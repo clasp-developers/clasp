@@ -1,0 +1,244 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 7. Extender Manual</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../index.html" title="Boost.Build V2 User Manual">
+<link rel="prev" href="reference/definitions.html" title="Definitions">
+<link rel="next" href="extender/example.html" title="Example: 1-to-1 generator">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="reference/definitions.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="extender/example.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="chapter" lang="en">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="bbv2.extender"></a>Chapter 7. Extender Manual</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="section"><a href="extender.html#bbv2.extender.intro">Introduction</a></span></dt>
+<dt><span class="section"><a href="extender/example.html">Example: 1-to-1 generator</a></span></dt>
+<dt><span class="section"><a href="extending/targets.html">Target types</a></span></dt>
+<dt><span class="section"><a href="extending/tools.html">Tools and generators</a></span></dt>
+<dt><span class="section"><a href="extending/features.html">Features</a></span></dt>
+<dt><span class="section"><a href="extending/rules.html">Main target rules</a></span></dt>
+<dt><span class="section"><a href="extending/toolset_modules.html">Toolset modules</a></span></dt>
+</dl>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.extender.intro"></a>Introduction</h2></div></div></div>
+<div class="toc"><dl>
+<dt><span class="section"><a href="extender.html#bbv2.extender.overview.metatargets">Metatargets</a></span></dt>
+<dt><span class="section"><a href="extender.html#bbv2.extender.overview.targets">Concrete targets</a></span></dt>
+<dt><span class="section"><a href="extender.html#bbv2.extender.overview.generators">Generators</a></span></dt>
+</dl></div>
+<p>
+        This section explains how to extend Boost.Build to accomodate your
+        local requirements&#8212;primarily to add support for non-standard
+        tools you have. Before we start, be sure you have read and understoon
+        the concept of metatarget, <a href="overview.html#bbv2.overview.concepts" title="Concepts">the section called &#8220;Concepts&#8221;</a>,
+        which is critical to understanding the remaining material.
+      </p>
+<p>
+        The current version of Boost.Build has three levels of targets, listed
+        below.
+      </p>
+<div class="variablelist"><dl>
+<dt><span class="term">metatarget</span></dt>
+<dd><p>
+              Object that is created from declarations in Jamfiles. May
+              be called with a set of properties to produce concrete
+              targets.
+            </p></dd>
+<dt><span class="term">concrete target</span></dt>
+<dd><p>
+              Object that corresponds to a file or an action.
+            </p></dd>
+<dt><span class="term">jam target</span></dt>
+<dd><p>
+              Low-level concrete target that is specific to Boost.Jam build
+              engine. Essentially a string&#8212;most often a name of file.                
+            </p></dd>
+</dl></div>
+<p>
+        In most cases, you will only have to deal with concrete targets and
+        the process that creates concrete targets from
+        metatargets. Extending metatarget level is rarely required. The jam
+        targets are typically only used inside the command line patterns.
+      </p>
+<div class="warning"><table border="0" summary="Warning">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Warning]" src="../../../../../../doc/html/images/warning.png"></td>
+<th align="left">Warning</th>
+</tr>
+<tr><td align="left" valign="top"><p>All of the Boost.Jam target-related builtin functions, like
+        <code class="computeroutput">DEPENDS</code> or <code class="computeroutput">ALWAYS</code> operate on jam
+        targets. Applying them to metatargets or concrete targets has no
+        effect.</p></td></tr>
+</table></div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="bbv2.extender.overview.metatargets"></a>Metatargets</h3></div></div></div>
+<p>Metatarget is an object that records information specified
+        in Jamfile, such as metatarget kind, name, sources and properties,
+        and can be called with specific properties to generate concrete
+        targets. At the code level it is represented by an instance of
+        class derived from <a href="reference/class.html#bbv2.reference.class.abstract-target" title="Class abstract-target">abstract-target</a>. 
+        <sup>[<a name="idp3979688" href="#ftn.idp3979688">4</a>]</sup>
+        </p>
+<p>The <a href="reference/class.html#bbv2.reference.class.abstract-target.generate">generate</a>
+        method takes the build properties
+        (as an instance of the <a href="reference/class.html#bbv2.reference.class.property-set" title="Class property-set">
+        property-set</a> class) and returns
+        a list containing:</p>
+<div class="itemizedlist"><ul type="disc">
+<li><p>As front element&#8212;Usage-requirements from this invocation
+          (an instance of <a href="reference/class.html#bbv2.reference.class.property-set" title="Class property-set">
+          property-set</a>)</p></li>
+<li><p>As subsequent elements&#8212;created concrete targets (
+          instances of the <code class="computeroutput">virtual-target</code> class.)</p></li>
+</ul></div>
+<p>It's possible to lookup a metataget by target-id using the 
+        <code class="computeroutput">targets.resolve-reference</code> function, and the
+        <code class="computeroutput">targets.generate-from-reference</code> function can both
+        lookup and generate a metatarget.</p>
+<p>The <a href="reference/class.html#bbv2.reference.class.abstract-target" title="Class abstract-target">abstract-target</a>
+        class has three immediate derived classes:</p>
+<div class="itemizedlist"><ul type="disc">
+<li><p><a href="reference/class.html#bbv2.reference.class.project-target" title="Class project-target">project-target</a> that
+          corresponds to a project and is not intended for further
+          subclassing. The <a href="reference/class.html#bbv2.reference.class.project-target.generate">
+          generate</a> method of this
+          class builds all targets in the project that are not marked as
+          explicit.</p></li>
+<li><p><a href="reference/class.html#bbv2.reference.class.main-target" title="Class main-target">main-target</a>
+          corresponds to a target in a project
+          and contains one or more target alternatives. This class also should not be 
+          subclassed. The <a href="reference/class.html#bbv2.reference.class.main-target.generate">generate</a>
+          method of this class selects an alternative to build, and calls the
+          <a href="reference/class.html#bbv2.reference.class.basic-target.generate">generate</a>
+          method of that alternative.</p></li>
+<li><p><a href="reference/class.html#bbv2.reference.class.basic-target" title="Class basic-target">basic-target</a>
+          corresponds to a specific target alternative. This is base class,
+          with a number of derived classes.  The
+          <a href="reference/class.html#bbv2.reference.class.basic-target.generate">generate</a> method
+          processes the target requirements and requested build properties to
+          determine final properties for the target, builds all sources, and
+          finally calls the abstract
+          <a href="reference/class.html#bbv2.reference.class.basic-target.construct">construct</a>
+          method with the list of source virtual targets, and the final properties.
+          </p></li>
+</ul></div>
+<p>The instances of the <a href="reference/class.html#bbv2.reference.class.project-target" title="Class project-target">project-target</a> and
+        <a href="reference/class.html#bbv2.reference.class.main-target" title="Class main-target">main-target</a> classes are created
+        implicitly&#8212;when loading a new Jamfiles, or when a new target
+        alternative with as-yet unknown name is created.  The instances of the
+        classes derived from <a href="reference/class.html#bbv2.reference.class.basic-target" title="Class basic-target">basic-target</a>
+        are typically created when Jamfile calls a <em class="firstterm">metatarget rule</em>,
+        such as such as <code class="computeroutput">exe</code>.
+        </p>
+<p>It it permissible to create a custom class derived from
+        <a href="reference/class.html#bbv2.reference.class.basic-target" title="Class basic-target">basic-target</a> and create new metatarget rule
+        that creates instance of such target. However, in the majority
+        of cases, a specific subclass of <a href="reference/class.html#bbv2.reference.class.basic-target" title="Class basic-target">basic-target</a>&#8212;
+        <a href="reference/class.html#bbv2.reference.class.typed-target" title="Class typed-target">typed-target</a> is used. That class is associated
+        with a <em class="firstterm">type</em> and relays to <em class="firstterm">generators</em>
+        to construct concrete targets of that type. This process will be explained below.
+        When a new type is declared, a new metatarget rule is automatically defined.
+        That rule creates new instance of type-target, associated with that type.                
+        </p>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="bbv2.extender.overview.targets"></a>Concrete targets</h3></div></div></div>
+<p>Concrete targets are represented by instance of classes derived
+        from <code class="computeroutput">virtual-target</code>. The most commonly used
+        subclass is <code class="computeroutput">file-target</code>. A file target is associated
+        with an action that creates it&#8212; an instance of the <code class="computeroutput">action</code>
+        class. The action, in turn, hold a list of source targets. It also holds the 
+        <a href="reference/class.html#bbv2.reference.class.property-set" title="Class property-set">property-set</a>
+        instance with the build properties that should be used for the action.</p>
+<p>Here's an example of creating a target from another target, <code class="computeroutput">source</code></p>
+<pre class="programlisting">
+local a = [ new action $(source) : common.copy : $(property-set) ] ;
+local t = [ new file-target $(name) : CPP : $(project) : $(a) ] ;
+</pre>
+<p>The first line creates an instance of the <code class="computeroutput">action</code> class.
+        The first parameter is the list of sources. The second parameter is the name
+        a jam-level <a href="overview/jam_language.html#bbv2.overview.jam_language.actions">action</a>.
+        The third parameter is the property-set applying to this action. The second line
+        creates a target. We specifie a name, a type and a project. We also pass the
+        action object created earlier.  If the action creates several targets, we can repeat
+        the second line several times.</p>
+<p>In some cases, code that creates concrete targets may be invoked more than
+        once with the same properties. Returning to different instance of <code class="computeroutput">file-target</code>
+        that correspond to the same file clearly will result in problems. Therefore, whenever
+        returning targets you should pass them via the <code class="computeroutput">virtual-target.register</code>
+        function, besides allowing Boost Build to track which virtual targets
+        got created for each metatarget, this will also replace targets with previously created identical
+        ones, as necessary.<sup>[<a name="idp4004016" href="#ftn.idp4004016">5</a>]</sup>
+        Here are a couple of examples:
+</p>
+<pre class="programlisting">
+return [ virtual-target.register $(t) ] ;
+return [ sequence.transform virtual-target.register : $(targets) ] ;
+</pre>
+<p>
+        </p>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="bbv2.extender.overview.generators"></a>Generators</h3></div></div></div>
+<p>In theory, every kind of metatarget in Boost.Build (like <code class="computeroutput">exe</code>, 
+        <code class="computeroutput">lib</code> or <code class="computeroutput">obj</code>) could be implemented
+        by writing a new metatarget class that, independently of the other code, figures
+        what files to produce and what commands to use. However, that would be rather inflexible.
+        For example, adding support for a new compiler would require editing several metatargets.
+        </p>
+<p>In practice, most files have specific types, and most tools
+        consume and produce files of specific type. To take advantage of this
+        fact, Boost.Build defines concept of target type and
+        <a class="indexterm" name="idp4007928"></a>
+        <em class="firstterm">generators</em>, and has special metatarget class
+        <a href="reference/class.html#bbv2.reference.class.typed-target" title="Class typed-target">typed-target</a>.  Target type is merely an
+        identifier. It is associated with a set of file extensions that
+        correspond to that type. Generator is an abstraction of a tool. It advertises
+        the types it produces and, if called with a set of input target, tries to construct
+        output targets of the advertised types. Finally,
+        <a href="reference/class.html#bbv2.reference.class.typed-target" title="Class typed-target">typed-target</a>
+        is associated with specific target type, and relays the generator (or generators)
+        for that type.
+        </p>
+<p>A generator is an instance of a class derived from <code class="computeroutput">generator</code>.
+        The <code class="computeroutput">generator</code> class itself is suitable for common cases.
+        You can define derived classes for custom scenarios.</p>
+</div>
+</div>
+<div class="footnotes">
+<br><hr width="100" align="left">
+<div class="footnote"><p><sup>[<a name="ftn.idp3979688" href="#idp3979688">4</a>] </sup>This name is historic, and will be eventuall changed to 
+        <code class="computeroutput">metatarget</code></p></div>
+<div class="footnote"><p><sup>[<a name="ftn.idp4004016" href="#idp4004016">5</a>] </sup>This create-then-register pattern is caused by limitations 
+        of the Boost.Jam language. Python port is likely to never create duplicate targets.</p></div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="reference/definitions.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="extender/example.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

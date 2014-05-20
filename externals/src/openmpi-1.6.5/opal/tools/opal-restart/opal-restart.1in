@@ -1,0 +1,130 @@
+.\"
+.\" Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+.\"                         University Research and Technology
+.\"                         Corporation.  All rights reserved.
+.\" Copyright (c) 2008      Sun Microsystems, Inc.  All rights reserved.
+.\"
+.\" Man page for OPAL's opal-restart command
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH     OPAL-RESTART  1 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+opal-restart \- Restart a previously checkpointed sequential process using the
+Open PAL Checkpoint/Restart Service (CRS)
+.
+.P
+\fBNote\fR: This should only be used by the user if the application being 
+restarted is an OPAL-only application. If it is an Open RTE or Open MPI
+program their respective tools should be used.
+.
+.\" **************************
+.\"    Synopsis Section
+.\" **************************
+.SH SYNOPSIS
+.
+.B opal-restart
+.B [ options ]
+.B <SNAPSHOT HANDLE>
+.
+.\" **************************
+.\"    Options Section
+.\" **************************
+.SH Options
+.
+\fIopal-restart\fR will attempt to restart a previously checkpointed squential
+process from the snapshot handle reference returned by \fIopal_checkpoint\fP.
+.
+.TP 10
+.B <SNAPSHOT HANDLE>
+The snapshot handle reference returned by \fIopal_checkpoint\fP, used to
+restart the process. This is required to be the last argument to this command.
+.
+.
+.TP
+.B -h | --help
+Display help for this command
+.
+.
+.TP
+.B --fork
+Fork off a new process, which is the restarted process. By default, the
+restarted process will replace \fIopal-restart\fR process.
+.
+.
+.TP
+.B -w | --where
+The location of the local snapshot reference.
+.
+.
+.TP
+.B -s | --self
+Restart this process using the \fIself\fR CRS component. This component is a
+special case, all other CRS components are automatically detected.
+.
+.
+.TP
+.B -v | --verbose
+Enable verbose output for debugging.
+.
+.
+.TP
+.B -gmca | --gmca \fR<key> <value>\fP
+Pass global MCA parameters that are applicable to all contexts. \fI<key>\fP is
+the parameter name; \fI<value>\fP is the parameter value.
+.
+.
+.TP
+.B -mca | --mca <key> <value>
+Send arguments to various MCA modules.
+.
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+\fIopal-restart\fR can be invoked multiple, non-overlapping times. This
+allows the user to restart a previously running sequential
+process. See opal_crs(7) for more information about the CRS framework and
+components.
+.
+.PP
+When using the \fIself\fR CRS component, the \fB<FILENAME>\fR argument is
+replaced by the name of the program to be restarted followed by any arguments
+that need to be passed to the program. For example, if under normal execution
+we would start our program "foo" as:
+
+   \fBshell$\fP setenv OMPI_MCA_crs=self
+   \fBshell$\fP setenv OMPI_MCA_crs_self_prefix=my_callback_prefix
+   \fBshell$\fP ./foo arg1 arg2
+
+To restart this process, we may only need to call:
+
+   \fBshell$\fP opal-restart --self
+                       -mca crs_self_prefix my_callback_prefix \\
+                       ./foo arg1 arg2
+
+This will cause the "my_callback_prefix-restart" function to be called as soon
+as the program "foo" calls \fIOPAL_INIT\fP. You do not have to call your
+program with the same argument set as before. There for we could have just as
+correctly called:
+
+   \fBshell$\fP opal-restart --self \\
+                       -mca crs_self_prefix my_callback_prefix \\
+                       ./foo arg3
+
+This depends upon the behavior of the program "foo".
+.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+  opal-checkpoint(1), opal_crs(7)
+.\", orte_crs(7), ompi_crs(7)

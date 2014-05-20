@@ -1,0 +1,33 @@
+# -*- text -*-
+#
+# Copyright (c) 2009 Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI's SMTP notifier support
+#
+[to/from not specified]
+Error: the Open MPI SMTP notifier component had no "to" and/or "from"
+email addresses specified.
+#
+[server not specified]
+Error: the Open MPI SMTP notifier component had no SMTP server name or
+IP address specified.
+#
+[unable to resolve server]
+Sorry, Open MPI's SMTP notifier component was unable to resolve the IP
+address of the server provided.
+
+  Server: %s
+#
+[send_email failed]
+Oops!  Open MPI's SMTP notifier failed to send an email.
+
+  Reason: %s
+  libESMTP function: %s
+  libESMTP message: %s
+  Message: %s
+#

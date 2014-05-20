@@ -1,0 +1,20 @@
+.gitattributes   export-ignore
+
+bootstrap        crlf=input
+configure        crlf=input
+*.[1-9]          crlf=input
+*.sh             crlf=input
+*.sh.in          crlf=input
+
+*.bat           -crlf
+*.dsp           -crlf
+*.dsptemplate   -crlf
+*.dsw           -crlf
+*.sln           -crlf
+*.vcproj        -crlf
+
+*.c              whitespace=tab-in-indent
+*.h              whitespace=tab-in-indent
+*.cxx            whitespace=tab-in-indent
+*.txt            whitespace=tab-in-indent
+*.cmake          whitespace=tab-in-indent

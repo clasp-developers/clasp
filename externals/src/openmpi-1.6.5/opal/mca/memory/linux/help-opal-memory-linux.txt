@@ -1,0 +1,42 @@
+# -*- text -*-
+#
+# Copyright (c) 2009      Sun Microsystems, Inc.  All rights reserved.
+# Copyright (c) 2010      Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI's memory/linux component.
+#
+[disable incorrectly set]
+WARNING: The special MCA parameter "%s" was set in
+an unexpected way, and is likely not working the way you want it to.
+
+Specifically, this MCA parameter is "special" in that it can *only* be
+set in the environment.  Setting this value in a file -- and sometimes
+even on the command line -- will not work as intended.  The *only* way
+to set this value is to set "OMPI_MCA_%s" in the environment before
+starting your job.
+
+  Value:      %d
+  Source:     %s
+#
+[ummunotify eaccess]
+Open MPI was unable to open the UMMU notification device.  This is
+likely a permissions problem on the device itself.  UMMU notification
+support is therefore disabled in this process; an alternate memory
+hook manager *may* be used instead (if available).
+
+  Local host:  %s
+  UMMU device: %s
+#
+[ummunotify open error]
+Open MPI was unable to open the UMMU notification device.  UMMU
+notification support is therefore disabled in this process; an
+alternate memory hook manager *may* be used instead (if available).
+
+  Local host:  %s
+  UMMU device: %s
+  Error:       %s (%d)

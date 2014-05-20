@@ -1,0 +1,72 @@
+.\"
+.\" Copyright (c) 2007      Los Alamos National Security, LLC
+.\"                         All rights reserved.
+.\" Copyright (c) 2008-2009 Sun Microsystems, Inc.  All rights reserved.
+.\"
+.\" Man page for OMPI's ompi-server command
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH OMPI-SERVER 1 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+ompi-server \- Server for supporting name publish/lookup operations.
+.
+.PP
+.
+.\" **************************
+.\"    Synopsis Section
+.\" **************************
+.SH SYNOPSIS
+.
+.BR ompi-server " [ options ]"
+.
+.\" **************************
+.\"    Options Section
+.\" **************************
+.SH Options
+.
+\fIompi-server\fR acts as a data server for Open MPI jobs to exchange
+contact information in support of MPI-2's Publish_name and Lookup_name
+functions.
+.
+.TP 10
+.B -h | --help
+Display help for this command
+.
+.
+.TP
+.B -d | --debug
+Enable verbose output for debugging
+.
+.
+.TP
+.B -r | --report-uri \fR<value>\fP
+Report the Open MPI contact information for the server. This information is
+required for MPI jobs to use the data server. Three parameter values are supported:
+(a) '-', indicating that the uri is to be printed to stdout; (b) '+', indicating that
+the uri is to be printed to stderr; and (c) "file:path-to-file", indicating that
+the uri is to be printed to the specified file. The "path-to-file" can be either
+absolute or relative, but must be in a location where the user has write
+permissions. Please note that the resulting file must be read-accessible to
+expected users of the server.
+.
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+\fIompi-server\fR acts as a data server for Open MPI jobs to exchange
+contact information in support of MPI-2's Publish_name and Lookup_name
+functions.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+.

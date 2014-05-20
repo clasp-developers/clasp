@@ -1,0 +1,78 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Dims_create 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Dims_create \fP \- Creates a division of processors in a Cartesian grid.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Dims_create(int \fInnodes\fP, int\fI ndims\fP, int\fI *dims\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_DIMS_CREATE(\fINNODES, NDIMS, DIMS, IERROR\fP)
+	INTEGER	\fINNODES, NDIMS, DIMS(*), IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Compute_dims(int \fInnodes\fP, int \fIndims\fP, int \fIdims\fP[])
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+nnodes
+Number of nodes in a grid (integer).
+.TP 1i
+ndims
+Number of Cartesian dimensions (integer).
+
+.SH IN/OUT PARAMETER
+.TP 1i
+dims
+Integer array of size ndims specifying the number of nodes in each dimension.
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+For Cartesian topologies, the function MPI_Dims_create helps the user select a balanced distribution of processes per coordinate direction, depending on the number of processes in the group to be balanced and optional constraints that can be specified by the user. One use is to partition all the processes (the size of MPI_COMM_WORLD's group) into an n-dimensional topology. 
+.sp
+The entries in the array \fIdims\fP are set to describe a Cartesian grid with \fIndims\fP dimensions and a total of \fInnodes\fP nodes. The dimensions are set to be as close to each other as possible, using an appropriate divisibility algorithm. The caller may further constrain the operation of this routine by specifying elements of array dims. If dims[i] is set to a positive number, the routine will not modify the number of nodes in dimension i; only those entries where  dims[i] = 0 are modified by the call.   
+.sp
+Negative input values of dims[i] are erroneous. An error will occur if
+nnodes is not a multiple of ((pi) over (i, dims[i] != 0)) dims[i].   
+.sp
+For dims[i] set by the call, dims[i] will be ordered in nonincreasing order. Array dims is suitable for use as input to routine MPI_Cart_create. MPI_Dims_create is local. 
+.sp
+\fBExample:\fP
+.nf
+
+dims
+before					dims
+call		function call		on return
+-----------------------------------------------------
+(0,0)	MPI_Dims_create(6, 2, dims)	(3,2)
+(0,0)	MPI_Dims_create(7, 2, dims) 	(7,1)
+(0,3,0)	MPI_Dims_create(6, 3, dims)	(2,3,1)
+(0,3,0)	MPI_Dims_create(7, 3, dims)	erroneous call
+------------------------------------------------------
+
+.fi
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

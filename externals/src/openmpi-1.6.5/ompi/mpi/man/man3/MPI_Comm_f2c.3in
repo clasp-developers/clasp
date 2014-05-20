@@ -1,0 +1,43 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Comm_f2c 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_f2c, MPI_Comm_c2f, MPI_File_f2c, MPI_File_c2f, MPI_Info_f2c, MPI_Info_c2f, MPI_Op_f2c, MPI_Op_c2f, MPI_Request_f2c, MPI_Request_c2f, MPI_Type_f2c, MPI_Type_c2f, MPI_Win_f2c, MPI_Win_c2f \fP \- Translates a C handle into a Fortran handle, or vice versa.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+MPI_Comm MPI_Comm_f2c(MPI_Fint \fIcomm\fP)
+MPI_Fint MPI_Comm_c2f(MPI_Comm \fIcomm\fP)
+
+MPI_File MPI_File_f2c(MPI_Fint \fIfile\fP)
+MPI_Fint MPI_File_c2f(MPI_File \fIfile\fP)
+
+MPI_Group MPI_Group_f2c(MPI Fint \fIgroup\fP)
+MPI_Fint MPI_Group_c2f(MPI Group \fIgroup\fP)
+
+MPI_Info MPI_Info_f2c(MPI_Fint \fIinfo\fP)
+MPI_Fint MPI_Info_c2f(MPI_Info \fIinfo\fP)
+
+MPI_Op MPI_Op_f2c(MPI_Fint \fIop\fP)
+MPI_Fint MPI_Op_c2f(MPI_Op \fIop\fP)
+
+MPI_Request MPI_Request_f2c(MPI_Fint \fIrequest\fP)
+MPI_Fint MPI_Request_c2f(MPI_Request \fIrequest\fP)
+
+MPI_Datatype MPI_Type_f2c(MPI_Fint \fIdatatype\fP)
+MPI_Fint MPI_Type_c2f(MPI_Datatype \fIdatatype\fP)
+
+MPI_Win MPI_Win_f2c(MPI_Fint \fIwin\fP)
+MPI_Fint MPI_Win_c2f(MPI_Win \fIwin\fP)
+
+.fi
+.SH DESCRIPTION
+.ft R
+Handles are passed between Fortran and C or C++ by using an explicit C wrapper to convert Fortran handles to C handles. There is no direct access to C or C++ handles in Fortran. Handles are passed between C and C++ using overloaded C++ operators called from C++ code. There is no direct access to C++ objects from C. The type definition \fIMPI_Fint\fP is provided in C/C++ for an integer of the size that matches a Fortran \fIINTEGER\fP; usually, \fIMPI_Fint\fP will be equivalent to \fIint\fP. The handle translation functions are provided in C to convert from a Fortran handle (which is an integer) to a C handle, and vice versa.
+.PP
+For example, if \fIcomm\fP is a valid Fortran handle to a communicator, then MPI_Comm_f2c returns a valid C handle to that same communicator; if \fIcomm\fP = MPI_COMM_NULL (Fortran value), then MPI_Comm_f2c returns a null C handle; if \fIcomm\fP is an invalid Fortran handle, then MPI_Comm_f2c returns an invalid C handle. 
+.SH NOTE
+This function does not return an error value. Consequently, the result of calling it before MPI_Init or after MPI_Finalize is undefined.

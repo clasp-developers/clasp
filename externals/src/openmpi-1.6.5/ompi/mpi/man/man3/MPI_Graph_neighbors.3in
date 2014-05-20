@@ -1,0 +1,98 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Graph_neighbors 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Graph_neighbors \fP \- Returns the neighbors of a node associated with a graph topology.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Graph_neighbors(MPI_Comm \fIcomm\fP, int\fI rank\fP, int\fI maxneighbors\fP,
+	int\fI *neighbors\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GRAPH_NEIGHBORS(\fICOMM, RANK, MAXNEIGHBORS, NEIGHBORS, IERROR\fP)
+	INTEGER	\fICOMM, RANK, MAXNEIGHBORS, NEIGHBORS(*), IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Graphcomm::Get_neighbors(int \fIrank\fP, int \fImaxneighbors\fP, 
+	int \fIneighbors\fP[]) const 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm
+Communicator with graph topology (handle).
+.TP 1i
+rank
+Rank of process in group of comm (integer).
+.TP 1i
+maxneighbors
+Size of array neighbors (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+neighbors
+Ranks of processes that are neighbors to specified process (array of integers).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+\fBExample:\fP  Suppose that comm is a communicator with a shuffle-exchange
+topology. The group has 2n members. Each process is labeled by a(1),\ ..., a(n) with a(i) E{0,1}, and has three neighbors: exchange (a(1),\ ..., a(n) = a(1),\ ..., a(n-1), a(n) (a = 1 - a), shuffle (a(1),\ ..., a(n)) = a(2),\ ..., a(n), a(1), and unshuffle (a(1),\ ..., a(n)) = a(n), a(1),\ ..., a(n-1). The graph adjacency list is illustrated below for n=3.
+.sp
+.nf
+        		exchange		shuffle		unshuffle
+    node		neighbors(1)	neighbors(2)	neighbors(3)
+    0(000)	    1		    0		    0
+    1(001)	    0		    2		    4
+    2(010)	    3		    4		    1
+    3(011)	    2		    6		    5
+    4(100)	    5		    1		    2
+    5(101)	    4		    3		    6
+    6(110)	    7		    5		    3
+    7(111)	    6		    7		    7
+.fi
+.sp
+Suppose that the communicator comm has this topology associated with it. The following code fragment cycles through the three types of neighbors and performs an appropriate permutation for each.
+.sp
+.nf
+C  assume: each process has stored a real number A. 
+C  extract neighborhood information 
+      CALL MPI_COMM_RANK(comm, myrank, ierr) 
+      CALL MPI_GRAPH_NEIGHBORS(comm, myrank, 3, neighbors, ierr) 
+C  perform exchange permutation 
+      CALL MPI_SENDRECV_REPLACE(A, 1, MPI_REAL, neighbors(1), 0, 
+     +     neighbors(1), 0, comm, status, ierr) 
+C  perform shuffle permutation 
+      CALL MPI_SENDRECV_REPLACE(A, 1, MPI_REAL, neighbors(2), 0, 
+     +     neighbors(3), 0, comm, status, ierr) 
+C  perform unshuffle permutation 
+      CALL MPI_SENDRECV_REPLACE(A, 1, MPI_REAL, neighbors(3), 0, 
+     +     neighbors(2), 0, comm, status, ierr)
+
+.fi
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Graph_neighbors_count
+

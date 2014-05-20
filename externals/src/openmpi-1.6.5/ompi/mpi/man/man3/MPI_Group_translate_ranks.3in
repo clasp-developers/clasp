@@ -1,0 +1,65 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Group_translate_ranks 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Group_translate_ranks\fP \- Translates the ranks of processes in one group to those in another group.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Group_translate_ranks(MPI_Group \fIgroup1\fP, int\fI n\fP,
+	int\fI *ranks1\fP, MPI_Group\fI group2\fP, int\fI *ranks2\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GROUP_TRANSLATE_RANKS(\fIGROUP1, N, RANKS1, GROUP2, RANKS2,
+		IERROR\fP)
+	INTEGER	\fIGROUP1, N, RANKS1(*), GROUP2, RANKS2(*), IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static void Group::Translate_ranks (const Group& \fIgroup1\fP, int \fIn\fP, 
+	const int \fIranks1\fP[], const Group& \fIgroup2\fP, int \fIranks2\fP[]) 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+group1
+First group (handle).
+.TP 1i
+n
+Number of ranks in ranks1 and ranks2 arrays (integer).
+.TP 1i
+ranks1
+Array of zero or more valid ranks in group1.
+.TP 1i
+group2
+Second group (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+ranks2
+Array of corresponding ranks in group2, MPI_UNDEFINED when no correspondence exists. 
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This function is important for determining the relative numbering of the same processes in two different groups. For instance, if one knows the ranks of certain processes in the group of MPI_COMM_WORLD, one might want to know their ranks in a subset of that group.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

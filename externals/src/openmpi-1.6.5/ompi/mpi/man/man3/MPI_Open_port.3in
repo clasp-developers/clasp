@@ -1,0 +1,63 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Open_port 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Open_port\fP \- Establishes a network address for a server to accept connections from clients.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Open_port(MPI_Info \fIinfo\fP, char *\fIport_name\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_OPEN_PORT(\fIINFO, PORT_NAME, IERROR\fP)
+	CHARACTER*(*)	\fIPORT_NAME\fP
+	INTEGER		\fIINFO, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Open_port(const MPI::Info& \fIinfo\fP, char* \fIport_name\fP)
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+info
+Options on how to establish an address (handle). No options currently supported.
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+port_name
+Newly established port (string).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Open_port establishes a network address, encoded in the \fIport_name\fP string, at which the server will be able to accept connections from clients. \fIport_name\fP is supplied by the system. 
+.sp
+MPI copies a system-supplied port name into \fIport_name\fP. \fIport_name\fP identifies the newly opened port and can be used by a client to contact the server. The maximum size string that may be supplied by the system is MPI_MAX_PORT_NAME.
+
+.SH SUPPORTED INFO KEYS
+None. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Comm_accept
+MPI_Comm_connect
+.br
+

@@ -1,0 +1,27 @@
+# -*- shell-script -*-
+#
+# Copyright (c) 2004-2007 The Trustees of the University of Tennessee.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+# Specific to this module
+
+PARAM_INIT_FILE=pml_v.c
+PARAM_CONFIG_FILES="Makefile"
+
+
+# Operate on the vprotocol framework directory to detect and configure all 
+# the vprotocols. 
+(
+    cd $pd_ompi_topdir
+    mv "$mca_no_config_env_file" "$mca_no_config_env_file.bak"
+    mv "$mca_m4_config_env_file" "$mca_m4_config_env_file.bak" 
+    process_framework $pd_dir/mca/vprotocol $rg_cwd v vprotocol
+    mv "$mca_no_config_env_file.bak" "$mca_no_config_env_file"
+    mv "$mca_m4_config_env_file.bak" "$mca_m4_config_env_file" 
+)

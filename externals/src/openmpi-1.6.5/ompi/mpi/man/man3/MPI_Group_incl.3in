@@ -1,0 +1,74 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Group_incl 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Group_incl \fP \- Produces a group by reordering an existing group and taking only listed members.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Group_incl(MPI_Group \fIgroup\fP, int\fI n\fP, int\fI *ranks\fP,
+	MPI_Group\fI *newgroup\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GROUP_INCL(\fIGROUP, N, RANKS, NEWGROUP, IERROR\fP)
+	INTEGER	\fIGROUP, N, RANKS(*), NEWGROUP, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Group Group::Incl(int \fIn\fP, const int \fIranks\fP[]) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+group
+Group (handle).
+.TP 1i
+n
+Number of elements in array ranks (and size of \fInewgroup\fP)(integer).
+.TP 1i
+ranks
+Ranks of processes in group to appear in newgroup (array of integers).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newgroup
+New group derived from above, in the order defined by ranks (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The function MPI_Group_incl creates a group group_out that consists of the n processes in group with ranks rank[0], \&..., rank[n-1]; the process with rank i in group_out is the process with rank ranks[i] in group. Each of the n elements of ranks must be a valid rank in group and all elements must be distinct, or else the program is erroneous. If n = 0, then group_out is MPI_GROUP_EMPTY. This function can, for instance, be used to reorder the elements of a group.
+
+.SH NOTE
+.ft R
+This implementation does not currently check to ensure that there are no
+duplicates in the list of ranks.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Group_compare
+.br
+MPI_Group_range_incl
+.br
+MPI_Group_free
+

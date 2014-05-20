@@ -1,0 +1,62 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Info_get_nkeys 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Info_get_nkeys\fP \- Gets the number of keys currently defined in an info object. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Info_get_nkeys(MPI_Info \fIinfo\fP, int \fI*nkeys\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_INFO_GET_NKEYS(\fIINFO, NKEYS, IERROR\fP)
+	INTEGER		\fIINFO, NKEYS, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int MPI::Info::Get_nkeys() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+info
+Info object (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+nkeys
+Number of defined keys (integer). 
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Info_get_nkeys returns the number of currently defined keys in \fIinfo\fP. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft r
+MPI_Info_get
+.br
+MPI_Info_get_nthkey
+.br
+MPI_Info_get_valueln
+.br
+

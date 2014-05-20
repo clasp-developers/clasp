@@ -1,0 +1,89 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Register_datarep 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Register_datarep\fP \- Defines data representation. 
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_Register_datarep(char \fI*datarep\fP, 
+    	      MPI_Datarep_conversion_function \fI*read_conversion_fn\fP, 
+    	      MPI_Datarep_conversion_function \fI*write_conversion_fn\fP, 
+    	      MPI_Datarep_extent_function \fI*dtype_file_extent_fn\fP, 
+    	      void \fI*extra_state\fP)
+.fi
+.SH Fortran Syntax
+.nf
+    INCLUDE 'mpif.h'
+    MPI_REGISTER_DATAREP(\fIDATAREP\fP, \fIREAD_CONVERSION_FN\fP, 
+	\fIWRITE_CONVERSION_FN\fP, \fIDTYPE_FILE_EXTENT_FN\fP, 
+	\fIEXTRA_STATE\fP,\fI IERROR\fP)
+		CHARACTER*(*) \fIDATAREP\fP 
+		EXTERNAL \fIREAD_CONVERSION_FN, WRITE_CONVERSION_FN, 
+		         DTYPE_FILE_EXTENT_FN\fP
+        	INTEGER	\fIIERROR\fP
+		INTEGER(KIND=MPI_ADDRESS_KIND) \fIEXTRA_STATE\fP
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Register_datarep(const char* \fIdatarep\fP,
+	MPI::Datarep_conversion_function* \fIread_conversion_fn\fP,
+	MPI::Datarep_conversion_function* \fIwrite_conversion_fn\fP,
+	MPI::Datarep_extent_function* \fIdtype_file_extent_fn\fP,
+	void* \fIextra_state\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+datarep
+Data representation identifier (string).
+.ft R
+.TP 1i
+read_conversion_fn
+Function invoked to convert from file representation to native representation (function).
+.ft R
+.TP 1i
+write_conversion_fn
+Function invoked to convert from native representation to file representation (function).
+.ft R
+.TP 1i
+dtype_file_extent_fn
+Function invoked to get the extent of a data type as represented in the file (function).
+.ft R
+.TP 1i
+extra_state
+Extra state. 
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Register_datarep defines a data representation. It associates the data representation's identifier (a string) with the functions that convert from file representation to the native representation and vice versa, with the function that gets the extent of a data type as represented in the file, as well as with "extra state," which is used for passing arguments. Once a data representation has been registered using this routine, you may specify its identifier as an argument to MPI_File_set_view, causing subsequent data-access operations to call the specified conversion functions. 
+
+The call associates \fIread_conversion_fn\fP, \fIwrite_conversion_fn\fP, and \fIdtype_file_extent_fn\fP with the data representation identifier \fIdatarep\fP. \fIdatarep\fP can then be used as an argument to MPI_File_set_view, causing subsequent data access operations to call the conversion functions to convert all data items accessed between file data representation and native representation. MPI_Register_datarep is a local operation and only registers the data representation for the calling MPI process. If \fIdatarep\fP is already defined, an error in the error class MPI_ERR_DUP_DATAREP is raised using the default file error handler. The length of a data representation string is limited to the value of MPI_MAX_DATAREP_STRING. MPI_MAX_DATAREP_STRING must have a value of at least 64. No routines are provided to delete data representations and free the associated resources; it is not expected that an application will generate them in significant numbers. 
+
+.SH NOTES
+.ft R
+
+The Fortran version of each MPI I/O routine includes a final argument, 
+IERROR, which is not defined in the PARAMETERS sections. This argument is used to return the error status of the routine in the manner typical for Fortran library routines. 
+.sp
+The C version of each routine returns an error status as an integer return value.
+.sp
+Error classes are found in mpi.h (for C), mpif.h (for Fortran), and mpi++.h (for C++). 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

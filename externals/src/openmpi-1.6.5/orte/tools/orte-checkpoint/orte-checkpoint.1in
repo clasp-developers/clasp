@@ -1,0 +1,103 @@
+.\"
+.\" Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+.\"                         University Research and Technology
+.\"                         Corporation.  All rights reserved.
+.\" Copyright (c) 2008      Sun Microsystems, Inc.  All rights reserved.
+.\"
+.\" Man page for OMPI's ompi-checkpoint command
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH     OMPI-CHECKPOINT  1 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+ompi-checkpoint, orte-checkpoint \- Checkpoint a running parallel process using the Open MPI
+Checkpoint/Restart Service (CRS)
+.
+.PP
+.
+\fBNOTE:\fP \fIompi-checkpoint\fP, and \fIorte-checkpoint\fP are all exact
+synonyms for each other. Using any of the names will result in exactly
+identical behavior.
+.
+.\" **************************
+.\"    Synopsis Section
+.\" **************************
+.SH SYNOPSIS
+.
+.B ompi-checkpoint
+.B [ options ]
+.B <PID_OF_MPIRUN>
+.
+.\" **************************
+.\"    Options Section
+.\" **************************
+.SH Options
+.
+\fIorte-checkpoint\fR will attempt to notify a running parallel job (identified
+by \fImpirun\fP) that it has been requested that the job checkpoint itself. A
+global snapshot handle reference is presented to the user, which is used in
+\fIompi_restart\fP to restart the job.
+.
+.TP 10
+.B <PID_OF_MPIRUN>
+Process ID of the \fImpirun\fP process.
+.
+.
+.TP
+.B -h | --help
+Display help for this command
+.
+.
+.TP
+.B -w | --nowait
+Do not wait for the application to finish checkpointing before returning.
+.
+.
+.TP
+.B -s | --status
+Display status messages regarding the progression of the checkpoint request.
+.
+.
+.TP
+.B --term
+After checkpointing the running job, terminate it.
+.
+.
+.TP
+.B -v | --verbose
+Enable verbose output for debugging.
+.
+.
+.TP
+.B -gmca | --gmca \fR<key> <value>\fP
+Pass global MCA parameters that are applicable to all contexts. \fI<key>\fP is
+the parameter name; \fI<value>\fP is the parameter value.
+.
+.
+.TP
+.B -mca | --mca <key> <value>
+Send arguments to various MCA modules.
+.
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+\fIorte-checkpoint\fR can be invoked multiple, non-overlapping times.
+It is convenient to note that the user does not need to spectify
+the checkpointer to be used here, as that is determined completely by each of
+the running process in the job being checkpointed.
+.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+  orte-ps(1), orte-clean(1), ompi-restart(1), opal-checkpoint(1), opal-restart(1), opal_crs(7)
+.

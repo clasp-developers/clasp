@@ -1,0 +1,1 @@
+../../../../ompi/mpi/c/is_thread_main.c

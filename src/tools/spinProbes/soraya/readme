@@ -1,0 +1,35 @@
+
+
+The coordinate systems are defined as follows:
+
+Pro4 Monomer:
+	origin is on CG
+	X-axis is Normalized[((NG-CG)+(CGC-CG))]
+	XY-plane is Normalized[(NG-CG)-(CGC-CG))]
+	Z-axis is Normalized[CrossProduct[X-axis,XY-Plane]]
+	Y-axis is CrossProduct[Z-axis,X-axis]
+
+
+Poac:
+
+	origin is on ND
+	X-axis is Normalized[OD-ND]
+	XY-plane is Normalized[CE-ND]
+	Z-axis is Normalized[CrossProduct[X-axis,XY-plane]
+	Y-axis is CrossProduct[Z-axis,X-axis]
+
+
+The code to convert RotX,RotY,RotZ,RotYY,RotZZ,Dist into a 4x4 transformation matrix is
+in "matrixFromCanonical.cc"
+
+
+The tables of RotX,RotY,RotZ,RotYY,RotZZ,Dist for the dynamics runs are in:
+
+lead_entries_dkp-OSS5+OSS2.txt
+lead_entries_main-OSS2+POA3.txt
+tail_entries_back-OSS4+POA5.txt
+
+
+The equilibrium values and force constants for a Pro4-Pro4 are in:
+
+dkp-pro4SS+pro4SS.xml

@@ -1,0 +1,205 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Scan 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Scan\fP \- Computes an inclusive scan (partial reduction)
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Scan(void *\fIsendbuf\fP, void *\fIrecvbuf\fP, int \fIcount\fP, 
+	MPI_Datatype \fIdatatype\fP, MPI_Op \fIop\fP, MPI_Comm \fIcomm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_SCAN(\fISENDBUF, RECVBUF, COUNT, DATATYPE, OP, COMM, IERROR\fP)
+	<type>	\fISENDBUF(*), RECVBUF(*)\fP
+	INTEGER	\fICOUNT, DATATYPE, OP, COMM, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Intracomm::Scan(const void* \fIsendbuf\fP, void* \fIrecvbuf\fP,
+	int \fIcount\fP, const MPI::Datatype& \fIdatatype\fP,
+	const MPI::Op& \fIop\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+sendbuf
+Send buffer (choice).
+.TP 1i
+count
+Number of elements in input buffer (integer).
+.TP 1i
+datatype
+Data type of elements of input buffer (handle).
+.TP 1i
+op
+Operation (handle).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+recvbuf
+Receive buffer (choice).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Scan is used to perform an inclusive prefix reduction on data
+distributed across the calling processes. The operation returns, in
+the \fIrecvbuf\fP of the process with rank i, the reduction
+(calculated according to the function \fIop\fP) of the values in the
+\fIsendbuf\fPs of processes with ranks 0, ..., i (inclusive). The type
+of operations supported, their semantics, and the constraints on send
+and receive buffers are as for MPI_Reduce.
+
+.SH EXAMPLE
+.ft R
+This example uses a user-defined operation to produce a segmented
+scan. A segmented scan takes, as input, a set of values and a set of
+logicals, where the logicals delineate the various segments of the
+scan. For example,
+.sp
+.nf
+values     v1      v2      v3      v4      v5      v6      v7      v8
+logicals   0       0       1       1       1       0       0       1
+result     v1    v1+v2     v3    v3+v4  v3+v4+v5   v6    v6+v7     v8
+.fi
+.sp
+The result for rank j is thus the sum v(i) + ... + v(j), where i is
+the lowest rank such that for all ranks n, i <= n <= j, logical(n) =
+logical(j). The operator that produces this effect is
+.sp
+.nf
+      [ u ]     [ v ]     [ w ]
+      [   ]  o  [   ]  =  [   ]
+      [ i ]     [ j ]     [ j ]
+.fi
+.sp
+where
+.sp
+            ( u + v if i  = j
+      w  =  ( 
+            ( v     if i != j
+.fi
+.sp
+Note that this is a noncommutative operator. C code that implements it is
+given below.
+.sp
+.nf
+	typedef struct {
+		double val;
+		int log;
+	} SegScanPair;
+     
+	/*
+	 * the user-defined function
+	 */
+	void segScan(SegScanPair *in, SegScanPair *inout, int *len,
+		MPI_Datatype *dptr)
+	{
+		int i;
+		SegScanPair c;
+     
+		for (i = 0; i < *len; ++i) {
+			if (in->log == inout->log)
+				c.val = in->val + inout->val;
+			else
+				c.val = inout->val;
+
+			c.log = inout->log;
+			*inout = c;
+			in++;
+			inout++;
+		}
+	}
+.fi
+.sp
+Note that the inout argument to the user-defined function corresponds
+to the right-hand operand of the operator. When using this operator,
+we must be careful to specify that it is noncommutative, as in the
+following:
+.sp
+.nf
+	int			i, base; 
+	SeqScanPair	a, answer; 
+	MPI_Op		myOp; 
+	MPI_Datatype	type[2] = {MPI_DOUBLE, MPI_INT}; 
+	MPI_Aint		disp[2]; 
+	int			blocklen[2] = {1, 1}; 
+	MPI_Datatype	sspair; 
+
+	/*
+	 * explain to MPI how type SegScanPair is defined 
+	 */ 
+	MPI_Get_address(a, disp); 
+	MPI_Get_address(a.log, disp + 1); 
+	base = disp[0]; 
+	for (i = 0; i < 2; ++i)
+		disp[i] -= base; 
+	MPI_Type_struct(2, blocklen, disp, type, &sspair); 
+	MPI_Type_commit(&sspair);
+
+	/*
+	 * create the segmented-scan user-op
+	 * noncommutative - set commute (arg 2) to 0
+	 */ 
+	MPI_Op_create((MPI_User_function *)segScan, 0, &myOp);
+	\&... 
+	MPI_Scan(a, answer, 1, sspair, myOp, comm);
+.fi
+
+.SH USE OF IN-PLACE OPTION
+When the communicator is an intracommunicator, you can perform a scanning operation in place (the output buffer is used as the input buffer).  Use the variable MPI_IN_PLACE as the value of the \fIsendbuf\fR argument.  The input data is taken from the receive buffer and replaced by the output data.  
+
+.SH NOTES ON COLLECTIVE OPERATIONS
+.ft R
+The reduction functions of type MPI_Op do not return an error value.
+As a result, if the functions detect an error, all they can do is
+either call MPI_Abort or silently skip the problem. Thus, if the
+error handler is changed from MPI_ERRORS_ARE_FATAL to something else
+(e.g., MPI_ERRORS_RETURN), then no error may be indicated.
+.sp
+The reason for this is the performance problems in ensuring that
+all collective routines return the same error value.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Exscan
+MPI_Op_create
+MPI_Reduce
+

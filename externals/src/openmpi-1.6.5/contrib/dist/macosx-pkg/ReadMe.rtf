@@ -1,0 +1,34 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf410
+{\fonttbl\f0\fnil\fcharset77 Verdana;\f1\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue236;}
+\margl1440\margr1440\vieww10580\viewh15280\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sa240\ql\qnatural
+
+\f0\fs24 \cf0 Open MPI is a project combining technologies and resources from several other projects ({\field{\*\fldinst{HYPERLINK "http://icl.cs.utk.edu/ftmpi/"}}{\fldrslt \cf2 \ul \ulc2 FT-MPI}}, {\field{\*\fldinst{HYPERLINK "http://public.lanl.gov/lampi/"}}{\fldrslt \cf2 \ul \ulc2 LA-MPI}}, {\field{\*\fldinst{HYPERLINK "http://www.lam-mpi.org/"}}{\fldrslt \cf2 \ul \ulc2 LAM/MPI}}, and {\field{\*\fldinst{HYPERLINK "http://www.hlrs.de/organization/pds/projects/pacx-mpi/"}}{\fldrslt \cf2 \ul \ulc2 PACX-MPI}}) in order to build the best MPI library available. A completely new MPI-2 compliant implementation, Open MPI offers advantages for system and software vendors, application developers and computer science researchers.
+\f1   More information about Open MPI, including all the source code and documentation, is available from the main web site:\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\qc
+{\field{\*\fldinst{HYPERLINK "http://www.open-mpi.org/"}}{\fldrslt \cf0 http://www.open-mpi.org/}}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural
+\cf0 \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural
+\cf0 \ul \ulc0 Special OS X Package Notes\ulnone \
+\
+The binary package for Open MPI includes support for TCP and shared memory transports, with rsh/ssh and XGrid job launching.  Sites requiring support for other networks or job launching mechanisms will need to rebuild from source.\
+\
+There is no Fortran support in this binary package, as Apple does not ship a Fortran compiler with the Developer Tools - if you have a Fortran compiler and need Fortran support from Open MPI, you will have to build it from source.\
+\
+Because HFS+ is case-preserving but not case-sensitive, the C++ wrapper compiler is named mpic++, not the traditional mpiCC (which would conflict with mpicc).\
+\
+\
+\ul Getting Help\
+\ulnone \
+Please see the Open MPI web page for help with Open MPI, especially the frequently asked questions.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\qc
+\cf0  http://www.open-mpi.org/faq/\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural
+\cf0 \
+If this does not answer your question, further help is available via our mailing list at users@open-mpi.org}

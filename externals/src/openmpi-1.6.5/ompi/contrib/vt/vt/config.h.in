@@ -1,0 +1,491 @@
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
+/* pathname of shared CUDA runtime library */
+#undef CUDARTSHLIB_PATHNAME
+
+/* Command to list symbols from object files. */
+#undef DEFAULT_NM
+
+/* Path for node-local temporary directory */
+#undef DEFAULT_PFORM_LDIR
+
+/* Define to 1 if you have the ACML. */
+#undef HAVE_ACML
+
+/* Define to 1 if you have the <asm/intrinsics.h> header file. */
+#undef HAVE_ASM_INTRINSICS_H
+
+/* Define to 1 if you have the `asprintf' function. */
+#undef HAVE_ASPRINTF
+
+/* Define to 1 if you have the <catamount/data.h> header file. */
+#undef HAVE_CATAMOUNT_DATA_H
+
+/* Define to 1 if you have the <catamount/dclock.h> header file. */
+#undef HAVE_CATAMOUNT_DCLOCK_H
+
+/* Define to 1 if you have the `creat64' function. */
+#undef HAVE_CREAT64
+
+/* Define to 1 if you have the declaration of `environ', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ENVIRON
+
+/* Define to 1 if you have the declaration of `MPI_IN_PLACE', and to 0 if you
+   don't. */
+#undef HAVE_DECL_MPI_IN_PLACE
+
+/* Define to 1 if you have the declaration of `MPI_ROOT', and to 0 if you
+   don't. */
+#undef HAVE_DECL_MPI_ROOT
+
+/* Define to 1 if you have the declaration of `MPI_STATUS_SIZE', and to 0 if
+   you don't. */
+#undef HAVE_DECL_MPI_STATUS_SIZE
+
+/* Define to 1 if you have the declaration of `RTLD_DEFAULT', and to 0 if you
+   don't. */
+#undef HAVE_DECL_RTLD_DEFAULT
+
+/* Define to 1 if you have the declaration of `RTLD_NEXT', and to 0 if you
+   don't. */
+#undef HAVE_DECL_RTLD_NEXT
+
+/* Define to 1 if you have the declaration of `RUSAGE_THREAD', and to 0 if you
+   don't. */
+#undef HAVE_DECL_RUSAGE_THREAD
+
+/* Define to 1 if you have the declaration of `_Errno', and to 0 if you don't.
+   */
+#undef HAVE_DECL__ERRNO
+
+/* Define to 1 if you have the declaration of `__errno_location', and to 0 if
+   you don't. */
+#undef HAVE_DECL___ERRNO_LOCATION
+
+/* Define to 1 if you have the declaration of `__vfprintf_chk', and to 0 if
+   you don't. */
+#undef HAVE_DECL___VFPRINTF_CHK
+
+/* Define to 1 if you have the <demangle.h> header file. */
+#undef HAVE_DEMANGLE_H
+
+/* Define to 1 if you have the DL. */
+#undef HAVE_DL
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the ESSL. */
+#undef HAVE_ESSL
+
+/* Define to 1 if you have the `execvpe' function. */
+#undef HAVE_EXECVPE
+
+/* Define to 1 if VT is configured with Fortran support. */
+#undef HAVE_FC
+
+/* Define to 1 if you have the `fdatasync' function. */
+#undef HAVE_FDATASYNC
+
+/* Define to 1 if you have the `fexecve' function. */
+#undef HAVE_FEXECVE
+
+/* Define to 1 if you have the `fflush' function. */
+#undef HAVE_FFLUSH
+
+/* Define to 1 if you have the `flockfile' function. */
+#undef HAVE_FLOCKFILE
+
+/* Define to 1 if VT is configured with MPI Fortran support. */
+#undef HAVE_FMPI
+
+/* Define to 1 if you have the <fnmatch.h> header file. */
+#undef HAVE_FNMATCH_H
+
+/* Define to 1 if you have the `fopen64' function. */
+#undef HAVE_FOPEN64
+
+/* Define to 1 if you have the `fseeko' function. */
+#undef HAVE_FSEEKO
+
+/* Define to 1 if you have the `fseeko64' function. */
+#undef HAVE_FSEEKO64
+
+/* Define to 1 if you have the `fsetpos64' function. */
+#undef HAVE_FSETPOS64
+
+/* Define to 1 if you have the `fsync' function. */
+#undef HAVE_FSYNC
+
+/* Define to 1 if you have the `ftrylockfile' function. */
+#undef HAVE_FTRYLOCKFILE
+
+/* Define to 1 if you have the `funlockfile' function. */
+#undef HAVE_FUNLOCKFILE
+
+/* Define to 1 if VT is configured with Hybrid (MPI/Threads) support. */
+#undef HAVE_HYBRID
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if VT is configured with IOFSL support. */
+#undef HAVE_IOFSL
+
+/* Define to 1 if you have the <linux/mmtimer.h> header file. */
+#undef HAVE_LINUX_MMTIMER_H
+
+/* Define to 1 if you have the `lockf' function. */
+#undef HAVE_LOCKF
+
+/* Define to 1 if the system has the type `long_long'. */
+#undef HAVE_LONG_LONG
+
+/* Define to 1 if you have the `lseek64' function. */
+#undef HAVE_LSEEK64
+
+/* Define to 1 if you have the `memalign' function. */
+#undef HAVE_MEMALIGN
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the MKL. */
+#undef HAVE_MKL
+
+/* Define to 1 if you have the <mmtimer.h> header file. */
+#undef HAVE_MMTIMER_H
+
+/* Define to 1 if VT is configured with MPI support. */
+#undef HAVE_MPI
+
+/* Define to 1 if you have functions for MPI-2 One-Sided Communications. */
+#undef HAVE_MPI2_1SIDED
+
+/* Define to 1 if you have functions for MPI-2 Extended Collective Operations.
+   */
+#undef HAVE_MPI2_EXTCOLL
+
+/* Define to 1 if you have functions for MPI-2 I/O. */
+#undef HAVE_MPI2_IO
+
+/* Define to 1 if you have functions for MPI-2 Thread support. */
+#undef HAVE_MPI2_THREAD
+
+/* Define to 1 if you have the `MPI_Add_error_class' function. */
+#undef HAVE_MPI_ADD_ERROR_CLASS
+
+/* Define to 1 if you have the `MPI_Add_error_code' function. */
+#undef HAVE_MPI_ADD_ERROR_CODE
+
+/* Define to 1 if you have the `MPI_Add_error_string' function. */
+#undef HAVE_MPI_ADD_ERROR_STRING
+
+/* Define to 1 if you have the `MPI_Finalized' function. */
+#undef HAVE_MPI_FINALIZED
+
+/* Define to 1 if you have the `MPI_Get_address' function. */
+#undef HAVE_MPI_GET_ADDRESS
+
+/* Define to 1 if you have the `MPI_Register_datarep' function. */
+#undef HAVE_MPI_REGISTER_DATAREP
+
+/* Define to 1 if you have the `MPI_Type_create_f90_complex' function. */
+#undef HAVE_MPI_TYPE_CREATE_F90_COMPLEX
+
+/* Define to 1 if you have the `MPI_Type_create_f90_integer' function. */
+#undef HAVE_MPI_TYPE_CREATE_F90_INTEGER
+
+/* Define to 1 if you have the `MPI_Type_create_f90_real' function. */
+#undef HAVE_MPI_TYPE_CREATE_F90_REAL
+
+/* Define to 1 if you have the `MPI_Type_create_struct' function. */
+#undef HAVE_MPI_TYPE_CREATE_STRUCT
+
+/* Define to 1 if you have the `MPI_Type_dup' function. */
+#undef HAVE_MPI_TYPE_DUP
+
+/* Define to 1 if you have the `MPI_Type_match_size' function. */
+#undef HAVE_MPI_TYPE_MATCH_SIZE
+
+/* Define to 1 if VT is configured with OpenMP support. */
+#undef HAVE_OMP
+
+/* Define to 1 if you have the `open64' function. */
+#undef HAVE_OPEN64
+
+/* Define to 1 if you have the `PMPI_File_read_ordered' function. */
+#undef HAVE_PMPI_FILE_READ_ORDERED
+
+/* Define to 1 if you have the `PMPI_File_read_ordered_begin' function. */
+#undef HAVE_PMPI_FILE_READ_ORDERED_BEGIN
+
+/* Define to 1 if you have the `PMPI_File_write_ordered' function. */
+#undef HAVE_PMPI_FILE_WRITE_ORDERED
+
+/* Define to 1 if you have the `PMPI_File_write_ordered_begin' function. */
+#undef HAVE_PMPI_FILE_WRITE_ORDERED_BEGIN
+
+/* Define to 1 if you have the `PMPI_Win_lock' function. */
+#undef HAVE_PMPI_WIN_LOCK
+
+/* Define to 1 if you have the `PMPI_Win_test' function. */
+#undef HAVE_PMPI_WIN_TEST
+
+/* Define to 1 if you have the `PMPI_Win_unlock' function. */
+#undef HAVE_PMPI_WIN_UNLOCK
+
+/* Define to 1 if you have the `posix_memalign' function. */
+#undef HAVE_POSIX_MEMALIGN
+
+/* Define to 1 if you have the `pread64' function. */
+#undef HAVE_PREAD64
+
+/* Define to 1 if VT is configured with Pthreads support. */
+#undef HAVE_PTHREAD
+
+/* Define to 1 if you have the `pthread_condattr_getpshared' function. */
+#undef HAVE_PTHREAD_CONDATTR_GETPSHARED
+
+/* Define to 1 if you have the `pthread_condattr_setpshared' function. */
+#undef HAVE_PTHREAD_CONDATTR_SETPSHARED
+
+/* Define to 1 if you have the `pthread_mutexattr_getpshared' function. */
+#undef HAVE_PTHREAD_MUTEXATTR_GETPSHARED
+
+/* Define to 1 if you have the `pthread_mutexattr_setpshared' function. */
+#undef HAVE_PTHREAD_MUTEXATTR_SETPSHARED
+
+/* Define to 1 if you have the `pwrite64' function. */
+#undef HAVE_PWRITE64
+
+/* Define to 1 if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
+
+/* Define to 1 if you have the <sn/mmtimer.h> header file. */
+#undef HAVE_SN_MMTIMER_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the SUN Performance Library. */
+#undef HAVE_SUNPERF
+
+/* Define to 1 if you have the `sync' function. */
+#undef HAVE_SYNC
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if VT is configured with Threads support. */
+#undef HAVE_THREADS
+
+/* Define to 1 if you have the `__va_copy' function. */
+#undef HAVE_UNDERSCORE_VA_COPY
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `valloc' function. */
+#undef HAVE_VALLOC
+
+/* Define to 1 if you have the `vasprintf' function. */
+#undef HAVE_VASPRINTF
+
+/* Define to 1 if you have the `va_copy' function. */
+#undef HAVE_VA_COPY
+
+/* Define to 1 if you have the `vsnprintf' function. */
+#undef HAVE_VSNPRINTF
+
+/* Define to 1 if you have the `wait3' function. */
+#undef HAVE_WAIT3
+
+/* Define to 1 if you have the `wait4' function. */
+#undef HAVE_WAIT4
+
+/* Define to 1 if you have the `waitid' function. */
+#undef HAVE_WAITID
+
+/* Define to 1 if you have the ZLIB. */
+#undef HAVE_ZLIB
+
+/* Define to 1 if you have the `__fprintf_chk' function. */
+#undef HAVE___FPRINTF_CHK
+
+/* Define to 1 if the system has the type `__WAIT_STATUS'. */
+#undef HAVE___WAIT_STATUS
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Define to 1 to record MPI functions called within MPI functions. */
+#undef MPI_TRACE_INSIDE
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to necessary symbol if this constant uses a non-standard name on
+   your system. */
+#undef PTHREAD_CREATE_JOINABLE
+
+/* pathname of shared LIBC */
+#undef SHLIBC_PATHNAME
+
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of `mode_t', as computed by sizeof. */
+#undef SIZEOF_MODE_T
+
+/* The size of `size_t', as computed by sizeof. */
+#undef SIZEOF_SIZE_T
+
+/* The size of `void*', as computed by sizeof. */
+#undef SIZEOF_VOIDP
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Use timer (see below) */
+#undef TIMER
+
+/* Use `clock_gettime' function */
+#undef TIMER_CLOCK_GETTIME
+
+/* CRAY Real-Time-Clock */
+#undef TIMER_CRAY_RTCLOCK
+
+/* Cycle counter (e.g. TSC) */
+#undef TIMER_CYCLE_COUNTER
+
+/* Use `dclock' function */
+#undef TIMER_DCLOCK
+
+/* gethrtime */
+#undef TIMER_GETHRTIME
+
+/* Use `gettimeofday' function */
+#undef TIMER_GETTIMEOFDAY
+
+/* Use `GetTimeBase' function */
+#undef TIMER_GET_TIMEBASE
+
+/* Define to 1 if the selected timer is global (doesn't need synchronization)
+   */
+#undef TIMER_IS_GLOBAL
+
+/* Intel Multimedia Timer */
+#undef TIMER_MMTIMER
+
+/* PAPI_get_real_cyc */
+#undef TIMER_PAPI_REAL_CYC
+
+/* PAPI_get_real_usec */
+#undef TIMER_PAPI_REAL_USEC
+
+/* IBM Power family Real-Time-Clock */
+#undef TIMER_POWER_REALTIME
+
+/* RTC (DOES NOT WORK YET WITH FORTRAN CODES) */
+#undef TIMER_RTC
+
+/* Use `rts_get_timebase' function */
+#undef TIMER_RTS_GET_TIMEBASE
+
+/* Hardware Switch-Clock (it's necessary to link your application with
+   '-lswclock') */
+#undef TIMER_SWITCH_CLOCK
+
+/* NEC SX HGTIME */
+#undef TIMER_SYSSX_HGTIME
+
+/* UniMCI's checker name */
+#undef UNIMCI_CHECKER_NAME
+
+/* UniMCI's checker version */
+#undef UNIMCI_CHECKER_VERSION
+
+/* Version number of package */
+#undef VERSION
+
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+#  undef WORDS_BIGENDIAN
+# endif
+#endif
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
+
+
+#include "config_bottom.h"
+#endif /* _CONFIG_H */
+

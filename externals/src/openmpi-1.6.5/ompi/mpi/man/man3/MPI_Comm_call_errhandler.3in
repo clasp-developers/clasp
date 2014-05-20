@@ -1,0 +1,76 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Comm_call_errhandler 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+
+\fBMPI_Comm_call_errhandler\fP \- Passes the supplied error code to the
+error handler assigned to a communicator
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_call_errhandler(MPI_Comm \fIcomm\fP, int \fIerrorcode\fP) 
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_CALL_ERRHANDLER(\fICOMM, ERRORCODE, IERROR\fP)
+	INTEGER	\fICOMM, ERRORCODE, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Call_errhandler(int \fIerrorcode\fP) const 
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1.4i
+comm 
+communicator with error handler (handle).
+.ft R
+.TP 1.4i
+errorcode 
+error code (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1.4i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This function invokes the error handler assigned to the communicator
+\fIcomm\fP with the supplied error code \fIerrorcode\fP. If the error
+handler was successfully called, the process is not aborted, and the
+error handler returns, this function returns MPI_SUCCESS.
+
+.SH NOTES
+.ft R
+Users should note that the default error handler is
+MPI_ERRORS_ARE_FATAL. Thus, calling this function will abort the
+processes in \fIcomm\fP if the default error handler has not been
+changed.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Comm_create_errhandler
+MPI_Comm_set_errhandler
+

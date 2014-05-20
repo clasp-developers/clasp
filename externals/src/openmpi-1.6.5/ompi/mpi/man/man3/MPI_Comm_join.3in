@@ -1,0 +1,99 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Comm_join 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Comm_join\fP \- Establishes communication between MPI jobs
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_join(int \fIfd\fP, MPI_Comm *\fIintercomm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_JOIN(\fIFD, INTERCOMM, IERROR\fP)
+	INTEGER	\fIFD, INTERCOMM, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Intercomm MPI::Comm::Join(const int \fIfd\fP)
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+fd
+socket file descriptor (socket).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+intercomm
+Intercommunicator between processes (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Comm_join creates an intercommunicator from the union of two MPI
+processes that are connected by a socket. \fIfd\fP is a file
+descriptor representing a socket of type SOCK_STREAM (a two-way
+reliable byte-stream connection). Nonblocking I/O and asynchronous
+notification via SIGIO must not be enabled for the socket. The socket
+must be in a connected state, and must be quiescent when MPI_Comm_join
+is called.
+.sp
+MPI_Comm_join must be called by the process at each end of the
+socket. It does not return until both processes have called
+MPI_Comm_join.
+
+.SH NOTES
+.ft R
+There are no MPI library calls for opening and manipulating a socket.
+The socket \fIfd\fP can be opened using standard socket API calls.
+MPI uses the socket to bootstrap creation of the intercommunicator,
+and for nothing else. Upon return, the file descriptor will be open
+and quiescent.
+.sp
+In a multithreaded process, the application must ensure that other
+threads do not access the socket while one is in the midst of
+calling MPI_Comm_join.
+.sp
+The returned communicator will contain the two processes connected by
+the socket, and may be used to establish MPI communication with
+additional processes, through the usual MPI communicator-creation
+mechanisms.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+socket(3SOCKET)
+MPI_Comm_create
+MPI_Comm_group
+

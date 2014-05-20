@@ -1,0 +1,54 @@
+# This is the VERSION file for OTF, describing the precise version of OTF in
+# this distribution. The various components of the version number below are
+# combined to form a single version number string.
+
+# major, minor, and sub are generally combined in the form
+# <major>.<minor>.<sub>. If sub is zero, then it is omitted.
+
+major=1
+minor=12
+sub=3
+
+# string is used for alpha, beta, or release tags. If it is non-empty, it will
+# be appended to the version number.
+#
+# history of release tags:
+# 0.2.*        octopussy
+# 0.3.*-1.1.*  starfish
+# 1.2.*        pufferfish
+# 1.3.*        jellyfish
+# 1.4.*        shark
+# 1.5.*        dolphin
+# 1.6.*        stingray
+# 1.7.*        catfish
+# 1.8.*        sturgeon
+# 1.9.*        sawfish
+# 1.10.*       coelacanth
+# 1.11.*       goldfish
+# 1.12.*       salmon
+#
+
+string=openmpi
+
+# library is used for the library versioning. These three numbers will be added
+# to the name of the library (e.g. libopen-trace-format.so.1.2.3).
+# The meaning of these numbers is as follows (from left to right):
+#
+#   current            The number of the current API exported by the library.
+#                      That must be incremented, if the API has changed.
+#   revision           The implementation number of the most recent API
+#                      exported by the library. A value of '0' means that this
+#                      is the first implementation of the API.
+#                      If any of the source for the library has changed,
+#                      revision must be incremented.
+#   age                The number of previous additional APIs supported by the
+#                      library. If age is '2', the library can be linked into
+#                      executables built with a release of the library that
+#                      exported the current API number (current), or any of
+#                      the preceding two APIs.
+#                      If the new API is backward-compatible with the preceding
+#                      release, age must be incremented. Otherwise, reset age
+#                      to '0'.
+
+library=1:0:0
+

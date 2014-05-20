@@ -1,0 +1,46 @@
+.\" Man page contributed by Dirk Eddelbuettel <edd@debian.org>
+.\" and released under the BSD license.
+.\" Copyright (c) 2008      Sun Microsystems, Inc.  All rights reserved.
+.TH ORTED 1 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+orted - Start an Open RTE User-Level Daemon
+.SH SYNOPSIS
+.B orted [options]
+.SH DESCRIPTION
+.PP
+.B orted
+starts an Open RTE daemon for the Open MPI system.
+.SH NOTE
+The
+.B orted
+command is 
+.I not intended to be manually invoked by end users.  
+.
+It is part of the Open MPI architecture and is invoked automatically
+as necessary.  This man page is mainly intended for those adventerous
+end users and system administrators who have noticed an "orted"
+process and wondered what it is.
+.PP
+As such, the command line options accepted by the 
+.B orted
+are not listed below because they are considered internal and are
+therefore subject to change between versions without warning.
+Running
+.B orted
+with the 
+.I --help
+command line option will show all available options.
+.
+.
+.\" **************************
+.\"    Authors Section
+.\" **************************
+.SH AUTHORS
+The Open MPI maintainers -- see 
+.I http://www.openmpi.org/
+or the file
+.IR AUTHORS .
+.PP
+This manual page was originally contributed by Dirk Eddelbuettel
+<edd@debian.org>, one of the Debian GNU/Linux maintainers for Open
+MPI, and may be used by others.

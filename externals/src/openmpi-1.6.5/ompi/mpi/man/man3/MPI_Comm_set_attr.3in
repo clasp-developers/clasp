@@ -1,0 +1,83 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Comm_set_attr 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_set_attr\fP \- Stores attribute value associated with a key.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_set_attr(MPI_Comm \fIcomm\fP, int \fIcomm_keyval\fP, void *\fIattribute_val\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_SET_ATTR(\fICOMM, COMM_KEYVAL, ATTRIBUTE_VAL, IERROR\fP)
+	INTEGER	\fICOMM, COMM_KEYVAL, IERROR \fP
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fIATTRIBUTE_VAL\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Set_attr(int \fIcomm_keyval\fP, const void* \fIattribute_val\fP) const
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+comm
+Communicator from which attribute will be attached (handle).
+
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm_keyval
+Key value (integer).
+.TP 1i
+attribute_val
+Attribute value.
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Comm_set_attr stores the stipulated attribute value \fIattribute_val\fP for subsequent retrieval by MPI_Comm_get_attr. If the value is already present, then the outcome is as if MPI_Comm_delete_attr was first called to delete the previous value (and the callback function delete_fn was executed), and a new value was next stored. The call is erroneous if there is no key with value \fIcomm_keyval\fP; in particular MPI_KEYVAL_INVALID is an erroneous key value. The call will fail if the delete_fn function returned an error code other than MPI_SUCCESS.
+.sp
+This function replaces MPI_Attr_put, the use of which is deprecated. The C binding is identical. The Fortran binding differs in that \fIattribute_val\fP is an address-sized integer. 
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIATTRIBUTE_VAL\fP argument only for Fortran 90. Sun FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_ADDRESS_KIND \fIATTRIBUTE_VAL\fP
+.fi
+.sp
+where MPI_ADDRESS_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH NOTES
+.ft R
+Values of the permanent attributes MPI_TAG_UB, MPI_HOST,
+MPI_IO, and MPI_WTIME_IS_GLOBAL may not be changed.
+.sp
+The type of the attribute value depends on whether C or Fortran is being used. In C, an attribute value is a pointer (void *); in Fortran, it is a single, address-size integer system for which a pointer does not fit in an integer. 
+.sp
+If an attribute is already present, the delete function (specified when the corresponding keyval was created) will be called.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

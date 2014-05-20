@@ -1,0 +1,73 @@
+#! /usr/bin/env python
+
+
+import getopt
+
+import xml.dom
+
+from xml.etree.ElementTree import ElementTree
+
+
+from xml.dom.minidom import parse
+
+
+import sys, os
+
+os.environ["CANDO_LOG"] = "_xmlRunDbg.xml"
+
+def walk(node,namespaces):
+    if ( node.tag == "Python" ):
+        code = node.text
+	pos = node.get("_p")
+	dictName = node.get("_namespace")
+	if ( not (dictName in namespaces) ):
+	    ns = {}
+	    namespaces[dictName] = ns
+	else:
+	    ns = namespaces[dictName]
+	ns["_p"] = pos
+	ns["_ns"] = dictName
+	exec code in ns
+	return
+    elif ( node.tag == "PythonAssign" ):
+	dictName = node.get("_namespace")
+	if ( not (dictName in namespaces) ):
+	    ns = {}
+	    namespaces[dictName] = ns
+	else:
+	    ns = namespaces[dictName]
+        var = node.get("_variable")
+	numChildren = len(node.getchildren())
+        print("PythonAssign variable(%s)"%var)
+	assert numChildren==1, "There can be only one child of PythonAssign but there are(%d)"%numChildren
+	child = node.getchildren()[0]
+	childAsString = xml.etree.ElementTree.tostring(child)
+	ns["___arg___"] = childAsString
+	print("    child: %s"%childAsString)
+	exec( "%s = mbb.objectFromXmlArchiveInString(___arg___)"%(var), ns)
+	return
+    for child in node.getchildren():
+	walk(child,namespaces)
+	
+
+
+
+
+try:
+    opts,cmdLineArgs = getopt.getopt(sys.argv[1:],"-a:-n:")
+except getopt.GetoptError:
+    print "Error parsing arguments"
+    sys.exit(0)
+
+
+fileName = sys.argv[1]
+
+namespaceDict = {}
+
+tree = ElementTree()
+tree.parse(fileName)
+root = tree.getroot()
+
+walk(root,namespaceDict)
+
+print namespaceDict

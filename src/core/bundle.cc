@@ -1,0 +1,306 @@
+#define	DEBUG_LEVEL_FULL
+#include "foundation.h"
+#include "object.h"
+#include "bundle.h"
+#include "sourceFileInfo.h"
+#include "str.h"
+#include "pathname.h"
+#include "lisp.h"
+#include "boost/filesystem.hpp"
+
+namespace bf = boost_filesystem;
+
+namespace core
+{
+
+
+    
+    
+
+    Bundle::Bundle()
+    {
+	this->_Initialized = false;
+    }
+
+
+    void	Bundle::initializeStartupWorkingDirectory()
+    {
+	string cwd = "";
+	boost_filesystem::path curPath;
+	try
+	{
+	    curPath = boost_filesystem::current_path();
+	    cwd = curPath.string();
+	} catch (std::runtime_error& e)
+	{
+	    printf("%s:%d - There was a problem getting the current_path - error[%s]\n",
+		   __FILE__, __LINE__, e.what() );
+	    printf("     This appears to be a problem with boost_filesystem\n");
+	    printf("     - see https://svn.boost.org/trac/boost/ticket/4688\n" );
+	    printf("About to read environment variable\n");
+	    char* rawcwd = getenv("CLASP_STARTUP_DIRECTORY");
+	    printf("%s:%d      Read environment variable CLASP_STARTUP_DIRECTORY\n",__FILE__,__LINE__);
+	    if ( rawcwd == NULL )
+	    {
+		printf( "    You could set the environment variable BRCL_STARTUP_DIRECTORY as a work-around until it is fixed\n");
+		printf( "     otherwise I have to exit now\n");
+		exit(1);
+	    } else
+	    {
+		cwd = rawcwd;
+		printf( "    I extracted the startup directory from BRCL_STARTUP_DIRECTORY --> [%s]\n", rawcwd );
+		printf( "%s:%d    Proceeding with program\n", __FILE__, __LINE__ );
+	    }
+	}
+	this->_StartupWorkingDir = boost_filesystem::path(cwd);
+    }
+
+
+    void	Bundle::initialize(const string& argv0, const string& envVar)
+    {
+	this->initializeStartupWorkingDirectory();
+
+	string cwd = this->_StartupWorkingDir.string();
+
+	bf::path appDir = this->findAppDir(argv0,cwd,envVar);
+
+	// First crawl up the directory tree and look for the cando root
+	bf::path curPath = appDir;
+	while ( curPath.has_relative_path() )
+	{
+	    // The following line used to contain curPath.leaf().find("cando") but that
+	    // is weird because .leaf()[-now depreciated-] returned a path and not a string!!!!!
+	    // I changed it to what should work now but the behavior might have changed!!!!!!! Aug15-2011
+	    if ( curPath.filename().string().find("cando")!=string::npos)
+	    {
+		break;
+	    }
+	    curPath = curPath.branch_path();
+	}
+	if ( !curPath.has_relative_path() )
+	{
+	    THROW_HARD_ERROR(BF("Could not find the root directory of the cando application bundle.\n"
+				" It must contain the word \"cando\".\n"));
+	}
+	this->_RootDir = curPath;
+	this->findSubDirectories(curPath);
+	this->_Initialized=true;
+    }
+
+
+// Find the absolute path where this application has been run from.
+// argv0 is wxTheApp->argv[0]
+// cwd is the current working directory (at startup)
+// appVariableName is the name of a variable containing the directory for this app, e.g.
+// MYAPPDIR. This is checked first.
+
+    boost_filesystem::path Bundle::findAppDir(const string& argv0, const string& cwd, const string& appVariableName)
+    {
+	// Try appVariableName
+	if (appVariableName != "" )
+	{
+	    char* cenv = getenv(appVariableName.c_str());
+	    if ( cenv!=NULL )
+	    {
+		string str = cenv;
+		boost_filesystem::path strPath(str);
+		if ( bf::exists(strPath) )
+		{
+		    return strPath;
+		}
+	    }
+	}
+
+#if 0 // defined(darwin)
+	boost_filesystem::path cwdPath(cwd);
+	LOG(BF("Using current working directory: path=%s") % cwdPath.string() );
+	return cwdPath;
+#endif
+
+	boost_filesystem::path argv0Path(argv0);
+
+	if (argv0Path.has_root_path())
+	{
+	    return argv0Path.branch_path();
+	} else
+	{
+	    boost_filesystem::path cwdPath(cwd);
+	    boost_filesystem::path absPath;
+
+	    absPath = cwdPath / argv0Path;
+	    if ( bf::exists(absPath) )
+	    {
+		return absPath.branch_path();
+	    }
+	}
+
+	// OK, it's neither an absolute path nor a relative path.
+	// Search PATH.
+
+	char* pc = getenv("PATH");
+	if ( pc == NULL )
+	{
+	    THROW_HARD_ERROR(BF("PATH environment variable must be defined"));
+	}
+	string pathList = pc;
+	VectorStrings	pathParts;
+	string		argv0Extension;
+#ifdef	WIN32
+	tokenize(pathList,pathParts,";");	// Windows path separator char
+	if ( argv0.find(".exe") == string::npos )
+	{
+	    argv0Extension = argv0+".exe";
+	} else
+	{
+	    argv0Extension = argv0;
+	}
+#else
+	tokenize(pathList,pathParts,":");	// Unix path separator char
+	argv0Extension = argv0;
+#endif
+	for ( VectorStrings::iterator it=pathParts.begin(); it!=pathParts.end(); it++ )
+	{
+	    bf::path onePath(*it);
+	    onePath = onePath / argv0Extension;
+	    if ( bf::exists(onePath) )
+	    {
+		return onePath.branch_path();
+	    }
+	}
+	THROW_HARD_ERROR(BF("Could not determine absolute path to executable: "+argv0+"\n"
+			    +" set environment variable("+appVariableName+") before running\n"
+			    +" or add application directory to PATH" ));
+    }
+
+
+    void	Bundle::findSubDirectories(boost_filesystem::path rootDir)
+    {
+	string	appDirName;
+#ifdef	darwin
+	appDirName = "macos";
+#else
+	appDirName = "bin";
+#endif
+	bf::recursive_directory_iterator	dirs(rootDir);
+	while ( dirs!=bf::recursive_directory_iterator() )
+	{
+	    if ( is_directory(dirs->path()) )
+	    {
+		string leaf = dirs->path().filename().string();
+		std::transform(leaf.begin(),leaf.end(),leaf.begin(),::tolower);
+		if ( leaf == appDirName )
+		{
+		    this->_AppDir = dirs->path();
+		} else if ( leaf == "resources" )
+		{
+		    this->_ResourcesDir = dirs->path();
+		} else if ( leaf == "databases" )
+		{
+		    this->_DatabasesDir = dirs->path();
+		} else if ( leaf == "lib" )
+		{
+		    this->_LibDir = dirs->path();
+		} else if ( leaf == "lisp" )
+		{
+		    this->_LispDir = dirs->path();
+		}
+	    }
+	    dirs++;
+	}
+	char* lispdir = getenv("CLASP_LISP_SOURCE_DIR");
+	if ( lispdir != NULL )
+	{
+	    printf("Using CLASP_LISP_SOURCE_DIR --> %s\n", lispdir );
+	    this->_LispDir = boost_filesystem::path(lispdir);
+	}
+    }
+
+
+    string	Bundle::describe()
+    {_G();
+	stringstream ss;
+	ss << "Root dir:        " << this->_RootDir.string() << std::endl;
+	ss << "Application dir: " << this->_AppDir.string() << std::endl;
+	ss << "Resources dir:   " << this->_ResourcesDir.string() << std::endl;
+	ss << "Databases dir:   " << this->_DatabasesDir.string() << std::endl;
+	ss << "Scripts dir:     " << this->_ScriptsDir.string() << std::endl;
+	ss << "Lisp dir: " << this->_LispDir.string() << std::endl;
+	ss << "Lib dir: " << this->_LibDir.string() << std::endl;
+	return ss.str();
+    }
+
+    bf::path Bundle::getRootDir()
+    {_OF();
+	ASSERT(!this->_RootDir.empty());
+	return this->_RootDir;
+    }
+
+    bf::path Bundle::getAppDir()
+    {_OF();
+	ASSERT(!this->_AppDir.empty());
+	return this->_AppDir;
+    }
+
+    bf::path Bundle::getResourcesDir()
+    {_OF();
+	ASSERT(!this->_ResourcesDir.empty());
+	return this->_ResourcesDir;
+    }
+
+    bf::path Bundle::getDatabasesDir()
+    {_OF();
+	ASSERT(!this->_DatabasesDir.empty());
+	return this->_DatabasesDir;
+    }
+
+    bf::path Bundle::getScriptsDir()
+    {
+	return this->_ScriptsDir;
+    }
+
+    bf::path Bundle::getLispDir()
+    {
+	return this->_LispDir;
+    }
+
+
+    Pathname_sp Bundle::getSysPathname()
+    {
+	stringstream ss;
+	ss << this->_LispDir.string();
+	ss << DIR_SEPARATOR;
+	ss << "**/*.*";
+	return af_pathname(Str_O::create(ss.str()));
+    }
+
+
+
+    Pathname_sp Bundle::getAppPathname()
+    {
+	stringstream ss;
+	ASSERT(!this->_RootDir.empty());
+	ss << this->_RootDir.string();
+	ss << DIR_SEPARATOR;
+	ss << "**/*.*";
+	return af_pathname(Str_O::create(ss.str()));
+    }
+
+
+    bf::path Bundle::getLibDir()
+    {
+	return this->_LibDir;
+    }
+
+
+    bf::path Bundle::getStartupWorkingDir()
+    {
+	return this->_StartupWorkingDir;
+    }
+
+
+
+
+};
+
+
+

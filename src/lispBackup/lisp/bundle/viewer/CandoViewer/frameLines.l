@@ -1,0 +1,55 @@
+
+(defun addPickableLine ( lines pos1 pos2 colorKeyword obj )
+  (let* ( (color (lookup *colorTable* colorKeyword))
+	  (idx1 (appendVertex lines pos1 color))
+	  (idx2 (appendVertex lines pos2 color)))
+    (appendPickableLine lines idx1 idx2 obj)))
+
+(defvar *lines* (GrPickableLines))
+(defvar *labels* (GrLabels))
+
+(defun oneFrame ( idx ) 
+  (let* ((colors '( :white :red :blue :magenta ))
+	 (numColors (length colors))
+	 (lines (GrPickableLines))
+	 (labels (GrLabels))
+	 (dl (DisplayList))
+	 (info (RenderInformation (% "Information for frame#%d" idx))))
+    (foreach r (Range 0 10)
+	     (let ((x1 (randomNumber01))
+		   (y1 (randomNumber01))
+		   (z1 (randomNumber01))
+		   (x2 (randomNumber01))
+		   (y2 (randomNumber01))
+		   (z2 (randomNumber01))
+		   (c (@ colors (int (* (randomNumber01) numColors))))  
+		   (label (% "#%d" r)) )
+	       (addPickableLine lines (OVector3 x1 y1 z1) (OVector3 x2 y2 z2) c (HighlightHolder label)) 
+	       (appendLabel labels (OVector3 x1 y1 z1) label (lookup *colorTable* c))))
+    (append dl lines)
+    (append dl labels)
+    (append dl info)
+    dl ))
+
+
+
+
+(defvar *world* (DisplayList :name :world))
+(print (% "*world* name[%s]" (repr (getName *world*))))
+
+(let ((frames (FrameList :name :img)))
+  (foreach f (Range 0 10)
+	   (let ((dl (oneFrame f)))
+	     (append frames dl)))
+  (append *world* frames))
+
+(let ((dlAxes (DisplayList :name :axes))
+      (axes (GrLines))
+      (white (lookup *colorTable* :white)))
+  (appendLineWithVertices axes (OVector3 0.0 0.0 0.0) white (OVector3 1.0 0.0 0.0) (lookup *colorTable* :red))
+  (appendLineWithVertices axes (OVector3 0.0 0.0 0.0) white (OVector3 0.0 2.0 0.0) (lookup *colorTable* :green))
+  (appendLineWithVertices axes (OVector3 0.0 0.0 0.0) white (OVector3 0.0 0.0 3.0) (lookup *colorTable* :blue))
+  (append dlAxes axes)
+  (append *world* dlAxes))
+
+(saveArchive *world* "_lines.cxml")

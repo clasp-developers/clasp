@@ -1,0 +1,2 @@
+
+(print "Loaded testmod.lsp")

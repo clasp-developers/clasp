@@ -1,0 +1,25 @@
+
+
+project internals : requirements
+	<define>INHERITED_FROM_SRC
+        <cxxflags>"-Wno-deprecated-register -mmacosx-version-min=10.7 -fvisibility=default"
+        <variant>debug:<cxxflags>"-O0 -g"
+        <variant>release:<cxxflags>"-O3"
+        <linkflags>"-fvisibility=default"
+	: usage-requirements
+	<include>.
+;
+
+alias mi : /internals/core//meta
+           /internals/core//mi
+      	   /internals/cffi//mi
+      	   /internals/sockets//mi
+      	   /internals/clbind//mi
+	   /internals/llvmo//mi
+	   /internals/gctools//mi
+	   /internals/asttooling//mi
+      	   /internals/mpip//mi
+	   /internals/serveEvent//mi
+	   ;
+
+

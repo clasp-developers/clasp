@@ -1,0 +1,85 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Irecv 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Irecv\fP \- Starts a standard-mode, nonblocking receive.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Irecv(void *\fIbuf\fP, int\fI count\fP, MPI_Datatype\fI datatype\fP, 
+        int\fI source\fP, int\fI tag\fP, MPI_Comm\fI comm\fP, MPI_Request\fI *request\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_IRECV(\fIBUF, COUNT, DATATYPE, SOURCE, TAG, COMM, REQUEST,
+		IERROR\fP)
+	<type>	\fIBUF\fP(*)
+	INTEGER	\fICOUNT, DATATYPE, SOURCE, TAG, COMM, REQUEST, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Request Comm::Irecv(void* \fIbuf\fP, int \fIcount\fP, const Datatype& 
+	\fIdatatype\fP, int \fIsource\fP, int \fItag\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+buf
+Initial address of receive buffer (choice).
+.TP 1i
+count
+Number of elements in receive buffer (integer).
+.TP 1i
+datatype
+Datatype of each receive buffer element (handle).
+.TP 1i
+source
+Rank of source (integer).
+.TP 1i
+tag
+Message tag (integer).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+request
+Communication request (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Nonblocking calls allocate a communication request object and associate it with the request handle (the argument request). The request can be used later to query the status of the communication or wait for its completion. 
+.sp
+A nonblocking receive call indicates that the system may start writing data into the receive buffer. The receiver should not access any part of the receive buffer after a nonblocking receive operation is called, until the receive completes. 
+.sp
+A receive request can be determined being completed by calling the MPI_Wait, MPI_Waitany, MPI_Test, or MPI_Testany with request returned by this function.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Recv
+MPI_Probe
+MPI_Test
+MPI_Testany
+MPI_Wait
+MPI_Waitany
+.br
+

@@ -1,0 +1,22 @@
+# There can be multiple blocks of configuration data, chosen by
+# compiler flags (using the compiler_args key to chose which block
+# should be activated.  This can be useful for multilib builds.  See the
+# multilib page at:
+#    https://svn.open-mpi.org/trac/ompi/wiki/compilerwrapper3264 
+# for more information.
+
+project=Open Portable Access Layer (OPAL)
+project_short=OPAL
+version=@OPAL_VERSION@
+language=C
+compiler_env=CC
+compiler_flags_env=CFLAGS
+compiler=@CC@
+extra_includes=@OPAL_WRAPPER_EXTRA_INCLUDES@
+preprocessor_flags=@OPAL_WRAPPER_EXTRA_CPPFLAGS@
+compiler_flags=@OPAL_WRAPPER_EXTRA_CFLAGS@
+linker_flags=@OPAL_WRAPPER_EXTRA_LDFLAGS@
+libs=-lopen-pal @OPAL_WRAPPER_EXTRA_LIBS@
+required_file=
+includedir=${includedir}
+libdir=${libdir}

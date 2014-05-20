@@ -1,0 +1,15 @@
+# -*- shell-script -*-
+#
+# Copyright (c) 2004-2007 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+# Specific to this module
+
+PARAM_CONFIG_FILES="Makefile"

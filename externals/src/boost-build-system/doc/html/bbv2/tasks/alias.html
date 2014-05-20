@@ -1,0 +1,81 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Alias</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../tasks.html" title="Chapter 5. Common tasks">
+<link rel="prev" href="libraries.html" title="Libraries">
+<link rel="next" href="installing.html" title="Installing">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="libraries.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../tasks.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="installing.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.tasks.alias"></a>Alias</h2></div></div></div>
+<p>
+      The <code class="computeroutput">alias</code> rule gives an alternative name to a
+      group of targets. For example, to give the name <code class="filename">core</code>
+      to a group of three other targets with the following code:
+</p>
+<pre class="programlisting">
+alias core : im reader writer ;
+</pre>
+<p>
+      Using <code class="filename">core</code> on the command line, or in the source list
+      of any other target is the same as explicitly using <code class="filename">im
+      </code>, <code class="filename">reader</code>, and <code class="filename">writer</code>.
+    </p>
+<p>
+      Another use of the <code class="computeroutput">alias</code> rule is to change build properties.
+      For example, if you want to use link statically to the Boost Threads
+      library, you can write the following:
+</p>
+<pre class="programlisting">
+alias threads : /boost/thread//boost_thread : &lt;link&gt;static ;
+</pre>
+<p>
+      and use only the <code class="computeroutput">threads</code> alias in your Jamfiles.
+    </p>
+<p>
+      You can also specify usage requirements for the <code class="computeroutput">alias</code> target.
+      If you write the following:
+</p>
+<pre class="programlisting">
+alias header_only_library : : : :  &lt;include&gt;/usr/include/header_only_library ;
+</pre>
+<p>
+      then using <code class="computeroutput">header_only_library</code> in sources will only add an
+      include path. Also note that when an alias has sources, their usage
+      requirements are propagated as well. For example:
+</p>
+<pre class="programlisting">
+lib library1 : library1.cpp : : : &lt;include&gt;/library/include1 ;
+lib library2 : library2.cpp : : : &lt;include&gt;/library/include2 ;
+alias static_libraries : library1 library2 : &lt;link&gt;static ;
+exe main : main.cpp static_libraries ;
+</pre>
+<p>
+      will compile <code class="filename">main.cpp</code> with additional includes
+      required for using the specified static libraries.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="libraries.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../tasks.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="installing.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

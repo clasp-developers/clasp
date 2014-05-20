@@ -1,0 +1,77 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Errhandler_create 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Errhandler_create \fP \- Creates an MPI-style error handler -- use of this routine is deprecated.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Errhandler_create(MPI_Handler_function *\fIfunction\fP,
+	MPI_Errhandler *\fIerrhandler\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ERRHANDLER_CREATE(\fIFUNCTION, ERRHANDLER, IERROR\fP)
+	EXTERNAL	\fIFUNCTION\fP
+	INTEGER	\fIERRHANDLER, IERROR\fP
+
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+function
+User-defined error handling procedure.
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+errhandler
+MPI error handler (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Note that use of this routine is \fIdeprecated\fP as of MPI-2. Please use MPI_Comm_create_errhandler instead. 
+.sp
+This deprecated routine is not available in C++. 
+.sp
+Registers the user routine function for use as an MPI exception handler. Returns in errhandler a handle to the registered exception handler. 
+.sp
+In the C language, the user routine should be a C function of type MPI_Handler_function, which is defined as
+.sp
+.nf
+    typedef void (MPI_Handler_function)(MPI_Comm *, int *, \&...); 
+.fi
+.sp
+The first argument is the communicator in use. The second is the error code
+to be returned by the MPI routine that raised the error. If the routine would have returned MPI_ERR_IN_STATUS, it is the error code returned in the status for the request that caused the error handler to be invoked. The remaining arguments are stdargs arguments whose number and meaning is implementation-dependent. An implementation should clearly document these arguments. Addresses are used so that the handler may be written in Fortran. 
+
+.SH NOTE
+.ft R
+The MPI-1 Standard states that an implementation may make the output value (errhandler) simply the address of the function. However, the action of MPI_Errhandler_ free makes this impossible, since it is required to set the value of the argument to MPI_ERRHANDLER_NULL. In addition, the actual error handler must remain until all communicators that use it are freed. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.br
+MPI_Comm_create_errhandler
+.br
+MPI_Comm_get_errhandler
+.br
+MPI_Comm_set_errhandler
+
+
+

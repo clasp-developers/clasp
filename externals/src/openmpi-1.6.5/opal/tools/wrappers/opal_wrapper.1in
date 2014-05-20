@@ -1,0 +1,74 @@
+.\" Copyright (c) 2008      Sun Microsystems, Inc.  All rights reserved.
+.\" Man page contributed by Dirk Eddelbuettel <edd@debian.org>
+.\" and released under the BSD license
+.TH OPAL_WRAPPER 1 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+opal_wrapper - Back-end Open MPI wrapper command
+.SH SYNOPSIS
+.B opal_wrapper [options]
+.SH DESCRIPTION
+.PP
+.B opal_wrapper
+is not meant to be called directly by end users.  It is automatically
+invoked as the back-end by the Open MPI wrapper commands such as:
+.BR mpicc ,
+.BR mpiCC ,
+.BR mpic++ ,
+.BR mpif77 ,
+and
+.BR mpif90 .
+.PP
+Some Open MPI installations may have additional wrapper commands,
+and/or have renamed the wrapper compilers listed above to avoid
+executable name conflicts with other MPI implementations.  Hence, you
+may also have wrapper compilers installed including the following
+names:
+.BR mpif90.openmpi ,
+.BR mpif77.openmpi ,
+.BR mpicxx.openmpi ,
+.BR mpiCC.openmpi ,
+.BR mpicc.openmpi ,
+.BR mpic++.openmpi ,
+.BR opalcc ,
+.BR opalc++ ,
+.BR ortecc ,
+and
+.BR ortec++ ,
+.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.SH SEE ALSO
+The following may exist depending on your particular Open MPI
+installation:
+.BR mpicc (1),
+.BR mpiCC (1),
+.BR mpic++ (1),
+.BR mpif77 (1),
+.BR mpif90 (1),
+.BR mpif90.openmpi (1),
+.BR mpif77.openmpi (1),
+.BR mpicxx.openmpi (1),
+.BR mpiCC.openmpi (1),
+.BR mpicc.openmpi (1),
+.BR mpic++.openmpi (1),
+.BR ortecc (1),
+.BR ortec++ (1),
+.BR opalccc (1),
+and the website at
+.IR http://www.openmpi.org/ .
+.
+.
+.\" **************************
+.\"    Authors Section
+.\" **************************
+.SH AUTHORS
+The Open MPI maintainers -- see 
+.I http://www.openmpi.org/
+or the file
+.IR AUTHORS .
+.PP
+This manual page was originally contributed by Dirk Eddelbuettel
+<edd@debian.org>, one of the Debian GNU/Linux maintainers for Open
+MPI, and may be used by others.

@@ -1,0 +1,176 @@
+// Copyright (c) 2004 Daniel Wallin
+
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+// SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+// ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+// OR OTHER DEALINGS IN THE SOFTWARE.
+
+#define CLBIND_BUILDING
+
+#include <core/foundation.h>
+#include <core/object.h>
+#include "core/hashTableEql.h"
+
+#include <clbind/cl_include.h>
+
+#include <clbind/clbind.h>
+#include <clbind/symbolTable.h>
+#include <clbind/class_registry.h>
+#include <clbind/class_rep.h>
+//#include <clbind/detail/operator_id.h>
+#include <core/wrappers.h>
+namespace clbind {
+
+    CLBIND_API void push_instance_metatable();
+    EXPOSE_CLASS(clbind,ClassRegistry_O);
+
+
+    void ClassRegistry_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+        core::class_<ClassRegistry_O>()
+            ;
+    }
+    void ClassRegistry_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+#ifdef USEBOOSTPYTHON
+	PYTHON_CLASS(CorePkg,ClassRegistry,"","",_lisp)
+	    ;
+#endif
+    }
+
+
+#if 0
+    namespace {
+
+
+        int create_cpp_class_metatable()
+        {
+            IMPLEMENT_MEF(BF("create_cpp_class_metatable"));
+#if 0
+            cl_newtable(L);
+
+            // mark the table with our (hopefully) shared tag
+            // that says that the user data that has this
+            // metatable is a class_rep
+            cl_pushstring(L, "__clbind_classrep");
+            cl_pushboolean(L, 1);
+            cl_rawset(L, -3);
+
+            cl_pushstring(L, "__gc");
+            cl_pushcclosure(
+                L
+                , &garbage_collector_s<
+                detail::class_rep
+                >::apply
+                , 0);
+
+            cl_rawset(L, -3);
+
+            cl_pushstring(L, "__call");
+            cl_pushcclosure(L, &class_rep::constructor_dispatcher, 0);
+            cl_rawset(L, -3);
+
+            cl_pushstring(L, "__index");
+            cl_pushcclosure(L, &class_rep::static_class_gettable, 0);
+            cl_rawset(L, -3);
+
+            cl_pushstring(L, "__newindex");
+            cl_pushcclosure(L, &class_rep::cl_settable_dispatcher, 0);
+            cl_rawset(L, -3);
+
+            return clL_ref(L, CL_REGISTRYINDEX);
+#endif
+        }
+
+        int create_cl_class_metatable()
+        {
+            IMPLEMENT_MEF(BF("create_cl_class_metatable"));
+#if 0
+            cl_newtable(L);
+
+            cl_pushstring(L, "__clbind_classrep");
+            cl_pushboolean(L, 1);
+            cl_rawset(L, -3);
+
+            cl_pushstring(L, "__gc");
+            cl_pushcclosure(
+                L
+                , &detail::garbage_collector_s<
+                detail::class_rep
+                >::apply
+                , 0);
+
+            cl_rawset(L, -3);
+
+            cl_pushstring(L, "__newindex");
+            cl_pushcclosure(L, &class_rep::cl_settable_dispatcher, 0);
+            cl_rawset(L, -3);
+
+            cl_pushstring(L, "__call");
+            cl_pushcclosure(L, &class_rep::constructor_dispatcher, 0);
+            cl_rawset(L, -3);
+
+            cl_pushstring(L, "__index");
+            cl_pushcclosure(L, &class_rep::static_class_gettable, 0);
+            cl_rawset(L, -3);
+
+            return clL_ref(L, CL_REGISTRYINDEX);
+#endif
+        }
+
+    } // namespace unnamed
+
+#endif
+
+    void ClassRegistry_O::initialize()
+    {
+        this->Base::initialize();
+        this->m_classes = core::HashTableEql_O::create_default();
+    }
+
+
+    ClassRegistry_sp ClassRegistry_O::get_registry()
+    {
+        SYMBOL_EXPORT_SC_(ClbindPkg,STARtheClassRegistrySTAR);
+        return clbind::_sym_STARtheClassRegistrySTAR->symbolValue().as<ClassRegistry_O>();
+    }
+
+    core::Integer_sp type_id_toClassRegistryKey(type_id const& info)
+    {
+        mpz_class zz((uintptr_t)(const_cast<void*>(static_cast<const void*>(info.get_type_info()))));
+        core::Integer_sp p = core::Integer_O::create(zz);
+        return p;
+    }
+
+
+    void ClassRegistry_O::add_class(type_id const& info, ClassRep_sp crep)
+    {
+        core::Integer_sp key = type_id_toClassRegistryKey(info);
+        ASSERTF(!this->m_classes->contains(key),
+                BF("You are trying to register the class %s twice") % info.name() );
+        this->m_classes->setf_gethash(key,crep);
+    }
+
+    ClassRep_sp ClassRegistry_O::find_class(type_id const& info) const
+    {
+        core::Integer_sp key = type_id_toClassRegistryKey(info);
+        return this->m_classes->gethash(key,_Nil<ClassRep_O>()).as<ClassRep_O>();
+    }
+
+} // namespace clbind
+

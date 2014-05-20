@@ -1,0 +1,101 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Sendrecv_replace 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Sendrecv_replace\fP \- Sends and receives a message using a single buffer.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Sendrecv_replace(void *\fIbuf\fP, int\fI count\fP, MPI_Datatype\fI datatype\fP,
+	int\fI dest\fP, int\fI sendtag\fP, int\fI source\fP, int\fI recvtag\fP, MPI_Comm\fI comm\fP,
+	MPI_Status\fI *status\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_SENDRECV_REPLACE(\fIBUF, COUNT, DATATYPE, DEST, SENDTAG, SOURCE,
+		RECVTAG, COMM, STATUS, IERROR\fP)
+	<type>	\fIBUF\fP(*)
+	INTEGER	\fICOUNT, DATATYPE, DEST, SENDTAG\fP
+	INTEGER	\fISOURCE, RECVTAG, COMM\fP
+	INTEGER	\fISTATUS(MPI_STATUS_SIZE), IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Comm::Sendrecv_replace(void* \fIbuf\fP, int \fIcount\fP, const 
+	Datatype& \fIdatatype\fP, int \fIdest\fP, int \fIsendtag\fP, int \fIsource\fP, 
+	int \fIrecvtag\fP, Status& \fIstatus\fP) const 
+
+void Comm::Sendrecv_replace(void* \fIbuf\fP, int \fIcount\fP, const 
+	Datatype& \fIdatatype\fP, int \fIdest\fP, int \fIsendtag\fP, int \fIsource\fP, 
+	int \fIrecvtag\fP) const 
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+buf
+Initial address of send and receive buffer (choice).
+
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count
+Number of elements in send and receive buffer (integer).
+.TP 1i
+datatype
+Type of elements to send and receive (handle).
+.TP 1i
+dest
+Rank of destination (integer).
+.TP 1i
+sendtag
+Send message tag (integer).
+.TP 1i
+source
+Rank of source (integer).
+.TP 1i
+recvtag
+Receive message tag (integer).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+status
+Status object (status).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The send-receive operations combine in one call the sending of a message to one destination and the receiving of another message, from another process. The two (source and destination) are possibly the same. A send-receive operation is useful for executing a shift operation across a chain of processes. If blocking sends and receives are used for such a shift, then one needs to order the sends and receives correctly (for example, even processes send, then receive; odd processes receive first, then send) in order to prevent cyclic dependencies that may lead to deadlock. When a send-receive operation is used, the communication subsystem takes care of these issues. The send-receive operation can be used in conjunction with the functions described in Chapter 6 of the MPI Standard, "Process Topologies," in order to perform shifts on various logical topologies. Also, a send-receive operation is useful for implementing remote procedure calls.
+.sp
+A message sent by a send-receive operation can be received by a regular receive operation or probed by a probe operation; a send-receive operation can receive a message sent by a regular send operation. 
+.sp
+MPI_Sendrecv_replace executes a blocking send and receive. The same buffer is used both for the send and for the receive, so that the message sent is replaced by the message received.
+.sp
+The semantics of a send-receive operation is what would be obtained if the caller forked two concurrent threads, one to execute the send, and one to execute the receive, followed by a join of these two threads.  
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Sendrecv
+
+
+

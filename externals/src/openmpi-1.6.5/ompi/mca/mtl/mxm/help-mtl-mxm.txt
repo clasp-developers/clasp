@@ -1,0 +1,67 @@
+#
+# Copyright (C) Mellanox Technologies Ltd. 2001-2011.  ALL RIGHTS RESERVED.
+# $COPYRIGHT$
+#
+# Additional copyrights may follow
+#
+# $HEADER$
+#
+
+
+[no uuid present]
+Error obtaining unique transport key from ORTE (orte_precondition_transports %s
+the environment).
+
+  Local host: %s
+
+[unable to create endpoint]
+MXM was unable to create an endpoint. Please make sure that the network link is
+active on the node and the hardware is functioning. 
+
+  Error: %s
+
+[unable to extract endpoint ptl address]
+MXM was unable to read settings for endpoint 
+
+  PTL ID: %d
+  Error: %s
+
+[unable to extract endpoint address]
+MXM was unable to read settings for endpoint 
+
+  Error: %s
+
+[mxm mq create]
+Failed to create MQ for endpoint
+
+  Error: %s
+
+[errors during mxm_progress]
+
+Error %s occurred in attempting to make network progress (mxm_progress).
+
+
+[mxm init]
+Initialization of MXM library failed.
+
+  Error: %s
+
+[error polling network]
+Error %s occurred in attempting to make network progress (mxm_mq_ipeek).
+
+[error posting receive]
+Unable to post application receive buffer
+
+  Error:      %s
+  Buffer:     %p
+  Length:     %d
+
+[error posting send]
+Unable to post application send buffer
+
+  Error:      %s
+
+[error while waiting in send]
+Error while waiting in send
+
+  Error:      %s

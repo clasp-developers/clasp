@@ -1,0 +1,86 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English general help file for Open RTE's orterun.
+#
+[orte-rmaps-base:alloc-error]
+There are not enough slots available in the system to satisfy the %d slots 
+that were requested by the application:
+  %s
+
+Either request fewer slots for your application, or make more slots available
+for use.
+[orte-rmaps-base:not-all-mapped-alloc]
+Some of the requested hosts are not included in the current allocation for the
+application:
+  %s
+The requested hosts were:
+  %s
+
+Verify that you have mapped the allocated resources properly using the 
+--host or --hostfile specification.
+[orte-rmaps-base:no-mapped-node]
+There are no allocated resources for the application 
+  %s
+that match the requested mapping:
+  %s
+
+Verify that you have mapped the allocated resources properly using the 
+--host or --hostfile specification.
+[orte-rmaps-base:nolocal-no-available-resources]
+There are no available nodes allocated to this job. This could be because
+no nodes were found or all the available nodes were already used.
+
+Note that since the -nolocal option was given no processes can be 
+launched on the local node.
+[orte-rmaps-base:no-available-resources]
+There are no nodes allocated to this job.
+[orte-rmaps-base:all-available-resources-used]
+All nodes which are allocated for this job are already filled.
+#
+[out-of-vpids]
+The system has exhausted its available ranks - the application is attempting
+to spawn too many daemons and will be aborted.
+
+This may be resolved by increasing the number of available ranks by
+re-configuring with the --enable-jumbo-apps option, and then
+re-building the application.
+#
+[rmaps:too-many-procs]
+Your job has requested a conflicting number of processes for the
+application:
+
+App: %s
+number of procs:  %d
+
+This is more processes than we can launch under the following
+additional directives and conditions:
+
+%s:   %d
+%s:   %d
+
+Please revise the conflict and try again.
+#
+[too-many-cpus-per-rank]
+Your job has requested more cpus per process(rank) than there
+are cpus in a socket:
+
+  Cpus/rank: %d
+  #cpus/socket: %d
+
+Please correct one or both of these values and try again.

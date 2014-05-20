@@ -1,0 +1,92 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Type_match_size 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+
+\fBMPI_Type_match_size\fP \- Returns an MPI datatype of a given type and size
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_match_size(int \fItypeclass\fP, int \fIsize\fP,
+	MPI_Datatype *\fItype\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_MATCH_SIZE(\fITYPECLASS, SIZE, TYPE, IERROR\fP)
+	INTEGER	\fITYPECLASS, SIZE, TYPE, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static MPI::Datatype MPI::Match_size(int \fItypeclass\fP, int \fIsize\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+typeclass
+Generic type specifier (integer).
+.ft R
+.TP 1i
+size
+Size, in bytes, of representation (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+type
+Datatype with correct type and size (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The function returns an MPI datatype matching a local variable of type
+(\fItypeclass\fP, \fIsize\fP). The returned type is a reference
+(handle) to a predefined named datatype, not a duplicate. This type
+cannot be freed.
+.sp
+The value of \fItypeclass\fR may be set to one of MPI_TYPECLASS_REAL,
+MPI_TYPECLASS_INTEGER, or MPI_TYPECLASS_COMPLEX, corresponding to the
+desired datatype.
+.sp
+MPI_type_match_size can be used to obtain a size-specific type that
+matches a Fortran numeric intrinsic type: first call MPI_Sizeof to
+compute the variable size, then call MPI_Type_match_size to find a
+suitable datatype. In C and C++, use the sizeof builtin instead of
+MPI_Sizeof.
+.sp
+It is erroneous to specify a size not supported by the compiler.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Sizeof
+MPI_Type_get_extent
+

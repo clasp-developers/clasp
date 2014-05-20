@@ -1,0 +1,27 @@
+# -*- text -*-
+#
+# Copyright (c) 2011 Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI's libnuma support
+#
+[invalid policy]
+WARNING: An invalid value was given for the maffinity_libnuma_policy
+MCA parameter.  The policy determines what happens when Open MPI tries
+to allocate local memory, but no local memory is available.  The value
+provided was:
+
+  Value:      %s
+  PID:        %d
+
+Valid values are:
+
+  strict: the memory allocation will fail
+  loose:  the memory allocation will spill over to remote memory
+
+Your job will now abort.
+#

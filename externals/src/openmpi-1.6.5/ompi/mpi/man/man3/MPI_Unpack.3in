@@ -1,0 +1,99 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Unpack 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Unpack\fP \- Unpacks a datatype into contiguous memory.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Unpack(void *\fIinbuf\fP, int\fI insize\fP, int\fI *position\fP, 
+	void\fI *outbuf\fP, int\fI outcount\fP, MPI_Datatype\fI datatype\fP, 
+	MPI_Comm\fI comm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_UNPACK(\fIINBUF, INSIZE, POSITION, OUTBUF, OUTCOUNT, 
+	DATATYPE, COMM, IERROR\fP)
+	<type>	\fIINBUF(*), OUTBUF(*)\fP
+	INTEGER	\fIINSIZE, POSITION, OUTCOUNT, DATATYPE, 
+		COMM, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Datatype::Unpack(const void* \fIinbuf\fP, int \fIinsize\fP, 
+	void *\fIoutbuf\fP, int \fIoutcount\fP, int& \fIposition\fP, 
+	const Comm& \fIcomm\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+inbuf      
+Input buffer start (choice).
+.TP 1i
+insize      
+Size of input buffer, in bytes (integer).
+.TP 1i
+outcount      
+Number of items to be unpacked (integer).
+.TP 1i
+datatype      
+Datatype of each output data item (handle).
+.TP 1i
+comm      
+Communicator for packed message (handle).
+.sp
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+position      
+Current position in bytes (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+outbuf      
+Output buffer start (choice).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Unpacks a message into the receive buffer specified by outbuf, outcount, datatype from the buffer space specified by inbuf and insize. The output buffer can be any communication buffer allowed in MPI_Recv. The input buffer is a contiguous storage area containing insize bytes, starting at address inbuf. The input value of position is the first location in the input buffer occupied by the packed message. \fIposition\fP is incremented by the size of the packed message, so that the output value of position is the first location in the input buffer after the locations occupied by the message that was unpacked. \fIcomm\fP is the communicator used to receive the packed message. 
+
+.SH NOTES
+Note the difference between MPI_Recv and MPI_Unpack: In MPI_Recv, the \fIcount\fP argument specifies the maximum number of items that can be received. The actual number of items received is determined by the length of the incoming message. In MPI_Unpack, the count argument specifies the actual number of items that are to be unpacked; the "size" of the corresponding message is the increment in position. The reason for this change is that the "incoming message size" is not predetermined since the user decides how much to unpack; nor is it easy to determine the "message size" from the number of items to be unpacked.
+.sp
+To understand the behavior of pack and unpack, it is convenient to think of the data part of a message as being the sequence obtained by concatenating the successive values sent in that message. The pack operation stores this sequence in the buffer space, as if sending the message to that buffer. The unpack operation retrieves this sequence from buffer space, as if receiving a message from that buffer. (It is helpful to think of internal Fortran files or sscanf in C for a similar function.) 
+.sp
+Several messages can be successively packed into one packing unit. This is effected by several successive related calls to MPI_Pack, where the first call provides position = 0, and each successive call inputs the value of position that was output by the previous call, and the same values for outbuf, outcount, and comm. This packing unit now contains the equivalent information that would have been stored in a message by one send call with a send buffer that is the "concatenation" of the individual send buffers.
+.sp
+A packing unit can be sent using type MPI_Packed. Any point-to-point or collective communication function can be used to move the sequence of bytes that forms the packing unit from one process to another. This packing unit can now be received using any receive operation, with any datatype: The type-matching rules are relaxed for messages sent with type MPI_Packed.  
+.sp
+A message sent with any type (including MPI_Packed) can be received using the type MPI_Packed. Such a message can then be unpacked by calls to MPI_Unpack.
+.sp
+A packing unit (or a message created by a regular, "typed" send) can be unpacked into several successive messages. This is effected by several successive related calls to MPI_Unpack, where the first call provides position = 0, and each successive call inputs the value of position that was output by the previous call, and the same values for inbuf, insize, and comm.
+.sp
+The concatenation of two packing units is not necessarily a packing unit; nor is a substring of a packing unit necessarily a packing unit. Thus, one cannot concatenate two packing units and then unpack the result as one packing unit; nor can one unpack a substring of a packing unit as a separate packing unit. Each packing unit that was created by a related sequence of pack calls or by a regular send must be unpacked as a unit, by a sequence of related unpack calls. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+MPI_Pack
+.br
+MPI_Pack_size
+

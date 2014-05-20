@@ -1,0 +1,85 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Type_contiguous 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_contiguous\fP \- Creates a contiguous datatype.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_contiguous(int \fIcount\fP, MPI_Datatype\fI oldtype\fP,
+	MPI_Datatype\fI *newtype\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_CONTIGUOUS(\fICOUNT, OLDTYPE, NEWTYPE, IERROR\fP)
+	INTEGER	\fICOUNT, OLDTYPE, NEWTYPE, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Datatype Datatype::Create_contiguous(int \fIcount\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count      
+Replication count (nonnegative integer).
+.TP 1i
+oldtype      
+Old datatype (handle).
+.sp
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newtype      
+New datatype (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The simplest datatype constructor is MPI_Type_contiguous, which allows replication of a datatype into contiguous locations. 
+.sp
+\fInewtype\fP is the datatype obtained by concatenating \fIcount\fP copies of \fIoldtype\fP. Concatenation is defined using the extent of \fIoldtype\fP as the size of the concatenated copies.  
+.sp
+\fBExample:\fR Let oldtype have type map {(double, 0), (char, 8)}, with extent 16, and let count = 3. The type map of the datatype returned by newtype is     
+.sp
+.nf
+    {(double, 0), (char, 8), (double, 16), (char, 24), 
+    (double, 32), (char, 40)];
+.fi
+.sp
+i.e., alternating double and char elements, with displacements 0, 8, 16, 24, 32, 40.
+.sp
+In general, assume that the type map of oldtype is    
+.sp
+.nf
+    {(type(0), disp(0)),...,(type(n-1), disp(n-1))},
+.fi
+.sp
+with extent ex. Then newtype has a type map with count times n entries defined by:    
+.sp
+.nf
+    {(type(0), disp(0)), ...,(type(n-1), disp(n-1)),
+    (type(0), disp(0) + ex), ...,(type(n-1), 
+    disp(n-1) + ex), ...,(type(0), disp(0) + ex * (count - 1)), 
+    ...,(type(n-1), disp(n-1) + ex * (count - 1))}.
+.fi
+.sp
+For more information about derived datatypes, see Section 3.12 of the MPI-1 Standard.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

@@ -1,0 +1,36 @@
+import cando ;
+local dir = $(__file__:D) ;
+
+#
+#
+project internals/sockets : requirements
+	<define>EXPAT
+	<define>_DEBUG
+	<define>_GNU_SOURCE
+	<toolset>darwin:<define>READLINE
+	<threading>single
+	<include>./
+	<include>../
+	<toolset>darwin:<define>darwin
+	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
+	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
+	<toolset>pathscale:<cxxflags>"-Wno-unused-variable -fopenmp"
+	<toolset>pgi:<cxxflags>"-mp -gopt"
+	<toolset>pgi:<linkflags>"-mp -gopt"
+	<target-os>darwin:<linkflags>"-dynamiclib"
+	;
+
+sources = 
+	sockets.cc
+	socketsPackage.cc
+	/internals/core//bundle
+	/externals//boostAndExpatLibs ;
+
+cando.bundle $(dir) :
+	     $(sources) :
+	     <link>static
+	     <implicit-dependency>mi
+	     <implicit-dependency>/internals/core//mi
+	     ;
+#	     <implicit-dependency>/internals/core//symbol_apply_inc  ;

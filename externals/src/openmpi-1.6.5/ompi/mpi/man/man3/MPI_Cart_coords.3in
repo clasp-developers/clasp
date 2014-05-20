@@ -1,0 +1,61 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Cart_coords 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Cart_coords\fP \- Determines process coords in Cartesian topology given rank in group.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Cart_coords(MPI_Comm \fIcomm\fP, int\fI rank\fP, int\fI maxdims\fP,
+	int\fI *coords\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_CART_COORDS(\fICOMM\fP,\fI RANK\fP,\fI MAXDIMS\fP,\fI COORDS\fP, \fIIERROR\fP)
+	INTEGER	\fICOMM\fP,\fI RANK\fP,\fI MAXDIMS\fP,\fI COORDS(\fI*\fP)\fP,\fI IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Cartcomm::Get_coords(int \fIrank\fP, int \fImaxdims\fP, 
+	int \fIcoords\fP[]) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm
+Communicator with Cartesian structure (handle).
+.TP 1i
+rank
+Rank of a process within group of comm (integer).
+.TP 1i
+maxdims
+ Length of vector coord in the calling program (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+coords
+Integer array (of size ndims,which was defined by MPI_Cart_create call) containing the Cartesian coordinates of specified process (integer).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The inverse mapping, rank-to-coordinates translation is provided by MPI_Cart_coords.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

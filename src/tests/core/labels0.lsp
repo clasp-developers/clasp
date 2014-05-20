@@ -1,0 +1,17 @@
+(defun test ()
+  (labels ((xxx () (print "xxx")))
+    (let* ((a 1))
+      (print "top of let")
+      (block nil
+	(print "top of block nil")
+	(let ((cur 3))
+	  (print "top of inner let")
+	  (print 3)
+	  (xxx)
+	  )
+	)
+      )
+    )
+  )
+
+(test)

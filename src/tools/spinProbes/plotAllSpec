@@ -1,0 +1,13 @@
+
+pl out/_spec0_spec8.pl
+pl out/_speck_spec8.pl
+pl out/_rotx0_spec8.pl
+pl out/_rotxk_spec8.pl
+pl out/_roty0_spec8.pl
+pl out/_rotyk_spec8.pl
+pl out/_rotz0_spec8.pl
+pl out/_rotzk_spec8.pl
+pl out/_rotyy0_spec8.pl
+pl out/_rotyyk_spec8.pl
+pl out/_rotzz0_spec8.pl
+pl out/_rotzzk_spec8.pl

@@ -1,0 +1,31 @@
+
+(defun addLine ( lines pos1 pos2 colorKeyword )
+  (let* ( (color (lookup *colorTable* colorKeyword))
+	  (idx1 (appendVertex lines pos1 color))
+	  (idx2 (appendVertex lines pos2 color)))
+    (appendLine lines idx1 idx2)))
+
+(defun addPoint ( points pos colorKeyword obj )
+  (let ((color (lookup *colorTable* colorKeyword)))
+	  (appendPickablePoint points pos color (HighlightHolder obj))))
+
+(defvar *lines* (GrLines))
+(addLine *lines* (OVector3 0.0 0.0 0.0) (OVector3 1.0 0.0 0.0) :white)
+(addLine *lines* (OVector3 1.0 0.0 0.0) (OVector3 1.0 1.0 0.0) :white)
+(addLine *lines* (OVector3 1.0 1.0 0.0) (OVector3 0.0 1.0 0.0) :white)
+(addLine *lines* (OVector3 0.0 1.0 0.0) (OVector3 0.0 1.0 1.0) :red)
+
+(defvar *points* (GrPickablePoints))
+(let* ((colors '( :white :red :green :blue :magenta :cyan ))
+      (numColors (length colors)))
+  (foreach r (Range 0 100)
+	   (let ((x (randomNumber01))
+		 (y (randomNumber01))
+		 (z (randomNumber01))
+		 (c (int (* (randomNumber01) numColors))))
+	     (addPoint *points* (OVector3 x y z) (@ colors c) r))) )
+
+(defvar *dl* (DisplayList))
+(append *dl* *lines*)
+(append *dl* *points*)
+(saveArchive *dl* "_points.cxml")

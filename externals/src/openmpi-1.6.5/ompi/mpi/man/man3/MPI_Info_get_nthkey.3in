@@ -1,0 +1,67 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Info_get_nthkey 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Info_get_nthkey\fP \- Returns the \fIn\fPth defined key in \fIinfo\fP.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Info_get_nthkey(MPI_Info \fIinfo\fP, int \fIn\fP, char \fI*key\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_INFO_GET_NTHKEY(\fIINFO, N, KEY, IERROR\fP)
+	INTEGER		\fIINFO, N, IERROR\fP 
+	CHARACTER*(*)	\fIKEY\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Info::Get_nthkey(int \fIn\fP, char* \fIkey\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+info
+Info object (handle).
+.ft R
+.TP 1i
+n
+Key number (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+key
+Key (string). 
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Info_get_nthkey returns the \fIn\fPth defined key in \fIinfo\fP. Keys are numbered 0\...\fIN\fP - 1 where \fIN\fP is the value returned by MPI_Info_get_nkeys. All keys between 0 and \fIN\fP - 1 are guaranteed to be defined. The number of a given key does not change as long as \fIinfo\fP is not modified with MPI_Info_set or MPI_Info_delete. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft r
+MPI_Info_get
+.br
+MPI_Info_get_nkeys
+.br
+MPI_Info_get_valueln
+.br
+

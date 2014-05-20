@@ -1,0 +1,60 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Status_set_cancelled 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Status_set_cancelled\fP \- Sets \fIstatus\fP to indicate a request has been canceled. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Status_set_cancelled(MPI_Status *\fIstatus\fP, int \fIflag\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_STATUS_SET_CANCELLED(\fISTATUS, FLAG, IERROR\fP)
+	INTEGER	\fISTATUS\fP(MPI_STATUS_SIZE), \fIIERROR \fP
+	LOGICAL \fIFLAG\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Status::Set_cancelled(bool \fIflag\fP)
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+status
+Status with which to associate cancel flag (status).
+
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+flag
+If true, indicates request was canceled (logical).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+If \fIflag\fP is set to true, then a subsequent call to MPI_Test_cancelled(\fIstatus, flag\fP) will also return \fIflag\fP = true; otherwise it will return false. 
+
+.SH NOTES
+.ft R
+Users are advised not to reuse the status fields for values other than those for which they were intended. Doing so may lead to unexpected results when using the status object. For example, calling MPI_Get_elements may cause an error if the value is out of range, or it may be impossible to detect such an error. The \fIextra_state\fP argument provided with a generalized request can be used to return information that does not logically belong in \fIstatus\fP. Furthermore, modifying the values in a status set internally by MPI, such as MPI_Recv, may lead to unpredictable results and is strongly discouraged. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

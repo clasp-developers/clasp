@@ -1,0 +1,79 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Comm_test_inter 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_test_inter \fP \- Tests to see if a comm is an intercommunicator.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_test_inter(MPI_Comm \fIcomm\fP, int\fI *flag\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_TEST_INTER(\fICOMM, FLAG, IERROR\fP)
+	INTEGER	\fICOMM, IERROR\fP
+	LOGICAL	\fIFLAG \fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+bool Comm::Is_inter() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+flag     (Logical.)
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This local routine allows the calling process to determine the type of a communicator. It returns true for an intercommunicator, false for an intracommunicator. 
+.sp
+The type of communicator also affects the value returned by three other functions.  When dealing with an intracommunicator (enables communication within a single group), the functions listed below return the expected values, group size, group, and rank.  When dealing with an inter-communicator, however, they return the following values:
+.sp
+.nf
+MPI_Comm_size	Returns the size of the local group.
+MPI_Comm_group	Returns the local group.
+MPI_Comm_rank	Returns the rank in the local group.
+.fi
+.sp
+To return the remote group and remote group size of an inter-communicator, use the MPI_Comm_remote_group and MPI_Comm_remote_size functions.
+.sp
+The operation MPI_Comm_compare is valid for intercommunicators. Both communicators must be either intra- or intercommunicators, or else MPI_UNEQUAL results. Both corresponding local and remote groups must compare correctly to get the results MPI_CONGRUENT and MPI_SIMILAR. In particular, it is possible for MPI_SIMILAR to result because either the local or remote groups were similar but not identical. 
+.sp
+The following accessors provide consistent access to the remote group of an
+intercommunicator: MPI_Comm_remote_size, MPI_Comm_remote_group. 
+.sp
+The intercommunicator accessors (MPI_Comm_test_inter, MPI_Comm_remote_size, MPI_Comm_remote_group) are all local operations.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+.nf
+MPI_Comm_remote_group
+MPI_Comm_remote_size
+MPI_Intercomm_create
+MPI_Intercomm_merge
+

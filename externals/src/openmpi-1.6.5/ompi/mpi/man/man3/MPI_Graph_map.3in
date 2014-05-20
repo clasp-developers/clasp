@@ -1,0 +1,69 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Graph_map 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Graph_map \fP \- Maps process to graph topology information.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Graph_map(MPI_Comm \fIcomm\fP, int\fI nnodes\fP, int\fI *index\fP,
+	int\fI *edges\fP, int\fI *newrank\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GRAPH_MAP(\fICOMM, NNODES, INDEX, EDGES, NEWRANK, IERROR\fP)
+	INTEGER	\fICOMM, NNODES, INDEX(*), EDGES(*), NEWRANK, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int Graphcomm::Map(int \fInnodes\fP, const int \fIindex\fP[], 
+	const int \fIedges\fP[]) const 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm
+Input communicator (handle).
+.TP 1i
+nnodes
+Number of graph nodes (integer).
+.TP 1i
+index
+Integer array specifying the graph structure, see  MPI_Graph_ create.
+.TP 1i
+edges
+Integer array specifying the graph structure.
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newrank
+Reordered rank of the calling process; MPI_UNDEFINED if the calling process does not belong to graph (integer).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Cart_map and MPI_Graph_map can be used to implement all other topology
+functions. In general they will not be called by the user directly, unless he or she is creating additional virtual topology capability other than that provided by MPI.  
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.sp
+MPI_Cart_map
+

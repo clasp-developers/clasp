@@ -1,0 +1,51 @@
+#! /usr/bin/env python
+
+
+import getopt
+
+import xml.dom
+
+from xml.etree.ElementTree import ElementTree
+
+
+from xml.dom.minidom import parse
+
+
+import sys, os
+
+
+print sys.argv[1:]
+
+
+def walk(node,watchObjects,destNode):
+    if ( "o" in node.attrib ):
+	val = str(node.attrib["o"])
+	if ( val in watchObjects ):
+	    destNode.append(node)
+	    return
+    for child in node.getchildren():
+	walk(child,watchObjects,destNode)
+	
+
+
+
+
+
+fileName = sys.argv[1]
+
+watchObjects = []
+watchObjects = sys.argv[2:]
+
+
+tree = ElementTree()
+tree.parse(fileName)
+root = tree.getroot()
+
+targetTree = ElementTree()
+targetNode = xml.etree.ElementTree.Element("DebugDump")
+targetTree._setroot(targetNode)
+
+walk(root,watchObjects,targetNode)
+
+print("Dumping tree")
+xml.etree.ElementTree.dump(targetNode)

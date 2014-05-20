@@ -1,0 +1,79 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Type_get_true_extent 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_get_true_extent\fP \- Returns the true lower bound and extent of a data type's corresponding typemap, ignoring MPI_UB and MPI_LB markers. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_get_true_extent(MPI_Datatype \fIdatatype\fP, 
+	MPI_Aint *\fItrue_lb\fP, MPI_Aint *\fItrue_extent\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_GET_TRUE_EXTENT(\fIDATATYPE, TRUE_LB, TRUE_EXTENT, IERROR\fP)
+	INTEGER	\fIDATATYPE, IERROR\fP 
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fITRUE_LB, TRUE_EXTENT\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Datatype::Get_true_extent(MPI::Aint& \fItrue_lb\fP, 
+	MPI::Aint& \fItrue_extent\fP) const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+datatype      
+Data type for which information is wanted (handle).
+.sp
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+true_lb
+True lower bound of data type (integer).
+.TP 1i
+true_extent
+True size of data type (integer).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The \fItrue_lb\fP parameter returns the offset of the lowest unit of store that is addressed by the data type, that is, the lower bound of the corresponding typemap, ignoring MPI_LB markers. The \fItrue_extent\fP parameter returns the true size of the data type, that is, the extent of the corresponding typemap, ignoring MPI_LB and MPI_UB markers, and performing no rounding for alignment. 
+.sp
+The \fItrue_extent\fP is the minimum number of bytes of memory necessary to hold a data type, uncompressed.
+.sp
+See Section 4.14.3 of the MPI-2 standard for more detailed definitions of these parameters in relation to the typemap. 
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fITRUE_LB\fP and \fITRUE_EXTENT\fP arguments only for Fortran 90. FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_ADDRESS_KIND \fITRUE_LB\fP
+or
+     INTEGER*MPI_ADDRESS_KIND \fITRUE_EXTENT\fP
+.fi
+.sp
+where MPI_ADDRESS_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+

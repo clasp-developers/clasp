@@ -1,0 +1,13 @@
+--- config/ltmain.sh.old	2007-01-22 11:34:19.000000000 -0500
++++ config/ltmain.sh	2007-01-22 11:34:43.000000000 -0500
+@@ -4428,6 +4428,10 @@
+ 		      depdepl="$absdir/$objdir/$depdepl"
+ 		      darwin_install_name=`otool -L $depdepl | $SED -n -e '3q;2,2p' | $SED -e 's/(.*//'`
+ 		      darwin_install_name=`$ECHO $darwin_install_name`
++                      if test -z "$darwin_install_name"; then
++                          darwin_install_name=`otool64 -L $depdepl | $SED -n -e '3q;2,2p' | $SED -e 's/(.*//'`
++                          darwin_install_name=`$ECHO $darwin_install_name`
++                      fi
+ 		      compiler_flags="$compiler_flags ${wl}-dylib_file ${wl}${darwin_install_name}:${depdepl}"
+ 		      linker_flags="$linker_flags -dylib_file ${darwin_install_name}:${depdepl}"
+ 		      path=

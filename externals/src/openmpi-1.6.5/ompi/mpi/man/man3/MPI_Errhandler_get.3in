@@ -1,0 +1,64 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Errhandler_get 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Errhandler_get \fP \- Gets the error handler for a communicator -- use of this routine is deprecated.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Errhandler_get(MPI_Comm \fIcomm\fP, MPI_Errhandler\fI *errhandler\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ERRHANDLER_GET(\fICOMM, ERRHANDLER, IERROR\fP)
+	INTEGER	\fICOMM, ERRHANDLER, IERROR\fP 
+
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+comm
+Communicator to get the error handler from (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+errhandler
+MPI error handler currently associated with communicator (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Note that use of this routine is \fIdeprecated\fP as of MPI-2. Please use MPI_Comm_get_errhandler instead. 
+.sp
+This deprecated routine is not available in C++. 
+.sp
+Returns in errhandler (a handle to) the error handler that is currently associated with communicator comm.
+.sp
+\fBExample:\fP A library function may register at its entry point the current error handler for a communicator, set its own private error handler for this communicator, and restore before exiting the previous error handler.  
+
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Comm_create_errhandler
+.br
+MPI_Comm_get_errhandler
+.br
+MPI_Comm_set_errhandler
+

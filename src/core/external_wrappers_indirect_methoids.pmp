@@ -1,0 +1,84 @@
+$var NumArgs = 16
+    $var ConstTypeCount = 2
+    $var ReturnTypeCount = 2
+    $var RetSV = 0
+    $var RetVoid = 1
+    $var InnerCount = NumArgs+1
+    $var Templates = (InnerCount*ReturnTypeCount*ConstTypeCount)-1
+    $var template_ = -1
+    $range isConst 0..1
+    $range ret 0..1
+    $range innerCount 0..(InnerCount-1)
+    $for isConst [[
+        $for ret [[
+                $for innerCount [[
+                        $var template_ = isConst*(InnerCount*ReturnTypeCount)+ret*(InnerCount)+innerCount
+                        $var numVoids = innerCount
+                        $var numArgs = NumArgs - numVoids
+                        $range Args_ 0..(numArgs-1)
+                        // TEMPLATE_TOP
+                        // template_ = $template_
+                        // isConst = $isConst
+                        // ret = $ret ($if ret==RetVoid [[void]] $else [[RetSV]]) 
+                        //
+                        // innerCount = $innerCount
+                        // numArgs = $numArgs ($for Args_ , [[ARG$Args_]])
+                        // numVoids = $numVoids
+                        // 
+                        /* Specialization  */
+                        template <typename Pols, $if ret==RetVoid [[]] $else [[ typename RT, ]] typename OT $if numArgs [[,]] $for Args_ ,[[typename ARG$Args_]] >
+                        class IndirectVariadicMethoid
+                        < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](OT::ExternalType::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
+                        : public Functoid {
+                        public:
+//        typedef std::function<$if ret==RetVoid [[void]] $else [[RT]] (OT& $if numArgs [[,]] $for Args_ , [[ARG$Args_]])> Type;
+                        typedef $if ret==RetVoid [[void]] $else [[RT]] (OT::ExternalType::*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
+                        Type mptr;
+                        public:
+                        enum { NumParams = $numArgs };
+                        IndirectVariadicMethoid(const string& name, Type ptr) : Functoid(name), mptr(ptr) {};
+
+                        core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
+                        {
+                            int countPureOutValues = CountPureOutValues<Pols>::value;
+                            if ( numArgs-1 != (NumParams-countPureOutValues) )
+                            {
+                                core::wrongNumberOfArguments(numArgs,(NumParams-countPureOutValues)+1);
+                            }
+                            mem::smart_ptr<OT> ot((*args).template as<OT>());
+                            ++args;
+                            $for Args_ [[
+                                    translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue_<$Args_> >::type > a$Args_(*args);
+                                    IncWhen<typename DoesNotContain_<Pols,pureOutValue_<$Args_> >::type >::go(args);
+                                    ]]
+                                $if ret==RetVoid [[]] $else [[ RT retval = ]] ((*(ot->wrappedPtr())).*(this->mptr))($for Args_ ,[[a$Args_._v]]);
+                            $if numArgs>0 [[
+                                    core::MultipleValues& returnValues = _lisp->multipleValues();
+                                    returnValues.setMaxSize();
+                                    ]]
+                                $if ret==RetVoid [[
+                                    $if numArgs==0 [[]] $else [[ int oidx = 0; ]]
+                                    ]] $else [[
+                                    int oidx = 1;
+                                    ]]
+                                $for Args_ [[
+                                    ReturnValueWhen(returnValues,oidx,
+                                                    typename or_<typename Contains_<Pols,pureOutValue_<$Args_> >::type,
+                                                    typename Contains_<Pols,    outValue_<$Args_> >::type >::type(),a$Args_._v);
+                                    ]]
+                                $if ret==RetVoid [[
+                                    $if numArgs==0 [[
+                                            return Values0<core::T_O>();
+                                            ]] $else [[
+                                            return mem::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+                                            ]]
+                                    ]] $else [[
+                                    return mem::multiple_values<T_O>(translate::to_object<RT>::convert(retval),oidx);
+                                    ]]
+          
+                                }
+
+                        };
+                        ]]
+                ]]
+        ]]

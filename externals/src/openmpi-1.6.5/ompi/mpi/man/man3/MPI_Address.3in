@@ -1,0 +1,90 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Address 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Address\fP \- Gets the address of a location in memory -- use of this routine is deprecated.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h> 
+int MPI_Address(void *\fIlocation\fP, MPI_Aint\fP *address\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ADDRESS(\fILOCATION\fP,\fI ADDRESS\fP,\fI IERROR\fP)		
+	<type>	\fILOCATION\fP (*) 		
+	INTEGER	\fIADDRESS\fP,\fI IERROR\fP
+
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+location
+Location in caller memory (choice).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+address
+Address of location (integer).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Note that use of this routine is \fIdeprecated\fP as of MPI-2. Please use MPI_Get_address instead. 
+.sp
+This deprecated routine is not available in C++. 
+.sp
+The address of a location in memory can be found by invoking this function. Returns the (byte) address of location.
+.sp
+Example: Using MPI_Address for an array. 
+.sp
+.nf
+REAL A(100,100) 
+.fi
+.br
+   INTEGER I1, I2, DIFF 
+.br
+   CALL MPI_ADDRESS(A(1,1), I1, IERROR) 
+.br
+   CALL MPI_ADDRESS(A(10,10), I2, IERROR) 
+.br
+   DIFF = I2 - I1 
+.br
+! The value of DIFF is 909*sizeofreal; the values of I1 and I2 are 
+.br
+! implementation dependent. 
+.fi
+
+.SH NOTES
+.ft R
+This routine is provided for both Fortran and C programmers and may be useful when writing portable code. In the current release, the address returned by this routine will be the same as that produced by the C & operator.
+.sp
+C users may be tempted to avoid using
+MPI_Address and rely on the availability of the address operator &.
+Note, however, that & cast-expression is a pointer, not an address.
+ANSI C does not require that the value of a pointer (or the pointer
+cast to int) be the absolute address of the object pointed at although 
+this is commonly the case. Furthermore, referencing may not have a unique
+definition on machines with a segmented address space. The use of
+MPI_Address to "reference" C variables guarantees portability to
+such machines as well.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler
+may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error. 
+
+.SH SEE ALSO
+MPI_Get_address
+.br

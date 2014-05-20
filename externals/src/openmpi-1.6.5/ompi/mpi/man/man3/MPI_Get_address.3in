@@ -1,0 +1,76 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Get_address 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Get_address\fP \- Gets the address of a location in memory. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Get_address(void *\fIlocation\fP, MPI_Aint *\fIaddress\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GET_ADDRESS(\fILOCATION, ADDRESS, IERROR\fP)
+	<type> \fILOCATION\fP(*)
+	INTEGER	\fIADDRESS, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Aint MPI::Get_address(void* \fIlocation\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+location
+Location in caller memory (choice).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+address
+Address of location (integer).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Get_address returns the byte address of a location in memory.
+.sp
+Example: Using MPI_Get_address for an array. 
+.sp
+.nf
+EAL A(100,100) 
+.fi
+.br
+   INTEGER I1, I2, DIFF 
+.br
+   CALL MPI_GET_ADDRESS(A(1,1), I1, IERROR) 
+.br
+   CALL MPI_GET_ADDRESS(A(10,10), I2, IERROR) 
+.br
+   DIFF = I2 - I1 
+.br
+! The value of DIFF is 909*sizeofreal; the values of I1 and I2 are 
+.br
+! implementation dependent. 
+.fi
+
+.SH NOTES
+.ft R
+Current Fortran MPI codes will run unmodified and will port to any system. However, they may fail if addresses larger than 2^32 - 1 are used in the program. New codes should be written so that they use the new functions. This provides compatibility with C/C++ and avoids errors on 64-bit architectures. However, such newly written codes may need to be (slightly) rewritten to port to old Fortran 77 environments that do not support KIND declarations. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

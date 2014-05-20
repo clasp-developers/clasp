@@ -1,0 +1,74 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Comm_set_name 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_set_name\fP \- Associates a name with a communicator.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_set_name(MPI_Comm \fIcomm\fP, char *\fIcomm_name\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_SET_NAME(\fICOMM, COMM_NAME, IERROR\fP)
+	INTEGER	\fICOMM, IERROR \fP
+	CHARACTER*(*) \fICOMM_NAME\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Set_name(const char* \fIcomm_name\fP)
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+comm
+Communicator whose identifier is to be set (handle).
+
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+comm_name
+Character string to be used as the identifier for the communicator (string).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+
+.SH DESCRIPTION
+.ft R
+MPI_Comm_set_name allows a user to associate a name string with a communicator. The character string that is passed to MPI_Comm_set_name is saved inside the MPI library (so it can be freed by the caller immediately after the call, or allocated on the stack). Leading spaces in \fIname\fP are significant, but trailing ones are not.
+.sp
+MPI_Comm_set_name is a local (noncollective) operation, which affects only the name of the communicator as seen in the process that made the MPI_Comm_set_name call. There is no requirement that the same (or any) name be assigned to a communicator in every process where it exists. 
+.sp
+The length of the name that can be stored is limited to the value of MPI_MAX_OBJECT_NAME in Fortran and MPI_MAX_OBJECT_NAME-1 in C and C++ (to allow for the null terminator). Attempts to set names longer than this will result in truncation of the name. MPI_MAX_OBJECT_NAME must have a value of at least 64.
+
+
+.SH NOTES
+.ft R
+Since MPI_Comm_set_name is provided to help debug code, it is sensible to give the same name to a communicator in all of the processes where it exists, to avoid confusion. 
+.sp
+Regarding name length, under circumstances of store exhaustion, an attempt to set a name of any length could fail; therefore, the value of MPI_MAX_OBJECT_NAME should be viewed only as a strict upper bound on the name length, not a guarantee that setting names of less than this length will always succeed.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+MPI_Comm_get_name
+.sp
+
+

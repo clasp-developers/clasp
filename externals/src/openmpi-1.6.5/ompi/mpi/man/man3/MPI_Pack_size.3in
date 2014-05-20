@@ -1,0 +1,71 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Pack_size 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Pack_size\fP \- Returns the upper bound on the amount of space needed to pack a message.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Pack_size(int \fIincount\fP, MPI_Datatype\fI datatype\fP, MPI_Comm\fI comm\fP,
+	int\fI *size\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_PACK_SIZE(\fIINCOUNT, DATATYPE, COMM, SIZE, IERROR\fP)
+	INTEGER	\fIINCOUNT, DATATYPE, COMM, SIZE, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int Datatype::Pack_size(int \fIincount\fP, const Comm& \fIcomm\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+incount
+Count argument to packing call (integer).
+.TP 1i
+datatype
+Datatype argument to packing call (handle).
+.TP 1i
+comm
+Communicator argument to packing call (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+size
+Upper bound on size of packed message, in bytes (integer).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Pack_size allows the application to find out how much space is needed to pack a message. A call to MPI_Pack_size(incount, datatype, comm, size) returns in size an
+upper bound on the increment in position that would occur in a call to MPI_Pack, with the same values for \fIincount\fP, \fIdatatype\fP, and \fIcomm\fP. 
+.sp
+\fBRationale:\fP  The call returns an upper bound, rather than an exact bound, since the exact amount of space needed to pack the message may depend on the context (e.g., first message packed in a packing unit may take more space). 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Pack
+.br
+MPI_Unpack
+
+

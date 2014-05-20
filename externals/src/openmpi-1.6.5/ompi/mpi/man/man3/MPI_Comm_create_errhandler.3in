@@ -1,0 +1,90 @@
+.\" Copyright 2009 Cisco Systems, Inc.
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Comm_create_errhandler 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_create_errhandler \fP \- Creates an error handler that can be attached to communicators. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_create_errhandler(MPI_Comm_errhandler_function \fI*function\fP,
+	MPI_Errhandler *\fIerrhandler\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_CREATE_ERRHANDLER(\fIFUNCTION, ERRHANDLER, IERROR\fP)
+	EXTERNAL	\fIFUNCTION\fP
+	INTEGER	\fIERRHANDLER, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static MPI::Errhandler
+	MPI::Comm::Create_errhandler(MPI::Comm::Errhandler_function*
+	\fIfunction\fP)
+
+.fi
+.SH DEPRECATED TYPE NAME NOTE
+.ft R
+MPI-2.2 deprecated the MPI_Comm_errhandler_fn and
+MPI::Comm::Errhandler_fn types in favor of
+MPI_Comm_errhandler_function and MPI::Comm::Errhandler_function,
+respectively.  Open MPI supports both names (indeed, the _fn names are
+typedefs to the _function names).
+
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+function
+User-defined error handling procedure (function).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+errhandler
+MPI error handler (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Comm_create_errhandler creates an error handler that can be attached to communicators. This function is identical to MPI_Errhandler_create, the use of which is deprecated. 
+.sp
+In C, the user routine should be a function of type MPI_Comm_errhandler_function, which is defined as 
+.sp
+.nf
+    typedef void MPI_Comm_errhandler_function(MPI_Comm *, int *, \&...); 
+.fi
+.sp
+The first argument is the communicator in use. The second is the error code
+to be returned by the MPI routine that raised the error. This typedef replaces MPI_Handler_function, the use of which is deprecated. 
+.sp
+In Fortran, the user routine should be of this form:
+.sp
+.nf
+    SUBROUTINE COMM_ERRHANDLER_FUNCTION(COMM, ERROR_CODE, \&...)
+        INTEGER COMM, ERROR_CODE
+.fi
+.sp
+In C++, the user routine should be of this form:
+.sp
+.nf
+    typedef void MPI::Comm::Errhandler_function(MPI_Comm &, int *, \&...); 
+.fi
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+
+

@@ -1,0 +1,29 @@
+project internals/tools ;
+
+local scripts = bdb
+       checkSeed
+       toXml
+       viewAggs
+       mr
+       viewDatabase
+       extractObjectNodes
+       xmlRun
+       dlView
+       dbg
+       advanceTrainers
+       mpiAdvanceTrainers
+       viewMinimizerDebug
+       updateCsc
+       fixLog
+       logView
+       cv
+       cvd
+       candoFormatView
+       gdbcvd
+       cleanupCompile
+       dbinfo
+       dbinfo_d
+       gdb_dbinfo_d
+       ;
+
+install bundle : $(scripts) : <location>$(APPRES_BIN) ;

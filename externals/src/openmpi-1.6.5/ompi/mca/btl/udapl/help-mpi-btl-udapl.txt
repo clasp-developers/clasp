@@ -1,0 +1,139 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2006 The Regents of the University of California.
+#                         All rights reserved.
+# Copyright (c) 2007-2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English general help file for Open MPI.
+#
+[invalid num rdma segments] 
+WARNING: MCA parameter [btl_udapl_eager_rdma_num = %d] is not valid.
+RDMA will not be used for short messages. Try setting to positive
+value, e.g. 16.
+#
+[use default endpoint params]
+WARNING: Using default uDAPL endpoint parameters not those that
+would have been modified by MCA parameters.
+#
+[optimal buffer alignment mismatch]
+WARNING: DAT_OPTIMAL_ALIGNMENT = %d : BTL buffer_alignment = %d.
+The BTL buffer_alignment value may not be optimal. If all nodes
+report the same DAT_OPTIMAL_ALIGNMENT value and this differs from
+BTL buffer_alignment then setting "--mca btl_udapl_buffer_alignment
+%d" may improve performance.
+#
+[max_recv_dtos too low]
+WARNING: The MCA parameter max_recv_dtos has been modified to a value,
+%d, that is insufficient. This value must be greater than or equal to
+num_recvs, %d. The uDAPL BTL will adjust to allow the program to
+proceed.
+#
+[max_request_dtos too low]
+WARNING: The MCA parameter max_request_dtos has been modified to a
+value, %d, which may not be sufficient. Try setting max_request_dtos
+to %d if program fails.
+#
+[max_recv_dtos system max]
+WARNING: The MCA parameter max_recv_dtos is trying to be set to,
+%d, which is larger than allowable so the value will be set to maximum
+allowed, %d.
+#
+[max_request_dtos system max]
+WARNING: The MCA parameter max_request_dtos is trying to be set to,
+%d, which is larger than allowable so the value will be set to maximum
+allowed, %d.
+#
+[evd_qlen adapter max]
+WARNING: The MCA parameter %s is trying to be set to %d,
+which is larger than allowable so the value will be set to maximum
+allowed, %d.
+#
+[evd_qlen too low]
+WARNING: The MCA parameter %s has been modified to a value,
+%d, which may not be sufficient. Try setting %s to %d if
+program fails.
+#
+[connection timeout low]
+WARNING: The MCA parameter %s has been modified to a value,
+%d, which may not be sufficient. Try setting %s to %d if
+program fails.
+#
+[dat_lmr_create DAT_INSUFFICIENT_RESOURCES] 
+WARNING: The uDAPL BTL is not able to register memory. Possibly out of
+allowed privileged memory (i.e. memory that can be pinned). Increasing
+the allowed privileged memory may alleviate this issue.
+#
+[dat_ia_open fail]
+WARNING: Failed to open "%s" [%s:%s]. 
+This may be a real error or it may be an invalid entry in the uDAPL
+Registry which is contained in the dat.conf file. Contact your local
+System Administrator to confirm the availability of the interfaces in
+the dat.conf file.
+#
+[specified include and exclude]
+ERROR: You have specified both the btl_udapl_if_include and
+btl_udapl_if_exclude MCA parameters.  These two parameters are
+mutually exclusive; you can only specify one or the other.
+
+For reference, the values that you specified are:
+
+    btl_udapl_if_include: %s
+    btl_udapl_if_exclude: %s
+#
+[nonexistent entry]
+WARNING: One or more nonexistent interfaces were specified:
+
+    Host:                 %s
+    MCA parameter:        btl_udapl_if_%sclude
+    Nonexistent entities: %s
+
+These entities will be ignored.
+#
+[IPv4 only]
+WARNING: uDAPL BTL only supports IPv4 addressing at this time.
+Something other than an IPv4 address was detected on %s.
+#
+[no network match]
+WARNING: Interface %s on node %s not able to find matching 
+interface on peer node %s. Could be that the interfaces are on
+different subnets or there are fewer available uDAPL interfaces on peer.
+#
+[interface not found]
+WARNING: Host %s, not able to determine interface name for 
+address %s. Will attempt to continue, assuming all addresses to
+peer are reachable.
+#
+[netmask not found]
+WARNING: Host %s, not able to determine netmask for address 
+%s. Will attempt to continue assuming all addresses to 
+peer are reachable.
+#
+[relaxed order support]
+WARNING: While attempting to open interface %s the system reported
+DAT_INVALID_RO_COOKIE. This indicates the currrent system supports
+relaxed ordering. An attempt will be made to open the interface using
+the following modified interface name %s. Open MPI must not use RDMA
+for short eager messages in this scenario. Therefore, if opened
+successfully RDMA will not be used for short eager messages. This will
+negatively impact short message latency.
+#
+[dat_ia_open fail RO]
+WARNING: Failed to open "%s" [%s:%s]. 
+Attempted to call dat_ia_open() on an interface that has been prefixed
+with "RO_AWARE_" after first trying to open %s and failed with
+DAT_INVALID_RO_COOKIE.
+#

@@ -1,0 +1,50 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Wtick 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Wtick\fP \- Returns the resolution of MPI_Wtime.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+double MPI_Wtick()
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+DOUBLE PRECISION MPI_WTICK()
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+double MPI::Wtick()
+
+.fi
+.SH RETURN VALUE
+.ft R
+Time in seconds of resolution of MPI_Wtime.
+
+.SH DESCRIPTION
+.ft R
+MPI_Wtick returns the resolution of MPI_Wtime in seconds. That is, it
+returns, as a double-precision value, the number of seconds between
+successive clock ticks. For example, if the clock is implemented by
+the hardware as a counter that is incremented every millisecond, the
+value returned by MPI_Wtick should be 10^-3.
+.PP
+Note that on POSIX platforms, Open MPI should always return 10^-6 for
+MPI_Wtick.  The returned value may be different on Windows platforms.
+.PP
+
+.SH NOTE
+This function does not return an error value. Consequently, the result
+of calling it before MPI_Init or after MPI_Finalize is undefined.
+
+.SH SEE ALSO 
+.ft R
+.sp
+MPI_Wtime

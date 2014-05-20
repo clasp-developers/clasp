@@ -1,0 +1,72 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_call_errhandler 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_File_call_errhandler\fP \- Passes the supplied error code to the
+error handler assigned to a file
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_File_call_errhandler(MPI_File \fIfh\fP, int \fIerrorcode\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_FILE_CALL_ERRHANDLER(\fIFH, ERRORCODE, IERROR\fP)
+	INTEGER	\fIFH, IERRORCODE, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::File::Call_errhandler(int \fIerrorcode\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1.4i
+fh
+file with error handler (handle).
+.ft R
+.TP 1.4i
+errorcode
+MPI error code (integer).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1.4i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This function invokes the error handler assigned to the file handle
+\fIfh\fP with the supplied error code \fIerrorcode\fP. If the error
+handler was successfully called, the process is not aborted, and the
+error handler returns, this function returns MPI_SUCCESS.
+.sp
+Unlike errors on communicators and windows, the default errorhandler
+for files is MPI_ERRORS_RETURN.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_File_create_errhandler
+MPI_File_set_errhandler
+

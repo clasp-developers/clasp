@@ -1,0 +1,53 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_get_errhandler 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_get_errhandler\fP \- Retrieves the error handler currently associated with a window.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_get_errhandler(MPI_Win \fIwin\fP, MPI_Errhandler *\fIerrhandler\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_GET_ERRHANDLER(\fIWIN, ERRHANDLER, IERROR\fP) 
+	INTEGER \fIWIN, ERRHANDLER, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Errhandler MPI::Win::Get_errhandler() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+win
+Window (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+errhandler
+Error handler currently associated with window (handle). 
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Win_get_errhandler retrieves the error handler currently associated with a window.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+

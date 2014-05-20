@@ -1,0 +1,78 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Issend 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Issend\fP \- Starts a nonblocking synchronous send.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Issend(void *\fIbuf\fP, int\fI count\fP, MPI_Datatype\fI datatype\fP, int\fI dest\fP,
+	int\fI tag\fP, MPI_Comm\fI comm\fP, MPI_Request\fI *request\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ISSEND(\fIBUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR\fP)
+	<type>	\fIBUF\fP(*)
+	INTEGER	\fICOUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Request Comm::Issend(const void* \fIbuf\fP, int \fIcount\fP, const 
+	Datatype& \fIdatatype\fP, int \fIdest\fP, int \fItag\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+buf
+Initial address of send buffer (choice).
+.TP 1i
+count
+Number of elements in send buffer (integer).
+.TP 1i
+datatype
+Datatype of each send buffer element (handle).
+.TP 1i
+dest
+Rank of destination (integer).
+.TP 1i
+tag
+Message tag (integer).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+request
+Communication request (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Starts a synchronous mode, nonblocking send.
+.sp
+Nonblocking calls allocate a communication request object and associate it with the request handle (the argument request). The request can be used later to query the status of the communication or wait for its completion. 
+.sp
+A nonblocking send call indicates that the system may start copying data out of the send buffer. The sender should not access any part of the send buffer after a nonblocking send operation is called, until the send completes. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Ssend
+.br

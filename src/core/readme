@@ -1,0 +1,10 @@
+
+
+Initialize sybyl atom types and use them when writing out mol2 files
+
+
+SingleOligomerBuilder
+
+Builder
+	MultiOligomerBuilder
+	HitBuilder	

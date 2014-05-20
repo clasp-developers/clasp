@@ -1,0 +1,13 @@
+export REQUIRES_RTTI=1
+export CC=/usr/bin/clang
+export CXX=/usr/bin/clang++
+export CXXFLAGS=-std=c++11 -stdlib=libc++
+
+
+all:
+	(cd llvm-207120/build-debug; \
+		echo printenv-begin-dump; \
+		printenv; \
+		echo printenv-end-dump; \
+		../configure --enable-debug-symbols --enable-debug-runtime --enable-shared )
+

@@ -1,0 +1,48 @@
+#ifndef	_core_HashTableEql_H
+#define _core_HashTableEql_H
+
+#include "core/object.h"
+#include "hashTable.h"
+#include "symbolTable.h"
+#include "corePackage.fwd.h"
+
+namespace core
+{
+
+    FORWARD(HashTableEql);
+    class HashTableEql_O : public HashTable_O
+    {
+	LISP_BASE1(HashTable_O);
+	LISP_CLASS(core,CorePkg,HashTableEql_O,"HashTableEql");
+#if defined(XML_ARCHIVE)
+	DECLARE_ARCHIVE();
+#endif // defined(XML_ARCHIVE)
+	DEFAULT_CTOR_DTOR(HashTableEql_O);
+    public:
+	void initialize();
+
+    private: // instance variables here
+
+    public:
+	static HashTableEql_sp create( uint sz,  Number_sp rehashSize, double rehashThreshold);
+	static HashTableEql_sp create_default();
+    public:
+//	static int sxhash_eql(T_sp obj);
+    public: // Functions here
+
+	virtual T_sp hashTableTest() const { return cl::_sym_eql;};
+
+	bool keyTest(T_sp entryKey, T_sp searchKey) const;
+
+	int sxhashKey(T_sp key,int bound, bool willAddKey) const;
+
+
+    };
+
+}; /* core */
+
+TRANSLATE(core::HashTableEql_O);
+
+#endif /* _core_HashTableEql_H */
+
+

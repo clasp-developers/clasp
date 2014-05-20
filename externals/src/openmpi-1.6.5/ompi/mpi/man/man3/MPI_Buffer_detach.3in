@@ -1,0 +1,96 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Buffer_detach 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Buffer_detach\fP \- Removes an existing buffer (for use in MPI_Bsend, etc.)
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Buffer_detach(void \fI*buf\fP, int\fI *size\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_BUFFER_DETACH(\fIBUF\fP,\fI SIZE\fP, \fIIERROR\fP)
+	<type>	\fIBUF\fP(\fI*\fP)
+	INTEGER	\fISIZE\fP,\fI IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int Detach_buffer(void*& \fIbuffer\fP)
+
+.fi
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+buf
+Initial buffer address (choice).
+.TP 1i
+size
+Buffer size, in bytes (integer).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Detach the buffer currently associated with MPI. The call returns the address and the size of the detached buffer. This operation will block until all messages currently in the buffer have been transmitted. Upon return of this function, the user may reuse or deallocate the space taken by the buffer. 
+.sp
+\fBExample:\fP Calls to attach and detach buffers.
+.sp
+.nf
+    #define BUFFSIZE 10000 
+    int size 
+    char *buff; 
+    MPI_Buffer_attach( malloc(BUFFSIZE), BUFFSIZE); 
+    /* a buffer of 10000 bytes can now be used by MPI_Bsend */ 
+    MPI_Buffer_detach( &buff, &size); 
+    /* Buffer size reduced to zero */ 
+    MPI_Buffer_attach( buff, size); 
+    /* Buffer of 10000 bytes available again */ 
+.fi
+
+.SH NOTES
+.ft R
+The reason that MPI_Buffer_detach returns the address and size of the buffer being detached is to allow nested libraries to replace and restore the buffer. For example, consider
+.sp
+.nf
+    int size, mysize, idummy;
+    void *ptr, *myptr, *dummy;
+    MPI_Buffer_detach( &ptr, &size );
+    MPI_Buffer_attach( myptr, mysize );
+    \&...
+    \&... library code \&...
+    \&...
+    MPI_Buffer_detach( &dummy, &idummy );
+    MPI_Buffer_attach( ptr, size );
+.fi
+.sp
+This is much like the action of the UNIX signal routine and has the same strengths (it's simple) and weaknesses (it only works for nested usages).
+.sp
+\fBFor Fortran:\fP The Fortran binding for this routine is different. Because Fortran does not have pointers, it is impossible to provide a way to use the output of this routine to exchange buffers. In this case, only the size field is set.
+.sp
+\fBFor C:\fP Even though the buf argument is declared as void, it is really the address of a void pointer. See Rationale, below, for more details.
+.sp
+Even though the C functions MPI_Buffer_attach and
+MPI_Buffer_detach both have a first argument of type void*, these arguments are used differently: A pointer to the buffer is passed to MPI_Buffer_attach; the address of the pointer is passed to MPI_Buffer_detach, so that this call can return the pointer value.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+.nf
+MPI_Buffer_attach
+MPI_Bsend

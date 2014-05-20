@@ -1,0 +1,15 @@
+# set the arguments for running the executable
+#
+command regex set-args 's/(.+)/settings set target.run-args %1/'
+
+#
+# Print the lisp value of the smart-ptr argument
+#
+command regex lpr 's/(.+)/expr core::dbg_describe(%1.px)/'
+
+# command alias ldbg expr af_invokeInternalDebuggerFromGdb()
+
+command alias lreload command source ~/.lldbinit
+
+# set breakpoints
+break set -n dbg_hook

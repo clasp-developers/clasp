@@ -1,0 +1,73 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Info_set 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Info_set\fP \- Adds a key/value pair to \fIinfo\fP.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Info_set(MPI_Info \fIinfo\fP, char \fI*key\fP, char \fI*value\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_INFO_SET(\fIINFO, KEY, VALUE, IERROR\fP)
+	INTEGER		\fIINFO, IERROR\fP 
+	CHARACTER*(*)	\fIKEY, VALUE\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Info::Set(const char* \fIkey\fP, const char* \fIvalue\fP)
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+info
+Info object (handle).
+
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+key
+Key (string).
+.ft R
+.TP 1i
+value
+Value (string).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Info_set adds the (key,value) pair to \fIinfo\fP and overrides the value if a value for the same key was previously set. The \fIkey\fP and \fIvalue\fP parameters are null-terminated strings in C. In Fortran, leading and trailing spaces in \fIkey\fP and \fIvalue\fP are stripped. If either \fIkey\fP or \fIvalue\fP is larger than the allowed maximums, the error MPI_ERR_INFO_KEY or MPI_ERR_INFO_VALUE is raised, respectively. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft r
+MPI_Info_create
+.br
+MPI_Info_delete
+.br
+MPI_Info_dup
+.br
+MPI_Info_free
+.br
+MPI_Info_set
+.br
+

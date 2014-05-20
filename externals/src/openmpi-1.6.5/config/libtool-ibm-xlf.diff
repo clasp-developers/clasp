@@ -1,0 +1,17 @@
+--- libtool.m4.orig	2010-11-12 01:57:26.000000000 -0600
++++ libtool.m4	2010-11-12 01:58:10.000000000 -0600
+@@ -4414,12 +4414,12 @@
+ 	  _LT_TAGVAR(whole_archive_flag_spec, $1)='--whole-archive$convenience --no-whole-archive'
+ 	  _LT_TAGVAR(hardcode_libdir_flag_spec, $1)=
+ 	  _LT_TAGVAR(hardcode_libdir_flag_spec_ld, $1)='-rpath $libdir'
+-	  _LT_TAGVAR(archive_cmds, $1)='$LD -shared $libobjs $deplibs $compiler_flags -soname $soname -o $lib'
++	  _LT_TAGVAR(archive_cmds, $1)='$LD -shared $libobjs $deplibs $linker_flags -soname $soname -o $lib'
+ 	  if test "x$supports_anon_versioning" = xyes; then
+ 	    _LT_TAGVAR(archive_expsym_cmds, $1)='echo "{ global:" > $output_objdir/$libname.ver~
+ 	      cat $export_symbols | sed -e "s/\(.*\)/\1;/" >> $output_objdir/$libname.ver~
+ 	      echo "local: *; };" >> $output_objdir/$libname.ver~
+-	      $LD -shared $libobjs $deplibs $compiler_flags -soname $soname -version-script $output_objdir/$libname.ver -o $lib'
++	      $LD -shared $libobjs $deplibs $linker_flags -soname $soname -version-script $output_objdir/$libname.ver -o $lib'
+ 	  fi
+ 	  ;;
+ 	esac

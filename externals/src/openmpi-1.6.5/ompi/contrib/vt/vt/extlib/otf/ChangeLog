@@ -1,0 +1,504 @@
+1.12.3openmpi
+	- otfprofile, LaTeX output:
+		- swapped x & y axis of the Message Data Rate Matrix
+		- adapted labels to Vampir
+	- otfinfo:
+		- fixed counting of collective operations and markers
+
+1.12.2openmpi
+	- fixed conflicts with OpenType Fonts:
+		- install header files to INCLUDEDIR/open-trace-format
+		- renamed OTF library to libopen-trace-format
+		- renamed otfdump to otfprint
+	- OTF library:
+		- replaced temporary workaround for handling bogus zlib
+		  sync. points by a more elaborated solution
+	- otfprofile:
+		- fixed build error when using the IBM XL C++ compiler
+		- removed unnecessary '-k' option from otfshrink command
+
+1.12.1openmpi
+	- implemented workaround to avoid setting otf_errno when a false
+	  error happens during OTF_RBuffer_Jump to a bogus zlib sync point
+
+1.12salmon
+	- OTF library:
+		- fixed potential segmentation fault when appending a new
+		  key-value pair to a list after removing another one
+	- OTFAUX library:
+		- 'OTFAUX_ThumbnailReader_read()' now correctly return success
+		  after reading the thumbnail
+	- otfprofile:
+		- create VampirTrace filter file from irregularity analysis
+	- otfaux:
+		- fixed build errors on Solaris and NetBSD
+		- fixed "time not increasing" error when generating inline
+		  snapshots
+
+1.11.2goldfish
+	- lib OTFAUX:
+		- speed-up messages matching, if no snapshots should
+		  be generated
+
+1.11.1goldfish
+	- new 'OTF_MasterControl_clone()' function to simplify making a copy
+	  of a master control object
+	- otfaux:
+		- keep the stream assignments of the input trace,
+		  when using the '-o' option
+	- otfmerge[-mpi]:
+		- keep inline snapshots
+
+1.11goldfish
+	- added support for highly parallel trace writing using the
+	  I/O Forwarding Scalability Layer (IOFSL) with atomic append
+	  aggregation
+	- added unique id record
+	- added new snapshot records which complete them by now
+	- added new definition record to indicates at which
+	  timestamps are snapshots or statistics available
+	- new 'OTF_KeyValueList_clone()' function to simplify making a copy
+	  of a key-value list
+	- updated python interface
+	- lib OTFAUX:
+		- learned to generate and read a thumbnail
+		- learned to generate snapshots
+	- otfaux:
+		- uses the new snapshot and thumbnail generating features
+		  from lib OTFAUX
+		- does not generate statistics by default now (use the new
+		  '--all' option to get the old behavior)
+		- new '-o' option to make a copy of the trace
+		- can attach message matching information suitable for Vampir
+		  (requires the '-o' option)
+		- can produce the new inline snapshots
+		  (requires the '-o' option)
+	- otfcompress:
+		- fixed link error using the GNU gold linker
+	- otfdump:
+		- fixed '-o' option
+	- otfmerge[-mpi]:
+		- fixed merging markers
+	- otfshrink:
+		- do not remove definitions of replaced processes
+		- keep original name of representing process
+        - otfprofile:
+                - added support for detecting irregularities and to present
+		  them as markers
+
+1.10.2coelacanth
+	- otfdump:
+		- don't abort when reading events fails - the input tracefile
+		  might only have statistics
+	- otfinfo:
+		- fixed file size calculation
+	- otfprofile:
+		- removed leading '=' from CSV lines to make it loadable into
+		  spreadsheets (e.g. Open Office) 
+		- fixed process naming in CSV output of collective operation
+		  statistics
+
+1.10.1coelacanth
+	- fixed build issues in otfprofile[-mpi]:
+		- added missing header includes for WEXITSTATUS
+		- moved 'using namespace std' under the header includes to solve
+		  compile error with PGI compiler
+
+1.10coelacanth
+	- added process substitute record
+	- added process group attribute 'OTF_ATTR_IsCommunicator'
+	- renamed OTF_fprintf to OTF_Error which sets the error variables
+	  otf_errno and otf_strerr
+	- added OTF_Warning which prints warning messages if verbosity
+	  (--with-verbose) is enabled
+	- fixed detection of C compiler flags for compiling the python interface
+	- corrected return value of OTF_WStream_write* functions
+	- fixed parsing of process[group] attributes record
+	- otfmerge-mpi:
+		- build sequential version; replaces the old otfmerge
+	- otfprofile-mpi:
+		- added process clustering based on feature vectors from every
+		  process trace
+		  (see docu/tools/otfprofile_clustering.pdf for more details)
+		- added CSV output
+		- changeable number of process groups for LaTeX output
+		- build sequential version; replaces the old otfprofile
+		- fixed problem with pgfplots 1.5
+		- improved y axis labeling for message length charts
+	- otfshrink:
+		- added mapping mode where all but one members per group are
+		  removed with multiple groups
+		- reworked parameter parsing, <from>-<to> ranges no longer
+		  supported
+		- fixed creation of symbolic links when non-contiguous
+		  stream IDs are used
+		- disable 'parent' in a remaining process definition in case
+		  the parent is removed
+
+1.9.2sawfish
+	- otfprofile-mpi:
+		- ignore "backward-running" P2P-messages when calculating
+		  durations
+		- removed '0' in message length charts and added '1' as
+		  extra label
+		- added thousands separator for large integer numbers in
+		  latex output
+
+1.9.1sawfish
+	- improved zlib compression
+	- added progress display to otfprofile-mpi
+	- use pdf[la]tex instead of latex/dvipdf to convert otfprofile-mpi's
+	  TeX output to PDF
+	- fixed function invocation statistics in otfprofile-mpi generated
+	  from summarized information (--stat)
+
+1.9sawfish
+	- added MPI-parallel version of otfprofile (otfprofile-mpi)
+	- added library 'libotfaux' for matching message events
+	- added time range record
+	- added counter process assignment record
+	- minor extensions on API for handling key-value lists
+	- define PATH_MAX under Windows if it is not defined yet
+	- fixed incorrect execution mode when using otfdecompress under Windows
+
+1.8.1sturgeon
+	- added option to 'otfdump' for specifying the maximum number of files
+	  that are allowed to be open simultaneously
+	- fixed compile error in 'otfmerge-mpi' due to a missing header include
+	- extended the 'hello' example source code to show the usage of
+	  key-values
+
+1.8sturgeon
+	- extended API for reading definitions from an external memory buffer
+	  instead of a file
+	- added copy handlers for single trace streams
+	- added support for Python 3
+	- temporary disabled OpenMP support completely if the PGI compiler is
+	  used to work around some uncleared compile errors
+
+1.7.1catfish
+	- removed size limit of key-value byte arrays
+	- disable OpenMP support in otfprofile if the PGI compiler
+	  is used to work around some compiler errors
+	- fixed bug while reading an empty process group definition record
+	- fixed composition of output file name in otf[de]compress
+	- fixed a memory leak in python interface
+
+1.7catfish
+	- added second version of each record that contains a Key-Value
+  	  list to store individual data
+	- two new definition records which can be used to assign
+	  attributes to processes
+	- two new snapshot record types: BeginCollopSnapshot,
+	  BeginFileOpSnapshot
+	- API changes in EndFileOP record and SendSnapshot record because
+	  of a flawed design
+	- added MPI-parallel version of otfmerge (otfmerge-mpi)
+	- otfprofile has a lite mode usefuly for highly parallel traces
+	- added option to otf[de]compress for specifying an output directory
+	- try to open files with 'O_NOATIME' for reading for increased speed 
+	- try to handle ESTALE errors on NFS gracefully 
+	- fixed OTF long format for several records
+	- fixed error handling in OTF reader
+	- fixed bug in otfshrink: a process number can be between
+	  0 and 4294967296 now
+
+1.6.5stingray
+	- enforce building position independent code (PIC) for the static
+	  version of the OTF library
+	  (so it's possible to add these objects to 3rd-party shared libraries)
+	- fixed and enhanced calculation of trace file size in otfinfo
+	- patched libtool:
+	  - to avoid a bug in detection of the PGI 10 C++ compiler
+	  - to detect IBM cross compilers on BlueGene/P
+
+1.6.4stingray
+	- enhanced reading of process group definition records
+
+1.6.3stingray	
+	- fixed errors while reading the long OTF format
+	- updated python interface
+
+1.6.2stingray
+	- fixed build errors on SUN Solaris with older GNU compilers
+	- fixed skewed arguments for OTF_WStream_writeEndFileOperation
+	- fixed progress calculation of otfprofile
+	- improved performance of otfprofile - especially handling of huge
+	  tracefiles
+
+1.6.1stingray
+	- added tool 'otfinfo' which can be used to get basic information of
+	  a trace
+	- fix invalid pointer dereferences in OTF_stripFilename() and 
+	  OTF_File_open_zlevel()
+	- fixed doxygen documentation: add OTF_Handler.h to package
+
+1.6stingray
+	- added tool 'otfshrink' which can be used to reduce a trace to
+	  specified processes
+	- introduced an error variable (otf_errno, otf_strerr) that indicates
+	  whether an error occurred or not
+	- fixed build dependencies of otfprofile
+	- added file operation types OTF_FILEOP_DUP, OTF_FILEOP_SYNC,
+	  OTF_FILEOP_LOCK, and OTF_FILEOP_UNLOCK
+	- changed datatype for sent/received data volume of collective
+	  operation begin/end records from 'uint32_t' to 'uint64_t'
+	- replaced usage of PATH_MAX by VT_PATH_MAX to avoid compile errors
+
+1.5.2dolphin
+	- adapted python bindings to the current API (related to new record
+	  types)
+	- if possible, otfprofile creates a PS-file
+	- fixed VPATH issue, when using python bindings
+	- fixed infinite recursion in python wrappers
+	  pyOTF_COUNTER_VARTYPE_ISSIGNED and pyOTF_COUNTER_VARTYPE_ISUNSIGNED
+
+1.5.1dolphin
+	- corrected package preparation for libtool
+	- build shared OTF library by default
+	- added version information to shared OTF library
+
+1.5
+	- added file operation begin/end records
+	- added file operation types OTF_FILEOP_UNLINK, OTF_FILEOP_RENAME,
+	  and OTF_FILEOP_OTHER
+	- use part of fileop for I/O flags (e.g. async, coll.)
+	- added collective operation begin/end records
+	- added remote memory access (RMA) operation records
+	- added marker records
+
+1.4.1
+	- bugfix: removed included system headers inside 'extern "C" {}'
+	- bugfix: added configure check for functions 'fseeko()' and 'ftello()'
+	  (these functions are not available on NEC SX platforms)
+	- bugfix in otfprofile: fixed infinite loop while drawing the
+	  statistics for "top 50 of counters"
+
+1.4
+	- added tool 'otfprofile' which can be used to generate CSV/Latex-
+	  summaries about functions and P2P-messages of a trace
+	- build/install tool 'otfdump' by default
+	- install documentation
+
+1.3.10
+	- added configure option '--[enable|disable]-binaries' to control
+	  building of binaries (useful for multi-lib installations)
+
+1.3.9
+	- fixed a portability bug: use own implementation of function
+	  'strdup()'
+	- install a symbolic link 'otfdecompress' which is a synonym for
+	  'otfcompress -d'
+
+1.3.8
+	- generate OTF_inttypes.h during configuring which provides
+	  the integer types like int64_t, int8_t,...
+	- shared OTF library will be linked with zlib, thus additionally
+	  linking with zlib is not necessary
+	- bugfix in otf2vtf: correctly handle function leave records with id 0
+
+1.3.7
+	- added example for using OTF_MasterControl to the doxygen documentation
+	- general improvement of the documentation
+	- improved autoconf's m4 scripts for cross buildings
+
+1.3.6
+	- OTF_{Keywords.h,Parse.h,Platform.h} will no longer be installed
+	- added a compile time assert making sure the correct sizes of the
+	  integer types ([u]int*_T)
+	- OTF is now Windows Visual Studio compatible
+
+1.3.5
+	- added doxygen html documentation (docu/doxygen/html/index.html)
+	- fixed issue, where newlines were forbidden in def, stats and snaps
+	- added missing const to OTF_WStream_writeDefProcessGroup()
+
+1.3.4
+	- bug fix in otfmerge: missing handling of DefCollectiveOperation
+	- bugfix in the documentation: overview.eps was broken
+
+1.3.3
+	- fixed configure bug when searching for zlib on mac
+	- fixed bug in otfmerge, where the parameter "-n 0" caused an error
+	- added macros for specifing the data type of the counter
+	  (OTF_COUNTER_VARTYPE_*)
+	- fixed otfconfig help text
+	- fixed bugs when using make dist
+	- python bindings disabled by default
+	- fixed configure bug, when using python bindings
+	- updated python bindings to support user defined counters
+
+1.3.2
+	- added small functions to convert various variable types to common 
+	  counter type uint64_t. By this means, other types can be transported 
+	  as uint64_t and re-casted during reading.
+	  This requires type information as additional counter property flags!
+
+1.3.1
+	- if an fopen() call fails an error is now printed out every time
+	- OTF_READ_ERROR was introduced as an error return value for all
+	  OTF_Reader_readXXX and OTF_RStream_readXXX functions. So (uint64_t)-1 is
+	  now a reserved value, thus cannot be used as record limit.
+	  The record limit always has to be smaller than or equal to
+	  OTF_READ_MAXRECORDS.
+	- fixed issue in otfmerge, when using many streams
+
+1.3
+	- integrated libtool for shared and static linkage to otf
+	- removed the possibility to include zlib symbols into otf
+	- fixed warning which appeared when not using zlib
+	- added python bindings to the otf library
+
+1.2.25
+	- added doxygen html documentation (docu/doxygen/html/index.html)
+
+1.2.24
+	- minor change in otf[de|un]compress
+	- strictly avoid writing of unsorted time stamps. Now, there will be an
+	  error message and the corresponding buffer/stream will be disabled for
+	  further writing. The write routines provide an invlaid return code but
+	  currently there is no way to "repair" the buffer/stream after an
+	  unsorted time stamp has been issued.
+
+1.2.23
+	- removed libtool from autoconf to make configure much faster, 
+	  libtool was not used by automake anyhow
+	- removed some autoconf-generated files from CVS, 
+	  you might need to re-run 'sh bootstrap' yourself
+
+1.2.22
+	- fixed inttypes/stdint bug
+
+1.2.21
+	- fixed "--with-zlib-symbols"-bug
+
+1.2.20
+	- added own inttypes definitions in case there is no on the platform 
+	  (necessary on NEC SX6)
+
+1.2.19
+	- finished otfdump
+	- removed debug output in OTF_Reader.c
+	- re-introduced DefVersion record as read only
+
+1.2.18
+	- added fwrite check for writting less bytes than expected
+	- re-write of otfdump. Now, it uses OTF read lib instead of plain
+	  scanf. It produces nicer output and numbers records in read order.
+
+1.2.17
+	- bugfixed parser (wrong treatment of unknown records)
+	- added FileGroupOperationSummary record
+	- changed FileOperation-, OpenFileSnapshot- and FileOperationSummary-
+	  record NOTE: these records are still experimental
+	- included file operation records into all tools
+	  NOTE: some parameters were added/changed
+	- the byte-parameter in the FileOperation record does now contain the
+	  new position in the file file after the seek operation
+	- bugfixed otfmerge
+
+1.2.16
+	- fixed a problem with comments in otfmerge
+	- 2 new records introduced (NOTE: these are experimental):
+	  - OpenFileSnapshot
+	  - FileOperationSummary
+
+1.2.15
+	- 3 new records introduced (NOTE: these are experimental):
+	- DefFile
+	  - DefFileGroup
+	  - FileOperation
+
+1.2.14
+	- do not linke with '-lz' if '--with-zlibsymbols' was specified
+	- added zlib include line to otflib/Makefile.am
+
+1.2.13
+	- removed intel compiler warnings
+	- changed OTF_FILETYPE_*-macros
+	- fixed issues with OTF_getFilename()
+
+1.2.12
+	- removed intel compiler warnings in otfmerge
+	- removed debug output
+	- fixed 64bit issue
+
+1.2.11
+	- changed OTF_RETURN*( 0=success, !0 = error )
+	- added these macros to all internal functions and tools for better
+	  consistency
+	- fixed various memoryleaks in otf and otfmerge
+	- added otfconfig to tools. otfconfig shows installationparameters
+	  important for developers
+	- updated documentation
+
+1.2.10
+	- bugfix: otfmerge does no longer accept traces with local streams
+
+1.2.9
+	- changeable zlevel
+	- changeable zbuffersize
+
+1.2.8
+	- allow suffix '.dylib' for zlib library file (from Mac OS X)
+	- removed configure warning
+
+1.2.7
+	- added progress functions to OTF_RStream
+	- added a progress counter to otfmerge
+
+1.2.6
+	- support shared libraries
+
+1.2.5
+	- bugfix: correctly handle process groups with more than 1000 entries
+
+1.2.4
+	- bugfix: zlib compression bug, wrong sanity check fixed
+
+1.2.3
+	- bugfix: provided copy handlers returned wrong value
+
+1.2.2
+	- important bugfix: definitionstream 0 was ignored since version 1.2
+
+1.2.1
+	- added progress functions using read bytes instead of timestamps
+
+1.2
+	- introduce transparent zlib compression
+
+1.1.7
+	- really did the bugfix for 1.1.6, was missing for some reasons
+
+1.1.6
+	- bugfix: correctly handle process groups with more than 1000 entries
+
+1.1.5
+	- have UnknownRecord report handle incomplete records or additional
+	  bytes at the end of a file.
+
+1.1.4
+	- fixed a bug in OTF_Reader which might have caused the very first 
+	  time stamp of a trace to be not properly sorted
+	- introduced '--snapshots' and '--statistics' switches to do only 
+	  snapshots or statistics. for statistics a selective mode is allowed
+	  which regards only some streams. By this means statistics can be
+	  created in parallel by calling otfaux multiple times.
+
+1.1.3
+	- fixed a minor bug in otfaux
+
+1.1.2
+	- inverted return value of call-back handlers: 
+	  '0' is non-error, '!= 0' is regarded as an error, now!
+	  (this makes OTF conform with the VTF3 scheme.)
+
+1.1.1
+	- OTF_Reader now considers the return values of the handlers
+	- added OTF_VERBOSE, OTF_DEBUG macro for error treatment
+	- introduced 'UnknownRecord' handler which allows to catch
+	  unknown record types
+
+1.0
+	- initial version

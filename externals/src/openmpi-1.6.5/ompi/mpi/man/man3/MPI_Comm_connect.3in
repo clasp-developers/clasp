@@ -1,0 +1,78 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Comm_connect 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_connect \fP \- Establishes communication with a server. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_connect(char *\fIport_name\fP, MPI_Info \fIinfo\fP, int \fIroot\fP, 
+	MPI_Comm \fIcomm\fP, MPI_Comm *\fInewcomm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_CONNECT(\fIPORT_NAME, INFO, ROOT, COMM, NEWCOMM, IERROR\fP)
+	CHARACTER*(*)	\fIPORT_NAME\fP
+	INTEGER		\fIINFO, ROOT, COMM, NEWCOMM, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Intercomm MPI::Intracomm::Connect(const char* \fIport_name\fP,
+	const MPI::Info& \fIinfo\fP, int \fIroot\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+port_name
+Port name (string, used only on \fIroot\fP).
+.TP 1i
+info
+Options given by root for the connect (handle, used only on root). No options currently supported. 
+.TP 1i
+root
+Rank in \fIcomm\fP of root node (integer).
+.TP 1i
+comm
+Intracommunicator over which call is collective (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newcomm
+Intercommunicator with client as remote group (handle)
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Comm_connect establishes communication with a server specified by \fIport_name\fP. It is collective over the calling communicator and returns an intercommunicator in which the remote group participated in an MPI_Comm_accept. The MPI_Comm_connect call must only be called after the MPI_Comm_accept call has been made by the MPI job acting as the server.
+.sp
+If the named port does not exist (or has been closed), MPI_Comm_connect raises an error of class MPI_ERR_PORT. 
+.sp
+MPI provides no guarantee of fairness in servicing connection attempts. That is, connection attempts are not necessarily satisfied in the order in which they were initiated, and competition from other connection attempts may prevent a particular connection attempt from being satisfied. 
+
+The \fIport_name\fP parameter is the address of the server. It must be the same as the name returned by MPI_Open_port on the server. 
+ 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+.sp
+See the MPI man page for a full list of MPI error codes. 
+
+.SH SEE ALSO
+MPI_Comm_accept
+MPI_Open_port
+.br
+

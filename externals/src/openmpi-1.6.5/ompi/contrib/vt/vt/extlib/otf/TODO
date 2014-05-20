@@ -1,0 +1,28 @@
+- re-design OTF's error/success return values for handlers and functions
+
+- ideas for future development
+	- add memory allocation/deallocation record types, how?
+	- have more semantics
+	- have less semantics
+	- add general purpose record types like (type/owner,key,value) with no semantics,
+		-- can be used freely, ignored if unknown, 
+		-- key/value are either uint64_t, array of uint64_t or text
+
+- add record to write wall clock time or epoch or year:month:day:hour:minute:second
+	with this, VT can record time at start and end of trace (request by Robert Henschel)
+
+- create a (graphical) tool for changing definition records:
+  - grouping functions
+  - ...
+
+- solve the problem that when only reading statistic records one cannot
+  determine the begin and end of a process !!!!!
+  You might introduce a new record for this. ( maybe like begin/endprocess
+  for events? )
+  You could also write a statistics comment record when the first event appears,
+  (in otfaux)
+
+- add new statistics record type that gives the caller-callee relation 
+	- only write this at the end of a trace run
+
+- use asynchronous write (aio_write) and maybe even read for performance 

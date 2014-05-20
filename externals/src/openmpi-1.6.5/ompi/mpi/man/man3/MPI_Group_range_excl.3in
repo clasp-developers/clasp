@@ -1,0 +1,71 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Group_range_excl 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Group_range_excl\fP \- Produces a group by excluding ranges of processes from an existing group.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Group_range_excl(MPI_Group \fIgroup\fP, int\fI n\fP, int\fI ranges\fP[][3],
+	MPI_Group\fI *newgroup\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GROUP_RANGE_EXCL(\fIGROUP, N, RANGES, NEWGROUP, IERROR\fP)
+	INTEGER	\fIGROUP, N, RANGES(3,*), NEWGROUP, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Group Group::Range_excl(int \fIn\fP, const int \fIranges\fP[][3]) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+group
+Group (handle).
+.TP 1i
+n
+Number of triplets in array ranges (integer).
+.TP 1i
+ranges
+A one-dimensional array of integer triplets of the form (first rank, last rank, stride), indicating the ranks in group of processes to be excluded from the output group newgroup.
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newgroup
+New group derived from above, preserving the order in group (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Each computed rank must be a valid rank in group and all computed ranks must be distinct, or else the program is erroneous.  
+.sp
+The functionality of this routine is specified to be equivalent to
+expanding the array of ranges to an array of the excluded ranks and passing the resulting array of ranks and other arguments to MPI_Group_excl. A call to MPI_Group_excl is equivalent to a call to MPI_Group_range_excl with each rank i in ranks replaced by the triplet (i,i,1) in the argument ranges.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Group_excl 
+.br
+MPI_Group_free
+.br
+

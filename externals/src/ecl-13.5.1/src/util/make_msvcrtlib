@@ -1,0 +1,16 @@
+#!/bin/sh
+set -x
+export MSVC="d:/unix/msvc/bin"
+
+cat > exports.sed <<EOF
+/^.*@.*$/d
+/[ \t]*ordinal hint/,/^[ \t]*Summary/{
+  /^[ \t]\+[0-9]\+/{
+    s/^[ \t]\+[0-9]\+[ \t]\+[0-9A-Fa-f]\+[ \t]\+[0-9A-Fa-f]\+[ \t]\+\(.*\)/\1/p
+  }
+ }
+EOF
+
+echo EXPORTS> msvcrt.def
+${MSVC}/link -dump -exports ${SYSTEMROOT}/System32/msvcrt.dll | tee msvcrt.out | sed -nf exports.sed >> msvcrt.def
+${MSVC}/link -lib -machine:X86 -def:msvcrt.def -out:msvcrt.lib

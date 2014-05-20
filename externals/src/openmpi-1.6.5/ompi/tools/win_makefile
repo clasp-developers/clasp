@@ -1,0 +1,172 @@
+#!/bin/sh
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is a simple makefile for windows which makes all the components
+# which are required for super computing. Too lazy to open up visual
+# studio each and every time to compile a component, so just adding
+# this to the svn repository
+#
+
+topdir := $(shell cygpath -m $(CURDIR))/../..
+installdir = ${topdir}/src/Debug
+libdir = ${installdir}/lib
+bindir = ${installdir}/bin
+incdir = ${installdir}/include
+
+# list of components to build with the c compiler
+C_SUBDIRS = \
+        orted
+
+# list of components to build with the cpp compiler
+# (because of the problem with OBJ_CLASS_INSTANCE)
+CPP_SUBDIRS = \
+        ompi_info
+
+CC = cl
+
+INCL = \
+        /I"${topdir}/src/win32/generated_include" \
+        /I"${topdir}/src/win32" \
+        /I"${topdir}/include" \
+        /I"${topdir}/src" \
+        /I"${topdir}/src/event/compat/" \
+        /I"${topdir}/src/event" \
+        /I"${topdir}/src/event/WIN32-Code/" 
+
+CFLAGS = \
+        /DWIN32 \
+        /DHAVE_CONFIG_H \
+        /DOMPI_SYSCONFDIR="\"${installdir}/share\"" \
+        /DOMPI_BUILDING_WIN_DSO=1 \
+        /EHsc \
+        /ML \
+        /W0 \
+        /Wp64 \
+        /TC \
+        /D_MBCS \
+        /LD\
+        /nologo \
+        /c
+
+CPPFLAGS = \
+        /DWIN32 \
+        /TP \
+        /DHAVE_CONFIG_H \
+        /DOMPI_SYSCONFDIR="\"${installdir}/share\"" \
+		  /DOMPI_BUILDING_WIN_DSO=1 \
+        /EHsc \
+        /ML \
+        /W0 \
+        /Wp64 \
+        /D_MBCS \
+        /LD \
+        /nologo \
+        /c
+
+ADD_INCL = \
+        /DOMPI_BUILD_USER="\"not implemented\"" \
+        /DOMPI_BUILD_DATE="\"not implemented\"" \
+        /DOMPI_BUILD_HOST="\"not implemented\"" \
+        /DOMPI_WANT_SVN="\"not implemented\"" \
+        /DOMPI_SVN_R="\"not implemented\"" \
+        /DOMPI_CONFIGURE_USER="\"not implemented\"" \
+        /DOMPI_CONFIGURE_DATE="\"not implemented\"" \
+        /DOMPI_CONFIGURE_HOST="\"not implemented\"" \
+        /DOMPI_BUILD_CFLAGS="\"not implemented\"" \
+        /DOMPI_BUILD_CXXFLAGS="\"not implemented\"" \
+        /DOMPI_BUILD_FFLAGS="\"not implemented\"" \
+        /DOMPI_BUILD_FCFLAGS="\"not implemented\"" \
+        /DOMPI_BUILD_LDFLAGS="\"not implemented\"" \
+        /DOMPI_BUILD_LIBS="\"not implemented\"" \
+        /DOMPI_MAJOR_VERSION=1 \
+        /DOMPI_MINOR_VERSION=0 \
+        /DOMPI_RELEASE_VERSION=0 \
+        /DOMPI_ALPHA_VERSION=0 \
+        /DOMPI_BETA_VERSION=0 \
+        /DOMPI_SVN_VERSION=0 \
+        /DOMPI_PREFIX="\"${prefix}\"" \
+        /DOMPI_BINDIR="\"${bindir}\"" \
+        /DOMPI_LIBDIR="\"${libdir}\"" \
+        /DOMPI_INCDIR="\"${incdir}\"" \
+        /DOMPI_PKGLIBDIR="\"${libdir}\"" 
+
+
+# link with ompi.lib to resolve external symbols
+OMPILIB = \
+        "${topdir}/src/libmpi.lib"
+
+LINK = link
+
+LINKFLAGS = \
+        /OPT:NOICF \
+        /OPT:NOREF \
+        /DEFAULTLIB:${OMPILIB} \
+        /nologo
+
+ADDLIBS = \
+        ws2_32.lib \
+        kernel32.lib \
+        user32.lib \
+        gdi32.lib \
+        winspool.lib \
+        comdlg32.lib \
+        advapi32.lib \
+        shell32.lib \
+        ole32.lib \
+        oleaut32.lib \
+        uuid.lib \
+        odbc32.lib \
+        odbccp32.lib
+
+all: \
+    cexes \
+    cppexecs
+
+cexes: ${C_SUBDIRS}
+	@for dirs in ${C_SUBDIRS}; do \
+	    (echo "Entering $$dirs"; cd $$dirs; \
+			${CC} ${CFLAGS} ${INCL} *.c; ${LINK} ${LINKFLAGS} ${ADDLIBS} *.obj;); \
+	done
+
+cppexecs: ${CPP_SUBDIRS}
+	@for dirs in ${CPP_SUBDIRS}; do \
+	    (echo "Entering $$dirs"; cd $$dirs; \
+			${CC} ${CPPFLAGS} ${INCL} ${ADD_INCL} *.cc; ${LINK} ${LINKFLAGS} ${ADDLIBS} *.obj;); \
+	done
+
+install: win_makefile
+	@echo -n "Installing components ......................."
+	@for dirs in ${C_SUBDIRS}; do \
+        install -d ${CURDIR}/$${dirs}/ ${bindir}; \
+        install -p ${CURDIR}/$${dirs}/$${dirs}.exe ${installdir}/$${dirs}.exe; \
+	done
+	@for dirs in ${CPP_SUBDIRS}; do \
+        install -d ${CURDIR}/$${dirs}/ ${bindir}; \
+        install -p ${CURDIR}/$${dirs}/$${dirs}.exe ${installdir}/$${dirs}.exe; \
+	done
+	@echo "done"
+
+.PHONY: clean
+
+clean:
+	@for dirs in ${C_SUBDIRS}; do \
+	    (echo "Entering $$dirs"; cd $$dirs; rm -rf *.lib *.obj *.exp;); \
+	done
+	@for dirs in ${CPP_SUBDIRS}; do \
+	    (echo "Entering $$dirs"; cd $$dirs; rm -rf *.lib *.obj *.exp;); \
+	done

@@ -1,0 +1,189 @@
+#! @PERL@ -w
+# -*- perl -*-
+#
+# Note that we use an interpreter value ("PERL") from configure
+# because even "#!/usr/bin/env perl" to all systems (e.g., NetBSD).
+#
+# Copyright (c) 2009-2010 Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+use File::Basename;
+use File::Spec::Functions;
+
+my $includedir = "@OMPI_WRAPPER_INCLUDEDIR@";
+my $libdir = "@OMPI_WRAPPER_LIBDIR@";
+
+# obey the OPAL_DESTDIR environment variable
+if (exists($ENV{'OPAL_DESTDIR'})
+  && defined($ENV{'OPAL_DESTDIR'})
+  && (length($ENV{'OPAL_DESTDIR'}) > 0)) {
+    my $ddir = $ENV{'OPAL_DESTDIR'};
+
+    $includedir = catdir($ddir, $includedir);
+    $libdir = catdir($ddir, $libdir);
+}
+
+my $CC = "@CC@";
+my $CXX = "@CXX@";
+my $F77 = "@F77@";
+my $FC = "@FC@";
+my $extra_includes = "@OMPI_WRAPPER_EXTRA_INCLUDES@";
+my $extra_cppflags = "@OMPI_WRAPPER_EXTRA_CPPFLAGS@";
+my $extra_cflags = "@OMPI_WRAPPER_EXTRA_CFLAGS@";
+my $extra_cxxflags = "@OMPI_WRAPPER_EXTRA_CXXFLAGS@";
+my $extra_fflags = "@OMPI_WRAPPER_EXTRA_FFLAGS@";
+my $extra_ldflags = "@OMPI_WRAPPER_EXTRA_LDFLAGS@";
+my $extra_libs = "@OMPI_WRAPPER_EXTRA_LIBS@";
+my $cxx_lib = "@OMPI_WRAPPER_CXX_LIB@";
+my $fc_module_flag = "@OMPI_FC_MODULE_FLAG@";
+
+# Someone might want to fix for windows
+my $include_flag = "-I";
+my $libdir_flag = "-L";
+
+my $lang = "none";
+my $comp = ""; # this is a sentinal from configure
+my $preproc_flags = $include_flag . $includedir;
+my $comp_flags = "";
+my $linker_flags = $libdir_flag . $libdir . " " . $extra_ldflags;
+my $libs = "-lmpi -lopen-rte -lopen-pal " . $extra_libs;
+
+
+sub check_env {
+    my $envvar = shift;
+    my $str = shift;
+
+    foreach my $var (("OMPI_MPI", "OMPI_")) {
+        my $testvar = $var . $envvar;
+        if (exists($ENV{$testvar})) {
+            $str = $ENV{$testvar};
+            return $str;
+        }
+    }
+
+    return $str;
+}
+
+sub add_extra_includes {
+    my $str = "";
+    my @includes = split(' ', $extra_includes);
+    for my $include (@includes) {
+        $str .= $include_flag . catdir($includedir, $include) . " ";
+    }
+
+    return $str;
+}
+
+
+if (basename($0) eq "mpicc") {
+    $lang = "C";
+    $comp = check_env("CC", $CC);
+    $preproc_flags .= " " . add_extra_includes();
+    $comp_flags = $extra_cflags;
+    # no special libs for C
+} elsif (basename($0) eq "mpic++" || basename($0) eq "mpiCC" || basename($0) eq "mpicxx") {
+    $lang = "C++";
+    $comp = check_env("CXX", $CXX);
+    $preproc_flags .= " " . add_extra_includes();
+    $comp_flags = $extra_cxxflags;
+    $libs = $cxx_lib . " " . $libs;
+} elsif (basename($0) eq "mpif77") {
+    $lang = "F77";
+    $comp = check_env("F77", $F77);
+    # no extra includes for F77.
+    $comp_flags = $extra_fflags;
+    $libs = "-lmpi_f77 " . $libs;
+} elsif (basename($0) eq "mpif90") {
+    $lang = "F90";
+    $comp = check_env("FC", $FC);
+    # no extra includes for F77.
+    $comp_flags = $fc_module_flag . $libdir . " " . $extra_fflags;
+    $libs = "-lmpi_f90 -lmpi_f77 " . $libs;
+}
+
+if ($lang eq "none") {
+    print "Could not determine requested language\n";
+    exit 1;
+}
+if ($comp eq "") {
+    print "Unfortunately, this installation of Open MPI was not compiled with\n";
+    print $lang . " support.  As such, the " . $lang . " compiler is non-functional.\n";
+    exit 1;
+}
+
+# figure out what user wants
+my @args = @ARGV;
+my $want_preproc = 1;
+my $want_compile = 1;
+my $want_link = 1;
+my $want_pmpi = 0;
+my $dry_run = 0;
+my $disable_flags = 1;
+my $real_flag = 0;
+my @appargs = ();
+
+while (scalar(@args) > 0) {
+    my $arg = shift(@args);
+
+    if ($arg eq "-showme") {
+        $dry_run = 1;
+    } elsif ($arg eq "-lpmpi") {
+        $want_pmpi = 1;
+    } else {
+        if ($arg eq "-c") {
+            $want_link = 0;
+            $real_flag = 1;
+        } elsif ($arg eq "-E" || $arg eq "-M") {
+            $want_compile = 0;
+            $want_link = 0;
+            $real_flag = 1;
+        } elsif ($arg eq "-S") {
+            $want_link = 0;
+            $real_flag = 1;
+        } elsif ($arg =~ /^-.*/) {
+            $real_flag = 1;
+        } else {
+            $real_flag = 1;
+            $disable_flags = 0;
+        }
+        push(@appargs, $arg);
+    }
+}
+
+if ($disable_flags == 1 && !($dry_run == 1 && $real_flag == 0)) {
+    $want_preproc = $want_compile = $want_link = 0;
+}
+
+my @exec_argv = ();
+
+# assemble command
+push(@exec_argv, split(' ', $comp));
+# Per https://svn.open-mpi.org/trac/ompi/ticket/2201, add all the user
+# arguments before anything else.
+push(@exec_argv, @appargs);
+if ($want_preproc == 1) {
+    push(@exec_argv, split(' ', $preproc_flags));
+}
+if ($want_compile == 1) {
+    push(@exec_argv, split(' ', $comp_flags));
+}
+if ($want_link == 1) {
+    push(@exec_argv, split(' ', $linker_flags));
+    push(@exec_argv, split(' ', $libs));
+}
+
+if ($dry_run == 1) {
+    print join(" ", @exec_argv) . "\n";
+    exit 0;
+}
+
+$cmd = shift(@exec_argv);
+if ($real_flag == 0) {
+    @exec_argv = ();
+}
+exec($cmd, (@exec_argv)) || die "Could not exec " . $exec_argv[0] . ": $!\n";

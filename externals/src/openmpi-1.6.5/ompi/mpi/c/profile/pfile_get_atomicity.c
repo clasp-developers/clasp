@@ -1,0 +1,1 @@
+../../../../ompi/mpi/c/file_get_atomicity.c

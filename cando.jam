@@ -1,0 +1,145 @@
+import errors ;
+import type ;
+import generators ;
+import common ;
+import path ;
+import project ;
+import feature ;
+import toolset ;
+
+local .top ;
+local .common ;
+local .applib ;
+local .appbin ;
+local .appinc ;
+
+rule init ( top ? ) {
+     if $(top) {
+          .top = $(top) ;
+     }
+     else {
+     	  errors.error "Please set the project root in your Jamroot file" ;
+     }
+     .common = $(top)/src/common ;
+     .applib = $(top)/build/cando.app/Contents/Resources/lib ;
+     local ecl = [ common.get-invocation-command-nodefault cando : ecl ] ;
+     if ! $(ecl) {
+     	  ECHO "WARNING: Command ecl not found." ;
+     } 
+}
+
+type.register P : pmp ;   # use pmp so that pump.py dumps output to stdout
+type.register L : lisp ;
+type.change-generated-target-suffix CPP : : cc ;
+
+generators.register-composing cando.ptoh : P : H ;
+generators.register-composing cando.ltoh : L : H ;
+generators.register-standard cando.ltocc : L : CPP ;
+
+feature.feature sanitize : asan msan amsan : optional ;
+feature.feature changes : 0 1 : incidental ;
+
+rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
+{
+
+	if ( ( mi in [ modules.peek : ARGV ] ) &&
+     	  ( ( [ path.pwd ] = [ path.root $(dir) [ path.pwd ] ] ) ||
+	    ( --mi-all in [ modules.peek : ARGV ] ) ) ) {
+
+     	    echo [ SHELL "cd $(dir); touch symbols_scraped_inc.h; rm symbols_scraped_inc.h; touch symbols_scraped_inc.h" ] ;
+
+     	}
+
+     	echo Scraping in $(dir) ;
+
+     	out = [ SHELL "cd $(dir); export PYTHONPATH=`pwd`:${PYTHONPATH}; python $(.common)/symbolScraper.py *.cc *.h" : exit-status ] ;
+
+	if $(out[2]) = 0 {
+     	   ECHO $(out[1]) ;
+     	} else {
+          ECHO "No changes found" ;
+        }
+	
+	local lib = $(dir:B) ;
+
+	make $(lib)_scrape_flag.h : symbols_scraped_inc.h : @cando.scraped : <changes>$(out[2]) ;
+
+	make $(lib)_initClasses_inc.h : 
+	     [ path.glob $(dir) : *.h ] : 
+	     @cando.register-classes : 
+	     <dependency>$(.common)/registerClasses.py ;
+
+	alias mi : $(lib)_initClasses_inc.h $(lib)_scrape_flag.h ;
+
+	lib $(lib)_mpsoff_opt : 
+	    $(sources) :
+	    $(properties) $(opt_props) <mps>off
+         <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+
+	lib $(lib)_mpsoff_dbg :
+	    $(sources) :
+	    $(properties) $(dbg_props) <mps>off
+	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
+
+	lib $(lib)_mpson_opt : 
+	    $(sources) :
+	    $(properties) $(opt_props) <mps>on
+         <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+
+	lib $(lib)_mpson_dbg :
+	    $(sources) :
+	    $(properties) $(dbg_props) <mps>on
+	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
+
+
+
+
+	alias $(lib) : $(lib)_mpsoff_opt : <mps>off <variant>release ;
+	alias $(lib) : $(lib)_mpsoff_dbg : <mps>off <variant>debug ;
+	alias $(lib) : $(lib)_mpson_opt : <mps>on <variant>release ;
+	alias $(lib) : $(lib)_mpson_dbg : <mps>on <variant>debug ;
+
+	install bundle : $(lib) : <location>$(.applib) ;
+}
+
+rule scraped ( target + : sources * : properties * )
+{
+
+	if "<changes>0" in $(properties) {
+	   ALWAYS $(targets) ;
+	}
+	else {
+	   NOUPDATE $(targets) ;
+	}
+
+}
+
+actions scraped
+{
+	touch $(<)
+}
+
+actions register-classes
+{
+	cd $(>[1]:D)
+	bname=`basename $(>[1]:D)`
+	python $(.common)/registerClasses.py $(<) $(<:D)/${bname}_initScripting_inc.h *Package.h otherPackageClasses.h *.h $(<:D)/*.h *.cc $(<:D)/*.cc > registerClasses.log
+}
+
+actions ltoh
+{
+    cd $(>[1]:D)
+    ecl -shell $(>[1]) $(<)
+}
+
+actions ptoh
+{
+    cd $(>[1]:D)
+    python $(.common)/pump.py $(>[1]) $(<)
+}
+
+actions ltocc
+{
+    cd $(>[1]:D)
+    ecl -shell $(>[1]) $(<)
+}

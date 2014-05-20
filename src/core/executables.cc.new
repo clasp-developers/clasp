@@ -1,0 +1,781 @@
+#define	DEBUG_LEVEL_FULL
+#include "foundation.h"
+#include "executables.h"
+#include "archiveNode.h"
+#include "archive.h"
+#include "lisp.h"
+#include "str.h"
+#include "standardObject.h"
+#include "range.h"
+#include "debugger.h"
+#include "iterator.h"
+#include "ordinaryLambdaListHandler.h"
+#include "macroLambdaListHandler.h"
+//#include "environmentDependent.h"
+#include "environment.h"
+#include "evaluator.h"
+#include "render.h"
+// to avoid Generic to_object include headers here
+#include "wrappers.h"
+
+
+namespace core {
+
+    EXPOSE_CLASS(core,Executable_O);
+//    EXPOSE_CLASS(core,PrimitiveWithArguments_O);
+    EXPOSE_CLASS(core,FunctionPrimitive_O);
+//    REGISTER_CLASS(core,MacroPrimitive_O);
+//    REGISTER_CLASS(core,MethodPrimitive_O);
+    EXPOSE_CLASS(core,Function_O);
+//    REGISTER_CLASS(core,MethodO_O);
+
+
+
+
+
+
+
+
+
+    void FunctionPrimitive_O::exposeCando(Lisp_sp lisp)
+{
+    class_<FunctionPrimitive_O>(lisp->lisp())
+	;
+
+}
+
+
+void FunctionPrimitive_O::exposePython(Lisp_sp lisp)
+{_F(lisp);
+#if 0
+    PYTHON_CLASS(CorePkg,FunctionPrimitive,"","",_lisp)
+	;
+#endif
+}
+
+FunctionPrimitive_sp	FunctionPrimitive_O::create(Symbol_sp sym, Functoid* func, string const& arguments, string const& docString, Lisp_sp e)
+{_F(e);
+FunctionPrimitive_sp	prim;
+    prim = RP_Create<FunctionPrimitive_O>(e);
+    prim->_WeakSymbol = sym;
+    prim->_Functoid = func;
+    prim->_ArgumentString = arguments;
+    prim->_LambdaListHandler = e->nil<LambdaListHandler_O>();
+    prim->_DocString = docString;
+    return prim;
+}
+
+
+FunctionPrimitive_sp	FunctionPrimitive_O::create_macro(Symbol_sp sym, Functoid* func, string const& arguments, string const& docString, Lisp_sp e)
+{_F(e);
+FunctionPrimitive_sp	prim;
+    prim = RP_Create<FunctionPrimitive_O>(e);
+    prim->_WeakSymbol = sym;
+    prim->_Functoid = func;
+    prim->_Flags = MACRO_FUNCTION;
+    prim->_ArgumentString = arguments;
+    prim->_LambdaListHandler = e->nil<LambdaListHandler_O>();
+    prim->_DocString = docString;
+    return prim;
+}
+
+
+
+/*! Lighter create that doesn't set docstring or argstring - use for generating temporary functions */
+FunctionPrimitive_sp	FunctionPrimitive_O::create(Symbol_sp sym, Functoid* func, Lisp_sp e)
+{_F(e);
+FunctionPrimitive_sp	prim;
+    prim = RP_Create<FunctionPrimitive_O>(e);
+    prim->_WeakSymbol = sym;
+    prim->_Functoid = func;
+    prim->_LambdaListHandler = e->nil<LambdaListHandler_O>();
+    return prim;
+}
+
+
+
+
+    void FunctionPrimitive_O::setupLambdaListHandler()
+{_OF();
+	this->_LambdaListHandler = this->lisp()->nil<LambdaListHandler_O>();
+	string& args = this->_ArgumentString;
+	Symbol_sp sym = this->getSymbol();
+	if ( args != "" )
+	{
+	    LOG(BF("Creating argument handler for function[%s] args[%s]") % sym->__repr__() % args );
+	    ASSERTF(sym->notNil(),BF("Method symbol cannot be nil"));
+	    OrdinaryLambdaListHandler_sp ah = OrdinaryLambdaListHandler_O::create(sym->getPackage(),args,this->lisp());
+	    this->_LambdaListHandler = ah;
+	    LOG(BF("For class(%s)@%p symbol[%s] setting up arguments(%s) handler@%p")
+		% this->className() % sym->__repr__() % ((void*)(this))% args % ((void*)(ah.get())));
+	} else
+	{
+	    LOG(BF("There were no arguments for function[%s]") % sym->__repr__() );
+	}
+    }
+
+
+/*! Evaluates the arguments recursively and builds a list of the results
+ */
+
+T_sp FunctionPrimitive_O::INVOKE(Cons_sp args, Lisp_sp lisp)
+{_F(this->lisp());
+    LOG(BF("Evaluating primitive(%s)")% this->getName());
+    if ( this->_LambdaListHandler.use_count() == 0 )
+    {
+	THROW(lisp->error(BF("In FunctionPrimitive::evaluate for symbol[%s] the _LambdaListHandler was "
+			     "undefined _ArgumentString[%s] the address of the FunctionPrimitive is %p")
+			  % this->getSymbol()->__repr__() % this->_ArgumentString % ((void*)this) ));
+    }
+    /* Set up the OrdinaryLambdaListHandler in a lazy way.  If it's Nil then
+       check if there is an argument string and setup the OrdinaryLambdaListHandler and
+       populate the local environment with the parsed arguments */
+    if ( this->_LambdaListHandler->isNil() )
+    {
+	if ( this->_ArgumentString != "" )
+	{
+	    ASSERTF(this->_WeakSymbol.use_count() > 0 ,BF("WeakSymbol for FunctionPrimitive_O is NULL!"));
+	    Symbol_sp mySymbol = this->_WeakSymbol.lock();
+	    LOG(BF("Lazy setup of _ArgumentString[%s]  for FunctionPrimitive[%s]") % this->_ArgumentString % mySymbol->__repr__() );
+	    this->setupLambdaListHandler();
+	} else
+	{
+	    LOG(BF("There is not _Argument string for FunctionPrimitive[%s]") % this->_WeakSymbol.lock()->__repr__() );
+	}
+    }
+    Environment_sp newEnviron = _lisp->topEnv();
+    if ( this->_LambdaListHandler->notNil() )
+    {
+	newEnviron = Environment_O::create(_lisp->topEnv(),lisp);
+	this->_LambdaListHandler->populateLocalEnvironment(args,newEnviron);
+	LOG(BF("Populated argument handler: %s") % this->_LambdaListHandler->asArgumentString() );
+    } else
+    {
+	LOG(BF("There is no argument handler"));
+    }
+    T_sp result;
+    result = this->_Functoid->invoke(this->sharedThis<FunctionPrimitive_O>(),args,newEnviron,lisp);
+    return result;
+}
+
+
+
+#if 0
+MacroPrimitive_sp	MacroPrimitive_O::create(Symbol_sp sym, Functoid* func, const string& arguments, Lisp_sp e)
+{_F(e);
+    MacroPrimitive_sp	prim;
+    prim = RP_Create<MacroPrimitive_O>(e);
+    LOG(BF("Creating MacroPrimitive@%p for symbol[%s] arguments[%s] ") % prim.get() % sym->__repr__() % arguments );
+    prim->_WeakSymbol = sym;
+    prim->_Functoid = func;
+    prim->_ArgumentString = arguments;
+    prim->_LambdaListHandler = e->nil<LambdaListHandler_O>();
+    LOG(BF("I just set the argument handler to[%s]") % prim->_LambdaListHandler->__repr__() );
+    return prim;
+}
+
+
+
+
+    MethodPrimitive_sp	MethodPrimitive_O::create(Symbol_sp sym, MetaClass_sp mc, Functoid* func, const string& arguments, const string& docString, Lisp_sp e )
+{_F(e);
+MethodPrimitive_sp	prim;
+    prim = RP_Create<MethodPrimitive_O>(e);
+    prim->_WeakSymbol = sym;
+    prim->_WeakAppliesToClass = mc;
+    prim->_Methoid = func;
+    prim->_ArgumentString = arguments;
+    prim->_LambdaListHandler = OrdinaryLambdaListHandler_O::nil(_lisp);
+    return prim;
+}
+
+
+
+
+T_sp MethodPrimitive_O::INVOKE(Cons_sp args, Lisp_sp lisp)
+{_F(this->lisp());
+    LOG(BF("Evaluating method(%s) args[%s]") % this->getSymbol()->__repr__() % args->__repr__() );
+    Environment_sp newEnviron = _lisp->topEnv();
+    /* Lazy creation of OrdinaryLambdaListHandler from ArgumentString */
+    if ( this->_LambdaListHandler->isNil() )
+    {
+	if ( this->_ArgumentString != "" )
+	{
+	    this->setupLambdaListHandler();
+	}
+    }
+    if ( this->_LambdaListHandler->notNil() )
+    {
+	newEnviron = Environment_O::create(_lisp->topEnv(),lisp);
+	this->_LambdaListHandler->populateLocalEnvironment(args,newEnviron);
+	LOG(BF("Created an environment using the arguments:\n%s") % newEnviron->__repr__() );
+    } else
+    {
+	LOG(BF("The _LambdaListHandler for this MethodPrimitive is undefined so I'm not defining an environment with the arguments"));
+    }
+    T_sp result = this->_Methoid->invoke(this->sharedThis<MethodPrimitive_O>(),args,newEnviron,lisp);
+    return result;
+}
+
+
+#endif
+
+    void Executable_O::exposeCando(Lisp_sp lisp)
+    {
+	class_<Executable_O>(lisp->lisp())
+	    ;
+    }
+
+void Executable_O::exposePython(Lisp_sp lisp)
+{_F(lisp);
+    PYTHON_CLASS(CorePkg,Executable,"","",_lisp)
+	    ;
+    }
+
+
+
+
+
+void Executable_O::initialize()
+{
+    this->Base::initialize();
+//    this->_WeakSymbol = Symbol_O::nil();
+//    this->_MethodIdx = UndefinedUnsignedInt;
+    this->_WeakSymbol = Symbol_O::nil(this->lisp());
+}
+
+    string Executable_O::__repr__() const
+    {_OL();
+	ASSERTNOTNULL(this->_WeakSymbol);
+	Symbol_sp sym = this->_WeakSymbol.lock();
+	stringstream ss;
+	ss << "#<" << this->className() << " " << sym->fullName() << ">";
+	return ss.str();
+    }
+
+
+
+Environment_sp Executable_O::closedEnvironment(Environment_sp currentEnvironment)
+{
+    	//
+	// Subclasses will have other ideas
+	//
+    return currentEnvironment;
+}
+
+
+void Executable_O::archiveBase(ArchiveP node)
+{
+    this->Base::archiveBase(node);
+    node->archiveWeakPointer("weakSymbol",this->_WeakSymbol);
+}
+
+void Executable_O::setSymbol(Symbol_sp s)
+{
+    this->_WeakSymbol = s;
+}
+
+Symbol_sp Executable_O::getSymbol() const
+{_OF();
+    ASSERTNOTNULL(this->_WeakSymbol);
+    return this->_WeakSymbol.lock();
+}
+
+string Executable_O::getName() const
+{
+    return this->getSymbol()->fullName();
+}
+
+
+
+
+
+#if 0
+    void FirstClassExecutable_O::exposeCando(Lisp_sp lisp)
+    {
+	class_<FirstClassExecutable_O>(lisp->lisp())
+	    .def_raw_dontExport("__init__",&FirstClassExecutable_O::__init__,"(self ordinaryLambdaListHandler code)")
+	    .def("getLambdaListHandler",&FirstClassExecutable_O::getLambdaListHandler)
+	    .def("getCode",&FirstClassExecutable_O::getCode)
+	    ;
+    }
+
+void FirstClassExecutable_O::exposePython(Lisp_sp lisp)
+{_F(lisp);
+    PYTHON_CLASS(CorePkg,FirstClassExecutable,"","",_lisp)
+	    ;
+    }
+
+
+
+void FirstClassExecutable_O::initialize()
+{
+    this->Base::initialize();
+}
+
+
+void FirstClassExecutable_O::archiveBase(ArchiveP node)
+{
+    this->Base::archiveBase(node);
+}
+
+
+
+#endif
+
+
+
+
+
+    void Function_O::exposeCando(Lisp_sp lisp)
+    {
+	class_<Function_O>(lisp->lisp())
+	    .def_raw_dontExport("__init__",&Function_O::__init__,"(self ordinaryLambdaListHandler code)")
+	    .def("getLambdaListHandler",&Function_O::getLambdaListHandler)
+	    .def("getCode",&Function_O::getCode)
+	    ;
+    }
+
+void Function_O::exposePython(Lisp_sp lisp)
+{_F(lisp);
+    PYTHON_CLASS(CorePkg,Function,"","",_lisp)
+//	    .def_raw_dontExport("__init__",&initArgs("(self ordinaryLambdaListHandler code)")
+	    ;
+    }
+
+
+    T_sp Function_O::__init__(Executable_sp exec, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+    {
+	OrdinaryLambdaListHandler_sp argHandler = from_object<OrdinaryLambdaListHandler_sp>::convert(environ->lookup(CorePkg,"ordinaryLambdaListHandler"));
+	Cons_sp code = from_object<Cons_sp>::convert(environ->lookup(CorePkg,"code"));
+	this->_Environment = this->lisp()->top_level_environment();
+	this->_DocString = "";
+	this->_LambdaListHandler = argHandler;
+	this->_Code = code;
+	return lisp->onil();
+    }
+
+
+
+Function_sp	Function_O::create( Symbol_sp name,
+				    Cons_sp arguments,
+				    Str_sp docString,
+				    Cons_sp code,
+				    Environment_sp environ,
+				    Lisp_sp lisp)
+{_F(lisp);
+Function_sp	proc;
+    LOG(BF("Creating a function named: %s")% name->currentName());
+    proc = lisp->create<Function_O>();
+    proc->_WeakSymbol = name;
+    proc->setupArgumentHandling(arguments,lisp);
+    proc->_DocString = docString->get();
+    proc->_Code = code;
+    proc->_Environment = environ;
+    if ( code->isNil() )
+    {
+	THROW(_lisp->create<LispError_O>("The procedure code is Nil!!!!"));
+    }
+    LOG(BF("Created procedure with name: %s")% proc->getName() );
+    LOG(BF("  Its position in memory: %lX")% proc.get() );
+    LOG(BF("  Its className() = %s")% proc->className() );
+    return proc;
+}
+
+Function_sp	Function_O::create_macro( Symbol_sp name,
+				    Cons_sp arguments,
+				    Str_sp docString,
+				    Cons_sp code,
+				    Environment_sp environ,
+				    Lisp_sp lisp)
+{_F(lisp);
+Function_sp	proc;
+    LOG(BF("Creating a function named: %s")% name->currentName());
+    proc = lisp->create<Function_O>();
+    proc->_WeakSymbol = name;
+    proc->setupArgumentHandling(arguments,lisp);
+    proc->_DocString = docString->get();
+    proc->_Code = code;
+    proc->_Environment = environ;
+    proc->_Flags |= MACRO_FUNCTION;
+    if ( code->isNil() )
+    {
+	THROW(_lisp->create<LispError_O>("The procedure code is Nil!!!!"));
+    }
+    LOG(BF("Created procedure with name: %s")% proc->getName() );
+    LOG(BF("  Its position in memory: %lX")% proc.get() );
+    LOG(BF("  Its className() = %s")% proc->className() );
+    return proc;
+}
+
+
+
+
+Function_sp	Function_O::create( Symbol_sp name,
+				    LambdaListHandler_sp lambdaList,
+				    Cons_sp code,
+				    Environment_sp environ,
+				    Lisp_sp lisp)
+{_F(lisp);
+Function_sp	proc;
+    LOG(BF("Creating a function named: %s")% name->currentName());
+    proc = lisp->create<Function_O>();
+    proc->_WeakSymbol = name;
+    proc->_LambdaListHandler = lambdaList;
+    proc->_DocString = "";
+    proc->_Code = code;
+    proc->_Environment = environ;
+    if ( code->isNil() )
+    {
+	THROW(_lisp->create<LispError_O>("The procedure code is Nil!!!!"));
+    }
+    LOG(BF("Created procedure with name: %s")% proc->getName() );
+    LOG(BF("  Its position in memory: %lX")% proc.get() );
+    LOG(BF("  Its className() = %s")% proc->className() );
+    return proc;
+}
+
+
+
+
+
+
+
+void Function_O::initialize()
+{
+    this->Base::initialize();
+    this->_LambdaListHandler = this->lisp()->nil<LambdaListHandler_O>();
+    this->_DocString = "";
+    this->_Code = this->lisp()->nil<SourceCodeCons_O>();
+    this->_Environment = this->lisp()->top_level_environment();
+}
+
+
+void Function_O::archiveBase(ArchiveP node)
+{
+    this->Base::archiveBase(node);
+    node->archiveObject("lambdaListHandler",this->_LambdaListHandler);
+    node->attribute("docString",this->_DocString);
+    node->archiveObjectIfDefined("code",this->_Code);
+    node->attribute("docString",this->_DocString);
+    node->archiveObjectIfDefined("code",this->_Code);
+}
+
+
+    string Function_O::__repr__() const
+    {
+	stringstream ss;
+	ss << "#<" << this->className() << " :name " << this->getName() << ">";
+	return ss.str();
+    }
+
+LambdaListHandler_sp Function_O::getLambdaListHandler()
+{_OF();
+    return this->_LambdaListHandler;
+}
+
+void Function_O::setupArgumentHandling(Cons_sp args, Lisp_sp lisp)
+{_F(lisp);
+    this->_LambdaListHandler = lisp->create<OrdinaryLambdaListHandler_O>();
+    this->_LambdaListHandler->setupArgumentHandling(args);
+}
+
+
+
+Environment_sp Function_O::closedEnvironment(Environment_sp environ)
+{_F(this->lisp());
+	// Ignore the environment that was passed and use the
+	// one that was available when the FirstClassExecutable was defined
+	//
+    ASSERTNOTNULL(this->_Environment);
+    return this->_Environment;
+}
+
+
+void Function_O::closeOverEnvironment(Environment_sp environ)
+{_F(this->lisp());
+    ASSERTNOTNULL(environ);
+    this->_Environment = environ;
+}
+
+
+
+T_sp Function_O::INVOKE(Cons_sp args, Lisp_sp lisp)
+{_F(this->lisp());
+    T_sp result;
+    Environment_sp localEnvironment = this->closedEnvironment(_lisp->topEnv());
+    ASSERTNOTNULL(localEnvironment);
+//TailRecursion:	// do tail recursion here
+    LambdaListHandler_sp ordinaryLambdaListHandler = this->getLambdaListHandler();
+    if ( this->_Code->compiled_bodyP() )
+    {
+	LOG(BF("The body is a CompiledBody"));
+	ASSERTNOTNULL(this->_LambdaListHandler);
+#if 0 // we don't do lazy evaluation of lambda lists anymore
+	/* Set up the OrdinaryLambdaListHandler in a lazy way.  If it's Nil then
+	   check if there is an argument string and setup the OrdinaryLambdaListHandler and
+	   populate the local environment with the parsed arguments */
+	if ( this->_LambdaListHandler->isNil() )
+	{
+	    if ( this->_ArgumentString != "" )
+	    {
+		ASSERTF(this->_WeakSymbol.use_count() > 0 ,BF("WeakSymbol for Function_O is NULL!"));
+		Symbol_sp mySymbol = this->_WeakSymbol.lock();
+		LOG(BF("Lazy setup of _ArgumentString[%s]  for Function[%s] with CompiledBody") % this->_ArgumentString % mySymbol->__repr__() );
+		this->setupLambdaListHandler();
+	    } else
+	    {
+		LOG(BF("There is not _Argument string for Function[%s]") % this->_WeakSymbol.lock()->__repr__() );
+	    }
+	}
+#endif
+	Environment_sp newEnviron = _lisp->topEnv();
+	if ( this->_LambdaListHandler->notNil() )
+	{
+	    newEnviron = Environment_O::create(this->_Environment,lisp);
+	    this->_LambdaListHandler->populateLocalEnvironment(args,newEnviron);
+	    LOG(BF("Populated argument handler: %s") % this->_LambdaListHandler->asArgumentString() );
+	} else
+	{
+	    LOG(BF("There is no argument handler"));
+	}
+	T_sp result;
+	ASSERTF(this->_Code->notNil(),BF("The function code should never by nil"));
+	Functoid* functoid = this->_Code->functoid();
+	ASSERTF(functoid!=NULL,BF("The functoid of a CompiledBody should never be NULL!"));
+	newEnviron->setCode(this->_Code);
+	PushCodeStack codeStack(this->_Code,newEnviron,lisp);
+	{
+	    if ( lisp->debugLog().isEnabled() )
+	    {
+		{_StackTrace st("-primitive-",
+				this->getSymbol()->currentName().c_str(),
+				"CSC_PRIM",
+				0,
+				_lisp,DEBUG_LISP);
+		    result = functoid->invoke(this->sharedThis<Function_O>(),args,newEnviron,lisp);
+		}
+	    } else
+	    {_BLOCK_TRACE("Calling evaluate on this->_Code");
+		result = functoid->invoke(this->sharedThis<Function_O>(),args,newEnviron,lisp);
+	    }
+	}
+	LOG(BF("Returning result: %s") % result->__repr__() );
+	return result;
+    }
+    ASSERTNOTNULL(ordinaryLambdaListHandler);
+    ASSERT(ordinaryLambdaListHandler->notNil());
+    Environment_sp newEnvironment = Environment_O::create(localEnvironment,lisp);
+    ordinaryLambdaListHandler->populateLocalEnvironment(args,newEnvironment);
+    LOG(BF("About to evaluate the code bound to symbol[%s] in the environment->\n%s")
+	% this->getSymbol()->__repr__() % newEnvironment->__repr__() );
+    LOG(BF("About to evaluate code: %s")%this->_Code->__repr__() );
+    LOG(BF("Pushing code onto the backTrace: <%s>")%this->_Code->__repr__() );
+    newEnvironment->setCode(this->_Code);
+    PushCodeStack codeStack(this->_Code,newEnvironment,lisp);
+    {
+	if ( lisp->debugLog().isEnabled() )
+	{
+	    if ( this->_Code->isOfClass<SourceCodeCons_O>() )
+	    {_StackTrace st(this->_Code->getParsePosFileName(),
+			    this->getSymbol()->currentName().c_str(),
+			    "CSC_PROC",
+			    this->_Code->getParsePosLineNumber(),
+			    _lisp,DEBUG_LISP);
+		result = eval::evaluate(this->_Code,newEnvironment,lisp);
+	    } else
+	    {_StackTrace st("-no file-",
+			    this->getSymbol()->currentName().c_str(),
+			    "CSC_PROC",
+			    0,
+			    _lisp,DEBUG_LISP);
+		result = eval::evaluate(this->_Code,newEnvironment,lisp);
+	    }
+	} else
+	{_BLOCK_TRACE("Calling evaluate on this->_Code");
+	    result = eval::evaluate(this->_Code,newEnvironment,lisp);
+	}
+    }
+    LOG(BF("Returning result: %s") % result->__repr__() );
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+MethodO_sp	MethodO_O::createWithoutReceiverClass(	Symbol_sp messageKeyword,
+					Cons_sp arguments,
+					Str_sp docString,
+					Cons_sp code, 
+					MethodEnvironment_sp environ,
+					Lisp_sp lisp)
+{_F(lisp);
+MethodO_sp	proc;
+Cons_sp		variableNames;
+    LOG(BF("Creating a Method") );
+//    ASSERTP(messageKeyword->isKeywordSymbol(),"Message symbols must be keywords, you can convert them to keywords here if you want");
+    variableNames = Cons_O::nil(lisp);
+    proc = RP_Create<MethodO_O>(lisp);
+    proc->_WeakSymbol = messageKeyword;
+    proc->setupArgumentHandling(arguments,lisp);
+    proc->_DocString = docString->get();
+    proc->_Code = code;
+    proc->closeOverEnvironment(environ);
+    return proc;
+}
+
+
+
+MethodO_sp	MethodO_O::create(	MetaClass_sp receiverClass,
+					Symbol_sp keywordSymbol,
+					Cons_sp arguments, 
+					Str_sp docString,
+					Cons_sp code,
+					MethodEnvironment_sp environ, 
+					Lisp_sp lisp)
+{_F(lisp);
+MethodO_sp	proc;
+    proc = MethodO_O::createWithoutReceiverClass(keywordSymbol,arguments,docString,code,environ,lisp);
+    proc->setReceiverClass(receiverClass);
+    return proc;
+}
+
+
+MetaClass_sp MethodO_O::getReceiverClass() const
+{_OF();
+    ASSERTNOTNULL(this->_WeakReceiverClass);
+    return this->_WeakReceiverClass.lock();
+}
+
+string MethodO_O::getFullMethodName(Lisp_sp lisp) const
+{ 
+    stringstream ss;
+    ss << this->getReceiverClass()->getPackagedName();
+//    ss << "(" << this->_AppliesToClassSIDx << ")";
+    ss << ".";
+    ss << this->getSymbol()->currentName();
+    return ss.str();
+};
+
+
+
+T_sp MethodO_O::INVOKE(Cons_sp args, Lisp_sp lisp)
+{_F(this->lisp());
+    Environment_sp closedEnvironment = this->closedEnvironment(_lisp->topEnv());
+    ASSERTNOTNULL(closedEnvironment);
+    Environment_sp newEnvironment = Environment_O::create(closedEnvironment,lisp);
+    ASSERTNOTNULL(newEnvironment);
+    ASSERTP(newEnvironment->notNil(),"newEnvironment is nil - should never happen");
+//TailRecursion:	// do tail recursion here
+    this->_LambdaListHandler->populateLocalEnvironment(args,newEnvironment);
+    LOG(BF("About to evaluate the code"));
+    LOG(BF("About to evaluate code: %s") % this->_Code->__repr__() );
+
+    //
+    // If the receiver is a StandardObject then
+    // push it on the Environment, that will make all
+    // of its instance variables appear as local variables
+    // along with the arguments and local variables
+    T_sp result;
+    TRY() 
+    {
+	if ( lisp->debugLog().isEnabled() )
+	{_BLOCK_TRACE("debugging is turned on");
+	    if ( this->_Code->isOfClass<SourceCodeCons_O>() )
+	    {_StackTrace st( this->_Code->getParsePosFileName(),this->getFullMethodName(lisp).c_str(),"CSC_METHOD",this->_Code->getParsePosLineNumber(),_lisp,DEBUG_LISP);
+		result = eval::evaluate(this->_Code,newEnvironment,lisp);
+	    } else
+	    {_StackTrace st( "-no file-",this->getFullMethodName(lisp).c_str(),"CSC_METHOD",0,_lisp,DEBUG_LISP);
+		result = eval::evaluate(this->_Code,newEnvironment,lisp);
+	    }
+	} else
+	{_BLOCK_TRACE("debugging is not on");
+	    result = eval::evaluate(this->_Code,newEnvironment,lisp);
+	}
+    } catch (ReturnFrom& returnFrom)
+      {
+	  if ( returnFrom.getBlockSymbol() != this->getSymbol() )
+	  {
+	      THROW(_lisp->error(BF("There was no enclosing block named[%s]") % returnFrom.getBlockSymbol()->__repr__() ));
+	  }
+	  result = returnFrom.getReturnedObject();
+      } catch (...)
+	{
+	    throw;
+	}
+//    LOG(BF("Returning result: %s") % result->__repr__().c_str()  );
+    return result;
+}
+
+#endif
+
+
+
+
+#if 0
+Macro_sp	Macro_O::create( Symbol_sp name,
+					Cons_sp arguments,
+					Str_sp docString,
+					Cons_sp code,
+					Environment_sp environ,
+					Lisp_sp lisp)
+{_F(lisp);
+Macro_sp	proc;
+Cons_sp		variableNames;
+    LOG(BF("Creating a procedure named: %s")% name->currentName());
+    variableNames = Cons_O::nil(lisp);
+    proc = lisp->create<Macro_O>();
+    proc->_WeakSymbol = name;
+    proc->setupArgumentHandling(arguments,lisp);
+    proc->_DocString = docString->get();
+    proc->_Code = code;
+    proc->_Environment = environ;
+    if ( code->isNil() )
+    {
+	THROW(_lisp->create<LispError_O>("The procedure code is Nil!!!!"));
+    }
+    LOG(BF("Created procedure with name: %s")% proc->getName() );
+    LOG(BF("  Its position in memory: %lX")% proc.get() );
+    LOG(BF("  Its className() = %s")% proc->className() );
+    return proc;
+}
+
+
+LambdaListHandler_sp Macro_O::getLambdaListHandler()
+{_OF();
+    return this->_LambdaListHandler;
+}
+
+
+
+void Macro_O::setupArgumentHandling(Cons_sp args, Lisp_sp lisp)
+{_F(lisp);
+    this->_LambdaListHandler = lisp->create<MacroLambdaListHandler_O>();
+    this->_LambdaListHandler->setupArgumentHandling(args);
+}
+
+#endif
+
+};
+
+
+
+
+
+
+
+
+

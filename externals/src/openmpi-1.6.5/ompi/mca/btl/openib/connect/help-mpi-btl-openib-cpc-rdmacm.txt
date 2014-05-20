@@ -1,0 +1,68 @@
+# -*- text -*-
+#
+# Copyright (c) 2008 Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI's OpenFabrics RDMA CM
+# support (the openib BTL).
+#
+[no valid ip]
+It appears that an OpenFabrics device does not have an IP address
+associated with it.  The OpenFabrics RDMA CM connection scheme
+*requires* IP addresses to be setup in order to function properly.
+
+  Local host:   %s
+  Local device: %s
+#
+[could not find matching endpoint]
+The OpenFabrics device in an MPI process received an RDMA CM connect
+request for a peer that it could not identify as part of this MPI job.
+This should not happen.  Your process is likely to abort; sorry.
+
+  Local host:      %s
+  Local device:    %s
+  Remote address:  %s
+  Remote TCP port: %d
+#
+[illegal tcp port]
+The btl_openib_connect_rdmacm_port MCA parameter was used to specify
+an illegal TCP port value.  TCP ports must be between 0 and 65536
+(ports below 1024 can only be used by root).
+
+  TCP port: %d
+
+This value was ignored.
+#
+[illegal timeout]
+The btl_openib_connect_rdmacm_resolve_timeout parameter was used to
+specify an illegal timeout value.  Timeout values are specified in
+miliseconds and must be greater than 0.
+
+  Timeout value: %d
+
+This value was ignored.
+#
+[rdma cm device removal]
+The RDMA CM returned that the device Open MPI was trying to use has
+been removed.
+
+  Local host: %s
+  Local device: %s
+
+Your MPI job will now abort, sorry.
+#
+[rdma cm event error]
+The RDMA CM returned an event error while attempting to make a
+connection.  This type of error usually indicates a network
+configuration error.
+
+  Local host:   %s
+  Local device: %s
+  Error name:   %s
+  Peer:         %s
+
+Your MPI job will now abort, sorry.

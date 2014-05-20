@@ -1,0 +1,66 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Intercomm_merge 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Intercomm_merge\fP \- Creates an intracommunicator from an intercommunicator.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Intercomm_merge(MPI_Comm \fIintercomm\fP, int\fI high\fP, 
+     MPI_Comm\fI *newintracomm\fP
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_INTERCOMM_MERGE(\fIINTERCOMM, HIGH, NEWINTRACOMM, IERROR\fP)
+	INTEGER	\fIINTERCOMM, NEWINTRACOMM, IERROR\fP 
+	LOGICAL	\fIHIGH\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Intracomm Intercomm::Merge(bool \fIhigh\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+intercomm
+Intercommunicator (type indicator).
+.TP 1i
+high
+Used to order the groups of the two intracommunicators within comm when creating the new communicator (type indicator).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newintracomm
+Created intracommunicator (type indicator).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This function creates an intracommunicator from the union of the two groups that are associated with intercomm. All processes should provide the same high value within each of the two groups. If processes in one group provide the value high = false and processes in the other group provide the value high = true, then the union orders the "low" group before the "high" group. If all processes provide the same high argument, then the order of the union is arbitrary. This call is blocking and collective within the union of the two groups. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Intercomm_create
+.br
+MPI_Comm_free
+
+
+
+

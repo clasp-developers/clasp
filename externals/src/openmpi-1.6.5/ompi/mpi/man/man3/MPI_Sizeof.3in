@@ -1,0 +1,62 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Sizeof 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Sizeof\fP \- Returns the size, in bytes, of the given type
+
+.SH SYNTAX
+.ft R
+
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_SIZEOF(\fIX, SIZE, IERROR\fP)
+<type>	\fIX\fP
+INTEGER	\fISIZE, IERROR\fP 
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+X
+A Fortran variable of numeric intrinsic type (choice).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+SIZE
+Size of machine representation of that type (integer).
+.ft R
+.TP 1i
+IERROR
+Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_SIZEOF returns the size (in bytes) of the machine representation
+of the given variable. It is a generic Fortran type and has a Fortran
+binding only. This routine is similar to the sizeof builtin in
+C/C++. However, if given an array argument, it returns the size of the
+base element, not the size of the whole array.
+
+.SH NOTES
+This function is not available in C/C++ because it is not necessary.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+

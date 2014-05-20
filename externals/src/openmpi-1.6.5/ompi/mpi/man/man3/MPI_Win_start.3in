@@ -1,0 +1,71 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_start 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_start\fP \- Starts an RMA access epoch for \fIwin\fP
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_start(MPI_Group \fIgroup\fP, int assert, MPI_Win \fIwin\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_START(\fIGROUP, ASSERT, WIN, IERROR\fP)
+	INTEGER GROUP, ASSERT, WIN, IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Start(const MPI::Group& group, int assert) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+group
+The group of target processes (handle).
+.TP 1i
+assert
+Program assertion (integer).
+.TP 1i
+win
+Window object (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Win_start is a one-sided MPI communication synchronization call that starts an RMA access epoch for \fIwin\fP. RMA calls issued on \fIwin\fP during this epoch must
+access only windows at processes in \fIgroup\fP. Each process in \fIgroup\fP must issue a matching
+call to MPI_Win_post. MPI_Win_start
+is allowed to block until the corresponding MPI_Win_post calls have been executed, but is not required to. 
+.sp
+The \fIassert\fP argument is used to provide assertions on the context of the call that may be used for various optimizations. (See Section 6.4.4 of the MPI-2 Standard.) A value of \fIassert\fP = 0 is always valid. The following assertion value is supported:
+.sp
+.TP 1i
+MPI_MODE_NOCHECK  
+When this value is passed in to this call, the library assumes that
+the post call on the target has been called and it is not necessary
+for the library to check to see if such a call has been made.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Win_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Win_post
+MPI_Win_complete
+.br
+

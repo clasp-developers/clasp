@@ -1,0 +1,9 @@
+rm -rf ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/include/llvm*
+rm -rf ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/include/clang*
+rm -rf ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/lib/libclang*
+rm -rf ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/lib/libLLVM*
+make llvm-get
+make llvm-setup
+make llvm-release
+make sb
+(cd ~/Development/cando/brcl/src/main; bjam -j4 bundle release -a)

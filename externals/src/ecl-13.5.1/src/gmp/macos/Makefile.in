@@ -1,0 +1,300 @@
+# Copyright 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+#
+# This file is part of the GNU MP Library.
+#
+# The GNU MP Library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; either version 2.1 of the License, or (at your
+# option) any later version.
+#
+# The GNU MP Library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+# License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
+# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
+
+VERSION 	= @version@
+
+C		= @cc@
+COptions	= @coptions@
+Link		= @link@
+LinkOptions	= @linkoptions@
+ToolOptions     = @tooloptions@
+Asm		= @asm@
+AOptions	= @aoptions@
+
+Lib	= "libgmp.{VERSION}"
+
+# These are only needed for creating test programs as MPW tools
+
+
+SysLibs		= @syslibs@
+
+# Where to put object code. The reason we don't put them into
+# the same directory is that some objectfiles have the same
+# name.
+
+MpfObjDir	= :MpfObj:
+MpnObjDir	= :MpnObj:
+MpqObjDir	= :MpqObj:
+MpzObjDir	= :MpzObj:
+PrintfObjDir	= :PrintfObj:
+ScanfObjDir	= :ScanfObj:
+CmnObjDir	= :CmnObj:
+AsmObjDir	= :AsmObj:
+AsmSrcDir	= :Asm:
+MpfBinDir	= :MpfBin:
+MpqBinDir	= :MpqBin:
+MpzBinDir	= :MpzBin:
+
+ObjDirs		= {MpfObjDir} {MpnObjDir} {MpqObjDir} {MpzObjDir} @c@
+		  {PrintfObjDir} {ScanfObjDir} @c@
+		  {CmnObjDir} {AsmObjDir} {AsmSrcDir} @c@
+                  {MpfBinDir} {MpqBinDir} {MpzBinDir}
+
+###########################################################################
+
+AsmObjs = @asm_objects@
+
+AsmSrc = @asm_sources@
+
+MpnObjs = {MpnObjDir}mp_bases.o @c@
+	@mpn_objects@
+
+MpfObjs = @c@
+	@mpf_objects@
+
+MpqObjs = @c@
+	@mpq_objects@
+
+MpzObjs = @c@
+	@mpz_objects@
+
+PrintfObjs = @c@
+	@printf_objects@
+
+ScanfObjs = @c@
+	@scanf_objects@
+
+CmnObjs = {CmnObjDir}tal-notreent.o @c@
+	@gmp_objects@
+
+Objs = {AsmObjs} {MpfObjs} {MpnObjs} {MpqObjs} {MpzObjs} {PrintfObjs} {ScanfObjs} {CmnObjs}
+
+
+
+###########################################################################
+
+all	@dep@ {Lib}
+
+{Lib} @dep@ {Objs} Makefile
+	{Link} {LinkOptions} -o {Lib} {Objs}
+
+
+###########################################################################
+# Default rules/ directory rules
+
+{MpfObjDir} @dep@ ::mpf:
+
+{MpnObjDir} @dep@ ::mpn: ::mpn:generic:
+
+{MpqObjDir} @dep@ ::mpq:
+
+{MpzObjDir} @dep@ ::mpz:
+
+{PrintfObjDir} @dep@ ::printf:
+
+{ScanfObjDir} @dep@ ::scanf:
+
+{CmnObjDir} @dep@ ::
+
+{AsmObjDir} @dep@ :Asm:
+
+{MpzBinDir} @dep@ ::mpz:tests:
+{MpqBinDir} @dep@ ::mpq:tests:
+{MpfBinDir} @dep@ ::mpf:tests:
+
+.o	@dep@ .c Makefile
+	{C} {DepDir}{default}.c -o {TargDir}{default}.o {COptions}
+
+.o	@dep@ .s Makefile
+	{Asm} {DepDir}{default}.s -o {TargDir}{default}.o {AOptions}
+
+
+clean @dep@
+	Delete -c -i ::mpz:tests:@wildcard@.o
+	Delete -c -i ::mpq:tests:@wildcard@.o
+	Delete -c -i ::mpf:tests:@wildcard@.o
+	Delete -c -i :@wildcard@:@wildcard@.o
+	Delete -c -i :@wildcard@:@wildcard@.s
+	Delete -c -i @wildcard@~
+
+distclean @dep@ clean
+	Delete -c -i {Lib}
+	Delete -c -i @wildcard@~
+	Delete -c -i @wildcard@.bak
+
+maintainer_clean @dep@ distclean
+	Delete -c -i config.h
+	Delete -c -i configure.mac
+	Delete -c -i Makefile
+	Delete -c -i Makefile.cw
+
+###########################################################################
+# Test application FIXME: Not ready
+
+TestApp = test
+TestObj = test.o
+
+{TestApp} @dep@ {TestObj}
+	{Link} -o {TestApp} {TestObj} {Lib} {SysLibs}
+
+
+###########################################################################
+# FIXME: This does't work very well.....
+# FIXME: Find dependency somehow. With the Unix mkdep like
+#   mkdep -I. -Imacos -Impn -Impn/powerpc32 -Impz \
+#     `find . -name "*.c" | grep -v Apple | grep -v tests | grep -v macos`
+# or some MPW tool.
+
+.exe @dep@ .o
+	{Link} {ToolOptions} -o {TargDir}{default}.exe {DepDir}{default}.o  @c@
+	{Lib} {SysLibs}
+
+
+check @dep@ check-mpz check-mpq check-mpf
+
+check-mpz @dep@ z-mul z-tdiv z-tdiv_ui z-fdiv z-fdiv_ui @c@
+		z-gcd z-dive z-sqrtrem z-convert z-logic z-bit @c@
+		z-powm z-powm_ui z-pow_ui z-2exp z-reuse z-root @c@
+		z-jac z-bin z-misc z-get_si z-fac_ui z-fib_ui
+
+# FIXME: Left out z-io, can't compile it.
+
+z-mul @dep@ {MpzBinDir}t-mul.exe
+	{MpzBinDir}t-mul.exe
+
+z-tdiv @dep@ {MpzBinDir}t-tdiv.exe
+	{MpzBinDir}t-tdiv.exe
+
+z-tdiv_ui @dep@ {MpzBinDir}t-tdiv_ui.exe
+	{MpzBinDir}t-tdiv_ui.exe
+
+z-fdiv @dep@ {MpzBinDir}t-fdiv.exe
+	{MpzBinDir}t-fdiv.exe
+
+z-fdiv_ui @dep@ {MpzBinDir}t-fdiv_ui.exe
+	{MpzBinDir}t-fdiv_ui.exe
+
+z-gcd @dep@ {MpzBinDir}t-gcd.exe
+	{MpzBinDir}t-gcd.exe
+
+z-dive @dep@ {MpzBinDir}dive.exe
+	{MpzBinDir}dive.exe
+
+z-sqrtrem @dep@ {MpzBinDir}t-sqrtrem.exe
+	{MpzBinDir}t-sqrtrem.exe
+
+z-convert @dep@ {MpzBinDir}convert.exe
+	{MpzBinDir}convert.exe
+
+z-io @dep@ {MpzBinDir}io.exe
+	{MpzBinDir}io.exe
+
+z-logic @dep@ {MpzBinDir}logic.exe
+	{MpzBinDir}logic.exe
+
+z-bit @dep@ {MpzBinDir}bit.exe
+	{MpzBinDir}bit.exe
+
+z-powm @dep@ {MpzBinDir}t-powm.exe
+	{MpzBinDir}t-powm.exe
+
+z-powm_ui @dep@ {MpzBinDir}t-powm_ui.exe
+	{MpzBinDir}t-powm_ui.exe
+
+z-pow_ui @dep@ {MpzBinDir}t-pow_ui.exe
+	{MpzBinDir}t-pow_ui.exe
+
+z-2exp @dep@ {MpzBinDir}t-2exp.exe
+	{MpzBinDir}t-2exp.exe
+
+z-reuse @dep@ {MpzBinDir}reuse.exe
+	{MpzBinDir}reuse.exe
+
+z-root @dep@ {MpzBinDir}t-root.exe
+	{MpzBinDir}t-root.exe
+
+z-jac @dep@ {MpzBinDir}t-jac.exe
+	{MpzBinDir}t-jac.exe
+
+z-bin @dep@ {MpzBinDir}t-bin.exe
+	{MpzBinDir}t-bin.exe
+
+z-misc @dep@ {MpzBinDir}t-misc.exe
+	{MpzBinDir}t-misc.exe
+
+z-get_si @dep@ {MpzBinDir}t-get_si.exe
+	{MpzBinDir}t-get_si.exe
+
+z-fac_ui @dep@ {MpzBinDir}t-fac_ui.exe
+	{MpzBinDir}t-fac_ui.exe
+
+z-fib_ui @dep@ {MpzBinDir}t-fib_ui.exe
+	{MpzBinDir}t-fib_ui.exe
+
+
+check-mpq @dep@ q-cmp q-cmp_ui q-get_d q-set_f
+
+q-cmp @dep@ {MpqBinDir}t-cmp.exe
+	{MpqBinDir}t-cmp.exe
+
+q-cmp_ui @dep@ {MpqBinDir}t-cmp_ui.exe
+	{MpqBinDir}t-cmp_ui.exe
+
+q-get_d @dep@ {MpqBinDir}t-get_d.exe
+	{MpqBinDir}t-get_d.exe
+
+q-set_f @dep@ {MpqBinDir}t-set_f.exe
+	{MpqBinDir}t-set_f.exe
+
+
+check-mpf @dep@ f-add f-sub f-conv f-sqrt f-muldiv f-dm2exp f-reuse @c@
+		f-get_d f-misc
+
+{MpfBinDir}t-add.exe @dep@ ::mpf:tests:t-add.o ::mpf:tests:ref.o
+	{Link} {ToolOptions} -o {Targ} {Deps} {Lib} {SysLibs}
+
+{MpfBinDir}t-sub.exe @dep@ ::mpf:tests:t-sub.o ::mpf:tests:ref.o
+	{Link} {ToolOptions} -o {Targ} {Deps} {Lib} {SysLibs}
+
+f-add @dep@ {MpfBinDir}t-add.exe
+	{MpfBinDir}t-add.exe
+
+f-sub @dep@ {MpfBinDir}t-sub.exe
+	{MpfBinDir}t-sub.exe
+
+f-conv @dep@ {MpfBinDir}t-conv.exe
+	{MpfBinDir}t-conv.exe
+
+f-sqrt @dep@ {MpfBinDir}t-sqrt.exe
+	{MpfBinDir}t-sqrt.exe
+
+f-muldiv @dep@ {MpfBinDir}t-muldiv.exe
+	{MpfBinDir}t-muldiv.exe
+
+f-dm2exp @dep@ {MpfBinDir}t-dm2exp.exe
+	{MpfBinDir}t-dm2exp.exe
+
+f-reuse @dep@ {MpfBinDir}reuse.exe
+	{MpfBinDir}reuse.exe
+
+f-get_d @dep@ {MpfBinDir}t-get_d.exe
+	{MpfBinDir}t-get_d.exe
+
+f-misc @dep@ {MpfBinDir}t-misc.exe
+	{MpfBinDir}t-misc.exe

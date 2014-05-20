@@ -1,0 +1,29 @@
+# -*- text -*-
+#
+# Copyright (c) 2011 The Trustees of Indiana University and Indiana
+#                    University Research and Technology Corporation.
+#                    All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the FTB event schema file for Open MPI's FTB notifier
+#
+start
+
+ftb.mpi.openmpi
+
+FTB_MPI_PROCS_DEAD ERROR
+FTB_MPI_PROCS_UNREACHABLE ERROR
+FTB_MPI_PROCS_COMM_ERROR WARNING
+FTB_MPI_PROCS_MIGRATED INFO
+FTB_MPI_PROCS_MIGRATE_FAIL ERROR
+FTB_MPI_PROCS_CKPTED INFO
+FTB_MPI_PROCS_CKPT_FAIL ERROR
+FTB_MPI_PROCS_RESTARTED INFO
+FTB_MPI_PROCS_RESTART_FAIL ERROR
+FTB_MPI_PROCS_ABORTED ERROR
+
+end

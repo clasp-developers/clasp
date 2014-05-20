@@ -1,0 +1,27 @@
+--- opal/libltdl/loaders/preopen.c.~1~	2010-03-03 14:13:28.000000000 -0500
++++ opal/libltdl/loaders/preopen.c	2010-03-05 17:57:11.000000000 -0500
+@@ -185,7 +185,24 @@
+ 	}
+     }
+ 
++#if 0
++  /* Open MPI: This line is commented out because Open MPI does not
++     use the preopen functionality in libltdl at all -- so we never
++     need to see errors from this module.  Additionally, this module
++     is usually invoked last in the sequence when trying to
++     lt_dlopenadvise() a DSO -- so if there was a real error when
++     opening that DSO (e.g., a symbol not found), setting the
++     FILE_NOT_FOUND error here will mask the real error.
++
++     This error has been reported upstream to the Libtool maintainers;
++     they acknowledge that it is a problem but no one has come up with
++     a good general solution yet.  This Open MPI-specific solution is
++     workable for us, but not workable as a general solution.  Hence,
++     we patch in this "if 0" block in autogen.sh after Libtool
++     installs libltdl in the opal/ tree.
++  */
+   LT__SETERROR (FILE_NOT_FOUND);
++#endif
+ 
+  done:
+   return module;

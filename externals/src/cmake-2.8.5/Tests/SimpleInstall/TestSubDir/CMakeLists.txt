@@ -1,0 +1,3 @@
+ADD_EXECUTABLE(TSD TSD.cxx TSD_utils.cxx)
+INSTALL_FILES(/MyTest/include FILES TSD.h)
+INSTALL_TARGETS(/MyTest/bin TSD)

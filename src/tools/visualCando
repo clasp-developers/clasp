@@ -1,0 +1,4 @@
+#! /usr/bin/env python -O
+
+import cando.appArchitectEditor
+cando.appArchitectEditor.start()

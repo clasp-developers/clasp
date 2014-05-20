@@ -1,0 +1,107 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Pack 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Pack\fP \- Packs data of a given datatype into contiguous memory.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Pack(void *\fIinbuf\fP, int\fI incount\fP, MPI_Datatype\fI datatype\fP,
+	void\fI *outbuf\fP, int\fI outsize\fP, int\fI *position\fP, MPI_Comm\fI comm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_PACK(\fIINBUF, INCOUNT, DATATYPE, OUTBUF,OUTSIZE, POSITION,
+		COMM, IERROR\fP)
+	<type>	\fIINBUF(*), OUTBUF(*)\fP
+	INTEGER	\fIINCOUNT, DATATYPE, OUTSIZE, POSITION, COMM, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Datatype::Pack(const void* \fIinbuf\fP, int \fIincount\fP, void *\fIoutbuf\fP, 
+	int \fIoutsize\fP, int& \fIposition\fP, const Comm &\fIcomm\fP) const 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+inbuf
+Input buffer start (choice).
+.TP 1i
+incount
+Number of input data items (integer).
+.TP 1i
+datatype
+Datatype of each input data item (handle).
+.TP 1i
+outsize
+Output buffer size, in bytes (integer).
+.TP 1i
+comm
+Communicator for packed message (handle).
+
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+position
+Current position in buffer, in bytes (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+outbuf
+Output buffer start (choice).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Packs the message in the send buffer specified by \fIinbuf\fP, \fIincount\fP, \fIdatatype\fP into the buffer space specified by \fIoutbuf\fP and \fIoutsize\fP. The input buffer can be any communication buffer allowed in MPI_Send. The output buffer is a contiguous storage area containing \fIoutsize\fP bytes, starting at the address \fIoutbuf\fP (length is counted in bytes, not elements, as if it were a communication buffer for a message of type MPI_Packed).
+.sp
+The input value of \fIposition\fP is the first location in the output buffer to be used for packing. \fIposition\fP is incremented by the size of the packed message, and the output value of \fIposition\fP is the first location in the output buffer following the locations occupied by the packed message. The \fIcomm\fP argument is the communicator that will be subsequently used for sending the packed message.
+.sp
+\fBExample:\fP An example using MPI_Pack:
+.sp
+.nf
+    int position, i, j, a[2]; 
+    char buff[1000]; 
+     
+    \&.... 
+     
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank); 
+    if (myrank == 0) 
+    { 
+       / * SENDER CODE */ 
+     
+    position = 0; 
+      MPI_Pack(&i, 1, MPI_INT, buff, 1000, &position, MPI_COMM_WORLD); 
+      MPI_Pack(&j, 1, MPI_INT, buff, 1000, &position, MPI_COMM_WORLD); 
+      MPI_Send( buff, position, MPI_PACKED, 1, 0, MPI_COMM_WORLD); 
+    } 
+    else  /* RECEIVER CODE */ 
+      MPI_Recv( a, 2, MPI_INT, 0, 0, MPI_COMM_WORLD) 
+     
+    }
+
+.fi
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+MPI_Unpack
+.br
+MPI_Pack_size
+

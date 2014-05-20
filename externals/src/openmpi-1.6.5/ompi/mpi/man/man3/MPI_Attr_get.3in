@@ -1,0 +1,67 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Attr_get 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Attr_get\fP \- Retrieves attribute value by key -- use of this routine is deprecated.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Attr_get(MPI_Comm \fIcomm\fP, int\fI keyval\fP,void\fI *attribute_val\fP,
+	int\fI *flag \fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ATTR_GET(\fICOMM\fP,\fI KEYVAL\fP, \fIATTRIBUTE_VAL\fP,\fI FLAG\fP,\fI IERROR\fP)
+	INTEGER	\fICOMM\fP,\fI KEYVAL\fP, \fIATTRIBUTE_VAL\fP,\fI IERROR\fP
+	LOGICAL	\fIFLAG\fP
+
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm
+Communicator to which attribute is attached (handle).
+.TP 1i
+keyval
+ Key value (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+attribute_val
+Attribute value, unless flag = false.
+.TP 1i
+flag
+True if an attribute value was extracted; false if no attribute is associated with the key.
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Note that use of this routine is \fIdeprecated\fP as of MPI-2. Please use MPI_Comm_get_attr instead.
+.sp
+This deprecated routine is not available in C++. 
+.sp
+Retrieves attribute value by key. The call is erroneous if there is no key
+with value keyval. On the other hand, the call is correct if the key value exists, but no attribute is attached on comm for that key; in such case, the call returns flag = false. In particular MPI_KEYVAL_INVALID is an erroneous key value.  
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler
+may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+
+.SH SEE ALSO
+
+MPI_Comm_get_attr
+.br

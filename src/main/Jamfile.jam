@@ -1,0 +1,129 @@
+
+#
+#
+project internals/main : requirements
+	<define>EXPAT
+	<toolset>darwin:<define>READLINE
+	<include>./
+	<include>../core
+	<include>../cffi
+	<include>../llvmo
+	<include>../gctools
+	<include>../sockets
+	<include>../serveEvent
+#	<target-os>linux:<linkflags>"-Wl,--start-group  -lclangRewriteFrontend -lclangRewriteCore -lclangTooling -lclangParse -lclangDriver -lclangEdit -lclangSema -lclangAnalysis -lclangSerialization -lclangLex -lclangFrontend -lclangAST -lclangASTMatchers -lclangBasic -Wl,--end-group"
+#	<target-os>darwin:<linkflags>"-lclang -lclangRewriteFrontend -lclangRewriteCore -lclangTooling -lclangParse -lclangDriver -lclangEdit -lclangSema -lclangAnalysis -lclangSerialization -lclangLex -lclangFrontend -lclangAST -lclangASTMatchers -lclangBasic " # -Wl,-exported_symbols_list,exportedSymbols.txt"
+	<toolset>darwin:<define>darwin
+	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
+	<toolset>darwin:<cxxflags>"-Wno-unused-variable -fopenmp"
+#-include pch.h"
+	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
+#	<toolset>gcc:<linkflags>"-lpthread"
+	<linkflags>"-rdynamic"
+	;
+
+lib rt : : <name>rt ;
+
+sources = 
+        mymps.c
+        gc_interface.cc
+    	    	/internals/core//bundle/<link>static
+		/internals/cffi//bundle/<link>static
+		/internals/llvmo//bundle/<link>static
+                /internals/clbind//bundle/<link>static
+		/internals/gctools//bundle/<link>static
+		/internals/sockets//bundle/<link>static
+		/internals/serveEvent//bundle/<link>static
+		/internals/asttooling//bundle/<link>static
+		/externals//llvm_lib/<link>static
+		/externals//clang_lib/<link>static
+		/externals//boostAndExpatLibs/<link>static
+#		/externals//lib_mps/<link>static
+#		/externals//openmm	
+		;
+
+# exe testLldb : testLldb.cc
+#             ;
+
+
+
+
+#local LIB = [ os.environ CANDO_APP_RESOURCES_LIB_DIR ] ;
+
+local deps =
+             <implicit-dependency>/internals/gctools//mi/<link>static
+             <implicit-dependency>/internals/cffi//mi/<link>static
+      	     <implicit-dependency>/internals/core//mi/<link>static
+             <implicit-dependency>/internals/clbind//mi/<link>static
+             <implicit-dependency>/internals/llvmo//mi/<link>static
+             <implicit-dependency>/internals/asttooling//mi/<link>static
+             <implicit-dependency>/internals/serveEvent//mi/<link>static
+             <implicit-dependency>/internals/sockets//mi/<link>static
+             <implicit-dependency>/internals/mpip//mi/<link>static
+      	     <dependency>/internals/lisp//bundle
+	     <target-os>linux:<library>rt         # real time functions not included in libc on linux
+	     ;
+
+
+
+exe clasp_o : main.cc $(sources)
+    	   : $(deps) <mps>off ;
+
+exe clasp_d : main.cc $(sources)
+    	   : $(deps) <mps>off ;
+
+exe clasp_mps_o : main.cc $(sources)
+    	   : $(deps) <mps>on ;
+
+exe clasp_mps_d : main.cc $(sources)
+    	   : $(deps) <mps>on ;
+
+
+alias mpi_stuff : /internals//mpip/<link>static
+                  /externals//boost_mpi/<link>static
+                  /externals//mpi
+                  ;
+
+exe clasp_mpi_o : mainMpi.cc $(sources) mpi_stuff
+        	   : $(deps)
+                   <mps>off
+		   ;
+
+exe clasp_mpi_d : mainMpi.cc $(sources) mpi_stuff
+        	   : $(deps)
+                   <mps>off
+		   ;
+
+
+exe clasp_mpi_mps_o : mainMpi.cc $(sources) mpi_stuff 
+        	   : $(deps)
+                   <mps>on
+		   ;
+
+exe clasp_mpi_mps_d : mainMpi.cc $(sources) mpi_stuff
+        	   : $(deps)
+                   <mps>on
+		   ;
+
+alias clasp : clasp_o : <variant>release <mps>off ;
+alias clasp : clasp_d : <variant>debug <mps>off ;
+
+alias clasp : clasp_mps_o : <variant>release <mps>on ;
+alias clasp : clasp_mps_d : <variant>debug <mps>on ;
+
+alias clasp_mpi : clasp_mpi_o : <variant>release <mps>off ;
+alias clasp_mpi : clasp_mpi_d : <variant>debug <mps>off ;
+alias clasp_mpi : clasp_mpi_mps_o : <variant>release <mps>on ;
+alias clasp_mpi : clasp_mpi_mps_d : <variant>debug <mps>on ;
+
+install bundle : clasp
+#               clasp_mpi
+               :
+			<target-os>darwin:<location>$(APPBIN_OSX)
+			<target-os>linux:<location>$(APPBIN_LINUX)
+#			<dll-path>$(APPLIB)
+		   	# <variant>debug:<dll-path>$(APPRES-EXTERNALS-DEBUG-LIB) #Uncomment to get the debug version of llvm
+#                         <dll-path>$(APPRES-EXTERNALS-RELEASE-LIB)
+                        ;
+

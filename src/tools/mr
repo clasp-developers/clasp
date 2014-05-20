@@ -1,0 +1,42 @@
+#!/usr/bin/env python -O
+
+import os
+import sys
+import getopt
+import buildDatabase
+
+
+print("MultiRun - run multiple processes")
+print("Usage: mr _cmd_ _oOptions_ _subCommand_ _fileSpecifiers_")
+
+# The command is the first argument
+command = sys.argv[1]
+#
+# Figure out what is an option and what is a file specifier
+#
+try:
+    opts,fileNames= getopt.getopt(sys.argv[2:],"o:")
+except getopt.GetoptError:
+    print "Error parsing arguments"
+    sys.exit(0)
+
+subCommand = fileNames[0]
+fnString = ""
+for fn in fileNames[1:]:
+    fnString += fn + " "
+
+optString = ""
+for o,a in opts:
+    optString += "-%s %s "%(o,a)
+
+processors = int(os.environ["COMPILE_PROCESSORS"])
+cmd = "bdb -o root=__part -o numParts=%s split %s"%(processors,fnString)
+print cmd
+os.system(cmd)
+
+for m in range(1,processors+1):
+    filePart = "@__part%04d > __part%04d.log_"%(m,m)
+    cmd = "%s %s %s %s &"%(command,optString,subCommand,filePart)
+    print cmd
+    os.system(cmd)
+

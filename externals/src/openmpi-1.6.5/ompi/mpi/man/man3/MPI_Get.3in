@@ -1,0 +1,98 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Get 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Get\fP \- Copies data from the target memory to the origin. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+MPI_Get(void *\fIorigin_addr\fP, int \fIorigin_count\fP, MPI_Datatype 
+	\fIorigin_datatype\fP, int \fItarget_rank\fP, MPI_Aint \fItarget_disp\fP, 
+	int \fItarget_count\fP, MPI_Datatype \fItarget_datatype\fP, MPI_Win \fIwin\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+INCLUDE 'mpif.h'
+MPI_GET(\fIORIGIN_ADDR, ORIGIN_COUNT, ORIGIN_DATATYPE, TARGET_RANK, 
+	TARGET_DISP, TARGET_COUNT, TARGET_DATATYPE, WIN, IERROR\fP)
+	<type> \fIORIGIN_ADDR\fP(*)
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fITARGET_DISP\fP
+	INTEGER \fIORIGIN_COUNT, ORIGIN_DATATYPE, TARGET_RANK, 
+	TARGET_COUNT, TARGET_DATATYPE, WIN, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Get(const void *\fIorigin_addr\fP, int \fIorigin_count\fP, 
+	const MPI::Datatype& \fIorigin_datatype\fP, int \fItarget_rank\fP, 
+	MPI::Aint \fItarget_disp\fP, int \fItarget_count\fP, 
+	const MPI::Datatype& \fItarget_datatype\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+origin_addr
+Initial address of origin buffer (choice).
+.TP 1i
+origin_count
+Number of entries in origin buffer (nonnegative integer). 
+.TP 1i
+origin_datatype
+Data type of each entry in origin buffer (handle).
+.TP 1i
+target_rank
+Rank of target (nonnegative integer).
+.TP 1i
+target_disp
+Displacement from window start to the beginning of the target buffer (nonnegative integer). 
+.TP 1i
+target_count
+Number of entries in target buffer (nonnegative integer).
+.TP 1i
+target datatype
+datatype of each entry in target buffer (handle) 
+.TP 1i
+win
+window object used for communication (handle)
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Get copies data from the target memory to the origin, similar to MPI_Put, except that the direction of data transfer is reversed. The \fIorigin_datatype\fP may not specify overlapping entries in the origin buffer. The target buffer must be contained within the target window, and the copied data must fit, without truncation, in the origin buffer. Only processes within the same node can access the target window.
+.sp
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fITARGET_DISP\fP argument only for Fortran 90. FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_ADDRESS_KIND \fITARGET_DISP\fP
+.fi
+.sp
+where MPI_ADDRESS_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Put
+

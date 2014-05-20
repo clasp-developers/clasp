@@ -1,0 +1,66 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Info_dup 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Info_dup\fP \- Duplicates an info object. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Info_dup(MPI_Info \fIinfo\fP, MPI_Info \fI*newinfo\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_INFO_DUP(\fIINFO, NEWINFO, IERROR\fP)
+	INTEGER		\fIINFO, NEWINFO, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Info MPI::Info::Dup() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+info
+Info object (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newinfo
+Info object (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Info_dup duplicates an existing info object, creating a new object, with the same (key,value) pairs and the same ordering of keys. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft r
+MPI_Info_create
+.br
+MPI_Info_delete
+.br
+MPI_Info_free
+.br
+MPI_Info_get
+.br
+MPI_Info_set
+.br
+

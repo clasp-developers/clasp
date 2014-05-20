@@ -1,0 +1,153 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Scatter 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Scatter\fP \- Sends data from one task to all tasks in a group.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Scatter(void *\fIsendbuf\fP, int\fI sendcount\fP, MPI_Datatype\fI sendtype\fP,
+	void\fI *recvbuf\fP, int\fI recvcount\fP, MPI_Datatype\fI recvtype\fP, int\fI root\fP,
+	MPI_Comm\fI comm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_SCATTER(\fISENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT,
+		RECVTYPE, ROOT, COMM, IERROR\fP)
+	<type>	\fISENDBUF(*), RECVBUF(*)\fP
+	INTEGER	\fISENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, ROOT\fP 
+	INTEGER	\fICOMM, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Scatter(const void* \fIsendbuf\fP, int \fIsendcount\fP,
+	const MPI::Datatype& \fIsendtype\fP, void* \fIrecvbuf\fP,
+	int \fIrecvcount\fP, const MPI::Datatype& \fIrecvtype\fP, 
+	int \fIroot\fP) const 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+sendbuf
+Address of send buffer (choice, significant only at root).
+.TP 1i
+sendcount
+Number of elements sent to each process (integer, significant only at
+root).
+.TP 1i
+sendtype
+Datatype of send buffer elements (handle, significant only at root). 
+.TP 1i
+recvcount
+Number of elements in receive buffer (integer).
+.TP 1i
+recvtype
+Datatype of receive buffer elements (handle).
+.TP 1i
+root
+Rank of sending process (integer).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+recvbuf
+Address of receive buffer (choice).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Scatter is the inverse operation to MPI_Gather. 
+.sp
+The outcome is as if the root executed n send operations,  
+.sp
+.nf
+    MPI_Send(sendbuf + i * sendcount * extent(sendtype), sendcount,
+             sendtype, i, \&...)
+.fi
+.sp
+and each process executed a receive,  
+.sp
+.nf
+    MPI_Recv(recvbuf, recvcount, recvtype, i, \&...).
+.fi
+.sp
+An alternative description is that the root sends a message with
+MPI_Send(\fIsendbuf\fP, \fIsendcount\fP * \fIn\fP,\ \fIsendtype\fP, \&...). This message is split
+into \fIn\fP equal segments, the ith segment is sent to the ith process in the
+group, and each process receives this message as above.
+.sp
+The send buffer is ignored for all nonroot processes. 
+.sp
+The type signature associated with \fIsendcount\fP, \fIsendtype\fP at the root must be
+equal to the type signature associated with \fIrecvcount\fP, \fIrecvtype\fP at all
+processes (however, the type maps may be different). This implies that the
+amount of data sent must be equal to the amount of data received, pairwise
+between each process and the root. Distinct type maps between sender and
+receiver are still allowed.
+.sp
+All arguments to the function are significant on process \fIroot\fP, while on
+other processes, only arguments \fIrecvbuf\fP, \fIrecvcount\fP, \fIrecvtype\fP, \fIroot\fP, \fIcomm\fP
+are significant. The arguments \fIroot\fP and \fIcomm\fP must have identical values on
+all processes.
+.sp
+The specification of counts and types should not cause any location on the
+root to be read more than once.
+.sp
+\fBRationale:\fR Though not needed, the last restriction is imposed so as
+to achieve symmetry with MPI_Gather, where the corresponding restriction (a
+multiple-write restriction) is necessary.
+.sp
+\fBExample:\fR The reverse of Example 1 in the MPI_Gather manpage. Scatter
+sets of 100 ints from the root to each process in the group.  
+.sp
+.nf
+        MPI_Comm comm;
+        int gsize,*sendbuf; 
+        int root, rbuf[100]; 
+        \&... 
+        MPI_Comm_size(comm, &gsize); 
+        sendbuf = (int *)malloc(gsize*100*sizeof(int)); 
+        \&... 
+        MPI_Scatter(sendbuf, 100, MPI_INT, rbuf, 100, 
+                    MPI_INT, root, comm);
+.fi
+
+.SH USE OF IN-PLACE OPTION
+When the communicator is an intracommunicator, you can perform a gather operation in-place (the output buffer is used as the input buffer).  Use the variable MPI_IN_PLACE as the value of the root process \fIrecvbuf\fR.  In this case, \fIrecvcount\fR and \fIrecvtype\fR are ignored, and the root process sends no data to itself.    
+.sp
+Note that MPI_IN_PLACE is a special kind of value; it has the same restrictions on its use as MPI_BOTTOM.
+.sp
+Because the in-place option converts the receive buffer into a send-and-receive buffer, a Fortran binding that includes INTENT must mark these as INOUT, not OUT.   
+.sp
+.SH WHEN COMMUNICATOR IS AN INTER-COMMUNICATOR
+.sp
+When the communicator is an inter-communicator, the root process in the first group sends data to all processes in the second group.  The first group defines the root process.  That process uses MPI_ROOT as the value of its \fIroot\fR argument.  The remaining processes use MPI_PROC_NULL as the value of their \fIroot\fR argument.  All processes in the second group use the rank of that root process in the first group as the value of their \fIroot\fR argument.   The receive buffer argument of the root process in the first group must be consistent with the receive buffer argument of the processes in the second group.   
+.sp  
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+.nf
+MPI_Scatterv
+MPI_Gather
+MPI_Gatherv
+

@@ -1,0 +1,60 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Cartdim_get 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Cartdim_get \fP \-  Retrieves Cartesian topology information associated with a communicator.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Cartdim_get(MPI_Comm\fI comm\fP, int\fI *ndims\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_CARTDIM_GET(\fICOMM, NDIMS, IERROR\fP)
+	INTEGER	\fICOMM, NDIMS, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int Cartcomm::Get_dim() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+comm
+Communicator with Cartesian structure (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+ndims
+Number of dimensions of the Cartesian structure (integer).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Cartdim_get returns the number of dimensions of the Cartesian structure. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+.nf
+MPI_Cart_get
+MPI_Cart_create
+

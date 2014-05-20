@@ -1,0 +1,59 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_wait 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_wait\fP \- Completes an RMA exposure epoch started by a call to MPI_Win_post on \fIwin\fP
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_wait(MPI_Win \fIwin\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_WAIT(\fI WIN, IERROR\fP)
+	INTEGER \fI WIN, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Wait() const 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+win
+Window object (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Win_wait is a one-sided MPI communication synchronization call that completes an RMA exposure epoch started by a call to MPI_Win_post on \fIwin\fP. This
+call matches calls to MPI_Win_complete(\fIwin\fP) issued by each of the processes that
+were granted access to the window during this epoch. The call to MPI_Win_wait blocks
+until all matching calls to MPI_Win_complete have occurred. This guarantees that all
+these origin processes have completed their RMA accesses to the local window. When the
+call returns, all these RMA accesses will have completed at the target window.
+
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Win_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error. 
+ 
+.SH SEE ALSO
+MPI_Win_post
+.br
+

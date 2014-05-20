@@ -1,0 +1,67 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Is_thread_main 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Is_thread_main\fP \- Determines if thread called MPI_Init
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Is_thread_main(int *\fIflag\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_IS_THREAD_MAIN(\fIFLAG, IERROR\fP)
+	LOGICAL	\fIFLAG\fP
+	INTEGER	\fIIERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+bool MPI::Is_thread_main()
+
+.fi
+.SH OUTPUT PARAMETERS
+.TP 1i
+flag
+True if calling thread is main thread (boolean).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Is_thread_main is called by a thread to find out whether the
+caller is the main thread (that is, the thread that called MPI_Init or
+MPI_Init_thread).
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Init
+MPI_Init_thread
+

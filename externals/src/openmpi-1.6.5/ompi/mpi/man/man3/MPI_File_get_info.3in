@@ -1,0 +1,94 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_get_info 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_get_info\fP \- Returns a new info object containing values for current hints associated with a file. 
+
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_get_info(MPI_File \fIfh\fP, MPI_Info \fI*info_used\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_GET_INFO(\fIFH\fP, \fIINFO_USED\fP, \fIIERROR\fP)
+        	 INTEGER	  FH, INFO_USED, IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Info MPI::File::Get_info() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+fh    
+File handle (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+info_used
+New info object (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_get_info returns a new info object containing all the hints that the system currently associates with the file \fIfh\fP. The current setting of all hints actually used by the system related to this open file is returned in \fIinfo_used\fP. The user is responsible for freeing \fIinfo_used\fP via MPI_Info_free. 
+
+Note that the set of hints returned in \fIinfo_used\fP may be greater or smaller than the set of hints passed in to MPI_File_open, MPI_File_set_view, and MPI_File_set_info, as the system may not recognize some hints set by the user, and may automatically set other hints that the user has not requested to be set. See the HINTS section for a list of hints that can be set. 
+
+.SH HINTS
+.ft R
+The following hints can be used as values for the \fIinfo_used\fP argument. 
+.sp
+SETTABLE HINTS:
+.sp
+- shared_file_timeout: Amount of time (in seconds) to wait for access to the 
+shared file pointer before exiting with MPI_ERR_TIMEDOUT.
+.sp
+- rwlock_timeout: Amount of time (in seconds) to wait for obtaining a read or 
+write lock on a contiguous chunk of a UNIX file before exiting with MPI_ERR_TIMEDOUT.
+.sp 
+- noncoll_read_bufsize:  Maximum size of the buffer used by
+MPI I/O to satisfy  read requests in
+the noncollective data-access routines. (See NOTE, below.)
+.sp
+- noncoll_write_bufsize: Maximum size of the buffer used by
+MPI I/O to satisfy write requests in
+the noncollective data-access routines. (See NOTE, below.)
+.sp
+- coll_read_bufsize:  Maximum size of the buffer used by MPI
+I/O to satisfy read requests in the
+collective data-access routines. (See NOTE, below.)
+.sp
+- coll_write_bufsize:  Maximum size of the buffer used by MPI
+I/O to satisfy write requests in the
+collective data-access routines. (See NOTE, below.)
+.sp
+NOTE: A buffer size smaller than the distance (in bytes) in a UNIX file between the first byte and the last byte of the access request causes MPI I/O to iterate and perform multiple UNIX read() or write() calls. If the request includes multiple noncontiguous chunks of data, and the buffer size is greater than the size of those chunks, then the UNIX read() or write() (made at the MPI I/O level) will access data not requested by this process in order to reduce the total number of write() calls made. If this is not desirable behavior, you should reduce this buffer size to equal the size of the contiguous chunks within the aggregate request.
+.sp
+- mpiio_concurrency: (boolean) controls whether nonblocking
+I/O routines can bind an extra thread to an LWP.
+.sp
+- mpiio_coll_contiguous: (boolean) controls whether subsequent collective data accesses will request collectively contiguous regions of the file.
+.sp
+NON-SETTABLE HINTS: 
+.sp
+- filename: Access this hint to get the name of the file. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

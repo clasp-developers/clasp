@@ -1,0 +1,4887 @@
+#define	DEBUG_LEVEL_FULL
+
+
+
+/*
+__BEGIN_DOC( candoScript, Cando Scripting Language)
+Cando-Script is a language tailored to constructing and searching virtual oligomer libraries.
+Cando-Script is based on Common Lisp.\par
+
+Cando-Script is designed to allow a chemists to easily define virtual oligomer libraries, build 3D models of members of of
+oligomer libraries, score members of these libraries and identify the best 
+oligomer structures that present functional groups
+in a desired three-dimensional constellation.\par
+
+Cando-Script commands are invoked using two forms: 
+
+\begin{itemize}
+\item Prefix form - [\textbf{command} \emph{arg1 arg2 arg3 ...} ]
+
+This is the ``prefix'' form, where the \textbf{command} is given followed by its arguments. 
+Square brackets are used to indicate that this is a prefix form command.
+
+When {\CANDOSCRIPT} encounters a command in prefix form it does the following:
+\begin{enumerate}
+\item It checks if the command is a macro name like ``defClass'' or ``if'' and if it is
+then the arguments are passed to the internal macro code for it to handle in its own way.
+{\CANDOSCRIPT} then goes on to the next command.
+
+\item {\CANDOSCRIPT} evaluates all of the arguments and constructs a list of evaluated arguments to
+pass to the function or method.
+
+\item {\CANDOSCRIPT} checks to see if the first evaluated argument object recognizes the method with
+the \textbf{command} name and if it does {\CANDOSCRIPT} invokes the method with the evaluated argument list.
+{\CANDOSCRIPT} then puts the result of the invocation into a growing argument list and goes to the
+next command.
+
+\item If the \textbf{command} didn't match an object/method call then {\CANDOSCRIPT} checks if \textbf{command}
+matches a function call.  If it does then {\CANDOSCRIPT} invokes the function with the evaluated arguments and puts the
+result into a growing result list and goes to the next command.
+
+\item {\CANDOSCRIPT} throws an error saying that the current command is not recognized.
+
+\end{enumerate}
+
+Examples:\par
+\begin{verbatim}
+[save hitList "hits.oml" ]  # saves the hitList object 
+                            #    to the file: hits.oml.
+[:= x 10.0]                 # assigns the value 10.0 
+                            #    to the global variable x.
+[println "Hello world" ]    # prints "Hello world" to stdout 
+                            #    followed by a carriage return.
+\end{verbatim}
+
+\item Infix form - ( object \textbf{command} \emph{arg1 arg2 ...} )
+
+This is the "infix" form, where the \textbf{command} is sent to the \emph{object} 
+with the arguments \emph{arg1 arg2 ...}. 
+
+Internally the ``infix'' form is automatically converted into ``prefix'' form 
+by swapping the order of \emph{object} and \textbf{command}. 
+
+So the command: ( \emph{object} \textbf{command} \emph{arg1 arg2 ...} ) \par
+is converted to [ \textbf{command} \emph{object} \emph{arg1 arg2 ...} ]
+
+The purpose of the infix-form is
+to allow the programmer to use a more familiar notation for mathematical 
+expressions and conditional expressions.
+
+
+\end{verbatim}
+__END_DOC
+ */
+#include "useBoostPython.h"
+
+#include <stdlib.h>
+
+#include "boost/filesystem.hpp"
+#include "boost/program_options.hpp"
+//#include	"boost/fstream.hpp"
+#include "foundation.h"
+#include "object.h"
+#include "candoOpenMp.h"
+#include "exceptions.h"
+#include "compiler.h"
+#include "lisp.h"
+#include "archiveNode.h"
+#include "archive.h"
+#include "profiler.h"
+#include "bundle.h"
+#include "stringSet.h"
+#include "cons.h"
+#include "specialForm.h"
+#include "environment.h"
+#include "numbers.h"
+#include "setfExpander.h"
+#include "standardObject.h"
+#include "conditionHandlers.h"
+#include "ql.h"
+#include "str.h"
+#include "fileSystem.h"
+#include "debugger.h"
+#include "builtInClass.h"
+#include "standardClass.h"
+#include "executables.h"
+#include "ovector3.h"
+#include "myReadLine.h"
+#include "lispStream.h"
+#include "lispReader.h"
+#include "multipleValues.h"
+#include "xmlLoadArchive.h"
+#include "xmlSaveArchive.h"
+#include "serialize.h"
+#include "bootStrapCoreSIDMap.h"
+#include "numerics.h"
+#include "reader.h"
+#include "genericFunction.h"
+#include "singleDispatchGenericFunction.h"
+#include "executables.h"
+#include "designators.h"
+#include "sort.h"
+#include "bitVector.h"
+#include "boundingBox.h"
+#include "character.h"
+#include "primitives.h"
+#include "package.h"
+#include "symbol.h"
+#include "lambdaListHandler.h"
+#include "sequenceVirtual.h"
+#include "sequence.h"
+#include "evaluator.h"
+#include "lispDefinitions.h"
+#include "myReadLine.h"
+#include "externalObject.h"
+#include "initializeClasses.h"
+#include "render.h"
+#include "holder.h"
+#include "candoFormatSaveArchive.h"
+#include "corePackage.h"
+#include "primitives.h"
+#include "readtable.h"
+#include "clos.h"
+#include "wrappers.h"
+#include "python_wrappers.h"
+
+#ifdef	READLINE
+extern "C" char *readline( const char* prompt);
+extern "C" void add_history(char* line);
+#endif
+
+#define ARGS_empty ""
+#define DOCS_empty ""
+
+
+namespace core 
+{
+
+Lisp_sp global_lisp;
+
+LispHolder* DefaultLispHolder = NULL;
+
+
+extern void lispScannerDebug(istream& sin);
+extern string	getLispError();
+
+
+SMART(BuiltInClass);
+
+
+
+#ifdef	USEBOOSTPYTHON
+#if 0
+void	LispError_OTranslator( LispError_O const& e )
+{
+    char	error[1024];
+    string	msg;
+    msg = e.message_const();
+    sprintf( error, "%s", msg.c_str() );
+    PyErr_SetString(PyExc_UserWarning, error );
+}
+#endif
+#endif
+
+
+//
+// Constructor
+//
+Lisp_O::Lisp_O(const MetaClass_sp& mc) : T_O(mc),
+					_Bundle(NULL),
+					_DebugStream(NULL),
+					_profiler(NULL), 
+					_freeOutputStream(false),
+					_PrintvWriteChar(NULL), 
+					_PrintvFlush(NULL), 
+					_MpiEnabled(false), 
+					_MpiRank(0),
+					 _MpiSize(1),
+					 _Interactive(false),
+					 _EmbeddedInPython(false)
+{
+    this->_freeOutputStream = false;
+    this->_outputStream = &cout;
+    this->_GlobalInitializationCallbacks.clear();
+    this->_MakePackageCallback = NULL;
+    this->_ExportSymbolCallback = NULL;
+}
+
+
+void Lisp_O::shutdownLispEnvironment()
+{
+    if ( this->_DebugStream != NULL )
+    {
+	this->_DebugStream->beginNode("SHUTDOWN");
+    }
+    this->_CommandLineArguments.reset();
+    this->_Packages.clear();
+    this->_HiddenBinder.reset();
+    this->_Program.reset();
+    this->_SpecialForms.clear();
+    this->_Modules.reset();
+    this->_ConditionHandlers.reset();
+    this->_RestartHandlers.reset();
+    this->_TrueObject.reset();
+    this->_EofObject.reset();
+
+#if 0
+    // 
+    // Wipe out the classes in reverse order of how they were created
+    // This may still pose problems for BuiltInClass_O and MetaClass_O, the
+    // first two classes created
+    //
+    for ( int i=this->_ClassesByClassSID.size()-1;  i>= 0; i-- )
+    {
+	lisp_LOG(this->lisp(),BF( "About to destroy class#%d(%s)") % i % this->_ClassesByClassSID[i]->name()->__repr__() );
+	this->_ClassesByClassSID[i].reset();
+    }
+#endif
+//    this->_ClassesByClassSID.clear();
+    if ( this->_Bundle != NULL )    
+    {
+	delete this->_Bundle;    
+    }
+    if ( this->_profiler != NULL )    {	delete this->_profiler; }
+    if ( this->_DebugStream!=NULL )    
+    { 
+	this->_DebugStream->endNode("SHUTDOWN");
+	delete this->_DebugStream; 
+    }
+    if ( this->_freeOutputStream ) 
+    {
+	if ( this->_outputStream!=NULL ) delete this->_outputStream;
+    }
+}
+
+
+
+
+
+
+Lisp_O::~Lisp_O()
+{
+    // nothing is left to be done here
+}
+
+
+EvalFrame& Lisp_O::__frame(int idx)
+{_OF();
+    if ( idx < 0 ) idx = 0;
+    if ( idx > this->__lastFrameIndex() ) idx = this->__lastFrameIndex();
+    return this->_ExecutionStack[idx];
+}
+
+void Lisp_O::lisp_initSymbols(Lisp_sp lisp)
+{
+    Package_sp corePackage = lisp->_CorePackage;
+}
+
+
+void	Lisp_O::initialize()
+{
+    // Don't do anything here
+    // add initialization to the end of createLispEnvironment
+}
+
+
+Lisp_sp Lisp_O::lisp()
+{
+    HARD_ASSERT(this->_WeakThis.use_count() != 0);
+    return boost::shared_polymorphic_downcast<Lisp_O>(this->_WeakThis.lock());
+}
+
+Lisp_sp Lisp_O::lisp() const
+{
+    HARD_ASSERT(this->_WeakThis.use_count() != 0);
+    return boost::shared_polymorphic_downcast<Lisp_O>(this->_WeakThis.lock());
+}
+
+
+
+void Lisp_O::addToStarModulesStar(Symbol_sp sym)
+{_OF();
+    Cons_sp list = _sym_STARmodulesSTAR->dynamicValue()->as<Cons_O>();
+    list = Cons_O::create(sym,list,_lisp);
+    _sym_STARmodulesSTAR->setDynamicValue(list);
+}
+
+
+
+template <class oclass>
+void setup_static_classSID(BootStrapCoreSIDMap const& sidMap)
+{
+    oclass::___set_static_ClassSID(sidMap.lookupSID(oclass::static_packageName(),oclass::static_className()));
+}
+
+
+#if 0
+template <class oclass>
+BuiltInClass_sp hand_initialize_class(uint& classesHandInitialized, Lisp_sp prog, BuiltInClass_sp _class )
+{
+    classesHandInitialized++;
+    MetaClass_sp undefinedMetaClass;
+    undefinedMetaClass.reset();
+    BuiltInClass_sp co = BuiltInClass_O::create(undefinedMetaClass);
+    co->_WeakThis = co;
+    co->__setClass(_class);	/* Is this what I need here? */
+    co->_InitializationOwner.reset();
+    co->_WeakLisp = prog;
+    co->_Name.reset();
+    co->_InstanceClassSID = oclass::static_classSID();
+    return co;
+}
+
+
+
+template <class oclass>
+void define_base_class(MetaClass_sp co, MetaClass_sp cob, uint& classesUpdated )
+{_F(co->lisp());
+    co->addInstanceBaseClass(cob);
+    classesUpdated++;
+}
+
+template <class oclass>
+void define_class_name(MetaClass_sp co, T_sp packageDesignator, uint& classesUpdated )
+{_F(co->lisp());
+    co->_Name = co->lisp()->intern(oclass::static_className(),packageDesignator);
+    if ( oclass::static_classSID()> _lisp->_PredefinedSymbols.size() )
+    {
+	Symbol_sp undefinedSymbol;
+	undefinedSymbol.reset();
+	_lisp->_PredefinedSymbols.resize(oclass::static_classSID()+1,undefinedSymbol);
+    }
+    _lisp->_PredefinedSymbols[oclass::static_classSID()] = co->_Name;
+    _lisp->_ClassTable[co->_Name] = co;
+    LOG(BF("Setting _PredefinedSymbols[%d] = symbol[%s]") % oclass::static_classSID() % co->_Name->__repr__() );
+    classesUpdated++;
+}
+#endif
+
+
+string dump_instanceClass_info(MetaClass_sp co, Lisp_sp prog)
+{_F(prog);
+    stringstream ss;
+    ss << "------------------------------------- class" << co->classNameSymbol()->__repr__() << endl;;
+    LOG(BF("Dumping info: %s") % co->dumpInfo() );
+    ss << co->dumpInfo();
+    return ss.str();
+}
+template <class oclass>
+void dump_info(BuiltInClass_sp co, Lisp_sp lisp)
+{_F(lisp);
+    LOG(BF("-------    dump_info    --------------- className: %s @ %X")% oclass::static_className() % co.get());
+    LOG(BF("%s::static_classSID() = %d")% oclass::static_className() % oclass::static_classSID() );
+    LOG(BF("%s::Base::static_classSID() = %d")% oclass::static_className() % oclass::Base::static_classSID() );
+    LOG(BF("%s::static_newNil_callback() = %X")% oclass::static_className() % (void*)(oclass::static_newNil_callback()) );
+//    LOG(BF("%s")%dump_instanceClass_info(co,lisp));
+}
+
+
+
+
+
+Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize )
+{
+    MetaClass_sp undefinedMetaClass;
+    undefinedMetaClass.reset();
+    Lisp_sp lisp = Lisp_O::create(undefinedMetaClass);
+    lisp->setupMpi(mpiEnabled,mpiRank,mpiSize);
+    lisp->__setWeakThis(lisp);
+    lisp->__resetInitializationOwner();
+    lisp->_DebugStream = new DebugStream(mpiRank);
+    lisp_LOG(lisp,BF("The lisp environment DebugStream has been created"));
+    lisp->_profiler = new LightProfiler(lisp);
+    lisp->_PrintvWriteChar = foundation_printv_writeChar;
+    lisp->_PrintvFlush = foundation_printv_flush;
+
+    return lisp;
+}
+
+
+
+void Lisp_O::setupMpi(bool mpiEnabled, int mpiRank, int mpiSize)
+{
+    this->_MpiEnabled = mpiEnabled;
+    this->_MpiRank = mpiRank;
+    this->_MpiSize = mpiSize;
+}
+
+
+Lisp_sp Lisp_O::create(MetaClass_sp mc)
+{
+    Lisp_sp lisp(new Lisp_O(mc));
+    return lisp;
+}
+
+
+
+void Lisp_O::startupLispEnvironment(Bundle* bundle)
+{_F(this->lisp());
+    this->_Mode = FLAG_EXECUTE;
+    global_lisp = _lisp;
+    initializeProfiler(this->profiler(),this->lisp());
+    this->_TraceLevel = 0;
+    this->_DebuggerLevel = 0;
+    this->_SingleStepping = false;
+    this->_CoreBuiltInClassesInitialized = false;
+    this->_ConditionHandlers.reset();
+    this->_RestartHandlers.reset();
+    this->_PackagesInitialized = false;
+    this->_BuiltInClassesInitialized = false;
+    this->_NilsCreated = false;
+    this->_EnvironmentInitialized = false;
+    this->_EnvironmentId = 0;
+    this->_CommandLineArguments.reset();
+    this->_Modules.reset();
+    this->_Graphical = false;
+
+    this->_Bundle = bundle;
+
+    CoreExposer* coreExposerPtr = NULL;
+    BuiltInClass_sp classDummy;
+    { // this does what RP_Create was supposed to do
+	// this->_Class = __setClass(NULL); // Null for now - down below we will set this up
+	this->__resetInitializationOwner();
+    }
+    { _BLOCK_TRACE("Initialize core classes by hand");
+	coreExposerPtr = CoreExposer::create_core_classes(this->lisp());
+	{_BLOCK_TRACE("Define important predefined symbols for CorePkg");
+	    coreExposerPtr->define_essential_globals(this->lisp());
+	    this->_PackagesInitialized = true;
+	}
+    }
+    Package_sp userPackage, ampPackage, mbbPackage, keywordPackage;
+    keywordPackage = this->_KeywordPackage; // Created by CoreExposer
+    { _BLOCK_TRACE("Initialize special forms and macros");
+	this->_EnvironmentInitialized = true;
+	eval::defineSpecialFormsAndMacros(this->sharedThis<Lisp_O>(),this->_CorePackage);
+	this->createHiddenBinder();
+    }
+    this->_BuiltInClassesInitialized = true;
+    LOG(BF("ALL CLASSES: %s")% this->dumpClasses() );
+//    this->createNils();
+    this->_NilsCreated= true;
+    {_BLOCK_TRACE("Initialize the nil object for each class");
+	for ( SymbolMap<MetaClass_O>::iterator mi=this->_ClassTable.begin(); mi!=this->_ClassTable.end(); mi++ )
+	{
+	    MetaClass_sp mc = mi->second;
+	    {_BLOCK_TRACEF(BF("Initializing nil for class: %s")% mc->instanceClassName() );
+		T_sp theNilObject = mc->instanceNil<T_O>();
+		ASSERTNOTNULL(theNilObject);
+		theNilObject->initialize();
+	    }
+	}
+    }
+    {_BLOCK_TRACE("Dump of all BuiltInClass classes");
+#ifdef	DEBUG_ON
+	//    rootClassManager().debugDump();
+#endif
+    }
+    {_BLOCK_TRACE("Create a top-level lexical environment");
+	this->_TopLevelEnvironment = Environment_O::create_single_top_level_environment(this->lisp());
+    }
+    LOG(BF("Package(%s) symbols: %s")% this->_CorePackage->getName() % this->_CorePackage->allSymbols() );
+    LOG(BF("Package(%s) symbols: %s")% keywordPackage->getName() % keywordPackage->allSymbols() );
+
+    //
+    // Finish initializing Lisp object
+    //
+    this->_CommandLineArguments = Cons_O::nil(this->sharedThis<Lisp_O>());
+    this->_Modules = StringSet_O::create(this->sharedThis<Lisp_O>());
+    this->_ConditionHandlers = Cons_O::nil(this->sharedThis<Lisp_O>());
+    this->_RestartHandlers = Cons_O::nil(this->sharedThis<Lisp_O>());
+    //
+    // Create the global environment
+    //
+//    this->_DefaultHierarchy = O_Hierarchy::create(this->sharedThis<Lisp_O>());
+    this->_Program = Cons_O::nil(this->sharedThis<Lisp_O>());
+    this->__setClass(this->classFromClassSID(Lisp_O::static_classSID()));
+
+    {_BLOCK_TRACE("Initialize scripting stuff");
+        Lisp_sp lisp = this->sharedThis<Lisp_O>();
+#include "initScripting.inc"
+    }
+    {_BLOCK_TRACE("Initialize other code"); // needs _TrueObject
+#define Use_CorePkg
+	Lisp_sp lisp = this->sharedThis<Lisp_O>();
+#include "initScripting.inc"
+#undef Use_CorePkg
+	initializeCandoPrimitives(lisp->lisp());
+	coreExposerPtr->expose(this->lisp(),PackageExposer::candoClasses);
+	initializeCandoClos(this->lisp());
+    }
+    //
+    // Create the user package
+    //
+    {_BLOCK_TRACE("Initializing the the COMMON-LISP and COMMON-LISP-USER package");
+	list<string> nicknames;
+	nicknames.push_front("u");
+	list<Package_sp> usePackages;
+	usePackages.push_front(this->_CorePackage);
+	userPackage = this->makePackage("CORE-USER",nicknames,usePackages);
+//	userPackage = Package_O::create(this->sharedThis<Lisp_O>(),UserPackage);
+//	this->_Packages.set(UserPackage,userPackage);
+    }
+    {_BLOCK_TRACE("Initializing special variable PATH");
+	boost::filesystem::path scriptPath = bundle->getCandoScriptDir();
+	Cons_sp path = this->create<Cons_O>(this->create<Str_O>("./"));
+	if ( !scriptPath.empty() )
+	{
+	    Str_sp scriptDir = this->create<Str_O>(scriptPath.string());
+	    path = Cons_O::create(scriptDir,path,this->sharedThis<Lisp_O>());
+	}
+	Symbol_sp sym = this->symbol(_sym_STARPATHSTAR);
+	this->defvar(sym,path);
+	this->_RequireLevel = 0;
+    }
+    {_BLOCK_TRACE("Initialize the arguments for class methods");
+	for ( SymbolMap<MetaClass_O>::iterator mi=this->_ClassTable.begin(); mi!=this->_ClassTable.end(); mi++ )
+	{
+	    MetaClass_sp oc = mi->second->as<MetaClass_O>();
+	    oc->setupMethodArguments();
+	}
+    }
+#if 0
+    {_BLOCK_TRACE("Initialize the arguments for functions in core package");
+	corepkg.package()->createFunctionOrdinaryLambdaListHandlers();
+    }
+#endif
+    //
+    //
+    //
+    Lisp_O::initializeGlobals(this->lisp());
+    coreExposerPtr->expose(this->lisp(),PackageExposer::candoFunctions);
+    coreExposerPtr->expose(this->lisp(),PackageExposer::candoGlobals);
+    {_BLOCK_TRACE("Call global initialization callbacks");
+        for ( vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin(); 
+	      ic!=this->_GlobalInitializationCallbacks.end(); ic++ )
+	{
+	    (*ic)(this->lisp());
+	}
+    }
+
+#if 0
+    {_BLOCK_TRACE("set userPackage to the current one");
+	this->setCurrentPackage(userPackage);
+    }
+#endif
+    Path_sp startupWorkingDir = Path_O::create(bundle->getStartupWorkingDir(),this->lisp());
+    this->defconstant(_sym_STARcurrent_working_directorySTAR,Path_O::nil(this->lisp()));
+    this->setCurrentWorkingDirectory(startupWorkingDir);
+    {_BLOCK_TRACE("Evaluating core function/macro definitions");
+    }
+    {_BLOCK_TRACE("Create a dummy stack frame");
+	EvalFrame dummyFrame(this->onil(),this->top_level_environment());
+	this->__pushFrame(dummyFrame);
+    }
+    if ( this->_dont_load_startup )
+    {_BLOCK_TRACE("Load startup code");
+	Path_sp corePath = Path_O::create(this->_Bundle->getCandoScriptDir(),_lisp);
+	corePath->path_append("/CANDO/init");
+	corePath->path_append("/coreFile.lisp");
+	{_BLOCK_TRACEF(BF("Loading core-file with path: %s") % corePath->asString() );
+	    this->load(corePath);
+	}
+    } else
+    {
+	LOG(BF("Not loading startup code"));
+    }
+	
+}
+
+
+void Lisp_O::add_accessor_pair(sid getter, sid setter)
+{_OF();
+    Symbol_sp getSym = getter;
+    Symbol_sp setSym = setter;
+    FunctionNameSetfExpander_sp expander = FunctionNameSetfExpander_O::create(setSym,_lisp);
+    _lisp->addSetfExpander(getSym,expander);
+}
+
+
+void Lisp_O::addSetfExpander(Symbol_sp sym, SetfExpander_sp expander)
+{_OF();
+    LOG(BF("Adding setf expander for symbol[%s] expander[%s]") % sym->__repr__() % expander->__repr__() );
+    this->_SetfExpanders.set(sym,expander);
+}
+
+SetfExpander_sp Lisp_O::lookupSetfExpander(Symbol_sp sym) const
+{_OF();
+    SymbolMap<SetfExpander_O>::const_iterator it = this->_SetfExpanders.find(sym);
+    if ( it == this->_SetfExpanders.end() ) 
+    {
+	LOG(BF("Could not find expander for symbol[%s]") % sym->__repr__() );
+	LOG(BF("Recognized symbols for setf expansion[%s]")
+	    % StringSet_O::create_fromKeysOfSymbolMap(this->_SetfExpanders,_lisp)->asString() );
+	return _lisp->nil<SetfExpander_O>();
+    }
+    LOG(BF("Found setf expander for symbol[%s]") % sym->__repr__() );
+    return it->second;
+}
+
+
+void Lisp_O::setCurrentWorkingDirectory(Path_sp dir)
+{
+    _sym_STARcurrent_working_directorySTAR->setDynamicValueReadOnlyOverRide(dir);
+}
+
+Path_sp Lisp_O::getCurrentWorkingDirectory()
+{
+    return this->symbol(_sym_STARcurrent_working_directorySTAR)->dynamicValue()->as<Path_O>();
+}
+
+
+
+ReadTable_sp Lisp_O::getCurrentReadTable()
+{
+    return this->top_level_environment()->lookup(_sym_STARreadtableSTAR)->as<ReadTable_O>();
+}
+
+void Lisp_O::setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc)
+{_OF();
+    LOG(BF("Setting MakePackageCallback and ExportSymbolCallback"));
+    this->_MakePackageCallback = mpc;
+    this->_ExportSymbolCallback = esc;
+}
+
+
+
+
+void Lisp_O::setupOutputCallbacks(PrintvWriteCharCallback pvc, PrintvFlushCallback pf)
+{
+    this->_PrintvWriteChar = pvc;
+    this->_PrintvFlush = pf;
+}
+
+
+
+
+
+
+
+
+
+
+
+T_sp Lisp_O::sread(Stream_sp sin, bool eofErrorP, T_sp eofValue )
+{_OF();
+    ReadSerializer_sp reader = _lisp->create<ReadSerializer_O>();
+    T_sp obj = reader->read(sin,eofErrorP,eofValue);
+    return obj;
+}
+
+void Lisp_O::sprint(T_sp obj, Stream_sp sout )
+{_OF();
+    	WriteSerializer_sp writer = _lisp->create<WriteSerializer_O>();
+	writer->addObject(obj);
+	writer->write(sout);
+}
+
+
+
+
+
+
+void Lisp_O::print(boost::format fmt)
+{_OF();
+    this->printvWrite("\n");
+    if ( this->_PrintvLinePrefix != "" ) this->printvWrite(this->_PrintvLinePrefix.c_str());
+    this->printvWrite(fmt.str().c_str());
+    this->printvFlush();
+}
+
+void Lisp_O::prin1(boost::format fmt)
+{
+    this->printvWrite(fmt.str().c_str());
+    this->printvFlush();
+}
+
+
+
+void Lisp_O::printvWrite(const char* buffer)
+{
+    for ( const char* cp = buffer; *cp; cp++ )
+    {
+	this->printvWriteChar(*cp);
+    }
+}
+
+void Lisp_O::printvWriteChar(char c)
+{
+    HARD_ASSERT(this->_PrintvWriteChar!=NULL);
+    (this->_PrintvWriteChar)(this->lisp(),c);
+    if ( c == '\n' ) this->printvWrite(this->_PrintvLinePrefix.c_str());
+}
+
+void Lisp_O::printvFlush()
+{
+    HARD_ASSERT(this->_PrintvFlush!=NULL);
+    (this->_PrintvFlush)(this->lisp());
+}
+
+
+
+
+void Lisp_O::defvar(Symbol_sp sym, T_sp obj)
+{_OF();
+    sym->pushDynamicBinding(obj);
+}
+
+void Lisp_O::defconstant(Symbol_sp sym, T_sp obj)
+{_OF();
+    sym->pushDynamicBinding(obj);
+    sym->setReadOnly(true);
+}
+
+void Lisp_O::setOutputStream(ostream* o)
+{_OF();
+    if ( this->_freeOutputStream )
+    {
+	delete this->_outputStream;
+    }
+    this->_freeOutputStream = true;
+    this->_outputStream = o;
+}
+
+ostream& Lisp_O::outputStream()
+{
+    return *(this->_outputStream);
+}
+
+
+
+
+/*! Return true if the form in code is a macro
+ * If a macro is seen then sawAMacro is set to true
+ */
+MultipleValues_sp Lisp_O::macroExpandOnce (T_sp code, Environment_sp environ)
+{_F(this->lisp());
+    if ( code->consP() )
+    {
+	T_sp head = code->as<Cons_O>()->ocar();
+	if ( head->symbolP() )
+	{
+	    Symbol_sp headSymbol = head->as<Symbol_O>();
+	    Function_sp func = environ->lookup_function(headSymbol);
+	    if ( func->notNil() && func->macroP() )
+	    {
+		ql::list list_macroArgs(_lisp);
+		list_macroArgs << code << environ;
+		Cons_sp macroArgs = list_macroArgs.cons();
+		T_sp expanded = eval::apply_function(func,macroArgs);
+//		T_sp expanded = eval::apply(func,macroArgs,this->lisp());
+		return MultipleValues_O::create(expanded,_lisp->_true(),_lisp);
+	    }
+	}
+    }
+    return MultipleValues_O::create(code,_lisp->_false(),_lisp);
+}
+
+
+MultipleValues_sp Lisp_O::macroExpand(T_sp obj,Environment_sp environ)
+{_F(this->lisp());
+    bool sawAMacro = false;
+    bool expandedMacro = false;
+    uint macroExpansionCount = 0;
+    T_sp cur = obj;
+    do {
+	MultipleValues_sp mv = this->macroExpandOnce(cur,environ);
+	cur = mv->object();
+	sawAMacro = mv->osecond()->isTrue();
+	expandedMacro |= sawAMacro;
+	macroExpansionCount++;
+	if ( macroExpansionCount > 100 )
+	{
+	    THROW(_lisp->create<LispError_O>(BF("Macro expansion happened %d times - You may have a macro expansion infinite loop") % macroExpansionCount ));
+	}
+    } while ( sawAMacro );
+    return MultipleValues_O::create(cur,_lisp->_boolean(expandedMacro),_lisp);
+}
+
+
+
+LispError_sp Lisp_O::error(boost::format fmt)
+{_OF();
+    return this->create<LispError_O>(fmt);
+}
+
+
+TypeException_sp Lisp_O::badType(boost::format fmt)
+{_OF();
+    return TypeException_O::create(fmt.str(),_lisp);
+}
+
+Symbol_sp Lisp_O::errorUndefinedSymbol(const char* sym)
+{_OF();
+    stringstream ss;
+    ss << "Unknown symbol("<<sym<<")";
+    THROW(this->error(BF("%s") % ss.str()));
+}
+
+
+
+
+
+#if 0
+void Lisp_O::throwIfSIDMismatch(sid symbolSID, Symbol_sp sym) const
+{_OF();
+#ifdef SID_SYMBOL
+    if (symbolSID!=sym)
+    {
+	THROW(_lisp->error(BF("SID[%s] mismatch with symbol[%s]") % symbolSID->__repr__() % sym->__repr__() ));
+    }
+#else
+    if ( IS_SID_UNDEFINED(symbolSID) )
+    {
+	THROW(_lisp->error(BF("SID mismatch between symbolSID[%d] and symbol[%s]") % symbolSID % sym->__repr__() ));
+    }
+    if ( symbolSID > this->_PredefinedSymbols.size() )
+    {
+	THROW(_lisp->error(BF("symbolSID[%d] is larger than the total number of _PredefinedSymbols[%d] - while matching to symbol[%s]")
+			   % symbolSID % this->_PredefinedSymbols.size() % sym->__repr__() ));
+    }
+    if ( this->symbol(symbolSID) != sym )
+    {
+	THROW(_lisp->error(BF("Mismatch between symbolSID[%d]->symbol[%s] and symbol[%s]")
+			   % symbolSID % this->symbol(symbolSID)->__repr__() % sym->__repr__() ));
+    }
+    // If we made it to here then the symbol matches the one in _PredefinedSymbols
+    // continue on and do good in the world
+#endif
+}
+#endif
+
+
+
+
+
+#if 0
+void Lisp_O::defineFirstSIDForPackage(const string& packageName)
+{
+#if SID_SYMBOL
+    return;
+#else
+    if ( this->_PackageNameToFirstSID.count(packageName) == 0 )
+    {
+	sid firstSID = this->_PredefinedSymbols.size();
+	this->_PackageNameToFirstSID[packageName] = firstSID;
+	this->_CachedPackageName = packageName;
+	this->_CachedFirstSID = firstSID;
+	return;
+    }
+    THROW_HARD_ERROR(BF("You have already defined symbols for package[%s] - you are currently in package[%s]") % packageName % this->_CachedPackageName );
+#endif
+}
+#endif
+
+
+#if 0
+/*! Create a predefined symbol if incoming symId == UndefinedUnsignedInt
+    Do not use _L or _OF or any guard macro because this will be called by 
+    the lisp environment as it starts up */
+void Lisp_O::createSID(sid& symSID, sid relSID, Symbol_sp sym)
+{ /* No guard */
+#ifdef SID_SYMBOL
+    IMPLEMENT_ME();
+#else
+    if ( IS_SID_DEFINED(symSID) )
+    {
+	THROW_HARD_ERROR(BF("Redefinition of an SID"));
+    }
+    string packageName = sym->getPackage()->getName();
+    symSID = this->_CachedFirstSID + relSID;
+    if ( symSID < this->_PredefinedSymbols.size() )
+    {
+	THROW_HARD_ERROR(BF("You tried to add a symSID[%d] to _PredefinedSymbols which already contains %d entries") % symSID % this->_PredefinedSymbols.size());
+    }
+    boost::shared_ptr<Symbol_O> undefinedSymbol;
+    this->_PredefinedSymbols.resize(symSID+1,undefinedSymbol);
+    this->_PredefinedSymbols[symSID] = sym;
+    this->_SymbolToSID[sym] = symSID;
+#endif
+}
+#endif
+
+#if 0
+sid Lisp_O::lookupPredefinedSymbol(Symbol_sp symbol) const
+{_OF();
+    map<Symbol_sp,sid>::const_iterator it = this->_SymbolToSID.find(symbol);
+    if ( it == this->_SymbolToSID.end() )
+    {	
+	THROW(_lisp->error(BF("Could not find predefined symbol[%s]") % symbol->__repr__() ));
+    }
+    return it->second;
+}
+
+
+
+void Lisp_O::define_predefined_symbol(const sid symSID, Symbol_sp sym)
+{_OF();
+#ifdef SID_SYMBOL
+    // do nothing - IMPLEMENT_ME();
+#else
+    if ( symSID > this->_PredefinedSymbols.size() )
+    {
+	Symbol_sp undefinedSymbol;
+	undefinedSymbol.reset();
+	this->_PredefinedSymbols.resize(symSID+1,undefinedSymbol);
+    }
+    this->_PredefinedSymbols[symSID] = sym;
+    LOG(BF("Setting _PredefinedSymbols[%d] = symbol[%s]") % symSID % sym->__repr__() );
+#endif
+}
+
+
+
+#if 0
+void Lisp_O::createPredefinedSymbol(const uint symbolIndex, const string& package, const string& symbolString)
+{_F(this->lisp());
+    DEPRECIATEDP("All predefined symbols should be defined in lisp_initGlobals functions");
+    if ( symbolIndex >= this->_PredefinedSymbols.size() )
+    {
+	THROW(_lisp->create<LispError_O>(BF("There is only space for %d predefined symbols and you are trying to define one with index(%d) and symbol(%s)")
+					 % this->_PredefinedSymbols.size() % symbolIndex % symbolString ));
+    }
+    string sym;
+    if ( package == "" ) 
+    {
+	sym = symbolString;
+    } else
+    {
+	sym = package + ":" + symbolString;
+    }
+    this->_PredefinedSymbols[symbolIndex] = this->intern(sym);
+}
+#endif
+
+Symbol_sp Lisp_O::predefinedSymbol(sid symbolIndex ) const
+{_L(this->lisp());
+#ifdef SID_SYMBOL
+    return symbolIndex;
+#else
+    if ( symbolIndex >= this->_PredefinedSymbols.size() )
+    {
+	THROW(_lisp->create<LispError_O>(BF("You are trying to access a predefined symbol with index(%d) and the table only contains %d entries") % symbolIndex % this->_PredefinedSymbols.size() ));
+    }
+    return this->_PredefinedSymbols[symbolIndex];
+#endif
+}
+
+#endif
+
+
+void Lisp_O::createHiddenBinder()
+{_F(this->lisp());
+    this->_HiddenBinder = this->create<Binder_O>();
+}
+
+Binder_sp Lisp_O::hiddenBinder()
+{_F(this->lisp());
+    ASSERTNOTNULL(this->_HiddenBinder);
+    ASSERT(this->_HiddenBinder->notNil());
+    return this->_HiddenBinder;
+}
+
+
+Symbol_sp Lisp_O::defineSpecialForm(const string& rawFormName, SpecialFormCallback cb, const string& argstring, const string& docstring )
+{_OF();
+    string formName = lispify_symbol_name(rawFormName);
+    SpecialFormFunctionPtr* fp = new SpecialFormFunctionPtr(cb);
+    Symbol_sp sym = _lisp->intern(formName)->exportYourself();
+    SpecialForm_sp special = SpecialForm_O::create(sym,fp,this->lisp());
+    ASSERTP(this->_SpecialForms.count(sym)==0,"You cant define a special form with the symbol("+formName+") it has already been defined");
+    this->_SpecialForms[sym] = special;
+    return sym;
+}
+
+
+
+
+
+
+
+
+
+SpecialForm_sp Lisp_O::specialFormOrNil(Symbol_sp sym)
+{
+    if ( sym->isNil() ) return SpecialForm_O::nil(this->lisp());
+    map<Symbol_sp,SpecialForm_sp>::iterator si = this->_SpecialForms.find(sym);
+    if ( si==this->_SpecialForms.end() ) return SpecialForm_O::nil(this->lisp());
+    return si->second;
+}
+
+
+
+
+#if 0
+void Lisp_O::createNils()
+{_OF();
+    _BLOCK_TRACE("Create the nil object for each class");
+    for ( SymbolMap<MetaClass_O>::iterator it = this->_ClassTable.begin(); it!=this->_ClassTable.end(); it++ )
+    {
+	LOG(BF("Getting class info for SID index: %d")% it->first );
+	MetaClass_sp mc = it->second;
+	{ _BLOCK_TRACE((boost::format("Initializing class nil for: %s")% mc->instanceClassName()).str() );
+	    LOG(BF("%s")%dump_instanceClass_info(mc,this->sharedThis<Lisp_O>()));
+	    if (mc->instanceNil<T_O>().use_count() == 0 )
+	    {_BLOCK_TRACE("About to allocate nil object");
+		T_sp nil = mc->allocate_newNil();
+		LOG(BF("Setting the nil for class[%s]") % mc->instanceClassName() );
+		mc->setInstanceNil(nil);
+	    }
+	    {
+		LOG(BF("The nil has already been created"));
+	    }
+	}
+    }
+}
+#endif
+
+
+
+void Lisp_O::installPackage(const PackageExposer* pkg)
+{_OF();
+    LOG(BF("Installing package[%s]") % pkg->packageName() );
+    int firstNewGlobalCallback = this->_GlobalInitializationCallbacks.end()-this->_GlobalInitializationCallbacks.begin();
+    ChangePackage change(pkg->package(),_lisp);
+//    this->inPackage(pkg->packageName());
+    {_BLOCK_TRACE("Initializing classes");
+	pkg->expose(this->lisp(),PackageExposer::candoClasses);
+    }
+    {_BLOCK_TRACE("Creating nils for built-in classes");
+	LOG(BF("Nils aren't created here anymore - they are created when the class is registered"));
+//	this->createNils();
+    }
+    {_BLOCK_TRACE("Initialize the arguments for class methods");
+	LOG(BF("The symbols should be interned into the current package which is: %s") % this->getCurrentPackage()->getName() );
+	for ( SymbolMap<MetaClass_O>::iterator mi=this->_ClassTable.begin(); mi!=this->_ClassTable.end(); mi++ )
+	{
+	    MetaClass_sp oc = mi->second->as<MetaClass_O>();
+	    _BLOCK_TRACEF(BF("Setting up method arguments for class[%s]") % oc->instanceClassName() );
+	    oc->setupMethodArguments();
+	}
+    }
+#if 0
+    {_BLOCK_TRACE("Initialize the arguments for functions");
+	pkg->package()->createFunctionOrdinaryLambdaListHandlers();
+    }
+#endif
+    {_BLOCK_TRACE("Initializing functions");
+	pkg->expose(this->lisp(),PackageExposer::candoFunctions);
+    }
+    {_BLOCK_TRACE("Initializing globals");
+	pkg->expose(this->lisp(),PackageExposer::candoGlobals);
+    }
+
+
+    {_BLOCK_TRACE("Call global initialization callbacks");
+        for ( vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin()+firstNewGlobalCallback; 
+	      ic!=this->_GlobalInitializationCallbacks.end(); ic++ )
+	{
+	    (*ic)(this->lisp());
+	}
+    }
+
+}
+
+
+void Lisp_O::installGlobalInitializationCallback(InitializationCallback c)
+{
+    this->_GlobalInitializationCallbacks.push_back(c);
+}
+
+
+
+
+void	Lisp_O::archive(::core::ArchiveP node)
+{_OF();
+    THROW(_lisp->create<LispError_O>("Never archive Lisp objects"));
+}
+
+
+
+void Lisp_O::addClassNameToPackageAsDynamic(const string& package, const string& name, MetaClass_sp mc)
+{_F(this->lisp());
+    Symbol_sp classSymbol = _lisp->intern(name,_lisp->findPackage(package));
+    classSymbol->exportYourself();
+    classSymbol->setUniqueDynamicValue(mc);
+//    this->globalEnvironment()->extend(classSymbol,mc);
+//    mc->__setOrdinaryLambdaListHandlerString(mc->getInstanceBaseClass()->__getLambdaListHandlerString());
+}
+
+/*! Add the class with (className) to the current package
+ */
+void Lisp_O::addClass(const string& packageName, const string& className,
+		      sid classSID, AllocatorCallback alloc,
+		      sid base1ClassSID, sid base2ClassSID )
+{_F(this->lisp());
+    LOG(BF("Lisp_O::addClass(%s) classSID(%d) baseClassSID1(%u) baseClassSID2(%u)")
+	% className % classSID % base1ClassSID % base2ClassSID  );
+    ASSERTP(IS_SID_DEFINED(BuiltInClass_O::static_classSID()),
+	    "You cannot create a BuiltInClass before the BuiltIn!Class is defined");
+    MetaClass_sp cc;
+    if ( classSID == StandardObject_O::static_classSID() )
+    {
+	IMPLEMENT_ME(); // WHEN DO StandardClasses get created with addClass?????
+#if 0
+	// If StandardClasses do get created with this routine then handle the core
+	Symbol_sp sym = this->internWithPackageName(packageName,className);
+	sym->exportYourself();
+#if 0
+	LOG(BF("Adding StandardClass with classSID(%d) lisp->_ClassesByClassSID.size() = %d")
+	    % classSID % this->_ClassesByClassSID.size() );
+#endif
+	cc = StandardClass_O::create(this->lisp(),sym /*,classSID */);
+#endif 
+    } else {
+	LOG(BF("Adding BuiltInClass with classSID(%d)") % classSID );
+	cc = BuiltInClass_O::create(className,classSID,_lisp);
+    }
+//    ASSERT_eq(classSID,this->_ClassesByClassSID.size());
+    this->setf_findClass(this->symbol(classSID),cc);
+    if ( IS_SID_DEFINED(base1ClassSID))
+    {
+	cc->addInstanceBaseClass(base1ClassSID);
+    } else
+    {
+	THROW(_lisp->error(BF("There must be one base class")));
+    }
+    if ( IS_SID_DEFINED(base2ClassSID))
+    {
+	cc->addInstanceBaseClass(base2ClassSID);
+    }
+    cc->setInstance_newNil_callback(alloc);
+    cc->setupInstanceNil();
+//    cc->__setOrdinaryLambdaListHandlerString(cc->getInstanceBaseClass()->__getLambdaListHandlerString());
+//    this->addClassNameToPackageAsDynamic(packageName,className,cc);
+}
+
+
+StringSet_sp Lisp_O::allClassNames()
+{_F(this->lisp());
+    StringSet_sp ss = this->create<StringSet_O>();
+    for ( SymbolMap<MetaClass_O>::iterator li=this->_ClassTable.begin();
+	  li!=this->_ClassTable.end(); li++ )
+    {
+	ss->insert(li->second->getPackagedName());
+    }
+    return ss;
+}
+
+
+bool Lisp_O::recognizesModule(const string& fileName)
+{ _OF();
+    return this->_Modules->contains(fileName);
+};
+
+
+void Lisp_O::addModule(const string& fileName)
+{_OF();
+    this->_Modules->insert(fileName);
+};
+
+
+
+
+
+
+StandardClass_sp Lisp_O::defineStandardClass(Symbol_sp name, T_sp baseClassesDesignator, Cons_sp slotSpecifiers )
+{_OF();
+    IMPLEMENT_MEF(BF("Implement defineStandardClass"));
+#if 0
+    if ( !this->_BuiltInClassesInitialized )
+    {
+	THROW(_lisp->create<LispError_O>("You cannot create StandardClass until all BuiltInClasses are initialized"));
+    }
+    ASSERT(this->_EnvironmentInitialized);
+    LOG(BF( "defineStandardClass with className: %s")% name->__repr__() );
+    StandardClass_sp cc;
+    if ( name->hasDynamicValue() )
+    {
+	LOG(BF("The symbol(%s) was already defined") % name->__repr__() );
+	T_sp boundObject = name->dynamicValue();
+	if ( boundObject->isAssignableTo<StandardClass_O>() )
+	{
+	    LOG(BF("The symbol was bound to an existing StandardClass which I will redefine"));
+	    cc = name->dynamicValue()->as<StandardClass_O>();
+	    cc->resetSlots();
+	    cc->resetMethods();
+	} else
+	{
+	    THROW(_lisp->create<LispError_O>(BF("The symbol(%s) is already bound but not to a class")%name->fullName()));
+	}
+    } else
+    {		// Create a brand new StandardClass
+    	LOG(BF("Creating a new StandardClass"));
+	cc = StandardClass_O::create(this->lisp(),name);
+	this->setf_findClass(name,cc);
+	cc->setInstanceNil(StandardClass_O::nil(this->lisp()));
+/* REMOVE THE FOLLOWING definition of a DynamicValue for the class name and a creator functor */
+	name->setUniqueDynamicValue(cc);
+//	this->globalEnvironment()->extend(name,cc);
+	StandardClassInitializationFunctoid* functoid = new StandardClassInitializationFunctoid(cc);
+#if 0
+	FunctionPrimitive_sp creator = FunctionPrimitive_O::create(name,functoid,""/*args*/,""/*Docstring*/,this->lisp());
+#else
+	CompiledBody_sp cbfunctoid = CompiledBody_O::create(functoid,_lisp);
+	Function_sp creator = Function_O::create(name,cbfunctoid,"","",this->_lisp());
+#endif
+	name->setUniqueDynamicFunction(creator);
+    }
+
+    /* Here we define the core class, the base classes and the slots */
+    cc->setInstanceCoreClassAndBaseClassesAndSlots(baseClassesDesignator,slotSpecifiers);
+
+    return cc;
+#endif
+}
+
+
+#if 0
+StandardClass_sp Lisp_O::defineStandardClass(Symbol_sp name, StandardClass_sp baseClass,Cons_sp instanceVariableSymbolNames)
+{_F(this->lisp());
+    StandardClass_sp newClass = this->defineStandardClass(name);
+    newClass->setInstanceBaseClass(baseClass);
+    newClass->appendInstanceVariablesFromListOfSymbols(instanceVariableSymbolNames);
+//    newClass->setupAccessors(instanceVariableSymbolNames);
+    return newClass;
+}
+#endif
+
+
+
+string Lisp_O::dumpClasses()
+{_F(this->lisp());
+    stringstream ss;
+    for ( SymbolMap<MetaClass_O>::const_iterator it=this->_ClassTable.begin();
+	  it != this->_ClassTable.end(); it++ )
+    {
+	LOG(BF("Dumping info for class[%s]") % it->first->__repr__() );
+        ss << dump_instanceClass_info(it->second,this->lisp());
+    }
+    return ss.str();
+}
+
+
+void Lisp_O::exportToPython(Symbol_sp sym) const
+{_OF();
+    if ( this->_ExportSymbolCallback == NULL )
+    {
+	LOG(BF("Could not export symbol[%s] because _ExportSymbolCallback is NULL") % sym->__repr__() );
+    } else
+    {
+	LOG(BF("Exporting symbol[%s]") % sym->__repr__() );
+	this->_ExportSymbolCallback(sym,this->lisp());
+    }
+}
+	
+
+Package_sp Lisp_O::makePackage(const string& name,list<string> const& nicknames, list<Package_sp> const& usePackages)
+{_F(this->lisp());
+    ASSERTP(this->_Packages.count(name) == 0,"There already exists a package with name: "+name);
+    LOG(BF("Creating package with name[%s]") % name);
+    Package_sp newPackage = Package_O::create(this->sharedThis<Lisp_O>(),name);
+    this->_Packages.set(name,newPackage);
+    for ( list<string>::const_iterator it=nicknames.begin(); it!=nicknames.end(); it++ )
+    {
+	string nickName = *it;
+	if ( this->_Packages.contains(nickName) )
+	{
+	    THROW(_lisp->error(BF("Package nickname[%s] is already being used by package[%s]") % nickName % this->_Packages.get(nickName)->getName()));
+	}
+	this->_Packages.set(nickName,newPackage);
+    }
+
+    for ( list<Package_sp>::const_iterator jit=usePackages.begin(); jit!=usePackages.end(); jit++ )
+    {
+	Package_sp usePkg = *jit;
+	LOG(BF("Using package[%s]") % usePkg->getName() );
+	newPackage->usePackage(usePkg);
+    }
+    if ( this->_MakePackageCallback != NULL )
+    {
+	LOG(BF("Calling _MakePackageCallback with package[%s]") % name );
+	this->_MakePackageCallback(name,this->sharedThis<Lisp_O>());
+    } else
+    {
+	LOG(BF("_MakePackageCallback is NULL - not calling callback"));
+    }
+    return newPackage;
+}
+
+#if 0
+bool Lisp_O::usePackage(const string& name)
+{_F(this->lisp());
+    ASSERTF(this->_Packages.count(name) != 0,BF("In usePackage - there is no package with name[%s]")%name);
+    Package_sp usePackage = this->_Packages.get(name);
+    Package_sp currentPackage = this->getCurrentPackage();
+    bool used = currentPackage->usePackage(usePackage);
+    return used;
+}
+#endif
+
+Package_sp Lisp_O::findPackage(const string& name) const
+{_F(this->lisp());
+    ASSERTF(this->_Packages.count(name) != 0,BF("In getPackage - there is no package with name[%s] - available packages[%s]")%name % this->_Packages.keysAsString() );
+    Package_sp getPackage = this->_Packages.get(name);
+    return getPackage;
+}
+
+
+Package_sp Lisp_O::getCurrentPackage() const
+{_OF();
+    // At startup the *package* symbol may not yet
+    // be defined or bound to a package - in that case just say we are in the core package
+    //
+    Package_sp cur;
+    if ( IS_SID_UNDEFINED(_sym_STARpackageSTAR) )
+    {
+	cur = this->_CorePackage;
+	goto DONE;
+    }
+    if ( !this->symbol(_sym_STARpackageSTAR)->hasDynamicValue() )
+    {
+	cur = this->_CorePackage;
+	goto DONE;
+    }
+    cur = this->symbol(_sym_STARpackageSTAR)->dynamicValue()->as<Package_O>();
+DONE:
+    ASSERTNOTNULL(cur);
+    return cur;
+}
+
+void Lisp_O::setCurrentPackage(Package_sp pack)
+{_OF();
+    this->symbol(_sym_STARpackageSTAR)->setUniqueDynamicValue(pack);
+}
+
+bool Lisp_O::recognizesPackage(const string& packageName ) const
+{
+    StringMap<Package_O>::const_iterator pi = this->_Packages.find(packageName);
+    return ( pi!=this->_Packages.end() );
+}
+
+void Lisp_O::inPackage(const string& p)
+{_OF();
+    StringMap<Package_O>::const_iterator pi = this->_Packages.find(p);
+    if ( pi==this->_Packages.end() )
+    {
+	ASSERTP(this->recognizesPackage(p),"I do not recognize package: "+p);
+    }
+    this->setCurrentPackage(pi->second);
+}
+
+
+
+
+
+void Lisp_O::defineMethod(const string& name, sid classSID, Functoid* methoid,const string& args, const string& docstring, bool autoExport)
+{    _F(this->lisp());
+    DEPRECIATED(); // moved into lisp_defineSingleDispatchMethod
+#if 0
+    MetaClass_sp mc = this->classFromClassSID(classSID);
+    Symbol_sp sym = this->internWithPackageName(mc->getPackageName(),name);
+    if (autoExport) sym->exportYourself();
+    LOG(BF("Interned method in class[%s]@%p with symbol[%s] args[%s] - autoexport[%d]")
+	% mc->instanceClassName() % (mc.get()) % sym->fullName() % args % autoExport );
+    MethodPrimitive_sp mp = MethodPrimitive_O::create(sym,mc,methoid,args,docstring,this->lisp());
+    ASSERTNOTNULL(mp);
+    mc->addMethod(sym,mp);
+#endif
+}
+
+
+void Lisp_O::throwIfBuiltInClassesNotInitialized()
+{_F(this->lisp());
+    if ( this->_BuiltInClassesInitialized ) return;
+    THROW(_lisp->create<LispError_O>("Cpp-classes are not initialized"));
+}
+
+
+
+
+Path_sp Lisp_O::translateLogicalPathname(T_sp logicalPathName)
+{_F(this->lisp());
+    if ( logicalPathName->isAssignableTo<Str_O>() )
+    {
+	string fileName = logicalPathName->as<Str_O>()->get();
+	return Path_O::create(fileName,_lisp);
+#if 0
+	LOG(BF("Looking for file: %s") % fileName.c_str()  );
+	LOG(BF("Looking in current directory"));
+	boost::filesystem::path onePath("./");
+	onePath /= fileName;
+	if ( boost::filesystem::exists(onePath) )
+	{
+	    return Path_O::create(onePath.string(),_lisp);
+	}
+	Symbol_sp pathSym = this->symbol(_sym_STARPATHSTAR);
+	Cons_sp pathList = pathSym->dynamicValue()->as<Cons_O>();
+	LOG(BF("PATH variable = %s") % pathList->__repr__().c_str()  );
+	while ( pathList->notNil() )
+	{
+	    boost::filesystem::path onePath(pathList->car<Str_O>()->get());
+	    onePath /= fileName;
+	    LOG(BF("Checking path[%s]") % onePath.string() );
+	    if ( boost::filesystem::exists(onePath) )
+	    {
+		return Path_O::create(onePath.string(),_lisp);
+	    }
+	    pathList = pathList->cdr();
+	}
+#endif
+	THROW(_lisp->create<LispError_O>("include "+fileName+" error, file does not exist"));
+    } else
+    {
+	THROW(_lisp->error(BF("Finish implementing Lisp_O::translateLogicalPathname")));
+    }
+}
+
+
+
+Path_sp Lisp_O::translateLogicalPathnameUsingPaths(T_sp logicalPathName)
+{_F(this->lisp());
+    if ( logicalPathName->isAssignableTo<Str_O>() )
+    {
+	string fileName = logicalPathName->as<Str_O>()->get();
+	LOG(BF("Looking for file: %s") % fileName.c_str()  );
+	LOG(BF("Looking in current directory"));
+	boost::filesystem::path onePath("./");
+	onePath /= fileName;
+	if ( boost::filesystem::exists(onePath) )
+	{
+	    return Path_O::create(onePath.string(),_lisp);
+	}
+	Symbol_sp pathSym = this->symbol(_sym_STARPATHSTAR);
+	Cons_sp pathList = pathSym->dynamicValue()->as<Cons_O>();
+	LOG(BF("PATH variable = %s") % pathList->__repr__().c_str()  );
+	while ( pathList->notNil() )
+	{
+	    boost::filesystem::path onePath(pathList->car<Str_O>()->get());
+	    onePath /= fileName;
+	    LOG(BF("Checking path[%s]") % onePath.string() );
+	    if ( boost::filesystem::exists(onePath) )
+	    {
+		return Path_O::create(onePath.string(),_lisp);
+	    }
+	    pathList = pathList->cdr();
+	}
+	THROW(_lisp->create<LispError_O>("include "+fileName+" error, file does not exist"));
+    } else
+    {
+	THROW(_lisp->error(BF("Finish implementing Lisp_O::translateLogicalPathname")));
+    }
+}
+
+
+uint Lisp_O::nextEnvironmentId()
+{
+    this->_EnvironmentId++;
+    return this->_EnvironmentId;
+}
+
+#if 0
+Cons_sp Lisp_O::allLocalNamesAsCons()
+{_OF();
+    ASSERT(this->_EnvironmentInitialized);
+    return this->_Environment->allLocalNamesAsCons();
+}
+#endif
+
+void Lisp_O::parseCommandLineArguments(int argc,char* argv[], bool compileInputFile)
+{_F(this->lisp());
+    namespace po = boost::program_options;
+    this->_dont_load_startup = false;
+    stringstream ss;
+    string fileName;
+#ifdef DEBUG_ON
+    LOG(BF("There are %d arguments") % argc  );
+    for ( int ii=0; ii<argc; ii++ )
+    {
+	LOG(BF(" argument #%d %s") % ii % argv[ii]  );
+    }
+#endif
+    string dbFileName;
+    boost::filesystem::path filePath;
+    this->_RenderFileName = "";
+    po::options_description desc("Allowed options");
+    desc.add_options()
+    	("help,h", "produce help message")
+	("database,d",po::value<string>(),"define database")
+	("output,o",po::value<string>(),"define output")
+	("exec,e",po::value<string>(),"execute string")
+	("render,r",po::value<string>(),"render object")
+	("scanner,S","run the scanner on the input")
+	("noload,n","dont load the startup code - go straight into repl")
+	("core,c","Use the specified core file (defines macros/system functions)  rather than the default")
+	("init,I","specify the initialization file")
+	("seed,s",po::value<int>(),"seed the random number generators")
+	("interactive,i","bring up interactive REPL after script/command evaluated")
+	;
+
+    po::variables_map vm;
+#if 1 // allow unregistered options
+    po::parsed_options parsed = po::command_line_parser(argc,argv)
+	.options(desc)
+	.allow_unregistered()
+	.run();
+    po::store(parsed,vm);
+    vector<string> to_pass_further = po::collect_unrecognized(parsed.options,po::include_positional);
+
+#ifdef	DEBUG_ON
+    for ( vector<string>::iterator zit=to_pass_further.begin();
+	  zit!=to_pass_further.end(); zit++ )
+    {
+	LOG(BF("to_pass_further: %s") % ((*zit).c_str() ) );
+    }
+#endif
+#else
+    po::store( po::command_line_parser(argc,argv).
+	       options(desc).positional(p).run(), vm );
+#endif
+    po::notify(vm);
+
+    if ( vm.count("help") )
+    {
+	stringstream ss;
+	ss << desc;
+	this->lisp()->print(BF("%s")% ss.str());
+	return;
+    }
+
+
+    //
+    // Default initialization file is {executableName}.rc
+    // loaded from the CANDO/init directory
+    //
+    // So cando -> CANDO/init/candoBoot.csc
+    //    candoMpi -> CANDO/init/candoMpiBoot.csc
+    //    candoView -> CANDO/init/candoViewBoot.csc
+    //
+    const char* execName = argv[0]+strlen(argv[0])-1;
+    while (execName >= argv[0] && *execName != '/') execName--;
+    execName++;
+    this->_ExecutableName = execName;
+    this->_RCFileName = "CANDO/init/init.lsp";
+    if ( vm.count("init") )
+    {
+	this->_RCFileName = vm["init"].as<string>();
+	LOG(BF( "Using initialization file(%s)")% this->_RCFileName);
+    }
+
+#if 0
+    if ( vm.count("database") )
+    {
+	dbFileName = vm["database"].as<string>();
+	LOG(BF( "About to open database(%s)")% dbFileName );
+	TRY()
+	{
+	    this->loadCandoDatabase(dbFileName,0);
+	} catch ( Condition& err )
+	  {
+	      this->error(err.conditionObject(),this->top_level_environment());
+	  } catch (...)
+	    {
+		throw;
+	    }
+    }
+#endif
+    if ( vm.count("noload") )
+    {
+	this->_dont_load_startup = true;
+	this->_Interactive = true;
+    }
+    if ( vm.count("interactive") )
+    {
+	this->_Interactive = true;
+    }
+    if ( vm.count("output") )
+    {
+	string outputFileName = vm["output"].as<string>();
+	LOG(BF("Parsing option -o %s") % outputFileName );
+        boost::format fn("%s%05d");
+	fn % outputFileName % this->mpiRank();
+	LOG(BF("Setting output to fileName(%s)") % fn.str() );
+	printvSetOutputFileName(fn.str(),this->lisp());
+    }
+    if ( vm.count("seed") )
+    {
+	string seed= vm["seed"].as<string>();
+	long iseed = atol(seed.c_str());
+	LOG(BF("Parsing option -s %s") % seed.c_str()  );
+	seedRandomNumberGenerators(iseed,this->lisp());
+    } else
+    {
+	seedRandomNumberGenerators(this->mpiRank(),this->lisp());
+    }
+
+    //
+    // Pass whatever is left over to the Lisp environment
+    //
+    LOG(BF("Parsing what is left over into lisp environment arguments") );
+    Cons_sp args = Cons_O::createFromVectorStringsCommandLineArguments(to_pass_further,this->lisp());
+    LOG(BF(" Command line arguments are being set in Lisp to: %s") % args->__repr__().c_str()  );
+    this->_CommandLineArguments = args;
+
+    if ( !compileInputFile ) return;
+
+    //
+    // Get the script from the command line or the input-file
+    //
+    if ( vm.count("exec") != 0 )
+    {
+	string script = vm["exec"].as<string>();
+	this->_ProgramCode._ScriptInFile = false;
+	this->_ProgramCode._FileNameOrCode = script+"\n";
+    } else 
+    {
+	LOG(BF("Evaluating first argument as the script name") );
+	Symbol_sp sym = this->symbol(_sym_STARARGSSTAR);
+	LOG(BF("Binding symbol(%s) to: %s") % sym->fullName() % this->_CommandLineArguments->__repr__() );
+	sym->setUniqueDynamicValue(this->_CommandLineArguments);
+//        this->globalEnvironment()->extend(sym,this->_CommandLineArguments);
+	this->_ProgramCode._ScriptInFile = true;
+	this->_ProgramCode._FileNameOrCode = this->_CommandLineArguments->car<Str_O>()->get();
+    }
+    if ( vm.count("render") != 0 )
+    {
+	this->_RenderFileName = vm["render"].as<string>();
+    }
+    LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ProgramCode._ScriptInFile % this->_ProgramCode._FileNameOrCode );
+}
+
+
+
+#if 0
+/*! Lookup and return the macro executable or nil
+ */
+Executable_sp	Lisp_O::lookupMacro(Symbol_sp head)
+{_F(this->lisp());
+    LOG(BF(" Looking up form(%s)")% head->currentName() );
+    if ( this->_Macros.count(head) == 0 ) return this->nil<Executable_O>();
+    return this->_Macros[head];
+}
+#endif
+
+
+
+
+
+#if 0
+
+CandoDatabase_sp Lisp_O::getCandoDatabase()
+{_F(this->lisp());
+    T_sp		ocdb;
+    ASSERTNOTNULL(this->_CandoDatabase);
+    return this->_CandoDatabase;
+}
+
+bool	Lisp_O::hasCandoDatabase()
+{_F(this->lisp());
+    return this->_CandoDatabase->notNil();
+}
+
+
+
+#endif
+
+
+
+
+
+
+
+
+
+void Lisp_O::load(T_sp filespec, bool verbose,
+		  bool print, bool ifDoesNotExist )
+{_OF();
+    Package_sp pack = this->getCurrentPackage();
+    bool inputWasStream = false;
+    Path_sp physicalPath = desig::pathDesignator(filespec,_lisp);
+    Stream_sp sin = FileInStream_O::create(physicalPath,_lisp);
+    
+    try // exception safe
+    {
+	this->readEvalPrint(sin,_lisp->top_level_environment(),print);
+    } catch (...)
+    {
+	this->setCurrentPackage(pack);
+	if ( inputWasStream )
+	{
+	    sin = _lisp->nil<Stream_O>();
+	}
+	sin->close();
+	throw;
+    }
+    this->setCurrentPackage(pack);
+    if ( inputWasStream )
+    {
+	sin = _lisp->nil<Stream_O>();
+    }
+    sin->close();
+}
+
+    
+
+T_sp Lisp_O::readEvalPrint(T_sp isd, Environment_sp environ, bool printResults)
+{_OF();
+    T_sp result = this->onil();
+    Stream_sp sin = desig::inputStreamDesignator(isd,_lisp);
+    while (1)
+    {
+	TRY()
+	{
+	    T_sp expression = read_lisp_object(sin,false,_lisp->_eof(),false,_lisp);
+	    if ( expression == _lisp->_eof() ) break;
+	    if ( _sym_STARprint_repl_readSTAR->dynamicValue()->isTrue() )
+	    {
+		string suppress;
+		if ( _sym_STARread_suppressSTAR->dynamicValue()->isTrue() )
+		{
+		    suppress = "SUPPRESSED";
+		    if ( expression->notNil() )
+		    {
+			THROW(_lisp->error(BF("*read-suppress* is true but the following expression was read: %s") % expression->__repr__() ));
+		    }
+		}
+		this->print(BF(";;--read-%s-------------\n#|\n%s\n|#----------\n") % suppress.c_str() % expression->__repr__() );
+	    }
+	    _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__() );
+	    TRY()
+	    {_BLOCK_TRACEF(BF("-eval/print stage-"));
+		result = eval::evaluate(expression,environ,this->sharedThis<Lisp_O>());
+		LOG(BF("---result[%s]") % result->__repr__() );
+		if ( printResults )
+		{
+		    this->print(BF("; --> %s")% result->__repr__() );
+		}
+	    }
+	    catch (Condition& err)
+	    {
+		this->print(BF("%s:%d - A Condition was caught in readEvalPrint - this shouldn't happen - exiting") % __FILE__ % __LINE__ );
+		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
+	    }
+	    catch (DebuggerSaysAbort)
+	    {
+		// do nothing
+	    }
+	    catch (HardError& err )
+	    {
+		this->print(BF("%s %d HardError - should never happen! Catch and convert to Condition below: %s")
+			    % sin->fileName() % sin->lineNumber() % err.message() );
+		IMPLEMENT_ME();
+//		    this->enterDebugger();
+	    }
+	    catch (ExitProgram& x)
+	    {
+		this->print(BF("Exiting"));
+		throw;
+	    }
+	    catch (ReturnFrom& x)
+	    {
+		THROW(this->error(BF("Return from unknown block %s") % x.getBlockSymbol()->__repr__() ));
+	    }
+	    catch (...)
+	    {
+//		this->print(BF("Unknown error in readEvalPrint %s:%d\n") % __FILE__ % __LINE__);
+		throw;
+	    }
+	}
+	catch (Condition& err)
+	{	
+	    // Catch condition from reader means just ask for another s-exp if 
+	    // interactive and terminate if batch
+	    this->print(BF("%s:%d Caught Condition from reader") % __FILE__ % __LINE__ );
+	    this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
+	}
+	catch (HardError& err)
+	{
+	    this->print(BF("%s %d Should never happen - catch and convert to Condition below - HardError: %s")
+			% sin->fileName() % sin->lineNumber() % err.message() );
+	    IMPLEMENT_ME();
+//		this->enterDebugger();
+	}
+	catch (...)
+	{
+	    throw;
+	}
+    }
+    return result;
+}
+
+
+void Lisp_O::readEvalPrintFile(const string& pathName, bool printResults )
+{_OF();
+    Path_sp path = Path_O::create(pathName,_lisp);
+    FileInStream_sp fin = FileInStream_O::create(path,_lisp);
+    this->readEvalPrint(fin,this->top_level_environment(),printResults);
+    fin->close();
+}
+
+
+
+T_sp Lisp_O::readEvalPrintString(const string& code, Environment_sp environ, bool printResults )
+{_OF();
+    StringInStream_sp sin = StringInStream_O::create(code,_lisp);
+    T_sp result = this->readEvalPrint(sin,environ,printResults);
+    sin->close();
+    return result;
+}
+
+
+
+void Lisp_O::readEvalPrintInteractive()
+{_OF();
+    Cons_sp expression;
+    while ( 1 )
+    {
+	stringstream line;
+	stringstream prompt;
+	prompt << this->symbol(_sym_STARpackageSTAR)->dynamicValue()->as<Package_O>()->getName() << ">>> ";
+	line << myReadLine(prompt.str(), this->lisp()) << endl;
+	StringInStream_sp sin = StringInStream_O::create(line.str(),_lisp);
+	TRY()
+	{
+	    this->readEvalPrint(sin,this->top_level_environment(),true);
+	} catch (TerminateProgramIfBatch& term)
+	  {
+	      // ignore since we are running interactively
+	  } catch (...)
+	    {
+		throw;
+	    }
+    }
+}
+
+
+
+void Lisp_O::setConditionHandlers(Cons_sp handlers)
+{_OF();
+    this->_ConditionHandlers = handlers;
+}
+
+Cons_sp Lisp_O::getConditionHandlers()
+{_OF();
+    return this->_ConditionHandlers;
+}
+
+
+void Lisp_O::setRestartHandlers(Cons_sp handlers)
+{_OF();
+    this->_RestartHandlers = handlers;
+}
+
+Cons_sp Lisp_O::getRestartHandlers()
+{_OF();
+    return this->_RestartHandlers;
+}
+
+
+
+T_sp Lisp_O::signal(ConditionBase_sp condition)
+{_OF();
+    /*! Move up through the ConditionHandler dynamic environment looking for a handler that
+      will handle this condition and then evaluate it.  If it returns then keep looking.
+      The handler should use a non-local return if it is successful.
+    */
+    for ( Cons_sp cur = this->_ConditionHandlers; cur->notNil(); cur = cur->cdr() )
+    {
+	ConditionHandlerBase_sp handler = cur->car<ConditionHandlerBase_O>();
+	if ( handler->handles(condition) )
+	{
+	    handler->handle(condition /*,environ */);
+	}
+    }
+    return _lisp->onil();
+}
+
+
+
+void Lisp_O::error(ConditionBase_sp condition)
+{_OF();
+    this->signal(condition);
+    if ( this->isInteractive() )
+    {
+	_lisp->print(BF("%s:%d Invoking debugger") % __FILE__ % __LINE__ );
+	LispDebugger debugger(_lisp->onil(),condition);
+	debugger.invoke();
+	_lisp->print(BF("%s:%d You tried to continue from debugger - this should never happen") % __FILE__ % __LINE__ );
+	exit(1);
+    }
+    this->reportConditionAndTerminateProgramIfBatch(condition);
+}
+
+#if 0
+void Lisp_O::error(ConditionBase_sp condition, Environment_sp environ, T_sp head, Cons_sp args)
+{_OF();
+    this->signal(condition,environ);
+    if ( this->isInteractive() )
+    {
+	LispDebugger debugger(_lisp->onil(),environ,true,condition,_lisp);
+	_lisp->print(BF("%s:%d Invoking debugger with for expression: %s(%s)") %__FILE__ % __LINE__ % head->__repr__() % args->__repr__() );
+	debugger.invoke();
+	_lisp->print(BF("%s:%d You tried to continue from debugger - this should never happen") % __FILE__ % __LINE__ );
+	exit(1);
+    }
+    this->reportConditionAndTerminateProgramIfBatch(condition);
+}
+#endif
+
+#if 0
+string	Lisp_O::errorMessage()
+{_F(this->lisp());
+    return getLispError();
+}
+#endif
+
+
+#if 0
+Cons_sp	Lisp_O::findHigherUpConditionHandler(T_sp condition, Cons_sp& handlerLists)
+{_F(this->lisp());
+    IMPLEMENT_ME();
+    for ( ; handlerLists->notNil(); handlerLists = handlerLists->cdr() )
+    {
+	Cons_sp cur = handlerLists->car<Cons_O>();
+	for ( ; cur->notNil(); cur = cur->cdr() )
+	{
+	    Cons_sp oneHandler = cur->car<Cons_O>();
+	    LOG(BF("  Testing handler: %s")% oneHandler->__repr__() );
+	    if ( oneHandler->ocar()->isAssignableTo<Symbol_O>() )
+	    {
+		Symbol_sp classSymbol = oneHandler->ocar()->as<Symbol_O>();
+		LOG(BF("    Handler handles class with symbol: %s") % classSymbol->__repr__() );
+		MetaClass_sp conditionClass = this->top_level_environment()->lookup(classSymbol)->as<MetaClass_O>();
+
+		if ( conditionClass.get() == condition->_class().get() )
+		{
+		    LOG(BF("It matches so lets return the handler"));
+		    return oneHandler;
+		}
+		LOG(BF("  it doesn't match"));
+	    } else
+	    {
+		THROW(_lisp->create<LispError_O>(BF("Illegal object for condition - you passed: %s") % condition->__repr__() ));
+	    }
+	}
+    }
+    LOG(BF("No handlers were found, returning nil"));
+    return Cons_O::nil(this->lisp());
+}
+
+Cons_sp	Lisp_O::findHigherUpConditionHandler(T_sp condition)
+{_F(this->lisp());
+    Cons_sp stack = this->_ConditionHandlers;
+    return this->findHigherUpConditionHandler(condition,stack);
+}
+#endif
+
+
+
+
+void Lisp_O::reportCondition(ConditionBase_sp cond)
+{_F(this->lisp());
+    stringstream acc;
+    acc << cond->getStackTraceDump() << endl;
+    acc << cond->message() << endl;
+    lisp_logException(this->lisp(),__FILE__,"unhandledCondition",__LINE__,"EXCEPTION",acc.str());
+    this->print(BF("%s") % acc.str() );
+}
+
+void Lisp_O::reportConditionAndTerminateProgramIfBatch(ConditionBase_sp cond)
+{
+    if ( this->isEmbeddedInPython() )
+    {
+	// In python we kick the condition up the line
+	// for Python to handle it
+	Condition holder(cond);
+	throw(holder);
+    }
+    printf("%s:%d ---- Not embedded in python\n", __FILE__, __LINE__);
+    //
+    // In Lisp we print the condition and gracefully exit
+    //
+    this->reportCondition(cond);
+    TerminateProgramIfBatch gracefulExit(1,cond->message());
+    throw(gracefulExit);
+}
+
+
+
+
+
+
+
+#define ARGS_af_acons "(key datum alist)"
+#define DECL_af_acons ""
+#define DOCS_af_acons "acons"
+T_sp af_acons(T_sp key, T_sp val, Cons_sp alist)
+{_G();
+    Cons_sp acons = Cons_O::create(key,val,_lisp);
+    return Cons_O::create(acons,alist,_lisp);
+}
+
+
+
+
+
+
+#define ARGS_af_assoc "(item alist &key key test test-not)"
+#define DECL_af_assoc ""
+#define DOCS_af_assoc "assoc"
+T_sp af_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test, T_sp test_not)
+{_G();
+    return alist->assoc(item,key,test,test_not);
+}
+
+
+#define ARGS_af_member "(item list &key key test test-not)"
+#define	DECL_af_member	""
+#define	DOCS_af_member	"See CLHS member"
+T_sp	af_member(T_sp item, Cons_sp list, T_sp key, T_sp test, T_sp test_not)
+{_G();
+    return list->member(item,key,test,test_not);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#define	ARGS_af_setenv	"(name value)"
+#define	DECL_af_setenv	""
+#define	DOCS_af_setenv	"Set environment variable NAME to VALUE"
+void af_setenv(Str_sp name, Str_sp value)
+{_G();
+    setenv(name->get().c_str(),value->get().c_str(),1);
+}
+
+
+
+#define	ARGS_af_getenv	"(name value)"
+#define	DECL_af_getenv	""
+#define	DOCS_af_getenv	"Get environment variable NAME"
+T_sp af_getenv(Str_sp name)
+{_G();
+    string value = getenv(name->get().c_str());
+    return Str_O::create(value,_lisp);
+}
+
+
+/*
+  __BEGIN_DOC( candoScript.general.saveArchive, subsection, saveArchive)
+  \scriptCmd{save}{Object::object Text::filename}
+
+  Save the \sa{object} to the \sa{filename} in Cando-Archive format.
+  __END_DOC
+*/
+const char* keywords_saveArchive[] = {":debug",""};
+
+
+
+#define ARGS_af_saveArchive "(obj desig-path &key (debug 0))"
+#define DECL_af_saveArchive ""
+#define DOCS_af_saveArchive "saveArchive"
+T_sp af_saveArchive(T_sp obj, T_sp desig_path,Fixnum_sp debug)
+{_G();
+    Path_sp dest = desig::pathDesignator(desig_path,_lisp);
+    LOG(BF("Got destination to archive to: %s") % dest->asString() );
+    int debugLevel = debug->get();
+    core::XmlSaveArchive_sp archive = core::XmlSaveArchive_O::create(_lisp);
+    archive->setVerbosity(debugLevel);
+    archive->put("only",obj);
+    archive->saveAsToPath(dest);
+    return T_O::nil(_lisp);
+}
+
+
+
+
+
+#define ARGS_af_serialize_xml "(stream obj)"
+#define DECL_af_serialize_xml ""
+#define DOCS_af_serialize_xml "serializeXml"
+T_sp af_serialize_xml(Stream_sp stream, T_sp obj)
+{_G();
+    core::XmlSaveArchive_sp archive = core::XmlSaveArchive_O::create(_lisp);
+    archive->put("only",obj);
+    archive->write(stream);
+    return T_O::nil(_lisp);
+}
+
+
+
+
+
+
+/*
+  __BEGIN_DOC( candoScript.general.loadArchive) % subsection, loadArchive)
+  \scriptCmd{load}{ fileName:text [debug:level] }
+
+  Load an object from an archive and return it.
+
+  __END_DOC
+*/
+#define ARGS_af_loadArchive 	"(fileName &optional (debug 0))"
+#define DECL_af_loadArchive	""
+#define DOCS_af_loadArchive 	"Load an archive from a file"
+T_sp	af_loadArchive(Str_sp fileName, Fixnum_sp debug)
+{_G();
+    ObjectVector			contents;
+    core::XmlLoadArchive_sp	archive;
+    int debugLevel = debug->get();
+    archive = core::XmlLoadArchive_O::create(_lisp);
+    archive->setVerbosity(debugLevel);
+    boost::filesystem::path filePath(fileName->get());
+    LOG(BF("About to open file: %s") % filePath.string());
+    archive->open(filePath.string());
+    contents = archive->getContents();
+    if ( contents.size() != 1 )
+    {
+        THROW(_lisp->create<core::ContentException_O>("There must be one and only one object in the file"));
+    }
+    T_sp o = contents[0];
+    return o;
+}
+
+
+
+
+
+#ifdef USEBOOSTPYTHON
+boost::python::tuple python_loadArchive(boost::python::tuple args, boost::python::dict keywords)
+{
+    printf("In python_loadArchive\n");
+    return boost::python::make_tuple(args,keywords);
+}
+#endif
+
+#define ARGS_af_deserialize_xml "(sin)"
+#define DECL_af_deserialize_xml ""
+#define DOCS_af_deserialize_xml "deserialize_xml"
+T_sp af_deserialize_xml(Stream_sp sin)
+{_G();
+    core::XmlLoadArchive_sp archive = core::XmlLoadArchive_O::create(_lisp);
+    archive->setFileName(sin->fileName());
+    archive->read(sin);
+    ObjectVector contents = archive->getContents();
+    if ( contents.size() != 1 )
+    {
+        THROW(_lisp->create<core::ContentException_O>("There must be one and only one object in the file"));
+    }
+    T_sp o = contents[0];
+    return o;
+}
+
+
+/*
+  __BEGIN_DOC( candoScript.general.getline, subsection, getline)
+  \scriptCmdRet{getline}{}{String::result}
+
+  Read a line from stdin
+  __END_DOC
+*/
+
+
+
+#define ARGS_af_getline "(&optional (prompt \"\"))"
+#define DECL_af_getline ""
+#define DOCS_af_getline "getline"
+T_sp af_getline(Str_sp prompt)
+{_G();
+    string res;
+#ifdef	READLINE
+    char* line_read;
+    /* Get a line from the user. */
+    line_read = readline(prompt->get().c_str());
+    if ( line_read != NULL )
+    {
+	if (*line_read) add_history(line_read);
+	res = line_read;
+	free(line_read);
+    }
+#else
+    if ( prompt->get() != "" )
+    {
+	_lisp->print(BF("%s ") % prompt->get() );
+	_lisp->printvFlush();
+    }
+    getline(cin,res);
+#endif
+    Str_sp result = Str_O::create(res,_lisp);
+    return result;
+}
+
+
+
+
+
+
+
+/*
+  __BEGIN_DOC( candoScript.general.system, subsection,system)
+  \scriptCmdRet{system}{}{String::command}
+
+  Invoke a system call using the UNIX system function call.
+  __END_DOC
+*/
+
+
+
+#define ARGS_af_system "(cmd)"
+#define DECL_af_system ""
+#define DOCS_af_system "system"
+T_sp af_system(Str_sp cmd)
+{_G();
+    string command = cmd->get();
+    int ret = system(command.c_str());
+    core::Fixnum_sp iret = _lisp->create<core::Fixnum_O>(ret);
+    return iret;
+}
+
+
+
+
+
+/*
+  __BEGIN_DOC( candoScript.general.render, subsection, render)
+  \scriptCmdRet{render}{ object}{renderedObject}
+
+  Render an object into a graphical representation of the \scriptArg{object} that can be viewed using "candoView". Save the result into a file using the "save" command and view it later.
+  __END_DOC
+*/
+
+
+
+
+
+#define ARGS_af_render "(arg)"
+#define DECL_af_render ""
+#define DOCS_af_render "render an object"
+T_sp af_render(T_sp obj)
+{_G();
+    IMPLEMENT_ME(); // handle render
+#if 0
+    core::Cons_sp kargs = core::KeyedArguments_O::createFromKeyedObjectCons(args,_lisp);
+    if ( kargs->numberOfPositionalArguments()!=1 )
+    {
+	THROW(_lisp->create<core::LispError_O>("You must provide the object to render as the only positional argument, 'options' is a keyedArgument "));
+    }
+    T_sp obj = kargs->getPositionalArgument(0);
+    core::Cons_sp options = kargs->getAndRemoveOrDefault("options",core::Cons_O::nil(lisp))->as<core::Cons_O>();
+    core::KeyedArguments_sp koptions = core::KeyedArguments_O::createFromKeyedObjectCons(options,lisp);
+    core::Render_sp render;
+    if ( obj->canRender() )
+    {
+        render = obj->rendered(koptions);
+    } else
+    {
+        THROW(_lisp->create<core::LispError_O>("Object doesn't support render"));
+    }
+    return render;
+#endif
+}
+
+
+
+
+
+/*
+  __BEGIN_DOC( candoScript.general.saveCando, subsection, saveCando)
+  \scriptCmd{save}{Object::object Text::filename}
+
+  Save the \sa{object} to the \sa{filename} in Cando-OML format.
+  __END_DOC
+*/
+#define ARGS_af_saveCando "(obj pathDesignator)"
+#define DECL_af_saveCando ""
+#define DOCS_af_saveCando "saveCando"
+T_sp af_saveCando(T_sp obj, T_sp pathDesignator)
+{_G();
+    Path_sp path = desig::pathDesignator(pathDesignator,_lisp);
+    Stream_sp sout = af_open(path,
+			     _kw_output,
+			     _sym_standard_char,
+			     _lisp->nil<Symbol_O>(),
+			     _lisp->nil<Symbol_O>(),
+			     _kw_default);
+    _lisp->sprint(obj,sout);
+    sout->close();
+    return T_O::nil(_lisp);
+}
+
+
+
+#define ARGS_af_loadCando "(pathDesignator)"
+#define DECL_af_loadCando ""
+#define DOCS_af_loadCando "loadCando"
+T_sp af_loadCando(T_sp pathDesignator)
+{_G();
+    Path_sp path = desig::pathDesignator(pathDesignator,_lisp);
+    Stream_sp sin = af_open(path,_kw_input,_sym_standard_char,_lisp->nil<Symbol_O>(),_lisp->nil<Symbol_O>(),_kw_default);
+    T_sp obj = _lisp->sread(sin->as<Stream_O>(),true,_lisp->onil());
+    sin->close();
+    return obj;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.dumpEnvironment,dumpEnvironment)
+  \scriptCmdRet{dumpEnvironment}{}{Text::packageName}
+
+  Dump the current environment.
+  __END_DOC
+*/
+
+
+
+
+
+
+
+
+
+#define ARGS_af_findFileInLispPath "(partialPath)"
+#define DECL_af_findFileInLispPath ""
+#define DOCS_af_findFileInLispPath "findFileInLispPath"
+T_sp af_findFileInLispPath(Str_sp partialPath)
+{_G();
+    LOG(BF("PartialPath=[%s]") % partialPath->get());
+    Path_sp fullPath = _lisp->translateLogicalPathnameUsingPaths(partialPath);
+    LOG(BF("fullPath is %s") % fullPath->asString());
+    return fullPath;
+}
+
+
+
+
+#define ARGS_af_find_package "(name_desig)"
+#define DECL_af_find_package ""
+#define DOCS_af_find_package "See CLHS: find-package"
+Package_sp af_find_package(T_sp name_desig)
+{_G();
+    if ( name_desig->packageP() ) return name_desig->as<Package_O>();
+    Str_sp name = desig::stringDesignator(name_desig,_lisp);
+    Package_sp pkg = _lisp->findPackage(name->get());
+    return pkg;
+}
+
+
+
+
+
+
+#define DOCS_af_set_current_package "set_current_package"
+#define LOCK_af_set_current_package 1
+#define ARGS_af_set_current_package "(package-designator)"
+#define DECL_af_set_current_package ""
+    void af_set_current_package(T_sp package_designator)
+    {_G();
+	Package_sp pkg = desig::packageDesignator(package_designator,_lisp);
+	_lisp->setCurrentPackage(pkg);
+    }
+
+
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.mpiEnabled,mpiEnabled)
+  \scriptCmdRet{mpiEnabled}{}{}
+
+  Return true if MPI is enabled.
+  __END_DOC
+*/
+
+
+
+#define ARGS_af_mpi_enabled "()"
+#define DECL_af_mpi_enabled ""
+#define DOCS_af_mpi_enabled "mpi_enabled"
+T_sp af_mpi_enabled()
+{_G();
+    return _lisp->_boolean(_lisp->mpiEnabled());
+}
+
+
+/*
+  __BEGIN_DOC(candoScript.general.mpiRank,mpiRank)
+  \scriptCmdRet{mpiRank}{}{}
+
+  Return the mpi rank or 0 if not enabled.
+  __END_DOC
+*/
+#define ARGS_af_mpi_rank "()"
+#define DECL_af_mpi_rank ""
+#define DOCS_af_mpi_rank "Return the mpi_rank or 0 if mpi is disabled"
+    T_sp af_mpi_rank()
+    {_G();
+	return Fixnum_O::create(_lisp->mpiRank(),_lisp);
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.mpiSize,mpiSize)
+  \scriptCmdRet{mpiSize}{}{}
+
+  Return the mpi rank or 0 if not enabled.
+  __END_DOC
+*/
+
+
+
+#define ARGS_af_mpi_size "()"
+#define DECL_af_mpi_size ""
+#define DOCS_af_mpi_size "Return mpi_size or 0 if mpi is not enabled"
+T_sp af_mpi_size()
+{_G();
+    return Fixnum_O::create(_lisp->mpiSize(),_lisp);
+}
+
+
+/*
+  __BEGIN_DOC(candoScript.general.dumpHidden,dumpHidden)
+  \scriptCmdRet{dumpHidden}{}{Text::packageName}
+
+  Dump the keys in the Hidden binder.
+  __END_DOC
+*/
+#if 0
+T_sp p r i m_dumpHidden(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+{_F(lisp);
+    lisp->print(BF("Hidden Binder keys:%s\n") % lisp->hiddenBinder()->summaryOfContents().c_str() );
+    return lisp->onil();
+}
+#endif
+
+
+
+
+
+
+
+
+#define ARGS_af_macroexpand_1 "(form &optional env)"
+#define DECL_af_macroexpand_1 ""
+#define DOCS_af_macroexpand_1 "macroexpand_1"
+T_sp af_macroexpand_1(T_sp form, Environment_sp env)
+{_G();
+    Environment_sp use_env = env;
+    if ( env->isNil() ) use_env = _lisp->top_level_environment();
+    if ( form->consP() )
+    {
+	Cons_sp arg = form->as<Cons_O>(); // Get the form to expand
+	MultipleValues_sp mv = _lisp->macroExpandOnce(arg,use_env);
+	return mv;
+    }
+    return MultipleValues_O::create(form,_lisp->_false(),_lisp);
+}
+
+
+
+
+#define ARGS_af_macroexpand "(form &optional env)"
+#define DECL_af_macroexpand ""
+#define DOCS_af_macroexpand "macroexpand"
+T_sp af_macroexpand(T_sp form, Environment_sp env)
+{_G();
+    Environment_sp use_env = env;
+    if ( env->isNil() ) use_env = _lisp->top_level_environment();
+    if ( form->consP() )
+    {
+	Cons_sp arg = form->as<Cons_O>(); // Get the form to expand
+	MultipleValues_sp mv = _lisp->macroExpand(arg,use_env);
+	return mv;
+    }
+    return MultipleValues_O::create(form,_lisp->_false(),_lisp);
+};
+
+
+
+
+
+
+
+
+void searchForApropos(Vector0<Package_O> packages,const string& raw_substring, bool print_values)
+{_G();
+    string substring = lispify_symbol_name(raw_substring);
+    set<Symbol_sp>	symbols;
+    LOG(BF("Searching for symbols apropos to(%s)") % substring);
+    for ( Vector0<Package_O>::iterator pi=packages.begin();
+	  pi!=packages.end(); pi++ )
+    {
+	for ( Package_O::symbolIterator si = (*pi)->beginExternals();
+	      si != (*pi)->endExternals(); si++ )
+	{
+	    string symbolName = si->second->identifierName();
+	    string::size_type pos = symbolName.find(substring);
+	    LOG(BF("Looking at symbol(%s) for (%s) found: %d") % symbolName % substring % pos );
+	    if ( pos != string::npos )
+	    {
+		LOG(BF("    It is apropos"));
+		symbols.insert(si->second);
+	    }
+	}
+	for ( Package_O::symbolIterator si = (*pi)->beginInternals();
+	      si != (*pi)->endInternals(); si++ )
+	{
+	    string symbolName = si->second->identifierName();
+	    string::size_type pos = symbolName.find(substring);
+	    LOG(BF("Looking at symbol(%s) for (%s) found: %d") % symbolName % substring % pos );
+	    if ( pos != string::npos )
+	    {
+		LOG(BF("    It is apropos"));
+		symbols.insert(si->second);
+	    }
+	}
+    }
+    for ( set<Symbol_sp>::iterator si=symbols.begin(); si!=symbols.end(); si++ )
+    {
+	stringstream ss;
+	ss << (BF("%50s") % (*si)->fullName()).str();
+	if ( (*si)->hasDynamicValue() || (*si)->hasDynamicFunction() )
+	{
+	    if ( (*si)->hasDynamicFunction() )
+	    {
+		ss << " ";
+		ss << (*si)->function()->className();
+		if ( (*si)->function()->macroP() )
+		{
+		    ss << "(MACRO)";
+		}
+	    }
+	    if ( (*si)->hasDynamicValue())
+	    {
+		ss << " VALUE";
+		if ( print_values )
+		{
+		    stringstream sval;
+		    sval << (*si)->dynamicValue()->__repr__();
+		    ss << ": " << sval.str().substr(0,50);
+		}
+	    }
+	}
+	_lisp->print(BF("%s") % ss.str());
+    }
+}
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.apropos,apropos)
+  \scriptCmdRet{apropos}{}{Text::substring [packageName]}
+
+  Return every symbol that contains the (substring)
+  __END_DOC
+*/
+
+
+
+#define ARGS_af_apropos "(string_desig &optional package_desig)"
+#define DECL_af_apropos ""
+#define DOCS_af_apropos "apropos"
+T_sp af_apropos(Str_sp string_desig, T_sp package_desig)
+{_G();
+    string substring = desig::stringDesignator(string_desig,_lisp)->get();
+    Vector0<Package_O>	packages;
+    if ( package_desig->isNil() )
+    {
+	for ( StringMap<Package_O>::iterator pi=_lisp->packages().begin();
+	      pi != _lisp->packages().end(); pi++ )
+	{
+	    packages.push_back(pi->second);
+	}
+    } else
+    {
+	Package_sp pkg = desig::packageDesignator(package_desig,_lisp);
+	packages.push_back(pkg);
+    }
+    searchForApropos(packages,substring,false);
+    return _lisp->nil<T_O>();
+}
+
+
+
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.macros.defFunction,defFunction)
+  \scriptCmd{defMacro}{macroName argumentNameList code...}
+
+  Define a macro with the name \scriptArg{macroName}.
+  The \scriptArg{argumentNameList} defines the variables that are
+  passed to the \scriptArg{code...}.
+  __END_DOC
+*/
+#if 0
+T_sp macro_defMacro(Executable_sp exec, Cons_sp wholeEnv, Environment_sp environment, Lisp_sp lisp)
+{_F(lisp);
+    Cons_sp args = wholeEnv->ocar()->as<Cons_O>()->cdr();
+    Symbol_sp	symbol;
+    T_sp	value;
+    LOG(BF( "defMacro raw args = %s") % args->__repr__() );
+    symbol = args->ocar()->as<Symbol_O>();
+    Cons_sp argumentNames = args->ocadr()->as<Cons_O>();
+    Str_sp docString = lisp->nil<Str_O>();
+    SourceCodeCons_sp form; 
+    LOG(BF("Checking for docstring in remaining arguments: %s")%args->ocaddr()->__repr__());
+    if ( args->ocaddr()->isAssignableTo<Str_O>() )
+    {
+	docString = args->ocaddr()->as<Str_O>();
+	form = args->cdddr()->as<SourceCodeCons_O>();
+	LOG(BF("Found docstring: %s") % docString->__repr__());
+	LOG(BF("Found form: %s") % form->__repr__());
+    } else
+    {
+	form = args->cddr()->as<SourceCodeCons_O>();
+	LOG(BF("Found form: %s") % form->__repr__());
+    }
+    SourceCodeCons_sp code = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(lisp->symbol(_sym_progn),form,form,lisp);
+    LOG(BF( "code = %s") % code->__repr__() );
+    LOG(BF("Closing over the environment-->\n%s") % environment->__repr__() );
+    Function_sp macro = Function_O::create(symbol,argumentNames,docString,_lisp->cnil(),code,lisp->top_level_environment(),_sym_macro,lisp);
+    LOG(BF("macro = %s") % macro->__repr__() );
+    symbol->setUniqueDynamicFunction(macro);
+    return lisp->nil<Cons_O>();
+}
+#endif
+
+
+/*
+  __BEGIN_DOC(candoScript.general.getPackage,getPackage)
+  \scriptCmdRet{getPackage}{}{Text::packageName}
+
+  Make the package.
+  __END_DOC
+*/
+#if 0
+T_sp p r i m_getPackage(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+{_F(lisp);
+    lisp->print(BF("Just entered prim_getPackage"));
+    Str_sp packageName = args->car<Str_O>();
+    return lisp->findPackage(packageName->get());
+}
+#endif
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.funcall,funcall)
+  \scriptCmdRet{funcall}{}{Function arg1 arg2 ...}
+
+  Evaluate the function with the arguments.
+  __END_DOC
+*/
+
+
+
+
+#define ARGS_af_funcall "(function_desig &rest args)"
+#define DECL_af_funcall ""
+#define DOCS_af_funcall "See CLHS: funcall"
+T_sp af_funcall(T_sp function_desig, Cons_sp args)
+{_G();
+    Function_sp func = desig::functionDesignator(function_desig,_lisp);
+    Cons_sp passArgs = args;
+    T_sp result = eval::apply(func,passArgs,_lisp);
+    return result;
+}
+
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.apply,apply)
+  \scriptCmdRet{apply}{}{Function argList}
+
+  Evaluate the function with the argument list.
+  __END_DOC
+*/
+
+
+
+#define ARGS_af_apply "(head &rest args)"
+#define DECL_af_apply ""
+#define DOCS_af_apply "apply"
+T_sp af_apply(T_sp head, Cons_sp args)
+{_G();
+    ql::list largs(_lisp);
+    Cons_sp cur;
+    for ( cur=args; cur->cdr()->notNil(); cur=cur->cdr() )
+    {
+	largs << cur->ocar();
+    }
+    largs.dot(cur->ocar());
+    Cons_sp pass_args = largs.cons();
+    T_sp result = eval::apply(head,pass_args,_lisp);
+    return result;
+}
+
+
+
+
+
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.getForm,getForm)
+  \scriptCmdRet{getForm}{}{Symbol::}
+
+  Return the Procedure associated with the symbol
+  __END_DOC
+*/
+T_sp prim_getForm(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+{_F(lisp);
+    Symbol_sp symbol = args->car<Symbol_O>();
+    Function_sp exec = environ->lookup_function(symbol);
+    return exec;
+}
+
+#if 0
+/*
+  __BEGIN_DOC(candoScript.general.parseConsOfStrings,parseConsOfStrings)
+  \scriptCmdRet{parseConsOfStrings}{}{Text::}
+
+  Parse a string as a list of elements.
+  __END_DOC
+*/
+T_sp prim_parseConsOfStrings(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+{_F(lisp);
+    stringstream ss;
+    ss << "( ";
+    ASSERT_eq(args->length(),1);
+    LOG(BF("all args |%s|") % args->__repr__().c_str()  );
+    Cons_sp l = args->ocar()->as<Cons_O>();
+    LOG(BF("first arg |%s|") % l->__repr__().c_str()  );
+    for ( Cons_sp c=l; c->notNil(); c=c->cdr() )
+    {
+	T_sp o = c->ocar();
+	LOG(BF("Object|%s|") % o->__repr__().c_str()  );
+	ss << c->ocar()->as<Str_O>()->get();
+	ss << " ";
+    }
+    ss << " ) ";
+    LOG(BF("Assembled string|%s|") % ss.str().c_str()  );
+    ss << endl;
+    Cons_sp result = lisp->compileScriptInStream(ss,"--noFileName--")->cdr();
+    T_sp oresult = result->ocar();
+    return oresult;
+}
+#endif
+
+class	OrderByLessThan
+{
+public:
+    bool operator()(T_sp x, T_sp y )
+    {
+	return x->operator<(y);
+    }
+};
+
+
+T_sp prim_sorted(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+{_F(lisp);
+    Vector0<T_O> sorted; 
+    Cons_sp unsorted = args->car<Cons_O>();
+    if ( unsorted->length() == 0 ) return Cons_O::nil(lisp);
+    sorted.fillFromCons(args->car<Cons_O>());
+    OrderByLessThan orderer;
+    sort::quickSort(sorted.begin(),sorted.end(),orderer,lisp);
+    Cons_sp result = sorted.asCons(lisp);
+    return result;
+}
+
+
+class	OrderBySortFunction
+{
+private:
+    Lisp_sp 	_Lisp;
+    Function_sp _SortExecutable;
+    Cons_sp 	_args;
+public:
+    OrderBySortFunction(Function_sp proc,Lisp_sp lisp)
+    {
+	this->_Lisp = lisp;
+	this->_SortExecutable = proc;
+	this->_args = Cons_O::createList(lisp->onil(),lisp->onil(),lisp);
+    }
+    bool operator()(T_sp x, T_sp y )
+    {
+	this->_args->setCar(x);
+	this->_args->cdr()->setCar(y);
+	return eval::apply(this->_SortExecutable,this->_args,this->_Lisp)->notNil();
+    }
+};
+
+T_sp prim_sort(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+{_F(lisp);
+    ASSERTF(environ->notNil(),BF("Environment cannot be nil in prim_sort"));
+    Vector0<T_O> sorted; 
+    Cons_sp unsorted = args->car<Cons_O>();
+    LOG(BF("Unsorted data: %s") % args->__repr__() );
+    if ( unsorted->length() == 0 ) return Cons_O::nil(lisp);
+    sorted.fillFromCons(args->car<Cons_O>());
+    Function_sp sortProc = args->ocadr()->as<Function_O>();
+    LOG(BF("Sort function: %s") % sortProc->__repr__() );
+    OrderBySortFunction orderer(sortProc,lisp);
+    sort::quickSort(sorted.begin(),sorted.end(),orderer,lisp);
+    Cons_sp result = sorted.asCons(lisp);
+    return result;
+}
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.yourself,yourself)
+  \scriptCmdRet{yourself}{}{Object::}
+
+  Return the value of the object.
+  __END_DOC
+*/
+T_sp prim_yourself(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    ASSERT(args->length()==1);
+    return args->ocar();
+}
+
+
+/*
+  __BEGIN_DOC(candoScript.general.localVariableNames,localVariableNames)
+  \scriptCmdRet{localVariableNames}{}{Text::}
+
+  Return a list of all local variable names.
+  __END_DOC
+*/
+T_sp prim_localVariableNames(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    IMPLEMENT_ME();
+//    Cons_sp names = lisp->allLocalNamesAsCons();
+//    return names;
+}
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.sourceFileLine,sourceFileLine)
+  \scriptCmdRet{sourceFileLine}{}{Cons::}
+
+  Return the current file name and line number in a two element Cons.
+  __END_DOC
+*/
+T_sp prim_sourceFileLine(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    EvalFrame frame = lisp->__topFrame();
+    T_sp frameCode = frame.code();
+    ASSERTNOTNULLP(frameCode,"code was NULL");
+    string sourceFile="-no-file-";
+    int lineNo = 0;
+    if ( frameCode->isAssignableTo<SourceCodeCons_O>() )
+    {
+	SourceCodeCons_sp code = frameCode->as<SourceCodeCons_O>();
+	sourceFile = Str_O::create(code->getParsePosFileName(),lisp)->get();
+	LOG(BF("sourceFile = %s") % sourceFile );
+	lineNo = lisp->create<Fixnum_O>(code->getParsePosLineNumber())->get();
+	LOG(BF("lineNo = %d") % lineNo );
+    }
+    Cons_sp result = Cons_O::createList(Str_O::create(sourceFile,lisp),Fixnum_O::create(lineNo,lisp),lisp);
+    return result;
+}
+
+
+Cons_sp Lisp_O::getBackTrace() const
+{_OF();
+    Cons_sp first = _lisp->create<Cons_O>();
+    Cons_sp cur = first;
+    for ( ExecutionStack::const_iterator i=this->_ExecutionStack.begin();
+	  i!=this->_ExecutionStack.end(); i++ )
+    {
+	Cons_sp one = _lisp->create<Cons_O>((*i).code());
+	cur->setCdr(one);
+	cur = one;
+    }
+    return first->cdr();
+}
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.backtrace,backtrace)
+  \scriptCmdRet{backtrace}{}{Cons::}
+
+  Return a backtrace as a list of SourceCodeCons.
+  __END_DOC
+*/
+T_sp prim_backtrace(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    Cons_sp bt = lisp->getBackTrace();
+    return bt;
+}
+
+
+
+#if 0
+/*
+  __BEGIN_DOC(candoScript.general.locals,locals)
+  \scriptCmdRet{locals}{}{Text::}
+
+  Print a list of all local variable names.
+  __END_DOC
+*/
+T_sp prim_locals(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    Cons_sp names = lisp->allLocalNamesAsCons();
+    lisp->print(BF("%s") % names->__repr__().c_str() );
+    return T_O::nil(lisp);
+}
+#endif
+
+/*
+  __BEGIN_DOC(candoScript.general.databaseDir,databaseDir)
+  \scriptCmdRet{databaseDir}{}{Text::}
+
+  Return the path for the database directory.
+  __END_DOC
+*/
+T_sp prim_scriptDir(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    Path_sp dir = lisp->create<Path_O>(lisp->bundle().getCandoScriptDir());
+    return dir;
+}
+
+
+/*
+  __BEGIN_DOC(candoScript.general.databaseDir,databaseDir)
+  \scriptCmdRet{databaseDir}{}{Text::}
+
+  Return the path for the database directory.
+  __END_DOC
+*/
+T_sp prim_databaseDir(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    Str_sp dir = lisp->create<Str_O>(lisp->bundle().getDatabasesDir().string());
+    return dir;
+}
+
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.changeWorkingDirectory,changeWorkingDirectory)
+  \scriptCmdRet{changeWorkingDirectory}{}{Text::}
+
+  Change the current working directory.
+  __END_DOC
+*/
+T_sp prim_setCurrentWorkingDirectory(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    Str_sp dir = args->car<Str_O>();
+    Path_sp cwd = Path_O::create(dir->get(),lisp);
+    lisp->setCurrentWorkingDirectory(cwd);
+    return dir;
+}
+
+
+/*
+  __BEGIN_DOC(candoScript.general.isTopLevelScript)
+
+  Return a true if this is a top level script or false if its an include file.
+  __END_DOC
+*/
+T_sp prim_isTopLevelScript(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    LOG(BF("isTopLevelScript = %d") % lisp->getRequireLevel()  );
+    T_sp top = lisp->_boolean(lisp->getRequireLevel() == 0);
+    return top;
+}
+
+/*
+  __BEGIN_DOC(candoScript.general.max,max)
+  \scriptCmdRet{max}{valueA:number valueB:number ...}{number}\par
+
+  Return the max of the arguments.
+  __END_DOC
+*/
+T_sp prim_max(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    Cons_sp p;
+    Number_sp o;
+    Number_sp max;
+    max = Number_O::nil(lisp);
+    for ( p = args; p->notNil(); p = p->cdr() )
+    {
+	o = p->car<Number_O>();
+	if ( max->isNil() || o->asReal() > max->asReal() )
+	{
+	    max = o;
+	}
+    }
+    return max;
+}
+
+
+/*
+  __BEGIN_DOC(candoScript.general.min,min)
+  \scriptCmdRet{min}{valueA:number valueB:number ...}{number}\par
+
+  Return the min of the arguments.
+  __END_DOC
+*/
+T_sp prim_min(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    Cons_sp p;
+    Number_sp o;
+    Number_sp min;
+    min = Number_O::nil(lisp);
+    for ( p = args; p->notNil(); p = p->cdr() )
+    {
+	o = p->car<Number_O>();
+	if ( min->isNil() || o->asReal() < min->asReal() )
+	{
+	    min = o;
+	}
+    }
+    return min;
+}
+
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.debugLogOn,debugLogOn)
+  \scriptCmd{debugLogOn}{true/false:bool}
+
+  Turn on or off writing debug statements to the debug log. This is useful when running
+  long scripts that crash, you can turn of debug logging up to the point where
+  the crash happens and then examine the output.
+  __END_DOC
+*/
+T_sp prim_debugLogOn(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    ASSERTNOTNULL(args);
+    if ( args->length() != 0 ) THROW(_lisp->create<LispError_O>("No arguments needed"));
+    lisp->debugLog().setSuppressMessages(false);
+    LOG(BF("Turning debugLogOn"));
+    return T_O::nil(lisp);
+}
+
+/*
+  __BEGIN_DOC(candoScript.general.debugLogOff,debugLogOff)
+  \scriptCmd{debugLogOff}{true/false:bool}
+
+  Turn on or off writing debug statements to the debug log. This is useful when running
+  long scripts that crash, you can turn of debug logging up to the point where
+  the crash happens and then examine the output.
+  __END_DOC
+*/
+T_sp prim_debugLogOff(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    ASSERTNOTNULL(args);
+    if ( args->length() != 0 ) THROW(_lisp->create<LispError_O>("No arguments needed"));
+    lisp->debugLog().setSuppressMessages(true);
+    return T_O::nil(lisp);
+}
+
+/*
+  __BEGIN_DOC(candoScript.general.debugDumpClassManager,debugDumpClassManager)
+  \scriptCmd{debugDumpClassManager}{}
+
+  Dump the class manager.
+  __END_DOC
+*/
+T_sp prim_debugDumpClassManager(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    return T_O::nil(lisp);
+}
+
+/*
+  __BEGIN_DOC(candoScript.general.testScanner,scannerTest)
+  \scriptCmd{testScanner}{Text::fileName}
+
+  Open the \sa{fileName}, run it through the scanner to test it.
+  __END_DOC
+*/
+T_sp prim_testScanner(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    IMPLEMENT_ME();
+#if 0
+    T_sp	obj;
+    ASSERTNOTNULL(args);
+    if ( args->length() != 1 ) THROW(_lisp->create<LispError_O>("Need a file name")); 
+    string fileName = args->car<Str_O>()->get();
+    ifstream fin;
+    fin.open(fileName.c_str(),ios::in);
+    lispScannerDebug(fin);
+    return T_O::nil(lisp);
+#endif
+}
+
+T_sp prim_testThrowCatch(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    ConditionBase_sp cx = args->car<ConditionBase_O>();
+    TRY()
+    {
+	if ( args->cadr<Bool_O>()->isTrue() )
+	{
+	    _lisp->print(BF("Expanded macro: About to throw condition(%s) condition.use_count()=%d") % cx->message().c_str() % cx.use_count() );
+	    ConditionBase_sp cond = (cx);		      
+	    cond->setThrowPosition(__FILE__,__FUNCTION__,__LINE__);
+	    ::core::lisp_logException(_lisp,__FILE__,__FUNCTION__,__LINE__,"exception thrown", cond->message());
+	    throw(::core::Condition(cond));
+	} else
+	{
+	    _lisp->print(BF("MACRO: About to throw condition(%s) condition.use_count()=%d") % cx->message().c_str() % cx.use_count() );
+	    THROW(cx);
+	}
+    } catch (Condition& err)
+      {
+	  _lisp->print(BF("Caught condition(%s) and continuing") % err.message().c_str() );
+	  _lisp->print(BF("conditionObject().use_count() = %d") % err.conditionObject().use_count());
+      }
+    return _lisp->onil();
+}
+
+
+class RequireFile
+{
+private:
+    Path_sp 	_path;
+    Lisp_sp 	_Lisp;
+public:
+    Lisp_sp lisp() { return this->_Lisp;};
+    RequireFile(Path_sp path,Lisp_sp lisp)
+    {_F(lisp);
+	this->_Lisp = lisp;
+	this->_path = path;
+	lisp->addModule(path->asString());
+	lisp->pushRequireLevel();
+	LOG(BF("  pushed require level to %d") % lisp->getRequireLevel()  );
+	lisp->load(path);
+    }
+    virtual ~RequireFile()
+    {_OF();
+	this->_Lisp->popRequireLevel();
+	LOG(BF("  popped require level to %d") % this->_Lisp->getRequireLevel()  );
+    }
+};
+
+
+/*
+  __BEGIN_DOC(candoScript.general.import,import)
+  \scriptCmd{export}{Text::fileName}
+
+  Open the \sa{fileName}, compile and evaluate its contents.
+  It looks through all of the directories in the global variable PATH and then 
+  the Scripts directory in the Cando application directory.
+
+  __END_DOC
+*/
+T_sp prim_include(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    T_sp	obj;
+    ASSERTNOTNULL(args);
+    if ( args->length() != 1 ) THROW(_lisp->create<LispError_O>("Need a file name")); 
+    string fileName = args->car<Str_O>()->get();
+    if ( lisp->recognizesModule(fileName) )
+    {
+	LOG(BF("File %s has already been included") % fileName.c_str() );
+	return T_O::nil(lisp);
+    }
+    Path_sp includePath = _lisp->translateLogicalPathnameUsingPaths(args->ocar());
+    LOG(BF("Looking for require file: %s") % includePath->asString()  );
+    // Load the required file if it fails it will automatically be cleaned up
+    RequireFile required(includePath,lisp);
+    return lisp->_true();
+}
+
+/*
+  __BEGIN_DOC(candoScript.general.export,export)
+  \scriptCmd{export}{symbols...}
+
+  Tell the symbols that they can be exported.
+
+  __END_DOC
+*/
+#define ARGS_prim_export "(symDes &optional (package *package*))"
+T_sp prim_export(Executable_sp e, Cons_sp args, Environment_sp env, Lisp_sp lisp )
+{_F(lisp);
+    Cons_sp symDes = desig::listOfSymbols(env->lookup(CorePkg,"symDes"),_lisp);
+    Package_sp package = desig::packageDesignator(env->lookup(CorePkg,"package"),_lisp);
+    package->_export(symDes);
+    return lisp->_true();
+}
+
+
+#define	PRIM_exportToPython "Export functions to python"
+#define ARGS_prim_exportToPython "(symbols)"
+/*! symbols = list of symbols designator : export symbols to Python */
+T_sp prim_exportToPython(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+{_F(lisp);
+    Cons_sp symbols = desig::listOfSymbols(environ->lookup(CorePkg,"symbols"),_lisp);
+    ASSERTNOTNULL(args);
+    for ( Cons_sp cur = symbols; cur->notNil(); cur = cur->cdr() )
+    {
+	Symbol_sp one = cur->ocar()->as<Symbol_O>();
+	LOG(BF("Exporting symbol[%s] to python") % one->__repr__() );
+	lisp->exportToPython(one);
+    }
+    return lisp->_true();
+}
+
+
+
+#define ARGS_af_intern "(symbol_name &optional (package-desig *package*))"
+#define DECL_af_intern ""
+#define DOCS_af_intern "See CLHS: intern"
+T_sp af_intern(Str_sp symbol_name, T_sp package_desig)
+{_G();
+    Package_sp package = desig::packageDesignator(package_desig,_lisp);
+    return package->intern(symbol_name->get());
+}
+
+
+
+
+
+
+
+
+#define ARGS_af_error "(datum &rest arguments)"
+#define DECL_af_error ""
+#define DOCS_af_error "See CLHS error"
+T_sp af_error(T_sp datum, Cons_sp arguments)
+{_G();
+    if ( datum->isAssignableTo<ConditionBase_O>() )
+    {
+	ConditionBase_sp c = datum->as<ConditionBase_O>();
+	_lisp->error(c/*,environ*/);
+    } else if ( datum->stringP() )
+    {
+	Str_sp control = datum->as<Str_O>();
+	ConditionBase_sp c = simple_error_O::create(control,arguments,_lisp);
+	_lisp->error(c/*,environ*/);
+    }
+    THROW(_lisp->error(BF("Currently you must pass a ConditionBase object to error")));
+}
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.load,load)
+  \scriptCmd{load}{Text::fileName}
+
+  Open the \sa{fileName}, compile and evaluate its contents.
+  It looks through all of the directories in the global variable PATH and then 
+  the Scripts directory in the Cando application directory.
+
+  __END_DOC
+*/
+#define ARGS_prim_load "(filespec &key (verbose *load-verbose*) (print *load-print*) (if-does-not-exist t) (external-format :default))"
+    T_sp prim_load(Executable_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp )
+    {_F(lisp);
+	T_sp fileSpec = env->lookup(CorePkg,"filespec");
+	bool verbose = env->lookup(CorePkg,"verbose")->isTrue();
+	bool print = env->lookup(CorePkg,"print")->isTrue();
+	bool ifDoesNotExist = env->lookup(CorePkg,"if-does-not-exist")->isTrue();
+	Symbol_sp externalFormat = env->lookup(CorePkg,"external-format")->as<Symbol_O>();
+	if ( externalFormat != _kw_default )
+	{
+	    THROW(lisp->error(BF("I don't handle externalFormat - convert this to a warning")));
+	}
+	lisp->load(fileSpec,verbose,print,ifDoesNotExist);
+	return lisp->_true();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.className,className)
+  \scriptCmdRet{className}{object}{string}
+
+  Return the name of the class the object belongs to.
+  __END_DOC
+*/
+    T_sp prim_className(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	if ( args->length() != 1 ) THROW(_lisp->create<LispError_O>("Need one argument"));
+	T_sp obj = args->ocar();
+	if ( !obj->isOfClass<StandardObject_O>() ) return lisp->create<Str_O>(obj->className());
+	return lisp->create<Str_O>(obj->className());
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.isAssignableTo,isAssignableTo)
+  \scriptInfixRet{Object::object}{isAssignableTo}{Class::classObject}{Bool::}
+
+  Return true if \scriptArg{object} can be assigned to a C++ variable of class \scriptArg{classObject}.
+  __END_DOC
+*/
+    T_sp prim_isAssignableTo(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+    {_F(lisp);
+	ASSERT_eq(args->length(),2);
+	LOG(BF("Entered prim_isAssignableTo with arguments: %s")% args->__repr__() );
+	T_sp tag = args->ocar();
+	T_sp secondArgument = args->ocadr();
+	MetaClass_sp mc = secondArgument->as<MetaClass_O>();;
+	LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)")% tag->className() % mc->className() );
+	bool io = (tag->isAssignableToByClassSID(mc->getInstanceClassSID()));
+	return lisp->_boolean(io);
+    }
+
+/*
+  __BEGIN_DOC(candoScript.general.isSubClassOf,isSubClassOf)
+  \scriptInfixRet{Object::object}{isSubClassOf}{Class::classObject}{Bool::}
+
+  Return true if \scriptArg{object} can be assigned to a C++ variable of class \scriptArg{classObject}.
+  __END_DOC
+*/
+    T_sp prim_isSubClassOf(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+    {_F(lisp);
+	ASSERT_eq(args->length(),2);
+	LOG(BF("Entered prim_isSubClassOf with arguments: %s")% args->__repr__() );
+	MetaClass_sp tag = args->ocar()->as<MetaClass_O>();
+	T_sp secondArgument = args->ocadr();
+	MetaClass_sp mc = secondArgument->as<MetaClass_O>();;
+	LOG(BF("Checking if instances of class(%s) is assignable to variables of class(%s)")% tag->className() % mc->className() );
+	bool io = tag->isSubClassOf(mc);
+	return lisp->_boolean(io);
+    }
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.isOfClass,isOfClass)
+  \scriptInfixRet{Object::object}{isOfClass}{Class::classObject}{Bool::}
+
+  Return true if \scriptArg{object} is a subclass of \scriptArg{classObject}.
+  __END_DOC
+*/
+    T_sp prim_isOfClass(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	if ( args->length() != 2 ) THROW(_lisp->create<LispError_O>("Need two arguments"));
+	T_sp obj = args->ocar();
+	MetaClass_sp oclass = args->ocadr()->as<MetaClass_O>();
+	bool res = ( obj->_class().get() == oclass.get() );
+	return lisp->_boolean(res);
+    }
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.repr,repr)
+  \scriptCmdRet{repr}{object}{string}
+
+  Return a string representation of the object.
+  __END_DOC
+*/
+    T_sp prim_repr(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	T_sp	obj;
+	Str_sp	res;
+	if ( args->length() != 1 ) THROW(_lisp->create<LispError_O>("Need one argument"));
+	res = lisp->create<Str_O>(args->car<T_O>()->__repr__());
+	return res;
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.list,list)
+  \scriptCmdRet{list}{object1 object2 ...}{list}\par
+  \scriptCmdRet{:}{object1 object2 ...}{list}
+
+  Return a list formed by evaluating the arguments.
+  __END_DOC
+*/
+
+
+
+
+
+
+
+#if 0 
+/*
+  __BEGIN_DOC(candoScript.general.sub,sub)
+  \scriptCmdRet{sub}{valueA:number valueB:number}{number}\par
+  \scriptCmdRet{-}{valueA:number valueB:number}{number}
+
+  Return the sum of the arguments.
+  __END_DOC
+*/
+    template <typename oTx, typename oTy, typename Tx, typename Ty, typename oTr>
+	boost::shared_ptr<oTr> t_sub(Lisp_sp lisp, T_sp ox, T_sp oy)
+    {
+	return oTr::create(((Tx)(ox->as<oTx>()->get()))-((Ty)(oy->as<oTy>()->get())),lisp);
+    }
+
+    T_sp prim_sub(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	double	dacc, dval;
+	int	iacc, ival;
+	bool	allInts;
+	Cons_sp p;
+	T_sp o, res;
+	if ( args->length() != 2 )
+	{
+	    THROW(_lisp->create<LispError_O>("sub takes only two arguments"));
+	}
+	T_sp x = args->ocar();
+	T_sp y = args->ocadr();
+	if ( x->isOfClass<Fixnum_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_sub<Fixnum_O,Fixnum_O,int,int,Fixnum_O>(lisp,x,y);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_sub<Fixnum_O,LongLongInt_O,LongLongInt,LongLongInt,LongLongInt_O>(lisp,x,y);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_sub<Fixnum_O,Double_float_O,double,double,Double_float_O>(lisp,x,y);
+	    }
+	} else if ( x->isOfClass<LongLongInt_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_sub<LongLongInt_O,Fixnum_O,LongLongInt,LongLongInt,LongLongInt_O>(lisp,x,y);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_sub<LongLongInt_O,LongLongInt_O,LongLongInt,LongLongInt,LongLongInt_O>(lisp,x,y);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_sub<LongLongInt_O,Double_float_O,double,double,Double_float_O>(lisp,x,y);
+	    }
+	} else if ( x->isOfClass<Double_float_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_sub<Double_float_O,Fixnum_O,double,double,Double_float_O>(lisp,x,y);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_sub<Double_float_O,LongLongInt_O,double,double,Double_float_O>(lisp,x,y);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_sub<Double_float_O,Double_float_O,double,double,Double_float_O>(lisp,x,y);
+	    }
+	}
+	THROW(_lisp->create<LispError_O>("Illegal arguments for sub"));
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.div,div)
+  \scriptCmdRet{div}{valueA:number valueB:number}{number}\par
+  \scriptCmdRet{/}{valueA:number valueB:number}{number}
+
+  Return the division of the arguments.
+  __END_DOC
+*/
+    template <typename oTx, typename oTy, typename Tx, typename Ty, typename oTr>
+	boost::shared_ptr<oTr> t_div( T_sp ox, T_sp oy, Lisp_sp lisp)
+    {
+	return oTr::create(((Tx)(ox->as<oTx>()->get()))/((Ty)(oy->as<oTy>()->get())),lisp);
+    }
+
+    T_sp prim_div(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	double	dacc, dval;
+	int	iacc, ival;
+	bool	allInts;
+	Cons_sp p;
+	T_sp o, res;
+	if ( args->length() != 2 )
+	{
+	    THROW(_lisp->create<LispError_O>("div takes only two arguments"));
+	}
+	T_sp x = args->ocar();
+	T_sp y = args->ocadr();
+	if ( x->isOfClass<Fixnum_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_div<Fixnum_O,Fixnum_O,int,int,Fixnum_O>(x,y,lisp);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_div<Fixnum_O,LongLongInt_O,LongLongInt,LongLongInt,LongLongInt_O>(x,y,lisp);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_div<Fixnum_O,Double_float_O,double,double,Double_float_O>(x,y,lisp);
+	    }
+	} else if ( x->isOfClass<LongLongInt_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_div<LongLongInt_O,Fixnum_O,LongLongInt,LongLongInt,LongLongInt_O>(x,y,lisp);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_div<LongLongInt_O,LongLongInt_O,LongLongInt,LongLongInt,LongLongInt_O>(x,y,lisp);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_div<LongLongInt_O,Double_float_O,double,double,Double_float_O>(x,y,lisp);
+	    }
+	} else if ( x->isOfClass<Double_float_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_div<Double_float_O,Fixnum_O,double,double,Double_float_O>(x,y,lisp);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_div<Double_float_O,LongLongInt_O,double,double,Double_float_O>(x,y,lisp);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_div<Double_float_O,Double_float_O,double,double,Double_float_O>(x,y,lisp);
+	    }
+	}
+	THROW(_lisp->create<LispError_O>("Illegal arguments for div"));
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.mul,mul)
+  \scriptCmdRet{mul}{valueA:number valueB:number}{number}\par
+  \scriptCmdRet{/}{valueA:number valueB:number}{number}
+
+  Return the mulision of the arguments.
+  __END_DOC
+*/
+    template <typename oTx, typename oTy, typename Tx, typename Ty, typename oTr>
+	boost::shared_ptr<oTr> t_mul(Lisp_sp lisp, T_sp ox, T_sp oy)
+    {
+	return oTr::create(((Tx)(ox->as<oTx>()->get()))*((Ty)(oy->as<oTy>()->get())),lisp);
+    }
+
+    T_sp prim_mul(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	double	dacc, dval;
+	int	iacc, ival;
+	bool	allInts;
+	Cons_sp p;
+	T_sp o, res;
+	if ( args->length() != 2 )
+	{
+	    THROW(_lisp->create<LispError_O>("mul takes only two arguments"));
+	}
+	T_sp x = args->ocar();
+	T_sp y = args->ocadr();
+	if ( x->isOfClass<Fixnum_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_mul<Fixnum_O,Fixnum_O,int,int,Fixnum_O>(lisp,x,y);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_mul<Fixnum_O,LongLongInt_O,LongLongInt,LongLongInt,LongLongInt_O>(lisp,x,y);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_mul<Fixnum_O,Double_float_O,double,double,Double_float_O>(lisp,x,y);
+	    }
+	} else if ( x->isOfClass<LongLongInt_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_mul<LongLongInt_O,Fixnum_O,LongLongInt,LongLongInt,LongLongInt_O>(lisp,x,y);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_mul<LongLongInt_O,LongLongInt_O,LongLongInt,LongLongInt,LongLongInt_O>(lisp,x,y);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_mul<LongLongInt_O,Double_float_O,double,double,Double_float_O>(lisp,x,y);
+	    }
+	} else if ( x->isOfClass<Double_float_O>() )
+	{
+	    if ( y->isOfClass<Fixnum_O>() )
+	    {
+		return t_mul<Double_float_O,Fixnum_O,double,double,Double_float_O>(lisp,x,y);
+	    } else if ( y->isOfClass<LongLongInt_O>() )
+	    {
+		return t_mul<Double_float_O,LongLongInt_O,double,double,Double_float_O>(lisp,x,y);
+	    } else if ( y->isOfClass<Double_float_O>() )
+	    {
+		return t_mul<Double_float_O,Double_float_O,double,double,Double_float_O>(lisp,x,y);
+	    }
+	}
+	THROW(_lisp->create<LispError_O>("Illegal arguments for mul"));
+    }
+
+
+#endif
+
+
+
+
+
+
+
+
+#if 0
+/*
+  __BEGIN_DOC(candoScript.general.mod,mod)
+  \scriptCmdRet{mod}{valueA:number valueB:number}{number}\par
+
+  Return the result of modulus of the arguments.
+  __END_DOC
+*/
+    T_sp prim_mod(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	IMPLEMENT_ME();
+	Cons_sp p;
+	T_sp o, res;
+	if ( args->length() != 2 ) THROW(_lisp->create<LispError_O>("Need two arguments"));
+	T_sp o1 = args->ocar();
+	T_sp o2 = args->ocadr();
+	int d1,d2;
+	d1 = safe_downcast<Fixnum_O>(o1)->get();
+	d2 = safe_downcast<Fixnum_O>(o2)->get();
+	return lisp->create<Fixnum_O>(d1 % d2);
+    }
+#endif
+
+
+
+
+
+
+#if 0
+/*
+  __BEGIN_DOC(candoScript.general.eq,eq)
+  \scriptCmdRet{eq}{valueA valueB }{Bool::}\par
+  \scriptMethodRet{valueA}{==}{valueB }{Bool::}
+
+  Return true if the objects are equal. For some objects (numbers,strings,bools) it compares the objects values. For more complex objects it returns true if they are identical.
+  __END_DOC
+*/
+    T_sp prim_eq(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	if ( args->length() != 2 ) THROW(_lisp->create<LispError_O>("eq needs two arguments"));
+	T_sp o1 = args->ocar();
+	T_sp o2 = args->ocadr();
+	return lisp->_boolean(o1->equal(o2));
+    }
+
+/*
+  __BEGIN_DOC(candoScript.general.ne,ne)
+  \scriptCmdRet{ne}{valueA valueB }{bool}\par
+  \scriptInfixRet{valueA}{!=}{valueB }{bool}
+
+  Return true if the objects are not equal. For some objects (numbers,strings,bools) it compares the objects values. For more complex objects it returns true if they are not identical.
+  __END_DOC
+*/
+    T_sp prim_ne(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	if ( args->length() != 2 ) THROW(_lisp->create<LispError_O>("ne needs two arguments"));
+	T_sp o1 = args->ocar();
+	T_sp o2 = args->ocadr();
+	return lisp->_boolean(o1->ne(o2));
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.lt,lt)
+  \scriptCmdRet{lt}{valueA valueB }{Bool::}\par
+  \scriptMethodRet{valueA}{$<$}{valueB }{Bool::}
+
+  Return true if valueA $<$ valueB.
+  __END_DOC
+*/
+    T_sp prim_lt(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	if ( args->length() != 2 ) THROW(_lisp->create<LispError_O>("lt needs two arguments"));
+	T_sp o1 = args->ocar();
+	T_sp o2 = args->ocadr();
+	return lisp->_boolean(o1->lt(o2));
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.gt,gt)
+  \scriptCmdRet{gt}{valueA valueB }{bool}\par
+  \scriptInfixRet{valueA}{$>$}{valueB }{bool}
+
+  Return true if valueA $>$ valueB.
+  __END_DOC
+*/
+    T_sp prim_gt(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	if ( args->length() != 2 ) THROW(_lisp->create<LispError_O>("gt needs two arguments"));
+	T_sp o1 = args->ocar();
+	T_sp o2 = args->ocadr();
+	return lisp->_boolean(o1->gt(o2));
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.le,le)
+  \scriptCmdRet{le}{valueA valueB }{bool}\par
+  \scriptInfixRet{valueA}{$<$=}{valueB }{bool}
+
+  Return true if valueA $<$= valueB.
+  __END_DOC
+*/
+    T_sp prim_le(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	if ( args->length() != 2 ) THROW(_lisp->create<LispError_O>("le needs two arguments"));
+	T_sp o1 = args->olistref(0);
+	T_sp o2 = args->olistref(1);
+	return lisp->_boolean(o1->le(o2));
+    }
+
+
+/*
+  __BEGIN_DOC(candoScript.general.ge,ge)
+  \scriptCmdRet{ge}{valueA valueB }{bool}\par
+  \scriptInfixRet{valueA}{$>=$}{valueB }{bool}
+
+  Return true if valueA $>=$ valueB.
+  __END_DOC
+*/
+    T_sp prim_ge(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	if ( args->length() != 2 ) THROW(_lisp->create<LispError_O>("ge needs two arguments"));
+	T_sp o1 = args->olistref(0);
+	T_sp o2 = args->olistref(1);
+	return lisp->_boolean(o1->ge(o2));
+    }
+
+#endif
+
+
+/*
+  __BEGIN_DOC(candoScript.general.not,not)
+  \scriptCmdRet{not}{boolA}{bool}\par
+
+  Return not boolA.
+  __END_DOC
+*/
+
+
+
+#define ARGS_af_not "(arg)"
+#define DECL_af_not ""
+#define DOCS_af_not "not"
+T_sp af_not(T_sp x)
+{_G();
+    return _lisp->_boolean(!x->isTrue());
+};
+
+
+
+
+/*
+  __BEGIN_DOC(candoScript.general.printPushPrefix,printPushPrefix)
+  \scriptCmd{printPushPrefixln}{args ...}\par
+
+  Push a prefix to be printed everytime print is called the arguments followed by a new line.
+  __END_DOC
+*/
+    T_sp prim_printPushPrefix(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	string pref = args->car<Str_O>()->get();
+	printvPushPrefix(pref,lisp);
+	return T_O::nil(lisp);
+    }
+
+/*
+  __BEGIN_DOC(candoScript.general.printPopPrefix,printPopPrefix)
+  \scriptCmd{printPopPrefixln}{args ...}\par
+
+  Pop a prefix to be printed everytime print is called the arguments followed by a new line.
+  __END_DOC
+*/
+    T_sp prim_printPopPrefix(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	stringstream	sout;
+	printvPopPrefix(lisp);
+	return T_O::nil(lisp);
+    }
+
+/*
+  __BEGIN_DOC(candoScript.general.println,println)
+  \scriptCmd{println}{args ...}\par
+
+  Print string representations of the arguments followed by a new line.
+  __END_DOC
+*/
+    T_sp prim_println(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	stringstream	sout;
+	for ( Cons_sp p=args; p->notNil(); p=p->cdr() ) sout << p->ocar()->__str__();
+	lisp->print(BF("%s") % sout.str().c_str());
+	return T_O::nil(lisp);
+    }
+
+/*
+  __BEGIN_DOC(candoScript.general.print,print)
+  \scriptCmd{println}{args ...}\par
+
+  Print new line followed by string representations of the arguments.
+  __END_DOC
+*/
+
+
+
+#define ARGS_af_print "(obj &optional (output-stream-desig core::*stdout*))"
+#define DECL_af_print ""
+#define DOCS_af_print "See CLHS: print"
+void af_print(T_sp obj, T_sp output_stream_desig )
+{_G();
+    Stream_sp sout = desig::outputStreamDesignator(output_stream_desig,_lisp);
+    sout->write("\n");
+    sout->write(obj->__repr__());
+}
+
+/*
+  __BEGIN_DOC(candoScript.general.prin1,prin1)
+  \scriptCmd{prin1}{args ...}\par
+
+  Print string representations of the arguments with no new line.
+  __END_DOC
+*/
+    T_sp prim_prin1(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	stringstream	sout;
+	for ( Cons_sp p=args; p->notNil(); p=p->cdr() ) sout << p->ocar()->__str__();
+	lisp->prin1(BF("%s") % sout.str());
+	return T_O::nil(lisp);
+    }
+
+
+
+
+
+
+    T_sp prim_exit(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	Cons_sp		p;
+	stringstream	sout;
+	int exitCode = 0;
+	if ( args->ocar()->notNil() )
+	{
+	    exitCode = args->ocar()->as<Fixnum_O>()->get();
+	}
+	throw ExitProgram(exitCode);
+    }
+
+    T_sp prim_dump(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	stringstream	sout;
+	for ( Cons_sp p=args; p->notNil(); p=p->cdr() ) 
+	    sout << p->ocar()->__repr__();
+	lisp->print(BF("%s") % sout.str().c_str());
+	return T_O::nil(lisp);
+    }
+
+
+    T_sp prim_dumpln(Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp )
+    {_F(lisp);
+	stringstream	sout;
+	for ( Cons_sp p=args; p->notNil(); p=p->cdr() ) sout << p->ocar()->__repr__();
+	lisp->print(BF("%s") % sout.str().c_str());
+	return T_O::nil(lisp);
+    }
+
+
+    Environment_sp Lisp_O::top_level_environment() const
+    {_OF();
+	return this->_TopLevelEnvironment;
+    }
+
+
+
+
+    sid Lisp_O::getClassSIDForClassName(const string& name)
+    {
+	MetaClass_sp mc = this->classFromClassName(name);
+	return mc->classSID();
+    }
+
+
+    T_sp Lisp_O::createObjectOfClass(MetaClass_sp mc)
+    {_F(this->lisp());
+	LOG(BF("createObjectOfClass(%s)") % mc->getPackagedName() );
+	T_sp obj = mc->allocate_newNil();
+	obj->initialize();
+	return obj;
+    }
+
+
+
+    void Lisp_O::setEmbeddedInPython(bool b)
+    {_OF();
+	LOG(BF("EmbeddedInPython is being set to[%d]") % b);
+	this->_EmbeddedInPython = b;
+    }
+
+
+
+    MetaClass_sp Lisp_O::setf_findClass(Symbol_sp className, MetaClass_sp mc)
+    {
+	this->_ClassTable[className] = mc;
+	return mc;
+    }
+
+
+    MetaClass_sp Lisp_O::findClass(Symbol_sp className, bool errorp) const
+    {_OF();
+	SymbolMap<MetaClass_O>::const_iterator fi = this->_ClassTable.find(className);
+	if ( fi == this->_ClassTable.end() )
+	{
+	    if ( errorp )
+	    {
+		THROW(_lisp->error(BF("No class named %s") % className->__repr__() ));
+	    }
+	    return _lisp->nil<MetaClass_O>();
+	}
+	return fi->second;
+    }
+
+
+
+
+
+    SingleDispatchGenericFunction_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp) const
+    {_OF();
+	SymbolMap<SingleDispatchGenericFunction_O>::const_iterator fi = this->_SingleDispatchGenericFunctionTable.find(gfSym);
+	if ( fi == this->_SingleDispatchGenericFunctionTable.end() )
+	{
+	    if ( errorp )
+	    {
+		THROW(_lisp->error(BF("No single-dispatch-generic-function named %s") % gfSym->__repr__() ));
+	    }
+	    return _lisp->nil<SingleDispatchGenericFunction_O>();
+	}
+	return fi->second;
+    }
+
+
+
+
+
+    SingleDispatchGenericFunction_sp Lisp_O::setf_find_single_dispatch_generic_function(Symbol_sp gfName, SingleDispatchGenericFunction_sp mc)
+    {_OF();
+	this->_SingleDispatchGenericFunctionTable[gfName] = mc;
+	return mc;
+    }
+
+
+    void Lisp_O::forget_all_single_dispatch_generic_functions()
+    {_OF();
+	this->_SingleDispatchGenericFunctionTable.clear();
+    }
+
+
+
+
+
+
+
+    GenericFunction_sp Lisp_O::setf_findGenericFunction(Symbol_sp gfName, GenericFunction_sp mc)
+    {_OF();
+	this->_GenericFunctionTable[gfName] = mc;
+	return mc;
+    }
+
+
+    GenericFunction_sp Lisp_O::findGenericFunction(Symbol_sp gfName, bool errorp) const
+    {_OF();
+	SymbolMap<GenericFunction_O>::const_iterator fi = this->_GenericFunctionTable.find(gfName);
+	if ( fi == this->_GenericFunctionTable.end() )
+	{
+	    if ( errorp )
+	    {
+		THROW(_lisp->error(BF("No generic function named %s") % gfName->__repr__() ));
+	    }
+	    return _lisp->nil<GenericFunction_O>();
+	}
+	return fi->second;
+    }
+
+
+	  
+
+
+
+    MetaClass_sp Lisp_O::classFromClassSID(sid cid) const
+    {_OL();
+#ifdef SID_SYMBOL
+	return this->findClass(cid,true);
+#else
+	if ( cid >= this->_PredefinedSymbols.size() || cid.use_count() == 0 )
+	{
+	    // The class symbol id has not yet been defined,
+	    // this probably means we are in the startup phase.
+	    // Look through a map of classes built for use during this startup phase
+	    map<int,MetaClass_sp>::const_iterator ci = this->_SIDIndexedClassTable.find(cid);
+	    if ( ci != this->_SIDIndexedClassTable.end() ) return ci->second;
+	    THROW(_lisp->error(BF("The class with SID[%d] has an undefined symbol - this should never happen") % cid));
+	}
+	Symbol_sp sym = this->_PredefinedSymbols[cid];
+	// Below is a duplicate of what is in find_class so that className->__repr__() does not infinite loop
+	SymbolMap<MetaClass_O>::const_iterator fi = this->_ClassTable.find(sym);
+	if ( fi == this->_ClassTable.end() )
+	{
+	    THROW(_lisp->error(BF("No class named %s") % sym->__repr__() ));
+	}
+	return fi->second;
+#endif
+    }
+
+    string Lisp_O::classNameFromClassSID(sid cid)
+    {
+	MetaClass_sp mc = this->classFromClassSID(cid);
+	return mc->getPackagedName();
+    }
+
+
+
+
+
+    MetaClass_sp Lisp_O::classFromClassName(const string& name)
+    {_OF();
+	Symbol_sp sym = this->findSymbol(name);
+	if ( sym->isNil() )
+	{
+	    THROW(_lisp->create<LispError_O>("Could not find class with name: "+name ));
+	}
+	return _lisp->findClass(sym);
+//    return sym->dynamicValue()->as<MetaClass_O>();
+    }
+
+
+
+    void Lisp_O::parseStringIntoPackageAndSymbolName(const string& name, bool& packageDefined, Package_sp& package, string& symbolName, bool& exported) const
+    {_OF();
+	packageDefined = true; // this will be true in most cases below
+	LOG(BF("Parsing string[%s] into package and symbol name") % name );
+	if ( name[0] == ':' )
+	{
+	    LOG(BF("It's a keyword"));
+	    package = this->_KeywordPackage;
+	    symbolName = name.substr(1,99999);
+	    exported = true;
+	    return;
+	}
+	if ( name[0] == '&' )
+	{
+	    LOG(BF("It's an & symbol"));
+	    package = this->_CorePackage;
+	    symbolName = name;
+	    exported = true;
+	    return;
+	}
+	size_t colonPos = name.find_first_of(":");
+	exported = true;
+	if ( colonPos == string::npos )
+	{
+	    LOG(BF("Package wasn't defined"));
+	    symbolName = name;
+	    packageDefined = false;
+	    return;
+	}
+	bool doubleColon = false;
+	size_t secondPart = colonPos+1;
+	if ( name[secondPart] == ':' )
+	{
+	    LOG(BF("It's a non-exported symbol"));
+	    exported = false;
+	    doubleColon = true;
+	    secondPart++;
+	    if ( name.find_first_of(":",secondPart) != string::npos )
+	    {
+		THROW(_lisp->create<LispError_O>("There can only be one ':' or '::' in a symbol name"));
+	    }
+	}
+	package = this->findPackage(name.substr(0,colonPos));
+	symbolName = name.substr(secondPart,99999);
+	LOG(BF("It's a packaged symbol (%s :: %s)") % package->getName()% symbolName );
+	return;
+    }
+
+
+
+
+    Symbol_sp Lisp_O::intern(const string& name, T_sp optionalPackageDesignator )
+    {_OL();
+#if DEBUG_ENVIRONMENT_CREATION
+//    ASSERT(this->_PackagesInitialized);
+#endif
+	Package_sp package;
+	string symbolName;
+	bool exported, packageDefined;
+	this->parseStringIntoPackageAndSymbolName(name,packageDefined,package,symbolName,exported);
+	if ( !packageDefined )
+	{
+	    package = desig::packageDesignator(optionalPackageDesignator,this->lisp());
+	}
+	ASSERTNOTNULL(package);
+	return package->intern(symbolName)->object()->as<Symbol_O>();
+    }
+
+/*! The optionalPackageDesignator is nil */
+    Symbol_sp Lisp_O::intern(string const& symbolName)
+    {_OL();
+	Package_sp curPackage = this->getCurrentPackage();
+	ASSERTNOTNULL(curPackage);
+	return this->intern(symbolName,curPackage);
+    }
+    
+
+
+
+    Symbol_sp Lisp_O::findSymbol(const string& name,T_sp optionalPackageDesignator) const
+    {_OL();
+#if DEBUG_ENVIRONMENT_CREATION
+	ASSERT(this->_PackagesInitialized);
+#endif
+	Package_sp package;
+	string symbolName;
+	bool exported,packageDefined;
+	this->parseStringIntoPackageAndSymbolName(name,packageDefined,package,symbolName,exported);
+	if ( !packageDefined )
+	{
+	    package = desig::packageDesignator(optionalPackageDesignator,this->lisp());
+	}
+	return package->findSymbol(symbolName)->object()->as<Symbol_O>();
+    }
+
+
+    Symbol_sp Lisp_O::findSymbol(const string& symbolName /*, T_sp optionalPackageDesignator = nil */) const
+    {_OL();
+	return this->findSymbol(symbolName,_lisp->onil());
+    }
+
+
+
+    Symbol_sp Lisp_O::internWithPackageName(string const& packageName, string const& symbolName)
+    {_OL();
+	Package_sp package = this->findPackage(packageName);
+	return this->intern(symbolName,package);
+    }
+
+
+
+
+    Symbol_sp Lisp_O::internKeyword(const string& name)
+    {_OL();
+	string realName = name;
+	if ( name[0] == ':' )
+	{
+	    realName = name.substr(1,99999);
+	}
+	size_t colonPos = realName.find_first_of(":");
+	if ( colonPos != string::npos )
+	{
+	    THROW(_lisp->error(BF("You cannot intern[%s] as a keyword - it has package designating ':' characters in it at pos[%d]") % realName % colonPos));
+	}
+	return this->_KeywordPackage->intern(realName)->object()->as<Symbol_O>();
+    }
+
+
+
+
+    bool Lisp_O::isClassName(const string& name)
+    {
+	Symbol_sp sym = this->intern(name);
+	MetaClass_sp cl = this->findClass(sym,false);
+	return cl->notNil();
+    }
+
+
+#if 0
+/*!
+ * Look for the method in the class and its ancestor classes.
+ * Return the method or nil if not found.
+ * Return the class that contained the method
+ *
+ * I created this function on the plane to Orlando (2010) and I don't want
+ * to recompile everything by adding this as an Lisp_O method
+ * make this a Lisp_O method once we have power and can compile the entire
+ * source code.
+ */
+    Executable_sp searchAncestorsForMethod(Symbol_sp sym, MetaClass_sp& mc, T_sp receiver, Lisp_O* lisp )
+    {_F(lisp->sharedThis<Lisp_O>());
+	LOG(BF("Looking for method(%s) in class(%s)")% sym->currentName() % mc->getPackagedName() );
+	Executable_sp exec = mc->getMethodOrNil(sym, receiver);
+	if ( exec->notNil() ) 
+	{
+	    LOG(BF("Found it!"));
+	    return exec;
+	}
+	MetaClass_O::const_baseClassIterator mc_begin = mc->baseClasses_begin();
+	MetaClass_O::const_baseClassIterator mc_end = mc->baseClasses_end();
+	for ( MetaClass_O::const_baseClassIterator it = mc_begin; it!= mc_end; it++ )
+	{
+	    mc = *it;
+	    Executable_sp baseExec = searchAncestorsForMethod(sym,mc,receiver,lisp);
+	    if ( baseExec->notNil() ) return baseExec;
+	}
+	LOG(BF("Could not find method"));
+	return lisp->nil<Executable_O>();
+    }
+
+
+
+    Executable_sp Lisp_O::lookupMethod(Symbol_sp sym, MetaClass_sp mc, T_sp receiver)
+    {_F(this->lisp());
+	return searchAncestorsForMethod(sym,mc,receiver,this);
+    }
+#endif
+
+
+
+
+
+    bool Lisp_O::subClassOrder(sid classSID1, sid classSID2 )
+    {_OF();
+	MetaClass_sp mc1 = this->classFromClassSID(classSID1);
+	MetaClass_sp mc2 = this->classFromClassSID(classSID2);
+	return mc2->isSubClassOf(mc1);
+    }
+
+
+
+    void Lisp_O::dump_apropos(const char* part) const
+    {_OF();
+	string substring = part;
+	Vector0<Package_O>	packages;
+	for ( StringMap<Package_O>::iterator pi=_lisp->packages().begin();
+	      pi != _lisp->packages().end(); pi++ )
+	{
+	    packages.push_back(pi->second);
+	}
+	searchForApropos(packages,substring,true);
+    }
+
+
+
+void Lisp_O::dump_backtrace()
+{_OF();
+    string bt = this->backTraceAsString();
+    _lisp->print(BF("%s")%bt);
+}
+
+
+
+void Lisp_O::gdb_trace_by_name(const char* names)
+{_OF();
+    string snames = lispify_symbol_name(names);
+    if ( snames == "" )
+    {
+	Set<Function_O>::iterator ti;
+	_lisp->print(BF("Tracing: "));
+	for ( ti=this->_TraceFunctions.begin(); ti!=this->_TraceFunctions.end(); ti++ )
+	{
+	    _lisp->print(BF("%s") % (*ti)->getSymbol()->__repr__() );
+	}
+	return;
+    }
+    vector<string> vnames = split(snames," ");
+    for ( vector<string>::iterator it=vnames.begin(); it!=vnames.end(); it++ ) 
+    {
+	Symbol_sp sym = this->intern(*it);
+	if ( sym->hasDynamicFunction() )
+	{
+	    Function_sp fn = sym->function();
+	    this->_TraceFunctions.addUnique(fn,_lisp);
+	    _lisp->print(BF("trace: %s") % sym->__repr__() );
+	} else
+	{
+	    _lisp->print(BF("Cannot trace function[%s] - it doesnt' exist") % sym->__repr__() );
+	}
+    }
+}
+
+
+
+
+void Lisp_O::gdb_untrace_by_name(const char* names)
+{_OF();
+    string snames = lispify_symbol_name(names);
+    if ( snames == "" )
+    {
+	Set<Function_O>::iterator ti;
+	_lisp->print(BF("untracing all"));
+	this->_TraceFunctions.clear();
+    	return;
+    }
+    vector<string> vnames = split(snames," ");
+    for ( vector<string>::iterator it=vnames.begin(); it!=vnames.end(); it++ ) 
+    {
+	Symbol_sp sym = this->intern(*it);
+	if ( sym->hasDynamicFunction() )
+	{
+	    Function_sp fn = sym->function();
+	    if (this->_TraceFunctions.count(fn)>0) this->_TraceFunctions.erase(fn);
+	}
+    }
+}
+
+
+    string Lisp_O::backTraceAsString() const
+    {
+	stringstream strace;
+	Cons_sp btReversed = this->getBackTrace();
+	Cons_sp bt = btReversed->reverse()->as<Cons_O>();;
+	strace << "Cando-backtrace number of entries: " << bt->length() <<endl;
+	while ( bt->notNil() )
+	{
+	    T_sp code = bt->ocar();
+	    stringstream sline;
+	    if ( code->isAssignableTo<Cons_O>() )
+	    {
+		Cons_sp entry = code->as<Cons_O>();
+		if ( entry->hasParsePos() )
+		{
+		    sline << trimSourceFilePathName(entry->getParsePosFileName()) << ":" << entry->getParsePosLineNumber() << " " << entry->__repr__();
+		} else
+		{
+		    sline << "no-function: " << entry->__repr__();
+		}
+	    } else
+	    {
+		sline << "no-function: " << code->__repr__();
+	    }
+	    strace << sline.str().substr(0,75) << endl;
+	    bt = bt->cdr();
+	}
+	strace << "----- backtrace done ------" << endl;
+	return strace.str();
+    }
+
+
+
+
+    void Lisp_O::run()
+    {_F(this->lisp());
+//	this->inPackage("CORE-USER");
+	//
+	// Compile and evaluate the .rc code to extend the environment in lisp
+	//
+	if ( !this->_dont_load_startup)
+	{
+	    LOG(BF("Initialization source file[%s]") % this->_RCFileName);
+	    if ( this->_RCFileName != "" )
+	    {_BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName );
+		Path_sp initPath = Path_O::create(this->_Bundle->getCandoScriptDir(),_lisp);
+		initPath->path_append(this->_RCFileName);
+		LOG(BF("Physical path to init file[%s]") % initPath->asString() );
+		this->load(initPath);
+	    }
+	    if ( !this->_ProgramCode._ScriptInFile
+		 && this->_ProgramCode._FileNameOrCode != "" )
+	    {
+		LOG(BF("Compiling script in string: %s")% this->_ProgramCode._FileNameOrCode);
+		StringInStream_sp sin = StringInStream_O::create(this->_ProgramCode._FileNameOrCode,_lisp);
+		this->load(sin);
+	    } else
+	    {
+		string& scriptFileName = this->_ProgramCode._FileNameOrCode;
+		if ( scriptFileName != "" )
+		{
+		    LOG(BF("About to compile script in fileName(%s)")% scriptFileName);
+		    Path_sp loadPath = _lisp->translateLogicalPathnameUsingPaths(Str_O::create(scriptFileName,_lisp));
+		    this->load(loadPath);
+		} else
+		{
+		    LOG(BF("this->_ProgramCode._FileNameOrCode is empty"));
+		}
+	    }
+	}
+	//
+	// Assume that if there is no program then
+	// we want an interactive script
+	//
+	if ( this->_Interactive )
+	{_BLOCK_TRACE("Interactive REPL");
+	    //
+	    // Implement a Read-Eval-Print-Loop
+	    //
+	    this->print(BF("CANDO - 1.0\n"));
+	    while ( 1 )
+	    {
+		TRY()
+		{
+		    this->readEvalPrintInteractive();
+		} catch (ExitProgram& exitProgram)
+		  {
+		      exit(exitProgram.getExitResult());
+		  }
+		catch (...)
+		{
+		    /* Do nothing */
+		}
+	    }
+	}
+	LOG(BF("Leaving lisp run"));
+    };
+
+
+
+    string	Lisp_O::__repr__() const
+    {_F(this->lisp());
+	stringstream ss;
+	ss << "Program: " <<endl;
+	ss << this->_Program->__repr__();
+	return ss.str();
+    };
+
+
+
+
+
+    T_sp prim_dumpClasses( Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+    {
+	string d = lisp->dumpClasses();
+	lisp->print(BF("%s") % d.c_str() );
+	return T_O::nil(lisp);
+    }
+
+
+    T_sp prim_testThrowError( Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+    {_F(lisp);
+	THROW(_lisp->create<LispError_O>("Throwing exception as a test"));
+	return T_O::nil(lisp);
+    }
+
+
+
+    T_sp prim_derive(Executable_sp e,Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+    {_F(lisp);
+	ASSERT(args->length() == 2 );
+	T_sp tag = args->ocar();
+	T_sp parent = args->ocadr();
+	IMPLEMENT_ME();
+//    lisp->defaultHierarchy()->derive(tag,parent);
+	return lisp->nil<T_O>();
+    }
+
+
+
+
+
+
+
+
+
+
+    T_sp prim_testomp( Executable_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
+    {_F(lisp);
+	int maxi;
+	ASSERT(args->length()==1);
+	maxi = args->car<Fixnum_O>()->get();
+	lisp->print(BF("Starting prim_testomp enabled= %d") % cando_omp_enabled() );
+	{
+// # p r a g m a  omp parallel
+	    lisp->print(BF("Hello from omp thread(%d)") % cando_omp_get_thread_num() );
+	}
+	LongLongInt c=0;
+	double d = 0;
+// # p r a g m a  omp parallel reduction (+:d) reduction(+:c)
+	{
+	    c = 0;
+// # p r a g m a  omp for
+	    for ( int i=0; i<maxi; i++ )
+	    {
+		for ( int j=0; j<100000; j++ )
+		{
+		    double e = sqrt((double)(i));
+		    d += e;
+		    c += 1;
+		}
+	    }
+	    lisp->print(BF("thread(%d) c=%ld") % cando_omp_get_thread_num() % c);
+	}
+	lisp->print(BF("c = %ld") % c );
+	return T_O::nil(lisp);
+    }
+
+
+    void Lisp_O::initializeGlobals(Lisp_sp lisp)
+    {_F(lisp);
+	LOG(BF("Lisp_O::initializeGlobals"));
+	SYMBOL_SC_(set_current_package);
+	Defun(set_current_package);
+    }
+
+    void Lisp_O::exposeCando(Lisp_sp lisp)
+    {_F(lisp);
+	class_<Lisp_O>(lisp->lisp())
+	    .def("true",&Lisp_O::_true)
+	    ;
+	SYMBOL_SC_(saveArchive);
+	Defun(saveArchive);
+	SYMBOL_SC_(serialize_xml);
+	Defun(serialize_xml);
+	SYMBOL_SC_(deserialize_xml);
+	Defun(deserialize_xml);
+	SYMBOL_SC_(loadArchive);
+	Defun(loadArchive);
+	SYMBOL_SC_(render);
+	Defun(render);
+	SYMBOL_SC_(saveCando);
+	Defun(saveCando);
+
+	SYMBOL_SC_(loadCando);
+	Defun(loadCando);
+
+	SYMBOL_SC_(getline);
+	Defun(getline);
+
+	SYMBOL_SC_(system);
+	Defun(system);
+
+	SYMBOL_EXPORT_SC_(apropos);
+	Defun(apropos);
+
+
+	defNoWrapPackageWithArguments(CorePkg,"export",&prim_export,ARGS_prim_export,lisp->lisp());
+	SYMBOL_EXPORT_SC_(intern);
+	Defun(intern);
+//	defNoWrapPackage(CorePkg,"apply", &prim_apply,lisp->lisp());
+	defNoWrapPackage(CorePkg,"getForm", &prim_getForm,lisp->lisp());
+	defNoWrapPackage(CorePkg,"testomp", &prim_testomp,lisp->lisp());
+	defNoWrapPackage(CorePkg,"testThrowCatch", &prim_testThrowCatch,lisp->lisp());
+	defNoWrapPackage(CorePkg,"testThrowError", &prim_testThrowError,lisp->lisp());
+	defNoWrapPackage(CorePkg,"isTopLevelScript", &prim_isTopLevelScript ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"allGlobalNames", &prim_allGlobalNames ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"localVariableNames", &prim_localVariableNames,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"locals", &prim_locals,lisp->lisp());
+	defNoWrapPackage(CorePkg,"sourceFileLine", &prim_sourceFileLine,lisp->lisp());
+	defNoWrapPackage(CorePkg,"backtrace", &prim_backtrace,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"globals", &prim_globals,lisp->lisp());
+	defNoWrapPackageWithArguments(CorePkg,"load", &prim_load,ARGS_prim_load,lisp->lisp());
+	defNoWrapPackage(CorePkg,"include",&prim_include,lisp->lisp());
+	defNoWrapPackage(CorePkg,"testScanner", &prim_testScanner ,lisp->lisp());
+	SYMBOL_SC_(findFileInLispPath);
+	Defun(findFileInLispPath);
+	defNoWrapPackage(CorePkg,"printPushPrefix", &prim_printPushPrefix ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"printPopPrefix", &prim_printPopPrefix ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"println", &prim_println ,lisp->lisp());
+	SYMBOL_EXPORT_SC_(print);
+	Defun(print);
+
+//	defNoWrapPackage(CorePkg,"print", &prim_print ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"prin1", &prim_prin1 ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"prim-dump", &prim_dump ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"isAssignableTo", &prim_isAssignableTo ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"isSubClassOf", &prim_isSubClassOf,lisp->lisp());
+	defNoWrapPackage(CorePkg,"isOfClass", &prim_isOfClass ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"derive", &prim_derive ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"isA", &prim_isA ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"dumpln", &prim_dumpln ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"parseConsOfStrings", &prim_parseConsOfStrings ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"exit", &prim_exit ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"quit", &prim_exit ,lisp->lisp());
+	SYMBOL_EXPORT_SC_(funcall);
+	Defun(funcall);
+	SYMBOL_EXPORT_SC_(apply);
+	Defun(apply);
+	defNoWrapPackage(CorePkg,"min", &prim_min ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"max", &prim_max ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"sub", &prim_sub ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"-", &prim_sub ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"div", &prim_div ,lisp->lisp());
+//    defNoWrapPackage(CorePkg,"mod", &prim_mod ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"/", &prim_div ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"mul", &prim_mul ,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"*", &prim_mul ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"className", &prim_className ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"repr", &prim_repr ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"yourself", &prim_yourself ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"!", &prim_yourself ,lisp->lisp());
+	Defun(error);
+	SYMBOL_SC_(setenv);
+	Defun(setenv);
+	SYMBOL_SC_(getenv);
+	Defun(getenv);
+	SYMBOL_EXPORT_SC_(not);
+	Defun(not);
+	defNoWrapPackage(CorePkg,"debugLogOn",&prim_debugLogOn,lisp->lisp());
+	defNoWrapPackage(CorePkg,"debugLogOff",&prim_debugLogOff,lisp->lisp());
+	defNoWrapPackage(CorePkg,"dumpClasses",&prim_dumpClasses,lisp->lisp());
+
+	// mpi commands that are always built in
+	SYMBOL_SC_(mpi_enabled);
+	Defun(mpi_enabled);
+	SYMBOL_SC_(mpi_rank);
+	Defun(mpi_rank);
+	SYMBOL_SC_(mpi_size);
+	Defun(mpi_size);
+	// Basic tests
+//	defNoWrapPackage(CorePkg,"consp",&prim_consp,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"symbolp",&prim_symbolp,lisp->lisp());
+
+	// aliases for "list" command
+
+	defNoWrapPackage(CorePkg,"sorted", &prim_sorted ,lisp->lisp());
+	defNoWrapPackage(CorePkg,"sort", &prim_sort,lisp->lisp());
+	SYMBOL_EXPORT_SC_(macroexpand_1);
+	Defun(macroexpand_1);
+	SYMBOL_EXPORT_SC_(macroexpand);
+	Defun(macroexpand);
+
+	// information functions
+	defNoWrapPackage(CorePkg,"databaseDir", &prim_databaseDir,lisp->lisp());
+	defNoWrapPackage(CorePkg,"scriptDir", &prim_scriptDir,lisp->lisp());
+//	defNoWrapPackage(CorePkg,"dumpHidden", &prim_dumpHidden,lisp->lisp());
+	defNoWrapPackage(CorePkg,"setCurrentWorkingDirectory",&prim_setCurrentWorkingDirectory,lisp->lisp());
+	
+	SYMBOL_EXPORT_SC_(acons);
+	Defun(acons);
+	SYMBOL_EXPORT_SC_(assoc);
+	Defun(assoc);
+	SYMBOL_EXPORT_SC_(member);
+	Defun(member);
+
+	defNoWrapPackageWithArguments(CorePkg,"export-to-python",&prim_exportToPython,ARGS_prim_exportToPython,lisp->lisp());
+
+	SYMBOL_EXPORT_SC_(find_package);
+	Defun(find_package);
+    }
+
+
+
+    void Lisp_O::exposePython(Lisp_sp lisp)
+    {_F(lisp);
+	Symbol_sp (Lisp_O::*intern1)(const string&) = &Lisp_O::intern;
+	PYTHON_CLASS(CorePkg,Lisp,"","",_lisp)
+	    .def("intern",intern1)
+	    .def("true",&Lisp_O::_true)
+	    .def("false",&Lisp_O::onil)
+	    .def("nil",&Lisp_O::onil)
+	    ;
+
+//    boost::python::def("loadArchive",boost::python::wrapped_function(CorePkg,"loadArchive",&prim_loadArchive,ARGS_prim_loadArchive,DOCS_prim_loadArchive,lisp));
+
+	boost::python::def_raw(CorePkg,"export",&prim_export,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"apply", &prim_apply,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"getForm", &prim_getForm,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"testomp", &prim_testomp,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"testThrowCatch", &prim_testThrowCatch,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"testThrowError", &prim_testThrowError,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"isTopLevelScript", &prim_isTopLevelScript ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"allGlobalNames", &prim_allGlobalNames ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"localVariableNames", &prim_localVariableNames,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"locals", &prim_locals,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"sourceFileLine", &prim_sourceFileLine,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"backtrace", &prim_backtrace,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"globals", &prim_globals,ARGS_empty,DOCS_empty,lisp->lisp());
+
+	boost::python::def_raw(CorePkg,"load", &prim_load,ARGS_prim_load,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"include",&prim_include,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"testScanner", &prim_testScanner ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"printPushPrefix", &prim_printPushPrefix ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"printPopPrefix", &prim_printPopPrefix ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"println", &prim_println ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"print", &prim_print ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"prin1", &prim_prin1 ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"prim-dump", &prim_dump ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"isAssignableTo", &prim_isAssignableTo ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"isSubClassOf", &prim_isSubClassOf,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"isOfClass", &prim_isOfClass ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"derive", &prim_derive ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"isA", &prim_isA ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"dumpln", &prim_dumpln ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"parseConsOfStrings", &prim_parseConsOfStrings ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"exit", &prim_exit ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"quit", &prim_exit ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"funcall", &prim_funcall ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"apply", &prim_apply ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"min", &prim_min ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"max", &prim_max ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"sub", &prim_sub ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"-", &prim_sub ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"div", &prim_div ,ARGS_empty,DOCS_empty,lisp->lisp());
+//    boost::python::def_raw(CorePkg,"mod", &prim_mod ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"/", &prim_div ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"mul", &prim_mul ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"*", &prim_mul ,ARGS_empty,DOCS_empty,lisp->lisp());
+#if 0
+	boost::python::def_raw(CorePkg,"listref", &prim_listref ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"@", &prim_listref ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"car", &prim_car ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"cdr", &prim_cdr ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"cddr", &prim_cddr ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"cdddr", &prim_cdddr ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"cadr", &prim_cadr ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"caddr", &prim_caddr ,ARGS_empty,DOCS_empty,lisp->lisp());
+#endif
+//    boost::python::def_raw(CorePkg,"cons", &prim_cons ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"className", &prim_className ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"repr", &prim_repr ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"yourself", &prim_yourself ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"!", &prim_yourself ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"list", &prim_list ,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"error", &prim_error ,ARGS_empty,DOCS_empty,lisp->lisp());
+#if 0  //These are now Object methods
+	boost::python::def_raw(CorePkg,"eq", &prim_eq,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"==", &prim_eq,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"ne", &prim_ne,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"!=", &prim_ne,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"lt", &prim_lt,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"<", &prim_lt,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"gt", &prim_gt,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,">", &prim_gt,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"le", &prim_le,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"<=", &prim_le,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"ge", &prim_ge,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,">=", &prim_ge,ARGS_empty,DOCS_empty,lisp->lisp());
+#endif
+//	boost::python::def_raw(CorePkg,"not", &prim_not,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"debugLogOn",&prim_debugLogOn,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"debugLogOff",&prim_debugLogOff,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"dumpClasses",&prim_dumpClasses,ARGS_empty,DOCS_empty,lisp->lisp());
+
+	// Basic tests
+//	boost::python::def_raw(CorePkg,"consp",&prim_consp,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"symbolp",&prim_symbolp,ARGS_empty,DOCS_empty,lisp->lisp());
+
+	// aliases for "list" command
+
+//	boost::python::def_raw(CorePkg,"comparer", &prim_list ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"sorted", &prim_sorted ,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"sort", &prim_sort,ARGS_empty,DOCS_empty,lisp->lisp());
+	// information functions
+	boost::python::def_raw(CorePkg,"databaseDir", &prim_databaseDir,ARGS_empty,DOCS_empty,lisp->lisp());
+	boost::python::def_raw(CorePkg,"scriptDir", &prim_scriptDir,ARGS_empty,DOCS_empty,lisp->lisp());
+//	boost::python::def_raw(CorePkg,"dumpHidden", &prim_dumpHidden,ARGS_empty,DOCS_empty,lisp->lisp());
+
+	boost::python::def_raw(CorePkg,"setCurrentWorkingDirectory",&prim_setCurrentWorkingDirectory,ARGS_empty,DOCS_empty,lisp->lisp());
+
+	initializePythonPrimitives(lisp->lisp());
+
+    }
+
+
+
+
+
+
+
+
+
+
+    LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize )
+    {
+	this->_Lisp = Lisp_O::createLispEnvironment(mpiEnabled,mpiRank,mpiSize);
+    }
+
+
+
+
+    void LispHolder::startup(int argc, char* argv[], const string& appPathEnvironmentVariable )
+    {
+	Lisp_sp _lisp = this->_Lisp;
+	const char* argv0 = "./";
+	if ( argc > 0 ) argv0 = argv[0];
+	Bundle* bundle = new Bundle(_lisp);
+	bundle->initialize(argv0,appPathEnvironmentVariable);
+	this->_Lisp->startupLispEnvironment(bundle);
+	if (_lisp->mpiEnabled())
+	{
+	    stringstream ss;
+	    ss << "P"<<_lisp->mpiRank()<<":";
+	    printvPushPrefix(ss.str(),_lisp);
+	}
+	_lisp->parseCommandLineArguments(argc,argv,true);
+    }
+
+
+
+
+    LispHolder::~LispHolder()
+    {
+	this->_Lisp->shutdownLispEnvironment();
+    }
+
+
+
+
+    PackageExposer::PackageExposer(Lisp_sp lisp, const string& packageName, const char* nicknames[])
+    {_F(lisp);
+	if ( !lisp->recognizesPackage(packageName) )
+	{	
+	    list<string> lnnames;
+	    for ( int i=0; strcmp(nicknames[i],"")!=0; i++ )
+	    {
+		lnnames.push_front(nicknames[i]);
+	    }
+	    list<Package_sp> lp;
+	    this->_Package = lisp->makePackage(packageName,lnnames,lp);
+	} else
+	{
+	    this->_Package = lisp->findPackage(packageName);
+	}
+	this->_PackageName = packageName;
+    }
+
+
+    PackageExposer::PackageExposer(Lisp_sp lisp, const string& packageName )
+    {_F(lisp);
+	if ( !lisp->recognizesPackage(packageName) )
+	{	
+	    list<string> lnnames;
+	    list<Package_sp> lpkgs;
+	    this->_Package = lisp->makePackage(packageName,lnnames,lpkgs);
+	} else
+	{
+	    this->_Package = lisp->findPackage(packageName);
+	}
+	this->_PackageName = packageName;
+    }
+
+
+
+
+
+
+
+    EXPOSE_CLASS(core,Lisp_O);
+
+
+
+};
+
+
+
+

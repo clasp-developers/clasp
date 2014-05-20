@@ -1,0 +1,32 @@
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+	. ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$HOME/Local/bin:$PATH
+
+export PATH
+
+
+
+echo "Starting .bash_profile"
+
+export PS1="\h:\W$ "
+export SVN_EDITOR=emacs
+alias emacs="emacs -nw"
+
+
+#
+# Set up CLASP for development
+#
+export CLASP_HOME=$HOME/Development/cando
+source $CLASP_HOME/targets/development.darwinClang
+export CLASP_LISP_SOURCE_DIR=$CLASP_HOME/src/lisp
+export PATH=$CLASP_HOME/build/darwin/cando.app/Contents/MacOS:$CLASP_APP/Contents/Resources/externals/release/bin:$PATH
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:~/Development/cando/build/cando.app/Contents/Resources/externals/release/lib
+test -r /sw/bin/init.sh && . /sw/bin/init.sh
+

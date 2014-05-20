@@ -1,0 +1,132 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Request_free 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Request_free\fP \- Frees a communication request object.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Request_free(MPI_Request *request)
+
+.fi
+.SH Fortran Syntax
+.nf
+\s-1INCLUDE\s0 'mpif.h'
+MPI_REQUEST_FREE(REQUEST, IERROR)
+	INTEGER	REQUEST, IERROR 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Request::Free()
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+request
+      Communication request (handle).
+
+.SH DESCRIPTION
+.ft R
+This operation allows a request object to be deallocated without waiting for the associated communication to complete.
+.sp
+MPI_Request_free marks the request object for deallocation and sets request
+to MPI_REQUEST_NULL. Any ongoing communication that is associated with the request will be allowed to complete. The request will be deallocated only after its completion. 
+
+.SH NOTES
+Once a request is freed by a call to MPI_Request_free, it is not possible to check for the successful completion of the associated communication with calls to MPI_Wait or MPI_Test. Also, if an error occurs subsequently during the communication, an error code cannot be returned to the user -- such an error must be treated as fatal. Questions arise as to how one knows when the operations have completed when using MPI_Request_free. Depending on the program logic, there may be other ways in which the program knows that certain operations have completed and this makes usage of MPI_Request_free practical. For example, an active send request could be freed when the logic of the program is such that the receiver sends a reply to the message sent -- the arrival of the reply informs the sender that the send has completed and the send buffer can be reused. An active receive request should never be freed, as the receiver will have no way to verify that the receive has completed and the receive buffer can be reused. 
+
+.sp
+\fBExample:\fR 
+.sp
+.nf
+    CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank) 
+    IF(rank.EQ.0) THEN 
+        DO i=1, n 
+          CALL MPI_ISEND(outval, 1, MPI_REAL, 1, 0, req, ierr) 
+          CALL MPI_REQUEST_FREE(req, ierr) 
+          CALL MPI_IRECV(inval, 1, MPI_REAL, 1, 0, req, ierr) 
+          CALL MPI_WAIT(req, status, ierr) 
+        END DO 
+    ELSE    ! rank.EQ.1 
+        CALL MPI_IRECV(inval, 1, MPI_REAL, 0, 0, req, ierr) 
+        CALL MPI_WAIT(req, status) 
+        DO I=1, n-1 
+           CALL MPI_ISEND(outval, 1, MPI_REAL, 0, 0, req, ierr) 
+           CALL MPI_REQUEST_FREE(req, ierr) 
+           CALL MPI_IRECV(inval, 1, MPI_REAL, 0, 0, req, ierr) 
+           CALL MPI_WAIT(req, status, ierr) 
+        END DO 
+        CALL MPI_ISEND(outval, 1, MPI_REAL, 0, 0, req, ierr) 
+        CALL MPI_WAIT(req, status) 
+    END IF 
+.fi
+.sp
+This routine is normally used to free persistent requests created with
+either 
+.I MPI_Recv_init
+or 
+.I MPI_Send_init
+and friends.  However, it can be
+used to free a request created with 
+.I MPI_Irecv
+or 
+.I MPI_Isend
+and friends;
+in that case the use can not use the test/wait routines on the request.
+
+It 
+.B is
+permitted to free an active request.  However, once freed, you can not
+use the request in a wait or test routine (e.g., 
+.I MPI_Wait
+).
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Isend
+.br
+MPI_Irecv
+.br
+MPI_Issend
+.br
+MPI_Ibsend
+.br
+MPI_Irsend
+.br
+MPI_Recv_init
+.br
+MPI_Send_init
+.br
+MPI_Ssend_init
+.br
+MPI_Rsend_init
+.br
+MPI_Test
+.br
+MPI_Wait
+.br
+MPI_Waitall
+.br
+MPI_Waitany
+.br
+MPI_Waitsome
+.br
+MPI_Testall
+.br
+MPI_Testany
+.br
+MPI_Testsome
+
+
+    

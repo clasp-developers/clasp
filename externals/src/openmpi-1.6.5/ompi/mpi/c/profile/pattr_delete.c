@@ -1,0 +1,1 @@
+../../../../ompi/mpi/c/attr_delete.c

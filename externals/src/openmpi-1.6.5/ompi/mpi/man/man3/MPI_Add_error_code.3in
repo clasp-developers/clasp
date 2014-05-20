@@ -1,0 +1,79 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Add_error_code 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Add_error_code\fP \- Creates a new error code associated
+with \fIerrorclass\fP
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Add_error_code(int \fIerrorclass\fP, int *\fIerrorcode\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ADD_ERROR_CODE(\fIERRORCLASS, ERRORCODE, IERROR\fP)
+	INTEGER \fI ERRORCLASS, ERRORCODE, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int MPI::Add_error_code(int \fIerrorclass\fP, int* \fIerrorcode\fP)
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1.4i
+errorclass
+MPI error class (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1.4i
+errorcode
+Error code returned by an MPI routine or an MPI error class (integer).
+.ft R
+.TP 1.4i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+Creates a new error code associated with \fIerrorclass\fP and returns
+its value in \fIerrorcode\fP.
+
+.SH NOTES
+.ft R
+No function is provided to free error codes, as it is not expected
+that an application will create them in significant numbers.
+.sp
+The value returned is always greater than or equal to MPI_ERR_LASTCODE.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Add_error_class
+MPI_Error_class
+
+

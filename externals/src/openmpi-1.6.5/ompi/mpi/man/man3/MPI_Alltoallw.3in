@@ -1,0 +1,164 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Alltoallw 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Alltoallw\fP \- All processes send data of different types to, and receive data of different types from, all processes
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Alltoallw(void *\fIsendbuf\fP, int *\fIsendcounts\fP,
+	int *\fIsdispls\fP, MPI_Datatype *\fIsendtypes\fP,
+	void *\fIrecvbuf\fP, int *\fIrecvcounts\fP,
+	int *\fIrdispls\fP, MPI_Datatype *\fIrecvtypes\fP, MPI_Comm \fIcomm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ALLTOALLW(\fISENDBUF, SENDCOUNTS, SDISPLS, SENDTYPES,
+	RECVBUF, RECVCOUNTS, RDISPLS, RECVTYPES, COMM, IERROR\fP)
+
+	<type>	\fISENDBUF(*), RECVBUF(*)\fP
+	INTEGER	\fISENDCOUNTS(*), SDISPLS(*), SENDTYPES(*)\fP
+	INTEGER	\fIRECVCOUNTS(*), RDISPLS(*), RECVTYPES(*)\fP
+	INTEGER	\fICOMM, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Alltoallw(const void* \fIsendbuf\fP,
+	const int \fIsendcounts\fP[], const int \fIsdispls\fP[],
+	const MPI::Datatype \fIsendtypes\fP[], void* \fIrecvbuf\fP,
+	const int \fIrecvcounts\fP[], const int \fIrdispls\fP[],
+	const MPI::Datatype \fIrecvtypes\fP[])
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1.2i
+sendbuf
+Starting address of send buffer.
+.TP 1.2i
+sendcounts
+Integer array, where entry i specifies the number of elements to send
+to rank i.
+.TP 1.2i
+sdispls
+Integer array, where entry i specifies the displacement (in bytes,
+offset from \fIsendbuf\fP) from which to send data to rank i.
+.TP 1.2i
+sendtypes
+Datatype array, where entry i specifies the datatype to use when
+sending data to rank i.
+.TP 1.2i
+recvcounts
+Integer array, where entry j specifies the number of elements to
+receive from rank j.
+.TP 1.2i
+rdispls
+Integer array, where entry j specifies the displacement (in bytes,
+offset from \fIrecvbuf\fP) to which data from rank j should
+be written.
+.TP 1.2i
+recvtypes
+Datatype array, where entry j specifies the datatype to use when
+receiving data from rank j.
+.TP 1.2i
+comm
+Communicator over which data is to be exchanged.
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1.2i
+recvbuf
+Address of receive buffer.
+.ft R
+.TP 1.2i
+IERROR
+Fortran only: Error status.
+
+.SH DESCRIPTION
+.ft R
+MPI_Alltoallw is a generalized collective operation in which all
+processes send data to and receive data from all other processes. It
+adds flexibility to MPI_Alltoallv by allowing the user to specify the
+datatype of individual data blocks (in addition to displacement and
+element count). Its operation can be thought of in the following way,
+where each process performs 2n (n being the number of processes in
+communicator \fIcomm\fP) independent point-to-point communications
+(including communication with itself).
+.sp
+.nf
+	MPI_Comm_size(\fIcomm\fP, &n);
+	for (i = 0, i < n; i++)
+	    MPI_Send(\fIsendbuf\fP + \fIsdispls\fP[i], \fIsendcounts\fP[i],
+	        \fIsendtypes\fP[i], i, ..., \fIcomm\fP);
+	for (i = 0, i < n; i++)
+	    MPI_Recv(\fIrecvbuf\fP + \fIrdispls\fP[i], \fIrecvcounts\fP[i],
+	        \fIrecvtypes\fP[i], i, ..., \fIcomm\fP);
+.fi
+.sp
+Process j sends the k-th block of its local \fIsendbuf\fP to process
+k, which places the data in the j-th block of its local
+\fIrecvbuf\fP.
+.sp
+When a pair of processes exchanges data, each may pass different
+element count and datatype arguments so long as the sender specifies
+the same amount of data to send (in bytes) as the receiver expects
+to receive.
+.sp
+Note that process i may send a different amount of data to process j
+than it receives from process j. Also, a process may send entirely
+different amounts and types of data to different processes in the
+communicator.
+
+WHEN COMMUNICATOR IS AN INTER-COMMUNICATOR
+.sp
+When the communicator is an inter-communicator, the gather operation occurs in two phases.  The data is gathered from all the members of the first group and received by all the members of the second group.  Then the data is gathered from all the members of the second group and received by all the members of the first.  The operation exhibits a symmetric, full-duplex behavior.  
+.sp
+The first group defines the root process.  The root process uses MPI_ROOT as the value of \fIroot\fR.  All other processes in the first group use MPI_PROC_NULL as the value of \fIroot\fR.  All processes in the second group use the rank of the root process in the first group as the value of \fIroot\fR.
+.sp
+When the communicator is an intra-communicator, these groups are the same, and the operation occurs in a single phase.
+.sp  
+.SH NOTES
+.ft R
+The MPI_IN_PLACE option is not available for any form of all-to-all
+communication.
+.sp
+The specification of counts, types, and displacements should not cause
+any location to be written more than once.
+.sp
+All arguments on all processes are significant. The \fIcomm\fP argument,
+in particular, must describe the same communicator on all processes.
+.sp
+The offsets of \fIsdispls\fP and \fIrdispls\fP are measured in bytes.
+Compare this to MPI_Alltoallv, where these offsets are measured in units
+of \fIsendtype\fP and \fIrecvtype\fP, respectively.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Alltoall
+MPI_Alltoallv
+

@@ -1,0 +1,11 @@
+--- aclocal.m4.old	2007-04-20 15:18:48.000000000 -0700
++++ aclocal.m4	2007-04-20 15:18:59.000000000 -0700
+@@ -5311,7 +5311,7 @@
+       # Commands to make compiler produce verbose output that lists
+       # what "hidden" libraries, object files and flags are used when
+       # linking a shared library.
+-      output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | $GREP "\-L"'
++      output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | $GREP "\-L" | tail -n 1'
+ 
+     else
+       GXX=no

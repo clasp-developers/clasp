@@ -1,0 +1,27 @@
+#!/bin/sh
+
+retval=-1
+
+progname="`basename $*`"
+echo "--> Testing $progname"
+
+for threads in 1 2 4 5 8 ; do
+    $* $threads
+    result=$?
+    if test "$result" = "0" ; then
+       echo "    - $threads threads: Passed"
+       if test "$retval" = "-1" ; then
+       	  retval=0
+       fi
+    elif test "$result" = "77" ; then
+       echo "    - $threads threads: Skipped"
+       if test "$retval" = "-1" ; then
+       	  retval=77
+       fi
+    else
+       echo "    - $threads threads: Failed"
+       retval="$result"
+    fi
+done
+
+exit $retval

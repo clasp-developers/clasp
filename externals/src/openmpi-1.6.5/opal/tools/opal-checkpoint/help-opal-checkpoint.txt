@@ -1,0 +1,63 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI checkpoint tool
+#
+[usage]
+opal-checkpoint PID
+  Open PAL Single Process Checkpoint Tool
+
+%s
+
+[invalid_pid]
+Error: The PID (%d) is invalid because either you have not provided a PID 
+       or provided an invalid PID.
+       Please see --help for usage.
+
+[ckpt_failure]
+Error: The application (PID = %d) failed to checkpoint properly.
+       Returned %d, state %d.
+
+[restart_cmd_failure]
+Error: Unable to obtain the proper restart command to restart from the 
+       checkpoint file (%s). Returned %d.
+
+[pid_does_not_exist]
+Error: The process with PID %d is not checkpointable.
+       This could be due to one of the following:
+        - An application with this PID doesn't currently exist
+        - The application with this PID isn't checkpointable
+        - The application with this PID isn't an OPAL application.
+       We were looking for the named files:
+         %s
+         %s
+[ckpt:in_progress]
+The process with PID %d is currently not checkpointable.
+This is because it is already checkpointing itself.
+Wait until the checkpoint completes then try again.
+[ckpt:req_error]
+The process with PID %d is currently not checkpointable.
+This is due to an error during the checkpointing process.
+[ckpt:req_null]
+The process with PID %d is not checkpointable.
+This can be due to one of the following reasons:
+ - The process was compiled without checkpoint support
+ - The process has elected not to be checkpointable by
+   using unsupported functions.
+ - The process has elected not to be checkpointable due
+   to the lack of a checkpoint/restart system.

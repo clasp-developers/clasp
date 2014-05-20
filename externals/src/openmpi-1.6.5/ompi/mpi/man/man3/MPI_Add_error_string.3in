@@ -1,0 +1,82 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Add_error_string 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+.nf
+\fBMPI_Add_error_string\fP \- Associates a string with an error code or class
+
+.fi
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Add_error_string(int \fIerrorcode\fP, char *\fIstring\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ADD_ERROR_STRING(\fIERRORCODE, STRING, IERROR\fP)
+	INTEGER		\fIERRORCODE, IERROR\fP
+	CHARACTER*(*)	\fISTRING\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Add_error_string(int \fIerrorcode\fP, const char* \fIstring\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1.4i
+errorcode
+MPI error class, or an error code returned by an MPI routine (integer).
+.ft R
+.TP 1.4i
+string
+Text that corresponds to the error code or class (string).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1.4i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This routine associates an error string with an error code or
+class. Calling MPI_Add_error_string for an error code or class that
+already has an associated error string will replace the old string
+with the new one. It is erroneous to call MPI_Add_error_string for an
+error value not generated via MPI_Add_error_class or
+MPI_Add_error_code (e.g., an error code or class with a value not
+greater than MPI_LAST_ERRCODE).
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Add_error_class
+MPI_Add_error_code
+MPI_Error_class
+MPI_Error_string
+
+

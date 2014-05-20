@@ -1,0 +1,92 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Group_range_incl 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Group_range_incl\fP \- Creates a new group from ranges of ranks in an existing group.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Group_range_incl(MPI_Group \fIgroup\fP, int\fI n\fP, int\fI ranges\fP[][3],
+	MPI_Group\fI *newgroup\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GROUP_RANGE_INCL(\fIGROUP, N, RANGES, NEWGROUP, IERROR\fP)
+	INTEGER	\fIGROUP, N, RANGES(3,*), NEWGROUP, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Group Group::Range_incl(int \fIn\fP, const int \fIranges\fP[][3]) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+group
+Group (handle).
+.TP 1i
+n
+Number of triplets in array ranges (integer).
+.TP 1i
+ranges
+A one-dimensional array of integer triplets, of the form (first rank, last rank, stride) indicating ranks in group or processes to be included in newgroup.
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newgroup
+New group derived from above, in the order defined by ranges (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+If ranges consist of the triplets 
+.sp
+.nf
+    (first1, last1, stride1),\ ..., (firstn, lastn, striden)
+.fi
+.sp
+then newgroup consists of the sequence of processes in group with ranks
+.sp
+.nf
+                                                 last(1)-first(1)
+  first(1), first(1) + stride(1),..., first(1) + ---------------- stride(1),...
+                                                     stride(1)
+
+                                                 last(n)-first(n)
+  first(n), first(n) + stride(n),..., first(n) + ---------------- stride(n).
+                                                     stride(n)
+.fi
+.sp
+Each computed rank must be a valid rank in group and all computed ranks must be distinct, or else the program is erroneous. Note that we may have first(i) > last(i), and stride(i) may be negative, but cannot be zero.
+.sp
+The functionality of this routine is specified to be equivalent to expanding the array of ranges to an array of the included ranks and passing the resulting array of ranks and other arguments to MPI_Group_incl. A call to MPI_Group_incl is equivalent to a call to MPI_Group_range_incl with each rank i in ranks replaced by the triplet (i,i,1) in the argument ranges.
+
+.SH NOTE
+.ft R
+This implementation does not currently check to see that the list of ranges to include are valid ranks in the group.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Group_incl 
+.br
+MPI_Group_free
+
+

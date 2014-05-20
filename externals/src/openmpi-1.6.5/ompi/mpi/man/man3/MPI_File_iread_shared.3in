@@ -1,0 +1,69 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_iread_shared 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_iread_shared\fP \- Reads a file using the shared file pointer (nonblocking, noncollective).
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_iread_shared(MPI_File \fIfh\fP, void \fI*buf\fP, int \fIcount\fP, 
+    	      MPI_Datatype \fIdatatype\fP, MPI_Request \fI*request\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_IREAD_SHARED(\fIFH\fP, \fIBUF\fP, \fICOUNT\fP, \fIDATATYPE\fP, \fIREQUEST\fP,\fI IERROR\fP)
+		<type>		BUF(*)
+        	INTEGER		FH, COUNT, DATATYPE, REQUEST, IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Request MPI::File::Iread_shared(void* \fIbuf\fP, int \fIcount\fP,
+	const MPI::Datatype& \fIdatatype\fP)
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+fh    
+File handle (handle).
+
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count
+Number of elements in buffer (integer).
+.ft R
+.TP 1i
+datatype
+Data type of each buffer element (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+buf
+Initial address of buffer (choice).
+.ft R
+.TP 1i
+request
+Request object (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_iread_shared is a nonblocking version of the MPI_File_read_shared interface. It uses the shared file pointer to read files. The order of serialization among the processors is not deterministic for this noncollective routine, so you need to use other methods of synchronization to impose a particular order among processors. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

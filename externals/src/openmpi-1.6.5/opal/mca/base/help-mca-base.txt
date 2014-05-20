@@ -1,0 +1,62 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# Copyright (c) 2008      Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI MCA error messages.
+#
+[find-available:none-found]
+No available %s components were found!
+
+This means that there are no components of this type installed on your
+system or all the components reported that they could not be used.
+
+This is a fatal error; your MPI process is likely to abort.  Check the
+output of the "ompi_info" command and ensure that components of this
+type are available on your system.  You may also wish to check the
+value of the "component_path" MCA parameter and ensure that it has at
+least one directory that contains valid MCA components.
+#
+[find-available:not-valid]
+A requested component was not found, or was unable to be opened.  This
+means that this component is either not installed or is unable to be
+used on your system (e.g., sometimes this means that shared libraries
+that the component requires are unable to be found/loaded).  Note that
+Open MPI stopped checking at the first component that it did not find.
+
+Host:      %s
+Framework: %s
+Component: %s
+#
+[framework-param:too-many-negates]
+MCA framework parameters can only take a single negation operator
+("^"), and it must be at the beginning of the value.  The following
+value violates this rule:
+
+    %s
+
+When used, the negation operator sets the "exclusive" behavior mode,
+meaning that it will exclude all specified components (and implicitly
+include all others).  If the negation operator is not specified, the
+"inclusive" mode is assumed, meaning that all specified components
+will be included (and implicitly exclude all others).
+
+For example, "^a,b" specifies the exclusive behavior and means "use
+all components *except* a and b", while "c,d" specifies the inclusive
+behavior and means "use *only* components c and d."
+
+You cannot mix inclusive and exclusive behavior.

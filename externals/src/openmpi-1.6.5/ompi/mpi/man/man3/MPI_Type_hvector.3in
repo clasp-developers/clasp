@@ -1,0 +1,95 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Type_hvector 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_hvector\fP \- Creates a vector (strided) datatype with offset in bytes -- use of this routine is deprecated.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_hvector(int \fIcount\fP, int\fI blocklength\fP, MPI_Aint\fI stride\fP,
+	MPI_Datatype\fI oldtype\fP, MPI_Datatype\fI *newtype\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_HVECTOR(\fICOUNT, BLOCKLENGTH, STRIDE, OLDTYPE, NEWTYPE,
+		IERROR\fP)
+	INTEGER	\fICOUNT, BLOCKLENGTH, STRIDE, OLDTYPE\fP 
+	INTEGER	\fINEWTYPE, IERROR\fP 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count     
+Number of blocks (nonnegative integer).
+.TP 1i
+blocklength      
+Number of elements in each block (nonnegative integer).
+.TP 1i
+stride      
+Number of bytes between start of each block (integer).
+.TP 1i
+oldtype      
+Old datatype (handle).
+.sp
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newtype      
+New datatype (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Note that use of this routine is \fIdeprecated\fP as of MPI-2. Use MPI_Type_create_hvector instead. 
+.sp
+This deprecated routine is not available in C++. 
+.sp
+The function MPI_Type_hvector is identical to MPI_Type_vector, except that
+stride is given in bytes, rather than in elements. The use for both types
+of vector constructors is illustrated in the examples in Section 3.12.7 of the MPI-1 Standard. 
+.sp
+Assume that oldtype has type map
+.sp
+.nf
+    {(type(0), disp(0)), ..., (type(n-1), disp(n-1))}
+.fi
+.sp
+with extent ex. Let bl be the blocklength. The newly created datatype has a type map with   count * bl * n  entries:
+.sp
+.nf
+  {(type(0), disp(0)), ..., (type(n-1), disp(n-1)),
+  (type(0), disp(0) + ex), ..., (type(n-1), disp(n-1) + ex), 
+  ..., (type(0), disp(0) + (bl -1) * ex),...,(type(n-1), 
+  disp(n-1) + (bl -1) * ex), (type(0), disp(0) + stride), 
+  ...,(type(n-1), disp(n-1) + stride), ..., (type(0), 
+  disp(0) + stride + (bl - 1) * ex), ..., (type(n-1), 
+  disp(n-1) + stride + (bl -1) * ex), ..., (type(0), 
+  disp(0) + stride * (count -1)), ...,(type(n-1), 
+  disp(n-1) + stride * (count -1)), ..., (type(0), 
+  disp(0) + stride * (count -1) + (bl -1) * ex), ..., 
+  (type(n-1), disp(n-1) + stride * (count -1) + (bl -1) * ex)}
+
+.fi
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Type_create_hvector
+.br
+MPI_Type_vector
+.br
+

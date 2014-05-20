@@ -1,0 +1,15 @@
+//summary point: 284
+//var      rotx0 =  -24.73 scale: 10.00 range: -Inf +Inf
+//var      roty0 =   -0.42 scale: 10.00 range: -Inf +Inf
+//var   logrotyk =    0.85 scale:  1.00 range: -Inf +Inf
+//var      rotz0 =   -0.11 scale: 10.00 range: -Inf +Inf
+//var   logrotzk =    2.62 scale:  1.00 range: -Inf +Inf
+//var     rotyy0 =  -18.42 scale: 10.00 range: -Inf +Inf
+//var     rotzz0 =    3.29 scale: 10.00 range: -Inf +Inf
+//var   logrotxk =    1.05 scale:  1.00 range: -Inf +Inf
+//var  logrotyyk =   -0.04 scale:  1.00 range: -Inf +Inf
+//var  logrotzzk =    0.85 scale:  1.00 range: -Inf +Inf
+//var   logdistk =    2.00 scale:  1.00 range: -Inf +Inf
+//var      dist0 =    0.06 scale:  0.10 range: -Inf +Inf
+//done
+

@@ -1,0 +1,66 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Error_string 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Error_string \fP \- Returns a string for a given error code.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Error_string(int \fIerrorcode\fP, char\fI *string\fP, int\fI *resultlen\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ERROR_STRING(\fIERRORCODE, STRING, RESULTLEN, IERROR\fP)
+	INTEGER		\fIERRORCODE, RESULTLEN, IERROR\fP
+	CHARACTER*(*)	\fISTRING\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Get_error_string(int \fIerrorcode\fP, char* \fIname\fP, int& \fIresultlen\fP)
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+errorcode
+Error code returned by an MPI routine or an MPI error class.
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+string
+Text that corresponds to the errorcode.
+.TP 1i
+resultlen
+Length of string.
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Returns the error string associated with an error code or class. The argument string must represent storage that is at least MPI_MAX_ERROR_STRING characters long. 
+.sp
+The number of characters actually written is returned in the output
+argument, resultlen. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Error_class
+
+

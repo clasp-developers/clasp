@@ -1,0 +1,53 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_complete 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_complete\fP \- Completes an RMA access epoch on \fIwin\fP started by a call to MPI_Win_start
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+MPI_Win_complete(MPI_Win \fIwin\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_COMPLETE(WIN, IERROR)
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Complete() const 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+win
+Window object (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Win_complete is a one-sided MPI communication synchronization call, completing an RMA access epoch on \fIwin\fP started by a call to MPI_Win_start. MPI_Win_complete enforces the completion of preceding RMA calls at the origin and not at the target. A put or accumulate call may not have completed at the target when it has completed at the origin.
+
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Win_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Win_start
+.br
+

@@ -1,0 +1,105 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Type_get_contents 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_get_contents\fP \- Returns information about arguments used in creation of a data type. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_get_contents(MPI_Datatype \fIdatatype\fP, int \fImax_integers\fP,
+	int \fImax_addresses\fP, int \fImax_datatypes\fP, int \fIarray_of_integers\fP[], MPI_Aint \fIarray_of_addresses\fP[], MPI_Datatype array_of_datatypes\fP[])
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_GET_CONTENTS(\fIDATATYPE, MAX_INTEGERS, MAX_ADDRESSES,
+		MAX_DATATYPES, ARRAY_OF_INTEGERS, ARRAY_OF_ADDRESSES,
+		ARRAY_OF_DATATYPES, IERROR\fP)
+	INTEGER	\fIDATATYPE, MAX_INTEGERS, MAX_ADDRESSES, MAX_DATATYPES\fP
+	INTEGER	\fIARRAY_OF_INTEGERS(*), ARRAY_OF_DATATYPES(*), IERROR\fP
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fIARRAY_OF_ADDRESSES\fP(*) 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Datatype::Get_contents(int \fImax_integers\fP, int \fImax_addresses\fP,
+	int \fImax_datatypes\fP, int \fIarray_of_integers\fP[],
+	MPI::Aint \fIarray_of_addresses\fP[],
+	MPI::Datatype \fIarray_of_datatypes\fP[]) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+datatype
+Data type to access (handle).
+.TP 1i
+max_integers
+Number of elements in \fIarray_of_integers\fP (nonnegative integer).
+.TP 1i
+max_addresses
+Number of elements in \fIarray_of_addresses\fP (nonnegative integer).
+.TP 1i
+max_datatypes
+Number of elements in \fIarray_of_datatypes\fP (nonnegative integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+array_of_integers
+Contains integer arguments used in constructing \fIdatatype\fP (array of integers).
+.TP 1i
+array_of_addresses
+Contains address arguments used in constructing \fIdatatype\fP (array of integers).
+.TP 1i
+array_of_datatypes
+Contains data-type arguments used in constructing \fIdatatype\fP (array of integers).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+For the given data type, MPI_Type_get_envelope returns information on the number and type of input arguments used in the call that created the data type. The number-of-arguments values returned can be used to provide sufficiently large arrays in the decoding routine MPI_Type_get_contents. This call and the meaning of the returned values is described below. The combiner reflects the MPI data type constructor call that was used in creating \fIdatatype\fP. 
+
+The parameter \fIdatatype\fP must be a predefined unnamed or a derived data type. The call is erroneous if \fIdatatype\fP is a predefined named data type.
+.sp
+The values given for \fImax_integers\fP, \fImax_addresses\fP, and \fImax_datatypes\fP must be at least as large as the value returned in \fInum_integers\fP, \fInum_addresses\fP, and \fInum_datatypes\fP, respectively, in the call MPI_Type_get_envelope for the same \fIdatatype\fP argument.
+.sp
+The data types returned in \fIarray_of_datatypes\fP are handles to data-type objects that are equivalent to the data types used in the original construction call. If these were derived data types, then the returned data types are new data-type objects, and the user is responsible for freeing these datatypes with MPI_Type_free. If these were predefined data types, then the returned data type is equal to that (constant) predefined data type and cannot be freed. 
+.sp
+The committed state of returned derived data types is undefined, that is, the data types may or may not be committed. Furthermore, the content of attributes of returned data types is undefined. 
+.sp
+Note that MPI_Type_get_contents can be invoked with a data-type argument that was constructed using MPI_Type_create_f90_real, MPI_Type_create_f90_integer, or MPI_Type_create_f90_complex (an unnamed predefined data type). In such a case, an empty \fIarray_of_datatypes\fP is returned. 
+.sp
+In the MPI-1 data-type constructor calls, the address arguments in Fortran are of type INTEGER. In the new MPI-2 calls, the address arguments are of type INTEGER(KIND=MPI ADDRESS KIND). The call MPI_Type_get_contents returns all addresses in an argument of type INTEGER(KIND=MPI ADDRESS KIND). This is true even if the old MPI-1 calls were used. Thus, the location of values returned can be thought of as being returned by the C bindings. It can also be determined by examining the new MPI-2 calls for data-type constructors for the deprecated MPI-1 calls that involve addresses. 
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIARRAY_OF_ADDRESSES\fP argument only for Fortran 90. FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_ADDRESS_KIND \fIARRAY_OF_ADDRESSES\fP(*)
+.fi
+.sp
+where MPI_ADDRESS_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft r
+MPI_Type_get_envelope
+.br
+

@@ -1,0 +1,609 @@
+Index: cmpintrinsics.lsp
+===================================================================
+--- cmpintrinsics.lsp	(revision 4607)
++++ cmpintrinsics.lsp	(working copy)
+@@ -234,8 +234,8 @@
+ (defun alloca-size (type)
+   (llvm-sys:data-layout-get-type-alloc-size (llvm-sys:get-data-layout *run-time-execution-engine*) type))
+ (llvm-sys:throw-if-mismatched-structure-sizes :tsp (alloca-size +tsp+)
+-					      :tmv (alloca-size +tmv+)
+-					      :lisp-compiled-function-ihf (alloca-size +LispCompiledFunctionIHF+))
++					      :tmv (alloca-size +tmv+))
++;;					      :lisp-compiled-function-ihf (alloca-size +LispCompiledFunctionIHF+))
+ 
+ 
+ 
+@@ -476,7 +476,7 @@
+   (primitive-does-not-throw module "trace_enterCatchScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
+   (primitive-does-not-throw module "trace_enterUnwindProtectScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
+ 
+-  (primitive-does-not-throw module "trace_setActivationFrameForLexicalScope" +void+ (list +i32+ +afsp*+))
++  (primitive-does-not-throw module "trace_setActivationFrameForInvocationHistoryStackTop" +void+ (list +afsp*+))
+ 
+   (primitive-does-not-throw module "trace_exitFunctionScope" +void+ (list +i32+) )
+   (primitive-does-not-throw module "trace_exitBlockScope" +void+ (list +i32+ ) )
+@@ -582,6 +582,5 @@
+ (defvar *current-form* nil "The current form being compiled")
+ (defvar *current-env* nil "Current environment")
+ (defvar *current-function* nil "The current function")
+-(defvar *current-invocation-history-frame* nil "The current LispCompiledFunctionIHF")
+ (defvar *current-function-name* nil "Store the current function name")
+ (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
+Index: cmpquote.lsp
+===================================================================
+--- cmpquote.lsp	(revision 4607)
++++ cmpquote.lsp	(working copy)
+@@ -3,7 +3,7 @@
+ (in-package :cmp)
+ 
+ (defvar *load-time-value-initialization-function*)
+-(defvar *load-time-value-invocation-history-frame*)
++#||(defvar *load-time-value-invocation-history-frame*)||#
+ 
+ (defvar *load-time-value-coalesce* nil)
+ (defvar *load-time-initializer-environment* nil)
+@@ -648,14 +648,14 @@
+ 	(irbuilder-alloca (gensym "ltv-irbuilder-alloca"))
+ 	(irbuilder-body (gensym "ltv-irbuilder-body"))
+ 	(traceid-gs (gensym "traceid"))
+-	(fn-env-gs (gensym "ltv-fn-env"))
+-	(ltv-invocation-history-frame (gensym "ltv-ihf")))
+-    `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs ,traceid-gs ,irbuilder-alloca ,irbuilder-body ,ltv-invocation-history-frame)
++	(fn-env-gs (gensym "ltv-fn-env")))
++    #||	(ltv-invocation-history-frame (gensym "ltv-ihf")))||#
++    `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs #| ,traceid-gs |# ,irbuilder-alloca ,irbuilder-body #||,ltv-invocation-history-frame||#)
+ 	 (irc-function-create "___loadTimeDataInitializer" nil nil)
+        (let ((*load-time-value-initialization-function* ,ltv-init-fn)
+-	     (*load-time-value-invocation-history-frame* ,ltv-invocation-history-frame)
++	     #||	     (*load-time-value-invocation-history-frame* ,ltv-invocation-history-frame)||#
+ 	     (*current-function* ,ltv-init-fn)
+-	     (*current-invocation-history-frame* *load-time-value-invocation-history-frame*)
++	     #||	     (*current-invocation-history-frame* *load-time-value-invocation-history-frame*)||#
+ 	     (*generate-compile-file-load-time-values* t)
+ 	     (*load-time-initializer-environment* ,fn-env-gs)
+ 	     (*irbuilder-ltv-function-alloca* ,irbuilder-alloca)
+@@ -706,8 +706,9 @@
+ 	   (let ((result (car (llvm-sys:get-argument-list ,ltv-init-fn ))))
+ 	     (irc-call ,fn-env-gs "makeNil" result))
+ 	   (let ((*gv-current-function-name* (jit-make-global-string-ptr (llvm-sys:get-name ,ltv-init-fn) "fn-name")))
+-	     (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
+-	       (irc-function-cleanup-and-return ,fn-env-gs ,traceid-gs)))))))))
++	     #||	     (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
++	     (irc-function-cleanup-and-return ,fn-env-gs ,*current-invocation-history-frame*))||#
++	   )))))))
+ 
+ 
+ 
+@@ -716,7 +717,7 @@
+   "Generate code within the ltv-function - used by codegen-load-time-value"
+   `(let ((*irbuilder-function-alloca* *irbuilder-ltv-function-alloca*)
+ 	 (*current-function* *load-time-value-initialization-function*)
+-	 (*current-invocation-history-frame* *load-time-value-invocation-history-frame*)
++#||	 (*current-invocation-history-frame* *load-time-value-invocation-history-frame*)||#
+ 	 )
+      (with-irbuilder (*load-time-initializer-environment* *irbuilder-ltv-function-body*)
+        ,form)))
+Index: debuginfo.lsp
+===================================================================
+--- debuginfo.lsp	(revision 4605)
++++ debuginfo.lsp	(working copy)
+@@ -202,8 +202,34 @@
+ 
+ 
+ 
++#||
++(defun dbg-push-invocation-history-stack (invocation-history-frame)
++  (print "dbg-push-invocation-history-stack"))
+ 
++(defun dbg-pop-invocation-history-stack ()
++  (print "dbg-pop-invocation-history-stack"))
++||#
+ 
++(defun dbg-push-invocation-history-stack-top-af (env form)
++  (print "dbg-set-invocation-history-stack-top-environment"))
++
++(defun dbg-pop-invocation-history-stack-top-af (env form)
++  (print "dbg-set-invocation-history-stack-top-environment"))
++
++
++(defun dbg-set-invocation-history-stack-top-source-pos (form)
++  (print "dbg-set-invocation-history-stack-top-source-pos"))
++#|  (let* ((source-cons (walk-to-find-parse-pos form))
++	 (ln (get-parse-pos-line-number source-cons))
++	 (col (get-parse-pos-column source-cons)))
++    (irc-call nil "traceSetLineNumberColumnForTop" ln col)))
++  |#
++
++
++
++
++
++
+ #|
+ (defmacro compile-debug-print-object (msg obj)
+   "Insert a call to debugPrintObject"
+@@ -219,7 +245,7 @@
+ |#
+ 
+ 
+-#|
++#||
+ (defmacro compile-debug-print-i32 (msg obj)
+   "Insert a call to debugPrintI32"
+   (let ((sym-line (gensym))
+@@ -231,7 +257,7 @@
+        (multiple-value-bind (,sym-filename ,sym-pathname) (source-file-name)
+ 	 (let ((,sym-msg (llvm-sys:make-string-global *the-module* (bformat nil "%s:%d --> %s" ,sym-filename ,sym-line ,msg))))
+ 	   (irc-call "debugPrintI32" ,sym-msg ,obj))))))
+-|#
++||#
+ 
+ (defun debug-generate-source-code (form)
+   (let ((all-code (bformat nil "%s" form)))
+@@ -258,39 +284,22 @@
+ 
+ 
+ 
+-(defun trace-enter-lexical-scope ( scope-name env form )
+-  (let* ((scope-fn (bformat nil "trace_enter%sScope" scope-name))
+-	 (source-code (debug-generate-source-code form))
+-	 (scope-id (irc-call env scope-fn *gv-source-path-name*
+-			    (irc-i32-current-line-number)
+-			    (irc-i32-current-column)
+-			    (irc-renv env)
+-			    source-code
+-			    (bformat nil "trace-%s" scope-name))))
+-    scope-id))
+-;;      (irc-push-unwind env (list 'exit-lexical-scope scope-name scope-id source-code))))
++(defmacro trace-enter-lexical-scope ( scope-name env form )
++  nil)
+ 
+ 
+ (defun trace-exit-lexical-scope (scope-name env traceid)
+-  (let ((scope-fn (bformat nil "trace_exit%sScope" scope-name)))
+-    (irc-call env scope-fn traceid)))
++  nil)
+ 
+ 
+ 
+-(defun trace-enter-call-scope (env form)
+-  (cmp-log "trace-enter-call-scope for form: %s\n" form )
+-  (trace-enter-lexical-scope "Call" env form))
+ 
+-(defun trace-exit-call-scope (env traceid)
+-  (trace-exit-lexical-scope "Call" env traceid))
+ 
+-
+-
+ (defun trace-enter-let-scope (env form)
+   (trace-enter-lexical-scope "Let" env form))
+ 
+ (defun trace-exit-let-scope (env traceid)
+-  (trace-exit-lexical-scope "Let" env traceid))
++  !(trace-exit-lexical-scope "Let" env traceid))
+ 
+ 
+ (defun trace-enter-let*-scope (env form)
+@@ -329,25 +338,9 @@
+   (trace-exit-lexical-scope "Block" env traceid))
+ 
+ 
+-(defun trace-enter-function-scope (fn env form)
+-  (let* ((source-code (debug-generate-source-code form))
+-	 (fn-arguments-af (cadr (llvm-sys:get-argument-list fn)))
+-	 (scope-id (irc-call env "trace_enterFunctionScope"
+-			     *gv-source-path-name*
+-			     (irc-i32-current-line-number)
+-			     (irc-i32-current-column)
+-			     fn-arguments-af
+-			     source-code
+-			     (bformat nil "trace-FN"))))
+-    scope-id
+-    )
+-  )
+ 
+-;;    (irc-push-cleanup env (list 'exit-lexical-scope "Function" scope-id source-code))))
+ 
+ 
+-(defun trace-exit-function-scope (env traceid)
+-  (irc-call env "trace_exitFunctionScope" traceid ))
+ 
+ 
+ (defun debug-gdb (env)
+Index: compiler.lsp
+===================================================================
+--- compiler.lsp	(revision 4607)
++++ compiler.lsp	(working copy)
+@@ -100,30 +100,31 @@
+   (cmp-log "         compile-lambda/lambda-block code: %s\n" code)
+   (cmp-log "      compile-lambda/lambda-block old-env: %s\n" old-env)
+   (or (stringp name) (break "name must be a string"))
+-  (let ((fn (with-new-function (fn fn-env :function-name name :parent-env old-env :function-form code)
+-	      (let* ((result (car (llvm-sys:get-argument-list fn)))
+-		     (activation-frame (cadr (llvm-sys:get-argument-list fn)))
+-		     traceid
+-		     (new-env (irc-new-value-environment
+-			       fn-env
+-			       :lambda-list-handler lambda-list-handler
+-			       :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
+-			       :fill-runtime-form (lambda (the-new-env)
+-						    (compile-arguments name
+-								       lambda-list-handler
+-								       fn-env
+-								       activation-frame
+-								       the-new-env)))))
+-		(dbg-set-current-debug-location-here)
++  (let ((fn
++	 (with-new-function (fn fn-env :function-name name :parent-env old-env :function-form code)
++	   (let* ((result (car (llvm-sys:get-argument-list fn)))
++		  (activation-frame (cadr (llvm-sys:get-argument-list fn)))
++		  traceid
++		  (new-env (irc-new-value-environment
++			    fn-env
++			    :lambda-list-handler lambda-list-handler
++			    :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
++			    :fill-runtime-form (lambda (the-new-env)
++						 (compile-arguments name
++								    lambda-list-handler
++								    fn-env
++								    activation-frame
++								    the-new-env)))))
++	     (dbg-set-current-debug-location-here)
+ ;;;		(irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env)
+-		(with-try new-env
+-		  (if wrap-block
+-		      (codegen-block result block-name code new-env)
+-		      (codegen-progn result code new-env))
+-		  ((cleanup)
+-		   (irc-unwind-environment new-env)))
+-		)
+-	      )))
++	     (with-try new-env
++	       (if wrap-block
++		   (codegen-block result block-name code new-env)
++		   (codegen-progn result code new-env))
++	       ((cleanup)
++		(irc-unwind-environment new-env)))
++	     )
++	   )))
+     (cmp-log-dump fn)
+     (irc-verify-function fn)
+     (push fn *all-funcs-for-one-compile*)
+@@ -234,7 +235,7 @@
+ 
+ 
+ 
+-(defun codegen-fill-pre-made-value-frame ( result-af exps parent-env evaluate-env)
++(defun codegen-fill-value-frame ( result-af exps parent-env evaluate-env)
+   "Evaluate each of the exps in the evaluate-env environment
+ and put the values into the activation frame in result-af.
+ env is the parent environment of the result-af value frame"
+@@ -270,18 +271,16 @@
+ 	   traceid)
+       (with-try new-env
+ 	(progn
+-	  ;; I can't fill (irc-renv new-renv) before giving it to trace-enter-XXX-scope
+-	  ;; because then traceid will not dominate all uses!
+-	  (setq traceid (trace-enter-call-scope new-env form))
+-	  (codegen-fill-pre-made-value-frame (irc-renv new-env) (cdr form) old-env old-env)
+-	  (irc-call new-env "trace_setActivationFrameForLexicalScope" traceid (irc-renv new-env))
++	  (dbg-set-invocation-history-stack-top-source-pos form)
++	  (codegen-fill-value-frame (irc-renv new-env) (cdr form) old-env old-env)
++	  (irc-call new-env "trace_setActivationFrameForInvocationHistoryStackTop" (irc-renv new-env))
+ 	  (irc-single-step-callback new-env)
+ 	  (let* ((classified (classify-function-lookup old-env sym)))
+ 	    (if (eq (car classified) 'core::global-function)
+ 		(codegen-global-function-call result sym new-env)
+ 		(codegen-lexical-function-call result (caddr classified) (cadddr classified) new-env))))
+       	((cleanup)
+-	 (trace-exit-call-scope new-env traceid))))
++	 nil)))
+     )
+   )
+ 
+@@ -495,11 +494,9 @@
+ 		(irc-branch-to-and-begin-block (irc-basic-block-create
+ 						(bformat nil "%s-start"
+ 							 (symbol-name operator-symbol))))
+-		;; I can't fill the (renv new-env) before calling trace-enter-XXX-scope
+-		;; because then traceid won't dominate all of its uses
+-		(setq traceid (if (eq operator-symbol 'let)
+-				  (trace-enter-let-scope new-env code)
+-				  (trace-enter-let*-scope new-env code)))
++		(if (eq operator-symbol 'let)
++		    (trace-enter-let-scope new-env code)
++		    (trace-enter-let*-scope new-env code))
+ 		(codegen-fill-let/let*-environment-premade-value-frame new-env
+ 								       lambda-list-handler
+ 								       expressions env evaluate-env)
+@@ -760,8 +757,6 @@
+ 	      (irc-branch-to-and-begin-block (irc-basic-block-create
+ 					      (bformat nil "%s-start"
+ 						       (symbol-name operator-symbol))))
+-	      ;; I can't fill function-env before giving it to trace-enter-XXX-scope
+-	      ;; because then traceid won't dominate all of its uses
+ 	      (setq traceid (if (eq operator-symbol 'flet)
+ 				(trace-enter-flet-scope function-env code)
+ 				(trace-enter-labels-scope function-env code)))
+Index: cmpir.lsp
+===================================================================
+--- cmpir.lsp	(revision 4607)
++++ cmpir.lsp	(working copy)
+@@ -410,25 +410,6 @@
+ 
+ 
+ 
+-(defun irc-cleanup-function-environment (env fntraceid)
+-  "Generate the code to cleanup the environment"
+-  (if env
+-      (progn
+-	(trace-exit-function-scope env fntraceid)
+-	(irc-do-unwind-environment env)
+-	(let ((cleanup (local-metadata env :cleanup)))
+-	  ;;      (cmp-log "Cleaning up env: %s\n" env)
+-	  (cmp-log "About to cleanup local-metadata :cleanup --> %s\n" cleanup)
+-	  (dolist (cc cleanup)
+-	    (let ((h (car cc)))
+-	      (cond
+-		((null h) (bformat t "Cleanup code of NIL!!!!!\n"))
+-		((eq h 'destructTsp) (irc-call env "destructTsp" (cadr cc)))
+-		((eq h 'destructTmv) (irc-call env "destructTmv" (cadr cc)))
+-		((eq h 'destructAFsp) (irc-call env "destructAFsp" (cadr cc)))
+-		((eq h 'exit-lexical-scope) (handle-exit-scope cc env))
+-		(t (break (bformat nil "Unknown cleanup code: %s" cc))))
+-	      ))))))
+ 
+ 
+ 
+@@ -439,46 +420,7 @@
+ 
+ 
+ 
+-(defun irc-function-cleanup-and-return (env fntraceid)
+-  (when env
+-    (let ((return-block (irc-basic-block-create "return-block")))
+-      (irc-br return-block)
+-      (irc-begin-landing-pad-block (irc-get-cleanup-landing-pad-block env) (irc-get-function-for-environment env))
+-      (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
+-	     (landpad (llvm-sys:create-landing-pad *irbuilder*
+-						   +exception-struct+
+-						   personality-function 0 "")))
+-	(declare (special *the-function-pass-manager*))
+-	(llvm-sys:set-cleanup landpad t)
+-	(dbg-set-current-debug-location-here)
+-	(irc-low-level-trace)
+-	(multiple-value-bind (exn.slot ehselector.slot)
+-	    (irc-preserve-exception-info env landpad)
+-	  (debug-print-i32 100)
+-	  (irc-branch-to-and-begin-block (irc-get-exception-handler-cleanup-block env))
+-	  (with-landing-pad (irc-get-terminate-landing-pad-block env)
+-	    (irc-cleanup-function-environment env fntraceid))
+-	  (irc-branch-to-and-begin-block (irc-get-exception-handler-resume-block env))
+-	  (debug-print-i32 101)
+-	  (irc-generate-resume-code exn.slot ehselector.slot env))
+-	(irc-begin-landing-pad-block (irc-get-terminate-landing-pad-block env))
+-	(irc-generate-terminate-code env)
+-	;; put the return-block at the end of the function to see if that fixes exception handling problem
+-	(progn
+-	  (irc-begin-block return-block)
+-	  (irc-cleanup-function-environment env fntraceid)
+-	  (llvm-sys:create-ret-void *irbuilder*))
+-	(cmp-log "About to verify the function in irc-function-cleanup-and-return\n")
+-	(irc-verify-function *current-function*)
+-	(when *the-function-pass-manager*
+-	  (llvm-sys:function-pass-manager-run *the-function-pass-manager* *current-function*)
+-	  )))))
+ 
+-
+-
+-
+-
+-
+     
+   
+ 
+@@ -608,11 +550,52 @@
+ 
+ 
+ 
++
++
++#|(llvm-sys:create-in-bounds-gep *irbuilder* (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* *current-function-name* (bformat nil ":::func-name-%s" *current-function-name*)) (list (jit-constant-i32 0) (jit-constant-i32 0)) "fn-name") 
++|#
++
++
++(defparameter *exception-handler-cleanup-block* nil)
++(defparameter *exception-clause-types-to-handle* nil)
++
++(defmacro with-new-function ((fn fn-env &key (function-name "function") parent-env function-form (linkage ''llvm-sys:internal-linkage)) &rest body)
++  "Create a new function with {function-name} and {parent-env} - return the function"
++  (let ((cleanup-block-gs (gensym "cleanup-block"))
++	(traceid-gs (gensym "traceid"))
++	(irbuilder-alloca (gensym))
++	(irbuilder-body (gensym)))
++    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs #| ,traceid-gs |# ,irbuilder-alloca ,irbuilder-body)
++	 (irc-function-create ,function-name ',function-form ,parent-env :linkage ,linkage)
++       (let* ((*current-function* ,fn)
++	      (*current-function-name* (llvm-sys:get-name ,fn))
++	      (*irbuilder-function-alloca* ,irbuilder-alloca)
++	      (*irbuilder-function-body* ,irbuilder-body))
++	 (with-irbuilder (,fn-env *irbuilder-function-body*)
++	   (with-dbg-function (,fn-env ,function-name
++				       :linkage-name *current-function-name*
++				       :function ,fn
++				       :function-type +fn-tmv*-afsp*+
++				       :form ,function-form )
++	     (with-dbg-lexical-block (,fn-env ,function-form)
++	       (let* ((*gv-current-function-name* (jit-make-global-string-ptr *current-function-name* "fn-name"))
++		      (*exception-handler-cleanup-block* (irc-get-exception-handler-cleanup-block ,fn-env))
++		      (*exception-clause-types-to-handle* nil))
++		 (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
++		   ,@body
++		   )
++#||		 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
++		   (irc-function-cleanup-and-return ,fn-env ,*current-invocation-history-frame*))||#
++		 ,fn)))))
++       )))
++
++
++
+ (defun irc-function-create (lisp-function-name body env &key (linkage 'llvm-sys:internal-linkage))
+   "Returns the new function, the lexical environment for the function 
+ and the block that cleans up the function and rethrows exceptions,
+ followed by the traceid for this function and then the current insert block,
+-and then the irbuilder-alloca, irbuilder-body and the invocation-history-frame"
++and then the irbuilder-alloca, irbuilder-body"
+   (let* ((llvm-function-name (jit-function-name lisp-function-name))
+ 	 (fn (llvm-sys:function-create +fn-tmv*-afsp*+
+ 				       linkage
+@@ -623,7 +606,6 @@
+ 	 (irbuilder-cur (llvm-sys:make-irbuilder *llvm-context*))
+ 	 (irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
+ 	 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+-	 invocation-history-frame
+ 	 )
+     (let ((args (llvm-sys:get-argument-list fn)))
+       (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
+@@ -648,59 +630,81 @@
+ 	  (exn.slot (irc-alloca-i8* func-env :irbuilder irbuilder-alloca :label "exn.slot"))
+ 	  (ehselector.slot (irc-alloca-i32 func-env 0
+ 					   :irbuilder irbuilder-alloca
+-					   :label "ehselector.slot")))
+-      (setq invocation-history-frame (irc-alloca-lisp-compiled-ihf
+-				      :irbuilder irbuilder-alloca))
++					   :label "ehselector.slot"))
++	  )
+       (setf-metadata func-env :exn.slot exn.slot)
+       (setf-metadata func-env :ehselector.slot ehselector.slot)
+-      (with-irbuilder (func-env irbuilder-body)
+-	(setq traceid (trace-enter-function-scope fn func-env body))))
+-    (values fn func-env cleanup-block traceid irbuilder-alloca irbuilder-body invocation-history-frame)))
++      (values fn func-env cleanup-block #| traceid |# irbuilder-alloca irbuilder-body))))
+ 
+ 
+ 
+-#|(llvm-sys:create-in-bounds-gep *irbuilder* (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* *current-function-name* (bformat nil ":::func-name-%s" *current-function-name*)) (list (jit-constant-i32 0) (jit-constant-i32 0)) "fn-name") 
+-|#
+ 
+ 
+-(defparameter *exception-handler-cleanup-block* nil)
+-(defparameter *exception-clause-types-to-handle* nil)
+ 
+-(defmacro with-new-function ((fn fn-env &key (function-name "function") parent-env function-form (linkage ''llvm-sys:internal-linkage)) &rest body)
+-  "Create a new function with {function-name} and {parent-env} - return the function"
+-  (let ((cleanup-block-gs (gensym "cleanup-block"))
+-	(traceid-gs (gensym "traceid"))
+-	(irbuilder-alloca (gensym))
+-	(irbuilder-body (gensym)))
+-    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs ,traceid-gs ,irbuilder-alloca ,irbuilder-body ,invocation-history-frame)
+-	 (irc-function-create ,function-name ',function-form ,parent-env :linkage ,linkage)
+-       (let* ((*current-function* ,fn)
+-	      (*current-invocation-history-frame* ,invocation-history-frame)
+-	      (*current-function-name* (llvm-sys:get-name ,fn))
+-	      (*irbuilder-function-alloca* ,irbuilder-alloca)
+-	      (*irbuilder-function-body* ,irbuilder-body))
+-	 (with-irbuilder (,fn-env *irbuilder-function-body*)
+-	   (with-dbg-function (,fn-env ,function-name
+-				       :linkage-name *current-function-name*
+-				       :function ,fn
+-				       :function-type +fn-tmv*-afsp*+
+-				       :form ,function-form )
+-	     (with-dbg-lexical-block (,fn-env ,function-form)
+-	       (let* ((*gv-current-function-name* (jit-make-global-string-ptr *current-function-name* "fn-name"))
+-		      (*exception-handler-cleanup-block* (irc-get-exception-handler-cleanup-block ,fn-env))
+-		      (*exception-clause-types-to-handle* nil))
+-		 (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
+-		   ,@body
+-		   )
+-		 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
+-		   (irc-function-cleanup-and-return ,fn-env ,traceid-gs))
+-		 ,fn)))))
+-       )))
++(defun irc-function-cleanup-and-return (env)
++  (when env
++    (let ((return-block (irc-basic-block-create "return-block")))
++      (irc-br return-block)
++      (irc-begin-landing-pad-block (irc-get-cleanup-landing-pad-block env) (irc-get-function-for-environment env))
++      (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
++	     (landpad (llvm-sys:create-landing-pad *irbuilder*
++						   +exception-struct+
++						   personality-function 0 "")))
++	(declare (special *the-function-pass-manager*))
++	(llvm-sys:set-cleanup landpad t)
++	(dbg-set-current-debug-location-here)
++	(irc-low-level-trace)
++	(multiple-value-bind (exn.slot ehselector.slot)
++	    (irc-preserve-exception-info env landpad)
++	  (debug-print-i32 100)
++	  (irc-branch-to-and-begin-block (irc-get-exception-handler-cleanup-block env))
++#||	  (with-landing-pad (irc-get-terminate-landing-pad-block env)
++	    (irc-cleanup-function-environment env invocation-history-frame)) ||#
++	  (irc-branch-to-and-begin-block (irc-get-exception-handler-resume-block env))
++	  (debug-print-i32 101)
++	  (irc-generate-resume-code exn.slot ehselector.slot env))
++	(irc-begin-landing-pad-block (irc-get-terminate-landing-pad-block env))
++	(irc-generate-terminate-code env)
++	;; put the return-block at the end of the function to see if that fixes exception handling problem
++	(progn
++	  (irc-begin-block return-block)
++#||	  (irc-cleanup-function-environment env invocation-history-frame) ||#
++	  (llvm-sys:create-ret-void *irbuilder*))
++	(cmp-log "About to verify the function in irc-function-cleanup-and-return\n")
++	(irc-verify-function *current-function*)
++	(when *the-function-pass-manager*
++	  (llvm-sys:function-pass-manager-run *the-function-pass-manager* *current-function*)
++	  )))))
+ 
+ 
++(defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
++  "Generate the code to cleanup the environment"
++  (if env
++      (progn
++	(dbg-pop-invocation-history-stack)
++	(irc-do-unwind-environment env)
++	(let ((cleanup (local-metadata env :cleanup)))
++	  ;;      (cmp-log "Cleaning up env: %s\n" env)
++	  (cmp-log "About to cleanup local-metadata :cleanup --> %s\n" cleanup)
++	  (dolist (cc cleanup)
++	    (let ((h (car cc)))
++	      (cond
++		((null h) (bformat t "Cleanup code of NIL!!!!!\n"))
++		((eq h 'destructTsp) (irc-call env "destructTsp" (cadr cc)))
++		((eq h 'destructTmv) (irc-call env "destructTmv" (cadr cc)))
++		((eq h 'destructAFsp) (irc-call env "destructAFsp" (cadr cc)))
++		((eq h 'exit-lexical-scope) (handle-exit-scope cc env))
++		(t (break (bformat nil "Unknown cleanup code: %s" cc))))
++	      ))))))
+ 
+ 
+ 
++
++
++
++
++
++
+ (defun irc-push-cleanup (env cleanup-code)
+   (multiple-value-bind (cleanup-cur found metadata-env)
+       (lookup-metadata env :cleanup)
+@@ -768,8 +772,6 @@
+     :init (lambda (a) (irc-call env "newAFsp" a))
+     :cleanup (lambda (a) (list 'destructAFsp a))))
+ 
+-(defconstant +make-value-frames-at-alloca-time+ nil)
+-
+ (defun irc-alloca-afsp-value-frame-of-size (env size &key (irbuilder *irbuilder-function-alloca*) (label ""))
+   (cmp-log "irc-alloca-afsp-value-frame-of-size label: %s for %s\n" label irbuilder)
+   (with-alloca-insert-point env irbuilder
+@@ -778,10 +780,7 @@
+     :cleanup (lambda (a) (list 'destructAFsp a))))
+ 
+ (defun irc-use-existing-value-frame (env result-af size)
+-  "If we +make-value-frames-at-alloca-time+ then we dont have
+-to make them within the body of the function"
+-  (unless +make-value-frames-at-alloca-time+
+-    (irc-call env "makeValueFrame" result-af (jit-constant-i32 size))))
++  (irc-call env "makeValueFrame" result-af (jit-constant-i32 size)))
+ 
+ 
+ (defun irc-alloca-i32-no-init (env &key (irbuilder *irbuilder-function-alloca*) (label "i32-"))

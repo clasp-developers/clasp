@@ -1,0 +1,52 @@
+#
+# For now don't build MPI on darwin
+#
+
+#
+#
+project internals/cando : requirements
+	<define>EXPAT
+	<toolset>darwin:<define>READLINE
+	<toolset>clang:<define>READLINE	
+	<include>./
+	<include>../
+	<toolset>darwin:<define>darwin
+	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
+	<toolset>darwin:<cxxflags>"-Wno-unused-variable -fopenmp"
+#-include pch.h"
+	<toolset>clang:<define>clang
+	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
+	<toolset>clang:<cxxflags>"-Wno-unused-variable -fopenmp"
+#-include pch.h"
+	<toolset>clang:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>clang:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
+	;
+
+local internalLibs = /internals/core//bundle
+		     /internals/units//bundle
+      		     /internals/chem//bundle
+		     /internals/kinematics//bundle
+#		     /internals//openmmPackage
+		     ;
+
+local sources = main.cc
+      		$(internalLibs)
+		/internals//packageManager
+		/externals//boostAndExpatLibs
+#		/externals//openmm
+		;
+
+local deps = <implicit-dependency>/internals/core//symbol_apply_inc ;
+
+exe cando_o : $(sources) : $(deps) ;
+exe cando_d : $(sources) : $(deps) ; 
+
+alias cando : cando_d : <variant>debug ;
+alias cando : cando_o : <variant>release ;
+
+install bundle : cando : 
+		<target-os>darwin:<location>$(APPBIN_OSX)
+		<target-os>linux:<location>$(APPBIN_LINUX)
+		<variant>debug:<dll-path>$(APPLIBOPT) 
+		<variant>release:<dll-path>$(APPLIBOPT) ;

@@ -1,0 +1,79 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Buffer_attach 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Buffer_attach\fP \- Attaches a user-defined buffer for sending.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Buffer_attach(void \fI*buf\fP, int\fI size\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_BUFFER_ATTACH(\fIBUF\fP,\fI SIZE\fP, \fIIERROR\fP)
+	<type>	\fIBUF\fP(\fI*\fP)
+	INTEGER	\fISIZE\fP,\fI IERROR \fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Attach_buffer(void* \fIbuffer\fP, int \fIsize\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+buf
+Initial buffer address (choice).
+.TP 1i
+size
+Buffer size, in bytes (integer).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Provides to MPI a buffer in the user's memory to be used for buffering outgoing messages. The buffer is used only by messages sent in buffered mode. Only one buffer can be attached to a process at a time. 
+
+.SH NOTES
+.ft R
+The size given should be the sum of the sizes of all outstanding Bsends that you intend to have, plus MPI_BSEND_OVERHEAD bytes for each Bsend that you do. For the purposes of calculating size, you should use MPI_Pack_size. In other words, in the code
+.sp
+.nf
+    MPI_Buffer_attach( buf, size );
+    MPI_Bsend( \&..., count=20, datatype=type1, \&... );
+    \&...
+    MPI_Bsend( \&..., count=40, datatype=type2, \&... );
+.fi
+.sp
+the value of size in the MPI_Buffer_attach call should be greater than the value computed by
+.sp
+.nf
+    MPI_Pack_size( 20, type1, comm, &s1 );
+    MPI_Pack_size( 40, type2, comm, &s2 );
+    size = s1 + s2 + 2 * MPI_BSEND_OVERHEAD;
+.fi
+.sp
+MPI_BSEND_OVERHEAD gives the maximum amount of buffer space that may be used by the Bsend routines. This value is in mpi.h for C and mpif.h for Fortran.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Buffer_detach
+

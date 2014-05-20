@@ -1,0 +1,16 @@
+enable_mem_debug=yes
+enable_debug_symbols=yes
+enable_debug=yes
+enable_mem_profile=no
+enable_contrib_no_build=libnbc,vt
+enable_ft_thread=no
+with_openib=/usr 
+CXXFLAGS="-O0 -g3 -ggdb" 
+CCASFLAGS="-O0 -g3 -ggdb"
+FCFLAGS="-O0 -g3 -ggdb"
+FFLAGS="-O0 -g3 -ggdb"
+CFLAGS="-O0 -g3 -ggdb"
+with_wrapper_cflags="-O0 -g3 -ggdb"
+with_wrapper_cxxflags="-O0 -g3 -ggdb"
+with_wrapper_fflags="-O0 -g3 -ggdb"
+with_wrapper_fcflags="-O0 -g3 -ggdb"

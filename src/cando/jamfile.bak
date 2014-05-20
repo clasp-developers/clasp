@@ -1,0 +1,122 @@
+#
+# For now don't build MPI on darwin
+#
+
+#	<variant>release:<define>SOURCE_DEBUG
+
+#
+# if you want debugging messages in release version turn on
+# <variant>release:<define>SOURCE_DEBUG
+#
+project : requirements
+	<define>EXPAT
+	<toolset>darwin:<define>READLINE
+	<toolset>clang:<define>READLINE	
+	<variant>debug:<define>SOURCE_DEBUG
+#	<variant>release:<define>SOURCE_DEBUG
+	<include>./
+	<include>../core
+	<include>../openmmPackage
+	<toolset>darwin:<define>darwin
+	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
+	<toolset>darwin:<cxxflags>"-Wno-unused-variable -fopenmp"
+#-include pch.h"
+	<toolset>clang:<define>darwin
+	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
+	<toolset>clang:<cxxflags>"-Wno-unused-variable -fopenmp"
+#-include pch.h"
+	<toolset>clang:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>clang:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
+	;
+
+import os ;
+local cando_app_bin_dir = [ os.environ CANDO_APP_BIN_DIR ] ;
+echo cando_app_bin_dir == $(cando_app_bin_dir) ;
+
+local LIB = [ os.environ CANDO_APP_RESOURCES_LIB_DIR ] ;
+
+
+exe cando : 	main.cc 
+    	  	/internals//internalLibs
+		/internals//packageManager
+		/externals//boostAndExpatLibs
+		/externals//openmm
+	:
+	    <variant>release
+	<toolset>gcc:<link>static:<dependancy>$(LIB)/libcore.a
+	;
+
+exe cando_d : 	main.cc 
+    	    	/internals//internalLibs_d
+		/internals//packageManager_d
+		/externals//boostAndExpatLibs
+		/externals//openmm
+ 	:
+ 	    <variant>debug
+	<toolset>gcc:<link>static:<dependancy>$(LIB)/libcore_d.a
+ 	;
+
+exe candoMpi : mainMpi.cc candoMpiEnabled.cc
+    	        /internals//internalLibs
+		/internals//packageManager
+ 		/externals//boostAndExpatLibs
+		/externals//openmm
+ 		/externals//boost_mpi
+ 		/externals//mpi
+ 	:
+	<toolset>darwin:<build>no
+	<variant>release
+	<toolset>gcc:<link>static:<dependancy>$(LIB)/libcore.a
+ 	;
+
+exe candoMpi_d : mainMpi.cc candoMpiEnabled.cc
+    	        /internals//internalLibs_d
+		/internals//packageManager_d
+ 		/externals//boostAndExpatLibs
+		/externals//openmm
+ 		/externals//boost_mpi
+ 		/externals//mpi
+ 	:
+	<toolset>darwin:<build>no
+ 	    <variant>debug
+	<toolset>gcc:<link>static:<dependancy>$(LIB)/libcore_d.a
+ 	;
+
+exe testMpi : testMpi.cc
+    	      internalLibs
+ 		/externals//boostAndExpatLibs
+ 		/externals//boost_mpi
+ 		/externals//mpi
+ 	:
+	<toolset>darwin:<build>no
+	<variant>release
+ 	;
+
+exe testMpi_d : testMpi.cc
+ 		/externals//boostAndExpatLibs
+ 		/externals//boost_mpi
+ 		/externals//mpi
+ 	:
+	<toolset>darwin:<build>no
+ 	<variant>debug
+ 	;
+
+
+
+alias install : install-apps install-apps_d  ;
+
+install install-apps_d : cando_d candoMpi_d testMpi_d :
+	<location>./apps
+	<toolset>gcc:<link>static:<dependancy>$(LIB)/libcore_d.a
+	 ;
+
+install install-apps : cando  candoMpi testMpi :
+	<location>./apps
+	<toolset>gcc:<link>static:<dependancy>$(LIB)/libcore.a
+	;
+
+
+
+
+

@@ -1,0 +1,109 @@
+.\"
+.\" Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+.\"                         University Research and Technology
+.\"                         Corporation.  All rights reserved.
+.\" Copyright (c) 2008-2009 Sun Microsystems, Inc.  All rights reserved.
+.\"
+.\" Man page for ORTE's SnapC Functionality
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH ORTE_SNAPC 7 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+ORTE_SNAPC \- Open RTE MCA Snapshot Coordination (SnapC) Framework: Overview of
+Open RTE's SnapC framework, and selected modules.  #PACKAGE_NAME# #PACKAGE_VERSION#
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+Open RTE can coordinate the generation of a global snapshot of a parallel job
+from many distributed local snapshots. The components in this framework
+determine how to: Initiate the checkpoint of the parallel application, gather
+together the many distributed local snapshots, and provide the user with a
+global snapshot handle reference that can be used to restart the parallel
+application.
+.
+.\" **************************
+.\"    General Process Requirements Section
+.\" **************************
+.SH GENERAL PROCESS REQUIREMENTS
+.PP
+In order for a process to use the Open RTE SnapC components it must adhear to a
+few programmatic requirements.
+.PP
+First, the program must call \fIORTE_INIT\fR early in its execution. This
+should only be called once, and it is not possible to checkpoint the process
+without it first having called this function.
+.PP
+The program must call \fIORTE_FINALIZE\fR before termination.
+.PP
+A user may initiate a checkpoint of a parallel application by using the
+orte-checkpoint(1) and orte-restart(1) commands.
+.
+.\" **********************************
+.\"    Available Components Section
+.\" **********************************
+.SH AVAILABLE COMPONENTS
+.PP
+Open RTE ships with one SnapC component: \fIfull\fR.
+.
+.PP
+The following MCA parameters apply to all components:
+.
+.TP 4
+snapc_base_verbose
+Set the verbosity level for all components. Default is 0, or silent except on error.
+.
+.TP 
+snapc_base_global_snapshot_dir
+The directory to store the checkpoint snapshots. Default is \fB/tmp\fP.
+.
+.\"   Self Component
+.\" ******************
+.SS full SnapC Component
+.PP
+The \fIfull\fR component gathers together the local snapshots to the disk local
+to the Head Node Process (HNP) before completing the checkpoint of the process. This
+component does not currently support replicated HNPs, or timer based gathering
+of local snapshot data. This is a 3-tiered hierarchy of coordinators.
+.
+.PP
+The \fIfull\fR component has the following MCA parameters:
+.
+.TP 4
+snapc_full_priority
+The component's priority to use when selecting the most appropriate component
+for a run.
+.
+.TP 4
+snapc_full_verbose
+Set the verbosity level for this component. Default is 0, or silent except on
+error.
+.
+.\"   Special 'none' option
+.\" ************************
+.SS none SnapC Component
+.PP
+The \fInone\fP component simply selects no SnapC component. All of the SnapC
+function calls return immediately with ORTE_SUCCESS. 
+.
+.PP
+This component is the last component to be selected by default. This means that if
+another component is available, and the \fInone\fP component was not explicity
+requested then ORTE will attempt to activate all of the available components
+before falling back to this component.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+  orte-checkpoint(1), orte-restart(1), opal-checkpoint(1), opal-restart(1),
+orte_filem(7), opal_crs(7)
+.

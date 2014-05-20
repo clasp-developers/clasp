@@ -1,0 +1,5 @@
+#! /bin/bash
+export NUM_PROCESSES=$1
+shift
+echo "Running with " $NUM_PROCESSES " processes"
+mpirun -np $NUM_PROCESSES candoMpi -o advanceAllTrainers.log buildDatabase/advanceAllTrainers.csc $*

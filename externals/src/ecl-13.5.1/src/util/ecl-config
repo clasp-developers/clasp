@@ -1,0 +1,40 @@
+#!/bin/sh
+# @configure_input@
+
+usage()
+{
+  cat <<EOF
+Usage: $0 [OPTIONS] [LIBS]
+Options: 
+	[--cflags]
+	[--libs|--ldflags]
+Libs:
+	cmp
+EOF
+}
+
+LDFLAGS="-lecl"
+for i in $*; do
+  case $i in
+    --cflags|-c)
+      echo_cflags=yes
+      ;;
+    --libs|--ldflags|-l)
+      echo_ldflags=yes
+      ;;
+    cmp)
+      LDFLAGS="$LDFLAGS -lcmp"
+      ;;
+    *)
+      usage 1 >&2
+      ;;
+    esac;
+done
+
+if test "$echo_cflags" = "yes"; then
+  echo "@ECL_CFLAGS@ @GMP_CPPFLAGS@ @DEBUG_CFLAGS@ -I@includedir\@"
+fi
+
+if test "$echo_ldflags" = "yes"; then
+  echo "@ECL_LDRPATH@ -L@libdir\@ $LDFLAGS @LDFLAGS@ @GMP_LDFLAGS@ @LIBS@"
+fi

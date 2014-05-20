@@ -1,0 +1,197 @@
+.\" Copyright 2007-2010 Oracle and/or its affiliates.  All rights reserved.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.\" Copyright (c) 2010 Cisco Systems, Inc.  All rights reserved.
+.TH OMPI_Affinity_str 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBOMPI_Affinity_str\fP \- Obtain prettyprint strings of processor affinity information for this process
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+#include <mpi-ext.h>
+
+int OMPI_Affinity_str(ompi_affinity_fmt_type_t \fIfmt_type\fP,
+                      char \fIompi_bound\fP[OMPI_AFFINITY_STRING_MAX],
+                      char \fIcurrent_binding\fP[OMPI_AFFINITY_STRING_MAX],
+                      char \fIexists\fP[OMPI_AFFINITY_STRING_MAX])
+.fi
+.SH Fortran Syntax
+There is no Fortran binding for this function.
+.
+.SH C++ Syntax
+There is no C++ binding for this function.
+.
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+fmt_type
+An enum indicating how to format the returned ompi_bound and
+current_binding strings.  OMPI_AFFINITY_RSRC_STRING_FMT returns the
+string as human-readable resource names, such as "socket 0, core 0".
+
+OMPI_AFFINITY_LAYOUT_FMT returns ASCII art representing where this MPI
+process is bound relative to the machine resource layout.  For example
+"[. B][. .]" shows the process that called the routine is bound to 
+socket 0, core 1 in a system with 2 sockets, each containing 2 cores.
+
+See below for more output examples.
+
+.
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+ompi_bound
+A prettyprint string describing what processor(s) Open MPI bound this
+process to, or a string indicating that Open MPI did not bind this
+process.
+.
+.TP 1i
+current_binding
+A prettyprint string describing what processor(s) this process is
+currently bound to, or a string indicating that the process is bound
+to all available processors (and is therefore considered "unbound").
+.
+.TP 1i
+exists
+A prettyprint string describing the available sockets and sockets on
+this host.
+
+.SH DESCRIPTION
+.ft R
+Open MPI may bind a process to specific sockets and/or cores at
+process launch time.  This non-standard Open MPI function call returns
+prettyprint information about three things:
+.
+.TP
+Where Open MPI bound this process.
+The string returned in 
+.B
+ompi_bound
+will either indicate that Open MPI did not bind this process to
+anything, or it will contain a prettyprint description of the
+processor(s) to which Open MPI bound this process.
+.
+.TP
+Where this process is currently bound.
+Regardless of whether Open MPI bound this process or not, another
+entity may have bound it.  The string returned in
+.B current_binding
+will indicate what the
+.I
+current
+binding is of this process, regardless of what Open MPI may have done
+earlier.  The string returned will either indicate that the process is
+unbound (meaning that it is bound to all available processors) or it
+will contain a prettyprint description of the sockets and cores to
+which the process is currently bound.
+.
+.TP
+What processors exist.
+As a convenience to the user, the
+.B
+exists
+string will contain a prettyprint description of the sockets and cores
+that this process can see (which is
+.I usually
+all processors in the system).
+
+.SH Examples
+.ft R
+\fBExample 1:\fP  Print out processes binding using resource string format.
+.sp
+.nf
+    int rank;
+    char ompi_bound[OMPI_AFFINITY_STRING_MAX];
+    char current_binding[OMPI_AFFINITY_STRING_MAX];
+    char exists[OMPI_AFFINITY_STRING_MAX];
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    OMPI_Affinity_str(OMPI_AFFINITY_RSRC_STRING_FMT, 
+                      ompi_bound, current_binding, exists);
+    printf("rank %d: \\n"
+           "       ompi_bound: %s\\n"
+           "  current_binding: %s\\n"
+           "           exists: %s\\n",
+           rank, ompi_bound, current_binding, exists);
+    ...
+.fi
+.PP
+Output of mpirun -np 2 -bind-to-core a.out:
+.nf
+rank 0: 
+       ompi_bound: socket 0[core 0] 
+  current_binding: socket 0[core 0] 
+           exists: socket 0 has 4 cores
+rank 1: 
+       ompi_bound: socket 0[core 1] 
+  current_binding: socket 0[core 1] 
+           exists: socket 0 has 4 cores
+.fi
+.PP
+Output of mpirun -np 2 -bind-to-socket a.out:
+.nf
+rank 0: 
+       ompi_bound: socket 0[core 0-3] 
+  current_binding: Not bound (or bound to all available processors)
+           exists: socket 0 has 4 cores
+rank 1: 
+       ompi_bound: socket 0[core 0-3] 
+  current_binding: Not bound (or bound to all available processors)
+           exists: socket 0 has 4 cores
+.fi
+.sp
+.br
+\fBExample 2:\fP  Print out processes binding using layout string format.
+.sp
+.nf
+    int rank;
+    char ompi_bound[OMPI_AFFINITY_STRING_MAX];
+    char current_binding[OMPI_AFFINITY_STRING_MAX];
+    char exists[OMPI_AFFINITY_STRING_MAX];
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    OMPI_Affinity_str(OMPI_AFFINITY_LAYOUT_FMT, 
+                      ompi_bound, current_binding, exists);
+    printf("rank %d: \\n"
+           "       ompi_bound: %s\\n"
+           "  current_binding: %s\\n"
+           "           exists: %s\\n",
+           rank, ompi_bound, current_binding, exists);
+    ...
+.fi
+.PP
+Output of mpirun -np 2 -bind-to-core a.out:
+.nf
+rank 0: 
+       ompi_bound: [B . . .]
+  current_binding: [B . . .]
+           exists: [. . . .]
+rank 1: 
+       ompi_bound: [. B . .]
+  current_binding: [. B . .]
+           exists: [. . . .]
+.fi
+.PP
+Output of mpirun -np 2 -bind-to-socket a.out:
+.nf
+rank 0: 
+       ompi_bound: [B B B B]
+  current_binding: [B B B B]
+           exists: [. . . .]
+rank 1: 
+       ompi_bound: [B B B B]
+  current_binding: [B B B B]
+           exists: [. . . .]
+.fi
+
+.SH See Also
+.ft R
+.nf
+mpirun(1)
+.fi

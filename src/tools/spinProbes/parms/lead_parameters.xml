@@ -1,0 +1,806 @@
+<all>
+ <segment name="main-OSS2+POA3">
+  <frame Dist=" 6.18189" RotX="-2.35979" RotY=" 0.34019" RotYY=" 0.21805" RotZ=" 0.27703" RotZZ=" 0.81090"/>
+  <frame Dist=" 6.16361" RotX="-2.36037" RotY=" 0.15939" RotYY=" 0.09272" RotZ=" 0.39226" RotZZ=" 0.75972"/>
+  <frame Dist=" 6.08746" RotX="-1.97988" RotY=" 0.27761" RotYY=" 0.00611" RotZ=" 0.88427" RotZZ=" 0.82437"/>
+  <frame Dist=" 6.11487" RotX="-2.68614" RotY=" 0.19375" RotYY=" 0.12734" RotZ=" 0.54968" RotZZ=" 0.86000"/>
+  <frame Dist=" 6.01847" RotX="-2.03792" RotY=" 0.48859" RotYY=" 0.14605" RotZ=" 1.05336" RotZZ=" 1.02672"/>
+  <frame Dist=" 5.99452" RotX="-2.03390" RotY=" 0.14051" RotYY=" 0.01822" RotZ=" 0.50393" RotZZ=" 0.67928"/>
+  <frame Dist=" 6.08034" RotX="-1.71150" RotY=" 0.33395" RotYY=" 0.09339" RotZ=" 1.05379" RotZZ=" 0.90341"/>
+  <frame Dist=" 6.21313" RotX="-1.67671" RotY=" 0.56713" RotYY=" 0.18453" RotZ=" 1.01552" RotZZ=" 0.89500"/>
+  <frame Dist=" 6.17484" RotX="-1.70607" RotY=" 0.32650" RotYY=" 0.14463" RotZ=" 0.63250" RotZZ=" 0.73053"/>
+  <frame Dist=" 6.14042" RotX="-1.75749" RotY=" 0.41426" RotYY=" 0.12250" RotZ=" 0.92915" RotZZ=" 0.88421"/>
+  <frame Dist=" 6.16919" RotX="-1.35937" RotY=" 0.61623" RotYY=" 0.18968" RotZ=" 1.23644" RotZZ=" 0.82553"/>
+  <frame Dist=" 6.04461" RotX="-1.79844" RotY=" 0.65417" RotYY=" 0.14692" RotZ=" 1.16208" RotZZ=" 0.90224"/>
+  <frame Dist=" 6.07627" RotX="-1.99733" RotY=" 0.49022" RotYY=" 0.24164" RotZ=" 0.93918" RotZZ=" 0.95116"/>
+  <frame Dist=" 6.18778" RotX="-1.88332" RotY=" 0.62862" RotYY=" 0.28186" RotZ=" 1.30116" RotZZ=" 1.14603"/>
+  <frame Dist=" 6.13859" RotX="-2.20579" RotY=" 0.26464" RotYY=" 0.19642" RotZ=" 0.64179" RotZZ=" 0.84369"/>
+  <frame Dist=" 6.11880" RotX="-2.38932" RotY=" 0.25072" RotYY=" 0.14498" RotZ=" 0.63256" RotZZ=" 0.98286"/>
+  <frame Dist=" 6.16181" RotX="-2.02820" RotY=" 0.36262" RotYY=" 0.09819" RotZ=" 0.76500" RotZZ=" 0.89538"/>
+  <frame Dist=" 6.15827" RotX="-1.75871" RotY=" 0.49890" RotYY=" 0.12374" RotZ=" 0.98710" RotZZ=" 0.86004"/>
+  <frame Dist=" 6.15706" RotX="-1.80813" RotY=" 0.42001" RotYY=" 0.09279" RotZ=" 0.79839" RotZZ=" 0.72697"/>
+  <frame Dist=" 6.11707" RotX="-1.94138" RotY=" 0.28775" RotYY=" 0.15125" RotZ=" 0.73383" RotZZ=" 0.92588"/>
+  <frame Dist=" 6.09861" RotX="-1.49307" RotY=" 0.39679" RotYY=" 0.09341" RotZ=" 1.14595" RotZZ=" 0.85294"/>
+  <frame Dist=" 6.12881" RotX="-1.61648" RotY=" 0.45344" RotYY=" 0.15871" RotZ=" 1.18228" RotZZ=" 0.90744"/>
+  <frame Dist=" 6.14575" RotX="-2.84737" RotY=" 0.04614" RotYY=" 0.15179" RotZ=" 0.79027" RotZZ=" 1.06424"/>
+  <frame Dist=" 6.14030" RotX="-2.81280" RotY="-0.11855" RotYY=" 0.06996" RotZ=" 0.44495" RotZZ=" 0.89887"/>
+  <frame Dist=" 6.09206" RotX="-2.65353" RotY=" 0.22994" RotYY=" 0.22367" RotZ=" 0.55541" RotZZ=" 1.04643"/>
+  <frame Dist=" 6.22853" RotX="-1.71455" RotY=" 0.43587" RotYY=" 0.04682" RotZ=" 0.79379" RotZZ=" 0.71229"/>
+  <frame Dist=" 6.00305" RotX="-2.44922" RotY="-0.04811" RotYY="-0.03632" RotZ=" 0.35770" RotZZ=" 0.76582"/>
+  <frame Dist=" 6.14731" RotX="-2.49693" RotY=" 0.34586" RotYY=" 0.16918" RotZ=" 0.72164" RotZZ=" 0.88654"/>
+  <frame Dist=" 6.09133" RotX="-2.02291" RotY=" 0.15253" RotYY="-0.08371" RotZ=" 0.71704" RotZZ=" 0.76771"/>
+  <frame Dist=" 6.15710" RotX="-1.67899" RotY=" 0.62357" RotYY=" 0.11455" RotZ=" 1.32801" RotZZ=" 0.98316"/>
+  <frame Dist=" 6.14196" RotX="-1.65085" RotY=" 0.21794" RotYY="-0.01373" RotZ=" 0.82286" RotZZ=" 0.83263"/>
+  <frame Dist=" 6.18976" RotX="-2.54728" RotY=" 0.26356" RotYY=" 0.10227" RotZ=" 0.73850" RotZZ=" 0.96583"/>
+  <frame Dist=" 6.18204" RotX="-2.22817" RotY=" 0.46905" RotYY=" 0.11154" RotZ=" 0.85461" RotZZ=" 0.86110"/>
+  <frame Dist=" 5.98877" RotX="-0.67396" RotY=" 0.01497" RotYY="-0.00600" RotZ=" 1.59824" RotZZ=" 1.21900"/>
+  <frame Dist=" 6.18366" RotX="-2.01153" RotY=" 0.39410" RotYY=" 0.04680" RotZ=" 0.80703" RotZZ=" 0.81116"/>
+  <frame Dist=" 6.03885" RotX="-1.65003" RotY=" 0.49205" RotYY=" 0.21417" RotZ=" 1.21676" RotZZ=" 1.02631"/>
+  <frame Dist=" 6.22385" RotX="-2.48570" RotY=" 0.38701" RotYY=" 0.21074" RotZ=" 0.57663" RotZZ=" 0.78757"/>
+  <frame Dist=" 6.09301" RotX="-2.25939" RotY=" 0.31030" RotYY=" 0.07977" RotZ=" 0.85149" RotZZ=" 0.93738"/>
+  <frame Dist=" 6.21697" RotX="-2.24630" RotY=" 0.37300" RotYY=" 0.14043" RotZ=" 0.73122" RotZZ=" 0.93182"/>
+  <frame Dist=" 6.07150" RotX="-2.41814" RotY=" 0.28349" RotYY=" 0.11677" RotZ=" 0.80120" RotZZ=" 0.95551"/>
+  <frame Dist=" 5.90492" RotX="-2.28978" RotY=" 0.06006" RotYY=" 0.01310" RotZ="-0.05859" RotZZ=" 0.56302"/>
+  <frame Dist=" 6.22290" RotX="-2.05170" RotY=" 0.50008" RotYY=" 0.13131" RotZ=" 0.91716" RotZZ=" 0.87512"/>
+  <frame Dist=" 6.21980" RotX="-2.42114" RotY=" 0.17364" RotYY=" 0.13650" RotZ=" 0.55756" RotZZ=" 0.85668"/>
+  <frame Dist=" 6.20536" RotX="-2.63778" RotY=" 0.05281" RotYY=" 0.16553" RotZ=" 0.55935" RotZZ=" 0.99906"/>
+  <frame Dist=" 6.08476" RotX="-2.92152" RotY=" 0.39263" RotYY=" 0.33336" RotZ=" 0.80103" RotZZ=" 1.07113"/>
+  <frame Dist=" 6.17459" RotX="-1.98561" RotY=" 0.42861" RotYY=" 0.18181" RotZ=" 0.96576" RotZZ=" 0.91241"/>
+  <frame Dist=" 6.09422" RotX="-2.91824" RotY=" 0.10880" RotYY=" 0.17522" RotZ=" 0.74392" RotZZ=" 0.94666"/>
+  <frame Dist=" 6.13528" RotX="-2.70073" RotY=" 0.32724" RotYY=" 0.16381" RotZ=" 0.69616" RotZZ=" 0.91835"/>
+  <frame Dist=" 5.93513" RotX="-1.69965" RotY=" 0.24227" RotYY=" 0.00359" RotZ=" 0.61208" RotZZ=" 0.69026"/>
+  <frame Dist=" 6.01012" RotX="-2.88263" RotY="-0.13151" RotYY=" 0.12795" RotZ=" 0.48927" RotZZ=" 0.93437"/>
+  <frame Dist=" 6.10394" RotX="-2.36074" RotY=" 0.18498" RotYY=" 0.00310" RotZ=" 0.69421" RotZZ=" 0.81145"/>
+  <frame Dist=" 6.17294" RotX="-2.45164" RotY=" 0.13767" RotYY=" 0.13698" RotZ=" 0.50057" RotZZ=" 0.98673"/>
+  <frame Dist=" 6.13519" RotX="-2.19166" RotY=" 0.24939" RotYY=" 0.17590" RotZ=" 0.66050" RotZZ=" 0.93664"/>
+  <frame Dist=" 6.12640" RotX="-1.73635" RotY=" 0.58168" RotYY=" 0.15971" RotZ=" 0.92270" RotZZ=" 0.76736"/>
+  <frame Dist=" 6.18667" RotX="-1.77628" RotY=" 0.42064" RotYY=" 0.10512" RotZ=" 1.10654" RotZZ=" 0.93188"/>
+  <frame Dist=" 6.22030" RotX="-2.04150" RotY=" 0.47419" RotYY=" 0.12575" RotZ=" 0.82280" RotZZ=" 0.88838"/>
+  <frame Dist=" 6.12758" RotX="-2.27240" RotY=" 0.41898" RotYY=" 0.21489" RotZ=" 0.69690" RotZZ=" 0.97762"/>
+  <frame Dist=" 6.24955" RotX="-2.60807" RotY="-0.07859" RotYY=" 0.07571" RotZ=" 0.37067" RotZZ=" 0.87864"/>
+  <frame Dist=" 6.10017" RotX="-2.76161" RotY=" 0.17152" RotYY=" 0.28964" RotZ=" 0.52619" RotZZ=" 0.99671"/>
+  <frame Dist=" 5.93450" RotX="-2.06868" RotY=" 0.22035" RotYY=" 0.08795" RotZ="-0.06093" RotZZ=" 0.56765"/>
+  <frame Dist=" 6.03636" RotX="-2.45290" RotY=" 0.14157" RotYY=" 0.14536" RotZ=" 0.70788" RotZZ=" 0.93007"/>
+  <frame Dist=" 6.17347" RotX="-2.47825" RotY=" 0.42415" RotYY=" 0.18724" RotZ=" 0.71730" RotZZ=" 0.87268"/>
+  <frame Dist=" 6.13104" RotX="-2.69363" RotY=" 0.06924" RotYY=" 0.02788" RotZ=" 0.37355" RotZZ=" 0.78956"/>
+  <frame Dist=" 6.19098" RotX="-2.23778" RotY=" 0.23160" RotYY=" 0.07525" RotZ=" 0.67547" RotZZ=" 0.85702"/>
+  <frame Dist=" 6.00948" RotX="-1.98273" RotY=" 0.42274" RotYY=" 0.17490" RotZ=" 1.00038" RotZZ=" 1.01044"/>
+  <frame Dist=" 6.08383" RotX="-2.37753" RotY=" 0.38601" RotYY=" 0.30116" RotZ=" 0.81572" RotZZ=" 1.06434"/>
+  <frame Dist=" 6.06742" RotX="-1.77407" RotY=" 0.44136" RotYY=" 0.14175" RotZ=" 1.11292" RotZZ=" 0.96531"/>
+  <frame Dist=" 5.95144" RotX="-2.47579" RotY=" 0.00032" RotYY=" 0.00746" RotZ=" 0.48262" RotZZ=" 0.75159"/>
+  <frame Dist=" 5.99986" RotX="-2.36490" RotY=" 0.43103" RotYY=" 0.30058" RotZ=" 0.84291" RotZZ=" 1.18852"/>
+  <frame Dist=" 6.05147" RotX="-2.50766" RotY="-0.02252" RotYY=" 0.07963" RotZ=" 0.44347" RotZZ=" 0.81705"/>
+  <frame Dist=" 6.13873" RotX="-2.16548" RotY=" 0.23692" RotYY="-0.06296" RotZ=" 0.64257" RotZZ=" 0.72943"/>
+  <frame Dist=" 6.04566" RotX="-2.67894" RotY=" 0.06482" RotYY=" 0.07437" RotZ=" 0.45328" RotZZ=" 0.81735"/>
+  <frame Dist=" 6.03030" RotX="-2.12469" RotY=" 0.10183" RotYY=" 0.02384" RotZ=" 0.72061" RotZZ=" 0.91683"/>
+  <frame Dist=" 6.12990" RotX="-2.54305" RotY=" 0.06326" RotYY=" 0.09486" RotZ=" 0.62787" RotZZ=" 0.97205"/>
+  <frame Dist=" 6.13512" RotX="-2.40634" RotY=" 0.22837" RotYY=" 0.14928" RotZ=" 0.56450" RotZZ=" 0.88786"/>
+  <frame Dist=" 6.17549" RotX="-1.97913" RotY=" 0.55601" RotYY=" 0.13502" RotZ=" 0.99782" RotZZ=" 0.85639"/>
+  <frame Dist=" 6.07019" RotX="-2.68281" RotY=" 0.12918" RotYY=" 0.17153" RotZ=" 0.20174" RotZZ=" 0.79818"/>
+  <frame Dist=" 6.29018" RotX="-2.20178" RotY=" 0.30656" RotYY=" 0.09906" RotZ=" 0.50313" RotZZ=" 0.79145"/>
+  <frame Dist=" 6.21828" RotX="-2.44551" RotY=" 0.18225" RotYY=" 0.18431" RotZ=" 0.40662" RotZZ=" 0.88578"/>
+  <frame Dist=" 6.09367" RotX="-1.93578" RotY=" 0.10131" RotYY="-0.00020" RotZ=" 0.63445" RotZZ=" 0.78507"/>
+  <frame Dist=" 6.11205" RotX="-1.54789" RotY=" 0.32594" RotYY=" 0.03317" RotZ=" 1.20625" RotZZ=" 0.79465"/>
+  <frame Dist=" 6.12645" RotX="-2.72306" RotY=" 0.01811" RotYY=" 0.14308" RotZ=" 0.34857" RotZZ=" 0.90236"/>
+  <frame Dist=" 6.13422" RotX="-2.44788" RotY=" 0.08644" RotYY=" 0.11517" RotZ=" 0.40922" RotZZ=" 0.80705"/>
+  <frame Dist=" 6.17953" RotX="-2.05862" RotY=" 0.54560" RotYY=" 0.20611" RotZ=" 0.75100" RotZZ=" 0.80672"/>
+  <frame Dist=" 6.18152" RotX="-1.96112" RotY=" 0.46347" RotYY=" 0.05330" RotZ=" 1.00188" RotZZ=" 0.90869"/>
+  <frame Dist=" 6.13107" RotX="-2.77508" RotY=" 0.23526" RotYY=" 0.17888" RotZ=" 0.62997" RotZZ=" 0.95747"/>
+  <frame Dist=" 6.10037" RotX="-1.49940" RotY=" 0.51967" RotYY=" 0.15861" RotZ=" 1.27921" RotZZ=" 1.02724"/>
+  <frame Dist=" 6.02027" RotX="-1.78313" RotY=" 0.43316" RotYY=" 0.15802" RotZ=" 1.28735" RotZZ=" 1.11353"/>
+  <frame Dist=" 6.22050" RotX="-2.47731" RotY=" 0.15591" RotYY=" 0.11818" RotZ=" 0.56173" RotZZ=" 0.86319"/>
+  <frame Dist=" 6.04229" RotX="-2.28587" RotY=" 0.31953" RotYY="-0.02070" RotZ=" 0.87057" RotZZ=" 0.79392"/>
+  <frame Dist=" 6.09287" RotX="-1.75646" RotY=" 0.54269" RotYY=" 0.15409" RotZ=" 1.30811" RotZZ=" 0.96673"/>
+  <frame Dist=" 6.09244" RotX="-1.82682" RotY=" 0.19566" RotYY=" 0.07249" RotZ=" 0.67525" RotZZ=" 0.81580"/>
+  <frame Dist=" 6.16422" RotX="-2.24926" RotY=" 0.39838" RotYY=" 0.25584" RotZ=" 0.42594" RotZZ=" 0.92170"/>
+  <frame Dist=" 6.13897" RotX="-1.98703" RotY=" 0.68867" RotYY=" 0.19484" RotZ=" 1.04319" RotZZ=" 0.93206"/>
+  <frame Dist=" 6.13292" RotX="-1.94663" RotY=" 0.29615" RotYY=" 0.08831" RotZ=" 0.58110" RotZZ=" 0.74880"/>
+  <frame Dist=" 6.13153" RotX="-1.57662" RotY=" 0.68483" RotYY=" 0.29845" RotZ=" 1.09224" RotZZ=" 0.90796"/>
+  <frame Dist=" 6.19568" RotX="-2.41474" RotY=" 0.13879" RotYY=" 0.07638" RotZ=" 0.30755" RotZZ=" 0.79116"/>
+  <frame Dist=" 6.26807" RotX="-1.81907" RotY=" 0.41850" RotYY=" 0.17631" RotZ=" 1.01235" RotZZ=" 0.92730"/>
+  <frame Dist=" 5.99234" RotX="-2.68697" RotY=" 0.25341" RotYY=" 0.32540" RotZ=" 0.68117" RotZZ=" 1.05728"/>
+  <frame Dist=" 6.07718" RotX="-2.04286" RotY=" 0.38031" RotYY=" 0.15728" RotZ=" 1.01390" RotZZ=" 0.93891"/>
+  <frame Dist=" 6.16130" RotX="-2.45010" RotY=" 0.13285" RotYY=" 0.11712" RotZ=" 0.40879" RotZZ=" 0.93749"/>
+  <frame Dist=" 6.16187" RotX="-2.63904" RotY="-0.01227" RotYY="-0.03886" RotZ=" 0.33478" RotZZ=" 0.79359"/>
+  <frame Dist=" 6.14848" RotX="-2.84413" RotY="-0.06720" RotYY=" 0.15759" RotZ=" 0.41185" RotZZ=" 0.84498"/>
+  <frame Dist=" 6.07899" RotX="-2.78361" RotY="-0.14458" RotYY="-0.11626" RotZ=" 0.54134" RotZZ=" 0.83289"/>
+  <frame Dist=" 6.07274" RotX="-1.98288" RotY=" 0.22062" RotYY=" 0.02944" RotZ=" 0.87176" RotZZ=" 0.87881"/>
+  <frame Dist=" 6.17803" RotX="-1.03692" RotY=" 0.31167" RotYY=" 0.10333" RotZ=" 1.54556" RotZZ=" 0.88223"/>
+  <frame Dist=" 6.04822" RotX="-2.02378" RotY=" 0.08725" RotYY="-0.10600" RotZ=" 0.68954" RotZZ=" 0.74415"/>
+  <frame Dist=" 6.18740" RotX="-1.60355" RotY=" 0.54787" RotYY=" 0.11778" RotZ=" 1.03980" RotZZ=" 0.80188"/>
+  <frame Dist=" 6.12637" RotX="-1.76143" RotY=" 0.21863" RotYY="-0.04852" RotZ=" 0.82457" RotZZ=" 0.80259"/>
+  <frame Dist=" 6.02794" RotX="-1.84850" RotY=" 0.52985" RotYY=" 0.22812" RotZ=" 1.12795" RotZZ=" 1.10935"/>
+  <frame Dist=" 6.12248" RotX="-2.45818" RotY=" 0.37084" RotYY=" 0.22029" RotZ=" 0.68828" RotZZ=" 0.98755"/>
+  <frame Dist=" 6.21002" RotX="-2.23762" RotY=" 0.45520" RotYY=" 0.14333" RotZ=" 0.82794" RotZZ=" 0.89622"/>
+  <frame Dist=" 6.18417" RotX="-2.60171" RotY="-0.10310" RotYY="-0.00333" RotZ=" 0.31585" RotZZ=" 0.73605"/>
+  <frame Dist=" 6.20207" RotX="-1.60808" RotY=" 0.39995" RotYY=" 0.01683" RotZ=" 0.93685" RotZZ=" 0.66560"/>
+  <frame Dist=" 6.01789" RotX="-1.93950" RotY=" 0.27621" RotYY=" 0.08337" RotZ=" 0.65947" RotZZ=" 0.82942"/>
+  <frame Dist=" 6.11073" RotX="-1.43796" RotY=" 0.42797" RotYY=" 0.09690" RotZ=" 1.11400" RotZZ=" 0.86636"/>
+  <frame Dist=" 6.15926" RotX="-2.46044" RotY=" 0.05422" RotYY=" 0.07480" RotZ=" 0.43410" RotZZ=" 0.87813"/>
+  <frame Dist=" 6.17451" RotX="-2.23494" RotY=" 0.32022" RotYY=" 0.17386" RotZ=" 0.55442" RotZZ=" 0.82534"/>
+  <frame Dist=" 6.04522" RotX="-2.67298" RotY="-0.08374" RotYY=" 0.06291" RotZ=" 0.49589" RotZZ=" 0.91518"/>
+  <frame Dist=" 6.09092" RotX="-1.66236" RotY=" 0.35969" RotYY=" 0.08717" RotZ=" 0.53784" RotZZ=" 0.59998"/>
+  <frame Dist=" 6.04334" RotX="-2.07999" RotY=" 0.48818" RotYY=" 0.05985" RotZ=" 0.88522" RotZZ=" 0.81799"/>
+  <frame Dist=" 6.09721" RotX="-2.55742" RotY="-0.13639" RotYY="-0.01809" RotZ=" 0.25640" RotZZ=" 0.66330"/>
+  <frame Dist=" 6.11306" RotX="-2.71535" RotY=" 0.11938" RotYY=" 0.15144" RotZ=" 0.45507" RotZZ=" 0.89058"/>
+  <frame Dist=" 6.07668" RotX="-2.44090" RotY=" 0.15477" RotYY=" 0.11946" RotZ=" 0.62478" RotZZ=" 0.89343"/>
+  <frame Dist=" 6.01585" RotX="-1.97193" RotY=" 0.49662" RotYY=" 0.12344" RotZ=" 0.66593" RotZZ=" 0.70450"/>
+  <frame Dist=" 6.05998" RotX="-2.39491" RotY=" 0.08483" RotYY=" 0.02209" RotZ=" 0.73037" RotZZ=" 1.04231"/>
+  <frame Dist=" 6.16086" RotX="-2.97485" RotY=" 0.14620" RotYY=" 0.24392" RotZ=" 0.55188" RotZZ=" 0.91180"/>
+  <frame Dist=" 6.04094" RotX="-1.88747" RotY=" 0.40585" RotYY=" 0.09985" RotZ=" 0.78811" RotZZ=" 0.83519"/>
+  <frame Dist=" 6.17150" RotX="-2.64842" RotY=" 0.33793" RotYY=" 0.25212" RotZ=" 0.74657" RotZZ=" 1.03397"/>
+  <frame Dist=" 6.14002" RotX="-2.16844" RotY=" 0.56073" RotYY=" 0.14294" RotZ=" 0.92225" RotZZ=" 0.89961"/>
+  <frame Dist=" 6.05241" RotX="-2.26002" RotY=" 0.44141" RotYY=" 0.07674" RotZ=" 1.00765" RotZZ=" 0.98244"/>
+  <frame Dist=" 6.05127" RotX="-1.90828" RotY=" 0.90756" RotYY=" 0.34767" RotZ=" 1.35755" RotZZ=" 1.11279"/>
+  <frame Dist=" 6.04768" RotX="-2.61126" RotY=" 0.26579" RotYY=" 0.19285" RotZ=" 0.54770" RotZZ=" 0.98462"/>
+  <frame Dist=" 6.05916" RotX="-2.37128" RotY=" 0.18562" RotYY=" 0.01654" RotZ=" 0.64357" RotZZ=" 0.87487"/>
+  <frame Dist=" 6.02558" RotX="-2.17672" RotY=" 0.23532" RotYY="-0.03648" RotZ=" 0.71974" RotZZ=" 0.79236"/>
+  <frame Dist=" 6.13245" RotX="-1.66450" RotY=" 0.67801" RotYY=" 0.23874" RotZ=" 1.21177" RotZZ=" 0.97851"/>
+  <frame Dist=" 6.19407" RotX="-2.53116" RotY="-0.09103" RotYY="-0.00784" RotZ=" 0.41747" RotZZ=" 0.82345"/>
+  <frame Dist=" 6.13575" RotX="-2.51808" RotY=" 0.18029" RotYY=" 0.18143" RotZ=" 0.42045" RotZZ=" 0.82581"/>
+  <frame Dist=" 6.12714" RotX="-2.10577" RotY=" 0.44052" RotYY=" 0.11560" RotZ=" 1.12951" RotZZ=" 0.97671"/>
+  <frame Dist=" 6.18974" RotX="-2.55299" RotY="-0.03245" RotYY=" 0.00251" RotZ=" 0.41861" RotZZ=" 0.81414"/>
+  <frame Dist=" 6.23090" RotX="-1.58309" RotY=" 0.52756" RotYY=" 0.17317" RotZ=" 1.18573" RotZZ=" 0.93490"/>
+  <frame Dist=" 6.00438" RotX="-2.15946" RotY=" 0.16413" RotYY="-0.02645" RotZ=" 0.59333" RotZZ=" 0.80165"/>
+  <frame Dist=" 6.05743" RotX="-2.10822" RotY=" 0.45268" RotYY=" 0.12504" RotZ=" 0.81962" RotZZ=" 0.85697"/>
+  <frame Dist=" 6.11520" RotX="-2.53658" RotY=" 0.28559" RotYY=" 0.17023" RotZ=" 0.75046" RotZZ=" 0.94511"/>
+  <frame Dist=" 6.08558" RotX="-2.24585" RotY=" 0.36937" RotYY=" 0.20976" RotZ=" 0.77726" RotZZ=" 1.03595"/>
+  <frame Dist=" 6.19491" RotX="-0.96509" RotY=" 0.29783" RotYY=" 0.16257" RotZ=" 1.56382" RotZZ=" 0.99895"/>
+  <frame Dist=" 5.99870" RotX="-2.05603" RotY=" 0.21509" RotYY=" 0.01522" RotZ=" 0.64775" RotZZ=" 0.78669"/>
+  <frame Dist=" 6.17925" RotX="-2.24399" RotY=" 0.15615" RotYY=" 0.03167" RotZ=" 0.63326" RotZZ=" 0.80779"/>
+  <frame Dist=" 6.19774" RotX="-2.65841" RotY=" 0.08114" RotYY=" 0.09244" RotZ=" 0.50166" RotZZ=" 0.86829"/>
+  <frame Dist=" 6.11287" RotX="-2.32287" RotY=" 0.63825" RotYY=" 0.22072" RotZ=" 0.81064" RotZZ=" 0.84735"/>
+  <frame Dist=" 6.01597" RotX="-2.09070" RotY=" 0.41539" RotYY=" 0.10429" RotZ=" 1.12452" RotZZ=" 1.03375"/>
+  <frame Dist=" 6.07643" RotX="-2.78799" RotY=" 0.11443" RotYY=" 0.13958" RotZ=" 0.63473" RotZZ=" 0.86232"/>
+  <frame Dist=" 6.16561" RotX="-1.84588" RotY=" 0.54736" RotYY=" 0.22071" RotZ=" 0.80589" RotZZ=" 0.80843"/>
+  <frame Dist=" 6.11857" RotX="-2.12337" RotY=" 0.39097" RotYY=" 0.03069" RotZ=" 0.81283" RotZZ=" 0.86188"/>
+  <frame Dist=" 6.22943" RotX="-1.90397" RotY=" 0.57392" RotYY=" 0.16572" RotZ=" 0.89284" RotZZ=" 0.82125"/>
+  <frame Dist=" 6.14591" RotX="-2.15821" RotY=" 0.31053" RotYY=" 0.06460" RotZ=" 0.63481" RotZZ=" 0.81467"/>
+  <frame Dist=" 6.25369" RotX="-2.90056" RotY="-0.04497" RotYY=" 0.14853" RotZ=" 0.45491" RotZZ=" 0.88370"/>
+  <frame Dist=" 6.12622" RotX="-1.86514" RotY=" 0.42418" RotYY=" 0.09029" RotZ=" 0.95905" RotZZ=" 0.85337"/>
+  <frame Dist=" 5.99747" RotX="-1.65175" RotY=" 0.30341" RotYY=" 0.09135" RotZ=" 0.79604" RotZZ=" 0.86867"/>
+  <frame Dist=" 6.10134" RotX="-1.47262" RotY=" 0.33873" RotYY=" 0.05429" RotZ=" 0.90966" RotZZ=" 0.71485"/>
+  <frame Dist=" 6.20131" RotX="-1.17923" RotY=" 0.58486" RotYY=" 0.21539" RotZ=" 1.36407" RotZZ=" 0.90134"/>
+  <frame Dist=" 5.98560" RotX="-2.33512" RotY=" 0.27261" RotYY=" 0.14716" RotZ=" 0.58887" RotZZ=" 0.86074"/>
+  <frame Dist=" 6.09135" RotX="-2.40782" RotY=" 0.25427" RotYY=" 0.20990" RotZ=" 0.58832" RotZZ=" 1.02101"/>
+  <frame Dist=" 6.16556" RotX="-2.79011" RotY=" 0.00036" RotYY=" 0.08738" RotZ=" 0.16333" RotZZ=" 0.68939"/>
+  <frame Dist=" 6.06687" RotX="-2.44701" RotY=" 0.16396" RotYY=" 0.05373" RotZ=" 0.51743" RotZZ=" 0.86933"/>
+  <frame Dist=" 6.25270" RotX="-2.55935" RotY=" 0.06541" RotYY=" 0.12679" RotZ=" 0.40659" RotZZ=" 0.87712"/>
+  <frame Dist=" 6.16419" RotX="-2.13336" RotY=" 0.52495" RotYY=" 0.14705" RotZ=" 0.86588" RotZZ=" 0.93254"/>
+  <frame Dist=" 6.14629" RotX="-1.83841" RotY=" 0.40683" RotYY=" 0.20527" RotZ=" 0.69026" RotZZ=" 0.81121"/>
+  <frame Dist=" 6.12896" RotX="-1.80454" RotY=" 0.65499" RotYY=" 0.17419" RotZ=" 1.06719" RotZZ=" 0.85689"/>
+  <frame Dist=" 6.10372" RotX="-1.88040" RotY=" 0.24295" RotYY=" 0.01741" RotZ=" 0.69203" RotZZ=" 0.70745"/>
+  <frame Dist=" 6.22587" RotX="-2.69539" RotY=" 0.01401" RotYY=" 0.09203" RotZ=" 0.53135" RotZZ=" 0.88593"/>
+  <frame Dist=" 6.09115" RotX="-2.50516" RotY=" 0.40868" RotYY=" 0.26218" RotZ=" 0.72537" RotZZ=" 1.11039"/>
+  <frame Dist=" 6.13282" RotX="-2.36547" RotY=" 0.50002" RotYY=" 0.20976" RotZ=" 0.81344" RotZZ=" 0.95058"/>
+  <frame Dist=" 6.03921" RotX="-2.06067" RotY=" 0.22797" RotYY=" 0.02198" RotZ=" 0.48177" RotZZ=" 0.66345"/>
+  <frame Dist=" 6.09306" RotX="-2.21497" RotY=" 0.25764" RotYY=" 0.13186" RotZ=" 0.59209" RotZZ=" 0.84790"/>
+  <frame Dist=" 6.09507" RotX="-2.42713" RotY=" 0.08062" RotYY=" 0.13716" RotZ=" 0.19871" RotZZ=" 0.84121"/>
+  <frame Dist=" 6.14925" RotX="-1.89305" RotY=" 0.50478" RotYY=" 0.14470" RotZ=" 0.90730" RotZZ=" 0.83179"/>
+  <frame Dist=" 5.99915" RotX="-2.72244" RotY=" 0.11007" RotYY=" 0.14794" RotZ=" 0.69395" RotZZ=" 1.06139"/>
+  <frame Dist=" 6.08967" RotX="-2.30544" RotY=" 0.28416" RotYY=" 0.15316" RotZ=" 0.81036" RotZZ=" 1.01436"/>
+  <frame Dist=" 6.03423" RotX="-2.21841" RotY=" 0.17769" RotYY="-0.01383" RotZ=" 0.83083" RotZZ=" 0.88230"/>
+  <frame Dist=" 6.10777" RotX="-2.68238" RotY=" 0.35414" RotYY=" 0.25876" RotZ=" 0.70090" RotZZ=" 1.00088"/>
+  <frame Dist=" 6.01737" RotX="-1.89986" RotY=" 0.40956" RotYY=" 0.15993" RotZ=" 0.90515" RotZZ=" 0.98444"/>
+  <frame Dist=" 6.09351" RotX="-2.80515" RotY=" 0.06275" RotYY=" 0.14855" RotZ=" 0.73844" RotZZ=" 0.93326"/>
+  <frame Dist=" 6.30509" RotX="-1.74380" RotY=" 0.51298" RotYY=" 0.14770" RotZ=" 1.12027" RotZZ=" 0.95447"/>
+  <frame Dist=" 6.15540" RotX="-2.01432" RotY=" 0.31989" RotYY=" 0.11891" RotZ=" 0.55901" RotZZ=" 0.81533"/>
+  <frame Dist=" 6.17589" RotX="-2.46086" RotY=" 0.20146" RotYY=" 0.12504" RotZ=" 0.45932" RotZZ=" 0.82166"/>
+  <frame Dist=" 6.25122" RotX=" 2.77574" RotY="-0.29834" RotYY="-0.02902" RotZ=" 0.58034" RotZZ=" 0.86856"/>
+  <frame Dist=" 6.13289" RotX="-2.05081" RotY=" 0.39403" RotYY=" 0.09012" RotZ=" 0.48923" RotZZ=" 0.69633"/>
+  <frame Dist=" 6.09473" RotX="-2.61761" RotY="-0.31824" RotYY="-0.06215" RotZ=" 0.03405" RotZZ=" 0.69588"/>
+  <frame Dist=" 6.11162" RotX="-2.16902" RotY=" 0.32497" RotYY=" 0.14836" RotZ=" 0.69730" RotZZ=" 0.85709"/>
+  <frame Dist=" 6.15708" RotX="-2.23000" RotY=" 0.54157" RotYY=" 0.22645" RotZ=" 0.83899" RotZZ=" 0.92122"/>
+  <frame Dist=" 6.18672" RotX="-2.18950" RotY=" 0.26764" RotYY=" 0.18920" RotZ=" 0.79516" RotZZ=" 1.02262"/>
+  <frame Dist=" 6.19449" RotX="-2.75210" RotY="-0.07114" RotYY=" 0.05118" RotZ=" 0.28834" RotZZ=" 0.79616"/>
+  <frame Dist=" 6.12567" RotX="-2.07804" RotY=" 0.37642" RotYY=" 0.19503" RotZ=" 0.73207" RotZZ=" 0.84258"/>
+  <frame Dist=" 6.19833" RotX="-2.81136" RotY="-0.23284" RotYY=" 0.09963" RotZ=" 0.25105" RotZZ=" 0.86321"/>
+  <frame Dist=" 6.14911" RotX="-2.43709" RotY=" 0.22206" RotYY=" 0.12820" RotZ=" 0.64272" RotZZ=" 0.91234"/>
+  <frame Dist=" 6.15708" RotX="-2.83759" RotY="-0.01479" RotYY=" 0.08821" RotZ=" 0.32450" RotZZ=" 0.72388"/>
+  <frame Dist=" 6.08907" RotX="-2.41867" RotY=" 0.11927" RotYY=" 0.03225" RotZ=" 0.48496" RotZZ=" 0.83457"/>
+  <frame Dist=" 6.12085" RotX="-2.52937" RotY=" 0.19457" RotYY=" 0.14240" RotZ=" 0.67706" RotZZ=" 0.97818"/>
+  <frame Dist=" 6.18411" RotX="-1.74754" RotY=" 0.50986" RotYY=" 0.08611" RotZ=" 0.93332" RotZZ=" 0.80456"/>
+  <frame Dist=" 6.25474" RotX="-2.70520" RotY=" 0.18061" RotYY=" 0.24731" RotZ=" 0.34342" RotZZ=" 0.94918"/>
+  <frame Dist=" 6.11327" RotX="-2.03607" RotY=" 0.20611" RotYY=" 0.07667" RotZ=" 0.64924" RotZZ=" 0.84999"/>
+  <frame Dist=" 6.13283" RotX="-1.66891" RotY=" 0.37843" RotYY=" 0.07297" RotZ=" 0.88070" RotZZ=" 0.83536"/>
+  <frame Dist=" 6.15940" RotX="-2.46084" RotY=" 0.24727" RotYY=" 0.16371" RotZ=" 0.31266" RotZZ=" 0.79775"/>
+  <frame Dist=" 6.09181" RotX="-1.72246" RotY=" 0.36402" RotYY=" 0.10678" RotZ=" 0.77693" RotZZ=" 0.80359"/>
+  <frame Dist=" 5.89796" RotX="-1.68244" RotY=" 0.23708" RotYY="-0.04472" RotZ=" 0.23835" RotZZ=" 0.44632"/>
+  <frame Dist=" 6.09730" RotX="-2.17168" RotY=" 0.35189" RotYY=" 0.09582" RotZ=" 0.79950" RotZZ=" 0.84785"/>
+  <frame Dist=" 6.10527" RotX="-2.86697" RotY="-0.09032" RotYY=" 0.06227" RotZ=" 0.56567" RotZZ=" 0.90651"/>
+  <frame Dist=" 6.25140" RotX="-2.56388" RotY=" 0.06475" RotYY=" 0.06137" RotZ=" 0.20191" RotZZ=" 0.84426"/>
+  <frame Dist=" 6.16281" RotX="-2.08943" RotY=" 0.43680" RotYY=" 0.05831" RotZ=" 0.86400" RotZZ=" 0.83689"/>
+  <frame Dist=" 6.06640" RotX="-2.51965" RotY=" 0.18262" RotYY=" 0.18741" RotZ=" 0.36752" RotZZ=" 0.91683"/>
+  <frame Dist=" 6.13428" RotX="-2.07735" RotY=" 0.42593" RotYY=" 0.10523" RotZ=" 0.84562" RotZZ=" 0.83567"/>
+  <frame Dist=" 6.03652" RotX="-2.21199" RotY=" 0.31316" RotYY=" 0.07564" RotZ=" 0.57111" RotZZ=" 0.73891"/>
+  <frame Dist=" 6.07276" RotX="-1.59275" RotY=" 0.48277" RotYY=" 0.06142" RotZ=" 1.06922" RotZZ=" 0.85336"/>
+  <frame Dist=" 5.93748" RotX="-2.33307" RotY=" 0.15046" RotYY=" 0.05699" RotZ=" 0.30901" RotZZ=" 0.76129"/>
+  <frame Dist=" 6.18851" RotX="-1.61762" RotY=" 0.62446" RotYY=" 0.12896" RotZ=" 1.06751" RotZZ=" 0.82655"/>
+  <frame Dist=" 6.18913" RotX="-2.76832" RotY=" 0.11406" RotYY=" 0.21288" RotZ=" 0.41127" RotZZ=" 0.86011"/>
+  <frame Dist=" 6.15899" RotX="-2.18291" RotY=" 0.30684" RotYY=" 0.08959" RotZ=" 0.25403" RotZZ=" 0.68616"/>
+  <frame Dist=" 6.09950" RotX="-1.95158" RotY=" 0.46663" RotYY=" 0.16018" RotZ=" 0.98677" RotZZ=" 0.92977"/>
+  <frame Dist=" 6.07312" RotX="-2.16744" RotY=" 0.52679" RotYY=" 0.26805" RotZ=" 0.87836" RotZZ=" 0.96889"/>
+  <frame Dist=" 5.98790" RotX="-2.16171" RotY=" 0.23118" RotYY="-0.03424" RotZ=" 0.84219" RotZZ=" 0.89042"/>
+  <frame Dist=" 6.12799" RotX="-2.62615" RotY=" 0.15880" RotYY=" 0.10176" RotZ=" 0.72478" RotZZ=" 0.94515"/>
+  <frame Dist=" 6.03828" RotX="-2.61429" RotY=" 0.21952" RotYY=" 0.20659" RotZ=" 0.44791" RotZZ=" 0.83606"/>
+  <frame Dist=" 6.14574" RotX="-2.88148" RotY="-0.03514" RotYY=" 0.15406" RotZ=" 0.62519" RotZZ=" 1.01168"/>
+  <frame Dist=" 6.01773" RotX="-2.14890" RotY=" 0.59794" RotYY=" 0.16896" RotZ=" 0.99624" RotZZ=" 0.99861"/>
+  <frame Dist=" 6.13906" RotX="-2.78642" RotY="-0.05514" RotYY=" 0.11534" RotZ=" 0.66623" RotZZ=" 1.03667"/>
+  <frame Dist=" 6.10048" RotX="-2.25428" RotY=" 0.07269" RotYY=" 0.09096" RotZ=" 0.73679" RotZZ=" 0.94939"/>
+  <frame Dist=" 6.02835" RotX="-1.66044" RotY=" 0.33330" RotYY=" 0.06445" RotZ=" 1.05331" RotZZ=" 0.78657"/>
+  <frame Dist=" 6.16631" RotX="-2.71299" RotY=" 0.20047" RotYY=" 0.23148" RotZ=" 0.20327" RotZZ=" 0.76058"/>
+  <frame Dist=" 6.18768" RotX="-2.94373" RotY=" 0.06457" RotYY=" 0.20705" RotZ=" 0.59672" RotZZ=" 0.90620"/>
+  <frame Dist=" 6.02139" RotX="-2.08137" RotY=" 0.33001" RotYY=" 0.13043" RotZ=" 0.79763" RotZZ=" 0.90413"/>
+  <frame Dist=" 6.11298" RotX="-1.68702" RotY=" 0.35243" RotYY=" 0.06294" RotZ=" 0.73208" RotZZ=" 0.69014"/>
+  <frame Dist=" 6.18773" RotX="-1.92192" RotY=" 0.43859" RotYY=" 0.05497" RotZ=" 0.92953" RotZZ=" 0.83460"/>
+  <frame Dist=" 6.03449" RotX="-2.68083" RotY=" 0.21979" RotYY=" 0.26648" RotZ=" 0.51233" RotZZ=" 0.92365"/>
+  <frame Dist=" 6.21960" RotX="-2.37648" RotY=" 0.21962" RotYY=" 0.11910" RotZ=" 0.43835" RotZZ=" 0.78179"/>
+  <frame Dist=" 6.18450" RotX="-1.81605" RotY=" 0.44701" RotYY=" 0.02953" RotZ=" 0.92530" RotZZ=" 0.82593"/>
+  <frame Dist=" 6.27929" RotX="-1.93197" RotY=" 0.49883" RotYY=" 0.19507" RotZ=" 0.90241" RotZZ=" 0.89078"/>
+  <frame Dist=" 6.15530" RotX="-2.80264" RotY=" 0.04295" RotYY=" 0.02904" RotZ=" 0.49690" RotZZ=" 0.79960"/>
+  <frame Dist=" 6.19732" RotX="-2.31376" RotY=" 0.47752" RotYY=" 0.30225" RotZ=" 0.59559" RotZZ=" 0.91812"/>
+  <frame Dist=" 6.14613" RotX="-2.01984" RotY=" 0.49391" RotYY=" 0.21107" RotZ=" 0.73644" RotZZ=" 0.82094"/>
+  <frame Dist=" 6.14506" RotX="-1.96144" RotY=" 0.51278" RotYY=" 0.21522" RotZ=" 1.17562" RotZZ=" 1.06007"/>
+  <frame Dist=" 6.13166" RotX="-2.13041" RotY=" 0.41662" RotYY=" 0.02660" RotZ=" 0.77140" RotZZ=" 0.81445"/>
+  <frame Dist=" 6.11369" RotX="-1.91887" RotY=" 0.32455" RotYY=" 0.18079" RotZ=" 1.01344" RotZZ=" 1.06430"/>
+  <frame Dist=" 6.16085" RotX="-1.65494" RotY=" 0.55641" RotYY=" 0.16676" RotZ=" 1.11558" RotZZ=" 0.84857"/>
+  <frame Dist=" 6.20686" RotX="-2.42620" RotY=" 0.47105" RotYY=" 0.22717" RotZ=" 0.67573" RotZZ=" 0.87702"/>
+  <frame Dist=" 6.04514" RotX="-2.09078" RotY=" 0.31566" RotYY=" 0.07111" RotZ=" 0.88758" RotZZ=" 0.88264"/>
+  <frame Dist=" 6.19292" RotX="-2.00652" RotY=" 0.61711" RotYY=" 0.17289" RotZ=" 1.01678" RotZZ=" 0.92831"/>
+  <frame Dist=" 6.25304" RotX="-1.12077" RotY=" 0.46489" RotYY=" 0.17971" RotZ=" 1.57431" RotZZ=" 0.98464"/>
+  <frame Dist=" 6.08001" RotX="-1.48089" RotY=" 0.53777" RotYY=" 0.20641" RotZ=" 1.27698" RotZZ=" 1.05895"/>
+  <frame Dist=" 6.11649" RotX="-2.26397" RotY=" 0.17489" RotYY=" 0.08871" RotZ=" 0.52007" RotZZ=" 0.83266"/>
+  <frame Dist=" 6.08252" RotX="-1.45294" RotY=" 0.36480" RotYY=" 0.12436" RotZ=" 1.03704" RotZZ=" 0.86826"/>
+  <frame Dist=" 6.21324" RotX="-2.32743" RotY=" 0.37377" RotYY=" 0.08406" RotZ=" 0.64655" RotZZ=" 0.82108"/>
+  <frame Dist=" 6.13619" RotX="-2.96593" RotY="-0.11144" RotYY=" 0.04713" RotZ=" 0.35409" RotZZ=" 0.78836"/>
+  <frame Dist=" 6.22143" RotX="-2.66335" RotY=" 0.04735" RotYY=" 0.19359" RotZ=" 0.54113" RotZZ=" 1.02862"/>
+  <frame Dist=" 6.19272" RotX="-2.29289" RotY=" 0.09788" RotYY=" 0.06252" RotZ=" 0.56094" RotZZ=" 0.92842"/>
+  <frame Dist=" 5.98895" RotX="-2.61970" RotY=" 0.36932" RotYY=" 0.33153" RotZ=" 0.96532" RotZZ=" 1.21092"/>
+  <frame Dist=" 6.04284" RotX="-2.09026" RotY=" 0.12118" RotYY=" 0.06930" RotZ=" 0.31041" RotZZ=" 0.63032"/>
+  <frame Dist=" 6.13531" RotX="-1.97207" RotY=" 0.57990" RotYY=" 0.19615" RotZ=" 0.93863" RotZZ=" 0.82095"/>
+  <frame Dist=" 6.02740" RotX="-2.21318" RotY=" 0.48092" RotYY=" 0.28657" RotZ=" 1.15574" RotZZ=" 1.20630"/>
+  <frame Dist=" 6.18621" RotX="-2.09566" RotY=" 0.45420" RotYY=" 0.00552" RotZ=" 0.80731" RotZZ=" 0.78713"/>
+  <frame Dist=" 6.28024" RotX="-2.26333" RotY=" 0.38668" RotYY=" 0.20407" RotZ=" 0.58321" RotZZ=" 0.99269"/>
+  <frame Dist=" 6.25837" RotX="-2.34347" RotY=" 0.41242" RotYY=" 0.25219" RotZ=" 0.46002" RotZZ=" 0.90267"/>
+  <frame Dist=" 6.14511" RotX="-2.00272" RotY=" 0.66626" RotYY=" 0.19316" RotZ=" 1.06755" RotZZ=" 0.92525"/>
+  <frame Dist=" 6.12436" RotX="-2.11496" RotY=" 0.47237" RotYY=" 0.19180" RotZ=" 0.70754" RotZZ=" 0.85272"/>
+  <frame Dist=" 6.15838" RotX="-1.71540" RotY=" 0.32390" RotYY=" 0.12112" RotZ=" 0.77739" RotZZ=" 0.85032"/>
+  <frame Dist=" 6.10353" RotX="-2.62328" RotY="-0.15781" RotYY=" 0.05302" RotZ=" 0.17020" RotZZ=" 0.81594"/>
+  <frame Dist=" 6.05194" RotX="-2.35322" RotY=" 0.35504" RotYY=" 0.08165" RotZ=" 0.89327" RotZZ=" 0.91689"/>
+  <frame Dist=" 6.04292" RotX="-2.72947" RotY="-0.07936" RotYY=" 0.05618" RotZ=" 0.41805" RotZZ=" 0.85563"/>
+  <frame Dist=" 6.11278" RotX="-2.11919" RotY=" 0.24804" RotYY=" 0.11565" RotZ=" 0.77800" RotZZ=" 1.11722"/>
+  <frame Dist=" 6.15182" RotX="-2.69536" RotY=" 0.20828" RotYY=" 0.18290" RotZ=" 0.58941" RotZZ=" 0.87560"/>
+  <frame Dist=" 6.17355" RotX="-2.62058" RotY=" 0.03743" RotYY=" 0.06659" RotZ=" 0.41648" RotZZ=" 0.76976"/>
+  <frame Dist=" 6.06347" RotX="-1.27756" RotY=" 0.57323" RotYY=" 0.23912" RotZ=" 1.13864" RotZZ=" 0.86937"/>
+  <frame Dist=" 6.10303" RotX="-1.72192" RotY=" 0.33598" RotYY=" 0.07231" RotZ=" 1.00256" RotZZ=" 0.91072"/>
+  <frame Dist=" 6.16518" RotX="-2.65033" RotY=" 0.51608" RotYY=" 0.20634" RotZ=" 0.90418" RotZZ=" 1.01162"/>
+  <frame Dist=" 6.21771" RotX="-2.11913" RotY=" 0.38554" RotYY=" 0.06901" RotZ=" 0.73224" RotZZ=" 0.78572"/>
+  <frame Dist=" 6.14038" RotX="-2.09945" RotY=" 0.54273" RotYY=" 0.14189" RotZ=" 1.00053" RotZZ=" 0.93445"/>
+  <frame Dist=" 6.18228" RotX="-1.87565" RotY=" 0.51357" RotYY=" 0.24467" RotZ=" 1.04136" RotZZ=" 1.00700"/>
+  <frame Dist=" 6.16265" RotX="-2.56478" RotY=" 0.24068" RotYY=" 0.19906" RotZ=" 0.56569" RotZZ=" 0.94736"/>
+  <frame Dist=" 6.20324" RotX="-1.98811" RotY=" 0.37190" RotYY="-0.00970" RotZ=" 0.95364" RotZZ=" 0.89425"/>
+  <frame Dist=" 5.93901" RotX="-1.83383" RotY=" 0.53270" RotYY=" 0.24200" RotZ=" 1.22564" RotZZ=" 1.23392"/>
+  <frame Dist=" 6.09590" RotX="-2.30501" RotY=" 0.38941" RotYY=" 0.23805" RotZ=" 0.83641" RotZZ=" 1.06231"/>
+  <frame Dist=" 6.15212" RotX=" 1.88074" RotY="-0.65888" RotYY="-0.18975" RotZ=" 0.97133" RotZZ=" 0.86574"/>
+  <frame Dist=" 6.22116" RotX=" 1.90158" RotY="-0.44978" RotYY="-0.12461" RotZ=" 0.98488" RotZZ=" 0.92607"/>
+  <frame Dist=" 6.17193" RotX=" 2.33096" RotY="-0.49928" RotYY="-0.18187" RotZ=" 0.84054" RotZZ=" 0.97590"/>
+  <frame Dist=" 6.18535" RotX=" 2.34409" RotY="-0.30644" RotYY="-0.11652" RotZ=" 0.94829" RotZZ=" 0.96339"/>
+  <frame Dist=" 5.94003" RotX=" 1.92474" RotY="-0.33174" RotYY=" 0.06445" RotZ=" 0.75933" RotZZ=" 0.72449"/>
+  <frame Dist=" 5.99346" RotX=" 1.73235" RotY="-0.76067" RotYY="-0.30726" RotZ=" 1.40107" RotZZ=" 1.08498"/>
+  <frame Dist=" 6.14024" RotX=" 2.78548" RotY=" 0.09203" RotYY="-0.03749" RotZ=" 0.30775" RotZZ=" 0.74521"/>
+  <frame Dist=" 6.11471" RotX=" 2.58890" RotY="-0.40372" RotYY="-0.24084" RotZ=" 0.90566" RotZZ=" 1.01730"/>
+  <frame Dist=" 5.98644" RotX=" 1.43777" RotY="-0.46623" RotYY="-0.21276" RotZ=" 1.42112" RotZZ=" 1.02731"/>
+  <frame Dist=" 6.15489" RotX=" 1.64920" RotY="-0.50218" RotYY="-0.07894" RotZ=" 0.98117" RotZZ=" 0.83534"/>
+  <frame Dist=" 6.23211" RotX=" 2.68690" RotY="-0.19246" RotYY="-0.10211" RotZ=" 0.48073" RotZZ=" 0.83360"/>
+  <frame Dist=" 6.10129" RotX=" 2.20792" RotY="-0.30902" RotYY="-0.17448" RotZ=" 0.50052" RotZZ=" 0.85065"/>
+  <frame Dist=" 6.21069" RotX=" 2.58294" RotY="-0.14542" RotYY="-0.12064" RotZ=" 0.64921" RotZZ=" 0.87753"/>
+  <frame Dist=" 6.06305" RotX=" 2.61019" RotY="-0.12273" RotYY="-0.14560" RotZ=" 0.48493" RotZZ=" 1.00101"/>
+  <frame Dist=" 6.20023" RotX=" 1.75762" RotY="-0.41417" RotYY="-0.18054" RotZ=" 0.87378" RotZZ=" 1.06074"/>
+  <frame Dist=" 6.06249" RotX=" 1.46876" RotY="-0.37058" RotYY="-0.13575" RotZ=" 1.12214" RotZZ=" 1.03456"/>
+  <frame Dist=" 6.09842" RotX=" 2.53644" RotY="-0.13546" RotYY="-0.11347" RotZ=" 0.79969" RotZZ=" 0.97191"/>
+  <frame Dist=" 6.11447" RotX=" 1.73720" RotY="-0.28748" RotYY="-0.02081" RotZ=" 0.88368" RotZZ=" 0.92326"/>
+  <frame Dist=" 6.16288" RotX=" 2.11080" RotY="-0.73084" RotYY="-0.11878" RotZ=" 1.10907" RotZZ=" 1.00673"/>
+  <frame Dist=" 6.07181" RotX=" 2.05608" RotY="-0.38869" RotYY="-0.21198" RotZ=" 0.97550" RotZZ=" 1.06343"/>
+  <frame Dist=" 6.23167" RotX=" 1.45210" RotY="-0.47594" RotYY="-0.19351" RotZ=" 1.07183" RotZZ=" 0.94313"/>
+  <frame Dist=" 6.08563" RotX=" 2.61695" RotY="-0.04898" RotYY="-0.10109" RotZ=" 0.60849" RotZZ=" 0.98185"/>
+  <frame Dist=" 6.20918" RotX="-1.22356" RotY=" 0.45226" RotYY=" 0.18039" RotZ=" 1.35099" RotZZ=" 0.80817"/>
+  <frame Dist=" 6.05649" RotX="-2.68917" RotY=" 0.09765" RotYY=" 0.20488" RotZ=" 0.59450" RotZZ=" 1.04398"/>
+  <frame Dist=" 6.08459" RotX="-2.18027" RotY=" 0.26447" RotYY=" 0.10273" RotZ=" 0.73329" RotZZ=" 0.88411"/>
+  <frame Dist=" 6.17596" RotX="-1.85822" RotY=" 0.57026" RotYY=" 0.09095" RotZ=" 1.09291" RotZZ=" 0.82190"/>
+  <frame Dist=" 6.12231" RotX="-2.63863" RotY=" 0.07460" RotYY=" 0.09703" RotZ=" 0.32754" RotZZ=" 0.80412"/>
+  <frame Dist=" 6.07955" RotX="-1.58445" RotY=" 0.43079" RotYY=" 0.11312" RotZ=" 0.97061" RotZZ=" 0.85305"/>
+  <frame Dist=" 5.98116" RotX="-1.88063" RotY=" 0.21665" RotYY=" 0.02327" RotZ=" 0.37473" RotZZ=" 0.58593"/>
+  <frame Dist=" 6.16304" RotX="-2.46101" RotY=" 0.11300" RotYY=" 0.10301" RotZ=" 0.35337" RotZZ=" 0.80532"/>
+  <frame Dist=" 5.98959" RotX="-2.34301" RotY="-0.06817" RotYY="-0.00635" RotZ=" 0.21908" RotZZ=" 0.73545"/>
+  <frame Dist=" 6.13180" RotX="-2.32413" RotY=" 0.01593" RotYY="-0.06773" RotZ=" 0.57604" RotZZ=" 0.73022"/>
+  <frame Dist=" 6.05455" RotX="-2.07134" RotY=" 0.31284" RotYY=" 0.18554" RotZ=" 0.75200" RotZZ=" 0.89744"/>
+  <frame Dist=" 6.16143" RotX="-2.31091" RotY=" 0.26887" RotYY=" 0.03493" RotZ=" 0.83090" RotZZ=" 0.84475"/>
+  <frame Dist=" 6.13405" RotX="-2.41786" RotY=" 0.18496" RotYY=" 0.04169" RotZ=" 0.53968" RotZZ=" 0.83086"/>
+  <frame Dist=" 6.29231" RotX="-2.58171" RotY=" 0.10665" RotYY=" 0.10807" RotZ=" 0.71632" RotZZ=" 0.95081"/>
+  <frame Dist=" 6.24628" RotX="-1.93641" RotY=" 0.27003" RotYY=" 0.01326" RotZ=" 0.80463" RotZZ=" 0.76034"/>
+  <frame Dist=" 6.15802" RotX="-2.18199" RotY=" 0.33125" RotYY=" 0.04220" RotZ=" 0.81490" RotZZ=" 0.84223"/>
+  <frame Dist=" 6.15971" RotX="-2.60425" RotY=" 0.04382" RotYY="-0.01792" RotZ=" 0.55760" RotZZ=" 0.84736"/>
+  <frame Dist=" 6.08203" RotX="-2.34112" RotY=" 0.18529" RotYY=" 0.07022" RotZ=" 0.45038" RotZZ=" 0.81690"/>
+  <frame Dist=" 6.19855" RotX="-2.51372" RotY=" 0.12787" RotYY=" 0.13839" RotZ=" 0.25970" RotZZ=" 0.76787"/>
+  <frame Dist=" 6.05000" RotX="-2.50966" RotY=" 0.13803" RotYY=" 0.13982" RotZ=" 0.55263" RotZZ=" 0.90309"/>
+  <frame Dist=" 6.11799" RotX="-2.23857" RotY=" 0.66867" RotYY=" 0.23331" RotZ=" 0.86703" RotZZ=" 0.94345"/>
+  <frame Dist=" 6.08854" RotX="-2.55181" RotY=" 0.14993" RotYY="-0.02846" RotZ=" 0.52253" RotZZ=" 0.82193"/>
+  <frame Dist=" 6.05849" RotX="-1.98461" RotY=" 0.41840" RotYY=" 0.09163" RotZ=" 0.92269" RotZZ=" 0.88379"/>
+  <frame Dist=" 6.06622" RotX="-2.55819" RotY="-0.06940" RotYY=" 0.00286" RotZ=" 0.44321" RotZZ=" 0.82806"/>
+  <frame Dist=" 6.11296" RotX="-2.29462" RotY=" 0.37611" RotYY=" 0.01022" RotZ=" 0.74293" RotZZ=" 0.81102"/>
+  <frame Dist=" 6.15352" RotX="-1.77390" RotY=" 0.30359" RotYY=" 0.03894" RotZ=" 0.94565" RotZZ=" 0.85626"/>
+  <frame Dist=" 6.12565" RotX="-2.02395" RotY=" 0.37098" RotYY=" 0.09984" RotZ=" 0.85720" RotZZ=" 0.88599"/>
+  <frame Dist=" 6.07732" RotX="-1.99675" RotY=" 0.14587" RotYY="-0.13364" RotZ=" 0.61527" RotZZ=" 0.67350"/>
+  <frame Dist=" 6.15675" RotX="-1.89854" RotY=" 0.54331" RotYY=" 0.07136" RotZ=" 0.70917" RotZZ=" 0.74363"/>
+  <frame Dist=" 6.22878" RotX="-2.38250" RotY=" 0.66143" RotYY=" 0.12538" RotZ=" 0.92854" RotZZ=" 0.95307"/>
+  <frame Dist=" 6.04169" RotX="-2.01183" RotY=" 0.27276" RotYY=" 0.07050" RotZ=" 0.59366" RotZZ=" 0.80651"/>
+  <frame Dist=" 6.07092" RotX="-2.72801" RotY="-0.14735" RotYY=" 0.01410" RotZ=" 0.36869" RotZZ=" 0.82237"/>
+  <frame Dist=" 5.92435" RotX="-1.89660" RotY=" 0.26531" RotYY="-0.07960" RotZ=" 0.64369" RotZZ=" 0.64835"/>
+  <frame Dist=" 5.99803" RotX=" 2.31243" RotY="-0.40696" RotYY="-0.17212" RotZ=" 0.88294" RotZZ=" 0.96025"/>
+  <frame Dist=" 5.99217" RotX=" 1.95646" RotY="-0.25115" RotYY=" 0.05190" RotZ=" 0.90686" RotZZ=" 0.86997"/>
+  <frame Dist=" 6.05625" RotX=" 2.67453" RotY=" 0.08073" RotYY="-0.06990" RotZ=" 0.22328" RotZZ=" 0.77836"/>
+  <frame Dist=" 6.13603" RotX=" 2.31335" RotY="-0.04993" RotYY=" 0.01059" RotZ=" 0.57047" RotZZ=" 0.83689"/>
+  <frame Dist=" 6.02515" RotX=" 2.09642" RotY="-0.15370" RotYY=" 0.04586" RotZ=" 0.66892" RotZZ=" 0.83247"/>
+  <frame Dist=" 6.23723" RotX=" 1.89438" RotY="-0.38972" RotYY="-0.01274" RotZ=" 1.10715" RotZZ=" 0.92005"/>
+  <frame Dist=" 6.26757" RotX=" 2.80069" RotY=" 0.09074" RotYY="-0.05159" RotZ=" 0.40493" RotZZ=" 0.81901"/>
+  <frame Dist=" 6.10677" RotX=" 1.86962" RotY="-0.30562" RotYY="-0.12124" RotZ=" 0.62648" RotZZ=" 0.77732"/>
+  <frame Dist=" 6.17831" RotX=" 2.15547" RotY="-0.31893" RotYY="-0.07769" RotZ=" 0.22448" RotZZ=" 0.73457"/>
+  <frame Dist=" 5.92396" RotX=" 2.38729" RotY="-0.48103" RotYY="-0.26730" RotZ=" 0.96551" RotZZ=" 1.06356"/>
+  <frame Dist=" 6.11792" RotX=" 2.38614" RotY="-0.26692" RotYY="-0.22268" RotZ=" 0.80913" RotZZ=" 1.08473"/>
+  <frame Dist=" 6.13407" RotX=" 2.84367" RotY=" 0.11963" RotYY="-0.13410" RotZ=" 0.49551" RotZZ=" 0.92863"/>
+  <frame Dist=" 6.01784" RotX=" 2.39252" RotY="-0.44537" RotYY="-0.27560" RotZ=" 0.78535" RotZZ=" 1.02564"/>
+  <frame Dist=" 6.14209" RotX=" 2.28901" RotY="-0.43659" RotYY="-0.20995" RotZ=" 0.59112" RotZZ=" 0.87675"/>
+  <frame Dist=" 6.03919" RotX=" 2.33045" RotY="-0.17748" RotYY="-0.08687" RotZ=" 0.67002" RotZZ=" 0.84878"/>
+  <frame Dist=" 5.99024" RotX=" 2.92424" RotY="-0.35670" RotYY="-0.27534" RotZ=" 0.72605" RotZZ=" 1.02501"/>
+  <frame Dist=" 6.09971" RotX=" 2.08734" RotY="-0.24722" RotYY="-0.00321" RotZ=" 0.82616" RotZZ=" 0.86702"/>
+  <frame Dist=" 6.23239" RotX="-3.00766" RotY="-0.10288" RotYY="-0.17808" RotZ=" 0.52233" RotZZ=" 0.87925"/>
+  <frame Dist=" 6.09073" RotX=" 3.01349" RotY="-0.19304" RotYY="-0.23209" RotZ=" 0.67244" RotZZ=" 1.02271"/>
+  <frame Dist=" 6.23081" RotX=" 1.81237" RotY="-0.57802" RotYY="-0.12455" RotZ=" 1.14035" RotZZ=" 0.89805"/>
+  <frame Dist=" 6.17670" RotX=" 2.46263" RotY="-0.20282" RotYY="-0.06540" RotZ=" 0.43532" RotZZ=" 0.81138"/>
+  <frame Dist=" 6.06017" RotX=" 1.90620" RotY="-0.37953" RotYY="-0.10001" RotZ=" 0.61147" RotZZ=" 0.70822"/>
+  <frame Dist=" 6.22102" RotX=" 1.59046" RotY="-0.71423" RotYY="-0.24031" RotZ=" 1.21475" RotZZ=" 0.98719"/>
+  <frame Dist=" 6.11312" RotX=" 2.35111" RotY="-0.04013" RotYY="-0.02450" RotZ=" 0.45275" RotZZ=" 0.80876"/>
+  <frame Dist=" 6.21820" RotX=" 2.13696" RotY="-0.66564" RotYY="-0.20849" RotZ=" 0.97168" RotZZ=" 0.94251"/>
+  <frame Dist=" 5.99218" RotX=" 2.12828" RotY="-0.51592" RotYY="-0.18962" RotZ=" 0.89229" RotZZ=" 1.02607"/>
+  <frame Dist=" 6.08335" RotX=" 1.90357" RotY="-0.64863" RotYY="-0.17531" RotZ=" 0.94106" RotZZ=" 0.87777"/>
+  <frame Dist=" 6.02933" RotX=" 2.09017" RotY="-0.15134" RotYY=" 0.00241" RotZ=" 0.82622" RotZZ=" 0.81960"/>
+  <frame Dist=" 6.12589" RotX=" 2.58939" RotY="-0.08482" RotYY="-0.08598" RotZ=" 0.44905" RotZZ=" 0.81827"/>
+  <frame Dist=" 6.23332" RotX=" 3.06376" RotY=" 0.19558" RotYY="-0.11359" RotZ=" 0.47039" RotZZ=" 0.93421"/>
+  <frame Dist=" 6.07658" RotX=" 2.02184" RotY="-0.42185" RotYY="-0.06693" RotZ=" 0.95169" RotZZ=" 0.94702"/>
+  <frame Dist=" 6.14708" RotX=" 2.33453" RotY="-0.34768" RotYY="-0.22398" RotZ=" 0.60399" RotZZ=" 0.87855"/>
+  <frame Dist=" 6.00517" RotX=" 2.45497" RotY="-0.23426" RotYY="-0.09535" RotZ=" 0.65074" RotZZ=" 0.88747"/>
+  <frame Dist=" 6.06991" RotX=" 1.75521" RotY="-0.34835" RotYY="-0.10292" RotZ=" 1.01707" RotZZ=" 1.04273"/>
+  <frame Dist=" 6.24711" RotX=" 2.29158" RotY="-0.41390" RotYY="-0.24033" RotZ=" 0.60850" RotZZ=" 0.93739"/>
+  <frame Dist=" 6.14425" RotX=" 2.89001" RotY="-0.22246" RotYY="-0.17788" RotZ=" 0.64694" RotZZ=" 0.93167"/>
+  <frame Dist=" 6.21125" RotX=" 1.85124" RotY="-0.25446" RotYY="-0.02727" RotZ=" 0.81750" RotZZ=" 0.81499"/>
+  <frame Dist=" 6.16812" RotX=" 2.25236" RotY="-0.18175" RotYY="-0.01612" RotZ=" 0.83019" RotZZ=" 0.87044"/>
+  <frame Dist=" 5.97276" RotX=" 2.72838" RotY=" 0.07083" RotYY="-0.06425" RotZ=" 0.56318" RotZZ=" 0.91541"/>
+  <frame Dist=" 6.15945" RotX=" 1.37365" RotY="-0.55060" RotYY="-0.17973" RotZ=" 1.39175" RotZZ=" 0.87081"/>
+  <frame Dist=" 6.06105" RotX=" 1.79239" RotY="-0.15546" RotYY=" 0.00681" RotZ=" 0.98767" RotZZ=" 0.86673"/>
+  <frame Dist=" 5.99935" RotX=" 2.52976" RotY="-0.22497" RotYY="-0.24000" RotZ=" 0.48274" RotZZ=" 0.91354"/>
+  <frame Dist=" 6.24312" RotX=" 1.51397" RotY="-0.55078" RotYY="-0.22950" RotZ=" 1.01204" RotZZ=" 0.83928"/>
+  <frame Dist=" 6.01572" RotX=" 2.73346" RotY="-0.06233" RotYY="-0.12127" RotZ=" 0.68658" RotZZ=" 0.98438"/>
+  <frame Dist=" 6.14897" RotX=" 2.61105" RotY=" 0.03808" RotYY="-0.07543" RotZ=" 0.28364" RotZZ=" 0.73662"/>
+  <frame Dist=" 6.11993" RotX=" 2.24668" RotY="-0.35621" RotYY=" 0.09180" RotZ=" 0.74400" RotZZ=" 0.83507"/>
+  <frame Dist=" 6.16303" RotX=" 2.14268" RotY="-0.27869" RotYY="-0.06223" RotZ=" 0.40700" RotZZ=" 0.69682"/>
+  <frame Dist=" 6.15256" RotX=" 2.39786" RotY="-0.38096" RotYY="-0.15727" RotZ=" 0.71453" RotZZ=" 0.87954"/>
+  <frame Dist=" 6.09417" RotX=" 1.79965" RotY="-0.26127" RotYY="-0.02098" RotZ=" 0.66134" RotZZ=" 0.71518"/>
+  <frame Dist=" 6.12538" RotX=" 1.97998" RotY="-0.38341" RotYY="-0.14719" RotZ=" 0.98475" RotZZ=" 0.92866"/>
+  <frame Dist=" 6.02946" RotX=" 2.10863" RotY="-0.38684" RotYY="-0.06223" RotZ=" 0.54741" RotZZ=" 0.62105"/>
+  <frame Dist=" 6.14960" RotX=" 2.37274" RotY="-0.07313" RotYY="-0.02669" RotZ=" 0.34114" RotZZ=" 0.69012"/>
+  <frame Dist=" 6.20558" RotX=" 2.16545" RotY="-0.39853" RotYY="-0.16702" RotZ=" 0.50946" RotZZ=" 0.81146"/>
+  <frame Dist=" 6.18855" RotX=" 1.78664" RotY="-0.31408" RotYY="-0.16262" RotZ=" 0.69803" RotZZ=" 0.80139"/>
+  <frame Dist=" 6.01026" RotX=" 1.73331" RotY="-0.43885" RotYY="-0.03961" RotZ=" 0.98128" RotZZ=" 0.73571"/>
+  <frame Dist=" 6.29727" RotX=" 2.70787" RotY="-0.11363" RotYY="-0.15984" RotZ=" 0.41347" RotZZ=" 0.88087"/>
+  <frame Dist=" 5.96192" RotX=" 2.01790" RotY="-0.24316" RotYY="-0.03768" RotZ=" 0.67276" RotZZ=" 0.80955"/>
+  <frame Dist=" 6.28076" RotX=" 2.47354" RotY="-0.12629" RotYY="-0.14312" RotZ=" 0.54546" RotZZ=" 0.89435"/>
+  <frame Dist=" 6.13321" RotX=" 2.17511" RotY="-0.27305" RotYY="-0.06329" RotZ=" 0.82358" RotZZ=" 0.85928"/>
+  <frame Dist=" 6.22089" RotX=" 2.14205" RotY="-0.24983" RotYY="-0.02024" RotZ=" 0.74948" RotZZ=" 0.81558"/>
+  <frame Dist=" 6.10030" RotX=" 2.72253" RotY="-0.21881" RotYY="-0.22692" RotZ=" 0.42130" RotZZ=" 0.86919"/>
+  <frame Dist=" 6.10002" RotX=" 2.40092" RotY="-0.19008" RotYY="-0.09736" RotZ=" 0.57839" RotZZ=" 0.92242"/>
+  <frame Dist=" 6.09238" RotX=" 1.95629" RotY="-0.58672" RotYY="-0.12125" RotZ=" 1.13217" RotZZ=" 0.94108"/>
+  <frame Dist=" 6.10734" RotX=" 2.24865" RotY="-0.22898" RotYY="-0.09925" RotZ=" 0.95181" RotZZ=" 1.00778"/>
+ </segment>
+ <segment name="dkp-OSS5+OSS2">
+  <frame Dist=" 4.83962" RotX="-1.45210" RotY="-0.40334" RotYY="-0.20625" RotZ="-0.49203" RotZZ="-0.33134"/>
+  <frame Dist=" 4.91223" RotX="-1.61076" RotY=" 0.17287" RotYY=" 0.06844" RotZ="-0.41669" RotZZ="-0.30514"/>
+  <frame Dist=" 4.79983" RotX="-1.17147" RotY="-0.49949" RotYY="-0.28297" RotZ="-0.59689" RotZZ="-0.31301"/>
+  <frame Dist=" 4.88976" RotX="-1.29630" RotY="-0.33100" RotYY="-0.17586" RotZ="-0.51458" RotZZ="-0.28167"/>
+  <frame Dist=" 4.85404" RotX="-1.43018" RotY="-0.33015" RotYY="-0.13381" RotZ="-0.57191" RotZZ="-0.29331"/>
+  <frame Dist=" 4.78123" RotX="-1.38490" RotY="-0.60990" RotYY="-0.30488" RotZ="-0.52628" RotZZ="-0.32780"/>
+  <frame Dist=" 4.86032" RotX="-1.56752" RotY="-0.21343" RotYY="-0.06032" RotZ="-0.44352" RotZZ="-0.30637"/>
+  <frame Dist=" 4.78195" RotX="-1.28793" RotY="-0.25363" RotYY="-0.21314" RotZ="-0.47139" RotZZ="-0.31809"/>
+  <frame Dist=" 4.77534" RotX="-1.21822" RotY="-0.82816" RotYY="-0.38144" RotZ="-0.55630" RotZZ="-0.34478"/>
+  <frame Dist=" 4.83285" RotX="-1.27339" RotY=" 0.18527" RotYY="-0.04271" RotZ="-0.30418" RotZZ="-0.22135"/>
+  <frame Dist=" 4.81428" RotX="-1.19330" RotY="-0.40135" RotYY="-0.22403" RotZ="-0.56635" RotZZ="-0.34688"/>
+  <frame Dist=" 4.67740" RotX="-1.11130" RotY=" 0.53233" RotYY="-0.03302" RotZ="-0.05525" RotZZ="-0.20325"/>
+  <frame Dist=" 4.41535" RotX="-1.29378" RotY=" 1.03020" RotYY=" 0.08462" RotZ="-0.22811" RotZZ="-0.28873"/>
+  <frame Dist=" 4.55460" RotX="-1.72687" RotY=" 1.00814" RotYY=" 0.15043" RotZ="-0.63342" RotZZ="-0.29805"/>
+  <frame Dist=" 4.58564" RotX="-0.72111" RotY=" 0.77823" RotYY=" 0.09458" RotZ=" 0.33457" RotZZ="-0.15822"/>
+  <frame Dist=" 4.71038" RotX="-1.13462" RotY=" 0.55013" RotYY="-0.03116" RotZ="-0.12863" RotZZ="-0.22097"/>
+  <frame Dist=" 4.45654" RotX="-1.01789" RotY=" 0.89163" RotYY=" 0.08270" RotZ=" 0.07563" RotZZ="-0.24200"/>
+  <frame Dist=" 4.58261" RotX="-1.36509" RotY=" 0.66262" RotYY="-0.01600" RotZ="-0.23524" RotZZ="-0.31210"/>
+  <frame Dist=" 4.87920" RotX="-1.28447" RotY="-0.36121" RotYY="-0.20211" RotZ="-0.45375" RotZZ="-0.31570"/>
+  <frame Dist=" 4.85792" RotX="-1.08829" RotY="-0.49416" RotYY="-0.35809" RotZ="-0.52786" RotZZ="-0.31327"/>
+  <frame Dist=" 4.85470" RotX="-1.38853" RotY="-0.25323" RotYY="-0.09484" RotZ="-0.47930" RotZZ="-0.29306"/>
+  <frame Dist=" 4.83453" RotX="-1.19610" RotY=" 0.42762" RotYY=" 0.06729" RotZ="-0.18355" RotZZ="-0.31092"/>
+  <frame Dist=" 4.79791" RotX="-1.39675" RotY="-0.00237" RotYY=" 0.06811" RotZ="-0.39566" RotZZ="-0.29615"/>
+  <frame Dist=" 4.85786" RotX="-1.55895" RotY=" 0.13580" RotYY=" 0.05531" RotZ="-0.44512" RotZZ="-0.32203"/>
+  <frame Dist=" 4.91442" RotX="-1.44538" RotY="-0.50185" RotYY="-0.16679" RotZ="-0.47267" RotZZ="-0.27477"/>
+  <frame Dist=" 4.85676" RotX="-1.30287" RotY="-0.45812" RotYY="-0.18725" RotZ="-0.41695" RotZZ="-0.28963"/>
+  <frame Dist=" 4.83293" RotX="-1.23888" RotY="-0.45245" RotYY="-0.29112" RotZ="-0.42531" RotZZ="-0.34358"/>
+  <frame Dist=" 4.83190" RotX="-1.29518" RotY="-0.38979" RotYY="-0.12161" RotZ="-0.63183" RotZZ="-0.28808"/>
+  <frame Dist=" 4.81782" RotX="-1.28281" RotY="-0.18571" RotYY="-0.02495" RotZ="-0.48014" RotZZ="-0.32888"/>
+  <frame Dist=" 4.84734" RotX="-1.36559" RotY="-0.69971" RotYY="-0.33618" RotZ="-0.52996" RotZZ="-0.33466"/>
+  <frame Dist=" 4.86613" RotX="-1.19400" RotY="-0.78898" RotYY="-0.37938" RotZ="-0.58333" RotZZ="-0.31491"/>
+  <frame Dist=" 4.82269" RotX="-1.46905" RotY="-0.46759" RotYY="-0.17327" RotZ="-0.51073" RotZZ="-0.29931"/>
+  <frame Dist=" 4.77071" RotX="-1.57810" RotY="-0.36082" RotYY="-0.09827" RotZ="-0.49635" RotZZ="-0.30116"/>
+  <frame Dist=" 4.83073" RotX="-1.66597" RotY="-0.47350" RotYY="-0.04890" RotZ="-0.31374" RotZZ="-0.33620"/>
+  <frame Dist=" 4.90652" RotX="-1.53294" RotY="-0.29035" RotYY="-0.17467" RotZ="-0.38920" RotZZ="-0.26919"/>
+  <frame Dist=" 4.77740" RotX="-1.61395" RotY="-0.25158" RotYY="-0.02480" RotZ="-0.44687" RotZZ="-0.32390"/>
+  <frame Dist=" 4.84561" RotX="-1.36333" RotY="-0.56178" RotYY="-0.30185" RotZ="-0.60850" RotZZ="-0.33074"/>
+  <frame Dist=" 4.72795" RotX="-1.77106" RotY="-0.13067" RotYY=" 0.07065" RotZ="-0.42331" RotZZ="-0.28900"/>
+  <frame Dist=" 4.87411" RotX="-1.22498" RotY="-0.34661" RotYY="-0.19486" RotZ="-0.52277" RotZZ="-0.28306"/>
+  <frame Dist=" 4.81434" RotX="-1.46616" RotY="-0.49158" RotYY="-0.17447" RotZ="-0.66241" RotZZ="-0.36614"/>
+  <frame Dist=" 4.76600" RotX="-1.47752" RotY="-0.10763" RotYY="-0.11297" RotZ="-0.55258" RotZZ="-0.34127"/>
+  <frame Dist=" 4.74899" RotX="-1.15867" RotY="-0.33590" RotYY="-0.20108" RotZ="-0.43740" RotZZ="-0.26963"/>
+  <frame Dist=" 4.90166" RotX="-1.24469" RotY="-0.35777" RotYY="-0.15513" RotZ="-0.56269" RotZZ="-0.30269"/>
+  <frame Dist=" 4.79423" RotX="-1.22319" RotY="-0.38873" RotYY="-0.25438" RotZ="-0.42411" RotZZ="-0.30424"/>
+  <frame Dist=" 4.85908" RotX="-1.37169" RotY="-0.33661" RotYY="-0.07793" RotZ="-0.31047" RotZZ="-0.23807"/>
+  <frame Dist=" 4.85058" RotX="-1.59989" RotY="-0.29200" RotYY="-0.08207" RotZ="-0.24828" RotZZ="-0.29356"/>
+  <frame Dist=" 4.79723" RotX="-1.69452" RotY=" 0.09167" RotYY=" 0.19018" RotZ="-0.37854" RotZZ="-0.30291"/>
+  <frame Dist=" 4.85061" RotX="-1.16338" RotY="-0.46701" RotYY="-0.28488" RotZ="-0.61966" RotZZ="-0.35526"/>
+  <frame Dist=" 4.79790" RotX="-1.19443" RotY="-0.55523" RotYY="-0.33648" RotZ="-0.55221" RotZZ="-0.29049"/>
+  <frame Dist=" 4.87480" RotX="-1.57759" RotY="-0.32544" RotYY="-0.15950" RotZ="-0.29554" RotZZ="-0.24248"/>
+  <frame Dist=" 4.86911" RotX="-1.38523" RotY="-0.48458" RotYY="-0.25041" RotZ="-0.62452" RotZZ="-0.31426"/>
+  <frame Dist=" 4.88936" RotX="-1.26079" RotY="-0.27387" RotYY="-0.10419" RotZ="-0.59564" RotZZ="-0.27984"/>
+  <frame Dist=" 4.82162" RotX="-1.29568" RotY="-0.60204" RotYY="-0.22787" RotZ="-0.50504" RotZZ="-0.27522"/>
+  <frame Dist=" 4.86958" RotX="-1.23794" RotY="-0.53158" RotYY="-0.21490" RotZ="-0.58262" RotZZ="-0.33346"/>
+  <frame Dist=" 4.80012" RotX="-1.47507" RotY="-0.37905" RotYY="-0.10684" RotZ="-0.44122" RotZZ="-0.30594"/>
+  <frame Dist=" 4.83735" RotX="-1.27753" RotY="-0.20372" RotYY="-0.05848" RotZ="-0.50278" RotZZ="-0.25864"/>
+  <frame Dist=" 4.82856" RotX="-1.18588" RotY="-0.51904" RotYY="-0.27028" RotZ="-0.53127" RotZZ="-0.30430"/>
+  <frame Dist=" 4.86687" RotX="-1.50242" RotY="-0.08980" RotYY=" 0.07556" RotZ="-0.43367" RotZZ="-0.30693"/>
+  <frame Dist=" 4.88117" RotX="-1.67438" RotY="-0.52482" RotYY="-0.21832" RotZ="-0.21354" RotZZ="-0.29201"/>
+  <frame Dist=" 4.84862" RotX="-1.57017" RotY="-0.20510" RotYY="-0.09837" RotZ="-0.43159" RotZZ="-0.33956"/>
+  <frame Dist=" 4.70700" RotX="-1.08079" RotY="-0.54414" RotYY="-0.28641" RotZ="-0.61251" RotZZ="-0.31641"/>
+  <frame Dist=" 4.84666" RotX="-1.41133" RotY="-0.24845" RotYY="-0.14352" RotZ="-0.48610" RotZZ="-0.28254"/>
+  <frame Dist=" 4.81021" RotX="-1.16373" RotY="-0.39303" RotYY="-0.26149" RotZ="-0.66967" RotZZ="-0.33729"/>
+  <frame Dist=" 4.83718" RotX="-1.58816" RotY="-0.18729" RotYY="-0.00677" RotZ="-0.41250" RotZZ="-0.31158"/>
+  <frame Dist=" 4.79910" RotX="-1.28440" RotY="-0.31763" RotYY="-0.16244" RotZ="-0.49519" RotZZ="-0.32500"/>
+  <frame Dist=" 4.87508" RotX="-1.23444" RotY="-0.58022" RotYY="-0.24102" RotZ="-0.68420" RotZZ="-0.35622"/>
+  <frame Dist=" 4.79778" RotX="-1.35247" RotY="-0.43832" RotYY="-0.11865" RotZ="-0.45511" RotZZ="-0.27194"/>
+  <frame Dist=" 4.85565" RotX="-1.49055" RotY="-0.48691" RotYY="-0.10223" RotZ="-0.51961" RotZZ="-0.32255"/>
+  <frame Dist=" 4.79689" RotX="-1.40544" RotY="-0.32453" RotYY="-0.25714" RotZ="-0.39703" RotZZ="-0.33111"/>
+  <frame Dist=" 4.84765" RotX="-1.24819" RotY="-0.29524" RotYY="-0.28042" RotZ="-0.41401" RotZZ="-0.32275"/>
+  <frame Dist=" 4.82246" RotX="-1.02697" RotY="-0.31154" RotYY="-0.31710" RotZ="-0.60054" RotZZ="-0.31376"/>
+  <frame Dist=" 4.91319" RotX="-1.21118" RotY="-0.37617" RotYY="-0.26926" RotZ="-0.54714" RotZZ="-0.29287"/>
+  <frame Dist=" 4.82340" RotX="-1.68691" RotY="-0.02557" RotYY=" 0.12835" RotZ="-0.48064" RotZZ="-0.34107"/>
+  <frame Dist=" 4.87404" RotX="-1.36166" RotY="-0.47567" RotYY="-0.22527" RotZ="-0.52883" RotZZ="-0.35388"/>
+  <frame Dist=" 4.90188" RotX="-1.52087" RotY="-0.17566" RotYY="-0.13001" RotZ="-0.37838" RotZZ="-0.29553"/>
+  <frame Dist=" 4.83622" RotX="-1.28882" RotY="-0.43360" RotYY="-0.18370" RotZ="-0.53248" RotZZ="-0.31401"/>
+  <frame Dist=" 4.76856" RotX="-1.64409" RotY="-0.61662" RotYY="-0.28062" RotZ="-0.23550" RotZZ="-0.31757"/>
+  <frame Dist=" 4.90868" RotX="-1.71711" RotY="-0.04834" RotYY="-0.03126" RotZ="-0.35122" RotZZ="-0.26376"/>
+  <frame Dist=" 4.85315" RotX="-1.47794" RotY="-0.15491" RotYY="-0.04945" RotZ="-0.34780" RotZZ="-0.31310"/>
+  <frame Dist=" 4.77338" RotX="-1.26933" RotY="-0.44089" RotYY="-0.20203" RotZ="-0.57888" RotZZ="-0.31502"/>
+  <frame Dist=" 4.93041" RotX="-1.48149" RotY="-0.58860" RotYY="-0.26542" RotZ="-0.43038" RotZZ="-0.29976"/>
+  <frame Dist=" 4.90822" RotX="-1.43682" RotY="-0.38955" RotYY="-0.04779" RotZ="-0.40115" RotZZ="-0.30991"/>
+  <frame Dist=" 4.90029" RotX="-1.45680" RotY="-0.08005" RotYY="-0.08454" RotZ="-0.50381" RotZZ="-0.33245"/>
+  <frame Dist=" 4.81703" RotX="-1.51580" RotY="-0.14046" RotYY="-0.10389" RotZ="-0.38625" RotZZ="-0.32137"/>
+  <frame Dist=" 4.86009" RotX="-1.36239" RotY="-0.44412" RotYY="-0.11574" RotZ="-0.48247" RotZZ="-0.27128"/>
+  <frame Dist=" 4.74489" RotX="-1.19878" RotY="-0.52839" RotYY="-0.25080" RotZ="-0.60774" RotZZ="-0.33577"/>
+  <frame Dist=" 4.89970" RotX="-1.62197" RotY="-0.04124" RotYY="-0.06124" RotZ="-0.33155" RotZZ="-0.26185"/>
+  <frame Dist=" 4.85874" RotX="-1.45081" RotY="-0.28926" RotYY="-0.00581" RotZ="-0.47975" RotZZ="-0.29543"/>
+  <frame Dist=" 4.97623" RotX="-1.53568" RotY="-0.33221" RotYY="-0.17174" RotZ="-0.36422" RotZZ="-0.30479"/>
+  <frame Dist=" 4.76887" RotX="-1.43115" RotY="-0.30224" RotYY="-0.19899" RotZ="-0.40027" RotZZ="-0.24413"/>
+  <frame Dist=" 4.75818" RotX="-1.36619" RotY="-0.49206" RotYY="-0.20609" RotZ="-0.55851" RotZZ="-0.32150"/>
+  <frame Dist=" 4.85346" RotX="-1.47534" RotY="-0.32212" RotYY="-0.17664" RotZ="-0.38826" RotZZ="-0.29460"/>
+  <frame Dist=" 4.79726" RotX="-1.30588" RotY="-0.34883" RotYY="-0.19756" RotZ="-0.39155" RotZZ="-0.30083"/>
+  <frame Dist=" 4.82476" RotX="-1.57807" RotY=" 0.03412" RotYY=" 0.03827" RotZ="-0.37396" RotZZ="-0.27833"/>
+  <frame Dist=" 4.75415" RotX="-1.39125" RotY="-0.32596" RotYY="-0.16174" RotZ="-0.36293" RotZZ="-0.32974"/>
+  <frame Dist=" 4.69440" RotX="-1.43525" RotY="-0.29508" RotYY="-0.12435" RotZ="-0.36826" RotZZ="-0.29413"/>
+  <frame Dist=" 4.72004" RotX="-1.34576" RotY="-0.61036" RotYY="-0.31245" RotZ="-0.67153" RotZZ="-0.37986"/>
+  <frame Dist=" 4.79795" RotX="-1.36232" RotY="-0.59647" RotYY="-0.26038" RotZ="-0.59353" RotZZ="-0.32518"/>
+  <frame Dist=" 4.77413" RotX="-1.36134" RotY="-0.25869" RotYY="-0.07348" RotZ="-0.32279" RotZZ="-0.25274"/>
+  <frame Dist=" 4.96373" RotX="-1.24934" RotY="-0.57631" RotYY="-0.24195" RotZ="-0.49852" RotZZ="-0.31517"/>
+  <frame Dist=" 4.85263" RotX="-1.24889" RotY="-0.52947" RotYY="-0.33370" RotZ="-0.56591" RotZZ="-0.27765"/>
+  <frame Dist=" 4.81419" RotX="-1.20958" RotY="-0.41659" RotYY="-0.22586" RotZ="-0.62852" RotZZ="-0.29580"/>
+  <frame Dist=" 4.84885" RotX="-1.41646" RotY="-0.25037" RotYY="-0.14401" RotZ="-0.54949" RotZZ="-0.31404"/>
+  <frame Dist=" 4.92803" RotX="-1.54080" RotY="-0.32780" RotYY="-0.05714" RotZ="-0.28645" RotZZ="-0.30521"/>
+  <frame Dist=" 4.87426" RotX="-1.31180" RotY="-0.39510" RotYY="-0.19965" RotZ="-0.46504" RotZZ="-0.32314"/>
+  <frame Dist=" 4.80546" RotX="-1.36009" RotY="-0.32131" RotYY="-0.09431" RotZ="-0.44228" RotZZ="-0.28330"/>
+  <frame Dist=" 4.86375" RotX="-1.51478" RotY="-0.23530" RotYY="-0.05664" RotZ="-0.48273" RotZZ="-0.30321"/>
+  <frame Dist=" 4.75011" RotX="-1.28852" RotY="-0.31190" RotYY="-0.12422" RotZ="-0.49234" RotZZ="-0.32556"/>
+  <frame Dist=" 4.81577" RotX="-1.35060" RotY="-0.56996" RotYY="-0.23461" RotZ="-0.63402" RotZZ="-0.32469"/>
+  <frame Dist=" 4.87385" RotX="-1.53849" RotY="-0.19133" RotYY="-0.08503" RotZ="-0.24829" RotZZ="-0.27905"/>
+  <frame Dist=" 4.84222" RotX="-1.40452" RotY="-0.51163" RotYY="-0.24795" RotZ="-0.49613" RotZZ="-0.30107"/>
+  <frame Dist=" 4.80655" RotX="-1.21158" RotY="-0.41266" RotYY="-0.28048" RotZ="-0.46089" RotZZ="-0.30851"/>
+  <frame Dist=" 4.85550" RotX="-1.30881" RotY="-0.46950" RotYY="-0.19253" RotZ="-0.46161" RotZZ="-0.26646"/>
+  <frame Dist=" 4.76929" RotX="-1.36530" RotY="-0.47469" RotYY="-0.17049" RotZ="-0.53864" RotZZ="-0.33062"/>
+  <frame Dist=" 4.91222" RotX="-1.38165" RotY="-0.39618" RotYY="-0.21211" RotZ="-0.44557" RotZZ="-0.31690"/>
+  <frame Dist=" 4.89615" RotX="-1.07686" RotY="-0.33950" RotYY="-0.20016" RotZ="-0.57246" RotZZ="-0.31606"/>
+  <frame Dist=" 4.76093" RotX="-1.22470" RotY="-0.37414" RotYY="-0.27147" RotZ="-0.45830" RotZZ="-0.33722"/>
+  <frame Dist=" 4.72870" RotX="-1.39918" RotY="-0.45241" RotYY="-0.18323" RotZ="-0.60985" RotZZ="-0.36189"/>
+  <frame Dist=" 4.76213" RotX="-1.17063" RotY="-0.43694" RotYY="-0.27248" RotZ="-0.50865" RotZZ="-0.27044"/>
+  <frame Dist=" 4.81940" RotX="-1.37839" RotY="-0.53250" RotYY="-0.20120" RotZ="-0.41294" RotZZ="-0.29662"/>
+  <frame Dist=" 4.93698" RotX="-1.22520" RotY="-0.63973" RotYY="-0.28148" RotZ="-0.60560" RotZZ="-0.27936"/>
+  <frame Dist=" 4.81239" RotX="-1.17962" RotY="-0.53488" RotYY="-0.28820" RotZ="-0.61047" RotZZ="-0.40343"/>
+  <frame Dist=" 4.69854" RotX="-1.27615" RotY=" 0.49847" RotYY="-0.06229" RotZ="-0.28380" RotZZ="-0.28123"/>
+  <frame Dist=" 4.79334" RotX="-1.38899" RotY="-0.51686" RotYY="-0.30762" RotZ="-0.50634" RotZZ="-0.30052"/>
+  <frame Dist=" 4.81208" RotX="-1.52445" RotY="-0.50984" RotYY="-0.28792" RotZ="-0.47713" RotZZ="-0.31198"/>
+  <frame Dist=" 4.80838" RotX="-1.86522" RotY=" 0.10019" RotYY=" 0.12224" RotZ="-0.54584" RotZZ="-0.31698"/>
+  <frame Dist=" 4.83015" RotX="-1.55539" RotY="-0.16795" RotYY="-0.13725" RotZ="-0.41913" RotZZ="-0.28505"/>
+  <frame Dist=" 4.80135" RotX="-1.29114" RotY="-0.53716" RotYY="-0.21803" RotZ="-0.56642" RotZZ="-0.35319"/>
+  <frame Dist=" 4.81125" RotX="-1.28621" RotY="-0.47482" RotYY="-0.21846" RotZ="-0.43044" RotZZ="-0.28979"/>
+  <frame Dist=" 4.86865" RotX="-1.38353" RotY="-0.69061" RotYY="-0.36527" RotZ="-0.62201" RotZZ="-0.38805"/>
+  <frame Dist=" 4.92816" RotX="-1.57861" RotY="-0.04590" RotYY=" 0.03610" RotZ="-0.47293" RotZZ="-0.29895"/>
+  <frame Dist=" 4.69816" RotX="-1.38649" RotY="-0.25364" RotYY=" 0.03057" RotZ="-0.43960" RotZZ="-0.28074"/>
+  <frame Dist=" 4.85220" RotX="-1.38742" RotY="-0.49911" RotYY="-0.25223" RotZ="-0.42184" RotZZ="-0.33095"/>
+  <frame Dist=" 4.84322" RotX="-1.35757" RotY="-0.46150" RotYY="-0.17410" RotZ="-0.44121" RotZZ="-0.26561"/>
+  <frame Dist=" 4.79622" RotX="-1.42103" RotY="-0.69391" RotYY="-0.32040" RotZ="-0.47896" RotZZ="-0.33192"/>
+  <frame Dist=" 4.83650" RotX="-1.55009" RotY="-0.24068" RotYY="-0.17054" RotZ="-0.34271" RotZZ="-0.24608"/>
+  <frame Dist=" 4.84429" RotX="-1.53504" RotY="-0.42414" RotYY="-0.25525" RotZ="-0.49371" RotZZ="-0.32651"/>
+  <frame Dist=" 4.84193" RotX="-1.25816" RotY="-0.50208" RotYY="-0.21538" RotZ="-0.49836" RotZZ="-0.31285"/>
+  <frame Dist=" 4.79846" RotX="-1.53430" RotY="-0.49781" RotYY="-0.20138" RotZ="-0.52517" RotZZ="-0.34085"/>
+  <frame Dist=" 4.80023" RotX="-1.68527" RotY="-0.30600" RotYY="-0.06780" RotZ="-0.42518" RotZZ="-0.29562"/>
+  <frame Dist=" 4.90526" RotX="-1.41682" RotY="-0.10480" RotYY="-0.08454" RotZ="-0.41836" RotZZ="-0.29411"/>
+  <frame Dist=" 4.90440" RotX="-1.66766" RotY="-0.21357" RotYY="-0.07045" RotZ="-0.46742" RotZZ="-0.30845"/>
+  <frame Dist=" 4.87999" RotX="-1.59590" RotY="-0.02327" RotYY=" 0.01267" RotZ="-0.38641" RotZZ="-0.33632"/>
+  <frame Dist=" 4.84171" RotX="-1.59779" RotY="-0.32690" RotYY="-0.13137" RotZ="-0.25670" RotZZ="-0.27072"/>
+  <frame Dist=" 4.90714" RotX="-1.30393" RotY="-0.25120" RotYY="-0.05887" RotZ="-0.51437" RotZZ="-0.28928"/>
+  <frame Dist=" 4.84290" RotX="-1.38578" RotY="-0.49785" RotYY="-0.20811" RotZ="-0.53390" RotZZ="-0.33607"/>
+  <frame Dist=" 4.91114" RotX="-1.48846" RotY="-0.32850" RotYY="-0.08172" RotZ="-0.52303" RotZZ="-0.28362"/>
+  <frame Dist=" 4.90380" RotX="-1.44038" RotY="-0.27437" RotYY="-0.13343" RotZ="-0.46151" RotZZ="-0.29530"/>
+  <frame Dist=" 4.91147" RotX="-1.33573" RotY="-0.28925" RotYY="-0.22607" RotZ="-0.45161" RotZZ="-0.30925"/>
+  <frame Dist=" 4.85590" RotX="-1.36149" RotY="-0.45491" RotYY="-0.16986" RotZ="-0.67127" RotZZ="-0.30740"/>
+  <frame Dist=" 4.87742" RotX="-1.23648" RotY="-0.13262" RotYY="-0.09459" RotZ="-0.54752" RotZZ="-0.24764"/>
+  <frame Dist=" 4.87726" RotX="-1.48065" RotY="-0.08169" RotYY="-0.07609" RotZ="-0.40764" RotZZ="-0.34223"/>
+  <frame Dist=" 4.81697" RotX="-1.39683" RotY="-0.52395" RotYY="-0.16802" RotZ="-0.50743" RotZZ="-0.30947"/>
+  <frame Dist=" 4.85561" RotX="-1.39147" RotY="-0.40828" RotYY="-0.12771" RotZ="-0.42288" RotZZ="-0.31125"/>
+  <frame Dist=" 4.87682" RotX="-1.30639" RotY="-0.42070" RotYY="-0.19685" RotZ="-0.50363" RotZZ="-0.27811"/>
+  <frame Dist=" 4.75361" RotX="-1.45283" RotY="-0.37858" RotYY="-0.27037" RotZ="-0.43089" RotZZ="-0.34839"/>
+  <frame Dist=" 4.84644" RotX="-1.34203" RotY="-0.42285" RotYY="-0.24507" RotZ="-0.31152" RotZZ="-0.21570"/>
+  <frame Dist=" 4.77665" RotX="-1.37988" RotY="-0.59538" RotYY="-0.21789" RotZ="-0.46669" RotZZ="-0.33333"/>
+  <frame Dist=" 4.87065" RotX="-1.25515" RotY="-0.19466" RotYY=" 0.00565" RotZ="-0.50715" RotZZ="-0.32871"/>
+  <frame Dist=" 4.79455" RotX="-1.19455" RotY="-0.60658" RotYY="-0.33142" RotZ="-0.61381" RotZZ="-0.34722"/>
+  <frame Dist=" 4.82190" RotX="-1.41064" RotY="-0.34132" RotYY="-0.15707" RotZ="-0.39819" RotZZ="-0.28344"/>
+  <frame Dist=" 4.84956" RotX="-1.58925" RotY="-0.10312" RotYY=" 0.03648" RotZ="-0.50790" RotZZ="-0.35119"/>
+  <frame Dist=" 4.84894" RotX="-1.40464" RotY="-0.52679" RotYY="-0.25287" RotZ="-0.43911" RotZZ="-0.33354"/>
+  <frame Dist=" 4.85084" RotX="-1.29992" RotY="-0.43387" RotYY="-0.24465" RotZ="-0.46626" RotZZ="-0.29870"/>
+  <frame Dist=" 4.85468" RotX="-1.49147" RotY="-0.30660" RotYY="-0.16277" RotZ="-0.37551" RotZZ="-0.28623"/>
+  <frame Dist=" 4.85310" RotX="-1.44121" RotY="-0.25489" RotYY="-0.20896" RotZ="-0.43557" RotZZ="-0.31254"/>
+  <frame Dist=" 4.80434" RotX="-1.34353" RotY="-0.61527" RotYY="-0.29176" RotZ="-0.56369" RotZZ="-0.33204"/>
+  <frame Dist=" 4.71186" RotX="-1.35999" RotY="-0.56999" RotYY="-0.24599" RotZ="-0.54320" RotZZ="-0.32443"/>
+  <frame Dist=" 4.76865" RotX="-1.25252" RotY="-0.37375" RotYY="-0.31471" RotZ="-0.59066" RotZZ="-0.40009"/>
+  <frame Dist=" 4.86392" RotX="-1.19155" RotY="-0.56896" RotYY="-0.32462" RotZ="-0.54025" RotZZ="-0.33519"/>
+  <frame Dist=" 4.93128" RotX="-1.57696" RotY="-0.17971" RotYY="-0.09952" RotZ="-0.38859" RotZZ="-0.30434"/>
+  <frame Dist=" 4.82766" RotX="-1.41151" RotY="-0.64695" RotYY="-0.21470" RotZ="-0.59050" RotZZ="-0.33667"/>
+  <frame Dist=" 4.80452" RotX="-1.58015" RotY="-0.36657" RotYY="-0.15034" RotZ="-0.40800" RotZZ="-0.31703"/>
+  <frame Dist=" 4.81971" RotX="-1.45379" RotY="-0.45223" RotYY="-0.16108" RotZ="-0.46940" RotZZ="-0.32266"/>
+  <frame Dist=" 4.96588" RotX="-1.42388" RotY="-0.35906" RotYY="-0.14835" RotZ="-0.48396" RotZZ="-0.26305"/>
+  <frame Dist=" 4.82010" RotX="-1.56073" RotY="-0.27801" RotYY="-0.05006" RotZ="-0.42263" RotZZ="-0.34489"/>
+  <frame Dist=" 4.68999" RotX="-1.44640" RotY="-0.67362" RotYY="-0.29323" RotZ="-0.50106" RotZZ="-0.30843"/>
+  <frame Dist=" 4.79623" RotX="-1.20624" RotY="-0.58138" RotYY="-0.27660" RotZ="-0.66921" RotZZ="-0.35700"/>
+  <frame Dist=" 4.79467" RotX="-1.53085" RotY="-0.13607" RotYY="-0.00038" RotZ="-0.41239" RotZZ="-0.29328"/>
+  <frame Dist=" 4.82429" RotX="-0.99176" RotY="-0.58856" RotYY="-0.29404" RotZ="-0.51887" RotZZ="-0.27168"/>
+  <frame Dist=" 4.86146" RotX="-1.97721" RotY=" 0.31402" RotYY=" 0.24235" RotZ="-0.48876" RotZZ="-0.29530"/>
+  <frame Dist=" 4.80937" RotX="-1.38613" RotY="-0.29843" RotYY="-0.07002" RotZ="-0.30220" RotZZ="-0.25369"/>
+  <frame Dist=" 4.81386" RotX="-1.39824" RotY="-0.14242" RotYY="-0.10443" RotZ="-0.37114" RotZZ="-0.32707"/>
+  <frame Dist=" 4.89694" RotX="-1.15355" RotY="-0.34616" RotYY="-0.18832" RotZ="-0.43872" RotZZ="-0.26014"/>
+  <frame Dist=" 4.87282" RotX="-1.32017" RotY="-0.23221" RotYY="-0.14162" RotZ="-0.42845" RotZZ="-0.31156"/>
+  <frame Dist=" 4.86052" RotX="-1.32436" RotY="-0.32856" RotYY="-0.23133" RotZ="-0.41396" RotZZ="-0.29600"/>
+  <frame Dist=" 4.86878" RotX="-1.47733" RotY="-0.37947" RotYY="-0.12204" RotZ="-0.46029" RotZZ="-0.30211"/>
+  <frame Dist=" 4.84134" RotX="-1.66532" RotY="-0.16331" RotYY="-0.02832" RotZ="-0.32379" RotZZ="-0.29644"/>
+  <frame Dist=" 4.78769" RotX="-1.73303" RotY="-0.04664" RotYY=" 0.14756" RotZ="-0.41896" RotZZ="-0.32438"/>
+  <frame Dist=" 4.88911" RotX="-1.43246" RotY="-0.24005" RotYY="-0.11799" RotZ="-0.42472" RotZZ="-0.29274"/>
+  <frame Dist=" 4.85881" RotX="-1.38234" RotY="-0.14361" RotYY="-0.12434" RotZ="-0.47780" RotZZ="-0.31121"/>
+  <frame Dist=" 4.82024" RotX="-1.42894" RotY="-0.43406" RotYY="-0.16431" RotZ="-0.49855" RotZZ="-0.34274"/>
+  <frame Dist=" 4.68083" RotX="-1.28641" RotY="-0.41573" RotYY="-0.19353" RotZ="-0.57994" RotZZ="-0.32348"/>
+  <frame Dist=" 4.81121" RotX="-1.44155" RotY="-0.35825" RotYY="-0.07108" RotZ="-0.41587" RotZZ="-0.27005"/>
+  <frame Dist=" 4.78382" RotX="-1.47398" RotY="-0.30040" RotYY="-0.12933" RotZ="-0.42464" RotZZ="-0.25960"/>
+  <frame Dist=" 4.90101" RotX="-1.31142" RotY="-0.27649" RotYY="-0.14015" RotZ="-0.43217" RotZZ="-0.29895"/>
+  <frame Dist=" 4.73394" RotX="-1.62851" RotY="-0.25702" RotYY="-0.04845" RotZ="-0.30945" RotZZ="-0.28413"/>
+  <frame Dist=" 4.77405" RotX="-1.10955" RotY="-0.54935" RotYY="-0.34258" RotZ="-0.67071" RotZZ="-0.32061"/>
+  <frame Dist=" 4.79762" RotX="-1.35363" RotY="-0.42437" RotYY="-0.17863" RotZ="-0.53062" RotZZ="-0.29819"/>
+  <frame Dist=" 4.83886" RotX="-1.65995" RotY="-0.23767" RotYY="-0.02986" RotZ="-0.38687" RotZZ="-0.27873"/>
+  <frame Dist=" 4.86918" RotX="-1.20951" RotY="-0.55771" RotYY="-0.26658" RotZ="-0.65352" RotZZ="-0.36124"/>
+  <frame Dist=" 4.80914" RotX="-1.14130" RotY="-0.50729" RotYY="-0.26754" RotZ="-0.51857" RotZZ="-0.31219"/>
+  <frame Dist=" 4.80267" RotX="-1.11559" RotY="-0.60527" RotYY="-0.26035" RotZ="-0.60132" RotZZ="-0.32442"/>
+  <frame Dist=" 4.84322" RotX="-1.34039" RotY="-0.30061" RotYY="-0.10160" RotZ="-0.40113" RotZZ="-0.32409"/>
+  <frame Dist=" 4.83367" RotX="-1.51386" RotY="-0.32814" RotYY="-0.10459" RotZ="-0.45350" RotZZ="-0.28869"/>
+  <frame Dist=" 4.81045" RotX="-1.41829" RotY="-0.49531" RotYY="-0.13138" RotZ="-0.45006" RotZZ="-0.30789"/>
+  <frame Dist=" 4.83897" RotX="-1.46096" RotY="-0.50415" RotYY="-0.23739" RotZ="-0.53746" RotZZ="-0.29320"/>
+  <frame Dist=" 4.88232" RotX="-1.48166" RotY="-0.21800" RotYY="-0.08208" RotZ="-0.42885" RotZZ="-0.29647"/>
+  <frame Dist=" 4.79937" RotX="-1.48126" RotY="-0.23650" RotYY="-0.06256" RotZ="-0.43178" RotZZ="-0.29327"/>
+  <frame Dist=" 4.93252" RotX="-1.54769" RotY="-0.63438" RotYY="-0.15690" RotZ="-0.44067" RotZZ="-0.29096"/>
+  <frame Dist=" 4.88734" RotX="-1.30344" RotY="-0.12149" RotYY="-0.00837" RotZ="-0.43984" RotZZ="-0.27394"/>
+  <frame Dist=" 4.81728" RotX="-1.41772" RotY="-0.07924" RotYY="-0.06477" RotZ="-0.50377" RotZZ="-0.28401"/>
+  <frame Dist=" 4.85900" RotX="-1.44811" RotY="-0.22062" RotYY="-0.02838" RotZ="-0.48324" RotZZ="-0.32071"/>
+  <frame Dist=" 4.80849" RotX="-1.52260" RotY="-0.31989" RotYY="-0.15072" RotZ="-0.36088" RotZZ="-0.31599"/>
+  <frame Dist=" 4.80894" RotX="-1.64351" RotY="-0.33434" RotYY="-0.04541" RotZ="-0.39736" RotZZ="-0.37715"/>
+  <frame Dist=" 4.92154" RotX="-1.35055" RotY="-0.53575" RotYY="-0.24315" RotZ="-0.48909" RotZZ="-0.31863"/>
+  <frame Dist=" 4.88307" RotX="-1.39050" RotY="-0.32312" RotYY="-0.11030" RotZ="-0.54976" RotZZ="-0.28394"/>
+  <frame Dist=" 4.88405" RotX="-1.45551" RotY="-0.45769" RotYY="-0.15712" RotZ="-0.32242" RotZZ="-0.26902"/>
+  <frame Dist=" 4.80415" RotX="-1.20762" RotY="-0.67941" RotYY="-0.32096" RotZ="-0.62522" RotZZ="-0.34915"/>
+  <frame Dist=" 4.78649" RotX="-1.39188" RotY="-0.53181" RotYY="-0.17695" RotZ="-0.47138" RotZZ="-0.29458"/>
+  <frame Dist=" 4.83615" RotX="-1.02839" RotY="-0.66114" RotYY="-0.41738" RotZ="-0.77555" RotZZ="-0.35556"/>
+  <frame Dist=" 4.79338" RotX="-1.13590" RotY="-0.33468" RotYY="-0.12809" RotZ="-0.52387" RotZZ="-0.28213"/>
+  <frame Dist=" 4.79891" RotX="-1.40245" RotY="-0.51493" RotYY="-0.20406" RotZ="-0.52833" RotZZ="-0.32629"/>
+  <frame Dist=" 4.77087" RotX="-1.41168" RotY="-0.36055" RotYY="-0.00720" RotZ="-0.55568" RotZZ="-0.30705"/>
+  <frame Dist=" 4.85340" RotX="-1.72994" RotY="-0.01279" RotYY="-0.01772" RotZ="-0.36010" RotZZ="-0.36390"/>
+  <frame Dist=" 4.95456" RotX="-1.35478" RotY="-0.41278" RotYY="-0.08943" RotZ="-0.42431" RotZZ="-0.23338"/>
+  <frame Dist=" 4.86455" RotX="-1.44917" RotY="-0.15449" RotYY="-0.07014" RotZ="-0.48945" RotZZ="-0.30179"/>
+  <frame Dist=" 4.87741" RotX="-1.23344" RotY="-0.63946" RotYY="-0.35701" RotZ="-0.64863" RotZZ="-0.38259"/>
+  <frame Dist=" 4.74346" RotX="-1.70887" RotY="-0.03472" RotYY=" 0.10386" RotZ="-0.37807" RotZZ="-0.30394"/>
+  <frame Dist=" 4.84262" RotX="-1.42563" RotY="-0.43705" RotYY="-0.24874" RotZ="-0.47635" RotZZ="-0.30828"/>
+  <frame Dist=" 4.84639" RotX="-1.43417" RotY=" 0.01985" RotYY="-0.09546" RotZ="-0.42467" RotZZ="-0.31295"/>
+  <frame Dist=" 4.81708" RotX="-1.32205" RotY="-0.37801" RotYY="-0.19078" RotZ="-0.53734" RotZZ="-0.29941"/>
+  <frame Dist=" 4.82908" RotX="-1.16765" RotY="-0.46801" RotYY="-0.24289" RotZ="-0.64197" RotZZ="-0.35359"/>
+  <frame Dist=" 4.84036" RotX="-1.20565" RotY="-0.57575" RotYY="-0.28298" RotZ="-0.48583" RotZZ="-0.31230"/>
+  <frame Dist=" 4.82110" RotX="-1.46747" RotY="-0.26426" RotYY="-0.03192" RotZ="-0.31746" RotZZ="-0.24874"/>
+  <frame Dist=" 4.85025" RotX="-1.38517" RotY="-0.62693" RotYY="-0.30551" RotZ="-0.60393" RotZZ="-0.32779"/>
+  <frame Dist=" 4.86495" RotX="-1.20837" RotY="-0.34500" RotYY="-0.19784" RotZ="-0.60702" RotZZ="-0.31377"/>
+  <frame Dist=" 4.88972" RotX="-1.47860" RotY="-0.28636" RotYY="-0.09315" RotZ="-0.40457" RotZZ="-0.27613"/>
+  <frame Dist=" 4.86370" RotX="-1.13949" RotY="-0.26382" RotYY="-0.14869" RotZ="-0.55170" RotZZ="-0.30449"/>
+  <frame Dist=" 4.79646" RotX="-1.31258" RotY="-0.32624" RotYY="-0.15967" RotZ="-0.50048" RotZZ="-0.33203"/>
+  <frame Dist=" 4.81222" RotX="-1.02188" RotY="-0.71591" RotYY="-0.36321" RotZ="-0.62721" RotZZ="-0.32622"/>
+  <frame Dist=" 4.79084" RotX="-1.11312" RotY="-0.48507" RotYY="-0.23569" RotZ="-0.75457" RotZZ="-0.34538"/>
+  <frame Dist=" 4.88385" RotX="-1.18852" RotY="-0.44672" RotYY="-0.21508" RotZ="-0.52983" RotZZ="-0.27326"/>
+  <frame Dist=" 4.83385" RotX="-1.56532" RotY="-0.17538" RotYY="-0.13236" RotZ="-0.30367" RotZZ="-0.27886"/>
+  <frame Dist=" 4.93875" RotX="-1.34072" RotY="-0.20608" RotYY="-0.12416" RotZ="-0.48832" RotZZ="-0.26447"/>
+  <frame Dist=" 4.83383" RotX="-1.39759" RotY="-0.33094" RotYY="-0.19153" RotZ="-0.36333" RotZZ="-0.26756"/>
+  <frame Dist=" 4.87287" RotX="-1.23393" RotY="-0.34298" RotYY="-0.17251" RotZ="-0.48733" RotZZ="-0.25240"/>
+  <frame Dist=" 4.84547" RotX="-1.36784" RotY="-0.36027" RotYY="-0.15434" RotZ="-0.43384" RotZZ="-0.33015"/>
+  <frame Dist=" 4.78653" RotX="-1.44657" RotY="-0.26652" RotYY="-0.14435" RotZ="-0.35928" RotZZ="-0.28169"/>
+  <frame Dist=" 4.80009" RotX="-1.31481" RotY="-0.08574" RotYY="-0.05041" RotZ="-0.43288" RotZZ="-0.27825"/>
+  <frame Dist=" 4.81086" RotX="-1.48719" RotY="-0.22556" RotYY="-0.05365" RotZ="-0.37981" RotZZ="-0.27601"/>
+  <frame Dist=" 4.85983" RotX="-1.22771" RotY="-0.26409" RotYY="-0.16763" RotZ="-0.40948" RotZZ="-0.25986"/>
+  <frame Dist=" 4.81575" RotX="-1.42142" RotY="-0.59326" RotYY="-0.28490" RotZ="-0.45105" RotZZ="-0.27921"/>
+  <frame Dist=" 4.89061" RotX="-1.45979" RotY="-0.39729" RotYY="-0.09510" RotZ="-0.46398" RotZZ="-0.33440"/>
+  <frame Dist=" 4.82581" RotX="-1.36181" RotY="-0.39006" RotYY="-0.27992" RotZ="-0.61960" RotZZ="-0.37099"/>
+  <frame Dist=" 4.89494" RotX="-1.24348" RotY="-0.52631" RotYY="-0.24503" RotZ="-0.39128" RotZZ="-0.23868"/>
+  <frame Dist=" 4.79389" RotX="-1.43589" RotY="-0.44487" RotYY="-0.19102" RotZ="-0.36472" RotZZ="-0.26093"/>
+  <frame Dist=" 4.80648" RotX="-1.50691" RotY="-0.41412" RotYY="-0.12417" RotZ="-0.45780" RotZZ="-0.25970"/>
+  <frame Dist=" 4.77043" RotX="-1.61530" RotY="-0.05268" RotYY="-0.03933" RotZ="-0.34424" RotZZ="-0.30913"/>
+  <frame Dist=" 4.83209" RotX="-1.46444" RotY="-0.44598" RotYY="-0.16431" RotZ="-0.46224" RotZZ="-0.24147"/>
+  <frame Dist=" 4.78478" RotX="-1.33807" RotY="-0.11843" RotYY="-0.05354" RotZ="-0.35202" RotZZ="-0.25605"/>
+  <frame Dist=" 4.73794" RotX="-1.41939" RotY="-0.06636" RotYY="-0.08103" RotZ="-0.42189" RotZZ="-0.30859"/>
+  <frame Dist=" 4.88978" RotX="-1.39261" RotY="-0.10594" RotYY="-0.00492" RotZ="-0.33562" RotZZ="-0.27284"/>
+  <frame Dist=" 4.78484" RotX="-1.46496" RotY="-0.22523" RotYY="-0.14526" RotZ="-0.45385" RotZZ="-0.30230"/>
+  <frame Dist=" 4.83494" RotX="-1.43051" RotY="-0.21297" RotYY="-0.16237" RotZ="-0.44887" RotZZ="-0.31693"/>
+  <frame Dist=" 4.91232" RotX="-1.16646" RotY="-0.45653" RotYY="-0.20989" RotZ="-0.52733" RotZZ="-0.32131"/>
+  <frame Dist=" 4.79275" RotX="-1.26432" RotY="-0.62125" RotYY="-0.28964" RotZ="-0.57745" RotZZ="-0.32725"/>
+  <frame Dist=" 4.82072" RotX="-1.20695" RotY="-0.44973" RotYY="-0.27238" RotZ="-0.62486" RotZZ="-0.35895"/>
+  <frame Dist=" 4.90134" RotX="-1.16726" RotY="-0.57756" RotYY="-0.24319" RotZ="-0.66902" RotZZ="-0.33122"/>
+  <frame Dist=" 4.84422" RotX="-1.47912" RotY="-0.08681" RotYY=" 0.06899" RotZ="-0.41178" RotZZ="-0.25536"/>
+  <frame Dist=" 4.79616" RotX="-1.22536" RotY="-0.50616" RotYY="-0.31615" RotZ="-0.51955" RotZZ="-0.30530"/>
+  <frame Dist=" 4.77971" RotX="-1.17637" RotY="-0.35068" RotYY="-0.17339" RotZ="-0.52032" RotZZ="-0.34761"/>
+  <frame Dist=" 4.77060" RotX="-1.22785" RotY="-0.57880" RotYY="-0.30662" RotZ="-0.61599" RotZZ="-0.33379"/>
+  <frame Dist=" 4.86445" RotX="-1.46641" RotY="-0.40729" RotYY="-0.22621" RotZ="-0.55911" RotZZ="-0.33811"/>
+  <frame Dist=" 4.68620" RotX="-1.16094" RotY=" 0.48668" RotYY="-0.04068" RotZ="-0.22863" RotZZ="-0.28682"/>
+  <frame Dist=" 4.49450" RotX="-1.82481" RotY=" 0.94737" RotYY=" 0.16686" RotZ="-0.48603" RotZZ="-0.28565"/>
+  <frame Dist=" 4.38792" RotX="-1.66984" RotY=" 1.31862" RotYY=" 0.38572" RotZ="-0.50714" RotZZ="-0.34274"/>
+  <frame Dist=" 4.43450" RotX="-1.91875" RotY=" 1.18152" RotYY=" 0.43430" RotZ="-0.67241" RotZZ="-0.30453"/>
+  <frame Dist=" 4.32956" RotX="-1.63641" RotY=" 1.28034" RotYY=" 0.28562" RotZ="-0.50112" RotZZ="-0.30840"/>
+  <frame Dist=" 4.59399" RotX="-0.77938" RotY=" 0.82937" RotYY=" 0.11582" RotZ=" 0.20814" RotZZ="-0.14964"/>
+  <frame Dist=" 4.54045" RotX="-1.14905" RotY=" 0.92107" RotYY=" 0.07029" RotZ="-0.07912" RotZZ="-0.28660"/>
+  <frame Dist=" 4.63487" RotX="-1.47917" RotY=" 0.77501" RotYY=" 0.03271" RotZ="-0.33948" RotZZ="-0.28629"/>
+  <frame Dist=" 4.48269" RotX="-0.86661" RotY=" 0.80855" RotYY="-0.06624" RotZ=" 0.15694" RotZZ="-0.22326"/>
+  <frame Dist=" 4.59586" RotX="-0.77834" RotY=" 0.87113" RotYY=" 0.07966" RotZ=" 0.27376" RotZZ="-0.14994"/>
+  <frame Dist=" 4.61844" RotX="-1.69525" RotY=" 1.09971" RotYY=" 0.34256" RotZ="-0.50894" RotZZ="-0.24770"/>
+  <frame Dist=" 4.37617" RotX="-0.99600" RotY=" 1.15355" RotYY=" 0.29637" RotZ=" 0.09341" RotZZ="-0.19564"/>
+  <frame Dist=" 4.51130" RotX="-1.07274" RotY=" 0.99389" RotYY=" 0.13607" RotZ=" 0.00685" RotZZ="-0.15189"/>
+  <frame Dist=" 4.59391" RotX="-1.98817" RotY=" 0.87169" RotYY=" 0.12335" RotZ="-0.72029" RotZZ="-0.29434"/>
+  <frame Dist=" 4.37533" RotX="-2.40750" RotY=" 1.02490" RotYY=" 0.40696" RotZ="-0.96265" RotZZ="-0.36751"/>
+  <frame Dist=" 4.83328" RotX="-1.53989" RotY=" 0.26097" RotYY="-0.01480" RotZ="-0.60283" RotZZ="-0.36381"/>
+  <frame Dist=" 4.76507" RotX="-1.52605" RotY="-0.17435" RotYY="-0.12542" RotZ="-0.50554" RotZZ="-0.31031"/>
+  <frame Dist=" 4.83090" RotX="-1.26200" RotY="-0.27820" RotYY="-0.11616" RotZ="-0.50688" RotZZ="-0.31042"/>
+  <frame Dist=" 4.81706" RotX="-1.26096" RotY="-0.58233" RotYY="-0.28450" RotZ="-0.57117" RotZZ="-0.25390"/>
+  <frame Dist=" 4.86119" RotX="-1.43641" RotY="-0.26188" RotYY="-0.03871" RotZ="-0.65659" RotZZ="-0.37856"/>
+  <frame Dist=" 4.79987" RotX="-1.17983" RotY="-0.36870" RotYY="-0.19062" RotZ="-0.68263" RotZZ="-0.30168"/>
+  <frame Dist=" 4.83832" RotX="-1.36760" RotY="-0.35544" RotYY="-0.08684" RotZ="-0.47643" RotZZ="-0.26877"/>
+  <frame Dist=" 4.87082" RotX="-1.19968" RotY="-0.50437" RotYY="-0.25091" RotZ="-0.54966" RotZZ="-0.25811"/>
+  <frame Dist=" 4.95108" RotX="-1.42951" RotY="-0.13844" RotYY="-0.15966" RotZ="-0.51227" RotZZ="-0.27006"/>
+  <frame Dist=" 4.79952" RotX="-1.65485" RotY="-0.32595" RotYY="-0.13940" RotZ="-0.47869" RotZZ="-0.40848"/>
+  <frame Dist=" 4.89419" RotX="-1.40498" RotY="-0.39424" RotYY="-0.15110" RotZ="-0.62104" RotZZ="-0.32664"/>
+  <frame Dist=" 4.84467" RotX="-1.35470" RotY="-0.46585" RotYY="-0.21310" RotZ="-0.58438" RotZZ="-0.33545"/>
+  <frame Dist=" 4.89174" RotX="-1.45108" RotY="-0.44995" RotYY="-0.27551" RotZ="-0.61343" RotZZ="-0.33093"/>
+  <frame Dist=" 4.80000" RotX="-1.37885" RotY="-0.21222" RotYY="-0.13595" RotZ="-0.50457" RotZZ="-0.32852"/>
+  <frame Dist=" 4.83876" RotX="-1.22372" RotY="-0.39336" RotYY="-0.23555" RotZ="-0.51011" RotZZ="-0.30770"/>
+  <frame Dist=" 4.75753" RotX="-1.44941" RotY="-0.63768" RotYY="-0.21193" RotZ="-0.55489" RotZZ="-0.30046"/>
+  <frame Dist=" 4.82076" RotX="-1.31888" RotY="-0.25020" RotYY="-0.23827" RotZ="-0.39868" RotZZ="-0.28246"/>
+  <frame Dist=" 4.82572" RotX="-1.43689" RotY="-0.42783" RotYY="-0.21899" RotZ="-0.55334" RotZZ="-0.32791"/>
+  <frame Dist=" 4.73413" RotX="-1.13539" RotY="-0.53050" RotYY="-0.31740" RotZ="-0.67031" RotZZ="-0.38060"/>
+  <frame Dist=" 4.87101" RotX="-1.42276" RotY="-0.19192" RotYY=" 0.00322" RotZ="-0.41619" RotZZ="-0.22333"/>
+  <frame Dist=" 4.84192" RotX="-1.11392" RotY="-0.50858" RotYY="-0.32545" RotZ="-0.70251" RotZZ="-0.32126"/>
+  <frame Dist=" 4.82964" RotX="-1.51914" RotY="-0.32547" RotYY="-0.10055" RotZ="-0.47658" RotZZ="-0.28756"/>
+  <frame Dist=" 4.86125" RotX="-1.37301" RotY=" 0.28992" RotYY=" 0.03261" RotZ="-0.29626" RotZZ="-0.24426"/>
+  <frame Dist=" 4.79801" RotX="-1.43610" RotY="-0.62597" RotYY="-0.27017" RotZ="-0.41135" RotZZ="-0.31110"/>
+  <frame Dist=" 4.83403" RotX="-1.37905" RotY="-0.53740" RotYY="-0.27361" RotZ="-0.49274" RotZZ="-0.29756"/>
+  <frame Dist=" 4.87812" RotX="-1.52984" RotY="-0.00963" RotYY="-0.07702" RotZ="-0.34513" RotZZ="-0.31533"/>
+  <frame Dist=" 4.82309" RotX="-1.34727" RotY="-0.23976" RotYY="-0.22206" RotZ="-0.46239" RotZZ="-0.36050"/>
+  <frame Dist=" 4.87877" RotX="-1.61346" RotY="-0.01369" RotYY=" 0.14576" RotZ="-0.33996" RotZZ="-0.26392"/>
+  <frame Dist=" 4.88004" RotX="-1.37603" RotY="-0.33644" RotYY="-0.10696" RotZ="-0.48468" RotZZ="-0.28440"/>
+  <frame Dist=" 4.82644" RotX="-1.35753" RotY="-0.43227" RotYY="-0.18648" RotZ="-0.59018" RotZZ="-0.35105"/>
+  <frame Dist=" 4.77418" RotX="-1.34428" RotY="-0.41100" RotYY="-0.10176" RotZ="-0.48353" RotZZ="-0.31860"/>
+  <frame Dist=" 4.70147" RotX="-1.44079" RotY="-0.26355" RotYY=" 0.01848" RotZ="-0.41285" RotZZ="-0.30771"/>
+  <frame Dist=" 4.79253" RotX="-1.44182" RotY="-0.04284" RotYY=" 0.00481" RotZ="-0.34527" RotZZ="-0.30503"/>
+  <frame Dist=" 4.79948" RotX="-1.43113" RotY="-0.21502" RotYY="-0.14662" RotZ="-0.43885" RotZZ="-0.30968"/>
+  <frame Dist=" 4.87124" RotX="-1.55522" RotY=" 0.06494" RotYY=" 0.02524" RotZ="-0.47297" RotZZ="-0.27776"/>
+  <frame Dist=" 4.77772" RotX="-1.20233" RotY="-0.44611" RotYY="-0.13271" RotZ="-0.73554" RotZZ="-0.33068"/>
+  <frame Dist=" 4.82993" RotX="-1.47648" RotY="-0.10283" RotYY=" 0.02052" RotZ="-0.45700" RotZZ="-0.28979"/>
+  <frame Dist=" 4.83455" RotX="-1.59590" RotY="-0.24279" RotYY="-0.01669" RotZ="-0.38859" RotZZ="-0.26753"/>
+  <frame Dist=" 4.82440" RotX="-1.27282" RotY="-0.40475" RotYY="-0.28942" RotZ="-0.50138" RotZZ="-0.31468"/>
+  <frame Dist=" 4.90431" RotX="-1.16204" RotY="-0.52983" RotYY="-0.31341" RotZ="-0.62732" RotZZ="-0.31667"/>
+  <frame Dist=" 4.92134" RotX="-1.18904" RotY="-0.46373" RotYY="-0.27162" RotZ="-0.52042" RotZZ="-0.32565"/>
+  <frame Dist=" 4.78817" RotX="-1.47888" RotY="-0.36465" RotYY="-0.24664" RotZ="-0.41698" RotZZ="-0.32728"/>
+  <frame Dist=" 4.80445" RotX="-1.45729" RotY="-0.32824" RotYY="-0.09007" RotZ="-0.50915" RotZZ="-0.28396"/>
+  <frame Dist=" 4.81617" RotX="-1.29131" RotY="-0.28062" RotYY="-0.11560" RotZ="-0.60187" RotZZ="-0.33440"/>
+  <frame Dist=" 4.80574" RotX="-1.31548" RotY="-0.57493" RotYY="-0.30564" RotZ="-0.49952" RotZZ="-0.33511"/>
+  <frame Dist=" 4.81694" RotX="-1.51149" RotY="-0.54313" RotYY="-0.17821" RotZ="-0.54514" RotZZ="-0.30332"/>
+  <frame Dist=" 4.78333" RotX="-1.47380" RotY="-0.54369" RotYY="-0.15300" RotZ="-0.37040" RotZZ="-0.30246"/>
+  <frame Dist=" 4.85924" RotX="-1.51256" RotY="-0.21070" RotYY=" 0.05795" RotZ="-0.50503" RotZZ="-0.23787"/>
+  <frame Dist=" 4.83949" RotX="-1.22092" RotY="-0.27932" RotYY="-0.21495" RotZ="-0.39883" RotZZ="-0.24210"/>
+  <frame Dist=" 4.71482" RotX="-1.25692" RotY="-0.20685" RotYY="-0.26232" RotZ="-0.64831" RotZZ="-0.36487"/>
+  <frame Dist=" 4.82599" RotX="-1.74304" RotY="-0.20686" RotYY=" 0.09842" RotZ="-0.58803" RotZZ="-0.33115"/>
+  <frame Dist=" 4.83342" RotX="-1.26838" RotY="-0.09404" RotYY="-0.00412" RotZ="-0.60173" RotZZ="-0.31094"/>
+  <frame Dist=" 4.76640" RotX="-1.28566" RotY="-0.57298" RotYY="-0.25085" RotZ="-0.56359" RotZZ="-0.37779"/>
+  <frame Dist=" 4.76149" RotX="-1.54037" RotY=" 0.04200" RotYY=" 0.08102" RotZ="-0.44347" RotZZ="-0.31769"/>
+  <frame Dist=" 4.83498" RotX="-1.34245" RotY="-0.44963" RotYY="-0.12927" RotZ="-0.46296" RotZZ="-0.26821"/>
+  <frame Dist=" 4.82874" RotX="-1.45734" RotY="-0.27405" RotYY="-0.17753" RotZ="-0.52896" RotZZ="-0.35007"/>
+  <frame Dist=" 4.85130" RotX="-1.25542" RotY="-0.36941" RotYY="-0.17073" RotZ="-0.58836" RotZZ="-0.28099"/>
+  <frame Dist=" 4.91697" RotX="-1.27028" RotY="-0.32972" RotYY="-0.19851" RotZ="-0.61001" RotZZ="-0.31801"/>
+  <frame Dist=" 4.82461" RotX="-1.43470" RotY="-0.05965" RotYY=" 0.08677" RotZ="-0.40693" RotZZ="-0.29640"/>
+  <frame Dist=" 4.85210" RotX="-1.45575" RotY="-0.44081" RotYY="-0.18777" RotZ="-0.53868" RotZZ="-0.28531"/>
+  <frame Dist=" 4.78352" RotX="-1.97324" RotY=" 0.32776" RotYY=" 0.35727" RotZ="-0.48785" RotZZ="-0.29942"/>
+  <frame Dist=" 4.80909" RotX="-1.07694" RotY="-0.61007" RotYY="-0.32364" RotZ="-0.70171" RotZZ="-0.34190"/>
+  <frame Dist=" 4.88422" RotX="-1.09461" RotY="-0.18912" RotYY="-0.15483" RotZ="-0.56381" RotZZ="-0.31647"/>
+  <frame Dist=" 4.83257" RotX="-1.35430" RotY="-0.37554" RotYY="-0.14704" RotZ="-0.58276" RotZZ="-0.30511"/>
+  <frame Dist=" 4.80731" RotX="-1.15011" RotY="-0.60929" RotYY="-0.37095" RotZ="-0.72625" RotZZ="-0.33847"/>
+  <frame Dist=" 4.96031" RotX="-1.55323" RotY="-0.26018" RotYY="-0.10673" RotZ="-0.51396" RotZZ="-0.28786"/>
+  <frame Dist=" 4.79298" RotX="-1.44735" RotY="-0.30487" RotYY="-0.06476" RotZ="-0.52258" RotZZ="-0.33283"/>
+  <frame Dist=" 4.75641" RotX="-1.40698" RotY="-0.09397" RotYY=" 0.01899" RotZ="-0.42455" RotZZ="-0.23963"/>
+  <frame Dist=" 4.82801" RotX="-1.12015" RotY="-0.65401" RotYY="-0.37702" RotZ="-0.78754" RotZZ="-0.37602"/>
+  <frame Dist=" 4.77773" RotX="-1.40375" RotY="-0.13179" RotYY="-0.03670" RotZ="-0.52497" RotZZ="-0.31952"/>
+  <frame Dist=" 4.77593" RotX="-1.08324" RotY="-0.44356" RotYY="-0.14379" RotZ="-0.55909" RotZZ="-0.29064"/>
+  <frame Dist=" 4.72321" RotX="-1.34546" RotY="-0.23179" RotYY="-0.25306" RotZ="-0.37704" RotZZ="-0.30437"/>
+  <frame Dist=" 4.82222" RotX="-1.26275" RotY="-0.25374" RotYY="-0.12012" RotZ="-0.45394" RotZZ="-0.27409"/>
+  <frame Dist=" 4.76381" RotX="-0.93885" RotY="-0.62789" RotYY="-0.33187" RotZ="-0.72933" RotZZ="-0.29003"/>
+  <frame Dist=" 4.79802" RotX="-1.35696" RotY="-0.41970" RotYY="-0.13454" RotZ="-0.59186" RotZZ="-0.31530"/>
+  <frame Dist=" 4.82065" RotX="-1.37652" RotY="-0.35244" RotYY="-0.23217" RotZ="-0.63913" RotZZ="-0.33527"/>
+  <frame Dist=" 4.78396" RotX="-1.35115" RotY="-0.31762" RotYY="-0.13099" RotZ="-0.38326" RotZZ="-0.32737"/>
+  <frame Dist=" 4.79049" RotX="-1.25403" RotY="-0.31738" RotYY="-0.18634" RotZ="-0.55313" RotZZ="-0.25188"/>
+  <frame Dist=" 4.83296" RotX="-1.56880" RotY=" 0.11685" RotYY=" 0.20056" RotZ="-0.57906" RotZZ="-0.30882"/>
+  <frame Dist=" 4.89322" RotX="-1.30467" RotY="-0.45192" RotYY="-0.19285" RotZ="-0.51268" RotZZ="-0.32413"/>
+  <frame Dist=" 4.80502" RotX="-1.05666" RotY="-0.44832" RotYY="-0.29021" RotZ="-0.73702" RotZZ="-0.38214"/>
+  <frame Dist=" 4.77380" RotX="-1.47492" RotY="-0.72066" RotYY="-0.33353" RotZ="-0.65360" RotZZ="-0.37669"/>
+  <frame Dist=" 4.78743" RotX="-1.42781" RotY=" 0.12994" RotYY=" 0.13684" RotZ="-0.60943" RotZZ="-0.30459"/>
+  <frame Dist=" 4.78729" RotX="-1.26185" RotY="-0.54238" RotYY="-0.25332" RotZ="-0.55496" RotZZ="-0.32590"/>
+  <frame Dist=" 4.75274" RotX="-1.45737" RotY="-0.30361" RotYY="-0.17231" RotZ="-0.55961" RotZZ="-0.32125"/>
+  <frame Dist=" 4.82482" RotX="-1.41950" RotY="-0.38534" RotYY="-0.22070" RotZ="-0.65692" RotZZ="-0.34069"/>
+  <frame Dist=" 4.80357" RotX="-1.43649" RotY="-0.28372" RotYY="-0.03922" RotZ="-0.56456" RotZZ="-0.31436"/>
+  <frame Dist=" 4.82661" RotX="-1.22318" RotY="-0.68367" RotYY="-0.31423" RotZ="-0.83069" RotZZ="-0.38256"/>
+  <frame Dist=" 4.87045" RotX="-1.34742" RotY="-0.34785" RotYY="-0.20095" RotZ="-0.61726" RotZZ="-0.35690"/>
+  <frame Dist=" 4.79262" RotX="-1.20241" RotY="-0.49013" RotYY="-0.22072" RotZ="-0.66008" RotZZ="-0.35001"/>
+  <frame Dist=" 4.82973" RotX="-1.47238" RotY="-0.47516" RotYY="-0.20394" RotZ="-0.44239" RotZZ="-0.31144"/>
+  <frame Dist=" 4.91888" RotX="-1.32916" RotY="-0.34272" RotYY="-0.16760" RotZ="-0.53873" RotZZ="-0.34235"/>
+  <frame Dist=" 4.85544" RotX="-1.18752" RotY="-0.47223" RotYY="-0.33312" RotZ="-0.47183" RotZZ="-0.36133"/>
+  <frame Dist=" 4.86983" RotX="-1.28032" RotY="-0.42040" RotYY="-0.21052" RotZ="-0.58032" RotZZ="-0.36754"/>
+  <frame Dist=" 4.82165" RotX="-1.44111" RotY="-0.18468" RotYY="-0.08573" RotZ="-0.46175" RotZZ="-0.24401"/>
+  <frame Dist=" 4.74921" RotX="-1.51438" RotY=" 0.08863" RotYY=" 0.07473" RotZ="-0.50579" RotZZ="-0.33611"/>
+  <frame Dist=" 4.82690" RotX="-1.35948" RotY="-0.32313" RotYY="-0.14237" RotZ="-0.40839" RotZZ="-0.23634"/>
+  <frame Dist=" 4.75527" RotX="-1.43336" RotY="-0.09193" RotYY="-0.09235" RotZ="-0.47691" RotZZ="-0.31662"/>
+  <frame Dist=" 4.91940" RotX="-1.15795" RotY="-0.46286" RotYY="-0.26560" RotZ="-0.57197" RotZZ="-0.33480"/>
+  <frame Dist=" 4.84031" RotX="-1.10797" RotY="-0.43004" RotYY="-0.32235" RotZ="-0.60812" RotZZ="-0.34554"/>
+  <frame Dist=" 4.80056" RotX="-1.24597" RotY="-0.43307" RotYY="-0.11939" RotZ="-0.66079" RotZZ="-0.31315"/>
+  <frame Dist=" 4.85384" RotX="-1.40355" RotY="-0.09663" RotYY="-0.10490" RotZ="-0.45493" RotZZ="-0.29946"/>
+  <frame Dist=" 4.76593" RotX="-1.37149" RotY=" 0.03848" RotYY=" 0.05042" RotZ="-0.50754" RotZZ="-0.26264"/>
+  <frame Dist=" 4.83068" RotX="-1.40484" RotY="-0.46458" RotYY="-0.23989" RotZ="-0.57662" RotZZ="-0.30716"/>
+  <frame Dist=" 4.80618" RotX="-1.42363" RotY="-0.30212" RotYY="-0.14040" RotZ="-0.52144" RotZZ="-0.34282"/>
+  <frame Dist=" 4.91828" RotX="-1.44632" RotY="-0.15199" RotYY="-0.01878" RotZ="-0.61908" RotZZ="-0.32560"/>
+  <frame Dist=" 4.84359" RotX="-1.48019" RotY="-0.34138" RotYY="-0.19479" RotZ="-0.49046" RotZZ="-0.29611"/>
+  <frame Dist=" 4.77918" RotX="-1.35569" RotY="-0.31309" RotYY="-0.19135" RotZ="-0.48480" RotZZ="-0.28649"/>
+  <frame Dist=" 4.88132" RotX="-1.33435" RotY="-0.33330" RotYY="-0.11216" RotZ="-0.55900" RotZZ="-0.29103"/>
+  <frame Dist=" 4.79258" RotX="-1.17530" RotY="-0.13577" RotYY="-0.03253" RotZ="-0.41016" RotZZ="-0.24074"/>
+  <frame Dist=" 4.83271" RotX="-1.35939" RotY="-0.35935" RotYY="-0.09152" RotZ="-0.42495" RotZZ="-0.25637"/>
+ </segment>
+</all>

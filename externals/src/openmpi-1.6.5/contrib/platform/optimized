@@ -1,0 +1,3 @@
+enable_mem_debug=no
+enable_mem_profile=no
+enable_debug=no

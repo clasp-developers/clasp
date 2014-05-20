@@ -1,0 +1,27 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Status_f2c 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Status_f2c, MPI_Status_c2f \fP \- Translates a C status into a Fortran status, or vice versa.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Status_f2c(MPI_Fint \fI*f_status\fP, MPI_Status \fI*c_status\fP)
+int MPI_Status_c2f(MPI_Status \fI*c_status\fP, MPI_Fint \fI*f_status\fP)
+
+.fi
+.SH DESCRIPTION
+.ft R
+These two procedures are provided in C to convert from a Fortran status (which is an array of integers) to a C status (which is a structure), and vice versa. The conversion occurs on all the information in \fIstatus\fP, including that which is hidden. That is, no status information is lost in the conversion. 
+.sp
+When using MPI_Status_f2c, if \fIf_status\fP is a valid Fortran status, but not the Fortran value of MPI_STATUS_IGNORE or MPI_STATUSES_IGNORE, then MPI_Status_f2c returns in \fIc_status\fP a valid C status with the same content. If \fIf_status\fP is the Fortran value of MPI_STATUS_IGNORE or MPI_STATUSES_IGNORE, or if \fIf_status\fP is not a valid Fortran status, then the call is erroneous. 
+.sp
+When using MPI_Status_c2f, the opposite conversion is applied. If \fIc_status\fP is MPI_STATUS_IGNORE or MPI_STATUSES_IGNORE, or if \fIc_status\fP is not a valid C status, then the call is erroneous.
+.sp
+The C status has the same source, tag and error code values as the Fortran status, and returns the same answers when queried for count, elements, and cancellation. The conversion function may be called with a Fortran status argument that has an undefined error field, in which case the value of the error field in the C status argument is undefined. 
+.sp
+
+

@@ -1,0 +1,57 @@
+# -*- text -*-
+#
+# Copyright (c) 2008-2009 Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI's OpenFabrics IB CPC
+# support.
+#
+[no cpcs for port]
+No OpenFabrics connection schemes reported that they were able to be
+used on a specific port.  As such, the openib BTL (OpenFabrics
+support) will be disabled for this port.
+
+  Local host:           %s
+  Local device:         %s
+  Local port:           %d
+  CPCs attempted:       %s
+#
+[cpc name not found]
+An invalid CPC name was specified via the btl_openib_cpc_%s MCA 
+parameter.
+
+  Local host:                   %s
+  btl_openib_cpc_%s value: %s
+  Invalid name:                 %s
+  All possible valid names:     %s
+#
+[inline truncated]
+WARNING: The btl_openib_max_inline_data MCA parameter was used to
+specify how much inline data should be used, but a device reduced this
+value.  This is not an error; it simply means that your run will use
+a smaller inline data value than was requested.
+
+  Local host:           %s
+  Local device:         %s
+  Local port:           %d
+  Requested value:      %d
+  Value used by device: %d
+#
+[ibv_create_qp failed]
+A process failed to create a queue pair. This usually means either
+the device has run out of queue pairs (too many connections) or
+there are insufficient resources available to allocate a queue pair
+(out of memory). The latter can happen if either 1) insufficient
+memory is available, or 2) no more physical memory can be registered
+with the device.
+
+For more information on memory registration see the Open MPI FAQs at:
+http://www.open-mpi.org/faq/?category=openfabrics#ib-locked-pages
+
+Local host:             %s
+Local device:           %s
+Queue pair type:        %s

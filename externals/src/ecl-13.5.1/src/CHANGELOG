@@ -1,0 +1,100 @@
+ECL 13.5.1
+==========
+
+* Visible changes:
+
+- ECL now reports #+UNIX for all compatible systems, including *BSD ones.
+
+* Compiler fixes:
+
+- Minor readability improvements in the C code.
+
+- MULTIPLE-VALUE-BIND compiles using MULTIPLE-VALUE-SETQ and now both are
+  better optimized, generating simpler C code.
+
+- The type checking routine for LOGAND was producing spurious warnings.
+
+- (LDB (BYTE ...) ...) no longer conses a BYTE object.
+
+- Added optimizations for MASK-FIELD, DPB, DEPOSIT-FIELD, LDB-TEST and LDB.
+
+- CONSTANT-VALUE-P and friends now use the (compiler) environment.
+
+- No optional type check generated for constant values.
+
+- Declare the temporary variables in DEFMACRO/DESTRUCTURING-BIND as IGNORABLE
+
+- ECL now accepts WHILE/IF before FOR/AS, a construct that is not ANSI
+  An example: (LOOP FOR I IN LIST WHILE (SOME-TEST I) FOR X = (F I) ... )
+
+* Common Lisp fixes:
+
+- CONSTANTP now performs a bit more work, macroexpanding forms.
+
+- ENSURE-DIRECTORIES-EXIST ignores the host and device from the original
+  pathname when creating the directories.
+
+- In FORMAT, printing of floating point numbers could lead to an infinite loop.
+
+- ROUND, FLOOR, CEILING and TRUNCATE have been reorganized and work faster with
+  rational numbers.
+
+- (CONCATENATE 'SIMPLE-BASE-STRING ...) returned an ordinary string.
+
+- MAKE-ARRAY did not terminate strings with #\Null (needed internally by the C
+  code).
+
+- (SETF DOCUMENTATION) did not operate on functions because the function object
+  documentation had precedence over the annotation.
+
+- Added the whole Unicode character database to the C library. This means ECL
+  can now interpret all Unicode character names properly, and print them as
+  well. ECL now also recognizes all ASCII control-character abbreviations
+
+- Print integers using upcase letters for radix > 10
+
+- New functions RATIOP, {SINGLE,SHORT,DOUBLE,LONG}-FLOAT-P help avoid consing
+  in TYPEP
+
+- HASH-TABLE-COUNT did not work with weak hashes: it did not update the count
+  of live cells (Note, however, that this function is by definition not
+  reliable, just a hint, since a garbage collection may happen while the count
+  is being computed)
+
+- ECL no longer uses :READ-ONLY declarations in the SETF expansions because
+  there is code out there that modifies the values variables.
+
+- PROGV can now 'unbind' variables when the list of variables is longer than
+  the list of values.
+
+* CLOS:
+
+- Added built in classes FIXNUM and BIGNUM.
+
+- Eliminated code for accessing slots that was no longer used. Removed also
+  redundant code.
+
+- Updating a class (due to a change in metaclass) now forces updating its
+  children
+
+- UPDATE-INSTANCE-FOR-REDEFINED-CLASS received an alist instead of a
+  propertly-list as last argument
+
+- PRINT-OBJECT did not have a working default for built in classes.
+
+* Extensions:
+
+- SYSTEM must use the POSIX shell, which usually lives in /bin/sh.
+
+- CLX now uses recursive locks.
+
+- ASDF upgraded to version 2.32, including the ASDF-BUNDLE facility, which
+  supersedes ECL's own implementation of precompiled libraries.
+
+- MAKE-INSTANCE, SHARED-INITIALIZE, REINITIALIZE-INSTANCE now work on
+  structures as well.
+
+;;; Local Variables: ***
+;;; mode:text ***
+;;; fill-column:79 ***
+;;; End: ***

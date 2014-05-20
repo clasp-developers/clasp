@@ -1,0 +1,48 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: ^([ 	]*#[ 	]*(include|import)[ 	]*)(KWSYS_HEADER)[ 	]*\(([^),]*)\) KWSYS_HEADER(%)=<cmsys/%>
+
+/Users/meister/Development/cando/externals/src/cmake-2.8.5/Source/kwsys/Process.h.in
+@KWSYS_NAMESPACE@/Configure.h
+-
+
+/Users/meister/Development/cando/externals/src/cmake-2.8.5/Source/kwsys/kwsysPrivate.h
+cmsys/Directory.hxx
+-
+cmsys/std/vector
+-
+
+/Users/meister/Development/cando/externals/src/cmake-2.8.5/Source/kwsys/testProcess.c
+kwsysPrivate.h
+/Users/meister/Development/cando/externals/src/cmake-2.8.5/Source/kwsys/kwsysPrivate.h
+cmsys/Process.h
+-
+Process.h.in
+/Users/meister/Development/cando/externals/src/cmake-2.8.5/Source/kwsys/Process.h.in
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+windows.h
+-
+unistd.h
+-
+be/kernel/OS.h
+-
+
+Source/cmsys/Configure.h
+
+Source/cmsys/Directory.hxx
+cmsys/Configure.h
+-
+
+Source/cmsys/Process.h
+cmsys/Configure.h
+-
+

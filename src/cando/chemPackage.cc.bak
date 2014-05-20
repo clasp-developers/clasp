@@ -1,0 +1,80 @@
+#include "core/common.h"
+#include "core/package.h"
+#include "chemPackage.h"
+#include "candoScript.h"
+#include "candoDatabase.h"
+#include "elements.h"
+
+namespace chem
+{
+//! The default CandoDatabase
+STATIC_PREDEFINED_SYMBOL(_sym_ChemPkg_candoDatabase);
+
+
+
+    void ChemPackage::initializeClasses(core::Lisp_sp lisp) const
+{
+    printf("%s:%d - Here initializing chem classes\n", __FILE__,__LINE__);
+    core::Package_sp cp = lisp->makePackage(this->packageName());
+    lisp->inPackage(this->packageName());
+    lisp->usePackage(CorePkg);
+#define	Use_ChemPkg
+#include "initClasses.inc"
+#undef Use_ChemPkg
+    core::Package_sp up = lisp->getPackage(UserPackage);
+    up->usePackage(cp);
+};
+
+    void ChemPackage::initializeGlobals(core::Lisp_sp lisp) const
+{_F(lisp);
+    setupCandoPrimitives(lisp);
+
+    defNoWrapPackage(ChemPkg,"atomAliases", &core::prim_list ,lisp->lisp());
+    defNoWrapPackage(ChemPkg,"aliasAtoms", &core::prim_list ,lisp->lisp());
+    defNoWrapPackage(ChemPkg,"addPart", &core::prim_list ,lisp->lisp());
+    defNoWrapPackage(ChemPkg,"parts", &core::prim_list ,lisp->lisp());
+    defNoWrapPackage(ChemPkg,"monomerAlias", &core::prim_list ,lisp->lisp());
+
+    initializeElementsAndHybridization(lisp);
+    CandoDatabase_sp cdb = CandoDatabase_O::nil(lisp);
+    CREATE_PREDEFINED_SYMBOL(_sym_ChemPkg_candoDatabase,ChemPkg,"*DATABASE*");
+    _lisp->defvar(_lisp->symbol(_sym_ChemPkg_candoDatabase),cdb);
+}
+
+
+
+
+
+
+CandoDatabase_sp getCandoDatabase(const core::Lisp_sp& lisp)
+{_F(lisp);
+    return _lisp->symbol(_sym_ChemPkg_candoDatabase)->dynamicValue()->as<CandoDatabase_O>();
+}
+
+
+
+
+
+};
+
+
+// Access command line parameters
+
+#if 0
+    if ( vm.count("database") )
+    {
+	dbFileName = vm["database"].as<string>();
+	LOG(BF( "About to open database(%s)")% dbFileName );
+	TRY()
+	{
+	    this->loadCandoDatabase(dbFileName,0);
+	} catch ( core::Condition& err )
+	  {
+	      this->error(err.conditionObject(),this->nil<core::Environment_O>());
+	  } catch (...)
+	    {
+		throw;
+	    }
+    }
+#endif
+

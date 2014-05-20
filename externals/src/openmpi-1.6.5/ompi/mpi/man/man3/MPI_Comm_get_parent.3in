@@ -1,0 +1,62 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Comm_get_parent 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_get_parent\fP \- Returns the parent intercommunicator of current spawned process. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_get_parent(MPI_Comm *\fIparent\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_GET_PARENT(\fIPARENT, IERROR\fP)
+	INTEGER	\fIPARENT, IERROR \fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static MPI::Intercomm MPI::Comm::Get_parent()
+
+
+.fi
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+parent
+The parent communicator (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+If a process was started with MPI_Comm_spawn or MPI_Comm_spawn_multiple, MPI_Comm_get_parent returns the "parent" intercommunicator of the current process. This parent intercommunicator is created implicitly inside of MPI_Init and is the same intercommunicator returned by the spawn call made in the parents. 
+.sp
+If the process was not spawned, MPI_Comm_get_parent returns MPI_COMM_NULL.
+.sp
+After the parent communicator is freed or disconnected, MPI_Comm_get_parent returns MPI_COMM_NULL. 
+
+.SH NOTES
+.ft R
+MPI_Comm_get_parent returns a handle to a single intercommunicator. Calling MPI_Comm_get_parent a second time returns a handle to the same intercommunicator. Freeing the handle with MPI_Comm_disconnect or MPI_Comm_free will cause other references to the intercommunicator to become invalid (dangling). Note that calling MPI_Comm_free on the parent communicator is not useful. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+.nf
+MPI_Comm_spawn
+MPI_Comm_spawn_multiple
+

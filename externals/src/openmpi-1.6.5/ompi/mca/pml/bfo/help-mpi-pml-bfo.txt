@@ -1,0 +1,20 @@
+# -*- text -*-
+#
+# Copyright (c) 2009-2010 Oracle and/or its affiliates.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+[eager_limit_too_small]
+The "eager limit" MCA parameter in the %s BTL was set to a value which
+is too low for Open MPI to function properly.  Please re-run your job
+with a higher eager limit value for this BTL; the exact MCA parameter
+name and its corresponding minimum value is shown below.
+
+  Local host:              %s
+  BTL name:                %s
+  BTL eager limit value:   %d (set via btl_%s_eager_limit)
+  BTL eager limit minimum: %d
+  MCA parameter name:      btl_%s_eager_limit 

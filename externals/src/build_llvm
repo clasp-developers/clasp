@@ -1,0 +1,22 @@
+#!/bin/bash
+BOOST_BUILD_SOURCE_DIR=boost-build-system
+BOOST_SOURCE_DIR=boost
+CC=/usr/bin/clang
+CXX=/usr/bin/clang++
+CXXFLAGS="-std=c++11 -stdlib=libc++ -fvisibility=hidden"
+LDFLAGS=-stdlib=libc++ -headerpad_max_install_names
+LLDB_SOURCE_DIR=lldb
+LLVM_REVISION=207120
+LLVM_SOURCE_DIR=llvm-207120
+MAKEFLAGS=
+MAKELEVEL=1
+MFLAGS=
+REQUIRES_RTTI=1
+RPATH_COMMON_FIX=@executable_path/../Resources/externals/common/lib
+RPATH_DEBUG_FIX=@executable_path/../Resources/externals/debug/lib
+RPATH_RELEASE_FIX=@executable_path/../Resources/externals/release/lib
+WXWIN=
+WX_CONFIG=/bin/wx-config
+ZLIB_SOURCE_DIR=zlib-1.2.8
+_=/usr/bin/make
+(cd llvm-207120/build-debug;../configure)

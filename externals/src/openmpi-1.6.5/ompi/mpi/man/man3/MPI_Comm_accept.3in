@@ -1,0 +1,74 @@
+.\" Copyright 2009, Cisco Systems, Inc.  All rights reserved.
+.\" Copyright 2007, Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Comm_accept 3OpenMPI "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_accept \fP \- Establishes communication with a client. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_accept(char *\fIport_name\fP, MPI_Info \fIinfo\fP, int \fIroot\fP, MPI_Comm \fIcomm\fP, MPI_Comm *\fInewcomm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_ACCEPT(\fIPORT_NAME, INFO, ROOT, COMM, NEWCOMM, IERROR\fP)
+	CHARACTER*(*)	\fIPORT_NAME\fP
+	INTEGER		\fIINFO, ROOT, COMM, NEWCOMM, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Intercomm MPI::Intracomm::Accept(const char* \fIport_name\fP,
+	const MPI::Info& \fIinfo\fP, int \fIroot\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+port_name
+Port name (string, used only on \fIroot\fP).
+.TP 1i
+info
+Options given by root for the accept (handle, used only on root). No options currently supported. 
+.TP 1i
+root
+Rank in \fIcomm\fP of root node (integer).
+.TP 1i
+comm
+Intracommunicator over which call is collective (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newcomm
+Intercommunicator with client as remote group (handle)
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Comm_accept establishes communication with a client. It is collective over the calling communicator. It returns an intercommunicator that allows communication with the client, after the client has connected with the MPI_Comm_accept function using the MPI_Comm_connect function.
+.sp
+The \fIport_name\fP must have been established through a call to MPI_Open_port on the root.
+
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned.  
+.sp
+See the MPI man page for a full list of MPI error codes. 
+
+.SH SEE ALSO
+MPI_Comm_connect
+MPI_Open_port
+.br
+

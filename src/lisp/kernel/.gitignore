@@ -1,0 +1,8 @@
+*.bc
+*.ll
+*.bc-rc
+*.o-min
+*.bc-min
+*.o
+*.o-rc
+*.ll-min-rc

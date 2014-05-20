@@ -1,0 +1,126 @@
+#!/bin/sh
+#
+# Self-contained configure script, that does not rely
+# on cross-compilation, aka no need for a platforms-file.
+#
+# If the below env flags are not set, initialize to default (gcc, std dir on Jaguar)...
+# This file works stand-alone, but is also integrated into the NCCS swtools environment
+#
+
+# Compilation should be done as VPATH
+if [ -d .svn -o -f AUTHORS ] ; then
+    echo WARNING: Should not compile in source directory
+    echo Please create a directory and adapt SRCDIR in this script
+    return
+fi
+
+FLAG=0
+[[ -z ${XTOS_VERSION} ]] && echo "XTOS_VERSION is not set.  Please load the xt-os module" && FLAG=1
+[[ -z ${PE_DIR} ]] && echo "PE_DIR is not set.  Please load the xt-pe module" && FLAG=1
+[[ -z ${SE_DIR} ]] && echo "SE_DIR is not set.  Please load the xt-service module" && FLAG=1
+[[ -z ${MPT_DIR} ]] && echo "MPT_DIR is not set.  Please load the xt-mpt module" && FLAG=1
+[[ -z ${PE_ENV} ]] && echo "PE_ENV is not set.  Please load the PrgEnv module" && FLAG=1
+
+if [ $FLAG -eq 1 ] ; then
+    echo -n "One of the modules was not properly loaded (might want to CTRL-C)."
+    sleep 1 ; echo -n "."
+    sleep 1 ; echo -n "."
+    sleep 1 ; echo -n "."
+    sleep 1 ; echo "."
+fi
+
+
+###################################################################
+
+# If the env flags are not set, initialize to default...
+SRCDIR=${SRCDIR:-..}
+COMPILER=${COMPILER:-gnu}
+INSTALL_ROOT=${INSTALL_ROOT:-/sw/xt5/ompi}
+VERSION=${VERSION:-"`${SRCDIR}/config/ompi_get_version.sh ${SRCDIR}/VERSION`"}
+SVER=${SVER:-"cnl`echo "${XTOS_VERSION}" | cut -c1-3`"}
+CVER=${CVER:-"${COMPILER}`gcc --version  | awk '/gcc/{print $3}'`"}
+
+# The following is all derived
+PREFIX=${PREFIX:-${INSTALL_ROOT}/${VERSION}/${SVER}_${CVER}}
+###################################################################
+
+case "$COMPILER" in
+    "cray" )
+        COMPILER_FLAGS="CC=craycc CXX=crayc++ F77=crayftn FC=crayftn"
+        CFLAGS="-O2 -h cpu=istanbul -h negmsgs ${CFLAGS}"
+        CXXFLAGS="-O2 -h cpu=istanbul -h negmsgs ${CXXFLAGS}"
+        LDFLAGS="${LDFLAGS}"
+        # Static compilation is the default, there is not even a flag...
+        WRAPPER_LDFLAGS=""
+        ;;
+    "gnu" )
+        # No need to specify compiler
+        CFLAGS="-O2 -fomit-frame-pointer ${CFLAGS}"
+        CXXFLAGS="-O2 -fomit-frame-pointer ${CXXFLAGS}"
+        LDFLAGS="${LDFLAGS}"
+        # REQUIRED
+        WRAPPER_LDFLAGS="-static"
+        ;;
+    "intel" )
+        COMPILER_FLAGS="CC=icc CXX=icpc F77=ifort FC=ifort"
+        CFLAGS="-O2 ${CFLAGS}"
+        CXXFLAGS="-O2 ${CXXFLAGS}"
+        FFLAGS="-O2 ${FFLAGS}"
+        FCFLAGS="-O2 ${FCFLAGS}"
+        LDFLAGS="${LDFLAGS}"
+        # REQUIRED
+        WRAPPER_LDFLAGS="-static"
+        ;;
+    "pathscale" )
+        COMPILER_FLAGS="CC=pathcc CXX=pathCC F77=pathf90 FC=pathf90"
+        CFLAGS="-O2 -TARG:processor=barcelona -TARG:sse2=on -TARG:sse3=on ${CFLAGS}"
+        CXXFLAGS="-O2 -TARG:processor=barcelona -TARG:sse2=on -TARG:sse3=on ${CXXFLAGS}"
+        # REQUIRED
+        LDFLAGS="${LDFLAGS}"
+        WRAPPER_LDFLAGS="-static"
+        ;;
+    "pgi" )
+        COMPILER_FLAGS="CC=pgcc CXX=pgCC F77=pgf77 FC=pgf90"
+        CFLAGS="-O2 -tp istanbul-64 ${CFLAGS}"
+        CXXFLAGS="-O2 -tp istanbul-64 ${CXXFLAGS}"
+        # REQUIRED
+        FFLAGS="-Mnomain $PGI/linux86-64/default/lib/pgfmain.o ${FFLAGS}"
+        FCFLAGS="-Mnomain $PGI/linux86-64/default/lib/pgfmain.o ${FCFLAGS}"
+        LDFLAGS="-L$PGI/linux86-64/default/lib ${LDFLAGS}"
+        WRAPPER_LDFLAGS="-Bstatic"
+        ;;
+    * )
+        echo "Error: Unknown Compiler: $COMPILER"
+        return
+        ;;
+esac
+
+
+# If further packages should be disabled, insert
+#   --enable-contrib-no-build=vt --disable-mpi-cxx --disable-io-romio \
+
+$SRCDIR/configure \
+   --prefix=$PREFIX \
+   --enable-static --disable-shared --disable-dlopen --disable-pretty-print-stacktrace --disable-pty-support \
+   --with-threads --with-memory-manager=none \
+   --without-tm --with-alps --with-portals --with-portals-config=xt3-modex \
+   --enable-mca-no-build=maffinity-first_use,maffinity-libnuma,ess-cnos,ess-slurm,ess-slurmd,filem-rsh,grpcomm-cnos,plm-rsh,plm-rshd,plm-slurm,pml-dr,btl-tcp,notifier-twitter,notifier-smtp,pml-csum,pml-v,vprotocol-pessimist,dpm-orte \
+   --with-wrapper-ldflags="-L${PE_DIR}/lib/snos64 -L${SE_DIR}/lib/snos64 -L/opt/xt-mpt/default/lib/snos64/ ${WRAPPER_LDFLAGS}" \
+   --with-wrapper-libs="-lpct -lalpslli -lalpsutil -lportals -lpthread -lm" \
+   --enable-contrib-no-build=vt \
+   ${COMPILER_FLAGS} \
+   CPPFLAGS="-DNDEBUG -I${PE_DIR}/include ${CPPFLAGS}" \
+   CFLAGS="${CFLAGS}" \
+   CXXFLAGS="${CXXFLAGS}" \
+   FFLAGS="-I${PE_DIR}/include ${FFLAGS}" \
+   FCFLAGS="-I${PE_DIR}/include ${FCFLAGS}" \
+   LDFLAGS="-L${PE_DIR}/lib/snos64 -L${SE_DIR}/lib/snos64 -L/opt/xt-mpt/default/lib/snos64/ ${LDFLAGS}" \
+   LIBS="${LIBS} -lpct -lalpslli -lalpsutil -lportals -lpthread -lrt -lm" $* | tee build.log
+
+#
+# To build orted static, use the libtool-flag -all-static
+#
+make -s -j4 orted_LDFLAGS=-all-static all | tee -a build.log
+
+make -s orted_LDFLAGS=-all-static install | tee -a install.log
+

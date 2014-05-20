@@ -1,0 +1,71 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Start 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Start\fP \- Initiates a communication using a persistent request handle.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Start(MPI_Request *\fIrequest\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_START(\fIREQUEST, IERROR\fP)
+	INTEGER	\fIREQUEST, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Prequest::Start()
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+request
+Communication request (handle).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+A communication (send or receive) that uses a persistent request is initiated by the function MPI_Start. 
+.sp
+The argument, request, is a handle returned by one of the persistent communication-request initialization functions (MPI_Send_init, MPI_Bsend_init,  MPI_Ssend_init, MPI_Rsend_init, MPI_Recv_init). The associated request should be inactive and becomes active once the call is made.
+.sp
+If the request is for a send with ready mode, then a matching receive should be posted before the call is made. From the time the call is made until after the operation completes, the communication buffer should not be accessed.
+.sp
+The call is local, with semantics similar to the nonblocking communication operations (see Section 3.7 in the MPI-1 Standard, "Nonblocking Communication.") That is, a call to MPI_Start with a request created by MPI_Send_init starts a communication in the same manner as a call to MPI_Isend; a call to MPI_Start with a request created by MPI_Bsend_init starts a communication in the same manner as a call to MPI_Ibsend; and so on.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Bsend_init
+.br
+MPI_Rsend_init
+.br
+MPI_Send_init
+.br
+MPI_Sssend_init
+.br
+MPI_Recv_init
+.br
+MPI_Startall
+
+

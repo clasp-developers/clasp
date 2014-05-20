@@ -1,0 +1,6 @@
+#! /usr/bin/env python -O
+
+import sys
+import viewers.appViewGraphics
+
+viewers.appViewGraphics.start(sys.argv[1])

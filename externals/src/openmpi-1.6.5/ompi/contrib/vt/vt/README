@@ -1,0 +1,12 @@
+ VampirTrace
+
+VampirTrace consists of a tool set and a run-time library for instrumentation and tracing of software applications. In particular, it is tailored towards parallel and distributed High Performance Computing (HPC) applications. 
+
+The instrumentation part modifies a given application in order to inject additional measurement calls during run-time. The tracing part provides the actual measurement functionality used by the instrumentation calls. By this means, a variety of detailed performance properties can be collected and recorded during run-time.
+
+VampirTrace version is available as open source software under the BSD license, see 'COPYING'. The software comes as a source code package. It can be installed by using autoconf procedures, see 'INSTALL'.
+
+For instructions on how use VampirTrace to instrument application programs so that they produce an OTF event trace when executed, see 'doc/UserManual.pdf'.
+
+Please, report bugs, wishes, and suggestions to
+<vampirsupport@zih.tu-dresden.de>.

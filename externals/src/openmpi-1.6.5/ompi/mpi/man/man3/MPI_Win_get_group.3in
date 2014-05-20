@@ -1,0 +1,52 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_get_group 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_get_group\fP \- Returns a duplicate of the group of the communicator used to create the window. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+MPI_Win_get_group(MPI_Win \fIwin\fP, MPI_Group *\fIgroup\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_GET_GROUP(\fIWIN, GROUP, IERROR\fP)
+	INTEGER \fIWIN, GROUP, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Group MPI::Win::Get_group() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+win
+Window object (handle). 
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+group
+Group of processes that share access to the window (handle). 
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Win_get_group returns a duplicate of the group of the communicator used to create the window associated with \fIwin\fP. The group is returned in \fIgroup\fP. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

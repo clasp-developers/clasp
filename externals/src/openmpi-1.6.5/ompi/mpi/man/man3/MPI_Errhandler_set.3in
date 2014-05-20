@@ -1,0 +1,61 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Errhandler_set 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Errhandler_set \fP \- Sets the error handler for a communicator -- use of this routine is deprecated.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Errhandler_set(MPI_Comm \fIcomm\fP, MPI_Errhandler \fIerrhandler\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ERRHANDLER_SET(\fICOMM, ERRHANDLER, IERROR\fP)
+	INTEGER	\fICOMM, ERRHANDLER, IERROR\fP
+
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm
+Communicator to set the error handler for (handle).
+.TP 1i
+errhandler
+New MPI error handler for communicator (handle).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Note that use of this routine is \fIdeprecated\fP as of MPI-2. Please use MPI_Comm_set_errhandler instead. 
+.sp
+This deprecated routine is not available in C++. 
+.sp
+Associates the new error handler errhandler with communicator comm at the calling process. Note that an error handler is always associated with the communicator. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI::Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Comm_create_errhandler
+.br
+MPI_Comm_get_errhandler
+.br
+MPI_Comm_set_errhandler
+
+

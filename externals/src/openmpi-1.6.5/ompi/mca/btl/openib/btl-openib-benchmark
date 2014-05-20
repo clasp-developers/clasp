@@ -1,0 +1,19 @@
+#
+# These values are suitable for benchmarking with the openib and sm
+# btls with a small number of MPI processes.  If you're only going to
+# use one process per node, remove "sm".  These values are *NOT*
+# scalable to large numbers of processes!
+#
+btl=openib,self,sm
+btl_openib_max_btls=20
+btl_openib_rd_num=128
+btl_openib_rd_low=75
+btl_openib_rd_win=50
+btl_openib_max_eager_rdma=32
+mpool_base_use_mem_hooks=1
+mpi_leave_pinned=1
+#
+# Note that we are not limiting the max free list size, so for netpipe
+# (for example), this is no problem.  But we may want to explore the
+# parameter space for other popular benchmarks.
+#

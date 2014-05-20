@@ -1,0 +1,91 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Query_thread 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Query_thread\fP \- Returns the current level of thread support
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Query_thread(int *\fIprovided\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_QUERY_THREAD(\fIPROVIDED, IERROR\fP)
+	INTEGER	\fIPROVIDED, IERROR \fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int MPI::Query_thread()
+
+.fi
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+provided
+C/Fortran only: Level of thread support (integer). 
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This routine returns in \fIprovided\fP the current level of thread
+support. If MPI was initialized by a call to MPI_Init_thread,
+\fIprovided\fP will have the same value as was returned by that
+function.
+.sp
+The possible values of \fIprovided\fP are as follows:
+.TP 2.4i
+MPI_THREAD_SINGLE
+Only one thread may execute.
+.TP 2.4i
+MPI_THREAD_FUNNELED
+If the process is multithreaded, only the thread
+that called MPI_Init[_thread] may make MPI calls.
+.TP 2.4i
+MPI_THREAD_SERIALIZED
+If the process is multithreaded, only one thread
+may make MPI library calls at one time.
+.TP 2.4i
+MPI_THREAD_MULTIPLE
+If the process is multithreaded, multiple threads
+may call MPI at once with no restrictions.
+
+.SH NOTES
+.ft R
+In Open MPI, \fIprovided\fP is always MPI_THREAD_SINGLE, unless the
+program has been linked with the multithreaded library, in which case
+\fIprovided\fP is MPI_THREAD_MULTIPLE.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Init
+MPI_Init_thread
+

@@ -1,0 +1,122 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Probe 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Probe\fP \- Blocking test for a message.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Probe(int \fIsource\fP, int\fI tag\fP, MPI_Comm\fI comm\fP, MPI_Status\fI *status\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_PROBE(\fISOURCE, TAG, COMM, STATUS, IERROR\fP)
+	INTEGER	\fISOURCE, TAG, COMM, STATUS(MPI_STATUS_SIZE), IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Comm::Probe(int \fIsource\fP, int \fItag\fP, Status& \fIstatus\fP) const
+
+void Comm::Probe(int \fIsource\fP, int \fItag\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+source
+Source rank or MPI_ANY_SOURCE (integer).
+.TP 1i
+tag
+Tag value or MPI_ANY_TAG (integer).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+status
+Status object (status).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The MPI_Probe and MPI_Iprobe operations allow checking of incoming messages, without actual receipt of them. The user can then decide how to receive them, based on the information returned by the probe in the status variable. For example, the user may allocate memory for the receive buffer, according to the length of the probed message. 
+.sp
+MPI_Probe behaves like MPI_Iprobe except that it is a blocking call that returns only after a matching message has been found.
+.sp
+If your application does not need to examine the \fIstatus\fP field, you can save resources by using the predefined constant MPI_STATUS_IGNORE as a special value for the \fIstatus\fP argument. 
+.sp
+The semantics of MPI_Probe and MPI_Iprobe guarantee progress: If a call to MPI_Probe has been issued by a process, and a send that matches the probe has been initiated by some process, then the call to MPI_Probe will return, unless the message is received by another concurrent receive operation (that is executed by another thread at the probing process). Similarly, if a process busy waits with MPI_Iprobe and a matching message has been issued, then the call to MPI_Iprobe will eventually return flag = true unless the message is received by another concurrent receive operation. 
+.sp
+\fBExample 1:\fP Use blocking probe to wait for an incoming message. 
+.sp
+.nf
+CALL MPI_COMM_RANK(comm, rank, ierr) 
+       IF (rank.EQ.0) THEN 
+            CALL MPI_SEND(i, 1, MPI_INTEGER, 2, 0, comm, ierr) 
+       ELSE IF(rank.EQ.1) THEN 
+            CALL MPI_SEND(x, 1, MPI_REAL, 2, 0, comm, ierr) 
+       ELSE   ! rank.EQ.2 
+           DO i=1, 2 
+              CALL MPI_PROBE(MPI_ANY_SOURCE, 0, 
+                              comm, status, ierr) 
+              IF (status(MPI_SOURCE) = 0) THEN 
+100                CALL MPI_RECV(i, 1, MPI_INTEGER, 0, 0, status, ierr) 
+              ELSE 
+200                CALL MPI_RECV(x, 1, MPI_REAL, 1, 0, status, ierr) 
+              END IF 
+           END DO 
+       END IF 
+.fi
+.sp
+Each message is received with the right type.
+.sp
+\fBExample 2:\fP A program similar to the previous example, but with a problem. 
+.sp
+.nf
+CALL MPI_COMM_RANK(comm, rank, ierr) 
+       IF (rank.EQ.0) THEN 
+            CALL MPI_SEND(i, 1, MPI_INTEGER, 2, 0, comm, ierr) 
+       ELSE IF(rank.EQ.1) THEN 
+            CALL MPI_SEND(x, 1, MPI_REAL, 2, 0, comm, ierr) 
+       ELSE 
+           DO i=1, 2 
+              CALL MPI_PROBE(MPI_ANY_SOURCE, 0, 
+                              comm, status, ierr) 
+              IF (status(MPI_SOURCE) = 0) THEN 
+100                CALL MPI_RECV(i, 1, MPI_INTEGER, MPI_ANY_SOURCE, 
+                                 0, status, ierr) 
+              ELSE 
+200                CALL MPI_RECV(x, 1, MPI_REAL, MPI_ANY_SOURCE, 
+                                 0, status, ierr) 
+              END IF 
+           END DO 
+       END IF
+.fi
+.sp
+We slightly modified Example 2, using MPI_ANY_SOURCE as the source argument in the two receive calls in statements labeled 100 and 200. The program is now incorrect: The receive operation may receive a message that is distinct from the message probed by the preceding call to MPI_Probe. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Iprobe
+.br
+MPI_Cancel
+

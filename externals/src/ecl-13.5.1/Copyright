@@ -1,0 +1,37 @@
+---- BEGINNING OF COPYRIGHT FOR THE ECL CORE ENVIRONMENT ------------
+
+  Copyright (c) 2000, Juan Jose Garcia Ripoll
+  Copyright (c) 1990, 1991, 1993 Giuseppe Attardi
+  Copyright (c) 1984 Taiichi Yuasa and Masami Hagiya
+	      All Rights Reserved
+
+  ECL is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Library General Public License as published
+  by the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version; see file 'Copying'.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Library General Public License for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+  PLEASE NOTE THAT:
+
+  This license covers all of the ECL program except for the files
+	src/lsp/loop2.lsp	; Symbolic's LOOP macro
+	src/lsp/pprint.lsp	; CMUCL's pretty printer
+	src/lsp/format.lsp	; CMUCL's format
+  and the directories
+	contrib/		; User contributed extensions
+	src/clx/		; portable CLX library from Telent
+  Look the precise copyright of these extensions in the corresponding
+  files.
+
+  Report bugs, comments, suggestions to the ecl mailing list:
+  ecls-list@lists.sourceforge.net.
+
+---- END OF COPYRIGHT FOR THE ECL CORE ENVIRONMENT ------------------

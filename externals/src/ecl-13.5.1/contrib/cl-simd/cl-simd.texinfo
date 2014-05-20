@@ -1,0 +1,306 @@
+@node cl-simd
+@section cl-simd
+@cindex SSE2 Intrinsics
+@cindex Intrinsics, SSE2
+
+The @code{cl-simd} module provides access to SSE2 instructions
+(which are nowadays supported by any CPU compatible with x86-64)
+in the form of @emph{intrinsic functions}, similar to the way
+adopted by modern C compilers. It also provides some lisp-specific
+functionality, like setf-able intrinsics for accessing lisp arrays.
+
+When this module is loaded, it defines an @code{:sse2} feature,
+which can be subsequently used for conditional compilation of
+code that depends on it. Intrinsic functions are available from
+the @code{sse} package.
+
+This API, with minor technical differences, is supported by both
+ECL and SBCL (x86-64 only).
+
+@menu
+* SSE pack types::
+* SSE array type::
+* Differences from C intrinsics::
+* Comparisons and NaN handling::
+* Simple extensions::
+* Lisp array accessors::
+* Example::
+@end menu
+
+@node SSE pack types
+@subsection SSE pack types
+
+The package defines and/or exports the following types to
+represent 128-bit SSE register contents:
+
+@anchor{Type sse:sse-pack}
+@deftp {Type} @somepkg{sse-pack,sse} @&optional item-type
+The generic SSE pack type.
+@end deftp
+
+@anchor{Type sse:int-sse-pack}
+@deftp {Type} @somepkg{int-sse-pack,sse}
+Same as @code{(sse-pack integer)}.
+@end deftp
+
+@anchor{Type sse:float-sse-pack}
+@deftp {Type} @somepkg{float-sse-pack,sse}
+Same as @code{(sse-pack single-float)}.
+@end deftp
+
+@anchor{Type sse:double-sse-pack}
+@deftp {Type} @somepkg{double-sse-pack,sse}
+Same as @code{(sse-pack double-float)}.
+@end deftp
+
+Declaring variable types using the subtype appropriate
+for your data is likely to lead to more efficient code
+(especially on ECL). However, the compiler implicitly
+casts between any subtypes of sse-pack when needed.
+
+Printed representation of SSE packs can be controlled
+by binding @code{*sse-pack-print-mode*}:
+
+@anchor{Variable sse:*sse-pack-print-mode*}
+@defvr {Variable} @somepkg{@earmuffs{sse-pack-print-mode},sse}
+When set to one of @code{:int}, @code{:float} or
+@code{:double}, specifies the way SSE packs are
+printed. A @code{NIL} value (default) instructs
+the implementation to make its best effort to
+guess from the data and context.
+@end defvr
+
+@node SSE array type
+@subsection SSE array type
+
+@anchor{Type sse:sse-array}
+@deftp {Type} @somepkg{sse-array,sse} element-type @&optional dimensions
+Expands to a lisp array type that is efficiently
+supported by AREF-like accessors.
+It should be assumed to be a subtype of @code{SIMPLE-ARRAY}.
+The type expander signals warnings or errors if it detects
+that the element-type argument value is inappropriate or unsafe.
+@end deftp
+
+@anchor{Function sse:make-sse-array}
+@deffn {Function} @somepkg{make-sse-array,sse} dimensions @&key element-type initial-element displaced-to displaced-index-offset
+Creates an object of type @code{sse-array}, or signals an error.
+In non-displaced case ensures alignment of the beginning of data to
+the 16-byte boundary.
+Unlike @code{make-array}, the element type defaults to (unsigned-byte 8).
+@end deffn
+
+On ECL this function supports full-featured displacement.
+On SBCL it has to simulate it by sharing the underlying
+data vector, and does not support nonzero index offset.
+
+@node Differences from C intrinsics
+@subsection Differences from C intrinsics
+
+Intel Compiler, GCC and
+@url{http://msdn.microsoft.com/en-us/library/y0dh78ez%28VS.80%29.aspx,MSVC}
+all support the same set
+of SSE intrinsics, originally designed by Intel. This
+package generally follows the naming scheme of the C
+version, with the following exceptions:
+
+@itemize
+@item
+Underscores are replaced with dashes, and the @code{_mm_}
+prefix is removed in favor of packages.
+
+@item
+The 'e' from @code{epi} is dropped because MMX is obsolete
+and won't be supported.
+
+@item
+@code{_si128} functions are renamed to @code{-pi} for uniformity
+and brevity. The author has personally found this discrepancy
+in the original C intrinsics naming highly jarring.
+
+@item
+Comparisons are named using graphic characters, e.g. @code{<=-ps}
+for @code{cmpleps}, or @code{/>-ps} for @code{cmpngtps}. In some
+places the set of comparison functions is extended to cover the
+full possible range.
+
+@item
+Scalar comparison predicates are named like @code{..-ss?} for
+@code{comiss}, and @code{..-ssu?} for @code{ucomiss} wrappers.
+
+@item
+Conversion functions are renamed to @code{convert-*-to-*} and
+@code{truncate-*-to-*}.
+
+@item
+A few functions are completely renamed: @code{cpu-mxcsr} (setf-able),
+@code{cpu-pause}, @code{cpu-load-fence}, @code{cpu-store-fence},
+@code{cpu-memory-fence}, @code{cpu-clflush}, @code{cpu-prefetch-*}.
+@end itemize
+
+In addition, foreign pointer access intrinsics have an additional
+optional integer offset parameter to allow more efficient coding
+of pointer deference, and the most common ones have been renamed
+and made SETF-able:
+
+@itemize
+@item
+@code{mem-ref-ss}, @code{mem-ref-ps}, @code{mem-ref-aps}
+
+@item
+@code{mem-ref-sd}, @code{mem-ref-pd}, @code{mem-ref-apd}
+
+@item
+@code{mem-ref-pi}, @code{mem-ref-api}, @code{mem-ref-si64}
+@end itemize
+
+(The @code{-ap*} version requires alignment.)
+
+@node Comparisons and NaN handling
+@subsection Comparisons and NaN handling
+
+Floating-point arithmetic intrinsics have trivial IEEE semantics
+when given QNaN and SNaN arguments. Comparisons have more complex
+behavior, detailed in the following table:
+
+@multitable { @code{/>=-ss, />=-ps} } { @code{/>=-sd, />=-pd} } { Not greater or equal } { Result for NaN } { QNaN traps }
+@item Single-float @tab Double-float @tab Condition @tab Result for NaN @tab QNaN traps
+@item @code{=-ss}, @code{=-ps} @tab @code{=-sd}, @code{=-pd} @tab Equal @tab False @tab No
+@item @code{<-ss}, @code{<-ps} @tab @code{<-sd}, @code{<-pd} @tab Less @tab False @tab Yes
+@item @code{<=-ss}, @code{<=-ps} @tab @code{<=-sd}, @code{<=-pd} @tab Less or equal @tab False @tab Yes
+@item @code{>-ss}, @code{>-ps} @tab @code{>-sd}, @code{>-pd} @tab Greater @tab False @tab Yes
+@item @code{>=-ss}, @code{>=-ps} @tab @code{>=-sd}, @code{>=-pd} @tab Greater or equal @tab False @tab Yes
+@item @code{/=-ss}, @code{/=-ps} @tab @code{/=-sd}, @code{/=-pd} @tab Not equal @tab True @tab No
+@item @code{/<-ss}, @code{/<-ps} @tab @code{/<-sd}, @code{/<-pd} @tab Not less @tab True @tab Yes
+@item @code{/<=-ss}, @code{/<=-ps} @tab @code{/<=-sd}, @code{/<=-pd} @tab Not less or equal @tab True @tab Yes
+@item @code{/>-ss}, @code{/>-ps} @tab @code{/>-sd}, @code{/>-pd} @tab Not greater @tab True @tab Yes
+@item @code{/>=-ss}, @code{/>=-ps} @tab @code{/>=-sd}, @code{/>=-pd} @tab Not greater or equal @tab True @tab Yes
+@item @code{cmpord-ss}, @code{cmpord-ps} @tab @code{cmpord-sd}, @code{cmpord-pd}
+@tab Ordered, i.e. no NaN args @tab False @tab No
+@item @code{cmpunord-ss}, @code{cmpunord-ps} @tab @code{cmpunord-sd}, @code{cmpunord-pd}
+@tab Unordered, i.e. with NaN args @tab True @tab No
+@end multitable
+
+Likewise for scalar comparison predicates, i.e. functions that return the
+result of the comparison as a Lisp boolean instead of a bitmask sse-pack:
+
+@multitable { Single-float } { Double-float } { Not greater or equal } { Result for NaN } { QNaN traps }
+@item Single-float @tab Double-float @tab Condition @tab Result for NaN @tab QNaN traps
+@item @code{=-ss?} @tab @code{=-sd?} @tab Equal @tab True @tab Yes
+@item @code{=-ssu?} @tab @code{=-sdu?} @tab Equal @tab True @tab No
+@item @code{<-ss?} @tab @code{<-sd?} @tab Less @tab True @tab Yes
+@item @code{<-ssu?} @tab @code{<-sdu?} @tab Less @tab True @tab No
+@item @code{<=-ss?} @tab @code{<=-sd?} @tab Less or equal @tab True @tab Yes
+@item @code{<=-ssu?} @tab @code{<=-sdu?} @tab Less or equal @tab True @tab No
+@item @code{>-ss?} @tab @code{>-sd?} @tab Greater @tab False @tab Yes
+@item @code{>-ssu?} @tab @code{>-sdu?} @tab Greater @tab False @tab No
+@item @code{>=-ss?} @tab @code{>=-sd?} @tab Greater or equal @tab False @tab Yes
+@item @code{>=-ssu?} @tab @code{>=-sdu?} @tab Greater or equal @tab False @tab No
+@item @code{/=-ss?} @tab @code{/=-sd?} @tab Not equal @tab False @tab Yes
+@item @code{/=-ssu?} @tab @code{/=-sdu?} @tab Not equal @tab False @tab No
+@end multitable
+
+Note that MSDN specifies different return values for the C counterparts of some
+of these functions when called with NaN arguments, but that seems to disagree
+with the actually generated code.
+
+@node Simple extensions
+@subsection Simple extensions
+
+This module extends the set of basic intrinsics with the following
+simple compound functions:
+
+@itemize
+@item
+@code{neg-ss}, @code{neg-ps}, @code{neg-sd}, @code{neg-pd},
+@code{neg-pi8}, @code{neg-pi16}, @code{neg-pi32}, @code{neg-pi64}:
+
+implement numeric negation of the corresponding data type.
+
+@item
+@code{not-ps}, @code{not-pd}, @code{not-pi}:
+
+implement bitwise logical inversion.
+
+@item
+@code{if-ps}, @code{if-pd}, @code{if-pi}:
+
+perform element-wise combining of two values based on a boolean
+condition vector produced as a combination of comparison function
+results through bitwise logical functions.
+
+The condition value must use all-zero bitmask for false, and
+all-one bitmask for true as a value for each logical vector
+element. The result is undefined if any other bit pattern is used.
+
+N.B.: these are @emph{functions}, so both branches of the
+conditional are always evaluated.
+@end itemize
+
+The module also provides symbol macros that expand into expressions
+producing certain constants in the most efficient way:
+
+@itemize
+@item
+0.0-ps 0.0-pd 0-pi for zero
+
+@item
+true-ps true-pd true-pi for all 1 bitmask
+
+@item
+false-ps false-pd false-pi for all 0 bitmask (same as zero)
+@end itemize
+
+@node Lisp array accessors
+@subsection Lisp array accessors
+
+In order to provide better integration with ordinary lisp code,
+this module implements a set of AREF-like memory accessors:
+
+@itemize
+@item
+@code{(ROW-MAJOR-)?AREF-PREFETCH-(T0|T1|T2|NTA)} for cache prefetch.
+
+@item
+@code{(ROW-MAJOR-)?AREF-CLFLUSH} for cache flush.
+
+@item
+@code{(ROW-MAJOR-)?AREF-[AS]?P[SDI]} for whole-pack read & write.
+
+@item
+@code{(ROW-MAJOR-)?AREF-S(S|D|I64)} for scalar read & write.
+@end itemize
+
+(Where A = aligned; S = aligned streamed write.)
+
+These accessors can be used with any non-bit specialized
+array or vector, without restriction on the precise element
+type (although it should be declared at compile time to
+ensure generation of the fastest code).
+
+Additional index bound checking is done to ensure that enough
+bytes of memory are accessible after the specified index.
+
+As an exception, ROW-MAJOR-AREF-PREFETCH-* does not do any
+range checks at all, because the prefetch instructions
+are officially safe to use with bad addresses. The
+AREF-PREFETCH-* and *-CLFLUSH functions do only ordinary
+index checks without the usual 16-byte extension.
+
+@node Example
+@subsection Example
+
+This code processes several single-float arrays, storing
+either the value of a*b, or c/3.5 into result, depending
+on the sign of mode:
+
+@example
+(loop for i from 0 below 128 by 4
+   do (setf (aref-ps result i)
+            (if-ps (<-ps (aref-ps mode i) 0.0-ps)
+                   (mul-ps (aref-ps a i) (aref-ps b i))
+                   (div-ps (aref-ps c i) (set1-ps 3.5)))))
+@end example
+
+As already noted above, both branches of the if are always
+evaluated.

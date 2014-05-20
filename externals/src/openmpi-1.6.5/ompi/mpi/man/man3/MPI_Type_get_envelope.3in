@@ -1,0 +1,108 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Type_get_envelope 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_get_envelope\fP \- Returns information about input arguments associated with a data type. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_get_envelope(MPI_Datatype \fIdatatype\fP, int *\fInum_integers\fP,
+	int *\fInum_addresses\fP, int *\fInum_datatypes\fP, int *\fIcombiner\fP)
+
+.fi
+.SH Fortran Syntax 
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_GET_ENVELOPE(\fIDATATYPE, NUM_INTEGERS, NUM_ADDRESSES,
+		NUM_DATATYPES, COMBINER, IERROR\fP)
+	INTEGER	\fIDATATYPE, NUM_INTEGERS, NUM_ADDRESSES\fP
+	INTEGER	\fINUM_DATATYPES, COMBINER, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Datatype::Get_envelope(int& \fInum_integers\fP, 
+	int& \fInum_addresses\fP, int& \fInum_datatypes\fP, 
+	int& \fIcombiner\fP) const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+datatype
+Data type to access (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+num_integers
+Number of input integers used in the call constructing \fIcombiner\fP (nonnegative integer).
+.TP 1i
+num_addresses
+Number of input addresses used in the call constructing \fIcombiner\fP (nonnegative integer).
+.TP 1i
+num_datatypes
+Number of input data types used in the call constructing \fIcombiner\fP (nonnegative integer).
+.TP 1i
+combiner
+Combiner (state). 
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+For the given data type, MPI_Type_get_envelope returns information on the number and type of input arguments used in the call that created the data type. The number-of-arguments values returned can be used to provide sufficiently large arrays in the decoding routine MPI_Type_get_contents. This call and the meaning of the returned values is described below. The combiner reflects the MPI data type constructor call that was used in creating \fIdatatype\fP. 
+
+.SH NOTES
+.ft R
+These are the values that can be returned in \fIcombiner\fP and their associated calls:
+.sp
+.nf
+Values                          Associated Calls
+
+MPI_COMBINER_NAMED              a named predefined data type
+MPI_COMBINER_DUP                MPI_Type_dup
+MPI_COMBINER_CONTIGUOUS         MPI_Type_contiguous
+MPI_COMBINER_VECTOR             MPI_Type_vector
+MPI_COMBINER_HVECTOR_INTEGER    MPI_Type_hvector from Fortran
+MPI_COMBINER_HVECTOR            MPI_Type_hvector from C or C++
+                                  and MPI_Type_create for
+                                  all languages
+MPI_COMBINER_INDEXED            MPI_Type_indexed
+MPI_COMBINER_HINDEXED_INTEGER   MPI_Type_hindexed from Fortran
+MPI_COMBINER_HINDEXED           MPI_Type_hindexed from C or C++
+                                  and MPI_Type_create_hindexed
+                                  for all languages
+MPI_COMBINER_INDEXED_BLOCK      MPI_Type_create_indexed_block
+MPI_COMBINER_STRUCT_INTEGER     MPI_Type_struct from Fortran
+MPI_COMBINER_STRUCT             MPI_Type_struct from C or C++
+                                  and MPI_Type_create_struct
+                                  for all languages
+MPI_COMBINER_SUBARRAY           MPI_Type_create_subarray
+MPI_COMBINER_DARRAY             MPI_Type_create_darray
+MPI_COMBINER_F90_REAL           MPI_Type_create_f90_real
+MPI_COMBINER_F90_COMPLEX        MPI_Type_create_f90_complex
+MPI_COMBINER_F90_INTEGER        MPI_Type_create_f90_integer
+MPI_COMBINER_RESIZED            MPI_Type_create_resized
+.fi
+.sp
+If \fIcombiner\fP is MPI_COMBINER_NAMED, then \fIdatatype\fP is a named predefined data type.
+.sp
+The actual arguments used in the creation call for a data type can be obtained from the call MPI_Type_get_contents. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft r
+MPI_Type_get_contents
+.br
+

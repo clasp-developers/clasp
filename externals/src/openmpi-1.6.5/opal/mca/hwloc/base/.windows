@@ -1,0 +1,11 @@
+#
+# Copyright (c) 2011      High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+exclude_list=hwloc_base_dt.c;hwloc_base_proc_mempolicy.c

@@ -1,0 +1,89 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Info_get 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Info_get\fP \- Retrieves the value associated with a key in an info object. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Info_get(MPI_Info \fIinfo\fP, char \fI*key\fP, int \fIvaluelen\fP, char \fI*value\fP, int *\fIflag\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_INFO_GET(\fIINFO, KEY, VALUELEN, VALUE, FLAG, IERROR\fP)
+	INTEGER	\fIINFO, VALUELEN, IERROR\fP 
+	CHARACTER*(*) \fIKEY, VALUE\fP
+	LOGICAL \fIFLAG\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+bool MPI::Info::Get(const char* \fIkey\fP, int \fIvaluelen\fP, 
+	char* \fIvalue\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+info
+Info object (handle).
+.ft R
+.TP 1i
+key
+Key (string).
+.ft R
+.TP 1i
+valuelen
+Length of value arg (integer).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+value
+Value (string).
+.ft R
+.TP 1i
+flag
+Returns true if key defined, false if not (boolean). 
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Info_get retrieves the value associated with \fIkey\fP in a previous call to MPI_Info_set. If such a key exists, it sets \fIflag\fP to true and returns the value in \fIvalue\fP; otherwise it sets \fIflag\fP to false and leaves \fIvalue\fP unchanged. \fIvaluelen\fP is the number of characters available in value. If it is less than the actual size of the value, the returned value is truncated. In C, \fIvaluelen\fP should be one less than the amount of allocated space to allow for the null terminator. 
+.sp
+If \fIkey\fP is larger than MPI_MAX_INFO_KEY, the call is erroneous. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft r
+MPI_Info_create
+.br
+MPI_Info_delete
+.br
+MPI_Info_dup
+.br
+MPI_Info_free
+.br
+MPI_Info_get_valuelen
+.br
+MPI_Info_get_nkeys
+.br
+MPI_Info_get_nthkey
+.br
+MPI_Info_set
+.br
+

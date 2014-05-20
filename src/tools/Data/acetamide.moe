@@ -1,0 +1,34 @@
+#moe 2001.01
+#system 16 tag t value *
+CellEnable i 0 CellParameters ** 3 t P1 i* 3 10 10 10 i* 3 90 90 90
+CellCoordinateMode t normal CellLatticeReplicate i* 3 1 1 1
+CellLatticeInset i 0 CellOverlayPacked i 0 CellImageRenderStyle ** 3 t
+inherit t inherit i -1 CellLatticeRenderStyle ** 3 t inherit t inherit i
+-1 ViewOrientationY r* 3 -0.4720673 0.5684665 -0.673794 ViewOrientationZ
+r* 3 -0.7803691 -0.6250176 0.0194201 ViewLookAt r* 3 -0.0572073
+-0.5856978 -0.2846163 ViewScale r 16.1710491 ViewDepthCueFront r 0.45
+ViewDepthCueStrength r 0.75 ViewZFront i 0 ViewZWidth i 1
+#molecule 3 tag t value *
+atoms i 9 residues i 1 chains i 1
+#bond 8 a i b i
+1 3 1 2 1 4 4 6 4 5 6 9 6 8 6 7
+#attr 9 ID i aName t aElement t aGeometry t aPosX r aPosY r aPosZ r
+1 N N sp2 0.239843 0.2886605 0.8914135 2 H H sp 0.0565297 1.2387179
+1.1790277 3 H H sp 0.7640961 -0.3331158 1.4890351 4 C C sp2 -0.2202668
+-0.131814 -0.2876593 5 O O sp2 -0.8612174 0.5994363 -1.0373187 6 C C sp3
+0.082056 -1.5748509 -0.6782184 7 H H sp 1.1611357 -1.7264791 -0.7128982
+8 H H sp -0.356724 -2.2521185 0.0548415 9 H H sp -0.3404291 -1.7892485
+-1.6603956
+#attr 9 ID i aCharge r
+1 -0.3700604 2 0.1585405 3 0.1585405 4 0.2153215 5 -0.2737703 6
+0.0140837 7 0.0324482 8 0.0324482 9 0.0324482
+#attr 1 ID i cResidueCount i cName t cHeader t cTag t cColorBy t cRGB ix
+11 1 $ $ $ c:number 0
+#attr 1 ID i rAtomCount i rName t rUID i rINS c rPos i rType t
+10 9 * 0 ! 0 none
+#attr 1 ID i rRGB ix rColorBy t rSegment t
+10 0 r:rgb none
+#attr 1 ID i rRibbonWidth r rRibbonHeight r rRibbonColorBy t rRibbonMode t
+10 0 0 r:aseg none
+#endmolecule
+#endsystem

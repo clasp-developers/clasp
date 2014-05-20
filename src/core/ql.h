@@ -1,0 +1,226 @@
+#ifndef	_core_quickList_H
+#define	_core_quickList_H
+
+#include "sourceFileInfo.h"
+
+/*! Handle template class for creating Lisp Cons's on the fly from within C++ and
+  applying them to primitive functions */
+namespace ql
+{
+
+
+/*! list is a class for constructing free-form Cons lists
+  from within C++.
+  
+  eg:
+  C++: (ql::list(lisp) , x , y , z , _lisp->symbol(kw::_sym_color) , objBlue ).cons() 
+  returns --> (list X Y Z :color BLUE )   where X,Y,Z,BLUE are the objects contained by the
+  C++ values x, y, z, objBlue which are of type T_sp
+*/
+
+
+
+    class list : public gctools::StackBoundClass
+    {
+    private:
+	core::Cons_rp _First; // ROOT
+	core::Cons_rp _Tail; // ROOT 
+    public:
+	/*! ctor sets up _Lisp and the first element of the Cons */
+    list(core::Lisp_sp lisp)
+	{
+	    this->clear();
+	}
+
+	list()
+	{_G();
+	    this->clear();
+	}
+
+	/*! Point _First of this list to the _Tail of another list */
+	void point_to_tail(ql::list const& other)
+	{_G();
+	    this->_First = other._Tail;
+	    this->_Tail = this->_First;
+	}
+
+	void clear()
+	{_G();
+	    this->_First = core::Cons_O::create(_Nil<core::T_O>());
+	    this->_Tail = this->_First;
+	}
+
+	void create_from_cons(core::Cons_sp other)
+	{_G();
+	    this->clear();
+	    for ( core::Cons_sp cur = other; cur.notnilp(); cur=cCdr(cur) )
+	    {
+		this->operator<<(oCar(cur));
+	    }
+	}
+	
+	core::Cons_sp tail() const
+	{
+	    return this->_Tail;
+	}
+
+	int length() const
+	{
+	    return this->_First->length()-1;
+	};
+
+	inline list& operator<<(core::T_rp const& obj)
+	{
+	    this->throwIfClosed();
+	    core::Cons_rp one = core::Cons_O::create(obj);
+	    this->_Tail->setCdr(one);
+	    this->_Tail = one;
+	    return *this;
+	}
+
+	/*! Insert list into list - should I copy or append (which will modify the argument)? */
+	inline list& operator&(core::Cons_sp const& l)
+	{
+	    this->throwIfClosed();
+	    for ( core::Cons_sp cur=l; cur.notnilp(); cur=cCdr(cur) )
+	    {
+		(*this) << oCar(cur);
+	    }
+	    return *this;
+	}
+
+	/*! Handle automatic conversion from a c++ int to Fixnum_O */
+
+	inline list& operator<<(int const& val)
+	{
+
+	    return ( (*this) << core::Fixnum_O::create(val));
+	}
+      
+
+	/*! dot the list argument to the end of the list */
+	inline list& dot(core::T_sp arg)
+	{
+	    this->throwIfClosed();
+	    this->_Tail->setOCdr(arg);
+	    return *this;
+	}
+	
+	inline core::Cons_rp cons() const
+	{
+	    return cCdr(this->_First);
+	}
+
+	/*! Return all of the list including the (usually) dummy first element */
+	inline core::Cons_rp all() const
+	{
+	    return this->_First;
+	}
+
+
+	inline void throwIfClosed() const
+	{
+	    if ( oCdr(this->_Tail).notnilp() )
+	    {
+		THROW_HARD_ERROR(BF("You tried to modify a closed list"));
+	    }
+	};
+    };
+
+
+
+
+
+#ifdef USE_SOURCE_CODE_CONS
+    class source_code_list
+    {
+    private:
+	core::SourceCodeCons_rp _First; // ROOT
+	core::SourceCodeCons_rp _Tail; // ROOT 
+    public:
+	/*! ctor sets up _Lisp and the first element of the Cons */
+	source_code_list()
+	{_G();
+	    this->_First = core::SourceCodeCons_O::create(_Nil<core::T_O>(),_Nil<core::Cons_O>(),0,0,_Nil<core::SourceFileInfo_O>(),_lisp);
+	    this->_Tail = this->_First;
+	}
+
+	/*! ctor sets up _Lisp and the first element of the SourceCodeCons.
+	 It sets the lineNumber/column/fileName from a stream */
+	source_code_list(uint lineNumber, uint column, core::SourceFileInfo_sp fileName)
+	{
+	    this->_First = core::SourceCodeCons_O::create(_Nil<core::T_O>(),_Nil<core::Cons_O>(),lineNumber,column,fileName,_lisp);
+	    this->_Tail = this->_First;
+	}
+
+
+	/*! ctor sets up the first element of the SourceCodeCons .
+	 It sets the lineNumber/column/fileName from the sourceCodeTemplate */
+	source_code_list(core::Cons_sp sourceCodeTemplate)
+	{
+	    this->_First = core::SourceCodeCons_O::createWithDuplicateSourceCodeInfo(_Nil<core::T_O>(),sourceCodeTemplate,_lisp);
+	    this->_Tail = this->_First;
+	}
+
+	inline source_code_list& operator<<(core::T_rp const& obj)
+	{
+	    this->throwIfClosed();
+	    core::SourceCodeCons_rp one = core::SourceCodeCons_O::createWithDuplicateSourceCodeInfo(obj,this->_First,_lisp);
+	    this->_Tail->setCdr(one);
+	    this->_Tail = one;
+	    return *this;
+	}
+
+	inline source_code_list& appendWithParsePos(core::T_sp obj, core::Cons_sp parsePosTemplate)
+	{
+	    this->throwIfClosed();
+	    core::SourceCodeCons_rp one = core::SourceCodeCons_O::createWithDuplicateSourceCodeInfo(obj,parsePosTemplate,_lisp);
+	    this->_Tail->setCdr(one);
+	    this->_Tail = one;
+	    return *this;
+	}
+
+
+	inline source_code_list& set_tail_source_info(core::Cons_sp sourceInfoTemplate)
+	{
+	    this->_Tail->duplicateSourceCodeInfo(sourceInfoTemplate);
+	    return *this;
+	}
+
+	inline source_code_list& dot(core::T_sp arg)
+	{
+	    this->throwIfClosed();
+	    this->_Tail->setOCdr(arg);
+	    return *this;
+	}
+
+
+	inline core::Cons_rp cons() const
+	{
+	    return cCdr(this->_First);
+	}
+
+
+	inline void throwIfClosed() const
+	{
+	    if ( oCdr(this->_Tail).notnilp() )
+	    {
+		THROW_HARD_ERROR(BF("You tried to modify a closed list"));
+	    }
+	};
+    };
+#endif
+
+
+
+/*
+  Later I want to add support to apply c++ functions that have been fbound 
+
+  apply::apply(func,(apply::list(_lisp) % x % y % z % _lisp->symbol(kw::_sym_rest) % stuff ).cons() )
+  apply::apply(func,(apply::list(_lisp) % x % y % z % _lisp->symbol(kw::_sym_rest) % stuff ).cons(tail) )
+
+*/
+
+};
+
+#endif // _core_quickList_H
