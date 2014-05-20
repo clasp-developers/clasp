@@ -1,0 +1,10 @@
+build/
+.svn/
+.git/
+*~
+*.log
+*.dSYM/
+*.i
+*.a
+*.dylib
+\#*\#

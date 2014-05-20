@@ -1,0 +1,61 @@
+import cando ;
+local dir = $(__file__:D) ;
+
+#
+#
+project internals/clbind : requirements
+	<define>EXPAT
+	<define>_DEBUG
+	<define>_GNU_SOURCE
+	<toolset>darwin:<define>READLINE
+	<threading>single
+	<include>./
+	<include>../
+	<toolset>darwin:<define>darwin
+	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
+	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
+	<toolset>pathscale:<cxxflags>"-Wno-unused-variable -fopenmp"
+	<toolset>pgi:<cxxflags>"-mp -gopt"
+	<toolset>pgi:<linkflags>"-mp -gopt"
+	<target-os>darwin:<linkflags>"-dynamiclib"
+	;
+
+
+
+h clbind_constructor_functoids : clbind_constructor_functoids.pmp ;
+h clbind_functoids : clbind_functoids.pmp ;
+h clbind_methoids : clbind_methoids.pmp ;
+h clbind_static_members : clbind_static_members.pmp ;
+
+
+sources = 
+        adapter.cc
+        class_rep.cc
+        open.cc
+        class_registry.cc
+        link_compatibility.cc
+        scope.cc
+        inheritance.cc
+        clbind.cc
+        clbindPackage.cc
+        class.cc
+        derivable_class.cc
+	/internals/core//bundle
+	/externals//boostAndExpatLibs ;
+
+
+alias meta : clbind_functoids
+                 clbind_methoids
+                 clbind_static_members
+                 clbind_constructor_functoids
+                 ;
+
+cando.bundle $(dir) :
+	     $(sources) :
+	     <link>static
+	     <implicit-dependency>mi
+	     <implicit-dependency>/internals/core//mi
+             <implicit-dependency>meta
+	     ;
+#	     <implicit-dependency>/internals/core//symbol_apply_inc  ;

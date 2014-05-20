@@ -1,0 +1,87 @@
+#! /usr/bin/env python
+
+import mbb
+
+import buildDatabase
+
+
+
+def topologiesWithOutPlugNamed(constitution,plugName):
+    tops = []
+    for top in constitution.iterate_Topologies:
+	if ( top.hasOutPlugNamed(plugName) ):
+	    tops.append(top)
+    return tops
+
+
+def topologiesWithInPlugNamed(constitution,plugName):
+    tops = []
+    for top in constitution.iterate_Topologies:
+	if ( top.getInPlugDefined() ):
+	    inPlug = top.getInPlug()
+	    if ( inPlug.getName()==plugName ):
+		tops.append(top)
+    return tops
+
+
+
+seedDbFileName = "./seed.xml"
+db = buildDatabase.readBuilderDatabase("./",seedDbFileName)
+
+problems = []
+
+#
+# For every stereoisomer name that has a topology with a particular inPlug/outPlug name, all of its mates
+# must have a corresponding plug in every topology 
+for focusConstitution in db.iterate_Constitutions:
+    print "Focus constitution: %s"%focusConstitution.getName()
+    for focusStereoisomer in focusConstitution.iterate_Stereoisomers:
+	focusMonomerName = focusStereoisomer.getName()
+	for focusTopology in focusConstitution.iterate_Topologies:
+	    print "  Focus topology: %s"%focusTopology.getName()
+	    if ( focusTopology.getInPlugDefined() ):
+		focusPlug = focusTopology.getInPlug()
+		focusPlugName = focusPlug.getName()
+		print "    Focus InPlug: %s"%focusPlug.getName()
+		for mate in focusPlug.iterate_Mates:
+		    equivNames = mate.getEquivalentNames()
+		    for name in equivNames:
+			print "      Equivalent name: %s"%name
+			mateConstitution = db.constitutionForNameOrPdb(name)
+			topologies = topologiesWithOutPlugNamed(mateConstitution,focusPlugName)
+			for top in topologies:
+			    plug = top.getOutPlugNamed(focusPlugName)
+			    if ( plug.recognizesMateNameOrPdb(focusMonomerName) ):
+				pass  # The other plug recognizes this monomer name, good
+			    else:
+				prob = "**** IN: Monomer(%s) topology(%s) outPlug(%s) is not recognizing monomer name(%s)"%(name,top.getName(),plug.getName(),focusMonomerName)
+			        print prob
+				problems.append(prob)
+	    else:
+		print "    No inplug"
+	    focusOutPlugs = focusTopology.getOutPlugs()
+	    for focusPlug in focusOutPlugs:
+		focusPlugName = focusPlug.getName()
+		print "    Focus OutPlug: %s"%focusPlug.getName()
+		for mate in focusPlug.iterate_Mates:
+		    equivNames = mate.getEquivalentNames()
+		    for name in equivNames:
+			print "      Equivalent name: %s"%name
+			mateConstitution = db.constitutionForNameOrPdb(name)
+			topologies = topologiesWithInPlugNamed(mateConstitution,focusPlugName)
+			for top in topologies:
+			    plug = top.getInPlug()
+			    if ( plug.recognizesMateNameOrPdb(focusMonomerName) ):
+				pass  # The other plug recognizes this monomer name, good
+			    else:
+				prob = "****OUT: Monomer(%s) topology(%s) inPlug(%s) is not recognizing monomer name(%s)"%(name,top.getName(),plug.getName(),focusMonomerName)
+			        print prob
+				problems.append(prob)
+	    else:
+		print "    No inplug"
+problems.sort()
+for x in problems:
+    print x
+
+if ( len(problems) == 0 ):
+    print "---- Seed database checked out, there were no problems"

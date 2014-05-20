@@ -1,0 +1,3 @@
+#! /bin/bash
+    install -d approved_output
+    python $1 | tee approved_output/$1.out

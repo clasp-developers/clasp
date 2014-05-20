@@ -1,0 +1,89 @@
+import cando ;
+local dir = $(__file__:D) ;
+
+#
+#
+project internals/llvmo : requirements
+	<define>EXPAT
+	<define>_DEBUG
+	<define>_GNU_SOURCE
+	<toolset>darwin:<define>READLINE
+	<threading>single
+	<include>./
+	<include>../
+#	<include>$(llvm_include_dir)/llvm/include
+	<toolset>darwin:<define>darwin
+	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
+	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
+	<toolset>pathscale:<cxxflags>"-Wno-unused-variable -fopenmp"
+	<toolset>pgi:<cxxflags>"-mp -gopt"
+	<toolset>pgi:<linkflags>"-mp -gopt"
+	<target-os>darwin:<linkflags>"-dynamiclib"
+	;
+
+local sources = 
+	debugInfoExpose.cc
+	debugLoc.cc
+	llvmoDwarf.cc
+	intrinsics.cc
+	insertPoint.cc
+	irtests.cc
+	llvmoExpose.cc
+	llvmoPackage.cc
+        clbindLlvmExpose.cc
+	/internals/core//bundle
+	/externals//boostAndExpatLibs
+	/externals//llvm_lib ;
+
+
+
+obj intrinsics_bitcode : intrinsics.cc
+	/internals/core//bundle
+	/externals//boostAndExpatLibs
+	/externals//llvm_lib
+	:
+	<implicit-dependency>/internals/core//mi
+	<implicit-dependency>/internals/clbind//mi
+	<implicit-dependency>mi
+	<link>static
+        <mps>off
+	<cxxflags>"-flto -emit-llvm" ;
+
+
+obj intrinsics_bitcode_mps : intrinsics.cc
+	/internals/core//bundle
+	/externals//boostAndExpatLibs
+	/externals//llvm_lib
+	:
+	<implicit-dependency>/internals/core//mi
+	<implicit-dependency>/internals/clbind//mi
+	<implicit-dependency>mi
+	<link>static
+        <mps>on
+	<cxxflags>"-flto -emit-llvm" ;
+
+
+
+install inst_intrinsics_bitcode : intrinsics_bitcode :
+	<variant>debug:<location>$(APP-DEBUG-LIB)
+	<variant>release:<location>$(APP-RELEASE-LIB)
+        <mps>off
+        ;
+
+install inst_intrinsics_bitcode_mps : intrinsics_bitcode_mps :
+	<variant>debug:<location>$(APP-DEBUG-LIB)
+	<variant>release:<location>$(APP-RELEASE-LIB)
+        <mps>on
+        ;
+
+alias install_intrinsics_bitcode : inst_intrinsics_bitcode inst_intrinsics_bitcode_mps ;
+
+cando.bundle $(dir) :
+	     $(sources)
+             :
+	     <link>static
+             <dependency>install_intrinsics_bitcode
+             <implicit-dependency>/internals/clbind//mi
+	     <implicit-dependency>mi 
+	     <implicit-dependency>/internals/core//symbol_apply_inc ;

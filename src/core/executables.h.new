@@ -1,0 +1,214 @@
+#ifndef	_core_executables_H
+#define _core_executables_H
+
+
+
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <set>
+#include "foundation.h"
+#include "object.h"
+//#include "macro.h"
+#include "cons.h"
+#include "symbol.h"
+#include "str.fwd.h"
+#include "package.fwd.h"
+#include "evaluator.fwd.h"
+#include "lambdaListHandler.fwd.h"
+#include "ordinaryLambdaListHandler.fwd.h"
+#include "macroLambdaListHandler.fwd.h"
+#include "lispDefinitions.h"
+
+namespace core {
+
+
+SMART(BuiltInClass);
+SMART(Binder);
+SMART(MethodO);
+SMART(MethodEnvironment);
+SMART(LambdaListHandler);
+
+
+
+SMART(Executable);
+class Executable_O : public T_O
+{
+    LISP_BASE1(T_O);
+    LISP_CLASS(CorePkg,Executable_O,"Executable");
+public:
+    void initialize();
+    void archiveBase(ArchiveP node);
+protected:
+    Symbol_wp	_WeakSymbol;
+private:
+    virtual T_sp INVOKE(Cons_sp exp, Lisp_sp lisp ) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+public:
+    /*! Return the environment that was active
+     * when this executable was defined
+     * Anything that is primitive returns the global environment
+     */
+    virtual Environment_sp closedEnvironment(Environment_sp env);
+public:
+    virtual bool executableP() const { return this->notNil();};
+    void setSymbol(Symbol_sp symbol);
+    Symbol_sp getSymbol() const;
+    string getName() const;
+
+    virtual bool isMacro() { return false; };
+    virtual bool isSpecialForm() { return false;};
+    string __repr__() const;
+    string __str__() {return this->__repr__();};
+    virtual string getFullMethodName(Lisp_sp lisp) const { return this->getName();};
+    string description() const { return this->getName();};
+
+    virtual LambdaListHandler_sp getLambdaListHandler() {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+    DEFAULT_CTOR_DTOR(Executable_O);
+};
+
+
+typedef	T_sp(*PrimFuncPtr)(Cons_sp ,Lisp_sp);
+
+
+
+
+#define	MACRO_FUNCTION	0x0001
+
+SMART(Function);
+class Function_O : public Executable_O
+{
+    LISP_BASE1(Executable_O);
+    LISP_CLASS(CorePkg,Function_O,"function");
+    DECLARE_INIT();
+    friend class SingleDispatchGenericFunction_O;
+    friend class Lambda_emf;
+    friend class Lambda_call_next_method;
+    friend T_sp core::eval::apply(T_sp head, Cons_sp args, Lisp_sp lisp);
+public:
+    void initialize();
+    void archiveBase(ArchiveP node);
+protected:
+    /*! Closed over environment */
+    Environment_sp		_Environment;
+    // Docstring
+    string			_DocString;
+    // Code
+    Cons_sp			_Code;
+    // Argument stuff
+    LambdaListHandler_sp	_LambdaListHandler;
+    uint			_Flags;
+private:
+    virtual T_sp INVOKE(Cons_sp exp, Lisp_sp lisp );
+public:
+    static Function_sp create( Symbol_sp sym, Cons_sp lambdaList, Str_sp docString, Cons_sp code, Environment_sp environment, Lisp_sp lisp);
+    static Function_sp create_macro( Symbol_sp sym, Cons_sp lambdaList, Str_sp docString, Cons_sp code, Environment_sp environment, Lisp_sp lisp);
+    static Function_sp create( Symbol_sp name, LambdaListHandler_sp args, Cons_sp code, Environment_sp env, Lisp_sp lisp);
+    static Function_sp create_macro( Symbol_sp name, LambdaListHandler_sp args, Cons_sp code, Environment_sp env, Lisp_sp lisp);
+
+public:
+    virtual Environment_sp closedEnvironment(Environment_sp env);
+    void closeOverEnvironment(Environment_sp environment);
+
+    Cons_sp getCode() { return this->_Code;};
+
+    void setDocStr(Str_sp str);
+    Str_sp getDocString();
+
+
+    virtual LambdaListHandler_sp getLambdaListHandler();
+    virtual void setupArgumentHandling( Cons_sp arguments, Lisp_sp);
+public:
+
+    virtual bool can_be_redefined() const { return true;};
+
+    string __repr__() const;
+    string __str__() { return this->__repr__(); };
+
+
+    bool functionP() const { return this->notNil() && (this->_Flags==0);};
+    bool macroP() const { return this->notNil() && (this->_Flags&MACRO_FUNCTION);};
+
+    explicit Function_O(const MetaClass_sp& mc) : Base(mc), _Flags(0) {};
+    virtual ~Function_O() {};
+};
+
+
+
+SMART(FunctionPrimitive);
+class FunctionPrimitive_O : public Function_O
+{
+    LISP_BASE1(Function_O);
+    LISP_CLASS(CorePkg,FunctionPrimitive_O,"function-primitive");
+protected:
+    string		_ArgumentString;
+    Functoid*		_Functoid;	// take ownership
+// WORKING - add argument handler here and to create method
+private:
+    virtual T_sp INVOKE(Cons_sp exp, Lisp_sp lisp );
+public:
+    static FunctionPrimitive_sp create(Symbol_sp name, Functoid* func,string const& arguments, string const& docstring, Lisp_sp);
+
+    static FunctionPrimitive_sp create_macro(Symbol_sp name, Functoid* func,string const& arguments, string const& docstring, Lisp_sp);
+
+    static FunctionPrimitive_sp create(Symbol_sp name, Functoid* func, Lisp_sp lisp);
+
+    /*! Create an unnamed primitive function that doesn't use an argument handler and does have docs */
+    static FunctionPrimitive_sp create_unnamed_function(FormCallback fnptr,Lisp_sp lisp);
+
+
+public:
+
+    string __repr__() const
+    {
+	stringstream ss;
+	ss << "FunctionPrimitive:"+this->getName();
+	return ss.str();
+    }
+    string __str__() { return this->__repr__(); };
+
+    void setupLambdaListHandler();
+
+    
+public:
+    explicit FunctionPrimitive_O(const core::MetaClass_sp& mc) : Base(mc), _Functoid(NULL) {};
+    virtual ~FunctionPrimitive_O() { if (this->_Functoid) {delete this->_Functoid; this->_Functoid = NULL;};};
+};
+
+
+
+
+
+
+};
+
+
+
+TRANSLATE(core::Executable_O);
+//TRANSLATE(core::SlotAccessor_O);
+//TRANSLATE(core::SlotSetter_O);
+//TRANSLATE(core::SlotGetter_O);
+//TRANSLATE(core::PrimitiveWithArguments_O);
+TRANSLATE(core::FunctionPrimitive_O);
+//TRANSLATE(core::MacroPrimitive_O);
+//TRANSLATE(core::MethodPrimitive_O);
+TRANSLATE(core::Function_O);
+//TRANSLATE(core::MethodO_O);
+//TRANSLATE(core::Macro_O);
+
+
+template <>
+struct	to_object<core::FormCallback>
+{
+    typedef	core::Function_sp		ExpectedType;
+    typedef	core::Function_sp		DeclareType;
+    static core::T_sp convert(core::Lisp_sp lisp, core::FormCallback v)
+    {
+	core::FunctionPrimitive_sp funcPrim = core::FunctionPrimitive_O::create_unnamed_function(v,lisp);
+	return funcPrim;
+    }
+};
+
+
+
+
+#endif //]

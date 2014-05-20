@@ -1,0 +1,213 @@
+import cando ;
+local dir = $(__file__:D) ;
+
+echo "core dir = $(dir)" ;
+#
+#
+project internals/core : requirements
+	<define>EXPAT
+#	<define>USEBOOSTPYTHON
+	<toolset>darwin:<define>READLINE
+	<toolset>clang:<define>READLINE
+	<threading>single
+        <link>static
+#	<linkflags>-rdynamic
+	<include>./
+	<include>..
+	<toolset>darwin:<define>darwin
+	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
+#	<toolset>darwin:<cxxflags>"-fopenmp"
+#-include pch.h"
+	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>clang:<cxxflags>"-Warray-bounds"
+	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
+	<toolset>pathscale:<cxxflags>"-Wno-unused-variable -fopenmp"
+	<toolset>pgi:<cxxflags>"-mp -gopt"
+	<toolset>pgi:<linkflags>"-mp -gopt"
+	<toolset>clang:<variant>release:<linkflags>"-O4"
+	<target-os>darwin:<linkflags>"-dynamiclib"
+	<target-os>darwin:<make-bundle>no
+	;
+
+#
+# For multithreading (openmp) use the following options
+
+
+#
+# Precompiled headers
+#
+
+#cpp-pch pch : pch.h ;
+
+local unity_sources =
+      all.cc ;
+
+local sources = 
+	    sourceFileInfo.cc
+      lisp.cc
+	    symbolList.cc
+	    package.cc
+      commonLispPackage.cc
+      keywordPackage.cc
+      extensionPackage.cc
+      print.cc
+      vectorObjectsWithFillPtr.cc
+      vectorObjects.cc
+	    lambdaListHandler.cc
+      corePackage.cc
+    activationFrame.cc
+      cons.cc
+      write_object.cc
+	    array.cc
+	foundation.cc 
+	    environment.cc 
+      strWithFillPtr.cc
+	    lispMath.cc
+	    lispStream.cc
+      grayPackage.cc
+      closPackage.cc
+      compPackage.cc
+	    bootStrapCoreSymbolMap.cc
+	    symbol.cc 
+	    evaluator.cc
+	    builtInClass.cc
+	    standardClass.cc
+	    compiler.cc
+	conditions.cc
+	    primitives.cc
+      smart_pointers.cc
+      cache.cc
+		object.cc
+      stdClass.cc
+      metaobject.cc
+	    arguments.cc
+	    pointer.cc
+	    funcallableStandardClass.cc
+	    standardObject.cc
+	iterator.cc
+	    sysprop.cc
+	    bformat.cc
+	    backquote.cc
+	    documentation.cc
+	    lispReader.cc
+	    singleDispatchEffectiveMethodFunction.cc
+	    singleDispatchGenericFunction.cc
+	    singleDispatchMethod.cc
+	    structureObject.cc
+	    structureClass.cc
+	    null.cc
+	    forwardReferencedClass.cc
+	    lispList.cc
+	    character.cc
+	    str.cc
+	    lispString.cc
+	    designators.cc
+	    sequence.cc
+	    lispVector.cc
+	    loadTimeValues.cc
+	    python_wrappers.cc
+	    arrayObjects.cc
+	    weakReference.cc
+#	    model.cc 
+#	    symbolVector.cc
+	    symbolSet.cc
+	    reader.cc
+	        lightProfiler.cc
+		fileSystem.cc
+		intArray.cc
+		bitVector.cc
+		posixTime.cc
+		symbolToEnumConverter.cc
+		globals.cc
+		externalObject.cc
+		myReadLine.cc
+		specialForm.cc
+	    bignum.cc
+      genericFunction.cc
+	    instance.cc
+		microHeap.cc
+	    binder.cc
+		multiStringBuffer.cc
+		candoOpenMp.cc
+		objectSet.cc
+		profiler.cc 
+		lispDefinitions.cc 
+		objRef.cc 
+		bundle.cc 
+		numerics.cc 
+		object.cc 
+	    stringSet.cc
+	    stringList.cc
+	    profile.cc
+      specializer.cc
+      write_ugly.cc
+      regex.cc
+      userData.cc
+      wrappedPointer.cc
+      serialize.cc
+      sexpLoadArchive.cc
+      sexpSaveArchive.cc
+	    readtable.cc
+      debugger.cc
+      float_to_digits.cc
+      num_arith.cc
+      numbers.cc
+      numberToString.cc
+      load.cc
+      num_co.cc
+      unixfsys.cc
+      pathname.cc
+      commandLineOptions.cc
+      exceptions.cc 
+      commonLispUserPackage.cc
+	    metaClass.cc
+	    multipleValues.cc
+	    hashTable.cc
+	    hashTableEq.cc
+	    hashTableEql.cc
+	    hashTableEqual.cc
+	    hashTableEqualp.cc
+      stacks.cc
+      executables.cc 
+      testing.cc
+      predicates.cc
+      write_list.cc
+	     /externals//boostAndExpatLibs 
+             		;
+
+#Declares virtual target af_function_templates dependent on the two
+#concrete .lisp files.
+h wrappers_functoids : wrappers_functoids.pmp ;
+h wrappers_methoids : wrappers_methoids.pmp ;
+
+h external_wrappers_indirect_methoids : external_wrappers_indirect_methoids.pmp ;
+
+h af_function_templates : generate_af_function_templates.lisp 
+  			prepare_af_method_templates.lisp ;
+
+h af_method_templates : generate_af_method_templates.lisp 
+  		      prepare_af_method_templates.lisp ;
+
+h af_external_method_templates : generate_af_external_method_templates.lisp
+		prepare_af_method_templates.lisp ;
+
+alias af : af_function_templates
+	 af_method_templates 
+	 af_external_method_templates ;
+
+h symbol_apply_inc : generate_symbol_apply_inc.lisp ;
+
+
+cando.bundle $(dir) :
+	     $(sources) :
+	     <link>static
+             <implicit-dependency>mi
+             <implicit-dependency>meta
+	     ;
+
+alias meta :     wrappers_functoids
+                 wrappers_methoids
+                 external_wrappers_indirect_methoids
+                 mi symbol_apply_inc  ;   # removed af 
+
+# preprocessed corePackage : corePackage.cc : <variant>debug <define>SOURCE_DEBUG ;

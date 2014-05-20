@@ -1,0 +1,55 @@
+$var NumArgs = 8
+    $var RetSV = 0
+    $var InnerCount = NumArgs+1
+    $range ret 0..0
+    $range template_ 0..(InnerCount-1)
+    $for ret [[
+        $for template_ [[
+                $var numVoids = template_
+                $var numArgs = NumArgs - template_
+                $range Args_ 1..numArgs
+                // ret = $ret
+                // template_ = $template_
+                // numVoids = $numVoids
+                // numArgs = $numArgs
+                /* Specialization */
+                template <typename Pols, typename Pointer, typename T $if numArgs [[,]] $for Args_ ,[[typename ARG$Args_]] >
+                class VariadicConstructorFunctoid
+                 < Pols, Pointer, T, constructor<$for Args_ , [[ARG$Args_]]> >
+                : public core::Functoid {
+                public:
+                    typedef Wrapper<T,Pointer>  WrapperType;
+                public:
+                    enum { NumParams = $numArgs };
+                    VariadicConstructorFunctoid(const string& name) : core::Functoid(name) {};
+                    
+                    core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
+                    {
+                        int countPureOutValues = CountPureOutValues<Pols>::value;
+                        if ( numArgs != (NumParams-countPureOutValues) )
+                        {
+                            core::wrongNumberOfArguments(numArgs,(NumParams-countPureOutValues));
+                        }
+                        $for Args_ [[
+                                translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type > a$Args_(*args);
+                                IncWhen<typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type >::go(args);
+                                ]]
+                            T* naked_ptr(new T($for Args_ ,[[a$Args_._v]]));
+                        mem::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
+                        $if numArgs>0 [[
+                                core::MultipleValues& returnValues = _lisp->multipleValues();
+                                returnValues.setMaxSize();
+                                ]]
+                            int oidx = 1;
+                            $for Args_ [[
+                                ReturnValueWhen(returnValues,oidx
+                                                , typename is_outValue<Pols,$Args_>::type()
+                                                , typename AdoptPointer<Pols,$Args_>::type()
+                                                , a$Args_._v);
+                                ]]
+                                return mem::multiple_values<core::T_O>(retval,oidx);
+                    }
+                };
+                ]]
+        ]]
+

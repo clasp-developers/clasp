@@ -1,0 +1,2 @@
+#! /bin/sh
+m4 filterSrc.m4 $1

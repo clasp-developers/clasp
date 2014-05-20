@@ -1,0 +1,2251 @@
+#moe:forcefield 2004.10
+#
+#	charmm27.ff
+#
+#	25-Oct-2004 (pl) created
+#
+# ISSUES:
+#
+#   *	The CHARMM VDW 1-4 special paramters are not supported by MOE
+#	and therefore are not applied for the types:
+#
+#	CP1 CP2 CP3 CPT CT1 CT2 CT3 HP N NH1 O OB CN7 CN7B CN8
+#	CN8B CN9 CT1 CT2 CT3 CTL5 OB
+#
+#   *	The CHARMM dictionary charges have been approximated by the
+#	bond charge increment methodology.  Since the fit is not
+#	perfect, there will be differences in the charges.
+#
+# AS A RESULT THIS FORCE FIELD FILE IS A VERY REASONABLE APPROXIMATION TO
+# THE ORIGINAL CHARMM PARAMETERS.
+#
+# The improper torsions are approximated (quite well) by using the
+# AMBER-style improper dihedral instead of the (x - x0)**2 CHARMm
+# form.  A taylor expansion of 1 - cos 2x is 2 (x-x0)**2 + (2/3) (x-x0)**4
+# which is very good at small angles.
+#
+# The tripos form of guanidinium (C+) is supported by the typing and formal
+# charge parameters however, the bond charge increment model may not
+# give the same results.
+
+title	'CHARMM27'
+disable	stb oop
+
+info desc 'An all-atom forcefield parameterized for proteins, DNA'
+info desc 'and RNA.  This forcefield is not suitable for most'
+info desc 'small organic molecules nor heme groups.  A partial'
+info desc 'charge dictionary is used with bond charge increment'
+info desc 'defaults for small molecules.'
+
+info ref 'MacKerell, A.D. et al.; J. Comput. Chem. 25, 2004, 1400-1415'
+info ref 'MacKerell, A.D. et al.; J. Phys. Chem. B 102, 1998, 3586-3616'
+info ref 'Roland, H. et al.; PROTEINS: Struc., Func. and Gen. 23, 1995, 12-31'
+info ref 'Feller, S.E. et al.; J. Am. Chem. Soc. 124, 2002, 318-326'
+info ref 'Feller, S.E. et al.; J. Phys. Chem. B 104, 2000, 7510-7515'
+info ref 'Yin, D. et al.; J. Comp. Chem. 19, 1998, 334-338'
+info ref 'Feller, S.E. et al.; Biophysical Journal 73, 1997, 2269-2279'
+info ref 'MacKerell, A.D. et al.; J. Chim. Phys., 94, 1997, 1436-1447'
+info ref 'Beglov, D. et al.; J. Chem. Phys. 100, 1994, 9050-9063'
+
+type C    C   'carbonyl C, peptide backbone'
+type CA   C   'aromatic C'
+type CAL  Ca  'Calcium Ion'
+type CC   C   'carbonyl C, asn,asp,gln,glu,cter,ct2'
+type CD   C   'carbonyl C, pres aspp,glup,ct1'
+type CEL1 C   'for alkene; RHC=CR'
+type CES  Cs  'Cesium Ion'
+type CLA  Cl  'Chloride Ion'
+type CN1  C   'Nucleic acid carbonyl carbon'
+type CN1T C   'Nucleic acid carbonyl carbon (T/U C2)'
+type CN2  C   'Nucleic acid aromatic carbon to amide'
+type CN3  C   'Nucleic acid aromatic carbon'
+type CN3T C   'Nucleic acid aromatic carbon, Thy C5'
+type CN4  C   'Nucleic acid purine C8 and ADE C2'
+type CN5  C   'Nucleic acid purine C4 and C5'
+type CN5G C   'Nucleic acid guanine C5'
+type CN7  C   'Nucleic acid carbon (equivalent to protein CT1)'
+type CN7B C   'Nucleic acid aliphatic carbon for C1*'
+type CN8  C   'Nucleic acid carbon (equivalent to protein CT2)'
+type CN8B C   'Nucleic acid carbon (equivalent to protein CT2)'
+type CN9  C   'Nucleic acid carbon (equivalent to protein CT3)'
+type CP1  C   'tetrahedral C (proline CA)'
+type CP2  C   'tetrahedral C (proline CB/CG)'
+type CQ   C   'tetrahedral/quaternary C (pro4 CG) meister'
+type CP3  C   'tetrahedral C (proline CD)'
+type CPH1 C   'his CG and CD2 carbons'
+type CPH2 C   'his CE1 carbon'
+type CPT  C   'trp C between rings'
+type CT   C   'aliphatic sp3 C '
+type CT1  C   'aliphatic sp3 C for CH'
+type CT2  C   'aliphatic sp3 C for CH2'
+type CT3  C   'aliphatic sp3 C for CH3'
+type CTL5 C   'carbon of methyl group (-CH3) for tetramethylammonium'
+type CY   C   'TRP C in pyrrole ring'
+type H    H   'polar H'
+type HA   H   'nonpolar H'
+type HB   H   'backbone H'
+type HC   H   'N-ter H'
+type HEL1 H   'for alkene; RHC=CR'
+type HL   H   'polar H (equivalent to protein H)'
+type HN1  H   'Nucleic acid amine proton'
+type HN2  H   'Nucleic acid ring nitrogen proton'
+type HN3  H   'Nucleic acid aromatic carbon proton'
+type HN4  H   'Nucleic acid phosphate hydroxyl proton'
+type HN5  H   'Nucleic acid ribose hydroxyl proton'
+type HN7  H   'Nucleic acid proton (equivalent to protein HA)'
+type HN8  H   'Bound to CN8 in nucleic acids/model compounds'
+type HN9  H   'Bound to CN9 in nucleic acids/model compounds'
+type HP   H   'aromatic H'
+type HR1  H   'his he1, (+) his HG,HD2'
+type HR2  H   '(+) his HE1'
+type HR3  H   'neutral his HG, HD2'
+type HS   H   'thiol hydrogen'
+type HT   H   'TIPS3P WATER HYDROGEN'
+type MG   Mg  'Magnesium Ion'
+type N    N   'proline N'
+type NC2  N   'guanidinium nitroogen'
+type NH1  N   'peptide nitrogen'
+type NH2  N   'amide nitrogen'
+type NH3  N   'ammonium nitrogen'
+type NN1  N   'Nucleic acid amide nitrogen'
+type NN2  N   'Nucleic acid protonated ring nitrogen'
+type NN2B N   'From NN2, for N9 in GUA different from ADE'
+type NN2G N   'Nucleic acid protonated ring nitrogen, gua N1'
+type NN2U N   'Nucleic acid protonated ring nitrogen, ura N3'
+type NN3  N   'Nucleic acid unprotonated ring nitrogen'
+type NN3A N   'Nucleic acid unprotonated ring nitrogen, ade N1 and N3'
+type NN3G N   'Nucleic acid unprotonated ring nitrogen, gua N3'
+type NN4  N   'Nucleic acid purine N7'
+type NP   N   'Proline ring NH2+ (N-terminal)'
+type NR1  N   'neutral his protonated ring nitrogen'
+type NR2  N   'neutral his unprotonated ring nitrogen'
+type NR3  N   'charged his ring nitrogen'
+type NTL  N   'ammonium nitrogen'
+type NY   N   'TRP N in pyrrole ring'
+type O    O   'carbonyl oxygen'
+type OB   O   'carbonyl oxygen in acetic acid'
+type OC   O   'carboxylate oxygen'
+type OH1  O   'hydroxyl oxygen'
+type OH  O   'hydroxyl oxygen'
+type ON1  O   'Nucleic acid carbonyl oxygen'
+type ON1C O   'Nucleic acid carbonyl oxygen, cyt O2'
+type ON2  O   'Nucleic acid phosphate ester oxygen'
+type ON3  O   'Nucleic acid =O in phosphate'
+type ON4  O   'Nucleic acid phosphate hydroxyl oxygen'
+type ON5  O   'Nucleic acid ribose hydroxyl oxygen'
+type ON6  O   'Nucleic acid deoxyribose ring oxygen'
+type ON6B O   'Nucleic acid ribose ring oxygen'
+type OS   O   'ester oxygen'
+type OT   O   'TIPS3P WATER OXYGEN'
+type P    P   'phosphorus'
+type POT  K   'Potassium Ion! check masses'
+type S    S   'sulphur'
+type SL   S   'Sulfate sulfur'
+type SM   S   'sulfur C-S-S-C type'
+type SOD  Na  'Sodium Ion'
+type ZN   Zn  'zinc (II) cation'
+type Du   LP  'Dummy'
+
+[rules] # automatic type assignment 
+
+    # misc atoms and ions
+
+Du	match	'[#0;D0]'		# dummy (no bonds)
+CAL	match	'[Ca+2]'		# calcium
+ZN	match	'[Zn+2]'		# zinc
+CLA	match	'[Cl-]'			# chlorine ion
+MG	match	'[Mg+2]'		# magnesium ion
+SOD	match	'[Na+]'			# soidum ion
+POT	match	'[K+]'			# potassium ion
+CES	match	'[Cs+]'			# cesium ion
+P	match	'[P]'			# phosphorus
+
+    # hydrogen
+
+H	match '[#1]-[#N]'			# polar H
+HT	match '[#1]-[O;X2H2]'			# TIP3P water H
+
+HC	match '[#1]-[N;Q1X3!iH2]'		# H on amine NH2
+H	match '[#1]-[N;!iX3]C=O'		# amide/peptide N
+
+HC	match '[#1]-[NX4]'			# n-terminal H, or H on N+(sp3)
+HC	match '[#1]-[N+]=C(-[N;X3!i])'		# H on NCN+ N
+HC	match '[#1]-[N;X3!i]-C(-[N;X3!i])=[N+]'
+HC	match '[#1]-[N;X3!i]-[C;X3+!i](-[N;X3!i])'
+
+HA	match '[#1]-[#6]'			# alphatic(nonpolar) H
+HB	match '[#1]-[C;H1Q3]-C=O'		# backbone H on C
+HB	match '[#1]-[C;H2X4](C=O)[N!i]'		# gly backbone
+HL	match '[#1]-[C;X4][N+Q4]'		# H on CH3 on N+
+
+HEL1	match '[#1]-C=C'			# alkene RHC=CR
+HP	match '[#1]-c'				# aromatic H
+
+HR1	match '[#1]-c1[n;X3H]c[n;X3H]c1'	# H on CD/CG in HIS+
+HR1	match '[#1]-c1[n;X2i1]cc[n;X3i2H]1'	# H on CE1 in HIS
+HR2	match '[#1]-c1[n;X3H]cc[n;X3H]1'	# H on CE1 in HIS+
+HR3	match '[#1]-c1[n;X2i1]c[n;X3i2H]c1'	# H on CD/CG in HIS
+HR3	match '[#1]-c1[n;X3i2H]c[n;X2i1]c1'	# H on CD/CG in HIS
+
+HS	match '[#1]-[S;X2+0]'			# thiol S
+
+    # carbon
+
+C	match 'C=O'				# carbonyl C
+C	match 'C(=O)[N;H1Q2]'			# backbone C=O
+C	match '[C+0](=[N+])-[N;!i]'		# C in guanidinium
+C	match '[C+1](-[N;!i])-[N;!i]'		# C in guanidinium
+
+CA	match '[c]'				# aromatic C
+CY	match '[c;r5Q3]'			# TRP C in pyrrole ring
+CPT	match '[c;r5](:a)(:a):a'		# TRP C between rings
+
+CC	match '[CQ3](=O)[NH2]'			# carbonyl C: asn,gln
+CC	match '[CQ3](=O)[OX1]'			# carbonyl C: asp,glu,cter
+CD	match '[CQ3](=O)[OX2]'			# carbonyl C: aspp,glup
+
+CEL1	match 'C=C'				# alkene C=C
+
+CPH1	match 'c1cncn1'				# C in HIS CG and CD2
+CPH2	match 'c1nccn1'				# C in HIS CE1
+
+CT1	match '[C;X4H1]'			# sp3 C in CH1
+CT2	match '[C;X4H2]'			# sp3 C in CH2
+CT3	match '[C;X4H3]'			# sp3 C in CH3
+CTL5	match '[C;X4H3][N+Q4]'			# sp3 C on N+ Q4
+
+CP1	match '[CX4H1r5]1(C=O)[CX4H2][CX4H2][CX4H2][N!i]1'	# C in PRO CA
+CP2	match '[CX4H2r5]1[CH2X4][CH2X4][N!i][CX4H1]1C=O'	# C in PRO CB
+CP2	match '[CX4H2r5]1[CH2X4][N!i][CX4H1](C=O)[CX4H2]1'	# C in PRO CG
+CP3	match '[CX4H2r5]1[N!i][CX4](C=O)[CX4H2][CX4H2]1'	# C in PRO CD
+
+    # nitrogen
+
+NH2	match '[N;Q1X3!iH2]'			# amine nitrogen
+NH1	match '[N;Q2X3!iH1]-C=O'		# peptide nitrogen
+NH2	match '[N;Q1X3!iH2]-C=O'		# amide nitrogen
+NH3	match '[N;X4]'				# ammonium nitrogen
+NTL	match '[N;X4Q4]'			# 4-coord ammonium N
+
+N	match '[N;Q3!i+0]-C=O'			# proline N
+NP	match '[N;X4H2]1CCCC1C(=O)'		# proline NH2 (n-terminal)
+
+NC2	match '[N+]=C(-[N;X3!i])'		# guanadinium nitrogen
+NC2	match '[N;X3!i]-C=[N+]'
+NC2	match '[N;X3!i]-[C;X3+!i]-[N;X3!i]'
+
+NY	match '[n;i2H]'				# TRP N in pyrrole ring
+NR1	match '[n;i2X3H]1c[n;i1X2]cc1'		# his protonated ring N
+NR2	match '[n;i1X2]1c[n;i2X3H]cc1'		# his unprotonated ring N
+NR3	match '[n;X3H]1c[n;X3H]cc1'		# his+ protonated ring N
+
+    # oxygen
+
+O	match '[OX1]=C'				# carbonyl oxygen
+OB	match '[OX1]=C-[OX2]'			# cabonyl oxygen in acetic acid
+OC	match '[OX1]=C-[OX1]'			# carboxylate oxygen
+OC	match '[OX1]-C=[OX1]'
+
+OH1	match '[O;X2H1]'			# hydroxyl oxygen
+OS	match '[O;X2Q2]-C=[OX1]'		# ester oxygen
+OT	match '[O;H2X2]'			# TIP3P water oxygen
+
+ON3	match '[OX1][SX4][OX1]'			# terminal O in sulfate
+ON2	match '[OX2Q2][SX4]([OX1])[OX1]'	# ester O in sulfate
+
+    # sulfur
+
+S	match '[#16]'				# sulfur
+SM	match '[S;X2](-C)[S;X2]-C'		# sulfur in C-S-S-C
+SL	match '[SX4]'				# sulfate sulfur
+
+    # nucleic acid ribose (match order C1' C2' C3' C4' O4')
+
+ON6B	match '[OX2r5]1@[CX4H]@[CX4H]([OH])@[CX4H]@[CX4H]1'	# O4' (rna)
+ON6	match '[OX2r5]1@[CX4H]@[CX4H2]@[CX4H]@[CX4H]1'		# O4' (dna)
+
+CN7	match '[CX4Hr5]1@[CX4H]@[OX2][CX4H]@[CX4]1'		# C3'
+CN7	match '[CX4Hr5]1@[OX2][CX4H]@[CX4]@[CX4H]1'		# C4'
+
+CN7B	match '[CX4Hr5]1@[CX4H2]@[CX4H]@[CX4H]@[OX2]1'		# C1' (dna)
+CN7B	match '[CX4Hr5]1@[CX4H]([OH])@[CX4H]@[CX4H]@[OX2]1'	# C1' (rna)
+
+CN7B	match '[CX4Hr5]1([OH])[CX4H][CX4H][OX2][CX4H]1'		# C2' (rna)
+HN7	match '[#1][CX4!H0r5]1@[OX2][CX4]@[CX4]@[CX4]1'		# H2
+HN7	match '[#1][CX4!H0r5]1@[CX4]@[OX2][CX4]@[CX4]1'
+
+CN8	match '[CX4H2r5]1@[CX4H]@[CX4H]@[OX2][CX4H]1'		# C2' (dna)
+HN8	match '[#1]-[CX4H2r5]1@[CX4H]@[CX4H]@[OX2][CX4H]1'	# H2
+
+CN8B	match '[CX4H2]([OQ2][PX4][OX1])[CX4r5]'			# C5'
+HN8	match '[#1]-[CX4H2]([OQ2][PX4][OX1])[CX4r5]'		# C5'
+
+ON5	match '[OH][CX4Hr5]1@[CX4H]@[CX4H]@[OX2][CX4H]1'	# O2' (rna)
+HN5	match '[#1][OH][CX4Hr5]1@[CX4H]@[CX4H]@[OX2][CX4H]1'	# H-O2' (rna)
+
+    # nucleic acid phosphate
+
+HN4	match '[#1][OX2H1][PX4]([OX1])([OX1])'	# H on OH in phosphate
+ON3	match '[OX1][PX4][OX1]'			# terminal O in phosphate
+ON2	match '[OQ2][PX4]([OX1])[OX1]'		# ether O in phosphate
+ON4	match '[OX2H1][PX4]([OX1])([OX1])'	# OH in phosphate
+
+    # nucleic acid: cytosine (match order N1 C2 N3 C4 C5 C6)
+
+NN2	match '[NQ3!ir6]1@[CQ3](=O)@[NX2]=@[CQ3]@[CQ2]=[CQ2]1'		# N1
+CN1	match '[CQ3r6]1(=O)@[NX2]=@[CQ3]@[CQ2]=[CQ2]@[NQ3!i]1'		# C2
+ON1C	match '[OX1]=[CQ3r6]1@[NX2]=@[CQ3]@[CQ2]=[CQ2]@[NQ3!i]1'	# O2
+NN3	match '[NX2r6]1=@[CQ3]@[CQ2]=[CQ2]@[NQ3!i]@[CQ3]1(=O)'		# N3
+CN2	match '[CQ3ir6]1@[CQ2]=[CQ2]@[NQ3!i]@[CQ3](=O)@[NX2]=1'		# C4
+
+NN1	match '[NH2X3!i][CQ3ir6]1@[CQ2]=[CQ2]@[NQ3!i]@[CQ3](=O)@[NX2]=1'
+HN1	match '[#1][NH2X3!i][CQ3ir6]1@[CQ2]=[CQ2]@[NQ3!i]@[CQ3](=O)@[NX2]=1'
+
+CN3	match '[CQ2r6i]1=[CQ2]@[NQ3!i]@[CQ3](=O)@[NX2]=@[CQ3]1'		# C5
+HN3	match '[#1]-[CQ2r6i]1=[CQ2]@[NQ3!i]@[CQ3](=O)@[NX2]=@[CQ3]1'	# H5
+
+CN3	match '[CQ2r6i]1@[NQ3!i]@[CQ3](=O)@[NX2]=@[CQ3]@[CQ2]=1'	# C6
+HN3	match '[#1]-[CQ2r6i]1@[NQ3!i]@[CQ3](=O)@[NX2]=@[CQ3]@[CQ2]=1'	# H6
+
+    # nucleic acid: thymine (match order N1 C2 N3 C4 C5 C6)
+
+NN2B	match '[NQ3!ir6]1@[CQ3](=O)@[NX3!i]@[CQ3](=O)@[CQ3]=[CQ2]1'	# N1
+
+CN1T	match '[CQ3r6]1(=O)@[NX3!i]@[CQ3](=O)@[CQ3]=[CQ2]@[NQ3!i]1'	# C2
+ON1	match '[OX1]=[CQ3r6]1@[NX3!i]@[CQ3](=O)@[CQ3]=[CQ2]@[NQ3!i]1'	# O2
+
+NN2U	match '[NX3!ir6]1@[CQ3](=O)@[CQ3]=[CQ2]@[NQ3!i]@[CQ3]1(=O)'	# N3
+HN2	match '[#1][NX3!ir6]1@[CQ3](=O)@[CQ3]=[CQ2]@[NQ3!i]@[CQ3]1(=O)'	# N3
+
+CN1	match '[CQ3r6]1(=O)@[CQ3]=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]1'	# C4
+ON1	match '[OX1]=[CQ3r6]1@[CQ3]=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]1'	# O4
+
+CN3T	match '[CQ3r6]1=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3]1(=O)'	# C5
+CN9	match '[CH3][CQ3r6]1=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3]1(=O)'	# C5M
+HN9	match '[#1][CH3][CQ3r6]1=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3]1(=O)'
+
+CN3	match '[CQ2r6]1@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3](=O)@[CQ3]=1'	# C6
+HN3	match '[#1][CQ2r6]1@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3](=O)@[CQ3]=1'	# H6
+
+    # nucleic acid: uracil (match order N1 C2 N3 C4 C5 C6)
+
+NN2B	match '[NQ3!ir6]1@[CQ3](=O)@[NX3!i]@[CQ3](=O)@[CQ2]=[CQ2]1'	# N1
+
+CN1T	match '[CQ3r6]1(=O)@[NX3!i]@[CQ3](=O)@[CQ2]=[CQ2]@[NQ3!i]1'	# C2
+ON1	match '[OX1]=[CQ3r6]1@[NX3!i]@[CQ3](=O)@[CQ2]=[CQ2]@[NQ3!i]1'	# O2
+
+NN2U	match '[NX3!ir6]1@[CQ3](=O)@[CQ2]=[CQ2]@[NQ3!i]@[CQ3]1(=O)'	# N3
+HN2	match '[#1][NX3!ir6]1@[CQ3](=O)@[CQ2]=[CQ2]@[NQ3!i]@[CQ3]1(=O)'	# N3
+
+CN1	match '[CQ3r6]1(=O)@[CQ2]=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]1'	# C4
+ON1	match '[OX1]=[CQ3r6]1@[CQ2]=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]1'	# O4
+
+CN3	match '[CQ2r6]1=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3]1(=O)'	# C5
+HN3	match '[#1][CQ2r6]1=[CQ2]@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3]1(=O)'	# H5
+
+CN3	match '[CQ2r6]1@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3](=O)@[CQ2]=1'	# C6
+HN3	match '[#1][CQ2r6]1@[NQ3!i]@[CQ3](=O)[NX3!i]@[CQ3](=O)@[CQ2]=1'	# H6
+
+    # nucleic acid: adenine (6: N1 C2 N3 C4 C5 C6) (5: N7 C8 N9 C4 C5)
+
+NN4	match '[nX2r5]1:[cH]:[nQ3]:c2:c1:[cQ3][nX2][cH][nX2]2'		# N7
+
+CN4	match '[cHr5]1:[nQ3]:c2:c([nX2]1):[cQ3][nX2][cH][nX2]2'		# C8
+HN3	match '[#1][cHr5]1:[nQ3]:c2:c([nX2]1):[cQ3][nX2][cH][nX2]2'
+
+NN2	match '[nQ3r5]1:c2:c([nX2][cH]1):[cQ3][nX2][cH][nX2]2'		# N9
+
+CN5	match '[cQ3r5]12:c([nX2][cH]:[nQ3]1):[cQ3][nX2][cH][nX2]2'	# C4
+CN5	match '[cQ3r5]1([nX2][cH]:[nQ3]:[cQ3]2:1):[cQ3][nX2][cH][nX2]2' # C5
+
+CN2	match '[cQ3r6]1[nX2][cH][nX2][cQ3]2:[cQ3]1[nX2][cH][nX3]2'	# C6
+NN1	match '[NH2!i][cQ3r6]1[nX2][cH][nX2][cQ3]2:[cQ3]1[nX2][cH][nX3]2'
+HN1	match '[#1][NH2!i][cQ3r6]1[nX2][cH][nX2][cQ3]2:[cQ3]1[nX2][cH][nX3]2'
+
+NN3A	match '[nX2r6]1[cH][nX2][cQ3]2:[cQ3](:[cQ3]1)[nX2][cH][nX3]2'	# N1
+
+CN4	match '[cHr6]1[nX2][cQ3]2:[cQ3](:[cQ3][nX2]1)[nX2][cH][nX3]2'	# C2
+HN3	match '[#1][cHr6]1[nX2][cQ3]2:[cQ3](:[cQ3][nX2]1)[nX2][cH][nX3]2'
+
+NN3A	match '[nX2r6]1[cQ3]2:[cQ3](:[cQ3][nX2][cH]1)[nX2][cH][nX3]2'	# N3
+
+    # nucleic acid: guanine (6: N1 C2 N3 C4 C5 C6) (5: N7 C8 N9 C4 C5)
+
+NN4	match '[nX2r5]1:[cH]:[nQ3]:c2:c1C(=O)[NH][CQ3]=[NX2]2'		# N7
+
+CN4	match '[cHr5]1:[nQ3]:c2:c([nX2]1)C(=O)[NH][CQ3]=[NX2]2'		# C8
+HN3	match '[#1][cHr5]1:[nQ3]:c2:c([nX2]1)C(=O)[NH][CQ3]=[NX2]2'	# H8
+
+NN2B	match '[nQ3r5]1:c2:c([nX2][cH]1)C(=O)[NH][CQ3]=[NX2]2'		# N9
+CN5	match '[cQ3r5]12:c([nX2][cH][nQ3]1)C(=O)[NH][CQ3]=[NX2]2'	# C4
+CN5G	match '[cQ3r5]1([nX2][cH][nQ3]c21)C(=O)[NH][CQ3]=[NX2]2'	# C5
+
+CN1	match '[CQ3r6]1(=O)@[NH]@[CQ3]=[NX2]c2c1[nX2][cH][nQ3]2'	# C6
+ON1	match 'O=[CQ3r6]1@[NH]@[CQ3]=[NX2]c2c1[nX2][cH][nQ3]2'		# O6
+
+NN2G	match '[NHr6]1@[CQ3]=[NX2]c2c([CQ3](=O)1)[nX2][cH][nQ3]2'	# N1
+HN2	match '[#1][NHr6]1@[CQ3]=[NX2]c2c([CQ3](=O)1)[nX2][cH][nQ3]2'	# H1
+
+CN2	match '[CQ3r6]1=@[NX2]c2c([CQ3](=O)[NH]1)[nX2][cH][nQ3]2'	# C2
+
+NN1	match '[NH2][CQ3r6]1=@[NX2]c2c([CQ3](=O)[NH]1)[nX2][cH][nQ3]2'	# N2
+HN1	match '[#1][NH2][CQ3r6]1=@[NX2]c2c([CQ3](=O)[NH]1)[nX2][cH][nQ3]2'
+
+NN3G	match '[NX2r6i]1c2c([CQ3](=O)[NH][CQ3]=1)[nX2][cH][nQ3]2'	# N3
+
+[str] # bond stretch parameters
+
+#    T1   T2         L        k2 k3 k4     bci
+#    ---- ----  ------ --------- -- -- -------
+*    C    C     1.3350  600.0000  0  0  0.0000
+*    C    CP1   1.4900  250.0000  0  0  0.0650
+*    C    CQ2   1.4900  250.0000  0  0  0.0650	#meister
+*    C    CT1   1.4900  250.0000  0  0  0.0400
+*    C    CT2   1.4900  250.0000  0  0  0.0150
+*    C    CT3   1.4900  250.0000  0  0  0.0200
+*    C    N     1.3000  260.0000  0  0 -0.0600
+*    C    NC2   1.3650  463.0000  0  0 -0.2000
+*    C    NH1   1.3450  370.0000  0  0 -0.0350
+*    C    NH2   1.3450  370.0000  0  0 -0.0350
+*    C    O     1.2300  620.0000  0  0 -0.5100
+*    CA   CA    1.3750  305.0000  0  0  0.0000
+*    CA   CPT   1.3680  305.0000  0  0  0.0000
+*    CA   CT2   1.4900  230.0000  0  0 -0.0050
+*    CA   CT3   1.4900  230.0000  0  0       -
+*    CA   CY    1.3650  350.0000  0  0 -0.0550
+*    CA   HA    1.0830  340.0000  0  0       -
+*    CA   HP    1.0800  340.0000  0  0  0.1150
+*    CA   NY    1.3700  270.0000  0  0 -0.0950
+*    CA   OC    1.2600  525.0000  0  0       -
+*    CA   OH1   1.4110  334.3000  0  0 -0.1100
+*    CC   CP1   1.4900  250.0000  0  0  0.0850
+*    CC   CT1   1.5220  200.0000  0  0  0.0700
+*    CC   CT2   1.5220  200.0000  0  0 -0.0400
+*    CC   CT3   1.5220  200.0000  0  0       -
+*    CC   HA    1.1000  317.1300  0  0       -
+*    CC   NH2   1.3600  430.0000  0  0  0.0150
+*    CC   O     1.2300  650.0000  0  0 -0.5450
+*    CC   OB    1.2200  750.0000  0  0 -0.4750
+*    CC   OC    1.2600  525.0000  0  0 -0.1750
+*    CC   OH1   1.4000  230.0000  0  0       -
+*    CC   ON2   1.3340  150.0000  0  0 -0.1600
+*    CD   CP1   1.4900  200.0000  0  0       -
+*    CD   CT1   1.5220  200.0000  0  0  0.1400
+*    CD   CT2   1.5220  200.0000  0  0 -0.0300
+*    CD   CT3   1.5220  200.0000  0  0       -
+*    CD   H     1.1100  330.0000  0  0       -
+*    CD   OB    1.2200  750.0000  0  0 -0.5450
+*    CD   OH1   1.4000  230.0000  0  0 -0.1750
+*    CD   OS    1.3340  150.0000  0  0 -0.2200
+*    CEL1 CEL1  1.3400  440.0000  0  0  0.0000
+*    CEL1 CT2   1.5020  365.0000  0  0  0.0000
+*    CEL1 CT3   1.5040  383.0000  0  0       -
+*    CEL1 HEL1  1.1000  360.5000  0  0  0.1500
+*    CN1  CN3   1.4090  302.0000  0  0 -0.0450
+*    CN1  CN3T  1.4030  302.0000  0  0 -0.0200
+*    CN1  CN5G  1.3600  302.0000  0  0 -0.1600
+*    CN1  NN2   1.3670  380.0000  0  0  0.0350
+*    CN1  NN2G  1.3960  340.0000  0  0  0.1000
+*    CN1  NN2U  1.3890  340.0000  0  0 -0.0050
+*    CN1  NN3   1.3350  350.0000  0  0 -0.0650
+*    CN1  ON1   1.2340  660.0000  0  0 -0.4800
+*    CN1  ON1C  1.2450  620.0000  0  0 -0.4900
+*    CN1T NN2B  1.3480  302.0000  0  0 -0.0200
+*    CN1T NN2U  1.3830  340.0000  0  0 -0.0900
+*    CN1T ON1   1.2300  860.0000  0  0 -0.4200
+*    CN2  CN3   1.4060  320.0000  0  0 -0.0300
+*    CN2  CN5   1.3580  360.0000  0  0 -0.0150
+*    CN2  NN1   1.3660  360.0000  0  0 -0.0250
+*    CN2  NN2G  1.3920  400.0000  0  0 -0.1800
+*    CN2  NN3   1.3430  450.0000  0  0 -0.5950
+*    CN2  NN3A  1.3420  400.0000  0  0 -0.4200
+*    CN2  NN3G  1.3260  320.0000  0  0 -0.5450
+*    CN3  CN3   1.3260  500.0000  0  0  0.0000
+*    CN3  CN3T  1.3200  560.0000  0  0 -0.0050
+*    CN3  CN8   1.4900  222.5000  0  0       -
+*    CN3  HN3   1.0900  350.0000  0  0  0.1350
+*    CN3  NN2   1.3430  302.0000  0  0 -0.1500
+*    CN3  NN2B  1.3430  320.0000  0  0 -0.3050
+*    CN3T CN9   1.4780  230.0000  0  0  0.1200
+*    CN3T HN3   1.0900  350.0000  0  0       -
+*    CN4  HN3   1.0900  380.0000  0  0  0.1350
+*    CN4  NN2   1.3740  320.0000  0  0 -0.0500
+*    CN4  NN2B  1.3780  300.0000  0  0  0.0400
+*    CN4  NN2G  1.3650  350.0000  0  0       -
+*    CN4  NN3A  1.3220  420.0000  0  0 -0.3200
+*    CN4  NN4   1.3050  400.0000  0  0 -0.4250
+*    CN5  CN5   1.3610  310.0000  0  0  0.0000
+*    CN5  CN5G  1.3500  320.0000  0  0 -0.0150
+*    CN5  NN2   1.3750  300.0000  0  0  0.0150
+*    CN5  NN2B  1.3750  302.0000  0  0 -0.0450
+*    CN5  NN3A  1.3120  350.0000  0  0 -0.4300
+*    CN5  NN3G  1.3150  350.0000  0  0 -0.1950
+*    CN5  NN4   1.3550  310.0000  0  0 -0.2850
+*    CN5G NN4   1.3650  310.0000  0  0 -0.1750
+*    CN7  CN7   1.5290  222.5000  0  0  0.0000
+*    CN7  CN7B  1.4600  222.5000  0  0 -0.0050
+*    CN7  CN8   1.5160  222.5000  0  0 -0.0050
+*    CN7  CN8B  1.5120  222.5000  0  0 -0.0300
+*    CN7  CN9   1.5160  222.5000  0  0       -
+*    CN7  HN7   1.1110  309.0000  0  0  0.0900
+*    CN7  ON2   1.4330  310.0000  0  0 -0.1350
+*    CN7  ON5   1.4200  428.0000  0  0       -
+*    CN7  ON6   1.4460  240.0000  0  0 -0.2600
+*    CN7  ON6B  1.4800  240.0000  0  0 -0.2600
+*    CN7B CN7B  1.4500  200.0000  0  0  0.0000
+*    CN7B CN8   1.5180  200.0000  0  0  0.0050
+*    CN7B HN7   1.1110  309.0000  0  0  0.0900
+*    CN7B NN2   1.4560  220.0000  0  0 -0.0150
+*    CN7B NN2B  1.4580  220.0000  0  0 -0.0150
+*    CN7B NR1   1.4620  220.0000  0  0       -
+*    CN7B ON2   1.4330  310.0000  0  0       -
+*    CN7B ON5   1.4000  428.0000  0  0 -0.2350
+*    CN7B ON6   1.4200  260.0000  0  0 -0.2400
+*    CN7B ON6B  1.4200  260.0000  0  0 -0.2400
+*    CN8  CN8   1.5280  222.5000  0  0  0.0000
+*    CN8  CN8B  1.5280  222.5000  0  0       -
+*    CN8  CN9   1.5280  222.5000  0  0       -
+*    CN8  HN8   1.1110  309.0000  0  0  0.0900
+*    CN8  NN2   1.4600  400.0000  0  0       -
+*    CN8  NN2B  1.4580  400.0000  0  0       -
+*    CN8  ON2   1.4400  340.0000  0  0       -
+*    CN8  ON5   1.4200  428.0000  0  0       -
+*    CN8B HN8   1.1110  309.0000  0  0  0.0900
+*    CN8B ON2   1.4400  320.0000  0  0 -0.1300
+*    CN8B ON5   1.4200  428.0000  0  0       -
+*    CN8B ON6   1.4200  260.0000  0  0       -
+*    CN9  HN9   1.1110  322.0000  0  0  0.0750
+*    CN9  NN2   1.4560  400.0000  0  0       -
+*    CN9  NN2B  1.4580  400.0000  0  0       -
+*    CN9  ON2   1.4300  340.0000  0  0       -
+*    CP1  CP2   1.5270  222.5000  0  0  0.0150
+*    CP1  HB    1.0800  330.0000  0  0  0.0900
+*    CP1  N     1.4340  320.0000  0  0 -0.0450
+*    CP1  NP    1.4850  320.0000  0  0 -0.1650
+*    CP2  CP2   1.5370  222.5000  0  0  0.0000
+*    CP2  CQ2   1.5370  222.5000  0  0  0.0000	#meister
+*    CP2  CP3   1.5370  222.5000  0  0 -0.0150
+*    CQ2  CP3   1.5370  222.5000  0  0 -0.0150	#meister
+*    CP2  HA    1.1110  309.0000  0  0  0.0900
+*    CP3  HA    1.1110  309.0000  0  0  0.0900
+*    CP3  N     1.4550  320.0000  0  0 -0.1900
+*    CP3  NP    1.5020  320.0000  0  0 -0.3200
+*    CPH1 CPH1  1.3600  410.0000  0  0  0.0000
+*    CPH1 CT2   1.5000  229.6300  0  0  0.1000
+*    CPH1 CT3   1.5000  229.6300  0  0       -
+*    CPH1 HR1   1.0830  375.0000  0  0  0.1250
+*    CPH1 HR3   1.0830  365.0000  0  0  0.0950
+*    CPH1 NR1   1.3800  400.0000  0  0 -0.0500
+*    CPH1 NR2   1.3800  400.0000  0  0 -0.3200
+*    CPH1 NR3   1.3700  380.0000  0  0 -0.2800
+*    CPH2 HR1   1.0900  340.0000  0  0  0.1300
+*    CPH2 HR2   1.0700  333.0000  0  0  0.1850
+*    CPH2 NR1   1.3600  400.0000  0  0  0.0050
+*    CPH2 NR2   1.3200  400.0000  0  0 -0.3800
+*    CPH2 NR3   1.3200  380.0000  0  0 -0.2250
+*    CPT  CPT   1.4000  360.0000  0  0  0.0000
+*    CPT  CY    1.4400  350.0000  0  0  0.0150
+*    CPT  NY    1.3750  270.0000  0  0 -0.1350
+*    CT1  CT1   1.5000  222.5000  0  0  0.0000
+*    CT1  CT2   1.5380  222.5000  0  0  0.0050
+*    CT1  CT3   1.5380  222.5000  0  0  0.0000
+*    CT1  HA    1.1110  309.0000  0  0  0.0900
+*    CT1  HB    1.0800  330.0000  0  0  0.1000
+*    CT1  NH1   1.4300  320.0000  0  0 -0.1200
+*    CQ2  NH1   1.4300  320.0000  0  0 -0.1200	# meister
+*    CT1  NH3   1.4800  200.0000  0  0 -0.2450
+*    CT1  OH1   1.4200  428.0000  0  0 -0.2300
+*    CT1  ON2   1.4300  340.0000  0  0 -0.1600
+*    CT2  CT2   1.5300  222.5000  0  0  0.0000
+*    CT2  CT3   1.5280  222.5000  0  0  0.0000
+*    CT2  CY    1.5100  230.0000  0  0  0.0050
+*    CT2  HA    1.1110  309.0000  0  0  0.0900
+*    CT2  HB    1.0800  330.0000  0  0  0.0850
+*    CT2  HL    1.0800  300.0000  0  0  0.2500
+*    CT2  NC2   1.4900  261.0000  0  0 -0.3550
+*    CT2  NH1   1.4300  320.0000  0  0 -0.1450
+*    CT2  NH2   1.4550  240.0000  0  0 -0.3000
+*    CT2  NH3   1.4800  200.0000  0  0 -0.2800
+*    CT2  NTL   1.5100  215.0000  0  0 -0.3750
+*    CT2  OC    1.3300  450.0000  0  0       -
+*    CT2  OH1   1.4200  428.0000  0  0 -0.2250
+*    CT2  ON2   1.4300  340.0000  0  0 -0.1100
+*    CT2  S     1.8180  198.0000  0  0 -0.0500
+*    CT2  SM    1.8160  214.0000  0  0 -0.0750
+*    CT3  CT3   1.5300  222.5000  0  0  0.0000
+*    CT3  HA    1.1110  322.0000  0  0  0.0900
+*    CT3  HB    1.0800  330.0000  0  0       -
+*    CT3  NC2   1.4900  261.0000  0  0       -
+*    CT3  NH1   1.4300  320.0000  0  0 -0.1400
+*    CT3  NH2   1.4550  240.0000  0  0       -
+*    CT3  NH3   1.4800  200.0000  0  0       -
+*    CT3  OC    1.3300  450.0000  0  0       -
+*    CT3  OH1   1.4200  428.0000  0  0       -
+*    CT3  ON2   1.4300  340.0000  0  0       -
+*    CT3  OS    1.4300  340.0000  0  0 -0.1250
+*    CT3  S     1.8160  240.0000  0  0 -0.0450
+*    CT3  SM    1.8160  214.0000  0  0       -
+*    CTL5 HL    1.0800  300.0000  0  0  0.2500
+*    CTL5 NTL   1.5100  215.0000  0  0 -0.3750
+*    CY   HA    1.0800  330.0000  0  0       -
+*    CY   HP    1.0800  350.0000  0  0       -
+*    H    NH1   0.9970  440.0000  0  0 -0.3100
+*    H    NH2   1.0000  480.0000  0  0 -0.3150
+*    H    NR1   1.0000  466.0000  0  0 -0.3200
+*    H    NR3   1.0000  453.0000  0  0 -0.4150
+*    H    NY    0.9760  465.0000  0  0 -0.3800
+*    H    OH1   0.9600  545.0000  0  0 -0.4350
+*    HC   NC2   1.0000  455.0000  0  0 -0.4450
+*    HC   NH1   0.9800  405.0000  0  0       -
+*    HC   NH2   1.0000  460.0000  0  0 -0.3350
+*    HC   NH3   1.0400  403.0000  0  0 -0.2950
+*    HC   NP    1.0060  460.0000  0  0 -0.2050
+*    HN1  NN1   1.0000  488.0000  0  0 -0.3550
+*    HN2  NN2   1.0100  474.0000  0  0       -
+*    HN2  NN2B  1.0100  474.0000  0  0       -
+*    HN2  NN2G  1.0100  471.0000  0  0 -0.2600
+*    HN2  NN2U  1.0100  474.0000  0  0 -0.3650
+*    HN4  ON4   0.9600  545.0000  0  0 -0.3050
+*    HN5  ON5   0.9600  545.0000  0  0 -0.4300
+*    HS   S     1.3250  275.0000  0  0 -0.1700
+*    HT   HT    1.5139    0.0000  0  0  0.0000
+*    HT   OT    0.9572  450.0000  0  0 -0.4150
+*    OH1  P     1.5900  237.0000  0  0       -
+*    ON2  P     1.6000  270.0000  0  0  0.4550
+*    ON2  SL    1.5750  250.0000  0  0  0.2100
+*    ON3  P     1.4800  580.0000  0  0  0.2100
+*    ON3  SL    1.4480  540.0000  0  0  0.3000
+*    ON4  P     1.5800  237.0000  0  0  0.4050
+*    SM   SM    2.0290  173.0000  0  0  0.0000
+
+[ang] # angle bend parameters
+
+ang-function	angle
+
+#
+#  Missing		-  Copy 
+# CP3 	CQ2 	C	-	CP2 CP1 C
+# NH1 	CQ2 	CP3	-	NH1 CT1 CT2
+# HA 	CP2 	CQ2	-	HA CP2 CP1
+# NH1 	CQ2 	C
+# O 	C 	CQ2
+# H 	NH1 	CQ2
+# N 	CP3 	CQ2
+
+#    T1   T2   T3        ang        k2 k3 k4     ub_k  ub_len
+#    ---- ---- ----  ------- --------- -- -- -------- -------
+*    CP1  C    N     112.500   20.0000  0  0    0.000 0.00000
+*    CP1  C    NH1   116.500   80.0000  0  0    0.000 0.00000
+*    CP1  C    O     118.000   80.0000  0  0    0.000 0.00000
+*    CQ1  C    O     118.000   80.0000  0  0    0.000 0.00000 #meister
+*    CT1  C    N     112.500   20.0000  0  0    0.000 0.00000
+*    CT1  C    NH1   116.500   80.0000  0  0    0.000 0.00000
+*    CT1  C    O     121.000   80.0000  0  0    0.000 0.00000
+*    CT2  C    N     112.500   20.0000  0  0    0.000 0.00000
+*    CT2  C    NH1   116.500   80.0000  0  0    0.000 0.00000
+*    CT2  C    O     121.000   80.0000  0  0    0.000 0.00000
+*    CQ2  C    O     121.000   80.0000  0  0    0.000 0.00000 #meister
+*    CT3  C    N     112.500   20.0000  0  0    0.000 0.00000
+*    CT3  C    NH1   116.500   80.0000  0  0    0.000 0.00000
+*    CT3  C    O     121.000   80.0000  0  0    0.000 0.00000
+*    H    C    O     121.700   50.0000  0  0    0.000 0.00000
+*    N    C    O     122.500   80.0000  0  0    0.000 0.00000
+*    NC2  C    NC2   120.000   52.0000  0  0   90.000 2.36420
+*    NH1  C    O     122.500   80.0000  0  0    0.000 0.00000
+*    CA   CA   CA    120.000   40.0000  0  0   35.000 2.41620
+*    CA   CA   CPT   118.000   60.0000  0  0    0.000 0.00000
+*    CA   CA   CT2   122.300   45.8000  0  0    0.000 0.00000
+*    CA   CA   CT3   122.300   45.8000  0  0    0.000 0.00000
+*    CA   CA   HA    120.000   29.0000  0  0   25.000 2.15250
+*    CA   CA   HP    120.000   30.0000  0  0   22.000 2.15250
+*    CA   CA   OC    120.000   40.0000  0  0    0.000 0.00000
+*    CA   CA   OH1   120.000   45.2000  0  0    0.000 0.00000
+*    CPT  CA   HA    122.000   41.0000  0  0    0.000 0.00000
+*    CPT  CA   HP    122.000   30.0000  0  0   22.000 2.14600
+*    CY   CA   HA    125.000   32.0000  0  0   25.000 2.17300
+*    CY   CA   HP    125.000   32.0000  0  0   25.000 2.17300
+*    CY   CA   NY    110.000  120.0000  0  0   25.000 2.24000
+*    HA   CA   NY    125.000   32.0000  0  0   25.000 2.17700
+*    HP   CA   NY    125.000   32.0000  0  0   25.000 2.17700
+*    CP1  CC   NH2   112.500   80.0000  0  0    0.000 0.00000
+*    CP1  CC   O     118.000   80.0000  0  0    0.000 0.00000
+*    CP1  CC   OC    118.000   40.0000  0  0   50.000 2.38800
+*    CT1  CC   NH2   116.500   50.0000  0  0   50.000 2.45000
+*    CT1  CC   O     121.000   15.0000  0  0   50.000 2.44000
+*    CT1  CC   OB    125.000   70.0000  0  0   20.000 2.44200
+*    CT1  CC   OC    118.000   40.0000  0  0   50.000 2.38800
+*    CT2  CC   NH2   116.500   50.0000  0  0   50.000 2.45000
+*    CT2  CC   O     121.000   15.0000  0  0   50.000 2.44000
+*    CT2  CC   OB    125.000   70.0000  0  0   20.000 2.44200
+*    CT2  CC   OC    118.000   40.0000  0  0   50.000 2.38800
+*    CT2  CC   OH1   110.500   55.0000  0  0    0.000 0.00000
+*    CT2  CC   ON2   109.000   55.0000  0  0   20.000 2.32600
+*    CT3  CC   NH2   116.500   50.0000  0  0   50.000 2.45000
+*    CT3  CC   O     121.000   15.0000  0  0   50.000 2.44000
+*    CT3  CC   OB    125.000   70.0000  0  0   20.000 2.44200
+*    CT3  CC   OC    118.000   40.0000  0  0   50.000 2.38800
+*    CT3  CC   OH1   110.500   55.0000  0  0    0.000 0.00000
+*    CT3  CC   ON2   109.000   55.0000  0  0   20.000 2.32600
+*    HA   CC   NH2   111.000   44.0000  0  0   50.000 1.98000
+*    HA   CC   O     122.000   44.0000  0  0    0.000 0.00000
+*    NH2  CC   O     122.500   75.0000  0  0   50.000 2.37000
+*    OB   CC   OH1   123.000   50.0000  0  0  210.000 2.26200
+*    OB   CC   ON2   125.900   90.0000  0  0  160.000 2.25760
+*    OC   CC   OC    124.000  100.0000  0  0   70.000 2.22500
+*    CP1  CD   OB    125.000   70.0000  0  0   20.000 2.44200
+*    CP1  CD   OS    109.000   55.0000  0  0   20.000 2.32600
+*    CT1  CD   OB    125.000   70.0000  0  0   20.000 2.44200
+*    CT1  CD   OS    109.000   55.0000  0  0   20.000 2.32600
+*    CT2  CD   OB    125.000   70.0000  0  0   20.000 2.44200
+*    CT2  CD   OH1   110.500   55.0000  0  0    0.000 0.00000
+*    CT2  CD   OS    109.000   55.0000  0  0   20.000 2.32600
+*    CT3  CD   OB    125.000   70.0000  0  0   20.000 2.44200
+*    CT3  CD   OH1   110.500   55.0000  0  0    0.000 0.00000
+*    CT3  CD   OS    109.000   55.0000  0  0   20.000 2.32600
+*    OB   CD   OH1   123.000   50.0000  0  0  210.000 2.26200
+*    OB   CD   OS    125.900   90.0000  0  0  160.000 2.25760
+*    CEL1 CEL1 CT2   123.500   48.0000  0  0    0.000 0.00000
+*    CEL1 CEL1 CT3   123.500   48.0000  0  0    0.000 0.00000
+*    CEL1 CEL1 HEL1  119.500   52.0000  0  0    0.000 0.00000
+*    CT2  CEL1 HEL1  116.000   40.0000  0  0    0.000 0.00000
+*    CT3  CEL1 HEL1  117.000   22.0000  0  0    0.000 0.00000
+*    HEL1 CEL1 HEL1  119.000   19.0000  0  0    0.000 0.00000
+*    CN3  CN1  NN2U  112.600   70.0000  0  0    0.000 0.00000
+*    CN3  CN1  ON1   125.500  100.0000  0  0    0.000 0.00000
+*    CN3T CN1  NN2U  113.500   70.0000  0  0    0.000 0.00000
+*    CN3T CN1  ON1   124.600  100.0000  0  0    0.000 0.00000
+*    CN5G CN1  NN2G  107.800   70.0000  0  0    0.000 0.00000
+*    CN5G CN1  ON1   124.700   50.0000  0  0    0.000 0.00000
+*    NN2  CN1  NN3   116.800   50.0000  0  0    0.000 0.00000
+*    NN2  CN1  ON1C  119.400  130.0000  0  0    0.000 0.00000
+*    NN2G CN1  ON1   127.500   50.0000  0  0    0.000 0.00000
+*    NN2U CN1  ON1   121.900  100.0000  0  0    0.000 0.00000
+*    NN3  CN1  ON1C  123.800  130.0000  0  0    0.000 0.00000
+*    NN2B CN1T NN2U  114.000   50.0000  0  0    0.000 0.00000
+*    NN2B CN1T ON1   121.600  100.0000  0  0    0.000 0.00000
+*    NN2U CN1T ON1   124.400  100.0000  0  0    0.000 0.00000
+*    CN3  CN2  NN1   118.400   81.0000  0  0    0.000 0.00000
+*    CN3  CN2  NN3   119.300   85.0000  0  0    0.000 0.00000
+*    CN5  CN2  NN1   118.600   50.0000  0  0    0.000 0.00000
+*    CN5  CN2  NN3A  110.700   60.0000  0  0    0.000 0.00000
+*    NN1  CN2  NN2G  115.400   95.0000  0  0    0.000 0.00000
+*    NN1  CN2  NN3   122.300   81.0000  0  0    0.000 0.00000
+*    NN1  CN2  NN3A  130.700   50.0000  0  0    0.000 0.00000
+*    NN1  CN2  NN3G  122.400   95.0000  0  0    0.000 0.00000
+*    NN2G CN2  NN3G  122.200   70.0000  0  0    0.000 0.00000
+*    CN1  CN3  CN3   117.600  100.0000  0  0    0.000 0.00000
+*    CN1  CN3  HN3   120.300   30.0000  0  0    0.000 0.00000
+*    CN2  CN3  CN3   117.800   85.0000  0  0    0.000 0.00000
+*    CN2  CN3  HN3   120.100   38.0000  0  0    0.000 0.00000
+*    CN3  CN3  CN8   108.500   53.5000  0  0    0.000 0.00000
+*    CN3  CN3  HN3   122.100   38.0000  0  0    0.000 0.00000
+*    CN3  CN3  NN2   122.900   85.0000  0  0    0.000 0.00000
+*    CN3  CN3  NN2B  123.600  100.0000  0  0    0.000 0.00000
+*    CN3T CN3  HN3   122.100   30.0000  0  0    0.000 0.00000
+*    CN3T CN3  NN2B  123.600  120.0000  0  0    0.000 0.00000
+*    CN8  CN3  HN3   116.000   30.0000  0  0    0.000 0.00000
+*    HN3  CN3  NN2   115.000   44.0000  0  0    0.000 0.00000
+*    HN3  CN3  NN2B  114.300   30.0000  0  0    0.000 0.00000
+*    CN1  CN3T CN3   116.700  120.0000  0  0    0.000 0.00000
+*    CN1  CN3T CN9   118.700   38.0000  0  0    0.000 0.00000
+*    CN3  CN3T CN9   124.600   38.0000  0  0    0.000 0.00000
+*    HN3  CN4  NN2   121.800   39.0000  0  0    0.000 0.00000
+*    HN3  CN4  NN2B  122.200   40.0000  0  0    0.000 0.00000
+*    HN3  CN4  NN2G  115.750   35.0000  0  0    0.000 0.00000
+*    HN3  CN4  NN3A  113.500   38.0000  0  0    0.000 0.00000
+*    HN3  CN4  NN4   124.800   39.0000  0  0    0.000 0.00000
+*    NN2  CN4  NN4   113.400  100.0000  0  0    0.000 0.00000
+*    NN2B CN4  NN4   113.000  100.0000  0  0    0.000 0.00000
+*    NN3A CN4  NN3A  133.000   60.0000  0  0    0.000 0.00000
+*    CN2  CN5  CN5   121.000   60.0000  0  0    0.000 0.00000
+*    CN2  CN5  NN4   129.000  100.0000  0  0    0.000 0.00000
+*    CN5  CN5  NN2   105.700  100.0000  0  0    0.000 0.00000
+*    CN5  CN5  NN3A  127.400   60.0000  0  0    0.000 0.00000
+*    CN5  CN5  NN4   110.000  100.0000  0  0    0.000 0.00000
+*    CN5G CN5  NN2B  104.600  100.0000  0  0    0.000 0.00000
+*    CN5G CN5  NN3G  129.900   70.0000  0  0    0.000 0.00000
+*    NN2  CN5  NN3A  126.900  100.0000  0  0    0.000 0.00000
+*    NN2B CN5  NN3G  125.500  140.0000  0  0    0.000 0.00000
+*    CN1  CN5G CN5   119.600   70.0000  0  0    0.000 0.00000
+*    CN1  CN5G NN4   129.000  125.0000  0  0    0.000 0.00000
+*    CN5  CN5G NN4   111.400  100.0000  0  0    0.000 0.00000
+*    CN7  CN7  CN7B  100.000   60.0000  0  0    8.000 2.56100
+*    CN7  CN7  CN8   102.000   60.0000  0  0    8.000 2.56100
+*    CN7  CN7  CN8B  110.000   45.0000  0  0    0.000 0.00000
+*    CN7  CN7  CN9   102.000   60.0000  0  0    8.000 2.56100
+*    CN7  CN7  HN7   108.000   40.0000  0  0    0.000 0.00000
+*    CN7  CN7  ON2   109.700  115.0000  0  0    0.000 0.00000
+*    CN7  CN7  ON5   110.100   75.7000  0  0    0.000 0.00000
+*    CN7  CN7  ON6   104.000  100.0000  0  0    0.000 0.00000
+*    CN7  CN7  ON6B  110.000  100.0000  0  0    0.000 0.00000
+*    CN7B CN7  CN8   113.600   58.3500  0  0   11.160 2.56100
+*    CN7B CN7  HN7   110.100   34.5300  0  0   22.530 2.17900
+*    CN7B CN7  ON2   110.000   90.0000  0  0    0.000 0.00000
+*    CN7B CN7  ON5   110.000   90.0000  0  0    0.000 0.00000
+*    CN8  CN7  CN8   113.600   58.3500  0  0   11.160 2.56100
+*    CN8  CN7  CN8B  113.600   58.3500  0  0   11.160 2.56100
+*    CN8  CN7  HN7   110.100   34.5000  0  0   22.530 2.17900
+*    CN8  CN7  ON2   109.700  115.0000  0  0    0.000 0.00000
+*    CN8  CN7  ON5   110.000   75.7000  0  0    0.000 0.00000
+*    CN8  CN7  ON6   104.000  100.0000  0  0    0.000 0.00000
+*    CN8  CN7  ON6B  110.000  100.0000  0  0    0.000 0.00000
+*    CN8B CN7  HN7   110.100   34.5000  0  0   22.530 2.17900
+*    CN8B CN7  ON5   108.200   90.0000  0  0    0.000 0.00000
+*    CN8B CN7  ON6   108.200   90.0000  0  0    0.000 0.00000
+*    CN8B CN7  ON6B  108.200   90.0000  0  0    0.000 0.00000
+*    CN9  CN7  HN7   110.100   34.6000  0  0   22.530 2.17900
+*    CN9  CN7  ON6   108.200   90.0000  0  0    0.000 0.00000
+*    CN9  CN7  ON6B  108.200   90.0000  0  0    0.000 0.00000
+*    HN7  CN7  HN7   109.000   35.5000  0  0    5.400 1.80200
+*    HN7  CN7  ON2   109.500   60.0000  0  0    0.000 0.00000
+*    HN7  CN7  ON5   109.500   60.0000  0  0    0.000 0.00000
+*    HN7  CN7  ON6   107.240   45.2000  0  0    0.000 0.00000
+*    HN7  CN7  ON6B  107.240   45.2000  0  0    0.000 0.00000
+*    CN7  CN7B CN7B   96.000  110.0000  0  0    0.000 0.00000
+*    CN7  CN7B HN7   110.100   34.5300  0  0   22.530 2.17900
+*    CN7  CN7B NN2   111.000  110.0000  0  0    0.000 0.00000
+*    CN7  CN7B NN2B  111.000  110.0000  0  0    0.000 0.00000
+*    CN7  CN7B ON2   109.700  115.0000  0  0    0.000 0.00000
+*    CN7  CN7B ON5   108.000   90.0000  0  0    0.000 0.00000
+*    CN7  CN7B ON6   106.250  120.0000  0  0    0.000 0.00000
+*    CN7B CN7B CN8    96.000  110.0000  0  0    0.000 0.00000
+*    CN7B CN7B HN7   110.100   33.4000  0  0   22.530 2.17900
+*    CN7B CN7B NN2   111.000  110.0000  0  0    0.000 0.00000
+*    CN7B CN7B NN2B  111.000  110.0000  0  0    0.000 0.00000
+*    CN7B CN7B NR1   113.700  140.0000  0  0    0.000 0.00000
+*    CN7B CN7B ON2   109.700  115.0000  0  0    0.000 0.00000
+*    CN7B CN7B ON5   108.400   80.0000  0  0    0.000 0.00000
+*    CN7B CN7B ON6B  106.000   90.0000  0  0    0.000 0.00000
+*    CN8  CN7B HN7   110.100   33.4000  0  0   22.530 2.17900
+*    CN8  CN7B NN2   113.700  110.0000  0  0    0.000 0.00000
+*    CN8  CN7B NN2B  113.700  110.0000  0  0    0.000 0.00000
+*    CN8  CN7B NR1   113.700  140.0000  0  0    0.000 0.00000
+*    CN8  CN7B ON2   109.700  115.0000  0  0    0.000 0.00000
+*    CN8  CN7B ON6   102.000   90.0000  0  0    0.000 0.00000
+*    HN7  CN7B HN7   109.000   35.5000  0  0    5.400 1.80200
+*    HN7  CN7B NN2   111.000   43.0000  0  0    0.000 0.00000
+*    HN7  CN7B NN2B  111.000   43.0000  0  0    0.000 0.00000
+*    HN7  CN7B NR1   106.300   30.0000  0  0    0.000 0.00000
+*    HN7  CN7B ON2   109.500   60.0000  0  0    0.000 0.00000
+*    HN7  CN7B ON5   109.500   60.0000  0  0    0.000 0.00000
+*    HN7  CN7B ON6   107.240   45.2000  0  0    0.000 0.00000
+*    HN7  CN7B ON6B  107.240   45.2000  0  0    0.000 0.00000
+*    NN2  CN7B ON6   108.000  110.0000  0  0    0.000 0.00000
+*    NN2  CN7B ON6B  112.000  110.0000  0  0    0.000 0.00000
+*    NN2B CN7B ON6   108.000  110.0000  0  0    0.000 0.00000
+*    NN2B CN7B ON6B  112.000  110.0000  0  0    0.000 0.00000
+*    NR1  CN7B ON6   108.000  140.0000  0  0    0.000 0.00000
+*    NR1  CN7B ON6B  108.000  140.0000  0  0    0.000 0.00000
+*    CN3  CN8  CN3   108.000  125.0000  0  0    0.000 0.00000
+*    CN3  CN8  HN8   110.100   55.0000  0  0    0.000 0.00000
+*    CN7  CN8  CN7B  100.000   80.0000  0  0    0.000 0.00000
+*    CN7  CN8  CN8   113.600   58.3500  0  0   11.160 2.56100
+*    CN7  CN8  CN8B  106.000   80.0000  0  0    0.000 0.00000
+*    CN7  CN8  HN8   110.100   34.5300  0  0   22.530 2.17900
+*    CN7  CN8  ON2   109.700  115.0000  0  0    0.000 0.00000
+*    CN7  CN8  ON5   110.100   75.7000  0  0    0.000 0.00000
+*    CN7B CN8  HN8   110.100   33.4000  0  0   22.530 2.17900
+*    CN8  CN8  CN8   113.600   58.3500  0  0   11.160 2.56100
+*    CN8  CN8  HN8   110.100   34.5300  0  0   22.530 2.17900
+*    CN8  CN8  ON2   109.700  115.0000  0  0    0.000 0.00000
+*    CN8B CN8  HN8   110.100   34.5300  0  0   22.530 2.17900
+*    CN9  CN8  HN8   110.100   34.6000  0  0   22.530 2.17900
+*    CN9  CN8  NN2B  113.700   70.0000  0  0    0.000 0.00000
+*    HN8  CN8  HN8   109.000   35.5000  0  0    5.400 1.80200
+*    HN8  CN8  NN2   110.100   33.4300  0  0    0.000 0.00000
+*    HN8  CN8  NN2B  110.100   33.4300  0  0    0.000 0.00000
+*    HN8  CN8  ON2   109.500   60.0000  0  0    0.000 0.00000
+*    HN8  CN8  ON5   108.890   45.9000  0  0    0.000 0.00000
+*    CN7  CN8B HN8   110.100   34.5300  0  0   22.530 2.17900
+*    CN7  CN8B ON2   108.400   70.0000  0  0    0.000 0.00000
+*    CN7  CN8B ON5   110.100   75.7000  0  0    0.000 0.00000
+*    CN8  CN8B HN8   110.100   34.5300  0  0   22.530 2.17900
+*    CN8  CN8B ON6   106.000   90.0000  0  0    0.000 0.00000
+*    HN8  CN8B HN8   109.000   35.5000  0  0    5.400 1.80200
+*    HN8  CN8B ON2   109.500   60.0000  0  0    0.000 0.00000
+*    HN8  CN8B ON5   108.890   45.9000  0  0    0.000 0.00000
+*    HN8  CN8B ON6   107.240   45.2000  0  0    0.000 0.00000
+*    CN3  CN9  HN9   110.100   33.4300  0  0   22.530 2.17900
+*    CN3T CN9  HN9   110.100   33.4300  0  0   22.530 2.17900
+*    CN7  CN9  HN9   110.100   33.4300  0  0   22.530 2.17900
+*    CN8  CN9  HN9   110.100   34.6000  0  0   22.530 2.17900
+*    HN9  CN9  HN9   108.400   35.5000  0  0    5.400 1.80200
+*    HN9  CN9  NN2   110.100   33.4300  0  0    0.000 0.00000
+*    HN9  CN9  NN2B  110.100   33.4300  0  0    0.000 0.00000
+*    HN9  CN9  ON2   109.500   60.0000  0  0    0.000 0.00000
+*    C    CP1  CP2   112.300   52.0000  0  0    0.000 0.00000
+*    C    CQ2  CP2   112.300   52.0000  0  0    0.000 0.00000 #meister
+*    C    CQ2  CP3   112.300   52.0000  0  0    0.000 0.00000 #meister
+*    C    CP1  HB    112.000   50.0000  0  0    0.000 0.00000
+*    C    CP1  N     108.200   50.0000  0  0    0.000 0.00000
+*    C    CP1  NP    106.000   50.0000  0  0    0.000 0.00000
+*    CC   CP1  CP2   112.300   52.0000  0  0    0.000 0.00000
+*    CC   CP1  HB    112.000   50.0000  0  0    0.000 0.00000
+*    CC   CP1  N     108.200   50.0000  0  0    0.000 0.00000
+*    CC   CP1  NP    106.000   50.0000  0  0    0.000 0.00000
+*    CD   CP1  CP2   112.300   50.0000  0  0    0.000 0.00000
+*    CD   CP1  HB    112.000   50.0000  0  0    0.000 0.00000
+*    CD   CP1  N     108.200   50.0000  0  0    0.000 0.00000
+*    CD   CP1  NP    106.000   50.0000  0  0    0.000 0.00000
+*    CP2  CP1  HB    118.000   35.0000  0  0    0.000 0.00000
+*    CP2  CP1  N     110.800   70.0000  0  0    0.000 0.00000
+*    CP2  CP1  NP    108.500   70.0000  0  0    0.000 0.00000
+*    HB   CP1  N     112.000   48.0000  0  0    0.000 0.00000
+*    HB   CP1  NP    107.500   51.5000  0  0    0.000 0.00000
+*    CP1  CP2  CP2   108.500   70.0000  0  0    0.000 0.00000
+*    CP1  CP2  CQ2   108.500   70.0000  0  0    0.000 0.00000 #meister
+*    CP1  CP2  HA    110.100   33.4300  0  0   22.530 2.17900
+*    CQ2  CP2  HA    110.100   33.4300  0  0   22.530 2.17900
+*    CP2  CP2  CP3   108.500   70.0000  0  0    0.000 0.00000
+*    CP2  CQ2  CP3   108.500   70.0000  0  0    0.000 0.00000 #meister
+*    CP2  CP2  HA    110.100   26.5000  0  0   22.530 2.17900
+*    CP3  CP2  HA    110.100   26.5000  0  0   22.530 2.17900
+*    HA   CP2  HA    109.000   35.5000  0  0    5.400 1.80200
+*    CP2  CP3  HA    110.100   26.5000  0  0   22.530 2.17900
+*    CQ2  CP3  HA    110.100   26.5000  0  0   22.530 2.17900 #meister
+*    CP2  CP3  N     110.500   70.0000  0  0    0.000 0.00000
+*    CQ2  CP3  N     110.500   70.0000  0  0    0.000 0.00000 #meister
+*    CP2  CP3  NP    108.500   70.0000  0  0    0.000 0.00000
+*    CQ2  CP3  NP    108.500   70.0000  0  0    0.000 0.00000 #meister
+*    HA   CP3  HA    109.000   35.5000  0  0    5.400 1.80200
+*    HA   CP3  N     108.000   48.0000  0  0    0.000 0.00000
+*    HA   CP3  NP    109.150   51.5000  0  0    0.000 0.00000
+*    CPH1 CPH1 CT2   130.000   45.8000  0  0    0.000 0.00000
+*    CPH1 CPH1 CT3   130.000   45.8000  0  0    0.000 0.00000
+*    CPH1 CPH1 HR1   130.000   22.0000  0  0   15.000 2.21500
+*    CPH1 CPH1 HR3   130.000   25.0000  0  0   20.000 2.20000
+*    CPH1 CPH1 NR1   106.000  130.0000  0  0    0.000 0.00000
+*    CPH1 CPH1 NR2   110.000  130.0000  0  0    0.000 0.00000
+*    CPH1 CPH1 NR3   108.000  145.0000  0  0    0.000 0.00000
+*    CT2  CPH1 NR1   124.000   45.8000  0  0    0.000 0.00000
+*    CT2  CPH1 NR2   120.000   45.8000  0  0    0.000 0.00000
+*    CT2  CPH1 NR3   122.000   45.8000  0  0    0.000 0.00000
+*    CT3  CPH1 NR1   124.000   45.8000  0  0    0.000 0.00000
+*    HR1  CPH1 NR3   122.000   22.0000  0  0   15.000 2.18000
+*    HR3  CPH1 NR1   124.000   25.0000  0  0   20.000 2.14000
+*    HR3  CPH1 NR2   120.000   25.0000  0  0   20.000 2.14000
+*    HR1  CPH2 NR1   122.500   25.0000  0  0   20.000 2.14000
+*    HR1  CPH2 NR2   125.000   25.0000  0  0   20.000 2.12000
+*    HR2  CPH2 NR3   126.000   32.0000  0  0   25.000 2.14000
+*    NR1  CPH2 NR2   112.500  130.0000  0  0    0.000 0.00000
+*    NR3  CPH2 NR3   108.000  145.0000  0  0    0.000 0.00000
+*    CA   CPT  CPT   122.000   60.0000  0  0    0.000 0.00000
+*    CA   CPT  CY    130.600  160.0000  0  0    0.000 0.00000
+*    CA   CPT  NY    130.600  160.0000  0  0    0.000 0.00000
+*    CPT  CPT  CY    107.400  110.0000  0  0    0.000 0.00000
+*    CPT  CPT  NY    107.400  110.0000  0  0    0.000 0.00000
+*    C    CT1  CT1   108.000   52.0000  0  0    0.000 0.00000
+*    C    CT1  CT2   108.000   52.0000  0  0    0.000 0.00000
+*    C    CT1  CT3   108.000   52.0000  0  0    0.000 0.00000
+*    C    CT1  HA    109.500   33.0000  0  0   30.000 2.16300
+*    C    CT1  HB    109.500   50.0000  0  0    0.000 0.00000
+*    C    CT1  NH1   107.000   50.0000  0  0    0.000 0.00000
+*    C    CQ2  NH1   107.000   50.0000  0  0    0.000 0.00000 #meister
+*    C    CT1  NH3   110.000   43.7000  0  0    0.000 0.00000
+*    CC   CT1  CT1   108.000   52.0000  0  0    0.000 0.00000
+*    CC   CT1  CT2   108.000   52.0000  0  0    0.000 0.00000
+*    CC   CT1  CT3   108.000   52.0000  0  0    0.000 0.00000
+*    CC   CT1  HB    109.500   50.0000  0  0    0.000 0.00000
+*    CC   CT1  NH1   107.000   50.0000  0  0    0.000 0.00000
+*    CC   CT1  NH3   110.000   43.7000  0  0    0.000 0.00000
+*    CD   CT1  CT2   108.000   52.0000  0  0    0.000 0.00000
+*    CD   CT1  HA    109.500   33.0000  0  0   30.000 2.16300
+*    CD   CT1  HB    109.500   50.0000  0  0    0.000 0.00000
+*    CD   CT1  NH1   107.000   50.0000  0  0    0.000 0.00000
+*    CT1  CT1  CT1   111.000   53.3500  0  0    8.000 2.56100
+*    CT1  CT1  CT2   111.000   53.3500  0  0    8.000 2.56100
+*    CT1  CT1  CT3   108.500   53.3500  0  0    8.000 2.56100
+*    CT1  CT1  HA    110.100   34.5000  0  0   22.530 2.17900
+*    CT1  CT1  HB    111.000   35.0000  0  0    0.000 0.00000
+*    CT1  CT1  NH1   113.500   70.0000  0  0    0.000 0.00000
+*    CT1  CT1  NH3   110.000   67.7000  0  0    0.000 0.00000
+*    CT1  CT1  OH1   110.100   75.7000  0  0    0.000 0.00000
+*    CT2  CT1  CT2   113.500   58.3500  0  0   11.160 2.56100
+*    CT2  CT1  CT3   114.000   53.3500  0  0    8.000 2.56100
+*    CT2  CT1  HA    110.100   34.5000  0  0   22.530 2.17900
+*    CT2  CT1  HB    111.000   35.0000  0  0    0.000 0.00000
+*    CT2  CT1  NH1   113.500   70.0000  0  0    0.000 0.00000
+*    CP2  CQ2  NH1   113.500   70.0000  0  0    0.000 0.00000 #meister
+*    CP3  CQ2  NH1   113.500   70.0000  0  0    0.000 0.00000 #meister
+*    CT2  CT1  NH3   110.000   67.7000  0  0    0.000 0.00000
+*    CT2  CT1  OH1   110.100   75.7000  0  0    0.000 0.00000
+*    CT2  CT1  ON2   110.100   75.7000  0  0    0.000 0.00000
+*    CT3  CT1  CT3   114.000   53.3500  0  0    8.000 2.56100
+*    CT3  CT1  HA    110.100   34.5000  0  0   22.530 2.17900
+*    CT3  CT1  HB    111.000   35.0000  0  0    0.000 0.00000
+*    CT3  CT1  NH1   113.500   70.0000  0  0    0.000 0.00000
+*    CT3  CT1  NH3   110.000   67.7000  0  0    0.000 0.00000
+*    CT3  CT1  OH1   110.100   75.7000  0  0    0.000 0.00000
+*    CT3  CT1  ON2   110.100   75.7000  0  0    0.000 0.00000
+*    HA   CT1  HA    109.000   35.5000  0  0    5.400 1.80200
+*    HA   CT1  OH1   108.890   45.9000  0  0    0.000 0.00000
+*    HA   CT1  ON2   109.500   60.0000  0  0    0.000 0.00000
+*    HB   CT1  NH1   108.000   48.0000  0  0    0.000 0.00000
+*    HB   CT1  NH3   107.500   51.5000  0  0    0.000 0.00000
+*    C    CT2  CT2   108.000   52.0000  0  0    0.000 0.00000
+*    C    CT2  HA    109.500   33.0000  0  0   30.000 2.16300
+*    C    CT2  HB    109.500   50.0000  0  0    0.000 0.00000
+*    C    CT2  NH1   107.000   50.0000  0  0    0.000 0.00000
+*    C    CT2  NH3   110.000   43.7000  0  0    0.000 0.00000
+*    CA   CT2  CT1   107.500   51.8000  0  0    0.000 0.00000
+*    CA   CT2  CT3   107.500   51.8000  0  0    0.000 0.00000
+*    CA   CT2  HA    107.500   49.3000  0  0    0.000 0.00000
+*    CC   CT2  CT1   108.000   52.0000  0  0    0.000 0.00000
+*    CC   CT2  CT2   108.000   52.0000  0  0    0.000 0.00000
+*    CC   CT2  CT3   108.000   52.0000  0  0    0.000 0.00000
+*    CC   CT2  HA    109.500   33.0000  0  0   30.000 2.16300
+*    CC   CT2  HB    109.500   50.0000  0  0    0.000 0.00000
+*    CC   CT2  NH1   107.000   50.0000  0  0    0.000 0.00000
+*    CC   CT2  NH3   110.000   43.7000  0  0    0.000 0.00000
+*    CD   CT2  CT1   108.000   52.0000  0  0    0.000 0.00000
+*    CD   CT2  CT2   108.000   52.0000  0  0    0.000 0.00000
+*    CD   CT2  HA    109.500   33.0000  0  0   30.000 2.16300
+*    CD   CT2  HB    109.500   50.0000  0  0    0.000 0.00000
+*    CD   CT2  NH1   107.000   50.0000  0  0    0.000 0.00000
+*    CD   CT2  NH2   108.000   52.0000  0  0    0.000 0.00000
+*    CD   CT2  NH3   110.000   43.7000  0  0    0.000 0.00000
+*    CEL1 CT2  CEL1  114.000   30.0000  0  0    0.000 0.00000
+*    CEL1 CT2  CT2   112.200   32.0000  0  0    0.000 0.00000
+*    CEL1 CT2  CT3   112.200   32.0000  0  0    0.000 0.00000
+*    CEL1 CT2  HA    111.500   45.0000  0  0    0.000 0.00000
+*    CPH1 CT2  CT1   113.000   58.3500  0  0    0.000 0.00000
+*    CPH1 CT2  CT3   113.000   58.3500  0  0    0.000 0.00000
+*    CPH1 CT2  HA    109.500   33.4300  0  0    0.000 0.00000
+*    CT1  CT2  CT1   113.500   58.3500  0  0   11.160 2.56100
+*    CT1  CT2  CT2   113.500   58.3500  0  0   11.160 2.56100
+*    CT1  CT2  CT3   113.500   58.3500  0  0   11.160 2.56100
+*    CT1  CT2  CY    114.000   58.3500  0  0    0.000 0.00000
+*    CT1  CT2  HA    110.100   33.4300  0  0   22.530 2.17900
+*    CT1  CT2  OH1   110.100   75.7000  0  0    0.000 0.00000
+*    CT1  CT2  ON2   110.100   75.7000  0  0    0.000 0.00000
+*    CT1  CT2  S     112.500   58.0000  0  0    0.000 0.00000
+*    CT1  CT2  SM    112.500   58.0000  0  0    0.000 0.00000
+*    CT2  CT2  CT2   113.600   58.3500  0  0   11.160 2.56100
+*    CT2  CT2  CT3   115.000   58.0000  0  0    8.000 2.56100
+*    CT2  CT2  HA    110.100   26.5000  0  0   22.530 2.17900
+*    CT2  CT2  HL    110.100   33.4300  0  0   22.530 2.17900
+*    CT2  CT2  NC2   107.500   67.7000  0  0    0.000 0.00000
+*    CT2  CT2  NH1   113.500   70.0000  0  0    0.000 0.00000
+*    CT2  CT2  NH2   110.000   67.7000  0  0    0.000 0.00000
+*    CT2  CT2  NH3   110.000   67.7000  0  0    0.000 0.00000
+*    CT2  CT2  NTL   115.000   67.7000  0  0    0.000 0.00000
+*    CT2  CT2  OH1   110.100   75.7000  0  0    0.000 0.00000
+*    CT2  CT2  ON2   110.100   75.7000  0  0    0.000 0.00000
+*    CT2  CT2  S     114.500   58.0000  0  0    0.000 0.00000
+*    CT3  CT2  CT3   114.000   53.3500  0  0    8.000 2.56100
+*    CT3  CT2  CY    114.000   58.3500  0  0    0.000 0.00000
+*    CT3  CT2  HA    110.100   34.6000  0  0   22.530 2.17900
+*    CT3  CT2  HL    110.100   33.4300  0  0   22.530 2.17900
+*    CT3  CT2  NTL   115.000   67.7000  0  0    0.000 0.00000
+*    CT3  CT2  OC    122.000   65.0000  0  0    0.000 0.00000
+*    CT3  CT2  OH1   110.100   75.7000  0  0    0.000 0.00000
+*    CT3  CT2  ON2   110.100   75.7000  0  0    0.000 0.00000
+*    CT3  CT2  S     114.500   58.0000  0  0    0.000 0.00000
+*    CY   CT2  HA    109.500   33.4300  0  0    0.000 0.00000
+*    HA   CT2  HA    109.000   35.5000  0  0    5.400 1.80200
+*    HA   CT2  NC2   107.500   51.5000  0  0    0.000 0.00000
+*    HA   CT2  NH1   109.500   51.5000  0  0    0.000 0.00000
+*    HA   CT2  NH2   109.500   38.0000  0  0   50.000 2.14000
+*    HA   CT2  NH3   107.500   45.0000  0  0   35.000 2.10100
+*    HA   CT2  OC    118.300   65.0000  0  0    0.000 0.00000
+*    HA   CT2  OH1   108.890   45.9000  0  0    0.000 0.00000
+*    HA   CT2  ON2   109.500   60.0000  0  0    0.000 0.00000
+*    HA   CT2  OS    109.500   60.0000  0  0    0.000 0.00000
+*    HA   CT2  S     111.300   46.1000  0  0    0.000 0.00000
+*    HA   CT2  SM    111.000   38.0000  0  0    0.000 0.00000
+*    HB   CT2  HB    115.000   36.0000  0  0    0.000 0.00000
+*    HB   CT2  NH1   108.000   48.0000  0  0    0.000 0.00000
+*    HB   CT2  NH2   109.500   38.0000  0  0   50.000 2.14000
+*    HB   CT2  NH3   107.500   51.5000  0  0    0.000 0.00000
+*    HL   CT2  HL    109.500   24.0000  0  0   28.000 1.76700
+*    HL   CT2  NTL   109.500   40.0000  0  0   27.000 2.13000
+*    C    CT3  HA    109.500   33.0000  0  0   30.000 2.16300
+*    C    CT3  HB    109.500   50.0000  0  0    0.000 0.00000
+*    CA   CT3  HA    107.500   49.3000  0  0    0.000 0.00000
+*    CC   CT3  HA    109.500   33.0000  0  0   30.000 2.16300
+*    CD   CT3  HA    109.500   33.0000  0  0   30.000 2.16300
+*    CEL1 CT3  HA    111.500   42.0000  0  0    0.000 0.00000
+*    CPH1 CT3  HA    109.500   33.4300  0  0    0.000 0.00000
+*    CT1  CT3  CT2   113.500   58.3500  0  0   11.160 2.56100
+*    CT1  CT3  HA    110.100   33.4300  0  0   22.530 2.17900
+*    CT2  CT3  HA    110.100   34.6000  0  0   22.530 2.17900
+*    CT3  CT3  HA    110.100   37.5000  0  0   22.530 2.17900
+*    HA   CT3  HA    108.400   35.5000  0  0    5.400 1.80200
+*    HA   CT3  NC2   107.500   51.5000  0  0    0.000 0.00000
+*    HA   CT3  NH1   109.500   51.5000  0  0    0.000 0.00000
+*    HA   CT3  NH2   109.500   38.0000  0  0   50.000 2.14000
+*    HA   CT3  NH3   107.500   45.0000  0  0   35.000 2.10100
+*    HA   CT3  OC    118.300   65.0000  0  0    0.000 0.00000
+*    HA   CT3  OH1   108.890   45.9000  0  0    0.000 0.00000
+*    HA   CT3  ON2   109.500   60.0000  0  0    0.000 0.00000
+*    HA   CT3  OS    109.500   60.0000  0  0    0.000 0.00000
+*    HA   CT3  S     111.300   46.1000  0  0    0.000 0.00000
+*    HA   CT3  SM    111.000   38.0000  0  0    0.000 0.00000
+*    HL   CTL5 HL    109.500   24.0000  0  0   28.000 1.76700
+*    HL   CTL5 NTL   109.500   40.0000  0  0   27.000 2.13000
+*    CA   CY   CPT   107.400  120.0000  0  0   25.000 2.26100
+*    CA   CY   CT2   129.400   45.8000  0  0    0.000 0.00000
+*    CA   CY   HA    126.400   20.0000  0  0   25.000 2.18600
+*    CA   CY   HP    126.400   32.0000  0  0   25.000 2.18600
+*    CPT  CY   CT2   124.000   45.8000  0  0    0.000 0.00000
+*    CPT  CY   HA    126.400   32.0000  0  0   25.000 2.25500
+*    CPT  CY   HP    126.400   32.0000  0  0   25.000 2.25500
+*    C    N    CP1   117.000   60.0000  0  0    0.000 0.00000
+*    C    N    CP3   117.000   60.0000  0  0    0.000 0.00000
+*    CP1  N    CP3   114.200  100.0000  0  0    0.000 0.00000
+*    C    NC2  CT2   120.000   62.3000  0  0    0.000 0.00000
+*    C    NC2  CT3   120.000   62.3000  0  0    0.000 0.00000
+*    C    NC2  HC    120.000   49.0000  0  0    0.000 0.00000
+*    CT2  NC2  HC    120.000   40.4000  0  0    0.000 0.00000
+*    CT3  NC2  HC    120.000   40.4000  0  0    0.000 0.00000
+*    HC   NC2  HC    120.000   25.0000  0  0    0.000 0.00000
+*    C    NH1  CT1   120.000   50.0000  0  0    0.000 0.00000
+*    C    NH1  CT2   120.000   50.0000  0  0    0.000 0.00000
+*    C    NH1  CT3   120.000   50.0000  0  0    0.000 0.00000
+*    C    NH1  H     123.000   34.0000  0  0    0.000 0.00000
+*    CT1  NH1  H     117.000   35.0000  0  0    0.000 0.00000
+*    CT2  NH1  H     117.000   35.0000  0  0    0.000 0.00000
+*    CT3  NH1  H     117.000   35.0000  0  0    0.000 0.00000
+*    CQ2  NH1  H     117.000   35.0000  0  0    0.000 0.00000 #meister
+*    CC   NH2  H     120.000   50.0000  0  0    0.000 0.00000
+*    CT2  NH2  HC    111.000   50.0000  0  0    0.000 0.00000
+*    CT3  NH2  HC    111.000   50.0000  0  0    0.000 0.00000
+*    H    NH2  H     120.000   23.0000  0  0    0.000 0.00000
+*    HC   NH2  HC    106.500   39.0000  0  0    0.000 0.00000
+*    CT1  NH3  HC    109.500   30.0000  0  0   20.000 2.07400
+*    CT2  NH3  HC    109.500   30.0000  0  0   20.000 2.07400
+*    CT3  NH3  HC    109.500   30.0000  0  0   20.000 2.07400
+*    HC   NH3  HC    109.500   44.0000  0  0    0.000 0.00000
+*    CN2  NN1  HN1   121.500   40.0000  0  0    0.000 0.00000
+*    HN1  NN1  HN1   117.000   31.0000  0  0    0.000 0.00000
+*    CN1  NN2  CN3   124.100   50.0000  0  0    0.000 0.00000
+*    CN1  NN2  CN7B  120.000   45.0000  0  0    0.000 0.00000
+*    CN1  NN2  CN9   115.400   70.0000  0  0    0.000 0.00000
+*    CN1  NN2  HN2   121.200   37.0000  0  0    0.000 0.00000
+*    CN3  NN2  CN7B  115.900   45.0000  0  0    0.000 0.00000
+*    CN3  NN2  CN9   120.500   70.0000  0  0    0.000 0.00000
+*    CN3  NN2  HN2   114.700   37.0000  0  0    0.000 0.00000
+*    CN4  NN2  CN5   106.300  100.0000  0  0    0.000 0.00000
+*    CN4  NN2  CN7B  127.600   45.0000  0  0    0.000 0.00000
+*    CN4  NN2  CN9   127.800   70.0000  0  0    0.000 0.00000
+*    CN4  NN2  HN2   125.000   30.0000  0  0    0.000 0.00000
+*    CN5  NN2  CN7B  126.100   45.0000  0  0    0.000 0.00000
+*    CN5  NN2  CN9   125.900   70.0000  0  0    0.000 0.00000
+*    CN5  NN2  HN2   129.400   30.0000  0  0    0.000 0.00000
+*    CN1T NN2B CN3   122.000   70.0000  0  0    0.000 0.00000
+*    CN1T NN2B CN7B  118.400   45.0000  0  0    0.000 0.00000
+*    CN1T NN2B CN9   116.000   70.0000  0  0    0.000 0.00000
+*    CN1T NN2B HN2   122.000   40.5000  0  0    0.000 0.00000
+*    CN3  NN2B CN7B  119.600   45.0000  0  0    0.000 0.00000
+*    CN3  NN2B CN9   122.000   70.0000  0  0    0.000 0.00000
+*    CN3  NN2B HN2   116.000   32.0000  0  0    0.000 0.00000
+*    CN4  NN2B CN5   107.200  100.0000  0  0    0.000 0.00000
+*    CN4  NN2B CN7B  126.300   45.0000  0  0    0.000 0.00000
+*    CN4  NN2B CN8   126.900   70.0000  0  0    0.000 0.00000
+*    CN4  NN2B CN9   126.900   70.0000  0  0    0.000 0.00000
+*    CN4  NN2B HN2   124.600   30.0000  0  0    0.000 0.00000
+*    CN5  NN2B CN7B  126.500   45.0000  0  0    0.000 0.00000
+*    CN5  NN2B CN8   125.900   70.0000  0  0    0.000 0.00000
+*    CN5  NN2B CN9   125.900   70.0000  0  0    0.000 0.00000
+*    CN5  NN2B HN2   129.300   30.0000  0  0    0.000 0.00000
+*    CN1  NN2G CN2   131.100   70.0000  0  0    0.000 0.00000
+*    CN1  NN2G CN4   129.700  125.0000  0  0    0.000 0.00000
+*    CN1  NN2G HN2   113.300   45.0000  0  0    0.000 0.00000
+*    CN2  NN2G HN2   115.600   45.0000  0  0    0.000 0.00000
+*    CN4  NN2G HN2   117.000   40.5000  0  0    0.000 0.00000
+*    CN1  NN2U CN1T  130.200   50.0000  0  0    0.000 0.00000
+*    CN1  NN2U HN2   115.400   40.5000  0  0    0.000 0.00000
+*    CN1T NN2U HN2   114.400   40.5000  0  0    0.000 0.00000
+*    CN1  NN3  CN2   119.100   85.0000  0  0    0.000 0.00000
+*    CN2  NN3A CN4   117.800   90.0000  0  0    0.000 0.00000
+*    CN4  NN3A CN5   110.100   90.0000  0  0    0.000 0.00000
+*    CN2  NN3G CN5   109.400   90.0000  0  0    0.000 0.00000
+*    CN4  NN4  CN5   104.600  120.0000  0  0    0.000 0.00000
+*    CN4  NN4  CN5G  103.800  120.0000  0  0    0.000 0.00000
+*    CP1  NP   CP3   111.000  100.0000  0  0    0.000 0.00000
+*    CP1  NP   HC    109.500   33.0000  0  0    4.000 2.05600
+*    CP3  NP   HC    109.500   33.0000  0  0    4.000 2.05600
+*    HC   NP   HC    107.500   51.0000  0  0    0.000 0.00000
+*    CN7B NR1  CPH1  126.000  130.0000  0  0    0.000 0.00000
+*    CN7B NR1  CPH2  127.000  130.0000  0  0    0.000 0.00000
+*    CPH1 NR1  CPH2  107.500  130.0000  0  0    0.000 0.00000
+*    CPH1 NR1  H     125.500   30.0000  0  0   20.000 2.15000
+*    CPH2 NR1  H     127.000   30.0000  0  0   20.000 2.14000
+*    CPH1 NR2  CPH2  104.000  130.0000  0  0    0.000 0.00000
+*    CPH1 NR3  CPH2  108.000  145.0000  0  0    0.000 0.00000
+*    CPH1 NR3  H     126.000   25.0000  0  0   15.000 2.13000
+*    CPH2 NR3  H     126.000   25.0000  0  0   15.000 2.09000
+*    CT2  NTL  CT2   109.500   60.0000  0  0   26.000 2.46600
+*    CT2  NTL  CTL5  109.500   60.0000  0  0   26.000 2.46600
+*    CTL5 NTL  CTL5  109.500   60.0000  0  0   26.000 2.46600
+*    CA   NY   CPT   108.000  110.0000  0  0    0.000 0.00000
+*    CA   NY   H     126.000   28.0000  0  0    0.000 0.00000
+*    CPT  NY   H     126.000   28.0000  0  0    0.000 0.00000
+*    CA   OH1  H     108.000   65.0000  0  0    0.000 0.00000
+*    CC   OH1  H     115.000   55.0000  0  0    0.000 0.00000
+*    CD   OH1  H     115.000   55.0000  0  0    0.000 0.00000
+*    CT1  OH1  H     106.000   57.5000  0  0    0.000 0.00000
+*    CT2  OH1  H     106.000   57.5000  0  0    0.000 0.00000
+*    CT3  OH1  H     106.000   57.5000  0  0    0.000 0.00000
+*    H    OH1  P     115.000   30.0000  0  0   40.000 2.30000
+*    CC   ON2  CT1   109.600   40.0000  0  0   30.000 2.26510
+*    CC   ON2  CT2   109.600   40.0000  0  0   30.000 2.26510
+*    CC   ON2  CT3   109.600   40.0000  0  0   30.000 2.26510
+*    CN7  ON2  P     120.000   20.0000  0  0   35.000 2.33000
+*    CN7B ON2  P     120.000   20.0000  0  0   35.000 2.33000
+*    CN8  ON2  P     120.000   20.0000  0  0   35.000 2.33000
+*    CN8B ON2  P     120.000   20.0000  0  0   35.000 2.33000
+*    CN9  ON2  P     120.000   20.0000  0  0   35.000 2.33000
+*    CT2  ON2  P     120.000   20.0000  0  0   35.000 2.33000
+*    CT2  ON2  SL    109.000   15.0000  0  0   27.000 1.90000
+*    CT3  ON2  P     120.000   20.0000  0  0   35.000 2.33000
+*    CT3  ON2  SL    109.000   15.0000  0  0   27.000 1.90000
+*    P    ON2  P     140.000   15.0000  0  0  -40.000 2.80000
+*    HN4  ON4  P     115.000   30.0000  0  0   40.000 2.35000
+*    CN7  ON5  HN5   109.000   57.5000  0  0    0.000 0.00000
+*    CN7B ON5  HN5   109.000   57.5000  0  0    0.000 0.00000
+*    CN8  ON5  HN5   106.000   57.5000  0  0    0.000 0.00000
+*    CN8B ON5  HN5   106.000   57.5000  0  0    0.000 0.00000
+*    CN9  ON5  HN5   106.000   57.5000  0  0    0.000 0.00000
+*    CN7  ON6  CN7B  108.000  110.0000  0  0    0.000 0.00000
+*    CN7  ON6  CN8B  109.000  110.0000  0  0    0.000 0.00000
+*    CN7  ON6B CN7B  115.000  110.0000  0  0    0.000 0.00000
+*    CD   OS   CT2   109.600   40.0000  0  0   30.000 2.26510
+*    CD   OS   CT3   109.600   40.0000  0  0   30.000 2.26510
+*    HT   OT   HT    104.520   55.0000  0  0    0.000 0.00000
+*    OH1  P    ON2   108.000   48.1000  0  0    0.000 0.00000
+*    OH1  P    ON3   108.230   98.9000  0  0    0.000 0.00000
+*    ON2  P    ON2   104.300   80.0000  0  0    0.000 0.00000
+*    ON2  P    ON3   111.600   98.9000  0  0    0.000 0.00000
+*    ON2  P    ON4   108.000   48.1000  0  0    0.000 0.00000
+*    ON3  P    ON3   120.000  120.0000  0  0    0.000 0.00000
+*    ON3  P    ON4   108.230   98.9000  0  0    0.000 0.00000
+*    ON3  P    ON5   111.600   98.9000  0  0    0.000 0.00000
+*    ON4  P    ON4   104.000   98.9000  0  0    0.000 0.00000
+*    CT2  S    CT3    95.000   34.0000  0  0    0.000 0.00000
+*    CT2  S    HS     95.000   38.8000  0  0    0.000 0.00000
+*    CT3  S    HS     95.000   43.0000  0  0    0.000 0.00000
+*    ON2  SL   ON3    98.000   85.0000  0  0    0.000 0.00000
+*    ON3  SL   ON3   109.470  130.0000  0  0   35.000 2.45000
+*    CT2  SM   SM    103.300   72.5000  0  0    0.000 0.00000
+*    CT3  SM   SM    103.300   72.5000  0  0    0.000 0.00000
+
+[itor] # improper torsion parameters
+
+# NOTE: The CHARMM improper torsion uses the k (x - x0)**2 for the
+# improper torsion energy.  This must be converted to amber-style
+# improper dihedrals Vn [1 + cos(2x - x0)] which results in a suitably
+# good approximation of the orgininal charmm form (at equilibrium).
+#
+# CHARMM also evaluates only one improper torsion at each center;
+# MOE does all three however only if the explicit parameters are found.
+# As a result, we further scale by the number of identical atoms
+# about each center (e.g., CO2 kspi's will be divided in half).
+
+#  T1   T2   T3*  T4   V1        V2 V3 V4 V5
+#  ---- ---- ---- ---- -- --------- -- -- --
+*  *    *    C    NC2   0  -10.0000  0  0  0
+*  *    *    C    O     0  -30.0000  0  0  0
+*  *    *    CC   OB    0  -25.0000  0  0  0
+*  *    *    CC   OC    0  -24.0000  0  0  0
+*  CP1  NH2  CC   O     0  -22.5000  0  0  0
+*  CT1  NH2  CC   O     0  -22.5000  0  0  0
+*  CT2  N    CC   O     0  -60.0000  0  0  0
+*  CT2  NH2  CC   O     0  -22.5000  0  0  0
+*  CT3  NH2  CC   O     0  -22.5000  0  0  0
+*  HA   NH2  CC   O     0  -22.5000  0  0  0
+*  *    *    CD   OB    0  -25.0000  0  0  0
+*  CEL1 HEL1 CEL1 HEL1  0   -0.7500  0  0  0
+*  *    *    CN3T CN9   0   -3.5000  0  0  0
+*  CN3  CN3  CN8  HN8   0   -4.5000  0  0  0
+*  C    CP1  CP3  N     0    0.0000  0  0  0
+*  CPH1 HR3  CPH1 NR1   0   -0.2500  0  0  0
+*  CPH1 HR3  CPH1 NR2   0   -0.2500  0  0  0
+*  CPH1 HR3  CPH1 NR3   0   -0.5000  0  0  0
+*  HR1  NR1  CPH2 NR2   0   -0.2500  0  0  0
+*  CA   CY   CPT  NY    0  -50.0000  0  0  0
+*  *    *    CT1  CC    0  -24.0000  0  0  0
+*  *    *    CT2  CC    0  -24.0000  0  0  0
+*  *    *    CT3  CC    0  -24.0000  0  0  0
+*  *    *    NH1  H     0   -5.0000  0  0  0
+*  *    *    NH2  H     0   -1.0000  0  0  0
+*  *    *    NN1  CN2   0  -22.5000  0  0  0
+*  *    *    NN1  HN1   0   -1.0000  0  0  0
+*  CN2  CN3  NN1  NN3   0  -30.0000  0  0  0
+*  CN2  CN5  NN1  NN3A  0  -20.0000  0  0  0
+*  CN2  HN1  NN1  HN1   0   -1.5000  0  0  0
+*  CN2  NN2G NN1  NN3G  0  -20.0000  0  0  0
+*  *    *    NN2  HN2   0   -0.2500  0  0  0
+*  CN4  CN5  NN2B HN2   0   -3.5000  0  0  0
+*  CN1  CN4  NN2G HN2   0   -0.4000  0  0  0
+*  CPH1 CPH2 NR1  H     0   -0.2250  0  0  0
+*  CPH1 CPH2 NR3  H     0   -0.6000  0  0  0
+*  *    *    ON1  CN1   0  -22.5000  0  0  0
+*  *    *    ON1  CN1T  0  -22.5000  0  0  0
+*  CN1  CN3T ON1  NN2U  0  -45.0000  0  0  0
+*  CN1  CN5G ON1  NN2G  0  -45.0000  0  0  0
+*  CN1T NN2B ON1  NN2U  0  -55.0000  0  0  0
+*  *    *    ON1C CN1   0  -20.0000  0  0  0
+
+[ptor] # torsion parameters
+
+format V1 P1 V2 P2 V3 P3 V4 P4 V5 P5 V6 P6
+
+* *    C    CP1  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CP1  CP2   0.400   0  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CP1  HB    0.400 180  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CP1  N     0.300   0  0.00   0  0.0000   0 -0.30   0 0.0   0 0.00   0
+* N    C    CP1  NP    0.300   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CP1  CP2   0.400   0  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CP1  HB    0.400 180  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CP1  N     0.300   0  0.00   0  0.0000   0 -0.30   0 0.0   0 0.00   0
+* NH1  C    CP1  NP    0.300   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CP1  CP2   0.400 180  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CP1  HB    0.400   0  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CP1  N     0.000   0  0.00   0  0.0000   0 -0.30   0 0.0   0 0.00   0
+* N    C    CT1  CT1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT1  CT2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT1  CT3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT1  HB    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT1  NH1   0.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT1  NH3   0.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT1  CT1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT1  CT2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT1  CT3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT1  HB    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT1  NH1   0.600   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT1  NH3   0.600   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT1  CT1   1.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT1  CT2   1.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT1  CT3   1.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT1  HB    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT1  NH1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT1  NH3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT2  HB    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT2  NH1   0.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT2  NH3   0.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT2  CT2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT2  HB    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT2  NH1   0.600   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT2  NH3   0.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT2  CT2   1.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT2  HB    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT2  NH1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT2  NH3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* N    C    CT3  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH1  C    CT3  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    CT3  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CP1  C    N    CP1   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* CP1  C    N    CP3   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* CT1  C    N    CP1   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* CT1  C    N    CP3   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* CT2  C    N    CP1   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* CT2  C    N    CP3   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* CT3  C    N    CP1   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* CT3  C    N    CP3   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* O    C    N    CP1   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* O    C    N    CP3   0.000   0  2.75 180  0.0000   0  0.30   0 0.0   0 0.00   0
+* *    C    NC2  *     0.000   0  2.25 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CP1  C    NH1  CT1   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CP1  C    NH1  CT2   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CP1  C    NH1  CT3   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CP1  C    NH1  H     0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT1  C    NH1  CT1   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT1  C    NH1  CT2   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT1  C    NH1  CT3   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT1  C    NH1  H     0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  C    NH1  CT1   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  C    NH1  CT2   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  C    NH1  CT3   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  C    NH1  H     0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  C    NH1  CT1   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  C    NH1  CT2   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  C    NH1  CT3   1.600   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  C    NH1  H     0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    NH1  CT1   0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    NH1  CT2   0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    NH1  CT3   0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    C    NH1  H     0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CA   CA    0.000   0  3.10 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CA   CPT   0.000   0  3.10 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CA   CT2   0.000   0  3.10 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CA   CT3   0.000   0  3.10 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CA   HA    0.000   0  3.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CA   HP    0.000   0  4.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CA   OC    0.000   0  3.10 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CA   OH1   0.000   0  3.10 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CA   CA   HA    0.000   0  3.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CA   CA   HP    0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CA   CA   HP    0.000   0  4.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CA   CA   HP    0.000   0  4.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   CA   HA    0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CA   HP    0.000   0  2.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CA   OC    0.000   0  4.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CA   OH1   0.000   0  4.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CPT  CPT   0.000   0  3.10 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CPT  CY    0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CPT  NY    0.000   0  2.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   CPT  CPT   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   CPT  CY    0.000   0  4.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   CPT  NY    0.000   0  4.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CPT  CPT   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CPT  CY    0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CPT  NY    0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CA   CT2  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CT2  CT1   0.000   0  0.23 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   CT2  CT3   0.000   0  0.23 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CA   CT3  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CA   CY   HA    0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   CY   CPT   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   CY   CT2   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   CY   HA    0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CY   CPT   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CY   CT2   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   CY   HP    0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NY   CA   CY   CPT   0.000   0  4.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NY   CA   CY   CT2   0.000   0  3.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NY   CA   CY   HA    0.000   0  3.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NY   CA   CY   HP    0.000   0  3.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CY   CA   NY   CPT   0.000   0  5.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CY   CA   NY   H     0.000   0  0.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   NY   CPT   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CA   NY   H     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   NY   CPT   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HP   CA   NY   H     0.000   0  0.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CA   OH1  H     0.000   0  0.99 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CC   CP1  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH2  CC   CP1  CP2   0.400   0  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH2  CC   CP1  HB    0.400 180  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH2  CC   CP1  N     0.300   0  0.00   0  0.0000   0 -0.30   0 0.0   0 0.00   0
+* NH2  CC   CP1  NP    0.300   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    CC   CP1  CP2   0.400 180  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    CC   CP1  HB    0.400   0  0.60   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    CC   CP1  N     0.000   0  0.00   0  0.0000   0 -0.30   0 0.0   0 0.00   0
+* OC   CC   CP1  CP2   0.000   0  0.00   0  0.1600   0  0.00   0 0.0   0 0.00   0
+* OC   CC   CP1  HB    0.000   0  0.00   0  0.1600   0  0.00   0 0.0   0 0.00   0
+* OC   CC   CP1  N     0.000   0  0.00   0  0.1600   0  0.00   0 0.0   0 0.00   0
+* OC   CC   CP1  NP    0.000   0  0.00   0  0.1600   0  0.00   0 0.0   0 0.00   0
+* *    CC   CT1  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.05 180
+* NH2  CC   CT1  NH3   0.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* OC   CC   CT1  NH3   0.000   0  3.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CC   CT2  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.05 180
+* NH2  CC   CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH2  CC   CT2  NH3   0.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    CC   CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* OB   CC   CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* OC   CC   CT2  NH3   0.000   0  3.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* OH1  CC   CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CC   CT2  CT1  -0.150 180  0.53 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CC   CT2  CT2  -0.150 180  0.53 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CC   CT2  CT3  -0.150 180  0.53 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CC   CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CC   CT3  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.05 180
+* OB   CC   CT3  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* OH1  CC   CT3  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CC   CT3  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CP1  CC   NH2  H     0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT1  CC   NH2  H     0.000   0  1.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CC   NH2  H     0.000   0  1.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CC   NH2  H     0.000   0  1.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CC   NH2  H     0.000   0  1.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* O    CC   NH2  H     0.000   0  1.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CC   OH1  *     0.000   0  2.05 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CC   ON2  *     0.000   0  2.05 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* OB   CC   ON2  CT1   0.965 180  3.85 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* OB   CC   ON2  CT2   0.965 180  3.85 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* OB   CC   ON2  CT3   0.965 180  3.85 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CD   CP1  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CD   CT1  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CD   CT2  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CD   CT3  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CD   OH1  *     0.000   0  2.05 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CD   OS   *     0.000   0  2.05 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* OB   CD   OS   CT2   0.965 180  3.85 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* OB   CD   OS   CT3   0.965 180  3.85 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CEL1 CEL1 *     0.150   0  4.90 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CEL1 CEL1 HEL1  0.000   0  5.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CEL1 CEL1 HEL1  0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HEL1 CEL1 CEL1 HEL1  0.000   0  5.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CEL1 CEL1 CT2  CEL1  1.000 180  0.10   0  0.3000 180  0.20   0 0.0   0 0.00   0
+* CEL1 CEL1 CT2  CT2   0.500 180  0.00   0  1.3000 180  0.00   0 0.0   0 0.00   0
+* CEL1 CEL1 CT2  CT3   0.500 180  0.00   0  1.3000 180  0.00   0 0.0   0 0.00   0
+* CEL1 CEL1 CT2  HA    0.000   0  0.00   0  0.0300   0  0.00   0 0.0   0 0.00   0
+* HEL1 CEL1 CT2  CEL1  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HEL1 CEL1 CT2  CT2   0.000   0  0.00   0  0.1200   0  0.00   0 0.0   0 0.00   0
+* HEL1 CEL1 CT2  CT3   0.000   0  0.00   0  0.1200   0  0.00   0 0.0   0 0.00   0
+* HEL1 CEL1 CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CEL1 CEL1 CT3  HA    0.000   0  0.00   0  0.0500 180  0.00   0 0.0   0 0.00   0
+* HEL1 CEL1 CT3  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1  CN3  *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2U CN1  CN3  CN3   0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1  CN3  HN3   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1  CN3T *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN1  CN3T CN9   0.000   0  5.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2U CN1  CN3T CN3   0.000   0  1.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1  CN5G *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2G CN1  CN5G CN5   0.000   0  0.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2G CN1  CN5G NN4   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1  CN5G CN5   0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1  CN5G NN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1  NN2  *     0.000   0  0.90 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3  CN1  NN2  CN3   0.000   0  0.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3  CN1  NN2  CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1C CN1  NN2  CN3   0.000   0  1.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1C CN1  NN2  CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1C CN1  NN2  HN2   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1  NN2G *     0.000   0  0.90 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5G CN1  NN2G CN2   0.000   0  0.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5G CN1  NN2G HN2   0.000   0  3.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1  NN2G CN2   0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1  NN2G HN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1  NN2U *     0.000   0  0.90 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3  CN1  NN2U CN1T  0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3  CN1  NN2U HN2   0.000   0  3.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3T CN1  NN2U HN2   0.000   0  4.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1  NN2U HN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1  NN3  *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN1  NN3  CN2   0.000   0  0.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1C CN1  NN3  CN2   0.000   0  1.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1T NN2B *     0.000   0  0.90 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2U CN1T NN2B CN3   0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2U CN1T NN2B CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2U CN1T NN2B HN2   0.000   0  1.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1T NN2B CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1T NN2B HN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN1T NN2U *     0.000   0  0.90 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN1T NN2U CN1   0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN1T NN2U HN2   0.000   0  3.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON1  CN1T NN2U HN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN2  CN3  *     0.000   0  0.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  CN3  CN3   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  CN3  HN3   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3  CN2  CN3  CN3   0.000   0  0.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3  CN2  CN3  HN3   0.000   0  3.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN2  CN5  *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  CN5  CN5   0.000   0  4.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  CN5  NN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3A CN2  CN5  CN5   0.000   0  1.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3A CN2  CN5  NN4   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3  CN2  NN1  HN1   0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5  CN2  NN1  HN1   0.000   0  0.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2G CN2  NN1  HN1   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3  CN2  NN1  HN1   0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3A CN2  NN1  HN1   0.000   0  0.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3G CN2  NN1  HN1   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN2  NN2G *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  NN2G CN1   0.000   0  4.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  NN2G HN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3G CN2  NN2G CN1   0.000   0  0.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3G CN2  NN2G HN2   0.000   0  3.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN2  NN3  *     0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3  CN2  NN3  CN1   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  NN3  CN1   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN2  NN3A *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5  CN2  NN3A CN4   0.000   0 10.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  NN3A CN4   0.000   0  4.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN2  NN3G *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN1  CN2  NN3G CN5   0.000   0  4.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2G CN2  NN3G CN5   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN3  CN3  *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN1  CN3  CN3  NN2B  0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN2  CN3  CN3  HN3   0.000   0  4.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN2  CN3  CN3  NN2   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN3  CN3  HN3   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN3  CN3  NN2   0.000   0  3.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN3  CN3T *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN3  CN3T CN1   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN3  CN3T CN9   0.000   0  5.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN3  CN8  *     0.000   0  0.00   0  1.0000 180  0.00   0 0.0   0 0.00   0
+* *    CN3  NN2  *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3  CN3  NN2  CN1   0.000   0  0.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3  CN3  NN2  CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN3  NN2  CN1   0.000   0  4.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN3  NN2  CN7B  0.000   0  0.30 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN3  NN2B *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3  CN3  NN2B CN1T  0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3  CN3  NN2B HN2   0.000   0  1.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3T CN3  NN2B CN1T  0.000   0  1.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN3T CN3  NN2B CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN3  NN2B CN7B  0.000   0  0.30 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN3  NN2B HN2   0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN1  CN3T CN9  HN9   0.000   0  0.00   0  0.4600   0  0.00   0 0.0   0 0.00   0
+* CN3  CN3T CN9  HN9   0.000   0  0.00   0  0.4600   0  0.00   0 0.0   0 0.00   0
+* *    CN4  NN2  *     0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN2  CN5   0.000   0  5.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN2  CN7B  0.000   0  0.30 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN2  HN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3A CN4  NN2  CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN4  CN4  NN2  CN5   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN4  CN4  NN2  CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN4  CN4  NN2  HN2   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN4  NN2B *     0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN2B CN5   0.000   0  5.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN2B CN7B  0.000   0  0.30 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN2B HN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN4  CN4  NN2B CN5   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN4  CN4  NN2B CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN4  CN4  NN2B HN2   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN2G CN1   0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN2G HN2   0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN4  NN3A *     0.000   0  3.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN3A CN2   0.000   0  8.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN3A CN5   0.000   0  8.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3A CN4  NN3A CN2   0.000   0  1.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3A CN4  NN3A CN5   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN4  NN4  *     0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN4  CN5   0.000   0  5.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN3  CN4  NN4  CN5G  0.000   0  5.60 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN4  NN4  CN5   0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN4  NN4  CN5G  0.000   0 16.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN5  CN5  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN2  CN5  CN5  NN2   0.000   0  7.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN2  CN5  CN5  NN3A  0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN5  CN5  NN4   0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3A CN5  CN5  NN4   0.000   0  7.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN5  CN5G *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN5  CN5G CN1   0.000   0 10.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN5  CN5G NN4   0.000   0 10.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3G CN5  CN5G CN1   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3G CN5  CN5G NN4   0.000   0 10.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN5  NN2  *     0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5  CN5  NN2  CN4   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5  CN5  NN2  CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5  CN5  NN2  HN2   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3A CN5  NN2  CN4   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN5  NN2B *     0.000   0  1.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5G CN5  NN2B CN4   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5G CN5  NN2B CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5G CN5  NN2B HN2   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3G CN5  NN2B CN4   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3G CN5  NN2B CN7B  0.000   0 11.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN3G CN5  NN2B HN2   0.000   0  1.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN5  NN3A *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5  CN5  NN3A CN4   0.000   0  1.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN5  NN3A CN4   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN5  NN3G *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5G CN5  NN3G CN2   0.000   0  0.20 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN5  NN3G CN2   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN5  NN4  *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN2  CN5  NN4  CN4   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5  CN5  NN4  CN4   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN5G NN4  *     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN1  CN5G NN4  CN4   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN5  CN5G NN4  CN4   0.000   0  6.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN7  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.40   0
+* CN7  CN7  CN7  CN8B  0.000   0  0.00   0  0.0000   0  0.50 180 0.0   0 0.00   0
+* CN7  CN7  CN7  HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN7  ON2   0.000   0  0.00   0  2.0000 180  0.00   0 0.4   0 0.80   0
+* CN7  CN7  CN7  ON5   0.000   0  0.00   0  2.0000 180  0.00   0 0.4   0 0.80   0
+* CN7  CN7  CN7  ON6   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.60   0
+* CN7B CN7  CN7  CN8B  0.000   0  0.00   0  0.0000   0  0.20 180 0.0   0 0.00   0
+* CN7B CN7  CN7  CN9   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.40   0
+* CN7B CN7  CN7  HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7  CN7  ON6B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7  CN7  CN8B  0.000   0  0.00   0  0.0000   0  0.50 180 0.0   0 0.00   0
+* CN8  CN7  CN7  CN9   0.000   0  0.00   0  0.0000   0  0.50 180 0.0   0 0.00   0
+* CN8  CN7  CN7  HN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7  CN7  ON6   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8B CN7  CN7  CN9   0.000   0  0.00   0  0.0000   0  0.50 180 0.0   0 0.00   0
+* CN8B CN7  CN7  HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN8B CN7  CN7  ON2   0.000   0  0.00   0  0.8000 180  0.20   0 0.0   0 0.00   0
+* CN8B CN7  CN7  ON5   0.000   0  0.00   0  0.8000 180  0.20   0 0.0   0 0.00   0
+* CN9  CN7  CN7  HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN9  CN7  CN7  ON2   0.000   0  0.00   0  0.8000 180  0.20   0 0.0   0 0.00   0
+* HN7  CN7  CN7  HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7  ON2   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7  ON5   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7  ON6   0.000   0  0.00   0  0.1950 180  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7  ON6B  0.000   0  0.00   0  0.1950 180  0.00   0 0.0   0 0.00   0
+* ON2  CN7  CN7  ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CN7  CN7  ON6   0.000   0  0.00   0  0.2000   0  0.60 180 0.3   0 0.50   0
+* ON2  CN7  CN7  ON6B  0.000   0  0.00   0  1.6000   0  0.00   0 0.0   0 0.40   0
+* ON5  CN7  CN7  ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON5  CN7  CN7  ON6   0.000   0  0.00   0  0.2000   0  0.60 180 0.3   0 0.50   0
+* ON5  CN7  CN7  ON6B  0.000   0  0.00   0  1.6000   0  0.00   0 0.0   0 0.40   0
+* CN7  CN7  CN7B CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN7B HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN7B NN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN7B ON2   0.000   0  0.00   0  2.0000 180  0.00   0 0.4   0 0.80   0
+* CN7  CN7  CN7B ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN7B ON6   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.60   0
+* CN8  CN7  CN7B HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7  CN7B NN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7  CN7B ON6   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.60   0
+* HN7  CN7  CN7B CN7B  0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7B HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7B NN2   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7B ON2   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7B ON5   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN7B ON6   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON2  CN7  CN7B CN7B  0.000   0  0.00   0  1.6000 180  0.00   0 0.0   0 0.60   0
+* ON2  CN7  CN7B HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON2  CN7  CN7B NN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CN7  CN7B ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CN7  CN7B ON6   0.000   0  0.00   0  0.2000   0  0.60 180 0.3   0 0.50   0
+* ON5  CN7  CN7B CN7B  0.000   0  0.00   0  1.6000 180  0.00   0 0.0   0 0.60   0
+* ON5  CN7  CN7B HN7   0.000   0  0.00   0  0.1950 180  0.00   0 0.0   0 0.00   0
+* ON5  CN7  CN7B NN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON5  CN7  CN7B ON2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON5  CN7  CN7B ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON5  CN7  CN7B ON6   3.400 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN7  CN8  *     0.000   0  0.00   0  0.2000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN8  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.40   0
+* CN7  CN7  CN8  CN8B  0.000   0  0.00   0  0.1000   0  0.50   0 0.0   0 0.00   0
+* CN7  CN7  CN8  HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN8  CN7B  0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN8  CN8B  0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN8  HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON2  CN7  CN8  CN7B  0.000   0  0.00   0  2.0000 180  0.00   0 0.4   0 0.80   0
+* ON2  CN7  CN8  CN8B  0.500 180  0.70   0  0.4000   0  0.00   0 0.4   0 0.00   0
+* ON2  CN7  CN8  HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON5  CN7  CN8  CN7B  0.000   0  0.00   0  2.0000 180  0.00   0 0.4   0 0.80   0
+* ON5  CN7  CN8  CN8B  0.500 180  0.70   0  0.4000   0  0.00   0 0.4   0 0.00   0
+* ON5  CN7  CN8  HN8   0.000   0  0.00   0  0.1950 180  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN8B HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN8B ON2   2.500 180  0.40   0  0.8000 180  0.20 180 0.0   0 0.00   0
+* CN7  CN7  CN8B ON5   2.500 180  0.40   0  0.8000 180  0.20 180 0.0   0 0.00   0
+* CN8  CN7  CN8B HN8   0.195   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7  CN8B ON2   0.000   0  0.00   0  0.2000 180  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN8B HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN8B ON2   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN8B ON5   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON5  CN7  CN8B HN8   0.195   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7  CN8B HN8   0.195   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7  CN8B ON2   3.400 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7  CN8B ON5   3.400 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7  CN8B HN8   0.195   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7  CN8B ON2   3.400 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7  CN8B ON5   3.400 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  CN9  HN9   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  CN9  HN9   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7  CN9  HN9   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7  CN9  HN9   0.000   0  0.00   0  0.1950 180  0.00   0 0.0   0 0.00   0
+* CN7  CN7  ON5  HN5   1.500   0  0.30 180  0.5000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7  ON5  HN5   0.500   0  0.00   0  0.8000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7  ON5  HN5   0.300   0  1.00 180  0.5000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  ON5  HN5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  ON6  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.60 180
+* CN7  CN7  ON6  CN8B  0.000   0  0.00   0  0.5000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7  ON6  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8B CN7  ON6  CN7B  0.000   0  0.00   0  0.8000   0  0.00   0 0.0   0 0.00   0
+* CN8B CN7  ON6  CN8B  0.500   0  0.00   0  0.1000 180  0.00   0 0.5   0 0.00   0
+* CN9  CN7  ON6  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  ON6  CN7B  0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  ON6  CN8B  0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7  ON6B CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7  ON6B CN7B  0.000   0  0.00   0  2.0000   0  0.00   0 0.0   0 0.00   0
+* CN8B CN7  ON6B CN7B  0.000   0  0.00   0  2.0000   0  0.00   0 0.0   0 0.00   0
+* CN9  CN7  ON6B CN7B  0.000   0  0.00   0  2.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7  ON6B CN7B  0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B CN7B HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B CN7B NN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B CN7B NN2B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B CN7B NR1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B CN7B ON6B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.40   0
+* CN8  CN7B CN7B HN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B CN7B NN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B CN7B NN2B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B CN7B ON6B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.40   0
+* HN7  CN7B CN7B HN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B CN7B NN2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B CN7B NN2B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B CN7B NR1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B CN7B ON2   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B CN7B ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B CN7B ON6B  0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* NN2  CN7B CN7B ON2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN7B CN7B ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN7B CN7B ON2   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN7B CN7B ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CN7B CN7B ON5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CN7B CN7B ON6B  0.000   0  0.00   0  1.6000   0  0.00   0 0.0   0 0.40   0
+* ON5  CN7B CN7B ON6B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B CN8  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B CN8  HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B CN8  CN7   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B CN8  HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* NN2  CN7B CN8  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN7B CN8  HN8   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN7B CN8  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN7B CN8  HN8   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CN7B CN8  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CN7B CN8  CN8   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CN7B CN8  HN8   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON2  CN7B CN8  CN7   0.000   0  0.00   0  2.0000 180  0.00   0 0.4   0 0.80   0
+* ON2  CN7B CN8  HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B CN8  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.60   0
+* ON6  CN7B CN8  HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B CN8  HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B NN2  CN1   0.000   0  0.00   0  1.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B NN2  CN3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B NN2  CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B NN2  CN5   0.000   0  0.00   0  0.3000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NN2  CN1   0.000   0  0.00   0  1.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NN2  CN3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NN2  CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NN2  CN5   0.000   0  0.00   0  0.3000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NN2  CN1   0.000   0  0.00   0  1.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NN2  CN3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NN2  CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NN2  CN5   0.000   0  0.00   0  0.3000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NN2  CN1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NN2  CN3   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NN2  CN4   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NN2  CN5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2  CN1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2  CN3   1.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2  CN4   1.100   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2  CN5   1.100 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2  CN1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2  CN3   1.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2  CN4   1.100   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2  CN5   1.100 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NN2B CN1T  0.000   0  0.00   0  0.2000 180  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NN2B CN3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NN2B CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NN2B CN5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NN2B CN1T  0.000   0  0.00   0  0.2000 180  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NN2B CN3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NN2B CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NN2B CN5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NN2B CN1T  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NN2B CN3   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NN2B CN4   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NN2B CN5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2B CN1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2B CN1T  0.800 180  0.00   0  0.7000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2B CN3   0.900   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2B CN4   1.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NN2B CN5   1.100 180  0.00   0  0.2000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2B CN1   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2B CN1T  0.800 180  0.00   0  0.7000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2B CN3   0.900   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2B CN4   1.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NN2B CN5   1.100 180  0.00   0  0.2000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B NR1  CPH1  0.000   0  0.00   0  0.0000   0  0.20   0 0.0   0 0.00   0
+* CN7B CN7B NR1  CPH2  0.000   0  0.30   0  0.1000 180  0.00   0 0.0   0 0.00   0
+* CN8  CN7B NR1  CPH1  0.000   0  0.00   0  0.0000   0  0.20   0 0.0   0 0.00   0
+* CN8  CN7B NR1  CPH2  0.000   0  0.30   0  0.1000 180  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NR1  CPH1  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B NR1  CPH2  0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NR1  CPH1  0.600 180  0.50 290  0.2000   0  0.00   0 0.0   0 0.00   0
+* ON6  CN7B NR1  CPH2  0.300   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NR1  CPH1  0.600 180  0.50 290  0.2000   0  0.00   0 0.0   0 0.00   0
+* ON6B CN7B NR1  CPH2  0.300   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B ON5  HN5   0.000   0  0.00   0  0.3000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B ON5  HN5   0.000   0  0.00   0  0.8000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B ON5  HN5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN7B ON6  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.60 180
+* CN8  CN7B ON6  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.60 180
+* HN7  CN7B ON6  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN7B ON6  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN7B ON6  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CN7B ON6  CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CN7B ON6  CN8   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7B CN7B ON6B CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN7  CN7B ON6B CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2  CN7B ON6B CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NN2B CN7B ON6B CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CN7B ON6B CN7   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN8  CN8  *     0.000   0  0.00   0  0.1500   0  0.00   0 0.0   0 0.00   0
+* CN8  CN8  CN8  CN9   0.150   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN9  CN8  CN8  CN9   0.150   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN8  CN8  CN8  ON6   0.195   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN8  CN8B HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* CN7  CN8  CN8B ON6   0.000   0  0.00   0  0.4000 180  0.40   0 0.7 180 0.00   0
+* HN8  CN8  CN8B HN8   0.000   0  0.00   0  0.1950   0  0.00   0 0.0   0 0.00   0
+* HN8  CN8  CN8B ON6   0.195   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CN8  CN9  *     0.000   0  0.00   0  0.1500   0  0.00   0 0.0   0 0.00   0
+* CN9  CN8  NN2B CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN9  CN8  NN2B CN5   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* HN8  CN8  NN2B CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN8  CN8  NN2B CN5   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* *    CN8  ON2  *     0.000   0  0.00   0 -0.1000   0  0.00   0 0.0   0 0.00   0
+* CN7  CN8B ON5  HN5   1.330   0  0.18   0  0.3200   0  0.00   0 0.0   0 0.00   0
+* HN8  CN8B ON5  HN5   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CN8  CN8B ON6  CN7   0.000   0  0.00   0  0.6000   0  0.00   0 0.0   0 0.60 180
+* HN8  CN8B ON6  CN7   0.195   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2  CN1   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2  CN3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2  CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2  CN5   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2B CN1   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2B CN1T  0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2B CN3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2B CN4   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  NN2B CN5   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* HN9  CN9  ON2  P     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CP1  CP2  *     0.000   0  0.00   0  0.1400   0  0.00   0 0.0   0 0.00   0
+* C    CP1  N    C     0.000   0  0.00   0  0.8000   0  0.00   0 0.0   0 0.00   0
+* C    CP1  N    CP3   0.000   0  0.00   0  0.1000   0  0.00   0 0.0   0 0.00   0
+* CC   CP1  N    C     0.000   0  0.00   0  0.8000   0  0.00   0 0.0   0 0.00   0
+* CC   CP1  N    CP3   0.000   0  0.00   0  0.1000   0  0.00   0 0.0   0 0.00   0
+* CD   CP1  N    C     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CP2  CP1  N    C     0.000   0  0.00   0  0.8000   0  0.00   0 0.0   0 0.00   0
+* CP2  CP1  N    CP3   0.000   0  0.00   0  0.1000   0  0.00   0 0.0   0 0.00   0
+* HB   CP1  N    C     0.000   0  0.00   0  0.8000   0  0.00   0 0.0   0 0.00   0
+* HB   CP1  N    CP3   0.000   0  0.00   0  0.1000   0  0.00   0 0.0   0 0.00   0
+* C    CP1  NP   CP3   0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* C    CP1  NP   HC    0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* CC   CP1  NP   CP3   0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* CC   CP1  NP   HC    0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* CD   CP1  NP   CP3   0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* CD   CP1  NP   HC    0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* CP2  CP1  NP   CP3   0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* CP2  CP1  NP   HC    0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* HB   CP1  NP   CP3   0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* HB   CP1  NP   HC    0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* *    CP2  CP2  *     0.000   0  0.00   0  0.1600   0  0.00   0 0.0   0 0.00   0
+* *    CP2  CP3  *     0.000   0  0.00   0  0.1400   0  0.00   0 0.0   0 0.00   0
+* CP2  CP3  N    C     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CP2  CP3  N    CP1   0.000   0  0.00   0  0.1000   0  0.00   0 0.0   0 0.00   0
+* HA   CP3  N    C     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CP3  N    CP1   0.000   0  0.00   0  0.1000   0  0.00   0 0.0   0 0.00   0
+* CP2  CP3  NP   CP1   0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* CP2  CP3  NP   HC    0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* HA   CP3  NP   CP1   0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* HA   CP3  NP   HC    0.000   0  0.00   0  0.0800   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 CPH1 HR1   0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 CPH1 HR3   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 CPH1 NR1   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 CPH1 NR2   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 CPH1 NR3   0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CPH1 CPH1 HR1   0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CPH1 CPH1 HR3   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CPH1 CPH1 NR1   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CPH1 CPH1 NR2   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CPH1 CPH1 NR3   0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR1  CPH1 CPH1 HR1   0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR1  CPH1 CPH1 NR3   0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR3  CPH1 CPH1 HR3   0.000   0  2.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR3  CPH1 CPH1 NR1   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR3  CPH1 CPH1 NR2   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CPH1 CPH1 NR2   0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR3  CPH1 CPH1 NR3   0.000   0 12.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 CT2  CT1   0.200   0  0.27   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 CT2  CT2   0.400   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 CT2  CT3   0.200   0  0.27   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 CT2  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CPH1 CT2  CT1   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR1  CPH1 CT2  CT2   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR1  CPH1 CT2  CT3   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR1  CPH1 CT2  HA    0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR2  CPH1 CT2  CT1   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR2  CPH1 CT2  CT2   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR2  CPH1 CT2  CT3   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR2  CPH1 CT2  HA    0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR3  CPH1 CT2  CT1   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR3  CPH1 CT2  CT2   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR3  CPH1 CT2  CT3   0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR3  CPH1 CT2  HA    0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 CT3  HA    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CPH1 CT3  HA    0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR2  CPH1 CT3  HA    0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* NR3  CPH1 CT3  HA    0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 NR1  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 NR1  CPH2  0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 NR1  H     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 NR1  CPH2  0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 NR1  H     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CPH1 NR1  CPH2  0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CPH1 NR1  H     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR3  CPH1 NR1  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR3  CPH1 NR1  CPH2  0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR3  CPH1 NR1  H     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 NR2  CPH2  0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 NR2  CPH2  0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR3  CPH1 NR2  CPH2  0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 NR3  CPH2  0.000   0 12.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPH1 CPH1 NR3  H     0.000   0  1.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 NR3  CPH2  0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CPH1 NR3  H     0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CPH1 NR3  H     0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR1  CPH1 NR3  CPH2  0.000   0  2.50 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR1  CPH1 NR3  H     0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR1  CPH2 NR1  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR1  CPH2 NR1  CPH1  0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR1  CPH2 NR1  H     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR2  CPH2 NR1  CN7B  0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR2  CPH2 NR1  CPH1  0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR2  CPH2 NR1  H     0.000   0  1.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR1  CPH2 NR2  CPH1  0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR1  CPH2 NR2  CPH1  0.000   0 14.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR2  CPH2 NR3  CPH1  0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HR2  CPH2 NR3  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR3  CPH2 NR3  CPH1  0.000   0 12.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* NR3  CPH2 NR3  H     0.000   0  1.40 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CPT  CPT  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  CPT  CA    0.000   0  3.10 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  CPT  CY    0.000   0 10.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  CPT  NY    0.000   0 10.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CY   CPT  CPT  NY    0.000   0  5.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  CY   CA    0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  CY   CT2   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  CY   HA    0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  CY   HP    0.000   0  2.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CPT  CY   CA    0.000   0  4.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CPT  CY   CT2   0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CPT  CY   HA    0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CPT  CY   HP    0.000   0  2.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  NY   CA    0.000   0  3.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CA   CPT  NY   H     0.000   0  0.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CPT  NY   CA    0.000   0  5.00 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CPT  CPT  NY   H     0.000   0  0.80 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CT1  CT1  *     0.000   0  0.00   0  0.2000   0  0.00   0 0.0   0 0.00   0
+* *    CT1  CT2  *     0.000   0  0.00   0  0.2000   0  0.00   0 0.0   0 0.00   0
+* C    CT1  CT2  CA    0.000   0  0.00   0  0.0400   0  0.00   0 0.0   0 0.00   0
+* CC   CT1  CT2  CA    0.000   0  0.00   0  0.0400   0  0.00   0 0.0   0 0.00   0
+* HA   CT1  CT2  CA    0.000   0  0.00   0  0.0400   0  0.00   0 0.0   0 0.00   0
+* N    CT1  CT2  CA    0.000   0  0.00   0  0.0400   0  0.00   0 0.0   0 0.00   0
+* *    CT1  CT3  *     0.000   0  0.00   0  0.2000   0  0.00   0 0.0   0 0.00   0
+* C    CT1  NH1  C     0.200 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* C    CT1  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CC   CT1  NH1  C     0.200 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CC   CT1  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CD   CT1  NH1  C     0.200 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CD   CT1  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT1  CT1  NH1  C     1.800   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT1  CT1  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CT1  NH1  C     1.800   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CT1  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CT1  NH1  C     1.800   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CT1  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HB   CT1  NH1  C     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HB   CT1  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CT1  NH3  *     0.000   0  0.00   0  0.1000   0  0.00   0 0.0   0 0.00   0
+* *    CT1  OH1  *     0.000   0  0.00   0  0.1400   0  0.00   0 0.0   0 0.00   0
+* CT1  CT1  OH1  H     1.330   0  0.18   0  0.3200   0  0.00   0 0.0   0 0.00   0
+* CT3  CT1  OH1  H     1.330   0  0.18   0  0.3200   0  0.00   0 0.0   0 0.00   0
+* *    CT1  ON2  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CT1  ON2  CC    0.700 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CT1  ON2  CC    0.700 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CT1  OS   *     0.000   0  0.00   0 -0.1000   0  0.00   0 0.0   0 0.00   0
+* *    CT2  CT2  *     0.000   0  0.00   0  0.1900   0  0.00   0 0.0   0 0.00   0
+* CC   CT2  CT2  CT2   0.210 180  0.39   0  0.3500 180  0.11   0 0.0   0 0.09 180
+* CC   CT2  CT2  CT3   0.210 180  0.39   0  0.3500 180  0.11   0 0.0   0 0.09 180
+* CT2  CT2  CT2  CT2   0.150   0  0.10 180  0.0000   0  0.15   0 0.0   0 0.10 180
+* CT2  CT2  CT2  CT3   0.150   0  0.10 180  0.0000   0  0.15   0 0.0   0 0.10 180
+* CT3  CT2  CT2  CT3   0.150   0  0.10 180  0.0000   0  0.15   0 0.0   0 0.10 180
+* HA   CT2  CT2  S     0.000   0  0.00   0  0.0100   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  CT2  SM    0.000   0  0.00   0  0.0100   0  0.00   0 0.0   0 0.00   0
+* NH3  CT2  CT2  OH1   0.700 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NH3  CT2  CT2  ON2   0.700 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* NTL  CT2  CT2  OH1   4.300 180  0.00   0 -0.4000 180  0.00   0 0.0   0 0.00   0
+* NTL  CT2  CT2  ON2   3.300 180  0.00   0 -0.4000 180  0.00   0 0.0   0 0.00   0
+* *    CT2  CT3  *     0.000   0  0.00   0  0.1600   0  0.00   0 0.0   0 0.00   0
+* CA   CT2  CT3  HA    0.000   0  0.00   0  0.0400   0  0.00   0 0.0   0 0.00   0
+* CT1  CT2  CY   CA    0.000   0  0.23 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT1  CT2  CY   CPT   0.000   0  0.23 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CT2  CY   CA    0.000   0  0.23 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CT2  CY   CPT   0.000   0  0.23 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  CY   CA    0.000   0  0.25 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  CY   CPT   0.000   0  0.25 180  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CT2  NC2  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* C    CT2  NH1  C     0.200 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* C    CT2  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CC   CT2  NH1  C     0.200 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CC   CT2  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CD   CT2  NH1  C     0.200 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CD   CT2  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CT2  NH1  C     1.800   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CT2  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CT2  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  NH1  C     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HB   CT2  NH1  C     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HB   CT2  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CD   CT2  NH2  HC    0.000   0  0.00   0  0.1100   0  0.00   0 0.0   0 0.00   0
+* CT2  CT2  NH2  HC    0.000   0  0.00   0  0.1100   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  NH2  HC    0.000   0  0.00   0  0.1100   0  0.00   0 0.0   0 0.00   0
+* HB   CT2  NH2  HC    0.000   0  0.00   0  0.1100   0  0.00   0 0.0   0 0.00   0
+* *    CT2  NH3  *     0.000   0  0.00   0  0.1000   0  0.00   0 0.0   0 0.00   0
+* *    CT2  NTL  *     0.000   0  0.00   0  0.2600   0  0.00   0 0.0   0 0.00   0
+* *    CT2  OH1  *     0.000   0  0.00   0  0.1400   0  0.00   0 0.0   0 0.00   0
+* CT1  CT2  OH1  H     1.300   0  0.30   0  0.4200   0  0.00   0 0.0   0 0.00   0
+* CT2  CT2  OH1  H     1.300   0  0.30   0  0.4200   0  0.00   0 0.0   0 0.00   0
+* CT3  CT2  OH1  H     1.300   0  0.30   0  0.4200   0  0.00   0 0.0   0 0.00   0
+* *    CT2  ON2  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT2  CT2  ON2  CC    0.700 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  CT2  ON2  CC    0.700 180  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CT2  OS   *     0.000   0  0.00   0 -0.1000   0  0.00   0 0.0   0 0.00   0
+* CT1  CT2  S    HS    0.240   0  0.15   0  0.2700   0  0.00   0 0.0   0 0.00   0
+* CT2  CT2  S    CT3   0.240 180  0.00   0  0.3700   0  0.00   0 0.0   0 0.00   0
+* CT3  CT2  S    CT3   0.240 180  0.00   0  0.3700   0  0.00   0 0.0   0 0.00   0
+* CT3  CT2  S    HS    0.240   0  0.15   0  0.2700   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  S    CT3   0.000   0  0.00   0  0.2800   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  S    HS    0.000   0  0.00   0  0.2000   0  0.00   0 0.0   0 0.00   0
+* CT1  CT2  SM   SM    0.000   0  0.00   0  0.3100   0  0.00   0 0.0   0 0.00   0
+* CT2  CT2  SM   SM    0.000   0  0.00   0  0.3100   0  0.00   0 0.0   0 0.00   0
+* HA   CT2  SM   SM    0.000   0  0.00   0  0.1580   0  0.00   0 0.0   0 0.00   0
+* *    CT3  CT3  *     0.000   0  0.00   0  0.1525   0  0.00   0 0.0   0 0.00   0
+* *    CT3  NC2  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CT3  NH1  C     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CT3  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HB   CT3  NH1  C     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HB   CT3  NH1  H     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CT3  NH2  *     0.000   0  0.00   0  0.1100   0  0.00   0 0.0   0 0.00   0
+* *    CT3  NH3  *     0.000   0  0.00   0  0.0900   0  0.00   0 0.0   0 0.00   0
+* *    CT3  OH1  *     0.000   0  0.00   0  0.1400   0  0.00   0 0.0   0 0.00   0
+* *    CT3  ON2  *     0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* HA   CT3  ON2  SL    0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    CT3  OS   *     0.000   0  0.00   0 -0.1000   0  0.00   0 0.0   0 0.00   0
+* HA   CT3  S    CT2   0.000   0  0.00   0  0.2800   0  0.00   0 0.0   0 0.00   0
+* HA   CT3  S    HS    0.000   0  0.00   0  0.2000   0  0.00   0 0.0   0 0.00   0
+* HA   CT3  SM   SM    0.000   0  0.00   0  0.1580   0  0.00   0 0.0   0 0.00   0
+* *    CTL5 NTL  *     0.000   0  0.00   0  0.2300   0  0.00   0 0.0   0 0.00   0
+* CT2  ON2  SL   ON3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* CT3  ON2  SL   ON3   0.000   0  0.00   0  0.0000   0  0.00   0 0.0   0 0.00   0
+* *    ON4  P    *     0.000   0  0.00   0  0.3000   0  0.00   0 0.0   0 0.00   0
+* CT2  SM   SM   CT2   1.000   0  4.10   0  0.9000   0  0.00   0 0.0   0 0.00   0
+* CT3  SM   SM   CT3   1.000   0  4.10   0  0.9000   0  0.00   0 0.0   0 0.00   0
+
+[nonbonded] # nonbonded parameters
+
+ele-dielectric 1 distance
+ele-buffer     0
+ele-scale14    1.0
+ele-charge-fcn SetCHARMM27Charges
+
+vdw-buffer     0 0
+vdw-scale14    1.00000
+vdw-mix-radius average
+vdw-mix-well   average
+
+#type    radius     well P N     mass DA        q0   fcadj     pbci
+#----   ------- -------- - - -------- -- --------- ------- --------
+C	2.00000 0.110000 - -  12.0110  -         ?  0.0000 -0.05152
+CA	1.99240 0.070000 - -  12.0110  -         ?  0.0000 -0.03583
+CC	2.00000 0.070000 - -  12.0110  -         ?  0.0000 -0.02178
+CD	2.00000 0.070000 - -  12.0110  -         ?  0.0000 -0.01086
+CEL1	2.09000 0.068000 - -  12.0110  -         ?  0.0000  0.00342
+CEL1	2.08000 0.064000 - -  12.0110  -         ?  0.0000  0.00342
+CP1	2.27500 0.020000 - -  12.0110  -         ?  0.0000  0.00455
+CP2	2.17500 0.055000 - -  12.0110  -         ?  0.0000  0.00735
+CP3	2.17500 0.055000 - -  12.0110  -         ?  0.0000  0.02786
+CPH1	1.80000 0.050000 - -  12.0110  -         ?  0.0000 -0.08584
+CPH2	1.80000 0.050000 - -  12.0110  -         ?  0.0000 -0.09385
+CPT	1.80000 0.090000 - -  12.0110  -         ?  0.0000 -0.04256
+CQ	2.27500 0.020000 - -  12.0110  -         ?  0.0000  0.00899 #meister
+CT	2.27500 0.020000 - -  12.0110  -         ?  0.0000  0.00899 #meister
+CT1	2.27500 0.020000 - -  12.0110  -         ?  0.0000  0.00899
+CT2	2.17500 0.055000 - -  12.0110  -         ?  0.0000  0.00378
+CT3	2.06000 0.080000 - -  12.0110  -         ?  0.0000  0.00413
+CY	1.99240 0.070000 - -  12.0110  -         ?  0.0000 -0.03233
+H	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.16614
+HA	1.32000 0.022000 - -   1.0080  -         ?  0.0000  0.09413
+HEL1	1.25000 0.031000 - -   1.0080  -         ?  0.0000  0.15324
+HEL1	1.26000 0.026000 - -   1.0080  -         ?  0.0000  0.15324
+HB	1.32000 0.022000 - -   1.0080  -         ?  0.0000  0.10114
+HC	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.15345
+HP	1.35820 0.030000 - -   1.0080  -         ?  0.0000  0.07928
+HR1	0.90000 0.046000 - -   1.0080  -         ?  0.0000  0.02480
+HR2	0.70000 0.046000 - -   1.0080  -         ?  0.0000  0.08100
+HR3	1.46800 0.007800 - -   1.0080  -         ?  0.0000  0.01604
+HS	0.45000 0.100000 - -   1.0080  -         ?  0.0000  0.12266
+HT	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.20850
+N	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.09992
+NC2	1.85000 0.200000 - -  14.0070  -         ?  0.1350 -0.27843
+NH1	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.11744
+NH2	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.14041
+NH3	1.85000 0.200000 - -  14.0070  -         ?  0.1550 -0.16671
+NP	1.85000 0.200000 - -  14.0070  -         ?  0.1650 -0.13569
+NR1	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.12757
+NR2	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.43162
+NR3	1.85000 0.200000 - -  14.0070  -         ?  0.1650 -0.31119
+NY	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.17911
+O	1.70000 0.120000 - -  15.9990  -         ?  0.0000 -0.55527
+OB	1.70000 0.120000 - -  15.9990  -         ?  0.0000 -0.55158
+OC	1.70000 0.120000 - -  15.9990  -         ? -0.0800 -0.19573
+OH1	1.77000 0.152100 - -  15.9990  -         ?  0.0000 -0.23500
+OS	1.77000 0.152100 - -  15.9994  -         ?  0.0000 -0.15655
+OT	1.76820 0.152100 - -  15.9994  -         ?  0.0000 -0.20850
+S	2.00000 0.450000 - -  32.0600  -         ?  0.0000 -0.04697
+SM	1.97500 0.380000 - -  32.0600  -         ?  0.0000 -0.07919
+SOD	1.36375 0.046900 - -  22.9898  -         ?  0.0000  0.00000
+POT	1.76375 0.087000 - -  39.1020  -         ?  0.0000  0.00000
+CLA	2.27000 0.150000 - -  35.4500  -         ?  0.0000  0.00000
+CAL	1.36700 0.120000 - -  40.0800  -         ?  0.0000  0.00000
+MG	1.18500 0.015000 - -  24.3050  -         ?  0.0000  0.00000
+CES	2.10000 0.190000 - - 132.9000  -         ?  0.0000  0.00000
+ZN	1.09000 0.250000 - -  65.3700  -         ?  0.0000  0.00000
+HN1	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.39536
+HN2	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.26043
+HN3	1.10000 0.046000 - -   1.0080  -         ?  0.0000  0.20630
+HN4	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.21512
+HN5	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.18903
+HN7	1.32000 0.022000 - -   1.0080  -         ?  0.0000  0.08571
+HN8	1.34000 0.028000 - -   1.0080  -         ?  0.0000  0.08459
+HN9	1.34000 0.024000 - -   1.0080  -         ?  0.0000  0.15275
+NN1	1.85000 0.200000 - -  14.0070  -         ?  0.0000  0.05996
+NN2	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.00959
+NN2B	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.03467
+NN2G	1.85000 0.200000 - -  14.0070  -         ?  0.0000  0.00776
+NN2U	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.06913
+NN3	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.26075
+NN3A	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.29551
+NN3G	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.27637
+NN4	1.85000 0.200000 - -  14.0070  -         ?  0.0000 -0.32920
+ON1	1.70000 0.120000 - -  15.9994  -         ?  0.0000 -0.45600
+ON1C	1.70000 0.120000 - -  15.9994  -         ?  0.0000 -0.36662
+ON2	1.77000 0.152100 - -  15.9994  -         ?  0.0000 -0.13743
+ON3	1.70000 0.120000 - -  15.9994  -         ? -0.1850  0.09906
+ON4	1.77000 0.152100 - -  15.9994  -         ?  0.0000 -0.09236
+ON5	1.77000 0.152100 - -  15.9994  -         ?  0.0000 -0.24021
+ON6	1.77000 0.152100 - -  15.9994  -         ?  0.0000 -0.25935
+ON6B	1.77000 0.152100 - -  15.9994  -         ?  0.0000 -0.25850
+CN1	1.90000 0.100000 - -  12.0110  -         ?  0.0000  0.00160
+CN1T	1.90000 0.100000 - -  12.0110  -         ?  0.0000 -0.00135
+CN2	1.90000 0.100000 - -  12.0110  -         ?  0.0000  0.14212
+CN3	1.90000 0.090000 - -  12.0110  -         ?  0.0000  0.10937
+CN3T	1.90000 0.090000 - -  12.0110  -         ?  0.0000  0.01457
+CN4	1.90000 0.075000 - -  12.0110  -         ?  0.0000  0.04446
+CN5	1.90000 0.075000 - -  12.0110  -         ?  0.0000  0.01351
+CN5G	1.90000 0.075000 - -  12.0110  -         ?  0.0000 -0.08671
+CN7	2.27500 0.020000 - -  12.0110  -         ?  0.0000 -0.01082
+CN7B	2.27500 0.020000 - -  12.0110  -         ?  0.0000 -0.00869
+CN8	2.01000 0.056000 - -  12.0110  -         ?  0.0000 -0.00610
+CN8B	2.01000 0.056000 - -  12.0110  -         ?  0.0000 -0.01336
+CN9	2.04000 0.078000 - -  12.0110  -         ?  0.0000  0.08911
+P	2.15000 0.585000 - -  30.9740  -         ?  0.0000  0.31270
+H	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.16614
+HA	1.32000 0.022000 - -   1.0080  -         ?  0.0000  0.09413
+HA	1.34000 0.028000 - -   1.0080  -         ?  0.0000  0.09413
+HA	1.34000 0.024000 - -   1.0080  -         ?  0.0000  0.09413
+HC	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.15345
+HT	0.22450 0.046000 - -   1.0080  -         ?  0.0000  0.20850
+HL	0.70000 0.046000 - -   1.0080  -         ?  0.0000  0.25378
+HEL1	1.25000 0.031000 - -   1.0080  -         ?  0.0000  0.15324
+CC	2.00000 0.070000 - -  12.0110  -         ?  0.0000 -0.02178
+CT1	2.27500 0.020000 - -  12.0110  -         ?  0.0000  0.00899
+CT2	2.01000 0.056000 - -  12.0110  -         ?  0.0000  0.00378
+CT3	2.04000 0.078000 - -  12.0110  -         ?  0.0000  0.00413
+CTL5	2.06000 0.080000 - -  12.0110  -         ?  0.0000  0.00378
+CEL1	2.09000 0.068000 - -  12.0110  -         ?  0.0000  0.00342
+OB	1.70000 0.120000 - -  15.9990  -         ?  0.0000 -0.55158
+OC	1.70000 0.120000 - -  15.9990  -         ? -0.0800 -0.19573
+ON3	1.70000 0.120000 - -  15.9994  -         ? -0.1850  0.09906
+OH	1.77000 0.152100 - -  15.9990  -         ?  0.0000 -0.23500
+OH1	1.77000 0.152100 - -  15.9990  -         ?  0.0000 -0.23500
+ON2	1.77000 0.152100 - -  15.9994  -         ?  0.0000 -0.13743
+OT	1.76820 0.152100 - -  15.9994  -         ?  0.0000 -0.20850
+NH3	1.85000 0.200000 - -  14.0070  -         ?  0.1550 -0.16671
+NTL	1.85000 0.200000 - -  14.0070  -         ?  0.0950 -0.37247
+SL	2.10000 0.470000 - -  32.0600  -         ?  0.0000  0.31413
+P	2.15000 0.585000 - -  30.9740  -         ?  0.0000  0.31270
+SOD	1.36375 0.046900 - -  22.9898  -         ?  0.0000  0.00000
+POT	1.76375 0.087000 - -  39.1020  -         ?  0.0000  0.00000
+CLA	2.27000 0.150000 - -  35.4500  -         ?  0.0000  0.00000
+CAL	1.36700 0.120000 - -  40.0800  -         ?  0.0000  0.00000
+MG	1.18500 0.015000 - -  24.3050  -         ?  0.0000  0.00000
+CES	2.10000 0.190000 - - 132.9000  -         ?  0.0000  0.00000
+ZN	1.09000 0.250000 - -  65.3700  -         ?  0.0000  0.00000
+
+[vdw] # vdw parameters
+
+#T1   T2   r        eps        m  n
+#---  ---- -------- --------  -- --
+
+*     *           -        -  12  6
+

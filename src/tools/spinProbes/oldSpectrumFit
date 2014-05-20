@@ -1,0 +1,231 @@
+#! /usr/bin/env python
+
+import hotshot
+import getopt
+import scipy.optimize
+
+from mbb import *
+import sys
+import random
+import math
+
+#profiling = True
+profiling = False
+parm = True
+
+from histogram import *
+from cgBuilders import *
+from cgOligomer import *
+from monteCarlo import *
+from ploticus import *
+from constrainedVector import *
+from eprOligomer import *
+
+Debug = False
+
+
+
+
+
+class MultiSpectrumComparer:
+    def __init__( self, builder, constrainedVector, mcsteps, outputFile ):
+	self._Oligomers = []
+	self._Builder = builder
+	self._ConstrainedVector = constrainedVector
+	self._MonteCarloSteps = mcsteps
+	self._Step = 0
+	self._Plot = PointPloticus(outputFile,"Step","Energy")
+
+    def addEprOligomer(self,o):
+	self._Oligomers.append(o)
+
+    def getConstrainedVector(self):
+	return self._ConstrainedVector
+
+
+    def evaluateMatch(self,valueVector):
+	print "Value vector = ", valueVector
+	self._ConstrainedVector.setFromValueVector(valueVector)
+	self._Builder.setFromConstrainedVector(self._ConstrainedVector)
+	if ( len(self._Oligomers)==0 ):
+	    raise("There are no SingleSpectrumOligomers defined")
+	place = self._ConstrainedVector.getPositionSummary(self._Step)
+	print place
+	self._Step += 1
+	mcsteps = self._MonteCarloSteps
+	compSum = 0.0
+	for z in self._Oligomers:
+	    z.generatePredictedSpectrum(mcsteps,self._ConstrainedVector,
+					self._Step,accumulatePlots=False)
+	    comp = z.getRmsDifference()
+	    compSum += comp*comp
+	compSum /= float(len(self._Oligomers))
+	print "\nEnergy = ",compSum
+	self._Plot.addPoint(self._Step,compSum)
+	return compSum
+
+    def getOligomers(self):
+	return self._Oligomers
+
+
+
+
+def functionToOptimize(vec,comparer):
+#    print "Vec = ", vec[:3]
+# test function
+#    idx = 0.0
+#    sum = 0.0
+#    for v in vec[:3]:
+#	sum += (v-idx)*(v-idx)
+#	idx = idx + 10
+#    print "Function = %f ======================"%sum
+#    return sum
+    return comparer.evaluateMatch(vec)
+
+
+
+
+def main():
+    if (len(sys.argv) <=1):
+	argList = [sys.argv[0],"-h"]
+    else:
+	argList = sys.argv
+
+    outputPrefix = "out/_opt"
+    longOptions = [ "outputPrefix=",
+			"restart=",
+			"spectrum=",
+			"logstep=",
+			"column=",
+			"nmer="  ]
+
+    constVector = ConstrainedVector( [ 
+			( "rotx0", 10.0 ),
+			( "roty0", 10.0 ),
+			( "logrotyk", 1.0 ),
+			( "rotz0", 10.0 ),
+			( "logrotzk", 1.0 ),
+			( "rotyy0", 10.0 ),
+			( "rotzz0", 10.0 ),
+			( "logrotxk", 1.0 ),
+			( "logrotyyk", 1.0 ),
+			( "logrotzzk", 1.0 ),
+			( "logdistk", 1.0 ),
+			( "dist0", 0.1 ) ])
+
+
+    longOptions.extend(constVector.getOptionsForGetOpt())
+    optlist, args = getopt.getopt(argList[1:],"h",longOptions)
+    parmFile = "parms/dkp-pro4SS+pro4SS.xml"
+    spectraAndOligomers = []
+    appendToFile = True
+    logStep = 5.5
+    restartFile = None
+    for opt,arg in optlist:
+	if ( opt in constVector.getOptions() ):
+	    constVector.setOption(opt,arg)
+	if ( opt == "--restart" ):
+	    restartFile = arg
+	if ( opt == "--logstep" ):
+	    logStep = float(arg)
+	if ( opt == "--outputPrefix" ):
+	    outputPrefix = arg
+	if ( opt == "--spectrum" ):
+	    spectrumFile = arg
+	    column = 2
+	if ( opt == "--column" ):
+	    column = int(arg)
+	if ( opt == "--nmer" ):
+	    nmer = int(arg)
+	    print "Adding oligomer with %d pro4(SS) monomers and spectrum in: %s"%(nmer,spectrumFile)
+	    spectraAndOligomers.append((nmer,spectrumFile,column))
+	if ( opt == "-h" ):
+	    print "Usage: %s [options] {--spectrum _specFile.xy_ --nmer #}"
+	    print "  -h           = Help"
+	    sys.exit(0)
+
+
+    if ( restartFile != None ):
+	constVector.initializeFromRestartFile(restartFile)
+
+    mcsteps = pow(10,logStep)
+
+    ssparm = CGParameterizedPro4Builder()
+    ssparm.defineFromFile(parmFile)
+
+    builderSS_dkp_SS = CGTableBuilder()
+    builderSS_dkp_SS.appendMatrices("parms/middle_parameters.xml",
+						"dkp-OSS2+OSS3")
+    builderSS_dkp_SSend = CGTableBuilder()
+    builderSS_dkp_SSend.appendMatrices("parms/lead_parameters.xml",
+						"dkp-OSS5+OSS2")
+#    builderSS_dkp_SSend.outputValues("out/_table_SS_dkp_SSlead.txt")
+
+    builderSS_main_Poac = CGTableBuilder()
+    builderSS_main_Poac.appendMatrices("parms/lead_parameters.xml",
+						"main-OSS2+POA3")
+#    builderSS_dkp_SSend.outputValues("out/_table_lead_poac.txt")
+
+    builderSS_back_Poac = CGTableBuilder()
+    builderSS_back_Poac.appendMatrices("parms/tail_parameters.xml",
+						"back-OSS4+POA5")
+#    builderSS_back_Poac.outputValues("out/_table_back_poac.txt")
+
+
+
+	#
+	# Build all of the EprOligomers
+	#
+    constVector.initializePosition()
+    outputFile = "%s_results.pl"%outputPrefix
+    spectrumComparer = MultiSpectrumComparer( ssparm, constVector, 
+						mcsteps, outputFile )
+    for nmer,specFile,column in spectraAndOligomers:
+	print "Creating %d-mer oligomer with spectrum: %s"%(nmer,specFile)
+	eprOlig = EprOligomer()
+	eprOlig.createNmer(nmer,builderSS_back_Poac, ssparm,
+				builderSS_dkp_SSend,builderSS_main_Poac,
+				outputPrefix)
+	eprOlig.setExperimentalSpectrumFileName(specFile,column)
+	spectrumComparer.addEprOligomer(eprOlig)
+
+
+
+#    pout = Ploticus(outputFile,"point","rms")
+#    results = NumericalFunction()
+
+    valueVector = constVector.getValueVector()
+    print "Starting optimization valueVector = ", valueVector
+    result = scipy.optimize.fmin_powell(func=functionToOptimize,
+			x0=valueVector,
+			args = [spectrumComparer],
+			maxiter = 100000 )
+
+    print "Result = ", result
+#    for i in range(0,points):
+#	print "Calculating point ========================================="
+#	ssparm.modifyUsingRangerPosition(constVector)
+#	place = constVector.getPositionDescription(i)
+#	print place,
+#	res = spectrumComparer.doComparison(i,points,place,mcsteps)
+#	results.addValues(i,res)
+#	print "\nResult = ",res
+#	constVector.advancePosition()
+#	if ( animationOn ):
+#	    for olig in spectrumComparer.getOligomers():
+#	        olig.saveAnimation("%s_time%d"%(outputPrefix,i))
+#		olig.turnOnAnimation()
+#    pout.addData(results,"rms spectral fit","")
+#    pout.finish()
+#
+#    for z in spectrumComparer.getOligomers():
+#	z.finishPlot()
+
+if (__name__ == "__main__" ):
+    if ( profiling ):
+        prof = hotshot.Profile("hotshot_edi_stats_new")
+        prof.runcall(main)
+        prof.close()
+    else:
+        main()
+

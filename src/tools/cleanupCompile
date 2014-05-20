@@ -1,0 +1,6 @@
+#! /bin/bash
+killall -9 g++
+killall -9 cc1plus
+killall -9 collect2
+killall -9 i686-apple-darwin10-g++-4.2.1
+killall -9 distcc

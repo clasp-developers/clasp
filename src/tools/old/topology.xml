@@ -1,0 +1,256 @@
+<monomerDatabase>
+ <monomerTypeDatabase>
+  <type name="_pro4">
+   <mold name="pro4">
+    <monomer name="pro4(2S4S)" pdb="OSS"/>
+    <monomer name="pro4(2S4R)" pdb="OSR"/>
+    <monomer name="pro4(2R4S)" pdb="ORS"/>
+    <monomer name="pro4(2R4R)" pdb="ORR"/>
+   </mold>
+  </type>
+  <type name="_pip5">
+   <mold name="pip5">
+    <monomer name="pip5(2S5S)" pdb="5SS"/>
+    <monomer name="pip5(2S5R)" pdb="5SR"/>
+    <monomer name="pip5(2R5S)" pdb="5RS"/>
+    <monomer name="pip5(2R5R)" pdb="5RR"/>
+   </mold>
+  </type>
+  <type name="_pip4">
+   <mold name="pip4">
+    <monomer name="pip4(2S4S)" pdb="4SS"/>
+    <monomer name="pip4(2S4R)" pdb="4SR"/>
+    <monomer name="pip4(2R4S)" pdb="4RS"/>
+    <monomer name="pip4(2R4R)" pdb="4RR"/>
+   </mold>
+  </type>
+  <type name="_aminoAcid">
+   <mold name="tyrosine"><monomer name="tyr" pdb="TYR"/></mold>
+   <mold name="glycine"><monomer name="gly" pdb="GLY"/></mold>
+  </type>
+  <type name="_resinAmide">
+   <mold name="resinAmide"><monomer name="NH2" pdb="NH2"/></mold>
+  </type>
+  <type name="_protonateAmine">
+   <mold name="protAmine"><monomer name="protAmine" pdb="NPR"/></mold>
+  </type>
+ </typeDatabase>
+<topologyDatabase>
+<subUnitMold name="resinAmide" zType="resinAmide">
+ <subUnitName name="resinAmide" pdbName="ram"/>
+ <residue>
+  <atom id='1' name='N' element='N' hybrid='sp3' type='CT' chg='0'/>
+  <atom id='2' name='H' element='H' hybrid='sp' type='HC' chg='0'/>
+  <atom id='3' name='H' element='H' hybrid='sp' type='HC' chg='0'/>
+  <bond order='single' from='1' to='2'/>
+  <bond order='single' from='1' to='3'/>
+ </residue>
+ <comment> </comment>
+ <coupling in="amide"></coupling>
+</subUnitMold>
+<subUnitMold name="acetate" zType="acylGroup">
+ <subUnitName name="acetate" pdbName="ace"/>
+ <residue>
+  <atom id='1' name='CA' element='C' hybrid='sp3' type='CT' chg='0'/>
+  <atom id='2' name='HA1' element='H' hybrid='sp' type='HC' chg='0'/>
+  <atom id='3' name='HA2' element='H' hybrid='sp' type='HC' chg='0'/>
+  <atom id='4' name='HA2' element='H' hybrid='sp' type='HC' chg='0'/>
+  <atom id='10' name='C' element='C' hybrid='sp2' type='C' chg='0'/>
+  <atom id='11' name='O' element='O' hybrid='sp2' type='O' chg='0'/>
+  <bond order='single' from='1' to='2'/>
+  <bond order='single' from='1' to='3'/>
+  <bond order='single' from='1' to='4'/>
+  <bond order='single' from='1' to='10'/>
+  <bond order='double' from='10' to='11'/>
+ </residue>
+ <comment> </comment>
+ <coupling in="amideBack"></coupling>
+ <coupling in="amide"></coupling>
+</subUnitMold>
+<subUnitMold name="gly" zType="aminoAcid">
+ <subUnitName name="gly" pdbName="gly"/>
+ <residue>
+  <atom id='1' name='CA' element='C' hybrid='sp3' type='CT' chg='0'/>
+  <atom id='2' name='HA1' element='H' hybrid='sp' type='HC' chg='0'/>
+  <atom id='3' name='HA2' element='H' hybrid='sp' type='HC' chg='0'/>
+  <atom id='4' name='N' element='N' hybrid='sp3' type='N' chg='0'/>
+  <atom id='5' name='H' element='H' hybrid='sp3' type='H' chg='0'/>
+  <atom id='10' name='C' element='C' hybrid='sp2' type='C' chg='0'/>
+  <atom id='11' name='O' element='O' hybrid='sp2' type='O' chg='0'/>
+  <bond order='single' from='1' to='3'/>
+  <bond order='single' from='1' to='2'/>
+  <bond order='single' from='1' to='10'/>
+  <bond order='single' from='1' to='4'/>
+  <bond order='single' from='4' to='5'/>
+  <bond order='double' from='10' to='11'/>
+ </residue>
+ <comment> </comment>
+ <coupling in="dkp"></coupling>
+ <coupling>dkp</coupling>
+</subUnitMold>
+<subUnitMold name="pro4" zType="pro4">
+ <subUnitName name="pro4(2s4s)" pdbName="OSS"/>
+ <subUnitName name="pro4(2s4r)" pdbName="OSR"/>
+ <subUnitName name="pro4(2r4s)" pdbName="ORS"/>
+ <subUnitName name="pro4(2r4r)" pdbName="ORR"/>
+ <residue>
+  <atom id='17' name='CAC' element='C' hybrid='sp2' type='C' chg='0'/>
+  <atom id='18' name='OA' element='O' hybrid='sp2' type='O' chg='0'/>
+  <atom id='19' name='CA' element='C' hybrid='sp3' type='CT' chg='0'/>
+  <atom id='20' name='HA' element='H' hybrid='sp3' type='HC' chg='0'/>
+  <atom id='23' name='NA' element='N' hybrid='sp3' type='N' chg='0'/>
+  <atom id='24' name='CD' element='C' hybrid='sp3' type='CT' chg='0'/>
+  <atom id='25' name='HD2' element='H' hybrid='sp3' type='HC' chg='0'/>
+  <atom id='26' name='HD1' element='H' hybrid='sp3' type='HC' chg='0'/>
+  <atom id='27' name='CG' element='C' hybrid='sp3' type='CT' chg='0'/>
+  <atom id='28' name='CB' element='C' hybrid='sp3' type='CT' chg='0'/>
+  <atom id='29' name='HB1' element='H' hybrid='sp3' type='HC' chg='0'/>
+  <atom id='30' name='HB2' element='H' hybrid='sp3' type='HC' chg='0'/>
+  <atom id='31' name='CGC' element='C' hybrid='sp2' type='C' chg='0'/>
+  <atom id='32' name='OG' element='O' hybrid='sp2' type='O' chg='0'/>
+  <atom id='34' name='NG' element='N' hybrid='sp3' type='N' chg='0'/>
+  <atom id='35' name='HN' element='H' hybrid='sp3' type='H' chg='0'/>
+  <bond order='single' from='17' to='19'/>
+  <bond order='double' from='17' to='18'/>
+  <bond order='single' from='19' to='20'/>
+  <bond order='single' from='19' to='28'/>
+  <bond order='single' from='19' to='23'/>
+  <bond order='single' from='23' to='24'/>
+  <bond order='single' from='24' to='25'/>
+  <bond order='single' from='24' to='26'/>
+  <bond order='single' from='24' to='27'/>
+  <bond order='single' from='27' to='28'/>
+  <bond order='single' from='27' to='31'/>
+  <bond order='single' from='27' to='34'/>
+  <bond order='single' from='28' to='29'/>
+  <bond order='single' from='28' to='30'/>
+  <bond order='double' from='31' to='32'/>
+  <bond order='single' from='34' to='35'/>
+ </residue>
+ <comment> </comment>
+ <coupling in="dkp">dkp</coupling>
+</subUnitMold>
+
+
+<couplingRule name="dkp">
+ <in> <zType zType="pro4"/> </in>
+ <out> <zType zType="pro4"/> </out>
+ <code>
+  <bond in="NG" out="CAC" order="single"/>
+  <bond in="CGC" out="NA" order="single"/>
+ </code>
+</couplingRule>
+<couplingRule name="peptide">
+ <in><zType zType="pro4"/></in>
+ <out><zType zType="pro4"/></out>
+ <code>
+  <bond in="NG" out="CAC" order="single"/>
+ </code>
+</couplingRule>
+<couplingRule name="dkp">
+ <in><zType zType="aminoAcid"/></in>
+ <out><zType zType="pro4"/></out>
+ <code>
+  <bond in="N" out="CAC" order="single"/>
+  <bond in="C" out="NA" order="single"/>
+ </code>
+</couplingRule>
+<couplingRule name="dkp">
+ <in><zType zType="pro4"/></in>
+ <out><zType zType="aminoAcid"/></out>
+ <code>
+  <bond in="NG" out="C" order="single"/>
+  <bond in="CGC" out="N" order="single"/>
+ </code>
+</couplingRule>
+<couplingRule name="dkp">
+ <in><zType zType="aminoAcid"/></in>
+ <out><zType zType="aminoAcid"/></out>
+ <code>
+  <bond in="N" out="C" order="single"/>
+  <bond in="C" out="N" order="single"/>
+ </code>
+</couplingRule>
+<couplingRule name="amide">
+ <in><zType zType="resinAmide"/></in>
+ <out><zType zType="pro4"/></out>
+ <code>
+  <bond in="N" out="CAC" order="single"/>
+ </code>
+</couplingRule>
+<couplingRule name="amideBack">
+ <in><zType zType="pro4"/></in>
+ <out><zType zType="pro4"/></out>
+ <code>
+  <bond in="NA" out="CAC" order="single"/>
+ </code>
+</couplingRule>
+<couplingRule name="amideBack">
+ <in><zType zType="pro4"/></in>
+ <out><zType zType="acylGroup"/></out>
+ <code>
+  <bond in="NA" out="C" order="single"/>
+ </code>
+</couplingRule>
+</topologyDatabase>
+
+
+
+
+<conformation>
+ <subUnitZMatrixMold zType="pro4">
+   <in inZType="pro4" inCoupling="dkp"/>
+   <in inZType="pro4" inCoupling="amide"/>
+   <dihedralDriver name="ramPro4" class="secondaryStructure"
+			atom1="NA" 
+			atom2="CA" 
+			atom3="CAC" 
+			atom4="-NG"/>
+   <zMatrixMold order="1" name="fpsi">
+	! CAC -NG -CG -CGC
+	! OAC CAC -NG -CG
+	! CA CAC OAC -NG
+	! NA CA CAC -NG
+	! HA CA CAC NA
+   </zMatrixMold>
+   <zMatrixMold order="2" name="ring">
+	! CB CA NA CAC
+	! CG CB CA NA
+	! CD CG CB CA
+	! HB1 CB CG CA
+	! HB2 CB CG CA
+	! HD1 CD CG NA
+	! HD2 CD CG NA
+	! NG CG CB CD
+   </zMatrixMold>
+   <zMatrixMold order="3" name="fphi">
+	! CGC CG CB CD
+	! OGC CGC CG NG
+	! NH NG CG CGC
+	! HN NH CG CB
+   </zMatrixMold>
+ </subUnitZMatrixMold>
+ <subUnitZMatrixMold name="resinAcid">
+   <in inZType="resinAcid" inCoupling="ester"/>
+   <zMatrixMold order="1" type="resinAcid">
+	! HO @xy @x @o
+	! OH HO @xy @x
+   </zMatrixMold>
+ </subUnitZMatrixMold>
+ <subUnitZMatrixMold fullName="gly">
+   <in zType="pro4" in="dkp"/>
+   <in zType="amide" in="amide"/>
+   <zMatrixMold order="1" type="amideC">
+	! C -OH -HO @xy
+	! O C -OH -HO
+	! CA C -OH -HO
+	! HA1 CA C O
+	! HA2 CA C O
+   </zMatrixMold>
+   <zMatrixMold order="2" type="amideN">
+	! N CA C O
+	! HN N CA C
+   </zMatrixMold>
+ </subUnitZMatrixMold>
+</conformation>
+</monomerDatabase>

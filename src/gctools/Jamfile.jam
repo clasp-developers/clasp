@@ -1,0 +1,52 @@
+import cando ;
+local dir = $(__file__:D) ;
+
+#
+#
+project internals/gctools : requirements
+	<cxxflags>-std=c++11
+#	<cxxflags>-Wc++11-extensions
+	<cxxflags>-Wno-unused-variable
+	<cxxflags>-Wno-c++11-extensions
+	# copied from clasp - I have to come up with a better way
+	<target-os>darwin:<linkflags>"-lclang -lclangRewriteFrontend -lclangRewriteCore -lclangTooling -lclangParse -lclangDriver -lclangEdit -lclangSema -lclangAnalysis -lclangSerialization -lclangLex -lclangFrontend -lclangAST -lclangASTMatchers -lclangBasic"
+ 	<define>EXPAT
+	<define>_DEBUG
+	<define>_GNU_SOURCE
+	<toolset>darwin:<define>READLINE
+	<threading>single
+	<include>./
+	<include>../
+	<include>$(MPS-SRC)
+#	<include>$(llvm_include_dir)/llvm/include
+	<toolset>darwin:<define>darwin
+	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
+	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
+	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
+	<toolset>pathscale:<cxxflags>"-Wno-unused-variable -fopenmp"
+	<toolset>pgi:<cxxflags>"-mp -gopt"
+	<toolset>pgi:<linkflags>"-mp -gopt"
+	<target-os>darwin:<linkflags>"-dynamiclib"
+	;
+
+local sources = 
+	gctoolsPackage.cc
+        memoryRefSearch.c
+	memoryManagement.cc
+#	/externals//lib_mps/<link>static
+#	gctoolsToolingPackage.cc
+#	gctoolsToolingExpose.cc
+#	gctoolsMatchingPackage.cc
+#	gctoolsMatchingExpose.cc
+	/internals/core//bundle
+	/externals//boostAndExpatLibs
+	/externals//llvm_lib ;
+
+cando.bundle $(dir) :
+	     $(sources) :
+	     <link>static
+	     <implicit-dependency>mi
+	     <implicit-dependency>/internals/core//mi
+	     <implicit-dependency>/internals/cffi//mi
+	     <implicit-dependency>/internals/llvmo//mi
+	     ;

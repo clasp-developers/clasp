@@ -1,0 +1,259 @@
+//
+// m4 macros for defining repetitive template specializations for
+// exposing c++ classes to CandoScript
+//
+//
+// Usage comma(8,9) # -> ,
+define(`comma',`ifelse(eval($1<$2),1,`,')')
+
+// comma_2,3: comma(2,3)
+// comma_3,3: comma(3,3)
+// comma_4,3: comma(4,3)
+
+//
+// Usage for(`x',1,5,`x,') # -> 1,2,3,4,5,
+define(`for',`ifelse($#,0,``$0'',`ifelse(eval($2<=$3),1,
+`pushdef(`$1',$2)$4`'popdef(`$1')$0(`$1',incr($2),$3,`$4')')')')
+
+// example
+// for: for(`x',1,10,`x()comma(x,10)')
+
+
+
+
+// Usage _P_one(idx,num)
+// Generates P_num or void
+define(`_P_one',`ifelse(eval($1<=$2),1,P$1,void)')
+
+
+// _P_one(1,2)
+// 1,2: _P_one(1,2)
+// 2,2: _P_one(2,2)
+// 3,2: _P_one(3,2)
+
+// Usage _P_args(num,max)
+// Generates P1,P2,...,P_num,void,void..,void_max
+define(`_P_args',`for(`_z',1,$2,`_P_one(_z,$1)`'comma(_z,$2)')')
+
+// _P_args_3,10: _P_args(3,10)
+
+//
+// Usage: _typename_P_args(num)
+// eg: _typename_P_args(3) -> typename P1, typename P2, typename P3
+define(`_typename_P_args',`for(`_z',1,$1,`typename _P_one(_z,$1)`'comma(_z,$1)')')
+
+//
+// Usage: _P_args_noVoid(num)
+// eg: _P_args_noVoid(3) -> P1, P2, P3
+define(`_P_args_noVoid',`for(`_z',1,$1,`_P_one(_z,$1)`'comma(_z,$1)')')
+
+//
+// Usage: _typename_P_args_void(num)
+// eg: _typename_P_args_void(3) -> typename P1=void, typename P2=void, typename P3=void
+define(`_typename_P_args_void',`for(`_z',1,$1,`typename _P_one(_z,$1)=void`'comma(_z,$1)')')
+//
+
+
+define(`_from_object',`typename from_object<P$1 >::DeclareType a$1 = from_object<P$1>::convert(args->olistrefArgument($1+$2));')
+define(`_all_from_objects',`for(`_z',1,$1,`_from_object(_z,$2)
+	')')
+
+//
+// Usage: _function_args(num) 
+define(`_function_args',`for(`_z',1,$1,`a`'_z`'comma(_z,$1)')')
+
+// _function_args(3) # -> a1,a2,a3
+
+
+define(`_typename_if_not_void',`ifelse($1,void,,typename $1)')
+
+// _typename_P_args_(5): _typename_P_args(5)
+
+
+
+
+
+// ---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
+//
+// 
+//
+// Usage _methodPtrT_basic(numArgs,maxArgs)
+//
+define(`_methodPtrT_basic',`
+template <typename OT`'ifelse($1,RT,`,'typename RT) ifelse($2,0,,`,')ifelse($5,master,`_typename_P_args_void($2)',`_typename_P_args($2)')>
+class $7 ifelse($5,master,,`<OT,$1,_P_args($2,$3)>') {
+    public:
+    	enum { NumParams = $2 };
+	typedef $1 (OT::*Type)(_P_args_noVoid($2)) $4;
+    static RPObject invoke( boost::shared_ptr<OT> obj, Type fn, RPCons args, RPLisp lisp)
+    {_F();
+	if ( args->length()-1 != $2 )
+	{
+	    stringstream ss;
+	    ss << "Method expected "<< ($2+1) << " argument(s) but was passed " << args->length() << " argument(s).";
+	    THROW(O_LispError(ss.str()));
+	}
+	_all_from_objects($2,0)
+	ifelse($1,RT,
+		RT retval = ((obj.get())->*fn)(_function_args($2));
+		return to_object<RT>::convert(lisp,retval);
+		,
+		(((obj.get())->*fn)$6)(_function_args($2));return O_Object::nil(lisp);
+	);
+    }
+};
+')
+
+define(`_methodPtrT',_methodPtrT_basic($1,$2,$3,$4,$5,,MethodPtrT))
+define(`_methodPtrT_wrappedClass',_methodPtrT_basic($1,$2,$3,$4,$5,->wrappedObjectPointer,MethodPtrT_wrappedClass))
+
+
+define(`_def_method_basic',`
+    template <typename RT`'ifelse($2,0,,`,')_typename_P_args($2)>
+        class_& def(const string& name, RT (OT::*mp)(_P_args_noVoid($2,$3))$4 )
+    {
+	ASSERT_NOT_NULLP(this->_Lisp,"The Lisp environment must be defined before wrappers");
+	Functoid* m = new $5<OT,RT`'ifelse($2,0,,`,')_P_args_noVoid($2,$3)>(mp);
+	lisp_defineMethodWithNameAndClassId(this->_Lisp,name,this->_ClassId,m);
+	return *this;
+    }
+')
+
+define(`_def_method',_def_method_basic($1,$2,$3,$4,MethodWrapPtr)
+define(`_def_method_wrappedClass',_def_method_basic($1,$2,$3,$4,WrappedClassMethodWrapPtr)
+
+
+#ifdef	include_methodptrt
+#ifndef	methodptrt_H
+#define	methodptrt_H
+
+_methodPtrT(RT,10,10,,master)
+_methodPtrT(RT,9,10)
+_methodPtrT(RT,8,10)
+_methodPtrT(RT,7,10)
+_methodPtrT(RT,6,10)
+_methodPtrT(RT,5,10)
+_methodPtrT(RT,4,10)
+_methodPtrT(RT,3,10)
+_methodPtrT(RT,2,10)
+_methodPtrT(RT,1,10)
+_methodPtrT(RT,0,10)
+
+_methodPtrT(void,10,10)
+_methodPtrT(void,9,10)
+_methodPtrT(void,8,10)
+_methodPtrT(void,7,10)
+_methodPtrT(void,6,10)
+_methodPtrT(void,5,10)
+_methodPtrT(void,4,10)
+_methodPtrT(void,3,10)
+_methodPtrT(void,2,10)
+_methodPtrT(void,1,10)
+_methodPtrT(void,0,10)
+
+#endif // ifndef methodptrt_H
+#endif	// include_methodptrt
+
+
+#ifdef	include_def_method
+#ifndef	def_method_H
+#define	def_method_H
+
+_def_method(RT,10,10)
+_def_method(RT,9,10)
+_def_method(RT,8,10)
+_def_method(RT,7,10)
+_def_method(RT,6,10)
+_def_method(RT,5,10)
+_def_method(RT,4,10)
+_def_method(RT,3,10)
+_def_method(RT,2,10)
+_def_method(RT,1,10)
+_def_method(RT,0,10)
+
+_def_method(RT,10,10,const)
+_def_method(RT,9,10,const)
+_def_method(RT,8,10,const)
+_def_method(RT,7,10,const)
+_def_method(RT,6,10,const)
+_def_method(RT,5,10,const)
+_def_method(RT,4,10,const)
+_def_method(RT,3,10,const)
+_def_method(RT,2,10,const)
+_def_method(RT,1,10,const)
+_def_method(RT,0,10,const)
+
+#endif
+#endif
+
+
+//
+// Include this to define MethodPtrT_wrappedClass
+// Functoids that 
+
+#ifdef	include_methodptrt_wrappedClass
+#ifndef	methodptrt_wrappedClass_H
+#define	methodptrt_wrappedClass_H
+
+_methodPtrT_wrappedClass(RT,10,10,,master)
+_methodPtrT_wrappedClass(RT,9,10)
+_methodPtrT_wrappedClass(RT,8,10)
+_methodPtrT_wrappedClass(RT,7,10)
+_methodPtrT_wrappedClass(RT,6,10)
+_methodPtrT_wrappedClass(RT,5,10)
+_methodPtrT_wrappedClass(RT,4,10)
+_methodPtrT_wrappedClass(RT,3,10)
+_methodPtrT_wrappedClass(RT,2,10)
+_methodPtrT_wrappedClass(RT,1,10)
+_methodPtrT_wrappedClass(RT,0,10)
+
+_methodPtrT_wrappedClass(void,10,10)
+_methodPtrT_wrappedClass(void,9,10)
+_methodPtrT_wrappedClass(void,8,10)
+_methodPtrT_wrappedClass(void,7,10)
+_methodPtrT_wrappedClass(void,6,10)
+_methodPtrT_wrappedClass(void,5,10)
+_methodPtrT_wrappedClass(void,4,10)
+_methodPtrT_wrappedClass(void,3,10)
+_methodPtrT_wrappedClass(void,2,10)
+_methodPtrT_wrappedClass(void,1,10)
+_methodPtrT_wrappedClass(void,0,10)
+
+#endif // ifndef methodptrt_wrappedClass_H
+#endif	// include_methodptrt_wrappedClass
+
+
+#ifdef	include_def_method_wrappedClass
+#ifndef	def_method_wrappedClass_H
+#define	def_method_wrappedClass_H
+
+_def_method_wrappedClass(RT,10,10)
+_def_method_wrappedClass(RT,9,10)
+_def_method_wrappedClass(RT,8,10)
+_def_method_wrappedClass(RT,7,10)
+_def_method_wrappedClass(RT,6,10)
+_def_method_wrappedClass(RT,5,10)
+_def_method_wrappedClass(RT,4,10)
+_def_method_wrappedClass(RT,3,10)
+_def_method_wrappedClass(RT,2,10)
+_def_method_wrappedClass(RT,1,10)
+_def_method_wrappedClass(RT,0,10)
+
+_def_method_wrappedClass(RT,10,10,const)
+_def_method_wrappedClass(RT,9,10,const)
+_def_method_wrappedClass(RT,8,10,const)
+_def_method_wrappedClass(RT,7,10,const)
+_def_method_wrappedClass(RT,6,10,const)
+_def_method_wrappedClass(RT,5,10,const)
+_def_method_wrappedClass(RT,4,10,const)
+_def_method_wrappedClass(RT,3,10,const)
+_def_method_wrappedClass(RT,2,10,const)
+_def_method_wrappedClass(RT,1,10,const)
+_def_method_wrappedClass(RT,0,10,const)
+
+#endif		// def_method_wrappedClass_H
+#endif		// include_def_method_wrappedClass

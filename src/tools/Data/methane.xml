@@ -1,0 +1,41 @@
+Out[2]=
+<?xml version="1.0"?>
+<modl>
+<head animation="on" clockperiod="5s" stepsize="1s" loop="true">
+   <meta name="title" content="Methane Dance" />
+   <DEFINE name="C">
+      <atom radius="0.3" color="1 1 0" />
+   </DEFINE>
+   <DEFINE name="H">
+      <atom radius="0.25" color="1 0 0" />
+   </DEFINE>
+   <DEFINE name="CH4">
+     <molecule>
+	<atom type="C" id="c1" position="0 0 0.4" />
+	<atom type="H" id="h1" position="0.5 0.1 -0.4" />
+	<atom type="H" id="h2" position="-1 0.1 0.3" />
+	<atom type="H" id="h3" position="0.3 0.7 1" />
+	<atom type="H" id="h4" position="0.2 -0.9 0.8" />
+	<bond atom1="c1" atom2="h1" />
+	<bond atom1="c1" atom2="h2" />
+	<bond atom1="c1" atom2="h3" />
+	<bond atom1="c1" atom2="h4" />
+     </molecule>
+   </DEFINE>
+</head>
+<body>
+  <molecule type="CH4" id="m" />
+ 
+  <TRANSLATE object="m" t="0.2" position="-3 1 -2" />
+  <TRANSLATE object="m" t="0.4" position="-1 0 -3" />
+  <TRANSLATE object="m" t="0.6" position="1 -1 -1" />
+  <TRANSLATE object="m" t="0.8" position="1 0 1" />
+  <TRANSLATE object="m" t="1" position="0 0 0" />
+
+  <ROTATE object="m" t="0.2" axis="1 0 0" />
+  <ROTATE object="m" t="0.4" axis="0 0 1" angle="-1.571"/>
+  <ROTATE object="m" t="0.6" axis="0 -1 0" />
+  <ROTATE object="m" t="0.8" axis="-1 0 0" angle="-0.78" />
+  <ROTATE object="m" t="1" axis="0 0 1" />
+</body>
+</modl>
