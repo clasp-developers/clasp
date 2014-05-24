@@ -171,18 +171,14 @@ namespace core
 
     Path_sp Path_O::create(const string& path)
     {
-	GC_RESERVE_BEGIN(Path_O,op ){
-	    GC_RESERVE_GET(Path_O,op );
-	} GC_RESERVE_END(Path_O,op );
+        GC_ALLOCATE(Path_O,op );
 	op->setPathFromString(path);
 	return op;
     }
 
     Path_sp Path_O::create(boost_filesystem::path p)
     {
-	GC_RESERVE_BEGIN(Path_O,op ){
-	    GC_RESERVE_GET(Path_O,op );
-	} GC_RESERVE_END(Path_O,op );
+        GC_ALLOCATE(Path_O,op );
 	op->setPath(p);
 	return op;
     }
@@ -288,9 +284,7 @@ namespace core
     Path_sp Path_O::absolute() const
     {_G();
 	if ( this->_Path.is_absolute() ) return this->copyPath();
-	GC_RESERVE_BEGIN(Path_O,abs ){
-	    GC_RESERVE_GET(Path_O,abs );
-	} GC_RESERVE_END(Path_O,abs );
+        GC_ALLOCATE(Path_O,abs );
 	abs->_Path = boost_filesystem::absolute(this->_Path);
 	return abs;
     }
@@ -448,9 +442,7 @@ namespace core
 
     DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path, Lisp_sp lisp)
     {_G();
-	GC_RESERVE_BEGIN(DirectoryIterator_O,di ){
-	    GC_RESERVE_GET(DirectoryIterator_O,di );
-	} GC_RESERVE_END(DirectoryIterator_O,di );
+        GC_ALLOCATE(DirectoryIterator_O,di );
 	di->setPath(path);
 	return di;
     }
@@ -587,9 +579,7 @@ namespace core
 
     RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path, Lisp_sp lisp)
     {_G();
-	GC_RESERVE_BEGIN(RecursiveDirectoryIterator_O,di ){
-	    GC_RESERVE_GET(RecursiveDirectoryIterator_O,di );
-	} GC_RESERVE_END(RecursiveDirectoryIterator_O,di );
+        GC_ALLOCATE(RecursiveDirectoryIterator_O,di );
 	di->setPath(path);
 	return di;
     }

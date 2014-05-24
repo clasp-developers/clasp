@@ -8,7 +8,7 @@
 
 namespace clbind {
 
-    map<const type_info*,core::Symbol_sp> 	globalRttiToClassSymbol;
+//    map<const type_info*,core::Symbol_sp> 	globalRttiToClassSymbol;
 
 
 

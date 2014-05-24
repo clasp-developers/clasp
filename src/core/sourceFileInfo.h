@@ -52,7 +52,7 @@ namespace core
     public:
     public: // ctor/dtor for classes with shared virtual base
 	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _LineNumber(UNDEF_UINT),_Column(UNDEF_UINT), _FilePos(UNDEF_UINT) {};
-    private: // instance variables here
+    public: // instance variables here
 	SourcePosInfo_O(uint spf, uint spln, uint spc, uint filePos, Function_sp expander=_Nil<Function_O>())
 	    : _FileId(spf), _LineNumber(spln), _Column(spc), _FilePos(filePos), _Expander(expander) {}
 
@@ -60,7 +60,7 @@ namespace core
 
         static SourcePosInfo_sp create(uint spf, uint spln=UNDEF_UINT, uint spc=UNDEF_UINT, uint filePos=UNDEF_UINT, Function_sp fn=_Nil<Function_O>() )
         {
-            GC_RESERVE_VARIADIC(SourcePosInfo_O,me,spf,spln,spc,filePos,fn);
+            GC_ALLOCATE_VARIADIC(SourcePosInfo_O,me,spf,spln,spc,filePos,fn);
             return me;
         }
 

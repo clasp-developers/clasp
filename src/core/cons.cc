@@ -1139,9 +1139,7 @@ namespace core
 					       SourceFileInfo_sp fileName, Lisp_sp e )
     {
         
-	GC_RESERVE_BEGIN(SourceCodeCons_O,ll ){
-	    GC_RESERVE_GET(SourceCodeCons_O,ll );
-	} GC_RESERVE_END(SourceCodeCons_O,ll );
+        GC_ALLOCATE(SourceCodeCons_O,ll );
 	    ll->setCar(car);
 	    ll->setOCdr(cdr);
 	    ll->_ParsePosLineNumber = lineNumber;
@@ -1155,9 +1153,7 @@ namespace core
     SourceCodeCons_sp SourceCodeCons_O::create(	int lineNumber,	int column,
 						SourceFileInfo_sp fileName, Lisp_sp e )
     {
-	GC_RESERVE_BEGIN(SourceCodeCons_O,ll ){
-	    GC_RESERVE_GET(SourceCodeCons_O,ll );
-	} GC_RESERVE_END(SourceCodeCons_O,ll );
+        GC_ALLOCATE(SourceCodeCons_O,ll );
 	    ll->_ParsePosLineNumber = lineNumber;
 	    ll->_ParsePosColumn = column;
 	    ll->_SourceFileInfo = fileName;
@@ -1499,9 +1495,7 @@ namespace core
 
     CompiledBody_sp CompiledBody_O::create(Functoid* functoid, T_sp compiledFuncs)
     {_G();
-	GC_RESERVE_BEGIN(CompiledBody_O,cb ){
-	    GC_RESERVE_GET(CompiledBody_O,cb );
-	} GC_RESERVE_END(CompiledBody_O,cb );
+        GC_ALLOCATE(CompiledBody_O,cb );
 	ASSERT(cb.notnilp());
 	cb->_Functoid = functoid;
 	cb->_CompiledFuncs = compiledFuncs;

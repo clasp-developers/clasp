@@ -32,7 +32,7 @@ namespace core
 
     HashTableEqual_sp HashTableEqual_O::create(uint sz,  Number_sp rehashSize, double rehashThreshold)
     {_G();
-        GC_RESERVE(HashTableEqual_O,hashTable);
+        GC_ALLOCATE(HashTableEqual_O,hashTable);
 	hashTable->setup(sz,rehashSize,rehashThreshold);
 	return hashTable;
     }
@@ -63,11 +63,6 @@ namespace core
     }
 #endif // defined(XML_ARCHIVE)
 
-
-    void HashTableEqual_O::initialize()
-    {_OF();
-        this->Base::initialize();
-    }
 
 
     bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const

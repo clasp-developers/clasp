@@ -18,7 +18,7 @@ namespace core {
         void*   _ptr;
     public:
         static LightUserData_sp create(void* ptr) {
-            GC_RESERVE(LightUserData_O,v);
+            GC_ALLOCATE(LightUserData_O,v);
             v->_ptr = ptr;
             return v;
         }
@@ -52,7 +52,7 @@ namespace core {
         DestructUserDataFn _Dtor;
     public:
         static UserData_sp create(size_t size,DestructUserDataFn dtor) {
-            GC_RESERVE(UserData_O,v);
+            GC_ALLOCATE(UserData_O,v);
             v->_ptr = (void*)malloc(size);
             v->_Dtor = dtor;
             return v;

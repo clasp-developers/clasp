@@ -328,9 +328,7 @@ namespace llvmo
 #define DOCS_DIBuilder_O_make "make DIBuilder args: module"
     DIBuilder_sp DIBuilder_O::make(Module_sp module)
     {_G();
-	GC_RESERVE_BEGIN(DIBuilder_O,me ){
-	    GC_RESERVE_GET(DIBuilder_O,me );
-	} GC_RESERVE_END(DIBuilder_O,me );
+	GC_ALLOCATE(DIBuilder_O,me );
 	me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
 	return me;
     };
@@ -399,9 +397,7 @@ namespace llvmo
 	}
 	llvm::ArrayRef<llvm::Value*> array(vector_values);
 	llvm::DIArray diarray = this->wrappedPtr()->getOrCreateArray(array);
-	GC_RESERVE_BEGIN(llvmo::DIArray_O,obj) {
-	    GC_RESERVE_GET_VARIADIC(llvmo::DIArray_O,obj,diarray);
-	} GC_RESERVE_END(llvmo::DIArray_O,obj);
+        GC_ALLOCATE_VARIADIC(llvmo::DIArray_O,obj,diarray);
 	return obj;
     }
 

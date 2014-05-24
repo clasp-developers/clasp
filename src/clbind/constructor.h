@@ -125,7 +125,7 @@ namespace clbind {
         core::T_sp allocate()
         {
 //            printf("%s:%d Allocating instance of Derivable class: %s\n", __FILE__, __LINE__, _rep_(this->_mostDerivedClassSymbol).c_str());
-            GC_RESERVE(T,obj);
+            GC_ALLOCATE(T,obj);
 //            printf("%s:%d obj.px_ref() = %p\n", __FILE__, __LINE__, obj.px_ref());
 //            printf("%s:%d obj.px_ref()->pointerToAlienWithin() = %p\n", __FILE__, __LINE__, obj.px_ref()->pointerToAlienWithin());
 //            printf("%s:%d typeid(obj.px_ref())@%p  typeid(obj.px_ref()).name=%s\n", __FILE__, __LINE__, &typeid(obj.px_ref()),typeid(obj.px_ref()).name());
@@ -159,7 +159,7 @@ namespace clbind {
             {
                 core::wrongNumberOfArguments(numArgs,(NumParams-countPureOutValues));
             }
-            GC_RESERVE(T,obj_gc_safe);
+            GC_ALLOCATE(T,obj_gc_safe);
             printf("%s:%d Allocating instance of Derivable class: %s\n", __FILE__, __LINE__, this->_Name.c_str() );
             int oidx = 1;
             return mem::multiple_values<core::T_O>(obj_gc_safe,oidx);

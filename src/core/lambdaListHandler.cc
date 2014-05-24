@@ -935,9 +935,7 @@ void bind_aux
 
     LambdaListHandler_sp LambdaListHandler_O::createRecursive(Cons_sp lambda_list, Cons_sp declares, T_sp context, TargetClassifier& classifier)
     {_G();
-	GC_RESERVE_BEGIN(LambdaListHandler_O,llh ){
-	    GC_RESERVE_GET(LambdaListHandler_O,llh );
-	} GC_RESERVE_END(LambdaListHandler_O,llh );
+        GC_ALLOCATE(LambdaListHandler_O,llh );
 	llh->parse_lambda_list_declares(lambda_list,declares,context,classifier);
 	return llh;
     }
@@ -957,9 +955,7 @@ void bind_aux
 
     LambdaListHandler_sp LambdaListHandler_O::create(int numArgs)
     {_G();
-	GC_RESERVE_BEGIN(LambdaListHandler_O,ollh ){
-	    GC_RESERVE_GET(LambdaListHandler_O,ollh );
-	} GC_RESERVE_END(LambdaListHandler_O,ollh );
+        GC_ALLOCATE(LambdaListHandler_O,ollh );
 	ollh->create_required_arguments(numArgs);
 	return ollh;
     }

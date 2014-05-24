@@ -12,12 +12,22 @@
 
 namespace core
 {
+    StructureClass_sp StructureClass_O::createUncollectable()
+    {
+        GC_ALLOCATE_UNCOLLECTABLE(StructureClass_O,bic);
+	return bic;
+    }
+
+
+#if 0
     StructureClass_sp StructureClass_O::create(Class_sp mc)
     {
-        GC_RESERVE(StructureClass_O,bic);
+        GC_ALLOCATE(StructureClass_O,bic);
 //	StructureClass_sp bic = StructureClass_sp(new StructureClass_O());
 	return bic;
     }
+#endif
+
 
     StructureClass_O::StructureClass_O()
     {
@@ -65,9 +75,7 @@ namespace core
 
     StructureClass_sp StructureClass_O::create(Lisp_sp lisp,Symbol_sp name /*, uint instanceClassSymbol */)
     {
-	GC_RESERVE_BEGIN(StructureClass_O,oclass ){
-	    GC_RESERVE_GET(StructureClass_O,oclass );
-	} GC_RESERVE_END(StructureClass_O,oclass );
+        GC_ALLOCATE(StructureClass_O,oclass );
 	    oclass->_Name = name;
 	    oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL; // Not used anymore instanceClassSymbol;
 	    oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();

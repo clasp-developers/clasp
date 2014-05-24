@@ -213,9 +213,7 @@ namespace core
 							   Str_sp docstr,
 							   CompiledBody_sp body )
     {_G();
-	GC_RESERVE_BEGIN(SingleDispatchMethod_O,method ){
-	    GC_RESERVE_GET(SingleDispatchMethod_O,method );
-	} GC_RESERVE_END(SingleDispatchMethod_O,method );
+        GC_ALLOCATE(SingleDispatchMethod_O,method );
 	method->_name = name;
 	method->_receiver_class = receiverClass;
 	ASSERTF(body.notnilp(),BF("The body of a method should never be nil"));

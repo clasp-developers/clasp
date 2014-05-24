@@ -1049,6 +1049,19 @@ namespace asttooling {
 
 
 
+    
+    
+    
+#define ARGS_af_makeQualType "(type)"
+#define DECL_af_makeQualType ""
+#define DOCS_af_makeQualType "makeQualType"
+    clang::QualType af_makeQualType(clang::Type* ty)
+    {_G();
+        clang::QualType qt(ty,0);
+        return qt;
+    };
+
+
 
 
 };
@@ -1350,6 +1363,7 @@ namespace asttooling {
             .  def("desugar",&clang::BuiltinType::desugar)
             , CLASS_TYPE(Complex, Type)
             , CLASS_TYPE(Pointer, Type)
+            .  def("desugar",&clang::PointerType::desugar)
             .  def("getPointeeType",&clang::PointerType::getPointeeType)
             , CLASS_TYPE(BlockPointer, Type)
             , CLASS_TYPE(Reference, Type)
@@ -1430,6 +1444,7 @@ namespace asttooling {
             .  def("isCanonical",&clang::QualType::isCanonical)
             .  def("getCanonicalType",&clang::QualType::getCanonicalType)
             ,  /*reg function but first arg is QualType*/ def("getTypePtrOrNull",&af_getTypePtrOrNull,policies<>(),ARGS_af_getTypePtrOrNull,DECL_af_getTypePtrOrNull,DOCS_af_getTypePtrOrNull)
+            , def("makeQualType",&af_makeQualType,policies<>(),ARGS_af_makeQualType,DECL_af_makeQualType,DOCS_af_makeQualType)
             ,class_<clang::TypeLoc>("TypeLoc",no_default_constructor)
             .  def("getSourceRange",&clang::TypeLoc::getSourceRange)
             .  def("getLocalSourceRange",&clang::TypeLoc::getLocalSourceRange)

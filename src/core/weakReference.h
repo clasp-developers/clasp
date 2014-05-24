@@ -4,14 +4,14 @@
 #include "core/object.h"
 #include "corePackage.fwd.h"
 
+#if 0 // depreciate weak references - MPS has a different way of handling weak references
 namespace core
 {
-
 FORWARD(WeakReference);
-class WeakReference_O : public T_O
+c l a ss WeakReference_O : public T_O
 {
-    LISP_BASE1(T_O);
-    LISP_CLASS(core,CorePkg,WeakReference_O,"WeakReference");
+    L I S P_BASE1(T_O);
+    L I S P_CLASS(core,CorePkg,WeakReference_O,"WeakReference");
 #if defined(OLD_SERIALIZE)
     DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
@@ -42,6 +42,7 @@ public: // Functions here
 
 TRANSLATE(core::WeakReference_O);
 
+#endif
 #endif /* _core_WeakReference_H */
 
 

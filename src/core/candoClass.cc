@@ -21,9 +21,7 @@ namespace core {
 
     CandoClass_sp CandoClass_O::create(Lisp_sp lisp,Symbol_sp name)
     {_G();
-	GC_RESERVE_TRY(CandoClass_O,oclass ){
-	    GC_RESERVE_GET(CandoClass_O,oclass );
-	} GC_RESERVE_END(CandoClass_O);
+        GC_ALLOCATE(CandoClass_O);
 	oclass->_Name = name;
 	// Lets create a predefined symbol here for the class name
 	oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL;

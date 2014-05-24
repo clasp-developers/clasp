@@ -563,9 +563,7 @@ namespace translate
     {
         static core::T_sp convert(llvm::Attribute attr)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::Attribute_O,oattr ){
-		GC_RESERVE_GET(llvmo::Attribute_O,oattr );
-	    } GC_RESERVE_END(llvmo::Attribute_O,oattr );
+	    GC_ALLOCATE(llvmo::Attribute_O,oattr );
 	    oattr->setAttribute(attr);
 	    return(( oattr));
 	}

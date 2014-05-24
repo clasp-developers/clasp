@@ -331,13 +331,6 @@ namespace core
     }
 
 
-    void HashTable_O::initialize()
-    {_OF();
-        this->Base::initialize();
-	this->_KeyCount = 0;
-	this->_HashTableEntryCount = 0;
-    }
-
 
     uint HashTable_O::resizeEmptyTable(uint sz)
     {_OF();
@@ -354,7 +347,7 @@ namespace core
 
     uint HashTable_O::hashTableCount() const
     {_OF();
-	return this->_KeyCount;
+	return this->_HashTableCount;
     }
 
     uint HashTable_O::calculateHashTableCount() const
@@ -504,16 +497,16 @@ namespace core
 //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.px_ref());
             Cons_sp newEntry = Cons_O::create(newKeyValue,this->_HashTable->operator[](index));
             this->_HashTable->operator[](index) = newEntry;
-            this->_HashTableEntryCount++;
-            ++(this->_KeyCount);
+//            this->_HashTableEntryCount++;
+            ++(this->_HashTableCount);
         } else if ( oCdr(keyValuePair).unboundp() )
         {
             keyValuePair->setOCdr(value);
-            ++(this->_KeyCount);
+            ++(this->_HashTableCount);
         } else {
             keyValuePair->setOCdr(value);
         }
-        if ( this->_KeyCount > this->_RehashThreshold*af_length(this->_HashTable) )
+        if ( this->_HashTableCount > this->_RehashThreshold*af_length(this->_HashTable) )
         {
             LOG(BF("Expanding hash table"));
             this->rehash(true,_Unbound<T_O>());
@@ -589,7 +582,7 @@ namespace core
     string HashTable_O::__repr__() const
     {
 	stringstream ss;
-	ss << "#<" << this->_instanceClass()->classNameAsString() << " :count " << this->_KeyCount;
+	ss << "#<" << this->_instanceClass()->classNameAsString() << " :count " << this->_HashTableCount;
 	ss << " @" << (void*)(this) <<  "> ";
 	return ss.str();
 //	return this->hash_table_dump();

@@ -5,6 +5,16 @@
 #include "core/lispVector.h"
 #include "corePackage.fwd.h"
 
+
+
+template<> struct gctools::GCAllocatorInfo<core::VectorObjects_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
+
 namespace core
 {
 
@@ -20,8 +30,6 @@ namespace core
 	VectorObjects_O();
 	virtual ~VectorObjects_O() {};
     public:
-	void initialize();
-
         typedef gctools::Vec0<T_sp>        vector_type;
         typedef gctools::Vec0<T_sp>::iterator iterator;
 

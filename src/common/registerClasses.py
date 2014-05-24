@@ -481,7 +481,7 @@ class	ClassGroup:
             if ( not cl.ignore() ):
                 fout.write("""
     LOG(BF("Creating class[%(CLASSNAME)s]"));
-    %(METACLASSNAME)s_sp %(CLASSNAME)s = %(METACLASSNAME)s_O::create();
+    %(METACLASSNAME)s_sp %(CLASSNAME)s = %(METACLASSNAME)s_O::createUncollectable();
     %(CLASSNAME)s->__setup_stage1_with_sharedPtr_lisp_sid(%(CLASSNAME)s,_lisp,%(OCLASS)s::static_classSymbol());
     reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<%(OCLASS)s>::id,%(OCLASS)s::static_classSymbol());
     %(OCLASS)s::___staticClass = %(CLASSNAME)s;

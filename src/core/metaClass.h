@@ -14,6 +14,7 @@
 #include "foundation.h"
 #include "object.fwd.h"
 #include "numbers.fwd.h"
+#include "vectorObjectsWithFillPtr.fwd.h"
 #include "specializer.h"
 #include "holder.h"
 
@@ -94,7 +95,7 @@ namespace core
 
 
     private:
-	void accumulateSuperClasses(map<Class_sp,int>& supers,vector<Class_sp>& arrayedSupers ,Class_sp mc);
+	void accumulateSuperClasses(HashTableEq_sp supers,VectorObjectsWithFillPtr_sp arrayedSupers ,Class_sp mc);
     public:
 	/*! NumberOfClassSlots has to match the number of entries in
 	  ECL clos::+class-slots+.  This is checked by a call to the function MAKE-SURE-CLOS-CLASS-SLOTS-MATCH-META-CLASS

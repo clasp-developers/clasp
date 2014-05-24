@@ -189,35 +189,6 @@ namespace core
     class PushLispMode;
 
 
-    struct FindApropos : public KeyValueMapper, public gctools::StackRoot
-    {
-    public:
-	set<Symbol_sp> _symbols;
-	string		_substr;
-	FindApropos(const string& str) { this->_substr = str;};
-	virtual bool mapKeyValue(T_sp key, T_sp value)
-	{
-	    Bignum_sp skey = key.as<Bignum_O>();
-	    Symbol_sp svalue = value.as<Symbol_O>();
-	    string symbolName = lisp_symbolNameAsString(svalue);
-	    string::size_type pos = symbolName.find(this->_substr);
-//	    LOG(BF("Looking at symbol(%s) for (%s) found: %d") % symbolName % this->_substring % pos );
-	    if ( pos != string::npos )
-	    {
-		LOG(BF("    It is apropos"));
-		this->_symbols.insert(svalue);
-	    }
-	    return true;
-	}
-        GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-#ifndef USE_MPS
-        { return GC_RES_OK; }
-#endif
-            ;
-
-    };
-
-
 
     class Lisp_O
     {
@@ -594,9 +565,7 @@ namespace core
 	template <class oclass>
 	mem::smart_ptr<oclass> create()
 	{
-	    GC_RESERVE_BEGIN(oclass,res) {
-		GC_RESERVE_GET(oclass,res);
-	    } GC_RESERVE_END(oclass,res);
+            GC_ALLOCATE(oclass,res);
 	    return res;
 	}
 	/*! One argument creator */

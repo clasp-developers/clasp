@@ -1,41 +1,51 @@
 #ifndef gc_gcvector_H
 #define gc_gcvector_H
 
-#include "gcalloc.h"
 
 namespace gctools {
 
 
     template <class T >
-    class GCVector_impl : GCContainer_impl  {
+    class GCVector_moveable : GCContainer_moveable  {
     public:
         template<class U, typename Allocator> friend class GCVector;
         typedef T               value_type;
         typedef value_type&     reference;
-        GCVector_impl(size_t num, size_t e=0) : _Capacity(num)
+        typedef T*              iterator;
+        typedef T const*        const_iterator;
+
+
+        GCVector_moveable(size_t num, size_t e=0) : _Capacity(num)
                                               , _End(e) {};
         size_t      _Capacity; // Index one beyond the total number of elements allocated
         size_t      _End;
         T           _Data[0]; // Store _Capacity numbers of T structs/classes starting here
 
     private:
-        GCVector_impl<T>(const GCVector_impl<T>& that); // disable copy ctor
-        GCVector_impl<T>& operator=(const GCVector_impl<T>&); // disable assignment
+        GCVector_moveable<T>(const GCVector_moveable<T>& that); // disable copy ctor
+        GCVector_moveable<T>& operator=(const GCVector_moveable<T>&); // disable assignment
    
     public:
+        value_type* data() { return &this->_Data[0]; };
+        size_t size() { return this->_End; };
+        size_t capacity() const { return this->_Capacity; };
         value_type& operator[](size_t i) { return this->_Data[i]; };
         const value_type& operator[](size_t i) const { return this->_Data[i]; };
+        iterator begin() { return &this->_Data[0]; };
+        iterator end() { return &this->_Data[this->_Capacity]; };
+        const_iterator begin() const { return &this->_Data[0]; };
+        const_iterator end() const { return &this->_Data[this->_Capacity]; };
     };
 
 
     template <class T, typename Allocator>
-    class GCVector : public GCContainer  {
+    class GCVector {
 #ifdef USE_MPS
         friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
         // Only this instance variable is allowed
-        GCVector_impl<T>*  _Contents;
+        GCVector_moveable<T>*  _Contents;
     public:
         typedef Allocator                           allocator_type;
         typedef T                                   value_type;
@@ -44,8 +54,8 @@ namespace gctools {
         typedef T const*                            const_iterator;
         typedef T&                                  reference;
         typedef GCVector<T,Allocator>               my_type;
-        typedef GCVector_impl<T>                    impl_type; // implementation type
-        typedef GCVector_impl<T>*                   pointer_to_impl;
+        typedef GCVector_moveable<T>                    impl_type; // implementation type
+        typedef GCVector_moveable<T>*                   pointer_to_moveable;
         static const size_t                         GCVectorPad = 8;
         constexpr static const float                GCVectorGrow = 1.5;
         constexpr static const float                GCVectorShrink = 0.5;
@@ -55,8 +65,8 @@ namespace gctools {
         {
             if ( that._Contents !=NULL ) {
                 allocator_type alloc;
-                pointer_to_impl implAddress = alloc.allocate(that._Contents->_Capacity);
-                new (implAddress) GCVector_impl<T>(that._Contents->_Capacity);
+                pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
+                new (implAddress) GCVector_moveable<T>(that._Contents->_Capacity);
                 for ( size_t i(0); i<that._Contents->_End; ++i ) {
                     T* p = &((*implAddress)[i]);
                     alloc.construct(p,that._Contents->_Data[i]);
@@ -76,14 +86,14 @@ namespace gctools {
             {
                 if ( this->_Contents != NULL ) {
                     Allocator alloc;
-                    GCVector_impl<T>* ptr = this->_Contents;
+                    GCVector_moveable<T>* ptr = this->_Contents;
                     this->_Contents = NULL;
                     alloc.deallocate(ptr,ptr->_End);
                 }
                 if ( that._Contents !=NULL ) {
                     allocator_type alloc;
-                    pointer_to_impl implAddress = alloc.allocate(that._Contents->_Capacity);
-                    new (implAddress) GCVector_impl<T>(that._Contents->_Capacity);
+                    pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
+                    new (implAddress) GCVector_moveable<T>(that._Contents->_Capacity);
                     for ( size_t i(0); i<that._Contents->_End; ++i ) {
                         T* p = &((*implAddress)[i]);
                         alloc.construct(p,that._Contents->_Data[i]);
@@ -97,12 +107,12 @@ namespace gctools {
     public:
         void swap(my_type& that)
         {
-            pointer_to_impl op = that._Contents;
+            pointer_to_moveable op = that._Contents;
             that._Contents = this->_Contents;
             this->_Contents = op;
         }
 
-        pointer_to_impl contents() const { return this->_Contents; };
+        pointer_to_moveable contents() const { return this->_Contents; };
     private:
         T& errorEmpty() {
             THROW_HARD_ERROR(BF("GCVector had no contents"));
@@ -123,8 +133,8 @@ namespace gctools {
             inline static pointer_my_type create(size_t n,const value_type& initial_element=value_type()) {
             size_t capacity = minSize+my_type::GCVectorPad;
             allocator_type alloc;
-            pointer_to_impl implAddress = alloc.allocate(capacity);
-            new (implAddress) GCVector_impl<T>(capacity);
+            pointer_to_moveable implAddress = alloc.allocate(capacity);
+            new (implAddress) GCVector_moveable<T>(capacity);
             for ( size_t i(0); i<minSize; ++i ) {
                 T* p = &((*implAddress)[i]);
                 alloc.construct(p,initialElement);
@@ -137,8 +147,8 @@ namespace gctools {
         {
             size_t capacity = my_type::GCVectorPad;
             allocator_type alloc;
-            pointer_to_impl implAddress = alloc.allocate(capacity);
-            new (implAddress) GCVector_impl<T>(capacity);
+            pointer_to_moveable implAddress = alloc.allocate(capacity);
+            new (implAddress) GCVector_moveable<T>(capacity);
             this->_Contents = implAddress;
         }            
 #endif
@@ -147,7 +157,7 @@ namespace gctools {
         {
             if ( this->_Contents != NULL ) {
                 Allocator alloc;
-                GCVector_impl<T>* ptr = this->_Contents;
+                GCVector_moveable<T>* ptr = this->_Contents;
                 this->_Contents = NULL;
                 alloc.deallocate(ptr,ptr->_End);
             }
@@ -164,7 +174,7 @@ namespace gctools {
             if (!this->_Contents) {
                 this->resize(0);
             }
-            pointer_to_impl vec = this->_Contents;
+            pointer_to_moveable vec = this->_Contents;
             Allocator alloc;
 #ifdef DEBUG_ASSERTS
             if ( this->_Contents->_End > this->_Contents->_Capacity ) {
@@ -181,7 +191,7 @@ namespace gctools {
                 }
 #endif
                 vec = alloc.allocate(newCapacity);
-                new (vec) GCVector_impl<T>(newCapacity);
+                new (vec) GCVector_moveable<T>(newCapacity);
                 for ( size_t zi(0); zi<this->_Contents->_End; ++zi ) {                   
                     // the array at newAddress is undefined - placement new to copy
                     alloc.construct(&((*vec)[zi]), (*this->_Contents)[zi]);
@@ -193,7 +203,7 @@ namespace gctools {
             ++vec->_End;
             if ( vec != this->_Contents ) {
                 // Save the old vector impl
-                pointer_to_impl oldVec(this->_Contents);
+                pointer_to_moveable oldVec(this->_Contents);
                 // Replace the old one with the new one in the GVector
                 this->_Contents = vec;
                 // Deallocate the old one
@@ -208,10 +218,10 @@ namespace gctools {
         {
             Allocator alloc;
             if ( !this->_Contents ) {
-                pointer_to_impl vec;
+                pointer_to_moveable vec;
                 size_t newCapacity = (n==0 ? GCVectorPad : n * GCVectorGrow);
                 vec = alloc.allocate(newCapacity);
-                new (vec) GCVector_impl<T>(newCapacity);
+                new (vec) GCVector_moveable<T>(newCapacity);
                 // the array at newAddress is undefined - placement new to copy
                 for ( size_t i(0); i<n; ++i ) alloc.construct(&(*vec)[i],x);
                 vec->_End = n;
@@ -220,11 +230,11 @@ namespace gctools {
             }
             if ( n == this->_Contents->_End ) return; // Size isn't changing;
             if ( n > this->_Contents->_End ) {
-                pointer_to_impl vec(this->_Contents);
+                pointer_to_moveable vec(this->_Contents);
                 if ( n > this->_Contents->_Capacity ) {
                     size_t newCapacity = n * GCVectorGrow;
                     vec = alloc.allocate(newCapacity);
-                    new (vec) GCVector_impl<T>(newCapacity);
+                    new (vec) GCVector_moveable<T>(newCapacity);
                     // the array at newAddress is undefined - placement new to copy
                     for ( size_t zi(0); zi<this->_Contents->_End; ++zi ) alloc.construct(&(*vec)[zi],(*this->_Contents)[zi]);
                     vec->_End = this->_Contents->_End;
@@ -232,7 +242,7 @@ namespace gctools {
                 for ( size_t i(this->_Contents->_End); i<n; ++i ) alloc.construct(&(*vec)[i],x);
                 vec->_End = n;
                 if ( vec != this->_Contents ) {
-                    pointer_to_impl oldVec(this->_Contents);
+                    pointer_to_moveable oldVec(this->_Contents);
                     this->_Contents = vec;
                     size_t num = oldVec->_End;
                     oldVec->_End = 0;
@@ -281,17 +291,17 @@ namespace gctools {
                 // Save the insertion position relative to the start
                 size_t iposition = position - this->begin();
                 size_t newCapacity = (this->_Contents->_End+1) * GCVectorGrow;
-                // Allocate a new vector_impl
-                pointer_to_impl vec = alloc.allocate(newCapacity);
-                new (vec) GCVector_impl<T>(newCapacity);
+                // Allocate a new vector_moveable
+                pointer_to_moveable vec = alloc.allocate(newCapacity);
+                new (vec) GCVector_moveable<T>(newCapacity);
                 // copy elements up to but not including iposition
                 for ( size_t zi(0); zi<iposition; ++zi ) alloc.construct(&(*vec)[zi],(*this->_Contents)[zi]);
                 // copy in the new element
                 alloc.construct(&(*vec)[iposition],std::forward<ARGS...>(args...));
-                // Copy elements from old iposition into the new vector_impl
+                // Copy elements from old iposition into the new vector_moveable
                 for ( size_t zi(iposition); zi<this->_Contents->_End; ++zi ) alloc.construct(&(*vec)[zi+1],(*this->_Contents)[zi]);
                 vec->_End = this->_Contents->_End+1;
-                pointer_to_impl oldVec(this->_Contents);
+                pointer_to_moveable oldVec(this->_Contents);
                 this->_Contents = vec;
                 size_t num = oldVec->_End;
                 oldVec->_End = 0;

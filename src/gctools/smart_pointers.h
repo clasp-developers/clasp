@@ -325,39 +325,6 @@ namespace mem {
 
 // LambdaListHandler_sp llh(ptr)
 
-    template <class T>
-#if defined(USE_MPS)
-    class weak_smart_ptr : public mem::tagged_ptr<T>
-    {
-    public:
-	typedef mem::tagged_ptr<T> 	BaseType;
-#else
-    class weak_smart_ptr : public boost::tagged_intrusive_ptr<T>
-    {
-    public:
-	typedef boost::tagged_intrusive_ptr<T>	BaseType;
-#endif
-    public:
-	weak_smart_ptr() : BaseType() {};
-	weak_smart_ptr(const T& obj) : BaseType(obj) {};
-	weak_smart_ptr(const smart_ptr<T>& obj_sp) : BaseType(obj_sp) {} ;
-	weak_smart_ptr(T* objP) : BaseType(objP) {} ;
-	template <class Y> weak_smart_ptr(const smart_ptr<Y>& yy) : BaseType(yy) {} ;
-	template <class Y> weak_smart_ptr(const weak_smart_ptr<Y>& yy) : BaseType(yy) {} ;
-	bool notnilp() const { return (!this->nilp());};
-	smart_ptr<T> lock() const
-	{
-	    if ( this->nilp() ) return _Nil<T>();
-	    if ( this->unboundp() ) return _Unbound<T>();
-	    return smart_ptr<T>(this->get());
-	}
-	virtual int number_of_values() const {return 1;};
-	virtual ~weak_smart_ptr() {};
-    };
-
-
-
-
 #if defined(USE_MPS)
 
     template <class TO, class FROM>
@@ -389,7 +356,7 @@ namespace mem {
 
 
 
-#if !defined(USE_MPS)
+#ifdef USE_REFCOUNT
 #ifndef USE_GC_REF_COUNT_WRAPPER
 #define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_)		\
     namespace boost							\
@@ -411,38 +378,39 @@ namespace mem {
 	template <>  void intrusive_ptr_release<_T_>(_T_* p) {gctools::GCWrapper<_T_>::gcRelease(p);} \
     }
 #endif
-#endif // !defined(USE_MPS)
+#else // ifdef USE_REFCOUNT
+    // Do nothing if !defined(USE_REFCOUNT)
+#define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_)
+#endif
 
 
 
 
 
 
-
-template <class OT>
-class StackRootedPointerToSmartPtr : public gctools::StackRoot {
-public:
-    typedef mem::smart_ptr<OT>  SmartPtrType;
-    mem::smart_ptr<OT>* _px;
-public:
-    StackRootedPointerToSmartPtr() : _px(NULL) {};
-    StackRootedPointerToSmartPtr(SmartPtrType* p) : _px(p) {};
+    template <class OT>
+    class StackRootedPointerToSmartPtr : public gctools::StackRoot {
+    public:
+        typedef mem::smart_ptr<OT>  SmartPtrType;
+        mem::smart_ptr<OT>* _px;
+    public:
+        StackRootedPointerToSmartPtr() : _px(NULL) {};
+        StackRootedPointerToSmartPtr(SmartPtrType* p) : _px(p) {};
 //    SmartPtrType operator*() const {return *this->_px;};
-    void setPointee(SmartPtrType x) { *this->_px = x; };
-    SmartPtrType getPointee() const { return *this->_px;};
-    void setPointer(SmartPtrType* px) { this->_px = px;};
-    DECLARE_onStackScanGCRoots(); 
+        void setPointee(SmartPtrType x) { *this->_px = x; };
+        SmartPtrType getPointee() const { return *this->_px;};
+        void setPointer(SmartPtrType* px) { this->_px = px;};
+        DECLARE_onStackScanGCRoots(); 
 
-    virtual ~StackRootedPointerToSmartPtr() {this->_px = NULL;};
-};
-
-
-
+        virtual ~StackRootedPointerToSmartPtr() {this->_px = NULL;};
     };
 
-    namespace gctools {
 
+};
 
+namespace gctools {
+
+#if 0
     template <typename OT>
     class StackRootedStlContainer<vector<mem::smart_ptr<OT> > > : public gctools::StackRoot  {
     public:
@@ -451,20 +419,16 @@ public:
     public:
         StlContainerType& get() { return this->_Container;};
         GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-#ifndef USE_MPS
         {
-            return GC_RES_OK;
-        }
-#else
-        {
+#ifdef USE_MPS
             GC_SCANNER_BEGIN() {
                 for ( auto& it_gc_safe : this->_Container ) {
                     SMART_PTR_FIX(it_gc_safe);
                 }
             } GC_SCANNER_END();
+#endif
             return GC_RES_OK;
         }
-#endif
     };
 
 
@@ -478,20 +442,16 @@ public:
     public:
         StlContainerType& get() { return this->_Container;};
         GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-#ifndef USE_MPS
         {
-            return GC_RES_OK;
-        }
-#else
-        {
+#ifdef USE_MPS            
             GC_SCANNER_BEGIN() {
                 for ( auto& it_gc_safe : this->_Container ) {
                     SMART_PTR_FIX(it_gc_safe.first);
                 }
             } GC_SCANNER_END();
+#endif
             return GC_RES_OK;
         }
-#endif
     };
 
     template <typename FirstTy, typename SecondOTy>
@@ -502,20 +462,16 @@ public:
     public:
         StlContainerType& get() { return this->_Container;};
         GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-#ifndef USE_MPS
         {
-            return GC_RES_OK;
-        }
-#else
-        {
+#ifdef USE_MPS
             GC_SCANNER_BEGIN() {
                 for ( auto& it_gc_safe : this->_Container ) {
                     SMART_PTR_FIX(it_gc_safe.second);
                 }
             } GC_SCANNER_END();
+#endif
             return GC_RES_OK;
         }
-#endif
     };
 
 
@@ -528,22 +484,21 @@ public:
     public:
         StlContainerType& get() { return this->_Container;};
         GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-#ifndef USE_MPS
         {
-            return GC_RES_OK;
-        }
-#else
-        {
+#ifdef USE_MPS            
             GC_SCANNER_BEGIN() {
                 for ( auto& it_gc_safe : this->_Container ) {
                     SMART_PTR_FIX(it_gc_safe.first);
                     SMART_PTR_FIX(it_gc_safe.second);
                 }
             } GC_SCANNER_END();
+#endif
             return GC_RES_OK;
         }
-#endif
     };
+
+#endif
+
 
 
 

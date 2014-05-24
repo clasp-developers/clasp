@@ -474,9 +474,7 @@ namespace core
 	__COMMON_VIRTUAL_CLASS_PARTS(oNamespace,oPackage,oClass,oclassName) \
 	static mem::smart_ptr<oClass> create()				\
 	{								\
-	    GC_RESERVE_BEGIN(oClass,obj) {                              \
-                GC_RESERVE_GET(oClass,obj);                             \
-            } GC_RESERVE_END(oClass,obj);                               \
+            GC_ALLOCATE(oClass,obj);                                    \
             return obj;                                                 \
 	};						
 
@@ -562,7 +560,6 @@ namespace core
 //	void	__setClass(Class_sp mc) { this->_Class = mc.get(); };
 //	void	__setClass_using_Symbol(Symbol_sp mcSym);
 //	void    __setClassPointer(core::Class_O* mcp) { this->_Class = mcp;};
-	void __setWeakThis(T_wp o) { /* Do nothing */ };
 //	void	__resetInitializationOwner() { this->_InitializationOwner.reset();};
 
     public:	// Introspection stuff -----------------------------
@@ -821,16 +818,8 @@ namespace core {
         }
         virtual core::T_sp allocate()
         {
-#if 1
-            GC_RESERVE_BEGIN(_W_,obj) {
-                GC_RESERVE_GET(_W_,obj);
-            } GC_RESERVE_END(_W_,obj);
-#else
-            mem::smart_ptr<_W_> obj(new _W_());
-#endif
-//            obj->__setWeakThis(obj);
+            GC_ALLOCATE(_W_,obj);
             return obj;
-//            return new_Nil<_W_>();
         }
         virtual void searcher() {};
     };
@@ -842,7 +831,7 @@ namespace core {
     T_sp new_LispObject()
     {_G();
         T_sp obj = oclass::static_allocator->allocate();
-//	GC_RESERVE(oclass,obj );
+//	GC_ALLOCATE(oclass,obj );
 	return obj;
     };
 }
@@ -861,21 +850,6 @@ inline mem::smart_ptr<o_class> downcast(core::T_sp c)
 {
     if ( c.nilp() ) return _Nil<o_class>();
     return mem::dynamic_pointer_cast<o_class>(c);
-}
-
-template <class o_class>
-inline mem::weak_smart_ptr<o_class>  weak_downcast(core::T_wp c,core::Lisp_sp lisp)
-{_G();
-    core::T_sp locked;
-    HARD_ASSERT(c);
-    locked = c.lock();
-    if ( locked.nilp() ) return _Nil<o_class>();
-    if ( !locked.isA<o_class>() )
-    {
-	lisp_throwUnexpectedType(locked,o_class::static_classSymbol());
-	return _Nil<o_class>();
-    }
-    return mem::dynamic_pointer_cast<o_class>(locked);
 }
 
 

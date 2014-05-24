@@ -105,14 +105,14 @@ namespace core
 		_lisp->print(BF(":n      - goto next frame"));
 		_lisp->print(BF(":D      - dissasemble current function"));
 		_lisp->print(BF(":a      - abort and return to top repl"));
-		_lisp->print(BF(":g      - invoke GDB by calling core::dbg_hook (set break point in gdb"));
-		_lisp->print(BF(":f ##   - jump to frame ##"));
+		_lisp->print(BF(":l      - invoke debugger by calling core::dbg_hook (set break point in gdb"));
+		_lisp->print(BF(":g ##   - jump to frame ##"));
 		break;
 	    }
-	    case 'g':
+	    case 'l':
 		dbg_hook("invoked from debugger");
 		break;
-	    case 'f':
+	    case 'g':
 	    {
                 int is;
                 for (is=1; is<line.size(); is++ ) {

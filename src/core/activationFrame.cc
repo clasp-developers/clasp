@@ -261,6 +261,7 @@ namespace core
 
 
 
+
     ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh,ActivationFrame_sp parent)
     {_G();
 	ValueFrame_sp vf(ValueFrame_O::create(llh->numberOfLexicalVariables(),parent));
@@ -512,10 +513,8 @@ namespace core
 
     TagbodyFrame_sp TagbodyFrame_O::create(ActivationFrame_sp parent)
     {_G();
-	GC_RESERVE_BEGIN(TagbodyFrame_O,vf ){
-	    GC_RESERVE_GET(TagbodyFrame_O,vf );
-	    vf->_ParentFrame = parent;
-	} GC_RESERVE_END(TagbodyFrame_O,vf );
+	GC_ALLOCATE(TagbodyFrame_O,vf );
+        vf->_ParentFrame = parent;
 	vf->_TagbodyId = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	return(vf);
     }

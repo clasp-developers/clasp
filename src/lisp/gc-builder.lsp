@@ -1,5 +1,6 @@
 
 
+
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)
 
@@ -24,6 +25,11 @@ of housekeeping-classes ")
       (cast:get-name decl)
       "NO-NAME-SAFE"))
 
+
+(defun decl-name (decl)
+  (cast:get-qualified-name-as-string decl)
+;;  (cast:get-name-as-string decl)
+  )
 
 
 (defstruct variable
@@ -241,7 +247,9 @@ Put them in three different slots of the organized-gcobjects object depending on
   (let* ((template-arg-kind (cast:get-kind template-arg)))
     (case template-arg-kind
       (ast-tooling:type
-       (cast:get-as-string (cast:get-as-type template-arg)))
+;;       (cast:get-as-string (cast:get-as-type template-arg))
+       (record-key (cast:get-type-ptr-or-null (cast:get-as-type template-arg)))
+       )
       (ast-tooling:integral
        (llvm:to-string (cast:get-as-integral template-arg) 10 t))
       (ast-tooling:pack
@@ -255,35 +263,44 @@ Put them in three different slots of the organized-gcobjects object depending on
       (otherwise
        (error "Add support for template-arg-as-string of kind: ~a" template-arg-kind)))))
 
+;; Build a string key that represents the node
+(defgeneric record-key (node))
 
+(defmethod record-key ((node cast:type))
+  (cast:make-qual-type node)) ;; get-as-string (cast:desugar node)))
 
-(defun record-key (decl-node)
+(defmethod record-key ((node cast:record-type))
+  "Names of RecordType(s) are calculated using recursive calls to record-key.
+This avoids the prefixing of 'class ' and 'struct ' to the names of classes and structs"
+  (record-key (cast:get-decl node)))
+
+(defmethod record-key ((decl-node cast:named-decl))
   "Return the name of the class/struct and whether it is a template specializer or not"
-;;  (when (search "llvm::AssertingVH" (cast:get-qualified-name-as-string decl-node) ) (break "Caught AssertingVH"))
+;;  (when (search "llvm::AssertingVH" (decl-name decl-node) ) (break "Caught AssertingVH"))
   (or decl-node (error "There is a problem, the decl-node is nil"))
   (case (type-of decl-node)
     ((cast:cxxrecord-decl
       cast:record-decl)
-     (values (cast:get-qualified-name-as-string decl-node) nil))
+     (values (decl-name decl-node) nil))
     (cast:enum-decl
-     (values (cast:get-qualified-name-as-string decl-node) nil))
+     (values (decl-name decl-node) nil))
     (cast:class-template-specialization-decl
-     (let* ((decl-name (safe-get-name-decl decl-node))if (cast:get-identifier decl-node)
+     (let* ((decl-name (safe-get-name-decl decl-node)) 
             (template-args (cast:get-template-args decl-node))
             (template-args-as-list (loop :for i :from 0 :below (cast:size template-args)
                                         :collect (let* ((template-arg (cast:template-argument-list-get template-args i)))
                                                    (template-arg-as-string template-arg)))))
-       (values (format nil "~a<~{~a~^,~}>" (cast:get-qualified-name-as-string decl-node) template-args-as-list) t)))
+       (values (format nil "~a<~{~a~^,~}>" (decl-name decl-node) template-args-as-list) t)))
     (cast:class-template-partial-specialization-decl
-     (let* ((decl-name (cast:get-qualified-name-as-string decl-node))
+     (let* ((decl-name (decl-name decl-node))
             (template-args (cast:get-template-args decl-node))
             (template-args-as-list (loop :for i :from 0 :below (cast:size template-args)
                                       :for template-arg = (cast:template-argument-list-get template-args i)
                                       :for type-name = (template-arg-as-string template-arg)
                                       :collect type-name)))
-       (values (format nil "~a<~{~a~^,~}>" (cast:get-qualified-name-as-string decl-node) template-args-as-list) t)))
+       (values (format nil "~a<~{~a~^,~}>" (decl-name decl-node) template-args-as-list) t)))
     (otherwise
-     (format t "Add support for record-key for ~a  get-name->~a~%" decl-node (cast:get-qualified-name-as-string decl-node))
+     (format t "Add support for record-key for ~a  get-name->~a~%" decl-node (decl-name decl-node))
      #+use-breaks(break "Check the decl-node")
      )))
 
@@ -2430,7 +2447,7 @@ if there were an empty string between them."
          (enum-name (class-enum-name classid species))
          (namespace (identify-namespace-define classid))
          )
-        (format output-stream "#ifdef NAMESPACE_~a~%" namespace)
+        (format output-stream "#if  defined(NAMESPACE_~a) || defined(GCINFO_~a)~%" namespace enum-name)
         (format output-stream "//GCInfo for ~a~%" entry)
         (format output-stream "template <> class gctools::GCInfo<~A> {~%" (ctype-name classid))
         (format output-stream "public:~%")
@@ -3474,7 +3491,7 @@ can be saved and reloaded within the project for later analysis"
     (:is-template-instantiation)
     (:is-same-or-derived-from
      (:record-decl
-      (:matches-name "GCContainer")))
+      (:matches-name "GCContainer_moveable")))
     ))
 
 
@@ -3500,7 +3517,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                     (let* ((qualtype (cast:get-type x))
                                            (type (cast:get-type-ptr-or-null qualtype))
                                            (base (cast:get-as-cxxrecord-decl type))
-                                           (base-name (cast:get-qualified-name-as-string base))
+                                           (base-name (decl-name base))
                                            )
                                       (gclog "   Base name: ~a~%" base-name)
                                       (push base-name temp-bases)))
@@ -3513,7 +3530,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                      (let* ((qualtype (cast:get-type x))
                                             (type (cast:get-type-ptr-or-null qualtype))
                                             (vbase (cast:get-as-cxxrecord-decl type))
-                                            (vbase-name (cast:get-qualified-name-as-string vbase))
+                                            (vbase-name (decl-name vbase))
                                             )
                                        (gclog "   VBase name: ~a~%" vbase-name)
                                        (push vbase-name temp-vbases)))
@@ -3601,7 +3618,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                     (let* ((qualtype (cast:get-type x))
                                            (type (cast:get-type-ptr-or-null qualtype))
                                            (base (cast:get-as-cxxrecord-decl type))
-                                           (base-name (cast:get-qualified-name-as-string base))
+                                           (base-name (decl-name base))
                                            )
                                       (gclog "   Base name: ~a~%" base-name)
                                       (push base-name temp-bases)))
@@ -3614,7 +3631,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                      (let* ((qualtype (cast:get-type x))
                                             (type (cast:get-type-ptr-or-null qualtype))
                                             (vbase (cast:get-as-cxxrecord-decl type))
-                                            (vbase-name (cast:get-qualified-name-as-string vbase))
+                                            (vbase-name (decl-name vbase))
                                             )
                                        (gclog "   VBase name: ~a~%" vbase-name)
                                        (push vbase-name temp-vbases)))
@@ -4094,7 +4111,7 @@ I think this is handled by the classify-XXXXX functions for gcobjects, globals, 
                (gclog "    Name: ~a~%" (mtag-name :whole))
                (gclog "    namespace: ~a~%" (mtag-name :ns))
                (let* ((var-node (mtag-node :whole))
-                      (varname (cast:get-qualified-name-as-string var-node))
+                      (varname (decl-name var-node))
                       (location (mtag-loc-start :whole))
                       (var-kind (cond
                                   ((and (cast:has-global-storage var-node) (not (cast:is-static-local var-node))) :global)
@@ -4157,7 +4174,7 @@ I think this is handled by the classify-XXXXX functions for gcobjects, globals, 
                (gclog "    Name: ~a~%" (mtag-name :whole))
                (gclog "    namespace: ~a~%" (mtag-name :ns))
                (let* ((var-node (mtag-node :whole))
-                      (varname (cast:get-qualified-name-as-string var-node))
+                      (varname (decl-name var-node))
                       (location (mtag-loc-start :whole))
                       (var-kind (cond
                                   ((and (cast:has-global-storage var-node) (not (cast:is-static-local var-node))) :global)
@@ -4468,7 +4485,7 @@ I think this is handled by the classify-XXXXX functions for gcobjects, globals, 
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*/testAST\.cc")
+                      (lsel $* ".*/metaClass\.cc")
                       ))
   )
 
@@ -4486,6 +4503,7 @@ I think this is handled by the classify-XXXXX functions for gcobjects, globals, 
                                                                               "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"))))
   ;; Extract the results for easy access
   (setq *project* (multitool-results *tools*))
+  (save-project)
   )
 
 
@@ -4921,7 +4939,7 @@ I think this is handled by the classify-XXXXX functions for gcobjects, globals, 
               all-instance-variables)
                 |#
               (format fout "    }~%")
-              (format fout "    typedef typename ~A::impl_type type_~A;~%" (ctype-name classid) enum-name)
+              (format fout "    typedef typename ~A type_~A;~%" (ctype-name classid) enum-name)
               (format fout "    size_t header_and_gccontainer_size = ALIGN_UP(gc_sizeof<type_~a>(~a->capacity()))+ALIGN_UP(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
               (format fout "    base = (char*)base + ALIGN(header_and_gccontainer_size);~%"))))
         (format fout "} break;~%")
@@ -4945,7 +4963,7 @@ I think this is handled by the classify-XXXXX functions for gcobjects, globals, 
                    (parm0-ctype (gc-template-argument-ctype parm0)))
               (format fout "// parm0-ctype = ~a~%" parm0-ctype)
               (format fout "    ~A* ~A = reinterpret_cast<~A*>(base);~%" (ctype-name classid) +ptr-name+ (ctype-name classid))
-              (format fout "    typedef typename ~A::impl_type type_~A;~%" (ctype-name classid) enum-name)
+              (format fout "    typedef typename ~A type_~A;~%" (ctype-name classid) enum-name)
               (format fout "    size_t header_and_gccontainer_size = ALIGN_UP(gc_sizeof<type_~a>(~a->capacity()))+ALIGN_UP(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
               (format fout "    base = (char*)base + ALIGN(header_and_gccontainer_size);~%")
               )))

@@ -2,32 +2,9 @@
 #define _brcl_intrusiveRefCountGarbageCollection_H
 
 
-#define GC_RESULT int
-#define GC_SCAN_ARGS_PROTOTYPE int  ____dummy
-#define GC_SCAN_ARGS_PASS  ____dummy
-#define DECLARE_onHeapScanGCRoots() virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {return 0;};
-#define DECLARE_onStackScanGCRoots() virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {return 0;};
-#define GC_SCANNER_BEGIN()
-#define GC_SCANNER_END()
-#define GC_RES_OK 0
-
-
 namespace gctools {
 
-
-    typedef enum {KIND_dummy} GCKindEnum;
-
-
     extern bool _GlobalDebugAllocations;
-
-
-    /*! This is not used in intrusive reference counted garbage collection*/
-    template <class OT>
-    class GCInfo {
-    public:
-        static GCKindEnum const Kind = KIND_dummy;
-    };
-
 
 
 
@@ -110,23 +87,12 @@ namespace gctools {
 // 
 
 
-#if 0
-#define GC_RESERVE_MUTABLE_VECTOR_ALLOCATE(_T_,_SIZE_,_ADDR_) _ADDR_ = (vec::MutableVector<_T_>*)malloc(vec::MutableVector<_T_>::_sizeof(_SIZE_))
-#define GC_RESERVE_MUTABLE_VECTOR_RESIZE(_T_,_OLD_,_NEW_SIZE_,_NEW_) { \
-        GC_RESERVE_MUTABLE_VECTOR_ALLOCATE(_T_,_NEW_SIZE_,_NEW_);       \
-        for ( size_t zi(0); zi<_OLD_->_End; ++zi ) {                   \
-            _NEW_->operator[](zi) = _OLD_->operator[](zi);             \
-        };                                                             \
-        _NEW_->_End = _OLD_->_End;                                     \
-    }
-#define GC_RESERVE_MUTABLE_VECTOR_FREE(/*_T_,*/_ADDR_) free(_ADDR_);
-#endif
 
 
 
 #ifdef USE_GC_REF_COUNT_WRAPPER
 #define GC_SIZEOF_BLOCK(_class_) (gctools::GCWrapper<_class_>::sizeof_wrapper())
-#define GC_RESERVE_GET(_class_,_obj_) {                                 \
+#define GC_ALLOCATE_GET(_class_,_obj_) {                                 \
         gctools::GCWrapper<_class_>* __gch = reinterpret_cast<gctools::GCWrapper<_class_>*>(malloc(GC_SIZEOF_BLOCK(_class_))); \
         new(__gch) gctools::GCWrapper<_class_>();                       \
         _class_* __object = __gch->gcobject();                          \
@@ -134,7 +100,7 @@ namespace gctools {
         _obj_ = __object;                                               \
     };
 
-#define GC_RESERVE_GET_VARIADIC(_class_,_obj_,...) {                    \
+#define GC_ALLOCATE_GET_VARIADIC(_class_,_obj_,...) {                    \
     gctools::GCWrapper<_class_>* __gch = reinterpret_cast<gctools::GCWrapper<_class_>*>(malloc(GC_SIZEOF_BLOCK(_class_))); \
     new(__gch) gctools::GCWrapper<_class_>();                           \
     _class_* __object = __gch->gcobject();                              \
@@ -149,26 +115,30 @@ namespace gctools {
         _obj_ = __object;                                               \
     };
 #else
-#define GC_RESERVE_GET(_class_,_obj_) _obj_ = mem::smart_ptr<_class_>(new _class_())
-#define GC_RESERVE_GET_VARIADIC(_class_,_obj_,...) _obj_ = mem::smart_ptr<_class_>(new _class_(__VA_ARGS__))
+#define GC_ALLOCATE_GET(_class_,_obj_) _obj_ = mem::smart_ptr<_class_>(new _class_())
+#define GC_ALLOCATE_GET_VARIADIC(_class_,_obj_,...) _obj_ = mem::smart_ptr<_class_>(new _class_(__VA_ARGS__))
 #define GC_COPY_GET(_class_,_obj_,_orig_) _obj_ = mem::smart_ptr<_class_>(new _class_(_orig_))
 #endif
 
-#define GC_RESERVE_GET_KIND(_class_,_kind_,_obj_) GC_RESERVE_GET(_class_,_obj_)
+#define GC_ALLOCATE_GET_KIND(_class_,_kind_,_obj_) GC_ALLOCATE_GET(_class_,_obj_)
 
-#define GC_RESERVE_BEGIN(_class_,_obj_) mem::smart_ptr<_class_> _obj_;
-#define GC_RESERVE_END(_class_,_obj_) (_obj_)->initialize();POLL_SIGNALS()
-#define GC_RESERVE_END_FINALno_INITno(_class_,_obj_) POLL_SIGNALS()
-#define GC_RESERVE_END_FINALyes_INITno(_class_,_obj_) POLL_SIGNALS()
+#define GC_ALLOCATE_BEGIN(_class_,_obj_) mem::smart_ptr<_class_> _obj_;
+#define GC_ALLOCATE_END(_class_,_obj_) (_obj_)->initialize();POLL_SIGNALS()
+#define GC_ALLOCATE_END_FINALno_INITno(_class_,_obj_) POLL_SIGNALS()
+#define GC_ALLOCATE_END_FINALyes_INITno(_class_,_obj_) POLL_SIGNALS()
 
 
-#define GC_RESERVE_END_DONT_INITIALIZE(_class_) POLL_SIGNALS()
-#define GC_RESERVE(_class_,_obj_) GC_RESERVE_BEGIN(_class_,_obj_){GC_RESERVE_GET(_class_,_obj_);} GC_RESERVE_END(_class_,_obj_);
-#define GC_RESERVE_VARIADIC(_class_,_obj_,...) GC_RESERVE_BEGIN(_class_,_obj_){GC_RESERVE_GET_VARIADIC(_class_,_obj_,__VA_ARGS__);} GC_RESERVE_END(_class_,_obj_);
-#define GC_RESERVE_DONT_INITIALIZE(_class_,_obj_) GC_RESERVE_BEGIN(_class_,_obj_){GC_RESERVE_GET(_class_,_obj_);} GC_RESERVE_END_DONT_INITIALIZE(_obj_);
+#define GC_ALLOCATE_END_DONT_INITIALIZE(_class_) POLL_SIGNALS()
+
+#define GC_ALLOCATE(_class_,_obj_) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_,_obj_) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::rootAllocate()
+#define GC_ALLOCATE_VARIADIC(_class_,_obj_,...) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate(__VA_ARGS__)
+
+
+#define GC_ALLOCATE_DONT_INITIALIZE(_class_,_obj_) GC_ALLOCATE_BEGIN(_class_,_obj_){GC_ALLOCATE_GET(_class_,_obj_);} GC_ALLOCATE_END_DONT_INITIALIZE(_obj_);
 
 #define GC_COPY_BEGIN(_class_,_obj_) mem::smart_ptr<_class_> _obj_;
-#define GC_COPY_END(_class_,_obj_) GC_RESERVE_END_DONT_INITIALIZE()
+#define GC_COPY_END(_class_,_obj_) GC_ALLOCATE_END_DONT_INITIALIZE()
 #define GC_COPY(_class_,_obj_,_orig_) GC_COPY_BEGIN(_class_,_obj_){GC_COPY_GET(_class_,_obj_,_orig_);} GC_COPY_END(_class_,_obj_);
 
 
@@ -216,12 +186,8 @@ namespace gctools
 
 
     class GCObject {
-#if 0
-        template <class T> friend struct ref_counter;
-	// general
-    protected:
-#endif
     public:
+#ifdef USE_REFCOUNT
 #ifndef USE_GC_REF_COUNT_WRAPPER
 	mutable int _ReferenceCount;
     protected:
@@ -229,6 +195,7 @@ namespace gctools
 	GCObject() : _ReferenceCount(0) {};
 	// Copy  ctor
 	GCObject(const GCObject& orig) : _ReferenceCount(0) {};
+#endif
 #endif
 	GCObject& operator=(const GCObject&) { return *this; };
     };

@@ -87,7 +87,9 @@ public:
 	BOOST_ASSERT(p==0 || pointerp());
 	if ( p!=0 )
 	{
+#ifdef USE_REFCOUNT
 	    if( add_ref ) intrusive_ptr_add_ref( (this->px) );  // pointerp() not necessary
+#endif
 	}
     }
 
@@ -117,7 +119,9 @@ public:
 	if (rhs.pointerp())
 	{
 	    px = rhs.pxget(); // implicit cast
+#ifdef USE_REFCOUNT
 	    intrusive_ptr_add_ref( (this->px) );  // pointerp() not necessary
+#endif
 	    return;
 	}
 	// Copy the bit pattern in rhs.px into this->px
@@ -129,12 +133,16 @@ public:
 
     tagged_intrusive_ptr(tagged_intrusive_ptr const & rhs): px( rhs.px )
     {
+#ifdef USE_REFCOUNT
         if (pointerp()) intrusive_ptr_add_ref( (this->px) );  // pointerp() not necessary
+#endif
     }
 
     ~tagged_intrusive_ptr()
     {
+#ifdef USE_REFCOUNT
         if (pointerp()) intrusive_ptr_release((this->px));
+#endif
     }
 
 #if !defined(BOOST_NO_MEMBER_TEMPLATES) || defined(BOOST_MSVC6_MEMBER_TEMPLATES)

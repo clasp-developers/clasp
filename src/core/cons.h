@@ -82,8 +82,22 @@ namespace core
 #define	CONS_CDR(x) oCdr(x)
 #define	CAR(x) oCar(x)
 #define	CDR(x) oCdr(x)
+};
 
+namespace core {
     SMART(Cons);
+};
+
+template<> struct gctools::GCAllocatorInfo<core::Cons_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+    
+
+namespace core {
+    
     class Cons_O : public List_O
     {
 	LISP_BASE1(List_O);
@@ -127,9 +141,8 @@ namespace core
 	static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8 );
 	static Cons_sp create(T_sp car, T_sp cdr)
 	{
-            GC_RESERVE_BEGIN(Cons_O,ll) {
-                GC_RESERVE_GET(Cons_O,ll);
-            } GC_RESERVE_END_FINALno_INITno(Cons_O,ll);
+//            Cons_sp ll = gctools::GCObjectAllocator<Cons_O>::allocate();
+            GC_ALLOCATE(Cons_O,ll);
             ll->setCar(car);
             ll->setOCdr(cdr);
 	    return ll;

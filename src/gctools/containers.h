@@ -4,12 +4,8 @@
 #include <utility>
 namespace gctools {
 
-    class GCContainer {
-    };
 
-
-
-    class GCContainer_impl {
+    class GCContainer_moveable {
     private:
     };
 
@@ -40,7 +36,7 @@ namespace gctools {
     public:
         vector_type     _Vector;
     public:
-        typename Vec::pointer_to_impl contents() const { return this->_Vector.contents(); };
+        typename Vec::pointer_to_moveable contents() const { return this->_Vector.contents(); };
     public:
         void swap(Vec0_impl& other) { this->_Vector.swap(other._Vector);};
         iterator begin() { return this->_Vector.begin(); };
@@ -96,7 +92,7 @@ namespace gctools {
         Array0_impl() : _Array() {};
     public:
         bool alivep() const { return this->_Array.alivep(); };
-        typename Arr::pointer_to_impl contents() const { return this->_Array.contents(); };
+        typename Arr::pointer_to_moveable contents() const { return this->_Array.contents(); };
     public:
         template <typename...ARGS>
         void allocate(size_t numExtraArgs, const value_type& initialValue, ARGS&&...args) {
@@ -124,20 +120,20 @@ namespace gctools {
 
 
 
-#ifndef USE_MPS
+#ifdef USE_REFCOUNT
     template <class T>
-    class Vec0 : public Vec0_impl<GCVector<T,GCAlloc_malloc<GCVector_impl<T> > > >
+    class Vec0 : public Vec0_impl<GCVector<T,GCContainerAllocator_refcount<GCVector_moveable<T> > > >
     {
     public:
-        typedef Vec0_impl<GCVector<T,GCAlloc_malloc<GCVector_impl<T> > > > Base;
+        typedef Vec0_impl<GCVector<T,GCContainerAllocator_refcount<GCVector_moveable<T> > > > Base;
         Vec0() : Base() {};
     };
 
     template <class T>
-    class Array0 : public Array0_impl<GCArray<T,GCAlloc_malloc<GCArray_impl<T> > > >
+    class Array0 : public Array0_impl<GCArray<T,GCContainerAllocator_refcount<GCArray_moveable<T> > > >
     {
     public:
-        typedef Array0_impl<GCArray<T,GCAlloc_malloc<GCArray_impl<T> > > >     Base;
+        typedef Array0_impl<GCArray<T,GCContainerAllocator_refcount<GCArray_moveable<T> > > >     Base;
 //        template <typename...ARGS> Array0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
         Array0() : Base() {};
     };
@@ -146,15 +142,47 @@ namespace gctools {
     // Use these for ActivationFrames to distinguish them from GCArray
     //
     template <class T>
-    class Frame0 : public Array0_impl<GCArray<T,GCAlloc_malloc<GCArray_impl<T> > > >
+    class Frame0 : public Array0_impl<GCArray<T,GCContainerAllocator_refcount<GCArray_moveable<T> > > >
     {
     public:
-        typedef Array0_impl<GCArray<T,GCAlloc_malloc<GCArray_impl<T> > > >     Base;
+        typedef Array0_impl<GCArray<T,GCContainerAllocator_refcount<GCArray_moveable<T> > > >     Base;
 //        template <typename...ARGS> Frame0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
         Frame0() : Base() {};
     };
 
-#else // !USE_MPS
+#endif
+
+
+#ifdef USE_BOEHM
+    template <class T>
+    class Vec0 : public Vec0_impl<GCVector<T,GCContainerAllocator_boehm<GCVector_moveable<T> > > >
+    {
+    public:
+        typedef Vec0_impl<GCVector<T,GCContainerAllocator_boehm<GCVector_moveable<T> > > > Base;
+        Vec0() : Base() {};
+    };
+
+    template <class T>
+    class Array0 : public Array0_impl<GCArray<T,GCContainerAllocator_boehm<GCArray_moveable<T> > > >
+    {
+    public:
+        typedef Array0_impl<GCArray<T,GCContainerAllocator_boehm<GCArray_moveable<T> > > >     Base;
+//        template <typename...ARGS> Array0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
+        Array0() : Base() {};
+    };
+
+    //
+    // Use these for ActivationFrames to distinguish them from GCArray
+    //
+    template <class T>
+    class Frame0 : public Array0_impl<GCArray<T,GCContainerAllocator_boehm<GCArray_moveable<T> > > >
+    {
+    public:
+        typedef Array0_impl<GCArray<T,GCContainerAllocator_boehm<GCArray_moveable<T> > > >     Base;
+//        template <typename...ARGS> Frame0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
+        Frame0() : Base() {};
+    };
+#endif
 
 
     
@@ -164,20 +192,20 @@ namespace gctools {
 
 
 
-
+#ifdef USE_MPS
     template <class T>
-    class Vec0 : public Vec0_impl<GCVector<T,GCAlloc_mps<GCVector_impl<T> > > >
+    class Vec0 : public Vec0_impl<GCVector<T,GCContainerAllocator_mps<GCVector_moveable<T> > > >
     {
     public:
-        typedef Vec0_impl<GCVector<T,GCAlloc_mps<GCVector_impl<T> > > > Base;
+        typedef Vec0_impl<GCVector<T,GCContainerAllocator_mps<GCVector_moveable<T> > > > Base;
         Vec0() : Base() {};
     };
 
     template <class T>
-    class Array0 : public Array0_impl<GCArray<T,GCAlloc_mps<GCArray_impl<T> > > >
+    class Array0 : public Array0_impl<GCArray<T,GCContainerAllocator_mps<GCArray_moveable<T> > > >
     {
     public:
-        typedef Array0_impl<GCArray<T,GCAlloc_mps<GCArray_impl<T> > > >     Base;
+        typedef Array0_impl<GCArray<T,GCContainerAllocator_mps<GCArray_moveable<T> > > >     Base;
 //        template <typename...ARGS> Array0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
         Array0() : Base() {};
     };
@@ -186,18 +214,13 @@ namespace gctools {
     // Use these for ActivationFrames to distinguish them from GCArray
     //
     template <class T>
-    class Frame0 : public Array0_impl<GCArray<T,GCAlloc_mps<GCArray_impl<T> > > >
+    class Frame0 : public Array0_impl<GCArray<T,GCContainerAllocator_mps<GCArray_moveable<T> > > >
     {
     public:
-        typedef Array0_impl<GCArray<T,GCAlloc_mps<GCArray_impl<T> > > >     Base;
+        typedef Array0_impl<GCArray<T,GCContainerAllocator_mps<GCArray_moveable<T> > > >     Base;
 //        template <typename...ARGS> Frame0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
         Frame0() : Base() {};
     };
-
-
-
-
-
 #endif // USE_MPS
 
 

@@ -14,6 +14,9 @@
 #include "symbolSet.h"
 #include "wrappers.h"
 
+#define GCINFO_KIND_GCVECTOR_gctools__GCVector_moveable_class_mem__smart_ptr_class_core__Symbol_O__
+#include GC_INTERFACE_HEADER
+#undef GCINFO_KIND_GCVECTOR_gctools__GCVector_moveable_class_mem__smart_ptr_class_core__Symbol_O__
 
 
 

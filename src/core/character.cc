@@ -569,7 +569,7 @@ namespace core
 
 //	.initArgs("(self)")
 	      ;
-	global_CharacterInfo = new CharacterInfo();
+	global_CharacterInfo = gctools::allocateRootClass<CharacterInfo>();
 
 	SYMBOL_EXPORT_SC_(ClPkg,name_char);
 	Defun(name_char);
@@ -771,9 +771,7 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
     StandardChar_sp StandardChar_O::create(char c)
     {
-	GC_RESERVE_BEGIN(StandardChar_O,v ){
-	    GC_RESERVE_GET(StandardChar_O,v );
-	} GC_RESERVE_END(StandardChar_O,v );
+        GC_ALLOCATE(StandardChar_O,v );
 	v->set(c);
 	return v;
     }

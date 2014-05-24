@@ -21,17 +21,13 @@ namespace core
     public:
 	static StrWithFillPtr_sp create(const string& nm)
 	{
-	    GC_RESERVE_BEGIN(StrWithFillPtr_O,v ){
-		GC_RESERVE_GET(StrWithFillPtr_O,v );
-	    } GC_RESERVE_END(StrWithFillPtr_O,v );
+            GC_ALLOCATE(StrWithFillPtr_O,v );
             v->set(nm);
 	    return v;
 	};
 	static StrWithFillPtr_sp create(const char* nm)
 	{
-	    GC_RESERVE_BEGIN(StrWithFillPtr_O,v ){
-		GC_RESERVE_GET(StrWithFillPtr_O,v );
-	    } GC_RESERVE_END(StrWithFillPtr_O,v );
+            GC_ALLOCATE(StrWithFillPtr_O,v );
             v->setFromChars(nm);
 	    return v;
 	};

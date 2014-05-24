@@ -1274,9 +1274,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 #define DOCS_FileInStream_O_make ""
     FileInStream_sp FileInStream_O::make(T_sp fileName)
     {_G();
-	GC_RESERVE_BEGIN(FileInStream_O,fin ){
-	    GC_RESERVE_GET(FileInStream_O,fin );
-	} GC_RESERVE_END(FileInStream_O,fin );
+        GC_ALLOCATE(FileInStream_O,fin );
 	Pathname_sp pn = af_pathname(fileName);
 	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(pn);
 	fin->_InStream.open(fin->_SourceFileInfo->fileName().c_str());
@@ -1303,9 +1301,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     FileInStream_sp FileInStream_O::create(Pathname_sp path)
     {_G();
-	GC_RESERVE_BEGIN(FileInStream_O,fin ){
-	    GC_RESERVE_GET(FileInStream_O,fin );
-	} GC_RESERVE_END(FileInStream_O,fin );
+        GC_ALLOCATE(FileInStream_O,fin );
 	Str_sp truename = af_coerceToFilename(af_truename(path));
 	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(truename->get());
 	LOG(BF("Opening file[%s]") % fin->_SourceFileInfo->fileName());
@@ -1477,9 +1473,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     FileOutStream_sp FileOutStream_O::create(Pathname_sp currentPath, std::ios_base::openmode mode)
     {_G();
-	GC_RESERVE_BEGIN(FileOutStream_O,fout ){
-	    GC_RESERVE_GET(FileOutStream_O,fout );
-	} GC_RESERVE_END(FileOutStream_O,fout );
+        GC_ALLOCATE(FileOutStream_O,fout );
 	    fout->_ActivePathname = currentPath;
 	    fout->_RenameToOriginalOnClose = false;
 	    fout->_OriginalPathname = _Nil<Pathname_O>();
@@ -1498,9 +1492,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     FileOutStream_sp FileOutStream_O::createTemporary(Pathname_sp temporaryPath, Pathname_sp originalPath, std::ios_base::openmode mode)
     {
-	GC_RESERVE_BEGIN(FileOutStream_O,fout ){
-	    GC_RESERVE_GET(FileOutStream_O,fout );
-	} GC_RESERVE_END(FileOutStream_O,fout );
+        GC_ALLOCATE(FileOutStream_O,fout );
 	fout->_ActivePathname = temporaryPath;
 	fout->_OriginalPathname = originalPath;
 	fout->_RenameToOriginalOnClose = true;
@@ -1595,9 +1587,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     FileInCompressedStream_sp FileInCompressedStream_O::createGzip(Pathname_sp path)
     {
-	GC_RESERVE_BEGIN(FileInCompressedStream_O,fin ){
-	    GC_RESERVE_GET(FileInCompressedStream_O,fin );
-	} GC_RESERVE_END(FileInCompressedStream_O,fin );
+        GC_ALLOCATE(FileInCompressedStream_O,fin );
 	Str_sp truename = af_coerceToFilename(af_truename(path));
 	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(truename->get());
 	fin->_RawStream.open(truename->c_str(),std::ios_base::in | std::ios_base::binary);
@@ -1730,9 +1720,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     FileOutCompressedStream_sp FileOutCompressedStream_O::createGzip(Pathname_sp path)
     {
-	GC_RESERVE_BEGIN(FileOutCompressedStream_O,fout ){
-	    GC_RESERVE_GET(FileOutCompressedStream_O,fout );
-	} GC_RESERVE_END(FileOutCompressedStream_O,fout );
+        GC_ALLOCATE(FileOutCompressedStream_O,fout );
 	Str_sp truename = af_coerceToFilename(af_truename(path));
 	fout->_ActivePathname = path;
 	fout->_RenameActiveToOriginalOnClose = false;
@@ -1746,9 +1734,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     FileOutCompressedStream_sp FileOutCompressedStream_O::createGzipTemporary(Pathname_sp activePath, Pathname_sp originalPath)
     {
-	GC_RESERVE_BEGIN(FileOutCompressedStream_O,fout ){
-	    GC_RESERVE_GET(FileOutCompressedStream_O,fout );
-	} GC_RESERVE_END(FileOutCompressedStream_O,fout );
+        GC_ALLOCATE(FileOutCompressedStream_O,fout );
 	fout->_ActivePathname = activePath;
 	fout->_RenameActiveToOriginalOnClose = true;
 	fout->_OriginalPathname = originalPath;
@@ -1904,9 +1890,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     StringInputStream_sp StringInputStream_O::create(string const& contents)
     {
-	GC_RESERVE_BEGIN(StringInputStream_O,fin ){
-	    GC_RESERVE_GET(StringInputStream_O,fin );
-	} GC_RESERVE_END(StringInputStream_O,fin );
+        GC_ALLOCATE(StringInputStream_O,fin );
 	fin->_Stream.str(contents);
 	return fin;
     }
@@ -2022,18 +2006,14 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     StringOutStream_sp StringOutStream_O::make()
     {
-	GC_RESERVE_BEGIN(StringOutStream_O,ss ){
-	    GC_RESERVE_GET(StringOutStream_O,ss );
-	} GC_RESERVE_END(StringOutStream_O,ss );
+        GC_ALLOCATE(StringOutStream_O,ss );
 	return ss;
     }
 
 
     StringOutStream_sp StringOutStream_O::create(StrWithFillPtr_sp str)
     {
-	GC_RESERVE_BEGIN(StringOutStream_O,ss ){
-	    GC_RESERVE_GET(StringOutStream_O,ss );
-	} GC_RESERVE_END(StringOutStream_O,ss );
+        GC_ALLOCATE(StringOutStream_O,ss );
 	ss->_String = str;
 	return ss;
     }
@@ -2292,9 +2272,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     FDInStream_sp FDInStream_O::make(T_sp file_descriptor)
     {_G();
 	Path_sp path = coerce::pathDesignator(file_descriptor);
-	GC_RESERVE_BEGIN(FDInStream_O,fin ){
-	    GC_RESERVE_GET(FDInStream_O,fin );
-	} GC_RESERVE_END(FDInStream_O,fin );
+        GC_ALLOCATE(FDInStream_O,fin );
 	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(path->asString());
 	fin->_FStream = fopen(path->asString().c_str(),"r");
 	return fin;
@@ -2303,9 +2281,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 
     FDInStream_sp FDInStream_O::create(Pathname_sp pname)
     {_G();
-	GC_RESERVE_BEGIN(FDInStream_O,fin ){
-	    GC_RESERVE_GET(FDInStream_O,fin );
-	} GC_RESERVE_END(FDInStream_O,fin );
+        GC_ALLOCATE(FDInStream_O,fin );
 	string fname = af_coerceToFilename(pname)->get();
 	fin->_FStream = fopen(fname.c_str(),"r");
 	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(fname);
@@ -2315,10 +2291,8 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 
     FDInStream_sp FDInStream_O::create(FILE* fid,const string& name,bool closeable)
     {_G();
-	GC_RESERVE_BEGIN(FDInStream_O,fin ){
-	    GC_RESERVE_GET(FDInStream_O,fin );
-	} GC_RESERVE_END(FDInStream_O,fin );
-	    fin->_FStream = fid;
+        GC_ALLOCATE(FDInStream_O,fin );
+        fin->_FStream = fid;
 	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(name);
 	fin->_Closeable = closeable;
 	return fin;
@@ -2524,9 +2498,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 
     FDOutStream_sp FDOutStream_O::create(FILE* fod,const string& name,bool closeable)
     {_G();
-	GC_RESERVE_BEGIN(FDOutStream_O,fout ){
-	    GC_RESERVE_GET(FDOutStream_O,fout );
-	} GC_RESERVE_END(FDOutStream_O,fout );
+        GC_ALLOCATE(FDOutStream_O,fout );
 	fout->_FStream = fod;
 	fout->_Closeable = closeable;
 	return fout;
@@ -2535,9 +2507,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 
     FDOutStream_sp FDOutStream_O::create(Pathname_sp currentPath, std::ios_base::openmode mode)
     {_G();
-	GC_RESERVE_BEGIN(FDOutStream_O,fout ){
-	    GC_RESERVE_GET(FDOutStream_O,fout );
-	} GC_RESERVE_END(FDOutStream_O,fout );
+        GC_ALLOCATE(FDOutStream_O,fout );
 	fout->_ActivePathname = currentPath;
 	fout->_RenameToOriginalOnClose = false;
 	fout->_OriginalPathname = _Nil<Pathname_O>();
@@ -2569,9 +2539,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 
     FDOutStream_sp FDOutStream_O::createTemporary(Pathname_sp temporaryPath, Pathname_sp originalPath, std::ios_base::openmode mode)
     {
-	GC_RESERVE_BEGIN(FDOutStream_O,fout ){
-	    GC_RESERVE_GET(FDOutStream_O,fout );
-	} GC_RESERVE_END(FDOutStream_O,fout );
+        GC_ALLOCATE(FDOutStream_O,fout );
 	fout->_ActivePathname = temporaryPath;
 	fout->_OriginalPathname = originalPath;
 	fout->_RenameToOriginalOnClose = true;
@@ -2694,9 +2662,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 
     FDIOStream_sp FDIOStream_O::create(FILE* fid,const string& name,bool closeable)
     {_G();
-	GC_RESERVE_BEGIN(FDIOStream_O,fio ){
-	    GC_RESERVE_GET(FDIOStream_O,fio );
-	} GC_RESERVE_END(FDIOStream_O,fio );
+        GC_ALLOCATE(FDIOStream_O,fio );
 	fio->_FStream = fid;
 	fio->_SourceFileInfo = SourceFileInfo_O::getOrCreate(name);
 	fio->_Closeable = closeable;
@@ -2752,9 +2718,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     SynonymStream_sp SynonymStream_O::make(Symbol_sp symbol)
     {_G();
 	Stream_sp stream = symbol->symbolValue().as<Stream_O>();
-	GC_RESERVE_BEGIN(SynonymStream_O,str ){
-	    GC_RESERVE_GET(SynonymStream_O,str );
-	} GC_RESERVE_END(SynonymStream_O,str );
+        GC_ALLOCATE(SynonymStream_O,str );
 	    str->_SynonymSymbol = symbol;
 	return str;
     }
@@ -3053,9 +3017,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 #define DOCS_TwoWayStream_O_make ""
     TwoWayStream_sp TwoWayStream_O::make(Stream_sp in_stream, Stream_sp out_stream)
     {_G();
-	GC_RESERVE_BEGIN(TwoWayStream_O,f ){
-	    GC_RESERVE_GET(TwoWayStream_O,f );
-	} GC_RESERVE_END(TwoWayStream_O,f );
+        GC_ALLOCATE(TwoWayStream_O,f );
 	    f->_in_stream = in_stream;
 	    f->_out_stream = out_stream;
 	return f;

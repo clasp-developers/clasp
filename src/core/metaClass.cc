@@ -17,6 +17,7 @@
 #include "cons.h"
 #include "lambdaListHandler.h"
 #include "core/lispList.h"
+#include "core/vectorObjectsWithFillPtr.h"
 #include "instance.h"
 #include "evaluator.h"
 #include "hashTable.h"
@@ -25,6 +26,13 @@
 #include "funcallableStandardClass.h"
 #include "structureClass.h"
 #include "wrappers.h"
+
+
+#define NAMESPACE_gctools_mem
+#include GC_INTERFACE_HEADER
+#undef NAMESPACE_gctools_mem
+
+
 
 
 namespace translate
@@ -143,7 +151,7 @@ namespace core
 
     T_sp InstanceAllocatorFunctor::allocate()
     {
-        GC_RESERVE(Instance_O,output);
+        GC_ALLOCATE(Instance_O,output);
         return output;
     };
 
@@ -322,12 +330,12 @@ namespace core
 	return this->name()->formattedName(false);
     }
 
-    void Class_O::accumulateSuperClasses(map<Class_sp,int>& supers,vector<Class_sp>& arrayedSupers ,Class_sp mc)
+    void Class_O::accumulateSuperClasses(HashTableEq_sp supers,VectorObjectsWithFillPtr_sp arrayedSupers ,Class_sp mc)
     {_G();
 	if ( IS_SYMBOL_UNDEFINED(mc->className()) ) return;
-	if ( supers.count(mc) > 0 ) return;
-	supers[mc] = arrayedSupers.size();
-	arrayedSupers.push_back(mc);
+	if ( supers->contains(mc) ) return;
+        supers->setf_gethash(mc,Fixnum_O::create(arrayedSupers->length()));
+	arrayedSupers->vectorPushExtend(mc);
 	for ( Cons_sp cur=mc->directSuperclasses(); cur.notnilp(); cur=cCdr(cur) )
 	{
 	    accumulateSuperClasses(supers,arrayedSupers,oCar(cur).as<Class_O>());
@@ -354,6 +362,74 @@ namespace gcroots {
 
 namespace core {
 
+
+    void Class_O::lowLevel_calculateClassPrecedenceList()
+    {_G();
+	using namespace boost;
+	HashTableEq_sp supers = HashTableEq_O::create_default();
+	VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),16,0,true));
+	this->accumulateSuperClasses(supers,arrayedSupers,this->sharedThis<Class_O>());
+	vector<list<int> > graph(af_length(arrayedSupers));
+
+	class TopoSortSetup : public KeyValueMapper {
+	private:
+	    HashTable_sp 	supers;
+	    vector<list<int> >* graphP;
+	public:
+	    TopoSortSetup(HashTable_sp asupers,vector<list<int> >* gP) : supers(asupers), graphP(gP) {};
+	    virtual bool mapKeyValue(T_sp key, T_sp value) {
+		int mcIndex = value.as<Fixnum_O>()->get();
+		Class_sp mc = key.as<Class_O>();
+		for ( Cons_sp mit=mc->directSuperclasses(); mit.notnilp(); mit=cCdr(mit) )
+		{
+		    int aSuperIndex = this->supers->gethash(oCar(mit),_Unbound<T_O>()).as<Fixnum_O>()->get();
+		    (*this->graphP)[mcIndex].push_front(aSuperIndex);
+		}
+		return true;
+	    }
+	};
+	TopoSortSetup topoSortSetup(supers,&graph);
+	supers->lowLevelMapHash(&topoSortSetup);
+#ifdef DEBUG_ON
+	{
+	    for ( size_t zi(0),ziEnd(af_length(arrayedSupers)); zi<ziEnd; ++zi )
+	    {
+		stringstream ss;
+		ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName() ).str();
+		for ( list<int>::const_iterator it=graph[zi].begin(); it!=graph[zi].end(); it++ )
+		{
+		    ss << *it << "-> ";
+		}
+		ss << ";";
+		LOG(BF("%s") % ss.str() );
+	    }
+	}
+#endif
+	deque<int> topo_order;
+	topological_sort(graph,front_inserter(topo_order),vertex_index_map(identity_property_map()));
+#ifdef DEBUG_ON
+	{
+	    stringstream ss;
+	    ss << "Topologically sorted superclasses ";
+	    for ( deque<int>::const_reverse_iterator it=topo_order.rbegin(); it!=topo_order.rend(); it++ )
+	    {
+		Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
+		ss << "-> " << mc->className() << "/" <<mc->instanceClassName();
+	    }
+	    LOG(BF("%s") % ss.str() );
+	}
+#endif
+	Cons_sp cpl = _Nil<Cons_O>();
+	for ( deque<int>::const_reverse_iterator it=topo_order.rbegin(); it!=topo_order.rend(); it++ )
+	{
+	    Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
+	    LOG(BF("pushing superclass[%s] to front of ClassPrecedenceList") % mc->instanceClassName() );
+	    cpl = Cons_O::create(mc,cpl);
+	}
+	this->instanceSet(REF_CLASS_PRECEDENCE_LIST,cpl);
+    }
+
+#if 0
     void Class_O::lowLevel_calculateClassPrecedenceList()
     {_OF();
 	using namespace boost;
@@ -410,7 +486,7 @@ namespace core {
 	}
 	this->instanceSet(REF_CLASS_PRECEDENCE_LIST,cpl);
     }
-
+#endif
 
 
     void Class_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp className)

@@ -11,6 +11,36 @@
 
 
 
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__0_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__1_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__2_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__3_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__4_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__5_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__6_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__7_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__8_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__9_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__10_
+#define GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__11_
+// may need more later
+#include GC_INTERFACE_HEADER
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__0_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__1_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__2_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__3_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__4_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__5_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__6_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__7_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__8_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__9_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__10_
+#undef GCINFO_KIND_GCARRAY_gctools__GCArray_moveable_class_mem__smart_ptr_class_core__T_O__11_
+ 
+
+
+
 namespace core
 {
 
@@ -95,19 +125,21 @@ namespace core
 	}
 
     }; // ActivationFrame class
-
-
-
 }; // core namespace
+
+template<> struct gctools::GCAllocatorInfo<core::ValueFrame_O> {
+    static bool const NeedsInitialization = false;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
 TRANSLATE(core::ActivationFrame_O);
+
+
 
 
 namespace core
 {
-
-
-
-
     class ValueFrame_O : public ActivationFrame_O
     {
 	LISP_BASE1(ActivationFrame_O);
@@ -121,7 +153,7 @@ namespace core
 
 	static ValueFrame_sp createForArgArray(size_t nargs, T_sp* argArray, const ActivationFrame_sp& parent)
 	{_G();
-            GC_RESERVE(ValueFrame_O,vf);
+            GC_ALLOCATE(ValueFrame_O,vf);
             vf->allocate(nargs);
             // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
             for ( int i(0); i<nargs; ++i ) {
@@ -137,16 +169,14 @@ namespace core
 	}
 	static ValueFrame_sp create(const ActivationFrame_sp& parent)
 	{_G();
-	    GC_RESERVE_BEGIN(ValueFrame_O,vf) {
-		GC_RESERVE_GET(ValueFrame_O,vf);
-		vf->_ParentFrame = parent;
-	    } GC_RESERVE_END_FINALyes_INITno(ValueFrame_O,vf);
+	    GC_ALLOCATE(ValueFrame_O,vf);
+            vf->_ParentFrame = parent;
 	    return vf;
 	}
 
 	static ValueFrame_sp create(int numArgs,const ActivationFrame_sp& parent)
 	{_G();
-            GC_RESERVE(ValueFrame_O,vf);
+            GC_ALLOCATE(ValueFrame_O,vf);
             vf->_ParentFrame = parent;
             vf->allocate(numArgs);
 //	    vf->allocateStorage(numArgs);
@@ -164,7 +194,7 @@ namespace core
 	template <class ... ARGS>
 	static ValueFrame_sp create_fill_args(ActivationFrame_sp parent, ARGS&&... args)
 	{_G();
-            GC_RESERVE(ValueFrame_O,vf);
+            GC_ALLOCATE(ValueFrame_O,vf);
             vf->_ParentFrame = parent;
             vf->allocate(0,std::forward<ARGS>(args)...);
 	    return vf;
@@ -174,7 +204,7 @@ namespace core
 	template <class ... ARGS>
 	static ValueFrame_sp create_fill_numExtraArgs(int numExtraArgs, ActivationFrame_sp parent, ARGS&&... args)
 	{_G();
-            GC_RESERVE(ValueFrame_O,vf);
+            GC_ALLOCATE(ValueFrame_O,vf);
             vf->_ParentFrame = parent;
             vf->allocate(numExtraArgs,std::forward<ARGS>(args)...);
 	    return vf;
@@ -278,11 +308,17 @@ namespace core
 
 
 
+};
 
 
+template<> struct gctools::GCAllocatorInfo<core::FunctionFrame_O> {
+    static bool const NeedsInitialization = false;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
-
-
+namespace core {
     class FunctionFrame_O : public ActivationFrame_O
     {
 	LISP_BASE1(ActivationFrame_O);
@@ -307,16 +343,14 @@ namespace core
     public:
 	static FunctionFrame_sp create(ActivationFrame_sp parent)
 	{_G();
-	    GC_RESERVE_BEGIN(FunctionFrame_O,vf) {
-		GC_RESERVE_GET(FunctionFrame_O,vf);
-		vf->_ParentFrame = parent;
-	    } GC_RESERVE_END(FunctionFrame_O,vf);
+	    GC_ALLOCATE(FunctionFrame_O,vf);
+            vf->_ParentFrame = parent;
 	    return vf;
 	}
 
 	static FunctionFrame_sp create(int numArgs,ActivationFrame_sp parent)
 	{_G();
-	    GC_RESERVE(FunctionFrame_O,vf);
+	    GC_ALLOCATE(FunctionFrame_O,vf);
             vf->_ParentFrame = parent;
             vf->allocate(numArgs);
 	    return vf;
@@ -339,7 +373,7 @@ namespace core
 	template <class ... ARGS>
 	static FunctionFrame_sp create_fill(ActivationFrame_sp parent, ARGS&&... args)
 	{_G();
-	    GC_RESERVE(FunctionFrame_O,vf);
+	    GC_ALLOCATE(FunctionFrame_O,vf);
             vf->_ParentFrame = parent;
             vf->allocate(0,std::forward<ARGS>(args)...);
 	    return vf;
@@ -394,6 +428,13 @@ namespace core
 
 };
 
+
+template<> struct gctools::GCAllocatorInfo<core::TagbodyFrame_O> {
+    static bool const NeedsInitialization = false;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 
 namespace core

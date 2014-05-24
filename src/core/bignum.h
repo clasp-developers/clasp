@@ -37,17 +37,13 @@ namespace core
 	static Bignum_sp make(const string& value_in_string);
 	static Bignum_sp create(int i)
 	{_G();
-	    GC_RESERVE_BEGIN(Bignum_O,b){
-		GC_RESERVE_GET(Bignum_O,b);
-	    } GC_RESERVE_END(Bignum_O,b);
+            GC_ALLOCATE(Bignum_O,b);
             b->_value=i;
 	    return b;
 	};
 	static Bignum_sp create(mpz_class v)
 	{_G();
-	    GC_RESERVE_BEGIN(Bignum_O,b){
-		GC_RESERVE_GET(Bignum_O,b);
-	    } GC_RESERVE_END(Bignum_O,b);
+            GC_ALLOCATE(Bignum_O,b);
             b->_value=v;
 	    return b;
 	};

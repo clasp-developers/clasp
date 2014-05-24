@@ -6,10 +6,11 @@ using [ os.environ CLASP_TOOLSET ] ;
 
 
 import feature ;
-feature.feature mps : off on
-                : symmetric composite propagated link-incompatible ;
-feature.compose <mps>on : <define>USE_MPS ;
-feature.compose <mps>off : <define>DONT_USE_MPS ;
+feature.feature gc : refcount boehm mps
+                : symmetric implicit composite propagated link-incompatible ;
+feature.compose <gc>refcount : <define>USE_REFCOUNT ;
+feature.compose <gc>boehm : <define>USE_BOEHM ;
+feature.compose <gc>mps : <define>USE_MPS ;
 
 
 

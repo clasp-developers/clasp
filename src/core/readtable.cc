@@ -908,9 +908,7 @@ namespace core
 
     ReadTable_sp ReadTable_O::create_standard_readtable(Lisp_sp lisp)
     {_G();
-	GC_RESERVE_BEGIN(ReadTable_O,rt ){
-	    GC_RESERVE_GET(ReadTable_O,rt );
-	} GC_RESERVE_END(ReadTable_O,rt );
+        GC_ALLOCATE(ReadTable_O,rt );
 	rt->_Syntax = ReadTable_O::create_standard_syntax_table(_lisp);
 	ASSERTNOTNULL(_sym_reader_backquoted_expression->symbolFunction());
 	ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());

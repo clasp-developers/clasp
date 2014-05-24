@@ -50,7 +50,7 @@ namespace core
 
     Regex_sp Regex_O::make(const string& regex)
     {_G();
-	GC_RESERVE(Regex_O,re);
+	GC_ALLOCATE(Regex_O,re);
 	re->_Regex = regex;
 	return re;
     }
@@ -84,7 +84,7 @@ namespace core
 
     RegexMatch_sp Regex_O::regexMatch(const string& str) const
     {_OF();
-	GC_RESERVE(RegexMatch_O,match);
+	GC_ALLOCATE(RegexMatch_O,match);
         match->_CopyOfTextToMatch = str;
 	boost::regex_match(match->_CopyOfTextToMatch.data(),match->_Match,this->_Regex);
 	return match;

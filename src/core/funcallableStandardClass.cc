@@ -15,7 +15,7 @@ namespace core
 {
     FuncallableStandardClass_sp FuncallableStandardClass_O::create(Class_sp mc)
     {
-        GC_RESERVE(FuncallableStandardClass_O,bic);
+        GC_ALLOCATE(FuncallableStandardClass_O,bic);
 //	FuncallableStandardClass_sp bic = FuncallableStandardClass_sp(new FuncallableStandardClass_O());
 	return bic;
     }
@@ -60,9 +60,7 @@ namespace core
 
     FuncallableStandardClass_sp FuncallableStandardClass_O::create(Lisp_sp lisp,Symbol_sp name /*, uint instanceClassSymbol */)
     {
-	GC_RESERVE_BEGIN(FuncallableStandardClass_O,oclass ){
-	    GC_RESERVE_GET(FuncallableStandardClass_O,oclass );
-	} GC_RESERVE_END(FuncallableStandardClass_O,oclass );
+        GC_ALLOCATE(FuncallableStandardClass_O,oclass );
 	    oclass->_Name = name;
 	    oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL; // Not used anymore instanceClassSymbol;
 	    oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();

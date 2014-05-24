@@ -18,9 +18,7 @@ namespace clbind
     template <class OT,class WT>
     mem::smart_ptr<OT> RP_Create_wrapper()
     {_G();
-	GC_RESERVE_BEGIN(OT,wrapper) {
-	    GC_RESERVE_GET(OT,wrapper);
-	} GC_RESERVE_END(OT,wrapper);
+        GC_ALLOCATE(OT,wrapper);
 	return wrapper;
     }
 
@@ -107,7 +105,7 @@ namespace clbind
 
 
 	static mem::smart_ptr<WrapperType> create(OT* naked,class_id classId) {
-            GC_RESERVE_VARIADIC(WrapperType,obj,naked,classId);
+            GC_ALLOCATE_VARIADIC(WrapperType,obj,naked,classId);
             core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
             obj->setInstanceClassUsingSymbol(classSymbol);
 	    return obj;
@@ -115,7 +113,7 @@ namespace clbind
 
 	static mem::smart_ptr<WrapperType> create(const OT& val,class_id classId) {
             OT* naked = new OT(val);
-            GC_RESERVE_VARIADIC(WrapperType,obj,naked,classId);
+            GC_ALLOCATE_VARIADIC(WrapperType,obj,naked,classId);
             core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
             obj->setInstanceClassUsingSymbol(classSymbol);
 	    return obj;

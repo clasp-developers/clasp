@@ -56,7 +56,7 @@ namespace core {
 #endif
     public:
 	/*! Create a Symbol that doesn't have a package or Metaclass defined */
-	static Symbol_sp create_classless_packageless(string const& name);
+//	static Symbol_sp create_classless_packageless(string const& name);
 
 	static Symbol_sp create(const string& nm);
     public:

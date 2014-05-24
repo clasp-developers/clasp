@@ -363,7 +363,7 @@
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
-	(irc-intrinsic "brcl_terminate" *gv-source-path-name* (irc-i32-current-line-number) (irc-i32-current-column) *gv-current-function-name* )
+	(irc-intrinsic "clasp_terminate" *gv-source-path-name* (irc-i32-current-line-number) (irc-i32-current-column) *gv-current-function-name* )
 	(irc-unreachable)
 	))
 
@@ -753,14 +753,19 @@ and then the irbuilder-alloca, irbuilder-body"
 	      (cond
 		((functionp h) (funcall h (cadr cc)))
 		((null h) (bformat t "Cleanup code of NIL!!!!!\n"))
-		((eq h 'destructTsp) (irc-intrinsic "destructTsp" (cadr cc)))
-		((eq h 'destructTmv) (irc-intrinsic "destructTmv" (cadr cc)))
-		((eq h 'destructAFsp) (irc-intrinsic "destructAFsp" (cadr cc)))
+		((eq h 'destructTsp) (irc-dtor "destructTsp" (cadr cc)))
+		((eq h 'destructTmv) (irc-dtor "destructTmv" (cadr cc)))
+		((eq h 'destructAFsp) (irc-dtor "destructAFsp" (cadr cc)))
 		((eq h 'exit-lexical-scope) (handle-exit-scope cc env))
 		((stringp h) (irc-intrinsic h (cadr cc)))
 		(t (break (bformat nil "Unknown cleanup code: %s" h))))
 	      ))))))
 
+
+(defun irc-dtor (name obj)
+  (declare (special *compiler-suppress-dtors*))
+  (unless *compiler-suppress-dtors* (irc-intrinsic name obj))
+  )
 
 
 
@@ -820,7 +825,7 @@ Within the _irbuilder_ dynamic environment...
   (with-alloca-insert-point env irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* +tmv+ (jit-constant-i32 1) label)
     :init (lambda (a) (irc-intrinsic "newTmv" a))
-    :cleanup (lambda (a) (irc-intrinsic "destructTmv" a))))
+    :cleanup (lambda (a) (irc-dtor "destructTmv" a))))
 
 (defun irc-alloca-tsp-array (env &key (num 1) (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-tsp label: %s for %s\n" label irbuilder)
@@ -832,7 +837,7 @@ Within the _irbuilder_ dynamic environment...
 		(irc-intrinsic "newTsp" (irc-gep a (list (jit-constant-i32 i))))))
       :cleanup (lambda (a)
 		 (dotimes (i num)
-		   (irc-intrinsic "destructTsp" (irc-gep a (list (jit-constant-i32 i))))))))
+		   (irc-dtor "destructTsp" (irc-gep a (list (jit-constant-i32 i))))))))
 
 
 (defun irc-alloca-tsp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
@@ -841,7 +846,7 @@ Within the _irbuilder_ dynamic environment...
       env irbuilder
       :alloca (llvm-sys::create-alloca *irbuilder* +tsp+ (jit-constant-i32 1) label)
       :init (lambda (a) (irc-intrinsic "newTsp" a))
-      :cleanup (lambda (a) (irc-intrinsic "destructTsp" a))))
+      :cleanup (lambda (a) (irc-dtor "destructTsp" a))))
 
 (defun irc-alloca-Function_sp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-Function_sp label: %s for %s\n" label irbuilder)
@@ -849,21 +854,21 @@ Within the _irbuilder_ dynamic environment...
       env irbuilder
       :alloca (llvm-sys::create-alloca *irbuilder* +Function_sp+ (jit-constant-i32 1) label)
       :init (lambda (a) (irc-intrinsic "newFunction_sp" a))
-      :cleanup (lambda (a) (irc-intrinsic "destructFunction_sp" a))))
+      :cleanup (lambda (a) (irc-dtor "destructFunction_sp" a))))
 
 (defun irc-alloca-afsp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-afsp label: %s for %s\n" label irbuilder)
   (with-alloca-insert-point env irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* +afsp+ (jit-constant-i32 1) label)
     :init (lambda (a) (irc-intrinsic "newAFsp" a))
-    :cleanup (lambda (a) (irc-intrinsic "destructAFsp" a))))
+    :cleanup (lambda (a) (irc-dtor "destructAFsp" a))))
 
 (defun irc-alloca-afsp-value-frame-of-size (env size &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-afsp-value-frame-of-size label: %s for %s\n" label irbuilder)
   (with-alloca-insert-point env irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* +afsp+ (jit-constant-i32 1) label)
     :init (lambda (a) (irc-intrinsic "newAFsp" a))
-    :cleanup (lambda (a) (irc-intrinsic "destructAFsp" a))))
+    :cleanup (lambda (a) (irc-dtor "destructAFsp" a))))
 
 (defun irc-make-value-frame (result-af size)
   (irc-intrinsic "makeValueFrame" result-af (jit-constant-i32 size) (jit-constant-i32 (irc-next-environment-id))))

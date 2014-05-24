@@ -57,7 +57,7 @@
 
 namespace reg {
 
-    std::vector<core::Symbol_sp> globalClassSymbolsVector;
+    std::vector<core::Symbol_sp, gctools::root_allocator<core::Symbol_sp> > globalClassSymbolsVector;
 
     class_id allocate_class_id(type_id const& cls)
     {
@@ -512,12 +512,14 @@ namespace core
     {_G();
 	return eval::applyToActivationFrame(funcDesig,frame);
     }
+
+#if 0
     Symbol_sp lisp_allocate_packageless_sid(string const& name)
     {
 	Symbol_sp sym = Symbol_O::create_classless_packageless(name);
 	return sym;
     }
-
+#endif
 
     string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash)
     {_G();

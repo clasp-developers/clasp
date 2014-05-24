@@ -200,7 +200,7 @@ namespace core
 
     Str_sp Str_O::create(const boost::format& nm)
     {
-	GC_RESERVE(Str_O,v);
+	GC_ALLOCATE(Str_O,v);
 	v->set(nm.str());
 	return v;
     };
@@ -209,9 +209,7 @@ namespace core
 
     Str_sp Str_O::create(const string& nm)
     {
-	GC_RESERVE_BEGIN(Str_O,v ){
-	    GC_RESERVE_GET(Str_O,v );
-	} GC_RESERVE_END(Str_O,v );
+        GC_ALLOCATE(Str_O,v );
 //	printf("%s:%d Str_O::create(const string& nm) @ %p nm = %s\n", __FILE__, __LINE__, v.px_ref(), nm.c_str() );
 	v->set(nm);
 	return v;
@@ -220,9 +218,7 @@ namespace core
 
     Str_sp Str_O::create(const char* nm)
     {
-	GC_RESERVE_BEGIN(Str_O,v ){
-	    GC_RESERVE_GET(Str_O,v );
-	} GC_RESERVE_END(Str_O,v );
+        GC_ALLOCATE(Str_O,v );
 //	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.px_ref(), nm );
 	v->setFromChars(nm);
 	return v;
@@ -230,9 +226,7 @@ namespace core
 
     Str_sp Str_O::create(const char* nm, int numChars)
     {
-	GC_RESERVE_BEGIN(Str_O,v ){
-	    GC_RESERVE_GET(Str_O,v );
-	} GC_RESERVE_END(Str_O,v );
+        GC_ALLOCATE(Str_O,v );
 //	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.px_ref(), nm );
 	v->setFromChars(nm,numChars);
 	return v;
@@ -560,9 +554,7 @@ namespace core
 
     Str_sp Str_O::create(char initial_element, int dimension, Sequence_sp seq )
     {_G();
-	GC_RESERVE_BEGIN(Str_O,str ){
-	    GC_RESERVE_GET(Str_O,str );
-	} GC_RESERVE_END(Str_O,str );
+        GC_ALLOCATE(Str_O,str );
 	str->_Contents = string(dimension, initial_element);
 	if ( seq.notnilp() ) str->fillInitialContents(seq);
 	return str;

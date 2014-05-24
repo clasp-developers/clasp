@@ -16,9 +16,7 @@ namespace llvmo
 
     DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugInfo)
     {_G();
-	GC_RESERVE_BEGIN(DebugLoc_O,oip ){
-	    GC_RESERVE_GET(DebugLoc_O,oip );
-	} GC_RESERVE_END(DebugLoc_O,oip );
+        GC_ALLOCATE(DebugLoc_O,oip );
 	llvm::DIDescriptor* didescriptor = debugInfo->operator llvm::DIDescriptor* ();
 	llvm::DebugLoc dl = llvm::DebugLoc::get(lineno,column,didescriptor->operator llvm::MDNode* ());
 	oip->_DebugLoc = dl;

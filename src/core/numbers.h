@@ -212,8 +212,18 @@ namespace core
 	DEFAULT_CTOR_DTOR(Integer_O);
     };
 
+};
 
 
+
+template <> struct gctools::GCAllocatorInfo<core::Fixnum_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = true;
+};
+
+namespace core {
     SMART(Fixnum);
     class Fixnum_O : public Integer_O
     {
@@ -361,9 +371,7 @@ namespace core
     public:
 	static ShortFloat_sp create(float nm)
 	{_G();
-	    GC_RESERVE_BEGIN(ShortFloat_O,sf){
-		GC_RESERVE_GET(ShortFloat_O,sf);
-	    } GC_RESERVE_END(ShortFloat_O,sf);
+	    GC_ALLOCATE(ShortFloat_O,sf);
             sf->_Value = nm;
 	    return sf;
 	};
@@ -428,9 +436,7 @@ namespace core
     public:
 	static SingleFloat_sp create(float nm)
 	{_G();
-	    GC_RESERVE_BEGIN(SingleFloat_O,sf){
-		GC_RESERVE_GET(SingleFloat_O,sf);
-	    } GC_RESERVE_END(SingleFloat_O,sf);
+            GC_ALLOCATE(SingleFloat_O,sf);
             sf->_Value = nm;
 	    return sf;
 	};
@@ -510,9 +516,7 @@ namespace core
     public:
 	static DoubleFloat_sp create(double nm)
 	{_G();
-	    GC_RESERVE_BEGIN(DoubleFloat_O,v ){
-		GC_RESERVE_GET(DoubleFloat_O,v );
-	    } GC_RESERVE_END(DoubleFloat_O,v );
+            GC_ALLOCATE(DoubleFloat_O,v );
             v->set(nm);
 	    return v;
 	};
@@ -590,9 +594,7 @@ namespace core
     public:
 	static LongFloat_sp create(double nm)
 	{_G();
-	    GC_RESERVE_BEGIN(LongFloat_O,v ){
-		GC_RESERVE_GET(LongFloat_O,v );
-	    } GC_RESERVE_END(LongFloat_O,v );
+            GC_ALLOCATE(LongFloat_O,v );
             v->_Value = nm;
 	    return v;
 	};
@@ -681,18 +683,14 @@ namespace core
     public:
 	static Complex_sp create(double r, double i)
 	{_G();
-	    GC_RESERVE_BEGIN(Complex_O,v ){
-		GC_RESERVE_GET(Complex_O,v );
-	    } GC_RESERVE_END(Complex_O,v );
+            GC_ALLOCATE(Complex_O,v );
 	    v->_real = DoubleFloat_O::create(r);
 	    v->_imaginary = DoubleFloat_O::create(i);
 	    return v;
 	};
 	static Complex_sp create(Real_sp r, Real_sp i)
 	{_G();
-	    GC_RESERVE_BEGIN(Complex_O,v){
-		GC_RESERVE_GET(Complex_O,v);
-	    } GC_RESERVE_END(Complex_O,v);
+            GC_ALLOCATE(Complex_O,v);
             v->_real = r;
             v->_imaginary = i;
 	    return v;
@@ -774,9 +772,7 @@ namespace core
     public:
 	static Ratio_sp create(Integer_sp num, Integer_sp denom)
 	{_G();
-	    GC_RESERVE_BEGIN(Ratio_O,v ){
-		GC_RESERVE_GET(Ratio_O,v );
-	    } GC_RESERVE_END(Ratio_O,v );
+            GC_ALLOCATE(Ratio_O,v );
 	    if ( denom->as_mpz() < 0 )
 	    {
 		v->_numerator = num->negate().as<Integer_O>();
@@ -790,18 +786,14 @@ namespace core
 	};
 	static Ratio_sp create(mpz_class const& num, mpz_class const& denom)
 	{_G();
-	    GC_RESERVE_BEGIN(Ratio_O,r) {
-		GC_RESERVE_GET(Ratio_O,r);
-	    } GC_RESERVE_END(Ratio_O,r);
+            GC_ALLOCATE(Ratio_O,r);
 	    r->_numerator = Integer_O::create(num);
 	    r->_denomenator = Integer_O::create(denom);
 	    return r;
 	}
 	static Ratio_sp create(const char* str)
 	{_G();
-	    GC_RESERVE_BEGIN(Ratio_O,r) {
-		GC_RESERVE_GET(Ratio_O,r);
-	    } GC_RESERVE_END(Ratio_O,r);
+            GC_ALLOCATE(Ratio_O,r);
 	    r->setFromString(str);
 	    return r;
 	}

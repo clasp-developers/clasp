@@ -21,9 +21,7 @@ namespace core
 #define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
     ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement)
     {_G();
-	GC_RESERVE_BEGIN(ArrayObjects_O,array ){
-	    GC_RESERVE_GET(ArrayObjects_O,array );
-	} GC_RESERVE_END(ArrayObjects_O,array );
+        GC_ALLOCATE(ArrayObjects_O,array );
 	array->_ElementType = elementType;
 	Cons_sp dim;
 	if ( af_atom(dim_desig) )
@@ -128,9 +126,7 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
 
     T_sp ArrayObjects_O::shallowCopy() const
     {_OF();
-	GC_RESERVE_BEGIN(ArrayObjects_O,array ){
-	    GC_RESERVE_GET(ArrayObjects_O,array );
-	} GC_RESERVE_END(ArrayObjects_O,array );
+        GC_ALLOCATE(ArrayObjects_O,array );
 	array->_Dimensions = this->_Dimensions;
 	array->_ElementType = this->_ElementType;
 	array->_Values = this->_Values;
@@ -148,10 +144,8 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
 
     T_sp ArrayObjects_O::deepCopy() const
     {_OF();
-	GC_RESERVE_BEGIN(ArrayObjects_O,narray ){
-	    GC_RESERVE_GET(ArrayObjects_O,narray );
-	    narray->_Dimensions = this->_Dimensions;
-	} GC_RESERVE_END(ArrayObjects_O,narray );
+        GC_ALLOCATE(ArrayObjects_O,narray );
+        narray->_Dimensions = this->_Dimensions;
 	narray->_ElementType = this->_ElementType; // Don't copy ElementType - it's an immutable Symbol representing a Class
 	narray->_Values.resize(this->_Values.size());
 	for ( uint i=0; i<this->_Values.size(); i++ )

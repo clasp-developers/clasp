@@ -31,6 +31,8 @@ public:
 public:
 	/*! The normal BuiltInClass creator used once the Lisp environment has been bootstrapped */
     static BuiltInClass_sp create(Symbol_sp instanceClassSymbol);
+    /*! Create a BuiltInClass_sp that will always be considered a root object */
+    static BuiltInClass_sp createUncollectable();
 public:
 
     virtual void describe();

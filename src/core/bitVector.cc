@@ -32,9 +32,7 @@ namespace core {
 
     SimpleBitVector_sp SimpleBitVector_O::create(int size)
     {_G();
-	GC_RESERVE_BEGIN(SimpleBitVector_O,sbv ){
-	    GC_RESERVE_GET(SimpleBitVector_O,sbv );
-	} GC_RESERVE_END(SimpleBitVector_O,sbv );
+        GC_ALLOCATE(SimpleBitVector_O,sbv );
 	sbv->_Length = size;
 	sbv->bits.resize(((size-1)/CHAR_BIT)+1,0);
 	return((sbv));

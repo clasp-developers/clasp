@@ -3,34 +3,109 @@
 
 #include "hardErrors.h"
 
+
+#ifdef USE_BOEHM
+#include "gc/gc.h"
+#include "gc/gc_allocator.h"
+#endif // USE_BOEHM
+
+
 typedef int (*MainFunctionType)(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize );
 
 #define GC_LOG(x)
 
-#ifdef USE_MPS
-#include "mpsGarbageCollection.h"
-#else
-#include "intrusiveRefCountGarbageCollection.h"
-#endif
 
-#define SUPPRESS_GC() {}
-#define ENABLE_GC() {}
+namespace gctools {
+     template <class OT>
+    struct GCAllocatorInfo {
+        static bool constexpr NeedsInitialization = true;
+        static bool constexpr NeedsFinalization = true;
+        static bool constexpr Moveable = true;
+        static bool constexpr Atomic = false;
+    };
+};
+
+#include "hardErrors.h"
+
+
+#ifndef USE_MPS
+
+#define GC_RESULT int
+#define GC_SCAN_ARGS_PROTOTYPE int  ____dummy
+#define GC_SCAN_ARGS_PASS  ____dummy
+#define DECLARE_onHeapScanGCRoots() virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {return 0;};
+#define DECLARE_onStackScanGCRoots() virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {return 0;};
+#define GC_SCANNER_BEGIN()
+#define GC_SCANNER_END()
+#define GC_RES_OK 0
+
+
+namespace gctools {
+
+
+    typedef enum {KIND_null} GCKindEnum;
+
+
+
+};
+#else // USE_MPS
+
+
+extern "C" 
+{
+#include "mps/code/mps.h"
+#include "mps/code/mpsavm.h"
+};
+
+#define MPS_RES_T int
+#define MPS_SS_T struct mps_ss_s*
+#define MPS_ADDR_T void*
+
+#define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x) ;
+
+#define GC_RESULT 	mps_res_t
+//! Lexical variable used to store the scan state
+#define GC_SCAN_STATE 	gc__scan_state
+#define GC_SCAN_ARGS_PROTOTYPE 	mps_ss_t GC_SCAN_STATE/* , mps_thr_t gc__thr, void* gc__p, size_t gc__s */
+#define GC_SCAN_ARGS_PASS GC_SCAN_STATE /* , gc__thr, gc__p, gc__s */
+#define DECLARE_onHeapScanGCRoots() virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
+#define DECLARE_onStackScanGCRoots() virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
+#define GC_SCANNER_BEGIN() MPS_SCAN_BEGIN(GC_SCAN_STATE)
+#define GC_SCANNER_END() MPS_SCAN_END(GC_SCAN_STATE)
+#define GC_RES_OK MPS_RES_OK
+
+namespace gctools {
+
+
+
+#ifndef RUNNING_GC_BUILDER
+#define GC_ENUM
+typedef 
+#include GARBAGE_COLLECTION_INCLUDE //"main/clasp_gc.cc"
+GCKindEnum ;
+#undef GC_ENUM
+#else
+    typedef enum { KIND_null, KIND_SYSTEM_fwd, KIND_SYSTEM_fwd2, KIND_SYSTEM_pad1, KIND_SYSTEM_pad } GCKindEnum;
+#endif
+};
+
+
+#endif // USE_MPS
+
+
+
+
+
+
+
+
 
 
 
 namespace gctools {
 
-#if 0
-    /*! This class connects the holder to the root */
-    class RootedGCHolder {
-    };
-
-    /*! Dummy class to identify Holders that are GC'd */
-    class GCOnHeap {
-    };
-#endif
-
-
+    struct HeapRoot;
+    struct StackRoot;
 
     /*! This is a common root class for HeapRoot and StackRoot
       Inherit from one of these if you want the GC refactoring tool to write 
@@ -40,20 +115,17 @@ namespace gctools {
     /*! Inherit from GC_Manual if you (the programmer)
       will write and maintain the scanGCRoots function for any
       subclass.
-    THIS IS USED BY MultipleValues.
-*/
+      THIS IS USED BY MultipleValues.
+    */
     struct GC_Manual {};
 
 
-
-    struct HeapRoot;
-    struct StackRoot;
 
     extern 	HeapRoot* 	rooted_HeapRoots;
     extern	StackRoot* 	rooted_StackRoots;
 
     /*! HeapRoots create a double linked list of nodes so that
-     when the system shuts down they can unlink themselves without crashing */
+      when the system shuts down they can unlink themselves without crashing */
     struct HeapRoot : public GC_Automated
     {
 	HeapRoot*	_prev;
@@ -122,79 +194,77 @@ namespace gctools {
     };
 
 
-
-
-
-template <class T>
-class StackRootedPointer : public gctools::StackRoot {
-public:
-    typedef T   PointeeType;
-    typedef T*  PtrType;
-    PtrType _px;
-public:
-    StackRootedPointer() : _px(NULL) {};
-    StackRootedPointer(PtrType p) : _px(p) {};
-//    PtrType operator*() const {return *this->_px;};
-    PointeeType const operator*() { return *this->_px;};
-    PtrType const operator->() { return this->_px;};
-    bool nullP() const { return !this->_px;};
-    void set(PtrType px) { this->_px = px; };
-    PtrType get() const { return this->_px;};
-    PtrType& operator++() { return (++(this->_px));};
-    GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-#ifndef USE_MPS
-    {
-        return GC_RES_OK;
-    }
-#else
-    {
-        if ( this->_px ) {
-            return this->_px->onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
-        }
-        return GC_RES_OK;
-    };
-#endif
-        ;
-
-    virtual ~StackRootedPointer() {this->_px = NULL;};
 };
 
-#if 0
-    // USE OVERLOADS instead of template functions
-    template <typename T >
-    GC_RESULT stl_onHeapScanGCRoots( T& val, GC_SCAN_ARGS_PROTOTYPE ) {
-        printf("%s:%d %s Implement onHeapScanGCRoots for stl container content\n", __FILE__, __LINE__, __FUNCTION__);
-        return GC_RES_OK;
-    }
+#include "smart_pointers.h"
+
+#include "gcalloc.h"
+
+#ifdef USE_MPS
+#include "mpsGarbageCollection.h"
+#else
+#include "intrusiveRefCountGarbageCollection.h"
 #endif
 
-    template <typename StlContainerType>
-    class StackRootedStlContainer : public gctools::StackRoot  {
-    public:
-        StlContainerType        _Container;
-    public:
-        StlContainerType& get() { return this->_Container;};
-        GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-#ifndef USE_MPS
-        {
-            return GC_RES_OK;
-        }
-#else
-        {
-            GC_RESULT res;
-            for ( auto it_gc_safe : this->_Container ) {
-                res = it_gc_safe.onHeapScanGCRoots(GC_SCAN_ARGS_PASS ); // .onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
-                if ( UNLIKELY(res!=GC_RES_OK) ) {
-                    return res;
-                }
-            }
-            return GC_RES_OK;
-        }
+
+
+namespace gctools {
+
+
+    /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
+    template <class OT>
+    struct GCInfo {
+#if defined(RUNNING_GC_BUILDER) || !defined(USE_MPS)
+        // We need a default Kind when running the gc-builder.lsp static analyzer
+        // but we don't want a default Kind when compiling the mps version of the code
+        // to force compiler errors when the Kind for an object hasn't been declared
+        static GCKindEnum const Kind = KIND_null;
 #endif
+        static bool const NeedsInitialization = true; // Currently everything needs initialization
+        static bool const NeedsFinalization = true; // Currently everything needs finalization
 
     };
 
 
+};
+
+
+#define SUPPRESS_GC() {}
+#define ENABLE_GC() {}
+
+
+
+
+namespace gctools {
+
+    template <class T>
+    class StackRootedPointer : public gctools::StackRoot {
+    public:
+        typedef T   PointeeType;
+        typedef T*  PtrType;
+        PtrType _px;
+    public:
+        StackRootedPointer() : _px(NULL) {};
+        StackRootedPointer(PtrType p) : _px(p) {};
+//    PtrType operator*() const {return *this->_px;};
+        PointeeType const operator*() { return *this->_px;};
+        PtrType const operator->() { return this->_px;};
+        bool nullP() const { return !this->_px;};
+        void set(PtrType px) { this->_px = px; };
+        PtrType get() const { return this->_px;};
+        PtrType& operator++() { return (++(this->_px));};
+        GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
+        {
+#ifdef USE_MPS
+            if ( this->_px ) {
+                return this->_px->onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
+            }
+#endif
+            return GC_RES_OK;
+        };
+
+        virtual ~StackRootedPointer() {this->_px = NULL;};
+    };
 
 };
 

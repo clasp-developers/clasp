@@ -27,9 +27,7 @@ namespace core
 #define DOCS_VectorObjects_O_make "make VectorObjects args: initial-element initial-contents dimension"
     VectorObjects_sp VectorObjects_O::make(T_sp initialElement, Sequence_sp initialContents, int dimension, bool adjustable)
     {_G();
-	GC_RESERVE_BEGIN(VectorObjects_O,vo ){
-	    GC_RESERVE_GET(VectorObjects_O,vo );
-	} GC_RESERVE_END(VectorObjects_O,vo );
+        GC_ALLOCATE(VectorObjects_O,vo );
 	vo->setup(initialElement,initialContents,dimension,adjustable);
 	return vo;
     }
@@ -56,9 +54,7 @@ namespace core
 
     VectorObjects_sp VectorObjects_O::create(T_sp initial_element, int dimension, T_sp elementType)
     {_G();
-	GC_RESERVE_BEGIN(VectorObjects_O,vo ){
-	    GC_RESERVE_GET(VectorObjects_O,vo );
-	} GC_RESERVE_END(VectorObjects_O,vo );
+        GC_ALLOCATE(VectorObjects_O,vo );
 	vo->setElementType(elementType);
 	vo->_Values.resize(dimension,initial_element);
 	return vo;
@@ -145,11 +141,6 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
 	// Archive other instance variables here
     }
 
-
-    void VectorObjects_O::initialize()
-    {_OF();
-        this->Base::initialize();
-    }
 
 
 
@@ -250,9 +241,7 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
 	{
 	    SIMPLE_ERROR(BF("out of bounds for subseq"));
 	}
-	GC_RESERVE_BEGIN(VectorObjects_O,result ) {
-	    GC_RESERVE_GET(VectorObjects_O,result );
-	} GC_RESERVE_END(VectorObjects_O,result );
+        GC_ALLOCATE(VectorObjects_O,result );
 	int isize = iend-istart;
 	result->_Values.resize(isize);
 	for ( int i=0; i<isize; ++i )

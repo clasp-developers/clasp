@@ -31,9 +31,7 @@ namespace core
 
     HashTableEqualp_sp HashTableEqualp_O::create(uint sz,  Number_sp rehashSize, double rehashThreshold)
     {_G();
-	GC_RESERVE_BEGIN(HashTableEqualp_O,hashTable ){
-	    GC_RESERVE_GET(HashTableEqualp_O,hashTable );
-	} GC_RESERVE_END(HashTableEqualp_O,hashTable );
+        GC_ALLOCATE(HashTableEqualp_O,hashTable );
 	hashTable->setup(sz,rehashSize,rehashThreshold);
 	return hashTable;
     }
@@ -55,12 +53,6 @@ namespace core
 	// Archive other instance variables here
     }
 #endif // defined(XML_ARCHIVE)
-
-
-    void HashTableEqualp_O::initialize()
-    {_OF();
-        this->Base::initialize();
-    }
 
 
     bool HashTableEqualp_O::keyTest(T_sp entryKey, T_sp searchKey) const
