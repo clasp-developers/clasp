@@ -20,11 +20,6 @@ namespace core
 #endif // defined(XML_ARCHIVE)
 	DEFAULT_CTOR_DTOR(HashTableEqualp_O);
     public:
-	void initialize();
-
-    private: // instance variables here
-
-    public:
 	static HashTableEqualp_sp create( uint sz,  Number_sp rehashSize, double rehashThreshold);
     public:
 //	static int sxhash_equalp(T_sp obj);
@@ -40,6 +35,12 @@ namespace core
     };
 
 }; /* core */
+template<> struct gctools::GCAllocatorInfo<core::HashTableEqualp_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 TRANSLATE(core::HashTableEqualp_O);
 

@@ -71,33 +71,45 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
 
 	alias mi : $(lib)_initClasses_inc.h $(lib)_scrape_flag.h ;
 
-	lib $(lib)_mpsoff_opt : 
+	lib $(lib)_refcount_opt : 
 	    $(sources) :
-	    $(properties) $(opt_props) <mps>off
-         <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+	    $(properties) $(opt_props) <gc>refcount
+        <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
 
-	lib $(lib)_mpsoff_dbg :
+	lib $(lib)_refcount_dbg :
 	    $(sources) :
-	    $(properties) $(dbg_props) <mps>off
+	    $(properties) $(dbg_props) <gc>refcount
 	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
 
-	lib $(lib)_mpson_opt : 
+	lib $(lib)_boehm_opt : 
 	    $(sources) :
-	    $(properties) $(opt_props) <mps>on
-         <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+	    $(properties) $(opt_props) <gc>boehm
+        <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
 
-	lib $(lib)_mpson_dbg :
+	lib $(lib)_boehm_dbg :
 	    $(sources) :
-	    $(properties) $(dbg_props) <mps>on
+	    $(properties) $(dbg_props) <gc>boehm
+	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
+
+	lib $(lib)_mps_opt : 
+	    $(sources) :
+	    $(properties) $(opt_props) <gc>mps
+        <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+
+	lib $(lib)_mps_dbg :
+	    $(sources) :
+	    $(properties) $(dbg_props) <gc>mps
 	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
 
 
 
 
-	alias $(lib) : $(lib)_mpsoff_opt : <mps>off <variant>release ;
-	alias $(lib) : $(lib)_mpsoff_dbg : <mps>off <variant>debug ;
-	alias $(lib) : $(lib)_mpson_opt : <mps>on <variant>release ;
-	alias $(lib) : $(lib)_mpson_dbg : <mps>on <variant>debug ;
+	alias $(lib) : $(lib)_refcount_opt : <gc>refcount <variant>release ;
+	alias $(lib) : $(lib)_refcount_dbg : <gc>refcount <variant>debug ;
+	alias $(lib) : $(lib)_boehm_opt : <gc>boehm <variant>release ;
+	alias $(lib) : $(lib)_boehm_dbg : <gc>boehm <variant>debug ;
+	alias $(lib) : $(lib)_mps_opt : <gc>mps <variant>release ;
+	alias $(lib) : $(lib)_mps_dbg : <gc>mps <variant>debug ;
 
 	install bundle : $(lib) : <location>$(.applib) ;
 }

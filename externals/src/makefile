@@ -1,4 +1,5 @@
 export REQUIRES_RTTI=$(CLASP_REQUIRES_RTTI)
+export BOEHM_VERSION=7.2
 export CC = $(CLASP_CC)
 export CXX = $(CLASP_CXX)
 export CXXFLAGS=$(CLASP_CXXFLAGS)
@@ -93,6 +94,7 @@ setup:
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR)
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR)
 	make boost-build-make
+	make boehm-setup
 	make llvm-setup
 	make openmpi-setup
 	make boost-setup
@@ -105,6 +107,7 @@ setup:
 #	make lldb-setup
 
 subAll sa:
+	make boehm-build
 	make llvm-build
 	make openmpi-make
 	make boost-make
@@ -121,6 +124,7 @@ subAll sa:
 subClean:
 	make openmpi-clean
 	make ecl-clean
+	make boehm-clean
 	make readline-clean
 	make expat-clean
 	make zlib-clean
@@ -405,6 +409,36 @@ zlib-build:
 
 zlib-clean:
 	-(cd $(ZLIB_SOURCE_DIR); make clean )
+
+
+
+boehm-build:
+	make boehm-compile
+	make boehm-install
+
+boehm-setup:
+	(cd boehm-$(BOEHM_VERSION); \
+		export ALL_INTERIOR_PTRS=1; \
+		./configure --with-large-heap=yes --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
+
+
+boehm-compile:
+	(cd boehm-$(BOEHM_VERSION); make -j1 | tee _boehm.log)
+
+boehm-install:
+	(cd boehm-$(BOEHM_VERSION); make -j1 install | tee _boehm_install.log)
+
+
+
+boehm-clean:
+	-(cd boehm-$(BOEHM_VERSION); make clean )
+
+
+
+
+
+
+
 
 
 readline-build:

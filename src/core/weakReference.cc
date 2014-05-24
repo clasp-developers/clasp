@@ -38,9 +38,7 @@ namespace core
 #define DOCS_WeakReference_O_make "make WeakReference args: obj"
     WeakReference_sp WeakReference_O::make(T_sp obj)
     {_G();
-	GC_RESERVE_BEGIN(WeakReference_O,me){
-	    GC_RESERVE_GET(WeakReference_O,me);
-	} GC_RESERVE_END(WeakReference_O,me);
+        GC_ALLOCATE(WeakReference_O,me);
 	    me->_WeakObject = obj;
 	return me;
     };

@@ -91,14 +91,14 @@ namespace core
 
     BranchSNode_sp BranchSNode_O::create()
     {_G();
-	GC_RESERVE(BranchSNode_O,v);
+	GC_ALLOCATE(BranchSNode_O,v);
 	return v;
     }
 
 
     BranchSNode_sp BranchSNode_O::create(Symbol_sp kind, Cons_sp plist, Vector_sp data)
     {_G();
-	GC_RESERVE(BranchSNode_O,v);
+	GC_ALLOCATE(BranchSNode_O,v);
 	v->_Kind = kind;
 	v->_SNodePList = plist;
 	v->_VectorSNodes = data;
@@ -305,7 +305,7 @@ namespace core
 
     LeafSNode_sp LeafSNode_O::create(T_sp obj)
     {_G();
-	GC_RESERVE(LeafSNode_O,v);
+	GC_ALLOCATE(LeafSNode_O,v);
 	v->_Object = obj;
 	return v;
     }

@@ -1,44 +1,8 @@
 #ifndef _brcl_mpsGarbageCollection_H
 #define _brcl_mpsGarbageCollection_H
 
-extern "C" 
-{
-#include "mps/code/mps.h"
-#include "mps/code/mpsavm.h"
-};
-
-#define MPS_RES_T int
-#define MPS_SS_T struct mps_ss_s*
-#define MPS_ADDR_T void*
-
-#define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x) ;
-
-#define GC_RESULT 	mps_res_t
-//! Lexical variable used to store the scan state
-#define GC_SCAN_STATE 	gc__scan_state
-#define GC_SCAN_ARGS_PROTOTYPE 	mps_ss_t GC_SCAN_STATE/* , mps_thr_t gc__thr, void* gc__p, size_t gc__s */
-#define GC_SCAN_ARGS_PASS GC_SCAN_STATE /* , gc__thr, gc__p, gc__s */
-#define DECLARE_onHeapScanGCRoots() virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-#define DECLARE_onStackScanGCRoots() virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-#define GC_SCANNER_BEGIN() MPS_SCAN_BEGIN(GC_SCAN_STATE)
-#define GC_SCANNER_END() MPS_SCAN_END(GC_SCAN_STATE)
-#define GC_RES_OK MPS_RES_OK
 
 namespace gctools {
-
-
-
-#ifndef RUNNING_GC_BUILDER
-#define GC_ENUM
-typedef 
-#include GARBAGE_COLLECTION_INCLUDE //"main/clasp_gc.cc"
-GCKindEnum ;
-#undef GC_ENUM
-#else
-    typedef enum { KIND_null, KIND_SYSTEM_fwd, KIND_SYSTEM_fwd2, KIND_SYSTEM_pad1, KIND_SYSTEM_pad } GCKindEnum;
-#endif
-
-
 
     class GCObject
     {
@@ -52,23 +16,13 @@ GCKindEnum ;
     extern const char* obj_name(GCKindEnum kind);
 
 
-/*! This template class wraps a lisp object and defines the kind of the lisp object */
-
-    /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
-    template <class OT>
-    class GCInfo {
-    public:
-        static GCKindEnum const Kind = KIND_null;
-    };
-
-
 
     typedef union Header_u *Header_t;
 
     /* Specialize this for every Header_s and set _Kind to its appropriate enum */
     struct Kind_s {
 #ifdef CONFIG_VAR_COOL
-        uintptr_t       _StartIndicator;
+        uint       _StartIndicator;
 #endif
 	GCKindEnum	_Kind;
 #ifdef DEBUG_MPS_AMS_POOL
@@ -97,9 +51,9 @@ GCKindEnum ;
     } Header_s;
 
 #ifdef CONFIG_VAR_COOL
-#define DEBUG_MARK_BLOCK_START(header) header->kind._StartIndicator = 0xdeadbeef
+#define DEBUG_VALIDATE_HEADER(header) {header->kind._StartIndicator = 0xbaddecaf; if (!header->kind._Kind) {printf("KIND is 0!!!!\n");__builtin_debugtrap();}} 
 #else
-#define DEBUG_MARK_BLOCK_START(header)
+#define DEBUG_VALIDATE_HEADER(header)
 #endif
 
 };
@@ -207,9 +161,9 @@ namespace gctools {
     mps_res_t __gc_res = mps_reserve(&__reserve_addr,gctools::allocation_point<_class_>::get(), sizeof_with_header<_class_>()); \
     if ( __gc_res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Could not allocate %s") % #_class_ ); \
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(__reserve_addr); \
-    DEBUG_MARK_BLOCK_START(header);                                     \
     header->kind._Kind = (gctools::GCKindEnum)(_kind_);                 \
-    void* __obj_addr = BASE_TO_OBJ_PTR(__reserve_addr);                         \
+    DEBUG_VALIDATE_HEADER(header);                                      \
+    void* __obj_addr = BASE_TO_OBJ_PTR(__reserve_addr);                 \
     DEBUG_MPS_ALLOCATION(__reserve_addr,__obj_addr,sizeof_with_header<_class_>(),_kind_); \
     _obj_ = new (__obj_addr) /* Followed by the class in EVERY usage of GC_RESERVE_GET_BASE */
 
@@ -232,6 +186,8 @@ namespace gctools {
 #define GC_RESERVE(_class_,_obj_) GC_RESERVE_BEGIN(_class_,_obj_) GC_RESERVE_GET(_class_,_obj_) GC_RESERVE_END(_class_,_obj_)
 #define GC_RESERVE_VARIADIC(_class_,_obj_,...) GC_RESERVE_BEGIN(_class_,_obj_) GC_RESERVE_GET_VARIADIC(_class_,_obj_,__VA_ARGS__) GC_RESERVE_END(_class_,_obj_)
 
+#define GC_ALLOCATE(_class_,_obj_) GC_RESERVE(_class_,_obj_)
+#define GC_ALLOCATE_VARIADIC(_class_,_obj_,...) GC_RESERVE_VARIADIC(_class_,_obj_,__VA_ARGS__)
 
 #define GC_COPY_BEGIN(_class_,_obj_) _GC_RESERVE_BEGIN_BASE(_class_,_obj_)
 #define GC_COPY_GET(_class_,_obj_,_orig_) GC_RESERVE_GET_VARIADIC(_class_,_obj_,_orig_)

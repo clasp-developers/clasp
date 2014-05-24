@@ -309,9 +309,7 @@ Pointer_sp af_foreign_alloc(core::Integer_sp size)
 
 Pointer_sp Pointer_O::create(void* ptr)
 {_G();
-    GC_RESERVE_BEGIN(Pointer_O,p ){
-	GC_RESERVE_GET(Pointer_O,p );
-    } GC_RESERVE_END(Pointer_O,p );
+    GC_ALLOCATE(Pointer_O,p );
     p->_ptr = ptr;
     return p;
 }
@@ -346,9 +344,7 @@ Pointer_sp Pointer_O::make(core::Number_sp arg)
 #define DOCS_Pointer_O_null_pointer "null_pointer"
 Pointer_sp Pointer_O::null_pointer()
 {_G();
-    GC_RESERVE_BEGIN(Pointer_O,res ){
-	GC_RESERVE_GET(Pointer_O,res );
-    } GC_RESERVE_END(Pointer_O,res );
+    GC_ALLOCATE(Pointer_O,res );
     res->_ptr = NULL;
     return res;
 }

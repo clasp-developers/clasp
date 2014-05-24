@@ -14,11 +14,6 @@
 #include "core/str.h"
 #include "symbolTable.h"
 #include "gctoolsPackage.h"
-//#include "gctoolsToolingPackage.h"
-//#include "gctoolsToolingExpose.h"
-//#include "gctoolsMatchingPackage.h"
-//#include "gctoolsMatchingExpose.h"
-//#include "clangExpose.h"
 #include "core/wrappers.h"
 
 

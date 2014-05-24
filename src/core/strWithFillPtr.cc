@@ -20,9 +20,7 @@ namespace core
 
     StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, int fill_ptr, bool adjustable, Sequence_sp initialContents)
     {_G();
-	GC_RESERVE_BEGIN(StrWithFillPtr_O,str ){
-	    GC_RESERVE_GET(StrWithFillPtr_O,str );
-	} GC_RESERVE_END(StrWithFillPtr_O,str );
+        GC_ALLOCATE(StrWithFillPtr_O,str );
 	str->_Contents = string(dimension, initial_element);
 	str->_FillPointer = fill_ptr;
 	str->_Adjustable = adjustable;

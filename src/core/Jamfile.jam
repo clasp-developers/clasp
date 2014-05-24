@@ -75,7 +75,6 @@ local sources =
 	    compiler.cc
 	conditions.cc
 	    primitives.cc
-      smart_pointers.cc
       cache.cc
 		object.cc
       stdClass.cc
@@ -107,7 +106,7 @@ local sources =
 	    loadTimeValues.cc
 	    python_wrappers.cc
 	    arrayObjects.cc
-	    weakReference.cc
+#	    weakReference.cc
 #	    model.cc 
 #	    symbolVector.cc
 	    symbolSet.cc

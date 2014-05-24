@@ -22,10 +22,8 @@ namespace core
 #define DOCS_Bignum_O_make "make"
     Bignum_sp Bignum_O::	make(const string& value_in_string)
     {_G();
-	GC_RESERVE_BEGIN(Bignum_O,bn ){
-	    GC_RESERVE_GET(Bignum_O,bn );
-	    bn->_value = value_in_string;
-	} GC_RESERVE_END(Bignum_O,bn );
+        GC_ALLOCATE(Bignum_O,bn );
+        bn->_value = value_in_string;
 	return((bn));
     };
 
@@ -180,19 +178,15 @@ namespace core
 
     Number_sp Bignum_O::copy() const
     {_G();
-	GC_RESERVE_BEGIN(Bignum_O,cp ){
-	    GC_RESERVE_GET(Bignum_O,cp );
-	    cp->_value = this->_value;
-	} GC_RESERVE_END(Bignum_O,cp );
+        GC_ALLOCATE(Bignum_O,cp );
+        cp->_value = this->_value;
 	return((cp));
     };
 
     Number_sp Bignum_O::abs() const
     {_G();
-	GC_RESERVE_BEGIN(Bignum_O,cp ){
-	    GC_RESERVE_GET(Bignum_O,cp );
-	    cp->_value = this->_value*::sgn(this->_value);
-	} GC_RESERVE_END(Bignum_O,cp );
+        GC_ALLOCATE(Bignum_O,cp );
+        cp->_value = this->_value*::sgn(this->_value);
 	return((cp));
     }
 

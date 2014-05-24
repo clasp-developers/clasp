@@ -115,7 +115,7 @@ namespace core {
 
     ForeignData_sp ForeignData_O::allocateForeignObject(T_sp kind)
     {
-	GC_RESERVE(ForeignData_O,obj);
+	GC_ALLOCATE(ForeignData_O,obj);
 	Cons_sp ckind = kind.as<Cons_O>();
 	ASSERTF(oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array,BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
 	ASSERTF(oCadr(ckind)==cl::_sym_UnsignedByte || oCadr(ckind)==kw::_sym_UnsignedByte,BF("The first element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));

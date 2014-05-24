@@ -90,7 +90,7 @@ namespace clbind {
 
     public:
         static ClassRep_sp create(type_id const& mtype, const char* name, bool derivable) {
-            GC_RESERVE_VARIADIC(ClassRep_O,val,mtype,name,derivable);
+            GC_ALLOCATE_VARIADIC(ClassRep_O,val,mtype,name,derivable);
             return val;
         }
 

@@ -41,11 +41,7 @@ struct ParserValue {
         Range(range)
         , Value(value) {};
     virtual ~ParserValue() {};
-    GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-#ifndef USE_MPS
-    {return GC_RES_OK;}
-#endif
-    ;
+    DECLARE_onHeapScanGCRoots();
 };
 
 /// \brief Helper class to manage error messages.

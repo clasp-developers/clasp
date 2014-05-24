@@ -1,25 +1,27 @@
 #ifndef gc_gcarray_H
 #define gc_gcarray_H
 
-#include "gcalloc.h"
 
 namespace gctools {
 
     template <class T, int SZ=0>
-    class GCArray_impl : GCContainer_impl  {
+    class GCArray_moveable : GCContainer_moveable  {
     public:
         template<class U, typename Allocator> friend class GCArray;
         typedef T               value_type;
+        typedef T*              pointer_type;
         typedef value_type&     reference;
+        typedef T*              iterator;
+        typedef T const*        const_iterator;
 
-        GCArray_impl(size_t num) : _Capacity(num)
+        GCArray_moveable(size_t num) : _Capacity(num)
                                  , _Alive(false) {};
 
         template <typename...ARGS>
-        GCArray_impl(size_t numExtraArgs, ARGS&&...args) : _Capacity(numExtraArgs+sizeof...(ARGS))
+        GCArray_moveable(size_t numExtraArgs, ARGS&&...args) : _Capacity(numExtraArgs+sizeof...(ARGS))
                                                          , _Alive(false)
                                                          , _Data{args...} {};
-        GCArray_impl() : _Capacity(0)
+        GCArray_moveable() : _Capacity(0)
                        , _Alive(false) {};
 
         size_t      _Capacity; // Index one beyond the total number of elements allocated
@@ -27,20 +29,25 @@ namespace gctools {
         T           _Data[SZ]; // Store _Capacity numbers of T structs/classes starting here
 
     public:
+        size_t capacity() const { return this->_Capacity;};
         value_type* data() { return this->_Data; };
         value_type& operator[](size_t i) { return this->_Data[i]; };    
         const value_type& operator[](size_t i) const { return this->_Data[i]; };
+        iterator begin() { return &this->_Data[0]; };
+        iterator end() { return &this->_Data[this->_Capacity]; };
+        const_iterator begin() const { return &this->_Data[0]; };
+        const_iterator end() const { return &this->_Data[this->_Capacity]; };
     };
 
 
     template <class T, typename Allocator>
-    class GCArray : public GCContainer  {
+    class GCArray  {
 #ifdef USE_MPS
         friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
         // Only this instance variable is allowed
-        GCArray_impl<T>*  _Contents;
+        GCArray_moveable<T>*  _Contents;
     public:
         typedef Allocator                           allocator_type;
         typedef T                                   value_type;
@@ -49,20 +56,20 @@ namespace gctools {
         typedef T const*                            const_iterator;
         typedef T&                                  reference;
         typedef GCArray<T,Allocator>              my_type;
-        typedef GCArray_impl<T>                     impl_type;
-        typedef GCArray_impl<T>*                   pointer_to_impl;
+        typedef GCArray_moveable<T>                     impl_type;
+        typedef GCArray_moveable<T>*                   pointer_to_moveable;
     private:
         GCArray<T,Allocator>(const GCArray<T,Allocator>& other); // disable copy ctor
         GCArray<T,Allocator>& operator=(const GCArray<T,Allocator>&); // disable assignment
     public:
         void swap(my_type& other)
         {
-            pointer_to_impl op = other._Contents;
+            pointer_to_moveable op = other._Contents;
             other._Contents = this->_Contents;
             this->_Contents = op;
         }
 
-        pointer_to_impl contents() const { return this->_Contents; };
+        pointer_to_moveable contents() const { return this->_Contents; };
     private:
         T& errorEmpty() {
             THROW_HARD_ERROR(BF("GCArray had no contents"));
@@ -74,50 +81,18 @@ namespace gctools {
     public:
 
         GCArray() : _Contents(NULL) {};
-#if 0
-        {
-            size_t capacity = 0;
-            allocator_type alloc;
-            pointer_to_impl implAddress = alloc.allocate(capacity);
-            new (implAddress) GCArray_impl<value_type,0>();
-            implAddress->_Alive = true;
-            this->_Contents = implAddress;
-        }            
-#endif
-
-
         ~GCArray() 
         {
-#ifndef USE_MPS            
+#ifdef USE_REFCOUNT
             if ( this->_Contents != NULL ) {
                 Allocator alloc;
-                GCArray_impl<T>* ptr = this->_Contents;
+                GCArray_moveable<T>* ptr = this->_Contents;
                 this->_Contents = NULL;
                 alloc.deallocate(ptr,ptr->_Capacity); // When USE_MPS - does nothing
             }
 #endif
         }
 
-
-
-
-#if 0
-        template <typename...ARGS>
-        GCArray(size_t numExtraArgs, const value_type& initialElement, ARGS&&...args) :
-            GCContainer(GCInfo<value_type>::Kind)
-            , _Contents(NULL)
-        {
-            allocator_type alloc;
-            pointer_to_impl implAddress = alloc.allocate(sizeof...(ARGS)+numExtraArgs);
-            new (implAddress) GCArray_impl<value_type,sizeof...(ARGS)>(numExtraArgs, std::forward<ARGS>(args)...);
-            for ( size_t i(sizeof...(ARGS)); i<(sizeof...(ARGS)+numExtraArgs); ++i ) {
-                T* p = &((*implAddress)[i]);
-                alloc.construct(p,initialElement);
-            }
-            implAddress->_Alive = true;
-            this->_Contents = implAddress;
-        };
-#endif
 
 
 
@@ -128,8 +103,8 @@ namespace gctools {
                 THROW_HARD_ERROR(BF("GCArray allocate called and array has contents"));
             }
             allocator_type alloc;
-            pointer_to_impl implAddress = alloc.allocate(sizeof...(ARGS)+numExtraArgs);
-            new (implAddress) GCArray_impl<value_type,sizeof...(ARGS)>(numExtraArgs, std::forward<ARGS>(args)...);
+            pointer_to_moveable implAddress = alloc.allocate(sizeof...(ARGS)+numExtraArgs);
+            new (implAddress) GCArray_moveable<value_type,sizeof...(ARGS)>(numExtraArgs, std::forward<ARGS>(args)...);
             for ( size_t i(sizeof...(ARGS)); i<(sizeof...(ARGS)+numExtraArgs); ++i ) {
                 T* p = &((*implAddress)[i]);
                 alloc.construct(p,initialElement);

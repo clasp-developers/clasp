@@ -39,7 +39,11 @@ protected:
 	Class_sp			_InstanceCoreClass;
 public:
 	/*! Special creator used when starting up lisp environment */
-	static StandardClass_sp create(Class_sp mc);
+//	static StandardClass_sp create(Class_sp mc);
+
+    /*! Special creator used when bootstrapping - the resulting will never be collected
+      and will always be treated as a root */
+    static StandardClass_sp createUncollectable();
 
     explicit StandardClass_O();
     virtual ~StandardClass_O() {};

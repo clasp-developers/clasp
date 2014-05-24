@@ -21,9 +21,7 @@ namespace core
     {_G();
 	LOG(BF("Creating BuiltInClass_O name(%s) instanceClassId=%d")
 	    % name.c_str() % instanceClassId  );
-	GC_RESERVE_BEGIN(BuiltInClass_O,oclass ){
-	    GC_RESERVE_GET(BuiltInClass_O,oclass );
-	} GC_RESERVE_END(BuiltInClass_O,oclass );
+        GC_ALLOCATE(BuiltInClass_O,oclass );
 	oclass->_Name = lisp->intern(name);
 	oclass->_InstanceClassId = instanceClassId;
 	return oclass;
@@ -113,9 +111,7 @@ namespace core
 
     StandardClass_sp StandardClass_O::create(Lisp_sp lisp,Symbol_sp name, uint instanceClassId)
     {
-	GC_RESERVE_BEGIN(StandardClass_O,oclass ){
-	    GC_RESERVE_GET(StandardClass_O,oclass );
-	} GC_RESERVE_END(StandardClass_O,oclass );
+        GC_ALLOCATE(StandardClass_O,oclass );
 	oclass->_Name = name;
 	oclass->_InstanceClassId = instanceClassId;
 	oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();

@@ -55,9 +55,7 @@ namespace core {
     template <class OT,class WT>
     mem::smart_ptr<OT> RP_Create_wrapped(WT ptr)
     {_G();
-	GC_RESERVE_BEGIN(OT,wrapper) {
-	    GC_RESERVE_GET(OT,wrapper);
-	} GC_RESERVE_END(OT,wrapper);
+        GC_ALLOCATE(OT,wrapper);
         wrapper->set_wrapped(ptr);
 	return wrapper;
     }

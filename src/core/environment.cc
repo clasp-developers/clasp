@@ -1052,7 +1052,7 @@ namespace core
 	stringstream ss;
         this->_SymbolIndex->mapHash( [this,tab,&ss] (T_sp key, T_sp value) {
                 int ivalue = value.as<Fixnum_O>()->get();
-                ss << string(tab,' ') << _rep_(oFirst(key)) << "#" << ivalue << " -> ";
+                ss << string(tab,' ') << _rep_(key) << "#" << ivalue << " -> ";
                 if ( ivalue == SPECIAL_TARGET )
                 {
                     ss << "SPECIAL-VAR";
@@ -1215,9 +1215,7 @@ namespace core
 
     FunctionValueEnvironment_sp FunctionValueEnvironment_O::createEmpty( Environment_sp parent )
     {_G();
-	GC_RESERVE_BEGIN(FunctionValueEnvironment_O,environ ){
-	    GC_RESERVE_GET(FunctionValueEnvironment_O,environ );
-	} GC_RESERVE_END(FunctionValueEnvironment_O,environ );
+        GC_ALLOCATE(FunctionValueEnvironment_O,environ );
 	environ->setupParent(parent);
 	return environ;
     }

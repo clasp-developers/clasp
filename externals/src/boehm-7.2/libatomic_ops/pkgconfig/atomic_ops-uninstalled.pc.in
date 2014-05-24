@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+top_builddir=@abs_top_builddir@
+top_srcdir=@abs_top_srcdir@
+
+Name: The atomic_ops library (uninstalled)
+Description: Atomic memory update operations
+Version: @PACKAGE_VERSION@
+Libs: ${top_builddir}/src/libatomic_ops.la
+Cflags: -I${top_builddir}/src -I${top_srcdir}/src

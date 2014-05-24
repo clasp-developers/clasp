@@ -5,9 +5,17 @@
 #include "core/vectorObjects.h"
 #include "corePackage.fwd.h"
 
+
+
+template<> struct gctools::GCAllocatorInfo<core::VectorObjectsWithFillPtr_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 namespace core
 {
-
     FORWARD(VectorObjectsWithFillPtr);
     class VectorObjectsWithFillPtr_O : public VectorObjects_O
     {
@@ -17,8 +25,6 @@ namespace core
     public:
 	VectorObjectsWithFillPtr_O();
 	virtual ~VectorObjectsWithFillPtr_O() {};
-    public:
-	void initialize();
     private: // instance variables here
 	int 		_FillPtr;
     public:

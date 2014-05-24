@@ -35,8 +35,8 @@ namespace clbind {
             OT* objPtr = (*args).as<core::WrappedPointer_O>()->cast<OT>();
             IteratorType itBegin = ((*objPtr).*(this->_begin))();
             IteratorType itEnd = ((*objPtr).*(this->_end))();
-            GC_RESERVE_VARIADIC(WrappedIteratorType,smart_itBegin,itBegin);
-            GC_RESERVE_VARIADIC(WrappedIteratorType,smart_itEnd,itEnd);
+            GC_ALLOCATE_VARIADIC(WrappedIteratorType,smart_itBegin,itBegin);
+            GC_ALLOCATE_VARIADIC(WrappedIteratorType,smart_itEnd,itEnd);
             return Values(smart_itBegin,smart_itEnd);
         }
 

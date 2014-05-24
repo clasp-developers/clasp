@@ -139,7 +139,7 @@ namespace
         _sym_STARtheClassRegistrySTAR->defparameter(registry);
         globalClassIdMap = new detail::class_id_map();
         globalCastGraph = new detail::cast_graph();
-        globalClassMap = new detail::class_map;
+        globalClassMap = gctools::allocateRootClass<detail::class_map>();
     }
 
 } // namespace clbind

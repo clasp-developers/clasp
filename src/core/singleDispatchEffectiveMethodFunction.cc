@@ -61,9 +61,7 @@ namespace core
 
     SingleDispatchEffectiveMethodFunction_sp SingleDispatchEffectiveMethodFunction_O::create(Cons_sp methods, Lisp_sp lisp)
     {_G();
-	GC_RESERVE_BEGIN(SingleDispatchEffectiveMethodFunction_O,emf ){
-	    GC_RESERVE_GET(SingleDispatchEffectiveMethodFunction_O,emf );
-	} GC_RESERVE_END(SingleDispatchEffectiveMethodFunction_O,emf );
+        GC_ALLOCATE(SingleDispatchEffectiveMethodFunction_O,emf );
 	    emf->_Methods = methods;
 	return emf;
     }

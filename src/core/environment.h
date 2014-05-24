@@ -249,6 +249,13 @@ namespace core
 	T_mv lookupMetadata(Symbol_sp key) const;
     };
 };
+template<> struct gctools::GCAllocatorInfo<core::LexicalEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 TRANSLATE(core::LexicalEnvironment_O);
 
 
@@ -275,6 +282,13 @@ namespace core
 	virtual ~RuntimeVisibleEnvironment_O() {};
     };
 };
+template<> struct gctools::GCAllocatorInfo<core::RuntimeVisibleEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 TRANSLATE(core::RuntimeVisibleEnvironment_O);
 
 
@@ -385,6 +399,13 @@ namespace core
 	virtual ~ValueEnvironment_O();
     };
 };
+template<> struct gctools::GCAllocatorInfo<core::ValueEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 TRANSLATE(core::ValueEnvironment_O);
 
 
@@ -430,6 +451,13 @@ namespace core
 	DEFAULT_CTOR_DTOR(FunctionValueEnvironment_O);
     };
 };
+template<> struct gctools::GCAllocatorInfo<core::FunctionValueEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 TRANSLATE(core::FunctionValueEnvironment_O);
 
 
@@ -568,6 +596,12 @@ namespace core
 	DEFAULT_CTOR_DTOR(BlockEnvironment_O);
     };
 };
+template<> struct gctools::GCAllocatorInfo<core::BlockEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
 TRANSLATE(core::BlockEnvironment_O);
 
 
@@ -592,6 +626,12 @@ namespace core
     public:
 	DEFAULT_CTOR_DTOR(CatchEnvironment_O);
     };
+};
+template<> struct gctools::GCAllocatorInfo<core::CatchEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
 };
 TRANSLATE(core::CatchEnvironment_O);
 
@@ -623,6 +663,12 @@ namespace core
 
 	DEFAULT_CTOR_DTOR(FunctionContainerEnvironment_O);
     };
+};
+template<> struct gctools::GCAllocatorInfo<core::FunctionContainerEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
 };
 TRANSLATE(core::FunctionContainerEnvironment_O);
 
@@ -682,6 +728,12 @@ namespace core
     }; // TagbodyEnvironment class
     
 }; // core namespace
+template<> struct gctools::GCAllocatorInfo<core::TagbodyEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
 TRANSLATE(core::TagbodyEnvironment_O);
 
 
@@ -723,6 +775,12 @@ namespace core
     }; // MacroletEnvironment class
     
 }; // core namespace
+template<> struct gctools::GCAllocatorInfo<core::MacroletEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
 TRANSLATE(core::MacroletEnvironment_O);
 
 
@@ -765,6 +823,13 @@ namespace core
     }; // SymbolMacroletEnvironment class
     
 }; // core namespace
+template<> struct gctools::GCAllocatorInfo<core::SymbolMacroletEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 TRANSLATE(core::SymbolMacroletEnvironment_O);
 
 

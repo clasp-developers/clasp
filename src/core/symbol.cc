@@ -112,20 +112,18 @@ namespace core
     
     
 
-
+#if 0
     Symbol_sp Symbol_O::create_classless_packageless(string const& name)
     {// no guard
 	DEPRECIATED();
 	ASSERTF(name[0] != '(',BF("Symbol names cannot start with paren[%s]") % name);
-	GC_RESERVE_BEGIN(Symbol_O,sym){
-	    GC_RESERVE_GET(Symbol_O,sym);
-	} GC_RESERVE_END(Symbol_O,sym);
+        GC_ALLOCATE(Symbol_O,sym);
 	sym->_Name = Str_O::create(name);
 	printf("%s:%d  Allocating packageless symbol @ %p name: %s\n", __FILE__, __LINE__, sym.px_ref(),name.c_str());
 //	Symbol_sp sym = mem::smart_ptr<Symbol_O>(new Symbol_O(name));
 	return sym;
     }
-
+#endif
 
     /*! Construct a symbol that is incomplete, it has no Class or Package */
     Symbol_O::Symbol_O(string const& name) : T_O() ,
@@ -172,9 +170,9 @@ namespace core
 
     Symbol_sp	Symbol_O::create(const string& nm)
     {_G();
-	GC_RESERVE_BEGIN(Symbol_O,n ){
-	    GC_RESERVE_GET(Symbol_O,n );
-	} GC_RESERVE_END(Symbol_O,n );
+        // This is used to allocate roots that are pointed
+        // to by global variable _sym_XXX  and will never be collected
+        GC_ALLOCATE_UNCOLLECTABLE(Symbol_O,n );
 	ASSERTF(nm!="",BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
 	if ( nm.find("/dyn") != string::npos)

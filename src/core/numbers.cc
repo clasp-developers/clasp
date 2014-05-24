@@ -1937,16 +1937,9 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
 
 
-
-
-
-
-
     Fixnum_sp Fixnum_O::create(int nm)
     {_G();
-	GC_RESERVE_BEGIN(Fixnum_O,v ){
-	    GC_RESERVE_GET(Fixnum_O,v );
-	} GC_RESERVE_END_FINALno_INITno(Fixnum_O,v );
+	GC_ALLOCATE(Fixnum_O,v );
 	v->set(nm);
 	return v;
     }

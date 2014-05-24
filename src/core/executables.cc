@@ -156,14 +156,6 @@ namespace core
 
 
 
-
-
-    void Function_O::initialize()
-    {
-	this->Base::initialize();
-	this->_Name = _Nil<T_O>();
-    }
-
     string Function_O::__repr__() const
     {_G();
 	ASSERTNOTNULL(this->_Name);
@@ -217,7 +209,11 @@ namespace core
 
 
 
-    Interpreted_O::Interpreted_O() : Base() {};
+    Interpreted_O::Interpreted_O() : Base()
+                                   , _ClosedEnvironment(_Nil<Environment_O>())
+                                   , _DocString(_Nil<Str_O>())
+                                   , _Declares(_Nil<Cons_O>())
+                                   , _Code(_Nil<Cons_O>()) {};
 
 
     Interpreted_sp	Interpreted_O::create( T_sp name,
@@ -279,18 +275,6 @@ namespace core
 
 
 
-    void Interpreted_O::initialize()
-    {_OF();
-	this->Base::initialize();
-	this->_Kind = kw::_sym_function;
-	this->_LambdaListHandler = _Nil<LambdaListHandler_O>();
-	this->_DocString = _Nil<Str_O>();
-	this->_Declares = _Nil<Cons_O>();
-	this->_Code = _Nil<Cons_O>();
-	this->_ClosedEnvironment = _Nil<Environment_O>();
-    }
-
-
 
 
 #if defined(XML_ARCHIVE)
@@ -312,6 +296,7 @@ namespace core
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString() << " :name " << _rep_(this->getFunctionName());
 	ss << " :llh " << _rep_(this->_LambdaListHandler);
+#if 0
 	if ( !this->_ClosedEnvironment.nilp() )
 	{
 	    ss << " :environment " << _rep_(this->_ClosedEnvironment);
@@ -319,9 +304,16 @@ namespace core
 	{
 	    ss << " :environment nil ";
 	}
+#else
+        ss << ":environment <MAY-OVERLOAD-STACK>";
+#endif
 	ss << " :declares " << _rep_(this->_Declares);
 	ss << " :docstring \"" << _rep_(this->_DocString) << "\" ";
+#if 1
+        ss << ":code <NOT-PRINTING-COULD-OVERLOAD-STACK>";
+#else
 	ss << " :code " << _rep_(this->_Code);
+#endif
 	ss << " :sourceFileInfo " << _rep_(this->_SourceFileInfo);
 	ss << " :lineNumber " << this->_LineNumber;
 	ss << " :column " << this->_Column;

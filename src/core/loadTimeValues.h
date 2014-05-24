@@ -69,7 +69,7 @@ namespace core
         LoadTimeValues_sp               _LoadTimeValues;
     public: // Functions here
 	static MemoryLockedLoadTimeValuesPointer_sp make(LoadTimeValues_sp ltv) {
-            GC_RESERVE(MemoryLockedLoadTimeValuesPointer_O,obj);
+            GC_ALLOCATE_UNCOLLECTABLE(MemoryLockedLoadTimeValuesPointer_O,obj);
             obj->_LoadTimeValues = ltv;
             return obj;
         }

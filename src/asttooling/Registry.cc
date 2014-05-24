@@ -323,7 +323,7 @@ namespace asttooling {
     } // anonymous namespace
 
 
-    void convertArgs(vector<ParserValue>& args, core::Vector_sp lispArgs)
+    void convertArgs(gctools::Vec0<ParserValue>& args, core::Vector_sp lispArgs)
     {
         args.resize(lispArgs->length());
         for ( int i(0),iEnd(lispArgs->length()); i<iEnd; i++ ) {
@@ -346,9 +346,10 @@ namespace asttooling {
             Error->addError(NameRangeDup, Error->ET_RegistryNotFound) << symbolName;
             return clang::ast_matchers::dynamic::VariantMatcher();
         }
-        gctools::StackRootedStlContainer<vector<ParserValue> > VArgs;
-        convertArgs(VArgs.get(),Args);
-        return it->second->create(NameRange, VArgs.get(), Error);
+        gctools::Vec0<ParserValue>      VArgs;
+//       gctools::StackRootedStlContainer<vector<ParserValue> > VArgs;
+        convertArgs(VArgs,Args);
+        return it->second->create(NameRange, ArrayRef<ParserValue>(VArgs.data(),VArgs.size()), Error);
     }
 
 // static

@@ -14,9 +14,7 @@ namespace core
 
     Pointer_sp Pointer_O::create(void* p)
     {_G();
-	GC_RESERVE_BEGIN(Pointer_O,ptr ){
-	    GC_RESERVE_GET(Pointer_O,ptr );
-	} GC_RESERVE_END(Pointer_O,ptr );
+        GC_ALLOCATE(Pointer_O,ptr );
 	    ptr->_Pointer = p;
 	return ptr;
     }

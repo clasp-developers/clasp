@@ -3,8 +3,10 @@
 
 #ifdef CANDO_COMPILE
 #define GARBAGE_COLLECTION_INCLUDE "cando/clasp_gc.cc"
+#define GC_INTERFACE_HEADER "cando/gc_interface.h"
 #else
 #define GARBAGE_COLLECTION_INCLUDE "main/clasp_gc.cc"
+#define GC_INTERFACE_HEADER "main/gc_interface.h"
 #endif
 
 /*! Old way of doing #= and ## used alists which are slow
@@ -431,7 +433,7 @@ template <typename X>
 using deque = std::deque<X>;
 
 
-#if !defined(USE_MPS)
+#if defined(USE_REFCOUNT)
 namespace boost
 {
     template <class T> void intrusive_ptr_add_ref(T* p);
@@ -570,14 +572,13 @@ namespace reg {
 #define BF boost::format
 
 
-#include "gctools/memoryManagement.h"
-
-
-
 
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
 void lisp_errorDereferencedNil();
 void lisp_errorDereferencedUnbound();
+
+
+#include "gctools/memoryManagement.h"
 
 
 
@@ -590,7 +591,7 @@ extern void brcl_mps_debug_scan_object(gctools::GCObject*  obj);
 
 
 
-#include "smart_pointers.h"
+
 
 
 #define	DEFINE_O_SMART_POINTERS(zclass) \
@@ -1020,7 +1021,7 @@ namespace core
     void lisp_error(T_sp datum, T_sp arguments);
 
     void lisp_setGlobalInt(Lisp_sp lisp, const string& package, const string& n, uint val );
-    Symbol_sp lisp_allocate_packageless_sid(string const& n);
+//    Symbol_sp lisp_allocate_packageless_sid(string const& n);
     Symbol_sp lisp_getClassSymbolForClassName(Lisp_sp lisp, const string& n);
 //    bool lisp_subClassOrder(Lisp_sp lisp, Symbol_sp baseClassSymbol, Symbol_sp classSymbol );
     string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash=true);
@@ -1260,7 +1261,7 @@ extern "C"
 
 
 namespace reg {
-    extern std::vector<core::Symbol_sp> globalClassSymbolsVector;
+    extern std::vector<core::Symbol_sp,gctools::root_allocator<core::Symbol_sp> > globalClassSymbolsVector;
 
     inline void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym)
     {

@@ -17,10 +17,19 @@ namespace core
     {
     }
 
+#if 0
     StandardClass_sp StandardClass_O::create(Class_sp mc)
     {
-        GC_RESERVE(StandardClass_O,bic);
+        GC_ALLOCATE(StandardClass_O,bic);
 //	StandardClass_sp bic = StandardClass_sp(new StandardClass_O());
+	return bic;
+    }
+#endif
+
+
+    StandardClass_sp StandardClass_O::createUncollectable()
+    {
+        GC_ALLOCATE_UNCOLLECTABLE(StandardClass_O,bic);
 	return bic;
     }
 
@@ -65,9 +74,7 @@ namespace core
 
     StandardClass_sp StandardClass_O::create(Lisp_sp lisp,Symbol_sp name /*, uint instanceClassSymbol */)
     {
-	GC_RESERVE_BEGIN(StandardClass_O,oclass ){
-	    GC_RESERVE_GET(StandardClass_O,oclass );
-	} GC_RESERVE_END(StandardClass_O,oclass );
+        GC_ALLOCATE(StandardClass_O,oclass );
 	    oclass->_Name = name;
 	    oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL; // Not used anymore instanceClassSymbol;
 	    oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();

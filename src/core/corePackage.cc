@@ -70,6 +70,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineLoadSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARserializerArchiveSTAR);
     SYMBOL_EXPORT_SC_(KeywordPkg,_uid);
+    SYMBOL_EXPORT_SC_(KeywordPkg,function);
     SYMBOL_EXPORT_SC_(CorePkg,STARihsCurrentSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,logicalPathnameTranslations);
     SYMBOL_EXPORT_SC_(ClPkg,set);

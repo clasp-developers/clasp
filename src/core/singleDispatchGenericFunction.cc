@@ -105,9 +105,7 @@ namespace core
 
     SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh)
     {_G();
-	GC_RESERVE_BEGIN(SingleDispatchGenericFunction_O,gf ){
-	    GC_RESERVE_GET(SingleDispatchGenericFunction_O,gf );
-	} GC_RESERVE_END(SingleDispatchGenericFunction_O,gf );
+        GC_ALLOCATE(SingleDispatchGenericFunction_O,gf );
 	gf->setFunctionName(name);
 	gf->_Kind = kw::_sym_function;
 	gf->_LambdaListHandler = llh;

@@ -26,7 +26,7 @@ namespace asttooling {
         virtual ~AstVisitor_O() {};
     public:
         static AstVisitor_sp create(core::T_sp target) {
-            GC_RESERVE_VARIADIC(AstVisitor_O,obj,target);
+            GC_ALLOCATE_VARIADIC(AstVisitor_O,obj,target);
             return obj;
         };
     public:

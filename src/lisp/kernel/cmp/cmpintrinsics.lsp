@@ -296,7 +296,9 @@ I'm using smart_ptr which have a vtable associated with them"
 	 (required-args-ty (cadr info))
 	 (passed-args-ty (mapcar #'(lambda (x)
 				     (if (llvm-sys:llvm-value-p x)
-					 (llvm-sys:get-type x)
+					 (if (llvm-sys:valid x)
+                                             (llvm-sys:get-type x)
+                                             (error "Invalid (NULL pointer) value ~a about to be passed to intrinsic function ~a" x fn-name))
 					 (core:class-name-as-string x)))
 				 args))
 	 (i 1))
@@ -535,7 +537,7 @@ I'm using smart_ptr which have a vtable associated with them"
 
   (primitive module "throwIllegalSwitchValue" +void+ (list +i32+ +i32+) :does-not-return t)
 
-  (primitive-does-not-throw module "brcl_terminate" +void+ (list +i8*+ +i32+ +i32+ +i8*+) )
+  (primitive-does-not-throw module "clasp_terminate" +void+ (list +i8*+ +i32+ +i32+ +i8*+) )
   (primitive-does-not-throw module "__gxx_personality_v0" +i32+ nil :varargs t) ;; varargs
   (primitive-does-not-throw module "__cxa_begin_catch" +i8*+ (list +i8*+) )
   (primitive module "__cxa_end_catch" +void+ nil)

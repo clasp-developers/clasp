@@ -16,9 +16,7 @@ namespace llvmo
 
     InsertPoint_sp InsertPoint_O::create(llvm::IRBuilderBase::InsertPoint& ip)
     {_G();
-	GC_RESERVE_BEGIN(InsertPoint_O,oip ){
-	    GC_RESERVE_GET(InsertPoint_O,oip );
-	} GC_RESERVE_END(InsertPoint_O,oip );
+        GC_ALLOCATE(InsertPoint_O,oip );
 	oip->_InsertPoint = ip;
 	return oip;
     }

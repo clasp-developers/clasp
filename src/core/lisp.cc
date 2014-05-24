@@ -124,6 +124,37 @@ namespace core
 
 
 
+
+    struct FindApropos : public KeyValueMapper, public gctools::StackRoot
+    {
+    public:
+	HashTable_sp    _symbols;
+	string		_substr;
+	FindApropos(const string& str) {
+            this->_substr = str;
+            this->_symbols = HashTableEq_O::create_default();
+        };
+	virtual bool mapKeyValue(T_sp key, T_sp value)
+	{
+	    Bignum_sp skey = key.as<Bignum_O>();
+	    Symbol_sp svalue = value.as<Symbol_O>();
+	    string symbolName = lisp_symbolNameAsString(svalue);
+	    string::size_type pos = symbolName.find(this->_substr);
+//	    LOG(BF("Looking at symbol(%s) for (%s) found: %d") % symbolName % this->_substring % pos );
+	    if ( pos != string::npos )
+	    {
+		LOG(BF("    It is apropos"));
+                this->_symbols->setf_gethash(svalue,_Nil<T_O>());
+	    }
+	    return true;
+	}
+
+    };
+
+
+
+
+
 //
 // Constructor
 //
@@ -288,7 +319,7 @@ namespace core
 
     Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize )
     {
-        ::_lisp = new Lisp_O();
+        ::_lisp = gctools::allocateRootClass<Lisp_O>();
 	_lisp->setupMpi(mpiEnabled,mpiRank,mpiSize);
 //	lisp->__setWeakThis(lisp);
 //	lisp->__resetInitializationOwner();
@@ -1135,6 +1166,12 @@ namespace core
 #endif
 #ifdef USE_SHARP_EQUAL_HASH_TABLES
 	features = Cons_O::create(_lisp->internKeyword("USE-SHARP-EQUAL-HASH-TABLES"),features);
+#endif
+#ifdef USE_REFCOUNT
+        features = Cons_O::create(_lisp->internKeyword("USE-REFCOUNT"),features);
+#endif
+#ifdef USE_BOEHM
+        features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"),features);
 #endif
 #ifdef USE_MPS
         // Informs CL that MPS is being used
@@ -2052,40 +2089,39 @@ namespace core
 	    pkg->mapExternals(&apropos);
 	    pkg->mapInternals(&apropos);
 	}
-	for ( set<Symbol_sp>::iterator si=apropos._symbols.begin();
-	      si!=apropos._symbols.end(); si++ )
-	{
-	    stringstream ss;
-	    ss << (BF("%50s") % (*si)->fullName()).str();
-	    if ( (*si)->specialP() || (*si)->fboundp() )
-	    {
-		if ( (*si)->fboundp() )
-		{
-		    ss << " ";
-		    ss << af_classOf(af_symbolFunction((*si)))->classNameAsString();
-		    if ( af_symbolFunction(*si)->macroP() )
-		    {
-			ss << "(MACRO)";
-		    }
-		}
-		if ( !(*si)->symbolValueUnsafe() ) {
-		    ss << " !!UNDEFINED!!";
-		} else {
-		    if ( (*si)->specialP() || (*si)->symbolValueUnsafe() )
-		    {
-			ss << " VALUE";
-			if ( print_values )
-			{
-			    stringstream sval;
-			    T_sp symVal = (*si)->symbolValueUnsafe();
-			    sval << _rep_(symVal);
-			    ss << ": " << sval.str().substr(0,50);
-			}
-		    }
-		}
-	    }
-	    _lisp->print(BF("%s") % ss.str());
-	}
+        apropos._symbols->mapHash( [&print_values] (T_sp key, T_sp dummy) {
+                stringstream ss;
+                Symbol_sp sym = key.as<Symbol_O>();
+                ss << (BF("%50s") % (sym)->fullName()).str();
+                if ( (sym)->specialP() || (sym)->fboundp() )
+                {
+                    if ( (sym)->fboundp() )
+                    {
+                        ss << " ";
+                        ss << af_classOf(af_symbolFunction((sym)))->classNameAsString();
+                        if ( af_symbolFunction(sym)->macroP() )
+                        {
+                            ss << "(MACRO)";
+                        }
+                    }
+                    if ( !(sym)->symbolValueUnsafe() ) {
+                        ss << " !!UNDEFINED!!";
+                    } else {
+                        if ( (sym)->specialP() || (sym)->symbolValueUnsafe() )
+                        {
+                            ss << " VALUE";
+                            if ( print_values )
+                            {
+                                stringstream sval;
+                                T_sp symVal = (sym)->symbolValueUnsafe();
+                                sval << _rep_(symVal);
+                                ss << ": " << sval.str().substr(0,50);
+                            }
+                        }
+                    }
+                }
+                _lisp->print(BF("%s") % ss.str());
+            } );
     }
 
 
@@ -3698,7 +3734,6 @@ extern "C"
     void LispHolder::startup(int argc, char* argv[], const string& appPathEnvironmentVariable )
     {
 	this->_Lisp->_StackTop = (char*)&argc;
-	mem::initialize_smart_pointers();
 	::_lisp = this->_Lisp;
 	const char* argv0 = "./";
 	if ( argc > 0 ) argv0 = argv[0];

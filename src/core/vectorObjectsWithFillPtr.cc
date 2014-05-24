@@ -20,9 +20,7 @@ namespace core
 #define DOCS_VectorObjectsWithFillPtr_O_make "make VectorObjectsWithFillPtr args: initial-element initial-contents dimension"
     VectorObjectsWithFillPtr_sp VectorObjectsWithFillPtr_O::make(T_sp initialElement, Sequence_sp initialContents, int dimension, int fillPtr,bool adjustable)
     {_G();
-	GC_RESERVE_BEGIN(VectorObjectsWithFillPtr_O,vo ){
-	    GC_RESERVE_GET(VectorObjectsWithFillPtr_O,vo );
-	} GC_RESERVE_END(VectorObjectsWithFillPtr_O,vo );
+        GC_ALLOCATE(VectorObjectsWithFillPtr_O,vo );
 	if (fillPtr < 0 ) fillPtr = 0;
 	if ( fillPtr > dimension ) fillPtr = dimension;
 	vo->_FillPtr = fillPtr;
@@ -62,12 +60,6 @@ namespace core
         this->Base::archiveBase(node);
 	SYMBOL_EXPORT_SC_(KeywordPkg,fillPointer);
 	node->attribute(kw::_sym_fillPointer,this->_FillPtr);
-    }
-
-
-    void VectorObjectsWithFillPtr_O::initialize()
-    {_OF();
-        this->Base::initialize();
     }
 
 

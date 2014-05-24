@@ -15,10 +15,14 @@ namespace core
     BuiltInClass_sp BuiltInClass_O::create(Symbol_sp instanceClassSymbol)
     {_G();
 	LOG(BF("Creating BuiltInClass_O instanceClassSymbol=%d") % instanceClassSymbol  );
-	GC_RESERVE_BEGIN(BuiltInClass_O,oclass ){
-	    GC_RESERVE_GET(BuiltInClass_O,oclass );
-	} GC_RESERVE_END(BuiltInClass_O,oclass );
+        GC_ALLOCATE(BuiltInClass_O,oclass );
 	oclass->setName(instanceClassSymbol);
+	return((oclass));
+    }
+
+    BuiltInClass_sp BuiltInClass_O::createUncollectable()
+    {_G();
+        GC_ALLOCATE_UNCOLLECTABLE(BuiltInClass_O,oclass );
 	return((oclass));
     }
 

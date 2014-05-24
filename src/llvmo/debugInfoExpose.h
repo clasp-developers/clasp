@@ -89,9 +89,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DIDescriptor& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DIDescriptor_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DIDescriptor_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DIDescriptor_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DIDescriptor_O,obj,val);
 	    printf("to_object<llvm::DIDescriptor>\n");
 	    return((obj));
 	};
@@ -136,9 +134,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DIScope& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DIScope_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DIScope_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DIScope_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DIScope_O,obj,val);
 	    return((obj));
 	};
     };
@@ -197,9 +193,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DIArray& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DIArray_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DIArray_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DIArray_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DIArray_O,obj,val);
 	    return((obj));
 	};
     };
@@ -255,9 +249,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DIFile& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DIFile_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DIFile_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DIFile_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DIFile_O,obj,val);
 	    return (obj);
 	};
     };
@@ -303,9 +295,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DISubprogram& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DISubprogram_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DISubprogram_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DISubprogram_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DISubprogram_O,obj,val);
 	    return (obj);
 	};
     };
@@ -358,9 +348,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DIType& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DIType_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DIType_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DIType_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DIType_O,obj,val);
 	    return (obj);
 	};
     };
@@ -408,9 +396,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DIDerivedType& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DIDerivedType_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DIDerivedType_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DIDerivedType_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DIDerivedType_O,obj,val);
 	    return (obj);
 	};
     };
@@ -460,9 +446,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DIBasicType& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DIBasicType_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DIBasicType_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DIBasicType_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DIBasicType_O,obj,val);
 	    return (obj);
 	};
     };
@@ -517,9 +501,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DICompositeType& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DICompositeType_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DICompositeType_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DICompositeType_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DICompositeType_O,obj,val);
 	    return (obj);
 	};
     };
@@ -567,9 +549,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DILexicalBlock& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DILexicalBlock_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DILexicalBlock_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DILexicalBlock_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DILexicalBlock_O,obj,val);
 	    return (obj);
 	};
     };
@@ -618,9 +598,7 @@ namespace translate
     {
         static core::T_sp convert(const llvm::DICompileUnit& val)
         {_G();
-	    GC_RESERVE_BEGIN(llvmo::DICompileUnit_O,obj) {
-		GC_RESERVE_GET_VARIADIC(llvmo::DICompileUnit_O,obj,val);
-	    } GC_RESERVE_END(llvmo::DICompileUnit_O,obj);
+            GC_ALLOCATE_VARIADIC(llvmo::DICompileUnit_O,obj,val);
 	    return (obj);
 	};
     };

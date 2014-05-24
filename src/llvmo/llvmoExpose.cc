@@ -77,9 +77,7 @@ namespace llvmo
 
     LLVMContext_sp LLVMContext_O::get_global_context() 
     {_G();
-	GC_RESERVE_BEGIN(LLVMContext_O,context ){
-	    GC_RESERVE_GET(LLVMContext_O,context );
-	} GC_RESERVE_END(LLVMContext_O,context );
+        GC_ALLOCATE(LLVMContext_O,context );
 	context->_ptr = &(llvm::getGlobalContext());
 	return context;
     }
@@ -120,9 +118,7 @@ namespace llvmo
 #define DOCS_Linker_O_make "Linker_O_make"
     Linker_sp Linker_O::make(Module_sp module)
     {_G();
-        GC_RESERVE_BEGIN(Linker_O,self ){
-	    GC_RESERVE_GET(Linker_O,self );
-	} GC_RESERVE_END(Linker_O,self );
+        GC_ALLOCATE(Linker_O,self );
         self->_ptr = new llvm::Linker(module->wrappedPtr());
 	return self;
     };
@@ -664,9 +660,7 @@ namespace llvmo
 #define DOCS_Module_O_make ""
     Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context)
     {_G();
-	GC_RESERVE_BEGIN(Module_O,self ){
-	    GC_RESERVE_GET(Module_O,self );
-	} GC_RESERVE_END(Module_O,self );
+        GC_ALLOCATE(Module_O,self );
 	ASSERT(&(llvm::getGlobalContext()) == context->wrappedPtr());
 	self->_ptr = new llvm::Module(module_name,*(context->wrappedPtr()));
 	return self;
@@ -1010,9 +1004,7 @@ namespace llvmo
 
     DataLayout_sp DataLayout_O::copy() const
     {_G();
-	GC_RESERVE_BEGIN(DataLayout_O,cp ){
-	    GC_RESERVE_GET(DataLayout_O,cp );
-	} GC_RESERVE_END(DataLayout_O,cp );
+        GC_ALLOCATE(DataLayout_O,cp );
 	cp->_ptr = new llvm::DataLayout(*(this->wrappedPtr()));
 	return cp;
     };
@@ -1055,9 +1047,7 @@ namespace llvmo
 #define DOCS_DataLayoutPass_O_make ""
     DataLayoutPass_sp DataLayoutPass_O::make(llvm::DataLayout const & dl)
     {_G();
-	GC_RESERVE_BEGIN(DataLayoutPass_O,self ){
-	    GC_RESERVE_GET(DataLayoutPass_O,self );
-	} GC_RESERVE_END(DataLayoutPass_O,self );
+        GC_ALLOCATE(DataLayoutPass_O,self );
 	self->_ptr = new llvm::DataLayoutPass(dl);
 	return self;
     };
@@ -1091,9 +1081,7 @@ namespace llvmo
 #define DOCS_TargetData_O_copy ""
     TargetData_sp TargetData_O::copy(llvm::TargetData const & orig)
     {_G();
-	GC_RESERVE_BEGIN(TargetData_O,self ){
-	    GC_RESERVE_GET(TargetData_O,self );
-	} GC_RESERVE_END(TargetData_O,self );
+        GC_ALLOCATE(TargetData_O,self );
 	self->_ptr = new llvm::TargetData(orig);
 	return self;
     };
@@ -1130,9 +1118,7 @@ namespace llvmo
 #define DOCS_FunctionPassManager_O_make ""
     FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module* module)
     {_G();
-	GC_RESERVE_BEGIN(FunctionPassManager_O,self ){
-	    GC_RESERVE_GET(FunctionPassManager_O,self );
-	} GC_RESERVE_END(FunctionPassManager_O,self );
+        GC_ALLOCATE(FunctionPassManager_O,self );
 	self->_ptr = new llvm::FunctionPassManager(module);
 	return self;
     };
@@ -1171,9 +1157,7 @@ namespace llvmo
 #define DOCS_PassManager_O_make ""
     PassManager_sp PassManager_O::make()
     {_G();
-	GC_RESERVE_BEGIN(PassManager_O,self ){
-	    GC_RESERVE_GET(PassManager_O,self );
-	} GC_RESERVE_END(PassManager_O,self );
+        GC_ALLOCATE(PassManager_O,self );
 	self->_ptr = new llvm::PassManager();
 	return self;
     };
@@ -1209,9 +1193,7 @@ namespace llvmo
 #define DOCS_EngineBuilder_O_make ""
     EngineBuilder_sp EngineBuilder_O::make(llvm::Module* module)
     {_G();
-	GC_RESERVE_BEGIN(EngineBuilder_O,self ){
-	    GC_RESERVE_GET(EngineBuilder_O,self );
-	} GC_RESERVE_END(EngineBuilder_O,self );
+        GC_ALLOCATE(EngineBuilder_O,self );
 	self->_ptr = new llvm::EngineBuilder(module);
 	self->_ptr->setErrorStr(&(self->_ErrorStr));
 	return self;
@@ -1333,9 +1315,7 @@ namespace llvmo
 #define DOCS_PassManagerBuilder_O_make ""
     PassManagerBuilder_sp PassManagerBuilder_O::make()
     {_G();
-	GC_RESERVE_BEGIN(PassManagerBuilder_O,self ){
-	    GC_RESERVE_GET(PassManagerBuilder_O,self );
-	} GC_RESERVE_END(PassManagerBuilder_O,self );
+        GC_ALLOCATE(PassManagerBuilder_O,self );
 	self->_ptr = new llvm::PassManagerBuilder();
 	return self;
     };
@@ -1580,9 +1560,7 @@ namespace llvmo
 
     Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(Constant_sp constant, core::Cons_sp idxList )
     {_G();
-	GC_RESERVE_BEGIN(Constant_O,res ){
-	    GC_RESERVE_GET(Constant_O,res );
-	} GC_RESERVE_END(Constant_O,res );
+        GC_ALLOCATE(Constant_O,res );
 	vector<llvm::Constant*> vector_IdxList;
 	for ( core::Cons_sp cur=idxList; cur.notnilp(); cur=cCdr(cur) )
 	{
@@ -1657,9 +1635,7 @@ namespace llvmo
 #define DOCS_GlobalVariable_O_make "make GlobalVariable args: module type is-constant linkage initializer name"
     GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, Constant_sp initializer, core::Str_sp name)
     {_G();
-	GC_RESERVE_BEGIN(GlobalVariable_O,me ){
-	    GC_RESERVE_GET(GlobalVariable_O,me );
-	} GC_RESERVE_END(GlobalVariable_O,me );
+        GC_ALLOCATE(GlobalVariable_O,me );
 	translate::from_object<llvm::GlobalValue::LinkageTypes> llinkage(linkage);
 	llvm::Constant* llvm_initializer = NULL;
 	if ( initializer.notnilp() ) {
@@ -2313,9 +2289,7 @@ namespace llvmo
 #define DOCS_APFloat_O_makeAPFloatFloat ""
     APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value)
     {_G();
-	GC_RESERVE_BEGIN(APFloat_O,self ){
-	    GC_RESERVE_GET(APFloat_O,self );
-	} GC_RESERVE_END(APFloat_O,self );
+        GC_ALLOCATE(APFloat_O,self );
 	self->_value = llvm::APFloat(value->get());
 	return self;
     };
@@ -2326,9 +2300,7 @@ namespace llvmo
 #define DOCS_APFloat_O_makeAPFloatDouble ""
     APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value)
     {_G();
-	GC_RESERVE_BEGIN(APFloat_O,self ){
-	    GC_RESERVE_GET(APFloat_O,self );
-	} GC_RESERVE_END(APFloat_O,self );
+        GC_ALLOCATE(APFloat_O,self );
 	self->_value = llvm::APFloat(value->get());
 	return self;
     };
@@ -2364,9 +2336,7 @@ namespace llvmo
 
     APInt_sp APInt_O::create(llvm::APInt api)
     {
-	GC_RESERVE_BEGIN(APInt_O,self ){
-	    GC_RESERVE_GET(APInt_O,self );
-	} GC_RESERVE_END(APInt_O,self );
+        GC_ALLOCATE(APInt_O,self );
         self->_value = api;
         return self;
     }
@@ -2378,9 +2348,7 @@ namespace llvmo
 #define DOCS_APInt_O_makeAPInt ""
     APInt_sp APInt_O::makeAPInt(core::Integer_sp value)
     {_G();
-	GC_RESERVE_BEGIN(APInt_O,self ){
-	    GC_RESERVE_GET(APInt_O,self );
-	} GC_RESERVE_END(APInt_O,self );
+        GC_ALLOCATE(APInt_O,self );
 	if (af_fixnumP(value) )
 	{
 	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
@@ -2409,9 +2377,7 @@ namespace llvmo
 #define DOCS_APInt_O_makeAPInt1 ""
     APInt_sp APInt_O::makeAPInt1(core::T_sp value)
     {_G();
-	GC_RESERVE_BEGIN(APInt_O,self ){
-	    GC_RESERVE_GET(APInt_O,self );
-	} GC_RESERVE_END(APInt_O,self );
+        GC_ALLOCATE(APInt_O,self );
 	if (af_fixnumP(value) )
 	{
 	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
@@ -2435,9 +2401,7 @@ namespace llvmo
 #define DOCS_APInt_O_makeAPIntWidth ""
     APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bool sign)
     {_G();
-	GC_RESERVE_BEGIN(APInt_O,self ){
-	    GC_RESERVE_GET(APInt_O,self );
-	} GC_RESERVE_END(APInt_O,self );
+        GC_ALLOCATE(APInt_O,self );
 	llvm::APInt    apint;
 	int	       numbits;
 	if (af_fixnumP(value) )
@@ -2616,9 +2580,7 @@ namespace llvmo
 #define DOCS_IRBuilder_O_make ""
     IRBuilder_sp IRBuilder_O::make(LLVMContext_sp context)
     {_G();
-	GC_RESERVE_BEGIN(IRBuilder_O,self ){
-	    GC_RESERVE_GET(IRBuilder_O,self );
-	} GC_RESERVE_END(IRBuilder_O,self );
+        GC_ALLOCATE(IRBuilder_O,self );
 	ASSERT(&(llvm::getGlobalContext()) == context->wrappedPtr());
 	self->set_wrapped(new llvm::IRBuilder<>(*(context->wrappedPtr())));
 	return self;

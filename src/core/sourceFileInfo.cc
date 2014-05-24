@@ -172,9 +172,7 @@ namespace core
     {_G();
 	SourceFileInfo_sp spx = _lisp->getSourceFileInfo(str);
 	if ( spx.notnilp() ) return spx;
-	GC_RESERVE_BEGIN(SourceFileInfo_O,spi ){
-	    GC_RESERVE_GET(SourceFileInfo_O,spi );
-	} GC_RESERVE_END(SourceFileInfo_O,spi );
+        GC_ALLOCATE(SourceFileInfo_O,spi );
 	spi->_pathname = af_pathname(Str_O::create(str));
 	_lisp->setSourceFileInfo(str,spi);
 	return spi;

@@ -19,149 +19,155 @@
 #include "lambdaListHandler.fwd.h"
 #include "lispDefinitions.h"
 
-namespace core {
-
-
-SMART(LambdaListHandler);
-
-
-
-SMART(Function);
-class Function_O : public T_O
-{
-    LISP_BASE1(T_O);
-    LISP_CLASS(core,ClPkg,Function_O,"Function");
-public:
-    void initialize();
-#if defined(XML_ARCHIVE)
-    void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-public:  // was protected:
-    T_sp			_Name;
-    Symbol_sp			_Kind;
-    LambdaListHandler_sp	_LambdaListHandler;
-    SourceFileInfo_sp 		_SourceFileInfo;
-    uint			_LineNumber;
-    uint			_Column;
-    uint 			_FilePos;
-public:
-    Function_O() : Base(), _SourceFileInfo(_Nil<SourceFileInfo_O>()), _LineNumber(0), _Column(0) {};   
-    virtual ~Function_O() {};
-public:
-    /*! Variadic funcall invoker */
-    virtual T_mv INVOKE(int nargs, ArgArray args) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-public:
-
-
-
-    virtual Environment_sp closedEnvironment() const;
-
-    Symbol_sp functionKind() const { return this->_Kind;};
-    T_sp functionName() const { return this->_Name;};
-    void setFunctionName(T_sp symbol);
-    T_sp getFunctionName() const;
-
-    T_mv functionFile() const;
-
-    bool macroP() const;
-
-
-    /*! Set the kind of the function (function) or (macro) */
-    void set_kind(Symbol_sp function_kind);
-
-    SourceFileInfo_sp sourceFileInfo() const;
-    int lineNumber() const { return this->_LineNumber;};
-    int column() const { return this->_Column;};
-public:
-
-
-    string __repr__() const;
-
-    string description() const { return _rep_(this->getFunctionName());};
-
-    void setLambdaListHandler(LambdaListHandler_sp llh) { this->_LambdaListHandler=llh;};
-    LambdaListHandler_sp getLambdaListHandler() {return this->_LambdaListHandler;};
-
-
+namespace kw {
+    extern core::Symbol_sp _sym_function;
 };
 
 
+namespace core {
+    SMART(LambdaListHandler);
+    SMART(Function);
+    class Function_O : public T_O
+    {
+        LISP_BASE1(T_O);
+        LISP_CLASS(core,ClPkg,Function_O,"Function");
 
-SMART(Interpreted);
-class Interpreted_O : public Function_O
-{
-    LISP_BASE1(Function_O);
-    LISP_CLASS(core,CorePkg,Interpreted_O,"interpreted");
-    friend class SingleDispatchGenericFunction_O;
-    friend class Lambda_emf;
-    friend class Lambda_call_next_method;
-//    friend T_mv core::eval::applyFunctionToActivationFrame(Function_sp head, ActivationFrame_sp args);
-public:
-    void initialize();
 #if defined(XML_ARCHIVE)
-    void archiveBase(ArchiveP node);
+        void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-protected:
-    /*! Closed over environment */
-    Environment_sp		_ClosedEnvironment;
-    // Docstring
-    Str_sp			_DocString;
-    // Declares
-    Cons_sp			_Declares;
-    // Code
-    Cons_sp			_Code;
-private:
-    /*! Variadic funcall invoker */
-    virtual T_mv INVOKE(int nargs, ArgArray args );
-public:
-
-    static Interpreted_sp make( T_sp functionName,
-				LambdaListHandler_sp llh,
-				Cons_sp code );
-    /*! Creates functions.  kind can be :macro or :function */
-    static Interpreted_sp create( T_sp functionName,
-				  LambdaListHandler_sp lambda_list_handler,
-				  Cons_sp declares,
-				  Str_sp docString,
-				  Cons_sp code,
-				  Environment_sp environment,
-				  Symbol_sp kind );
+    public:  // was protected:
+        T_sp			_Name;
+        Symbol_sp			_Kind;
+        LambdaListHandler_sp	_LambdaListHandler;
+        SourceFileInfo_sp 		_SourceFileInfo;
+        uint			_LineNumber;
+        uint			_Column;
+        uint 			_FilePos;
+    public:
+        Function_O() : Base(), _Name(_Nil<T_O>())
+                     , _Kind(kw::_sym_function)
+                     , _LambdaListHandler(_Nil<LambdaListHandler_O>())
+                     , _SourceFileInfo(_Nil<SourceFileInfo_O>())
+                     , _LineNumber(0)
+                     , _Column(0)
+        {};   
+        virtual ~Function_O() {};
+    public:
+        /*! Variadic funcall invoker */
+        virtual T_mv INVOKE(int nargs, ArgArray args) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+    public:
 
 
 
-public:
-    virtual Environment_sp closedEnvironment() const;
-    void closeOverEnvironment(Environment_sp environment);
+        virtual Environment_sp closedEnvironment() const;
 
-    Cons_sp getCode() { return this->_Code;};
+        Symbol_sp functionKind() const { return this->_Kind;};
+        T_sp functionName() const { return this->_Name;};
+        void setFunctionName(T_sp symbol);
+        T_sp getFunctionName() const;
 
-    void setDocStr(Str_sp str);
-    Str_sp getDocString();
+        T_mv functionFile() const;
+
+        bool macroP() const;
+
+
+        /*! Set the kind of the function (function) or (macro) */
+        void set_kind(Symbol_sp function_kind);
+
+        SourceFileInfo_sp sourceFileInfo() const;
+        int lineNumber() const { return this->_LineNumber;};
+        int column() const { return this->_Column;};
+    public:
+
+
+        string __repr__() const;
+
+        string description() const { return _rep_(this->getFunctionName());};
+
+        void setLambdaListHandler(LambdaListHandler_sp llh) { this->_LambdaListHandler=llh;};
+        LambdaListHandler_sp getLambdaListHandler() {return this->_LambdaListHandler;};
+
+
+    };
+};
+template<> struct gctools::GCAllocatorInfo<core::Function_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+TRANSLATE(core::Function_O);
+
+
+namespace core {
+    SMART(Interpreted);
+    class Interpreted_O : public Function_O
+    {
+        LISP_BASE1(Function_O);
+        LISP_CLASS(core,CorePkg,Interpreted_O,"interpreted");
+        friend class SingleDispatchGenericFunction_O;
+        friend class Lambda_emf;
+        friend class Lambda_call_next_method;
+//    friend T_mv core::eval::applyFunctionToActivationFrame(Function_sp head, ActivationFrame_sp args);
+#if defined(XML_ARCHIVE)
+        void archiveBase(ArchiveP node);
+#endif // defined(XML_ARCHIVE)
+    protected:
+        /*! Closed over environment */
+        Environment_sp		_ClosedEnvironment;
+        // Docstring
+        Str_sp			_DocString;
+        // Declares
+        Cons_sp			_Declares;
+        // Code
+        Cons_sp			_Code;
+    private:
+        /*! Variadic funcall invoker */
+        virtual T_mv INVOKE(int nargs, ArgArray args );
+    public:
+
+        static Interpreted_sp make( T_sp functionName,
+                                    LambdaListHandler_sp llh,
+                                    Cons_sp code );
+        /*! Creates functions.  kind can be :macro or :function */
+        static Interpreted_sp create( T_sp functionName,
+                                      LambdaListHandler_sp lambda_list_handler,
+                                      Cons_sp declares,
+                                      Str_sp docString,
+                                      Cons_sp code,
+                                      Environment_sp environment,
+                                      Symbol_sp kind );
+
+
+
+    public:
+        virtual Environment_sp closedEnvironment() const;
+        void closeOverEnvironment(Environment_sp environment);
+
+        Cons_sp getCode() { return this->_Code;};
+
+        void setDocStr(Str_sp str);
+        Str_sp getDocString();
 
 
 //    virtual void setupArgumentHandling( Cons_sp arguments, Lisp_sp);
-public:
+    public:
 
-    virtual bool can_be_redefined() const { return true;};
+        virtual bool can_be_redefined() const { return true;};
 
-    string __repr__() const;
-    string __str__() { return _rep_(this); };
+        string __repr__() const;
+        string __str__() { return _rep_(this); };
 
-    explicit Interpreted_O();
-    virtual ~Interpreted_O() {};
+        explicit Interpreted_O();
+        virtual ~Interpreted_O() {};
+    };
 };
-
-
-
-
-
-
-
+template<> struct gctools::GCAllocatorInfo<core::Interpreted_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
 };
-
-
-
-TRANSLATE(core::Function_O);
 TRANSLATE(core::Interpreted_O);
 
 
@@ -210,6 +216,13 @@ namespace core
     }; // BuiltIn class
 	
 }; // core namespace
+template<> struct gctools::GCAllocatorInfo<core::BuiltIn_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
     TRANSLATE(core::BuiltIn_O);
     
 
@@ -254,6 +267,13 @@ namespace core
     }; // CompiledFunction class
     
 }; // core namespace
+template<> struct gctools::GCAllocatorInfo<core::CompiledFunction_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 TRANSLATE(core::CompiledFunction_O);
 
 

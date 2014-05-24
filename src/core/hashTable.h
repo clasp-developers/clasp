@@ -24,7 +24,11 @@ namespace core
 	LISP_VIRTUAL_CLASS(core,ClPkg,HashTable_O,"HashTable");
 	void archiveBase(SNode_sp node);
 
-	HashTable_O() : _InitialSize(4),_RehashSize(_Nil<Number_O>()), _HashTable(_Nil<VectorObjects_O>()) {};
+	HashTable_O() : _InitialSize(4)
+                      , _RehashSize(_Nil<Number_O>())
+                      , _RehashThreshold(1.2)
+                      , _HashTable(_Nil<VectorObjects_O>())
+                      , _HashTableCount(0) {};
 	virtual ~HashTable_O() {};
 //	DEFAULT_CTOR_DTOR(HashTable_O);
 	friend class HashTableEq_O;
@@ -34,16 +38,13 @@ namespace core
 	friend T_mv af_maphash(T_sp function_desig, HashTable_sp hash_table);
 	friend T_mv af_clrhash(HashTable_sp hash_table );
 
-    public:
-	void initialize();
-
     private: // instance variables here
 	uint		_InitialSize;
 	Number_sp	_RehashSize;
 	double		_RehashThreshold;
 	VectorObjects_sp _HashTable;
-	uint		_KeyCount;
-	uint		_HashTableEntryCount;
+	uint		_HashTableCount;
+//	uint		_EntryCount;
 #ifdef USE_MPS
         mps_ld_s        _LocationDependencyTracker;
 #endif        

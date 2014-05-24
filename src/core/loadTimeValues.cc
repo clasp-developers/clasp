@@ -121,9 +121,7 @@ namespace core
 #define DOCS_LoadTimeValues_O_make "This is a thin wrapper around VectorObjectsWithFillPtr - it creates a place to store LoadTimeValues"
     LoadTimeValues_sp LoadTimeValues_O::make(int dataDimension, int symbolsDimension)
     {_G();
-	GC_RESERVE_BEGIN(LoadTimeValues_O,vo ){
-	    GC_RESERVE_GET(LoadTimeValues_O,vo );
-	} GC_RESERVE_END(LoadTimeValues_O,vo );
+        GC_ALLOCATE(LoadTimeValues_O,vo );
 	vo->_Objects = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),dataDimension,0,false);
 	vo->_Symbols.resize(symbolsDimension,_Nil<Symbol_O>());
 	return vo;

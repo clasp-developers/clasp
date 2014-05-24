@@ -44,6 +44,11 @@ namespace core
     };
 
 
+    void Instance_O::initializeSlots(int numberOfSlots)
+    {
+        this->_Slots.resize(numberOfSlots,_Unbound<T_O>());
+    }
+
     T_sp Instance_O::oinstancep() const
     {
 	return Fixnum_O::create((LongLongInt)(this->_Slots.size()));

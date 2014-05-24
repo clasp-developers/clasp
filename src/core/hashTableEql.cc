@@ -33,9 +33,7 @@ namespace core
     HashTableEql_sp HashTableEql_O::create(uint sz,  Number_sp rehashSize, double rehashThreshold)
     {_G();
 	if ( sz == 0 ) sz = 16;
-	GC_RESERVE_BEGIN(HashTableEql_O,hashTable ){
-	    GC_RESERVE_GET(HashTableEql_O,hashTable );
-	} GC_RESERVE_END(HashTableEql_O,hashTable );
+        GC_ALLOCATE(HashTableEql_O,hashTable );
 	hashTable->setup(sz,rehashSize,rehashThreshold);
 	return hashTable;
     }
@@ -68,11 +66,6 @@ namespace core
     }
 #endif // defined(XML_ARCHIVE)
 
-
-    void HashTableEql_O::initialize()
-    {_OF();
-        this->Base::initialize();
-    }
 
 
     bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const

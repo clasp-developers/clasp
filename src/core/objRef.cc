@@ -76,9 +76,7 @@ namespace core
     ObjRef_sp ObjRef_O::create(Lisp_sp e,const string& asString)
     {
 	string		head, tail, orSelector, orName;
-	GC_RESERVE_BEGIN(ObjRef_O,ref ){
-	    GC_RESERVE_GET(ObjRef_O,ref );
-	} GC_RESERVE_END(ObjRef_O,ref );
+        GC_ALLOCATE(ObjRef_O,ref );
 	VectorStrings parts;
 	size_t split = asString.find("/");
 	if ( split != string::npos )

@@ -37,8 +37,12 @@ public:
 protected:
 	Class_sp			_InstanceCoreClass;
 public:
+	/*! Special creator used when starting up lisp environment, the object returned will be a root */
+	static StructureClass_sp createUncollectable();
+#if 0
 	/*! Special creator used when starting up lisp environment */
 	static StructureClass_sp create(Class_sp mc);
+#endif
 
 #if 0 // for now comment out all functions
 	static StructureClass_sp create(Lisp_sp e,Symbol_sp name /* , uint instanceClassSymbol */ );

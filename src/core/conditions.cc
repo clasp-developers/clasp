@@ -57,18 +57,14 @@ namespace core
 
     CandoException_sp CandoException_O::create(const string& msg)
     {
-	GC_RESERVE_BEGIN(CandoException_O,ce ){
-	    GC_RESERVE_GET(CandoException_O,ce );
-	} GC_RESERVE_END(CandoException_O,ce );
+        GC_ALLOCATE(CandoException_O,ce );
 	ce->setMessage(msg);
 	return ce;
     }
 
     CandoException_sp CandoException_O::create(const boost::format& fmt)
     {
-	GC_RESERVE_BEGIN(CandoException_O,ce ){
-	    GC_RESERVE_GET(CandoException_O,ce );
-	} GC_RESERVE_END(CandoException_O,ce );
+        GC_ALLOCATE(CandoException_O,ce );
 	ce->setMessage(fmt.str());
 	return ce;
     }
@@ -113,9 +109,7 @@ namespace core
 #define DECL_af_makeCondition ""
     T_sp af_makeCondition(T_sp type, Cons_sp slot_initializations)
     {_G();
-	GC_RESERVE_BEGIN(CandoException_O,condition ){
-	    GC_RESERVE_GET(CandoException_O,condition );
-	} GC_RESERVE_END(CandoException_O,condition );
+        GC_ALLOCATE(CandoException_O,condition );
 	Cons_sp all = Cons_O::createList(type,slot_initializations);
 	Str_sp msg = af_bformat(_Nil<T_O>(),"%s %s",all).as<Str_O>();
 	condition->setMessage(msg->get());

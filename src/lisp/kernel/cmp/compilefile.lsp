@@ -44,16 +44,6 @@
 
 
 
-#|
-(defun t1defmacro (form)
-  (destructuring-bind (name lambda-list &rest body)
-      form
-    (multiple-value-bind (function pprint doc-string)
-        (expand-defmacro name lambda-list body)
-      (let ((fn (cmp-eval function nil ))) ;; *cmp-env*)))
-        (cmp-env-register-global-macro name fn))
-      (t1expr* (macroexpand `(DEFMACRO ,@form))))))
-|#
 
 
 (defun t1progn (form)
