@@ -89,7 +89,6 @@ namespace core {
     string	SymbolSet_O::asString()
     {
         stringstream 		ss;
-        set<Symbol_sp>::iterator	si;
         string			nm;
         ss.str("");
         this->map( [&ss] (Symbol_sp s) {
@@ -246,7 +245,6 @@ namespace core {
     SymbolSet_sp	SymbolSet_O::relativeComplement(SymbolSet_sp b)
     {
         SymbolSet_sp		nset;
-        set<Symbol_sp>::iterator	si;
         nset = SymbolSet_O::create();
         this->map( [&nset,&b] (Symbol_sp si) {
                 if ( !b->contains(si) )
@@ -279,7 +277,6 @@ namespace core {
     ObjectSet_sp	SymbolSet_O::cartesianProductWrapped(SymbolSet_sp b,const SymbolSetCartesianProductWrapper& wrapper)
     {_G();
         ObjectSet_sp		nset;
-        set<Symbol_sp>::iterator	si,bi;
         nset = ObjectSet_O::create();
         this->map( [&b,&nset,&wrapper] (Symbol_sp si) {
                 b->map( [&si,&nset,&wrapper] (Symbol_sp bi) {
@@ -326,7 +323,7 @@ namespace core {
             .def("insert",&SymbolSet_O::insert)
             .def("contains",&SymbolSet_O::contains)
             .def("containsSubset",&SymbolSet_O::containsSubset)
-            .def("remove",&SymbolSet_O::remove)
+//            .def("remove",&SymbolSet_O::remove)
             .def("clear",&SymbolSet_O::clear)
             .def("asString",&SymbolSet_O::asString)
             .def("union",&SymbolSet_O::setUnion)
@@ -348,7 +345,7 @@ namespace core {
             .def("insert",&SymbolSet_O::insert)
             .def("contains",&SymbolSet_O::contains)
             .def("containsSubset",&SymbolSet_O::containsSubset)
-            .def("remove",&SymbolSet_O::remove)
+//            .def("remove",&SymbolSet_O::remove)
             .def("clear",&SymbolSet_O::clear)
             .def("asString",&SymbolSet_O::asString)
             .def("union",&SymbolSet_O::setUnion)

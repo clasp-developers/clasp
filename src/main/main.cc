@@ -121,7 +121,7 @@ int startup(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize
     }
     catch (core::CatchThrow& ee)
     {
-	_lisp->print(BF("%s:%d Uncaught THROW tag[%s]  return-value[%s]") % __FILE__ % __LINE__ % _rep_(ee.getThrownTag()) % _rep_(ee.getReturnedObject()) );
+	_lisp->print(BF("%s:%d Uncaught THROW frame[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW") % __FILE__ % __LINE__ % ee.getFrame() );
     }
     catch (core::HardError& ee)
     {
@@ -168,10 +168,10 @@ int main(int argc, char* argv[] )
     int mpiRank = 0;
     int mpiSize = 1;
 
-#if 0
-    boost::mpi::environment env(argc,argv);
-    boost::mpi::communicator world;
-#endif
+
+
+
+
 
 #ifdef USE_MPI
     try {

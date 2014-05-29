@@ -237,7 +237,7 @@ No DIBuilder is defined for the default module")
 
 (defun fasl-pathname-type (file-type)
   (let ((is-min (cmp::search* :ecl-min *features*))
-        (is-ref-count (not (cmp::search* :use-mps *features*))))
+        (is-ref-count (cmp::search* :use-refcount *features*)))
     (fasl-pathname-type-impl file-type
                              :min is-min
                              :ref-count is-ref-count)))

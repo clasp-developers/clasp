@@ -21,8 +21,7 @@ namespace clbind {
 
 
     template <typename T, typename Pointer>
-    class DefaultConstructorAllocatorFunctor : public core::AllocatorFunctor
-                                             , public gctools::HeapRoot
+    class DefaultConstructorCreator : public core::Creator
     {
     public:
         typedef Wrapper<T,Pointer>  WrapperType;
@@ -40,10 +39,11 @@ namespace clbind {
             return GC_RES_OK;
         }
     public:
-        DefaultConstructorAllocatorFunctor() : _mostDerivedClassSymbol(reg::lisp_classSymbol<T>())
+        DISABLE_NEW();
+        DefaultConstructorCreator() : _mostDerivedClassSymbol(reg::lisp_classSymbol<T>())
                                              , _Kind(gctools::GCInfo<WrapperType>::Kind)
                                              , _duplicationLevel(0) {};
-        DefaultConstructorAllocatorFunctor(core::Symbol_sp cn, int kind, int dupnum)
+        DefaultConstructorCreator(core::Symbol_sp cn, int kind, int dupnum)
             : _mostDerivedClassSymbol(cn)
             , _Kind(kind)
             , _duplicationLevel(dupnum) {};
@@ -53,7 +53,7 @@ namespace clbind {
         void describe() const {
             stringstream ss;
             core::Symbol_sp baseClassSymbol = reg::lisp_classSymbol<T>();
-            ss << "DefaultConstructorAllocatorFunctor for class " << _rep_(baseClassSymbol);
+            ss << "DefaultConstructorCreator for class " << _rep_(baseClassSymbol);
             if ( baseClassSymbol != this->_mostDerivedClassSymbol ) {
                 ss << " derived class " << _rep_(this->_mostDerivedClassSymbol);
             }
@@ -67,8 +67,8 @@ namespace clbind {
 //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
             return retval;
         }
-        AllocatorFunctor* duplicateForClassName(core::Symbol_sp className) {
-            AllocatorFunctor* allocator = new DefaultConstructorAllocatorFunctor<T,Pointer>(className,this->_Kind,this->_duplicationLevel+1);
+        Creator* duplicateForClassName(core::Symbol_sp className) {
+            Creator* allocator = gctools::allocateCreator<DefaultConstructorCreator<T,Pointer>>(className,this->_Kind,this->_duplicationLevel+1);
             return allocator;
         }
     };
@@ -85,14 +85,14 @@ namespace clbind {
 
 
     template <typename T>
-    class DerivableDefaultConstructorAllocatorFunctor : public core::AllocatorFunctor
-                                                      , public gctools::HeapRoot
+    class DerivableDefaultConstructorCreator : public core::Creator
     {
     public:
         core::Symbol_sp _mostDerivedClassSymbol;
         int _Kind;
         int _duplicationLevel;
     public:
+        DISABLE_NEW();
         virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
         {
 #ifdef USE_MPS
@@ -103,10 +103,10 @@ namespace clbind {
             return GC_RES_OK;
         }
     public:
-        DerivableDefaultConstructorAllocatorFunctor() : _mostDerivedClassSymbol(reg::lisp_classSymbol<T>())
+        DerivableDefaultConstructorCreator() : _mostDerivedClassSymbol(reg::lisp_classSymbol<T>())
                                                       , _Kind(gctools::GCInfo<T>::Kind)
                                                       , _duplicationLevel(0) {};
-        DerivableDefaultConstructorAllocatorFunctor(core::Symbol_sp cn, int kind, int dupnum)
+        DerivableDefaultConstructorCreator(core::Symbol_sp cn, int kind, int dupnum)
             : _mostDerivedClassSymbol(cn)
             , _Kind(kind)
             , _duplicationLevel(dupnum) {};
@@ -116,7 +116,7 @@ namespace clbind {
         void describe() const {
             stringstream ss;
             core::Symbol_sp baseClassSymbol = reg::lisp_classSymbol<T>();
-            ss << "DerivableDefaultConstructorAllocatorFunctor for class " << _rep_(baseClassSymbol);
+            ss << "DerivableDefaultConstructorCreator for class " << _rep_(baseClassSymbol);
             if ( baseClassSymbol != this->_mostDerivedClassSymbol ) {
                 ss << " derived class " << _rep_(this->_mostDerivedClassSymbol);
             }
@@ -133,8 +133,8 @@ namespace clbind {
 //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
             return obj;
         }
-        AllocatorFunctor* duplicateForClassName(core::Symbol_sp className) {
-            AllocatorFunctor* allocator = new DerivableDefaultConstructorAllocatorFunctor<T>(className,this->_Kind,this->_duplicationLevel+1);
+        Creator* duplicateForClassName(core::Symbol_sp className) {
+            Creator* allocator = gctools::allocateCreator<DerivableDefaultConstructorCreator<T>>(className,this->_Kind,this->_duplicationLevel+1);
             return allocator;
         }
     };
@@ -151,7 +151,7 @@ namespace clbind {
     public:
         enum { NumParams = 0 };
         DerivableDefaultConstructorFunctoid(const string& name) : core::Functoid(name) {};
-
+        DISABLE_NEW();
         core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
         {
             int countPureOutValues = CountPureOutValues<Policies>::value;

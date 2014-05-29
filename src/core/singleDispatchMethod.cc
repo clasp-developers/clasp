@@ -50,6 +50,8 @@ namespace core
 	    this->_arguments = args;
 	}
 
+        DISABLE_NEW();
+
 	/*! Indicates if this Functoid uses activation frames to get arguments */
 	virtual bool	requires_activation_frame() const { return true;}
 
@@ -88,6 +90,8 @@ namespace core
 	    this->_next_emfun = next_emfun;
 	}
 
+        DISABLE_NEW();
+
 	/*! Doesn't take any arguments */
 	T_sp invoke(Function_sp e,Cons_sp cnm_args, Environment_sp env, Lisp_sp lisp )
 	{_G();
@@ -119,6 +123,7 @@ namespace core
 	    this->_temporary_function = _Nil<Function_O>();
 	}
 
+        DISABLE_NEW();
 
 	bool requires_activation_frame() const { return true; };
 
@@ -225,7 +230,7 @@ namespace core
 	// -- this function has to accept two arguments: (args next-emfun)
 	// So it's a chainable methoid, it can be called with a next-emfun argument
 	// which can be called by applying arguments to the local function "call-next-method"
-	Functoid* method_functoid = new Lambda_method_function(name->fullName(),method);
+	Functoid* method_functoid = gctools::allocateFunctoid<Lambda_method_function>(name->fullName(),method);
 	CompiledBody_sp cb_method_function_primitive = CompiledBody_O::create(method_functoid,_Nil<T_O>());
 	LambdaListHandler_sp llh_pass_arguments_through(_Nil<LambdaListHandler_O>());
 	method->_method_builtin = BuiltIn_O::make(name,llh_pass_arguments_through,cb_method_function_primitive);

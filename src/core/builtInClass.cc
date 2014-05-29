@@ -65,10 +65,10 @@ namespace core
 	    _lisp->print(BF("Base class: %s") % (oCar(cur).as<Class_O>())->className() );
 	}
 	_lisp->print(BF("%s") % this->dumpInfo() );
-        if ( this->_allocator == NULL ) {
+        if ( this->_creator == NULL ) {
             printf("this->_allocator -> NULL\n");
         } else {
-            this->_allocator->describe();
+            this->_creator->describe();
         }
         _lisp->print(BF("cxxDerivableClassP() -> %d") % this->cxxDerivableClassP());
         _lisp->print(BF("primaryCxxDerivableClassP() -> %d") % this->primaryCxxDerivableClassP());

@@ -360,284 +360,10 @@ namespace core
 
 
 
-#if 0
-/*
-  __BEGIN_DOC(candoScript.specialForm.dolist,dolist)
-  For each element of the list put it in the localVariableName and evaluate the code.
-  __END_DOC
-*/
-	T_sp interpreter_dolist(Cons_sp args, Environment_sp environment)
-	{_G();
-	    Cons_sp varPart = args->ocar().as_or_nil<Cons_O>();
-	    Symbol_sp sym = varPart->ocar().as<Symbol_O>();
-	    T_sp listForm = varPart->ocadr();
-	    T_sp resultForm = varPart->ocaddr();
-	    LOG(BF("dolist symbo[%s] listForm[%s] resultForm[%s]")
-		% _rep_(sym) % _rep_(listForm) % _rep_(resultForm) );
-	    Cons_sp declares;
-	    Cons_sp code;
-	    extract_declares_code(args->cdr(),declares,code);
-	    LOG(BF("dolist code = %s") % _rep_(code) );
-	    T_sp res = _Nil<T_O>();
-	    Cons_sp cur;
-	    BlockEnvironment_sp implicitBlock = BlockEnvironment_O::create(environment,_lisp);
-	    TRY()
-	    {
-		FunctionEnvironment_sp newEnvironment = FunctionEnvironment_O::create(cl::_sym_dolist,implicitBlock,_lisp);
-		EnvironmentDynamicLexicalScopeManager scope(newEnvironment);
-		scope.extend(sym,-1,_Nil<T_O>());
-		Cons_sp list = eval::evaluate(listForm,environment);
-		if ( list.notnilp() )
-		{ _BLOCK_TRACEF(BF("Starting dolist loop with list[%s]") % _rep_(list) );
-		    for ( ; list.notnilp(); list = list->cdr() )
-		    {
-			T_sp val = list->ocar();
-			LOG(BF("Evaluating dolist for cur=%s") % _rep_(val) );
-			newEnvironment->update(sym,val);
-			res = eval::sp_tagbody(code,newEnvironment); /* result thrown away */
-		    }
-		}
-		if ( resultForm.notnilp() )
-		{
-		    res = eval::evaluate(resultForm,newEnvironment);
-		}
-	    }	catch (ReturnFrom& returnFrom)
-		{
-		    if ( returnFrom.getBlockSymbol().notnilp() )
-		    {
-			throw returnFrom;
-		    }	
-		    res = returnFrom.getReturnedObject();
-		} catch (...)	
-		  {
-		      throw;
-		  }
-	    return res;
-	}
-
-
-/*
-  __BEGIN_DOC(candoScript.specialForm.foreach,foreach)
-  \scriptCmd{foreach}{localVariableName list code}
-
-  For each element of the list put it in the localVariableName and evaluate the code.
-  __END_DOC
-*/
-
-	T_sp interpreter_dotimes(Cons_sp args, Environment_sp environment)
-	{_G();
-	    Cons_sp varPart = args->ocar().as_or_nil<Cons_O>();
-	    Symbol_sp sym = varPart->ocar().as<Symbol_O>();
-	    T_sp countForm = varPart->ocadr();
-	    T_sp resultForm = varPart->ocaddr();
-	    LOG(BF("dotimes symbo[%s] countForm[%s] resultForm[%s]")
-		% _rep_(sym) % _rep_(countForm) % resultForm->__repr__() );
-	    Cons_sp declares;
-	    Cons_sp code;
-	    extract_declares_code(args->cdr(),declares,code);
-	    LOG(BF("dotimes code = %s") % code->__repr__() );
-	    T_sp res = _Nil<T_O>();
-	    Cons_sp cur;
-	    BlockEnvironment_sp implicitBlock = BlockEnvironment_O::create(environment,_lisp);
-	    TRY()
-	    {
-		FunctionEnvironment_sp newEnvironment = FunctionEnvironment_O::create(cl::_sym_dotimes,implicitBlock,_lisp);
-		EnvironmentDynamicLexicalScopeManager scope(newEnvironment);
-		scope.extend(sym,-1,_Nil<T_O>());
-		Rational_sp count = eval::evaluate(countForm,environment).as<Rational_O>();
-		LongLongInt llcount = count->as_LongLongInt();
-		if ( llcount > 0 )
-		{ _BLOCK_TRACEF(BF("Starting dotimes loop with count[%d]") % llcount);
-		    for ( int llcur = 0; llcur<llcount; llcur++ )
-		    {
-			Integer_sp val = Integer_O::create(llcur);
-			LOG(BF("Evaluating dotimes for cur=%d") % llcur  );
-			newEnvironment->update(sym,val);
-			res = eval::sp_tagbody(code,newEnvironment); /* result thrown away */
-		    }
-		}
-		if ( resultForm.notnilp() )
-		{
-		    res = eval::evaluate(resultForm,newEnvironment);
-		}
-	    }	catch (ReturnFrom& returnFrom)
-		{
-		    if ( returnFrom.getBlockSymbol().notnilp() )
-		    {
-			throw returnFrom;
-		    }	
-		    res = returnFrom.getReturnedObject();
-		} catch (...)	
-		  {
-		      throw;
-		  }
-	    return res;
-	}
-
-
-
-	T_mv interpreter_do(Cons_sp args, Environment_sp environment)
-	{_G();
-	    Cons_sp iterationPart = args->ocar().as_or_nil<Cons_O>();
-	    Cons_sp endPart = args->ocadr().as_or_nil<Cons_O>();
-	    LOG(BF("do iterationPart[%s] endPart[%s]")
-		% _rep_(iterationPart) % _rep_(endPart) );
-	    Cons_sp code;
-	    Cons_sp declares;
-	    Str_sp docstring;
-	    extract_declares_docstring_code(args->cddr(),declares,false,docstring,code,_lisp);
-	    LOG(BF("do code = %s") % code->__repr__() );
-	    T_mv res = mem::multiple_values<T_O>(_Nil<T_O>(),1);
-	    Cons_sp cur;
-	    BlockEnvironment_sp implicitBlock = BlockEnvironment_O::create(environment,_lisp);
-	    TRY()
-	    {
-		FunctionEnvironment_sp newEnvironment = FunctionEnvironment_O::create(cl::_sym_do,implicitBlock,_lisp);
-		EnvironmentDynamicLexicalScopeManager scope(newEnvironment);
-		vector<T_sp> values;
-		values.resize(af_length(iterationPart));
-		{_BLOCK_TRACEF(BF("Calculating initial values"));
-		    int i = 0;
-		    for ( Cons_sp init = iterationPart; init.notnilp(); init = init->cdr(), i++ )
-		    {
-			values[i] = eval::evaluate(init->ocar().as_or_nil<Cons_O>()->ocadr(),newEnvironment);
-		    }
-		}
-		{_BLOCK_TRACEF(BF("Binding initial values"));
-		    int i = 0;
-		    for ( Cons_sp init = iterationPart;init.notnilp(); init = init->cdr(), i++ )
-		    {
-			Symbol_sp var = init->ocar().as_or_nil<Cons_O>()->ocar().as<Symbol_O>();
-			if ( var->hasDynamicValue() )
-			{
-			    SIMPLE_ERROR(BF("do variable %s has dynamic value - you shouldn't use it as an iterator variable") % var->__repr__() );
-			}
-			scope.extend(var,-1,values[i]);
-		    }
-		}
-		{ _BLOCK_TRACEF(BF("Starting do loop"));
-		    while (1)
-		    {
-			T_sp test = eval::evaluate(endPart->ocar(),newEnvironment);
-			if ( test.isTrue() ) break;
-			res = eval::sp_tagbody(code,newEnvironment);
-			{_BLOCK_TRACEF(BF("Evaluate the update forms"));
-			    int i = 0;
-			    // Update all values
-			    for ( Cons_sp init = iterationPart; init.notnilp(); init = init->cdr())
-			    {
-				// Check if there is an increment form
-				if ( init->ocar().as_or_nil<Cons_O>()->cddr().notnilp() )
-				{
-				    T_sp update = eval::evaluate(init->ocar().as_or_nil<Cons_O>()->ocaddr());
-				    values[i] = update;
-				} else values[i].reset();
-				++i;
-			    }
-			    // Bind the values to the symbols after every one has been updated
-			    i = 0;
-			    for ( Cons_sp init = iterationPart; init.notnilp(); init = init->cdr() )
-			    {
-				if (values[i].pointerp()) // was use_count()>0
-				{
-				    Symbol_sp var = init->ocar().as_or_nil<Cons_O>()->ocar().as<Symbol_O>();
-				    newEnvironment->update(var,values[i]);
-				}
-				++i;
-			    }
-			}
-		    }
-		}
-		if ( endPart->ocadr().notnilp() )
-		{
-		    res = eval::evaluateListReturnLast(endPart->cdr(),newEnvironment);
-		}
-	    }	catch (ReturnFrom& returnFrom)
-		{
-		    if ( returnFrom.getBlockSymbol().notnilp() )
-		    {
-			throw returnFrom;
-		    }	
-		    res = returnFrom.getReturnedObject();
-		} catch (...)	
-		  {
-		      throw;
-		  }
-	    return res;
-	}
-
-
-	T_mv interpreter_doStar(Cons_sp args, Environment_sp environment)
-	{_G();
-	    Cons_sp iterationPart = args->ocar().as_or_nil<Cons_O>();
-	    Cons_sp endPart = args->ocadr().as_or_nil<Cons_O>();
-	    LOG(BF("do iterationPart[%s] endPart[%s]")
-		% iterationPart->__repr__() % endPart->__repr__() );
-	    Cons_sp declares;
-	    Str_sp docstring;
-	    Cons_sp code;
-	    extract_declares_docstring_code(args->cddr(),declares,false,docstring,code,_lisp);
-	    LOG(BF("do code = %s") % code->__repr__() );
-	    T_mv res = mem::multiple_values<T_O>(_Nil<T_O>(),1);
-	    Cons_sp cur;
-	    BlockEnvironment_sp implicitBlock = BlockEnvironment_O::create(environment,_lisp);
-	    TRY()
-	    {
-		FunctionEnvironment_sp newEnvironment = FunctionEnvironment_O::create(cl::_sym_do,implicitBlock,_lisp);
-		EnvironmentDynamicLexicalScopeManager scope(newEnvironment);
-		{_BLOCK_TRACEF(BF("Calculating initial values"));
-		    for ( Cons_sp init = iterationPart; init.notnilp(); init = init->cdr() )
-		    {
-			T_sp initialVal  = eval::evaluate(init->ocar().as_or_nil<Cons_O>()->ocadr());
-			scope.extend(init->ocar().as_or_nil<Cons_O>()->ocar().as<Symbol_O>(),-1,initialVal);
-		    }
-		}
-		{ _BLOCK_TRACEF(BF("Starting do loop"));
-		    while (1)
-		    {
-			if ( eval::evaluate(endPart->ocar(),newEnvironment).isTrue() ) break;
-			res = eval::sp_tagbody(code,newEnvironment);
-			{_BLOCK_TRACEF(BF("Evaluate the update forms"));
-			    for ( Cons_sp init = iterationPart; init.notnilp(); init = init->cdr())
-			    {
-				// Check if there is an increment form
-				if ( init->ocar().as_or_nil<Cons_O>()->cddr().notnilp() )
-				{
-				    T_mv update = eval::evaluate(init->ocar().as_or_nil<Cons_O>()->ocaddr());
-				    newEnvironment->update(init->ocar().as_or_nil<Cons_O>()->ocar().as<Symbol_O>(),update);
-				}
-			    }
-			}
-		    }
-		}
-		res = _Nil<T_O>();
-		if ( endPart->ocadr().notnilp() )
-		{
-		    res = eval::evaluateListReturnLast(endPart->cdr(),newEnvironment);
-		}
-	    }	catch (ReturnFrom& returnFrom)
-		{
-		    if ( returnFrom.getBlockSymbol().notnilp() )
-		    {
-			throw returnFrom;
-		    }	
-		    res = returnFrom.getReturnedObject();
-		} catch (...)	
-		  {
-		      throw;
-		  }
-	    return res;
-	}
-
-#endif
-
     };
 
     namespace eval
     {
-
-
-
 	void extract_declares_docstring_code_specials(Cons_sp inputBody, Cons_sp& declares, bool expectDocString, Str_sp& documentation, Cons_sp& code, Cons_sp& specials )
 	{_G();
 #if 1
@@ -989,56 +715,61 @@ namespace core
 		}
 	    }
 	    LOG(BF("sp_tagbody has extended the environment to: %s") % tagbodyEnv->__repr__() );
-	    // Start to evaluate the tagbody
-	    Cons_sp ip = args;
-	    while (ip.notnilp())
-	    {
-		T_sp tagOrForm = oCar(ip);
-		if ( af_consP(tagOrForm) )
-		{
-		    try
-		    {
-			eval::evaluate(tagOrForm,tagbodyEnv);
-		    }
-		    catch (LexicalGo& go)
-		    {
-			if ( go.depth() != 0 )
-			{
-			    go.decrementDepth();
-			    throw go;
-			}
-			int index = go.index();
-			ip = tagbodyEnv->codePos(index);
-		    }
-		    catch (DynamicGo& dgo)
-		    {
-			if ( dgo.tagbodyId() != Environment_O::nilCheck_getActivationFrame(tagbodyEnv).as<TagbodyFrame_O>()->tagbodyId() )
-			{
-			    throw dgo;
-			}
-			int index = dgo.index();
-			ip = tagbodyEnv->codePos(index);
-		    }
-		}
-		ip = cCdr(ip);
-	    }
-	    LOG(BF("Leaving sp_tagbody"));
+            T_sp tagbodyId = Environment_O::nilCheck_getActivationFrame(tagbodyEnv).as<TagbodyFrame_O>();
+            int frame = _lisp->exceptionStack().push(TagbodyFrame,tagbodyId);
+            // Start to evaluate the tagbody
+            Cons_sp ip = args;
+            while (ip.notnilp())
+            {
+                T_sp tagOrForm = oCar(ip);
+                if ( af_consP(tagOrForm) )
+                {
+                    try
+                    {
+                        eval::evaluate(tagOrForm,tagbodyEnv);
+                    }
+                    catch (LexicalGo& go)
+                    {
+                        if ( go.getFrame() != frame ) {throw go;}
+                        int index = go.index();
+                        ip = tagbodyEnv->codePos(index);
+                    }
+                    catch (DynamicGo& dgo)
+                    {
+                        if ( dgo.getFrame() != frame ) {throw dgo;}
+                        int index = dgo.index();
+                        ip = tagbodyEnv->codePos(index);
+                    }
+                }
+                ip = cCdr(ip);
+            }
+            LOG(BF("Leaving sp_tagbody"));
+            _lisp->exceptionStack().unwind(frame);
 	    return Values0<T_O>();
 	};
+
+
+
 	
 #define DOCS_sp_go "go special form - see CLHS"
 	T_mv sp_go( Cons_sp args, Environment_sp env)
 	{_G();
 	    Symbol_sp tag = oCar(args).as<Symbol_O>();
-	    int depth;
+	    Environment_sp tagbodyEnvironment(_Nil<Environment_O>());
+            int depth;
 	    int index;
 	    bool foundTag = env->findTag(tag,depth,index);
 	    if ( !foundTag )
 	    {
-		SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env) );
+		SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") 
+                             % _rep_(tag) % _rep_(env) );
 	    }
-	    T_sp tagbodyId = Environment_O::nilCheck_getActivationFrame(env).as<TagbodyFrame_O>()->tagbodyId();
-	    DynamicGo go(tagbodyId,index);
+	    T_sp tagbodyId = Environment_O::nilCheck_getActivationFrame(env)->lookupTagbodyId(depth,index).as<TagbodyFrame_O>();
+            int frame = _lisp->exceptionStack().findKey(TagbodyFrame,tagbodyId);
+            if ( frame < 0 ) {
+                SIMPLE_ERROR(BF("Could not find tagbody frame for tag %s") % _rep_(tag) );
+            }
+	    DynamicGo go(frame,index);
 	    throw go;
 	}
 
@@ -1264,26 +995,23 @@ namespace core
 
 	T_mv sp_block( Cons_sp args, Environment_sp environment)
 	{_G();
-	    BlockEnvironment_sp newEnvironment = BlockEnvironment_O::create(environment);
 	    Symbol_sp blockSymbol = oCar(args).as<Symbol_O>();
-	    newEnvironment->setBlockSymbol(blockSymbol);
+	    BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol,environment);
+            int frame = _lisp->exceptionStack().push(BlockFrame,blockSymbol);
 	    LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__() );
 	    T_mv result;
-	    TRY()
-	    {
+	    try {
 		result = eval::sp_progn(cCdr(args),newEnvironment);
-	    }
-	    catch (ReturnFrom& returnFrom)
-	    {
+	    } catch (ReturnFrom& returnFrom) {
 		LOG(BF("Caught ReturnFrom with returnFrom.getBlockDepth() ==> %d") % returnFrom.getBlockDepth() );
-		if ( returnFrom.getBlockDepth() != 0 ) // Symbol() != newEnvironment->getBlockSymbol() )
+		if ( returnFrom.getFrame() != frame ) // Symbol() != newEnvironment->getBlockSymbol() )
 		{
-		    returnFrom.decBlockDepth();
 		    throw returnFrom;
 		}
-		result = returnFrom.getReturnedObject();
+		result = mem::multiple_values<T_O>::createFromValues();  // returnFrom.getReturnedObject();
 	    }
 	    LOG(BF("Leaving sp_block"));
+            _lisp->exceptionStack().unwind(frame);
 	    return result;
 	}
 
@@ -1291,8 +1019,8 @@ namespace core
 	T_mv sp_returnFrom( Cons_sp args, Environment_sp environment)
 	{_G();
 	    Symbol_sp blockSymbol = oCar(args).as<Symbol_O>();
-	    if ( environment->find_block_named_environment(blockSymbol).nilp() )
-	    {
+            int frame = _lisp->exceptionStack().findKey(BlockFrame,blockSymbol);
+            if ( frame < 0 ) {
 		SIMPLE_ERROR(BF("Could not find block named %s in lexical environment: %s") % _rep_(blockSymbol) % _rep_(environment) );
 	    }
 	    T_mv result = Values(_Nil<T_O>());
@@ -1300,24 +1028,75 @@ namespace core
 	    {
 		result = eval::evaluate(oCadr(args),environment);
 	    }
-	    if ( environment->recognizesBlockSymbol(blockSymbol) )
-	    {
-		int blockDepth = environment->calculateBlockDepth(blockSymbol);
-		ReturnFrom returnFrom(blockDepth,result);
-		throw returnFrom;
-	    }
-	    SIMPLE_ERROR(BF("Block symbol %s not recognized") % _rep_(blockSymbol) );
+            result.saveToMultipleValue0();
+            ReturnFrom returnFrom(frame);
+            throw returnFrom;
 	}
 
+#if 1 // new way using RAII
+	T_mv sp_unwindProtect( Cons_sp args, Environment_sp environment)
+	{_G();
+            MultipleValues* mv = lisp_multipleValues();
+            gctools::Vec0<T_sp>  save;
+            struct UnwindProtectDone {};
+	    try {
+                // Evaluate the protected form
+		T_mv result = eval::evaluate(oCar(args),environment);
+                result.saveToMultipleValue0();
+                throw(UnwindProtectDone());
+            } catch (UnwindProtectDone& dummy) {
+                // Save the return values
+                mv->saveToVec0(save);
+                // Evaluate the unwind forms -- This is wrong - it shouldn't be protected here
+		eval::sp_progn(cCdr(args),environment);
+            } catch (...) {
+                mv->saveToVec0(save);
+                eval::sp_progn(cCdr(args),environment);
+                mv->loadFromVec0(save);
+                throw;
+            }
+	    return mem::multiple_values<T_O>::createFromVec0(save);
+	}
 
+#else // old
+  #if 0
+        // use gctools::Vec0
+	T_mv sp_unwindProtect( Cons_sp args, Environment_sp environment)
+	{_G();
+            T_mv result = Values(_Nil<T_O>());
+            MultipleValues* mv = lisp_multipleValues();
+            gctools::Vec0<T_sp> save;
+            TRY()
+	    {
+                // Evaluate the protected form
+		result = eval::evaluate(oCar(args),environment);
+                // Save the return values
+                mv->saveToVec0(save);
+                // Evaluate the unwind forms --
+                // THIS IS REALLY, REALLY WRONG - it shouldn't be protected here
+		eval::sp_progn(cCdr(args),environment);
+	    } catch (...)
+	      {
+                  mv->saveToVec0(save);
+		  eval::sp_progn(cCdr(args),environment);
+		  throw;
+	      }
+	    return mem::multiple_values<T_O>::createFromVec0(save);
+	}
+  #else
+        // original
 	T_mv sp_unwindProtect( Cons_sp args, Environment_sp environment)
 	{_G();
 	    T_mv result = Values(_Nil<T_O>());
 	    VectorObjects_sp save(VectorObjects_O::create());
 	    TRY()
 	    {
+                // Evaluate the protected form
 		result = eval::evaluate(oCar(args),environment);
+                // Save the return values
 		multipleValuesSaveToVector(result,save);
+                // Evaluate the unwind forms --
+                // THIS IS REALLY, REALLY WRONG - it shouldn't be protected here
 		eval::sp_progn(cCdr(args),environment);
 	    } catch (...)
 	      {
@@ -1326,28 +1105,26 @@ namespace core
 	      }
 	    return multipleValuesLoadFromVector(save);
 	}
-
+  #endif
+#endif
 
 
 
 	T_mv sp_catch( Cons_sp args, Environment_sp environment)
 	{_G();
 	    T_sp mytag = eval::evaluate(oCar(args),environment);
+            int frame = _lisp->exceptionStack().push(CatchFrame,mytag);
 	    T_mv result;
-	    TRY()
-	    {
+	    try {
 		result = eval::sp_progn(cCdr(args),environment);
-	    } catch (CatchThrow& catchThrow)
-	      {
-		  if ( catchThrow.getThrownTag() != mytag )
-		  {
-		      throw catchThrow;
-		  }
-		  result = catchThrow.getReturnedObject();
-	      } catch (...)
-		{
-		    throw;
-		}
+	    } catch (CatchThrow& catchThrow) {
+                if ( catchThrow.getFrame() != frame )
+                {
+                    throw catchThrow;
+                }
+                result = mem::multiple_values<T_O>::createFromValues();
+            }
+            _lisp->exceptionStack().unwind(frame);
 	    return result;
 	}
 
@@ -1360,38 +1137,20 @@ namespace core
 	{_G();
 	    T_sp throwTag = eval::evaluate(oCar(args),environment);
 	    T_mv result = Values(_Nil<T_O>());
+            int frame = _lisp->exceptionStack().findKey(CatchFrame,throwTag);
+            if ( frame < 0 ) {
+                CONTROL_ERROR();
+            }
 	    if ( cCdr(args).notnilp() )
 	    {
 		result = eval::evaluate(oCadr(args),environment);
 	    }
-	    throw CatchThrow(throwTag,result);
+            // The first return value needs to be saved in MultipleValues
+            result.saveToMultipleValue0();
+            // I should search for the Catch frame for throwTag and
+            // invoke an error if it doesn't exist
+	    throw CatchThrow(frame);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

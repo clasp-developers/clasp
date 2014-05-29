@@ -186,7 +186,7 @@ namespace core
 	virtual Environment_sp find_current_code_environment() const;
 
 	virtual bool recognizesBlockSymbol(Symbol_sp sym) const;
-	virtual int calculateBlockDepth(Symbol_sp sym) const;
+	virtual int getBlockSymbolFrame(Symbol_sp sym) const;
 
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
 	bool findTag(Symbol_sp tag, int& depth, int& index ) const;
@@ -544,6 +544,12 @@ namespace core
 
     };
 };
+template<> struct gctools::GCAllocatorInfo<core::UnwindProtectEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
 TRANSLATE(core::UnwindProtectEnvironment_O);
 
 
@@ -583,10 +589,10 @@ namespace core
     public:
 
 	Symbol_sp getBlockSymbol() const { return this->_BlockSymbol;};
-	void setBlockSymbol(Symbol_sp sym) { this->_BlockSymbol = sym;};
+	void setBlockSymbol(Symbol_sp sym ) { this->_BlockSymbol = sym;};
 
 	bool recognizesBlockSymbol(Symbol_sp sym) const;
-	int calculateBlockDepth(Symbol_sp sym) const;
+//        int getBlockSymbolFrame(Symbol_sp sym) const;
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/

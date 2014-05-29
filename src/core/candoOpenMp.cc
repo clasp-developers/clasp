@@ -1,5 +1,6 @@
 
 #include "foundation.h"
+#include "object.h"
 #include "candoOpenMp.h"
 
 

@@ -74,11 +74,12 @@ TRANSLATE(core::SingleDispatchGenericFunction_O);
 
 namespace core
 {
-    class SingleDispatchGenericFunctoid : public AFFunctoid
+    class SingleDispatchGenericFunctoid : public Closure
     {
     private:
 	SingleDispatchGenericFunction_sp 	_sdgf;
     public:
+        DISABLE_NEW();
 	virtual string describe() const {return "SingleDispatchGenericFunctoid";};
 	virtual T_mv activate( ActivationFrame_sp closedEnv,int nargs, ArgArray args )
 	{
@@ -104,6 +105,8 @@ namespace core
 		   Symbol_sp emf_name,
 		   SingleDispatchMethod_sp cur_method );
         GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
+
+        DISABLE_NEW();
 
         virtual T_mv activate( ActivationFrame_sp closedEnv,int nargs, ArgArray args )
         {

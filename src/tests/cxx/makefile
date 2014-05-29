@@ -1,3 +1,7 @@
+jmp: jmp.cc
+	clang++ -o jmp jmp.cc
+
+
 testarr: testarr.cc
 	clang++ -Wgnu-array-member-paren-init -std=c++11 -stdlib=libc++ -O0 -g -o testarr testarr.cc
 

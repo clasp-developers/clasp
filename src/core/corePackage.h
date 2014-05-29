@@ -14,15 +14,16 @@ namespace core
     extern const char* CorePkg_nicknames[];
 
 
-    class CoreExposer : public core::PackageExposer
+    class CoreExposer : public core::Exposer
     {
     public:
 	CoreExposer(Lisp_sp lisp);
+        DISABLE_NEW();
 	virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 
     public:
 	/*! Lisp_O::startupLispEnvironment calls this to create the core classes */
-	static gctools::StackRootedPointer<CoreExposer> create_core_classes(Lisp_sp lisp);
+	static CoreExposer* create_core_classes(Lisp_sp lisp);
     public:
 	void define_essential_globals(Lisp_sp lisp);
 

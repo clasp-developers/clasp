@@ -27,7 +27,7 @@ namespace core
     template <typename RT,typename... ARGS>
     void af_def(const string& packageName, const string& name, RT (*fp)(ARGS...) , const string& arguments="", const string& declares="", const string& docstring="", int locked=1 )
     {_G();
-        Functoid* f = new VariadicFunctoid<RT(ARGS...)>(packageName+"::"+name,fp);
+        Functoid* f = gctools::allocateFunctoid<VariadicFunctoid<RT(ARGS...)> >(packageName+"::"+name,fp);
         lisp_defun_lispify_name(packageName,name,f,arguments,declares,docstring,locked,true,sizeof...(ARGS));
     }
 
@@ -80,7 +80,7 @@ namespace core {
 	virtual string describe() const {return "ActivationFrameMacroWrapPtr";};
 // constructor
 	ActivationFrameMacroWrapPtr(const string& name, MacroPtr ptr) : Functoid(name),mptr(ptr) {}
-
+        DISABLE_NEW();
 	T_mv activate( ActivationFrame_sp closedEnv, int nargs, ArgArray argArray)
 	{_G();
 	    Cons_sp form = argArray[0].as_or_nil<Cons_O>();
@@ -90,10 +90,9 @@ namespace core {
 	};
     };
 
-
     inline void defmacro(const string& packageName, const string& name, T_mv (*mp)(Cons_sp,Environment_sp env),const string& arguments="", const string& declares="", const string& docstring="", bool autoExport=true)
     {_G();
-	Functoid* f = new ActivationFrameMacroWrapPtr("macro->"+packageName+"::"+name,mp);
+	Functoid* f = gctools::allocateFunctoid<ActivationFrameMacroWrapPtr>("macro->"+packageName+"::"+name,mp);
 	lisp_defmacro(packageName,name,f,arguments,declares,docstring,autoExport);
     }
 
@@ -165,7 +164,7 @@ namespace core {
 		lisp_addClass(/*_lisp,OT::static_packageName(),
 				OT::static_className(), */
 		    OT::static_classSymbol(),
-		    OT::static_allocator,
+		    OT::static_creator,
 		    OT::Bases::baseClass1Id(),
 		    OT::Bases::baseClass2Id() );
 	    }
@@ -201,7 +200,7 @@ namespace core {
 	class_& def( string const& name, RT (OT::*mp)(ARGS...),
                      string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
 	{_G();
-	    Functoid* m = new VariadicMethoid<0,RT(OT::*)(ARGS...)>(name,mp);
+	    Functoid* m = gctools::allocateFunctoid<VariadicMethoid<0,RT(OT::*)(ARGS...)>>(name,mp);
 	    lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
 	    return *this;
 	}
@@ -212,8 +211,7 @@ namespace core {
 	class_& def( string const& name, RT (OT::*mp)(ARGS...) const,
 		     string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
 	{_G();
-//	    ConstVariadicMethoid<RT,OT,ARGS...>* m = new ConstVariadicMethoid<RT,OT,ARGS...>(name,mp);
-	    Functoid* m = new VariadicMethoid<0,RT(OT::*)(ARGS...) const>(name,mp);
+	    Functoid* m = gctools::allocateFunctoid<VariadicMethoid<0,RT(OT::*)(ARGS...) const>>(name,mp);
 	    lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
 	    return *this;
 	}

@@ -5,7 +5,7 @@
 namespace gctools {
 
 
-    class GCContainer_moveable {
+    class GCContainer {
     private:
     };
 
@@ -49,6 +49,7 @@ namespace gctools {
         reference operator[](size_t i) { return this->_Vector[i]; };
         const_reference operator[](size_t i) const { return this->_Vector[i]; };
         void resize(size_t n, const value_type& initialElement = value_type()) { this->_Vector.resize(n,initialElement); };
+        void reserve(size_t n) { this->_Vector.reserve(n); };
         void clear() { this->_Vector.clear(); };
         void push_back(const_reference val) { this->_Vector.push_back(val); };
         void pop_back() { this->_Vector.pop_back(); };
@@ -56,7 +57,9 @@ namespace gctools {
         const_reference back() const { return this->_Vector[this->_Vector.size()-1];}
         iterator insert (const_iterator position, const value_type& val) { return this->_Vector.emplace(position,val);};
         template <typename...ARGS>
-        iterator emplace (const_iterator position, ARGS&&...args) { return this->_Vector.emplace(position,std::forward<ARGS...>(args...));};
+        iterator emplace (const_iterator position, ARGS&&...args) { return this->_Vector.emplace(position,std::forward<ARGS>(args)...);};
+        template <typename...ARGS>
+        void emplace_back (ARGS&&...args) { this->_Vector.emplace_back(std::forward<ARGS>(args)...);};
         iterator erase(const_iterator position) { return this->_Vector.erase(position); };
 
         GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {

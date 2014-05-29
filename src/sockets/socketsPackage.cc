@@ -43,7 +43,7 @@ namespace sockets
 #pragma GCC visibility pop
 
 
-    void SocketsExposer::expose(core::Lisp_sp lisp,core::PackageExposer::WhatToExpose what) const
+    void SocketsExposer::expose(core::Lisp_sp lisp,core::Exposer::WhatToExpose what) const
     {_G();
 	switch (what)
 	{

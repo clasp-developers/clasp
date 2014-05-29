@@ -285,8 +285,15 @@ namespace core
         string receiverClassName = receiverClassNameSymbol->symbolNameAsString();
         emf_name_ss << gfname << "->" << receiverClassName;
         Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_functionBlockName(this->getFunctionName())->getPackage());
-        gctools::StackRootedPointer<Lambda_emf> l_emf(new Lambda_emf(emf_name_ss.str(),this->sharedThis<SingleDispatchGenericFunction_O>(), emf_name, cur_method));
-        CompiledBody_sp cb_l_emf = CompiledBody_O::create(l_emf.get(),_Nil<T_O>());
+
+
+        Lambda_emf* l_emf = gctools::allocateFunctoid<Lambda_emf>(emf_name_ss.str()
+                                                                ,this->sharedThis<SingleDispatchGenericFunction_O>()
+                                                                , emf_name
+                                                                , cur_method);
+
+
+        CompiledBody_sp cb_l_emf = CompiledBody_O::create(l_emf,_Nil<T_O>());
         Function_sp emf = BuiltIn_O::create(emf_name,
                                             _Nil<LambdaListHandler_O>(),// LambdaListHandler_O::create(method_llh->numberOfLexicalVariables()), // _Nil<LambdaListHandler_O>(),
                                             cb_l_emf,
@@ -301,52 +308,54 @@ namespace core
 
 
 
-        class Lambda_emf : public Functoid
-        {
-        private:
-            /*! Store the name of the function that this Lambda_emf invokes - for debugging */
-            Symbol_sp		_name;
-            /*! Store the method_function that this emf invokes.
-              This function takes two arguments: (args next-emfun) */
-            Function_sp		_method_function;
-            /*! Store the next-emfun that will be passed to the _method_function */
-            Function_sp		_next_emfun;
-        public:
-            string describe() const { return "Lambda_emf";};
-            bool requires_activation_frame() const { return true;};
-        public:
-            Lambda_emf(const string& name,
-                       SingleDispatchGenericFunction_sp gf,
-                       Symbol_sp emf_name,
-                       SingleDispatchMethod_sp cur_method,
-                       Cons_sp next_methods) : Functoid("Lambda_emf->"+name)
-            {_G();
-                this->_name = emf_name;
-                this->_method_function = cur_method->_chainable_method_function;
-                ASSERTF(this->_method_function->getLambdaListHandler().notnilp()
-                        , BF("The method-function should never have a nil LambdaListHandler"));
-                // Calculate the function to call with call_next_method
-                // Do this by recursively calling gf->compute_effective_method_function with next_methods
-                if ( next_methods.nilp() )
-                {
-                    this->_next_emfun = _Nil<Function_O>();
-                } else
-                {
-                    this->_next_emfun = gf->compute_effective_method_function(next_methods);
-                }
-            }
-
-            virtual T_mv activate(ActivationFrame_sp frame)
+    class Lambda_emf : public Functoid
+    {
+    private:
+        /*! Store the name of the function that this Lambda_emf invokes - for debugging */
+        Symbol_sp		_name;
+        /*! Store the method_function that this emf invokes.
+          This function takes two arguments: (args next-emfun) */
+        Function_sp		_method_function;
+        /*! Store the next-emfun that will be passed to the _method_function */
+        Function_sp		_next_emfun;
+    public:
+        string describe() const { return "Lambda_emf";};
+        bool requires_activation_frame() const { return true;};
+    public:
+        Lambda_emf(const string& name,
+                   SingleDispatchGenericFunction_sp gf,
+                   Symbol_sp emf_name,
+                   SingleDispatchMethod_sp cur_method,
+                   Cons_sp next_methods) : Functoid("Lambda_emf->"+name)
+        {_G();
+            this->_name = emf_name;
+            this->_method_function = cur_method->_chainable_method_function;
+            ASSERTF(this->_method_function->getLambdaListHandler().notnilp()
+                    , BF("The method-function should never have a nil LambdaListHandler"));
+            // Calculate the function to call with call_next_method
+            // Do this by recursively calling gf->compute_effective_method_function with next_methods
+            if ( next_methods.nilp() )
             {
-                // TODO:: Here I'm converting the ActivationFrame back into a Cons and passing it
-                // as the first argument to the _method_function and the second argument is _next_emfun
-                // I should pass (frame) within (method_function_args) [an ActivationFrame within an ActivationFrame ]
-                // Then I don't need to convert it back into an activation frame on the receiving end
-                ValueFrame_sp method_function_args(ValueFrame_O::create_fill(frame,this->_next_emfun,_Nil<ActivationFrame_O>()));
-                return this->_method_function->INVOKE(method_function_args);
-	    
+                this->_next_emfun = _Nil<Function_O>();
+            } else
+            {
+                this->_next_emfun = gf->compute_effective_method_function(next_methods);
             }
-        };
+        }
+
+        DISABLE_NEW();
+
+        virtual T_mv activate(ActivationFrame_sp frame)
+        {
+            // TODO:: Here I'm converting the ActivationFrame back into a Cons and passing it
+            // as the first argument to the _method_function and the second argument is _next_emfun
+            // I should pass (frame) within (method_function_args) [an ActivationFrame within an ActivationFrame ]
+            // Then I don't need to convert it back into an activation frame on the receiving end
+            ValueFrame_sp method_function_args(ValueFrame_O::create_fill(frame,this->_next_emfun,_Nil<ActivationFrame_O>()));
+            return this->_method_function->INVOKE(method_function_args);
+	    
+        }
+    };
 
 
         Function_sp SingleDispatchGenericFunction_O::compute_effective_method_function(Cons_sp applicable_methods)

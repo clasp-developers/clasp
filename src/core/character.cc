@@ -285,10 +285,12 @@ namespace core
 
     CharacterInfo::CharacterInfo() {
         this->gCharacterNames.resize(256,_Nil<Str_O>());
+        this->gIndexedCharacters.resize(256,_Nil<Character_O>());
 #define	ADD_CHAR(name,char_index) {					\
             string upcase_name = stringUpper(name);			\
             int fci = char_index;					\
-            gNamesToCharacters[upcase_name] = StandardChar_O::create((char)fci); \
+            gNamesToCharacterIndex[upcase_name] = fci;  \
+            gIndexedCharacters[fci] = StandardChar_O::create((char)fci); \
             gCharacterNames[fci] = Str_O::create(upcase_name);          \
         }
         int ci = 0;
@@ -528,10 +530,10 @@ namespace core
     {_G();
 	Str_sp name = coerce::stringDesignator(sname);
 	string upname = stringUpper(name->get());
-	map<string,Character_sp>::const_iterator it = global_CharacterInfo->gNamesToCharacters.find(upname);
-	if ( it != global_CharacterInfo->gNamesToCharacters.end() )
+	map<string,int>::const_iterator it = global_CharacterInfo->gNamesToCharacterIndex.find(upname);
+	if ( it != global_CharacterInfo->gNamesToCharacterIndex.end() )
 	{
-	    return(Values(it->second));
+	    return(Values(global_CharacterInfo->gIndexedCharacters[it->second]));
 	}
 	return(Values(_Nil<T_O>()));
     };

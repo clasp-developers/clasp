@@ -182,6 +182,32 @@ namespace core
 	return(Str_O::create(s));
     }
 
+
+#if 1
+    /*! Copied from ecl append_into 
+     This copies the CAR's in l into new CONS nodes
+    that are appended to the list pointed to by **tailPP
+    which is advanced with every element.
+    **tailPP is at the end of the list pointed to by head
+    */
+    void Cons_O::appendInto(T_sp head, T_sp*& tailP, T_sp l)
+    {
+	if (!(*tailP).nilp()) {
+	    /* (APPEND '(1 . 2) 3) */
+	    TYPE_ERROR_PROPER_LIST(head);
+	}
+	while (af_consP(l)) {
+	    Cons_sp cons = Cons_O::create(CONS_CAR(l));
+	    *tailP = cons;
+            tailP = &(cons->_Cdr);
+	    l = CONS_CDR(l);
+	}
+	*tailP = l;
+    }
+
+
+
+#else
     /*! Copied from ecl append_into */
     void Cons_O::appendInto(T_sp head, mem::StackRootedPointerToSmartPtr<T_O>& tail, T_sp l)
     {
@@ -197,7 +223,7 @@ namespace core
 	}
 	tail.setPointee(l);
     }
-
+#endif
 
 
 
@@ -205,7 +231,7 @@ namespace core
     
 #define ARGS_af_append2 "(l1 l2)"
 #define DECL_af_append2 ""
-#define DOCS_af_append2 "append2"
+#define DOCS_af_append2 "append2 - append l2 to l1 by copying l1 and pointing the end of it to l2"
     List_sp af_append2(Cons_sp x, Cons_sp y)
     {_G();
         return Cons_O::append(x,y);
@@ -214,15 +240,16 @@ namespace core
 
     List_sp Cons_O::append(List_sp x, List_sp y)
     {
-	T_sp head(_Nil<List_O>());
-        mem::StackRootedPointerToSmartPtr<T_O> tail(&head);
+	T_sp head(_Nil<List_O>()); // This will root the new list
+        T_sp* tailP = &head;    // This will keep track of the end of the new list
 	if ( x.notnilp() ) {
-	    Cons_O::appendInto(head,tail,x);
+	    Cons_O::appendInto(head,tailP,x);
 	}
-	if ( (tail.getPointee()).notnilp() ) {
+	if ( (*tailP).notnilp() ) {
 	    TYPE_ERROR_PROPER_LIST(head);
 	}
-	tail.setPointee(y);
+	/* I WAS DOING THIS WHY??? head = y; */
+        *tailP = y;
 	return head.as<List_O>();
     }
 
@@ -1514,24 +1541,7 @@ namespace core
 #endif
     
     
-    CompiledBody_O::CompiledBody_O() : T_O(), _Functoid(NULL) {}
-
-    CompiledBody_O::~CompiledBody_O()
-    {
-	if ( this->_Functoid != NULL )
-	{
-	    delete this->_Functoid;
-	    this->_Functoid = NULL;
-	}
-    }
-
-	
-    
-    void CompiledBody_O::initialize()
-    {_OF();
-	this->Base::initialize();
-	this->_CompiledFuncs = _Nil<T_O>();
-    }
+    CompiledBody_O::CompiledBody_O() : T_O(), _Functoid(NULL), _CompiledFuncs(_Nil<T_O>()) {}
 
 
 

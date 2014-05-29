@@ -493,17 +493,6 @@ I'm using smart_ptr which have a vtable associated with them"
   (primitive module "va_throwIfBadKeywordArgument" +void+ (list +i32+ +i32+ +i32+ +tsp*+))
 
 
-#||
-  (primitive-does-not-throw module "trace_enterFunctionScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+ ))
-  (primitive-does-not-throw module "trace_enterBlockScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
-  (primitive-does-not-throw module "trace_enterLetScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
-  (primitive-does-not-throw module "trace_enterLetSTARScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
-  (primitive-does-not-throw module "trace_enterFletScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
-  (primitive-does-not-throw module "trace_enterLabelsScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
-  (primitive-does-not-throw module "trace_enterCallScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
-  (primitive-does-not-throw module "trace_enterCatchScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
-  (primitive-does-not-throw module "trace_enterUnwindProtectScope" +i32+ (list +i8*+ +i32+ +i32+ +afsp*+ +i8*+))
-||#
   (primitive-does-not-throw module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
   (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i32+ +i32+))
 
@@ -517,23 +506,21 @@ I'm using smart_ptr which have a vtable associated with them"
   (primitive-does-not-throw module "trace_exitCatchScope" +void+ (list +i32+ ) )
   (primitive-does-not-throw module "trace_exitUnwindProtectScope" +void+ (list +i32+ ) )
 
-  (primitive module "throwCatchThrow" +void+ (list +tsp*+ +tmv*+) :does-not-return t)
-  (primitive module "throwReturnFrom" +void+ (list +i32+ +tmv*+) :does-not-return t)
+  (primitive-does-not-throw module "pushCatchFrame" +i32+ (list +tsp*+))
+  (primitive-does-not-throw module "pushBlockFrame" +i32+ (list +symsp*+))
+  (primitive-does-not-throw module "pushTagbodyFrame" +i32+ (list +tsp*+))
 
-  (primitive-does-not-throw module "catchStoreTag" +void+ (list +tsp*+ +tsp*+))
-  (primitive module "catchIfTagMatchesStoreResultElseRethrow" +void+ (list +tsp*-or-tmv*+ +tsp*+ +i8*+))
-  (primitive-does-not-throw module "catchUnwind" +void+ (list +tsp*+))
+  (primitive module "throwCatchThrow" +void+ (list +tsp*+ #| +tmv*+ |#) :does-not-return t)
+  (primitive module "throwReturnFrom" +void+ (list +symsp*+) :does-not-return t)
+  (primitive module "throwDynamicGo" +void+ (list +i32+ +i32+ +afsp*+) :does-not-return t)
 
-  ;; depreciated
-  ;;(primitive-does-not-throw module "catchTagMatches" +i32+ (list +tsp*+ +i8*+))
-  ;; depreciated
-  ;;  (primitive-does-not-throw module "catchStoreResult" +void+ (list +tsp*+ +i8*+))
-  
+  (primitive module "ifCatchFrameMatchesStoreResultElseRethrow" +void+ (list +tsp*-or-tmv*+ +i32+ +i8*+))
+  (primitive-does-not-throw module "exceptionStackUnwind" +void+ (list +i32+))
 
-  (primitive module "blockHandleReturnFrom" +void+ (list +tsp*-or-tmv*+ +i8*+))
 
-  (primitive module "throw_DynamicGo" +void+ (list +i32+ +i32+ +afsp*+) :does-not-return t)
-  (primitive module "tagbodyDynamicGoIndexElseRethrow" +i32+ (list +afsp*+ +i8*+))
+  (primitive module "blockHandleReturnFrom" +void+ (list +tsp*-or-tmv*+ +i8*+ +i32+))
+
+  (primitive module "tagbodyDynamicGoIndexElseRethrow" +i32+ (list +i8*+ +i32+))
 
   (primitive module "throwIllegalSwitchValue" +void+ (list +i32+ +i32+) :does-not-return t)
 
@@ -563,6 +550,7 @@ I'm using smart_ptr which have a vtable associated with them"
   (primitive-does-not-throw module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltvsp**+ +i32*+))
   (primitive-does-not-throw module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltvsp**+ +i32*+))
 
+  (primitive-does-not-throw module "saveToMultipleValue0" +void+ (list +tmv*+))
   (primitive-does-not-throw module "saveValues" +void+ (list +tsp*+ +tmv*+))
   (primitive-does-not-throw module "loadValues" +void+ (list +tmv*+ +tsp*+))
 
@@ -585,6 +573,7 @@ I'm using smart_ptr which have a vtable associated with them"
   (primitive-does-not-throw module "popDynamicBinding" +void+ (list +symsp*+))
 
   (primitive-does-not-throw module "matchKeywordOnce" +i32+ (list +tsp*+ +tsp*+ +i8*+))
+
 
   )
 

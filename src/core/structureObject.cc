@@ -267,22 +267,23 @@ namespace core
     T_sp StructureObject_O::structureAsList() const
     {
 	Cons_O::CdrType_sp first(_Nil<Cons_O::CdrType_O>());
-        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
+        Cons_O::CdrType_sp* curP = &first;
+//        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
 	Cons_sp head = Cons_O::create(this->_Type);
-	cur.setPointee(head); // *cur = head;
-	cur.setPointer(head->cdrPtr()); // cur = head->cdrPtr();
+	*curP = head; // cur.setPointee(head); // *cur = head;
+	curP = head->cdrPtr(); // cur.setPointer(head->cdrPtr()); // cur = head->cdrPtr();
 	SYMBOL_EXPORT_SC_(CorePkg,structure_slot_descriptions);
 	Cons_sp slots = af_get_sysprop(this->_Type,_sym_structure_slot_descriptions).as<Cons_O>();
 	for ( ; slots.notnilp(); slots = cCdr(slots) ) {
 	    Cons_sp slotDesc = oCar(slots).as<Cons_O>();
 	    Cons_sp slotNameCons = Cons_O::create(_lisp->internKeyword(oCar(slotDesc).as<Symbol_O>()->symbolName()->get()));
-	    cur.setPointee(slotNameCons); // *cur = slotNameCons;
-	    cur.setPointer(slotNameCons->cdrPtr()); // cur = slotNameCons->cdrPtr();
+	    *curP = slotNameCons; // cur.setPointee(slotNameCons); // *cur = slotNameCons;
+	    curP = slotNameCons->cdrPtr(); // cur.setPointer(slotNameCons->cdrPtr()); // cur = slotNameCons->cdrPtr();
 	    int idx = oFifth(slotDesc).as<Fixnum_O>()->get();
 	    T_sp val = this->structureRef(idx);
 	    Cons_sp slotValueCons = Cons_O::create(val);
-	    cur.setPointee(slotValueCons); // *cur = slotValueCons;
-	    cur.setPointer(slotValueCons->cdrPtr()); // cur = slotValueCons->cdrPtr();
+	    *curP = slotValueCons; // cur.setPointee(slotValueCons); // *cur = slotValueCons;
+	    curP = slotValueCons->cdrPtr(); // cur.setPointer(slotValueCons->cdrPtr()); // cur = slotValueCons->cdrPtr();
 	}
 	return first;
     }
@@ -314,7 +315,8 @@ namespace core
 
     T_sp StructureObject_O::copyStructure() const
     {_G();
-	GC_COPY(StructureObject_O,copy,*this);
+        StructureObject_sp copy = gctools::GCObjectAllocator<StructureObject_O>::copy(*this);
+//GC_COPY(StructureObject_O,copy,*this);
 	return copy;
     }
 

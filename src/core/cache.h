@@ -29,12 +29,12 @@ namespace core
     class Cache
     {
 	VectorObjectsWithFillPtr_sp 	_keys;
-	vector<CacheRecord>		_table;
+        gctools::Vec0<CacheRecord>	_table;
 	int				_generation;
 
     private:
 	void empty();
-	void clearOneFromCache(const T_sp& target);
+	void clearOneFromCache(T_sp target);
     public:
     
 	/*! Constructor - like ecl_make_cache */
@@ -54,7 +54,7 @@ namespace core
 
 	/*! Search cache - like ecl_search_cache
 	  It takes no arguments - what is it searching????*/
-	void search_cache(gctools::StackRootedPointer<CacheRecord>& e);
+	void search_cache(CacheRecord*& e);
 
 	/*! Like ecl_cache_remove_one */
 	void removeOne(T_sp firstKey);

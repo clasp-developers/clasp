@@ -103,13 +103,14 @@ void PASS_FUNCTION_REST
 {_G();
     if ( restarg.isDefined() )
     {
-	Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
-        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
+	Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>(); 
+        Cons_O::CdrType_sp* curP = &rest;
+//        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
 	for ( int i(arg_idx), iEnd(PASS_ARGS_NUM); i<iEnd; ++i ) {
 	    T_sp obj = PASS_NEXT_ARG();
 	    Cons_sp one = Cons_O::create(obj);
-	    cur.setPointee(one);
-	    cur.setPointer(one->cdrPtr());
+	    *curP = one; // cur.setPointee(one);
+	    curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr());
 	    ++arg_idx;
 	}
 	scope.new_binding(restarg,rest);

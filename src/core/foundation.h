@@ -854,16 +854,16 @@ namespace kw
 
 namespace core {
 
-    class AllocatorFunctor
+    class Creator
     {
     public:
         GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-        // Some AllocatorFunctors don't actually allocate anything - 
+        // Some Creators don't actually allocate anything - 
         // classes that don't have default allocators
         virtual bool allocates() const { return true;};
         /*! If this is the allocator for a primary CxxAdapter class then return true, */
         virtual int duplicationLevel() const { return 0;};
-        virtual AllocatorFunctor* duplicateForClassName(core::Symbol_sp className) {printf("Subclass must implement AllocatorFunctor::duplicateForClassName\n"); exit(1);};
+        virtual Creator* duplicateForClassName(core::Symbol_sp className) {printf("Subclass must implement Creator::duplicateForClassName\n"); exit(1);};
         virtual void describe() const = 0;
         virtual core::T_sp allocate() = 0;
     };
@@ -996,9 +996,9 @@ namespace core
     Symbol_sp lisp_symbolNil();
     Class_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
     void	lisp_exposeClass(Lisp_sp lisp, const string& className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction);
-    void	lisp_addClass( Symbol_sp classSymbol, AllocatorFunctor* cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2=UNDEFINED_SYMBOL,Symbol_sp baseClassSymbol3=UNDEFINED_SYMBOL );
+    void	lisp_addClass( Symbol_sp classSymbol, Creator* cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2=UNDEFINED_SYMBOL,Symbol_sp baseClassSymbol3=UNDEFINED_SYMBOL );
     void	lisp_addClass( Symbol_sp classSymbol );
-    void	lisp_addClassAndInitialize( Symbol_sp classSymbol, AllocatorFunctor* cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2=UNDEFINED_SYMBOL,Symbol_sp baseClassSymbol3=UNDEFINED_SYMBOL );
+    void	lisp_addClassAndInitialize( Symbol_sp classSymbol, Creator* cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2=UNDEFINED_SYMBOL,Symbol_sp baseClassSymbol3=UNDEFINED_SYMBOL );
     void	lisp_throwIfBuiltInClassesNotInitialized(Lisp_sp lisp);
     string	lisp_classNameFromClassSymbol(Lisp_sp lisp, Symbol_sp classSymbol );
     Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol );
@@ -1110,6 +1110,7 @@ namespace core
     Symbol_sp lisp_internKeyword(const string& name);
     Symbol_sp lisp_intern(const string& name);
     Symbol_sp lisp_intern(const string& pkgName, const string& symName);
+    T_sp lisp_VectorObjectsFromMultipleValues(T_mv values);
     string symbol_fullName(Symbol_sp s);
     void lisp_logException(const char* file, const char* fn, int line, const char* structure, T_sp condition );
     bool lisp_isGlobalInitializationAllowed(Lisp_sp lisp);
@@ -1117,12 +1118,17 @@ namespace core
     Symbol_sp lisp_predefinedSymbol(Lisp_sp lisp, Symbol_sp symId);
 //    void lisp_hiddenBinderExtend(Lisp_sp lisp, Symbol_sp sym, T_sp obj);
     void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const& name, Symbol_sp const& archiveName, int value );
+    /*! Return the index of the top of the stack */
+    size_t lisp_pushCatchThrowException(T_sp throwTag, T_sp value);
     int lisp_lookupEnumForSymbol( Symbol_sp predefSymId, T_sp symbol);
     core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
 
 
 
-
+#define DISABLE_NEW()                                                   \
+    void* operator new(size_t s) {DEPRECIATEDP("Disabled new");};       \
+    void* operator new(size_t s, const std::nothrow_t& tag) {DEPRECIATEDP("Disabled new");}; \
+    void* operator new(size_t s,void* ptr) { return ptr;};
 
     class Functoid 
     {
@@ -1138,29 +1144,26 @@ namespace core
 	    printf( "Functoid - %s\n", this->_Name.c_str() );
 	}
 
-
-
+#if 0
 	T_mv funcall(int n_args, va_list vl) {
 	    //IMPLEMENT_ME();
 	    return Values0<T_O>();
 	}
-	    
-
-
-
+#endif	    
 	Functoid( const string& name) : _Name(name) {};
 	virtual ~Functoid() {};
     };
 
 
-    class AFFunctoid : public Functoid
+    class Closure : public Functoid
     {
     public:
-	virtual string describe() const {return "AFFunctoid";};
+        void* operator new(size_t s) {THROW_HARD_ERROR(BF("Use gctools"));};
+	virtual string describe() const {return "Closure";};
 	virtual T_mv activate(ActivationFrame_sp closedOverEnv, int nargs, ArgArray argArray) {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
 
-	AFFunctoid(const string& name) : Functoid(name) {};
-	virtual ~AFFunctoid() {};
+	Closure(const string& name) : Functoid(name) {};
+	virtual ~Closure() {};
     };
 
 
@@ -1240,6 +1243,12 @@ namespace llvm_interface
 	}
 
 
+extern "C"
+{
+#define 	_LISP _lisp
+    extern core::Lisp_sp _lisp;
+};
+
 #include "exceptions.h"
 
 
@@ -1249,11 +1258,6 @@ namespace llvm_interface
 #include "clasp_gmpxx.h"
 
 
-extern "C"
-{
-#define 	_LISP _lisp
-    extern core::Lisp_sp _lisp;
-};
 
 
 
@@ -1261,14 +1265,19 @@ extern "C"
 
 
 namespace reg {
-    extern std::vector<core::Symbol_sp,gctools::root_allocator<core::Symbol_sp> > globalClassSymbolsVector;
+    struct ClassSymbolsHolder {
+        gctools::Vec0<core::Symbol_sp>  _Symbols;
+    };
+
+    extern ClassSymbolsHolder   globalClassSymbolsVectorHolder;
+
 
     inline void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym)
     {
-        if ( cid >= globalClassSymbolsVector.size() ) {
-            globalClassSymbolsVector.resize(cid+1,core::lisp_symbolNil());
+        if ( cid >= globalClassSymbolsVectorHolder._Symbols.size() ) {
+            globalClassSymbolsVectorHolder._Symbols.resize(cid+1,core::lisp_symbolNil());
         }
-        globalClassSymbolsVector[cid] = sym;
+        globalClassSymbolsVectorHolder._Symbols[cid] = sym;
     }
 
     template <class T>
@@ -1280,7 +1289,7 @@ namespace reg {
 
     inline core::Symbol_sp lisp_classSymbolFromClassId(class_id cid)
     {
-        core::Symbol_sp sym = globalClassSymbolsVector[cid];
+        core::Symbol_sp sym = globalClassSymbolsVectorHolder._Symbols[cid];
         if (sym.nilp()) {
             return _Unbound<core::Symbol_O>();
         }
@@ -1290,7 +1299,7 @@ namespace reg {
     template <class T>
     core::Symbol_sp lisp_classSymbol() {
         class_id cid = registered_class<T>::id;
-        core::Symbol_sp sym = globalClassSymbolsVector[cid];
+        core::Symbol_sp sym = globalClassSymbolsVectorHolder._Symbols[cid];
         if (sym.nilp()) {
             string typen = typeid(T).name();
             sym = core::lisp_intern(typen);

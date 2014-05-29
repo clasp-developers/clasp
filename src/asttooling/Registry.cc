@@ -24,51 +24,80 @@
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
-#include "llvm/Support/ManagedStatic.h"
 
 namespace asttooling {
     namespace {
 
         using asttooling::internal::MatcherDescriptor;
 
-        typedef map<core::Symbol_sp,const MatcherDescriptor *> ConstructorMap;
+
+
         class RegistryMaps {
         public:
             RegistryMaps();
             ~RegistryMaps();
 
-            const ConstructorMap &constructors() const { return Constructors; }
+            struct SymbolMatcherDescriptorPair {
+                SymbolMatcherDescriptorPair(core::Symbol_sp k, const MatcherDescriptor* v) : Name(k), matcher(v) {};
+                core::Symbol_sp     Name;
+                const MatcherDescriptor*    matcher;
+            };
+            typedef gctools::Vec0<SymbolMatcherDescriptorPair> ConstructorMap;
+            typedef ConstructorMap::iterator iterator;
+            typedef ConstructorMap::const_iterator const_iterator;
+            iterator begin() { return this->Constructors.begin();};
+            iterator end() { return this->Constructors.end();};
+            const_iterator begin() const { return this->Constructors.begin();};
+            const_iterator end() const { return this->Constructors.end();};
+
+            const ConstructorMap &constructors() const { return this->Constructors; }
+
+
+            /*! Find the constructor associated with the symbol */
+            ConstructorMap::iterator find(core::Symbol_sp key)
+            {
+                ConstructorMap::iterator it;
+                for ( it = this->Constructors.begin(); it!=this->Constructors.end(); ++it ) {
+                    if (it->Name == key ) return it;
+                }
+                return it;
+            }
+
 
         private:
             void registerMatcher(core::Symbol_sp MatcherName, MatcherDescriptor *Callback);
+            /*! This is used to replace the map<Symbol_sp,const MatcherDescriptor*> that used to be a ConstructorMap */
+        private:
             ConstructorMap Constructors;
         };
 
         void RegistryMaps::registerMatcher(core::Symbol_sp MatcherName,
                                            MatcherDescriptor *Callback) {
-            assert(Constructors.find(MatcherName) == Constructors.end());
-            Constructors[MatcherName] = Callback;
+            ConstructorMap::iterator pos = this->find(MatcherName);
+            ASSERTF(pos==Constructors.end(),BF("The MatcherName %s has already had a constructor defined for it") % _rep_(MatcherName));
+            Constructors.emplace_back(SymbolMatcherDescriptorPair(MatcherName,Callback));
+            //Constructors[MatcherName] = Callback;
         }
 
 #define REGISTER_MATCHER(name)                                          \
         registerMatcher(core::lispify_intern_keyword(#name), internal::makeMatcherAutoMarshall( \
                             ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
-
 #define SPECIFIC_MATCHER_OVERLOAD(name, Id)                     \
         static_cast< ::clang::ast_matchers::name##_Type##Id>(   \
             ::clang::ast_matchers::name)
-
 #define REGISTER_OVERLOADED_2(name)                                     \
         do {                                                            \
-            MatcherDescriptor *Callbacks[] = {                      \
+            MatcherDescriptor *Callbacks[] = {                          \
                 internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), \
                                                   core::lispify_intern_keyword(#name)), \
                 internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), \
                                                   core::lispify_intern_keyword(#name)) \
             };                                                          \
             registerMatcher(core::lispify_intern_keyword(#name),  \
-                            new internal::OverloadedMatcherDescriptor(Callbacks)); \
-        } while (0)
+                            gctools::allocateClass<internal::OverloadedMatcherDescriptor>(Callbacks) \
+            /*new internal::OverloadedMatcherDescriptor(Callbacks)*/   \
+            );                                                       \
+    } while (0)
 
 /// \brief Generate a registry map with all the known matchers.
         RegistryMaps::RegistryMaps() {
@@ -314,11 +343,11 @@ namespace asttooling {
             for (ConstructorMap::iterator it = Constructors.begin(),
                      end = Constructors.end();
                  it != end; ++it) {
-                delete it->second;
+//                delete it->second;
             }
         }
 
-        static llvm::ManagedStatic<RegistryMaps> RegistryData;
+        static gctools::ManagedStatic<RegistryMaps> RegistryData;
 
     } // anonymous namespace
 
@@ -336,9 +365,8 @@ namespace asttooling {
                                                                             core::Cons_sp NameRange,
                                                                             core::Vector_sp Args,
                                                                             Diagnostics* Error) {
-        ConstructorMap::const_iterator it =
-            RegistryData->constructors().find(MatcherName);
-        if (it == RegistryData->constructors().end()) {
+        RegistryMaps::const_iterator it = RegistryData->find(MatcherName);
+        if (it == RegistryData->end()) {
             core::Symbol_sp sym = MatcherName;
             core::Str_sp strName = sym->symbolName();
             string symbolName = strName->get();
@@ -349,7 +377,7 @@ namespace asttooling {
         gctools::Vec0<ParserValue>      VArgs;
 //       gctools::StackRootedStlContainer<vector<ParserValue> > VArgs;
         convertArgs(VArgs,Args);
-        return it->second->create(NameRange, ArrayRef<ParserValue>(VArgs.data(),VArgs.size()), Error);
+        return it->matcher->create(NameRange, ArrayRef<ParserValue>(VArgs.data(),VArgs.size()), Error);
     }
 
 // static

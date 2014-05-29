@@ -99,11 +99,12 @@ namespace core
 	if ( af_length(load) > 0 )
 	{
 	    T_mv mvn(load->operator[](0),af_length(load));
-///	    core::MultipleValues* mv = lisp_multipleValues();
+	    core::MultipleValues* mv = lisp_multipleValues();
             SUPPRESS_GC();
-            int i(1);
+            int i(0);
             int iEnd(af_length(load));
-	    for (; i<iEnd; i++ ) {mvn.valueSet(i,load->operator[](i));}
+            mv->setSize(iEnd);
+	    for (; i<iEnd; ++i ) {mv->valueSet(i,load->operator[](i));}
             ENABLE_GC();
 	    return mvn;
 	}

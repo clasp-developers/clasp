@@ -222,7 +222,7 @@ void	ObjectSet_O::archive(ArchiveP node)
 	.def("addObjectsInCons",&core::ObjectSet_O::addObjectsInCons)
 	.def("addObjects",&core::ObjectSet_O::addObjects)
 	.def("size",&core::ObjectSet_O::size)
-	.def("remove",&core::ObjectSet_O::remove)
+//	.def("remove",&core::ObjectSet_O::remove)
 	.def("asCons",&ObjectSet_O::asCons)
 	.def("relativeComplement",&ObjectSet_O::relativeComplement)
 	.def("union",&ObjectSet_O::setUnion)
@@ -242,7 +242,7 @@ void	ObjectSet_O::archive(ArchiveP node)
 	.def("add",&core::ObjectSet_O::insert)
 	.def("setUnion",&core::ObjectSet_O::setUnion)
 	.def("size",&core::ObjectSet_O::size)
-	.def("remove",&core::ObjectSet_O::remove)
+//	.def("remove",&core::ObjectSet_O::remove)
 	;
 #endif
 }

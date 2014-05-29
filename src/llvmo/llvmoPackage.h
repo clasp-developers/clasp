@@ -14,11 +14,12 @@ namespace llvmo
 
 
 
-    class LlvmoExposer : public core::PackageExposer
+    class LlvmoExposer : public core::Exposer
     {
     private:
     public:
-    LlvmoExposer(core::Lisp_sp lisp) : PackageExposer(lisp,LlvmoPkg) {};
+        DISABLE_NEW();
+    LlvmoExposer(core::Lisp_sp lisp) : Exposer(lisp,LlvmoPkg) {};
         virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
     };
 

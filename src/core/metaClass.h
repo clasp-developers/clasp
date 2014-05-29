@@ -108,7 +108,7 @@ namespace core
 	/*! Mimic ECL Instance::sig */
 	T_sp 				_Signature_ClassSlots;
 	/*! Callback function to allocate instances */
-	AllocatorFunctor* 		_allocator;
+	Creator*         		_creator;
         gctools::Vec0<T_sp> 		_MetaClassSlots;
     public:
 	/*! This is a factory function that returns either a BuiltInClass or a StandardClass depending on the
@@ -131,7 +131,6 @@ namespace core
 	/*! Setup the instance nil value */
 //	void setupInstanceNil();
     public:
-	static void topologicalSortSuperClasses(Class_sp mc, set<Class_sp>& seen, std::front_insert_iterator<deque<Class_sp> > store);
     private:
 	void lowLevel_calculateClassPrecedenceList();
     public: // Mimic CLOS classes that are represented by Instance_O
@@ -161,9 +160,9 @@ namespace core
 
 
         void inheritDefaultAllocator(Cons_sp directSuperclasses);
-	void setAllocator(AllocatorFunctor* cb) { this->_allocator = cb;};
-	AllocatorFunctor* getAllocator() const { return this->_allocator;};
-        bool hasAllocator() const { return this->_allocator!=NULL;};
+	void setCreator(Creator* cb) { this->_creator = cb;};
+	Creator* getCreator() const { return this->_creator;};
+        bool hasCreator() const { return this->_creator!=NULL;};
 
 	/*! I have GOT to clean up all this class-name stuff
 	  Reduce the clutter to one function to get the name and one to set the name */
@@ -260,14 +259,14 @@ namespace core
 
 
 
-    class InstanceAllocatorFunctor : public AllocatorFunctor
-                                   , public gctools::HeapRoot
+    class InstanceCreator : public Creator
     {
         Symbol_sp       _className;
     public:
         DECLARE_onHeapScanGCRoots();
     public:
-        InstanceAllocatorFunctor(Symbol_sp className) : _className(className) {};
+        DISABLE_NEW();
+        InstanceCreator(Symbol_sp className) : _className(className) {};
         void describe() const {
             printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_className).c_str());
         };

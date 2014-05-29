@@ -26,6 +26,7 @@ namespace core
 
         void setMaxSize() { this->_Size = MultipleValuesLimit;};
         void setSize(int sz) { this->_Size = sz;};
+        int getSize() const { return this->_Size;};
 	/*! Set the value */
 	void valueSet(int i, const T_sp& val)
         {
@@ -34,6 +35,22 @@ namespace core
 
 	/*! Return a Cons of elements 1 up to but not including iend */
 	Cons_sp asCons(int iend) const;
+
+        void saveToVec0(gctools::Vec0<core::T_sp>& vec)
+        {
+            vec.resize(this->_Size);
+            for ( int i(0), iEnd(this->_Size); i<iEnd; ++i ) {
+                vec[i] = this->_Values[i];
+            }
+        }
+        void loadFromVec0(const gctools::Vec0<core::T_sp>& vec)
+        {
+            this->setSize(vec.size());
+            for ( int i(0), iEnd(vec.size()); i<iEnd; ++i ) {
+                this->_Values[i] = vec[i];
+            };
+        };
+
     };
 #pragma GCC visibility pop
 
@@ -58,6 +75,36 @@ namespace mem
 	multiple_values(const smart_ptr<T>& v,int num) : smart_ptr<T>(v), _number_of_values(num) {};
 	multiple_values(const smart_ptr<T>& v) : smart_ptr<T>(v), _number_of_values(1) {};
 	template <class Y> multiple_values(const mem::multiple_values<Y>& yy) : smart_ptr<T>(yy), _number_of_values(yy.number_of_values()) {};
+
+
+
+        static multiple_values<T> createFromValues() {
+	    core::MultipleValues* mv = core::lisp_multipleValues();
+            multiple_values<T> result( mv->getSize()==0 ? _Nil<core::T_O>() : mv->valueGet(0,mv->getSize()), mv->getSize());
+            return result;
+        }
+
+
+        static multiple_values<T> createFromVec0(const gctools::Vec0<core::T_sp>& vec) {
+	    core::MultipleValues* mv = core::lisp_multipleValues();
+            mv->loadFromVec0(vec);
+            return mem::multiple_values<T>::createFromValues();
+        }
+
+
+        void saveToMultipleValue0() const {
+	    core::MultipleValues* mv = core::lisp_multipleValues();
+            mv->valueSet(0,*this);
+        };
+
+        void saveToVec0(gctools::Vec0<core::T_sp>& values) {
+            values.resize(this->_number_of_values);
+            values[0] = *this;
+            for ( int i(1); i<this->_number_of_values; ++i ) {
+                values[i] = this->valueGet(i);
+            }
+        }
+
 
 #ifdef POLYMORPHIC_SMART_PTR
 	virtual
@@ -86,7 +133,7 @@ namespace mem
 		printf(" %s\n", ts.c_str() );
 		for (int i(1); i<this->_number_of_values; ++i )
 		{
-		    string ts = _rep_(this->valueGet(i,this->_number_of_values));
+		    string ts = _rep_(this->valueGet(i));
 		    printf(" %s\n", ts.c_str() );
 		}
 	    } else
@@ -94,6 +141,10 @@ namespace mem
 		printf( "---No values---\n");
 	    }
 	}
+
+
+            
+
 
 
     };

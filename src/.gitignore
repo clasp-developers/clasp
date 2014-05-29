@@ -3,6 +3,8 @@
 *.bc-rc
 *.o-min
 *.bc-min
+*.bc-min-rc
 *.o
 *.o-rc
+*.o-min-rc
 *.ll-min-rc

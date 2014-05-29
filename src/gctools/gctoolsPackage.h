@@ -8,17 +8,17 @@
 NAMESPACE_PACKAGE_ASSOCIATION(gctools,GcToolsPkg,"GCTOOLS")
 
 
-
 namespace gctools
 {
 
     extern bool _GlobalDebugAllocations;
 
-    class GcToolsExposer : public core::PackageExposer
+    class GcToolsExposer : public core::Exposer
     {
     private:
     public:
-    GcToolsExposer(core::Lisp_sp lisp) : PackageExposer(lisp,GcToolsPkg) {};
+        DISABLE_NEW();
+    GcToolsExposer(core::Lisp_sp lisp) : Exposer(lisp,GcToolsPkg) {};
         virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
     };
 

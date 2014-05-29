@@ -29,6 +29,7 @@ namespace clbind {
         VariablePtrType                 _MemberPtr;
     public:
         GetterMethoid(const string& name, VariablePtrType p) : Functoid(name), _MemberPtr(p) {};
+        DISABLE_NEW();
         virtual core::T_mv activate(core::ActivationFrame_sp closedOverFrame, int nargs, ArgArray args) {
             OT* objPtr = (*args).as<core::WrappedPointer_O>()->cast<OT>();
             MemberType& orig = (*objPtr).*(this->_MemberPtr);
@@ -50,6 +51,7 @@ namespace clbind {
         VariablePtrType                 _MemberPtr;
     public:
         GetterMethoid(const string& name, VariablePtrType p) : Functoid(name), _MemberPtr(p) {};
+        DISABLE_NEW();
         virtual core::T_mv activate(core::ActivationFrame_sp closedOverFrame, int nargs, ArgArray args) {
             OT* objPtr = (*args).as<core::WrappedPointer_O>()->cast<OT>();
             MemberType* ptr = (*objPtr).*(this->_MemberPtr);

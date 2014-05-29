@@ -234,7 +234,7 @@ class _RootDummyClass : public gctools::GCObject
 private:
 public:
     static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
-    static void ___set_static_allocator(core::AllocatorFunctor* cb) {};
+    static void ___set_static_creator(core::Creator* cb) {};
 public:
     explicit _RootDummyClass();
     virtual ~_RootDummyClass() {};
@@ -448,7 +448,7 @@ namespace core
     public:								\
     static core::Symbol_sp ___staticClassSymbol;			\
     static core::Class_sp ___staticClass;				\
-    static core::AllocatorFunctor* static_allocator;                    \
+    static core::Creator* static_creator;                    \
     static int static_Kind;                                             \
     /* static mem::smart_ptr<oClass> _nil; depreciate this in favor of _Nil<oClass>()? */ \
     /* static mem::smart_ptr<oClass> _unbound; depreciate this in favor of _Unbound<oClass>()? */ \
@@ -456,7 +456,7 @@ namespace core
     /*    static oClass* ___staticDereferencedUnboundInstance; */       \
     public:								\
     static void ___set_static_ClassSymbol(core::Symbol_sp i) { oClass::___staticClassSymbol = i; }; \
-    static void ___set_static_allocator(core::AllocatorFunctor* al) { oClass::static_allocator = al;}; \
+    static void ___set_static_creator(core::Creator* al) { oClass::static_creator = al;}; \
     static string static_packageName()  { return oPackage;};		\
     static string static_className() { return core::lispify_symbol_name(oclassName);}; \
     static core::Symbol_sp static_classSymbol() { return oClass::___staticClassSymbol; }; \
@@ -600,10 +600,6 @@ namespace core
 
 
 
-
-
-	typedef	vector<T_sp>	ObjectVector;
-	typedef	vector<T_sp>::iterator	ObjectVectorIterator;
 
 
 	/*! If this object can render itself into a graphics object then
@@ -810,11 +806,12 @@ namespace core
 namespace core {
 
     template <class _W_>
-    class LispObjectAllocatorFunctor : public core::AllocatorFunctor
+    class LispObjectCreator : public core::Creator
     {
     public:
+        DISABLE_NEW();
         virtual void describe() const {
-            printf("LispObjectAllocatorFunctor for class %s  sizeof_instances-> %lu\n",_rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
+            printf("LispObjectCreator for class %s  sizeof_instances-> %lu\n",_rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
         }
         virtual core::T_sp allocate()
         {
@@ -830,7 +827,7 @@ namespace core {
     template <class oclass>
     T_sp new_LispObject()
     {_G();
-        T_sp obj = oclass::static_allocator->allocate();
+        T_sp obj = oclass::static_creator->allocate();
 //	GC_ALLOCATE(oclass,obj );
 	return obj;
     };
@@ -948,10 +945,10 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 	core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_packageName(),oClass::static_className());
 	LOG(BF("Setting staticClassSymbol for class to: %d")% classSymbol );
 	oClass::___set_static_ClassSymbol(classSymbol);
-	if ( oClass::static_allocator == NULL )
+	if ( oClass::static_creator == NULL )
 	{
-            core::LispObjectAllocatorFunctor<oClass>* lispObjectAllocator = new core::LispObjectAllocatorFunctor<oClass>();
-            oClass::___set_static_allocator(lispObjectAllocator);
+            core::LispObjectCreator<oClass>* lispObjectCreator = gctools::allocateCreator<core::LispObjectCreator<oClass>>();
+            oClass::___set_static_creator(lispObjectCreator);
 	}
     }
     LOG(BF( "REGISTERING class(%s::%s)  classSymbol(%2d)")
@@ -983,7 +980,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
     core::Symbol_sp oClass::___staticClassSymbol;			\
     core::Class_sp oClass::___staticClass;                              \
     int oClass::static_Kind;                                            \
-core::AllocatorFunctor* oClass::static_allocator = NULL;		
+    core::Creator* oClass::static_creator = NULL;		
 
 #define STATIC_CLASS_INFO(oClass)					\
     /*	oClass* oClass::___staticDereferencedNilInstance;	*/	\

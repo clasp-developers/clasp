@@ -15,11 +15,12 @@ namespace mpip
 
 
 
-    class MpiExposer : public core::PackageExposer
+    class MpiExposer : public core::Exposer
     {
     private:
     public:
-	MpiExposer(core::Lisp_sp lisp) : PackageExposer(lisp,MpiPkg) {};
+        DISABLE_NEW();
+	MpiExposer(core::Lisp_sp lisp) : Exposer(lisp,MpiPkg) {};
         virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
     };
 

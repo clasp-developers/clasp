@@ -669,7 +669,8 @@ namespace llvmo
 	fptr_type		fptr;
 // constructor
     public:
-	LLVMFunctoid( const string& name, fptr_type ptr) : Functoid("LLVMFunctoid->"+name), fptr(ptr) {}
+	LLVMFunctoid( const string& name, fptr_type ptr) : Functoid("LLVMFunctoid->"+name), fptr(ptr) {};
+        DISABLE_NEW();
 	core::T_mv activate(core::ActivationFrame_sp closedEnv, int nargs, ArgArray args )
 	{_G();
 	    core::T_mv result;

@@ -37,7 +37,7 @@ $var ConstTypeCount = 1
                         public:
                         enum { NumParams = $numArgs };
                         IndirectVariadicMethoid(const string& name, Type ptr) : core::Functoid(name), mptr(ptr) {};
-
+                    DISABLE_NEW();
                         core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
                         {
                             int countPureOutValues = CountPureOutValues<Pols>::value;

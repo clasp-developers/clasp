@@ -104,21 +104,21 @@ namespace core
 
 
 
-    /*! Virtual class for defining new packages and doing package dependent 
+    /*! Class for defining new packages and doing package dependent 
      exposure of classes/functions/globals.  You can create more than one
      PackageHolder for a package to expose successive things.
      If you invoke the Ctor and the package hasn't been created then
      it will be created and you must save the Package before
-     before the PackageExposer is destructed or the package will also be
+     the Exposer is destructed or the package will also be
      destructed.
-     If you invoke the PackageExposer ctor when the package exists in the
+     If you invoke the Exposer ctor when the package exists in the
      lisp interpreter then it will be gotten from the lisp interpreter and
      used to expose things.
      For instance, the lisp interpreter creates a CorePackage to expose
-     the cando stuff and then the python interface creates another one and
+     the clasp stuff and then the python interface creates another one and
      gets the Package_sp for the core package from lisp and then 
      exposes the python classes/functions/globals */
-    class PackageExposer
+    class Exposer
     {
     public:
 	typedef enum { candoClasses, candoFunctions, candoGlobals,
@@ -130,21 +130,21 @@ namespace core
     public:
 	/*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - allows nicknames */
-	PackageExposer(Lisp_sp lisp, const string& packageName, const char* nicknames[]);
+	Exposer(Lisp_sp lisp, const string& packageName, const char* nicknames[]);
 
 
 	/*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - no nicknames allowed */
-	PackageExposer(Lisp_sp lisp, const string& packageName );
+	Exposer(Lisp_sp lisp, const string& packageName );
 
-	virtual ~PackageExposer();
+	virtual ~Exposer();
 
         DECLARE_onHeapScanGCRoots();
 
 	/*! Return the packageName */
 	string packageName() const { return this->_PackageName;};
 
-	/*! Return the Package that this PackageExposer holds */
+	/*! Return the Package that this Exposer holds */
 	Package_sp package() const { return this->_Package;};
 
 	/* Evaluate the code that exposes the package Classes/Functions/Globals
@@ -195,6 +195,7 @@ namespace core
 	struct GCRoots : public gctools::HeapRoot {
 	/*! The invocation history stack this should be per thread */
 	    InvocationHistoryStack 	_InvocationHistoryStack;
+            ExceptionStack              _ExceptionStack;
 	/*! Multiple values - this should be per thread */
 	    MultipleValues 		_MultipleValues;
 	    /*! Bignum registers should be one per thread */
@@ -210,20 +211,22 @@ namespace core
 	    /*! Store CATCH info */
 	    Cons_sp 			_CatchInfo;
 	    /* The global class table that maps class symbols to classes */
-	    SymbolMap<Class_O>		_BootClassTable;
+	    SymbolDict<Class_O>		_BootClassTable;
 	    /*! When compiled files are loaded, they need to create
 	      LOAD-TIME-VALUEs and QUOTEd objects using C++ calls at runtime.
 	      Those objects are stored here as a map on the compiled file name. */
 	    HashTableEqual_sp           _LoadTimeValueArrays; // map<string,LoadTimeValues_sp> _LoadTimeValueArrays;
 	    Cons_sp 			_CommandLineArguments;
             gctools::Vec0<Package_sp>	_Packages;
-	    SymbolMap<Function_O>	_SetfDefinitions;
+	    /*SymbolMap<Function_O>	        _SetfDefinitions; */
+	    HashTableEq_sp	        _SetfDefinitions;
 	    Package_sp 			_CorePackage;
 	    Package_sp 			_KeywordPackage;
 	    Package_sp 			_CommonLispPackage;
 	    HashTableEq_sp                _SpecialForms;
 	    /*! Store a table of generic functions - should this be a HashTable?  What about (setf XXX) generic functions? Aug2013 */
-	    SymbolMap<SingleDispatchGenericFunction_O> 	_SingleDispatchGenericFunctionTable;
+	    /*SymbolMap<SingleDispatchGenericFunction_O> 	_SingleDispatchGenericFunctionTable;*/
+            HashTableEq_sp              _SingleDispatchGenericFunctionTable;
 	    /*! True object */
 	    T_sp 			_TrueObject;
             /*! This is needed by the compiler */
@@ -287,9 +290,9 @@ namespace core
 	static 	void lisp_initSymbols(Lisp_sp lisp);
 
     public:
-	static const int MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
-	static const int MaxClosSlots = 3; //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
-	static const int ClosCacheSize = 65536;
+	static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
+	static const int MaxClosSlots; //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
+	static const int ClosCacheSize;
     public:
 	void initialize();
 #if defined(XML_ARCHIVE)
@@ -362,6 +365,8 @@ namespace core
 	DebugStream& debugLog() {HARD_ASSERT(this->_DebugStream!=NULL);return *(this->_DebugStream);};
 //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
     public:
+        ExceptionStack& exceptionStack() { return this->_Roots._ExceptionStack; };
+    public:
 	void setupMpi(bool mpiEnabled, int mpiRank, int mpiSize);
 	bool mpiEnabled() { return this->_MpiEnabled;}
 	int mpiRank() { return this->_MpiRank;}
@@ -371,9 +376,9 @@ namespace core
     public:
 	void mapClassNamesAndClasses(KeyValueMapper* mapper);
     public:
-	Cons_sp catchPushTag(T_sp tag);
-	void catchUnwindTag(Cons_sp catchStore);
-	Cons_sp catchFindTag(T_sp tag);
+//	Cons_sp catchPushTag(T_sp tag);
+//	void catchUnwindTag(Cons_sp catchStore);
+//	Cons_sp catchFindTag(T_sp tag);
     public:
 	Cons_sp pathnameTranslations() const { return this->_Roots._PathnameTranslations; };
 	void setPathnameTranslations(Cons_sp pnt) { this->_Roots._PathnameTranslations = pnt;};
@@ -673,8 +678,8 @@ namespace core
 	void 	pushConditionHandlers(Cons_sp handlers);
 	void	popConditionHandlers();
 #endif
-	/*! Install a package using the newer PackageExposer idiom */
-	void	installPackage(const PackageExposer* package );
+	/*! Install a package using the newer Exposer idiom */
+	void	installPackage(const Exposer* package );
 	/*! Create nils for all classes that don't have them yet */
 //	void	createNils();
 	/*! When global initialization is locked then no more callbacks can be added
@@ -837,8 +842,8 @@ namespace core
 	void initializeEnvironment();
 
 	void addClassNameToPackageAsDynamic(const string& package, const string& name, Class_sp cl);
-	void addClass( Symbol_sp classSymbol, AllocatorFunctor* alloc, Symbol_sp base1ClassSymbol, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL );
-	void addClass( Symbol_sp classSymbol,Class_sp theClass,AllocatorFunctor* allocator);
+	void addClass( Symbol_sp classSymbol, Creator* creator, Symbol_sp base1ClassSymbol, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL );
+	void addClass( Symbol_sp classSymbol,Class_sp theClass,Creator* creator);
 //	void addClass( Symbol_sp classSymbol);
 
 	string __repr__() const ;

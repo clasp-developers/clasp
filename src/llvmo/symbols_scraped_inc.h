@@ -259,66 +259,67 @@
 // SYMBOL_TABLE_ENTRY     LlvmoPkg  256 AttributeReturnsTwice          ATTRIBUTE-RETURNS-TWICE        export ; cName=_sym_AttributeReturnsTwice lispName=ATTRIBUTE-RETURNS-TWICE
 // SYMBOL_TABLE_ENTRY     LlvmoPkg  257 LLVMContext_O                  LLVM-CONTEXT                   private ; cName=_sym_LLVMContext_O lispName=LLVM-CONTEXT
 // SYMBOL_TABLE_ENTRY     LlvmoPkg  258 ResumeInst_O                   RESUME-INST                    private ; cName=_sym_ResumeInst_O lispName=RESUME-INST
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  259 AttributeReadOnly              ATTRIBUTE-READ-ONLY            export ; cName=_sym_AttributeReadOnly lispName=ATTRIBUTE-READ-ONLY
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  260 writeIrToFile                  WRITE-IR-TO-FILE               export ; cName=_sym_writeIrToFile lispName=WRITE-IR-TO-FILE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  261 BlockAddress_O                 BLOCK-ADDRESS                  private ; cName=_sym_BlockAddress_O lispName=BLOCK-ADDRESS
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  262 LinkerPrivateWeakLinkage       LINKER-PRIVATE-WEAK-LINKAGE    export ; cName=_sym_LinkerPrivateWeakLinkage lispName=LINKER-PRIVATE-WEAK-LINKAGE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  263 STARaSTAR                      *A*                            export ; cName=_sym_STARaSTAR lispName=*A*
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  264 AttributeInlineHint            ATTRIBUTE-INLINE-HINT          export ; cName=_sym_AttributeInlineHint lispName=ATTRIBUTE-INLINE-HINT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  265 DW_TAG_compile_unit            DW-TAG-COMPILE-UNIT            export ; cName=_sym_DW_TAG_compile_unit lispName=DW-TAG-COMPILE-UNIT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  266 ConstantFP_O                   CONSTANT-FP                    private ; cName=_sym_ConstantFP_O lispName=CONSTANT-FP
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  267 DW_TAG_inheritance             DW-TAG-INHERITANCE             export ; cName=_sym_DW_TAG_inheritance lispName=DW-TAG-INHERITANCE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  268 STARrunTimeExecutionEngineSTAR *RUN-TIME-EXECUTION-ENGINE*    export ; cName=_sym_STARrunTimeExecutionEngineSTAR lispName=*RUN-TIME-EXECUTION-ENGINE*
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  269 DW_TAG_imported_declaration    DW-TAG-IMPORTED-DECLARATION    export ; cName=_sym_DW_TAG_imported_declaration lispName=DW-TAG-IMPORTED-DECLARATION
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  270 STARglobal_value_linkage_typesSTAR *GLOBAL-VALUE-LINKAGE-TYPES*   private ; cName=_sym_STARglobal_value_linkage_typesSTAR lispName=*GLOBAL-VALUE-LINKAGE-TYPES*
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  271 CallInst_O                     CALL-INST                      private ; cName=_sym_CallInst_O lispName=CALL-INST
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  272 AllocaInst_O                   ALLOCA-INST                    private ; cName=_sym_AllocaInst_O lispName=ALLOCA-INST
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  273 DataLayout_O                   DATA-LAYOUT                    private ; cName=_sym_DataLayout_O lispName=DATA-LAYOUT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  274 Argument_O                     ARGUMENT                       private ; cName=_sym_Argument_O lispName=ARGUMENT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  275 DW_TAG_thrown_type             DW-TAG-THROWN-TYPE             export ; cName=_sym_DW_TAG_thrown_type lispName=DW-TAG-THROWN-TYPE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  276 FunctionType_O                 FUNCTION-TYPE                  private ; cName=_sym_FunctionType_O lispName=FUNCTION-TYPE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  277 DW_TAG_variable                DW-TAG-VARIABLE                export ; cName=_sym_DW_TAG_variable lispName=DW-TAG-VARIABLE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  278 APInt_O                        APINT                          private ; cName=_sym_APInt_O lispName=APINT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  279 makeAPInt                      MAKE-APINT                     export ; cName=_sym_makeAPInt lispName=MAKE-APINT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  280 DW_TAG_subroutine_type         DW-TAG-SUBROUTINE-TYPE         export ; cName=_sym_DW_TAG_subroutine_type lispName=DW-TAG-SUBROUTINE-TYPE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  281 Unordered                      UNORDERED                      export ; cName=_sym_Unordered lispName=UNORDERED
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  282 PointerType_O                  POINTER-TYPE                   private ; cName=_sym_PointerType_O lispName=POINTER-TYPE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  283 ModulePass_O                   MODULE-PASS                    private ; cName=_sym_ModulePass_O lispName=MODULE-PASS
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  284 DW_TAG_lo_user                 DW-TAG-LO-USER                 export ; cName=_sym_DW_TAG_lo_user lispName=DW-TAG-LO-USER
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  285 And                            AND                            export ; cName=_sym_And lispName=AND
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  286 DW_TAG_variant                 DW-TAG-VARIANT                 export ; cName=_sym_DW_TAG_variant lispName=DW-TAG-VARIANT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  287 DW_TAG_unspecified_parameters  DW-TAG-UNSPECIFIED-PARAMETERS  export ; cName=_sym_DW_TAG_unspecified_parameters lispName=DW-TAG-UNSPECIFIED-PARAMETERS
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  288 ExternalWeakLinkage            EXTERNAL-WEAK-LINKAGE          export ; cName=_sym_ExternalWeakLinkage lispName=EXTERNAL-WEAK-LINKAGE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  289 SingleThread                   SINGLE-THREAD                  export ; cName=_sym_SingleThread lispName=SINGLE-THREAD
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  290 FCMP_ULE                       FCMP-ULE                       export ; cName=_sym_FCMP_ULE lispName=FCMP-ULE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  291 ConstantInt_O                  CONSTANT-INT                   private ; cName=_sym_ConstantInt_O lispName=CONSTANT-INT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  292 CompositeType_O                COMPOSITE-TYPE                 private ; cName=_sym_CompositeType_O lispName=COMPOSITE-TYPE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  293 Xchg                           XCHG                           export ; cName=_sym_Xchg lispName=XCHG
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  294 makeAPWidth                    MAKE-APWIDTH                   export ; cName=_sym_makeAPWidth lispName=MAKE-APWIDTH
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  295 STARatomic_orderingSTAR        *ATOMIC-ORDERING*              export ; cName=_sym_STARatomic_orderingSTAR lispName=*ATOMIC-ORDERING*
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  296 GlobalVariable_O               GLOBAL-VARIABLE                private ; cName=_sym_GlobalVariable_O lispName=GLOBAL-VARIABLE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  297 Shl                            SHL                            export ; cName=_sym_Shl lispName=SHL
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  298 InternalLinkage                INTERNAL-LINKAGE               export ; cName=_sym_InternalLinkage lispName=INTERNAL-LINKAGE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  299 Min                            MIN                            export ; cName=_sym_Min lispName=MIN
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  300 DW_TAG_GNU_formal_parameter_pack DW-TAG-GNU-FORMAL-PARAMETER-PACK export ; cName=_sym_DW_TAG_GNU_formal_parameter_pack lispName=DW-TAG-GNU-FORMAL-PARAMETER-PACK
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  301 Acquire                        ACQUIRE                        export ; cName=_sym_Acquire lispName=ACQUIRE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  302 _PLUS_DW_ATE_SIGNED_FIXED_PLUS_ +DW-ATE-SIGNED-FIXED+          export ; cName=_sym__PLUS_DW_ATE_SIGNED_FIXED_PLUS_ lispName=+DW-ATE-SIGNED-FIXED+
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  303 AttributeByVal                 ATTRIBUTE-BY-VAL               export ; cName=_sym_AttributeByVal lispName=ATTRIBUTE-BY-VAL
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  304 DW_TAG_friend                  DW-TAG-FRIEND                  export ; cName=_sym_DW_TAG_friend lispName=DW-TAG-FRIEND
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  305 DW_TAG_lexical_block           DW-TAG-LEXICAL-BLOCK           export ; cName=_sym_DW_TAG_lexical_block lispName=DW-TAG-LEXICAL-BLOCK
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  306 Function_O                     FUNCTION                       private ; cName=_sym_Function_O lispName=FUNCTION
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  307 Module_O                       MODULE                         private ; cName=_sym_Module_O lispName=MODULE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  308 Max                            MAX                            export ; cName=_sym_Max lispName=MAX
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  309 DW_TAG_subrange_type           DW-TAG-SUBRANGE-TYPE           export ; cName=_sym_DW_TAG_subrange_type lispName=DW-TAG-SUBRANGE-TYPE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  310 FMul                           FMUL                           export ; cName=_sym_FMul lispName=FMUL
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  311 LLVMDebugVersion4              LLVMDEBUG-VERSION4             export ; cName=_sym_LLVMDebugVersion4 lispName=LLVMDEBUG-VERSION4
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  312 DW_TAG_imported_unit           DW-TAG-IMPORTED-UNIT           export ; cName=_sym_DW_TAG_imported_unit lispName=DW-TAG-IMPORTED-UNIT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  313 DebugInfo_O                    DEBUG-INFO                     export ; cName=_sym_DebugInfo_O lispName=DEBUG-INFO
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  314 AttributeOptimizeForSize       ATTRIBUTE-OPTIMIZE-FOR-SIZE    export ; cName=_sym_AttributeOptimizeForSize lispName=ATTRIBUTE-OPTIMIZE-FOR-SIZE
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  315 UDiv                           UDIV                           export ; cName=_sym_UDiv lispName=UDIV
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  316 DW_TAG_variant_part            DW-TAG-VARIANT-PART            export ; cName=_sym_DW_TAG_variant_part lispName=DW-TAG-VARIANT-PART
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  317 APFloat_O                      APFLOAT                        private ; cName=_sym_APFloat_O lispName=APFLOAT
-// SYMBOL_TABLE_ENTRY     LlvmoPkg  318 AttributeSExt                  ATTRIBUTE-SEXT                 export ; cName=_sym_AttributeSExt lispName=ATTRIBUTE-SEXT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  259 _PLUS_DebugMetadataVersion_PLUS_ +DEBUG-METADATA-VERSION+       export ; cName=_sym__PLUS_DebugMetadataVersion_PLUS_ lispName=+DEBUG-METADATA-VERSION+
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  260 AttributeReadOnly              ATTRIBUTE-READ-ONLY            export ; cName=_sym_AttributeReadOnly lispName=ATTRIBUTE-READ-ONLY
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  261 writeIrToFile                  WRITE-IR-TO-FILE               export ; cName=_sym_writeIrToFile lispName=WRITE-IR-TO-FILE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  262 BlockAddress_O                 BLOCK-ADDRESS                  private ; cName=_sym_BlockAddress_O lispName=BLOCK-ADDRESS
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  263 LinkerPrivateWeakLinkage       LINKER-PRIVATE-WEAK-LINKAGE    export ; cName=_sym_LinkerPrivateWeakLinkage lispName=LINKER-PRIVATE-WEAK-LINKAGE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  264 STARaSTAR                      *A*                            export ; cName=_sym_STARaSTAR lispName=*A*
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  265 AttributeInlineHint            ATTRIBUTE-INLINE-HINT          export ; cName=_sym_AttributeInlineHint lispName=ATTRIBUTE-INLINE-HINT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  266 DW_TAG_compile_unit            DW-TAG-COMPILE-UNIT            export ; cName=_sym_DW_TAG_compile_unit lispName=DW-TAG-COMPILE-UNIT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  267 ConstantFP_O                   CONSTANT-FP                    private ; cName=_sym_ConstantFP_O lispName=CONSTANT-FP
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  268 DW_TAG_inheritance             DW-TAG-INHERITANCE             export ; cName=_sym_DW_TAG_inheritance lispName=DW-TAG-INHERITANCE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  269 STARrunTimeExecutionEngineSTAR *RUN-TIME-EXECUTION-ENGINE*    export ; cName=_sym_STARrunTimeExecutionEngineSTAR lispName=*RUN-TIME-EXECUTION-ENGINE*
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  270 DW_TAG_imported_declaration    DW-TAG-IMPORTED-DECLARATION    export ; cName=_sym_DW_TAG_imported_declaration lispName=DW-TAG-IMPORTED-DECLARATION
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  271 STARglobal_value_linkage_typesSTAR *GLOBAL-VALUE-LINKAGE-TYPES*   private ; cName=_sym_STARglobal_value_linkage_typesSTAR lispName=*GLOBAL-VALUE-LINKAGE-TYPES*
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  272 CallInst_O                     CALL-INST                      private ; cName=_sym_CallInst_O lispName=CALL-INST
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  273 AllocaInst_O                   ALLOCA-INST                    private ; cName=_sym_AllocaInst_O lispName=ALLOCA-INST
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  274 DataLayout_O                   DATA-LAYOUT                    private ; cName=_sym_DataLayout_O lispName=DATA-LAYOUT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  275 Argument_O                     ARGUMENT                       private ; cName=_sym_Argument_O lispName=ARGUMENT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  276 DW_TAG_thrown_type             DW-TAG-THROWN-TYPE             export ; cName=_sym_DW_TAG_thrown_type lispName=DW-TAG-THROWN-TYPE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  277 FunctionType_O                 FUNCTION-TYPE                  private ; cName=_sym_FunctionType_O lispName=FUNCTION-TYPE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  278 DW_TAG_variable                DW-TAG-VARIABLE                export ; cName=_sym_DW_TAG_variable lispName=DW-TAG-VARIABLE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  279 APInt_O                        APINT                          private ; cName=_sym_APInt_O lispName=APINT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  280 makeAPInt                      MAKE-APINT                     export ; cName=_sym_makeAPInt lispName=MAKE-APINT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  281 DW_TAG_subroutine_type         DW-TAG-SUBROUTINE-TYPE         export ; cName=_sym_DW_TAG_subroutine_type lispName=DW-TAG-SUBROUTINE-TYPE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  282 Unordered                      UNORDERED                      export ; cName=_sym_Unordered lispName=UNORDERED
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  283 PointerType_O                  POINTER-TYPE                   private ; cName=_sym_PointerType_O lispName=POINTER-TYPE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  284 ModulePass_O                   MODULE-PASS                    private ; cName=_sym_ModulePass_O lispName=MODULE-PASS
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  285 DW_TAG_lo_user                 DW-TAG-LO-USER                 export ; cName=_sym_DW_TAG_lo_user lispName=DW-TAG-LO-USER
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  286 And                            AND                            export ; cName=_sym_And lispName=AND
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  287 DW_TAG_variant                 DW-TAG-VARIANT                 export ; cName=_sym_DW_TAG_variant lispName=DW-TAG-VARIANT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  288 DW_TAG_unspecified_parameters  DW-TAG-UNSPECIFIED-PARAMETERS  export ; cName=_sym_DW_TAG_unspecified_parameters lispName=DW-TAG-UNSPECIFIED-PARAMETERS
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  289 ExternalWeakLinkage            EXTERNAL-WEAK-LINKAGE          export ; cName=_sym_ExternalWeakLinkage lispName=EXTERNAL-WEAK-LINKAGE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  290 SingleThread                   SINGLE-THREAD                  export ; cName=_sym_SingleThread lispName=SINGLE-THREAD
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  291 FCMP_ULE                       FCMP-ULE                       export ; cName=_sym_FCMP_ULE lispName=FCMP-ULE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  292 ConstantInt_O                  CONSTANT-INT                   private ; cName=_sym_ConstantInt_O lispName=CONSTANT-INT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  293 CompositeType_O                COMPOSITE-TYPE                 private ; cName=_sym_CompositeType_O lispName=COMPOSITE-TYPE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  294 Xchg                           XCHG                           export ; cName=_sym_Xchg lispName=XCHG
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  295 makeAPWidth                    MAKE-APWIDTH                   export ; cName=_sym_makeAPWidth lispName=MAKE-APWIDTH
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  296 STARatomic_orderingSTAR        *ATOMIC-ORDERING*              export ; cName=_sym_STARatomic_orderingSTAR lispName=*ATOMIC-ORDERING*
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  297 GlobalVariable_O               GLOBAL-VARIABLE                private ; cName=_sym_GlobalVariable_O lispName=GLOBAL-VARIABLE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  298 Shl                            SHL                            export ; cName=_sym_Shl lispName=SHL
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  299 InternalLinkage                INTERNAL-LINKAGE               export ; cName=_sym_InternalLinkage lispName=INTERNAL-LINKAGE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  300 Min                            MIN                            export ; cName=_sym_Min lispName=MIN
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  301 DW_TAG_GNU_formal_parameter_pack DW-TAG-GNU-FORMAL-PARAMETER-PACK export ; cName=_sym_DW_TAG_GNU_formal_parameter_pack lispName=DW-TAG-GNU-FORMAL-PARAMETER-PACK
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  302 Acquire                        ACQUIRE                        export ; cName=_sym_Acquire lispName=ACQUIRE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  303 _PLUS_DW_ATE_SIGNED_FIXED_PLUS_ +DW-ATE-SIGNED-FIXED+          export ; cName=_sym__PLUS_DW_ATE_SIGNED_FIXED_PLUS_ lispName=+DW-ATE-SIGNED-FIXED+
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  304 AttributeByVal                 ATTRIBUTE-BY-VAL               export ; cName=_sym_AttributeByVal lispName=ATTRIBUTE-BY-VAL
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  305 DW_TAG_friend                  DW-TAG-FRIEND                  export ; cName=_sym_DW_TAG_friend lispName=DW-TAG-FRIEND
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  306 DW_TAG_lexical_block           DW-TAG-LEXICAL-BLOCK           export ; cName=_sym_DW_TAG_lexical_block lispName=DW-TAG-LEXICAL-BLOCK
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  307 Function_O                     FUNCTION                       private ; cName=_sym_Function_O lispName=FUNCTION
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  308 Module_O                       MODULE                         private ; cName=_sym_Module_O lispName=MODULE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  309 Max                            MAX                            export ; cName=_sym_Max lispName=MAX
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  310 DW_TAG_subrange_type           DW-TAG-SUBRANGE-TYPE           export ; cName=_sym_DW_TAG_subrange_type lispName=DW-TAG-SUBRANGE-TYPE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  311 FMul                           FMUL                           export ; cName=_sym_FMul lispName=FMUL
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  312 LLVMDebugVersion4              LLVMDEBUG-VERSION4             export ; cName=_sym_LLVMDebugVersion4 lispName=LLVMDEBUG-VERSION4
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  313 DW_TAG_imported_unit           DW-TAG-IMPORTED-UNIT           export ; cName=_sym_DW_TAG_imported_unit lispName=DW-TAG-IMPORTED-UNIT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  314 DebugInfo_O                    DEBUG-INFO                     export ; cName=_sym_DebugInfo_O lispName=DEBUG-INFO
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  315 AttributeOptimizeForSize       ATTRIBUTE-OPTIMIZE-FOR-SIZE    export ; cName=_sym_AttributeOptimizeForSize lispName=ATTRIBUTE-OPTIMIZE-FOR-SIZE
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  316 UDiv                           UDIV                           export ; cName=_sym_UDiv lispName=UDIV
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  317 DW_TAG_variant_part            DW-TAG-VARIANT-PART            export ; cName=_sym_DW_TAG_variant_part lispName=DW-TAG-VARIANT-PART
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  318 APFloat_O                      APFLOAT                        private ; cName=_sym_APFloat_O lispName=APFLOAT
+// SYMBOL_TABLE_ENTRY     LlvmoPkg  319 AttributeSExt                  ATTRIBUTE-SEXT                 export ; cName=_sym_AttributeSExt lispName=ATTRIBUTE-SEXT
 #ifdef LlvmoPkg_SYMBOLS
 DO_SYMBOL(_sym_FCMP_UGE,0,LlvmoPkg,"FCMP-UGE",true);
 DO_SYMBOL(_sym_FCMP_UNE,1,LlvmoPkg,"FCMP-UNE",true);
@@ -579,64 +580,65 @@ DO_SYMBOL(_sym_ArrayType_O,255,LlvmoPkg,"ARRAY-TYPE",false);
 DO_SYMBOL(_sym_AttributeReturnsTwice,256,LlvmoPkg,"ATTRIBUTE-RETURNS-TWICE",true);
 DO_SYMBOL(_sym_LLVMContext_O,257,LlvmoPkg,"LLVM-CONTEXT",false);
 DO_SYMBOL(_sym_ResumeInst_O,258,LlvmoPkg,"RESUME-INST",false);
-DO_SYMBOL(_sym_AttributeReadOnly,259,LlvmoPkg,"ATTRIBUTE-READ-ONLY",true);
-DO_SYMBOL(_sym_writeIrToFile,260,LlvmoPkg,"WRITE-IR-TO-FILE",true);
-DO_SYMBOL(_sym_BlockAddress_O,261,LlvmoPkg,"BLOCK-ADDRESS",false);
-DO_SYMBOL(_sym_LinkerPrivateWeakLinkage,262,LlvmoPkg,"LINKER-PRIVATE-WEAK-LINKAGE",true);
-DO_SYMBOL(_sym_STARaSTAR,263,LlvmoPkg,"*A*",true);
-DO_SYMBOL(_sym_AttributeInlineHint,264,LlvmoPkg,"ATTRIBUTE-INLINE-HINT",true);
-DO_SYMBOL(_sym_DW_TAG_compile_unit,265,LlvmoPkg,"DW-TAG-COMPILE-UNIT",true);
-DO_SYMBOL(_sym_ConstantFP_O,266,LlvmoPkg,"CONSTANT-FP",false);
-DO_SYMBOL(_sym_DW_TAG_inheritance,267,LlvmoPkg,"DW-TAG-INHERITANCE",true);
-DO_SYMBOL(_sym_STARrunTimeExecutionEngineSTAR,268,LlvmoPkg,"*RUN-TIME-EXECUTION-ENGINE*",true);
-DO_SYMBOL(_sym_DW_TAG_imported_declaration,269,LlvmoPkg,"DW-TAG-IMPORTED-DECLARATION",true);
-DO_SYMBOL(_sym_STARglobal_value_linkage_typesSTAR,270,LlvmoPkg,"*GLOBAL-VALUE-LINKAGE-TYPES*",false);
-DO_SYMBOL(_sym_CallInst_O,271,LlvmoPkg,"CALL-INST",false);
-DO_SYMBOL(_sym_AllocaInst_O,272,LlvmoPkg,"ALLOCA-INST",false);
-DO_SYMBOL(_sym_DataLayout_O,273,LlvmoPkg,"DATA-LAYOUT",false);
-DO_SYMBOL(_sym_Argument_O,274,LlvmoPkg,"ARGUMENT",false);
-DO_SYMBOL(_sym_DW_TAG_thrown_type,275,LlvmoPkg,"DW-TAG-THROWN-TYPE",true);
-DO_SYMBOL(_sym_FunctionType_O,276,LlvmoPkg,"FUNCTION-TYPE",false);
-DO_SYMBOL(_sym_DW_TAG_variable,277,LlvmoPkg,"DW-TAG-VARIABLE",true);
-DO_SYMBOL(_sym_APInt_O,278,LlvmoPkg,"APINT",false);
-DO_SYMBOL(_sym_makeAPInt,279,LlvmoPkg,"MAKE-APINT",true);
-DO_SYMBOL(_sym_DW_TAG_subroutine_type,280,LlvmoPkg,"DW-TAG-SUBROUTINE-TYPE",true);
-DO_SYMBOL(_sym_Unordered,281,LlvmoPkg,"UNORDERED",true);
-DO_SYMBOL(_sym_PointerType_O,282,LlvmoPkg,"POINTER-TYPE",false);
-DO_SYMBOL(_sym_ModulePass_O,283,LlvmoPkg,"MODULE-PASS",false);
-DO_SYMBOL(_sym_DW_TAG_lo_user,284,LlvmoPkg,"DW-TAG-LO-USER",true);
-DO_SYMBOL(_sym_And,285,LlvmoPkg,"AND",true);
-DO_SYMBOL(_sym_DW_TAG_variant,286,LlvmoPkg,"DW-TAG-VARIANT",true);
-DO_SYMBOL(_sym_DW_TAG_unspecified_parameters,287,LlvmoPkg,"DW-TAG-UNSPECIFIED-PARAMETERS",true);
-DO_SYMBOL(_sym_ExternalWeakLinkage,288,LlvmoPkg,"EXTERNAL-WEAK-LINKAGE",true);
-DO_SYMBOL(_sym_SingleThread,289,LlvmoPkg,"SINGLE-THREAD",true);
-DO_SYMBOL(_sym_FCMP_ULE,290,LlvmoPkg,"FCMP-ULE",true);
-DO_SYMBOL(_sym_ConstantInt_O,291,LlvmoPkg,"CONSTANT-INT",false);
-DO_SYMBOL(_sym_CompositeType_O,292,LlvmoPkg,"COMPOSITE-TYPE",false);
-DO_SYMBOL(_sym_Xchg,293,LlvmoPkg,"XCHG",true);
-DO_SYMBOL(_sym_makeAPWidth,294,LlvmoPkg,"MAKE-APWIDTH",true);
-DO_SYMBOL(_sym_STARatomic_orderingSTAR,295,LlvmoPkg,"*ATOMIC-ORDERING*",true);
-DO_SYMBOL(_sym_GlobalVariable_O,296,LlvmoPkg,"GLOBAL-VARIABLE",false);
-DO_SYMBOL(_sym_Shl,297,LlvmoPkg,"SHL",true);
-DO_SYMBOL(_sym_InternalLinkage,298,LlvmoPkg,"INTERNAL-LINKAGE",true);
-DO_SYMBOL(_sym_Min,299,LlvmoPkg,"MIN",true);
-DO_SYMBOL(_sym_DW_TAG_GNU_formal_parameter_pack,300,LlvmoPkg,"DW-TAG-GNU-FORMAL-PARAMETER-PACK",true);
-DO_SYMBOL(_sym_Acquire,301,LlvmoPkg,"ACQUIRE",true);
-DO_SYMBOL(_sym__PLUS_DW_ATE_SIGNED_FIXED_PLUS_,302,LlvmoPkg,"+DW-ATE-SIGNED-FIXED+",true);
-DO_SYMBOL(_sym_AttributeByVal,303,LlvmoPkg,"ATTRIBUTE-BY-VAL",true);
-DO_SYMBOL(_sym_DW_TAG_friend,304,LlvmoPkg,"DW-TAG-FRIEND",true);
-DO_SYMBOL(_sym_DW_TAG_lexical_block,305,LlvmoPkg,"DW-TAG-LEXICAL-BLOCK",true);
-DO_SYMBOL(_sym_Function_O,306,LlvmoPkg,"FUNCTION",false);
-DO_SYMBOL(_sym_Module_O,307,LlvmoPkg,"MODULE",false);
-DO_SYMBOL(_sym_Max,308,LlvmoPkg,"MAX",true);
-DO_SYMBOL(_sym_DW_TAG_subrange_type,309,LlvmoPkg,"DW-TAG-SUBRANGE-TYPE",true);
-DO_SYMBOL(_sym_FMul,310,LlvmoPkg,"FMUL",true);
-DO_SYMBOL(_sym_LLVMDebugVersion4,311,LlvmoPkg,"LLVMDEBUG-VERSION4",true);
-DO_SYMBOL(_sym_DW_TAG_imported_unit,312,LlvmoPkg,"DW-TAG-IMPORTED-UNIT",true);
-DO_SYMBOL(_sym_DebugInfo_O,313,LlvmoPkg,"DEBUG-INFO",true);
-DO_SYMBOL(_sym_AttributeOptimizeForSize,314,LlvmoPkg,"ATTRIBUTE-OPTIMIZE-FOR-SIZE",true);
-DO_SYMBOL(_sym_UDiv,315,LlvmoPkg,"UDIV",true);
-DO_SYMBOL(_sym_DW_TAG_variant_part,316,LlvmoPkg,"DW-TAG-VARIANT-PART",true);
-DO_SYMBOL(_sym_APFloat_O,317,LlvmoPkg,"APFLOAT",false);
-DO_SYMBOL(_sym_AttributeSExt,318,LlvmoPkg,"ATTRIBUTE-SEXT",true);
+DO_SYMBOL(_sym__PLUS_DebugMetadataVersion_PLUS_,259,LlvmoPkg,"+DEBUG-METADATA-VERSION+",true);
+DO_SYMBOL(_sym_AttributeReadOnly,260,LlvmoPkg,"ATTRIBUTE-READ-ONLY",true);
+DO_SYMBOL(_sym_writeIrToFile,261,LlvmoPkg,"WRITE-IR-TO-FILE",true);
+DO_SYMBOL(_sym_BlockAddress_O,262,LlvmoPkg,"BLOCK-ADDRESS",false);
+DO_SYMBOL(_sym_LinkerPrivateWeakLinkage,263,LlvmoPkg,"LINKER-PRIVATE-WEAK-LINKAGE",true);
+DO_SYMBOL(_sym_STARaSTAR,264,LlvmoPkg,"*A*",true);
+DO_SYMBOL(_sym_AttributeInlineHint,265,LlvmoPkg,"ATTRIBUTE-INLINE-HINT",true);
+DO_SYMBOL(_sym_DW_TAG_compile_unit,266,LlvmoPkg,"DW-TAG-COMPILE-UNIT",true);
+DO_SYMBOL(_sym_ConstantFP_O,267,LlvmoPkg,"CONSTANT-FP",false);
+DO_SYMBOL(_sym_DW_TAG_inheritance,268,LlvmoPkg,"DW-TAG-INHERITANCE",true);
+DO_SYMBOL(_sym_STARrunTimeExecutionEngineSTAR,269,LlvmoPkg,"*RUN-TIME-EXECUTION-ENGINE*",true);
+DO_SYMBOL(_sym_DW_TAG_imported_declaration,270,LlvmoPkg,"DW-TAG-IMPORTED-DECLARATION",true);
+DO_SYMBOL(_sym_STARglobal_value_linkage_typesSTAR,271,LlvmoPkg,"*GLOBAL-VALUE-LINKAGE-TYPES*",false);
+DO_SYMBOL(_sym_CallInst_O,272,LlvmoPkg,"CALL-INST",false);
+DO_SYMBOL(_sym_AllocaInst_O,273,LlvmoPkg,"ALLOCA-INST",false);
+DO_SYMBOL(_sym_DataLayout_O,274,LlvmoPkg,"DATA-LAYOUT",false);
+DO_SYMBOL(_sym_Argument_O,275,LlvmoPkg,"ARGUMENT",false);
+DO_SYMBOL(_sym_DW_TAG_thrown_type,276,LlvmoPkg,"DW-TAG-THROWN-TYPE",true);
+DO_SYMBOL(_sym_FunctionType_O,277,LlvmoPkg,"FUNCTION-TYPE",false);
+DO_SYMBOL(_sym_DW_TAG_variable,278,LlvmoPkg,"DW-TAG-VARIABLE",true);
+DO_SYMBOL(_sym_APInt_O,279,LlvmoPkg,"APINT",false);
+DO_SYMBOL(_sym_makeAPInt,280,LlvmoPkg,"MAKE-APINT",true);
+DO_SYMBOL(_sym_DW_TAG_subroutine_type,281,LlvmoPkg,"DW-TAG-SUBROUTINE-TYPE",true);
+DO_SYMBOL(_sym_Unordered,282,LlvmoPkg,"UNORDERED",true);
+DO_SYMBOL(_sym_PointerType_O,283,LlvmoPkg,"POINTER-TYPE",false);
+DO_SYMBOL(_sym_ModulePass_O,284,LlvmoPkg,"MODULE-PASS",false);
+DO_SYMBOL(_sym_DW_TAG_lo_user,285,LlvmoPkg,"DW-TAG-LO-USER",true);
+DO_SYMBOL(_sym_And,286,LlvmoPkg,"AND",true);
+DO_SYMBOL(_sym_DW_TAG_variant,287,LlvmoPkg,"DW-TAG-VARIANT",true);
+DO_SYMBOL(_sym_DW_TAG_unspecified_parameters,288,LlvmoPkg,"DW-TAG-UNSPECIFIED-PARAMETERS",true);
+DO_SYMBOL(_sym_ExternalWeakLinkage,289,LlvmoPkg,"EXTERNAL-WEAK-LINKAGE",true);
+DO_SYMBOL(_sym_SingleThread,290,LlvmoPkg,"SINGLE-THREAD",true);
+DO_SYMBOL(_sym_FCMP_ULE,291,LlvmoPkg,"FCMP-ULE",true);
+DO_SYMBOL(_sym_ConstantInt_O,292,LlvmoPkg,"CONSTANT-INT",false);
+DO_SYMBOL(_sym_CompositeType_O,293,LlvmoPkg,"COMPOSITE-TYPE",false);
+DO_SYMBOL(_sym_Xchg,294,LlvmoPkg,"XCHG",true);
+DO_SYMBOL(_sym_makeAPWidth,295,LlvmoPkg,"MAKE-APWIDTH",true);
+DO_SYMBOL(_sym_STARatomic_orderingSTAR,296,LlvmoPkg,"*ATOMIC-ORDERING*",true);
+DO_SYMBOL(_sym_GlobalVariable_O,297,LlvmoPkg,"GLOBAL-VARIABLE",false);
+DO_SYMBOL(_sym_Shl,298,LlvmoPkg,"SHL",true);
+DO_SYMBOL(_sym_InternalLinkage,299,LlvmoPkg,"INTERNAL-LINKAGE",true);
+DO_SYMBOL(_sym_Min,300,LlvmoPkg,"MIN",true);
+DO_SYMBOL(_sym_DW_TAG_GNU_formal_parameter_pack,301,LlvmoPkg,"DW-TAG-GNU-FORMAL-PARAMETER-PACK",true);
+DO_SYMBOL(_sym_Acquire,302,LlvmoPkg,"ACQUIRE",true);
+DO_SYMBOL(_sym__PLUS_DW_ATE_SIGNED_FIXED_PLUS_,303,LlvmoPkg,"+DW-ATE-SIGNED-FIXED+",true);
+DO_SYMBOL(_sym_AttributeByVal,304,LlvmoPkg,"ATTRIBUTE-BY-VAL",true);
+DO_SYMBOL(_sym_DW_TAG_friend,305,LlvmoPkg,"DW-TAG-FRIEND",true);
+DO_SYMBOL(_sym_DW_TAG_lexical_block,306,LlvmoPkg,"DW-TAG-LEXICAL-BLOCK",true);
+DO_SYMBOL(_sym_Function_O,307,LlvmoPkg,"FUNCTION",false);
+DO_SYMBOL(_sym_Module_O,308,LlvmoPkg,"MODULE",false);
+DO_SYMBOL(_sym_Max,309,LlvmoPkg,"MAX",true);
+DO_SYMBOL(_sym_DW_TAG_subrange_type,310,LlvmoPkg,"DW-TAG-SUBRANGE-TYPE",true);
+DO_SYMBOL(_sym_FMul,311,LlvmoPkg,"FMUL",true);
+DO_SYMBOL(_sym_LLVMDebugVersion4,312,LlvmoPkg,"LLVMDEBUG-VERSION4",true);
+DO_SYMBOL(_sym_DW_TAG_imported_unit,313,LlvmoPkg,"DW-TAG-IMPORTED-UNIT",true);
+DO_SYMBOL(_sym_DebugInfo_O,314,LlvmoPkg,"DEBUG-INFO",true);
+DO_SYMBOL(_sym_AttributeOptimizeForSize,315,LlvmoPkg,"ATTRIBUTE-OPTIMIZE-FOR-SIZE",true);
+DO_SYMBOL(_sym_UDiv,316,LlvmoPkg,"UDIV",true);
+DO_SYMBOL(_sym_DW_TAG_variant_part,317,LlvmoPkg,"DW-TAG-VARIANT-PART",true);
+DO_SYMBOL(_sym_APFloat_O,318,LlvmoPkg,"APFLOAT",false);
+DO_SYMBOL(_sym_AttributeSExt,319,LlvmoPkg,"ATTRIBUTE-SEXT",true);
 #endif

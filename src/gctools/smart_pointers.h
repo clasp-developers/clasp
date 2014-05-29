@@ -142,7 +142,6 @@ namespace mem
 
 	}
 
-
 	template <class o_class>
 	inline smart_ptr<o_class> asOrNull() const
 	{
@@ -363,9 +362,9 @@ namespace mem {
     {									\
 	/* non-const versions */					\
 	template <>  void intrusive_ptr_add_ref<_T_ const>(_T_ const* p) {p->_ReferenceCount++;} \
-	template <>  void intrusive_ptr_release<_T_ const>(_T_ const* p) {if ( --(p->_ReferenceCount) == 0 ) delete const_cast<_T_*>(p);} \
+	template <>  void intrusive_ptr_release<_T_ const>(_T_ const* p) {if ( --(p->_ReferenceCount) == 0 ) gctools::GCObjectAllocator<_T_>::deallocate(const_cast<_T_*>(p));} \
 	template <>  void intrusive_ptr_add_ref<_T_ >(_T_* p) {p->_ReferenceCount++;} \
-	template <>  void intrusive_ptr_release<_T_>(_T_* p) {if ( --(p->_ReferenceCount) == 0 ) delete p;} \
+	template <>  void intrusive_ptr_release<_T_>(_T_* p) {if ( --(p->_ReferenceCount) == 0 ) gctools::GCObjectAllocator<_T_>::deallocate(p);} \
     }
 #else
 #define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_)		\
@@ -387,7 +386,7 @@ namespace mem {
 
 
 
-
+#if 0
     template <class OT>
     class StackRootedPointerToSmartPtr : public gctools::StackRoot {
     public:
@@ -404,108 +403,9 @@ namespace mem {
 
         virtual ~StackRootedPointerToSmartPtr() {this->_px = NULL;};
     };
-
+#endif
 
 };
-
-namespace gctools {
-
-#if 0
-    template <typename OT>
-    class StackRootedStlContainer<vector<mem::smart_ptr<OT> > > : public gctools::StackRoot  {
-    public:
-        typedef vector<mem::smart_ptr<OT> >   StlContainerType;
-        StlContainerType                _Container;
-    public:
-        StlContainerType& get() { return this->_Container;};
-        GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-        {
-#ifdef USE_MPS
-            GC_SCANNER_BEGIN() {
-                for ( auto& it_gc_safe : this->_Container ) {
-                    SMART_PTR_FIX(it_gc_safe);
-                }
-            } GC_SCANNER_END();
-#endif
-            return GC_RES_OK;
-        }
-    };
-
-
-
-
-    template <typename FirstOTy, typename SecondTy>
-    class StackRootedStlContainer<map<mem::smart_ptr<FirstOTy>,SecondTy> > : public gctools::StackRoot  {
-    public:
-        typedef map<mem::smart_ptr<FirstOTy>,SecondTy>   StlContainerType;
-        StlContainerType                _Container;
-    public:
-        StlContainerType& get() { return this->_Container;};
-        GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-        {
-#ifdef USE_MPS            
-            GC_SCANNER_BEGIN() {
-                for ( auto& it_gc_safe : this->_Container ) {
-                    SMART_PTR_FIX(it_gc_safe.first);
-                }
-            } GC_SCANNER_END();
-#endif
-            return GC_RES_OK;
-        }
-    };
-
-    template <typename FirstTy, typename SecondOTy>
-    class StackRootedStlContainer<map<FirstTy,mem::smart_ptr<SecondOTy> > > : public gctools::StackRoot  {
-    public:
-        typedef map<FirstTy,mem::smart_ptr<SecondOTy> >   StlContainerType;
-        StlContainerType                _Container;
-    public:
-        StlContainerType& get() { return this->_Container;};
-        GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-        {
-#ifdef USE_MPS
-            GC_SCANNER_BEGIN() {
-                for ( auto& it_gc_safe : this->_Container ) {
-                    SMART_PTR_FIX(it_gc_safe.second);
-                }
-            } GC_SCANNER_END();
-#endif
-            return GC_RES_OK;
-        }
-    };
-
-
-
-    template <typename FirstOTy, typename SecondOTy>
-    class StackRootedStlContainer<map<mem::smart_ptr<FirstOTy>,mem::smart_ptr<SecondOTy> > > : public gctools::StackRoot  {
-    public:
-        typedef map<mem::smart_ptr<FirstOTy>,mem::smart_ptr<SecondOTy> >   StlContainerType;
-        StlContainerType                _Container;
-    public:
-        StlContainerType& get() { return this->_Container;};
-        GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) 
-        {
-#ifdef USE_MPS            
-            GC_SCANNER_BEGIN() {
-                for ( auto& it_gc_safe : this->_Container ) {
-                    SMART_PTR_FIX(it_gc_safe.first);
-                    SMART_PTR_FIX(it_gc_safe.second);
-                }
-            } GC_SCANNER_END();
-#endif
-            return GC_RES_OK;
-        }
-    };
-
-#endif
-
-
-
-
-};
-
-
-
 
 
 #endif

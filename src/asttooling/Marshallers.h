@@ -249,6 +249,7 @@ VariantMatcher
 variadicMatcherDescriptor(core::Symbol_sp MatcherName,
                               core::Cons_sp NameRange,
                               ArrayRef<ParserValue> Args, Diagnostics* Error) {
+//    int***i = ArgT(); i; // What is the type of ArgT???????   If Derived from MatcherDescriptor then use allocateClass
   ArgT **InnerArgs = new ArgT *[Args.size()]();
 
   bool HasError = false;
@@ -284,26 +285,26 @@ template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
           typename FromTypes, typename ToTypes>
 class AdaptativeOverloadCollector {
 public:
-  AdaptativeOverloadCollector(core::Symbol_sp Name,
-                              std::vector<MatcherDescriptor *> &Out)
-      : Name(Name), Out(Out) {
-    collect(FromTypes());
-  }
+    AdaptativeOverloadCollector(core::Symbol_sp Name,
+                                gctools::Vec0<MatcherDescriptor *> &Out)
+        : Name(Name), Out(Out) {
+        collect(FromTypes());
+    }
 
 private:
     typedef clang::ast_matchers::internal::ArgumentAdaptingMatcherFunc<
-      ArgumentAdapterT, FromTypes, ToTypes> AdaptativeFunc;
+    ArgumentAdapterT, FromTypes, ToTypes> AdaptativeFunc;
 
-  /// \brief End case for the recursion
+    /// \brief End case for the recursion
     static void collect(clang::ast_matchers::internal::EmptyTypeList) {}
 
-  /// \brief Recursive case. Get the overload for the head of the list, and
-  ///   recurse to the tail.
-  template <typename FromTypeList>
-  inline void collect(FromTypeList);
+    /// \brief Recursive case. Get the overload for the head of the list, and
+    ///   recurse to the tail.
+    template <typename FromTypeList>
+    inline void collect(FromTypeList);
 
-  const core::Symbol_sp Name;
-  std::vector<MatcherDescriptor *> &Out;
+    const core::Symbol_sp Name;
+    gctools::Vec0<MatcherDescriptor *> &Out;
 };
 
 /// \brief MatcherDescriptor that wraps multiple "overloads" of the same
@@ -313,38 +314,57 @@ private:
 /// more than one overloads match the arguments.
 class OverloadedMatcherDescriptor : public MatcherDescriptor {
 public:
-  OverloadedMatcherDescriptor(ArrayRef<MatcherDescriptor *> Callbacks)
-      : Overloads(Callbacks) {}
+    // OverloadedMatcherDescriptor(ArrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
 
-  virtual ~OverloadedMatcherDescriptor() {
-    llvm::DeleteContainerPointers(Overloads);
-  }
-
-  virtual VariantMatcher create(core::Cons_sp NameRange,
-                             ArrayRef<ParserValue> Args,
-                             Diagnostics* Error) const {
-    std::vector<VariantMatcher> Constructed;
-    Diagnostics::OverloadContext Ctx(Error);
-    for (size_t i = 0, e = Overloads.size(); i != e; ++i) {
-      VariantMatcher SubMatcher = Overloads[i]->create(NameRange, Args, Error);
-      if (!SubMatcher.isNull()) {
-        Constructed.push_back(SubMatcher);
-      }
+//    OverloadedMatcherDescriptor(ArrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
+#if 0
+    OverloadedMatcherDescriptor(const gctools::Vec0<MatcherDescriptor*> Callbacks) {
+        for ( auto it=Callbacks.begin(); it!=Callbacks.end(); ++it ) {
+            Overloads.push_back(*it);
+        }
+    }
+#endif
+    OverloadedMatcherDescriptor(const gctools::Vec0<MatcherDescriptor*> Callbacks) {
+        for ( auto it=Callbacks.begin(); it!=Callbacks.end(); ++it ) {
+            Overloads.push_back(*it);
+        }
+    }
+    OverloadedMatcherDescriptor(ArrayRef<MatcherDescriptor*> Callbacks) {
+        for ( auto it=Callbacks.begin(); it!=Callbacks.end(); ++it ) {
+            Overloads.push_back(*it);
+        }
     }
 
-    if (Constructed.empty()) return VariantMatcher(); // No overload matched.
-    // We ignore the errors if any matcher succeeded.
-    Ctx.revertErrors();
-    if (Constructed.size() > 1) {
-      // More than one constructed. It is ambiguous.
-      Error->addError(NameRange, Error->ET_RegistryAmbiguousOverload);
-      return VariantMatcher();
+
+    virtual ~OverloadedMatcherDescriptor() {
+        llvm::DeleteContainerPointers(Overloads);
     }
-    return Constructed[0];
-  }
+
+    virtual VariantMatcher create(core::Cons_sp NameRange,
+                                  ArrayRef<ParserValue> Args,
+                                  Diagnostics* Error) const {
+        std::vector<VariantMatcher> Constructed;
+        Diagnostics::OverloadContext Ctx(Error);
+        for (size_t i = 0, e = Overloads.size(); i != e; ++i) {
+            VariantMatcher SubMatcher = Overloads[i]->create(NameRange, Args, Error);
+            if (!SubMatcher.isNull()) {
+                Constructed.push_back(SubMatcher);
+            }
+        }
+
+        if (Constructed.empty()) return VariantMatcher(); // No overload matched.
+        // We ignore the errors if any matcher succeeded.
+        Ctx.revertErrors();
+        if (Constructed.size() > 1) {
+            // More than one constructed. It is ambiguous.
+            Error->addError(NameRange, Error->ET_RegistryAmbiguousOverload);
+            return VariantMatcher();
+        }
+        return Constructed[0];
+    }
 
 private:
-  std::vector<MatcherDescriptor *> Overloads;
+    gctools::Vec0<MatcherDescriptor *> Overloads;
 };
 
 /// \brief Variadic operator marshaller function.
@@ -396,18 +416,30 @@ private:
 template <typename ReturnType>
 MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(),
                                                core::Symbol_sp MatcherName) {
+#ifndef USE_NEW
+    return gctools::allocateClass<FixedArgCountMatcherDescriptor>(matcherMarshall0<ReturnType>
+                                                                  , reinterpret_cast<void (*)()>(Func)
+                                                                  , MatcherName);
+#else
   return new FixedArgCountMatcherDescriptor(
       matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func),
       MatcherName);
+#endif
 }
 
 /// \brief 1-arg overload
 template <typename ReturnType, typename ArgType1>
 MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
                                                core::Symbol_sp MatcherName) {
+#ifndef USE_NEW
+    return gctools::allocateClass<FixedArgCountMatcherDescriptor>(
+        matcherMarshall1<ReturnType, ArgType1>,
+        reinterpret_cast<void (*)()>(Func), MatcherName);
+#else
   return new FixedArgCountMatcherDescriptor(
       matcherMarshall1<ReturnType, ArgType1>,
       reinterpret_cast<void (*)()>(Func), MatcherName);
+#endif
 }
 
 /// \brief 2-arg overload
@@ -415,9 +447,15 @@ template <typename ReturnType, typename ArgType1, typename ArgType2>
 MatcherDescriptor *makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
                                                                   ArgType2),
                                                core::Symbol_sp MatcherName) {
+#ifndef USE_NEW
+    return gctools::allocateClass<FixedArgCountMatcherDescriptor>(
+      matcherMarshall2<ReturnType, ArgType1, ArgType2>,
+      reinterpret_cast<void (*)()>(Func), MatcherName);
+#else
   return new FixedArgCountMatcherDescriptor(
       matcherMarshall2<ReturnType, ArgType1, ArgType2>,
       reinterpret_cast<void (*)()>(Func), MatcherName);
+#endif
 }
 
 /// \brief Variadic overload.
@@ -426,8 +464,13 @@ template <typename ResultT, typename ArgT,
 MatcherDescriptor *
 makeMatcherAutoMarshall(llvm::VariadicFunction<ResultT, ArgT, Func> VarFunc,
                         core::Symbol_sp MatcherName) {
+#ifndef USE_NEW
+    return gctools::allocateClass<FreeFuncMatcherDescriptor>(
+      &variadicMatcherDescriptor<ResultT, ArgT, Func>, MatcherName);
+#else
   return new FreeFuncMatcherDescriptor(
       &variadicMatcherDescriptor<ResultT, ArgT, Func>, MatcherName);
+#endif
 }
 
 /// \brief Argument adaptative overload.
@@ -437,10 +480,14 @@ MatcherDescriptor *
 makeMatcherAutoMarshall(clang::ast_matchers::internal::ArgumentAdaptingMatcherFunc<
                             ArgumentAdapterT, FromTypes, ToTypes>,
                         core::Symbol_sp MatcherName) {
-  std::vector<MatcherDescriptor *> Overloads;
+    gctools::Vec0<MatcherDescriptor *> Overloads;
   AdaptativeOverloadCollector<ArgumentAdapterT, FromTypes, ToTypes>(MatcherName,
                                                                     Overloads);
+#ifndef USE_NEW
+  return gctools::allocateClass<OverloadedMatcherDescriptor>(Overloads);
+#else
   return new OverloadedMatcherDescriptor(Overloads);
+#endif
 }
 
 template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
@@ -458,8 +505,13 @@ template <unsigned MinCount, unsigned MaxCount>
 MatcherDescriptor *
 makeMatcherAutoMarshall(clang::ast_matchers::internal::VariadicOperatorMatcherFunc<MinCount, MaxCount> Func,
     core::Symbol_sp MatcherName) {
+#ifndef USE_NEW
+    return gctools::allocateClass<VariadicOperatorMatcherDescriptor>(MinCount,MaxCount, Func.Func,
+                                                 MatcherName);
+#else
     return new VariadicOperatorMatcherDescriptor(MinCount,MaxCount, Func.Func,
                                                  MatcherName);
+#endif
 }
 
 }  // namespace internal

@@ -22,11 +22,12 @@ namespace cffi
 
 
 
-    class CffiExposer : public core::PackageExposer
+    class CffiExposer : public core::Exposer
     {
     private:
     public:
-    CffiExposer(core::Lisp_sp lisp) : PackageExposer(lisp,CffiPkg) {};
+        DISABLE_NEW();
+    CffiExposer(core::Lisp_sp lisp) : Exposer(lisp,CffiPkg) {};
         virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
     };
 

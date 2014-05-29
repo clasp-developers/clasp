@@ -16,11 +16,12 @@ namespace sockets
 
 
 
-    class SocketsExposer : public core::PackageExposer
+    class SocketsExposer : public core::Exposer
     {
     private:
     public:
-    SocketsExposer(core::Lisp_sp lisp) : PackageExposer(lisp,SocketsPkg) {};
+        DISABLE_NEW();
+    SocketsExposer(core::Lisp_sp lisp) : Exposer(lisp,SocketsPkg) {};
         virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
     };
 

@@ -128,17 +128,19 @@ namespace core
 #define DOCS_af_walkToFindSourceInfo "walkToFindSourceInfo"
     SourceFileInfo_mv af_walkToFindSourceInfo(T_sp obj)
     {_G();
-	if ( af_consP(obj) ) {
-	    SourceFileInfo_mv sfi = _lisp->sourceManager()->lookupSourceInfo(obj);
-	    if ( sfi.notnilp() ) {
-		return sfi;
-	    }
-	    Cons_sp cur = obj.as<Cons_O>();
-	    for ( ; cur.notnilp(); cur=cCdr(cur) ) {
-		SourceFileInfo_mv sfisub = af_walkToFindSourceInfo(oCar(cur));
-		if ( sfisub.notnilp() ) return sfisub;
-	    }
-	}
+        if ( _lisp->sourceManager()->availablep() ) {
+            if ( af_consP(obj) ) {
+                SourceFileInfo_mv sfi = _lisp->sourceManager()->lookupSourceInfo(obj);
+                if ( sfi.notnilp() ) {
+                    return sfi;
+                }
+                Cons_sp cur = obj.as<Cons_O>();
+                for ( ; cur.notnilp(); cur=cCdr(cur) ) {
+                    SourceFileInfo_mv sfisub = af_walkToFindSourceInfo(oCar(cur));
+                    if ( sfisub.notnilp() ) return sfisub;
+                }
+            }
+        }
 	return Values(_Nil<SourceFileInfo_O>());
     };
 
@@ -307,10 +309,14 @@ namespace core
 #define DOCS_af_dumpSourceManager "dumpSourceManager"
     void af_dumpSourceManager()
     {_G();
-	_lisp->print(BF("Source Manager entries: %d\n") % _lisp->sourceManager()->_SourcePosInfo->size());
-	for ( int i=0, iEnd(_lisp->sourceManager()->_Files.size()); i<iEnd; ++i ) {
-	    _lisp->print(BF("   File[%d] --> %s\n") % i % _lisp->sourceManager()->_Files[i]->namestring());
-	}
+        if ( _lisp->sourceManager()->availablep() ) {
+            _lisp->print(BF("Source Manager entries: %d\n") % _lisp->sourceManager()->_WeakKeySourcePosInfo->size());
+            for ( int i=0, iEnd(_lisp->sourceManager()->_Files.size()); i<iEnd; ++i ) {
+                _lisp->print(BF("   File[%d] --> %s\n") % i % _lisp->sourceManager()->_Files[i]->namestring());
+            }
+        } else {
+            _lisp->print(BF("No source manager available"));
+        }
     };
 
 
@@ -336,10 +342,17 @@ namespace core
     }
 
 
+//#define USE_REGULAR_HASH_TABLE_FOR_SOURCE_MANAGER
     void SourceManager_O::initialize()
     {
         this->Base::initialize();
-        this->_SourcePosInfo = HashTableEq_O::create_default();
+#ifndef USE_REGULAR_HASH_TABLE_FOR_SOURCE_MANAGER
+        this->_WeakKeySourcePosInfo = _Nil<HashTableEq_O>();
+#else
+        printf("%s:%d!\n!\n!\n!\n!  WARNING  SourceManager is using a regular HashTable - memory will explode if run for too long\n!\n!\n!\n", __FILE__, __LINE__ );
+        this->_WeakKeySourcePosInfo = HashTableEq_O::create_default();
+#endif
+        
     }
 
 
@@ -350,19 +363,21 @@ namespace core
 					     uint filePos,
 					     Function_sp expander)
     {_G();
-        SourcePosInfo_sp sfi = this->_SourcePosInfo->gethash(sourceFile,_Nil<SourcePosInfo_O>()).as<SourcePosInfo_O>();
-	uint fileId;
-	if ( sfi.nilp() ) {
-	    fileId = this->_Files.size();
-	    this->_Files.push_back(sourceFile);
-	    SourcePosInfo_sp finfo = SourcePosInfo_O::create(fileId,UNDEF_UINT,UNDEF_UINT,UNDEF_UINT,expander);
-	    this->_SourcePosInfo->setf_gethash(sourceFile, finfo);
-	} else {
-	    fileId = sfi->_FileId;
-	}
-	SourcePosInfo_sp info = SourcePosInfo_O::create(fileId,lineno,column,filePos);
-        this->_SourcePosInfo->setf_gethash(key,info);
+        if ( this->availablep() ) {
+            SourcePosInfo_sp sfi = this->_WeakKeySourcePosInfo->gethash(sourceFile,_Nil<SourcePosInfo_O>()).as<SourcePosInfo_O>();
+            uint fileId;
+            if ( sfi.nilp() ) {
+                fileId = this->_Files.size();
+                this->_Files.push_back(sourceFile);
+                SourcePosInfo_sp finfo = SourcePosInfo_O::create(fileId,UNDEF_UINT,UNDEF_UINT,UNDEF_UINT,expander);
+                this->_WeakKeySourcePosInfo->setf_gethash(sourceFile, finfo);
+            } else {
+                fileId = sfi->_FileId;
+            }
+            SourcePosInfo_sp info = SourcePosInfo_O::create(fileId,lineno,column,filePos);
+            this->_WeakKeySourcePosInfo->setf_gethash(key,info);
 //	this->_SourcePosInfo[key] = info;
+        }
     }
 
 
@@ -379,21 +394,23 @@ namespace core
     bool SourceManager_O::searchForSourceInfoAndDuplicateIt(T_sp orig_obj, T_sp new_obj)
     {
 	SourceFileInfo_mv info = _lisp->sourceManager()->lookupSourceInfo(orig_obj);
-	if ( info.number_of_values() >= 4) {
-	    SourceFileInfo_sp sfi = info;
-	    uint lineno = info.valueGet(1).as<Fixnum_O>()->get();
-	    uint column = info.valueGet(2).as<Fixnum_O>()->get();
-	    uint filePos = info.valueGet(3).as<Fixnum_O>()->get();
-	    this->registerSourceInfo(new_obj,sfi,lineno,column,filePos);
-	    return true;
-	} else {
-	    if ( af_consP(orig_obj) ) {
-		Cons_sp orig_cons = orig_obj.as<Cons_O>();
-		for ( ; orig_cons.notnilp(); orig_cons=cCdr(orig_cons) ) {
-		    if ( this->searchForSourceInfoAndDuplicateIt(oCar(orig_cons),new_obj) ) return true;
-		}
-	    }
-	}
+        if ( info.notnilp() ) {
+            if ( info.number_of_values() >= 4) {
+                SourceFileInfo_sp sfi = info;
+                uint lineno = info.valueGet(1).as<Fixnum_O>()->get();
+                uint column = info.valueGet(2).as<Fixnum_O>()->get();
+                uint filePos = info.valueGet(3).as<Fixnum_O>()->get();
+                this->registerSourceInfo(new_obj,sfi,lineno,column,filePos);
+                return true;
+            } else {
+                if ( af_consP(orig_obj) ) {
+                    Cons_sp orig_cons = orig_obj.as<Cons_O>();
+                    for ( ; orig_cons.notnilp(); orig_cons=cCdr(orig_cons) ) {
+                        if ( this->searchForSourceInfoAndDuplicateIt(oCar(orig_cons),new_obj) ) return true;
+                    }
+                }
+            }
+        }
 	return false;
     }
 	
@@ -402,59 +419,63 @@ namespace core
     void SourceManager_O::duplicateSourceInfo(T_sp orig_obj, T_sp new_obj)
     {_G();
 	SourceFileInfo_mv info = _lisp->sourceManager()->lookupSourceInfo(orig_obj);
-	if ( info.number_of_values() >= 4) {
-	    SourceFileInfo_sp sfi = info;
-	    uint lineno = info.valueGet(1).as<Fixnum_O>()->get();
-	    uint column = info.valueGet(2).as<Fixnum_O>()->get();
-	    uint filePos = info.valueGet(3).as<Fixnum_O>()->get();
-	    this->registerSourceInfo(new_obj,sfi,lineno,column,filePos);
-	} else {
-	    this->searchForSourceInfoAndDuplicateIt(orig_obj, new_obj);
+        if (info.notnilp() ) {
+            if ( info.number_of_values() >= 4) {
+                SourceFileInfo_sp sfi = info;
+                uint lineno = info.valueGet(1).as<Fixnum_O>()->get();
+                uint column = info.valueGet(2).as<Fixnum_O>()->get();
+                uint filePos = info.valueGet(3).as<Fixnum_O>()->get();
+                this->registerSourceInfo(new_obj,sfi,lineno,column,filePos);
+            } else {
+                this->searchForSourceInfoAndDuplicateIt(orig_obj, new_obj);
 #if 0
 #if REQUIRE_SOURCE_INFO
-	    printf("Dumping source info for orig_obj\n");
-	    dumpSourceInfo(orig_obj);
-	    IMPLEMENT_MEF(BF("There was no source info to duplicate"));
+                printf("Dumping source info for orig_obj\n");
+                dumpSourceInfo(orig_obj);
+                IMPLEMENT_MEF(BF("There was no source info to duplicate"));
 #endif
 #endif
-	}
+            }
+        }
     }
 
     void SourceManager_O::duplicateSourceInfoForMacroExpansion(T_sp orig_obj, Function_sp expander, T_sp new_obj)
     {_G();
 	SourceFileInfo_mv info = _lisp->sourceManager()->lookupSourceInfo(orig_obj);
-	if ( info.number_of_values() >= 4) {
-	    SourceFileInfo_sp sfi = info;
-	    uint lineno = info.valueGet(1).as<Fixnum_O>()->get();
-	    uint column = info.valueGet(2).as<Fixnum_O>()->get();
-	    uint filePos = info.valueGet(3).as<Fixnum_O>()->get();
-	    this->registerSourceInfo(new_obj,sfi,lineno,column,filePos,expander);
-	} else {
-	    this->searchForSourceInfoAndDuplicateIt(orig_obj, new_obj);
+        if ( info.notnilp() ) {
+            if ( info.number_of_values() >= 4) {
+                SourceFileInfo_sp sfi = info;
+                uint lineno = info.valueGet(1).as<Fixnum_O>()->get();
+                uint column = info.valueGet(2).as<Fixnum_O>()->get();
+                uint filePos = info.valueGet(3).as<Fixnum_O>()->get();
+                this->registerSourceInfo(new_obj,sfi,lineno,column,filePos,expander);
+            } else {
+                this->searchForSourceInfoAndDuplicateIt(orig_obj, new_obj);
 #if 0
 #if REQUIRE_SOURCE_INFO
-	    printf("Dumping source info for orig_obj\n");
-	    dumpSourceInfo(orig_obj);
-	    IMPLEMENT_MEF(BF("There was no source info to duplicate"));
+                printf("Dumping source info for orig_obj\n");
+                dumpSourceInfo(orig_obj);
+                IMPLEMENT_MEF(BF("There was no source info to duplicate"));
 #endif
 #endif
-	}
+            }
+        }
     }
 
 
     SourceFileInfo_mv SourceManager_O::lookupSourceInfo(T_sp key)
     {
-        SourcePosInfo_sp it = this->_SourcePosInfo->gethash(key,_Nil<SourcePosInfo_O>()).as<SourcePosInfo_O>();
-	if (it.notnilp()) {
-	    SourceFileInfo_sp sfi = this->_Files[it->_FileId];
-	    return Values(sfi,Fixnum_O::create(it->_LineNumber),
-			  Fixnum_O::create(it->_Column),
-			  Fixnum_O::create(it->_FilePos));
-	}
-	return Values(_Nil<SourceFileInfo_O>());
+        if ( this->availablep() ) {
+            SourcePosInfo_sp it = this->_WeakKeySourcePosInfo->gethash(key,_Nil<SourcePosInfo_O>()).as<SourcePosInfo_O>();
+            if (it.notnilp()) {
+                SourceFileInfo_sp sfi = this->_Files[it->_FileId];
+                return Values(sfi,Fixnum_O::create(it->_LineNumber),
+                              Fixnum_O::create(it->_Column),
+                              Fixnum_O::create(it->_FilePos));
+            }
+        }
+        return Values(_Nil<SourceFileInfo_O>());
     }
-
-
 
 
 };

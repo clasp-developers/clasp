@@ -55,6 +55,8 @@ class	StandardClassInitializationFunctoid : public Functoid
 private:
 	StandardClass_sp	_StandardClass;	
 public:
+    DISABLE_NEW();
+
     virtual string describe() const {return "StandardClassInitializationFunctoid";};
     StandardClassInitializationFunctoid(const string& name, StandardClass_sp c) : Functoid(name)
     { this->_StandardClass = c;};

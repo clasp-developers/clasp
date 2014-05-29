@@ -26,6 +26,7 @@ namespace clbind {
         Begin   _begin;
         End     _end;
     public:
+        DISABLE_NEW();
         core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
         {
             if ( numArgs != 1 )

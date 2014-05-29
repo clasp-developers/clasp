@@ -55,6 +55,36 @@ namespace core
 
 
 
+    
+    
+#define ARGS_af_exceptionStackDump "()"
+#define DECL_af_exceptionStackDump ""
+#define DOCS_af_exceptionStackDump "exceptionStackDump"
+    void af_exceptionStackDump()
+    {_G();
+        ExceptionStack& stack = _lisp->exceptionStack();
+        printf("Exception stack size: %zu members\n", stack.size());
+        for ( int i(0); i<stack.size(); ++i ) {
+            string kind;
+            switch (stack[i]._FrameKind) {
+            case CatchFrame:
+                kind = "catch";
+                break;
+            case BlockFrame:
+                kind = "block";
+                break;
+            case TagbodyFrame:
+                kind = "tagbody";
+                break;
+            default:
+                kind = "unknown";
+                break;
+            };
+            printf("Exception stack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.px_ref());
+        }
+        printf("----Done----\n");
+    };
+
 
     
     
@@ -63,9 +93,9 @@ namespace core
 #define DOCS_af_allRegisteredClassNames "allRegisteredClassNames"
     Vector_sp af_allRegisteredClassNames()
     {_G();
-        VectorObjects_sp vo=VectorObjects_O::make(_Nil<T_O>(),_Nil<Cons_O>(),reg::globalClassSymbolsVector.size(),false);
-        for ( int i(0),iEnd(reg::globalClassSymbolsVector.size());i<iEnd;++i) {
-            vo->setf_elt(i,reg::globalClassSymbolsVector[i]);
+        VectorObjects_sp vo=VectorObjects_O::make(_Nil<T_O>(),_Nil<Cons_O>(),reg::globalClassSymbolsVectorHolder._Symbols.size(),false);
+        for ( int i(0),iEnd(reg::globalClassSymbolsVectorHolder._Symbols.size());i<iEnd;++i) {
+            vo->setf_elt(i,reg::globalClassSymbolsVectorHolder._Symbols[i]);
         }
         return vo;
     };
@@ -634,6 +664,9 @@ namespace core
 #define DOCS_af_fboundp "fboundp"
     bool af_fboundp(T_sp functionName)
     {_G();
+        if (functionName.nilp() ) {
+            TYPE_ERROR(functionName,cl::_sym_Symbol_O);
+        }
 	if ( af_symbolp(functionName) )
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
@@ -782,13 +815,13 @@ namespace core
 	    if ( af_vectorP(obj) )
 	    {
 		if (af_length(obj.as<Vector_O>()) == 0 ) goto EMPTY;
-                gctools::StackRootedPointer<VectorStepper> v(new VectorStepper(obj.as<Vector_O>()));
-		this->_Steppers.push_back(v.get());
+                VectorStepper* vP(gctools::allocateClass<VectorStepper>(obj.as<Vector_O>()));
+                this->_Steppers.push_back(vP);
 	    } else if ( af_consP(obj) )
 	    {
 		if (obj.as_or_nil<Cons_O>().nilp()) goto EMPTY;
-                gctools::StackRootedPointer<ConsStepper> v(new ConsStepper(obj.as_or_nil<Cons_O>()));
-		this->_Steppers.push_back(v.get());
+                ConsStepper* cP(gctools::allocateClass<ConsStepper>(obj.as_or_nil<Cons_O>()));
+                this->_Steppers.push_back(cP);
 	    } else if ( obj.nilp() ) 
 	    {
 		goto EMPTY;
@@ -805,13 +838,12 @@ namespace core
 
     ListOfSequenceSteppers::~ListOfSequenceSteppers()
     {
-	for ( vector<SequenceStepper*>::const_reverse_iterator rit=this->_Steppers.rbegin();
-	      rit!=this->_Steppers.rend(); rit++ )
+	for ( auto rit=this->_Steppers.begin();
+	      rit!=this->_Steppers.end(); rit++ )
 	{
-	    delete *rit;
+            gctools::deallocateClass<SequenceStepper>(*rit);
 	}
     }
-	
 
 
 
@@ -820,8 +852,7 @@ namespace core
 	if ( this->_AtEnd) SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
 	Cons_sp res = _Nil<Cons_O>();
 	int idx=0;
-	for ( vector<SequenceStepper*>::const_iterator rit=this->_Steppers.begin();
-	      rit!=this->_Steppers.end(); rit++ )
+	for (auto rit=this->_Steppers.begin(); rit!=this->_Steppers.end(); rit++ )
 	{
 	    frame->set_entry(idx,(*rit)->element());
 	    ++idx;
@@ -832,8 +863,7 @@ namespace core
     bool ListOfSequenceSteppers::advanceSteppers()
     {_OF();
 	if ( this->_AtEnd) SIMPLE_ERROR(BF("Tried to advance ended stepper"));
-	for ( vector<SequenceStepper*>::const_iterator it=this->_Steppers.begin();
-	      it!=this->_Steppers.end(); it++ )
+	for ( auto it=this->_Steppers.begin(); it!=this->_Steppers.end(); it++ )
 	{
 	    this->_AtEnd |= (*it)->advance();
 	}
@@ -857,8 +887,8 @@ namespace core
 	    if ( af_consP(obj) )
 	    {
 		if ( obj.as_or_nil<Cons_O>().nilp() ) goto EMPTY;
-                gctools::StackRootedPointer<ConsStepper> v(new ConsStepper(obj.as_or_nil<Cons_O>()));
-		this->_Steppers.push_back(v.get());
+                ConsStepper* cP(gctools::allocateClass<ConsStepper>(obj.as_or_nil<Cons_O>()));
+                this->_Steppers.push_back(cP);
 	    } else
 	    {
 		goto EMPTY;
@@ -874,6 +904,9 @@ namespace core
 
     bool test_every_some_notevery_notany(Function_sp predicate, Cons_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn )
     {_G();
+#ifdef USE_MPS
+#error "Ensure that the pointers within ListOfSequenceSteppers will be fixed properly by MPS - it's probably ok because they will be in a gctools::Vec0"
+#endif
 	ListOfSequenceSteppers steppers(sequences);
 	ValueFrame_sp frame(ValueFrame_O::create(steppers.size(),_Nil<ActivationFrame_O>()));
 	if ( steppers.atEnd() ) goto FALLTHROUGH; // return elementReturn;
@@ -1748,6 +1781,7 @@ void initialize_primitives()
 	SYMBOL_EXPORT_SC_(CorePkg,getEnv);
 	Defun(getEnv);
 
+        Defun(exceptionStackDump);
 	SYMBOL_EXPORT_SC_(CorePkg,toTaggedFixnum);
 	SYMBOL_EXPORT_SC_(CorePkg,fromTaggedFixnum);
 	SYMBOL_EXPORT_SC_(CorePkg,dumpTaggedFixnum);

@@ -525,14 +525,16 @@ extern "C"
     typedef void (*fnVoidType)();
 
 
-    class  JITAFFunctoid : public core::AFFunctoid
+    class  JITClosure : public core::Closure
     {
     protected:
 	fnTmvActivationFramesp	_FuncPtr;
     public:
 	// By default the zeroth argument is dispatched on
-	explicit JITAFFunctoid(const string& name,fnTmvActivationFramesp fptr) : AFFunctoid(name), _FuncPtr(fptr) {};
-	virtual string describe() const {return "JITAFFunctoid";};
+	explicit JITClosure(const string& name,fnTmvActivationFramesp fptr) : Closure(name), _FuncPtr(fptr) {};
+        DISABLE_NEW();
+
+	virtual string describe() const {return "JITClosure";};
 	core::T_mv activate(core::ActivationFrame_sp closedEnv,int nargs, ArgArray args)
 	{
 	    core::T_mv result;
@@ -583,7 +585,7 @@ extern "C"
 
 core::T_sp proto_makeCompiledFunction(fnTmvActivationFramesp funcPtr, char* sourceName, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
 {_G();
-    core::Functoid* f = new JITAFFunctoid("compiled",funcPtr);
+    core::Functoid* f = gctools::allocateFunctoid<JITClosure>("compiled",funcPtr);
     core::CompiledBody_sp cb = core::CompiledBody_O::create(f,_Nil<core::T_O>());
     string fileNamePath = sourceName;
     core::T_sp functionName = *functionNameP;
@@ -1297,19 +1299,17 @@ extern "C"
     }
 	
 
-
-    void throwCatchThrow(core::T_sp* tagP, core::T_mv* resultP)
+    void throwCatchThrow(core::T_sp* tagP)
     {
 	ASSERT(tagP!=NULL);
-	ASSERT(resultP!=NULL);
 	core::T_sp tag = *tagP;
-	core::Cons_sp found = _lisp->catchFindTag(tag);
-	if ( found.nilp() )
+	int frame = _lisp->exceptionStack().findKey(CatchFrame,tag);
+	if ( frame < 0 )
 	{
 	    CONTROL_ERROR();
 	} else
 	{
-	    core::CatchThrow catchThrow(*tagP,*resultP);
+	    core::CatchThrow catchThrow(frame);
 #ifdef DEBUG_FLOW_CONTROL
 	    printf("Throwing core::CatchThrow exception tag[%s]\n", (*tagP)->__repr__().c_str());
 #endif
@@ -1319,13 +1319,16 @@ extern "C"
     }
 
 
-    void throwReturnFrom(int depth, core::T_mv* resultP)
+    void throwReturnFrom(core::Symbol_sp* blockSymbolP)
     {
-	ASSERT(resultP!=NULL);
-	core::ReturnFrom returnFrom(depth,*resultP);
+        ASSERT(blockSymbolP!=NULL);
+	core::T_sp blockSymbol = *blockSymbolP;
+	int frame = _lisp->exceptionStack().findKey(BlockFrame,blockSymbol);
+	if ( frame < 0 ) {CONTROL_ERROR();}
 #ifdef DEBUG_FLOW_CONTROL
-	printf("Throwing core::ReturnFrom exception depth[%d]\n", depth);
+	printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
 #endif
+	core::ReturnFrom returnFrom(frame);
 	throw returnFrom;
     }
 
@@ -1333,16 +1336,15 @@ extern "C"
 };
 
 
-core::T_mv  proto_blockHandleReturnFrom( unsigned char* exceptionP)
+core::T_mv  proto_blockHandleReturnFrom( unsigned char* exceptionP, int frame)
 {
     core::ReturnFrom& returnFrom = (core::ReturnFrom&)*((core::ReturnFrom*)(exceptionP));
-    if ( returnFrom.getBlockDepth() == 0 )
+    if ( returnFrom.getFrame() == frame )
     {
-	return returnFrom.getReturnedObject();
+	return mem::multiple_values<T_O>::createFromValues();
     }
-    returnFrom.decBlockDepth();
 #ifdef DEBUG_FLOW_CONTROL
-    printf("Re-throwing core::ReturnFrom exception depth[%d]\n", returnFrom.getBlockDepth());
+    printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
 #endif
     throw returnFrom;
 }
@@ -1350,14 +1352,14 @@ core::T_mv  proto_blockHandleReturnFrom( unsigned char* exceptionP)
 extern "C"
 {
 
-    void sp_blockHandleReturnFrom( core::T_sp* resultP, unsigned char* exceptionP)
+    void sp_blockHandleReturnFrom( core::T_sp* resultP, unsigned char* exceptionP, int frame)
     {
-	(*resultP) = proto_blockHandleReturnFrom(exceptionP);
+	(*resultP) = proto_blockHandleReturnFrom(exceptionP,frame);
 	ASSERTNOTNULL(*resultP);
     }
-    void mv_blockHandleReturnFrom( core::T_mv* resultP, unsigned char* exceptionP)
+    void mv_blockHandleReturnFrom( core::T_mv* resultP, unsigned char* exceptionP, int frame)
     {
-	(*resultP) = proto_blockHandleReturnFrom(exceptionP);
+	(*resultP) = proto_blockHandleReturnFrom(exceptionP,frame);
 	ASSERTNOTNULL(*resultP);
     }
 
@@ -1381,43 +1383,39 @@ extern "C"
 
 
 
-
-    void catchStoreTag(core::T_sp* unwindStoreP, core::T_sp* tagP)
+    
+    int pushCatchFrame(core::T_sp* tagP)
     {_G();
 	ASSERT(tagP!=NULL);
-	core::Cons_sp unwindInfo = _lisp->catchPushTag(*tagP);
-	(*unwindStoreP) = unwindInfo;
-	ASSERTNOTNULL(*unwindStoreP);
+        return _lisp->exceptionStack().push(CatchFrame, *tagP);
     }
 
-
-#if 0
-    int catchTagMatches(core::T_sp* tagP, unsigned char* exceptionP)
+    int pushBlockFrame(core::Symbol_sp* tagP)
     {_G();
-	// depreciated
-	core::CatchThrow* ctExceptionP = (core::CatchThrow*)(exceptionP);
-	if ( *tagP == ctExceptionP->getThrownTag() ) return 1;
-	return 0;
+	ASSERT(tagP!=NULL);
+        core::T_sp osym = *tagP;
+        return _lisp->exceptionStack().push(BlockFrame, osym);
     }
 
-    void catchStoreResult(core::T_mv* resultP, unsigned char* exceptionP)
+    int pushTagbodyFrame(core::ActivationFrame_sp* afP)
     {_G();
-	// depreciated
-	core::CatchThrow* ctExceptionP = (core::CatchThrow*)(exceptionP);
-	*resultP = ctExceptionP->getReturnedObject();
+	ASSERT(afP!=NULL);
+        core::T_sp tagbodyId = (*afP);
+        return _lisp->exceptionStack().push(TagbodyFrame, tagbodyId);
     }
-#endif
+
+
 
 };
 
 
 
-core::T_mv proto_catchIfTagMatchesStoreResultElseRethrow(core::T_sp* tagP, unsigned char* exceptionP)
+core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(int catchFrame, unsigned char* exceptionP)
 {_G();
-    gctools::StackRootedPointer<core::CatchThrow> ctExceptionP((core::CatchThrow*)(exceptionP));
-    if ( *tagP == ctExceptionP->getThrownTag() )
+    core::CatchThrow* ctExceptionP = reinterpret_cast<core::CatchThrow*>(exceptionP);
+    if ( catchFrame == ctExceptionP->getFrame() )
     {
-	return ctExceptionP->getReturnedObject();
+	return mem::multiple_values<core::T_O>::createFromValues(); // ctExceptionP->getReturnedObject();
     }
     // rethrow the exception 
 #ifdef	DEBUG_FLOW_CONTROL
@@ -1429,14 +1427,14 @@ core::T_mv proto_catchIfTagMatchesStoreResultElseRethrow(core::T_sp* tagP, unsig
 
 extern "C"
 {
-    void sp_catchIfTagMatchesStoreResultElseRethrow(core::T_sp* resultP, core::T_sp* tagP, unsigned char* exceptionP)
+    void sp_ifCatchFrameMatchesStoreResultElseRethrow(core::T_sp* resultP, int catchFrame, unsigned char* exceptionP)
     {
-	(*resultP) = proto_catchIfTagMatchesStoreResultElseRethrow(tagP,exceptionP);
+	(*resultP) = proto_ifCatchFrameMatchesStoreResultElseRethrow(catchFrame,exceptionP);
 	ASSERTNOTNULL(*resultP);
     }
-    void mv_catchIfTagMatchesStoreResultElseRethrow(core::T_mv* resultP, core::T_sp* tagP, unsigned char* exceptionP)
+    void mv_ifCatchFrameMatchesStoreResultElseRethrow(core::T_mv* resultP, int catchFrame, unsigned char* exceptionP)
     {
-	(*resultP) = proto_catchIfTagMatchesStoreResultElseRethrow(tagP,exceptionP);
+	(*resultP) = proto_ifCatchFrameMatchesStoreResultElseRethrow(catchFrame,exceptionP);
 	ASSERTNOTNULL(*resultP);
     }
 };
@@ -1445,11 +1443,9 @@ extern "C"
 
 extern "C"
 {
-    void catchUnwind(core::T_sp* unwindStoreP)
+    void exceptionStackUnwind(int frame)
     {_G();
-	ASSERT(unwindStoreP!=NULL);
-	core::Cons_sp cur = (*unwindStoreP).as<core::Cons_O>();
-	_lisp->catchUnwindTag(cur);
+	_lisp->exceptionStack().unwind(frame);
     }
 
 
@@ -1468,10 +1464,11 @@ extern "C"
 	throw lgo;
     }
 
-    void throw_DynamicGo(int depth, int index, core::ActivationFrame_sp* afP)
+    void throwDynamicGo(int depth, int index, core::ActivationFrame_sp* afP)
     {_G();
 	T_sp tagbodyId = (*afP)->lookupTagbodyId(depth,index);
-	core::DynamicGo dgo(tagbodyId,index);
+        int frame = _lisp->exceptionStack().findKey(TagbodyFrame,tagbodyId);
+	core::DynamicGo dgo(frame,index);
 #ifdef DEBUG_FLOW_CONTROL
 	printf("Throwing core::DynamicGo tagbodyIdP[%p] index[%d]\n", (void*)((*tagbodyIdP).get()), index);
 #endif
@@ -1481,6 +1478,8 @@ extern "C"
 
     int tagbodyLexicalGoIndexElseRethrow(char* exceptionP)
     {
+        IMPLEMENT_MEF(BF("Update me"));
+#if 0
 	core::LexicalGo* goExceptionP = (core::LexicalGo*)(exceptionP);
 	if ( goExceptionP->depth() == 0 )
 	{
@@ -1491,14 +1490,14 @@ extern "C"
 	printf("Re-throwing core::Go depth[%d] index[%d]\n", goExceptionP->depth(), goExceptionP->index());
 #endif
 	throw *goExceptionP;
+#endif
     }
 
 
-    int tagbodyDynamicGoIndexElseRethrow(core::ActivationFrame_sp* envP, char* exceptionP)
+    int tagbodyDynamicGoIndexElseRethrow(char* exceptionP, int frame)
     {
-	core::TagbodyFrame_sp tagbodyFrame = (*envP).as<core::TagbodyFrame_O>();
-        gctools::StackRootedPointer<core::DynamicGo> goExceptionP((core::DynamicGo*)(exceptionP));
-	if ( goExceptionP->tagbodyId() == (tagbodyFrame->tagbodyId())  )
+        core::DynamicGo* goExceptionP = reinterpret_cast<core::DynamicGo*>(exceptionP);
+	if ( goExceptionP->getFrame() == frame )
 	{
 	    return goExceptionP->index();
 	}
@@ -1686,6 +1685,12 @@ extern "C"
 	}
     }
 
+
+    void saveToMultipleValue0(core::T_mv* mvP)
+    {
+        MultipleValues* mv = lisp_multipleValues();
+        mv->valueSet(0,*mvP);
+    }
 
 
 /*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */

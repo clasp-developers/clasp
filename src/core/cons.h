@@ -192,7 +192,7 @@ namespace core {
 	static Cons_sp createFromCommandLineArguments(int argc, char**argv);
 	static Cons_sp createFromVectorStringsCommandLineArguments(const vector<string>& strings , Lisp_sp e);
     public:
-	static void appendInto(T_sp head, mem::StackRootedPointerToSmartPtr<T_O>& tail, T_sp l);
+	static void appendInto(T_sp head, T_sp*& tailP, T_sp l);
 	static List_sp append(List_sp x, List_sp y);
     public:
 	/*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
@@ -679,11 +679,8 @@ namespace core
 	LISP_CLASS(core,CorePkg,CompiledBody_O,"compiled-body");
     public: // ctor/dtor for classes with shared virtual base
 	explicit CompiledBody_O();
-	virtual ~CompiledBody_O();
     public:
 	static CompiledBody_sp create(Functoid* functoid, T_sp compiledFunctions);
-    public:
-	void initialize();
     private: // instance variables here
 	Functoid*	_Functoid;
 	/*! When a Lisp function is compiled, more than one LLVM function may be generated because of internal lambda etc.
@@ -720,6 +717,12 @@ namespace core
     }
     
 }; // core namespace
+template<> struct gctools::GCAllocatorInfo<core::CompiledBody_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 TRANSLATE(core::CompiledBody_O);
 
 

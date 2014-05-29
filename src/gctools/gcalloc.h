@@ -53,11 +53,15 @@ namespace gctools {
 
 
 #ifdef USE_REFCOUNT
+#define REFCOUNT_DEBUG_HEADER
 
 namespace gctools {
     template <class T>
     class root_allocator : public std::allocator<T> {};
 };
+
+
+
 
 
 
@@ -70,6 +74,35 @@ namespace gctools {
         return new T();
     }
 };
+
+
+
+namespace gctools {
+    /*! Allocate regular C++ classes that are considered roots */
+    template <class T,class...ARGS>
+    T* allocateRootClass(ARGS&&...args)
+    {
+        T* base = new T(std::forward<ARGS>(args)...);
+        return base;
+    }
+
+
+    /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
+    template <class T,class...ARGS>
+    T* allocateClass(ARGS&&...args)
+    {
+        T* base = new T(std::forward<ARGS>(args)...);
+        return base;
+    }
+
+    /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
+    template <class T>
+    void deallocateClass(T* ptr)
+    {
+        delete ptr;
+    }
+};
+
 
 
 namespace gctools {
@@ -85,7 +118,15 @@ namespace gctools {
         template <typename...ARGS>
         static smart_pointer_type rootAllocate(ARGS&&...args)
         {
+#ifdef REFCOUNT_DEBUG_HEADER
+            char** base = reinterpret_cast<char**>(malloc(sizeof(OT)+sizeof(char*)));
+            *base = const_cast<char*>(typeid(OT).name());
+            pointer_type ptr = reinterpret_cast<OT*>(base+1);
+            new (ptr) OT(std::forward<ARGS>(args)...);
+//            printf("%s:%d rootAllocate base@%p   typeid().name() = %s\n", __FILE__, __LINE__, base, typeid(OT).name() );
+#else
             pointer_type ptr = new OT(std::forward<ARGS>(args)...);
+#endif
             smart_pointer_type sp = mem::smart_ptr<value_type>(ptr);
             GCObjectInitializer<OT,gctools::GCAllocatorInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
             return sp;
@@ -94,7 +135,15 @@ namespace gctools {
         template <typename...ARGS>
         static smart_pointer_type allocate(ARGS&&...args)
         {
+#ifdef REFCOUNT_DEBUG_HEADER
+            char** base = reinterpret_cast<char**>(malloc(sizeof(OT)+sizeof(char*)));
+            *base = const_cast<char*>(typeid(OT).name());
+            pointer_type ptr = reinterpret_cast<OT*>(base+1);
+            new (ptr) OT(std::forward<ARGS>(args)...);
+//            printf("%s:%d allocate base@%p   typeid().name() = %s\n", __FILE__, __LINE__, base, typeid(OT).name() );
+#else
             pointer_type ptr = new OT(std::forward<ARGS>(args)...);
+#endif
             smart_pointer_type sp = mem::smart_ptr<value_type>(ptr);
             GCObjectInitializer<OT,gctools::GCAllocatorInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
             return sp;
@@ -103,10 +152,34 @@ namespace gctools {
 
         static smart_pointer_type copy(const OT& that)
         {
+#ifdef REFCOUNT_DEBUG_HEADER
+            char** base = reinterpret_cast<char**>(malloc(sizeof(OT)+sizeof(char*)));
+            *base = const_cast<char*>(typeid(OT).name());
+            pointer_type ptr = reinterpret_cast<OT*>(base+1);
+            new (ptr) OT(that);
+//            printf("%s:%d copy base@%p   typeid().name() = %s\n", __FILE__, __LINE__, base, typeid(OT).name() );
+#else
             pointer_type ptr = new OT(that);
+#endif
             smart_pointer_type sp = mem::smart_ptr<value_type>(ptr);
             return sp;
         }
+
+
+
+        static void deallocate(OT* thatP)
+        {
+#ifdef REFCOUNT_DEBUG_HEADER
+            void* mostDerived = dynamic_cast<void*>(thatP);
+            char** base = reinterpret_cast<char**>(mostDerived);
+            --base;
+//            printf("%s:%d deallocate base@%p thatP@%p mostDerived@%p type=%s\n", __FILE__, __LINE__, base, thatP, mostDerived, *base);
+            free(base);
+#else
+            delete thatP;
+#endif
+        };
+
     };
 };
 
@@ -205,13 +278,66 @@ namespace gctools {
 
 namespace gctools {
     /*! Allocate regular C++ classes that are considered roots */
-    template <class T>
-    T* allocateRootClass()
+    template <class T,class...ARGS>
+    T* allocateRootClass(ARGS&&...args)
     {
         T* base = reinterpret_cast<T*>(GC_MALLOC_UNCOLLECTABLE(sizeof(T)));
-        new (base) T();
+        new (base) T(std::forward<ARGS>(args)...);
         return base;
     }
+
+
+    /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
+    template <class T,class...ARGS>
+    T* allocateClass(ARGS&&...args)
+    {
+        T* base = reinterpret_cast<T*>(GC_MALLOC(sizeof(T)));
+        new (base) T(std::forward<ARGS>(args)...);
+        return base;
+    }
+
+    /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
+    template <class T>
+    void deallocateClass(T* ptr)
+    {
+        // BOEHM and MPS do nothing
+    }
+
+
+
+
+
+    /*! Allocate Creators for C++ classes that will be garbage collected as soon as nothing points to them */
+    template <class T,class...ARGS>
+    T* allocateCreator(ARGS&&...args)
+    {
+        T* base = reinterpret_cast<T*>(GC_MALLOC(sizeof(T)));
+        ::new (base) T(std::forward<ARGS>(args)...);
+        return base;
+    }
+
+
+
+    /*! Allocate package Exposers for C++ classes that will be garbage collected as soon as nothing points to them */
+    template <class T,class...ARGS>
+    T* allocateExposer(ARGS&&...args)
+    {
+        T* base = reinterpret_cast<T*>(GC_MALLOC(sizeof(T)));
+        ::new (base) T(std::forward<ARGS>(args)...);
+        return base;
+    }
+
+
+
+    template <class T,class...ARGS>
+    T* allocateFunctoid(ARGS&&...args)
+    {
+        T* base = reinterpret_cast<T*>(GC_MALLOC(sizeof(T)));
+        ::new(base) T(std::forward<ARGS>(args)...);
+        return base;
+    }
+
+
 };
 
 
@@ -347,6 +473,7 @@ namespace gctools {
         };
 
 
+#if 0
         template <typename...ARGS>
         static smart_pointer_type leafAllocate(ARGS&&...args)
         {
@@ -356,7 +483,7 @@ namespace gctools {
 //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
             return sp;
         };
-
+#endif
 
 
 
@@ -370,6 +497,8 @@ namespace gctools {
             GCObjectFinalizer_boehm<OT,gctools::GCAllocatorInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
             return sp;
         }
+
+
     };
 };
 
@@ -431,7 +560,7 @@ namespace gctools {
         template <typename...ARGS>
         void construct (pointer p, ARGS&&...args) {
             // initialize memory with placement new
-            new((void*)p)value_type(args...);
+            new((void*)p) value_type(args...);
         }
 
         // destroy elements of initialized storage p
@@ -445,6 +574,137 @@ namespace gctools {
         }
     };
 };
+
+
+
+namespace gctools {
+
+    struct WeakLinks {};
+    struct StrongLinks {};
+
+    template <class TY, class LinkType >
+    class GCBucketAllocator_boehm /* : public GCAlloc<TY> */ {
+    public:
+
+        // type definitions
+        typedef TY                container_type;
+        typedef container_type*   container_pointer;
+        typedef typename container_type::value_type          value_type;
+        typedef value_type*       pointer;
+        typedef const value_type* const_pointer;
+        typedef value_type&       reference;
+        typedef const value_type& const_reference;
+        typedef std::size_t      size_type;
+        typedef std::ptrdiff_t   difference_type;
+
+        /* constructors and destructor
+         * - nothing to do because the allocator has no state
+         */
+        GCBucketAllocator_boehm() throw() {}
+        GCBucketAllocator_boehm(const GCBucketAllocator_boehm&) throw() {}
+        template <class U>
+        GCBucketAllocator_boehm (const GCBucketAllocator_boehm<U,LinkType>&) throw() {}
+        ~GCBucketAllocator_boehm() throw() {}
+
+        // return maximum number of elements that can be allocated
+        size_type max_size () const throw() {
+            return std::numeric_limits<std::size_t>::max() / sizeof(value_type);
+        }
+
+        // allocate but don't initialize num elements of type value_type
+        container_pointer allocate (size_type num, const void* = 0) {
+            size_t newBytes = gc_sizeof<container_type>(num);
+            container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
+            if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
+            new (myAddress) container_type(num);
+            return myAddress;
+        }
+
+
+        // initialize elements of allocated storage p with value value
+        template <typename...ARGS>
+        void construct (pointer p, ARGS&&...args) {
+            // initialize memory with placement new
+            THROW_HARD_ERROR(BF("What do I do here"));
+//            new((void*)p)value_type(args...);
+        }
+
+        // destroy elements of initialized storage p
+        void destroy (pointer p) {
+            // Do nothing
+        }
+
+        // deallocate storage p of deleted elements
+        void deallocate (container_pointer p, size_type num) {
+            // Do nothing
+        }
+    };
+};
+
+
+
+
+namespace gctools {
+    template <class TY>
+    class GCWeakBucketAllocator_boehm /* : public GCAlloc<TY> */ {
+    public:
+
+        // type definitions
+        typedef TY                container_type;
+        typedef container_type*   container_pointer;
+        typedef typename container_type::value_type          value_type;
+        typedef value_type*       pointer;
+        typedef const value_type* const_pointer;
+        typedef value_type&       reference;
+        typedef const value_type& const_reference;
+        typedef std::size_t      size_type;
+        typedef std::ptrdiff_t   difference_type;
+
+        /* constructors and destructor
+         * - nothing to do because the allocator has no state
+         */
+        GCWeakBucketAllocator_boehm() throw() {}
+        GCWeakBucketAllocator_boehm(const GCWeakBucketAllocator_boehm&) throw() {}
+        template <class U>
+        GCWeakBucketAllocator_boehm (const GCWeakBucketAllocator_boehm<U>&) throw() {}
+        ~GCWeakBucketAllocator_boehm() throw() {}
+
+        // return maximum number of elements that can be allocated
+        size_type max_size () const throw() {
+            return std::numeric_limits<std::size_t>::max() / sizeof(value_type);
+        }
+
+        // allocate but don't initialize num elements of type value_type
+        container_pointer allocate (size_type num, const void* = 0) {
+            size_t newBytes = gc_sizeof<container_type>(num);
+            container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
+            if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
+            new (myAddress) container_type(num);
+            return myAddress;
+        }
+
+
+        // initialize elements of allocated storage p with value value
+        template <typename...ARGS>
+        void construct (pointer p, ARGS&&...args) {
+            // initialize memory with placement new
+            THROW_HARD_ERROR(BF("What do I do here"));
+//            new((void*)p)value_type(args...);
+        }
+
+        // destroy elements of initialized storage p
+        void destroy (pointer p) {
+            // Do nothing
+        }
+
+        // deallocate storage p of deleted elements
+        void deallocate (container_pointer p, size_type num) {
+            // Do nothing
+        }
+    };
+};
+
+
 #endif // USE_BOEHM
 
 

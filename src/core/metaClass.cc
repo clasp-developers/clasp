@@ -39,9 +39,9 @@ namespace translate
 {
 
     template <>
-    struct	to_object<core::AllocatorFunctor*>
+    struct	to_object<core::Creator*>
     {
-	typedef	core::AllocatorFunctor*	GivenType;
+	typedef	core::Creator*	GivenType;
 	static core::T_sp convert(GivenType v)
 	{_G();
             if ( v ) return core::Pointer_O::create(v);
@@ -86,7 +86,7 @@ namespace core
 	    SIMPLE_ERROR(BF("Deal with non-nil orig in allocateRawClass"));
 	    // Check out ecl/src/c/instance.d/si_allocate_raw_instance
 	}
-        ASSERTF(metaClass->hasAllocator(),BF("The metaClass allocator should always be defined - for class %s it hasn't been") % _rep_(metaClass));
+        ASSERTF(metaClass->hasCreator(),BF("The metaClass allocator should always be defined - for class %s it hasn't been") % _rep_(metaClass));
 	Class_sp newClass = metaClass->allocate_newNil().as<Class_O>();
 	newClass->initialize();
 	newClass->initializeSlots(slots);
@@ -123,7 +123,7 @@ namespace core
 
     Class_O::Class_O() : Class_O::Base()
                        , _Signature_ClassSlots(_Unbound<T_O>())
-                       , _allocator(NULL)
+                       , _creator(NULL)
     {
     };
 
@@ -149,7 +149,7 @@ namespace core
 
 
 
-    T_sp InstanceAllocatorFunctor::allocate()
+    T_sp InstanceCreator::allocate()
     {
         GC_ALLOCATE(Instance_O,output);
         return output;
@@ -176,7 +176,7 @@ namespace core
 
     void Class_O::inheritDefaultAllocator(Cons_sp superclasses)
     {
-        if ( this->hasAllocator() ) {
+        if ( this->hasCreator() ) {
             // If this class already has an allocator then leave it alone
             return;
         }
@@ -202,12 +202,15 @@ namespace core
         }
 
         if ( aCxxDerivableAncestorClass.notnilp() ) {
-            gctools::StackRootedPointer<AllocatorFunctor> aCxxAllocator(aCxxDerivableAncestorClass->getAllocator());
-            gctools::StackRootedPointer<AllocatorFunctor> dup(aCxxAllocator->duplicateForClassName(this->name()));
-            this->setAllocator(dup.get());
+            Creator* aCxxAllocator(aCxxDerivableAncestorClass->getCreator());
+            // gctools::StackRootedPointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass->getCreator());
+            Creator* dup(aCxxAllocator->duplicateForClassName(this->name()));
+            //gctools::StackRootedPointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
+            this->setCreator(dup); // this->setCreator(dup.get());
         } else {
-            gctools::StackRootedPointer<InstanceAllocatorFunctor> instanceAllocator(new InstanceAllocatorFunctor(this->name()));
-            this->setAllocator(instanceAllocator.get());
+            InstanceCreator* instanceAllocator = gctools::allocateCreator<InstanceCreator>(this->name());
+            //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
+            this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
         }
     }
 
@@ -232,15 +235,15 @@ namespace core
 
     T_sp Class_O::allocate_newNil()
     {_G();
-	if ( this->_allocator == NULL ) {
-            IMPLEMENT_MEF(BF("All allocation should be done through _allocator"));
+	if ( this->_creator == NULL ) {
+            IMPLEMENT_MEF(BF("All allocation should be done through _creator"));
 	    // if the newNil_callback is NULL then allocate an instance
 	    int slots = this->_MetaClassSlots[REF_SIZE].as<Fixnum_O>()->get();
 	    printf("%s:%d:%s  Allocating new instance of %s with %d slots\n", __FILE__,__LINE__,__FUNCTION__,_rep_(this->asSmartPtr()).c_str(),slots);
 	    return Instance_O::allocateInstance(this->asSmartPtr(),slots);
-//	    SIMPLE_ERROR(BF("_allocator for %s is NULL!!") % _rep_(this->asSmartPtr()) );
+//	    SIMPLE_ERROR(BF("_creator for %s is NULL!!") % _rep_(this->asSmartPtr()) );
 	}
-	T_sp newObject = this->_allocator->allocate();
+	T_sp newObject = this->_creator->allocate();
 	return newObject;
     }
 
@@ -320,7 +323,7 @@ namespace core
 	{
 	    ss << "Base class: " << oCar(cc).as<Class_O>()->instanceClassName() << std::endl;
 	}
-	ss << boost::format("this.instanceAllocatorFunctor* = %p") % (void*)(this->getAllocator()) << std::endl;
+	ss << boost::format("this.instanceCreator* = %p") % (void*)(this->getCreator()) << std::endl;
 	return ss.str();
     }
 
@@ -340,11 +343,6 @@ namespace core
 	{
 	    accumulateSuperClasses(supers,arrayedSupers,oCar(cur).as<Class_O>());
 	}
-    }
-
-    void Class_O::topologicalSortSuperClasses(Class_sp mc, set<Class_sp>& seen, std::front_insert_iterator<deque<Class_sp> > store )
-    {_G();
-	DEPRECIATED();
     }
 
 };
@@ -551,11 +549,11 @@ namespace core {
 		printf("directSuperclasses: %s\n", oCar(cc).as<Class_O>()->instanceClassName().c_str() );
 	    }
 	}
-	printf(" this.instanceAllocatorFunctor* = %p\n", (void*)(this->getAllocator()));
-        if ( !this->hasAllocator() ) {
-            printf("_allocator = NULL\n");
+	printf(" this.instanceCreator* = %p\n", (void*)(this->getCreator()));
+        if ( !this->hasCreator() ) {
+            printf("_creator = NULL\n");
         } else {
-            this->getAllocator()->describe();
+            this->getCreator()->describe();
         }
         printf("cxxClassP[%d]  cxxDerivableClassP[%d]   primaryCxxDerivableClassP[%d]\n",
                this->cxxClassP(), this->cxxDerivableClassP(), this->primaryCxxDerivableClassP() );
@@ -677,8 +675,8 @@ namespace core {
 	class_<Class_O>()
 	    .def("className",&Class_O::className)
 	    .def("direct-superclasses",&Class_O::directSuperclasses)
-            .def("hasAllocator",&Class_O::hasAllocator)
-            .def("getAllocator",&Class_O::getAllocator)
+            .def("hasCreator",&Class_O::hasCreator)
+            .def("getCreator",&Class_O::getCreator)
 	    ;
 //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
 //	Defun(makeSureClosClassSlotsMatchClass);

@@ -47,45 +47,6 @@ namespace core {
     class Function_O;    
 
 
-// -----------------------------------
-//
-// Macro stuff
-//
-//
-// Wrapper for ActivationFrameMacroPtr
-    class ActivationFrameMacroWrapPtr : public Functoid {
-    private:
-	typedef	T_mv (*MacroPtr)(Cons_sp,Environment_sp);
-	MacroPtr	mptr;
-    public:
-	virtual string describe() const {return "ActivationFrameMacroWrapPtr";};
-// constructor
-	ActivationFrameMacroWrapPtr(const string& name, MacroPtr ptr) : Functoid(name),mptr(ptr) {}
-
-	T_mv activate( ActivationFrame_sp closedEnv, int nargs, ArgArray argArray)
-	{_G();
-	    Cons_sp form = argArray[0].as_or_nil<Cons_O>();
-	    Environment_sp env = argArray[1].as_or_nil<Environment_O>();
-	    T_mv retval = (this->mptr)(form,env);
-	    return retval;
-	};
-    };
-
-
-    inline void defmacro(const string& packageName, const string& name, T_mv (*mp)(Cons_sp,Environment_sp env),const string& arguments="", const string& declares="", const string& docstring="", bool autoExport=true)
-    {_G();
-	Functoid* f = new ActivationFrameMacroWrapPtr("macro->"+packageName+"::"+name,mp);
-	lisp_defmacro(packageName,name,f,arguments,declares,docstring,autoExport);
-    }
-
-
-
-
-
-
-
-
-
 
     template <int N>
     struct DispatchOn {
@@ -180,29 +141,6 @@ namespace core {
             this->setup_class(packageName,className);
         }
 
-
-
-        // non-const function dispatch on parameter 0
-	template <typename RT,class... ARGS>
-	class_& def( string const& name, RT (OT::*mp)(ARGS...),
-                     string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
-	{_G();
-	    Functoid* m = new VariadicMethoid<0,RT(OT::*)(ARGS...)>(name,mp);
-	    lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
-	    return *this;
-	}
-
-
-        // const function dispatch on parameter 0
-	template <typename RT,class... ARGS>
-	class_& def( string const& name, RT (OT::*mp)(ARGS...) const,
-		     string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
-	{_G();
-//	    ConstVariadicMethoid<RT,OT,ARGS...>* m = new ConstVariadicMethoid<RT,OT,ARGS...>(name,mp);
-	    Functoid* m = new VariadicMethoid<0,RT(OT::*)(ARGS...) const>(name,mp);
-	    lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
-	    return *this;
-	}
 
 
     };

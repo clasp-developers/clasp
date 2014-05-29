@@ -577,7 +577,7 @@ class ActivationFrameFunctionPtrT <void,void,void,void,void,void,void,void,void,
 
 // Wrapper for ActivationFrameFunctionPtrT
 template<typename RT,typename P1=void,typename P2=void,typename P3=void,typename P4=void,typename P5=void,typename P6=void,typename P7=void,typename P8=void,typename P9=void,typename P10=void >
-class ActivationFrameFunctionWrapPtr : public AFFunctoid {
+class ActivationFrameFunctionWrapPtr : public Closure {
 private:
     typedef typename ActivationFrameFunctionPtrT<RT,P1,P2,P3,P4,P5,P6,P7,P8,P9,P10>::Type FuncPtr;
     ActivationFrameFunctionPtrT<RT,P1,P2,P3,P4,P5,P6,P7,P8,P9,P10>		invoker;
@@ -597,8 +597,8 @@ public:
     typedef P9      Param9T;
     typedef P10      Param10T;
 // constructor
-    ActivationFrameFunctionWrapPtr(const string& name, FuncPtr ptr) : AFFunctoid(name), fptr(ptr) {}
-
+    ActivationFrameFunctionWrapPtr(const string& name, FuncPtr ptr) : Closure(name), fptr(ptr) {}
+    DISABLE_NEW();
     T_sp activate(const_ActivationFrame_spREF af)
     {_G();
         return this->invoker.activate(this->fptr,af);

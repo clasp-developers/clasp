@@ -42,7 +42,7 @@ namespace clbind { namespace detail {
         virtual ~registration();
 
     public:
-        virtual core::AllocatorFunctor* registerDefaultConstructor_() const {HARD_SUBCLASS_MUST_IMPLEMENT();};
+        virtual core::Creator* registerDefaultConstructor_() const {HARD_SUBCLASS_MUST_IMPLEMENT();};
     protected:
         virtual void register_() const = 0;
 

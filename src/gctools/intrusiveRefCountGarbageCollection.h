@@ -90,56 +90,14 @@ namespace gctools {
 
 
 
-#ifdef USE_GC_REF_COUNT_WRAPPER
-#define GC_SIZEOF_BLOCK(_class_) (gctools::GCWrapper<_class_>::sizeof_wrapper())
-#define GC_ALLOCATE_GET(_class_,_obj_) {                                 \
-        gctools::GCWrapper<_class_>* __gch = reinterpret_cast<gctools::GCWrapper<_class_>*>(malloc(GC_SIZEOF_BLOCK(_class_))); \
-        new(__gch) gctools::GCWrapper<_class_>();                       \
-        _class_* __object = __gch->gcobject();                          \
-        new(__object) _class_();                                        \
-        _obj_ = __object;                                               \
-    };
-
-#define GC_ALLOCATE_GET_VARIADIC(_class_,_obj_,...) {                    \
-    gctools::GCWrapper<_class_>* __gch = reinterpret_cast<gctools::GCWrapper<_class_>*>(malloc(GC_SIZEOF_BLOCK(_class_))); \
-    new(__gch) gctools::GCWrapper<_class_>();                           \
-    _class_* __object = __gch->gcobject();                              \
-    new(__object) _class_(__VA_ARGS__);                                 \
-    _obj_ = __object;
-};
-#define GC_COPY_GET(_class_,_obj_,_orig_) {                             \
-        gctools::GCWrapper<_class_>* __gch = reinterpret_cast<gctools::GCWrapper<_class_>*>(malloc(GC_SIZEOF_BLOCK(_class_))); \
-        new(__gch) gctools::GCWrapper<_class_>();                       \
-        _class_* __object = __gch->gcobject();                          \
-        new(__object) _class_(_orig_);                                  \
-        _obj_ = __object;                                               \
-    };
-#else
-#define GC_ALLOCATE_GET(_class_,_obj_) _obj_ = mem::smart_ptr<_class_>(new _class_())
-#define GC_ALLOCATE_GET_VARIADIC(_class_,_obj_,...) _obj_ = mem::smart_ptr<_class_>(new _class_(__VA_ARGS__))
-#define GC_COPY_GET(_class_,_obj_,_orig_) _obj_ = mem::smart_ptr<_class_>(new _class_(_orig_))
-#endif
-
-#define GC_ALLOCATE_GET_KIND(_class_,_kind_,_obj_) GC_ALLOCATE_GET(_class_,_obj_)
-
-#define GC_ALLOCATE_BEGIN(_class_,_obj_) mem::smart_ptr<_class_> _obj_;
-#define GC_ALLOCATE_END(_class_,_obj_) (_obj_)->initialize();POLL_SIGNALS()
-#define GC_ALLOCATE_END_FINALno_INITno(_class_,_obj_) POLL_SIGNALS()
-#define GC_ALLOCATE_END_FINALyes_INITno(_class_,_obj_) POLL_SIGNALS()
-
-
-#define GC_ALLOCATE_END_DONT_INITIALIZE(_class_) POLL_SIGNALS()
-
 #define GC_ALLOCATE(_class_,_obj_) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()
 #define GC_ALLOCATE_UNCOLLECTABLE(_class_,_obj_) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::rootAllocate()
 #define GC_ALLOCATE_VARIADIC(_class_,_obj_,...) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate(__VA_ARGS__)
 
 
-#define GC_ALLOCATE_DONT_INITIALIZE(_class_,_obj_) GC_ALLOCATE_BEGIN(_class_,_obj_){GC_ALLOCATE_GET(_class_,_obj_);} GC_ALLOCATE_END_DONT_INITIALIZE(_obj_);
+#define GC_COPY(_class_,_obj_,_orig_) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::copy(_orig_)
 
-#define GC_COPY_BEGIN(_class_,_obj_) mem::smart_ptr<_class_> _obj_;
-#define GC_COPY_END(_class_,_obj_) GC_ALLOCATE_END_DONT_INITIALIZE()
-#define GC_COPY(_class_,_obj_,_orig_) GC_COPY_BEGIN(_class_,_obj_){GC_COPY_GET(_class_,_obj_,_orig_);} GC_COPY_END(_class_,_obj_);
+
 
 
 
@@ -195,6 +153,8 @@ namespace gctools
 	GCObject() : _ReferenceCount(0) {};
 	// Copy  ctor
 	GCObject(const GCObject& orig) : _ReferenceCount(0) {};
+    public:
+        int referenceCount() const { return this->_ReferenceCount;};
 #endif
 #endif
 	GCObject& operator=(const GCObject&) { return *this; };

@@ -339,39 +339,6 @@ namespace core
     }
 
 
-#if 0
-    T_mv Interpreted_O::FUNCALL(int n_args, ... )
-    {_G();
-	T_mv result;
-	LambdaListHandler_sp lambdaListHandler = this->getLambdaListHandler();
-	ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(lambdaListHandler,this->closedEnvironment());
-	ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-	{
-	    va_list ap;
-	    va_start(ap,n_args);
-	    lambdaListHandler->createBindingsInScope_var_args(n_args,ap,scope);
-	    va_end(ap);
-	}
-	LOG(BF("About to evaluate the code bound to symbol[%s] in the environment->\n%s")
-	    % _rep_(this->getFunctionName()) % _rep_(newValueEnvironment) );
-	LOG(BF("About to evaluate code: %s")%_rep_(this->_Code) );
-	if ( af_consP(this->_Code) )
-	{
-	    ValueFrame_sp newActivationFrame = newValueEnvironment->getActivationFrame().as<ValueFrame_O>();
-	    VectorObjects_sp debuggingInfo = lambdaListHandler->namesOfLexicalVariablesForDebugging();
-	    newActivationFrame->attachDebuggingInfo(debuggingInfo);
-	    LispInterpretedFunctionIHF _frame(_lisp->invocationHistoryStack(),this->sharedThis<Interpreted_O>(),newActivationFrame);
-	    result = eval::sp_progn(this->_Code,newValueEnvironment);
-	} else
-	{
-	    SIMPLE_ERROR(BF("What do we do now, this->_Code = %s") % _rep_(this->_Code) );
-	}
-	LOG(BF("Returning result: %s") % _rep_(result) );
-	return(result);
-    }
-#endif
-
-
 
     // This is the old way of doing things using createBindingsInEnvironment
 

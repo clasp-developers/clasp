@@ -16,11 +16,12 @@ namespace clbind
 
 
 
-    class ClbindExposer : public core::PackageExposer
+    class ClbindExposer : public core::Exposer
     {
     private:
     public:
-    ClbindExposer(core::Lisp_sp lisp) : PackageExposer(lisp,ClbindPkg) {};
+        DISABLE_NEW();
+    ClbindExposer(core::Lisp_sp lisp) : Exposer(lisp,ClbindPkg) {};
         virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
     };
 

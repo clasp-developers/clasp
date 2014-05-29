@@ -488,43 +488,19 @@ class	ClassGroup:
     %(OCLASS)s::static_Kind = gctools::GCInfo<%(OCLASS)s>::Kind;
     core::af_setf_findClass(%(CLASSNAME)s,%(OCLASS)s::static_classSymbol(),true,_Nil<core::Environment_O>());
     {
-        LispObjectAllocatorFunctor<%(OCLASS)s>* cb = new LispObjectAllocatorFunctor<%(OCLASS)s>();
-        %(OCLASS)s::___set_static_allocator(cb);
+        LispObjectCreator<%(OCLASS)s>* cb = gctools::allocateCreator<LispObjectCreator<%(OCLASS)s>>();
+        %(OCLASS)s::___set_static_creator(cb);
     }
     LOG(BF("Set static_allocator for class(%%s) to %%X")%% %(OCLASS)s::static_className() %% (void*)(%(OCLASS)s::static_allocator) );
-    %(CLASSNAME)s->setAllocator(%(OCLASS)s::static_allocator);
+    %(CLASSNAME)s->setCreator(%(OCLASS)s::static_creator);
     {
         LOG(BF("Created nil for class[%%s]") %% %(OCLASS)s::static_className() );
-//        %(OCLASS)s::___staticDereferencedNilInstance = new %(OCLASS)s();
-//        %(OCLASS)s::___staticDereferencedNilInstance->___make_nil(); /* Unique NIL for class*/
-//        %(OCLASS)s::___staticDereferencedUnboundInstance = new %(OCLASS)s();
-//        %(OCLASS)s::___staticDereferencedUnboundInstance->___make_unbound(); /* Unique UNBOUND for class */
-//        %(OCLASS)s::_nil = _Nil<%(OCLASS)s>();
-//        %(OCLASS)s::_unbound = _Unbound<%(OCLASS)s>();
     }
-//    %(CLASSNAME)s->setSupportsSlots(%(OCLASS)s::static_supportsSlots());
     /* ----- the class and its nil are now defined and so is %(CLASSNAME)s::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to T_O::_nil in stage3   ----- */
 """ % args)
 
         fout.write("#endif // CREATE_CLASS\n")
         fout.write("#undef CREATE_CLASS\n")
-
-#        fout.write("#if defined(SET_CLASS) || defined(ALL_STAGES) // { \n")
-#        fout.write("// Depends on classcore__%(METACLASSNAME)s_Oval\n")
-#        for x in allSorted:
-#            try:
-#                cl = self.getClass(x)
-#            except:
-#                print("Class[%s] was not defined" % x)
-#                continue
-#            args = make_argument_dict(cl)
-#            if ( not cl.ignore() ):
-#                fout.write("""
-#    %(CLASSNAME)s->__setup_stage2_with_classSymbol(%(METACLASSNAME)s_O::static_classSymbol());
-#""" % args)
-#        fout.write("#endif // } SET_CLASS\n")
-#        fout.write("#undef SET_CLASS\n")
-
         fout.write("#ifdef DUMP_INFO_CLASS // {\n")
         fout.write("// Depends on nothing\n")
         for x in allSorted:
