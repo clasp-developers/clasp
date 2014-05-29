@@ -1,7 +1,8 @@
 #define DEBUG_LEVEL_FULL
 
-
+#include "llvm/IR/Metadata.h"
 #include "llvm/Support/Dwarf.h"
+
 #include "core/foundation.h"
 #include "core/object.h"
 #include "core/lisp.h"
@@ -41,7 +42,7 @@ namespace llvmo
 	SYMBOL_EXPORT_SC_(LlvmoPkg,LLVMDebugVersion6);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,LLVMDebugVersion5);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,LLVMDebugVersion4);
-
+        SYMBOL_EXPORT_SC_(LlvmoPkg,_PLUS_DebugMetadataVersion_PLUS_);
 	_sym_LLVMDebugVersion11->defconstant(core::Fixnum_O::create(llvm::LLVMDebugVersion11));
 	_sym_LLVMDebugVersion10->defconstant(core::Fixnum_O::create(llvm::LLVMDebugVersion10));
 	_sym_LLVMDebugVersion9->defconstant(core::Fixnum_O::create(llvm::LLVMDebugVersion9));
@@ -50,6 +51,7 @@ namespace llvmo
 	_sym_LLVMDebugVersion6->defconstant(core::Fixnum_O::create(llvm::LLVMDebugVersion6));
 	_sym_LLVMDebugVersion5->defconstant(core::Fixnum_O::create(llvm::LLVMDebugVersion5));
 	_sym_LLVMDebugVersion4->defconstant(core::Fixnum_O::create(llvm::LLVMDebugVersion4));
+        _sym__PLUS_DebugMetadataVersion_PLUS_->defconstant(core::Fixnum_O::create(llvm::DEBUG_METADATA_VERSION));
 
 
 //===----------------------------------------------------------------------===//

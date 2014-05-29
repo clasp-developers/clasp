@@ -168,7 +168,7 @@ namespace core
 	    .def("unwindProtectEnvironmentP",&Environment_O::unwindProtectEnvironmentP)
 	    .def("functionContainerEnvironmentP",&Environment_O::functionContainerEnvironmentP)
 	    .def("recognizesBlockSymbol",&Environment_O::recognizesBlockSymbol)
-	    .def("calculateBlockDepth",&Environment_O::calculateBlockDepth)
+	    .def("getBlockSymbolFrame",&Environment_O::getBlockSymbolFrame)
 	    .def("classifyTag",&Environment_O::classifyTag)
 	    .def("countFunctionContainerEnvironments",&Environment_O::countFunctionContainerEnvironments)
 	    ;
@@ -523,13 +523,13 @@ namespace core
 
 
 
-    int Environment_O::calculateBlockDepth(Symbol_sp sym) const
+    int Environment_O::getBlockSymbolFrame(Symbol_sp sym) const
     {_G();
 	if ( this->getParentEnvironment().nilp() )
 	{
-	    return 0;
+	    SIMPLE_ERROR(BF("Could not find block with name %s") % _rep_(sym));
 	}
-	return this->getParentEnvironment()->calculateBlockDepth(sym);
+	return this->getParentEnvironment()->getBlockSymbolFrame(sym);
     }
 
     bool Environment_O::nilCheck_findTag(Environment_sp env, Symbol_sp sym, int& depth, int& index)
@@ -833,7 +833,7 @@ namespace core
     bool RuntimeVisibleEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index ) const
     {_G();
 	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
-	++depth;
+        ++depth;
 	return nilCheck_findTag(parent,sym,depth,index);
     }
 
@@ -1525,20 +1525,18 @@ namespace core
 	if ( this->getParentEnvironment().nilp() ) return false;
 	return this->getParentEnvironment()->recognizesBlockSymbol(sym);
     }
-
-
-    int BlockEnvironment_O::calculateBlockDepth(Symbol_sp sym) const
+#if 0
+    int BlockEnvironment_O::getBlockSymbol(Symbol_sp sym) const
     {_G();
-	if ( this->_BlockSymbol == sym ) return 0;
+	if ( this->_BlockSymbol == sym ) return this->_Frame;
 	if ( this->getParentEnvironment().nilp() )
 	{
 	    SIMPLE_ERROR(BF("Could not find block symbol %s") % _rep_(sym) );
 	}
-	return this->getParentEnvironment()->calculateBlockDepth(sym)+1;
+	return this->getParentEnvironment()->getBlockSymbolFrame(sym);
     }
 
-
-
+#endif
 
 
 
@@ -1800,7 +1798,7 @@ namespace core
 	{
 	    return false;
 	}
-	depth++;
+        ++depth;
 	return nilCheck_findTag(this->getParentEnvironment(),sym,depth,index);
     }
 

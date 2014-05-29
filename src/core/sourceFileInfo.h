@@ -71,9 +71,16 @@ namespace core
 	uint	_FilePos;
 	Function_sp 	_Expander;
     };
+};
+template<> struct gctools::GCAllocatorInfo<core::SourcePosInfo_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 
-
+namespace core {
     class SourceManager_O : public T_O
     {
 	LISP_BASE1(T_O);
@@ -86,20 +93,14 @@ namespace core
     public: // instance variables here
         // TODO!!!!! Use a WeakKeyHashTable_sp here
         // Must be implemented first!!!!
-        HashTableEq_sp                         _SourcePosInfo;
+        HashTableEq_sp                         _WeakKeySourcePosInfo;
 //	map<T_wp,SourcePosInfo>			_SourcePosInfo;
 	/*! All SourceFileInfo_sp source files are stored here indexed by integer FileId */
         gctools::Vec0<SourceFileInfo_sp>		_Files;
     public: // Functions here
-#if 0
-	SourceLocation createForSourceFile(const string& fileName);
-	SourceFileInfo_sp getSourceFile(SourceLocation);
 
-	SourceLocation createForSourceLocation(SourceLocation fileInfo, uint lineNumber, uint column );
-	SourceLocation createForSourceLocation(SourceFileInfo_sp file, uint lineNumber, uint column );
-
-	T_mv getSourceInfo(SourceLocation sourceLoc);
-#endif
+        /*! Return true if the SourceManager is available */
+        bool availablep() const { return this->_WeakKeySourcePosInfo.notnilp(); };
 
 	/*! Register the object with the source manager */
 	void registerSourceInfo(T_sp obj, SourceFileInfo_sp sourceFile, uint lineno, uint column, uint sourcePos, Function_sp expander=_Nil<Function_O>() );

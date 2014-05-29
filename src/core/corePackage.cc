@@ -470,7 +470,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 #pragma GCC visibility pop
 
 
-    CoreExposer::CoreExposer(Lisp_sp lisp) : PackageExposer(lisp,CorePkg,CorePkg_nicknames)
+    CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp,CorePkg,CorePkg_nicknames)
     {
 	this->package()->usePackage(_lisp->findPackage("CL"));
     };
@@ -539,7 +539,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 
 
 
-    gctools::StackRootedPointer<CoreExposer> CoreExposer::create_core_classes(Lisp_sp lisp)
+    CoreExposer* CoreExposer::create_core_classes(Lisp_sp lisp)
     { _G();
 	LOG(BF("Initialize core classes by hand"));
 	BootStrapCoreSymbolMap bootStrapSymbolMap;
@@ -600,7 +600,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 #define DEFINE_BASE_CLASSES
 #include "core_initClasses_inc.h"
 	}
-        gctools::StackRootedPointer<CoreExposer> coreExposerPtr(new CoreExposer(_lisp));
+        CoreExposer* coreExposerPtr = gctools::allocateExposer<CoreExposer>(_lisp);
 	Package_sp corePackage = coreExposerPtr->package();
 	_lisp->_Roots._CorePackage = corePackage;
 	_lisp->_Roots._KeywordPackage = keywordPackage;
@@ -642,21 +642,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 	return coreExposerPtr;
     }
 
-
-#if 0
-    void testPointers()
-    {
-        FDInStream_O* stdin_fdinstream = new FDInStream_O();
-        Stream_O* stdin_stream = static_cast<Stream_O*>(stdin_fdinstream);
-        T_O* stdin_t = static_cast<T_O*>(stdin_fdinstream);
-        FDInStream_O* stdin2_fdinstream = dynamic_cast<FDInStream_O*>(stdin_t);
-        if (!stdin2_fdinstream) {
-            printf("%s:%d     Could not dynamic_cast T_O* to FDInStream_O*\n",
-                   __FILE__, __LINE__ );
-            __builtin_debugtrap();
-        }
-    }
-#endif
 
 
     void CoreExposer::define_essential_globals(Lisp_sp lisp)

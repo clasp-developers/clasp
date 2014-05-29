@@ -24,7 +24,7 @@ namespace core
     }
 
 
-    void Cache::clearOneFromCache(const T_sp& target)
+    void Cache::clearOneFromCache(T_sp target)
     {
 	for ( int i(0); i< this->_table.size(); ++i)
 	{
@@ -87,9 +87,9 @@ namespace core
 
 
 
-    void Cache::search_cache(gctools::StackRootedPointer<CacheRecord>& min_e)
+    void Cache::search_cache(CacheRecord*& min_e)
     {
-	vector<CacheRecord>& table = this->_table;
+        gctools::Vec0<CacheRecord>& table = this->_table;
 	VectorObjectsWithFillPtr_sp& keys = this->_keys;
 	int argno = keys->fillPointer();
 	cl_intptr_t hi = this->vector_hash_key(keys);
@@ -123,7 +123,7 @@ namespace core
 	    T_sp& hkey = e._key; // cl_object hkey = RECORD_KEY(e);
 	    if (hkey.nilp()) { // if (hkey == OBJNULL) {
 		min_gen = -1; // min_gen = -1;
-		min_e.set(&e); // min_e = e;
+		min_e = &e; // min_e.set(&e); // min_e = e;
 		if ( e._value.nilp() ) { // if (RECORD_VALUE(e) == OBJNULL) {
 		    /* This record is not only deleted but empty
 		     * Hence we cannot find our method ahead */
@@ -138,7 +138,7 @@ namespace core
 // if (keys->vector.self.t[n] != hkey->vector.self.t[n])
 			goto NO_MATCH;
 		}
-		min_e.set(&e);
+		min_e = &e; // min_e.set(&e);
 		goto FOUND;
 	    } else if (min_gen >= 0) {
 	    NO_MATCH:
@@ -148,15 +148,15 @@ namespace core
 		gen = e._generation; // gen = RECORD_GEN(e);
 		if ( gen < min_gen ) {// if (gen < min_gen) {
 		    min_gen = gen;
-		    min_e.set(&e);
+		    min_e = &e; // min_e.set(&e);
 		}
 	    }
 	    idx++; //i += 3;
 	    if (idx >= total_size) idx = 0;
 	}
-	if (min_e.nullP()) {
+	if (!min_e) { // (min_e.nullP()) {
             throw CacheError();
-	    SIMPLE_ERROR(BF("An error occured while searching the generic function method hash table - min_e.nullP() - I should put this in a try/catch block"));
+	    SIMPLE_ERROR(BF("An error occured while searching the generic function method hash table - min_e == NULL - I should put this in a try/catch block"));
 	}
 	min_e->_key = _Nil<T_O>(); // RECORD_KEY(min_e) = OBJNULL;
 	this->_generation++; // cache->generation++;
@@ -170,7 +170,8 @@ namespace core
 	gen = this->_generation; // gen = cache->generation;
 	min_e->_generation = gen; // RECORD_GEN_SET(min_e, gen);
 	if (gen >= total_size/2) {
-            gctools::StackRootedPointer<CacheRecord> e(&(table.operator[](0))); // cl_object *e = table->vector.self.t;
+            CacheRecord* e = &table.operator[](0);
+//            gctools::StackRootedPointer<CacheRecord> e(&(table.operator[](0))); // cl_object *e = table->vector.self.t;
 	    gen = 0.5*gen;
 	    this->_generation = gen; // cache->generation -= gen;
 	    for ( int i=table.size(); --i; ++e ) { // for (i = table->vector.dim; i; i-= 3, e += 3) {
@@ -192,7 +193,7 @@ namespace core
     {
 	GC_SCANNER_BEGIN() {
 	    SMART_PTR_FIX(this->_keys);
-	    for ( vector<CacheRecord>::iterator it= this->_table.begin(); it<this->_table.end(); ++it )
+	    for ( auto it= this->_table.begin(); it<this->_table.end(); ++it )
 	    {
 		SMART_PTR_FIX(it->_key);
 		SMART_PTR_FIX(it->_value);

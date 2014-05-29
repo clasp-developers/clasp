@@ -315,11 +315,7 @@ namespace core
     {
 	Symbol_sp 	_Var;
 	T_sp 		_Val;
-	DynamicBinding(Symbol_sp sym, T_sp val)
-	{
-	    this->_Var = sym;
-	    this->_Val = val;
-	}
+	DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val) {};
         GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
     };
 
@@ -327,7 +323,7 @@ namespace core
     class DynamicBindingStack
     {
     public:
-	vector<DynamicBinding> 	_Bindings;
+        gctools::Vec0<DynamicBinding> 	_Bindings;
     public:
 	int top() const { return this->_Bindings.size()-1; }
 
@@ -378,17 +374,60 @@ namespace core
     int af_setIhsCurrentFrame(int idx);
     
 
+}
 
 
-	
+namespace core {
+
+    /*! Exception stack information */
+
+    typedef enum { NullFrame, CatchFrame, BlockFrame, TagbodyFrame } FrameKind;
+    /*! Store the information for the exception 
+      For CatchThrow:   _Obj1
+    */
+    struct ExceptionEntry {
+        ExceptionEntry() : _FrameKind(NullFrame)
+                         , _Key(_Nil<T_O>()) {};
+        ExceptionEntry(FrameKind k, T_sp key) : _FrameKind(k)
+                                                  , _Key(key) {};
+        FrameKind       _FrameKind;
+        T_sp            _Key;
+    };
 
 
+    class ExceptionStack {
+    private:
+        gctools::Vec0<ExceptionEntry>   _Stack;
+    public:
+        ExceptionEntry& operator[](int i) { return this->_Stack[i];};
+        size_t size() const { return this->_Stack.size();};
+
+        int push(FrameKind kind, T_sp key) {
+            int frame = this->_Stack.size();
+            this->_Stack.emplace_back(kind,key);
+            return frame;
+        }
+        void pop() {
+            this->_Stack.pop_back();
+        };
+        /*! Return the index of the stack entry with the matching key.
+          If return -1 then the key wasn't found */
+        int findKey(FrameKind kind, T_sp key) {
+            for ( int i(this->_Stack.size()-1); i>=0; --i ) {
+                if (this->_Stack[i]._FrameKind == kind && this->_Stack[i]._Key == key) return i;
+            }
+            return -1;
+        }
+        T_sp backKey() const {return this->_Stack.back()._Key; };
+        void unwind(size_t newTop) { this->_Stack.resize(newTop); };
+    };
 
 
+};
 
+
+namespace core{
     void initialize_stacks();
-
-    
 };
 
 

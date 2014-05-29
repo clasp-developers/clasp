@@ -13,11 +13,12 @@ namespace asttooling
 
 
 
-    class AsttoolingExposer : public core::PackageExposer
+    class AsttoolingExposer : public core::Exposer
     {
     private:
     public:
-    AsttoolingExposer(core::Lisp_sp lisp) : PackageExposer(lisp,AstToolingPkg) {
+        DISABLE_NEW();
+        AsttoolingExposer(core::Lisp_sp lisp) : Exposer(lisp,AstToolingPkg) {
         
     };
         virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;

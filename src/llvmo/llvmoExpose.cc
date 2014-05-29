@@ -894,7 +894,7 @@ namespace llvmo
 	}
 	LLVMFunctoid::fptr_type lisp_funcPtr = (LLVMFunctoid::fptr_type)(p);
 	string functoidName = sym.nilp() ? "" : sym->fullName();
-	LLVMFunctoid* functoid = new LLVMFunctoid(functoidName,lisp_funcPtr);
+	LLVMFunctoid* functoid = gctools::allocateFunctoid<LLVMFunctoid>(functoidName,lisp_funcPtr);
 	core::CompiledBody_sp compiledBody = core::CompiledBody_O::create(functoid,fn);
 	core::CompiledFunction_sp func = core::CompiledFunction_O::makeCompiledFunction( sym,
 											 compiledBody,

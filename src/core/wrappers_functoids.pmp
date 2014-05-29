@@ -29,7 +29,7 @@ $for template_ [[
         public:
         enum { NumParams = $numArgs };
         VariadicFunctoid(const string& name, Type ptr) : Functoid(name), fptr(ptr) {};
-
+        DISABLE_NEW();
         core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
         {
             if ( numArgs != (NumParams) )

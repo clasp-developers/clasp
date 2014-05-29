@@ -13,17 +13,17 @@ system-recompile:
 	make system-full
 
 system-min-boot:
-	clasp_o -I -f ecl-min -l "buildClaspMinBoot.lsp"
+	clasp -I -f ecl-min -l "buildClaspMinBoot.lsp"
 
 # Use the old min-image
 system-min-recompile:
-	clasp_o -f ecl-min -l "buildClaspMinRecompile.lsp"
+	clasp -f ecl-min -l "buildClaspMinRecompile.lsp"
 
 system-full:
-	clasp_o -f ecl-min -l "buildClasp.lsp"
+	clasp -f ecl-min -l "buildClasp.lsp"
 
 clasp-gc:
-	clasp_o -l "buildClaspGc.lsp"
+	clasp -l "buildClaspGc.lsp"
 
 compile-commands:
 	-bjam release clasp -n -a >bjam.out

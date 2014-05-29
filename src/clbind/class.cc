@@ -69,11 +69,11 @@ namespace clbind { namespace detail {
                 core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
                     core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
             }
-            core::AllocatorFunctor* allocator = NULL;
+            core::Creator* allocator = NULL;
             if ( m_default_constructor != NULL ) {
                 allocator = m_default_constructor->registerDefaultConstructor_();
             } else {
-                allocator = new DummyAllocatorFunctor(classNameString);
+                allocator = gctools::allocateCreator<DummyCreator>(classNameString);
             }
             _lisp->addClass(className,crep,allocator);
             registry->add_class(m_type,crep);

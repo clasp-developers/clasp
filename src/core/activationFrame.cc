@@ -57,7 +57,7 @@ namespace core
     bool ActivationFrame_O::_findTag(Symbol_sp sym, int& depth, int& index ) const
     {_G();
 	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
-	++depth;
+        ++depth;
 	return nilCheck_findTag(parent,sym,depth,index);
     }
 
@@ -483,22 +483,20 @@ namespace core
 {
 
 
-
     T_sp TagbodyFrame_O::lookupTagbodyId(int depth, int index) const
     {_G();
 	if ( depth == 0 )
 	{
-	    return(this->_TagbodyId);
+	    return this->asSmartPtr();
 	}
 	--depth;
 	return(this->parentFrame()->lookupTagbodyId(depth,index));
     }
 
-
     string TagbodyFrame_O::summaryOfContents() const
     {
 	stringstream ss;
-	ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId() << " :id " << (void*)(this->tagbodyId().get()) << std::endl;
+	ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId()  << std::endl;
 	return(ss.str());
     }
 
@@ -515,7 +513,6 @@ namespace core
     {_G();
 	GC_ALLOCATE(TagbodyFrame_O,vf );
         vf->_ParentFrame = parent;
-	vf->_TagbodyId = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	return(vf);
     }
 

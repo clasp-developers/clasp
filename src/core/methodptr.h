@@ -28,20 +28,6 @@ public:
 /*! Methods that don't need to have argument/result translation are
  * stored as Methoid objects
  */
-#if 0
-template <typename OT>
-class Methoid : public Functoid
-{
-private:
-	T_sp (OT::*fptr)(Function_sp,Cons_sp, Environment_sp, Lisp_sp );
-public:
-    Methoid( T_sp (OT::*fp)(Function_sp,Cons_sp, Environment_sp, Lisp_sp ) )
-    {
-	this->fptr = fp;
-    };
-    virtual string describe() const {return "Methoid";};
-};
-#else
 template <typename OT>
 class Methoid : public SingleDispatchMethoid
 {
@@ -61,46 +47,27 @@ public:
 	return result;
     }
 };
-#endif
 
 
+#if 0
 /*! A ChainableMethoid is a Methoid that is called with two arguments: (args next-emfun)
   It's methoid is applied to args and next-emfun is ignored
  */
-#if 0
-class ChainableMethoid : public Functoid
-{
-private:
-	Functoid* _methoid; // take ownership
-public:
-    ChainableMethoid( Functoid* m) : _methoid(m) {};
-    virtual ~ChainableMethoid() { if (this->_methoid!=NULL) { delete this->_methoid; this->_methoid = NULL;}};
-    virtual string describe() const {return "ChainableMethoid";};
-};
-#else
-class ChainableMethoid : public AFFunctoid
+class ChainableMethoid : public Closure
 {
 private:
 	Functoid* _methoid; // take ownership
 public:
     ChainableMethoid( const string& name, Functoid* m) : AFFunctoid(name), _methoid(m) {};
+    DISABLE_NEW();
     virtual ~ChainableMethoid() { if (this->_methoid!=NULL) { delete this->_methoid; this->_methoid = NULL;}};
     virtual string describe() const {return "ChainableMethoid";};
     T_mv activate( ActivationFrame_sp closedEnv,int nargs, ArgArray args)
     {_G();
 	IMPLEMENT_MEF(BF("Handle new way of passing emfun in activation frames"));
-#if 0
-	Cons_sp methodArgs = args->ocar().as_or_nil<Cons_O>();
-	Function_sp next_emfun = args->ocadr().as<Function_O>();
-	// I can ignore next_emfun because once we enter C++ code calling parent/next functions
-	// is handled by the virtual function machinery
-	ASSERTF(this->_methoid!=NULL,BF("The methoid of a ChainableMethoid is UNDEFINED - this should never happen!!!"));
-	return this->_methoid->invoke(e,methodArgs,env,lisp);
-#endif
     }
 };
 #endif
-
 
 
 };

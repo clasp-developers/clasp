@@ -64,10 +64,10 @@ namespace core
     T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots )
     {_G();
         Class_sp cl = theClass.as<Class_O>();
-        if ( !cl->hasAllocator() ) {
+        if ( !cl->hasCreator() ) {
             IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots );
         }
-        core::AllocatorFunctor* allocatorP = (cl->getAllocator());
+        core::Creator* allocatorP = (cl->getCreator());
         T_sp obj = allocatorP->allocate();
 	if ( obj.nilp()) 
 	{
@@ -138,30 +138,14 @@ namespace core
 
     T_sp Instance_O::instanceSigSet()
     {
-#if DEBUG_CLOS>=2
-	printf("\nMLOG instanceSigSet of Instance %p  CLASS_OF --> %s\n", (void*)(this), this->_CLASS_OF()->__repr__().c_str() );
-#endif
         T_sp classSlots(_Nil<T_O>());
-#if 0
-        // This is the old code
-	T_sp classOf = this->_ C L A S S_OF();
-	if ( Instance_sp instClassOf = classOf.asOrNull<Instance_O>() )
-	{
-	    classSlots = instClassOf->_C L A S S_SLOTS();
-	} else if (Class_sp mc = classOf.asOrNull<Class_O>() )
-	{
-	    classSlots = mc->slots();
-	} else
-	{
-	    SIMPLE_ERROR(BF("illegal class-of"));
-	}
-#else
         Class_sp mc = this->_instanceClass();
         classSlots = mc->slots();
-#endif
 	this->_Sig = classSlots;
 	return(( classSlots));
     }
+
+
 
     T_sp Instance_O::instanceSig() const
     {
@@ -288,12 +272,12 @@ namespace core
 
     T_sp Instance_O::copyInstance() const
     {
-	Instance_sp inew = Instance_O::allocateInstance(this->_Class).as<Instance_O>();
-	inew->_isgf = this->_isgf;
-	inew->_Slots = this->_Slots;
-	inew->_Entry = this->_Entry;
-	inew->_Sig = this->_Sig;
-	return inew;
+	Instance_sp iobj = Instance_O::allocateInstance(this->_Class).as<Instance_O>();
+	iobj->_isgf = this->_isgf;
+	iobj->_Slots = this->_Slots;
+	iobj->_Entry = this->_Entry;
+	iobj->_Sig = this->_Sig;
+	return iobj;
     }
 
 

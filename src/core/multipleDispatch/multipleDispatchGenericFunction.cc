@@ -227,6 +227,9 @@ namespace core
 	    }
 	}
 
+        DISABLE_NEW();
+
+
 	/*! This invoke will get the arguments for the method.  
 	  They will be passed to Lambda_emf::_function as the first argument of the (args next-emfun) pair
 	  of arguments.  The next-emfun 

@@ -363,7 +363,7 @@ namespace core {
 	    int idx = 0;
 	    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) )
 	    {
-		vf->operator[](idx) = oCar(cur);//new (&(vf->_Args[idx])) T_sp(oCar(cur));
+		vf->operator[](idx) = oCar(cur);// n e w (&(vf->_Args[idx])) T_sp(oCar(cur));
 		++idx;
 	    }
 	    return vf;
@@ -429,12 +429,6 @@ namespace core {
 };
 
 
-template<> struct gctools::GCAllocatorInfo<core::TagbodyFrame_O> {
-    static bool const NeedsInitialization = false;
-    static bool const NeedsFinalization = false;
-    static bool const Moveable = true;
-    static bool constexpr Atomic = false;
-};
 
 
 namespace core
@@ -445,19 +439,14 @@ namespace core
 	LISP_CLASS(core,CorePkg,TagbodyFrame_O,"TagbodyFrame");
     private:
 	ActivationFrame_sp	_ParentFrame;
-	T_sp            	_TagbodyId;
     public:
 	static TagbodyFrame_sp create(ActivationFrame_sp parent);
 
 	virtual ActivationFrame_sp& parentFrameRef() { return this->_ParentFrame; };
 	virtual ActivationFrame_sp parentFrame() const { return this->_ParentFrame; };
-	T_sp tagbodyId() const { return this->_TagbodyId;};
-
 	virtual string summaryOfContents() const;
 
-
-	T_sp lookupTagbodyId(int depth, int index) const;
-
+        T_sp lookupTagbodyId(int depth, int index) const;
 
 	TagbodyFrame_O() : Base() {};
 	virtual ~TagbodyFrame_O() {};
@@ -465,6 +454,12 @@ namespace core
     public:
 	string asString() const;
     };
+};
+template<> struct gctools::GCAllocatorInfo<core::TagbodyFrame_O> {
+    static bool const NeedsInitialization = false;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
 };
 
 

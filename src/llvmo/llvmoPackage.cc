@@ -261,7 +261,7 @@ namespace llvmo
 
 
 
-    void LlvmoExposer::expose(core::Lisp_sp lisp,core::PackageExposer::WhatToExpose what) const
+    void LlvmoExposer::expose(core::Lisp_sp lisp,core::Exposer::WhatToExpose what) const
     {_G();
 	//
 	// Initialize the intrinsic functions in intrinsics.cc

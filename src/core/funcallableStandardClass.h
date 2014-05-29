@@ -79,6 +79,8 @@ class	FuncallableStandardClassInitializationFunctoid : public Functoid
 private:
 	FuncallableStandardClass_sp	_FuncallableStandardClass;	
 public:
+    DISABLE_NEW();
+
     virtual string describe() const {return "FuncallableStandardClassInitializationFunctoid";};
     FuncallableStandardClassInitializationFunctoid(const string& name, FuncallableStandardClass_sp c) : Functoid(name)
     { this->_FuncallableStandardClass = c;};

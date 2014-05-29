@@ -142,12 +142,17 @@
 ;; Notice that, due to circularity in the definition, STANDARD-CLASS has
 ;; itself as metaclass. MAKE-EMPTY-STANDARD-CLASS takes care of that.
 ;;
-
+#|(eval-when (:execute)
+  (setq cl:*features* (cons :compare cl:*features*))
+  (setq cl:*features* (cons :force-lots-of-gcs cl:*features*)))
+|#
 #+compare(print "MLOG ----- Stage#1   creating the clases")
 (let* ((class-hierarchy '#.+class-hierarchy+))
   (let ((all-classes (loop for c in class-hierarchy
 			for class = (apply #'make-empty-standard-class c)
-			do (progn #+compare(print (list "MLOG Class--> " c)))
+			do (progn #+compare(print (list "MLOG Class--> " c))
+                                  #+compare(print (list "Doing gc"))
+                                  #+force-lots-of-gcs (gctools:garbage-collect))
 			collect class)))
     (defconstant +the-t-class+ (find-class 't nil))
     (defconstant +the-class+ (find-class 'class nil))
@@ -158,23 +163,34 @@
     ;; 2) Class T had its metaclass wrong. Fix it.
     ;;
 #+compare    (print (list "MLOG STAGE 2 - BRCL skips this"))
+#+force-lots-of-gcs (gctools:garbage-collect)
 #-brcl
     (si:instance-class-set (find-class 't) (find-class 'built-in-class))
+#+force-lots-of-gcs (gctools:garbage-collect)
     ;;
     ;; 3) Finalize
     ;;
 #+compare(print (list "MLOG STAGE 3"))
-    (mapc #'si::instance-sig-set all-classes)
+#+force-lots-of-gcs(gctools:garbage-collect)
+#-force-lots-of-gcs(mapc #'si::instance-sig-set all-classes)
+#+force-lots-of-gcs(mapc (lambda (c) (format t "Listing class ~a~%" c) (gctools::garbage-collect)) all-classes)
+#+force-lots-of-gcs(mapc (lambda (c) (format t "About to gc and then instance-sig-set ~a~%" c) (gctools::garbage-collect) (si::instance-sig-set c)) all-classes)
+#+force-lots-of-gcs(gctools:garbage-collect)
     ;;
     ;; 4) This is needed for further optimization
     ;;
     #+compare(print (list "MLOG STAGE 4"))
+#+force-lots-of-gcs (gctools:garbage-collect)
+#+force-lots-of-gcs (break "About to setf slot-value")
     (setf (slot-value (find-class 'method-combination) 'sealedp) t)
+#+force-lots-of-gcs (gctools:garbage-collect)
     ;;
     ;; 5) This is needed so that slot-definition objects are not marked
     ;;    obsolete and need to be updated
     ;;
+#+force-lots-of-gcs (gctools:garbage-collect)
     #+compare(print (list "MLOG STAGE 5"))
+#+force-lots-of-gcs (gctools:garbage-collect)
     (with-early-accessors (+standard-class-slots+)
       (loop for c in all-classes
 	 do (loop for s in (class-direct-slots c)

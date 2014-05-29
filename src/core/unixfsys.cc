@@ -981,10 +981,10 @@ dir_files(T_sp base_dir, T_sp pathname, int flags)
 	     all_files = ECL_CONS_CDR(all_files))
 	{
 		T_sp record = ECL_CONS_CAR(all_files);
-		T_sp new = ECL_CONS_CAR(record);
+		T_sp nw = ECL_CONS_CAR(record);
 		T_sp kind = ECL_CONS_CDR(record);
 		if (kind != kw::_sym_directory) {
-			output = CONS(new, output);
+			output = CONS(nw, output);
 		}
 	}
 	return output;

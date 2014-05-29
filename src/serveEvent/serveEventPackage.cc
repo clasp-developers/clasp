@@ -43,7 +43,7 @@ namespace serveEvent
 #pragma GCC visibility pop
 
 
-    void ServeEventExposer::expose(core::Lisp_sp lisp,core::PackageExposer::WhatToExpose what) const
+    void ServeEventExposer::expose(core::Lisp_sp lisp,core::Exposer::WhatToExpose what) const
     {_G();
 	switch (what)
 	{

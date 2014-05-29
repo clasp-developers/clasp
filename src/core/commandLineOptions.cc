@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include "foundation.h"
+#include "object.h"
 #include "boost/program_options.hpp"
 #include "commandLineOptions.h"
 

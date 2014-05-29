@@ -22,7 +22,6 @@
 using namespace core;
 
 
-
 namespace gctools
 {
 
@@ -126,6 +125,9 @@ namespace gctools
 #define DOCS_af_garbageCollect "garbageCollect"
     void af_garbageCollect()
     {_G();
+#ifdef USE_BOEHM
+        GC_gcollect();
+#endif
 //        printf("%s:%d Starting garbage collection of arena\n", __FILE__, __LINE__ );
 #ifdef USE_MPS
         mps_arena_collect(_global_arena);
@@ -359,7 +361,7 @@ namespace gctools
 
 
 
-    void GcToolsExposer::expose(core::Lisp_sp lisp,core::PackageExposer::WhatToExpose what) const
+    void GcToolsExposer::expose(core::Lisp_sp lisp,core::Exposer::WhatToExpose what) const
     {_G();
 	switch (what)
 	{

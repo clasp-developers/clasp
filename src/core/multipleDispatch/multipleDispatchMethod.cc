@@ -45,6 +45,8 @@ namespace core
 	    this->_arguments = args;
 	}
 
+        DISABLE_NEW();
+
 	/*! The argument list is: (&rest cnm_args)
 	  If no arguments are passed to this invoke then
 	  use the arguments that are stored in _arguments */
@@ -71,6 +73,7 @@ namespace core
 	{
 	    this->_next_emfun = next_emfun;
 	}
+        DISABLE_NEW();
 
 	/*! Doesn't take any arguments */
 	T_sp invoke(Executable_sp e,Cons_sp cnm_args, Environment_sp env, Lisp_sp lisp )
@@ -99,6 +102,8 @@ namespace core
 	    this->_method = method;
 	    this->_methoid = methoid;
 	}
+
+        DISABLE_NEW();
 
 	/*! The argument list is: (args next-emfun)
 	  Use next-emfun to set up a FunctionEnvironment that defines call-next-method and next-method-p */

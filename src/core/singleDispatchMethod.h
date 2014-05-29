@@ -51,6 +51,12 @@ namespace core
     }; // SingleDispatchMethod class
     
 }; // core namespace
+template<> struct gctools::GCAllocatorInfo<core::SingleDispatchMethod_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 TRANSLATE(core::SingleDispatchMethod_O);
 
 

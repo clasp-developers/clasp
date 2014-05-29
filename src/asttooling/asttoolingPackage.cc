@@ -46,7 +46,7 @@ namespace asttooling
 #pragma GCC visibility pop
 
 
-    void AsttoolingExposer::expose(core::Lisp_sp lisp,core::PackageExposer::WhatToExpose what) const
+    void AsttoolingExposer::expose(core::Lisp_sp lisp,core::Exposer::WhatToExpose what) const
     {_G();
 	switch (what)
 	{

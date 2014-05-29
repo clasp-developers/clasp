@@ -16,11 +16,12 @@ namespace serveEvent
 
 
 
-    class ServeEventExposer : public core::PackageExposer
+    class ServeEventExposer : public core::Exposer
     {
     private:
     public:
-    ServeEventExposer(core::Lisp_sp lisp) : PackageExposer(lisp,ServeEventPkg) {};
+        DISABLE_NEW();
+    ServeEventExposer(core::Lisp_sp lisp) : Exposer(lisp,ServeEventPkg) {};
         virtual void expose(core::Lisp_sp lisp,WhatToExpose what) const;
     };
 

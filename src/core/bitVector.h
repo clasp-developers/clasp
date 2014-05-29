@@ -72,11 +72,11 @@ public:
 		//! Calculate the "xor" of bv with this BitVector
 	void	inPlaceXor(SimpleBitVector_sp bv);
 
-		//! Return a new BitVector "or"ed with this
+		//! Return a BitVector "or"ed with this
 	SimpleBitVector_sp	bitOr(SimpleBitVector_sp bv);
-		//! Return a new BitVector "and"ed with this
+		//! Return a BitVector "and"ed with this
 	SimpleBitVector_sp	bitAnd(SimpleBitVector_sp bv);
-		//! Return a new BitVector "xor"ed with this
+		//! Return a BitVector "xor"ed with this
 	SimpleBitVector_sp	bitXor(SimpleBitVector_sp bv);
 
 		//! Return the number of set bits

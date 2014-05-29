@@ -241,15 +241,16 @@ In ecl/src/c/interpreter.d  is the following code
     {
 	Function_sp func;
 #if defined(CACHE_METHOD_LOOKUP)
-        gctools::StackRootedPointer<Cache> cache(_lisp->methodCachePtr());
+        Cache* cache(_lisp->methodCachePtr()); // gctools::StackRootedPointer<Cache> cache(_lisp->methodCachePtr());
 	VectorObjectsWithFillPtr_sp vektor = fill_spec_vector(cache->keys(), nargs, args, gf); // Was ref
-        gctools::StackRootedPointer<CacheRecord> e;
+        CacheRecord* e; //gctools::StackRootedPointer<CacheRecord> e;
         try {
             cache->search_cache(e); // e = ecl_search_cache(cache);
         } catch (CacheError& err) {
+            printf("%s:%d - There was an CacheError searching the GF cache for the keys  You should try and get into cache->search_cache to see where the error is\n", __FILE__, __LINE__);
             SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(gf));
         }
-	ASSERT(!e.nullP());
+	ASSERT(e!=NULL); // ASSERT(!e.nullP());
 	if (e->_key.notnilp()) {
 	    func = e->_value.as<Function_O>();
 	} else

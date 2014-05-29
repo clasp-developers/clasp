@@ -30,7 +30,7 @@
 		    (dolist (part-pathname part-pathnames)
 		      (let* ((part-name (pathname-name part-pathname))
 			     (gv-part-name (jit-make-global-string-ptr part-name "part-path-name")))
-			(bformat t "Adding function: %s\n" part-name)
+			(bformat t "Adding function to evaluate compiled top level forms for: %s\n" part-name)
 			(let* ((efn (llvm-sys:function-create +fn-void+
 							      'llvm-sys::external-linkage
 							      (jit-function-name part-pathname)

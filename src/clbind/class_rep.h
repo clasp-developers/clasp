@@ -75,7 +75,7 @@ namespace clbind {
 
         bool cxxClassP() const { return true;};
         bool cxxDerivableClassP() const { return this->m_derivable; };
-        bool primaryCxxDerivableClassP() const { return this->getAllocator()->duplicationLevel() == 0;};
+        bool primaryCxxDerivableClassP() const { return this->getCreator()->duplicationLevel() == 0;};
 
             ClassRep_O() : m_derivable(false) {};
 

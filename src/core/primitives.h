@@ -121,7 +121,7 @@ namespace core
     {
 	friend class ListOfListSteppers;
     private:
-	vector<SequenceStepper*>	_Steppers;
+        gctools::Vec0<SequenceStepper*>	_Steppers;
 	bool				_AtEnd;
     public:
 	ListOfSequenceSteppers() {};

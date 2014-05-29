@@ -137,21 +137,22 @@ namespace clbind
 
 
 
-    class DummyAllocatorFunctor : public core::AllocatorFunctor
+    class DummyCreator : public core::Creator
     {
         string _name;
     public:
-        DummyAllocatorFunctor(const string& name) : _name(name) {};
+        DummyCreator(const string& name) : _name(name) {};
     public:
+        DISABLE_NEW();
         virtual bool allocates() const { return false;};
         virtual void describe() const {
-            printf("DummyAllocatorFunctor for: %s\n", this->_name.c_str());
+            printf("DummyCreator for: %s\n", this->_name.c_str());
         };
         virtual core::T_sp allocate() {
             SIMPLE_ERROR(BF("This class cannot allocate instances"));
         }//return _Nil<core::T_O>(); };
-        AllocatorFunctor* duplicateForClassName(core::Symbol_sp className) {
-            return new DummyAllocatorFunctor(core::lisp_symbolNameAsString(className));
+        Creator* duplicateForClassName(core::Symbol_sp className) {
+            return gctools::allocateCreator<DummyCreator>(core::lisp_symbolNameAsString(className));
         }
 
     };
@@ -577,7 +578,7 @@ namespace clbind
             {
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
-                core::Functoid* f = new VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>(tname);
+                core::Functoid* f = gctools::allocateFunctoid<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>(tname);
                 return f;
             }
 

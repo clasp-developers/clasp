@@ -21,7 +21,14 @@ namespace core
 
 
     template <class OType/*, class GCKind=gctools::GCHolder */>
-    class SymbolMap : public std::map<Symbol_sp, mem::smart_ptr<OType> >/*, public GCKind */
+    class SymbolDict : 
+#if defined(USE_MPS) || defined(USE_REFCOUNT)
+        public std::map<Symbol_sp, mem::smart_ptr<OType> >
+#endif
+#ifdef USE_BOEHM
+        public std::map<Symbol_sp, mem::smart_ptr<OType>, std::less<Symbol_sp>, gc_allocator<Symbol_sp> >
+#endif
+  
     {
     public:
 	typedef typename mem::smart_ptr<OType>	value_type;
@@ -31,7 +38,7 @@ namespace core
 #if 0
 	StringSet_sp getKeysAsStringSet(Lisp_sp e) const
 	{
-	    typename SymbolMap::const_iterator ie;
+	    typename SymbolDict::const_iterator ie;
 	    StringSet_sp ss = StringSet_O::create(e);
 	    for ( ie=this->begin(); ie!=this->end(); ie++ )
 	    {
@@ -47,7 +54,7 @@ namespace core
 	void	remove( Symbol_sp c) { this->erase(c); };
 	void	addUnique(Symbol_sp s, value_type obj)
 	{_OF();
-	    ASSERTP(!this->contains(s),"The SymbolMap already contains key("+symbol_fullName(s)+")");
+	    ASSERTP(!this->contains(s),"The SymbolDict already contains key("+symbol_fullName(s)+")");
 	    this->operator[](s) = obj;
 	};
 	void	set(Symbol_sp s, value_type obj)
@@ -56,7 +63,7 @@ namespace core
 	};
 	value_type get(Symbol_sp name,const Lisp_sp& lisp) const
 	{_G();
-	    typename SymbolMap::const_iterator found = this->find(name);
+	    typename SymbolDict::const_iterator found = this->find(name);
 	    if ( found == this->end() )
 	    {
 		KEY_NOT_FOUND_ERROR(name);

@@ -60,12 +60,6 @@ namespace clbind {
 
         ClassRep_sp find_class(type_id const& info) const;
 
-#if 0
-        std::map<type_id, ClassRep_sp> const& get_classes() const
-        {
-            return m_classes;
-        }
-#endif
     private:
 
         /*! Index on the type_id.id converted to a core::Pointer and use EQL equality */

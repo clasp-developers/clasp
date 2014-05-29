@@ -57,7 +57,11 @@
 
 namespace reg {
 
+#if 1
+    ClassSymbolsHolder  globalClassSymbolsVectorHolder;
+#else
     std::vector<core::Symbol_sp, gctools::root_allocator<core::Symbol_sp> > globalClassSymbolsVector;
+#endif
 
     class_id allocate_class_id(type_id const& cls)
     {
@@ -89,18 +93,18 @@ namespace reg {
 
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP)
 {
-    if ( expectedTyp >= reg::globalClassSymbolsVector.size() ) {
-        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("expected class_id %lu out of range max[%lu]") % expectedTyp % reg::globalClassSymbolsVector.size() );
+    if ( expectedTyp >= reg::globalClassSymbolsVectorHolder._Symbols.size() ) {
+        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("expected class_id %lu out of range max[%lu]") % expectedTyp % reg::globalClassSymbolsVectorHolder._Symbols.size() );
     }
-    core::Symbol_sp expectedSym = reg::globalClassSymbolsVector[expectedTyp];
+    core::Symbol_sp expectedSym = reg::globalClassSymbolsVectorHolder._Symbols[expectedTyp];
     if ( expectedSym.nilp() ) {
         core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("expected class_id %lu symbol was not defined") % expectedTyp );
     }
 
-    if ( givenTyp >= reg::globalClassSymbolsVector.size() ) {
-        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("given class_id %lu out of range max[%lu]") % givenTyp % reg::globalClassSymbolsVector.size() );
+    if ( givenTyp >= reg::globalClassSymbolsVectorHolder._Symbols.size() ) {
+        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("given class_id %lu out of range max[%lu]") % givenTyp % reg::globalClassSymbolsVectorHolder._Symbols.size() );
     }
-    core::Symbol_sp givenSym = reg::globalClassSymbolsVector[givenTyp];
+    core::Symbol_sp givenSym = reg::globalClassSymbolsVectorHolder._Symbols[givenTyp];
     if ( givenSym.nilp() ) {
         core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("given class_id %lu symbol was not defined") % givenTyp );
     }
@@ -262,7 +266,7 @@ namespace core
 
 
 
-    GC_RESULT AllocatorFunctor::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
+    GC_RESULT Creator::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
     {
         IMPLEMENT_MEF(BF("Subclass must implement AllocatorFunction::onHeapScanGCRoots"));
     }
@@ -683,7 +687,7 @@ namespace core
 
 
     void lisp_addClass(Symbol_sp classSymbol,
-		       AllocatorFunctor* cb,
+		       Creator* cb,
 		       Symbol_sp base1ClassSymbol,
 		       Symbol_sp base2ClassSymbol,
 		       Symbol_sp base3ClassSymbol)
@@ -699,7 +703,7 @@ namespace core
 
 
     void lisp_addClassAndInitialize(Symbol_sp classSymbol,
-		       AllocatorFunctor* cb,
+                                    Creator* cb,
 		       Symbol_sp base1ClassSymbol,
 		       Symbol_sp base2ClassSymbol,
 		       Symbol_sp base3ClassSymbol)
@@ -1565,11 +1569,12 @@ namespace core
     T_sp lisp_ArgArrayToCons(int nargs, ArgArray args)
     {
 	Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
-        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
+        Cons_O::CdrType_sp* curP = &first;
+//        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
 	for ( int i(0); i<nargs; ++i ) {
 	    Cons_sp one = Cons_O::create(args[i]);
-	    cur.setPointee(one); //*cur = one;
-	    cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
+            *curP = one; // cur.setPointee(one); //*cur = one;
+	    curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
 	}
 	return first;
     }

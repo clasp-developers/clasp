@@ -115,6 +115,10 @@ extern "C" void add_history(char* line);
 namespace core 
 {
 
+    const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
+    const int Lisp_O::MaxClosSlots = 3; //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
+    const int Lisp_O::ClosCacheSize = 65536;
+
 
     extern void lispScannerDebug(std::istream& sin);
     extern string	getLispError();
@@ -225,6 +229,7 @@ namespace core
 	}
     }
 
+#if 0
     Cons_sp Lisp_O::catchPushTag(T_sp tag)
     {
         Cons_sp one = Cons_O::create(tag,this->_Roots._CatchInfo);
@@ -245,7 +250,7 @@ namespace core
         }
         return _Nil<Cons_O>();
     }
-
+#endif
  
 
 
@@ -339,6 +344,22 @@ namespace core
     }
 
 
+#ifdef USE_REFCOUNT
+    void testContainers()
+    {
+        Fixnum_sp fn = Fixnum_O::create(1);
+        printf("%s:%d  fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.px_ref(), fn->referenceCount() );
+        gctools::Vec0<T_sp> container;
+        container.push_back(fn);
+        printf("%s:%d  after push_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.px_ref(), fn->referenceCount() );
+        Fixnum_sp fn2 = container.back().as<Fixnum_O>();
+        printf("%s:%d  after back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.px_ref(), fn->referenceCount() );
+        container.pop_back();
+        printf("%s:%d  after pop_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.px_ref(), fn->referenceCount() );
+        printf("%s:%d  fn2@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn2.px_ref(), fn2->referenceCount() );
+    };
+#endif
+
 
     void Lisp_O::startupLispEnvironment(Bundle* bundle)
     {
@@ -346,6 +367,9 @@ namespace core
 	  they were going into infinite loops - so I was testing them here within
 	  the context of the entire package */
 //	testIterators();
+#ifdef USE_REFCOUNT
+        testContainers();
+#endif
 
 	this->_Mode = FLAG_EXECUTE;
 
@@ -365,7 +389,7 @@ namespace core
 	this->_Bundle = bundle;
 
 
-        gctools::StackRootedPointer<CoreExposer> coreExposerPtr;
+        CoreExposer* coreExposerPtr = NULL;
 	BuiltInClass_sp classDummy;
 
 
@@ -380,8 +404,9 @@ namespace core
 	}
 	{_BLOCK_TRACE("Create some housekeeping objects");
 	    this->_Roots._SourceManager = SourceManager_O::create();
-
             this->_Roots._LoadTimeValueArrays = HashTableEqual_O::create_default();
+            this->_Roots._SetfDefinitions = HashTableEq_O::create_default();
+            this->_Roots._SingleDispatchGenericFunctionTable = HashTableEq_O::create_default();
 	}
 	{ _BLOCK_TRACE("Initialize special forms and macros");
 	    this->_EnvironmentInitialized = true;
@@ -455,7 +480,7 @@ namespace core
 	    initialize_conditions();
 	    initialize_exceptions();
 
-	    coreExposerPtr->expose(_lisp,PackageExposer::candoClasses);
+	    coreExposerPtr->expose(_lisp,Exposer::candoClasses);
 //	    initializeCandoClos(_lisp);
 	}
 	{
@@ -492,8 +517,8 @@ namespace core
 	//
 	this->exposeCando();
 	Lisp_O::initializeGlobals(_lisp);
-	coreExposerPtr->expose(_lisp,PackageExposer::candoFunctions);
-	coreExposerPtr->expose(_lisp,PackageExposer::candoGlobals);
+	coreExposerPtr->expose(_lisp,Exposer::candoFunctions);
+	coreExposerPtr->expose(_lisp,Exposer::candoGlobals);
 	{_BLOCK_TRACE("Call global initialization callbacks");
 	    for ( vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin(); 
 		  ic!=this->_GlobalInitializationCallbacks.end(); ic++ )
@@ -534,8 +559,8 @@ namespace core
 	    getcwd(true); // set *default-pathname-defaults*
 	};
 	{_BLOCK_TRACE("Creating Caches for CLOS");
-	    this->_Roots._MethodCachePtr = new Cache(MaxFunctionArguments,ClosCacheSize);
-	    this->_Roots._SlotCachePtr = new Cache(MaxClosSlots,ClosCacheSize);
+	    this->_Roots._MethodCachePtr = gctools::allocateClass<Cache>(MaxFunctionArguments,ClosCacheSize);
+	    this->_Roots._SlotCachePtr = gctools::allocateClass<Cache>(MaxClosSlots,ClosCacheSize);
 	}
 #if 0 // wtf is this???
 	if ( this->_dont_load_startup )
@@ -604,28 +629,21 @@ namespace core
 
     void Lisp_O::set_setfDefinition(Symbol_sp fnName, Function_sp fnDef)
     {_G();
-	this->_Roots._SetfDefinitions[fnName] = fnDef;
+	this->_Roots._SetfDefinitions->setf_gethash(fnName,fnDef);
     }
 
     Function_sp Lisp_O::get_setfDefinition(Symbol_sp fnName) const
     {_G();
-	SymbolMap<Function_O>::const_iterator it = this->_Roots._SetfDefinitions.find(fnName);
-	if ( it == this->_Roots._SetfDefinitions.end() ) 
-	{
-	    return _Nil<Function_O>();
-	}
-	return it->second;
+        return this->_Roots._SetfDefinitions->gethash(fnName,_Nil<T_O>()).as<Function_O>();
     }
 
     bool Lisp_O::remove_setfDefinition(Symbol_sp fnName)
     {_G();
-	SymbolMap<Function_O>::const_iterator it = this->_Roots._SetfDefinitions.find(fnName);
-	if ( it == this->_Roots._SetfDefinitions.end() ) 
-	{
-	    return false;
-	}
-	this->_Roots._SetfDefinitions.erase(fnName);
-	return true;
+        if (this->_Roots._SetfDefinitions->contains(fnName) ) {
+            this->_Roots._SetfDefinitions->remhash(fnName);
+            return true;
+        }
+        return false;
     }
 
 
@@ -787,24 +805,24 @@ namespace core
 
 
 
-    void Lisp_O::installPackage(const PackageExposer* pkg)
+    void Lisp_O::installPackage(const Exposer* pkg)
     {_OF();
 	LOG(BF("Installing package[%s]") % pkg->packageName() );
 	int firstNewGlobalCallback = this->_GlobalInitializationCallbacks.end()-this->_GlobalInitializationCallbacks.begin();
 	ChangePackage change(pkg->package());
 //    this->inPackage(pkg->packageName());
 	{_BLOCK_TRACE("Initializing classes");
-	    pkg->expose(_lisp,PackageExposer::candoClasses);
+	    pkg->expose(_lisp,Exposer::candoClasses);
 	}
 	{_BLOCK_TRACE("Creating nils for built-in classes");
 	    LOG(BF("Nils aren't created here anymore - they are created when the class is registered"));
 //	this->createNils();
 	}
 	{_BLOCK_TRACE("Initializing functions");
-	    pkg->expose(_lisp,PackageExposer::candoFunctions);
+	    pkg->expose(_lisp,Exposer::candoFunctions);
 	}
 	{_BLOCK_TRACE("Initializing globals");
-	    pkg->expose(_lisp,PackageExposer::candoGlobals);
+	    pkg->expose(_lisp,Exposer::candoGlobals);
 	}
 
 
@@ -846,7 +864,7 @@ namespace core
 /*! Add the class with (className) to the current package
  */
     void Lisp_O::addClass(Symbol_sp classSymbol,
-			  AllocatorFunctor* alloc,
+			  Creator* alloc,
 			  Symbol_sp base1ClassSymbol,
 			  Symbol_sp base2ClassSymbol,
 			  Symbol_sp base3ClassSymbol )
@@ -882,8 +900,8 @@ namespace core
 	{
 	    cc->addInstanceBaseClass(base3ClassSymbol);
 	}
-	ASSERTF(alloc!=NULL,BF("_allocator for %s is NULL!!!") % _rep_(classSymbol) );
-	cc->setAllocator(alloc);
+	ASSERTF(alloc!=NULL,BF("_creator for %s is NULL!!!") % _rep_(classSymbol) );
+	cc->setCreator(alloc);
     }
 
 
@@ -891,14 +909,14 @@ namespace core
 
 /*! Add the class with (className) to the current package
  */
-    void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, AllocatorFunctor* allocator )
+    void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator* allocator )
     {_G();
 //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
 	LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol) );
 //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
 	af_setf_findClass(theClass,classSymbol,true,_Nil<Environment_O>());
 //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
-	theClass->setAllocator(allocator);
+	theClass->setCreator(allocator);
     }
 
 
@@ -2927,7 +2945,7 @@ extern "C"
     {_G();
 	ASSERTF(this->_BootClassTableIsValid,
 		BF("Never use Lisp_O::findClass after boot - use cl::_sym_findClass"));
-	SymbolMap<Class_O>::const_iterator fi = this->_Roots._BootClassTable.find(className);
+	SymbolDict<Class_O>::const_iterator fi = this->_Roots._BootClassTable.find(className);
 	if ( fi == this->_Roots._BootClassTable.end() )
 	{
 	    if ( errorp )
@@ -2948,7 +2966,7 @@ extern "C"
     {_G();
 	ASSERTF(this->_BootClassTableIsValid,BF("switchToClassNameHashTable should only be called once after boot"));
 	HashTable_sp ht = _sym_STARclassNameHashTableSTAR->symbolValue().as<HashTable_O>();
-	for ( SymbolMap<Class_O>::iterator it=this->_Roots._BootClassTable.begin();
+	for ( SymbolDict<Class_O>::iterator it=this->_Roots._BootClassTable.begin();
 	      it!=this->_Roots._BootClassTable.end(); it++ )
 	{
 	    ht->hash_table_setf_gethash(it->first,it->second);
@@ -2965,8 +2983,9 @@ extern "C"
 #define DOCS_Lisp_O_find_single_dispatch_generic_function "Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception"
     SingleDispatchGenericFunction_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp)
     {_G();
-	SymbolMap<SingleDispatchGenericFunction_O>::const_iterator fi = _lisp->_Roots._SingleDispatchGenericFunctionTable.find(gfSym);
-	if ( fi == _lisp->_Roots._SingleDispatchGenericFunctionTable.end() )
+        SingleDispatchGenericFunction_sp fn = _lisp->_Roots._SingleDispatchGenericFunctionTable->gethash(gfSym,_Nil<T_O>()).as<SingleDispatchGenericFunction_O>();
+
+	if ( fn.nilp() ) 
 	{
 	    if ( errorp )
 	    {
@@ -2974,7 +2993,7 @@ extern "C"
 	    }
 	    return _Nil<SingleDispatchGenericFunction_O>();
 	}
-	return fi->second;
+	return fn;
     }
 
 
@@ -2986,7 +3005,7 @@ extern "C"
 #define DOCS_Lisp_O_setf_find_single_dispatch_generic_function "Define a single dispatch generic function "
     SingleDispatchGenericFunction_sp Lisp_O::setf_find_single_dispatch_generic_function(Symbol_sp gfName, SingleDispatchGenericFunction_sp gf)
     {_G();
-	_lisp->_Roots._SingleDispatchGenericFunctionTable[gfName] = gf;
+	_lisp->_Roots._SingleDispatchGenericFunctionTable->setf_gethash(gfName, gf);
 	return gf;
     }
 
@@ -2996,7 +3015,7 @@ extern "C"
 #define DOCS_Lisp_O_forget_all_single_dispatch_generic_functions "Forget all single dispatch functions"
     void Lisp_O::forget_all_single_dispatch_generic_functions()
     {_G();
-	_lisp->_Roots._SingleDispatchGenericFunctionTable.clear();
+	_lisp->_Roots._SingleDispatchGenericFunctionTable->clrhash();
     }
 
 
@@ -3385,7 +3404,7 @@ extern "C"
     {_G();
 	if ( this->_BootClassTableIsValid )
 	{
-	    for ( SymbolMap<Class_O>::iterator it=this->_Roots._BootClassTable.begin();
+	    for ( SymbolDict<Class_O>::iterator it=this->_Roots._BootClassTable.begin();
 		  it!=this->_Roots._BootClassTable.end(); it++ )
 	    {
 		if (!mapper->mapKeyValue(it->first,it->second)) break;
@@ -3762,7 +3781,7 @@ extern "C"
 
 
 
-    PackageExposer::PackageExposer(Lisp_sp lisp, const string& packageName, const char* nicknames[])
+    Exposer::Exposer(Lisp_sp lisp, const string& packageName, const char* nicknames[])
     {_G();
 	if ( !lisp->recognizesPackage(packageName) )
 	{	
@@ -3781,7 +3800,7 @@ extern "C"
     }
 
 
-    PackageExposer::PackageExposer(Lisp_sp lisp, const string& packageName )
+    Exposer::Exposer(Lisp_sp lisp, const string& packageName )
     {_G();
 	if ( !lisp->recognizesPackage(packageName) )
 	{	
@@ -3796,7 +3815,7 @@ extern "C"
     }
 
 
-    PackageExposer::~PackageExposer() {};
+    Exposer::~Exposer() {};
 
 
 

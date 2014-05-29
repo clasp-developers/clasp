@@ -137,21 +137,22 @@ namespace clbind
 
 
 
-    class DummyAllocatorFunctor : public core::AllocatorFunctor
+    class DummyCreator : public core::Creator
     {
         string _name;
     public:
-        DummyAllocatorFunctor(const string& name) : _name(name) {};
+        DummyCreator(const string& name) : _name(name) {};
     public:
+        DISABLE_NEW();
         virtual bool allocates() const { return false;};
         virtual void describe() const {
-            printf("DummyAllocatorFunctor for: %s\n", this->_name.c_str());
+            printf("DummyCreator for: %s\n", this->_name.c_str());
         };
         virtual core::T_sp allocate() {
             SIMPLE_ERROR(BF("This class cannot allocate instances"));
         }//return _Nil<core::T_O>(); };
-        AllocatorFunctor* duplicateForClassName(core::Symbol_sp className) {
-            return new DummyAllocatorFunctor(core::lisp_symbolNameAsString(className));
+        Creator* duplicateForClassName(core::Symbol_sp className) {
+            return gctools::allocateCreator<DummyCreator>(core::lisp_symbolNameAsString(className));
         }
 
     };
@@ -416,7 +417,7 @@ namespace clbind
 
             void register_() const
             {
-                core::Functoid* methoid = new IndirectVariadicMethoid<Policies,Class,MethodPointerType>(name,methodPtr);
+                core::Functoid* methoid = gctools::allocateFunctoid<IndirectVariadicMethoid<Policies,Class,MethodPointerType>>(name,methodPtr);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
 //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
 //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -476,7 +477,7 @@ namespace clbind
 
             void register_() const
             {
-                core::Functoid* iterator_methoid = new IteratorMethoid<Policies,Class,Begin,End>(name,beginPtr,endPtr);
+                core::Functoid* iterator_methoid = gctools::allocateFunctoid<IteratorMethoid<Policies,Class,Begin,End>>(name,beginPtr,endPtr);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
 //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
 //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -548,7 +549,7 @@ namespace clbind
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
                 printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
-                core::Functoid* f = new VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>(tname);
+                core::Functoid* f = gctools::allocateFunctoid<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature> >(tname);
                 lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
             }
 
@@ -573,8 +574,8 @@ namespace clbind
         struct constructor_registration<Class,Pointer,default_constructor,Policies> : public constructor_registration_base<Class,Pointer,default_constructor,Policies> 
         {
             constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring) : constructor_registration_base<Class,Pointer,default_constructor,Policies>(policies,name,arguments,declares,docstring) {};
-            core::AllocatorFunctor* registerDefaultConstructor_() const {
-                core::AllocatorFunctor* allocator = new DefaultConstructorAllocatorFunctor<Class,Pointer>();
+            core::Creator* registerDefaultConstructor_() const {
+                core::Creator* allocator = gctools::allocateCreator<DefaultConstructorCreator<Class,Pointer>>();
                 return allocator;
             }
         };
@@ -607,7 +608,7 @@ namespace clbind
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
                 printf("%s:%d    constructor_registration_base::register_ called for derivable default constructor %s\n", __FILE__, __LINE__, m_name.c_str());
-                core::Functoid* f = new DerivableDefaultConstructorFunctoid<Policies,Class>(tname);
+                core::Functoid* f = gctools::allocateFunctoid<DerivableDefaultConstructorFunctoid<Policies,Class>>(tname);
                 lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,0);
             }
 
@@ -629,9 +630,9 @@ namespace clbind
         struct constructor_registration<Class,reg::null_type,default_constructor,Policies> : public constructor_registration_base<Class,reg::null_type,default_constructor,Policies> 
         {
             constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring) : constructor_registration_base<Class,reg::null_type,default_constructor,Policies>(policies,name,arguments,declares,docstring) {};
-            core::AllocatorFunctor* registerDefaultConstructor_() const {
+            core::Creator* registerDefaultConstructor_() const {
                 printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-                core::AllocatorFunctor* allocator = new DerivableDefaultConstructorAllocatorFunctor<Class>();
+                core::Creator* allocator = gctools::allocateCreator<DerivableDefaultConstructorCreator<Class>>();
                 return allocator;
             }
 
@@ -692,7 +693,7 @@ namespace clbind
             void register_() const
             {
                 const string n(name);
-                core::Functoid* getter = new GetterMethoid<reg::null_type,Class,Get>(n,get);
+                core::Functoid* getter = gctools::allocateFunctoid<GetterMethoid<reg::null_type,Class,Get>>(n,get);
 //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
 //                printf("%p\n", i);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();

@@ -133,8 +133,23 @@ namespace core
             };
 
 
+        
+#if 1
 #pragma GCC visibility push(default)
-    class ATTR_WEAK CatchThrow : public gctools::HeapRoot
+    class ATTR_WEAK CatchThrow
+        {
+            virtual void keyFunctionForVtable() ATTR_WEAK;
+        private:
+            int         _Frame;
+        public:
+            DECLARE_onHeapScanGCRoots();
+            CatchThrow(int frame) : _Frame(frame) {};
+            int getFrame() { return this->_Frame;};
+            ATTR_WEAK virtual ~CatchThrow() {};
+        };
+#else
+#pragma GCC visibility push(default)
+    class ATTR_WEAK CatchThrow
         {
             virtual void keyFunctionForVtable() ATTR_WEAK;
         private:
@@ -147,33 +162,31 @@ namespace core
                 this->_ThrownTag = thrownTag;
                 this->_ReturnedObject = ret;
             }
+            ~
             T_sp getThrownTag() { return this->_ThrownTag;};
             T_mv getReturnedObject() { return this->_ReturnedObject;};
             ATTR_WEAK virtual ~CatchThrow() {};
         };
-
+#endif
 
     class ATTR_WEAK ReturnFrom : public gctools::HeapRoot
         {
             virtual void keyFunctionForVtable() ATTR_WEAK; // MUST BE FIRST VIRTUAL FUNCTION
         private:
-            int	_BlockDepth;
-            T_mv 	_ReturnedObject;
+            int	_Frame;
         public:
             virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-            ReturnFrom(int depth, T_mv ret)
+            ReturnFrom(int frame)
             {
-                this->_BlockDepth = depth;
-                this->_ReturnedObject = ret;
+                this->_Frame = frame;
             }
-            int getBlockDepth() const { return this->_BlockDepth;};
-            void decBlockDepth() { this->_BlockDepth--;};
-            T_mv getReturnedObject() { return this->_ReturnedObject;};
+            int getFrame() const { return this->_Frame;};
             ATTR_WEAK virtual ~ReturnFrom() {};
         };
 
 
 /*! Thrown by slot_ref when a slot_ref call fails because the symbol_name is invalid */
+
 	class SlotRefFailed
 	{
 	};
@@ -183,17 +196,12 @@ namespace core
         {
             virtual void keyFunctionForVtable() ATTR_WEAK;
         private:
-            int	_Depth;
+            int	_Frame;
             int	_Index;
         public:
-            ATTR_WEAK LexicalGo(int depth, int index)
-            {
-                this->_Depth = depth;
-                this->_Index = index;
-            }
-            int depth() const { return this->_Depth;};
+            ATTR_WEAK LexicalGo(int frame, int index) : _Frame(frame), _Index(index) {};
+            int getFrame() const { return this->_Frame;};
             int index() const { return this->_Index;};
-            void decrementDepth() { this->_Depth--;};
             ATTR_WEAK virtual ~LexicalGo() {};
         };
 
@@ -203,17 +211,13 @@ namespace core
         {
             virtual void keyFunctionForVtable() ATTR_WEAK;
         private:
-            core::T_sp _TagbodyId;
+            int _Frame;
             int	_Index;
         public:
             DECLARE_onHeapScanGCRoots();
-            ATTR_WEAK DynamicGo(core::T_sp tagbodyId, int index)
-            {
-                this->_TagbodyId = tagbodyId;
-                this->_Index = index;
-            }
+            ATTR_WEAK DynamicGo(int frame, int index) : _Frame(frame), _Index(index) {};
             ATTR_WEAK virtual ~DynamicGo() {};
-            core::T_sp tagbodyId() const { return this->_TagbodyId;};
+            int getFrame() const { return this->_Frame;};
             int index() const { return this->_Index;};
         };
 

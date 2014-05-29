@@ -1,3 +1,7 @@
+#+(or)(eval-when (:execute)
+        (format t "!~%!~%!~%!~%!~%In generic.lsp !~%  Turning on :compare *feature*  for ensure-generic-function~%!~%!~%!~%!~%")
+        (setq cl:*features* (cons :compare cl:*features*))
+        (setq cl:*features* (cons :force-lots-of-gcs cl:*features*)))
 ;;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: CLOS -*-
 ;;;;
 ;;;;  Copyright (c) 1992, Giuseppe Attardi.
@@ -239,7 +243,7 @@
      (generic-function-class 'STANDARD-GENERIC-FUNCTION)
      (delete-methods nil))
   (declare (ignore delete-methods gfun))
-  #+compare(print "MLOG - entered ensure-generic-function-using-class (null) generic.lsp 200")
+  #+compare(print (list "MLOG - entered ensure-generic-function-using-class (gfun null) generic.lsp name:" name " args:" args ))
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -250,13 +254,17 @@
     (setf args (list* :method-class (find-class method-class) args)))
   (apply #'make-instance generic-function-class :name name args))
 
+
+
+
 (defun ensure-generic-function (name &rest args &key &allow-other-keys)
-  #+compare(print (list "MLOG starting ensure-generic-function --> name: " name " args: " args))
+  #+compare(print (list "MLOG starting ensure-generic-function --> name: " name "  args: %" args))
   (let ((gfun (si::traced-old-definition name)))
     (cond ((not (legal-generic-function-name-p name))
 	   (simple-program-error "~A is not a valid generic function name" name))
           ((not (fboundp name))
-	   #+compare(print (list "MLOG generic.lsp ensure-generic-function line 245 <<<(not fbountp name) name-->" name ))
+           #+compare(print (list "MLOG about to setf (fdefinition name) -generic-function --> name: " name "  args: %" args))
+;;           (break "About to setf (fdefinition name)")
 	   (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class gfun name args)))
           ((si::instancep (or gfun (setf gfun (fdefinition name))))
