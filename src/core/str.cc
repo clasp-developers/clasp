@@ -488,7 +488,6 @@ namespace core
 		.def("size", &Str_O::size)
 		.def("countOccurances", &Str_O::countOccurances)
 		.def("split", &Str_O::split)
-		.def("concat", &Str_O::concat)
 		.def("splitAtWhiteSpace", &Str_O::splitAtWhiteSpace)
 		.def("schar",&Str_O::schar)
                 .def("scharSet",&Str_O::scharSet)
@@ -1323,6 +1322,10 @@ namespace core
 
     Str_O::~Str_O()
     {
+        if ( this->_Contents[0] == '!' ) {
+            gctools::tagged_base_ptr x(this->asSmartPtr());
+            printf("%s:%d finalizing special key %s at base=%p   \n", __FILE__, __LINE__, this->_Contents.c_str(), gctools::tagged_base_ptr::toBasePtr(this));
+        }
     }
 
 
@@ -1402,7 +1405,7 @@ namespace core
 	} else if ( Str_sp ss = seq.asOrNull<Str_O>() ) {
 	    if ( ss->length() != this->dimension() ) goto ERROR;
 	    for ( size_t i=0; i<this->dimension(); ++i ) {
-		this->_Contents[i] = ss->_contents()[i];
+		this->_Contents[i] = (*ss)[i];
 	    }
 	} else if ( Vector_sp vs = seq.asOrNull<Vector_O>() ) {
 	    if ( vs->length() != this->dimension() ) goto ERROR;

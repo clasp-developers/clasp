@@ -58,7 +58,6 @@ namespace core
 	virtual bool advance() = 0;
 	virtual T_sp element() const = 0;
 	virtual ~SequenceStepper() {};
-        virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) = 0;
     };
 
 
@@ -82,11 +81,6 @@ namespace core
 		return _Nil<T_O>();
 	    }
 	};
-        virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-#ifndef USE_MPS
-        { return GC_RES_OK; }
-#endif
-        ;
     };
 
 
@@ -99,11 +93,6 @@ namespace core
 	Cons_sp	_Cur;
     public:
 	ConsStepper(Cons_sp first) : _Cur(first) {};
-        virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-#ifndef USE_MPS
-        { return GC_RES_OK; }
-#endif
-            ;
 	virtual bool advance() { this->_Cur = cCdr(this->_Cur); return this->_Cur.nilp(); };
 	virtual T_sp element() const { return oCar(this->_Cur);};
     };
@@ -133,17 +122,6 @@ namespace core
 	/* Advance all of the steppers - return false if the end is hit otherwise true */
 	bool advanceSteppers();
 	int size() { return this->_Steppers.size();};
-
-        virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-        {
-#ifdef USE_MPS
-            for ( auto& it : this->_Steppers ) {
-                GC_RESULT res = it->onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
-                if ( res!=GC_RES_OK ) return res;
-            };
-#endif
-            return GC_RES_OK;
-        }
 
     };
 

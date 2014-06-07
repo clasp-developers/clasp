@@ -249,7 +249,7 @@ namespace core
 	T_mv lookupMetadata(Symbol_sp key) const;
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::LexicalEnvironment_O> {
+template<> struct gctools::GCInfo<core::LexicalEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -282,7 +282,7 @@ namespace core
 	virtual ~RuntimeVisibleEnvironment_O() {};
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::RuntimeVisibleEnvironment_O> {
+template<> struct gctools::GCInfo<core::RuntimeVisibleEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -387,7 +387,7 @@ namespace core
 	T_sp oget(Symbol_sp sym);
 
 	template <class o_class>
-	mem::smart_ptr<o_class> get(Symbol_sp sym)
+	gctools::smart_ptr<o_class> get(Symbol_sp sym)
 	{
 	    return safe_downcast<o_class>(this->oget(sym));
 	}
@@ -399,7 +399,7 @@ namespace core
 	virtual ~ValueEnvironment_O();
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::ValueEnvironment_O> {
+template<> struct gctools::GCInfo<core::ValueEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -451,7 +451,7 @@ namespace core
 	DEFAULT_CTOR_DTOR(FunctionValueEnvironment_O);
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::FunctionValueEnvironment_O> {
+template<> struct gctools::GCInfo<core::FunctionValueEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -544,7 +544,7 @@ namespace core
 
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::UnwindProtectEnvironment_O> {
+template<> struct gctools::GCInfo<core::UnwindProtectEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -602,7 +602,7 @@ namespace core
 	DEFAULT_CTOR_DTOR(BlockEnvironment_O);
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::BlockEnvironment_O> {
+template<> struct gctools::GCInfo<core::BlockEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -633,7 +633,7 @@ namespace core
 	DEFAULT_CTOR_DTOR(CatchEnvironment_O);
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::CatchEnvironment_O> {
+template<> struct gctools::GCInfo<core::CatchEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -670,7 +670,7 @@ namespace core
 	DEFAULT_CTOR_DTOR(FunctionContainerEnvironment_O);
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::FunctionContainerEnvironment_O> {
+template<> struct gctools::GCInfo<core::FunctionContainerEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -734,7 +734,7 @@ namespace core
     }; // TagbodyEnvironment class
     
 }; // core namespace
-template<> struct gctools::GCAllocatorInfo<core::TagbodyEnvironment_O> {
+template<> struct gctools::GCInfo<core::TagbodyEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -781,7 +781,7 @@ namespace core
     }; // MacroletEnvironment class
     
 }; // core namespace
-template<> struct gctools::GCAllocatorInfo<core::MacroletEnvironment_O> {
+template<> struct gctools::GCInfo<core::MacroletEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -829,7 +829,7 @@ namespace core
     }; // SymbolMacroletEnvironment class
     
 }; // core namespace
-template<> struct gctools::GCAllocatorInfo<core::SymbolMacroletEnvironment_O> {
+template<> struct gctools::GCInfo<core::SymbolMacroletEnvironment_O> {
     static bool const NeedsInitialization = true;
     static bool const NeedsFinalization = false;
     static bool const Moveable = true;
@@ -882,7 +882,7 @@ namespace core
 
 TRANSLATE(core::GlueEnvironment_O);
 
-namespace mem {
+namespace gctools {
     template<> inline bool isNilDowncastableTo<core::Environment_O>() { return true;};
 };
 

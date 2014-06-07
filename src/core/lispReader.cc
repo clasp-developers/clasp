@@ -461,11 +461,13 @@ namespace core
 		Cons_sp otherResult = cCdr(first);
 		TRAP_BAD_CONS(otherResult);
 		if ( otherResult.nilp() ) return(Values(_Nil<Cons_O>()));
-		_lisp->sourceManager()->registerSourceInfo(otherResult,
-							   sin->sourceFileInfo(),
-							   start_lineNumber,
-							   start_column,
-							   start_filePos);
+                if ( _lisp->sourceDatabase().notnilp() ) {
+                    _lisp->sourceDatabase()->registerSourceInfo(otherResult,
+                                                                sin->sourceFileInfo(),
+                                                                start_lineNumber,
+                                                                start_column,
+                                                                start_filePos);
+                }
 		return(otherResult);
 	    }
 	    int ivalues;
@@ -499,7 +501,9 @@ namespace core
 			SIMPLE_ERROR(BF("More than one object after consing dot"));
 		    }
 		    Cons_sp one = Cons_O::create(obj,_Nil<Cons_O>());
-		    _lisp->sourceManager()->registerSourceInfo(one,af_sourceFileInfo(sin),start_lineNumber,start_column,start_filePos);
+                    if ( _lisp->sourceDatabase().notnilp() ) {
+                        _lisp->sourceDatabase()->registerSourceInfo(one,af_sourceFileInfo(sin),start_lineNumber,start_column,start_filePos);
+                    }
 		    LOG(BF("One = %s\n") % _rep_(one) );
 		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(af_sourceFileInfo(one)) );
 		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % af_sourceFileInfo(one)->fileName());
@@ -522,11 +526,34 @@ namespace core
     SYMBOL_SC_(CorePkg,STARsharp_equal_temp_tableSTAR);
     SYMBOL_SC_(CorePkg,STARsharp_equal_repl_tableSTAR);
 
+    __thread unsigned int  read_lisp_object_recursion_depth = 0;
+    struct increment_read_lisp_object_recursion_depth {
+        increment_read_lisp_object_recursion_depth() {
+            ++read_lisp_object_recursion_depth;
+        }
+        ~increment_read_lisp_object_recursion_depth() {
+            --read_lisp_object_recursion_depth;
+        }
+        static void reset() {
+            read_lisp_object_recursion_depth = 0;
+        }
+        int value() const {
+            return read_lisp_object_recursion_depth;
+        }
+        int max() const {
+            return 256;
+        }
+    };
     T_sp read_lisp_object(Stream_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
     {_G();
 	T_sp result = _Nil<T_O>();
 	if ( recursiveP )
 	{
+            increment_read_lisp_object_recursion_depth recurse;
+            if ( recurse.value() > recurse.max() ) {
+                printf("%s:%d read_lisp_object_recursion_depth %d has exceeded max (%d) - there is a problem reading line %d\n",
+                       __FILE__, __LINE__, recurse.value(), recurse.max(), sin->lineNumber() );
+            }
 	    while (1)
 	    {
 		T_mv mv = lisp_object_query(sin,eofErrorP,eofValue,recursiveP);
@@ -545,6 +572,8 @@ namespace core
 	    }
 	} else
 	{
+            increment_read_lisp_object_recursion_depth::reset();
+
 #ifndef USE_SHARP_EQUAL_HASH_TABLES
 	    DynamicScopeManager scope(_sym_STARsharp_equal_alistSTAR,_Nil<Cons_O>());
 #else
@@ -552,6 +581,7 @@ namespace core
 	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,HashTableEql_O::create(40,Fixnum_O::create(4000),0.8));
 	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR,HashTableEq_O::create(40,Fixnum_O::create(4000),0.8));
 #endif
+            
 	    result = read_lisp_object(sin,eofErrorP,eofValue,true);
 	}
 	if ( result.nilp() ) return(Values(_Nil<T_O>()));

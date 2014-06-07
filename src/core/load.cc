@@ -41,6 +41,7 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	if ( strm.nilp() ) return;
     }
     try {
+        DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
 	while (true) {
 	    bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
 	    T_sp x = read_lisp_object(strm,false,_Unbound<T_O>(),false);

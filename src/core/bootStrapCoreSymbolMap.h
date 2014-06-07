@@ -60,13 +60,5 @@ namespace core {
 
 
 
-namespace gctools {
-    inline GC_RESULT stl_onHeapScanGCRoots( map<string,core::SymbolStorage>::iterator& it, GC_SCAN_ARGS_PROTOTYPE )
-    {
-        return it->second.onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
-    };
-
-};
-
 #endif
 

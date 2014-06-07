@@ -30,7 +30,7 @@ private: // instance variables
 		/*! Store what the the enumIndex values represent
 		 * Used when errors are thrown
 		 */
-    string		_WhatTheEnumsRepresent;
+    gctools::gcstring	_WhatTheEnumsRepresent;
     HashTableEql_sp     _EnumToSymbol;
     HashTableEq_sp  	_ArchiveSymbolToEnum;
     HashTableEql_sp     _EnumToArchiveSymbol;

@@ -28,7 +28,6 @@
   )
 
 
-
 (defmacro with-compilation-unit ((&key override module function-pass-manager ) &rest body)
   `(let* ((*the-module* ,module)
 	  (*the-function-pass-manager* ,function-pass-manager)
@@ -179,47 +178,47 @@ and the pathname of the source file - this will also be used as the module initi
 	       (eof-value (gensym)))
 	  (when verbose
 	    (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
-	  (cmp-log "About to start with-compilation-unit\n")
-	  (with-compilation-unit (:override nil
-					    :module module
-					    :function-pass-manager function-pass-manager)
-	    (let* ((*compile-file-pathname* given-input-pathname)
-		   (*compile-file-truename* (truename *compile-file-pathname*))
-		   (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
-		   (*compile-print* print)
-		   (*compile-verbose* verbose))
-	      (with-dibuilder (*the-module*)
-		(with-dbg-compile-unit (nil *compile-file-truename*)
-		  (with-dbg-file-descriptor (nil *compile-file-truename*)
-		    ;;	    (let ((*generate-load-time-values* t))
-		    (with-load-time-value-unit (ltv-init-fn)
-		      (do ((line-number (stream-line-number sin)
-					(stream-line-number sin))
-			   (column (stream-column sin)
-				   (stream-column sin))
-			   (form (progn (let ((rd (read sin nil eof-value))) rd))
-				 (progn (let ((rd (read sin nil eof-value))) rd))))
-			  ((eq form eof-value) nil)
-			(let ((*current-line-number* line-number)
-			      (*current-column* column))
-			  (t1expr form)
-			  ))
-		      (compile-main-function output-file ltv-init-fn )
-		      ))))
-	      (cmp-log "About to verify the module\n")
-	      (cmp-log-dump *the-module*)
-	      (multiple-value-bind (found-errors error-message)
-		  (progn
-		    (cmp-log "About to verify module prior to writing bitcode\n")
-		    (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
-		    )
-		(if found-errors
-		    (break "Verify module found errors")))
-              (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-file))
-	      (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-file))
-	      ))
-	  )
-	))))
+          (with-one-source-database
+              (cmp-log "About to start with-compilation-unit\n")
+          
+            (with-compilation-unit (:override nil
+                                              :module module
+                                              :function-pass-manager function-pass-manager)
+              (let* ((*compile-file-pathname* given-input-pathname)
+                     (*compile-file-truename* (truename *compile-file-pathname*))
+                     (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
+                     (*compile-print* print)
+                     (*compile-verbose* verbose))
+                (with-dibuilder (*the-module*)
+                  (with-dbg-compile-unit (nil *compile-file-truename*)
+                    (with-dbg-file-descriptor (nil *compile-file-truename*)
+                      ;;	    (let ((*generate-load-time-values* t))
+                      (with-load-time-value-unit (ltv-init-fn)
+                        (do ((line-number (stream-line-number sin)
+                                          (stream-line-number sin))
+                             (column (stream-column sin)
+                                     (stream-column sin))
+                             (form (progn (let ((rd (read sin nil eof-value))) rd))
+                                   (progn (let ((rd (read sin nil eof-value))) rd))))
+                            ((eq form eof-value) nil)
+                          (let ((*current-line-number* line-number)
+                                (*current-column* column))
+                            (t1expr form)
+                            ))
+                        (compile-main-function output-file ltv-init-fn )
+                        ))))
+                (cmp-log "About to verify the module\n")
+                (cmp-log-dump *the-module*)
+                (multiple-value-bind (found-errors error-message)
+                    (progn
+                      (cmp-log "About to verify module prior to writing bitcode\n")
+                      (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
+                      )
+                  (if found-errors
+                      (break "Verify module found errors")))
+                (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-file))
+                (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-file))
+                ))))))))
   
     
 

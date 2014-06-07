@@ -441,20 +441,20 @@ namespace core
 	    goto DONE;
 	}	
 	switch (x.tag()) {
-	case mem::smart_ptr<T_O>::BaseType::ptr_tag:
+	case gctools::smart_ptr<T_O>::BaseType::ptr_tag:
 	    x->__write__(stream);
 	    break;
-	case mem::smart_ptr<T_O>::special_tag:
+	case gctools::smart_ptr<T_O>::special_tag:
 	    if ( x.nilp() ) { // ECL appears to shunt this off to write_list
 		cl::_sym_nil->__write__(stream);
 	    } else if ( x.unboundp() ) {
 		stream->writeStr("unbound");
 	    }
 	    break;
-	case mem::smart_ptr<T_O>::character_tag:
+	case gctools::smart_ptr<T_O>::character_tag:
 	    write_character(stream,x);
 	    break;
-	case mem::smart_ptr<T_O>::fixnum_tag:
+	case gctools::smart_ptr<T_O>::fixnum_tag:
 	    write_fixnum(stream,x);
 	    break;
 	default:

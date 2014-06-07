@@ -22,7 +22,7 @@ namespace clbind {
     public:
 
         template <typename...Args>
-	static mem::smart_ptr<DerivableType> create(Args&&...args) {
+	static gctools::smart_ptr<DerivableType> create(Args&&...args) {
             GC_ALLOCATE_VARIADIC(DerivableType,obj,std::forward<Args>(args)...);
 	    return obj;
 	}

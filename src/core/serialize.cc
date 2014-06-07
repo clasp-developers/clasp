@@ -496,7 +496,7 @@ namespace core
                 node.as<SNode_O>()->object()->loadFinalize(node.as<SNode_O>());
             } );
 #if 0
-	this->_NodesToFinalize.map( [] (mem::smart_ptr<SNode_O> node)  {
+	this->_NodesToFinalize.map( [] (gctools::smart_ptr<SNode_O> node)  {
 		T_sp obj = node->object();
 		obj->loadFinalize(node);
 	    });

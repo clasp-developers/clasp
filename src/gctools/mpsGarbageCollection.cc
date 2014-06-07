@@ -61,6 +61,11 @@ namespace gctools
     void* _global_stack_marker;
     mps_pool_t _global_ams_pool;
     mps_pool_t _global_amc_pool;
+    mps_pool_t _global_amcz_pool;
+    mps_pool_t _global_awl_pool;
+    mps_ap_t _global_automatic_weak_link_allocation_point;
+    mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
+
 
 #ifdef DEBUG_MPS
 #define MPS_LOG(fm) {printf("%s:%d %s --> %s\n", __FILE__, __LINE__, __FUNCTION__, (fm).str().c_str());}
@@ -124,8 +129,8 @@ namespace gctools
 	mps_addr_t limit = obj_skip(old_base);
 	size_t size = (char *)limit - (char *)old_base;
 //	mps_addr_t obj_ptr = BASE_TO_OBJ_PTR(old_base);
-	assert(size >= ALIGN_UP(sizeof_with_header<Fwd2_s>()));
-	if (size == ALIGN_UP(sizeof_with_header<Fwd2_s>())) {
+	assert(size >= AlignUp(sizeof_with_header<Fwd2_s>()));
+	if (size == AlignUp(sizeof_with_header<Fwd2_s>())) {
 //	    printf("%s:%d  old_base=%p  size=%lu  ALIGN_UP(sizeof_with_header<Fwd2_s>())=%lu\n", __FILE__,__LINE__, old_base, size, ALIGN_UP(sizeof_with_header<Fwd2_s>()));
 	    THROW_HARD_ERROR(BF("KIND_fwd2 should not be used in obj_fwd"));
 //	    GcFwd2* obj2 = reinterpret_cast<GcFwd2*>(obj_ptr);
@@ -171,17 +176,17 @@ namespace gctools
 
     static void obj_pad(mps_addr_t base, size_t size)
     {
-	size_t alignment = ALIGNMENT;
+	size_t alignment = Alignment();
 //	size_t sizeofPad1_s = sizeof_with_header<Pad1_s>();
 //	size_t align_sizeofPad1_s = ALIGN(sizeofPad1_s);
 //	size_t align_up_sizeofPad1_s = ALIGN_UP(sizeofPad1_s);
 	size_t sizeof_Header_s = sizeof(Header_s);
-	size_t align_up_sizeof_Header_s = ALIGN_UP(sizeof_Header_s);
-	MPS_LOG(BF("base = %p ALIGNMENT = %d size=%lu  ALIGN_UP(sizeof_with_header<Pad1_s>()): %d") % base % alignment % size % ALIGN_UP(SIZEOF_WITH_HEADER(Pad1_s)));
+	size_t align_up_sizeof_Header_s = AlignUp(sizeof_Header_s);
+	MPS_LOG(BF("base = %p ALIGNMENT = %d size=%lu  ALIGN_UP(sizeof_with_header<Pad1_s>()): %d") % base % alignment % size % AlignUp(sizeof_with_header(Pad1_s)));
 	MPS_LOG(BF("sizeof_Header_s = %lu   align_up_sizeof_Header_s = %lu") % sizeof_Header_s % align_up_sizeof_Header_s );
-	assert(size >= ALIGN_UP(sizeof_with_header<Pad1_s>()));
+	assert(size >= AlignUp(sizeof_with_header<Pad1_s>()));
 	Header_s* header = reinterpret_cast<Header_s*>(base);
-	if (size == ALIGN_UP(sizeof_with_header<Pad1_s>())) {
+	if (size == AlignUp(sizeof_with_header<Pad1_s>())) {
 	    header->pad1._Kind = KIND_SYSTEM_pad1;
 	} else {
 //	    BASE_PTR_KIND(base) = KIND_pad;
@@ -190,7 +195,6 @@ namespace gctools
 	    header->pad._Size = size;
 	}
     }
-
 
 
 
@@ -281,7 +285,7 @@ namespace gctools {
 /* -------------------------------------------------- */
 
     struct mps_fmt_auto_header_s default_obj_fmt_s = {
-        ALIGNMENT,
+        Alignment(),
         obj_scan,
         obj_skip,
         obj_fwd,
@@ -315,7 +319,7 @@ namespace gctools {
         
         mps_fmt_t obj_fmt;
         MPS_ARGS_BEGIN(args) {
-            MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, ALIGNMENT);
+            MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
             MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, obj_scan);
             MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, obj_skip);
             MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, obj_fwd);
@@ -392,6 +396,11 @@ namespace gctools {
         // And the allocation point
         res = mps_ap_create_k(&_global_automatic_mostly_copying_allocation_point, _global_amc_pool, mps_args_none );
         res = mps_ap_create_k(&_global_automatic_mark_sweep_allocation_point, _global_ams_pool, mps_args_none );
+
+
+        IMPLEMENT_MEF(BF("Setup the AMCZ and AWL pools"));
+
+
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create obj allocation point");
 
         // register the current and only thread

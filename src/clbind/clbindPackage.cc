@@ -110,13 +110,13 @@ namespace clbind
 #if USE_INTRUSIVE_SMART_PTR==1
 #define EXPAND_CLASS_MACROS
 
-#if defined(USE_MPS) // MPS doesn't require INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS
-#define _CLASS_MACRO(_T_) \
-    STATIC_CLASS_INFO(_T_); 
-#else
+#if defined(USE_REFCOUNT) // MPS doesn't require INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS
 #define _CLASS_MACRO(_T_) \
     STATIC_CLASS_INFO(_T_); \
     INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
+#else
+#define _CLASS_MACRO(_T_) \
+    STATIC_CLASS_INFO(_T_);
 #endif
 
 #include "clbind_initClasses_inc.h"

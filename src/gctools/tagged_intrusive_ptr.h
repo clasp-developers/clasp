@@ -67,6 +67,7 @@ public:
     static const uintptr_t tagged_NULL 	  = BOOST_BINARY(0000)|special_tag;
     static const uintptr_t tagged_unbound = BOOST_BINARY(0100)|special_tag;
     static const uintptr_t tagged_nil 	  = BOOST_BINARY(1000)|special_tag;
+    static const uintptr_t tagged_deleted = BOOST_BINARY(1100)|special_tag;
 
 public:
 

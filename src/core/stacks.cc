@@ -4,6 +4,7 @@
 #include "cons.h"
 #include "symbolTable.h"
 #include "lispStream.h"
+#include "evaluator.h"
 #include "designators.h"
 #include "str.h"
 #include "sourceFileInfo.h"
@@ -46,13 +47,16 @@ namespace core
 
     void InvocationHistoryStack::setExpressionForTop(T_sp expression)
     {
-	SourceFileInfo_mv info = _lisp->sourceManager()->lookupSourceInfo(expression);
-	Fixnum_sp lineno = info.valueGet(1).as<Fixnum_O>();
-	Fixnum_sp column = info.valueGet(2).as<Fixnum_O>();
+        uint ilineno(0), icolumn(0);
+        if ( _lisp->sourceDatabase().notnilp() ) {
+            SourceFileInfo_mv info = _lisp->sourceDatabase()->lookupSourceInfo(expression);
+            Fixnum_sp lineno = info.valueGet(1).as<Fixnum_O>();
+            Fixnum_sp column = info.valueGet(2).as<Fixnum_O>();
 //	Fixnum_sp filePos = info.valueGet(3).as<Fixnum_O>();
-	uint ilineno = lineno.nilp() ? 0 : lineno->get();
-	uint icolumn = column.nilp() ? 0 : column->get();
+            uint ilineno = lineno.nilp() ? 0 : lineno->get();
+            uint icolumn = column.nilp() ? 0 : column->get();
 //	uint ifilePos = filePos.nilp() ? 0 : filePos->get();
+        }
 	this->_Top->setLineNumberColumn(ilineno,icolumn);
     }
 
@@ -64,6 +68,8 @@ namespace core
 						    uint column) const
     {
 	stringstream ss;
+        if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
+        if ( column == UNDEF_UINT ) column = 0;
 	ss << (BF("#%3d %8s %20s %5d col %2d %s") % this->_Index % type % sourceFileName % lineNumber % column  % funcName ).str();
 //	ss << std::endl;
 //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
@@ -84,13 +90,15 @@ namespace core
 	  _FilePos(UNDEF_UINT)
     {
 	if ( expression.notnilp() ) {
-	    SourceFileInfo_mv sfi = _lisp->sourceManager()->lookupSourceInfo(expression);
-	    this->_SourceFileInfo = sfi;
-	    if ( sfi.number_of_values()>=3 ) {
-		this->_LineNumber = sfi.valueGet(1).as<Fixnum_O>()->get();
-		this->_Column = sfi.valueGet(2).as<Fixnum_O>()->get();
-		this->_FilePos = sfi.valueGet(3).as<Fixnum_O>()->get();
-	    }
+            if ( _lisp->sourceDatabase().notnilp() ) {
+                SourceFileInfo_mv sfi = _lisp->sourceDatabase()->lookupSourceInfo(expression);
+                this->_SourceFileInfo = sfi;
+                if ( sfi.number_of_values()>=3 ) {
+                    this->_LineNumber = sfi.valueGet(1).as<Fixnum_O>()->get();
+                    this->_Column = sfi.valueGet(2).as<Fixnum_O>()->get();
+                    this->_FilePos = sfi.valueGet(3).as<Fixnum_O>()->get();
+                }
+            }
 	}
     }
 
@@ -261,7 +269,9 @@ namespace core
 	    } else {
 		ss << "   ";
 	    }
-	    ss << "frame["<<i<<"] = " << cur->asString() << std::endl;
+	    ss << "frame[";
+            ss.width(3);
+            ss << i<<"] = " << cur->asString() << std::endl;
 	}
 	return ss.str();
     }
@@ -269,8 +279,20 @@ namespace core
 
 
 
+    SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
     void DynamicBindingStack::push(Symbol_sp var)
     {
+        if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
+            Cons_sp assoc = af_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
+            if ( assoc.notnilp() ) {
+                T_sp funcDesig = oCdr(assoc);
+                if ( funcDesig.notnilp() ) {
+                    eval::funcall(funcDesig,var,_lisp->_true());
+                } else {
+                    printf("%s:%d  *watch-dynamic-binding-stack* caught push[%zu] of %s  value = %s\n", __FILE__, __LINE__, this->_Bindings.size(), _rep_(var).c_str(), _rep_(var->symbolValue()).c_str() );
+                }
+            }
+        }
 	T_sp val = var->symbolValueUnsafe();
 	DynamicBinding bind(var,var->symbolValueUnsafe());
 	this->_Bindings.push_back(bind);
@@ -280,6 +302,17 @@ namespace core
     void DynamicBindingStack::pop()
     {
 	DynamicBinding& bind = this->_Bindings.back();
+        if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
+            Cons_sp assoc = af_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
+            if ( assoc.notnilp() ) {
+                T_sp funcDesig = oCdr(assoc);
+                if ( funcDesig.notnilp() ) {
+                    eval::funcall(funcDesig,bind._Var,_Nil<T_O>());
+                } else {
+                    printf("%s:%d  *watch-dynamic-binding-stack* caught pop[%zu] of %s  overwriting value = %s\n", __FILE__, __LINE__, this->_Bindings.size()-1, _rep_(bind._Var).c_str(), _rep_(bind._Var->symbolValue()).c_str() );
+                }
+            }
+        }
 	bind._Var->setf_symbolValue(bind._Val);
 	this->_Bindings.pop_back();
     }

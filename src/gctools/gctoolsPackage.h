@@ -30,10 +30,7 @@ struct TestingClass
     TestingClass() : x(0) {};
     TestingClass(int i) :x(i) {};
     void dump() const { printf("%d ",x);};
-    GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-    {
-        return GC_RES_OK;
-    };
+    DECLARE_onHeapScanGCRoots();
 };
     
 

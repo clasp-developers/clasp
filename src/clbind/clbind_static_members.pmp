@@ -46,7 +46,7 @@ $var ConstTypeCount = 1
                                 core::wrongNumberOfArguments(numArgs,(NumParams-countPureOutValues)+1);
                             }
                             OT* objPtr = (*args).as<core::WrappedPointer_O>()->cast<OT>();
-                            //mem::smart_ptr<OT> ot((*args).as<OT>());
+                            //gctools::smart_ptr<OT> ot((*args).as<OT>());
                             ++args;
                             $for Args_ [[
                                     translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type > a$Args_(*args);
@@ -62,7 +62,7 @@ $var ConstTypeCount = 1
                                     int oidx = 1;
                                     ]]
                                 $for Args_ [[
-                            returnValues.setMaxSize();
+                            returnValues.setSize(0);
                                 ReturnValueWhen(returnValues,oidx
                                                 , typename is_outValue<Pols,$Args_>::type()
                                                 , typename AdoptPointer<Pols,$Args_>::type()
@@ -73,10 +73,10 @@ $var ConstTypeCount = 1
                                     $if numArgs==0 [[
                                             return Values0<core::T_O>();
                                             ]] $else [[
-                                            return mem::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
+                                            return gctools::multiple_values<core::T_O>(returnValues.valueGet(0,oidx),oidx);
                                             ]]
                                     ]] $else [[
-                                    return mem::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),oidx);
+                                    return gctools::multiple_values<core::T_O>(translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval),oidx);
                                     ]]
           
                                 }

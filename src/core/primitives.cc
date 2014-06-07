@@ -57,6 +57,23 @@ namespace core
 
     
     
+#define ARGS_af_testBasePointerConversion "(arg)"
+#define DECL_af_testBasePointerConversion ""
+#define DOCS_af_testBasePointerConversion "testBasePointerConversion"
+    void af_testBasePointerConversion(T_sp p)
+    {_G();
+        printf("original px_ref = %p\n", p.px_ref());
+        gctools::tagged_base_ptr base(p);
+        printf("base = %p\n", base.base.px_ref());
+        gctools::tagged_backcastable_base_ptr<T_O> backcastable(p);
+        printf("Backcastable base = %p  offset(Fixnum) = %d\n", backcastable.base.px_ref(), backcastable.offset.fixnum());
+        T_sp back = backcastable.backcast();
+        printf("After backcasting back.px_ref() = %p\n", back.px_ref() );
+    };
+
+
+    
+    
 #define ARGS_af_exceptionStackDump "()"
 #define DECL_af_exceptionStackDump ""
 #define DOCS_af_exceptionStackDump "exceptionStackDump"
@@ -106,7 +123,7 @@ namespace core
 #define DOCS_af_toTaggedFixnum "toTaggedFixnum"
     T_sp af_toTaggedFixnum(int val)
     {_G();
-	return mem::smart_ptr<T_O>(val);
+	return gctools::smart_ptr<T_O>(val);
     };
 
 
@@ -815,12 +832,12 @@ namespace core
 	    if ( af_vectorP(obj) )
 	    {
 		if (af_length(obj.as<Vector_O>()) == 0 ) goto EMPTY;
-                VectorStepper* vP(gctools::allocateClass<VectorStepper>(obj.as<Vector_O>()));
+                VectorStepper* vP(gctools::ClassAllocator<VectorStepper>::allocateClass(obj.as<Vector_O>()));
                 this->_Steppers.push_back(vP);
 	    } else if ( af_consP(obj) )
 	    {
 		if (obj.as_or_nil<Cons_O>().nilp()) goto EMPTY;
-                ConsStepper* cP(gctools::allocateClass<ConsStepper>(obj.as_or_nil<Cons_O>()));
+                ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(obj.as_or_nil<Cons_O>()));
                 this->_Steppers.push_back(cP);
 	    } else if ( obj.nilp() ) 
 	    {
@@ -841,7 +858,7 @@ namespace core
 	for ( auto rit=this->_Steppers.begin();
 	      rit!=this->_Steppers.end(); rit++ )
 	{
-            gctools::deallocateClass<SequenceStepper>(*rit);
+            gctools::ClassAllocator<SequenceStepper>::deallocateClass(*rit);
 	}
     }
 
@@ -887,7 +904,7 @@ namespace core
 	    if ( af_consP(obj) )
 	    {
 		if ( obj.as_or_nil<Cons_O>().nilp() ) goto EMPTY;
-                ConsStepper* cP(gctools::allocateClass<ConsStepper>(obj.as_or_nil<Cons_O>()));
+                ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(obj.as_or_nil<Cons_O>()));
                 this->_Steppers.push_back(cP);
 	    } else
 	    {
@@ -904,9 +921,6 @@ namespace core
 
     bool test_every_some_notevery_notany(Function_sp predicate, Cons_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn )
     {_G();
-#ifdef USE_MPS
-#error "Ensure that the pointers within ListOfSequenceSteppers will be fixed properly by MPS - it's probably ok because they will be in a gctools::Vec0"
-#endif
 	ListOfSequenceSteppers steppers(sequences);
 	ValueFrame_sp frame(ValueFrame_O::create(steppers.size(),_Nil<ActivationFrame_O>()));
 	if ( steppers.atEnd() ) goto FALLTHROUGH; // return elementReturn;
@@ -1788,6 +1802,7 @@ void initialize_primitives()
 	Defun(toTaggedFixnum);
 	Defun(fromTaggedFixnum);
 	Defun(dumpTaggedFixnum);
+        Defun(testBasePointerConversion);
     }
 
 

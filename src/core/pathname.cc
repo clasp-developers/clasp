@@ -1867,7 +1867,7 @@ namespace core {
 	}
 	/* Only create a new string when needed */
 	if (new_string) {
-	    pattern = Str_O::create(token->_contents());
+	    pattern = Str_O::create(token->c_str(),token->size());
 	}
 //	si_put_buffer_string(token);
 	*wilds_list = wilds;

@@ -1,5 +1,3 @@
-#ifndef RUNNING_GC_BUILDER
-
 typedef bool _Bool;
 #include <type_traits>
 #include <llvm/Support/system_error.h>
@@ -155,15 +153,13 @@ namespace gctools {
     const char* obj_name( GCKindEnum kind )
     {
 	switch (kind) {
+#ifndef RUNNING_GC_BUILDER
 #define GC_KIND_NAME_MAP
 #include "main/clasp_gc.cc"
 #undef GC_KIND_NAME_MAP
-#if 0
-	case gctools::KIND_max: return "KIND_max";
-	case gctools::KIND_fwd: return "KIND_fwd";
-	case gctools::KIND_fwd2: return "KIND_fwd2";
-	case gctools::KIND_pad1: return "KIND_pad1";
-	case gctools::KIND_pad: return "KIND_pad";
+#else
+            // RUNNING_GC_BUILDER
+
 #endif
 	default: {
 	    return "UNKNOWN KIND in obj_name";
@@ -196,9 +192,11 @@ extern "C" {
 
     void initialize_kinds()
     {
+#ifndef RUNNING_GC_BUILDER
 #define SETUP_KIND
 #include "main/clasp_gc.cc"
 #undef SETUP_KIND
+#endif
     };
 
 
@@ -222,10 +220,11 @@ extern "C" {
         };
 #endif
         switch (kind) {
-
+#ifndef RUNNING_GC_BUILDER
 #define GC_SKIP_METHOD
 #include "main/clasp_gc.cc"
 #undef GC_SKIP_METHOD
+#endif
 #if 0
         case gctools::KIND_fwd2:
             THROW_HARD_ERROR(BF("KIND_fwd2 should never be used"));
@@ -260,15 +259,15 @@ extern "C" {
         // do nothing
     }
 
-    GC_RESULT obj_scan(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit)
+    GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit)
     {
         DEBUG_MPS_MESSAGE(BF("obj_scan started"));
  	MPS_LOG(BF("Incoming base %p   limit: %p") % base % limit );
-        MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+        MPS_SCAN_BEGIN(ss) {
 	    while (base < limit)
 	    {
                 DEBUG_MPS_MESSAGE(BF("obj_scan address %p") % base );
-		mps_addr_t obj_ptr = BASE_TO_OBJ_PTR(base);
+		mps_addr_t obj_ptr = BasePtrToMostDerivedPtr<void>(base);
                 gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
                 gctools::GCKindEnum kind = header->kind._Kind;
                 int iKind = kind&0x00FFFF;
@@ -280,9 +279,11 @@ extern "C" {
 		MPS_LOG(BF("obj_scan base = %p obj_ptr = %p  kind = %s")
                         % base % obj_ptr % obj_name(header->kind._Kind) );
                 switch (kind) {
+#ifndef RUNNING_GC_BUILDER
 #define GC_SCAN_METHOD
 #include "main/clasp_gc.cc"
 #undef GC_SCAN_METHOD
+#endif
                 default: {
                     fprintf(stderr,"Garbage collection tried to obj_scan an object of unknown family %d kind[%d] \n", iFamily, kind);
                     assert(0);
@@ -293,7 +294,7 @@ extern "C" {
                 POLL_SIGNALS();
 #endif
             } // while base
-        } MPS_SCAN_END(GC_SCAN_STATE);
+        } MPS_SCAN_END(ss);
         return MPS_RES_OK;
     };
 
@@ -304,7 +305,7 @@ extern "C" {
     void obj_finalize( mps_addr_t base )
     {
         gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
-        void* obj_ptr = BASE_TO_OBJ_PTR(base);
+        void* obj_ptr = BasePtrToMostDerivedPtr<void>(base);
         gctools::GCKindEnum kind = header->kind._Kind;
         int iKind = kind&0x00FFFF;
         int iFamily =  ((kind&0xFF0000)>>16);
@@ -314,9 +315,11 @@ extern "C" {
         header->kind._Kind = (GCKindEnum)(invalidate_kind);
 //        printf("%s:%d Finalizing base@%p   kind=%d\n", __FILE__, __LINE__, base, kind );
         switch (kind) {
+#ifndef RUNNING_GC_BUILDER
 #define GC_FINALIZE_METHOD
 #include "main/clasp_gc.cc"
 #undef GC_FINALIZE_METHOD
+#endif
         default: {
             fprintf(stderr,"Garbage collection tried to obj_finalize an object of unknown family %d   kind[%d]\n", iFamily, kind);
             assert(0);
@@ -335,12 +338,14 @@ extern "C" {
 
 
 
-    mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *gc__p, size_t gc__s)
+    mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s)
     {
         DEBUG_MPS_MESSAGE(BF("in main_thread_roots_scan"));
 //	mps_thr_t gc__thr = 0; // This isn't passed in but the scanners need it 
-        MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+        MPS_SCAN_BEGIN(ss) {
             MPS_LOG(BF("Starting rooted_HeapRoots"));
+            IMPLEMENT_MEF(BF("Handle HeapRoot and StackRoot stuff - probably get rid of it"));
+#if 0
             for ( HeapRoot* scur=rooted_HeapRoots; scur!=NULL; scur=scur->_next ) {
                 scur->onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
             }
@@ -348,12 +353,14 @@ extern "C" {
             for ( StackRoot* lcur=rooted_StackRoots; lcur!=NULL; lcur=lcur->_next ) {
                 lcur->onStackScanGCRoots(GC_SCAN_ARGS_PASS);
             }
+#endif
+#ifndef RUNNING_GC_BUILDER
 #define CODE_FOR_GLOBAL_VARIABLES
 #include "main/clasp_gc.cc"
 #undef CODE_FOR_GLOBAL_VARIABLES
-
+#endif
             MPS_LOG(BF("Done roots_scan"));
-        } MPS_SCAN_END(GC_SCAN_STATE);
+        } MPS_SCAN_END(ss);
 	return MPS_RES_OK;
     }
 
@@ -370,10 +377,11 @@ namespace gctools {
 //
 // We don't want the static analyzer gc-builder.lsp to see the generated scanners
 //
+#ifndef RUNNING_GC_BUILDER
 #define HOUSEKEEPING_SCANNERS
 #include "main/clasp_gc.cc"
 #undef HOUSEKEEPING_SCANNERS
-
+#endif
 
 //
 // Turn the following on if you want potentially dangerous local variables
@@ -381,9 +389,11 @@ namespace gctools {
 // of gc_interface.cc
 //
 #if 0 
+#ifndef RUNNING_GC_BUILDER
 #define GC_LOCAL_VARIABLES_DANGEROUS_UNROOTED
 #include "main/clasp_gc.cc"
 #undef GC_LOCAL_VARIABLES_DANGEROUS_UNROOTED
+#endif
 #endif
 
 
@@ -392,4 +402,3 @@ namespace gctools {
 #endif // ifdef USE_MPS
 
 
-#endif // #ifndef RUNNING_GC_BUILDER

@@ -98,7 +98,7 @@ extern "C" {
 
     void generateTspFromTAGGED_PTR(core::T_sp* resultP, TAGGED_PTR x)
     {
-	(*resultP) = mem::smart_ptr<T_O>(x);
+	(*resultP) = gctools::smart_ptr<T_O>(x);
     }
 #endif
 
@@ -585,7 +585,7 @@ extern "C"
 
 core::T_sp proto_makeCompiledFunction(fnTmvActivationFramesp funcPtr, char* sourceName, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
 {_G();
-    core::Functoid* f = gctools::allocateFunctoid<JITClosure>("compiled",funcPtr);
+    core::Functoid* f = gctools::ClassAllocator<JITClosure>::allocateClass("compiled",funcPtr);
     core::CompiledBody_sp cb = core::CompiledBody_O::create(f,_Nil<core::T_O>());
     string fileNamePath = sourceName;
     core::T_sp functionName = *functionNameP;
@@ -1341,7 +1341,7 @@ core::T_mv  proto_blockHandleReturnFrom( unsigned char* exceptionP, int frame)
     core::ReturnFrom& returnFrom = (core::ReturnFrom&)*((core::ReturnFrom*)(exceptionP));
     if ( returnFrom.getFrame() == frame )
     {
-	return mem::multiple_values<T_O>::createFromValues();
+	return gctools::multiple_values<T_O>::createFromValues();
     }
 #ifdef DEBUG_FLOW_CONTROL
     printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
@@ -1415,7 +1415,7 @@ core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(int catchFrame, unsig
     core::CatchThrow* ctExceptionP = reinterpret_cast<core::CatchThrow*>(exceptionP);
     if ( catchFrame == ctExceptionP->getFrame() )
     {
-	return mem::multiple_values<core::T_O>::createFromValues(); // ctExceptionP->getReturnedObject();
+	return gctools::multiple_values<core::T_O>::createFromValues(); // ctExceptionP->getReturnedObject();
     }
     // rethrow the exception 
 #ifdef	DEBUG_FLOW_CONTROL
@@ -1718,8 +1718,8 @@ extern "C"
 	ASSERT(vectorObjectsP!=NULL);
         if ( !(*vectorObjectsP) ) {
             // If there was a non-local exit then *vectorObjectP will be NULL
-            // check for that here and if so set the result to mem::multiple_values<core::T_O>()
-            (*resultP) = mem::multiple_values<core::T_O>();
+            // check for that here and if so set the result to gctools::multiple_values<core::T_O>()
+            (*resultP) = gctools::multiple_values<core::T_O>();
             return;
         }
         ASSERTF(*vectorObjectsP,BF("*vectorObjectsP is UNDEFINED"));
@@ -1727,10 +1727,10 @@ extern "C"
 //	printf("intrinsics.cc loadValues vo->length() = %d\n", vo->length() );
 	if ( vo->length() == 0 )
 	{
-	    (*resultP) = mem::multiple_values<core::T_O>();
+	    (*resultP) = gctools::multiple_values<core::T_O>();
 	    return;
 	}
-	(*resultP) = mem::multiple_values<core::T_O>(vo->elt(0),vo->length());
+	(*resultP) = gctools::multiple_values<core::T_O>(vo->elt(0),vo->length());
 	for ( int i(1); i<vo->length(); ++i )
 	{
 	    (*resultP).valueSet(i,vo->elt(i));

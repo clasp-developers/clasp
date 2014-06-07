@@ -101,7 +101,7 @@ namespace core {
 
 	/*! Return the dynamic value as type T */
 	template <class T>
-	mem::smart_ptr<T> dyn() { return this->symbolValue().as<T>(); };
+	gctools::smart_ptr<T> dyn() { return this->symbolValue().as<T>(); };
 
 	void makeSpecial();
 
@@ -185,7 +185,7 @@ namespace core {
 };
 
 
-namespace mem {
+namespace gctools {
     template<> inline bool isNilDowncastableTo<core::Symbol_O>() { return true;};
 };
 

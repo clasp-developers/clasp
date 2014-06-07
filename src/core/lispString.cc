@@ -87,10 +87,8 @@ namespace core
     {_G();
 	Str_sp str = coerce::stringDesignator(arg);
 	Str_sp result = Str_O::create(str->get());
-	for ( string::iterator it=result->_contents().begin(), itEnd(result->_contents().end()); it!=itEnd; it++ )
-	{
-	    char c = toupper(*it);
-	    *it = c;
+	for ( Str_O::iterator it = result->begin(); it!=result->end(); ++it ) {
+            *it = toupper(*it);
 	}
 	return(result);
     };
@@ -109,11 +107,11 @@ namespace core
 #endif
 	if ( Str_sp str = ostr.asOrNull<Str_O>() )
 	{
-	    if ( idx >= str->dimension() )
+	    if ( idx >= str->size() )
 	    {
 		TYPE_ERROR_INDEX(str,idx);
 	    }
-	    return str->_contents()[idx];
+	    return (*str)[idx];
 	}
 	WRONG_TYPE_NTH_ARG(1,ostr,cl::_sym_string);
 	THROW_HARD_ERROR(BF("Should never reach here"));
@@ -131,10 +129,8 @@ namespace core
     {_G();
 	Str_sp str = coerce::stringDesignator(arg);
 	Str_sp result = Str_O::create(str->get());
-	for ( string::iterator it=result->_contents().begin(); it!=result->_contents().end(); it++ )
-	{
-	    char c = tolower(*it);
-	    *it = c;
+	for ( Str_O::iterator it = result->begin(); it!=result->end(); ++it ) {
+            *it = tolower(*it);
 	}
 	return(result);
     };
@@ -148,10 +144,8 @@ namespace core
     Str_sp af_nstring_upcase(T_sp arg)
     {_G();
 	Str_sp result = coerce::stringDesignator(arg);
-	for ( string::iterator it=result->_contents().begin(); it!=result->_contents().end(); it++ )
-	{
-	    char c = toupper(*it);
-	    *it = c;
+	for ( Str_O::iterator it = result->begin(); it!=result->end(); ++it ) {
+            *it = toupper(*it);
 	}
 	return(result);
     };
@@ -168,10 +162,8 @@ namespace core
     Str_sp af_nstring_downcase(T_sp arg)
     {_G();
 	Str_sp result = coerce::stringDesignator(arg);
-	for ( string::iterator it=result->_contents().begin(); it!=result->_contents().end(); it++ )
-	{
-	    char c = tolower(*it);
-	    *it = c;
+	for ( Str_O::iterator it = result->begin(); it!=result->end(); ++it ) {
+            *it = tolower(*it);
 	}
 	return(result);
     };
@@ -197,7 +189,7 @@ namespace core
 	if ( Str_sp scharBag = charBag.asOrNull<Str_O>() )
 	{
 	    for ( size_t i=0, iEnd(scharBag->size()); i<iEnd; ++i ) {
-		if ( scharBag->_contents()[i] == c ) return true;
+		if ( (*scharBag)[i] == c ) return true;
 	    }
 	    return false;
 	}

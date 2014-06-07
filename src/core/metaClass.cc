@@ -208,7 +208,7 @@ namespace core
             //gctools::StackRootedPointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
             this->setCreator(dup); // this->setCreator(dup.get());
         } else {
-            InstanceCreator* instanceAllocator = gctools::allocateCreator<InstanceCreator>(this->name());
+            InstanceCreator* instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocateClass(this->name());
             //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
             this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
         }
@@ -349,6 +349,7 @@ namespace core
 
 namespace gcroots {
 
+#if 0
     GC_RESULT stl_onHeapScanGCRoots(map<core::Class_sp,int>::iterator& it, GC_SCAN_ARGS_PROTOTYPE)
     {
         GC_SCANNER_BEGIN() {
@@ -356,6 +357,7 @@ namespace gcroots {
         } GC_SCANNER_END();
         return GC_RES_OK;
     }
+#endif
 };
 
 namespace core {

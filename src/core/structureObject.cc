@@ -268,7 +268,7 @@ namespace core
     {
 	Cons_O::CdrType_sp first(_Nil<Cons_O::CdrType_O>());
         Cons_O::CdrType_sp* curP = &first;
-//        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
+//        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
 	Cons_sp head = Cons_O::create(this->_Type);
 	*curP = head; // cur.setPointee(head); // *cur = head;
 	curP = head->cdrPtr(); // cur.setPointer(head->cdrPtr()); // cur = head->cdrPtr();

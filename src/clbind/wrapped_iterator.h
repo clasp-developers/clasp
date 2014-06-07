@@ -23,7 +23,7 @@ namespace clbind
         }
         void step() {++this->_Iterator;};
         bool operator==(core::T_sp other) const {
-            if ( mem::smart_ptr<Iterator > io = other.asOrNull<Iterator<IT> >() ) {
+            if ( gctools::smart_ptr<Iterator > io = other.asOrNull<Iterator<IT> >() ) {
                 return this->_Iterator == io.get()->_Iterator;
             }
             return false;

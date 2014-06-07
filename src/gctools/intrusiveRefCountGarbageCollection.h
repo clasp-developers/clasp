@@ -90,12 +90,12 @@ namespace gctools {
 
 
 
-#define GC_ALLOCATE(_class_,_obj_) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_,_obj_) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::rootAllocate()
-#define GC_ALLOCATE_VARIADIC(_class_,_obj_,...) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate(__VA_ARGS__)
+#define GC_ALLOCATE(_class_,_obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_,_obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::rootAllocate()
+#define GC_ALLOCATE_VARIADIC(_class_,_obj_,...) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate(__VA_ARGS__)
 
 
-#define GC_COPY(_class_,_obj_,_orig_) mem::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::copy(_orig_)
+#define GC_COPY(_class_,_obj_,_orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::copy(_orig_)
 
 
 
@@ -159,6 +159,28 @@ namespace gctools
 #endif
 	GCObject& operator=(const GCObject&) { return *this; };
     };
+
+
+#define ALIGNMENT alignof(char*)
+#define ALIGN_UP(size) \
+  (((size) + ALIGNMENT - 1) & ~(ALIGNMENT - 1))
+
+
+    typedef const char* Header_s;
+
+template <class T> inline size_t sizeof_with_header() {return ALIGN_UP(sizeof(T))+ALIGN_UP(sizeof(gctools::Header_s));};
+
+
+    /*! Make objects self describing by prepending a pointer to their typeInfoName */
+    struct GCHeader {
+        Header_s        typeInfoName;
+    };
+
+#define BASE_TO_OBJ_PTR(_gcptr_) reinterpret_cast<void*>(reinterpret_cast<char*>(_gcptr_)+ALIGN_UP(sizeof(gctools::Header_s)))
+#define OBJ_TO_BASE_PTR(_objptr_) reinterpret_cast<void*>(reinterpret_cast<char*>(_objptr_)-ALIGN_UP(sizeof(gctools::Header_s)))
+
+
+
 
 
 };

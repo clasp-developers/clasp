@@ -47,7 +47,7 @@ public: // Functions here
 TRANSLATE(core::List_O);
 
 
-namespace mem {
+namespace gctools {
     template<> inline bool isNilDowncastableTo<core::List_O>() { return true;};
 };
 

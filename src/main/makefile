@@ -26,7 +26,7 @@ clasp-gc:
 	clasp -l "buildClaspGc.lsp"
 
 compile-commands:
-	-bjam release clasp -n -a >bjam.out
+	-bjam bundle release mps-prep -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/buildDatabases
 	python ../common/buildJSON.py clang bjam.out $(CLASP_APP_RESOURCES_DIR)/buildDatabases/clasp_compile_commands.json
 

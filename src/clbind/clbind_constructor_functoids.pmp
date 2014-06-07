@@ -35,10 +35,10 @@ $var NumArgs = 8
                                 IncWhen<typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type >::go(args);
                                 ]]
                             T* naked_ptr(new T($for Args_ ,[[a$Args_._v]]));
-                        mem::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
+                        gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
                         $if numArgs>0 [[
                                 core::MultipleValues& returnValues = _lisp->multipleValues();
-                                returnValues.setMaxSize();
+                                returnValues.setSize(0);
                                 ]]
                             int oidx = 1;
                             $for Args_ [[
@@ -47,7 +47,7 @@ $var NumArgs = 8
                                                 , typename AdoptPointer<Pols,$Args_>::type()
                                                 , a$Args_._v);
                                 ]]
-                                return mem::multiple_values<core::T_O>(retval,oidx);
+                                return gctools::multiple_values<core::T_O>(retval,oidx);
                     }
                 };
                 ]]

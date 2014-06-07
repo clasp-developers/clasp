@@ -4,10 +4,24 @@
 #include "hardErrors.h"
 
 
+
+#define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x)
+
+
 #ifdef USE_BOEHM
 #include "gc/gc.h"
 #include "gc/gc_allocator.h"
+        typedef void* LocationDependencyPtrT;
 #endif // USE_BOEHM
+
+#ifdef USE_MPS
+extern "C" 
+{
+#include "mps/code/mps.h"
+#include "mps/code/mpsavm.h"
+};
+        typedef mps_ld_t LocationDependencyPtrT;
+#endif
 
 
 typedef int (*MainFunctionType)(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize );
@@ -15,90 +29,17 @@ typedef int (*MainFunctionType)(int argc, char* argv[], bool& mpiEnabled, int& m
 #define GC_LOG(x)
 
 
-namespace gctools {
-     template <class OT>
-    struct GCAllocatorInfo {
-        static bool constexpr NeedsInitialization = true;
-        static bool constexpr NeedsFinalization = true;
-        static bool constexpr Moveable = true;
-        static bool constexpr Atomic = false;
-    };
-};
-
 #include "hardErrors.h"
 
 
-#ifndef USE_MPS
-
-#define GC_RESULT int
-#define GC_SCAN_ARGS_PROTOTYPE int  ____dummy
-#define GC_SCAN_ARGS_PASS  ____dummy
-#define DECLARE_onHeapScanGCRoots() virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {return 0;};
-#define DECLARE_onStackScanGCRoots() virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {return 0;};
-#define GC_SCANNER_BEGIN()
-#define GC_SCANNER_END()
-#define GC_RES_OK 0
-
-
 namespace gctools {
 
-
-    typedef enum {KIND_null} GCKindEnum;
-
-
+    template <typename T>
+    constexpr size_t AlignmentT() { return alignof(T); };
+    template <typename T>
+    constexpr size_t AlignUpT(size_t size) { return (size + AlignmentT<T>() - 1) & ~(AlignmentT<T>() - 1);};
 
 };
-#else // USE_MPS
-
-
-extern "C" 
-{
-#include "mps/code/mps.h"
-#include "mps/code/mpsavm.h"
-};
-
-#define MPS_RES_T int
-#define MPS_SS_T struct mps_ss_s*
-#define MPS_ADDR_T void*
-
-#define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x) ;
-
-#define GC_RESULT 	mps_res_t
-//! Lexical variable used to store the scan state
-#define GC_SCAN_STATE 	gc__scan_state
-#define GC_SCAN_ARGS_PROTOTYPE 	mps_ss_t GC_SCAN_STATE/* , mps_thr_t gc__thr, void* gc__p, size_t gc__s */
-#define GC_SCAN_ARGS_PASS GC_SCAN_STATE /* , gc__thr, gc__p, gc__s */
-#define DECLARE_onHeapScanGCRoots() virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-#define DECLARE_onStackScanGCRoots() virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-#define GC_SCANNER_BEGIN() MPS_SCAN_BEGIN(GC_SCAN_STATE)
-#define GC_SCANNER_END() MPS_SCAN_END(GC_SCAN_STATE)
-#define GC_RES_OK MPS_RES_OK
-
-namespace gctools {
-
-
-
-#ifndef RUNNING_GC_BUILDER
-#define GC_ENUM
-typedef 
-#include GARBAGE_COLLECTION_INCLUDE //"main/clasp_gc.cc"
-GCKindEnum ;
-#undef GC_ENUM
-#else
-    typedef enum { KIND_null, KIND_SYSTEM_fwd, KIND_SYSTEM_fwd2, KIND_SYSTEM_pad1, KIND_SYSTEM_pad } GCKindEnum;
-#endif
-};
-
-
-#endif // USE_MPS
-
-
-
-
-
-
-
-
 
 
 
@@ -134,14 +75,6 @@ namespace gctools {
 	virtual ~HeapRoot() { this->detachFromGCRoot(); };
         virtual const char* repr() const { printf("%s:%d Subclass must implement repr\n", __FILE__, __LINE__ ); return "HeapRoot";};
 
-        virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-#ifdef  USE_MPS
-        = 0;
-#else
-        {return GC_RES_OK;};
-#endif
-
-
 	/*! Link this node into the list of static roots.
 	  Do this in the correct order so that if GC happens
 	  rooted_HeapRoots is always pointing to valid roots */
@@ -173,12 +106,6 @@ namespace gctools {
         virtual const char* repr() const {
             printf("%s:%d Subclass must implement repr\n", __FILE__, __LINE__ ); return "StackRoot";
         };
-        virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-#ifdef  USE_MPS
-        = 0;
-#else
-        {return GC_RES_OK;};
-#endif
 
 	void attachToGCRoot() {
 	    this->_next = rooted_StackRoots;
@@ -196,38 +123,135 @@ namespace gctools {
 
 };
 
-#include "smart_pointers.h"
 
-#include "gcalloc.h"
 
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+//
+// Define what a Header_s is for each garbage collector
+// as well as other GC specific stuff
+//
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+#ifdef USE_BOEHM
+#include "boehmGarbageCollection.h"
+#endif
 #ifdef USE_MPS
 #include "mpsGarbageCollection.h"
-#else
-#include "intrusiveRefCountGarbageCollection.h"
 #endif
 
 
+
+
+namespace gctools {
+
+    inline void* MostDerivedPtrToBasePtr(void* mostDerived)
+    {
+        void* ptr = reinterpret_cast<char*>(mostDerived) - AlignUp(sizeof(Header_s));
+        return ptr;
+    }
+
+    template <typename T>
+    inline T* BasePtrToMostDerivedPtr(void* base)
+    {
+        T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + AlignUp(sizeof(Header_s)));
+        return ptr;
+    }
+
+};
+
+
+
+#include "smart_pointers.h"
+
+
+
+namespace gctools {
+    template <typename T>
+    void* SmartPtrToBasePtr(smart_ptr<T> obj)
+    {
+        void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.pbase()) - AlignUp(sizeof(Header_s)));
+        return ptr;
+    }
+
+};
+
+
+#define DECLARE_onHeapScanGCRoots()
+#define DECLARE_onStackScanGCRoots()
 
 namespace gctools {
 
 
     /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
     template <class OT>
-    struct GCInfo {
-#if defined(RUNNING_GC_BUILDER) || !defined(USE_MPS)
+    struct GCKind {
+#ifdef USE_MPS
+#ifdef RUNNING_GC_BUILDER
+        static GCKindEnum const Kind = KIND_null;
+#else
         // We need a default Kind when running the gc-builder.lsp static analyzer
         // but we don't want a default Kind when compiling the mps version of the code
         // to force compiler errors when the Kind for an object hasn't been declared
-        static GCKindEnum const Kind = KIND_null;
-#endif
+#endif // RUNNING_GC_BUILDER
+#endif // USE_MPS
+    };
+
+
+    template <class OT>
+    struct GCInfo {
+        static constexpr bool Atomic = false;
         static bool const NeedsInitialization = true; // Currently everything needs initialization
         static bool const NeedsFinalization = true; // Currently everything needs finalization
-
+        static constexpr bool Moveable = true;
     };
 
 
 };
 
+
+namespace gctools {
+
+    /*! Size of containers given the number of elements */
+    template <typename Cont_impl>
+    size_t sizeof_container(size_t n)
+    {
+        size_t headerSz = sizeof(Cont_impl);
+        size_t dataSz = sizeof(typename Cont_impl::value_type)*n;
+        size_t totalSz = headerSz+dataSz;
+        GC_LOG(("headerSz[%lu] + ( value_size[%lu] * n[%lu] -> dataSz[%lu] ) --> totalSz[%lu]\n",
+                headerSz, sizeof(typename Cont_impl::value_type), n, dataSz, totalSz));
+        return AlignUp(totalSz);
+    };
+
+
+    template <class T> inline size_t sizeof_container_with_header(size_t num) {
+        return sizeof_container<T>(num)+AlignUp(sizeof(Header_s));
+    };
+
+};
+
+
+
+#include "gcalloc.h"
+
+
+#define GC_ALLOCATE(_class_,_obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()
+#define GC_ALLOCATE_VARIADIC(_class_,_obj_,...) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate(__VA_ARGS__)
+
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_,_obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::rootAllocate()
+
+#define GC_COPY(_class_,_obj_,_orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::copy(_orig_)
+
+
+
+
+
+
+
+/*! These don't do anything at the moment
+  but may be used in the future to create unsafe-gc points
+*/
 
 #define SUPPRESS_GC() {}
 #define ENABLE_GC() {}
@@ -235,166 +259,6 @@ namespace gctools {
 
 
 
-namespace gctools {
-
-#if 0
-    template <class T>
-    class StackRootedPointer : public gctools::StackRoot {
-    public:
-        typedef T   PointeeType;
-        typedef T*  PtrType;
-        PtrType _px;
-    public:
-        StackRootedPointer() : _px(NULL) {};
-        StackRootedPointer(PtrType p) : _px(p) {};
-//    PtrType operator*() const {return *this->_px;};
-        PointeeType const operator*() { return *this->_px;};
-        PtrType const operator->() { return this->_px;};
-        bool nullP() const { return !this->_px;};
-        void set(PtrType px) { this->_px = px; };
-        PtrType get() const { return this->_px;};
-        PtrType& operator++() { return (++(this->_px));};
-        GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-        {
-#ifdef USE_MPS
-            if ( this->_px ) {
-                return this->_px->onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
-            }
-#endif
-            return GC_RES_OK;
-        };
-
-        virtual ~StackRootedPointer() {this->_px = NULL;};
-    };
-#endif
-};
-
-
-namespace gctools {
-
-    // This stuff is copied and modified from LLVM
-    //===-- llvm/Support/ManagedStatic.h - Static Global wrapper ----*- C++ -*-===//
-    //
-    //                     The LLVM Compiler Infrastructure
-    //
-    // This file is distributed under the University of Illinois Open Source
-    // License. See LICENSE.TXT for details.
-    //
-    //===----------------------------------------------------------------------===//
-    //
-    // This file defines the ManagedStatic class and the llvm_shutdown() function.
-    //
-    //===----------------------------------------------------------------------===//
-
-    /// object_creator - Helper method for ManagedStatic.
-    template<class C>
-    void* object_creator() {
-        return gctools::allocateRootClass<C>();
-    }
- 
-    /// object_deleter - Helper method for ManagedStatic.
-    ///
-    template<typename T> struct object_deleter {
-        static void call(void * Ptr) { /*delete (T*)Ptr;*/ }
-    };
-#if 0
-    template<typename T, size_t N> struct object_deleter<T[N]> {
-        static void call(void * Ptr) { delete[] (T*)Ptr; }
-    };
-#endif
- 
-    /// ManagedStaticBase - Common base class for ManagedStatic instances.
-    class ManagedStaticBase {
-    protected:
-        // This should only be used as a static variable, which guarantees that this
-        // will be zero initialized.
-        mutable void *Ptr;
-//        mutable void (*DeleterFn)(void*);
-//        mutable const ManagedStaticBase *Next;
- 
-        void RegisterManagedStatic(void *(*Creator)() )
-        {
-//            ASSERT(Creator!=NULL);
-#if 0
-            if (llvm_is_multithreaded()) {
-                llvm_acquire_global_lock();
- 
-                if (!Ptr) {
-                    void* tmp = Creator();
- 
-                    TsanHappensBefore(this);
-                    sys::MemoryFence();
- 
-                    // This write is racy against the first read in the ManagedStatic
-                    // accessors. The race is benign because it does a second read after a
-                    // memory fence, at which point it isn't possible to get a partial value.
-                    TsanIgnoreWritesBegin();
-                    Ptr = tmp;
-                    TsanIgnoreWritesEnd();
-                    DeleterFn = Deleter;
-       
-                    // Add to list of managed statics.
-                    Next = StaticList;
-                    StaticList = this;
-                }
- 
-                llvm_release_global_lock();
-            } else {
-#endif
-//                ASSERTF(!Ptr && !Next, BF("Partially initialized ManagedStatic!?"));
-                Ptr = Creator();
-                //DeleterFn = Deleter;
-                
-                // Add to list of managed statics.
-//                Next = StaticList;
-//                ManagedStaticList = this;
-//            }
-        }
- 
-    public:
-        /// isConstructed - Return true if this object has not been created yet.
-        bool isConstructed() const { return Ptr != nullptr; }
- 
-        void destroy() const;
-    };
- 
-    template<class C>
-    class ManagedStatic : public ManagedStaticBase {
-    public:
- 
-        // Accessors.
-        C &operator*() {
-            void* tmp = Ptr;
-//            if (llvm_is_multithreaded()) sys::MemoryFence();
-            if (!tmp) RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/);
-            return *static_cast<C*>(Ptr);
-        }
-        C *operator->() {
-            void* tmp = Ptr;
-//            if (llvm_is_multithreaded()) sys::MemoryFence();
-            if (!tmp) RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/ );
-            return static_cast<C*>(Ptr);
-        }
-        const C &operator*() const {
-            void* tmp = Ptr;
-//            if (llvm_is_multithreaded()) sys::MemoryFence();
-            if (!tmp) RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/);
-            return *static_cast<C*>(Ptr);
-        }
-        const C *operator->() const {
-            void* tmp = Ptr;
-//            if (llvm_is_multithreaded()) sys::MemoryFence();
-            if (!tmp) RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/);
-            return static_cast<C*>(Ptr);
-        }
-    };
-
-};
-
-
-#include "containers.h"
-
-
-
-
 #endif // _brcl_memoryManagement_H
+    
+

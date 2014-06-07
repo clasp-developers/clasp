@@ -223,16 +223,6 @@ the corresponding VAR.  Returns NIL."
 
 
 
-;;   "Add ITEM to LIST unless it is already a member."
-(defun adjoin (item list &key key (test #'eql) test-not)
-  (when test-not
-    (setq test (complement test-not)))
-  (if (member (apply-key key item) list :key key :test test)
-      list
-    (cons item list)))
-
-
-
 
 
 
@@ -243,6 +233,17 @@ the corresponding VAR.  Returns NIL."
 			    (funcall ,key ,element)
 			    ,element)))
       t)
+
+;;   "Add ITEM to LIST unless it is already a member."
+(defun adjoin (item list &key key (test #'eql) test-not)
+  (when test-not
+    (setq test (complement test-not)))
+  (if (member (apply-key key item) list :key key :test test)
+      list
+    (cons item list)))
+
+
+
 
 ;;
 ;; This is defined in ecl>>lsp>>load.d

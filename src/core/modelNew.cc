@@ -415,7 +415,7 @@ class	Model_Expose : public Exposer
 
 
     boost::python::class_<Model_O,
-			  mem::smart_ptr<Model_O>,
+			  gctools::smart_ptr<Model_O>,
 	    boost::python::bases <T_O>,
 	boost::noncopyable> ("Model_O", boost::python::no_init )
 	.def("connectPythonListener",&Model_O::connectPythonObject)

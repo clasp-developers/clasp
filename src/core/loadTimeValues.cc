@@ -166,7 +166,8 @@ namespace core
 	printf("LTV size %d  LTS size %lu\n", af_length(this->_Objects), this->_Symbols.size() );
 	for (int i=0,iEnd(af_length(this->_Objects)); i<iEnd; i++ )
 	{
-	    printf("LTV[%4d]@%p --> %s\n", i, (void*)(&this->_Objects->operator[](i)), _rep_(this->_Objects->operator[](i)).c_str() );
+            T_sp& obj = (*this->_Objects)[i];
+	    printf("LTV[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Objects->operator[](i)), _rep_(obj).c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
 	}
 	int ic=0;
 	for ( auto it=this->_Symbols.begin();

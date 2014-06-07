@@ -22,7 +22,7 @@ namespace gctools {
 
     template <class Vec >
     class Vec0_impl {
-#ifdef USE_MPS
+#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
         friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
@@ -48,7 +48,8 @@ namespace gctools {
         pointer_type data() const { return this->_Vector.data(); };
         reference operator[](size_t i) { return this->_Vector[i]; };
         const_reference operator[](size_t i) const { return this->_Vector[i]; };
-        void resize(size_t n, const value_type& initialElement = value_type()) { this->_Vector.resize(n,initialElement); };
+        void resize(size_t n, const value_type& initialElement = value_type()) {
+            this->_Vector.resize(n,initialElement); };
         void reserve(size_t n) { this->_Vector.reserve(n); };
         void clear() { this->_Vector.clear(); };
         void push_back(const_reference val) { this->_Vector.push_back(val); };
@@ -62,6 +63,7 @@ namespace gctools {
         void emplace_back (ARGS&&...args) { this->_Vector.emplace_back(std::forward<ARGS>(args)...);};
         iterator erase(const_iterator position) { return this->_Vector.erase(position); };
 
+#if 0
         GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
             GC_RESULT res;
             for ( iterator it = this->begin(); it!=this->end(); ++it ) {
@@ -70,14 +72,14 @@ namespace gctools {
             }
             return GC_RES_OK;
         }
-
+#endif
     };
 
 
 
     template <class Arr >
     class Array0_impl {
-#ifdef USE_MPS
+#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
         friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
@@ -110,6 +112,7 @@ namespace gctools {
         pointer_type data() const { return this->_Array.data(); };
         reference operator[](size_t i) { return this->_Array[i]; };
         const_reference operator[](size_t i) const { return this->_Array[i]; };
+#if 0
         GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
             GC_RESULT res;
             for ( iterator it = this->begin(); it!=this->end(); ++it ) {
@@ -118,7 +121,7 @@ namespace gctools {
             }
             return GC_RES_OK;
         }
-            
+#endif            
     };
 
 

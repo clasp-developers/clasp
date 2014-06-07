@@ -16,7 +16,7 @@ namespace clbind
 
 
     template <class OT,class WT>
-    mem::smart_ptr<OT> RP_Create_wrapper()
+    gctools::smart_ptr<OT> RP_Create_wrapper()
     {_G();
         GC_ALLOCATE(OT,wrapper);
 	return wrapper;
@@ -104,14 +104,14 @@ namespace clbind
         }
 
 
-	static mem::smart_ptr<WrapperType> create(OT* naked,class_id classId) {
+	static gctools::smart_ptr<WrapperType> create(OT* naked,class_id classId) {
             GC_ALLOCATE_VARIADIC(WrapperType,obj,naked,classId);
             core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
             obj->setInstanceClassUsingSymbol(classSymbol);
 	    return obj;
 	}
 
-	static mem::smart_ptr<WrapperType> create(const OT& val,class_id classId) {
+	static gctools::smart_ptr<WrapperType> create(const OT& val,class_id classId) {
             OT* naked = new OT(val);
             GC_ALLOCATE_VARIADIC(WrapperType,obj,naked,classId);
             core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
@@ -226,7 +226,7 @@ namespace translate {
             if ( ptr == NULL ) {
                 return _Nil<core::T_O>();
             }
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -241,7 +241,7 @@ namespace translate {
             if ( ptr == NULL ) {
                 return _Nil<core::T_O>();
             }
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -259,7 +259,7 @@ namespace translate {
             if ( ptr == NULL ) {
                 return _Nil<core::T_O>();
             }
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -274,7 +274,7 @@ namespace translate {
             if ( ptr == NULL ) {
                 return _Nil<core::T_O>();
             }
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -290,7 +290,7 @@ namespace translate {
             if ( ptr == NULL ) {
                 return _Nil<core::T_O>();
             }
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -304,7 +304,7 @@ namespace translate {
             if ( ptr == NULL ) {
                 return _Nil<core::T_O>();
             }
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -314,7 +314,7 @@ namespace translate {
     public:
         typedef clbind::Wrapper<T,T*>      WrapperType;
         static core::T_sp convert(T& val) {
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(&val,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(&val,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -328,7 +328,7 @@ namespace translate {
         typedef WrapperType GivenType;
         static core::T_sp convert(const T& val) {
             T* ptr = new T(val);
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -343,7 +343,7 @@ namespace translate {
         typedef WrapperType GivenType;
         static core::T_sp convert(const T& val) {
             T* ptr = new T(val);
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -357,7 +357,7 @@ namespace translate {
         typedef WrapperType GivenType;
         static core::T_sp convert(const T& val) {
             T* ptr = new T(val);
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };
@@ -373,7 +373,7 @@ namespace translate {
         static core::T_sp convert(const T& val) {
             IMPLEMENT_MEF(BF("This doesn't make sense - copy but don't adopt pointer???"));
             T* ptr = new T(val);
-            mem::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
             return wrapper;
         }
     };

@@ -23,7 +23,15 @@ namespace core
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     protected:
-	string	_Contents;
+#ifdef USE_GCSTRING
+        typedef gctools::gcstring         str_type;
+#else
+	typedef std::string str_type;
+#endif
+        str_type _Contents;
+    public:
+        typedef str_type::iterator iterator;
+        typedef str_type::const_iterator const_iterator;
     public:
 	static Str_sp create(const boost::format& fmt);
 	static Str_sp create(const string& nm);
@@ -36,19 +44,42 @@ namespace core
     public:
 	virtual bool adjustableArrayP() const { return false;}
     public:
-	virtual T_sp asetUnsafe(int j, T_sp val);
+        virtual uint size() const { return this->_Contents.size(); };
+	const char* c_str() const { return this->_Contents.c_str(); };
+#ifdef USE_GCSTRING
+        string __str__() { return this->_Contents.asStdString(); };
+	virtual string get() const { return this->_Contents.asStdString(); };
+        virtual void set(const string& v) {
+            str_type temp(v);
+            this->_Contents.swap(temp);
+        };
+        virtual void setFromChars(const char* v) {
+            str_type temp(v);
+            this->_Contents.swap(temp);
+        };
+        virtual void setFromChars(const char* v, int num) {
+            str_type temp(v,num);
+            this->_Contents.swap(temp);
+        };
+#else
+	virtual string get() const { return this->_Contents; };
 	string __str__() { return this->_Contents; };
+	virtual void set(const string& v) { this->_Contents = v; };
+	virtual void setFromChars(const char* v) { this->_Contents = v; };
+	virtual void setFromChars(const char* v,int num) { string temp(v,num); this->_Contents.swap(temp);};
+	string& _contents() { return this->_Contents; };
+	string const& _contents() const { return this->_Contents; };
+	virtual uint dimension() const { return this->_Contents.size();};
+	virtual	string	valueAsString() const { return this->_Contents;};
+	virtual	void	setFromString(const string& strVal) { this->set(strVal);};
+#endif
+	virtual T_sp asetUnsafe(int j, T_sp val);
 	string __repr__() const;
 	uint countOccurances(const string& chars);
 	Cons_sp splitAtWhiteSpace();
 	Cons_sp split(const string& splitChars);
-	virtual void set(const string& v) { this->_Contents = v; };
-	virtual void setFromChars(const char* v) { this->_Contents = v; };
-	virtual void setFromChars(const char* v,int num) { string temp(v,num); this->_Contents.swap(temp);};
-	const char* c_str() const { return this->_Contents.c_str(); };
-	string& _contents() { return this->_Contents; };
-	string const& _contents() const { return this->_Contents; };
-	virtual string get() const { return this->_Contents; };
+        char& operator[](int i) { return this->_Contents[i];};
+        const char& operator[](int i) const { return this->_Contents[i];};
 	Fixnum_sp asInt() const;
 	Rational_sp parseInteger();
 	DoubleFloat_sp asReal() const;
@@ -56,9 +87,24 @@ namespace core
 	Symbol_sp asKeywordSymbol() const;
 	string left(int num) const;
 	string right(int num) const;
-	string concat(Str_sp other) const { return this->_Contents + other->_contents();};
 	string substr(int start, int num ) const;
 	void sxhash(HashGenerator& hg) const;
+
+        Str_O& operator+=(const string& s) {
+            this->_Contents += s;
+            return *this;
+        }
+
+        Str_sp operator+(const string& s) {
+            string result(this->_Contents.data(),this->_Contents.size());
+            result += s;
+            return Str_O::create(result);
+        }
+
+        iterator begin() { return this->_Contents.data(); }
+        iterator end() { return this->_Contents.data()+this->size(); };
+        const_iterator begin() const { return this->_Contents.data(); }
+        const_iterator end() const { return this->_Contents.data()+this->size(); };
 
 	brclChar schar(int index) const;
         brclChar scharSet(int index, brclChar c);
@@ -69,14 +115,10 @@ namespace core
 	Rational_sp find(const string& substring, int start);
     public:
 	//! dim ignore fill pointers - don't overload
-	virtual uint dimension() const { return this->_Contents.size();};
-	virtual uint	size() const { return this->_Contents.size(); };
 	uint length() const { return this->size(); };
 	T_sp prim_format(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp );
 	T_sp prim_formatCons(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp );
 	virtual T_sp elementType() const;
-	virtual	string	valueAsString() const { return this->_Contents;};
-	virtual	void	setFromString(const string& strVal) { this->set(strVal);};
 	virtual bool	equal(T_sp obj) const;
         virtual bool    equalp(T_sp obj) const;
 	virtual	bool	eql(T_sp obj) const;
@@ -114,11 +156,13 @@ namespace core
 
         virtual T_sp svref(int index) const { return elt(index); };
         virtual T_sp setf_svref(int index, T_sp value) { return this->setf_elt(index,value); };
-                
 
 
-    virtual Sequence_sp subseq(int start, T_sp end) const;
-    virtual Sequence_sp setf_subseq(int start, T_sp end, Sequence_sp new_subseq);
+        
+
+
+        virtual Sequence_sp subseq(int start, T_sp end) const;
+        virtual Sequence_sp setf_subseq(int start, T_sp end, Sequence_sp new_subseq);
 
 
 	virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end);
@@ -136,6 +180,16 @@ namespace core
 
 
 
+};
+template<> struct gctools::GCInfo<core::Str_O> {
+    static bool constexpr NeedsInitialization = false;
+#ifdef USE_GCSTRING
+    static bool constexpr NeedsFinalization = false;
+#else
+    static bool constexpr NeedsFinalization = true;
+#endif
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
 };
 
 

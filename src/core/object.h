@@ -56,12 +56,12 @@ namespace core
 {
 
     class	Archive_O;
-    typedef	mem::smart_ptr<Archive_O>	Archive_sp;
+    typedef	gctools::smart_ptr<Archive_O>	Archive_sp;
     class	SNode_O;
-    typedef	mem::smart_ptr<SNode_O>		SNode_sp;
-    typedef	mem::smart_ptr<SNode_O>		ArchiveP;
+    typedef	gctools::smart_ptr<SNode_O>		SNode_sp;
+    typedef	gctools::smart_ptr<SNode_O>		ArchiveP;
     class Function_O;
-    typedef	mem::smart_ptr<Function_O>	Function_sp;
+    typedef	gctools::smart_ptr<Function_O>	Function_sp;
 
 };
 
@@ -147,9 +147,9 @@ namespace core
 //  * See gctools/brclMemoryPoolSystem.h for GC_RESERVE_TRY/GC_RESERVE_GET
 //  */
 // template <class oClass>
-// mem::smart_ptr<oClass> RP_OLD_Create(bool initialize)
+// gctools::smart_ptr<oClass> RP_OLD_Create(bool initialize)
 // {_G();
-//     mem::smart_ptr<oClass> obj= mem::smart_ptr<oClass>(new oClass()); // (new oClass(mc));
+//     gctools::smart_ptr<oClass> obj= gctools::smart_ptr<oClass>(new oClass()); // (new oClass(mc));
 // //    if (initialize) obj->initialize(); // Initialize instance everything that depends on class hierarchy
 //     return obj;
 // }
@@ -160,9 +160,9 @@ namespace core
 //  * See gctools/brclMemoryPoolSystem.h for GC_RESERVE_TRY/GC_RESERVE_GET
 //  */
 // template <class oClass, class... ARGS>
-// mem::smart_ptr<oClass> RP_OLD_Create_VARIADIC(bool initialize,ARGS&&... args)
+// gctools::smart_ptr<oClass> RP_OLD_Create_VARIADIC(bool initialize,ARGS&&... args)
 // {_G();
-//     mem::smart_ptr<oClass> obj= mem::smart_ptr<oClass>(new oClass(args...)); // (new oClass(mc));
+//     gctools::smart_ptr<oClass> obj= gctools::smart_ptr<oClass>(new oClass(args...)); // (new oClass(mc));
 // //    if (initialize) obj->initialize(); // Initialize instance everything that depends on class hierarchy
 //     return obj;
 // }
@@ -178,22 +178,22 @@ namespace core
 // core::T_sp	copy_Object(const o_class* cur)
 // {_G();
 //     core::T_sp	obj;
-//     obj = (mem::smart_ptr<o_class>)(new o_class(*cur));
+//     obj = (gctools::smart_ptr<o_class>)(new o_class(*cur));
 //     // Any further initialization should be handled by a copy or deepCopy method
 //     return obj;
 // }
 
 // template <class Dumb_Class>
-// mem::smart_ptr<Dumb_Class> RP_OLD_Copy(const Dumb_Class* c)
+// gctools::smart_ptr<Dumb_Class> RP_OLD_Copy(const Dumb_Class* c)
 // {
-//     return mem::dynamic_pointer_cast<Dumb_Class>(copy_Object<Dumb_Class>(c));
+//     return gctools::dynamic_pointer_cast<Dumb_Class>(copy_Object<Dumb_Class>(c));
 // }
 
 
 // template <class Dumb_Class>
-// mem::smart_ptr<Dumb_Class> RP_OLD_Copy(mem::smart_ptr<Dumb_Class> c)
+// gctools::smart_ptr<Dumb_Class> RP_OLD_Copy(gctools::smart_ptr<Dumb_Class> c)
 // {
-//     return mem::dynamic_pointer_cast<Dumb_Class>(copy_Object<Dumb_Class>(c.get()));
+//     return gctools::dynamic_pointer_cast<Dumb_Class>(copy_Object<Dumb_Class>(c.get()));
 // }
 
 // #endif
@@ -221,7 +221,11 @@ namespace core
 //
 //
 #if defined(USE_MPS)
-#define FRIEND_GC_SCANNER() 	friend MPS_RES_T (::obj_scan(MPS_SS_T ss, MPS_ADDR_T base, MPS_ADDR_T limit));
+#ifdef RUNNING_GC_BUILDER
+#define FRIEND_GC_SCANNER()
+#else
+#define FRIEND_GC_SCANNER() 	friend GC_RESULT (::obj_scan(GC_SCAN_STATE ss, mps_addr_t base, mps_addr_t limit));
+#endif
 #define BRCL_MPS_INTERFACE(oNamespace,oClass)				\
 	FRIEND_GC_SCANNER();
 #else
@@ -428,30 +432,30 @@ namespace core
 	BRCL_MPS_INTERFACE(oNamespace,oClass);				\
     public:								\
     template<class DestClass>						\
-    mem::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const \
+    gctools::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const \
     {									\
 	oClass* not_const_this_gc_safe = const_cast<oClass*>(this); /* Should be GC-safe because this should be a root */ \
-	return mem::smart_ptr<DestClass>(not_const_this_gc_safe);		\
+	return gctools::smart_ptr<DestClass>(not_const_this_gc_safe);   \
     };									\
     template <class DestClass>						\
-    mem::smart_ptr<DestClass> sharedThis() 				\
+    gctools::smart_ptr<DestClass> sharedThis() 				\
     {									\
-	return mem::smart_ptr<DestClass>(this);				\
+	return gctools::smart_ptr<DestClass>(this);                     \
     };									\
-    mem::smart_ptr<oClass> asSmartPtr() const {return this->const_sharedThis<oClass>();}; \
-    mem::smart_ptr<oClass> asSmartPtr()  {return this->sharedThis<oClass>();}; \
+    gctools::smart_ptr<oClass> asSmartPtr() const {return this->const_sharedThis<oClass>();}; \
+    gctools::smart_ptr<oClass> asSmartPtr()  {return this->sharedThis<oClass>();}; \
     public:								\
-    /*    static mem::smart_ptr<oClass> nil(core::Lisp_sp lisp);	*/ \
+    /*    static gctools::smart_ptr<oClass> nil(core::Lisp_sp lisp);	*/ \
     typedef oClass ThisClass;						\
-    typedef mem::smart_ptr<oClass>	smart_ptr;			\
-    typedef mem::weak_smart_ptr<oClass>	weak_smart_ptr;			\
+    typedef gctools::smart_ptr<oClass>	smart_ptr;			\
+    typedef gctools::weak_smart_ptr<oClass>	weak_smart_ptr;         \
     public:								\
     static core::Symbol_sp ___staticClassSymbol;			\
     static core::Class_sp ___staticClass;				\
     static core::Creator* static_creator;                    \
     static int static_Kind;                                             \
-    /* static mem::smart_ptr<oClass> _nil; depreciate this in favor of _Nil<oClass>()? */ \
-    /* static mem::smart_ptr<oClass> _unbound; depreciate this in favor of _Unbound<oClass>()? */ \
+    /* static gctools::smart_ptr<oClass> _nil; depreciate this in favor of _Nil<oClass>()? */ \
+    /* static gctools::smart_ptr<oClass> _unbound; depreciate this in favor of _Unbound<oClass>()? */ \
     /*    static oClass* ___staticDereferencedNilInstance;	*/      \
     /*    static oClass* ___staticDereferencedUnboundInstance; */       \
     public:								\
@@ -472,7 +476,7 @@ namespace core
 
 #define	__COMMON_CLASS_PARTS(oNamespace,oPackage,oClass,oclassName)	\
 	__COMMON_VIRTUAL_CLASS_PARTS(oNamespace,oPackage,oClass,oclassName) \
-	static mem::smart_ptr<oClass> create()				\
+	static gctools::smart_ptr<oClass> create()                      \
 	{								\
             GC_ALLOCATE(oClass,obj);                                    \
             return obj;                                                 \
@@ -796,10 +800,9 @@ namespace core
     };
 
 
+
+
 };
-
-
-
 
 
 
@@ -843,10 +846,10 @@ namespace core {
 
 
 template <class o_class>
-inline mem::smart_ptr<o_class> downcast(core::T_sp c)
+inline gctools::smart_ptr<o_class> downcast(core::T_sp c)
 {
     if ( c.nilp() ) return _Nil<o_class>();
-    return mem::dynamic_pointer_cast<o_class>(c);
+    return gctools::dynamic_pointer_cast<o_class>(c);
 }
 
 
@@ -947,7 +950,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 	oClass::___set_static_ClassSymbol(classSymbol);
 	if ( oClass::static_creator == NULL )
 	{
-            core::LispObjectCreator<oClass>* lispObjectCreator = gctools::allocateCreator<core::LispObjectCreator<oClass>>();
+            core::LispObjectCreator<oClass>* lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocateClass();
             oClass::___set_static_creator(lispObjectCreator);
 	}
     }
@@ -985,8 +988,8 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 #define STATIC_CLASS_INFO(oClass)					\
     /*	oClass* oClass::___staticDereferencedNilInstance;	*/	\
     /*  oClass* oClass::___staticDereferencedUnboundInstance;	*/	\
-    /* mem::smart_ptr<oClass> oClass::_nil; */				\
-    /* mem::smart_ptr<oClass> oClass::_unbound;	*/		
+    /* gctools::smart_ptr<oClass> oClass::_nil; */				\
+    /* gctools::smart_ptr<oClass> oClass::_unbound;	*/		
 
 
 	
@@ -1083,14 +1086,14 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 #define PYTHON_CLASS(pkgName,className,initArgs,docString,___lisp)	\
     PYTHON__init__(pkgName,className,docString);			\
     boost::python::class_< className##_O,				\
-			   mem::smart_ptr< className##_O >,			\
+			   gctools::smart_ptr< className##_O >,         \
 	boost::python::bases< className##_O::Base>,			\
 	boost::noncopyable > ( #className "_O", boost::python::no_init )
 
 #define PYTHON_CLASS_2BASES(pkgName,className,initArgs,docString,___lisp) \
     PYTHON__init__(pkgName,className,docString);			\
     boost::python::class_< className##_O,				\
-			   mem::smart_ptr< className##_O >,			\
+			   gctools::smart_ptr< className##_O >,         \
 	boost::python::bases< className##_O::Bases::Base1, className##_O::Bases::Base2>, \
 	boost::noncopyable > ( #className "_O", boost::python::no_init )
 
@@ -1101,7 +1104,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 #define	PYTHON_INIT( className )					\
     boost::python::def("create_" #className,&RP_OLD_Create<className##_O>);	\
     boost::python::class_< className##_O,				\
-			   mem::smart_ptr< className##_O >,			\
+			   gctools::smart_ptr< className##_O >,         \
 	boost::python::bases< className##_O::Base>,			\
 	boost::noncopyable > ( #className, init<core::Lisp_sp> )
 
@@ -1117,10 +1120,6 @@ Class_sp af_classOf(T_sp obj);
 
 
 
-
-extern core::T_sp open_ObjectInXmlArchive(const string& fileName, const string& uid, core::Lisp_sp lisp);
-extern core::T_sp open_OnlyObjectInXmlArchive(const string& fileName, core::Lisp_sp lisp);
-
 #include "glue.h"
 #include "conditions.h"
 
@@ -1129,7 +1128,7 @@ extern core::T_sp open_OnlyObjectInXmlArchive(const string& fileName, core::Lisp
 TRANSLATE(core::T_O);
 
 #if 0
-namespace mem {
+namespace gctools {
     template<> inline bool isNilDowncastableTo<core::T_O>() { return true;};
 };
 #endif

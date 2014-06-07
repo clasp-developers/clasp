@@ -14,12 +14,12 @@
 #include <boost/utility/binary.hpp>
 
 #include <iostream>
-#if defined(USE_MPS)
- #include "tagged_ptr.h"
- #define TAGGED_PTR_BASE tagged_ptr
-#else
+#if defined(USE_REFCOUNT)
  #include "tagged_intrusive_ptr.h"
  #define TAGGED_PTR_BASE tagged_intrusive_ptr
+#else // boehm or mps
+ #include "tagged_ptr.h"
+ #define TAGGED_PTR_BASE tagged_ptr
 #endif
 
 
@@ -43,7 +43,7 @@
 #define	TAGGED_PTR core::T_O*
 
 
-namespace mem
+namespace gctools
 {
 
 
@@ -56,18 +56,17 @@ namespace mem
 
     void initialize_smart_pointers();
 
-    template <class T>
-#if defined(USE_MPS)
-    class smart_ptr : public mem::tagged_ptr<T>
-    {
-    public:
-	typedef mem::tagged_ptr<T> 	BaseType;
+#if defined(USE_REFCOUNT)
+#define SMART_PTR_BASE(T) boost::tagged_intrusive_ptr<T>
 #else
-	class smart_ptr : public boost::tagged_intrusive_ptr<T>
+#define SMART_PTR_BASE(T) tagged_ptr<T>
+#endif
+
+    template <class T>
+    class smart_ptr : public SMART_PTR_BASE(T)
     {
     public:
-	typedef boost::tagged_intrusive_ptr<T>	BaseType;
-#endif
+	typedef SMART_PTR_BASE(T) BaseType;
     public:
 	typedef T Type;
 	typedef T* PointerType;
@@ -78,12 +77,13 @@ namespace mem
 	smart_ptr() : BaseType() {};
 	explicit smart_ptr(uintptr_t p) : BaseType(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
 	smart_ptr( T* objP) : BaseType(objP) {};
+	explicit smart_ptr( void* objP) : BaseType(objP) {};
 	smart_ptr(const smart_ptr<T>& obj) : BaseType(obj) {};
 //	smart_ptr(int f) : BaseType(f) {};    // DONT ENABLE THIS UNTIL WE ARE READY TO USE TAGGED FIXNUMS IF EVER!!!!!!    IMPLICIT CONVERTION OF INT TO SMART_PTR
 	template <class Y> smart_ptr(const smart_ptr<Y>& yy) : BaseType(yy) {} ; //.get()) {};
 //	template <class Y> smart_ptr(const smart_ptr<const Y>& yy) : BaseType(/*const_cast<T*>*/(yy.pxget())) {} ; //.get()) {};
-#if defined(USE_MPS)
-	template <class Y>  smart_ptr(const mem::tagged_ptr<Y>& yy) : BaseType(yy) {};
+#if !defined(USE_REFCOUNT)
+	template <class Y>  smart_ptr(const tagged_ptr<Y>& yy) : BaseType(yy) {};
 #else
 	template <class Y>  smart_ptr(const boost::tagged_intrusive_ptr<Y>& yy) : BaseType(yy) {};
 #endif
@@ -92,28 +92,28 @@ namespace mem
 
 
 	template <class o_class>
-	inline smart_ptr<o_class> pointerAsUnsafe()
+            inline smart_ptr<o_class> pointerAsUnsafe()
 	{
 	    o_class* new_px = dynamic_cast<o_class*>(this->px);
 	    return smart_ptr<o_class>(new_px);
 	}
 
 	template <class o_class>
-	inline smart_ptr<o_class> pointerAsUnsafe() const
+            inline smart_ptr<o_class> pointerAsUnsafe() const
 	{
 	    o_class* new_px = dynamic_cast<o_class*>(this->px);
 	    return smart_ptr<o_class>(new_px);
 	}
 
 	template <class o_class>
-	void errorExpectedType() const {
+            void errorExpectedType() const {
             class_id expected_typ = reg::registered_class<o_class>::id;
             class_id this_typ = reg::registered_class<T>::id;
 	    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->px));
 	};
 
 	template <class o_class>
-	inline smart_ptr<o_class> asOrNull()
+            inline smart_ptr<o_class> asOrNull()
 	{
 	    /*! this->nilp() should only return nil for Null_O,Symbol_O,List_O,Sequence_O */
 	    if (this->pointerp()) {
@@ -143,7 +143,7 @@ namespace mem
 	}
 
 	template <class o_class>
-	inline smart_ptr<o_class> asOrNull() const
+            inline smart_ptr<o_class> asOrNull() const
 	{
 	    if (this->pointerp()) {
 		smart_ptr</* TODO: const */ o_class> ret(const_cast<o_class*>(dynamic_cast<const o_class*>(this->px)));
@@ -182,7 +182,7 @@ namespace mem
 
 
 	template <class o_class>
-	inline smart_ptr<o_class> as()
+            inline smart_ptr<o_class> as()
 	{
 	    smart_ptr<o_class> ret = this->asOrNull<o_class>();
 	    if (!ret)
@@ -195,7 +195,7 @@ namespace mem
 	}
 
 	template <class o_class>
-	inline smart_ptr< o_class> as() const
+            inline smart_ptr< o_class> as() const
 	{
 	    smart_ptr< o_class> ret = this->asOrNull<o_class>();
 	    if (!ret)
@@ -210,7 +210,7 @@ namespace mem
 	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
 	  If the ptr is nil, return a nil ptr */
 	template <class o_class>
-	inline smart_ptr<o_class> as_or_nil()
+            inline smart_ptr<o_class> as_or_nil()
 	{
 	    if ( this->nilp() ) {
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
@@ -229,7 +229,7 @@ namespace mem
 	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
 	  If the ptr is nil, return a nil ptr */
 	template <class o_class>
-	inline smart_ptr< o_class> as_or_nil() const
+            inline smart_ptr< o_class> as_or_nil() const
 	{
 	    if ( this->nilp() ) {
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
@@ -247,7 +247,7 @@ namespace mem
 
 
 	template <class o_class>
-	inline bool isA() const
+            inline bool isA() const
 	{
 	    smart_ptr<const o_class> ret = this->asOrNull<const o_class>();
 	    if (!ret) return false;
@@ -256,7 +256,7 @@ namespace mem
 
 
 	template <class o_class>
-	inline bool isA()
+            inline bool isA()
 	{
 	    smart_ptr<o_class> ret = this->asOrNull<o_class>();
 	    if (!ret) return false;
@@ -275,7 +275,7 @@ namespace mem
 #ifdef POLYMORPHIC_SMART_PTR
 	virtual
 #endif
-	int number_of_values() const { return this->_NULLp() ? 0 : 1;};
+            int number_of_values() const { return this->_NULLp() ? 0 : 1;};
 
 	bool notnilp() const { return (!this->nilp());};
 	bool isTrue() const { return (!this->nilp() || internal_isTrue(this)); };
@@ -291,40 +291,47 @@ namespace mem
     };
 
 
-    };
+};
 
 template <class T>
-mem::smart_ptr<T> _NULL()
+gctools::smart_ptr<T> _NULL()
 {
-    mem::smart_ptr<T> x(mem::smart_ptr<T>::BaseType::tagged_NULL);
+    gctools::smart_ptr<T> x(gctools::smart_ptr<T>::BaseType::tagged_NULL);
     return x;
 }
 
 template <class T>
-mem::smart_ptr<T> _Nil()
+gctools::smart_ptr<T> _Nil()
 {
-    mem::smart_ptr<T> x(mem::smart_ptr<T>::BaseType::tagged_nil);
-    return x;
-}
-
-
-template <class T>
-mem::smart_ptr<T> _Unbound()
-{
-    mem::smart_ptr<T> x(mem::smart_ptr<T>::BaseType::tagged_unbound);
+    gctools::smart_ptr<T> x(gctools::smart_ptr<T>::BaseType::tagged_nil);
     return x;
 }
 
 
 template <class T>
-inline bool Null(const mem::smart_ptr<T>& ptr) { return ptr.nilp();};
+gctools::smart_ptr<T> _Unbound()
+{
+    gctools::smart_ptr<T> x(gctools::smart_ptr<T>::BaseType::tagged_unbound);
+    return x;
+}
+
+template <class T>
+gctools::smart_ptr<T> _Deleted()
+{
+    gctools::smart_ptr<T> x(gctools::smart_ptr<T>::BaseType::tagged_deleted);
+}
 
 
-namespace mem {
+
+template <class T>
+inline bool Null(const gctools::smart_ptr<T>& ptr) { return ptr.nilp();};
+
+
+namespace gctools {
 
 // LambdaListHandler_sp llh(ptr)
 
-#if defined(USE_MPS)
+#if defined(USE_BOEHM) || defined(USE_MPS)
 
     template <class TO, class FROM>
     smart_ptr<TO> dynamic_pointer_cast(const smart_ptr<FROM>& ptr)
@@ -377,33 +384,12 @@ namespace mem {
 	template <>  void intrusive_ptr_release<_T_>(_T_* p) {gctools::GCWrapper<_T_>::gcRelease(p);} \
     }
 #endif
-#else // ifdef USE_REFCOUNT
-    // Do nothing if !defined(USE_REFCOUNT)
-#define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_)
 #endif
 
 
 
 
 
-#if 0
-    template <class OT>
-    class StackRootedPointerToSmartPtr : public gctools::StackRoot {
-    public:
-        typedef mem::smart_ptr<OT>  SmartPtrType;
-        mem::smart_ptr<OT>* _px;
-    public:
-        StackRootedPointerToSmartPtr() : _px(NULL) {};
-        StackRootedPointerToSmartPtr(SmartPtrType* p) : _px(p) {};
-//    SmartPtrType operator*() const {return *this->_px;};
-        void setPointee(SmartPtrType x) { *this->_px = x; };
-        SmartPtrType getPointee() const { return *this->_px;};
-        void setPointer(SmartPtrType* px) { this->_px = px;};
-        DECLARE_onStackScanGCRoots(); 
-
-        virtual ~StackRootedPointerToSmartPtr() {this->_px = NULL;};
-    };
-#endif
 
 };
 

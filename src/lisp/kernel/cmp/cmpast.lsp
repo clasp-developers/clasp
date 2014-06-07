@@ -1152,7 +1152,6 @@ be wrapped with to make a closure"
 
 
 
-#+compile-mcjit
 (defun compile-in-env (name &optional definition env)
   "Compile in the given environment"
   (with-compiler-env ()

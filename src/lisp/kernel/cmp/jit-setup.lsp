@@ -90,7 +90,6 @@ using features defined in corePackage.cc"
     (setq *run-time-module-counter* (+ 1 *run-time-module-counter*))))
 
 
-#+compile-mcjit
 (defun create-run-time-module-for-compile ()
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
 Return the module and the global variable that represents the load-time-value-holder as
@@ -111,8 +110,7 @@ Return the module and the global variable that represents the load-time-value-ho
 (llvm-sys:initialize-native-target)
 (defparameter *llvm-context* (llvm-sys::get-global-context))
 
-#-compile-mcjit (defparameter *run-time-module* (llvm-create-module "run-time-module"))
-#+compile-mcjit (defparameter *run-time-module* nil)
+(defparameter *run-time-module* nil)
 
 
 (defvar *the-module* nil
@@ -187,39 +185,6 @@ No DIBuilder is defined for the default module")
 )
 
 
-
-
-
-
-
-
-
-
-
-
-#-compile-mcjit (progn
-		  (defparameter *run-time-engine-builder* (llvm-sys:make-engine-builder *run-time-module*))
-		  (llvm-sys:set-target-options *run-time-engine-builder* '( llvm-sys:jitemit-debug-info t
-									   llvm-sys:jitemit-debug-info-to-disk t))
-		  (import 'llvm-sys:*run-time-execution-engine*)
-		  (defparameter *run-time-execution-engine* (llvm-sys:create *run-time-engine-builder*))
-		  (if (is-undefined *run-time-execution-engine*)
-		      (error "The execution engine could not be created: ~a" (llvm-sys:error-string *run-time-engine-builder*)))
-
-		  (export '(*llvm-context* *run-time-module* *the-module* *run-time-engine-builder* *run-time-execution-engine*))
-		  (defparameter *run-time-function-pass-manager* nil)
-		  ;; The function-pass-manager for the default *the-module*
-		  (progn
-		    (setq *run-time-function-pass-manager* (llvm-sys:make-function-pass-manager *run-time-module*))
-		    (llvm-sys:function-pass-manager-add *run-time-function-pass-manager* (llvm-sys:data-layout-copy *data-layout*))
-!		    (llvm-sys:function-pass-manager-add *run-time-function-pass-manager* (llvm-sys:create-basic-alias-analysis-pass))
-		    (llvm-sys:function-pass-manager-add *run-time-function-pass-manager* (llvm-sys:create-instruction-combining-pass))
-		    (llvm-sys:function-pass-manager-add *run-time-function-pass-manager* (llvm-sys:create-reassociate-pass))
-		    (llvm-sys:function-pass-manager-add *run-time-function-pass-manager* (llvm-sys:create-gvnpass nil))
-		    (llvm-sys:function-pass-manager-add *run-time-function-pass-manager* (llvm-sys:create-cfgsimplification-pass))
-		    (llvm-sys:do-initialization *run-time-function-pass-manager*)
-		    )
-		  )
 
 
 (defun fasl-pathname-type-impl (file-type &key min ref-count)

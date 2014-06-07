@@ -90,7 +90,7 @@ namespace core {
 
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::Function_O> {
+template<> struct gctools::GCInfo<core::Function_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
@@ -162,7 +162,7 @@ namespace core {
         virtual ~Interpreted_O() {};
     };
 };
-template<> struct gctools::GCAllocatorInfo<core::Interpreted_O> {
+template<> struct gctools::GCInfo<core::Interpreted_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
@@ -216,7 +216,7 @@ namespace core
     }; // BuiltIn class
 	
 }; // core namespace
-template<> struct gctools::GCAllocatorInfo<core::BuiltIn_O> {
+template<> struct gctools::GCInfo<core::BuiltIn_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
@@ -267,7 +267,7 @@ namespace core
     }; // CompiledFunction class
     
 }; // core namespace
-template<> struct gctools::GCAllocatorInfo<core::CompiledFunction_O> {
+template<> struct gctools::GCInfo<core::CompiledFunction_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;

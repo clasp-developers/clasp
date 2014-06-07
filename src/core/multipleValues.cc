@@ -15,6 +15,7 @@ namespace core
 
     MultipleValues::MultipleValues()
     {
+        this->_Values.reserve(MultipleValuesLimit);
     };
 
 
@@ -64,7 +65,7 @@ namespace core
 	return cur;
     }
 
-
+#if 0
     GC_RESULT MultipleValues::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
     {
 	GC_SCANNER_BEGIN() {
@@ -75,7 +76,7 @@ namespace core
 	} GC_SCANNER_END();
 	return GC_RES_OK;
     }
-
+#endif
 
 
 
@@ -132,7 +133,7 @@ namespace core
 	core::MultipleValues& me = *(core::lisp_multipleValues());
 	core::T_sp first = me.setFromConsSkipFirst(vals);
 	core::T_mv mv;
-	mv = mem::multiple_values<core::T_O>(first,len);
+	mv = gctools::multiple_values<core::T_O>(first,len);
 	return mv;
     }
 

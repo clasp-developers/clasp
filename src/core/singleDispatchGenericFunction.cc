@@ -287,7 +287,7 @@ namespace core
         Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_functionBlockName(this->getFunctionName())->getPackage());
 
 
-        Lambda_emf* l_emf = gctools::allocateFunctoid<Lambda_emf>(emf_name_ss.str()
+        Lambda_emf* l_emf = gctools::ClassAllocator<Lambda_emf>::allocateClass(emf_name_ss.str()
                                                                 ,this->sharedThis<SingleDispatchGenericFunction_O>()
                                                                 , emf_name
                                                                 , cur_method);

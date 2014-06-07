@@ -38,7 +38,7 @@ namespace core
 	va_list ap;
 	va_start(ap, n_args);
 	Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
-        Cons_O::CdrType_sp* curP = &first; // mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
+        Cons_O::CdrType_sp* curP = &first; // gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
 	for(int i = 1; i <= n_args; ++i) {
 	    T_sp obj = *(va_arg(ap, const T_sp*));
 	    Cons_sp one = Cons_O::create(obj);
@@ -286,7 +286,9 @@ namespace core
 	// Convert the form into a thunk and return like COMPILE does
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
 	Cons_sp code = Cons_O::create(form,_Nil<Cons_O>());
-	_lisp->sourceManager()->duplicateSourceInfo(form,code);
+        if ( _lisp->sourceDatabase().notnilp() ) {
+            _lisp->sourceDatabase()->duplicateSourceInfo(form,code);
+        }
 	Interpreted_sp thunk = Interpreted_O::make(_Nil<T_O>(),llh,code);
 	thunk->closeOverEnvironment(env);
 	return(Values(thunk,_Nil<T_O>(),_Nil<T_O>()));

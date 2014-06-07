@@ -206,7 +206,7 @@ namespace core {
 
 
 
-//ostream& operator<<(ostream& out, mem::smart_ptr<core::T_O> obj);
+//ostream& operator<<(ostream& out, gctools::smart_ptr<core::T_O> obj);
 
 
 

@@ -63,6 +63,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 
     SYMBOL_SC_(CorePkg,STARdebugMonitorSTAR);
     SYMBOL_SC_(CorePkg,monitorReader);
+    SYMBOL_EXPORT_SC_(CorePkg,STARsourceDatabaseSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARstartRunTimeSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,internalTimeUnitsPerSecond);
     SYMBOL_EXPORT_SC_(ClPkg,getInternalRealTime);
@@ -600,7 +601,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 #define DEFINE_BASE_CLASSES
 #include "core_initClasses_inc.h"
 	}
-        CoreExposer* coreExposerPtr = gctools::allocateExposer<CoreExposer>(_lisp);
+        CoreExposer* coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocateClass(_lisp);
 	Package_sp corePackage = coreExposerPtr->package();
 	_lisp->_Roots._CorePackage = corePackage;
 	_lisp->_Roots._KeywordPackage = keywordPackage;
@@ -748,6 +749,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 	_sym_STARenablePrintPrettySTAR->defparameter(_Nil<T_O>()); // Just for debugging *print-pretty*
 	_sym_STARstdinSTAR->defparameter(stdin_stream);
 	_sym_STARstdoutSTAR->defparameter(stdout_stream);
+        _sym_STARsourceDatabaseSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARstandard_inputSTAR->defparameter(SynonymStream_O::make(_sym_STARstdinSTAR));
 	cl::_sym_STARstandard_outputSTAR->defparameter(SynonymStream_O::make(_sym_STARstdoutSTAR));
 	cl::_sym_STARerror_outputSTAR->defparameter(SynonymStream_O::make(_sym_STARstdoutSTAR));
@@ -801,6 +803,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 	_sym_STARserializerArchiveSTAR->defparameter(_Nil<T_O>());
 	_sym_STARcommandLineLoadSTAR->defparameter(_Nil<T_O>());
 	_sym_STARdebugMonitorSTAR->defparameter(_Nil<T_O>());
+        _sym_STARwatchDynamicBindingStackSTAR->defparameter(_Nil<T_O>());
 	Cons_sp hooks = Cons_O::createList(
 	    Cons_O::create(Str_O::create("l"),_sym_loadSource),
 	    Cons_O::create(Str_O::create("L"),_sym_loadSource),
@@ -918,6 +921,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 	Cons_sp pair = Cons_O::create(access_fn,update_fn);
 	Cons_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue().as_or_nil<Cons_O>();
 	_sym_STARsystem_defsetf_update_functionsSTAR->defparameter(Cons_O::create(pair,list));
+        _sym_STARmonitorRegisterSourceInfoSTAR->defparameter(_Nil<T_O>());
     }
 
 };
@@ -929,7 +933,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 
-#if !defined(USE_MPS)
+#if defined(USE_REFCOUNT)
 #define EXPAND_CLASS_MACROS
 #define _CLASS_MACRO(_T_)    INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #include "core_initClasses_inc.h"

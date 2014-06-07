@@ -42,7 +42,7 @@ public:
     T_mv activate( ActivationFrame_sp closedEnv,const_ActivationFrame_spREF frame)
     {
 	T_sp receiver = frame->entry(this->_SingleDispatchArgumentIndex);
-	mem::smart_ptr<OT> obj = receiver.as<OT>();
+        gctools::smart_ptr<OT> obj = receiver.as<OT>();
 	T_mv result = ((obj.get())->*fptr)(frame,this->_SingleDispatchArgumentIndex);
 	return result;
     }

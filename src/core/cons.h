@@ -88,7 +88,7 @@ namespace core {
     SMART(Cons);
 };
 
-template<> struct gctools::GCAllocatorInfo<core::Cons_O> {
+template<> struct gctools::GCInfo<core::Cons_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
@@ -141,8 +141,8 @@ namespace core {
 	static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8 );
 	static Cons_sp create(T_sp car, T_sp cdr)
 	{
-//            Cons_sp ll = gctools::GCObjectAllocator<Cons_O>::allocate();
-            GC_ALLOCATE(Cons_O,ll);
+            Cons_sp ll = gctools::GCObjectAllocator<Cons_O>::allocate();
+//            GC_ALLOCATE(Cons_O,ll);
             ll->setCar(car);
             ll->setOCdr(cdr);
 	    return ll;
@@ -281,7 +281,7 @@ namespace core {
 
 	/*! Get the data for the first element */
 	template <class o_class>
-	mem::smart_ptr<o_class> car() { ASSERTNOTNULL(this->_Car);return this->_Car.as<o_class>();};
+	gctools::smart_ptr<o_class> car() { ASSERTNOTNULL(this->_Car);return this->_Car.as<o_class>();};
 
 	virtual bool equal(T_sp obj) const;
         virtual bool equalp(T_sp obj) const;
@@ -345,7 +345,7 @@ namespace core {
 
 	/*! Return an arbitrary member of the list or an empty member*/
 	template <class o_class>
-	mem::smart_ptr<o_class> listref(int i) { return this->olistref(i).as<o_class>();};
+	gctools::smart_ptr<o_class> listref(int i) { return this->olistref(i).as<o_class>();};
 
 	/*! Return an arbitrary member of the list or an empty member*/
 	T_sp olistref(int index);
@@ -390,7 +390,7 @@ namespace core {
 	    return this->olookupKeyObject(key);
 	}
 	template <class oreturnType, class string>
-	mem::smart_ptr<oreturnType> lookup(Symbol_sp s)
+	gctools::smart_ptr<oreturnType> lookup(Symbol_sp s)
 	{
 	    T_sp oret = this->olookupKeyObject(s);
 	    return oret.as<oreturnType>();
@@ -717,7 +717,7 @@ namespace core
     }
     
 }; // core namespace
-template<> struct gctools::GCAllocatorInfo<core::CompiledBody_O> {
+template<> struct gctools::GCInfo<core::CompiledBody_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;

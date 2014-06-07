@@ -208,7 +208,7 @@ namespace core
 //	PYTHON_CLASS_2BASES(Pkg(),Vector,"","",_LISP)
 #ifdef USEBOOSTPYTHON
     boost::python::class_< Vector_O,
-			   mem::smart_ptr< Vector_O >,
+			   gctools::smart_ptr< Vector_O >,
 	    boost::python::bases< Vector_O::Bases::Base1, Vector_O::Bases::Base2>, 
 	boost::noncopyable > ( "Vector_O", boost::python::no_init )
 //	.initArgs("(self)")

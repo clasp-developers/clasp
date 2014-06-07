@@ -6,11 +6,12 @@ using [ os.environ CLASP_TOOLSET ] ;
 
 
 import feature ;
-feature.feature gc : refcount boehm mps
+feature.feature gc : refcount boehm mps mps-prep
                 : symmetric implicit composite propagated link-incompatible ;
 feature.compose <gc>refcount : <define>USE_REFCOUNT ;
 feature.compose <gc>boehm : <define>USE_BOEHM ;
 feature.compose <gc>mps : <define>USE_MPS ;
+feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # used for testing MPS
 
 
 

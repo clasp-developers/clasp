@@ -49,7 +49,9 @@ namespace policies {
     template<typename Cond, typename ARG>
     void ReturnValueWhen(core::MultipleValues& mv, int& idx, Cond, ARG&& a)
     {
-        mv.valueSet(idx++,translate::to_object<ARG>::convert(a));
+        mv.emplace_back(translate::to_object<ARG>::convert(a));
+        ++idx;
+//        mv.valueSet(idx++,translate::to_object<ARG>::convert(a));
     }
 
     template<typename ARG>

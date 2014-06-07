@@ -82,7 +82,7 @@ int SymbolToEnumConverter_O::enumIndexForSymbol(Symbol_sp sym)
 Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index)
 {_OF();
     Fixnum_sp indexKey = Fixnum_O::create(index);
-    ASSERTF(this->_EnumToSymbol->contains(indexKey),BF("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") % index % this->_WhatTheEnumsRepresent );
+    ASSERTF(this->_EnumToSymbol->contains(indexKey),BF("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") % index % this->_WhatTheEnumsRepresent.c_str() );
     return this->_EnumToSymbol->gethash(indexKey).as<Symbol_O>();
 }
 
@@ -142,7 +142,7 @@ bool SymbolToEnumConverter_O::recognizesSymbol(Symbol_sp sym)
     {_G();
 	stringstream ss;
 	ss << "#<" <<this->_instanceClass()->classNameAsString() << " ";
-	ss << " :info " << this->_WhatTheEnumsRepresent << " ";
+	ss << " :info " << this->_WhatTheEnumsRepresent.c_str() << " ";
         this->_EnumToSymbol->mapHash( [&ss] (T_sp k, T_sp v) {
                 ss << "#<entry " << _rep_(k) << " " <<_rep_(v) << "> ";
             } );

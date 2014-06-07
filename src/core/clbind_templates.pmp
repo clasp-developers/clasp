@@ -43,7 +43,7 @@ $for template_ [[
                 $if retVoid [[]] $else [[ RT retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
             $if numArgs>0 [[
             core::MultipleValues& returnValues = _lisp->multipleValues();
-            returnValues.setMaxSize();
+            returnValues.setSize(0);
             ]]
             $if retVoid [[
                     $if numArgs==0 [[]] $else [[ int oidx = 0; ]]
@@ -59,10 +59,10 @@ $for template_ [[
                     $if numArgs==0 [[
                             return Values0<core::T_O>();
                             ]] $else [[
-                            return mem::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+                            return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
                             ]]
                     ]] $else [[
-                    return mem::multiple_values<T_O>(translate::to_object<RT>::convert(retval),oidx);
+                    return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(retval),oidx);
                     ]]
           
                 }

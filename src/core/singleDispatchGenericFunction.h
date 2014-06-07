@@ -104,8 +104,6 @@ namespace core
 		   SingleDispatchGenericFunction_sp gf,
 		   Symbol_sp emf_name,
 		   SingleDispatchMethod_sp cur_method );
-        GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-
         DISABLE_NEW();
 
         virtual T_mv activate( ActivationFrame_sp closedEnv,int nargs, ArgArray args )

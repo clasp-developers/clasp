@@ -81,6 +81,7 @@ namespace reg {
     }
 };
 
+
     void lisp_errorDereferencedNil()
     {
         SIMPLE_ERROR(BF("Tried to dereference nil"));
@@ -109,7 +110,7 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
         core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("given class_id %lu symbol was not defined") % givenTyp );
     }
 
-    mem::smart_ptr<core::T_O> obj(objP);
+    gctools::smart_ptr<core::T_O> obj(objP);
     TYPE_ERROR(obj,expectedSym);
 }
 
@@ -139,7 +140,7 @@ core::Lisp_sp _lisp;
              __builtin_debugtrap();
         };
 
-#if defined(USE_MPS)
+#if defined(USE_MPS)  && !defined(RUNNING_GC_BUILDER)
 	string kindName = gctools::obj_name((gctools::GCKindEnum)(kind));
 	printf("%s:%d brcl_mps_allocation   base: %p  objAddr: %p  size: %3d  kind[%x/%s]  \n",
                __FILE__, __LINE__,
@@ -180,7 +181,7 @@ void brcl_mps_debug_scan_object(gctools::GCObject* dobj)
 #if defined(USE_MPS)
     if ( core::T_O* tobj_gc_safe = dynamic_cast<core::T_O*>(dobj) )
     {
-	mem::smart_ptr<core::T_O> tsp(tobj_gc_safe);
+        gctools::smart_ptr<core::T_O> tsp(tobj_gc_safe);
 	printf("brcl_mps_debug_scan_object   T_O*: %p\n", tobj_gc_safe );
     }
 #endif
@@ -236,6 +237,7 @@ namespace core
 
     int _global_signalTrap = 0;
 
+    
     void lisp_processSignal(int signo)
     {
         SET_SIGNAL(0);
@@ -258,18 +260,25 @@ namespace core
     }
 
 
+    void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol) {
+        if ( _sym_STARallCxxClassesSTAR->symbolValueUnsafe() ) {
+            _sym_STARallCxxClassesSTAR->setf_symbolValue(Cons_O::create(classSymbol,_sym_STARallCxxClassesSTAR->symbolValue()));
+        }
+    };
+
+    void lisp_symbolSetSymbolValue(Symbol_sp sym, T_sp val)
+    {
+        sym->setf_symbolValue(val);
+    }
+
+
+
     Symbol_sp lisp_symbolNil()
     {
         return _Nil<Symbol_O>();
     }
 
 
-
-
-    GC_RESULT Creator::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-    {
-        IMPLEMENT_MEF(BF("Subclass must implement AllocatorFunction::onHeapScanGCRoots"));
-    }
 
 
 
@@ -1257,6 +1266,7 @@ namespace core
     {_G();
 // # p r a g m a omp critical ( printv )
 	{
+            IMPLEMENT_MEF(BF("Make sure malloc works\n"));
 	    va_list	arg_ptr;
 	    char	*outBuffer;
 	    char	*newOutBuffer;
@@ -1570,7 +1580,7 @@ namespace core
     {
 	Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
         Cons_O::CdrType_sp* curP = &first;
-//        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
+//        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
 	for ( int i(0); i<nargs; ++i ) {
 	    Cons_sp one = Cons_O::create(args[i]);
             *curP = one; // cur.setPointee(one); //*cur = one;

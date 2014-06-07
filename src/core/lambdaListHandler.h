@@ -91,11 +91,11 @@ namespace core
 	Cons_sp 			_DeclareSpecifierList;
         gctools::Vec0<RequiredArgument>	_RequiredArguments;
         gctools::Vec0<OptionalArgument>	_OptionalArguments;
-	RestArgument			        _RestArgument;
+	RestArgument			_RestArgument;
         gctools::Vec0<KeywordArgument>	_KeywordArguments;
-	T_sp				        _AllowOtherKeys;
-        gctools::Vec0<AuxArgument>		_AuxArguments;
-	string				        _Comment;
+	T_sp				_AllowOtherKeys;
+        gctools::Vec0<AuxArgument>	_AuxArguments;
+        gctools::gcstring	        _Comment;
 	// -- calculated info --
 	int				_NumberOfLexicalVariables;
 	VectorObjects_sp 		_LexicalVariableNamesForDebugging;
@@ -129,7 +129,7 @@ namespace core
 	*/
 
 	void setComment(const string& s) { this->_Comment = s;};
-	string getComment() const { return this->_Comment;};
+	string getComment() const { return this->_Comment.asStdString();};
 
 	void process_declares(Cons_sp declares) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 

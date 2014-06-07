@@ -1008,7 +1008,7 @@ namespace core
 		{
 		    throw returnFrom;
 		}
-		result = mem::multiple_values<T_O>::createFromValues();  // returnFrom.getReturnedObject();
+		result = gctools::multiple_values<T_O>::createFromValues();  // returnFrom.getReturnedObject();
 	    }
 	    LOG(BF("Leaving sp_block"));
             _lisp->exceptionStack().unwind(frame);
@@ -1055,7 +1055,7 @@ namespace core
                 mv->loadFromVec0(save);
                 throw;
             }
-	    return mem::multiple_values<T_O>::createFromVec0(save);
+	    return gctools::multiple_values<T_O>::createFromVec0(save);
 	}
 
 #else // old
@@ -1081,7 +1081,7 @@ namespace core
 		  eval::sp_progn(cCdr(args),environment);
 		  throw;
 	      }
-	    return mem::multiple_values<T_O>::createFromVec0(save);
+	    return gctools::multiple_values<T_O>::createFromVec0(save);
 	}
   #else
         // original
@@ -1122,7 +1122,7 @@ namespace core
                 {
                     throw catchThrow;
                 }
-                result = mem::multiple_values<T_O>::createFromValues();
+                result = gctools::multiple_values<T_O>::createFromValues();
             }
             _lisp->exceptionStack().unwind(frame);
 	    return result;
@@ -1238,7 +1238,9 @@ namespace core
 						     Cons_O::create(
 							 af_functionBlockName(name),
 							 code)));
-		_lisp->sourceManager()->duplicateSourceInfo(body,code);
+                if ( _lisp->sourceDatabase().notnilp() ) {
+                    _lisp->sourceDatabase()->duplicateSourceInfo(body,code);
+                }
 	    }
 	    Function_sp proc = Interpreted_O::create(name,llh,declares,docstring,code,env,kw::_sym_function);
 	    return proc;

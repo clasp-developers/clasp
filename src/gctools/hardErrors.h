@@ -27,6 +27,12 @@ namespace core {
 
 #define THROW_HARD_ERROR(fmt) {dbg_hook((fmt).str().c_str());core::errorFormatted(fmt);throw(core::HardError(__FILE__,__FUNCTION__,__LINE__,fmt));}
 #define HARD_SUBCLASS_MUST_IMPLEMENT() THROW_HARD_ERROR(boost::format("Subclass must implement"));
-
+#ifdef DEBUG_ASSERTS
+#define GCTOOLS_ASSERT(x) {if (!(x)) THROW_HARD_ERROR(BF("Failed gctools assertion %s") % #x);};
+#define GCTOOLS_ASSERTF(x,fmt) {if (!(x)) THROW_HARD_ERROR(fmt);};
+#else
+#define GCTOOLS_ASSERT(x)
+#define GCTOOLS_ASSERTF(x,f)
+#endif
 
 #endif // gc_hardErrors_H

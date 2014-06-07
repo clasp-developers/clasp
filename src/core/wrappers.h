@@ -27,7 +27,7 @@ namespace core
     template <typename RT,typename... ARGS>
     void af_def(const string& packageName, const string& name, RT (*fp)(ARGS...) , const string& arguments="", const string& declares="", const string& docstring="", int locked=1 )
     {_G();
-        Functoid* f = gctools::allocateFunctoid<VariadicFunctoid<RT(ARGS...)> >(packageName+"::"+name,fp);
+        Functoid* f = gctools::ClassAllocator<VariadicFunctoid<RT(ARGS...)> >::allocateClass(packageName+"::"+name,fp);
         lisp_defun_lispify_name(packageName,name,f,arguments,declares,docstring,locked,true,sizeof...(ARGS));
     }
 
@@ -92,7 +92,7 @@ namespace core {
 
     inline void defmacro(const string& packageName, const string& name, T_mv (*mp)(Cons_sp,Environment_sp env),const string& arguments="", const string& declares="", const string& docstring="", bool autoExport=true)
     {_G();
-	Functoid* f = gctools::allocateFunctoid<ActivationFrameMacroWrapPtr>("macro->"+packageName+"::"+name,mp);
+	Functoid* f = gctools::ClassAllocator<ActivationFrameMacroWrapPtr>::allocateClass("macro->"+packageName+"::"+name,mp);
 	lisp_defmacro(packageName,name,f,arguments,declares,docstring,autoExport);
     }
 
@@ -151,9 +151,8 @@ namespace core {
 
 	    /*! Accumulate all of the classes in reverse order of how they were initialized
 	      in the core::*all-cxx-classes* variable */
-	    if ( _sym_STARallCxxClassesSTAR->symbolValueUnsafe() ) {
-		_sym_STARallCxxClassesSTAR->setf_symbolValue(Cons_O::create(OT::static_classSymbol(),_sym_STARallCxxClassesSTAR->symbolValue()));
-	    }
+            lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(OT::static_classSymbol());
+
 	    // 
 	    // If the class isn't in the class table then add it
 	    //
@@ -200,7 +199,7 @@ namespace core {
 	class_& def( string const& name, RT (OT::*mp)(ARGS...),
                      string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
 	{_G();
-	    Functoid* m = gctools::allocateFunctoid<VariadicMethoid<0,RT(OT::*)(ARGS...)>>(name,mp);
+	    Functoid* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...)>>::allocateClass(name,mp);
 	    lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
 	    return *this;
 	}
@@ -211,7 +210,7 @@ namespace core {
 	class_& def( string const& name, RT (OT::*mp)(ARGS...) const,
 		     string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
 	{_G();
-	    Functoid* m = gctools::allocateFunctoid<VariadicMethoid<0,RT(OT::*)(ARGS...) const>>(name,mp);
+	    Functoid* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...) const>>::allocateClass(name,mp);
 	    lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
 	    return *this;
 	}
@@ -248,7 +247,7 @@ namespace core {
 	{_G();
 	    this->_PredefinedConverterSymbolId = symbol;
 	    this->_Converter = SymbolToEnumConverter_O::create(title);
-	    symbol->setf_symbolValue(this->_Converter);
+	    lisp_symbolSetSymbolValue(symbol,this->_Converter);
 	}
 
 	enum_& value(Symbol_sp const& sym, X value )
@@ -280,7 +279,7 @@ namespace core {
 
 
 
-//ostream& operator<<(ostream& out, mem::smart_ptr<core::T_O> obj);
+//ostream& operator<<(ostream& out, gctools::smart_ptr<core::T_O> obj);
 
 
 

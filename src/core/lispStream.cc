@@ -1340,13 +1340,19 @@ T_sp brcl_close(T_sp strm, bool abort)
 	this->_InStream.seekg(0,std::ios_base::end);
 	LongLongInt fileSize = this->_InStream.tellg();
 	this->_InStream.seekg(0,std::ios_base::beg);
-	char* buffer = (char*)malloc(fileSize+1);
-	for ( LongLongInt i=0; i<fileSize; i++ )
-	{
-	    buffer[i] = this->get(); // read file and keep track of line numbers
-	}
-	buffer[fileSize] = '\0';
-	string fileContents = buffer;
+        string fileContents;
+        char* buffer = (char*)malloc(fileSize+1);
+        try {
+            for ( LongLongInt i=0; i<fileSize; i++ )
+            {
+                buffer[i] = this->get(); // read file and keep track of line numbers
+            }
+            buffer[fileSize] = '\0';
+            fileContents = buffer;
+            free(buffer);
+        } catch (...) {
+            free(buffer);
+        }
 	return fileContents;
     }
 
@@ -2246,6 +2252,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 	    setvbuf(fp, new_buffer, buffer_mode, buffer_size);
 	} else
 	    setvbuf(fp, NULL, _IONBF, 0);
+        
     }
     return this->sharedThis<FDStream_O>();
 };

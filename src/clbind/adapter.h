@@ -37,7 +37,7 @@ namespace clbind {
         typedef T* enable_wrapper_from_this;
         typedef T* enable_slots;
         typedef Wrapper<T,HolderType>   WrapperType;
-        typedef mem::smart_ptr<WrapperType> SmartPtrType;
+        typedef gctools::smart_ptr<WrapperType> SmartPtrType;
     private:
         string                          _Name;
         gctools::Vec0<core::T_sp>          _Slots;
@@ -50,8 +50,8 @@ namespace clbind {
     public:
         bool cxxAdapterClassP() const { return true;};
 
-        SmartPtrType wrapper_from_this() const { return mem::smart_ptr<WrapperType>(this->_WeakWrapper.get()); };//mem::smart_ptr<WrapperType>(this->_wrapper);};
-        void _internal_accept_wrapper(mem::smart_ptr<WrapperType>& wrapper) { this->_WeakWrapper.set(wrapper.pxget());};
+        SmartPtrType wrapper_from_this() const { return gctools::smart_ptr<WrapperType>(this->_WeakWrapper.get()); };//gctools::smart_ptr<WrapperType>(this->_wrapper);};
+        void _internal_accept_wrapper(gctools::smart_ptr<WrapperType>& wrapper) { this->_WeakWrapper.set(wrapper.pxget());};
 
         void* address() const { return const_cast<void*>(static_cast<const void*>(this)); };
         void initializeSlots(int numberOfSlots)
@@ -98,13 +98,13 @@ namespace clbind {
 
 
     template <class T, class HolderType>
-    void support_enable_wrapper_from_this(mem::smart_ptr<Wrapper<T,HolderType> >& wrapper, T* ptr,typename T::enable_wrapper_from_this)
+    void support_enable_wrapper_from_this(gctools::smart_ptr<Wrapper<T,HolderType> >& wrapper, T* ptr,typename T::enable_wrapper_from_this)
     {
         ptr->_internal_accept_wrapper(wrapper);
     }
 
     template <class T, class HolderType>
-    void support_enable_wrapper_from_this(mem::smart_ptr<Wrapper<T,HolderType> >& wrapper, T* ptr, ...) {}
+    void support_enable_wrapper_from_this(gctools::smart_ptr<Wrapper<T,HolderType> >& wrapper, T* ptr, ...) {}
 
  
 

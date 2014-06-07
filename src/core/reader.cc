@@ -269,7 +269,9 @@ namespace core
 		}
 //		SourceLocation sourceLoc = this->_Input->sourceLocation();
 		result = Cons_O::createList(cl::_sym_quote, quotedObject );
-		_lisp->sourceManager()->registerSourceInfoFromStream(result,this->_Input);
+                if ( _lisp->sourceDatabase().notnilp() ) {
+                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
+                }
 	    goto RETURN;
 	    }
 	    case quotedString:
@@ -293,11 +295,13 @@ namespace core
 		}
 //		SourceLocation sl = this->_Input->sourceLocation();
 		result = Cons_O::createList(cl::_sym_function, quotedObject);
-		_lisp->sourceManager()->registerSourceInfo(result,
+                if ( _lisp->sourceDatabase().notnilp() ) {
+                    _lisp->sourceDatabase()->registerSourceInfo(result,
 							   this->_Input->sourceFileInfo(),
 							   this->_Input->lineNumber(),
 							   this->_Input->column(),
 							   this->_Input->tell());
+                }
 		goto RETURN;
 	    }
 	    case sharpMinus:
@@ -373,10 +377,11 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_backquote, quotedObject);
-		_lisp->sourceManager()->registerSourceInfoFromStream(result,this->_Input);
+                if ( _lisp->sourceDatabase().notnilp() ) {
+                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
+                }
 		goto RETURN;
 	    }
-	    case doubleBackQuote:
 // This is like a backQuote but two arguments must follow.
 // The first element is a template Cons or SourceCodeCons and the second object is the object being backQuoted.
 // The doubleBackQuote special creates an object of the same class as the template
@@ -391,6 +396,7 @@ namespace core
 // --> *b* is a SourceCodeCons whose lineNumber/fileName points to where *a* was defined.
 //
 
+	    case doubleBackQuote:
 	    {
 		T_sp templateObject = this->primitive_read(true,_Nil<T_O>(),true);
 		T_sp quotedObject = this->primitive_read(true,_Nil<T_O>(),true);
@@ -400,7 +406,9 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_double_backquote, templateObject);
-		_lisp->sourceManager()->registerSourceInfoFromStream(result,this->_Input);
+                if ( _lisp->sourceDatabase().notnilp() ) {
+                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
+                }
 		goto RETURN;
 	    }
 	    case comma:
@@ -412,7 +420,9 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_unquote,quotedObject);
-		_lisp->sourceManager()->registerSourceInfoFromStream(result,this->_Input);
+                if ( _lisp->sourceDatabase().notnilp() ) {
+                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
+                }
 		goto RETURN;
 	    }
 	    case commaAt:
@@ -424,7 +434,9 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_unquote_splice,quotedObject);
-		_lisp->sourceManager()->registerSourceInfoFromStream(result,this->_Input);
+                if ( _lisp->sourceDatabase().notnilp() ) {
+                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
+                }
 		goto RETURN;
 	    }
 	    case symbol:
@@ -711,8 +723,11 @@ namespace core
 		END_OF_FILE_ERROR(this->_Input);
 	    }
 	    Cons_sp one = Cons_O::create(element, _Nil<Cons_O>());
-	    _lisp->sourceManager()->registerSourceInfo(one,af_sourceFileInfo(this->_Input),
+            SourceManager_sp sm = _lisp->sourceDatabase();
+            if ( sm.notnilp() ) {
+                sm->registerSourceInfo(one,af_sourceFileInfo(this->_Input),
 				      lineNumber,column,filePos);
+            }
 	    cur->setCdr(one);
 	    cur = one;
 	}

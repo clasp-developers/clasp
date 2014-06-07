@@ -14,9 +14,9 @@ namespace core
 	LISP_TEMPLATE_CLASS(Vector_template_O);
     public:
 	typedef T valueType;
-	typedef mem::smart_ptr<T> sharedValueType;
+	typedef gctools::smart_ptr<T> sharedValueType;
 	typedef Vector_template_O<T> vectorType;
-	typedef mem::smart_ptr<vectorType> sharedVectorType;
+	typedef gctools::smart_ptr<vectorType> sharedVectorType;
     public:
 	Vector_template_O() : T_O(), Vector_O() {};
 	virtual ~Vector_template_O() {};

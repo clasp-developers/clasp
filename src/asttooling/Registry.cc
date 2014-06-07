@@ -94,7 +94,7 @@ namespace asttooling {
                                                   core::lispify_intern_keyword(#name)) \
             };                                                          \
             registerMatcher(core::lispify_intern_keyword(#name),  \
-                            gctools::allocateClass<internal::OverloadedMatcherDescriptor>(Callbacks) \
+                            gctools::ClassAllocator<internal::OverloadedMatcherDescriptor>::allocateClass(Callbacks) \
             /*new internal::OverloadedMatcherDescriptor(Callbacks)*/   \
             );                                                       \
     } while (0)

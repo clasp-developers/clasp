@@ -30,7 +30,7 @@
 #endif
 #endif
 
-namespace mem {
+namespace gctools {
 //
 //  tagged_ptr
 //
@@ -348,10 +348,10 @@ template<class E, class T, class Y> std::basic_ostream<E, T> & operator<< (std::
 
 template< class T > struct hash;
 
-template< class T > std::size_t hash_value( mem::tagged_ptr<T> const & p )
+template< class T > std::size_t hash_value( gctools::tagged_ptr<T> const & p )
 {
     return boost::hash< T* >()( p.get() );
 }
 
-}; // namespace mem
+}; // namespace gctools
 #endif  // #ifndef _TAGGED_PTR_HPP_INCLUDED

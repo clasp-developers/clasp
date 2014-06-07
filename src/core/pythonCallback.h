@@ -41,7 +41,7 @@ namespace core {
 
 
 class	Dumb_PythonCallback;
-    typedef	mem::smart_ptr<Dumb_PythonCallback>	RPPythonCallback;
+    typedef	gctools::smart_ptr<Dumb_PythonCallback>	RPPythonCallback;
 class	Dumb_PythonCallback{
 
 public:

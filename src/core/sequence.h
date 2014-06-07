@@ -47,7 +47,7 @@ TRANSLATE(core::Sequence_O);
 
 
 
-namespace mem {
+namespace gctools {
     template<> inline bool isNilDowncastableTo<core::Sequence_O>() { return true;};
 };
 

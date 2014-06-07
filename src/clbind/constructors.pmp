@@ -46,13 +46,13 @@ $var NumArgs = 8
                                 ]] $else [[
                                 int oidx = 1;
                                 ]]
-                            returnValues.setMaxSize();
+                            returnValues.setSize(0);
                             $for Args_ [[
                                 ReturnValueWhen(returnValues,oidx,
                                                 typename or_<typename Contains_<Pols,pureOutValue_<$Args_> >::type,
                                                 typename Contains_<Pols,    outValue_<$Args_> >::type >::type(),a$Args_._v);
                                 ]]
-                            return mem::multiple_values<T_O>(retval,oidx);
+                            return gctools::multiple_values<T_O>(retval,oidx);
                     }
                 };
                 ]]

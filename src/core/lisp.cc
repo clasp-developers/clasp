@@ -361,8 +361,15 @@ namespace core
 #endif
 
 
+    void testStrings()
+    {
+        Str_sp str = Str_O::create("This is a test");
+        printf("%s:%d  Str_sp = %s\n", __FILE__, __LINE__, str->c_str() );
+    }
+
     void Lisp_O::startupLispEnvironment(Bundle* bundle)
     {
+
 	/*! There was a problem iterating over maps and sets when garbage collection
 	  they were going into infinite loops - so I was testing them here within
 	  the context of the entire package */
@@ -403,7 +410,6 @@ namespace core
 	    }
 	}
 	{_BLOCK_TRACE("Create some housekeeping objects");
-	    this->_Roots._SourceManager = SourceManager_O::create();
             this->_Roots._LoadTimeValueArrays = HashTableEqual_O::create_default();
             this->_Roots._SetfDefinitions = HashTableEq_O::create_default();
             this->_Roots._SingleDispatchGenericFunctionTable = HashTableEq_O::create_default();
@@ -439,6 +445,12 @@ namespace core
 #define Use_CorePkg
 //#include "core_initScripting_inc.h"
 #undef Use_CorePkg
+
+            testStrings();
+
+
+
+
 	    initialize_foundation();
 	    initialize_primitives();
 	    initialize_stacks();
@@ -484,6 +496,7 @@ namespace core
 //	    initializeCandoClos(_lisp);
 	}
 	{
+
 	    // setup the SYS logical-pathname-translations
 	    Cons_sp pts = Cons_O::createList(
 		Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
@@ -559,8 +572,8 @@ namespace core
 	    getcwd(true); // set *default-pathname-defaults*
 	};
 	{_BLOCK_TRACE("Creating Caches for CLOS");
-	    this->_Roots._MethodCachePtr = gctools::allocateClass<Cache>(MaxFunctionArguments,ClosCacheSize);
-	    this->_Roots._SlotCachePtr = gctools::allocateClass<Cache>(MaxClosSlots,ClosCacheSize);
+	    this->_Roots._MethodCachePtr = gctools::ClassAllocator<Cache>::allocateClass(MaxFunctionArguments,ClosCacheSize);
+	    this->_Roots._SlotCachePtr = gctools::ClassAllocator<Cache>::allocateClass(MaxClosSlots,ClosCacheSize);
 	}
 #if 0 // wtf is this???
 	if ( this->_dont_load_startup )
@@ -1041,6 +1054,26 @@ namespace core
 	}
 	Package_sp getPackage = this->_Roots._Packages[fi->second];
 	return getPackage;
+    }
+
+
+    SourceManager_sp Lisp_O::sourceDatabase() const
+    {_OF();
+	// At startup the *package* symbol may not yet
+	// be defined or bound to a package - in that case just say we are in the core package
+	//
+	T_sp cur;
+	if ( IS_SYMBOL_UNDEFINED(_sym_STARsourceDatabaseSTAR) )
+	{
+	    return _Nil<SourceManager_O>();
+	}
+	if ( !_sym_STARsourceDatabaseSTAR->specialP() )
+	{
+	    return _Nil<SourceManager_O>();
+	}
+	cur = _sym_STARsourceDatabaseSTAR->symbolValue();
+        if ( cur.nilp() ) return cur;
+        return cur.as<SourceManager_O>();
     }
 
 
@@ -2051,7 +2084,9 @@ namespace core
 //	    ValueFrame_sp macroHookArgs(ValueFrame_O::create_fill(expansionFunction,form,env,_Nil<ActivationFrame_O>()));
 	    MacroExpansionIHF _frame(_lisp->invocationHistoryStack(),hookFunc);
 	    T_sp expanded = hookFunc->INVOKE(3, macroHookArgs); // eval::applyFunctionToActivationFrame(hookFunc,macroHookArgs);
-	    _lisp->sourceManager()->duplicateSourceInfoForMacroExpansion(form,expansionFunction,expanded);
+            if ( _lisp->sourceDatabase().notnilp() ) {
+                _lisp->sourceDatabase()->duplicateSourceInfoForMacroExpansion(form,expansionFunction,expanded);
+            }
 	    return(Values(expanded,_lisp->_true()) );
 	}
 	return(Values(form,_lisp->_false()) );

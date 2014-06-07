@@ -93,7 +93,7 @@ namespace core
         template <typename RT,class... ARGS>
         externalClass_& def( string const& name, RT (OT::*mp)(ARGS...), string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
         {_G();
-            Functoid* m = gctools::allocateFunctoid<VariadicMethoid<0,RT(OT::*)(ARGS...)>>(name,mp);
+            Functoid* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...)>>::allocateClass(name,mp);
             lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
             return *this;
         }
@@ -102,7 +102,7 @@ namespace core
         externalClass_& def( string const& name, RT (OT::*mp)(ARGS...) const,
                              string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
         {_G();
-            Functoid* m = gctools::allocateFunctoid<VariadicMethoid<0,RT(OT::*)(ARGS...) const>>(name,mp);
+            Functoid* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...) const>>::allocateClass(name,mp);
             lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
             return *this;
         }
@@ -111,7 +111,7 @@ namespace core
         externalClass_& def( const string& name, RT (OT::ExternalType::*mp)(ARGS...),
                              const string& lambda_list="", const string& declares="", const string& docstring="", bool autoExport=true )
         {_G();
-            Functoid* m = gctools::allocateFunctoid<IndirectVariadicMethoid<policies_<>,OT,RT(OT::ExternalType::*)(ARGS...)>>(name,mp);
+            Functoid* m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>,OT,RT(OT::ExternalType::*)(ARGS...)>>::allocateClass(name,mp);
             lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
             return *this;
         }
@@ -121,7 +121,7 @@ namespace core
         externalClass_& def( const string& name, RT (OT::ExternalType::*mp)(ARGS...) const,
                              const string& lambda_list="", const string& declares="", const string& docstring="", bool autoExport=true )
         {_G();
-            Functoid* m = gctools::allocateFunctoid<IndirectVariadicMethoid<policies_<>,OT,RT(OT::ExternalType::*)(ARGS...) const>>(name,mp);
+            Functoid* m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>,OT,RT(OT::ExternalType::*)(ARGS...) const>>::allocateClass(name,mp);
             lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
             return *this;
         }

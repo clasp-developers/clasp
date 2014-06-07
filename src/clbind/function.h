@@ -63,7 +63,7 @@ namespace clbind {
 
             void register_() const
             {
-                core::Functoid* functoid = gctools::allocateFunctoid<VariadicFunctoid<FunctionPointerType,Policies>>(name,functionPtr);
+                core::Functoid* functoid = gctools::ClassAllocator<VariadicFunctoid<FunctionPointerType,Policies>>::allocateClass(name,functionPtr);
                 core::lisp_defun_lispify_name(core::lisp_currentPackageName()
                                               , name
                                               , functoid

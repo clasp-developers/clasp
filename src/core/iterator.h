@@ -41,7 +41,7 @@ public:
     virtual bool notDone() { return !this->isDone(); };
     virtual T_sp currentObject() {_OF(); SUBCLASS_MUST_IMPLEMENT(); };
     template <typename OType>
-    mem::smart_ptr<OType> current() { return downcast<OType>(this->currentObject());};
+    gctools::smart_ptr<OType> current() { return downcast<OType>(this->currentObject());};
 
 
 //	Iterator_O( const Iterator_O& ss ); //!< Copy constructor

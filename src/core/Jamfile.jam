@@ -43,6 +43,10 @@ local unity_sources =
       all.cc ;
 
 local sources = 
+	    str.cc
+      unixfsys.cc
+	    primitives.cc
+      weakHashTable.cc
 	    sourceFileInfo.cc
       lisp.cc
 	    symbolList.cc
@@ -74,7 +78,6 @@ local sources =
 	    standardClass.cc
 	    compiler.cc
 	conditions.cc
-	    primitives.cc
       cache.cc
 		object.cc
       stdClass.cc
@@ -98,7 +101,6 @@ local sources =
 	    forwardReferencedClass.cc
 	    lispList.cc
 	    character.cc
-	    str.cc
 	    lispString.cc
 	    designators.cc
 	    sequence.cc
@@ -154,7 +156,6 @@ local sources =
       numberToString.cc
       load.cc
       num_co.cc
-      unixfsys.cc
       pathname.cc
       commandLineOptions.cc
       exceptions.cc 

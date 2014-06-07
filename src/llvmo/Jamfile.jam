@@ -75,6 +75,18 @@ obj intrinsics_bitcode_mps : intrinsics.cc
         <gc>mps
 	<cxxflags>"-flto -emit-llvm" ;
 
+obj intrinsics_bitcode_mps_prep : intrinsics.cc
+	/internals/core//bundle
+	/externals//boostAndExpatLibs
+	/externals//llvm_lib
+	:
+	<implicit-dependency>/internals/core//mi
+	<implicit-dependency>/internals/clbind//mi
+	<implicit-dependency>mi
+	<link>static
+        <gc>mps-prep
+	<cxxflags>"-flto -emit-llvm" ;
+
 
 
 install inst_intrinsics_bitcode_refcount : intrinsics_bitcode_refcount :
@@ -95,6 +107,12 @@ install inst_intrinsics_bitcode_mps : intrinsics_bitcode_mps :
         <gc>mps
         ;
 
+install inst_intrinsics_bitcode_mps_prep : intrinsics_bitcode_mps_prep :
+	<variant>debug:<location>$(APP-DEBUG-LIB)
+	<variant>release:<location>$(APP-RELEASE-LIB)
+        <gc>mps-prep
+        ;
+
 alias install_intrinsics_bitcode : inst_intrinsics_bitcode_refcount :
       <gc>refcount
       ;
@@ -105,6 +123,10 @@ alias install_intrinsics_bitcode : inst_intrinsics_bitcode_boehm :
 
 alias install_intrinsics_bitcode : inst_intrinsics_bitcode_mps :
       <gc>mps
+      ;
+
+alias install_intrinsics_bitcode : inst_intrinsics_bitcode_mps_prep :
+      <gc>mps-prep
       ;
 
 cando.bundle $(dir) :
