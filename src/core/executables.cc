@@ -234,7 +234,7 @@ namespace core
 	proc->_Declares = declares;
 	proc->_Code = code;
 	proc->_ClosedEnvironment = environ;
-	SourceFileInfo_mv sfi = af_lookupSourceFileInfo(code);
+	SourceFileInfo_mv sfi = af_walkToFindSourceInfo(code);
 	if ( sfi.number_of_values() > 3 ) {
 	    proc->_SourceFileInfo = sfi;
 	    proc->_LineNumber = sfi.valueGet(1).as<Fixnum_O>()->get();
@@ -677,8 +677,11 @@ namespace core
     {_G();
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
-	ss << " :name " << _rep_(this->_Name) << " ";
-	ss << " :body " << _rep_(this->_Body) << " >";
+	ss << ":name " << _rep_(this->_Name) << " ";
+	ss << ":body " << _rep_(this->_Body) << " ";
+        ss << ":source-file-info " << _rep_(this->_SourceFileInfo) << " ";
+        ss << ":lineno " << this->_LineNumber << " ";
+        ss << ":column " << this->_Column << " >";
 	return ss.str();
     }
 

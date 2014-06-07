@@ -101,6 +101,16 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
 	    $(properties) $(dbg_props) <gc>mps
 	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
 
+	lib $(lib)_mps_prep_opt : 
+	    $(sources) :
+	    $(properties) $(opt_props) <gc>mps-prep
+        <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
+
+	lib $(lib)_mps_prep_dbg :
+	    $(sources) :
+	    $(properties) $(dbg_props) <gc>mps-prep
+	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
+
 
 
 
@@ -110,6 +120,8 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
 	alias $(lib) : $(lib)_boehm_dbg : <gc>boehm <variant>debug ;
 	alias $(lib) : $(lib)_mps_opt : <gc>mps <variant>release ;
 	alias $(lib) : $(lib)_mps_dbg : <gc>mps <variant>debug ;
+	alias $(lib) : $(lib)_mps_prep_opt : <gc>mps-prep <variant>release ;
+	alias $(lib) : $(lib)_mps_prep_dbg : <gc>mps-prep <variant>debug ;
 
 	install bundle : $(lib) : <location>$(.applib) ;
 }

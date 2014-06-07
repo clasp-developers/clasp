@@ -152,7 +152,7 @@ namespace clbind
             SIMPLE_ERROR(BF("This class cannot allocate instances"));
         }//return _Nil<core::T_O>(); };
         Creator* duplicateForClassName(core::Symbol_sp className) {
-            return gctools::allocateCreator<DummyCreator>(core::lisp_symbolNameAsString(className));
+            return gctools::ClassAllocator<DummyCreator>::allocateClass(core::lisp_symbolNameAsString(className));
         }
 
     };
@@ -417,7 +417,7 @@ namespace clbind
 
             void register_() const
             {
-                core::Functoid* methoid = gctools::allocateFunctoid<IndirectVariadicMethoid<Policies,Class,MethodPointerType>>(name,methodPtr);
+                core::Functoid* methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies,Class,MethodPointerType>>::allocateClass(name,methodPtr);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
 //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
 //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -477,7 +477,7 @@ namespace clbind
 
             void register_() const
             {
-                core::Functoid* iterator_methoid = gctools::allocateFunctoid<IteratorMethoid<Policies,Class,Begin,End>>(name,beginPtr,endPtr);
+                core::Functoid* iterator_methoid = gctools::ClassAllocator<IteratorMethoid<Policies,Class,Begin,End>>::allocateClass(name,beginPtr,endPtr);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
 //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
 //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -549,7 +549,7 @@ namespace clbind
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
                 printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
-                core::Functoid* f = gctools::allocateFunctoid<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature> >(tname);
+                core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature> >::allocateClass(tname);
                 lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
             }
 
@@ -575,7 +575,7 @@ namespace clbind
         {
             constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring) : constructor_registration_base<Class,Pointer,default_constructor,Policies>(policies,name,arguments,declares,docstring) {};
             core::Creator* registerDefaultConstructor_() const {
-                core::Creator* allocator = gctools::allocateCreator<DefaultConstructorCreator<Class,Pointer>>();
+                core::Creator* allocator = gctools::ClassAllocator<DefaultConstructorCreator<Class,Pointer>>::allocateClass();
                 return allocator;
             }
         };
@@ -608,7 +608,7 @@ namespace clbind
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
                 printf("%s:%d    constructor_registration_base::register_ called for derivable default constructor %s\n", __FILE__, __LINE__, m_name.c_str());
-                core::Functoid* f = gctools::allocateFunctoid<DerivableDefaultConstructorFunctoid<Policies,Class>>(tname);
+                core::Functoid* f = gctools::ClassAllocator<DerivableDefaultConstructorFunctoid<Policies,Class>>::allocateClass(tname);
                 lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,0);
             }
 
@@ -632,7 +632,7 @@ namespace clbind
             constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring) : constructor_registration_base<Class,reg::null_type,default_constructor,Policies>(policies,name,arguments,declares,docstring) {};
             core::Creator* registerDefaultConstructor_() const {
                 printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-                core::Creator* allocator = gctools::allocateCreator<DerivableDefaultConstructorCreator<Class>>();
+                core::Creator* allocator = gctools::ClassAllocator<DerivableDefaultConstructorCreator<Class>>::allocateClass();
                 return allocator;
             }
 
@@ -693,7 +693,7 @@ namespace clbind
             void register_() const
             {
                 const string n(name);
-                core::Functoid* getter = gctools::allocateFunctoid<GetterMethoid<reg::null_type,Class,Get>>(n,get);
+                core::Functoid* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocateClass(n,get);
 //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
 //                printf("%p\n", i);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();

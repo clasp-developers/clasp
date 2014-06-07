@@ -35,11 +35,11 @@ namespace core
 	static CandoException_sp create(const boost::format& fmt);
 
     private: // instance variables here
-	string _message;
+        gctools::gcstring _message;
 	
     public: // Functions here
 	void setMessage(const string& msg) { this->_message = msg;};
-	string message() const { return this->_message;};
+	string message() const { return this->_message.asStdString();};
 
     }; // CandoException class
     

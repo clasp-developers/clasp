@@ -1,0 +1,116 @@
+#
+# Sample RC file for the debug malloc library
+# Rename this to .dmallocrc and place in your $HOME directory to
+# activate.  See dmalloc.info for more information.
+#
+# $Id: dmallocrc,v 1.32 1998/11/12 21:42:31 gray Exp $
+#
+
+#
+# This file maps tags to certain combinations of debug tokens.  The 
+# tags here are provided as an example.  You can also roll your own.  
+# Lines in this file should have the form:
+#
+#	tag	token1, token2, ...
+#
+# To use the above line you say 'dmalloc tag' which enables the
+# debugging facilities token1, token2, ...  You must pass the output
+# from dmalloc through your shell's eval command to change your
+# environment.  See malloc.info for more information.
+#
+# Lines can end with a \ meaning it continues onto the next line.
+# Lines beginning with '#' and empty lines are ignored
+#
+
+#
+# Token:			Description:
+###########################################################################
+# none				no debugging functionality
+#
+# log-stats			log general statistics
+# log-non-free			log non-freed memory pointers on shutdown
+# log-trans			log memory transactions
+# log-admin			log full administrative information
+# log-blocks			log detailed block information in heap_map
+# log-unknown			log unknown non-freed memory pointers too
+# log-bad-space			log actual bytes from bad pointers
+# log-nonfree-space		log actual bytes in non-freed pointers
+# log-elapsed-time		log elapsed-time for allocated pointer
+# log-current-time		log current-time for allocated pointers
+#
+# check-fence			check fence-post areas
+# check-heap			do general heap checking
+# check-lists			verify internal heap linked-lists
+# check-blank			check to see if blank space is overwritten
+# check-funcs			check the arguments of some routines
+#
+# catch-signals			shutdown the library on SIGHUP, SIGINT, SIGTERM
+# realloc-copy			always copy data to a new pointer when realloc
+# free-blank			overwrite space that is freed
+# error-abort			abort the program (and dump core) on errors
+# alloc-blank			blank space that is to be alloced
+# heap-check-map		log a heap-map every time the heap is checked
+# print-messages		print errors and messages to STDERR
+# catch-null			abort program if library can't get sbrk space
+# never-reuse			never reuse memory that has been freed
+# allow-nonlinear		allow non-linear heap space
+# allow-free-null		allow the freeing of NULL pointers
+# error-dump			dump core on error and then continue
+#
+
+# no debugging (for disabling memory checking)
+none		none
+
+# basic runtime tests
+runtime		log-stats, log-non-free, log-blocks, log-bad-space, \
+		log-unknown, \
+		check-fence, \
+		catch-null
+
+# minimal checking
+low		log-stats, log-non-free, log-blocks, log-bad-space, \
+		log-unknown, log-elapsed-time, \
+		check-fence, \
+		free-blank, error-abort, alloc-blank, catch-null
+
+# significant checking
+medium		log-stats, log-non-free, log-blocks, log-bad-space, \
+		log-unknown, log-elapsed-time, \
+		check-fence, check-heap, check-lists, \
+		realloc-copy, free-blank, error-abort, alloc-blank, \
+		catch-null
+
+# extensive checking
+high		log-stats, log-non-free, log-blocks, log-bad-space, \
+		log-unknown, log-elapsed-time, \
+		check-fence, check-heap, check-lists, check-blank, \
+		check-funcs, \
+		realloc-copy, free-blank, error-abort, alloc-blank, \
+		catch-null
+
+# full logging of statistics
+log		log-stats, log-non-free, log-trans, log-admin, log-blocks, \
+		log-unknown, log-bad-space, log-elapsed-time, \
+		check-fence, \
+		catch-null
+
+# immediate logging of problems in a text-based programs
+text		log-bad-space, log-unknown, \
+		check-fence, \
+		catch-null, print-messages
+
+# full logging of statistics in text programs
+verbose		log-stats, log-non-free, log-trans, log-admin, log-blocks, \
+		log-unknown, log-bad-space, log-elapsed-time, \
+		check-fence, \
+		catch-null, print-messages
+
+# the kitchen-sink minus a couple special tokens:
+#	log-current-time, print-messages, allow-nonlinear, allow-free-null,
+#	error-dump
+all		log-stats, log-non-free, log-trans, log-admin, log-blocks, \
+		log-unknown, log-bad-space, log-elapsed-time, \
+		check-fence, check-heap, check-lists, check-blank, \
+		check-funcs, \
+		catch-signals, realloc-copy, free-blank, error-abort, \
+		alloc-blank, heap-check-map, catch-null, never-reuse

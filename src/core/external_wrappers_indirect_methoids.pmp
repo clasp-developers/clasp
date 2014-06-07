@@ -45,7 +45,7 @@ $var NumArgs = 16
                             {
                                 core::wrongNumberOfArguments(numArgs,(NumParams-countPureOutValues)+1);
                             }
-                            mem::smart_ptr<OT> ot((*args).template as<OT>());
+                            gctools::smart_ptr<OT> ot((*args).template as<OT>());
                             ++args;
                             $for Args_ [[
                                     translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue_<$Args_> >::type > a$Args_(*args);
@@ -54,7 +54,7 @@ $var NumArgs = 16
                                 $if ret==RetVoid [[]] $else [[ RT retval = ]] ((*(ot->wrappedPtr())).*(this->mptr))($for Args_ ,[[a$Args_._v]]);
                             $if numArgs>0 [[
                                     core::MultipleValues& returnValues = _lisp->multipleValues();
-                                    returnValues.setMaxSize();
+                                    returnValues.setSize(0);
                                     ]]
                                 $if ret==RetVoid [[
                                     $if numArgs==0 [[]] $else [[ int oidx = 0; ]]
@@ -70,10 +70,10 @@ $var NumArgs = 16
                                     $if numArgs==0 [[
                                             return Values0<core::T_O>();
                                             ]] $else [[
-                                            return mem::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+                                            return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
                                             ]]
                                     ]] $else [[
-                                    return mem::multiple_values<T_O>(translate::to_object<RT>::convert(retval),oidx);
+                                    return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(retval),oidx);
                                     ]]
           
                                 }

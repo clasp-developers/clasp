@@ -36,7 +36,7 @@ namespace core
     };
 
 }; /* core */
-template<> struct gctools::GCAllocatorInfo<core::HashTableEqual_O> {
+template<> struct gctools::GCInfo<core::HashTableEqual_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;

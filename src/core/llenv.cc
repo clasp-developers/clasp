@@ -92,7 +92,7 @@ int bind_rest_var
 	Cons_O::CdrType_sp rest(_Nil<Cons_O::CdrType_O>());
 	Cons_O::CdrType_sp* cur = &rest;
 	for ( int i(arg_idx); i<n_args; ++i ) {
-	    T_sp obj = mem::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR));
+	    T_sp obj = gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR));
 	    Cons_sp one = Cons_O::create(obj);
 	    *cur = one;
 	    cur = one->cdrPtr();

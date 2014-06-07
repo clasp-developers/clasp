@@ -120,7 +120,7 @@ namespace core
         GC_ALLOCATE(Symbol_O,sym);
 	sym->_Name = Str_O::create(name);
 	printf("%s:%d  Allocating packageless symbol @ %p name: %s\n", __FILE__, __LINE__, sym.px_ref(),name.c_str());
-//	Symbol_sp sym = mem::smart_ptr<Symbol_O>(new Symbol_O(name));
+//	Symbol_sp sym = gctools::smart_ptr<Symbol_O>(new Symbol_O(name));
 	return sym;
     }
 #endif
@@ -350,10 +350,10 @@ namespace core
 
     T_sp Symbol_O::symbolValue() const
     {
-	ASSERTF(this->_Value,BF("NULL symbol-value for %s") % this->_Name->_contents() );
+	ASSERTF(this->_Value,BF("NULL symbol-value for %s") % this->_Name->c_str() );
 	if ( this->_Value.unboundp() )
 	{
-	    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % this->_Name->_contents() );
+	    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % this->_Name->c_str() );
 	}
 	return this->_Value;
     }
@@ -385,7 +385,7 @@ namespace core
 
     string Symbol_O::symbolNameAsString() const
     {
-	return this->_Name->_contents();
+	return this->_Name->get();
     }
 
 
@@ -396,7 +396,7 @@ namespace core
 	{
 	    ss << "#:";
 	    if ( this->_Name.pointerp() ) {
-		ss << this->_Name->_contents();
+		ss << this->_Name->get();
 	    } else
 	    {
 		ss << "---no-name---";
@@ -407,21 +407,21 @@ namespace core
 	    Package_sp myPackage = this->_HomePackage;
 	    if ( myPackage->isKeywordPackage() )
 	    {
-		ss << ":" << this->_Name->_contents();
+		ss << ":" << this->_Name->get();
 	    } else
 	    {
 		Package_sp currentPackage = _lisp->getCurrentPackage();
 		if ( (currentPackage.get() == myPackage.get()) && !prefixAlways )
 		{
-		    ss << this->_Name->_contents();
+		    ss << this->_Name->get();
 		} else
 		{
 		    if ( myPackage->isExported(this->const_sharedThis<Symbol_O>()) )
 		    {
-			ss << myPackage->getName() << ":" << this->_Name->_contents();
+			ss << myPackage->getName() << ":" << this->_Name->get();
 		    } else
 		    {
-			ss << myPackage->getName() << "::" << this->_Name->_contents();
+			ss << myPackage->getName() << "::" << this->_Name->get();
 		    }
 		}
 	    }
@@ -467,7 +467,7 @@ namespace core
 		Package_sp pkg = this->getPackage();
 		if ( !pkg->isKeywordPackage())
 		{   
-		    if ( this->_Name->_contents() == "NIL" )
+		    if ( this->_Name->get() == "NIL" )
 		    {
 			// Debugging nil symbol - we could take this out now
 			Symbol_sp nil_sym = this->sharedThis<Symbol_O>();
@@ -583,7 +583,7 @@ namespace core
 	stringstream ss;
 	ss << "Symbol @" << (void*)this << " --->" << std::endl;
 	{
-	    ss << "Name: " << this->_Name->_contents() <<std::endl;
+	    ss << "Name: " << this->_Name->get() <<std::endl;
 	    if ( !this->_HomePackage )
 	    {
 		ss << "Package: UNDEFINED" << std::endl;

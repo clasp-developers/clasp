@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+#
+# Little perl script which converts the time in epoch seconds into a
+# use viewable time/date.
+#
+
+use strict;
+
+use POSIX qw(strftime);
+
+sub usage {
+  print qq[Usage: tsecs [-h] [-f strftime-format] [epoch1 [epoch2 [...]]]
+  -h      Specify the times as hex values instead of decimal.
+  -f      Specify the strftime format string to use to display the time.
+
+  You can give a list times in epoch seconds to convert on the command line.
+  The time "now" will display the current date and secs.
+  If no times are given it will print out the current date and secs.
+];
+  exit 1;
+}
+
+my $now = time;
+@ARGV = ( $now ) unless @ARGV;
+
+my $time_format = "%a %b %e %H:%M:%S %Y %Z";
+my $hex_b = 0;
+my @times;
+
+while ( @ARGV ) {
+  $_ = shift;
+  /^-f/ && do { $time_format = shift || usage(); next; };
+  /^-h/ && do { $hex_b = 1; next; };
+  /^-/ && usage();
+  /^now$/ && do { $times[++$#times] = $now; next; };
+  $times[++$#times] = ($hex_b ? hex $_ : $_);
+}
+
+foreach my $secs ( @times ) {
+  my $time_str = strftime $time_format, localtime($secs);
+  print "Time in seconds for $secs is '$time_str'\n";
+}

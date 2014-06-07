@@ -189,7 +189,7 @@ void	ObjectSet_O::archive(ArchiveP node)
 	    int i = 0;
 	    stringstream suid;
 	    T_sp	obj;
-	    set<mem::smart_ptr<T_O> >::iterator oi;
+	    set<gctools::smart_ptr<T_O> >::iterator oi;
 	    for ( oi=this->_Set.begin(); oi!=this->_Set.end(); i++,oi++ )
 	    {
 	    	obj = (*oi);

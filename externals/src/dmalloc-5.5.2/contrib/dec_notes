@@ -1,0 +1,63 @@
+-------------------------------------------------------------------------------
+$Id: dec_notes,v 1.7 2000/03/21 20:13:02 gray Exp $
+-------------------------------------------------------------------------------
+
+From Dave Hill:
+-----------------------------------
+
+DEC OSF1/AXP extra notes:
+=========================
+
+To build this library, you will need to have -std1 as a flag to cc in
+the Makefile.  This sets the compiler into ansi-mode.  The configure
+script may have done this for you, but if not, the Makefile should
+read:
+
+	# default c-compiler
+	CC = cc -std1
+
+To create a shared library from the static library:
+
+	ld -shared -o libdmalloc.so -all libdmalloc.a -all \
+		-soname libdmalloc.so -none -lc
+
+The OSF1/AXP shared library loader has the capabilities to override the
+shared libraries used, even to the extent that it takes symbols from a
+library that the program was not linked with.  Using this technique, you
+may override the standard malloc in libc with the debug malloc shared
+library.
+
+	_RLD_LIST=/path_to_the_dir/libdmalloc.so:DEFAULT;export _RLD_LIST
+
+Remember though, setting this variable will affect ALL commands invoked
+from the shell that it is set inside of.  You may wish to do this inside
+of a shell script that sets the variable just before starting your
+program.  Another option with sh and ksh is to list the environment
+variables on the program invocation line, for example:
+
+	_RLD_LIST=/path_to_the_dir/libdmalloc.so:DEFAULT program
+
+This command will set the specified env variable and then run program.
+
+-------------------------------------------------------------------------------
+
+[The dmalloc library currently supports the at_exit() auto-shutdown
+routine.  If this is not working, however, you may want to consider
+the following.]
+
+OSF1 also supports the use of an 'init' and a 'fini' routine. Any function
+prefixed with '__init_' will be executed prior to main() and any function
+prefixed with '__fini_' will be executed after any call to exit() or
+after main() returns.
+
+A fini routine can be used with the debug library to invoke dmalloc_shutdown
+to get final statistics from the library package. For example:
+
+	void
+	__fini_dmalloc()
+	{
+	    dmalloc_shutdown();
+	}
+
+Try putting this code in a separate .o file and linking it into your
+application when you are debugging.

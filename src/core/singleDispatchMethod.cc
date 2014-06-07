@@ -230,7 +230,7 @@ namespace core
 	// -- this function has to accept two arguments: (args next-emfun)
 	// So it's a chainable methoid, it can be called with a next-emfun argument
 	// which can be called by applying arguments to the local function "call-next-method"
-	Functoid* method_functoid = gctools::allocateFunctoid<Lambda_method_function>(name->fullName(),method);
+	Functoid* method_functoid = gctools::ClassAllocator<Lambda_method_function>::allocateClass(name->fullName(),method);
 	CompiledBody_sp cb_method_function_primitive = CompiledBody_O::create(method_functoid,_Nil<T_O>());
 	LambdaListHandler_sp llh_pass_arguments_through(_Nil<LambdaListHandler_O>());
 	method->_method_builtin = BuiltIn_O::make(name,llh_pass_arguments_through,cb_method_function_primitive);

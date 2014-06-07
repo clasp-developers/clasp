@@ -152,7 +152,7 @@ namespace clbind
             SIMPLE_ERROR(BF("This class cannot allocate instances"));
         }//return _Nil<core::T_O>(); };
         Creator* duplicateForClassName(core::Symbol_sp className) {
-            return gctools::allocateCreator<DummyCreator>(core::lisp_symbolNameAsString(className));
+            return gctools::ClassAllocator<DummyCreator>::allocateClass(core::lisp_symbolNameAsString(className));
         }
 
     };
@@ -578,7 +578,7 @@ namespace clbind
             {
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
-                core::Functoid* f = gctools::allocateFunctoid<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>(tname);
+                core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>::allocateClass(tname);
                 return f;
             }
 

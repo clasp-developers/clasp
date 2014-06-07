@@ -139,8 +139,6 @@ namespace core
 
 	virtual ~Exposer();
 
-        DECLARE_onHeapScanGCRoots();
-
 	/*! Return the packageName */
 	string packageName() const { return this->_PackageName;};
 
@@ -242,7 +240,6 @@ namespace core
 	    DoubleFloat_sp 		_RehashThreshold;
 	    Stream_sp 			_NullStream;
 	    Cons_sp 			_PathnameTranslations; /* alist */
-	    SourceManager_sp 		_SourceManager;
 	    Complex_sp 			_ImaginaryUnit;
 	    Complex_sp 			_ImaginaryUnitNegative;
 	    Ratio_sp 			_PlusHalf;
@@ -261,7 +258,6 @@ namespace core
 
 	    GCRoots();
 
-            DECLARE_onHeapScanGCRoots();
 	};
 
 	friend class IncrementTraceLevel;
@@ -299,7 +295,6 @@ namespace core
 	void	archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     public:
-        DECLARE_onHeapScanGCRoots();
     public:
 	GCRoots 		_Roots;
 	char*			_StackTop;
@@ -437,7 +432,7 @@ namespace core
 	uint mode() const { return this->_Mode;};
     public:
 	/*! Get access to the SourceManager of the Common Lisp environment */
-	SourceManager_sp sourceManager() const { return this->_Roots._SourceManager;};
+	SourceManager_sp sourceDatabase() const;
     public:
 	bool isSingleStepOn() { return this->_SingleStepLevel!=UndefinedUnsignedInt;};
 	void setSingleStepLevel(uint level) { this->_SingleStepLevel = level;};
@@ -563,35 +558,35 @@ namespace core
 	ReadTable_sp getCurrentReadTable();
 
 	template <class oclass>
-	mem::smart_ptr<Cons_O> cons(mem::smart_ptr<oclass> obj,mem::smart_ptr<Cons_O> tail)
+	gctools::smart_ptr<Cons_O> cons(gctools::smart_ptr<oclass> obj,gctools::smart_ptr<Cons_O> tail)
 	{
 	    return this->create<Cons_O>(obj,tail);
 	}
 	template <class oclass>
-	mem::smart_ptr<oclass> create()
+	gctools::smart_ptr<oclass> create()
 	{
             GC_ALLOCATE(oclass,res);
 	    return res;
 	}
 	/*! One argument creator */
 	template <class oclass,typename targ1>
-	mem::smart_ptr<oclass> create(targ1 x)
+	gctools::smart_ptr<oclass> create(targ1 x)
 	{
-	    mem::smart_ptr<oclass> res = oclass::create(x);
+            gctools::smart_ptr<oclass> res = oclass::create(x);
 	    return res;
 	}
 	/*! Two argument creator */
 	template <class oclass,typename targ1, typename targ2>
-	mem::smart_ptr<oclass> create(targ1 x, targ2 y)
+	gctools::smart_ptr<oclass> create(targ1 x, targ2 y)
 	{
-	    mem::smart_ptr<oclass> res = oclass::create(x,y);
+            gctools::smart_ptr<oclass> res = oclass::create(x,y);
 	    return res;
 	}
 	/*! Three argument creator */
 	template <class oclass,typename targ1, typename targ2, typename targ3>
-	mem::smart_ptr<oclass> create(targ1 x, targ2 y, targ3 z)
+	gctools::smart_ptr<oclass> create(targ1 x, targ2 y, targ3 z)
 	{
-	    mem::smart_ptr<oclass> res = oclass::create(x,y,z,_lisp);
+            gctools::smart_ptr<oclass> res = oclass::create(x,y,z,_lisp);
 	    return res;
 	}
     public:
@@ -900,7 +895,6 @@ public:
     public:
 	/*! Pass the mpiProcess rank in (rank) or set to 0 if there is only one process */
 	LispHolder(bool mpiEnabled, int mpiRank, int mpiSize );
-        DECLARE_onStackScanGCRoots(); 
 
 
 	virtual void startup(int argc, char* argv[], const string& appPathEnvironmentVariable );

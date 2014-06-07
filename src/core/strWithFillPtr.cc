@@ -92,10 +92,10 @@ namespace core
 	    }
 	    if ( this->_Contents.size() == newSize ) return;
 	    if ( this->_Contents.size() < newSize ) {
-		this->_Contents = this->_Contents + std::string(newSize-this->_Contents.size(),' ');
+                this->_Contents.resize(newSize,' ');
 		return;
 	    } else {
-		this->_Contents = this->_Contents.substr(0,newSize);
+		this->_Contents.resize(newSize);
 		if ( this->_FillPointer > this->_Contents.size() ) {
 		    this->_FillPointer = this->_Contents.size();
 		}

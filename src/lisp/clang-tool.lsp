@@ -559,7 +559,7 @@ This can only be run in the context set up by the code-match-callback::run metho
       (when (position (single-tool-name t) list-of-tool-names)
         (push t selected-tools)))
     (unless selected-tools
-      (format t "No tools were selected - all tools being used"))
+      (format t "No tools were selected - all tools being used~%"))
     (setf (multitool-selected-tools mtool) selected-tools)
     ))
 
@@ -593,7 +593,9 @@ This can only be run in the context set up by the code-match-callback::run metho
                          mf))
          (factory (new-frontend-action-factory match-finder)))
     (dolist (tool tools)
-      (funcall (single-tool-initializer tool)))
+      (let ((initializer (single-tool-initializer tool)))
+        (unless initializer (error "You did not provide an initializer for ~a" (single-tool-name tool))
+        (funcall (single-tool-initializer tool)))))
     (time (ast-tooling:clang-tool-run clang-tool factory))
     (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
     (format t "Number of matches ~a~%" *match-counter*)

@@ -33,7 +33,7 @@ namespace core
 TRANSLATE(core::Null_O);
 
 
-namespace mem {
+namespace gctools {
     template<> inline bool isNilDowncastableTo<core::Null_O>() { return true;};
 };
 

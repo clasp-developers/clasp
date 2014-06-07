@@ -578,14 +578,6 @@ I'm using smart_ptr which have a vtable associated with them"
   )
 
 
-;; --------------------------------------------------------
-;;
-;; Now we have the primitives - put them in the default module
-;;
-;; If a *run-time-module* is defined then fill it with primitives
-;; otherwise we are using MCJIT and the *run-time-module* is defined in COMPILE
-#-compile-mcjit (define-primitives-in-module *run-time-module*)
-
 
 
 ;;------------------------------------------------------------

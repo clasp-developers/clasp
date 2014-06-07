@@ -183,7 +183,7 @@ namespace core
 	    LOG(BF("Argument --> dict"));
 	}
 	else {
-	    result = boost::python::extract<mem::smart_ptr<T_O> >(value);
+	    result = boost::python::extract<gctools::smart_ptr<T_O> >(value);
 	    LOG(BF("Extracted the object[%s]") % result->__repr__() );
 	}
 	return result;

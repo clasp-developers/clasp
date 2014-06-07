@@ -338,9 +338,11 @@ namespace llvmo
 //
 // Include the Kinds
 //
+#ifndef RUNNING_GC_BUILDER
 #define NAMESPACE_llvmo
 #include GARBAGE_COLLECTION_INCLUDE
 #undef NAMESPACE_llvmo
+#endif
 #endif
 
 

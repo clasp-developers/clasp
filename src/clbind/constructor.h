@@ -29,6 +29,7 @@ namespace clbind {
         int _Kind;
         int _duplicationLevel;
     public:
+#if 0
         virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
         {
 #ifdef USE_MPS
@@ -38,10 +39,13 @@ namespace clbind {
 #endif
             return GC_RES_OK;
         }
+#endif
     public:
         DISABLE_NEW();
         DefaultConstructorCreator() : _mostDerivedClassSymbol(reg::lisp_classSymbol<T>())
-                                             , _Kind(gctools::GCInfo<WrapperType>::Kind)
+#ifdef USE_MPS
+                                             , _Kind(gctools::GCKind<WrapperType>::Kind)
+#endif
                                              , _duplicationLevel(0) {};
         DefaultConstructorCreator(core::Symbol_sp cn, int kind, int dupnum)
             : _mostDerivedClassSymbol(cn)
@@ -63,12 +67,12 @@ namespace clbind {
         {
             T* naked_ptr(new T());
 //            printf("%s:%d - creating WrapperType\n", __FILE__,__LINE__);
-            mem::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
+            gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
 //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
             return retval;
         }
         Creator* duplicateForClassName(core::Symbol_sp className) {
-            Creator* allocator = gctools::allocateCreator<DefaultConstructorCreator<T,Pointer>>(className,this->_Kind,this->_duplicationLevel+1);
+            Creator* allocator = gctools::ClassAllocator<DefaultConstructorCreator<T,Pointer>>::allocateClass(className,this->_Kind,this->_duplicationLevel+1);
             return allocator;
         }
     };
@@ -93,6 +97,7 @@ namespace clbind {
         int _duplicationLevel;
     public:
         DISABLE_NEW();
+#if 0
         virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
         {
 #ifdef USE_MPS
@@ -102,9 +107,12 @@ namespace clbind {
 #endif
             return GC_RES_OK;
         }
+#endif
     public:
         DerivableDefaultConstructorCreator() : _mostDerivedClassSymbol(reg::lisp_classSymbol<T>())
-                                                      , _Kind(gctools::GCInfo<T>::Kind)
+#ifdef USE_MPS
+                                                      , _Kind(gctools::GCKind<T>::Kind)
+#endif
                                                       , _duplicationLevel(0) {};
         DerivableDefaultConstructorCreator(core::Symbol_sp cn, int kind, int dupnum)
             : _mostDerivedClassSymbol(cn)
@@ -134,7 +142,7 @@ namespace clbind {
             return obj;
         }
         Creator* duplicateForClassName(core::Symbol_sp className) {
-            Creator* allocator = gctools::allocateCreator<DerivableDefaultConstructorCreator<T>>(className,this->_Kind,this->_duplicationLevel+1);
+            Creator* allocator = gctools::ClassAllocator<DerivableDefaultConstructorCreator<T>>::allocateClass(className,this->_Kind,this->_duplicationLevel+1);
             return allocator;
         }
     };
@@ -162,7 +170,7 @@ namespace clbind {
             GC_ALLOCATE(T,obj_gc_safe);
             printf("%s:%d Allocating instance of Derivable class: %s\n", __FILE__, __LINE__, this->_Name.c_str() );
             int oidx = 1;
-            return mem::multiple_values<core::T_O>(obj_gc_safe,oidx);
+            return gctools::multiple_values<core::T_O>(obj_gc_safe,oidx);
         }
     };
 

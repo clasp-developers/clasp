@@ -43,7 +43,7 @@ namespace core {
     void LexicalGo::keyFunctionForVtable() {};
     void DynamicGo::keyFunctionForVtable() {};
 
-
+#if 0
     GC_RESULT ReturnFrom::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
 #ifdef USE_MPS
             {
@@ -57,7 +57,7 @@ namespace core {
                 return GC_RES_OK;
             };
 #endif
-
+#endif
 
     TooFewArgumentsError::TooFewArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required) {
         printf("%s:%d Constructed TooFewArgumentsError\n", __FILE__, __LINE__ );

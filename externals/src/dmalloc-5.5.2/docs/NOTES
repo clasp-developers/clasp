@@ -1,0 +1,18 @@
+-------------------------------------------------------------------------------
+$Id: NOTES,v 1.31 2000/07/21 22:41:21 gray Exp $
+-------------------------------------------------------------------------------
+
+WARNINGS:
+
+-	I have not been able to test the library on a system whose
+	heap grows towards low memory.  If you are trying to run the
+	library on such a system I would be interested in talking with
+	you.  Please send me mail.
+
+-	do not be surprised if the library catches problems with your
+	system's library routines.  It took me hours to finally come
+	to the conclusion that the localtime call, included in SunOS
+	release 4.1 (and maybe before/after), was overwriting one of
+	its fence-post markers.
+
+-------------------------------------------------------------------------------

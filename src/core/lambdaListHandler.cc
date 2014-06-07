@@ -212,7 +212,9 @@ namespace core
 	ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),af_sourceFileInfo(lambda_list));
 	sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol,new_lambda_list);
 	Cons_sp macro_ll = sclist.cons();
-	_lisp->sourceManager()->duplicateSourceInfo(lambda_list,macro_ll);
+        if ( _lisp->sourceDatabase().notnilp() ) {
+            _lisp->sourceDatabase()->duplicateSourceInfo(lambda_list,macro_ll);
+        }
 	return macro_ll;
     }
 
@@ -1106,7 +1108,7 @@ void bind_aux
 	{
 	    ss << this->partsAsString();
 	}
-	ss << " :comment \"" << this->_Comment << "\"";
+	ss << " :comment \"" << this->_Comment.c_str() << "\"";
 	ss << "> ";
 	return ss.str();
     }

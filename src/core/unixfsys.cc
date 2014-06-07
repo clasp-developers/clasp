@@ -142,6 +142,23 @@ safe_chdir(const char *path, Str_sp prefix)
         return pid;
     };
 
+#define ARGS_af_getpid "()"
+#define DECL_af_getpid ""
+#define DOCS_af_getpid "getpid"
+    T_sp af_getpid()
+    {_G();
+        Fixnum_sp pid = Fixnum_O::create(getpid());
+        return pid;
+    };
+
+#define ARGS_af_getppid "()"
+#define DECL_af_getppid ""
+#define DOCS_af_getppid "getppid"
+    T_sp af_getppid()
+    {_G();
+        Fixnum_sp pid = Fixnum_O::create(getppid());
+        return pid;
+    };
 
     
     
@@ -205,7 +222,7 @@ Str_sp af_currentDir()
 {_G();
     const char *ok;
     size_t size = 128;
-    StrWithFillPtr_sp output(StrWithFillPtr_O::create('\0',1,0,true));
+    StrWithFillPtr_sp output(StrWithFillPtr_O::create(' ',1,0,true));
     do {
 	output->setSize(size);
 	brcl_disable_interrupts();
@@ -223,9 +240,9 @@ Str_sp af_currentDir()
 	if (*c == '\\')
 	    *c = '/';
 #endif
-    if (output->_contents()[size-1] != DIR_SEPARATOR_CHAR ) {
-	output->_contents()[size++] = DIR_SEPARATOR_CHAR;
-	output->_contents()[size] = 0;
+    if ((*output)[size-1] != DIR_SEPARATOR_CHAR ) {
+	(*output)[size++] = DIR_SEPARATOR_CHAR;
+	(*output)[size] = 0;
     }
     output->setFillPointer(size);
     return output;
@@ -269,7 +286,7 @@ file_kind(char *filename, bool follow_links) {
     Symbol_sp af_file_kind(Pathname_sp filename, bool follow_links)
     {_G();
 	Str_sp sfilename = coerce_to_posix_filename(filename);
-	return file_kind((char*)sfilename->_contents().c_str(), follow_links);
+	return file_kind((char*)(sfilename->c_str()), follow_links);
     }
 
 
@@ -283,18 +300,18 @@ si_readlink(Str_sp filename) {
 	StrWithFillPtr_sp output;
 	Symbol_sp kind;
 	do {
-	    output = StrWithFillPtr_O::create('\0',size,0,true);
+	    output = StrWithFillPtr_O::create(' ',size,0,true);
 	    brcl_disable_interrupts();
-	    written = readlink((char*)filename->_contents().c_str(),
-			       (char*)output->_contents().c_str(), size);
+	    written = readlink((char*)filename->c_str(),
+			       (char*)output->c_str(), size);
 	    brcl_enable_interrupts();
 	    size += 256;
 	} while (written == size);
-	output->_contents()[written] = '\0';
-	kind = file_kind((char*)output->_contents().c_str(), false);
+	(*output)[written] = '\0';
+	kind = file_kind((char*)output->c_str(), false);
 	if (kind == kw::_sym_directory) {
-	    output->_contents()[written++] = DIR_SEPARATOR_CHAR;
-	    output->_contents()[written] = '\0';
+	    (*output)[written++] = DIR_SEPARATOR_CHAR;
+	    (*output)[written] = '\0';
 	}
 	output->setFillPointer(written);
 	return output;
@@ -337,7 +354,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure)
     aux = brcl_namestring(output, BRCL_NAMESTRING_FORCE_BASE_STRING);
     aux = Str_O::create(aux->substr(0,aux->length()-1));
 //    aux->_contents()[aux->base_string.fillp-1] = 0;
-    kind = file_kind((char*)aux->_contents().c_str(), false);
+    kind = file_kind((char*)aux->c_str(), false);
     if (kind.nilp()) {
 	if (ignore_if_failure) return _Nil<Pathname_O>();
 	CANNOT_OPEN_FILE_ERROR(aux);
@@ -410,7 +427,7 @@ file_truename(Pathname_sp pathname, Str_sp filename, int flags)
 	    SIMPLE_ERROR(BF("Unprintable pathname %s found in TRUENAME") % _rep_(pathname));
 	}
     }
-    kind = file_kind((char*)filename->_contents().c_str(), false);
+    kind = file_kind((char*)filename->c_str(), false);
     if (kind.nilp()) {
 	CANNOT_OPEN_FILE_ERROR(filename);
 #ifdef HAVE_LSTAT
@@ -434,7 +451,7 @@ file_truename(Pathname_sp pathname, Str_sp filename, int flags)
 	   separator and re-parsing again the namestring */
 	if (pathname->_Name.notnilp() ||
 	    pathname->_Type.notnilp()) {
-	    Str_sp spathname = Str_O::create(filename->_contents()+DIR_SEPARATOR);
+	    Str_sp spathname = (*filename) + DIR_SEPARATOR;
 	    pathname = af_truename(spathname);
 	}
     }
@@ -617,7 +634,7 @@ T_mv af_renameFile(T_sp oldn, T_sp newn, T_sp if_exists)
 	}
 	/* fall through */
 #else
-	if (rename((char*)old_filename->_contents().c_str(),
+	if (rename((char*)old_filename->c_str(),
 		   (char*)new_filename->c_str()) == 0) {
 	    goto SUCCESS;
 	}
@@ -1424,6 +1441,8 @@ void initialize_unixfsys()
     SYMBOL_EXPORT_SC_(ClPkg,userHomedirPathname);
     Defun(userHomedirPathname);
     Defun(fork);
+    Defun(getpid);
+    Defun(getppid);
 };
 
 

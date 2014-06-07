@@ -19,10 +19,6 @@ namespace core
 	int	_generation;
 	CacheRecord(T_sp k, T_sp v, int g) : _key(k), _value(v), _generation(g) {};
 
-        GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
-            IMPLEMENT_MEF(BF("Don't implement anthing here - the Cache should scan each CacheRecord"));
-        };
-
     };
 
 
@@ -40,6 +36,7 @@ namespace core
 	/*! Constructor - like ecl_make_cache */
 	explicit Cache(int keySize, int cacheSize);
 
+#if 0
         GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
         {
             GC_SCANNER_BEGIN() {
@@ -51,7 +48,7 @@ namespace core
             } GC_SCANNER_END();
             return GC_RES_OK;
         }
-
+#endif
 	/*! Search cache - like ecl_search_cache
 	  It takes no arguments - what is it searching????*/
 	void search_cache(CacheRecord*& e);
@@ -66,7 +63,6 @@ namespace core
 	VectorObjectsWithFillPtr_sp& keys() { return this->_keys;};
 	const VectorObjectsWithFillPtr_sp& keys() const { return this->_keys;};
 
-        GC_RESULT scanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
 
     };
 };

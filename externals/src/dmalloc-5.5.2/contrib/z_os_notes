@@ -1,0 +1,72 @@
+[ From Tony Reyelts. ]
+
+Building dmalloc on z/OS 1.3
+
+   After a few tries, I've boiled down the steps to building dmalloc
+   on z/OS to run under USS. Here's how:
+
+   1. Set the environment so Makefile generates a valid compile:
+
+         export DEFINES='-D_XOPEN_SOURCE_EXTENDED -Wc,"LANGLVL(ANSI)"
+
+   2. Run configure:
+
+         configure --prefix==/some/path --disable-cxx
+
+      Note: The default is to use C++, but the make failed with it
+      because the compiler expects the extension .C, not .cc. Since I
+      don't use C++, I disabled that part.
+
+      You'll get the following message from configure:
+
+         WARNING: The library has limited support for heaps
+         that grow down.  Please see the NOTES file and
+         send the author mail.
+
+   3. Edit conf.h:
+
+      - Change HEAP_GROWS_UP to 1 from 0. For some reason, configure
+        thinks it grows down when it really doesn't.
+
+   4. Edit the Makefile:
+
+      - Unset $LIBS because cc won't link with it on the end of the
+        link command.
+
+      - Set LDFLAGS to "-L ./" so libdmalloc.a can be found.
+
+   5. Create a dummy ranlib (return 0) because z/OS doesn't have one.
+
+   6. Run make to build the code.
+
+      I got a compile warning for malloc.c assigning between "long *"
+      and "unsigned long *" at line 246. It looks like this is because
+      _dmalloc_address_seen_n (unsigned long *) is being passed as the
+      third argument to _dmalloc_environ_get (long *). The code seems to
+      work ok, so I didn't bother fixing this.
+
+Using dmalloc on z/OS 1.3
+
+   1. dmalloc uses sbrk() to allocate storage. The sbrk() function on
+      z/OS only uses the primary allocation (vs. secondary), so the
+      primary has to be set to be big enough to hold eveything.
+
+      This is a Language Environment run-time option called HEAP. In
+      USS, you can set it with the _CEE_RUNOPTS environment variable.
+      For example, I used the following:
+
+          export_CEE_RUNOPTS="heap(64M,1M,ANY,FREE)"
+
+   2. The z/OS C compiler provides functions for doing MVS-specific
+      things such as allocating data sets. The easiest way to gain access
+      is to compile with -Wc,"LANGLVL(EXTENDED)" vs. -Wc,"LANGLVL(ANSI)".
+      This makes dmalloc.h think it is a non-ANSI compile (__STDC__ is not
+      set), so the definitions of malloc(), etc fall afoul of those from
+      stdlib.h. So, if you're using LANGLVL(EXTENDED), you'll need to
+      edit dmalloc.h so the ANSI version of DMALLOC_PNT is used.
+
+   3. The following functions are known to not be tracked by dmalloc on
+      z/OS 1.3. They apparently use their own storage scheme:
+
+         - glob()/globfree()
+         - wordexp()/wordfree()

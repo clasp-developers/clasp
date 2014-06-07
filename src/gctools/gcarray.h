@@ -42,7 +42,7 @@ namespace gctools {
 
     template <class T, typename Allocator>
     class GCArray  {
-#ifdef USE_MPS
+#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
         friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
 #endif
     public:

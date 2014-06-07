@@ -5,7 +5,7 @@
   PASS_FUNCTION_SUFFIX   	'_var_args'				'_activation_frame'
   PASS_ARGS  			'int n_args, va_list ap'		'ActivationFrame_sp args'
   PASS_ARGS_NUM 		'n_args'				'af_length(args)'
-  PASS_NEXT_ARG() 		'mem::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
+  PASS_NEXT_ARG() 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
 
 

@@ -114,7 +114,9 @@ namespace core
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
 	Cons_sp result = Cons_O::createList(_sym_backquote,quoted_object);
 	//HERE_scCONS_CREATE_LIST2(_sym_backquote,quoted_object);
-	_lisp->sourceManager()->duplicateSourceInfo(quoted_object,result);
+        if ( _lisp->sourceDatabase().notnilp() ) {
+            _lisp->sourceDatabase()->duplicateSourceInfo(quoted_object,result);
+        }
 	return(Values(result));
     };
 

@@ -1375,6 +1375,7 @@ namespace asttooling {
             .    def("desugar",&clang::MemberPointerType::desugar)
             .    def("getPointeeType",&clang::MemberPointerType::getPointeeType)
             , CLASS_TYPE(Array, Type)
+            .    def("getElementType",&clang::ArrayType::getElementType)
             , CLASS_TYPE(ConstantArray, ArrayType)
             .    def("desugar",&clang::ConstantArrayType::desugar)
             , CLASS_TYPE(IncompleteArray, ArrayType)

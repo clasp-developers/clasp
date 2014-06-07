@@ -22,13 +22,12 @@ namespace core
 int brcl_string_case(Str_sp s)
 {
     int upcase = 0;
-    string& contents = s->_contents();
-    for (size_t i(0), iEnd(contents.size()); i < iEnd; i++) {
-	if (isupper(contents[i])) {
+    for (Str_O::iterator it = s->begin(); it!=s->end(); ++it ) {
+	if (isupper(*it)) {
 	    if (upcase < 0)
 		return 0;
 	    upcase = +1;
-	} else if (islower(contents[i])) {
+	} else if (islower(*it)) {
 	    if (upcase > 0)
 		return 0;
 	    upcase = -1;

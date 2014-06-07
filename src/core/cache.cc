@@ -188,7 +188,7 @@ namespace core
 
 
 
-
+#if 0
     GC_RESULT Cache::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
     {
 	GC_SCANNER_BEGIN() {
@@ -201,7 +201,7 @@ namespace core
 	} GC_SCANNER_END();
 	return GC_RES_OK;
     }
-
+#endif
     
     
     

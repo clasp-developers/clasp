@@ -485,10 +485,12 @@ class	ClassGroup:
     %(CLASSNAME)s->__setup_stage1_with_sharedPtr_lisp_sid(%(CLASSNAME)s,_lisp,%(OCLASS)s::static_classSymbol());
     reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<%(OCLASS)s>::id,%(OCLASS)s::static_classSymbol());
     %(OCLASS)s::___staticClass = %(CLASSNAME)s;
-    %(OCLASS)s::static_Kind = gctools::GCInfo<%(OCLASS)s>::Kind;
+#ifdef USE_MPS
+    %(OCLASS)s::static_Kind = gctools::GCKind<%(OCLASS)s>::Kind;
+#endif
     core::af_setf_findClass(%(CLASSNAME)s,%(OCLASS)s::static_classSymbol(),true,_Nil<core::Environment_O>());
     {
-        LispObjectCreator<%(OCLASS)s>* cb = gctools::allocateCreator<LispObjectCreator<%(OCLASS)s>>();
+        LispObjectCreator<%(OCLASS)s>* cb = gctools::ClassAllocator<LispObjectCreator<%(OCLASS)s>>::allocateClass();
         %(OCLASS)s::___set_static_creator(cb);
     }
     LOG(BF("Set static_allocator for class(%%s) to %%X")%% %(OCLASS)s::static_className() %% (void*)(%(OCLASS)s::static_allocator) );

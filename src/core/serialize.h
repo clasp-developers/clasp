@@ -94,14 +94,14 @@ namespace core
 
     public: // bidirectional
 	template <class T>
-	void attribute(const string& name, mem::smart_ptr<T>& val)
+	void attribute(const string& name, gctools::smart_ptr<T>& val)
 	{
 	    Symbol_sp sym = _lisp->internKeyword(name);
 	    this->attribute<T>(sym,val);
 	}
 
 	template <class T>
-	void attribute(Symbol_sp name, mem::smart_ptr<T>& val)
+	void attribute(Symbol_sp name, gctools::smart_ptr<T>& val)
 	{
 	    if (this->loading()) {
 		val = this->getAttributeOrError(name).as<T>();
@@ -112,7 +112,7 @@ namespace core
 
 
 	template <class T>
-	void attributeWeakPointer(Symbol_sp name, mem::weak_smart_ptr<T>& val)
+	void attributeWeakPointer(Symbol_sp name, gctools::weak_smart_ptr<T>& val)
 	{
 	    if (this->loading()) {
 		T_sp o = this->getAttribute(name,_Unbound<T_O>());
@@ -198,7 +198,7 @@ namespace core
 
 
 	template <typename T>
-	void attributeIfNotNil( Symbol_sp name, mem::smart_ptr<T>& val ) {
+	void attributeIfNotNil( Symbol_sp name, gctools::smart_ptr<T>& val ) {
 	    if ( this->loading() ) {
 		T_sp oval = this->getAttribute(name,_Unbound<T_O>());
 		if ( oval.unboundp() ) {

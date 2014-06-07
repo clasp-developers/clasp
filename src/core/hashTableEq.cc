@@ -73,7 +73,7 @@ namespace core
     {_OF();
 #ifdef USE_MPS
         if ( willAddKey ) {
-            void* blockAddr = GC_BASE_ADDRESS_FROM_SMART_PTR(obj);
+            void* blockAddr = SmartPtrToBasePtr(obj);
             mps_ld_add(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker))
                        ,gctools::_global_arena,blockAddr);
         }

@@ -21,10 +21,10 @@ $for template_ [[
     /* Specialization */
     template <$if ret==RetVoid [[]] $else [[typename RT $if numArgs [[,]] ]] $for Args_ ,[[typename ARG$Args_]] >
         class VariadicFunctoid
-    <$if ret==RetVoid [[void]] $elif ret==RetSV [[RT ]] $else [[mem::multiple_values<RT>]]($for Args_ , [[ARG$Args_]]) >
+    <$if ret==RetVoid [[void]] $elif ret==RetSV [[RT ]] $else [[gctools::multiple_values<RT>]]($for Args_ , [[ARG$Args_]]) >
         : public Functoid {
         public:
-        typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[mem::multiple_values<RT>]](*Type) ($for Args_ , [[ARG$Args_]]);
+        typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](*Type) ($for Args_ , [[ARG$Args_]]);
         Type fptr;
         public:
         enum { NumParams = $numArgs };
@@ -40,7 +40,7 @@ $for template_ [[
                     translate::from_object<ARG$Args_> a$Args_(*args);
                     ++args;
                     ]]
-                $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ mem::multiple_values<RT> retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
+                $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
             $if ret==RetVoid [[
                     return Values0<core::T_O>();
                     ]] $elif ret==RetMV [[

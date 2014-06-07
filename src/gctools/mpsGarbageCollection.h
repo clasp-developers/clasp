@@ -4,18 +4,46 @@
 
 namespace gctools {
 
+#define GC_RESULT mps_res_t
+#define GC_SCAN_STATE mps_ss_t
+
+
     class GCObject
     {
     public:
-	bool isNil() const { return false;};
-	bool isUnbound() const { return false;};
-	bool isObject() const { return true;};
+//	bool isNil() const { return false;};
+//	bool isUnbound() const { return false;};
+//	bool isObject() const { return true;};
         virtual ~GCObject() {};
     };
 
+
+
+#if !defined(RUNNING_GC_BUILDER)
+#define GC_ENUM
+    typedef
+#include GARBAGE_COLLECTION_INCLUDE //"main/clasp_gc.cc"
+    GCKindEnum ;
+#undef GC_ENUM
+#else
+    typedef enum { KIND_null, KIND_SYSTEM_fwd, KIND_SYSTEM_fwd2, KIND_SYSTEM_pad1, KIND_SYSTEM_pad } GCKindEnum;
+#endif
+};
+
+
+namespace gctools {
     extern const char* obj_name(GCKindEnum kind);
 
-
+    // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    //
+    // Define Header_s and stuff that can exist in the header
+    //
+    //
 
     typedef union Header_u *Header_t;
 
@@ -50,36 +78,43 @@ namespace gctools {
 	Fwd_s	fwd;
     } Header_s;
 
-#ifdef CONFIG_VAR_COOL
-#define DEBUG_VALIDATE_HEADER(header) {header->kind._StartIndicator = 0xbaddecaf; if (!header->kind._Kind) {printf("KIND is 0!!!!\n");__builtin_debugtrap();}} 
-#else
-#define DEBUG_VALIDATE_HEADER(header)
-#endif
 
 };
 
-#define ALIGNMENT alignof(gctools::Fwd_s)
-#define ALIGN_UP(size) \
-  (((size) + ALIGNMENT - 1) & ~(ALIGNMENT - 1))
 
-template <class T> inline size_t sizeof_with_header() {return ALIGN_UP(sizeof(T))+ALIGN_UP(sizeof(gctools::Header_s));};
-template <> inline size_t sizeof_with_header<gctools::Kind_s>() { return ALIGN_UP(sizeof(gctools::Kind_s)); };
-template <> inline size_t sizeof_with_header<gctools::Pad1_s>() { return ALIGN_UP(sizeof(gctools::Pad1_s)); };
-template <> inline size_t sizeof_with_header<gctools::Pad_s>() { return ALIGN_UP(sizeof(gctools::Pad_s)); };
-template <> inline size_t sizeof_with_header<gctools::Fwd_s>() { return ALIGN_UP(sizeof(gctools::Fwd_s)); };
-template <> inline size_t sizeof_with_header<gctools::Fwd2_s>() { return ALIGN_UP(sizeof(gctools::Fwd2_s)); };
+namespace gctools {
+
+    constexpr size_t Alignment() { return AlignmentT<Header_s>(); };
+    constexpr size_t AlignUp(size_t size) { return AlignUpT<Header_s>(size); };
+
+
+    template <class T> inline size_t sizeof_with_header() {return AlignUp(sizeof(T))+AlignUp(sizeof(Header_s));};
+
+
+    template <> inline size_t sizeof_with_header<gctools::Kind_s>() { return AlignUp(sizeof(gctools::Kind_s)); };
+    template <> inline size_t sizeof_with_header<gctools::Pad1_s>() { return AlignUp(sizeof(gctools::Pad1_s)); };
+    template <> inline size_t sizeof_with_header<gctools::Pad_s>() { return AlignUp(sizeof(gctools::Pad_s)); };
+    template <> inline size_t sizeof_with_header<gctools::Fwd_s>() { return AlignUp(sizeof(gctools::Fwd_s)); };
+    template <> inline size_t sizeof_with_header<gctools::Fwd2_s>() { return AlignUp(sizeof(gctools::Fwd2_s)); };
+};
 
 /* Align size upwards and ensure that it's big enough to store a
- * forwarding pointer. */
-#define ALIGN(size)                                \
-    (ALIGN_UP(size) >= ALIGN_UP(sizeof_with_header<gctools::Fwd_s>())	\
-     ? ALIGN_UP(size)                              \
-     : ALIGN_UP(sizeof_with_header<gctools::Fwd_s>()))
-
-
-#define SIZEOF_WITH_HEADER(_class_) sizeof_with_header<_class_>()
-
-
+ * forwarding pointer.
+ * This is used by the obj_scan and obj_skip methods
+ */
+/*   Replaces this macro...
+     #define ALIGN(size)                                                \
+    (AlignUp<Header_s>(size) >= AlignUp<Header_s>(sizeof_with_header<gctools::Fwd_s>())	\
+     ? AlignUp<Header_s>(size)                              \
+     : gctools::sizeof_with_header<gctools::Fwd_s>() ) 
+*/
+namespace gctools {
+    inline size_t Align(size_t size) {
+        return (AlignUp(size) >= AlignUp(sizeof_with_header<Fwd_s>())
+                ? AlignUp(size)
+                : sizeof_with_header<Fwd_s>() );
+    };
+};
 
 namespace gctools {
 
@@ -88,9 +123,13 @@ namespace gctools {
     extern mps_arena_t _global_arena;
     extern mps_pool_t _global_ams_pool;
     extern mps_pool_t _global_amc_pool;
+    extern mps_pool_t _global_amcz_pool;
+    extern mps_pool_t _global_awl_pool;
 
     extern mps_ap_t _global_automatic_mostly_copying_allocation_point;
+    extern mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
     extern mps_ap_t _global_automatic_mark_sweep_allocation_point;
+    extern mps_ap_t _global_automatic_weak_link_allocation_point;
 
 
     /*! By default objects get allocated in the AMC pool */
@@ -132,67 +171,6 @@ namespace gctools {
 #endif
 
 
-#ifndef RUNNING_GC_BUILDER
-#ifdef NON_MOVING_CLASSES
-#include GARBAGE_COLLECTION_INCLUDE
-#endif // NON_MOVING_CLASSES
-#endif
-
-
-
-
-
-#if 0
-#define GC_RESERVE_MUTABLE_VECTOR_ALLOCATE(_T_,_SIZE_,_ADDR_) IMPLEMENT_ME();
-#define GC_RESERVE_MUTABLE_VECTOR_RESIZE(_T_,_OLD_,_NEW_SIZE_,_NEW_) IMPLEMENT_ME();
-#endif
-
-
-
-
-
-#define _GC_RESERVE_BEGIN_BASE(_class_,_obj_) \
-    mem::smart_ptr<_class_> _obj_;           \
-    {                                        \
-    mps_addr_t __reserve_addr(0);            \
-    do {
-
-#define _GC_RESERVE_GET_BASE(_class_,_kind_,_obj_)                \
-    mps_res_t __gc_res = mps_reserve(&__reserve_addr,gctools::allocation_point<_class_>::get(), sizeof_with_header<_class_>()); \
-    if ( __gc_res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Could not allocate %s") % #_class_ ); \
-    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(__reserve_addr); \
-    header->kind._Kind = (gctools::GCKindEnum)(_kind_);                 \
-    DEBUG_VALIDATE_HEADER(header);                                      \
-    void* __obj_addr = BASE_TO_OBJ_PTR(__reserve_addr);                 \
-    DEBUG_MPS_ALLOCATION(__reserve_addr,__obj_addr,sizeof_with_header<_class_>(),_kind_); \
-    _obj_ = new (__obj_addr) /* Followed by the class in EVERY usage of GC_RESERVE_GET_BASE */
-
-#define _GC_RESERVE_END_BASE(_class_) }while (!mps_commit(gctools::allocation_point<_class_>::get(),__reserve_addr,sizeof_with_header<_class_>())); 
-
-#define _GC_RESERVE_FINALIZE() mps_finalize(gctools::_global_arena,&__reserve_addr)
-
-#define _GC_RESERVE_END_FINALyes_INITno(_class_,_obj_) _GC_RESERVE_END_BASE(_class_); _GC_RESERVE_FINALIZE(); } POLL_SIGNALS()
-#define _GC_RESERVE_END_FINALno_INITno(_class_,_obj_) _GC_RESERVE_END_BASE(_class_); } POLL_SIGNALS()
-#define _GC_RESERVE_END_FINALyes_INITyes(_class_,_obj_) _GC_RESERVE_END_BASE(_class_); _GC_RESERVE_FINALIZE(); _obj_->initialize(); } POLL_SIGNALS()
-
-
-#define GC_RESERVE_BEGIN(_class_,_obj_) _GC_RESERVE_BEGIN_BASE(_class_,_obj_)
-#define GC_RESERVE_GET(_class_,_obj_) _GC_RESERVE_GET_BASE(_class_,_class_::static_Kind,_obj_) _class_();
-#define GC_RESERVE_GET_VARIADIC(_class_,_obj_,...) _GC_RESERVE_GET_BASE(_class_,_class_::static_Kind,_obj_) _class_(__VA_ARGS__);
-#define GC_RESERVE_END(_class_,_obj_) _GC_RESERVE_END_FINALyes_INITyes(_class_,_obj_)
-#define GC_RESERVE_END_FINALno_INITno(_class_,_obj_) _GC_RESERVE_END_FINALno_INITno(_class_,_obj_)
-#define GC_RESERVE_END_FINALyes_INITno(_class_,_obj_) _GC_RESERVE_END_FINALyes_INITno(_class_,_obj_)
-
-#define GC_RESERVE(_class_,_obj_) GC_RESERVE_BEGIN(_class_,_obj_) GC_RESERVE_GET(_class_,_obj_) GC_RESERVE_END(_class_,_obj_)
-#define GC_RESERVE_VARIADIC(_class_,_obj_,...) GC_RESERVE_BEGIN(_class_,_obj_) GC_RESERVE_GET_VARIADIC(_class_,_obj_,__VA_ARGS__) GC_RESERVE_END(_class_,_obj_)
-
-#define GC_ALLOCATE(_class_,_obj_) GC_RESERVE(_class_,_obj_)
-#define GC_ALLOCATE_VARIADIC(_class_,_obj_,...) GC_RESERVE_VARIADIC(_class_,_obj_,__VA_ARGS__)
-
-#define GC_COPY_BEGIN(_class_,_obj_) _GC_RESERVE_BEGIN_BASE(_class_,_obj_)
-#define GC_COPY_GET(_class_,_obj_,_orig_) GC_RESERVE_GET_VARIADIC(_class_,_obj_,_orig_)
-#define GC_COPY_END(_class_,_obj_) _GC_RESERVE_END_FINALyes_INITno(_class_,_obj_)
-#define GC_COPY(_class_,_obj_,_orig_) GC_COPY_BEGIN(_class_,_obj_) GC_COPY_GET(_class_,_obj_,_orig_) GC_COPY_END(_class_,_obj_)
 
 
 
@@ -208,23 +186,16 @@ namespace gctools {
 */
 
 
-
-#define GC_IGNORE(_ptr_)  {} /* do nothing - it's not a pointer or container of pointers */
-
 /*! Return the block address of the object pointed to by the smart_ptr */
 #define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) ((_smartptr_).pbase_ref())
 #define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void*>(dynamic_cast<const void*>(_ptr_)))
 
 
 
-#define BASE_TO_OBJ_PTR(_gcptr_) reinterpret_cast<void*>(reinterpret_cast<char*>(_gcptr_)+ALIGN_UP(sizeof(gctools::Header_s)))
-#define OBJ_TO_BASE_PTR(_objptr_) reinterpret_cast<void*>(reinterpret_cast<char*>(_objptr_)-ALIGN_UP(sizeof(gctools::Header_s)))
-
-
 
 #define CONTAINER_FIX(_cptr_)                                           \
     if (_cptr_) {                                                       \
-        mps_addr_t addr = OBJ_TO_BASE_PTR(_cptr_);                      \
+        mps_addr_t addr = MostDerivedPtrToBasePtr(_cptr_);                      \
         mps_res_t res = MPS_FIX12(GC_SCAN_STATE,&addr);                 \
         if (res != MPS_RES_OK) return res;                              \
         (_cptr_) = reinterpret_cast<decltype(_cptr_)>(BASE_TO_OBJ_PTR(addr)); \
@@ -253,49 +224,17 @@ namespace gctools {
         }								\
     };
 #else
-#error "HANDLE undef USE_TAGGED_PTR_P0"
+#define MY_MPS_FIX(_smartptr_)						\
+    DEBUG_MPS_MESSAGE(boost::format("MY_MPS_FIX of %s@%p pbase: %p  px: %p") % #_smartptr_ % (&(_smartptr_)) % (_smartptr_).pbase_ref() % (_smartptr_).px_ref()); \
+    if ( (_smartptr_).pointerp() ) {                                    \
+	if ( MPS_FIX1(GC_SCAN_STATE,(_smartptr_).px_ref()) ) {          \
+	    mps_res_t res = MPS_FIX2(GC_SCAN_STATE,&(_smartptr_).px_ref()); \
+            if (res != MPS_RES_OK) return res;                          \
+        }								\
+    };
 #endif // USE_TAGGED_PTR_P0
 
 
-
-#if 0
-// This was for the AMC pool using the px pointer to dynamic_downcast to void*
-// This requires a dereferencing of px and the MPS library protects the memory and
-// so we have to unshield it
-#define MY_MPS_FIX(_smartptr_)						\
-    if ( (_smartptr_).pointerp() ) {					\
-	if ( MPS_FIX1(GC_SCAN_STATE,reinterpret_cast<void*>((_smartptr_).px_ref())) ) { \
-	    Seg _seg;						\
-	    bool gotAddr = SegOfAddr(&_seg,_global_arena,(_smartptr_).px_ref());	\
-	    if ( !gotAddr ) THROW_HARD_ERROR(BF("Could not get SegOfAddr for address: %p") % (_smartptr_).px_ref() ); \
-	    ShieldRaise(_global_arena,_seg);					\
-	    void* _obj_addr = dynamic_cast<void*>((_smartptr_).px_ref()); \
-	    ShieldCover(gctools::_global_arena,_seg);                   \
-	    void* _base = OBJ_TO_BASE_PTR(_obj_addr);			\
-	    int _offset = reinterpret_cast<char*>((_smartptr_).px_ref()) - reinterpret_cast<char*>(_base); \
-	    DEBUG_MPS_FIX_BEFORE(_base,_obj_addr,reinterpret_cast<void*>((_smartptr_).px_ref()),_offset); \
-	    mps_res_t res = MPS_FIX2(GC_SCAN_STATE,&_base);		\
-	    if (res != MPS_RES_OK) return res;				\
-	    void* _newAddr = reinterpret_cast<void*>(reinterpret_cast<char*>(_base) + _offset); \
-	    (_smartptr_)._gcset(_newAddr);				\
-	    DEBUG_MPS_FIX_AFTER(_base,reinterpret_cast<void*>((_smartptr_).px_ref())); \
-	}								\
-    };
-#endif
-#define MY_MPS_FIX_OLD(_smartptr_)						\
-    if ( (_smartptr_).pointerp() ) {					\
-	if ( MPS_FIX1(GC_SCAN_STATE,reinterpret_cast<void*>((_smartptr_).px_ref())) ) { \
-	    void* _obj_addr = dynamic_cast<void*>((_smartptr_).px_ref()); \
-	    void* _base = OBJ_TO_BASE_PTR(_obj_addr);			\
-	    int _offset = reinterpret_cast<char*>((_smartptr_).px_ref()) - reinterpret_cast<char*>(_base); \
-	    DEBUG_MPS_FIX_BEFORE(_base,_obj_addr,reinterpret_cast<void*>((_smartptr_).px_ref()),_offset); \
-	    mps_res_t res = MPS_FIX2(GC_SCAN_STATE,&_base);		\
-	    if (res != MPS_RES_OK) return res;				\
-	    void* _newAddr = reinterpret_cast<void*>(reinterpret_cast<char*>(_base) + _offset); \
-	    (_smartptr_)._gcset(_newAddr);				\
-	    DEBUG_MPS_FIX_AFTER(_base,reinterpret_cast<void*>((_smartptr_).px_ref())); \
-	}								\
-    };
 #define IGNORE(_ptr_)
 #define SMART_PTR_FIX(_ptr_) {MY_MPS_FIX(_ptr_);};
 #define HANDLE_POINTER_CTYPE(_ptr_) { if (_ptr_) _ptr_->onHeapScanGCRoots(GC_SCAN_ARGS_PASS); };
@@ -431,8 +370,6 @@ extern "C" {
 
     /*! This must be implemented in the main directory */
     extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t s);
-
-
 };
 
 

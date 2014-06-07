@@ -218,7 +218,7 @@ namespace core
 	    return;
 	}
 #ifdef USE_MPS
-        if (ld) mps_ld_add(ld,gctools::_global_arena, GC_BASE_ADDRESS_FROM_SMART_PTR(obj));
+        if (ld) mps_ld_add(ld,gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
 	obj->T_O::sxhash(hg);
     }
@@ -237,7 +237,7 @@ namespace core
 	    return;
 	}
 #ifdef USE_MPS
-        if (ld) mps_ld_add(ld, gctools::_global_arena, GC_BASE_ADDRESS_FROM_SMART_PTR(obj));
+        if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
 	obj->T_O::sxhash(hg);
     }
@@ -255,7 +255,7 @@ namespace core
 	    return;
 	}
 #ifdef USE_MPS
-        if (ld) mps_ld_add(ld, gctools::_global_arena, GC_BASE_ADDRESS_FROM_SMART_PTR(obj));
+        if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
 	obj->T_O::sxhash(hg);
     }
@@ -352,7 +352,6 @@ namespace core
 
     uint HashTable_O::calculateHashTableCount() const
     {_OF();
-        IMPLEMENT_MEF(BF("Do I need to ignore _Unbound<T_O>() values???????"));
 	uint cnt = 0;
 	for ( size_t it(0), itEnd(af_length(this->_HashTable)); it<itEnd; ++it )
 	{
@@ -425,7 +424,7 @@ namespace core
         if ( keyValueCons.notnilp() ) return keyValueCons;
 #ifdef USE_MPS
         // Location dependency test if key is stale
-        void* blockAddr = GC_BASE_ADDRESS_FROM_SMART_PTR(key);
+        void* blockAddr = SmartPtrToBasePtr(key);
         if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)),gctools::_global_arena,blockAddr)) {
             keyValueCons = this->rehash(false,key);
         }
@@ -583,6 +582,7 @@ namespace core
     {
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString() << " :count " << this->_HashTableCount;
+        ss << " :total-alist-entries " << this->calculateHashTableCount();
 	ss << " @" << (void*)(this) <<  "> ";
 	return ss.str();
 //	return this->hash_table_dump();

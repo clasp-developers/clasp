@@ -34,13 +34,13 @@ namespace core
 	static StrWithFillPtr_sp create(char initial_element, int dimension, int fill_ptr, bool adjustable,Sequence_sp initialContents=_Nil<Sequence_O>());
 	/*! Create a buffer BUFFER_STRING_LEN size, fill_ptr=0, adjustable=true */
 	static StrWithFillPtr_sp createBufferString(size_t bufferSize=BUFFER_STRING_SIZE) {
-	    return StrWithFillPtr_O::create('\0',bufferSize,0,true,_Nil<Sequence_O>());
+	    return StrWithFillPtr_O::create(' ',bufferSize,0,true,_Nil<Sequence_O>());
 	};
     public:
 	virtual bool adjustableArrayP() const { return this->_Adjustable;}
-	virtual void set(const string& v) { this->_Contents = v; this->_FillPointer = v.size();};
-	virtual void setFromChars(const char* v) { this->_Contents = v; this->_FillPointer = this->_Contents.size();}
-	virtual string get() const { return this->_Contents.substr(0,this->_FillPointer);};
+	virtual void set(const string& v) { this->Str_O::set(v); this->_FillPointer = v.size();};
+	virtual void setFromChars(const char* v) { this->Str_O::set(v); this->_FillPointer = this->_Contents.size();}
+	virtual string get() const { return std::string(this->_Contents.data(),this->_FillPointer);};
 	virtual uint size() const { return this->_FillPointer;};
 
 	void incrementFillPointer(int offset);

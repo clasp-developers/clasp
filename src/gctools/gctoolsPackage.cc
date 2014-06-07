@@ -103,18 +103,218 @@ namespace gctools
         printf("Leaving scope\n");
     }
 
+};
+
+#ifdef USE_BOEHM
+
+struct ReachableClass {
+    ReachableClass() : typeidName(NULL) {};
+    ReachableClass(const char* tn) : typeidName(tn), instances(0), totalSize(0) {}
+    void update(size_t sz) { ++this->instances; this->totalSize += sz;};
+    const char* typeidName;
+    size_t      instances;
+    size_t      totalSize;
+    size_t print(const std::string& shortName) {
+        printf("%s: total_size: %10lu count: %8lu avg.sz: %8lu %s\n", shortName.c_str(),
+               this->totalSize, this->instances, this->totalSize/this->instances, this->typeidName );
+        return this->totalSize;
+    }
+};
+
+struct ReachableContainer {
+    ReachableContainer() : typeidName(NULL) {};
+    ReachableContainer(const char* tn) : typeidName(tn), instances(0), totalSize(0), largest(0) {}
+    void update(size_t sz) {
+        ++this->instances;
+        this->totalSize += sz;
+        if (sz > this->largest) {
+            this->largest = sz;
+        }
+    };
+    const char* typeidName;
+    size_t      instances;
+    size_t      totalSize;
+    size_t      largest;
+    size_t print(const std::string& shortName) {
+        printf("%s: total_size: %10lu count: %8lu  avg.sz: %8lu  largest: %8lu %s\n", shortName.c_str(),
+               this->totalSize, this->instances, this->totalSize/this->instances, this->largest, this->typeidName );
+        return this->totalSize;
+    }
+
+};
+
+    typedef map<const char*,ReachableClass>    ReachableClassMap;
+    typedef map<const char*,ReachableContainer> ReachableContainerMap;
+    static ReachableClassMap*     static_ReachableClassKinds;
+    static ReachableClassMap*     static_ReachableLispKinds;
+    static ReachableContainerMap* static_ReachableContainerKinds;
+    static ReachableContainerMap* static_ReachableStringKinds;
+static size_t invalidHeaderTotalSize = 0;
+int globalSearchMarker = 0;
+extern "C" {    
+    extern void GC_mercury_enumerate_reachable_objects();
+    void GC_callback_reachable_object(void* ptr, size_t sz)
+    {
+        sz <<= 2; // convert to bytes
+        gctools::Header_s* h = reinterpret_cast<gctools::Header_s*>(ptr);
+        if (h->isValid() ) {
+            if ( h->markerMatches(globalSearchMarker)) {
+                switch (h->kind()) {
+                case gctools::BoehmClassKind: {
+                    ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->name());
+                    if ( it == static_ReachableClassKinds->end() ) {
+                        ReachableClass reachableClass(h->name());
+                        reachableClass.update(sz);
+                        (*static_ReachableClassKinds)[h->name()] = reachableClass;
+                    } else {
+                        it->second.update(sz);
+                    }
+                    break;
+                }
+                case gctools::BoehmLispKind: {
+                    ReachableClassMap::iterator it = static_ReachableLispKinds->find(h->name());
+                    if ( it == static_ReachableLispKinds->end() ) {
+                        ReachableClass reachableClass(h->name());
+                        reachableClass.update(sz);
+                        (*static_ReachableLispKinds)[h->name()] = reachableClass;
+                    } else {
+                        it->second.update(sz);
+                    }
+                    break;
+                }
+                case gctools::BoehmContainerKind: {
+                    ReachableContainerMap::iterator it = static_ReachableContainerKinds->find(h->name());
+                    if ( it == static_ReachableContainerKinds->end() ) {
+                        ReachableContainer reachableContainer(h->name());
+                        reachableContainer.update(sz);
+                        (*static_ReachableContainerKinds)[h->name()] = reachableContainer;
+                    } else {
+                        it->second.update(sz);
+                    }
+                    break;
+                }
+                case gctools::BoehmStringKind: {
+                    ReachableContainerMap::iterator it = static_ReachableStringKinds->find(h->name());
+                    if ( it == static_ReachableStringKinds->end() ) {
+                        ReachableContainer reachableContainer(h->name());
+                        reachableContainer.update(sz);
+                        (*static_ReachableStringKinds)[h->name()] = reachableContainer;
+                    } else {
+                        it->second.update(sz);
+                    }
+                    break;
+                }
+                }
+            }
+        } else {
+            invalidHeaderTotalSize += sz;
+        }
+    }
+};
 
 
+template <typename T>
+size_t dumpResults(const std::string& name, const std::string& shortName, T* data)
+{
+    printf("-------------------- %s -------------------\n", name.c_str() );
+    typedef typename T::value_type::second_type value_type;
+    vector<value_type> values;
+    for (auto it : *data ) {
+        values.push_back(it.second);
+    }
+    size_t totalSize(0);
+    sort(values.begin(), values.end(), [](value_type& x, value_type& y) {
+            return (x.totalSize > y.totalSize);
+        });
+    for ( auto it : values ) {
+        totalSize += it.print(shortName);
+    }
+    return totalSize;
+}
 
 
-#define ARGS_af_gcInfo "()"
+#endif
+
+namespace gctools {
+
+
+#define ARGS_af_gcInfo "(&optional x (marker 0))"
 #define DECL_af_gcInfo ""
-#define DOCS_af_gcInfo "gcInfo"
-    T_mv af_gcInfo()
+#define DOCS_af_gcInfo "gcInfo - Return info about the reachable objects"
+    T_mv af_gcInfo(T_sp x, Fixnum_sp marker)
     {_G();
 #ifdef USE_MPS
-        return Values(core::Fixnum_O::create((int)(ALIGN_UP(sizeof(gctools::Header_s)))));
-#else
+        return Values(core::Fixnum_O::create((int)(AlignUp(sizeof(gctools::Header_s)))));
+#endif
+#ifdef USE_BOEHM
+        return Values(_Nil<core::T_O>());
+#endif
+    };
+
+
+
+    
+    
+#define ARGS_af_gcMarker "(&optional marker)"
+#define DECL_af_gcMarker ""
+#define DOCS_af_gcMarker "gcMarker"
+    int af_gcMarker(Fixnum_sp marker)
+    {_G();
+#ifdef USE_BOEHM
+        if ( marker.nilp() ) {
+            return gctools::globalBoehmMarker;
+        }
+        int oldm = gctools::globalBoehmMarker;
+        int m = marker->get();
+        gctools::globalBoehmMarker = m;
+        return oldm;
+#endif
+        return 0;
+    }
+
+
+#define ARGS_af_gcReachableObjects "(&optional x (marker 0) msg)"
+#define DECL_af_gcReachableObjects ""
+#define DOCS_af_gcReachableObjects "gcReachableObjects - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)"
+    T_mv af_gcReachable(T_sp x, Fixnum_sp marker, Str_sp msg)
+    {_G();
+        string smsg = "Total";
+        if ( msg.notnilp() ) {
+        smsg = msg->get();
+    }
+#ifdef USE_MPS
+        return Values(core::Fixnum_O::create((int)(AlignUp(sizeof(gctools::Header_s)))));
+#endif
+#ifdef USE_BOEHM
+        globalSearchMarker = marker->get();
+        static_ReachableClassKinds = new(ReachableClassMap);
+        static_ReachableLispKinds = new(ReachableClassMap);
+        static_ReachableContainerKinds = new(ReachableContainerMap);
+        static_ReachableStringKinds = new(ReachableContainerMap);
+        invalidHeaderTotalSize = 0;
+        GC_mercury_enumerate_reachable_objects();
+        printf("Walked LispKinds\n");
+        size_t totalSize(0);
+        totalSize += dumpResults("Reachable StringKinds", "strs", static_ReachableStringKinds);
+        totalSize += dumpResults("Reachable ContainerKinds",  "cont", static_ReachableContainerKinds);
+        totalSize += dumpResults("Reachable LispKinds", "lisp", static_ReachableLispKinds);
+        totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
+        printf("Done walk of memory  %lu ClassKinds   %lu LispKinds   %lu ContainerKinds   %lu StringKinds\n",
+            static_ReachableClassKinds->size(),
+            static_ReachableLispKinds->size(),
+            static_ReachableContainerKinds->size(),
+            static_ReachableStringKinds->size() );
+        printf("%s invalidHeaderTotalSize = %12lu\n", smsg.c_str(), invalidHeaderTotalSize );
+        printf("%s memory usage (bytes):    %12lu\n", smsg.c_str(), totalSize );
+        printf("%s GC_get_heap_size()       %12lu\n", smsg.c_str(),GC_get_heap_size() );
+        printf("%s GC_get_free_bytes()      %12lu\n", smsg.c_str(),GC_get_free_bytes() );
+        printf("%s GC_get_bytes_since_gc()  %12lu\n", smsg.c_str(),GC_get_bytes_since_gc() );
+        printf("%s GC_get_total_bytes()     %12lu\n", smsg.c_str(),GC_get_total_bytes() );
+
+        delete static_ReachableClassKinds;
+        delete static_ReachableLispKinds;
+        delete static_ReachableContainerKinds;
+        delete static_ReachableStringKinds;
         return Values(_Nil<core::T_O>());
 #endif
     };
@@ -390,6 +590,8 @@ namespace gctools
             core::af_def(GcToolsPkg,"testVec0",&af_testVec0);
             core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
             core::af_def(GcToolsPkg,"gcInfo",&af_gcInfo);
+            core::af_def(GcToolsPkg,"gcMarker",&af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
+            core::af_def(GcToolsPkg,"gcReachableObjects",&af_gcReachable,ARGS_af_gcReachableObjects, DECL_af_gcReachableObjects, DOCS_af_gcReachableObjects);
             core::af_def(GcToolsPkg,"garbageCollect",&af_garbageCollect);
             core::af_def(GcToolsPkg,"cleanup",&af_cleanup);
             core::af_def(GcToolsPkg,"maxBootstrapKinds",&af_maxBootstrapKinds);

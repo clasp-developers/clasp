@@ -28,7 +28,7 @@ namespace asttooling
 {
 
     template <typename T>
-    mem::smart_ptr<clbind::Wrapper<T,T*> > Wrap(T* p) { return clbind::Wrapper<T,T*>::create(p,reg::registered_class<T>::id);};
+    gctools::smart_ptr<clbind::Wrapper<T,T*> > Wrap(T* p) { return clbind::Wrapper<T,T*>::create(p,reg::registered_class<T>::id);};
 
 
 
@@ -178,6 +178,17 @@ namespace asttooling
 
     };
 
+};
+
+template<> struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
+namespace asttooling {
+
 
     void initialize_clangTooling();
 
@@ -199,9 +210,9 @@ namespace translate {
         typedef asttooling::DerivableMatchCallback* DeclareType;
         DeclareType _v;
         from_object(core::T_sp o) {
-            if ( mem::smart_ptr<asttooling::DerivableMatchCallback> dmc = o.asOrNull<asttooling::DerivableMatchCallback>())  {
+            if ( gctools::smart_ptr<asttooling::DerivableMatchCallback> dmc = o.asOrNull<asttooling::DerivableMatchCallback>())  {
             this->_v = dmc.px_ref();
-            printf("%s:%d Converted T_sp to mem::smart_ptr<asttooling::DerivableMatchCallback> -> converting to asttooling::DerivableMatchCallback* = %p\n", __FILE__, __LINE__, this->_v);
+            printf("%s:%d Converted T_sp to gctools::smart_ptr<asttooling::DerivableMatchCallback> -> converting to asttooling::DerivableMatchCallback* = %p\n", __FILE__, __LINE__, this->_v);
             return;
         }
 #if 0

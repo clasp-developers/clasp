@@ -41,7 +41,7 @@ namespace gctools {
     template <class T, typename Allocator>
     class GCVector {
 #ifdef USE_MPS
-        friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
+//        friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
         // Only this instance variable is allowed

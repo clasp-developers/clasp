@@ -1,0 +1,77 @@
+Date: Sun, 15 Aug 1999 22:29:56 -0700 (PDT)
+From: Takis Psarogiannakopoulos
+Subject: DG/UX dmalloc
+
+Dear Gray,
+
+I am writing this relating to the DG/ux port (ix86) of dmalloc
+library. I am responsible for the DG/ux X11R6.3 and I am designing a
+new Xserver with multiple threads, so I want to use your dmalloc, as a
+replacemnet for the crap system DG/ux library.  I am curious who wrote
+to you that dmalloc (as is) will work in DG/ux. Firstly the threads
+library for DG/ux "-lthread ", (configure , configure.in) should be
+something like
+
+	AC_CHECK_LIB(thread, __d10_pthread_mutex_init, LIBTHREAD="-lthread"
+	   DG_THREAD_FLAG="-D_POSIX4A_DRAFT10_SOURCE")
+
+(there is no pthread_create , pthread_mutex_init or ...  inside
+-lthread)
+
+and the functions sould be detected by , say,
+
+	AC_CHECK_FUNCS(__d10_pthread_mutex_init) ...etc
+
+As the DG/ux header pthread.h is _not_ a desent one , we need probably
+to define somewhere (in conf.h.in ?) something like
+
+	#if defined(DGUX)
+	#include <pthread.h>
+	#define _USING_POSIX4A_DRAFT10 1
+	#endif
+
+and then 
+
+	#define __d10_pthread_mutex_init mutex_init 
+
+etc ... (for the others).
+
+Also in the above AC_CHECK_LIB(thread ...)  to add (for the _d10__xxx
+of DG/ux) a special flag like
+
+	DG_THREAD_FLAG="-D_POSIX4A_DRAFT10_SOURCE" 
+
+(as I did already)
+
+which we want to append in the Makefile as
+
+	AC_SUBST(DG_THREAD_FLAG)
+
+and add it to the standard CFLAGS as 
+
+	DG_THREAD_FLAG = @DG_THREAD_FLAG@
+
+CFLAGS = ... $(DG_THREAD_FLAG) 
+
+so it will be empty for other OS ...
+
+I confess these are not great changes, but as dmalloc is it will not
+detect lthread, and also neither of the pthread functions!
+
+Finnaly the correct CFLAGS for DG/ux are
+
+	-DDGUX -D_DGUX_SOURCE -D_POSIX4A_DRAFT10_SOURCE
+
+but I guess one can pass these to configure when it executes
+it. However looking for the header dg_sys_info.h (which obviously is a
+DG/ux particular header , not in any other OS) like
+
+	AC_CHECK_HEADER(dg_sys... )
+
+we can have in the configure.in something like $ac_is_dgux=yes,no and
+accordingly set the DG/ux CFLAGS, so the user doesnt need to know the
+correct configuration command.  If you want me to submit a patch drop
+me an e-mail.
+
+Regards,
+Takis

@@ -806,7 +806,7 @@ public:
     virtual bool isNode() { return true; };
 
     template<class SimpleClass>
-    void archiveSharedObjectRaw( const string& uid, const string& nodeName, mem::smart_ptr<SimpleClass>& plainObject, bool mustBeDefined )
+    void archiveSharedObjectRaw( const string& uid, const string& nodeName, gctools::smart_ptr<SimpleClass>& plainObject, bool mustBeDefined )
     { _G();
             if ( this->saving() )
 	    { _BLOCK_TRACE("Saving");
@@ -848,13 +848,13 @@ public:
         }
 
     template<class SimpleClass>
-    void archiveSharedObject( const string& uid, const string& nodeName, mem::smart_ptr<SimpleClass>& plainObject )
+    void archiveSharedObject( const string& uid, const string& nodeName, gctools::smart_ptr<SimpleClass>& plainObject )
     { _G();
 	    this->archiveSharedObjectRaw(uid,nodeName,plainObject,true);
 	}
 
     template<class SimpleClass>
-    void archiveSharedObjectIfDefined( const string& uid, const string& nodeName, mem::smart_ptr<SimpleClass>& plainObject )
+    void archiveSharedObjectIfDefined( const string& uid, const string& nodeName, gctools::smart_ptr<SimpleClass>& plainObject )
     { _G();
 	    this->archiveSharedObjectRaw(uid,nodeName,plainObject,false);
 	}
@@ -1064,7 +1064,7 @@ public:
         }
 
     template <class oclass>
-    void archiveOnlyObjectOfClass( mem::smart_ptr<oclass>& obj )
+    void archiveOnlyObjectOfClass( gctools::smart_ptr<oclass>& obj )
     { _G();
 	    if ( this->loading() )
 	    { _BLOCK_TRACE("Loading");
@@ -1095,7 +1095,7 @@ public:
  *		-# If it isn't found then archive it here.
  */
     template <class oclass>
-    void archiveObject( const string& uid, mem::smart_ptr<oclass>& obj )
+    void archiveObject( const string& uid, gctools::smart_ptr<oclass>& obj )
     { _G();
 	    if ( this->loading() )
 	    { _BLOCK_TRACE("Loading");
@@ -1109,7 +1109,7 @@ public:
 	}
 
     template <class oclass>
-    void archiveObjectIfDefined( const string& uid, mem::smart_ptr<oclass>& obj )
+    void archiveObjectIfDefined( const string& uid, gctools::smart_ptr<oclass>& obj )
     { _G();
 	    if ( this->loading() )
 	    { _BLOCK_TRACEF(BF("Loading uid(%s) if it exists")%uid.c_str() );
@@ -1136,7 +1136,7 @@ public:
  *		-# If the vector is empty then don't create contents.
  */
     template <typename OType>
-    void archiveContainerIfNotEmpty( const string& uid, mem::smart_ptr<OType>& v )
+    void archiveContainerIfNotEmpty( const string& uid, gctools::smart_ptr<OType>& v )
     { _G();
 	    if ( this->saving() )
 	    { _BLOCK_TRACE("Saving");
@@ -1193,7 +1193,7 @@ public:
 //		printf( "archiveVector0>>Looking for children with uid(%s)\n", uid.c_str() );
 		v.clear();
 	        if ( this->hasChildWithUniqueId(uid) ) {
-		    mem::smart_ptr<OType> object;
+                    gctools::smart_ptr<OType> object;
 		    listNode = this->childWithUniqueId(uid);
 		    listNode->setRecognized(true);
 		    VectorNodes::iterator in;
@@ -1258,7 +1258,7 @@ public:
 //		printf( "archiveSet>>Looking for children with uid(%s)\n", uid.c_str() );
 		v.clear();
 	        if ( this->hasChildWithUniqueId(uid) ) {
-		    mem::smart_ptr<OType> object;
+                    gctools::smart_ptr<OType> object;
 		    listNode = this->childWithUniqueId(uid);
 		    listNode->setRecognized(true);
 		    VectorNodes::iterator in;
@@ -1309,7 +1309,7 @@ public:
 		setNode->setClasslessNodeName("OrderedSet");
 		setNode->setTextUniqueId(uid);
 		typename OrderedSet<OType>::iterator oi;
-		mem::smart_ptr<OType> obj;
+                gctools::smart_ptr<OType> obj;
 		stringstream suid;
 		int suidi = 1;
 		for ( oi=v.begin(); oi!=v.end(); oi++ ) {
@@ -1324,7 +1324,7 @@ public:
 //		printf( "archiveOrderedSet>>Looking for children with uid(%s)\n", uid.c_str() );
 		v.clear();
 	        if ( this->hasChildWithUniqueId(uid) ) {
-		    mem::smart_ptr<OType> object;
+                    gctools::smart_ptr<OType> object;
 		    setNode = this->childWithUniqueId(uid);
 		    setNode->setRecognized(true);
 		    VectorNodes::iterator in;
@@ -1401,7 +1401,7 @@ public:
 		    mapNode->setRecognized(true);
 		    VectorNodes::iterator	ci;
 		    string	key;
-		    mem::smart_ptr<OType>  object;
+                    gctools::smart_ptr<OType>  object;
 		    for ( ci=mapNode->begin_Children(); ci!=mapNode->end_Children(); ci++ )
 		    {
 			object = downcast<OType>(mapNode->loadObjectDirectly(*ci));
@@ -1472,7 +1472,7 @@ public:
 		    mapNode->setRecognized(true);
 		    VectorNodes::iterator	ci;
 		    string	key;
-		    mem::smart_ptr<OType>  object;
+                    gctools::smart_ptr<OType>  object;
 		    for ( ci=mapNode->begin_Children(); ci!=mapNode->end_Children(); ci++ )
 		    {
 			this->loadWeakPointerInAttribute( *ci, "val", object, OType::static_classSymbol(), true );
@@ -1626,7 +1626,7 @@ public:
 		    mapNode->setRecognized(true);
 		    VectorNodes::iterator	ci;
 		    string	key;
-		    mem::smart_ptr<OType>  object;
+                    gctools::smart_ptr<OType>  object;
 		    for ( ci=mapNode->begin_Children(); ci!=mapNode->end_Children(); ci++ )
 		    {
 			object = downcast<OType>(mapNode->loadObjectDirectly(*ci));
@@ -1785,7 +1785,7 @@ public:
  *		-# If the vector is empty then don't create contents.
  */
     template <typename MyType>
-    void archiveObjectVector( const string& uid, const string& nodeName, vector<mem::smart_ptr<MyType> >& v )
+    void archiveObjectVector( const string& uid, const string& nodeName, vector<gctools::smart_ptr<MyType> >& v )
     { _G();
 //	    DEPRECIATED("Use archiveVector0 instead");
 	    ArchiveP	childMatter;
@@ -1793,12 +1793,12 @@ public:
 	    { _BLOCK_TRACE("Saving");
 	        if ( v.size() != 0 ) {
 //		    printf( "archiveObjectVector>> Archive start object\n" );
-		    typename vector<mem::smart_ptr<MyType> >::iterator	oi;
+		    typename vector<gctools::smart_ptr<MyType> >::iterator	oi;
 		    childMatter = this->newArchiveNode();
 		    childMatter->setClasslessNodeName(nodeName);
 		    childMatter->setTextUniqueId(uid);
 		    this->addChild(childMatter);
-		    mem::smart_ptr<MyType> object;
+                    gctools::smart_ptr<MyType> object;
 		    for ( oi=v.begin(); oi!=v.end(); oi++ ) {
 //			printf( "archiveObjectVector>> Archive object\n" );
 			object = *oi;
@@ -1814,7 +1814,7 @@ public:
 		    childMatter = this->childWithUniqueId(uid);
 		    childMatter->setRecognized(true);
 		    VectorNodes::iterator	ci;
-		    mem::smart_ptr<MyType> object;
+                    gctools::smart_ptr<MyType> object;
 		    v.clear();
 		    for ( ci=childMatter->begin_Children();
 				    ci!=childMatter->end_Children(); ci++ ) {
@@ -1861,7 +1861,7 @@ public:
 	    { _BLOCK_TRACE("Loading");
 		Symbol_sp curId;
 		vector<ArchiveP>::iterator ci;
-		mem::smart_ptr<aClass> object;
+                gctools::smart_ptr<aClass> object;
 		objects.clear();
 		for ( ci=this->begin_Children(); ci!=this->end_Children(); ci++ )
 		{
@@ -1904,7 +1904,7 @@ public:
 		Symbol_sp curId;
 		string key;
 		vector<ArchiveP>::iterator ci;
-		mem::smart_ptr<aClass> object;
+                gctools::smart_ptr<aClass> object;
 		objects.clear();
 		for ( ci=this->begin_Children(); ci!=this->end_Children(); ci++ )
 		{
@@ -1944,19 +1944,19 @@ public:
  *		-# If the vector is empty then don't create contents.
  */
     template <typename MyType>
-    void archiveMapStringObject( const string& uid, const string& nodeName, map<string,mem::smart_ptr<MyType> >& v ) { _G();
+    void archiveMapStringObject( const string& uid, const string& nodeName, map<string,gctools::smart_ptr<MyType> >& v ) { _G();
 	    DEPRECIATEDP("Use archiveMap instead");
 	    ArchiveP	childMatter;
 	    if ( this->saving() )
 	    { _BLOCK_TRACE("Saving");
 	        if ( v.size() != 0 ) {
 //		    printf( "archiveObjectVector>> Archive start object\n" );
-		    typename map<string,mem::smart_ptr<MyType> >::iterator	oi;
+		    typename map<string,gctools::smart_ptr<MyType> >::iterator	oi;
 		    childMatter = this->newArchiveNode();
 		    childMatter->setClasslessNodeName(nodeName);
 		    childMatter->setTextUniqueId(uid);
 		    this->addChild(childMatter);
-		    mem::smart_ptr<MyType> object;
+                    gctools::smart_ptr<MyType> object;
 		    for ( oi=v.begin(); oi!=v.end(); oi++ ) {
 //			printf( "archiveObjectVector>> Archive object\n" );
 			object = oi->second;
@@ -1971,7 +1971,7 @@ public:
 //		    printf( "archiveObjectVector>>found the node with uid(%s)\n", uid.c_str() );
 		    childMatter = this->childWithUniqueId(uid);
 		    VectorNodes::iterator	ci;
-		    mem::smart_ptr<MyType> object;
+                    gctools::smart_ptr<MyType> object;
 		    v.clear();
 		    for ( ci=childMatter->begin_Children();
 				    ci!=childMatter->end_Children(); ci++ ) {
@@ -2078,7 +2078,7 @@ public:
  *	node has been created.
  */
     template <class Dumb_Class>
-    void archiveWeakPointerBase( string attribute, mem::weak_smart_ptr<Dumb_Class>&obj, 
+    void archiveWeakPointerBase( string attribute, gctools::weak_smart_ptr<Dumb_Class>&obj, 
 						bool errorIfAttributeMissing, 
 						bool suppressNodeForBrokenOrNilWeakPointers,
 						bool suppressAttributeForNilWeakPointers)
@@ -2106,29 +2106,29 @@ public:
 	    }
 	}
     template <class Dumb_Class>
-    void archiveWeakPointer( string attribute, mem::weak_smart_ptr<Dumb_Class>&obj)
+    void archiveWeakPointer( string attribute, gctools::weak_smart_ptr<Dumb_Class>&obj)
     { _G();
 	    this->archiveWeakPointerBase<Dumb_Class>(attribute,obj,true,false,false);
 	}
     template <class Dumb_Class>
-    void archiveWeakPointerIfNotNil( string attribute, mem::weak_smart_ptr<Dumb_Class>&obj)
+    void archiveWeakPointerIfNotNil( string attribute, gctools::weak_smart_ptr<Dumb_Class>&obj)
     { _G();
 	    this->archiveWeakPointerBase<Dumb_Class>(attribute,obj,false,false,true);
 	}
     template <class Dumb_Class>
-    void archiveWeakPointerSuppressNodeIfBrokenOrNil( string attribute, mem::weak_smart_ptr<Dumb_Class>&obj )
+    void archiveWeakPointerSuppressNodeIfBrokenOrNil( string attribute, gctools::weak_smart_ptr<Dumb_Class>&obj )
     { _G();
 	    this->archiveWeakPointerBase<Dumb_Class>(attribute,obj,true,true,false);
 	}
 
 
     template <class Dumb_Class>
-    void archiveSaveObjectAsChildAssignAutoUniqueId( mem::smart_ptr<Dumb_Class>& obj ) {
+    void archiveSaveObjectAsChildAssignAutoUniqueId( gctools::smart_ptr<Dumb_Class>& obj ) {
 	    this->saveObjectWithinNodeWithUid( this->nextUniqueIdCharacters(), obj );
 	}
 
     template <class Dumb_Class>
-    void archiveLoadObjectDirectly( mem::smart_ptr<Dumb_Class>& obj )
+    void archiveLoadObjectDirectly( gctools::smart_ptr<Dumb_Class>& obj )
     { _G();
 	    T_sp rawObj;
 	    rawObj = this->loadObjectDirectly(this);

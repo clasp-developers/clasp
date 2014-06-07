@@ -73,7 +73,7 @@ namespace clbind { namespace detail {
             if ( m_default_constructor != NULL ) {
                 allocator = m_default_constructor->registerDefaultConstructor_();
             } else {
-                allocator = gctools::allocateCreator<DummyCreator>(classNameString);
+                allocator = gctools::ClassAllocator<DummyCreator>::allocateClass(classNameString);
             }
             _lisp->addClass(className,crep,allocator);
             registry->add_class(m_type,crep);

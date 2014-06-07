@@ -1,5 +1,5 @@
 #define _GC_RESERVE_BEGIN_BASE(_class_,_obj_) \
-    mem::smart_ptr<_class_> _obj_;           \
+    gctools::smart_ptr<_class_> _obj_;        \
     {                                        \
     mps_addr_t __reserve_addr(0);            \
     do {

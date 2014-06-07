@@ -19,8 +19,14 @@ namespace gctools {
 
 };
 
-#ifdef USE_MPS
-#include "mpsGarbageCollection.cc"
-#else
+#ifdef USE_REFCOUNT
 #include "intrusiveRefCountGarbageCollection.cc"
+#endif
+
+#ifdef USE_BOEHM
+#include "boehmGarbageCollection.cc"
+#endif
+
+#if defined(USE_MPS)
+#include "mpsGarbageCollection.cc"
 #endif

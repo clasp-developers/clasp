@@ -53,12 +53,6 @@ namespace core
 	virtual ActivationFrame_sp activationFrame() const =0;
 	virtual int bds() const {return this->_Bds;};
     public:
-        virtual GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-        {
-            printf("%s:%d - onStackScanGCRoots - I don't need to do anything - get rid of me\n", __FILE__, __LINE__ );
-            return GC_RES_OK;
-        };
-
     };
 
 
@@ -300,9 +294,6 @@ namespace core
 
 	string asString() const;
 
-#ifdef USE_MPS
-	GC_RESULT scanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-#endif
 
     };
 
@@ -316,7 +307,6 @@ namespace core
 	Symbol_sp 	_Var;
 	T_sp 		_Val;
 	DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val) {};
-        GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
     };
 
 #pragma GCC visibility push(default)
@@ -339,20 +329,6 @@ namespace core
 
 	int size() const { return this->_Bindings.size(); };
 
-        GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
-#ifdef USE_MPS
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-            MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-                for ( auto& _it : this->_Bindings ) {
-                    GC_RESULT res = _it.onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
-                    if ( res != GC_RES_OK ) return res;
-                }
-            } MPS_SCAN_END(GC_SCAN_STATE);
-#pragma clang diagnostic pop
-#endif
-            return GC_RES_OK;
-        }
     };	
 #pragma GCC visibility pop
 	

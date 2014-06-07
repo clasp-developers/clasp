@@ -66,7 +66,9 @@ namespace clbind {
     template<typename OutValue, typename Adopt, typename ARG>
     void ReturnValueWhen(core::MultipleValues& mv, int& idx, OutValue, Adopt, ARG&& a)
     {
-        mv.valueSet(idx++,translate::to_object<ARG,Adopt>::convert(a));
+        mv.emplace_back(translate::to_object<ARG,Adopt>::convert(a));
+        ++idx;
+//        mv.valueSet(idx++,translate::to_object<ARG,Adopt>::convert(a));
     }
 
     template<typename Adopt, typename ARG>

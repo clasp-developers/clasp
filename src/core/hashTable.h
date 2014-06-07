@@ -53,13 +53,6 @@ namespace core
 	static HashTable_sp create(T_sp test); // set everything up with defaults
 
     public:
-#ifdef USE_MPS
-        // Define the location dependency tracking type
-        typedef mps_ld_t LocationDependencyPtrT;
-#else
-        // Dummy pointer type
-        typedef void* LocationDependencyPtrT;
-#endif
 
 	static void sxhash_eq(HashGenerator& running_hash, T_sp obj, LocationDependencyPtrT);
 	static void sxhash_eql(HashGenerator& running_hash, T_sp obj, LocationDependencyPtrT);

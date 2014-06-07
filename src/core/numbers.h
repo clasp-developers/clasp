@@ -215,8 +215,7 @@ namespace core
 };
 
 
-
-template <> struct gctools::GCAllocatorInfo<core::Fixnum_O> {
+template <> struct gctools::GCInfo<core::Fixnum_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;
@@ -327,12 +326,9 @@ namespace core {
 
 	DEFAULT_CTOR_DTOR(Fixnum_O);
     };
+};
 
-
-
-
-
-
+namespace core {
 
     SMART(Float);
     class Float_O : public Real_O

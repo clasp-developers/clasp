@@ -419,7 +419,8 @@ boehm-build:
 boehm-setup:
 	(cd boehm-$(BOEHM_VERSION); \
 		export ALL_INTERIOR_PTRS=1; \
-		./configure --with-large-heap=yes --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
+		CFLAGS="-DUSE_MMAP" \
+		./configure --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
 
 
 boehm-compile:

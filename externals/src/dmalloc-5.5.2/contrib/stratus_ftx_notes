@@ -1,0 +1,17 @@
+From: Wim_van_Duuren
+Subject: dmalloc library
+Date: Wed, 12 Aug 1998 10:36:42 -0400
+
+I recently used your dmalloc library on a Stratus FTX (release
+2.3.1.1, i860 Intel processor) system.  Getting the return-address
+setup properly was a problem (couldn't get the "asm" working in the
+selected compiler mode), and I ended up with compiling according to
+full-ANSI rules (using the -Xa compiler option).  This I could only do
+after modifying the "dmalloc.h.3" in such a way that the
+malloc/calloc/realloc/free definitions would no longer cause the
+compiler to bark with 'identifier redeclared' (I just put an #ifdef
+_STDLIB_H ... #endif around those functions).
+
+...
+
+sdf

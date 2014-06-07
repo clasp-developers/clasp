@@ -7,7 +7,7 @@
 
 
 
-template<> struct gctools::GCAllocatorInfo<core::VectorObjects_O> {
+template<> struct gctools::GCInfo<core::VectorObjects_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static bool constexpr Moveable = true;

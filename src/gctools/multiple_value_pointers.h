@@ -1,0 +1,114 @@
+#ifndef gctools_multiple_value_pointers_H
+#define gctools_multiple_value_pointers_H
+
+
+namespace gctools
+{
+
+
+
+    template <class T>
+    class multiple_values : public smart_ptr<T>
+    {
+    private:
+	int 	_number_of_values;
+    public:
+	multiple_values() : smart_ptr<T>(_Nil<T>()), _number_of_values(0) {};
+	multiple_values(const smart_ptr<T>& v,int num) : smart_ptr<T>(v), _number_of_values(num) {};
+	multiple_values(const smart_ptr<T>& v) : smart_ptr<T>(v), _number_of_values(1) {};
+	template <class Y> multiple_values(const multiple_values<Y>& yy) : smart_ptr<T>(yy), _number_of_values(yy.number_of_values()) {};
+
+
+
+        static multiple_values<T> createFromValues() {
+	    core::MultipleValues* mv = core::lisp_multipleValues();
+            multiple_values<T> result( mv->getSize()==0 ? _Nil<core::T_O>() : mv->valueGet(0,mv->getSize()), mv->getSize());
+            return result;
+        }
+
+
+        static multiple_values<T> createFromVec0(const Vec0<core::T_sp>& vec) {
+	    core::MultipleValues* mv = core::lisp_multipleValues();
+            mv->loadFromVec0(vec);
+            return multiple_values<T>::createFromValues();
+        }
+
+
+        void saveToMultipleValue0() const {
+	    core::MultipleValues* mv = core::lisp_multipleValues();
+            mv->valueSet(0,*this);
+        };
+
+        void saveToVec0(::gctools::Vec0<core::T_sp>& values) {
+            values.resize(this->_number_of_values);
+            values[0] = *this;
+            for ( int i(1); i<this->_number_of_values; ++i ) {
+                values[i] = this->valueGet(i);
+            }
+        }
+
+
+#ifdef POLYMORPHIC_SMART_PTR
+	virtual
+#endif
+	int number_of_values() const { return this->_number_of_values;};
+
+	void valueSet(int idx, smart_ptr<core::T_O> val)
+	{
+	    core::MultipleValues* mv = core::lisp_multipleValues();
+	    mv->valueSet(idx,val);
+	}
+	    
+	core::T_sp valueGet(int idx) const
+	{
+	    core::MultipleValues* mv = core::lisp_multipleValues();
+	    core::T_sp val = mv->valueGet(idx,this->_number_of_values);
+	    return val;
+	};
+
+
+	void dump() 
+	{
+	    if (this->_number_of_values > 0 )
+	    {
+		string ts = (*this)->__repr__();
+		printf(" %s\n", ts.c_str() );
+		for (int i(1); i<this->_number_of_values; ++i )
+		{
+		    string ts = _rep_(this->valueGet(i));
+		    printf(" %s\n", ts.c_str() );
+		}
+	    } else
+	    {
+		printf( "---No values---\n");
+	    }
+	}
+
+
+            
+
+
+
+    };
+
+#if defined(USE_MPS)
+    template <class TO, class FROM>
+    multiple_values<TO> dynamic_pointer_cast(const multiple_values<FROM>& ptr)
+    {
+	smart_ptr<FROM> sp = ptr;
+	return multiple_values<TO>(gctools::dynamic_pointer_cast<TO>(sp),ptr.number_of_values());
+    };
+#else
+    template <class TO, class FROM>
+    multiple_values<TO> dynamic_pointer_cast(const multiple_values<FROM>& ptr)
+    {
+	smart_ptr<FROM> sp = ptr;
+	return multiple_values<TO>(boost::dynamic_pointer_cast<TO>(sp),ptr.number_of_values());
+    };
+#endif
+
+
+};
+
+
+#endif

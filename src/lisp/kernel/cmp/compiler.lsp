@@ -27,6 +27,19 @@
 
 
 
+(defparameter *active-compilation-source-database* nil)
+(defun do-one-source-database (closure)
+  (if (null *active-compilation-source-database*)
+      (let ((*active-compilation-source-database* t)
+            (core:*source-database* (core:make-source-manager)))
+        (do-one-source-database closure))
+      (funcall closure)))
+(defmacro with-one-source-database (&rest body)
+  `(do-one-source-database #'(lambda () ,@body)))
+        
+
+
+
 
 
 
@@ -197,6 +210,8 @@ COMPILE-FILE just throws this away")
 	(let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
 						       nil
 						       *all-funcs-for-one-compile*) env)))
+          ;; TODO:   Here walk the source code in lambda-or-lambda-block and
+          ;; get the line-number/column for makeCompiledFunction
 	  (irc-intrinsic "makeCompiledFunction" result compiled-fn *gv-source-path-name* (compile-reference-to-literal function-name env) funcs (irc-renv env)))
 	*all-funcs-for-one-compile*)))
 
@@ -639,7 +654,7 @@ jump to blocks within this tagbody."
                     (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))
                     ))
               enumerated-tag-blocks)
-        ((cleanup) (codegen-literal result nil env))
+        ;;        ((cleanup) (codegen-literal result nil env))
         ((typeid-core-dynamic-go exception-ptr)
          (let* ((go-index (irc-intrinsic "tagbodyDynamicGoIndexElseRethrow" exception-ptr frame))
                 (default-block (irc-basic-block-create "switch-default"))
@@ -650,6 +665,7 @@ jump to blocks within this tagbody."
            (irc-intrinsic "throwIllegalSwitchValue"
                           go-index (jit-constant-i32 (length enumerated-tag-blocks))))))
       (irc-intrinsic "exceptionStackUnwind" frame)
+      (codegen-literal result nil env)
       )))
 
 
@@ -1145,7 +1161,6 @@ be wrapped with to make a closure"
 
 
 
-#+compile-mcjit
 (defun compile-in-env (name &optional definition env)
   "Compile in the given environment"
   (with-compiler-env ()
@@ -1164,36 +1179,36 @@ be wrapped with to make a closure"
 					     'llvm-sys:external-linkage
 					     nil ;; (llvm-sys:constant-pointer-null-get +ltvsp*+ )
 					     *run-time-literals-external-name*)))
-	(with-compilation-unit (:override nil
-					  :module *the-module*
-					  :function-pass-manager *the-function-pass-manager*)
-	  (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
-	    (let* ((truename (if *load-truename*
-				 (namestring *load-truename*)
-				 "compile-in-env"))
-		   (*gv-source-path-name* (jit-make-global-string-ptr
-					   truename
-					   "source-path-name"))
-		   (*all-funcs-for-one-compile* nil))
-	      (multiple-value-bind (fn function-kind wrapped-env warnp failp)
-		  (with-dibuilder (*the-module*)
-		    (with-dbg-compile-unit (nil truename)
-		      (with-dbg-file-descriptor (nil truename)
-			(multiple-value-bind (fn fn-kind wrenv warnp failp)
-			    (compile* name definition env)
-			  (values fn fn-kind wrenv warnp failp)
-			  ))))
-		(cmp-log "------------  Finished building MCJIT Module - about to get-compiled-function  Final module follows...\n")
-		(cmp-log-dump *the-module*)
-		(let* ((compiled-function (progn
-					    (cmp-log "About to get-compiled-function with fn %s\n" fn)
-					    (llvm-sys:get-compiled-function *run-time-execution-engine* name fn
-									  (irc-environment-activation-frame wrapped-env)
-									  function-kind)))
-		       (compiled-body (get-body compiled-function)))
-		  (set-compiled-funcs compiled-body *all-funcs-for-one-compile*)
-		  (when name (setf-symbol-function name compiled-function))
-		  (values compiled-function warnp failp))))))))))
+        (with-compilation-unit (:override nil
+                                          :module *the-module*
+                                          :function-pass-manager *the-function-pass-manager*)
+          (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
+            (let* ((truename (if *load-truename*
+                                 (namestring *load-truename*)
+                                 "compile-in-env"))
+                   (*gv-source-path-name* (jit-make-global-string-ptr
+                                           truename
+                                           "source-path-name"))
+                   (*all-funcs-for-one-compile* nil))
+              (multiple-value-bind (fn function-kind wrapped-env warnp failp)
+                  (with-dibuilder (*the-module*)
+                    (with-dbg-compile-unit (nil truename)
+                      (with-dbg-file-descriptor (nil truename)
+                        (multiple-value-bind (fn fn-kind wrenv warnp failp)
+                            (compile* name definition env)
+                          (values fn fn-kind wrenv warnp failp)
+                          ))))
+                (cmp-log "------------  Finished building MCJIT Module - about to get-compiled-function  Final module follows...\n")
+                (cmp-log-dump *the-module*)
+                (let* ((compiled-function (progn
+                                            (cmp-log "About to get-compiled-function with fn %s\n" fn)
+                                            (llvm-sys:get-compiled-function *run-time-execution-engine* name fn
+                                                                            (irc-environment-activation-frame wrapped-env)
+                                                                            function-kind)))
+                       (compiled-body (get-body compiled-function)))
+                  (set-compiled-funcs compiled-body *all-funcs-for-one-compile*)
+                  (when name (setf-symbol-function name compiled-function))
+                  (values compiled-function warnp failp))))))))))
 
 
 

@@ -142,7 +142,6 @@ namespace core
         private:
             int         _Frame;
         public:
-            DECLARE_onHeapScanGCRoots();
             CatchThrow(int frame) : _Frame(frame) {};
             int getFrame() { return this->_Frame;};
             ATTR_WEAK virtual ~CatchThrow() {};
@@ -175,7 +174,6 @@ namespace core
         private:
             int	_Frame;
         public:
-            virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
             ReturnFrom(int frame)
             {
                 this->_Frame = frame;
@@ -214,7 +212,6 @@ namespace core
             int _Frame;
             int	_Index;
         public:
-            DECLARE_onHeapScanGCRoots();
             ATTR_WEAK DynamicGo(int frame, int index) : _Frame(frame), _Index(index) {};
             ATTR_WEAK virtual ~DynamicGo() {};
             int getFrame() const { return this->_Frame;};
@@ -316,8 +313,8 @@ namespace core
 
 
         class Cons_O;
-        typedef mem::smart_ptr<Cons_O> Cons_sp;
-        typedef mem::weak_smart_ptr<Cons_O> Cons_wp;
+    typedef gctools::smart_ptr<Cons_O> Cons_sp;
+    typedef gctools::weak_smart_ptr<Cons_O> Cons_wp;
 
 
 

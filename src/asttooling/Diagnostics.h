@@ -153,18 +153,11 @@ public:
     struct ErrorContent {
         gctools::Vec0<ContextFrame> ContextStack;
         struct Message {
-#ifdef USE_MPS
-            GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-#endif
             core::Cons_sp Range;
             ErrorType Type;
             std::vector<std::string> Args;
         };
         gctools::Vec0<Message> Messages;
-#ifdef USE_MPS
-            GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-            GC_RESULT onStackScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-#endif
     };
     ArrayRef<ErrorContent> errors() const { return ArrayRef<ErrorContent>(Errors.begin(),Errors.end()); }
 
@@ -185,7 +178,7 @@ private:
     ArgStream pushContextFrame(ContextType Type, core::Cons_sp Range);
 
 public:
-    GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
+//    GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
 
 private:
     gctools::Vec0<ContextFrame> ContextStack;

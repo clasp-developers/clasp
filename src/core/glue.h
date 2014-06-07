@@ -5,30 +5,30 @@
 
 
 template <class to_class, class from_class>
-inline mem::smart_ptr<to_class> safe_downcast(const mem::smart_ptr<from_class>& c)
+inline gctools::smart_ptr<to_class> safe_downcast(const gctools::smart_ptr<from_class>& c)
 {
     if ( c.nilp() ) return _Nil<to_class>();
-    mem::smart_ptr<to_class> dc = mem::dynamic_pointer_cast<to_class>(c);
+    gctools::smart_ptr<to_class> dc = gctools::dynamic_pointer_cast<to_class>(c);
     if ( dc.pointerp() ) return dc;
     lisp_throwUnexpectedType(c,to_class::static_classSymbol());
     return _Nil<to_class>();
 }
 
 template <>
-inline mem::smart_ptr<core::T_O> safe_downcast(const mem::smart_ptr<core::T_O>& c)
+inline gctools::smart_ptr<core::T_O> safe_downcast(const gctools::smart_ptr<core::T_O>& c)
 {
     return c;
 }
 
 template <>
-inline mem::smart_ptr<core::Cons_O> safe_downcast(const mem::smart_ptr<core::Cons_O>& c)
+inline gctools::smart_ptr<core::Cons_O> safe_downcast(const gctools::smart_ptr<core::Cons_O>& c)
 {
     return c;
 }
 
 
 template <>
-inline mem::smart_ptr<core::Symbol_O> safe_downcast(const mem::smart_ptr<core::Symbol_O>& c)
+inline gctools::smart_ptr<core::Symbol_O> safe_downcast(const gctools::smart_ptr<core::Symbol_O>& c)
 {
     return c;
 }
@@ -42,31 +42,31 @@ inline mem::smart_ptr<core::Symbol_O> safe_downcast(const mem::smart_ptr<core::S
 
 
 template <class to_class, class from_class>
-inline mem::multiple_values<to_class> safe_downcast(const mem::multiple_values<from_class>& c)
+inline gctools::multiple_values<to_class> safe_downcast(const gctools::multiple_values<from_class>& c)
 {
-    if ( c.nilp() ) return mem::multiple_values<to_class>(_Nil<to_class>(),c.number_of_values());
-    mem::multiple_values<to_class> dc = mem::dynamic_pointer_cast<to_class>(c);
+    if ( c.nilp() ) return gctools::multiple_values<to_class>(_Nil<to_class>(),c.number_of_values());
+    gctools::multiple_values<to_class> dc = gctools::dynamic_pointer_cast<to_class>(c);
     if ( dc.pointerp() ) return dc;
     lisp_throwUnexpectedType(c,to_class::static_classSymbol());
     // dummy return */
-    return mem::multiple_values<to_class>(_Nil<to_class>(),1);
+    return gctools::multiple_values<to_class>(_Nil<to_class>(),1);
 }
 
 template <>
-inline mem::multiple_values<core::T_O> safe_downcast(const mem::multiple_values<core::T_O>& c)
+inline gctools::multiple_values<core::T_O> safe_downcast(const gctools::multiple_values<core::T_O>& c)
 {
     return c;
 }
 
 template <>
-inline mem::multiple_values<core::Cons_O> safe_downcast(const mem::multiple_values<core::Cons_O>& c)
+inline gctools::multiple_values<core::Cons_O> safe_downcast(const gctools::multiple_values<core::Cons_O>& c)
 {
     return c;
 }
 
 
 template <>
-inline mem::multiple_values<core::Symbol_O> safe_downcast(const mem::multiple_values<core::Symbol_O>& c)
+inline gctools::multiple_values<core::Symbol_O> safe_downcast(const gctools::multiple_values<core::Symbol_O>& c)
 {
     return c;
 }
@@ -84,7 +84,7 @@ namespace translate
 	struct from_object
 	{								
 #if 0
-	    typedef	mem::smart_ptr<oClass>	DeclareType;	
+	    typedef	gctools::smart_ptr<oClass>	DeclareType;	
 	    DeclareType _v;
 	    from_object(T_P o) : _v(o.as<oClass>()) {};
 #endif
@@ -103,9 +103,9 @@ namespace translate
 
 
     template <class T>
-    struct to_object<mem::smart_ptr<T> >
+    struct to_object<gctools::smart_ptr<T> >
     {
-        static core::T_sp convert(const mem::smart_ptr<T>& o)
+        static core::T_sp convert(const gctools::smart_ptr<T>& o)
         {
             return o;
         }
@@ -116,10 +116,10 @@ namespace translate
 
 #define	__FROM_OBJECT_CONVERTER(oClass) 				\
     namespace translate {						\
-	template <> struct from_object<mem::smart_ptr<oClass>,std::true_type > \
+	template <> struct from_object<gctools::smart_ptr<oClass>,std::true_type > \
 	{								\
-	    typedef	mem::smart_ptr<oClass>	ExpectedType;		\
-	    typedef	mem::smart_ptr<oClass>	DeclareType;		\
+	    typedef	gctools::smart_ptr<oClass>	ExpectedType;   \
+	    typedef	gctools::smart_ptr<oClass>	DeclareType;    \
 	    DeclareType _v;						\
 	    from_object(T_P o) : _v(o.as<oClass>()) {}          \
 	};								\
@@ -129,9 +129,9 @@ namespace translate
 
 #define	__TO_OBJECT_CONVERTER(oClass)                                   \
     namespace translate {                                               \
-	template <> struct to_object<mem::smart_ptr<oClass> >           \
+	template <> struct to_object<gctools::smart_ptr<oClass> >       \
 	{                                                               \
-	    typedef	mem::smart_ptr<oClass>	GivenType;              \
+	    typedef	gctools::smart_ptr<oClass>	GivenType;      \
 	    static core::T_sp convert(GivenType o) 			\
 	    {_G();							\
 		return o;                                               \
@@ -166,7 +166,7 @@ namespace translate
 
 
 #define	STREAMIO(classo) \
-    std::ostream & operator<<(std::ostream&os, mem::smart_ptr<classo> p)	\
+        std::ostream & operator<<(std::ostream&os, gctools::smart_ptr<classo> p) \
     {			\
 	THROW_HARD_ERROR(boost::format("Illegal operator<<"));	\
 	return os; \

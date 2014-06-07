@@ -1,0 +1,219 @@
+-------------------------------------------------------------------------------
+$Id: TODO,v 1.33 2001/07/12 23:12:13 gray Exp $
+-------------------------------------------------------------------------------
+
+HEAP OPERATIONS:
+
+- realloc should look on either side (preferring above of course) for
+	free bblocks and absorb them
+	- find free section we can use
+	- remove from free list(s)
+	- rewrite admin chunks for used
+	- rewrite admin chunks for left-overs (if there are any)
+	- readd left-overs to free list (if there are any)
+- when the last element in a dblock is freed, the block should be freed.
+	- presents problems with maintaining the dblock-admin slots
+	- probably requires a new pointer admin tree
+- have the ability of limiting the size of the heap
+	- simulate heap boundary
+	- do number of bytes (maybe take k,K,m,M extensions)
+	- have start do number of bytes also?
+
+-------------------------------------------------------------------------------
+
+NEW HEAP ADMIN:
+	- need a list of block-ids:
+		- flag/size (bblock/free/dblock/external/unused)
+			- 1... = bblock # bytes allocated (max alloc = 2gb)
+			- 01... = free # bblocks till used block
+			- 00... = where ... > 1 = dblock # bits/# used
+			- external == 00...1 (all zeros then a 1)
+			- unused == 00...0 (all zeros)
+		- pointer: for info-block if used, next free if not
+			- next pointer for free-list (is this necessary?)
+			- pointer to [first] info block below
+	- need to search on pnt to find allocations: file, line, size
+		- key: pnt
+		- data:
+			- (char *)file/ret-addr (or next->)
+			- (short)line-number (0 if ret-addr)
+			- (short)size: # dblock-bytes/bblocks
+			- [pointer to bblock to go faster, ifdef]
+			- [iteration # when allocated]
+			- [iteration # when last touched]
+			- [time when allocated]
+			- [time when last touched]
+			- [memory crc to track changes, need ~MD5 (token?)]
+			- [some sort of use counter]
+				- idea is to keep the info struct
+				around even the section was freed.
+				That way we can track how many times a
+				pointer was returned
+	- time could be global or elapsed
+		- always save start-time and dump it on shutdown if LOG_STAMP
+		- ifdef the global or elapsed
+		- ifdef the last-touched information
+		- time info when LOG_STAMP
+		- iteration information need a token: LOG_ITERATION
+	- need to separate the allocations of the trees, different data sizes
+	- either ignore the external bblocks and the ones for the tree
+		allocations or account for them via careful recursion
+	- still need free lists of bblocks/dblocks
+	- maybe maintain the bblock free list (sorted by # blocks) in
+		a skip-list for easy location, or walk free-list
+	- with fence overruns, dump the pointer info on either side
+		- easy with allocation tree
+		- maybe have a #ifdef to define how many pnts on either side
+
+-------------------------------------------------------------------------------
+
+CHECKING:
+
+- maybe have a type as the first argument to message
+	- can be error,trans,admin,debug,etc.
+	- this spits out a starting label to all messages:
+		trans: checking heap
+		admin: need 1 bblocks
+- check in heap_check the cleared space above each allocation instead of
+	only the fence posts
+- maybe add another debug level which stores crc information about internal
+	heap structures and verifies it during run time.  slow, slow!!
+- maybe add crc information about each memory block into the admin
+	structure and then be able to dump which blocks have changed
+- maybe add 'use-mprotect' token to allow the user to access only
+	user-allocated pages
+- a _big_ project could involve hacking gcc to allow some sort of heap
+	checking of every memory reference.
+- watch for non-contiguous memory and mark those blocks as external
+	- have some sort of EXTERNAL flag
+	- make sure checked/freed/realloced/etc. pointers are not in that area
+	- we may need to round sbrk() calls if someone else did not do a
+		page-size call (see get_bblocks in chunk, need non-alloc flag)
+- think of ways we can reorganize the heap and move allocations around
+	since problems sometimes pop-up with different heap organizations:
+
+	- pick a random slot from the free-list not just the first entry
+	- add new list of dblocks in reverse order to the free-lists or
+		randomly disperse
+	- maybe when allocating for a block of X bits, get 2 blocks or
+		some allocation factor
+	- maybe some sort of compact heap orientation like ndt organization.
+		- need a different dblock admin maintenance or
+		- need to allocate max dblock-admin for every block
+	- maybe generate some magical value which corresponds to the
+		orientation because you want to be able to reproduce
+		the error (bsd random?)
+	- probably need an internal randomizer with log-able seed
+		value and the ability to set the seed
+
+-------------------------------------------------------------------------------
+
+DOCUMENTATION:
+
+- add more to the debugging section:
+	- use of MALLOC_START because a failure is found at some point
+		to find the last malloc call
+	- use of MALLOC_FUNC_CHECK by inserting dmalloc.h and FUNC_CHECK on
+- need to make sure the manual works for the brand new user
+- need an overview early on about its purpose (at a very high level)
+- need a section to explain all the error codes
+- put in a section about other malloc libraries and commercial versions
+
+-------------------------------------------------------------------------------
+
+TESTING / STATISTICS:
+
+- maybe use the new gnu testing code (GCT)
+- general tons of small blocks and watch for dblock_admin entry leak
+	like with large ndb_shell scripts
+- maybe a program that would try a standard set of tests on a number of
+	different combinations of debug-values to look for dependencies.
+
+-------------------------------------------------------------------------------
+
+GENERAL:
+
+- add display_pnt calls mostly everywhere display_where calls in chunk.
+- maybe show the upper-end of a pointer if it is over fence post
+	- need to pass size into log_error_info
+- maybe with no 'log-unknown' token, don't print ANY info about
+	non-file-line pnts
+- maybe have some sort etext support for systems that don't have it?
+	- etext (heap-start?)
+	- end (heap-end?)
+- maybe have some sort of memory-stack support:
+	- malloc_push_location("foo");
+	- malloc_pop_location("foo");
+	- have a maximum ~100 entry stack
+	- count how deep we are and if we go over don't store but track	so
+		when we drop below 100 it will be correct info
+	- if we are at an unknown spot, display the top of the stack
+- maybe some sort of cheap crc on memory in non-freed memory sections so
+	you can see what portions of memory changed (check tripwire)
+- maybe provide support for reference counts on allocations:
+	- have a call which along with malloc/realloc, increments the
+		reference count of the node (maybe duplicate_pointer)
+	- free will decrement the reference count and free if 0
+	- have a call which reports on the reference count of the node
+	- may need additional admin space
+	- debug token?
+- maybe have bit in allocation struct somewhere that it is a string and
+	maybe have a checking level/value that runs though the strings
+	and makes sure they have a NULL in them.
+	- token 'check-string' or something
+	- should only happen if alloc-blank used
+	- could be dangerous if folks are changing 'type' of allocation
+		from string to ...
+	- maybe some special strdup flag or something
+- write perl script to summarize the memory usage per file.
+- for fence underflow, print out the pointer below's info and for fence
+	overflow the pointer above's info
+- handle memalign, valloc, maybe some form of mallopt
+	- maybe mallopt could be mapped into dmalloc_debug()
+
+- maybe an environment variable to designate which program(s) you want to
+	debug. found with strstr.
+	- or could use .mallocrc entry
+	- could have program:tag entries for default behavior in program
+	- requires knowing the argv[0] argument
+- add a recalloc function.  I guess it is available under SGI.
+
+-------------------------------------------------------------------------------
+
+- should the free and alloc-blank tokens write the address % 256 into
+bytes instead of a constant '\305'
+
+	- it would slow it down a bit
+	- maybe some token/option?
+	- \305 is recognizable however
+
+- I've considered adding the mprotect features which would signal if
+code READ into certain areas (writing is easy with magic values).
+This causes problems since most (all?)  mprotect implementations work
+with page-size resolutions which means that every allocation (8 byte
+string) would require 8+pagesize (often > 4096 bytes).  Anyone have a
+easier way of accomplishing this?
+
+-------------------------------------------------------------------------------
+
+I would like to blacklist a list of 'ra=0x4013195c'. I would be *very*
+usefull to shut-up numerous leaks from standard C library.  Is there a
+way to do that ?
+
+-------------------------------------------------------------------------------
+
+but I'd like the extra feature of being able to SIGUSR1 a running
+program and get a memory footprint during the main cycle (I'll add
+this feature myself to dmalloc if I can get it working).
+
+-------------------------------------------------------------------------------
+
+It would be nice to have dmalloc_examine return good information from
+random pointers:
+
+- whether in heap or not
+- in use or not
+- free, realloc'd, calloc'd, etc.
+- more than 1 file/line/ra for alloc, realloc, free locations
+
+-------------------------------------------------------------------------------

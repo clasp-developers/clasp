@@ -65,9 +65,9 @@ namespace core
   __END_DOC
 */
 
-    Bignum_sp nameToKey(const string& name)
+    Bignum_sp nameToKey(const char* name)
     {_G();
-	return Bignum_O::create(Str_O::stringToBignum(name.c_str()));
+	return Bignum_O::create(Str_O::stringToBignum(name));
     }
     
     
@@ -472,7 +472,7 @@ namespace core
 
     Symbol_mv Package_O::findSymbol(const string& name) const
     {_G();
-	Bignum_sp nameKey = nameToKey(name);
+	Bignum_sp nameKey = nameToKey(name.c_str());
 	return findSymbol(nameKey);
     }
 
@@ -576,7 +576,7 @@ namespace core
 	    {
 		SIMPLE_ERROR(BF("Problem exporting symbol - it has no name"));
 	    }
-	    Bignum_sp nameKey = nameToKey(sym->_Name->get());
+	    Bignum_sp nameKey = nameToKey(sym->_Name->c_str());
 	    Symbol_sp foundSym, status;
 	    {MULTIPLE_VALUES_CONTEXT();
 		T_mv values = this->findSymbol(nameKey);
@@ -657,8 +657,7 @@ namespace core
     void Package_O::_add_symbol_to_package(Symbol_sp sym, bool exportp)
     {
 //	trapSymbol(this,sym,sym->_Name->get());
-        string& name = sym->_Name->_contents();
-	Bignum_sp nameKey = nameToKey(name);
+	Bignum_sp nameKey = nameToKey(sym->_Name->c_str());
 	if ( this->isKeywordPackage() || exportp )
 	{
 	    this->_ExternalSymbols->hash_table_setf_gethash(nameKey,sym);
@@ -704,7 +703,7 @@ namespace core
 	// The following is not completely conformant with CLHS
 	// unintern should throw an exception if removing a shadowing symbol
 	// uncovers a name conflict of the symbol in two packages that are being used
-	Bignum_sp nameKey = nameToKey(sym->_Name->_contents());
+	Bignum_sp nameKey = nameToKey(sym->_Name->c_str());
 
 	{
 	    Symbol_sp sym, status;
@@ -760,7 +759,7 @@ namespace core
 
     bool Package_O::isExported(Symbol_sp sym)
     {_OF();
-	Bignum_sp nameKey = nameToKey(sym->_Name->_contents());
+	Bignum_sp nameKey = nameToKey(sym->_Name->c_str());
 	T_mv values = this->_ExternalSymbols->gethash(nameKey,_Nil<T_O>());
 	T_sp presentp = values.valueGet(1);
     	LOG(BF("isExported test of symbol[%s] isExported[%d]") % sym->symbolNameAsString() % presentp.isTrue() );
@@ -775,7 +774,7 @@ namespace core
 	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
 	{
 	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
-	    Bignum_sp nameKey = nameToKey(symbolToImport->_Name->_contents());
+	    Bignum_sp nameKey = nameToKey(symbolToImport->_Name->c_str());
 	    Symbol_sp foundSymbol, status;
 	    {MULTIPLE_VALUES_CONTEXT();
 		Symbol_mv values = this->findSymbol(nameKey);
@@ -801,7 +800,7 @@ namespace core
 	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
 	{
 	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
-	    Bignum_sp nameKey = nameToKey(symbolToImport->_Name->_contents());
+	    Bignum_sp nameKey = nameToKey(symbolToImport->_Name->c_str());
 	    Symbol_sp foundSymbol, status;
 	    {MULTIPLE_VALUES_CONTEXT();
 		Symbol_mv values = this->findSymbol(nameKey);

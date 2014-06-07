@@ -53,7 +53,7 @@ namespace core {
 
 
     template <class OT,class WT>
-    mem::smart_ptr<OT> RP_Create_wrapped(WT ptr)
+    gctools::smart_ptr<OT> RP_Create_wrapped(WT ptr)
     {_G();
         GC_ALLOCATE(OT,wrapper);
         wrapper->set_wrapped(ptr);

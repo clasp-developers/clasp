@@ -8,7 +8,7 @@
   PASS_FUNCTION_KEYWORD 	bind_keyword_var_args			bind_keyword_af
   PASS_ARGS  			'int n_args, va_list ap'		'ActivationFrame_sp args'
   PASS_ARGS_NUM 		'n_args'				'af_length(args)'
-  PASS_NEXT_ARG() 		'mem::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
+  PASS_NEXT_ARG() 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
 
 
@@ -105,7 +105,7 @@ void PASS_FUNCTION_REST
     {
 	Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>(); 
         Cons_O::CdrType_sp* curP = &rest;
-//        mem::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
+//        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
 	for ( int i(arg_idx), iEnd(PASS_ARGS_NUM); i<iEnd; ++i ) {
 	    T_sp obj = PASS_NEXT_ARG();
 	    Cons_sp one = Cons_O::create(obj);

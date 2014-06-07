@@ -12,11 +12,25 @@
 
 
 
+(defun walk-form-for-source-info (form)
+  (multiple-value-bind (source-file-info line-number column file-pos)
+      (core:walk-to-find-source-info form)
+    (when source-file-info
+      (let* ((source-pathname (source-file-info-pathname source-file-info))
+             (source-directory (directory-namestring source-pathname))
+             (source-filename (file-namestring source-pathname))
+             )
+        (return-from walk-form-for-source-info
+          (list source-directory source-filename line-number column)))))
+  (list "no-dir" "no-file" 0 0))
 
+
+#||
 (defun walk-form-for-source-info (form)
   (when (and form (consp form))
     (multiple-value-bind (source-file-info line-number column file-pos)
 	(lookup-source-file-info form)
+      (cmp-log "walk-form-for-source-info %s %s %s --> %s\n" source-file-info line-number column form)
       (when source-file-info
 	(let* ((source-pathname (source-file-info-pathname source-file-info))
 	       (source-directory (directory-namestring source-pathname))
@@ -25,7 +39,7 @@
 	  (return-from walk-form-for-source-info
 	    (list source-directory source-filename line-number column))))))
   (list "no-dir" "no-file" 0 0))
-
+||#
 
 
 (defun dbg-create-function-type (difile function-type)
@@ -252,6 +266,10 @@
 
 
 (defun dbg-set-invocation-history-stack-top-source-pos (form)
+  #+trace-source-manager(progn
+                          (print (list "Dumping backtrace and core:*source-database*" core:*source-database*))
+                          (core:ihs-backtrace)
+                          (core:dump-source-manager))
   (multiple-value-bind (source-file lineno column)
       (walk-to-find-source-info form)
     (when source-file

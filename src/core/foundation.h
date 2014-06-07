@@ -1,6 +1,16 @@
 #ifndef	FOUNDATION_H //[
 #define	FOUNDATION_H
 
+
+/*! Turn this on to force turn on xxx_ASSERT messages in release code*/
+//#ifndef DEBUG_ASSERTS
+//#define DEBUG_ASSERTS
+//#endif
+
+// To debug memory usage turn this on and then you can mark 
+// objects as they are allocated with an integer using gctools::MARKER
+#define USE_BOEHM_MEMORY_MARKER
+
 #ifdef CANDO_COMPILE
 #define GARBAGE_COLLECTION_INCLUDE "cando/clasp_gc.cc"
 #define GC_INTERFACE_HEADER "cando/gc_interface.h"
@@ -8,6 +18,10 @@
 #define GARBAGE_COLLECTION_INCLUDE "main/clasp_gc.cc"
 #define GC_INTERFACE_HEADER "main/gc_interface.h"
 #endif
+
+
+// Switch between GCString and std::string using this define
+#define USE_GCSTRING
 
 /*! Old way of doing #= and ## used alists which are slow
   Switch to hash-tables to speed things up */
@@ -21,7 +35,10 @@ namespace std { class type_info; };
 //         memory
 //
 //
-#define USE_TAGGED_PTR_P0 1
+// Don't use P0 ptr with BOEHM
+#ifdef USE_MPS
+//#define USE_TAGGED_PTR_P0 1
+#endif
 
 
 
@@ -462,8 +479,9 @@ namespace boost
 namespace core
 {
     class T_O;
+    class Cons_O;
     class Pointer_O;
-
+    class VectorObjects_O;
     /* AMS pool classes */
     class Symbol_O;
     class Null_O;
@@ -573,12 +591,40 @@ namespace reg {
 
 
 
+namespace core {
+extern int _global_signalTrap;
+    void lisp_processSignal(int signo);
+
+};
+#define SET_SIGNAL(s) {core::_global_signalTrap = s;}
+#define POLL_SIGNALS() if (core::_global_signalTrap) core::lisp_processSignal(core::_global_signalTrap);
+
+
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
 void lisp_errorDereferencedNil();
 void lisp_errorDereferencedUnbound();
 
 
+namespace core {
+    class MultipleValues;
+    MultipleValues* lisp_multipleValues();
+};
+
 #include "gctools/memoryManagement.h"
+
+namespace core {
+    typedef gctools::smart_ptr<T_O>	T_sp;
+    typedef gctools::smart_ptr<Cons_O>  Cons_sp;
+    typedef gctools::smart_ptr<VectorObjects_O>  VectorObjects_sp;
+};
+
+#include "gctools/containers.h"
+
+#include "multipleValues.h"
+
+#include "gctools/managedStatic.h"
+
+#include "gctools/gcstring.h"
 
 
 
@@ -596,13 +642,13 @@ extern void brcl_mps_debug_scan_object(gctools::GCObject*  obj);
 
 #define	DEFINE_O_SMART_POINTERS(zclass) \
 	class zclass##_O;\
-	typedef mem::smart_ptr<zclass##_O> zclass##_sp; /* Stack pointers */  \
-	typedef mem::smart_ptr<zclass##_O> zclass##_hp; /* Heap pointers */ \
-	typedef mem::smart_ptr</* TODO: const */ zclass##_O> zclass##_scp; \
-	typedef mem::smart_ptr<zclass##_O> zclass##_rp; \
-	typedef mem::smart_ptr<zclass##_O> const& zclass##_cp; \
-	typedef mem::weak_smart_ptr<zclass##_O> zclass##_wp; \
-	typedef mem::multiple_values<zclass##_O> zclass##_mv;
+	typedef gctools::smart_ptr<zclass##_O> zclass##_sp; /* Stack pointers */ \
+	typedef gctools::smart_ptr<zclass##_O> zclass##_hp; /* Heap pointers */ \
+	typedef gctools::smart_ptr</* TODO: const */ zclass##_O> zclass##_scp; \
+	typedef gctools::smart_ptr<zclass##_O> zclass##_rp;             \
+	typedef gctools::smart_ptr<zclass##_O> const& zclass##_cp;      \
+	typedef gctools::weak_smart_ptr<zclass##_O> zclass##_wp;        \
+	typedef gctools::multiple_values<zclass##_O> zclass##_mv;
 
 	// This ensures that smart pointers are only declared once
 	// for each compilation
@@ -613,27 +659,21 @@ extern void brcl_mps_debug_scan_object(gctools::GCObject*  obj);
     DEFINE_O_SMART_POINTERS(zclass)
 
 
-
 namespace core
 {
-    typedef mem::smart_ptr<T_O>			T_sp;
-    typedef mem::smart_ptr</* TODO: use const */ T_O>		T_scp;
-    typedef mem::weak_smart_ptr<T_O>		T_wp;
-
-    class Cons_O;
-    typedef mem::smart_ptr<Cons_O>	Cons_sp;
+    typedef gctools::smart_ptr</* TODO: use const */ T_O>		T_scp;
 
     class Class_O;
-    typedef mem::smart_ptr<Class_O>	Class_sp;
+    typedef gctools::smart_ptr<Class_O>	Class_sp;
 
     class VectorObjects_O;
-    typedef mem::smart_ptr<VectorObjects_O> 	VectorObjects_sp;
+    typedef gctools::smart_ptr<VectorObjects_O> 	VectorObjects_sp;
 
     class Symbol_O;
-    typedef mem::smart_ptr<Symbol_O>		Symbol_sp;
+    typedef gctools::smart_ptr<Symbol_O>		Symbol_sp;
 
     class Pointer_O;
-    typedef mem::smart_ptr<Pointer_O>   Pointer_sp;
+    typedef gctools::smart_ptr<Pointer_O>   Pointer_sp;
 
     void lisp_error_simple(const char* functionName, const char* fileName, int lineNumber, const boost::format& fmt);
 
@@ -660,16 +700,6 @@ namespace core
 
 
 
-
-
-
-
-namespace core {
-    class MultipleValues;
-    MultipleValues* lisp_multipleValues();
-};
-
-#include "multipleValues.h"
 
 
 
@@ -780,8 +810,8 @@ namespace core {
 
 
     class ActivationFrame_O;
-    typedef mem::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
-    typedef mem::weak_smart_ptr<ActivationFrame_O> ActivationFrame_wp;
+    typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
+    typedef gctools::weak_smart_ptr<ActivationFrame_O> ActivationFrame_wp;
 //    typedef const ActivationFrame_sp* const_ActivationFrame_spP;
 //    typedef const ActivationFrame_sp& const_ActivationFrame_spREF;
     typedef ActivationFrame_sp& ActivationFrame_spREF;
@@ -802,18 +832,18 @@ namespace core {
     class Lisp_O;
     typedef Lisp_O* Lisp_sp;
     class Function_O;
-    typedef mem::smart_ptr<Function_O>	Function_sp;
+    typedef gctools::smart_ptr<Function_O>	Function_sp;
     class Str_O;
-    typedef mem::smart_ptr<Str_O> Str_sp;
+    typedef gctools::smart_ptr<Str_O> Str_sp;
     class Fixnum_O;
-    typedef mem::smart_ptr<Fixnum_O> Fixnum_sp;
+    typedef gctools::smart_ptr<Fixnum_O> Fixnum_sp;
 
     class LambdaListHandler_O;
-    typedef mem::smart_ptr<LambdaListHandler_O>	LambdaListHandler_sp;
+    typedef gctools::smart_ptr<LambdaListHandler_O>	LambdaListHandler_sp;
     class Environment_O;
-    typedef mem::smart_ptr<Environment_O>	Environment_sp;
+    typedef gctools::smart_ptr<Environment_O>	Environment_sp;
     class Symbol_O;
-    typedef mem::smart_ptr<Symbol_O> Symbol_sp;
+    typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
     typedef void (*ExposeCandoFunction)(Lisp_sp);
     typedef void (*ExposePythonFunction)(Lisp_sp);
     typedef T_mv (*SpecialFormCallback)(Cons_sp,Environment_sp);
@@ -821,7 +851,7 @@ namespace core {
     typedef void (*ExportSymbolCallback)(Symbol_sp symbol,Lisp_sp);
 
     class Package_O;
-    typedef mem::smart_ptr<Package_O> Package_sp;
+    typedef gctools::smart_ptr<Package_O> Package_sp;
 
     /* A few symbols associated with error handling that everything needs */
     extern Symbol_sp _sym_error;
@@ -857,7 +887,6 @@ namespace core {
     class Creator
     {
     public:
-        GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
         // Some Creators don't actually allocate anything - 
         // classes that don't have default allocators
         virtual bool allocates() const { return true;};
@@ -919,18 +948,18 @@ namespace core
 
 
     class Cons_O;
-    typedef	mem::smart_ptr<Cons_O>	Cons_sp;
+    typedef	gctools::smart_ptr<Cons_O>	Cons_sp;
 
     class Class_O;
-    typedef	mem::smart_ptr<Class_O>	Class_sp;
+    typedef	gctools::smart_ptr<Class_O>	Class_sp;
 
     class Function_O;
 
     class Symbol_O;
-    typedef	mem::smart_ptr<Symbol_O>	Symbol_sp;
+    typedef	gctools::smart_ptr<Symbol_O>	Symbol_sp;
 
     class SymbolToEnumConverter_O;
-    typedef mem::smart_ptr<SymbolToEnumConverter_O>	SymbolToEnumConverter_sp;
+    typedef gctools::smart_ptr<SymbolToEnumConverter_O>	SymbolToEnumConverter_sp;
 
 
 }
@@ -991,6 +1020,8 @@ namespace core
     bool	lisp_BuiltInClassesInitialized(Lisp_sp lisp);
     bool lisp_BuiltInClassesInitialized(Lisp_sp lisp);
     bool lisp_NilsCreated(Lisp_sp lisp);
+    void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);
+    void lisp_symbolSetSymbolValue(Symbol_sp sym, T_sp val);
     string symbol_symbolName(Symbol_sp);
     string symbol_repr(Symbol_sp);
     Symbol_sp lisp_symbolNil();
@@ -1004,7 +1035,6 @@ namespace core
     Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol );
     Class_sp lisp_instance_class(T_sp obj);
     Class_sp lisp_static_class(T_sp obj);
-    void lisp_processSignal(int signo);
     Function_sp lisp_symbolFunction(Symbol_sp sym);
     string lisp_symbolNameAsString(Symbol_sp sym);
     T_sp lisp_createStr(const string& str);
@@ -1133,8 +1163,8 @@ namespace core
     class Functoid 
     {
     protected:
-	string	_Name;
-    public:
+        typedef gctools::GCString<char,gctools::GCStringAllocator<gctools::GCString_moveable<char>>>         str_type;
+	str_type _Name;
     public:
 	virtual string describe() const {return "Functoid - subclass must implement describe()";};
 	virtual T_mv activate(ActivationFrame_sp closedOverFrame, int nargs, ArgArray argArray) {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
@@ -1338,12 +1368,6 @@ namespace core
 #define unlikely_if(x) if(UNLIKELY(x))
 #define BRCL_T (_lisp->_true())
 #define BRCL_NIL (_Nil<core::T_O>())
-
-namespace core {
-extern int _global_signalTrap;
-};
-#define SET_SIGNAL(s) {core::_global_signalTrap = s;}
-#define POLL_SIGNALS() if (core::_global_signalTrap) core::lisp_processSignal(core::_global_signalTrap);
 
 #endif //]
 

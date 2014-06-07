@@ -16,9 +16,9 @@ namespace core
 	virtual ~VectorWithFillPtr_template_O() {};
     public:
 	typedef T valueType;
-	typedef mem::smart_ptr<T> sharedValueType;
+	typedef gctools::smart_ptr<T> sharedValueType;
 	typedef VectorWithFillPtr_template_O<T> vectorType;
-	typedef mem::smart_ptr<vectorType> sharedVectorType;
+	typedef gctools::smart_ptr<vectorType> sharedVectorType;
     private: // instance variables here
 	int 		_FillPtr;
     public:

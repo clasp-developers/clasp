@@ -1,0 +1,2397 @@
+2007-05-14  Gray Watson  <>
+
+	* Removed some left-over references to the dmalloc.info file.
+	Thanks Bernard.
+
+	* Fixed some unsigned/signed issues in one of the dmalloc_t tests.
+	Thanks Bernard.
+
+	* Fixed problems with configure and SL_LINK_OBJS.  Thanks Bernard.
+
+	* Releasing dmalloc version 5.5.2.
+
+2007-03-25  Gray Watson  <>
+
+	* Fixed some problems with str[n]dup argument checking.
+
+	* Releasing dmalloc version 5.5.1.
+
+2007-03-24  Gray Watson  <>
+
+	* Fixed bug where LOG_PNT_SEEN_COUNT set to 0 caused segfault in
+	dmalloc_examine.  dmalloc_t was also not handling the setting
+	appropriated.
+
+	* Fixed bug with the checking of the MAX_FILE_LENGTH. 
+
+2007-03-23  Gray Watson  <>
+
+	* Revamped the chunk.c tests for user_pnt space.  Added support
+	for strnlen sizing.  Added better checking of non-exact user
+	pointers.
+
+	* Added dmalloc_verify_pnt_strsize to support strnlen size testing.
+
+2007-03-22  Gray Watson  <>
+
+	* Added missing DMALLOC_FUNC_CHECK routines: atoi, atol, memmove
+
+	* Added a number of special checks for DMALLOC_FUNC_CHECK stuff.
+
+	* Fixed all of the DMALLOC_FUNC_CHECK arguments thanks to Nickolai.
+
+2007-03-12  Gray Watson  <>
+
+	* Improved some documents after user feedback. Thanks Renny.
+
+2007-02-08  Gray Watson  <>
+
+	* Releasing dmalloc version 5.5.0.
+
+2006-03-27  Gray Watson  <>
+
+	* Fixed a problem with arg-check dmalloc code and check-fence.
+
+2006-03-23  Gray Watson  <>
+
+	* Fixed a section of the manual about Cygwin thanks to Pierre.
+
+	* Fixed a problem with Cygwin env parsing.  Thanks to Pierre and
+	others.
+
+2005-12-21  Gray Watson  <>
+
+	* Added a section on dumping core in the manual.
+
+	* Added a number of regression tests for the arg-check code.
+
+2005-12-19  Gray Watson  <>
+
+	* Fixed some problems with function argument checking and length
+	arguments.  The library was not handling strncmp correctly for
+	example.
+
+	* Added handling of strndup function.
+
+	* Added overlapping memory check for memcpy if memmove exists.
+
+	* Added __FILE__ and __LINE__ arguments to function checks.  Not
+	sure why they weren't there earlier.
+
+2005-12-18  Gray Watson  <>
+
+	* Added patches to [hopefully] improve the building under Mac OSX.
+	Thanks to Terry.
+
+	* Added dmalloc_get_stats function to report on internal heap
+	stats.  Thanks to Sam.
+
+2005-12-17  Gray Watson  <>
+
+	* Fixed a problem with the RPM .spec file.
+
+2005-11-30  Gray Watson  <>
+
+	* Fixed a problem with double free not reporting
+	ERROR_ALREADY_FREE.  This was confusing.
+
+2005-10-27  Gray Watson  <>
+
+	* Made some changes to the docs to address the possible mmap
+	issues.
+
+	* Added better checking for mmap compatibility during autoconfig.
+
+2005-10-15  Gray Watson  <>
+
+	* Added a section to the startup docs about the .tgz file
+	extension.
+
+2005-07-26  Gray Watson  <>
+
+	* Improved some of the startup docs and installed a new version of
+	texi2html.  The old one was hiding the NOTE entries.
+
+2005-06-05  Gray Watson  <>
+
+	* Improved the usage output for dmalloc.  Thanks to murf.
+
+	* Improved some of the error values to better identify internal
+	dmalloc errors.
+
+	* Fixed problem where if LARGEST_ALLOCATION is set to 0 the test
+	program still checks it.  Whoops.  Thanks to sbied.
+
+2005-03-18  Gray Watson  <>
+
+	* Increased the basic block default to 32k.
+
+	* Fixed some documentation.
+
+	* Added better error code output in dmalloc_t.
+
+	* Fixed the global Makefile to install libs as 755 not 644.
+
+2005-01-11  Gray Watson  <>
+
+	* Added some fixes for Compaq's C compiler, some include ordering
+	fixes, and some C++ compiler defines.  Thanks Burl.
+
+2004-12-03  Gray Watson  <>
+
+	* Improved dmalloc_t to better detect and test a small heap area.
+
+2004-10-19  Gray Watson  <>
+
+	* Releasing dmalloc version 5.4.2.
+
+	* Refined the definition of the 'alloc-blank' and 'free-blank'
+	tags.  The 'alloc-blank' token clear various parts of the
+	allocation block when it is allocated.  The 'free-blank' token
+	clears a pointer when it is freed.
+
+	* Also, the library was clearing the user spaces of an allocated
+	chunk with the alloc-blank character and the non-user spaces with
+	the free-blank character.  This seemed confusing and wrong so now
+	all sections of an allocated chunk are cleared with the
+	alloc-blank character.
+
+	* Fixed a couple of longer standing stupid bugs via feedback from
+	Philippe.  Thanks dude.
+
+2004-10-12  Gray Watson  <>
+
+	* Releasing dmalloc version 5.4.1.
+
+	* Found and fixed a stupid little test bug so re-released as 5.4.1.
+
+	* Releasing dmalloc version 5.4.0.
+
+	* Added return.h support for ARM processors from Silvester Erdeg.
+
+	* Improved the manual a bit.
+
+2004-09-13  Gray Watson  <>
+
+	* Made allocating zero size chunks the default.
+
+2004-08-13  Gray Watson  <>
+
+	* Fixed some missing ; and a int/unsigned-int bug from feedback
+	from Joe Buehler.
+
+	* Added return.h support for AIX 4.3 RS/6000 from Joe Buehler.
+
+	* Added backwards compatibility (ugh) to %d for logfile name.
+
+2004-07-10  Gray Watson  <>
+
+	* Starting release of 5.4.0 with beta.
+
+2004-07-09  Gray Watson  <>
+
+	* Removed force-linear token because made invalid with mmap
+	addition.
+
+	* Removed the growing up testing and other restrictions for the
+	heap because mmap made it invalid.  Drastically reduced the
+	various up and down macros and associated testing.
+
+	* Added mmap usage inside of the library.  Should it be the
+	default?
+
+2004-07-08  Gray Watson  <>
+
+	* Removed auto-seeding of internal random with variable seed.
+	This was creating random addresses for programs making it hard to
+	debug.
+
+2004-07-01  Gray Watson  <>
+
+	* Added bigger and better debugging server section to the manual.
+
+	* Added header/footer to online manual.
+
+2004-06-29  Gray Watson  <>
+
+	* Really improved the logging of error information about pointers.
+	Better formats, added prev/next for fence post errors, etc..
+
+2004-06-07  Gray Watson  <>
+
+	* Added return.h support for ia64 machine type from Didier Remy.
+
+2004-04-09  Gray Watson  <>
+
+	* NOTE: next release I should increase the maximum source file
+	length from 10k to 30k or something.
+
+	* Fixed some typos in the docs and created a new gdb translate
+	return-address section.  Thanks Luk.
+
+2004-02-18  Gray Watson  <>
+
+	* Fixed info install with feedback from Matt Fuller.  Thanks.
+
+2004-01-31  Gray Watson  <>
+
+	* Added compat and arg_checking of atoi, atol, and memmove.
+	Thanks to Guy (guyresh) for pointing out the omissions.
+
+	* Added arg checking to internal strdup functions.
+
+	* Moved argv.c code to use loc_snprintf.
+
+2004-01-28  Gray Watson  <>
+
+	* Releasing dmalloc version 5.3.0.
+
+	* Fixed a bad bug where calls to _dmalloc_chunk_pnt_check from the
+	arg_check.c functions were not locking.  Ugh.  Thanks much to
+	Guy (guyresh).
+
+	* Added dmalloc_verify_pnt function for proper external pointer
+	checking.
+
+2004-01-14  Gray Watson  <>
+
+	* Added a dmalloc_memory_allocated function to assist with the
+	checking of the memory size start feature.
+
+	* Added automatic checking of the start at file:line, iteration,
+	and memory size features.
+
+	* Added a --start-size argument to dmalloc to start the library
+	checking the heap after we allocate a certain size of memory.
+	Thanks to andyc_2k.
+
+	* Added some more documentation about destructors.
+
+	* Added a check-shutdown token and support to check the pointers
+	heap when we shutdown the library.  Thanks to Charles for the
+	idea.
+
+2003-11-23  Gray Watson  <>
+
+	* Added dmalloc_count_changed function plus tests.  Thanks to
+	Brian O'Kelley.
+
+2003-11-20  Gray Watson  <>
+
+	* Added some more error code documentation.
+
+	* Added ability to disable the LARGEST_ALLOCATION setting by
+	defining it to be 0.
+
+2003-11-18  Gray Watson  <>
+
+	* Released dmalloc version 5.2.4.
+
+	* Fixed bug with check-fence and check-funcs interaction.  Thanks
+	to John Hetherington.
+
+2003-11-17  Gray Watson  <>
+
+	* Added support for rc shell.  Thanks to Michael Haardt.
+
+	* Fixed a logfile NULL pointer printf.  Thanks to John
+	Hetherington.
+
+2003-10-17  Gray Watson  <>
+
+	* Fleshed out the error code documentation.
+
+2003-10-06  Gray Watson  <>
+
+	* Fixed Makefile.in to properly refer to the documents directory.
+	Whoops.  Thanks to Mike Castle.
+
+2003-10-04  Gray Watson  <>
+
+	* Improved the docs about alias creation and usage.
+
+2003-10-01  Gray Watson  <>
+
+	* Added testing for destructors in configure.
+
+2003-09-29  Gray Watson  <>
+
+	* Releasing dmalloc version 5.2.3.
+
+2003-09-12  Gray Watson  <>
+
+	* Added new GetEnvironmentVariableA Cygwin call.  Thanks to Rolf
+	Banting.
+
+2003-09-10  Gray Watson  <>
+
+	* Added quick checks for the constructor attribute.
+
+2003-09-09  Gray Watson  <>
+
+	* Removed find_slot function in chunk.c since it was only used
+	once.
+
+2003-09-08  Gray Watson  <>
+
+	* Changed the configure script to define the HAVE_... include
+	defines to 0 or 1.  Thanks to Brian Schreder.
+
+	* Removed usage of environ (duh) from dmalloc_argv.c.  Thanks to
+	Brian Schreder.
+
+	* Added better dmalloc.h processing.
+
+2003-09-08  Gray Watson  <>
+
+	* Releasing dmalloc version 5.2.2.
+
+	* Added a Cygwin section to the manual.
+
+	* Added GETENV_SAFE testing for Cygwin environments.
+
+	* Added a new ERROR_NOT_START_BLOCK (30) errno for addresses which
+	are within an allocation but not pointing to the start of the
+	block.
+
+	* Worked a bit more on the function pnt checking code after some
+	more feedback from Richard Colley.
+
+2003-09-06  Gray Watson  <>
+
+	* Improved the pnt checking code to properly check free space
+	below and above an allocation.  Added regression tests for this.
+
+2003-09-05  Gray Watson  <>
+
+	* Fixed possible lock leak in the shutdown code.  Thanks to TJ
+	Saunders.
+
+	* Fixed bug in function pnt checking code.  Not sure when this
+	broke.  Thanks to Philippe Roger.
+
+2003-08-04  Gray Watson  <>
+
+	* Removed references to dmalloc leap.
+
+2003-07-23  Gray Watson  <>
+
+	* Changed the installing of libraries to install-data. 
+
+2003-07-08  Gray Watson  <>
+
+	* Releasing version 5.2.1.
+
+2003-06-20  Gray Watson  <>
+
+	* Fixed problems with macro arguments not in () thanks to Paul
+	Hurtley.
+
+2003-06-18  Gray Watson  <>
+
+	* Fixed a problem with strdup not returning char *.  Thanks to Dan
+	Nelson, Juhani Rautiainen, and Paul Hurtley.
+
+2003-06-10  Gray Watson  <>
+
+	* Releasing version 5.2.0.
+
+	* Renamed the "max memory space wasted" to "max unused memory
+	space" to indicate that it is not the users fault.
+
+	* Improved the admin and extern block accounting.
+
+	* Added PDF doc files to the installation.
+
+	* Fixed a problem with the global Makefile and dmalloc_t.  Thanks
+	to Bert Deknuydt.
+
+	* Added new logfile expansion of %u as getuid() output.
+
+2003-06-09  Gray Watson  <>
+
+	* Added detection of gethostname() function for %h logpath
+	handling.
+
+	* Added new logfile process with %h hostname, %t time, %p
+	process-id, and %i for thread-id.
+
+	* Removed the old logfile % processing.  %d, %l, or %u no longer
+	expands to the pid.
+
+	* Added LOG_PID to drop the pid on each line of the logfile.
+
+	* Added LOG_REOPEN to reopen the logfile when the pid of the
+	process changes as with a fork.  Thanks to James Hawtin.
+
+	* Renamed the LOG_ITERATION_COUNT to LOG_ITERATION in settings.dist.
+
+	* Renamed the STORE_SEEN_COUNT to be LOG_PNT_SEEN_COUNT.
+
+	* Renamed the STORE_ITERATION_COUNT to be LOG_PNT_ITERATION.
+
+	* Renamed the STORE_TIME to be LOG_PNT_TIME.
+
+	* Renamed the STORE_TIMEVAL to be LOG_PNT_TIMEVAL.
+
+	* Renamed the LOG_THREAD_ID to be LOG_PNT_THREAD_ID.
+
+	* Improved the log_stats and log_changed output.
+
+2003-06-08  Gray Watson  <>
+
+	* Releasing version 5.1.0.
+
+	* Fixed the FREED_POINTER_DELAY functionality.
+
+	* Removed PROTECT_BLOCKS from settings.dist because was unused.
+
+	* Added the tsecs perl script to convert epoch seconds time to
+	ctime output.
+
+	* Removed the check-lists debug token which was not being used
+	with the new heap organizations.
+
+	* Fixed the never-reuse functionality and added checks to
+	dmalloc_t for it.
+
+	* Added checks to dmalloc_t for the realloc-copy functionality.
+
+	* Fixed a problem where a call to dmalloc_log_changed would wipe
+	out allocate table information.  Improved other table functions.
+
+	* Improved the stats output a bit.
+
+	* Added additional checks to dmalloc_t for wierd realloc and free
+	problems.
+
+2003-06-06  Gray Watson  <>
+
+	* Expanded the arguments to dmalloc_examine to return more
+	information about the pointer.  This was explicitly needed to
+	better test the library's setting of the values.
+
+	* Found and fixed a problem where the last-used mark was not being
+	set properly.  Added checks to dmalloc_t for this.
+
+	* Found and fixed a bad problem where the leaked memory was not
+	being reported correctly.  Very bad.  Added checks in dmalloc_t
+	for this.
+
+2003-06-04  Gray Watson  <>
+
+	* Releasing dmalloc version 5.0.2.
+
+	* Fixed some problems and improved the code in dmalloc_t.
+
+	* Integrated an internal random number generator since random()
+	often calls malloc.  Ugh.
+
+2003-05-22  Gray Watson  <>
+
+	* Removed protection filler to not confuse stuff.
+
+2003-05-21  Gray Watson  <>
+
+	* Improved some of the configure script internals.
+
+	* Added support for a.exe and other cc output forms for Windoze.
+
+2003-05-20  Gray Watson  <>
+
+	* Releasing dmalloc version 5.0.1.
+
+	* Updated configure.ac script.
+
+	* New texinfo.tex macros.
+
+2003-05-19  Gray Watson  <>
+
+	* Added dmalloc_page_size() function.
+
+	* Improved the auto-testing in dmalloc_t.
+
+	* Found a [bad] problem with putting pointers back on the free
+	list.
+
+	* Added some checking of pointers on the free list.
+
+	* Removed DEBUG_NOT_REMOVABLE and DEBUG_NOT_ADDABLE flags.
+
+	* Added the per-pointer checking for cleared free memory.
+
+	* Compressed the per-pointer admin structure by 8 bytes.
+
+	* Cleaned up the production of dmalloc.h.3 from fillproto file.
+
+2003-05-16  Gray Watson  <>
+
+	* Releasing dmalloc version 5.0.0.
+
+2003-05-14  Gray Watson  <>
+
+	* Removed debug_val.h and error_str.h.
+
+	* Lots of bugs fixed.
+
+	* Removed a number of old error codes.
+
+2003-05-13  Gray Watson  <>
+
+	* Deprecated log-blocks and heap-check-map debug tokens.
+
+	* Removed dmalloc_lp.[ch] stuff.
+
+	* Added -M --memory-limit argument to dmalloc and ability to limit
+	the library from allocating more than a certain number of bytes.
+
+	* Getting ready for a huge checkin after a good bunch of work.
+
+2002-06-06  Gray Watson  <>
+
+	* Added a currently in use stats to log-stats.  Thanks Bernard.
+
+2002-02-27  Gray Watson  <>
+
+	* Fixed some literal ranlib entries in the Makefile.in thanks to
+	Ralf Fassel.
+
+2002-02-24  Gray Watson  <>
+
+	* Removed the USE_DMALLOC_LEAP functionality.  This was causing
+	pains internally and I needed to simplify some of the sections.  I
+	apologize for those folks who used this a lot.
+
+2002-02-14  Gray Watson  <>
+
+	* Added a function to close and re-open the dmalloc logfile when
+	you process a new set of environmental flags.
+
+	* Added a section to the docs about debugging daemon and CGI
+	processes.
+
+2002-01-28  Gray Watson  <>
+
+	* Made some cosmetic improvements to the configure.in script.
+
+2001-11-30  Gray Watson  <>
+
+	* Made free(0L) not an error by default.  I've been swayed by
+	public pressure.
+
+	* Removed short token support.
+
+	* Did some more work on testing and chunk.c changes.
+
+2001-07-18  Gray Watson  <>
+
+	* Added better autoconf checking of thread libraries to include
+	FreeBSD's non-portable libc_r.  Grrr.  Thanks to Steve Roberts.
+
+2001-07-12  Gray Watson  <>
+
+	* Added dmalloc_debug_setup function with which you can set the
+	options with a function and not just the environmental variable.
+
+	* Finally got the main line compiling again.  Ugh.  Chunk code
+	looks a lot better however.
+
+	* Before this time I've changed significantly the way the chunk
+	routines account for pointers.  Now every pointer has a flags
+	field which says whether fence post checking should be applied to
+	it.
+
+2001-05-23  Gray Watson  <>
+
+	* Renamed _dmalloc_logpath to dmalloc_logpath to match the
+	documentation and dmalloc.h.  Thanks Christoph.
+
+2001-05-21  Gray Watson  <>
+
+	* Solved problem with dmalloc_t and no sbrk.
+
+	* Added INTERNAL_MEMORY_SPACE setting to the settings.dist file to
+	help people with no sbrk function.
+
+2001-03-29  Gray Watson  <>
+
+	* Fixed some additional problems with start-file, start-count, and
+	interval.
+
+2001-03-28  Gray Watson  <>
+
+	* Added the 'How It Works' section to the manual.
+
+	* Removed necessity of strcat.
+
+	* Removed use of strcpy internally.
+
+	* Fixed problem with use of start-count and start-file not
+	disabling the check-heap flag.
+
+Mon Feb 26 12:17:25 2001  Gray Watson  <>
+
+	* Releasing dmalloc version 4.8.2.
+
+	* Installed new configure script to remove C++ requirement.
+
+Sun Feb 25 18:58:37 2001  Gray Watson  <>
+
+	* Making major changes to a number of routines.
+
+Thu Feb 22 19:24:38 2001  Gray Watson  <>
+
+	* Added more information to heap-check error messages on freed
+	memory overwritten.  This is now possible since I unrolled the
+	unions from chunk_loc.h.  Thanks to Robert Nielsen for pointing
+	out this oversite.
+
+Wed Feb 21 20:16:32 2001  Gray Watson  <>
+
+	* Added strings to identify if the library was compiled with
+ 	LOCK_THREADS enabled.
+
+Thu Nov 30 19:01:10 2000  Gray Watson  <>
+
+	* Added heap checking when we shutdown if check-blank is enabled.
+	This will verify that all of the freed memory was not overwritten.
+
+Mon Nov 27 19:01:10 2000  Gray Watson  <>
+
+	* Added a separate ALLOC_BLANK_CHAR and FREE_BLANK_CHAR to the
+	settings.dist file.  Now the default 0xc5 character has been
+	replaced with 0xda for dmalloc-allocated memory and 0xdf for
+	dmalloc-freed memory.
+
+Tue Nov 14 15:09:02 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.8.1.
+
+	* Added --enable-shlib to configure which enables the building of
+	shared libraries.
+
+	* Added autoconf handling of the shlibdir for installing of shared
+	libraries.
+
+Mon Nov 13 10:47:21 2000  Gray Watson  <>
+
+	* Added improvements to the shared library creation in the Makefile.
+
+	* Fixed the #ident "..."; semi-colon problem.  Thanks to Jonathan.
+
+Fri Nov 10 10:27:23 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.8.0.
+
+Thu Nov  9 19:58:56 2000  Gray Watson  <>
+
+	* Added OpenBSD port information.  Hopefully this will be close to
+	Free/Net/... BSD as well.
+
+Tue Nov  7 11:39:26 2000  Gray Watson  <>
+
+	* Renamed malloc.h to malloc_funcs.h to avoid system conflicts.
+
+	* Made log-unknown the default and depreciated the token.  Added a
+	log-known token to _only_ report on known (file/line) memory.
+
+	* Removed INSTALL.1 file because it was basically empty.
+
+	* Added Troubleshooting section to the INSTALL manual.
+
+Tue Oct 10 19:03:14 2000  Gray Watson  <>
+
+	* Did a pre-release of 4.7.2 with the autoconfigure handling for
+	VA Linux release.  Thanks guys.
+
+	* Reorged dmalloc.h.3.  Ugh.
+
+	* malloc_verify and dmalloc_verify now return
+	[D]MALLOC_VERIFY_[NO]ERROR.
+
+	* Just about every function now initializes the library.  This was
+	not the case before with some information routines.
+
+	* dmalloc_debug now takes an unsigned-int flags and returns the
+	old debug flag value.  debug_current now returns an unsigned int
+	flag value.
+
+	* Added autoconfig handling of #ident.  I really hate Unix
+	sometimes for its blatant disregard for anything approaching a
+	standard.  Idiots.
+
+Wed Sep 13 14:24:46 2000  Gray Watson  <>
+
+	* Fixed a bug in chunk.c found by Ian Badcoe.
+
+	* Improved the displaying of tokens my dmalloc utility.
+
+Tue Jul 25 11:57:49 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.7.1.
+
+	* Fixed problem with check-blank being specified but not
+	free-blank or alloc-blank.  I thought I fixed this before.
+
+Mon Jul 24 15:30:04 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.7.0.
+
+	* Added support for --disable-cxx and --enable-threads for turning
+	on or off C++ and thread support.
+
+Fri Jul 21 17:00:25 2000  Gray Watson  <>
+
+	* Added autoconfiguration code to see if the return macros work
+	for an architecture.
+
+	* Renamed USE_RET_ADDRESS to USE_RETURN_MACROS in return.h.
+
+	* Added threaded C++ library support to Makefile.
+
+Tue Jun 20 18:30:55 2000  Gray Watson  <>
+
+	* Fixed problems with -p and -m not setting the debug flags.
+
+	* Added 'force-linear' token and depreciated the 'allow-nonlinear'
+	token.  Non-linear heaps really are the default these days (on AIX
+	for example).  Now, you can enable the force-linear if you want to
+	ensure a linear heap.
+
+Wed May 17 11:29:55 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.6.0.
+
+	* Fixed an incompatibility with the dmalloc_t -r, sbrk, and the
+	DEBUG_ALLOW_NONLINEAR flag.
+
+	* Improved the implementation of the NEVER_REUSE flag.  Found
+	problems with the dmalloc_t -r random debug flag.
+
+	* Added BUILD.txt instructions to the repository.
+
+Tue May 16 14:34:14 2000  Gray Watson  <>
+
+	* Added BLOCK_ROUND macros to heap.h.
+
+	* Made initial attempt to protect blocks in chunk.c.  Got pretty
+	hairy way too fast so backed it out.
+
+	* Added SET_POINTER macro and cleaned some code.
+
+	* Completely reworked the internal initialization values for the
+	environmental variables to fix problems pointed out by Carlton
+	Teel.  I was doing a (unsigned int)-1.  Yuck.
+
+	* Fixed a bug found by Mcvey where the 1st dblock allocation in a
+	block would not have been found in non-freed memory lists.  Yuck.
+
+Mon May 15 11:46:21 2000  Gray Watson  <>
+
+	* Moved to 'make cxx' and 'make installcxx' for building and
+	installing the C++ version of the library.
+
+	* Added autoconfiguration of the presence of a C++ compiler so it
+	will attempt to build and install libdmallocxx.a if it can.
+
+	* Removed DMALLOC_VERIFY_[NO]ERROR and replaced with
+	DMALLOC_[NO]ERROR.
+
+	* dmalloc_examine now returns DMALLOC_[NO]ERROR not [NO]ERROR.
+
+	* Added initial mprotect configuration and stub function to the
+	library.
+
+Mon May  8 08:19:45 2000  Gray Watson  <>
+
+	* Renamed dmalloc.cc to dmallocc.cc and added the building of
+	libdmalloc++.a per Dimitri's comments.
+
+	* Renamed rpm.spec to dmalloc.rpm per Dimitri's comments.
+
+Mon May  1 20:34:18 2000  Gray Watson  <>
+
+	* Fixed some more function headers.
+
+Tue Apr 18 15:41:30 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.5.2.
+
+	* Added DGUX notes from Takis Psarogiannakopoulos.
+
+	* Fixed bug in chunk.c pointer checking.  Thanks Ezra.
+
+Mon Apr 17 21:55:39 2000  Gray Watson  <>
+
+	* Cleaned up some of the compat.[ch] headers to better match
+	reality.
+
+Thu Mar 30 10:05:01 2000  Gray Watson  <>
+
+	* Reorganized the dmalloc.texi documentation and moved to using
+	makeinfo program.
+
+	* Releasing dmalloc version 4.5.1.
+
+	* Fixed a problem with compilation of dmalloc_lp.c.  Thanks Chip.
+
+Wed Mar 29 17:40:43 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.5.0.
+
+Fri Mar 24 16:21:39 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.5.0 beta 1.
+
+	* Added new dmalloc_mark() and dmalloc_log_changed() functions.
+
+	* Added new BBLOCK_FREE_START and redid some of the block flag
+	checking.
+
+Tue Mar 21 13:15:46 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.4.0 beta 2.
+
+	* Removed the stupid old Deansify.pl script.
+
+	* Added rpm.spec file to the distribution.
+
+	* Fixed problem with chunk checking of dblock structures.
+
+Mon Mar 20 18:19:06 2000  Gray Watson  <>
+
+	* Releasing dmalloc version 4.4.0 beta 1.
+
+	* Removed usage of PTHREAD_MUTEX_INITIALIZER which was delaying
+	the mutex-init call.
+
+	* Added code to fix some recursive problems with open and atexit.
+
+	* Basically encorporated Randell's changes [finally].  Thanks for
+	your patience dude.
+
+	* Removed the stupid chunk.c unions.  Why did I ever do that?  It
+	made debugging and absolute bear.
+
+	* www.dmalloc.com -> dmalloc.com.
+
+Mon Mar  6 12:05:01 2000  Gray Watson  <>
+
+	* Added better help messages to dmalloc.
+
+Thu Feb 17 09:04:19 2000  Gray Watson  <>
+
+	* Fixed Makefile.dep creation with _th.o special objects.
+
+	* Fixed the outputting of gratuitous colons.
+
+	* Added @uref texinfo tags and new texinfo.tex.
+
+Mon Nov  8 15:39:44 1999  Gray Watson  <>
+
+	* Releasing dmalloc version 4.3.0.
+
+	* Fixed some problems with char * instead of void *.
+
+Mon Oct 18 12:09:30 1999  Gray Watson  <>
+
+	* Added info about log-unknown to the Getting Started section and
+	more info about ident.
+
+Fri Oct 15 18:13:39 1999  Gray Watson  <>
+
+	* Added power pc return.h macros from Shawn.
+
+Thu Oct 14 10:08:58 1999  Gray Watson  <>
+
+	* Releasing dmalloc version 4.3.0 beta 3.
+
+	* Darn.  Missed malloc.h in the port file.
+
+Wed Oct 13 18:38:26 1999  Gray Watson  <>
+
+	* Releasing dmalloc version 4.3.0 beta 2.
+
+	* Changed #ifdef USE_DMALLOC_LEAP -> #if USE_DMALLOC_LEAP.  Doh.
+
+Mon Oct 11 12:37:13 1999  Gray Watson  <>
+
+	* Releasing dmalloc version 4.3.0 beta 1.
+
+	* Fixed problems on Linux with the strdup macro.
+
+Wed Aug 25 08:33:39 1999  Gray Watson  <>
+
+	* Added copyright and url info for ident and what.
+
+	* Added support for PTHREAD_MUTEX_INITIALIZER.
+
+Tue Jul 20 12:47:14 1999  Gray Watson  <>
+
+	* Added USE_DMALLOC_LEAP define in the settings.dist file with
+	which you can enable the leap functionality which previously was
+	the default.
+
+Thu Apr 15 10:21:55 1999  Gray Watson  <>
+
+	* Dmalloc now looks in the current directory for .dmallocrc before
+	checking your $HOME directory.
+
+	* Rewrote a significant piece of the dmalloc utility.  Much better
+	code with regards to processing configuration files.
+
+Fri Mar 26 17:57:54 1999  Gray Watson  <>
+
+	* Increased the filename size from 40 to 100 characters.
+
+Thu Mar 11 17:31:00 1999  Gray Watson  <>
+
+	* Releasing dmalloc version 4.2.0.
+
+	* Completely reworked the qsort code.
+
+Wed Mar 10 11:18:13 1999  Gray Watson  <>
+
+	* Improved the autoconfig of abort and qsort safety.
+
+	* Fixed hash problem on 64-bit alphas.
+
+	* Fixed a number of missing prototypes and include problems.
+
+	* Added QSORT_OKAY switch to configure for linux.
+
+	* Fixed STDC ifdefs for C++.  Thanks Eric.
+
+Tue Mar  9 14:26:11 1999  Gray Watson  <>
+
+	* Fixed some problems with threading and the LOG_THREAD_ID ifdef.
+
+	* Improved the memory table output.  Renamed the table files to be
+	dmalloc_tab.[ch] to removed clash with libtable.a.
+
+Mon Mar  8 10:50:12 1999  Gray Watson  <>
+
+	* Releasing dmalloc version 4.2.0-beta.
+
+	* Fixed long standing problem with the NEVER-REUSE token.
+
+	* Added memory tracking function so the user can register a
+	callback function to be run whenever a memory transaction occurs.
+
+Sun Mar  7 17:58:07 1999  Gray Watson  <>
+
+	* Added DUMP_UNFREED_SUMMARY_ONLY variable to the settings.dist
+	file.
+
+	* Added MEMORY_TABLE_SIZE and MEMORY_TABLE_LOG variables to the
+	settings.dist file.
+
+	* Fixed problem with valloc exposed by moving to random() from
+	rand().  Grrr.
+
+	* Added memory table code for grouping of allocated and non-freed
+	memory.  Looks great!
+
+Thu Mar  4 19:28:45 1999  Gray Watson  <>
+
+	* Removed a number of static variables for string buffers.  Yuck.
+
+	* Removed PERMISSION file and all references to commercial-ness.
+
+	* Moved to internal sprintf code for snprintf, etc..
+
+	* Added dmalloc_message to the exported list of functions.  Had to
+	add stdarg.h handling to dmalloc.h.
+
+Fri Dec 11 00:04:04 1998  Gray Watson  <>
+
+	* Releasing dmalloc version 4.1.2.
+
+	* Fixed really bad bug which basically killed pthread support.
+
+Mon Nov 16 11:51:39 1998  Gray Watson  <>
+
+	* Releasing dmalloc version 4.1.1.
+
+	* Fixed signal autoconfiguration.  Bad dog.
+
+	* Releasing dmalloc version 4.1.0.
+
+Thu Nov 12 10:08:58 1998  Gray Watson  <>
+
+	* Added HTML versions of the manuals to the releases.
+
+	* Added FREED_POINTER_DELAY in settings.h which will hold a
+	pointer from being reused for a certain amount of time.
+
+	* Renamed allow-zero token to be allow-free-null.
+
+	* Added LOG_TIME_NUMBER and LOG_CTIME_STRING to the settings.dist
+	file for logging times in the logfile.
+
+	* Disabled the log-thread-id macro.  Use the LOG_THREAD_ID
+	define in settings.h to control.
+
+	* Disabled the log-stamp macro.  Use the STORE_TIME define in
+	settings.h to control.
+
+Tue Nov 10 12:43:00 1998  Gray Watson  <>
+
+	* Added Jens' cool gdb script and -g (--gdb) flag to dmalloc
+	utility.
+
+	* Added missing delete[] function to the C++ code.  Thanks Jens.
+
+Mon Nov  9 11:48:29 1998  Gray Watson  <>
+
+	* Releasing dmalloc version 4.1.0 beta.
+
+	* Moved some settings from chunk_loc.h into settings.dist.
+
+	* Improved the handling of free(NULL) and malloc(0) settings.
+
+	* Added initial memalign support with a error message if the
+	alignment is less than block size which is not currently
+	supported.
+
+	* Renamed print-error token to print-messages.
+
+Wed Oct 28 10:17:13 1998  Gray Watson  <>
+
+	* Increased the default max memory size from 16mb to 64mb.
+
+Thu Oct 15 11:06:41 1998  Gray Watson  <>
+
+	* Released dmalloc version 4.0.3.
+
+	* Moved to #ident for rcs-ids in GCC.
+
+	* Found and fixed a bug when reallocing a previous valloced
+	section.  Not a good idea anyway since it will not preserve the
+	block-aligned status (should it).
+
+	* Released dmalloc version 4.0.2.
+
+	* Fixed a problem in return.h and DMALLOC_UNKNOWN_FILE.  Ugh.
+	Thanks much to Mike Sacauskis for pointing this out.
+
+Thu Oct  8 11:07:25 1998  Gray Watson  <>
+
+	* Released dmalloc version 4.0.1.
+
+	* Added startup messages acknowledging the thread status.  Added
+	error.o to the thread object list.
+
+Wed Oct  7 14:52:14 1998  Gray Watson  <>
+
+	* Fixed problem with thread compilation and chunk.c.  Thanks much
+	to Didier Verna for pointing out this problem.
+
+	* Fixed possible race condition with synchronizing with external
+	sbrk calls.
+
+Mon Oct  5 22:56:46 1998  Gray Watson  <>
+
+	* Migrated in new argv code.
+
+Sun Oct  4 22:56:46 1998  Gray Watson  <>
+
+	* Released dmalloc version 4.0.0.
+
+	* Updated the manual a bit.
+
+	* Made a small change to the solaris return.h code.  Thanks
+	Alexandre.
+
+Tue Sep 29 09:26:50 1998  Gray Watson  <>
+
+	* Releasing dmalloc version 4.0.0 beta2.
+
+	* Aligned valloc to block alignment as it should have been with
+	fence post checking installed.
+
+	* Renamed some internal variables and macros better names.
+
+Mon Sep 28 17:55:24 1998  Gray Watson  <>
+
+	* Added better auto-configuration of valloc.
+
+	* Improved the log-trans output messages.
+
+	* Added the printf attribute to error.c's dmalloc_message.  Fixed
+	a number of casting problems.
+
+Fri Sep 18 13:37:23 1998  Gray Watson  <>
+
+	* Releasing dmalloc version 4.0.0 beta.
+
+	* Added recalloc support into the library.  Thanks to Nick
+	Albright for suggesting it.
+
+	* Cleaned up the calloc special handling and accounting.
+	Simplified the local malloc functions in malloc.c.
+
+	* Added valloc support to the library after it was determined that
+	OSF thread libraries still use the function.  memalign will be
+	much harder to add.
+
+Thu Sep 17 08:42:14 1998  Gray Watson  <>
+
+	* Improved the pthread autoconfiguration and the code.  Removed
+	the gross macro code sections.
+
+	* Lots of small code improvements.
+
+	* Got rid of the _dmalloc_file and _dmalloc_line stuff which was
+	_very_ unportable.  Thanks Marty for pointed this out.  Reduced
+	the race conditions there and improved the handling of default
+	values.
+
+	* Added FTX return.h information.  Thanks to Wim van Duuren.
+
+Wed Sep 16 16:28:49 1998  Gray Watson  <>
+
+	* Added direct strdup support to the library with the assocated
+	leap functions.
+
+Tue Feb 10 21:12:40 1998  Gray Watson  <>
+
+	* Releasing version 3.3.1 to get rid of the -beta.
+
+Sun Dec 21 19:32:02 1997  Gray Watson  <>
+
+	* Shifted some flags to ints instead of longs.
+
+	* Improved error string handling.
+
+Wed Dec 17 08:15:04 1997  Gray Watson  <>
+
+	* Removed allocation macros from the docs and the header.  I was
+	not using them anymore and I would think they would be confusing.
+
+	* Added realloc(pnt, 0) works like free(pnt).  Thanks Stefan!
+
+Mon Dec  8 04:34:14 1997  Gray Watson  <>
+
+	* Reworked the log_error_info routine's dumping of the fence post
+	areas to properly dumps upper fence post bytes.
+
+Mon Dec  8 02:34:14 1997  Gray Watson  <>
+
+	* Releasing dmalloc version 3.3.0.
+
+	* Fixed problems with pthread locking and various conditions.
+	Added a warning if lock-on is set without allow-nonlinear.
+
+Sun Dec  7 21:44:17 1997  Gray Watson  <>
+
+	* Added THREAD_LOCK_INIT_VAL autoconfigure.
+
+Fri Dec  5 12:09:26 1997  Gray Watson  <>
+
+	* Performed some long overdue major code cleaning.  Added new
+	Lycos {}, int _b for bools, and other stuff.
+
+Wed Nov  5 11:25:09 1997  Gray Watson  <>
+
+	* Renamed argv.[ch] to be dmalloc_argv.[ch] to not clash with argv
+	files.
+
+Sun Jul 20 00:40:53 1997  Gray Watson  <>
+
+	* Added return address handling for SGI.  Thanks James.
+
+Mon Jul  7 03:12:28 1997  Gray Watson  <>
+
+	* Added better C++ overload functions.  From whom off the Net did
+	I get this from?
+
+	* Added test for DMALLOC_SIZE unsigned-ness.
+
+	* Added a FINI_DMALLOC setting to the settings.dist file to
+	support the OSF __fini_ stuff.
+
+	* Added pthread lock_on -o environmental settings.  You will need
+	to have LOCK_THREADS set to 1 in the settings.h file.
+
+Sat Mar 22 12:28:45 1997  Gray Watson  <>
+
+	* Added return-address tracking for gcc on alphas.  Thanks
+	Alexandre.
+
+Fri Mar 21 09:29:46 1997  Gray Watson  <>
+
+	* Released version 3.2.1.
+
+	* Added to dmalloc the ability to recognize its internal tags.
+
+	* Added better documentation of auto-dmalloc_shutdown.
+
+	* Cleaned up some configuration stuff.
+
+	* Fixed a number of signed/unsigned problems in chunk.
+
+Thu Mar 20 15:45:59 1997  Gray Watson  <>
+
+	* Removed autoconf rule in Makefile.all.
+
+	* Cleaned up pthreads locking delay code.
+
+Fri Jan 17 14:25:12 1997  Gray Watson  <>
+
+	* Releasing version 3.2.0.
+
+	* Added catch-signals debug token (about time, huh Marty?)
+
+	* Revamped autoconf scripts to be more standard.
+
+	* New signal handling.
+
+Thu Jan 16 15:22:06 1997  Gray Watson  <>
+
+	* Moved to memcpy and memcmp from the b routines.
+
+	* Fixed the locking for pthread programs.  Dumb errors.
+
+	* Ran new fillproto on h-files.  IMPORT -> extern.
+
+Thu Dec 28 20:39:00 1995  Gray Watson  <>
+
+	* Releasing version 3.1.3.
+
+	* Added new argv versions to fix problems.
+
+	* Don't allow silent dumps of test program.
+
+Tue Dec 19 19:11:19 1995  Gray Watson  <>
+
+	* Added registration subdirectory.
+
+Mon Nov 20 22:14:14 1995  Gray Watson  <>
+
+	* Removed some unresolved references in argv.c: strcasecmp, strdup.
+
+	* Fixed some porting problems to Unixware.  Unsigned chars.
+
+Mon Oct 21 00:23:51 1995  Gray Watson  <>
+
+	* Fixed bug where I called display_pnt instead of display_where.
+
+Tue Oct 10 18:43:09 1995  Gray Watson  <>
+
+	* Releasing version 3.1.2.
+
+Mon Sep 18 10:14:36 1995  Gray Watson  <>
+
+	* Finally tested fore myself the configure --srcdir option.  Found
+	lots of places with missing $(srcdir) entries.
+
+Wed Sep  6 13:33:59 1995  Gray Watson  <>
+
+	* Released version 3.1.2-gamma.
+
+	* Added sbrk handling in the dmalloc_t test program.
+
+	* Renumbered error values so inserting won't be a problem in the
+	future.  Added ERROR_EXTERNAL_HUGE.
+
+	* Added new argv files.
+
+	* Fixed up statistics to include external block handling.
+
+	* Fixed up the external sbrk handling.  I broke it with the 3.1.1
+	version.  This re-write is much cleaner.  Made some changes to
+	dblock admin handling and heap-check
+
+	* Re-added THREAD_LOCK definitions to settings.dist.  Where did
+	they go?
+
+Tue Sep  5 12:38:48 1995  Gray Watson  <>
+
+	* Moved install.sh to install-sh and fixed some Makefile problems.
+	Thanks Francois.
+
+	* Simplified the heap code a lot.  Fixed race conditions.
+
+Sun Sep  3 12:50:30 1995  Gray Watson  <>
+
+	* Releasing 3.1.2-beta.
+
+	* Added configure handling of 32768 page sizes.
+
+	* Removed stdlib inclusion in dmalloc.h.2 for size_t.
+
+	* Added some undefs for malloc, etc. for Linux.  Thanks Rick.
+
+Sat Sep  2 15:34:01 1995  Gray Watson  <>
+
+	* Releasing 3.1.2-alpha.
+
+	* Added inital thread locking for debugging threaded programs.
+
+	* New attempts to auto-configure DMALLOC_SIZE for size_t.  I've
+	tried this before.  We'll have to see what it screws up.
+
+	* Added settings.dist which is copied by configure.  Thanks Marty.
+
+Fri Sep  1 15:53:50 1995  Gray Watson  <>
+
+	* Started better autoconfiguring of DMALLOC_SIZE variable.
+
+Wed Aug 30 14:05:39 1995  Gray Watson  <>
+
+	* Added dmalloc_aborting flag in case kill or abort recurses.
+	Thanks Stephen.
+
+Tue Aug 29 17:43:54 1995  Gray Watson  <>
+
+	* Added new[] C++ function.  Thanks Arno.
+
+Tue Aug 28 00:00:00 1995  Gray Watson  <>
+
+	* Changed DMALLOC_SIZE to 'unsigned long' instead of unsigned.
+
+Fri Aug 18 11:50:03 1995  Gray Watson  <>
+
+	* Releasing version 3.1.1.
+
+	* Moved all non-linear heap checking to heap code and improved the
+	code immensely (read it works now).
+
+	* Fixed dumb bug in argv code.
+
+	* Added handling of NONLINEAR heap by default.
+
+Mon Aug 14 10:57:26 1995  Gray Watson  <>
+
+	* Fixed up dmalloc_t to propogate errors better.  Thanks Thorsten.
+
+Sun Aug 13 16:02:27 1995  Gray Watson  <>
+
+	* Renamed chunk_heap_check to chunk_check.
+
+Fri Jul 14 16:58:09 1995  Gray Watson  <>
+
+	* Releasing version 3.1.0.  First commercial release.
+
+	* Added academic references to permissions sections.
+
+Wed Jul  5 19:11:03 1995  Gray Watson  <>
+
+	* Released version 3.1.0-beta.
+
+Mon Jul  3 19:57:05 1995  Gray Watson  <>
+
+	* Encorporated new configed argv files from version 2.0.1.
+
+Wed Jun 28 19:48:47 1995  Gray Watson  <>
+
+	* Improved header file configurations immensely.  Removed all
+	casts and other dumb coding assumptions for 64 bit machines.
+
+	* Fixed dumb sparc preprocesser error.
+
+Tue Jun 20 13:56:02 1995  Gray Watson  <>
+
+	* Added commercial license restrictions to library.
+
+Mon Jun 19 22:06:12 1995  Gray Watson  <>
+
+	* Changed USE_ABORT to rely on ABORT_OKAY auto-configed setting.
+
+	* Fixed problem with fence handling and 64 bit longs.
+
+	* Added lots of comments about internal chunk structures.
+
+Tue Jun 13 17:34:02 1995  Gray Watson  <>
+
+	* pulled manual settings out of conf.h to settings.h.
+
+Tue May 31 10:30:59 1995  Gray Watson  ()
+
+	* Finished version 3.0.7.  Released later.
+
+Tue May 30 10:30:59 1995  Gray Watson  ()
+
+	* Fixed problem with conf.h references before included.
+
+	* Fixed problems with exit() calls in configure.  Thanks Rik.
+
+Mon May 15 20:13:10 1995  Gray Watson  ()
+
+	* Added error-dump token for dumping-core and continuing on errors.
+
+	* Added Web pointers to online documentation.
+
+	* Added abort() auto-configuration for KILL_PROCESS.
+
+	* Minor fixes.  Added an arg to dmalloc_die to be silent.
+
+Fri May 12 16:33:44 1995  Gray Watson  ()
+
+	* Released version 3.0.6-beta.
+
+	* Fixed problem with NEVER_REUSE and realloc same block-size.
+
+	* Fixed up logging of time.  Lots of ifdefs.
+
+	* Added a pointer overhead structure.
+
+Fri May  5 11:39:39 1995  Gray Watson  ()
+
+	* Renamed a number of chunk fields to remove the use of count.
+
+	* Logged starting/ending time in logfile.
+
+	* Added thread-id tracking with conf.h option.
+
+	* Added pointer-count tracking with conf.h option.
+
+	* Added interation-count tracking with conf.h option.
+
+	* Added global/relative time tracking with conf.h option.
+
+Fri Mar 31 16:51:52 1995  Gray Watson  ()
+
+	* Better tag output from dmalloc -t.
+
+	* New version of argv files.
+
+	* Fixed problem with dmalloc -c and start-count.
+
+	* Added some messages about upcoming errors in dmalloc_t.
+
+Thu Mar 23 10:34:33 1995  Gray Watson  ()
+
+	* Improved the manual a bit.  Phased in some alpha changes.
+
+	* Added some Next notes to the contrib directory.  Need more.
+
+Fri Mar 10 13:29:49 1995  Gray Watson  ()
+
+	* Added allow-zero token for not minding malloc(0) and free(0L).
+
+	* Made all chunk.c global counters longs.
+
+Fri Mar  3 12:37:17 1995  Gray Watson  ()
+
+	* Integrated into new CVS hierarchy.  New copyrights.
+
+Mon Jan  2 18:51:19 1995  Gray Watson  ()
+
+	* Released version 3.0.5.
+
+	* Changed my mail address and ftp location.
+
+Fri Dec 16 15:07:29 1994  Gray Watson  ()
+
+	* Fixed some old references to malloc in docs.  Thanks Dave.
+
+Thu Dec 15 10:25:59 1994  Gray Watson  ()
+
+	* Released version 3.0.4.
+
+Sat Nov 12 18:05:34 1994  Gray Watson  ()
+
+	* Removed message arg to env-get routine due to various probs.
+
+	* New STDC definitions of DMALLOC_PNT and DMALLOC_FREE_RET.
+
+	* Removed all STRDUP and BDUP macros.  Was anyone using them?
+
+Wed Nov  9 15:43:45 1994  Gray Watson  ()
+
+	* Upgraded to autoconf 2.1.  New configure script.
+
+Tue Nov  8 18:54:04 1994  Gray Watson  ()
+
+	* Added dying message when malloc_die is called.  Thanks Marty.
+
+	* Reworked the manual a ton.  Looks much better.  Added
+	Quick-Start + Installation sections.
+
+	* Lots of changes to notes files.
+
+Thu Nov  3 17:25:29 1994  Gray Watson  ()
+
+	* Released version 3.0.3.
+
+	* Added dmalloc.cc C++ file to distribution.
+
+	* Default is now to build/install a libdmalloclp.a library.
+
+Wed Oct 26 21:13:11 1994  Gray Watson  ()
+
+	* Removed the log-error tag.  Pretty worthless.  If you had
+	logpath set then it should log errors.
+
+Tue Oct 18 19:54:21 1994  Gray Watson  ()
+
+	* Fixed problem with new args clearing all old ones.
+
+Sat Oct 15 13:55:16 1994  Gray Watson  ()
+
+	* Added dmalloc.h.2 creation to config.status file.  Thanks Dave.
+
+	* Added a startup message with the debug flags used to logfile.
+
+Fri Oct 14 18:40:59 1994  Gray Watson  ()
+
+	* Fixed dumb errors with FUNC_CHECK code.  Thanks Dave.
+
+Thu Oct 13 21:25:52 1994  Gray Watson  ()
+
+	* Added default tags: default,low,medium,high,all to dmalloc.
+
+	* Renamed check-free to check-blank but left free for compat.
+
+	* Made a number of changes from Dave MacKenzie.  Reworking the
+	manual fixed the Makefile, RC file, argv, etc...
+
+Wed Oct 12 13:00:48 1994  Gray Watson  ()
+
+	* Added long/short options to dmalloc and env routines.
+
+	* Changed some dmalloc options.  -T -> -D, -L -> -t.  Yeach!
+
+	* Added better error logging in chunk.
+
+Tue Oct  4 13:39:40 1994  Gray Watson  ()
+
+	* Added DG/UX code to return.h and atexit code and notes to the
+	distribution.  Thanks Joerg.
+
+Mon Sep 26 11:59:56 1994  Gray Watson  ()
+
+	* Releasing version 3.0.2.
+
+	* Fixed stupid strtok error in dmallocrc file processing.
+
+Mon Sep 26 11:20:17 1994  Gray Watson  ()
+
+	* Fixed problems with env code and that sprintf returning (char *)
+	on some archs.  DUMB!
+
+Wed Sep 21 11:45:19 1994  Gray Watson  ()
+
+	* Library now dumps the proper fence-bottom bytes on first pointer
+	error.
+
+	* Fixed 2 casting problems on OSF.  Thanks Dave.
+
+Tue Sep 20 13:58:08 1994  Gray Watson  ()
+
+	* Releasing version 3.0.1.
+
+	* Combined all env variables into DMALLOC_OPTIONS.  Lots of
+	changes to dmalloc program.
+
+Fri Sep 16 14:50:26 1994  Gray Watson  ()
+
+	* Added short token strings and values to -T very-verbose output.
+
+	* Added -n flag to dmalloc program for printing/not-doing actions.
+
+Tue Sep 13 11:36:10 1994  Gray Watson  ()
+
+	* Added mkinstalldirs to distribution.  Thanks Francois.
+
+Mon Sep 12 13:12:38 1994  Gray Watson  ()
+
+	* Fixed zsh and [t]csh alias messages in documentation.
+
+	* Added install.sh to distribution. Thanks Francois.
+
+Mon Sep 12 10:07:29 1994  Gray Watson  ()
+
+	* Renamed _dmalloc_error to dmalloc_error since it is used
+	externally so often.  Sorry folks.
+
+	* Removed time() and getpid() from compat functions.  Moved
+	HAVE_... tests into the code that used them.  Duhhhh.
+
+	* Changed DMALLOC_DEBUG_DISABLE flag to DMALLOC_DISABLE.
+
+	* Fixed some include file auto-include messages. Thanks Francois.
+
+Thu Sep  8 10:07:56 1994  Gray Watson  ()
+
+	* Releasing version 3.0.0.
+
+	* Fixed a problem with some list checking via user feedback.
+
+Fri Sep  2 17:34:02 1994  Gray Watson  ()
+
+	* Fixed possible recursion problem.  Thanks Marty.
+
+Mon Aug 29 11:08:36 1994  Gray Watson  ()
+
+	* Tons of name changes going from malloc_dbg -> dmalloc.  Lots of
+	files, internal/external routines, variables, etc.
+
+Sat Aug 27 19:33:16 1994  Gray Watson  ()
+
+	* Releasing 2.2.1 so I make the name shifts.
+
+	* Fixed problem with IMPORT in malloc_dbg.3 via user feedback.
+
+Mon Aug  8 22:43:44 1994  Gray Watson  ()
+
+	* Releasing version 2.2.0.
+
+Mon Aug  8 22:29:11 1994  Gray Watson  ()
+
+	* Added no-special test option to malloc_t.
+
+	* Fixed problem with merging adjacent free blocks if last/first
+	block being freed.
+
+Wed Aug  3 14:28:20 1994  Gray Watson  ()
+
+	* Fixed xmalloc,xrealloc,etc. override functions.
+
+	* Added xstrdup to the x leap function list.
+
+Mon Aug  1 23:03:50 1994  Gray Watson  ()
+
+	* Added $verbose checks in configure.  Thanks Francois.
+
+	* Added 'err' label to error printing.  Thanks Francois.
+
+Fri Jul 22 11:48:26 1994  Gray Watson  ()
+
+	* Added ability to combine adjacent free blocks into one.
+
+Thu Jul 21 14:44:25 1994  Gray Watson  ()
+
+	* 0 or negative MALLOC_INTERVAL values act as if no interval value.
+
+	* Made a 'malloc_dbg -i 0' undefine MALLOC_INTERVAL.
+
+	* Fixed calloc return-address problem.  Thanks Gregory.
+
+	* Added KILL_PROCESS macro to configuration scripts.  Replaces
+	ERROR_SIGNAL.
+
+Thu Jul 10 00:00:00 1994  Gray Watson  ()
+
+	* Marty Leisner compiles library on MS-DOG!
+
+Sun May 22 18:37:31 1994  Gray Watson  ()
+
+	* Fixed some problems with malloc_errno set after call to error.
+
+Wed May 11 12:02:31 1994  Gray Watson  ()
+
+	* Released version 2.1.0.
+
+	* Fixed problem with never-reuse going on/off and check-lists.
+
+	* Added -r (random-debug) option to malloc_t which causes it to
+	constantly change the dmalloc flags while testing.
+
+	* Fixed VERY nasty bug in realloc with alloc-blank and no
+	realloc-copy token.
+
+	* Fixed problem with ANSI-C configure on AIX systems.
+
+Fri Apr  8 13:51:39 1994  Gray Watson  ()
+
+	* Fixed some race conditions with sbrk failure.
+
+Thu Apr  7 17:13:31 1994  Gray Watson  ()
+
+	* Added some better checking for out-of-range arguments.
+
+	* Changed heap-error to 0L from -1.
+
+	* Added -p max-pointers argument to malloc_t.
+
+Wed Apr  6 23:02:07 1994  Gray Watson  ()
+
+	* Added 'log-nonfree-space' token for logging unfreed memory
+	space.
+
+Wed Mar 30 01:03:56 1994  Gray Watson  ()
+
+	* Added iteration count label to all logfile output.
+
+Fri Mar 25 01:18:55 1994  Gray Watson  ()
+
+	* Fixed small recursive problem messing up malloc #2 info.
+
+Mon Mar 21 09:58:21 1994  Gray Watson  ()
+
+	* Added xmalloc,xrealloc,etc. override functions.
+
+Sun Mar 20 14:48:25 1994  Gray Watson  ()
+
+	* Added better mechanisms for const definition.
+
+Sun Mar 20 11:57:34 1994  Gray Watson  ()
+
+	* Renamed token 'log-perror' and 'print-perror' to '...-error'.
+
+Wed Mar  2 22:49:18 1994  Gray Watson  ()
+
+	* Fixed some spelling and other misc problems.
+
+Sun Feb 27 17:53:35 1994  Gray Watson  ()
+
+	* New argv files.  Fixed Makefile.all.in problem.
+
+	* Released version 2.0.1.
+
+Sun Feb 20 00:39:37 1994  Gray Watson  ()
+
+	* Cleaned up a number of configure/compat functions.
+
+Fri Feb 18 02:32:53 1994  Gray Watson  ()
+
+	* Fixed tons of __STDC__ defines.  Finally I hope.
+
+	* Added more commands to malloc_t to log information, etc.
+
+	* Released version 2.0.0.
+
+	* Last minute fixes from Sparc and MIPS boxes.
+
+Thu Feb 17 17:47:05 1994  Gray Watson  ()
+
+	* Lots of changes to add argv files in place of argv subdir.
+
+	* added initial support for external block locating.  this is
+	going to be a toughy to solve.  there is a catch-22 here.
+
+Sat Jan 22 01:34:55 1994  Gray Watson  ()
+
+	* moved BLOCK_SIZE into malloc_log because its used everywhere.
+
+Fri Jan 21 23:45:26 1994  Gray Watson  ()
+
+	* added missing checks for ADMIN_FREE in heap_check
+
+Wed Jan 19 20:43:05 1994  Gray Watson  ()
+
+	* Added a new texinfo.tex macro file.
+
+	* Renamed CHECK_FREE to CHECK_BLANK internally.
+
+	* Added 'allow-nonlinear' token to remove special checks.
+
+Mon Dec 20 14:14:08 1993  Gray Watson  ()
+
+	* Added a -m max-amount flag to malloc_t.
+
+	* Renamed dbg_tokens.h -> debug_tok.h and dbg_values.h -> debug_val.h
+
+Mon Dec 20 02:24:02 1993  Gray Watson  ()
+
+	* Added -V option to malloc_dbg and desc field for debug-token list.
+
+Sun Dec 19 23:35:53 1993  Gray Watson  ()
+
+	* moved the NULLs in malloc_dbg.h to 0L.
+
+	* added a debugging section to the manual and moved some stuff
+	around.
+
+Fri Dec 17 15:02:29 1993  Gray Watson  ()
+
+	* fixed some compilation errors with non-STDC systems re
+	Charles Campbell.
+
+Mon Dec  6 01:18:29 1993  Gray Watson  ()
+
+	* new fence read/write code.  much cleaner.  new FENCE_TOP define.
+
+Tue Nov 30 05:35:39 1993  Gray Watson  ()
+
+	* added special tests to malloc_t.  cleaned up and tested
+	alloc(0).
+
+Mon Nov 29 21:39:54 1993  Gray Watson  ()
+
+	* turned num_bits into a macro and condensed log_heap_map.  added
+	MAX_SLOTS to chunk.
+
+Tue Nov 23 02:39:44 1993  Gray Watson  ()
+
+	* fixed heap_check error with free blocks.
+
+	* Added light and heavy makefile targets for automatic testing.
+
+	* added -s flag to malloc_t and cleaned up the output.
+
+	* added realloc test code to malloc_t and immediately had to fix a
+	pretty nasty realloc bug with the new code.
+
+	* phased in the version 1.3.5 branch changes into the 2.0.0
+	version.  looks like it was reasonably painless.
+
+Mon Nov 22 22:21:56 1993  Gray Watson  ()
+
+	* Integrated tons of new heap code with per/block allocations (not
+	base 2) and better free list management with block splitting.
+
+	* Releasing version 1.3.5.
+
+	* Added more automatic and comprehensive malloc_t testing
+	facilities with argv options.
+
+	* removed library from linking with malloc_dbg.  good idea dave.
+
+	* integrated some fixes and remove pre-main shit.
+
+Mon Nov 15 00:39:51 1993  Gray Watson  ()
+
+	* Added -T option to malloc_dbg: list-tokens for listing of debug
+	tokens.
+
+	* added ERROR_SIGNAL configure entry.  defaults to SIGABRT.
+	(NOTE: later removed).
+
+Sun Nov 14 23:08:03 1993  Gray Watson  ()
+
+	* Added 'never-reuse' token to never reuse free'd memory.
+
+Mon Nov  8 05:44:58 1993  Gray Watson  ()
+
+	* added ra_info to the contrib directory.  Big wow.
+
+Wed Nov  3 00:56:19 1993  Gray Watson  ()
+
+	* Added check for pre-main calls to malloc.  HACK!
+
+	* Added on_exit and atexit support to auto-call malloc_shutdown.
+	Thanks much to Manfred, Dave, Scott, and Rich.
+
+	* Added -m (minus) option to malloc_dbg.  Why didn't I think of
+	this before?
+
+Tue Nov  2 16:45:32 1993  Gray Watson  ()
+
+	* Fixed problem with getenv processing.
+
+Wed Oct 20 19:30:34 1993  Gray Watson  ()
+
+	* Renamed malloc_debug to malloc_flags.
+
+	* Added all malloc utility functions to malloc_lp.c.  Now
+	programs can call malloc_shutdown (for instance) without fear.
+	See malloc_lp.h.
+
+Sat Oct 16 19:18:53 1993  Gray Watson  ()
+
+	* removed debug token log-ra, log-unknown should be enough.
+
+Thu Oct 14 19:48:42 1993  Gray Watson  ()
+
+	* malloc_heap_map() -> malloc_log_heap_map() for consistency.
+
+Wed Oct 13 17:58:55 1993  Gray Watson  ()
+
+	* Added malloc_log_unfreed() to dump non-free memory to
+	logfile.  Good for comparing heaps to see differences.
+
+	* Added -p flag to malloc_dbg to allow adding of tokens to
+	debug value.
+
+	* added DEBUG_LOG_STAMP to add timestamps to log entries.
+
+	* Added malloc_log_stats() to dump stats to log file.
+
+	* Re-added cfree() call.  No reason not to have it.
+
+Sun Sep 26 14:36:54 1993  Gray Watson  ()
+
+	* For new version 2.0.0b.  Major changes.  Lots of procedures
+	moved around.  Rewrote a large part of get_bblocks and removed
+	get_bblock_adm.
+
+	* Releasing version 1.3.4.
+
+	* Added -std1 configuration changes and bcopy fixes.
+
+	* Fixed up the messages to provide more information and to just
+	reflect reality.  Some real dumb errors found.
+
+	* Added malloc_debug_current() and #ifdef STDC instead of
+	#if.  Thanks Scott.
+
+Wed Sep 22 00:43:54 1993  Gray Watson  ()
+
+	* Removed log-bad-pnt.  What a dumb token!  Unnecessary!
+
+Mon Sep 20 20:36:23 1993  Gray Watson  ()
+
+	* Releasing version 1.3.3.
+
+	* Added ALLOW_FREE_NULL defines because of some systems allowing
+	free(0).  Yeach!  Thanks Dave.
+
+Fri Sep 10 17:10:45 1993  Gray Watson  ()
+
+	* Fixed debug value changes in mid-stream.  Repaired configuration
+	error with memcpy/bcopy and memcmp/bcmp.  Thanks Marc.
+
+Tue Sep  7 00:49:50 1993  Gray Watson  ()
+
+	* Renamed all error codes to ERROR_*.  Added ERROR_IS_FREE and
+	changed some of the already-free errors to this.  Reworded some
+	error messages and added free's file/line into to log_bad_pnt.
+
+Mon Aug 30 17:23:47 1993  Gray Watson  ()
+
+	* Added prototypes for _malloc_strcpy, etc. functions to
+	malloc_dbg.h per Scott's comments.
+
+Thu Aug 26 19:06:45 1993  Gray Watson  ()
+
+	* Released version 1.3.2.  Uploaded to the ftp site.
+
+	* Removed MALLOC_TRACE and malloc_dbg -t.  Replaced by
+	MALLOC_ADDRESS:0 functionality and logging of a message every time
+	malloc_address is seen.
+
+	* Fixed some dumb const problems.  Have to now preprocess
+	malloc_dbg.h from start const.h end.  Yeach!
+
+	* Added MALLOC_LOGFILE feature where %d in the string will be
+	replaced with the pid of the process.  Had to add getpid to
+	configure and compat.
+
+	* Fixed some problems with compat.h defines.
+
+Tue Aug 24 00:35:49 1993  Gray Watson  ()
+
+	* Releasing version 1.3.1.
+
+	* Added log-ra token to log specific information about non-freed
+	memory with only return-address information (NOTE: later removed).
+
+	* Added the beginnings of return-address handling.  Thanks Dave.
+	Need to resolve some XXX sections in chunk and get more
+	architecture/compiler hacks in return.h.  Along the way had to
+	change the malloc_examine() arguments to add ret_attr.
+
+	* Added -L or --list to malloc_dbg to list all the rc-file tags.
+
+	* Fixed some problems in chunk.c.  Thanks Dave.  Renamed
+	malloc_str.[ch] to be arg_check.[ch].
+
+Tue Aug 17 16:22:20 1993  Gray Watson  ()
+
+	* Releasing version 1.3.0.
+
+	* Fixed some ansi compiler problems via patch from Manfred
+	Hauswirth.
+
+Thu Aug 12 18:11:01 1993  Gray Watson  ()
+
+	* Added MALLOC_TRACE variable and malloc_dbg -t functionality for
+	tracing an address and logging messages about it.  NOTE: this
+	was later removed -- replaced by MALLOC_ADDRESS:0.
+
+Tue Aug 10 16:43:07 1993  Gray Watson  ()
+
+	* Made some minor fixes.  Thanks Marc.
+
+Mon Jul 26 05:50:27 1993  Gray Watson  ()
+
+	* Added some C++ from Peter Miller to the manual.
+
+Fri Jul 23 01:36:09 1993  Gray Watson  ()
+
+	* Removed LGPL copyright and put in its place fully free
+	software notices.
+
+Thu Jul 22 17:35:23 1993  Gray Watson  ()
+
+	* _malloc_perror renamed to _malloc_error and made some other
+	minor changes.
+
+Tue Jul 20 01:52:02 1993  Gray Watson  ()
+
+	* Added smallest_block runtime calculations.
+
+Mon Jul 19 12:20:58 1993  Gray Watson  ()
+
+	* Made malloc_address exported per Dave's comments so it
+	can be setable by debugger at runtime.
+
+	* Added Dave's idea of auto-sensing of shell by malloc_dbg.
+	Also added -C option to malloc_dbg to force cshell output.
+
+	* Removed the dblock checking tokens CHECK_DBLOCK and
+	CHECK_DB_FENCE for a couple different reasons.  I never liked them
+	anyway!  I also renumbered CHECK_FREE and CHECK_FUNCS in the
+	process.
+
+	* Fixed a number of int/long problems since Dave is running
+	malloc on a 64 bit alpha.
+
+	* Made a number of changes to the configure scripts and conf.h per
+	Dave's comments.  Added BASIC_BLOCK and ALLOCATION_ALIGNMENT
+	to the auto-config stuff.
+
+Fri Jul 16 00:01:31 1993  Gray Watson  ()
+
+	* Changed malloc_dbg per new ARGV_MAYBE.  Made some various
+	changes from ints to longs per some useful comments from Dave
+	Hill.
+
+Tue Jul 13 01:53:32 1993  Gray Watson  ()
+
+	* Version 1.2.6 released.
+
+	* Posting to bsdi.  Last minute porting changes.
+
+Mon Jul 12 02:03:25 1993  Gray Watson  ()
+
+	* Finished new catch-null token.
+
+Tue Jul  6 16:04:17 1993  Gray Watson  ()
+
+	* Added 'catch-null' token for quitting as soon as we get a sbrk
+	failure (i.e. the swap is full or something) as opposed to
+	returning NULL.
+
+Sat Jun 19 14:49:42 1993  Gray Watson  ()
+
+	* Minor changes to configuration and notes files.
+
+Tue Jun 15 10:29:13 1993  Gray Watson  ()
+
+	* Released version 1.2.5.
+
+	* Made some last minute changes to the manual.
+
+Wed Jun  9 15:12:21 1993  Gray Watson  ()
+
+	* Fixed small malloc_dbg token bug from Peter Miller.
+
+Thu Jun  3 16:01:14 1993  Gray Watson  ()
+
+	* Added index to manual, removed shar files in place of Makefile
+	variables.
+
+Mon May 24 12:58:06 1993  Gray Watson  ()
+
+	* Added -r and -k options for auto-unsetting of variables or
+	keeping of variables with malloc_dbg when setting a tag.
+
+	* Added const checking to configure and reordered some include
+	files to put conf.h on top.
+
+Tue May 18 20:07:41 1993  Gray Watson  ()
+
+	* Added log-bad-space token and added expand_buf into chunk.c.
+
+	* Create log_bad_pnt in chunk.  Probably broke stuff.
+	Translated some flag to BIT_FLAG format.
+
+	* Updated README and started ftp site thanks to Doug Balog.
+
+Thu May 13 00:56:39 1993  Gray Watson  ()
+
+	* Released version 1.2.4.
+
+	* Pretty stable now for a while.  Trying to get access to a ftp
+	for distribution ease.
+
+Thu May  6 11:26:03 1993  Gray Watson  ()
+
+	* Added new fix-patch script for myself.  Fixed malloc_t by
+	removing LOCAL/EXPORT, etc.
+
+Fri Apr 30 15:26:12 1993  Gray Watson  ()
+
+	* Removed some heap checks in malloc.c from Bali Jatinder's
+	comments and fixed some of the error strings.
+
+	* Moved around some defines and changes include ordering.
+
+	* Added -v option to malloc_dbg to provide verbose output
+	especially for dumping currently set debug tokens from
+	MALLOC_DEBUG variable.
+
+Mon Apr 19 16:04:17 1993  Gray Watson  ()
+
+	* Released version 1.2.3.
+
+	* Made some changes to a lot of comments, notes files, and ttd
+	file.
+
+Thu Apr 15 17:44:41 1993  Gray Watson  ()
+
+	* Renamed malloc.h to malloc_dbg.h and libmalloc.a to
+	libmalloc_dbg.a.  Added heap-extension checking and verification
+	to make sure no-one extends the heap using sbrk behind out back.
+	Fixed calloc to have the number of elements be a size_t to (WHY??
+	It's not a size!!).  Fixed malloc_t free problems.
+
+Wed Apr 14 18:11:00 1993  Gray Watson  ()
+
+	* Released version 1.2.2.
+
+	* Added some more point checking tests to malloc_str.  Added
+	MALLOC_SIZE to some more places.  Completely ifdef'ed compat.h.
+	If cannot open logfile, now it complains and continues.  Removed
+	stdarg from malloc_dbg.
+
+Fri Apr  9 01:50:17 1993  Gray Watson  ()
+
+	* Released version 1.2.1.
+
+	* Made various other changes.  Backed out some printf changes.
+	Added SIZE_T defines and fixed up STDC defines.
+
+Thu Apr  8 17:41:59 1993  Gray Watson  ()
+
+	* Changed to void * internally from char * and put STDC defines in
+	malloc.h for ANSI folks.  Why did the ANSI idiots drop the return
+	value from free?  Dumb!
+
+	* Made a number of changes per suggestions from the net.  Added
+	some size_t defines for AIX junk (that's right Scott junk).  Cut
+	down on the continuation strings, fixed some README and mallocrc
+	goofs, etc.  Thanks to all.
+
+Tue Apr  6 00:46:45 1993  Gray Watson  ()
+
+	* Released version 1.2.0 to comp.sources.unix.
+
+	* Upgraded to version 1.2.0.  Ready for 2nd release to
+	comp.sources.unix.  Lots of work on the manual.
+
+Mon Apr  5 18:28:05 1993  Gray Watson  ()
+
+	* Finished adding token "check-funcs" to check the arguments of
+	some common string functions to see whether they are in the heap.
+	if so it tries to verify that the pointers are good.
+
+Sun Apr  4 21:24:45 1993  Gray Watson  ()
+
+	* Added token "log-unknown" to dump non-free unknown pointers as
+	well as known ones.  Also cleaned up the displaying of the
+	pointers.
+
+	* comp.sources.unix is almost ready to post so lots of last minute
+	cleanups in the manual, etc.
+
+	* Started integration of function argument checking.
+
+Tue Mar 30 19:36:27 1993  Gray Watson  ()
+
+	* Changed malloc.h defines so malloc routines are handled as well
+	as the ALLOC macros.
+
+	* malloc_dbg program now reports on the token NAME and values.
+
+	* Added initial string files for string support in the future.
+
+	* A number of minor changes: fixed gcc compilation problems per
+	Scott's help, combined malloc_lp.h into malloc.h, cleaned most .h
+	and .c files.
+
+Fri Mar 26 04:00:14 1993  Gray Watson  ()
+
+	* Fixed post 1.1.6 problem with chunk.c.  Boy do I need some
+	automated testing tools.  Discovered the illusive localtime
+	fence-post error.  Had a hard time tracking it down.  Maybe due to
+	the fact that the checks were not being made on dblock fence posts
+	before?
+
+	* Released version 1.1.6
+
+	* Found some problems with malloc debug codes.  Use of DB_FENCE
+	and CHECK_LISTS and some others were improper.  A MALLOC_DEBUG
+	value of 0x403000 would crash all malloc programs.  :-)
+
+	* Added some better comments to all files and cleaned up most
+	files too.
+
+Fri Mar 12 18:35:02 1993  Gray Watson  ()
+
+	* Released version 1.1.5.
+
+Sat Feb 13 17:25:43 1993  Gray Watson  ()
+
+	* Finished add a number of const operators to improve coding per
+	scott's recommendations.
+
+Sat Jan 30 12:33:43 1993  Gray Watson  ()
+
+	* Released version 1.1.4
+
+	* Took out the check_vars call inside of malloc_strerror since
+	_malloc_perror calls malloc_strerror which would go quickly
+	recursive.  Thanks scott.
+
+Tue Jan  5 00:00:00 1993  Gray Watson  ()
+
+	* Posted version 1.1.3 shar files to comp.sources.unix.
+
+Sat Jan  2 00:16:58 1993  Gray Watson  ()
+
+	* Made last minute changes to solve some gcc/ansi errors and
+	to the manual to get things ready for the post.
+
+Sun Dec 27 20:28:19 1992  Gray Watson  ()
+
+	* Fixed problem with some external functions in malloc.c not
+	resetting the in_alloc flag.  Also removed some testing of unsigned
+	variables < 0 in chunk.c per gcc 2.3.3 warnings.
+
+	* Released version 1.1.3.
+
+Mon Dec 21 15:31:50 1992  Gray Watson  ()
+
+	* Created the series of shar files in preparation to posting to
+	comp.unix.sources.  Looking good.
+
+Thu Dec 17 18:33:38 1992  Gray Watson  ()
+
+	* Renamed a number of files to comply with the Sys5 12 character
+	restrictions (14 - 2 for RCS/CVS/SCCS).  Yeach.  malloc_debug ->
+	malloc_dbg.
+
+Sat Nov 14 15:59:53 1992  Gray Watson  ()
+
+	* Added all external functions to configure and conf.h even though
+	the library assumes that some functions will be resolved.  Also
+	upgraded the version number to 1.01gamma (oooooh).
+
+	* Added print-perror debug token for logging messages to STDERR as
+	well as log-files.  Removed stdio from the malloc library to make
+	sure it does not go recursive (alloc for stderr) at a bad time.
+
+Wed Nov 11 18:19:49 1992  Gray Watson  ()
+
+	* Moved the heap_check calls from chunk.c over to malloc so we can
+	be guaranteed that it gets called only once per user call.
+	chunk's routines often cross-call each other meaning that
+	heap-check was being run 5 times in realloc.  YEACH!!
+
+Tue Nov 10 17:55:53 1992  Gray Watson  ()
+
+	* Added two new debug-tokens: log-blocks and heap-check-map.  Also
+	made sure that heap_check was being called from everywhere.
+	Updated the manual and corresponding files.
+
+	* Added library functions that may not be defined.  Updated the
+	conf.h.in and configure.in files to improve confiurability.
+	Upgraded the manual which still needs a lot of work (sigh).
+
+Mon Nov  9 19:21:25 1992  Gray Watson  ()
+
+	* Added configure, configure.in, conf.h.in, and Makefile.in to try
+	and conform with autoconf specs.  What a bear.  The documentation
+	for autoconf needs a whole bunch more examples, etc.  Sigh.
+	Removed all the MEMORY and STRING defines, etc.
+
+Thu Nov  5 22:13:18 1992  Gray Watson  ()
+
+	* Released version 1.01b.  Sending it off to some folks.
+
+	* Lots and lots of changes.  Translated all programs into non-ansi
+	C dependence and then went back again when I found some problems
+	with my macros.  :-)  Took out all (and I mean all) Antaire
+	dependencies and defines.
+
+Thu Oct 22 00:47:18 1992  Gray Watson  ()
+
+	* Ran through most of the debug-flag functionality testing and
+	tweaking.  Found some bugs on dblock handling and some messed up
+	logic with the way the LOG flags were working.
+
+	* malloc_debug is looking good.  It now outputs C or Bourne shell
+	code and seems to work in both environments.  What do sh folks use
+	in the place of c-shell aliasing?  I guess use bash.  :-)
+
+Wed Oct 21 03:27:35 1992  Gray Watson  ()
+
+	* Major changes.  I sort of went overboard tonight.  I integrated
+	the new malloc_debug program which sets all the debug variables
+	for you.  I also added a .mallocrc which you can define with tags
+	exactly the functionality you want to happen.  No more levels!!
+
+	* Did some renaming of files, cleaned up some other things,
+	had to rework a number of items to get new debug flags working.
+
+Tue Oct 20 18:06:36 1992  Gray Watson  ()
+
+	* Removed useful.h requirements and integrated necessary
+	definitions into malloc.h.
+
+	* Transferred malloc.txt documentation into malloc.texinfo.  Boy
+	is it nifty!!  And damn easy!!!
+
+	* Major changes to improve general machine independence.  Added
+	malloc_mach.h.  Moved alloc.[ch] to malloc.[ch] for sanity
+	reasons.
+
+Tue Oct 13 16:14:17 1992  Gray Watson  ()
+
+	* Made various cosmetic changes.  Fixed realloc inbound pointer
+	checking per MALLOC_ADDRESS.  Fixed problem with MALLOC_ADDRESS
+	initialization to NULL causing free to "find" NULL pointers.  :-)
+
+	* Separated the PERROR debug level and the KILL_SELF level.  Now
+	(by default) all memory errors are logged at level 1 and above and
+	malloc kills itself at level 2 and above.
+
+Mon Sep 28 23:24:36 1992  Gray Watson  ()
+
+	* Added MALLOC_ADDRESS support for free.  MALLOC_ADDRESS counts
+	now also apply to frees also.
+
+Mon Sep 21 20:39:38 1992  Gray Watson  ()
+
+	* Fixed some size problems with bounds checking enabled.
+
+	* Made free be able to report who freed a pointer.  I don't know
+	why this wasn't caught before.  free wasn't even using its
+	file/line arguments.
+
+Thu Sep  3 03:23:39 1992  Gray Watson  ()
+
+	* Added ability to realloc a NULL pointer with an ifdef to
+	disable.  Useful in realloc loops where the first time you don't
+	have to alloc it.
+
+Fri Aug 14 15:54:03 1992  Gray Watson  ()
+
+	* Added a bunch of new environmental variables features:
+	MALLOC_ADDRESS now can have a :# argument.  MALLOC_START now has
+	two formats, the old number and new file:line.  Looks nice!
+
+	* Made a pass through chunk.c and fixed a number of problems where
+	debug output pnt/size did not match user-supplied information.
+
+	* Moved most of the debug variables into alloc.c from chunk.c and
+	added a standardized check_debug_vars() checking routine.
+
+Tue Jul 21 16:06:13 1992  Gray Watson  ()
+
+	* Fixed malloc count statistics.  Removed duplicate malloc_count
+	variable from a number of places.
+
+Mon Mar 23 10:49:25 1992  Gray Watson  ()
+
+	* Released version 0.04
+
+	* New env variable features.
+
+Thu Mar 12 19:28:34 1992  Gray Watson  ()
+
+	* Fixed a large problem with chunk.c not reporting the correct
+	memory address when listing unfreed memory.  This was discovered
+	when MALLOC_ADDRESS was not working correctly.
+
+	* Started ChangeLog.
+
+-------------------------------------------------------------------------------
+$Id: ChangeLog,v 1.345 2007/05/14 17:23:42 gray Exp $
+-------------------------------------------------------------------------------

@@ -23,15 +23,15 @@ namespace core
     template <class OType/*, class GCKind=gctools::GCHolder */>
     class SymbolDict : 
 #if defined(USE_MPS) || defined(USE_REFCOUNT)
-        public std::map<Symbol_sp, mem::smart_ptr<OType> >
+        public std::map<Symbol_sp, gctools::smart_ptr<OType> >
 #endif
 #ifdef USE_BOEHM
-        public std::map<Symbol_sp, mem::smart_ptr<OType>, std::less<Symbol_sp>, gc_allocator<Symbol_sp> >
+        public std::map<Symbol_sp, gctools::smart_ptr<OType>, std::less<Symbol_sp>, gc_allocator<Symbol_sp> >
 #endif
   
     {
     public:
-	typedef typename mem::smart_ptr<OType>	value_type;
+	typedef typename gctools::smart_ptr<OType>	value_type;
 	typedef typename map< Symbol_sp, value_type >::iterator	iterator;
 	typedef typename map< Symbol_sp, value_type >::const_iterator	const_iterator;
     public:

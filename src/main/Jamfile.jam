@@ -97,6 +97,12 @@ exe clasp_mps_o : main.cc $(sources)
 exe clasp_mps_d : main.cc $(sources)
     	   : $(deps) <gc>mps ;
 
+exe clasp_mps_prep_o : main.cc $(sources)
+    	   : $(deps) <gc>mps-prep ;
+
+exe clasp_mps_prep_d : main.cc $(sources)
+    	   : $(deps) <gc>mps-prep ;
+
 
 alias mpi_stuff : /internals//mpip/<link>static
                   /externals//boost_mpi/<link>static
@@ -132,6 +138,9 @@ alias clasp : clasp_boehm_d : <variant>debug <gc>boehm ;
 
 alias clasp : clasp_mps_o : <variant>release <gc>mps ;
 alias clasp : clasp_mps_d : <variant>debug <gc>mps ;
+
+alias clasp : clasp_mps_prep_o : <variant>release <gc>mps-prep ;
+alias clasp : clasp_mps_prep_d : <variant>debug <gc>mps-prep ;
 
 alias clasp_mpi : clasp_mpi_mps_o : <variant>release <gc>boehm ;
 alias clasp_mpi : clasp_mpi_mps_d : <variant>debug <gc>boehm ;

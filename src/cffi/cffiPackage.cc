@@ -98,9 +98,11 @@ namespace cffi
 //
 // Include the Kinds
 //
+#ifndef RUNNING_GC_BUILDER
 #define NAMESPACE_cffi
 #include GARBAGE_COLLECTION_INCLUDE
 #undef NAMESPACE_cffi
+#endif
 #endif
 
 

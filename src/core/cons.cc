@@ -209,7 +209,7 @@ namespace core
 
 #else
     /*! Copied from ecl append_into */
-    void Cons_O::appendInto(T_sp head, mem::StackRootedPointerToSmartPtr<T_O>& tail, T_sp l)
+    void Cons_O::appendInto(T_sp head, gctools::StackRootedPointerToSmartPtr<T_O>& tail, T_sp l)
     {
 	if (!(tail.getPointee()).nilp()) {
 	    /* (APPEND '(1 . 2) 3) */
@@ -1116,6 +1116,9 @@ namespace core
 	    }
 	}
 	sout << " )";
+#if 1
+        sout <<"@" << (void*)(this) << " ";
+#endif
 	return((sout.str()));
     }
 
