@@ -264,7 +264,7 @@ namespace core
 		printf("Backtrace: %s\n", strings[i]);
 	    }
 	}
-	free(strings);
+	if (strings) free(strings);
     };
 
 

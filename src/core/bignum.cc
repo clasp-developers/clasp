@@ -15,12 +15,27 @@
 namespace core
 {
 
+
+
+    unsigned int* BignumExportBuffer::getOrAllocate(const mpz_class& bignum, int nail ) {
+            size_t size = _lisp->integer_ordering()._mpz_import_size;
+            size_t numb = (size<<3) - nail; // *8
+            size_t count = (mpz_sizeinbase(bignum.get_mpz_t(),2) + numb - 1) / numb;
+            size_t bytes = count*size;
+            if ( bytes > this->bufferSize ) {
+                if ( this->buffer ) {
+                    free (this->buffer);
+                }
+                this->buffer = (unsigned int*)malloc(bytes);
+            }
+            return this->buffer;
+        };
     
     
 #define ARGS_Bignum_O_make "(value_in_string)"
 #define DECL_Bignum_O_make ""
 #define DOCS_Bignum_O_make "make"
-    Bignum_sp Bignum_O::	make(const string& value_in_string)
+    Bignum_sp Bignum_O::make(const string& value_in_string)
     {_G();
         GC_ALLOCATE(Bignum_O,bn );
         bn->_value = value_in_string;
@@ -60,12 +75,13 @@ namespace core
 	SIMPLE_ERROR(BF("Cannot convert Bignum %s to sint") % this->__repr__() );
     }
 
+static BignumExportBuffer static_Bignum_O_as_uint64_buffer;  
 
     uint64_t Bignum_O::as_uint64() const
     {_G();
-	unsigned int* valsP;
+	unsigned int* valsP = static_Bignum_O_as_uint64_buffer.getOrAllocate(this->_value,0);
 	size_t count;
-	valsP = (unsigned int*)::mpz_export(NULL, &count,
+	valsP = (unsigned int*)::mpz_export(valsP, &count,
 					    _lisp->integer_ordering()._mpz_import_word_order,
 					    _lisp->integer_ordering()._mpz_import_size,
 					    _lisp->integer_ordering()._mpz_import_endian, 
@@ -79,7 +95,6 @@ namespace core
 	    unsigned int val0 = valsP[0];
 	    unsigned int val1 = 0;
 	    if ( count > 1 ) val1 = valsP[1];
-	    free(valsP);
 	    if ( count == 1 )
 	    {
 		return((val0&0xfffffffful));

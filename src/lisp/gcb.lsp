@@ -1499,8 +1499,14 @@ in order they need to be forward declared because longer ones need shorter ones"
 (load-compilation-database "app:Contents;Resources;buildDatabases;clasp_compile_commands.json")
 
 (defvar *tools* nil)
+(defvar *arguments-adjuster* (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
+                                                         #("-DUSE_MPS"
+                                                           "-DRUNNING_GC_BUILDER"
+                                                           "-resource-dir"
+                                                           "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"))))
+
 (progn
-  (setf *tools* (make-multitool))
+  (setf *tools* (make-multitool :arguments-adjuster *arguments-adjuster*))
   (setup-cclass-search *tools*) ; search for all classes
   (setup-lispkind-search *tools*)
   (setup-classkind-search *tools*)
@@ -1513,10 +1519,18 @@ in order they need to be forward declared because longer ones need shorter ones"
 ;; ----------------------------------------------------------------------
 (progn
   (lnew $test-search)
+  (setq $test-search (subseq $* 0 10))
+  )
+;; ----------------------------------------------------------------------
+;; Single search
+;; ----------------------------------------------------------------------
+(progn
+  (lnew $test-search)
   (setq $test-search (append
                       (lsel $* ".*/metaClass\.cc")
                       ))
   )
+
 
 (defvar *project* nil)
 (defun search-all (&key test tools)
@@ -1524,15 +1538,10 @@ in order they need to be forward declared because longer ones need shorter ones"
   (setf (multitool-results *tools*) (make-project))
   (batch-run-multitool *tools* :filenames (if test
                                               $test-search
-                                              (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
-                       :arguments-adjuster-code (lambda (args)
-                                                  (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
-                                                               #("-DUSE_MPS"
-                                                                 "-DRUNNING_GC_BUILDER"
-                                                                 "-resource-dir"
-                                                                 "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"))))
+                                              (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$"))))
   ;; Extract the results for easy access
   (setq *project* (multitool-results *tools*))
+  (core:system (format nil "vmmap -w ~a" (core:getpid)))
   (save-project)
   )
 
@@ -1557,7 +1566,7 @@ in order they need to be forward declared because longer ones need shorter ones"
 
 
 
-(defparameter *max-parallel-searches* 4)
+(defparameter *max-parallel-searches* 6)
 
 (defvar *parallel-search-pids* nil)
 (defun parallel-search-all (&key test)
@@ -1577,13 +1586,7 @@ in order they need to be forward declared because longer ones need shorter ones"
                                                  :direction :output :if-exists :supersede)
                 (format t "Running search on: ~a~%" 
                         (setf (multitool-results *tools*) (make-project))
-                        (batch-run-multitool *tools* :filenames job-list
-                                             :arguments-adjuster-code (lambda (args)
-                                                                        (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
-                                                                                     #("-DUSE_MPS"
-                                                                                       "-DRUNNING_GC_BUILDER"
-                                                                                       "-resource-dir"
-                                                                                       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"))))
+                        (batch-run-multitool *tools* :filenames job-list)
                         (serialize:save-archive (multitool-results *tools*) (project-pathname (format nil "project~a" proc) "dat"))
                         (core:exit)))
               (push pid *parallel-search-pids*)
@@ -1592,14 +1595,64 @@ in order they need to be forward declared because longer ones need shorter ones"
   )
 
 
+
+
+(defun fork-jobs (proc job-list)
+  (setf (multitool-results *tools*) (make-project))
+  (batch-run-multitool *tools* :filenames job-list)
+  (serialize:save-archive (multitool-results *tools*) (project-pathname (format nil "project~a" proc) "dat"))
+  (core:exit))
+
+(defvar *parallel-search-pids* nil)
+(defun sequential-fork-search-all (&key test)
+  "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
+  (setq *parallel-search-pids* nil)
+  (let ((all-jobs (if test
+                      (subseq $* 0 test)
+                      (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$"))))
+        (spare-processes *max-parallel-searches*))
+    (serialize:save-archive all-jobs (project-pathname "project-all" "dat"))
+    (format t "all-jobs: ~a~%" all-jobs)
+    (dotimes (proc (length all-jobs))
+      (setq spare-processes (1- spare-processes))
+      (core:system "sleep 1")
+      (let* ((job-list (list (elt all-jobs proc)))
+             (pid (core:fork)))
+        (if (eql 0 pid)
+            (fork-jobs proc job-list)
+            (when (eql spare-processes 0)
+              (core:waitpid -1 0)
+              (setq spare-processes (1+ spare-processes)))))
+      (format t "Bottom of loop proc: ~a~%" proc)
+      )
+    ))
+
+
+(defun merge-projects (union one)
+  (maphash (lambda (k v) (setf (gethash k (project-classes union)) v)) (project-classes one))
+  (maphash (lambda (k v) (setf (gethash k (project-lispkinds union)) v)) (project-lispkinds one))
+  (maphash (lambda (k v) (setf (gethash k (project-classkinds union)) v)) (project-classkinds one))
+  (maphash (lambda (k v) (setf (gethash k (project-containerkinds union)) v)) (project-containerkinds one))
+)
+
+
 (defun parallel-merge (&optional (num-jobs *max-parallel-searches*))
   "Merge the analyses generated from the parallel search"
-  (let ((merged (make-project)))
-    (dotimes (proc num-jobs)
+  (let ((all-jobs (serialize:load-archive (project-pathname "project-all" "dat")))
+        (merged (make-project)))
+    (dotimes (proc (length all-jobs))
+      (format t "Marking memory with ~a~%" (1+ proc))
+      (gctools:gc-marker (1+ proc))
       (format t "Loading project for job ~a~%" proc)
-      (let ((one (serialize:load-archive (project-pathname (format nil "project~a" proc) "dat"))))
-        (format t "     merging...~%")
-        (merge-projects merged one)))
+      (let* ((project-dat-name (truename (project-pathname (format nil "project~a" proc) "dat")))
+             (one (if project-dat-name
+                      (serialize:load-archive (project-pathname (format nil "project~a" proc) "dat"))
+                      nil)))
+        (if one
+            (progn
+              (format t "     merging...~%")
+              (merge-projects merged one))
+            (format t "File not found.~%"))))
     (setq *project* merged)
     (save-project)
     merged))

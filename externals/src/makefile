@@ -1,5 +1,6 @@
 export REQUIRES_RTTI=$(CLASP_REQUIRES_RTTI)
 export BOEHM_VERSION=7.2
+export DMALLOC_VERSION=5.5.2
 export CC = $(CLASP_CC)
 export CXX = $(CLASP_CXX)
 export CXXFLAGS=$(CLASP_CXXFLAGS)
@@ -94,6 +95,7 @@ setup:
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR)
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR)
 	make boost-build-make
+	make dmalloc-setup
 	make boehm-setup
 	make llvm-setup
 	make openmpi-setup
@@ -107,6 +109,7 @@ setup:
 #	make lldb-setup
 
 subAll sa:
+	make dmalloc-build
 	make boehm-build
 	make llvm-build
 	make openmpi-make
@@ -124,6 +127,7 @@ subAll sa:
 subClean:
 	make openmpi-clean
 	make ecl-clean
+	make dmalloc-clean
 	make boehm-clean
 	make readline-clean
 	make expat-clean
@@ -412,16 +416,39 @@ zlib-clean:
 
 
 
-boehm-build:
-	make boehm-compile
-	make boehm-install
+
+
+dmalloc-setup:
+	(cd dmalloc-$(DMALLOC_VERSION); \
+		./configure --enable-cxx --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
+dmalloc-build:
+	make dmalloc-compile
+	make dmalloc-install
+
+dmalloc-compile:
+	(cd dmalloc-$(DMALLOC_VERSION); make -j1 cxx light | tee _dmalloc.log)
+
+dmalloc-install:
+	(cd dmalloc-$(DMALLOC_VERSION); make -j1 light installcxx install | tee _dmalloc_install.log)
+
+
+
+dmalloc-clean:
+	-(cd dmalloc-$(DMALLOC_VERSION); make clean )
+
+
+
+
+
 
 boehm-setup:
 	(cd boehm-$(BOEHM_VERSION); \
 		export ALL_INTERIOR_PTRS=1; \
 		CFLAGS="-DUSE_MMAP" \
-		./configure --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
-
+		./configure --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
+boehm-build:
+	make boehm-compile
+	make boehm-install
 
 boehm-compile:
 	(cd boehm-$(BOEHM_VERSION); make -j1 | tee _boehm.log)

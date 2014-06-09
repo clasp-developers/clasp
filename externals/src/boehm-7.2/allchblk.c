@@ -661,7 +661,7 @@ GC_allochblk_nth(size_t sz, int kind, unsigned flags, int n,
     signed_word size_needed;    /* number of bytes in requested objects */
     signed_word size_avail;     /* bytes available in this block        */
 
-    may_split = FALSE;  // meister modification suggested by Bruce Hoult
+//    may_split = FALSE;  // meister modification suggested by Bruce Hoult
 
     size_needed = HBLKSIZE * OBJ_SZ_TO_BLOCKS(sz);
 

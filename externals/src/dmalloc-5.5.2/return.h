@@ -328,7 +328,7 @@ static	void	aix_c_get_ret_addr(int i, int *file)
 #ifdef DMALLOC_DEFAULT_FILE
 #define GET_RET_ADDR(file)	file = DMALLOC_DEFAULT_FILE
 #else
-#define GET_RET_ADDR(file)	file = 0L
+#define GET_RET_ADDR(file)	file = (char*)(__builtin_extract_return_addr(__builtin_return_address(0)))
 #endif
 #endif
 

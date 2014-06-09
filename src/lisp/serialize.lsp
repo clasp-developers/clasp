@@ -29,9 +29,10 @@
   "Load an object from a file that contains a serialized archive"
   (let ((archive (core:make-sexp-load-archive)))
     (with-open-file (fin filename :direction :input)
-      (let ((object (read fin)))
-	(core:parse-from-object archive object))
-      (core:get archive :only))))
+      (let ((core:*source-database* nil)) ;; don't treat fin as source code
+        (let ((object (read fin)))
+          (core:parse-from-object archive object))
+        (core:get archive :only)))))
 
 
 

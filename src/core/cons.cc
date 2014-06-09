@@ -559,9 +559,41 @@ namespace core
  */
     void Cons_O::archiveBase(ArchiveP node)
     {_G();
+#if 1
+        if ( node->saving() ) {
+            af_stackMonitor(); // make sure the stack isn't exhausted.
+            // Convert the the list that this Cons points to into a vector of elements where
+            // the last element is the very last CDR
+            T_sp cur = this->asSmartPtr();
+            // TODO: Fix this loop - it will go into an infinite loop
+            for ( ; cur.notnilp(); cur=oCdr(cur) ) {
+                if ( af_consP(cur) ) {
+                    T_sp obj = oCar(cur);
+                    node->pushVector(obj); // A Cons - push the car
+                } else {
+                    node->pushVector(cur); // improper list - last element not nil
+                    return;
+                }
+            }
+            node->pushVector(_Nil<T_O>()); // proper list - last element nil
+        } else { // loading
+            Vector_sp vec = node->getVectorSNodes();
+            int len = vec->length();
+            Cons_sp cur = Cons_O::create((*vec)[len-2].as<SNode_O>()->object(),(*vec)[len-1].as<SNode_O>()->object());
+            for ( int i(len-3); i>=0; --i ) {
+                Cons_sp one = Cons_O::create((*vec)[i].as<SNode_O>()->object(),cur);
+                cur = one;
+            }
+            this->_Car = cur->_Car;
+            this->_Cdr = cur->_Cdr;
+        }
+#else
 	node->attributeIfNotNil("A",this->_Car); // use attributeIfNotNil
 	node->attributeIfNotNil("D",this->_Cdr); // use attributeIfNotNil
+#endif
     }
+
+
 
     SYMBOL_EXPORT_SC_(ClPkg,getf);
     T_sp Cons_O::getf(T_sp key, T_sp defVal) const
