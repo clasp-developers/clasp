@@ -132,11 +132,11 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
 
 
 
+    SYMBOL_EXPORT_SC_(KeywordPkg,elementType);
+    SYMBOL_EXPORT_SC_(KeywordPkg,adjustable);
     void VectorObjects_O::archiveBase(::core::ArchiveP node)
     {
         this->Base::archiveBase(node);
-	SYMBOL_EXPORT_SC_(KeywordPkg,elementType);
-	SYMBOL_EXPORT_SC_(KeywordPkg,adjustable);
 	node->attribute(kw::_sym_elementType,this->_ElementType);
 	node->attribute(kw::_sym_adjustable,this->_Adjustable);
 	node->vector(this->_Values);

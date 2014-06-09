@@ -142,6 +142,22 @@ safe_chdir(const char *path, Str_sp prefix)
         return pid;
     };
 
+
+
+    
+    
+#define ARGS_af_waitpid "(pid options)"
+#define DECL_af_waitpid ""
+#define DOCS_af_waitpid "waitpid - see unix waitpid - returns status"
+    int af_waitpid(Fixnum_sp pid, Fixnum_sp options)
+    {_G();
+        pid_t p = pid->get();
+        int status(0);
+        int iopts = options->get();
+        waitpid(p,&status,iopts);
+        return status;
+    };
+
 #define ARGS_af_getpid "()"
 #define DECL_af_getpid ""
 #define DOCS_af_getpid "getpid"
@@ -1443,6 +1459,7 @@ void initialize_unixfsys()
     Defun(fork);
     Defun(getpid);
     Defun(getppid);
+    Defun(waitpid);
 };
 
 

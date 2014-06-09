@@ -18,7 +18,8 @@ namespace core
     SNode_sp getOrCreateSNodeForObjectIncRefCount(T_sp val)
     {
 	SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
-	return saveArchive->getOrCreateSNodeForObjectIncRefCount(val);
+        SNode_sp node = saveArchive->getOrCreateSNodeForObjectIncRefCount(val);
+        return node;
     }
 
     SYMBOL_EXPORT_SC_(KeywordPkg,podSymbolMap);

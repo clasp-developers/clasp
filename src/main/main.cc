@@ -48,14 +48,7 @@ void fatal_error_handler(void* user_data, const std::string& reason, bool gen_cr
 void clasp_warn_proc(char *msg, GC_word arg)
 {
     printf("%s:%d clasp trapped Boehm-gc warning...\n", __FILE__, __LINE__ );
-    char** ptr = reinterpret_cast<char**>(arg);
-    --ptr; // backup to the typeinfo(TYPE).name() pointer
     printf( msg, arg );
-    printf("     Type of object: %s\n", *ptr);
-    if ( strcmp(*ptr,"N4core13Interpreted_OE")==0 ) {
-        core::Interpreted_O* interpretedObj = reinterpret_cast<core::Interpreted_O*>(arg);
-        printf("Interpreted_O object _Code: %s\n", _rep_(interpretedObj->getCode()).c_str() );
-    }
 }
 #endif
 

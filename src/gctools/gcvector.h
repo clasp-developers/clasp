@@ -57,7 +57,7 @@ namespace gctools {
         typedef GCVector_moveable<T>                    impl_type; // implementation type
         typedef GCVector_moveable<T>*                   pointer_to_moveable;
         static const size_t                         GCVectorPad = 8;
-        constexpr static const float                GCVectorGrow = 1.5;
+        constexpr static const float                GCVectorGrow = 2.0;
         constexpr static const float                GCVectorShrink = 0.5;
     public:
         // Copy Ctor

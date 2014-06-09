@@ -40,6 +40,9 @@ namespace std { class type_info; };
 //#define USE_TAGGED_PTR_P0 1
 #endif
 
+#include <map>
+
+
 
 
 
@@ -50,8 +53,6 @@ namespace std { class type_info; };
 #endif
 #include "gcInterface.h"
 //#include <cstdio>
-#include <map>
-
 
 //! Macro for attribute that causes symbols to be exposed
 #define ATTR_WEAK __attribute__((weak))
@@ -1368,6 +1369,16 @@ namespace core
 #define unlikely_if(x) if(UNLIKELY(x))
 #define BRCL_T (_lisp->_true())
 #define BRCL_NIL (_Nil<core::T_O>())
+
+
+
+
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
+
+
+
 
 #endif //]
 

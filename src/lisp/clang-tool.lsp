@@ -530,7 +530,8 @@ This can only be run in the context set up by the code-match-callback::run metho
   "Store multiple tools to run in one go across a bunch of source files."
   all-tools   ;; the list of all tools
   selected-tools  ;; the list of selected tools - if nil then use all-tools
-  results)
+  results
+  arguments-adjuster )
 
 
 (defstruct single-tool
@@ -583,8 +584,8 @@ This can only be run in the context set up by the code-match-callback::run metho
                        (ast-tooling:clear-arguments-adjusters temp)
                        (ast-tooling:append-arguments-adjuster temp syntax-only-adjuster)
                        (ast-tooling:append-arguments-adjuster temp strip-output-adjuster)
-                       (when arguments-adjuster-code
-                         (ast-tooling:append-arguments-adjuster temp (make-instance 'simple-arguments-adjuster :code arguments-adjuster-code)))
+                       (when (multitool-arguments-adjuster mtool)
+                         (ast-tooling:append-arguments-adjuster temp (make-instance 'simple-arguments-adjuster :code (multitool-arguments-adjuster mtool))))
                        temp))
          (tools (multitool-active-tools mtool))
          (match-finder (let ((mf (new-match-finder)))

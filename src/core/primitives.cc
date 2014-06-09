@@ -55,6 +55,50 @@ namespace core
 
 
 
+
+    
+    
+#define ARGS_af_incompleteNextHigherPowerOf_2 "(arg)"
+#define DECL_af_incompleteNextHigherPowerOf_2 ""
+#define DOCS_af_incompleteNextHigherPowerOf_2 "incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing"
+    int af_incompleteNextHigherPowerOf_2(Fixnum_sp fn)
+    {_G();
+        unsigned int f = fn->get();
+        return 1<< ((sizeof(f)*8) - __builtin_clz(f));
+    };
+
+    
+    
+#define ARGS_af_mallocAndDontFree "(arg)"
+#define DECL_af_mallocAndDontFree ""
+#define DOCS_af_mallocAndDontFree "mallocAndDontFree"
+    void af_mallocAndDontFree(Fixnum_sp mem)
+    {_G();
+        void* ptr = malloc(mem->get());
+    };
+
+    struct DummyStruct {
+        char    dummy[9876];
+    };
+
+#define ARGS_af_newAndDontDelete "(arg)"
+#define DECL_af_newAndDontDelete ""
+#define DOCS_af_newAndDontDelete "newAndDontDelete"
+    void af_newAndDontDelete(Fixnum_sp mem)
+    {_G();
+        DummyStruct* ptr = new DummyStruct();
+    };
+
+#define ARGS_af_mallocAndFreeItTwice "(arg)"
+#define DECL_af_mallocAndFreeItTwice ""
+#define DOCS_af_mallocAndFreeItTwice "mallocAndFreeItTwice"
+    void af_mallocAndFreeItTwice(Fixnum_sp mem)
+    {_G();
+        void* ptr = malloc(mem->get());
+        free(ptr);
+        free(ptr);
+    };
+
     
     
 #define ARGS_af_testBasePointerConversion "(arg)"
@@ -1803,6 +1847,10 @@ void initialize_primitives()
 	Defun(fromTaggedFixnum);
 	Defun(dumpTaggedFixnum);
         Defun(testBasePointerConversion);
+        Defun(mallocAndDontFree);
+        Defun(newAndDontDelete);
+        Defun(mallocAndFreeItTwice);
+        Defun(incompleteNextHigherPowerOf_2);
     }
 
 

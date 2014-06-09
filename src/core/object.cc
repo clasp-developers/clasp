@@ -344,24 +344,26 @@ namespace core
 	obj->sxhash(*this);
     }
 
+
+static BignumExportBuffer static_HashGenerator_addPart_buffer;  
+
     bool HashGenerator::addPart(const mpz_class& bignum)
     {
-	unsigned int* valsP;
-	size_t count;
-	valsP = (unsigned int*)::mpz_export(NULL, &count,
-				   _lisp->integer_ordering()._mpz_import_word_order,
-				   _lisp->integer_ordering()._mpz_import_size,
-				   _lisp->integer_ordering()._mpz_import_endian, 
-				   0,
-				   bignum.get_mpz_t() );
-	if ( valsP != NULL )
+        unsigned int* buffer = static_HashGenerator_addPart_buffer.getOrAllocate(bignum,0);
+        size_t count(0);
+	buffer = (unsigned int*)::mpz_export(buffer, &count,
+                                            _lisp->integer_ordering()._mpz_import_word_order,
+                                            _lisp->integer_ordering()._mpz_import_size,
+                                            _lisp->integer_ordering()._mpz_import_endian, 
+                                            0,
+                                            bignum.get_mpz_t() );
+	if ( buffer != NULL )
 	{
 	    for ( int i=0; i<(int)count; i++ )
 	    {
-		this->addPart(valsP[i]);
+		this->addPart(buffer[i]);
 		if ( this->isFull() ) return false;
 	    }
-	    free(valsP);
 	} else
 	{
 	    this->addPart(0);

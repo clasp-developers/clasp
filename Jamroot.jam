@@ -21,6 +21,7 @@ project clasp : requirements
 	<define>EXPAT
         <cxxflags>"-Wgnu-array-member-paren-init"
 
+
 #
 # CONFIGURE CLASP BUILD
 #
@@ -44,6 +45,10 @@ project clasp : requirements
        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>USE_PUT_SELECT_CLASSES_IN_AMC_POOL
 
+#---------- dmalloc stuff
+#            <linkflags>-ldmallocxx
+#            <define>DMALLOC
+#            <define>DMALLOC_FUNC_CHECK
 # ------------------------------------------------------------
 	<toolset>clang:<cxxflags>-std=c++11
 	<toolset>clang:<cxxflags>-stdlib=libc++

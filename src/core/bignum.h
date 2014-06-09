@@ -16,6 +16,16 @@
 
 namespace core
 {
+    struct BignumExportBuffer {
+        BignumExportBuffer() : buffer(NULL), bufferSize(0) {};
+        ~BignumExportBuffer() { if (this->buffer) free(this->buffer); };
+        unsigned int* buffer = NULL;
+        size_t bufferSize = 0;
+        unsigned int* getOrAllocate(const mpz_class& bignum, int nail );
+    };
+
+
+        
     class Bignum_O : public Integer_O
     {
 	LISP_BASE1(Integer_O);

@@ -73,6 +73,7 @@ namespace core
 	virtual T_sp getUniqueId() const { return _Nil<T_O>();};
 	virtual SNode_sp childWithUniqueId(Symbol_sp uid) const { return _Nil<SNode_O>();};
 	virtual Vector_sp getVectorSNodes() const {SUBIMP();};
+        virtual SNode_sp& operator[](size_t i) { SUBIMP();};
 	int vectorSize() const { return this->getVectorSNodes()->length();}
 	virtual void loadVector(gctools::Vec0<T_sp>& vec) {SUBIMP();};
 

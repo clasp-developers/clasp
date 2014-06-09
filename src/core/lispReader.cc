@@ -433,6 +433,7 @@ namespace core
 
     Cons_sp read_list(Stream_sp sin, char end_char, bool allow_consing_dot)
     {_G();
+        af_stackMonitor();
 	uint start_lineNumber=UNDEF_UINT;
 	uint start_column=UNDEF_UINT;
 	uint start_filePos = UNDEF_UINT;
