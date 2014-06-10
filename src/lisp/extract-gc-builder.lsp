@@ -4394,23 +4394,6 @@ I think this is handled by the classify-XXXXX functions for gcobjects, globals, 
 
 
 
-(defun build-mps-scan (fout anal)
-  (let* ((sorted-species (sorted-species anal)))
-    (dolist (species sorted-species)
-      (funcall (species-scan species) fout species anal))))
-
-
-(defun build-mps-skip (fout anal)
-  (let* ((sorted-species (sorted-species anal)))
-    (dolist (species sorted-species)
-      (funcall (species-skip species) fout species anal))))
-
-
-(defun build-mps-finalize (fout anal)
-  (let* ((sorted-species (sorted-species anal)))
-    (dolist (species sorted-species)
-      (funcall (species-finalize species) fout species anal))))
-
 
 
 
