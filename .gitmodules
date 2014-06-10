@@ -1,3 +1,6 @@
 [submodule "src/mps"]
 	path = src/mps
 	url = https://github.com/Ravenbrook/mps-temporary.git
+[submodule "externals/src/llvm"]
+	path = externals/src/llvm
+	url = https://github.com/llvm-mirror/llvm.git
