@@ -1,0 +1,3 @@
+[submodule "src/mps"]
+	path = src/mps
+	url = https://github.com/Ravenbrook/mps-temporary.git
