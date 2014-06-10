@@ -39,6 +39,7 @@ compile_commands.json
 projects/*
 !projects/CMakeLists.txt
 !projects/Makefile
+!projects/LLVMBuild.txt
 # Clang, which is tracked independently.
 tools/clang
 # LLDB, which is tracked independently.
