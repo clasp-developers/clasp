@@ -27,9 +27,15 @@
 namespace asttooling
 {
 
+#if 0
     template <typename T>
     gctools::smart_ptr<clbind::Wrapper<T,T*> > Wrap(T* p) { return clbind::Wrapper<T,T*>::create(p,reg::registered_class<T>::id);};
 
+    template <typename T>
+    gctools::smart_ptr<clbind::Wrapper<T,std::unique_ptr<T>> > Wrap(std::unique_ptr<T>& p) {
+	return clbind::Wrapper<T,std::unique_ptr<T>>::create(p,reg::registered_class<T>::id);
+    };
+#endif
 
 
     class DerivableArgumentsAdjuster : public clbind::Derivable<clang::tooling::ArgumentsAdjuster> {

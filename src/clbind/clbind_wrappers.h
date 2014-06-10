@@ -88,6 +88,12 @@ namespace clbind
         Wrapper(OT* naked, class_id cid) : externalPtr_gc_ignore(naked), nakedPtr_gc_ignore(naked), _classId(cid) {
 //            printf("\n%s:%d - ctor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__, this, typeid(HolderType).name(),this->nakedPtr,clbind::support_adapterAddress<ExternalType>(this->nakedPtr), cid, _rep_(reg::globalClassIdToClassSymbol[cid]).c_str() );
         };
+	
+	// ctor that takes a unique_ptr
+        Wrapper(std::unique_ptr<OT> naked, class_id cid) : externalPtr_gc_ignore(std::move(naked)), _classId(cid) {
+	    nakedPtr_gc_ignore = &(*this->externalPtr_gc_ignore); // seriously - do I need nakedPtr?????????
+//            printf("\n%s:%d - ctor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__, this, typeid(HolderType).name(),this->nakedPtr,clbind::support_adapterAddress<ExternalType>(this->nakedPtr), cid, _rep_(reg::globalClassIdToClassSymbol[cid]).c_str() );
+        };
 
 
         void* mostDerivedPointer() const { return (void*)(this->nakedPtr_gc_ignore);};
@@ -114,6 +120,13 @@ namespace clbind
 	static gctools::smart_ptr<WrapperType> create(const OT& val,class_id classId) {
             OT* naked = new OT(val);
             GC_ALLOCATE_VARIADIC(WrapperType,obj,naked,classId);
+            core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
+            obj->setInstanceClassUsingSymbol(classSymbol);
+	    return obj;
+	}
+
+	static gctools::smart_ptr<WrapperType> create(std::unique_ptr<OT> val,class_id classId) {
+            GC_ALLOCATE_VARIADIC(WrapperType,obj,std::move(val),classId);
             core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
             obj->setInstanceClassUsingSymbol(classSymbol);
 	    return obj;

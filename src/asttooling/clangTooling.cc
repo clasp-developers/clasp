@@ -298,7 +298,15 @@ namespace asttooling {
     core::T_sp af_newFrontendActionFactory(core::T_sp consumerFactory)
     {_G();
         if ( clang::ast_matchers::MatchFinder* matchFinder = consumerFactory.as<core::WrappedPointer_O>()->cast<clang::ast_matchers::MatchFinder>() ) {
-            return Wrap(clang::tooling::newFrontendActionFactory(matchFinder));
+	    typedef clbind::Wrapper<clang::tooling::FrontendActionFactory,std::unique_ptr<clang::tooling::FrontendActionFactory>> wrapped_type;
+	    std::unique_ptr<clang::tooling::FrontendActionFactory> val = clang::tooling::newFrontendActionFactory(matchFinder);
+#if 0
+	    clang::tooling::FrontendActionFactory* fafptr = val.release();
+	    gctools::smart_ptr<wrapped_type> sp(wrapped_type::create(fafptr,reg::registered_class<clang::tooling::FrontendActionFactory>::id));
+#else
+	    gctools::smart_ptr<wrapped_type> sp(wrapped_type::create(std::move(val),reg::registered_class<clang::tooling::FrontendActionFactory>::id));
+#endif
+            return sp;
         } 
 	SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % consumerFactory );
     };
@@ -539,7 +547,7 @@ namespace asttooling {
             ,class_<clang::tooling::CompileCommand>("CompileCommand",no_default_constructor)
             .  property("CompileCommandDirectory",&clang::tooling::CompileCommand::Directory)
             .  property("CompileCommandCommandLine",&clang::tooling::CompileCommand::CommandLine)
-            ,def("buildASTFromCodeWithArgs",&clang::tooling::buildASTFromCodeWithArgs)
+//            ,def("buildASTFromCodeWithArgs",&clang::tooling::buildASTFromCodeWithArgs)
             ];
         Defun(deduplicate);
         Defun(clangVersionString);
