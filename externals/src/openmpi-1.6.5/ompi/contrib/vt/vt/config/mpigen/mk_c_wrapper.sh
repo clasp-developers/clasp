@@ -9,7 +9,7 @@ set -e
 
 
 
-export SRCDIR=/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/ompi/contrib/vt/vt/config/mpigen
+export SRCDIR=/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/ompi/contrib/vt/vt/config/mpigen
 
 have_mpi2_thread=1
 have_mpi2_1sided=1
@@ -28,7 +28,7 @@ mpi2_src5=""; if [ $have_mpi2_file = 1 ] ; then mpi2_src5="mpi2_file.h"; fi
 mpi2_src6=""; if [ $have_mpi2_proc = 1 ] ; then mpi2_src6="mpi2_proc.h"; fi
 src="mpi_standard.h $mpi2_src1 $mpi2_src2 $mpi2_src3 $mpi2_src4 $mpi2_src5 $mpi2_src6"
 
-out=/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/ompi/contrib/vt/vt/vtlib/vt_mpiwrap.gen.c
+out=/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/ompi/contrib/vt/vt/vtlib/vt_mpiwrap.gen.c
 tmp=tmp$$
 trap "rm -f $tmp.*; exit" 0 1 2 3 15
 

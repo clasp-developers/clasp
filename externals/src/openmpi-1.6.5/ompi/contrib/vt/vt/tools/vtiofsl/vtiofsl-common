@@ -23,7 +23,7 @@ fi
 if test x"$VT_PREFIX" != x; then
   prefix=$VT_PREFIX
 else
-  prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+  prefix=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
 fi
 _VTIOFSL_SYSCONFDIR=`echo ${prefix}/etc`
 _VTIOFSL_VERBOSE=1

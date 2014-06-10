@@ -45,7 +45,7 @@ TAR=tar
 SHELL=/bin/sh
 EXE=
 
-prefix =/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix =/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
 exec_prefix =${prefix}
 libdir =${exec_prefix}/lib
 sharedlibdir =${libdir}

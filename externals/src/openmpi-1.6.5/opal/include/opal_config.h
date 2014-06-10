@@ -801,7 +801,7 @@
 #define HAVE_UTMP_H 1
 
 /* Define to 1 if you have the <valgrind/valgrind.h> header file. */
-/* #undef HAVE_VALGRIND_VALGRIND_H */
+#define HAVE_VALGRIND_VALGRIND_H 1
 
 /* Define to 1 if you have the `vasprintf' function. */
 #define HAVE_VASPRINTF 1
@@ -1055,7 +1055,7 @@
 #define MCA_hwloc_IMPLEMENTATION_HEADER "opal/mca/hwloc/hwloc132/hwloc132.h"
 
 /* Complete set of command line arguments given to ROMIOs configure script */
-#define MCA_io_romio_COMPLETE_CONFIGURE_FLAGS " CFLAGS='-DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing ' CPPFLAGS=' -D_REENTRANT -I/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband' FFLAGS='' LDFLAGS='-stdlib=libc++ -headerpad_max_install_names ' --enable-shared --disable-static  --prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common --with-mpi=open_mpi --disable-aio"
+#define MCA_io_romio_COMPLETE_CONFIGURE_FLAGS " CFLAGS='-DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing ' CPPFLAGS=' -D_REENTRANT -I/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband' FFLAGS='' LDFLAGS='-stdlib=libc++ -headerpad_max_install_names ' --enable-shared --disable-static  --prefix=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common --with-mpi=open_mpi --disable-aio"
 
 /* Set of user-defined configure flags given to ROMIOs configure script via
    --with-io-romio-flags */
@@ -1982,7 +1982,7 @@
 #define OPAL_NEED_C_BOOL 1
 
 /* package/branding string for Open MPI */
-#define OPAL_PACKAGE_STRING "Open MPI meister@fry.local Distribution"
+#define OPAL_PACKAGE_STRING "Open MPI meister@chm340mini.chem.temple.edu Distribution"
 
 /* Whether r notation is used for ppc registers */
 /* #undef OPAL_POWERPC_R_REGISTERS */

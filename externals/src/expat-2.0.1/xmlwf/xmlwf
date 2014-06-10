@@ -73,7 +73,7 @@ else
 
   if test -f "$progdir/$program"; then
     # Add our own library path to DYLD_LIBRARY_PATH
-    DYLD_LIBRARY_PATH="/Users/meister/Development/cando/clasp/externals/src/expat-2.0.1/.libs:$DYLD_LIBRARY_PATH"
+    DYLD_LIBRARY_PATH="/Volumes/spin/Development/clasp-Lisp/externals/src/expat-2.0.1/.libs:$DYLD_LIBRARY_PATH"
 
     # Some systems cannot cope with colon-terminated DYLD_LIBRARY_PATH
     # The second colon is a workaround for a bug in BeOS R4 sed

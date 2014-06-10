@@ -5,7 +5,7 @@ Description: Portable high-performance MPI implementation
 Version: 1.6.5
 URL: http://www.open-mpi.org/
 #
-prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
 exec_prefix=${prefix}
 includedir=${prefix}/include
 libdir=${exec_prefix}/lib

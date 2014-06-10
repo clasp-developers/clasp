@@ -21,7 +21,7 @@ RL_LIBRARY_VERSION = 6.2
 SHELL = /bin/sh
 RM = rm -f
 
-prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix = /Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
 exec_prefix = ${prefix}
 
 datarootdir = ${prefix}/share
@@ -32,7 +32,7 @@ datadir = ${datarootdir}
 VPATH = .
 top_srcdir = ..
 #BUILD_DIR = .
-BUILD_DIR = /Users/meister/Development/cando/clasp/externals/src/readline-6.2
+BUILD_DIR = /Volumes/spin/Development/clasp-Lisp/externals/src/readline-6.2
 installdir = $(datadir)/readline
 
 INSTALL = /usr/bin/install -c

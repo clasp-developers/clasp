@@ -20,7 +20,7 @@ topdir = ..
 srcdir = .
 VPATH = .
 
-prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix = /Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
 
 datarootdir = ${prefix}/share
 
@@ -46,7 +46,7 @@ RM = rm -f
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 
-BUILD_DIR = /Users/meister/Development/cando/clasp/externals/src/readline-6.2
+BUILD_DIR = /Volumes/spin/Development/clasp-Lisp/externals/src/readline-6.2
 TEXINPUTDIR = $(srcdir)
 
 MAKEINFO    = LANGUAGE= makeinfo

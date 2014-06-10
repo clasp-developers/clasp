@@ -32,7 +32,7 @@ datarootdir = ${prefix}/share
 srcdir = .
 VPATH = .:..
 topdir = ..
-BUILD_DIR = /Users/meister/Development/cando/clasp/externals/src/readline-6.2
+BUILD_DIR = /Volumes/spin/Development/clasp-Lisp/externals/src/readline-6.2
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
@@ -52,7 +52,7 @@ SHELL = /bin/sh
 host_os = darwin13.1.0
 host_vendor = apple
 
-prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix = /Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
 exec_prefix = ${prefix}
 includedir = ${prefix}/include
 bindir = ${exec_prefix}/bin

@@ -133,7 +133,7 @@
 #define PACKAGE_VERSION "1.12.3openmpi"
 
 /* pdfTeX typesetter command. */
-#define PDFTEX "pdflatex"
+/* #undef PDFTEX */
 
 /* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG 8

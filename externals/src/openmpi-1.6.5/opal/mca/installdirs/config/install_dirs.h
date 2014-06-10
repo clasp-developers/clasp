@@ -36,7 +36,7 @@
 #ifndef OPAL_INST_DIRS_H
 #define OPAL_INST_DIRS_H
 
-#define OPAL_PREFIX "/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common"
+#define OPAL_PREFIX "/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common"
 #define OPAL_EXEC_PREFIX "${prefix}"
 
 /* The directory for installing executable programs that users can

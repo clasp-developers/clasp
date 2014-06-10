@@ -69,7 +69,8 @@ all-dependencies:
 # export LLVM_REVISION=198807    #       <--------previous revision
 export LLVM_REVISION=207120
 
-export LLVM_SOURCE_DIR = llvm-$(LLVM_REVISION)
+# export LLVM_SOURCE_DIR = llvm-$(LLVM_REVISION)
+export LLVM_SOURCE_DIR = llvm
 
 
 
@@ -94,6 +95,7 @@ setup:
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_DIR)
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR)
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR)
+	make subClean
 	make boost-build-make
 	make dmalloc-setup
 	make boehm-setup
@@ -696,7 +698,7 @@ boost-rpath-fix:
 	-install_name_tool -change libboost_serialization.dylib $(RPATH_RELEASE_FIX)/libboost_serialization.dylib $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)/libboost_mpi.dylib 
 #	-install_name_tool -id $(RPATH_RELEASE_FIX)/libboost_thread.dylib $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)/libboost_thread.dylib
 	install_name_tool -id $(RPATH_RELEASE_FIX)/libboost_serialization.dylib $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)/libboost_serialization.dylib
-	install_name_tool -id $(RPATH_RELEASE_FIX)/libboost_python.dylib $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)/libboost_python.dylib
+#	install_name_tool -id $(RPATH_RELEASE_FIX)/libboost_python.dylib $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)/libboost_python.dylib
 	install_name_tool -id $(RPATH_RELEASE_FIX)/libboost_system.dylib $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)/libboost_system.dylib
 #	install_name_tool -change libboost_system.dylib $(RPATH_RELEASE_FIX)/libboost_system.dylib $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)/libboost_thread.dylib
 	install_name_tool -change libboost_system.dylib $(RPATH_RELEASE_FIX)/libboost_system.dylib $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_LIB_DIR)/libboost_filesystem.dylib
@@ -710,7 +712,7 @@ boost-rpath-fix:
 	-install_name_tool -change libboost_serialization.dylib $(RPATH_DEBUG_FIX)/libboost_serialization.dylib $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_LIB_DIR)/libboost_mpi.dylib 
 #	-install_name_tool -id $(RPATH_DEBUG_FIX)/libboost_thread.dylib $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_LIB_DIR)/libboost_thread.dylib
 	install_name_tool -id $(RPATH_DEBUG_FIX)/libboost_serialization.dylib $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_LIB_DIR)/libboost_serialization.dylib
-	install_name_tool -id $(RPATH_DEBUG_FIX)/libboost_python.dylib $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_LIB_DIR)/libboost_python.dylib
+#	install_name_tool -id $(RPATH_DEBUG_FIX)/libboost_python.dylib $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_LIB_DIR)/libboost_python.dylib
 	install_name_tool -id $(RPATH_DEBUG_FIX)/libboost_system.dylib $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_LIB_DIR)/libboost_system.dylib
 #	install_name_tool -change libboost_system.dylib $(RPATH_DEBUG_FIX)/libboost_system.dylib $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_LIB_DIR)/libboost_thread.dylib
 	install_name_tool -change libboost_system.dylib $(RPATH_DEBUG_FIX)/libboost_system.dylib $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_LIB_DIR)/libboost_filesystem.dylib

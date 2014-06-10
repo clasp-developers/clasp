@@ -15,7 +15,7 @@
 #ifndef _INSTALLDIRS_CONF_H
 #define _INSTALLDIRS_CONF_H
 
-#define VT_PREFIX      "/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common"
+#define VT_PREFIX      "/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common"
 #define VT_EXEC_PREFIX "${prefix}"
 #define VT_BINDIR      "${exec_prefix}/bin"
 #define VT_INCLUDEDIR  "${prefix}/include/vampirtrace"

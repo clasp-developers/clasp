@@ -32,4 +32,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common/lib'
+libdir='/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common/lib'

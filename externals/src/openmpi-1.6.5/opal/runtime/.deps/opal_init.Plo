@@ -127,17 +127,17 @@ runtime/opal_init.lo: runtime/opal_init.c ../opal/include/opal_config.h \
   /usr/include/sys/time.h /usr/include/sys/_select.h \
   ../opal/mca/hwloc/hwloc132/hwloc132.h \
   ../opal/mca/hwloc/hwloc132/hwloc/include/hwloc.h \
-  /Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/autogen/config.h \
+  /Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/autogen/config.h \
   /usr/include/unistd.h /usr/include/sys/unistd.h \
   /usr/include/sys/_types/_posix_vdisable.h \
   /usr/include/sys/_types/_seek_set.h /usr/include/sys/select.h \
   /usr/include/sys/_types/_uuid_t.h /usr/include/gethostuuid.h \
   /usr/include/string.h /usr/include/strings.h \
   /usr/include/secure/_string.h \
-  /Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/rename.h \
-  /Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/bitmap.h \
-  /Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/cpuset.h \
-  /Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/helper.h \
+  /Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/rename.h \
+  /Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/bitmap.h \
+  /Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/cpuset.h \
+  /Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/helper.h \
   ../opal/mca/paffinity/base/base.h ../opal/mca/paffinity/paffinity.h \
   ../opal/mca/timer/base/base.h ../opal/mca/timer/timer.h \
   ../opal/mca/memchecker/base/base.h ../opal/mca/memchecker/memchecker.h \
@@ -591,7 +591,7 @@ runtime/opal_init.lo: runtime/opal_init.c ../opal/include/opal_config.h \
 
 ../opal/mca/hwloc/hwloc132/hwloc/include/hwloc.h:
 
-/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/autogen/config.h:
+/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/autogen/config.h:
 
 /usr/include/unistd.h:
 
@@ -613,13 +613,13 @@ runtime/opal_init.lo: runtime/opal_init.c ../opal/include/opal_config.h \
 
 /usr/include/secure/_string.h:
 
-/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/rename.h:
+/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/rename.h:
 
-/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/bitmap.h:
+/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/bitmap.h:
 
-/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/cpuset.h:
+/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/cpuset.h:
 
-/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/helper.h:
+/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include/hwloc/helper.h:
 
 ../opal/mca/paffinity/base/base.h:
 

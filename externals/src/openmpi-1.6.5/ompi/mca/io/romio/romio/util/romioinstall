@@ -11,16 +11,16 @@
 #
 # in the top-level romio directory
 #
-PREFIX=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
-ROMIO_HOME=/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/ompi/mca/io/romio/romio
+PREFIX=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
+ROMIO_HOME=/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/ompi/mca/io/romio/romio
 ARCH=Darwin
 RANLIB=ranlib
-TOP_BUILD_DIR=/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/ompi/mca/io/romio/romio
+TOP_BUILD_DIR=/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/ompi/mca/io/romio/romio
 # LAM Do we want to install or uninstall?
 WANT_INSTALL=1
 #
 # Default paths (set at configure time)
-prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
 exec_prefix=${prefix}
 bindir=${exec_prefix}/bin
 sbindir=${exec_prefix}/sbin
@@ -35,7 +35,7 @@ datarootdir=@datatrootdir@
 #datadir=${datarootdir}
 docdir=${datarootdir}/doc/${PACKAGE_TARNAME}
 ## Location of sources
-#top_srcdir=/Users/meister/Development/cando/clasp/externals/src/openmpi-1.6.5/ompi/mca/io/romio/romio
+#top_srcdir=/Volumes/spin/Development/clasp-Lisp/externals/src/openmpi-1.6.5/ompi/mca/io/romio/romio
 #
 # File access mode
 MODE=0644
