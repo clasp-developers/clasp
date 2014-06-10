@@ -1007,6 +1007,13 @@ and the inheritance hierarchy that the garbage collector will need"
         
 
 
+(defstruct array-fixer
+  element-type)
+
+(defstruct pointer-fixer
+  pointee-type)
+
+
 (defgeneric fixer-macro-name (fixer-head fixer))
 
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix)) fixer) "SMART_PTR_FIX")
@@ -1351,11 +1358,6 @@ in the system-species and assign them a GCKind value"
 ;; ----------------------------------------------------------------------
 
 
-(defstruct array-fixer
-  element-type)
-
-(defstruct pointer-fixer
-  pointee-type)
 
 (defun fix-code-for-field (field analysis)
   (let ((code (fix-code (instance-variable-ctype field) analysis)))
