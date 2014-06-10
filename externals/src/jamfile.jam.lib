@@ -63,7 +63,7 @@ alias boost-release :
                 /externals//boost_release_program_options
                 /externals//boost_release_system
 		/externals//boost_release_iostreams
-		/externals//boost_release_python
+#		/externals//boost_release_python
 ;
 
 
@@ -86,7 +86,7 @@ alias boost-debug :
                 /externals//boost_debug_program_options
                 /externals//boost_debug_system
 		/externals//boost_debug_iostreams
-		/externals//boost_debug_python
+#		/externals//boost_debug_python
 ;
 
 lib boost_debug_filesystem : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>boost_filesystem ;

@@ -9,6 +9,7 @@
 #include <llvm/Bitcode/ReaderWriter.h>
 #include "llvm/Support/raw_ostream.h"
 #include <llvm/Support/MemoryBuffer.h>
+#include <llvm/Support/FileSystem.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Constants.h>
@@ -391,7 +392,7 @@ namespace llvmo
     Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context )
     {_G();
 	string error;
-	llvm::OwningPtr<llvm::MemoryBuffer> membuf;
+	std::unique_ptr<llvm::MemoryBuffer> membuf;
 	llvm::MemoryBuffer::getFile(filename->get(),membuf);
 	llvm::ErrorOr<llvm::Module *>eom = llvm::parseBitcodeFile(membuf.get(),
                                                             *(context->wrappedPtr()));
