@@ -113,12 +113,13 @@
   (forwards (make-hash-table :test #'equal))
   (kind-to-species (make-hash-table :test #'eq))
   (species-to-enum (make-hash-table :test #'eq))
+  (gckind-to-enum (make-hash-table :test #'eq))
   list-of-all-enums
   (contains-fixable-pointer (make-hash-table :test #'eq))
   )
 
 (defmethod print-object ((object analysis) stream)
-  (format stream "#S(ANALYSIS ...)"))
+  (format stream "#S(ANALYSIS :project ~a :kind-to-species ~a)" (analysis-project object) (analysis-kind-to-species object)))
 
 
 
@@ -772,6 +773,14 @@ and the inheritance hierarchy that the garbage collector will need"
     result))
 
 
+(defmethod contains-fixable-pointer-impl-p ((x constant-array-ctype) analysis)
+  (contains-fixable-pointer-impl-p (constant-array-ctype-element-type x) analysis))
+
+(defmethod contains-fixable-pointer-impl-p ((x cxxrecord-ctype) analysis)
+  (cond
+    ((string= (cxxrecord-ctype-key x) "(anonymous)") nil)
+    (t (error "Handle other contains-fixable-pointer-impl-p ((x cxxrecord-ctype)) analysis)"))))
+
 (defmethod contains-fixable-pointer-impl-p ((x unclassified-ctype) analysis) nil)
 (defmethod contains-fixable-pointer-impl-p ((x smart-ptr-ctype) analysis) t)
 (defmethod contains-fixable-pointer-impl-p ((x pointer-ctype) analysis)
@@ -925,6 +934,7 @@ and the inheritance hierarchy that the garbage collector will need"
          )
     (setf (gethash gco (analysis-kind-to-species anal)) species) ; what species does a gco belong to
     (push gco-info (gethash species (analysis-species-to-enum anal)))
+    (setf (gethash gco (analysis-gckind-to-enum anal)) gco-info)
          ))
 
 
@@ -953,14 +963,14 @@ and the inheritance hierarchy that the garbage collector will need"
       (let ((gckind (enum-gckind gce)))
         (format fout "case ~a: {~%" (enum-enum-name gce))
         (cond
-          ((string= "fwd2" (gckind-key gckind))
-           (format fout "THROW_HARD_ERROR(BF(\"~a should never be scanned\"));~%" (gckind-key gckind)))
-          ((string= "fwd" (gckind-key gckind))
-           (format fout "base = (char*)base + ALIGN_UP(header->fwd._Size);~%"))
-          ((string= "pad1" (gckind-key gckind))
-           (format fout "base = (char*)base + ALIGN_UP(sizeof_with_header<Pad1_s>());~%"))
-          ((string= "pad" (gckind-key gckind))
-           (format fout "base = (char*)base + ALIGN_UP(header->pad._Size);~%"))
+          ((string= "fwd2" (kind-key gckind))
+           (format fout "THROW_HARD_ERROR(BF(\"~a should never be scanned\"));~%" (kind-key gckind)))
+          ((string= "fwd" (kind-key gckind))
+           (format fout "base = (char*)base + AlignUp(header->fwd._Size);~%"))
+          ((string= "pad1" (kind-key gckind))
+           (format fout "base = (char*)base + AlignUp(sizeof_with_header<Pad1_s>());~%"))
+          ((string= "pad" (kind-key gckind))
+           (format fout "base = (char*)base + AlignUp(header->pad._Size);~%"))
           (t (error "Illegal scanner-for-system species ~a" species)))
         (format fout "break;~%}~%")
         ))
@@ -974,14 +984,14 @@ and the inheritance hierarchy that the garbage collector will need"
       (let ((gckind (enum-gckind gce)))
         (format fout "case ~a: {~%" (enum-enum-name gce))
         (cond
-          ((string= "fwd2" (gckind-key gckind))
-           (format fout "THROW_HARD_ERROR(BF(\"~a should never be skipped\"));~%" (gckind-key gckind)))
-          ((string= "fwd" (gckind-key gckind))
-           (format fout "base = (char*)base + ALIGN_UP(header->fwd._Size);~%"))
-          ((string= "pad1" (gckind-key gckind))
-           (format fout "base = (char*)base + ALIGN_UP(sizeof_with_header<Pad1_s>());~%"))
-          ((string= "pad" (gckind-key gckind))
-           (format fout "base = (char*)base + ALIGN_UP(header->pad._Size);~%"))
+          ((string= "fwd2" (kind-key gckind))
+           (format fout "THROW_HARD_ERROR(BF(\"~a should never be skipped\"));~%" (kind-key gckind)))
+          ((string= "fwd" (kind-key gckind))
+           (format fout "base = (char*)base + AlignUp(header->fwd._Size);~%"))
+          ((string= "pad1" (kind-key gckind))
+           (format fout "base = (char*)base + AlignUp(sizeof_with_header<Pad1_s>());~%"))
+          ((string= "pad" (kind-key gckind))
+           (format fout "base = (char*)base + AlignUp(header->pad._Size);~%"))
           (t (error "Illegal skipper-for-system species ~a" species)))
         (format fout "break;~%}~%")
         ))
@@ -992,27 +1002,43 @@ and the inheritance hierarchy that the garbage collector will need"
     (dolist (gce enums)
       (let ((gckind (enum-gckind gce)))
         (format fout "case ~a: {~%" (enum-enum-name gce))
-        (format fout "    THROW_HARD_ERROR(BF(\"~a should never be finalized\"));~%" (gckind-key gckind)))
+        (format fout "    THROW_HARD_ERROR(BF(\"~a should never be finalized\"));~%" (kind-key gckind)))
       (format fout "    break;~%}~%"))))
         
 
 
-(defun scanner-for-one-gcobject (fout classid species anal)
-  (let* ((enum-name (class-enum-name classid species))
-         (inheritance (project-lispkinds (analysis-project anal)))
-         (all-instance-variables (gather-instance-variables classid inheritance)))
+(defgeneric fixer-macro-name (fixer-head fixer))
+
+(defmethod fixer-macro-name ((x (eql :smart-ptr-fix)) fixer) "SMART_PTR_FIX")
+
+(defmethod fixer-macro-name ((x pointer-fixer) fixer) "POINTER_FIX")
+
+
+
+(defun code-for-instance-var (stream ptr-name instance-var)
+  (let* ((fixer-macro (fixer-macro-name (car (last instance-var)) (last instance-var)))
+         (variable-chain (butlast instance-var 1)))
+    (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name variable-chain)))
+#||
+           (macro-name (macro fixer))
+           (accessor (variable-accessor e)))
+      (format stream "~a(~a);~%" (macro fixer) (variable e)))))
+||#
+
+(defconstant +ptr-name+ "obj_gc_safe"
+  "This variable is used to temporarily hold a pointer to a Wrapper<...> object - we want the GC to ignore it")
+
+
+(defun scanner-for-one-lispkind (fout classid species anal)
+  (let ((enum-name (class-enum-name classid species)))
     (gclog "build-mps-scan-for-one-family -> inheritance classid[~a]  value[~a]~%" (ctype-name classid) value)
     (format fout "case ~a: {~%" enum-name)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(obj_ptr);~%" (ctype-name classid) +ptr-name+ (ctype-name classid))
-    (maphash #'(lambda (k v &aux (csp (contains-fixable-pointer-p (instance-variable-ctype v) anal)))
-                 (cond
-                   ((null csp))
-                   ((eq csp :maybe) (code-for-instance-var fout +ptr-name+ k (instance-variable-ctype v) :maybe))
-                   ((search "gc_ignore" k) (format fout "// Ignoring instance variable ~a // ~a~%" k (instance-variable-ctype v)))
-                   (t (code-for-instance-var fout +ptr-name+ k (instance-variable-ctype v) t))))
-             all-instance-variables)
+    (let ((all-instance-variables (fix-code (gethash classid (project-classes (analysis-project anal))) anal)))
+      (dolist (instance-var all-instance-variables)
+        (code-for-instance-var fout +ptr-name+ instance-var)))
     (format fout "    typedef ~A type_~A;~%" (ctype-name classid) enum-name)
-    (format fout "    base = (char*)base + ALIGN(SIZEOF_WITH_HEADER(type_~A));~%" enum-name)
+    (format fout "    base = (char*)base + Align(sizeof_with_header(type_~A));~%" enum-name)
     (format fout "} break;~%")
     ))
 
@@ -1021,20 +1047,20 @@ and the inheritance hierarchy that the garbage collector will need"
   (let ((enums (sort-enums-by-index (gethash species (analysis-species-to-enum anal)))))
     (dolist (enum enums)
       (let* ((entry (enum-gckind enum))
-             (classid (gckind-key entry)))
-        (scanner-for-one-gcobject fout classid species anal)))))
+             (classid (kind-key entry)))
+        (scanner-for-one-lispkind fout classid species anal)))))
 
 
 (defun skipper-for-lispkinds (fout species anal)
   (let ((enums (sort-enums-by-index (gethash species (analysis-species-to-enum anal)))))
     (dolist (enum enums)
       (let* ((entry (enum-gckind enum))
-             (classid (gckind-key entry))
+             (classid (kind-key entry))
              (enum-name (class-enum-name classid species)))
         (gclog "skipper-for-lispkinds -> inheritance classid[~a]  value[~a]~%" (ctype-name classid) value)
         (format fout "case ~a: {~%" enum-name)
         (format fout "    typedef ~A type_~A;~%" (ctype-name classid) enum-name)
-        (format fout "    base = (char*)base + ALIGN(SIZEOF_WITH_HEADER(type_~A));~%" enum-name)
+        (format fout "    base = (char*)base + Align(sizeof_with_header(type_~A));~%" enum-name)
         (format fout "} break;~%")))
     ))
 
@@ -1043,7 +1069,7 @@ and the inheritance hierarchy that the garbage collector will need"
   (let ((enums (sort-enums-by-index (gethash species (analysis-species-to-enum anal)))))
     (dolist (enum enums)
       (let* ((entry (enum-gckind enum))
-             (classid (gckind-key entry))
+             (classid (kind-key entry))
              (enum-name (class-enum-name classid species))
              (ns-cn (ctype-name classid))
              (cn (let ((ns-divider (search "::" ns-cn)))
@@ -1061,20 +1087,13 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 
-(defun test-tcode-gcvector (&optional (anal *analysis*))
-  (with-open-file (fout (make-pathname :name "test-gcvector" :type "cc" :defaults (main-directory-pathname)) :direction :output :if-exists :supersede)
-    (let ((gcvector-species (lookup-species (analysis-manager anal) :gcvector)))
-      (format t "Processing ~a entries~%" (length (gethash gcvector-species (analysis-species-to-enum anal))))
-;;      (scanner-for-gcvector fout gcvector-species anal)
-      )))
-
 
 (defun scanner-for-gccontainer (fout species anal)
   (let ((enums (sort-enums-by-index (gethash species (analysis-species-to-enum anal)))))
     (dolist (enum enums)
       (let* ((entry (enum-gckind enum))
-             (decl (gccontainer-decl-type entry))
-             (classid (gckind-key entry))
+             (decl (containerkind-ctype entry))
+             (classid (kind-key entry))
              (enum-name (class-enum-name classid species)))
         (format fout "case ~a: {~%" enum-name)
         (format fout "// processing ~a~%" entry)
@@ -1092,7 +1111,11 @@ and the inheritance hierarchy that the garbage collector will need"
                 ((smart-ptr-ctype-p parm0-ctype)
                  (format fout "          SMART_PTR_FIX(*it);~%"))
                 ((cxxrecord-ctype-p parm0-ctype)
-                 (format fout "          it->onHeapScanGCRoots(GC_SCAN_ARGS_PASS);~%"))
+                 (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
+                   (dolist (instance-var all-instance-variables)
+                     (code-for-instance-var fout "it" instance-var))))
+                ((pointer-ctype-p parm0-ctype)
+                 (format fout "          POINTER_FIX(*it);~%" ))
                 (t (error "Write code to scan ~a" parm0-ctype)))
                  
               #|        (maphash #'(lambda (k v &aux (csp (contains-fixable-pointer-p (instance-variable-ctype v) anal)))
@@ -1105,8 +1128,8 @@ and the inheritance hierarchy that the garbage collector will need"
                 |#
               (format fout "    }~%")
               (format fout "    typedef typename ~A type_~A;~%" (ctype-name classid) enum-name)
-              (format fout "    size_t header_and_gccontainer_size = ALIGN_UP(gc_sizeof<type_~a>(~a->capacity()))+ALIGN_UP(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-              (format fout "    base = (char*)base + ALIGN(header_and_gccontainer_size);~%"))))
+              (format fout "    size_t header_and_gccontainer_size = AlignUp(gc_sizeof<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+              (format fout "    base = (char*)base + Align(header_and_gccontainer_size);~%"))))
         (format fout "} break;~%")
         )))
 
@@ -1115,8 +1138,8 @@ and the inheritance hierarchy that the garbage collector will need"
   (let ((enums (sort-enums-by-index (gethash species (analysis-species-to-enum anal)))))
     (dolist (enum enums)
       (let* ((entry (enum-gckind enum))
-             (decl (gccontainer-decl-type entry))
-             (classid (gckind-key entry))
+             (decl (containerkind-ctype entry))
+             (classid (kind-key entry))
              (enum-name (class-enum-name classid species)))
         (format fout "case ~a: {~%" enum-name)
         (format fout "// processing ~a~%" entry)
@@ -1129,8 +1152,8 @@ and the inheritance hierarchy that the garbage collector will need"
               (format fout "// parm0-ctype = ~a~%" parm0-ctype)
               (format fout "    ~A* ~A = reinterpret_cast<~A*>(base);~%" (ctype-name classid) +ptr-name+ (ctype-name classid))
               (format fout "    typedef typename ~A type_~A;~%" (ctype-name classid) enum-name)
-              (format fout "    size_t header_and_gccontainer_size = ALIGN_UP(gc_sizeof<type_~a>(~a->capacity()))+ALIGN_UP(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-              (format fout "    base = (char*)base + ALIGN(header_and_gccontainer_size);~%")
+              (format fout "    size_t header_and_gccontainer_size = AlignUp(gc_sizeof<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+              (format fout "    base = (char*)base + Align(header_and_gccontainer_size);~%")
               )))
       (format fout "} break;~%")
       )))
@@ -1141,8 +1164,59 @@ and the inheritance hierarchy that the garbage collector will need"
   (let ((enums (sort-enums-by-index (gethash species (analysis-species-to-enum anal)))))
     (dolist (enum enums)
       (let* ((entry (enum-gckind enum))
-             (decl (gccontainer-decl-type entry))
-             (classid (gckind-key entry))
+             (decl (containerkind-ctype entry))
+             (classid (kind-key entry))
+             (enum-name (class-enum-name classid species)))
+        (format fout "case ~a: {~%" enum-name)
+        (format fout "// processing ~a~%" entry)
+        (if (cxxrecord-ctype-p decl)
+            (progn
+              (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))
+            (let* ((parms (class-template-specialization-ctype-arguments decl))
+                   (parm0 (car parms))
+                   (parm0-ctype (gc-template-argument-ctype parm0)))
+              (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+              (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));" (record-ctype-key decl)))))
+      (format fout "} break;~%")
+      )))
+
+
+
+
+
+
+(defun skipper-for-gcstring (fout species anal)
+  (let ((enums (sort-enums-by-index (gethash species (analysis-species-to-enum anal)))))
+    (dolist (enum enums)
+      (let* ((entry (enum-gckind enum))
+             (decl (containerkind-ctype entry))
+             (classid (kind-key entry))
+             (enum-name (class-enum-name classid species)))
+        (format fout "case ~a: {~%" enum-name)
+        (format fout "// processing ~a~%" entry)
+        (if (cxxrecord-ctype-p decl)
+            (progn
+              (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
+            (let* ((parms (class-template-specialization-ctype-arguments decl))
+                   (parm0 (car parms))
+                   (parm0-ctype (gc-template-argument-ctype parm0)))
+              (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+              (format fout "    ~A* ~A = reinterpret_cast<~A*>(base);~%" (ctype-name classid) +ptr-name+ (ctype-name classid))
+              (format fout "    typedef typename ~A type_~A;~%" (ctype-name classid) enum-name)
+              (format fout "    size_t header_and_gcstring_size = AlignUp(gc_sizeof<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+              (format fout "    base = (char*)base + Align(header_and_gcstring_size);~%")
+              )))
+      (format fout "} break;~%")
+      )))
+
+
+
+(defun finalizer-for-gcstring (fout species anal)
+  (let ((enums (sort-enums-by-index (gethash species (analysis-species-to-enum anal)))))
+    (dolist (enum enums)
+      (let* ((entry (enum-gckind enum))
+             (decl (containerkind-ctype entry))
+             (classid (kind-key entry))
              (enum-name (class-enum-name classid species)))
         (format fout "case ~a: {~%" enum-name)
         (format fout "// processing ~a~%" entry)
@@ -1217,15 +1291,15 @@ and the inheritance hierarchy that the garbage collector will need"
     (add-species manager (make-species :name :GCSTRING
                                        :discriminator (lambda (x) (and (containerkind-p x)
                                                                        (search "gctools::GCString" (kind-key x))))
-                                       :scan 'scanner-for-gccontainer
-                                       :skip 'skipper-for-gccontainer
-                                       :finalize 'finalizer-for-gccontainer
+                                       :scan 'skipper-for-gcstring ;; don't need to scan
+                                       :skip 'skipper-for-gcstring
+                                       :finalize 'finalizer-for-gcstring
                                        ))
     (add-species manager (make-species :name :class
                                        :discriminator (lambda (x) (and (classkind-p x)))
-                                       :scan 'scanner-for-gccontainer
-                                       :skip 'skipper-for-gccontainer
-                                       :finalize 'finalizer-for-gccontainer
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
                                        ))
     manager))
 
@@ -1351,7 +1425,8 @@ in the system-species and assign them a GCKind value"
 (defmethod fix-code ((x smart-ptr-ctype) analysis) :smart-ptr-fix)
 
 (defmethod fix-code ((x constant-array-ctype) analysis)
-  (make-array-fixer :element-type (constant-array-ctype-element-type x)))
+  (if (contains-fixable-pointer-p x analysis)
+      (make-array-fixer :element-type (constant-array-ctype-element-type x))))
 
 
 (defmethod fix-code ((x pointer-ctype) analysis )
@@ -1365,22 +1440,32 @@ in the system-species and assign them a GCKind value"
           nil))))
     
 
+(defun sorted-species (analysis)
+  (let (species)
+    (maphash (lambda (spec gcenums) (push spec species)) (analysis-species-to-enum analysis))
+    (sort species #'(lambda (a b) (< (species-index a) (species-index b))))))
 
-(defun generate-fix-code (analysis)
-  (let ((project (analysis-project analysis)))
-    (maphash (lambda (k v)
-               (format t "Fix for ~a~%" k)
-               (format t "   ~a~%" (fix-code (gethash k (project-classes project)) analysis)))
-             (project-lispkinds project))
-    (maphash (lambda (k v)
-               (format t "Fix for ~a~%" k)
-               (format t "   ~a~%" (fix-code (gethash k (project-classes project)) analysis)))
-             (project-containerkinds project))
-    (maphash (lambda (k v)
-               (format t "Fix for ~a~%" k)
-               (format t "   ~a~%" (fix-code (gethash k (project-classes project)) analysis)))
-             (project-classkinds project))
-    ))
+
+
+
+(defun build-mps-scan (fout anal)
+  (let* ((sorted-species (sorted-species anal)))
+    (dolist (species sorted-species)
+      (funcall (species-scan species) fout species anal))))
+
+
+(defun build-mps-skip (fout anal)
+  (let* ((sorted-species (sorted-species anal)))
+    (dolist (species sorted-species)
+      (funcall (species-skip species) fout species anal))))
+
+
+(defun build-mps-finalize (fout anal)
+  (let* ((sorted-species (sorted-species anal)))
+    (dolist (species sorted-species)
+      (funcall (species-finalize species) fout species anal))))
+
+
 
 (defun separate-namespace-name (name)
 "Separate a X::Y name into (values X Y) - strip any preceeding 'class '"
@@ -1388,8 +1473,8 @@ in the system-species and assign them a GCKind value"
                         (subseq name (length "class ") (length name))
                         name))
          (colon-pos (search "::" full-name))
-         (namespace (subseq full-name 0 colon-pos))
-         (name (subseq full-name (+ colon-pos 2) (length full-name))))
+         (namespace (if colon-pos (subseq full-name 0 colon-pos) nil))
+         (name (if colon-pos (subseq full-name (+ colon-pos 2) (length full-name)) full-name)))
     (values namespace name)))
 
         
@@ -1465,7 +1550,7 @@ in order they need to be forward declared because longer ones need shorter ones"
 
 
 
-(defun generate-kind-enum (fout anal)
+(defun generate-kind-enum (&optional (fout t) (anal *analysis*))
   (let ((all-enums (analysis-list-of-all-enums anal)))
     (format fout "enum { KIND_null = 0, ~%")
     (dolist (entry all-enums)
@@ -1484,9 +1569,17 @@ in order they need to be forward declared because longer ones need shorter ones"
     (code-forwards stream analysis)
     (format stream "#endif // DECLARE_FORWARDS~%")
     (format stream "#if defined(GC_ENUM)~%")
-    (code-enums stream analysis)
     (generate-kind-enum stream analysis)
     (format stream "#endif // defined(GC_ENUM)~%")
+    (format stream "#if defined(GC_OBJ_SCAN)~%")
+    (build-mps-scan stream analysis)
+    (format stream "#endif // defined(GC_OBJ_SCAN)~%")
+    (format stream "#if defined(GC_OBJ_SKIP)~%")
+    (build-mps-skip stream analysis)
+    (format stream "#endif // defined(GC_OBJ_SKIP)~%")
+    (format stream "#if defined(GC_OBJ_FINALIZE)~%")
+    (build-mps-finalize stream analysis)
+    (format stream "#endif // defined(GC_OBJ_FINALIZE)~%")
     ))
 
 ;; ----------------------------------------------------------------------
@@ -1625,6 +1718,7 @@ in order they need to be forward declared because longer ones need shorter ones"
               (setq spare-processes (1+ spare-processes)))))
       (format t "Bottom of loop proc: ~a~%" proc)
       )
+    (format t "~%!~%!  Done ~%!~%")
     ))
 
 
@@ -1636,11 +1730,14 @@ in order they need to be forward declared because longer ones need shorter ones"
 )
 
 
-(defun parallel-merge (&optional (num-jobs *max-parallel-searches*))
+(defun parallel-merge (&optional num-jobs)
   "Merge the analyses generated from the parallel search"
   (let ((all-jobs (serialize:load-archive (project-pathname "project-all" "dat")))
         (merged (make-project)))
-    (dotimes (proc (length all-jobs))
+    (setq *project* merged)
+    (when (null num-jobs)
+      (setq num-jobs (length all-jobs)))
+    (dotimes (proc num-jobs)
       (format t "Marking memory with ~a~%" (1+ proc))
       (gctools:gc-marker (1+ proc))
       (format t "Loading project for job ~a~%" proc)
@@ -1653,7 +1750,6 @@ in order they need to be forward declared because longer ones need shorter ones"
               (format t "     merging...~%")
               (merge-projects merged one))
             (format t "File not found.~%"))))
-    (setq *project* merged)
     (save-project)
     merged))
 

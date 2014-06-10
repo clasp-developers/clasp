@@ -7,7 +7,7 @@ For sbcl
 
 |#
 
-
+#||
 (defmacro with-setjmp-longjmp ((env jmp-buf-var) body longjmp-body cleanup-body )
   (let ((setjmpret (gensym))
 	(cmp (gensym))
@@ -31,8 +31,7 @@ For sbcl
 	 (irc-branch-to-and-begin-block ,cleanup-block)
 	 ,cleanup-body
 	 ))))
-
-
+||#
 
 
 (defun try.attach-dispatch-blocks-to-clauses (clauses)
