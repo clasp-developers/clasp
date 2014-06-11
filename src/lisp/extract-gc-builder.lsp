@@ -2382,29 +2382,6 @@ if there were an empty string between them."
           (format nil "~a_~a" first-namespace second-namespace)))))
 
 
-(defun generate-one-gc-info (output-stream entry)
-  (let* ((classid (gckind-key (gcenum-gckind entry)))
-         (species (gcenum-species entry))
-         (enum-name (class-enum-name classid species))
-         (namespace (identify-namespace-define classid))
-         )
-        (format output-stream "#if  defined(NAMESPACE_~a) || defined(GCINFO_~a)~%" namespace enum-name)
-        (format output-stream "//GCInfo for ~a~%" entry)
-        (format output-stream "template <> class gctools::GCInfo<~A> {~%" (ctype-name classid))
-        (format output-stream "public:~%")
-        (format output-stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
-        (format output-stream "};~%")
-        (format output-stream "#endif~%")
-        ))
-
-
-(defun generate-gc-info (fout anal)
-  (let ((all-enums (analysis-list-of-all-gcenums anal)))
-    (dolist (entry all-enums)
-      (generate-one-gc-info fout entry))
-    ))
-
-
 
 (defun generate-kind-name-map (fout anal)
   (let ((all-enums (analysis-list-of-all-gcenums anal)))

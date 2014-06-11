@@ -219,13 +219,13 @@
       (ast-tooling:integral
        (llvm:to-string (cast:get-as-integral template-arg) 10 t))
       (ast-tooling:pack
-       "TEMPLATE-ARG-AS-STRING::PACK")
+       "TEMPLATE_ARG_AS_STRING::PACK")
       (ast-tooling:template
-       "TEMPLATE-ARG-AS-STRING::TEMPLATE")
+       "TEMPLATE_ARG_AS_STRING::TEMPLATE")
       (ast-tooling:expression
-       "TEMPLATE-ARG-AS-STRING::EXPRESSION")
+       "TEMPLATE_ARG_AS_STRING::EXPRESSION")
       (ast-tooling:declaration
-       "TEMPLATE-ARG-AS-STRING::DECLARATION")
+       "TEMPLATE_ARG_AS_STRING::DECLARATION")
       (otherwise
        (error "Add support for template-arg-as-string of kind: ~a" template-arg-kind)))))
 
@@ -862,7 +862,11 @@ and the inheritance hierarchy that the garbage collector will need"
 (defun class-enum-name (classid species &optional (prefix "KIND"))
   (let* ((raw-name (copy-seq (ctype-name classid)))
          (name0 (nsubstitute-if #\_ (lambda (c) (member c '(#\SPACE #\, #\< #\> #\: ))) raw-name))
-         (name (nsubstitute #\P #\* name0))
+         (name1 (nsubstitute #\P #\* name0))
+         (name2 (nsubstitute #\O #\( name1))
+         (name3 (nsubstitute #\C #\) name2))
+         (name4 (nsubstitute #\A #\& name3))
+         (name name4)
          )
     (format nil "~a_~a_~a" prefix (symbol-name (species-name species)) name)))
 
@@ -1359,6 +1363,29 @@ in the system-species and assign them a GCKind value"
 
 
 
+
+(defun generate-one-gc-info (stream entry)
+  (let* ((classid (kind-key (enum-gckind entry)))
+         (species (enum-species entry))
+         (enum-name (class-enum-name classid species))
+         )
+        (format stream "//GCInfo for ~a~%" entry)
+        (format stream "template <> class gctools::GCInfo<~A> {~%" (ctype-name classid))
+        (format stream "public:~%")
+        (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
+        (format stream "};~%")
+        ))
+
+
+(defun generate-gc-info (fout anal)
+  (let ((all-enums (analysis-list-of-all-enums anal)))
+    (dolist (entry all-enums)
+      (generate-one-gc-info fout entry))
+    ))
+
+
+
+
 (defun fix-code-for-field (field analysis)
   (let ((code (fix-code (instance-variable-ctype field) analysis)))
     (cond
@@ -1470,23 +1497,18 @@ in the system-species and assign them a GCKind value"
 
 
 (defun separate-namespace-name (name)
-"Separate a X::Y name into (values X Y) - strip any preceeding 'class '"
+"Separate a X::Y::Z name into (list X Y Z) - strip any preceeding 'class '"
   (let* ((full-name (if (string= (subseq name 0 (length "class ")) "class ")
                         (subseq name (length "class ") (length name))
                         name))
-         (colon-pos (search "::" full-name))
-         (namespace (if colon-pos (subseq full-name 0 colon-pos) nil))
-         (name (if colon-pos (subseq full-name (+ colon-pos 2) (length full-name)) full-name)))
-    (values namespace name)))
+         (colon-pos (search "::" full-name)))
+    (if colon-pos
+        (let ((namespace (subseq full-name 0 colon-pos))
+              (name (subseq full-name (+ colon-pos 2) (length full-name))))
+          (list* namespace (separate-namespace-name name)))
+        (list name))))
 
         
-(defun sort-forward-declarations (analysis)
-  "Sort the forward declaration names by their length - that will sort them
-in order they need to be forward declared because longer ones need shorter ones"
-  (let ((forwards (analysis-forwards analysis))
-        forward-names)
-    (maphash (lambda (k v) (push k forward-names)) forwards)
-    (sort forward-names #'(lambda (x y) (< (length x) (length y))))))
 
 
 (defun remove-namespace (namespace name)
@@ -1505,9 +1527,39 @@ in order they need to be forward declared because longer ones need shorter ones"
           (remove-class-space removed))
         name)))
 
+
+(defstruct namespace
+  (submap (make-hash-table :test #'equal)) ;; map namespaces to names
+  names)
+
+(defun namespace-add-name (ns name)
+  (if (eql (length name) 1)
+      (push (car name) (namespace-names ns))
+      (let ((subnamespace (gethash (car name) (namespace-submap ns) (make-namespace))))
+        (setf (gethash (car name) (namespace-submap ns)) subnamespace)
+        (namespace-add-name subnamespace (cdr name)))))
+
+(defun code-for-namespace-names (stream ns &optional (indent 0))
+  (dolist (name (namespace-names ns))
+    (format stream "~vtclass ~a;~%" indent name))
+  (maphash (lambda (ns-name subnamespace)
+             (format stream "~vtnamespace ~a {~%" indent ns-name)
+             (code-for-namespace-names stream subnamespace (+ 4 indent))
+             (format stream "~vt};~%" indent))
+           (namespace-submap ns)))
+
+
+
 (defun merge-forward-names-by-namespace (analysis)
-  (let ((forward-names (sort-forward-declarations analysis))
-        merged-groups
+  (let ((forwards (analysis-forwards analysis))
+        (top-namespace (make-namespace)))
+    (maphash (lambda (name value)
+               (let ((split-name (separate-namespace-name name)))
+                 (namespace-add-name top-namespace split-name)))
+             forwards)
+    top-namespace))
+
+#|
         current-group
         current-namespace)
     (do* ((cur forward-names (cdr cur))
@@ -1527,24 +1579,13 @@ in order they need to be forward declared because longer ones need shorter ones"
             )
         (setq current-namespace ns)
         ))))
+|#
 
 (defun prefix-template-if-needed (name)
   (if (search "<" name)
       "template <>"
       ""))
 
-(defun code-forwards (stream &optional (analysis *analysis*))
-  (let ((forwards (merge-forward-names-by-namespace analysis)))
-    (dolist (l forwards)
-      (let ((namespace (car l)))
-        (format stream "namespace ~a {~%" namespace)
-        (dolist (one (cdr l))
-          (let ((name (remove-class-space (remove-namespace namespace one))))
-            (format stream "    ~a class ~a;~%" (prefix-template-if-needed name) name)))
-        (format stream "};~%")
-        ))
-    ))
-          
 
 (defun code-enums (stream analysis)
   (format stream "enum { }~%")
@@ -1568,11 +1609,14 @@ in order they need to be forward declared because longer ones need shorter ones"
 (defun generate-code (&optional (analysis *analysis*))
   (with-open-file (stream (make-pathname :name "clasp_gc" :type "cc" :defaults (main-directory-pathname)) :direction :output :if-exists :supersede)
     (format stream "#ifdef DECLARE_FORWARDS~%")
-    (code-forwards stream analysis)
+    (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
     (format stream "#endif // DECLARE_FORWARDS~%")
     (format stream "#if defined(GC_ENUM)~%")
     (generate-kind-enum stream analysis)
     (format stream "#endif // defined(GC_ENUM)~%")
+    (format stream "#if defined(GC_KIND_SELECTORS)~%")
+    (generate-gc-info stream analysis)
+    (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
     (format stream "#if defined(GC_OBJ_SCAN)~%")
     (build-mps-scan stream analysis)
     (format stream "#endif // defined(GC_OBJ_SCAN)~%")
@@ -1699,7 +1743,7 @@ in order they need to be forward declared because longer ones need shorter ones"
   (core:exit))
 
 (defvar *parallel-search-pids* nil)
-(defun sequential-fork-search-all (&key test)
+(defun parallel-search-all (&key test)
   "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
   (setq *parallel-search-pids* nil)
   (let ((all-jobs (if test
@@ -1720,7 +1764,10 @@ in order they need to be forward declared because longer ones need shorter ones"
               (setq spare-processes (1+ spare-processes)))))
       (format t "Bottom of loop proc: ~a~%" proc)
       )
+    (dotimes (proc (1- *max-parallel-searches*))
+      (core:waitpid -1 0))
     (format t "~%!~%!  Done ~%!~%")
+    (parallel-merge)
     ))
 
 
