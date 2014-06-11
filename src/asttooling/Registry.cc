@@ -372,7 +372,7 @@ namespace asttooling {
             core::Str_sp strName = sym->symbolName();
             string symbolName = strName->get();
             core::Cons_sp NameRangeDup = NameRange;
-            Error->addError(NameRangeDup, Error->ET_RegistryNotFound) << symbolName;
+            Error->addError(NameRangeDup, /*Error->*/ET_RegistryNotFound) << symbolName;
             return clang::ast_matchers::dynamic::VariantMatcher();
         }
         gctools::Vec0<ParserValue>      VArgs;
@@ -396,7 +396,7 @@ namespace asttooling {
                 return clang::ast_matchers::dynamic::VariantMatcher::SingleMatcher(*Bound);
             }
         }
-        Error->addError(NameRange, Error->ET_RegistryNotBindable);
+        Error->addError(NameRange, /*Error->*/ET_RegistryNotBindable);
         return clang::ast_matchers::dynamic::VariantMatcher();
     }
 
