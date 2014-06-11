@@ -1656,19 +1656,12 @@ in the system-species and assign them a GCKind value"
 
 
 ;; ----------------------------------------------------------------------
-;; Single search
-;; ----------------------------------------------------------------------
-(progn
-  (lnew $test-search)
-  (setq $test-search (subseq $* 0 10))
-  )
-;; ----------------------------------------------------------------------
-;; Single search
+;; Test search
 ;; ----------------------------------------------------------------------
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*/metaClass\.cc")
+                      (lsel $* ".*/asttooling/.*")
                       ))
   )
 
@@ -1677,12 +1670,17 @@ in the system-species and assign them a GCKind value"
 (defun search-all (&key test tools)
   (multitool-activate-tools *tools* tools)
   (setf (multitool-results *tools*) (make-project))
-  (batch-run-multitool *tools* :filenames (if test
-                                              $test-search
-                                              (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$"))))
-  ;; Extract the results for easy access
-  (setq *project* (multitool-results *tools*))
-  (core:system (format nil "vmmap -w ~a" (core:getpid)))
+  (let ((alljobs (if test
+                     $test-search
+                     (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))))
+    (dolist (job alljobs)
+      (core:system (format nil "heap ~a" (core:getpid)))
+      (core:system (format nil "vmmap -w ~a" (core:getpid)))
+      (let ((somejobs (list job)))
+        (batch-run-multitool *tools* :filenames somejobs))
+      ;; Extract the results for easy access
+      (setq *project* (multitool-results *tools*))
+      ))
   (save-project)
   )
 
@@ -1709,35 +1707,6 @@ in the system-species and assign them a GCKind value"
 
 (defparameter *max-parallel-searches* 6)
 
-(defvar *parallel-search-pids* nil)
-(defun parallel-search-all (&key test)
-;;  (error "fork doesn't work with the Boehm garbage collector")
-  (setq *parallel-search-pids* nil)
-  (let ((all-jobs (if test
-                      (subseq $* 0 test)
-                      (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))))
-    (format t "all-jobs: ~a~%" all-jobs)
-    (let ((split-jobs (split-list all-jobs *max-parallel-searches*)))
-      (dotimes (proc *max-parallel-searches*)
-        (core:system "sleep 1")
-        (let* ((job-list (elt split-jobs proc))
-               (pid (core:fork)));; 0 )) ;;(core:fork))
-          (if (eql 0 pid)
-              (with-open-file (*standard-output* (project-pathname (format nil "project~a" proc) "log")
-                                                 :direction :output :if-exists :supersede)
-                (format t "Running search on: ~a~%" 
-                        (setf (multitool-results *tools*) (make-project))
-                        (batch-run-multitool *tools* :filenames job-list)
-                        (serialize:save-archive (multitool-results *tools*) (project-pathname (format nil "project~a" proc) "dat"))
-                        (core:exit)))
-              (push pid *parallel-search-pids*)
-              )))))
-  (format t "Started parallel-search-all   pids: ~a~%" *parallel-search-pids*)
-  )
-
-
-
-
 (defun fork-jobs (proc job-list)
   (setf (multitool-results *tools*) (make-project))
   (batch-run-multitool *tools* :filenames job-list)
@@ -1749,7 +1718,7 @@ in the system-species and assign them a GCKind value"
   "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
   (setq *parallel-search-pids* nil)
   (let ((all-jobs (if test
-                      (subseq $* 0 test)
+                      $test-search
                       (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$"))))
         (spare-processes *max-parallel-searches*))
     (serialize:save-archive all-jobs (project-pathname "project-all" "dat"))
@@ -1809,8 +1778,8 @@ in the system-species and assign them a GCKind value"
 
 
 (progn
-  (lnew $test-search)
-  (setq $test-search (append
+  (lnew $tiny-test-search)
+  (setq $tiny-test-search (append
                       (lsel $* ".*/lambdaListHandler\.cc")
                       ))
   )
@@ -1821,9 +1790,9 @@ in the system-species and assign them a GCKind value"
 
 
 (defun load-test-ast ()
-  (lnew $test-search)
-  (setq $test-search (lsel $* ".*/lambdaListHandler\.cc"))
-  (load-asts $test-search
+  (lnew $tiny-test-search)
+  (setq $tiny-test-search (lsel $* ".*/lambdaListHandler\.cc"))
+  (load-asts $tiny-test-search
              :arguments-adjuster-code (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
                                                                   #("-DUSE_MPS"
                                                                     "-DRUNNING_GC_BUILDER"
