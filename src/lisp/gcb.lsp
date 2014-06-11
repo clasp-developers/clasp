@@ -1533,6 +1533,8 @@ in the system-species and assign them a GCKind value"
   names)
 
 (defun namespace-add-name (ns name)
+  (when (and (eql (length name) 1) (string= "Diagnostics" (car name)))
+    (break "Check name - about to add to namespace"))
   (if (eql (length name) 1)
       (push (car name) (namespace-names ns))
       (let ((subnamespace (gethash (car name) (namespace-submap ns) (make-namespace))))
