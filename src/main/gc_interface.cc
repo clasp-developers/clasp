@@ -150,6 +150,7 @@ typedef bool _Bool;
 #endif
 
 namespace gctools {
+#if 0
     const char* obj_name( GCKindEnum kind )
     {
 	switch (kind) {
@@ -166,21 +167,10 @@ namespace gctools {
 	}
 	}
     }
-
-
-    extern void searchMemoryForAddress(mps_addr_t addr);
+#endif
 
 
 };
-
-
-    template <class T>
-    void initializeKind() {
-        gctools::GCKindEnum k = gctools::GCInfo<T>::Kind;
-        T::static_Kind = k;
-    };
-
-
 
 
 extern "C" {
@@ -190,14 +180,6 @@ extern "C" {
 
 
 
-    void initialize_kinds()
-    {
-#ifndef RUNNING_GC_BUILDER
-#define SETUP_KIND
-#include "main/clasp_gc.cc"
-#undef SETUP_KIND
-#endif
-    };
 
 
     /*! I'm using a format_header so MPS gives me the object-pointer */
@@ -221,9 +203,9 @@ extern "C" {
 #endif
         switch (kind) {
 #ifndef RUNNING_GC_BUILDER
-#define GC_SKIP_METHOD
+#define GC_OBJ_SKIP
 #include "main/clasp_gc.cc"
-#undef GC_SKIP_METHOD
+#undef GC_OBJ_SKIP
 #endif
 #if 0
         case gctools::KIND_fwd2:
@@ -280,9 +262,9 @@ extern "C" {
                         % base % obj_ptr % obj_name(header->kind._Kind) );
                 switch (kind) {
 #ifndef RUNNING_GC_BUILDER
-#define GC_SCAN_METHOD
+#define GC_OBJ_SCAN
 #include "main/clasp_gc.cc"
-#undef GC_SCAN_METHOD
+#undef GC_OBJ_SCAN
 #endif
                 default: {
                     fprintf(stderr,"Garbage collection tried to obj_scan an object of unknown family %d kind[%d] \n", iFamily, kind);
@@ -316,9 +298,9 @@ extern "C" {
 //        printf("%s:%d Finalizing base@%p   kind=%d\n", __FILE__, __LINE__, base, kind );
         switch (kind) {
 #ifndef RUNNING_GC_BUILDER
-#define GC_FINALIZE_METHOD
+#define GC_OBJ_FINALIZE
 #include "main/clasp_gc.cc"
-#undef GC_FINALIZE_METHOD
+#undef GC_OBJ_FINALIZE
 #endif
         default: {
             fprintf(stderr,"Garbage collection tried to obj_finalize an object of unknown family %d   kind[%d]\n", iFamily, kind);

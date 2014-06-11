@@ -26,7 +26,7 @@
 #include "llvm/ADT/StringRef.h"
 
 namespace asttooling {
-    namespace {
+    namespace RegMap {
 
         using asttooling::internal::MatcherDescriptor;
 
@@ -349,7 +349,8 @@ namespace asttooling {
 
         static gctools::ManagedStatic<RegistryMaps> RegistryData;
 
-    } // anonymous namespace
+    } // RegMap namespace - was anonymous namespace
+    using namespace RegMap;
 
 
     void convertArgs(gctools::Vec0<ParserValue>& args, core::Vector_sp lispArgs)

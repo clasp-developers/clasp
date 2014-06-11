@@ -488,9 +488,11 @@ namespace gctools {
             size_t sz = sizeof_container_with_header<container_type>(num);
             // prepend a one pointer header with a pointer to the typeinfo.name
             Header_s* base = reinterpret_cast<Header_s*>(GC_MALLOC(sz));
+#if 0
             if ( sz > 100000 ) {
                 printf("%s:%d Allocating large container containing %lu bytes at address: %p\n", __FILE__, __LINE__, sz, base );
             }
+#endif
             if (!base) THROW_HARD_ERROR(BF("Out of memory in allocate"));
             new (base) Header_s(typeid(TY).name(),BoehmContainerKind);
             container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);

@@ -720,6 +720,14 @@ namespace translate
         static core::T_sp convert(llvm::Constant* ptr)
         {_G(); return(( core::RP_Create_wrapped<llvmo::Constant_O,llvm::Constant*>(ptr)));};
     };
+    template <>
+    struct from_object<llvm::Constant*,std::true_type>
+    {
+        typedef llvm::Constant* DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(object.as<llvmo::Constant_O>()->wrappedPtr()) {};
+    };
+
 };
 ;
 
@@ -2882,6 +2890,15 @@ namespace translate
         static core::T_sp convert(llvm::ConstantPointerNull* ptr)
         {_G(); return(( llvmo::ConstantPointerNull_O::create(ptr)));}
     };
+
+    template <>
+    struct from_object<llvm::ConstantPointerNull*,std::true_type>
+    {
+        typedef llvm::ConstantPointerNull* DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(object.as<llvmo::ConstantPointerNull_O>()->wrappedPtr()) {};
+    };
+
 };
 ;
 

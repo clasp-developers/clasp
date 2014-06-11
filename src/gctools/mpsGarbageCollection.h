@@ -356,8 +356,6 @@ namespace gctools {
 
 
 extern "C" {
-    /*! Implemented in gc_interace.cc */
-    void initialize_kinds();
 
     /*! Implemented in gc_interace.cc */
     mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);

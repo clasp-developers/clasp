@@ -431,8 +431,6 @@ namespace gctools {
 
 //#define TEST_MPS        1
 
-        initialize_kinds(); // Initialize all bootstrap and gcobject static_Kind values
-
         int exit_code = 0;
 
         mps_root_t global_scan_root;
