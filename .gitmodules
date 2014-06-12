@@ -4,3 +4,6 @@
 [submodule "externals/src/llvm"]
 	path = externals/src/llvm
 	url = https://github.com/llvm-mirror/llvm.git
+[submodule "externals/src/clang"]
+	path = externals/src/clang
+	url = https://github.com/llvm-mirror/clang.git

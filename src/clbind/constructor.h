@@ -18,14 +18,19 @@ namespace clbind {
     typedef constructor<> default_constructor;
 
 
+    class ConstructorCreator : public core::Creator {
+    public:
+        ConstructorCreator(core::Symbol_sp c) : _mostDerivedClassSymbol(c) {};
+        core::Symbol_sp _mostDerivedClassSymbol;
+    };
+
 
 
     template <typename T, typename Pointer>
-    class DefaultConstructorCreator : public core::Creator
+    class DefaultConstructorCreator : public ConstructorCreator
     {
     public:
         typedef Wrapper<T,Pointer>  WrapperType;
-        core::Symbol_sp _mostDerivedClassSymbol;
         int _Kind;
         int _duplicationLevel;
     public:
@@ -42,13 +47,13 @@ namespace clbind {
 #endif
     public:
         DISABLE_NEW();
-        DefaultConstructorCreator() : _mostDerivedClassSymbol(reg::lisp_classSymbol<T>())
+        DefaultConstructorCreator() : ConstructorCreator(reg::lisp_classSymbol<T>())
 #ifdef USE_MPS
                                              , _Kind(gctools::GCKind<WrapperType>::Kind)
 #endif
                                              , _duplicationLevel(0) {};
         DefaultConstructorCreator(core::Symbol_sp cn, int kind, int dupnum)
-            : _mostDerivedClassSymbol(cn)
+            : ConstructorCreator(cn)
             , _Kind(kind)
             , _duplicationLevel(dupnum) {};
 
@@ -89,10 +94,9 @@ namespace clbind {
 
 
     template <typename T>
-    class DerivableDefaultConstructorCreator : public core::Creator
+    class DerivableDefaultConstructorCreator : public ConstructorCreator
     {
     public:
-        core::Symbol_sp _mostDerivedClassSymbol;
         int _Kind;
         int _duplicationLevel;
     public:
@@ -109,13 +113,13 @@ namespace clbind {
         }
 #endif
     public:
-        DerivableDefaultConstructorCreator() : _mostDerivedClassSymbol(reg::lisp_classSymbol<T>())
+        DerivableDefaultConstructorCreator() : ConstructorCreator(reg::lisp_classSymbol<T>())
 #ifdef USE_MPS
                                                       , _Kind(gctools::GCKind<T>::Kind)
 #endif
                                                       , _duplicationLevel(0) {};
         DerivableDefaultConstructorCreator(core::Symbol_sp cn, int kind, int dupnum)
-            : _mostDerivedClassSymbol(cn)
+            : ConstructorCreator(cn)
             , _Kind(kind)
             , _duplicationLevel(dupnum) {};
 

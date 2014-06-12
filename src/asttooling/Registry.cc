@@ -32,45 +32,6 @@ namespace asttooling {
 
 
 
-        class RegistryMaps {
-        public:
-            RegistryMaps();
-            ~RegistryMaps();
-
-            struct SymbolMatcherDescriptorPair {
-                SymbolMatcherDescriptorPair(core::Symbol_sp k, const MatcherDescriptor* v) : Name(k), matcher(v) {};
-                core::Symbol_sp     Name;
-                const MatcherDescriptor*    matcher;
-            };
-            typedef gctools::Vec0<SymbolMatcherDescriptorPair> ConstructorMap;
-            typedef ConstructorMap::iterator iterator;
-            typedef ConstructorMap::const_iterator const_iterator;
-            iterator begin() { return this->Constructors.begin();};
-            iterator end() { return this->Constructors.end();};
-            const_iterator begin() const { return this->Constructors.begin();};
-            const_iterator end() const { return this->Constructors.end();};
-
-            const ConstructorMap &constructors() const { return this->Constructors; }
-
-
-            /*! Find the constructor associated with the symbol */
-            ConstructorMap::iterator find(core::Symbol_sp key)
-            {
-                ConstructorMap::iterator it;
-                for ( it = this->Constructors.begin(); it!=this->Constructors.end(); ++it ) {
-                    if (it->Name == key ) return it;
-                }
-                return it;
-            }
-
-
-        private:
-            void registerMatcher(core::Symbol_sp MatcherName, MatcherDescriptor *Callback);
-            /*! This is used to replace the map<Symbol_sp,const MatcherDescriptor*> that used to be a ConstructorMap */
-        private:
-            ConstructorMap Constructors;
-        };
-
         void RegistryMaps::registerMatcher(core::Symbol_sp MatcherName,
                                            MatcherDescriptor *Callback) {
             ConstructorMap::iterator pos = this->find(MatcherName);
@@ -372,7 +333,7 @@ namespace asttooling {
             core::Str_sp strName = sym->symbolName();
             string symbolName = strName->get();
             core::Cons_sp NameRangeDup = NameRange;
-            Error->addError(NameRangeDup, Error->ET_RegistryNotFound) << symbolName;
+            Error->addError(NameRangeDup, /*Error->*/ET_RegistryNotFound) << symbolName;
             return clang::ast_matchers::dynamic::VariantMatcher();
         }
         gctools::Vec0<ParserValue>      VArgs;
@@ -396,7 +357,7 @@ namespace asttooling {
                 return clang::ast_matchers::dynamic::VariantMatcher::SingleMatcher(*Bound);
             }
         }
-        Error->addError(NameRange, Error->ET_RegistryNotBindable);
+        Error->addError(NameRange, /*Error->*/ET_RegistryNotBindable);
         return clang::ast_matchers::dynamic::VariantMatcher();
     }
 

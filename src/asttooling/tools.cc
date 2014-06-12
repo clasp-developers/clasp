@@ -311,7 +311,7 @@ namespace asttooling
     private:
 	InstanceVarAccumulator 	_Result;
     public:
-	virtual void run(const MatchFinder::MatchResult &Result)
+	virtual void run(const MatchFinderMatchResult &Result)
 	{
 	STATIC_ROOT_FRAME_BEGIN(StaticFrame) {
 	    StaticFrame() { this->attachToGCRoot(); };
@@ -398,7 +398,7 @@ namespace asttooling
 	InheritanceAccumulator 	_Result;
     public:
     public:
-	virtual void run(const MatchFinder::MatchResult &Result)
+	virtual void run(const MatchFinderMatchResult &Result)
 	{
 	    Symbol_sp sym_makeInheritanceRelationship;
 	    Symbol_sp kw_myclass, kw_bases, kw_vbases;
@@ -471,7 +471,7 @@ namespace asttooling
 	GlobalAccumulator 	_Result;
     public:
     public:
-	virtual void run(const MatchFinder::MatchResult &Result)
+	virtual void run(const MatchFinderMatchResult &Result)
 	{
 	    const VarDecl *varDecl = Result.Nodes.getNodeAs<clang::VarDecl>("var");
 	    if ( varDecl->hasGlobalStorage() )
@@ -533,7 +533,7 @@ namespace asttooling
 	LocalAccumulator	_Locals;
     public:
     public:
-	virtual void run(const MatchFinder::MatchResult &Result)
+	virtual void run(const MatchFinderMatchResult &Result)
 	{
 	    const VarDecl *varDecl = Result.Nodes.getNodeAs<clang::VarDecl>("var");
 	    if ( !varDecl->hasGlobalStorage() )
@@ -699,7 +699,7 @@ namespace asttooling
 	tooling::Replacements* 	_Replacements;
     public:
 	RewriteReprCallback(tooling::Replacements* replacements) : _Replacements(replacements) {};
-	virtual void run(const MatchFinder::MatchResult &result)
+	virtual void run(const MatchFinderMatchResult &result)
 	{
 	    const CXXMemberCallExpr* call = result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call");
 	    const Expr* expr = call->getImplicitObjectArgument();
@@ -776,7 +776,7 @@ namespace asttooling
 	RewriteNullaryMemberFunctionsCallback(HashTable_sp conversions,
 					      tooling::Replacements* replacements)
 	    : _Conversions(conversions), _Replacements(replacements) {};
-	virtual void run(const MatchFinder::MatchResult &result)
+	virtual void run(const MatchFinderMatchResult &result)
 	{
 	    const CXXMemberCallExpr* call = result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call");
 	    const Expr* expr = call->getImplicitObjectArgument();
@@ -866,7 +866,7 @@ namespace asttooling
 	RewriteFunctionNamesCallback(HashTable_sp conversions,
 					      tooling::Replacements* replacements)
 	    : _Conversions(conversions), _Replacements(replacements) {};
-	virtual void run(const MatchFinder::MatchResult &result)
+	virtual void run(const MatchFinderMatchResult &result)
 	{
 	    const CallExpr* call = result.Nodes.getNodeAs<clang::CallExpr>("call");
 	    const Expr* expr = call->getCallee();
