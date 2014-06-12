@@ -50,7 +50,8 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&base,obj_ap,sz);
                 gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
-                header->kind._Kind = gctools::GCKind<container_type>::Kind;
+                new (header) Header_s(gctools::GCKind<container_type>::Kind);
+//                header->kind._Kind = gctools::GCKind<container_type>::Kind;
             } while (!mps_commit(obj_ap,base,sz) );
 #endif
             container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);

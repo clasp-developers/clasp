@@ -51,6 +51,7 @@
 
 
 
+
 namespace asttooling {
 
     using namespace clbind;
@@ -535,11 +536,13 @@ namespace asttooling {
             .  def("run",&DerivableMatchCallback::default_run)
             .  def("onStartOfTranslationUnit",&DerivableMatchCallback::default_onStartOfTranslationUnit)
             .  def("onEndOfTranslationUnit",&DerivableMatchCallback::default_onEndOfTranslationUnit)
-
-            ,class_<clang::ast_matchers::MatchFinder::MatchResult>("MatchResult",no_default_constructor)
-            .  property("Nodes",&clang::ast_matchers::MatchFinder::MatchResult::Nodes)
-            .  property("Context",&clang::ast_matchers::MatchFinder::MatchResult::Context)
-            .  property("SourceManager",&clang::ast_matchers::MatchFinder::MatchResult::SourceManager)
+            ,class_<clang::ast_matchers::MatchFinderMatchResult>("MatchResult",no_default_constructor)
+            .  def("Nodes",&clang::ast_matchers::MatchFinderMatchResult::getNodes)
+            .  def("Context",&clang::ast_matchers::MatchFinderMatchResult::getContext)
+            .  def("SourceManager",&clang::ast_matchers::MatchFinderMatchResult::getSourceManager)
+//            .  property("Nodes",&clang::ast_matchers::MatchFinderMatchResult::Nodes)
+//            .  property("Context",&clang::ast_matchers::MatchFinderMatchResult::Context)
+//            .  property("SourceManager",&clang::ast_matchers::MatchFinderMatchResult::SourceManager)
             ,class_<clang::ast_matchers::BoundNodes>("BoundNodes",no_default_constructor)
             ,def("IDToNodeMap",&af_IDToNodeMap,policies<>(),ARGS_af_IDToNodeMap,DECL_af_IDToNodeMap,DOCS_af_IDToNodeMap)
             ,def("Lexer-getLocForEndOfToken",&clang::Lexer::getLocForEndOfToken)

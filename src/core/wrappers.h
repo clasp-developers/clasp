@@ -14,6 +14,7 @@ namespace core
 
     template <typename FN>
     class VariadicFunctoid : public Functoid {};
+#define CORE_VARIADIC_FUNCTOID_TEMPLATE_DEFINED
 
 #include "wrappers_functoids.h"
 

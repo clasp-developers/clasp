@@ -89,14 +89,15 @@ namespace asttooling {
     };
 
 
+    struct Message {
+        core::Cons_sp Range;
+        ErrorType Type;
+        std::vector<std::string> Args;
+    };
+
     /// \brief Information stored for each error found.
     struct ErrorContent {
         gctools::Vec0<ContextFrame> ContextStack;
-        struct Message {
-            core::Cons_sp Range;
-            ErrorType Type;
-            std::vector<std::string> Args;
-        };
         gctools::Vec0<Message> Messages;
     };
 

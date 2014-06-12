@@ -72,7 +72,7 @@ ArgStream &ArgStream::operator<<(const Twine &Arg) {
         Errors.push_back(ec);
         ErrorContent &Last = Errors.back();
         Last.ContextStack = ContextStack;
-        Last.Messages.push_back(ErrorContent::Message());
+        Last.Messages.push_back(Message());
         Last.Messages.back().Range = Range;
         Last.Messages.back().Type = Error;
         return ArgStream(&Last.Messages.back().Args);
@@ -163,7 +163,7 @@ static void printContextFrameToStream(const ContextFrame &Frame,
 }
 
 static void
-printMessageToStream(const ErrorContent::Message &Message,
+printMessageToStream(const Message &Message,
                      const Twine Prefix, llvm::raw_ostream &OS) {
   maybeAddLineAndColumn(Message.Range, OS);
   OS << Prefix;

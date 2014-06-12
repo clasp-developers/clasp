@@ -219,7 +219,10 @@
       (ast-tooling:integral
        (llvm:to-string (cast:get-as-integral template-arg) 10 t))
       (ast-tooling:pack
-       "TEMPLATE_ARG_AS_STRING::PACK")
+       (let ((pack-size (cast:pack-size template-arg)))
+         (if (eql pack-size 0)
+             ""
+             (format nil "TEMPLATE_ARG_PACK_SIZE~a" pack-size))))
       (ast-tooling:template
        "TEMPLATE_ARG_AS_STRING::TEMPLATE")
       (ast-tooling:expression
@@ -232,17 +235,17 @@
 
 
 
-(defgeneric record-key (node))
+(defgeneric record-key-impl (node))
 
-(defmethod record-key ((node cast:type))
+(defmethod record-key-impl ((node cast:type))
   (cast:get-as-string (cast:make-qual-type node))) ;; get-as-string (cast:desugar node)))
 
-(defmethod record-key ((node cast:record-type))
+(defmethod record-key-impl ((node cast:record-type))
   "Names of RecordType(s) are calculated using recursive calls to record-key.
 This avoids the prefixing of 'class ' and 'struct ' to the names of classes and structs"
-  (record-key (cast:get-decl node)))
+  (record-key-impl (cast:get-decl node)))
 
-(defmethod record-key ((decl-node cast:named-decl))
+(defmethod record-key-impl ((decl-node cast:named-decl))
   "Return the name of the class/struct and whether it is a template specializer or not"
 ;;  (when (search "llvm::AssertingVH" (decl-name decl-node) ) (break "Caught AssertingVH"))
   (or decl-node (error "There is a problem, the decl-node is nil"))
@@ -271,6 +274,11 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
      (format t "Add support for record-key for ~a  get-name->~a~%" decl-node (decl-name decl-node))
      #+use-breaks(break "Check the decl-node")
      )))
+
+
+(defun record-key (node)
+  (let ((name (record-key-impl node)))
+    (remove-class-struct-noise name)))
 
 
 (defun classify-template-args (decl)
@@ -604,12 +612,16 @@ and the inheritance hierarchy that the garbage collector will need"
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (mtag-loc-start :whole)))
+                    (class-location (mtag-loc-start :whole))
+                    (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
+                    (arg-location (source-loc-as-string (get-loc-start arg-decl)))
+                    (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
+;;                 (break "Check locations")
                  (let ((lispkind (make-lispkind :key class-key
-                                                :name (mtag-name :whole)
-                                                :location class-location
+                                                :name arg-name ;; XXXXXX (mtag-name :whole)
+                                                :location arg-location ;; class-location
                                                 :ctype classified)))
                    (setf (gethash class-key class-results) lispkind)
                    )))))
@@ -651,12 +663,15 @@ and the inheritance hierarchy that the garbage collector will need"
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (mtag-loc-start :whole)))
+                    (class-location (mtag-loc-start :whole))
+                    (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
+                    (arg-location (source-loc-as-string (get-loc-start arg-decl)))
+                    (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
                  (let ((classkind (make-classkind :key class-key
-                                                  :name (mtag-name :whole)
-                                                  :location class-location
+                                                  :name arg-name ;;(mtag-name :whole)
+                                                  :location arg-location ;;class-location
                                                   :ctype classified)))
                    (setf (gethash class-key class-results) classkind)
                    )))))
@@ -695,18 +710,31 @@ and the inheritance hierarchy that the garbage collector will need"
     (flet ((%%containerkind-matcher-callback ()
              "This function can only be called as a ASTMatcher callback"
              (let* ((decl (mtag-node :whole))
+                    (args (cast:get-template-args decl))
+                    (arg (cast:template-argument-list-get args 0))
+                    (qtarg (cast:get-as-type arg))
+                    (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key decl))
                     (classified (classify-decl decl))
                     (class-location (mtag-loc-start :whole)))
-;;               (break "Check containerkind")
                (unless (gethash class-key class-results)
-                 (gclog "Adding class name: ~a~%" class-name)
-                 (let ((containerkind (make-containerkind :key class-key
-                                                          :name (mtag-name :whole)
-                                                          :location class-location
-                                                          :ctype classified)))
-                   (setf (gethash class-key class-results) containerkind)
-                   )))))
+                 (if (not (string= class-key "gctools::GCString_moveable<char>"))
+                     (let* ((arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
+                           (arg-location (source-loc-as-string (get-loc-start arg-decl)))
+                           (arg-name (cast:get-name arg-decl)))
+                       ;;               (break "Check containerkind")
+                       (gclog "Adding class name: ~a~%" class-name)
+                       (let ((containerkind (make-containerkind :key class-key
+                                                                :name arg-name ;;(mtag-name :whole)
+                                                                :location arg-location ;;class-location
+                                                                :ctype classified)))
+                         (setf (gethash class-key class-results) containerkind)))
+                     (let ((containerkind (make-containerkind :key class-key
+                                                              :name "gctools::GCString_moveable"
+                                                              :location nil
+                                                              :ctype classified)))
+                       (setf (gethash class-key class-results) containerkind))
+                     )))))
       ;; Initialize the class search
       (multitool-add-matcher mtool
                              :name :containerkinds
@@ -860,15 +888,15 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 (defun class-enum-name (classid species &optional (prefix "KIND"))
-  (let* ((raw-name (copy-seq (ctype-name classid)))
-         (name0 (nsubstitute-if #\_ (lambda (c) (member c '(#\SPACE #\, #\< #\> #\: ))) raw-name))
+  (let* ((raw-name (format nil "~a_~a_~a" prefix (symbol-name (species-name species)) (copy-seq (ctype-name classid))))
+         (name0 (nsubstitute-if #\_ (lambda (c) (member c '(#\SPACE #\, #\< #\> #\: #\- ))) raw-name))
          (name1 (nsubstitute #\P #\* name0))
          (name2 (nsubstitute #\O #\( name1))
          (name3 (nsubstitute #\C #\) name2))
          (name4 (nsubstitute #\A #\& name3))
          (name name4)
          )
-    (format nil "~a_~a_~a" prefix (symbol-name (species-name species)) name)))
+    name))
 
 
 
@@ -879,6 +907,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 (defstruct species
   name
+  preprocessor-guard ;; defines a preprocessor symbol XXX used to wrap #ifdef XXX/#endif around GCKind
   discriminator ;; Function - takes one argument, returns a species index
   scan          ;; Function - generates scanner for species
   skip          ;; Function - generates obj_skip code for species
@@ -1049,7 +1078,7 @@ and the inheritance hierarchy that the garbage collector will need"
       (dolist (instance-var all-instance-variables)
         (code-for-instance-var fout +ptr-name+ instance-var)))
     (format fout "    typedef ~A type_~A;~%" (ctype-name classid) enum-name)
-    (format fout "    base = (char*)base + Align(sizeof_with_header(type_~A));~%" enum-name)
+    (format fout "    base = (char*)base + Align(sizeof_with_header<type_~A>());~%" enum-name)
     (format fout "} break;~%")
     ))
 
@@ -1071,7 +1100,7 @@ and the inheritance hierarchy that the garbage collector will need"
         (gclog "skipper-for-lispkinds -> inheritance classid[~a]  value[~a]~%" (ctype-name classid) value)
         (format fout "case ~a: {~%" enum-name)
         (format fout "    typedef ~A type_~A;~%" (ctype-name classid) enum-name)
-        (format fout "    base = (char*)base + Align(sizeof_with_header(type_~A));~%" enum-name)
+        (format fout "    base = (char*)base + Align(sizeof_with_header<type_~A>());~%" enum-name)
         (format fout "} break;~%")))
     ))
 
@@ -1139,7 +1168,7 @@ and the inheritance hierarchy that the garbage collector will need"
                 |#
               (format fout "    }~%")
               (format fout "    typedef typename ~A type_~A;~%" (ctype-name classid) enum-name)
-              (format fout "    size_t header_and_gccontainer_size = AlignUp(gc_sizeof<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+              (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
               (format fout "    base = (char*)base + Align(header_and_gccontainer_size);~%"))))
         (format fout "} break;~%")
         )))
@@ -1163,7 +1192,7 @@ and the inheritance hierarchy that the garbage collector will need"
               (format fout "// parm0-ctype = ~a~%" parm0-ctype)
               (format fout "    ~A* ~A = reinterpret_cast<~A*>(base);~%" (ctype-name classid) +ptr-name+ (ctype-name classid))
               (format fout "    typedef typename ~A type_~A;~%" (ctype-name classid) enum-name)
-              (format fout "    size_t header_and_gccontainer_size = AlignUp(gc_sizeof<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+              (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
               (format fout "    base = (char*)base + Align(header_and_gccontainer_size);~%")
               )))
       (format fout "} break;~%")
@@ -1214,7 +1243,7 @@ and the inheritance hierarchy that the garbage collector will need"
               (format fout "// parm0-ctype = ~a~%" parm0-ctype)
               (format fout "    ~A* ~A = reinterpret_cast<~A*>(base);~%" (ctype-name classid) +ptr-name+ (ctype-name classid))
               (format fout "    typedef typename ~A type_~A;~%" (ctype-name classid) enum-name)
-              (format fout "    size_t header_and_gcstring_size = AlignUp(gc_sizeof<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+              (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
               (format fout "    base = (char*)base + Align(header_and_gcstring_size);~%")
               )))
       (format fout "} break;~%")
@@ -1243,12 +1272,24 @@ and the inheritance hierarchy that the garbage collector will need"
       )))
 
 
+(defun string-left-matches (str sub)
+  (eql (search str sub) 0))
 
+(defmacro simple-species (name left-string guard)
+  `(make-species :name ,name
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches ,left-string (kind-key x))))
+                                       :preprocessor-guard ,guard
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
 
 (defun setup-manager ()
   (let* ((manager (make-manager)))
     (add-species manager (make-species :name :system
                                        :discriminator (lambda (x) (and (lispkind-p x) (stringp x) (search "system_" x)))
+                                       :preprocessor-guard "SYSTEM_GUARD"
                                        :scan 'scanner-for-system
                                        :skip 'skipper-for-system
                                        :finalize 'finalizer-for-system
@@ -1263,8 +1304,8 @@ and the inheritance hierarchy that the garbage collector will need"
     (add-species manager (make-species :name :gcobject
                                        :discriminator (lambda (x) (and (lispkind-p x)
                                                                        (not (gctools:bootstrap-kind-p (kind-key x)))
-                                                                       (not (string= "clbind::Wrapper" (kind-name x)))
-                                                                       (not (string= "clbind::Iterator" (kind-name x)))
+                                                                       (not (string-left-matches "clbind::Wrapper" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::Iterator" (kind-key x)))
                                                                        ))
                                        :scan 'scanner-for-lispkinds
                                        :skip 'skipper-for-lispkinds
@@ -1273,14 +1314,16 @@ and the inheritance hierarchy that the garbage collector will need"
     (add-species manager (make-species :name :WRAPPER
                                        :discriminator (lambda (x) (progn
                                                                     (and (lispkind-p x)
-                                                                         (string= "clbind::Wrapper" (kind-name x)))))
+                                                                         (string-left-matches "clbind::Wrapper" (kind-key x)))))
+                                       :preprocessor-guard "CLBIND_WRAPPER_TEMPLATE_DEFINED"
                                        :scan 'scanner-for-lispkinds
                                        :skip 'skipper-for-lispkinds
                                        :finalize 'finalizer-for-lispkinds
                                        ))
     (add-species manager (make-species :name :ITERATOR
                                        :discriminator (lambda (x) (and (lispkind-p x)
-                                                                       (string= "clbind::Iterator" (kind-name x))))
+                                                                       (string-left-matches "clbind::Iterator" (kind-key x))))
+                                       :preprocessor-guard "CLBIND_ITERATOR_TEMPLATE_DEFINED"
                                        :scan 'scanner-for-lispkinds
                                        :skip 'skipper-for-lispkinds
                                        :finalize 'finalizer-for-lispkinds
@@ -1306,8 +1349,87 @@ and the inheritance hierarchy that the garbage collector will need"
                                        :skip 'skipper-for-gcstring
                                        :finalize 'finalizer-for-gcstring
                                        ))
-    (add-species manager (make-species :name :class
-                                       :discriminator (lambda (x) (and (classkind-p x)))
+    (add-species manager (make-species :name :classkind
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (not (string-left-matches "core::VariadicFunctoid" (kind-key x)))
+                                                                       (not (string-left-matches "core::VariadicMethoid" (kind-key x)))
+                                                                       (not (string-left-matches "core::IndirectVariadicMethoid" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::VariadicFunctoid" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::IndirectVariadicMethoid" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::DefaultConstructorCreator" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::DerivableDefaultConstructorFunctoid" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::DerivableDefaultConstructorCreator" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::VariadicConstructorFunctoid" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::GetterMethoid" (kind-key x)))
+                                                                       (not (string-left-matches "clbind::IteratorMethoid" (kind-key x)))
+                                                                       ))
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
+    (add-species manager (simple-species :clbind-getter-methoid "clbind::GetterMethoid" "CLBIND_GETTER_METHOID_TEMPLATE_DEFINED"))
+    (add-species manager (simple-species :clbind-iterator-methoid "clbind::IteratorMethoid" "CLBIND_ITERATOR_METHOID_TEMPLATE_DEFINED"))
+    (add-species manager (simple-species :clbind-derivable-default-constructor-creator "clbind::DerivableDefaultConstructorCreator" "CLBIND_DERIVABLE_DEFAULT_CONSTRUCTOR_TEMPLATE_DEFINED"))
+    (add-species manager (make-species :name :core-indirect-variadic-methoid
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches "core::IndirectVariadicMethoid" (kind-key x))))
+                                       :preprocessor-guard "CORE_INDIRECT_VARIADIC_METHOID_TEMPLATE_DEFINED"
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
+    (add-species manager (make-species :name :core-variadic-functoid
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches "core::VariadicFunctoid" (kind-key x))))
+                                       :preprocessor-guard "CORE_VARIADIC_FUNCTOID_TEMPLATE_DEFINED"
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
+    (add-species manager (make-species :name :core-variadic-methoid
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches "core::VariadicMethoid" (kind-key x))))
+                                       :preprocessor-guard "CORE_VARIADIC_METHOID_TEMPLATE_DEFINED"
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
+    (add-species manager (make-species :name :clbind-variadic-functoid
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches "clbind::VariadicFunctoid" (kind-key x))))
+                                       :preprocessor-guard "CLBIND_VARIADIC_FUNCTOID_TEMPLATE_DEFINED"
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
+    (add-species manager (make-species :name :clbind-indirect-variadic-methoid
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches "clbind::IndirectVariadicMethoid" (kind-key x))))
+                                       :preprocessor-guard "CLBIND_INDIRECT_VARIADIC_METHOID_TEMPLATE_DEFINED"
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
+    (add-species manager (make-species :name :clbind-default-constructor-creator
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches "clbind::DefaultConstructorCreator" (kind-key x))))
+                                       :preprocessor-guard "CLBIND_DEFAULT_CONSTRUCTOR_CREATOR_TEMPLATE_DEFINED"
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
+    (add-species manager (make-species :name :clbind-derivable-default-constructor-functoid
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches "clbind::DerivableDefaultConstructorFunctoid" (kind-key x))))
+                                       :preprocessor-guard "CLBIND_DERIVABLE_DEFAULT_CONSTRUCTOR_FUNCTOID_TEMPLATE_DEFINED"
+                                       :scan 'scanner-for-lispkinds
+                                       :skip 'skipper-for-lispkinds
+                                       :finalize 'finalizer-for-lispkinds
+                                       ))
+    (add-species manager (make-species :name :clbind-variadic-constructor-functoid
+                                       :discriminator (lambda (x) (and (classkind-p x)
+                                                                       (string-left-matches "clbind::VariadicConstructorFunctoid" (kind-key x))))
+                                       :preprocessor-guard "CLBIND_VARIADIC_CONSTRUCTOR_FUNCTOID_TEMPLATE_DEFINED"
                                        :scan 'scanner-for-lispkinds
                                        :skip 'skipper-for-lispkinds
                                        :finalize 'finalizer-for-lispkinds
@@ -1369,12 +1491,16 @@ in the system-species and assign them a GCKind value"
          (species (enum-species entry))
          (enum-name (class-enum-name classid species))
          )
-        (format stream "//GCInfo for ~a~%" entry)
-        (format stream "template <> class gctools::GCInfo<~A> {~%" (ctype-name classid))
-        (format stream "public:~%")
-        (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
-        (format stream "};~%")
-        ))
+    (when (species-preprocessor-guard species)
+      (format stream "#if defined(~a)~%" (species-preprocessor-guard species)))
+    (format stream "//GCKind for ~a~%" entry)
+    (format stream "template <> class gctools::GCKind<~A> {~%" (ctype-name classid))
+    (format stream "public:~%")
+    (format stream "  static gctools::GCKindEnum const Kind = gctools::~a ;~%" enum-name)
+    (format stream "};~%")
+    (when (species-preprocessor-guard species)
+      (format stream "#endif // #if defined(~a)~%" (species-preprocessor-guard species)))
+    ))
 
 
 (defun generate-gc-info (fout anal)
@@ -1510,6 +1636,12 @@ in the system-species and assign them a GCKind value"
 
         
 
+(defun remove-string (name str)
+  (let* ((pos (search str name)))
+    (if pos
+        (let ((removed (concatenate 'string (subseq name 0 pos) (subseq name (+ pos (length str)) (length name)))))
+          (remove-string removed str))
+        name)))
 
 (defun remove-namespace (namespace name)
   (let* ((prefixed (concatenate 'string namespace "::"))
@@ -1519,13 +1651,14 @@ in the system-species and assign them a GCKind value"
           (remove-namespace namespace removed))
         name)))
 
+
 (defun remove-class-space (name)
-  (let* ((class-space "class ")
-         (pos (search class-space name)))
-    (if pos
-        (let ((removed (concatenate 'string (subseq name 0 pos) (subseq name (+ pos (length class-space)) (length name)))))
-          (remove-class-space removed))
-        name)))
+  (remove-string name "class "))
+(defun remove-struct-space (name)
+  (remove-string name "struct "))
+
+(defun remove-class-struct-noise (name)
+  (remove-class-space (remove-struct-space name)))
 
 
 (defstruct namespace
@@ -1533,22 +1666,42 @@ in the system-species and assign them a GCKind value"
   names)
 
 (defun namespace-add-name (ns name)
-  (when (and (eql (length name) 1) (string= "Diagnostics" (car name)))
+#|  (when (and (eql (length name) 1) (string= "ddddDiagnostics" (car name)))
     (break "Check name - about to add to namespace"))
+|#
   (if (eql (length name) 1)
       (push (car name) (namespace-names ns))
       (let ((subnamespace (gethash (car name) (namespace-submap ns) (make-namespace))))
         (setf (gethash (car name) (namespace-submap ns)) subnamespace)
         (namespace-add-name subnamespace (cdr name)))))
 
-(defun code-for-namespace-names (stream ns &optional (indent 0))
+(defun code-for-nested-class-names (stream ns ns-name &optional (indent 0))
   (dolist (name (namespace-names ns))
-    (format stream "~vtclass ~a;~%" indent name))
+    (format stream "~vt// NESTED    class ~a::~a; // YOU ARE GOING TO HAVE TO INCLUDE THE DEFINITION OF THIS CLASS!!!~%" (+ indent 4) ns-name name))
   (maphash (lambda (ns-name subnamespace)
-             (format stream "~vtnamespace ~a {~%" indent ns-name)
-             (code-for-namespace-names stream subnamespace (+ 4 indent))
-             (format stream "~vt};~%" indent))
+             (progn
+               (format stream "~vt// nested classes within ~a START~%" indent ns-name)
+               (code-for-nested-class-names stream subnamespace ns-name)
+               (format stream "~vt// nested classes END~%" indent)))
            (namespace-submap ns)))
+
+
+(defun code-for-namespace-names (stream ns &optional (indent 0))
+  (let ((classes (make-hash-table :test #'equal)))
+    (dolist (name (namespace-names ns))
+      (setf (gethash name classes) t)
+      (format stream "~vtclass ~a;~%" indent name))
+    (maphash (lambda (ns-name subnamespace)
+               (if (gethash ns-name classes)
+                   (progn
+                     (format stream "~vt// nested classes within ~a START~%" indent ns-name)
+                     (code-for-nested-class-names stream subnamespace ns-name)
+                     (format stream "~vt// nested classes END~%" indent))
+                   (progn
+                     (format stream "~vtnamespace ~a {~%" indent ns-name)
+                     (code-for-namespace-names stream subnamespace (+ 4 indent))
+                     (format stream "~vt};~%" indent))))
+             (namespace-submap ns))))
 
 
 
@@ -1661,8 +1814,8 @@ in the system-species and assign them a GCKind value"
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*/asttooling/.*")
-                      ))
+                      (lsel $* ".*cons\.cc$"))
+                      )
   )
 
 
@@ -1674,8 +1827,8 @@ in the system-species and assign them a GCKind value"
                      $test-search
                      (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))))
     (dolist (job alljobs)
-      (core:system (format nil "heap ~a" (core:getpid)))
-      (core:system (format nil "vmmap -w ~a" (core:getpid)))
+;;;      (core:system (format nil "heap ~a" (core:getpid)))
+;;;      (core:system (format nil "vmmap -w ~a" (core:getpid)))
       (let ((somejobs (list job)))
         (batch-run-multitool *tools* :filenames somejobs))
       ;; Extract the results for easy access

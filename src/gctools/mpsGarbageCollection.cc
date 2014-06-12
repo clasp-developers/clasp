@@ -140,9 +140,9 @@ namespace gctools
 //	    GcFwd* obj = reinterpret_cast<GcFwd*>(obj_ptr);
 //	    BASE_PTR_KIND(old_base) = KIND_fwd;
 	    Header_s* header = reinterpret_cast<Header_s*>(old_base);
-	    header->fwd._Kind = KIND_SYSTEM_fwd;
-	    header->fwd._Fwd = ((Header_t)new_base);
-	    header->fwd._Size = size;
+	    header->fwd.Kind = KIND_SYSTEM_fwd;
+	    header->fwd.Fwd = ((Header_t)new_base);
+	    header->fwd.Size = size;
 	}
     }
 
@@ -152,7 +152,7 @@ namespace gctools
     {
 	MPS_LOG(BF(" addr = %p") % addr );
 	Header_s* header = reinterpret_cast<Header_s*>(addr);
-	switch (header->kind._Kind) {
+	switch (header->kind.Kind) {
 	case KIND_SYSTEM_fwd2: {
 	    THROW_HARD_ERROR(BF("KIND_fwd2 should never be needed"));
 //	    GcFwd2* obj2 = reinterpret_cast<GcFwd2*>(obj_ptr);
@@ -162,7 +162,7 @@ namespace gctools
 	case KIND_SYSTEM_fwd: {
 //	    GcFwd* obj = reinterpret_cast<GcFwd*>(obj_ptr);
 	    MPS_LOG(BF("              KIND_fwd returning %p") % header->fwd._Fwd );
-	    return header->fwd._Fwd;
+	    return header->fwd.Fwd;
 	}
 	default: {
 	    // do nothing - fall through
@@ -187,12 +187,12 @@ namespace gctools
 	assert(size >= AlignUp(sizeof_with_header<Pad1_s>()));
 	Header_s* header = reinterpret_cast<Header_s*>(base);
 	if (size == AlignUp(sizeof_with_header<Pad1_s>())) {
-	    header->pad1._Kind = KIND_SYSTEM_pad1;
+	    header->pad1.Kind = KIND_SYSTEM_pad1;
 	} else {
 //	    BASE_PTR_KIND(base) = KIND_pad;
 //	    mps_base_t obj_ptr = BASE_TO_OBJ_PTR(base);
-	    header->pad._Kind = KIND_SYSTEM_pad;
-	    header->pad._Size = size;
+	    header->pad.Kind = KIND_SYSTEM_pad;
+	    header->pad.Size = size;
 	}
     }
 
