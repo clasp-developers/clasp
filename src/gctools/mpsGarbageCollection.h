@@ -49,34 +49,49 @@ namespace gctools {
 
     /* Specialize this for every Header_s and set _Kind to its appropriate enum */
     struct Kind_s {
+        Kind_s(GCKindEnum kind) : Kind(kind) {};
 #ifdef CONFIG_VAR_COOL
-        uint       _StartIndicator;
+        uint       StartIndicator;
 #endif
-	GCKindEnum	_Kind;
-#ifdef DEBUG_MPS_AMS_POOL
-        uintptr_t       _OwnerInfo;
-        void setOwner(void* ptr) { this->_OwnerInfo = reinterpret_cast<uintptr_t>(ptr);};
-        void setOwner(uintptr_t val) { this->_OwnerInfo = val;};
-#endif
+	GCKindEnum	Kind;
     };
     struct Pad1_s : public Kind_s {};
     struct Pad_s : public Kind_s {
-	size_t		_Size;
+	size_t		Size;
     };
     struct Fwd2_s : public Kind_s {
-	Header_t	_Fwd;
+	Header_t	Fwd;
     };
     struct Fwd_s : public Kind_s {
-	Header_t	_Fwd;
-	size_t		_Size;
+	Header_t	Fwd;
+	size_t		Size;
     };
     typedef union Header_u {
+        Header_u(GCKindEnum k) : kind(k) {};
 	Kind_s	kind;
 	Pad1_s	pad1;
 	Pad_s	pad;
 	Fwd2_s	fwd2;
 	Fwd_s	fwd;
     } Header_s;
+
+
+    /* Specialize this for every Header_s and set _Kind to its appropriate enum */
+    struct TemplatedKind_s {
+        TemplatedKind_s(GCKindEnum kind, size_t length) : Kind(kind), Length(length) {};
+#ifdef CONFIG_VAR_COOL
+        uint       StartIndicator;
+#endif
+	GCKindEnum	Kind;
+        size_t          Length;
+    };
+    typedef union TemplatedHeader_u {
+	TemplatedKind_s	kind;
+	Pad1_s	pad1;
+	Pad_s	pad;
+	Fwd2_s	fwd2;
+	Fwd_s	fwd;
+    } TemplatedHeader_s;
 
 
 };

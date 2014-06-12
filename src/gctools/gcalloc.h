@@ -642,7 +642,7 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
                 gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(addr);
-                header->kind._Kind = gctools::GCKind<T>::Kind;
+                new (header) gctools::Header_s(gctools::GCKind<T>::Kind);
                 T* obj = BasePtrToMostDerivedPtr<T>(addr);
                 new (obj) T(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
@@ -681,7 +681,7 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
                 gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(addr);
-                header->kind._Kind = gctools::GCKind<OT>::Kind;
+                new (header) gctools::Header_s(gctools::GCKind<OT>::Kind);
                 OT* obj = BasePtrToMostDerivedPtr<OT>(addr);
                 new (obj) OT(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
@@ -705,7 +705,7 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
                 gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(addr);
-                header->kind._Kind = gctools::GCKind<OT>::Kind;
+                new (header) gctools::Header_s(gctools::GCKind<OT>::Kind);
                 OT* obj = BasePtrToMostDerivedPtr<OT>(addr);
                 new (obj) OT(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
@@ -849,7 +849,7 @@ namespace gctools {
                 mps_res_t res = mps_reserve(&addr,_global_automatic_mostly_copying_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCContainerAllocator_mps"));
                 Header_s* header = reinterpret_cast<Header_s*>(addr);
-                header->kind._Kind = GCKind<TY>::Kind;
+                new (header) Header_s(GCKind<TY>::Kind);
                 myAddress = (BasePtrToMostDerivedPtr<container_type>(addr));
                 new (myAddress) container_type(num);
             } while (!mps_commit(_global_automatic_mostly_copying_allocation_point,addr,size));
@@ -921,7 +921,7 @@ namespace gctools {
                 mps_res_t res = mps_reserve(&addr,_global_automatic_weak_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCContainerAllocator_mps"));
                 Header_s* header = reinterpret_cast<Header_s*>(addr);
-                header->kind._Kind = GCKind<TY>::Kind;
+                new (header) Header_s(GCKind<TY>::Kind);
                 myAddress = BasePtrToMostDerivedPtr<container_type>(addr);
                 new (myAddress) container_type(num);
             }

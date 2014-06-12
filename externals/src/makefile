@@ -221,27 +221,22 @@ llvm-setup:
 	make llvm-setup-debug
 	make llvm-setup-release
 
-llvm-build:
-	make llvm-debug
-	make llvm-release
-
-
-llvm-setup-release:
-	-mkdir -p $(LLVM_SOURCE_DIR)/build-release
-	(cd $(LLVM_SOURCE_DIR)/build-release; \
-		../configure --enable-optimized --enable-shared --enable-assertions  \
-			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR);)
 
 llvm-setup-debug:
-	@echo REQUIRES_RTTI=$(REQUIRES_RTTI)
-	@echo llvm-setup-debug CC=$(CLASP_CC)
-	@echo llvm-setup-debug CXX=$(CXX)
-	@echo llvm-setup-debug CXXFLAGS=$(CXXFLAGS)
-	@echo llvm-setup-debug LDFLAGS=$(LDFLAGS)
 	-mkdir -p $(LLVM_SOURCE_DIR)/build-debug
 	(cd $(LLVM_SOURCE_DIR)/build-debug; \
 		../configure --with-clang-srcdir=$(CLANG_SOURCE_DIR) --enable-debug-symbols --enable-debug-runtime --enable-shared \
 			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR);)
+
+llvm-setup-release:
+	-mkdir -p $(LLVM_SOURCE_DIR)/build-release
+	(cd $(LLVM_SOURCE_DIR)/build-release; \
+		../configure --with-clang-srcdir=$(CLANG_SOURCE_DIR) --enable-optimized --enable-shared --enable-assertions  \
+			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR);)
+
+llvm-build:
+	make llvm-debug
+	make llvm-release
 
 
 llvm-debug:
