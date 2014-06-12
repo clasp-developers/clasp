@@ -32,21 +32,19 @@ namespace asttooling {
     using namespace llvm;
 
 /// \brief A VariantValue instance annotated with its parser context.
-struct ParserValue {
-  ParserValue() : /*Text(),*/ Range(), Value() {}
+    struct ParserValue {
+        ParserValue() : /*Text(),*/ Range(), Value() {}
 //    llvm::StringRef Text;
-    core::Cons_sp Range;
-    VariantValue Value;
-    ParserValue(core::Cons_sp range, const VariantValue& value) :
-        Range(range)
-        , Value(value) {};
-    virtual ~ParserValue() {};
-    DECLARE_onHeapScanGCRoots();
-};
+        core::Cons_sp Range;
+        VariantValue Value;
+        ParserValue(core::Cons_sp range, const VariantValue& value) :
+            Range(range)
+            , Value(value) {};
+        virtual ~ParserValue() {};
+        DECLARE_onHeapScanGCRoots();
+    };
 
-/// \brief Helper class to manage error messages.
-class Diagnostics {
-public:
+
     /// \brief Parser context types.
     enum ContextType {
         CT_MatcherArg = 0,
@@ -76,6 +74,33 @@ public:
         ET_ParserOverloadedType = 110
     };
 
+    class OverloadContext;
+    class Context;
+
+
+    /// \brief Information stored for one frame of the context.
+    struct ContextFrame {
+        ContextType Type;
+        core::Cons_sp Range;
+        std::vector<std::string> Args;
+#ifdef USE_MPS
+        DECLARE_onHeapScanGCRoots();
+#endif
+    };
+
+
+    struct Message {
+        core::Cons_sp Range;
+        ErrorType Type;
+        std::vector<std::string> Args;
+    };
+
+    /// \brief Information stored for each error found.
+    struct ErrorContent {
+        gctools::Vec0<ContextFrame> ContextStack;
+        gctools::Vec0<Message> Messages;
+    };
+
     /// \brief Helper stream class.
     class ArgStream {
     public:
@@ -88,6 +113,52 @@ public:
     private:
         std::vector<std::string> *Out;
     };
+
+
+/// \brief Helper class to manage error messages.
+    class Diagnostics {
+        friend class OverloadContext;
+        friend class Context;
+        friend class ContextFrame;
+    public:
+
+
+
+        /// \brief Add an error to the diagnostics.
+        ///
+        /// All the context information will be kept on the error message.
+        /// \return a helper class to allow the caller to pass the arguments for the
+        /// error message, using the << operator.
+        ArgStream addError(core::Cons_sp Range, ErrorType Error);
+
+
+        ArrayRef<ErrorContent> errors() const { return ArrayRef<ErrorContent>(Errors.begin(),Errors.end()); }
+
+        /// \brief Returns a simple string representation of each error.
+        ///
+        /// Each error only shows the error message without any context.
+        void printToStream(llvm::raw_ostream &OS) const;
+        std::string toString() const;
+
+        /// \brief Returns the full string representation of each error.
+        ///
+        /// Each error message contains the full context.
+        void printToStreamFull(llvm::raw_ostream &OS) const;
+        std::string toStringFull() const;
+
+    private:
+        /// \brief Helper function used by the constructors of ContextFrame.
+        ArgStream pushContextFrame(ContextType Type, core::Cons_sp Range);
+
+    public:
+//    GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
+
+    private:
+        gctools::Vec0<ContextFrame> ContextStack;
+        gctools::Vec0<ErrorContent> Errors;
+    };
+
+
 
     /// \brief Class defining a parser context.
     ///
@@ -115,6 +186,7 @@ public:
         Diagnostics* Error;
     };
 
+
     /// \brief Context for overloaded matcher construction.
     ///
     /// This context will take care of merging all errors that happen within it
@@ -132,58 +204,7 @@ public:
         unsigned BeginIndex;
     };
 
-    /// \brief Add an error to the diagnostics.
-    ///
-    /// All the context information will be kept on the error message.
-    /// \return a helper class to allow the caller to pass the arguments for the
-    /// error message, using the << operator.
-    ArgStream addError(core::Cons_sp Range, ErrorType Error);
 
-    /// \brief Information stored for one frame of the context.
-    struct ContextFrame {
-        ContextType Type;
-        core::Cons_sp Range;
-        std::vector<std::string> Args;
-#ifdef USE_MPS
-        DECLARE_onHeapScanGCRoots();
-#endif
-    };
-
-    /// \brief Information stored for each error found.
-    struct ErrorContent {
-        gctools::Vec0<ContextFrame> ContextStack;
-        struct Message {
-            core::Cons_sp Range;
-            ErrorType Type;
-            std::vector<std::string> Args;
-        };
-        gctools::Vec0<Message> Messages;
-    };
-    ArrayRef<ErrorContent> errors() const { return ArrayRef<ErrorContent>(Errors.begin(),Errors.end()); }
-
-    /// \brief Returns a simple string representation of each error.
-    ///
-    /// Each error only shows the error message without any context.
-    void printToStream(llvm::raw_ostream &OS) const;
-    std::string toString() const;
-
-    /// \brief Returns the full string representation of each error.
-    ///
-    /// Each error message contains the full context.
-    void printToStreamFull(llvm::raw_ostream &OS) const;
-    std::string toStringFull() const;
-
-private:
-    /// \brief Helper function used by the constructors of ContextFrame.
-    ArgStream pushContextFrame(ContextType Type, core::Cons_sp Range);
-
-public:
-//    GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-
-private:
-    gctools::Vec0<ContextFrame> ContextStack;
-    gctools::Vec0<ErrorContent> Errors;
-};
 
 }  // namespace asttooling
 

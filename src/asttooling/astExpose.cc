@@ -1455,6 +1455,8 @@ namespace asttooling {
             .  def("getType",&clang::CXXBaseSpecifier::getType)
             ,class_<clang::TemplateArgument>("TemplateArgument",no_default_constructor)
             .  def("getKind",&clang::TemplateArgument::getKind)
+            .  def("pack_size",&clang::TemplateArgument::pack_size)
+            .  def("getPackAsArray",&clang::TemplateArgument::getPackAsArray)
             .  def("getAsType",&clang::TemplateArgument::getAsType)
             .  def("getAsIntegral",&clang::TemplateArgument::getAsIntegral)
             .  def("getAsTemplate",&clang::TemplateArgument::getAsTemplate)

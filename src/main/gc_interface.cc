@@ -190,14 +190,14 @@ extern "C" {
 #define FAMILY_iterators 2
 
         gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
-        gctools::GCKindEnum kind = header->kind._Kind;
+        gctools::GCKindEnum kind = header->kind.Kind;
         int iKind = kind&0xFFFF;
         int iFamily = ((kind&0xFF0000)>>16);
 #ifdef DEBUG_MPS_AMS_POOL
         int iDead = (kind&0xFF000000);
         if ( iDead != 0 && iDead != 0xDE000000 ) {
             printf("%s:%d ERROR   Invalid liveness value of an object in obj_skip - kind[%u] \n", __FILE__, __LINE__, (unsigned int)(kind) );
-            searchMemoryForAddress(base);
+            //searchMemoryForAddress(base);
             __builtin_trap();
         };
 #endif
@@ -251,7 +251,7 @@ extern "C" {
                 DEBUG_MPS_MESSAGE(BF("obj_scan address %p") % base );
 		mps_addr_t obj_ptr = BasePtrToMostDerivedPtr<void>(base);
                 gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
-                gctools::GCKindEnum kind = header->kind._Kind;
+                gctools::GCKindEnum kind = header->kind.Kind;
                 int iKind = kind&0x00FFFF;
                 int iFamily = ((kind&0xFF0000)>>16);
                 if ( iKind == 84 ) // CONS
@@ -288,13 +288,13 @@ extern "C" {
     {
         gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
         void* obj_ptr = BasePtrToMostDerivedPtr<void>(base);
-        gctools::GCKindEnum kind = header->kind._Kind;
+        gctools::GCKindEnum kind = header->kind.Kind;
         int iKind = kind&0x00FFFF;
         int iFamily =  ((kind&0xFF0000)>>16);
         int invalidate_kind = kind;
 // invalidate the kind but leave enough info to figure out what it was
         invalidate_kind |= 0xDE000000; 
-        header->kind._Kind = (GCKindEnum)(invalidate_kind);
+        header->kind.Kind = (GCKindEnum)(invalidate_kind);
 //        printf("%s:%d Finalizing base@%p   kind=%d\n", __FILE__, __LINE__, base, kind );
         switch (kind) {
 #ifndef RUNNING_GC_BUILDER

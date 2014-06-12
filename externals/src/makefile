@@ -2,10 +2,10 @@ export REQUIRES_RTTI=$(CLASP_REQUIRES_RTTI)
 export BOEHM_VERSION=7.2
 export DMALLOC_VERSION=5.5.2
 export CC = $(CLASP_CC)
-export CXX = $(CLASP_CXX)
-export CXXFLAGS=$(CLASP_CXXFLAGS)
+#export CXX = $(CLASP_CXX)
+#export CXXFLAGS=$(CLASP_CXXFLAGS)
 #export CXXFLAGS=$(CLASP_CXXFLAGS) -fvisibility=hidden
-export LDFLAGS=$(CLASP_LDFLAGS)
+#export LDFLAGS=$(CLASP_LDFLAGS)
 
 ifneq ($(CXXFLAGS),)
 	BOOST_CXXFLAGS="cxxflags=$(CXXFLAGS)"
@@ -14,7 +14,7 @@ ifneq ($(LDFLAGS),)
 	BOOST_LDFLAGS="linkflags=$(LDFLAGS) -lc++"
 endif
 
-
+export CLANG_SOURCE_DIR = clang
 export OPENMPI_SOURCE_DIR = openmpi-1.6.5
 # export MPS_SOURCE_DIR = mps-kit-1.111.0 # mps-temporary
 export MPS_SOURCE_DIR = mps-temporary
@@ -200,25 +200,6 @@ ecl-clean:
 
 
 
-llvm-get:
-	install -d $(LLVM_SOURCE_DIR)
-	/usr/bin/svn co http://llvm.org/svn/llvm-project/llvm/trunk $(LLVM_SOURCE_DIR) -r $(LLVM_REVISION)
-	(cd $(LLVM_SOURCE_DIR)/tools; /usr/bin/svn co http://llvm.org/svn/llvm-project/cfe/trunk clang -r $(LLVM_REVISION))
-	(cd $(LLVM_SOURCE_DIR)/projects; /usr/bin/svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt -r $(LLVM_REVISION))
-
-libcxx-get:
-	svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
-
-#
-# For OS X
-# To support -std=c++11
-#
-libcxx-install:
-	sudo ln -s $(PWD)/libcxx/include /usr/include/c++/v1
-
-llvm-update:
-	(cd $(LLVM_SOURCE_DIR)/tools/clang; svn update -r $(LLVM_REVISION))
-	(cd $(LLVM_SOURCE_DIR)/projects/compiler-rt; svn update -r $(LLVM_REVISION))
 
 
 llvm-clean:
@@ -240,27 +221,22 @@ llvm-setup:
 	make llvm-setup-debug
 	make llvm-setup-release
 
-llvm-build:
-	make llvm-debug
-	make llvm-release
 
+llvm-setup-debug:
+	-mkdir -p $(LLVM_SOURCE_DIR)/build-debug
+	(cd $(LLVM_SOURCE_DIR)/build-debug; \
+		../configure --with-clang-srcdir=$(CLANG_SOURCE_DIR) --enable-debug-symbols --enable-debug-runtime --enable-shared \
+			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR);)
 
 llvm-setup-release:
 	-mkdir -p $(LLVM_SOURCE_DIR)/build-release
 	(cd $(LLVM_SOURCE_DIR)/build-release; \
-		../configure --enable-optimized --enable-shared --enable-assertions  \
+		../configure --with-clang-srcdir=$(CLANG_SOURCE_DIR) --enable-optimized --enable-shared --enable-assertions  \
 			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR);)
 
-llvm-setup-debug:
-	@echo REQUIRES_RTTI=$(REQUIRES_RTTI)
-	@echo llvm-setup-debug CC=$(CLASP_CC)
-	@echo llvm-setup-debug CXX=$(CXX)
-	@echo llvm-setup-debug CXXFLAGS=$(CXXFLAGS)
-	@echo llvm-setup-debug LDFLAGS=$(LDFLAGS)
-	-mkdir -p $(LLVM_SOURCE_DIR)/build-debug
-	(cd $(LLVM_SOURCE_DIR)/build-debug; CXX=$(CXX); CC=$(CC); \
-		../configure --enable-debug-symbols --enable-debug-runtime --enable-shared \
-			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR);)
+llvm-build:
+	make llvm-debug
+	make llvm-release
 
 
 llvm-debug:

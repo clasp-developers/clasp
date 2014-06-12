@@ -25,7 +25,55 @@
 #include "llvm/ADT/StringRef.h"
 
 namespace asttooling {
+    namespace internal {
+        class MatcherDescriptor;
+    };
+};
 
+namespace asttooling {
+    namespace RegMap {
+        struct SymbolMatcherDescriptorPair {
+            SymbolMatcherDescriptorPair(core::Symbol_sp k, const internal::MatcherDescriptor* v) : Name(k), matcher(v) {};
+            core::Symbol_sp     Name;
+            const internal::MatcherDescriptor*    matcher;
+        };
+
+
+        class RegistryMaps {
+            friend class SymbolMatcherDescriptorPair;
+        public:
+            RegistryMaps();
+            ~RegistryMaps();
+
+            typedef gctools::Vec0<SymbolMatcherDescriptorPair> ConstructorMap;
+            typedef ConstructorMap::iterator iterator;
+            typedef ConstructorMap::const_iterator const_iterator;
+            iterator begin() { return this->Constructors.begin();};
+            iterator end() { return this->Constructors.end();};
+            const_iterator begin() const { return this->Constructors.begin();};
+            const_iterator end() const { return this->Constructors.end();};
+
+            const ConstructorMap &constructors() const { return this->Constructors; }
+
+
+            /*! Find the constructor associated with the symbol */
+            ConstructorMap::iterator find(core::Symbol_sp key)
+            {
+                ConstructorMap::iterator it;
+                for ( it = this->Constructors.begin(); it!=this->Constructors.end(); ++it ) {
+                    if (it->Name == key ) return it;
+                }
+                return it;
+            }
+
+
+        private:
+            void registerMatcher(core::Symbol_sp MatcherName, internal::MatcherDescriptor *Callback);
+            /*! This is used to replace the map<Symbol_sp,const MatcherDescriptor*> that used to be a ConstructorMap */
+        private:
+            ConstructorMap Constructors;
+        };
+    };
 
 class Registry {
 public:

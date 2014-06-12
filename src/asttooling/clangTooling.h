@@ -24,6 +24,25 @@
 #include "symbolTable.h"
 #include "clbind/clbind.h"
 
+
+
+namespace clang {
+    namespace ast_matchers {
+        /*! This class is defined to inherit from the MatchFinder::MatchResult to
+          deal with the inability of forward declaring nested classes in C++
+          MatchFinderMatchResult inherits everything from MatchFinder::MatchResult
+          and I can expose it and forward declare it while I cannot forward declare
+          MatchFinder::MatchResult */
+        struct MatchFinderMatchResult : public MatchFinder::MatchResult {
+            MatchFinderMatchResult(const MatchFinder::MatchResult& other) : MatchFinder::MatchResult(other) {};
+            const BoundNodes& getNodes() const { return this->Nodes; };
+            clang::ASTContext* getContext() const { return this->Context; };
+            clang::SourceManager* getSourceManager() const { return this->SourceManager; };
+        };
+    };
+};
+
+
 namespace asttooling
 {
 
@@ -131,13 +150,14 @@ namespace asttooling
     public:
         virtual void run(const clang::ast_matchers::MatchFinder::MatchResult& Result)
         {
+            const clang::ast_matchers::MatchFinderMatchResult conv(Result);//  = static_cast<const clang::ast_matchers::MatchFinderMatchResult&>(Result);
             core::eval::funcall(asttooling::_sym_run
                                 , this->asSmartPtr()
-                                , translate::to_object<const clang::ast_matchers::MatchFinder::MatchResult&>::convert(Result)
+                                , translate::to_object<const clang::ast_matchers::MatchFinderMatchResult&>::convert(conv)
                 );
         }
 
-        void default_run(const clang::ast_matchers::MatchFinder::MatchResult& Result)
+        void default_run(const clang::ast_matchers::MatchFinderMatchResult& Result)
         {
             SIMPLE_ERROR(BF("Subclass must implement"));
         };
