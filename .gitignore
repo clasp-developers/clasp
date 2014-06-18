@@ -1,0 +1,8 @@
+*.pyc
+/doc/bin
+/doc/html
+/b2
+/bjam
+/bin
+/bootstrap.log
+/test/test_results.txt
