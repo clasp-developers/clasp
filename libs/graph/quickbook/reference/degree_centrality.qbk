@@ -1,0 +1,440 @@
+[/
+ / Copyright (c) 2007 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Degree Centrality]
+[template ex_degree_centrality[] [link
+    boost_graph.reference.algorithms.measures.degree_centrality.examples.degree_centrality
+    Degree Centrality Example]]
+[template ex_influence_prestige[] [link
+    boost_graph.reference.algorithms.measures.degree_centrality.examples.influence_and_prestige
+    Influence and Prestige Example]]
+[template degree_centrality_measures[] [link
+    boost_graph.reference.algorithms.measures.degree_centrality.measures
+    Measures Section]]
+
+[heading Overview]
+The /degree centrality/ measure is used in social network analysis to help
+determine which vertices (or more specifically actors) are the most central
+or important to a network. Degree centrality of a vertex is computed over the number
+of connections (adjacent vertices) of that vertex. This definition varies for
+undirected and directed graphs. For undirected graphs, the degree centrality of a
+vertex is equivalent to its degree. For directed graphs it is equivalent to either
+its in- or out-degree.
+
+Consider the social network represented by an undirected graph in Figure 1.
+
+[figure
+    images/reference/social_network.png
+    *Figure 1.* A network of friends.
+]
+
+This graph depicts a set of friends and their relationships (friendship, dating, etc.)
+The degree centrality of each person in this graph is their number of friends.
+Here, Frank has the highest degree centrality with five friends, whereas Laurie,
+Jill, Bill, Anne, and Howard are the least central with two friends apiece. See
+the [ex_degree_centrality] for details on computing the degree centrality of
+undirected graphs.
+
+For directed graphs, there are related two interpretations of degree centrality.
+When degree centrality is measured over the out-degree of a vertex, it is called
+/influence/. When the in-degree is measured, the measure is called /prestige/.
+See the [degree_centrality_measures] for information types and functions related
+to the computation of influence and prestige.
+
+Consider the information network represented by the directed graph in Figure 2.
+
+[figure
+    images/reference/info_network.png
+    *Figure 2.* A network of informational websites.
+]
+
+This graph represents links between information websites, presumably regarding a
+specific topic. The most influential (out-degree centrality) is blogger with
+three outgoing links while wikipedia is the least influential. The most prestigous
+(in-degree centrality) is wikipedia with five incoming references. The least
+prestigous websites are myspace, blogger, and blogspot each of which have no
+incoming links. See the [ex_influence_prestige] for details on computing the
+influence and prestige of directed graphs.
+
+[section [^degree_centrality()]]
+    #include <boost/graph/degree_centrality.hpp>
+
+    template <typename Graph, typename Vertex>
+    typename graph_traits<Graph>::degree_size_type
+    degree_centrality(const Graph& g, Vertex v);
+
+    template <typename Graph, typename Vertex, typename Measure>
+    typename Measure::degree_type
+    degree_centrality(const Graph& g, Vertex v, Measure measure);
+
+The `degree_centrality()` function computes this measure for a single vertex,
+returning the value to the caller. Optionally, a degree measure can be given,
+specializing the computation of degree centrality. See the [degree_centrality_measures]
+section for more details on the influence and prestige measures.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& graph`]
+        [
+            The graph object for which the degree centralities will be computed.
+
+            *Requirements:* The `Graph` type must be a model of the [IncidenceGraph]
+            concept. If the `Measure` parameter is given as `prestige_measure`,
+            then the graph must be a model of the [BidirectionalGraph] concept.
+        ]
+    ]
+    [
+        [required, in] [`Vertex v`]
+        [
+            The vertex descriptor for which the degree centrality is computed.
+
+            *Requirements:* The `Vertex` type must be the same as the `vertex_descriptor`
+            of the `Graph` parameter.
+        ]
+    ]
+    [
+        [optional, in] [`Measure measure`]
+        [
+            The `measure` parameter allows the caller to override the default
+            computation of degree centrality for a vertex.
+
+            *Requirements:* The `Measure` type must be a model of the
+            [DegreeMeasure] concept. The `degree_type` of `Measure` must
+            be the same as the `value_type` of the `CentralityMap` type.
+        ]
+    ]
+]
+
+[heading Return Value]
+The `degree_centrality()` function returns the centrality of a vertex.
+If no `measure` parameter is given, the return type is the same as the
+`degree_size_type` of the `Graph`. Otherwise, it is the `degree_type` of
+the `Measure`.
+
+[heading Complexity]
+The `degree_centrality()` returns in /O(M)/. If the measure is not given,
+or the measure is given as `influence_measure` or `prestige_measure`, this function
+returns in constant time.
+[endsect]
+
+[section [^influence()]]
+    template <typename Graph, typename Vertex>
+    typename graph_traits<Graph>::degree_size_type
+    influence(const Graph& g, Vertex v);
+
+The `influence()` function the influence of the vertex to the caller. The influence
+of a vertex is the same as its out-degree.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& graph`]
+        [
+            The graph object for which the degree centralities will be computed.
+
+            *Requirements:* The `Graph` type must be a model of the [IncidenceGraph]
+            concept. If the `Measure` parameter is given as `prestige_measure`,
+            then the graph must be a model of the [BidirectionalGraph] concept.
+        ]
+    ]
+    [
+        [required, in] [`Vertex v`]
+        [
+            The vertex descriptor for which the degree centrality is computed.
+
+            *Requirements:* The `Vertex` type must be the same as the `vertex_descriptor`
+            of the `Graph` parameter.
+        ]
+    ]
+]
+
+[heading Return Value]
+The `influence()` function returns the influence of the vertex, which is the same
+as its out-degree.
+
+[heading Complexity]
+The `influence()` function returns in constant time.
+[endsect]
+
+[section [^prestige()]]
+    template <typename Graph, typename Vertex>
+    typename graph_traits<Graph>::degree_size_type
+    prestige(const Graph& g, Vertex v);
+
+The `prestige()` function the prestige of the vertex to the caller. The prestige
+of a vertex is the same as its in-degree.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& graph`]
+        [
+            The graph object for which the degree centralities will be computed.
+
+            *Requirements:* The `Graph` type must be a model of the [IncidenceGraph]
+            concept. If the `Measure` parameter is given as `prestige_measure`,
+            then the graph must be a model of the [BidirectionalGraph] concept.
+        ]
+    ]
+    [
+        [required, in] [`Vertex v`]
+        [
+            The vertex descriptor for which the degree centrality is computed.
+
+            *Requirements:* The `Vertex` type must be the same as the `vertex_descriptor`
+            of the `Graph` parameter.
+        ]
+    ]
+]
+
+[heading Return Value]
+The `prestige()` function returns the influence of the vertex, which is the same
+as its out-degree.
+
+[heading Complexity]
+The `prestige()` returns in constant time.
+[endsect]
+
+[section [^all_degree_centralities()]]
+    #include <boost/graph/degree_centrality.hpp>
+
+    template <typename Graph, typename CentralityMap>
+    void all_degree_centralities(const Graph& g, CentralityMap cent);
+
+    template <typename Graph, typename CentralityMap, typename Measure>
+    void all_degree_centralities(const Graph& g, CentralityMap cent, Measure measure);
+
+The `all_degree_centralities()` computes the degree centrality for each vertex in the
+graph, assigning the values to an output property map. Optionally, a degree measure
+can be given, specializing the computation of degree centrality. See the
+[degree_centrality_measures] section for more details on the influence and
+prestige measures.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& graph`]
+        [
+            The graph object for which the degree centralities will be computed.
+
+            *Requirements:* The `Graph` type must model the [VertexListGraph]
+            and [IncidenceGraph] concepts. If the `Measure` parameter is given
+            as `prestige_measure`, then the graph must be a model of the
+            [BidirectionalGraph] concept.
+        ]
+    ]
+    [
+        [required, out] [`CentralityMap cent`]
+        [
+            The property map that contains the degree centralities of all vertices
+            in a graph after calling the `degree_centrality()` function.
+
+            *Requirements:* The `CentralityMap` type must be a model of the
+            [WritablePropertyMap] concept. The `key_type` of the map must
+            be the same as the `vertex_descriptor` of the `Graph` type. If the
+            `Measure` parameter is given in the call, then the `value_type`
+            of `CentralityMap` must be the same as `Measure::degree_type`.
+            Otherwise, the `value_type` must be the same as the `degree_size_type`
+            of the graph.
+        ]
+    ]
+    [
+        [optional, in] [`Measure measure`]
+        [
+            The `measure` parameter allows the caller to override the default
+            computation of degree centrality for a vertex.
+
+            *Requirements:* The `Measure` type must be a model of the
+            [DegreeMeasure] concept. The `degree_type` of `Measure` must
+            be the same as the `value_type` of the `CentralityMap` type.
+        ]
+    ]
+]
+
+[heading Complexity]
+The `all_degree_centralities()` function returns in /O(n*O(M))/ where /n/ is the
+number of vertices in the graph and /M/ is a measure of a vertex. If the measure
+is not specified or is `influence_measure` or `prestige_measure`, this function
+returns in linear time.
+[endsect]
+
+[section [^all_influence_values()]]
+    #include <boost/graph/degree_centrality.hpp>
+
+    template <typename Graph, typename CentralityMap>
+    void all_influence_values(const Graph& g, CentralityMap cent);
+
+
+The `all_influence_values()` function computes the influence of each vertex in the
+graph, assigning the values to an output property map.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& graph`]
+        [
+            The graph object for which the degree centralities will be computed.
+
+            *Requirements:* The `Graph` type must model the [VertexListGraph]
+            and [IncidenceGraph] concepts. If the `Measure` parameter is given
+            as `prestige_measure`, then the graph must be a model of the
+            [BidirectionalGraph] concept.
+        ]
+    ]
+    [
+        [required, out] [`CentralityMap cent`]
+        [
+            The property map that contains the degree centralities of all vertices
+            in a graph after calling the `degree_centrality()` function.
+
+            *Requirements:* The `CentralityMap` type must be a model of the
+            [WritablePropertyMap] concept. The `key_type` of the map must
+            be the same as the `vertex_descriptor` of the `Graph` type. If the
+            `Measure` parameter is given in the call, then the `value_type`
+            of `CentralityMap` must be the same as `Measure::degree_type`.
+            Otherwise, the `value_type` must be the same as the `degree_size_type`
+            of the graph.
+        ]
+    ]
+]
+
+[heading Complexity]
+The `all_influence_values()` function returns linear time with respect to the
+number of vertices in the graph.
+[endsect]
+
+[section [^all_prestige_values()]]
+    #include <boost/graph/degree_centrality.hpp>
+
+    template <typename Graph, typename CentralityMap>
+    void all_prestige_values(const Graph& g, CentralityMap cent);
+
+
+The `all_prestige_values()` function computes the prestige of each vertex in the
+graph, assigning the values to an output property map.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& graph`]
+        [
+            The graph object for which the degree centralities will be computed.
+
+            *Requirements:* The `Graph` type must model the [VertexListGraph]
+            and [IncidenceGraph] concepts. If the `Measure` parameter is given
+            as `prestige_measure`, then the graph must be a model of the
+            [BidirectionalGraph] concept.
+        ]
+    ]
+    [
+        [required, out] [`CentralityMap cent`]
+        [
+            The property map that contains the degree centralities of all vertices
+            in a graph after calling the `degree_centrality()` function.
+
+            *Requirements:* The `CentralityMap` type must be a model of the
+            [WritablePropertyMap] concept. The `key_type` of the map must
+            be the same as the `vertex_descriptor` of the `Graph` type. If the
+            `Measure` parameter is given in the call, then the `value_type`
+            of `CentralityMap` must be the same as `Measure::degree_type`.
+            Otherwise, the `value_type` must be the same as the `degree_size_type`
+            of the graph.
+        ]
+    ]
+]
+
+[heading Complexity]
+The `all_prestige_values()` function returns linear time with respect to the
+number of vertices in the graph.
+[endsect]
+
+[section Measures]
+    template <typename Graph> struct influence_measure;
+    template <typename Graph> struct prestige_measure;
+
+    template <typename Graph>
+    influence_measure<Graph> measure_influence(const Graph&);
+
+    template <typename Graph>
+    prestige_measure<Graph> measure_prestige(const Graph&);
+
+These functions in this module can be specialized throught the use of different
+/measure/ functors. These funtors are called to compute the degree centraltiy of a
+vertex within the computational framework. This module provides the two default
+measures for /influence/ and /prestige/ and functions to help instantiate them.
+Custom measures can also be used.
+
+The `influence_measure` returns the out-degree of a vertex. Using this measure
+requires the `Graph` to model the [IncidenceGraph] concept.
+
+The `prestige_measure` returns the in-degree of a vertex. Using this measure
+requires the `Graph` to model the [BidirectionalGraph] concept.
+
+The `measure_influence()` and `measure_prestige()` functions can be used to
+create the corresponding measure objects.
+[endsect]
+
+[section Examples]
+[heading Degree Centrality]
+This example reads a graph from standard input (in a simple edge-list format),
+computes the degree-centrality of each vertex, and prints them to standard
+output. This example includes of the following files:
+
+* [^examples/degreee_centrality.hpp]
+* [^examples/helper.hpp]
+
+[degree_centrality_example]
+
+If given the `social_network.graph` file as input, the program will produce the
+following output:
+
+[pre
+Scott: 4
+Jill: 2
+Mary: 2
+Bill: 2
+Josh: 2
+Frank: 5
+Laurie: 1
+Anne: 2
+Howard: 2
+]
+
+[heading Influence and Prestige]
+This example is nearly identical to the previous in that it computes the degree
+centrality over vertices in a graph. However, this example constructs a directed
+graph and computes both influence and prestige. This example consist of the following
+files:
+
+* [^examples/influence_prestige.hpp]
+* [^examples/helper.hpp]
+
+[influence_prestige_example]
+
+If given the `info_network.graph` file as input, the program will produce
+the following output where the second column is influence and the third is prestige:
+
+[pre
+myspace         1       0
+digg            2       2
+blogger         3       0
+slahsdot        0       1
+wikipedia       0       5
+slashdot        2       2
+blogspot        2       0
+bbc             1       1
+]
+[endsect]
+
+[endsect]

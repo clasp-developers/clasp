@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"  "../../../../tools/boostbook/dtd/boostbook.dtd" [
+ <!ENTITY utf "<acronym>UTF</acronym>">
+]>
+<section id="tutorial.hello-the-testing-world">
+ <title>Hello the testing world &hellip; or beginner's introduction into testing using the Unit Test Framework</title>
+ <titleabbrev>Hello the testing world</titleabbrev>
+
+ <para role="first-line-indented">
+  How should a test program report errors? Displaying an error message is an obvious possibility:
+ </para>
+ 
+ <btl-snippet name="snippet9"/>
+ 
+ <para role="first-line-indented">
+  But that requires inspection of the program's output after each run to determine if an error occurred. Since test 
+  programs are often run as part of a regression test suite, human inspection of output to detect error messages is 
+  time consuming and unreliable. Test frameworks like GNU/expect can do the inspections automatically, but are 
+  overly complex for simple testing.
+ </para>
+ 
+ <para role="first-line-indented">
+  A better simple way to report errors is for the test program to return EXIT_SUCCESS (normally 0) if the test program 
+  completes satisfactorily, and EXIT_FAILURE if an error is detected. This allows a simple regression test script to 
+  automatically and unambiguous detect success or failure. Further appropriate actions such as creating an HTML table 
+  or emailing an alert can be taken by the script, and can be modified as desired without having to change the actual
+  C++ test programs.
+ </para>
+ 
+ <para role="first-line-indented">
+  A testing protocol based on a policy of test programs returning EXIT_SUCCESS or EXIT_FAILURE does not require any 
+  supporting tools; the C++ language and standard library are sufficient. The programmer must remember, however, to 
+  catch all exceptions and convert them to program exits with non-zero return codes. The programmer must also remember 
+  to not use the standard library assert() macro for test code, because on some systems it results in undesirable side 
+  effects like a message requiring manual intervention.
+ </para>
+ 
+ <para role="first-line-indented">
+  The Boost Test Library's Unit Test Framework is designed to automate those tasks. The library supplied main() 
+  relieves users from messy error detection and reporting duties. Users could use supplied testing tools to perform 
+  complex validation tasks. Let's take a look on the following simple test program:
+ </para>
+ 
+ <btl-snippet name="snippet10"/>
+
+ <para role="first-line-indented">
+  There are several issues with above test.
+ </para>
+ 
+ <orderedlist>
+  <listitem>
+   <simpara>You need to convert is_valid result in proper result code.</simpara>
+  </listitem>
+  <listitem>
+   <simpara>Would exception happen in test_object construction of method is_valid invocation, the program will crash.</simpara>
+  </listitem>
+  <listitem>
+   <simpara>You won't see any output, would you run this test manually.</simpara>
+  </listitem>
+ </orderedlist>
+ 
+ <para role="first-line-indented">
+  The Unit Test Framework solves all these issues. To integrate with it above program needs to be changed to:
+ </para>
+ 
+ <btl-snippet name="snippet11"/>
+ 
+ <para role="first-line-indented">
+  Now, you not only receive uniform result code, even in case of exception, but also nicely formatted output from 
+  BOOST_CHECK tool, would you choose to see it. Is there any other ways to perform checks? The following example test 
+  program shows several different ways to detect and report an error in the add() function.
+ </para>
+ 
+ <btl-snippet name="snippet12">
+  <annotations>
+   <annotation id="snippet12.ann-1" coords="1">
+    <para role="first-line-indented">
+     This approach uses the BOOST_CHECK tool, which displays an error message (by default on std::cout) that includes 
+     the expression that failed, the source file name, and the source file line number. It also increments the error 
+     count. At program termination, the error count will be displayed automatically by the Unit Test Framework.
+    </para>
+   </annotation>
+
+   <annotation id="snippet12.ann-2" coords="1">
+    <para role="first-line-indented">
+     This approach uses the BOOST_REQUIRE tool, is similar to approach #1, except that after displaying the error, 
+     an exception is thrown, to be caught by the Unit Test Framework. This approach is suitable when writing an
+     explicit test program, and the error would be so severe as to make further testing impractical. BOOST_REQUIRE 
+     differs from the C++ Standard Library's assert() macro in that it is always generated, and channels error 
+     detection into the uniform Unit Test Framework reporting procedure.
+    </para>
+   </annotation>
+
+   <annotation id="snippet12.ann-3" coords="1">
+    <para role="first-line-indented">
+     This approach is similar to approach #1, except that the error detection and error reporting are coded separately.
+     This is most useful when the specific condition being tested requires several independent statements and/or is 
+     not indicative of the reason for failure.
+    </para>
+   </annotation>
+
+   <annotation id="snippet12.ann-4" coords="1">
+    <para role="first-line-indented">
+     This approach is similar to approach #2, except that the error detection and error reporting are coded separately.
+     This is most useful when the specific condition being tested requires several independent statements and/or is 
+     not indicative of the reason for failure.
+    </para>
+   </annotation>
+
+   <annotation id="snippet12.ann-5" coords="1">
+    <para role="first-line-indented">
+     This approach throws an exception, which will be caught and reported by the Unit Test Framework. The error 
+     message displayed when the exception is caught will be most meaningful if the exception is derived from 
+     std::exception, or is a char* or std::string.
+    </para>
+   </annotation>
+
+   <annotation id="snippet12.ann-6" coords="1">
+    <para role="first-line-indented">
+     This approach uses the BOOST_CHECK_MESSAGE tool, is similar to approach #1, except that similar to the approach #3
+     displays an alternative error message specified as a second argument.
+    </para>
+   </annotation>
+
+   <annotation id="snippet12.ann-7" coords="1"> <!-- TO FIX: all the coords -->
+    <para role="first-line-indented">
+     This approach uses the BOOST_CHECK_EQUAL tool and functionally is similar to approach #1. This approach is most 
+     attractive for checking equality of two variables, since in case of error it shows mismatched values.
+    </para>
+   </annotation>
+  </annotations>
+ </btl-snippet>
+
+ <para/> <!-- TO FIX: some finishing statements here -->
+ 
+</section>

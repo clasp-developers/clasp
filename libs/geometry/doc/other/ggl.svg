@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="200"
+   height="80"
+   id="svg2479"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docname="ggl-logo-big.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   version="1.0"
+   inkscape:export-filename="/home/mloskot/dev/ggl/doc/ggl-logo-big.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs2481">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective2487" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="4.5066667"
+     inkscape:cx="108.17308"
+     inkscape:cy="40"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1440"
+     inkscape:window-height="854"
+     inkscape:window-x="0"
+     inkscape:window-y="25" />
+  <metadata
+     id="metadata2484">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Generic Geometry Library Logo</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Steven M. Ottens</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>logo</rdf:li>
+            <rdf:li>library</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>Big version of Generic Geometry Library logo graphics</dc:description>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Steven M. Ottens, Barend Gerhles</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Mateusz Loskot</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:language>en-US</dc:language>
+        <dc:contributor>
+          <cc:Agent>
+            <dc:title></dc:title>
+          </cc:Agent>
+        </dc:contributor>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       transform="matrix(0.8435773,0,0,0.8435773,2839.9914,3930.1403)"
+       id="g3441">
+      <path
+         id="path3443"
+         d="M -3317.0063,-4652.377 L -3350.1428,-4616.7161 L -3314.4819,-4583.5796 L -3293.8275,-4605.8084 L -3304.7922,-4605.8084 L -3304.7922,-4641.0272 L -3317.0063,-4652.377 z"
+         style="fill:#729fcf;fill-opacity:1;fill-rule:nonzero;stroke:#2e3436;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="cssssc"
+         id="path3445"
+         d="M -3308.9994,-4589.4784 L -3297.2155,-4589.1982 C -3297.8529,-4578.906 -3306.4106,-4570.7468 -3316.8625,-4570.7468 C -3327.7286,-4570.7468 -3336.5474,-4579.5657 -3336.5474,-4590.4318 C -3336.5474,-4601.298 -3327.7286,-4610.1168 -3316.8625,-4610.1168 C -3313.2621,-4610.1168 -3310.1971,-4609.3007 -3307.0735,-4607.5104"
+         style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#2e3436;stroke-width:3.23588896;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         id="path3447"
+         d="M -3333.3791,-4601.139 C -3335.3825,-4598.0564 -3336.5482,-4594.3789 -3336.5482,-4590.4311 C -3336.5482,-4579.565 -3327.7297,-4570.7465 -3316.8636,-4570.7466 C -3306.4118,-4570.7466 -3297.8536,-4578.9067 -3297.2162,-4589.1988 L -3308.9995,-4589.4784 L -3314.4819,-4583.5796 L -3333.3791,-4601.139 z"
+         style="fill:#8ae234;fill-opacity:1;fill-rule:nonzero;stroke:#2e3436;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         id="path3449"
+         d="M -3299.3156,-4635.9385 L -3299.3156,-4611.5874 L -3288.4564,-4611.5874 L -3281.3454,-4619.2405 L -3299.3156,-4635.9385 z"
+         style="fill:#729fcf;fill-opacity:1;fill-rule:nonzero;stroke:#2e3436;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#2e3436;stroke-width:3.23588896;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1"
+         d="M -3308.9994,-4589.4784 L -3297.2155,-4589.1982 C -3297.8529,-4578.906 -3306.4106,-4570.7468 -3316.8625,-4570.7468 C -3327.7286,-4570.7468 -3336.5474,-4579.5657 -3336.5474,-4590.4318 C -3336.5474,-4601.298 -3327.7286,-4610.1168 -3316.8625,-4610.1168 C -3313.2621,-4610.1168 -3310.1971,-4609.3007 -3307.0735,-4607.5104"
+         id="path3451"
+         sodipodi:nodetypes="cssssc" />
+      <path
+         id="path3453"
+         d="M -3333.75,-4634.3438 L -3349.5938,-4617.3125 C -3347.154,-4616.2282 -3344.4655,-4615.625 -3341.625,-4615.625 C -3331.1731,-4615.625 -3322.6063,-4623.7701 -3321.9688,-4634.0625 L -3333.75,-4634.3438 z"
+         style="opacity:0.75;fill:#4e9a06;fill-opacity:1;fill-rule:nonzero;stroke:#2e3436;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="cssssc"
+         id="path3455"
+         d="M -3333.7534,-4634.3542 L -3321.9696,-4634.074 C -3322.607,-4623.7818 -3331.1646,-4615.6226 -3341.6165,-4615.6226 C -3352.4826,-4615.6226 -3361.3015,-4624.4415 -3361.3015,-4635.3076 C -3361.3015,-4646.1737 -3352.4826,-4654.9926 -3341.6165,-4654.9926 C -3338.0162,-4654.9926 -3334.9512,-4654.1765 -3331.8276,-4652.3861"
+         style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#2e3436;stroke-width:3.23588896;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:21.74307632px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#2e3436;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Candara;-inkscape-font-specification:Candara Bold"
+       x="77.288437"
+       y="18.60154"
+       id="text3516"><tspan
+         sodipodi:role="line"
+         id="tspan3518"
+         x="77.288437"
+         y="18.60154">Generic</tspan><tspan
+         sodipodi:role="line"
+         x="77.288437"
+         y="45.780384"
+         id="tspan3520">Geometry</tspan><tspan
+         sodipodi:role="line"
+         x="77.288437"
+         y="72.959229"
+         id="tspan3522">Library</tspan></text>
+  </g>
+</svg>

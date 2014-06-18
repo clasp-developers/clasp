@@ -1,0 +1,115 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>BOOST_EXPLICIT_OPERATOR_BOOL and BOOST_CONSTEXPR_EXPLICIT_OPERATOR_BOOL</title>
+<link rel="stylesheet" href="../../../../doc/src/boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="explicit_operator_bool.html" title="BOOST_EXPLICIT_OPERATOR_BOOL and BOOST_CONSTEXPR_EXPLICIT_OPERATOR_BOOL">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr>
+<td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../boost.png"></td>
+<td align="center"><a href="../../../../index.html">Home</a></td>
+<td align="center"><a href="../../../../libs/libraries.htm">Libraries</a></td>
+<td align="center"><a href="http://www.boost.org/users/people.html">People</a></td>
+<td align="center"><a href="http://www.boost.org/users/faq.html">FAQ</a></td>
+<td align="center"><a href="../../../../more/index.htm">More</a></td>
+</tr></table>
+<hr>
+<div class="spirit-nav"></div>
+<div class="article">
+<div class="titlepage">
+<div>
+<div><h2 class="title">
+<a name="boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool"></a>BOOST_EXPLICIT_OPERATOR_BOOL and BOOST_CONSTEXPR_EXPLICIT_OPERATOR_BOOL</h2></div>
+<div><div class="authorgroup"><div class="author"><h3 class="author">
+<span class="firstname">Andrey</span> <span class="surname">Semashev</span>
+</h3></div></div></div>
+<div><p class="copyright">Copyright &#169; 2013 Andrey Semashev</p></div>
+<div><div class="legalnotice">
+<a name="boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.legal"></a><p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></div>
+</div>
+<hr>
+</div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl class="toc">
+<dt><span class="section"><a href="explicit_operator_bool.html#boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.overview">Overview</a></span></dt>
+<dt><span class="section"><a href="explicit_operator_bool.html#boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.examples">Examples</a></span></dt>
+<dt><span class="section"><a href="explicit_operator_bool.html#boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.history">History</a></span></dt>
+</dl>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.overview"></a><a class="link" href="explicit_operator_bool.html#boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.overview" title="Overview">Overview</a>
+</h2></div></div></div>
+<p>
+      <code class="computeroutput"><span class="identifier">BOOST_EXPLICIT_OPERATOR_BOOL</span><span class="special">()</span></code> and <code class="computeroutput"><span class="identifier">BOOST_CONSTEXPR_EXPLICIT_OPERATOR_BOOL</span><span class="special">()</span></code> are compatibility helper macros that expand
+      to an explicit conversion operator to <code class="computeroutput"><span class="keyword">bool</span></code>.
+      For compilers not supporting explicit conversion operators introduced in C++11
+      the macros expand to a conversion operator that implements the <a href="http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Safe_bool" target="_top">safe
+      bool idiom</a>. In case if the compiler is not able to handle safe bool
+      idiom well the macros expand to a regular conversion operator to <code class="computeroutput"><span class="keyword">bool</span></code>.
+    </p>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.examples"></a><a class="link" href="explicit_operator_bool.html#boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.examples" title="Examples">Examples</a>
+</h2></div></div></div>
+<p>
+      Both macros are intended to be placed within a user's class definition. The
+      generated conversion operators will be implemented in terms of <code class="computeroutput"><span class="keyword">operator</span><span class="special">!()</span></code>
+      that should be defined by user in this class. In case of <code class="computeroutput"><span class="identifier">BOOST_CONSTEXPR_EXPLICIT_OPERATOR_BOOL</span><span class="special">()</span></code> the generated conversion operator will be
+      declared <code class="computeroutput"><span class="keyword">constexpr</span></code> which requires
+      the corresponding <code class="computeroutput"><span class="keyword">operator</span><span class="special">!()</span></code>
+      to also be <code class="computeroutput"><span class="keyword">constexpr</span></code>.
+    </p>
+<pre class="programlisting"><span class="keyword">template</span><span class="special">&lt;</span> <span class="keyword">typename</span> <span class="identifier">T</span> <span class="special">&gt;</span>
+<span class="keyword">class</span> <span class="identifier">my_ptr</span>
+<span class="special">{</span>
+    <span class="identifier">T</span><span class="special">*</span> <span class="identifier">m_p</span><span class="special">;</span>
+
+<span class="keyword">public</span><span class="special">:</span>
+    <span class="identifier">BOOST_EXPLICIT_OPERATOR_BOOL</span><span class="special">()</span>
+
+    <span class="keyword">bool</span> <span class="keyword">operator</span><span class="special">!()</span> <span class="keyword">const</span>
+    <span class="special">{</span>
+        <span class="keyword">return</span> <span class="special">!</span><span class="identifier">m_p</span><span class="special">;</span>
+    <span class="special">}</span>
+<span class="special">};</span>
+</pre>
+<p>
+      Now <code class="computeroutput"><span class="identifier">my_ptr</span></code> can be used in conditional
+      expressions, similarly to a regular pointer:
+    </p>
+<pre class="programlisting"><span class="identifier">my_ptr</span><span class="special">&lt;</span> <span class="keyword">int</span> <span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+<span class="keyword">if</span> <span class="special">(</span><span class="identifier">p</span><span class="special">)</span>
+    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"true"</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span>
+</pre>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.history"></a><a class="link" href="explicit_operator_bool.html#boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.history" title="History">History</a>
+</h2></div></div></div>
+<h4>
+<a name="boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.history.h0"></a>
+      <span class="phrase"><a name="boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.history.boost_1_55"></a></span><a class="link" href="explicit_operator_bool.html#boost_explicit_operator_bool_and_boost_constexpr_explicit_operator_bool.history.boost_1_55">boost
+      1.55</a>
+    </h4>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+          The macro was extracted from Boost.Log.
+        </li></ul></div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"><p><small>Last revised: November 17, 2013 at 17:08:52 GMT</small></p></td>
+<td align="right"><div class="copyright-footer"></div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav"></div>
+</body>
+</html>

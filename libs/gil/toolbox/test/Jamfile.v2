@@ -1,0 +1,55 @@
+# Boost.GIL.ToolBox
+#
+# (C) Copyright 2012: Mateusz Loskot and Christian Henning
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# bring in rules for testing
+import testing ;
+
+project
+    : requirements
+        <library>/boost/test//boost_unit_test_framework
+        <link>static
+        <include>../../../..
+        <toolset>intel:<debug-symbols>off
+        <toolset>msvc-7.1:<debug-symbols>off
+        <toolset>msvc-8.0:<define>_SCL_SECURE_NO_DEPRECATE <define>_CRT_SECURE_NO_DEPRECATE <define>_CRT_NONSTDC_NO_DEPRECATE
+        <toolset>msvc-9.0:<define>_SCL_SECURE_NO_DEPRECATE <define>_CRT_SECURE_NO_WARNINGS <define>_CRT_NONSTDC_NO_DEPRECATE
+        <toolset>msvc-10.0:<define>_SCL_SECURE_NO_DEPRECATE <define>_CRT_SECURE_NO_WARNINGS <define>_CRT_NONSTDC_NO_DEPRECATE
+        <link>static
+        <library>/boost/test//boost_unit_test_framework
+#		<library>/boost/system//boost_system
+    ;
+
+test-suite "gil::toolbox"
+	:
+	[ run
+        # sources
+        test.cpp
+        channel_type.cpp
+        channel_view.cpp
+        cmyka.cpp
+        get_num_bits.cpp
+        get_pixel_type.cpp
+        gray_alpha.cpp
+        gray_to_rgba.cpp
+        hsl_hsv_test.cpp
+        indexed_image_test.cpp
+        is_bit_aligned.cpp
+        is_homogeneous.cpp
+        is_similar.cpp
+        lab_test.cpp
+        pixel_bit_size.cpp
+        rgb_to_luminance.cpp
+        xyz_test.cpp
+        : # args
+        : # input-files
+        :	# requirements
+        : # target-name
+        gil_io_new_tests
+        : # default-build
+	]
+
+    ;

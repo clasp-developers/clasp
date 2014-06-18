@@ -1,0 +1,64 @@
+[/
+ / Copyright (C) 2007-2009 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[/ TODO: Redefine this as a function taking a vertex and a graph. /]
+
+[section Degree Measure]
+The [DegreeMeasure] concept defines requirements for function objects
+that are used in computations on the degree of a vertex.
+
+[heading Notation]
+The following expressions are used within this document:
+[table
+    [[Expression] [Description]]
+    [[M] [A type modeling the [DegreeMeasure] concept.]]
+    [[m] [An object of type `M`.]]
+    [[G] [A type modeling the [Graph] concept.]]
+    [[g] [An object of type `G`.]]
+    [[v] [An object of type `graph_traits<G>::vertex_descriptor`.]]
+]
+
+[heading Associated Types]
+[table
+    [[Name] [Type] [Description]]
+    [
+        [Degree Type]
+        [`M::degree_type`]
+        [
+            The result type of the computation. Note that unlike
+            `graph_traits<G>::degree_size_type`, the `degree_type` is not
+            required to be numeric.
+        ]
+    ]
+]
+
+[heading Expressions]
+[table
+    [[Name] [Expression] [Result Type] [Description]]
+    [
+        [Function Call]
+        [`m(v, g)`]
+        [`M::degree_type`]
+        [
+            Invoke the measure on the vertex `v`, with respect
+            to the graph `g`. This returns the result as type `degree_type`.
+        ]
+    ]
+]
+
+[heading C++0x]
+
+    concept DegreeMeasure<M>
+    {
+        typename Graph;
+        typename Vertex;
+        typename M::degree_type;
+
+        degree_type M::operator(Vertex v, const Graph& g)
+    };
+
+[endsect]

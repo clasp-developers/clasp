@@ -1,0 +1,75 @@
+[/
+ / Copyright (C) 2007-2009 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Vertex List Graph]
+The VertexListGraph concept refines the [Graph] concept, and adds the requirement
+for efficient traversal of all the vertices in a graph.
+
+[h4 Refinement Of]
+[Graph]
+
+[h4 Associated Types]
+[table
+    [[Type] [Description]]
+    [
+        [`graph_traits<G>::traversal_category`]
+        [
+            This tag type must be convertible to `vertex_list_graph_tag`.
+        ]
+    ]
+    [
+        [`graph_traits<G>::vertex_iterator`]
+        [
+            A vertex iterator (obtained via vertices(g)) provides access to all of the vertices in
+            a graph. A vertex iterator type must meet the requirements of [MultiPassInputIterator].
+            The value type of the vertex iterator must be the vertex descriptor of the graph.
+        ]
+    ]
+    [
+        [`graph_traits<G>::vertices_size_type`]
+        [
+            The unsigned integer type used to represent the number of vertices in the graph.
+        ]
+    ]
+]
+
+[h4 Valid Expressions]
+[table
+    [[Expression] [Description]]
+    [
+        [`vertices(g)`]
+        [
+            Returns an iterator range providing access to all the vertices in the graph `g`.
+
+            *Returns* `std::pair<vertex_iterator, vertex_iterator>`
+        ]
+    ]
+    [
+        [`num_vertices(g)`]
+        [
+            Returns the number of vertices in the graph `g`.
+
+            *Returns* `vertices_size_type`
+        ]
+    ]
+]
+
+[h4 Complexity Guarantees]
+The `vertices(g)` function must return in constant time.
+
+[h4 Design Rationale]
+One issue in the design of this concept is whether to include the refinement from the
+[IncidenceGraph] and [AdjacencyGraph] concepts. The ability to traverse the vertices
+of a graph is orthogonal to traversing out-edges, so it would make sense to have a VertexListGraph
+concept that only includes vertex traversal. However, such a concept would no longer really be a
+graph, but would just be a set, and the STL already has concepts for dealing with such things.
+However, there are many BGL algorithms that need to traverse the vertices and out-edges of a graph,
+so for convenience a concept is needed that groups these requirements together, hence the VertexListGraph
+concept.
+
+
+[endsect]

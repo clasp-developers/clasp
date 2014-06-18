@@ -1,0 +1,97 @@
+# Boost.GIL.IO
+#
+# (C) Copyright 2012: Mateusz Loskot and Christian Henning
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# Please make sure to read readme.txt!
+
+# bring in rules for testing
+import testing ;
+
+using jpeg 	    : 	 8b : C:/chhenning/jpeg/jpeg-8c ;
+using zlib      : 1.2.5 : C:/chhenning/zlib/zlib-1.2.5 ;
+using png       : 1.4.4 : C:/chhenning/png/lpng154 ;
+using libtiff   : 3.9.4 : C:/chhenning/tiff/tiff-4.0.1 ;
+
+project
+    : requirements
+        <toolset>intel:<debug-symbols>off
+        <toolset>msvc-7.1:<debug-symbols>off
+        <toolset>msvc-8.0:<define>_SCL_SECURE_NO_DEPRECATE <define>_CRT_SECURE_NO_DEPRECATE <define>_CRT_NONSTDC_NO_DEPRECATE
+        <toolset>msvc-9.0:<define>_SCL_SECURE_NO_DEPRECATE <define>_CRT_SECURE_NO_WARNINGS <define>_CRT_NONSTDC_NO_DEPRECATE
+        <toolset>msvc-10.0:<define>_SCL_SECURE_NO_DEPRECATE <define>_CRT_SECURE_NO_WARNINGS <define>_CRT_NONSTDC_NO_DEPRECATE
+        <link>static
+        <library>/boost/test//boost_unit_test_framework
+		<library>/boost/system//boost_system
+		<library>/boost/filesystem//boost_filesystem
+    ;
+
+test-suite "gil::io"
+	:
+	[ run
+        # sources
+        test.cpp
+        all_formats_test.cpp
+        bmp_old_test.cpp
+        bmp_read_test.cpp
+        bmp_test.cpp
+        bmp_write_test.cpp
+        jpeg_old_test.cpp
+        jpeg_read_test.cpp
+        jpeg_test.cpp
+        jpeg_write_test.cpp
+        make.cpp
+        png_file_format_test.cpp
+        png_old_test.cpp
+        png_read_test.cpp
+        png_test.cpp
+        pnm_old_test.cpp
+        pnm_read_test.cpp
+        pnm_test.cpp
+        pnm_write_test.cpp
+        #raw_test.cpp
+        targa_old_test.cpp
+        targa_read_test.cpp
+        targa_test.cpp
+        targa_write_test.cpp
+        tiff_file_format_test.cpp
+        tiff_old_test.cpp
+        tiff_subimage_test.cpp
+        tiff_test.cpp
+        tiff_tiled_float_test.cpp
+        tiff_tiled_minisblack_test_1-10.cpp
+        tiff_tiled_minisblack_test_11-20.cpp
+        tiff_tiled_minisblack_test_21-31_32-64.cpp
+        tiff_tiled_minisblack_write_test_1-10.cpp
+        tiff_tiled_minisblack_write_test_11-20.cpp
+        tiff_tiled_minisblack_write_test_21-31_32-64.cpp
+        tiff_tiled_palette_test_1-8.cpp
+        tiff_tiled_palette_test_8-16.cpp
+        tiff_tiled_palette_write_test_1-8.cpp
+        tiff_tiled_palette_write_test_8-16.cpp
+        tiff_tiled_rgb_contig_test_1-10.cpp
+        tiff_tiled_rgb_contig_test_11-20.cpp
+        tiff_tiled_rgb_contig_test_21-31_32_64.cpp
+        tiff_tiled_rgb_contig_write_test_1-10.cpp
+        tiff_tiled_rgb_contig_write_test_11-20.cpp
+        tiff_tiled_rgb_contig_write_test_21-31_32_64.cpp
+        tiff_tiled_rgb_planar_test_1-10.cpp
+        tiff_tiled_rgb_planar_test_11-20.cpp
+        tiff_tiled_rgb_planar_test_21-31_32_64.cpp
+        tiff_tiled_test.cpp
+        tiff_write_test.cpp
+        /ext/jpeg//jpeg
+        /ext/png//png
+        /ext/libtiff//tiff
+        /ext/libtiff//tiffxx
+        /ext/zlib//z
+        : # args
+        : # input-files
+        : # requirements
+        : # target-name
+        gil_io_tests
+        : # default-build
+	]
+
+    ;

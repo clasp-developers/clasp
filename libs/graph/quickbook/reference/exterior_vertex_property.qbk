@@ -1,0 +1,106 @@
+[/
+ / Copyright (c) 2007 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Exterior Vertex Property]
+
+    template <typename Graph, typename Value>
+    class exterior_vertex_property;
+
+The `exterior_vertex_property` class is a utility for generically creating
+and initializing exterior properties for graph classes.
+
+[note
+In fact, this class is the /only/ way to generically create exterior properties
+for graphs.
+]
+
+[heading Notation]
+The following expressions are used in this document:
+[table
+    [[Expression] [Description]]
+    [[`G`] [A graph type modeling a refinement of the [Graph] concept.]]
+    [[`V`] [A value type that models the [SgiAssignable] concept.]]
+]
+
+[heading Model Of]
+[ExteriorProperty]
+
+[heading Template Parameters]
+[table
+    [[Parameter] [Description]]
+    [
+        [`Graph`]
+        [
+            *Semantics:* Specifies the type of graph for which the property
+            is being declared.
+
+            *Requirements:* `Graph` must model a refinement of the the
+            [Graph] concept.
+        ]
+    ]
+    [
+        [`Value`]
+        [
+            *Semantics:* Specifies the value type of the exterior property.
+        ]
+    ]
+]
+
+[heading Where Defined]
+`boost/graph/exterior_property.hpp`
+
+[heading Associated Types]
+[table
+    [[Type] [Description]]
+    [
+        [`P<G,V>::value_type`]
+        [
+            This is the same as the template parameter `Value`.
+        ]
+    ]
+    [
+        [`P<G,V>::key_type`]
+        [
+            This is the same as `graph_traits<G>::vertex_descriptor`.
+        ]
+    ]
+    [
+        [`P<G,V>::container_type`]
+        [
+            This type selects the preferred property container based on the
+            type of graph such that values are accessed in constant time
+            on average.
+        ]
+    ]
+    [
+        [`P<G,V>::map_type`]
+        [
+            This type selects the preferred property map type based on the
+            type of graph.
+        ]
+    ]
+]
+
+[heading Examples]
+Using the `exterior_vertex_property` it is possible to generically create
+exterior properties for a graph. Consider the following template function:
+
+    template <typename Graph, typename Weight>
+    void
+    do_shortest_paths(const Graph& g, Weight w = ())
+    {
+        typedef exterior_vertex_property<Graph, Weight> DistanceProperty;
+        typedef DistanceProperty::container_type DistanceContainer;
+        typedef DistanceProeprty::map_type DistanceMap;
+
+        DistanceContainer distances(num_vertices(g));
+        DistanceMap dist(make_property_map(distances));
+
+        dijkstra_shortest_paths(g, *vertices(g).first, distance_map(dist));
+    }
+
+[endsect]

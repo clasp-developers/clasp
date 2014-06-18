@@ -1,0 +1,42 @@
+#define BOOST_TEST_MODULE example
+#include <boost/test/included/unit_test.hpp>
+
+BOOST_AUTO_TEST_CASE( testA )
+{
+}
+
+BOOST_AUTO_TEST_CASE( testB )
+{
+}
+
+BOOST_AUTO_TEST_SUITE( s1 )
+
+BOOST_AUTO_TEST_CASE( test1 )
+{
+}
+
+BOOST_AUTO_TEST_CASE( lest2 )
+{
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( s2 )
+
+BOOST_AUTO_TEST_CASE( test1 )
+{
+}
+
+BOOST_AUTO_TEST_CASE( test11 )
+{
+}
+
+BOOST_AUTO_TEST_SUITE( in )
+
+BOOST_AUTO_TEST_CASE( test )
+{
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE_END()

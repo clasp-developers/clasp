@@ -1,0 +1,17 @@
+graph {
+    // make this look like a directed graph
+    edge [dir=forward];
+
+    Mary -- Jill;
+    Jill -- Scott;
+    Scott -- Mary;
+    Scott -- Bill;
+    Bill -- Josh;
+    Josh -- Frank;
+    Frank -- Scott;
+    Frank -- Anne;
+    Anne -- Howard [len=2];
+    Howard -- Frank;
+    Frank -- Laurie;
+    Laurie -- Mary;
+};

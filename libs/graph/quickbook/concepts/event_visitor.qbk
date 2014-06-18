@@ -1,0 +1,175 @@
+[/
+ / Copyright (C) 2007-2009 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Event Visitor]
+This concept defines the interface for single-event visitors. An EventVisitor has an
+/apply/ member function (`operator()`) which is invoked within the graph algorithm
+at the event-point specified by the `event_filter` typedef within the type modeling
+the EventVisitor concept. EventVisitors can be combined into an [EventVisitorList].
+
+The following is the list of event tags that can be invoked in Boost.Graph algorithms.
+Each tag corresponds to a member function of the visitor for an algorithm. For example,
+the [BFSVisitor] has a `cycle_edge()` member function. The corresponding tag is
+`on_cycle_edge`. The first argument in the event visitor's `operator()` must be
+either an edge or vertex depending on the event tag.
+
+[h4 Event Tags]
+[table
+    [[Type] [Description]]
+    [
+        [`on_initialize_vertex`]
+        [
+            An event tag corresponding to the initialization of a vertex. The parameter
+            type associated with this event is `vertex_descriptor`.
+        ]
+    ]
+    [
+        [`on_start_vertex`]
+        [
+            In algorithms that without explicit starting points, this event tag
+            corresponds to the selection of a starting vertex. The parameter
+            type associated with this event is `vertex_descriptor`.
+        ]
+    ]
+    [
+        [`on_discover_vertex`]
+        [
+            An event tag that corresponds to a vertex that is being used for
+            the first time. The parameter type associated with this event is
+            `vertex_descriptor`.
+        ]
+    ]
+    [
+        [`on_examine_edge`]
+        [
+            An event tag that corresponds to the examination of edges for recently
+            discovered vertices. The parameter type associated with this event
+            is `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_tree_edge`]
+        [
+            For algorithms whose iterations of a vertex set implicitly define a
+            tree (such as [[breadth_first_search] or [[depth_first_search]),
+            this event tag corresponds to the identification of an edge that acts
+            as an edge in the search tree. The parameter type associated with this
+            event is `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_cycle_edge`]
+        [
+            For algorithms capable of detecting cycles in graphs such as
+            [[depth_first_search], this event tag is associated with discovery
+            of an edge that creates a cycle within the graph. The parameter type
+            associated with this event is `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_forward_or_cross_edge`]
+        [
+            Forward and cross edges refer to types of edges that can be found by
+            different types of searches on graph (e.g., [[depth_first_search]).
+            This event tag corresponds to the identification of such an edge by
+            the algorithm. The parameter type associated with this event is
+            `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_back_edge`]
+        [
+            Back edges refer to types of edges that can be found by different types
+            of searches on a graph (e.g., [[breadth_first_search] and
+            [[depth_first_search]). This event tag corresponds to the identification
+            of such an edge by the algorithm. The parameter type associated with this
+            event is `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_finish_vertex`]
+        [
+            The inverse event of `on_discover_vertex`, this event tag corresponds to
+            the completion of an iteration of an algorithm that is operating on a
+            vertex. The parametet type associated with this event is `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_edge_relaxed`]
+        [
+            For algorithms implementing edge relaxation (e.g.,
+            [[dijkstra_shortest_paths]), this event corresponds to the case
+            where an edge is relaxed. The parameter type associated with this event
+            is `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_edge_not_relaxed`]
+        [
+            For algorithms implementing edge relaxation (e.g.,
+            [[dijkstra_shortest_paths]), this event corresponds to the case
+            where an edge is not relaxed. The parameter type associated with this
+            event is `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_edge_minimized`]
+        [
+            For algorithms implementing edge minimization (e.g.,
+            [[bellman_ford_shortest_paths]), this event corresponds to the case
+            where an edge is minimized. The parameter type associated with this event
+            is `edge_descriptor`.
+        ]
+    ]
+    [
+        [`on_edge_not_minimized`]
+        [
+            For algorithms implementing edge minimization (e.g.,
+            [[bellman_ford_shortest_paths]), this event corresponds to the case
+            where an edge is not minimized. The parameter type associated with this
+            event is `edge_descriptor`.
+        ]
+    ]
+]
+
+[h4 Refinement Of]
+[Visitor]
+
+[h4 Associated Types]
+[table
+    [[Type] [Description]]
+    [
+        [`V::event_filter`]
+        [
+            A tag to specify on which even the visitor should be invoked.
+        ]
+    ]
+]
+
+[h4 Valid Expressions]
+[table
+    [[Expression] [Description]]
+    [
+        [`vis(x,g)`]
+        [
+            Invokes the `operator()` member function of an object `vis` of type
+            `V`. The parameter `x` is either a vertex or edge of the graph `g`. The
+            specific type of parameter depends on `V::event_filter`.
+
+            *Returns* `void`
+        ]
+    ]
+]
+
+[h4 Models]
+* [predecessor_recorder]
+* [distance_recorder]
+* [time_stamper]
+* [property_writer]
+* [null_visitor]
+
+[endsect]

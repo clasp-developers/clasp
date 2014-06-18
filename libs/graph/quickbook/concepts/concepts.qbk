@@ -1,0 +1,37 @@
+[/
+ / Copyright (C) 2007-2009 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Concepts]
+This section provides a detailed listing of the type concepts in the Boost.Graph
+library.
+
+[heading Notation]
+For the following sections, we use the following notional convents:
+
+[table
+    [[Object] [Type]]
+    [[G] [A type that is a model of a [Graph] (or refinement thereof)]]
+    [[g] [An object of type G]]
+    [[u,v] [Objects of type `graph_traits<G>::vertex_descriptor`]]
+    [[e] [An object of type `graph_traits<G>::edge_descriptor`]]
+    [[vi] [An object of type `graph_traits<G>::vertex_iterator`]]
+    [[ei] [An object of type `graph_traits<G>::edge_iterator`]]
+    [[vp] [An object of type `G::vertex_property_type`]]
+    [[ep] [An object of type `G::edge_property_type`]]
+    [[Property] [A type used to specify a vertex or edge property. Also called a /tag/.]]
+    [[p] [An object of type Property]]
+    [[Predicate] [A function that, given an argument, returns true or false]]
+    [[pred] [An object of type [SgiPredicate]]]
+    [[V] [A type that is a model of a [Visitor] (or refinement thereof)]]
+    [[vis] [An object of type V]]
+]
+
+[include utility.qbk]
+[include graphs.qbk]
+[include visitors.qbk]
+
+[endsect]

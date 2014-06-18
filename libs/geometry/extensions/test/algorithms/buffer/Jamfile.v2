@@ -1,0 +1,24 @@
+# Boost.Geometry (aka GGL, Generic Geometry Library)
+#
+# Copyright (c) 2011-2013 Barend Gehrels, Amsterdam, the Netherlands.
+#
+# Use, modification and distribution is subject to the Boost Software License,
+# Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+project bgeab
+    :
+    requirements
+        <include>.
+    ;
+
+test-suite boost-geometry-extensions-algorithms-buffer
+    :
+    [ run point_buffer.cpp ]
+    [ run linestring_buffer.cpp ]
+    [ run polygon_buffer.cpp ]
+    [ run multi_point_buffer.cpp ]
+    [ run multi_linestring_buffer.cpp ]
+    [ run multi_polygon_buffer.cpp ]
+    ;
+

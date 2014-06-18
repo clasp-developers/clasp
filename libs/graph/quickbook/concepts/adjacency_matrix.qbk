@@ -1,0 +1,50 @@
+[/
+ / Copyright (C) 2007-2009 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Adjacency Matrix]
+The AdjacencyMatrix concept refines `Graph` concept and adds the requirement for efficient access
+to any edge in the graph given the source and target vertices. No Boost.Graph algorithms currently
+use this concept. However there are algorithms not yet implemented such as Floyd-Warshall that
+would require this concept.
+
+[h4 Refinement Of]
+[Graph]
+
+[h4 Associated Types]
+[table
+    [[Type] [Description]]
+    [
+        [`graph_traits<G>::traversal_category`]
+        [
+            This tag type must be convertible to `adjacency_matrix_tag`.
+        ]
+    ]
+]
+
+[h4 Valid Expressions]
+[table
+    [[Expression] [Description]]
+    [
+        [`edge(u,v,g)`]
+        [
+            Returns a pair consisting of a flag saying whether there exists an edge between `u` and
+            `v` in graph g, and consisting of the edge descriptor if the edge was found.
+
+            *Returns* `std::pair<edge_iterator, bool>`
+        ]
+    ]
+]
+
+[h4 Complexity Guarantees]
+The `edge(u,v,g)` function must return in constant time.
+
+[h4 Notes]
+A number of graph classes (notably [undirected_graph], [directed_graph] and
+[adjacency_list]) provide non-constant time implementations of this interface. Although
+the function exists, none of these classes are documented as modeling this concept.
+
+[endsect]

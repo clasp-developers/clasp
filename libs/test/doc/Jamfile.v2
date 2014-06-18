@@ -1,0 +1,29 @@
+# Jamfile.v2
+#
+# Copyright (c) 2010
+# Steven Watanabe
+#
+# Distributed Under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+use-project /boost/test : ../build ;
+
+using utf-boostbook ;
+import path ;
+
+path-constant .here : . ;
+
+here = [ path.make $(.here) ] ;
+
+boostbook standalone
+  :
+    src/btl.xml
+  :
+    <xsl:param>chunk.toc=$(here)/src/btl-toc.xml
+    <xsl:param>manual.toc=$(here)/src/btl-toc.xml
+    <xsl:param>snippet.dir=file://$(here)/src/snippet
+    <xsl:param>example.dir=file://$(here)/src/examples
+    <utf-boostbook>on
+    <xsl:path>$(.here)/src
+;

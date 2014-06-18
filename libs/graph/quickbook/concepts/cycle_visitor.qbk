@@ -1,0 +1,43 @@
+[/
+ / Copyright (C) 2007-2009 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Cycle Visitor]
+The cycle visitor concept defines requirements for types that act as visitors
+of cycle-detection algorithms. Objects of this type are passed to these
+algorithms and are invoked when a cycle is found within a graph.
+
+[heading Refinement Of]
+[Visitor]
+
+[heading Valid Expressions]
+[table
+    [[Name] [Expression] [Result Type] [Description]]
+    [
+        [Visit Cycle]
+        [`vis.cycle(c,g)`]
+        [`void`]
+        [
+            The `vis.cycle()` member function of the visitor is invoked when a
+            cycle is identified in the graph `g`. The vertices in `c` are arranged
+            such that first vertex is connected to the second, and that is connected
+            to the third, etc. The `back()` vertex is connected to the `front()`
+            to form the reported cycle.
+
+            *Requirements:* `g` is an object whose type `G` is a model of the
+            [Graph] concept.
+
+            *Requirements:* `c` is an object whose type `C` is a model of the
+            [SgiContainer] concept. The `value_type` of `C` must be the same type
+            as the `vertex_descriptor` of `G`.
+        ]
+    ]
+]
+
+[heading Models]
+[cycle_visitor], [min_max_cycle_visitor]
+
+[endsect]

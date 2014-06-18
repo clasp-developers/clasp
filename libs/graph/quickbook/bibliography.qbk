@@ -1,0 +1,19 @@
+[/
+ / Copyright (c) 2007 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[bibliography]
+
+[bibentry
+    [authors [Sutter, Herb], [Alexandrescu, Andrei]]
+    [title C++ Coding Standards: 101 Rules, Guidelines, and Best Practices]
+    [book
+        [publisher Addison Wesley]
+        [copyright 1985 Pearson Education, Inc.]
+    [pages 220]
+]
+
+[endbib]
