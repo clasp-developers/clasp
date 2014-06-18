@@ -172,7 +172,7 @@ namespace core
     {_G();
         // This is used to allocate roots that are pointed
         // to by global variable _sym_XXX  and will never be collected
-        GC_ALLOCATE_UNCOLLECTABLE(Symbol_O,n );
+        Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::rootAllocate();
 	ASSERTF(nm!="",BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
 	if ( nm.find("/dyn") != string::npos)

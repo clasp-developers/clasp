@@ -32,6 +32,8 @@ $var ConstTypeCount = 2
                         < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
                         : public core::Functoid {
                         public:
+                            typedef Functoid TemplatedBase;
+                        public:
 //        typedef std::function<$if ret==RetVoid [[void]] $else [[RT]] (OT& $if numArgs [[,]] $for Args_ , [[ARG$Args_]])> Type;
                         typedef $if ret==RetVoid [[void]] $else [[RT]] (OT::*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
                         Type mptr;

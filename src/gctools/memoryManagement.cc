@@ -11,10 +11,10 @@
 namespace gctools {
 
 
-
+#if 0
     HeapRoot* 	rooted_HeapRoots = NULL;
     StackRoot* 	rooted_StackRoots = NULL;
-
+#endif
 
 
 };

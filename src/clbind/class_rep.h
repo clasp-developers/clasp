@@ -176,6 +176,12 @@ namespace clbind {
 	bool is_class_rep(core::Lisp_sp L, int index);
 
 }
+template<> struct gctools::GCInfo<clbind::ClassRep_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = false;
+    static bool constexpr Atomic = false;
+};
 
 //#include <clbind/detail/overload_rep_impl.hpp>
 

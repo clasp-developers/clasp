@@ -13,17 +13,33 @@ namespace core
 {
 
     template <typename FN>
-    class VariadicFunctoid : public Functoid {};
-#define CORE_VARIADIC_FUNCTOID_TEMPLATE_DEFINED
+    class VariadicFunctoid : public Functoid {
+    public:
+        typedef Functoid TemplatedBase;
+    };
+};
 
+template <typename T>
+class gctools::GCKind<core::VariadicFunctoid<T>> {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicFunctoid<T>::TemplatedBase>::Kind;
+};
+
+namespace core {
 #include "wrappers_functoids.h"
+};
 
 
+
+
+namespace core {
     template <int DispatchOn, typename FN>
-    class VariadicMethoid : public Functoid {};
+    class VariadicMethoid : public Functoid {
+    public:
+        typedef Functoid TemplatedBase;
+    };
 
 #include "wrappers_methoids.h"
-
 
     template <typename RT,typename... ARGS>
     void af_def(const string& packageName, const string& name, RT (*fp)(ARGS...) , const string& arguments="", const string& declares="", const string& docstring="", int locked=1 )
@@ -31,14 +47,13 @@ namespace core
         Functoid* f = gctools::ClassAllocator<VariadicFunctoid<RT(ARGS...)> >::allocateClass(packageName+"::"+name,fp);
         lisp_defun_lispify_name(packageName,name,f,arguments,declares,docstring,locked,true,sizeof...(ARGS));
     }
+};
 
 
-
-    
-
-
-
-
+template <int DispatchOn, typename T>
+class gctools::GCKind<core::VariadicMethoid<DispatchOn,T>> {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicMethoid<DispatchOn,T>::TemplatedBase>::Kind;
 };
 
 
@@ -148,6 +163,13 @@ namespace core {
 	    }
 
 	    this->_ClassSymbol = OT::static_classSymbol();
+
+#if 1
+            OT xxx;
+            int offset = reinterpret_cast<char*>(&dynamic_cast<T_O&>(xxx)) - reinterpret_cast<char*>(&xxx);
+            printf("%s:%d offsetof(%s,T_O) = %d\n", __FILE__, __LINE__, _rep_(this->_ClassSymbol).c_str(),offset);
+#endif            
+
             reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);
 
 	    /*! Accumulate all of the classes in reverse order of how they were initialized

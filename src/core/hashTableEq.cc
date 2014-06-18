@@ -72,7 +72,7 @@ namespace core
     int HashTableEq_O::sxhashKey(T_sp obj,int bound,bool willAddKey) const
     {_OF();
 #ifdef USE_MPS
-        if ( willAddKey ) {
+        if ( willAddKey && obj.pointerp() ) {
             void* blockAddr = SmartPtrToBasePtr(obj);
             mps_ld_add(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker))
                        ,gctools::_global_arena,blockAddr);

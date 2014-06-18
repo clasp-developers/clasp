@@ -70,13 +70,18 @@ namespace clbind
     };
 
 
+};
 
+
+namespace clbind {
 
     /*! Wrappers wrap external pointers - 
       The wrapper does not own the pointer unless the HolderType is a std::unique_ptr or some other
       smart_ptr type */
     template <class OT, class HolderType = OT* >
     class Wrapper : public core::WrappedPointer_O /*, public gctools::GC_MergeKinds*/ {
+    public:
+        typedef core::WrappedPointer_O TemplatedBase;
     public:
         typedef Wrapper<OT,HolderType>  WrapperType;
 	typedef	OT	                ExternalType;
@@ -208,11 +213,32 @@ namespace clbind
 
         };
     };
-
-
-
-
 };
+
+template <typename T> class gctools::GCKind<clbind::Wrapper<T,T*>> {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Wrapper<T,T*>::TemplatedBase>::Kind;
+};
+template<typename T> struct gctools::GCInfo<clbind::Wrapper<T,T*>> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
+
+/*! Wrappers of unique_ptr need to be finalized */
+template <typename T> class gctools::GCKind<clbind::Wrapper<T,std::unique_ptr<T>>> {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Wrapper<T,std::unique_ptr<T>>::TemplatedBase>::Kind;
+};
+template<typename T> struct gctools::GCInfo<clbind::Wrapper<T,std::unique_ptr<T>>> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 
 
 namespace translate {
@@ -426,6 +452,8 @@ namespace translate {
             }
 
 #if 1
+            printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nWhat follows may or may not be useful for diagnosing the problem.\nYou may need to write a from_object translator for the destination type\n",
+                   __FILE__, __LINE__, _rep_(o).c_str());
             clbind::Derivable<T>* dtptr = dynamic_cast<clbind::Derivable<T>*>(o.px_ref());
             printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__ );
             printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(o.px_ref()));

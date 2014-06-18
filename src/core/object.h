@@ -220,18 +220,6 @@ namespace core
 //                                                                        
 //
 //
-#if defined(USE_MPS)
-#ifdef RUNNING_GC_BUILDER
-#define FRIEND_GC_SCANNER()
-#else
-#define FRIEND_GC_SCANNER() 	friend GC_RESULT (::obj_scan(GC_SCAN_STATE ss, mps_addr_t base, mps_addr_t limit));
-#endif
-#define BRCL_MPS_INTERFACE(oNamespace,oClass)				\
-	FRIEND_GC_SCANNER();
-#else
-#define FRIEND_GC_SCANNER()	
-#define BRCL_MPS_INTERFACE(oNamespace,oClass)
-#endif
 
 class _RootDummyClass : public gctools::GCObject
 {
@@ -429,7 +417,7 @@ namespace core
 
 
 #define	__COMMON_VIRTUAL_CLASS_PARTS(oNamespace,oPackage,oClass,oclassName) \
-	BRCL_MPS_INTERFACE(oNamespace,oClass);				\
+	FRIEND_GC_SCANNER();                                            \
     public:								\
     template<class DestClass>						\
     gctools::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const \
@@ -812,6 +800,8 @@ namespace core {
     class LispObjectCreator : public core::Creator
     {
     public:
+        typedef core::Creator TemplatedBase;
+    public:
         DISABLE_NEW();
         virtual void describe() const {
             printf("LispObjectCreator for class %s  sizeof_instances-> %lu\n",_rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
@@ -823,10 +813,17 @@ namespace core {
         }
         virtual void searcher() {};
     };
+};
+
+template <typename T>
+class gctools::GCKind<core::LispObjectCreator<T>> {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::LispObjectCreator<T>::TemplatedBase>::Kind;
+};
 
 
 
-
+namespace core {
     template <class oclass>
     T_sp new_LispObject()
     {_G();

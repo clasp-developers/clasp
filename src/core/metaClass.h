@@ -250,6 +250,17 @@ namespace core
 	virtual ~Class_O();
     };
 
+};
+template<> struct gctools::GCInfo<core::Class_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = false;
+    static bool constexpr Atomic = false;
+};
+
+
+
+namespace core {
 
     /*!Return true if low is a subclass of high */
     bool af_subclassp(T_sp low, T_sp high);
@@ -261,6 +272,7 @@ namespace core
 
     class InstanceCreator : public Creator
     {
+        FRIEND_GC_SCANNER();
         Symbol_sp       _className;
     public:
         DECLARE_onHeapScanGCRoots();

@@ -103,6 +103,7 @@ namespace clbind { namespace detail {
 
         class class_map
         {
+            FRIEND_GC_SCANNER();
         public:
             DECLARE_onHeapScanGCRoots();
             ClassRep_sp get(class_id id) const;

@@ -57,11 +57,6 @@
 
 namespace reg {
 
-#if 1
-    ClassSymbolsHolder  globalClassSymbolsVectorHolder;
-#else
-    std::vector<core::Symbol_sp, gctools::root_allocator<core::Symbol_sp> > globalClassSymbolsVector;
-#endif
 
     class_id allocate_class_id(type_id const& cls)
     {
@@ -79,6 +74,27 @@ namespace reg {
 
         return inserted.first->second;
     }
+
+
+
+    void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym)
+    {
+        ASSERT(_lisp);
+        if ( cid >= _lisp->classSymbolsHolder().size() ) {
+            _lisp->classSymbolsHolder().resize(cid+1,core::lisp_symbolNil());
+        }
+        _lisp->classSymbolsHolder()[cid] = sym;
+    }
+
+
+    core::Symbol_sp lisp_classSymbolFromClassId(class_id cid)
+    {
+        core::Symbol_sp sym = _lisp->classSymbolsHolder()[cid];
+        if (sym.nilp()) {
+            return _Unbound<core::Symbol_O>();
+        }
+        return sym;
+    }
 };
 
 
@@ -94,18 +110,19 @@ namespace reg {
 
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP)
 {
-    if ( expectedTyp >= reg::globalClassSymbolsVectorHolder._Symbols.size() ) {
-        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("expected class_id %lu out of range max[%lu]") % expectedTyp % reg::globalClassSymbolsVectorHolder._Symbols.size() );
+    ASSERT(_lisp);
+    if ( expectedTyp >= _lisp->classSymbolsHolder().size() ) {
+        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("expected class_id %lu out of range max[%lu]") % expectedTyp % _lisp->classSymbolsHolder().size() );
     }
-    core::Symbol_sp expectedSym = reg::globalClassSymbolsVectorHolder._Symbols[expectedTyp];
+    core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expectedTyp];
     if ( expectedSym.nilp() ) {
         core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("expected class_id %lu symbol was not defined") % expectedTyp );
     }
 
-    if ( givenTyp >= reg::globalClassSymbolsVectorHolder._Symbols.size() ) {
-        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("given class_id %lu out of range max[%lu]") % givenTyp % reg::globalClassSymbolsVectorHolder._Symbols.size() );
+    if ( givenTyp >= _lisp->classSymbolsHolder().size() ) {
+        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("given class_id %lu out of range max[%lu]") % givenTyp % _lisp->classSymbolsHolder().size() );
     }
-    core::Symbol_sp givenSym = reg::globalClassSymbolsVectorHolder._Symbols[givenTyp];
+    core::Symbol_sp givenSym = _lisp->classSymbolsHolder()[givenTyp];
     if ( givenSym.nilp() ) {
         core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("given class_id %lu symbol was not defined") % givenTyp );
     }
@@ -133,7 +150,7 @@ core::Lisp_sp _lisp;
 };
 
 
-    void brcl_mps_debug_allocation(void* addr, void* objectAddr, int size, int kind)
+void brcl_mps_debug_allocation(const char* poolName, void* addr, void* objectAddr, int size, int kind)
     {
         if ( kind == 0 ) {
              printf("%s:%d brcl_mps_debug_allocation kind == 0  ----------------- !!!!\n", __FILE__, __LINE__ );
@@ -141,11 +158,12 @@ core::Lisp_sp _lisp;
         };
 
 #if defined(USE_MPS)  && !defined(RUNNING_GC_BUILDER)
-	string kindName = gctools::obj_name((gctools::GCKindEnum)(kind));
-	printf("%s:%d brcl_mps_allocation   base: %p  objAddr: %p  size: %3d  kind[%x/%s]  \n",
+	const char* kindName = obj_name((gctools::GCKindEnum)(kind));
+	printf("%s:%d brcl_mps_allocation poolName: %s  base: %p  objAddr: %p  size: %3d  kind[%d/%s]  \n",
                __FILE__, __LINE__,
+               poolName,
 	       addr, objectAddr, size,
-	       kind, kindName.c_str());
+	       kind, kindName);
 #endif
     }
 

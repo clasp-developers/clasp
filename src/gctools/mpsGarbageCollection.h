@@ -1,11 +1,24 @@
 #ifndef _brcl_mpsGarbageCollection_H
 #define _brcl_mpsGarbageCollection_H
 
+#include <type_traits>
+
+
+extern "C" {
+    typedef struct SegStruct* Seg;
+    typedef mps_arena_t Arena;
+    typedef mps_addr_t Addr;
+    extern int SegOfAddr(Seg *segReturn, Arena arena, Addr addr);
+//    extern int SegPM(Seg segReturn);
+    extern void ShieldExpose(Arena arena, Seg seg);
+    extern void ShieldCover(Arena arena, Seg seg);
+};
 
 namespace gctools {
 
 #define GC_RESULT mps_res_t
-#define GC_SCAN_STATE mps_ss_t
+#define GC_SCAN_STATE_TYPE mps_ss_t
+#define GC_SCAN_STATE ss
 
 
     class GCObject
@@ -32,7 +45,9 @@ namespace gctools {
 
 
 namespace gctools {
-    extern const char* obj_name(GCKindEnum kind);
+
+    template <class T> inline size_t sizeof_with_header();
+
 
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
@@ -45,68 +60,61 @@ namespace gctools {
     //
     //
 
-    typedef union Header_u *Header_t;
+    template <typename T> union Header_s;
+
+//    typedef Header_s<void>* Header_t;
+
+    
 
     /* Specialize this for every Header_s and set _Kind to its appropriate enum */
-    struct Kind_s {
-        Kind_s(GCKindEnum kind) : Kind(kind) {};
-#ifdef CONFIG_VAR_COOL
-        uint       StartIndicator;
-#endif
-	GCKindEnum	Kind;
+    template <typename T>
+    struct SKind_s {
+        SKind_s() : Kind(GCKind<T>::Kind)
+                       , Length(sizeof_with_header<T>())
+        {};
+        SKind_s(size_t sz) : Kind(GCKind<T>::Kind)
+                                , Length(sz)
+        {};
+	unsigned int	Kind;
+        unsigned int    Length;
     };
-    struct Pad1_s : public Kind_s {};
-    struct Pad_s : public Kind_s {
-	size_t		Size;
+    struct Pad1_s : public SKind_s<Pad1_s> {};
+    struct Pad_s : public SKind_s<Pad_s> {
     };
-    struct Fwd2_s : public Kind_s {
-	Header_t	Fwd;
+    struct Fwd2_s : public SKind_s<Fwd2_s> {
+	Header_s<void>*	Fwd;
     };
-    struct Fwd_s : public Kind_s {
-	Header_t	Fwd;
-	size_t		Size;
+    struct Fwd_s : public SKind_s<Fwd_s> {
+	Header_s<void>*	Fwd;
     };
-    typedef union Header_u {
-        Header_u(GCKindEnum k) : kind(k) {};
-	Kind_s	kind;
-	Pad1_s	pad1;
-	Pad_s	pad;
-	Fwd2_s	fwd2;
-	Fwd_s	fwd;
-    } Header_s;
 
 
-    /* Specialize this for every Header_s and set _Kind to its appropriate enum */
-    struct TemplatedKind_s {
-        TemplatedKind_s(GCKindEnum kind, size_t length) : Kind(kind), Length(length) {};
-#ifdef CONFIG_VAR_COOL
-        uint       StartIndicator;
-#endif
-	GCKindEnum	Kind;
-        size_t          Length;
-    };
-    typedef union TemplatedHeader_u {
-	TemplatedKind_s	kind;
-	Pad1_s	pad1;
-	Pad_s	pad;
-	Fwd2_s	fwd2;
-	Fwd_s	fwd;
-    } TemplatedHeader_s;
 
+
+    template <typename T>
+    union Header_s {
+        Header_s() : kind(sizeof_with_header<T>()) {};
+        Header_s(size_t sz) : kind(sz) {};
+	SKind_s<T>	        kind;
+//        TemplatedKind_s<T>      templatedKind;
+	Pad1_s	                pad1;
+	Pad_s	                pad;
+	Fwd2_s	                fwd2;
+	Fwd_s                   fwd;
+        static size_t HeaderSize() { return sizeof(Header_s<T>);};
+    };
 
 };
 
 
 namespace gctools {
 
-    constexpr size_t Alignment() { return AlignmentT<Header_s>(); };
-    constexpr size_t AlignUp(size_t size) { return AlignUpT<Header_s>(size); };
+    constexpr size_t Alignment() { return AlignmentT<Header_s<void>>(); };
+    constexpr size_t AlignUp(size_t size) { return AlignUpT<Header_s<void>>(size); };
 
 
-    template <class T> inline size_t sizeof_with_header() {return AlignUp(sizeof(T))+AlignUp(sizeof(Header_s));};
+    template <class T> inline size_t sizeof_with_header() {return AlignUp(sizeof(T))+GCHeader<T>::HeaderType::HeaderSize();};
 
-
-    template <> inline size_t sizeof_with_header<gctools::Kind_s>() { return AlignUp(sizeof(gctools::Kind_s)); };
     template <> inline size_t sizeof_with_header<gctools::Pad1_s>() { return AlignUp(sizeof(gctools::Pad1_s)); };
     template <> inline size_t sizeof_with_header<gctools::Pad_s>() { return AlignUp(sizeof(gctools::Pad_s)); };
     template <> inline size_t sizeof_with_header<gctools::Fwd_s>() { return AlignUp(sizeof(gctools::Fwd_s)); };
@@ -136,20 +144,24 @@ namespace gctools {
 #define NON_MOVING_POOL_ALLOCATION_POINT _global_automatic_mark_sweep_allocation_point
 
     extern mps_arena_t _global_arena;
-    extern mps_pool_t _global_ams_pool;
+
     extern mps_pool_t _global_amc_pool;
+    extern mps_pool_t _global_ams_pool;
     extern mps_pool_t _global_amcz_pool;
-    extern mps_pool_t _global_awl_pool;
 
     extern mps_ap_t _global_automatic_mostly_copying_allocation_point;
-    extern mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
     extern mps_ap_t _global_automatic_mark_sweep_allocation_point;
+    extern mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
+
+
+#ifdef USE_AWL_POOL
+    extern mps_pool_t _global_awl_pool;
     extern mps_ap_t _global_automatic_weak_link_allocation_point;
+#endif
 
 
-    /*! By default objects get allocated in the AMC pool */
-    template <class T>
-    struct allocation_point {
+    template <typename T> struct GCAllocationPoint
+    {
 #ifdef USE_AMC_POOL
         static mps_ap_t get() { return _global_automatic_mostly_copying_allocation_point; };
 #define DEFAULT_ALLOCATION_POINT _global_automatic_mostly_copying_allocation_point
@@ -208,169 +220,114 @@ namespace gctools {
 
 
 
-#define CONTAINER_FIX(_cptr_)                                           \
-    if (_cptr_) {                                                       \
-        mps_addr_t addr = MostDerivedPtrToBasePtr(_cptr_);                      \
-        mps_res_t res = MPS_FIX12(GC_SCAN_STATE,&addr);                 \
-        if (res != MPS_RES_OK) return res;                              \
-        (_cptr_) = reinterpret_cast<decltype(_cptr_)>(BASE_TO_OBJ_PTR(addr)); \
+
+namespace gctools {
+
+    template <typename T>
+    inline void* MostDerivedPtrToBasePtr(void* mostDerived)
+    {
+        void* ptr = reinterpret_cast<char*>(mostDerived) - (GCHeader<T>::HeaderType::HeaderSize());
+        return ptr;
     }
 
-#define GCVEC0_FIX(_c_) {CONTAINER_FIX(_c_._Vector._Contents); };
-#define GCFRAME0_FIX(_c_) {CONTAINER_FIX(_c_._Array._Contents); };
-#define GCARRAY0_FIX(_c_) {CONTAINER_FIX(_c_._Array._Contents); };
+    template <typename T>
+    inline T* BasePtrToMostDerivedPtr(void* base)
+    {
+        T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + (GCHeader<T>::HeaderType::HeaderSize()));
+        return ptr;
+    }
+
+};
+
 
         
 
+#if 1 // use inlined functions rather than macros
 
-#ifdef USE_TAGGED_PTR_P0
-#define MY_MPS_FIX(_smartptr_)						\
-    DEBUG_MPS_MESSAGE(boost::format("MY_MPS_FIX of %s@%p pbase: %p  px: %p") % #_smartptr_ % (&(_smartptr_)) % (_smartptr_).pbase_ref() % (_smartptr_).px_ref()); \
-    if ( (_smartptr_).pointerp() ) {                                    \
-	if ( MPS_FIX1(GC_SCAN_STATE,(_smartptr_).pbase_ref()) ) {          \
-            void*& _pbase_ref = (_smartptr_).pbase_ref();                     \
-	    int _offset = reinterpret_cast<char*>((_smartptr_).px_ref()) - reinterpret_cast<char*>(_pbase_ref); \
-            /*DEBUG_MPS_FIX_BEFORE(_pbase_ref,reinterpret_cast<void*>((_smartptr_).px_ref()),_offset); */  \
-	    mps_res_t res = MPS_FIX2(GC_SCAN_STATE,&_pbase_ref);		\
-            if (res != MPS_RES_OK) return res;                          \
-            /* (_smartptr_)._pbase_set(_pbase_ref);*/                   \
-            (_smartptr_)._pxset(reinterpret_cast<char*>(_pbase_ref) + _offset); \
-            /*DEBUG_MPS_FIX_AFTER((_smartptr_).pbase_ref(),(_smartptr_).px_ref());*/ \
-        }								\
+//       do { mps_ss_t _ss = (ss); mps_word_t _mps_zs = (_ss)->_zs; mps_word_t _mps_w = (_ss)->_w; mps_word_t _mps_ufs = (_ss)->_ufs; mps_word_t _mps_wt; { {
+
+namespace gctools {
+    template <typename T> class smart_ptr;
+};
+
+template <typename T>
+inline mps_res_t smartPtrFix(mps_ss_t _ss
+                        , mps_word_t _mps_zs
+                        , mps_word_t _mps_w
+                        , mps_word_t& _mps_ufs
+                        , mps_word_t _mps_wt
+                        , const gctools::smart_ptr<T>* sptrP
+#ifdef DEBUG_MPS
+                        , const char* sptr_name
+#endif
+    ) {
+    DEBUG_MPS_MESSAGE(boost::format("MY_MPS_FIX of %s@%p px: %p") % sptr_name % (sptrP)  % (sptrP)->px_ref()); 
+    if ( sptrP->pointerp() ) {                                    
+	if ( MPS_FIX1(_ss,(sptrP)->px_ref()) ) {          
+            Seg seg;
+            mps_addr_t mostDerived;
+            if (SegOfAddr(&seg,gctools::_global_arena,sptrP->px_ref())) {
+//                bool segpm = SegPM(seg);
+//                if ( segpm ) {
+                    ShieldExpose(gctools::_global_arena,seg);
+                    mostDerived = dynamic_cast<void*>(sptrP->px_ref());
+                    ShieldCover(gctools::_global_arena,seg);
+//                } else {
+//                    mostDerived = dynamic_cast<void*>(sptrP->px_ref());
+//                }
+            } else {
+                THROW_HARD_ERROR(BF("SegOfAddr for address: %p failed - this should never happen") % sptrP->px_ref());
+            }
+            mps_addr_t base = gctools::MostDerivedPtrToBasePtr<void>(mostDerived); 
+	    int offset = reinterpret_cast<char*>((sptrP)->px_ref()) - reinterpret_cast<char*>(base); 
+            DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p mostDerived=%p  base=%p  offset=%d  seg=%p") % sptrP->px_ref() % mostDerived % base % offset % seg ); 
+	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&base)); 
+            DEBUG_MPS_MESSAGE(boost::format("  new_base=%p") % base);
+            if (res != MPS_RES_OK) return res;              
+            mps_addr_t new_obj = reinterpret_cast<void*>(reinterpret_cast<char*>(base)+offset);
+            DEBUG_MPS_MESSAGE(boost::format("  old_obj=%p  new_obj = %p\n") % (sptrP->px_ref()) % new_obj ); 
+            (sptrP)->_pxset(new_obj); 
+        }								
     };
+    return MPS_RES_OK;
+};
+
+#ifdef DEBUG_MPS
+#define SMART_PTR_FIX(_smartptr_) smartPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_smartptr_,#_smartptr_)
 #else
-#define MY_MPS_FIX(_smartptr_)						\
-    DEBUG_MPS_MESSAGE(boost::format("MY_MPS_FIX of %s@%p pbase: %p  px: %p") % #_smartptr_ % (&(_smartptr_)) % (_smartptr_).pbase_ref() % (_smartptr_).px_ref()); \
+#define SMART_PTR_FIX(_smartptr_) smartPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_smartptr_)
+#endif
+
+#else
+#define SMART_PTR_FIX(_smartptr_)						\
+    DEBUG_MPS_MESSAGE(boost::format("MY_MPS_FIX of %s@%p px: %p") % #_smartptr_ % (&(_smartptr_))  % (_smartptr_).px_ref()); \
     if ( (_smartptr_).pointerp() ) {                                    \
 	if ( MPS_FIX1(GC_SCAN_STATE,(_smartptr_).px_ref()) ) {          \
-	    mps_res_t res = MPS_FIX2(GC_SCAN_STATE,&(_smartptr_).px_ref()); \
+            mps_addr_t mostDerived = (_smartptr_).pbase();              \
+            mps_addr_t base = MostDerivedPtrToBasePtr<void>(mostDerived); \
+	    int offset = reinterpret_cast<char*>((_smartptr_).px_ref()) - reinterpret_cast<char*>(base); \
+            DEBUG_MPS_MESSAGE(boost::format("  mostDerived=%p  base=%p  offset=%d\n") % mostDerived % base % offset ); \
+	    mps_res_t res = MPS_FIX2(GC_SCAN_STATE,reinterpret_cast<mps_addr_t*>(&base)); \
             if (res != MPS_RES_OK) return res;                          \
+            (_smartptr_)._pxset(reinterpret_cast<void*>(reinterpret_cast<char*>(base)+offset)); \
+            DEBUG_MPS_MESSAGE(boost::format("  new base = %p\n") % base ); \
         }								\
     };
-#endif // USE_TAGGED_PTR_P0
-
-
-#define IGNORE(_ptr_)
-#define SMART_PTR_FIX(_ptr_) {MY_MPS_FIX(_ptr_);};
-#define HANDLE_POINTER_CTYPE(_ptr_) { if (_ptr_) _ptr_->onHeapScanGCRoots(GC_SCAN_ARGS_PASS); };
-#define HANDLE_POINTER_TO_SMART_PTR(_ptr_) { if (_ptr_) {SMART_PTR_FIX(*_ptr_);};}
-#define HANDLE_CXXRECORD_CTYPE(_var_) { _var_.onHeapScanGCRoots(GC_SCAN_ARGS_PASS); };
-#define MAYBE_HANDLE_POINTER_CTYPE(_ptr_) { IMPLEMENT_MEF(BF("Handle MAYBE_HANDLE_POINTER_CTYPE"));};
-#define HANDLE_MAYBE_INTERESTING_CTYPE(_ptr_) {IMPLEMENT_MEF(BF("HANDLE_MAYBE_INTERESTING_CTYPE macro undefined"));};
-
-
-#define MAYBE_HANDLE_CLASS_TEMPLATE_SPECIALIZATION_CTYPE(_val_) {IMPLEMENT_MEF(BF("Handle MAYBE_HANDLE_CLASS_TEMPLATE_SPECIALIZATION_CTYPE"));};
-
-#define WEAK_SMART_PTR_FIX(_ptr_) {MY_MPS_FIX(_ptr_);};
-
-#define GCHOLDER_STRINGMAP_FIX(_map_) { \
-	DEBUG_MPS_CONTAINER("GCHOLDER_STRINGMAP",_map_); \
-	if ( (_map_).size()>0 ) {					\
-	    for ( auto& __itr_gc_safe : _map_ ) { SMART_PTR_FIX(__itr_gc_safe.second); }}}
-#define GCHOLDER_VECTOR0_FIX(_vec_) {					\
-	DEBUG_MPS_CONTAINER("GCHOLDER_VECTOR0",_vec_);			\
-	if ( (_vec_).size()>0 ) {                                       \
-            DEBUG_MPS_MESSAGE(BF("Started GCHOLDER_VECTOR0_FIX"));      \
-            for ( auto& __itr_gc_safe : _vec_) { SMART_PTR_FIX(__itr_gc_safe);} \
-            DEBUG_MPS_MESSAGE(BF("Done GCHOLDER_VECTOR0_FIX"));         \
-        }}
-#define GCHOLDER_SYMBOLMAP_FIX(_cont_) { \
-	DEBUG_MPS_CONTAINER("GCHOLDER_SYMBOLMAP",_cont_);	\
-	if ( (_cont_).size()>0 ) {				\
-            for ( auto& __itr_gc_safe : _cont_ ) { SMART_PTR_FIX(__itr_gc_safe.first); SMART_PTR_FIX(__itr_gc_safe.second); }}}
-#define GCHOLDER_UNORDEREDSET_FIX(_cont_) { \
-	DEBUG_MPS_CONTAINER("GCHOLDER_UNORDEREDSET",_cont_);	\
-	if ( (_cont_).size()>0 ) {				\
-            for ( auto& __itr_gc_safe : _cont_ ) { SMART_PTR_FIX(__itr_gc_safe);}}}
-
-#define GCHOLDER_INDEXEDSYMBOLMAP_FIX(_map_) {					\
-	DEBUG_MPS_CONTAINER("GCHOLDER_INDEXEDSYMBOLMAP",_map_); \
-	if ( (_map_).size() > 0 ) { \
-	    for ( auto& __itr_gc_safe : _map_ ) { SMART_PTR_FIX(__itr_gc_safe.first);}; \
-	    for ( auto& v__itr_gc_safe : _map_._Values ) { SMART_PTR_FIX(v__itr_gc_safe);};}}
-#define STLVECTOR_FIX(_vec_) { \
-	DEBUG_MPS_CONTAINER("STLVECTOR",_vec_); \
-	if ( (_vec_).size() > 0 ) { \
-	    for ( auto& __itr_gc_safe : _vec_) { SMART_PTR_FIX(__itr_gc_safe); }}}
-#define STLVECTOR_HANDLE_FIX(_vec_) { \
-	DEBUG_MPS_CONTAINER("STLVECTOR",_vec_); \
-	if ( (_vec_).size() > 0 ) { \
-	    for ( auto& __itr_gc_safe : _vec_) { __itr_gc_safe.onHeapScanGCRoots(GC_SCAN_ARGS_PASS); }}}
-#define STLSET_FIX(_set_) { \
-	DEBUG_MPS_CONTAINER("STLSET",_set_); \
-	if ( (_set_).size() > 0 ) { \
-	    for ( auto& __itr_gc_safe : _set_ ) { SMART_PTR_FIX(__itr_gc_safe); }}}
-#define STLMAP_SMART_FIRST_FIX(_map_) { \
-	DEBUG_MPS_CONTAINER("STLMAP_SMART_FIRST",_map_); \
-	if ( (_map_).size() > 0 ) { \
-	    for ( auto& __itr_gc_safe : _map_ ) { SMART_PTR_FIX(__itr_gc_safe.first); }}}
-#define STLMAP_SMART_SECOND_FIX(_map_) { \
-	DEBUG_MPS_CONTAINER("STLMAP_SMART_SECOND",_map_); \
-	if ( (_map_).size() > 0 ) { \
-	    for ( auto& __itr_gc_safe : _map_ ) { SMART_PTR_FIX(__itr_gc_safe.second); }}}
-#define STLMAP_SMART_FIRST_SECOND_FIX(_map_) { \
-	DEBUG_MPS_CONTAINER("STLMAP_SMART_FIRST_SECOND",_map_); \
-	if ( (_map_).size() > 0 ) { \
-	    for ( auto& __itr_gc_safe : _map_) { SMART_PTR_FIX(__itr_gc_safe.first);SMART_PTR_FIX(__itr_gc_safe.second); }}}
-
-#define STLMAP_TEMPLATE_SCANNER_FIX(_map_) {                      \
-	DEBUG_MPS_CONTAINER("STLMAP_TEMPLATE_SCANNER_FIX",_map_); \
-	if ( (_map_).size() > 0 ) { \
-	    for ( auto __itr_gc_safe = _map_.begin(); __itr_gc_safe != _map_.end(); ++__itr_gc_safe) { gctools::stl_onHeapScanGCRoots(__itr_gc_safe,GC_SCAN_ARGS_PASS); }}}
-
-
-
-#define STLMULTIMAP_SMART_FIRST_FIX(_map_) { \
-	DEBUG_MPS_CONTAINER("STLMULTIMAP_SMART_FIRST",_map_); \
-	if ( (_map_).size() > 0 ) { \
-	    for ( auto& __itr_gc_safe : _map_ ) { SMART_PTR_FIX(__itr_gc_safe.first); }}}
-#define STLMULTIMAP_SMART_SECOND_FIX(_map_) { \
-	DEBUG_MPS_CONTAINER("STLMULTIMAP_SMART_SECOND",_map_);		\
-	if ( (_map_).size() > 0 ) {					\
-	    for ( auto& __itr_gc_safe : _map_ ) { SMART_PTR_FIX(__itr_gc_safe.second); }}}
-#define STLMULTIMAP_SMART_FIRST_SECOND_FIX(_map_) { \
-	DEBUG_MPS_CONTAINER("STLMULTIMAP_SMART_FIRST_SECOND",_map_);	\
-	if ( (_map_).size() > 0 ) {					\
-	    for ( auto& __itr_gc_safe : _map_ ) { SMART_PTR_FIX(__itr_gc_safe.first);SMART_PTR_FIX(__itr_gc_safe.second); }}}
-#if 0
-#define STL_VECTOR_REQUIRED_ARGUMENT_FIX(_vec_) { \
-	DEBUG_MPS_CONTAINER("STD_VECTOR_REQUIRED_ARGUMENT",_vec_);	\
-	if ( (_vec_).size() > 0 ) {					\
-            for ( auto& __itr_gc_safe : _vec_ ) { SMART_PTR_FIX(__itr_gc_safe._ArgTarget); }}
-#define STL_VECTOR_OPTIONAL_ARGUMENT_FIX(_vec_) { \
-	DEBUG_MPS_CONTAINER("STD_VECTOR_OPTIONAL_ARGUMENT",_vec_);	\
-	if ( (_vec_).size()>0 ) {					\
-	    for ( auto& __itr = _vec_.begin(); __itr != _vec_.end(); ++__itr ) \
-	    {								\
-		SMART_PTR_FIX(__itr->_ArgTarget);			\
-		SMART_PTR_FIX(__itr->_Default);				\
-		SMART_PTR_FIX(__itr->_Sensor._ArgTarget);		\
-	    }}}
-#define REST_ARGUMENT_FIX(_arg_) {		\
-	SMART_PTR_FIX(_arg_._ArgTarget);	\
-    }
-#define STL_VECTOR_KEYWORD_ARGUMENT_FIX(_vec_) { \
-	DEBUG_MPS_CONTAINER("STD_VECTOR_KEYWORD_ARGUMENT",_vec_);	\
-	if ( (_vec_).size() > 0 ) {					\
-	    for ( auto& __itr = _vec_.begin(); __itr != _vec_.end(); ++__itr ) \
-	    {								\
-		SMART_PTR_FIX(__itr->_Keyword);				\
-		SMART_PTR_FIX(__itr->_ArgTarget);			\
-		SMART_PTR_FIX(__itr->_Default);				\
-		SMART_PTR_FIX(__itr->_Sensor._ArgTarget);		\
-	    }}}
-#define STL_VECTOR_AUX_ARGUMENT_FIX(_vec_) {				\
-	DEBUG_MPS_CONTAINER("STD_VECTOR_AUX_ARGUMENT",_vec_);		\
-	if ( (_vec_).size() > 0 ) {					\
-	    for ( auto& __itr = _vec_.begin(); __itr != _vec_.end(); ++__itr ) \
-	    {								\
-		SMART_PTR_FIX(__itr->_ArgTarget);			\
-		SMART_PTR_FIX(__itr->_Expression);			\
-	    }}}
 #endif
+
+#define POINTER_FIX(_ptr_)                                              \
+    if ( MPS_FIX1(GC_SCAN_STATE,_ptr_) ) {                              \
+        void** ptrP = reinterpret_cast<void**>(&_ptr_);                 \
+        mps_addr_t base = MostDerivedPtrToBasePtr<void>(_ptr_);         \
+        mps_res_t res = MPS_FIX2(GC_SCAN_STATE,reinterpret_cast<mps_addr_t*>(&(base))); \
+        if (res != MPS_RES_OK) return res;                              \
+        *ptrP = BasePtrToMostDerivedPtr<void>(base);                    \
+    };
 
 
 extern "C" {
+
+    const char* obj_name(gctools::GCKindEnum kind);
 
     /*! Implemented in gc_interace.cc */
     mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
@@ -384,6 +341,8 @@ extern "C" {
     /*! This must be implemented in the main directory */
     extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t s);
 };
+
+
 
 
 

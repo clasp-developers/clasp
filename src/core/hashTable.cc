@@ -424,9 +424,11 @@ namespace core
         if ( keyValueCons.notnilp() ) return keyValueCons;
 #ifdef USE_MPS
         // Location dependency test if key is stale
-        void* blockAddr = SmartPtrToBasePtr(key);
-        if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)),gctools::_global_arena,blockAddr)) {
-            keyValueCons = this->rehash(false,key);
+        if (key.pointerp()) {
+            void* blockAddr = SmartPtrToBasePtr(key);
+            if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)),gctools::_global_arena,blockAddr)) {
+                keyValueCons = this->rehash(false,key);
+            }
         }
 #endif
         return keyValueCons;

@@ -22,6 +22,8 @@ namespace clbind {
 
     template <typename GetterPolicies, typename OT, typename VariablePtrType >
     class GetterMethoid : public core::Functoid {
+    public:
+        typedef core::Functoid TemplatedBase;
     private:
         typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
         typedef clbind::Wrapper<MemberType>     WrapperType;
@@ -41,9 +43,12 @@ namespace clbind {
         }
     };
 
+};
 
+namespace clbind {
     template <typename GetterPolicies, typename OT, typename MemberType >
     class GetterMethoid<GetterPolicies,OT, MemberType*const(OT::*)> : public core::Functoid {
+        typedef core::Functoid TemplatedBase;
     private:
         typedef clbind::Wrapper<MemberType>     WrapperType;
         string                          _Name;
@@ -65,6 +70,17 @@ namespace clbind {
 
 
 };
+
+
+
+
+
+template <typename GetterPolicies, typename OT, typename VariablePtrType >
+class gctools::GCKind<clbind::GetterMethoid<GetterPolicies,OT,VariablePtrType> > {
+public:
+        static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::GetterMethoid<GetterPolicies,OT,VariablePtrType>::TemplatedBase>::Kind;
+};
+
 
 #endif
 

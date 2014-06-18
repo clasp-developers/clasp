@@ -35,21 +35,22 @@ namespace core
 
 namespace core {
 
-    class BootStrapCoreSymbolMap : public gctools::StackRoot
+    class BootStrapCoreSymbolMap // : public gctools::StackRoot
     {
     private:
-	map<string,SymbolStorage>	_SymbolNamesToSymbol;
+	map<string,int>                 _SymbolNamesToIndex;
+        gctools::Vec0<SymbolStorage>	_IndexToSymbol;
     private:
 	static string fullSymbolName(string const& packageName, string const& symbolName);
     public:
 	BootStrapCoreSymbolMap();
 
-        DECLARE_onStackScanGCRoots(); 
 	void finish_setup_of_symbols();
 
 	Symbol_sp allocate_unique_symbol(string const& pkgName,string const& symbolName, bool exportp=false);
 
-	Symbol_sp lookupSymbol(string const& packageName, string const& symbolName) const;
+	/*! Throw an exception if symbol not found */
+        Symbol_sp lookupSymbol(string const& packageName, string const& symbolName) const;
 
 	void dump();
 

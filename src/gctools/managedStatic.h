@@ -20,7 +20,7 @@ namespace gctools {
     /// object_creator - Helper method for ManagedStatic.
     template<class C>
     void* object_creator() {
-        return allocateRootClass<C>();
+        return RootClassAllocator<C>::allocate();
     }
  
     /// object_deleter - Helper method for ManagedStatic.

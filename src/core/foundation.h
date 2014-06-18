@@ -9,7 +9,9 @@
 
 // To debug memory usage turn this on and then you can mark 
 // objects as they are allocated with an integer using gctools::MARKER
-#define USE_BOEHM_MEMORY_MARKER
+#ifdef USE_BOEHM
+//#define USE_BOEHM_MEMORY_MARKER
+#endif
 
 #ifdef CANDO_COMPILE
 #define GARBAGE_COLLECTION_INCLUDE "cando/clasp_gc.cc"
@@ -60,14 +62,14 @@ namespace std { class type_info; };
 
 #if defined(DEBUG_MPS)
 #define DEBUG_MPS_MESSAGE(_bf_) printf("%s:%d %s\n", __FILE__, __LINE__, (_bf_).str().c_str())
-#define DEBUG_MPS_ALLOCATION(addr,gcobject_addr,size,kind)  brcl_mps_debug_allocation(addr,gcobject_addr,size,kind)
+#define DEBUG_MPS_ALLOCATION(poolName,addr,gcobject_addr,size,kind)  brcl_mps_debug_allocation(poolName,addr,gcobject_addr,size,kind)
 //#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr) brcl_mps_debug_fix1_before(base,smartaddr)
 #define DEBUG_MPS_FIX_BEFORE(pbase,px,offset) brcl_mps_debug_fix_before(pbase,px,offset)
 #define	DEBUG_MPS_FIX_AFTER(pbase,px) brcl_mps_debug_fix_after(pbase,px)
 #define DEBUG_MPS_CONTAINER(ctype,cnt) brcl_mps_debug_container(ctype,#cnt,cnt.size())
 #define DEBUG_SCAN_OBJECT(obj) brcl_mps_debug_scan_object(obj)
 #else
-#define DEBUG_MPS_ALLOCATION(addr,gcobject_addr,size,kind)
+#define DEBUG_MPS_ALLOCATION(poolName,addr,gcobject_addr,size,kind)
 //#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr)
 #define DEBUG_MPS_MESSAGE(_bf_) 
 #define DEBUG_MPS_FIX_BEFORE(pbase,px,offset)
@@ -611,6 +613,16 @@ namespace core {
     MultipleValues* lisp_multipleValues();
 };
 
+
+
+extern void brcl_mps_debug_allocation(const char* poolName,void* base, void* objAddr, int size, int kind);
+extern void brcl_mps_debug_fix1_before(void* base, void* smartAddr);
+extern void brcl_mps_debug_fix_before(void* pbase, void* px, int offset);
+extern void brcl_mps_debug_fix_after(void* pbase, void* px);
+extern void brcl_mps_debug_container(const char* ctype,const char* name, int size);
+//extern void brcl_mps_debug_scan_object(gctools::GCObject*  obj);
+
+
 #include "gctools/memoryManagement.h"
 
 namespace core {
@@ -621,20 +633,16 @@ namespace core {
 
 #include "gctools/containers.h"
 
+
+
 #include "multipleValues.h"
 
 #include "gctools/managedStatic.h"
 
 #include "gctools/gcstring.h"
 
+#include GC_INTERFACE_HEADER
 
-
-extern void brcl_mps_debug_allocation(void* base, void* objAddr, int size, int kind);
-extern void brcl_mps_debug_fix1_before(void* base, void* smartAddr);
-extern void brcl_mps_debug_fix_before(void* pbase, void* px, int offset);
-extern void brcl_mps_debug_fix_after(void* pbase, void* px);
-extern void brcl_mps_debug_container(const char* ctype,const char* name, int size);
-extern void brcl_mps_debug_scan_object(gctools::GCObject*  obj);
 
 
 
@@ -967,6 +975,18 @@ namespace core
 
 
 
+#if defined(USE_BOEHM)
+#define FRIEND_GC_SCANNER()
+#endif
+#if defined(USE_MPS)
+#ifdef RUNNING_GC_BUILDER
+#define FRIEND_GC_SCANNER()
+#else
+#define FRIEND_GC_SCANNER() 	friend GC_RESULT (::obj_scan(GC_SCAN_STATE_TYPE ss, mps_addr_t base, mps_addr_t limit));
+#endif
+#endif
+
+
 
 
 namespace core 
@@ -1163,6 +1183,7 @@ namespace core
 
     class Functoid 
     {
+        FRIEND_GC_SCANNER();
     protected:
         typedef gctools::GCString<char,gctools::GCStringAllocator<gctools::GCString_moveable<char>>>         str_type;
 	str_type _Name;
@@ -1296,20 +1317,15 @@ extern "C"
 
 
 namespace reg {
+#if 0
     struct ClassSymbolsHolder {
         gctools::Vec0<core::Symbol_sp>  _Symbols;
     };
 
     extern ClassSymbolsHolder   globalClassSymbolsVectorHolder;
+#endif
 
-
-    inline void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym)
-    {
-        if ( cid >= globalClassSymbolsVectorHolder._Symbols.size() ) {
-            globalClassSymbolsVectorHolder._Symbols.resize(cid+1,core::lisp_symbolNil());
-        }
-        globalClassSymbolsVectorHolder._Symbols[cid] = sym;
-    }
+    void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym);
 
     template <class T>
     void lisp_registerClassSymbol(core::Symbol_sp sym)
@@ -1318,19 +1334,12 @@ namespace reg {
         lisp_associateClassIdWithClassSymbol(cid,sym);
     }
 
-    inline core::Symbol_sp lisp_classSymbolFromClassId(class_id cid)
-    {
-        core::Symbol_sp sym = globalClassSymbolsVectorHolder._Symbols[cid];
-        if (sym.nilp()) {
-            return _Unbound<core::Symbol_O>();
-        }
-        return sym;
-    }
+    core::Symbol_sp lisp_classSymbolFromClassId(class_id cid);
 
     template <class T>
     core::Symbol_sp lisp_classSymbol() {
         class_id cid = registered_class<T>::id;
-        core::Symbol_sp sym = globalClassSymbolsVectorHolder._Symbols[cid];
+        core::Symbol_sp sym = lisp_classSymbolFromClassId(cid);//_lisp->classSymbolsHolder()[cid];
         if (sym.nilp()) {
             string typen = typeid(T).name();
             sym = core::lisp_intern(typen);

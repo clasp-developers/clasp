@@ -65,6 +65,7 @@ namespace core
 
     class VectorStepper : public SequenceStepper
     {
+        FRIEND_GC_SCANNER();
     private:
 	Vector_sp	_Domain;
 	int		_Index;
@@ -89,6 +90,7 @@ namespace core
 
     class ConsStepper : public SequenceStepper
     {
+        FRIEND_GC_SCANNER();
     private:
 	Cons_sp	_Cur;
     public:
@@ -106,7 +108,7 @@ namespace core
     /*! A class that generates lists of elements drawn from a list of sequences.
       Given (a1 a2 a3) (b1 b2 b3) (c1 c2 c3)
       Will successively generate (a1 b1 c1) (a2 b2 c2) (a3 b3 c3) */
-    class ListOfSequenceSteppers : public gctools::StackRoot
+    class ListOfSequenceSteppers //: public gctools::StackRoot
     {
 	friend class ListOfListSteppers;
     private:

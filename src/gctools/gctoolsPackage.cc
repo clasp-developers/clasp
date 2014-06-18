@@ -244,7 +244,7 @@ namespace gctools {
     T_mv af_gcInfo(T_sp x, Fixnum_sp marker)
     {_G();
 #ifdef USE_MPS
-        return Values(core::Fixnum_O::create((int)(AlignUp(sizeof(gctools::Header_s)))));
+        return Values(_Nil<core::T_O>());
 #endif
 #ifdef USE_BOEHM
         return Values(_Nil<core::T_O>());
@@ -260,7 +260,7 @@ namespace gctools {
 #define DOCS_af_gcMarker "gcMarker"
     int af_gcMarker(Fixnum_sp marker)
     {_G();
-#ifdef USE_BOEHM
+#ifdef USE_BOEHM_MEMORY_MARKER
         if ( marker.nilp() ) {
             return gctools::globalBoehmMarker;
         }
@@ -283,7 +283,7 @@ namespace gctools {
         smsg = msg->get();
     }
 #ifdef USE_MPS
-        return Values(core::Fixnum_O::create((int)(AlignUp(sizeof(gctools::Header_s)))));
+        return Values(_Nil<T_O>());
 #endif
 #ifdef USE_BOEHM
         globalSearchMarker = marker->get();

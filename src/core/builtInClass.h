@@ -14,40 +14,46 @@
 namespace core {
 
 
-SMART(BuiltInClass );
-class BuiltInClass_O : public Class_O
-{
-    LISP_META_CLASS(StandardClass);
-    LISP_BASE1(Class_O);
-    LISP_CLASS(core,ClPkg,BuiltInClass_O,"BuiltInClass");
-private:
+    SMART(BuiltInClass );
+    class BuiltInClass_O : public Class_O
+    {
+        LISP_META_CLASS(StandardClass);
+        LISP_BASE1(Class_O);
+        LISP_CLASS(core,ClPkg,BuiltInClass_O,"BuiltInClass");
+    private:
 //	string			_InitializationArgumentString;
 //	LambdaListHandler_sp	_InitializationArguments;
-public:
+    public:
 #if defined(XML_ARCHIVE)
 	void	archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 	void	initialize();
-public:
+    public:
 	/*! The normal BuiltInClass creator used once the Lisp environment has been bootstrapped */
-    static BuiltInClass_sp create(Symbol_sp instanceClassSymbol);
-    /*! Create a BuiltInClass_sp that will always be considered a root object */
-    static BuiltInClass_sp createUncollectable();
-public:
+        static BuiltInClass_sp create(Symbol_sp instanceClassSymbol);
+        /*! Create a BuiltInClass_sp that will always be considered a root object */
+        static BuiltInClass_sp createUncollectable();
+    public:
 
-    virtual void describe();
+        virtual void describe();
 
-    /*! Allocate and initialize an instance of this class
-     */
-    T_sp allocateAndInitialize();
-    explicit BuiltInClass_O();
-    virtual ~BuiltInClass_O();
-};
+        /*! Allocate and initialize an instance of this class
+         */
+        T_sp allocateAndInitialize();
+        explicit BuiltInClass_O();
+        virtual ~BuiltInClass_O();
+    };
 
 
 
 };
 TRANSLATE(core::BuiltInClass_O);
+template<> struct gctools::GCInfo<core::BuiltInClass_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = false;
+    static bool constexpr Atomic = false;
+};
 
 
 

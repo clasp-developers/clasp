@@ -1322,10 +1322,6 @@ namespace core
 
     Str_O::~Str_O()
     {
-        if ( this->_Contents[0] == '!' ) {
-            gctools::tagged_base_ptr x(this->asSmartPtr());
-            printf("%s:%d finalizing special key %s at base=%p   \n", __FILE__, __LINE__, this->_Contents.c_str(), gctools::tagged_base_ptr::toBasePtr(this));
-        }
     }
 
 

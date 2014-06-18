@@ -95,6 +95,7 @@ namespace asttooling {
 /// The marshaller is in charge of taking the VariantValue arguments, checking
 /// their types, unpacking them and calling the underlying function.
         class FixedArgCountMatcherDescriptor : public MatcherDescriptor {
+            FRIEND_GC_SCANNER();
         public:
             typedef VariantMatcher (*MarshallerType)(void (*Func)(),
                                                      core::Symbol_sp MatcherName,
@@ -129,6 +130,7 @@ namespace asttooling {
 /// functions as we want, reducing the number of symbols and size of the
 /// object file.
         class FreeFuncMatcherDescriptor : public MatcherDescriptor {
+            FRIEND_GC_SCANNER();
         public:
             typedef VariantMatcher (*RunFunc)(core::Symbol_sp MatcherName,
                                               core::Cons_sp NameRange,
@@ -313,6 +315,7 @@ namespace asttooling {
 /// It will try every overload and generate appropriate errors for when none or
 /// more than one overloads match the arguments.
         class OverloadedMatcherDescriptor : public MatcherDescriptor {
+            FRIEND_GC_SCANNER();
         public:
             // OverloadedMatcherDescriptor(ArrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
 
@@ -369,6 +372,7 @@ namespace asttooling {
 
 /// \brief Variadic operator marshaller function.
         class VariadicOperatorMatcherDescriptor : public MatcherDescriptor {
+            FRIEND_GC_SCANNER();
         public:
             typedef clang::ast_matchers::internal::VariadicOperatorFunction VarFunc;
             VariadicOperatorMatcherDescriptor(unsigned MinCount, unsigned MaxCount,

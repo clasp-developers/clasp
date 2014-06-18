@@ -168,7 +168,7 @@ namespace core
         };
 #endif
 
-    class ATTR_WEAK ReturnFrom : public gctools::HeapRoot
+    class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
         {
             virtual void keyFunctionForVtable() ATTR_WEAK; // MUST BE FIRST VIRTUAL FUNCTION
         private:
@@ -205,7 +205,7 @@ namespace core
 
 
 
-    class ATTR_WEAK DynamicGo : public gctools::HeapRoot
+    class ATTR_WEAK DynamicGo //: public gctools::HeapRoot
         {
             virtual void keyFunctionForVtable() ATTR_WEAK;
         private:

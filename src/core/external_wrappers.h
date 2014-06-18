@@ -19,9 +19,24 @@ namespace core
 
 
     template<typename Policies, typename OT, typename Method>
-    class IndirectVariadicMethoid : public Functoid {};
+    class IndirectVariadicMethoid : public Functoid {
+        typedef Functoid TemplatedBase;
+    };
 
 #include "external_wrappers_indirect_methoids.h"
+
+};
+
+
+template<typename Policies, typename OT, typename Method>
+class gctools::GCKind<core::IndirectVariadicMethoid<Policies,OT,Method>> {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::IndirectVariadicMethoid<Policies,OT,Method>::TemplatedBase>::Kind;
+};
+
+
+
+namespace core {
 
 // ----------------------------------------
 // ----------------------------------------

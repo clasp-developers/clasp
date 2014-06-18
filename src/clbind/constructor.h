@@ -24,11 +24,15 @@ namespace clbind {
         core::Symbol_sp _mostDerivedClassSymbol;
     };
 
+};
 
+namespace clbind {
 
     template <typename T, typename Pointer>
     class DefaultConstructorCreator : public ConstructorCreator
     {
+    public:
+        typedef ConstructorCreator TemplatedBase;
     public:
         typedef Wrapper<T,Pointer>  WrapperType;
         int _Kind;
@@ -82,20 +86,23 @@ namespace clbind {
         }
     };
 
+};
+
+template <typename T, typename Pointer>
+class gctools::GCKind<clbind::DefaultConstructorCreator<T,Pointer> > {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DefaultConstructorCreator<T,Pointer>::TemplatedBase>::Kind;
+};
 
 
 
-
-
-
-
-
-
-
+namespace clbind {
 
     template <typename T>
     class DerivableDefaultConstructorCreator : public ConstructorCreator
     {
+    public:
+        typedef ConstructorCreator TemplatedBase;
     public:
         int _Kind;
         int _duplicationLevel;
@@ -150,16 +157,21 @@ namespace clbind {
             return allocator;
         }
     };
+};
 
 
+template <typename T>
+class gctools::GCKind<clbind::DerivableDefaultConstructorCreator<T> > {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DerivableDefaultConstructorCreator<T>::TemplatedBase>::Kind;
+};
 
 
-
-
-
-
+namespace clbind {
     template <typename Policies, typename T>
     class DerivableDefaultConstructorFunctoid : public core::Functoid {
+    public:
+        typedef core::Functoid TemplatedBase;
     public:
         enum { NumParams = 0 };
         DerivableDefaultConstructorFunctoid(const string& name) : core::Functoid(name) {};
@@ -178,21 +190,40 @@ namespace clbind {
         }
     };
 
+};
+
+
+template <typename Policies, typename T>
+class gctools::GCKind<clbind::DerivableDefaultConstructorFunctoid<Policies,T> > {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DerivableDefaultConstructorFunctoid<Policies,T>::TemplatedBase>::Kind;
+};
 
 
 
 
+
+namespace clbind {
 
     template <typename Pols, typename Pointer, typename T, typename Sig>
-    class VariadicConstructorFunctoid : public core::Functoid {};
+    class VariadicConstructorFunctoid : public core::Functoid {
+    public:
+        typedef core::Functoid TemplatedBase;
+    };
 
 
 #include "clbind_constructor_functoids.h"
 
-
-
-
 };
+
+template <typename Pols, typename Pointer, typename T, typename Sig>
+class gctools::GCKind<clbind::VariadicConstructorFunctoid<Pols,Pointer,T,Sig> > {
+public:
+        static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicConstructorFunctoid<Pols,Pointer,T,Sig>::TemplatedBase>::Kind;
+};
+
+
+
 
 #endif
 

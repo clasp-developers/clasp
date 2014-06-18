@@ -154,9 +154,9 @@ namespace core
 #define DOCS_af_allRegisteredClassNames "allRegisteredClassNames"
     Vector_sp af_allRegisteredClassNames()
     {_G();
-        VectorObjects_sp vo=VectorObjects_O::make(_Nil<T_O>(),_Nil<Cons_O>(),reg::globalClassSymbolsVectorHolder._Symbols.size(),false);
-        for ( int i(0),iEnd(reg::globalClassSymbolsVectorHolder._Symbols.size());i<iEnd;++i) {
-            vo->setf_elt(i,reg::globalClassSymbolsVectorHolder._Symbols[i]);
+        VectorObjects_sp vo=VectorObjects_O::make(_Nil<T_O>(),_Nil<Cons_O>(),_lisp->classSymbolsHolder().size(),false);
+        for ( int i(0),iEnd(_lisp->classSymbolsHolder().size());i<iEnd;++i) {
+            vo->setf_elt(i,_lisp->classSymbolsHolder()[i]);
         }
         return vo;
     };

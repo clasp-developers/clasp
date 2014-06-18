@@ -24,6 +24,8 @@ $for template_ [[
     <$if ret==RetVoid [[void]] $elif ret==RetSV [[RT ]] $else [[gctools::multiple_values<RT>]]($for Args_ , [[ARG$Args_]]) >
         : public Functoid {
         public:
+            typedef Functoid TemplatedBase;
+        public:
         typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](*Type) ($for Args_ , [[ARG$Args_]]);
         Type fptr;
         public:

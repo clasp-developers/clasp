@@ -10,7 +10,9 @@
 
 namespace gctools {
 
+#ifdef USE_BOEHM_MEMORY_MARKER
     int globalBoehmMarker = 0;
+#endif
 
 };
 

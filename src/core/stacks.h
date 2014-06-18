@@ -19,7 +19,7 @@ namespace core
 
 
 #pragma GCC visibility push(default)
-    class InvocationHistoryFrame : public gctools::StackRoot
+    class InvocationHistoryFrame //: public gctools::StackRoot
     {
 	friend class InvocationHistoryStack;
     public:
@@ -372,6 +372,7 @@ namespace core {
 
 
     class ExceptionStack {
+        FRIEND_GC_SCANNER();
     private:
         gctools::Vec0<ExceptionEntry>   _Stack;
     public:

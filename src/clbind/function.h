@@ -24,10 +24,24 @@ namespace clbind {
     };
 
     template <typename FunctionPtrType,typename Policies>
-    class VariadicFunctoid : public core::Functoid {};
+    class VariadicFunctoid : public core::Functoid {
+    public:
+        typedef core::Functoid TemplatedBase;
+    };
 
 #include "clbind_functoids.h"
 
+};
+
+
+template <typename FunctionPtrType, typename Policies> class gctools::GCKind<clbind::VariadicFunctoid<FunctionPtrType,Policies> > {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicFunctoid<FunctionPtrType,Policies>::TemplatedBase>::Kind;
+};
+
+
+
+namespace clbind {
 
     namespace detail
     {

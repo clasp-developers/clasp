@@ -295,6 +295,7 @@ namespace gctools {
 #ifdef USE_TAGGED_PTR_P0
             return this->pbase;
 #else
+            // Shouldn't this point to the mps base?
             return dynamic_cast<void*>(this->px);
 #endif
         }
@@ -309,6 +310,7 @@ namespace gctools {
 
 };
 
+
 namespace gctools {
 
 
@@ -319,13 +321,13 @@ namespace gctools {
       of GC managed object */
     class tagged_base_ptr {
     public:
-        static const uintptr_t unused = tagged_ptr<::gctools::Header_s>::tagged_unbound;
-        static const uintptr_t deleted = tagged_ptr<::gctools::Header_s>::tagged_deleted;
+        static const uintptr_t unused = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_unbound;
+        static const uintptr_t deleted = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_deleted;
         tagged_base_ptr(uintptr_t v) : base(v) {};
 
         template <class U>
-        static gctools::Header_s* toBasePtr(U* ptr) {
-            return reinterpret_cast<::gctools::Header_s*>(MostDerivedPtrToBasePtr(dynamic_cast<void*>(ptr)));
+        static typename GCHeader<void>::HeaderType* toBasePtr(U* ptr) {
+            return reinterpret_cast<typename GCHeader<void>::HeaderType*>(MostDerivedPtrToBasePtr<void>(dynamic_cast<void*>(ptr)));
         }
             
         template <class U>
@@ -333,13 +335,13 @@ namespace gctools {
             if (objPtr.pointerp() ) {
                 this->base = toBasePtr(objPtr.px_ref());
             } else {
-                this->base.px_ref() = reinterpret_cast<gctools::Header_s*>(objPtr.px_ref());
+                this->base.px_ref() = reinterpret_cast<typename GCHeader<void>::HeaderType*>(objPtr.px_ref());
             }
         }
 
-        tagged_ptr<::gctools::Header_s>& base_ref() { return this->base;};
+        tagged_ptr<typename GCHeader<void>::HeaderType>& base_ref() { return this->base;};
     public:
-        tagged_ptr<::gctools::Header_s> base;
+        tagged_ptr<typename GCHeader<void>::HeaderType> base;
     };
 
 
@@ -376,7 +378,6 @@ namespace gctools {
     };
 
 };
-
 
 
 

@@ -125,9 +125,13 @@ namespace gctools
 
     static void obj_fwd(mps_addr_t old_base, mps_addr_t new_base)
     {
-	MPS_LOG(BF("old_base = %p   new_base = %p") % old_base % new_base);
+        DEBUG_MPS_MESSAGE(BF("obj_fwd old_base = %p   new_base = %p") % old_base % new_base );
 	mps_addr_t limit = obj_skip(old_base);
 	size_t size = (char *)limit - (char *)old_base;
+//        if ( size == 376 ) {
+//            printf("%s:%d obj_fwd   size=376\n", __FILE__, __LINE__ );
+//        }
+
 //	mps_addr_t obj_ptr = BASE_TO_OBJ_PTR(old_base);
 	assert(size >= AlignUp(sizeof_with_header<Fwd2_s>()));
 	if (size == AlignUp(sizeof_with_header<Fwd2_s>())) {
@@ -139,10 +143,10 @@ namespace gctools
 	} else {
 //	    GcFwd* obj = reinterpret_cast<GcFwd*>(obj_ptr);
 //	    BASE_PTR_KIND(old_base) = KIND_fwd;
-	    Header_s* header = reinterpret_cast<Header_s*>(old_base);
+	    Header_s<void>* header = reinterpret_cast<Header_s<void>*>(old_base);
 	    header->fwd.Kind = KIND_SYSTEM_fwd;
-	    header->fwd.Fwd = ((Header_t)new_base);
-	    header->fwd.Size = size;
+	    header->fwd.Fwd = ((Header_s<void>*)new_base);
+	    header->fwd.Length = size;
 	}
     }
 
@@ -150,8 +154,8 @@ namespace gctools
 
     static mps_addr_t obj_isfwd(mps_addr_t addr)
     {
-	MPS_LOG(BF(" addr = %p") % addr );
-	Header_s* header = reinterpret_cast<Header_s*>(addr);
+	Header_s<void>* header = reinterpret_cast<Header_s<void>*>(addr);
+        MPS_LOG(BF(" addr = %p  kind = %s") % addr % obj_name((gctools::GCKindEnum)(header->kind.Kind)) );
 	switch (header->kind.Kind) {
 	case KIND_SYSTEM_fwd2: {
 	    THROW_HARD_ERROR(BF("KIND_fwd2 should never be needed"));
@@ -161,14 +165,14 @@ namespace gctools
 	}
 	case KIND_SYSTEM_fwd: {
 //	    GcFwd* obj = reinterpret_cast<GcFwd*>(obj_ptr);
-	    MPS_LOG(BF("              KIND_fwd returning %p") % header->fwd._Fwd );
+	    MPS_LOG(BF("              KIND_fwd returning %p") % header->fwd.Fwd );
 	    return header->fwd.Fwd;
 	}
 	default: {
 	    // do nothing - fall through
 	}
 	}
-	MPS_LOG(BF("               Not fwd returning NULL  kind = %s") % obj_name(header->kind._Kind));
+	MPS_LOG(BF("   isfwd=FALSE returning NULL  kind = %s") % obj_name((gctools::GCKindEnum)(header->kind.Kind)));
 	return NULL;
     }
 
@@ -177,22 +181,17 @@ namespace gctools
     static void obj_pad(mps_addr_t base, size_t size)
     {
 	size_t alignment = Alignment();
-//	size_t sizeofPad1_s = sizeof_with_header<Pad1_s>();
-//	size_t align_sizeofPad1_s = ALIGN(sizeofPad1_s);
-//	size_t align_up_sizeofPad1_s = ALIGN_UP(sizeofPad1_s);
-	size_t sizeof_Header_s = sizeof(Header_s);
-	size_t align_up_sizeof_Header_s = AlignUp(sizeof_Header_s);
-	MPS_LOG(BF("base = %p ALIGNMENT = %d size=%lu  ALIGN_UP(sizeof_with_header<Pad1_s>()): %d") % base % alignment % size % AlignUp(sizeof_with_header(Pad1_s)));
-	MPS_LOG(BF("sizeof_Header_s = %lu   align_up_sizeof_Header_s = %lu") % sizeof_Header_s % align_up_sizeof_Header_s );
+	MPS_LOG(BF("base = %p ALIGNMENT = %d size=%lu  AlignUp(sizeof_with_header<Pad1_s>()): %d") % base % alignment % size % AlignUp(sizeof_with_header<Pad1_s>()));
 	assert(size >= AlignUp(sizeof_with_header<Pad1_s>()));
-	Header_s* header = reinterpret_cast<Header_s*>(base);
+	Header_s<void>* header = reinterpret_cast<Header_s<void>*>(base);
 	if (size == AlignUp(sizeof_with_header<Pad1_s>())) {
 	    header->pad1.Kind = KIND_SYSTEM_pad1;
+            header->pad1.Length = size;
 	} else {
 //	    BASE_PTR_KIND(base) = KIND_pad;
 //	    mps_base_t obj_ptr = BASE_TO_OBJ_PTR(base);
 	    header->pad.Kind = KIND_SYSTEM_pad;
-	    header->pad.Size = size;
+	    header->pad.Length = size;
 	}
     }
 
@@ -223,6 +222,7 @@ extern "C" {
             assert(b); /* we just checked there was one */
             ++messages;
             if (type == mps_message_type_gc_start()) {
+                DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_gc_start"));
 #if 0
                 printf("Message: mps_message_type_gc_start\n");
                 printf("Collection started.\n");
@@ -230,6 +230,7 @@ extern "C" {
                 printf("  clock: %lu\n", (unsigned long)mps_message_clock(_global_arena, message));
 #endif
             } else if ( type == mps_message_type_gc() ) {
+                DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_gc"));
 #if 0
                 printf("Message: mps_message_type_gc()\n");
                 size_t live = mps_message_gc_live_size(_global_arena, message);
@@ -252,12 +253,14 @@ extern "C" {
             }
             mps_message_discard(gctools::_global_arena, message);
         }
+#if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
         core::Number_sp endTime = core::cl_getInternalRunTime().as<core::Number_O>();
         core::Number_sp deltaTime = core::contagen_sub(endTime,startTime);
         core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
-        printf("[processMpsMessages %s seconds]\n", _rep_(deltaSeconds).c_str());
-        fflush(stdout);
+//        printf("[processMpsMessages %s seconds]\n", _rep_(deltaSeconds).c_str());
+//        fflush(stdout);
+#endif
         return messages;
     };
 
@@ -330,7 +333,7 @@ namespace gctools {
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create obj format");
 
 
-#define AMC_CHAIN_SIZE 16
+#define AMC_CHAIN_SIZE 256
         // Now the generation chain
         mps_gen_param_s amc_gen_params[] = {
             { AMC_CHAIN_SIZE, 0.85 },
@@ -342,11 +345,9 @@ namespace gctools {
                                _global_arena,
                                LENGTH(amc_gen_params),
                                amc_gen_params);
-        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create obj chain");
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create amc chain");
 
-
-
-        // And then the pool
+        // Create the AMC pool
         mps_pool_t _global_amc_pool;
         res = mps_pool_create(&_global_amc_pool,
                               _global_arena,
@@ -355,7 +356,7 @@ namespace gctools {
                               amc_chain);
 
 
-#define AMS_CHAIN_SIZE 20480
+#define AMS_CHAIN_SIZE 256 // 32768
         // Now the generation chain
         mps_gen_param_s ams_gen_params[] = {
             { AMS_CHAIN_SIZE, 0.85 },
@@ -367,7 +368,7 @@ namespace gctools {
                                _global_arena,
                                LENGTH(ams_gen_params),
                                ams_gen_params);
-        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create obj chain");
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create ams chain");
 
 
 #ifdef DEBUG_MPS_AMS_POOL
@@ -393,15 +394,54 @@ namespace gctools {
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create ams pool");
 
-        // And the allocation point
+
+#define AMCZ_CHAIN_SIZE 256 // 32768
+        // Now the generation chain
+        mps_gen_param_s amcz_gen_params[] = {
+            { AMCZ_CHAIN_SIZE, 0.85 },
+            { AMCZ_CHAIN_SIZE, 0.45 },
+        };
+
+        mps_chain_t amcz_chain;
+        res = mps_chain_create(&amcz_chain,
+                               _global_arena,
+                               LENGTH(amcz_gen_params),
+                               amcz_gen_params);
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create amcz chain");
+
+        // Create the AMCZ pool
+        mps_pool_t _global_amcz_pool;
+        res = mps_pool_create(&_global_amcz_pool,
+                              _global_arena,
+                              mps_class_amcz(),
+                              obj_fmt,
+                              amcz_chain);
+
+
+
+        // Create the AWL pool here
+
+
+
+
+
+
+
+
+        // And the allocation points
         res = mps_ap_create_k(&_global_automatic_mostly_copying_allocation_point, _global_amc_pool, mps_args_none );
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mostly_copying_allocation_point");
+
         res = mps_ap_create_k(&_global_automatic_mark_sweep_allocation_point, _global_ams_pool, mps_args_none );
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mark_sweep_allocation_point");
 
+        res = mps_ap_create_k(&_global_automatic_mostly_copying_zero_rank_allocation_point, _global_amcz_pool, mps_args_none );
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mostly_copying_zero_rank_allocation_point");
 
-        IMPLEMENT_MEF(BF("Setup the AMCZ and AWL pools"));
-
-
-        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create obj allocation point");
+#ifdef USE_AWL_POOL
+        res = mps_ap_create_k(&_global_automatic_weak_link_allocation_point, _global_awl_pool, mps_args_none );
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create weak_link_allocation_point");
+#endif
 
         // register the current and only thread
         mps_thr_t global_thread;
@@ -451,8 +491,14 @@ namespace gctools {
 
         mps_root_destroy(global_stack_root);
         mps_thread_dereg(global_thread);
+        mps_ap_destroy(_global_automatic_weak_link_allocation_point);
+        mps_ap_destroy(_global_automatic_mostly_copying_zero_rank_allocation_point);
         mps_ap_destroy(_global_automatic_mark_sweep_allocation_point);
         mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
+#ifdef USE_AWL_POOL
+        mps_pool_destroy(_global_awl_pool);
+#endif
+        mps_pool_destroy(_global_amcz_pool);
         mps_pool_destroy(_global_ams_pool);
         mps_pool_destroy(_global_amc_pool);
         mps_chain_destroy(ams_chain);
