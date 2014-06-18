@@ -29,6 +29,8 @@ $var ReturnTypeCount = 3
                         <DispatchOn,$if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
                         : public Functoid {
                         public:
+                                typedef Functoid TemplatedBase;
+                        public:
                             typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](OT::*Type)($for Args_ , [[ARG$Args_]]) $if isConst [[const]];
                             Type mptr;
                         public:

@@ -83,6 +83,14 @@ namespace core
 TRANSLATE(core::LoadTimeValues_O);
 TRANSLATE(core::MemoryLockedLoadTimeValuesPointer_O);
 
+template<> struct gctools::GCInfo<core::MemoryLockedLoadTimeValuesPointer_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = false;
+    static bool constexpr Atomic = false;
+};
+
+
 extern "C"
 {
     /*! This stores a pointer to the smart_ptr to the run-time value vector.

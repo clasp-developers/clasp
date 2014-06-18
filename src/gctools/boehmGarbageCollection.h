@@ -52,15 +52,22 @@ namespace gctools
 	GCObject& operator=(const GCObject&) { return *this; };
     };
 
+
+    typedef enum { KIND_null } GCKindEnum; // minimally define this GCKind
+
+
+
     typedef enum {  BoehmClassKind, BoehmLispKind, BoehmContainerKind, BoehmStringKind } BoehmKind;
 
+#ifdef USE_BOEHM_MEMORY_MARKER
     extern int globalBoehmMarker;
+#endif
     class Header_s {
     public:
-        Header_s(const char* tn, BoehmKind k) : ValidStamp(0xDEADBEEF)
-                                              , TypeidName(tn), Kind(k)
+        Header_s(const char* name, BoehmKind k) : ValidStamp(0xDEADBEEF)
+                              , TypeidName(name), Kind(k)
 #ifdef USE_BOEHM_MEMORY_MARKER
-                                              , Marker(globalBoehmMarker)
+                              , Marker(globalBoehmMarker)
 #endif
         {};
     private:
@@ -81,6 +88,13 @@ namespace gctools
             return true;
 #endif
         }
+        static size_t HeaderSize() { return sizeof(Header_s);};
+    };
+
+    class TemplatedHeader_s : public Header_s
+    {
+    public:
+        TemplatedHeader_s(const char* name, BoehmKind k) : Header_s(name,k) {};
     };
 
     constexpr size_t Alignment() { return AlignmentT<Header_s>(); };
@@ -88,6 +102,7 @@ namespace gctools
 
 
     template <class T> inline size_t sizeof_with_header() { return AlignUp(sizeof(T))+AlignUp(sizeof(Header_s));};
+    template <class T> inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T))+AlignUp(sizeof(TemplatedHeader_s));};
 
 
 
@@ -119,6 +134,28 @@ namespace gctools
 };
 
 
+
+
+namespace gctools {
+
+    template <typename T>
+    inline void* MostDerivedPtrToBasePtr(void* mostDerived)
+    {
+        void* ptr = reinterpret_cast<char*>(mostDerived) - AlignUp(sizeof(Header_s));
+        return ptr;
+    }
+
+    template <typename T>
+    inline T* BasePtrToMostDerivedPtr(void* base)
+    {
+        T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + AlignUp(sizeof(Header_s)));
+        return ptr;
+    }
+
+};
+
+
+
 namespace gctools
 {
     /*! Initialize the memory pool system and call the startup function which
@@ -128,6 +165,8 @@ namespace gctools
     int initializeMemoryManagement( MainFunctionType startup, int argc, char* argv[], void* dummy );
 
 };
+
+
 
 
 

@@ -421,10 +421,7 @@ namespace core
         ADD_CHAR("RIGHT_CURLY_BRACKET",ci++);
         ADD_CHAR("TILDE",ci++);
         ADD_CHAR("Rubout",ci++);
-        this->attachToGCRoot();
     }
-    CharacterInfo* global_CharacterInfo = NULL;
-
 
 
 
@@ -529,10 +526,10 @@ namespace core
     {_G();
 	Str_sp name = coerce::stringDesignator(sname);
 	string upname = stringUpper(name->get());
-	map<string,int>::const_iterator it = global_CharacterInfo->gNamesToCharacterIndex.find(upname);
-	if ( it != global_CharacterInfo->gNamesToCharacterIndex.end() )
+	map<string,int>::const_iterator it = _lisp->characterInfo().gNamesToCharacterIndex.find(upname);
+	if ( it != _lisp->characterInfo().gNamesToCharacterIndex.end() )
 	{
-	    return(Values(global_CharacterInfo->gIndexedCharacters[it->second]));
+	    return(Values(_lisp->characterInfo().gIndexedCharacters[it->second]));
 	}
 	return(Values(_Nil<T_O>()));
     };
@@ -547,7 +544,7 @@ namespace core
     Str_sp cl_char_name(Character_sp och)
 	{_G();
 	    char ch = och->asChar();
-	    return(global_CharacterInfo->gCharacterNames[ch]);
+	    return(_lisp->characterInfo().gCharacterNames[ch]);
 	};
 
 
@@ -570,8 +567,6 @@ namespace core
 
 //	.initArgs("(self)")
 	      ;
-	global_CharacterInfo = gctools::allocateRootClass<CharacterInfo>();
-
 	SYMBOL_EXPORT_SC_(ClPkg,name_char);
 	Defun(name_char);
 	SYMBOL_EXPORT_SC_(ClPkg,char_name);

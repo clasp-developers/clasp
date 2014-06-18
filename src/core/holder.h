@@ -21,7 +21,7 @@ namespace core
 
 
     template <class OType/*, class GCKind=gctools::GCHolder */>
-    class SymbolDict : 
+    class DepreciatedSymbolDict : 
 #if defined(USE_MPS) || defined(USE_REFCOUNT)
         public std::map<Symbol_sp, gctools::smart_ptr<OType> >
 #endif
@@ -63,7 +63,7 @@ namespace core
 	};
 	value_type get(Symbol_sp name,const Lisp_sp& lisp) const
 	{_G();
-	    typename SymbolDict::const_iterator found = this->find(name);
+	    typename DepreciatedSymbolDict::const_iterator found = this->find(name);
 	    if ( found == this->end() )
 	    {
 		KEY_NOT_FOUND_ERROR(name);

@@ -32,14 +32,6 @@ of housekeeping-classes ")
   )
 ||#
 
-(defstruct variable
-  location
-  name
-  ctype)
-
-(defstruct (global-variable (:include variable)))
-(defstruct (static-local-variable (:include variable)))
-(defstruct (local-variable (:include variable)))
 
 (defstruct new-gcobject-expr
   ctype

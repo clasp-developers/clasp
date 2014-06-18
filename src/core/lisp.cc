@@ -129,7 +129,7 @@ namespace core
 
 
 
-    struct FindApropos : public KeyValueMapper, public gctools::StackRoot
+    struct FindApropos : public KeyValueMapper //, public gctools::StackRoot
     {
     public:
 	HashTable_sp    _symbols;
@@ -324,7 +324,7 @@ namespace core
 
     Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize )
     {
-        ::_lisp = gctools::allocateRootClass<Lisp_O>();
+        ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
 	_lisp->setupMpi(mpiEnabled,mpiRank,mpiSize);
 //	lisp->__setWeakThis(lisp);
 //	lisp->__resetInitializationOwner();
@@ -897,7 +897,6 @@ namespace core
 	}
 	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
 	af_setf_findClass(cc,classSymbol,true,_Nil<Environment_O>());
-//	this->boot_setf_findClass(classSymbol,cc);
 	if ( IS_SYMBOL_DEFINED(base1ClassSymbol))
 	{
 	    cc->addInstanceBaseClass(base1ClassSymbol);
@@ -2969,10 +2968,21 @@ extern "C"
 
     Class_sp Lisp_O::boot_setf_findClass(Symbol_sp className, Class_sp mc)
     {
+#if 0
 	ASSERTF(this->_BootClassTableIsValid,
 		BF("Never use Lisp_O::setf_findClass after boot - use af_setf_findClass"));
 	this->_Roots._BootClassTable[className] = mc;
-	return mc;
+#else
+        for ( auto it = this->_Roots.bootClassTable.begin(); it!=this->_Roots.bootClassTable.end(); ++it ) {
+            if ( it->symbol == className ) {
+                it->theClass = mc;
+                return mc;
+            }
+        }
+        SymbolClassPair sc(className,mc);
+        this->_Roots.bootClassTable.push_back(sc);
+#endif
+        return mc;
     }
 
 
@@ -2980,6 +2990,7 @@ extern "C"
     {_G();
 	ASSERTF(this->_BootClassTableIsValid,
 		BF("Never use Lisp_O::findClass after boot - use cl::_sym_findClass"));
+#if 0
 	SymbolDict<Class_O>::const_iterator fi = this->_Roots._BootClassTable.find(className);
 	if ( fi == this->_Roots._BootClassTable.end() )
 	{
@@ -2990,6 +3001,12 @@ extern "C"
 	    return _Nil<Class_O>();
 	}
 	return fi->second;
+#else
+        for ( auto it = this->_Roots.bootClassTable.begin(); it!=this->_Roots.bootClassTable.end(); ++it ) {
+            if ( it->symbol == className ) return it->theClass;
+        }
+        return _Nil<Class_O>();
+#endif
     }
 
 
@@ -3001,11 +3018,18 @@ extern "C"
     {_G();
 	ASSERTF(this->_BootClassTableIsValid,BF("switchToClassNameHashTable should only be called once after boot"));
 	HashTable_sp ht = _sym_STARclassNameHashTableSTAR->symbolValue().as<HashTable_O>();
+#if 0
 	for ( SymbolDict<Class_O>::iterator it=this->_Roots._BootClassTable.begin();
 	      it!=this->_Roots._BootClassTable.end(); it++ )
 	{
 	    ht->hash_table_setf_gethash(it->first,it->second);
 	}
+#else
+        for ( auto it = this->_Roots.bootClassTable.begin(); it!=this->_Roots.bootClassTable.end(); ++it ) {
+            ht->hash_table_setf_gethash(it->symbol,it->theClass);
+        }
+        this->_Roots.bootClassTable.clear();
+#endif
 	this->_BootClassTableIsValid = false;
     }
 
@@ -3439,17 +3463,24 @@ extern "C"
     {_G();
 	if ( this->_BootClassTableIsValid )
 	{
+#if 0
 	    for ( SymbolDict<Class_O>::iterator it=this->_Roots._BootClassTable.begin();
 		  it!=this->_Roots._BootClassTable.end(); it++ )
 	    {
 		if (!mapper->mapKeyValue(it->first,it->second)) break;
 	    }
-	} else
-	{
-	    HashTable_sp ht = _sym_STARclassNameHashTableSTAR->symbolValue().as<HashTable_O>();
-	    ht->lowLevelMapHash(mapper);
-	}
-    }
+#else
+            for ( auto it = this->_Roots.bootClassTable.begin(); it!=this->_Roots.bootClassTable.end(); ++it ) {
+                if (!mapper->mapKeyValue(it->symbol,it->theClass)) return;
+            }
+            return;
+#endif
+        } else
+              {
+                  HashTable_sp ht = _sym_STARclassNameHashTableSTAR->symbolValue().as<HashTable_O>();
+                  ht->lowLevelMapHash(mapper);
+              }
+        }
 
 
     string	Lisp_O::__repr__() const

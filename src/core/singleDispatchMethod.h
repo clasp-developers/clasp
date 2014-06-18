@@ -61,5 +61,112 @@ TRANSLATE(core::SingleDispatchMethod_O);
 
 
 
+namespace core {
+
+
+    class Lambda_call_next_method : public Functoid
+    {
+    private:
+	/* Store the name of the previous function */
+	Symbol_sp	_previous_emf_name;
+	/*! Store the next function to call */
+	Function_sp	_next_emfun;
+	/*! Store the arguments that were passed to the function that called us */
+	ActivationFrame_sp		_arguments;
+    public:
+	string describe() const { return "Lambda_call_next_method";};
+    public:
+	Lambda_call_next_method(const string& name, Symbol_sp previous_emf_name, ActivationFrame_sp args, Function_sp next_emfun) : Functoid("Lambda_call_next_method->"+name)
+	{_G();
+	    this->_previous_emf_name = previous_emf_name;
+	    this->_next_emfun = next_emfun;
+	    this->_arguments = args;
+	}
+
+        DISABLE_NEW();
+
+	/*! Indicates if this Functoid uses activation frames to get arguments */
+	virtual bool	requires_activation_frame() const { return true;}
+
+#if 0
+	/*! The argument list is: (&rest cnm_args)
+	  If no arguments are passed to this invoke then
+	  use the arguments that are stored in _arguments */
+	T_sp invoke(Function_sp e,Cons_sp cnm_args, Environment_sp env, Lisp_sp lisp )
+	{_G();
+	    if ( this->_next_emfun.nilp() )
+	    {
+		SIMPLE_ERROR(BF("No next method for generic function %s") % this->_previous_emf_name->__repr__() );
+	    }
+	    Cons_sp args = cnm_args;
+	    if ( args.nilp() ) args = this->_arguments;
+	    return this->_next_emfun->INVOKE(args);
+	}
+
+#endif
+
+
+
+    };
+
+
+    class Lambda_next_method_p : public Functoid
+    {
+    private:
+	/*! Store the next function to call */
+	Function_sp	_next_emfun;
+    public:
+	string describe() const { return "Lambda_next_method_p";};
+    public:
+	Lambda_next_method_p(const string& name, Function_sp next_emfun) : Functoid("Lambda_next_method_p->"+name)
+	{
+	    this->_next_emfun = next_emfun;
+	}
+
+        DISABLE_NEW();
+
+	/*! Doesn't take any arguments */
+	T_sp invoke(Function_sp e,Cons_sp cnm_args, Environment_sp env, Lisp_sp lisp )
+	{_G();
+	    if ( this->_next_emfun.notnilp() ) return _lisp->_true();
+	    return _Nil<T_O>();
+	}
+    };
+
+
+
+
+
+    /*! A method function when invoked is given two arguments: (args next-emfun)
+      It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
+      with the method environment as its parent and then invokes the method-function
+      with (args next-emfun) */
+    class Lambda_method_function : public Functoid
+    {
+        FRIEND_GC_SCANNER();
+    private:
+	SingleDispatchMethod_sp	_method;
+	Function_sp 		_temporary_function;
+    public:
+	string describe() const { return "Lambda_method_function";};
+    public:
+	Lambda_method_function(const string& name, SingleDispatchMethod_sp method)
+	    : Functoid("Lambda_method_function->"+name)
+	{_G();
+	    this->_method = method;
+	    this->_temporary_function = _Nil<Function_O>();
+	}
+
+        DISABLE_NEW();
+
+	bool requires_activation_frame() const { return true; };
+
+	/*! The argument list is: (args next-emfun)
+	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
+	T_mv activate( ActivationFrame_sp closedEnv, int nargs, ArgArray args);
+    };
+
+};
+
 
 #endif /* _singleDispatchMethod_H_ */

@@ -259,6 +259,56 @@ namespace llvmo
 
 
 
+    
+    
+#define ARGS_af_viewCFG "(fn)"
+#define DECL_af_viewCFG ""
+#define DOCS_af_viewCFG "viewCFG"
+    void af_viewCFG(core::CompiledFunction_sp compiledFunction)
+    {_G();
+	core::CompiledBody_sp cb = compiledFunction->getBody();
+	core::T_sp funcs = cb->compiledFuncs();
+	if ( af_consP(funcs) )
+	{
+	    core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
+	    for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
+	    {
+		core::T_sp func = oCar(cur);
+		if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
+		{
+		    f->wrappedPtr()->viewCFG();
+		}
+	    }
+	    return;
+	}
+    };
+
+
+    
+#define ARGS_af_viewCFGOnly "(fn)"
+#define DECL_af_viewCFGOnly ""
+#define DOCS_af_viewCFGOnly "viewCFGOnly"
+    void af_viewCFGOnly(core::CompiledFunction_sp compiledFunction)
+    {_G();
+	core::CompiledBody_sp cb = compiledFunction->getBody();
+	core::T_sp funcs = cb->compiledFuncs();
+	if ( af_consP(funcs) )
+	{
+	    core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
+	    for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
+	    {
+		core::T_sp func = oCar(cur);
+		if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
+		{
+		    f->wrappedPtr()->viewCFGOnly();
+		}
+	    }
+	    return;
+	}
+    };
+
+
+
 
 
     void LlvmoExposer::expose(core::Lisp_sp lisp,core::Exposer::WhatToExpose what) const
@@ -297,6 +347,8 @@ namespace llvmo
 	    SYMBOL_EXPORT_SC_(LlvmoPkg,throwIfMismatchedStructureSizes);
 	    Defun(throwIfMismatchedStructureSizes);
 	    Defun(mangleSymbolName);
+            Defun(viewCFG);
+            Defun(viewCFGOnly);
 	    //nothing
 	};
 	break;

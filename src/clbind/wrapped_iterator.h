@@ -10,8 +10,10 @@
 namespace clbind
 {
 
-    template <class IT, /* class End,*/ typename Policy=reg::null_type>
+    template <class IT, typename Policy=reg::null_type>
     class Iterator : public core::Iterator_O /*, public gctools::GC_MergeKinds */ {
+    public:
+        typedef core::Iterator_O TemplatedBase;
     public:
         IT      _Iterator;
 //        End     _end;
@@ -35,8 +37,14 @@ namespace clbind
             return false;
         }
     };
-
-
 };
+
+
+template <typename IT, typename Policy>
+class gctools::GCKind<clbind::Iterator<IT,Policy> > {
+public:
+    static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Iterator<IT,Policy>::TemplatedBase>::Kind;
+};
+
 
 #endif // clbind_wrapped_iterator

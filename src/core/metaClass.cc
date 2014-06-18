@@ -566,6 +566,7 @@ namespace core {
     T_sp Class_O::instanceRef(int idx) const
     {
 	ASSERTF(idx>=0 && idx<this->_MetaClassSlots.size(),BF("Out of range index %d for instanceRef(%d)") % idx % this->_MetaClassSlots.size());
+        ASSERT(this->_MetaClassSlots[idx]);
 	return this->_MetaClassSlots[idx];
     }
 

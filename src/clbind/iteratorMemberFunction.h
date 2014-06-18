@@ -19,6 +19,8 @@ namespace clbind {
     template <typename Pols , typename OT, typename Begin, typename End >
     class IteratorMethoid : public core::Functoid {
     public:
+        typedef core::Functoid TemplatedBase;
+    public:
         IteratorMethoid(const string& name, Begin begin, End end) : core::Functoid(name), _begin(begin), _end(end) {};
     private:
         typedef typename BeginReturnType<OT,Begin>::type      IteratorType;
@@ -43,12 +45,14 @@ namespace clbind {
 
 
     };
-
-
-
-
-
 };
+
+template <typename Pols , typename OT, typename Begin, typename End >
+class gctools::GCKind<clbind::IteratorMethoid<Pols,OT,Begin,End> > {
+public:
+        static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::IteratorMethoid<Pols,OT,Begin,End>::TemplatedBase>::Kind;
+};
+
 
 #endif
 

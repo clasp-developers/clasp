@@ -181,18 +181,6 @@ namespace core
 
 
 
-    struct CharacterInfo : public gctools::HeapRoot {
-        map<string,int>                 gNamesToCharacterIndex;
-        gctools::Vec0<Character_sp>     gIndexedCharacters;
-        gctools::Vec0<Str_sp>		gCharacterNames;
-        const char* repr() const { return "CharacterInfo";};
-        DECLARE_onHeapScanGCRoots();
-	CharacterInfo(); 
-    };
-
-    extern CharacterInfo* global_CharacterInfo;
-
-
 }; /* core */
 
 

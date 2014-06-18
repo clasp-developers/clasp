@@ -1,15 +1,19 @@
 #ifndef GC_INTERFACE_H
 #define GC_INTERFACE_H
 #include "core/foundation.h"
-#include "core/object.h"
-#include "core/symbol.h"
-#include "core/wrappers.h"
 
 //
 // All class forward declarations
 //
 namespace core {
     class T_O;
+    class WrappedPointer_O;
+    class Functoid;
+    class Creator;
+    class Iterator_O;
+};
+namespace clbind {
+    class ConstructorCreator;
 };
 
 #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following

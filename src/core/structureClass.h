@@ -13,30 +13,30 @@
 
 namespace core {
 
-SMART(StructureClass);
+    SMART(StructureClass);
 
 
-SMART(StringSet);
-
-
-
+    SMART(StringSet);
 
 
 
-SMART(StructureClass );
-class StructureClass_O : public Class_O
-{
-    LISP_META_CLASS(StandardClass);
-    LISP_BASE1(Class_O);
-    LISP_CLASS(core,ClPkg,StructureClass_O,"structure-class");
-public:
+
+
+
+    SMART(StructureClass );
+    class StructureClass_O : public Class_O
+    {
+        LISP_META_CLASS(StandardClass);
+        LISP_BASE1(Class_O);
+        LISP_CLASS(core,ClPkg,StructureClass_O,"structure-class");
+    public:
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 	void	initialize();
-protected:
+    protected:
 	Class_sp			_InstanceCoreClass;
-public:
+    public:
 	/*! Special creator used when starting up lisp environment, the object returned will be a root */
 	static StructureClass_sp createUncollectable();
 #if 0
@@ -54,52 +54,65 @@ public:
 						  Lisp_sp lisp);
 
 							      
-    /*! Convert a Class list designator to a Cons of classes.
-      Accept the following designators:
-      nil - Convert to a Cons containing StructureClass.
-      A single class - Convert to a Cons containing that Class.
-      A cons of classes - return it.
-    */
+        /*! Convert a Class list designator to a Cons of classes.
+          Accept the following designators:
+          nil - Convert to a Cons containing StructureClass.
+          A single class - Convert to a Cons containing that Class.
+          A cons of classes - return it.
+        */
 //    static Cons_sp classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp);
 
 
-public:
+    public:
 //	void defineYourSlotsFromBinderArchiveNode(ArchiveP node);
 //	uint numberOfSlots();
-		/*! Look for the symbol and return an iterator for the slot
-		 * otherwise return end()
-		 */
+        /*! Look for the symbol and return an iterator for the slot
+         * otherwise return end()
+         */
 //	slotIterator find(Symbol_sp sym);
-public:
+    public:
 
-		/*! Reset the slots */
+        /*! Reset the slots */
 //	void resetSlots();
 
 	void appendInstanceVariablesFromStructureClass(StructureClass_sp cc);
 	void appendInstanceVariablesFromListOfSymbols(Cons_sp variableNames);
 
-    virtual void describe();
-    virtual string dumpInfo();
+        virtual void describe();
+        virtual string dumpInfo();
 
 
 #endif
 
-    StructureClass_O();
-    virtual ~StructureClass_O() {};
+        StructureClass_O();
+        virtual ~StructureClass_O() {};
+    };
+
+};
+
+template<> struct gctools::GCInfo<core::StructureClass_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = false;
+    static bool constexpr Atomic = false;
 };
 
 
-class	StructureClassInitializationFunctoid : public Functoid
-{
-private:
+
+namespace core {
+
+
+    class	StructureClassInitializationFunctoid : public Functoid
+    {
+    private:
 	StructureClass_sp	_StructureClass;	
-public:
-    DISABLE_NEW();
+    public:
+        DISABLE_NEW();
 
-    virtual string describe() const {return "StructureClassInitializationFunctoid";};
-    StructureClassInitializationFunctoid(const string& name, StructureClass_sp c) : Functoid("StructureClassInitializationFunctoid->"+name) { this->_StructureClass = c;};
-    virtual ~StructureClassInitializationFunctoid() {};
-};
+        virtual string describe() const {return "StructureClassInitializationFunctoid";};
+        StructureClassInitializationFunctoid(const string& name, StructureClass_sp c) : Functoid("StructureClassInitializationFunctoid->"+name) { this->_StructureClass = c;};
+        virtual ~StructureClassInitializationFunctoid() {};
+    };
 
 };
 TRANSLATE(core::StructureClass_O);

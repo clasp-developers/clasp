@@ -24,7 +24,7 @@ namespace core {
 #endif
     }
 
-
+#if 0
     EXPOSE_CLASS(core,WeakKeyHashTable_O);
 
 
@@ -119,6 +119,7 @@ namespace core {
 #endif
     }
 
+#endif
 
 };
 

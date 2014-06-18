@@ -16,7 +16,7 @@ namespace core
 
     BootStrapCoreSymbolMap::BootStrapCoreSymbolMap()
     {
-	this->attachToGCRoot();
+//	this->attachToGCRoot();
 //#define LOOKUP_SYMBOL(pkgName,symName) bootStrapSymbolMap.lookupSymbol(pkgName,symName)
 #define ClPkg_SYMBOLS
 #define DO_SYMBOL(cname,rsid,pkgName,symName,exportp) cl::cname = this->allocate_unique_symbol(pkgName,symName,exportp);
@@ -65,45 +65,47 @@ namespace core
     Symbol_sp BootStrapCoreSymbolMap::allocate_unique_symbol(string const& pkgName, string const& symbolName,bool exportp)
     {
 	string name = BootStrapCoreSymbolMap::fullSymbolName(pkgName,symbolName);
-	map<string,SymbolStorage>::iterator it = this->_SymbolNamesToSymbol.find(name);
-	if ( it != this->_SymbolNamesToSymbol.end() )
+	map<string,int>::iterator it = this->_SymbolNamesToIndex.find(name);
+	if ( it != this->_SymbolNamesToIndex.end() )
 	{
-	    return((it->second._Symbol));
+	    return((this->_IndexToSymbol[it->second]._Symbol));
 	}
 	Symbol_sp sym = Symbol_O::create(symbolName);
 	SymbolStorage store(pkgName,symbolName,sym,exportp);
-	this->_SymbolNamesToSymbol[name] = store;
-	return((sym));
+        int index = this->_IndexToSymbol.size();
+        this->_IndexToSymbol.push_back(store);
+	this->_SymbolNamesToIndex[name] = index;
+	return(sym);
     }
 
     Symbol_sp BootStrapCoreSymbolMap::lookupSymbol(string const& packageName, string const& rawSymbolName) const
     {
 	string symbolName = rawSymbolName;
 	string fullName = BootStrapCoreSymbolMap::fullSymbolName(packageName,symbolName);
-	map<string,SymbolStorage>::const_iterator it = this->_SymbolNamesToSymbol.find(fullName);
-	if ( it == this->_SymbolNamesToSymbol.end() )
+	map<string,int>::const_iterator it = this->_SymbolNamesToIndex.find(fullName);
+	if ( it == this->_SymbolNamesToIndex.end() )
 	{
 	    THROW_HARD_ERROR(BF("In BootStrapCoreSymbolMap::lookupSymbol Unknown symbolName[%s]") % fullName );
 	}
-	return((it->second._Symbol));
+	return((this->_IndexToSymbol[it->second]._Symbol));
     }
 
 
 
     void BootStrapCoreSymbolMap::finish_setup_of_symbols()
     {_G();
-	for ( map<string,SymbolStorage>::const_iterator it=this->_SymbolNamesToSymbol.begin();
-	      it!=this->_SymbolNamesToSymbol.end(); it++ )
+	for ( map<string,int>::const_iterator it=this->_SymbolNamesToIndex.begin();
+	      it!=this->_SymbolNamesToIndex.end(); it++ )
 	{
-	    Package_sp pkg = _lisp->findPackage(it->second._PackageName);
-	    it->second._Symbol->finish_setup(pkg,it->second._Export);
+	    Package_sp pkg = _lisp->findPackage(this->_IndexToSymbol[it->second]._PackageName);
+	    this->_IndexToSymbol[it->second]._Symbol->finish_setup(pkg,this->_IndexToSymbol[it->second]._Export);
 	}
     }
 
     void BootStrapCoreSymbolMap::dump()
     {
-	for ( map<string,SymbolStorage>::const_iterator it=this->_SymbolNamesToSymbol.begin();
-	      it!=this->_SymbolNamesToSymbol.end(); it++ )
+	for ( map<string,int>::const_iterator it=this->_SymbolNamesToIndex.begin();
+	      it!=this->_SymbolNamesToIndex.end(); it++ )
 	{
 	    string ts = it->first;
 	    printf("%s\n", ts.c_str());

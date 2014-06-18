@@ -19,6 +19,8 @@ $var NumArgs = 16
                 < $if ret==RetVoid [[void]] $else [[RT ]] (*)($for Args_ , [[ARG$Args_]]), Pols>
                 : public core::Functoid {
                 public:
+                typedef core::Functoid TemplatedBase;
+                public:
                     typedef $if ret==RetVoid [[void]] $else [[RT]](*Type)($for Args_ , [[ARG$Args_]]);
                     Type fptr;
                 public:

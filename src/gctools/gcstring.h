@@ -5,66 +5,6 @@
 
 
 
-namespace gctools {
-    template <class TY>
-    class GCStringAllocator /* : public GCAlloc<TY> */ {
-    public:
-
-        // type definitions
-        typedef TY                container_type;
-        typedef container_type*   container_pointer;
-        typedef typename container_type::value_type          value_type;
-        typedef value_type*       pointer;
-        typedef const value_type* const_pointer;
-        typedef value_type&       reference;
-        typedef const value_type& const_reference;
-        typedef std::size_t      size_type;
-        typedef std::ptrdiff_t   difference_type;
-
-        /* constructors and destructor
-         * - nothing to do because the allocator has no state
-         */
-        GCStringAllocator() throw() {}
-        GCStringAllocator(const GCStringAllocator&) throw() {}
-        template <class U>
-        GCStringAllocator(const GCStringAllocator<U>&) throw() {}
-        ~GCStringAllocator() throw() {}
-
-        // return maximum number of elements that can be allocated
-        size_type max_size() const throw() {
-            return std::numeric_limits<std::size_t>::max() / sizeof(value_type);
-        }
-
-        // allocate but don't initialize num elements of type value_type
-        container_pointer allocate(size_type num, const void* = 0) {
-            size_t sz = sizeof_container_with_header<container_type>(num);
-#if defined(USE_BOEHM)
-            // prepend a one pointer header with a pointer to the typeinfo.name
-            Header_s* base = reinterpret_cast<Header_s*>(GC_MALLOC_ATOMIC(sz));
-            if (!base) THROW_HARD_ERROR(BF("Out of memory in allocate"));
-            new (base) Header_s(typeid(TY).name(),BoehmStringKind);
-#endif
-#if defined(USE_MPS)
-            mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
-            mps_addr_t base;
-            do {
-                mps_res_t res = mps_reserve(&base,obj_ap,sz);
-                gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
-                new (header) Header_s(gctools::GCKind<container_type>::Kind);
-//                header->kind._Kind = gctools::GCKind<container_type>::Kind;
-            } while (!mps_commit(obj_ap,base,sz) );
-#endif
-            container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-            new (myAddress) TY(num);
-            POLL_SIGNALS();
-            return myAddress;
-        }
-
-        void deallocate(container_pointer p, size_type num) {
-            // Do nothing
-        }
-    };
-};
 
 
 namespace gctools {
@@ -106,7 +46,7 @@ namespace gctools {
     template <class T, typename Allocator=GCStringAllocator<GCString_moveable<T>>>
     class GCString {
 #ifdef USE_MPS
-//        friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
+//        friend GC_RESULT (::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
         // Only this instance variable is allowed

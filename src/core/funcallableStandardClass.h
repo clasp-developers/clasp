@@ -14,30 +14,30 @@
 
 namespace core {
 
-SMART(FuncallableStandardClass);
+    SMART(FuncallableStandardClass);
 
 
-SMART(StringSet);
-
-
-
+    SMART(StringSet);
 
 
 
-SMART(FuncallableStandardClass );
-class FuncallableStandardClass_O : public StdClass_O
-{
-    LISP_META_CLASS(StandardClass);
-    LISP_BASE1(StdClass_O);
-    LISP_CLASS(clos,ClosPkg,FuncallableStandardClass_O,"FuncallableStandardClass");
-public:
+
+
+
+    SMART(FuncallableStandardClass );
+    class FuncallableStandardClass_O : public StdClass_O
+    {
+        LISP_META_CLASS(StandardClass);
+        LISP_BASE1(StdClass_O);
+        LISP_CLASS(clos,ClosPkg,FuncallableStandardClass_O,"FuncallableStandardClass");
+    public:
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 	void	initialize();
-protected:
+    protected:
 	Class_sp			_InstanceCoreClass;
-public:
+    public:
 	/*! Special creator used when starting up lisp environment */
 	static FuncallableStandardClass_sp create(Class_sp mc);
 
@@ -52,40 +52,56 @@ public:
 
 							      
 
-public:
+    public:
 
 
-public:
+    public:
 
 //    virtual T_sp instanceSig() const;
 
 	
-public:
+    public:
 
 	void appendInstanceVariablesFromFuncallableStandardClass(FuncallableStandardClass_sp cc);
 	void appendInstanceVariablesFromListOfSymbols(Cons_sp variableNames);
 
-    virtual void describe();
-    virtual string dumpInfo();
+        virtual void describe();
+        virtual string dumpInfo();
 
 #endif
 
-    DEFAULT_CTOR_DTOR(FuncallableStandardClass_O);
+        DEFAULT_CTOR_DTOR(FuncallableStandardClass_O);
+    };
+
+};
+
+template<> struct gctools::GCInfo<core::FuncallableStandardClass_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = false;
+    static bool constexpr Atomic = false;
 };
 
 
-class	FuncallableStandardClassInitializationFunctoid : public Functoid
-{
-private:
+
+
+
+
+namespace core {
+
+
+    class	FuncallableStandardClassInitializationFunctoid : public Functoid
+    {
+    private:
 	FuncallableStandardClass_sp	_FuncallableStandardClass;	
-public:
-    DISABLE_NEW();
+    public:
+        DISABLE_NEW();
 
-    virtual string describe() const {return "FuncallableStandardClassInitializationFunctoid";};
-    FuncallableStandardClassInitializationFunctoid(const string& name, FuncallableStandardClass_sp c) : Functoid(name)
-    { this->_FuncallableStandardClass = c;};
-    virtual ~FuncallableStandardClassInitializationFunctoid() {};
-};
+        virtual string describe() const {return "FuncallableStandardClassInitializationFunctoid";};
+        FuncallableStandardClassInitializationFunctoid(const string& name, FuncallableStandardClass_sp c) : Functoid(name)
+        { this->_FuncallableStandardClass = c;};
+        virtual ~FuncallableStandardClassInitializationFunctoid() {};
+    };
 
 };
 TRANSLATE(core::FuncallableStandardClass_O);

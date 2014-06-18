@@ -62,15 +62,16 @@ TRANSLATE(core::WeakHashTable_O);
 
 
 
+#if 0
 
 namespace core
 {
 
     FORWARD(WeakKeyHashTable);
-    class WeakKeyHashTable_O : public WeakHashTable_O
+    c l a s s WeakKeyHashTable_O : public WeakHashTable_O
     {
-	LISP_BASE1(WeakHashTable_O);
-	LISP_CLASS(core,CorePkg,WeakKeyHashTable_O,"WeakKeyHashTable");
+	L I S P_BASE1(WeakHashTable_O);
+	L I S P_CLASS(core,CorePkg,WeakKeyHashTable_O,"WeakKeyHashTable");
 #if defined(XML_ARCHIVE)
 	DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -103,7 +104,6 @@ namespace core
 
 
     };
-
 }; /* core */
 template<> struct gctools::GCInfo<core::WeakKeyHashTable_O> {
     static bool constexpr NeedsInitialization = false;
@@ -113,7 +113,7 @@ template<> struct gctools::GCInfo<core::WeakKeyHashTable_O> {
 };
 
 TRANSLATE(core::WeakKeyHashTable_O);
-
+#endif
 
 
 

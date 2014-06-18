@@ -18,6 +18,8 @@ $var NumArgs = 8
                  < Pols, Pointer, T, constructor<$for Args_ , [[ARG$Args_]]> >
                 : public core::Functoid {
                 public:
+                        typedef core::Functoid TemplatedBase;
+                public:
                     typedef Wrapper<T,Pointer>  WrapperType;
                 public:
                     enum { NumParams = $numArgs };

@@ -40,6 +40,7 @@ namespace asttooling {
 
 
         class RegistryMaps {
+            FRIEND_GC_SCANNER();
             friend class SymbolMatcherDescriptorPair;
         public:
             RegistryMaps();

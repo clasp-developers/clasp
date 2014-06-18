@@ -14,6 +14,7 @@ namespace core
 
     struct CacheRecord
     {
+        FRIEND_GC_SCANNER();
 	T_sp 	_key;
 	T_sp 	_value;
 	int	_generation;
@@ -24,6 +25,7 @@ namespace core
 
     class Cache
     {
+        FRIEND_GC_SCANNER();
 	VectorObjectsWithFillPtr_sp 	_keys;
         gctools::Vec0<CacheRecord>	_table;
 	int				_generation;

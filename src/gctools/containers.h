@@ -23,7 +23,7 @@ namespace gctools {
     template <class Vec >
     class Vec0_impl {
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
-        friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
+        friend GC_RESULT (::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
         typedef Vec                                     vector_type;
@@ -80,7 +80,7 @@ namespace gctools {
     template <class Arr >
     class Array0_impl {
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
-        friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
+        friend GC_RESULT (::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
         typedef Arr                                    array_type;
@@ -159,20 +159,20 @@ namespace gctools {
 #endif
 
 
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM) || defined(USE_MPS)
     template <class T>
-    class Vec0 : public Vec0_impl<GCVector<T,GCContainerAllocator_boehm<GCVector_moveable<T> > > >
+    class Vec0 : public Vec0_impl<GCVector<T,GCContainerAllocator<GCVector_moveable<T> > > >
     {
     public:
-        typedef Vec0_impl<GCVector<T,GCContainerAllocator_boehm<GCVector_moveable<T> > > > Base;
+        typedef Vec0_impl<GCVector<T,GCContainerAllocator<GCVector_moveable<T> > > > Base;
         Vec0() : Base() {};
     };
 
     template <class T>
-    class Array0 : public Array0_impl<GCArray<T,GCContainerAllocator_boehm<GCArray_moveable<T> > > >
+    class Array0 : public Array0_impl<GCArray<T,GCContainerAllocator<GCArray_moveable<T> > > >
     {
     public:
-        typedef Array0_impl<GCArray<T,GCContainerAllocator_boehm<GCArray_moveable<T> > > >     Base;
+        typedef Array0_impl<GCArray<T,GCContainerAllocator<GCArray_moveable<T> > > >     Base;
 //        template <typename...ARGS> Array0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
         Array0() : Base() {};
     };
@@ -181,10 +181,10 @@ namespace gctools {
     // Use these for ActivationFrames to distinguish them from GCArray
     //
     template <class T>
-    class Frame0 : public Array0_impl<GCArray<T,GCContainerAllocator_boehm<GCArray_moveable<T> > > >
+    class Frame0 : public Array0_impl<GCArray<T,GCContainerAllocator<GCArray_moveable<T> > > >
     {
     public:
-        typedef Array0_impl<GCArray<T,GCContainerAllocator_boehm<GCArray_moveable<T> > > >     Base;
+        typedef Array0_impl<GCArray<T,GCContainerAllocator<GCArray_moveable<T> > > >     Base;
 //        template <typename...ARGS> Frame0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
         Frame0() : Base() {};
     };
@@ -198,7 +198,7 @@ namespace gctools {
 
 
 
-#ifdef USE_MPS
+#ifdef USE_MPS_OLD
     template <class T>
     class Vec0 : public Vec0_impl<GCVector<T,GCContainerAllocator_mps<GCVector_moveable<T> > > >
     {

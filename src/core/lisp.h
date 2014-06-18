@@ -13,6 +13,7 @@
 #include "lightProfiler.h"
 #include "lispStream.fwd.h"
 #include "executables.fwd.h"
+#include "character.fwd.h"
 #include "cons.h"
 #include "numbers.h"
 #include "pointer.fwd.h"
@@ -64,6 +65,12 @@ namespace core
     Cons_sp af_member(T_sp item, T_sp list, T_sp key=_Nil<T_O>(), T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
     void af_invokeInternalDebugger(T_sp condition);
 
+
+    struct SymbolClassPair {
+        SymbolClassPair(Symbol_sp s, Class_sp c) : symbol(s), theClass(c) {};
+        Symbol_sp symbol;
+        Class_sp  theClass;
+    };
 
 
     /*! A structure that stores the integer byte/word ordering information for this processor.
@@ -120,6 +127,7 @@ namespace core
      exposes the python classes/functions/globals */
     class Exposer
     {
+        FRIEND_GC_SCANNER();
     public:
 	typedef enum { candoClasses, candoFunctions, candoGlobals,
 		       pythonClasses, pythonFunctions, pythonGlobals } WhatToExpose;
@@ -190,7 +198,8 @@ namespace core
 
     class Lisp_O
     {
-	struct GCRoots : public gctools::HeapRoot {
+	struct GCRoots //: public gctools::HeapRoot
+        {
 	/*! The invocation history stack this should be per thread */
 	    InvocationHistoryStack 	_InvocationHistoryStack;
             ExceptionStack              _ExceptionStack;
@@ -200,8 +209,8 @@ namespace core
 	    Bignum_sp 			_BignumRegister0;
 	    Bignum_sp 			_BignumRegister1;
 	    Bignum_sp 			_BignumRegister2;
-
-//	    HashTable_sp                _TraceFunctions;
+            CharacterInfo               charInfo;
+            gctools::Vec0<core::Symbol_sp>      _ClassSymbolsHolder;
 	    HashTable_sp 		_SystemProperties;
 	    DynamicBindingStack 	_Bindings;
 	    /*! Map source file path strings to SourceFileInfo_sp */
@@ -209,7 +218,8 @@ namespace core
 	    /*! Store CATCH info */
 	    Cons_sp 			_CatchInfo;
 	    /* The global class table that maps class symbols to classes */
-	    SymbolDict<Class_O>		_BootClassTable;
+            gctools::Vec0<SymbolClassPair> bootClassTable;
+//	    SymbolDict<Class_O>		_BootClassTable;
 	    /*! When compiled files are loaded, they need to create
 	      LOAD-TIME-VALUEs and QUOTEd objects using C++ calls at runtime.
 	      Those objects are stored here as a map on the compiled file name. */
@@ -381,6 +391,10 @@ namespace core
 	int pathMax() const { return this->_PathMax; };
     public:
 	bool bootClassTableIsValid() const { return this->_BootClassTableIsValid;};
+    public:
+        CharacterInfo& characterInfo() { return this->_Roots.charInfo; };
+    public:
+        gctools::Vec0<core::Symbol_sp>&     classSymbolsHolder() { return this->_Roots._ClassSymbolsHolder;};
     public:
 	/*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
@@ -888,7 +902,7 @@ public:
 
 
 
-    class LispHolder : public gctools::StackRoot
+    class LispHolder //: public gctools::StackRoot
     {
     private:
         Lisp_sp _Lisp;

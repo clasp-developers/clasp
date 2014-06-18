@@ -4,7 +4,6 @@
 #include "hardErrors.h"
 
 
-
 #define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x)
 
 
@@ -42,7 +41,7 @@ namespace gctools {
 };
 
 
-
+#if 0
 namespace gctools {
 
     struct HeapRoot;
@@ -122,7 +121,7 @@ namespace gctools {
 
 
 };
-
+#endif
 
 
 // ----------------------------------------------------------------------
@@ -133,6 +132,38 @@ namespace gctools {
 //
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
+namespace gctools {
+    /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
+    template <class OT> struct GCKind;
+};
+
+namespace gctools {
+
+#ifdef USE_BOEHM
+    class Header_s;
+#endif
+#ifdef USE_MPS
+    template <typename T> union Header_s;
+#endif
+
+    template <typename T> struct GCHeader {
+#ifdef USE_BOEHM
+        typedef Header_s                HeaderType;
+#endif
+#ifdef USE_MPS
+#ifdef RUNNING_GC_BUILDER
+        typedef Header_s<T>         HeaderType;
+#else
+        typedef Header_s<T>         HeaderType;
+#endif
+#endif
+    };
+
+    template <typename T> struct GCAllocationPoint;
+        
+
+};
+
 #ifdef USE_BOEHM
 #include "boehmGarbageCollection.h"
 #endif
@@ -141,51 +172,9 @@ namespace gctools {
 #endif
 
 
-
-
 namespace gctools {
-
-    inline void* MostDerivedPtrToBasePtr(void* mostDerived)
-    {
-        void* ptr = reinterpret_cast<char*>(mostDerived) - AlignUp(sizeof(Header_s));
-        return ptr;
-    }
-
-    template <typename T>
-    inline T* BasePtrToMostDerivedPtr(void* base)
-    {
-        T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + AlignUp(sizeof(Header_s)));
-        return ptr;
-    }
-
-};
-
-
-
-#include "smart_pointers.h"
-
-
-
-namespace gctools {
-    template <typename T>
-    void* SmartPtrToBasePtr(smart_ptr<T> obj)
-    {
-        void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.pbase()) - AlignUp(sizeof(Header_s)));
-        return ptr;
-    }
-
-};
-
-
-#define DECLARE_onHeapScanGCRoots()
-#define DECLARE_onStackScanGCRoots()
-
-namespace gctools {
-
-
     /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
-    template <class OT>
-    struct GCKind {
+    template <class OT> struct GCKind {
 #ifdef USE_MPS
 #ifdef RUNNING_GC_BUILDER
         static GCKindEnum const Kind = KIND_null;
@@ -195,7 +184,15 @@ namespace gctools {
         // to force compiler errors when the Kind for an object hasn't been declared
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
+#ifdef USE_BOEHM
+        static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
+#endif
     };
+};
+
+namespace gctools {
+
+
 
 
     template <class OT>
@@ -208,6 +205,30 @@ namespace gctools {
 
 
 };
+
+
+
+
+
+
+#include "smart_pointers.h"
+
+
+
+namespace gctools {
+    template <typename T>
+    void* SmartPtrToBasePtr(smart_ptr<T> obj)
+    {
+        void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.pbase()) - (GCHeader<T>::HeaderType::HeaderSize()));
+        return ptr;
+    }
+
+};
+
+
+#define DECLARE_onHeapScanGCRoots()
+#define DECLARE_onStackScanGCRoots()
+
 
 
 namespace gctools {
@@ -226,7 +247,7 @@ namespace gctools {
 
 
     template <class T> inline size_t sizeof_container_with_header(size_t num) {
-        return sizeof_container<T>(num)+AlignUp(sizeof(Header_s));
+        return sizeof_container<T>(num)+GCHeader<T>::HeaderType::HeaderSize();
     };
 
 };

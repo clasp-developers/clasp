@@ -90,6 +90,7 @@ namespace core
 
     class Lambda_emf : public Functoid
     {
+        FRIEND_GC_SCANNER();
     private:
 	/*! Store the name of the function that this Lambda_emf invokes - for debugging */
 	Symbol_sp		_name;

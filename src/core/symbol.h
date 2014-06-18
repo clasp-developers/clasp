@@ -183,18 +183,20 @@ namespace core {
 
 
 };
+TRANSLATE(core::Symbol_O);
+template<> struct gctools::GCInfo<core::Symbol_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = false;
+    static bool constexpr Atomic = false;
+};
 
-
+#if 0
 namespace gctools {
     template<> inline bool isNilDowncastableTo<core::Symbol_O>() { return true;};
 };
 
-
-
-
-TRANSLATE(core::Symbol_O);
-
-
+#endif
 
 
 

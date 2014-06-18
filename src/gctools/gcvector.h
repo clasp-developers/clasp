@@ -32,16 +32,16 @@ namespace gctools {
         value_type& operator[](size_t i) { return this->_Data[i]; };
         const value_type& operator[](size_t i) const { return this->_Data[i]; };
         iterator begin() { return &this->_Data[0]; };
-        iterator end() { return &this->_Data[this->_Capacity]; };
+        iterator end() { return &this->_Data[this->_End]; };
         const_iterator begin() const { return &this->_Data[0]; };
-        const_iterator end() const { return &this->_Data[this->_Capacity]; };
+        const_iterator end() const { return &this->_Data[this->_End]; };
     };
 
 
     template <class T, typename Allocator>
     class GCVector {
 #ifdef USE_MPS
-//        friend GC_RESULT (::obj_scan)(mps_ss_t GC_SCAN_STATE, mps_addr_t base, mps_addr_t limit);
+//        friend GC_RESULT (::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 #endif
     public:
         // Only this instance variable is allowed
