@@ -1,0 +1,10 @@
+prefix=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: The atomic_ops project
+Description: Atomic memory update operations portable implementation
+Version: 7.2
+Libs: -L${libdir} -latomic_ops
+Cflags: -I${includedir}
