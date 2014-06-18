@@ -1,0 +1,120 @@
+[/
+ / Copyright (c) 2007 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section History]
+
+The Boost Graph Library began its life as the Generic Graph Component Library (GGCL), a software
+project at the Lab for Scientific Computing (LSC) at the University of Notre Dame, under the
+direction of Professor Andrew Lumsdaine. The Lab's research directions include numerical linear
+algebra, parallel computing, and software engineering (including generic programming).
+
+Soon after the Standard Template Library was released, work began at the LSC to apply generic
+programming to scientific computing. The Matrix Template Library (Jeremy Siek's masters thesis)
+was one of the first projects. Many of the lessons learned during construction of the MTL were
+applied to the design and implementation of the GGCL.
+
+Graph algorithms play an important role in sparse matrix computations, so the LSC had a need for
+a good graph library. However, none of the available graph libraries (LEDA, GTL, Stanford GraphBase)
+were written using the generic programming style of the STL, and hence did not fulfill the flexibility
+and high-performance requirements of the LSC. Others were also expressing interest in a generic C++
+graph library. During a meeting with Bjarne Stroustrup we were introduced to several people at AT&T
+who needed such a library. There had also been earlier work in the area of generic graph algorithms,
+including some codes written by Alexander Stepanov, and Dietmar Kuhl's masters thesis.
+
+With this in mind, and motivated by homework assignments in his algorithms class, Jeremy began
+prototyping an interface and some graph classes in the spring on 1998. Lie-Quan Lee then developed
+the first version of GGCL, which became his masters thesis project.
+
+The following year, Jeremy went to work for SGI with Alexander Stepanov and Matt Austern. During
+this time Alex's disjoint-sets based connected components algorithm was added to GGCL, and Jeremy
+began working on the concept documentation for GGCL similar to Matt's STL documentation.
+
+While working at SGI, Jeremy heard about Boost and was excited to find a group of people interested
+in creating high-quality C++ libraries. At Boost there were several people interested in generic
+graph algorithms, most notably Dietmar Kuhl. Some discussions about generic interfaces for graph
+structures resulted in the a revision of GGCL which closely resembles the current Boost Graph Library
+interface.
+
+On September 4, 2000 GGCL passed the Boost formal review and became the Boost Graph Library (BGL).
+The first release of BGL was September 27, 2000.
+
+[h2 Changes by Revision]
+
+* Version 1.38.0
+ * New algorithms
+   * Travelling Salesman Problem approximation by Matyas Egyhazy ([metric_tsp_approx]).
+   * Support for named vertices in `adjacency_list`.
+ * Bug Fixes
+   * Fixed spelling of `edmonds_karp` algorithm name.
+   * Correctly remove loop edges from undirected [adjacency_list].
+   * Correctly handle infinite edge weights in [floyd_warshall_all_pairs_shortest_paths].
+   * Edge counts are no longer modified if [remove_edge] fails.
+
+* Version 1.35.0
+  * New algorithms and components
+    * boykov_kolmogorov_max_flow (formerly kolmogorov_max_flow), from Stephan Diederich as part of the 2006 Google Summer of Code.
+    * read_dimacs_max_flow and write_dimacs_max_flow for max-flow problems, from Stephan Diederich.
+    * read_graphml and write_graphml for GraphML input/output, from Tiago de Paula Peixoto.
+  * Enhancements
+    * LEDA Adaptor improvements, from Jens Muller.
+
+* Version 1.34.0
+  * New algorithms and components
+    * edmonds_maximum_cardinality_matching, from Aaron Windsor.
+    * lengauer_tarjan_dominator_tree, from JongSoo Park.
+    * compressed_sparse_row_graph, from Jeremiah Willcock and Douglas Gregor of Indiana University.
+    * sorted_erdos_renyi_iterator, from Jeremiah Willcock of Indiana University.
+  * Enhancements
+    * biconnected_components now has a visitor parameter and supports named parameters, from Janusz Piwowarski.
+    * adjacency_matrix now models the Bidirectional Graph concept.
+    * adjacency_list is now Serializable, from Jeremy Siek of Rice University.
+    * Added edges_size_type and vertices_size_type to adjacency_list_traits, from Jeremy Siek of Rice University.
+    * Added operator< , etc. to the edge descriptor of adjacency_list, from Jeremy Siek of Rice University.
+  * Bug Fixes
+    * Fixed a bug that causes the relaxed heap to fail on x86 Linux.
+    * Bundled properties now work with adjacency list I/O.
+    * floyd_warshall_all_pairs_shortest_paths now properly uses its compare, inf, and zero parameters.
+    * johnson_all_pairs_shortest_paths now supports compare, combine, inf, and zero.
+    * Fixed a bug in smallest_last_vertex_ordering.hpp which could cause a vertex to be moved to the  wrong bucket during an BucketSorter update.
+
+* Version 1.33.1
+  * Bug Fixes
+    * fruchterman_reingold_force_directed_layout: Fixed enumeration of grid-force pairs, which caused some odd graph formations along grid lines.
+    * king_ordering and cuthill_mckee_ordering: Fixed bug that caused failures with the multi-component version of these algorithms.
+
+* Version 1.33.0
+  * New algorithms and components
+    * Experimental Python bindings, from Doug Gregor and Indiana University.
+    * floyd_warshall_all_pairs_shortest_paths, from Lauren Foutz and Scott Hill.
+    * astar_search, from Kristopher Beevers and Jufeng Peng.
+    * fruchterman_reingold_force_directed_layout, from Doug Gregor and Indiana University.
+    * biconnected_components and articulation_points, from Indiana University.
+    * gursoy_atun_layout, from Jeremiah Willcock and Doug Gregor of Indiana University.
+    * king_ordering, from D. Kevin McGrath of Indiana University.
+    * erdos_renyi_iterator
+    * plod_iterator
+    * small_world_iterator
+  * Enhancements
+    * bellman_ford_shortest_paths now permits one to specify the starting vertex, so that it will perform its own initialization.
+    * undirected_dfs is now data-recursive, resulting in improved performance in some cases, from Synge Todo.
+    * dijkstra_shortest_paths now uses a relaxed heap [61] as its priority queue, improving its complexity to O(V log V) and improving real-world performance for larger graphs.
+    * read_graphviz now has a new, Spirit-based parser that works for all graph types and supports arbitrary properties on the graph, from Ron Garcia. The old, Bison-based GraphViz reader has been deprecated and will be removed in a future Boost release.
+    * write_graphviz now supports output of dynamic properties (as read in through the new read_graphviz).
+    * cuthill_mckee_ordering has been recast as an invocation of breadth_first_search and now supports graphs with multiple components.
+    * subgraph now supports bundled properties. get_property now refers to the subgraph property, not the root graph's property.
+    * filtered_graph now supports bundled properties.
+    * reverse_graph now supports bundled properties, set_property, and get_property.
+  * Bug fixes
+    * bellman_ford_shortest_paths now deals with unreachable vertices better.
+    * adjacency_list: parallel edge removal with OutEdgeListS = listS has been fixed. Copying and swapping has been fixed.
+    * Incremental connected components: fixed a bug in the incremental_components routine that may have caused incorrect results.
+    * The remove_out_edge_if function for an undirected adjacency_list has been rewritten and should no longer dereference singular iterators.
+    * write_graphviz now accepts a vertex_id parameter that is used to name the nodes.
+    * read_graphviz now accepts empty attribute lists.
+    * sequential_vertex_coloring has been updated, tested, and documented.
+
+[endsect]

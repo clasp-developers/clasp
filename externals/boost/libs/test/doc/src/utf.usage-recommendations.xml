@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"  "../../../../tools/boostbook/dtd/boostbook.dtd" [
+ <!ENTITY utf "<acronym>UTF</acronym>">
+]>
+<section id="utf.usage-recommendations">
+ <title>The unit test framework usage recommendations</title>
+ <titleabbrev>Usage recommendations</titleabbrev>
+
+ <para role="first-line-indented">
+  On following pages collected tips and recommendations on how to use and apply the &utf; in your real life practice. 
+  You don't necessarily need to follow them, but I found them handy.
+ </para>
+
+ <section id="utf.usage-recommendations.generic">
+  <title>Generic usage recommendations</title>
+  <titleabbrev>Generic</titleabbrev>  
+
+  <qandaset defaultlabel="none">
+   <?dbhtml label-width="0%"?>
+   
+   <qandaentry>
+    <question>
+     <simpara>
+      Prefer offline compiled libraries to the inline included components
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      If you are just want to write quick simple test in environment where you never used Boost.Test before - yes, 
+      use included components. But if you plan to use Boost.Test on permanent basis, small investment of time needed 
+      to build (if not build yet), install and change you makefiles/project settings will soon return to you in a 
+      form of shorter compilation time. Why do you need to make your compiler do the same work over and over again?
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry>
+    <question>
+     <simpara>
+      If you use only free function based test cases advance to the automatic registration facility
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      It's really easy to switch to automatic registration. And you don't need to worry about forgotten test case 
+      anymore
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry>
+    <question>
+     <simpara>
+      To find location of first error reported by test tool within reused template function, use special hook within 
+      framework headers
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      In some cases you are reusing the same template based code from within one test case (actually I recommend 
+      better solution in such case- see below). Now if an error gets reported by the test tool within that reused 
+      code you may have difficulty locating were exactly error occurred. To address this issue you could either a add 
+      <link linkend="utf.user-guide.test-output.log.BOOST_TEST_MESSAGE">BOOST_TEST_MESSAGE</link> statements in 
+      templated code that log current type id of template parameters or you can use special hook located in 
+      unit_test_result.hpp called first_failed_assertion(). If you set a breakpoint right on the line where this 
+      function is defined you will be able to unroll the stack and see where error actually occurred.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry>
+    <question>
+     <simpara>
+      To test reusable template base component with different template parameter use test case template facility
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      If you writing unit test for generic reusable component you may have a need to test it against set of different 
+      template parameter types . Most probably you will end up with a code like this:
+     </para>
+     
+     <btl-snippet name="snippet6"/>
+     
+     <para role="first-line-indented">
+      This is namely the situation where you would use test case template facility. It not only simplifies this kind 
+      of unit testing by automating some of the work, in addition every argument type gets tested separately under 
+      unit test monitor. As a result if one of types produce exception or non-fatal error you may still continue and 
+      get results from testing with other types.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry>
+    <question>
+     <simpara>
+      Prefer BOOST_CHECK_EQUAL to BOOST_CHECK
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      Even though BOOSK_CHECK tool is most generic and allows validating any bool convertible expression, I would 
+      recommend using, if possible, more specific tools dedicated to the task. For example if you need you validate 
+      some variable vs. some expected value use BOOST_CHECK_EQUAL instead. The main advantage is that in case of 
+      failure you will see the mismatched value - the information most useful for error identification. The same 
+      applies to other tools supplied by the framework.
+     </para>
+    </answer>
+   </qandaentry>
+  </qandaset>
+ </section>
+ 
+ <section id="utf.usage-recommendations.dot-net-specific">
+  <title>Microsoft Visual Studio .NET usage recommendations</title>
+  <titleabbrev>Microsoft Visual Studio .NET users specific</titleabbrev>  
+
+  <qandaset defaultlabel="none">
+   <?dbhtml label-width="0%"?>
+   
+   <qandaentry>
+    <question>
+     <simpara>
+      Use custom build step to automatically start test program after compilation
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      I found it most convenient to put test program execution as a post-build step in compilation. To do so use 
+      project property page:
+     </para>
+
+     <mediaobject>
+      <imageobject>
+       <imagedata format="jpg" fileref="../img/post_build_event.jpg"/>
+      </imageobject>
+     </mediaobject>
+     
+     <para role="first-line-indented">
+      Full command you need in "Command Line" field is:
+     </para>
+     
+     <cmdsynopsis>
+      <command>&quot;$(TargetDir)\$(TargetName).exe&quot;</command>
+      <arg choice="plain">--result_code=no</arg>
+      <arg choice="plain">--report_level=no</arg>
+     </cmdsynopsis>
+     
+     <para role="first-line-indented">
+      Note that both report level and result code are suppressed. This way the only output you may see from this 
+      command are possible runtime errors. But the best part is that you could jump through these errors using usual 
+      keyboard shortcuts/mouse clicks you use for compilation error analysis:
+     </para>
+     
+     <mediaobject>
+      <imageobject>
+       <imagedata format="jpg" fileref="../img/post_build_out.jpg"/>
+      </imageobject>
+     </mediaobject>
+
+    </answer>
+   </qandaentry>
+
+   <qandaentry>
+    <question>
+     <simpara>
+      If you got fatal exception somewhere within test case, make debugger break at the point the failure by adding 
+      extra command line argument
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      If you got "memory access violation" message (or any other message indication fatal or system error) when you 
+      run you test, to get more information of error location add --catch_system_errors=no to the test run command 
+      line:
+     </para>
+     
+     <mediaobject>
+      <imageobject>
+       <imagedata format="jpg" fileref="../img/run_args.jpg"/>
+      </imageobject>
+     </mediaobject>
+    
+     <para role="first-line-indented">
+      Now run the test again under debugger and it will break at the point of failure.
+     </para>
+    </answer>
+   </qandaentry>
+  </qandaset>
+ </section>  
+ 
+ <section id="utf.usage-recommendations.command-line-specific">
+  <title>Command line usage recommendations</title>
+  <titleabbrev>Command-line (non-GUI) users specific</titleabbrev>  
+
+  <qandaset defaultlabel="none">
+   <?dbhtml label-width="0%"?>
+   
+   <qandaentry>
+    <question>
+     <simpara>
+      If you got fatal exception somewhere within test case, make program generate coredump by adding extra command 
+      line argument
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      If you got "memory access violation" message (or any other message indication fatal or system error) when you 
+      run you test, to get more information about the error location add --catch_system_errors=no to the test run 
+      command line. Now run the test again and it will create a coredump you could analyze using you preferable 
+      debugger. Or run it under debugger in a first place and it will break at the point of failure.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry>
+    <question>
+     <simpara>
+      How to use test module build with Boost.Test framework under management of automated regression test facilities?
+     </simpara>
+    </question>
+    <answer>
+     <para role="first-line-indented">
+      My first recommendation is to make sure that the test framework catches all fatal errors by adding argument
+      --catch_system_error=yes to all test modules invocations. Otherwise test program may produce unwanted 
+      dialogs (depends on compiler and OS) that will halt you regression tests run. The second recommendation is to 
+      suppress result report output by adding --report_level=no argument and test log output by adding 
+      --log_level=nothing argument, so that test module won't produce undesirable output no one is going to look at 
+      anyway. I recommend relying only on result code that will be consistent for all test programs. An 
+      alternative to my second recommendation is direct both log and report to separate file you could analyze 
+      later on. Moreover you can  make Boost.Test to produce them in XML format using output_format=XML and use some 
+      automated tool that will format this information as you like.
+     </para>
+    </answer>
+   </qandaentry>
+  </qandaset>
+ </section>  
+</section>

@@ -1,0 +1,8 @@
+#~ Copyright Rene Rivera 2008, Daryle Walker 2011
+#~ Distributed under the Boost Software License, Version 1.0.
+#~ (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+import testing ;
+
+run crc_test.cpp : : : <library>/boost/test//boost_test_exec_monitor/<link>static ;
+run crc_test2.cpp : : : <library>/boost/test//boost_unit_test_framework/<link>static ;

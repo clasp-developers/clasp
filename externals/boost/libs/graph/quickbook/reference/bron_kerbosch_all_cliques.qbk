@@ -1,0 +1,191 @@
+[/
+ / Copyright (c) 2007 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Bron Kerbosch All Cliques]
+[template ex_bron_kerbosch_printing_cliques[] [link
+    boost_graph.reference.algorithms.subgraph.bron_kerbosch_all_cliques.examples.printing_cliques
+    Printing Cliques Example]]
+[template ex_bron_kerbosch_clique_number[] [link
+    boost_graph.reference.algorithms.subgraph.bron_kerbosch_all_cliques.examples.clique_number
+    Clique Number Example]]
+
+[heading Overview]
+This algorithm finds all /cliques/ of the given graph, invoking a visitor when
+each clique is found. A clique is formally defined as a maxiamally connected
+subgraph of a graph. This means that there are no more (and no fewer) vertices
+in the graph that are connected to all other vertices in the graph. A vertex can
+participate in many cliques. Note that the smallest clique contains two vertices
+since each vertex is connected to the other.
+
+Consider the social network (represented by an undirected graph) in Figure 1.
+
+[figure
+    images/reference/social_network.png
+    *Figure 1.* A network of friends.
+]
+
+There are a number of cliques in the graph. We can easily identify the two largest:
+
+* Scott, Jill, and Mary
+* Frank, Howard, and Anne
+
+There are six other cliques represented by pairs of actors. Note that the Scott,
+Mary, Frank, and Laurie do not form a clique because Mary and Frank are not directly
+connected. See the [ex_bron_kerbosch_printing_cliques] for more details.
+
+The /clique number/ of a graph is defined as the size (the number of vertices) of
+the largest clique in the graph. The social network in Figure 1 has a clique number
+of 3. The [bron_kerbosch_clique_number] implements this measure. See the
+[ex_bron_kerbosch_clique_number] for an example of its use.
+
+The Bron-Kerbosch algorithm was originally developed to operate over adjacency
+matrices representing /undirected graphs/. The algorithm can also be applied to
+/directed graphs/ using a more restrictive definition of a connected subgraph.
+A /directed clique/ is a maximally connected subgraph in which each pair of vertices
+/u/ and /v/ are connected by the edges /(u, v)/ and /(v, u)/.
+
+Although the algorithm can be used with adjacency list-based graph classes, it
+will perform less efficiently than an adjacency matrix. Also, running this algorithm
+on a directed graph will double the performance penalty (which is generally negligible).
+
+[section [^bron_kerbosch_all_cliques()]]
+    #include <boost/graph/bron_kerbosch_all_cliques.hpp>
+
+    template <typename Graph, typename Visitor>
+    void bron_kerbosch_all_cliques(const Graph& g, Visitor vis)
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& g`]
+        [
+            The graph for which cliques are being visited.
+
+            *Preconditions:* The indices of vertices in the graph must be
+            in the range \[0, `num_vertices(g)`).
+
+            *Requirements:* The `Graph` type must be a model of the [AdjacencyMatrix],
+            [IncidenceGraph] concept and the [VertexIndexGraph]
+            concepts[footnote Any `Graph` type that implements the `edge()`
+            function will satisfy the expression requirements for the
+            [AdjacencyMatrix], but may incur additional overhead due non-constant
+            time complexity.].
+        ]
+    ]
+    [
+        [required, in] [`Visitor vis`]
+        [
+            The visitor object to the algorithm.
+
+            *Requirements:* This `Visitor` class must model the
+            [CliqueVisitor] class.
+        ]
+    ]
+    [
+        [optional, in] [`std::size_t min`]
+        [
+            The minimum size of a clique to visit.
+
+            *Default:* 2 - the size of the smallest possible clique.
+        ]
+    ]
+]
+
+[heading Complexity]
+This problem has a loose upper bound of ['O(2[sup n])] if one considers all possible
+combinations of subsets of vertices as cliques (i.e., the powerset of vertices).
+The original publication, however, approximates the runtime of the algorithm as
+being proportional to ['O(3.14[sup n])].
+
+Graphs that do not meet the constant-time requirements of the [AdjacencyMatrix]
+concept will incur additional runtime costs during execution (usually by a linear
+factor). Examples of such graphs include the [undirected_graph], [directed_graph],
+and the [adjacency_list] classes.
+
+Note that using the Bron-Kerbosch algorithm on directed graphs will doubles the
+amount of time it takes to determine edge connection.
+[endsect]
+
+[section [^bron_kerbosch_clique_number()]]
+    #include <boost/graph/bron_kerbosch_all_cliques.hpp>
+
+    template <typename Graph, typename Visitor>
+    std::size_t bron_kerbosch_clique_number(const Graph& g)
+
+The `bron_kerbosch_clique_number()` function returns the size of the largest
+clique in a graph - its clique number.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& g`]
+        [
+            The graph for which cliques are being visited.
+
+            *Preconditions:* The indices of vertices in the graph must be
+            in the range \[0, `num_vertices(g)`).
+
+            *Requirements:* The `Graph` type must be a model of the [AdjacencyMatrix],
+            [IncidenceGraph] concept and the [VertexIndexGraph]
+            concepts[footnote Any `Graph` typen that implements the `edge()`
+            function will satisfy the expression requirements for the
+            [AdjacencyMatrix], but may incur additional overhead due non-constant
+            time complexity.].
+        ]
+    ]
+]
+
+[heading Return]
+The `bron_kerbosch_clique_number()` function returns the size of the largest
+clique in the the graph `g`.
+
+[heading Complexity]
+The `bron_kerbosch_clique_number()` function has the same complexity as the
+[bron_kerbosch_all_cliques] function.
+[endsect]
+
+[section Examples]
+[heading Printing Cliques]
+This example demonstrates how to find and print all the cliques in a graph.
+
+[code_bron_kerbosch_print_cliques]
+
+If given the input file `social_network.graph`, which represents the social network
+pictured in Figure 1 of the
+[link boost_graph.reference.algorithms.subgraph.bron_kerbosch_all_cliques.overview Overview],
+the program will produce the following output:
+
+[pre
+Scott Jill Mary
+Scott Bill
+Scott Frank
+Mary Laurie
+Bill Josh
+Josh Frank
+Frank Laurie
+Frank Anne Howard
+]
+
+[heading Clique Number]
+This example demonstrates the use of the [bron_kerbosch_clique_number] example.
+
+[code_bron_kerbosch_clique_number]
+
+If given the input file `social_network.graph`, which represents the social network
+pictured in Figure 1 of the
+[link boost_graph.reference.algorithms.subgraph.bron_kerbosch_all_cliques.overview Overview],
+the program will produce the following output:
+
+[pre
+clique number: 3
+]
+
+[endsect]
+
+[endsect]

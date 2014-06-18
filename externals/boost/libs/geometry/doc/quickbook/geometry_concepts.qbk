@@ -1,0 +1,232 @@
+[/==============================================================================
+    Copyright (c) 2007-2012 Barend Gehrels, Amsterdam, the Netherlands.
+    Copyright (c) 2008-2012 Bruno Lalande, Paris, France.
+    Copyright (c) 2009-2012 Mateusz Loskot, London, UK., London, UK
+
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[section:Geometry Geometry Concepts]
+
+[:['["A concept is a set of requirements consisting of valid expressions,
+associated types, invariants, and complexity guarantees]]
+
+-- David Abrahams, __boost_gtp__
+]
+
+Boost Geometry is a generic library. Instead of providing a collection of concrete and
+final definitions of types and algorithms, the library rather lets users to generate
+them based on parameters specified during templates specialization.
+
+Boost Geometry uses concepts as a technique for describing requirements on types and
+combinations of types. This mechanism allows precise specification of requirements on
+template parameters which can be used to instantiate concrete types. It means that
+a geometry type, in order to be usable with Boost Geometr algorithms, has to model
+specific concepts which corresponds to a role that particular type is dedicated to play.
+
+Boost Geometry uses __boost_concept__ to define checking classes, specify and verify
+concept requirements. The mechanism of concepts uses standard C++ and introduce no
+run-time overhead as it is compile-time technique. 
+
+Boost Geometry algorithms necessarily impose restrictions on the types that they take,
+so they heavily rely on concepts. It means that all algorithms can work with the provided
+geometries as well as user-defined and custom geometries as long as all geometry types
+model required concepts.
+
+[/ TODO: declaring? shouldn't be using?]
+By declaring registration macros or by specializating type traits it is possible to adapt
+user-defined or even legacy geometry types to fulfil requirements of Boost Geometry as
+defined by concepts.
+
+In practice, it means that Boost Geometry potentially can handle geometry types in 
+variety of forms and definitions, like:
+
+* predefined geometry types provided by the library
+* user-defined type for point geometry
+* tuples as point geometry types
+* sequences of elments of fundamental types as coordinates
+* sequences of elments of user-defined point types
+* various legacy geometries
+
+For definition of point geometry, number of choices are possible:
+
+* user-defined class
+* C array of coordiantes
+* __boost_tuple__ or `std::pair` [/ TODO: confirm if std::pair is usable]
+
+Boost Geometry uses __boost_range__ library to access various sequences in unified manner
+and thus it is capable to iterate over elements of:
+
+* C array
+* C++ standard sequences: `std::vector`, `std::deque`, `std::array`
+* a range specified by a pair of iterators
+* __boost_array__
+
+Boost Geometry specifies concepts for the following single geometries:
+
+* point
+* line segment
+* linestring (line, polyline)
+* ring (linearring)
+* box
+* polygon
+
+Concepts are also provided for homogeneous aggregate geometries:
+
+* multipoint
+* multilinestring
+* multipolygon
+
+The aggregate geometry types are considered as ranges of points, linestrings and polygons,
+respectively.
+
+[/Explanation of the terms included only next to the Point concept below to
+  help to diest concepts presentation full definitions at
+  http://www.sgi.com/tech/stl/doc_introduction.html]
+[section:Point Point]
+
+[/Description - A summary of the concept's purpose.]
+[heading Description]
+
+A Point is a 0-dimensional entity that has a location on a plane or in space.
+
+[/Notation - defines meaning of variables and identifiers used in definitions,
+  valid expressions and expression semantics.]
+[variablelist Notation
+    [[`G`] [A type that is a model of `Point`]]
+    [[`D`] [An integral constant specifying number of dimensions of coordinate space]]
+    [[`K`] [An integral constant specifying nth-dimension of `D`-dimensional coordinate space]]
+    [[`p`] [Object of type `G`]]
+    [[`v`] [An arbitrary (?) numeric value  ['TODO: arbitrary value? --mloskot] ]]
+]
+
+[/Refinement - A list of other concepts that this concept refines.]
+[heading Refinement of]
+
+none
+
+[/Associated Types - named types related to the modeling type, participate valid
+  expressions, value of constraint variable, parameter.]
+[/heading Associated Types]
+[heading Associated types]
+
+[table
+    [[Type] [Expression] [Description]]
+    [[Geometry tag]
+        [`boost::geometry::traits::tag<G>::type`]
+        [Identifier of a point geometry type]]
+    [[Coordinate type]
+        [`boost::geometry::traits::coordinate_type<G>::type`]
+        [Type of values of coordinates]]
+    [[Dimmension value]
+        [`boost::geometry::traits::dimension<G>::value`]
+        [Value indicating number of coordinate dimensions (2, 3, ...)]]
+    [[Coordinate access type]
+        [`boost::geometry::traits::access<G, D>`]
+        [Type implementing read and write access to point coordinates]]
+    [[Coordinate system type]
+        [`boost::geometry::traits::coordinate_system<G>::type`]
+        [Definition of coordinate system, for instance cartesian or spherical, etc.]]
+]
+
+[heading Valid Expressions]
+
+[table
+    [[Expression] [Return Type] [Type Requirements]]
+    [[`p.get<K>()`] [`boost::geometry::traits::coordinate_type<G>::type`][]]
+    [[`p.set<K>(v)`] [][`p` is mutable, `v` is convertible to `boost::geometry::traits::coordinate_type<G>::type`]]
+]
+
+[heading Expression Semantics]
+
+The semantics of an expression are defined only where they differ from, or are not defined in 
+DefaultConstructible, CopyConstructible, Assignable.
+
+[table
+    [[Expression] [Semantics]]
+    [[`p.get<K>()`] []]
+    [[`p.set<K>(v)`] []]
+]
+
+[/Model - A list of examples of types that are models of this concept.]
+[heading Models]
+
+* __model_point__
+* __model_point_xy__
+
+[/Header - A definition, link to the source code where concept is defined.]
+[heading Header]
+    #include <boost/geometry/geometries/concepts/point_concept.hpp>
+
+[endsect] [/ end of section Concept Point]
+
+[section:ConstPoint ConstPoint]
+
+[heading Description]
+
+A Point is a 0-dimensional entity that has a location on a plane or in space,
+but does not apply write access to its coordinates.
+
+[variablelist Notation
+    [[`G`] [A type that is a model of `Point`]]
+    [[`D`] [An integral constant]]
+    [[`K`] [An integral constant specifying nth-dimension of `D`-dimensional coordinate space]]
+    [[`p`] [Object of type `G`]]
+    [[`v`] [An arbitrary (?) numeric value  ['TODO: arbitrary value? --mloskot] ]]
+]
+
+[heading Refinement of]
+
+__concept_point__
+
+[heading Associated types]
+
+[table
+    [[Type] [Expression] [Description]]
+    [[Geometry tag]
+        [`boost::geometry::traits::tag<G>::type`]
+        [Identifier of a point geometry type]]
+    [[Coordinate type]
+        [`boost::geometry::traits::coordinate_type<G>::type`]
+        [Type of values of coordinates]]
+    [[Dimmension value]
+        [`boost::geometry::traits::dimension<G>::value`]
+        [Value indicating number of coordinate dimensions (2, 3, ...)]]
+    [[Coordinate access type]
+        [`boost::geometry::traits::access<G, D>`]
+        [Type implementing read-only access to point coordinates]]
+    [[Coordinate system type]
+        [`boost::geometry::traits::coordinate_system<G>::type`]
+        [Definition of coordinate system, for instance cartesian or spherical, etc.]]
+]
+
+[heading Valid Expressions]
+
+[table
+    [[Expression] [Return Type] [Type Requirements]]
+    [[`p.get<K>()`] [`boost::geometry::traits::coordinate_type<G>::type`][`p` is immutable]]
+]
+
+[heading Expression Semantics]
+
+The semantics of an expression are defined only where they differ from, or are not defined
+in Point.
+
+[table
+    [[Expression] [Semantics]]
+    [[`p.get<K>()`] []]
+]
+
+[heading Models]
+
+['TODO]
+
+[heading Header]
+
+    #include <boost/geometry/geometries/concepts/point_concept.hpp>
+
+[endsect] [/ end of section Concept ConstPoint]
+
+[endsect] [/ end of section Concepts]

@@ -1,0 +1,2 @@
+success: (123.45 true false 255 63 "this is a € string" "Τη γλώσσα μου έδωσαν ελληνική" #0123456789abcdef123456789abcdef# (92 ("another string" apple Sîne)))
+

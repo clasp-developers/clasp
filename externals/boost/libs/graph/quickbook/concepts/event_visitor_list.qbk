@@ -1,0 +1,70 @@
+[/
+ / Copyright (C) 2007-2009 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Event Visitor List]
+An EventVisitorList is either an [EventVisitor], or a list of [EventVisitor]
+combined using `std::pair`. Each graph algorithm defines visitor adaptors that convert an
+EventVisitorList into the particular kind of visitor needed by the algorithm. In the
+following example we will show how to combine event visitors into a list using `std::pair`
+and how to use an algorithm's visitor adaptor class.
+
+Suppose we would like to print out the parenthesis structure of the discover/finish times
+of vertices in a depth-first search. We can use the Boost.Graph algorithm [depth_first_search]
+and two event visitors to accomplish this. The complete source code for the following example
+is in `examples/dfs_parenthesis.cpp`. First we define the two event visitors. We use
+`on_discover_vertex` and `on_finish_vertex` as the event points, selected from the list of
+event points specified in [DFSVisitor].
+
+    struct open_paren : public base_visitor<open_paren>
+    {
+        typedef on_discover_vertex event_filter;
+
+        template <class Vertex, class Graph>
+        void operator ()(Vertex v, Graph& G)
+        {
+            cout << "(" << v;
+        }
+    };
+
+
+    struct close_paren : public base_visitor<clsoe_paren>
+    {
+        typedef on_discover_vertex event_filter;
+
+        template <class Vertex, class Graph>
+        void operator ()(Vertex v, Graph& G)
+        {
+            cout << v << ")";
+        }
+    };
+
+Next, we create two event visitor objects and combine them so the resultant type models
+the EventVisitorList concept.
+
+    make_pair(open_paren(), close_paren());
+
+Next we want to pass this list into [depth_first_search], but it is
+expecting a [DFSVisitor], not a [EventVisitorList]. We therefore use the [[dfs_visitor]
+adaptor which turns an [EventVisitor] list into a [DFSVisitor]. Like all of the visitor
+adaptors, [dfs_visitor] has a creation function called [make_dfs_visitor].
+
+    make_dfs_visitor((open_paren(), close_paren()));
+
+Now we can pass the resulting visitor object into [depth_first_search] as follows.
+
+    depth_first_search(
+        G,
+        make_dfs_visitor(make_pair(open_paren(), close_paren())));
+
+For creating a list of more than two event visitors, nest calls to `make_pair` in the following way
+to recursively produce an EventVisitorList.
+
+    make_pair(visitor1,
+        make_pair(visitor2, ...
+            make_pair(visitorN - 1, visitorN)...))
+
+[endsect]

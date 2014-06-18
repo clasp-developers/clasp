@@ -1,0 +1,244 @@
+[/
+ / Copyright (C) 2007-2009 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Graph Concepts]
+The heart of the Boost Graph Library (BGL) is the interface, or concepts (in the
+parlance of generic programming), that define how a graph can be examined and
+manipulated in a data-structure neutral fashion. In fact, the BGL interface need
+not even be implemented using a data-structure, as for some problems it is easier
+or more efficient to define a graph implicitly based on some functions.
+
+The Boost.Graph interface does not appear as a single graph concept. Instead it is
+factored into much smaller pieces. The reason for this is that the purpose of a
+concept is to summarize the requirements for particular algorithms. Any one algorithm
+does not need every kind of graph operation, typically only a small subset. Furthermore,
+there are many graph data-structures that can not provide efficient implementations of
+all the operations, but provide highly efficient implementations of the operations
+necessary for a particular algorithm . By factoring the graph interface into many smaller
+concepts we provide the graph algorithm writer with a good selection from which to choose
+the concept that is the closest match for their algorithm.
+
+Figure 1 shows the refinements relations between the graph concepts. The reason for
+factoring the graph interface into so many concepts is to encourage algorithm interfaces
+to require and use only the minimum interface of a graph, thereby increasing the
+usability of the algorithm.
+
+[$images/concepts/graph_concepts.png]
+
+Table 1 gives a summary of the valid expressions and associated types for the graph
+concepts and provides links to the detailed descriptions of each of the concepts.
+The notation used in the table is as follows.
+
+[table
+    [[Expression] [Return Type or Description]]
+    [[[*[Graph]]]]
+    [[`graph_traits<G>::vertex_descriptor`] [The type for vertex representative objects.]]
+    [[`graph_traits<G>::edge_descriptor`] [The type for edge representative objects.]]
+    [[`graph_traits<G>::directed_category`] [Graph is directed or undirected?]]
+    [[`graph_traits<G>::edge_parallel_category`] [Graph allows parallel edges?]]
+    [[`graph_traits<G>::traversal_category`] [The ways in which the vertices and edges can be traversed.]]
+    [[[*[IncidenceGraph]]]]
+    [[`graph_traits<G>::degree_size_type`] [The integer type for vertex degree.]]
+    [[`graph_traits<G>::out_edge_iterator`] [Type for iterating over out edges.]]
+    [[`out_edges(v,g)`] [`std::pair<out_edge_iterator, out_edge_iterator>`]]
+    [[`out_degree(v,g)`] [`degree_size_type`]]
+    [[`source(e,g)`] [`vertex_descriptor`]]
+    [[`target(e,g)`] [`vertex_descriptor`]]
+    [[[*[BidirectionalGraph]]]]
+    [[`graph_traits<G>::in_edge_iterator`] [Type for iterating over in edges.]]
+    [[`in_edges(v,g)`] [`std::pair<in_edge_iterator,in_edge_iterator>`]]
+    [[`in_degree(v,g)`] [`degree_size_type`]]
+    [[`degree(v,g)`] [`degree_size_type`]]
+    [[[*[AdjacencyGraph]]]]
+    [[`graph_traits<G>::adjacency_iterator`] [Type for iterating over adjacent vertices.]]
+    [[`adjacent_vertices(v,g)`] [`std::pair<adjacency_iterator,adjacency_iterator>`]]
+    [[[*[VertexListGraph]]]]
+    [[`graph_traits<G>::vertex_iterator`] [Type for iterating over vertices.]]
+    [[`graph_traits<G>::vertices_size_type`] [Unsigned integer type for the number of vertices.]]
+    [[`vertices(g)`] [`std::pair<vertex_iterator,vertex_iterator>`]]
+    [[`num_vertices(g)`] [`vertices_size_type`]]
+    [[[*[EdgeListGraph]]]]
+    [[`graph_traits<G>::edge_iterator`] [Type for iterating over edges.]]
+    [[`graph_traits<G>::edges_size_type`] [Unsigned integer type for the number of edges.]]
+    [[`edges(g)`] [`std::pair<edge_iterator, edge_iterator>`]]
+    [[`num_edges(g)`] [`edges_size_type`]]
+    [[`source(e,g)`] [`vertex_descriptor`]]
+    [[`target(e,g)`] [`vertex_descriptor`]]
+    [[[*[AdjacencyMatrix]]]]
+    [[`edge(u,v,g)`] [`std::pair<edge_descriptor,boo>`]]
+    [[[*[MutableGraph]]]]
+    [[`add_vertex(g)`] [`vertex_descriptor`]]
+    [[`clear_vertex(v,g)`] [`void`]]
+    [[`clear_out_edges(v,g)`] [`void`]]
+    [[`clear_in_edges(v,g)`] [`void`]]
+    [[`add_edge(u,v,g)`] [`std::pair<edge_descriptor,bool>`]]
+    [[`remove_edge(u,v,g)`] [`void`]]
+    [[`remove_edge(e,g)`] [`void`]]
+    [[`remove_edge(ei,g)`] [`void`]]
+    [[`remove_edge_if(pred,g)`] [`void`]]
+    [[`remove_out_edge_if(v,pred,g)`] [`void`]]
+    [[`remove_in_edge_if(v,pred,g)`] [`void`]]
+    [[[*[PropertyGraph]]]]
+    [[`property_map<G,Property>::type`] [Type for a mutable property map.]]
+    [[`property_map<G,Property>::const_type`] [Type for a non-mutable property map.]]
+    [[`get(p,g)`] [Function to get a property map.]]
+    [[`get(p,g,x)`] [Get the property value for vertex or edge `x`]]
+    [[`put(p,g,x,v`)] [Set the property value for vertex or edge `x` to value `v`.]]
+    [[[*[MutablePropertyGraph]]]]
+    [[`add_vertex(vp,g)`] [`vertex_descriptor`]]
+    [[`add_edge(u,v,ep,g)`] [`std::pair<edge_descriptor,bool>`]]
+]
+
+[include graph.qbk]
+[include incidence_graph.qbk]
+[include bidirectional_graph.qbk]
+[include adjacency_graph.qbk]
+[include vertex_list_graph.qbk]
+[include edge_list_graph.qbk]
+[include adjacency_matrix.qbk]
+[include mutable_graph.qbk]
+[include property_graph.qbk]
+[include mutable_property_graph.qbk]
+
+[heading Pseudo-Concepts]
+The concepts above describe the syntactic and semantic requirements of graphs
+types. However, these do not directly address common graph notions such as
+"directed" graphs or "multigraphs". As such, there are a number of
+pseudo-concepts with which we can also describe graph objects.
+
+[heading Directed and Undirected Graphs]
+The interface that Boost.Graph provides for accessing and manipulating an
+undirected graph is the same as the interface for directed graphs described in
+the following sections, however there are some differences in the behaviour and
+semantics. For example, in a directed graph we can talk about out-edges and
+in-edges of a vertex. In an undirected graph there is no "in" and "out", there
+are just edges incident to a vertex. Nevertheless, in Boost.Graph we still use
+the `out_edges()` function (or `in_edges()`) to access the incident edges in an
+undirected graph. Similarly, an undirected edge has no "source" and "target" but
+merely an unordered pair of vertices, but we still use `source()` and `target()`
+to access these vertices. The reason Boost.Graph does not provide a separate
+interface for undirected graphs is that many algorithms on directed graphs also
+work on undirected graphs, and it would be inconvenient to have to duplicate the
+algorithms just because of an interface difference. When using undirected graphs
+just mentally disregard the directionality in the function names. The example
+below demonstrates using the `out_edges()`, `source()`, and `target()` with an
+undirected graph. The source code for this example and the following one can be
+found in `examples/undirected.cpp`.
+
+
+    const int V = 2;
+    typedef ... UndirectedGraph;
+    UndirectedGraph graph(V);
+
+    std::cout << "the edges incident to v: ";
+    boost::graph_traits<UndirectedGraph>::out_edge_iterator e, e_end;
+    boost::graph_traits<UndirectedGraph>::vertex_descriptor  s = vertex(0, graph);
+    for(tie(e, e_end) = out_edges(s, graph); e != e_end; ++e) {
+        std::cout << "(" << source(*e, graph)
+                  << "," << target(*e, graph)
+                  << ")" << endl;
+    }
+
+Even though the interface is the same for undirected graphs, there are some
+behavioral differences because edge equality is defined differently. In a
+directed graph, edge /(u,v)/ is never equal to edge /(v,u)/, but in an
+undirected graph they may be equal. If the undirected graph is a multigraph then
+/(u,v)/ and /(v,u)/ might be parallel edges. If the graph is not a multigraph
+then /(u,v)/ and /(v,u)/ must be the same edge.
+
+In the example below the edge equality test will return false for the directed
+graph and true for the undirected graph. The difference also affects the meaning
+of `add_edge()`. In the example below, if we had also written `add_add(v, u,
+graph)`, this would have added a parallel edge between `u` and `v` (provided the
+graph type allows parallel edges - which most do). The difference in edge
+equality also affects the association of edge properties. In the directed graph,
+the edges /(u,v)/ and /(v,u)/ can have distinct weight values, whereas in the
+undirected graph the weight of /(u,v)/ is the same as the weight of /(v,u)/
+since they are the same edge.
+
+    typedef ... DirectedGraph;
+    typedef ... UndirectedGraph;
+
+    DirectedGraph digraph(V);
+    UndirectedGraph graph(V)
+
+    {
+        boost::graph_traits<DirectedGraph>::vertex_descriptor u, v;
+        u = vertex(0, digraph);
+        v = vertex(1, digraph);
+        add_edge(digraph, u, v, Weight(1.2));
+        add_edge(digraph, v, u, Weight(2.4));
+        boost::graph_traits<DirectedGraph>::edge_descriptor e1, e2;
+        bool found;
+        tie(e1, found) = edge(u, v, digraph);
+        tie(e2, found) = edge(v, u, digraph);
+        std::cout << "in a directed graph is ";
+        std::cout << "(u,v) == (v,u) ? " << (e1 == e2) << std::endl;
+
+        property_map<DirectedGraph, edge_weight_t>::type
+        weight = get(edge_weight, digraph);
+        cout << "weight[(u,v)] = " << get(weight, e1) << endl;
+        cout << "weight[(v,u)] = " << get(weight, e2) << endl;
+    }
+
+    {
+        boost::graph_traits<UndirectedGraph>::vertex_descriptor u, v;
+        u = vertex(0, graph);
+        v = vertex(1, graph);
+        add_edge(graph, u, v, Weight(3.1));
+        boost::graph_traits<UndirectedGraph>::edge_descriptor e1, e2;
+        bool found;
+        tie(e1, found) = edge(u, v, graph);
+        tie(e2, found) = edge(v, u, graph);
+        std::cout << "in an undirected graph is ";
+        std::cout << "(u,v) == (v,u) ? " << (e1 == e2) << std::endl;
+
+        property_map<UndirectedGraph, edge_weight_t>::type
+        weight = get(edge_weight, graph);
+        cout << "weight[(u,v)] = " << get(weight, e1) << endl;
+        cout << "weight[(v,u)] = " << get(weight, e2) << endl;
+    }
+
+The output is:
+
+[pre
+in a directed graph is (u,v) == (v,u) ? 0
+weight\[(u,v)\] = 1.2
+weight\[(v,u)\] = 2.4
+in an undirected graph is (u,v) == (v,u) ? 1
+weight\[(u,v)\] = 3.1
+weight\[(v,u)\] = 3.1
+]
+
+[heading Multigraphs]
+A /multigraph/ is a graph (either directed or undirected) that has parallel edges
+between vertices. The Boost.Graph types are mostly unrestrictive about the addition
+of parallel edges, meaning that it is fairly easy to actually create multigraphs
+without any additional work.
+
+There are certain sets of graph types that do not allow the addition of parallel edges.
+Specifically, if the EdgeList and OutEdgeList of an [adjacency_list] models
+[StdUniqueAssociativeContainer], then the graph cannont be a multigraph.
+
+[heading Indexed Graphs]
+Indexed graph provide a specific property, an index, for vertices, edges or both.
+Many algorithms require vertex or edge indices for "fast" property access, often
+declaring exterior properties as `vector`s and using the indices as random access
+iterators to access those properties. These concepts effectively require that
+indices are accessible as interior properties of the graph.
+
+These concepts are provided to help describe interface requirements for algorithms
+that allow indices to be provided as an exterior property map. With these concepts,
+requirements (and interfaces) can be written more distinctly for algorithms that accept
+indexed graphs, and those that require adaptation through exterior properties.
+
+There are two indexed graph concepts: [VertexIndexGraph] and [EdgeIndexGraph].
+
+[include vertex_index_graph.qbk]
+[include edge_index_graph.qbk]
+
+[endsect]

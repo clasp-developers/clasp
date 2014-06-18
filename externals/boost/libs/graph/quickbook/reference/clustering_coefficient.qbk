@@ -1,0 +1,199 @@
+[/
+ / Copyright (c) 2007 Andrew Sutton
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section Clustering Coefficient]
+[template ex_clustering_coefficient[] [link
+    boost_graph.reference.algorithms.measures.closeness_centrality.examples.closeness_centrality
+    Closeness Centrality Example]]
+
+[heading Overview]
+The /clustering coefficient/ is a measure used in network analysis to describe a
+connective property of vertices. The clustering coefficient of a vertex gives the
+probability that two neighbors of that vertex are, themselves, connected. In social
+networks, this is often interpreted as the probability that a persons friends are
+also friends.
+
+This measure is derived from two different properties of a vertex /v/. The first is the
+number of possible paths through that vertex. The number of paths through a vertex
+can be counted as the number of possible ways to connect the neighbors (adjacent
+vertices) of /v/. This number differs for directed and undirected graphs. For directed
+graphs it is given as:
+
+[$images/eq/num_paths_directed.png]
+
+Where /d(v)/ is the out-degree of the vertex /v/. For undirected graphs:
+
+[$images/eq/num_paths_undirected.png]
+
+Note that for undirected graphs the out-degree of /v/ is the same as the degree
+of /v/.
+
+The second property is the number of triangles centered on the vertex /v/. Triangles
+are counted as each pair of neighbors (adjacent vertices) /p/ and /q/ that are
+connected (i.e., and edge exists between /p/ and /q/). Note that if /p/ and /q/
+are connected, they form a distinct triangle /{v, p, q}/. For directed graphs, the
+edges /(p, q)/ and /(q, p)/ can form two distinct triangles. The number of triangles
+centered on a vertex is given as:
+
+[$images/eq/num_triangles.png]
+
+Where ['e[sub pq]] is an edge connecting vertices /p/ and /q/ in the edge set of
+the graph. The clustering coefficient of the vertex is then computed as:
+
+[$images/eq/clustering_coef.png]
+
+Note that the clustering coefficient of a vertex /v/ is 0 if none of its neighbors
+are connected to each other. Its clustering coefficient is 1 if all of its neighbors
+are connected to each other.
+
+The /mean clustering coefficient/ can be computed for the entire graph as quantification
+of the /small-world property/. A graph is a small world property if its clustering
+coefficient is significantly higher than a random graph over the same vertex set.
+
+Consider the following social network represented by an undirected graph in
+Figure 1.
+
+[figure
+    images/reference/social_network.png
+    *Figure 1.* A network of friends.
+]
+
+Computing the clustering coefficient for each person in this network shows that
+Frank has a clustering coefficient of 0.1. This implies that while Frank has many
+friends, his friends are not necessarily friendly with each other. On the other
+hand  Jill, Anne, and Howard each have a value of 1.0, meaning that they enjoy
+participation in a social clique.
+
+The mean clustering coefficient of this graph is 0.4. Unfortunately, since the
+graph is so small, one cannot determine whether or not this network does exhibit
+the small-world property.
+
+[section [^clustering_coefficient()]]
+    #include <boost/graph/clustering_coefficient.hpp>
+
+    template <typename Graph, typename Vertex>
+    float clustering_coefficient(const Graph& g, Vertex v)
+
+    template <typename ResultType, typename Graph, typename Vertex>
+    ResultType clustering_coefficient(const Graph& g, Vertex v)
+
+The `clustering_coefficient()` function returns the clustering coefficient of
+the given vertex. The second variant allows the caller to explicitly specify
+the type of the clustering coefficient.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [template] [`ResultType`]
+        [
+            The `ResultType` template parmeter explitly specifies the the
+            return type of the function. If not given, the return type is `float`.
+
+            *Requirements:* The return type is required to model the [NumericValue]
+            concept.
+        ]
+    ]
+    [
+        [required, in] [`const Graph& g`]
+        [
+            The graph for which vertex measures are being comptued.
+
+            *Requirements:* The `Graph` type must be a model of the  [IncidenceGraph],
+            [AdjacencyGraph] and [AdjacencyMatrix] concepts[footnote Any `Graph` type
+            that implements the `edge()` function will satisfy the expression requirements
+            for the [AdjacencyMatrix], but may incur additional overhead due non-constant
+            time complexity.].
+        ]
+    ]
+]
+
+[heading Return]
+The `clustering_coefficient()` function returns the clustering coefficient of the
+vertex. The return type is either `float` or the type specified by the user.
+
+[heading Complexity]
+The `clustering_coefficient()` function returns in ['O(d(v)[sup 2]] where
+/d(v)/ is the degree of /v/.
+[endsect]
+
+[section [^all_clustering_cofficients()]]
+    #include <boost/graph/clustering_coefficient.hpp>
+
+    template <typename Graph, typename ClusteringMap>
+    typename property_traits<ClusteringMap>::value_type
+    all_clustering_coefficients(const Graph& g, ClusteringMap cm)
+
+Compute the clustering coefficients for each vertex and return the mean clustering
+coefficient to the caller.
+
+[heading Parameters]
+[table
+    [[Type] [Parameter] [Description]]
+    [
+        [required, in] [`const Graph& g`]
+        [
+            The graph for which vertex measures are being comptued.
+
+            *Requirements:* The `Graph` type must be a model of the [VertexListGraph],
+            [IncidenceGraph], [AdjacencyGraph] and [AdjacencyMatrix] concepts[footnote Any
+            `Graph` type that implements the `edge()` function will satisfy the expression
+            requirements for the [AdjacencyMatrix], but may incur additional overhead due
+            non-constant time complexity.].
+        ]
+    ]
+    [
+        [required, in] [`ClusteringMap cm`]
+        [
+            The clustering map `cm` stores the clustering coefficient of each
+            vertex in the graph `g`.
+
+           *Requirements:* The `ClusteringMap` type must modelt the [WritablePropertyMap]
+            concept.
+        ]
+    ]
+]
+
+[heading Complexity]
+The `all_clustering_coefficients()` function returns in ['O(nd[sup 2])] where
+/d/ is the mean (average) degree of vertices in the graph.
+[endsect]
+
+[section [^num_paths_through_vertex()]]
+[endsect]
+
+[section [^num_triangles_on_vertex()]]
+[endsect]
+
+[section Examples]
+[heading Clustering Coefficient]
+This example computes both the clustering coefficient for each vertex in a graph and
+the mean clustering coefficient for the graph, printing them to standard output.
+
+[code_clustering_coefficient]
+
+If this program is given the `social_network.graph` file as input which represents
+the graph shown in the
+[link boost_graph.reference.algorithms.measures.clustering_coefficient.overview Overview],
+the output will be:
+
+[pre
+Scott       0.166667
+Jill        1
+Mary        0.333333
+Bill        0
+Josh        0
+Frank       0.1
+Laurie      0
+Anne        1
+Howard      1
+mean clustering coefficient: 0.4
+]
+
+[endsect]
+
+[endsect]
