@@ -1,0 +1,268 @@
+C		CLASS
+SC		STANDARD-CLASS
+BIC		BUILT-IN-CLASS
+FRC		FORWARD-REFERENCED-CLASS
+FSC		FUNCALLABLE-STANDARD-CLASS
+M		METHOD
+SM		STANDARD-METHOD
+SAM		STANDARD-ACCESSOR-METHOD
+GF		GENERIC-FUNCTION
+SGF		STANDARD-GENERIC-FUNCTION
+SP		SPECIALIZER
+EQSP		EQL-SPECIALIZER
+SD		SLOT-DEFINITION
+SSD		STANDARD-SLOT-DEFINITION
+SDSD		STANDARD-DIRECT-SLOT-DEFINITION
+SESF		STANDARD-EFFECTIVE-SLOT-DEFINITION
+
+;;
+;; MISCELLANEOUS PROTOCOLS
+;; =======================
+;;
+
+(ADD-DEPENDENT (metaobject SC FSC SGF) dependent)
+
+(MAP-DEPENDENT (metaobject SC FSC SGF) function)
+
+(REMOVE-DEPENDENT (metaobject SC FSC SGF) dependent)
+
+(UPDATE-DEPENDENT (metaobject SC FSC SGF)
+
+(ALLOCATE-INSTANCE (class SC FSC BIC) &rest initargs)
+
+;;
+;; CLASSES
+;; =======
+;;
+
+;;
+;; 2.A) GENERAL CLASS ACCESSORS
+;;      -----------------------
+
+(ADD-DIRECT-SUBCLASS (superclass C) (subclass C))
+
+(REMOVE-DIRECT-SUBCLASS (superclass C) (subclass C))
+
+(CLASS-DEFAULT-INITARGS (class C))
+(CLASS-DIRECT-DEFAULT-INITARGS (class C))
+(CLASS-DIRECT-SLOTS (class C))
+(CLASS-DIRECT-SUBCLASSES (class C))
+(CLASS-DIRECT-SUPERCLASSES (class C))
+(CLASS-FINALIZED-P (class C))
+(CLASS-NAME (class C))
+(CLASS-PRECEDENCE-LIST (class C))
+(CLASS-PROTOTYPE (class C))
+(CLASS-SLOTS (class C))
+
+[F] ((SETF CLASS-NAME) new-name class)
+
+[F] (STANDARD-INSTANCE-ACCESS instance location)
+
+[F] (FUNCALLABLE-STANDARD-INSTANCE-ACCESS instance location)
+
+;;
+;; 2.B) CLASS-DEFINITION
+;;      ----------------
+
+[F] (ENSURE-CLASS name &key &allow-other-keys)
+
+(ENSURE-CLASS-USING-CLASS (class (C FRC NULL)) name
+	&key :direct-default-initargs :direct-slots :direct-superclasses
+	     :name (:metaclass 'STANDARD-CLASS)
+	&rest initargs
+	&allow-other-keys)
+"
+  < CLASS is a class metaobject or NIL
+  < METACLASS is a class metaobject or a valid name of one (or error).
+  < :DIRECT-SUPERCLASSES is a proper list of class metaobjects or names (or error).
+  - This function may be called directly, and it is used to define or modify
+    the definition of a function.
+  - INITARGS is processed:
+	- The :METACLASS option is removed.
+	- The :DIRECT-SUPERCLASSES is processed, so that each element is
+	  a valid class metaobject or a forward referenced class metaobject.
+  - The METACLASS argument is processed as follows
+	+ if CLASS is NIL, an instance of METACLASS is created with the
+	  computed INITARGS.
+	+ if CLASS is a forward referenced class, CHANGE-CLASS is applied on
+	  it with the value of METACLASS, and it is REINITIALIZE-CLASS with
+	  the computed INITARGS.
+	+ if CLASS <> METACLASS, an error is signaled.
+	+ otherwise, CLASS is REINITIALIZE-CLASS with the computed INITARGS.
+"
+
+(MAKE-INSTANCE (class (SYMBOL SC FSC)) &rest initargs)
+
+[M] (INITIALIZE-INSTANCE class &rest initargs)
+[M] (REINITIALIZE-INSTANCE class &rest initargs)
+[M] (SHARED-INITIALIZE class &rest initargs)
+
+"
+  - Initialization is made by MAKE-INSTANCE and letting it call
+    INITIALIZE-INSTANCE.
+  - Reinitialization is made by REINITIALIZE-INSTANCE on an existing class.
+  - INITIALZE-INSTANCE, CHANGE-CLASS AND SHARED-INITIALIZE cannot be called
+    directly on a class metaobject.
+  - SHARED-INITIALIZE cannot be redefined by any user methods.
+  - [RE]INITIALIZE-INSTANCE may have extending around methods (i.e. they
+    must not override the existing specified methods.
+  < :DIRECT-DEFAULT-INITARGS is a proper list of canonicalized default initargs
+    (or error).
+  < :DIRECT-SLOTS is a proper list of canonicalized slotd definitions (or
+    error).
+  < :DIRECT-SUPERCLASSES is a proper list of valid class metaobjects (or error)
+    Validation is made using VALIDATE-SUPERCLASS.
+  < :DOCUMENTATION is either a string or NIL (or error)
+  < :NAME is any object
+  - Default values during initialization
+	DIRECT-DEFAULT-INITARGS	=> NIL
+	DIRECT-SLOTS		=> NIL
+	DIRECT-SUPERCLASSES	=> (LIST (FIND-CLASS 'STANDARD-OBJECT))
+				or (LIST (FIND-CLASS 'FUNCALLABLE-STANDARD-OBJECT))
+	DOCUMENTATION		=> NIL
+	NAME			=> NIL
+  - DIRECT-SLOTS is converted to a list of slot definition objects
+	+ DIRECT-SLOT-DEFINITION-CLASS provides the class
+	+ MAKE-INSTANCE is used to create the slot definition
+	+ After slots are created, reader and writer methods are created
+	  using READER-METHOD-CLASS and WRITER-METHOD-CLASS.
+"
+
+(COMPUTE-CLASS-PRECEDENCE-LIST (class C))
+
+(COMPUTE-DEFAULT-INITARGS (class (SC FSC))
+
+(VALIDATE-SUPERCLASS (class C) (superclass C))
+
+(FINALIZE-INHERITANCE (class (SC FSC FRC)))
+
+"
+  - This function is called with a class, at least before the first
+    invocation of ALLOCATE-INSTANCE.
+  - COMPUTE-CLASS-PRECEDENCE-LIST is done, and the value stored.
+  - COMPUTE-SLOTS is done and the value stored. It involves calling
+	- EFFECTIVE-SLOT-DEFINITION-CLASS
+	- COMPUTE-EFFECTIVE-SLOT-DEFINITION
+  - COMPUTE-DEFAULT-INITARGS is done and the value stored.
+  - If the class was previously finalized, and the local slots have
+    changed MAKE-INSTANCES-OBSOLETE is invoked.
+  - FINALIZE-INHERITANCE signals an error with forward referenced classes.
+"
+
+;;
+;; 2.C) SLOT ALLOCATION AND DEFINITION
+;;      ------------------------------
+
+(COMPUTE-EFFECTIVE-SLOT-DEFINITION (class (SC FSC)) name direct-slot-definitions)
+
+(COMPUTE-SLOTS (class (SC FSC)))
+(COMPUTE-SLOTS :AROUND (class (SC FSC)))
+
+(DIRECT-SLOT-DEFINITION-CLASS (class (SC FSC)) &rest initargs)
+
+(EFFECTIVE-SLOT-DEFINITION-CLASS (class (SC FSC)) &rest initargs)
+
+;;
+;; 2.D) SLOT ACCESSING
+;;      --------------
+;;
+
+((SETF SLOT-VALUE-USING-CLASS) new-value (class (SC FSC BIC)) object (slot SESD))
+
+(SLOT-BOUNDP-USING-CLASS) (class SC FSC BIC) object (slot SESD))
+
+(SLOT-MAKUNBOUND-USING-CLASS) (class SC FSC BIC) object (slot SESD))
+
+(SLOT-VALUE-USING-CLASS (class SC FSC BIC) object (slot SESD))
+
+;;
+;; SLOTS
+;; =====
+;;
+
+(SLOT-DEFINITION-ALLOCATION (slotd SSD))
+(SLOT-DEFINITION-INITARGS (slotd SSD))
+(SLOT-DEFINITION-INITFORM (slotd SSD))
+(SLOT-DEFINITION-INITFUNCTION (slotd SSD))
+(SLOT-DEFINITION-NAME (slotd SSD))
+(SLOT-DEFINITION-TYPE (slotd SSD))
+(SLOT-DEFINITION-READERS (direct-slot SDSD))
+(SLOT-DEFINITION-WRITERS (direct-slot SDSD))
+(SLOT-DEFINITION-LOCATION (effective-slot SESD))
+
+;;
+;; SPECIALIZERS
+;; ============
+;;
+
+(ADD-DIRECT-METHOD (specializer C EQSP) (method M))
+
+(REMOVE-DIRECT-METHOD (specializer C EQSP) (method M))
+
+[F] (EQL-SPECIALIZER-OBJECT eql-specializer)
+
+(SPECIALIZER-DIRECT-GENERIC-FUNCTIONS (specializer C EQSP))
+
+(SPECIALIZER-DIRECT-METHODS (specializer C EQSP))
+
+;;
+;; GENERIC FUNCTIONS
+;; =================
+;;
+
+(ADD-METHOD (gf SGF) (method SM))
+
+(COMPUTE-APPLICABLE-METHODS (gf SGF) arguments)
+
+(COMPUTE-APPLICABLE-METHODS-USING-CLASSES (gf SGF) classes)
+
+(COMPUTE-DISCRIMINATING-FUNCTION (gf SGF))
+
+(COMPUTE-EFFECTIVE-METHOD (gf SGF) method-combination methods)
+
+[F] (ENSURE-GENERIC-FUNCTION function-name &key &alow-other-keys)
+
+(ENSURE-GENERIC-FUNCTION-USING-CLASS (gf (GF NULL)) function-name
+	&key :argument-precedence-order :declarations :documentation
+	     :generic-function-class :lambda-list :method-class
+	     :method-combination :name
+	&alow-other-keys)
+
+[F] (EXTRACT-LAMBDA-LIST specialized-lambda-list)
+
+[F] (EXTRACT-SPECIALIZER-NAMES specialized-lambda-list)
+
+(FIND-METHOD-COMBINATION gf method-combination-type-name method-combination-options)
+
+[F] (FUNCALLABLE-STANDARD-INSTANCE-ACCESS instance location)
+
+(GENERIC-FUNCTION-ARGUMENT-PRECEDENCE-ORDER (gf SGF))
+(GENERIC-FUNCTION-DECLARATIONS (gf SGF))
+(GENERIC-FUNCTION-LAMBDA-LIST (gf SGF))
+(GENERIC-FUNCTION-METHOD-CLASS (gf SGF))
+(GENERIC-FUNCTION-METHOD-COMBINATION (gf SGF))
+(GENERIC-FUNCTION-METHODS (gf SGF))
+(GENERIC-FUNCTION-NAME (gf SGF))
+
+[F] (INTERN-EQL-SPECIALIZER object)
+
+(MAKE-METHOD-LAMBDA (gf SGF) (method SM) lambda-expression environment)
+
+(MAP-DEPENDENT (metaobject (SC FSC SGF)) function)
+
+(METHOD-FUNCTION (method SM))
+(METHOD-GENERIC-FUNCTION (method SM))
+(METHOD-LAMBDA-LIST (method SM))
+(METHOD-SPECIALIZERS (method SM))
+(METHOD-QUALIFIERS (method SM))
+(ACCESSOR-METHOD-SLOT-DEFINITION (method SAM))
+
+(READER-METHOD-CLASS (class (SC FSC)) (direct-slot SDSD) &rest initargs)
+
+(REMOVE-METHOD (gf SGF) (method SM))
+
+[F] (SET-FUNCALLABLE-INSTANCE-FUNCTION funcallable-instance function)
+
+[F] ((SETF GENERIC-FUNCTION-NAME) new-name gf)
+
+(WRITER-METHOD-CLASS (class SC) (direct-slot SDSD) &rest initargs)

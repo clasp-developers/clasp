@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# This is just a driver for configure, the real configure is in src.
+# This script identifies the machine, and creates a directory for
+# the installation, where it runs ${srcdir}/configure.
+set -e
+
+#if uname -a | grep -i 'mingw32' > /dev/null; then
+#  srcdir=`pwd -W`/src;
+#else
+#  srcdir=`pwd`/src
+#fi
+srcdir=`pwd`/src
+[ "x$buildir" = "x" ] && buildir=build
+export buildir
+
+if [ ! -d ${buildir} ] ; then
+   echo Creating directory "\`${buildir}'"
+   mkdir ${buildir}
+fi
+
+echo Switching to directory "\`${buildir}'" to continue configuration.
+
+#
+# There are two ways to configure ECL. If we use our own version of GMP,
+# we let it configure itself and later on retrieve the appropiate flags
+#
+if ( echo $* | grep guess-host-cflags ); then
+  echo ****
+  echo **** The flag --enable-guest-host-cflags has been removed. Instead try
+  echo ****   $* --enable-slow-conf
+  echo ****
+  exit 1
+fi
+
+cd ${buildir}
+${srcdir}/configure --srcdir=${srcdir} "$@"
+
+echo Configuration complete. To build ECL, issue 'make' in this directory.

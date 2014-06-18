@@ -1,0 +1,243 @@
+===========================================================================
+
+                  GMP port to Power Macintosh and MacOS
+
+                       Kent Boortz <kent@swox.se>
+
+===========================================================================
+
+Copyright 2000, 2001, 2002 Free Software Foundation, Inc.
+
+This file is part of the GNU MP Library.
+
+The GNU MP Library is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 2.1 of the License, or (at your
+option) any later version.
+
+The GNU MP Library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
+the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.
+
+
+
+
+This is an unsupported port of GMP to Power Macintosh and MacOS. This
+port is *not* for OS X which is a Unix derivative, that system can use
+the normal configure and make described in the GMP manual.
+
+This port will use the optimized 'mpn' assembler routines written for
+32 bit PowerPC to gain speed. The BSD MP compatible library is not
+built. The MacOS configuration uses the 'malloc-notreentrant' option
+to optimize for speed.
+
+The output is a library
+
+        $GMP_SOURCE_DIR/macos/libgmp.$GMP_VERSION
+
+Not all tests pass
+
+        We never run the 'io' test the source don't compile
+
+        If using Apple's compilers we never run the mpz t-mul, mpf t-add
+        and mpf t-sub because they don't compile with MrC 4.1
+
+
+
+REQUIREMENTS
+============
+
+To compile into the library you need
+
+        Apple MPW (free)
+	MacPerl 5 for MPW
+
+GMP build was tested with MPW Shell 3.5.
+
+MacPerl is free, download and install the MPW tool version from
+any CPAN mirror. There is a list of mirrors at
+
+    http://www.cpan.org/SITES.html
+    http://mirror.cpan.org/
+
+There is also a special site dedicated to MacPerl
+
+    http://www.macperl.com
+
+You need the "Appl" and "Tool" archive, for example
+
+    http://www.perl.com/CPAN-local/ports/mac/Mac_Perl_520r4_appl.bin
+    http://www.perl.com/CPAN-local/ports/mac/Mac_Perl_520r4_tool.bin
+
+
+
+APPLE MPW INSTALLATION
+======================
+
+The MPW development system can be downloaded from
+
+    http://developer.apple.com/tools/mpw-tools/
+
+You need "StuffIt Expander" to unpack the source. You can download
+"StuffIt Expander" for free from
+
+    http://www.aladdinsys.com/expander/expander_mac_login.html
+
+This result is a PDF file that can be read with the free Acrobat Reader
+
+    http://www.adobe.com/products/acrobat/readstep.html
+
+From the MPW development environment you need at least
+
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./About_MPW_etc.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/MPW/MPW_Shell.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/MPW/Scripts.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/MPW/Tools/GetFileName.sit.hqx    
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/MPW/Tools/Make.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/MPW/Tools/MrC.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/MPW/Tools/PPCAsm.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/MPW/Tools/PPCLink.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/Interfaces&Libraries/Libraries.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/Interfaces&Libraries/RuntimeLibraries.sit.hqx
+    ftp://ftp.apple.com/developer/Tool_Chest/Core_Mac_OS_Tools/MPW_etc./MPW-GM/Interfaces&Libraries/Interfaces/CIncludes.sit.hqx
+    
+Put these into a folder and drag the whole folder to the "StuffIt
+Expander" icon to unpack them.
+
+Move "Scripts" folder down into the "MPW_Shell Folder".
+
+Create a folder "Tools" inside the "MPW_Shell Folder" and move "Make",
+"PPCAsm", "MrC", "PPCLink" and "GetFileName" down into the "Tools"
+folder.
+
+Create a folder "Interfaces&Libraries" at the same level as the
+"MPW_Shell Folder". Put Put "RuntimeLibraries", "Libraries" into the
+"Interfaces&Libraries" folder. Inside the "Interfaces&Libraries"
+folder create a new folder "Interfaces" and put "CInlcudes" into it.
+
+In summary, the manually moved files/folders should be located at
+
+	:MPW_Shell Folder:Tools:Make
+	:MPW_Shell Folder:Tools:PPCAsm
+	:MPW_Shell Folder:Tools:MrC
+	:MPW_Shell Folder:Tools:PPCLink
+	:MPW_Shell Folder:Tools:GetFileName
+	:Interfaces&Libraries:RuntimeLibraries:
+	:Interfaces&Libraries:Libraries:
+	:Interfaces&Libraries:Interfaces:CInlcudes:
+
+Follow the rest of the installation instructions in "About MPW etc.".
+
+
+
+MACPERL MPW INSTALLATION
+========================
+
+Drag these archives to the "StuffIt Expander" icon to unpack them.
+The result is two installation programs. Run the "Mac_Perl_520r4_appl"
+installer and let it install Perl into the default location, then run
+the "Mac_Perl_520r4_tool" insaller.
+
+To enable MPW to use MacPerl follow the instructions in the first
+comment in the file "Install.MPW_Perl". For MacPerl 520r4 this is
+
+  - Double click on the "MPW Shell" icon to start MPW and change the
+    directory to the "MacPerl f" folder using the directory command or
+    the "Set Directory..." menu item.
+
+  - Execute the "Install.MPW_Perl" command, i.e. write the name of the
+    command at the end of the "Worksheet" window, select the command
+    text and hit the "Enter" key". This will create a configuration
+    file and open it.
+
+  - Execute the "Install.MPW_Perl" command again.
+
+  - Execute the text the script wrote to the "Worksheet" window, i.e.
+    drag select all the lines and hit the "Enter" key.
+
+  - You need to restart MPW to make Perl work.
+
+
+
+BUILD PROCESS
+=============
+
+The "macos" folder/directory should be inside the top directory in the
+GMP source tree and should contain four files
+
+        README          This file.
+        configure       Create files and directories needed.
+        unix2mac        Used to convert "configure" end-of-line chars.
+        Makefile.in     Source for the final "Makefile".
+
+Double click on the "MPW Shell" icon and set the directory using the
+"Directory" menu to the "$GMP_SOURCE_DIR:macos:" folder/directory.
+
+You run "configure" in a two step process
+
+        % perl unix2mac configure > configure.mac
+        % perl configure.mac
+
+Then run "Make"
+
+        % make
+
+This will not execute the commands. It is like "make -n" on Unix, it
+will display the commands to execute. You select the commands and
+hit "enter" to actually execute the commands.
+
+To test the code you execute the output from
+
+        % make check
+
+If there is an error the test program will complain. Note that the
+test programs can contain errors so a test failure doesn't always
+mean that the library is broken.
+
+To cleanup to the state before configure you execute the output from
+
+        % make clean
+
+To remove the the resulting library as well you do
+
+        % make distclean
+
+
+
+PROBLEMS
+========
+
+Bug reports can be sent to bug-gmp@gnu.org.  Unfortunately the
+developers don't use this port and can offer only very general help.
+Reports including any fixes or updates necessary would be welcomed.
+
+There may be problems if the program you use for unpacking the source
+use automatic conversion of end-of-line characters.
+
+This port may be out of sync with minor GMP releases or patches.
+The MacOS build is very different from the Unix build process and
+for some changes in the Unix build the build process for MacOS has
+to be changed manually.
+
+The library uses stream I/O operations for some of the GMP functions
+and maybe for some error messages. This means that to link this
+library to form a normal Mac application you may get link problems,
+i.e. a Mac normally has no console/shell to write to.
+
+If you are unfamiliar with MPW note that the "return" key and the
+"enter" key mean different things to MPW.  The first just add a line
+break, the second send the line your pointer is at or the selection
+you have to the MPW command interpreter.
+
+If you mount the GMP source from a Unix netatalk server don't move or
+remove files from the Unix side while MPW is running. MPW cache
+information about what the file system looks like and gets very
+confused or crash.
+
+Kent Boortz <kent@swox.se>

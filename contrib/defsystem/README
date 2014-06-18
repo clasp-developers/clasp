@@ -1,0 +1,39 @@
+This is MK:DEFSYSTEM 3.6i, a 'make' utility for Common Lisp.
+
+The current distribution contains a file `defsystem.lisp', a `docs'
+directory, a `debian' directory, and this README file.
+
+MK:DEFSYSTEM 3.6i works on most Common Lisp implementations and it is
+used by a wide variety of projects.
+
+
+INSTALLATION
+
+To install MK:DEFSYSTEM 3.x, you should just make sure to LOAD the
+file `defystem.lisp' in you CL environment.  You can do that by
+putting the appropriate LOAD statement in you CL initialization file
+(which most implementations have).
+
+
+DOCUMENTATION
+
+The documentation for MK:DEFSYSTEM 3.6i is part of a the following CMU TR
+
+    Mark Kantrowitz, "Portable Utilities for Common Lisp, User Guide
+    and Implementation Notes", Tech Report CMU-CS-91-143, School of
+    Computer Science, Carnegie Mellon University, May 1991.
+
+The `docs' directory contains a quick introduction to MK:DEFSYSTEM.
+
+
+HELP and BUG REPORTS
+
+For help and bug reports, the `clocc-list@sourceforge.net' mailing
+list is usually the right place where to send requests and other
+correspondence.
+
+
+=======
+Enjoy.
+
+Marco Antoniotti, 2005-09-04

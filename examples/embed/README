@@ -1,0 +1,4 @@
+This example shows how to compile a Common Lisp program using ECL
+and link it together with a C program. The example focuses on the
+building process, not on the C code needed to do various things
+with the embedded libraries.

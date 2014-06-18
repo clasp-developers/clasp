@@ -1,0 +1,22 @@
+You will find detailed installation instructions in the ECL manual
+       http://ecls.sourceforge.net/new-manual/pr01s06.html
+If you do not have access to the online version, follow the following two small recipies.
+
+* Unix and similar platforms.
+   1. Type
+       ./configure --help
+      to get a list of the flags with which ECL can be configured.
+   2. Enter
+       ./configure ...
+      where "..." is the set of flags you have chosen.
+   3. Use "make" followed by "make install" to build and install ECL.
+
+* Windows with Visual Studio C++ 2008
+   1. Enter the msvc directory
+   2. Read the file Makefile to find the configuration options. They typically have the
+      form ECL_UNICODE=1, ECL_THREADS=1, etc
+   3. Enter
+       nmake ...
+      followed by zero or more of those options
+   4. Use "nmake install" to create a directory called "package" with ECL in it.
+   5. Move that directory wherever you need.

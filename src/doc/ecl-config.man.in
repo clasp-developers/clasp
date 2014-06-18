@@ -1,0 +1,30 @@
+.TH ECL-CONFIG 1 2013-06-09
+.SH NAME
+ecl-config \- Embeddable Common Lisp configuration query
+.SH SYNOPSIS
+\fBecl\-config\fP
+[\fB\-cflags]
+[\fB\-libs]
+[\fB\-ldflags]
+[\fB LIBS]
+.SH DESCRIPTION
+ecl\-config will return through the standard output the set
+of compiler or linker flags needed to build applications that
+embed ecl.
+.SH OPTIONS
+.TP
+.BI \-cflags
+Output the flags required to compile a C/C++ file.
+.TP
+.B \-libs
+.TP
+.B \-ldflags
+Return the linker flags required to build a C/C++ application or shared library.
+.TP
+.B LIBS
+When also using
+.B \-ldflags
+also add the cmp (compiler) library.
+.SH "BUGS"
+Probably some. Report them!
+
