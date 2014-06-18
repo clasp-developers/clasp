@@ -1,0 +1,25 @@
+
+lib_LTLIBRARIES += libcord.la
+
+libcord_la_LIBADD = $(top_builddir)/libgc.la
+libcord_la_LDFLAGS = -version-info 1:3:0 -no-undefined
+libcord_la_CPPFLAGS = $(AM_CPPFLAGS)
+
+libcord_la_SOURCES = \
+        cord/cordbscs.c \
+        cord/cordprnt.c \
+        cord/cordxtra.c
+
+TESTS += cordtest$(EXEEXT)
+check_PROGRAMS += cordtest
+cordtest_SOURCES = cord/tests/cordtest.c
+cordtest_LDADD = $(top_builddir)/libgc.la $(top_builddir)/libcord.la
+
+EXTRA_DIST += \
+        cord/tests/de.c \
+        cord/tests/de_cmds.h \
+        cord/tests/de_win.c \
+        cord/tests/de_win.h \
+        cord/tests/de_win.rc
+
+pkginclude_HEADERS += include/cord.h
