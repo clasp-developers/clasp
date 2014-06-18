@@ -1,0 +1,49 @@
+You can find the preprocessed documentation in ./doc in HTML format.
+
+Debugging via GDB:
+------------------
+
+src/util/gdbinit (and, therefore, build/.gdbinit) defines
+a few convenience things - T, NIL, and, even more important,
+ecl_print.
+
+This is a GDB function that prints a 'cl_object' human-readably:
+
+    (gdb) ecl_print x
+    $39 = t_fixnum
+    $40 = (ecl_base_char *) 0x42b4000 "10652336"
+
+And another that helps to see a thread state:
+
+    (gdb) ecl_eval "cl:*package*"
+
+Please note that double quotes have to be escaped:
+
+    (gdb) ecl_eval "(concatenate 'string \"a\" \"b\")"
+
+Both will give a string with "readable" content, and a pretty-printed one.
+
+
+
+Using VIM:
+----------
+
+.git/tags is a VIM-compatible tag file; if you're using
+the fugitive plugin, it will be used automatically.
+
+
+
+About testing:
+--------------
+
+make check
+	to (get, initialize and) run the tests
+
+make -C build/tests do-regressions
+make -C build/tests do-ansi
+make -C build/tests do-quicklisp
+make -C build/tests do-mop-tests
+	runs the specified tests
+
+make -C build/tests/ show-fails
+	prints results

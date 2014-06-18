@@ -1,0 +1,54 @@
+;;; ----------------------------------------------------------------------
+;;;	COMMON LISP LIBRARY
+;;; ----------------------------------------------------------------------
+
+(defparameter
+  *lsp-modules*
+  ;; file	load		compile			files which force
+  ;;		environment	environment		recompilations of
+  ;;							this file
+  '(
+    (export	()		()			())
+    (defmacro	()		()			())
+    (helpfile	()		()			())
+#-runtime
+    (evalmacros	()		()			())
+    (module	()		()			())
+    (autoload	()		()			())
+    (setf	()		()			())
+    (arraylib	()		()			())
+    (predlib	()		()			())
+    (assert	()		()			())
+    (defstruct	()		()			())
+    (listlib	()		()			())
+    (mislib	()		()			())
+    (numlib	()		()			())
+    (packlib	()		()			())
+    (seq	()		()			())
+    (seqlib	()		()			())
+    (iolib	()		()			())
+    (ansi	()		()			())
+#+old-loop
+    (loop	()		()			())
+#-old-loop
+    (loop2	()		()			())
+#+cmu-format
+    (format	()		()			())
+    (defpackage ()		()			())
+    (ffi	()		()			())
+#-runtime
+    (describe	()		()			())
+    (top	()		()			())
+    (trace	()		()			())
+    (config	()		()			())
+#+threads
+    (thread	()		()			())
+#+nil ; This is loaded as source file
+    (tk-init	()		()			())))
+
+(sbt:defsystem 
+ lsp
+ :modules *lsp-modules*
+ :source-directory '("@abs_srcdir@/" "@abs_builddir@/")
+ :fasl-directory "@abs_builddir@/"
+ :library-directory "@abs_top_builddir@/")

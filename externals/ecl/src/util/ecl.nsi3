@@ -1,0 +1,14 @@
+  Delete "$INSTDIR\ecl.exe"
+
+  Delete "$SMPROGRAMS\ECL\Uninstall.lnk"
+  Delete "$SMPROGRAMS\ECL\Website.lnk"
+  Delete "$DESKTOP\ECL.lnk"
+  Delete "$SMPROGRAMS\ECL\ECL.lnk"
+
+  RMDir "$SMPROGRAMS\ECL"
+  RMDir "$INSTDIR"
+
+  DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
+  SetAutoClose true
+SectionEnd

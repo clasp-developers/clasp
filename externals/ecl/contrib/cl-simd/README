@@ -1,0 +1,8 @@
+This module implements SSE intrinsic functions for ECL and SBCL.
+
+NOTE: CURRENTLY THIS SHOULD BE CONSIDERED EXPERIMENTAL, AND
+      SUBJECT TO INCOMPATIBLE CHANGES IN A FUTURE RELEASE.
+
+Since the implementation is closely tied to the internals of
+the compiler, it should normally be obtained exclusively via
+the bundled contrib mechanism of the above implementations.

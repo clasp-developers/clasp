@@ -1,0 +1,55 @@
+(cl:unless (cl:find-package :ISO-2022-JP)
+  (make-package :ISO-2022-JP))
+(in-package :ISO-2022-JP)
+
+(defun compose (bytes)
+  (loop for i in bytes
+     with cum = 0
+     do (setf cum (+ (ash cum 8) i))
+     finally (return cum)))
+
+(defun mapping-hash-table (sequence &optional (mask 0))
+  (loop with hash = (make-hash-table :size (floor (* 1.5 (length sequence)))
+				     :test 'eq)
+     for i from 0 below (length sequence) by 2
+     for multibyte = (elt sequence i)
+     for codepoint = (elt sequence (1+ i))
+     for unicode-char = (code-char codepoint)
+     when (zerop (logand multibyte mask))
+     do (progn
+	  (setf (gethash multibyte hash) unicode-char)
+	  (setf (gethash unicode-char hash) multibyte)
+	  (when (> multibyte #xFF)
+	    (setf (gethash (ash multibyte -8) hash) t)))
+     finally (return hash)))
+
+(defun multimap (escapes tables)
+  (loop for seq in escapes
+     for table in tables
+     for table-cons = (member table tables :test 'eq)
+     do (progn
+	  ;; Change escape sequence into byte codes
+	  (setf seq (mapcar #'char-code seq))
+	  ;; Store it in the hash table
+	  (setf (gethash t table) seq)
+	  (loop for other-table in tables
+	     do (loop for i from 1
+		   for precedings = (butlast seq i)
+		   while precedings
+		   do (setf (gethash (compose precedings) other-table) t)
+		   finally (setf (gethash (compose seq) other-table) table-cons)))))
+  (nconc tables tables))
+
+(defparameter ext::iso-2022-jp
+  (let* ((ascii-no-esc (mapping-hash-table (loop for i from 0 to 127
+					      unless (= i (char-code #\esc))
+					      nconc (list i i))))
+	 (jis208 (mapping-hash-table (ext::load-encoding :jisx0208) #x8080))
+	 (jis201 (mapping-hash-table (ext::load-encoding :jisx0201) #x80)))
+    (multimap '((#\Esc #\( #\B)
+		(#\Esc #\( #\J)
+		(#\Esc #\$ #\@)
+		(#\Esc #\$ #\B))
+	      (list ascii-no-esc jis201 jis208 jis208))))
+
+(delete-package :ISO-2022-JP)

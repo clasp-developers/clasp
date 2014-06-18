@@ -1,0 +1,64 @@
+Announcement of ECL
+===================
+
+ECL stands for Embeddable Common-Lisp. The ECL project aims to
+produce an implementation of the Common-Lisp language which complies
+to the ANSI X3J13 definition of the language.
+
+The term embeddable refers to the fact that ECL includes a lisp to C
+compiler, which produces libraries (static or dynamic) that can be
+called from C programs. Furthermore, ECL can produce standalone
+executables from your lisp code and can itself be linked to your
+programs as a shared library.
+
+ECL supports the operating systems Linux, FreeBSD, NetBSD, OpenBSD,
+Solaris (at least v. 9), Microsoft Windows and OSX, running on top of
+the Intel, Sparc, Alpha and PowerPC processors. Porting to other
+architectures should be rather easy.
+
+ECL is currently hosted at SourceForge. The home page of the project
+is http://ecls.sourceforge.net, and in it you will find source code
+releases, a CVS tree and some useful documentation.
+
+
+Known issues
+============
+
+* Cygwin's library is still broken: fork/exec fails to reload the
+  cygwin library, or ECL's compiled libraries in a completely random
+  fashion. For this reason we recommend using ext:system instead of
+  ext:run-program in that platform.
+
+* In Windows ECL comes with bytecodes compiler by default, because C
+  compilers are normally not avaiable. Unfortunately several
+  libraries out there are not prepared for this. If you plan to use
+  quicklisp and have a C compiler accessible to ECL, you may use
+  (ext:install-c-compiler) to switch back to the Lisp-to-C compiler.
+
+
+Changes since last release
+==========================
+
+Some highlights of this release are:
+
+* ECL now ships with the whole of the Unicode names database,
+  optimally compressed using constant C tables. This means ECL now
+  recognizes all valid Unicode (and ASCII) names for the whole range
+  of characters, and can print them as well.
+
+* ECL has changed the way it stores compiled data in the C files, so
+  that it works around the limit of 65k characters per string.
+
+* ECL now builds with Microsoft Visual Studio C++ 2012.
+
+* We bend the knee and accepted WHILE/IF statements intertwined with
+  FOR/AS, though this is still not valid ANSI Common Lisp.
+
+See file src/CHANGELOG or browse it online
+
+http://ecls.cvs.sourceforge.net/viewvc/ecls/ecl/src/CHANGELOG?view=markup
+
+;;; Local Variables: ***
+;;; mode:text ***
+;;; fill-column:69 ***
+;;; End: ***
