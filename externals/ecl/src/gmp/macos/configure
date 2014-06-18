@@ -1,0 +1,521 @@
+#!/usr/bin/perl
+
+# This is a simple configure script for MacOS and MPW.
+# Note that this script can't be run directly from MPW perl
+# because it has the wrong end-of-line characters. See README.
+
+# Copyright 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+#
+# This file is part of the GNU MP Library.
+#
+# The GNU MP Library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; either version 2.1 of the License, or (at your
+# option) any later version.
+#
+# The GNU MP Library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+# License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
+# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
+
+# ***************************** NOTE **************************************
+# This script try to figure out things about this release but has a hard
+# time doing it. It reads some lines in "configure", "Makefile.am" and
+# "mp*/Makefile.am" and try to guess things. With every new release
+# this script has to be tested.
+# ***************************** NOTE **************************************
+
+use strict;
+
+###########################################################################
+#
+#  Platform dependent
+#
+###########################################################################
+
+$/ = "\012"			# Input files use Unix end-of-line chars
+  if $^O eq 'MacOS';
+
+###########################################################################
+#
+#  Constants
+#
+###########################################################################
+
+# Directories to create
+
+my @dirs =
+  (
+   'MpfObj',
+   'MpnObj',
+   'MpqObj',
+   'MpzObj',
+   'PrintfObj',
+   'ScanfObj',
+   'CmnObj',
+   'AsmObj',
+   'Asm',
+   'MpfBin',
+   'MpqBin',
+   'MpzBin',
+  );
+
+my $cfg;			# Will point to %cfg_apple or %cfg_cw
+
+my %cfg_apple =
+  (
+   'cc'          =>  'MrC',
+   'coptions'    => ['-ansi on -i : -i :: -i ::mpn:powerpc32 -i ::mpz',
+		     '-opt speed -inline on'],
+   'link'        => 'PPCLink',
+   'linkoptions' => '-sym on -xm library',
+   'tooloptions' => "-t 'MPST' -c 'MPS'",
+   'asm'         => 'PPCAsm',
+   'aoptions'    => '-sym on',
+   'syslibs'     => [
+		     '"{SharedLibraries}"StdCLib',
+		     '"{SharedLibraries}"InterfaceLib',
+		     '"{SharedLibraries}"MathLib',
+		     '"{PPCLibraries}"StdCRuntime.o',
+		     '"{PPCLibraries}"PPCCRuntime.o',
+		    ],
+  );
+
+my %cfg_cw =
+  (
+   'cc'          =>  'MWCPPC',
+   'coptions'    => [
+		     '-opt all -w nounusedvar,noextended',
+		     '-i :: -i ::mpn:powerpc32 -i ::mpz',
+		     '-sym full',
+		    ],
+   'link'        => 'MWLinkPPC',
+   'linkoptions' => '-sym fullpath -library',
+   'tooloptions' => '-mpwtool',
+   'asm'         => 'PPCAsm',
+   'aoptions'    => '-sym on',
+   'syslibs'     => [
+		     '"{SharedLibraries}"InterfaceLib',
+		     '"{MWPPCLibraries}MSL MPWCRuntime.Lib"',
+		     '"{MWPPCLibraries}MSL C.PPC MPW(NL).Lib"',
+		     '"{SharedLibraries}"MathLib',
+		    ],
+  );
+
+# We only set the variables that have a value
+my %vars =
+  (
+   'BITS_PER_MP_LIMB' => 32,
+   'HAVE_HOST_CPU_FAMILY_power' => 0,
+   'HAVE_HOST_CPU_FAMILY_powerpc' => 1,
+   'GMP_NAIL_BITS' => 0,
+   'DEFN_LONG_LONG_LIMB' => '',
+   'LIBGMP_DLL' => 0,
+  );
+
+my $make_in      = 'Makefile.in';
+my $make         = 'Makefile';
+my $configure    = mf("../configure");
+my $configure_in = mf("../configure.in");
+my $config_in    = mf("../config.in");
+my $gmp_h        = mf('../gmp.h');
+my $gmp_h_in     = mf('../gmp-h.in');
+my $mpn_asm_dir  = "../mpn/powerpc32";
+my $mpn_gen_dir  = "../mpn/generic";
+my $config_h     = 'config.h';
+
+my $asm_start    = "\ttoc";	# No dot, like ".dot"?
+
+###########################################################################
+#
+#  Read command line
+#
+###########################################################################
+
+$cfg = \%cfg_apple;		# Default
+
+if (@ARGV and $ARGV[0] =~ /^cw|co/) {
+  $cfg = \%cfg_cw;
+  $make .= '.cw';
+}
+
+###########################################################################
+#
+#  Parse top configure file for mpn files
+#
+###########################################################################
+
+my ($files,$optional,$package,$version) = parse_top_configure($configure);
+my %mpn_objects = map {$_ => 1} (@$files,@$optional);
+my %mpn_optional = map {$_ => 1} @$optional;
+
+###########################################################################
+#
+#  Create config.h from ../config.in
+#
+###########################################################################
+
+my @asm_files;
+
+open(CONFIG_IN, $config_in)
+  or die "Can't open \"$config_in\"\n";
+open(CONFIG_H, ">$config_h")
+  or die "Can't create \"$config_h\"\n";
+
+while (<CONFIG_IN>) {
+  chomp;
+
+  if (/^\s*#\s*undef\s+HAVE_NATIVE_mpn_(\w+)/ and
+      -r mf("$mpn_asm_dir/$1.asm")) {
+
+    if (defined delete $mpn_objects{$1}) {
+      push(@asm_files, $1);
+      print CONFIG_H "\#define HAVE_NATIVE_mpn_$1 1\n";
+    } else {
+      print STDERR "Warning: Found asm file \"$1\" but no corresponding C file - ignoring\n";
+    }
+
+  } elsif (/^\s*#\s*undef\s+inline\b/) {
+    print CONFIG_H "\#define inline\n";
+  } elsif (/^\s*#\s*undef\s+HAVE_STDARG\b/) {
+    print CONFIG_H "\#define HAVE_STDARG 1\n";
+  } elsif (/^\s*#\s*undef\s+HAVE_STRCHR\b/) {
+    print CONFIG_H "\#define HAVE_STRCHR 1\n";
+  } elsif (/^\s*#\s*undef\s+HAVE_HOST_CPU_FAMILY_powerpc\b/) {
+    print CONFIG_H "\#define HAVE_HOST_CPU_FAMILY_powerpc 1\n";
+  } elsif (/^\s*#\s*undef\s+WANT_TMP_NOTREENTRANT\b/) {
+    print CONFIG_H "\#define WANT_TMP_NOTREENTRANT 1\n";
+  } elsif (/^\s*#\s*undef\s+PACKAGE\b/) {
+    print CONFIG_H "\#define PACKAGE \"$package\"\n";
+  } elsif (/^\s*#\s*undef\s+VERSION\b/) {
+    print CONFIG_H "\#define VERSION \"$version\"\n";
+  } elsif (/^\s*#\s*undef\s+STDC_HEADERS\b/) {
+    print CONFIG_H "\#define STDC_HEADERS 1\n";
+  } else {			# Blank line, leave it
+    print CONFIG_H "$_\n";
+  }
+}
+
+close CONFIG_H;
+close CONFIG_IN;
+
+###########################################################################
+#
+#  Create gmp.h from ../gmp-h.in
+#
+###########################################################################
+
+open(GMP_H_IN, $gmp_h_in)
+  or die "Can't open \"$gmp_h_in\"\n";
+open(GMP_H, ">$gmp_h")
+  or die "Can't create \"$gmp_h\"\n";
+
+while (<GMP_H_IN>) {
+  chomp;			# Remove whatever ending it was
+
+  # Do the variable substitution
+
+  s/\@([^\@]+)\@/exists $vars{$1} ? $vars{$1} : ''/ge;
+
+  print GMP_H "$_\n";
+}
+
+close GMP_H;
+close GMP_H_IN;
+
+###########################################################################
+#
+#  Create directories
+#
+###########################################################################
+
+foreach (@dirs) {
+  -d $_ or mkdir $_, 0775
+    or die "Can't create directory \"$_\"\n";
+}
+
+###########################################################################
+#
+#  Parse the *.asm files found and convert them to MPW format
+#
+###########################################################################
+
+my $file;
+
+foreach $file (@asm_files) {
+  my $ifile = mf("$mpn_asm_dir/$file.asm");
+  my $ofile = mf("Asm/$file.s");
+  my $func;
+  my %defs = ();
+
+  open(ASM, $ifile)
+    or die "Can't read file \"$ifile\"\n";
+  open(NEW, ">$ofile")
+    or die "Can't create file \"$ofile\"\n";
+
+  while (<ASM>) {
+    chomp;			# Remove whatever ending it was
+
+    s/\bdnl\b/;/ or s/\bC\b/;/;	# Use ; comments
+
+    s/include\s*\(.*?\)//;	# Don't use include macro
+
+    s/ASM_START\s*\(.*?\)/$asm_start/;
+
+    if (s/PROLOGUE\s*\(\s*(.*?)\s*\)/asm_prologue($1)/e) {
+      $func = $1;
+    }
+
+    s/EPILOGUE\s*\(\s*(.*?)\s*\)/asm_epilogue($func)/e;
+
+    s/L\(([^)]*)\)/L$1/g;       # L() style labels
+
+    # register name defines
+    if (/\bdefine\(`?([a-zA-Z0-9]+)'?,`?([^')]*)\'?\)/) {
+      $defs{$1} = $2;
+      $_ = "\n";
+    }
+    foreach my $i (keys %defs) {
+      s/\b\Q$i\E\b/$defs{$i}/g;
+    }
+
+    s/\n/\x0D/g;
+    print NEW "$_\x0D";		# Use MacOS end-of-line character
+  }
+  
+  close ASM;
+  close NEW;
+}
+
+
+###########################################################################
+#
+#  Parse the Makefile.in and produce the Makefile
+#
+###########################################################################
+
+# Check if we have optional left in C directory
+
+foreach (keys %mpn_objects) {
+  delete $mpn_objects{$_}
+    if $mpn_optional{$_} and !-r mf("$mpn_gen_dir/$_.c");
+}
+
+my $mpn_objects = join(' ', map {"{MpnObjDir}$_.o"}  sort keys %mpn_objects);
+$mpn_objects =~ s/(.{1,66})\s/$1 \xB6\x0D\t/g;
+
+my @asm_objects = @asm_files;
+my @asm_sources = @asm_files;
+
+# Adjust configuration
+
+foreach (keys %{$cfg}) {
+  $$cfg{$_} = join(" \xB6\x0D\t\t", @{$$cfg{$_}})
+    if ref $$cfg{$_};
+}
+
+my %config =
+  (
+   'version' => $version,
+   'package' => $package,
+   'c'       => "\xB6",
+   'dep'     => "\xC4",
+   'wildcard'=> "\xC5",
+   'asm_objects' =>
+   	join(" \xB6\x0D\t",map {$_ = "{AsmObjDir}$_.o"} sort @asm_objects),
+   'asm_sources' =>
+   	join(" \xB6\x0D\t",map {$_ = "{AsmSrcDir}$_.s"} sort @asm_sources),
+   'mpn_objects' => $mpn_objects,
+   'mpz_objects' => what_objects("mpz","../mpz","{MpzObjDir}"),
+   'mpf_objects' => what_objects("mpf","../mpf","{MpfObjDir}"),
+   'mpq_objects' => what_objects("mpq","../mpq","{MpqObjDir}"),
+   'printf_objects' => what_objects("printf","../printf","{PrintfObjDir}"),
+   'scanf_objects'  => what_objects("scanf","../scanf","{ScanfObjDir}"),
+   'gmp_objects' => what_objects("gmp","..",    "{CmnObjDir}"),
+   %{$cfg},
+  );
+
+
+open(IN, $make_in)
+  or die "Can't read file \"$make_in\"\n";
+open(OUT, ">$make")
+  or die "Can't create file \"$make\"\n";
+
+while (<IN>) {
+  chomp;			# Remove whatever ending it was
+
+  # Do the variable substitution
+
+  s/\@([^\@]+)\@/exists $config{$1} ? $config{$1} : ''/ge;
+
+  print OUT "$_\x0D";		# Use MacOS end-of-line character
+}
+  
+close IN;
+close OUT;
+
+###########################################################################
+#
+#  Parse the configure.in file to find the mpn files to compile and link
+#  Find package name and version
+#
+###########################################################################
+
+sub parse_top_configure {
+  my $cfg = shift;
+
+  open(CONFIGURE, $cfg)
+    or die "Can't open \"$cfg\"\n";
+  my $old_eol = $/;
+  undef $/;
+  my $text = <CONFIGURE>;
+  $/ = $old_eol;
+  close CONFIGURE;
+
+  my ($package) = $text =~ /(?:\n|\r)PACKAGE_NAME\s*=\s*(\S+)/;
+  my ($version) = $text =~ /(?:\n|\r)PACKAGE_VERSION\s*=\s*(\S+)/;
+
+  my $files = join(' ',$text =~ /(?:\n|\r)gmp_mpn_functions\s*=\s*\"([^\"]+)/);
+  $files =~ s/\\/ /g;
+  $files =~ s/\$\{?\w*\}?//g;
+  my @files = sort split(' ',$files);
+
+  $files = join(' ',$text =~ /(?:\n|\r)gmp_mpn_functions_optional\s*=\s*\"([^\"]+)/);
+  $files =~ s/\\/ /g;
+  $files =~ s/\$\{?\w*\}?//g;
+  my @optional = sort split(' ',$files);
+
+  @files > 30 or die "Can't find mpn files in \"$cfg\"\n";
+  defined $package or die "Can't find package name in \"$cfg\"\n";
+  defined $version or die "Can't find version name in \"$cfg\"\n";
+  return (\@files,\@optional,$package,$version);
+}
+
+###########################################################################
+#
+#  Find the C files for mpz, mpf .....
+#
+###########################################################################
+
+sub what_objects {
+  my $part   = shift;
+  my $srcdir = shift;
+  my $dstdir = shift;
+
+  my $makefile_am = mf("$srcdir/Makefile.am");
+
+  # We look in the Makefile.am file
+  open(MAKEFILE_AM, $makefile_am)
+    or die "Can't open file \"$makefile_am\"\n";
+
+  # I had as short version of this using more advanced
+  # regular expressions on the whole file content but
+  # MacPerl freezes my Mac every time..... :-(
+
+  my $line;
+  my $text = '';
+
+  while (defined($line = <MAKEFILE_AM>) ) {
+    chomp $line;
+
+    if ($line =~ s/^lib${part}_la_SOURCES\s*=//) {
+      do {
+	chomp $line;
+	if ($line =~ s/\\\s*$//) {
+	  $text .= " $line";
+	} else {
+	  $text .= " $line";
+	  next;
+	}
+      } while (defined($line = <MAKEFILE_AM>));
+    }
+
+    if ($line =~ s/^nodist_lib${part}_la_SOURCES\s*=//) {
+      do {
+	chomp $line;
+	if ($line =~ s/\\\s*$//) {
+	  $text .= " $line";
+	} else {
+	  $text .= " $line";
+	  last;
+	}
+      } while (defined($line = <MAKEFILE_AM>));
+    }
+  }
+  close MAKEFILE_AM;
+
+  my @ofiles = split(' ',$text);
+  @ofiles > 8 or die "Can't find $part files in \"$makefile_am\"\n";
+  my $ofiles = join(' ', map {/^(.+)\.c$/ and $_ = "$dstdir$1.o"} @ofiles);
+  $ofiles =~ s/(.{1,66})\s/$1 \xB6\x0D\t/g;
+
+  return $ofiles;
+}
+
+###########################################################################
+#
+#  Assembler
+#
+###########################################################################
+
+sub asm_epilogue {
+    my $func = shift;
+    return "\tcsect .__g$func\[pr]";
+}
+
+sub asm_prologue {
+    my $func = shift;
+
+    my $asm = <<HERE;
+	EXPORT __g$func\[DS]
+	EXPORT .__g$func\[PR]
+
+	TC __g$func\[TC], __g$func\[DS]
+			
+	CSECT __g$func\[DS]
+	DC.L .__g$func\[PR]
+	DC.L TOC[tc0]
+		
+	CSECT .__g$func\[PR]
+	FUNCTION .__g$func\[PR]	
+HERE
+    return $asm;
+}
+
+
+###########################################################################
+#
+#  Platform dependent filename conversion
+#
+###########################################################################
+
+sub mf {
+  my $path = shift;
+
+  return $path unless $^O eq 'MacOS';
+
+  $path =~ /:/ and die "File name already converted to mac format: $path\n";
+
+  if ($path =~ s&^/&&) {
+    # Absolute path
+    unless ($path =~ s&/&:&g) {
+      # This is a drive name
+      $path .= ':';
+    }
+  } else {
+    # Relative path
+    if ($path =~ s&/&:&g) {
+      # Contains slash
+      $path = ":$path";
+      $path =~ s&\.\.:&:&g;
+    } else {
+      # Plain file name, no directory part
+    }
+  }
+  return $path;
+}

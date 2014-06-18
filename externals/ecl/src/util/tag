@@ -1,0 +1,16 @@
+#!/bin/sh
+k=".`date +"%d%H%M"`"
+file="src/lsp/config.lsp.in"
+if test -f $file ; then
+  if test -z "$1" ; then
+    echo "Tagging ECL with $k"
+  else
+    echo "Untagging ECL"
+    k=""
+  fi
+  sed "s,@PACKAGE_VERSION@.*\",@PACKAGE_VERSION@$k\",g" < $file > foo && \
+    mv foo $file && grep PACKAGE_VERSION $file
+else
+  echo "Cannot find file to tag"
+  exit 1
+fi

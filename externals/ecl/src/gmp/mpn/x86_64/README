@@ -1,0 +1,49 @@
+Copyright 2003, 2004, 2006 Free Software Foundation, Inc.
+
+This file is part of the GNU MP Library.
+
+The GNU MP Library is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 2.1 of the License, or (at your
+option) any later version.
+
+The GNU MP Library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
+the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.
+
+
+
+
+
+			AMD64 MPN SUBROUTINES
+
+
+This directory contains mpn functions for AMD64 chips.  It might also be
+useful for 64-bit Pentiums, but that chip's poor carry handling makes it
+unlikely.  We'll need completely separate code (in a subdirectory).
+
+
+		     RELEVANT OPTIMIZATION ISSUES
+
+The only AMD64 core as of this writing is the AMD Hammer, sold under the
+names Opteron and Athlon64.  The Hammer can sustain up to 3 instructions per
+cycle, but in practice that is only possible for integer instructions.  But
+almost any three integer instructions can issue simultaneously, including
+any 3 ALU operations, including shifts.  Up to two memory operations can
+issue each cycle.
+
+Scheduling typically requires that load-use instructions are split into
+separate load and use instructions.  That requires more decode resources,
+and it is rarely a win.  Hammer is a deep out-of-order core.
+
+
+REFERENCES
+
+"System V Application Binary Interface AMD64 Architecture Processor
+Supplement", draft version 0.90, April 2003.

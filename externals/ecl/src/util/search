@@ -1,0 +1,5 @@
+function se () { (cd  $HOME/src/ecl/src/; grep "$*" c/*.c c/*.d h/* {lsp,clos,cmp,clx}/*); }
+function sl () { (cd  $HOME/src/ecl/src/; grep -l "$*" c/*.c c/*.d h/* {lsp,clos,cmp,clx}/*); }
+function sie () { (cd  $HOME/src/ecl/src/; grep -i "$*" c/*.c c/*.d h/* {lsp,clos,cmp,clx}/*); }
+function sil () { (cd  $HOME/src/ecl/src/; grep -il "$*" c/*.c c/*.d h/* {lsp,clos,cmp,clx}/*); }
+function cvstat () { cvs status `find src -type f -and -not \( -name Root -or -name Repository -or -name Entries \) ` 2>/dev/null | grep "Status: $*"; }

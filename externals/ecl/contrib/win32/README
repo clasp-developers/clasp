@@ -1,0 +1,37 @@
+In this directory you will find an interesting example of an application built
+using ECL's implementation of the UFFI specification.
+
+This example consists on several files:
+
+ * win32.lisp: This is a lisp interface to the Microsoft Windows API
+   for the graphical user interface. It is not finished but it suffices
+   to demonstrate the most important ingredients you will need in a
+   real-world application.
+
+ * txtedit.lisp: A simple text editor written using the previous library.
+   This text editor can make use of Scintilla component to provides syntax
+   highlightning (http://www.scintilla.org). To enable it, simply copy the
+   SciLexer.dll library in this directory (or where the system can find it).
+   If the component is not present, a simple editor will be used instead.
+ 
+ * lisp-kw.lisp: A file containing LISP keywords, used for syntax
+   highlightning with the Scintilla component.
+
+This example makes use of static or dynamic FFI/callbacks. When win32.lisp
+is compiled into a FAS file, the static FFI/callbacks will be used. Otherwise,
+dynamic ones will be used (only under supported architectures).
+
+To compile the Win32 library (not required under architectures where
+dynamic FFI/callbacks are supported), use:
+
+	(compile-file "win32.lisp")
+
+To start the editor, use:
+
+	(load "txtedit")
+	(win32::edit)
+
+This library has been contributed by Michael Goffioul (michael dot goffioul at
+swing dot be). Feel free to experiment with it and share your experience at
+the ECL mailing list.
+

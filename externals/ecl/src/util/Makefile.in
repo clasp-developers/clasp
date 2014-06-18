@@ -1,0 +1,46 @@
+# File: util/Makefile
+
+top_srcdir= @top_srcdir@
+srcdir	= @srcdir@
+VPATH	= @srcdir@
+
+MACHINE = @MACHINE_VERSION@
+
+# Programs used by "make":
+#
+CC	= @CC@
+DEFS	= @DEFS@
+CFLAGS	= @cflags@ @oflag@
+CLIBS	= @clibs@
+
+SHELL	= /bin/sh
+RM	= @RM@
+
+# Source Directories
+
+HDIR	= @HDIR@
+
+#ifdef MSDOS
+UTILS	= dpp.exe rsym.exe
+#else
+UTILS	= dpp rsym
+#endif
+
+all:	$(UTILS)
+
+dpp	: ${HDIR}/machines.h dpp.c
+	${CC} ${CFLAGS} -I${HDIR} -o dpp $(srcdir)/dpp.c
+
+rsym	: rsym.c ${HDIR}/machines.h
+	${CC} ${CFLAGS} -I${HDIR} -o rsym $(srcdir)/rsym.c 
+
+dpp.exe	: dpp
+	coff2exe dpp
+	${RM} dpp
+
+rsym.exe: rsym
+	coff2exe rsym
+	${RM} rsym
+
+clean	:	
+	${RM} ${UTILS} core a.out *.o
