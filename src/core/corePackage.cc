@@ -540,7 +540,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 
 
 
-    CoreExposer* CoreExposer::create_core_classes(Lisp_sp lisp)
+    CoreExposer* CoreExposer::create_core_packages_and_classes()
     { _G();
 	LOG(BF("Initialize core classes by hand"));
 	BootStrapCoreSymbolMap bootStrapSymbolMap;

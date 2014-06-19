@@ -78,7 +78,7 @@ namespace gctools {
             typedef typename std::remove_const<T>::type *no_const_T_ptr;
             this->px = const_cast<no_const_T_ptr>(p);
 #ifdef USE_TAGGED_PTR_P0
-            this->pbase = MostDerivedPtrToBasePtr(dynamic_cast<void*>(const_cast<no_const_T_ptr>(this->px)));
+            this->pbase = ClientPtrToBasePtr(dynamic_cast<void*>(const_cast<no_const_T_ptr>(this->px)));
 #endif
             BOOST_ASSERT(p==0 || pointerp());
         }
@@ -105,7 +105,7 @@ namespace gctools {
             if ( rhs.pointerp() ) {
                 px = dynamic_cast<T*>(rhs.pxget());
 #ifdef USE_TAGGED_PTR_P0
-                pbase = MostDerivedPtrToBasePtr(dynamic_cast<void*>(px));
+                pbase = ClientPtrToBasePtr(dynamic_cast<void*>(px));
 #endif
             } else {
                 uintptr_t upx = reinterpret_cast<uintptr_t>(rhs.pxget());
@@ -327,7 +327,7 @@ namespace gctools {
 
         template <class U>
         static typename GCHeader<void>::HeaderType* toBasePtr(U* ptr) {
-            return reinterpret_cast<typename GCHeader<void>::HeaderType*>(MostDerivedPtrToBasePtr<void>(dynamic_cast<void*>(ptr)));
+            return reinterpret_cast<typename GCHeader<void>::HeaderType*>(ClientPtrToBasePtr(dynamic_cast<void*>(ptr)));
         }
             
         template <class U>

@@ -138,8 +138,7 @@ namespace gctools
 
 namespace gctools {
 
-    template <typename T>
-    inline void* MostDerivedPtrToBasePtr(void* mostDerived)
+    inline void* ClientPtrToBasePtr(void* mostDerived)
     {
         void* ptr = reinterpret_cast<char*>(mostDerived) - AlignUp(sizeof(Header_s));
         return ptr;

@@ -23,7 +23,7 @@ namespace core
 
     public:
 	/*! Lisp_O::startupLispEnvironment calls this to create the core classes */
-	static CoreExposer* create_core_classes(Lisp_sp lisp);
+	static CoreExposer* create_core_packages_and_classes();
     public:
 	void define_essential_globals(Lisp_sp lisp);
 

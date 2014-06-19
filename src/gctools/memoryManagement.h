@@ -143,7 +143,7 @@ namespace gctools {
     class Header_s;
 #endif
 #ifdef USE_MPS
-    template <typename T> union Header_s;
+    class Header_s;
 #endif
 
     template <typename T> struct GCHeader {
@@ -152,9 +152,9 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
 #ifdef RUNNING_GC_BUILDER
-        typedef Header_s<T>         HeaderType;
+        typedef Header_s         HeaderType;
 #else
-        typedef Header_s<T>         HeaderType;
+        typedef Header_s         HeaderType;
 #endif
 #endif
     };
@@ -219,7 +219,7 @@ namespace gctools {
     template <typename T>
     void* SmartPtrToBasePtr(smart_ptr<T> obj)
     {
-        void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.pbase()) - (GCHeader<T>::HeaderType::HeaderSize()));
+        void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.pbase()) - sizeof(Header_s));
         return ptr;
     }
 
@@ -247,7 +247,7 @@ namespace gctools {
 
 
     template <class T> inline size_t sizeof_container_with_header(size_t num) {
-        return sizeof_container<T>(num)+GCHeader<T>::HeaderType::HeaderSize();
+        return sizeof_container<T>(num)+sizeof(Header_s);
     };
 
 };

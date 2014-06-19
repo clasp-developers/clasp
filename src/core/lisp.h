@@ -66,7 +66,8 @@ namespace core
     void af_invokeInternalDebugger(T_sp condition);
 
 
-    struct SymbolClassPair {
+    class SymbolClassPair {
+    public:
         SymbolClassPair(Symbol_sp s, Class_sp c) : symbol(s), theClass(c) {};
         Symbol_sp symbol;
         Class_sp  theClass;

@@ -11,12 +11,13 @@ namespace core
     class MultipleValues
     {
     public: // ctor
-	MultipleValues();
+	MultipleValues() {};
 	static const int MultipleValuesLimit = 32;
     public: // instance variables here
-//        int     _Size;
-//	T_sp	_Values[MultipleValuesLimit]; 		// TODO: Make sure this is a root
-        gctools::Vec0<T_sp>     _Values;
+        /*! Allocate the GCVector in the NonMoveable memory */
+        gctools::Vec0_impl<gctools::GCVector<T_sp,gctools::GCContainerNonMoveableAllocator<gctools::GCVector_moveable<T_sp>>>>     _Values;
+    public:
+        void initialize();
     public: // Functions here
 
 	/*! Return the indexed multiple value or nil */

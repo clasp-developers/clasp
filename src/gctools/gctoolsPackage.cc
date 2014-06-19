@@ -344,12 +344,6 @@ namespace gctools {
     {_G();
 #ifdef USE_MPS
         int messages = processMpsMessages();
-#ifdef DEBUG_MPS_AMS_POOL
-//        printf("%s:%d Checking fenceposts\n", __FILE__, __LINE__ );
-        mps_pool_check_fenceposts(_global_ams_pool);
-        mps_pool_check_free_space(_global_ams_pool);
-//        printf("%s:%d Fencepost check done\n",__FILE__,__LINE__);
-#endif
 #endif
     };
 
