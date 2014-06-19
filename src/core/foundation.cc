@@ -147,29 +147,32 @@ extern "C"
  */
 core::Lisp_sp _lisp;
 
+    bool debug_mps = true;
 };
 
 
 void brcl_mps_debug_allocation(const char* poolName, void* addr, void* objectAddr, int size, int kind)
-    {
-        if ( kind == 0 ) {
-             printf("%s:%d brcl_mps_debug_allocation kind == 0  ----------------- !!!!\n", __FILE__, __LINE__ );
-             __builtin_debugtrap();
-        };
+{
+    if (!debug_mps) return;
+    if ( kind == 0 ) {
+        printf("%s:%d brcl_mps_debug_allocation kind == 0  ----------------- !!!!\n", __FILE__, __LINE__ );
+        __builtin_debugtrap();
+    };
 
 #if defined(USE_MPS)  && !defined(RUNNING_GC_BUILDER)
-	const char* kindName = obj_name((gctools::GCKindEnum)(kind));
-	printf("%s:%d brcl_mps_allocation poolName: %s  base: %p  objAddr: %p  size: %3d  kind[%d/%s]  \n",
-               __FILE__, __LINE__,
-               poolName,
-	       addr, objectAddr, size,
-	       kind, kindName);
+    const char* kindName = obj_name((gctools::GCKindEnum)(kind));
+    printf("%s:%d brcl_mps_allocation poolName: %s  base: %p  objAddr: %p  size: %3d  kind[%d/%s]  \n",
+           __FILE__, __LINE__,
+           poolName,
+           addr, objectAddr, size,
+           kind, kindName);
 #endif
-    }
+}
 
 void brcl_mps_debug_fix1_before(void* base, void* smartAddr)
 {
 #if defined(USE_MPS)
+    if (!debug_mps) return;
     printf("brcl_mps_debug_fix1_before  base: %p  smartAddr: %p\n", base, smartAddr );
 #endif
 }
@@ -178,6 +181,7 @@ void brcl_mps_debug_fix1_before(void* base, void* smartAddr)
     {
 #if defined(USE_MPS)
 #if defined(DEBUG_LOG_MPS_KINDS)
+    if (!debug_mps) return;
 	gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(pbase);
 	const char* kindName = gctools::obj_name((gctools::GCKindEnum)(header->kind._Kind));
 	printf("brcl_mps_debug_fix_before   pbase: %p  px: %p   kind: %s\n", pbase, px, kindName);
@@ -190,6 +194,7 @@ void brcl_mps_debug_fix1_before(void* base, void* smartAddr)
 void brcl_mps_debug_fix_after(void* pbase, void* px)
     {
 #if defined(USE_MPS)
+    if (!debug_mps) return;
 	printf("brcl_mps_debug_fix_after    pbase: %p  px: %p\n", pbase, px);
 #endif
     }
@@ -197,6 +202,7 @@ void brcl_mps_debug_fix_after(void* pbase, void* px)
 void brcl_mps_debug_scan_object(gctools::GCObject* dobj)
 {
 #if defined(USE_MPS)
+    if (!debug_mps) return;
     if ( core::T_O* tobj_gc_safe = dynamic_cast<core::T_O*>(dobj) )
     {
         gctools::smart_ptr<core::T_O> tsp(tobj_gc_safe);
@@ -208,6 +214,7 @@ void brcl_mps_debug_scan_object(gctools::GCObject* dobj)
 void brcl_mps_debug_container(const char* ctype, const char* name, int size)
 {
 #if defined(USE_MPS)
+    if (!debug_mps) return;
     printf("brcl_mps_debug_container   type: %s   name: %s    size: %d\n",
 	   ctype, name, size );
 #endif

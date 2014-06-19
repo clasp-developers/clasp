@@ -1,7 +1,7 @@
-prefix=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
+prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix=${prefix}
-top_builddir=/Volumes/spin/Development/clasp-Lisp/externals/src/boehm-7.2/libatomic_ops
-top_srcdir=/Volumes/spin/Development/clasp-Lisp/externals/src/boehm-7.2/libatomic_ops
+top_builddir=/Users/meister/Development/cando/clasp/externals/boehm-7.2/libatomic_ops
+top_srcdir=/Users/meister/Development/cando/clasp/externals/boehm-7.2/libatomic_ops
 
 Name: The atomic_ops library (uninstalled)
 Description: Atomic memory update operations

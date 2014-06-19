@@ -2,6 +2,7 @@
 #include "foundation.h"
 #include "lisp.h"
 #include "extensionPackage.fwd.h"
+#include "package.h"
 #include "symbolTable.h"
 #include "bootStrapCoreSymbolMap.h"
 
@@ -97,8 +98,15 @@ namespace core
 	for ( map<string,int>::const_iterator it=this->_SymbolNamesToIndex.begin();
 	      it!=this->_SymbolNamesToIndex.end(); it++ )
 	{
+//            printf("%s:%d  Adding symbol to package: %s\n", __FILE__, __LINE__, this->_IndexToSymbol[it->second]._PackageName.c_str()  );
 	    Package_sp pkg = _lisp->findPackage(this->_IndexToSymbol[it->second]._PackageName);
-	    this->_IndexToSymbol[it->second]._Symbol->finish_setup(pkg,this->_IndexToSymbol[it->second]._Export);
+            if ( pkg.nilp() ) {
+                SIMPLE_ERROR(BF("The package %s has not been defined yet") % this->_IndexToSymbol[it->second]._PackageName);
+            }
+//            printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.pbase());
+            int idx = it->second;
+//            printf("%s:%d  The symbol index is %d\n", __FILE__, __LINE__, idx );
+	    this->_IndexToSymbol[idx]._Symbol->finish_setup(pkg,this->_IndexToSymbol[idx]._Export);
 	}
     }
 

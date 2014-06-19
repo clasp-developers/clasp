@@ -62,17 +62,6 @@ namespace gctools {
         template <typename...ARGS>
         void emplace_back (ARGS&&...args) { this->_Vector.emplace_back(std::forward<ARGS>(args)...);};
         iterator erase(const_iterator position) { return this->_Vector.erase(position); };
-
-#if 0
-        GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
-            GC_RESULT res;
-            for ( iterator it = this->begin(); it!=this->end(); ++it ) {
-                res = (*it).onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
-                if ( res != GC_RES_OK ) return res;
-            }
-            return GC_RES_OK;
-        }
-#endif
     };
 
 

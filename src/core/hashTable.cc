@@ -412,6 +412,7 @@ namespace core
 
     Cons_sp HashTable_O::bucketsFind(T_sp key) const
     {
+        ASSERT(this->_HashTable);
         uint index = this->sxhashKey(key,af_length(this->_HashTable), false );
         Cons_sp keyValueCons = this->findAssoc(index,key);
         return keyValueCons;

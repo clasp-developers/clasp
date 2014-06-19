@@ -1131,6 +1131,7 @@ so that they don't have to be constantly recalculated"
 
 
 (defun classes-that-contain-fixptrs (project)
+  "This is not used at the moment for analysis"
   (let ((contain (make-hash-table :test #'equal))
         (record (make-hash-table :test #'eq)))
     (maphash (lambda (k v)
@@ -1352,49 +1353,6 @@ so that they don't have to be constantly recalculated"
   (sort (copy-list enums) #'(lambda (a b) (< (enum-value a) (enum-value b)))))
 
 
-(defun scanner-for-system (fout enum anal)
-  (let ((cclass (enum-cclass enum)))
-    (format fout "case ~a: {~%" (enum-name enum))
-    (cond
-      ((string= "fwd2" (cclass-key cclass))
-       (format fout "THROW_HARD_ERROR(BF(\"~a should never be scanned\"));~%" (cclass-key cclass)))
-      ((string= "fwd" (cclass-key cclass))
-       (format fout "base = (char*)base + length;~%"))
-      ((string= "pad1" (cclass-key cclass))
-       (format fout "base = (char*)base + length;~%"))
-      ((string= "pad" (cclass-key cclass))
-       (format fout "base = (char*)base + length;~%"))
-      (t (error "Illegal scanner-for-system species ~a" enum)))
-    (format fout "break;~%}~%")
-    ))
-
-
-
-(defun skipper-for-system (fout enum anal)
-  (let ((cclass (enum-cclass enum)))
-    (format fout "case ~a: {~%" (enum-name enum))
-;;    (format fout "Header_s<void>* header = reinterpret_cast<Header_s<void>*>(base);~%")
-    (cond
-      ((string= "fwd2" (cclass-key cclass))
-       (format fout "THROW_HARD_ERROR(BF(\"~a should never be skipped\"));~%" (cclass-key cclass)))
-      ((string= "fwd" (cclass-key cclass))
-       (format fout "base = (char*)base + length;~%"))
-      ((string= "pad1" (cclass-key cclass))
-       (format fout "base = (char*)base + length;~%"))
-      ((string= "pad" (cclass-key cclass))
-       (format fout "base = (char*)base + length;~%"))
-      (t (error "Illegal skipper-for-system species ~a" species)))
-    (format fout "break;~%}~%")
-    ))
-
-(defun finalizer-for-system (fout enum anal)
-  (check-type enum simple-enum)
-  (let ((cclass (enum-cclass enum)))
-    (format fout "case ~a: {~%" (enum-name enum))
-    (format fout "    THROW_HARD_ERROR(BF(\"~a should never be finalized\"));~%" (cclass-key cclass)))
-  (format fout "    break;~%}~%"))
-        
-
 
 (defstruct array-fixer
   element-type)
@@ -1438,7 +1396,7 @@ so that they don't have to be constantly recalculated"
       (dolist (instance-var all-instance-variables)
         (code-for-instance-var fout +ptr-name+ instance-var)))
     (format fout "    typedef ~A type_~A;~%" key enum-name)
-    (format fout "    base = (char*)base + length;~%")
+    (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
     (format fout "} break;~%")
     ))
 
@@ -1451,7 +1409,7 @@ so that they don't have to be constantly recalculated"
     (gclog "skipper-for-lispallocs -> inheritance classid[~a]  value[~a]~%" key (enum-value enum))
     (format fout "case ~a: {~%" enum-name)
     (format fout "    typedef ~A type_~A;~%" key enum-name)
-    (format fout "    base = (char*)base + length;~%")
+    (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
     (format fout "} break;~%")))
 
 
@@ -1483,7 +1441,9 @@ so that they don't have to be constantly recalculated"
     (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
       (dolist (instance-var all-instance-variables)
         (code-for-instance-var fout +ptr-name+ instance-var)))
-    (format fout "    base = (char*)base + length;~%")
+;;    (format fout "    base = (char*)base + length;~%")
+    (format fout "    typedef ~A type_~A;~%" key enum-name)
+    (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
     (format fout "} break;~%")
     ))
 (defun skipper-for-templated-lispallocs (fout enum anal)
@@ -1492,7 +1452,9 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (format fout "case ~a: {~%" enum-name)
-    (format fout "    base = (char*)base + length;~%")
+;;    (format fout "    base = (char*)base + length;~%")
+    (format fout "    typedef ~A type_~A;~%" key enum-name)
+    (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
     (format fout "} break;~%")
     ))
 (defun finalizer-for-templated-lispallocs (fout enum anal)
@@ -1540,12 +1502,12 @@ so that they don't have to be constantly recalculated"
              (format fout "          POINTER_FIX(*it);~%" ))
             (t (error "Write code to scan ~a" parm0-ctype)))
           (format fout "    }~%")
-;;              (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-;;              (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-;;              (format fout "    base = (char*)base + templatedHeader->size;~%" enum-name)))
-              (format fout "    base = (char*)base + length;~%")
-        (format fout "} break;~%")
-        ))))
+          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
+          (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+          (format fout "    client = (char*)client + header_and_gccontainer_size;~%" enum-name)))
+    ;;              (format fout "    base = (char*)base + length;~%")
+    (format fout "} break;~%")
+    ))
 
 
 (defun skipper-for-gccontainer (fout enum anal)
@@ -1563,12 +1525,15 @@ so that they don't have to be constantly recalculated"
                (parm0 (car parms))
                (parm0-ctype (gc-template-argument-ctype parm0)))
           (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-;;          (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-;;          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-;;          (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-;;          (format fout "    base = (char*)base + Align(header_and_gccontainer_size);~%")
-              (format fout "    base = (char*)base + length;~%")
-          ))
+          (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+          ;;          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
+          ;;          (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+          ;;          (format fout "    base = (char*)base + Align(header_and_gccontainer_size);~%")
+          ;; OLD             (format fout "    base = (char*)base + length;~%")
+          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
+          (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+          (format fout "    client = (char*)client + header_and_gccontainer_size;~%" enum-name)))
+    ;;              (format fout "    base = (char*)base + length;~%")
     (format fout "} break;~%")
     ))
 
@@ -1614,10 +1579,10 @@ so that they don't have to be constantly recalculated"
                (parm0-ctype (gc-template-argument-ctype parm0)))
           (format fout "// parm0-ctype = ~a~%" parm0-ctype)
 ;;          (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-;;          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-;;          (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-;;          (format fout "    base = (char*)base + Align(header_and_gcstring_size);~%")
-          (format fout "    base = (char*)base + length;~%")
+          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
+          (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+          (format fout "    client = (char*)client + Align(header_and_gcstring_size);~%")
+;;          (format fout "    base = (char*)base + length;~%")
           ))
     (format fout "} break;~%")
     ))
@@ -1650,13 +1615,6 @@ so that they don't have to be constantly recalculated"
 
 (defun setup-manager ()
   (let* ((manager (make-manager)))
-    (add-species manager (make-species :name :system
-                                       :discriminator (lambda (x) (and (lispalloc-p x) (stringp x) (search "system_" x)))
-                                       :preprocessor-guard "SYSTEM_GUARD"
-                                       :scan 'scanner-for-system
-                                       :skip 'skipper-for-system
-                                       :finalize 'finalizer-for-system
-                                       ))
     (add-species manager (make-species :name :bootstrap
                                        :discriminator (lambda (x) (and (lispalloc-p x)
                                                                        (gctools::bootstrap-kind-p (alloc-key x))))
@@ -1718,30 +1676,14 @@ so that they don't have to be constantly recalculated"
 
 
 
-(defun setup-system-species (analysis)
-  "The MPS system requires a few enum's to function - put them 
-in the system-species and assign them a Kind value.
-Species are groups of enums that share the same obj_scan, obj_skip and obj_finalize code"
-  (let ((system-species (lookup-species (analysis-manager analysis) :system))
-        (bootstrap-species (lookup-species (analysis-manager analysis) :bootstrap)))
-    (make-enum-for-alloc-if-needed (make-alloc :key "fwd") system-species analysis)
-    (make-enum-for-alloc-if-needed (make-alloc :key "fwd2") system-species analysis)
-    (make-enum-for-alloc-if-needed (make-alloc :key "pad1") system-species analysis)
-    (make-enum-for-alloc-if-needed (make-alloc :key "pad") system-species analysis)
-    ))
-
-
 
 
 (defparameter *analysis* nil)
 (defun analyze-project (&optional (project *project*))
   (setq *analysis* (make-analysis :project project
                                   :manager (setup-manager)))
-  (setup-system-species *analysis*)
   (organize-allocs-into-species-and-create-enums *analysis*)
   (generate-forward-declarations *analysis*)
-  (setf (analysis-classes-with-fixptrs *analysis*) (classes-that-contain-fixptrs project))
-  (check-globals-for-fixptrs *analysis*)
   #|
 ;;  (multiple-value-bind (simple-enums templated-enums) ; ; ; ; ;
 ;;      (categorize-enums *analysis*)   ; ; ; ; ;
@@ -2087,7 +2029,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     ((isalloc-p (pointer-ctype-pointee var) (analysis-project analysis)) t)
     (t nil))))
 (defmethod fix-variable-p ((var cxxrecord-ctype) analysis) 
-  (contains-fixptrs-p var (analysis-project analysis)))
+  (contains-fixptr-p var (analysis-project analysis)))
 
 (defmethod fix-variable-p ((var injected-class-name-ctype) analysis) nil)
 
@@ -2179,7 +2121,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*cons\.cc$"))
+                      (lsel $* ".*lisp\.cc$"))
                       )
   )
 

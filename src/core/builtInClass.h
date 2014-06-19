@@ -51,7 +51,7 @@ TRANSLATE(core::BuiltInClass_O);
 template<> struct gctools::GCInfo<core::BuiltInClass_O> {
     static bool constexpr NeedsInitialization = true;
     static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = false;
+    static bool constexpr Moveable = true; // old=false
     static bool constexpr Atomic = false;
 };
 

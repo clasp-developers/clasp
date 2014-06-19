@@ -277,8 +277,7 @@ namespace core
 
     void	Lisp_O::initialize()
     {
-	// Don't do anything here
-	// add initialization to the end of createLispEnvironment
+        this->_Roots._MultipleValues.initialize();
     }
 
 
@@ -325,7 +324,8 @@ namespace core
     Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize )
     {
         ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
-	_lisp->setupMpi(mpiEnabled,mpiRank,mpiSize);
+	_lisp->initialize();
+        _lisp->setupMpi(mpiEnabled,mpiRank,mpiSize);
 //	lisp->__setWeakThis(lisp);
 //	lisp->__resetInitializationOwner();
 	_lisp->_DebugStream = new DebugStream(mpiRank);
@@ -401,7 +401,7 @@ namespace core
 
 
 	{ _BLOCK_TRACE("Initialize core classes");
-	    coreExposerPtr = CoreExposer::create_core_classes(_lisp);
+	    coreExposerPtr = CoreExposer::create_core_packages_and_classes();
 // TODO: Should this be a WeakKeyHashTable?
             this->_Roots._SourceFiles = HashTableEqual_O::create_default(); 
 	    {_BLOCK_TRACE("Define important predefined symbols for CorePkg");
@@ -998,6 +998,8 @@ namespace core
 	Package_sp newPackage = Package_O::create(name);
 	int packageIndex = this->_Roots._Packages.size();
 	{
+            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.px_ref());
+
 	    this->_PackageNameIndexMap[name] = packageIndex;
 	    this->_Roots._Packages.push_back(newPackage);
 	}
@@ -1038,20 +1040,15 @@ namespace core
 
     Package_sp Lisp_O::findPackage(const string& name) const
     {_G();
+//        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
 	map<string,int>::const_iterator fi = this->_PackageNameIndexMap.find(name);
 	if ( fi == this->_PackageNameIndexMap.end() )
 	{
 	    return _Nil<Package_O>(); // return nil if no package found
-#if 0
-	    stringstream ss;
-	    for ( Vector0<Package_O>::const_iterator it = this->_Roots._Packages.begin(); it!=this->_Roots._Packages.end(); it++ )
-	    {
-		ss << " " << (*it)->getName();
-	    }
-	    SIMPLE_ERROR(BF("In getPackage - there is no package with name[%s] - available packages[%s]") %name % ss.str() );
-#endif
 	}
+//        printf("%s:%d Lisp_O::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
 	Package_sp getPackage = this->_Roots._Packages[fi->second];
+//        printf("%s:%d Lisp_O::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.px_ref());
 	return getPackage;
     }
 

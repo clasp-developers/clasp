@@ -185,99 +185,112 @@ extern "C" {
 
 
     /*! I'm using a format_header so MPS gives me the object-pointer */
-    mps_addr_t obj_skip( mps_addr_t base )
+    mps_addr_t obj_skip( mps_addr_t client )
     {
-        gctools::Header_s<void>* header = reinterpret_cast<gctools::Header_s<void>*>(base);
-#if 1
-        Seg seg;
-        gctools::GCKindEnum kind;
-        unsigned int length;
-        if (SegOfAddr(&seg,gctools::_global_arena,header)) {
-            ShieldExpose(gctools::_global_arena,seg);
-            kind = (gctools::GCKindEnum)(header->kind.Kind);
-            length = header->kind.Length;
-            ShieldCover(gctools::_global_arena,seg);
-        };
+        gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+        MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
+        if ( header->kindP() ) {
+#if 0
+            Seg seg;
+            gctools::GCKindEnum kind;
+            unsigned int length;
+            if (SegOfAddr(&seg,gctools::_global_arena,header)) {
+                ShieldExpose(gctools::_global_arena,seg);
+                kind = (gctools::GCKindEnum)(header->kind.Kind);
+                length = header->kind.Length;
+                ShieldCover(gctools::_global_arena,seg);
+            };
 #else
-        Seg seg;
-        bool segValid = SegOfAddr(&seg,gctools::_global_arena,header);
-        MPS_LOG(BF("obj_skip base = %p   segValid=%d   seg=%p\n") % base % segValid % seg);
-        gctools::GCKindEnum kind = (gctools::GCKindEnum)(header->kind.Kind);
-        unsigned int length = header->kind.Length;
+            gctools::GCKindEnum kind = header->kind();
 #endif        
-        MPS_LOG(BF("obj_skip base = %p   kind = %s   length=%d")
-                % base  % obj_name((gctools::GCKindEnum)(header->kind.Kind)) % length );
-        switch (kind) {
+            switch (kind) {     
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP
 #include "main/clasp_gc.cc"
 #undef GC_OBJ_SKIP
 #endif
         default: {
-            fprintf(stderr,"Garbage collection tried to obj_skip an object of unknown kind[%d]\n", header->kind.Kind);
+            fprintf(stderr,"Garbage collection tried to obj_skip an object of unknown kind: %s\n", header->description().c_str() );
             assert(0);
             abort();
         }
         };
-        DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with base@%p") % base);
-	return base;
+        } else if (header->fwdP()) {
+            client = (char*)(client)+header->fwdSize()+global_alignup_sizeof_header;
+        } else if (header->pad1P()) {
+            client = (char*)(client)+header->pad1Size()+global_alignup_sizeof_header;
+        } else if (header->padP()) {
+            client = (char*)(client)+header->padSize()+global_alignup_sizeof_header;
+        } else {
+            THROW_HARD_ERROR(BF("Illegal header at %p") % header );
+        }
+        DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p") % client);
+	return client;
     }
 
 
     int trap_obj_scan = 0;
 
-    GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit)
+    GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit)
     {
-        DEBUG_MPS_MESSAGE(BF("obj_scan started - Incoming base %p   limit: %p") % base % limit );
+        DEBUG_MPS_MESSAGE(BF("obj_scan started - Incoming client %p   limit: %p") % client % limit );
         MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-	    while (base < limit)
-	    {
-                mps_addr_t prev_base = base;
-		mps_addr_t obj_ptr = BasePtrToMostDerivedPtr<void>(base);
-                gctools::Header_s<void>* header = reinterpret_cast<gctools::Header_s<void>*>(base);
-                gctools::GCKindEnum kind = (gctools::GCKindEnum)(header->kind.Kind);
-                unsigned int length = header->kind.Length;
-//#ifdef DEBUG_MPS
-                if (trap_obj_scan) {
-                    printf("%s:%d Trapping obj_scan base=%p kind=%d/%s length=%u\n", 
-                           __FILE__, __LINE__, base, kind,obj_name((gctools::GCKindEnum)(header->kind.Kind)), length);
-                    if ( kind == 262 ) {
-                        printf("WARNING\nWARNING\nWARNING\nAbout to go infinite loop\n");
-                    }
-                }
-//#endif
-		MPS_LOG(BF("obj_scan base = %p  length= %u  kind = %s")
-                        % base % length % obj_name((gctools::GCKindEnum)(header->kind.Kind)) );
-                switch (kind) {
+            while (client<limit)
+            {
+                gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+                MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
+                if ( header->kindP() ) {
+#if 0
+                    Seg seg;
+                    gctools::GCKindEnum kind;
+                    unsigned int length;
+                    if (SegOfAddr(&seg,gctools::_global_arena,header)) {
+                        ShieldExpose(gctools::_global_arena,seg);
+                        kind = (gctools::GCKindEnum)(header->kind.Kind);
+                        length = header->kind.Length;
+                        ShieldCover(gctools::_global_arena,seg);
+                    };
+#else
+                    GCKindEnum kind = header->kind();
+#endif        
+                    switch (kind) {     
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN
 #include "main/clasp_gc.cc"
 #undef GC_OBJ_SCAN
 #endif
-                default: {
-                    fprintf(stderr,"Garbage collection tried to obj_scan an object of unknown kind[%d] \n", header->kind.Kind);
-                    assert(0);
-                    abort();
+                    default: {
+                        fprintf(stderr,"Garbage collection tried to obj_skip an object of unknown kind[%s]\n", header->description().c_str() );
+                        assert(0);
+                        abort();
+                    }
+                    };
+                } else if (header->fwdP()) {
+                    client = (char*)(client)+header->fwdSize()+global_alignup_sizeof_header;
+                } else if (header->pad1P()) {
+                    client = (char*)(client)+header->pad1Size()+global_alignup_sizeof_header;
+                } else if (header->padP()) {
+                    client = (char*)(client)+header->padSize()+global_alignup_sizeof_header;
+                } else {
+                    THROW_HARD_ERROR(BF("Illegal header at %p") % header );
                 }
-                }
-                ASSERTF(base!=prev_base,BF("The base@%p hasn't advanced in the previous scan - may go into infinite loop!") % base );
-                POLL_SIGNALS();
-            } // while base
+            }
         } MPS_SCAN_END(GC_SCAN_STATE);
-        DEBUG_MPS_MESSAGE(BF("obj_scan done - Outgoing base %p   limit: %p") % base % limit );
         return MPS_RES_OK;
-    };
+    }
 
 
 
-    /*! I'm using a format_header so MPS gives me the object-pointer */
+            /*! I'm using a format_header so MPS gives me the object-pointer */
 #define GC_FINALIZE_METHOD
-    void obj_finalize( mps_addr_t base )
-    {
-        gctools::Header_s<void>* header = reinterpret_cast<gctools::Header_s<void>*>(base);
-        gctools::GCKindEnum kind = (GCKindEnum)(header->kind.Kind);
-        DEBUG_MPS_MESSAGE(BF("Finalizing base@%p   kind=%s") % base  % obj_name((gctools::GCKindEnum)(header->kind.Kind)) );
-        switch (kind) {
+            void obj_finalize( mps_addr_t ptr )
+            {
+                THROW_HARD_ERROR(BF("Check what the ptr pointer is - is it a client or a base pointer"));
+#if 0
+            gctools::Header_s<void>* header = reinterpret_cast<gctools::Header_s<void>*>(base);
+            gctools::GCKindEnum kind = (GCKindEnum)(header->kind.Kind);
+            DEBUG_MPS_MESSAGE(BF("Finalizing base@%p   kind=%s") % base  % obj_name((gctools::GCKindEnum)(header->kind.Kind)) );
+            switch (kind) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_FINALIZE
 #include "main/clasp_gc.cc"
@@ -289,6 +302,7 @@ extern "C" {
             abort();
         }
         };
+#endif
     }
 #undef GC_FINALIZE_METHOD
 

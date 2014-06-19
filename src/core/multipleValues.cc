@@ -13,7 +13,7 @@ namespace core
     const int MultipleValues::MultipleValuesLimit;
 
 
-    MultipleValues::MultipleValues()
+    void MultipleValues::initialize()
     {
         this->_Values.reserve(MultipleValuesLimit);
     };

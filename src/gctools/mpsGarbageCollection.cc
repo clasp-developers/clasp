@@ -13,7 +13,7 @@
 
 
 extern "C" {
-#include "mps/code/mpscams.h"  // AMS pool
+#include "mps/code/mpscawl.h"  // MVFF pool
 #include "mps/code/mpscamc.h" // AMC pool
 
 };
@@ -59,12 +59,18 @@ namespace gctools
 
     mps_arena_t	_global_arena;
     void* _global_stack_marker;
-    mps_pool_t _global_ams_pool;
+//    mps_pool_t _global_mvff_pool;
     mps_pool_t _global_amc_pool;
     mps_pool_t _global_amcz_pool;
     mps_pool_t _global_awl_pool;
     mps_ap_t _global_automatic_weak_link_allocation_point;
+//    mps_ap_t _global_mvff_allocation_point;
     mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
+
+    mps_pool_t global_non_moving_pool;
+    mps_ap_t global_non_moving_ap;
+    size_t global_sizeof_fwd;
+    size_t global_alignup_sizeof_header;
 
 
 #ifdef DEBUG_MPS
@@ -123,75 +129,45 @@ namespace gctools
         THROW_HARD_ERROR(BF("GC_RESULT error: %s   %s\n") % error % msg ); \
     }
 
-    static void obj_fwd(mps_addr_t old_base, mps_addr_t new_base)
+    static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client)
     {
-        DEBUG_MPS_MESSAGE(BF("obj_fwd old_base = %p   new_base = %p") % old_base % new_base );
-	mps_addr_t limit = obj_skip(old_base);
-	size_t size = (char *)limit - (char *)old_base;
-//        if ( size == 376 ) {
-//            printf("%s:%d obj_fwd   size=376\n", __FILE__, __LINE__ );
-//        }
-
-//	mps_addr_t obj_ptr = BASE_TO_OBJ_PTR(old_base);
-	assert(size >= AlignUp(sizeof_with_header<Fwd2_s>()));
-	if (size == AlignUp(sizeof_with_header<Fwd2_s>())) {
-//	    printf("%s:%d  old_base=%p  size=%lu  ALIGN_UP(sizeof_with_header<Fwd2_s>())=%lu\n", __FILE__,__LINE__, old_base, size, ALIGN_UP(sizeof_with_header<Fwd2_s>()));
-	    THROW_HARD_ERROR(BF("KIND_fwd2 should not be used in obj_fwd"));
-//	    GcFwd2* obj2 = reinterpret_cast<GcFwd2*>(obj_ptr);
-//	    BASE_PTR_KIND(old_base) = KIND_fwd2;
-//	    obj2->_Fwd = ((obj_t)new_base);
-	} else {
-//	    GcFwd* obj = reinterpret_cast<GcFwd*>(obj_ptr);
-//	    BASE_PTR_KIND(old_base) = KIND_fwd;
-	    Header_s<void>* header = reinterpret_cast<Header_s<void>*>(old_base);
-	    header->fwd.Kind = KIND_SYSTEM_fwd;
-	    header->fwd.Fwd = ((Header_s<void>*)new_base);
-	    header->fwd.Length = size;
-	}
+        DEBUG_MPS_MESSAGE(BF("obj_fwd old_client = %p   new_client = %p") % old_client % new_client );
+	mps_addr_t limit = obj_skip(old_client);
+	size_t size = (char *)limit - (char *)old_client;
+        if ( size < global_sizeof_fwd ) {
+            THROW_HARD_ERROR(BF("obj_fwd needs size >= %lu") % global_sizeof_fwd );
+        }
+        Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(old_client));
+        header->setFwdSize(size);
+        header->setFwdPointer(new_client);
     }
 
 
 
-    static mps_addr_t obj_isfwd(mps_addr_t addr)
+    static mps_addr_t obj_isfwd(mps_addr_t client)
     {
-	Header_s<void>* header = reinterpret_cast<Header_s<void>*>(addr);
-        MPS_LOG(BF(" addr = %p  kind = %s") % addr % obj_name((gctools::GCKindEnum)(header->kind.Kind)) );
-	switch (header->kind.Kind) {
-	case KIND_SYSTEM_fwd2: {
-	    THROW_HARD_ERROR(BF("KIND_fwd2 should never be needed"));
-//	    GcFwd2* obj2 = reinterpret_cast<GcFwd2*>(obj_ptr);
-//	    MPS_LOG(BF("              KIND_fwd2 returning %p") % obj2->_Fwd );
-//	    return obj2->_Fwd;
-	}
-	case KIND_SYSTEM_fwd: {
-//	    GcFwd* obj = reinterpret_cast<GcFwd*>(obj_ptr);
-	    MPS_LOG(BF("              KIND_fwd returning %p") % header->fwd.Fwd );
-	    return header->fwd.Fwd;
-	}
-	default: {
-	    // do nothing - fall through
-	}
-	}
-	MPS_LOG(BF("   isfwd=FALSE returning NULL  kind = %s") % obj_name((gctools::GCKindEnum)(header->kind.Kind)));
-	return NULL;
+	Header_s* header = reinterpret_cast<Header_s*>(reinterpret_cast<char*>(client)-sizeof(Header_s));
+        MPS_LOG(BF(" client = %p base=%p  kind = %s") % client % header % header->description() );
+        if (header->fwdP()) {
+            MPS_LOG(BF("   isfwd=TRUE returning %p") % header->fwdPointer() );
+            return header->fwdPointer();
+        }
+	MPS_LOG(BF("   isfwd=FALSE returning NULL  kind = %s") % obj_name((gctools::GCKindEnum)(header->kind())));
+        return NULL;
     }
-
 
 
     static void obj_pad(mps_addr_t base, size_t size)
     {
 	size_t alignment = Alignment();
-	MPS_LOG(BF("base = %p ALIGNMENT = %d size=%lu  AlignUp(sizeof_with_header<Pad1_s>()): %d") % base % alignment % size % AlignUp(sizeof_with_header<Pad1_s>()));
-	assert(size >= AlignUp(sizeof_with_header<Pad1_s>()));
-	Header_s<void>* header = reinterpret_cast<Header_s<void>*>(base);
-	if (size == AlignUp(sizeof_with_header<Pad1_s>())) {
-	    header->pad1.Kind = KIND_SYSTEM_pad1;
-            header->pad1.Length = size;
+	MPS_LOG(BF("base = %p ALIGNMENT = %d size=%lu ") % base % alignment % size );
+	assert(size >= AlignUp(sizeof(Header_s)));
+	Header_s* header = reinterpret_cast<Header_s*>(base);
+        if (size == AlignUp(sizeof(Header_s))) {
+            header->setPad(Header_s::pad1_tag);
 	} else {
-//	    BASE_PTR_KIND(base) = KIND_pad;
-//	    mps_base_t obj_ptr = BASE_TO_OBJ_PTR(base);
-	    header->pad.Kind = KIND_SYSTEM_pad;
-	    header->pad.Length = size;
+            header->setPad(Header_s::pad_tag);
+            header->setPadSize(size);
 	}
     }
 
@@ -304,6 +280,9 @@ namespace gctools {
     int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], mps_fmt_auto_header_s* obj_fmt_sP, bool mpiEnabled, int mpiRank, int mpiSize)
     {
 
+        global_sizeof_fwd = AlignUp(sizeof(Header_s)+sizeof(uintptr_t));
+        global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
+
         // Create the object format
         if ( obj_fmt_sP != NULL )
         {
@@ -322,6 +301,7 @@ namespace gctools {
         
         mps_fmt_t obj_fmt;
         MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(Header_s) );
             MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
             MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, obj_scan);
             MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, obj_skip);
@@ -356,6 +336,33 @@ namespace gctools {
                               amc_chain);
 
 
+
+
+
+
+
+#if 1
+
+
+
+
+#define AWL_CHAIN_SIZE 256 // 32768
+
+        /*! Use an AWL pool rather than and AMS pool until the AMS bug gets fixed */
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+            res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
+        } MPS_ARGS_END(args);
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create ams pool");
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+            res = mps_ap_create_k(&global_non_moving_ap, global_non_moving_pool, args);
+        } MPS_ARGS_END(args);
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create global_non_moving_ap");
+
+
+
+#else // USE AMS pool instead of AWL pool
 #define AMS_CHAIN_SIZE 256 // 32768
         // Now the generation chain
         mps_gen_param_s ams_gen_params[] = {
@@ -393,6 +400,22 @@ namespace gctools {
 #endif
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create ams pool");
+
+#endif
+
+// #else
+//         MPS_ARGS_BEGIN(args) {
+//             MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY, 1024 * 1024);
+//             MPS_ARGS_ADD(args, MPS_KEY_MEAN_SIZE, 32);
+//             MPS_ARGS_ADD(args, MPS_KEY_ALIGN, 8);
+//             MPS_ARGS_ADD(args, MPS_KEY_MVFF_ARENA_HIGH, 1);
+//             MPS_ARGS_ADD(args, MPS_KEY_MVFF_SLOT_HIGH, 1);
+//             MPS_ARGS_ADD(args, MPS_KEY_MVFF_FIRST_FIT, 0);
+//             res = mps_pool_create_k(&_global_mvff_pool, _global_arena, mps_class_mvff(), args);
+//         } MPS_ARGS_END(args);
+//         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create mvff pool");
+// #endif
+
 
 
 #define AMCZ_CHAIN_SIZE 256 // 32768
@@ -432,8 +455,8 @@ namespace gctools {
         res = mps_ap_create_k(&_global_automatic_mostly_copying_allocation_point, _global_amc_pool, mps_args_none );
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mostly_copying_allocation_point");
 
-        res = mps_ap_create_k(&_global_automatic_mark_sweep_allocation_point, _global_ams_pool, mps_args_none );
-        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mark_sweep_allocation_point");
+        // res = mps_ap_create_k(&_global_mvff_allocation_point, _global_mvff_pool, mps_args_none );
+        // if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mvff_allocation_point");
 
         res = mps_ap_create_k(&_global_automatic_mostly_copying_zero_rank_allocation_point, _global_amcz_pool, mps_args_none );
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mostly_copying_zero_rank_allocation_point");
@@ -492,16 +515,17 @@ namespace gctools {
         mps_root_destroy(global_stack_root);
         mps_thread_dereg(global_thread);
         mps_ap_destroy(_global_automatic_weak_link_allocation_point);
+        mps_ap_destroy(global_non_moving_ap);
         mps_ap_destroy(_global_automatic_mostly_copying_zero_rank_allocation_point);
-        mps_ap_destroy(_global_automatic_mark_sweep_allocation_point);
+//        mps_ap_destroy(_global_mvff_allocation_point);
         mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
 #ifdef USE_AWL_POOL
         mps_pool_destroy(_global_awl_pool);
 #endif
         mps_pool_destroy(_global_amcz_pool);
-        mps_pool_destroy(_global_ams_pool);
+        mps_pool_destroy(global_non_moving_pool);
+//        mps_pool_destroy(_global_mvff_pool);
         mps_pool_destroy(_global_amc_pool);
-        mps_chain_destroy(ams_chain);
         mps_chain_destroy(amc_chain);
         mps_fmt_destroy(obj_fmt);
         mps_arena_destroy(_global_arena);

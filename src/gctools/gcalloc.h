@@ -284,16 +284,16 @@ namespace gctools {
             size_t sz = sizeof_with_header<T>();
             typedef typename GCHeader<T>::HeaderType HeadT;
             T* obj;
-            mps_ap_t obj_ap = _global_automatic_mark_sweep_allocation_point;
+            mps_ap_t obj_ap = global_non_moving_ap;
             mps_addr_t addr;
             do {
                 mps_res_t res = mps_reserve(&addr,obj_ap,sz);
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT();
+                new (header) HeadT(GCKind<T>::Kind);
                 obj = BasePtrToMostDerivedPtr<T>(addr);
                 new (obj) T(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,sz) );
-            DEBUG_MPS_ALLOCATION("ROOT_AMS", addr,obj,sz,gctools::GCKind<T>::Kind);
+            DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr,obj,sz,gctools::GCKind<T>::Kind);
             POLL_SIGNALS();
             return obj;
 #endif
@@ -326,7 +326,7 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&addr,obj_ap,sz);
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT();
+                new (header) HeadT(GCKind<T>::Kind);
                 obj = BasePtrToMostDerivedPtr<T>(addr);
                 new (obj) T(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,sz) );
@@ -375,7 +375,7 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT();
+                new (header) HeadT(GCKind<OT>::Kind);
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
                 new (obj) OT(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
@@ -414,7 +414,7 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT();
+                new (header) HeadT(GCKind<OT>::Kind);
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
                 new (obj) OT(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
@@ -450,17 +450,17 @@ namespace gctools {
 #ifdef USE_MPS
             typedef typename GCHeader<OT>::HeaderType HeadT;
             OT* obj;
-            mps_ap_t obj_ap = _global_automatic_mark_sweep_allocation_point;
+            mps_ap_t obj_ap = global_non_moving_ap;
             mps_addr_t addr;
             size_t size = sizeof_with_header<OT>();
             do {
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT();
+                new (header) HeadT(GCKind<OT>::Kind);
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
                 new (obj) OT(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
-            DEBUG_MPS_ALLOCATION("AMS", addr,obj,size,gctools::GCKind<OT>::Kind);
+            DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr,obj,size,gctools::GCKind<OT>::Kind);
             smart_pointer_type sp = gctools::smart_ptr<value_type>(obj);
             return sp;
 #endif
@@ -651,17 +651,18 @@ namespace gctools {
             mps_addr_t  addr;
             container_pointer myAddress(NULL);
             size_t size = sizeof_container_with_header<TY>(num);
+            mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
             do {
-                mps_res_t res = mps_reserve(&addr,_global_automatic_mostly_copying_allocation_point,size);
+                mps_res_t res = mps_reserve(&addr,obj_ap,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCContainerAllocator_mps"));
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT(size);
+                new (header) HeadT(GCKind<TY>::Kind);
                 myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
                 new (myAddress) TY(num);
-            } while (!mps_commit(_global_automatic_mostly_copying_allocation_point,addr,size));
+            } while (!mps_commit(obj_ap,addr,size));
             GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
             POLL_SIGNALS();
-            DEBUG_MPS_ALLOCATION("container AMC", addr, myAddress, size, gctools::GCKind<TY>::Kind);
+            DEBUG_MPS_ALLOCATION("containerAMC", addr, myAddress, size, gctools::GCKind<TY>::Kind);
             return myAddress;
 #endif
         }
@@ -685,6 +686,101 @@ namespace gctools {
         }
     };
 };
+
+
+
+
+namespace gctools {
+    /*! This allocator is for allocating containers that are fixed in position and Capacity.
+      Things like the MultipleValues for multiple value return are allocated with this.
+      */
+
+    template <class TY>
+    class GCContainerNonMoveableAllocator /* : public GCAlloc<TY> */ {
+    public:
+
+        // type definitions
+        typedef TY                container_type;
+        typedef container_type*   container_pointer;
+        typedef typename container_type::value_type          value_type;
+        typedef value_type*       pointer;
+        typedef const value_type* const_pointer;
+        typedef value_type&       reference;
+        typedef const value_type& const_reference;
+        typedef std::size_t      size_type;
+        typedef std::ptrdiff_t   difference_type;
+
+        /* constructors and destructor
+         * - nothing to do because the allocator has no state
+         */
+        GCContainerNonMoveableAllocator() throw() {}
+        GCContainerNonMoveableAllocator(const GCContainerNonMoveableAllocator&) throw() {}
+        template <class U>
+        GCContainerNonMoveableAllocator (const GCContainerNonMoveableAllocator<U>&) throw() {}
+        ~GCContainerNonMoveableAllocator() throw() {}
+
+        // return maximum number of elements that can be allocated
+        size_type max_size () const throw() {
+            return std::numeric_limits<std::size_t>::max() / sizeof(value_type);
+        }
+
+        // allocate but don't initialize num elements of type value_type
+        container_pointer allocate (size_type num, const void* = 0) {
+#ifdef USE_BOEHM
+            size_t sz = sizeof_container_with_header<TY>(num);
+            // prepend a one pointer header with a pointer to the typeinfo.name
+            Header_s* base = reinterpret_cast<Header_s*>(GC_MALLOC(sz));
+            if (!base) THROW_HARD_ERROR(BF("Out of memory in allocate"));
+            new (base) Header_s(typeid(TY).name(),BoehmContainerKind);
+            container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
+            POLL_SIGNALS();
+            return myAddress;
+#endif
+#ifdef USE_MPS
+            typedef typename GCHeader<TY>::HeaderType HeadT;
+            mps_addr_t  addr;
+            container_pointer myAddress(NULL);
+            size_t size = sizeof_container_with_header<TY>(num);
+            mps_ap_t obj_ap = global_non_moving_ap;
+            do {
+                mps_res_t res = mps_reserve(&addr,obj_ap,size);
+                if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCContainerNonMoveableAllocator_mps"));
+                HeadT* header = reinterpret_cast<HeadT*>(addr);
+                new (header) HeadT(GCKind<TY>::Kind);
+                myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
+                new (myAddress) TY(num);
+            } while (!mps_commit(obj_ap,addr,size));
+            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            POLL_SIGNALS();
+            DEBUG_MPS_ALLOCATION("container_MVFF", addr, myAddress, size, gctools::GCKind<TY>::Kind);
+            return myAddress;
+#endif
+        }
+
+
+        // initialize elements of allocated storage p with value value
+        template <typename...ARGS>
+        void construct (pointer p, ARGS&&...args) {
+            // initialize memory with placement new
+            new((void*)p) value_type(args...);
+        }
+
+        // destroy elements of initialized storage p
+        void destroy (pointer p) {
+            // Do nothing
+        }
+
+        // deallocate storage p of deleted elements
+        void deallocate (container_pointer p, size_type num) {
+            // Do nothing
+        }
+    };
+};
+
+
+
+
+
 
 
 
@@ -739,7 +835,7 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&base,obj_ap,sz);
                 HeadT* header = reinterpret_cast<HeadT*>(base);
-                new (header) HeadT(sz);
+                new (header) HeadT(GCKind<TY>::Kind);
 //                header->kind._Kind = gctools::GCKind<container_type>::Kind;
             } while (!mps_commit(obj_ap,base,sz) );
             container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
@@ -817,7 +913,7 @@ namespace gctools {
                 mps_res_t res = mps_reserve(&addr,_global_automatic_weak_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCContainerAllocator_mps"));
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT();
+                new (header) HeadT(GCKind<TY>::Kind);
                 myAddress = BasePtrToMostDerivedPtr<container_type>(addr);
                 new (myAddress) container_type(num);
             }

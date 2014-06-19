@@ -34,6 +34,9 @@ export LLVM_SOURCE_DIR = llvm
 
 
 BOEHM_SOURCE_DIR = boehm-7.2
+
+
+
 EXPAT_SOURCE_DIR = expat-2.0.1
 ZLIB_SOURCE_DIR = zlib-1.2.8
 GMP_SOURCE_DIR = gmp-5.0.5
@@ -381,8 +384,6 @@ boehm-setup:
 	(cd $(BOEHM_SOURCE_DIR); \
 		export ALL_INTERIOR_PTRS=1; \
 		CFLAGS="-DUSE_MMAP" \
-		autoreconf -vif \
-		automake --add-missing \
 		./configure --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR);)
 boehm-build:
 	make boehm-compile
