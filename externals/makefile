@@ -59,9 +59,9 @@ setup:
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR)
 	install -d $(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR)
 	make subClean
-	make boostbuild2-build
-	make boehm-setup
-	make llvm-setup
+	make boostbuild2-build  #
+	make boehm-setup        #
+	make llvm-setup		#
 	make openmpi-setup
 	make boost-setup
 	make ecl-setup
