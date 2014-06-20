@@ -24,7 +24,7 @@ srcdir = .
 top_srcdir = .
 
 
-prefix = /Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
+prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix = ${prefix}
 
 bindir = ${exec_prefix}/bin
@@ -100,12 +100,12 @@ mkdir-init:
 		(mkdir $$d 2> /dev/null || test 1) ; \
 	done
 
-CC = /usr/bin/clang
-CXX = /usr/bin/clang++
+CC = gcc
+CXX = g++
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 
 INCLUDES = -I$(srcdir)/lib -I.
-LDFLAGS = -stdlib=libc++ -headerpad_max_install_names
+LDFLAGS = 
 CPPFLAGS =  -DHAVE_EXPAT_CONFIG_H
 CFLAGS = -g -O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -fexceptions
 CXXFLAGS = -g -O2 -Wall -fexceptions

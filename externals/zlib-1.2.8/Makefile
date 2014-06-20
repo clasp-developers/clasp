@@ -16,7 +16,7 @@
 # To install in $HOME instead of /usr/local, use:
 #    make install prefix=$HOME
 
-CC=/usr/bin/clang
+CC=gcc
 
 CFLAGS=-O3  -DHAVE_HIDDEN
 #CFLAGS=-O -DMAX_WBITS=14 -DMAX_MEM_LEVEL=7
@@ -25,10 +25,10 @@ CFLAGS=-O3  -DHAVE_HIDDEN
 #           -Wstrict-prototypes -Wmissing-prototypes
 
 SFLAGS=-O3  -fPIC -DHAVE_HIDDEN
-LDFLAGS=-stdlib=libc++ -headerpad_max_install_names 
+LDFLAGS= 
 TEST_LDFLAGS=-L. libz.a
-LDSHARED=/usr/bin/clang -dynamiclib -install_name ${exec_prefix}/lib/libz.1.dylib -compatibility_version 1 -current_version 1.2.8
-CPP=/usr/bin/clang -E
+LDSHARED=gcc -dynamiclib -install_name ${exec_prefix}/lib/libz.1.dylib -compatibility_version 1 -current_version 1.2.8
+CPP=gcc -E
 
 STATICLIB=libz.a
 SHAREDLIB=libz.dylib
@@ -45,7 +45,7 @@ TAR=tar
 SHELL=/bin/sh
 EXE=
 
-prefix =/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
+prefix =/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix =${prefix}
 libdir =${exec_prefix}/lib
 sharedlibdir =${libdir}
