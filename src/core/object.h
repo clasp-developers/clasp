@@ -803,6 +803,7 @@ namespace core {
         typedef core::Creator TemplatedBase;
     public:
         DISABLE_NEW();
+        size_t templatedSizeof() const { return sizeof(LispObjectCreator<_W_>);};
         virtual void describe() const {
             printf("LispObjectCreator for class %s  sizeof_instances-> %lu\n",_rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
         }

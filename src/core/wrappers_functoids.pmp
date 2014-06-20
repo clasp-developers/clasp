@@ -32,6 +32,7 @@ $for template_ [[
         enum { NumParams = $numArgs };
         VariadicFunctoid(const string& name, Type ptr) : Functoid(name), fptr(ptr) {};
         DISABLE_NEW();
+        virtual size_t templatedSizeof() const { return sizeof(*this); };
         core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
         {
             if ( numArgs != (NumParams) )

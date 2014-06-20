@@ -100,6 +100,7 @@ namespace core
     public:
 	string describe() const { return "Lambda_emf";};
 	bool requires_activation_frame() const { return true;};
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:
 	Lambda_emf(const string& name,
 		   SingleDispatchGenericFunction_sp gf,

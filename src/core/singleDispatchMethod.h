@@ -158,7 +158,7 @@ namespace core {
 	}
 
         DISABLE_NEW();
-
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
 	bool requires_activation_frame() const { return true; };
 
 	/*! The argument list is: (args next-emfun)

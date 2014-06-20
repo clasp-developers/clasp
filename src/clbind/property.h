@@ -30,6 +30,8 @@ namespace clbind {
         string                          _Name;
         VariablePtrType                 _MemberPtr;
     public:
+        virtual size_t templatedSizeof() const { return sizeof(*this); };
+    public:
         GetterMethoid(const string& name, VariablePtrType p) : Functoid(name), _MemberPtr(p) {};
         DISABLE_NEW();
         virtual core::T_mv activate(core::ActivationFrame_sp closedOverFrame, int nargs, ArgArray args) {

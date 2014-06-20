@@ -283,6 +283,7 @@ namespace core {
             printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_className).c_str());
         };
         T_sp allocate();
+        virtual size_t templatedSizeof() const { return sizeof(InstanceCreator);};
     };
 
 

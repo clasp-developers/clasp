@@ -216,11 +216,11 @@ extern "C" {
         }
         };
         } else if (header->fwdP()) {
-            client = (char*)(client)+header->fwdSize()+global_alignup_sizeof_header;
+            client = (char*)(client)+header->fwdSize();
         } else if (header->pad1P()) {
-            client = (char*)(client)+header->pad1Size()+global_alignup_sizeof_header;
+            client = (char*)(client)+header->pad1Size();
         } else if (header->padP()) {
-            client = (char*)(client)+header->padSize()+global_alignup_sizeof_header;
+            client = (char*)(client)+header->padSize();
         } else {
             THROW_HARD_ERROR(BF("Illegal header at %p") % header );
         }
@@ -266,11 +266,11 @@ extern "C" {
                     }
                     };
                 } else if (header->fwdP()) {
-                    client = (char*)(client)+header->fwdSize()+global_alignup_sizeof_header;
+                    client = (char*)(client)+header->fwdSize();
                 } else if (header->pad1P()) {
-                    client = (char*)(client)+header->pad1Size()+global_alignup_sizeof_header;
+                    client = (char*)(client)+header->pad1Size();
                 } else if (header->padP()) {
-                    client = (char*)(client)+header->padSize()+global_alignup_sizeof_header;
+                    client = (char*)(client)+header->padSize();
                 } else {
                     THROW_HARD_ERROR(BF("Illegal header at %p") % header );
                 }

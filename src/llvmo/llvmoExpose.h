@@ -669,6 +669,8 @@ namespace llvmo
 	fptr_type		fptr;
 // constructor
     public:
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
+    public:
 	LLVMFunctoid( const string& name, fptr_type ptr) : Functoid("LLVMFunctoid->"+name), fptr(ptr) {};
         DISABLE_NEW();
 	core::T_mv activate(core::ActivationFrame_sp closedEnv, int nargs, ArgArray args )

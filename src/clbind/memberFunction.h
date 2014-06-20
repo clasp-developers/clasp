@@ -14,6 +14,7 @@ namespace clbind {
     class IndirectVariadicMethoid : public core::Functoid {
     public:
         typedef Functoid TemplatedBase;
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
     };
 
 

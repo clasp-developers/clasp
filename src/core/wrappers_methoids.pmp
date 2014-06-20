@@ -37,6 +37,7 @@ $var ReturnTypeCount = 3
                             enum { NumParams = $numArgs };
                             VariadicMethoid(const string& name, Type ptr) : Functoid(name), mptr(ptr) {};
                             DISABLE_NEW();
+                            virtual size_t templatedSizeof() const { return sizeof(*this);};
                             core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
                             {
                                 if ( numArgs-1 != (NumParams) )

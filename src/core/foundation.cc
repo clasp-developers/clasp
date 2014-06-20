@@ -151,7 +151,7 @@ core::Lisp_sp _lisp;
 };
 
 
-void brcl_mps_debug_allocation(const char* poolName, void* addr, void* objectAddr, int size, int kind)
+void brcl_mps_debug_allocation(const char* poolName, void* base, void* client, int size, int kind)
 {
     if (!debug_mps) return;
     if ( kind == 0 ) {
@@ -161,10 +161,10 @@ void brcl_mps_debug_allocation(const char* poolName, void* addr, void* objectAdd
 
 #if defined(USE_MPS)  && !defined(RUNNING_GC_BUILDER)
     const char* kindName = obj_name((gctools::GCKindEnum)(kind));
-    printf("%s:%d brcl_mps_allocation poolName: %s  base: %p  objAddr: %p  size: %3d  kind[%d/%s]  \n",
+    printf("%s:%d brcl_mps_allocation poolName: %s  base: %p  client: %p  size: %3d  kind[%d/%s]  \n",
            __FILE__, __LINE__,
            poolName,
-           addr, objectAddr, size,
+           base, client, size,
            kind, kindName);
 #endif
 }

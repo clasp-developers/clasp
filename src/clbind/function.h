@@ -27,6 +27,7 @@ namespace clbind {
     class VariadicFunctoid : public core::Functoid {
     public:
         typedef core::Functoid TemplatedBase;
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
     };
 
 #include "clbind_functoids.h"
