@@ -1,0 +1,111 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Type_create_hindexed 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_create_hindexed\fP \- Creates an indexed data type with offsets in bytes.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_create_hindexed(int\fI count\fP, int \fIarray_of_blocklengths\fP[],
+	MPI_Aint \fIarray_of_displacements\fP[], MPI_Datatype \fIoldtype\fP,
+	MPI_Datatype *\fInewtype\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_CREATE_HINDEXED(\fICOUNT\fP,\fI ARRAY_OF_BLOCKLENGTHS\fP, 
+	\fIARRAY_OF_DISPLACEMENTS\fP, \fIOLDTYPE\fP, \fINEWTYPE\fP, \fIIERROR\fP)
+	INTEGER	\fICOUNT, ARRAY_OF_BLOCKLENGTHS(*), OLDTYPE, NEWTYPE, IERROR\fP
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fIARRAY_OF_DISPLACEMENTS\fP(*)
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Datatype MPI::Datatype::Create_hindexed(int \fIcount\fP, 
+	const int \fIarray_of_blocklengths\fP[],
+	const MPI::Aint \fIarray_of_displacements\fP[]) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count
+Number of blocks (nonnegative integer).
+.TP 1i
+array_of_blocklengths
+Number of elements in each block (array of nonnegative integers).
+.TP 1i
+array_of_displacements
+Byte displacement of each block (array of integers).
+.TP 1i
+oldtype
+Old data type (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newtype
+New data type (handle). 
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Type_create_hindexed is identical to MPI_Type_indexed, except that block displacements in \fIarray_of_displacements\fP are specified in bytes, rather than in multiples of the \fIoldtype\fP extent. 
+.sp
+Assume that \fIoldtype\fP has type map
+.sp
+.nf
+    {(type(0), disp(0)), ..., (type(n-1), disp(n-1))},
+.fi
+.sp
+with extent \fIex\fP. Let B be the \fIarray_of_blocklengths\fP argument and D be the
+\fIarray_of_displacements\fP argument. The newly created data type has 
+.nf
+n x S^count-1
+    (i=0)        B[i]  entries:
+
+  {(type(0), disp(0) + D[0]),...,(type(n-1), disp(n-1) + D[0]),...,
+  (type(0), disp(0) + (D[0] + B[0]-1)* ex),..., 
+  type(n-1), disp(n-1) + (D[0]+ B[0]-1)* ex),...,
+  (type(0), disp(0) + D[count-1]),...,(type(n-1), disp(n-1) + D[count-1]),...,
+  (type(0), disp(0) +  D[count-1] + (B[count-1] -1)* ex),...,
+  (type(n-1), disp(n-1) + D[count-1] + (B[count-1] -1)* ex)}
+.fi
+.PP
+NOTE \- This routine replaces MPI_Type_hindexed, which is deprecated. See the man page MPI_Type_hindexed(3) for information about that routine.
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIARRAY_OF_DISPLACEMENTS\fP(*) argument only for Fortran 90.  FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_ADDRESS_KIND \fIARRAY_OF_DISPLACEMENTS\fP(*)
+.fi
+.sp
+where MPI_ADDRESS_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+.sp
+See the MPI(3) man page for a full list of MPI error codes. 
+
+.SH SEE ALSO
+.ft R
+MPI_Type_indexed
+.br
+MPI_Type_hindexed
+.br
+

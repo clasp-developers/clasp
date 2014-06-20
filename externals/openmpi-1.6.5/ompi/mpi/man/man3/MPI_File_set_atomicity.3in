@@ -1,0 +1,68 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_set_atomicity 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_set_atomicity\fP \- Sets consistency semantics for data-access operations (collective).
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_set_atomicity(MPI_File \fIfh\fP, int \fIflag\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_SET_ATOMICITY(\fIFH\fP,\fI FLAG\fP,\fI IERROR\fP)
+    	      INTEGER 	  FH, FLAG, IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::File::Set_atomicity(bool \fIflag\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+fh
+File handle (handle).
+.TP 1i
+flag
+\fBtrue\fP to enable atomic mode, \fBfalse\fP to enable nonatomic mode (boolean).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The consistency semantics for data-access operations using the set of
+file handles created by one collective MPI_File_open is set by collectively
+calling MPI_File_set_atomicity. All processes in the group must pass identical values for 
+.I fh 
+and
+.I flag.
+If 
+.I flag 
+is 
+.I true,
+atomic mode is set; if 
+.I flag 
+is 
+.I false,
+nonatomic mode is set.
+.sp
+The default value on a call to MPI_File_open in Open MPI is \fItrue\fP for jobs running on more than one node, \fIfalse\fP for jobs running on a single SMP. For more information, see the MPI-2 standard. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

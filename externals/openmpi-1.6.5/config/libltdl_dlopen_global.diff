@@ -1,0 +1,29 @@
+--- opal/libltdl/loaders/dlopen.c	2007-03-05 08:56:11.000000000 -0800
++++ opal/libltdl/loaders/dlopen_global.c	2007-03-05 08:54:46.000000000 -0800
+@@ -121,6 +121,17 @@
+ #  define LT_LAZY_OR_NOW	0
+ #endif /* !LT_LAZY_OR_NOW */
+ 
++/* Open MPI */
++#if !defined(LT_GLOBAL)
++#  if defined(RTLD_GLOBAL)
++#    define LT_GLOBAL	RTLD_GLOBAL
++#  else
++#    if defined(DL_GLOBAL)
++#      define LT_GLOBAL	DL_GLOBAL
++#    endif
++#  endif /* !RTLD_GLOBAL */
++#endif
++
+ #if defined(HAVE_DLERROR)
+ #  define DLERROR(arg)	dlerror ()
+ #else
+@@ -136,7 +147,7 @@
+ static lt_module
+ vm_open (lt_user_data LT__UNUSED loader_data, const char *filename)
+ {
+-  lt_module module = dlopen (filename, LT_LAZY_OR_NOW);
++  lt_module module = dlopen (filename, LT_GLOBAL | LT_LAZY_OR_NOW);
+ 
+   if (!module)
+     {

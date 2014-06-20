@@ -1,0 +1,174 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_open 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_open\fP \- Opens a file (collective).
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_open(MPI_Comm \fIcomm\fP, char \fI*filename\fP,
+    	      int \fIamode\fP, MPI_Info \fIinfo\fP, 
+	      MPI_File \fI*fh\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_OPEN(\fICOMM\fP,\fI FILENAME\fP,\fI AMODE\fP, \fIINFO\fP,\fI FH\fP,\fI IERROR\fP)
+   	 CHARACTER*(*)    FILENAME
+    	 INTEGER      COMM, AMODE, INFO, FH, IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static MPI::File MPI::File::Open(const MPI::Intracomm& \fIcomm\fP,
+	const char* \fIfilename\fP, int \fIamode\fP, const MPI::Info& \fIinfo\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm  
+Communicator (handle).
+.TP 1i
+filename
+Name of file to open (string). 
+.TP 1i
+amode 
+File access mode (integer).
+.TP 1i
+info
+Info object (handle). 
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+fh    
+New file handle (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_open opens the file identified by the filename 
+.I
+filename
+on all processes in the 
+.I comm
+communicator group. MPI_File_open is a collective routine; all processes
+must provide the same value for
+.I amode,
+and all processes must provide filenames that reference the same
+file and which are textually identical. A process can open a file
+independently of other processes by using the MPI_COMM_SELF
+communicator. The file handle returned, 
+.I fh,
+can be subsequently used to access the file until the file is closed
+using MPI_File_close. Before calling MPI_Finalize, the user is required to
+close (via MPI_File_close) all files that were opened with MPI_File_open. Note
+that the communicator 
+.I comm 
+is unaffected by MPI_File_open and continues to be usable in all MPI
+routines. Furthermore, use of 
+.I comm 
+will not interfere with I/O behavior.
+.sp
+Initially, all processes view the file as a linear byte stream; that is, the 
+.I etype 
+and 
+.I filetype
+are both MPI_BYTE. The file view can be changed via the MPI_File_set_view routine.
+.sp
+The following access modes are supported (specified in amode, in a bit-vector OR in one of the following integer constants):
+.TP .5i
+  o  
+MPI_MODE_APPEND
+.TP .5i
+  o 
+MPI_MODE_CREATE -- Create the file if it does not exist.
+.TP .5i
+  o  
+MPI_MODE_DELETE_ON_CLOSE
+.TP .5i
+  o  
+MPI_MODE_EXCL -- Error creating a file that already exists. 
+.TP .5i
+  o  
+MPI_MODE_RDONLY -- Read only.
+.TP .5i
+  o 
+MPI_MODE_RDWR -- Reading and writing.
+.TP .5i
+  o  
+MPI_MODE_SEQUENTIAL
+.TP .5i
+  o 
+MPI_MODE_WRONLY -- Write only.
+.TP .5i
+  o  
+MPI_MODE_UNIQUE_OPEN
+.RE
+.sp
+The modes MPI_MODE_RDONLY, MPI_MODE_RDWR, MPI_MODE_WRONLY, and MPI_MODE_CREATE have
+identical semantics to their POSIX counterparts. It is erroneous to
+specify MPI_MODE_CREATE in conjunction with MPI_MODE_RDONLY. Errors related to
+the access mode are raised in the class MPI_ERR_AMODE.
+.sp
+On single-node clusters, files are opened by default using nonatomic mode file consistency
+semantics. The more stringent atomic-mode consistency semantics, required for atomicity of overlapping accesses, are the default when processors in a communicator group reside on more than one node. 
+This setting can be changed using
+MPI_File_set_atomicity.
+.sp
+The MPI_File_open interface allows the user to pass information via the \fIinfo\fP argument. It can be set to MPI_INFO_NULL. See the HINTS section for a list of hints that can be set. 
+
+.SH HINTS
+.ft R
+The following hints can be used as values for the \fIinfo\fP argument. 
+.sp
+SETTABLE HINTS:
+.sp
+- MPI_INFO_NULL
+.sp
+- shared_file_timeout: Amount of time (in seconds) to wait for access to the 
+shared file pointer before exiting with MPI_ERR_TIMEDOUT.
+.sp
+- rwlock_timeout: Amount of time (in seconds) to wait for obtaining a read or 
+write lock on a contiguous chunk of a UNIX file before exiting with MPI_ERR_TIMEDOUT.
+.sp 
+- noncoll_read_bufsize:  Maximum size of the buffer used by
+MPI I/O to satisfy multiple noncontiguous read requests in
+the noncollective data-access routines. (See NOTE, below.)
+.sp
+- noncoll_write_bufsize: Maximum size of the buffer used by
+MPI I/O to satisfy multiple noncontiguous write requests in
+the noncollective data-access routines. (See NOTE, below.)
+.sp
+- coll_read_bufsize:  Maximum size of the buffer used by MPI
+I/O to satisfy multiple noncontiguous read requests in the
+collective data-access routines. (See NOTE, below.)
+.sp
+- coll_write_bufsize:  Maximum size of the buffer used by MPI
+I/O to satisfy multiple noncontiguous write requests in the
+collective data-access routines. (See NOTE, below.)
+.sp
+NOTE: A buffer size smaller than the distance (in bytes) in a UNIX file between the first byte and the last byte of the access request causes MPI I/O to iterate and perform multiple UNIX read() or write() calls. If the request includes multiple noncontiguous chunks of data, and the buffer size is greater than the size of those chunks, then the UNIX read() or write() (made at the MPI I/O level) will access data not requested by this process in order to reduce the total number of write() calls made. If this is not desirable behavior, you should reduce this buffer size to equal the size of the contiguous chunks within the aggregate request.
+.sp
+- mpiio_concurrency: (boolean) controls whether nonblocking
+I/O routines can bind an extra thread to an LWP.
+.sp
+- mpiio_coll_contiguous: (boolean) controls whether subsequent collective data accesses will request collectively contiguous regions of the file.
+.sp
+NON-SETTABLE HINTS: 
+.sp
+- filename: Access this hint to get the name of the file. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

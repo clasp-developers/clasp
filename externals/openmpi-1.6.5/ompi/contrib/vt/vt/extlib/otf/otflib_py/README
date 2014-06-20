@@ -1,0 +1,17 @@
+otf python bindings
+--
+
+The interface is exact the same as in C
+except:
+  - all 'OTF_*_*Progress' functions return a list of 4 values, namely
+    [old-return-value, minimum, current, maximum] and take only one argument,
+    which is a pointer to a OTF_{Reader,RStream} object
+
+  - the function 'OTF_KeyValueList_getByteArray' returns a list of 3 objects,
+    where the third object is a list, that contains the byte array. The first
+    object is the return-value and the second holds the length of the array.
+    This functions expects two arguments (OTF_KeyValueList*, uint32_t)
+
+  - all other 'OTF_KeyValueList_get*' functions return a list of 2 values, namely
+    [return-value, value] and take only 2 arguments (OTF_KeyValueList*, uint32_t)
+

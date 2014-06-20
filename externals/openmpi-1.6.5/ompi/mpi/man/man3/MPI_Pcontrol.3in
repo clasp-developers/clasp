@@ -1,0 +1,66 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Pcontrol 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Pcontrol\fP \- Controls profiling.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Pcontrol(const int \fIlevel\fP, \&... )
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_PCONTROL(\fILEVEL\fP)
+	INTEGER	\fILEVEL\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Pcontrol(const int \fIlevel\fP, \...)
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+level
+Profiling level.
+
+.SH DESCRIPTION
+.ft R
+MPI libraries themselves make no use of this routine; they simply return immediately to the user code. However the presence of calls to this routine allows a profiling package to be explicitly called by the user.  
+.sp
+Since MPI has no control of the implementation of the profiling code, we are unable to specify precisely the semantics that will be provided by calls to MPI_Pcontrol. This vagueness extends to the number of arguments to the function, and their datatypes. 
+.sp
+However to provide some level of portability of user codes to different
+profiling libraries, we request the following meanings for certain values of level:
+.TP
+  o
+level==0	Profiling is disabled.
+.TP
+  o
+level==1	Profiling is enabled at a normal default level of detail.
+.TP
+  o
+level==2	Profile buffers are flushed. (This may be a no-op in some
+profilers).
+.TP
+  o
+All other values of level have profile library-defined effects and additional arguments.  
+.LP
+.sp
+We also request that the default state after MPI_Init has been called is for profiling to be enabled at the normal default level (i.e., as if MPI_Pcontrol had just been called with the argument 1). This allows users to link with a profiling library and obtain profile output without having to modify their source code at all.
+.sp
+The provision of MPI_Pcontrol as a no-op in the standard MPI library allows users to modify their source code to obtain more detailed profiling information, but still be able to link exactly the same code against the standard MPI library. 
+
+.SH NOTES
+.ft R
+This routine provides a common interface for profiling control. The interpretation of level and any other arguments is left to the profiling library. 
+.sp
+This function does not return an error value. Consequently, the result of calling it before MPI_Init or after MPI_Finalize is undefined.
+

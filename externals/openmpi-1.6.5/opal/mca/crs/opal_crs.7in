@@ -1,0 +1,183 @@
+.\"
+.\" Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+.\"                         University Research and Technology
+.\"                         Corporation.  All rights reserved.
+.\" Copyright (c) 2009      Sun Microsystems, Inc.  All rights reserved.
+.\"
+.\" Man page for OPAL's CRS Functionality
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH OPAL_CRS 7 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+OPAL_CRS \- Open PAL MCA Checkpoint/Restart Service (CRS): Overview of Open PAL's
+CRS framework, and selected modules.  #PACKAGE_NAME# #PACKAGE_VERSION#.
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+Open PAL can involuntarily checkpoint and restart sequential programs.
+Doing so requires that Open PAL was compiled with thread support and
+that the back-end checkpointing systems are available at run-time.
+.
+.SS Phases of Checkpoint / Restart
+.PP
+Open PAL defines three phases for checkpoint / restart support in a
+procress:
+.
+.TP 4
+Checkpoint
+When the checkpoint request arrives, the procress is notified of the 
+request before the checkpoint is taken.
+.
+.TP 4
+Continue
+After a checkpoint has successfully completed, the same process as the
+checkpoint is notified of its successful continuation of execution.
+.
+.TP 4
+Restart
+After a checkpoint has successfully completed, a new / restarted
+process is notified of its successful restart.
+.
+.PP
+The Continue and Restart phases are identical except for the process
+in which they are invoked. The Continue phase is invoked in the same process
+as the Checkpoint phase was invoked. The Restart phase is only invoked in newly
+restarted processes.
+.
+.\" **************************
+.\"    General Process Requirements Section
+.\" **************************
+.SH GENERAL PROCESS REQUIREMENTS
+.PP
+In order for a process to use the Open PAL CRS components it must adhear to a
+few programmatic requirements.
+.PP
+First, the program must call \fIOPAL_INIT\fR early in its execution. This
+should only be called once, and it is not possible to checkpoint the process
+without it first having called this function.
+.PP
+The program must call \fIOPAL_FINALIZE\fR before termination. This does a 
+significant amount of cleanup. If it is not called, then it is very likely that
+remnants are left in the filesystem.
+.PP
+To checkpoint and restart a process you must use the Open PAL tools to do
+so. Using the backend checkpointer's checkpoint and restart tools will lead
+to undefined behavior.
+To checkpoint a process use \fIopal_checkpoint\fR (opal_checkpoint(1)).
+To restart a process use \fIopal_restart\fR (opal_restart(1)).
+.
+.\" **********************************
+.\"    Available Components Section
+.\" **********************************
+.SH AVAILABLE COMPONENTS
+.PP
+Open PAL ships with two CRS components: \fIself\fR and \fIblcr\fR.
+.
+.PP
+The following MCA parameters apply to all components:
+.
+.TP 4
+crs_base_verbose
+Set the verbosity level for all components. Default is 0, or silent except on error.
+.
+.TP 
+crs_base_snapshot_dir
+The directory to store the checkpoint snapshots. Default is \fB/tmp\fP.
+.
+.\"   Self Component
+.\" ******************
+.SS self CRS Component
+.PP
+The \fIself\fR component invokes user-defined functions to save and restore
+checkpoints. It is simply a mechanism for user-defined functions to be invoked
+at Open PAL's Checkpoint, Continue, and Restart phases. Hence, the only data
+that is saved during the checkpoint is what is written in the user's checkpoint
+function. No libary state is saved at all.
+.
+.PP
+As such, the model for the \fIself\fR component is slightly differnt than for
+other components. Specifically, the Restart function is not invoked in the same
+process image of the process that was checkpointed. The Restart phase is
+invoked during \fBOPAL_INIT\fR of the new instance of the applicaiton (i.e., it
+starts over from main()).
+.
+.PP
+The \fIself\fR component has the following MCA parameters:
+.TP 4
+crs_self_prefix
+Speficy a string prefix for the name of the checkpoint, continue, and restart
+functions that Open PAL will invoke during the respective stages. That is,
+by specifying "-mca crs_self_prefix foo" means that Open PAL expects to find
+three functions at run-time:
+
+   int foo_checkpoint()
+
+   int foo_continue()
+
+   int foo_restart()
+
+By default, the prefix is set to "opal_crs_self_user".
+.
+.TP 4
+crs_self_priority
+Set the \fIself\fR components default priority
+.
+.TP 4
+crs_self_verbose
+Set the verbosity level. Default is 0, or silent except on error.
+.
+.TP 4
+crs_self_do_restart
+This is mostly internally used. A general user should never need to set this
+value. This is set to non-0 when a the new process should invoke the restart
+callback in \fIOPAL_INIT\fR. Default is 0, or normal execution.
+.
+.\"   BLCR Component
+.\" ******************
+.SS blcr CRS Component
+.PP
+The Berkeley Lab Checkpoint/Restart (BLCR) single-process checkpoint is a
+software system developed at Lawrence Berkeley National Laboratory. See the
+project website for more details:
+
+   \fI http://ftg.lbl.gov/CheckpointRestart/CheckpointRestart.shtml \fR
+.
+.PP
+The \fIblcr\fR component has the following MCA parameters:
+.TP 4
+crs_blcr_priority
+Set the \fIblcr\fR components default priority.
+.
+.TP 4
+crs_blcr_verbose
+Set the verbosity level. Default is 0, or silent except on error.
+.
+.\"   Special 'none' option
+.\" ************************
+.SS none CRS Component
+.PP
+The \fInone\fP component simply selects no CRS component. All of the CRS
+function calls return immediately with OPAL_SUCCESS. 
+.
+.PP
+This component is the last component to be selected by default. This means that if
+another component is available, and the \fInone\fP component was not explicity
+requested then OPAL will attempt to activate all of the available components
+before falling back to this component.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+  opal_checkpoint(1), opal_restart(1)
+.\", orte_crs(7), ompi_crs(7)

@@ -1,0 +1,93 @@
+.\"
+.\" Man page for OMPI's CRCP Functionality
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH OMPI_CRCP 7 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+OMPI_CRCP \- Open MPI MCA Checkpoint/Restart Coordination Protocol (CRCP) Framework:
+Overview of Open MPI's CRCP framework, and selected modules.  #PACKAGE_NAME# #PACKAGE_VERSION#
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+The CRCP Framework is used by Open MPI for the encapsulation of various
+Checkpoint/Restart Coordination Protocols (e.g., Coordinated, Uncoordinated,
+Message/Communication Induced, ...).
+.
+.\" **************************
+.\"    General Process Requirements Section
+.\" **************************
+.SH GENERAL PROCESS REQUIREMENTS
+.PP
+In order for a process to use the Open MPI CRCP components it must adhear to a
+few programmatic requirements.
+.PP
+First, the program must call \fIMPI_INIT\fR early in its execution.
+.PP
+The program must call \fIMPI_FINALIZE\fR before termination.
+.PP
+A user may initiate a checkpoint of a parallel application by using the
+ompi-checkpoint(1) and ompi-restart(1) commands.
+.
+.\" **********************************
+.\"    Available Components Section
+.\" **********************************
+.SH AVAILABLE COMPONENTS
+.PP
+Open MPI currently ships with one CRCP component: \fIcoord\fR.
+.
+.PP
+The following MCA parameters apply to all components:
+.
+.TP 4
+crcp_base_verbose
+Set the verbosity level for all components. Default is 0, or silent except on error.
+.
+.\"   Coord Component
+.\" ******************
+.SS coord CRCP Component
+.PP
+The \fIcoord\fR component implements a Coordinated Checkpoint/Restart
+Coordination Protocol similar to the one implemented in LAM/MPI.
+.
+.PP
+The \fIcoord\fR component has the following MCA parameters:
+.
+.TP 4
+crcp_coord_priority
+The component's priority to use when selecting the most appropriate component
+for a run.
+.
+.TP 4
+crcp_coord_verbose
+Set the verbosity level for this component. Default is 0, or silent except on
+error.
+.
+.\"   Special 'none' option
+.\" ************************
+.SS none CRCP Component
+.PP
+The \fInone\fP component simply selects no CRCP component. All of the CRCP
+function calls return immediately with ORTE_SUCCESS. 
+.
+.PP
+This component is the last component to be selected by default. This means that if
+another component is available, and the \fInone\fP component was not explicity
+requested then Open MPI will attempt to activate all of the available components
+before falling back to this component.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+  ompi-checkpoint(1), ompi-restart(1), opal-checkpoint(1), opal-restart(1),
+orte_snapc(7), orte_filem(7), opal_crs(7)
+.

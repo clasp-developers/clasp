@@ -1,0 +1,56 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2006 The Regents of the University of California.
+#                         All rights reserved.
+# Copyright (c) 2006-2007 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2007      Mellanox Technologies. All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI's OpenFabrics support
+# (the carto file).
+#
+
+[file not found]
+File %s: No such file or directory
+#
+
+[expected node type]
+File: %s line: %d expected Edge type (free string). received %s
+#
+
+[expected node name]
+File: %s line: %d expected Edge name (free string). received %s
+#
+
+[expected Connection]
+File: %s line: %d expected Edge branch (edge name:weight). received %s
+#
+
+[expected deceleration]
+File: %s line: %d expected Edge declaration (EDGE) or branch declaration (BRANCH). received %s
+#
+
+[incorrect connection]
+File: %s line: %d - %s - incorrect branch
+#
+
+[vertex not found]
+File: %s line: %d - Edge %s is not in the graph
+#
+
+[unknown token]
+File: %s line: %d - lexical analyzer returned 
+unknown value - %d
+#

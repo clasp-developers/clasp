@@ -1,0 +1,102 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Init 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Init\fP \- Initializes the MPI execution environment
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Init(int *\fIargc\fP, char ***\fIargv\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_INIT(\fIIERROR\fP)
+	INTEGER	\fIIERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Init(int& \fIargc\fP, char**& \fIargv\fP)
+void MPI::Init()
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+argc
+C/C++ only: Pointer to the number of arguments.
+.TP 1i
+argv
+C/C++ only: Argument vector.
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This routine, or MPI_Init_thread, must be called before any other MPI
+routine (apart from MPI_Initialized) is called. MPI can be initialized
+at most once; subsequent calls to MPI_Init or MPI_Init_thread are
+erroneous.
+.sp
+All MPI programs must contain a call to MPI_Init or
+MPI_Init_thread. Open MPI accepts the C/C++ \fIargc\fP and \fIargv\fP
+arguments to main, but neither modifies, interprets, nor distributes
+them:
+.sp
+.nf
+	{
+		/* declare variables */
+		MPI_Init(&argc, &argv);
+		/* parse arguments */
+		/* main program */ 
+		MPI_Finalize();
+	}
+.fi
+
+.SH NOTES
+.ft R
+The Fortran version does not have provisions for \fIargc\fP and
+\fIargv\fP and takes only IERROR.
+.sp
+The MPI Standard does not say what a program can do before an MPI_Init
+or after an MPI_Finalize. In the Open MPI implementation, it should do
+as little as possible. In particular, avoid anything that changes the
+external state of the program, such as opening files, reading standard
+input, or writing to standard output.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Init_thread
+MPI_Initialized
+MPI_Finalize
+

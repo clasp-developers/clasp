@@ -1,0 +1,340 @@
+Copyright (c) 2010 Oracle and/or its affiliates.  All rights reserved.
+
+BFO DESIGN DOCUMENT
+This document describes the use and design of the bfo.  In addition,
+there is a section at the end explaining why this functionality was
+not merged into the ob1 PML.
+
+1. GENERAL USAGE
+First, one has to configure the failover code into the openib BTL so
+that bfo will work correctly.  To do this:
+configure --enable-btl-openib-failover.
+
+Then, when running one needs to select the bfo PML explicitly.
+mpirun --mca pml bfo
+
+Note that one needs to both configure with --enable-btl-openib-failover
+and run with --mca pml bfo to get the failover support.  If one of
+these two steps is skipped, then the MPI job will just abort in the
+case of an error like it normally does with the ob1 PML.
+
+2. GENERAL FUNCTION
+The bfo failover feature requires two or more openib BTLs in use.  In
+normal operation, it will stripe the communication over the multiple
+BTLs.  When an error is detected, it will stop using the BTL that
+incurred the error and continue the communication over the remaining
+BTL.  Once a BTL has been mapped out, it cannot be used by the job
+again, even if the underlying fabric becomes functional again.  Only
+new jobs started after the fabric comes back up will use both BTLs.
+
+The bfo works in conjunction with changes that were made in the openib
+BTL.  As noted above, those changes need to be configured into the
+BTL for everything to work properly.
+
+The bfo only fails over between openib BTLs.  It cannot failover from
+an openib BTL to TCP, for example.
+ 
+3. GENERAL DESIGN
+The bfo (Btl FailOver) PML was designed to work in clusters that have
+multiple openib BTLs.  It was designed to be lightweight so as to
+avoid any adverse effects on latency.  To that end, there is no
+tracking of fragments or messages in the bfo PML.  Rather, it depends
+on the underlying BTL to notify it of each fragment that has an error.
+The bfo then decides what needs to be done based on the type of
+fragment that gets an error.
+
+No additional sequence numbers were introduced in the bfo.  Instead,
+it makes use of the sequence numbers that exist in the MATCH, RNDV and
+RGET fragment header.  In that way, duplicate fragments that have
+MATCH information in them can be detected.  Other fragments, like PUT
+and ACK, are never retransmitted so it does not matter that they do
+not have sequence numbers.  The FIN header was a special case in that
+it was changed to include the MATCH header so that the tag, source,
+and context fields could be used to check for duplicate FINs.
+
+Note that the assumption is that the underlying BTL will always issue
+a callback with an error flag when it thinks a fragment has an error.
+This means that even after an error is detected on a BTL, the BTL
+continues to be checked for any other messages that may also complete
+with an error.  This is potentially a unique characteristic of the
+openib BTL when running over RC connections that allows the BFO to
+work properly.
+
+One scenario that is particularly difficult to handle is the case
+where a fragment has an error but the message actually makes it to the
+other side.  It is because of this that all fragments need to be
+checked to make sure they are not a duplicate.  This scenario also
+complicates some of the rendezvous protocols as the two sides may not
+agree where the problem occurred.  For example, one can imagine a
+sender getting an error on a final FIN message, but the FIN message
+actually arrives at the other side.  The receiver thinks the
+communication is done and moves on.  The sender thinks there was a
+problem, and that the communication needs to restart.
+
+It is also important to note that a message cannot signal a successful
+completion and *not* make it to the receiver.  This would probably cause
+the bfo to hang.
+
+4. ERRORS
+Errors are detected in the openib BTL layer and propagated to the PML
+layer.  Typically, the errors occur while polling the completion
+queue, but can happen in other areas as well.  When an error occurs,
+an additional callback is called so the PML can map out the connection
+for future sending.  Then the callback associated with the fragment is
+called, but with the error field set to OMPI_ERROR.  This way, the PML
+knows that this fragment may not have made it to the remote side.
+
+The first callback into the PML is via the mca_pml_bfo_error_handler()
+callback and the PML uses this to remove a connection for future
+sending.  If the error_proc_t field is NULL, then the entire BTL is
+removed for any future communication.  If the error_proc_t is not
+NULL, then the BTL is only removed for the connection associated with
+the error_proc_t.
+
+The second callback is the standard one for a completion event, and
+this can trigger various activities in the PML.  The regular callback
+function is called but the status is set to OMPI_ERROR.  The PML layer
+detects this and calls some failover specific routines depending on
+the type of fragment that got the error.
+
+
+5. RECOVERY OF MATCH FRAGMENTS
+Note: For a general description of how the various fragments interact,
+see Appendix 1 at the end of this document.
+
+In the case of a MATCH fragment, the fragment is simply resent.  Care
+has to be taken with a MATCH fragment that is sent via the standard
+interface and one that is sent via the sendi interface.  In the
+standard send, the send request is still available and is therefore
+reset reused to send the MATCH fragment.  In the case of the sendi
+fragment, the send request is gone, so the fragment is regenerated
+from the information contained within the fragment.
+
+6. RECOVERY OF RNDV or LARGE MESSAGE RDMA
+In the case of a large message RDMA transfer or a RNDV transfer where
+the message consists of several fragments, the restart is a little
+more complicated.  This includes fragments like RNDV, PUT, RGET, FRAG,
+FIN, and RDMA write and RDMA read completions. In most cases, the
+requests associated with these fragments are reset and restarted.
+
+First, it should be pointed out that a new variable was added to the
+send and receive requests.  This variable tracks outstanding send
+events that have not yet received their completion events.  This new
+variable is used so that a request is not restarted until all the
+outstanding events have completed.  If one does not wait for the
+outstanding events to complete, then one may restart a request and
+then a completion event will happen on the wrong request.
+
+There is a second variable added to each request and that is one that
+shows whether the request is already in an error state.  When a request
+reaches the state that it has an error flagged on it and the outstanding
+completion events are down to zero, it can start the restart dance
+as described below.
+
+7. SPECIAL CASE FOR FIN FRAGMENT
+Like the MATCH fragment, the FIN message is also simply resent.  Like
+the sendi MATCH fragment, there may be no request associated with the
+FIN message when it gets an error, so the fragment is recreated from
+the information in the fragment.  The FIN fragment was modified to
+have additional information like what is in a MATCH fragment including
+the context, source, and tag.  In this way, we can figure out if the
+FIN message is a duplicate on the receiving side.
+
+8. RESTART DANCE
+When the bfo determines that there are no outstanding completion events,
+a restart dance is initiated.  There are four new PML message types that
+have been created to participate in the dance.
+  1. RNDVRESTARTNOTIFY
+  2. RECVERRNOTIFY
+  3. RNDVRESTARTACK
+  4. RNDVRESTARTNACK
+
+When the send request is in an error state and the outstanding
+completion events is zero, RNDVRESTARTNOTIFY is sent from the sender
+to the receiver to let it know that the communication needs to be
+restarted.  Upon receipt of the RNDVRESTARTNOTIFY, the receiver first
+checks to make sure that it is still pointing to a valid receiver
+request.  If so, it marks the receive request in error.  It then
+checks to see if there are any outstanding completion events on the
+receiver.  If there are no outstanding completion events, the receiver
+sends the RNDVRESTARTACK.  If there are outstanding completion events,
+then the RNDVRESTARTACK gets sent later when a completion event occurs
+that brings the outstanding event count to zero.
+
+In the case that the receiver determines that it is no longer looking
+at a valid receive request, which means the request is complete, the
+receiver responds with a RNDVRESTARTNACK.  While rare, this case can
+happen for example, when a final FRAG message triggers an error on the
+sender, but actually makes it to the receiver.
+
+The RECVERRNOTIFY fragment is used so the receiver can let the sender
+sender know that it had an error.  The sender then waits for all of
+its completion events, and then sends a RNDVRESTARTNOTIFY.
+
+All the handling of these new messages is contained in the
+pml_bfo_failover files.
+
+9. BTL SUPPORT
+The openib BTL also supplies a lot of support for the bfo PML.  First,
+fragments can be stored in the BTL during normal operation if
+resources become scarce.  This means that when an error is detected in
+the BTL, it needs to scour its internal queues for fragments that are
+destined for the BTL and error them out.  The function
+error_out_all_pending_frags() takes care of this functionality.  And
+some of the fragments stored can be coalesced, so care has to be taken
+to tease out each message from a coalesced fragment.
+
+There is also some special code in the BTL to handle some strange
+occurrences that were observed in the BTL.  First, there are times
+where only one half of the connection gets an error.  This can result
+in a mismatch between what the PML thinks is available to it and can
+cause hangs.  Therefore, when a BTL detects an error, it sends a
+special message down the working BTL connection to tell the remote
+side that it needs to be brought down as well.
+
+Secondly, it has been observed that a message can get stuck in the
+eager RDMA connection between two BTLs.  In this case, an error is
+detected on one side, but the other side never sees the message.
+Therefore, a special message is sent to the other side telling it to
+move along in the eager RDMA connection.  This is all somewhat
+confusing.  See the code in the btl_openib_failover.c file for the
+details.
+
+10. MERGING
+Every effort was made to try and merge the bfo PML into the ob1 PML.
+The idea was that any upgrades to the ob1 PML would automatically make
+it into the bfo PML and this would enhance maintainability of all the
+code.  However, it was deemed that this merging would cause more
+problems than it would solve.  What was attempted and why the
+conclusion was made are documented here.
+
+One can look at the bfo and easily see the differences between it and
+ob1.  All the bfo specific code is surrounded by #if PML_BFO.  In
+addition, there are two additional files in the bfo,
+pml_bfo_failover.c and pml_bfo_failover.h.
+
+To merge them, the following was attempted.  First, add all the code
+in #if regions into the ob1 PML.  As of this writing, there are 73
+#ifs that would have to be added into ob1.
+
+Secondly, remove almost all the pml_bfo files and replace them with
+links to the ob1 files.
+
+Third, create a new header file that did name shifting of all the
+functions so that ob1 and bfo could live together.  This also included
+having to create macros for the names of header files as well.  To
+help illustrate the name shifting issue, here is what the file might
+look like in the bfo directory.
+
+/* Need macros for the header files as they are different in the 
+ * different PMLs */
+#define PML "bfo"
+#define PML_OB1_H "pml_bfo.h"
+#define PML_OB1_COMM_H "pml_bfo_comm.h"
+#define PML_OB1_COMPONENT_H "pml_bfo_component.h"
+#define PML_OB1_HDR_H "pml_bfo_hdr.h"
+#define PML_OB1_RDMA_H "pml_bfo_rdma.h"
+#define PML_OB1_RDMAFRAG_H "pml_bfo_rdmafrag.h"
+#define PML_OB1_RECVFRAG_H "pml_bfo_recvfrag.h"
+#define PML_OB1_RECVREQ_H "pml_bfo_recvreq.h"
+#define PML_OB1_SENDREQ_H "pml_bfo_sendreq.h"
+
+/* Name shifting of functions from ob1 to bfo (incomplete list) */
+#define mca_pml_ob1 mca_pml_bfo
+#define mca_pml_ob1_t mca_pml_bfo_t 
+#define mca_pml_ob1_component mca_pml_bfo_component
+#define mca_pml_ob1_add_procs mca_pml_bfo_add_procs
+#define mca_pml_ob1_del_procs mca_pml_bfo_del_procs
+#define mca_pml_ob1_enable mca_pml_bfo_enable
+#define mca_pml_ob1_progress mca_pml_bfo_progress
+#define mca_pml_ob1_add_comm mca_pml_bfo_add_comm
+#define mca_pml_ob1_del_comm mca_pml_bfo_del_comm
+#define mca_pml_ob1_irecv_init mca_pml_bfo_irecv_init
+#define mca_pml_ob1_irecv mca_pml_bfo_irecv
+#define mca_pml_ob1_recv mca_pml_bfo_recv
+#define mca_pml_ob1_isend_init mca_pml_bfo_isend_init
+#define mca_pml_ob1_isend mca_pml_bfo_isend
+#define mca_pml_ob1_send mca_pml_bfo_send
+#define mca_pml_ob1_iprobe mca_pml_bfo_iprobe
+[...and much more ...]
+
+The pml_bfo_hdr.h file was not a link because the changes in it were
+so extensive.  Also the Makefile was kept separate so it could include
+the additional failover files as well as add a compile directive that
+would force the files to be compiled as bfo instead of ob1.
+
+After these changes were made, several independent developers reviewed
+the results and concluded that making these changes would have too
+much of a negative impact on ob1 maintenance.  First, the code became
+much harder to read with all the additional #ifdefs.  Secondly, the
+possibility of adding other features, like csum, to ob1 would only
+make this issue even worse.  Therefore, it was decided to keep the bfo
+PML separate from ob1.
+
+11. UTILITIES
+In an ideal world, any bug fixes that are made in the ob1 PML would
+also be made in the csum and the bfo PMLs.  However, that does not
+always happen.  Therefore, there are two new utilities added to the
+contrib directory.
+
+check-ob1-revision.pl
+check-ob1-pml-diffs.pl
+
+The first one can be run to see if ob1 has changed from its last known
+state.  Here is an example.
+
+ machine =>check-ob1-revision.pl
+Running svn diff -r24138 ../ompi/mca/pml/ob1
+No new changes detected in ob1.  Everything is fine.
+
+If there are differences, then one needs to review them and potentially
+add them to the bfo (and csum also if one feels like it).
+After that, bump up the value in the script to the latest value.
+
+The second script allows one to see the differences between the ob1
+and bfo PML.  Here is an example.
+
+ machine =>check-ob1-pml-diffs.pl
+
+Starting script to check differences between bfo and ob1...
+Files Compared: pml_ob1.c and pml_bfo.c
+No differences encountered
+Files Compared: pml_ob1.h and pml_bfo.h
+[...snip...]
+Files Compared: pml_ob1_start.c and pml_bfo_start.c
+No differences encountered
+
+There is a lot more in the script that tells how it is used.
+
+
+Appendix 1: SIMPLE OVERVIEW OF COMMUNICATION PROTOCOLS
+The drawings below attempt to describe some of the general flow of
+fragments in the various protocols that are supported in the PMLs.
+The "read" and "write" are actual RDMA actions and do not pertain to
+fragments that are sent.  As can be inferred, they use FIN messages to
+indicate their completion.
+
+
+MATCH PROTOCOL
+sender >->->-> MATCH >->->-> receiver
+
+SEND WITH MULTIPLE FRAGMENTS
+sender >->->-> RNDV  >->->-> receiver
+       <-<-<-<  ACK  <-<-<-<
+       >->->-> FRAG  >->->->
+       >->->-> FRAG  >->->->
+       >->->-> FRAG  >->->->
+
+RDMA PUT
+sender >->->-> RNDV  >->->-> receiver
+       <-<-<-<  PUT  <-<-<-<
+       <-<-<-<  PUT  <-<-<-<
+       >->->-> write >->->->
+       >->->->  FIN  >->->->
+       >->->-> write >->->->
+       >->->->  FIN  >->->->
+
+RMA GET
+sender >->->-> RGET  >->->-> receiver
+       <-<-<-< read  <-<-<-< 
+       <-<-<-<  FIN  <-<-<-< 

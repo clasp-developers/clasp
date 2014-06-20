@@ -1,0 +1,104 @@
+.\"
+.\" Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+.\"                         University Research and Technology
+.\"                         Corporation.  All rights reserved.
+.\" Copyright (c) 2008      Sun Microsystems, Inc.  All rights reserved.
+.\"
+.\" Man page for OPAL's opal-checkpoint command
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH     OPAL-CHECKPOINT  1       "#OMPI_DATE#" "#PACKAGE_NAME#"   "#PACKAGE_VERSION#"
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+opal-checkpoint \- Checkpoint a running sequential process using the Open PAL
+Checkpoint/Restart Service (CRS).
+.
+.P
+\fBNote\fR: This should only be used by the user if the application being 
+checkpointed is an OPAL-only application. If it is an Open RTE or Open MPI
+program their respective tools should be used.
+.
+.\" **************************
+.\"    Synopsis Section
+.\" **************************
+.SH SYNOPSIS
+.
+.B opal-checkpoint
+.B [ options ]
+.B <PID>
+.
+.\" **************************
+.\"    Options Section
+.\" **************************
+.SH Options
+.
+\fIopal-checkpoint\fR will attempt to notify a running process that it has been
+requested that the process checkpoint itself. A snapshot handle reference is
+presented to the user, which is used in \fIopal_restart\fP to restart the
+process.
+.
+.TP 10
+.B <PID>
+Process ID of the running target process.
+.
+.
+.TP
+.B -h | --help
+Display help for this command
+.
+.
+.TP
+.B --term
+After checkpointing the running process, terminate it.
+.
+.
+.TP
+.B -v | --verbose
+Enable verbose output for debugging.
+.
+.
+.TP
+.B -n | --name
+Request a specific name for the local snapshot reference.
+.
+.
+.TP
+.B -w | --where
+Request that the local snapshot reference be placed in a specific location.
+.
+.
+.TP
+.B -gmca | --gmca \fR<key> <value>\fP
+Pass global MCA parameters that are applicable to all contexts. \fI<key>\fP is
+the parameter name; \fI<value>\fP is the parameter value.
+.
+.
+.TP
+.B -mca | --mca <key> <value>
+Send arguments to various MCA modules.
+.
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+\fIopal-checkpoint\fR can be invoked multiple, non-overlapping times. This
+allows the user to take involuntary checkpoints of a running sequential
+process. See opal_crs(7) for more information about the CRS framework and
+components. It is convenient to note that the user does not need to spectify
+the checkpointer to be used here, as that is determined completely by the
+running process being checkpointed.
+.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+  opal-restart(1), opal_crs(7)
+.\", orte_crs(7), ompi_crs(7)

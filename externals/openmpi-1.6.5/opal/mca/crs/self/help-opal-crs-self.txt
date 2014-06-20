@@ -1,0 +1,56 @@
+ -*- text -*-
+#
+# Copyright (c) 2004-2009 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+#
+# Additional copyrights may follow
+#
+# $HEADER$
+#
+# This is the US/English general help file for Open PAL CRS framework.
+#
+[self:lt_dlopen]
+Error: We were unable to open the executable with libtool.
+       We needed to look for the inclusion of user defined callbacks.
+       
+       Make sure that the linker has exported all of the symbols. 
+       This is usally enabled with a flag such as '-export'.
+
+[self:no_callback]
+Error: We were unable to find one of the following callbacks:
+         %s =  %s_%s
+         %s =  %s_%s
+         %s =  %s_%s
+       Possible causes of this problem are:
+        - Linker did not export all of the proper symbols.
+          This is usally enabled with a flag such as '-export'.
+        - The function does not exist in your program.
+
+       If you have a custom prefix for your functions you may specify
+       them with the 'crs_self_prefix' mca parameter. For example,
+         $ prog -mca crs_self_prefix my_prefix 
+       This will then look for the following functions:
+         int my_prefix_checkpoint(void)
+         int my_prefix_continue(void)
+         int my_prefix_restart(void)
+       Otherwise it will search for functions with the default prefix of:
+           '%s'
+
+[self:ckpt_disabled]
+Error: The checkpointer is currently disabled.
+       Unable to proceed with the checkpoint!
+
+[self:no-restart-cmd]
+Error: The checkpointer was unable to determine how to restart your
+       application. Specify the restart command in the checkpoint
+       function.
+

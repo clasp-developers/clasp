@@ -1,0 +1,121 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.\" Copyright (c) 2011 Cisco Systems, Inc.  All rights reserved.
+.TH MPI_Testall 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Testall\fP \- Tests for the completion of all previously initiated communications in a list.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Testall(int \fIcount\fP, MPI_Request\fI *array_of_requests\fP,
+	int\fI *flag\fP, MPI_Status\fI *array_of_statuses\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TESTALL(\fICOUNT, ARRAY_OF_REQUESTS, FLAG, ARRAY_OF_STATUSES,
+		IERROR\fP)
+	LOGICAL	\fIFLAG\fP
+	INTEGER	\fICOUNT, ARRAY_OF_REQUESTS(*)\fP
+	INTEGER	\fIARRAY_OF_STATUSES(MPI_STATUS_SIZE,*), IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static bool Request::Testall(int \fIcount\fP, Request 
+	\fIarray_of_requests\fP[], Status \fIarray_of_statuses\fP[]) 
+
+static bool Request::Testall(int \fIcount\fP, Request \fIarray_of_requests\fP[])
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count
+Lists length (integer).
+.TP 1i
+array_of_requests
+Array of requests (array of handles).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+flag
+True if previously initiated communications are complete (logical.)
+.TP 1i
+array_of_statuses
+Array of status objects (array of status).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Returns \fIflag\fP = true if all communications associated with active handles in the array have completed (this includes the case where no handle in the list is active). In this case, each status entry that corresponds to an active handle request is set to the status of the corresponding communication; if the request was allocated by a nonblocking communication call then it is deallocated, and the handle is set to MPI_REQUEST_NULL. Each status entry that corresponds to a null or inactive handle is set to empty.
+.sp
+Otherwise, \fIflag\fP = false is returned, no request is modified and the values of the status entries are undefined. This is a local operation.
+.sp
+If your application does not need to examine the \fIarray_of_statuses\fP field, you can save resources by using the predefined constant MPI_STATUSES_IGNORE can be used as a special value for the \fIarray_of_statuses\fP argument. 
+.sp
+Errors that occurred during the execution of MPI_Testall are handled in the same manner as errors in MPI_Waitall.
+
+.SH NOTE
+.ft R
+\fIflag\fP is true only if all requests have completed. Otherwise, \fIflag\fP is false,
+and neither \fIarray_of_requests\fP nor \fIarray_of_statuses\fP is modified.
+
+.SH ERRORS
+For each invocation of MPI_Testall, if one or more requests generate
+an MPI exception, only the \fIfirst\fP MPI request that caused an
+exception will be passed to its corresponding error handler.  No other
+error handlers will be invoked (even if multiple requests generated
+exceptions).  However, \fIall\fP requests that generate an exception
+will have a relevant error code set in the corresponding
+status.MPI_ERROR field (unless MPI_STATUSES_IGNORE was used).
+.sp
+The default error handler aborts the MPI job, except for I/O function
+errors. The error handler may be changed with MPI_Comm_set_errhandler,
+MPI_File_set_errhandler, or MPI_Win_set_errhandler (depending on the
+type of MPI handle that generated the MPI request); the predefined
+error handler MPI_ERRORS_RETURN may be used to cause error values to
+be returned. Note that MPI does not guarantee that an MPI program can
+continue past an error.
+.sp
+If the invoked error handler allows MPI_Testall to return to the
+caller, the value MPI_ERR_IN_STATUS will be returned in the C and
+Fortran bindings.  In C++, if the predefined error handler
+MPI::ERRORS_THROW_EXCEPTIONS is used, the value MPI::ERR_IN_STATUS
+will be contained in the MPI::Exception object.  The MPI_ERROR field
+can then be examined in the array of returned statuses to determine
+exactly which request(s) generated an exception.
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Comm_set_errhandler
+.br
+MPI_File_set_errhandler
+.br
+MPI_Test
+.br
+MPI_Testany
+.br
+MPI_Testsome
+.br
+MPI_Wait
+.br
+MPI_Waitall
+.br
+MPI_Waitany
+.br
+MPI_Waitsome
+.br
+MPI_Win_set_errhandler
+.br
+

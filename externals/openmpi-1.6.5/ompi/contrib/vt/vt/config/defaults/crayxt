@@ -1,0 +1,14 @@
+CC="cc"
+CXX="CC"
+FC="ftn"
+CFLAGS="-O3"
+CXXFLAGS="-O3"
+FCFLAGS="-O3"
+if test x"$XTPE_COMPILE_TARGET" != x; then
+  CFLAGS="$CFLAGS -target=$XTPE_COMPILE_TARGET"
+  CXXFLAGS="$CXXFLAGS -target=$XTPE_COMPILE_TARGET"
+  FCFLAGS="$FCFLAGS -target=$XTPE_COMPILE_TARGET"
+fi
+enable_shared="no"
+with_mpich2="yes"
+with_shlibc=/lib64/libc-2.4.so

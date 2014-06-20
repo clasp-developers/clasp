@@ -1,0 +1,49 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Comm_free 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_free \fP \- Mark a communicator object for deallocation.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_free(MPI_Comm *\fIcomm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_FREE(\fICOMM, IERROR\fP)
+	INTEGER	\fICOMM, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Comm::Free()
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+comm
+Communicator to be destroyed (handle).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This operation marks the communicator object for deallocation. The handle is set to MPI_COMM_NULL. Any pending operations that use this communicator will complete normally; the object is actually deallocated only if there are no other active references to it. This call applies to intracommunicators and intercommunicators. Upon actual deallocation, the delete callback functions for all cached attributes (see Section 5.7 in the MPI-1 Standard, "Caching") are called in arbitrary order.  
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

@@ -1,0 +1,196 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Pack_external 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Pack_external\fP \- Writes data to a portable format
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Pack_external(char *\fIdatarep\fP, void *\fIinbuf\fP,
+	int \fIincount\fP, MPI_Datatype\fI datatype\fP,
+	void *\fIoutbuf\fP, MPI_Aint \fIoutsize\fP, 
+	MPI_Aint *\fIposition\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_PACK_EXTERNAL(\fIDATAREP, INBUF, INCOUNT, DATATYPE,
+	OUTBUF, OUTSIZE, POSITION, IERROR\fP)
+
+	INTEGER		\fIINCOUNT, DATATYPE, IERROR\fP
+	INTEGER (KIND=MPI_ADDRESS_KIND) \fIOUTSIZE, POSITION\fP
+	CHARACTER*(*)	\fIDATAREP\fP
+	<type>		\fIINBUF(*), OUTBUF(*)\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Datatype::Pack_external(const char* \fIdatarep\fP,
+	const void* \fIinbuf\fP, int \fIincount\fP,
+	void* \fIoutbuf\fP, MPI::Aint \fIoutsize\fP, 
+	MPI::Aint& \fIposition\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+datarep
+Data representation (string).
+.ft R
+.TP 1i
+inbuf
+Input buffer start (choice).
+.TP 1i
+incount
+Number of input data items (integer).
+.TP 1i
+datatype
+Datatype of each input data item (handle).
+.TP 1i
+outsize
+Output buffer size, in bytes (integer).
+
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+position
+Current position in buffer, in bytes (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+outbuf
+Output buffer start (choice).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Pack_external packs data into the external32 format, a universal
+data representation defined by the MPI Forum. This format is useful
+for exchanging data between MPI implementations, or when writing data
+to a file.
+.sp
+The input buffer is specified by \fIinbuf\fP, \fIincount\fP and
+\fIdatatype\fP, and may be any communication buffer allowed in
+MPI_Send. The output buffer \fIoutbuf\fP must be a contiguous storage
+area containing \fIoutsize\fP bytes.
+.sp
+The input value of \fIposition\fP is the first position in
+\fIoutbuf\fP to be used for packing (measured in bytes, not elements,
+relative to the start of the buffer). When the function returns,
+\fIposition\fP is incremented by the size of the packed message, so
+that it points to the first location in \fIoutbuf\fP following the
+packed message. This way it may be used as input to a subsequent call
+to MPI_Pack_external.
+.sp
+
+\fBExample:\fP An example using MPI_Pack_external:
+.sp
+.nf
+	int position, i; 
+	double msg[5]; 
+	char buf[1000];
+
+	\&...
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &myrank); 
+	if (myrank == 0) {	/* SENDER CODE */ 
+		position = 0;
+		i = 5; /* number of doubles in msg[] */
+		MPI_Pack_external("external32", &i, 1, MPI_INT,
+		    buf, 1000, &position); 
+		MPI_Pack_external("external32", &msg, i, MPI_DOUBLE,
+		    buf, 1000, &position); 
+		MPI_Send(buf, position, MPI_PACKED, 1, 0,
+		    MPI_COMM_WORLD); 
+	} else {		/* RECEIVER CODE */ 
+		MPI_Recv(buf, 1, MPI_PACKED, 0, 0, MPI_COMM_WORLD,
+		    MPI_STATUS_IGNORE);
+		MPI_Unpack_external("external32", buf, 1000, 
+		    MPI_INT, &i, 1, &position);
+		MPI_Unpack_external("external32", buf, 1000, 
+		    MPI_DOUBLE, &msg, i, &position);
+	}	
+
+.fi
+.SH NOTES
+.ft R
+The \fIdatarep\fP argument specifies the data format. The only valid
+value in the current version of MPI is "external32". The argument is
+provided for future extensibility.
+.sp
+To understand the behavior of pack and unpack, it is convenient to
+think of the data part of a message as being the sequence obtained by
+concatenating the successive values sent in that message. The pack
+operation stores this sequence in the buffer space, as if sending the
+message to that buffer. The unpack operation retrieves this sequence
+from buffer space, as if receiving a message from that buffer. (It is
+helpful to think of internal Fortran files or sscanf in C for a
+similar function.)
+.sp
+Several messages can be successively packed into one packing
+unit. This is effected by several successive related calls to
+MPI_Pack_external, where the first call provides \fIposition\fP=0,
+and each successive call inputs the value of \fIposition\fP that was
+output by the previous call, along with the same values for
+\fIoutbuf\fP and \fIoutcount\fP. This packing unit now contains the
+equivalent information that would have been stored in a message by one
+send call with a send buffer that is the "concatenation" of the
+individual send buffers.
+.sp
+A packing unit can be sent using type MPI_PACKED. Any point-to-point
+or collective communication function can be used to move the sequence
+of bytes that forms the packing unit from one process to another. This
+packing unit can now be received using any receive operation, with any
+datatype. (The type-matching rules are relaxed for messages sent with
+type MPI_PACKED.)
+.sp
+A packing unit can be unpacked into several successive messages. This
+is effected by several successive related calls to
+MPI_Unpack_external, where the first call provides \fIposition\fP=0,
+and each successive call inputs the value of position that was output
+by the previous call, and the same values for \fIinbuf\fP and
+\fIinsize\fP.
+.sp
+The concatenation of two packing units is not necessarily a packing
+unit; nor is a substring of a packing unit necessarily a packing
+unit. Thus, one cannot concatenate two packing units and then unpack
+the result as one packing unit; nor can one unpack a substring of a
+packing unit as a separate packing unit. Each packing unit that was
+created by a related sequence of pack calls must be unpacked as a unit
+by a sequence of related unpack calls.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Pack_external_size
+MPI_Send
+MPI_Unpack_external
+sscanf(3C)
+

@@ -1,0 +1,27 @@
+How to build vtsetup from source:
+
+1. Change to the source directory.
+   $ cd src
+
+2. Unpack the source files from the archive.
+   $ tar xzf vtsetup-x.x.src.tar.gz
+
+3. Compile the source files.
+   $ javac *.java
+
+4. Finally, build the *.jar file.
+   $ jar cfvm vtsetup.jar manifest.mf *
+
+
+To update the installation of vtsetup proceed as follows:
+
+1. Overwrite the file vtsetup.jar in <vt-root-srcdir>/tools/vtsetup
+   by the new one.
+   $ cp -f vtsetup.jar <vt-root-srcdir>/tools/vtsetup
+
+2. Change to the build directory of vtsetup.
+   $ cd <vt-root-builddir>/tools/vtsetup
+
+3. [Re-]install vtsetup
+   $ make install
+

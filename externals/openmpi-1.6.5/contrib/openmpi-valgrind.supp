@@ -1,0 +1,109 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+###############################################################
+#
+# OPAL suppressions
+#
+###############################################################
+
+# weirdness in init routines on Gentoo
+{
+  linux_pthread_init
+  Memcheck:Leak
+  fun:calloc
+  fun:allocate_dtv
+  fun:_dl_allocate_tls_storage
+  fun:_dl_allocate_tls
+}
+{
+  linux_pthread_init2
+  Memcheck:Leak
+  fun:calloc
+  fun:_dl_tls_setup
+  fun:__pthread_initialize_minimal
+}
+{
+  linux_pthread_init3
+  Memcheck:Leak
+  fun:memalign
+  fun:_dl_allocate_tls_storage
+  fun:_dl_allocate_tls
+  fun:__pthread_initialize_minimal
+}
+
+# The event library leaves some blocks in use that we should clean up,
+# but it would require much changing of the event library, so it
+# really isn't worth it...
+{
+  event_lib_poll
+  Memcheck:Leak
+  fun:malloc
+  fun:realloc
+  fun:opal_realloc
+  fun:poll_dispatch
+}
+
+
+###############################################################
+#
+# ORTE suppressions
+#
+###############################################################
+
+# inet_ntoa on linux mallocs a static buffer.  We can't free 
+# it, so we have to live with it
+{
+  linux_inet_ntoa
+  Memcheck:Leak
+  fun:malloc
+  fun:inet_ntoa
+}
+{
+  linux_inet_ntoa_thread
+  Memcheck:Leak
+  fun:calloc
+  fun:pthread_setspecific
+  fun:inet_ntoa
+}
+
+
+###############################################################
+#
+# OMPI suppressions
+#
+###############################################################
+
+
+###############################################################
+#
+# Suppressions for various commonly-used packages
+#
+###############################################################
+
+# Portals reference implementation has a read from invalid issue
+{
+  portals_send
+  Memcheck:Param
+  socketcall.send(msg)
+  fun:send
+  fun:utcp_sendbytes
+  fun:utcp_sendto
+  fun:utcp_msg_wait
+}

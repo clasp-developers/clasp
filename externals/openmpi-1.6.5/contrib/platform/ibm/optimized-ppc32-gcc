@@ -1,0 +1,8 @@
+enable_mem_debug=no
+enable_mem_profile=no
+enable_debug=no
+enable_contrib_no_build=libnbc,vt
+enable_ft_thread=no
+with_openib=/usr 
+enable_shared=yes
+enable_static=no

@@ -1,0 +1,94 @@
+##
+# VampirTrace
+# http://www.tu-dresden.de/zih/vampirtrace
+#
+# Copyright (c) 2005-2013, ZIH, TU Dresden, Federal Republic of Germany
+#
+# Copyright (c) 1998-2005, Forschungszentrum Juelich, Juelich Supercomputing
+#                          Centre, Federal Republic of Germany
+#
+# See the file COPYING in the package base directory for details
+##
+
+# make sure that this script is called from vtiofsl-start or vtiofsl-stop
+#
+if test x"$_VTIOFSL_EXENAME" = x; then
+  echo "$0: Error: This script must be run inside vtiofsl-start or" \
+"vtiofsl-stop"
+  exit 1
+fi
+
+# common global variables
+#
+if test x"$VT_PREFIX" != x; then
+  prefix=$VT_PREFIX
+else
+  prefix=@prefix@
+fi
+_VTIOFSL_SYSCONFDIR=`echo @sysconfdir@`
+_VTIOFSL_VERBOSE=1
+
+#
+# subroutine _vtiofsl_parse_common_option() - parse a common command line option
+#
+_vtiofsl_parse_common_option()
+{
+  case $1 in
+    -h | --help)
+      _vtiofsl_show_helptext
+      ;;
+    -V | --version)
+      _vtiofsl_show_version
+      ;;
+    -v | --verbose)
+      _VTIOFSL_VERBOSE=$((_VTIOFSL_VERBOSE+1))
+      ;;
+    -q | --quiet)
+      _VTIOFSL_VERBOSE=0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+
+  return 0
+}
+
+#
+# subroutine _vtiofsl_show_version() - shows the VampirTrace version
+#
+_vtiofsl_show_version()
+{
+  echo @PACKAGE_VERSION@
+  exit 0
+}
+
+#
+# subroutine _vtiofsl_verbose_msg() - show a message on stdout if given verbose
+#                                     level suffices
+#
+_vtiofsl_verbose_msg()
+{
+  if test $_VTIOFSL_VERBOSE -ge $1; then
+    echo -e "$_VTIOFSL_EXENAME: $2"
+  fi
+}
+
+#
+# subroutine _vtiofsl_error_msg() - show an error message on stderr
+#
+_vtiofsl_error_msg()
+{
+  echo -e "$_VTIOFSL_EXENAME: $*" >&2
+}
+
+#
+# subroutine _vtiofsl_exit() - call exit with given error code and print a
+#                              warning to stdout
+#
+_vtiofsl_exit()
+{
+  _vtiofsl_verbose_msg 1 "Exiting current shell"
+  exit $1
+}
+

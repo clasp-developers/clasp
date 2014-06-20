@@ -1,0 +1,78 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2009 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2006-2010 Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI's shared memory support.
+#
+[knem requested but not supported]
+WARNING: Linux kernel knem support was requested for the shared memory
+(sm) BTL, but it is not supported.  Deactivating the shared memory
+BTL.
+
+  Local host: %s
+#
+[knem permission denied]
+Open MPI failed to open the /dev/knem device due to a permissions
+problem.  Please check with your system administrator to get the
+permissions fixed, or set the btl_sm_use_knem MCA parameter to 0 to
+run without /dev/knem support.
+
+  Local host:            %s
+  /dev/knem permissions: 0%o
+#
+[knem fail open]
+Open MPI failed to open the /dev/knem device due to a local error.
+Please check with your system administrator to get the problem fixed,
+or set the btl_sm_use_knem MCA parameter to 0 to run without /dev/knem
+support.
+
+  Local host: %s
+  Errno:      %d (%s)
+#
+[knem get ABI fail]
+Open MPI failed to retrieve the ABI version from the /dev/knem device
+due to a local error.  This usually indicates an error in your
+/dev/knem installation; please check with your system administrator,
+or set the btl_sm_use_knem MCA parameter to 0 to run without /dev/knem
+support.
+
+  Local host: %s
+  Errno:      %d (%s)
+#
+[knem ABI mismatch]
+Open MPI was compiled with support for one version of the knem kernel
+module, but it discovered a different version running in /dev/knem.
+Open MPI needs to be installed with support for the same version of
+knem as is in the running Linux kernel.  Please check with your system
+administrator, or set the btl_sm_use_knem MCA parameter to 0 to run
+without /dev/knem support.
+
+  Local host:              %s
+  Open MPI's knem version: 0x%x
+  /dev/knem's version:     0x%x
+#
+[knem mmap fail]
+Open MPI failed to map support from the knem Linux kernel module; this
+shouldn't happen.  Please check with your system administrator, or set
+the btl_sm_use_knem MCA parameter to 0 to run without /dev/knem support.
+
+  Local host:  %s
+  System call: mmap()
+  Errno:       %d (%s)
+#
+[knem init error]
+Open MPI encountered an error during the knem initialization.  Please
+check with your system administrator, or set the btl_sm_use_knem MCA
+parameter to 0 to run without /dev/knem support.
+
+  Local host:  %s
+  System call: %s
+  Errno:       %d (%s)

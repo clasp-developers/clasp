@@ -1,0 +1,12 @@
+# -*- shell-script -*-
+#
+# Copyright (C) Mellanox Technologies Ltd. 2001-2011.  ALL RIGHTS RESERVED.
+# $COPYRIGHT$
+# Additional copyrights may follow
+#
+# $HEADER$
+#
+
+
+# Specific to this module
+PARAM_CONFIG_FILES="Makefile"

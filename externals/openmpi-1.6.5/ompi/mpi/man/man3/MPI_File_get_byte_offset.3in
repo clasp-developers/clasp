@@ -1,0 +1,75 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_get_byte_offset 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_get_byte_offset\fP \- Converts a view-relative offset into an absolute byte position.
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_get_byte_offset(MPI_File \fIfh\fP, MPI_Offset \fIoffset\fP,
+    	      MPI_Offset \fI*disp\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_GET_BYTE_OFFSET(\fIFH\fP, \fIOFFSET\fP, \fIDISP\fP,\fI IERROR\fP)
+        	INTEGER	\fIFH, IERROR\fP
+		INTEGER(KIND=MPI_OFFSET_KIND) \fIOFFSET, DISP\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Offset MPI::File::Get_byte_offset(const MPI::Offset \fIdisp\fP) 
+	const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+fh    
+File handle (handle).
+.ft R
+.TP 1i
+offset
+Offset (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+disp
+Absolute byte position of offset (integer). 
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_get_byte_offset converts an offset specified for the current view to its corresponding displacement value, or absolute byte position, from the beginning of the file. The absolute byte position of \fIoffset\fP relative to the current view of \fIfh\fP is returned in \fIdisp\fP. 
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIOFFSET\fP and \fIDISP\fP arguments only for Fortran 90. Sun FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_OFFSET_KIND \fIOFFSET\fP
+or
+     INTEGER*MPI_OFFSET_KIND \fIDISP\fP
+.fi
+.sp
+where MPI_OFFSET_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+

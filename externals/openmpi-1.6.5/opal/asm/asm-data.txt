@@ -1,0 +1,138 @@
+# -*- sh -*-
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+#
+# Database for mapping architecture and assembly format to prebuilt
+# assembly files.  For explination of the assembly operations, see
+# the inline assembly header files in src/include/sys/<arch>.
+#
+# FORMAT:
+# ARCHITECTURE	ASSEMBLY FORMAT			BASE FILENAME
+#
+# Assembly Format field:
+#   config_file-text-global-label_suffix-gsym-lsym-type-size-align_log-ppc_r_reg-64_bit-gnu_stack
+
+######################################################################
+#
+# Alpha
+#
+######################################################################
+
+ALPHA	default-.text-.globl-:--$-@-1-1-1-1-1	alpha-linux
+
+
+######################################################################
+#
+# AMD Opteron / Intel EM64T
+#
+######################################################################
+
+AMD64	default-.text-.globl-:--.L-@-1-0-1-1-1	amd64-linux
+AMD64	default-.text-.globl-:--.L-@-1-0-1-1-0	amd64-linux-nongas
+
+
+######################################################################
+#
+# ARM (ARMv7 and later)
+#
+######################################################################
+
+ARM    default-.text-.globl-:--.L-#-1-1-1-1-1  arm-linux
+
+
+######################################################################
+#
+# Intel Pentium Class
+#
+######################################################################
+
+IA32	default-.text-.globl-:--.L-@-1-0-1-1-1	ia32-linux
+IA32	default-.text-.globl-:--.L-@-1-0-1-1-0	ia32-linux-nongas
+IA32	default-.text-.globl-:-_-L--0-1-1-1-0	ia32-osx
+IA32	default-.text-.globl-:-_-L--0-0-1-1-1	ia32-cygwin
+IA32	default-.text-.globl-:-_-L--0-0-1-1-0	ia32-cygwin-nongas
+
+
+######################################################################
+#
+# IA64 (Intel Itanium)
+#
+######################################################################
+
+IA64	default-.text-.globl-:--.L-@-1-0-1-1-1	ia64-linux
+IA64	default-.text-.globl-:--.L-@-1-0-1-1-0	ia64-linux-nongas
+
+
+######################################################################
+#
+# PowerPC / POWER 
+#
+######################################################################
+
+# standard ppc instruction set (AIX calls it ppc).  This is not the
+# true intersection of all the POWER / PowerPC machines, but works
+# on PowerPCs since the 601 and on at least POWER 3 and above.
+POWERPC32	default-.text-.globl-:-_-L--0-1-1-0-0	powerpc32-osx
+POWERPC32	default-.text-.globl-:--.L-@-1-1-0-0-1	powerpc32-linux
+POWERPC32	default-.text-.globl-:--.L-@-1-1-0-0-0	powerpc32-linux-nongas
+POWERPC32	aix-.csect .text[PR]-.globl-:-.-L--0-1-0-0-0	powerpc32-aix
+
+# The ppc code above, plus support for the 64 bit operations.  This
+# mode is really only available on OS X when using the OS X 10.3
+# compiler chain with the -mcpu=970 option.
+POWERPC32	default-.text-.globl-:-_-L--0-1-1-1-0	powerpc32-64-osx
+
+# PowerPC / POWER 64bit machines.  sizeof(void*) == 8.
+POWERPC64	default-.text-.globl-:-_-L--0-1-1-1-0	powerpc64-osx
+POWERPC64	default-.text-.globl-:-.-.L-@-1-1-0-1-1	powerpc64-linux
+POWERPC64	default-.text-.globl-:-.-.L-@-1-1-0-1-0	powerpc64-linux-nongas
+POWERPC64	aix-.csect .text[PR]-.globl-:-.-L--0-1-0-1-0	powerpc64-aix
+
+
+######################################################################
+#
+# SPARC / UltraSPARC (Scalalable Processor ARChitecture)
+#
+######################################################################
+
+# default compile mode on Solaris.  Evil.  equiv to about Sparc v8
+SPARC	default-.text-.globl-:--.L-#-1-0-1-0-0	sparc-solaris
+
+# Usually compiled with -xarch=v8plus.  Basically Sparc V9, but with
+# sizeof(void*) == 4 instead of 8.  Different from V9_64 because still
+# uses 2 registers to pass in a 64bit integer
+SPARCV9_32	default-.text-.globl-:--.L-#-1-0-1-1-0	sparcv9-32-solaris
+
+# The Sparc v9 (aka Ultra Sparc).  Sizeof(void*) == 8.
+SPARCV9_64	default-.text-.globl-:--.L-#-1-0-1-1-0	sparcv9-64-solaris
+
+
+######################################################################
+#
+# MIPS III (Microprocessor without Interlocked Pipeline Stages)
+#          R4000 and above
+#
+######################################################################
+
+# So MIPS, in it's infinite wisdom (thank you!) decided that when
+# compiling in 32bit mode and passing in a 64bit integer, it is done
+# in one register (instead of SPARC and POWER, who use two).  Which
+# means that we can use the same code either way.  Woo hoo!
+
+MIPS	default-.text-.globl-:--L--1-1-1-1-0	mips-irix
+MIPS	default-.text-.globl-:--L--1-1-1-1-0	mips64el

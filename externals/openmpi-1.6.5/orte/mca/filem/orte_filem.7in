@@ -1,0 +1,92 @@
+.\"
+.\" Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+.\"                         University Research and Technology
+.\"                         Corporation.  All rights reserved.
+.\" Copyright (c) 2008-2009 Sun Microsystems, Inc.  All rights reserved.
+.\"
+.\" Man page for ORTE's FileM Functionality
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH ORTE_FILEM 7 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+ORTE_FILEM \- Open RTE MCA File Management (FileM) Framework: Overview of Open RTE's
+FileM framework, and selected modules.  #PACKAGE_NAME# #PACKAGE_VERSION#
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+FileM is a utility framework used by OpenRTE for a variety of purposes, including
+the transport of checkpoint files, preloading user binaries, and preloading of user files.
+.
+.\" **********************************
+.\"    Available Components Section
+.\" **********************************
+.SH AVAILABLE COMPONENTS
+.PP
+Open RTE currently ships with one FileM component: \fIrsh\fR.
+.
+.PP
+The following MCA parameters apply to all components:
+.
+.TP 4
+filem_base_verbose
+Set the verbosity level for all components. Default is 0, or silent except on
+error.
+.
+.
+.\"   rsh Component
+.\" ******************
+.SS rsh FileM Component
+.PP
+The \fIrsh\fR component uses \fIrcp\fP or \fIscp\fP to do its file transfers. This component
+requires the use of passwordless \fIrsh\fP or \fIssh\fP between all nodes.
+.
+.PP
+The \fIrsh\fR component has the following MCA parameters:
+.
+.TP 4
+filem_rsh_priority
+The component's priority to use when selecting the most appropriate component
+for a run.
+.
+.TP 4
+filem_rsh_verbose
+Set the verbosity level for this component. Default is 0, or silent except on
+error.
+.
+.TP 4
+filem_rsh_rcp
+The program to use to copy files. Generally will be rcp or scp.
+.
+.TP 4
+filem_rsh_rsh
+The program used to remotely log into a given machine and remove files.
+Generally will be rsh or ssh.
+.
+.\"   Special 'none' option
+.\" ************************
+.SS none FileM Component
+.PP
+The \fInone\fP component simply selects no FileM component. All of the FileM
+function calls return immediately with ORTE_SUCCESS. 
+.
+.PP
+This component is the last component to be selected by default. This means that if
+another component is available, and the \fInone\fP component was not explicity
+requested then ORTE will attempt to activate all of the available components
+before falling back to this component.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+  orte-checkpoint(1), orte-restart(1), opal-checkpoint(1), opal-restart(1), orte_snapc(7), opal_crs(7)
+.

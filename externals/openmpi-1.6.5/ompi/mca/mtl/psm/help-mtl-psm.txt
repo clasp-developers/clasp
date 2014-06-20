@@ -1,0 +1,43 @@
+# -*- text -*-
+#
+# Copyright (C) 2009. QLogic Corporation.  All rights reserved.
+# $COPYRIGHT$
+#
+# Additional copyrights may follow
+#
+# $HEADER$
+#
+[psm init]
+Initialization of PSM library failed.
+
+  Error: %s
+#
+[debug level]
+Unable to set PSM debug level.
+
+  Error: %s
+#
+[unable to open endpoint]
+PSM was unable to open an endpoint. Please make sure that the network link is
+active on the node and the hardware is functioning. 
+
+  Error: %s
+#
+[no uuid present]
+Error obtaining unique transport key from ORTE (orte_precondition_transports %s
+the environment).
+
+  Local host: %s
+#
+[error polling network]
+Error %s occurred in attempting to make network progress (psm_mq_ipeek).
+#
+[error posting receive]
+Unable to post application receive buffer (psm_mq_irecv).
+
+  Error:      %s
+  Buffer:     %p
+  Length:     %d
+#
+[path query mechanism unknown]
+Unknown path record query mechanism %s. Supported mechanisms are %s.

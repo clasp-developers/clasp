@@ -1,0 +1,1 @@
+atomic-asm.lo: atomic-asm.S

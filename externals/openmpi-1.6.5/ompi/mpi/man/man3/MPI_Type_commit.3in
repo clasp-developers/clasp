@@ -1,0 +1,61 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Type_commit 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_commit\fP \- Commits a data type.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_commit(MPI_Datatype *\fIdatatype\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_COMMIT(\fIDATATYPE, IERROR\fP)
+	INTEGER	\fIDATATYPE, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Datatype::Commit()
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+datatype
+Data type (handle).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The commit operation commits the data type. A data type is the formal description of a communication buffer, not the content of that buffer. After a data type has been committed, it can be repeatedly reused to communicate the changing content of a buffer or, indeed, the content of different buffers, with different starting addresses.  
+.sp
+\fBExample:\fP The following Fortran code fragment gives examples of using MPI_Type_commit. 
+.sp
+.nf
+    INTEGER type1, type2 
+    CALL MPI_TYPE_CONTIGUOUS(5, MPI_REAL, type1, ierr) 
+                  ! new type object created 
+    CALL MPI_TYPE_COMMIT(type1, ierr) 
+                  ! now type1 can be used for communication 
+.fi
+.sp
+If the data type specified in \fIdatatype\fP is already committed, it is equivalent to a no-op.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

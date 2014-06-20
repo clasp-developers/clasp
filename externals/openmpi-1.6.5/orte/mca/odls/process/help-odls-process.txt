@@ -1,0 +1,37 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English general help file for Open RTE's orterun.
+#
+[orte-odls-process:execv-error]
+Could not execute the executable "%s": %s
+
+This could mean that your PATH or executable name is wrong, or that you do not
+have the necessary permissions.  Please ensure that the executable is able to be
+found and executed.
+[orte-odls-process:could-not-kill]
+WARNING: A process refused to die!
+
+Host: %s
+PID:  %d
+
+This process may still be running and/or consuming resources.
+
+[orte-odls-process:could-not-kill]
+WARNING: A process refused the kill SIGTERM signal!
+         This should never happen unless the application is changing the
+         parent/child relationship permissions.
+
+Host:  %s
+PID:   %d
+Errno: %d
+
+This process may still be running and/or consuming resources.

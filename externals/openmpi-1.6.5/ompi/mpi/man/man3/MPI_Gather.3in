@@ -1,0 +1,172 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Gather 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Gather\fP \- Gathers values from a group of processes.
+
+.SH SYNOPSIS
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Gather(void \fI*sendbuf\fP, int\fI sendcount\fP, MPI_Datatype\fI sendtype\fP,
+	void\fI *recvbuf\fP, int\fI recvcount\fP, MPI_Datatype\fI recvtype\fP, int \fIroot\fP,
+	MPI_Comm\fI comm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GATHER(\fISENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT,
+		RECVTYPE, ROOT, COMM, IERROR\fP)
+	<type>	\fISENDBUF(*), RECVBUF(*)\fP
+	INTEGER	\fISENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, ROOT\fP
+	INTEGER	\fICOMM, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Gather(const void* \fIsendbuf\fP, int \fIsendcount\fP,
+	const MPI::Datatype& \fIsendtype\fP, void* \fIrecvbuf\fP, 
+	int \fIrecvcount\fP, const MPI::Datatype& \fIrecvtype\fP, int \fIroot\fP,
+	const = 0
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+sendbuf
+Starting address of send buffer (choice).
+.TP 1i
+sendcount
+Number of elements in send buffer (integer).
+.TP 1i
+sendtype
+Datatype of send buffer elements (handle).
+.TP 1i
+recvcount
+Number of elements for any single receive (integer, significant only at
+root).
+.TP 1i
+recvtype
+Datatype of recvbuffer elements (handle, significant only at root).
+.TP 1i
+root
+Rank of receiving process (integer).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.TP 1i
+recvbuf
+Address of receive buffer (choice, significant only at root).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Each process (root process included) sends the contents of its send buffer to the root process. The root process receives the messages and stores them in rank order. The outcome is as if each of the n processes in the group (including the root process) had executed a call to      
+.sp
+.nf
+    MPI_Send(sendbuf, sendcount, sendtype, root, \&...)
+.fi
+.sp
+and the root had executed n calls to 
+.sp
+.nf
+    MPI_Recv(recfbuf + i * recvcount * extent(recvtype), \ 
+             recvcount, recvtype, i, \&...)
+.fi
+.sp
+where extent(recvtype) is the type extent obtained from a call to MPI_Type_extent().            
+.sp
+An alternative description is that the n messages sent by the processes in the group are concatenated in rank order, and the resulting message is received by the root as if by a call to MPI_RECV(recvbuf, recvcount * n, recvtype, . . . ). 
+.sp
+The receive buffer is ignored for all nonroot processes. 
+.sp
+General, derived datatypes are allowed for both sendtype and recvtype. The
+type signature of sendcount, sendtype on process i must be equal to the type signature of recvcount, recvtype at the root. This implies that the amount of data sent must be equal to the amount of data received, pairwise between each process and the root. Distinct type maps between sender and receiver are still allowed.
+.sp
+All arguments to the function are significant on process root, while on other processes, only arguments sendbuf, sendcount, sendtype, root, comm are significant. The arguments root and comm must have identical values on all processes. 
+.sp
+The specification of counts and types should not cause any location on the root to be written more than once. Such a call is erroneous. 
+.sp
+Note that the recvcount argument at the root indicates the number of items it receives from each process, not the total number of items it receives.
+.sp
+\fBExample 1:\fP  Gather 100 ints from every process in group to root.
+.sp
+.nf
+  MPI_Comm comm; 
+      int gsize,sendarray[100]; 
+      int root, *rbuf; 
+      \&... 
+      MPI_Comm_size( comm, &gsize); 
+      rbuf = (int *)malloc(gsize*100*sizeof(int)); 
+      MPI_Gather( sendarray, 100, MPI_INT, rbuf, 100, MPI_INT, root, comm); 
+
+.fi
+.sp
+.br
+\fBExample 2:\fP Previous example modified -- only the root allocates memory for the receive buffer.
+.sp
+.nf
+  MPI_Comm comm; 
+      int gsize,sendarray[100]; 
+      int root, myrank, *rbuf; 
+      \&... 
+      MPI_Comm_rank( comm, myrank); 
+      if ( myrank == root) { 
+         MPI_Comm_size( comm, &gsize); 
+         rbuf = (int *)malloc(gsize*100*sizeof(int)); 
+         } 
+      MPI_Gather( sendarray, 100, MPI_INT, rbuf, 100, MPI_INT, root, comm); 
+.fi
+.sp
+\fBExample 3:\fP Do the same as the previous example, but use a derived
+datatype. Note that the type cannot be the entire set of  gsize * 100 ints since type matching is defined pairwise between the root and each process in the gather.   
+
+.nf
+  MPI_Comm comm; 
+      int gsize,sendarray[100]; 
+      int root, *rbuf; 
+      MPI_Datatype rtype; 
+      \&... 
+      MPI_Comm_size( comm, &gsize); 
+      MPI_Type_contiguous( 100, MPI_INT, &rtype ); 
+      MPI_Type_commit( &rtype ); 
+      rbuf = (int *)malloc(gsize*100*sizeof(int)); 
+      MPI_Gather( sendarray, 100, MPI_INT, rbuf, 1, rtype, root, comm); 
+.fi
+
+.SH USE OF IN-PLACE OPTION
+When the communicator is an intracommunicator, you can perform a gather operation in-place (the output buffer is used as the input buffer).  Use the variable MPI_IN_PLACE as the value of the root process \fIsendbuf\fR.  In this case, \fIsendcount\fR and \fIsendtype\fR are ignored, and the contribution of the root process to the gathered vector is assumed to already be in the correct place in the receive buffer.  
+.sp
+Note that MPI_IN_PLACE is a special kind of value; it has the same restrictions on its use as MPI_BOTTOM.
+.sp
+Because the in-place option converts the receive buffer into a send-and-receive buffer, a Fortran binding that includes INTENT must mark these as INOUT, not OUT.   
+.sp
+.SH WHEN COMMUNICATOR IS AN INTER-COMMUNICATOR
+.sp
+When the communicator is an inter-communicator, the root process in the first group gathers data from all the processes in the second group.  The first group defines the root process.  That process uses MPI_ROOT as the value of its \fIroot\fR argument.  The remaining processes use MPI_PROC_NULL as the value of their \fIroot\fR argument.  All processes in the second group use the rank of that root process in the first group as the value of their \fIroot\fR argument.   The send buffer argument of the processes in the first group must be consistent with the receive buffer argument of the root process in the second group.   
+.sp  
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+.sp
+See the MPI man page for a full list of MPI error codes. 
+
+.SH SEE ALSO
+.ft R
+.sp
+.nf
+MPI_Gatherv
+MPI_Scatter
+MPI_Scatterv
+

@@ -1,0 +1,115 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Testany 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Testany\fP \- Tests for completion of any one previously initiated communication in a list. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Testany(int \fIcount\fP, MPI_Request\fI *array_of_requests\fP, 
+	int\fI *index\fP, int\fI *flag\fP, MPI_Status\fI *status\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TESTANY(\fICOUNT, ARRAY_OF_REQUESTS, INDEX, FLAG, STATUS, IERROR\fP)
+	LOGICAL	\fIFLAG\fP 
+	INTEGER	\fICOUNT, ARRAY_OF_REQUESTS(*), INDEX\fP 
+	INTEGER	\fISTATUS(MPI_STATUS_SIZE), IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static bool Request::Testany(int \fIcount\fP, Request \fIarray_of_requests\fP[], 
+	int& \fIindex\fP, Status& \fIstatus\fP) 
+
+static bool Request::Testany(int \fIcount\fP, Request \fIarray_of_requests\fP[], 
+	int& \fIindex\fP) 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count
+List length (integer).
+.TP 1i
+array_of_requests
+Array of requests (array of handles).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+index
+Index of operation that completed, or MPI_UNDEFINED if none completed
+(integer).
+.TP 1i
+flag
+True if one of the operations is complete (logical).
+.TP 1i
+status
+Status object (status).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Testany tests for completion of either one or none of the operations associated with active handles. In the former case, it returns \fIflag\fP = true, returns in \fIindex\fP the index of this request in the array, and returns in \fIstatus\fP the status of that operation; if the request was allocated by a nonblocking communication call then the request is deallocated and the handle is set to MPI_REQUEST_NULL. (The array is indexed from 0 in C, and from 1 in Fortran.) In the latter case (no operation completed), it returns \fIflag\fP = false, returns a value of MPI_UNDEFINED in \fIindex\fP, and \fIstatus\fP is undefined.
+.sp
+The array may contain null or inactive handles. If the array contains no active handles then the call returns immediately with \fIflag\fP = true, \fIindex\fP = MPI_UNDEFINED, and an empty \fIstatus\fP.
+.sp
+If the array of requests contains active handles then the execution of
+MPI_Testany(count, array_of_requests, index, status) has the same effect as the execution of MPI_Test(&\fIarray_of_requests[i\fP], \fIflag\fP, \fIstatus\fP), for \fIi\fP=0,1,...,count-1, in some arbitrary order, until one call returns \fIflag\fP = true, or all fail. In the former case, \fIindex\fP is set to the last value of \fIi\fP, and in the latter case, it is set to MPI_UNDEFINED. MPI_Testany with an array containing one active entry is equivalent to MPI_Test.
+.sp
+If your application does not need to examine the \fIstatus\fP field, you can save resources by using the predefined constant MPI_STATUS_IGNORE as a special value for the \fIstatus\fP argument. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI::Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler, MPI_File_set_errhandler, or
+MPI_Win_set_errhandler (depending on the type of MPI handle that
+generated the request); the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does
+not guarantee that an MPI program can continue past an error.
+.sp
+Note that per MPI-1 section 3.2.5, MPI exceptions on requests passed
+to MPI_TESTANY do not set the status.MPI_ERROR field in the returned
+status.  The error code is passed to the back-end error handler and
+may be passed back to the caller through the return value of
+MPI_TESTANY if the back-end error handler returns it.  The pre-defined
+MPI error handler MPI_ERRORS_RETURN exhibits this behavior, for
+example.
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Comm_set_errhandler
+.br
+MPI_File_set_errhandler
+.br
+MPI_Test
+.br
+MPI_Testall
+.br
+MPI_Testsome
+.br
+MPI_Wait
+.br
+MPI_Waitall
+.br
+MPI_Waitany
+.br
+MPI_Waitsome
+.br
+MPI_Win_set_errhandler
+.br
+

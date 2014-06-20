@@ -1,0 +1,30 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI MCA error messages.
+#
+[nodelist-failed]
+While trying to determine what resources are available, LSF failed when
+queried for a list of available nodes. This may indicate a problem with
+LSF or your cluster.
+
+[no-nodes-avail]
+While trying to determine what resources are available, LSF returned
+a list of available nodes from which we were unable to extract anything
+usable. This may indicate a problem with LSF or your cluster.
+

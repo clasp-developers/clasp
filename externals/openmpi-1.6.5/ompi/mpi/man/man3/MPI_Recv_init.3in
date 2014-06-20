@@ -1,0 +1,95 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Recv_init 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Recv_init\fP \- Builds a handle for a receive.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Recv_init(void *\fIbuf\fP, int\fI count\fP, MPI_Datatype\fI datatype\fP,
+	int\fI source\fP, int\fI tag\fP, MPI_Comm\fI comm\fP, MPI_Request\fI *request\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_RECV_INIT(\fIBUF, COUNT, DATATYPE, SOURCE, TAG, COMM, REQUEST,
+		IERROR\fP)
+	<type>	\fIBUF\fP(*)
+	INTEGER	\fICOUNT, DATATYPE, SOURCE, TAG, COMM, REQUEST, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Prequest Comm::Recv_init(void* \fIbuf\fP, int \fIcount\fP, const 
+	Datatype& \fIdatatype\fP, int \fIsource\fP, int \fItag\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count
+Maximum number of elements to receive (integer).
+.TP 1i
+datatype
+Type of each entry (handle).
+.TP 1i
+source
+Rank of source (integer).
+.TP 1i
+tag
+Message tag (integer).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH INPUT/OUTPUT PARAMETER
+.TP 1i
+buf
+Initial address of receive buffer (choice).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+request
+Communication request (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Creates a persistent communication request for a receive operation. The argument \fIbuf\fP is marked as OUT because the user gives permission to write on the receive buffer by passing the argument to MPI_Recv_init.  
+.sp
+A persistent communication request is inactive after it is created -- no active communication is attached to the request. 
+.sp
+A communication (send or receive) that uses a persistent request is initiated by the function MPI_Start or MPI_Startall. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Bsend_init
+.br
+MPI_Rsend_init
+.br
+MPI_Send_init
+.br
+MPI_Sssend_init
+.br
+MPI_Start
+.br
+MPI_Startall
+.br
+MPI_Request_free
+

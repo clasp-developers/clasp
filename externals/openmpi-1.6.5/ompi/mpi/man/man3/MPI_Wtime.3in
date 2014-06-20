@@ -1,0 +1,71 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Wtime 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Wtime\fP \- Returns an elapsed time on the calling processor.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+double MPI_Wtime()
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+DOUBLE PRECISION MPI_WTIME()
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+double MPI::Wtime()
+
+.fi
+.SH RETURN VALUE
+.ft R
+Time in seconds since an arbitrary time in the past.
+
+.SH DESCRIPTION
+.ft R
+MPI_Wtime returns a floating-point number of seconds, representing elapsed wall-clock time since some time in the past. 
+.PP
+The "time in the past" is guaranteed not to change during the life of the process. The user is responsible for converting large numbers of seconds to other units if they are preferred. 
+.PP
+This function is portable (it returns seconds, not "ticks"), it allows high resolution, and carries no unnecessary baggage. One would use it like this: 
+.sp
+.nf
+    { 
+       double starttime, endtime; 
+       starttime = MPI_Wtime(); 
+        \&....  stuff to be timed  \&... 
+       endtime   = MPI_Wtime(); 
+       printf("That took %f seconds\\n",endtime-starttime); 
+    } 
+.fi
+.PP
+The times returned are local to the node that called them. There is no requirement that different nodes return the "same" time. 
+.SH NOTES 
+The boolean variable MPI_WTIME_IS_GLOBAL, a predefined attribute key that indicates whether clocks are synchronized, does not have a valid value in Open MPI, as the clocks are not guaranteed to be synchronized.
+
+.PP
+This function is intended to be a high-resolution, elapsed (or wall) clock. See MPI_Wtick to determine the resolution of MPI_Wtime. 
+.PP
+On POSIX platforms, this function may utilize a timer that is cheaper
+to invoke than the gettimeofday() system call, but will fall back to
+gettimeofday() if a cheap high-resolution timer is not available.  The
+ompi_info command can be consulted to see if Open MPI supports a
+native high-resolution timer on your platform; see the value for "MPI_WTIME 
+support" (or "options:mpi-wtime" when viewing the parsable
+output).  If this value is "native", a method that is likely to be
+cheaper than gettimeofday() will be used to obtain the time when
+MPI_Wtime is invoked.
+.PP
+This function does not return an error value. Consequently, the result of calling it before MPI_Init or after MPI_Finalize is undefined.
+
+.SH SEE ALSO
+MPI_Wtick
+.br
+

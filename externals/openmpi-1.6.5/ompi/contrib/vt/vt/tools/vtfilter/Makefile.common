@@ -1,0 +1,55 @@
+if AMEXTERNOTF
+OTFINCLUDE = $(OTFINCDIR)
+OTFLIBRARY = $(OTFLIBDIR) $(OTFLIB)
+OTFDEPENDENCIES =
+else
+OTFINCLUDE = -I$(top_srcdir)/extlib/otf/otflib -I$(top_builddir)/extlib/otf/otflib
+OTFLIBRARY = $(top_builddir)/extlib/otf/otflib/libopen-trace-format.la
+OTFDEPENDENCIES = $(OTFLIBRARY)
+endif
+
+AM_CPPFLAGS = -I$(VTFILTERSRCDIR) $(OTFINCLUDE) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/rfg -I$(top_srcdir)/vtlib
+
+OLDSOURCES = \
+	$(VTFILTERSRCDIR)/old/vt_filterc.h \
+	$(VTFILTERSRCDIR)/old/vt_filthandler.h \
+	$(VTFILTERSRCDIR)/old/vt_otfhandler.h \
+	$(VTFILTERSRCDIR)/old/vt_filterc.cc \
+	$(VTFILTERSRCDIR)/old/vt_filthandler.cc \
+	$(VTFILTERSRCDIR)/old/vt_otfhandler.cc \
+	$(VTFILTERSRCDIR)/old/vt_tracefilter.cc
+
+OLDCXXFLAGS = -DVT_FILTER_OLD
+
+COMMONSOURCES = \
+	$(VTFILTERSRCDIR)/vt_filter.h \
+	$(VTFILTERSRCDIR)/vt_filter_common.h \
+	$(VTFILTERSRCDIR)/vt_filter_config.h \
+	$(VTFILTERSRCDIR)/vt_filter_gen.h \
+	$(VTFILTERSRCDIR)/vt_filter_trc.h \
+	$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.h \
+	$(VTFILTERSRCDIR)/vt_filter.cc \
+	$(VTFILTERSRCDIR)/vt_filter_common.cc \
+	$(VTFILTERSRCDIR)/vt_filter_gen.cc \
+	$(VTFILTERSRCDIR)/vt_filter_trc.cc \
+	$(VTFILTERSRCDIR)/vt_filter_trc_hdlr.cc \
+	$(OLDSOURCES)
+
+if AMHAVEOMP
+COMMONCXXFLAGS = $(OPENMP_CFLAGS) $(OLDCXXFLAGS)
+COMMONLDFLAGS = $(OPENMP_CFLAGS)
+else
+COMMONCXXFLAGS = $(OLDCXXFLAGS)
+COMMONLDFLAGS =
+endif
+
+COMMONLDADD = \
+	$(top_builddir)/rfg/libvt_rfg.la \
+	$(top_builddir)/util/libvt_util.la \
+	$(OTFLIBRARY)
+
+COMMONDEPENDENCIES = \
+	$(top_builddir)/rfg/libvt_rfg.la \
+	$(top_builddir)/util/libvt_util.la \
+	$(OTFDEPENDENCIES)
+

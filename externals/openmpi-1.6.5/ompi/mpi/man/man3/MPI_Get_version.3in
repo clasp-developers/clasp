@@ -1,0 +1,58 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Get_version 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Get_version\fP \- Returns the version of the standard corresponding to the current implementation. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Get_version(int \fI*version\fP, int \fI*subversion\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GET_VERSION(\fIVERSION\fP, \fISUBVERSION\fP, \fIIERROR\fP)
+	INTEGER	\fIVERSION\fP, \fISUBVERSION\fP, \fIIERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Get_version(int& \fIversion\fP, int& \fIsubversion\fP)
+
+.fi
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+version
+The major version number of the corresponding standard (integer).
+
+.ft R
+.TP 1i
+subversion
+The minor version number of the corresponding standard (integer).
+
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Since Open MPI is MPI 2.0 compliant, this function will return a version value of 2 and a subversion value of 0 for this release. 
+
+.SH NOTE
+.ft R
+MPI_Get_version is one of the few functions that can be called before MPI_Init and after MPI_Finalize. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+

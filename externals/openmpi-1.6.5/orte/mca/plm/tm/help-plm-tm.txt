@@ -1,0 +1,62 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+[tm-bad-launchid]
+The TM (PBS / Torque) process starter cannot spawn the specified
+application on a remote node due to an invalid launch_id.
+
+This is most likely due to use of the "--hostfile" option to the
+command line with one or more hosts in that file not having
+been allocated to this job.
+
+Removing "--hostfile" from the command line will likely allow the
+application to be launched.
+#
+[multiple-prefixes]
+Multiple different --prefix options were specified to mpirun for the
+same node.  This is a fatal error for the TM (PBS / Torque) process
+starter in Open MPI.
+
+The first two prefix values supplied for node %s were:
+    %s
+and %s
+#
+[tm-spawn-failed]
+The TM (PBS / Torque) process starter failed to spawn a daemon (orted)
+on a remote node.
+
+Command line: %s
+Node name: %s
+Launch id: %d
+
+If you do not understand this error mesage, please try the following:
+
+1. Ensure that the executable "orted" is in your PATH
+2. Use the --prefix option to indicate where we can
+   find that executable
+3. Talk to your local system administrator
+#
+[no-local-slave-support]
+A call was made to launch a local slave process, but no support
+is available for doing so. Launching a local slave requires support
+for either rsh or ssh on the backend nodes where MPI processes
+are running.
+
+Please consult with your system administrator about obtaining
+such support.
+

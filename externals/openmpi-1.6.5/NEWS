@@ -1,0 +1,1841 @@
+Copyright (c) 2004-2008 The Trustees of Indiana University and Indiana
+                        University Research and Technology
+                        Corporation.  All rights reserved.
+Copyright (c) 2004-2006 The University of Tennessee and The University
+                        of Tennessee Research Foundation.  All rights
+                        reserved.
+Copyright (c) 2004-2008 High Performance Computing Center Stuttgart, 
+                        University of Stuttgart.  All rights reserved.
+Copyright (c) 2004-2006 The Regents of the University of California.
+                        All rights reserved.
+Copyright (c) 2006-2013 Cisco Systems, Inc.  All rights reserved.
+Copyright (c) 2006      Voltaire, Inc. All rights reserved.
+Copyright (c) 2006      Sun Microsystems, Inc.  All rights reserved.
+                        Use is subject to license terms.
+Copyright (c) 2006-2007 Los Alamos National Security, LLC.  All rights
+                        reserved.
+$COPYRIGHT$
+
+Additional copyrights may follow
+
+$HEADER$
+
+===========================================================================
+
+This file contains the main features as well as overviews of specific
+bug fixes (and other actions) for each version of Open MPI since
+version 1.0.
+
+As more fully described in the "Software Version Number" section in
+the README file, Open MPI typically releases two separate version
+series simultaneously.  Since these series have different goals and
+are semi-independent of each other, a single NEWS-worthy item may be
+introduced into different series at different times.  For example,
+feature F was introduced in the vA.B series at version vA.B.C, and was
+later introduced into the vX.Y series at vX.Y.Z.
+
+The first time feature F is released, the item will be listed in the
+vA.B.C section, denoted as:
+
+   (** also to appear: X.Y.Z) -- indicating that this item is also
+                                 likely to be included in future release
+                                 version vX.Y.Z.
+
+When vX.Y.Z is later released, the same NEWS-worthy item will also be
+included in the vX.Y.Z section and be denoted as:
+
+   (** also appeared: A.B.C)  -- indicating that this item was previously
+                                 included in release version vA.B.C.
+
+1.6.5
+-----
+
+- Updated default SRQ parameters for the openib BTL.
+  (** also to appear: 1.7.2)
+- Major VampirTrace update to 5.14.4.2.
+  (** also to appear: 1.7.2)
+- Fix to set flag==1 when MPI_IPROBE is called with MPI_PROC_NULL.
+  (** also to appear: 1.7.2)
+- Set the Intel Phi device to be ignored by default by the openib BTL.
+  (** also to appear: 1.7.2)
+- Decrease the internal memory storage used by intrinsic MPI datatypes
+  for Fortran types.  Thanks to Takahiro Kawashima for the initial
+  patch.
+  (** also to appear: 1.7.2)
+- Fix total registered memory calculation for Mellanox ConnectIB and
+  OFED 2.0.
+  (** also to appear: 1.7.2)
+- Fix possible data corruption in the MXM MTL component.
+  (** also to appear: 1.7.2)
+- Remove extraneous -L from hwloc's embedding.  Thanks to Stefan
+  Friedel for reporting the issue.
+  (** also to appear: 1.7.2)
+- Fix contiguous datatype memory check.  Thanks to Eric Chamberland
+  for reporting the issue.
+  (** also to appear: 1.7.2)
+- Make the openib BTL more friendly to ignoring verbs devices that are
+  not RC-capable.
+  (** also to appear: 1.7.2)
+- Fix some MPI datatype engine issues.  Thanks to Thomas Jahns for
+  reporting the issue.
+  (** also to appear: 1.7.2)
+- Add INI information for Chelsio T5 device.
+  (** also to appear: 1.7.2)
+- Integrate MXM STREAM support for MPI_ISEND and MPI_IRECV, and other
+  minor MXM fixes.
+  (** also to appear: 1.7.2)
+- Improved alignment for OpenFabrics buffers.
+- Fix to not show amorphous "MPI was already finalized" error when
+  failing to MPI_File_close an open file.  Thanks to Brian Smith for
+  reporting the issue.
+  (** also to appear: 1.7.2)
+
+
+1.6.4
+-----
+
+- Fix Cygwin shared memory and debugger plugin support.  Thanks to
+  Marco Atzeri for reporting the issue and providing initial patches.
+- Fix to obtaining the correct available nodes when a rankfile is
+  providing the allocation.  Thanks to Siegmar Gross for reporting the
+  problem.
+- Fix process binding issue on Solaris.  Thanks to Siegmar Gross for
+  reporting the problem.
+- Updates for MXM 2.0.
+- Major VT update to 5.14.2.3.
+- Fixed F77 constants for Cygwin/Cmake build.
+- Fix a linker error when configuring --without-hwloc.
+- Automatically provide compiler flags that compile properly on some
+  types of ARM systems.
+- Fix slot_list behavior when multiple sockets are specified.  Thanks
+  to Siegmar Gross for reporting the problem.
+- Fixed memory leak in one-sided operations.  Thanks to Victor
+  Vysotskiy for letting us know about this one.
+- Added performance improvements to the OpenIB (OpenFabrics) BTL.
+- Improved error message when process affinity fails.
+- Fixed MPI_MINLOC on man pages for MPI_REDUCE(_LOCAL).  Thanks to Jed
+  Brown for noticing the problem and supplying a fix.
+- Made malloc hooks more friendly to IO interprosers.  Thanks to the
+  bug report and suggested fix from Darshan maintainer Phil Carns.
+- Restored ability to direct launch under SLURM without PMI support.
+- Fixed MPI datatype issues on OpenBSD.
+- Major VT update to 5.14.2.3.
+- Support FCA v3.0+.
+- Fixed header file problems on OpenBSD.
+- Fixed issue with MPI_TYPE_CREATE_F90_REAL.
+- Fix an issue with using external libltdl installations.  Thanks to
+  opolawski for identifying the problem.
+- Fixed MPI_IN_PLACE case for MPI_ALLGATHER for FCA.
+- Allow SLURM PMI support to look in lib64 directories.  Thanks to
+  Guillaume Papaure for the patch.
+- Restore "use mpi" ABI compatibility with the rest of the 1.5/1.6
+  series (except for v1.6.3, where it was accidentally broken).
+- Fix a very old error in opal_path_access(). Thanks to Marco Atzeri
+  for chasing it down.
+
+
+1.6.3
+-----
+
+- Fix mpirun --launch-agent behavior when a prefix is specified.
+  Thanks to Reuti for identifying the issue.
+- Fixed memchecker configury.
+- Brought over some compiler warning squashes from the development trunk.
+- Fix spawning from a singleton to multiple hosts when the "add-host"
+  MPI_Info key is used.  Thanks to Brian Budge for pointing out the
+  problem.
+- Add Mellanox ConnextIB IDs and max inline value.
+- Fix rankfile when no -np is given.
+- FreeBSD detection improvement.  Thanks to Brooks Davis for the
+  patch.
+- Removed TCP warnings on Windows.
+- Improved collective algorithm selection for very large messages.
+- Fix PSM MTL affinity settings.
+- Fix issue with MPI_OP_COMMUTATIVE in the mpif.h bindings.  Thanks to
+  Ake Sandgren for providing a patch to fix the issue.
+- Fix issue with MPI_SIZEOF when using CHARACTER and LOGICAL types in
+  the mpi module.  Thanks to Ake Sandgren for providing a patch to fix
+  the issue.
+
+
+1.6.2
+-----
+
+- Fix issue with MX MTL.  Thanks to Doug Eadline for raising the issue.
+- Fix singleton MPI_COMM_SPAWN when the result job spans multiple nodes.
+- Fix MXM hang, and update for latest version of MXM.
+- Update to support Mellanox FCA 2.5.
+- Fix startup hang for large jobs.
+- Ensure MPI_TESTANY / MPI_WAITANY properly set the empty status when
+  count==0.
+- Fix MPI_CART_SUB behavior of not copying periods to the new
+  communicator properly.  Thanks to John Craske for the bug report.
+- Add btl_openib_abort_not_enough_reg_mem MCA parameter to cause Open
+  MPI to abort MPI jobs if there is not enough registered memory
+  available on the system (vs. just printing a warning).  Thanks to
+  Brock Palen for raising the issue.
+- Minor fix to Fortran MPI_INFO_GET: only copy a value back to the
+  user's buffer if the flag is .TRUE.
+- Fix VampirTrace compilation issue with the PGI compiler suite.
+
+
+1.6.1
+-----
+
+- A bunch of changes to eliminate hangs on OpenFabrics-based networks.
+  Users with Mellanox hardware are ***STRONGLY ENCOURAGED*** to check
+  their registered memory kernel module settings to ensure that the OS
+  will allow registering more than 8GB of memory.  See this FAQ item
+  for details:
+
+  http://www.open-mpi.org/faq/?category=openfabrics#ib-low-reg-mem
+
+  - Fall back to send/receive semantics if registered memory is
+    unavilable for RDMA.
+  - Fix two fragment leaks when registered memory is exhausted.
+  - Hueristically determine how much registered memory is available
+    and warn if it's significantly less than all of RAM.
+  - Artifically limit the amount of registered memory each MPI process
+    can use to about 1/Nth to total registered memory available.
+  - Improve error messages when events occur that are likely due to
+    unexpected registered memory exhaustion.
+
+- Fix double semicolon error in the C++ in <mpi.h>.  Thanks to John
+  Foster for pointing out the issue.
+- Allow -Xclang to be specified multiple times in CFLAGS.  Thanks to
+  P. Martin for raising the issue.
+- Break up a giant "print *" statement in the ABI-preserving incorrect
+  MPI_SCATTER interface in the "large" Fortran "mpi" module.  Thanks
+  to Juan Escobar for the initial patch.
+- Switch the MPI_ALLTOALLV default algorithm to a pairwise exchange.
+- Increase the openib BTL default CQ length to handle more types of
+  OpenFabrics devices.
+- Lots of VampirTrace fixes; upgrade to v5.13.0.4.
+- Map MPI_2INTEGER to underlying MPI_INTEGERs, not MPI_INTs.
+- Ensure that the OMPI version number is toleant of handling spaces.
+  Thanks to dragonboy for identifying the issue.
+- Fixed IN parameter marking on Fortran "mpi" module
+  MPI_COMM_TEST_INTER interface.
+- Various MXM improvements.
+- Make the output of "mpirun --report-bindings" much more friendly /
+  human-readable.
+- Properly handle MPI_COMPLEX8|16|32.
+- More fixes for mpirun's processor affinity options (--bind-to-core
+  and friends).
+- Use aligned memory for OpenFabrics registered memory.
+- Multiple fixes for parameter checking in MPI_ALLGATHERV,
+  MPI_REDUCE_SCATTER, MPI_SCATTERV, and MPI_GATHERV.  Thanks to the
+  mpi4py community (Bennet Fauber, Lisandro Dalcin, Jonathan Dursi).
+- Fixed file positioning overflows in MPI_FILE_GET_POSITION,
+  MPI_FILE_GET_POSITION_SHARED, FILE_GET_SIZE, FILE_GET_VIEW.
+- Removed the broken --cpu-set mpirun option.
+- Fix cleanup of MPI errorcodes.  Thanks to Alexey Bayduraev for the
+  patch.
+- Fix default hostfile location.  Thanks to Götz Waschk for noticing
+  the issue.
+- Improve several error messages.
+
+
+1.6
+---
+
+- Fix some process affinity issues.  When binding a process, Open MPI
+  will now bind to all available hyperthreads in a core (or socket,
+  depending on the binding options specified).
+  --> Note that "mpirun --bind-to-socket ..." does not work on POWER6-
+      and POWER7-based systems with some Linux kernel versions.  See
+      the FAQ on the Open MPI web site for more information.
+- Add support for ARM5 and ARM6 (in addition to the existing ARM7
+  support).  Thanks to Evan Clinton for the patch.
+- Minor Mellanox MXM fixes.
+- Properly detect FDR10, FDR, and EDR OpenFabrics devices.
+- Minor fixes to the mpirun(1) and MPI_Comm_create(3) man pages.
+- Prevent segv if COMM_SPAWN_MULTIPLE fails.  Thanks to Fujitsu for
+  the patch.
+- Disable interposed memory management in fakeroot environments.  This
+  fixes a problem in some build environments.
+- Minor hwloc updates.
+- Array versions of MPI_TEST and MPI_WAIT with a count==0 will now
+  return immediately with MPI_SUCCESS.  Thanks to Jeremiah Willcock
+  for the suggestion.
+- Update VampirTrace to v5.12.2.
+- Properly handle forwarding stdin to all processes when "mpirun
+  --stdin all" is used.
+- Workaround XLC assembly bug.
+- OS X Tiger (10.4) has not been supported for a while, so forcibly
+  abort configure if we detect it.
+- Fix segv in the openib BTL when running on SPARC 64 systems.
+- Fix some include file ordering issues on some BSD-based platforms.
+  Thanks to Paul Hargove for this (and many, many other) fixes.
+- Properly handle .FALSE. return parameter value to attribute copy
+  callback functions.
+- Fix a bunch of minor C++ API issues; thanks to Fujitsu for the patch.
+- Fixed the default hostfile MCA parameter behavior.
+- Per the MPI spec, ensure not to touch the port_name parameter to
+  MPI_CLOSE_PORT (it's an IN parameter).
+
+
+1.5.5
+-----
+
+- Many, many portability configure/build fixes courtesy of Paul
+  Hargrove.  Thanks, Paul!
+- Fixed shared memory fault tolerance support compiler errors.
+- Removed not-production-quality rshd and tmd PLM launchers.
+- Minor updates to the Open MPI SRPM spec file.
+- Fixed mpirun's --bind-to-socket option.
+- A few MPI_THREAD_MULTIPLE fixes in the shared memory BTL.
+- Upgrade the GNU Autotools used to bootstrap the 1.5/1.6 series to
+  all the latest versions at the time of this release.
+- Categorically state in the README that if you're having a problem
+  with Open MPI with the Linux Intel 12.1 compilers, *upgrade your
+  Intel Compiler Suite to the latest patch version*, and the problems
+  will go away. :-)
+- Fix the --without-memory-manager configure option.
+- Fixes for Totalview/DDT MPI-capable debuggers.
+- Update rsh/ssh support to properly handle the Mac OS X library path
+  (i.e., DYLD_LIBRARY_PATH).
+- Make warning about shared memory backing files on a networked file
+  system be optional (i.e., can be disabled via MCA parameter).
+- Several fixes to processor and memory affinity.
+- Various shared memory infrastructure improvements.
+- Various checkpoint/restart fixes.
+- Fix MPI_IN_PLACE (and other MPI sentinel values) on OS X.  Thanks to
+  Dave Goodell for providing the magic OS X gcc linker flags necessary.
+- Various man page corrections and typo fixes.  Thanks to Fujitsu for
+  the patch.
+- Updated wrapper compiler man pages to list the various --showme
+  options that are available.
+- Add PMI direct-launch support (e.g., "srun mpi_application" under
+  SLURM).
+- Correctly compute the aligned address when packing the
+  datatype description. Thanks to Fujitsu for the patch.
+- Fix MPI obscure corner case handling in packing MPI datatypes.
+  Thanks to Fujitsu for providing the patch.
+- Workaround an Intel compiler v12.1.0 2011.6.233 vector optimization
+  bug.
+- Output the MPI API in ompi_info output.
+- Major VT update to 5.12.1.4.
+- Rankfile 'P'hysical mapping is no longer available.
+- Upgrade embedded Hardware Locality (hwloc) v1.3.2, plus some
+  post-1.3.2-release bug fixes.  All processor and memory binding is
+  now done through hwloc.  Woo hoo!  Note that this fixes core binding
+  on AMD Opteron 6200 and 4200 series-based systems (sometimes known
+  as Interlagos, Valencia, or other Bulldozer-based chips).
+- New MCA parameters to control process-wide memory binding policy:
+  hwloc_base_mem_alloc_policy, hwloc_base_mem_bind_failure_action (see
+  ompi_info --param hwloc base).
+- Removed direct support for libnuma.  Libnuma support may now be
+  picked up through hwloc.
+- Added MPI_IN_PLACE support to MPI_EXSCAN.
+- Various fixes for building on Windows, including MinGW support.
+- Removed support for the OpenFabrics IBCM connection manager.
+- Updated Chelsio T4 and Intel NE OpenFabrics default buffer settings.
+- Increased the default RDMA CM timeout to 30 seconds.
+- Issue a warning if both btl_tcp_if_include and btl_tcp_if_exclude
+  are specified.
+- Many fixes to the Mellanox MXM transport.
+
+
+1.5.4
+-----
+
+- Add support for the (as yet unreleased) Mellanox MXM transport.
+- Add support for dynamic service levels (SLs) in the openib BTL.
+- Fixed C++ bindings cosmetic/warnings issue with
+  MPI::Comm::NULL_COPY_FN and MPI::Comm::NULL_DELETE_FN.  Thanks to
+  Júlio Hoffimann for identifying the issues.
+- Also allow the word "slots" in rankfiles (i.e., not just "slot").
+  (** also to appear in 1.4.4)
+- Add Mellanox ConnectX 3 device IDs to the openib BTL defaults.
+  (** also to appear in 1.4.4)
+- Various FCA updates.
+- Fix 32 bit SIGBUS errors on Solaris SPARC platforms.
+- Add missing ARM assembly code files.
+- Update to allow more than 128 entries in an appfile.
+  (** also to appear in 1.4.4)
+- Various VT updates and bug fixes.
+- Update description of btl_openib_cq_size to be more accurate.
+  (** also to appear in 1.4.4)
+- Various assembly "clobber" fixes.
+- Fix a hang in carto selection in obscure situations.
+- Guard the inclusion of execinfo.h since not all platforms have it.  Thanks
+  to Aleksej Saushev for identifying this issue.
+  (** also to appear in 1.4.4)
+- Support Solaris legacy munmap prototype changes.
+  (** also to appear in 1.4.4)
+- Updated to Automake 1.11.1 per
+  http://www.open-mpi.org/community/lists/devel/2011/07/9492.php.
+- Fix compilation of LSF support.
+- Update MPI_Comm_spawn_multiple.3 man page to reflect what it
+  actually does.
+- Fix for possible corruption of the environment.  Thanks to Peter
+  Thompson for the suggestion.  (** also to appear in 1.4.4)
+- Enable use of PSM on direct-launch SLURM jobs.
+- Update paffinity hwloc to v1.2, and to fix minor bugs affinity
+  assignment bugs on PPC64/Linux platforms.
+- Let the openib BTL auto-detect its bandwidth.
+- Support new MPI-2.2 datatypes.
+- Updates to support more datatypes in MPI one-sided communication.
+- Fix recursive locking bug when MPI-IO was used with
+  MPI_THREAD_MULTIPLE.  (** also to appear in 1.4.4)
+- Fix mpirun handling of prefix conflicts.
+- Ensure mpirun's --xterm options leaves sessions attached.
+  (** also to appear in 1.4.4)
+- Fixed type of sendcounts and displs in the "use mpi" F90 module.
+  ABI is preserved, but applications may well be broken.  See the
+  README for more details.  Thanks to Stanislav Sazykin for
+  identifying the issue.  (** also to appear in 1.4.4)
+- Fix indexed datatype leaks.  Thanks to Pascal Deveze for supplying
+  the initial patch.  (** also to appear in 1.4.4)
+- Fix debugger mapping when mpirun's -npernode option is used.
+- Fixed support for configure's --disable-dlopen option when used with
+  "make distclean".
+- Fix segv associated with MPI_Comm_create with MPI_GROUP_EMPTY.
+  Thanks to Dominik Goeddeke for finding this.
+  (** also to appear in 1.4.4)
+- Improved LoadLeveler ORTE support.
+- Add new WinVerbs BTL plugin, supporting native OpenFabrics verbs on 
+  Windows (the "wv" BTL).
+- Add new btl_openib_gid_index MCA parameter to allow selecting which
+  GID to use on an OpenFabrics device's GID table.
+- Add support for PCI relaxed ordering in the OpenFabrics BTL (when
+  available).
+- Update rsh logic to allow correct SGE operation.
+- Ensure that the mca_paffinity_alone MCA parameter only appears once
+  in the ompi_info output.  Thanks to Gus Correa for identifying the
+  issue.
+- Fixed return codes from MPI_PROBE and MPI_IPROBE.
+  (** also to appear in 1.4.4)
+- Remove --enable-progress-thread configure option; it doesn't work on
+  the v1.5 branch.  Rename --enable-mpi-threads to
+  --enable-mpi-thread-multiple.  Add new --enable-opal-multi-threads
+  option.
+- Updates for Intel Fortran compiler version 12.
+- Remove bproc support.  Farewell bproc!
+- If something goes wrong during MPI_INIT, fix the error
+  message to say that it's illegal to invoke MPI_INIT before
+  MPI_INIT.
+
+
+1.5.3
+-----
+
+- Add missing "affinity" MPI extension (i.e., the OMPI_Affinity_str()
+  API) that was accidentally left out of the 1.5.2 release.
+
+
+1.5.2
+-----
+
+- Replaced all custom topology / affinity code with initial support
+  for hwloc v1.1.1 (PLPA has been removed -- long live hwloc!).  Note
+  that hwloc is bundled with Open MPI, but an external hwloc can be
+  used, if desired.  See README for more details.
+- Many CMake updates for Windows builds.
+- Updated opal_cr_thread_sleep_wait MCA param default value to make it
+  less aggressive.
+- Updated debugger support to allow Totalview attaching from jobs
+  launched directly via srun (not mpirun).  Thanks to Nikolay Piskun
+  for the patch.
+- Added more FTB/CIFTS support.
+- Fixed compile error with the PGI compiler.
+- Portability fixes to allow the openib BTL to run on the Solaris
+  verbs stack.
+- Fixed multi-token command-line issues when using the mpirun
+  --debug switch.  For example:
+      mpirun --debug -np 2 a.out "foo bar"
+  Thanks to Gabriele Fatigati for reporting the issue.
+- Added ARM support.
+- Added the MPI_ROOT environment variable in the Open MPI Linux SRPM
+  for customers who use the BPS and LSF batch managers.
+- Updated ROMIO from MPICH v1.3.1 (plus one additional patch).
+- Fixed some deprecated MPI API function notification messages.
+- Added new "bfo" PML that provides failover on OpenFabrics networks.
+- Fixed some buffer memcheck issues in MPI_*_init.
+- Added Solaris-specific chip detection and performance improvements.
+- Fix some compile errors on Solaris.
+- Updated the "rmcast" framework with bug fixes, new functionality.
+- Updated the Voltaire FCA component with bug fixes, new
+  functionality.  Support for FCA version 2.1.
+- Fix gcc 4.4.x and 4.5.x over-aggressive warning notifications on
+  possibly freeing stack variables.  Thanks to the Gentoo packagers
+  for reporting the issue.
+- Make the openib component be verbose when it disqualifies itself due
+  to MPI_THREAD_MULTIPLE.
+- Minor man page fixes.
+- Various checkpoint / restart fixes.
+- Fix race condition in the one-sided unlock code.  Thanks to
+  Guillaume Thouvenin for finding the issue.
+- Improve help message aggregation.
+- Add OMPI_Affinity_str() optional user-level API function (i.e., the
+  "affinity" MPI extension).  See README for more details.
+- Added btl_tcp_if_seq MCA parameter to select a different ethernet
+  interface for each MPI process on a node.  This parameter is only
+  useful when used with virtual ethernet interfaces on a single
+  network card (e.g., when using virtual interfaces give dedicated
+  hardware resources on the NIC to each process).
+- Changed behavior of mpirun to terminate if it receives 10 (or more)
+  SIGPIPEs.
+- Fixed oversubscription detection.
+- Added new mtl_mx_board and mtl_mx_endpoint MCA parameters.
+- Added ummunotify support for OpenFabrics-based transports.  See the
+  README for more details.
+
+
+1.5.1
+-----
+
+- Fixes for the Oracle Studio 12.2 Fortran compiler.
+- Fix SPARC and SPARCv9 atomics.  Thanks to Nicola Stange for the
+  initial patch.
+- Fix Libtool issues with the IBM XL compiler in 64-bit mode.
+- Restore the reset of the libevent progress counter to avoid
+  over-sampling the event library.
+- Update memory barrier support.
+- Use memmove (instead of memcpy) when necessary (e.g., source and
+  destination overlap).
+- Fixed ompi-top crash.
+- Fix to handle Autoconf --program-transforms properly and other
+  m4/configury updates.  Thanks to the GASNet project for the
+  --program transforms fix.
+- Allow hostfiles to specify usernames on a per-host basis.
+- Update wrapper compiler scripts to search for perl during configure,
+  per request from the BSD maintainers.
+- Minor man page fixes.
+- Added --with-libltdl option to allow building Open MPI with an
+  external installation of libltdl.
+- Fixed various issues with -D_FORTIFY_SOURCE=2.
+- Various VT fixes and updates.
+
+
+1.5
+---
+
+- Added "knem" support: direct process-to-process copying for shared
+  memory message passing.  See http://runtime.bordeaux.inria.fr/knem/
+  and the README file for more details.
+- Updated shared library versioning scheme and linking style of MPI
+  applications.  The MPI application ABI has been broken from the
+  v1.3/v1.4 series.  MPI applications compiled against any prior
+  version of Open MPI will need to, at a minimum, re-link.  See the
+  README file for more details.
+- Added "fca" collective component, enabling MPI collective offload
+  support for Voltaire switches.
+- Fixed MPI one-sided operations with large target displacements.
+  Thanks to Brian Price and Jed Brown for reporting the issue.
+- Fixed MPI_GET_COUNT when used with large counts.  Thanks to Jed
+  Brown for reporting the issue.
+- Made the openib BTL safer if extremely low SRQ settings are used.
+- Fixed handling of the array_of_argv parameter in the Fortran
+  binding of MPI_COMM_SPAWN_MULTIPLE (** also to appear: 1.4.3).
+- Fixed malloc(0) warnings in some collectives.
+- Fixed a problem with the Fortran binding for
+  MPI_FILE_CREATE_ERRHANDLER.  Thanks to Secretan Yves for identifying
+  the issue (** also to appear: 1.4.3).
+- Updates to the LSF PLM to ensure that the path is correctly passed.
+  Thanks to Teng Lin for the patch (** also to appear: 1.4.3).
+- Fixes for the F90 MPI_COMM_SET_ERRHANDLER and MPI_WIN_SET_ERRHANDLER
+  bindings.  Thanks to Paul Kapinos for pointing out the issue
+  (** also to appear: 1.4.3).
+- Fixed extra_state parameter types in F90 prototypes for
+  MPI_COMM_CREATE_KEYVAL, MPI_GREQUEST_START, MPI_REGISTER_DATAREP,
+  MPI_TYPE_CREATE_KEYVAL, and MPI_WIN_CREATE_KEYVAL.
+- Fixes for Solaris oversubscription detection.
+- If the PML determines it can't reach a peer process, print a
+  slightly more helpful message.  Thanks to Nick Edmonds for the
+  suggestion. 
+- Make btl_openib_if_include/exclude function the same way
+  btl_tcp_if_include/exclude works (i.e., supplying an _include list
+  overrides supplying an _exclude list).
+- Apply more scalable reachability algorithm on platforms with more
+  than 8 TCP interfaces.
+- Various assembly code updates for more modern platforms / compilers.
+- Relax restrictions on using certain kinds of MPI datatypes with
+  one-sided operations.  Users beware; not all MPI datatypes are valid
+  for use with one-sided operations!
+- Improve behavior of MPI_COMM_SPAWN with regards to --bynode.
+- Various threading fixes in the openib BTL and other core pieces of
+  Open MPI.
+- Various help file and man pages updates.
+- Various FreeBSD and NetBSD updates and fixes.  Thanks to Kevin
+  Buckley and Aleksej Saushev for their work.
+- Fix case where freeing communicators in MPI_FINALIZE could cause
+  process failures.
+- Print warnings if shared memory state files are opened on what look
+  like networked filesystems.
+- Update libevent to v1.4.13.
+- Allow propagating signals to processes that call fork().
+- Fix bug where MPI_GATHER was sometimes incorrectly examining the
+  datatype on non-root processes.  Thanks to Michael Hofmann for
+  investigating the issue.
+- Various Microsoft Windows fixes.
+- Various Catamount fixes.
+- Various checkpoint / restart fixes.
+- Xgrid support has been removed until it can be fixed (patches
+  would be welcome).
+- Added simplistic "libompitrace" contrib package.  Using the MPI
+  profiling interface, it essentially prints out to stderr when select
+  MPI functions are invoked.
+- Update bundled VampirTrace to v5.8.2.
+- Add pkg-config(1) configuration files for ompi, ompi-c, ompi-cxx,
+  ompi-f77, ompi-f90.  See the README for more details.
+- Removed the libopenmpi_malloc library (added in the v1.3 series)
+  since it is no longer necessary
+- Add several notifier plugins (generally used when Open MPI detects
+  system/network administrator-worthy problems); each have their own
+  MCA parameters to govern their usage.  See "ompi_info --param
+  notifier <name>" for more details.
+  - command to execute arbitrary commands (e.g., run a script).
+  - file to send output to a file.
+  - ftb to send output to the Fault Tolerant Backplane (see
+    http://wiki.mcs.anl.gov/cifts/index.php/CIFTS)
+  - hnp to send the output to mpirun.
+  - smtp (requires libesmtp) to send an email.
+
+
+1.4.3
+-----
+
+- Fixed handling of the array_of_argv parameter in the Fortran
+  binding of MPI_COMM_SPAWN_MULTIPLE
+- Fixed a problem with the Fortran binding for
+  MPI_FILE_CREATE_ERRHANDLER.  Thanks to Secretan Yves for identifying
+  the issue
+- Updates to the LSF PLM to ensure that the path is correctly passed.
+  Thanks to Teng Lin for the patch
+- Fixes for the F90 MPI_COMM_SET_ERRHANDLER and MPI_WIN_SET_ERRHANDLER
+  bindings.  Thanks to Paul Kapinos for pointing out the issue.
+- Fixed various MPI_THREAD_MULTIPLE race conditions.
+- Fixed an issue with an undeclared variable from ptmalloc2 munmap on
+  BSD systems.
+- Fixes for BSD interface detection.
+- Various other BSD fixes.  Thanks to Kevin Buckley helping to track.
+  all of this down.
+- Fixed issues with the use of the -nper* mpirun command line arguments.
+- Fixed an issue with coll tuned dynamic rules.
+- Fixed an issue with the use of OPAL_DESTDIR being applied too aggressively.
+- Fixed an issue with one-sided xfers when the displacement exceeds 2GBytes.
+- Change to ensure TotalView works properly on Darwin.
+- Added support for Visual Studio 2010.
+- Fix to ensure proper placement of VampirTrace header files.
+- Needed to add volatile keyword to a varialbe used in debugging
+  (MPIR_being_debugged).
+- Fixed a bug in inter-allgather.
+- Fixed malloc(0) warnings.
+- Corrected a typo the MPI_Comm_size man page (intra -> inter).  Thanks
+  to Simon number.cruncher for pointing this out.
+- Fixed a SegV in orted when given more than 127 app_contexts.
+- Removed xgrid source code from the 1.4 branch since it is no longer
+  supported in the 1.4 series.
+- Removed the --enable-opal-progress-threads config option since
+  opal progress thread support does not work in 1.4.x.
+- Fixed a defect in VampirTrace's vtfilter.
+- Fixed wrong Windows path in hnp_contact.
+- Removed the requirement for a paffinity component.
+- Removed a hardcoded limit of 64 interconnected jobs.
+- Fix to allow singletons to use ompi-server for rendezvous.
+- Fixed bug in output-filename option.
+- Fix to correctly handle failures in mx_init().
+- Fixed a potential Fortran memory leak.
+- Fixed an incorrect branch in some ppc32 assembly code.  Thanks
+  to Matthew Clark for this fix.
+- Remove use of undocumented AS_VAR_GET macro during configuration.
+- Fixed an issue with VampirTrace's wrapper for MPI_init_thread.
+- Updated mca-btl-openib-device-params.ini file with various new vendor id's.
+- Configuration fixes to ensure CPPFLAGS in handled properly if a non-standard
+  valgrind location was specified.
+- Various man page updates
+
+
+1.4.2
+-----
+
+- Fixed problem when running in heterogeneous environments.  Thanks to
+  Timur Magomedov for helping to track down this issue.
+- Update LSF support to ensure that the path is passed correctly.
+  Thanks to Teng Lin for submitting a patch.
+- Fixed some miscellaneous oversubscription detection bugs.
+- IBM re-licensed its LoadLeveler code to be BSD-compliant.
+- Various OpenBSD and NetBSD build and run-time fixes.  Many thanks to
+  the OpenBSD community for their time, expertise, and patience
+  getting these fixes incorporated into Open MPI's main line.
+- Various fixes for multithreading deadlocks, race conditions, and
+  other nefarious things.
+- Fixed ROMIO's handling of "nearly" contiguous issues (e.g., with
+  non-zero true_lb).  Thanks for Pascal Deveze for the patch.
+- Bunches of Windows build fixes.  Many thanks to several Windows
+  users for their help in improving our support on Windows.
+- Now allow the graceful failover from MTLs to BTLs if no MTLs can
+  initialize successfully.
+- Added "clobber" information to various atomic operations, fixing
+  erroneous behavior in some newer versions of the GNU compiler suite.
+- Update various iWARP and InfiniBand device specifications in the
+  OpenFabrics .ini support file.
+- Fix the use of hostfiles when a username is supplied.
+- Various fixes for rankfile support.
+- Updated the internal version of VampirTrace to 5.4.12.
+- Fixed OS X TCP wireup issues having to do with IPv4/IPv6 confusion
+  (see https://svn.open-mpi.org/trac/ompi/changeset/22788 for more
+  details).
+- Fixed some problems in processor affinity support, including when
+  there are "holes" in the processor namespace (e.g., offline
+  processors). 
+- Ensure that Open MPI's "session directory" (usually located in /tmp)
+  is cleaned up after process termination.
+- Fixed some problems with the collective "hierarch" implementation
+  that could occur in some obscure conditions.
+- Various MPI_REQUEST_NULL, API parameter checking, and attribute
+  error handling fixes.  Thanks to Lisandro DalcÃ­n for reporting the
+  issues.
+- Fix case where MPI_GATHER erroneously used datatypes on non-root
+  nodes.  Thanks to Michael Hofmann for investigating the issue.
+- Patched ROMIO support for PVFS2 > v2.7 (patch taken from MPICH2
+  version of ROMIO).
+- Fixed "mpirun --report-bindings" behavior when used with
+  mpi_paffinity_alone=1.  Also fixed mpi_paffinity_alone=1 behavior
+  with non-MPI applications.  Thanks to Brice Goglin for noticing the
+  problem.
+- Ensure that all OpenFabrics devices have compatible receive_queues
+  specifications before allowing them to communicate.  See the lengthy
+  comment in https://svn.open-mpi.org/trac/ompi/changeset/22592 for
+  more details.
+- Fix some issues with checkpoint/restart.
+- Improve the pre-MPI_INIT/post-MPI_FINALIZE error messages.
+- Ensure that loopback addresses are never advertised to peer
+  processes for RDMA/OpenFabrics support.
+- Fixed a CSUM PML false positive.
+- Various fixes for Catamount support.
+- Minor update to wrapper compilers in how user-specific argv is
+  ordered on the final command line.  Thanks to Jed Brown for the
+  suggestions. 
+- Removed flex.exe binary from Open MPI tarballs; now generate flex
+  code from a newer (Windows-friendly) flex when we make official
+  tarballs.
+
+
+1.4.1
+-----
+
+- Update to PLPA v1.3.2, addressing a licensing issue identified by
+  the Fedora project.  See
+  https://svn.open-mpi.org/trac/plpa/changeset/262 for details.
+- Add check for malformed checkpoint metadata files (Ticket #2141).
+- Fix error path in ompi-checkpoint when not able to checkpoint
+  (Ticket #2138).
+- Cleanup component release logic when selecting checkpoint/restart
+  enabled components (Ticket #2135).
+- Fixed VT node name detection for Cray XT platforms, and fixed some
+  broken VT documentation files.
+- Fix a possible race condition in tearing down RDMA CM-based
+  connections.
+- Relax error checking on MPI_GRAPH_CREATE.  Thanks to David Singleton
+  for pointing out the issue.
+- Fix a shared memory "hang" problem that occurred on x86/x86_64
+  platforms when used with the GNU >=4.4.x compiler series.
+- Add fix for Libtool 2.2.6b's problems with the PGI 10.x compiler
+  suite.  Inspired directly from the upstream Libtool patches that fix
+  the issue (but we need something working before the next Libtool
+  release).
+
+
+1.4
+---
+
+The *only* change in the Open MPI v1.4 release (as compared to v1.3.4)
+was to update the embedded version of Libtool's libltdl to address a
+potential security vulnerability.  Specifically: Open MPI v1.3.4 was
+created with GNU Libtool 2.2.6a; Open MPI v1.4 was created with GNU
+Libtool 2.2.6b.  There are no other changes between Open MPI v1.3.4
+and v1.4.
+
+
+1.3.4
+-----
+
+- Fix some issues in OMPI's SRPM with regard to shell_scripts_basename
+  and its use with mpi-selector.  Thanks to Bill Johnstone for
+  pointing out the problem.
+- Added many new MPI job process affinity options to mpirun.  See the
+  newly-updated mpirun(1) man page for details.
+- Several updates to mpirun's XML output.
+- Update to fix a few Valgrind warnings with regards to the ptmalloc2
+  allocator and Open MPI's use of PLPA.
+- Many updates and fixes to the (non-default) "sm" collective
+  component (i.e., native shared memory MPI collective operations).
+- Updates and fixes to some MPI_COMM_SPAWN_MULTIPLE corner cases.
+- Fix some internal copying functions in Open MPI's use of PLPA.
+- Correct some SLURM nodelist parsing logic that may have interfered
+  with large jobs.  Additionally, per advice from the SLURM team,
+  change the environment variable that we use for obtaining the job's
+  allocation.
+- Revert to an older, safer (but slower) communicator ID allocation
+  algorithm. 
+- Fixed minimum distance finding for OpenFabrics devices in the openib
+  BTL.
+- Relax the parameter checking MPI_CART_CREATE a bit.
+- Fix MPI_COMM_SPAWN[_MULTIPLE] to only error-check the info arguments
+  on the root process.  Thanks to Federico Golfre Andreasi for
+  reporting the problem.
+- Fixed some BLCR configure issues.
+- Fixed a potential deadlock when the openib BTL was used with
+  MPI_THREAD_MULTIPLE.
+- Fixed dynamic rules selection for the "tuned" coll component.
+- Added a launch progress meter to mpirun (useful for large jobs; set
+  the orte_report_launch_progress MCA parameter to 1 to see it).
+- Reduced the number of file descriptors consumed by each MPI process.
+- Add new device IDs for Chelsio T3 RNICs to the openib BTL config file.
+- Fix some CRS self component issues.
+- Added some MCA parameters to the PSM MTL to tune its run-time
+  behavior.
+- Fix some VT issues with MPI_BOTTOM/MPI_IN_PLACE.
+- Man page updates from the Debain Open MPI package maintainers.
+- Add cycle counter support for the Alpha and Sparc platforms.
+- Pass visibility flags to libltdl's configure script, resulting in
+  those symbols being hidden.  This appears to mainly solve the
+  problem of applications attempting to use different versions of
+  libltdl from that used to build Open MPI.
+
+
+1.3.3
+-----
+
+- Fix a number of issues with the openib BTL (OpenFabrics) RDMA CM,
+  including a memory corruption bug, a shutdown deadlock, and a route
+  timeout.  Thanks to David McMillen and Hal Rosenstock for help in
+  tracking down the issues.
+- Change the behavior of the EXTRA_STATE parameter that is passed to
+  Fortran attribute callback functions: this value is now stored
+  internally in MPI -- it no longer references the original value
+  passed by MPI_*_CREATE_KEYVAL.
+- Allow the overriding RFC1918 and RFC3330 for the specification of
+  "private" networks, thereby influencing Open MPI's TCP
+  "reachability" computations.
+- Improve flow control issues in the sm btl, by both tweaking the
+  shared memory progression rules and by enabling the "sync" collective
+  to barrier every 1,000th collective.
+- Various fixes for the IBM XL C/C++ v10.1 compiler.
+- Allow explicit disabling of ptmalloc2 hooks at runtime (e.g., enable
+  support for Debian's builtroot system).  Thanks to Manuel Prinz and
+  the rest of the Debian crew for helping identify and fix this issue.
+- Various minor fixes for the I/O forwarding subsystem.
+- Big endian iWARP fixes in the Open Fabrics RDMA CM support.
+- Update support for various OpenFabrics devices in the openib BTL's
+  .ini file.
+- Fixed undefined symbol issue with Open MPI's parallel debugger
+  message queue support so it can be compiled by Sun Studio compilers.
+- Update MPI_SUBVERSION to 1 in the Fortran bindings.
+- Fix MPI_GRAPH_CREATE Fortran 90 binding.
+- Fix MPI_GROUP_COMPARE behavior with regards to MPI_IDENT.  Thanks to
+  Geoffrey Irving for identifying the problem and supplying the fix.
+- Silence gcc 4.1 compiler warnings about type punning.  Thanks to
+  Number Cruncher for the fix.
+- Added more Valgrind and other memory-cleanup fixes.  Thanks to
+  various Open MPI users for help with these issues.
+- Miscellaneous VampirTrace fixes.
+- More fixes for openib credits in heavy-congestion scenarios.
+- Slightly decrease the latency in the openib BTL in some conditions
+  (add "send immediate" support to the openib BTL).
+- Ensure to allow MPI_REQUEST_GET_STATUS to accept an
+  MPI_STATUS_IGNORE parameter.  Thanks to Shaun Jackman for the bug
+  report.
+- Added Microsoft Windows support.  See README.WINDOWS file for
+  details.
+
+
+1.3.2
+-----
+
+- Fixed a potential infinite loop in the openib BTL that could occur
+  in senders in some frequent-communication scenarios.  Thanks to Don
+  Wood for reporting the problem.
+- Add a new checksum PML variation on ob1 (main MPI point-to-point
+  communication engine) to detect memory corruption in node-to-node
+  messages
+- Add a new configuration option to add padding to the openib
+  header so the data is aligned
+- Add a new configuration option to use an alternative checksum algo
+  when using the checksum PML
+- Fixed a problem reported by multiple users on the mailing list that
+  the LSF support would fail to find the appropriate libraries at
+  run-time.
+- Allow empty shell designations from getpwuid().  Thanks to Sergey
+  Koposov for the bug report.
+- Ensure that mpirun exits with non-zero status when applications die
+  due to user signal.  Thanks to Geoffroy Pignot for suggesting the
+  fix.
+- Ensure that MPI_VERSION / MPI_SUBVERSION match what is returned by
+  MPI_GET_VERSION.  Thanks to Rob Egan for reporting the error.
+- Updated MPI_*KEYVAL_CREATE functions to properly handle Fortran
+  extra state.
+- A variety of ob1 (main MPI point-to-point communication engine) bug
+  fixes that could have caused hangs or seg faults.
+- Do not install Open MPI's signal handlers in MPI_INIT if there are
+  already signal handlers installed.  Thanks to Kees Verstoep for
+  bringing the issue to our attention.
+- Fix GM support to not seg fault in MPI_INIT.
+- Various VampirTrace fixes.
+- Various PLPA fixes.
+- No longer create BTLs for invalid (TCP) devices.
+- Various man page style and lint cleanups.
+- Fix critical OpenFabrics-related bug noted here:
+  http://www.open-mpi.org/community/lists/announce/2009/03/0029.php.
+  Open MPI now uses a much more robust memory intercept scheme that is
+  quite similar to what is used by MX.  The use of "-lopenmpi-malloc"
+  is no longer necessary, is deprecated, and is expected to disappear
+  in a future release.  -lopenmpi-malloc will continue to work for the
+  duration of the Open MPI v1.3 and v1.4 series.
+- Fix some OpenFabrics shutdown errors, both regarding iWARP and SRQ.
+- Allow the udapl BTL to work on Solaris platforms that support
+  relaxed PCI ordering.
+- Fix problem where the mpirun would sometimes use rsh/ssh to launch on
+  the localhost (instead of simply forking).
+- Minor SLURM stdin fixes.
+- Fix to run properly under SGE jobs.
+- Scalability and latency improvements for shared memory jobs: convert
+  to using one message queue instead of N queues.
+- Automatically size the shared-memory area (mmap file) to match
+  better what is needed;  specifically, so that large-np jobs will start.
+- Use fixed-length MPI predefined handles in order to provide ABI
+  compatibility between Open MPI releases.
+- Fix building of the posix paffinity component to properly get the
+  number of processors in loosely tested environments (e.g.,
+  FreeBSD).  Thanks to Steve Kargl for reporting the issue.
+- Fix --with-libnuma handling in configure.  Thanks to Gus Correa for
+  reporting the problem.
+
+
+1.3.1
+-----
+
+- Added "sync" coll component to allow users to synchronize every N
+  collective operations on a given communicator.
+- Increased the default values of the IB and RNR timeout MCA parameters.
+- Fix a compiler error noted by Mostyn Lewis with the PGI 8.0 compiler.
+- Fix an error that prevented stdin from being forwarded if the
+  rsh launcher was in use.  Thanks to Branden Moore for pointing out
+  the problem.
+- Correct a case where the added datatype is considered as contiguous but
+  has gaps in the beginning.
+- Fix an error that limited the number of comm_spawns that could
+  simultaneously be running in some environments
+- Correct a corner case in OB1's GET protocol for long messages; the
+  error could sometimes cause MPI jobs using the openib BTL to hang.
+- Fix a bunch of bugs in the IO forwarding (IOF) subsystem and add some
+  new options to output to files and redirect output to xterm.  Thanks to
+  Jody Weissmann for helping test out many of the new fixes and
+  features.
+- Fix SLURM race condition.
+- Fix MPI_File_c2f(MPI_FILE_NULL) to return 0, not -1.  Thanks to
+  Lisandro Dalcin for the bug report.
+- Fix the DSO build of tm PLM.
+- Various fixes for size disparity between C int's and Fortran
+  INTEGER's.  Thanks to Christoph van Wullen for the bug report.
+- Ensure that mpirun exits with a non-zero exit status when daemons or
+  processes abort or fail to launch.
+- Various fixes to work around Intel (NetEffect) RNIC behavior.
+- Various fixes for mpirun's --preload-files and --preload-binary
+  options.
+- Fix the string name in MPI::ERRORS_THROW_EXCEPTIONS.
+- Add ability to forward SIFTSTP and SIGCONT to MPI processes if you
+  set the MCA parameter orte_forward_job_control to 1.
+- Allow the sm BTL to allocate larger amounts of shared memory if
+  desired (helpful for very large multi-core boxen).
+- Fix a few places where we used PATH_MAX instead of OPAL_PATH_MAX,
+  leading to compile problems on some platforms.  Thanks to Andrea Iob
+  for the bug report.
+- Fix mca_btl_openib_warn_no_device_params_found MCA parameter; it
+  was accidentally being ignored.
+- Fix some run-time issues with the sctp BTL.
+- Ensure that RTLD_NEXT exists before trying to use it (e.g., it
+  doesn't exist on Cygwin).  Thanks to Gustavo Seabra for reporting
+  the issue.
+- Various fixes to VampirTrace, including fixing compile errors on
+  some platforms.
+- Fixed missing MPI_Comm_accept.3 man page; fixed minor issue in
+  orterun.1 man page.  Thanks to Dirk Eddelbuettel for identifying the
+  problem and submitting a patch.
+- Implement the XML formatted output of stdout/stderr/stddiag.
+- Fixed mpirun's -wdir switch to ensure that working directories for
+  multiple app contexts are properly handled.  Thanks to Geoffroy
+  Pignot for reporting the problem.
+- Improvements to the MPI C++ integer constants:
+  - Allow MPI::SEEK_* constants to be used as constants
+  - Allow other MPI C++ constants to be used as array sizes
+- Fix minor problem with orte-restart's command line options.  See
+  ticket #1761 for details.  Thanks to Gregor Dschung for reporting
+  the problem.
+
+
+1.3
+---
+
+- Extended the OS X 10.5.x (Leopard) workaround for a problem when
+  assembly code is compiled with -g[0-9].  Thanks to Barry Smith for
+  reporting the problem.  See ticket #1701.
+- Disabled MPI_REAL16 and MPI_COMPLEX32 support on platforms where the
+  bit representation of REAL*16 is different than that of the C type
+  of the same size (usually long double).  Thanks to Julien Devriendt
+  for reporting the issue.  See ticket #1603.
+- Increased the size of MPI_MAX_PORT_NAME to 1024 from 36. See ticket #1533.
+- Added "notify debugger on abort" feature. See tickets #1509 and #1510.
+  Thanks to Seppo Sahrakropi for the bug report.
+- Upgraded Open MPI tarballs to use Autoconf 2.63, Automake 1.10.1,
+  Libtool 2.2.6a.
+- Added missing MPI::Comm::Call_errhandler() function.  Thanks to Dave
+  Goodell for bringing this to our attention.
+- Increased MPI_SUBVERSION value in mpi.h to 1 (i.e., MPI 2.1).
+- Changed behavior of MPI_GRAPH_CREATE, MPI_TOPO_CREATE, and several
+  other topology functions per MPI-2.1.
+- Fix the type of the C++ constant MPI::IN_PLACE.
+- Various enhancements to the openib BTL:
+  - Added btl_openib_if_[in|ex]clude MCA parameters for
+    including/excluding comma-delimited lists of HCAs and ports.
+  - Added RDMA CM support, includng btl_openib_cpc_[in|ex]clude MCA
+    parameters
+  - Added NUMA support to only use "near" network adapters
+  - Added "Bucket SRQ" (BSRQ) support to better utilize registered
+    memory, including btl_openib_receive_queues MCA parameter
+  - Added ConnectX XRC support (and integrated with BSRQ)
+  - Added btl_openib_ib_max_inline_data MCA parameter
+  - Added iWARP support
+  - Revamped flow control mechansisms to be more efficient
+  - "mpi_leave_pinned=1" is now the default when possible,
+    automatically improving performance for large messages when
+    application buffers are re-used
+- Elimiated duplicated error messages when multiple MPI processes fail
+  with the same error.
+- Added NUMA support to the shared memory BTL.
+- Add Valgrind-based memory checking for MPI-semantic checks.
+- Add support for some optional Fortran datatypes (MPI_LOGICAL1,
+  MPI_LOGICAL2, MPI_LOGICAL4 and MPI_LOGICAL8).
+- Remove the use of the STL from the C++ bindings.
+- Added support for Platform/LSF job launchers.  Must be Platform LSF
+  v7.0.2 or later.
+- Updated ROMIO with the version from MPICH2 1.0.7.
+- Added RDMA capable one-sided component (called rdma), which
+  can be used with BTL components that expose a full one-sided
+  interface.
+- Added the optional datatype MPI_REAL2. As this is added to the "end of"
+  predefined datatypes in the fortran header files, there will not be
+  any compatibility issues.
+- Added Portable Linux Processor Affinity (PLPA) for Linux.
+- Addition of a finer symbols export control via the visibiliy feature
+  offered by some compilers.
+- Added checkpoint/restart process fault tolerance support. Initially
+  support a LAM/MPI-like protocol.
+- Removed "mvapi" BTL; all InfiniBand support now uses the OpenFabrics
+  driver stacks ("openib" BTL).
+- Added more stringent MPI API parameter checking to help user-level
+  debugging.
+- The ptmalloc2 memory manager component is now by default built as
+  a standalone library named libopenmpi-malloc.  Users wanting to
+  use leave_pinned with ptmalloc2 will now need to link the library
+  into their application explicitly.  All other users will use the
+  libc-provided allocator instead of Open MPI's ptmalloc2.  This change
+  may be overriden with the configure option enable-ptmalloc2-internal
+- The leave_pinned options will now default to using mallopt on
+  Linux in the cases where ptmalloc2 was not linked in.  mallopt
+  will also only be available if munmap can be intercepted (the
+  default whenever Open MPI is not compiled with --without-memory-
+  manager.
+- Open MPI will now complain and refuse to use leave_pinned if
+  no memory intercept / mallopt option is available.
+- Add option of using Perl-based wrapper compilers instead of the
+  C-based wrapper compilers.  The Perl-based version does not
+  have the features of the C-based version, but does work better
+  in cross-compile environments.
+
+
+1.2.9 (unreleased)
+------------------
+
+- Fix a segfault when using one-sided communications on some forms of derived
+  datatypes.  Thanks to Dorian Krause for reporting the bug. See #1715.
+- Fix an alignment problem affecting one-sided communications on
+  some architectures (e.g., SPARC64). See #1738.
+- Fix compilation on Solaris when thread support is enabled in Open MPI
+  (e.g., when using --with-threads). See #1736.
+- Correctly take into account the MTU that an OpenFabrics device port
+  is using. See #1722 and
+  https://bugs.openfabrics.org/show_bug.cgi?id=1369.
+- Fix two datatype engine bugs. See #1677.
+  Thanks to Peter Kjellstrom for the bugreport.
+- Fix the bml r2 help filename so the help message can be found. See #1623.
+- Fix a compilation problem on RHEL4U3 with the PGI 32 bit compiler
+  caused by <infiniband/driver.h>.  See ticket #1613.
+- Fix the --enable-cxx-exceptions configure option. See ticket #1607.
+- Properly handle when the MX BTL cannot open an endpoint. See ticket #1621.
+- Fix a double free of events on the tcp_events list. See ticket #1631.
+- Fix a buffer overun in opal_free_list_grow (called by MPI_Init).
+  Thanks to Patrick Farrell for the bugreport and Stephan Kramer for
+  the bugfix.  See ticket #1583.
+- Fix a problem setting OPAL_PREFIX for remote sh-based shells.
+  See ticket #1580.
+
+
+1.2.8
+-----
+
+- Tweaked one memory barrier in the openib component to be more conservative.
+  May fix a problem observed on PPC machines.  See ticket #1532.
+- Fix OpenFabrics IB partition support. See ticket #1557.
+- Restore v1.1 feature that sourced .profile on remote nodes if the default
+  shell will not do so (e.g. /bin/sh and /bin/ksh).  See ticket #1560.
+- Fix segfault in MPI_Init_thread() if ompi_mpi_init() fails. See ticket #1562.
+- Adjust SLURM support to first look for $SLURM_JOB_CPUS_PER_NODE instead of
+  the deprecated $SLURM_TASKS_PER_NODE environment variable.  This change
+  may be *required* when using SLURM v1.2 and above.  See ticket #1536.
+- Fix the MPIR_Proctable to be in process rank order. See ticket #1529.
+- Fix a regression introduced in 1.2.6 for the IBM eHCA. See ticket #1526.
+
+
+1.2.7
+-----
+
+- Add some Sun HCA vendor IDs.  See ticket #1461.
+- Fixed a memory leak in MPI_Alltoallw when called from Fortran.
+  Thanks to Dave Grote for the bugreport.  See ticket #1457.
+- Only link in libutil when it is needed/desired.  Thanks to
+  Brian Barret for diagnosing and fixing the problem.  See ticket #1455.
+- Update some QLogic HCA vendor IDs.  See ticket #1453.
+- Fix F90 binding for MPI_CART_GET.  Thanks to Scott Beardsley for
+  bringing it to our attention. See ticket #1429.
+- Remove a spurious warning message generated in/by ROMIO. See ticket #1421.
+- Fix a bug where command-line MCA parameters were not overriding
+  MCA parameters set from environment variables.  See ticket #1380.
+- Fix a bug in the AMD64 atomics assembly.  Thanks to Gabriele Fatigati
+  for the bug report and bugfix.  See ticket #1351.
+- Fix a gather and scatter bug on intercommunicators when the datatype
+  being moved is 0 bytes. See ticket #1331.
+- Some more man page fixes from the Debian maintainers.
+  See tickets #1324 and #1329.
+- Have openib BTL (OpenFabrics support) check for the presence of
+  /sys/class/infiniband before allowing itself to be used.  This check
+  prevents spurious "OMPI did not find RDMA hardware!" notices on
+  systems that have the software drivers installed, but no
+  corresponding hardware.  See tickets #1321 and #1305.
+- Added vendor IDs for some ConnectX openib HCAs. See ticket #1311.
+- Fix some RPM specfile inconsistencies.  See ticket #1308.
+  Thanks to Jim Kusznir for noticing the problem.
+- Removed an unused function prototype that caused warnings on
+  some systems (e.g., OS X).  See ticket #1274.
+- Fix a deadlock in inter-communicator scatter/gather operations.
+  Thanks to Martin Audet for the bug report.  See ticket #1268.
+
+
+1.2.6
+-----
+
+- Fix a bug in the inter-allgather for asymmetric inter-communicators.
+  Thanks to Martin Audet for the bug report. See ticket #1247.
+- Fix a bug in the openib BTL when setting the CQ depth.  Thanks
+  to Jon Mason for the bug report and fix.  See ticket #1245.
+- On Mac OS X Leopard, the execinfo component will be used for
+  backtraces, making for a more durable solution.  See ticket #1246.
+- Added vendor IDs for some QLogic DDR openib HCAs. See ticket #1227.
+- Updated the URL to get the latest config.guess and config.sub files.
+  Thanks to Ralf Wildenhues for the bug report. See ticket #1226.
+- Added shared contexts support to PSM MTL.  See ticket #1225.
+- Added pml_ob1_use_early_completion MCA parameter to allow users
+  to turn off the OB1 early completion semantic and avoid "stall"
+  problems seen on InfiniBand in some cases.  See ticket #1224.
+- Sanitized some #define macros used in mpi.h to avoid compiler warnings
+  caused by MPI programs built with different autoconf versions.
+  Thanks to Ben Allan for reporting the problem, and thanks to
+  Brian Barrett for the fix. See ticket #1220.
+- Some man page fixes from the Debian maintainers. See ticket #1219.
+- Made the openib BTL a bit more resilient in the face of driver
+  errors.  See ticket #1217.
+- Fixed F90 interface for MPI_CART_CREATE.  See ticket #1208.
+  Thanks to Michal Charemza for reporting the problem.
+- Fixed some C++ compiler warnings. See ticket #1203.
+- Fixed formatting of the orterun man page.  See ticket #1202.
+  Thanks to Peter Breitenlohner for the patch.
+
+
+1.2.5
+-----
+
+- Fixed compile issue with open() on Fedora 8 (and newer) platforms.
+  Thanks to Sebastian Schmitzdorff for noticing the problem.
+- Added run-time warnings during MPI_INIT when MPI_THREAD_MULTIPLE
+  and/or progression threads are used (the OMPI v1.2 series does not
+  support these well at all).
+- Better handling of ECONNABORTED from connect on Linux.  Thanks to
+  Bob Soliday for noticing the problem; thanks to Brian Barrett for
+  submitting a patch.
+- Reduce extraneous output from OOB when TCP connections must
+  be retried.  Thanks to Brian Barrett for submitting a patch.
+- Fix for ConnectX devices and OFED 1.3.  See ticket #1190.
+- Fixed a configure problem for Fortran 90 on Cray systems.  Ticket #1189.
+- Fix an uninitialized variable in the error case in opal_init.c.
+  Thanks to Ake Sandgren for pointing out the mistake.
+- Fixed a hang in configure if $USER was not defined.  Thanks to
+  Darrell Kresge for noticing the problem.  See ticket #900.
+- Added support for parallel debuggers even when we have an optimized build.
+  See ticket #1178.
+- Worked around a bus error in the Mac OS X 10.5.X (Leopard) linker when
+  compiling Open MPI with -g.  See ticket #1179.
+- Removed some warnings about 'rm' from Mac OS X 10.5 (Leopard) builds.
+- Fix the handling of mx_finalize().  See ticket #1177.
+  Thanks to Ake Sandgren for bringing this issue to our attention.
+- Fixed minor file descriptor leak in the Altix timer code.  Thanks to
+  Paul Hargrove for noticing the problem and supplying the fix.
+- Fix a problem when using a different compiler for C and Objective C.
+  See ticket #1153.
+- Fix segfault in MPI_COMM_SPAWN when the user specified a working
+  directory.  Thanks to Murat Knecht for reporting this and suggesting
+  a fix.
+- A few manpage fixes from the Debian Open MPI maintainers.  Thanks to
+  Tilman Koschnick, Sylvestre Ledru, and Dirk Eddelbuettel.
+- Fixed issue with pthread detection when compilers are not all
+  from the same vendor.  Thanks to Ake Sandgren for the bug
+  report.  See ticket #1150.
+- Fixed vector collectives in the self module.  See ticket #1166.
+- Fixed some data-type engine bugs: an indexing bug, and an alignment bug.
+  See ticket #1165.
+- Only set the MPI_APPNUM attribute if it is defined.  See ticket
+  #1164.
+
+
+1.2.4
+-----
+
+- Really added support for TotalView/DDT parallel debugger message queue
+  debugging (it was mistakenly listed as "added" in the 1.2 release).
+- Fixed a build issue with GNU/kFreeBSD. Thanks to Petr Salinger for
+  the patch.
+- Added missing MPI_FILE_NULL constant in Fortran.  Thanks to
+  Bernd Schubert for bringing this to our attention.
+- Change such that the UDAPL BTL is now only built in Linux when
+  explicitly specified via the --with-udapl configure command line
+  switch.
+- Fixed an issue with umask not being propagated when using the TM
+  launcher.
+- Fixed behavior if number of slots is not the same on all bproc nodes.
+- Fixed a hang on systems without GPR support (ex. Cray XT3/4).
+- Prevent users of 32-bit MPI apps from requesting >= 2GB of shared
+  memory.
+- Added a Portals MTL.
+- Fix 0 sized MPI_ALLOC_MEM requests.  Thanks to Lisandro Dalcin for
+  pointing out the problem.
+- Fixed a segfault crash on large SMPs when doing collectives.
+- A variety of fixes for Cray XT3/4 class of machines.
+- Fixed which error handler is used when MPI_COMM_SELF is passed
+  to MPI_COMM_FREE.  Thanks to Lisandro Dalcini for the bug report.
+- Fixed compilation on platforms that don't have hton/ntoh.
+- Fixed a logic problem in the fortran binding for MPI_TYPE_MATCH_SIZE.
+  Thanks to Jeff Dusenberry for pointing out the problem and supplying
+  the fix.
+- Fixed a problem with MPI_BOTTOM in various places of the f77-interface.
+  Thanks to Daniel Spangberg for bringing this up.
+- Fixed problem where MPI-optional Fortran datatypes were not
+  correctly initialized.
+- Fixed several problems with stdin/stdout forwarding.
+- Fixed overflow problems with the sm mpool MCA parameters on large SMPs.
+- Added support for the DDT parallel debugger via orterun's --debug
+  command line option.
+- Added some sanity/error checks to the openib MCA parameter parsing
+  code.
+- Updated the udapl BTL to use RDMA capabilities.
+- Allow use of the BProc head node if it was allocated to the user.
+  Thanks to Sean Kelly for reporting the problem and helping debug it.
+- Fixed a ROMIO problem where non-blocking I/O errors were not properly
+  reported to the user.
+- Made remote process launch check the $SHELL environment variable if
+  a valid shell was not otherwise found for the user.
+  Thanks to Alf Wachsmann for the bugreport and suggested fix.
+- Added/updated some vendor IDs for a few openib HCAs.
+- Fixed a couple of failures that could occur when specifying devices
+  for use by the OOB.
+- Removed dependency on sysfsutils from the openib BTL for
+  libibverbs >=v1.1 (i.e., OFED 1.2 and beyond).
+
+
+1.2.3
+-----
+
+- Fix a regression in comm_spawn functionality that inadvertently
+  caused the mapping of child processes to always start at the same
+  place.  Thanks to Prakash Velayutham for helping discover the
+  problem.
+- Fix segfault when a user's home directory is unavailable on a remote
+  node.  Thanks to Guillaume Thomas-Collignon for bringing the issue
+  to our attention.
+- Fix MPI_IPROBE to properly handle MPI_STATUS_IGNORE on mx and psm
+  MTLs. Thanks to Sophia Corwell for finding this and supplying a
+  reproducer.
+- Fix some error messages in the tcp BTL.
+- Use _NSGetEnviron instead of environ on Mac OS X so that there
+  are no undefined symbols in the shared libraries.
+- On OS X, when MACOSX_DEPLOYMENT_TARGET is 10.3 or higher, support
+  building the Fortran 90 bindings as a shared library.  Thanks to
+  Jack Howarth for his advice on making this work.
+- No longer require extra include flag for the C++ bindings.
+- Fix detection of weak symbols support with Intel compilers.
+- Fix issue found by Josh England: ompi_info would not show framework
+  MCA parameters set in the environment properly.
+- Rename the oob_tcp_include/exclude MCA params to oob_tcp_if_include/exclude
+  so that they match the naming convention of the btl_tcp_if_include/exclude
+  params.  The old names are depreciated, but will still work.
+- Add -wd as a synonym for the -wdir orterun/mpirun option.
+- Fix the mvapi BTL to compile properly with compilers that do not support
+  anonymous unions.  Thanks to Luis Kornblueh for reporting the bug.
+
+
+1.2.2
+-----
+
+- Fix regression in 1.2.1 regarding the handling of $CC with both
+  absolute and relative path names.
+- Fix F90 array of status dimensions.  Thanks to Randy Bramley for
+  noticing the problem.
+- Add btl_openib_ib_pkey_value MCA parameter for controlling IB port selection.
+- Fixed a variety of threading/locking bugs.
+- Fixed some compiler warnings associated with ROMIO, OS X, and gridengine.
+- If pbs-config can be found, use it to look for TM support.  Thanks
+  to Bas van der Vlies for the inspiration and preliminary work.
+- Fixed a deadlock in orterun when the rsh PLS encounters some errors.
+
+
+1.2.1
+-----
+
+- Fixed a number of connection establishment errors in the TCP out-
+  of-band messaging system.
+- Fixed a memory leak when using mpi_comm calls.
+  Thanks to Bas van der Vlies for reporting the problem.
+- Fixed various memory leaks in OPAL and ORTE.
+- Improved launch times when using TM (PBS Pro, Torque, Open PBS).
+- Fixed mpi_leave_pinned to work for all datatypes.
+- Fix functionality allowing users to disable sbrk() (the
+  mpool_base_disable_sbrk MCA parameter) on platforms that support it.
+- Fixed a pair of problems with the TCP "listen_thread" mode for the
+  oob_tcp_listen_mode MCA parameter that would cause failures when
+  attempting to launch applications.
+- Fixed a segfault if there was a failure opening a BTL MX endpoint.
+- Fixed a problem with mpirun's --nolocal option introduced in 1.2.
+- Re-enabled MPI_COMM_SPAWN_MULTIPLE from singletons.
+- LoadLeveler and TM configure fixes, Thanks to Martin Audet for the
+  bug report.
+- Various C++ MPI attributes fixes.
+- Fixed issues with backtrace code on 64 bit Intel & PPC OS X builds.
+- Fixed issues with multi-word CC variables and libtool.
+  Thanks to Bert Wesarg for the bug reports.
+- Fix issue with non-uniform node naming schemes in SLURM.
+- Fix file descriptor leak in the Grid Engine/N1GE support.
+- Fix compile error on OS X 10.3.x introduced with Open MPI 1.1.5.
+- Implement MPI_TYPE_CREATE_DARRAY function (was in 1.1.5 but not 1.2).
+- Recognize zsh shell when using rsh/ssh for launching MPI jobs.
+- Ability to set the OPAL_DESTDIR or OPAL_PREFIX environment
+  variables to "re-root" an existing Open MPI installation.
+- Always include -I for Fortran compiles, even if the prefix is
+  /usr/local.
+- Support for "fork()" in MPI applications that use the
+  OpenFabrics stack (OFED v1.2 or later).
+- Support for setting specific limits on registered memory.
+
+
+1.2
+---
+
+- Fixed race condition in the shared memory fifo's, which led to
+  orphaned messages.
+- Corrected the size of the shared memory file - subtracted out the
+  space the header was occupying.
+- Add support for MPI_2COMPLEX and MPI_2DOUBLE_COMPLEX.
+- Always ensure to create $(includedir)/openmpi, even if the C++
+  bindings are disabled so that the wrapper compilers don't point to
+  a directory that doesn't exist.  Thanks to Martin Audet for
+  identifying the problem.
+- Fixes for endian handling in MPI process startup.
+- Openib BTL initialization fixes for cases where MPI processes in the
+  same job has different numbers of active ports on the same physical
+  fabric.
+- Print more descriptive information when displaying backtraces on
+  OS's that support this functionality, such as the hostname and PID
+  of the process in question.
+- Fixes to properly handle MPI exceptions in C++ on communicators,
+  windows, and files.
+- Much more reliable runtime support, particularly with regards to MPI
+  job startup scalability, BProc support, and cleanup in failure
+  scenarios (e.g., MPI_ABORT, MPI processes abnormally terminating,
+  etc.).
+- Significant performance improvements for MPI collectives,
+  particularly on high-speed networks.
+- Various fixes in the MX BTL component.
+- Fix C++ typecast problems with MPI_ERRCODES_IGNORE.  Thanks to
+  Satish Balay for bringing this to our attention.
+- Allow run-time specification of the maximum amount of registered
+  memory for OpenFabrics and GM.
+- Users who utilize the wrapper compilers (e.g., mpicc and mpif77)
+  will not notice, but the underlying library names for ORTE and OPAL
+  have changed to libopen-rte and libopen-pal, respectively (listed
+  here because there are undoubtedly some users who are not using the
+  wrapper compilers).
+- Many bug fixes to MPI-2 one-sided support.
+- Added support for TotalView message queue debugging.
+- Fixes for MPI_STATUS_SET_ELEMENTS.
+- Print better error messages when mpirun's "-nolocal" is used when
+  there is only one node available.
+- Added man pages for several Open MPI executables and the MPI API
+  functions.
+- A number of fixes for Alpha platforms.
+- A variety of Fortran API fixes.
+- Build the Fortran MPI API as a separate library to allow these
+  functions to be profiled properly.
+- Add new --enable-mpirun-prefix-by-default configure option to always
+  imply the --prefix option to mpirun, preventing many rsh/ssh-based
+  users from needing to modify their shell startup files.
+- Add a number of missing constants in the C++ bindings.
+- Added tight integration with Sun N1 Grid Engine (N1GE) 6 and the
+  open source Grid Engine.
+- Allow building the F90 MPI bindings as shared libraries for most
+  compilers / platforms.  Explicitly disallow building the F90
+  bindings as shared libraries on OS X because of complicated
+  situations with Fortran common blocks and lack of support for
+  unresolved common symbols in shared libraries.
+- Added stacktrace support for Solaris and Mac OS X.
+- Update event library to libevent-1.1b.
+- Fixed standards conformance issues with MPI_ERR_TRUNCATED and
+  setting MPI_ERROR during MPI_TEST/MPI_WAIT.
+- Addition of "cm" PML to better support library-level matching
+  interconnects, with support for Myrinet/MX, and QLogic PSM-based
+  networks.
+- Addition of "udapl" BTL for transport across uDAPL interconnects.
+- Really check that the $CXX given to configure is a C++ compiler
+  (not a C compiler that "sorta works" as a C++ compiler).
+- Properly check for local host only addresses properly, looking 
+  for 127.0.0.0/8, rather than just 127.0.0.1.
+
+
+1.1.5
+-----
+
+- Implement MPI_TYPE_CREATE_DARRAY function.
+- Fix race condition in shared memory BTL startup that could cause MPI
+  applications to hang in MPI_INIT.
+- Fix syntax error in a corner case of the event library.  Thanks to
+  Bert Wesarg for pointing this out.
+- Add new MCA parameter (mpi_preconnect_oob) for pre-connecting the
+  "out of band" channels between all MPI processes.  Most helpful for
+  MPI applications over InfiniBand where process A sends an initial
+  message to process B, but process B does not enter the MPI library
+  for a long time.
+- Fix for a race condition in shared memory locking semantics.
+- Add major, minor, and release version number of Open MPI to mpi.h.
+  Thanks to Martin Audet for the suggestion.
+- Fix the "restrict" compiler check in configure.
+- Fix a problem with argument checking in MPI_TYPE_CREATE_SUBARRAY.
+- Fix a problem with compiling the XGrid components with non-gcc
+  compilers.
+
+
+1.1.4
+-----
+
+- Fixed 64-bit alignment issues with TCP interface detection on
+  intel-based OS X machines.
+- Adjusted TCP interface selection to automatically ignore Linux
+  channel-bonded slave interfaces.
+- Fixed the type of the first parameter to the MPI F90 binding for
+  MPI_INITIALIZED.  Thanks to Tim Campbell for pointing out the
+  problem.
+- Fix a bunch of places in the Fortran MPI bindings where (MPI_Fint*)
+  was mistakenly being used instead of (MPI_Aint*).
+- Fixes for fortran MPI_STARTALL, which could sometimes return
+  incorrect request values.  Thanks to Tim Campbell for pointing out
+  the problem.
+- Include both pre- and post-MPI-2 errata bindings for
+  MPI::Win::Get_attr.
+- Fix math error on Intel OS X platforms that would greatly increase
+  shared memory latency.
+- Fix type casting issue with MPI_ERRCODES_IGNORE that would cause
+  errors when using a C++ compiler.  Thanks to Barry Smith for
+  bringing this to our attention.
+- Fix possible segmentation fault during shutdown when using the
+  MX BTL.
+
+
+1.1.3
+-----
+
+- Remove the "hierarch" coll component; it was not intended to be
+  included in stable releases yet.
+- Fix a race condition with stdout/stderr not appearing properly from
+  all processes upon termination of an MPI job.
+- Fix internal accounting errors with the self BTL.
+- Fix typos in the code path for when sizeof(int) != sizeof(INTEGER)
+  in the MPI F77 bindings functions.  Thanks to Pierre-Matthieu
+  Anglade for bringing this problem to our attention.
+- Fix for a memory leak in the derived datatype function
+  ompi_ddt_duplicate().  Thanks to Andreas Schafer for reporting,
+  diagnosing, and patching the leak.
+- Used better performing basic algorithm for MPI_ALLGATHERV.
+- Added a workaround for a bug in the Intel 9.1 C++ compiler (all
+  versions up to and including 20060925) in the MPI C++ bindings that
+  caused run-time failures.  Thanks to Scott Weitzenkamp for reporting
+  this problem.
+- Fix MPI_SIZEOF implementation in the F90 bindings for COMPLEX
+  variable types.
+- Fixes for persistent requests involving MPI_PROC_NULL.  Thanks to
+  Lisandro Dalcin for reporting the problem.
+- Fixes to MPI_TEST* and MPI_WAIT* for proper MPI exception reporting.
+  Thanks to Lisandro Dalcin for finding the issue.
+- Various fixes for MPI generalized request handling; addition of
+  missing MPI::Grequest functionality to the C++ bindings.
+- Add "mpi_preconnect_all" MCA parameter to force wireup of all MPI
+  connections during MPI_INIT (vs. making connections lazily whenever
+  the first MPI communication occurs between a pair of peers).
+- Fix a problem for when $FC and/or $F77 were specified as multiple
+  tokens.  Thanks to Orion Poplawski for identifying the problem and
+  to Ralf Wildenhues for suggesting the fix.
+- Fix several MPI_*ERRHANDLER* functions and MPI_GROUP_TRANSLATE_RANKS
+  with respect to what arguments they allowed and the behavior that
+  they effected.  Thanks to Lisandro Dalcin for reporting the
+  problems.
+
+
+1.1.2
+-----
+
+- Really fix Fortran status handling in MPI_WAITSOME and MPI_TESTSOME.
+- Various datatype fixes, reported by several users as causing
+  failures in the BLACS testing suite.  Thanks to Harald Forbert, Ake
+  Sandgren and, Michael Kluskens for reporting the problem.
+- Correctness and performance fixes for heterogeneous environments.
+- Fixed a error in command line parsing on some platforms (causing
+  mpirun to crash without doing anything).
+- Fix for initialization hangs on 64 bit Mac OS X PowerPC systems.
+- Fixed some memory allocation problems in mpirun that could cause
+  random problems if "-np" was not specified on the command line.
+- Add Kerberos authentication support for XGrid.
+- Added LoadLeveler support for jobs larger than 128 tasks.
+- Fix for large-sized Fortran LOGICAL datatypes.
+- Fix various error checking in MPI_INFO_GET_NTHKEY and
+  MPI_GROUP_TRANSLATE_RANKS, and some collective operations
+  (particularly with regards to MPI_IN_PLACE).  Thanks to Lisandro
+  Dalcin for reporting the problems.
+- Fix receiving messages to buffers allocated by MPI_ALLOC_MEM.
+- Fix a number of race conditions with the MPI-2 Onesided
+  interface.
+- Fix the "tuned" collective componenete where some cases where
+  MPI_BCAST could hang.
+- Update TCP support to support non-uniform TCP environments.
+- Allow the "poe" RAS component to be built on AIX or Linux.
+- Only install mpif.h if the rest of the Fortran bindings are
+  installed.
+- Fixes for BProc node selection.
+- Add some missing Fortran MPI-2 IO constants.
+
+
+1.1.1
+-----
+
+- Fix for Fortran string handling in various MPI API functions.
+- Fix for Fortran status handling in MPI_WAITSOME and MPI_TESTSOME.
+- Various fixes for the XL compilers.
+- Automatically disable using mallot() on AIX.
+- Memory fixes for 64 bit platforms with registering MCA parameters in
+  the self and MX BTL components.
+- Fixes for BProc to support oversubscription and changes to the
+  mapping algorithm so that mapping processes "by slot" works as
+  expected.
+- Fixes for various abort cases to not hang and clean up nicely.
+- If using the Intel 9.0 v20051201 compiler on an IA64 platform, the
+  ptmalloc2 memory manager component will automatically disable
+  itself.  Other versions of the Intel compiler on this platform seem
+  to work fine (e.g., 9.1).
+- Added "host" MPI_Info key to MPI_COMM_SPAWN and
+  MPI_COMM_SPAWN_MULTIPLE.
+- Add missing C++ methods: MPI::Datatype::Create_indexed_block,
+  MPI::Datatype::Create_resized, MPI::Datatype::Get_true_extent.
+- Fix OSX linker issue with Fortran bindings.
+- Fixed MPI_COMM_SPAWN to start spawning new processes in slots that
+  (according to Open MPI) are not already in use.  
+- Added capability to "mpirun a.out" (without specifying -np) that
+  will run on all currently-allocated resources (e.g., within a batch
+  job such as SLURM, Torque, etc.).
+- Fix a bug with one particular case of MPI_BCAST.  Thanks to Doug
+  Gregor for identifying the problem.
+- Ensure that the shared memory mapped file is only created when there
+  is more than one process on a node.
+- Fixed problems with BProc stdin forwarding.
+- Fixed problem with MPI_TYPE_INDEXED datatypes.  Thanks to Yven
+  Fournier for identifying this problem.
+- Fix some thread safety issues in MPI attributes and the openib BTL.
+- Fix the BProc allocator to not potentially use the same resources
+  across multiple ORTE universes.
+- Fix gm resource leak.
+- More latency reduction throughout the code base.
+- Make the TM PLS (PBS Pro, Torque, Open PBS) more scalable, and fix
+  some latent bugs that crept in v1.1.  Thanks to the Thunderbird crew
+  at Sandia National Laboratories and Martin Schaffoner for access to
+  testing facilities to make this happen.
+- Added new command line options to mpirun:
+  --nolocal: Do not run any MPI processes on the same node as mpirun
+    (compatibility with the OSC mpiexec launcher)
+  --nooversubscribe: Abort if the number of processes requested would
+    cause oversubscription
+  --quiet / -q: do not show spurious status messages
+  --version / -V: show the version of Open MPI
+- Fix bus error in XGrid process starter.  Thanks to Frank from the
+  Open MPI user's list for identifying the problem.
+- Fix data size mismatches that caused memory errors on PPC64
+  platforms during the startup of the openib BTL.
+- Allow propagation of SIGUSR1 and SIGUSR2 signals from mpirun to
+  back-end MPI processes.
+- Add missing MPI::Is_finalized() function.
+
+
+1.1
+---
+
+- Various MPI datatype fixes, optimizations.
+- Fixed various problems on the SPARC architecture (e.g., not
+  correctly aligning addresses within structs).
+- Improvements in various run-time error messages to be more clear
+  about what they mean and where the errors are occurring.
+- Various fixes to mpirun's handling of --prefix.
+- Updates and fixes for Cray/Red Storm support.
+- Major improvements to the Fortran 90 MPI bindings:
+  - General improvements in compile/linking time and portability
+    between different F90 compilers.
+  - Addition of "trivial", "small" (the default), and "medium"
+    Fortran 90 MPI module sizes (v1.0.x's F90 module was
+    equivalent to "medium").  See the README file for more
+    explanation.
+  - Fix various MPI F90 interface functions and constant types to
+    match.  Thanks to Michael Kluskens for pointing out the problems
+    to us.
+- Allow short messagees to use RDMA (vs. send/receive semantics) to a
+  limited number peers in both the mvapi and openib BTL components.
+  This reduces communication latency over IB channels.
+- Numerous performance improvements throughout the entire code base.
+- Many minor threading fixes.
+- Add a define OMPI_SKIP_CXX to allow the user to skip the mpicxx.h from
+  being included in mpi.h. It allows the user to compile C code with a CXX
+  compiler without including the CXX bindings.
+- PERUSE support has been added. In order to activate it add
+  --enable-peruse to the configure options. All events described in
+  the PERUSE 2.0 draft are supported, plus one Open MPI
+  extension. PERUSE_COMM_REQ_XFER_CONTINUE allow to see how the data
+  is segmented internally, using multiple interfaces or the pipeline
+  engine. However, this version only support one event of each type
+  simultaneously attached to a communicator.
+- Add support for running jobs in heterogeneous environments.
+  Currently supports environments with different endianness and
+  different representations of C++ bool and Fortran LOGICAL.
+  Mismatched sizes for other datatypes is not supported.
+- Open MPI now includes an implementation of the MPI-2 One-Sided
+  Communications specification.
+- Open MPI is now configurable in cross-compilation environments.
+  Several Fortran 77 and Fortran 90 tests need to be pre-seeded with
+  results from a config.cache-like file.
+- Add --debug option to mpirun to generically invoke a parallel debugger.
+
+
+1.0.3 (unreleased; all fixes included in 1.1)
+---------------------------------------------
+
+- Fix a problem noted by Chris Hennes where MPI_INFO_SET incorrectly
+  disallowed long values.
+- Fix a problem in the launch system that could cause inconsistent
+  launch behavior, particularly when launching large jobs.
+- Require that the openib BTL find <sysfs/libsysfs.h>.  Thanks to Josh
+  Aune for the suggestion.
+- Include updates to support the upcoming Autoconf 2.60 and Libtool
+  2.0.  Thanks to Ralf Wildenhues for all the work!
+- Fix bug with infinite loop in the "round robin" process mapper.
+  Thanks to Paul Donohue for reporting the problem.
+- Enusre that memory hooks are removed properly during MPI_FINALIZE.
+  Thanks to Neil Ludban for reporting the problem.
+- Various fixes to the included support for ROMIO.
+- Fix to ensure that MPI_LONG_LONG and MPI_LONG_LONG_INT are actually
+  synonyms, as defined by the MPI standard.  Thanks to Martin Audet
+  for reporting this.
+- Fix Fortran 90 configure tests to properly utilize LDFLAGS and LIBS.
+  Thanks to Terry Reeves for reporting the problem.
+- Fix shared memory progression in asynchronous progress scenarios.
+  Thanks to Mykael Bouquey for reporting the problem.
+- Fixed back-end operations for predefined MPI_PROD for some
+  datatypes.  Thanks to Bert Wesarg for reporting this.
+- Adapted configure to be able to handle Torque 2.1.0p0's (and above)
+  new library name.  Thanks to Brock Palen for pointing this out and
+  providing access to a Torque 2.1.0p0 cluster to test with.
+- Fixed situation where mpirun could set a shell pipeline's stdout
+  to non-blocking, causing the shell pipeline to prematurely fail.
+  Thanks to Darrell Kresge for figuring out what was happening.
+- Fixed problems with leave_pinned that could cause Badness with the
+  mvapi BTL.
+- Fixed problems with MPI_FILE_OPEN and non-blocking MPI-2 IO access.
+- Fixed various InfiniBand port matching issues during startup.
+  Thanks to Scott Weitzenkamp for identifying these problems.
+- Fixed various configure, build and run-time issues with ROMIO.
+  Thanks to Dries Kimpe for bringing them to our attention.
+- Fixed error in MPI_COMM_SPLIT when dealing with intercommunicators.
+  Thanks to Bert Wesarg for identifying the problem.
+- Fixed backwards handling of "high" parameter in MPI_INTERCOMM_MERGE.
+  Thanks to Michael Kluskens for pointing this out to us.
+- Fixed improper handling of string arguments in Fortran bindings
+  for MPI-IO functionality
+- Fixed segmentation fault with 64 bit applications on Solaris when
+  using the shared memory transports.
+- Fixed MPI_COMM_SELF attributes to free properly at the beginning of
+  MPI_FINALIZE.  Thanks to Martin Audet for bringing this to our
+  attention.
+- Fixed alignment tests for cross-compiling to not cause errors with
+  recent versions of GCC.
+
+
+1.0.2
+-----
+
+- Fixed assembly race condition on AMD64 platforms.
+- Fixed residual .TRUE. issue with copying MPI attributes set from
+  Fortran.
+- Remove unnecessary logic from Solaris pty I/O forwarding.  Thanks to
+  Francoise Roch for bringing this to our attention.
+- Fixed error when count = 0 was given for multiple completion MPI
+  functions (MPI_TESTSOME, MPI_TESTANY, MPI_TESTALL, MPI_WAITSOME,
+  MPI_WAITANY, MPI_WAITALL).
+- Better handling in MPI_ABORT for when peer processes have already
+  died, especially under some resource managers.
+- Random updates to README file, to include notes about the Portland
+  compilers.
+- Random, small threading fixes to prevent deadlock.
+- Fixed a problem with handling long mpirun app files.  Thanks to Ravi
+  Manumachu for identifying the problem.
+- Fix handling of strings in several of the Fortran 77 bindings.
+- Fix LinuxPPC assembly issues.  Thanks to Julian Seward for reporting 
+  the problem.
+- Enable pty support for standard I/O forwarding on platforms that
+  have ptys but do not have openpty().  Thanks to Pierre Valiron for
+  bringing this to our attention.
+- Disable inline assembly for PGI compilers to avoid compiler errors.
+  Thanks to Troy Telford for bringing this to our attention.
+- Added MPI_UNSIGNED_CHAR and MPI_SIGNED_CHAR to the allowed reduction
+  types.
+- Fix a segv in variable-length message displays on Opterons running
+  Solaris.  Thanks to Pierre Valiron for reporting the issue.
+- Added MPI_BOOL to the intrinsic reduction operations MPI_LAND,
+  MPI_LOR, MPI_LXOR.  Thanks to Andy Selle for pointing this out to us.
+- Fixed TCP BTL network matching logic during MPI_INIT; in some cases
+  on multi-NIC nodes, a NIC could get paired with a NIC on another
+  network (typically resulting in deadlock).  Thanks to Ken Mighell
+  for pointing this out to us.
+- Change the behavior of orterun (mpirun, mpirexec) to search for
+  argv[0] and the cwd on the target node (i.e., the node where the
+  executable will be running in all systems except BProc, where the
+  searches are run on the node where orterun is invoked).
+- Fix race condition in shared memory transport that could cause
+  crashes on machines with weak memory consistency models (including
+  POWER/PowerPC machines).
+- Fix warnings about setting read-only MCA parameters on bproc systems.
+- Change the exit status set by mpirun when an application process is
+  killed by a signal.  The exit status is now set to signo + 128, which
+  conforms with the behavior of (almost) all shells.
+- Correct a datatype problem with the convertor when partially
+  unpacking data. Now we can position the convertor to any position
+  not only on the predefined types boundaries. Thanks to Yvan Fournier
+  for reporting this to us.
+- Fix a number of standard I/O forwarding issues, including the
+  ability to background mpirun and a loss of data issue when
+  redirecting mpirun's standard input from a file.
+- Fixed bug in ompi_info where rcache and bml MCA parameters would not
+  be displayed.
+- Fixed umask issues in the session directory.  Thanks to Glenn Morris
+  for reporting this to us.
+- Fixed tcsh-based LD_LIBRARY_PATH issues with --prefix.  Thanks to
+  Glen Morris for identifying the problem and suggesting the fix.
+- Removed extraneous \n's when setting PATH and LD_LIBRARY_PATH in the
+  rsh startup.  Thanks to Glen Morris for finding these typos.
+- Fixed missing constants in MPI C++ bindings.
+- Fixed some errors caused by threading issues.
+- Fixed openib BTL flow control logic to not overrun the number of
+  send wqes available.
+- Update to match newest OpenIB user-level library API.  Thanks to
+  Roland Dreier for submitting this patch.
+- Report errors properly when failing to register memory in the openib
+  BTL.
+- Reduce memory footprint of openib BTL.
+- Fix parsing problem with mpirun's "-tv" switch.  Thanks to Chris
+  Gottbrath for supplying the fix.
+- Fix Darwin net/if.h configure warning.
+- The GNU assembler unbelievably defaults to making stacks executable.
+  So when using gas, add flags to explicitly tell it to not make
+  stacks executable (lame but necessary).
+- Add missing MPI::Request::Get_status() methods.  Thanks to Bill
+  Saphir for pointing this out to us.
+- Improved error messages on memory registration errors (e.g., when
+  using high-speed networks).
+- Open IB support now checks firmware for how many outstanding RDMA
+  requests are supported.  Thanks to Mellanox for pointing this out to
+  us.
+- Enable printing of stack traces in MPI processes upon SIGBUS,
+  SIGSEGV, and SIGFPE if the platform supports it.
+- Fixed F90 compilation support for the Lahey compiler.
+- Fixed issues with ROMIO shared library support.
+- Fixed internal accounting problems with rsh support.
+- Update to GNU Libtool 1.5.22.
+- Fix error in configure script when setting CCAS to ias (the Intel
+  assembler).
+- Added missing MPI::Intercomm collectives.
+- Fixed MPI_IN_PLACE handling for Fortran collectives.
+- Fixed some more C++ const_cast<> issues.  Thanks for Martin Audet
+  (again) for bringing this to our attention.
+- Updated ROMIO with the version from MPICH 1.2.7p1, marked as version
+  2005-06-09.
+- Fixes for some cases where the use of MPI_BOTTOM could cause
+  problems.
+- Properly handle the case where an mVAPI does not have shared receive
+  queue support (such as the one shipped by SilverStorm / Infinicon
+  for OS X).
+
+
+1.0.1
+-----
+
+- Fixed assembly on Solaris AMD platforms.  Thanks to Pierre Valiron
+  for bringing this to our attention.
+- Fixed long messages in the send-to-self case.
+- Ensure that when the "leave_pinned" option is used, the memory hooks
+  are also enabled.  Thanks to Gleb Natapov for pointing this out.
+- Fixed compile errors for IRIX.
+- Allow hostfiles to have integer host names (for BProc clusters).
+- Fixed a problem with message matching of out-of-order fragments in
+  multiple network device scenarios.
+- Converted all the C++ MPI bindings to use proper const_cast<>'s
+  instead of old C-style casts to get rid of const-ness.  Thanks to
+  Martin Audet for raising the issue with us.
+- Converted MPI_Offset to be a typedef instead of a #define because it
+  causes problems for some C++ parsers.  Thanks to Martin Audet for
+  bringing this to our attention.
+- Improved latency of TCP BTL.
+- Fixed index value in MPI_TESTANY to be MPI_UNDEFINED if some
+  requests were not MPI_REQUEST_NULL, but no requests finished.
+- Fixed several Fortran MPI API implementations that incorrectly used
+  integers instead of logicals or address-sized integers.
+- Fix so that Open MPI correctly handles the Fortran value for .TRUE.,
+  regardless of what the Fortran compiler's value for .TRUE. is.
+- Improved scalability of MX startup.
+- Fix datatype offset handling in the coll basic component's
+  MPI_SCATTERV implementation.
+- Fix EOF handling on stdin.
+- Fix missing MPI_F_STATUS_IGNORE and MPI_F_STATUSES_IGNORE
+  instanatiations.  Thanks to Anthony Chan for pointing this out.
+- Add a missing value for MPI_WIN_NULL in mpif.h.
+- Bring over some fixes for the sm btl that somehow didn't make it
+  over from the trunk before v1.0.  Thanks to Beth Tibbitts and Bill
+  Chung for helping identify this issue.
+- Bring over some fixes for the iof that somehow didn't make it over
+  from the trunk before v1.0.
+- Fix for --with-wrapper-ldflags handling.  Thanks to Dries Kimpe for
+  pointing this out to us.
+
+
+1.0
+---
+
+Initial public release.

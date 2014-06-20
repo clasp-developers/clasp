@@ -1,0 +1,110 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.\" Copyright 2007-2008 Cisco Systems, Inc.  All rights reserved.
+.TH MPI_Test 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Test\fP \- Tests for the completion of a specific send or receive.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Test(MPI_Request *\fIrequest\fP, int\fI *flag\fP, MPI_Status\fI *status\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TEST(\fIREQUEST, FLAG, STATUS, IERROR\fP)
+	LOGICAL	\fIFLAG\fP
+	INTEGER	\fIREQUEST, STATUS(MPI_STATUS_SIZE), IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+bool Request::Test(Status& \fIstatus\fP)
+
+bool Request::Test()
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+request
+Communication request (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+flag
+True if operation completed (logical).
+.TP 1i
+status
+Status object (status).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+A call to MPI_Test returns flag = true if the operation identified by request is complete. In such a case, the status object is set to contain information on the completed operation; if the communication object was created by a nonblocking send or receive, then it is deallocated and the request handle is set to MPI_REQUEST_NULL. The call returns flag = false, otherwise. In this case, the value of the status object is undefined. MPI_Test is a local operation.  
+.sp
+The return status object for a receive operation carries information that can be accessed as described in Section 3.2.5 of the MPI-1 Standard, "Return Status." The status object for a send operation carries information that can be accessed by a call to MPI_Test_cancelled (see Section 3.8 of the MPI-1 Standard, "Probe and Cancel").
+.sp
+If your application does not need to examine the \fIstatus\fP field, you can save resources by using the predefined constant MPI_STATUS_IGNORE as a special value for the \fIstatus\fP argument. 
+.sp
+One is allowed to call MPI_Test with a null or inactive \fIrequest\fP argument. In such a case the operation returns with \fIflag\fP = true and empty \fIstatus\fP.
+.sp
+The functions MPI_Wait and MPI_Test can be used to complete both sends and
+receives.
+
+.SH NOTES
+The use of the nonblocking MPI_Test call allows the user to schedule alternative activities within a single thread of execution. An event-driven thread scheduler can be emulated with periodic calls to MPI_Test. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI::Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler, MPI_File_set_errhandler, or
+MPI_Win_set_errhandler (depending on the type of MPI handle that
+generated the request); the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does
+not guarantee that an MPI program can continue past an error.
+.sp
+Note that per MPI-1 section 3.2.5, MPI exceptions on requests passed
+to MPI_TEST do not set the status.MPI_ERROR field in the returned
+status.  The error code is passed to the back-end error handler
+and may be passed back to the caller through the return value of
+MPI_TEST if the back-end error handler returns it.  The
+pre-defined MPI error handler MPI_ERRORS_RETURN exhibits this
+behavior, for example.
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Comm_set_errhandler
+.br
+MPI_File_set_errhandler
+.br
+MPI_Testall
+.br
+MPI_Testany
+.br
+MPI_Testsome
+.br
+MPI_Wait
+.br
+MPI_Waitall
+.br
+MPI_Waitany
+.br
+MPI_Waitsome
+.br
+MPI_Win_set_errhandler
+.br
+

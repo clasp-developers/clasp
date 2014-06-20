@@ -1,0 +1,36 @@
+# -*- makefile -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+AUTOMAKE_OPTIONS	= foreign dist-bzip2
+
+# $(top_ompi_srcdir)                - mca_base_param.h
+# $(top_ompi_srcdir)/opal/include   - opal_config_bottom.h
+# $(top_ompi_builddir)/opal/include - opal_config.h
+# $(top_ompi_builddir)/ompi/include - mpi.h
+# $(top_srcdir)/include             - vpath support
+# $(top_srcdir)/adio/include        - vpath support
+
+AM_CPPFLAGS = \
+        -DOMPI_BUILDING=1 \
+        -I$(top_ompi_srcdir) \
+        -I$(top_ompi_srcdir)/opal/include \
+        -I$(top_ompi_builddir)/opal/include \
+        -I$(top_ompi_builddir)/ompi/include \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/adio/include

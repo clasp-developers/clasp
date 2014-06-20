@@ -1,0 +1,93 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_seek 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_seek\fP \- Updates individual file pointers (noncollective).
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_seek(MPI_File \fIfh\fP, MPI_Offset \fIoffset\fP,
+    	      	   int \fIwhence\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_SEEK(\fIFH\fP,\fI OFFSET\fP,\fI WHENCE\fP,\fI IERROR\fP)
+    	      INTEGER \fIFH, WHENCE, IERROR\fP
+    	      INTEGER(KIND=MPI_OFFSET_KIND) \fIOFFSET\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::File::Seek(MPI::Offset \fIoffset\fP, int \fIwhence\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+fh    
+File handle (handle).
+.TP 1i
+offset 
+File offset (integer).
+.TP 1i
+whence
+Update mode (integer).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_seek updates the individual file pointer according to 
+.I whence,
+which could have the following possible values:
+.TP
+  o  
+MPI_SEEK_SET - The pointer is set to 
+.I offset.
+.TP
+  o  
+MPI_SEEK_CUR - The pointer is set to the current pointer position plus 
+.I offset.
+.TP
+  o  
+MPI_SEEK_END - The pointer is set to the end of the file plus 
+.I offset.
+.sp
+.RE
+The 
+.I offset 
+can be negative, which allows seeking backwards. It is erroneous to
+seek to a negative position in the file. The end of the file is
+defined to be the location of the next elementary data item
+immediately after the last accessed data item, even if that location
+is a hole.
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIOFFSET\fP argument only for Fortran 90.  FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_OFFSET_KIND \fIOFFSET\fP
+.fi
+.sp
+where MPI_OFFSET_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

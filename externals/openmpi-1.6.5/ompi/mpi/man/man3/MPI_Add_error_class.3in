@@ -1,0 +1,87 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Add_error_class 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+.nf
+\fBMPI_Add_error_class\fP \- Creates a new error class and returns its value
+
+.fi
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Add_error_class(int *\fIerrorclass\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ADD_ERROR_CLASS(\fIERRORCLASS, IERROR\fP)
+	INTEGER	\fIERRORCLASS, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int MPI::Add_error_class()
+
+.fi
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1.4i
+errorclass
+New error class (integer).
+.ft R
+.TP 1.4i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The function MPI_Add_error_class creates a new, local error
+class.
+
+.SH NOTES
+.ft R
+Because this function is local, the same value of \fIerrorclass\fP may
+not be returned on all processes that make this call, even if they
+call the function concurrently. Thus, same error on different
+processes may not cause the same value of \fIerrorclass\fP to be
+returned. To reduce the potential for confusion, MPI_Add_error_string
+may be used on multiple processes to associate the same error string
+with the newly created \fIerrorclass\fP. Even though \fIerrorclass\fP
+may not be consistent across processes, using MPI_Add_error_string
+will ensure the error string associated with it will be the same
+everywhere.
+.sp
+No function is provided to free error classes, as it is not expected
+that an application will create them in significant numbers.
+.sp
+The value returned is always greater than or equal to MPI_ERR_LASTCODE.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Add_error_code
+MPI_Add_error_string
+MPI_Error_class
+MPI_Error_string
+

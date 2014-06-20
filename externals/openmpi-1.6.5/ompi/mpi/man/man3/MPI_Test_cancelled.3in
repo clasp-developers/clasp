@@ -1,0 +1,60 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Test_cancelled 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Test_cancelled\fP \- Tests whether a request was canceled.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Test_cancelled(MPI_Status *\fIstatus\fP, int \fI*flag\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TEST_CANCELLED(\fISTATUS, FLAG, IERROR\fP)
+	LOGICAL	\fIFLAG\fP
+	INTEGER	\fISTATUS(MPI_STATUS_SIZE), IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+bool Status::Is_cancelled() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+status
+Status object (status).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+flag
+True if operation was cancelled (logical). 
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Returns \fIflag\fP = true if the communication associated with the status object
+was canceled successfully. In such a case, all other fields of status (such as \fIcount\fP or \fItag\fP) are undefined. Otherwise, returns \fIflag\fP = false. If a receive operation might be canceled, one should call MPI_Test_cancelled first, to check whether the operation was canceled, before checking on the other fields of the return status.
+
+.SH NOTES
+Cancel can be an expensive operation that should be used only exceptionally. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+
+

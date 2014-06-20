@@ -1,0 +1,62 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Graph_neighbors_count 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Graph_neighbors_count \fP \- Returns the number of neighbors of a node associated with a graph topology.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Graph_neighbors_count(MPI_Comm \fIcomm\fP, int\fI rank\fP,
+	int\fI *nneighbors\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_GRAPH_NEIGHBORS_COUNT(\fICOMM, RANK, NNEIGHBORS, IERROR\fP)
+	INTEGER	\fICOMM, RANK, NNEIGHBORS, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+int Graphcomm::Get_neighbors_count(int \fIrank\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm
+Communicator with graph topology (handle).
+.TP 1i
+rank
+Rank of process in group of comm (integer).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+nneighbors
+Number of neighbors of specified process (integer).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Graph_neighbors_count and MPI_Graph_neighbors provide adjacency information for a general, graph topology. MPI_Graph_neighbors_count returns the number of neighbors for the process signified by rank. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Graph_neighbors
+

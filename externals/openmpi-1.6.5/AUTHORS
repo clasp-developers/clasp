@@ -1,0 +1,111 @@
+Open MPI Authors
+================
+
+The following cumulative list contains the names and Subversion IDs of
+all individuals who have committed code to the Open MPI repository.
+
+Username    Name                        Affiliation(s)
+----------- --------------------------- -------------------------
+Anya        Anya Tatashina              Sun
+abbyz       Abhishek Kulkarni           IU
+adi         Adrian Knoth                UJ
+adkulkar    Abhishek Kulkarni           IU
+afriedle    Andrew Friedley             IU, SNL
+angskun     Thara Angskun               UTK
+apant       Avneesh Pant                QLogic
+bbenton     Brad Benton                 IBM
+bosilca     George Bosilca              UTK
+bouteill    Aurelien Bouteiller         UTK
+brbarret    Brian Barrett               IU, LANL, SNL
+casswell    Laura Casswell              LANL
+coti        Camille Coti                UTK, INRIA
+csbell      Christian Bell              QLogic
+cyeoh       Chris Yeoh                  IBM
+damico      Bill D'Amico                Cisco
+ddd         David Daniel                LANL
+derbeyn     Nadia Derby                 Bull
+dgdimick    Denis Dimick                LANL
+dkerr       Donald Kerr                 Sun, Oracle
+dlacher     Dan Lacher                  Sun
+edgar       Edgar Gabriel               HLRS, UH, UTK
+emallove    Ethan Mallove               Sun, Oracle
+eugene      Eugene Loh                  Sun, Oracle
+gef         Graham Fagg                 UTK
+gingery     Ginger Young                LANL
+gleb        Gleb Natapov                Voltaire
+gshipman    Galen Shipman               LANL
+gwatson     Greg Watson                 LANL
+herault     Thomas Herault              INRIA
+hpcstork    Sven Stork                  HLRS
+htor        Torsten Hoefler             IU, TUC
+igb         Iain Bason                  Sun, Oracle
+jdmason     Jon Mason                   Chelsio
+jjhursey    Josh Hursey                 IU, ORNL, LANL, LBNL
+jnysal      Nysal Jan                   IBM
+jsquyres    Jeff Squyres                Cisco, IU
+jurenz      Matthias Jurenz             ZIH
+karenn      Karen Norteman              Sun
+kmroz       Karl Mroz                   UBC
+knuepfer    Andreas Knuepfer            ZIH
+koenig      Greg Koenig                 ORNL
+lemarini    Pierre Lemarinier           UTK
+lennyve     Lenny Verkhovsky            Voltaire
+lums        Andrew Lumsdaine            IU
+matney      Ken Matney                  ORNL
+miked       Mike Dubman                 Voltaire
+mitch       Mitch Sukalski              SNL
+mschaara    Mohamad Chaarawi            UH
+mt          Mark Taylor                 LANL
+ollie       Li-Ta Lo                    LANL
+paklui      Pak Lui                     Sun
+pasha       Pavel Shamis                Mellanox
+patrick     Patrick Geoffray            Myricom
+penoff      Brad Penoff                 UBC
+pjesa       Jelena Pjesivac-Grbovic     UTK
+pkambadu    Prabhanjan Kambadur         IU
+rasmussn    Craig Rasmussen             LANL
+rbbrigh     Ron Brightwell              SNL
+rhc         Ralph Castain               LANL, Cisco
+rlgraham    Rich Graham                 ORNL, LANL
+rolfv       Rolf Vandevaart             Sun, Oracle
+rta         Rob Awles                   LANL
+rusraink    Rainer Keller               HLRS, ORNL
+sami        Sami Ayyorgun               LANL
+samuel      Samuel K. Gutierrez         LANL
+santhana    Gopal Santhanaraman         OSU
+sharonm     Sharon Melamed              Voltaire
+shiqing     Shiqing Fan                 HLRS
+surs        Sayantan Sur                OSU
+sushant     Sushant Sharma              LANL
+swise       Steve Wise                  Chelsio
+tdd         Terry Dontje                Sun, Oracle
+timattox    Tim Mattox                  IU, Cisco
+tprins      Tim Prins                   IU, LANL
+twoodall    Tim Woodall                 LANL
+vasily      Vasily Filipov              Mellanox
+vsahay      Vishal Sahay                IU
+yuw         Weikuan Yu                  LANL, OSU
+
+Affiliaion abbreviations:
+-------------------------
+
+Chelsio = Chelsio Communications, Inc.
+Cisco = Cisco Systems, Inc.
+HLRS = High Performance Computing Center, Stuttgart
+IU = Indiana University
+LANL = Los Alamos National Laboratory
+LBNL = Lawrence Berkeley National Laboratory
+Mellanox = Mellanox
+Myricom = Myricom, Inc.
+Oracle = Oracle
+ORNL = Oak Ridge National Laboratory
+OSU = The Ohio State University
+QLogic = QLogic
+SNL = Sandia National Laboratories
+Sun = Sun Microsystems, Inc.
+TUC = Technische Universtaet Chemnitz
+UBC = University of British Columbia
+UJ = Friedrich-Schiller-Universitat Jena
+UTK = University of Tennessee, Knoxville
+Voltaire = Voltaire
+ZIH = Technische Universitaet Dresden

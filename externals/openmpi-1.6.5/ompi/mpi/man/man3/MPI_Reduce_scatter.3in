@@ -1,0 +1,102 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Reduce_scatter 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Reduce_scatter\fP \- Combines values and scatters the results.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Reduce_scatter(void *\fIsendbuf\fP, void\fI *recvbuf\fP, int\fI *recvcounts\fP,
+	MPI_Datatype\fI datatype\fP, MPI_Op\fI op\fP, MPI_Comm\fI comm\fP)        
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_REDUCE_SCATTER(\fISENDBUF, RECVBUF, RECVCOUNTS, DATATYPE, OP,
+		COMM, IERROR\fP)
+	<type>	\fISENDBUF(*), RECVBUF(*)\fP
+	INTEGER	\fIRECVCOUNTS(*), DATATYPE, OP, COMM, IERROR \fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Reduce_scatter(const void* \fIsendbuf\fP, void* \fIrecvbuf\fP,
+	int \fIrecvcounts\fP[], const MPI::Datatype& \fIdatatype\fP,
+	const MPI::Op& \fIop\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+sendbuf
+Starting address of send buffer (choice).
+.TP 1i
+recvcounts
+Integer array specifying the number of elements in result distributed to
+each process. Array must be identical on all calling processes.
+.TP 1i
+datatype
+Datatype of elements of input buffer (handle).
+.TP 1i
+op
+Operation (handle).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+recvbuf
+Starting address of receive buffer (choice).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+
+MPI_Reduce_scatter first does an element-wise reduction on vector of \fIcount\fP\
+ =\ S(i)\fIrevcounts\fP[i] elements in the send buffer defined by \fIsendbuf\fP, \fIcount\fP, and
+\fIdatatype\fP. Next, the resulting vector of results is split into n disjoint
+segments, where n is the number of processes in the group. Segment i contains
+\fIrecvcounts\fP[i] elements. The ith segment is sent to process i and stored in
+the receive buffer defined by \fIrecvbuf\fP, \fIrecvcounts\fP[i], and \fIdatatype\fP.
+
+
+.SH USE OF IN-PLACE OPTION
+When the communicator is an intracommunicator, you can perform a reduce-scatter operation in-place (the output buffer is used as the input buffer).  Use the variable MPI_IN_PLACE as the value of the \fIsendbuf\fR.  In this case, the input data is taken from the top of the receive buffer.  The area occupied by the input data may be either longer or shorter than the data filled by the output data. 
+.sp
+.SH WHEN COMMUNICATOR IS AN INTER-COMMUNICATOR
+.sp
+When the communicator is an inter-communicator, the reduce-scatter operation occurs in two phases.  First, the result of the reduction performed on the data provided by the processes in the first group is scattered among the processes in the second group.  Then the reverse occurs: the reduction performed on the data provided by the processes in the second group is scattered among the processes in the first group.  For each group, all processes provide the same \fIrecvcounts\fR argument, and the sum of the \fIrecvcounts\fR values should be the same for both groups.  
+.sp  
+.SH NOTES ON COLLECTIVE OPERATIONS
+
+The reduction functions (
+.I MPI_Op
+) do not return an error value.  As a result,
+if the functions detect an error, all they can do is either call 
+.I MPI_Abort
+or silently skip the problem.  Thus, if you change the error handler from
+.I MPI_ERRORS_ARE_FATAL
+to something else, for example, 
+.I MPI_ERRORS_RETURN
+,
+then no error may be indicated.
+
+The reason for this is the performance problems in ensuring that
+all collective routines return the same error value.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

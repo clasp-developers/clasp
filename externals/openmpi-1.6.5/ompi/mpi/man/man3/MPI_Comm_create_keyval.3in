@@ -1,0 +1,136 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Comm_create_keyval 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Comm_create_keyval\fP \- Generates a new attribute key. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Comm_create_keyval(MPI_Comm_copy_attr_function 
+	*\fIcomm_copy_attr_fn\fP, MPI_Comm_delete_attr_function 
+	*\fIcomm_delete_attr_fn\fP, int *\fIcomm_keyval\fP, 
+	void *\fIextra_state\fP) 
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+INCLUDE 'mpif.h'
+MPI_COMM_CREATE_KEYVAL(\fICOMM_COPY_ATTR_FN, COMM_DELETE_ATTR_FN, 
+	COMM_KEYVAL, EXTRA_STATE, IERROR\fP)
+
+    EXTERNAL \fICOMM_COPY_ATTR_FN, COMM_DELETE_ATTR_FN\fP
+    INTEGER \fICOMM_KEYVAL, IERROR \fP
+    INTEGER(KIND=MPI_ADDRESS_KIND) \fIEXTRA_STATE\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static in MPI::Comm::Create_keyval(MPI::Comm::Copy_attr_function*
+	\fIcomm_copy_attr_fn\fP,
+	MPI::Comm::Delete_attr_function* \fIcomm_delete_attr_fn\fP,
+	void* \fIextra_state\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm_copy_attr_fn
+Copy callback function for \fIcomm_keyval\fP (function).
+.TP 1i
+comm_delete_attr_fn
+Delete callback function for \fIcomm_keyval\fP (function).
+.TP 1i
+extra_state
+Extra state for callback functions.
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+comm_keyval
+Key value for future access (integer).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This function replaces MPI_Keyval_create, the use of which is deprecated. The C binding is identical. The Fortran binding differs in that \fIextra_state\fP is an address-sized integer. Also, the copy and delete callback functions have Fortran bindings that are consistent with address-sized attributes. 
+.sp
+The argument \fIcomm_copy_attr_fn\fP may be specified as MPI_COMM_NULL_COPY_FN or MPI_COMM_DUP_FN from C, C++, or Fortran. MPI_COMM_NULL_COPY_FN is a function that does nothing more than returning \fIflag\fP = 0 and MPI_SUCCESS. MPI_COMM_DUP_FN is a simple-minded copy function that sets \fIflag\fP = 1, returns the value of \fIattribute_val_in\fP in \fIattribute_val_out\fP, and returns MPI_SUCCESS. These replace the MPI-1 predefined callbacks MPI_NULL_COPY_FN and MPI_DUP_FN, the use of which is deprecated. 
+.sp
+The C callback functions are:
+.sp
+.nf
+typedef int MPI_Comm_copy_attr_function(MPI_Comm \fIoldcomm\fP, int \fIcomm_keyval\fP, 
+             void *\fIextra_state\fP, void *\fIattribute_val_in\fP, 
+             void *\fIattribute_val_out\fP, int *\fIflag\fP);
+.fi
+and
+.nf
+typedef int MPI_Comm_delete_attr_function(MPI_Comm \fIcomm\fP, int \fIcomm_keyval\fP, 
+             void *\fIattribute_val\fP, void *\fIextra_state\fP);
+.fi
+.sp
+which are the same as the MPI-1.1 calls but with a new name. The old names are deprecated.
+.sp
+The Fortran callback functions are:
+.sp
+.nf
+SUBROUTINE COMM_COPY_ATTR_FN(\fIOLDCOMM, COMM_KEYVAL, EXTRA_STATE, 
+             ATTRIBUTE_VAL_IN, ATTRIBUTE_VAL_OUT, FLAG, IERROR\fP) 
+    INTEGER \fIOLDCOMM, COMM_KEYVAL, IERROR\fP 
+    INTEGER(KIND=MPI_ADDRESS_KIND) \fIEXTRA_STATE, ATTRIBUTE_VAL_IN, 
+        ATTRIBUTE_VAL_OUT\fP 
+    LOGICAL \fIFLAG\fP 
+.fi
+and
+.nf
+SUBROUTINE COMM_DELETE_ATTR_FN(\fICOMM, COMM_KEYVAL, ATTRIBUTE_VAL, EXTRA_STATE, 
+             IERROR\fP) 
+    INTEGER \fICOMM, COMM_KEYVAL, IERROR\fP 
+    INTEGER(KIND=MPI_ADDRESS_KIND) \fIATTRIBUTE_VAL, EXTRA_STATE\fP 
+.fi
+.sp
+The C++ callbacks are:
+.sp
+.nf
+typedef int MPI::Comm::Copy_attr_function(const MPI::Comm& \fIoldcomm\fP, 
+             int \fIcomm_keyval\fP, void* \fIextra_state\fP, void* \fIattribute_val_in\fP, 
+             void* \fIattribute_val_out\fP, bool& \fIflag\fP); 
+.fi
+and
+.nf
+typedef int MPI::Comm::Delete_attr_function(MPI::Comm& \fIcomm\fP, 
+             int \fIcomm_keyval\fP, void* \fIattribute_val\fP, void* \fIextra_state\fP); 
+.fi
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIEXTRA_STATE\fP argument only for Fortran 90. FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_ADDRESS_KIND \fIEXTRA_STATE\fP
+.fi
+.sp
+where MPI_ADDRESS_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+.sp
+See the MPI man page for a full list of MPI error codes. 
+
+.SH SEE ALSO
+.ft R
+.sp
+
+

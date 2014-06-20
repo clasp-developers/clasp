@@ -1,0 +1,806 @@
+<vtenv vtenvversion="1.0" vtversion="@PACKAGE_VERSION@">
+  <group identifier="gen" descname="General Trace Settings" priority="100">
+    <desc>General options for tracing and profiling.</desc>
+  </group>
+  <group identifier="count" priority="300" descname="Counter">
+    <desc>Counters to be recorded during performance measurement of the selected application.</desc>
+  </group>
+  <group identifier="FiltGrp" priority="400" descname="Filtering and Grouping">
+    <desc>Options for filtering and grouping of symbol names of the selected application. </desc>
+  </group>
+  <group identifier="optFeat" priority="200" descname="Optional Trace Features">
+    <desc>Optional Features.</desc>
+  </group>
+  <group identifier="oth" priority="600" descname="Advanced">
+    <desc>Additional setting for experienced users.</desc>
+  </group>
+  <group identifier="genFset" priority="100" descname="Trace File Settings">
+    <desc>Setting according to the file</desc>
+    <parentid>gen</parentid>
+  </group>
+  <group identifier="genTset" priority="200" descname="Trace Buffer Settings">
+    <desc>Settings according to the temporary file and buffer</desc>
+    <parentid>gen</parentid>
+  </group>
+  <group identifier="genIOFSLset" priority="300" descname="IOFSL Settings">
+    <desc>Settings according to IOFSL</desc>
+    <parentid>gen</parentid>
+  </group>
+  <group identifier="libtrace" descname="Additional Event Sources" priority="000">
+    <desc>Options for tracing of IO, lib-C, ... events.</desc>
+    <parentid>optFeat</parentid>
+  </group>
+  <group identifier="synFl" priority="200" descname="Synchronized Flush">
+    <desc>synchronizing buffer flushes</desc>
+    <parentid>optFeat</parentid>
+  </group>
+  <group identifier="papiC" priority="100" descname="PAPI Performance Counter">
+    <desc>PAPI Performance Counter</desc>
+    <parentid>count</parentid>
+  </group>
+  <group identifier="reusC" priority="200" descname="Resource Usage Counter">
+    <desc>Resource Usage Counter</desc>
+    <parentid>count</parentid>
+  </group>
+  <group identifier="java" priority="100" descname="Java">
+    <desc> </desc>
+    <parentid>FiltGrp</parentid>
+  </group>
+  <group identifier="FiltGrpOutput" priority="300" descname="Output Files">
+    <desc>Output Files</desc>
+    <parentid>FiltGrp</parentid>
+  </group>
+  <group identifier="FiltGrpMisc" priority="400" descname="Miscellaneous">
+    <desc>Miscellaneous</desc>
+    <parentid>FiltGrp</parentid>
+  </group>
+  <group identifier="ats" priority="300" descname="Enhanced Time Synchronization">
+    <desc>Enhanced Time Synchronization</desc>
+    <parentid>optFeat</parentid>
+  </group>
+  <group identifier="omode" priority="400" descname="Operation Mode">
+    <desc>Operation Mode</desc>
+    <parentid>optFeat</parentid>
+  </group>
+  <group identifier="Dyninst" priority="500" descname="Binary instrumentation (Dyninst)">
+    <desc>Binary instrumentation (Dyninst)</desc>
+    <parentid>optFeat</parentid>
+  </group>
+  <group identifier="mcor" priority="600" descname="MPI Correctness">
+    <desc>MPI Correctness</desc>
+    <parentid>optFeat</parentid>
+  </group>
+  <group identifier="iofsl" priority="700" descname="I/O Forwarding (IOFSL)">
+    <desc>IOFSL</desc>
+    <parentid>gen</parentid>
+  </group>
+  <group identifier="snam" priority="000" descname="Symbol Names">
+    <desc>Symbol Names</desc>
+    <parentid>oth</parentid>
+  </group>
+  <group identifier="adpost" priority="000" descname="Advanced Portability Settings">
+    <desc>Advanced Portability Settings</desc>
+    <parentid>oth</parentid>
+  </group>
+  <group identifier="sloc" priority="100" descname="Source Location">
+    <desc>Source Location</desc>
+    <parentid>oth</parentid>
+  </group>
+  <group identifier="furthCount" priority="200" descname="Further Counters">
+    <desc>Further Counters</desc>
+    <parentid>count</parentid>
+  </group>
+  <env isdeprecated="0" priority="000" descname="Executable" isadvanced="0" group="genFset" envname="VTSetup_EXECUTABLE">
+    <desc>The executable is not an environment variable that is used by VampirTrace, but rather informally used by VTSetup. </desc>
+    <valuedesc>
+      <value type="filepath">
+        <default> </default>
+        <noDefault>1</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+  </env><env isdeprecated="0" priority="300" descname="Enable I/O tracing" isadvanced="0" group="libtrace"
+    envname="VT_IOTRACE">
+    <desc>Enable / disable the recording of I/O functions like fopen.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+        <noDefault>0</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="5" patch="0" ></since>
+    <available>@VT_SETUP_IOTRACE@</available>
+    <anchor>VT_SETUP_VT_IOTRACE</anchor>
+  </env>
+  <env isdeprecated="0" priority="200" descname="Buffer size per process" isadvanced="0" group="genTset"
+    envname="VT_BUFFER_SIZE">
+    <desc>Set the size of the internal event buffer, which is the place where the event records are stored before being written to a file.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>32</default>
+        <range max="10000000000000000" min="1" ></range>
+      </value>
+      <value type="enum">
+        <default>M</default>
+        <enumid>sizeunitenum</enumid>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_BUFFER_SIZE</anchor>
+  </env>
+  <env isdeprecated="0" priority="250" descname="Buffer size per thread" isadvanced="1" group="genTset"
+    envname="VT_THREAD_BUFFER_SIZE">
+    <desc>Set the size of the internal event buffer for threads.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>0</default>
+        <range max="10000000000000000" min="1" ></range>
+      </value>
+      <value type="enum">
+        <default>K</default>
+        <enumid>sizeunitenum</enumid>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_THREAD_BUFFER_SIZE</anchor>
+  </env>
+  <env isdeprecated="0" priority="300" descname="Application path" isadvanced="1" group="genFset"
+    envname="VT_APPPATH">
+    <desc>Path to the application executable.</desc>
+    <valuedesc>
+      <value type="path">
+        <default></default>
+        <noDefault>1</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>1</available>
+    <anchor>VT_SETUP_VT_APPPATH</anchor>
+  </env>
+  <env isdeprecated="0" priority="500" descname="Remove temporary files" isadvanced="1" group="genFset"
+    envname="VT_CLEAN">
+    <desc>Before global unification of the event data, VampirTrace stores all local events in temporary trace files. 
+    This option controls whether the temporary trace files should be removed after unification or not. For debugging 
+    reasons it might be necessary to preserve the temporary trace files.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_CLEAN</anchor>
+  </env>
+  <env isdeprecated="0" priority="400" descname="Enable compression" isadvanced="1" group="genFset"
+    envname="VT_COMPRESSION">
+    <desc>Compression of trace files can be used to reduce the size of the trace file on the disk.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>@VT_SETUP_COMPRESSION@</available>
+    <anchor>VT_SETUP_VT_COMPRESSION</anchor>
+  </env>
+  <env isdeprecated="0" priority="450" descname="Generate snaphots" isadvanced="1" group="genFset"
+    envname="VT_SNAPSHOTS">
+    <desc>Snapshots allows Vampir to load subsets of the resulting trace.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="13" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_SNAPSHOTS</anchor>
+  </env>
+  <env isdeprecated="0" priority="460" descname="Maximum number of snaphots" isadvanced="1" group="genFset"
+    envname="VT_MAX_SNAPSHOTS">
+    <desc>Maximum number of snapshots to generate.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>1024</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="13" patch="0" /><available>1</available>
+    <anchor>VT_SETUP_VT_MAX_SNAPSHOTS</anchor>
+  </env>
+  <env isdeprecated="0" priority="200" descname="Trace filename" isadvanced="0" group="genFset"
+    envname="VT_FILE_PREFIX">
+    <desc>Prefix of trace filename.</desc>
+    <valuedesc>
+      <value type="string">
+        <default>a<!--on Linux,MacOS and Sun Solaris application-prefix.otf and on other Systems a.otf--></default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
+    <anchor>VT_SETUP_VT_FILE_PREFIX</anchor>
+  </env>
+  <env isdeprecated="0" priority="400" descname="Enforce unique filename" isadvanced="1" group="genFset"
+    envname="VT_FILE_UNIQUE">
+    <desc>Enable / disable unique trace file naming. This option prevents the performance analysts from overwriting existing trace files.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_FILE_UNIQUE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Maximum number of buffer flushes" isadvanced="1" group="genTset"
+    envname="VT_MAX_FLUSHES">
+    <desc>If the size of the internal event buffer is to small then the shared events have to be flushed to the disk. 
+    This option controls how often VampirTrace writes its internal buffer to disk. After reaching the limit the event 
+    recording will be disabled. for unlimited buffer flushes set the maximum number of buffer flushes to 0.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>1</available>
+    <anchor>VT_SETUP_VT_MAX_FLUSHES</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Maximum number of threads" isadvanced="1" group="adpost"
+    envname="VT_MAX_THREADS">
+    <desc>Maximum number of threads per process that VampirTrace reserves resources for.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>65536</default>
+        <range max="65536" min="1" ></range>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
+    <anchor>VT_SETUP_VT_MAX_THREADS</anchor>
+  </env>
+  <env isdeprecated="0" priority="300" descname="Final trace directory (global)" isadvanced="1" group="genFset"
+    envname="VT_PFORM_GDIR">
+    <desc>Name of global directory that is used to store the temporary trace file.</desc>
+    <valuedesc>
+      <value type="path">
+        <default>./</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>1</available>
+    <anchor>VT_SETUP_VT_PFORM_GDIR</anchor>
+  </env>
+  <env isdeprecated="0" priority="350" descname="Temporary trace directory (node local)" isadvanced="1" group="genFset"
+    envname="VT_PFORM_LDIR">
+    <desc>Name of node-local directory that is used to store the temporary trace files.</desc>
+    <valuedesc>
+      <value type="path">
+        <default>/tmp/</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
+    <anchor>VT_SETUP_VT_PFORM_LDIR</anchor>
+  </env>
+  <env isdeprecated="0" priority="400" descname="Unify trace files" isadvanced="1" group="genFset"
+    envname="VT_UNIFY">
+    <desc>Unify local trace files of the event recording afterwards.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
+    <anchor>VT_SETUP_VT_UNIFY</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="VampirTrace information level" isadvanced="1" group="adpost"
+    envname="VT_VERBOSE">
+    <desc>Level of VampirTrace related information messages: quiet(0), critical (1), information (2).</desc>
+    <valuedesc>
+      <value type="enum">
+        <default>1</default>
+        <enumid>verboseenum</enumid>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_VERBOSE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Enable CPU ID tracing" isadvanced="0" group="libtrace"
+    envname="VT_CPUIDTRACE">
+    <desc>Enable / disable tracing of CPU ID as counter.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>@VT_SETUP_CPUIDTRACE@</available>
+    <anchor>VT_SETUP_VT_CPUIDTRACE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Enhanced time synchronization" isadvanced="1" group="ats"
+    envname="VT_ETIMESYNC">
+    <desc>Enable / disable enhanced timer synchronization.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" />
+    <available>@VT_SETUP_ETIMESYNC@</available>
+    <anchor>VT_SETUP_VT_ETIMESYNC</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Synchronization interval (s)" isadvanced="1" group="ats"
+    envname="VT_ETIMESYNC_INTV">
+    <desc>Interval between two successive synchronization phases in s at the enhanced timer synchronization.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>120</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>@VT_SETUP_ETIMESYNC@</available>
+    <anchor>VT_SETUP_VT_ETIMESYNC_INTV</anchor>
+  </env>
+  <env isdeprecated="0" priority="350" descname="Alternative I/O library" isadvanced="1" group="libtrace"
+    envname="VT_IOLIB_PATHNAME">
+    <desc>Provides an alternative library for interception of LIBC I/O calls.</desc>
+    <valuedesc>
+      <value type="filepath">
+        <default></default>
+        <noDefault>1</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>@VT_SETUP_IOTRACE@</available>
+    <anchor>VT_SETUP_VT_IOLIB_PATHNAME</anchor>
+  </env>
+  <env isdeprecated="0" priority="290" descname="Enable exec(3) function tracing" isadvanced="1" group="libtrace"
+    envname="VT_EXECTRACE">
+    <desc>Enable / disable the recording of functions for creating and controling child processes (e.g. execl).</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>@VT_SETUP_EXECTRACE@</available>
+    <anchor>VT_SETUP_VT_EXECTRACE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Enable memory allocation tracing" isadvanced="0" group="libtrace"
+    envname="VT_MEMTRACE">
+    <desc>Enable / disable recording of memory allocation counter.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>@VT_SETUP_MEMTRACE@</available>
+    <anchor>VT_SETUP_VT_MEMTRACE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="VampirTrace operation mode" isadvanced="1" group="omode"
+    envname="VT_MODE">
+    <desc>Set the VampirTrace working mode that processes the event data: tracing(TRACE), profiling(STAT).</desc>
+    <valuedesc>
+      <value type="enumselection">
+        <default>TRACE</default>
+        <enumid>vtmodeenum</enumid>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_MODE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="MPI correctness checking" isadvanced="1" group="mcor"
+    envname="VT_MPICHECK">
+    <desc>Enable / disable MPI correctness checking via UniMCI.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>@VT_SETUP_MPICHECK@</available>
+    <anchor>VT_SETUP_VT_MPICHECK</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Exit on correctness error" isadvanced="1" group="mcor"
+    envname="VT_MPICHECK_ERREXIT">
+    <desc>Force trace write and application exit if an MPI usage error is detected.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>@VT_SETUP_MPICHECK@</available>
+    <anchor>VT_SETUP_VT_MPICHECK_ERREXIT</anchor>
+  </env>
+  <env isdeprecated="0" priority="200" descname="IOFSL Server Addresses" isadvanced="1" group="iofsl"
+    envname="VT_IOFSL_SERVERS">
+    <desc>Comma-separated list of IOFSL server addresses.</desc>
+    <valuedesc>
+      <value type="string">
+        <default></default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="13" patch="0" ></since><available>1</available>
+    <available>@VT_SETUP_IOFSL@</available>
+    <anchor>VT_SETUP_VT_IOFSL_SERVERS</anchor>
+  </env>
+  <env isdeprecated="0" priority="250" descname="IOFSL mode" isadvanced="1" group="iofsl"
+    envname="VT_IOFSL_MODE">
+    <desc>Mode of the IOFSL communication (MULTIFILE_SPLIT, MULTIFILE)</desc>
+    <valuedesc>
+      <value type="enum">
+        <default>MULTIFILE_SPLIT</default>
+        <enumid>vtiofslmodeenum</enumid>
+      </value>
+    </valuedesc>
+    <since major="5" minor="13" patch="0" ></since>
+    <available>@VT_SETUP_IOFSL@</available>
+    <anchor>VT_SETUP_VT_IOFSL_MODE</anchor>
+  </env>
+  <env isdeprecated="0" priority="300" descname="Enable buffered IOFSL writes" isadvanced="1" group="iofsl"
+    envname="VT_IOFSL_ASYNC_IO">
+    <desc>Enable / disable buffered IOFSL writes.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+        <noDefault>0</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="13" patch="0" ></since>
+    <available>@VT_SETUP_IOFSL@</available>
+    <anchor>VT_SETUP_VT_IOFSL_ASYNC_IO</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Reuse Pthread IDs" isadvanced="1" group="adpost"
+    envname="VT_PTHREAD_REUSE">
+    <desc>Reuse IDs of terminated Pthreads?</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>@VT_SETUP_PTHREAD@</available>
+    <anchor>VT_SETUP_VT_PTHREAD_REUSE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Trace MPI events" isadvanced="0" group="libtrace"
+    envname="VT_MPITRACE">
+    <desc>Enable / disable recording of MPI events.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>@VT_SETUP_MPI@</available>
+    <anchor>VT_SETUP_VT_MPITRACE</anchor>
+  </env>
+  <env isdeprecated="0" priority="101" descname="Ignore filter for MPI communication events" isadvanced="1" group="libtrace"
+    envname="VT_MPI_IGNORE_FILTER">
+    <desc>Enable / disable recording of MPI communication events although its corresponding functions are filterd.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="14" patch="0" /><available>@VT_SETUP_MPI@</available>
+    <anchor>VT_SETUP_VT_MPI_IGNORE_FILTER</anchor>
+  </env>
+  <env isdeprecated="0" priority="200" descname="Profiling interval (for STAT mode in ms)" isadvanced="1" group="omode"
+    envname="VT_STAT_INV">
+    <desc>Length of interval for writing the next profiling record.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>1</available>
+    <anchor>VT_SETUP_VT_STAT_INV</anchor>
+  </env>
+  <env isdeprecated="0" priority="200" descname="Profile event types" isadvanced="1" group="omode"
+    envname="VT_STAT_PROPS">
+    <desc>Set event types that shall be recorded in profiling mode: functions (FUNC), messages (MSG), 
+    collective operations (COLLOP) or all of them.</desc>
+    <valuedesc>
+      <value type="enumselection">
+        <default>FUNC;MSG;COLLOP</default>
+        <enumid>statPropsenum</enumid>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
+    <anchor>VT_SETUP_VT_STAT_PROPS</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Synchronized buffer flush" isadvanced="1" group="synFl"
+    envname="VT_SYNC_FLUSH">
+    <desc>Enable synchronized buffer flush during a collective MPI operation, which uses MPI_COMM_WORLD.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
+    <anchor>VT_SETUP_VT_SYNC_FLUSH</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Buffer fill level" isadvanced="1" group="synFl"
+    envname="VT_SYNC_FLUSH_LEVEL">
+    <desc>Minimum buffer fill level for synchronized buffer flush in percent.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>80</default>
+        <range max="100" min="0" />
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_SYNC_FLUSH_LEVEL</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname=" " isadvanced="0" group="papiC"
+    envname="VT_METRICS">
+    <desc>Specify the counter that shell be recorded during the performance measurement.</desc>
+    <valuedesc>
+      <value type="special">
+        <default></default><enumid>papiCounter</enumid><noDefault>1</noDefault><!--depends on available papi counter-->
+        
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>@VT_SETUP_METRICS@</available>
+    <anchor>VT_SETUP_VT_METRICS</anchor>
+  </env>
+  
+  
+  <!-- 
+    <env isdeprecated="0" priority="200" descname="Separator String for PAPI Counter" isadvanced="1" group="papiC"
+    envname="VT_METRICS_SEP">
+    <desc>Separator string between counter specifications in VT_METRICS.</desc>
+    <valuedesc>
+      <value type="string">
+        <default>:</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since>
+    <available>1</available>
+    <anchor>VT_SETUP_VT_METRICS_SEP</anchor>
+  </env>
+  -->
+  
+  
+  
+  <env isdeprecated="0" priority="100" descname="" isadvanced="0" group="reusC"
+    envname="VT_RUSAGE">
+    <desc>Specify the resource usage counters that shall be recorded during the performance measurement.</desc>
+    <valuedesc>
+      <value type="enumselection">
+        <default></default><!--depends on available rusage counters--><enumid>ReUs</enumid>
+        <noDefault>1</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>@VT_SETUP_RUSAGE@</available>
+    <anchor>VT_SETUP_VT_RUSAGE</anchor>
+  </env>
+  <env isdeprecated="0" priority="300" descname="Resource usage update interval (ms)" isadvanced="0" group="reusC"
+    envname="VT_RUSAGE_INTV">
+    <desc>Sample interval for recording resource usage counters in ms.</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>100</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>@VT_SETUP_RUSAGE@</available>
+    <anchor>VT_SETUP_VT_RUSAGE_INTV</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Additional libraries to instrument" isadvanced="1" group="Dyninst"
+    envname="VT_DYN_SHLIBS">
+    <desc>Colon-separeted list of shared libraries for Dyninst instrumentation.</desc>
+    <valuedesc>
+      <value type="string">
+        <default></default><noDefault>1</noDefault><!--depends on available Libs-->
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>@VT_SETUP_DYNINST@</available>
+    <anchor>VT_SETUP_VT_DYN_SHLIBS</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Instrumentation of function which have no debug information" isadvanced="1" group="Dyninst"
+    envname="VT_DYN_IGNORE_NO_DBG">
+    <desc>Enable / disable instrumentation of functions which have no debug information.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="11" patch="0" /><available>@VT_SETUP_DYNINST@</available>
+    <anchor>VT_SETUP_VT_DYN_IGNORE_NODBG</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Instrumentation of outer loops within functions" isadvanced="1" group="Dyninst"
+    envname="VT_DYN_OUTER_LOOPS">
+    <desc>Enable / disable instrumentation of outer loops within functions.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="13" patch="0" /><available>@VT_SETUP_DYNINST@</available>
+    <anchor>VT_SETUP_VT_DYN_OUTER_LOOPS</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Instrumentation of inner loops within outer loops" isadvanced="1" group="Dyninst"
+    envname="VT_DYN_INNER_LOOPS">
+    <desc>Enable / disable instrumentation of inner loops within outer loops.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="13" patch="0" /><available>@VT_SETUP_DYNINST@</available>
+    <anchor>VT_SETUP_VT_DYN_INNER_LOOPS</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Instrumentation of loop iterations" isadvanced="1" group="Dyninst"
+    envname="VT_DYN_OUTER_LOOPS">
+    <desc>Enable / disable instrumentation of loop iterations.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="13" patch="0" /><available>@VT_SETUP_DYNINST@</available>
+    <anchor>VT_SETUP_VT_DYN_LOOP_ITERS</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Detach Dyninst mutator-program from application process" isadvanced="1" group="Dyninst"
+    envname="VT_DYN_DETACH">
+    <desc>Whether to detach the Dyninst mutator-program (vtdyn) from the application process.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="12" patch="0" /><available>@VT_SETUP_DYNINST@</available>
+    <anchor>VT_SETUP_VT_DYN_DETACH</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Filter file" isadvanced="0" group="FiltGrpOutput"
+    envname="VT_FILTER_SPEC">
+    <desc>Name of function/region filter file.</desc>
+    <valuedesc>
+      <value type="filepath">
+        <default>vtsetup_filter.spec</default><!--need to build a new filterfile--><noDefault>0</noDefault>
+        <io>out</io></value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
+    <anchor>VT_SETUP_VT_FILTER_SPEC</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Group file" isadvanced="0" group="FiltGrpOutput"
+    envname="VT_GROUPS_SPEC">
+    <desc>Name of function/region group file.</desc>
+    <valuedesc>
+      <value type="filepath">
+        <default>vtsetup_groups.spec</default><!--need to build a new groupfile--><noDefault>0</noDefault>
+        <io>out</io>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
+    <anchor>VT_SETUP_VT_GROUPS_SPEC</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Filter file" isadvanced="1" group="java"
+    envname="VT_JAVA_FILTER_SPEC">
+    <desc>Name of Java specific input filter file.</desc>
+    <valuedesc>
+      <value type="filepath">
+        <default></default>
+        <noDefault>1</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>@VT_SETUP_JAVA@</available>
+    <anchor>VT_SETUP_VT_JAVA_FILTER_SPEC</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Java class grouping" isadvanced="1" group="java"
+    envname="VT_JAVA_GROUP_CLASSES">
+    <desc>Whether to create a group for each Java class automatically or not.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>@VT_SETUP_JAVA@</available>
+    <anchor>VT_SETUP_VT_JAVA_GROUP_CLASSES</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Check stack level balance when switching tracing on/off" isadvanced="1" group="FiltGrpMisc"
+    envname="VT_ONOFF_CHECK_STACK_BALANCE">
+    <desc>When restarting the recording of events by VT_ON check whether the call stack has the same depth as when the recording was stopped by VT_OFF.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="12" patch="0" /><available>1</available>
+    <anchor>VT_SETUP_VT_ONOFF_CHECK_STACK_BALANCE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Maximum stack level" isadvanced="1" group="FiltGrpMisc"
+    envname="VT_MAX_STACK_DEPTH">
+    <desc>Maximum number of stack level to be traced (0 = unlimited).</desc>
+    <valuedesc>
+      <value type="integer">
+        <default>0</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>1</available>
+    <anchor>VT_SETUP_VT_MAX_STACK_DEPTH</anchor>
+  </env>
+  <env isdeprecated="1" priority="200" descname="Optional nm file" isadvanced="1" group="snam"
+    envname="VT_GNU_NMFILE">
+    <desc>Filename with symbol list information of the application executable.</desc>
+    <valuedesc>
+      <value type="filepath">
+        <default></default>
+        <noDefault>1</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>1</available>
+    <anchor>VT_SETUP_VT_GNU_NMFILE</anchor>
+  </env>
+  <env isdeprecated="0" priority="200" descname="Trace OpenMP events" isadvanced="0" group="libtrace"
+    envname="VT_OMPTRACE">
+    <desc>Enable / disable tracing of OpenMP events instrumented by OPARI.</desc>
+    <valuedesc>
+      <value type="bool">
+        <default>1</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>@VT_SETUP_OMP@</available>
+    <anchor>VT_SETUP_VT_OMPTRACE</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Plugin Counter Metrics" isadvanced="1" group="furthCount"
+    envname="VT_PLUGIN_CNTR_METRICS">
+    <desc>Colon-separated list of plugin counter metrics that shall be recorded.</desc>
+    <valuedesc>
+      <value type="string">
+        <default></default>
+        <noDefault>1</noDefault>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" ></since><available>@VT_SETUP_PLUGIN_CNTR@</available><anchor>VT_SETUP_VT_PLUGIN_CNTR_METRICS</anchor>
+  </env>
+  <env isdeprecated="0" priority="100" descname="Command to list symbols" isadvanced="1" group="snam"
+    envname="VT_GNU_NM">
+    <desc>Command to generate symbol information from the executable and object files. The output has to be in the BSD format.</desc>
+    <valuedesc>
+      <value type="string">
+        <default>@NM@</default>
+      </value>
+    </valuedesc>
+    <since major="5" minor="0" patch="0" /><available>@VT_SETUP_COMPINST_GNU@</available><anchor>VT_SETUP_VT_GNU_NM</anchor>
+  </env>
+
+  <enum id="sizeunitenum">
+    <entry>K</entry>
+    <entry>M</entry>
+    <entry>G</entry>
+  </enum>
+  <enum id="verboseenum">
+    <entry>0</entry>
+    <entry>1</entry>
+    <entry>2</entry>
+  </enum>
+  <enum id="vtiofslmodeenum">
+    <entry>MULTIFILE_SPLIT</entry>
+    <entry>MULTIFILE</entry>
+  </enum>
+  <enumselection id="vtmodeenum" oneRequired="1">
+    <entry>TRACE</entry>
+    <entry>STAT</entry>
+  </enumselection>
+  <enumselection id="statPropsenum" oneRequired="1">
+    <entry>FUNC</entry>
+    <entry>MSG</entry>
+    <entry>COLLOP</entry>
+  </enumselection>
+  <enumselection oneRequired="0" id="ReUs">
+    <entry>ru_utime</entry>
+    <entry>ru_stime</entry>
+    <entry>ru_maxrss</entry>
+    <entry>ru_ixrss</entry>
+    <entry>ru_idrss</entry>
+    <entry>ru_isrss</entry>
+    <entry>ru_minflt</entry>
+    <entry>ru_majflt</entry>
+    <entry>ru_nswap</entry>
+    <entry>ru_inblock</entry>
+    <entry>ru_oublock</entry>
+    <entry>ru_msgsnd</entry>
+    <entry>ru_msgrcv</entry>
+    <entry>ru_nsignals</entry>
+    <entry>ru_nvcsw</entry>
+    <entry>ru_nivcsw</entry>
+  </enumselection>
+  </vtenv>

@@ -1,0 +1,57 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Attr_delete 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Attr_delete\fP \- Deletes attribute value associated with a key -- use of this routine is deprecated.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Attr_delete(MPI_Comm\fI comm\fP, int\fI keyval\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ATTR_DELETE(\fICOMM\fP,\fI KEYVAL\fP, \fIIERROR\fP)			
+	INTEGER	\fICOMM\fP,\fI KEYVAL\fP,\fI IERROR\fP
+
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm
+Communicator to which attribute is attached (handle).
+.TP 1i
+keyval
+The key value of the deleted attribute (integer).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+This deprecated routine is not available in C++. 
+.sp
+Note that use of this routine is \fIdeprecated\fP as of MPI-2. Please use MPI_Comm_delete_attr. 
+.sp
+Delete attribute from cache by key. This function invokes the attribute delete function delete_fn specified when the keyval was created. The call will fail if the delete_fn function returns an error code other than MPI_SUCCESS.  
+
+Whenever a communicator is replicated using the function MPI_Comm_dup, all callback copy functions for attributes that are currently set are invoked (in arbitrary order). Whenever a communicator is deleted using the function MPI_Comm_free, all callback delete functions for attributes that are currently set are invoked. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler
+may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Comm_delete_attr
+.br
+

@@ -1,0 +1,69 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_fence 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_fence\fP \- Synchronizes RMA calls on a window.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_fence(int \fIassert\fP, MPI_Win \fIwin\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_FENCE(\fIASSERT, WIN, IERROR\fP) 
+	INTEGER \fIASSERT, WIN, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Fence(int \fIassert\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+assert
+Program assertion (integer).
+.TP 1i
+win
+Window object (handle). 
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Win_fence synchronizes RMA calls on \fIwin\fP. The call is collective on the group of \fIwin\fP. All RMA operations on \fIwin\fP originating at a given process and started before the fence call will complete at that process before the fence call returns. They will be completed at their target before the fence call returns at the target. RMA operations on \fIwin\fP started by a process after the fence call returns will access their target window only after MPI_Win_fence has been called by the target process. 
+.sp
+The call completes an RMA access epoch if it was preceded by another fence call and the local process issued RMA communication calls on \fIwin\fP between these two calls. The call completes an RMA exposure epoch if it was preceded by another fence call and the local window was the target of RMA accesses between these two calls. The call starts an RMA access epoch if it is followed by another fence call and by RMA communication calls issued between these two fence calls. The call starts an exposure epoch if it is followed by another fence call and the local window is the target of RMA accesses between these two fence calls. Thus, the fence call is equivalent to calls to a subset of \fIpost, start, complete, wait\fP. 
+.sp
+A fence call usually entails a barrier synchronization: a process completes a call to MPI_Win_fence only after all other processes in the group have entered their matching call. However, a call to MPI_Win_fence that is known not to end any epoch (in particular, a call with \fIassert\fP = MPI_MODE_NOPRECEDE) does not necessarily act as a barrier. 
+
+.SH NOTE
+Calls to MPI_Win_fence should both precede and follow calls to put, get or accumulate that are synchronized with fence calls. 
+.sp
+
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Win_create
+MPI_Win_start
+MPI_Win_post
+MPI_Win_complete
+MPI_Win_wait
+.br
+

@@ -1,0 +1,51 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_delete_attr 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_delete_attr\fP \- Deletes an attribute from a window.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_delete_attr(MPI_Win \fIwin\fP, int \fIwin_keyval\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_DELETE_ATTR(\fIWIN, WIN_KEYVAL, IERROR\fP) 
+	INTEGER \fIWIN, WIN_KEYVAL, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Delete_attr(int \fIwin_keyval\fP)
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+win
+Window from which the attribute is deleted (handle). 
+
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+win_keyval
+Key value (integer). 
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

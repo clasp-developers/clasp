@@ -1,0 +1,7 @@
+1.0.1
+	- removed environment variable in tolltip box for executable
+	- fixed a bug that caused the version number was not shown correctly in the about dialog
+
+1.0.0
+	- initial version
+

@@ -1,0 +1,62 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Abort 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Abort\fP \- Terminates MPI execution environment.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Abort(MPI_Comm \fIcomm\fP, int\fI errorcode\fP)
+
+.fi
+.SH Fortran Syntax
+.ft R
+.nf
+INCLUDE 'mpif.h'
+MPI_ABORT(\fICOMM\fP, \fIERRORCODE\fP, \fIIERROR\fP)			
+	INTEGER		\fICOMM\fP,\fI ERRORCODE\fP,\fI IERROR 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void Comm::Abort(int \fIerrorcode\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm    
+Communicator of tasks to abort.
+.TP 1i
+errorcode    
+Error code to return to invoking environment.
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This routine makes a "best attempt" to abort all tasks in the group of
+comm. This function does not require that the invoking environment take any
+action with the error code. However, a UNIX or POSIX
+environment should handle this as a return errorcode from the main program
+or an abort (errorcode).
+.sp
+The Open MPI implementation terminates all processes in all tasks that contain a process in \fIcomm\fP, and the error code is not returned to the invoking environment.
+.sp
+Note: All associated processes are sent a SIGTERM.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler
+may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

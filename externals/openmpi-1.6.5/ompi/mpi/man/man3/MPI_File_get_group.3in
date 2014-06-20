@@ -1,0 +1,58 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_get_group 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_get_group\fP \- Returns a duplicate of the process group of a file.
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_get_group(MPI_File \fIfh\fP, MPI_Group \fI*group\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_GET_GROUP(\fIFH\fP,\fI GROUP\fP, \fI IERROR\fP)
+        	 INTEGER	  FH, GROUP, IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Group MPI::File::Get_group() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+fh    
+File handle (handle).
+
+.SH OUTPUT PARAMETERS
+.TP 1i
+group
+Group that opened the file (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_get_group returns a duplicate of the group of the communicator
+used to open the file associated with 
+.I fh.
+The group is returned in 
+.I group.
+The user is responsible for freeing 
+.I group, 
+using MPI_Group_free. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

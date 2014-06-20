@@ -1,0 +1,45 @@
+# -*- makefile -*-
+# Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# Copyright (c) 2006-2008 Cisco Systems, Inc.  All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+# This Makefile does not stand on its own; it is included in
+# ompi/mpi/Makefile.am to satisfy a complicated set of ordering issues
+# when building the Fortran code.  This stub Makefile only builds a
+# small number of files in the f77 directory so that they can be
+# included in the main libmpi.  See comments in that Makefile.am for
+# details.
+
+# If we're building the F77 bindings, then we need to build the
+# Fortran 77 glue into libmpi
+if OMPI_WANT_F77_BINDINGS
+noinst_LTLIBRARIES += mpi/f77/base/libmpi_f77_base.la
+endif
+
+# This needs to be its own convenience library because it requires
+# some specialized CPPFLAGS to set all the defines in various .h files
+# properly (copied from ompi/mpi/f77/Makefile.am) -- we unfortunately
+# can't just suck the sources into the larger libmpi.la.
+
+mpi_f77_base_libmpi_f77_base_la_CPPFLAGS = \
+        -DOMPI_PROFILE_LAYER=0 -DOMPI_COMPILING_F77_WRAPPERS=1
+mpi_f77_base_libmpi_f77_base_la_SOURCES = \
+        mpi/f77/base/attr_fn_f.c \
+        mpi/f77/base/conversion_fn_null_f.c \
+        mpi/f77/base/f90_accessors.c \
+        mpi/f77/base/strings.c \
+        mpi/f77/base/test_constants_f.c

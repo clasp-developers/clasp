@@ -1,0 +1,2 @@
+:
+autoreconf -ivf -I confdb

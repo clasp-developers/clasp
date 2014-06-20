@@ -1,0 +1,139 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Type_create_darray 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_create_darray\fP \- Creates a distributed array datatype;
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_create_darray(int \fIsize\fP, int \fIrank\fP, int \fIndims\fP, 
+	int \fIarray_of_gsizes\fP[], int \fIarray_of_distribs\fP[], 
+	int \fIarray_of_dargs\fP[], int \fIarray_of_psizes\fP[], 
+	int \fIorder\fP, MPI_Datatype \fIoldtype\fP, MPI_Datatype \fI*newtype\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_CREATE_DARRAY(\fISIZE, RANK, NDIMS, ARRAY_OF_GSIZES, 
+	ARRAY_OF_DISTRIBS, ARRAY_OF_DARGS, ARRAY_OF_PSIZES, ORDER, 
+	OLDTYPE, NEWTYPE, IERROR\fP)
+
+	INTEGER	\fISIZE, RANK, NDIMS, ARRAY_OF_GSIZES(*), ARRAY_OF_DISTRIBS(*),
+		ARRAY_OF_DARGS(*), ARRAY_OF_PSIZES(*), ORDER, OLDTYPE, 
+		NEWTYPE, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Datatype MPI::Datatype::Create_darray(int \fIsize\fP, int \fIrank\fP, 
+	int \fIndims\fP, const int \fIarray_of_gsizes\fP[], 
+	const int \fIarray_of_distribs\fP[], const int \fIarray_of_dargs\fP[], 
+	const int \fIarray_of_psizes\fP[], int \fIorder\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+size
+Size of process group (positive integer).
+.TP 1i
+rank
+Rank in process group (nonnegative integer).
+.TP 1i
+ndims
+Number of array dimensions as well as process grid dimensions (positive integer).
+.sp
+.TP 1i
+array_of_gsizes
+Number of elements of type \fIoldtype\fP in each dimension of global array (array of positive integers). 
+.sp
+.TP 1i
+array_of_distribs
+Distribution of array in each dimension (array of state).
+.TP 1i
+array_of_dargs
+Distribution argument in each dimension (array of positive integers).
+.sp
+.TP 1i
+array_of_psizes
+Size of process grid in each dimension (array of positive integers).
+.sp
+.TP 1i
+order
+Array storage order flag (state).
+.TP 1i
+oldtype
+Old data type (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newtype
+New data type (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+
+MPI_Type_create_darray can be used to generate the data types corresponding to the distribution of an ndims-dimensional array of \fIoldtype\fP elements onto an \fIndims\fP-dimensional grid of logical processes. Unused dimensions of \fIarray_of_psizes\fP should be set to 1. For a call to MPI_Type_create_darray to be correct, the equation 
+.sp
+.nf
+    \fIndims\fP-1
+  pi              \fIarray_of_psizes[i]\fP = \fIsize\fP
+    \fIi\fP=0
+
+.fi
+.sp
+must be satisfied. The ordering of processes in the process grid is assumed to be row-major, as in the case of virtual Cartesian process topologies in MPI-1. 
+.sp
+Each dimension of the array can be distributed in one of three ways:   
+.sp
+.nf
+- MPI_DISTRIBUTE_BLOCK - Block distribution   
+- MPI_DISTRIBUTE_CYCLIC - Cyclic distribution   
+- MPI_DISTRIBUTE_NONE - Dimension not distributed. 
+.fi
+.sp
+The constant MPI_DISTRIBUTE_DFLT_DARG specifies a default distribution argument. The distribution argument for a dimension that is not distributed is ignored. For any dimension \fIi\fP in which the distribution is MPI_DISTRIBUTE_BLOCK, it erroneous to specify \fIarray_of_dargs[i]\fP \fI*\fP \fIarray_of_psizes[i]\fP < \fIarray_of_gsizes[i]\fP.
+.sp
+For example, the HPF layout ARRAY(CYCLIC(15)) corresponds to MPI_DISTRIBUTE_CYCLIC with a distribution argument of 15, and the HPF layout ARRAY(BLOCK) corresponds to MPI_DISTRIBUTE_BLOCK with a distribution argument of MPI_DISTRIBUTE_DFLT_DARG. 
+.sp
+The \fIorder\fP argument is used as in MPI_TYPE_CREATE_SUBARRAY to specify the storage order. Therefore, arrays described by this type constructor may be stored in Fortran (column-major) or C (row-major) order. Valid values for order are MPI_ORDER_FORTRAN and MPI_ORDER_C. 
+.sp
+This routine creates a new MPI data type with a typemap defined in terms of a function called "cyclic()" (see below). 
+.sp
+Without loss of generality, it suffices to define the typemap for the MPI_DISTRIBUTE_CYCLIC case where MPI_DISTRIBUTE_DFLT_DARG is not used. 
+.sp
+MPI_DISTRIBUTE_BLOCK and MPI_DISTRIBUTE_NONE can be reduced to the MPI_DISTRIBUTE_CYCLIC case for dimension \fIi\fP as follows.
+.sp
+MPI_DISTRIBUTE_BLOCK with \fIarray_of_dargs[i]\fP equal to MPI_DISTRIBUTE_DFLT_DARG is equivalent to MPI_DISTRIBUTE_CYCLIC with \fIarray_of_dargs[i]\fP set to
+.sp
+.nf
+   (\fIarray_of_gsizes[i]\fP + \fIarray_of_psizes[i]\fP - 1)/\fIarray_of_psizes[i]\fP
+.fi
+.sp
+If \fIarray_of_dargs[i]\fP is not MPI_DISTRIBUTE_DFLT_DARG, then MPI_DISTRIBUTE_BLOCK and DISTRIBUTE_CYCLIC are equivalent.
+.sp
+MPI_DISTRIBUTE_NONE is equivalent to MPI_DISTRIBUTE_CYCLIC with \fIarray_of_dargs[i]\fP set to \fIarray_of_gsizes[i]\fP.
+.sp
+Finally, MPI_DISTRIBUTE_CYCLIC with \fIarray_of_dargs[i]\fP equal to MPI_DISTRIBUTE_DFLT_DARG is equivalent to MPI_DISTRIBUTE_CYCLIC with \fIarray_of_dargs[i]\fP set to 1.
+.sp
+
+.SH NOTES
+.ft R
+For both Fortran and C arrays, the ordering of processes in the process grid is assumed to be row-major. This is consistent with the ordering used in virtual Cartesian process topologies in MPI-1. To create such virtual process topologies, or to find the coordinates of a process in the process grid, etc., users may use the corresponding functions provided in MPI-1. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+

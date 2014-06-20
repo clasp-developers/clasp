@@ -1,0 +1,144 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Allreduce 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Allreduce\fP \- Combines values from all processes and distributes the result back to all processes.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Allreduce(void \fI*sendbuf\fP, void \fI*recvbuf\fP, int\fI count\fP,
+	MPI_Datatype\fI datatype\fP, MPI_Op\fI op\fP, MPI_Comm\fI comm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ALLREDUCE(\fISENDBUF\fP,\fI RECVBUF\fP, \fICOUNT\fP,\fI DATATYPE\fP,\fI OP\fP,
+		\fICOMM\fP, \fIIERROR\fP)
+	<type>	\fISENDBUF\fP(*), \fIRECVBUF\fP(*)
+	INTEGER	\fICOUNT\fP,\fI DATATYPE\fP,\fI OP\fP,\fI COMM\fP,\fI IERROR 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Allreduce(const void* \fIsendbuf\fP, void* \fIrecvbuf\fP, 
+	int \fIcount\fP, const MPI::Datatype& \fIdatatype\fP, const 
+	MPI::Op& \fIop\fP) const=0
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+sendbuf
+Starting address of send buffer (choice).
+.TP 1i
+count
+Number of elements in send buffer (integer).
+.TP 1i
+datatype
+Datatype of elements of send buffer (handle).
+.TP 1i
+op
+Operation (handle).
+.TP 1i
+comm
+Communicator (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+recvbuf
+Starting address of receive buffer (choice).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Same as MPI_Reduce except that the result appears in the receive buffer of all the group members. 
+.sp
+\fBExample 1:\fR A routine that computes the product of a vector and an array that are distributed across a group of processes and returns the answer at all nodes (compare with Example 2, with MPI_Reduce, below).
+.sp
+.nf
+SUBROUTINE PAR_BLAS2(m, n, a, b, c, comm) 
+REAL a(m), b(m,n)    ! local slice of array 
+REAL c(n)            ! result 
+REAL sum(n) 
+INTEGER n, comm, i, j, ierr 
+ 
+! local sum 
+DO j= 1, n 
+  sum(j) = 0.0 
+  DO i = 1, m 
+    sum(j) = sum(j) + a(i)*b(i,j) 
+  END DO 
+END DO 
+ 
+! global sum 
+CALL MPI_ALLREDUCE(sum, c, n, MPI_REAL, MPI_SUM, comm, ierr) 
+ 
+! return result at all nodes 
+RETURN
+.fi
+.sp
+\fBExample 2:\fR A routine that computes the product of a vector and an array that are distributed across a group of processes and returns the answer at node zero.
+.sp
+.nf
+SUBROUTINE PAR_BLAS2(m, n, a, b, c, comm) 
+REAL a(m), b(m,n)    ! local slice of array 
+REAL c(n)            ! result 
+REAL sum(n) 
+INTEGER n, comm, i, j, ierr 
+ 
+! local sum 
+DO j= 1, n 
+  sum(j) = 0.0 
+  DO i = 1, m 
+    sum(j) = sum(j) + a(i)*b(i,j) 
+  END DO 
+END DO 
+
+! global sum 
+CALL MPI_REDUCE(sum, c, n, MPI_REAL, MPI_SUM, 0, comm, ierr) 
+ 
+! return result at node zero (and garbage at the other nodes) 
+RETURN
+.fi
+.SH USE OF IN-PLACE OPTION
+When the communicator is an intracommunicator, you can perform an all-reduce operation in-place (the output buffer is used as the input buffer).  Use the variable MPI_IN_PLACE as the value of \fIsendbuf\fR at all processes. 
+.sp
+Note that MPI_IN_PLACE is a special kind of value; it has the same restrictions on its use as MPI_BOTTOM.
+.sp
+Because the in-place option converts the receive buffer into a send-and-receive buffer, a Fortran binding that includes INTENT must mark these as INOUT, not OUT.   
+.sp
+.SH WHEN COMMUNICATOR IS AN INTER-COMMUNICATOR
+When the communicator is an inter-communicator, the reduce operation occurs in two phases.  The data is reduced from all the members of the first group and received by all the members of the second group.  Then the data is reduced from all the members of the second group and received by all the members of the first.  The operation exhibits a symmetric, full-duplex behavior.  
+.sp
+When the communicator is an intra-communicator, these groups are the same, and the operation occurs in a single phase.
+.SH NOTES ON COLLECTIVE OPERATIONS
+
+The reduction functions (
+.I MPI_Op
+) do not return an error value.  As a result,
+if the functions detect an error, all they can do is either call 
+.I MPI_Abort
+or silently skip the problem.  Thus, if you change the error handler from
+.I MPI_ERRORS_ARE_FATAL
+to something else, for example, 
+.I MPI_ERRORS_RETURN
+,
+then no error may be indicated.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler
+may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error. 
+
+

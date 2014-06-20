@@ -1,0 +1,49 @@
+Copyright (c) 2004-2006 The Trustees of Indiana University and Indiana
+                        University Research and Technology
+                        Corporation.  All rights reserved.
+Copyright (c) 2006-2011 Cisco Systems, Inc.  All rights reserved.
+Copyright (c) 2007      Sun Microsystems, Inc.  All rights reserved.
+
+The files in this directory are sample MPI applications provided both
+as a trivial primer to MPI as well as simple tests to ensure that your
+Open MPI installation is working properly.
+
+If you are looking for a comprehensive MPI tutorial, these samples are
+not enough.  Excellent MPI tutorials are available here:
+
+        http://www.citutor.org/login.php
+
+Get a free account and login; you can then browse to the list of
+available courses.  Look for the ones with "MPI" in the title.
+
+There are 2 MPI examples in this directory, each in four languages:
+
+- Hello world
+  C:   hello_c.c
+  C++: hello_cxx.cc
+  F77: hello_f77.f
+  F90: hello_f90.f90
+
+- Send a trivial message around in a ring
+  C:   ring_c.c
+  C++: ring_cxx.cc
+  F77: ring_f77.f
+  F90: ring_f90.f90
+
+- Test the connectivity between all processes
+  C:   connectivity_c.c
+
+The Makefile in this directory will build as many of the examples as
+you have language support (e.g., if you do not have F90 bindings
+compiled as part of Open MPI, the F90 examples will be skipped).
+
+The Makefile assumes that the wrapper compilers mpicc, mpic++, mpif77,
+and mpif90 are in your path.
+
+Although the Makefile is tailored for Open MPI (e.g., it checks the
+"ompi_info" command to see if you have support for C++, F77, and F90),
+all of the example programs are pure MPI, and therefore not specific
+to Open MPI.  Hence, you can use a different MPI implementation to
+compile and run these programs if you wish.
+
+Make today an Open MPI day!

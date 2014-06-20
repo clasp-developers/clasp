@@ -1,0 +1,17 @@
+COMMONINCLUDES = \
+	-I$(OTFMERGESRCDIR) \
+	-I$(top_builddir)/otflib -I$(top_srcdir)/otflib \
+	-I$(top_builddir)/otfauxlib -I$(top_srcdir)/otfauxlib
+
+COMMONCFLAGS =
+COMMONLDADD = \
+	$(top_builddir)/otflib/libopen-trace-format.la \
+	$(top_builddir)/otfauxlib/libotfaux.la
+COMMONDEPENDENCIES = \
+	$(top_builddir)/otflib/libopen-trace-format.la \
+        $(top_builddir)/otfauxlib/libotfaux.la
+COMMONSOURCES = \
+	$(OTFMERGESRCDIR)/handler.h \
+	$(OTFMERGESRCDIR)/handler.c \
+	$(OTFMERGESRCDIR)/otfmerge.c
+

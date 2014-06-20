@@ -1,0 +1,252 @@
+#!/bin/sh
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is a simple makefile for windows which makes all the components
+# which are required for super computing. Too lazy to open up visual
+# studio each and every time to compile a component, so just adding
+# this to the svn repository
+#
+
+topdir := $(shell cygpath -m $(CURDIR))/..
+prefix = ${topdir}/src/Debug
+installdir = ${prefix}
+pkgdatadir = ${prefix}/share
+sysconfdir = ${prefix}/etc
+pkglibdir = ${prefix}/lib
+
+# list of components to build with the c compiler
+C_SUBDIRS =  \
+        attribute \
+        class \
+        communicator \
+        datatype \
+        errhandler \
+        event \
+        event/WIN32-Code \
+        dps \
+        file \
+        group \
+        info \
+        util \
+        mpi/c \
+        mpi/runtime \
+        threads \
+        op \
+        proc \
+        request \
+        runtime \
+        mca/base \
+        mca/allocator/base \
+        mca/coll/base \
+        mca/gpr/base \
+        mca/gpr/base/data_type_support \
+        mca/gpr/base/pack_api_cmd \
+        mca/gpr/base/unpack_api_response \
+        mca/io/base \
+        mca/iof/base \
+		  mca/errmgr/base \
+		  mca/rml/base \
+		  mca/rmgr/base \
+        mca/rmgr/base/data_type_support \
+        mca/rmaps/base \
+		  mca/soh/base \
+        mca/soh/base/data_type_support \
+        mca/mpool/base \
+        mca/ns/base \
+        mca/ns/base/data_type_support \
+        mca/oob/base \
+        mca/pml/base \
+        mca/ptl/base \
+        mca/pls/base \
+        mca/pls/fork \
+        mca/pls/proxy \
+        mca/pls/rsh \
+        mca/ras/base \
+        mca/ras/host \
+        mca/rds/base \
+        mca/rds/hostfile \
+        mca/rds/resfile \
+        mca/topo/base \
+        mca/schema/base \
+        win32/generated_source \
+        win \
+        win32 
+
+EXTRA_DIRS = 
+
+#
+# Files included by the dist that we don't want to compile
+# 
+EXCLUDE_FILES = dt_arch.c \
+                epoll.c \
+                epoll_sub.c \
+                kqueue.c \
+                llm_base_parse_hostfile_lex.c \
+                misc.c \
+                poll.c \
+                rtsig.c \
+                stacktrace.c \
+                condition_spinlock.c
+
+#
+# A small function to extract the list of all files in these directories
+#
+SOURCE_FILES = $(foreach dir, ${C_SUBDIRS}, $(wildcard ${dir}/*.[c]))
+OBJECT_FILES = $(SOURCE_FILES:.c=.obj)
+DEBUG = Debug
+LINKED_SOURCE = $(foreach dir, ${DEBUG}, $(wildcard ${dir}/*.[c]))
+LINKED_OBJS = $(LINKED_SOURCE:.c=.obj)
+
+.SUFFIXES: .c .obj
+CC = cl
+CXX = $(CC)
+
+INCL = \
+        /I"${topdir}/src/win32/generated_include" \
+        /I"${topdir}/src/win32" \
+        /I"${topdir}/include" \
+        /I"${topdir}/src" \
+        /I"${topdir}/src/event/compat/" \
+        /I"${topdir}/src/event" \
+        /I"${topdir}/src/event/WIN32-Code/"
+
+CFLAGS = \
+        /DWIN32 \
+        /DOMPI_SYSCONFDIR="\"${sysconfdir}\"" \
+        /DOMPI_PKGLIBDIR="\"${pkglibdir}\"" \
+        /DOMPI_PKGDATADIR="\"${pkgdatadir}\"" \
+        /DHAVE_CONFIG_H \
+        /D_WINDLL \
+        /EHsc \
+        /ML \
+        /W0 \
+        /Wp64 \
+        /TC \
+        /D_MBCS \
+        /Fo"${topdir}/src/Debug/" \
+        /nologo \
+        /c
+
+STATIC_LIBS = \
+        allocator \
+        coll\
+        ns\
+        gpr \
+        topo\
+		  errmgr \
+		  rml \
+		  rmgr \
+		  rmaps \
+		  soh \
+        ptl\
+        oob\
+        pml\
+        pls\
+        ras \
+        rds \
+        schema \
+        iof
+
+CXXFLAGS = $(CFLAGS) $(INCL)
+
+LINK = link
+
+LINKFLAGS = \
+        /DLL \
+        /OPT:NOICF \
+        /OPT:NOREF \
+        /IMPLIB:libmpi.lib\
+        /nologo \
+        /OUT:libmpi.dll
+
+ADDLIBS = \
+        ws2_32.lib \
+        kernel32.lib \
+        user32.lib \
+        gdi32.lib \
+        winspool.lib \
+        comdlg32.lib \
+        advapi32.lib \
+        shell32.lib \
+        ole32.lib \
+        oleaut32.lib \
+        uuid.lib \
+        odbc32.lib \
+        odbccp32.lib 
+
+.c.obj:
+	$(CXX) $(CXXFLAGS) $*.c
+
+all: libmpi
+
+prebuild:
+	@echo "Creating mca_base_parse_paramfile_lex.c"
+	@/usr/bin/flex -t -Pmca_base_yy "${topdir}/src/mca/base/mca_base_parse_paramfile_lex.l" \
+                >"${topdir}/src/mca/base/mca_base_parse_paramfile_lex.c" 2>/dev/null
+	@echo "Creating mca_rds_hostfile_lex.c"
+	@/usr/bin/flex -t -Porte_rds_hostfile_ "${topdir}/src/mca/rds/hostfile/rds_hostfile_lex.l" \
+                > "${topdir}/src/mca/rds/hostfile/rds_hostfile_lex.c" 2>/dev/null
+	@echo "Creating show_help_lex.c"
+	@/usr/bin/flex -t -Popal_show_help_yy "${topdir}/src/opal/util/show_help_lex.l" \
+                > "${topdir}/src/opal/util/show_help_lex.c" 2>/dev/null
+	@for dirs in ${STATIC_LIBS}; do \
+        (dir="mca/$${dirs}/base"; echo "Making Static components in $${dirs}"; comp_name="$${dirs}_static-components.h"; cp "${topdir}/src/win32/generated_include/$${comp_name}" "$${dir}/static-components.h";); \
+     done
+	@echo "Creating Version Headers"
+	@cp "${topdir}/src/win32/generated_include/pls-fork-version.h"  "${topdir}/src/mca/pls/fork/pls-fork-version.h";
+	@cp "${topdir}/src/win32/generated_include/pls-proxy-version.h" "${topdir}/src/mca/pls/proxy/pls-proxy-version.h";
+	@cp "${topdir}/src/win32/generated_include/pls-rsh-version.h"   "${topdir}/src/mca/pls/rsh/pls-rsh-version.h";
+	@for dirs in ${C_SUBDIRS}; do \
+	    (echo "Entering $${dirs}"; cd $$dirs; if test -f .compile_files; then (more .compile_files| xargs -i'{}' ln -f '{}' ${topdir}/src/Debug/'{}'); else (ls *.c 2>/dev/null | xargs -i'{}' ln -f '{}' ${topdir}/src/Debug/'{}'); fi); \
+	done
+	@for file in ${EXCLUDE_FILES}; do \
+		(echo "Removing $${file}"; cd ${topdir}/src/Debug/; rm -f $${file}); \
+	done
+	@echo "done"
+
+
+libmpi: $(LINKED_OBJS)
+	${LINK} ${LINKFLAGS} ${ADDLIBS} $(LINKED_OBJS)
+
+install:
+	@echo -n "Installing libmpi and include file ................"
+	@install -d ${topdir}/src ${installdir}/lib
+	@install -p ${topdir}/src/libmpi.lib ${installdir}/lib/libmpi.lib
+	@install -p ${topdir}/src/libmpi.exp ${installdir}/lib/libmpi.exp
+	@install -p ${topdir}/src/libmpi.dll ${installdir}/lib/libmpi.dll
+	@install -d ${topdir}/include ${installdir}/include/
+	@install -p ${topdir}/include/ompi_config_bottom.h \
+                                  ${installdir}/include/ompi_config_bottom.h 
+	@install -p ${topdir}/src/win32/generated_include/ompi_config.h \
+                                  ${installdir}/include/ompi_config.h 
+	@install -p ${topdir}/include/mpi.h ${installdir}/include/mpi.h
+	@install -p ${topdir}/include/ompi_stdint.h ${installdir}/include/ompi_stdint.h
+	@install -d ${topdir}/src/win32 ${installdir}/include/win32
+	@install -p ${topdir}/src/win32/win_compat.h ${installdir}/include/win32/win_compat.h
+	@echo "done"
+
+.PHONY: clean
+
+clean:
+	@for dirs in ${C_SUBDIRS}; do \
+	    (echo "Entering $$dirs"; cd $$dirs; rm -rf *.lib *.obj *.exp;); \
+	done
+	@for dirs in ${C_PPSUBDIRS}; do \
+	    (echo "Entering $$dirs"; cd $$dirs; rm -rf *.lib *.obj *.exp;); \
+	done
+	@echo "Entering ${topdir}/src/Debug ... "; cd ${topdir}/src/Debug; rm -rf *.lib *.obj *.exp *.c;

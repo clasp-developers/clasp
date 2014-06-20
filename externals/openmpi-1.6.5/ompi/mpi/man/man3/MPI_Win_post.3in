@@ -1,0 +1,63 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_post 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_post\fP \- Starts an RMA exposure epoch for the local window associated with \fIwin\fP
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_post(MPI_Group \fIgroup\fP, int assert, MPI_Win \fIwin\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_POST(\fIGROUP, ASSERT, WIN, IERROR\fP)
+	INTEGER GROUP, ASSERT, WIN, IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Post(const MPI::Group& group, int assert) const
+
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+group
+The group of origin processes (handle)
+.TP 1i
+assert
+Program assertion (integer)
+.TP 1i
+win
+Window object (handle)
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+
+Starts an RMA exposure epoch for the local window associated with \fIwin\fP. Only the processes belonging to \fIgroup\fP should access the window with RMA calls on \fIwin\fP during this epoch. Each process in \fIgroup\fP must issue a matching call to MPI_Win_start. MPI_Win_post does not block.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Win_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Win_start
+MPI_Win_wait
+.br
+
+
+

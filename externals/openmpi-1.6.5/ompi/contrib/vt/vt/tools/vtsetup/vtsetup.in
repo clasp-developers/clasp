@@ -1,0 +1,84 @@
+#!@SHELL@
+##
+# VampirTrace
+# http://www.tu-dresden.de/zih/vampirtrace
+#
+# Copyright (c) 2005-2013, ZIH, TU Dresden, Federal Republic of Germany
+#
+# Copyright (c) 1998-2005, Forschungszentrum Juelich, Juelich Supercomputing
+#                          Centre, Federal Republic of Germany
+#
+# See the file COPYING in the package base directory for details
+##
+
+# setup paths to VampirTrace installation
+#
+if test x"$VT_PREFIX" != x; then
+  prefix=$VT_PREFIX
+else
+  prefix=@prefix@
+fi
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+datarootdir=@datarootdir@
+docdir=@docdir@
+sysconfdir=@sysconfdir@
+
+# parse command line options
+#
+
+args=
+show_helptext=0
+show_version=0
+
+while test $# -ne 0; do
+  case $1 in
+    -h | --help)
+      show_helptext=1
+      shift
+      ;;
+    -V | --version)
+      show_version=1
+      shift
+      ;;
+    *)
+      args="$args $1"
+      shift
+      ;;
+  esac
+done
+
+# show help text, if desired
+#
+if test $show_helptext -eq 1; then
+  echo ""
+  echo " vtsetup - configuration GUI for VampirTrace."
+  echo ""
+  echo " Syntax: vtsetup [options] [config|application [arguments]]"
+  echo ""
+  echo "   options:"
+  echo "     -h, --help          Show this help message."
+  echo ""
+  echo "     -V, --version       Show VampirTrace version."
+  echo ""
+  exit 0;
+fi
+
+# show VampirTrace version, if desired
+#
+if test $show_version -eq 1; then
+  echo "@PACKAGE_VERSION@"
+  exit 0;
+fi
+
+# run Java application launcher
+#
+@JAVA@ -jar $bindir/vtsetup.jar \
+  $datarootdir/vtsetup-data.xml \
+  $sysconfdir/vtsetup-config.xml \
+  $docdir/UserManual.html \
+  $args
+java_rc=$?
+
+exit $java_rc
+

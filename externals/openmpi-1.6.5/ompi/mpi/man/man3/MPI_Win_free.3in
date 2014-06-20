@@ -1,0 +1,55 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_free 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_free\fP \- Frees the window object and returns a null handle.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_free(MPI_Win *\fIwin\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_FREE(\fIWIN, IERROR\fP)
+	INTEGER \fIWIN, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Free()
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+win
+Window object (handle). 
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Win_free frees the window object \fIwin\fP and returns a null handle (equal to MPI_WIN_NULL). This collective call is executed by all processes in the group associated with \fIwin\fP. It can be invoked by a process only after it has completed its involvement in RMA communications on window \fIwin\fP, that is, the process has called MPI_Win_fence, or called MPI_Win_unlock to match a previous call to MPI_Win_lock. When the call returns, the window memory can be freed.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Win_create
+MPI_Win_fence
+MPI_Win_unlock
+.br
+

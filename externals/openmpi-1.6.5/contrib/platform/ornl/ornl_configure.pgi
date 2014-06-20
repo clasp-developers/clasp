@@ -1,0 +1,96 @@
+#!/bin/bash
+
+  echo ""
+  echo "If you have not loaded the xt-catamount module or your version"
+  echo "of automake is below 1.10.1, it is in your best interest to"
+  echo "type <ctrl-C> now.  Note that loading the automake module on"
+  echo "jaguar.ccs.ornl.gov/jaguarpf.ccs.ornl.gov will meet the"
+  echo "latter requirement."
+  read ANS
+
+# Change the following for install path.  Note: VER appends to path.
+  SRC_DIR=..
+  INSTALL_ROOT=/tmp/work/keh/ompi-pgi-ken
+  VER=standard
+  BUILD=pgi
+  SVER=cnl`echo "$XTOS_VERSION" | cut -c1-3`
+  CVER=${BUILD}`pgcc -V | awk '/pgcc/{print $2}'|sed 's/-/./'`
+  SW_BLDDIR=${INSTALL_ROOT}/${VER}/${SVER}_${CVER}
+
+  PLATFORM=ornl/cray_xt_cnl_romio_debug
+  XTOSVER=`echo "$XTOS_VERSION" | cut -c1,3`
+
+# Set header file paths (structure of libsci changed at version 10.3.4).
+  if [ -d ${LIBSCI_BASE_DIR}/${BUILD}/include ]
+  then
+	SCI_INC=-I${LIBSCI_BASE_DIR}/${BUILD}/include
+	SCI_LIB=-L${LIBSCI_BASE_DIR}/${BUILD}/lib
+  else
+	SCI_INC=-I${LIBSCI_BASE_DIR}/${BUILD}/snos64/include
+	SCI_LIB=-L${LIBSCI_BASE_DIR}/${BUILD}/snos64/lib
+  fi
+
+  if [ ! -d ${CATAMOUNT_DIR} ] ; then
+      echo "Please load xt-catamount module"
+      echo "    module load xt-catamount
+  fi
+
+  CAT_INC=-I${CATAMOUNT_DIR}/catamount/linux/include
+
+  PCT_INC=-I${PE_DIR}/include
+  PCT_LIB=-L${PE_DIR}/lib/snos64
+
+  MPT_LIB=-L${MPT_DIR}/util/lib
+  MPT_SO=-R${MPT_DIR}/util/lib
+
+  SER_LIB=-L${SE_DIR}/lib/snos64
+
+  BASE_LPATHS="${MPT_LIB} ${PCT_LIB} ${SER_LIB}"
+  BASE_LIBS="-lrt -lpct -lalpslli -lalpsutil -lportals -lpthread -lm"
+  MAKE_OPTS="-j 4 orted_LDFLAGS=-all-static"
+
+  ID=x86_64-cray-linux-gnu
+  JD=x86_64-unknown-linux-gnu
+
+  umask 02
+  rm -f build.log config.log
+
+# Run the aclocal/autoconf/automake hierarchy.
+# cd $SRC_DIR
+#  ./autogen.sh                                  2>&1 | tee -a build.log
+# cd $OLDPWD
+
+
+# Do the configure.
+$SRC_DIR/configure \
+	NM=/usr/bin/nm \
+	CC=pgcc \
+	CXX=pgCC \
+	F77=pgf77 \
+	FC=pgf90 \
+	CPPFLAGS="${CAT_INC} ${PCT_INC}" \
+	LDFLAGS="${BASE_LPATHS} ${MPT_SO}" \
+	LIBS="${BASE_LIBS}" \
+	--host=${ID} \
+	--build=${JD} \
+	--disable-mpi-cxx \
+	--disable-mpi-f77 \
+	--disable-mpi-f90 \
+	--disable-heterogeneous \
+	--without-tm \
+	--with-alps \
+	--with-threads \
+	--with-platform=${SRC_DIR}/contrib/platform/${PLATFORM} \
+	--with-io-romio-flags="host_alias=${ID} build_alias=${JD} \
+		--enable-ltdl-convenience --no-recursion" \
+	--with-contrib-vt-flags="--with-platform=linux" \
+	--with-wrapper-cflags="${SCI_INC}" \
+	--with-wrapper-ldflags="-Bstatic ${SCI_LIB} ${BASE_LPATHS}" \
+	--with-wrapper-libs="-lsci_quadcore" \
+	--prefix=${SW_BLDDIR}                   2>&1 | tee -a build.log
+
+# Build.
+  gmake ${MAKE_OPTS} all                        2>&1 | tee -a build.log
+
+# Install.
+  gmake ${MAKE_OPTS} install                    2>&1 | tee -a build.log

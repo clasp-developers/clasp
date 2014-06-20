@@ -1,0 +1,83 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_iread 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_iread\fP \- Reads a file starting at the location specified by the individual file pointer (nonblocking, noncollective).
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_iread(MPI_File \fIfh\fP, void  \fI*buf\fP, int  \fIcount\fP, 
+    	      MPI_Datatype  \fIdatatype\fP, MPI_Request  \fI*request\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_IREAD(\fIFH\fP, \fIBUF\fP, \fICOUNT\fP, \fIDATATYPE\fP, \fIREQUEST\fP,\fI IERROR\fP)
+		<type>		BUF(*)
+        	INTEGER		FH, COUNT, DATATYPE, REQUEST, IERROR
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Request MPI::File::Iread(void* \fIbuf\fP, int \fIcount\fP,
+	const MPI::Datatype& \fIdatatype\fP)
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+fh    
+File handle (handle).
+
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count
+Number of elements in the buffer (integer).
+.ft R
+.TP 1i
+datatype
+Data type of each buffer element (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+buf
+Initial address of buffer (choice).
+.ft R
+.TP 1i
+request
+Request object (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_iread is a nonblocking version of MPI_File_read. It attempts to read from the file associated with 
+.I fh
+at the current individual file pointer position maintained by the system in which a total number of 
+.I count
+data items having 
+.I datatype
+type  are read into the user's buffer 
+.I buf.
+The data is taken out of those parts of the
+file specified by the current view. MPI_File_iread stores the
+number of data-type elements actually read in 
+.I status.
+All other fields of 
+.I status
+are undefined. It is erroneous to call this function if MPI_MODE_SEQUENTIAL mode was specified when the file was opened. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

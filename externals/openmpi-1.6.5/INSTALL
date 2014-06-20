@@ -1,0 +1,102 @@
+Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+                        University Research and Technology
+                        Corporation.  All rights reserved.
+Copyright (c) 2004-2005 The University of Tennessee and The University
+                        of Tennessee Research Foundation.  All rights
+                        reserved.
+Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+                        University of Stuttgart.  All rights reserved.
+Copyright (c) 2004-2005 The Regents of the University of California.
+                        All rights reserved.
+Copyright (c) 2008      Cisco Systems, Inc.  All rights reserved.
+$COPYRIGHT$
+
+Additional copyrights may follow
+
+$HEADER$
+
+
+For More Information
+====================
+
+This file is a *very* short overview of building and installing Open
+MPI, and building MPI applications.  Much more information is
+available on the Open MPI web site (e.g., see the FAQ section):
+
+    http://www.open-mpi.org/
+
+
+Developer Builds
+================
+
+If you have checked out a DEVELOPER'S COPY of Open MPI (i.e., you
+checked out from subversion), you should read the HACKING file before
+attempting to build Open MPI.  You must then run:
+
+shell$ ./autogen.sh
+
+You will need very recent versions of GNU Autoconf, Automake, and
+Libtool.  If autogen.sh fails, read the HACKING file.  If anything
+else fails, read the HACKING file.  Finally, we suggest reading the
+HACKING file.
+
+*** NOTE: Developer's copies of Open MPI typically include a large
+performance penalty at run-time because of extra debugging overhead.
+
+
+User Builds
+===========
+
+Building Open MPI is typically a combination of running "configure"
+and "make".  Execute the following commands to install the Open MPI
+system from within the directory at the top of the tree:
+
+shell$ ./configure --prefix=/where/to/install
+[...lots of output...]
+shell$ make all install
+
+If you need special access to install, then you can execute "make
+all" as a user with write permissions in the build tree, and a
+separate "make install" as a user with write permissions to the
+install tree.
+
+Compiling support for various networks or other specific hardware may
+require additional command ling flags when running configure.  See the
+README file for more details.  Note that VPATH builds are fully
+supported.  For example:
+
+shell$ gtar zxf openmpi-X.Y.Z.tar.gz
+shell$ cd openmpi-X.Y.Z
+shell$ mkdir build
+shell$ cd build
+shell$ ../configure ...your options...
+[...lots of output...]
+shell$ make all install
+
+Parallel builds are also supported (although some versions of "make",
+such as GNU make, will only use the first target listed on the command
+line when executable parallel builds).  For example (assume GNU make):
+
+shell$ make -j 4 all
+[...lots of output...]
+shell$ make install
+
+Parallel make is generally only helpful in the build phase; the
+installation process is mostly serial and does not benefit much from
+parallel make.
+
+
+Compiling MPI Applications
+==========================
+
+MPI applications should be compiled using the Open MPI "wrapper"
+compilers:
+
+C programs:   mpicc your-code.c
+C++ programs: mpiCC your-code.cc    or
+              mpic++ your-code.cc   (for case-insensitive filesystems)
+F77 programs: mpif77 your-code.f
+F90 programs: mpif90 your-code.f90
+
+These compilers simply add various command line flags (such as -lmpi)
+and invoke a back-end compiler; they are not compilers in themselves.

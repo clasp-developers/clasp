@@ -1,0 +1,61 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_get_atomicity 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_get_atomicity\fP \- Returns current consistency semantics for data-access operations.
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_get_atomicity(MPI_File \fIfh\fP, int \fI*flag\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_GET_ATOMICITY(\fIFH\fP,\fI FLAG\fP,\fI IERROR\fP)
+	INTEGER \FIFH, IERROR\FP 
+	LOGICAL \FIFLAG\FP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+bool MPI::File::Get_atomicity() const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+fh
+File handle (handle).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+flag
+true if atomic mode is enabled, false if nonatomic mode is enabled (boolean).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_get_atomicity returns the current consistency semantics for
+data access operations on the set of file handles created by one
+collective MPI_File_open. If \fIflag\fP is 
+.I true,
+atomic mode is currently enabled; if 
+.I flag 
+is 
+.I false,
+nonatomic mode is currently enabled. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

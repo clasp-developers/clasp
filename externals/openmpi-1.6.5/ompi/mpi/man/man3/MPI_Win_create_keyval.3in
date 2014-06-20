@@ -1,0 +1,130 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_create_keyval 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_create_keyval\fP \- Creates a keyval for a window.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_create_keyval(MPI_Win_copy_attr_function *\fIwin_copy_attr_fn\fP, 
+	MPI_Win_delete_attr_function *\fIwin_delete_attr_fn\fP, 
+	int *\fIwin_keyval\fP, void *\fIextra_state\fP) 
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_CREATE_KEYVAL(\fIWIN_COPY_ATTR_FN, WIN_DELETE_ATTR_FN, 
+	WIN_KEYVAL, EXTRA_STATE, IERROR\fP) 
+	EXTERNAL \fIWIN_COPY_ATTR_FN, WIN_DELETE_ATTR_FN\fP 
+	INTEGER \fIWIN_KEYVAL, IERROR\fP 
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fIEXTRA_STATE\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+static int MPI::Win::Create_keyval(MPI::Win::Copy_attr_function* 
+	\fIwin_copy_attr_fn\fP, 
+	MPI::Win::Delete_attr_function* \fIwin_delete_attr_fn\fP, 
+	void* \fIextra_state\fP) 
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+win_copy_attr_fn
+Copy callback function for \fIwin_keyval\fP (function).
+.TP 1i
+win_delete_attr_fn
+Delete callback function for \fIwin_keyval\fP (function). 
+.TP 1i
+extra_state
+Extra state for callback functions. 
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+win_keyval
+Key value for future access (integer). 
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The argument \fIwin_copy_attr_fn\fP may be specified as MPI_WIN_NULL_COPY_FN or MPI_WIN_DUP_FN from either C, C++, or Fortran. MPI_WIN_NULL_COPY_FN is a function that serves only to return \fIflag\fP = 0 and MPI_SUCCESS. MPI_WIN_DUP_FN is a simple-minded copy function that sets \fIflag\fP = 1, returns the value of \fIattribute_val_in\fP in \fIattribute_val_out\fP, and returns MPI_SUCCESS. 
+.sp
+The argument \fIwin_delete_attr_fn\fP may be specified as MPI_WIN_NULL_DELETE_FN from either C, C++, or Fortran. MPI_WIN_NULL_DELETE_FN is a function that serves only to return MPI_SUCCESS. 
+.sp
+The C callback functions are:
+.sp
+.nf
+typedef int MPI_Win_copy_attr_function(MPI_Win \fIoldwin\fP, int \fIwin_keyval\fP, 
+             void *\fIextra_state\fP, void *\fIattribute_val_in\fP, 
+             void *\fIattribute_val_out\fP, int *\fIflag\fP); 
+.fi
+.sp
+and
+.sp
+.nf
+typedef int MPI_Win_delete_attr_function(MPI_Win \fIwin\fP, int \fIwin_keyval\fP, 
+             void *\fIattribute_val\fP, void *\fIextra_state\fP); 
+.fi
+.sp
+The Fortran callback functions are:
+.sp
+.nf
+SUBROUTINE WIN_COPY_ATTR_FN(\fIOLDWIN, WIN_KEYVAL, EXTRA_STATE, 
+	ATTRIBUTE_VAL_IN, ATTRIBUTE_VAL_OUT, FLAG, IERROR\fP) 
+	INTEGER \fIOLDWIN, WIN_KEYVAL, IERROR\fP 
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fIEXTRA_STATE, ATTRIBUTE_VAL_IN, 
+		ATTRIBUTE_VAL_OUT\fP 
+	LOGICAL \fIFLAG\fP 
+.fi
+.sp
+and
+.sp
+.nf
+SUBROUTINE WIN_DELETE_ATTR_FN(\fIWIN, WIN_KEYVAL, ATTRIBUTE_VAL, 
+	EXTRA_STATE, IERROR\fP) 
+	INTEGER \fIWIN, WIN_KEYVAL, IERROR\fP 
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fIATTRIBUTE_VAL, EXTRA_STATE\fP 
+.fi
+.sp
+The C++ callbacks are:
+.sp
+.nf
+typedef int MPI::Win::Copy_attr_function(const MPI::Win& \fIoldwin\fP, 
+	int \fIwin_keyval\fP, void* \fIextra_state\fP, void* \fIattribute_val_in\fP, 
+	void* \fIattribute_val_out\fP, bool& \fIflag\fP); 
+.fi
+.sp
+and
+.sp
+.nf
+typedef int MPI::Win::Delete_attr_function(MPI::Win& \fIwin\fP, int \fIwin_keyval\fP, void* \fIattribute_val\fP, void* \fIextra_state\fP); 
+.fi
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIEXTRA_STATE\fP argument only for Fortran 90. FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_ADDRESS_KIND \fIEXTRA_STATE\fP
+.fi
+.sp
+where MPI_ADDRESS_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

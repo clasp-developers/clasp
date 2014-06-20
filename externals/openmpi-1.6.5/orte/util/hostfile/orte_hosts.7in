@@ -1,0 +1,197 @@
+.\"
+.\" Copyright (c) 2008	     Los Alamos National Security, LLC  All rights reserved.
+.\" Copyright (c) 2008-2009  Sun Microsystems, Inc.  All rights reserved.
+.\"
+.\" Man page for ORTE's Hostfile functionality
+.\" 
+.\" .TH name     section center-footer   left-footer  center-header
+.TH ORTE_HOSTS 7 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.\" **************************
+.\"    Name Section
+.\" **************************
+.SH NAME
+.
+ORTE_HOSTS \- OpenRTE Hostfile and HOST Behavior: Overview of OpenRTE's support for user-supplied
+hostfiles and comma-delimited lists of hosts
+.
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.
+.PP
+OpenRTE supports several levels of user-specified host lists based on an established
+precedence order. Users can specify a \fIdefault hostfile\fP that contains a list of
+nodes available to all app_contexts given on the command line. Only \fIone\fP default
+hostfile can be provided for any job. In addition, users
+can specify a \fIhostfile\fP that contains a list of nodes to be used for a specific
+app_context, or can provide a comma-delimited list of nodes to be used for that
+app_context via the \fI-host\fP command line option.
+.sp
+The precedence order applied to these various options depends to some extent on
+the local environment. The following table illustrates how host and hostfile directives
+work together to define the set of hosts upon which a job will execute
+in the absence of a resource manager (RM):
+.sp
+.nf
+ default
+ hostfile      host        hostfile       Result
+----------    ------      ----------      -----------------------------------------
+ unset        unset          unset        Job is co-located with mpirun
+ unset         set           unset        Host defines resource list for the job
+ unset        unset           set         Hostfile defines resource list for the job
+ unset         set            set         Hostfile defines resource list for the job,
+                                          then host filters the list to define the final
+                                          set of nodes available to each application
+                                          within the job
+  set         unset          unset        Default hostfile defines resource list for the job
+  set          set           unset        Default hostfile defines resource list for the job,
+                                          then host filters the list to define the final
+                                          set of nodes available to each application
+                                          within the job
+  set          set            set         Default hostfile defines resource list for the job,
+                                          then hostfile filters the list, and then host filters
+                                          the list to define the final set of nodes available
+                                          to each application within the job
+.fi
+.sp
+This changes somewhat in the presence of a RM as that entity specifies the
+initial allocation of nodes. In this case, the default hostfile, hostfile and host
+directives are all used to filter the RM's specification so that a user can utilize different
+portions of the allocation for different jobs. This is done according to the same precedence
+order as in the prior table, with the RM providing the initial pool of nodes.
+.sp
+.
+.\" **************************
+.\"    Relative Indexing
+.\" **************************
+.SH RELATIVE INDEXING
+.
+.PP
+Once an initial allocation has been specified (whether by an RM, default hostfile, or hostfile),
+subsequent hostfile and -host specifications can be made using relative indexing. This allows a
+user to stipulate which hosts are to be used for a given app_context without specifying the
+particular host name, but rather its relative position in the allocation.
+.sp
+This can probably best be understood through consideration of a few examples. Consider the case
+where an RM has allocated a set of nodes to the user named "foo1, foo2, foo3, foo4". The user
+wants the first app_context to have exclusive use of the first two nodes, and a second app_context
+to use the last two nodes. Of course, the user could printout the allocation to find the names
+of the nodes allocated to them and then use -host to specify this layout, but this is cumbersome
+and would require hand-manipulation for every invocation.
+.sp
+A simpler method is to utilize OpenRTE's relative indexing capability to specify the desired
+layout. In this case, a command line of:
+.sp
+mpirun -pernode -host +n1,+n2 ./app1 : -host +n3,+n4 ./app2
+.sp
+.PP
+would provide the desired pattern. The "+" syntax indicates that the information is being
+provided as a relative index to the existing allocation. Two methods of relative indexing
+are supported:
+.sp
+.TP
+.B +n<#>
+A relative index into the allocation referencing the <#> node. OpenRTE will substitute
+the <#> node in the allocation
+.
+.
+.TP
+.B +e[:<#>]
+A request for <#> empty nodes - i.e., OpenRTE is to substitute this reference with
+<#> nodes that have not yet been used by any other app_context. If the ":<#>" is not
+provided, OpenRTE will substitute the reference with all empty nodes. Note that OpenRTE
+does track the empty nodes that have been assigned in this manner, so multiple
+uses of this option will result in assignment of unique nodes up to the limit of the
+available empty nodes. Requests for more empty nodes than are available will generate
+an error.
+.sp
+.PP
+Relative indexing can be combined with absolute naming of hosts in any arbitrary manner,
+and can be used in hostfiles as well as with the -host command line option. In addition,
+any slot specification provided in hostfiles will be respected - thus, a user can specify
+that only a certain number of slots from a relative indexed host are to be used for a
+given app_context.
+.sp
+Another example may help illustrate this point. Consider the case where a user has a default
+hostfile containing:
+.sp
+.nf
+dummy1 slots=4
+dummy2 slots=4
+dummy3 slots=4
+dummy4 slots=4
+dummy5 slots=4
+.fi
+.sp
+.PP
+This may, for example, be a hostfile that describes a set of commonly-used resources that
+the user wishes to execute applications against. For this particular application, the user
+plans to map byslot, and wants the first two ranks to be on the second node of any allocation,
+the next ranks to land on an empty node, have one rank specifically on dummy4, the next rank
+to be on the second node of the allocation again, and finally any remaining ranks to be on
+whatever empty nodes are left. To accomplish this, the user provides a hostfile of:
+.sp
+.nf
++n2 slots=2
++e:1
+dummy4 slots=1
++n2
++e
+.fi
+.sp
+.PP
+The user can now use this information in combination with OpenRTE's sequential mapper to
+obtain their specific layout:
+.sp
+.nf
+mpirun --default-hostfile dummyhosts -hostfile mylayout -mca rmaps seq ./my_app
+.fi
+.sp
+.PP
+which will result in:
+.nf
+.sp
+rank0 being mapped to dummy3
+.br
+rank1 to dummy1 as the first empty node
+.br
+rank2 to dummy4
+.br
+rank3 to dummy3
+.br
+rank4 to dummy2 and rank5 to dummy5 as the last remaining unused nodes
+.sp
+.fi
+Note that the sequential mapper ignores the number of slots arguments as it only
+maps one rank at a time to each node in the list.
+.sp
+If the default round-robin mapper had been used, then the mapping would have resulted in:
+.sp
+.nf
+ranks 0 and 1 being mapped to dummy3 since two slots were specified
+.br
+ranks 2-5 on dummy1 as the first empty node, which has four slots
+.br
+rank6 on dummy4 since the hostfile specifies only a single slot from that node is to be used
+.br
+ranks 7 and 8 on dummy3 since only two slots remain available
+.br
+ranks 9-12 on dummy2 since it is the next available empty node and has four slots
+.br
+ranks 13-16 on dummy5 since it is the last remaining unused node and has four slots
+.fi
+.sp 
+.PP
+Thus, the use of relative indexing can allow for complex mappings to be ported across
+allocations, including those obtained from automated resource managers, without the need
+for manual manipulation of scripts and/or command lines.
+.
+.
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+  orterun(1)
+.

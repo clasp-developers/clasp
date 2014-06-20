@@ -1,0 +1,157 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Publish_name 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+.nf
+\fBMPI_Publish_name\fP \- Publishes a service name associated with a port
+
+.fi
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Publish_name(char *\fIservice_name\fP, MPI_Info \fIinfo\fP,
+	char *\fIport_name\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_PUBLISH_NAME(\fISERVICE_NAME, INFO, PORT_NAME, IERROR\fP)
+	CHARACTER*(*)	\fISERVICE_NAME, PORT_NAME\fP
+	INTEGER		\fIINFO, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Publish_name(const char* \fIservice_name\fP, const MPI::Info& \fIinfo\fP,
+	const char* \fIport_name\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1.4i
+service_name
+A service name (string).
+.TP 1.4i
+info
+Options to the name service functions (handle).
+.ft R
+.TP 1.4i
+port_name
+A port name (string).
+
+.SH OUTPUT PARAMETER
+.TP 1.4i
+IERROR
+Fortran only: Error status (integer).
+
+.SH DESCRIPTION
+.ft R
+This routine publishes the pair (\fIservice_name, port_name\fP) so that
+an application may retrieve \fIport_name\fP by calling MPI_Lookup_name
+with \fIservice_name\fP as an argument. It is an error to publish the same
+\fIservice_name\fP twice, or to use a \fIport_name\fP argument that was
+not previously opened by the calling process via a call to MPI_Open_port.
+
+.SH INFO ARGUMENTS
+The following keys for \fIinfo\fP are recognized:
+.sp
+.sp
+.nf
+Key                   Type      Description
+---                   ----      -----------
+
+ompi_global_scope     bool      If set to true, publish the name in
+                                the global scope.  Publish in the local
+                                scope otherwise.  See the NAME SCOPE
+                                section for more details.
+.fi
+
+.sp 
+\fIbool\fP info keys are actually strings but are evaluated as
+follows: if the string value is a number, it is converted to an
+integer and cast to a boolean (meaning that zero integers are false
+and non-zero values are true).  If the string value is
+(case-insensitive) "yes" or "true", the boolean is true.  If the
+string value is (case-insensitive) "no" or "false", the boolean is
+false.  All other string values are unrecognized, and therefore false.
+.PP
+If no info key is provided, the function will first check to see if a
+global server has been specified and is available. If so, then the
+publish function will default to global scope first, followed by local. Otherwise,
+the data will default to publish with local scope.
+
+.SH NAME SCOPE
+Open MPI supports two name scopes: \fIglobal\fP and \fIlocal\fP. Local scope will
+place the specified service/port pair in a data store located on the
+mpirun of the calling process' job. Thus, data published with local
+scope will only be accessible to processes in jobs spawned by that
+mpirun - e.g., processes in the calling process' job, or in jobs
+spawned via MPI_Comm_spawn.
+.sp
+Global scope places the specified service/port pair in a data store
+located on a central server that is accessible to all jobs running
+in the cluster or environment. Thus, data published with global
+scope can be accessed by multiple mpiruns and used for MPI_Comm_Connect
+and MPI_Comm_accept between jobs.
+.sp
+Note that global scope operations require both the presence of the
+central server and that the calling process be able to communicate
+to that server. MPI_Publish_name will return an error if global
+scope is specified and a global server is either not specified or
+cannot be found.
+.sp
+Open MPI provides a server called \fIompi-server\fP to support global
+scope operations. Please refer to its manual page for a more detailed
+description of data store/lookup operations.
+.sp
+As an example of the impact of these scoping rules, consider the case
+where a job has been started with
+mpirun - call this job "job1". A process in job1 creates and publishes
+a service/port pair using a local scope. Open MPI will store this
+data in the data store within mpirun.
+.sp
+A process in job1 (perhaps the same as did the publish, or perhaps
+some other process in the job) subsequently calls MPI_Comm_spawn to
+start another job (call it "job2") under this mpirun. Since the two
+jobs share a common mpirun, both jobs have access to local scope data. Hence,
+a process in job2 can perform an MPI_Lookup_name with a local scope
+to retrieve the information.
+.sp
+However, assume another user starts a job using mpirun - call
+this job "job3". Because the service/port data published by job1 specified
+local scope, processes in job3 cannot access that data. In contrast, if the
+data had been published using global scope, then any process in job3 could
+access the data, provided that mpirun was given knowledge of how to contact
+the central server and the process could establish communication
+with it. 
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Lookup_name
+MPI_Open_port
+
+

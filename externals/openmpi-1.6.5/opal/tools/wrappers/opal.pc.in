@@ -1,0 +1,24 @@
+# Copyright (c) 2010 Cisco Systems, Inc.  All rights reserved.
+#
+Name: Open Portability Access Layer (OPAL)
+Description: Lowest layer abstractions for the Open MPI software package
+Version: @OPAL_VERSION@
+URL: http://www.open-mpi.org/
+#
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+#
+# Note that the EXTRA_LIBS are only necessary when static linking
+# (they're pulled in via libopen-pal.so's implicit dependencies), so
+# list them in Libs.private.
+#
+Libs: -L${libdir} @OPAL_WRAPPER_EXTRA_LDFLAGS@ -lopen-pal 
+Libs.private: @OPAL_WRAPPER_EXTRA_LIBS@
+#
+# It is safe to hard-wire the -I before the EXTRA_INCLUDES because we
+# will not be installing this .pc file unless --enable-devel-headers is
+# selected, meaning that there will definitely be a value in EXTRA_INCLUDES.
+#
+Cflags: -I${includedir} -I${includedir}/@OPAL_WRAPPER_EXTRA_INCLUDES@ @OPAL_WRAPPER_EXTRA_CPPFLAGS@ @OPAL_WRAPPER_EXTRA_CFLAGS@

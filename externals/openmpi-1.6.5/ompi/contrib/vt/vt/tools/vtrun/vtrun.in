@@ -1,0 +1,397 @@
+#!@SHELL@
+##
+# VampirTrace
+# http://www.tu-dresden.de/zih/vampirtrace
+#
+# Copyright (c) 2005-2013, ZIH, TU Dresden, Federal Republic of Germany
+#
+# Copyright (c) 1998-2005, Forschungszentrum Juelich, Juelich Supercomputing
+#                          Centre, Federal Republic of Germany
+#
+# See the file COPYING in the package base directory for details
+##
+
+EXENAME="vtrun"
+PID=$$
+
+# relevant VampirTrace configuration
+#
+
+MACOS=@VT_RUN_MACOS@
+HAVE_THREADS=@VT_RUN_HAVE_THREADS@
+HAVE_MPI=@VT_RUN_HAVE_MPI@
+HAVE_FMPI=@VT_RUN_HAVE_FMPI@
+HAVE_DYNINST=@VT_RUN_HAVE_DYNINST@
+VTVERSION="@PACKAGE_VERSION@"
+VTSEQLIB="@VT_RUN_VTLIB@"
+VTMPILIB="@VT_RUN_VTMPILIB@"
+VTMTLIB="@VT_RUN_VTMTLIB@"
+VTHYBLIB="@VT_RUN_VTHYBLIB@"
+FMPILIB="@VT_RUN_FMPILIB@"
+DYNATTLIB="@VT_RUN_DYNATTLIB@"
+NM="@VT_RUN_NM@"
+
+#
+# subroutine show_helptext() - shows the help text
+#
+show_helptext()
+{
+  echo ""
+  echo " $EXENAME - application execution wrapper for VampirTrace."
+  echo ""
+  echo " Syntax: $EXENAME [options] <executable> [arguments]"
+  echo ""
+  echo "   options:"
+  echo "     -h, --help          Show this help message."
+  echo ""
+  echo "     -V, --version       Show VampirTrace version."
+  echo ""
+  echo "     -v, --verbose       Increase output verbosity."
+  echo "                         (can be used more than once)"
+  echo ""
+  echo "     -q, --quiet         Enable quiet mode."
+  echo "                         (only emergency output)"
+  echo ""
+  echo "     -<seq|mpi|mt|hyb>   Set application's parallelization type."
+  if test x"$NM" != x; then
+    echo "                         It's only necessary if it could not be determined"
+    echo "                         automatically."
+  fi
+  echo "                         seq = sequential"
+  echo "                         mpi = parallel (uses MPI)"
+  echo "                         mt  = parallel (uses OpenMP/POSIX threads)"
+  echo "                         hyb = hybrid parallel (MPI + Threads)"
+  if test x"$NM" != x; then
+    echo "                         (default: automatically)"
+  else
+    if test $HAVE_MPI -eq 1; then
+      echo "                         (default: mpi)"
+    else
+      echo "                         (default: seq)"
+    fi
+  fi
+  echo ""
+  echo "     --fortran           Set application's language to Fortran."
+  if test x"$NM" != x; then
+    echo "                         It's only necessary for MPI-applications and if"
+    echo "                         it could not be determined automatically."
+  else
+    echo "                         It's only necessary for MPI-applications."
+  fi
+  echo ""
+  echo "     --dyninst           Instrument user functions by Dyninst."
+  echo ""
+  echo "     --extra-libs=LIBS   Extra libraries to preload."
+  echo ""
+  echo "   example:"
+  echo "     original:"
+  echo "        mpirun -np 4 ./a.out"
+  echo "     with VampirTrace:"
+  echo "        mpirun -np 4 $EXENAME ./a.out"
+  echo ""
+
+  exit 0
+}
+
+#
+# subroutine show_version() - shows the VampirTrace version
+#
+show_version()
+{
+  echo $VTVERSION
+
+  exit 0
+}
+
+#
+# subroutine verbose_msg() - shows a message if verbose mode is enabled
+#
+verbose_msg()
+{
+  if test $verbose -ge $1; then
+    if test $mpi -eq 1; then
+      echo -e "$EXENAME: [$PID]: $2"
+    else
+      echo -e "$EXENAME: $2"
+    fi
+  fi
+}
+
+#
+# subroutine error_msg() - shows an error message on stderr
+#
+error_msg()
+{
+  if test $mpi -eq 1; then
+    echo -e "$EXENAME: [$PID]: $*" >&2
+  else
+    echo -e "$EXENAME: $*" >&2
+  fi
+}
+
+#
+# "main"-routine
+#
+
+# setup paths to VampirTrace installation
+#
+if test x"$VT_PREFIX" != x; then
+  prefix=$VT_PREFIX
+else
+  prefix=@prefix@
+fi
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+
+# parse command line options
+#
+
+verbose=1
+dyninst=0
+fortran=0
+mpi=$HAVE_MPI
+mt=0
+par_type_enforced=0
+extra_libs=
+exe=
+exe_args=
+
+if test $# -eq 0; then
+  show_helptext
+else
+  arg_error_msg=
+  while test $# -ne 0; do
+    # handle quotes and spaces within argument
+    arg=`echo "x$1" | sed -e 's/^x//' -e 's/"/\\\"/g' -e s,\',%@%\',g -e 's/%@%/\\\/g' -e 's/ /\\\ /g'`
+
+    if test x"$exe" != x; then
+      if test x"$exe_args" = x; then
+        exe_args=$arg
+      else
+        exe_args="$exe_args $arg"
+      fi
+      shift
+    else
+      case $arg in
+        -h | --help)
+          show_helptext
+          shift
+          ;;
+        -V | --version)
+          show_version
+          shift
+          ;;
+        -v | --verbose)
+          verbose=$(($verbose+1))
+          shift
+          ;;
+        -q | --quiet)
+          verbose=0
+          shift
+          ;;
+        --dyninst)
+          dyninst=1
+          shift
+          ;;
+        --fortran)
+          fortran=1
+          shift
+          ;;
+        -seq | --seq)
+          mpi=0; mt=0
+          par_type_enforced=1
+          shift
+          ;;
+        -mt | --mt)
+          mpi=0; mt=1
+          par_type_enforced=1
+          shift
+          ;;
+        -mpi | --mpi)
+          mpi=1; mt=0
+          par_type_enforced=1
+          shift
+          ;;
+        -hyb | --hyb)
+          mpi=1; mt=1
+          par_type_enforced=1
+          shift
+          ;;
+        --extra-libs=*)
+          myarg=`echo $arg | sed 's/--extra-libs=//'`
+          if test x"$myarg" = x; then
+            arg_error_msg="option '--extra-libs' requires an argument"
+            break
+          fi
+          extra_libs=$myarg
+          shift
+          ;;
+        -*)
+          arg_error_msg="unrecognized option -- '$arg'"
+          break
+          ;;
+        *)
+          exe=$arg
+          # prepend './' to the executable name if it is specified without
+          # abs./rel. path and it cannot be located in $PATH
+          case "$exe" in
+            /* | ./* | ../*) ;;
+            *)
+              which $exe >/dev/null 2>&1
+              if test $? -ne 0; then
+                exe="./$exe"
+              fi
+              ;;
+          esac
+          shift
+          ;;
+      esac
+    fi
+  done
+  if test x"$arg_error_msg" != x; then
+    error_msg "$arg_error_msg\nTry \`$EXENAME --help' for more information."
+    exit 1
+  elif test x"$exe" = x; then
+    show_helptext
+  fi
+fi
+
+# determine application's parallelization type
+#
+if test $par_type_enforced -eq 0 -a x"$NM" != x; then
+  mpi=0; mt=0
+  par_type=SEQUENTIAL
+
+  # get symbols by nm (ignore errors)
+  symbols=`$NM $exe 2>/dev/null`
+
+  # check for MPI
+  #
+  funcs="mpi_init MPI_INIT"
+  for f in $funcs; do
+    echo $symbols | grep $f >/dev/null 2>&1
+    if test $? -eq 0; then
+      mpi=1; fortran=1
+      break
+    fi
+  done
+  if test $mpi -eq 0; then
+    echo $symbols | grep MPI_Init >/dev/null 2>&1
+    if test $? -eq 0; then
+      mpi=1
+    fi
+  fi
+  if test $mpi -eq 1; then
+    par_type=MPI
+  fi
+
+  # check for multithreading
+  #
+  funcs="pthread_create omp_get_num_threads omp_get_thread_num"
+  for f in $funcs; do
+    echo $symbols | grep $f >/dev/null 2>&1
+    if test $? -eq 0; then
+      mt=1
+      break
+    fi
+  done
+  if test $mt -eq 1; then
+    if test $mpi -eq 1; then
+      par_type=HYBRID
+    else
+      par_type=MULTITHREADED
+    fi
+  fi
+
+  verbose_msg 2 "Detected parallelization type: $par_type"
+fi
+
+# set suitable VampirTrace library
+#
+vtlib=
+if test $mpi -eq 1; then
+  if test $mt -eq 1; then
+    vtlib=$VTHYBLIB
+  else
+    vtlib=$VTMPILIB
+  fi
+else
+  if test $mt -eq 1; then
+    vtlib=$VTMTLIB
+  else
+    vtlib=$VTSEQLIB
+  fi
+fi
+
+# catch bad configuration
+#
+
+if test $mpi -eq 1 -a $HAVE_MPI -eq 0; then
+  error_msg "Error: This installation of VampirTrace was not compiled "\
+"with MPI support. Aborting."
+  exit 1
+fi
+
+if test $mpi -eq 1 -a $fortran -eq 1 -a $HAVE_FMPI -eq 0; then
+  error_msg "Error: This installation of VampirTrace was not compiled "\
+"with MPI Fortran support. Aborting."
+  exit 1
+fi
+
+if test $mt -eq 1 -a $HAVE_THREADS -eq 0; then
+  error_msg "Error: This installation of VampirTrace was not compiled "\
+"with Multithreading support. Aborting."
+  exit 1
+fi
+
+if test $dyninst -eq 1 -a $HAVE_DYNINST -eq 0; then
+  error_msg "Error: This installation of VampirTrace was not compiled "\
+"with Dyninst support. Aborting."
+  exit 1
+fi
+
+# compose LD_PRELOAD environment variable
+#
+
+ld_preload="$libdir/$vtlib"
+
+if test $mpi -eq 1 -a $fortran -eq 1 -a x"$FMPILIB" != x; then
+  ld_preload="$libdir/$FMPILIB:$ld_preload"
+fi
+
+if test $dyninst -eq 1; then
+  ld_preload="$libdir/$DYNATTLIB:$ld_preload"
+fi
+
+if test x"$extra_libs" != x; then
+  ld_preload="$ld_preload:$extra_libs"
+fi
+
+# set environment variables
+#
+if test $MACOS -eq 1; then
+  verbose_msg 2 "Prepending $libdir to DYLD_LIBRARY_PATH"
+  export DYLD_LIBRARY_PATH=$libdir:$DYLD_LIBRARY_PATH
+  verbose_msg 2 "Setting DYLD_INSERT_LIBRARIES to $ld_preload"
+  export DYLD_INSERT_LIBRARIES=$ld_preload
+  verbose_msg 2 "Setting DYLD_FORCE_FLAT_NAMESPACE"
+  export DYLD_FORCE_FLAT_NAMESPACE=""
+else
+  verbose_msg 2 "Prepending $libdir to LD_LIBRARY_PATH"
+  export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
+  verbose_msg 2 "Setting LD_PRELOAD to $ld_preload"
+  export LD_PRELOAD=$ld_preload
+fi
+
+# forward verbosity level to VT_VERBOSE
+#
+if test x"$VT_VERBOSE" = x; then
+  export VT_VERBOSE=$(($verbose))
+fi
+
+# run application
+#
+verbose_msg 2 "Executing: $exe $exe_args"
+$exe $exe_args
+exit $?
+

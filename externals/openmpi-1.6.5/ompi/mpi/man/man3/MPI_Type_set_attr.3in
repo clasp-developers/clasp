@@ -1,0 +1,78 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Type_set_attr 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_set_attr\fP \- Sets a key value/attribute pair to a data type. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_set_attr(MPI_Datatype \fItype\fP, int \fItype_keyval\fP, 
+	void *\fIattribute_val\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_SET_ATTR(\fITYPE, TYPE_KEYVAL, ATTRIBUTE_VAL, IERROR\fP)
+	INTEGER	\fITYPE, TYPE_KEYVAL, IERROR\fP
+	INTEGER(KIND=MPI_ADDRESS_KIND) \fIATTRIBUTE_VAL\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Datatype::Set_attr(int \fItype_keyval\fP, const void* \fIattribute_val\fP)
+
+.fi
+.SH INPUT/OUTPUT PARAMETER
+.ft R
+.TP 1i
+type
+Data type to which attribute will be attached (handle). 
+
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+type_keyval
+Key value (integer).
+.TP 1i
+attribute_val
+Attribute value.
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+For the given data type, MPI_Type_set_attr sets the key value to the value of the specified attribute. 
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIATTRIBUTE_VAL\fP argument only for Fortran 90. FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_ADDRESS_KIND \fIATTRIBUTE_VAL\fP
+.fi
+.sp
+where MPI_ADDRESS_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Type_get_attr
+.br
+

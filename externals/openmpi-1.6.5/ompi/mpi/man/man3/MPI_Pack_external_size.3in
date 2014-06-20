@@ -1,0 +1,99 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Pack_external_size 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+\fBMPI_Pack_external_size\fP \- Calculates upper bound on space needed
+to write to a portable format
+
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Pack_external_size(char *\fIdatarep\fP, int \fIincount\fP, 
+	MPI_Datatype \fIdatatype\fP, MPI_Aint *\fIsize\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_PACK_EXTERNAL_SIZE(\fIDATAREP, INCOUNT, DATATYPE, SIZE, IERROR\fP)
+
+	INTEGER		\fIINCOUNT, DATATYPE, IERROR\fP 
+	INTEGER (KIND=MPI_ADDRESS_KIND) \fISIZE\fP
+	CHARACTER*(*)	\fIDATAREP\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Aint MPI::Datatype::Pack_external_size(const char* \fIdatarep\fP, 
+	int \fIincount\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+datarep
+Data representation (string).
+.TP 1i
+incount
+Number of input data items (integer).
+.TP 1i
+datatype
+Datatype of each input data item (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+size
+Upper bound on size of packed message, in bytes (integer).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Pack_external_size allows the application to find out how much
+space is needed to pack a message in the portable format defined by
+the MPI Forum. It returns in \fIsize\fP an upper bound on the
+increment in \fIposition\fP that would occur in a call to
+MPI_Pack_external with the same values for \fIdatarep\fP,
+\fIincount\fP, and \fIdatatype\fP.
+.sp
+The call returns an upper bound, rather than an exact bound, as the
+exact amount of space needed to pack the message may depend on context
+and alignment (e.g., the first message packed in a packing unit may
+take more space).
+
+.SH NOTES
+.ft R
+The \fIdatarep\fP argument specifies the data format. The only valid
+value in the current version of MPI is "external32". The argument is
+provided for future extensibility.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Pack_external
+MPI_Unpack_external
+

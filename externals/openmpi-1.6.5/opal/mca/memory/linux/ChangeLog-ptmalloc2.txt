@@ -1,0 +1,181 @@
+2004-11-05  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/hooks.c (malloc_starter, memalign_starter): Call
+	ptmalloc_init_minimal().
+
+2004-11-04  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/malloc.c (USE_STARTER): New macro.
+	* malloc/hooks.c: Use USE_STARTER.
+	* malloc/arena.c: Use USE_STARTER.
+
+2004-08-13  Ulrich Drepper  <drepper@redhat.com>
+
+	* malloc/malloc.c: Use strong_alias instead of weak_alias wherever
+	possible.
+
+2002-12-06  Roland McGrath  <roland@redhat.com>
+
+	* malloc/arena.c (ptmalloc_init_minimal): New function, broken out
+	of ptmalloc_init.
+
+2002-08-23  Roland McGrath  <roland@redhat.com>
+
+	* malloc/hooks.c (__malloc_initialize_hook, __free_hook,
+	__malloc_hook, __realloc_hook, __memalign_hook,
+	__after_morecore_hook): Variable definitions moved to ...
+	* malloc/malloc.c: ... here, so as to be before all references.
+
+2004-10-19  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/hooks.c (mem2chunk_check, top_check): Handle
+	non-contiguous arena.  Reported by Michael Dalton
+	<mwdalton@stanford.edu> [BZ #457].  Add further checks for top
+	chunk.
+
+2004-08-08  Wolfram Gloger  <wg@malloc.de>
+
+	* include/malloc.h (mstate): Move type declaration from here...
+	* malloc/malloc.h: ...to here.
+	(struct malloc_arena_info, struct malloc_global_info): New types.
+	(_int_get_arena, _int_get_arena_info, _int_get_global_info): New
+	functions.
+	* malloc/malloc.c (mSTATS, public_mSTATs, mALLINFo): Remove.
+	(_int_get_arena_info, _int_get_global_info): New functions.
+	* malloc/arena.c (_int_get_arena): New function.
+	* malloc/malloc-stats.c: New file.
+	* malloc/tst-mstats.c: New file.
+	* malloc/Makefile (tests): Add tst-mstats.
+	(distribute): Remove no-longer existing thread-m.h.
+	(dist-routines): Add malloc-stats.
+	* malloc/Versions: Add _int_get_arena, _int_get_arena_info,
+	_int_get_global_info.
+	
+2004-07-25  Wolfram Gloger  <wg@malloc.de>
+
+	* sysdeps/generic/thread-st.h: New file.
+	* sysdeps/pthread/thread-st.h: New file.
+	* sysdeps/sproc/thread-st.h: New file.
+	* sysdeps/solaris/thread-st.h: New file.
+	* thread-st.h: Removed.
+
+2004-03-18  Ulrich Drepper  <drepper@redhat.com>
+
+	* malloc/malloc.c (__posix_memalign): Correct alignment check.
+	Reported by Don Heller <dheller@cse.psu.edu>.
+
+2003-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* malloc/malloc.c (__posix_memalign): If __memalign_hook != NULL,
+	call it directly instead of memalign_internal.
+
+2003-09-27  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/malloc.c: Include <malloc-machine.h> earlier instead of
+	"thread-m.h", so that default parameters can be overridden in a
+	system-specific malloc-machine.h.  Remove extra ; from extern "C"
+	closing brace.
+	* sysdeps/generic/malloc-machine.h: New file.
+	* malloc/thread-m.h: Removed.
+
+2003-09-08  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/malloc.c (sYSMALLOc): Move foreign sbrk accounting into
+	contiguous case.  Bug report from Prem Gopalan
+	<prem@mazunetworks.com>.
+
+2003-08-18  Art Haas  <ahaas@airmail.net>
+
+	* malloc/malloc.h: Remove unneeded ';' where closing the C++
+	extern block.
+
+2003-06-18  Ulrich Drepper  <drepper@redhat.com>
+
+	* malloc/malloc.c (public_mALLINFo): Initialize malloc if it
+	hasn't happened yet.
+
+2003-05-28  Roland McGrath  <roland@redhat.com>
+
+	* malloc/malloc.h [! __GNUC__] (__const): Define if undefined.
+
+2003-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* malloc/arena.c (arena_get2): Add atomic_write_barrier.
+	* malloc/thread-m.h: Include <atomic.h>.
+	(atomic_full_barrier): Provide default.
+	(atomic_read_barrier): Likewise.
+	(atomic_write_barrier): Likewise.
+
+2003-05-01  Ulrich Drepper  <drepper@redhat.com>
+
+	* malloc/malloc.c (mSTATs): Call ptmalloc_init if necessary.
+
+2003-01-27  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/hooks.c (mem2chunk_check): Check alignment of mem
+	pointer, not of the computed chunk.  Bug report from Carlos
+	O'Donell <carlos@baldric.uwo.ca>.
+
+2002-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* malloc/arena.c (ptmalloc_init): Don't call next_env_entry if
+	_environ is NULL.
+
+2002-12-17  Ulrich Drepper  <drepper@redhat.com>
+
+	* malloc/malloc.c (mALLOPt): Make sure malloc is initialized.
+
+2002-12-06  Roland McGrath  <roland@redhat.com>
+
+	* malloc/hooks.c [_LIBC && (USE___THREAD || (USE_TLS && !SHARED))]
+	(malloc_starter, memalign_starter, free_starter): Don't define these.
+
+	* malloc/hooks.c (memalign_starter): New function.
+	* malloc/malloc.c: Declare it.
+	* malloc/arena.c (save_memalign_hook): New variable.
+	(ptmalloc_init): Set __memalign_hook to memalign_starter.
+
+2002-11-18  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/arena.c
+	(ptmalloc_lock_all, ptmalloc_unlock_all, ptmalloc_unlock_all2): Do
+	nothing if not initialized.  Bug report from Marcus Brinkmann
+	<Marcus.Brinkmann@ruhr-uni-bochum.de>.
+
+2002-10-07  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/malloc.c (sYSMALLOc): Only check for breakage due
+	to foreign sbrk()'s if arena is contiguous.  Bug report from
+	Bruno Haible <bruno@clisp.org>.
+
+2002-07-11  Wolfram Gloger  <wmglo@dent.med.uni-muenchen.de>
+
+	* malloc/hooks.c: typo fix in NO_THREADS case, realloc_check
+	fix in HAVE_MREMAP case.
+
+2002-06-11  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/malloc.c: Fix error path when new_heap() returns NULL.
+	Reported by Michael Meissner <meissner@redhat.com>.
+
+2002-03-29  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/malloc.c: Add short description and prototypes for
+	malloc_get_state, malloc_set_state and posix_memalign, for
+	consistency and to avoid warnings with -Wstrict-prototypes.
+	Reported by Andreas Jaeger <aj@suse.de>.
+
+2002-03-13  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/malloc.c (sYSMALLOc): Don't change brk if mmap
+	failed.
+
+2002-01-18  Wolfram Gloger  <wg@malloc.de>
+
+	* malloc/malloc.c: Rewrite, adapted from Doug Lea's malloc-2.7.0.c.
+	* malloc/malloc.h: Likewise.
+	* malloc/arena.c: New file.
+	* malloc/hooks.c: New file.
+	* malloc/tst-mallocstate.c: New file.
+	* malloc/Makefile: Add new testcase tst-mallocstate.
+	Add arena.c and hooks.c to distribute.  Fix commented CPPFLAGS.

@@ -1,0 +1,90 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_get_view 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_get_view\fP \- Returns the process's view of data in the file.
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_get_view(MPI_File \fIfh\fP, MPI_Offset \fI*disp\fP,
+    	      MPI_Datatype \fI*etype\fP, MPI_Datatype \fI*filetype\fP,
+              char \fI*datarep\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_GET_VIEW(\fIFH\fP,\fI DISP\fP,\fI ETYPE\fP,
+    	      \fI FILETYPE\fP, \fIDATAREP\fP, \fI IERROR\fP)
+    	 INTEGER \fIFH, ETYPE, FILETYPE, IERROR\fP
+	 CHARACTER*(*) \fIDATAREP\fP
+    	 INTEGER(KIND=MPI_OFFSET_KIND) \fIDISP\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::File::Get_view(MPI::Offset& \fIdisp\fP,
+	MPI::Datatype& \fIetype\fP,
+	MPI::Datatype& \fIfiletype\fP, char* \fIdatarep\fP) const
+
+.fi
+.SH INPUT PARAMETER
+.ft R
+.TP 1i
+fh
+File handle (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+disp  
+Displacement (integer).
+.TP 1i
+etype 
+Elementary data type (handle). 
+.TP 1i
+filetype
+File type (handle). See Restrictions, below.
+.TP 1i
+datarep
+Data representation (string). 
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+The MPI_File_get_view routine returns the process's view of the data
+in the file. The current values of the displacement, etype, and
+filetype are returned in 
+.I disp,
+.I etype,
+and 
+.I filetype,
+respectively.
+.sp
+The MPI_File_get_view interface allows the user to pass a data-representation string via the \fIdatarep\fP argument.
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fIDISP\fP argument only for Fortran 90.  FORTRAN 77
+users may use the non-portable syntax.
+.sp
+.nf
+     INTEGER*MPI_OFFSET_KIND \fIDISP\fP
+.fi
+.sp
+where MPI_OFFSET_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

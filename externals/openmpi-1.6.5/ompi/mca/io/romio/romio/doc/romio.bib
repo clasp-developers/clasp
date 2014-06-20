@@ -1,0 +1,92 @@
+@Book{grop99a,
+  author =       {William Gropp and Ewing Lusk and Rajeev Thakur},
+  title =        {{Using MPI-2: Advanced Features of the Message-Passing Interface}},
+  publisher =    {MIT Press},
+  year =         1999,
+  address =      {Cambridge, MA}
+}
+
+@Misc{mpi97a,
+  author       = "{Message Passing Interface Forum}",
+  title = 	 "{{MPI-2}: Extensions to the Message-Passing Interface}", 
+  note =	 "{\tt http://www.mpi-forum.org/docs/docs.html}",
+  year = {July 1997}
+}
+
+@InProceedings{thak96e,
+  author = {Rajeev Thakur and William Gropp and Ewing Lusk},
+  title = {An Abstract-Device Interface for Implementing Portable 
+             Parallel-{I/O} Interfaces},
+  booktitle = {Proceedings of the 6th Symposium on the Frontiers of
+               Massively Parallel Computation}, 
+  publisher = {IEEE Computer Society Press},
+  pages = {180--187},
+  month = {October},
+  year = {1996}
+}
+
+@InProceedings{thak99b,
+  author = {Rajeev Thakur and William Gropp and Ewing Lusk},
+  title = {On Implementing {MPI-IO} Portably and with High Performance},
+  booktitle = {Proceedings of the 6th Workshop on I/O in Parallel and 
+  Distributed Systems}, 
+  pages = {23--32},
+  year = {1999},
+  month = {May},
+  publisher = {ACM Press}
+}
+
+@InProceedings{bordawekar:primitives,
+  author = {Rajesh Bordawekar and Juan Miguel {del Rosario} and Alok
+  Choudhary},
+  title = {Design and Evaluation of Primitives for Parallel {I/O}},
+  booktitle = {Proceedings of Supercomputing '93},
+  year = {1993},
+  pages = {452--461},
+  publisher = {IEEE Computer Society Press},
+  address = {Portland, OR},
+  URL = {ftp://erc.cat.syr.edu/ece/choudhary/PASSION/sc93.ps.Z},
+  keywords = {parallel I/O, pario-bib},
+  abstract = {In this paper, we show that the performance of parallel file
+  systems can vary greatly as a function of the selected data distributions,
+  and that some data distributions can not be supported. Also, we describe how
+  the parallel language extensions, though simplifying the programming, do not
+  address the performance problems found in parallel file systems. \par We have
+  devised an alternative scheme for conducting parallel I/O - the Two-Phase
+  Access Strategy - which guarantees higher and more consistent performance
+  over a wider spectrum of data distributions. We have designed and implemented
+  runtime primitives that make use of the two-phase access strategy to conduct
+  parallel I/O, and facilitate the programming of parallel I/O operations. We
+  describe these primitives in detail and provide performance results which
+  show that I/O access rates are improved by up to several orders of magnitude.
+  Further, we show that the variation in performance over various data
+  distributions is restricted to within a factor of 2 of the best access
+  rate.},
+  comment = {Much of this is the same as delrosario:two-phase, except for
+  section~4 where they describe their actual run-time library of primitives,
+  with a little bit about how it works. It's not clear, for example, how their
+  meta-data structures are distributed across the machine. They also do not
+  describe their methods for the data redistribution.}
+}
+
+@TechReport{choudhary:passion,
+  author = {Alok Choudhary and Rajesh Bordawekar and Michael Harry and Rakesh
+  Krishnaiyer and Ravi Ponnusamy and Tarvinder Singh and Rajeev Thakur},
+  title = {{PASSION:} Parallel And Scalable Software for Input-Output},
+  year = {1994},
+  month = {September},
+  number = {SCCS-636},
+  institution = {ECE Dept., NPAC and CASE Center, Syracuse University},
+  later = {thakur:jpassion},
+  URL = {ftp://erc.cat.syr.edu/ece/choudhary/PASSION/passion_report.ps.Z},
+  keywords = {parallel I/O, out-of-core, pario-bib},
+  comment = {This TR overviews the PASSION project, and all its components:
+  two-phase access, out-of-core support for structured and unstructured
+  problems, data sieving, prefetching, caching, compiler and language support,
+  file system support, virtual parallel file system, and parallel pipes. They
+  reference many of their related papers in an extensive bibliography. See also
+  singh:adopt, jadav:ioschedule, thakur:passion, thakur:runtime,
+  bordawekar:efficient, thakur:out-of-core, delrosario:prospects,
+  delrosario:two-phase, bordawekar:primitives, bordawekar:delta-fs.}
+}
+

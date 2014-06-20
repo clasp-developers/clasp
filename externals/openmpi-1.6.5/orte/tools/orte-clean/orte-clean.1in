@@ -1,0 +1,120 @@
+.\"
+.\" Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+.\"                         University Research and Technology
+.\"                         Corporation.  All rights reserved.
+.\" Copyright 2007-2008     Sun Microsystems, Inc.
+.\"
+.TH orte-clean 1 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBorte-clean\fP - Cleans up any stale processes and files leftover
+from Open MPI jobs.
+
+.sp
+
+.\" **************************
+.\"    Synopsis Section
+.\" **************************
+.SH SYNOPSIS
+.ft R
+.nf 
+orte-clean [--verbose]
+.br
+mpirun --pernode [--host | --hostfile \fIfile\fP] orte-clean [--verbose]
+.fi
+.sp
+
+
+.\" **************************
+.\"    Options Section
+.\" **************************
+.SH OPTIONS
+.ft R
+[-v | --verbose] This argument will run the command in verbose
+mode and print out the universes that are getting cleaned up 
+as well as processes that are being killed.
+.sp
+
+.\" **************************
+.\"    Description Section
+.\" **************************
+.SH DESCRIPTION
+.ft R
+\fIorte-clean\fR attempts to clean up any processes and files
+left over from Open MPI jobs that were run in the past as well as any
+currently running jobs.  This includes OMPI infrastructure and helper
+commands, any processes that were spawned as part of the job, and any
+temporary files.  orte-clean will only act upon processes and files
+that belong to the user running the orte-clean command.  If run as
+root, it will kill off processes belonging to any users.
+.sp
+When run from the command line, orte-clean will attempt to clean up
+the local node it is run from.  When launched via mpirun, it will
+clean up the nodes selected by mpirun.
+.sp
+
+.\" **************************
+.\"    Examples Section
+.\" **************************
+.SH EXAMPLES
+.ft R
+Example 1: Clean up local node only.
+.sp
+.nf
+example% orte-clean
+.fi
+.sp
+
+Example 2: To clean up on a specific set of nodes specified on
+command line, it is recommended to use the pernode option.  This
+will run one orte-clean for each node.  
+.sp
+.nf
+example% mpirun --pernode --host node1,node2,node3 orte-clean
+.fi
+.sp
+To clean up on a specific set of nodes from a file.
+.sp
+.nf
+example% mpirun --pernode --hostfile nodes_file orte-clean
+.fi
+.sp
+Example 3: Within a resource managed environment like N1GE,
+SLURM, or Torque.  The following example is from N1GE.
+.sp
+First, we see that we have two nodes with two CPUs each.
+.sp
+.nf
+example% qsh -pe orte 4
+.br
+example% mpirun -np 4 hostname
+.br
+node1
+.br
+node1
+.br
+node2
+.br
+node2
+.fi
+.sp
+Clean up all the nodes in the cluster.
+.sp
+.nf
+example% mpirun --pernode orte-clean
+.fi
+.sp
+Clean up a subset of the nodes in the cluster.
+.sp
+.nf
+example% mpirun --pernode --host node1 orte-clean
+.fi
+.sp
+
+.\" **************************
+.\"    See Also Section
+.\" **************************
+.
+.SH SEE ALSO
+.ft R
+orterun(1), orte-ps(1)
+.sp

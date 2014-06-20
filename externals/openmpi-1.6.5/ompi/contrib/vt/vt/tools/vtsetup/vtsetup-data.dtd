@@ -1,0 +1,186 @@
+<!--
+*** VampirTrace
+*** http://www.tu-dresden.de/zih/vampirtrace
+***
+*** Copyright (c) 2005-2013, ZIH, TU Dresden, Federal Republic of Germany
+***
+*** Copyright (c) 1998-2005, Forschungszentrum Juelich GmbH, Federal
+*** Republic of Germany
+***
+*** See the file COPYRIGHT in the package base directory for details
+*
+* DTD for VampirTrace environmental descriptions.
+*
+*
+* Authors: Tobias Hilbrich
+* Version: 1.0
+*
+* ChangeLog:
+*  08.04.2010: Version 1.0 (Tobias)
+-->
+
+
+<!--Root node for environmental specification.
+    "vtversion": Version of VampirTrace.
+    "vtenvversion": Version of the environmental specification format.
+-->
+<!ELEMENT vtenv (group*, env*, enum*,enumselection*)>
+<!ATTLIST vtenv
+   vtversion CDATA #REQUIRED
+   vtenvversion CDATA #REQUIRED
+>
+
+<!--Specification for a group of environmental vars.
+    "identifier": Id used to refer to this group.
+    "descname": Group to be displayed to user.
+    "priority": used for sorting of top level groups and of sub-groups within a group
+    
+    If no "parentid" child is given it is a top level group.
+-->
+<!ELEMENT group (desc, parentid?)>
+<!ATTLIST group
+   identifier CDATA #REQUIRED
+   descname CDATA #REQUIRED
+   priority CDATA #REQUIRED
+>
+
+<!--ID of parent group, used to enable hierarchical groups.
+-->
+<!ELEMENT parentid (#PCDATA)>
+
+<!--Descriptive text for an environmental or group
+    Avoid replicating the VT manual !
+    Use an anchor instead (for envvars)!
+-->
+<!ELEMENT desc (#PCDATA)>
+
+<!--Description of a single environmental variable of VampirTrace.
+    "envname": Actual name of the environmental variable
+    "descname": Descriptive name for the envvar
+    "group": Id of the group that hosts this envvar. 
+    "isadvanced": 0 for basic/common vars, 1 for advanced vars
+    "isdeprecated": 1 for a deprecated var, 0 otherwise
+    "priority": priority of the var (used to sort vars within a group)
+-->
+<!ELEMENT env (desc, valuedesc, since, warning?, available?, anchor?)>
+<!ATTLIST env
+   envname CDATA #REQUIRED
+   descname CDATA #REQUIRED
+   group CDATA #REQUIRED
+   isadvanced CDATA #REQUIRED
+   isdeprecated CDATA #REQUIRED
+   priority CDATA #REQUIRED
+>
+
+<!-- Name of an anchor to an ASCII version of the VT Manual. -->
+<!ELEMENT anchor (#PCDATA)>
+
+<!-- Describes since when an environmental variable is part of VT.
+    "major": the mayor version of VT
+    "minor": the minor version of VT
+    "patch": the patch version of VT
+-->
+<!ELEMENT since EMPTY>
+<!ATTLIST since
+   major CDATA #REQUIRED
+   minor CDATA #REQUIRED
+   patch CDATA #REQUIRED
+>
+
+<!-- An optional warning/note to be given to the user when using a 
+     non-default setting for an envvar.
+-->
+<!ELEMENT warning (#PCDATA)>
+
+<!-- Optional child, if not specified or set to 1 the environmental
+     is available. Otherwise (0) it is not available. -->
+<!ELEMENT available (#PCDATA)>
+
+
+<!-- Description of the value for an environmental variable.
+     A variable may have multiple values, the actual value 
+     for the environmental is build by concatenating each value
+     in the order in which they are listed in the XML.
+     Rational: Buffersize can be build easily with that, first 
+               value is an integer > 0, second value is the unit,
+               e.g. M (from an enum).
+-->
+<!ELEMENT valuedesc (value)+>
+
+<!-- A single value description.
+     "type": one of:
+         -> bool -> 0,1 
+         -> enum -> as described in <enum> with given enumid
+         -> float
+         -> integer
+         -> filepath -> path to file should be absoulute, a default should be $PWD/something or $BIN_DIR/something
+         -> path -> path to file should be absoulute, a default should be $PWD or $BIN_DIR
+         -> string  //should be avoided
+	 -> special -> a special widget should be implemented for this type
+
+     - For integer and float the optional <range> child limits 
+       the valid values for the number
+     - For enums the <enumid> child must be used, which needs to
+       be a valid id from one of the enum specifications    
+     - If there is no default or the default is an unset of the variable 
+       noDefault is set to 1
+     - For path and filepath the optional <io> child shows if it is an
+       input or output. Valid values are:
+           -> in
+           -> out
+           -> in/out
+     - For special the <enumid> child must be used, which needs to 
+       be a valid id, leeding to a hardcoded widget.
+-->
+<!ELEMENT value (default, range?, enumid?,noDefault?,io?)>
+<!ATTLIST value
+   type CDATA #REQUIRED
+>
+
+<!-- Default value for a value, format depends on type of value. -->
+<!ELEMENT default (#PCDATA)>
+
+<!--If there is no default, noDefault is set to 1-->
+<!ELEMENT noDefault (#PCDATA)>
+
+<!-- Id of an enum. -->
+<!ELEMENT enumid (#PCDATA)>
+
+<!-- direction of fileIO. -->
+<!ELEMENT io (#PCDATA)>
+
+<!-- A range specification for a number -->
+<!ELEMENT range EMPTY>
+<!ATTLIST range 
+   min CDATA #REQUIRED
+   max CDATA #REQUIRED
+>
+
+<!-- Description of an enumeration.
+     When displaying the entries, they should be
+     ordered as in the XML file.  
+     "id": id used for this enum
+-->
+<!ELEMENT enum (entry)+>
+<!ATTLIST enum 
+   id CDATA #REQUIRED
+>
+
+<!-- An entry of an enum, its content is the name of the entry. -->
+<!ELEMENT entry (#PCDATA)>
+
+
+<!-- Description of an enumeration.
+     When displaying the entries, they should be
+     ordered as in the XML file.  
+     "id": id used for this enum
+     multiple selection is allowed.
+-->
+<!ELEMENT enumselection (entry)+>
+<!ATTLIST enumselection 
+   id CDATA #REQUIRED
+   oneRequired CDATA #REQUIRED
+>
+
+
+

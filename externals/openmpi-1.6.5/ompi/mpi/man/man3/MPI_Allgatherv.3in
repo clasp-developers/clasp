@@ -1,0 +1,120 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc. 
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Allgatherv 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Allgatherv\fP \- Gathers data from all processes and delivers it to all. Each process may contribute a different amount of data.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Allgatherv(void\fI *sendbuf\fP, int\fI sendcount\fP,
+	MPI_Datatype\fI sendtype\fP, void\fI *recvbuf\fP, int\fI *recvcount\fP,
+	int\fI *displs\fP, MPI_Datatype\fI recvtype\fP, MPI_Comm\fI comm\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_ALLGATHERV(\fISENDBUF\fP,\fI SENDCOUNT\fP, \fISENDTYPE\fP,\fI RECVBUF\fP,
+		\fIRECVCOUNT\fP,\fI DISPLS\fP, \fIRECVTYPE\fP,\fI COMM\fP,\fI IERROR\fP)
+	<type>	\fISENDBUF\fP(*), \fIRECVBUF\fP(*)
+	INTEGER	\fISENDCOUNT\fP,\fI SENDTYPE\fP, \fIRECVCOUNT\fP(*),
+	INTEGER	\fIDISPLS\fP(*),\fI RECVTYPE\fP,\fI COMM\fP,\fI IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Allgatherv(const void* \fIsendbuf\fP, int \fIsendcount\fP, 
+	const MPI::Datatype& \fIsendtype\fP, void* \fIrecvbuf\fP,
+	const int \fIrecvcounts\fP[], const int \fIdispls\fP[],
+	const MPI::Datatype& \fIrecvtype\fP) const = 0
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+sendbuf    
+Starting address of send buffer (choice).
+.TP 1i
+sendcount    
+Number of elements in send buffer (integer).
+.TP 1i
+sendtype    
+Datatype of send buffer elements (handle).
+.TP 1i
+recvcount    
+Integer array (of length group size) containing the number of elements that are received from each process.
+.TP 1i
+displs    
+Integer array (of length group size). Entry i specifies the displacement (relative to recvbuf) at which to place the incoming data from process i.
+.TP 1i
+recvtype    
+Datatype of receive buffer elements (handle).
+.TP 1i
+comm    
+Communicator (handle).
+.sp
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+recvbuf    
+Address of receive buffer (choice).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Allgatherv is similar to MPI_Allgather in that all processes gather data from all other processes, except that each process can send a different amount of data. The block of data sent from the jth process is received by every process and placed in the jth block of the buffer 
+.I recvbuf.
+.sp
+The type signature associated with sendcount, sendtype, at process j must be equal to the type signature associated with recvcounts[j], recvtype at any other process. 
+.sp
+The outcome is as if all processes executed calls to      
+.nf
+MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,
+            displs,recvtype,root,comm)
+.fi
+.sp
+for root = 0 , ..., n-1. The rules for correct usage of MPI_Allgatherv are easily found from the corresponding rules for MPI_Gatherv. 
+
+.SH USE OF IN-PLACE OPTION
+When the communicator is an intracommunicator, you can perform an all-gather operation in-place (the output buffer is used as the input buffer).  Use the variable MPI_IN_PLACE as the value of \fIsendbuf\fR.  In this case, \fIsendcount\fR and \fIsendtype\fR are ignored.  The input data of each process is assumed to be in the area where that process would receive its own contribution to the receive buffer.  Specifically, the outcome of a call to MPI_Allgather that used the in-place option is identical to the case in which all processes executed \fIn\fR calls to
+.sp
+.nf
+   MPI_GATHERV ( MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, recvbuf, 
+   recvcounts, displs, recvtype, root, comm )
+
+for root =0, ... , n-1.
+.fi 
+.sp
+Note that MPI_IN_PLACE is a special kind of value; it has the same restrictions on its use as MPI_BOTTOM.
+.sp
+Because the in-place option converts the receive buffer into a send-and-receive buffer, a Fortran binding that includes INTENT must mark these as INOUT, not OUT.   
+.sp
+.SH WHEN COMMUNICATOR IS AN INTER-COMMUNICATOR
+.sp
+When the communicator is an inter-communicator, the gather operation occurs in two phases.  The data is gathered from all the members of the first group, concatenated, and received by all the members of the second group.  Then the data is gathered from all the members of the second group, concatenated, and received by all the members of the first.  The send buffer arguments in the one group must be consistent with the receive buffer arguments in the other group, and vice versa.  The operation must exhibit symmetric, full-duplex behavior.  
+.sp
+The first group defines the root process.  The root process uses MPI_ROOT as the value of \fIroot\fR.  All other processes in the first group use MPI_PROC_NULL as the value of \fIroot\fR.  All processes in the second group use the rank of the root process in the first group as the value of \fIroot\fR.
+.sp
+When the communicator is an intra-communicator, these groups are the same, and the operation occurs in a single phase.
+.sp  
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler
+may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Gatherv
+.br
+MPI_Allgather

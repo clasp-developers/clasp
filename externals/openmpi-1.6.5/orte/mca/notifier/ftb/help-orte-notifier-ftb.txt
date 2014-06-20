@@ -1,0 +1,45 @@
+# -*- text -*-
+#
+# Copyright (c) 2009 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2011 The Trustees of Indiana University and Indiana
+#                    University Research and Technology Corporation.
+#                    All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+# This is the US/English help file for Open MPI's FTB notifier support
+#
+[ftb connect failed]
+Open MPI's FTB notifier component failed to connect to the FTB server.
+Check if the FTB bootstrap server is running or not. For further help, 
+refer the FTB documentation (Section 4.0: RUNNING FTB).
+
+  Reason: %s (errno: %d)
+#
+[declare events failed]
+The Open MPI FTB notifier component failed to declare publishable events
+to the FTB.
+
+  Reason: %s (errno: %d)
+#
+[publish failed]
+Sorry, Open MPI's FTB component failed to publish the following event to
+the FTB.
+
+  Reason: %s (errno: %d)
+  Event info: [%s] %s
+  Event properties: %s (errno: %d)
+#
+[invalid subscription style]
+Error: the Open MPI FTB component tried to register with an invalid
+FTB client subscription style.
+
+ Subscription style: %s
+#
+[invalid value]
+Error: the Open MPI FTB notifier component tried to register with an
+invalid value in the FTB client information.
+#

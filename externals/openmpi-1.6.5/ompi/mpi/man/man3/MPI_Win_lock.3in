@@ -1,0 +1,77 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Win_lock 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Win_lock\fP \- Starts an RMA access epoch locking access to a particular rank.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Win_lock(int \fIlock_type\fP, int \fIrank\fP, int \fIassert\fP, MPI_Win \fIwin\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_WIN_LOCK(\fILOCK_TYPE, RANK, ASSERT, WIN, IERROR\fP) 
+	INTEGER \fILOCK_TYPE, RANK, ASSERT, WIN, IERROR\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Win::Lock(int \fIlock_type\fP, int \fIrank\fP, int \fIassert\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+lock_type
+Either MPI_LOCK_EXCLUSIVE or MPI_LOCK_SHARED (state).  
+.TP 1i
+rank
+Rank of locked window (nonnegative integer). 
+.TP 1i
+assert
+Program assertion (integer). 
+.TP 1i
+win
+Window object (handle). 
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+Starts an RMA access epoch. Locks ensure that only the windows created by specific processes can be accessed by those processes (and by no other processes) during that epoch.
+.sp
+Locks are used to protect accesses to the locked target window effected by RMA calls issued between the lock and unlock call, and to protect local load/store accesses to a locked local window executed between the lock and unlock call. 
+Accesses that are protected by an exclusive lock will not be concurrent at the window site with other accesses to the same window that are lock protected. Accesses that are protected by a shared lock will not be concurrent at the window site with accesses protected by an exclusive lock to the same window. 
+.sp
+The \fIassert\fP argument is used to provide assertions on the context of the call that may be used for various optimizations. (See Section 6.4.4 of the MPI-2 Standard.) A value of \fIassert\fP = 0 is always valid.
+.sp
+.ft 
+.SH NOTES 
+.ft R
+In a client/server environment in which clients connect to
+a server and create windows that span both the client and the
+server, if a client or server that has obtained a lock
+on such a window and then terminates abnormally, the server or other clients
+may hang in a MPI_Win_lock call, failing to notice that the peer MPI job 
+has terminated.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+MPI_Win_unlock
+.br
+

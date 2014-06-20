@@ -1,0 +1,79 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_File_set_size 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_File_set_size\fP \- Resizes a file (collective).
+
+.SH SYNTAX
+.ft R
+.nf
+C Syntax
+    #include <mpi.h>
+    int MPI_File_set_size(MPI_File \fIfh\fP, MPI_Offset \fIsize\fP)
+
+.fi
+.SH Fortran Syntax (see FORTRAN 77 NOTES)
+.nf
+    INCLUDE 'mpif.h'
+    MPI_FILE_SET_SIZE(\fIFH\fP,\fI SIZE\fP, \fI IERROR\fP)
+        	 INTEGER \fIFH, IERROR\fP 
+        	 INTEGER(KIND=MPI_OFFSET_KIND) \fISIZE\fP 
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::File::Set_size(MPI::Offset \fIsize\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+fh    
+File handle (handle).
+.TP 1i
+size
+Size to truncate or expand file (integer).
+
+.SH OUTPUT PARAMETER
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_File_set_size resizes the file associated with the file handle
+.I fh,
+truncating UNIX files as necessary. MPI_File_set_size is collective; all
+processes in the group must pass identical values for size.
+.sp
+When using MPI_File_set_size on a UNIX file, if \fIsize\fP is larger than the current file size, the file size becomes \fIsize\fP. If \fIsize\fP is smaller than the current file size, the file is truncated at the position defined by \fIsize\fP (from the beginning of the file and measured in bytes). Regions of the file which have been previously written are unaffected. 
+.sp
+MPI_File_set_size does not affect the individual file pointers or the
+shared file pointer.
+.sp
+Note that the actual amount of storage space cannot be allocated by MPI_File_set_size. Use MPI_File_preallocate to accomplish this. 
+.sp
+It is erroneous to call this function if MPI_MODE_SEQUENTIAL mode was specified when the file was opened. 
+
+.SH FORTRAN 77 NOTES
+.ft R
+The MPI standard prescribes portable Fortran syntax for
+the \fISIZE\fP argument only for Fortran 90.  FORTRAN 77
+users may use the non-portable syntax
+.sp
+.nf
+     INTEGER*MPI_OFFSET_KIND \fISIZE\fP
+.fi
+.sp
+where MPI_OFFSET_KIND is a constant defined in mpif.h
+and gives the length of the declared integer in bytes.
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. For MPI I/O function errors, the default error handler is set to MPI_ERRORS_RETURN. The error handler may be changed with MPI_File_set_errhandler; the predefined error handler MPI_ERRORS_ARE_FATAL may be used to make I/O errors fatal. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+

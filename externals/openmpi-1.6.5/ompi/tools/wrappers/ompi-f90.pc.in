@@ -1,0 +1,19 @@
+# Copyright (c) 2010 Cisco Systems, Inc.  All rights reserved.
+#
+Name: Open MPI
+Description: Portable high-performance MPI implementation
+Version: @OMPI_VERSION@
+URL: http://www.open-mpi.org/
+#
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+#
+# Note that -lopen-pal and all the EXTRA_LIBS are only necessary when
+# static linking (they're pulled in by libopen-rte.so's implicit
+# dependencies), so only list these in Libs.private.
+#
+Libs: -L${libdir} @OMPI_WRAPPER_EXTRA_LDFLAGS@ -lmpi_f90
+Libs.private: -lmpi_f77 -lmpi @OMPI_WRAPPER_EXTRA_LIBS@
+Cflags: @OMPI_FC_MODULE_FLAG@${libdir} -I${includedir} @OMPI_WRAPPER_EXTRA_CPPFLAGS@ @OMPI_WRAPPER_EXTRA_FCFLAGS@

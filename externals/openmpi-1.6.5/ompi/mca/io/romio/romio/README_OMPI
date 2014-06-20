@@ -1,0 +1,24 @@
+Please note that this is *NOT* a vanilla 1.2.5.1 distribution of the
+ROMIO package from Argonne National Labs.  Various customizations had
+to be applied to the configuration process.  More to the point -- if
+replace this copy of ROMIO with a newer version, it will likely not
+work.  :-(
+
+- The Open MPI Team
+
+-----------------------------------------------------------------------------
+
+Local modifications:
+====================
+
+- Moved aclocal.m4 -> acinclude.m4
+- Bunches of changes in acinclude.m4 to make it work with modern
+  versions of the GNU auto tools -- see comments in file.
+- Bunches of changes in configure.in to make it work with modern
+  versions of the GNU auto tools -- see comments in file.
+- Added a full set of Makefile.am files; removed all prior Makefile's;
+  replaced most Makefile.in's.  Ignore mpi2-other and man directories.
+- We define MPI_MAX_DATAREP_STRING, therefore
+  protect the redefinition in include/mpio.h
+- Not all systems have snprintf(); include "opal/util/printf.h" in
+  test/noncontig_coll.c

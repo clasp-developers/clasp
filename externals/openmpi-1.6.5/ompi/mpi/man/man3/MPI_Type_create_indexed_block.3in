@@ -1,0 +1,70 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines
+.TH MPI_Type_create_indexed_block 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Type_create_indexed_block\fP \- Creates an indexed data type with the same block length for all blocks. 
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Type_create_indexed_block(int \fIcount\fP, int \fIblocklength\fP, int \fIarray_of_displacements\fP[], MPI_Datatype \fIoldtype\fP, MPI_Datatype *\fInewtype\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_TYPE_CREATE_INDEXED_BLOCK(\fICOUNT, BLOCKLENGTH, 
+		ARRAY_OF_DISPLACEMENTS, OLDTYPE, NEWTYPE, IERROR\fP)
+	INTEGER	\fICOUNT, BLOCKLENGTH, ARRAY_OF_DISPLACEMENTS(*),
+	        OLDTYPE, NEWTYPE, IERROR \fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+MPI::Datatype MPI::Datatype::Create_indexed_block( int \fIcount\fP,
+	int \fIblocklength\fP, const int \fIarray_of_displacements\fP[]) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+count
+Length of array of displacements (integer).
+.TP 1i
+blocklength
+Size of block (integer).
+.TP 1i
+array_of_displacements
+Array of displacements (array of integers).
+.TP 1i
+oldtype
+Old data type (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+newtype
+New data type (handle).
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Type_create_indexed_block creates an indexed data type with the same block length for all blocks. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+
+.SH SEE ALSO
+.ft R
+.sp
+MPI_Type_indexed
+.br
+

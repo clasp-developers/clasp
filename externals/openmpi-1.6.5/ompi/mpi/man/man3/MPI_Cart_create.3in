@@ -1,0 +1,71 @@
+.\" Copyright 2006-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Cart_create 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+.SH NAME
+\fBMPI_Cart_create\fP \- Makes a new communicator to which Cartesian topology information has been attached.
+
+.SH SYNTAX
+.ft R
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Cart_create(MPI_Comm\fI comm_old\fP, int\fI ndims\fP, int\fI *dims\fP,
+	int\fI *periods\fP, int\fI reorder\fP, MPI_Comm\fI *comm_cart\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_CART_CREATE(\fICOMM_OLD\fP,\fI NDIMS\fP,\fI DIMS\fP,\fI PERIODS\fP,\fI REORDER\fP,
+		\fICOMM_CART\fP,\fI IERROR\fP)
+	INTEGER	\fICOMM_OLD\fP,\fI NDIMS\fP,\fI DIMS\fP(*),\fI COMM_CART\fP,\fI IERROR\fP
+	LOGICAL	\fIPERIODS\fI(*),\fI REORDER\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+Cartcomm Intracomm::Create_cart(int \fIndims\fP, const int \fIdims\fP[], 
+	const bool \fIperiods\fP[], bool \fIreorder\fP) const
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1i
+comm_old
+Input communicator (handle).
+.TP 1i
+ndims
+Number of dimensions of Cartesian grid (integer).
+.TP 1i
+dims
+Integer array of size ndims specifying the number of processes in each
+dimension.
+.TP 1i
+periods
+Logical array of size ndims specifying whether the grid is periodic (true)
+or not (false) in each dimension.
+.TP 1i
+reorder
+Ranking may be reordered (true) or not (false) (logical).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1i
+comm_cart
+Communicator with new Cartesian topology (handle).
+.ft R
+.TP 1i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+MPI_Cart_create returns a handle to a new communicator to which the Cartesian topology information is attached. If reorder = false then the rank of each process in the new group is identical to its rank in the old group. Otherwise, the function may reorder the processes (possibly so as to choose a good embedding of the virtual topology onto the physical machine). If the total size of the Cartesian grid is smaller than the size of the group of comm, then some processes are returned MPI_COMM_NULL, in analogy to MPI_Comm_split. The call is erroneous if it specifies a grid that is larger than the group size. 
+
+.SH ERRORS
+Almost all MPI routines return an error value; C routines as the value of the function and Fortran routines in the last argument. C++ functions do not return errors. If the default error handler is set to MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for I/O function errors. The error handler may be changed with MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN may be used to cause error values to be returned. Note that MPI does not guarantee that an MPI program can continue past an error.  
+

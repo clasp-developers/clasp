@@ -1,0 +1,127 @@
+.\" Copyright 2007-2008 Sun Microsystems, Inc.
+.\" Copyright (c) 1996 Thinking Machines Corporation
+.TH MPI_Lookup_name 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
+
+.SH NAME
+.nf
+\fBMPI_Lookup_name\fP \- Finds port associated with a service name
+
+.fi
+.SH SYNTAX
+.ft R
+
+.SH C Syntax
+.nf
+#include <mpi.h>
+int MPI_Lookup_name(char *\fIservice_name\fP, MPI_Info \fIinfo\fP,
+	char *\fIport_name\fP)
+
+.fi
+.SH Fortran Syntax
+.nf
+INCLUDE 'mpif.h'
+MPI_LOOKUP_NAME(\fISERVICE_NAME, INFO, PORT_NAME, IERROR\fP)
+	CHARACTER*(*)	\fISERVICE_NAME, PORT_NAME\fP
+	INTEGER		\fIINFO, IERROR\fP
+
+.fi
+.SH C++ Syntax
+.nf
+#include <mpi.h>
+void MPI::Lookup_name(const char *\fIservice_name\fP, const MPI::Info& \fIinfo\fP,
+	char* \fIport_name\fP)
+
+.fi
+.SH INPUT PARAMETERS
+.ft R
+.TP 1.4i
+service_name
+A service name (string).
+.TP 1.4i
+info
+Options to the name service functions (handle).
+
+.SH OUTPUT PARAMETERS
+.ft R
+.TP 1.4i
+port_name
+a port name (string).
+.TP 1.4i
+IERROR
+Fortran only: Error status (integer). 
+
+.SH DESCRIPTION
+.ft R
+This function retrieves a \fIport_name\fP published under
+\fIservice_name\fP by a previous invocation of MPI_Publish_name. The
+application must supply a \fIport_name\fP buffer large enough to hold
+the largest possible port name (i.e., MPI_MAX_PORT_NAME bytes).
+
+.SH INFO ARGUMENTS
+The following keys for \fIinfo\fP are recognized:
+.sp
+.sp
+.nf
+Key                   Type      Description
+---                   ----      -----------
+
+ompi_lookup_order     char *    Resolution order for name lookup.
+.fi
+
+The \fIompi_lookup_order\fP info key can specify one of four valid
+string values (see the NAME SCOPE section below for more information
+on name scopes):
+
+.TP 4
+\fIlocal\fP: Only search the local scope for name resolution.
+.TP 4
+\fIglobal\fP: Only search the global scope for name resolution.
+.TP 4
+\fIlocal,global\fP: Search the local scope for name resolution.  If
+not found, try searching the global scope for name resolution.  This
+behavior is the default if the \fIompi_lookup_order\fP info key is not
+specified.
+.TP 4
+\fIglobal,local\fP: Search the global scope for name resolution.  If
+not found, try searching the local scope for name resolution.
+.PP
+If no info key is provided, the search will first check to see if a
+global server has been specified and is available. If so, then the
+search will default to global scope first, followed by local. Otherwise,
+the search will default to local.
+
+.SH NAME SCOPE
+Open MPI supports two name scopes: \fIglobal\fP and \fIlocal\fP. Local scope
+values are placed in a data store located on the mpirun of the calling
+process' job, while global scope values reside on a central server. Calls
+to MPI_Unpublish_name must correctly specify the scope to be used in
+finding the value to be removed. The function will return an error if
+the specified service name is not found on the indicated location.
+.sp
+For a more detailed description of scoping rules, please see the MPI_Publish_name
+man page.
+
+.SH ERRORS
+.ft R
+Almost all MPI routines return an error value; C routines as
+the value of the function and Fortran routines in the last argument. C++
+functions do not return errors. If the default error handler is set to
+MPI::ERRORS_THROW_EXCEPTIONS, then on error the C++ exception mechanism
+will be used to throw an MPI:Exception object.
+.sp
+Before the error value is returned, the current MPI error handler is
+called. By default, this error handler aborts the MPI job, except for
+I/O function errors. The error handler may be changed with
+MPI_Comm_set_errhandler; the predefined error handler MPI_ERRORS_RETURN
+may be used to cause error values to be returned. Note that MPI does not
+guarantee that an MPI program can continue past an error. 
+.sp
+See the MPI man page for a full list of MPI error codes.
+
+.SH SEE ALSO
+.ft R
+.nf
+MPI_Publish_name
+MPI_Open_port
+
+

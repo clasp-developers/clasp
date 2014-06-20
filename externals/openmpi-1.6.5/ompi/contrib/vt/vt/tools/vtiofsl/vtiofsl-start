@@ -1,0 +1,194 @@
+#!/bin/sh
+##
+# VampirTrace
+# http://www.tu-dresden.de/zih/vampirtrace
+#
+# Copyright (c) 2005-2013, ZIH, TU Dresden, Federal Republic of Germany
+#
+# Copyright (c) 1998-2005, Forschungszentrum Juelich, Juelich Supercomputing
+#                          Centre, Federal Republic of Germany
+#
+# See the file COPYING in the package base directory for details
+##
+
+# global variables
+#
+_VTIOFSL_EXENAME="vtiofsl-start"
+_VTIOFSL_ROOT=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)
+
+# source common stuff
+. $_VTIOFSL_ROOT/vtiofsl-common $@
+
+_VTIOFSL_SERVERS=
+_VTIOFSL_NUM_SERVERS=$VT_IOFSL_NUM_SERVERS
+if test x"$_VTIOFSL_NUM_SERVERS" != x; then
+  invalid=0
+  if test ! `expr $_VTIOFSL_NUM_SERVERS + 1 2>/dev/null`; then
+    invalid=1
+  elif test $_VTIOFSL_NUM_SERVERS -le 0; then
+    invalid=1
+  fi
+  if test $invalid -eq 1; then
+    _vtiofsl_error_msg "Error: Invalid value \`$_VTIOFSL_NUM_SERVERS' "\
+"for environment variable \`VT_IOFSL_NUM_SERVERS'. Aborting."
+    _vtiofsl_exit 1
+  fi
+fi
+
+_VTIOFSL_MODE=$VT_IOFSL_MODE
+if test x"$_VTIOFSL_MODE" = x; then
+  _VTIOFSL_MODE=MULTIFILE_SPLIT
+elif test x"$_VTIOFSL_MODE" != "xMULTIFILE" -a \
+          x"$_VTIOFSL_MODE" != "xMULTIFILE_SPLIT"; then
+  _vtiofsl_error_msg "Error: Invalid value \`$_VTIOFSL_MODE' for "\
+"environment variable \`VT_IOFSL_MODE'. Aborting."
+  _vtiofsl_exit 1
+fi
+
+_VTIOFSL_ASYNC_IO=$VT_IOFSL_ASYNC_IO
+
+#
+# subroutine _vtiofsl_show_helptext() - shows the help text
+#
+_vtiofsl_show_helptext()
+{
+  echo ""
+  echo " $_VTIOFSL_EXENAME - set environment variables and start IOFSL servers."
+  echo ""
+  echo " Syntax: $_VTIOFSL_EXENAME [options]"
+  echo ""
+  echo "   options:"
+  echo "     -h, --help          Show this help message."
+  echo ""
+  echo "     -V, --version       Show VampirTrace version."
+  echo ""
+  echo "     -v, --verbose       Increase output verbosity."
+  echo "                         (can be used more than once)"
+  echo ""
+  echo "     -q, --quiet         Enable quiet mode."
+  echo "                         (only emergency output)"
+  echo ""
+  echo "     -n, --num NUM       Number of IOFSL servers to start."
+  echo ""
+  echo "     -m, --mode MODE     IOFSL mode (MULTIFILE or MULTIFILE_SPLIT)."
+  echo "                         (default: MULTIFILE_SPLIT)"
+  echo ""
+  echo "     --asyncio           Use asynchronous I/O."
+  echo ""
+  echo "   environment variables:"
+  echo "     VT_IOFSL_NUM_SERVERS"
+  echo "                         equivalent to '-n' or '--num'"
+  echo "     VT_IOFSL_MODE       equivalent to '-m' or '--mode'"
+  echo "     VT_IOFSL_ASYNC_IO=<yes|true|1>"
+  echo "                         equivalent to '--asyncio'"
+  echo ""
+  echo "   note:"
+  echo "     This script needs to be sourced from a shell, since it sets"
+  echo "     environment variables."
+  echo "     Either -n or VT_IOFSL_NUM_SERVERS must be specified."
+  echo ""
+
+  _vtiofsl_exit 0
+}
+
+#
+# "main"-routine
+#
+
+# parse command line options
+#
+if test $# -eq 0 -a x"$_VTIOFSL_NUM_SERVERS" = x; then
+  _vtiofsl_show_helptext
+else
+  arg_error_msg=
+  while test $# -ne 0; do
+    case $1 in
+      -n | --num)
+        if test x"$2" = x; then
+          arg_error_msg="option '$1' requires an argument"
+          break
+        fi
+
+        invalid=0
+        if test ! `expr $2 + 1 2>/dev/null`; then
+          invalid=1
+        elif test $2 -le 0; then
+          invalid=1
+        fi
+        if test $invalid -eq 1; then
+          arg_error_msg="invalid argument \`$2' for option \`$1'"
+          break
+        fi
+
+        _VTIOFSL_NUM_SERVERS=$2
+        shift 2
+        ;;
+      -m | --mode)
+        if test x"$2" = x; then
+          arg_error_msg="option '$1' requires an argument"
+          break
+        fi
+
+        if test x"$2" != "xMULTIFILE" -a x"$2" != "xMULTIFILE_SPLIT"; then
+          arg_error_msg="invalid argument \`$2' for option \`$1'"
+          break
+        fi
+
+        _VTIOFSL_MODE=$2
+        # It is important that successive applications
+        # (e.g. VampirTrace measurement environment) use the same mode as we
+        # start the server with!
+        export VT_IOFSL_MODE=$_VTIOFSL_MODE
+        shift 2
+        ;;
+      --asyncio)
+        _VTIOFSL_ASYNC_IO=1
+        shift
+        ;;
+      *)
+        _vtiofsl_parse_common_option $1
+        if test $? -ne 0; then
+          arg_error_msg="unrecognized option -- '$1'"
+          break
+        fi
+        shift
+        ;;
+    esac
+  done
+  if test x"$arg_error_msg" != x; then
+    _vtiofsl_error_msg "$arg_error_msg\nTry \`$EXENAME --help' for more" \
+"information."
+    _vtiofsl_exit 1
+  fi
+fi
+
+# check whether number of IOFSL servers is set
+#
+if test x"$_VTIOFSL_NUM_SERVERS" = x; then
+  _vtiofsl_error_msg "Error: Number of IOFSL servers not set.\n"\
+"Please specify it by the '-n' option or by the environment variable "\
+"VT_IOFSL_NUM_SERVERS. Aborting."
+  _vtiofsl_exit 1
+fi
+
+# source platform specific stuff
+. $_VTIOFSL_ROOT/vtiofsl-platform
+
+# start IOFSL servers
+#
+_vtiofsl_start_servers
+rc=$?
+
+# set environment variables on success; otherwise abort
+#
+if test $rc -eq 0; then
+  export VT_IOFSL_SERVERS=$_VTIOFSL_SERVERS
+  echo "setenv VT_IOFSL_SERVERS '$_VTIOFSL_SERVERS'" >> $_VTIOFSL_CSH_FILE
+  export VT_IOFSL_MODE=$_VTIOFSL_MODE
+  echo "setenv VT_IOFSL_MODE '$_VTIOFSL_MODE'" >> $_VTIOFSL_CSH_FILE
+  export VT_IOFSL_ASYNC_IO=$_VTIOFSL_ASYNC_IO
+  echo "setenv VT_IOFSL_ASYNC_IO '$_VTIOFSL_ASYNC_IO'" >> $_VTIOFSL_CSH_FILE
+else
+  _vtiofsl_exit $rc
+fi
+
