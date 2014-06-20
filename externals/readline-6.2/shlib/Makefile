@@ -32,13 +32,13 @@ datarootdir = ${prefix}/share
 srcdir = .
 VPATH = .:..
 topdir = ..
-BUILD_DIR = /Volumes/spin/Development/clasp-Lisp/externals/src/readline-6.2
+BUILD_DIR = /Users/meister/Development/cando/clasp/externals/readline-6.2
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 
-CC = /usr/bin/clang
+CC = gcc
 RANLIB = ranlib
 AR = ar
 ARFLAGS = cr
@@ -49,10 +49,10 @@ LN = ln
 
 SHELL = /bin/sh
 
-host_os = darwin13.1.0
+host_os = darwin13.2.0
 host_vendor = apple
 
-prefix = /Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
+prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix = ${prefix}
 includedir = ${prefix}/include
 bindir = ${exec_prefix}/bin
@@ -66,7 +66,7 @@ DESTDIR =
 CFLAGS = -g -O
 LOCAL_CFLAGS =  -DRL_LIBRARY_VERSION='"$(RL_LIBRARY_VERSION)"'
 CPPFLAGS = 
-LDFLAGS = -stdlib=libc++ -headerpad_max_install_names  -g -O
+LDFLAGS =   -g -O
 
 DEFS = -DHAVE_CONFIG_H 
 LOCAL_DEFS = 
@@ -77,7 +77,7 @@ LOCAL_DEFS =
 # dynamic loading of shared objects, please update the script and send the
 # changes to bash-maintainers@gnu.org.
 #
-SHOBJ_CC = /usr/bin/clang
+SHOBJ_CC = gcc
 SHOBJ_CFLAGS = -fno-common
 SHOBJ_LD = ${CC}
 
@@ -85,7 +85,7 @@ SHOBJ_LDFLAGS = -dynamiclib
 SHOBJ_XLDFLAGS = 
 SHOBJ_LIBS = 
 
-SHLIB_XLDFLAGS = -stdlib=libc++ -headerpad_max_install_names -arch_only `/usr/bin/arch` -install_name $(libdir)/$@ -current_version $(SHLIB_MAJOR)$(SHLIB_MINOR) -compatibility_version $(SHLIB_MAJOR) -v
+SHLIB_XLDFLAGS =  -arch_only `/usr/bin/arch` -install_name $(libdir)/$@ -current_version $(SHLIB_MAJOR)$(SHLIB_MINOR) -compatibility_version $(SHLIB_MAJOR) -v
 SHLIB_LIBS = -lncurses
 
 SHLIB_DOT = .

@@ -406,7 +406,7 @@ on `(hostname || uname -n) 2>/dev/null | sed 1q`
 # Files that config.status was made for.
 config_files=" demos/pexpr-config.h:demos/pexpr-config-h.in demos/calc/calc-config.h:demos/calc/calc-config-h.in Makefile mpbsd/Makefile mpf/Makefile mpn/Makefile mpq/Makefile mpz/Makefile printf/Makefile scanf/Makefile cxx/Makefile tests/Makefile tests/devel/Makefile tests/mpbsd/Makefile tests/mpf/Makefile tests/mpn/Makefile tests/mpq/Makefile tests/mpz/Makefile tests/rand/Makefile tests/misc/Makefile tests/cxx/Makefile doc/Makefile tune/Makefile demos/Makefile demos/calc/Makefile demos/expr/Makefile gmp.h:gmp-h.in mp.h:mp-h.in"
 config_headers=" config.h:config.in"
-config_links=" mpn/add.c:mpn/generic/add.c mpn/add_1.c:mpn/generic/add_1.c mpn/add_n.asm:mpn/x86_64/core2/aors_n.asm mpn/sub.c:mpn/generic/sub.c mpn/sub_1.c:mpn/generic/sub_1.c mpn/sub_n.asm:mpn/x86_64/core2/aors_n.asm mpn/neg.c:mpn/generic/neg.c mpn/com.asm:mpn/x86_64/com.asm mpn/mul_1.asm:mpn/x86_64/mul_1.asm mpn/addmul_1.asm:mpn/x86_64/core2/aorsmul_1.asm mpn/submul_1.asm:mpn/x86_64/core2/aorsmul_1.asm mpn/lshift.asm:mpn/x86_64/core2/lshift.asm mpn/rshift.asm:mpn/x86_64/core2/rshift.asm mpn/dive_1.asm:mpn/x86_64/dive_1.asm mpn/diveby3.c:mpn/generic/diveby3.c mpn/divis.c:mpn/generic/divis.c mpn/divrem.c:mpn/generic/divrem.c mpn/divrem_1.asm:mpn/x86_64/divrem_1.asm mpn/divrem_2.asm:mpn/x86_64/divrem_2.asm mpn/fib2_ui.c:mpn/generic/fib2_ui.c mpn/mod_1.c:mpn/generic/mod_1.c mpn/mod_34lsub1.asm:mpn/x86_64/mod_34lsub1.asm mpn/mode1o.asm:mpn/x86_64/mode1o.asm mpn/pre_mod_1.c:mpn/generic/pre_mod_1.c mpn/dump.c:mpn/generic/dump.c mpn/mod_1_1.c:mpn/generic/mod_1_1.c mpn/mod_1_2.c:mpn/generic/mod_1_2.c mpn/mod_1_3.c:mpn/generic/mod_1_3.c mpn/mod_1_4.asm:mpn/x86_64/mod_1_4.asm mpn/lshiftc.asm:mpn/x86_64/core2/lshiftc.asm mpn/mul.c:mpn/generic/mul.c mpn/mul_fft.c:mpn/generic/mul_fft.c mpn/mul_n.c:mpn/generic/mul_n.c mpn/sqr.c:mpn/generic/sqr.c mpn/mul_basecase.asm:mpn/x86_64/mul_basecase.asm mpn/sqr_basecase.asm:mpn/x86_64/sqr_basecase.asm mpn/nussbaumer_mul.c:mpn/generic/nussbaumer_mul.c mpn/random.c:mpn/generic/random.c mpn/random2.c:mpn/generic/random2.c mpn/pow_1.c:mpn/generic/pow_1.c mpn/rootrem.c:mpn/generic/rootrem.c mpn/sqrtrem.c:mpn/generic/sqrtrem.c mpn/get_str.c:mpn/generic/get_str.c mpn/set_str.c:mpn/generic/set_str.c mpn/scan0.c:mpn/generic/scan0.c mpn/scan1.c:mpn/generic/scan1.c mpn/popcount.asm:mpn/x86_64/core2/popcount.asm mpn/hamdist.asm:mpn/x86_64/popham.asm mpn/cmp.c:mpn/generic/cmp.c mpn/perfsqr.c:mpn/generic/perfsqr.c mpn/perfpow.c:mpn/generic/perfpow.c mpn/gcd_1.asm:mpn/x86_64/gcd_1.asm mpn/gcd.c:mpn/generic/gcd.c mpn/gcdext_1.c:mpn/generic/gcdext_1.c mpn/gcdext.c:mpn/generic/gcdext.c mpn/gcd_lehmer.c:mpn/generic/gcd_lehmer.c mpn/gcd_subdiv_step.c:mpn/generic/gcd_subdiv_step.c mpn/gcdext_lehmer.c:mpn/generic/gcdext_lehmer.c mpn/gcdext_subdiv_step.c:mpn/generic/gcdext_subdiv_step.c mpn/div_q.c:mpn/generic/div_q.c mpn/tdiv_qr.c:mpn/generic/tdiv_qr.c mpn/jacbase.c:mpn/generic/jacbase.c mpn/get_d.c:mpn/generic/get_d.c mpn/matrix22_mul.c:mpn/generic/matrix22_mul.c mpn/hgcd2.c:mpn/generic/hgcd2.c mpn/hgcd.c:mpn/generic/hgcd.c mpn/mullo_n.c:mpn/generic/mullo_n.c mpn/mullo_basecase.c:mpn/generic/mullo_basecase.c mpn/toom22_mul.c:mpn/generic/toom22_mul.c mpn/toom32_mul.c:mpn/generic/toom32_mul.c mpn/toom42_mul.c:mpn/generic/toom42_mul.c mpn/toom52_mul.c:mpn/generic/toom52_mul.c mpn/toom62_mul.c:mpn/generic/toom62_mul.c mpn/toom33_mul.c:mpn/generic/toom33_mul.c mpn/toom43_mul.c:mpn/generic/toom43_mul.c mpn/toom53_mul.c:mpn/generic/toom53_mul.c mpn/toom63_mul.c:mpn/generic/toom63_mul.c mpn/toom44_mul.c:mpn/generic/toom44_mul.c mpn/toom6h_mul.c:mpn/generic/toom6h_mul.c mpn/toom6_sqr.c:mpn/generic/toom6_sqr.c mpn/toom8h_mul.c:mpn/generic/toom8h_mul.c mpn/toom8_sqr.c:mpn/generic/toom8_sqr.c mpn/toom_couple_handling.c:mpn/generic/toom_couple_handling.c mpn/toom2_sqr.c:mpn/generic/toom2_sqr.c mpn/toom3_sqr.c:mpn/generic/toom3_sqr.c mpn/toom4_sqr.c:mpn/generic/toom4_sqr.c mpn/toom_eval_dgr3_pm1.c:mpn/generic/toom_eval_dgr3_pm1.c mpn/toom_eval_dgr3_pm2.c:mpn/generic/toom_eval_dgr3_pm2.c mpn/toom_eval_pm1.c:mpn/generic/toom_eval_pm1.c mpn/toom_eval_pm2.c:mpn/generic/toom_eval_pm2.c mpn/toom_eval_pm2exp.c:mpn/generic/toom_eval_pm2exp.c mpn/toom_eval_pm2rexp.c:mpn/generic/toom_eval_pm2rexp.c mpn/toom_interpolate_5pts.c:mpn/generic/toom_interpolate_5pts.c mpn/toom_interpolate_6pts.c:mpn/generic/toom_interpolate_6pts.c mpn/toom_interpolate_7pts.c:mpn/generic/toom_interpolate_7pts.c mpn/toom_interpolate_8pts.c:mpn/generic/toom_interpolate_8pts.c mpn/toom_interpolate_12pts.c:mpn/generic/toom_interpolate_12pts.c mpn/toom_interpolate_16pts.c:mpn/generic/toom_interpolate_16pts.c mpn/invertappr.c:mpn/generic/invertappr.c mpn/invert.c:mpn/generic/invert.c mpn/binvert.c:mpn/generic/binvert.c mpn/mulmod_bnm1.c:mpn/generic/mulmod_bnm1.c mpn/sqrmod_bnm1.c:mpn/generic/sqrmod_bnm1.c mpn/sbpi1_div_q.c:mpn/generic/sbpi1_div_q.c mpn/sbpi1_div_qr.c:mpn/generic/sbpi1_div_qr.c mpn/sbpi1_divappr_q.c:mpn/generic/sbpi1_divappr_q.c mpn/dcpi1_div_q.c:mpn/generic/dcpi1_div_q.c mpn/dcpi1_div_qr.c:mpn/generic/dcpi1_div_qr.c mpn/dcpi1_divappr_q.c:mpn/generic/dcpi1_divappr_q.c mpn/mu_div_qr.c:mpn/generic/mu_div_qr.c mpn/mu_divappr_q.c:mpn/generic/mu_divappr_q.c mpn/mu_div_q.c:mpn/generic/mu_div_q.c mpn/bdiv_q_1.asm:mpn/x86_64/bdiv_q_1.asm mpn/sbpi1_bdiv_q.c:mpn/generic/sbpi1_bdiv_q.c mpn/sbpi1_bdiv_qr.c:mpn/generic/sbpi1_bdiv_qr.c mpn/dcpi1_bdiv_q.c:mpn/generic/dcpi1_bdiv_q.c mpn/dcpi1_bdiv_qr.c:mpn/generic/dcpi1_bdiv_qr.c mpn/mu_bdiv_q.c:mpn/generic/mu_bdiv_q.c mpn/mu_bdiv_qr.c:mpn/generic/mu_bdiv_qr.c mpn/bdiv_q.c:mpn/generic/bdiv_q.c mpn/bdiv_qr.c:mpn/generic/bdiv_qr.c mpn/divexact.c:mpn/generic/divexact.c mpn/bdiv_dbm1c.asm:mpn/x86_64/bdiv_dbm1c.asm mpn/redc_1.asm:mpn/x86_64/redc_1.asm mpn/redc_2.c:mpn/generic/redc_2.c mpn/redc_n.c:mpn/generic/redc_n.c mpn/powm.c:mpn/generic/powm.c mpn/powlo.c:mpn/generic/powlo.c mpn/powm_sec.c:mpn/generic/powm_sec.c mpn/subcnd_n.c:mpn/generic/subcnd_n.c mpn/redc_1_sec.c:mpn/generic/redc_1_sec.c mpn/trialdiv.c:mpn/generic/trialdiv.c mpn/remove.c:mpn/generic/remove.c mpn/and_n.asm:mpn/x86_64/logops_n.asm mpn/andn_n.asm:mpn/x86_64/logops_n.asm mpn/nand_n.asm:mpn/x86_64/logops_n.asm mpn/ior_n.asm:mpn/x86_64/logops_n.asm mpn/iorn_n.asm:mpn/x86_64/logops_n.asm mpn/nior_n.asm:mpn/x86_64/logops_n.asm mpn/xor_n.asm:mpn/x86_64/logops_n.asm mpn/xnor_n.asm:mpn/x86_64/logops_n.asm mpn/copyi.asm:mpn/x86_64/copyi.asm mpn/copyd.asm:mpn/x86_64/copyd.asm mpn/zero.c:mpn/generic/zero.c mpn/invert_limb.asm:mpn/x86_64/invert_limb.asm mpn/mul_2.asm:mpn/x86_64/mul_2.asm mpn/addmul_2.asm:mpn/x86_64/addmul_2.asm mpn/addlsh1_n.asm:mpn/x86_64/core2/aorslsh1_n.asm mpn/sublsh1_n.asm:mpn/x86_64/core2/aorslsh1_n.asm mpn/rsblsh1_n.asm:mpn/x86_64/aorrlsh1_n.asm mpn/rsh1add_n.asm:mpn/x86_64/rsh1aors_n.asm mpn/rsh1sub_n.asm:mpn/x86_64/rsh1aors_n.asm mpn/addlsh2_n.asm:mpn/x86_64/aorrlsh2_n.asm mpn/rsblsh2_n.asm:mpn/x86_64/aorrlsh2_n.asm mpn/addlsh_n.asm:mpn/x86_64/aorrlsh_n.asm mpn/rsblsh_n.asm:mpn/x86_64/aorrlsh_n.asm mpn/addaddmul_1msb0.asm:mpn/x86_64/addaddmul_1msb0.asm gmp-mparam.h:mpn/x86_64/coreisbr/gmp-mparam.h"
+config_links=" mpn/add.c:mpn/generic/add.c mpn/add_1.c:mpn/generic/add_1.c mpn/add_n.asm:mpn/x86_64/core2/aors_n.asm mpn/sub.c:mpn/generic/sub.c mpn/sub_1.c:mpn/generic/sub_1.c mpn/sub_n.asm:mpn/x86_64/core2/aors_n.asm mpn/neg.c:mpn/generic/neg.c mpn/com.asm:mpn/x86_64/com.asm mpn/mul_1.asm:mpn/x86_64/mul_1.asm mpn/addmul_1.asm:mpn/x86_64/core2/aorsmul_1.asm mpn/submul_1.asm:mpn/x86_64/core2/aorsmul_1.asm mpn/lshift.asm:mpn/x86_64/core2/lshift.asm mpn/rshift.asm:mpn/x86_64/core2/rshift.asm mpn/dive_1.asm:mpn/x86_64/dive_1.asm mpn/diveby3.c:mpn/generic/diveby3.c mpn/divis.c:mpn/generic/divis.c mpn/divrem.c:mpn/generic/divrem.c mpn/divrem_1.asm:mpn/x86_64/divrem_1.asm mpn/divrem_2.asm:mpn/x86_64/divrem_2.asm mpn/fib2_ui.c:mpn/generic/fib2_ui.c mpn/mod_1.c:mpn/generic/mod_1.c mpn/mod_34lsub1.asm:mpn/x86_64/mod_34lsub1.asm mpn/mode1o.asm:mpn/x86_64/mode1o.asm mpn/pre_mod_1.c:mpn/generic/pre_mod_1.c mpn/dump.c:mpn/generic/dump.c mpn/mod_1_1.c:mpn/generic/mod_1_1.c mpn/mod_1_2.c:mpn/generic/mod_1_2.c mpn/mod_1_3.c:mpn/generic/mod_1_3.c mpn/mod_1_4.asm:mpn/x86_64/mod_1_4.asm mpn/lshiftc.asm:mpn/x86_64/core2/lshiftc.asm mpn/mul.c:mpn/generic/mul.c mpn/mul_fft.c:mpn/generic/mul_fft.c mpn/mul_n.c:mpn/generic/mul_n.c mpn/sqr.c:mpn/generic/sqr.c mpn/mul_basecase.asm:mpn/x86_64/mul_basecase.asm mpn/sqr_basecase.asm:mpn/x86_64/sqr_basecase.asm mpn/nussbaumer_mul.c:mpn/generic/nussbaumer_mul.c mpn/random.c:mpn/generic/random.c mpn/random2.c:mpn/generic/random2.c mpn/pow_1.c:mpn/generic/pow_1.c mpn/rootrem.c:mpn/generic/rootrem.c mpn/sqrtrem.c:mpn/generic/sqrtrem.c mpn/get_str.c:mpn/generic/get_str.c mpn/set_str.c:mpn/generic/set_str.c mpn/scan0.c:mpn/generic/scan0.c mpn/scan1.c:mpn/generic/scan1.c mpn/popcount.asm:mpn/x86_64/core2/popcount.asm mpn/hamdist.asm:mpn/x86_64/popham.asm mpn/cmp.c:mpn/generic/cmp.c mpn/perfsqr.c:mpn/generic/perfsqr.c mpn/perfpow.c:mpn/generic/perfpow.c mpn/gcd_1.asm:mpn/x86_64/gcd_1.asm mpn/gcd.c:mpn/generic/gcd.c mpn/gcdext_1.c:mpn/generic/gcdext_1.c mpn/gcdext.c:mpn/generic/gcdext.c mpn/gcd_lehmer.c:mpn/generic/gcd_lehmer.c mpn/gcd_subdiv_step.c:mpn/generic/gcd_subdiv_step.c mpn/gcdext_lehmer.c:mpn/generic/gcdext_lehmer.c mpn/gcdext_subdiv_step.c:mpn/generic/gcdext_subdiv_step.c mpn/div_q.c:mpn/generic/div_q.c mpn/tdiv_qr.c:mpn/generic/tdiv_qr.c mpn/jacbase.c:mpn/generic/jacbase.c mpn/get_d.c:mpn/generic/get_d.c mpn/matrix22_mul.c:mpn/generic/matrix22_mul.c mpn/hgcd2.c:mpn/generic/hgcd2.c mpn/hgcd.c:mpn/generic/hgcd.c mpn/mullo_n.c:mpn/generic/mullo_n.c mpn/mullo_basecase.c:mpn/generic/mullo_basecase.c mpn/toom22_mul.c:mpn/generic/toom22_mul.c mpn/toom32_mul.c:mpn/generic/toom32_mul.c mpn/toom42_mul.c:mpn/generic/toom42_mul.c mpn/toom52_mul.c:mpn/generic/toom52_mul.c mpn/toom62_mul.c:mpn/generic/toom62_mul.c mpn/toom33_mul.c:mpn/generic/toom33_mul.c mpn/toom43_mul.c:mpn/generic/toom43_mul.c mpn/toom53_mul.c:mpn/generic/toom53_mul.c mpn/toom63_mul.c:mpn/generic/toom63_mul.c mpn/toom44_mul.c:mpn/generic/toom44_mul.c mpn/toom6h_mul.c:mpn/generic/toom6h_mul.c mpn/toom6_sqr.c:mpn/generic/toom6_sqr.c mpn/toom8h_mul.c:mpn/generic/toom8h_mul.c mpn/toom8_sqr.c:mpn/generic/toom8_sqr.c mpn/toom_couple_handling.c:mpn/generic/toom_couple_handling.c mpn/toom2_sqr.c:mpn/generic/toom2_sqr.c mpn/toom3_sqr.c:mpn/generic/toom3_sqr.c mpn/toom4_sqr.c:mpn/generic/toom4_sqr.c mpn/toom_eval_dgr3_pm1.c:mpn/generic/toom_eval_dgr3_pm1.c mpn/toom_eval_dgr3_pm2.c:mpn/generic/toom_eval_dgr3_pm2.c mpn/toom_eval_pm1.c:mpn/generic/toom_eval_pm1.c mpn/toom_eval_pm2.c:mpn/generic/toom_eval_pm2.c mpn/toom_eval_pm2exp.c:mpn/generic/toom_eval_pm2exp.c mpn/toom_eval_pm2rexp.c:mpn/generic/toom_eval_pm2rexp.c mpn/toom_interpolate_5pts.c:mpn/generic/toom_interpolate_5pts.c mpn/toom_interpolate_6pts.c:mpn/generic/toom_interpolate_6pts.c mpn/toom_interpolate_7pts.c:mpn/generic/toom_interpolate_7pts.c mpn/toom_interpolate_8pts.c:mpn/generic/toom_interpolate_8pts.c mpn/toom_interpolate_12pts.c:mpn/generic/toom_interpolate_12pts.c mpn/toom_interpolate_16pts.c:mpn/generic/toom_interpolate_16pts.c mpn/invertappr.c:mpn/generic/invertappr.c mpn/invert.c:mpn/generic/invert.c mpn/binvert.c:mpn/generic/binvert.c mpn/mulmod_bnm1.c:mpn/generic/mulmod_bnm1.c mpn/sqrmod_bnm1.c:mpn/generic/sqrmod_bnm1.c mpn/sbpi1_div_q.c:mpn/generic/sbpi1_div_q.c mpn/sbpi1_div_qr.c:mpn/generic/sbpi1_div_qr.c mpn/sbpi1_divappr_q.c:mpn/generic/sbpi1_divappr_q.c mpn/dcpi1_div_q.c:mpn/generic/dcpi1_div_q.c mpn/dcpi1_div_qr.c:mpn/generic/dcpi1_div_qr.c mpn/dcpi1_divappr_q.c:mpn/generic/dcpi1_divappr_q.c mpn/mu_div_qr.c:mpn/generic/mu_div_qr.c mpn/mu_divappr_q.c:mpn/generic/mu_divappr_q.c mpn/mu_div_q.c:mpn/generic/mu_div_q.c mpn/bdiv_q_1.asm:mpn/x86_64/bdiv_q_1.asm mpn/sbpi1_bdiv_q.c:mpn/generic/sbpi1_bdiv_q.c mpn/sbpi1_bdiv_qr.c:mpn/generic/sbpi1_bdiv_qr.c mpn/dcpi1_bdiv_q.c:mpn/generic/dcpi1_bdiv_q.c mpn/dcpi1_bdiv_qr.c:mpn/generic/dcpi1_bdiv_qr.c mpn/mu_bdiv_q.c:mpn/generic/mu_bdiv_q.c mpn/mu_bdiv_qr.c:mpn/generic/mu_bdiv_qr.c mpn/bdiv_q.c:mpn/generic/bdiv_q.c mpn/bdiv_qr.c:mpn/generic/bdiv_qr.c mpn/divexact.c:mpn/generic/divexact.c mpn/bdiv_dbm1c.asm:mpn/x86_64/bdiv_dbm1c.asm mpn/redc_1.asm:mpn/x86_64/redc_1.asm mpn/redc_2.c:mpn/generic/redc_2.c mpn/redc_n.c:mpn/generic/redc_n.c mpn/powm.c:mpn/generic/powm.c mpn/powlo.c:mpn/generic/powlo.c mpn/powm_sec.c:mpn/generic/powm_sec.c mpn/subcnd_n.c:mpn/generic/subcnd_n.c mpn/redc_1_sec.c:mpn/generic/redc_1_sec.c mpn/trialdiv.c:mpn/generic/trialdiv.c mpn/remove.c:mpn/generic/remove.c mpn/and_n.asm:mpn/x86_64/logops_n.asm mpn/andn_n.asm:mpn/x86_64/logops_n.asm mpn/nand_n.asm:mpn/x86_64/logops_n.asm mpn/ior_n.asm:mpn/x86_64/logops_n.asm mpn/iorn_n.asm:mpn/x86_64/logops_n.asm mpn/nior_n.asm:mpn/x86_64/logops_n.asm mpn/xor_n.asm:mpn/x86_64/logops_n.asm mpn/xnor_n.asm:mpn/x86_64/logops_n.asm mpn/copyi.asm:mpn/x86_64/copyi.asm mpn/copyd.asm:mpn/x86_64/copyd.asm mpn/zero.c:mpn/generic/zero.c mpn/invert_limb.asm:mpn/x86_64/invert_limb.asm mpn/mul_2.asm:mpn/x86_64/mul_2.asm mpn/addmul_2.asm:mpn/x86_64/addmul_2.asm mpn/addlsh1_n.asm:mpn/x86_64/core2/aorslsh1_n.asm mpn/sublsh1_n.asm:mpn/x86_64/core2/aorslsh1_n.asm mpn/rsblsh1_n.asm:mpn/x86_64/aorrlsh1_n.asm mpn/rsh1add_n.asm:mpn/x86_64/rsh1aors_n.asm mpn/rsh1sub_n.asm:mpn/x86_64/rsh1aors_n.asm mpn/addlsh2_n.asm:mpn/x86_64/aorrlsh2_n.asm mpn/rsblsh2_n.asm:mpn/x86_64/aorrlsh2_n.asm mpn/addlsh_n.asm:mpn/x86_64/aorrlsh_n.asm mpn/rsblsh_n.asm:mpn/x86_64/aorrlsh_n.asm mpn/addaddmul_1msb0.asm:mpn/x86_64/addaddmul_1msb0.asm gmp-mparam.h:mpn/x86_64/coreinhm/gmp-mparam.h"
 config_commands=" libtool"
 
 ac_cs_usage="\
@@ -444,7 +444,7 @@ Report bugs to <gmp-bugs@gmplib.org, see http://gmplib.org/manual/Reporting-Bugs
 GNU MP home page: <http://www.gnu.org/software/gmp/>.
 General help using GNU software: <http://www.gnu.org/gethelp/>."
 
-ac_cs_config="'--prefix=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common' '--enable-cxx' 'CC=/usr/bin/clang' 'LDFLAGS=-stdlib=libc++ -headerpad_max_install_names' 'CXX=/usr/bin/clang++' 'CXXFLAGS=-std=c++11 -stdlib=libc++'"
+ac_cs_config="'--prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common' '--enable-cxx' 'CC=/usr/bin/clang' 'CXX=/usr/bin/clang++' 'CXXFLAGS=-std=c++11 -stdlib=libc++'"
 ac_cs_version="\
 GNU MP config.status 5.0.5
 configured by ./configure, generated by GNU Autoconf 2.65,
@@ -454,7 +454,7 @@ Copyright (C) 2009 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/Volumes/spin/Development/clasp-Lisp/externals/src/gmp-5.0.5'
+ac_pwd='/Users/meister/Development/cando/clasp/externals/gmp-5.0.5'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 MKDIR_P='./install-sh -c -d'
@@ -530,7 +530,7 @@ if $ac_cs_silent; then
 fi
 
 if $ac_cs_recheck; then
-  set X '/bin/sh' './configure'  '--prefix=/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common' '--enable-cxx' 'CC=/usr/bin/clang' 'LDFLAGS=-stdlib=libc++ -headerpad_max_install_names' 'CXX=/usr/bin/clang++' 'CXXFLAGS=-std=c++11 -stdlib=libc++' $ac_configure_extra_args --no-create --no-recursion
+  set X '/bin/sh' './configure'  '--prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common' '--enable-cxx' 'CC=/usr/bin/clang' 'CXX=/usr/bin/clang++' 'CXXFLAGS=-std=c++11 -stdlib=libc++' $ac_configure_extra_args --no-create --no-recursion
   shift
   $as_echo "running CONFIG_SHELL=/bin/sh $*" >&6
   CONFIG_SHELL='/bin/sh'
@@ -573,11 +573,11 @@ SHELL='/bin/sh'
 ECHO='printf %s\n'
 PATH_SEPARATOR=':'
 host_alias=''
-host='coreisbr-apple-darwin13.1.0'
-host_os='darwin13.1.0'
+host='corei-apple-darwin13.2.0'
+host_os='darwin13.2.0'
 build_alias=''
-build='coreisbr-apple-darwin13.1.0'
-build_os='darwin13.1.0'
+build='corei-apple-darwin13.2.0'
+build_os='darwin13.2.0'
 SED='/usr/bin/sed'
 Xsed='/usr/bin/sed -e 1s/^X//'
 GREP='/usr/bin/grep'
@@ -1099,7 +1099,7 @@ S["OBJEXT"]="o"
 S["EXEEXT"]=""
 S["ac_ct_CC"]="/usr/bin/clang"
 S["CPPFLAGS"]=""
-S["LDFLAGS"]="-stdlib=libc++ -headerpad_max_install_names"
+S["LDFLAGS"]=""
 S["CFLAGS"]="-O2 -pedantic -m64 -mtune=corei7 -march=corei7"
 S["CC"]="/usr/bin/clang"
 S["DEFN_LONG_LONG_LIMB"]="/* #undef _LONG_LONG_LIMB */"
@@ -1119,7 +1119,7 @@ S["MAINTAINER_MODE_FALSE"]=""
 S["MAINTAINER_MODE_TRUE"]="#"
 S["am__untar"]="${AMTAR} xf -"
 S["am__tar"]="${AMTAR} chof - \"$$tardir\""
-S["AMTAR"]="${SHELL} /Volumes/spin/Development/clasp-Lisp/externals/src/gmp-5.0.5/missing --run tar"
+S["AMTAR"]="${SHELL} /Users/meister/Development/cando/clasp/externals/gmp-5.0.5/missing --run tar"
 S["am__leading_dot"]="."
 S["SET_MAKE"]=""
 S["AWK"]="awk"
@@ -1127,12 +1127,12 @@ S["mkdir_p"]="$(top_builddir)/./install-sh -c -d"
 S["MKDIR_P"]="./install-sh -c -d"
 S["INSTALL_STRIP_PROGRAM"]="$(install_sh) -c -s"
 S["STRIP"]="strip"
-S["install_sh"]="${SHELL} /Volumes/spin/Development/clasp-Lisp/externals/src/gmp-5.0.5/install-sh"
-S["MAKEINFO"]="${SHELL} /Volumes/spin/Development/clasp-Lisp/externals/src/gmp-5.0.5/missing --run makeinfo"
-S["AUTOHEADER"]="${SHELL} /Volumes/spin/Development/clasp-Lisp/externals/src/gmp-5.0.5/missing --run autoheader"
-S["AUTOMAKE"]="${SHELL} /Volumes/spin/Development/clasp-Lisp/externals/src/gmp-5.0.5/missing --run automake-1.11"
-S["AUTOCONF"]="${SHELL} /Volumes/spin/Development/clasp-Lisp/externals/src/gmp-5.0.5/missing --run autoconf"
-S["ACLOCAL"]="${SHELL} /Volumes/spin/Development/clasp-Lisp/externals/src/gmp-5.0.5/missing --run aclocal-1.11"
+S["install_sh"]="${SHELL} /Users/meister/Development/cando/clasp/externals/gmp-5.0.5/install-sh"
+S["MAKEINFO"]="${SHELL} /Users/meister/Development/cando/clasp/externals/gmp-5.0.5/missing --run makeinfo"
+S["AUTOHEADER"]="${SHELL} /Users/meister/Development/cando/clasp/externals/gmp-5.0.5/missing --run autoheader"
+S["AUTOMAKE"]="${SHELL} /Users/meister/Development/cando/clasp/externals/gmp-5.0.5/missing --run automake-1.11"
+S["AUTOCONF"]="${SHELL} /Users/meister/Development/cando/clasp/externals/gmp-5.0.5/missing --run autoconf"
+S["ACLOCAL"]="${SHELL} /Users/meister/Development/cando/clasp/externals/gmp-5.0.5/missing --run aclocal-1.11"
 S["VERSION"]="5.0.5"
 S["PACKAGE"]="gmp"
 S["CYGPATH_W"]="echo"
@@ -1140,14 +1140,14 @@ S["am__isrc"]=""
 S["INSTALL_DATA"]="${INSTALL} -m 644"
 S["INSTALL_SCRIPT"]="${INSTALL}"
 S["INSTALL_PROGRAM"]="${INSTALL}"
-S["host_os"]="darwin13.1.0"
+S["host_os"]="darwin13.2.0"
 S["host_vendor"]="apple"
-S["host_cpu"]="coreisbr"
-S["host"]="coreisbr-apple-darwin13.1.0"
-S["build_os"]="darwin13.1.0"
+S["host_cpu"]="corei"
+S["host"]="corei-apple-darwin13.2.0"
+S["build_os"]="darwin13.2.0"
 S["build_vendor"]="apple"
-S["build_cpu"]="coreisbr"
-S["build"]="coreisbr-apple-darwin13.1.0"
+S["build_cpu"]="corei"
+S["build"]="corei-apple-darwin13.2.0"
 S["target_alias"]=""
 S["host_alias"]=""
 S["build_alias"]=""
@@ -1176,7 +1176,7 @@ S["libexecdir"]="${exec_prefix}/libexec"
 S["sbindir"]="${exec_prefix}/sbin"
 S["bindir"]="${exec_prefix}/bin"
 S["program_transform_name"]="s,x,x,"
-S["prefix"]="/Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common"
+S["prefix"]="/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common"
 S["exec_prefix"]="${prefix}"
 S["PACKAGE_URL"]="http://www.gnu.org/software/gmp/"
 S["PACKAGE_BUGREPORT"]="gmp-bugs@gmplib.org, see http://gmplib.org/manual/Reporting-Bugs.html"
@@ -1236,7 +1236,7 @@ D["PACKAGE_URL"]=" \"http://www.gnu.org/software/gmp/\""
 D["PACKAGE"]=" \"gmp\""
 D["VERSION"]=" \"5.0.5\""
 D["WANT_FFT"]=" 1"
-D["HAVE_HOST_CPU_coreisbr"]=" 1"
+D["HAVE_HOST_CPU_corei"]=" 1"
 D["HAVE_SPEED_CYCLECOUNTER"]=" 2"
 D["HAVE_CALLING_CONVENTIONS"]=" 1"
 D["PROTOTYPES"]=" 1"
@@ -1498,7 +1498,7 @@ D["HAVE_NATIVE_func"]=" 1"
 D["HAVE_NATIVE_mpn_addaddmul_1msb0"]=" 1"
 D["LSYM_PREFIX"]=" \"L\""
 D["HAVE_HOST_CPU_FAMILY_x86_64"]=" 1"
-D["GMP_MPARAM_H_SUGGEST"]=" \"./mpn/x86_64/coreisbr/gmp-mparam.h\""
+D["GMP_MPARAM_H_SUGGEST"]=" \"./mpn/x86_64/coreinhm/gmp-mparam.h\""
 D["SIZEOF_VOID_P"]=" 8"
 D["SIZEOF_UNSIGNED_SHORT"]=" 2"
 D["SIZEOF_UNSIGNED"]=" 4"

@@ -21,7 +21,7 @@ RL_LIBRARY_VERSION = 6.2
 SHELL = /bin/sh
 RM = rm -f
 
-prefix = /Volumes/spin/Development/clasp-Lisp/build/cando.app/Contents/Resources/externals/common
+prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix = ${prefix}
 
 datarootdir = ${prefix}/share
@@ -32,7 +32,7 @@ datadir = ${datarootdir}
 VPATH = .
 top_srcdir = ..
 #BUILD_DIR = .
-BUILD_DIR = /Volumes/spin/Development/clasp-Lisp/externals/src/readline-6.2
+BUILD_DIR = /Users/meister/Development/cando/clasp/externals/readline-6.2
 installdir = $(datadir)/readline
 
 INSTALL = /usr/bin/install -c
@@ -46,7 +46,7 @@ OBJEXT = o
 DESTDIR =
 
 DEFS = -DHAVE_CONFIG_H
-CC = /usr/bin/clang
+CC = gcc
 CFLAGS = -g -O
 LOCAL_CFLAGS =  -DREADLINE_LIBRARY -DRL_LIBRARY_VERSION='"$(RL_LIBRARY_VERSION)"'
 CPPFLAGS = 
@@ -54,7 +54,7 @@ CPPFLAGS =
 INCLUDES = -I$(srcdir) -I$(top_srcdir) -I..
 
 CCFLAGS  = $(DEFS) $(LOCAL_CFLAGS) $(CPPFLAGS) $(INCLUDES) $(CFLAGS)
-LDFLAGS = -g -L.. -stdlib=libc++ -headerpad_max_install_names
+LDFLAGS = -g -L.. 
 
 PURIFY = 
 

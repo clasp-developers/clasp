@@ -16,7 +16,7 @@ endif
 
 
 CLANG_SOURCE_DIR = clang
-OPENMPI_SOURCE_DIR = openmpi
+OPENMPI_SOURCE_DIR = openmpi-1.6.5
 MPS_SOURCE_DIR = mps-temporary
 ECL_SOURCE_DIR = ecl
 
