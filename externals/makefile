@@ -1,3 +1,9 @@
+ifeq ($(DEVELOPMENT_ENVIRONMENT),linuxClang)
+CLASP_CXXFLAGS="-std=c++11"
+else
+CLASP_CXXFLAGS="-std=c++11 -stdlib=libc++"
+endif
+
 REQUIRES_RTTI=$(CLASP_REQUIRES_RTTI)
 BOEHM_VERSION=7.2
 DMALLOC_VERSION=5.5.2
@@ -288,9 +294,7 @@ gmp-clean:
 
 gmp-setup:
 	(cd $(GMP_SOURCE_DIR); \
-		export CXX="/usr/bin/clang++"; \
-		export CC="/usr/bin/clang"; \
-		export CXXFLAGS="-std=c++11 -stdlib=libc++"; \
+		CXXFLAGS=$(CLASP_CXXFLAGS); \
 		./configure --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR) --enable-cxx)
 	echo "If this failed - use make gmp-clean first to clear out old configuration"
 

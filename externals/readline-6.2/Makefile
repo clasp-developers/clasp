@@ -29,7 +29,7 @@ PACKAGE_VERSION = 6.2
 srcdir = .
 VPATH = .
 top_srcdir = .
-BUILD_DIR = /Users/meister/Development/cando/clasp/externals/readline-6.2
+BUILD_DIR = /home/meister/Development/clasp/externals/readline-6.2
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}

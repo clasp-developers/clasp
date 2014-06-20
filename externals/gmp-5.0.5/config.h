@@ -63,7 +63,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 #define HAVE_CLOCK 1
 
 /* Define to 1 if you have the `clock_gettime' function. */
-/* #undef HAVE_CLOCK_GETTIME */
+#define HAVE_CLOCK_GETTIME 1
 
 /* Define to 1 if you have the `cputime' function. */
 /* #undef HAVE_CPUTIME */
@@ -308,13 +308,13 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 #define HAVE_NL_TYPES_H 1
 
 /* Define to 1 if you have the `obstack_vprintf' function. */
-/* #undef HAVE_OBSTACK_VPRINTF */
+#define HAVE_OBSTACK_VPRINTF 1
 
 /* Define to 1 if you have the `popen' function. */
 #define HAVE_POPEN 1
 
 /* Define to 1 if you have the `processor_info' function. */
-#define HAVE_PROCESSOR_INFO 1
+/* #undef HAVE_PROCESSOR_INFO */
 
 /* Define to 1 if <sys/pstat.h> `struct pst_processor' exists and contains
    `psp_iticksperclktick'. */
@@ -342,7 +342,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 #define HAVE_SIGALTSTACK 1
 
 /* Define to 1 if you have the `sigstack' function. */
-/* #undef HAVE_SIGSTACK */
+#define HAVE_SIGSTACK 1
 
 /* Tune directory speed_cyclecounter, undef=none, 1=32bits, 2=64bits) */
 #define HAVE_SPEED_CYCLECOUNTER 2
@@ -396,7 +396,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 #define HAVE_SYSCTL 1
 
 /* Define to 1 if you have the `sysctlbyname' function. */
-#define HAVE_SYSCTLBYNAME 1
+/* #undef HAVE_SYSCTLBYNAME */
 
 /* Define to 1 if you have the `syssgi' function. */
 /* #undef HAVE_SYSSGI */
@@ -429,7 +429,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 #define HAVE_SYS_SYSCTL_H 1
 
 /* Define to 1 if you have the <sys/sysinfo.h> header file. */
-/* #undef HAVE_SYS_SYSINFO_H */
+#define HAVE_SYS_SYSINFO_H 1
 
 /* Define to 1 if you have the <sys/syssgi.h> header file. */
 /* #undef HAVE_SYS_SYSSGI_H */
@@ -459,7 +459,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 #define HAVE_VSNPRINTF 1
 
 /* Assembler local label prefix */
-#define LSYM_PREFIX "L"
+#define LSYM_PREFIX ".L"
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
@@ -565,7 +565,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 
 /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
    `char[]'. */
-#define YYTEXT_POINTER 1
+/* #undef YYTEXT_POINTER */
 
 /* Define like PROTOTYPES; this can be used by system headers. */
 #define __PROTOTYPES 1

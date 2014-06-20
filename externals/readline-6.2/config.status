@@ -173,17 +173,17 @@ $as_unset CDPATH
 
 
 
-  as_lineno_1=$LINENO
-  as_lineno_2=$LINENO
+  as_lineno_1=10819
+  as_lineno_2=10820
   test "x$as_lineno_1" != "x$as_lineno_2" &&
   test "x`expr $as_lineno_1 + 1`" = "x$as_lineno_2" || {
 
-  # Create $as_me.lineno as a copy of $as_myself, but with $LINENO
+  # Create $as_me.lineno as a copy of $as_myself, but with 10824
   # uniformly replaced by the line number.  The first 'sed' inserts a
-  # line-number line after each line using $LINENO; the second 'sed'
+  # line-number line after each line using 10826; the second 'sed'
   # does the real work.  The second script uses 'N' to pair each
-  # line-number line with the line containing $LINENO, and appends
-  # trailing '-' during substitution so that $LINENO is not a special
+  # line-number line with the line containing 10828, and appends
+  # trailing '-' during substitution so that 10829 is not a special
   # case at line end.
   # (Raja R Harinath suggested sed '=', and Paul Eggert wrote the
   # scripts with optimization help from Paolo Bonzini.  Blame Lee
@@ -363,7 +363,7 @@ Copyright (C) 2008 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/Users/meister/Development/cando/clasp/externals/readline-6.2'
+ac_pwd='/home/meister/Development/clasp/externals/readline-6.2'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 test -n "$AWK" || AWK=awk
@@ -466,7 +466,7 @@ do
     "shlib/Makefile") CONFIG_FILES="$CONFIG_FILES shlib/Makefile" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
-  *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
+  *) { { $as_echo "$as_me:11141: error: invalid argument: $ac_config_target" >&5
 $as_echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -535,7 +535,7 @@ S["ARFLAGS"]="cr"
 S["LOCAL_DEFS"]=""
 S["LOCAL_LDFLAGS"]=""
 S["LOCAL_CFLAGS"]=""
-S["BUILD_DIR"]="/Users/meister/Development/cando/clasp/externals/readline-6.2"
+S["BUILD_DIR"]="/home/meister/Development/clasp/externals/readline-6.2"
 S["PURIFY"]=""
 S["SHARED_INSTALL_TARGET"]="install-shared"
 S["STATIC_INSTALL_TARGET"]="install-static"
@@ -543,20 +543,20 @@ S["SHARED_TARGET"]="shared"
 S["STATIC_TARGET"]="static"
 S["SHLIB_MINOR"]="2"
 S["SHLIB_MAJOR"]="6"
-S["SHLIB_LIBS"]="-lncurses"
+S["SHLIB_LIBS"]=""
 S["SHLIB_DLLVERSION"]="$(SHLIB_MAJOR)"
-S["SHLIB_LIBVERSION"]="$(SHLIB_MAJOR)$(SHLIB_MINOR).$(SHLIB_LIBSUFF)"
-S["SHLIB_LIBSUFF"]="dylib"
+S["SHLIB_LIBVERSION"]="$(SHLIB_LIBSUFF).$(SHLIB_MAJOR)$(SHLIB_MINOR)"
+S["SHLIB_LIBSUFF"]="so"
 S["SHLIB_LIBPREF"]="lib"
 S["SHLIB_DOT"]="."
-S["SHLIB_XLDFLAGS"]="-arch_only `/usr/bin/arch` -install_name $(libdir)/$@ -current_version $(SHLIB_MAJOR)$(SHLIB_MINOR) -compatibility_version $(SHLIB_MAJOR) -v"
+S["SHLIB_XLDFLAGS"]="-Wl,-rpath,$(libdir) -Wl,-soname,`basename $@ $(SHLIB_MINOR)`"
 S["SHLIB_STATUS"]="supported"
-S["SHOBJ_STATUS"]="unsupported"
+S["SHOBJ_STATUS"]="supported"
 S["SHOBJ_LIBS"]=""
 S["SHOBJ_XLDFLAGS"]=""
-S["SHOBJ_LDFLAGS"]="-dynamic"
+S["SHOBJ_LDFLAGS"]="-shared -Wl,-soname,$@"
 S["SHOBJ_LD"]="${CC}"
-S["SHOBJ_CFLAGS"]="-fno-common"
+S["SHOBJ_CFLAGS"]="-fPIC"
 S["SHOBJ_CC"]="gcc"
 S["LIBOBJS"]=" ${LIBOBJDIR}mbschr$U.o"
 S["MAKE_SHELL"]="/bin/sh"
@@ -565,8 +565,8 @@ S["AR"]="ar"
 S["INSTALL_DATA"]="${INSTALL} -m 644"
 S["INSTALL_SCRIPT"]="${INSTALL}"
 S["INSTALL_PROGRAM"]="${INSTALL}"
-S["EGREP"]="/usr/bin/grep -E"
-S["GREP"]="/usr/bin/grep"
+S["EGREP"]="/bin/grep -E"
+S["GREP"]="/bin/grep"
 S["CPP"]="gcc -E"
 S["OBJEXT"]="o"
 S["EXEEXT"]=""
@@ -577,21 +577,21 @@ S["CFLAGS"]="-g -O"
 S["CC"]="gcc"
 S["SET_MAKE"]=""
 S["CROSS_COMPILE"]=""
-S["host_os"]="darwin13.2.0"
-S["host_vendor"]="apple"
-S["host_cpu"]="i386"
-S["host"]="i386-apple-darwin13.2.0"
-S["build_os"]="darwin13.2.0"
-S["build_vendor"]="apple"
-S["build_cpu"]="i386"
-S["build"]="i386-apple-darwin13.2.0"
+S["host_os"]="linux-gnu"
+S["host_vendor"]="unknown"
+S["host_cpu"]="x86_64"
+S["host"]="x86_64-unknown-linux-gnu"
+S["build_os"]="linux-gnu"
+S["build_vendor"]="unknown"
+S["build_cpu"]="x86_64"
+S["build"]="x86_64-unknown-linux-gnu"
 S["target_alias"]=""
 S["host_alias"]=""
 S["build_alias"]=""
 S["LIBS"]=""
 S["ECHO_T"]=""
-S["ECHO_N"]=""
-S["ECHO_C"]="\\c"
+S["ECHO_N"]="-n"
+S["ECHO_C"]=""
 S["DEFS"]="-DHAVE_CONFIG_H"
 S["mandir"]="${datarootdir}/man"
 S["localedir"]="${datarootdir}/locale"
@@ -654,7 +654,7 @@ if sed "s/$ac_cr//" < /dev/null > /dev/null 2>&1; then
 else
   cat
 fi < "$tmp/subs1.awk" > "$tmp/subs.awk" \
-  || { { $as_echo "$as_me:$LINENO: error: could not setup config files machinery" >&5
+  || { { $as_echo "$as_me:11316: error: could not setup config files machinery" >&5
 $as_echo "$as_me: error: could not setup config files machinery" >&2;}
    { (exit 1); exit 1; }; }
 fi # test -n "$CONFIG_FILES"
@@ -718,17 +718,16 @@ D["HAVE_LIMITS_H"]=" 1"
 D["HAVE_LOCALE_H"]=" 1"
 D["HAVE_PWD_H"]=" 1"
 D["HAVE_MEMORY_H"]=" 1"
-D["HAVE_TERMCAP_H"]=" 1"
 D["HAVE_TERMIOS_H"]=" 1"
+D["HAVE_TERMIO_H"]=" 1"
 D["HAVE_SYS_SELECT_H"]=" 1"
 D["HAVE_SYS_FILE_H"]=" 1"
 D["HAVE_POSIX_SIGNALS"]=" 1"
 D["HAVE_POSIX_SIGSETJMP"]=" 1"
 D["HAVE_LSTAT"]=" 1"
-D["CTYPE_NON_ASCII"]=" 1"
 D["HAVE_GETPW_DECLS"]=" 1"
+D["GWINSZ_IN_SYS_IOCTL"]=" 1"
 D["VOID_SIGHANDLER"]=" 1"
-D["TIOCSTAT_IN_SYS_IOCTL"]=" 1"
 D["FIONREAD_IN_SYS_IOCTL"]=" 1"
 D["STRUCT_WINSIZE_IN_SYS_IOCTL"]=" 1"
 D["HAVE_STRUCT_DIRENT_D_INO"]=" 1"
@@ -788,7 +787,7 @@ D["HAVE_WINT_T"]=" 1"
 }
 { print }
 _ACAWK
-  { { $as_echo "$as_me:$LINENO: error: could not setup config headers machinery" >&5
+  { { $as_echo "$as_me:11446: error: could not setup config headers machinery" >&5
 $as_echo "$as_me: error: could not setup config headers machinery" >&2;}
    { (exit 1); exit 1; }; }
 fi # test -n "$CONFIG_HEADERS"
@@ -803,7 +802,7 @@ do
   esac
   case $ac_mode$ac_tag in
   :[FHL]*:*);;
-  :L* | :C*:*) { { $as_echo "$as_me:$LINENO: error: invalid tag $ac_tag" >&5
+  :L* | :C*:*) { { $as_echo "$as_me:11461: error: invalid tag $ac_tag" >&5
 $as_echo "$as_me: error: invalid tag $ac_tag" >&2;}
    { (exit 1); exit 1; }; };;
   :[FH]-) ac_tag=-:-;;
@@ -833,7 +832,7 @@ $as_echo "$as_me: error: invalid tag $ac_tag" >&2;}
 	   [\\/$]*) false;;
 	   *) test -f "$srcdir/$ac_f" && ac_f="$srcdir/$ac_f";;
 	   esac ||
-	   { { $as_echo "$as_me:$LINENO: error: cannot find input file: $ac_f" >&5
+	   { { $as_echo "$as_me:11491: error: cannot find input file: $ac_f" >&5
 $as_echo "$as_me: error: cannot find input file: $ac_f" >&2;}
    { (exit 1); exit 1; }; };;
       esac
@@ -849,7 +848,7 @@ $as_echo "$as_me: error: cannot find input file: $ac_f" >&2;}
 	`' by configure.'
     if test x"$ac_file" != x-; then
       configure_input="$ac_file.  $configure_input"
-      { $as_echo "$as_me:$LINENO: creating $ac_file" >&5
+      { $as_echo "$as_me:11507: creating $ac_file" >&5
 $as_echo "$as_me: creating $ac_file" >&6;}
     fi
     # Neutralize special characters interpreted by sed in replacement strings.
@@ -862,7 +861,7 @@ $as_echo "$as_me: creating $ac_file" >&6;}
 
     case $ac_tag in
     *:-:* | *:-) cat >"$tmp/stdin" \
-      || { { $as_echo "$as_me:$LINENO: error: could not create $ac_file" >&5
+      || { { $as_echo "$as_me:11520: error: could not create $ac_file" >&5
 $as_echo "$as_me: error: could not create $ac_file" >&2;}
    { (exit 1); exit 1; }; } ;;
     esac
@@ -930,7 +929,7 @@ $as_echo X"$as_dir" |
       test -d "$as_dir" && break
     done
     test -z "$as_dirs" || eval "mkdir $as_dirs"
-  } || test -d "$as_dir" || { { $as_echo "$as_me:$LINENO: error: cannot create directory $as_dir" >&5
+  } || test -d "$as_dir" || { { $as_echo "$as_me:11588: error: cannot create directory $as_dir" >&5
 $as_echo "$as_me: error: cannot create directory $as_dir" >&2;}
    { (exit 1); exit 1; }; }; }
   ac_builddir=.
@@ -996,7 +995,7 @@ ac_sed_dataroot='
 case `eval "sed -n \"\$ac_sed_dataroot\" $ac_file_inputs"` in
 *datarootdir*) ac_datarootdir_seen=yes;;
 *@datadir@*|*@docdir@*|*@infodir@*|*@localedir@*|*@mandir@*)
-  { $as_echo "$as_me:$LINENO: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&5
+  { $as_echo "$as_me:11657: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&5
 $as_echo "$as_me: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&2;}
   ac_datarootdir_hack='
   s&@datadir@&${datarootdir}&g
@@ -1031,14 +1030,14 @@ s&@INSTALL@&$ac_INSTALL&;t t
 $ac_datarootdir_hack
 "
 eval sed \"\$ac_sed_extra\" "$ac_file_inputs" | $AWK -f "$tmp/subs.awk" >$tmp/out \
-  || { { $as_echo "$as_me:$LINENO: error: could not create $ac_file" >&5
+  || { { $as_echo "$as_me:11695: error: could not create $ac_file" >&5
 $as_echo "$as_me: error: could not create $ac_file" >&2;}
    { (exit 1); exit 1; }; }
 
 test -z "$ac_datarootdir_hack$ac_datarootdir_seen" &&
   { ac_out=`sed -n '/\${datarootdir}/p' "$tmp/out"`; test -n "$ac_out"; } &&
   { ac_out=`sed -n '/^[	 ]*datarootdir[	 ]*:*=/p' "$tmp/out"`; test -z "$ac_out"; } &&
-  { $as_echo "$as_me:$LINENO: WARNING: $ac_file contains a reference to the variable \`datarootdir'
+  { $as_echo "$as_me:11702: WARNING: $ac_file contains a reference to the variable \`datarootdir'
 which seems to be undefined.  Please make sure it is defined." >&5
 $as_echo "$as_me: WARNING: $ac_file contains a reference to the variable \`datarootdir'
 which seems to be undefined.  Please make sure it is defined." >&2;}
@@ -1048,7 +1047,7 @@ which seems to be undefined.  Please make sure it is defined." >&2;}
   -) cat "$tmp/out" && rm -f "$tmp/out";;
   *) rm -f "$ac_file" && mv "$tmp/out" "$ac_file";;
   esac \
-  || { { $as_echo "$as_me:$LINENO: error: could not create $ac_file" >&5
+  || { { $as_echo "$as_me:11712: error: could not create $ac_file" >&5
 $as_echo "$as_me: error: could not create $ac_file" >&2;}
    { (exit 1); exit 1; }; }
  ;;
@@ -1061,29 +1060,29 @@ $as_echo "$as_me: error: could not create $ac_file" >&2;}
       $as_echo "/* $configure_input  */" \
       && eval '$AWK -f "$tmp/defines.awk"' "$ac_file_inputs"
     } >"$tmp/config.h" \
-      || { { $as_echo "$as_me:$LINENO: error: could not create $ac_file" >&5
+      || { { $as_echo "$as_me:11725: error: could not create $ac_file" >&5
 $as_echo "$as_me: error: could not create $ac_file" >&2;}
    { (exit 1); exit 1; }; }
     if diff "$ac_file" "$tmp/config.h" >/dev/null 2>&1; then
-      { $as_echo "$as_me:$LINENO: $ac_file is unchanged" >&5
+      { $as_echo "$as_me:11729: $ac_file is unchanged" >&5
 $as_echo "$as_me: $ac_file is unchanged" >&6;}
     else
       rm -f "$ac_file"
       mv "$tmp/config.h" "$ac_file" \
-	|| { { $as_echo "$as_me:$LINENO: error: could not create $ac_file" >&5
+	|| { { $as_echo "$as_me:11734: error: could not create $ac_file" >&5
 $as_echo "$as_me: error: could not create $ac_file" >&2;}
    { (exit 1); exit 1; }; }
     fi
   else
     $as_echo "/* $configure_input  */" \
       && eval '$AWK -f "$tmp/defines.awk"' "$ac_file_inputs" \
-      || { { $as_echo "$as_me:$LINENO: error: could not create -" >&5
+      || { { $as_echo "$as_me:11741: error: could not create -" >&5
 $as_echo "$as_me: error: could not create -" >&2;}
    { (exit 1); exit 1; }; }
   fi
  ;;
 
-  :C)  { $as_echo "$as_me:$LINENO: executing $ac_file commands" >&5
+  :C)  { $as_echo "$as_me:11747: executing $ac_file commands" >&5
 $as_echo "$as_me: executing $ac_file commands" >&6;}
  ;;
   esac
