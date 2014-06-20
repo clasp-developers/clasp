@@ -1,0 +1,55 @@
+Authors of GNU MP (in chronological order of initial contribution)
+
+Torbjörn Granlund	Main author
+
+John Amanatides		Original version of mpz/pprime_p.c
+
+Paul Zimmermann		mpn/generic/mul_fft.c, dc_divrem_n.c, rootrem.c,
+			old mpz/powm.c, old toom3 code.
+
+Ken Weber		mpn/generic/bdivmod.c, old mpn/generic/gcd.c
+
+Bennet Yee		mpz/jacobi.c mpz/legendre.c
+
+Andreas Schwab		mpn/m68k/lshift.asm, mpn/m68k/rshift.asm
+
+Robert Harley		Old mpn/generic/mul_n.c, many files in mpn/arm
+
+Linus Nordberg		Random number framework, original autoconfery
+
+Kent Boortz		MacOS 9 port
+
+Kevin Ryde		Most x86 assembly, new autoconfery, and countless other
+			things (please see the GMP manual for complete list)
+
+Gerardo Ballabio	gmpxx.h and C++ istream input
+
+Pedro Gimeno		Mersenne Twister random generator, other random number
+			revisions
+
+Jason Moxham		mpz/fac_ui.c and gen-fac_ui.c
+
+Niels Möller		mpn/generic/hgcd2.c, gcd.c, gcdext.c, matrix22_mul.c,
+			hgcd.c, gcdext_1.c, gcd_subdiv_step.c, gcd_lehmer.c,
+			gcdext_subdiv_step.c, gcdext_lehmer.c,
+			toom_interpolate_7pts, mulmod_bnm1.c, dcpi1_bdiv_qr.c,
+			dcpi1_bdiv_q.c, sbpi1_bdiv_qr.c, sbpi1_bdiv_q.c,
+			toom_eval_dgr3_pm1.c, toom_eval_dgr3_pm2.c,
+			toom_eval_pm1.c, toom_eval_pm2.c, toom_eval_pm2exp.c,
+			divexact.c, mpn/x86/invert_limb.asm,
+			mpn/x86_64/invert_limb.asm, mpz/nextprime.c,
+			mpz/divexact.c.
+
+Marco Bodrato		mpn/generic/toom44_mul.c, toom4_sqr.c, toom53_mul.c,
+			toom62_mul.c, toom43_mul.c, toom52_mul.c,
+			toom_interpolate_6pts.c, toom_couple_handling.c,
+			toom63_mul.c, toom_interpolate_8pts.c,
+			toom6h_mul.c, toom6_sqr.c, toom_interpolate_12pts.c,
+			toom8h_mul.c, toom8_sqr.c, toom_interpolate_16pts.c,
+			mulmod_bnm1.c, sqrmod_bnm1.c, nussbaumer_mul.c,
+			toom_eval_pm2.c, toom_eval_pm2rexp.c,
+			mullo_n.c, invert.c, invertappr.c.
+
+David Harvey		mpn/x86_64/mul_basecase.asm
+
+Martin Boij		mpn/generic/perfpow.c

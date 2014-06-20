@@ -1,0 +1,1 @@
+../mpn/generic/get_d.c
