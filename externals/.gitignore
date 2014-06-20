@@ -1,0 +1,5 @@
+*.o
+boost/
+boostbuild2/
+llvm/
+openmpi-1.6.5/
