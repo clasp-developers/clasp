@@ -28,6 +28,8 @@ namespace clbind {
         Begin   _begin;
         End     _end;
     public:
+        virtual size_t templatedSizeof() const { return sizeof(*this); };
+    public:
         DISABLE_NEW();
         core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
         {

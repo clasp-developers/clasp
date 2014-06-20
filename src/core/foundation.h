@@ -901,6 +901,7 @@ namespace core {
         virtual bool allocates() const { return true;};
         /*! If this is the allocator for a primary CxxAdapter class then return true, */
         virtual int duplicationLevel() const { return 0;};
+        virtual size_t templatedSizeof() const = 0;
         virtual Creator* duplicateForClassName(core::Symbol_sp className) {printf("Subclass must implement Creator::duplicateForClassName\n"); exit(1);};
         virtual void describe() const = 0;
         virtual core::T_sp allocate() = 0;
@@ -1190,7 +1191,7 @@ namespace core
     public:
 	virtual string describe() const {return "Functoid - subclass must implement describe()";};
 	virtual T_mv activate(ActivationFrame_sp closedOverFrame, int nargs, ArgArray argArray) {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
-
+        virtual size_t templatedSizeof() const = 0;
 	void dump() const
 	{
 	    printf( "Functoid - %s\n", this->_Name.c_str() );

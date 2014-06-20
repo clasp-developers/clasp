@@ -23,6 +23,7 @@ namespace clbind
         core::T_sp unsafeElement() const {
             return translate::to_object<IT>::convert(this->_Iterator);
         }
+        size_t templatedSizeof() const { return sizeof(*this); };
         void step() {++this->_Iterator;};
         bool operator==(core::T_sp other) const {
             if ( gctools::smart_ptr<Iterator > io = other.asOrNull<Iterator<IT> >() ) {

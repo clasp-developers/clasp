@@ -38,6 +38,8 @@ namespace clbind {
         int _Kind;
         int _duplicationLevel;
     public:
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
+    public:
 #if 0
         virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
         {
@@ -108,6 +110,8 @@ namespace clbind {
         int _duplicationLevel;
     public:
         DISABLE_NEW();
+    public:
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
 #if 0
         virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
         {
@@ -175,6 +179,9 @@ namespace clbind {
     public:
         enum { NumParams = 0 };
         DerivableDefaultConstructorFunctoid(const string& name) : core::Functoid(name) {};
+    public:
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
+    public:
         DISABLE_NEW();
         core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
         {
@@ -209,6 +216,8 @@ namespace clbind {
     class VariadicConstructorFunctoid : public core::Functoid {
     public:
         typedef core::Functoid TemplatedBase;
+    public:
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
     };
 
 

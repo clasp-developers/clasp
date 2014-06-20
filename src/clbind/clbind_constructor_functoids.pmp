@@ -25,6 +25,7 @@ $var NumArgs = 8
                     enum { NumParams = $numArgs };
                     VariadicConstructorFunctoid(const string& name) : core::Functoid(name) {};
                     DISABLE_NEW();
+                    virtual size_t templatedSizeof() const { return sizeof(*this);};
                     core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
                     {
                         int countPureOutValues = CountPureOutValues<Pols>::value;

@@ -32,7 +32,7 @@ public:
     virtual bool operator<(T_sp other) const {SUBIMP();};
     virtual bool eql(T_sp other) const { return this->operator==(other);};
 
-
+    virtual size_t templatedSizeof() const {SUBIMP();};
 
     // Old way of doing things
 	virtual void first() {_OF(); SUBCLASS_MUST_IMPLEMENT(); };

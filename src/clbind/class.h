@@ -144,6 +144,7 @@ namespace clbind
         DummyCreator(const string& name) : _name(name) {};
     public:
         DISABLE_NEW();
+        virtual size_t templatedSizeof() const { return sizeof(*this); };
         virtual bool allocates() const { return false;};
         virtual void describe() const {
             printf("DummyCreator for: %s\n", this->_name.c_str());

@@ -21,6 +21,7 @@ namespace core
     template<typename Policies, typename OT, typename Method>
     class IndirectVariadicMethoid : public Functoid {
         typedef Functoid TemplatedBase;
+        virtual size_t templatedSizeof() const { return sizeof(*this); };
     };
 
 #include "external_wrappers_indirect_methoids.h"

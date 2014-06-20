@@ -25,6 +25,7 @@ namespace core {
         void setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
     public:
         virtual bool validp() const {SUBIMP();};
+        virtual size_t templatedSizeof() const {SUBIMP();};
 	virtual bool eq(core::T_sp obj) const;
 	virtual void* mostDerivedPointer() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
         Pointer_sp  address() const;

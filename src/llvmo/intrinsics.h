@@ -16,7 +16,7 @@ extern "C"
 	// By default the zeroth argument is dispatched on
 	explicit JITClosure(const string& name,fnTmvActivationFramesp fptr) : Closure(name), _FuncPtr(fptr) {};
         DISABLE_NEW();
-
+        virtual size_t templatedSizeof() const { return sizeof(*this);};
 	virtual string describe() const {return "JITClosure";};
 	core::T_mv activate(core::ActivationFrame_sp closedEnv,int nargs, ArgArray args)
 	{

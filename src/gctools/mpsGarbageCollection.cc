@@ -147,7 +147,8 @@ namespace gctools
     static mps_addr_t obj_isfwd(mps_addr_t client)
     {
 	Header_s* header = reinterpret_cast<Header_s*>(reinterpret_cast<char*>(client)-sizeof(Header_s));
-        MPS_LOG(BF(" client = %p base=%p  kind = %s") % client % header % header->description() );
+        MPS_LOG(BF(" client = %p base=%p") % client % header );
+        MPS_LOG(BF("    kind = %s") % header->description() );
         if (header->fwdP()) {
             MPS_LOG(BF("   isfwd=TRUE returning %p") % header->fwdPointer() );
             return header->fwdPointer();
@@ -275,6 +276,13 @@ namespace gctools {
 
 
 
+
+    mps_addr_t dummyAwlFindDependent(mps_addr_t addr)
+    {
+        return NULL;
+    }
+
+
 #define LENGTH(array)	(sizeof(array) / sizeof(array[0]))
 
     int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], mps_fmt_auto_header_s* obj_fmt_sP, bool mpiEnabled, int mpiRank, int mpiSize)
@@ -351,6 +359,7 @@ namespace gctools {
         /*! Use an AWL pool rather than and AMS pool until the AMS bug gets fixed */
         MPS_ARGS_BEGIN(args) {
             MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+            MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, dummyAwlFindDependent );
             res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create ams pool");

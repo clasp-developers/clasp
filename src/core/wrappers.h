@@ -16,6 +16,7 @@ namespace core
     class VariadicFunctoid : public Functoid {
     public:
         typedef Functoid TemplatedBase;
+        virtual size_t templatedSizeof() const { return sizeof(VariadicFunctoid<FN>);};
     };
 };
 
@@ -37,9 +38,16 @@ namespace core {
     class VariadicMethoid : public Functoid {
     public:
         typedef Functoid TemplatedBase;
+        size_t templatedSizeof() const { return sizeof(VariadicMethoid<DispatchOn,FN>);};
     };
 
 #include "wrappers_methoids.h"
+
+};
+
+
+namespace core{
+
 
     template <typename RT,typename... ARGS>
     void af_def(const string& packageName, const string& name, RT (*fp)(ARGS...) , const string& arguments="", const string& declares="", const string& docstring="", int locked=1 )
@@ -97,6 +105,7 @@ namespace core {
 // constructor
 	ActivationFrameMacroWrapPtr(const string& name, MacroPtr ptr) : Functoid(name),mptr(ptr) {}
         DISABLE_NEW();
+        size_t templatedSizeof() const { return sizeof(ActivationFrameMacroWrapPtr);};
 	T_mv activate( ActivationFrame_sp closedEnv, int nargs, ArgArray argArray)
 	{_G();
 	    Cons_sp form = argArray[0].as_or_nil<Cons_O>();

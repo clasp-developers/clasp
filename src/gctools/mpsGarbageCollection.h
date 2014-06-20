@@ -126,9 +126,16 @@ namespace gctools {
         
     private:
         uintptr_t       header;
+#ifdef CONFIG_VAR_COOL
+        uintptr_t       debugTag; // Always set to 0xDEADBEEF01234567
+#endif
         uintptr_t       data[0]; // This is where the client pointer starts
     public:
-        Header_s(GCKindEnum k) : header((k<<2)|kind_tag) {};
+        Header_s(GCKindEnum k) : header((k<<2)|kind_tag)
+#ifdef CONFIG_VAR_COOL
+                               , debugTag(0xDEADBEEF01234567)
+#endif
+        {};
 
         bool kindP() const { return (this->header&tag_mask)==kind_tag;};
         bool fwdP() const { return (this->header&tag_mask)==fwd_tag;};
@@ -155,8 +162,13 @@ namespace gctools {
         /*! This writes into the first uintptr_t sized word of the client data. */
         void setPadSize(size_t sz) { this->data[0] = sz; };
         string description() const {
-            if ( this->kindP() ) { return obj_name(this->kind()); }
-            else if ( this->fwdP() ) {
+            if ( this->kindP() ) {
+                std::stringstream ss;
+                ss << "Header=" << (void*)(this->header);
+                ss << "/";
+                ss << obj_name(this->kind());
+                return ss.str();
+            } else if ( this->fwdP() ) {
                 std::stringstream ss;
                 ss << "Fwd/ptr=" << this->fwdPointer() <<"/sz="<<this->fwdSize();
                 return ss.str();
@@ -165,8 +177,13 @@ namespace gctools {
             } else if (this->padP()) {
                 stringstream ss;
                 ss << "Pad/sz=" << this->padSize();
+                return ss.str();
             }
-            return "IllegalHeader_s";
+            stringstream ss;
+            ss << "IllegalHeader=";
+            ss << (void*)(this->header);
+            printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str() );
+            return ss.str();;
         }
    };
 
@@ -356,10 +373,6 @@ namespace gctools {
 
         
 
-#if 1 // use inlined functions rather than macros
-
-//       do { mps_ss_t _ss = (ss); mps_word_t _mps_zs = (_ss)->_zs; mps_word_t _mps_w = (_ss)->_w; mps_word_t _mps_ufs = (_ss)->_ufs; mps_word_t _mps_wt; { {
-
 namespace gctools {
     template <typename T> class smart_ptr;
 };
@@ -375,32 +388,38 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss
                         , const char* sptr_name
 #endif
     ) {
-    DEBUG_MPS_MESSAGE(boost::format("MY_MPS_FIX of %s@%p px: %p") % sptr_name % (sptrP)  % (sptrP)->px_ref()); 
+    DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP)  % (sptrP)->px_ref()); 
     if ( sptrP->pointerp() ) {                                    
 	if ( MPS_FIX1(_ss,(sptrP)->px_ref()) ) {          
             Seg seg;
-            mps_addr_t mostDerived;
+            mps_addr_t client;
             if (SegOfAddr(&seg,gctools::_global_arena,sptrP->px_ref())) {
-//                bool segpm = SegPM(seg);
-//                if ( segpm ) {
                     ShieldExpose(gctools::_global_arena,seg);
-                    mostDerived = dynamic_cast<void*>(sptrP->px_ref());
+                    client = dynamic_cast<void*>(sptrP->px_ref());
                     ShieldCover(gctools::_global_arena,seg);
-//                } else {
-//                    mostDerived = dynamic_cast<void*>(sptrP->px_ref());
-//                }
             } else {
                 THROW_HARD_ERROR(BF("SegOfAddr for address: %p failed - this should never happen") % sptrP->px_ref());
             }
-            mps_addr_t base = gctools::ClientPtrToBasePtr(mostDerived); 
+#if 0 // pass base to MPS_FIX2
+            mps_addr_t base = gctools::ClientPtrToBasePtr(client); 
 	    int offset = reinterpret_cast<char*>((sptrP)->px_ref()) - reinterpret_cast<char*>(base); 
-            DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p mostDerived=%p  base=%p  offset=%d  seg=%p") % sptrP->px_ref() % mostDerived % base % offset % seg ); 
+            DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p client=%p  base=%p  offset=%d  seg=%p") % sptrP->px_ref() % client % base % offset % seg ); 
 	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&base)); 
             DEBUG_MPS_MESSAGE(boost::format("  new_base=%p") % base);
             if (res != MPS_RES_OK) return res;              
             mps_addr_t new_obj = reinterpret_cast<void*>(reinterpret_cast<char*>(base)+offset);
             DEBUG_MPS_MESSAGE(boost::format("  old_obj=%p  new_obj = %p\n") % (sptrP->px_ref()) % new_obj ); 
             (sptrP)->_pxset(new_obj); 
+#else // pass client to MPS_FIX2
+	    int offset = reinterpret_cast<char*>((sptrP)->px_ref()) - reinterpret_cast<char*>(client); 
+            DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p client=%p  offset=%d  Seg=%p") % sptrP->px_ref() % client % offset % seg); 
+	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&client)); 
+            DEBUG_MPS_MESSAGE(boost::format("  new client=%p") % client);
+            if (res != MPS_RES_OK) return res;              
+            mps_addr_t new_obj = reinterpret_cast<void*>(reinterpret_cast<char*>(client)+offset);
+            DEBUG_MPS_MESSAGE(boost::format("  old_obj=%p  new_obj = %p\n") % (sptrP->px_ref()) % new_obj ); 
+            (sptrP)->_pxset(new_obj); 
+#endif
         }								
     };
     return MPS_RES_OK;
@@ -412,31 +431,42 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss
 #define SMART_PTR_FIX(_smartptr_) smartPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_smartptr_)
 #endif
 
-#else
-#define SMART_PTR_FIX(_smartptr_)						\
-    DEBUG_MPS_MESSAGE(boost::format("MY_MPS_FIX of %s@%p px: %p") % #_smartptr_ % (&(_smartptr_))  % (_smartptr_).px_ref()); \
-    if ( (_smartptr_).pointerp() ) {                                    \
-	if ( MPS_FIX1(GC_SCAN_STATE,(_smartptr_).px_ref()) ) {          \
-            mps_addr_t mostDerived = (_smartptr_).pbase();              \
-            mps_addr_t base = ClientPtrToBasePtr<void>(mostDerived); \
-	    int offset = reinterpret_cast<char*>((_smartptr_).px_ref()) - reinterpret_cast<char*>(base); \
-            DEBUG_MPS_MESSAGE(boost::format("  mostDerived=%p  base=%p  offset=%d\n") % mostDerived % base % offset ); \
-	    mps_res_t res = MPS_FIX2(GC_SCAN_STATE,reinterpret_cast<mps_addr_t*>(&base)); \
-            if (res != MPS_RES_OK) return res;                          \
-            (_smartptr_)._pxset(reinterpret_cast<void*>(reinterpret_cast<char*>(base)+offset)); \
-            DEBUG_MPS_MESSAGE(boost::format("  new base = %p\n") % base ); \
-        }								\
+
+template <typename T>
+inline mps_res_t ptrFix(mps_ss_t _ss
+                        , mps_word_t _mps_zs
+                        , mps_word_t _mps_w
+                        , mps_word_t& _mps_ufs
+                        , mps_word_t _mps_wt
+                        , T* clientP
+#ifdef DEBUG_MPS
+                        , const char* client_name
+#endif
+ )
+{
+    DEBUG_MPS_MESSAGE(boost::format("POINTER_FIX of %s@%p px: %p") % client_name % clientP  % *clientP );
+   if ( MPS_FIX1(GC_SCAN_STATE,*clientP) ) {                              
+#if 0 // pass base to MPS_FIX2
+        mps_addr_t base = ClientPtrToBasePtr(*clientP);         
+        mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&(base))); 
+        if (res != MPS_RES_OK) return res;                              
+        *clientP = BasePtrToMostDerivedPtr<void>(base);                    
+#else // pass client to MPS_FIX2
+        mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(clientP)); 
+        if (res != MPS_RES_OK) return res;                              
+#endif
     };
+   return MPS_RES_OK;
+};
+
+
+#ifdef DEBUG_MPS
+#define POINTER_FIX(_ptr_) ptrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_ptr_,#_ptr_)
+#else
+#define POINTER_FIX(_ptr_) ptrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_ptr_)
 #endif
 
-#define POINTER_FIX(_ptr_)                                              \
-    if ( MPS_FIX1(GC_SCAN_STATE,_ptr_) ) {                              \
-        void** ptrP = reinterpret_cast<void**>(&_ptr_);                 \
-        mps_addr_t base = ClientPtrToBasePtr<void>(_ptr_);         \
-        mps_res_t res = MPS_FIX2(GC_SCAN_STATE,reinterpret_cast<mps_addr_t*>(&(base))); \
-        if (res != MPS_RES_OK) return res;                              \
-        *ptrP = BasePtrToMostDerivedPtr<void>(base);                    \
-    };
+
 
 
 

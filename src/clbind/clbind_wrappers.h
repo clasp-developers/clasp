@@ -100,7 +100,7 @@ namespace clbind {
 //            printf("\n%s:%d - ctor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__, this, typeid(HolderType).name(),this->nakedPtr,clbind::support_adapterAddress<ExternalType>(this->nakedPtr), cid, _rep_(reg::globalClassIdToClassSymbol[cid]).c_str() );
         };
 
-
+        size_t templatedSizeof() const { return sizeof(*this); };
         void* mostDerivedPointer() const { return (void*)(this->nakedPtr_gc_ignore);};
 
         virtual class_id classId() const { return this->_classId;};
