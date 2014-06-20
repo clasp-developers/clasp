@@ -39,7 +39,7 @@ this program.  If not, see http://www.gnu.org/licenses/.  */
 #define HAVE_SIGALTSTACK  1
 
 /* Define if you have the `sigstack' function. */
-#define HAVE_SIGSTACK  0
+#define HAVE_SIGSTACK  1
 
 /* Define if the system has the type `stack_t'. */
 #define HAVE_STACK_T  1
