@@ -581,15 +581,12 @@ void bind_aux
     void throw_if_invalid_context(T_sp context)
     {_G();
 	if (context == _sym_macro
-//	    || context == _sym_ftype
 	    || context == cl::_sym_function
 	    || context == cl::_sym_method
 	    || context == cl::_sym_destructuring_bind
-//	     || context == cl::_sym_deftype
-//	     || context == cl::_sym_defsetf
-//	     || context == cl::_sym_define_method_combination
-//	     || context == cl::_sym_deftype
 	     || context == _lisp->_true() ) return;
+        printf("%s:%d context.px_ref= %p     cl::_sym_destructuring_bind.px_ref=%p\n",
+               __FILE__, __LINE__, context.px_ref(), cl::_sym_destructuring_bind.px_ref());
 	SIMPLE_ERROR(BF("Illegal parse_lambda_list context[%s]") % _rep_(context) );
     }
 

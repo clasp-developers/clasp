@@ -6,7 +6,7 @@
 namespace core
 {
     FORWARD(LoadTimeValues);
-    FORWARD(MemoryLockedLoadTimeValuesPointer);
+//    FORWARD(MemoryLockedLoadTimeValuesPointer);
 };
 
 

@@ -283,14 +283,13 @@ extern "C" {
 
             /*! I'm using a format_header so MPS gives me the object-pointer */
 #define GC_FINALIZE_METHOD
-            void obj_finalize( mps_addr_t ptr )
+            void obj_finalize( mps_addr_t client )
             {
-                THROW_HARD_ERROR(BF("Check what the ptr pointer is - is it a client or a base pointer"));
-#if 0
-            gctools::Header_s<void>* header = reinterpret_cast<gctools::Header_s<void>*>(base);
-            gctools::GCKindEnum kind = (GCKindEnum)(header->kind.Kind);
-            DEBUG_MPS_MESSAGE(BF("Finalizing base@%p   kind=%s") % base  % obj_name((gctools::GCKindEnum)(header->kind.Kind)) );
-            switch (kind) {
+                gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+                ASSERTF(header->kindP(),BF("obj_finalized called without a valid object"));
+                gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
+                DEBUG_MPS_MESSAGE(BF("Finalizing client@%p   kind=%s") % client % header->description() );
+                switch (kind) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_FINALIZE
 #include "main/clasp_gc.cc"
@@ -302,7 +301,6 @@ extern "C" {
             abort();
         }
         };
-#endif
     }
 #undef GC_FINALIZE_METHOD
 

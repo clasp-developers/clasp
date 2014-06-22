@@ -36,12 +36,10 @@ project clasp : requirements
 
 #       <define>USE_GCVECTOR_MALLOC_ALLOCATOR      # DO NOT USE WITH USE_MPS - just for testing GCVector
 
-#        <define>USE_AMC_POOL    # When this is on we use the AMC pool  off=AMS pool
-
-         <define>DEBUG_MPS_AMS_POOL    # use the debugging AMS pool and run tests on it
+#         <define>DEBUG_MPS_AMS_POOL    # use the debugging AMS pool and run tests on it
 #       <define>DEBUG_LOG_MPS_KINDS     # Give more verbose MPS debugging messages that include kind names
 #       <define>SOURCE_DEBUG
-	<define>DEBUG_MPS      # generate lots of debugging information for MPS
+#	<define>DEBUG_MPS      # generate lots of debugging information for MPS
        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>USE_PUT_SELECT_CLASSES_IN_AMC_POOL
 

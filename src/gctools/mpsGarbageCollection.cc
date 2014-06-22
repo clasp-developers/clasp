@@ -146,7 +146,7 @@ namespace gctools
 
     static mps_addr_t obj_isfwd(mps_addr_t client)
     {
-	Header_s* header = reinterpret_cast<Header_s*>(reinterpret_cast<char*>(client)-sizeof(Header_s));
+        Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(client));
         MPS_LOG(BF(" client = %p base=%p") % client % header );
         MPS_LOG(BF("    kind = %s") % header->description() );
         if (header->fwdP()) {
@@ -162,9 +162,9 @@ namespace gctools
     {
 	size_t alignment = Alignment();
 	MPS_LOG(BF("base = %p ALIGNMENT = %d size=%lu ") % base % alignment % size );
-	assert(size >= AlignUp(sizeof(Header_s)));
+	assert(size >= alignment );
 	Header_s* header = reinterpret_cast<Header_s*>(base);
-        if (size == AlignUp(sizeof(Header_s))) {
+        if (size == alignment) {
             header->setPad(Header_s::pad1_tag);
 	} else {
             header->setPad(Header_s::pad_tag);
@@ -264,19 +264,6 @@ namespace gctools {
 
 /* -------------------------------------------------- */
 
-    struct mps_fmt_auto_header_s default_obj_fmt_s = {
-        Alignment(),
-        obj_scan,
-        obj_skip,
-        obj_fwd,
-        obj_isfwd,
-        obj_pad,
-        0 // ALIGN(sizeof(Header_s))
-    };
-
-
-
-
     mps_addr_t dummyAwlFindDependent(mps_addr_t addr)
     {
         return NULL;
@@ -287,7 +274,11 @@ namespace gctools {
 
     int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], mps_fmt_auto_header_s* obj_fmt_sP, bool mpiEnabled, int mpiRank, int mpiSize)
     {
+#define CHAIN_SIZE 256 // 256 // 6400
 
+        if ( Alignment() == 16 ) {
+            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
+        }
         global_sizeof_fwd = AlignUp(sizeof(Header_s)+sizeof(uintptr_t));
         global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
@@ -321,7 +312,7 @@ namespace gctools {
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create obj format");
 
 
-#define AMC_CHAIN_SIZE 256
+#define AMC_CHAIN_SIZE CHAIN_SIZE
         // Now the generation chain
         mps_gen_param_s amc_gen_params[] = {
             { AMC_CHAIN_SIZE, 0.85 },
@@ -354,7 +345,7 @@ namespace gctools {
 
 
 
-#define AWL_CHAIN_SIZE 256 // 32768
+#define AWL_CHAIN_SIZE CHAIN_SIZE // 32768
 
         /*! Use an AWL pool rather than and AMS pool until the AMS bug gets fixed */
         MPS_ARGS_BEGIN(args) {
@@ -372,7 +363,7 @@ namespace gctools {
 
 
 #else // USE AMS pool instead of AWL pool
-#define AMS_CHAIN_SIZE 256 // 32768
+#define AMS_CHAIN_SIZE CHAIN_SIZE // 32768
         // Now the generation chain
         mps_gen_param_s ams_gen_params[] = {
             { AMS_CHAIN_SIZE, 0.85 },

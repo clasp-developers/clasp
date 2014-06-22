@@ -500,8 +500,8 @@ namespace gctools {
 //            printf("%s:%d Just completed finalize sp@%p sp.px_ref()@%p\n", __FILE__, __LINE__, &sp, sp.px_ref());
 #endif
 #ifdef USE_MPS  
-            void* base = SmartPtrToBasePtr(sp);
-            mps_finalize(_global_arena,&base);
+            void* client = sp.pbase(); // SmartPtrToBasePtr(sp);
+            mps_finalize(_global_arena,&client);
 #endif
         };
     };
