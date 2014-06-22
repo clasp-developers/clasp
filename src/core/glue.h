@@ -102,6 +102,14 @@ namespace translate
     };
 
 
+    template <typename T> struct from_object<gctools::smart_ptr<T>,std::true_type>
+    {
+        typedef gctools::smart_ptr<T> ExpectedType;
+        typedef gctools::smart_ptr<T> DeclareType;
+        DeclareType _v;
+        from_object(const core::T_sp& o) : _v(o.as<T>()) {};
+    };
+
     template <class T>
     struct to_object<gctools::smart_ptr<T> >
     {
@@ -113,6 +121,8 @@ namespace translate
 
 
 };
+
+
 
 #define	__FROM_OBJECT_CONVERTER(oClass) 				\
     namespace translate {						\
@@ -174,10 +184,13 @@ namespace translate
 
 
 
-
+#if 0 // I switched to using template programming to define automatic to_object and from_object translators
 #define	TRANSLATE(classo)						\
     __FROM_OBJECT_CONVERTER(classo);					\
     __TO_OBJECT_CONVERTER(classo);
+#else
+#define TRANSLATE(classo)
+#endif
 
 
 //    STREAMIO(classo);

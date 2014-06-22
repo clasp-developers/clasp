@@ -640,6 +640,24 @@ namespace core
 	}
     }
 
+    void HashTable_O::terminatingMapHash(std::function<bool(T_sp,T_sp)> const& fn)
+    {
+	for ( size_t it(0),itEnd(af_length(this->_HashTable)); it<itEnd; ++it )
+	{
+	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
+	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
+	    {
+                Cons_sp pair = cCar(cur);
+                T_sp key = oCar(pair);
+                T_sp value = oCdr(pair);
+                if ( value.notunboundp()) {
+                    bool cont = fn(key,value);
+                    if (!cont) return;
+                }
+	    }
+	}
+    }
+
     void HashTable_O::lowLevelMapHash(KeyValueMapper* mapper) const
     {_OF();
 	for ( size_t it(0),itEnd(af_length(this->_HashTable)); it<itEnd; ++it )

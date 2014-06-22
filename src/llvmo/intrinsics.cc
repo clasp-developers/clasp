@@ -472,6 +472,7 @@ extern "C"
     void internSymbol_tsp( core::T_sp* resultP, const char* symbolNameP, const char* packageNameP )
     {_G();
 	core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP,symbolNameP);
+        printf("%s:%d  internSymbol_tsp(%s::%s)  newSym.px_ref() = %p   cl::destructuring-bind.px_ref()=%p\n", __FILE__, __LINE__, packageNameP, symbolNameP, newSym.px_ref(), cl::_sym_destructuring_bind.px_ref());
 	ASSERTNOTNULL(newSym);
 	(*resultP) = newSym;
     }
@@ -1486,10 +1487,10 @@ extern "C"
     }
 
 
-    void getOrCreateLoadTimeValueArray(core::LoadTimeValues_sp** ltvPP, const char* moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols )
+    void getOrCreateLoadTimeValueArray(core::LoadTimeValues_O* ltvP, const char* moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols )
     {
-	core::LoadTimeValues_sp& loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName,numberOfLoadTimeValues, numberOfLoadTimeSymbols);
-	(*(ltvPP)) = &loadTimeValues;
+	core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName,numberOfLoadTimeValues, numberOfLoadTimeSymbols);
+	(*(ltvP)) = reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
     }
 
 
@@ -1516,6 +1517,8 @@ extern "C"
 	ASSERT(ltvPP!=NULL);
 	ASSERT((*ltvPP)!=NULL);
 	core::T_sp val = proto_copyLoadTimeValue(ltvPP,index);
+        printf("%s:%d sp_copyTimeValue@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, (**ltvPP).pbase(), index, val.pbase(), _rep_(val).c_str());
+
 	(*resultP) = val;
 	ASSERTNOTNULL(*resultP);
     }
@@ -1525,6 +1528,7 @@ extern "C"
 	ASSERT(ltvPP!=NULL);
 	ASSERT((*ltvPP)!=NULL);
 	(*resultP) = Values(proto_copyLoadTimeValue(ltvPP,index));
+        printf("%s:%d mv_copyTimeValue@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, (**ltvPP).pbase(), index, (*resultP).pbase(), _rep_(*resultP).c_str());
 	ASSERTNOTNULL(*resultP);
     }
 };
@@ -1540,6 +1544,7 @@ extern "C"
 	ASSERT(*ltvPP!=NULL);
 	core::LoadTimeValues_sp& ltv = **ltvPP;
 	core::T_sp& result = ltv->data_element(index);
+        printf("%s:%d loadTimeValueReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, ltv.pbase(), index, result.pbase(), _rep_(result).c_str());
 	return &result;
     }
 
@@ -1549,6 +1554,7 @@ extern "C"
 	ASSERT(*ltvPP!=NULL);
 	core::LoadTimeValues_sp& ltv = **ltvPP;
 	core::Symbol_sp& result = ltv->symbols_element(index);
+        printf("%s:%d loadTimeSymbolReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, ltv.pbase(), index, result.pbase(), _rep_(result).c_str());
 	return &result;
     }
 

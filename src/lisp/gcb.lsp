@@ -1394,6 +1394,8 @@ so that they don't have to be constantly recalculated"
 ;;    (format fout "Header_s* header = reinterpret_cast<Header_s*>(base);~%")
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
+;;      (when (string= enum-name "KIND_LISPALLOC_core__CompiledBody_O")
+;;        (break "Check all-instance-variables"))
       (dolist (instance-var all-instance-variables)
         (code-for-instance-var fout +ptr-name+ instance-var)))
     (format fout "    typedef ~A type_~A;~%" key enum-name)
@@ -1469,7 +1471,8 @@ so that they don't have to be constantly recalculated"
          (cn (strip-all-namespaces-from-name ns-cn)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (format fout "case ~a: {~%" enum-name)
-    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
+    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
     (format fout "} break;~%")
     ))
@@ -1790,11 +1793,8 @@ so that they don't have to be constantly recalculated"
 
 (defmethod fix-code ((x unclassified-ctype) analysis)
   (cond
-    ((string= (ctype-key x) "unsigned int") nil)
-    ((string= (ctype-key x) "unsigned long") nil)
-    ((string= (ctype-key x) "_Bool") nil)
-    (t
-     (warn "ignoring fix-code for ~a" x)))
+    ((ignorable-ctype-p x) nil)
+    (t (warn "ignoring fix-code for ~a" x)))
   nil)
 
 (defmethod fix-code ((x cxxrecord-ctype) analysis)
@@ -1806,15 +1806,136 @@ so that they don't have to be constantly recalculated"
     (t
      (fix-code (gethash (ctype-key x) (project-classes (analysis-project analysis))) analysis))))
 
-(defmethod fix-code ((x pointer-ctype) analysis)
-  (warn "ignoring fix-code for ~a" x)
-  nil)
-
 (defmethod fix-code ((x smart-ptr-ctype) analysis) :smart-ptr-fix)
 
 (defmethod fix-code ((x constant-array-ctype) analysis)
   (if (contains-fixptr-p x (analysis-project analysis))
       (make-array-fixer :element-type (constant-array-ctype-element-type x))))
+
+
+(defun fixable-pointee-p (ctype)
+  (let ((key (ctype-key ctype)))
+    (or (string= (ctype-key ctype) "core::Functoid")
+        (string= (ctype-key ctype) "core::Creator"))
+    ))
+
+
+(defgeneric ignorable-ctype-p (ctype))
+
+(defmethod ignorable-ctype-p ((ctype smart-ptr-ctype)) nil)
+
+(defun make-ignore-table (strings)
+  (let ((ht (make-hash-table :test #'equal)))
+    (dolist (s strings)
+      (setf (gethash s ht) t))
+    ht))
+
+(defparameter +ignorable-unclassified-ctype+
+  (make-ignore-table '(
+                       "void (void *)"
+                       "void"
+                       "_Bool"
+                       "unsigned int"
+                       "unsigned long"
+                       "char"
+                       "double"
+                       "enum asttooling::ContextType"
+                       "enum asttooling::ErrorType"
+                       "enum boost::filesystem::file_type"
+                       "enum boost::filesystem::perms"
+                       "enum clang::InputKind"
+                       "enum clang::ast_matchers::dynamic::VariantValue::ValueType"
+                       "enum llvm::APFloat::fltCategory"
+                       "float"
+                       "int"
+                       "long long"
+                       "long"
+                       "short"
+                       "unsigned char"
+                       "unsigned long long"
+                       "void (core::Lisp_O *)"
+                       )))
+
+
+(defmethod ignorable-ctype-p ((ctype unclassified-ctype))
+  (let ((key (ctype-key ctype)))
+    (gethash key +ignorable-unclassified-ctype+)))
+
+
+
+(defparameter +ignorable-cxxrecord-ctype+
+  (make-ignore-table '(
+                       "__sFILE"
+                       "boost::detail::sp_counted_base"
+                       "boost::filesystem::detail::dir_itr_imp"
+                       "boost::filesystem::detail::recur_dir_itr_imp"
+                       "boost::filesystem::directory_entry"
+                       "boost::filesystem::directory_iterator"
+                       "boost::filesystem::recursive_directory_iterator"
+                       "boost::iostreams::detail::chain_base<boost::iostreams::chain<boost::iostreams::input, char, std::__1::char_traits<char>, std::__1::allocator<char> >, char, std::__1::char_traits<char>, std::__1::allocator<char>, boost::iostreams::input>::chain_impl"
+                       "boost::iostreams::detail::chain_base<boost::iostreams::chain<boost::iostreams::output, char, std::__1::char_traits<char>, std::__1::allocator<char> >, char, std::__1::char_traits<char>, std::__1::allocator<char>, boost::iostreams::output>::chain_impl"
+                       "boost::re_detail::named_subexpressions"
+                       "clang::ASTUnit"
+                       "clang::CompilerInstance"
+                       "clang::ast_matchers::dynamic::VariantMatcher"
+                       "llvm::AttributeImpl"
+                       "llvm::BasicBlock"
+                       "llvm::DIBuilder"
+                       "llvm::DataLayout"
+                       "llvm::EngineBuilder"
+                       "llvm::ExecutionEngine"
+                       "llvm::IRBuilderBase"
+                       "llvm::Instruction"
+                       "llvm::LLVMContext"
+                       "llvm::Linker"
+                       "llvm::MDNode"
+                       "llvm::MemoryBuffer"
+                       "llvm::Module"
+                       "llvm::NamedMDNode"
+                       "llvm::Pass"
+                       "llvm::PassManagerBuilder"
+                       "llvm::Type"
+                       "llvm::Value"
+                       "llvm::fltSemantics"
+                       "llvm::legacy::PassManagerBase"
+                       "std::__1::locale::__imp"
+                       "std::type_info"
+                       )))
+
+(defmethod ignorable-ctype-p ((ctype cxxrecord-ctype))
+  (cond
+    ((gethash (ctype-key ctype) +ignorable-cxxrecord-ctype+) t)
+    ((contains-fixptr-p ctype *project*) nil)
+    (t nil)))
+     
+
+
+(defparameter +ignorable-class-template-specialization-ctype+
+  (make-ignore-table '(
+                       "boost::iostreams::chain<boost::iostreams::input,char,std::__1::char_traits<char>,std::__1::allocator<char>>"
+                       "boost::iostreams::chain<boost::iostreams::output,char,std::__1::char_traits<char>,std::__1::allocator<char>>"
+                       "boost::re_detail::basic_regex_implementation<char,boost::regex_traits<char,boost::cpp_regex_traits<char>>>"
+                       "boost::sub_match<const char *>"
+                       "std::__1::__tree_node<std::__1::__value_type<std::__1::basic_string<char,std::__1::char_traits<char>,std::__1::allocator<char>>,int>,void *>"
+                       "std::__1::__tree_node<std::__1::basic_string<char,std::__1::char_traits<char>,std::__1::allocator<char>>,void *>"
+                       "std::__1::__tree_node_base<void *>"
+                       "std::__1::basic_ostream<char,std::__1::char_traits<char>>"
+                       "std::__1::basic_string<char,std::__1::char_traits<char>,std::__1::allocator<char>>"
+                       "std::__1::codecvt<char,char,(anonymous)>"
+                       )))
+
+(defmethod ignorable-ctype-p ((ctype class-template-specialization-ctype))
+  (gethash (ctype-key ctype) +ignorable-class-template-specialization-ctype+))
+
+
+(defmethod ignorable-ctype-p ((ctype pointer-ctype))
+  (cond
+    ((pointer-ctype-p (pointer-ctype-pointee ctype))
+     (warn "ignoring pointer-ctype because pointee is another pointer for ~a" ctype)
+     t)
+    ((ignorable-ctype-p (pointer-ctype-pointee ctype)) t)
+    (t
+     (warn "Check ignorable-ctype-p ((ctype pointer-ctype)) for ~a" ctype))))
 
 
 (defmethod fix-code ((x pointer-ctype) analysis )
@@ -1824,10 +1945,13 @@ so that they don't have to be constantly recalculated"
          (gcarray-moveable-ctype-p pointee)
          (gcstring-moveable-ctype-p pointee))
         (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
-    ((isalloc-p (pointer-ctype-pointee x) (analysis-project analysis))
+    ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
      (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
+    ((fixable-pointee-p (pointer-ctype-pointee x))
+     (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
+    ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
     (t
-      (warn "ignoring pointer-ctype ~a" x)
+      (warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
       nil))))
     
 
@@ -2008,7 +2132,7 @@ so that they don't have to be constantly recalculated"
 
 
 
-(defun isalloc-p (ctype project)
+(defun is-alloc-p (ctype project)
   "Returns true if the ctype is an object allocated using a template function in gcalloc.
 These are objects that are directly managed by the garbage collector.
 Pointers to these objects are fixed in obj_scan or they must be roots."
@@ -2028,12 +2152,11 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var constant-array-ctype) analysis) nil)
 (defmethod fix-variable-p ((var pointer-ctype) analysis)
   (let ((pointee (pointer-ctype-pointee var)))
-  (cond
-    ((string= "core::Creator" (ctype-key pointee)) t) ;; some pointers to core::Creator are for derived classes of core::Creator
-    ((string= "gctools::StackRoot" (ctype-key pointee)) nil) ;; I'll handle this explicitly
-    ((unclassified-ctype-p pointee) nil)
-    ((isalloc-p (pointer-ctype-pointee var) (analysis-project analysis)) t)
-    (t nil))))
+    (cond
+      ((fixable-pointee-p pointee) t)
+      ((ignorable-ctype-p pointee) nil)
+      ((is-alloc-p (pointer-ctype-pointee var) (analysis-project analysis)) t)
+      (t (warn "Handle fix-variable-p for ~a" var)))))
 (defmethod fix-variable-p ((var cxxrecord-ctype) analysis) 
   (contains-fixptr-p var (analysis-project analysis)))
 

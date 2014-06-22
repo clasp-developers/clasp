@@ -126,15 +126,10 @@ namespace gctools {
         
     private:
         uintptr_t       header;
-#ifdef CONFIG_VAR_COOL
-        uintptr_t       debugTag; // Always set to 0xDEADBEEF01234567
-#endif
-        uintptr_t       data[0]; // This is where the client pointer starts
+        uintptr_t       data[1]; // After this is where the client pointer starts
     public:
         Header_s(GCKindEnum k) : header((k<<2)|kind_tag)
-#ifdef CONFIG_VAR_COOL
-                               , debugTag(0xDEADBEEF01234567)
-#endif
+                               , data{0xDEADBEEF01234567}
         {};
 
         bool kindP() const { return (this->header&tag_mask)==kind_tag;};
@@ -238,8 +233,12 @@ namespace gctools {
 
 namespace gctools {
 
-    constexpr size_t Alignment() { return AlignmentT<Header_s>(); };
-    constexpr size_t AlignUp(size_t size) { return AlignUpT<Header_s>(size); };
+        constexpr size_t Alignment() {
+            return sizeof(Header_s);
+//            return alignof(Header_s);
+        };
+        constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1);};
+
 
 
     template <class T> inline size_t sizeof_with_header() {return AlignUp(sizeof(T))+sizeof(Header_s);}

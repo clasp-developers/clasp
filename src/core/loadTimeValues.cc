@@ -33,12 +33,11 @@ namespace core
 #define DOCS_cl_setRunTimeValuesVector "setRunTimeValuesVector - return true if its set and false if it was already set"
     bool cl_setRunTimeValuesVector(const string& name)
     {_G();
-	if ( globalRunTimeValuesVector != NULL )
+	if ( globalRunTimeValues != NULL )
 	{
 	    return false;
 	}
-	LoadTimeValues_sp& runTimeLiterals = _lisp->getOrCreateLoadTimeValues(name);
-	globalRunTimeValuesVector = &runTimeLiterals;
+	globalRunTimeValues = _lisp->getOrCreateLoadTimeValues(name);
 	return true;
     };
 
@@ -48,7 +47,8 @@ namespace core
 #define DOCS_af_loadTimeValueArray "loadTimeValueArray"
     LoadTimeValues_mv af_loadTimeValueArray(const string& name, int dataSize, int symbolSize )
     {_G();
-	return(Values(_lisp->getOrCreateLoadTimeValues(name,dataSize, symbolSize)));
+        Pointer_sp ptr = Pointer_O::create(_lisp->getOrCreateLoadTimeValues(name,dataSize, symbolSize));
+        return Values(ptr);
     };
 
 
@@ -60,7 +60,7 @@ namespace core
 #define DOCS_af_lookupLoadTimeValue "Return the load-time-value associated with array NAME and IDX"
     T_sp af_lookupLoadTimeValue(const string& name, int idx)
     {_G();
-	LoadTimeValues_sp ltva = _lisp->findLoadTimeValues(name);
+	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name);
 	if ( ltva.nilp() ) {
 	    SIMPLE_ERROR(BF("Could not find load-time-values %s") % name);
 	}
@@ -77,7 +77,7 @@ namespace core
 #define DOCS_af_lookupLoadTimeSymbol "Return the load-time-value associated with array NAME and IDX"
     Symbol_sp af_lookupLoadTimeSymbol(const string& name, int idx)
     {_G();
-	LoadTimeValues_sp ltva = _lisp->findLoadTimeValues(name);
+	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name);
 	if ( ltva.nilp() ) {
 	    SIMPLE_ERROR(BF("Could not find load-time-values %s") % name);
 	}
@@ -94,9 +94,14 @@ namespace core
 #define ARGS_af_loadTimeValuesIds "()"
 #define DECL_af_loadTimeValuesIds ""
 #define DOCS_af_loadTimeValuesIds "Return a cons of the load-time-values ids"
-    Cons_mv af_loadTimeValuesIds()
+    void af_loadTimeValuesIds()
     {_G();
-	return(Values(_lisp->loadTimeValuesIds()));
+        Cons_sp names = _lisp->loadTimeValuesIds();
+        for ( Cons_sp cur=names; cur.notnilp(); cur=cCdr(cur) ) {
+            Str_sp nm = oCar(cur).as<Str_O>();
+            T_sp ltv = _lisp->findLoadTimeValues(nm->get());
+            printf("%s:%d LTV[%s]@%p = %s\n", __FILE__, __LINE__, nm->get().c_str(), ltv.pbase(), _rep_(ltv).c_str() );
+        }
     };
 
     
@@ -106,7 +111,7 @@ namespace core
 #define DOCS_af_loadTimeValuesDump "Dump the load-time-values for the id _name_(string)."
     void af_loadTimeValuesDump(Str_sp name)
     {_G();
-	LoadTimeValues_sp ltv = _lisp->findLoadTimeValues(name->get());
+	LoadTimeValues_sp ltv = _lisp->findLoadTimeValuesWithNameContaining(name->get());
 	ltv->dump();
     };
 
@@ -163,7 +168,7 @@ namespace core
 
     void LoadTimeValues_O::dump()
     {_G();
-	printf("LTV size %d  LTS size %lu\n", af_length(this->_Objects), this->_Symbols.size() );
+	printf("%s:%d  LTV@%p size %d  LTS size %lu\n", __FILE__, __LINE__, this, af_length(this->_Objects), this->_Symbols.size() );
 	for (int i=0,iEnd(af_length(this->_Objects)); i<iEnd; i++ )
 	{
             T_sp& obj = (*this->_Objects)[i];
@@ -173,7 +178,7 @@ namespace core
 	for ( auto it=this->_Symbols.begin();
 	      it!=this->_Symbols.end(); it++, ic++ )
 	{
-	    printf("LTV-symbol[%4d] --> %s\n", ic, _rep_((*it)).c_str() );
+	    printf("LTV-symbol[%4d] --> %s@%p\n", ic, _rep_((*it)).c_str(), (*it).px_ref() );
 	}
     }
 
@@ -222,6 +227,8 @@ namespace core
 
 
 
+#if 1 // Depreciated
+
     EXPOSE_CLASS(core,MemoryLockedLoadTimeValuesPointer_O);
 
     void MemoryLockedLoadTimeValuesPointer_O::exposeCando(::core::Lisp_sp lisp)
@@ -239,7 +246,7 @@ namespace core
 #endif
     }
 
-
+#endif
 
 
     

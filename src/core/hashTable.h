@@ -113,6 +113,9 @@ namespace core
 
 	void mapHash(std::function<void(T_sp, T_sp)> const& fn);
 
+        /*! maps function across a hash table until the function returns false */
+	void terminatingMapHash(std::function<bool(T_sp, T_sp)> const& fn);
+
 	/*! Return the number of entries in the HashTable Vector0 */
 	int hashTableNumberOfHashes() const;
 	/*! Return the start of the alist in the HashTable Vector0 at hash value */

@@ -399,11 +399,12 @@ namespace core
     public:
 	/*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
-	LoadTimeValues_sp& getOrCreateLoadTimeValues(const string& name, int numberOfLoadTimeValues=0, int numberOfLoadTimeSymbols=0);
+	LoadTimeValues_sp getOrCreateLoadTimeValues(const string& name, int numberOfLoadTimeValues=0, int numberOfLoadTimeSymbols=0);
 	Cons_sp loadTimeValuesIds() const;
 	T_sp loadTimeValue(const string& name, int idx);
 	Symbol_sp loadTimeSymbol(const string& name, int idx);
 	LoadTimeValues_sp findLoadTimeValues(const string& name);
+	LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string& name);
     public:
     /*! Keep track of every source file that is read by the system */
 	SourceFileInfo_sp getSourceFileInfo(const string& fileName);

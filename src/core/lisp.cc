@@ -694,18 +694,18 @@ namespace core
     /*! How is this going to work with moving garbage collection?
      We return a reference to the LoadTimeValues_sp smart_ptr in the LoadtimeValueArrays hash-table
     What happens when this moves????    Disaster!!!!!!!   */
-    LoadTimeValues_sp& Lisp_O::getOrCreateLoadTimeValues(const string& name,int numberOfLoadTimeValues, int numberOfLoadTimeSymbols)
+    LoadTimeValues_sp Lisp_O::getOrCreateLoadTimeValues(const string& name,int numberOfLoadTimeValues, int numberOfLoadTimeSymbols)
     {_G();
         Str_sp key = Str_O::create(name);
         T_sp it = this->_Roots._LoadTimeValueArrays->gethash(key,_Nil<T_O>());
 	if ( it.nilp() )
 	{
 	    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues, numberOfLoadTimeSymbols);
-            MemoryLockedLoadTimeValuesPointer_sp holder = MemoryLockedLoadTimeValuesPointer_O::make(vo);
-	    this->_Roots._LoadTimeValueArrays->setf_gethash(key,holder);
-	    return holder->ref();
+	    this->_Roots._LoadTimeValueArrays->setf_gethash(key,vo);
+            return gctools::smart_ptr<LoadTimeValues_O>(vo.pbase());
 	}
-	return it.as<MemoryLockedLoadTimeValuesPointer_O>()->ref();
+        LoadTimeValues_sp ltv = it.as<LoadTimeValues_O>();
+        return gctools::smart_ptr<LoadTimeValues_O>(ltv.pbase());
     }
 
 
@@ -714,7 +714,19 @@ namespace core
         Str_sp key = Str_O::create(name);
         T_sp it = this->_Roots._LoadTimeValueArrays->gethash(key,_Nil<T_O>());
 	if ( it.nilp() ) return _Nil<LoadTimeValues_O>();
-        return it.as<MemoryLockedLoadTimeValuesPointer_O>()->ref();
+        return it.as<LoadTimeValues_O>();
+    }
+    LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string& name)
+    {
+        LoadTimeValues_sp result = _Nil<LoadTimeValues_O>();
+        this->_Roots._LoadTimeValueArrays->terminatingMapHash( [&result,&name] (T_sp key, T_sp val) -> bool {
+                if ( key.as<Str_O>()->find(name,0).notnilp() ) {
+                    result = val.as<LoadTimeValues_O>();
+                    return false;
+                }
+                return true;
+            });
+        return result;
     }
 
 

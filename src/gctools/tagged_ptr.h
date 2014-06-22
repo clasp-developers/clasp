@@ -294,9 +294,12 @@ namespace gctools {
         {
 #ifdef USE_TAGGED_PTR_P0
             return this->pbase;
-#else
-            // Shouldn't this point to the mps base?
-            return dynamic_cast<void*>(this->px);
+#else   
+            if (this->pointerp()) {
+                // Shouldn't this point to the mps base?
+                return dynamic_cast<void*>(this->px);
+            }
+            return NULL;
 #endif
         }
 
