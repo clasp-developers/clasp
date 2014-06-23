@@ -2511,8 +2511,12 @@ case KIND_LISPALLOC_core__MicroHeap_O: {
 } break;
 case KIND_LISPALLOC_core__LoadTimeValues_O: {
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
+    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  In obj_scan LoadTimeValues_O@%p  before  obj_gc_safe->_Objects.px_ref()=%p   obj_gc_safe->_Symbols._Vector._Contents=%p") %
+                          __FILE__ % __LINE__ % client % obj_gc_safe->_Objects.px_ref() % obj_gc_safe->_Symbols._Vector._Contents );
     SMART_PTR_FIX(obj_gc_safe->_Objects);
     POINTER_FIX(obj_gc_safe->_Symbols._Vector._Contents);
+    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  In obj_scan LoadTimeValues_O@%p  after   obj_gc_safe->_Objects.px_ref()=%p   obj_gc_safe->_Symbols._Vector._Contents=%p") %
+                          __FILE__ % __LINE__ % client % obj_gc_safe->_Objects.px_ref() % obj_gc_safe->_Symbols._Vector._Contents );
     typedef core::LoadTimeValues_O type_KIND_LISPALLOC_core__LoadTimeValues_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadTimeValues_O)) + global_alignup_sizeof_header;
 } break;
@@ -2652,8 +2656,12 @@ case KIND_LISPALLOC_core__SymbolMacroletEnvironment_O: {
 } break;
 case KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O: {
     core::VectorObjectsWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::VectorObjectsWithFillPtr_O*>(client);
+    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  In obj_scan VectorObjectsWithFillPtr_O@%p  before  obj_gc_safe->_Values._Vector._Contents=%p" )
+                          % __FILE__ % __LINE__ % client % obj_gc_safe->_Values._Vector._Contents );
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
     POINTER_FIX(obj_gc_safe->_Values._Vector._Contents);
+    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  In obj_scan VectorObjectsWithFillPtr_O@%p  after   obj_gc_safe->_Values._Vector._Contents=%p" )
+                          % __FILE__ % __LINE__ % client % obj_gc_safe->_Values._Vector._Contents );
     typedef core::VectorObjectsWithFillPtr_O type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O)) + global_alignup_sizeof_header;
 } break;
@@ -4121,6 +4129,8 @@ case KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__: {
 // processing #S(CONTAINERALLOC :KEY "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" :NAME "GCVector_moveable" :LOCATION "/Users/meister/Development/cando/clasp/src/gctools/gcvector.h:8:5" :CTYPE #S(GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(GC-TEMPLATE-ARGUMENT :CL:INDEX 0 :CTYPE #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")))))
 // parm0-ctype = #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>*>(client);
+    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  obj_scan GCVector_moveable_gctools__smart_ptr_core__T_O__@%p   size=%lu  capacity=%lu") 
+                          % __FILE__ % __LINE__ % client % obj_gc_safe->size() % obj_gc_safe->capacity() );
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
         // A scanner for #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
           SMART_PTR_FIX(*it);
@@ -4474,7 +4484,11 @@ case KIND_ROOTCLASSALLOC_core__Lisp_O: {
     SMART_PTR_FIX(obj_gc_safe->_Roots._SourceFiles);
     SMART_PTR_FIX(obj_gc_safe->_Roots._CatchInfo);
     POINTER_FIX(obj_gc_safe->_Roots.bootClassTable._Vector._Contents);
+    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  obj_scan before of obj_gc_safe->_Roots._LoadTimeValueArrays=%p" )
+                          % __FILE__ % __LINE__ % obj_gc_safe->_Roots._LoadTimeValueArrays.px_ref() );
     SMART_PTR_FIX(obj_gc_safe->_Roots._LoadTimeValueArrays);
+    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  obj_scan after of obj_gc_safe->_Roots._LoadTimeValueArrays=%p" )
+                          % __FILE__ % __LINE__ % obj_gc_safe->_Roots._LoadTimeValueArrays.px_ref() );
     SMART_PTR_FIX(obj_gc_safe->_Roots._CommandLineArguments);
     POINTER_FIX(obj_gc_safe->_Roots._Packages._Vector._Contents);
     SMART_PTR_FIX(obj_gc_safe->_Roots._SetfDefinitions);
@@ -7274,7 +7288,6 @@ case KIND_ROOTCLASSALLOC_core__Lisp_O: {
  SMART_PTR_FIX(cl::_sym_string_NE_);
  SMART_PTR_FIX(core::_sym_SymbolMacroletEnvironment_O);
  SMART_PTR_FIX(kw::_sym_type);
- SMART_PTR_FIX(cl::_sym_nil);
  SMART_PTR_FIX(core::_sym_bdsVar);
  SMART_PTR_FIX(llvmo::_sym_LLVMDebugVersion7);
  SMART_PTR_FIX(core::_sym_STARbq_appendSTAR);
@@ -7803,7 +7816,19 @@ case KIND_ROOTCLASSALLOC_core__Lisp_O: {
  SMART_PTR_FIX(cl::_sym_gethash);
  POINTER_FIX(core::SexpSaveArchive_O::static_creator);
  SMART_PTR_FIX(core::SymbolList_O::___staticClass);
+#ifdef DEBUG_LOAD_TIME_VALUES
+ {
+     mps_label_t lbl = mps_telemetry_intern((BF("%s:%d root_scan before cl::_sym_declare") % __FILE__ % __LINE__ ).str().c_str());
+     mps_telemetry_label(cl::_sym_declare.px_ref(),lbl);
+ }
+#endif
  SMART_PTR_FIX(cl::_sym_declare);
+#ifdef DEBUG_LOAD_TIME_VALUES
+ {
+     mps_label_t lbl = mps_telemetry_intern((BF("%s:%d root_scan after cl::_sym_declare") % __FILE__ % __LINE__ ).str().c_str());
+     mps_telemetry_label(cl::_sym_declare.px_ref(),lbl);
+ }
+#endif
  SMART_PTR_FIX(core::BranchSNode_O::___staticClass);
  SMART_PTR_FIX(llvmo::_sym_IntegerType_O);
  SMART_PTR_FIX(core::LoadArchive_O::___staticClass);
@@ -8667,7 +8692,19 @@ case KIND_ROOTCLASSALLOC_core__Lisp_O: {
  SMART_PTR_FIX(cl::_sym_lognor);
  SMART_PTR_FIX(core::_sym_STARbq_listSTARSTAR);
  SMART_PTR_FIX(core::_sym_nan);
+#ifdef DEBUG_LOAD_TIME_VALUES
+ {
+     mps_label_t lbl = mps_telemetry_intern((BF("%s:%d root_scan before cl::_sym_destructuring_bind") % __FILE__ % __LINE__ ).str().c_str());
+     mps_telemetry_label(cl::_sym_destructuring_bind.px_ref(),lbl);
+ }
+#endif
  SMART_PTR_FIX(cl::_sym_destructuring_bind);
+#ifdef DEBUG_LOAD_TIME_VALUES
+ {
+     mps_label_t lbl = mps_telemetry_intern((BF("%s:%d root_scan after cl::_sym_destructuring_bind") % __FILE__ % __LINE__ ).str().c_str());
+     mps_telemetry_label(cl::_sym_destructuring_bind.px_ref(),lbl);
+ }
+#endif
  SMART_PTR_FIX(core::_sym_bq_simplify);
  SMART_PTR_FIX(llvmo::_sym_STARdwarfConstantsSTAR);
  SMART_PTR_FIX(cl::_sym__MINUS_);

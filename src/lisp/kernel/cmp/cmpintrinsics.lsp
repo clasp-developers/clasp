@@ -156,8 +156,9 @@ I'm using smart_ptr which have a vtable associated with them"
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
 (defconstant +ltv+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "LoadTimeValue_O"
-(defconstant +ltv-ptr+ (llvm-sys:type-get-pointer-to +ltv+))
-(defconstant +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv-ptr+) nil))  ;; "LoadTimeValue_sp" 
+(defconstant +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
+(defconstant +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
+(defconstant +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp" 
 (defconstant +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
 (defconstant +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
@@ -532,14 +533,14 @@ I'm using smart_ptr which have a vtable associated with them"
   (primitive-does-not-throw module "llvm.eh.typeid.for" +i32+ (list +i8*+))
 ;;  (primitive-does-not-throw module "_Unwind_Resume" +void+ (list +i8*+))
 
-  (primitive-does-not-throw module "getOrCreateLoadTimeValueArray" +void+ (list +ltvsp**+ +i8*+ +i32+ +i32+))
+  (primitive-does-not-throw module "getOrCreateLoadTimeValueArray" +void+ (list +ltv**+ +i8*+ +i32+ +i32+))
 
-  (primitive-does-not-throw module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltvsp**+ +i32+))
+  (primitive-does-not-throw module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
 
-  (primitive-does-not-throw module "loadTimeValueReference" +tsp*+ (list +ltvsp**+ +i32+))
-  (primitive-does-not-throw module "loadTimeSymbolReference" +symsp*+ (list +ltvsp**+ +i32+))
-  (primitive-does-not-throw module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltvsp**+ +i32+))
-  (primitive-does-not-throw module "dumpLoadTimeValues" +void+ (list +ltvsp**+))
+  (primitive-does-not-throw module "loadTimeValueReference" +tsp*+ (list +ltv**+ +i32+))
+  (primitive-does-not-throw module "loadTimeSymbolReference" +symsp*+ (list +ltv**+ +i32+))
+  (primitive-does-not-throw module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
+  (primitive-does-not-throw module "dumpLoadTimeValues" +void+ (list +ltv**+))
 
   (primitive-does-not-throw module "ltv_makeCons" +void+ (list +tsp*+))
   (primitive-does-not-throw module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
@@ -547,8 +548,8 @@ I'm using smart_ptr which have a vtable associated with them"
   (primitive-does-not-throw module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
   (primitive-does-not-throw module "rplaca" +void+ (list +tsp*+ +tsp*+))
   (primitive-does-not-throw module "rplacd" +void+ (list +tsp*+ +tsp*+))
-  (primitive-does-not-throw module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltvsp**+ +i32*+))
-  (primitive-does-not-throw module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltvsp**+ +i32*+))
+  (primitive-does-not-throw module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
+  (primitive-does-not-throw module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
 
   (primitive-does-not-throw module "saveToMultipleValue0" +void+ (list +tmv*+))
   (primitive-does-not-throw module "saveValues" +void+ (list +tsp*+ +tmv*+))

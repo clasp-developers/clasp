@@ -231,6 +231,24 @@ extern "C" {
 
     int trap_obj_scan = 0;
 
+
+
+#ifdef DEBUG_LOAD_TIME_VALUES
+#define SHIELD_SAFE_TELEMETRY(CLIENT,FMT)                               \
+    {                                                                   \
+        Seg seg;                                                        \
+        if ( SegOfAddr(&seg,gctools::_global_arena,CLIENT)) {           \
+            ShieldExpose(gctools::_global_arena,seg);                   \
+            mps_label_t lbl = mps_telemetry_intern((FMT).str().c_str()); \
+            mps_telemetry_label(client,lbl);                            \
+            ShieldCover(gctools::_global_arena,seg);                    \
+        }                                                               \
+    }
+#else
+#define SHIELD_SAFE_TELEMETRY(CLIENT,PARGS)
+#endif
+
+
     GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit)
     {
         DEBUG_MPS_MESSAGE(BF("obj_scan started - Incoming client %p   limit: %p") % client % limit );

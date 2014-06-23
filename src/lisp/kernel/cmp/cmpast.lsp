@@ -1165,10 +1165,9 @@ be wrapped with to make a closure"
       (define-primitives-in-module *the-module*)
       (let* ((*run-time-value-holder-global-var*
 	      (llvm-sys:make-global-variable *the-module*
-					     +ltvsp*+
+					     +run-and-load-time-value-holder-global-var-type+
 					     nil
-					     'llvm-sys:external-linkage
-					     nil ;; (llvm-sys:constant-pointer-null-get +ltvsp*+ )
+					     'llvm-sys:external-linkage nil ;; (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+)
 					     *run-time-literals-external-name*)))
 	(with-compilation-unit (:override nil
 					  :module *the-module*

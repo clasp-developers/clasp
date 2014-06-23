@@ -473,7 +473,8 @@ namespace core
     Symbol_mv Package_O::findSymbol(const string& name) const
     {_G();
 	Bignum_sp nameKey = nameToKey(name.c_str());
-	return findSymbol(nameKey);
+        Symbol_mv sym = findSymbol(nameKey);
+        return findSymbol(nameKey);
     }
 
 
@@ -618,7 +619,7 @@ namespace core
             shadowSym->makunbound();
             shadowSym->setPackage(this->sharedThis<Package_O>());
             LOG(BF("Created symbol<%s>") % _rep_(shadowSym) );
-            this->_add_symbol_to_package(shadowSym);
+            this->add_symbol_to_package(shadowSym->symbolName()->get().c_str(),shadowSym);
         }
         this->_ShadowingSymbols->setf_gethash(symbolName,shadowSym);
 	return true;
@@ -654,10 +655,10 @@ namespace core
 
 
 
-    void Package_O::_add_symbol_to_package(Symbol_sp sym, bool exportp)
+    void Package_O::add_symbol_to_package(const char* symName,  Symbol_sp sym, bool exportp)
     {
 //	trapSymbol(this,sym,sym->_Name->get());
-	Bignum_sp nameKey = nameToKey(sym->_Name->c_str());
+	Bignum_sp nameKey = nameToKey(symName);
 	if ( this->isKeywordPackage() || exportp )
 	{
 	    this->_ExternalSymbols->hash_table_setf_gethash(nameKey,sym);
@@ -667,9 +668,13 @@ namespace core
 	}
 	if ( llvm_interface::addSymbol != NULL )
 	{
+            DEPRECIATED();
 	    llvm_interface::addSymbol(sym);
 	}
     }
+
+
+
 
 
     T_mv Package_O::intern(const string& name)
@@ -684,7 +689,7 @@ namespace core
 	    status = _Nil<Symbol_O>();
 	    sym->setPackage(this->sharedThis<Package_O>());
 	    LOG(BF("Created symbol<%s>") % _rep_(sym) );
-	    this->_add_symbol_to_package(sym);
+	    this->add_symbol_to_package(sym->symbolName()->get().c_str(),sym);
 	}
 	if ( this->isKeywordPackage() )
 	{

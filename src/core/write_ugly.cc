@@ -446,7 +446,8 @@ namespace core
 	    break;
 	case gctools::smart_ptr<T_O>::special_tag:
 	    if ( x.nilp() ) { // ECL appears to shunt this off to write_list
-		cl::_sym_nil->__write__(stream);
+                Str_sp nilstr = Str_O::create("NIL");
+		nilstr->__write__(stream);
 	    } else if ( x.unboundp() ) {
 		stream->writeStr("unbound");
 	    }

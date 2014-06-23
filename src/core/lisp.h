@@ -534,6 +534,7 @@ namespace core
     public:
         gctools::Vec0<Package_sp>& packages() { return this->_Roots._Packages;};
 	Package_sp keywordPackage() { return this->_Roots._KeywordPackage;};
+        Package_sp commonLispPackage() { return this->_Roots._CommonLispPackage;};
     private:
 	void parseStringIntoPackageAndSymbolName(const string& name, bool& packageDefined, Package_sp& package, string& symbolName, bool& exported ) const;
     public:

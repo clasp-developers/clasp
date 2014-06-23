@@ -173,7 +173,7 @@ namespace core {
 
 	    this->_ClassSymbol = OT::static_classSymbol();
 
-#if 1
+#if 0
             OT xxx;
             int offset = reinterpret_cast<char*>(&dynamic_cast<T_O&>(xxx)) - reinterpret_cast<char*>(&xxx);
             printf("%s:%d offsetof(%s,T_O) = %d\n", __FILE__, __LINE__, _rep_(this->_ClassSymbol).c_str(),offset);

@@ -668,8 +668,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 	_sym_nil->exportYourself();
 	_sym_t = cl::_sym_T_O;
 #endif
-	cl::_sym_nil->setf_symbolValue(_Nil<T_O>());
-	cl::_sym_nil->_Name = Str_O::create("NIL");
+        _lisp->commonLispPackage()->add_symbol_to_package("NIL",_Nil<Symbol_O>(),true);
 	_lisp->_Roots._TrueObject = cl::_sym_T_O;
 	cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
 	cl::_sym_STARload_printSTAR->exportYourself()->defparameter(_lisp->_false());

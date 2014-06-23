@@ -1,4 +1,9 @@
 #define DEBUG_LEVEL_FULL
+#ifdef USE_MPS
+extern "C" {
+#include "mps/code/mps.h"
+};
+#endif
 #include "core/foundation.h"
 #include "core/common.h"
 //#include "core/debugger.h"
@@ -472,7 +477,9 @@ extern "C"
     void internSymbol_tsp( core::T_sp* resultP, const char* symbolNameP, const char* packageNameP )
     {_G();
 	core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP,symbolNameP);
-        printf("%s:%d  internSymbol_tsp(%s::%s)  newSym.px_ref() = %p   cl::destructuring-bind.px_ref()=%p\n", __FILE__, __LINE__, packageNameP, symbolNameP, newSym.px_ref(), cl::_sym_destructuring_bind.px_ref());
+#ifdef DEBUG_LOAD_TIME_VALUES
+//        printf("%s:%d  internSymbol_tsp(%s::%s)  newSym.px_ref() = %p   cl::destructuring-bind.px_ref()=%p\n", __FILE__, __LINE__, packageNameP, symbolNameP, newSym.px_ref(), cl::_sym_destructuring_bind.px_ref());
+#endif
 	ASSERTNOTNULL(newSym);
 	(*resultP) = newSym;
     }
@@ -1487,48 +1494,54 @@ extern "C"
     }
 
 
-    void getOrCreateLoadTimeValueArray(core::LoadTimeValues_O* ltvP, const char* moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols )
+    void getOrCreateLoadTimeValueArray(core::LoadTimeValues_O** ltvPP, const char* moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols )
     {
 	core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName,numberOfLoadTimeValues, numberOfLoadTimeSymbols);
-	(*(ltvP)) = reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
+	*ltvPP = reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
     }
 
 
-    void dumpLoadTimeValues(core::LoadTimeValues_sp** ltvPP)
+    void dumpLoadTimeValues(core::LoadTimeValues_O* ltvP)
     {
-	core::LoadTimeValues_sp& loadTimeValues = **ltvPP;
-	loadTimeValues->dump();
+	ltvP->dump();
     }
 
 
 };
 
 
-inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_sp** ltvPP, int index)
+inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_O** ltvPP, int index)
 {
-    core::LoadTimeValues_sp& ltv = **ltvPP;
-    return ltv->data_element(index);
+    core::LoadTimeValues_O& ltv = **ltvPP;
+    return ltv.data_element(index);
 }
 extern "C"
 {
-    void sp_copyLoadTimeValue(core::T_sp* resultP, core::LoadTimeValues_sp** ltvPP, int index)
+    void sp_copyLoadTimeValue(core::T_sp* resultP, core::LoadTimeValues_O** ltvPP, int index)
     {
 	ASSERT(resultP!=NULL);
 	ASSERT(ltvPP!=NULL);
 	ASSERT((*ltvPP)!=NULL);
 	core::T_sp val = proto_copyLoadTimeValue(ltvPP,index);
-        printf("%s:%d sp_copyTimeValue@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, (**ltvPP).pbase(), index, val.pbase(), _rep_(val).c_str());
-
+#ifdef DEBUG_LOAD_TIME_VALUES
+        {
+            mps_label_t lbl = mps_telemetry_intern(
+                (BF("%s:%d sp_copyLoadTimeValue@%p  VectorObjectsWithFillPtr@%p    gctools::Vec0<T_sp>@%p  index[%d]  result client@%p  value: %s  cl::_sym_destructuring_bind@%p") % __FILE__ % __LINE__ % *ltvPP % (*ltvPP)->_Objects.pbase() % (*ltvPP)->_Objects->_Values._Vector._Contents % index % val.pbase() % _rep_(val).c_str() % cl::_sym_destructuring_bind.pbase()).str().c_str());
+            mps_telemetry_label(val.px_ref(),lbl);
+        }
+#endif
 	(*resultP) = val;
 	ASSERTNOTNULL(*resultP);
     }
-    void mv_copyLoadTimeValue(core::T_mv* resultP, core::LoadTimeValues_sp** ltvPP, int index)
+    void mv_copyLoadTimeValue(core::T_mv* resultP, core::LoadTimeValues_O** ltvPP, int index)
     {
 	ASSERT(resultP!=NULL);
 	ASSERT(ltvPP!=NULL);
 	ASSERT((*ltvPP)!=NULL);
 	(*resultP) = Values(proto_copyLoadTimeValue(ltvPP,index));
-        printf("%s:%d mv_copyTimeValue@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, (**ltvPP).pbase(), index, (*resultP).pbase(), _rep_(*resultP).c_str());
+#ifdef DEBUG_LOAD_TIME_VALUES
+//        printf("%s:%d mv_copyTimeValue@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, *ltvPP, index, (*resultP).pbase(), _rep_(*resultP).c_str());
+#endif
 	ASSERTNOTNULL(*resultP);
     }
 };
@@ -1538,23 +1551,26 @@ extern "C"
 {
 
 
-    core::T_sp* loadTimeValueReference(core::LoadTimeValues_sp** ltvPP, int index)
+    core::T_sp* loadTimeValueReference(core::LoadTimeValues_O** ltvPP, int index)
     {
 	ASSERT(ltvPP!=NULL);
 	ASSERT(*ltvPP!=NULL);
-	core::LoadTimeValues_sp& ltv = **ltvPP;
-	core::T_sp& result = ltv->data_element(index);
-        printf("%s:%d loadTimeValueReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, ltv.pbase(), index, result.pbase(), _rep_(result).c_str());
+	core::LoadTimeValues_O& ltv = **ltvPP;
+	core::T_sp& result = ltv.data_element(index);
+#ifdef DEBUG_LOAD_TIME_VALUES
+//        printf("%s:%d loadTimeValueReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, *ltvPP, index, result.pbase(), _rep_(result).c_str());
+#endif
 	return &result;
     }
 
-    core::Symbol_sp* loadTimeSymbolReference(core::LoadTimeValues_sp** ltvPP, int index)
+    core::Symbol_sp* loadTimeSymbolReference(core::LoadTimeValues_O** ltvPP, int index)
     {
 	ASSERT(ltvPP!=NULL);
 	ASSERT(*ltvPP!=NULL);
-	core::LoadTimeValues_sp& ltv = **ltvPP;
-	core::Symbol_sp& result = ltv->symbols_element(index);
-        printf("%s:%d loadTimeSymbolReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, ltv.pbase(), index, result.pbase(), _rep_(result).c_str());
+	core::Symbol_sp& result = (*ltvPP)->symbols_element(index);
+#ifdef DEBUG_LOAD_TIME_VALUES
+//        printf("%s:%d loadTimeSymbolReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, (*ltvPP), index, result.pbase(), _rep_(result).c_str());
+#endif
 	return &result;
     }
 
@@ -1563,20 +1579,19 @@ extern "C"
 
 };
 
-inline core::T_sp proto_getLoadTimeValue(core::LoadTimeValues_sp** ltvPP, int index)
+inline core::T_sp proto_getLoadTimeValue(core::LoadTimeValues_O** ltvPP, int index)
 {
-    core::LoadTimeValues_sp& ltv = **ltvPP;
-    return ltv->data_element(index);
+    return (*ltvPP)->data_element(index);
 }
 
 extern "C"
 {
-    void sp_getLoadTimeValue(core::T_sp* resultP, core::LoadTimeValues_sp** ltvPP, int index)
+    void sp_getLoadTimeValue(core::T_sp* resultP, core::LoadTimeValues_O** ltvPP, int index)
     {
 	(*resultP) = proto_getLoadTimeValue(ltvPP,index);
 	ASSERTNOTNULL(*resultP);
     }
-    void mv_getLoadTimeValue(core::T_mv* resultP, core::LoadTimeValues_sp** ltvPP, int index)
+    void mv_getLoadTimeValue(core::T_mv* resultP, core::LoadTimeValues_O** ltvPP, int index)
     {
 	(*resultP) = Values(proto_getLoadTimeValue(ltvPP,index));
 	ASSERTNOTNULL(*resultP);
@@ -1642,28 +1657,26 @@ extern "C"
 
 
 
-    void ltv_initializeArrayObjectsRowMajorArefOrder(core::T_sp* arrayP, core::LoadTimeValues_sp** ltvPP, int* indices )
+    void ltv_initializeArrayObjectsRowMajorArefOrder(core::T_sp* arrayP, core::LoadTimeValues_O** ltvPP, int* indices )
     {
 	core::Array_sp array = (*arrayP).as<core::Array_O>();
-	core::LoadTimeValues_sp& ltv = **ltvPP;
 	int arrayTotalSize = array->arrayTotalSize();
 	for (int i=0; i<arrayTotalSize; i++ )
 	{
-	    array->rowMajorAset(i,ltv->data_element(indices[i]));
+	    array->rowMajorAset(i,(*ltvPP)->data_element(indices[i]));
 	}
     }
 
-    void ltv_initializeHashTable(core::T_sp* hashTableP, int numEntries, core::LoadTimeValues_sp** ltvPP, int* indices )
+    void ltv_initializeHashTable(core::T_sp* hashTableP, int numEntries, core::LoadTimeValues_O** ltvPP, int* indices )
     {
 	core::HashTable_sp hashTable = (*hashTableP).as<core::HashTable_O>();
-	core::LoadTimeValues_sp& ltv = **ltvPP;
 	int j = 0;
 	for (int i=0; i<numEntries; i++ )
 	{
 	    int ikey = indices[j];
 	    int ival = indices[j+1];
-	    core::T_sp key = ltv->data_element(ikey);
-	    core::T_sp val = ltv->data_element(ival);
+	    core::T_sp key = (*ltvPP)->data_element(ikey);
+	    core::T_sp val = (*ltvPP)->data_element(ival);
 	    hashTable->hash_table_setf_gethash(key,val);
 	    j += 2;
 	}

@@ -12,6 +12,7 @@ namespace core
 {
     class LoadTimeValues_O : public T_O
     {
+        friend void (::sp_copyLoadTimeValue(T_sp* resultP, LoadTimeValues_O** ltvPP, int index));
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,LoadTimeValues_O,"LoadTimeValues");
     public: // Simple default ctor/dtor
