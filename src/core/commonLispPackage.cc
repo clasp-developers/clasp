@@ -10,7 +10,6 @@
 namespace cl
 {
 
-    SYMBOL_EXPORT_SC_(ClPkg,nil);
     SYMBOL_EXPORT_SC_(ClPkg,length);
     SYMBOL_EXPORT_SC_(ClPkg,condition);
     SYMBOL_EXPORT_SC_(ClPkg,defvar);

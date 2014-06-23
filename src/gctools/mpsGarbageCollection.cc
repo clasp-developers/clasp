@@ -63,7 +63,7 @@ namespace gctools
     mps_pool_t _global_amc_pool;
     mps_pool_t _global_amcz_pool;
     mps_pool_t _global_awl_pool;
-    mps_ap_t _global_automatic_weak_link_allocation_point;
+//    mps_ap_t _global_automatic_weak_link_allocation_point;
 //    mps_ap_t _global_mvff_allocation_point;
     mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
 
@@ -274,8 +274,11 @@ namespace gctools {
 
     int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], mps_fmt_auto_header_s* obj_fmt_sP, bool mpiEnabled, int mpiRank, int mpiSize)
     {
-#define CHAIN_SIZE 256 // 256 // 6400
-
+#ifdef DEBUG_LOAD_TIME_VALUES
+#define CHAIN_SIZE 6400 // 256 // 6400
+#else
+#define CHAIN_SIZE 6400 // 256 // 6400
+#endif
         if ( Alignment() == 16 ) {
             printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
         }
@@ -293,7 +296,7 @@ namespace gctools {
 
         mps_res_t res;
         MPS_ARGS_BEGIN(args) {
-            MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, 10 * 32 * 1024 * 1024 );
+            MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, 50 * 32 * 1024 * 1024 );
             res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create MPS arena");
@@ -327,13 +330,23 @@ namespace gctools {
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create amc chain");
 
         // Create the AMC pool
+#if 0
         mps_pool_t _global_amc_pool;
         res = mps_pool_create(&_global_amc_pool,
                               _global_arena,
                               mps_class_amc(),
                               obj_fmt,
                               amc_chain);
+#else
 
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+            MPS_ARGS_ADD(args, MPS_KEY_CHAIN, amc_chain);
+            MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
+            res = mps_pool_create_k(&_global_amc_pool, _global_arena, mps_class_amc(), args);
+        } MPS_ARGS_END(args);
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create amc pool");
+#endif
 
 
 
@@ -418,7 +431,7 @@ namespace gctools {
 
 
 
-#define AMCZ_CHAIN_SIZE 256 // 32768
+#define AMCZ_CHAIN_SIZE CHAIN_SIZE // 32768
         // Now the generation chain
         mps_gen_param_s amcz_gen_params[] = {
             { AMCZ_CHAIN_SIZE, 0.85 },
@@ -508,24 +521,22 @@ namespace gctools {
 
         exit_code = startupFn(argc,argv,mpiEnabled,mpiRank,mpiSize);
 
-        mps_root_destroy(global_scan_root);
-
         processMpsMessages();
 
+        mps_root_destroy(global_scan_root);
         mps_root_destroy(global_stack_root);
         mps_thread_dereg(global_thread);
-        mps_ap_destroy(_global_automatic_weak_link_allocation_point);
-        mps_ap_destroy(global_non_moving_ap);
-        mps_ap_destroy(_global_automatic_mostly_copying_zero_rank_allocation_point);
-//        mps_ap_destroy(_global_mvff_allocation_point);
-        mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
 #ifdef USE_AWL_POOL
-        mps_pool_destroy(_global_awl_pool);
+        mps_ap_destroy(_global_automatic_weak_link_allocation_point);
 #endif
+        mps_ap_destroy(_global_automatic_mostly_copying_zero_rank_allocation_point);
+        mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
         mps_pool_destroy(_global_amcz_pool);
+        mps_ap_destroy(global_non_moving_ap);
         mps_pool_destroy(global_non_moving_pool);
-//        mps_pool_destroy(_global_mvff_pool);
         mps_pool_destroy(_global_amc_pool);
+        mps_arena_park(_global_arena);
+        mps_chain_destroy(amcz_chain);
         mps_chain_destroy(amc_chain);
         mps_fmt_destroy(obj_fmt);
         mps_arena_destroy(_global_arena);

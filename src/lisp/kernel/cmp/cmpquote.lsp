@@ -23,6 +23,8 @@
 (defvar *run-time-literals-external-name* "globalRunTimeValues")
 
 
+(defvar +run-and-load-time-value-holder-global-var-type+ +ltv*+) ;; Was +ltvsp*+
+
 (defvar *load-time-value-holder-global-var* nil
   "Store the current load-time-value data structure for COMPILE-FILE")
 
@@ -686,10 +688,10 @@ marshaling of compiled quoted data"
 	     (*irbuilder-ltv-function-body* ,irbuilder-body)
 	     (*load-time-value-holder-global-var*
 	      (llvm-sys:make-global-variable *the-module*
-					     +ltvsp*+
+					     +run-and-load-time-value-holder-global-var-type+
 					     nil
 					     'llvm-sys:internal-linkage
-					     (llvm-sys:constant-pointer-null-get +ltvsp*+)
+					     (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+)
 					     "load-time-value-vector"))
 	     (*next-load-time-value-index* 0)
 	     (*next-load-time-symbol-index* 0)

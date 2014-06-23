@@ -294,7 +294,8 @@ namespace core
 	{
 	    if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() ) return _Nil<T_O>();
 	    string symbolName = tokenStr(token,name_marker-token.data());
-	    return _lisp->getCurrentPackage()->intern(symbolName);
+	    Symbol_sp sym = _lisp->getCurrentPackage()->intern(symbolName);
+            return sym;
 	}
 	break;
 	case tsymex: case tsympv:
@@ -318,7 +319,8 @@ namespace core
 	    {
 		PACKAGE_ERROR(Str_O::create(packageName));
 	    }
-	    return pkg->intern(symbolName);
+            Symbol_sp sym = pkg->intern(symbolName);
+	    return sym;
 	}
 	break;
 	case tsymkw:
@@ -767,7 +769,6 @@ namespace core
 	// Throw a ReaderError if the token is not valid syntax
 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() ) return(Values(_Nil<T_O>()));
 	T_sp object = interpret_token_or_throw_reader_error(sin,token);
-	if ( object == cl::_sym_nil || object.nilp() ) object = _Nil<T_O>();
 	TRAP_BAD_CONS(object);
 	return(Values(object));
     }

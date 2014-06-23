@@ -170,7 +170,7 @@ COMPILE-FILE just throws this away")
     (if (eq (car lambda) 'ext::lambda-block)
 	(setq block-name (function-block-name (cadr lambda))
 	      ;; function-name-as-string could be (setf xxx) or xxx - should I use (function-block-name (cadr lambda))?
-	      function-name-as-string (bformat nil "%s" (cadr lambda))
+	      function-name-as-string (symbol-name (cadr lambda)) ;; bformat nil "%s" (cadr lambda))
 	      lambda-list (caddr lambda)
 	      body (cdddr lambda))
 	(setq lambda-list (cadr lambda)
@@ -366,7 +366,7 @@ COMPILE-FILE just throws this away")
 
 
 (defun codegen-special-var-reference (var &optional env)
-  (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" var )))
+  (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
 
 
 (defun codegen-lexical-var-reference (depth-index env)
@@ -1174,10 +1174,10 @@ be wrapped with to make a closure"
       (define-primitives-in-module *the-module*)
       (let* ((*run-time-value-holder-global-var*
 	      (llvm-sys:make-global-variable *the-module*
-					     +ltvsp*+
+                                             +run-and-load-time-value-holder-global-var-type+
 					     nil
 					     'llvm-sys:external-linkage
-					     nil ;; (llvm-sys:constant-pointer-null-get +ltvsp*+ )
+					     nil ;; (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+ )
 					     *run-time-literals-external-name*)))
         (with-compilation-unit (:override nil
                                           :module *the-module*

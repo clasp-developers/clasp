@@ -44,7 +44,7 @@ public:	// Creation class functions
     public:
 	/*! Very low level - add to internal symbols unless keyword
 	  package, in that case add to external symbols */
-	void _add_symbol_to_package(Symbol_sp sym, bool exportp=false);
+	void add_symbol_to_package(const char* symName, Symbol_sp sym, bool exportp=false);
 
 public:
 

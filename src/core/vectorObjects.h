@@ -15,12 +15,18 @@ template<> struct gctools::GCInfo<core::VectorObjects_O> {
 };
 
 
+extern "C"
+{
+    extern void sp_copyLoadTimeValue(core::T_sp* resultP, core::LoadTimeValues_O** ltvPP, int index);
+};
+
 namespace core
 {
 
     FORWARD(VectorObjects);
     class VectorObjects_O : public Vector_O
     {
+        friend void (::sp_copyLoadTimeValue(T_sp* resultP, LoadTimeValues_O** ltvPP, int index));
 	LISP_BASE1(Vector_O);
 	LISP_CLASS(core,CorePkg,VectorObjects_O,"VectorObjects");
 	DECLARE_INIT();

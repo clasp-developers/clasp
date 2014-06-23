@@ -1367,7 +1367,6 @@ namespace core
 	T_mv sp_quote(Cons_sp args, Environment_sp environment)
 	{_G();
 	    ASSERTF(af_length(args)==1,BF("Only one argument allowed for QUOTE"));
-	    if ( oCar(args) == cl::_sym_nil) return(Values(_Nil<T_O>()));
 	    return(Values(oCar(args)));
 	}
 
@@ -1724,13 +1723,9 @@ namespace core
 	{
 	    T_mv result;
 	    LOG(BF("Evaluating atom: %s")% exp->__repr__());
-	    if ( exp.nilp() )
-	    {
-		return Values(_Nil<T_O>());
-	    } else if ( Symbol_sp sym = exp.asOrNull<Symbol_O>() )
+	    if ( exp.nilp() ) return Values(_Nil<T_O>());
+            else if ( Symbol_sp sym = exp.asOrNull<Symbol_O>() )
 	    {_BLOCK_TRACEF(BF("Evaluating symbol: %s")% exp->__repr__() );
-		if ( sym == cl::_sym_nil ) return Values(_Nil<T_O>());
-		if ( sym == _Nil<Symbol_O>() ) return Values(_Nil<T_O>());
 		if ( sym->isKeywordSymbol() ) return Values(sym);
 		if ( af_interpreter_lookup_symbol_macro(sym,environment).notnilp() )
 		{

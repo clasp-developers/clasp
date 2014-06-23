@@ -30,7 +30,7 @@ namespace core
 #define DOCS_af_boundp "boundp"
     bool af_boundp(Symbol_sp arg)
     {_G();
-	if ( arg.nilp() ) return cl::_sym_nil->boundP();
+	if ( arg.nilp() ) return _lisp->_true();
 	return arg->boundP();
     };
 
@@ -43,7 +43,7 @@ namespace core
 #define DOCS_af_symbolPackage "symbolPackage"
     Package_sp af_symbolPackage(Symbol_sp arg)
     {_G();
-	if ( arg.nilp() ) return cl::_sym_nil->homePackage();
+	if ( arg.nilp() ) return _lisp->commonLispPackage();
 	return arg->homePackage();
     };
 
@@ -56,7 +56,7 @@ namespace core
 #define DOCS_af_symbolFunction "symbolFunction"
     Function_sp af_symbolFunction(Symbol_sp sym)
     {_G();
-	if ( sym.nilp() ) return cl::_sym_nil->symbolFunction();
+	if ( sym.nilp() ) return _Nil<Function_O>();
 	return sym->symbolFunction();
     };
 
@@ -71,7 +71,7 @@ namespace core
     {_G();
 	if ( arg.nilp() )
 	{
-	    return cl::_sym_nil->symbolName();
+	    return Str_O::create("NIL");
 	}
 	return arg->symbolName();
     }
@@ -87,7 +87,7 @@ namespace core
     {_G();
 	if ( arg.nilp() )
 	{
-	    return cl::_sym_nil->symbolValue();
+	    return _Nil<T_O>();
 	} else if ( arg.unboundp() )
 	{
 	    SIMPLE_ERROR(BF("Symbol %s is unbound") % _rep_(arg));
@@ -162,7 +162,7 @@ namespace core
     {
 	ASSERTF(pkg,BF("The package is UNDEFINED"));
 	this->_HomePackage = pkg;
-	pkg->_add_symbol_to_package(this->sharedThis<Symbol_O>(),exportp);
+	pkg->add_symbol_to_package(this->symbolName()->get().c_str(),this->sharedThis<Symbol_O>(),exportp);
 	this->_PropertyList = _Nil<Cons_O>();
 	this->_Function = _Nil<Function_O>();
     }

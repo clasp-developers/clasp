@@ -15,7 +15,7 @@ extern "C"
       We use a pointer to the smart_ptr because we don't want
       to have to maintain this as a garbage collection root.
     */
-    core::LoadTimeValues_sp* 	globalRunTimeValuesVector ATTR_WEAK = NULL;
+    core::LoadTimeValues_O* 	globalRunTimeValues ATTR_WEAK = NULL;
 };
 #pragma GCC visibility pop
 
@@ -37,7 +37,9 @@ namespace core
 	{
 	    return false;
 	}
-	globalRunTimeValues = _lisp->getOrCreateLoadTimeValues(name);
+        /*! LoadTimeValues_O are allocated in non-moving pool so we can
+          set a global pointer to one of them without working about it moving */
+	globalRunTimeValues = reinterpret_cast<LoadTimeValues_O*>(_lisp->getOrCreateLoadTimeValues(name).pbase());
 	return true;
     };
 
@@ -47,8 +49,8 @@ namespace core
 #define DOCS_af_loadTimeValueArray "loadTimeValueArray"
     LoadTimeValues_mv af_loadTimeValueArray(const string& name, int dataSize, int symbolSize )
     {_G();
-        Pointer_sp ptr = Pointer_O::create(_lisp->getOrCreateLoadTimeValues(name,dataSize, symbolSize));
-        return Values(ptr);
+        LoadTimeValues_sp ltv = _lisp->getOrCreateLoadTimeValues(name,dataSize, symbolSize);
+        return Values(ltv);
     };
 
 
@@ -168,8 +170,8 @@ namespace core
 
     void LoadTimeValues_O::dump()
     {_G();
-	printf("%s:%d  LTV@%p size %d  LTS size %lu\n", __FILE__, __LINE__, this, af_length(this->_Objects), this->_Symbols.size() );
-	for (int i=0,iEnd(af_length(this->_Objects)); i<iEnd; i++ )
+	printf("%s:%d  LTV@%p  size %d  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects->dimension(), this->_Symbols.size() );
+	for (int i=0,iEnd(this->_Objects->dimension()); i<iEnd; i++ )
 	{
             T_sp& obj = (*this->_Objects)[i];
 	    printf("LTV[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Objects->operator[](i)), _rep_(obj).c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );

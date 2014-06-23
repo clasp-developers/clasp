@@ -702,10 +702,10 @@ namespace core
 	{
 	    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues, numberOfLoadTimeSymbols);
 	    this->_Roots._LoadTimeValueArrays->setf_gethash(key,vo);
-            return gctools::smart_ptr<LoadTimeValues_O>(vo.pbase());
+            return gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(vo.pbase()));
 	}
         LoadTimeValues_sp ltv = it.as<LoadTimeValues_O>();
-        return gctools::smart_ptr<LoadTimeValues_O>(ltv.pbase());
+        return gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(ltv.pbase()));
     }
 
 
