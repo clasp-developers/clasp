@@ -173,10 +173,11 @@ namespace core {
 
 	    this->_ClassSymbol = OT::static_classSymbol();
 
-#if 0
-            OT xxx;
-            int offset = reinterpret_cast<char*>(&dynamic_cast<T_O&>(xxx)) - reinterpret_cast<char*>(&xxx);
-            printf("%s:%d offsetof(%s,T_O) = %d\n", __FILE__, __LINE__, _rep_(this->_ClassSymbol).c_str(),offset);
+#if 1
+            OT dummy;
+            size_t offsetT = (size_t)((char*)(dynamic_cast<T_O*>(&dummy)) - (char*)(&dummy));
+            size_t offsetGCO = (size_t)((char*)(dynamic_cast<gctools::GCObject*>(&dummy)) - (char*)(&dummy));
+            printf("%s:%d %50s offsetof(T_O) = %3lu  offsetof(gctools::GCObject) = %3lu\n", __FILE__, __LINE__, typeid(OT).name(),offsetT, offsetGCO);
 #endif            
 
             reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);

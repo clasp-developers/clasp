@@ -461,7 +461,7 @@ namespace core
 
 
 #ifdef	DEBUG_ON
-
+#error "TURN OFF DEBUG_ON"
 #define	TESTMEMORY()
 
 #define	HARD_BREAK_POINT() __asm int 3;
@@ -562,6 +562,7 @@ namespace core
         LOG_CXX_FUNCTION_INVOCATION();          \
         _PROFILE_FUNCTION();
 
+#error "TURN CALLSTACK_ON off"
 #define _OF() _G();
 #define _lisp_BLOCK_TRACEF(__f) {} // core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,DEBUG_CPP_BLOCK,__f)
 #define _lisp_BLOCK_TRACE(__s) _lisp_BLOCK_TRACEF(BF("%s")%(__s))

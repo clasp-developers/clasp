@@ -23,11 +23,7 @@ namespace core
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     protected:
-#ifdef USE_GCSTRING
         typedef gctools::gcstring         str_type;
-#else
-	typedef std::string str_type;
-#endif
         str_type _Contents;
     public:
         typedef str_type::iterator iterator;
@@ -46,7 +42,6 @@ namespace core
     public:
         virtual uint size() const { return this->_Contents.size(); };
 	const char* c_str() const { return this->_Contents.c_str(); };
-#ifdef USE_GCSTRING
         string __str__() { return this->_Contents.asStdString(); };
 	virtual string get() const { return this->_Contents.asStdString(); };
         virtual void set(const string& v) {
@@ -61,18 +56,6 @@ namespace core
             str_type temp(v,num);
             this->_Contents.swap(temp);
         };
-#else
-	virtual string get() const { return this->_Contents; };
-	string __str__() { return this->_Contents; };
-	virtual void set(const string& v) { this->_Contents = v; };
-	virtual void setFromChars(const char* v) { this->_Contents = v; };
-	virtual void setFromChars(const char* v,int num) { string temp(v,num); this->_Contents.swap(temp);};
-	string& _contents() { return this->_Contents; };
-	string const& _contents() const { return this->_Contents; };
-	virtual uint dimension() const { return this->_Contents.size();};
-	virtual	string	valueAsString() const { return this->_Contents;};
-	virtual	void	setFromString(const string& strVal) { this->set(strVal);};
-#endif
 	virtual T_sp asetUnsafe(int j, T_sp val);
 	string __repr__() const;
 	uint countOccurances(const string& chars);
@@ -183,11 +166,7 @@ namespace core
 };
 template<> struct gctools::GCInfo<core::Str_O> {
     static bool constexpr NeedsInitialization = false;
-#ifdef USE_GCSTRING
     static bool constexpr NeedsFinalization = false;
-#else
-    static bool constexpr NeedsFinalization = true;
-#endif
     static bool constexpr Moveable = true;
     static bool constexpr Atomic = false;
 };

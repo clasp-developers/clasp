@@ -1,5 +1,11 @@
 #include <boost/mpl/list.hpp>
 
+#ifdef USE_MPS
+extern "C" {
+#include "mpscamc.h"
+};
+#endif
+
 #include <stdint.h>
 
 #include "core/foundation.h"
@@ -212,7 +218,6 @@ extern "C" {
     }
 };
 
-
 template <typename T>
 size_t dumpResults(const std::string& name, const std::string& shortName, T* data)
 {
@@ -232,8 +237,62 @@ size_t dumpResults(const std::string& name, const std::string& shortName, T* dat
     return totalSize;
 }
 
-
 #endif
+
+#ifdef USE_MPS
+struct ReachableMPSObject {
+    ReachableMPSObject(int k) : kind(k) {};
+    int    kind=0;
+    size_t instances=0;
+    size_t totalMemory=0;
+    size_t largest=0;
+    size_t print(const std::string& shortName) {
+        if ( this->instances > 0 ) {
+            printf("%s: totalMemory: %10lu count: %8lu largest: %8lu avg.sz: %8lu %s/%d\n", shortName.c_str(),
+                   this->totalMemory, this->instances, this->largest, this->totalMemory/this->instances, obj_name((gctools::GCKindEnum)this->kind), this->kind );
+        }
+        return this->totalMemory;
+    }
+};
+
+extern "C" {
+    void amc_apply_stepper(mps_addr_t client, void* p, size_t s)
+    {
+        gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ClientPtrToBasePtr(client));
+        vector<ReachableMPSObject>* reachablesP = reinterpret_cast<vector<ReachableMPSObject>*>(p);
+        if ( header->kindP() ) {
+            ReachableMPSObject& obj = (*reachablesP)[header->kind()];
+            ++obj.instances;
+            size_t sz = (char*)(obj_skip(client)) - (char*)client;
+            obj.totalMemory += sz;
+            if ( sz > obj.largest ) obj.largest = sz;
+        }
+    }
+};
+
+
+size_t dumpMPSResults(const std::string& name, const std::string& shortName, vector<ReachableMPSObject>& values)
+{
+    printf("-------------------- %s -------------------\n", name.c_str() );
+    size_t totalSize(0);
+    typedef ReachableMPSObject value_type;
+    sort(values.begin(), values.end(), [](value_type& x, value_type& y) {
+            return (x.totalMemory > y.totalMemory);
+        });
+    for ( auto it : values ) {
+        totalSize += it.print(shortName);
+    }
+    return totalSize;
+}
+
+#endif // USE_MPS
+
+
+
+
+
+
+
 
 namespace gctools {
 
@@ -276,13 +335,36 @@ namespace gctools {
 #define ARGS_af_gcReachableObjects "(&optional x (marker 0) msg)"
 #define DECL_af_gcReachableObjects ""
 #define DOCS_af_gcReachableObjects "gcReachableObjects - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)"
-    T_mv af_gcReachable(T_sp x, Fixnum_sp marker, Str_sp msg)
+    T_mv af_gcReachableObjects(T_sp x, Fixnum_sp marker, Str_sp msg)
     {_G();
         string smsg = "Total";
         if ( msg.notnilp() ) {
         smsg = msg->get();
     }
 #ifdef USE_MPS
+        mps_word_t numCollections = mps_collections(gctools::_global_arena);
+        size_t arena_committed = mps_arena_committed(gctools::_global_arena);
+        size_t arena_reserved = mps_arena_reserved(gctools::_global_arena);
+        printf("%12lu collections\n", numCollections );
+        printf("%12lu mps_arena_committed\n", arena_committed);
+        printf("%12lu mps_arena_reserved\n", arena_reserved);
+        printf("%12lu finalization requests\n", globalMpsMetrics.finalizationRequests);
+        size_t totalAllocations = globalMpsMetrics.nonMovingAllocations
+            + globalMpsMetrics.movingAllocations
+            + globalMpsMetrics.movingZeroRankAllocations
+            + globalMpsMetrics.unknownAllocations;
+        printf("%12lu total allocations\n", totalAllocations );
+        printf("%12lu    non-moving(AWL) allocations\n", globalMpsMetrics.nonMovingAllocations);
+        printf("%12lu    moving(AMC) allocations\n", globalMpsMetrics.movingAllocations);
+        printf("%12lu    moving zero-rank(AMCZ) allocations\n", globalMpsMetrics.movingZeroRankAllocations);
+        printf("%12lu    unknown(configurable) allocations\n", globalMpsMetrics.unknownAllocations);
+        printf("%12lu total memory allocated\n", globalMpsMetrics.totalMemoryAllocated);
+        vector<ReachableMPSObject> reachables;
+        for (int i=0; i<gctools::KIND_max; ++i ) {
+            reachables.push_back(ReachableMPSObject(i));
+        }
+        mps_amc_apply(_global_amc_pool,amc_apply_stepper,&reachables,0);
+        dumpMPSResults("Reachable Kinds", "AMCpool", reachables );
         return Values(_Nil<T_O>());
 #endif
 #ifdef USE_BOEHM
@@ -318,6 +400,29 @@ namespace gctools {
         return Values(_Nil<core::T_O>());
 #endif
     };
+
+
+
+
+    
+#ifdef USE_MPS    
+#define ARGS_af_mpsTelemetrySet "(flags)"
+#define DECL_af_mpsTelemetrySet ""
+#define DOCS_af_mpsTelemetrySet "mpsTelemetrySet"
+    void af_mpsTelemetrySet(Fixnum_sp flags)
+    {_G();
+        mps_telemetry_set(flags->get());
+    };
+
+#define ARGS_af_mpsTelemetryReset "(flags)"
+#define DECL_af_mpsTelemetryReset ""
+#define DOCS_af_mpsTelemetryReset "mpsTelemetryReset"
+    void af_mpsTelemetryReset(Fixnum_sp flags)
+    {_G();
+        mps_telemetry_reset(flags->get());
+    };
+
+#endif
 
 
 #define ARGS_af_garbageCollect "()"
@@ -585,12 +690,16 @@ namespace gctools {
             core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
             core::af_def(GcToolsPkg,"gcInfo",&af_gcInfo);
             core::af_def(GcToolsPkg,"gcMarker",&af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
-            core::af_def(GcToolsPkg,"gcReachableObjects",&af_gcReachable,ARGS_af_gcReachableObjects, DECL_af_gcReachableObjects, DOCS_af_gcReachableObjects);
+            core::af_def(GcToolsPkg,"gcReachableObjects",&af_gcReachableObjects,ARGS_af_gcReachableObjects, DECL_af_gcReachableObjects, DOCS_af_gcReachableObjects);
             core::af_def(GcToolsPkg,"garbageCollect",&af_garbageCollect);
             core::af_def(GcToolsPkg,"cleanup",&af_cleanup);
             core::af_def(GcToolsPkg,"maxBootstrapKinds",&af_maxBootstrapKinds);
             core::af_def(GcToolsPkg,"bootstrapKindP",&af_bootstrapKindP);
             core::af_def(GcToolsPkg,"bootstrapKindSymbols",&af_bootstrapKindSymbols);
+#ifdef USE_MPS
+            core::af_def(GcToolsPkg,"mpsTelemetrySet",&af_mpsTelemetrySet);
+            core::af_def(GcToolsPkg,"mpsTelemetryReset",&af_mpsTelemetryReset);
+#endif
 
 
 

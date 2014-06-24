@@ -58,7 +58,15 @@ namespace core
 	int charCode() const { return this->toInt(); };
 	void __write__(Stream_sp sout) const; // Look in write_ugly.cc
     };
+};
+template<> struct gctools::GCInfo<core::Character_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = true;
+};
 
+namespace core {
 
 
 
@@ -77,7 +85,16 @@ namespace core
 
     public: // Functions here
     };
+};
+template<> struct gctools::GCInfo<core::BaseChar_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = true;
+};
 
+
+namespace core {
 
 
 
@@ -142,6 +159,16 @@ namespace core
 
 	DEFAULT_CTOR_DTOR(StandardChar_O);
     };
+};
+
+template<> struct gctools::GCInfo<core::StandardChar_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = true;
+};
+
+namespace core {
 
 
 
@@ -164,6 +191,16 @@ namespace core
 
     public: // Functions here
     };
+
+};
+template<> struct gctools::GCInfo<core::ExtendedChar_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = true;
+};
+
+namespace core {
 
 
 

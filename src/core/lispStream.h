@@ -118,17 +118,15 @@ namespace core
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,ClPkg,Stream_O,"stream");
 	DECLARE_INIT_GLOBALS();
-    private:
-        bool            _Interactive;
     public:
 	/*! Return the stream name as a pathname*/
 	Pathname_sp pathname() const;
 
 	virtual bool inputStreamP() const {return false;};
 	virtual bool outputStreamP() const {return false;};
-	virtual bool interactiveStreamP() const {return this->_Interactive;};
+	virtual bool interactiveStreamP() const {return false;};
 
-        void setInteractive(bool i) { this->_Interactive = true; };
+        virtual void setInteractive(bool i) { SUBIMP(); };
 
 
 	virtual T_sp streamElementType() const { SUBIMP();};
@@ -201,7 +199,7 @@ namespace core
 
 	// Other
 	virtual T_sp close(bool abort=false);
-        Stream_O() : _Interactive(false) {};
+        Stream_O() {};
         virtual ~Stream_O() {};
     };
 
@@ -673,6 +671,12 @@ namespace core
     
 }; // core namespace
 TRANSLATE(core::StringOutStream_O);
+template<> struct gctools::GCInfo<core::StringOutStream_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 
 
@@ -946,6 +950,7 @@ namespace core
     protected: // instance variables here
 	Stream_sp 	_in_stream;
 	Stream_sp 	_out_stream;
+        bool            interactive;
     public: // Functions here
 	void throw_if_no_file_descriptor() const;
 	T_sp close(bool abort=false);
@@ -956,6 +961,8 @@ namespace core
     public: // Functions here
 	virtual bool inputStreamP() const {return true;};
 	virtual string readEntireFile();
+        virtual bool interactiveStreamP() const { return this->interactive;};
+        virtual void setInteractive(bool i) { this->interactive = i;};
 	LongLongInt tell();
 	void seek(LongLongInt);
 	LongLongInt fileSize();

@@ -7,13 +7,6 @@
 
 
 
-template<> struct gctools::GCInfo<core::VectorObjects_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = false;
-};
-
 
 extern "C"
 {
@@ -99,8 +92,15 @@ namespace core
     };
 
 }; /* core */
-
 TRANSLATE(core::VectorObjects_O);
+template<> struct gctools::GCInfo<core::VectorObjects_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
+
 
 #endif /* _core_VectorObjects_H */
 

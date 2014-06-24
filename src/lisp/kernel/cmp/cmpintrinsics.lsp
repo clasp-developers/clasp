@@ -97,27 +97,11 @@ Set this to other IRBuilders to make code go where you want")
     (eq pointer-type 'core::intrusive-reference-counted-pointer))
   (defconstant +smart-ptr-px-offset+ pointer-px-offset))
 
+
 (defun smart-pointer-fields (data-ptr-type &rest additional-fields)
   "List the types that make up a smart_ptr.
-I'm using smart_ptr which have a vtable associated with them"
-  (or
-   ;; mps currently uses:
-   ;;   (internal-ptr most-derived-ptr) if #+use-tagged-ptr-p0
-   ;; or (internal-ptr) only if that feature is not set
-   ;;
-   #+use-mps (list* data-ptr-type
-                    #+use-tagged-ptr-p0 data-ptr-type
-                    additional-fields)
-
-   (if +using-intrusive-reference-count+
-       (list* #+polymorphic-smart-ptr +i32*+ ;; vtable ptr
-              data-ptr-type                  ;; data ptr
-              additional-fields)
-       (list* #+polymorphic-smart-ptr +i32*+ ;; vtable ptr
-              data-ptr-type                  ;; data ptr
-              +shared-count+                 ;; reference counter
-              additional-fields))
-   ))
+Boehm and MPS use a single pointer"
+  (list* data-ptr-type additional-fields))
 
 
 ;;
