@@ -161,6 +161,12 @@ COMPILE-FILE just throws this away")
     ))
 
 
+(defun function-name-from-lambda (name)
+    (cond
+      ((symbolp name) (symbol-name name))
+      ((consp name) (bformat nil "%s" name))
+      (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
+       
 
 
 
@@ -170,7 +176,7 @@ COMPILE-FILE just throws this away")
     (if (eq (car lambda) 'ext::lambda-block)
 	(setq block-name (function-block-name (cadr lambda))
 	      ;; function-name-as-string could be (setf xxx) or xxx - should I use (function-block-name (cadr lambda))?
-	      function-name-as-string (symbol-name (cadr lambda)) ;; bformat nil "%s" (cadr lambda))
+	      function-name-as-string (function-name-from-lambda (cadr lambda)) ;; bformat nil "%s" (cadr lambda))
 	      lambda-list (caddr lambda)
 	      body (cdddr lambda))
 	(setq lambda-list (cadr lambda)

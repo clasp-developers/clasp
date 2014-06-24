@@ -16,7 +16,7 @@ namespace core
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,LoadTimeValues_O,"LoadTimeValues");
     public: // Simple default ctor/dtor
-	LoadTimeValues_O() : Base(), _Objects(_Nil<VectorObjectsWithFillPtr_O>()) {};
+	LoadTimeValues_O() : Base()  {};
 	virtual ~LoadTimeValues_O() {};
 
     public: // ctor/dtor for classes with shared virtual base
@@ -24,20 +24,19 @@ namespace core
 //    virtual ~LoadTimeValues_O() {};
 
     private: // instance variables here
-	VectorObjectsWithFillPtr_sp 	_Objects;
-        gctools::Vec0<Symbol_sp>	_Symbols; // TODO: Make this VectorSymbolsWithFillPtr_sp
+        gctools::Vec0<T_sp>      	_Objects;
+        gctools::Vec0<Symbol_sp>	_Symbols;
 	
     public: // Functions here
 	static LoadTimeValues_sp make(int dataDimension, int symbolDimension);
 
-	int numberOfValues() const { return this->_Objects->length(); };
+	int numberOfValues() const { return this->_Objects.size(); };
 	int numberOfSymbols() const { return this->_Symbols.size(); };
 
 	void dump();
 
 	// -------- Regular data storage
 
-	void data_setFillPointer(uint i);
 	T_sp& data_element(uint i);
 	int data_vectorPushExtend(T_sp val, int extension);
 
@@ -76,7 +75,7 @@ namespace core {
 	LISP_CLASS(core,CorePkg,MemoryLockedLoadTimeValuesPointer_O,"MemoryLockedLoadTimeValuePointer");
     public: // Simple default ctor/dtor
 	MemoryLockedLoadTimeValuesPointer_O() : Base(), _LoadTimeValues(_Nil<LoadTimeValues_O>()) {
-            DEPRECIATED();
+            printf("%s:%d  MemoryLockedLoadTimeValuesPointer is DEPRECIATED()\n",__FILE__,__LINE__);
         };
 	virtual ~MemoryLockedLoadTimeValuesPointer_O() {};
     private: // instance variables here

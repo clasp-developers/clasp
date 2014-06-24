@@ -2112,12 +2112,16 @@ so that they don't have to be constantly recalculated"
 
 
 (defun generate-alloc-enum (&optional (fout t) (anal *analysis*))
-  (let ((all-enums (analysis-enums anal)))
+  (let ((all-enums (analysis-enums anal))
+        (maxenum 0))
     (format fout "enum { KIND_null = 0, ~%")
     (maphash (lambda (key enum)
-               (format fout "~A = ~A,~%" (enum-name enum) (enum-value enum)))
+               (format fout "~A = ~A,~%" (enum-name enum) (enum-value enum))
+               (when (> (enum-value enum) maxenum)
+                 (setq maxenum (enum-value enum))))
              (analysis-enums anal)
              )
+    (format fout "  KIND_max = ~a~%" maxenum)
     (format fout "}~%" )
     ))
 

@@ -235,7 +235,7 @@ extern "C" {
 
 #ifdef DEBUG_LOAD_TIME_VALUES
 #define SHIELD_SAFE_TELEMETRY(CLIENT,FMT)                               \
-    {                                                                   \
+    if ( mps_telemetry_get()&64 ) {                                     \
         Seg seg;                                                        \
         if ( SegOfAddr(&seg,gctools::_global_arena,CLIENT)) {           \
             ShieldExpose(gctools::_global_arena,seg);                   \

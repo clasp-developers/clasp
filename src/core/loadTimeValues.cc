@@ -129,7 +129,7 @@ namespace core
     LoadTimeValues_sp LoadTimeValues_O::make(int dataDimension, int symbolsDimension)
     {_G();
         GC_ALLOCATE(LoadTimeValues_O,vo );
-	vo->_Objects = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),dataDimension,0,false);
+	vo->_Objects.resize(dataDimension,_Nil<T_O>());
 	vo->_Symbols.resize(symbolsDimension,_Nil<Symbol_O>());
 	return vo;
     }
@@ -170,11 +170,11 @@ namespace core
 
     void LoadTimeValues_O::dump()
     {_G();
-	printf("%s:%d  LTV@%p  size %d  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects->dimension(), this->_Symbols.size() );
-	for (int i=0,iEnd(this->_Objects->dimension()); i<iEnd; i++ )
+	printf("%s:%d  LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size() );
+	for (int i=0,iEnd(this->_Objects.size()); i<iEnd; i++ )
 	{
-            T_sp& obj = (*this->_Objects)[i];
-	    printf("LTV[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Objects->operator[](i)), _rep_(obj).c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+            T_sp& obj = this->_Objects[i];
+	    printf("LTV[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Objects[i]), _rep_(obj).c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
 	}
 	int ic=0;
 	for ( auto it=this->_Symbols.begin();
@@ -186,23 +186,17 @@ namespace core
 
 
 
-    void LoadTimeValues_O::data_setFillPointer(uint i)
-    {_G();
-	ASSERT(this->_Objects.pointerp());
-	this->_Objects->setf_fillPointer(i);
-    }
-
-
     T_sp& LoadTimeValues_O::data_element(uint i)
     {
-	ASSERT(this->_Objects.pointerp());
-	return this->_Objects->operator[](i);
+	return this->_Objects[i];
     }
 
+    /*! Ignore extension */
     int LoadTimeValues_O::data_vectorPushExtend(T_sp val, int extension)
     {
-	ASSERT(this->_Objects.pointerp());
-	return this->_Objects->vectorPushExtend(val,extension)->get();
+        int idx = this->_Objects.size();
+        this->_Objects.push_back(val);
+        return idx;
     }
 
 

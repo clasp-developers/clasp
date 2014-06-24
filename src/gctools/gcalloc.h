@@ -293,6 +293,7 @@ namespace gctools {
                 obj = BasePtrToMostDerivedPtr<T>(addr);
                 new (obj) T(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,sz) );
+            globalMpsMetrics.nonMovingAllocation(sz);
             DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr,obj,sz,gctools::GCKind<T>::Kind);
             POLL_SIGNALS();
             return obj;
@@ -330,6 +331,7 @@ namespace gctools {
                 obj = BasePtrToMostDerivedPtr<T>(addr);
                 new (obj) T(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,sz) );
+            globalMpsMetrics.unknownAllocation(sz);
             DEBUG_MPS_ALLOCATION("AP", addr,obj,sz,gctools::GCKind<T>::Kind);
             POLL_SIGNALS();
             return obj;
@@ -379,6 +381,7 @@ namespace gctools {
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
                 new (obj) OT(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
+            globalMpsMetrics.movingAllocation(size);
             DEBUG_MPS_ALLOCATION("AMC", addr,obj,size,gctools::GCKind<OT>::Kind);
             smart_pointer_type sp = gctools::smart_ptr<value_type>(obj);
             return sp;
@@ -418,6 +421,7 @@ namespace gctools {
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
                 new (obj) OT(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
+            globalMpsMetrics.movingZeroRankAllocation(size);
             DEBUG_MPS_ALLOCATION("AMCZ", addr,obj,size,gctools::GCKind<OT>::Kind);
             smart_pointer_type sp = gctools::smart_ptr<value_type>(obj);
             return sp;
@@ -460,6 +464,7 @@ namespace gctools {
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
                 new (obj) OT(std::forward<ARGS>(args)...);
             } while (!mps_commit(obj_ap,addr,size) );
+            globalMpsMetrics.nonMovingAllocation(size);
             DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr,obj,size,gctools::GCKind<OT>::Kind);
             smart_pointer_type sp = gctools::smart_ptr<value_type>(obj);
             return sp;
@@ -502,6 +507,7 @@ namespace gctools {
 #ifdef USE_MPS  
             void* client = sp.pbase(); // SmartPtrToBasePtr(sp);
             mps_finalize(_global_arena,&client);
+            ++globalMpsMetrics.finalizationRequests;
 #endif
         };
     };
@@ -660,6 +666,7 @@ namespace gctools {
                 myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
                 new (myAddress) TY(num);
             } while (!mps_commit(obj_ap,addr,size));
+            globalMpsMetrics.movingAllocation(size);
             GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
             POLL_SIGNALS();
             DEBUG_MPS_ALLOCATION("containerAMC", addr, myAddress, size, gctools::GCKind<TY>::Kind);
@@ -750,6 +757,7 @@ namespace gctools {
                 myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
                 new (myAddress) TY(num);
             } while (!mps_commit(obj_ap,addr,size));
+            globalMpsMetrics.nonMovingAllocation(size);
             GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
             POLL_SIGNALS();
             DEBUG_MPS_ALLOCATION("container_MVFF", addr, myAddress, size, gctools::GCKind<TY>::Kind);
@@ -838,6 +846,7 @@ namespace gctools {
                 new (header) HeadT(GCKind<TY>::Kind);
 //                header->kind._Kind = gctools::GCKind<container_type>::Kind;
             } while (!mps_commit(obj_ap,base,sz) );
+            globalMpsMetrics.movingZeroRankAllocation(sz);
             container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
             new (myAddress) TY(num);
             POLL_SIGNALS();

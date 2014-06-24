@@ -22,8 +22,6 @@
 #endif
 
 
-// Switch between GCString and std::string using this define
-#define USE_GCSTRING
 
 /*! Old way of doing #= and ## used alists which are slow
   Switch to hash-tables to speed things up */

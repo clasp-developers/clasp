@@ -1523,10 +1523,11 @@ extern "C"
 	ASSERT(ltvPP!=NULL);
 	ASSERT((*ltvPP)!=NULL);
 	core::T_sp val = proto_copyLoadTimeValue(ltvPP,index);
-#ifdef DEBUG_LOAD_TIME_VALUES
-        {
-            mps_label_t lbl = mps_telemetry_intern(
-                (BF("%s:%d sp_copyLoadTimeValue@%p  VectorObjectsWithFillPtr@%p    gctools::Vec0<T_sp>@%p  index[%d]  result client@%p  value: %s  cl::_sym_destructuring_bind@%p") % __FILE__ % __LINE__ % *ltvPP % (*ltvPP)->_Objects.pbase() % (*ltvPP)->_Objects->_Values._Vector._Contents % index % val.pbase() % _rep_(val).c_str() % cl::_sym_destructuring_bind.pbase()).str().c_str());
+#if defined(USE_MPS) && defined(DEBUG_LOAD_TIME_VALUES)
+        if (mps_telemetry_get()&64) {
+            stringstream ss;
+            ss << (BF("%s:%d sp_copyLoadTimeValue@%p  _Objects@%p  index[%d]  result client@%p  value: %s  cl::_sym_destructuring_bind@%p") % __FILE__ % __LINE__ % *ltvPP % (*ltvPP)->_Objects._Vector._Contents % index % val.pbase() % _rep_(val).c_str() % cl::_sym_destructuring_bind.pbase()).str();
+            mps_label_t lbl = mps_telemetry_intern(ss.str().substr(0,250).c_str());
             mps_telemetry_label(val.px_ref(),lbl);
         }
 #endif

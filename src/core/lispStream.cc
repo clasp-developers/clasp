@@ -2950,7 +2950,8 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 
     TwoWayStream_O::TwoWayStream_O() : Base()
                                      , _in_stream(_Nil<Stream_O>())
-                                     , _out_stream(_Nil<Stream_O>()) {};
+                                     , _out_stream(_Nil<Stream_O>())
+                                     , interactive(false) {};
 
     TwoWayStream_O::~TwoWayStream_O()
     {

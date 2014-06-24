@@ -21,6 +21,34 @@ extern "C" {
 
 namespace gctools {
 
+    struct MpsMetrics {
+        size_t finalizationRequests=0;
+        size_t movingAllocations=0;
+        size_t movingZeroRankAllocations=0;
+        size_t nonMovingAllocations=0;
+        size_t unknownAllocations=0;
+        size_t totalMemoryAllocated=0;
+        void movingAllocation(size_t sz) {
+            this->totalMemoryAllocated += sz;
+            ++this->movingAllocations;
+        }
+        void movingZeroRankAllocation(size_t sz) {
+            this->totalMemoryAllocated += sz;
+            ++this->movingZeroRankAllocations;
+        }
+        void unknownAllocation(size_t sz) {
+            this->totalMemoryAllocated += sz;
+            ++this->unknownAllocations;
+        }
+        void nonMovingAllocation(size_t sz) {
+            this->totalMemoryAllocated += sz;
+            ++this->nonMovingAllocations;
+        }
+    };
+
+    extern MpsMetrics globalMpsMetrics;
+
+
 #define GC_RESULT mps_res_t
 #define GC_SCAN_STATE_TYPE mps_ss_t
 #define GC_SCAN_STATE ss

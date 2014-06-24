@@ -567,12 +567,17 @@ namespace core {
 
 	DEFAULT_CTOR_DTOR(DoubleFloat_O);
     };
+};
+template<> struct gctools::GCInfo<core::DoubleFloat_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = true;
+};
 
 
 
-
-
-
+namespace core {
     SMART(LongFloat);
     class LongFloat_O : public Float_O
     {
