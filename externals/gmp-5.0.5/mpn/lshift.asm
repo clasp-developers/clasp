@@ -1,1 +1,1 @@
-../mpn/x86_64/core2/lshift.asm
+../mpn/x86_64/lshift.asm

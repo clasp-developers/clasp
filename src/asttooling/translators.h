@@ -10,7 +10,7 @@
 #include <clang/Tooling/JSONCompilationDatabase.h>
 #include "clang/AST/Stmt.h"
 #include "clang/Frontend/ASTUnit.h"
-#include "clang/AST/declBase.h"
+#include "clang/AST/DeclBase.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 

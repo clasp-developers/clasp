@@ -1,46 +1,21 @@
 cordbscs.lo: cord/cordbscs.c include/gc.h include/gc_version.h \
-  include/gc_config_macros.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stddef.h \
-  include/cord.h /usr/include/stdio.h /usr/include/sys/cdefs.h \
-  /usr/include/sys/_symbol_aliasing.h \
-  /usr/include/sys/_posix_availability.h /usr/include/Availability.h \
-  /usr/include/AvailabilityInternal.h /usr/include/_types.h \
-  /usr/include/sys/_types.h /usr/include/machine/_types.h \
-  /usr/include/i386/_types.h /usr/include/sys/_types/_va_list.h \
-  /usr/include/sys/_types/_size_t.h /usr/include/sys/_types/_null.h \
-  /usr/include/sys/_types/_off_t.h /usr/include/sys/_types/_ssize_t.h \
-  /usr/include/secure/_stdio.h /usr/include/secure/_common.h \
-  include/private/cord_pos.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stdarg.h \
-  /usr/include/stdlib.h /usr/include/sys/wait.h \
-  /usr/include/sys/_types/_pid_t.h /usr/include/sys/_types/_id_t.h \
-  /usr/include/sys/signal.h /usr/include/sys/appleapiopts.h \
-  /usr/include/machine/signal.h /usr/include/i386/signal.h \
-  /usr/include/machine/_mcontext.h /usr/include/i386/_mcontext.h \
-  /usr/include/mach/i386/_structs.h \
-  /usr/include/sys/_types/_sigaltstack.h \
-  /usr/include/sys/_types/_ucontext.h \
-  /usr/include/sys/_types/_pthread_attr_t.h \
-  /usr/include/sys/_types/_sigset_t.h /usr/include/sys/_types/_uid_t.h \
-  /usr/include/sys/resource.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stdint.h \
-  /usr/include/stdint.h /usr/include/sys/_types/_int8_t.h \
-  /usr/include/sys/_types/_int16_t.h /usr/include/sys/_types/_int32_t.h \
-  /usr/include/sys/_types/_int64_t.h /usr/include/_types/_uint8_t.h \
-  /usr/include/_types/_uint16_t.h /usr/include/_types/_uint32_t.h \
-  /usr/include/_types/_uint64_t.h /usr/include/sys/_types/_intptr_t.h \
-  /usr/include/sys/_types/_uintptr_t.h /usr/include/_types/_intmax_t.h \
-  /usr/include/_types/_uintmax_t.h /usr/include/sys/_types/_timeval.h \
-  /usr/include/machine/endian.h /usr/include/i386/endian.h \
-  /usr/include/sys/_endian.h /usr/include/libkern/_OSByteOrder.h \
-  /usr/include/libkern/i386/_OSByteOrder.h /usr/include/alloca.h \
-  /usr/include/sys/_types/_ct_rune_t.h /usr/include/sys/_types/_rune_t.h \
-  /usr/include/sys/_types/_wchar_t.h /usr/include/machine/types.h \
-  /usr/include/i386/types.h /usr/include/sys/_types/___offsetof.h \
-  /usr/include/sys/_types/_dev_t.h /usr/include/sys/_types/_mode_t.h \
-  /usr/include/string.h /usr/include/sys/_types/_rsize_t.h \
-  /usr/include/sys/_types/_errno_t.h /usr/include/strings.h \
-  /usr/include/secure/_string.h
+ include/gc_config_macros.h \
+ /home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include/stddef.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h include/cord.h /usr/include/stdio.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ include/private/cord_pos.h /usr/include/stdlib.h \
+ /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/sys/types.h \
+ /usr/include/time.h /usr/include/sys/select.h /usr/include/bits/select.h \
+ /usr/include/bits/sigset.h /usr/include/bits/time.h \
+ /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
+ /usr/include/alloca.h /usr/include/string.h /usr/include/xlocale.h
 
 include/gc.h:
 
@@ -48,146 +23,70 @@ include/gc_version.h:
 
 include/gc_config_macros.h:
 
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stddef.h:
+/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include/stddef.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
 
 include/cord.h:
 
 /usr/include/stdio.h:
 
-/usr/include/sys/cdefs.h:
+/usr/include/bits/types.h:
 
-/usr/include/sys/_symbol_aliasing.h:
+/usr/include/bits/typesizes.h:
 
-/usr/include/sys/_posix_availability.h:
+/usr/include/libio.h:
 
-/usr/include/Availability.h:
+/usr/include/_G_config.h:
 
-/usr/include/AvailabilityInternal.h:
+/usr/include/wchar.h:
 
-/usr/include/_types.h:
+/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include/stdarg.h:
 
-/usr/include/sys/_types.h:
+/usr/include/bits/stdio_lim.h:
 
-/usr/include/machine/_types.h:
-
-/usr/include/i386/_types.h:
-
-/usr/include/sys/_types/_va_list.h:
-
-/usr/include/sys/_types/_size_t.h:
-
-/usr/include/sys/_types/_null.h:
-
-/usr/include/sys/_types/_off_t.h:
-
-/usr/include/sys/_types/_ssize_t.h:
-
-/usr/include/secure/_stdio.h:
-
-/usr/include/secure/_common.h:
+/usr/include/bits/sys_errlist.h:
 
 include/private/cord_pos.h:
 
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stdarg.h:
-
 /usr/include/stdlib.h:
 
-/usr/include/sys/wait.h:
+/usr/include/bits/waitflags.h:
 
-/usr/include/sys/_types/_pid_t.h:
+/usr/include/bits/waitstatus.h:
 
-/usr/include/sys/_types/_id_t.h:
+/usr/include/endian.h:
 
-/usr/include/sys/signal.h:
+/usr/include/bits/endian.h:
 
-/usr/include/sys/appleapiopts.h:
+/usr/include/bits/byteswap.h:
 
-/usr/include/machine/signal.h:
+/usr/include/sys/types.h:
 
-/usr/include/i386/signal.h:
+/usr/include/time.h:
 
-/usr/include/machine/_mcontext.h:
+/usr/include/sys/select.h:
 
-/usr/include/i386/_mcontext.h:
+/usr/include/bits/select.h:
 
-/usr/include/mach/i386/_structs.h:
+/usr/include/bits/sigset.h:
 
-/usr/include/sys/_types/_sigaltstack.h:
+/usr/include/bits/time.h:
 
-/usr/include/sys/_types/_ucontext.h:
+/usr/include/sys/sysmacros.h:
 
-/usr/include/sys/_types/_pthread_attr_t.h:
-
-/usr/include/sys/_types/_sigset_t.h:
-
-/usr/include/sys/_types/_uid_t.h:
-
-/usr/include/sys/resource.h:
-
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stdint.h:
-
-/usr/include/stdint.h:
-
-/usr/include/sys/_types/_int8_t.h:
-
-/usr/include/sys/_types/_int16_t.h:
-
-/usr/include/sys/_types/_int32_t.h:
-
-/usr/include/sys/_types/_int64_t.h:
-
-/usr/include/_types/_uint8_t.h:
-
-/usr/include/_types/_uint16_t.h:
-
-/usr/include/_types/_uint32_t.h:
-
-/usr/include/_types/_uint64_t.h:
-
-/usr/include/sys/_types/_intptr_t.h:
-
-/usr/include/sys/_types/_uintptr_t.h:
-
-/usr/include/_types/_intmax_t.h:
-
-/usr/include/_types/_uintmax_t.h:
-
-/usr/include/sys/_types/_timeval.h:
-
-/usr/include/machine/endian.h:
-
-/usr/include/i386/endian.h:
-
-/usr/include/sys/_endian.h:
-
-/usr/include/libkern/_OSByteOrder.h:
-
-/usr/include/libkern/i386/_OSByteOrder.h:
+/usr/include/bits/pthreadtypes.h:
 
 /usr/include/alloca.h:
 
-/usr/include/sys/_types/_ct_rune_t.h:
-
-/usr/include/sys/_types/_rune_t.h:
-
-/usr/include/sys/_types/_wchar_t.h:
-
-/usr/include/machine/types.h:
-
-/usr/include/i386/types.h:
-
-/usr/include/sys/_types/___offsetof.h:
-
-/usr/include/sys/_types/_dev_t.h:
-
-/usr/include/sys/_types/_mode_t.h:
-
 /usr/include/string.h:
 
-/usr/include/sys/_types/_rsize_t.h:
-
-/usr/include/sys/_types/_errno_t.h:
-
-/usr/include/strings.h:
-
-/usr/include/secure/_string.h:
+/usr/include/xlocale.h:

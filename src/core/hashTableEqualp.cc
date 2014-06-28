@@ -62,7 +62,7 @@ namespace core
         return equalp;
     }
 
-    int HashTableEqualp_O::sxhashKey(T_sp obj,int bound) const
+  int HashTableEqualp_O::sxhashKey(T_sp obj,int bound, bool willAddKey) const
     {_OF();
 	HashGenerator hg;
 	HashTable_O::sxhash_equalp(hg,obj,NULL);

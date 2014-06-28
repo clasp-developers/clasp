@@ -1,6 +1,6 @@
 #define DEBUG_LEVEL_FULL
 
-#include <llvm/Support/system_error.h>
+//#include <llvm/Support/system_error.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Bitcode/ReaderWriter.h>
@@ -39,6 +39,7 @@
 #include "core/bignum.h"
 #include "core/pointer.h"
 #include "core/str.h"
+#include "core/translators.h"
 #include "core/vectorObjectsWithFillPtr.h"
 #include "debugInfoExpose.h"
 #include "insertPoint.h"

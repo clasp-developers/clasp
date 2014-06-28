@@ -4,7 +4,7 @@ else
 CLASP_CXXFLAGS="-std=c++11 -stdlib=libc++"
 endif
 
-REQUIRES_RTTI=$(CLASP_REQUIRES_RTTI)
+export REQUIRES_RTTI=$(CLASP_REQUIRES_RTTI)
 BOEHM_VERSION=7.2
 DMALLOC_VERSION=5.5.2
 CC = $(CLASP_CC)
@@ -81,8 +81,8 @@ setup:
 subAll sa:
 	make boehm-build
 	make llvm-build
-	make openmpi-make
-	make boost-make
+	make openmpi-build
+	make boost-build
 	make ecl-build
 	make gmp-build
 	make expat-build
@@ -125,7 +125,7 @@ openmpi-setup:
 #
 # There is a problem in openmpi where they have "(default: "DEFAULT_OUTFILE")    "
 # it is tripping the warning -Wreserved-user-defined-literal
-openmpi-make:
+openmpi-build:
 	-(cd $(OPENMPI_SOURCE_DIR); CXXFLAGS="-Wno-reserved-user-defined-literal"; make all install)
 
 mps-setup:
@@ -185,26 +185,19 @@ llvm-setup-rtti-test:
 
 llvm-setup:
 	echo REQUIRES_RTTI=$(REQUIRES_RTTI)
+	-ln -s clang llvm/tools/clang
+	-ln -s libcxx llvm/projects
 	make llvm-setup-debug
 	make llvm-setup-release
 
 
-llvm-setup-debug:
-	-mkdir -p $(LLVM_SOURCE_DIR)/build-debug
-	(cd $(LLVM_SOURCE_DIR)/build-debug; \
-		../configure --with-clang-srcdir=$(CLANG_SOURCE_DIR) --enable-debug-symbols --enable-debug-runtime --enable-shared \
-			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR);)
-
-llvm-setup-release:
-	-mkdir -p $(LLVM_SOURCE_DIR)/build-release
-	(cd $(LLVM_SOURCE_DIR)/build-release; \
-		../configure --with-clang-srcdir=$(CLANG_SOURCE_DIR) --enable-optimized --enable-shared --enable-assertions  \
-			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR);)
 
 llvm-build:
 	make llvm-debug
 	make llvm-release
 
+# build llvm with VERBOSE=1 to see commands as they execute  - also set -j1 so multiple builds output aren't interleaved
+#	(cd $(LLVM_SOURCE_DIR)/build-debug; export VERBOSE=1;  make VERBOSE=1 -j$(COMPILE_PROCESSORS) ; make install) 2>&1 | tee _llvm-debug.log
 
 llvm-debug:
 	(cd $(LLVM_SOURCE_DIR)/build-debug; make -j$(COMPILE_PROCESSORS) ; make install) 2>&1 | tee _llvm-debug.log
@@ -215,12 +208,12 @@ llvm-release:
 
 
 
-boost-make:
-	make boost-make-debug
-	make boost-make-release
+boost-build:
+	make boost-build-debug
+	make boost-build-release
 
 
-boost-make-debug:
+boost-build-debug:
 	echo LDFLAGS=$(LDFLAGS)    processed = $(BOOST_LDFLAGS)
 	(cd $(BOOST_SOURCE_DIR); \
 				bjam toolset=$(BOOST_TOOLSET)  \
@@ -236,7 +229,7 @@ boost-make-debug:
 				install ) | tee _boost.log 
 
 
-boost-make-release:
+boost-build-release:
 	(cd $(BOOST_SOURCE_DIR); bjam toolset=$(BOOST_TOOLSET)   \
 				$(BOOST_CXXFLAGS) $(BOOST_LDFLAGS) \
 				--with-filesystem --with-date_time	\
@@ -290,13 +283,14 @@ clang-setup-release:
 
 
 gmp-clean:
-	(cd $(GMP_SOURCE_DIR); make clean)
+	(cd $(GMP_SOURCE_DIR); make clean ; rm -f gen-fib)
 
 gmp-setup:
 	(cd $(GMP_SOURCE_DIR); \
 		CXXFLAGS=$(CLASP_CXXFLAGS); \
 		./configure --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_COMMON_DIR) --enable-cxx)
 	echo "If this failed - use make gmp-clean first to clear out old configuration"
+	echo "gmpXXX/gen-fib sticks around even after gmp-clean - maybe delete it???"
 
 
 gmp-build-n:
@@ -311,7 +305,7 @@ boost-setup:
 #	cp user-config.jam $(BOOST_SOURCE_DIR)/tools/build/v2/user-config.jam
 	echo do nothing
 
-boost-make-a-n:
+boost-build-a-n:
 	(cd $(BOOST_SOURCE_DIR); bjam toolset=$(BOOST_TOOLSET) -a -n  \
 				cxxflags="$(CXXFLAGS)" linkflags="$(LDFLAGS)" \
 				--with-filesystem --with-date_time	\
@@ -499,6 +493,36 @@ ifeq ($(DEVELOPMENT_ENVIRONMENT),linuxClang)
 #
 
 
+
+
+#linuxClang
+llvm-setup-debug:
+	-mkdir -p $(LLVM_SOURCE_DIR)/build-debug
+	(cd $(LLVM_SOURCE_DIR)/build-debug; \
+		../configure --enable-targets=x86_64 --enable-debug-symbols --enable-debug-runtime \
+		--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR) --with-gcc-toolchain=$(HOME)/local/gcc-4.8.3 \
+		CC=$(HOME)/local/gcc-4.8.3/bin/gcc \
+		CXX=$(HOME)/local/gcc-4.8.3/bin/g++ \
+		CXXFLAGS="-static-libstdc++ -static-libgcc" \
+		CFLAGS="-static-libgcc" \
+		--enable-shared=no --enable-cxx11 )
+
+
+#linuxClang
+llvm-setup-release:
+	-mkdir -p $(LLVM_SOURCE_DIR)/build-release
+	(cd $(LLVM_SOURCE_DIR)/build-release; \
+		../configure --enable-targets=x86_64  --enable-optimized --enable-assertions  \
+		--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR) --with-gcc-toolchain=$(HOME)/local/gcc-4.8.3 \
+		CC=$(HOME)/local/gcc-4.8.3/bin/gcc \
+		CXX=$(HOME)/local/gcc-4.8.3/bin/g++ \
+		CXXFLAGS="-static-libstdc++ -static-libgcc" \
+		CFLAGS="-static-libgcc" \
+		--enable-shared=no --enable-cxx11 )
+
+
+
+
 boostbuild2-build:
 	(cd $(BOOST_BUILD_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=$(CLASP_TOOLSET) install --prefix=$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR))
 
@@ -550,6 +574,23 @@ export RPATH_DEBUG_FIX = @executable_path/../Resources/externals/debug/lib
 export RPATH_COMMON_FIX = @executable_path/../Resources/externals/common/lib
 
 
+#darwinClang
+llvm-setup-debug:
+	-mkdir -p $(LLVM_SOURCE_DIR)/build-debug
+	(cd $(LLVM_SOURCE_DIR)/build-debug; \
+		../configure --enable-targets=x86_64 \
+			--enable-debug-symbols --enable-debug-runtime \
+			--enable-cxx11 \
+			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR);)
+
+#darwinClang
+llvm-setup-release:
+	-mkdir -p $(LLVM_SOURCE_DIR)/build-release
+	(cd $(LLVM_SOURCE_DIR)/build-release; \
+		../configure --with-clang-srcdir=../$(CLANG_SOURCE_DIR)  --enable-targets=x86_64  --enable-optimized --enable-assertions  \
+			--enable-cxx11 \
+			--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR);)
+
 gmp-build:
 	(cd $(GMP_SOURCE_DIR); make install) | tee _gmp.log
 	(cd $(GMP_SOURCE_DIR); source fixlibgmpxx.sh)   # fixes libgmpxx so that it uses libc++ on OS X
@@ -561,7 +602,7 @@ boostbuild2-build:
 
 
 
-# boost-make-debug:
+# boost-build-debug:
 # 	(cd $(BOOST_SOURCE_DIR); bjam toolset=$(BOOST_TOOLSET)   \
 # 				cxxflags="-std=c++11 -stdlib=libc++" linkflags="-std=c++11 -stdlib=libc++" \
 # 				--with-filesystem --with-date_time	\
@@ -572,7 +613,7 @@ boostbuild2-build:
 # 				debug \
 # 				-j$(COMPILE_PROCESSORS) \
 # 				install ) | tee _boost.log 
-# boost-make-release:
+# boost-build-release:
 # 	(cd $(BOOST_SOURCE_DIR); bjam toolset=$(BOOST_TOOLSET)   \
 # 				cxxflags="-std=c++11 -stdlib=libc++" linkflags="-std=c++11 -stdlib=libc++" \
 # 				--with-filesystem --with-date_time	\
@@ -584,7 +625,7 @@ boostbuild2-build:
 # 				-j$(COMPILE_PROCESSORS) \
 # 				install ) | tee _boost.log 
 
-# boost-make-a-n:
+# boost-build-a-n:
 # 	(cd $(BOOST_SOURCE_DIR); bjam toolset=$(BOOST_TOOLSET) -a -n  \
 # 				cxxflags="-std=c++11 -stdlib=libc++" linkflags="-std=c++11 -stdlib=libc++" \
 # 				--with-filesystem --with-date_time	\
@@ -723,7 +764,7 @@ boost-fresh:
 			2>&1 | tee _boost.log )
 	make boost-rpath-fix
 
-boost-make:
+boost-build:
 	(cd $(BOOST_SOURCE_DIR); \
 		$(BJAM) -j$(COMPILE_PROCESSORS) \
 			-d+2 \

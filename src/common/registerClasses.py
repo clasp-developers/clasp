@@ -46,14 +46,24 @@ def toposort2(data):
     for k, v in data.items():
         v.discard(k) # Ignore self dependencies
     extra_items_in_deps = reduce(set.union, data.values()) - set(data.keys())
-    data.update({item:set() for item in extra_items_in_deps})
+
+    for item in extra_items_in_deps:
+        data.update({item:set()})
+
     while True:
-        ordered = set(item for item,dep in data.items() if not dep)
+        ordered = set()
+        for item,dep in data.items():
+            if not dep:
+                ordered.update(item)
+#        ordered = set(item for item,dep in data.items() if not dep)
         if not ordered:
             break
         yield sorted(ordered)
-        data = {item: (dep - ordered) for item,dep in data.items()
-                if item not in ordered}
+        for item,dep in data.items():
+            if item not in ordered:
+                data.update({item:(dep-ordered)})
+#        data = {item: (dep - ordered) for item,dep in data.items()
+#                if item not in ordered}
     assert not data, "A cyclic dependency exists amongst %r" % data
 
 ## end of http://code.activestate.com/recipes/577413/ }}}

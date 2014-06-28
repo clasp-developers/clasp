@@ -302,8 +302,9 @@ namespace core
 
 
 
-    struct DynamicBinding
+    class DynamicBinding
     {
+    public:
 	Symbol_sp 	_Var;
 	T_sp 		_Val;
 	DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val) {};
@@ -361,7 +362,8 @@ namespace core {
     /*! Store the information for the exception 
       For CatchThrow:   _Obj1
     */
-    struct ExceptionEntry {
+    class ExceptionEntry {
+    public:
         ExceptionEntry() : _FrameKind(NullFrame)
                          , _Key(_Nil<T_O>()) {};
         ExceptionEntry(FrameKind k, T_sp key) : _FrameKind(k)

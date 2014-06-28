@@ -2,7 +2,7 @@
 #define gc_gcstring_H
 
 
-
+#include <string.h>
 
 
 

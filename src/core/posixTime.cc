@@ -1,6 +1,11 @@
 #undef USEBOOSTPYTHON
 #define	DEBUG_LEVEL_FULL
 
+#ifdef _TARGET_OS_LINUX
+# include <sys/time.h>
+# include <sys/resource.h>
+#endif
+
 #include "common.h"
 #include "posixTime.h"
 #include "symbolTable.h"
