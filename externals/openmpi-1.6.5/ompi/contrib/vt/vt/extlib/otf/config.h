@@ -12,7 +12,7 @@
 
 /* Define to 1 if you have the declaration of `O_NOATIME', and to 0 if you
    don't. */
-#define HAVE_DECL_O_NOATIME 0
+#define HAVE_DECL_O_NOATIME 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -133,7 +133,7 @@
 #define PACKAGE_VERSION "1.12.3openmpi"
 
 /* pdfTeX typesetter command. */
-#define PDFTEX "pdflatex"
+/* #undef PDFTEX */
 
 /* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG 8

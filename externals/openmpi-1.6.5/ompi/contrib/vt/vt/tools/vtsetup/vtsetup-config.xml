@@ -1,6 +1,6 @@
 <vtconfig vtconfigversion="1.0.1" vtversion="5.14.4openmpi">
 
-<config attr="nm">/usr/bin/nm</config>
+<config attr="nm">/usr/bin/nm -B --demangle </config>
 
 <standardGroups>
 	<group identifier="MEM">

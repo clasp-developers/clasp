@@ -1,28 +1,20 @@
 gc_cpp.lo: gc_cpp.cc include/private/config.h include/gc_cpp.h \
-  include/gc.h include/gc_version.h include/gc_config_macros.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stddef.h \
-  include/gc_pthread_redirects.h /usr/include/pthread.h \
-  /usr/include/_types.h /usr/include/sys/_types.h \
-  /usr/include/sys/cdefs.h /usr/include/sys/_symbol_aliasing.h \
-  /usr/include/sys/_posix_availability.h /usr/include/machine/_types.h \
-  /usr/include/i386/_types.h /usr/include/pthread_impl.h \
-  /usr/include/sched.h /usr/include/time.h /usr/include/_structs.h \
-  /usr/include/sys/_structs.h /usr/include/sys/_types/_timespec.h \
-  /usr/include/sys/_types/_null.h /usr/include/sys/_types/_clock_t.h \
-  /usr/include/sys/_types/_size_t.h /usr/include/sys/_types/_time_t.h \
-  /usr/include/sys/_types/_pthread_attr_t.h \
-  /usr/include/sys/_types/_pthread_cond_t.h \
-  /usr/include/sys/_types/_pthread_condattr_t.h \
-  /usr/include/sys/_types/_pthread_key_t.h \
-  /usr/include/sys/_types/_pthread_mutex_t.h \
-  /usr/include/sys/_types/_pthread_mutexattr_t.h \
-  /usr/include/sys/_types/_pthread_once_t.h \
-  /usr/include/sys/_types/_pthread_rwlock_t.h \
-  /usr/include/sys/_types/_pthread_rwlockattr_t.h \
-  /usr/include/sys/_types/_pthread_t.h \
-  /usr/include/sys/_types/_mach_port_t.h \
-  /usr/include/sys/_types/_sigset_t.h /usr/include/Availability.h \
-  /usr/include/AvailabilityInternal.h
+ include/gc.h include/gc_version.h include/gc_config_macros.h \
+ /home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include/stddef.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h include/gc_pthread_redirects.h \
+ /usr/include/pthread.h /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/sched.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/time.h /usr/include/bits/sched.h /usr/include/bits/time.h \
+ /usr/include/xlocale.h /usr/include/bits/pthreadtypes.h \
+ /usr/include/bits/setjmp.h /usr/include/dlfcn.h \
+ /usr/include/bits/dlfcn.h /usr/include/signal.h \
+ /usr/include/bits/sigset.h /usr/include/bits/signum.h \
+ /usr/include/bits/siginfo.h /usr/include/bits/sigaction.h \
+ /usr/include/bits/sigcontext.h /usr/include/bits/sigstack.h \
+ /usr/include/sys/ucontext.h /usr/include/bits/sigthread.h
 
 include/private/config.h:
 
@@ -34,70 +26,64 @@ include/gc_version.h:
 
 include/gc_config_macros.h:
 
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stddef.h:
+/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include/stddef.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
 
 include/gc_pthread_redirects.h:
 
 /usr/include/pthread.h:
 
-/usr/include/_types.h:
+/usr/include/endian.h:
 
-/usr/include/sys/_types.h:
+/usr/include/bits/endian.h:
 
-/usr/include/sys/cdefs.h:
-
-/usr/include/sys/_symbol_aliasing.h:
-
-/usr/include/sys/_posix_availability.h:
-
-/usr/include/machine/_types.h:
-
-/usr/include/i386/_types.h:
-
-/usr/include/pthread_impl.h:
+/usr/include/bits/byteswap.h:
 
 /usr/include/sched.h:
 
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
 /usr/include/time.h:
 
-/usr/include/_structs.h:
+/usr/include/bits/sched.h:
 
-/usr/include/sys/_structs.h:
+/usr/include/bits/time.h:
 
-/usr/include/sys/_types/_timespec.h:
+/usr/include/xlocale.h:
 
-/usr/include/sys/_types/_null.h:
+/usr/include/bits/pthreadtypes.h:
 
-/usr/include/sys/_types/_clock_t.h:
+/usr/include/bits/setjmp.h:
 
-/usr/include/sys/_types/_size_t.h:
+/usr/include/dlfcn.h:
 
-/usr/include/sys/_types/_time_t.h:
+/usr/include/bits/dlfcn.h:
 
-/usr/include/sys/_types/_pthread_attr_t.h:
+/usr/include/signal.h:
 
-/usr/include/sys/_types/_pthread_cond_t.h:
+/usr/include/bits/sigset.h:
 
-/usr/include/sys/_types/_pthread_condattr_t.h:
+/usr/include/bits/signum.h:
 
-/usr/include/sys/_types/_pthread_key_t.h:
+/usr/include/bits/siginfo.h:
 
-/usr/include/sys/_types/_pthread_mutex_t.h:
+/usr/include/bits/sigaction.h:
 
-/usr/include/sys/_types/_pthread_mutexattr_t.h:
+/usr/include/bits/sigcontext.h:
 
-/usr/include/sys/_types/_pthread_once_t.h:
+/usr/include/bits/sigstack.h:
 
-/usr/include/sys/_types/_pthread_rwlock_t.h:
+/usr/include/sys/ucontext.h:
 
-/usr/include/sys/_types/_pthread_rwlockattr_t.h:
-
-/usr/include/sys/_types/_pthread_t.h:
-
-/usr/include/sys/_types/_mach_port_t.h:
-
-/usr/include/sys/_types/_sigset_t.h:
-
-/usr/include/Availability.h:
-
-/usr/include/AvailabilityInternal.h:
+/usr/include/bits/sigthread.h:

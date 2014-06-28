@@ -81,14 +81,14 @@
 !     Kind parameters
 !
       integer MPI_OFFSET_KIND, MPI_ADDRESS_KIND, MPI_INTEGER_KIND
-      parameter (MPI_INTEGER_KIND=0)
-      parameter (MPI_ADDRESS_KIND=0)
-      parameter (MPI_OFFSET_KIND=0)
+      parameter (MPI_INTEGER_KIND=4)
+      parameter (MPI_ADDRESS_KIND=8)
+      parameter (MPI_OFFSET_KIND=8)
 !
 !     Miscellaneous constants
 !
       integer MPI_STATUS_SIZE
-      parameter (MPI_STATUS_SIZE=0)
+      parameter (MPI_STATUS_SIZE=6)
 !
 !     Configurable length constants
 !

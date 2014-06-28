@@ -1,4 +1,4 @@
-prefix=/home/meister/Development/clasp-lisp/build/cando.app/Contents/Resources/externals/common
+prefix=/home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix=${prefix}
 top_builddir=/home/meister/Development/clasp/externals/boehm-7.2/libatomic_ops
 top_srcdir=/home/meister/Development/clasp/externals/boehm-7.2/libatomic_ops

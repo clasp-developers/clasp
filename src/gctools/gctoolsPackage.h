@@ -24,8 +24,9 @@ namespace gctools
 
 
 
-struct TestingClass
+class TestingClass
 {
+ public:
     int x;
     TestingClass() : x(0) {};
     TestingClass(int i) :x(i) {};

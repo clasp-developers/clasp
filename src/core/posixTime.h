@@ -96,4 +96,12 @@ public:
 };
 TRANSLATE(core::PosixTime_O);
 TRANSLATE(core::PosixTimeDuration_O);
+
+
+namespace core {
+
+  T_sp cl_getInternalRealTime();
+  T_sp cl_getInternalRunTime();
+
+};
 #endif //]

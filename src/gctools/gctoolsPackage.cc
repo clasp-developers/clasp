@@ -2,7 +2,7 @@
 
 #ifdef USE_MPS
 extern "C" {
-#include "mpscamc.h"
+#include "mps/code/mpscamc.h"
 };
 #endif
 
@@ -228,7 +228,7 @@ size_t dumpResults(const std::string& name, const std::string& shortName, T* dat
         values.push_back(it.second);
     }
     size_t totalSize(0);
-    sort(values.begin(), values.end(), [](value_type& x, value_type& y) {
+    sort(values.begin(), values.end(), [] (const value_type& x, const value_type& y) {
             return (x.totalSize > y.totalSize);
         });
     for ( auto it : values ) {
@@ -276,7 +276,7 @@ size_t dumpMPSResults(const std::string& name, const std::string& shortName, vec
     printf("-------------------- %s -------------------\n", name.c_str() );
     size_t totalSize(0);
     typedef ReachableMPSObject value_type;
-    sort(values.begin(), values.end(), [](value_type& x, value_type& y) {
+    sort(values.begin(), values.end(), [] (const value_type& x, const value_type& y) {
             return (x.totalMemory > y.totalMemory);
         });
     for ( auto it : values ) {

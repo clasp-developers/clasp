@@ -17,19 +17,19 @@ PID=$$
 # relevant VampirTrace configuration
 #
 
-MACOS=1
+MACOS=0
 HAVE_THREADS=1
 HAVE_MPI=1
-HAVE_FMPI=0
+HAVE_FMPI=1
 HAVE_DYNINST=0
 VTVERSION="5.14.4openmpi"
-VTSEQLIB="libvt`test .$module = .yes && echo .so || echo .dylib`"
-VTMPILIB="libvt-mpi`test .$module = .yes && echo .so || echo .dylib`"
-VTMTLIB="libvt-mt`test .$module = .yes && echo .so || echo .dylib`"
-VTHYBLIB="libvt-hyb`test .$module = .yes && echo .so || echo .dylib`"
+VTSEQLIB="libvt.so"
+VTMPILIB="libvt-mpi.so"
+VTMTLIB="libvt-mt.so"
+VTHYBLIB="libvt-hyb.so"
 FMPILIB=""
-DYNATTLIB="libvt-dynatt`test .$module = .yes && echo .so || echo .dylib`"
-NM="/usr/bin/nm"
+DYNATTLIB="libvt-dynatt.so"
+NM="/usr/bin/nm -B --demangle "
 
 #
 # subroutine show_helptext() - shows the help text
@@ -138,7 +138,7 @@ error_msg()
 if test x"$VT_PREFIX" != x; then
   prefix=$VT_PREFIX
 else
-  prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+  prefix=/home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common
 fi
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib

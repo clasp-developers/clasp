@@ -2,7 +2,10 @@
 
 #include <sys/types.h>
 #include <pwd.h>
-#include <uuid/uuid.h>
+#ifdef _TARGET_OS_LINUX
+#else
+# include <uuid/uuid.h>
+#endif
 
 #include "core/common.h"
 #include "core/corePackage.h"

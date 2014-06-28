@@ -110,7 +110,7 @@
       </value>
     </valuedesc>
     <since major="5" minor="5" patch="0" ></since>
-    <available>0</available>
+    <available>1</available>
     <anchor>VT_SETUP_VT_IOTRACE</anchor>
   </env>
   <env isdeprecated="0" priority="200" descname="Buffer size per process" isadvanced="0" group="genTset"
@@ -311,7 +311,7 @@
       </value>
     </valuedesc>
     <since major="5" minor="0" patch="0" ></since>
-    <available>0</available>
+    <available>1</available>
     <anchor>VT_SETUP_VT_CPUIDTRACE</anchor>
   </env>
   <env isdeprecated="0" priority="100" descname="Enhanced time synchronization" isadvanced="1" group="ats"
@@ -347,7 +347,7 @@
       </value>
     </valuedesc>
     <since major="5" minor="0" patch="0" ></since>
-    <available>0</available>
+    <available>1</available>
     <anchor>VT_SETUP_VT_IOLIB_PATHNAME</anchor>
   </env>
   <env isdeprecated="0" priority="290" descname="Enable exec(3) function tracing" isadvanced="1" group="libtrace"
@@ -358,7 +358,7 @@
         <default>1</default>
       </value>
     </valuedesc>
-    <since major="5" minor="0" patch="0" /><available>0</available>
+    <since major="5" minor="0" patch="0" /><available>1</available>
     <anchor>VT_SETUP_VT_EXECTRACE</anchor>
   </env>
   <env isdeprecated="0" priority="100" descname="Enable memory allocation tracing" isadvanced="0" group="libtrace"
@@ -369,7 +369,7 @@
         <default>0</default>
       </value>
     </valuedesc>
-    <since major="5" minor="0" patch="0" ></since><available>0</available>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
     <anchor>VT_SETUP_VT_MEMTRACE</anchor>
   </env>
   <env isdeprecated="0" priority="100" descname="VampirTrace operation mode" isadvanced="1" group="omode"
@@ -737,7 +737,7 @@
         <default>1</default>
       </value>
     </valuedesc>
-    <since major="5" minor="0" patch="0" ></since><available>0</available>
+    <since major="5" minor="0" patch="0" ></since><available>1</available>
     <anchor>VT_SETUP_VT_OMPTRACE</anchor>
   </env>
   <env isdeprecated="0" priority="100" descname="Plugin Counter Metrics" isadvanced="1" group="furthCount"
@@ -756,7 +756,7 @@
     <desc>Command to generate symbol information from the executable and object files. The output has to be in the BSD format.</desc>
     <valuedesc>
       <value type="string">
-        <default>/usr/bin/nm</default>
+        <default>/usr/bin/nm -B --demangle --line-numbers</default>
       </value>
     </valuedesc>
     <since major="5" minor="0" patch="0" /><available>1</available><anchor>VT_SETUP_VT_GNU_NM</anchor>

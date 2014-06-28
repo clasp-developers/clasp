@@ -12,8 +12,9 @@ namespace core
     {
     };
 
-    struct CacheRecord
+    class CacheRecord
     {
+    public:
         FRIEND_GC_SCANNER();
 	T_sp 	_key;
 	T_sp 	_value;

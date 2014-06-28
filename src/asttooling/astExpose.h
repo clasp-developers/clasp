@@ -2,7 +2,7 @@
 #define asttooling_astExpose_H
 
 #include "core/common.h"
-#include "clang/AST/declBase.h"
+#include "clang/AST/DeclBase.h"
 
 namespace asttooling
 {

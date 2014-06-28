@@ -4,14 +4,14 @@ INCLUDE_DIR =
 # because := is not universally avalible, we have to play games to use the
 # user-specified LDFLAGS and OUR_LIBS env. variables (if set)
 OUR_LIBS =   ${LDFLAGS} ${LIBS}
-USER_CFLAGS =  -D_REENTRANT -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband  $(INCLUDE_DIR)
-USER_FFLAGS =  -D_REENTRANT -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband  $(INCLUDE_DIR)
+USER_CFLAGS =   -I/home/meister/Development/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband  $(INCLUDE_DIR)
+USER_FFLAGS =   -I/home/meister/Development/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband  $(INCLUDE_DIR)
 CTESTS = simple perf async coll_test coll_perf misc file_info excl large_array \
      atomicity noncontig i_noncontig noncontig_coll split_coll shared_fp \
      large_file psimple error status noncontig_coll2 aggregation1 aggregation2 \
      async-multiple ordered_fp hindexed
 FTESTS = fcoll_test fperf fmisc pfcoll_test 
-srcdir=/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/mca/io/romio/romio/test
+srcdir=/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/mca/io/romio/romio/test
 
 VPATH=.:${srcdir}
 

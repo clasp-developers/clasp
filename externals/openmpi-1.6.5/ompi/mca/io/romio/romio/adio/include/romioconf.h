@@ -40,7 +40,7 @@
 #define HAVE_LONG_LONG_64 1
 
 /* Define to 1 if you have the `lseek64' function. */
-/* #undef HAVE_LSEEK64 */
+#define HAVE_LSEEK64 1
 
 /* Define to 1 if you have the `lstat' function. */
 #define HAVE_LSTAT 1
@@ -49,10 +49,10 @@
 /* #undef HAVE_LUSTRE_LUSTRE_USER_H */
 
 /* Define to 1 if you have the <malloc.h> header file. */
-/* #undef HAVE_MALLOC_H */
+#define HAVE_MALLOC_H 1
 
 /* Define to 1 if you have the `memalign' function. */
-/* #undef HAVE_MEMALIGN */
+#define HAVE_MEMALIGN 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -151,7 +151,7 @@
 /* #undef HAVE_SYS_AIO_H */
 
 /* Define to 1 if you have the <sys/attr.h> header file. */
-#define HAVE_SYS_ATTR_H 1
+/* #undef HAVE_SYS_ATTR_H */
 
 /* Define to 1 if you have the <sys/mount.h> header file. */
 #define HAVE_SYS_MOUNT_H 1
@@ -169,7 +169,7 @@
 #define HAVE_SYS_TYPES_H 1
 
 /* Define to 1 if you have the <sys/vfs.h> header file. */
-/* #undef HAVE_SYS_VFS_H */
+#define HAVE_SYS_VFS_H 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
@@ -296,7 +296,7 @@
 /* #undef ROMIO_HAVE_STRUCT_AIOCB_WITH_AIO_WHENCE */
 
 /* Define if statfs has f_fstypename */
-#define ROMIO_HAVE_STRUCT_STATFS_WITH_F_FSTYPENAME 1
+/* #undef ROMIO_HAVE_STRUCT_STATFS_WITH_F_FSTYPENAME */
 
 /* defined if struct statvfs has a f_basetype member */
 /* #undef ROMIO_HAVE_STRUCT_STATVFS_WITH_F_BASETYPE */

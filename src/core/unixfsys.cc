@@ -36,8 +36,14 @@ typedef int mode_t;
 
 
 # include <pwd.h>
-# include <uuid/uuid.h>
 
+#ifdef _TARGET_OS_LINUX
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/wait.h>
+#else
+# include <uuid/uuid.h>
+#endif
 
 
 #include <sys/stat.h>
