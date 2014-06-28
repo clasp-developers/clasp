@@ -40,7 +40,7 @@
 #define OPAL_BUILD_PLATFORM_COMPILER_FAMILYID 1
 
 /* The compiler version which OMPI was built with */
-#define OPAL_BUILD_PLATFORM_COMPILER_VERSION 262657
+#define OPAL_BUILD_PLATFORM_COMPILER_VERSION 264195
 
 /* Define to 1 if you have the ANSI C header files. */
 #define OPAL_STDC_HEADERS 1
@@ -88,31 +88,31 @@
 #define OPAL_MAX_PROCESSOR_NAME 256
 
 /* Whether we have FORTRAN LOGICAL*1 or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL1 0
+#define OMPI_HAVE_FORTRAN_LOGICAL1 1
 
 /* Whether we have FORTRAN LOGICAL*2 or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL2 0
+#define OMPI_HAVE_FORTRAN_LOGICAL2 1
 
 /* Whether we have FORTRAN LOGICAL*4 or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL4 0
+#define OMPI_HAVE_FORTRAN_LOGICAL4 1
 
 /* Whether we have FORTRAN LOGICAL*8 or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL8 0
+#define OMPI_HAVE_FORTRAN_LOGICAL8 1
 
 /* Whether we have FORTRAN INTEGER*1 or not */
-#define OMPI_HAVE_FORTRAN_INTEGER1 0
+#define OMPI_HAVE_FORTRAN_INTEGER1 1
 
 /* Whether we have FORTRAN INTEGER*16 or not */
 #define OMPI_HAVE_FORTRAN_INTEGER16 0
 
 /* Whether we have FORTRAN INTEGER*2 or not */
-#define OMPI_HAVE_FORTRAN_INTEGER2 0
+#define OMPI_HAVE_FORTRAN_INTEGER2 1
 
 /* Whether we have FORTRAN INTEGER*4 or not */
-#define OMPI_HAVE_FORTRAN_INTEGER4 0
+#define OMPI_HAVE_FORTRAN_INTEGER4 1
 
 /* Whether we have FORTRAN INTEGER*8 or not */
-#define OMPI_HAVE_FORTRAN_INTEGER8 0
+#define OMPI_HAVE_FORTRAN_INTEGER8 1
 
 /* Whether we have FORTRAN REAL*16 or not */
 #define OMPI_HAVE_FORTRAN_REAL16 0
@@ -121,10 +121,10 @@
 #define OMPI_HAVE_FORTRAN_REAL2 0
 
 /* Whether we have FORTRAN REAL*4 or not */
-#define OMPI_HAVE_FORTRAN_REAL4 0
+#define OMPI_HAVE_FORTRAN_REAL4 1
 
 /* Whether we have FORTRAN REAL*8 or not */
-#define OMPI_HAVE_FORTRAN_REAL8 0
+#define OMPI_HAVE_FORTRAN_REAL8 1
 
 /* Whether we have float _Complex  or not */
 #define HAVE_FLOAT__COMPLEX 1
@@ -157,10 +157,10 @@
 #define OMPI_CXX_SUPPORTS_2D_CONST_CAST 1
 
 /* Whether we want the MPI f77 bindings or not */
-#define OMPI_WANT_F77_BINDINGS 0
+#define OMPI_WANT_F77_BINDINGS 1
 
 /* Whether we want the MPI f90 bindings or not */
-#define OMPI_WANT_F90_BINDINGS 0
+#define OMPI_WANT_F90_BINDINGS 1
 
 /* Enable warnings in wrong usage (e.g. deprecated) in user-level code */
 /* XXX This __disabled__ by default for Open MPI-1.5, but will be __enabled__ for Open MPI-1.7 by default */
@@ -182,7 +182,7 @@
 #define ompi_fortran_bogus_type_t int
 
 /* C type corresponding to FORTRAN INTEGER */
-#define ompi_fortran_integer_t ompi_fortran_bogus_type_t
+#define ompi_fortran_integer_t int
 
 /* Whether C compiler supports -fvisibility */
 #define OPAL_C_HAVE_VISIBILITY 1

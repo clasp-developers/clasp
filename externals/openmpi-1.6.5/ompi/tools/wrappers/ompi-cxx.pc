@@ -5,7 +5,7 @@ Description: Portable high-performance MPI implementation
 Version: 1.6.5
 URL: http://www.open-mpi.org/
 #
-prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix=/home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix=${prefix}
 includedir=${prefix}/include
 libdir=${exec_prefix}/lib
@@ -15,10 +15,10 @@ libdir=${exec_prefix}/lib
 # dependencies), so only list these in Libs.private.
 #
 Libs: -L${libdir}      -lmpi_cxx -lmpi
-Libs.private:     -lm  
+Libs.private:   -ldl  -lm  -Wl,--export-dynamic -lrt -lnsl -lutil -lm -ldl 
 #
 # It is safe to hard-wire the -I before the EXTRA_INCLUDES because we
 # will not be installing this .pc file unless --enable-devel-headers is
 # selected, meaning that there will definitely be a value in EXTRA_INCLUDES.
 #
-Cflags: -I${includedir} -I${includedir}/   
+Cflags: -I${includedir} -I${includedir}/  -pthread 

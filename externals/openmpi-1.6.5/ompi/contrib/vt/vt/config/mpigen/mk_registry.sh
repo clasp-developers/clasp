@@ -9,7 +9,7 @@ set -e
 
 
 
-export SRCDIR=/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/mpigen
+export SRCDIR=/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/mpigen
 
 have_mpi2_thread=1
 have_mpi2_1sided=1
@@ -28,7 +28,7 @@ mpi2_src5=""; if [ $have_mpi2_file = 1 ] ; then mpi2_src5="mpi2_file.h"; fi
 mpi2_src6=""; if [ $have_mpi2_proc = 1 ] ; then mpi2_src6="mpi2_proc.h"; fi
 src="mpi_standard.h $mpi2_src1 $mpi2_src2 $mpi2_src3 $mpi2_src4 $mpi2_src5 $mpi2_src6"
 
-outprefix=/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/vtlib/vt_mpireg.gen
+outprefix=/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/vtlib/vt_mpireg.gen
 tmp=tmp$$
 trap "rm -f $tmp.*; exit" 0 1 2 3 15
 
@@ -87,7 +87,7 @@ cat <<End-of-File >$tmp.awk
 }
 End-of-File
 
-awk -f $tmp.awk -F, <$tmp.tmp >>$tmp.h
+gawk -f $tmp.awk -F, <$tmp.tmp >>$tmp.h
 if test $? -ne 0; then exit $?; fi
 
 num=`grep VT__ $tmp.h | wc -l`
@@ -150,7 +150,7 @@ cat <<End-of-File >$tmp.awk
 }
 End-of-File
 
-awk -f $tmp.awk -F, <$tmp.tmp >>$tmp.c
+gawk -f $tmp.awk -F, <$tmp.tmp >>$tmp.c
 if test $? -ne 0; then exit $?; fi
 
 mv $tmp.c $outprefix.c

@@ -995,19 +995,19 @@ namespace core {
     int
     brcl_signbit(Number_sp x)
     {
-	switch (brcl_t_of(x)) {
-	case number_SingleFloat:
-	    return signbit(brcl_single_float(x));
-	case number_DoubleFloat:
-	    return signbit(brcl_double_float(x));
+	    switch (brcl_t_of(x)) {
+	    case number_SingleFloat:
+		    return std::signbit(brcl_single_float(x));
+	    case number_DoubleFloat:
+		    return std::signbit(brcl_double_float(x));
 #ifdef BRCL_LONG_FLOAT
-	case number_LongFloat:
-	    return signbit(brcl_long_float(x));
+	    case number_LongFloat:
+		    return signbit(brcl_long_float(x));
 #endif
-	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
-	}
-	SIMPLE_ERROR(BF("Illegal argument for brcl_signbit: %s") % _rep_(x));
+	    default:
+		    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
+	    }
+	    SIMPLE_ERROR(BF("Illegal argument for brcl_signbit: %s") % _rep_(x));
     }
 
 
@@ -1026,18 +1026,18 @@ namespace core {
       switch (brcl_t_of(y)) {
       case number_SingleFloat: {
 	  float f = brcl_single_float(y);
-	  if (signbit(f) != negativep) y = brcl_make_single_float(-f);
+	  if (std::signbit(f) != negativep) y = brcl_make_single_float(-f);
 	  break;
       }
       case number_DoubleFloat: {
 	  double f = brcl_double_float(y);
-	  if (signbit(f) != negativep) y = brcl_make_double_float(-f);
+	  if (std::signbit(f) != negativep) y = brcl_make_double_float(-f);
 	  break;
       }
 #ifdef BRCL_LONG_FLOAT
       case number_LongFloat: {
 	  LongFloat f = brcl_long_float(y);
-	  if (signbit(f) != negativep) y = brcl_make_long_float(-f);
+	  if (std::signbit(f) != negativep) y = brcl_make_long_float(-f);
 	  break;
       }
 #endif
@@ -1153,7 +1153,7 @@ namespace core {
 #ifdef BRCL_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = brcl_long_float(x);
-	    if (signbit(d)) {
+	    if (std::signbit(d)) {
 		s = -1;
 		d = -d;
 	    }
@@ -1170,7 +1170,7 @@ namespace core {
 #endif
 	case number_DoubleFloat: {
 	    double d = brcl_double_float(x);
-	    if (signbit(d)) {
+	    if (std::signbit(d)) {
 		s = -1;
 		d = -d;
 	    }
@@ -1186,7 +1186,7 @@ namespace core {
 	}
 	case number_SingleFloat: {
 	    float d = brcl_single_float(x);
-	    if (signbit(d)) {
+	    if (std::signbit(d)) {
 		s = -1;
 		d = -d;
 	    }
@@ -1265,20 +1265,20 @@ namespace core {
 	    x = brcl_make_fixnum(0);
 	    break;
 	case number_SingleFloat:
-	    if (signbit(brcl_single_float(x)))
+	    if (std::signbit(brcl_single_float(x)))
 		x = _lisp->singleFloatMinusZero();
 	    else
 		x = _lisp->singleFloatPlusZero();
 	    break;
 	case number_DoubleFloat:
-	    if (signbit(brcl_double_float(x)))
+	    if (std::signbit(brcl_double_float(x)))
 		x = _lisp->doubleFloatMinusZero();
 	    else
 		x = _lisp->doubleFloatPlusZero();
 	    break;
 #ifdef BRCL_LONG_FLOAT
 	case number_LongFloat:
-	    if (signbit(brcl_long_float(x)))
+	    if (std::signbit(brcl_long_float(x)))
 		x = _lisp->longFloatMinusZero();
 	    else
 		x = _lisp->longFloatPlusZero();

@@ -1008,8 +1008,10 @@ namespace sockets {
 	_sym_SO_DONTROUTE->defconstant(Integer_O::create(SO_DONTROUTE));
 	SYMBOL_EXPORT_SC_(SocketsPkg,SO_LINGER);
 	_sym_SO_LINGER->defconstant(Integer_O::create(SO_LINGER));
+#ifndef _TARGET_OS_LINUX
 	SYMBOL_EXPORT_SC_(SocketsPkg,SO_REUSEPORT);
 	_sym_SO_REUSEPORT->defconstant(Integer_O::create(SO_REUSEPORT));
+#endif
 	SYMBOL_EXPORT_SC_(SocketsPkg,TCP_NODELAY);
 	_sym_TCP_NODELAY->defconstant(Integer_O::create(TCP_NODELAY));
     };

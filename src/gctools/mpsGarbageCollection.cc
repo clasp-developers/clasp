@@ -6,7 +6,7 @@
 #include "core/numbers.h"
 #include "core/str.h"
 #include "core/builtInClass.h"
-#include "core/posixTime.cc"
+#include "core/posixTime.h" // was core/posixTime.cc???
 #include "core/standardClass.h"
 #include "core/structureClass.h"
 #include "core/wrappers.h"

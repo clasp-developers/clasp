@@ -5,7 +5,7 @@ Description: Portable high-performance MPI implementation
 Version: 1.6.5
 URL: http://www.open-mpi.org/
 #
-prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix=/home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix=${prefix}
 includedir=${prefix}/include
 libdir=${exec_prefix}/lib
@@ -15,5 +15,5 @@ libdir=${exec_prefix}/lib
 # dependencies), so only list these in Libs.private.
 #
 Libs: -L${libdir}      -lmpi_f90
-Libs.private: -lmpi_f77 -lmpi     -lm  
-Cflags: ${libdir} -I${includedir}   
+Libs.private: -lmpi_f77 -lmpi   -ldl  -lm  -Wl,--export-dynamic -lrt -lnsl -lutil -lm -ldl 
+Cflags: -I${libdir} -I${includedir}  -pthread 

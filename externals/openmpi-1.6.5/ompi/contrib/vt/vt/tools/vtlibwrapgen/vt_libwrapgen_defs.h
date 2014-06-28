@@ -21,7 +21,7 @@
 #define VT_LIBWRAPGEN_DEFAULT_LIBTOOL           "${datadir}/libtool"
 #define VT_LIBWRAPGEN_DEFAULT_CC                "gcc"
 #define VT_LIBWRAPGEN_DEFAULT_CPP               "gcc -E"
-#define VT_LIBWRAPGEN_DEFAULT_CFLAGS            "-DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing "
+#define VT_LIBWRAPGEN_DEFAULT_CFLAGS            "-DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing -pthread"
 #define VT_LIBWRAPGEN_DEFAULT_SYSHEADER_PREFIX  "/usr/include/"
 
 #endif // _VT_LIBWRAPGEN_H_

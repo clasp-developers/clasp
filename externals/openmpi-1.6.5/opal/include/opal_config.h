@@ -31,7 +31,7 @@
 #define BTL_OPENIB_FAILOVER_ENABLED 0
 
 /* Whether the openib BTL malloc hooks are enabled */
-#define BTL_OPENIB_MALLOC_HOOKS_ENABLED 0
+#define BTL_OPENIB_MALLOC_HOOKS_ENABLED 1
 
 /* BLCR cr_request_file check */
 /* #undef CRS_BLCR_HAVE_CR_REQUEST */
@@ -82,7 +82,7 @@
 /* #undef HAVE_CNOS_MPI_OS_H */
 
 /* Define to 1 if you have the <crt_externs.h> header file. */
-#define HAVE_CRT_EXTERNS_H 1
+/* #undef HAVE_CRT_EXTERNS_H */
 
 /* Define to 1 if you have the `cr_request_checkpoint' function. */
 /* #undef HAVE_CR_REQUEST_CHECKPOINT */
@@ -103,26 +103,26 @@
 
 /* Define to 1 if you have the declaration of `CTL_HW', and to 0 if you don't.
    */
-#define HAVE_DECL_CTL_HW 1
+#define HAVE_DECL_CTL_HW 0
 
 /* Define to 1 if you have the declaration of `HW_NCPU', and to 0 if you
    don't. */
-#define HAVE_DECL_HW_NCPU 1
+#define HAVE_DECL_HW_NCPU 0
 
 /* Define to 1 if you have the declaration of `HZ', and to 0 if you don't. */
-/* #undef HAVE_DECL_HZ */
+#define HAVE_DECL_HZ 1
 
 /* Define to 1 if you have the declaration of `IBV_ACCESS_SO', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_IBV_ACCESS_SO */
+#define HAVE_DECL_IBV_ACCESS_SO 0
 
 /* Define to 1 if you have the declaration of `IBV_EVENT_CLIENT_REREGISTER',
    and to 0 if you don't. */
-/* #undef HAVE_DECL_IBV_EVENT_CLIENT_REREGISTER */
+#define HAVE_DECL_IBV_EVENT_CLIENT_REREGISTER 1
 
 /* Define to 1 if you have the declaration of `IBV_LINK_LAYER_ETHERNET', and
    to 0 if you don't. */
-/* #undef HAVE_DECL_IBV_LINK_LAYER_ETHERNET */
+#define HAVE_DECL_IBV_LINK_LAYER_ETHERNET 1
 
 /* Define to 1 if you have the declaration of `MPOL_MF_MOVE', and to 0 if you
    don't. */
@@ -142,11 +142,11 @@
 
 /* Define to 1 if you have the declaration of `pthread_getaffinity_np', and to
    0 if you don't. */
-#define HAVE_DECL_PTHREAD_GETAFFINITY_NP 0
+#define HAVE_DECL_PTHREAD_GETAFFINITY_NP 1
 
 /* Define to 1 if you have the declaration of `pthread_setaffinity_np', and to
    0 if you don't. */
-#define HAVE_DECL_PTHREAD_SETAFFINITY_NP 0
+#define HAVE_DECL_PTHREAD_SETAFFINITY_NP 1
 
 /* Define to 1 if you have the declaration of `RLIMIT_MEMLOCK', and to 0 if
    you don't. */
@@ -158,7 +158,7 @@
 
 /* Define to 1 if you have the declaration of `sbrk', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_SBRK */
+#define HAVE_DECL_SBRK 1
 
 /* Define to 1 if you have the declaration of `_SC_LARGE_PAGESIZE', and to 0
    if you don't. */
@@ -197,16 +197,16 @@
 #define HAVE_DLFCN_H 1
 
 /* Define to 1 if you have the `dlsym' function. */
-/* #undef HAVE_DLSYM */
+#define HAVE_DLSYM 1
 
 /* Define to 1 if the system has the type `double _Complex'. */
 #define HAVE_DOUBLE__COMPLEX 1
 
 /* Define if your system supports the epoll interface */
-/* #undef HAVE_EPOLL */
+#define HAVE_EPOLL 1
 
 /* Define to 1 if you have the `epoll_ctl' function. */
-/* #undef HAVE_EPOLL_CTL */
+#define HAVE_EPOLL_CTL 1
 
 /* Define to 1 if you have the <err.h> header file. */
 #define HAVE_ERR_H 1
@@ -236,10 +236,10 @@
 #define HAVE_FLOAT__COMPLEX 1
 
 /* Define to 1 if you have the `fls' function. */
-#define HAVE_FLS 1
+/* #undef HAVE_FLS */
 
 /* Define to 1 if you have the `flsl' function. */
-#define HAVE_FLSL 1
+/* #undef HAVE_FLSL */
 
 /* Define to 1 if you have the `fork' function. */
 #define HAVE_FORK 1
@@ -266,25 +266,25 @@
 /* #undef HAVE_HOSTLIB_H */
 
 /* Define to 1 if you have the `host_info' function. */
-#define HAVE_HOST_INFO 1
+/* #undef HAVE_HOST_INFO */
 
 /* Define to 1 if you have the `ibv_create_xrc_rcv_qp' function. */
 /* #undef HAVE_IBV_CREATE_XRC_RCV_QP */
 
 /* Define to 1 if you have the `ibv_fork_init' function. */
-/* #undef HAVE_IBV_FORK_INIT */
+#define HAVE_IBV_FORK_INIT 1
 
 /* Define to 1 if you have the `ibv_get_device_list' function. */
-/* #undef HAVE_IBV_GET_DEVICE_LIST */
+#define HAVE_IBV_GET_DEVICE_LIST 1
 
 /* Define to 1 if you have the `ibv_resize_cq' function. */
-/* #undef HAVE_IBV_RESIZE_CQ */
+#define HAVE_IBV_RESIZE_CQ 1
 
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #define HAVE_IFADDRS_H 1
 
 /* Define to 1 if you have the <infiniband/driver.h> header file. */
-/* #undef HAVE_INFINIBAND_DRIVER_H */
+#define HAVE_INFINIBAND_DRIVER_H 1
 
 /* Define to 1 if the system has the type `int128_t'. */
 /* #undef HAVE_INT128_T */
@@ -335,7 +335,7 @@
 /* #undef HAVE_LIBLGRP */
 
 /* Define to 1 if you have the `nsl' library (-lnsl). */
-/* #undef HAVE_LIBNSL */
+#define HAVE_LIBNSL 1
 
 /* Define to 1 if you have the `pci' library (-lpci). */
 /* #undef HAVE_LIBPCI */
@@ -359,13 +359,13 @@
 #define HAVE_LONG_LONG 1
 
 /* Define to 1 if you have the <mach/mach_host.h> header file. */
-#define HAVE_MACH_MACH_HOST_H 1
+/* #undef HAVE_MACH_MACH_HOST_H */
 
 /* Define to 1 if you have the <mach/mach_init.h> header file. */
-#define HAVE_MACH_MACH_INIT_H 1
+/* #undef HAVE_MACH_MACH_INIT_H */
 
 /* Define to 1 if you have the <mach/mach_time.h> header file. */
-#define HAVE_MACH_MACH_TIME_H 1
+/* #undef HAVE_MACH_MACH_TIME_H */
 
 /* Define to 1 if you have the <mach/mach_vm.h> header file. */
 /* #undef HAVE_MACH_MACH_VM_H */
@@ -377,10 +377,10 @@
 /* #undef HAVE_MACH_VM_REGION */
 
 /* Define to 1 if you have the <malloc.h> header file. */
-/* #undef HAVE_MALLOC_H */
+#define HAVE_MALLOC_H 1
 
 /* Define to 1 if you have the `memalign' function. */
-/* #undef HAVE_MEMALIGN */
+#define HAVE_MEMALIGN 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -425,7 +425,7 @@
 /* #undef HAVE_NUMA_NODE_RELATIONSHIP */
 
 /* Define to 1 if you have the `openat' function. */
-/* #undef HAVE_OPENAT */
+#define HAVE_OPENAT 1
 
 /* Define to 1 if you have the `openpty' function. */
 #define HAVE_OPENPTY 1
@@ -495,7 +495,7 @@
 #define HAVE_PTSNAME 1
 
 /* Define to 1 if you have the <pty.h> header file. */
-/* #undef HAVE_PTY_H */
+#define HAVE_PTY_H 1
 
 /* Define to 1 if you have the <pwd.h> header file. */
 #define HAVE_PWD_H 1
@@ -546,7 +546,7 @@
 #define HAVE_SIGINFO_T_SI_BAND 1
 
 /* Define to 1 if `si_fd' is a member of `siginfo_t'. */
-/* #undef HAVE_SIGINFO_T_SI_FD */
+#define HAVE_SIGINFO_T_SI_FD 1
 
 /* Define to 1 if you have the <signal.h> header file. */
 #define HAVE_SIGNAL_H 1
@@ -612,7 +612,7 @@
 #define HAVE_STRUCT_DIRENT_D_TYPE 1
 
 /* Define to 1 if `transport_type' is a member of `struct ibv_device'. */
-/* #undef HAVE_STRUCT_IBV_DEVICE_TRANSPORT_TYPE */
+#define HAVE_STRUCT_IBV_DEVICE_TRANSPORT_TYPE 1
 
 /* Define to 1 if the system has the type `struct sockaddr_in'. */
 #define HAVE_STRUCT_SOCKADDR_IN 1
@@ -621,13 +621,13 @@
 #define HAVE_STRUCT_SOCKADDR_IN6 1
 
 /* Define to 1 if `sa_len' is a member of `struct sockaddr'. */
-#define HAVE_STRUCT_SOCKADDR_SA_LEN 1
+/* #undef HAVE_STRUCT_SOCKADDR_SA_LEN */
 
 /* Define to 1 if the system has the type `struct sockaddr_storage'. */
 #define HAVE_STRUCT_SOCKADDR_STORAGE 1
 
 /* Define to 1 if you have the `syscall' function. */
-/* #undef HAVE_SYSCALL */
+#define HAVE_SYSCALL 1
 
 /* Define to 1 if you have the `sysconf' function. */
 #define HAVE_SYSCONF 1
@@ -636,7 +636,7 @@
 #define HAVE_SYSCTL 1
 
 /* Define to 1 if you have the `sysctlbyname' function. */
-#define HAVE_SYSCTLBYNAME 1
+/* #undef HAVE_SYSCTLBYNAME */
 
 /* Define to 1 if you have the `syslog' function. */
 #define HAVE_SYSLOG 1
@@ -659,10 +659,10 @@
 /* #undef HAVE_SYS_DEVPOLL_H */
 
 /* Define to 1 if you have the <sys/epoll.h> header file. */
-/* #undef HAVE_SYS_EPOLL_H */
+#define HAVE_SYS_EPOLL_H 1
 
 /* Define to 1 if you have the <sys/event.h> header file. */
-#define HAVE_SYS_EVENT_H 1
+/* #undef HAVE_SYS_EVENT_H */
 
 /* Define to 1 if you have the <sys/fcntl.h> header file. */
 #define HAVE_SYS_FCNTL_H 1
@@ -704,10 +704,10 @@
 #define HAVE_SYS_SOCKET_H 1
 
 /* Define to 1 if you have the <sys/sockio.h> header file. */
-#define HAVE_SYS_SOCKIO_H 1
+/* #undef HAVE_SYS_SOCKIO_H */
 
 /* Define to 1 if you have the <sys/statfs.h> header file. */
-/* #undef HAVE_SYS_STATFS_H */
+#define HAVE_SYS_STATFS_H 1
 
 /* Define to 1 if you have the <sys/statvfs.h> header file. */
 #define HAVE_SYS_STATVFS_H 1
@@ -737,7 +737,7 @@
 #define HAVE_SYS_UTSNAME_H 1
 
 /* Define to 1 if you have the <sys/vfs.h> header file. */
-/* #undef HAVE_SYS_VFS_H */
+#define HAVE_SYS_VFS_H 1
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #define HAVE_SYS_WAIT_H 1
@@ -758,7 +758,7 @@
 #define HAVE_TIME_H 1
 
 /* Define to 1 if you have the <ucontext.h> header file. */
-/* #undef HAVE_UCONTEXT_H */
+#define HAVE_UCONTEXT_H 1
 
 /* Define to 1 if the system has the type `uint128_t'. */
 /* #undef HAVE_UINT128_T */
@@ -795,7 +795,7 @@
 #define HAVE_USLEEP 1
 
 /* Define to 1 if you have the <util.h> header file. */
-#define HAVE_UTIL_H 1
+/* #undef HAVE_UTIL_H */
 
 /* Define to 1 if you have the <utmp.h> header file. */
 #define HAVE_UTMP_H 1
@@ -807,7 +807,7 @@
 #define HAVE_VASPRINTF 1
 
 /* Define to 1 if you have the `vm_read_overwrite' function. */
-#define HAVE_VM_READ_OVERWRITE 1
+/* #undef HAVE_VM_READ_OVERWRITE */
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #define HAVE_VSNPRINTF 1
@@ -819,13 +819,13 @@
 /* #undef HAVE_WORKING_KQUEUE */
 
 /* Whether poll works for file descriptors and devices */
-#define HAVE_WORKING_POLL 0
+#define HAVE_WORKING_POLL 1
 
 /* Define if realtime signals work on pipes */
 /* #undef HAVE_WORKING_RTSIG */
 
 /* Define to 1 if you have the `_NSGetEnviron' function. */
-#define HAVE__NSGETENVIRON 1
+/* #undef HAVE__NSGETENVIRON */
 
 /* Define to 1 if you have the `_strdup' function. */
 /* #undef HAVE__STRDUP */
@@ -843,7 +843,7 @@
 #define HWLOC_C_HAVE_VISIBILITY 1
 
 /* Define to 1 on Darwin */
-#define HWLOC_DARWIN_SYS 1
+/* #undef HWLOC_DARWIN_SYS */
 
 /* Whether we are in debugging mode or not */
 /* #undef HWLOC_DEBUG */
@@ -909,7 +909,7 @@
 #define HWLOC_HAVE_ATTRIBUTE_WARN_UNUSED_RESULT 1
 
 /* Whether your compiler has __attribute__ weak alias or not */
-#define HWLOC_HAVE_ATTRIBUTE_WEAK_ALIAS 0
+#define HWLOC_HAVE_ATTRIBUTE_WEAK_ALIAS 1
 
 /* Define to 1 if your `ffs' function is known to be broken. */
 /* #undef HWLOC_HAVE_BROKEN_FFS */
@@ -924,10 +924,10 @@
 #define HWLOC_HAVE_CPUID 1
 
 /* Define to 1 if the CPU_SET macro works */
-/* #undef HWLOC_HAVE_CPU_SET */
+#define HWLOC_HAVE_CPU_SET 1
 
 /* Define to 1 if the CPU_SET_S macro works */
-/* #undef HWLOC_HAVE_CPU_SET_S */
+#define HWLOC_HAVE_CPU_SET_S 1
 
 /* Define to 1 if function `clz' is declared by system headers */
 /* #undef HWLOC_HAVE_DECL_CLZ */
@@ -942,10 +942,10 @@
 #define HWLOC_HAVE_DECL_FFSL 1
 
 /* Define to 1 if function `fls' is declared by system headers */
-#define HWLOC_HAVE_DECL_FLS 1
+/* #undef HWLOC_HAVE_DECL_FLS */
 
 /* Define to 1 if function `flsl' is declared by system headers */
-#define HWLOC_HAVE_DECL_FLSL 1
+/* #undef HWLOC_HAVE_DECL_FLSL */
 
 /* Define to 1 if you have the `ffs' function. */
 #define HWLOC_HAVE_FFS 1
@@ -954,10 +954,10 @@
 #define HWLOC_HAVE_FFSL 1
 
 /* Define to 1 if you have the `fls' function. */
-#define HWLOC_HAVE_FLS 1
+/* #undef HWLOC_HAVE_FLS */
 
 /* Define to 1 if you have the `flsl' function. */
-#define HWLOC_HAVE_FLSL 1
+/* #undef HWLOC_HAVE_FLSL */
 
 /* Define to 1 if you have the `libpci' library. */
 /* #undef HWLOC_HAVE_LIBPCI */
@@ -988,7 +988,7 @@
 /* #undef HWLOC_HAVE_PTHREAD_GETTHRDS_NP */
 
 /* Define to 1 if glibc provides a prototype of sched_setaffinity() */
-/* #undef HWLOC_HAVE_SCHED_SETAFFINITY */
+#define HWLOC_HAVE_SCHED_SETAFFINITY 1
 
 /* Define to 1 if set_mempolicy is available. */
 /* #undef HWLOC_HAVE_SET_MEMPOLICY */
@@ -1012,7 +1012,7 @@
 /* #undef HWLOC_IRIX_SYS */
 
 /* Define to 1 on Linux */
-/* #undef HWLOC_LINUX_SYS */
+#define HWLOC_LINUX_SYS 1
 
 /* Define to 1 on OSF */
 /* #undef HWLOC_OSF_SYS */
@@ -1055,7 +1055,7 @@
 #define MCA_hwloc_IMPLEMENTATION_HEADER "opal/mca/hwloc/hwloc132/hwloc132.h"
 
 /* Complete set of command line arguments given to ROMIOs configure script */
-#define MCA_io_romio_COMPLETE_CONFIGURE_FLAGS " CFLAGS='-DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing ' CPPFLAGS=' -D_REENTRANT -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband' FFLAGS='' LDFLAGS=' ' --enable-shared --disable-static  --prefix=/Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common --with-mpi=open_mpi --disable-aio"
+#define MCA_io_romio_COMPLETE_CONFIGURE_FLAGS " CFLAGS='-DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing -pthread' CPPFLAGS='  -I/home/meister/Development/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband' FFLAGS='' LDFLAGS=' ' --enable-shared --disable-static  --prefix=/home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common --with-mpi=open_mpi --disable-aio"
 
 /* Set of user-defined configure flags given to ROMIOs configure script via
    --with-io-romio-flags */
@@ -1086,10 +1086,10 @@
 #define MCA_pml_DIRECT_CALL_HEADER ""
 
 /* Header to include for timer implementation */
-#define MCA_timer_IMPLEMENTATION_HEADER "opal/mca/timer/darwin/timer_darwin.h"
+#define MCA_timer_IMPLEMENTATION_HEADER "opal/mca/timer/linux/timer_linux.h"
 
 /* Whether ptmalloc2 is supported on this system or not */
-#define MEMORY_LINUX_PTMALLOC2 0
+#define MEMORY_LINUX_PTMALLOC2 1
 
 /* Whether ummunotify is supported on this system or not */
 #define MEMORY_LINUX_UMMUNOTIFY 0
@@ -1106,13 +1106,13 @@
 /* #undef NO_MINUS_C_MINUS_O */
 
 /* Alignment of Fortran 77 CHARACTER */
-#define OMPI_ALIGNMENT_FORTRAN_CHARACTER 4
+#define OMPI_ALIGNMENT_FORTRAN_CHARACTER 1
 
 /* Alignment of Fortran 77 COMPLEX */
 #define OMPI_ALIGNMENT_FORTRAN_COMPLEX 4
 
 /* Alignment of Fortran 77 COMPLEX*16 */
-#define OMPI_ALIGNMENT_FORTRAN_COMPLEX16 4
+#define OMPI_ALIGNMENT_FORTRAN_COMPLEX16 8
 
 /* Alignment of Fortran 77 COMPLEX*32 */
 #define OMPI_ALIGNMENT_FORTRAN_COMPLEX32 4
@@ -1121,43 +1121,43 @@
 #define OMPI_ALIGNMENT_FORTRAN_COMPLEX8 4
 
 /* Alignment of Fortran 77 DOUBLE COMPLEX */
-#define OMPI_ALIGNMENT_FORTRAN_DOUBLE_COMPLEX 4
+#define OMPI_ALIGNMENT_FORTRAN_DOUBLE_COMPLEX 8
 
 /* Alignment of Fortran 77 DOUBLE PRECISION */
-#define OMPI_ALIGNMENT_FORTRAN_DOUBLE_PRECISION 4
+#define OMPI_ALIGNMENT_FORTRAN_DOUBLE_PRECISION 8
 
 /* Alignment of Fortran 77 INTEGER */
 #define OMPI_ALIGNMENT_FORTRAN_INTEGER 4
 
 /* Alignment of Fortran 77 INTEGER*1 */
-#define OMPI_ALIGNMENT_FORTRAN_INTEGER1 4
+#define OMPI_ALIGNMENT_FORTRAN_INTEGER1 1
 
 /* Alignment of Fortran 77 INTEGER*16 */
 #define OMPI_ALIGNMENT_FORTRAN_INTEGER16 4
 
 /* Alignment of Fortran 77 INTEGER*2 */
-#define OMPI_ALIGNMENT_FORTRAN_INTEGER2 4
+#define OMPI_ALIGNMENT_FORTRAN_INTEGER2 2
 
 /* Alignment of Fortran 77 INTEGER*4 */
 #define OMPI_ALIGNMENT_FORTRAN_INTEGER4 4
 
 /* Alignment of Fortran 77 INTEGER*8 */
-#define OMPI_ALIGNMENT_FORTRAN_INTEGER8 4
+#define OMPI_ALIGNMENT_FORTRAN_INTEGER8 8
 
 /* Alignment of Fortran 77 LOGICAL */
 #define OMPI_ALIGNMENT_FORTRAN_LOGICAL 4
 
 /* Alignment of Fortran 77 LOGICAL*1 */
-#define OMPI_ALIGNMENT_FORTRAN_LOGICAL1 4
+#define OMPI_ALIGNMENT_FORTRAN_LOGICAL1 1
 
 /* Alignment of Fortran 77 LOGICAL*2 */
-#define OMPI_ALIGNMENT_FORTRAN_LOGICAL2 4
+#define OMPI_ALIGNMENT_FORTRAN_LOGICAL2 2
 
 /* Alignment of Fortran 77 LOGICAL*4 */
 #define OMPI_ALIGNMENT_FORTRAN_LOGICAL4 4
 
 /* Alignment of Fortran 77 LOGICAL*8 */
-#define OMPI_ALIGNMENT_FORTRAN_LOGICAL8 4
+#define OMPI_ALIGNMENT_FORTRAN_LOGICAL8 8
 
 /* Alignment of Fortran 77 REAL */
 #define OMPI_ALIGNMENT_FORTRAN_REAL 4
@@ -1172,7 +1172,7 @@
 #define OMPI_ALIGNMENT_FORTRAN_REAL4 4
 
 /* Alignment of Fortran 77 REAL*8 */
-#define OMPI_ALIGNMENT_FORTRAN_REAL8 4
+#define OMPI_ALIGNMENT_FORTRAN_REAL8 8
 
 /* If knem support can be enabled */
 #define OMPI_BTL_SM_HAVE_KNEM 0
@@ -1217,7 +1217,7 @@
 #define OMPI_EXT_COMPONENTS " affinity example"
 
 /* OMPI underlying F77 compiler */
-#define OMPI_F77 "none"
+#define OMPI_F77 "gfortran"
 
 /* Whether fortran symbols are all caps or not */
 #define OMPI_F77_CAPS 0
@@ -1229,17 +1229,17 @@
 #define OMPI_F77_PLAIN 0
 
 /* Whether fortran symbols have a trailing underscore or not */
-#define OMPI_F77_SINGLE_UNDERSCORE 0
+#define OMPI_F77_SINGLE_UNDERSCORE 1
 
 /* OMPI underlying F90 compiler */
-#define OMPI_F90 "none"
+#define OMPI_F90 "gfortran"
 
 /* Max handle value for fortran MPI handles, effectively min(INT_MAX, max
    fortran INTEGER value) */
-#define OMPI_FORTRAN_HANDLE_MAX 2147483647
+#define OMPI_FORTRAN_HANDLE_MAX ( 2147483647 < 2147483647 ? 2147483647 : 2147483647 )
 
 /* Fortran value for LOGICAL .TRUE. value */
-#define OMPI_FORTRAN_VALUE_TRUE 0
+#define OMPI_FORTRAN_VALUE_TRUE 1
 
 /* Greek - alpha, beta, etc - release number of Open MPI */
 #define OMPI_GREEK_VERSION ""
@@ -1257,61 +1257,61 @@
 #define OMPI_HAVE_CXX_EXCEPTION_SUPPORT 0
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_CHARACTER 0
+#define OMPI_HAVE_F90_CHARACTER 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_COMPLEX 0
+#define OMPI_HAVE_F90_COMPLEX 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_COMPLEX16 0
+#define OMPI_HAVE_F90_COMPLEX16 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
 #define OMPI_HAVE_F90_COMPLEX32 0
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_COMPLEX8 0
+#define OMPI_HAVE_F90_COMPLEX8 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_DOUBLE_COMPLEX 0
+#define OMPI_HAVE_F90_DOUBLE_COMPLEX 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_DOUBLE_PRECISION 0
+#define OMPI_HAVE_F90_DOUBLE_PRECISION 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_INTEGER 0
+#define OMPI_HAVE_F90_INTEGER 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_INTEGER1 0
+#define OMPI_HAVE_F90_INTEGER1 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_INTEGER16 0
+#define OMPI_HAVE_F90_INTEGER16 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_INTEGER2 0
+#define OMPI_HAVE_F90_INTEGER2 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_INTEGER4 0
+#define OMPI_HAVE_F90_INTEGER4 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_INTEGER8 0
+#define OMPI_HAVE_F90_INTEGER8 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_LOGICAL 0
+#define OMPI_HAVE_F90_LOGICAL 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_LOGICAL1 0
+#define OMPI_HAVE_F90_LOGICAL1 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_LOGICAL2 0
+#define OMPI_HAVE_F90_LOGICAL2 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_LOGICAL4 0
+#define OMPI_HAVE_F90_LOGICAL4 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_LOGICAL8 0
+#define OMPI_HAVE_F90_LOGICAL8 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_REAL 0
+#define OMPI_HAVE_F90_REAL 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
 #define OMPI_HAVE_F90_REAL16 0
@@ -1320,67 +1320,67 @@
 #define OMPI_HAVE_F90_REAL2 0
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_REAL4 0
+#define OMPI_HAVE_F90_REAL4 1
 
 /* Whether we have Fortran 90 $ofc_fortran_type or not */
-#define OMPI_HAVE_F90_REAL8 0
+#define OMPI_HAVE_F90_REAL8 1
 
 /* Whether we have Fortran 77 CHARACTER or not */
-#define OMPI_HAVE_FORTRAN_CHARACTER 0
+#define OMPI_HAVE_FORTRAN_CHARACTER 1
 
 /* Whether we have Fortran 77 COMPLEX or not */
-#define OMPI_HAVE_FORTRAN_COMPLEX 0
+#define OMPI_HAVE_FORTRAN_COMPLEX 1
 
 /* Whether we have Fortran 77 COMPLEX*16 or not */
-#define OMPI_HAVE_FORTRAN_COMPLEX16 0
+#define OMPI_HAVE_FORTRAN_COMPLEX16 1
 
 /* Whether we have Fortran 77 COMPLEX*32 or not */
 #define OMPI_HAVE_FORTRAN_COMPLEX32 0
 
 /* Whether we have Fortran 77 COMPLEX*8 or not */
-#define OMPI_HAVE_FORTRAN_COMPLEX8 0
+#define OMPI_HAVE_FORTRAN_COMPLEX8 1
 
 /* Whether we have Fortran 77 DOUBLE COMPLEX or not */
-#define OMPI_HAVE_FORTRAN_DOUBLE_COMPLEX 0
+#define OMPI_HAVE_FORTRAN_DOUBLE_COMPLEX 1
 
 /* Whether we have Fortran 77 DOUBLE PRECISION or not */
-#define OMPI_HAVE_FORTRAN_DOUBLE_PRECISION 0
+#define OMPI_HAVE_FORTRAN_DOUBLE_PRECISION 1
 
 /* Whether we have Fortran 77 INTEGER or not */
-#define OMPI_HAVE_FORTRAN_INTEGER 0
+#define OMPI_HAVE_FORTRAN_INTEGER 1
 
 /* Whether we have Fortran 77 INTEGER*1 or not */
-#define OMPI_HAVE_FORTRAN_INTEGER1 0
+#define OMPI_HAVE_FORTRAN_INTEGER1 1
 
 /* Whether we have Fortran 77 INTEGER*16 or not */
 #define OMPI_HAVE_FORTRAN_INTEGER16 0
 
 /* Whether we have Fortran 77 INTEGER*2 or not */
-#define OMPI_HAVE_FORTRAN_INTEGER2 0
+#define OMPI_HAVE_FORTRAN_INTEGER2 1
 
 /* Whether we have Fortran 77 INTEGER*4 or not */
-#define OMPI_HAVE_FORTRAN_INTEGER4 0
+#define OMPI_HAVE_FORTRAN_INTEGER4 1
 
 /* Whether we have Fortran 77 INTEGER*8 or not */
-#define OMPI_HAVE_FORTRAN_INTEGER8 0
+#define OMPI_HAVE_FORTRAN_INTEGER8 1
 
 /* Whether we have Fortran 77 LOGICAL or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL 0
+#define OMPI_HAVE_FORTRAN_LOGICAL 1
 
 /* Whether we have Fortran 77 LOGICAL*1 or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL1 0
+#define OMPI_HAVE_FORTRAN_LOGICAL1 1
 
 /* Whether we have Fortran 77 LOGICAL*2 or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL2 0
+#define OMPI_HAVE_FORTRAN_LOGICAL2 1
 
 /* Whether we have Fortran 77 LOGICAL*4 or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL4 0
+#define OMPI_HAVE_FORTRAN_LOGICAL4 1
 
 /* Whether we have Fortran 77 LOGICAL*8 or not */
-#define OMPI_HAVE_FORTRAN_LOGICAL8 0
+#define OMPI_HAVE_FORTRAN_LOGICAL8 1
 
 /* Whether we have Fortran 77 REAL or not */
-#define OMPI_HAVE_FORTRAN_REAL 0
+#define OMPI_HAVE_FORTRAN_REAL 1
 
 /* Whether we have Fortran 77 REAL*16 or not */
 #define OMPI_HAVE_FORTRAN_REAL16 0
@@ -1389,25 +1389,25 @@
 #define OMPI_HAVE_FORTRAN_REAL2 0
 
 /* Whether we have Fortran 77 REAL*4 or not */
-#define OMPI_HAVE_FORTRAN_REAL4 0
+#define OMPI_HAVE_FORTRAN_REAL4 1
 
 /* Whether we have Fortran 77 REAL*8 or not */
-#define OMPI_HAVE_FORTRAN_REAL8 0
+#define OMPI_HAVE_FORTRAN_REAL8 1
 
 /* If PTHREADS implementation supports PTHREAD_MUTEX_ERRORCHECK */
 #define OMPI_HAVE_PTHREAD_MUTEX_ERRORCHECK 1
 
 /* If PTHREADS implementation supports PTHREAD_MUTEX_ERRORCHECK_NP */
-#define OMPI_HAVE_PTHREAD_MUTEX_ERRORCHECK_NP 0
+#define OMPI_HAVE_PTHREAD_MUTEX_ERRORCHECK_NP 1
 
 /* Whether RDMA CM is available or not */
 #define OMPI_HAVE_RDMACM 0
 
 /* Enable RDMAoE support */
-/* #undef OMPI_HAVE_RDMAOE */
+#define OMPI_HAVE_RDMAOE 1
 
 /* Number of arguments to ibv_create_cq */
-/* #undef OMPI_IBV_CREATE_CQ_ARGS */
+#define OMPI_IBV_CREATE_CQ_ARGS 5
 
 /* Major release number of Open MPI */
 #define OMPI_MAJOR_VERSION 1
@@ -1419,7 +1419,7 @@
 #define OMPI_MCA_BTL_SCTP_USE_ONE_TO_ONE_SOCKET 0
 
 /* Whether any opal memory mca components were found */
-#define OMPI_MEMORY_HAVE_COMPONENT 0
+#define OMPI_MEMORY_HAVE_COMPONENT 1
 
 /* Minor release number of Open MPI */
 #define OMPI_MINOR_VERSION 6
@@ -1462,58 +1462,58 @@
 #define OMPI_RELEASE_VERSION 5
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_CHARACTER 4
+#define OMPI_SIZEOF_F90_CHARACTER 1
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_COMPLEX 4
+#define OMPI_SIZEOF_F90_COMPLEX 8
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_COMPLEX16 4
+#define OMPI_SIZEOF_F90_COMPLEX16 16
 
 /* Size of Fortran 77 $ofc_fortran_type */
 #define OMPI_SIZEOF_F90_COMPLEX32 4
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_COMPLEX8 4
+#define OMPI_SIZEOF_F90_COMPLEX8 8
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_DOUBLE_COMPLEX 4
+#define OMPI_SIZEOF_F90_DOUBLE_COMPLEX 16
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_DOUBLE_PRECISION 4
+#define OMPI_SIZEOF_F90_DOUBLE_PRECISION 8
 
 /* Size of Fortran 77 $ofc_fortran_type */
 #define OMPI_SIZEOF_F90_INTEGER 4
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_INTEGER1 4
+#define OMPI_SIZEOF_F90_INTEGER1 1
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_INTEGER16 4
+#define OMPI_SIZEOF_F90_INTEGER16 16
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_INTEGER2 4
+#define OMPI_SIZEOF_F90_INTEGER2 2
 
 /* Size of Fortran 77 $ofc_fortran_type */
 #define OMPI_SIZEOF_F90_INTEGER4 4
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_INTEGER8 4
+#define OMPI_SIZEOF_F90_INTEGER8 8
 
 /* Size of Fortran 77 $ofc_fortran_type */
 #define OMPI_SIZEOF_F90_LOGICAL 4
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_LOGICAL1 4
+#define OMPI_SIZEOF_F90_LOGICAL1 1
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_LOGICAL2 4
+#define OMPI_SIZEOF_F90_LOGICAL2 2
 
 /* Size of Fortran 77 $ofc_fortran_type */
 #define OMPI_SIZEOF_F90_LOGICAL4 4
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_LOGICAL8 4
+#define OMPI_SIZEOF_F90_LOGICAL8 8
 
 /* Size of Fortran 77 $ofc_fortran_type */
 #define OMPI_SIZEOF_F90_REAL 4
@@ -1528,61 +1528,61 @@
 #define OMPI_SIZEOF_F90_REAL4 4
 
 /* Size of Fortran 77 $ofc_fortran_type */
-#define OMPI_SIZEOF_F90_REAL8 4
+#define OMPI_SIZEOF_F90_REAL8 8
 
 /* Size of Fortran 77 CHARACTER */
-#define OMPI_SIZEOF_FORTRAN_CHARACTER 4
+#define OMPI_SIZEOF_FORTRAN_CHARACTER 1
 
 /* Size of Fortran 77 COMPLEX */
-#define OMPI_SIZEOF_FORTRAN_COMPLEX 4
+#define OMPI_SIZEOF_FORTRAN_COMPLEX 8
 
 /* Size of Fortran 77 COMPLEX*16 */
-#define OMPI_SIZEOF_FORTRAN_COMPLEX16 4
+#define OMPI_SIZEOF_FORTRAN_COMPLEX16 16
 
 /* Size of Fortran 77 COMPLEX*32 */
 #define OMPI_SIZEOF_FORTRAN_COMPLEX32 4
 
 /* Size of Fortran 77 COMPLEX*8 */
-#define OMPI_SIZEOF_FORTRAN_COMPLEX8 4
+#define OMPI_SIZEOF_FORTRAN_COMPLEX8 8
 
 /* Size of Fortran 77 DOUBLE COMPLEX */
-#define OMPI_SIZEOF_FORTRAN_DOUBLE_COMPLEX 4
+#define OMPI_SIZEOF_FORTRAN_DOUBLE_COMPLEX 16
 
 /* Size of Fortran 77 DOUBLE PRECISION */
-#define OMPI_SIZEOF_FORTRAN_DOUBLE_PRECISION 4
+#define OMPI_SIZEOF_FORTRAN_DOUBLE_PRECISION 8
 
 /* Size of Fortran 77 INTEGER */
 #define OMPI_SIZEOF_FORTRAN_INTEGER 4
 
 /* Size of Fortran 77 INTEGER*1 */
-#define OMPI_SIZEOF_FORTRAN_INTEGER1 4
+#define OMPI_SIZEOF_FORTRAN_INTEGER1 1
 
 /* Size of Fortran 77 INTEGER*16 */
-#define OMPI_SIZEOF_FORTRAN_INTEGER16 4
+#define OMPI_SIZEOF_FORTRAN_INTEGER16 16
 
 /* Size of Fortran 77 INTEGER*2 */
-#define OMPI_SIZEOF_FORTRAN_INTEGER2 4
+#define OMPI_SIZEOF_FORTRAN_INTEGER2 2
 
 /* Size of Fortran 77 INTEGER*4 */
 #define OMPI_SIZEOF_FORTRAN_INTEGER4 4
 
 /* Size of Fortran 77 INTEGER*8 */
-#define OMPI_SIZEOF_FORTRAN_INTEGER8 4
+#define OMPI_SIZEOF_FORTRAN_INTEGER8 8
 
 /* Size of Fortran 77 LOGICAL */
 #define OMPI_SIZEOF_FORTRAN_LOGICAL 4
 
 /* Size of Fortran 77 LOGICAL*1 */
-#define OMPI_SIZEOF_FORTRAN_LOGICAL1 4
+#define OMPI_SIZEOF_FORTRAN_LOGICAL1 1
 
 /* Size of Fortran 77 LOGICAL*2 */
-#define OMPI_SIZEOF_FORTRAN_LOGICAL2 4
+#define OMPI_SIZEOF_FORTRAN_LOGICAL2 2
 
 /* Size of Fortran 77 LOGICAL*4 */
 #define OMPI_SIZEOF_FORTRAN_LOGICAL4 4
 
 /* Size of Fortran 77 LOGICAL*8 */
-#define OMPI_SIZEOF_FORTRAN_LOGICAL8 4
+#define OMPI_SIZEOF_FORTRAN_LOGICAL8 8
 
 /* Size of Fortran 77 REAL */
 #define OMPI_SIZEOF_FORTRAN_REAL 4
@@ -1597,7 +1597,7 @@
 #define OMPI_SIZEOF_FORTRAN_REAL4 4
 
 /* Size of Fortran 77 REAL*8 */
-#define OMPI_SIZEOF_FORTRAN_REAL8 4
+#define OMPI_SIZEOF_FORTRAN_REAL8 8
 
 /* Complete release number of Open MPI */
 #define OMPI_VERSION "5"
@@ -1606,10 +1606,10 @@
 #define OMPI_WANT_CXX_BINDINGS 1
 
 /* Whether we want the MPI f77 bindings or not */
-#define OMPI_WANT_F77_BINDINGS 0
+#define OMPI_WANT_F77_BINDINGS 1
 
 /* Whether we want the MPI f90 bindings or not */
-#define OMPI_WANT_F90_BINDINGS 0
+#define OMPI_WANT_F90_BINDINGS 1
 
 /* if the memory and buffer checking should be enabled */
 #define OMPI_WANT_MEMCHECKER 0
@@ -1688,7 +1688,7 @@
 #define OPAL_ALIGN_WORD_SIZE_INTEGERS 0
 
 /* OMPI architecture string */
-#define OPAL_ARCH "x86_64-apple-darwin13.2.0"
+#define OPAL_ARCH "x86_64-unknown-linux-gnu"
 
 /* Assembly align directive expects logarithmic value */
 #define OPAL_ASM_ALIGN_LOG 
@@ -1700,16 +1700,16 @@
 #define OPAL_ASM_GLOBAL ".globl"
 
 /* Assembly prefix for gsym labels */
-#define OPAL_ASM_GSYM "_"
+#define OPAL_ASM_GSYM ""
 
 /* Assembly suffix for labels */
 #define OPAL_ASM_LABEL_SUFFIX ":"
 
 /* Assembly prefix for lsym labels */
-#define OPAL_ASM_LSYM "L"
+#define OPAL_ASM_LSYM ".L"
 
 /* Do we need to give a .size directive */
-#define OPAL_ASM_SIZE "0"
+#define OPAL_ASM_SIZE "1"
 
 /* Whether we can do 64bit assembly operations or not. Should not be used
    outside of the assembly header files */
@@ -1719,13 +1719,13 @@
 #define OPAL_ASM_TEXT ".text"
 
 /* How to set function type in .type directive */
-#define OPAL_ASM_TYPE ""
+#define OPAL_ASM_TYPE "@"
 
 /* Architecture type of assembly to use for atomic operations */
 #define OPAL_ASSEMBLY_ARCH OMPI_AMD64
 
 /* Format of assembly file */
-#define OPAL_ASSEMBLY_FORMAT "default-.text-.globl-:-_-L--0-1-1-1-0"
+#define OPAL_ASSEMBLY_FORMAT "default-.text-.globl-:--.L-@-1-0-1-1-1"
 
 /* The compiler $lower which OMPI was built with */
 #define OPAL_BUILD_PLATFORM_COMPILER_FAMILYID 1
@@ -1734,19 +1734,19 @@
 #define OPAL_BUILD_PLATFORM_COMPILER_FAMILYNAME GNU
 
 /* The compiler $lower which OMPI was built with */
-#define OPAL_BUILD_PLATFORM_COMPILER_VERSION 262657
+#define OPAL_BUILD_PLATFORM_COMPILER_VERSION 264195
 
 /* The compiler $lower which OMPI was built with */
-#define OPAL_BUILD_PLATFORM_COMPILER_VERSION_STR 4.2.1
+#define OPAL_BUILD_PLATFORM_COMPILER_VERSION_STR 4.8.3
 
 /* OMPI underlying C compiler */
 #define OPAL_CC "gcc"
 
 /* Use static const char[] strings for C files */
-#define OPAL_CC_USE_CONST_CHAR_IDENT 1
+#define OPAL_CC_USE_CONST_CHAR_IDENT 0
 
 /* Use #ident strings for C files */
-#define OPAL_CC_USE_IDENT 0
+#define OPAL_CC_USE_IDENT 1
 
 /* Use #pragma comment for C files */
 #define OPAL_CC_USE_PRAGMA_COMMENT 
@@ -1758,10 +1758,10 @@
 #define OPAL_CXX "g++"
 
 /* Use static const char[] strings for C++ files */
-#define OPAL_CXX_USE_CONST_CHAR_IDENT 1
+#define OPAL_CXX_USE_CONST_CHAR_IDENT 0
 
 /* Use #ident strings for C++ files */
-#define OPAL_CXX_USE_IDENT 0
+#define OPAL_CXX_USE_IDENT 1
 
 /* Use #pragma comment for C++ files */
 #define OPAL_CXX_USE_PRAGMA_COMMENT 
@@ -1856,7 +1856,7 @@
 
 /* Whether your compiler has __attribute__ format and it works on function
    pointers */
-#define OPAL_HAVE_ATTRIBUTE_FORMAT_FUNCPTR 0
+#define OPAL_HAVE_ATTRIBUTE_FORMAT_FUNCPTR 1
 
 /* Whether your compiler has __attribute__ hot or not */
 #define OPAL_HAVE_ATTRIBUTE_HOT 1
@@ -1899,7 +1899,7 @@
 #define OPAL_HAVE_ATTRIBUTE_WARN_UNUSED_RESULT 1
 
 /* Whether your compiler has __attribute__ weak alias or not */
-#define OPAL_HAVE_ATTRIBUTE_WEAK_ALIAS 0
+#define OPAL_HAVE_ATTRIBUTE_WEAK_ALIAS 1
 
 /* whether qsort is broken or not */
 #define OPAL_HAVE_BROKEN_QSORT 0
@@ -1912,7 +1912,7 @@
 #define OPAL_HAVE_LONG_LONG 1
 
 /* Whether libltdl appears to have the lt_dladvise interface */
-#define OPAL_HAVE_LTDL_ADVISE 1
+#define OPAL_HAVE_LTDL_ADVISE 0
 
 /* Do we have POSIX threads */
 #define OPAL_HAVE_POSIX_THREADS 1
@@ -1938,7 +1938,7 @@
 #define OPAL_HAVE_VA_COPY 1
 
 /* Whether we have weak symbols or not */
-#define OPAL_HAVE_WEAK_SYMBOLS 0
+#define OPAL_HAVE_WEAK_SYMBOLS 1
 
 /* Define to 1 ifyou have the declaration of _SC_NPROCESSORS_ONLN, and to 0
    otherwise */
@@ -1982,7 +1982,7 @@
 #define OPAL_NEED_C_BOOL 1
 
 /* package/branding string for Open MPI */
-#define OPAL_PACKAGE_STRING "Open MPI meister@fry.home Distribution"
+#define OPAL_PACKAGE_STRING "Open MPI meister@compute.temple.edu Distribution"
 
 /* Whether r notation is used for ppc registers */
 /* #undef OPAL_POWERPC_R_REGISTERS */
@@ -2034,7 +2034,7 @@
 #define OPAL_WANT_SMP_LOCKS 1
 
 /* Specific ps command to use in orte-clean */
-#define ORTE_CLEAN_PS_CMD "ps -A -o command,pid,user"
+#define ORTE_CLEAN_PS_CMD "ps -A -o fname,pid,user"
 
 /* Build full RTE support */
 #define ORTE_DISABLE_FULL_SUPPORT 0
@@ -2201,22 +2201,22 @@
 #endif
 
 /* Additional CFLAGS to pass through the wrapper compilers */
-#define WRAPPER_EXTRA_CFLAGS " "
+#define WRAPPER_EXTRA_CFLAGS "-pthread "
 
 /* Additional CXXFLAGS to pass through the wrapper compilers */
-#define WRAPPER_EXTRA_CXXFLAGS " "
+#define WRAPPER_EXTRA_CXXFLAGS "-pthread "
 
 /* Additional FCFLAGS to pass through the wrapper compilers */
-#define WRAPPER_EXTRA_FCFLAGS " "
+#define WRAPPER_EXTRA_FCFLAGS "-pthread "
 
 /* Additional FFLAGS to pass through the wrapper compilers */
-#define WRAPPER_EXTRA_FFLAGS " "
+#define WRAPPER_EXTRA_FFLAGS "-pthread "
 
 /* Additional LDFLAGS to pass through the wrapper compilers */
 #define WRAPPER_EXTRA_LDFLAGS "  "
 
 /* Additional LIBS to pass through the wrapper compilers */
-#define WRAPPER_EXTRA_LIBS "  -lm  "
+#define WRAPPER_EXTRA_LIBS "-ldl  -lm  -Wl,--export-dynamic -lrt -lnsl -lutil -lm -ldl "
 
 /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
    `char[]'. */
@@ -2260,7 +2260,7 @@
 #define ompi_fortran_bogus_type_t int
 
 /* C type corresponding to Fortran 77 CHARACTER */
-#define ompi_fortran_character_t ompi_fortran_bogus_type_t
+#define ompi_fortran_character_t char
 
 /* C type corresponding to Fortran 77 COMPLEX*16 */
 /* #undef ompi_fortran_complex16_t */
@@ -2278,40 +2278,40 @@
 /* #undef ompi_fortran_double_complex_t */
 
 /* C type corresponding to Fortran 77 DOUBLE PRECISION */
-#define ompi_fortran_double_precision_t ompi_fortran_bogus_type_t
+#define ompi_fortran_double_precision_t double
 
 /* C type corresponding to Fortran 77 INTEGER*16 */
-#define ompi_fortran_integer16_t ompi_fortran_bogus_type_t
+#define ompi_fortran_integer16_t 
 
 /* C type corresponding to Fortran 77 INTEGER*1 */
-#define ompi_fortran_integer1_t ompi_fortran_bogus_type_t
+#define ompi_fortran_integer1_t char
 
 /* C type corresponding to Fortran 77 INTEGER*2 */
-#define ompi_fortran_integer2_t ompi_fortran_bogus_type_t
+#define ompi_fortran_integer2_t short
 
 /* C type corresponding to Fortran 77 INTEGER*4 */
-#define ompi_fortran_integer4_t ompi_fortran_bogus_type_t
+#define ompi_fortran_integer4_t int
 
 /* C type corresponding to Fortran 77 INTEGER*8 */
-#define ompi_fortran_integer8_t ompi_fortran_bogus_type_t
+#define ompi_fortran_integer8_t long long
 
 /* C type corresponding to Fortran 77 INTEGER */
-#define ompi_fortran_integer_t ompi_fortran_bogus_type_t
+#define ompi_fortran_integer_t int
 
 /* C type corresponding to Fortran 77 LOGICAL*1 */
-#define ompi_fortran_logical1_t ompi_fortran_bogus_type_t
+#define ompi_fortran_logical1_t char
 
 /* C type corresponding to Fortran 77 LOGICAL*2 */
-#define ompi_fortran_logical2_t ompi_fortran_bogus_type_t
+#define ompi_fortran_logical2_t short
 
 /* C type corresponding to Fortran 77 LOGICAL*4 */
-#define ompi_fortran_logical4_t ompi_fortran_bogus_type_t
+#define ompi_fortran_logical4_t int
 
 /* C type corresponding to Fortran 77 LOGICAL*8 */
-#define ompi_fortran_logical8_t ompi_fortran_bogus_type_t
+#define ompi_fortran_logical8_t long long
 
 /* C type corresponding to Fortran 77 LOGICAL */
-#define ompi_fortran_logical_t ompi_fortran_bogus_type_t
+#define ompi_fortran_logical_t int
 
 /* C type corresponding to Fortran 77 REAL*16 */
 #define ompi_fortran_real16_t ompi_fortran_bogus_type_t
@@ -2320,13 +2320,13 @@
 #define ompi_fortran_real2_t ompi_fortran_bogus_type_t
 
 /* C type corresponding to Fortran 77 REAL*4 */
-#define ompi_fortran_real4_t ompi_fortran_bogus_type_t
+#define ompi_fortran_real4_t float
 
 /* C type corresponding to Fortran 77 REAL*8 */
-#define ompi_fortran_real8_t ompi_fortran_bogus_type_t
+#define ompi_fortran_real8_t double
 
 /* C type corresponding to Fortran 77 REAL */
-#define ompi_fortran_real_t ompi_fortran_bogus_type_t
+#define ompi_fortran_real_t float
 
 /* Define to `int' if <sys/types.h> does not define. */
 /* #undef pid_t */

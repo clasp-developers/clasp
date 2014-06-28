@@ -27,7 +27,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 
 /* The gmp-mparam.h file (a string) the tune program should suggest updating.
    */
-#define GMP_MPARAM_H_SUGGEST "./mpn/x86_64/coreinhm/gmp-mparam.h"
+#define GMP_MPARAM_H_SUGGEST "./mpn/x86_64/bd1/gmp-mparam.h"
 
 /* Define to 1 if you have the `alarm' function. */
 #define HAVE_ALARM 1
@@ -63,7 +63,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 #define HAVE_CLOCK 1
 
 /* Define to 1 if you have the `clock_gettime' function. */
-#define HAVE_CLOCK_GETTIME 1
+/* #undef HAVE_CLOCK_GETTIME */
 
 /* Define to 1 if you have the `cputime' function. */
 /* #undef HAVE_CPUTIME */
@@ -565,7 +565,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 
 /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
    `char[]'. */
-/* #undef YYTEXT_POINTER */
+#define YYTEXT_POINTER 1
 
 /* Define like PROTOTYPES; this can be used by system headers. */
 #define __PROTOTYPES 1

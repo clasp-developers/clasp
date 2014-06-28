@@ -1,8 +1,8 @@
-#! /bin/bash
+#! /bin/sh
 
 # libtool - Provide generalized library-building support services.
 # Generated automatically by config.status (gmp) 5.0.5
-# Libtool was configured on host meister-Virtualbox:
+# Libtool was configured on host compute.temple.edu:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 #   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
@@ -68,7 +68,7 @@ pic_mode=default
 fast_install=yes
 
 # Shell to use when invoking shell scripts.
-SHELL="/bin/bash"
+SHELL="/bin/sh"
 
 # An echo program that protects backslashes.
 ECHO="printf %s\\n"
@@ -78,12 +78,12 @@ PATH_SEPARATOR=":"
 
 # The host system.
 host_alias=
-host=corei-unknown-linux-gnu
+host=bulldozer-unknown-linux-gnu
 host_os=linux-gnu
 
 # The build system.
 build_alias=
-build=corei-unknown-linux-gnu
+build=bulldozer-unknown-linux-gnu
 build_os=linux-gnu
 
 # A sed program that does not truncate output.
@@ -167,7 +167,7 @@ lock_old_archive_extraction=no
 LTCC="gcc -std=gnu99"
 
 # LTCC compiler flags.
-LTCFLAGS="-O2 -pedantic -m64 -mtune=corei7 -march=corei7"
+LTCFLAGS="-O2 -pedantic -m64 -mtune=bdver1 -march=bdver1"
 
 # Take the output of nm and produce a listing of raw symbols and C names.
 global_symbol_pipe="sed -n -e 's/^.*[	 ]\\([ABCDGIRSTW][ABCDGIRSTW]*\\)[	 ][	 ]*\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 \\2 \\2/p' | sed '/ __gnu_lto/d'"
@@ -275,10 +275,10 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/usr/lib/gcc/x86_64-linux-gnu/4.8 /usr/lib/x86_64-linux-gnu /usr/lib /lib/x86_64-linux-gnu /lib "
+sys_lib_search_path_spec="/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3 /home/meister/local/gcc-4.8.3/lib64 /lib64 /usr/lib64 "
 
 # Run-time system search path for libraries.
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/local/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/mesa-egl /usr/lib/x86_64-linux-gnu/mesa "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib64/atlas /usr/lib64/mysql /usr/lib64/qt-3.3/lib "
 
 # Whether dlopen is supported.
 dlopen_support=unknown
@@ -320,7 +320,7 @@ pic_flag=" -fPIC -DPIC"
 wl="-Wl,"
 
 # Compiler flag to prevent dynamic linking.
-link_static_flag="-static"
+link_static_flag=""
 
 # Does compiler simultaneously support -c and -o options?
 compiler_c_o="yes"
@@ -10106,7 +10106,7 @@ reload_cmds="\$LD\$reload_flag -o \$output\$reload_objs"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$tool_oldlib"
 
 # A language specific compiler.
-CC="c++"
+CC="g++"
 
 # Is the compiler the GNU compiler?
 with_gcc=yes
@@ -10121,7 +10121,7 @@ pic_flag=" -fPIC -DPIC"
 wl="-Wl,"
 
 # Compiler flag to prevent dynamic linking.
-link_static_flag="-static"
+link_static_flag=""
 
 # Does compiler simultaneously support -c and -o options?
 compiler_c_o="yes"
@@ -10227,18 +10227,18 @@ file_list_spec=""
 hardcode_action=immediate
 
 # The directories searched by this compiler when creating a shared library.
-compiler_lib_search_dirs="/usr/bin/../lib/gcc/x86_64-linux-gnu/4.8 /usr/bin/../lib/gcc/x86_64-linux-gnu/4.8/../../../x86_64-linux-gnu /usr/bin/../lib/x86_64-linux-gnu /lib/x86_64-linux-gnu /lib/../lib64 /usr/lib/x86_64-linux-gnu /usr/bin/../lib/gcc/x86_64-linux-gnu/4.8/../../.. /usr/bin/../lib /lib /usr/lib"
+compiler_lib_search_dirs="/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3 /home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/../../../../lib64 /lib/../lib64 /usr/lib/../lib64 /home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/../../.."
 
 # Dependencies to place before and after the objects being linked to
 # create a shared library.
-predep_objects="/usr/bin/../lib/gcc/x86_64-linux-gnu/4.8/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/4.8/crtbeginS.o"
-postdep_objects="/usr/bin/../lib/gcc/x86_64-linux-gnu/4.8/crtendS.o /usr/bin/../lib/gcc/x86_64-linux-gnu/4.8/../../../x86_64-linux-gnu/crtn.o"
+predep_objects="/usr/lib/../lib64/crti.o /home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/crtbeginS.o"
+postdep_objects="/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/crtendS.o /usr/lib/../lib64/crtn.o"
 predeps=""
 postdeps="-lstdc++ -lm -lgcc_s -lc -lgcc_s"
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/usr/bin/../lib/gcc/x86_64-linux-gnu/4.8 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/4.8/../../../x86_64-linux-gnu -L/usr/bin/../lib/x86_64-linux-gnu -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/4.8/../../.. -L/usr/bin/../lib -L/lib -L/usr/lib"
+compiler_lib_search_path="-L/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3 -L/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/../../.."
 
 # ### END LIBTOOL TAG CONFIG: CXX
 

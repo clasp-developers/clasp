@@ -31,10 +31,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = x86_64-apple-darwin13.2.0
-host_triplet = x86_64-apple-darwin13.2.0
-target_triplet = x86_64-apple-darwin13.2.0
-#check_PROGRAMS = otf_generic_streams_mpi$(EXEEXT)
+build_triplet = x86_64-unknown-linux-gnu
+host_triplet = x86_64-unknown-linux-gnu
+target_triplet = x86_64-unknown-linux-gnu
+check_PROGRAMS = otf_generic_streams_mpi$(EXEEXT)
 subdir = tests/generic_streams-mpi
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -59,7 +59,7 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__otf_generic_streams_mpi_SOURCES_DIST = generic_streams_mpi.c
-#am_otf_generic_streams_mpi_OBJECTS = otf_generic_streams_mpi-generic_streams_mpi.$(OBJEXT)
+am_otf_generic_streams_mpi_OBJECTS = otf_generic_streams_mpi-generic_streams_mpi.$(OBJEXT)
 otf_generic_streams_mpi_OBJECTS =  \
 	$(am_otf_generic_streams_mpi_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -101,56 +101,56 @@ DIST_SOURCES = $(am__otf_generic_streams_mpi_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = ar
-AUTOCONF = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run autoconf
-AUTOHEADER = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run autoheader
-AUTOMAKE = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run automake-1.11
-AWK = awk
+AUTOCONF = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run automake-1.11
+AWK = gawk
 BMI_INCLUDE_DIR = 
 BMI_LIB_DIR = 
 CC = $(MPICC)
 CCDEPMODE = depmode=gcc3
-CFLAGS = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing 
-CLOCK_GETTIME_LIB = 
+CFLAGS = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing -pthread
+CLOCK_GETTIME_LIB = -lrt
 CPP = gcc -E
-CPPFLAGS = -DINSIDE_OPENMPI -DINSIDE_OPENMPI  -D_REENTRANT -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband  -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../include -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../include
+CPPFLAGS = -DINSIDE_OPENMPI -DINSIDE_OPENMPI   -I/home/meister/Development/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband  -I/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../include -I/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../include -D_GNU_SOURCE
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -O3 -DNDEBUG -finline-functions 
+CXXFLAGS = -O3 -DNDEBUG -finline-functions -pthread
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
 DLLTOOL = false
-DSYMUTIL = dsymutil
+DSYMUTIL = 
 DUMPBIN = 
-ECHO_C = \c
-ECHO_N = 
+ECHO_C = 
+ECHO_N = -n
 ECHO_T = 
-EGREP = /usr/bin/grep -E
+EGREP = /bin/grep -E
 EXEEXT = 
-FGREP = /usr/bin/grep -F
-GREP = /usr/bin/grep
+FGREP = /bin/grep -F
+GREP = /bin/grep
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-LD = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld
-LDFLAGS =   -L/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../.libs
+LD = /usr/bin/ld -m elf_x86_64
+LDFLAGS =   -L/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../.libs
 LIBOBJS = 
 LIBS = 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LIPO = lipo
+LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/missing --run makeinfo
 MANIFEST_TOOL = :
-MATHLIB = 
-MKDIR_P = ../../config/install-sh -c -d
+MATHLIB = -lm
+MKDIR_P = /bin/mkdir -p
 MPICC = gcc
 MPICFLAGS = 
 MPICXX = g++
@@ -160,14 +160,14 @@ MPI_INCLUDE_DIR =
 MPI_INCLUDE_LINE = 
 MPI_LIB_DIR = 
 MPI_LIB_LINE = -lmpi
-NM = /usr/bin/nm
-NMEDIT = nmedit
-OBJDUMP = false
+NM = /usr/bin/nm -B
+NMEDIT = 
+OBJDUMP = objdump
 OBJEXT = o
-OPENMP_CXXFLAGS = 
+OPENMP_CXXFLAGS = -fopenmp
 OTF_VERSION_LIBRARY = 1:0:0
-OTOOL = otool
-OTOOL64 = :
+OTOOL = 
+OTOOL64 = 
 PACKAGE = OTF
 PACKAGE_BUGREPORT = andreas.knuepfer@tu-dresden.de
 PACKAGE_NAME = OTF
@@ -176,14 +176,14 @@ PACKAGE_TARNAME = OTF
 PACKAGE_URL = 
 PACKAGE_VERSION = 1.12.3openmpi
 PATH_SEPARATOR = :
-PDFTEX = pdflatex
+PDFTEX = 
 PYTHON = 
 PYTHON_EXEC_PREFIX = 
 PYTHON_PLATFORM = 
 PYTHON_PREFIX = 
 PYTHON_VERSION = 
 RANLIB = ranlib
-SED = /usr/bin/sed
+SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = strip
@@ -203,10 +203,10 @@ ZOIDFS_INCLUDE_DIR =
 ZOIDFS_INCLUDE_LINE = 
 ZOIDFS_LIB_DIR = 
 ZOIDFS_LIB_LINE =  
-abs_builddir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/tests/generic_streams-mpi
-abs_srcdir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/tests/generic_streams-mpi
-abs_top_builddir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf
-abs_top_srcdir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf
+abs_builddir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/tests/generic_streams-mpi
+abs_srcdir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/tests/generic_streams-mpi
+abs_top_builddir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf
+abs_top_srcdir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -217,11 +217,11 @@ am__quote =
 am__tar = $${TAR-tar} chof - "$$tardir"
 am__untar = $${TAR-tar} xf -
 bindir = ${exec_prefix}/bin
-build = x86_64-apple-darwin13.2.0
+build = x86_64-unknown-linux-gnu
 build_alias = 
 build_cpu = x86_64
-build_os = darwin13.2.0
-build_vendor = apple
+build_os = linux-gnu
+build_vendor = unknown
 builddir = .
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share/open-trace-format
@@ -230,26 +230,26 @@ dvidir = ${docdir}
 exec_prefix = ${prefix}
 have_inttypes_h = 1
 have_stdint_h = 1
-host = x86_64-apple-darwin13.2.0
+host = x86_64-unknown-linux-gnu
 host_alias = 
 host_cpu = x86_64
-host_os = darwin13.2.0
-host_vendor = apple
+host_os = linux-gnu
+host_vendor = unknown
 htmldir = ${docdir}
-includedir = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common/include/vampirtrace/open-trace-format
+includedir = /home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common/include/vampirtrace/open-trace-format
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/install-sh
+install_sh = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/extlib/otf/config/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
 mandir = ${datarootdir}/man
-mkdir_p = $(top_builddir)/config/install-sh -c -d
+mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
 pkgpyexecdir = 
 pkgpythondir = 
-prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix = /home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common
 program_transform_name = s,x,x,
 psdir = ${docdir}
 pyexecdir = 
@@ -260,25 +260,25 @@ sharedstatedir = ${prefix}/com
 sizeof_long = 8
 srcdir = .
 sysconfdir = ${prefix}/etc
-target = x86_64-apple-darwin13.2.0
+target = x86_64-unknown-linux-gnu
 target_alias = 
 target_cpu = x86_64
-target_os = darwin13.2.0
-target_vendor = apple
+target_os = linux-gnu
+target_vendor = unknown
 top_build_prefix = ../../
 top_builddir = ../..
 top_srcdir = ../..
-#otf_generic_streams_mpi_CFLAGS = $(MPICFLAGS)
-#otf_generic_streams_mpi_SOURCES = generic_streams_mpi.c
-#otf_generic_streams_mpi_DEPENDENCIES = $(top_builddir)/otflib/libopen-trace-format.la
-#otf_generic_streams_mpi_LDADD = $(top_builddir)/otflib/libopen-trace-format.la \
-#	$(CLOCK_GETTIME_LIB) \
-#	$(MPI_LIB_LINE)
+otf_generic_streams_mpi_CFLAGS = $(MPICFLAGS)
+otf_generic_streams_mpi_SOURCES = generic_streams_mpi.c
+otf_generic_streams_mpi_DEPENDENCIES = $(top_builddir)/otflib/libopen-trace-format.la
+otf_generic_streams_mpi_LDADD = $(top_builddir)/otflib/libopen-trace-format.la \
+	$(CLOCK_GETTIME_LIB) \
+	$(MPI_LIB_LINE)
 
-#otf_generic_streams_mpi_CPPFLAGS = $(AM_CPPFLAGS) \
-#	-I$(top_builddir)/otflib \
-#	-I$(top_srcdir)/otflib \
-#	$(MPI_INCLUDE_LINE)
+otf_generic_streams_mpi_CPPFLAGS = $(AM_CPPFLAGS) \
+	-I$(top_builddir)/otflib \
+	-I$(top_srcdir)/otflib \
+	$(MPI_INCLUDE_LINE)
 
 all: all-am
 
@@ -493,7 +493,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean-local:
+#clean-local:
 #clean-local:
 clean: clean-am
 
@@ -583,8 +583,8 @@ uninstall-am:
 	tags uninstall uninstall-am
 
 
-#clean-local:
-#	rm -f *.otf *.def *.events *.marker *.otf.z *.def.z *.events.z *.marker.z
+clean-local:
+	rm -f *.otf *.def *.events *.marker *.otf.z *.def.z *.events.z *.marker.z
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

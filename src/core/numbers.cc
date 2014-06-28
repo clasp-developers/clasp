@@ -2170,7 +2170,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     void ShortFloat_O::sxhash(HashGenerator& hg) const
     {_OF();
-	hg.addPart(::abs(::floor(this->_Value)));
+	hg.addPart(std::abs(::floor(this->_Value)));
     }
 
 
@@ -2319,7 +2319,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     void SingleFloat_O::sxhash(HashGenerator& hg) const
     {_OF();
-	hg.addPart(::abs(::floor(this->_Value)));
+	hg.addPart(std::abs(::floor(this->_Value)));
     }
 
 
@@ -2504,7 +2504,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     void DoubleFloat_O::sxhash(HashGenerator& hg) const
     {_OF();
-	hg.addPart(::abs(::floor(this->_Value)));
+	hg.addPart(std::abs(::floor(this->_Value)));
     }
 
 
@@ -2674,7 +2674,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     void LongFloat_O::sxhash(HashGenerator& hg) const
     {_OF();
-	hg.addPart(::abs(::floor(this->_Value)));
+	hg.addPart(std::abs(::floor(this->_Value)));
     }
 
 
@@ -3816,8 +3816,8 @@ Number_sp cl_expt(Number_sp x, Number_sp y)
 static double
 brcl_atan2_double(double y, double x)
 {
-    if (signbit(x)) {
-	if (signbit(y)) {
+  if (std::signbit(x)) {
+    if (std::signbit(y)) {
 	    return -BRCL_PI_D + atan(-y / -x);
 	} else if (y == 0) {
 	    return BRCL_PI_D;
@@ -3825,7 +3825,7 @@ brcl_atan2_double(double y, double x)
 	    return BRCL_PI_D - atan(y / -x);
 	}
     } else if (x == 0) {
-	if (signbit(y)) {
+    if (std::signbit(y)) {
 	    return -BRCL_PI2_D;
 	} else if (y == 0) {
 	    return x / y;  /* Produces a NaN */
@@ -3833,7 +3833,7 @@ brcl_atan2_double(double y, double x)
 	    return BRCL_PI2_D;
 	}
     } else {
-	if (signbit(y)) {
+    if (std::signbit(y)) {
 	    return -atan(-y / x);
 	} else if (y == 0) {
 	    return (double)0;

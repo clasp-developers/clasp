@@ -33,16 +33,16 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = x86_64-apple-darwin13.2.0
-host_triplet = x86_64-apple-darwin13.2.0
+build_triplet = x86_64-unknown-linux-gnu
+host_triplet = x86_64-unknown-linux-gnu
 ##am__append_1 = vt_cuda_driver_api.h
 ##am__append_2 = -DVT_CUDA $(CUDATKINCDIR)
 ##am__append_3 = -DVT_LIBERTY $(LIBERTYINCDIR)
 ##am__append_4 = $(LIBERTYLIBDIR) $(LIBERTYLIB)
-###am__append_5 = vt_cudartwrap.c vt_cudart.c
-###am__append_6 = vt_cudartwrap.h vt_cuda_runtime_api.h
-###am__append_7 = -DVT_CUDARTWRAP
-###am__append_8 = $(CUDATKINCDIR)
+##am__append_5 = vt_cudartwrap.c vt_cudart.c
+##am__append_6 = vt_cudartwrap.h vt_cuda_runtime_api.h
+##am__append_7 = -DVT_CUDARTWRAP
+##am__append_8 = $(CUDATKINCDIR)
 ##am__append_9 = vt_cupti_common.c
 ##am__append_10 = vt_cupti_common.h vt_cupti.h
 ##am__append_11 = $(CUPTILIBDIR) $(CUPTILIB)
@@ -193,7 +193,7 @@ am__libvt_hyb_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_cudartwrap.h vt_cuda_runtime_api.h vt_cupti_common.h \
 	vt_cupti.h vt_cupti_events.h vt_cupti_callback.h \
 	vt_cupti_activity.h vt_env.c vt_error.c vt_fbindings.c \
-	vt_otf_gen.c vt_otf_sum.c vt_pform_macos.c vt_thrd.c \
+	vt_otf_gen.c vt_otf_sum.c vt_pform_linux.c vt_thrd.c \
 	vt_trc.c vt_user_comment.c vt_user_control.c vt_user_count.c \
 	vt_user_marker.c vt_user_message.c vt_user_region.c \
 	vt_getcpu.c vt_metric_cpc.c vt_metric_necsx.c \
@@ -211,7 +211,7 @@ am__objects_2 =
 #am__objects_3 = $(am__objects_2) $(am__objects_2) \
 #	$(am__objects_2) $(am__objects_2) \
 #	$(am__objects_2) $(am__objects_2)
-#am__objects_4 = libvt_hyb_la-vt_getcpu.lo
+am__objects_4 = libvt_hyb_la-vt_getcpu.lo
 ##am__objects_5 = libvt_hyb_la-vt_metric_papi.lo
 ##am__objects_5 = libvt_hyb_la-vt_metric_necsx.lo \
 ##	vt_metric_necsx_1.lo
@@ -221,7 +221,7 @@ am__objects_7 = libvt_hyb_la-vt_rusage.lo
 am__objects_8 = $(am__objects_3) libvt_hyb_la-vt_env.lo \
 	libvt_hyb_la-vt_error.lo libvt_hyb_la-vt_fbindings.lo \
 	libvt_hyb_la-vt_otf_gen.lo libvt_hyb_la-vt_otf_sum.lo \
-	libvt_hyb_la-vt_pform_macos.lo libvt_hyb_la-vt_thrd.lo \
+	libvt_hyb_la-vt_pform_linux.lo libvt_hyb_la-vt_thrd.lo \
 	libvt_hyb_la-vt_trc.lo libvt_hyb_la-vt_user_comment.lo \
 	libvt_hyb_la-vt_user_control.lo libvt_hyb_la-vt_user_count.lo \
 	libvt_hyb_la-vt_user_marker.lo libvt_hyb_la-vt_user_message.lo \
@@ -237,9 +237,9 @@ am__objects_9 = libvt_hyb_la-vt_comp_gnu.lo
 #am__objects_9 = libvt_hyb_la-vt_comp_gnu.lo
 #am__objects_10 = libvt_hyb_la-vt_dyninst.lo
 #am__objects_11 = libvt_hyb_la-vt_esync.lo
-#am__objects_12 = libvt_hyb_la-vt_execwrap.lo
-###am__objects_13 = libvt_hyb_la-vt_cudartwrap.lo \
-###	libvt_hyb_la-vt_cudart.lo
+am__objects_12 = libvt_hyb_la-vt_execwrap.lo
+##am__objects_13 = libvt_hyb_la-vt_cudartwrap.lo \
+##	libvt_hyb_la-vt_cudart.lo
 ##am__objects_14 = libvt_hyb_la-vt_cupti_common.lo
 ###am__objects_15 = libvt_hyb_la-vt_cupti_events.lo
 ###am__objects_16 = libvt_hyb_la-vt_cupti_callback.lo
@@ -249,11 +249,11 @@ am__objects_9 = libvt_hyb_la-vt_comp_gnu.lo
 #	$(am__objects_15) $(am__objects_16) \
 #	$(am__objects_17)
 #am__objects_19 = libvt_hyb_la-vt_iofsl.lo
-#am__objects_20 = libvt_hyb_la-vt_iowrap.lo \
-#	libvt_hyb_la-vt_iowrap_helper.lo
-#am__objects_21 = libvt_hyb_la-vt_libwrap.lo
+am__objects_20 = libvt_hyb_la-vt_iowrap.lo \
+	libvt_hyb_la-vt_iowrap_helper.lo
+am__objects_21 = libvt_hyb_la-vt_libwrap.lo
 am__objects_22 = libvt_hyb_la-vt_mpifile.lo
-#am__objects_23 = libvt_hyb_la-vt_ompreg.lo
+am__objects_23 = libvt_hyb_la-vt_ompreg.lo
 am__objects_24 = libvt_hyb_la-vt_pthreadreg.lo \
 	libvt_hyb_la-vt_pthreadwrap.lo
 am__objects_25 = libvt_hyb_la-vt_thrd_pthread.lo
@@ -283,13 +283,13 @@ am__libvt_java_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_cudartwrap.h vt_cuda_runtime_api.h vt_cupti_common.h \
 	vt_cupti.h vt_cupti_events.h vt_cupti_callback.h \
 	vt_cupti_activity.h vt_env.c vt_error.c vt_fbindings.c \
-	vt_otf_gen.c vt_otf_sum.c vt_pform_macos.c vt_thrd.c \
+	vt_otf_gen.c vt_otf_sum.c vt_pform_linux.c vt_thrd.c \
 	vt_trc.c vt_user_comment.c vt_user_control.c vt_user_count.c \
 	vt_user_marker.c vt_user_message.c vt_user_region.c \
 	vt_getcpu.c vt_metric_cpc.c vt_metric_necsx.c \
 	vt_metric_necsx_1.s vt_metric_papi.c vt_plugin_cntr.c \
 	vt_rusage.c vt_jvmti.h vt_java.c vt_thrd_java.c
-#am__objects_27 = libvt_java_la-vt_getcpu.lo
+am__objects_27 = libvt_java_la-vt_getcpu.lo
 ##am__objects_28 = libvt_java_la-vt_metric_papi.lo
 ##am__objects_28 = libvt_java_la-vt_metric_necsx.lo \
 ##	vt_metric_necsx_1.lo
@@ -300,7 +300,7 @@ am__objects_30 = libvt_java_la-vt_rusage.lo
 am__objects_31 = $(am__objects_3) libvt_java_la-vt_env.lo \
 	libvt_java_la-vt_error.lo libvt_java_la-vt_fbindings.lo \
 	libvt_java_la-vt_otf_gen.lo libvt_java_la-vt_otf_sum.lo \
-	libvt_java_la-vt_pform_macos.lo libvt_java_la-vt_thrd.lo \
+	libvt_java_la-vt_pform_linux.lo libvt_java_la-vt_thrd.lo \
 	libvt_java_la-vt_trc.lo libvt_java_la-vt_user_comment.lo \
 	libvt_java_la-vt_user_control.lo \
 	libvt_java_la-vt_user_count.lo libvt_java_la-vt_user_marker.lo \
@@ -325,7 +325,7 @@ am__libvt_mpi_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_cudartwrap.h vt_cuda_runtime_api.h vt_cupti_common.h \
 	vt_cupti.h vt_cupti_events.h vt_cupti_callback.h \
 	vt_cupti_activity.h vt_env.c vt_error.c vt_fbindings.c \
-	vt_otf_gen.c vt_otf_sum.c vt_pform_macos.c vt_thrd.c \
+	vt_otf_gen.c vt_otf_sum.c vt_pform_linux.c vt_thrd.c \
 	vt_trc.c vt_user_comment.c vt_user_control.c vt_user_count.c \
 	vt_user_marker.c vt_user_message.c vt_user_region.c \
 	vt_getcpu.c vt_metric_cpc.c vt_metric_necsx.c \
@@ -338,7 +338,7 @@ am__libvt_mpi_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_cupti_callback.c vt_cupti_activity.c vt_iofsl.c vt_iowrap.c \
 	vt_iowrap_helper.c vt_libwrap.c vt_mallocwrap.c vt_mpifile.c \
 	vt_unimci.c
-#am__objects_32 = libvt_mpi_la-vt_getcpu.lo
+am__objects_32 = libvt_mpi_la-vt_getcpu.lo
 ##am__objects_33 = libvt_mpi_la-vt_metric_papi.lo
 ##am__objects_33 = libvt_mpi_la-vt_metric_necsx.lo \
 ##	vt_metric_necsx_1.lo
@@ -349,7 +349,7 @@ am__objects_35 = libvt_mpi_la-vt_rusage.lo
 am__objects_36 = $(am__objects_3) libvt_mpi_la-vt_env.lo \
 	libvt_mpi_la-vt_error.lo libvt_mpi_la-vt_fbindings.lo \
 	libvt_mpi_la-vt_otf_gen.lo libvt_mpi_la-vt_otf_sum.lo \
-	libvt_mpi_la-vt_pform_macos.lo libvt_mpi_la-vt_thrd.lo \
+	libvt_mpi_la-vt_pform_linux.lo libvt_mpi_la-vt_thrd.lo \
 	libvt_mpi_la-vt_trc.lo libvt_mpi_la-vt_user_comment.lo \
 	libvt_mpi_la-vt_user_control.lo libvt_mpi_la-vt_user_count.lo \
 	libvt_mpi_la-vt_user_marker.lo libvt_mpi_la-vt_user_message.lo \
@@ -365,9 +365,9 @@ am__objects_37 = libvt_mpi_la-vt_comp_gnu.lo
 #am__objects_37 = libvt_mpi_la-vt_comp_gnu.lo
 #am__objects_38 = libvt_mpi_la-vt_dyninst.lo
 #am__objects_39 = libvt_mpi_la-vt_esync.lo
-#am__objects_40 = libvt_mpi_la-vt_execwrap.lo
-###am__objects_41 = libvt_mpi_la-vt_cudartwrap.lo \
-###	libvt_mpi_la-vt_cudart.lo
+am__objects_40 = libvt_mpi_la-vt_execwrap.lo
+##am__objects_41 = libvt_mpi_la-vt_cudartwrap.lo \
+##	libvt_mpi_la-vt_cudart.lo
 ##am__objects_42 = libvt_mpi_la-vt_cupti_common.lo
 ###am__objects_43 = libvt_mpi_la-vt_cupti_events.lo
 ###am__objects_44 = libvt_mpi_la-vt_cupti_callback.lo
@@ -377,11 +377,11 @@ am__objects_37 = libvt_mpi_la-vt_comp_gnu.lo
 #	$(am__objects_43) $(am__objects_44) \
 #	$(am__objects_45)
 #am__objects_47 = libvt_mpi_la-vt_iofsl.lo
-#am__objects_48 = libvt_mpi_la-vt_iowrap.lo \
-#	libvt_mpi_la-vt_iowrap_helper.lo
-#am__objects_49 = libvt_mpi_la-vt_libwrap.lo
-#am__objects_50 =  \
-#	libvt_mpi_la-vt_mallocwrap.lo
+am__objects_48 = libvt_mpi_la-vt_iowrap.lo \
+	libvt_mpi_la-vt_iowrap_helper.lo
+am__objects_49 = libvt_mpi_la-vt_libwrap.lo
+am__objects_50 =  \
+	libvt_mpi_la-vt_mallocwrap.lo
 am__objects_51 = libvt_mpi_la-vt_mpifile.lo
 #am__objects_52 = libvt_mpi_la-vt_unimci.lo
 am_libvt_mpi_la_OBJECTS = $(am__objects_36) libvt_mpi_la-vt_mpicom.lo \
@@ -407,7 +407,7 @@ am__libvt_mt_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_cudartwrap.h vt_cuda_runtime_api.h vt_cupti_common.h \
 	vt_cupti.h vt_cupti_events.h vt_cupti_callback.h \
 	vt_cupti_activity.h vt_env.c vt_error.c vt_fbindings.c \
-	vt_otf_gen.c vt_otf_sum.c vt_pform_macos.c vt_thrd.c \
+	vt_otf_gen.c vt_otf_sum.c vt_pform_linux.c vt_thrd.c \
 	vt_trc.c vt_user_comment.c vt_user_control.c vt_user_count.c \
 	vt_user_marker.c vt_user_message.c vt_user_region.c \
 	vt_getcpu.c vt_metric_cpc.c vt_metric_necsx.c \
@@ -419,7 +419,7 @@ am__libvt_mt_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_cupti_callback.c vt_cupti_activity.c vt_iowrap.c \
 	vt_iowrap_helper.c vt_libwrap.c vt_ompreg.c vt_pthreadreg.c \
 	vt_pthreadwrap.c vt_thrd_omp.c vt_thrd_pthread.c
-#am__objects_53 = libvt_mt_la-vt_getcpu.lo
+am__objects_53 = libvt_mt_la-vt_getcpu.lo
 ##am__objects_54 = libvt_mt_la-vt_metric_papi.lo
 ##am__objects_54 = libvt_mt_la-vt_metric_necsx.lo \
 ##	vt_metric_necsx_1.lo
@@ -429,7 +429,7 @@ am__objects_56 = libvt_mt_la-vt_rusage.lo
 am__objects_57 = $(am__objects_3) libvt_mt_la-vt_env.lo \
 	libvt_mt_la-vt_error.lo libvt_mt_la-vt_fbindings.lo \
 	libvt_mt_la-vt_otf_gen.lo libvt_mt_la-vt_otf_sum.lo \
-	libvt_mt_la-vt_pform_macos.lo libvt_mt_la-vt_thrd.lo \
+	libvt_mt_la-vt_pform_linux.lo libvt_mt_la-vt_thrd.lo \
 	libvt_mt_la-vt_trc.lo libvt_mt_la-vt_user_comment.lo \
 	libvt_mt_la-vt_user_control.lo libvt_mt_la-vt_user_count.lo \
 	libvt_mt_la-vt_user_marker.lo libvt_mt_la-vt_user_message.lo \
@@ -444,9 +444,9 @@ am__objects_58 = libvt_mt_la-vt_comp_gnu.lo
 #	vt_comp_ftrace_1.lo
 #am__objects_58 = libvt_mt_la-vt_comp_gnu.lo
 #am__objects_59 = libvt_mt_la-vt_dyninst.lo
-#am__objects_60 = libvt_mt_la-vt_execwrap.lo
-###am__objects_61 = libvt_mt_la-vt_cudartwrap.lo \
-###	libvt_mt_la-vt_cudart.lo
+am__objects_60 = libvt_mt_la-vt_execwrap.lo
+##am__objects_61 = libvt_mt_la-vt_cudartwrap.lo \
+##	libvt_mt_la-vt_cudart.lo
 ##am__objects_62 = libvt_mt_la-vt_cupti_common.lo
 ###am__objects_63 = libvt_mt_la-vt_cupti_events.lo
 ###am__objects_64 = libvt_mt_la-vt_cupti_callback.lo
@@ -455,10 +455,10 @@ am__objects_58 = libvt_mt_la-vt_comp_gnu.lo
 #	$(am__objects_61) $(am__objects_62) \
 #	$(am__objects_63) $(am__objects_64) \
 #	$(am__objects_65)
-#am__objects_67 = libvt_mt_la-vt_iowrap.lo \
-#	libvt_mt_la-vt_iowrap_helper.lo
-#am__objects_68 = libvt_mt_la-vt_libwrap.lo
-#am__objects_69 = libvt_mt_la-vt_ompreg.lo
+am__objects_67 = libvt_mt_la-vt_iowrap.lo \
+	libvt_mt_la-vt_iowrap_helper.lo
+am__objects_68 = libvt_mt_la-vt_libwrap.lo
+am__objects_69 = libvt_mt_la-vt_ompreg.lo
 am__objects_70 = libvt_mt_la-vt_pthreadreg.lo \
 	libvt_mt_la-vt_pthreadwrap.lo
 am__objects_71 = libvt_mt_la-vt_thrd_pthread.lo
@@ -479,7 +479,7 @@ libvt_pomp_la_OBJECTS = $(am_libvt_pomp_la_OBJECTS)
 libvt_pomp_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libvt_pomp_la_CFLAGS) \
 	$(CFLAGS) $(libvt_pomp_la_LDFLAGS) $(LDFLAGS) -o $@
-#am_libvt_pomp_la_rpath = -rpath $(libdir)
+am_libvt_pomp_la_rpath = -rpath $(libdir)
 am__libvt_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_dyninst.h vt_env.h vt_error.h vt_esync.h vt_execwrap.h \
 	vt_fbindings.h vt_fork.h vt_getcpu.h vt_iofsl.h vt_iowrap.h \
@@ -491,7 +491,7 @@ am__libvt_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_cudartwrap.h vt_cuda_runtime_api.h vt_cupti_common.h \
 	vt_cupti.h vt_cupti_events.h vt_cupti_callback.h \
 	vt_cupti_activity.h vt_env.c vt_error.c vt_fbindings.c \
-	vt_otf_gen.c vt_otf_sum.c vt_pform_macos.c vt_thrd.c \
+	vt_otf_gen.c vt_otf_sum.c vt_pform_linux.c vt_thrd.c \
 	vt_trc.c vt_user_comment.c vt_user_control.c vt_user_count.c \
 	vt_user_marker.c vt_user_message.c vt_user_region.c \
 	vt_getcpu.c vt_metric_cpc.c vt_metric_necsx.c \
@@ -502,7 +502,7 @@ am__libvt_la_SOURCES_DIST = vt_comp.h vt_defs.h vt_demangle.h \
 	vt_gpu.c vt_cudartwrap.c vt_cudart.c vt_cupti_common.c \
 	vt_cupti_events.c vt_cupti_callback.c vt_cupti_activity.c \
 	vt_iowrap.c vt_iowrap_helper.c vt_libwrap.c vt_mallocwrap.c
-#am__objects_72 = libvt_la-vt_getcpu.lo
+am__objects_72 = libvt_la-vt_getcpu.lo
 ##am__objects_73 = libvt_la-vt_metric_papi.lo
 ##am__objects_73 = libvt_la-vt_metric_necsx.lo \
 ##	vt_metric_necsx_1.lo
@@ -513,7 +513,7 @@ am__objects_75 = libvt_la-vt_rusage.lo
 am__objects_76 = $(am__objects_3) libvt_la-vt_env.lo \
 	libvt_la-vt_error.lo libvt_la-vt_fbindings.lo \
 	libvt_la-vt_otf_gen.lo libvt_la-vt_otf_sum.lo \
-	libvt_la-vt_pform_macos.lo libvt_la-vt_thrd.lo \
+	libvt_la-vt_pform_linux.lo libvt_la-vt_thrd.lo \
 	libvt_la-vt_trc.lo libvt_la-vt_user_comment.lo \
 	libvt_la-vt_user_control.lo libvt_la-vt_user_count.lo \
 	libvt_la-vt_user_marker.lo libvt_la-vt_user_message.lo \
@@ -528,9 +528,9 @@ am__objects_77 = libvt_la-vt_comp_gnu.lo
 #	vt_comp_ftrace_1.lo
 #am__objects_77 = libvt_la-vt_comp_gnu.lo
 #am__objects_78 = libvt_la-vt_dyninst.lo
-#am__objects_79 = libvt_la-vt_execwrap.lo
-###am__objects_80 = libvt_la-vt_cudartwrap.lo \
-###	libvt_la-vt_cudart.lo
+am__objects_79 = libvt_la-vt_execwrap.lo
+##am__objects_80 = libvt_la-vt_cudartwrap.lo \
+##	libvt_la-vt_cudart.lo
 ##am__objects_81 = libvt_la-vt_cupti_common.lo
 ###am__objects_82 = libvt_la-vt_cupti_events.lo
 ###am__objects_83 = libvt_la-vt_cupti_callback.lo
@@ -538,10 +538,10 @@ am__objects_77 = libvt_la-vt_comp_gnu.lo
 #am__objects_85 = libvt_la-vt_gpu.lo $(am__objects_80) \
 #	$(am__objects_81) $(am__objects_82) \
 #	$(am__objects_83) $(am__objects_84)
-#am__objects_86 = libvt_la-vt_iowrap.lo \
-#	libvt_la-vt_iowrap_helper.lo
-#am__objects_87 = libvt_la-vt_libwrap.lo
-#am__objects_88 = libvt_la-vt_mallocwrap.lo
+am__objects_86 = libvt_la-vt_iowrap.lo \
+	libvt_la-vt_iowrap_helper.lo
+am__objects_87 = libvt_la-vt_libwrap.lo
+am__objects_88 = libvt_la-vt_mallocwrap.lo
 am_libvt_la_OBJECTS = $(am__objects_76) libvt_la-vt_fork.lo \
 	$(am__objects_77) $(am__objects_78) $(am__objects_79) \
 	$(am__objects_85) $(am__objects_86) $(am__objects_87) \
@@ -611,14 +611,14 @@ DATA = $(dist_vtsysconf_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = ar
-AUTOCONF = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run autoconf
-AUTOHEADER = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run autoheader
-AUTOMAKE = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run automake-1.11
-AWK = awk
+AUTOCONF = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run automake-1.11
+AWK = gawk
 BITMODE = 
 BMIDIR = 
 BMIINCDIR = 
@@ -627,11 +627,11 @@ BMILIBDIR =
 CC = $(MPICC)
 CCAS = gcc
 CCASDEPMODE = depmode=gcc3
-CCASFLAGS = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing 
+CCASFLAGS = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing -pthread
 CCDEPMODE = depmode=gcc3
 CC_FOR_BUILD = gcc
-CFLAGS = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing 
-CFLAGS_FOR_BUILD = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing 
+CFLAGS = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing -pthread
+CFLAGS_FOR_BUILD = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing -pthread
 CLAPACKINCDIR = 
 CLAPACKLIB = 
 CLAPACKLIBDIR = 
@@ -639,8 +639,8 @@ CPCINCDIR =
 CPCLIB = 
 CPCLIBDIR = 
 CPP = gcc -E
-CPPFLAGS = -DINSIDE_OPENMPI  -D_REENTRANT -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband  -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../include -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../include
-CPPFLAGS_FOR_BUILD = -DINSIDE_OPENMPI  -D_REENTRANT -I/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband 
+CPPFLAGS = -DINSIDE_OPENMPI   -I/home/meister/Development/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband  -I/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../include -I/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../include
+CPPFLAGS_FOR_BUILD = -DINSIDE_OPENMPI   -I/home/meister/Development/clasp/externals/openmpi-1.6.5/opal/mca/hwloc/hwloc132/hwloc/include   -I/usr/include/infiniband -I/usr/include/infiniband 
 CPP_FOR_BUILD = gcc -E
 CROSS_PREFIX = 
 CTOOLINCDIR = 
@@ -658,8 +658,8 @@ CXX = g++
 CXXCPP = g++ -E
 CXXCPP_FOR_BUILD = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -O3 -DNDEBUG -finline-functions 
-CXXFLAGS_FOR_BUILD = -O3 -DNDEBUG -finline-functions 
+CXXFLAGS = -O3 -DNDEBUG -finline-functions -pthread
+CXXFLAGS_FOR_BUILD = -O3 -DNDEBUG -finline-functions -pthread
 CXX_FOR_BUILD = g++
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
@@ -668,22 +668,22 @@ DLINCDIR =
 DLLIB = -ldl
 DLLIBDIR = 
 DLLTOOL = false
-DSYMUTIL = dsymutil
+DSYMUTIL = 
 DUMPBIN = 
 DYNIINCDIR = 
 DYNILIB = 
 DYNILIBDIR = 
-ECHO_C = \c
-ECHO_N = 
+ECHO_C = 
+ECHO_N = -n
 ECHO_T = 
-EGREP = /usr/bin/grep -E
+EGREP = /bin/grep -E
 EXEEXT = 
-FC = 
-FCFLAGS = 
-FGREP = /usr/bin/grep -F
+FC = gfortran
+FCFLAGS = -g -O2
+FGREP = /bin/grep -F
 FMPIINCDIR = 
-FMPILIB = 
-GREP = /usr/bin/grep
+FMPILIB = -lmpi_f77
+GREP = /bin/grep
 HAVE_DEMANGLE_H = 
 HAVE_INTTYPES_H = 1
 HAVE_STDINT_H = 1
@@ -694,24 +694,24 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 IOFSLSCRIPTS = 
 JAVA = java
-JVMTIINCDIR = 
-LD = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld
-LDFLAGS =   -L/Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../.libs
+JVMTIINCDIR = -I/usr/include/linux/
+LD = /usr/bin/ld -m elf_x86_64
+LDFLAGS =   -L/home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/../../../.libs
 LDFLAGS_FOR_BUILD =  
 LIBERTYINCDIR = 
 LIBERTYLIB = 
 LIBERTYLIBDIR = 
 LIBOBJS = 
-LIBS =  
-LIBS_FOR_BUILD =  
+LIBS = -lrt -lnsl  -lutil -lm 
+LIBS_FOR_BUILD = -lrt -lnsl  -lutil -lm 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LIPO = lipo
+LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/missing --run makeinfo
 MANIFEST_TOOL = :
 MATHLIB = 
-MKDIR_P = ../config/install-sh -c -d
+MKDIR_P = /bin/mkdir -p
 MPICC = gcc
 MPICFLAGS = 
 MPICXX = g++
@@ -722,18 +722,18 @@ MPIFCFLAGS =
 MPIINCDIR = 
 MPILIB = -lmpi
 MPILIBDIR = 
-NM = /usr/bin/nm
-NMEDIT = nmedit
+NM = /usr/bin/nm -B --demangle --line-numbers
+NMEDIT = 
 NVCC = 
-OBJDUMP = false
+OBJDUMP = objdump
 OBJEXT = o
-OPENMP_CFLAGS = 
+OPENMP_CFLAGS = -fopenmp
 OTFDIR = 
 OTFINCDIR = 
 OTFLIB = -lopen-trace-format  -lz    
 OTFLIBDIR = 
-OTOOL = otool
-OTOOL64 = :
+OTOOL = 
+OTOOL64 = 
 PACKAGE = VampirTrace
 PACKAGE_BUGREPORT = vampirsupport@zih.tu-dresden.de
 PACKAGE_NAME = VampirTrace
@@ -745,16 +745,16 @@ PAPIINCDIR =
 PAPILIB = 
 PAPILIBDIR = 
 PATH_SEPARATOR = :
-PLATFORM = macos
+PLATFORM = linux
 PMPILIB = -lmpi
 PTHREAD_CC = gcc
-PTHREAD_CFLAGS = -D_THREAD_SAFE 
+PTHREAD_CFLAGS = 
 PTHREAD_LIBS = 
 RANLIB = ranlib
-SED = /usr/bin/sed
+SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
-SHREXT = `test .$module = .yes && echo .so || echo .dylib`
+SHREXT = .so
 SIZEOF_LONG = 8
 STRIP = strip
 UNIMCI_CFLAGS = 
@@ -768,7 +768,7 @@ VERSION = 5.14.4openmpi
 VTDYNATTLIB = 
 VTJAVALIB = 
 VTMPIUNIFYLIB = -lvt-mpi-unify -lotfaux   -lstdc++
-VTPOMPLIB = 
+VTPOMPLIB = -lvt-pomp
 VT_MPIGEN_HAVE_FC_CONV_COMM = 
 VT_MPIGEN_HAVE_FC_CONV_ERRH = 
 VT_MPIGEN_HAVE_FC_CONV_FILE = 
@@ -784,33 +784,33 @@ VT_MPIGEN_HAVE_MPI2_1SIDED = 1
 VT_MPIGEN_HAVE_MPI2_EXTCOLL = 1
 VT_MPIGEN_HAVE_MPI2_IO = 1
 VT_MPIGEN_HAVE_MPI2_THREAD = 1
-VT_RUN_DYNATTLIB = libvt-dynatt`test .$module = .yes && echo .so || echo .dylib`
+VT_RUN_DYNATTLIB = libvt-dynatt.so
 VT_RUN_FMPILIB = 
 VT_RUN_HAVE_DYNINST = 0
-VT_RUN_HAVE_FMPI = 0
+VT_RUN_HAVE_FMPI = 1
 VT_RUN_HAVE_MPI = 1
 VT_RUN_HAVE_THREADS = 1
-VT_RUN_MACOS = 1
-VT_RUN_NM = /usr/bin/nm
-VT_RUN_VTHYBLIB = libvt-hyb`test .$module = .yes && echo .so || echo .dylib`
-VT_RUN_VTLIB = libvt`test .$module = .yes && echo .so || echo .dylib`
-VT_RUN_VTMPILIB = libvt-mpi`test .$module = .yes && echo .so || echo .dylib`
-VT_RUN_VTMTLIB = libvt-mt`test .$module = .yes && echo .so || echo .dylib`
+VT_RUN_MACOS = 0
+VT_RUN_NM = /usr/bin/nm -B --demangle 
+VT_RUN_VTHYBLIB = libvt-hyb.so
+VT_RUN_VTLIB = libvt.so
+VT_RUN_VTMPILIB = libvt-mpi.so
+VT_RUN_VTMTLIB = libvt-mt.so
 VT_SETUP_COMPINST_GNU = 1
 VT_SETUP_COMPRESSION = 1
-VT_SETUP_CPUIDTRACE = 0
+VT_SETUP_CPUIDTRACE = 1
 VT_SETUP_DYNINST = 0
 VT_SETUP_ETIMESYNC = 0
-VT_SETUP_EXECTRACE = 0
+VT_SETUP_EXECTRACE = 1
 VT_SETUP_IOFSL = 0
-VT_SETUP_IOTRACE = 0
+VT_SETUP_IOTRACE = 1
 VT_SETUP_JAVA = 0
-VT_SETUP_MEMTRACE = 0
+VT_SETUP_MEMTRACE = 1
 VT_SETUP_METRICS = 0
 VT_SETUP_MPI = 1
 VT_SETUP_MPICHECK = 0
-VT_SETUP_NM = /usr/bin/nm
-VT_SETUP_OMP = 0
+VT_SETUP_NM = /usr/bin/nm -B --demangle 
+VT_SETUP_OMP = 1
 VT_SETUP_PLUGIN_CNTR = 1
 VT_SETUP_PTHREAD = 1
 VT_SETUP_RUSAGE = 1
@@ -823,7 +823,7 @@ VT_WRAPPER_CC_DYNINST_COMPILER_FLAGS =
 VT_WRAPPER_CC_EXTRA_COMPILER_FLAGS = 
 VT_WRAPPER_CC_EXTRA_CPPFLAGS =  -I${includedir}/..
 VT_WRAPPER_CC_EXTRA_LIBS = 
-VT_WRAPPER_CC_EXTRA_LINKER_FLAGS =  -Wl,-force_flat_namespace
+VT_WRAPPER_CC_EXTRA_LINKER_FLAGS = 
 VT_WRAPPER_CC_TAUINST_OPTS = 
 VT_WRAPPER_CC_TAUINST_PARSE_BIN = 
 VT_WRAPPER_CC_TAUINST_PARSE_OPTS = 
@@ -835,20 +835,20 @@ VT_WRAPPER_CXX_DYNINST_COMPILER_FLAGS =
 VT_WRAPPER_CXX_EXTRA_COMPILER_FLAGS = 
 VT_WRAPPER_CXX_EXTRA_CPPFLAGS =  -I${includedir}/..
 VT_WRAPPER_CXX_EXTRA_LIBS = 
-VT_WRAPPER_CXX_EXTRA_LINKER_FLAGS =  -Wl,-force_flat_namespace
+VT_WRAPPER_CXX_EXTRA_LINKER_FLAGS = 
 VT_WRAPPER_CXX_TAUINST_OPTS = 
 VT_WRAPPER_CXX_TAUINST_PARSE_BIN = 
 VT_WRAPPER_CXX_TAUINST_PARSE_OPTS = 
 VT_WRAPPER_DEFAULT_INST = compinst
-VT_WRAPPER_FC_COMPILER = 
+VT_WRAPPER_FC_COMPILER = gfortran
 VT_WRAPPER_FC_COMPINST_COMPILER_FLAGS = -g -finstrument-functions
 VT_WRAPPER_FC_CPP = gcc -E
 VT_WRAPPER_FC_DEFAULT_PARTYPE = seq
 VT_WRAPPER_FC_DYNINST_COMPILER_FLAGS = 
 VT_WRAPPER_FC_EXTRA_COMPILER_FLAGS = 
-VT_WRAPPER_FC_EXTRA_CPPFLAGS =  
+VT_WRAPPER_FC_EXTRA_CPPFLAGS =  -I${includedir}/..
 VT_WRAPPER_FC_EXTRA_LIBS = 
-VT_WRAPPER_FC_EXTRA_LINKER_FLAGS =  -Wl,-force_flat_namespace
+VT_WRAPPER_FC_EXTRA_LINKER_FLAGS = 
 VT_WRAPPER_FC_TAUINST_OPTS = 
 VT_WRAPPER_FC_TAUINST_PARSE_BIN = 
 VT_WRAPPER_FC_TAUINST_PARSE_OPTS = 
@@ -862,14 +862,14 @@ VT_WRAPPER_NVCC_DYNINST_COMPILER_FLAGS =
 VT_WRAPPER_NVCC_EXTRA_COMPILER_FLAGS = 
 VT_WRAPPER_NVCC_EXTRA_CPPFLAGS =  -I${includedir}/..
 VT_WRAPPER_NVCC_EXTRA_LIBS = 
-VT_WRAPPER_NVCC_EXTRA_LINKER_FLAGS =  -Wl,-force_flat_namespace
+VT_WRAPPER_NVCC_EXTRA_LINKER_FLAGS = 
 VT_WRAPPER_NVCC_TAUINST_OPTS = 
 VT_WRAPPER_NVCC_TAUINST_PARSE_BIN = 
 VT_WRAPPER_NVCC_TAUINST_PARSE_OPTS = 
-VT_WRAPPER_OPARI_BIN = 
+VT_WRAPPER_OPARI_BIN = ${bindir}/opari
 VT_WRAPPER_OPARI_OPTS = 
-VT_WRAPPER_OPARI_TAB_COMPILER = 
-VT_WRAPPER_OPARI_TAB_COMPILER_FLAGS = 
+VT_WRAPPER_OPARI_TAB_COMPILER = gcc
+VT_WRAPPER_OPARI_TAB_COMPILER_FLAGS = -DNDEBUG -g -O2 -finline-functions -fno-strict-aliasing -pthread
 VT_WRAPPER_TAUINST_BIN = 
 VT_WRAPPER_VTHYBLIB = -lvt-hyb
 VT_WRAPPER_VTLIB = -lvt
@@ -882,15 +882,15 @@ ZOIDFSDIR =
 ZOIDFSINCDIR = 
 ZOIDFSLIB = 
 ZOIDFSLIBDIR = 
-abs_builddir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/vtlib
-abs_srcdir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/vtlib
-abs_top_builddir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt
-abs_top_srcdir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt
+abs_builddir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/vtlib
+abs_srcdir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/vtlib
+abs_top_builddir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt
+abs_top_srcdir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt
 ac_ct_AR = 
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 ac_ct_DUMPBIN = 
-ac_ct_FC = 
+ac_ct_FC = gfortran
 acx_pthread_config = 
 am__include = include
 am__leading_dot = .
@@ -898,35 +898,35 @@ am__quote =
 am__tar = $${TAR-tar} chof - "$$tardir"
 am__untar = $${TAR-tar} xf -
 bindir = ${exec_prefix}/bin
-build = x86_64-apple-darwin13.2.0
+build = x86_64-unknown-linux-gnu
 build_alias = 
 build_cpu = x86_64
-build_os = darwin13.2.0
-build_vendor = apple
+build_os = linux-gnu
+build_vendor = unknown
 builddir = .
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share/vampirtrace
 docdir = ${datarootdir}/doc
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = x86_64-apple-darwin13.2.0
+host = x86_64-unknown-linux-gnu
 host_alias = 
 host_cpu = x86_64
-host_os = darwin13.2.0
-host_vendor = apple
+host_os = linux-gnu
+host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include/vampirtrace
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/install-sh
+install_sh = ${SHELL} /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt/config/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
 mandir = ${datarootdir}/man
-mkdir_p = $(top_builddir)/config/install-sh -c -d
+mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix = /home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
@@ -941,8 +941,8 @@ tauinst_fparse_cmd =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-top_vt_builddir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt
-top_vt_srcdir = /Users/meister/Development/cando/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt
+top_vt_builddir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt
+top_vt_srcdir = /home/meister/Development/clasp/externals/openmpi-1.6.5/ompi/contrib/vt/vt
 unimci_config_cmd = 
 #VTMPILIBRARY = 
 VTMPILIBRARY = libvt-mpi.la
@@ -954,8 +954,8 @@ VTJAVALIBRARY =
 #VTJAVALIBRARY = libvt-java.la
 VTJAVAETCDATA = 
 #VTJAVAETCDATA = vt-java-default-filter.spec
-VTPOMPLIBRARY = 
-#VTPOMPLIBRARY = libvt-pomp.la
+#VTPOMPLIBRARY = 
+VTPOMPLIBRARY = libvt-pomp.la
 VTFMPILIBRARY = 
 #VTFMPILIBRARY = libvt-fmpi.la
 lib_LTLIBRARIES = \
@@ -984,10 +984,10 @@ VTMPIUNIFYLIBDEPENDENCIES = $(VTMPIUNIFYLIBLIBRARY)
 PTHREADSOURCES = vt_pthreadreg.c vt_pthreadwrap.c
 #PTHREADCFLAGS = 
 PTHREADCFLAGS = -DVT_PTHREAD
-OMPSOURCES = 
-#OMPSOURCES = vt_ompreg.c
-OMPCFLAGS = 
-#OMPCFLAGS = -DVT_OMP
+#OMPSOURCES = 
+OMPSOURCES = vt_ompreg.c
+#OMPCFLAGS = 
+OMPCFLAGS = -DVT_OMP
 #THRDSOURCES = 
 #THRDSOURCES = vt_thrd_omp.c
 THRDSOURCES = vt_thrd_pthread.c 
@@ -1010,22 +1010,22 @@ UNIMCISOURCES =
 #UNIMCISOURCES = vt_unimci.c
 UNIMCICFLAGS = 
 #UNIMCICFLAGS = -DVT_UNIMCI $(UNIMCI_CFLAGS)
-LIBWRAPSOURCES = 
-#LIBWRAPSOURCES = vt_libwrap.c
-LIBWRAPCFLAGS = 
-#LIBWRAPCFLAGS = -DVT_LIBWRAP
-EXECWRAPSOURCES = 
-#EXECWRAPSOURCES = vt_execwrap.c
-EXECWRAPCFLAGS = 
-#EXECWRAPCFLAGS = -DVT_EXECWRAP
-IOWRAPSOURCES = 
-#IOWRAPSOURCES = vt_iowrap.c vt_iowrap_helper.c
-IOWRAPCFLAGS = 
-#IOWRAPCFLAGS = -DVT_IOWRAP
-MALLOCWRAPSOURCES = 
-#MALLOCWRAPSOURCES = vt_mallocwrap.c
-MALLOCWRAPCFLAGS = 
-#MALLOCWRAPCFLAGS = -DVT_MALLOCWRAP
+#LIBWRAPSOURCES = 
+LIBWRAPSOURCES = vt_libwrap.c
+#LIBWRAPCFLAGS = 
+LIBWRAPCFLAGS = -DVT_LIBWRAP
+#EXECWRAPSOURCES = 
+EXECWRAPSOURCES = vt_execwrap.c
+#EXECWRAPCFLAGS = 
+EXECWRAPCFLAGS = -DVT_EXECWRAP
+#IOWRAPSOURCES = 
+IOWRAPSOURCES = vt_iowrap.c vt_iowrap_helper.c
+#IOWRAPCFLAGS = 
+IOWRAPCFLAGS = -DVT_IOWRAP
+#MALLOCWRAPSOURCES = 
+MALLOCWRAPSOURCES = vt_mallocwrap.c
+#MALLOCWRAPCFLAGS = 
+MALLOCWRAPCFLAGS = -DVT_MALLOCWRAP
 GPUSOURCES = 
 #GPUSOURCES = vt_gpu.c $(am__append_5) $(am__append_9) \
 #	$(am__append_13) $(am__append_16) \
@@ -1041,10 +1041,10 @@ GPUCFLAGS =
 #	$(am__append_18) $(am__append_21)
 GPULIBRARY = 
 #GPULIBRARY = $(am__append_4) $(am__append_11)
-GETCPUSOURCES = 
-#GETCPUSOURCES = vt_getcpu.c
-GETCPUCFLAGS = 
-#GETCPUCFLAGS = -DVT_GETCPU
+#GETCPUSOURCES = 
+GETCPUSOURCES = vt_getcpu.c
+#GETCPUCFLAGS = 
+GETCPUCFLAGS = -DVT_GETCPU
 #RUSAGESOURCES = 
 RUSAGESOURCES = vt_rusage.c
 #RUSAGECFLAGS = 
@@ -1131,7 +1131,7 @@ COMMONSOURCES = \
 	vt_fbindings.c \
 	vt_otf_gen.c \
 	vt_otf_sum.c \
-	vt_pform_macos.c \
+	vt_pform_linux.c \
 	vt_thrd.c \
 	vt_trc.c \
 	vt_user_comment.c \
@@ -1526,7 +1526,7 @@ include ./$(DEPDIR)/libvt_hyb_la-vt_mpiwrap.Plo
 include ./$(DEPDIR)/libvt_hyb_la-vt_ompreg.Plo
 include ./$(DEPDIR)/libvt_hyb_la-vt_otf_gen.Plo
 include ./$(DEPDIR)/libvt_hyb_la-vt_otf_sum.Plo
-include ./$(DEPDIR)/libvt_hyb_la-vt_pform_macos.Plo
+include ./$(DEPDIR)/libvt_hyb_la-vt_pform_linux.Plo
 include ./$(DEPDIR)/libvt_hyb_la-vt_plugin_cntr.Plo
 include ./$(DEPDIR)/libvt_hyb_la-vt_pthreadreg.Plo
 include ./$(DEPDIR)/libvt_hyb_la-vt_pthreadwrap.Plo
@@ -1553,7 +1553,7 @@ include ./$(DEPDIR)/libvt_java_la-vt_metric_necsx.Plo
 include ./$(DEPDIR)/libvt_java_la-vt_metric_papi.Plo
 include ./$(DEPDIR)/libvt_java_la-vt_otf_gen.Plo
 include ./$(DEPDIR)/libvt_java_la-vt_otf_sum.Plo
-include ./$(DEPDIR)/libvt_java_la-vt_pform_macos.Plo
+include ./$(DEPDIR)/libvt_java_la-vt_pform_linux.Plo
 include ./$(DEPDIR)/libvt_java_la-vt_plugin_cntr.Plo
 include ./$(DEPDIR)/libvt_java_la-vt_rusage.Plo
 include ./$(DEPDIR)/libvt_java_la-vt_thrd.Plo
@@ -1594,7 +1594,7 @@ include ./$(DEPDIR)/libvt_la-vt_metric_necsx.Plo
 include ./$(DEPDIR)/libvt_la-vt_metric_papi.Plo
 include ./$(DEPDIR)/libvt_la-vt_otf_gen.Plo
 include ./$(DEPDIR)/libvt_la-vt_otf_sum.Plo
-include ./$(DEPDIR)/libvt_la-vt_pform_macos.Plo
+include ./$(DEPDIR)/libvt_la-vt_pform_linux.Plo
 include ./$(DEPDIR)/libvt_la-vt_plugin_cntr.Plo
 include ./$(DEPDIR)/libvt_la-vt_rusage.Plo
 include ./$(DEPDIR)/libvt_la-vt_thrd.Plo
@@ -1640,7 +1640,7 @@ include ./$(DEPDIR)/libvt_mpi_la-vt_mpireq.Plo
 include ./$(DEPDIR)/libvt_mpi_la-vt_mpiwrap.Plo
 include ./$(DEPDIR)/libvt_mpi_la-vt_otf_gen.Plo
 include ./$(DEPDIR)/libvt_mpi_la-vt_otf_sum.Plo
-include ./$(DEPDIR)/libvt_mpi_la-vt_pform_macos.Plo
+include ./$(DEPDIR)/libvt_mpi_la-vt_pform_linux.Plo
 include ./$(DEPDIR)/libvt_mpi_la-vt_plugin_cntr.Plo
 include ./$(DEPDIR)/libvt_mpi_la-vt_rusage.Plo
 include ./$(DEPDIR)/libvt_mpi_la-vt_sync.Plo
@@ -1681,7 +1681,7 @@ include ./$(DEPDIR)/libvt_mt_la-vt_metric_papi.Plo
 include ./$(DEPDIR)/libvt_mt_la-vt_ompreg.Plo
 include ./$(DEPDIR)/libvt_mt_la-vt_otf_gen.Plo
 include ./$(DEPDIR)/libvt_mt_la-vt_otf_sum.Plo
-include ./$(DEPDIR)/libvt_mt_la-vt_pform_macos.Plo
+include ./$(DEPDIR)/libvt_mt_la-vt_pform_linux.Plo
 include ./$(DEPDIR)/libvt_mt_la-vt_plugin_cntr.Plo
 include ./$(DEPDIR)/libvt_mt_la-vt_pthreadreg.Plo
 include ./$(DEPDIR)/libvt_mt_la-vt_pthreadwrap.Plo
@@ -1769,12 +1769,12 @@ libvt_hyb_la-vt_otf_sum.lo: vt_otf_sum.c
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_hyb_la_CFLAGS) $(CFLAGS) -c -o libvt_hyb_la-vt_otf_sum.lo `test -f 'vt_otf_sum.c' || echo '$(srcdir)/'`vt_otf_sum.c
 
-libvt_hyb_la-vt_pform_macos.lo: vt_pform_macos.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_hyb_la_CFLAGS) $(CFLAGS) -MT libvt_hyb_la-vt_pform_macos.lo -MD -MP -MF $(DEPDIR)/libvt_hyb_la-vt_pform_macos.Tpo -c -o libvt_hyb_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_hyb_la-vt_pform_macos.Tpo $(DEPDIR)/libvt_hyb_la-vt_pform_macos.Plo
-#	$(AM_V_CC)source='vt_pform_macos.c' object='libvt_hyb_la-vt_pform_macos.lo' libtool=yes \
+libvt_hyb_la-vt_pform_linux.lo: vt_pform_linux.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_hyb_la_CFLAGS) $(CFLAGS) -MT libvt_hyb_la-vt_pform_linux.lo -MD -MP -MF $(DEPDIR)/libvt_hyb_la-vt_pform_linux.Tpo -c -o libvt_hyb_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_hyb_la-vt_pform_linux.Tpo $(DEPDIR)/libvt_hyb_la-vt_pform_linux.Plo
+#	$(AM_V_CC)source='vt_pform_linux.c' object='libvt_hyb_la-vt_pform_linux.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_hyb_la_CFLAGS) $(CFLAGS) -c -o libvt_hyb_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
+#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_hyb_la_CFLAGS) $(CFLAGS) -c -o libvt_hyb_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
 
 libvt_hyb_la-vt_thrd.lo: vt_thrd.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_hyb_la_CFLAGS) $(CFLAGS) -MT libvt_hyb_la-vt_thrd.lo -MD -MP -MF $(DEPDIR)/libvt_hyb_la-vt_thrd.Tpo -c -o libvt_hyb_la-vt_thrd.lo `test -f 'vt_thrd.c' || echo '$(srcdir)/'`vt_thrd.c
@@ -2133,12 +2133,12 @@ libvt_java_la-vt_otf_sum.lo: vt_otf_sum.c
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_java_la_CFLAGS) $(CFLAGS) -c -o libvt_java_la-vt_otf_sum.lo `test -f 'vt_otf_sum.c' || echo '$(srcdir)/'`vt_otf_sum.c
 
-libvt_java_la-vt_pform_macos.lo: vt_pform_macos.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_java_la_CFLAGS) $(CFLAGS) -MT libvt_java_la-vt_pform_macos.lo -MD -MP -MF $(DEPDIR)/libvt_java_la-vt_pform_macos.Tpo -c -o libvt_java_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_java_la-vt_pform_macos.Tpo $(DEPDIR)/libvt_java_la-vt_pform_macos.Plo
-#	$(AM_V_CC)source='vt_pform_macos.c' object='libvt_java_la-vt_pform_macos.lo' libtool=yes \
+libvt_java_la-vt_pform_linux.lo: vt_pform_linux.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_java_la_CFLAGS) $(CFLAGS) -MT libvt_java_la-vt_pform_linux.lo -MD -MP -MF $(DEPDIR)/libvt_java_la-vt_pform_linux.Tpo -c -o libvt_java_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_java_la-vt_pform_linux.Tpo $(DEPDIR)/libvt_java_la-vt_pform_linux.Plo
+#	$(AM_V_CC)source='vt_pform_linux.c' object='libvt_java_la-vt_pform_linux.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_java_la_CFLAGS) $(CFLAGS) -c -o libvt_java_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
+#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_java_la_CFLAGS) $(CFLAGS) -c -o libvt_java_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
 
 libvt_java_la-vt_thrd.lo: vt_thrd.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_java_la_CFLAGS) $(CFLAGS) -MT libvt_java_la-vt_thrd.lo -MD -MP -MF $(DEPDIR)/libvt_java_la-vt_thrd.Tpo -c -o libvt_java_la-vt_thrd.lo `test -f 'vt_thrd.c' || echo '$(srcdir)/'`vt_thrd.c
@@ -2287,12 +2287,12 @@ libvt_mpi_la-vt_otf_sum.lo: vt_otf_sum.c
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_la_CFLAGS) $(CFLAGS) -c -o libvt_mpi_la-vt_otf_sum.lo `test -f 'vt_otf_sum.c' || echo '$(srcdir)/'`vt_otf_sum.c
 
-libvt_mpi_la-vt_pform_macos.lo: vt_pform_macos.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_la_CFLAGS) $(CFLAGS) -MT libvt_mpi_la-vt_pform_macos.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_la-vt_pform_macos.Tpo -c -o libvt_mpi_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_la-vt_pform_macos.Tpo $(DEPDIR)/libvt_mpi_la-vt_pform_macos.Plo
-#	$(AM_V_CC)source='vt_pform_macos.c' object='libvt_mpi_la-vt_pform_macos.lo' libtool=yes \
+libvt_mpi_la-vt_pform_linux.lo: vt_pform_linux.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_la_CFLAGS) $(CFLAGS) -MT libvt_mpi_la-vt_pform_linux.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_la-vt_pform_linux.Tpo -c -o libvt_mpi_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mpi_la-vt_pform_linux.Tpo $(DEPDIR)/libvt_mpi_la-vt_pform_linux.Plo
+#	$(AM_V_CC)source='vt_pform_linux.c' object='libvt_mpi_la-vt_pform_linux.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_la_CFLAGS) $(CFLAGS) -c -o libvt_mpi_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
+#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_la_CFLAGS) $(CFLAGS) -c -o libvt_mpi_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
 
 libvt_mpi_la-vt_thrd.lo: vt_thrd.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mpi_la_CFLAGS) $(CFLAGS) -MT libvt_mpi_la-vt_thrd.lo -MD -MP -MF $(DEPDIR)/libvt_mpi_la-vt_thrd.Tpo -c -o libvt_mpi_la-vt_thrd.lo `test -f 'vt_thrd.c' || echo '$(srcdir)/'`vt_thrd.c
@@ -2623,12 +2623,12 @@ libvt_mt_la-vt_otf_sum.lo: vt_otf_sum.c
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mt_la_CFLAGS) $(CFLAGS) -c -o libvt_mt_la-vt_otf_sum.lo `test -f 'vt_otf_sum.c' || echo '$(srcdir)/'`vt_otf_sum.c
 
-libvt_mt_la-vt_pform_macos.lo: vt_pform_macos.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mt_la_CFLAGS) $(CFLAGS) -MT libvt_mt_la-vt_pform_macos.lo -MD -MP -MF $(DEPDIR)/libvt_mt_la-vt_pform_macos.Tpo -c -o libvt_mt_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mt_la-vt_pform_macos.Tpo $(DEPDIR)/libvt_mt_la-vt_pform_macos.Plo
-#	$(AM_V_CC)source='vt_pform_macos.c' object='libvt_mt_la-vt_pform_macos.lo' libtool=yes \
+libvt_mt_la-vt_pform_linux.lo: vt_pform_linux.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mt_la_CFLAGS) $(CFLAGS) -MT libvt_mt_la-vt_pform_linux.lo -MD -MP -MF $(DEPDIR)/libvt_mt_la-vt_pform_linux.Tpo -c -o libvt_mt_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_mt_la-vt_pform_linux.Tpo $(DEPDIR)/libvt_mt_la-vt_pform_linux.Plo
+#	$(AM_V_CC)source='vt_pform_linux.c' object='libvt_mt_la-vt_pform_linux.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mt_la_CFLAGS) $(CFLAGS) -c -o libvt_mt_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
+#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mt_la_CFLAGS) $(CFLAGS) -c -o libvt_mt_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
 
 libvt_mt_la-vt_thrd.lo: vt_thrd.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_mt_la_CFLAGS) $(CFLAGS) -MT libvt_mt_la-vt_thrd.lo -MD -MP -MF $(DEPDIR)/libvt_mt_la-vt_thrd.Tpo -c -o libvt_mt_la-vt_thrd.lo `test -f 'vt_thrd.c' || echo '$(srcdir)/'`vt_thrd.c
@@ -2938,12 +2938,12 @@ libvt_la-vt_otf_sum.lo: vt_otf_sum.c
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_la_CFLAGS) $(CFLAGS) -c -o libvt_la-vt_otf_sum.lo `test -f 'vt_otf_sum.c' || echo '$(srcdir)/'`vt_otf_sum.c
 
-libvt_la-vt_pform_macos.lo: vt_pform_macos.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_la_CFLAGS) $(CFLAGS) -MT libvt_la-vt_pform_macos.lo -MD -MP -MF $(DEPDIR)/libvt_la-vt_pform_macos.Tpo -c -o libvt_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_la-vt_pform_macos.Tpo $(DEPDIR)/libvt_la-vt_pform_macos.Plo
-#	$(AM_V_CC)source='vt_pform_macos.c' object='libvt_la-vt_pform_macos.lo' libtool=yes \
+libvt_la-vt_pform_linux.lo: vt_pform_linux.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_la_CFLAGS) $(CFLAGS) -MT libvt_la-vt_pform_linux.lo -MD -MP -MF $(DEPDIR)/libvt_la-vt_pform_linux.Tpo -c -o libvt_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libvt_la-vt_pform_linux.Tpo $(DEPDIR)/libvt_la-vt_pform_linux.Plo
+#	$(AM_V_CC)source='vt_pform_linux.c' object='libvt_la-vt_pform_linux.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_la_CFLAGS) $(CFLAGS) -c -o libvt_la-vt_pform_macos.lo `test -f 'vt_pform_macos.c' || echo '$(srcdir)/'`vt_pform_macos.c
+#	$(AM_V_CC_no)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_la_CFLAGS) $(CFLAGS) -c -o libvt_la-vt_pform_linux.lo `test -f 'vt_pform_linux.c' || echo '$(srcdir)/'`vt_pform_linux.c
 
 libvt_la-vt_thrd.lo: vt_thrd.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libvt_la_CFLAGS) $(CFLAGS) -MT libvt_la-vt_thrd.lo -MD -MP -MF $(DEPDIR)/libvt_la-vt_thrd.Tpo -c -o libvt_la-vt_thrd.lo `test -f 'vt_thrd.c' || echo '$(srcdir)/'`vt_thrd.c
@@ -3352,7 +3352,7 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 install-exec-hook:
-#install-exec-hook:
+install-exec-hook:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
@@ -3443,10 +3443,10 @@ uninstall-am: uninstall-dist_vtsysconfDATA uninstall-libLTLIBRARIES
 	tags uninstall uninstall-am uninstall-dist_vtsysconfDATA \
 	uninstall-libLTLIBRARIES
 
-#install-exec-hook:
-#	(cd $(DESTDIR)$(libdir); \
-#	rm -f libvt-java.jnilib; \
-#	$(LN_S) libvt-java$(SHREXT) libvt-java.jnilib)
+##install-exec-hook:
+##	(cd $(DESTDIR)$(libdir); \
+##	rm -f libvt-java.jnilib; \
+##	$(LN_S) libvt-java$(SHREXT) libvt-java.jnilib)
 $(VTMPIUNIFYLIBLIBRARY):
 	@($(am__cd) $(top_builddir)/tools/vtunify/mpi && $(MAKE) $(AM_MAKEFLAGS) libvt-mpi-unify.la)
 install-exec-hook-pre:

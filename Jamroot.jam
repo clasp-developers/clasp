@@ -49,8 +49,8 @@ project clasp : requirements
 #            <define>DMALLOC_FUNC_CHECK
 # ------------------------------------------------------------
 	<toolset>clang:<cxxflags>-std=c++11
-	<toolset>clang:<cxxflags>-stdlib=libc++
-	<toolset>clang:<linkflags>-stdlib=libc++
+	<target-os>darwin:<cxxflags>-stdlib=libc++
+	<target-os>darwin:<linkflags>-stdlib=libc++
 #	<cxxflags>-v        # this will generate a lot more output during compilation but help with tooling
 #	<target-os>darwin:<linkflags>-stdlib=libc++
 #	<target-os>darwin:<linkflags>"-flat_namespace -undefined warning"
@@ -123,7 +123,7 @@ project clasp : requirements
 # Others 
 #
 	<toolset>darwin:<define>darwin
-	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
+	<cxxflags>"-Wno-unused-variable"
 #	<toolset>darwin:<cxxflags>"-fopenmp"
 #-include pch.h"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
