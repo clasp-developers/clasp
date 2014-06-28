@@ -127,7 +127,7 @@ namespace translate
     };
 
 
-#if 0
+#if 1
 
     template <>
     struct	from_object<unsigned long,std::true_type>

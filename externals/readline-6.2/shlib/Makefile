@@ -32,7 +32,7 @@ datarootdir = ${prefix}/share
 srcdir = .
 VPATH = .:..
 topdir = ..
-BUILD_DIR = /Users/meister/Development/cando/clasp/externals/readline-6.2
+BUILD_DIR = /home/meister/Development/clasp/externals/readline-6.2
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
@@ -49,10 +49,10 @@ LN = ln
 
 SHELL = /bin/sh
 
-host_os = darwin13.2.0
-host_vendor = apple
+host_os = linux-gnu
+host_vendor = unknown
 
-prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix = /home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix = ${prefix}
 includedir = ${prefix}/include
 bindir = ${exec_prefix}/bin
@@ -78,21 +78,21 @@ LOCAL_DEFS =
 # changes to bash-maintainers@gnu.org.
 #
 SHOBJ_CC = gcc
-SHOBJ_CFLAGS = -fno-common
+SHOBJ_CFLAGS = -fPIC
 SHOBJ_LD = ${CC}
 
-SHOBJ_LDFLAGS = -dynamiclib
+SHOBJ_LDFLAGS = -shared -Wl,-soname,$@
 SHOBJ_XLDFLAGS = 
 SHOBJ_LIBS = 
 
-SHLIB_XLDFLAGS =  -arch_only `/usr/bin/arch` -install_name $(libdir)/$@ -current_version $(SHLIB_MAJOR)$(SHLIB_MINOR) -compatibility_version $(SHLIB_MAJOR) -v
-SHLIB_LIBS = -lncurses
+SHLIB_XLDFLAGS =  -Wl,-rpath,$(libdir) -Wl,-soname,`basename $@ $(SHLIB_MINOR)`
+SHLIB_LIBS = 
 
 SHLIB_DOT = .
 SHLIB_LIBPREF = lib
-SHLIB_LIBSUFF = dylib
+SHLIB_LIBSUFF = so
 
-SHLIB_LIBVERSION = $(SHLIB_MAJOR)$(SHLIB_MINOR).$(SHLIB_LIBSUFF)
+SHLIB_LIBVERSION = $(SHLIB_LIBSUFF).$(SHLIB_MAJOR)$(SHLIB_MINOR)
 SHLIB_DLLVERSION = $(SHLIB_MAJOR)
 
 SHLIB_STATUS = supported

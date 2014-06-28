@@ -11,6 +11,7 @@ extern void pointerSearcherAddRef(void* searcher, mps_addr_t q);
 
 void memory_find_ref(Arena arena, Addr ref, void* searcher )
 {
+#if 0
     Ring node, next;  
     Addr base, limit, p;
     ArenaExposeRemember(ArenaGlobals(arena), 0); /* call this to remove protection */
@@ -29,4 +30,5 @@ void memory_find_ref(Arena arena, Addr ref, void* searcher )
             }
         }
     }
+#endif
 }

@@ -1,5 +1,9 @@
 #define	DEBUG_LEVEL_FULL
 
+#ifdef _TARGET_OS_LINUX
+# include <signal.h>
+#endif
+
 #ifdef USE_MPI
 #include <boost/mpi.hpp>
 #endif

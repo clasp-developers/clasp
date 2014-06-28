@@ -48,7 +48,7 @@ PURIFY =
 
 SHELL = /bin/sh
 
-prefix = /Users/meister/Development/cando/clasp/build/cando.app/Contents/Resources/externals/common
+prefix = /home/meister/Development/clasp/build/cando.app/Contents/Resources/externals/common
 exec_prefix = ${prefix}
 
 datarootdir = ${prefix}/share

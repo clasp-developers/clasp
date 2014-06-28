@@ -29,7 +29,7 @@ namespace core
 
 	bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-	int sxhashKey(T_sp key,int bound) const;
+	int sxhashKey(T_sp key,int bound, bool willAddKey) const;
 
 
     };

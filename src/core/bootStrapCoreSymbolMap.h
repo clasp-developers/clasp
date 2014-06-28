@@ -4,8 +4,9 @@
 namespace core
 {
 
-    struct SymbolStorage
+    class SymbolStorage
     {
+    public:
 	string		_PackageName;
 	string		_SymbolName;
 	Symbol_sp	_Symbol;

@@ -1,6 +1,6 @@
 typedef bool _Bool;
 #include <type_traits>
-#include <llvm/Support/system_error.h>
+//#include <llvm/Support/system_error.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/IR/LLVMContext.h>
@@ -96,7 +96,7 @@ typedef bool _Bool;
 #include "core/standardClass.h"
 #include "core/stringSet.h"
 #include "core/symbolSet.h"
-#include "core/readTable.h"
+#include "core/readtable.h"
 #include "core/arrayObjects.h"
 #include "core/intArray.h"
 #include "core/lispStream.h"

@@ -226,12 +226,14 @@ namespace core
 	    } else if ( sym == kw::_sym_rtld_next )
 	    {
 		handle = RTLD_NEXT;
+#ifndef _TARGET_OS_LINUX
             } else if ( sym == kw::_sym_rtld_self ) //NOT PORTABLE TO LINUX
 	    {
 		handle = RTLD_SELF;
 	    } else if ( sym == kw::_sym_rtld_main_only )
 	    {
 		handle = RTLD_MAIN_ONLY;
+#endif
             } else
 	    {
 		SIMPLE_ERROR(BF("Illegal keyword[%s] for dlsym - only :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(sym));
