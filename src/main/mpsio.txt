@@ -1,0 +1,24 @@
+000034A62D07281A 001A Intern              stringId:0000000000000001 string:"@(#)Ravenbrook MPS, product.mps, release/1.114.0, platform.xci6ll, variety.asserted.logging.nonstats, compiled on Jun 24 2014 23:25:23" 
+000034A62D0AA020 001A Intern              stringId:0000000000000002 string:"MFS" 
+000034A62D0AA2B4 001B Label               address:0000000110716BF8["MFS"] stringId:0000000000000002 
+000034A62D0B7781 001A Intern              stringId:0000000000000003 string:"Reservoir" 
+000034A62D0B77CC 001B Label               address:0000000110715EF0["Reservoir"] stringId:0000000000000003 
+000034A62D0FDB0A 001A Intern              stringId:0000000000000004 string:"MV" 
+000034A62D0FDBA6 001B Label               address:0000000110716D28["MV"] stringId:0000000000000004 
+000034A62D11AC52 001A Intern              stringId:0000000000000005 string:"AMC" 
+000034A62D11AC97 001B Label               address:00000001107175A8["AMC"] stringId:0000000000000005 
+000034A62D12A82B 001A Intern              stringId:0000000000000006 string:"AWL" 
+000034A62D12A855 001B Label               address:0000000110717A78["AWL"] stringId:0000000000000006 
+000034A62D12DF2D 001A Intern              stringId:0000000000000007 string:"AMCZ" 
+000034A62D12DF66 001B Label               address:0000000110717478["AMCZ"] stringId:0000000000000007 
+000034A680A0723A 001A Intern              stringId:0000000000000008 string:"MRG" 
+000034A680A077F5 001B Label               address:0000000110716AC8["MRG"] stringId:0000000000000008 
+00003713D0BFAFC6 0075 EventClockSync      clock:000000002DEBA932 
+00003714192C7C26 001A Intern              stringId:0000000000000009 string:"../../src/llvmo/intrinsics.cc:1529 sp_copyLoadTimeValue@0x112925a30  _Objects@0x15d2fa010  index[78]  result client@0x113010cc0  value: CL:IF  cl::_sym_destructuring_bind@0x115014bf0" 
+00003714192C83D9 001B Label               address:0000000113010CC0["../../src/llvmo/intrinsics.cc:1529 sp_copyLoadTimeValue@0x112925a30  _Objects@0x15d2fa010  index[78]  result client@0x113010cc0  value: CL:IF  cl::_sym_destructuring_bind@0x115014bf0"] stringId:0000000000000009 
+000037141930F5F9 001A Intern              stringId:000000000000000A string:"../../src/llvmo/intrinsics.cc:1529 sp_copyLoadTimeValue@0x112925a30  _Objects@0x15d2fa010  index[79]  result client@0x1130013e0  value: CL:PROGN  cl::_sym_destructuring_bind@0x115014bf0" 
+000037141930F902 001B Label               address:00000001130013E0["../../src/llvmo/intrinsics.cc:1529 sp_copyLoadTimeValue@0x112925a30  _Objects@0x15d2fa010  index[79]  result client@0x1130013e0  value: CL:PROGN  cl::_sym_destructuring_bind@0x115014bf0"] stringId:000000000000000A 
+000037141931C5A4 001A Intern              stringId:000000000000000B string:"../../src/llvmo/intrinsics.cc:1529 sp_copyLoadTimeValue@0x112925a30  _Objects@0x15d2fa010  index[0]  result client@0x0  value: \"NIL\"  cl::_sym_destructuring_bind@0x115014bf0" 
+000037141931C934 001B Label               address:0000000000000009["../../src/llvmo/intrinsics.cc:1529 sp_copyLoadTimeValue@0x112925a30  _Objects@0x15d2fa010  index[0]  result client@0x0  value: \"NIL\"  cl::_sym_destructuring_bind@0x115014bf0"] stringId:000000000000000B 
+0000371419328571 001A Intern              stringId:000000000000000C string:"../../src/llvmo/intrinsics.cc:1529 sp_copyLoadTimeValue@0x112925a30  _Objects@0x15d2fa010  index[0]  result client@0x0  value: \"NIL\"  cl::_sym_destructuring_bind@0x115014bf0" 
+0000371419328826 001B Label               

@@ -52,6 +52,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
             (si::register-global ',var)))
     ',var))
 
+
+;; TODO: Remove this
+(eval-when (:compile-toplevel)
+           (bformat t "evalmacros.lsp !!!!!!!!!!! Turning on mps-telemetry!!!!!\n")
+           (gctools:mps-telemetry-set 64))
+
 (defmacro defparameter (&whole whole var form &optional doc-string)
   "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
@@ -68,6 +74,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
          `(eval-when (:compile-toplevel)
             (si::register-global ',var)))
     ',var))
+
+
+
 
 (defmacro defconstant (&whole whole var form &optional doc-string)
   "Syntax: (defconstant symbol form [doc])
@@ -86,6 +95,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
             (sys:*make-constant ',var ,form)
             (si::register-global ',var)))
     ',var))
+
 
 (defparameter *defun-inline-hook* nil)
 

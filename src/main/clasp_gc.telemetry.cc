@@ -2513,11 +2513,11 @@ case KIND_LISPALLOC_core__MicroHeap_O: {
 case KIND_LISPALLOC_core__LoadTimeValues_O: {
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
     SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  In obj_scan LoadTimeValues_O@%p  before  obj_gc_safe->_Objects.px_ref()=%p   obj_gc_safe->_Symbols._Vector._Contents=%p") %
-                          __FILE__ % __LINE__ % client % obj_gc_safe->_Objects.px_ref() % obj_gc_safe->_Symbols._Vector._Contents );
-    SMART_PTR_FIX(obj_gc_safe->_Objects);
+                          __FILE__ % __LINE__ % client % obj_gc_safe->_Objects._Vector._Contents % obj_gc_safe->_Symbols._Vector._Contents );
+    POINTER_FIX(obj_gc_safe->_Objects._Vector._Contents);
     POINTER_FIX(obj_gc_safe->_Symbols._Vector._Contents);
-    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  In obj_scan LoadTimeValues_O@%p  after   obj_gc_safe->_Objects.px_ref()=%p   obj_gc_safe->_Symbols._Vector._Contents=%p") %
-                          __FILE__ % __LINE__ % client % obj_gc_safe->_Objects.px_ref() % obj_gc_safe->_Symbols._Vector._Contents );
+    SHIELD_SAFE_TELEMETRY(client,BF("%s:%d  In obj_scan LoadTimeValues_O@%p  after   obj_gc_safe->_Objects._Vector._Contents=%p   obj_gc_safe->_Symbols._Vector._Contents=%p") %
+                          __FILE__ % __LINE__ % client % obj_gc_safe->_Objects._Vector._Contents % obj_gc_safe->_Symbols._Vector._Contents );
     typedef core::LoadTimeValues_O type_KIND_LISPALLOC_core__LoadTimeValues_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadTimeValues_O)) + global_alignup_sizeof_header;
 } break;
@@ -7818,14 +7818,14 @@ case KIND_ROOTCLASSALLOC_core__Lisp_O: {
  POINTER_FIX(core::SexpSaveArchive_O::static_creator);
  SMART_PTR_FIX(core::SymbolList_O::___staticClass);
 #ifdef DEBUG_LOAD_TIME_VALUES
- {
+if ( mps_telemetry_get()&64 ) {
      mps_label_t lbl = mps_telemetry_intern((BF("%s:%d root_scan before cl::_sym_declare") % __FILE__ % __LINE__ ).str().c_str());
      mps_telemetry_label(cl::_sym_declare.px_ref(),lbl);
  }
 #endif
  SMART_PTR_FIX(cl::_sym_declare);
 #ifdef DEBUG_LOAD_TIME_VALUES
- {
+if ( mps_telemetry_get()&64 ) {
      mps_label_t lbl = mps_telemetry_intern((BF("%s:%d root_scan after cl::_sym_declare") % __FILE__ % __LINE__ ).str().c_str());
      mps_telemetry_label(cl::_sym_declare.px_ref(),lbl);
  }
@@ -8694,14 +8694,14 @@ case KIND_ROOTCLASSALLOC_core__Lisp_O: {
  SMART_PTR_FIX(core::_sym_STARbq_listSTARSTAR);
  SMART_PTR_FIX(core::_sym_nan);
 #ifdef DEBUG_LOAD_TIME_VALUES
- {
+if ( mps_telemetry_get()&64 ) {
      mps_label_t lbl = mps_telemetry_intern((BF("%s:%d root_scan before cl::_sym_destructuring_bind") % __FILE__ % __LINE__ ).str().c_str());
      mps_telemetry_label(cl::_sym_destructuring_bind.px_ref(),lbl);
  }
 #endif
  SMART_PTR_FIX(cl::_sym_destructuring_bind);
 #ifdef DEBUG_LOAD_TIME_VALUES
- {
+if ( mps_telemetry_get()&64 ) {
      mps_label_t lbl = mps_telemetry_intern((BF("%s:%d root_scan after cl::_sym_destructuring_bind") % __FILE__ % __LINE__ ).str().c_str());
      mps_telemetry_label(cl::_sym_destructuring_bind.px_ref(),lbl);
  }

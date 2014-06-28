@@ -200,8 +200,8 @@ extern "C" {
             assert(b); /* we just checked there was one */
             ++messages;
             if (type == mps_message_type_gc_start()) {
-                DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_gc_start"));
 #if 0
+                DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_gc_start"));
                 printf("Message: mps_message_type_gc_start\n");
                 printf("Collection started.\n");
                 printf("  Why: %s\n", mps_message_gc_start_why(_global_arena, message));
@@ -275,11 +275,6 @@ namespace gctools {
 
     int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], mps_fmt_auto_header_s* obj_fmt_sP, bool mpiEnabled, int mpiRank, int mpiSize)
     {
-#ifdef DEBUG_LOAD_TIME_VALUES
-#define CHAIN_SIZE 6400 // 256 // 6400
-#else
-#define CHAIN_SIZE 6400 // 256 // 6400
-#endif
         if ( Alignment() == 16 ) {
             printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
         }
@@ -295,13 +290,17 @@ namespace gctools {
         void* local_stack_marker;
         _global_stack_marker = &local_stack_marker;
 
+        size_t arenaSize = 50 * 32 * 1024 * 1024;
         mps_res_t res;
         MPS_ARGS_BEGIN(args) {
-            MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, 50 * 32 * 1024 * 1024 );
+            MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, arenaSize );
             res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create MPS arena");
-        
+
+        // David suggested this - it never gives back memory to the OS
+//        mps_arena_spare_commit_limit_set(_global_arena, arenaSize );
+
         mps_fmt_t obj_fmt;
         MPS_ARGS_BEGIN(args) {
             MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(Header_s) );
@@ -316,54 +315,40 @@ namespace gctools {
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create obj format");
 
 
+#ifdef DEBUG_LOAD_TIME_VALUES
+#define CHAIN_SIZE 6400 // 256 // 6400
+#else
+#define CHAIN_SIZE 6400 // 256 // 6400
+#endif
+
 #define AMC_CHAIN_SIZE CHAIN_SIZE
         // Now the generation chain
-        mps_gen_param_s amc_gen_params[] = {
+        mps_gen_param_s gen_params[] = {
             { AMC_CHAIN_SIZE, 0.85 },
-            { AMC_CHAIN_SIZE, 0.45 },
+            { AMC_CHAIN_SIZE*6, 0.45 },
         };
 
-        mps_chain_t amc_chain;
-        res = mps_chain_create(&amc_chain,
+        mps_chain_t only_chain;
+        res = mps_chain_create(&only_chain,
                                _global_arena,
-                               LENGTH(amc_gen_params),
-                               amc_gen_params);
+                               LENGTH(gen_params),
+                               gen_params);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create amc chain");
 
         // Create the AMC pool
-#if 0
-        mps_pool_t _global_amc_pool;
-        res = mps_pool_create(&_global_amc_pool,
-                              _global_arena,
-                              mps_class_amc(),
-                              obj_fmt,
-                              amc_chain);
-#else
-
         MPS_ARGS_BEGIN(args) {
             MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-            MPS_ARGS_ADD(args, MPS_KEY_CHAIN, amc_chain);
+            MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
             MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
             res = mps_pool_create_k(&_global_amc_pool, _global_arena, mps_class_amc(), args);
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create amc pool");
-#endif
 
-
-
-
-
-
-#if 1
-
-
-
-
-#define AWL_CHAIN_SIZE CHAIN_SIZE // 32768
 
         /*! Use an AWL pool rather than and AMS pool until the AMS bug gets fixed */
         MPS_ARGS_BEGIN(args) {
             MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+            MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
             MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, dummyAwlFindDependent );
             res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
         } MPS_ARGS_END(args);
@@ -376,84 +361,14 @@ namespace gctools {
 
 
 
-#else // USE AMS pool instead of AWL pool
-#define AMS_CHAIN_SIZE CHAIN_SIZE // 32768
-        // Now the generation chain
-        mps_gen_param_s ams_gen_params[] = {
-            { AMS_CHAIN_SIZE, 0.85 },
-            { AMS_CHAIN_SIZE, 0.45 },
-        };
-
-        mps_chain_t ams_chain;
-        res = mps_chain_create(&ams_chain,
-                               _global_arena,
-                               LENGTH(ams_gen_params),
-                               ams_gen_params);
-        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create ams chain");
-
-
-#ifdef DEBUG_MPS_AMS_POOL
-        mps_pool_debug_option_s debug_options = {
-            (const void*)"postpost", 8,
-            (const void*)"freefree", 8,
-        };
-#endif
-
-#undef DEBUG_MPS_AMS_POOL
-        MPS_ARGS_BEGIN(args) {
-#ifdef DEBUG_MPS_AMS_POOL
-            MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options );
-#endif
-            MPS_ARGS_ADD(args, MPS_KEY_CHAIN, ams_chain);
-            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-            MPS_ARGS_ADD(args, MPS_KEY_AMS_SUPPORT_AMBIGUOUS, 1);
-#ifdef DEBUG_MPS_AMS_POOL
-            res = mps_pool_create_k(&_global_ams_pool, _global_arena, mps_class_ams_debug(), args);
-#else
-            res = mps_pool_create_k(&_global_ams_pool, _global_arena, mps_class_ams(), args);
-#endif
-        } MPS_ARGS_END(args);
-        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create ams pool");
-
-#endif
-
-// #else
-//         MPS_ARGS_BEGIN(args) {
-//             MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY, 1024 * 1024);
-//             MPS_ARGS_ADD(args, MPS_KEY_MEAN_SIZE, 32);
-//             MPS_ARGS_ADD(args, MPS_KEY_ALIGN, 8);
-//             MPS_ARGS_ADD(args, MPS_KEY_MVFF_ARENA_HIGH, 1);
-//             MPS_ARGS_ADD(args, MPS_KEY_MVFF_SLOT_HIGH, 1);
-//             MPS_ARGS_ADD(args, MPS_KEY_MVFF_FIRST_FIT, 0);
-//             res = mps_pool_create_k(&_global_mvff_pool, _global_arena, mps_class_mvff(), args);
-//         } MPS_ARGS_END(args);
-//         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create mvff pool");
-// #endif
-
-
-
-#define AMCZ_CHAIN_SIZE CHAIN_SIZE // 32768
-        // Now the generation chain
-        mps_gen_param_s amcz_gen_params[] = {
-            { AMCZ_CHAIN_SIZE, 0.85 },
-            { AMCZ_CHAIN_SIZE, 0.45 },
-        };
-
-        mps_chain_t amcz_chain;
-        res = mps_chain_create(&amcz_chain,
-                               _global_arena,
-                               LENGTH(amcz_gen_params),
-                               amcz_gen_params);
-        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create amcz chain");
 
         // Create the AMCZ pool
         mps_pool_t _global_amcz_pool;
-        res = mps_pool_create(&_global_amcz_pool,
-                              _global_arena,
-                              mps_class_amcz(),
-                              obj_fmt,
-                              amcz_chain);
-
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+            MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
+            res = mps_pool_create_k(&_global_amcz_pool, _global_arena, mps_class_amcz(), args);
+        } MPS_ARGS_END(args);
 
 
         // Create the AWL pool here
@@ -466,19 +381,17 @@ namespace gctools {
 
 
         // And the allocation points
-        res = mps_ap_create_k(&_global_automatic_mostly_copying_allocation_point, _global_amc_pool, mps_args_none );
+        res = mps_ap_create_k(&_global_automatic_mostly_copying_allocation_point,
+                              _global_amc_pool, mps_args_none );
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mostly_copying_allocation_point");
 
         // res = mps_ap_create_k(&_global_mvff_allocation_point, _global_mvff_pool, mps_args_none );
         // if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mvff_allocation_point");
 
-        res = mps_ap_create_k(&_global_automatic_mostly_copying_zero_rank_allocation_point, _global_amcz_pool, mps_args_none );
+        res = mps_ap_create_k(&_global_automatic_mostly_copying_zero_rank_allocation_point,
+                              _global_amcz_pool, mps_args_none );
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create mostly_copying_zero_rank_allocation_point");
 
-#ifdef USE_AWL_POOL
-        res = mps_ap_create_k(&_global_automatic_weak_link_allocation_point, _global_awl_pool, mps_args_none );
-        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create weak_link_allocation_point");
-#endif
 
         // register the current and only thread
         mps_thr_t global_thread;
@@ -537,8 +450,7 @@ namespace gctools {
         mps_pool_destroy(global_non_moving_pool);
         mps_pool_destroy(_global_amc_pool);
         mps_arena_park(_global_arena);
-        mps_chain_destroy(amcz_chain);
-        mps_chain_destroy(amc_chain);
+        mps_chain_destroy(only_chain);
         mps_fmt_destroy(obj_fmt);
         mps_arena_destroy(_global_arena);
 

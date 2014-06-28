@@ -72,7 +72,7 @@ namespace gctools {
     GCKindEnum ;
 #undef GC_ENUM
 #else
-    typedef enum { KIND_null, KIND_SYSTEM_fwd, KIND_SYSTEM_fwd2, KIND_SYSTEM_pad1, KIND_SYSTEM_pad } GCKindEnum;
+    typedef enum { KIND_null, KIND_max } GCKindEnum;
 #endif
 };
 
@@ -427,17 +427,6 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss
             } else {
                 THROW_HARD_ERROR(BF("SegOfAddr for address: %p failed - this should never happen") % sptrP->px_ref());
             }
-#if 0 // pass base to MPS_FIX2
-            mps_addr_t base = gctools::ClientPtrToBasePtr(client); 
-	    int offset = reinterpret_cast<char*>((sptrP)->px_ref()) - reinterpret_cast<char*>(base); 
-            DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p client=%p  base=%p  offset=%d  seg=%p") % sptrP->px_ref() % client % base % offset % seg ); 
-	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&base)); 
-            DEBUG_MPS_MESSAGE(boost::format("  new_base=%p") % base);
-            if (res != MPS_RES_OK) return res;              
-            mps_addr_t new_obj = reinterpret_cast<void*>(reinterpret_cast<char*>(base)+offset);
-            DEBUG_MPS_MESSAGE(boost::format("  old_obj=%p  new_obj = %p\n") % (sptrP->px_ref()) % new_obj ); 
-            (sptrP)->_pxset(new_obj); 
-#else // pass client to MPS_FIX2
 	    int offset = reinterpret_cast<char*>((sptrP)->px_ref()) - reinterpret_cast<char*>(client); 
             DEBUG_MPS_MESSAGE(boost::format("  px_ref()=%p client=%p  offset=%d  Seg=%p") % sptrP->px_ref() % client % offset % seg); 
 	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&client)); 
@@ -446,7 +435,6 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss
             mps_addr_t new_obj = reinterpret_cast<void*>(reinterpret_cast<char*>(client)+offset);
             DEBUG_MPS_MESSAGE(boost::format("  old_obj=%p  new_obj = %p\n") % (sptrP->px_ref()) % new_obj ); 
             (sptrP)->_pxset(new_obj); 
-#endif
         }								
     };
     return MPS_RES_OK;
@@ -473,15 +461,8 @@ inline mps_res_t ptrFix(mps_ss_t _ss
 {
     DEBUG_MPS_MESSAGE(boost::format("POINTER_FIX of %s@%p px: %p") % client_name % clientP  % *clientP );
    if ( MPS_FIX1(GC_SCAN_STATE,*clientP) ) {                              
-#if 0 // pass base to MPS_FIX2
-        mps_addr_t base = ClientPtrToBasePtr(*clientP);         
-        mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&(base))); 
-        if (res != MPS_RES_OK) return res;                              
-        *clientP = BasePtrToMostDerivedPtr<void>(base);                    
-#else // pass client to MPS_FIX2
         mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(clientP)); 
         if (res != MPS_RES_OK) return res;                              
-#endif
     };
    return MPS_RES_OK;
 };

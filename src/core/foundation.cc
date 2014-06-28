@@ -1486,6 +1486,7 @@ namespace core
 
     string lisp_symbolNameAsString(Symbol_sp sym)
     {
+        if ( sym.nilp() ) return "NIL";
 	return sym->symbolNameAsString();
     }
 

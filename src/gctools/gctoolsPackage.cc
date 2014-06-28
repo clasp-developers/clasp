@@ -332,10 +332,10 @@ namespace gctools {
     }
 
 
-#define ARGS_af_gcReachableObjects "(&optional x (marker 0) msg)"
-#define DECL_af_gcReachableObjects ""
-#define DOCS_af_gcReachableObjects "gcReachableObjects - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)"
-    T_mv af_gcReachableObjects(T_sp x, Fixnum_sp marker, Str_sp msg)
+#define ARGS_af_room "(&optional x (marker 0) msg)"
+#define DECL_af_room ""
+#define DOCS_af_room "room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)"
+    T_mv af_room(T_sp x, Fixnum_sp marker, Str_sp msg)
     {_G();
         string smsg = "Total";
         if ( msg.notnilp() ) {
@@ -690,7 +690,7 @@ namespace gctools {
             core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
             core::af_def(GcToolsPkg,"gcInfo",&af_gcInfo);
             core::af_def(GcToolsPkg,"gcMarker",&af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
-            core::af_def(GcToolsPkg,"gcReachableObjects",&af_gcReachableObjects,ARGS_af_gcReachableObjects, DECL_af_gcReachableObjects, DOCS_af_gcReachableObjects);
+            core::af_def(ClPkg,"room",&af_room,ARGS_af_room, DECL_af_room, DOCS_af_room);
             core::af_def(GcToolsPkg,"garbageCollect",&af_garbageCollect);
             core::af_def(GcToolsPkg,"cleanup",&af_cleanup);
             core::af_def(GcToolsPkg,"maxBootstrapKinds",&af_maxBootstrapKinds);
