@@ -1980,6 +1980,11 @@ so that they don't have to be constantly recalculated"
     (dolist (enum sorted-enums)
       (funcall (species-finalize (enum-species enum)) fout enum anal))))
 
+(defun build-mps-uses-finalize (fout anal)
+  (let* ((sorted-enums (sorted-enums anal)))
+    (dolist (enum sorted-enums)
+      (funcall (species-finalize (enum-species enum)) fout enum anal))))
+
 
 
 (defun separate-namespace-name (name)
