@@ -47,23 +47,47 @@ def toposort2(data):
         v.discard(k) # Ignore self dependencies
     extra_items_in_deps = reduce(set.union, data.values()) - set(data.keys())
 
+#new code
     for item in extra_items_in_deps:
         data.update({item:set()})
+# original code
+#    data.update({item:set() for item in extra_items_in_deps})
+#----END
+#    print("Data = %s\n" % data)
 
     while True:
-        ordered = set()
+#new code
+        orderednew = set()
         for item,dep in data.items():
             if not dep:
-                ordered.update(item)
+                orderednew.add(item)
+        ordered = orderednew
+#original code
 #        ordered = set(item for item,dep in data.items() if not dep)
+#----END
+#        print("orderednew = %s\n" % orderednew)
+#        print("ordered  = %s\n" % ordered )
+#        print("   SAME ordered = %d\n" % (orderednew == ordered))
+
         if not ordered:
             break
         yield sorted(ordered)
+
+
+#new code
+        datanew = {}
         for item,dep in data.items():
             if item not in ordered:
-                data.update({item:(dep-ordered)})
+                datanew.update({item:(dep-ordered)})
+        data = datanew
+#original code
 #        data = {item: (dep - ordered) for item,dep in data.items()
 #                if item not in ordered}
+#---END
+#        print("datanew = %s\n" % datanew)
+#        print("data    = %s\n" % data)
+#        print("   SAME data = %d\n" % (datanew == data))
+
     assert not data, "A cyclic dependency exists amongst %r" % data
 
 ## end of http://code.activestate.com/recipes/577413/ }}}

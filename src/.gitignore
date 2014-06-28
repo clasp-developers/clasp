@@ -1,3 +1,4 @@
+*.pyc
 *.bc
 *.ll
 *.bc-rc
