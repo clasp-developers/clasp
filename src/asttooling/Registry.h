@@ -32,7 +32,8 @@ namespace asttooling {
 
 namespace asttooling {
     namespace RegMap {
-        struct SymbolMatcherDescriptorPair {
+        class SymbolMatcherDescriptorPair {
+	public:
             SymbolMatcherDescriptorPair(core::Symbol_sp k, const internal::MatcherDescriptor* v) : Name(k), matcher(v) {};
             core::Symbol_sp     Name;
             const internal::MatcherDescriptor*    matcher;

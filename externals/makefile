@@ -224,7 +224,7 @@ boost-build-debug:
 				--with-system --with-mpi\
 				include=../$(ZLIB_SOURCE_DIR) linkflags=-L../$(ZLIB_SOURCE_DIR)\
 				--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR) \
-				debug \
+				debug link=static\
 				-j$(COMPILE_PROCESSORS) \
 				install ) | tee _boost.log 
 

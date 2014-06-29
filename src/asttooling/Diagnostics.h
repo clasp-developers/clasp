@@ -32,7 +32,8 @@ namespace asttooling {
     using namespace llvm;
 
 /// \brief A VariantValue instance annotated with its parser context.
-    struct ParserValue {
+    class ParserValue {
+    public:
         ParserValue() : /*Text(),*/ Range(), Value() {}
 //    llvm::StringRef Text;
         core::Cons_sp Range;
@@ -79,7 +80,8 @@ namespace asttooling {
 
 
     /// \brief Information stored for one frame of the context.
-    struct ContextFrame {
+    class ContextFrame {
+    public:
         ContextType Type;
         core::Cons_sp Range;
         std::vector<std::string> Args;
@@ -89,14 +91,16 @@ namespace asttooling {
     };
 
 
-    struct Message {
+  class Message {
+     public:
         core::Cons_sp Range;
         ErrorType Type;
         std::vector<std::string> Args;
     };
 
     /// \brief Information stored for each error found.
-    struct ErrorContent {
+  class ErrorContent {
+  public:
         gctools::Vec0<ContextFrame> ContextStack;
         gctools::Vec0<Message> Messages;
     };
@@ -166,7 +170,7 @@ namespace asttooling {
     /// parsing/construction can fail. Any error triggered within a context will
     /// keep information about the context chain.
     /// This class should be used as a RAII instance in the stack.
-    struct Context {
+    class Context {
     public:
         /// \brief About to call the constructor for a matcher.
         enum ConstructMatcherEnum { ConstructMatcher };
@@ -191,7 +195,7 @@ namespace asttooling {
     ///
     /// This context will take care of merging all errors that happen within it
     /// as "candidate" overloads for the same matcher.
-    struct OverloadContext  {
+    class OverloadContext  {
     public:
         OverloadContext(Diagnostics* Error);
         virtual ~OverloadContext();

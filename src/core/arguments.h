@@ -12,8 +12,9 @@ namespace core
 #define SUB_LAMBDA_LIST		-3
 #define	SPECIAL_TARGET		-2
 #define	UNDEFINED_TARGET	-1
-    struct Argument
+    class Argument
     {
+    public:
 	T_sp  		_ArgTarget;
 	int		_ArgTargetFrameIndex;
 	explicit Argument() : _ArgTarget(_Nil<T_O>())
@@ -42,8 +43,9 @@ namespace core
     };
       
 
-    struct ArgumentWithDefault : public Argument
+    class ArgumentWithDefault : public Argument
     {
+    public:
 	typedef Argument Base;
 	T_sp 		_Default;
         ArgumentWithDefault() : _Default(_Nil<T_O>()) {};
@@ -52,8 +54,9 @@ namespace core
 	string asString() const;
     };
 
-    struct RequiredArgument : public Argument
+    class RequiredArgument : public Argument
     {
+    public:
 	typedef Argument Base;
         RequiredArgument() {};
 	RequiredArgument(T_sp target) : Argument(target) {};
@@ -64,8 +67,9 @@ namespace core
 
 
 
-    struct OptionalArgument : public ArgumentWithDefault
+    class OptionalArgument : public ArgumentWithDefault
     {
+    public:
 	typedef ArgumentWithDefault Base;
 	Argument	_Sensor;
         OptionalArgument() {};
@@ -75,8 +79,9 @@ namespace core
     };
 
 
-    struct RestArgument : public Argument
+    class RestArgument : public Argument
     {
+    public:
 	typedef Argument Base;
 	explicit RestArgument() : Argument() {};
 	explicit RestArgument(T_sp target) : Argument(target) {};
@@ -85,8 +90,9 @@ namespace core
 	string asString() const;
     };
 
-    struct KeywordArgument : public ArgumentWithDefault
+    class KeywordArgument : public ArgumentWithDefault
     {
+    public:
 	typedef ArgumentWithDefault Base;
 	T_sp 		_Keyword;
 	Argument	_Sensor;
@@ -100,8 +106,9 @@ namespace core
 
 
 
-    struct AuxArgument : public Argument
+    class AuxArgument : public Argument
     {
+    public:
 	typedef Argument Base;
 	T_sp 		_Expression;
         AuxArgument() : Argument(_Nil<T_O>()), _Expression(_Nil<T_O>()) {};
