@@ -88,7 +88,7 @@ exe clasp_boehm_o : main.cc $(sources)
                     /externals//lib_boehm
     	   : $(deps) <gc>boehm ;
 
-exe clasp_boehm_d : main.cc $(sources) /externals//lib_boehm
+exe clasp_boehm_d : main.cc $(sources) /externals//lib_boehm/<link>static
     	   : $(deps) <gc>boehm ;
 
 exe clasp_mps_o : main.cc $(sources)

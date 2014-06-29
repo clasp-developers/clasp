@@ -16,6 +16,14 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 
 
 project clasp : requirements
+	<define>INHERITED_FROM_SRC
+        <cxxflags>"-Wno-deprecated-register"
+	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
+	<cxxflags>"-fvisibility=default"
+        <variant>debug:<cxxflags>"-O0 -g"
+        <variant>release:<cxxflags>"-O3"
+        <linkflags>"-fvisibility=default"
+
 	<define>INCLUDED_FROM_CLASP
 	<include>$(APPRES-EXTERNALS-RELEASE-INCLUDE)
 	<define>EXPAT
@@ -132,8 +140,6 @@ project clasp : requirements
 	<toolset>pgi:<cxxflags>"-mp -gopt"
 	<toolset>pgi:<linkflags>"-mp -gopt"
 	<define>READLINE
-
-
 
 	: usage-requirements
     ;
