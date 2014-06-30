@@ -624,6 +624,12 @@ namespace core
     
 }; // core namespace
 TRANSLATE(core::StringInputStream_O);
+template<> struct gctools::GCInfo<core::StringInputStream_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = false;
+    static bool constexpr Atomic = false;
+};
 
 
 

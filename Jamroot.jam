@@ -23,7 +23,7 @@ project clasp : requirements
         <variant>debug:<cxxflags>"-O0 -g"
         <variant>release:<cxxflags>"-O3"
         <linkflags>"-fvisibility=default"
-
+	<target-os>linux:<linkflags>-lpthread
 	<define>INCLUDED_FROM_CLASP
 	<include>$(APPRES-EXTERNALS-RELEASE-INCLUDE)
 	<define>EXPAT
