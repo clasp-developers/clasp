@@ -572,8 +572,10 @@ namespace core
 	    getcwd(true); // set *default-pathname-defaults*
 	};
 	{_BLOCK_TRACE("Creating Caches for CLOS");
-	    this->_Roots._MethodCachePtr = gctools::ClassAllocator<Cache>::allocateClass(MaxFunctionArguments,ClosCacheSize);
-	    this->_Roots._SlotCachePtr = gctools::ClassAllocator<Cache>::allocateClass(MaxClosSlots,ClosCacheSize);
+	    this->_Roots._MethodCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
+	    this->_Roots._MethodCachePtr->setup(MaxFunctionArguments,ClosCacheSize);
+	    this->_Roots._SlotCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
+	    this->_Roots._SlotCachePtr->setup(MaxClosSlots,ClosCacheSize);
 	}
 #if 0 // wtf is this???
 	if ( this->_dont_load_startup )

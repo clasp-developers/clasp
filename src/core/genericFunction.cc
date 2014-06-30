@@ -174,7 +174,7 @@ In ecl/src/c/interpreter.d  is the following code
 
 
 /*! Mimic ECL>>gfun.d fill_spec_vector */
-    VectorObjectsWithFillPtr_sp fill_spec_vector(VectorObjectsWithFillPtr_sp vektor,
+  gctools::Vec0<T_sp>& fill_spec_vector(gctools::Vec0<T_sp>& vektor,
 						  int nargs, ArgArray args, T_sp& gf)
     {
 #if DEBUG_CLOS>=2
@@ -183,12 +183,13 @@ In ecl/src/c/interpreter.d  is the following code
 	int narg = nargs;
 	T_sp spec_how_list = gf.as<Instance_O>()->GFUN_SPECIALIZERS();
 	// cl_object *argtype = vector->vector.self.t; // ??
-	VectorObjectsWithFillPtr_sp argtype = vektor;
+	gctools::Vec0<T_sp>& argtype = vektor;
 	int spec_no = 1;
-	argtype->operator[](0) = gf;
+	argtype[0] = gf;
+	vektor.resize(1+af_length(spec_how_list),_Nil<T_O>());
 #if DEBUG_CLOS>=2
 	printf("MLOG fill_spec_vector - writing to argtype[%d] at %p wrote: %lX\n",
-	       0, argtype->operator[](0).px_address(), argtype->operator[](0).intptr());
+	       0, argtype[0].px_address(), argtype[0].intptr());
 #endif
 	for ( ; spec_how_list.notnilp(); spec_how_list=cCdr(spec_how_list.as_or_nil<Cons_O>()) )
 	{
@@ -198,7 +199,7 @@ In ecl/src/c/interpreter.d  is the following code
 	    if ( spec_position >= narg )
 	    {
 		SIMPLE_ERROR(BF("Wrong number of arguments"));
-	    } else if ( spec_no >= vektor->dimension() )
+	    } else if ( spec_no >= vektor.capacity() )
 	    {
 		SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
 	    }
@@ -209,13 +210,13 @@ In ecl/src/c/interpreter.d  is the following code
 #if DEBUG_CLOS>=2
 		printf("MLOG fill_spec_vector argtype[%d] using class_of(args[%d]): %s\n", spec_no, spec_position, mc->__repr__().c_str() );
 #endif
-		argtype->operator[](spec_no) = mc;
+		argtype[spec_no] = mc;
 	    } else
 	    {
 #if DEBUG_CLOS>=2
 		printf("MLOG fill_spec_vector argtype[%d] using args[%d]\n", spec_no, spec_position );
 #endif
-		argtype->operator[](spec_no) = args[spec_position];
+		argtype[spec_no] = args[spec_position];
 	    }
 #if DEBUG_CLOS>=2
 	    printf("MLOG fill_spec_vector - from arg[%d] val=%lX writing to argtype[%d] at %p wrote: %lX --> argtype/%s",
@@ -230,7 +231,7 @@ In ecl/src/c/interpreter.d  is the following code
 #endif
 	    ++spec_no;
 	}
-	vektor->setf_fillPointer(spec_no);
+	ASSERT(spec_no==vektor.size());
 	return vektor;
     }
 
@@ -242,7 +243,7 @@ In ecl/src/c/interpreter.d  is the following code
 	Function_sp func;
 #if defined(CACHE_METHOD_LOOKUP)
         Cache* cache(_lisp->methodCachePtr()); // gctools::StackRootedPointer<Cache> cache(_lisp->methodCachePtr());
-	VectorObjectsWithFillPtr_sp vektor = fill_spec_vector(cache->keys(), nargs, args, gf); // Was ref
+	gctools::Vec0<T_sp>& vektor = fill_spec_vector(cache->keys(), nargs, args, gf); // Was ref
         CacheRecord* e; //gctools::StackRootedPointer<CacheRecord> e;
         try {
             cache->search_cache(e); // e = ecl_search_cache(cache);
@@ -263,7 +264,7 @@ In ecl/src/c/interpreter.d  is the following code
 	    func = mv.as<Function_O>();
 	    if (mv.valueGet(1).notnilp() )
 	    {
-		Sequence_sp keys = vektor->subseq(0,_Nil<T_O>());
+	      Sequence_sp keys = VectorObjects_O::create(vektor);
 		if (e->_key.notnilp())
 		{
                     try {

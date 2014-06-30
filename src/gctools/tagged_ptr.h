@@ -253,8 +253,8 @@ namespace gctools {
 
         void swap(tagged_ptr & rhs)
         {
-            T * tmp = px;
-            px = rhs.px;
+            T * tmp = this->px;
+            this->px = rhs.px;
             rhs.px = tmp;
 #ifdef USE_TAGGED_PTR_P0
             void* tmp0 = pbase;
