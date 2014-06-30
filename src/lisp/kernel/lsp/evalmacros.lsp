@@ -54,7 +54,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 ;; TODO: Remove this
-(eval-when (:compile-toplevel)
+#+use-mps(eval-when (:compile-toplevel)
            (bformat t "evalmacros.lsp !!!!!!!!!!! Turning on core:*debug-load-time-values*!!!!!\n")
            (setq core:*debug-load-time-values* t))
 
