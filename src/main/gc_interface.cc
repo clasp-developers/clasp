@@ -231,16 +231,15 @@ extern "C" {
 
     int trap_obj_scan = 0;
 
-
+//core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR.notnilp()
 
 #ifdef DEBUG_LOAD_TIME_VALUES
 #define SHIELD_SAFE_TELEMETRY(CLIENT,FMT)                               \
-    if ( mps_telemetry_get()&64 ) {                                     \
+    if ( core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR->symbolValue().notnilp() ) { \
         Seg seg;                                                        \
         if ( SegOfAddr(&seg,gctools::_global_arena,CLIENT)) {           \
             ShieldExpose(gctools::_global_arena,seg);                   \
-            mps_label_t lbl = mps_telemetry_intern((FMT).str().c_str()); \
-            mps_telemetry_label(client,lbl);                            \
+            printf("%s\n", (FMT).str().c_str());                        \
             ShieldCover(gctools::_global_arena,seg);                    \
         }                                                               \
     }
