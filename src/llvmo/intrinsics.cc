@@ -1524,11 +1524,10 @@ extern "C"
 	ASSERT((*ltvPP)!=NULL);
 	core::T_sp val = proto_copyLoadTimeValue(ltvPP,index);
 #if defined(USE_MPS) && defined(DEBUG_LOAD_TIME_VALUES)
-        if (mps_telemetry_get()&64) {
+        if (core::_sym_STARdebugLoadTimeValuesSTAR && core::_sym_STARdebugLoadTimeValuesSTAR->symbolValue().notnilp() ) {
             stringstream ss;
             ss << (BF("%s:%d sp_copyLoadTimeValue@%p  _Objects@%p  index[%d]  result client@%p  value: %s  cl::_sym_destructuring_bind@%p") % __FILE__ % __LINE__ % *ltvPP % (*ltvPP)->_Objects._Vector._Contents % index % val.pbase() % _rep_(val).c_str() % cl::_sym_destructuring_bind.pbase()).str();
-            mps_label_t lbl = mps_telemetry_intern(ss.str().substr(0,250).c_str());
-            mps_telemetry_label(val.px_ref(),lbl);
+            printf("%s\n", ss.str().c_str());
         }
 #endif
 	(*resultP) = val;
