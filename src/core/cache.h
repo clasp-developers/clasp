@@ -27,7 +27,7 @@ namespace core
     class Cache
     {
         FRIEND_GC_SCANNER();
-	VectorObjectsWithFillPtr_sp 	_keys;
+	gctools::Vec0<T_sp> 	        _keys;
         gctools::Vec0<CacheRecord>	_table;
 	int				_generation;
 
@@ -37,7 +37,8 @@ namespace core
     public:
     
 	/*! Constructor - like ecl_make_cache */
-	explicit Cache(int keySize, int cacheSize);
+	explicit Cache() {};
+	void setup(int keySize,int cacheSize);
 
 #if 0
         GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
@@ -60,11 +61,11 @@ namespace core
 	void removeOne(T_sp firstKey);
 
 
-	cl_intptr_t vector_hash_key(T_sp keys);
+	cl_intptr_t vector_hash_key(gctools::Vec0<T_sp>& keys);
 
 
-	VectorObjectsWithFillPtr_sp& keys() { return this->_keys;};
-	const VectorObjectsWithFillPtr_sp& keys() const { return this->_keys;};
+	gctools::Vec0<T_sp>& keys() { return this->_keys;};
+	const gctools::Vec0<T_sp>& keys() const { return this->_keys;};
 
 
     };

@@ -62,6 +62,18 @@ namespace core
 
 
 
+  VectorObjects_sp VectorObjects_O::create(const gctools::Vec0<T_sp>& data)
+  {_G();
+    GC_ALLOCATE(VectorObjects_O,result );
+    result->_Values.resize(data.size());
+    for (int i=0, iEnd(data.size()); i<iEnd; ++i ) {
+      result->_Values[i] = data[i];
+    }
+    return result;
+  }
+
+
+
 
 
     void VectorObjects_O::setup(T_sp initialElement, Sequence_sp initialContents, int dimension, bool adjustable)
@@ -246,7 +258,7 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
 	for ( int i=0; i<isize; ++i )
 	{
 	    result->_Values[i] = this->_Values[istart];
-	    istart++;
+	    ++istart;
 	}
 	return result;
     }

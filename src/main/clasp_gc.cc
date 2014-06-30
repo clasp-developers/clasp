@@ -4380,7 +4380,7 @@ case KIND_CLASSALLOC_core__InstanceCreator: {
 } break;
 case KIND_CLASSALLOC_core__Cache: {
     core::Cache* obj_gc_safe = reinterpret_cast<core::Cache*>(client);
-    SMART_PTR_FIX(obj_gc_safe->_keys);
+    POINTER_FIX(obj_gc_safe->_keys._Vector._Contents);
     POINTER_FIX(obj_gc_safe->_table._Vector._Contents);
     typedef core::Cache type_KIND_CLASSALLOC_core__Cache;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__Cache)) + global_alignup_sizeof_header;

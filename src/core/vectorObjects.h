@@ -44,7 +44,7 @@ namespace core
     public:
 	static VectorObjects_sp create(T_sp initial_element, int dimension, T_sp elementType);
 	static VectorObjects_sp make(T_sp initial_element, Sequence_sp initialContents, int dimension, bool adjustable );
-
+	static VectorObjects_sp create(const gctools::Vec0<T_sp>& objs);
 
     public:
 	void setup(T_sp initial_element, Sequence_sp initialContents, int dimension, bool adjustable);
