@@ -1204,13 +1204,18 @@ be wrapped with to make a closure"
                             (compile* name definition env)
                           (values fn fn-kind wrenv warnp failp)
                           ))))
-                (cmp-log "------------  Finished building MCJIT Module - about to get-compiled-function  Final module follows...\n")
+                (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
                 (cmp-log-dump *the-module*)
-                (let* ((compiled-function (progn
-                                            (cmp-log "About to get-compiled-function with fn %s\n" fn)
-                                            (llvm-sys:get-compiled-function *run-time-execution-engine* name fn
-                                                                            (irc-environment-activation-frame wrapped-env)
-                                                                            function-kind)))
+                (let* ((compiled-function
+                        (progn
+                          (cmp-log "About to finalize-engine with fn %s\n" fn)
+                          (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+                           *run-time-execution-engine*
+                           name
+                           fn
+                           (irc-environment-activation-frame wrapped-env)
+                           function-kind
+                           *run-time-literals-external-name*)))
                        (compiled-body (get-body compiled-function)))
                   (set-compiled-funcs compiled-body *all-funcs-for-one-compile*)
                   (when name (setf-symbol-function name compiled-function))
@@ -1253,10 +1258,12 @@ be wrapped with to make a closure"
 		  (lambda-list-handler (get-lambda-list-handler fn)))
 	      (let* ((fn (compile-lambda/lambda-block name
 						      lambda-list-handler nil "" code env))
-		     (compiled-function (llvm-sys:get-compiled-function *run-time-execution-engine*
-									name fn
-									(irc-environment-activation-frame env)
-									(function-kind fn))))
+		     (compiled-function (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+                                         *run-time-execution-engine*
+                                         name fn
+                                         (irc-environment-activation-frame env)
+                                         (function-kind fn)
+                                         *run-time-literals-external-name*)))
 		(llvm-sys:disassemble* compiled-function))))
 	   (t (error "Unknown disassemble target")))))
       ((and (consp desig) (or (eq (car desig) 'lambda) (eq (car desig) 'ext::lambda-block)))

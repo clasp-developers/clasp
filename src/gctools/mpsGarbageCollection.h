@@ -513,7 +513,6 @@ extern "C" {
     /*! Return the number of messages processed */
     extern int processMpsMessages(void );
 
-
 };
 
 

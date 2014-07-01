@@ -483,6 +483,7 @@ namespace core
     class Cons_O;
     class Pointer_O;
     class VectorObjects_O;
+    class LoadTimeValues_O;
     /* AMS pool classes */
     class Symbol_O;
     class Null_O;

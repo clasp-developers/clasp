@@ -47,6 +47,7 @@
 #include "core/pointer.h"
 #include "core/str.h"
 #include "core/vectorObjectsWithFillPtr.h"
+#include "main/gc_interface.fwd.h"
 #include "llvmoExpose.h"
 #include "insertPoint.h"
 #include "debugLoc.h"
@@ -882,54 +883,6 @@ namespace llvmo
 
 
 
-    core::Function_sp ExecutionEngine_O::getCompiledFunction(core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind)
-    {_G();
-	// Stuff to support MCJIT
-	llvm::ExecutionEngine* engine = this->wrappedPtr();
-	engine->finalizeObject();
-	ASSERTF(fn.notnilp(),BF("The Function must never be nil"));
-	void* p = engine->getPointerToFunction(fn->wrappedPtr());
-	if (!p) {
-	    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(sym));
-	}
-	LLVMFunctoid::fptr_type lisp_funcPtr = (LLVMFunctoid::fptr_type)(p);
-	string functoidName = sym.nilp() ? "" : sym->fullName();
-	LLVMFunctoid* functoid = gctools::ClassAllocator<LLVMFunctoid>::allocateClass(functoidName,lisp_funcPtr);
-	core::CompiledBody_sp compiledBody = core::CompiledBody_O::create(functoid,fn);
-	core::CompiledFunction_sp func = core::CompiledFunction_O::makeCompiledFunction( sym,
-											 compiledBody,
-											 activationFrameEnvironment,
-											 _Nil<core::SourceFileInfo_O>(), 0, 0,
-											 functionKind );
-	return func;
-    }
-
-
-    void ExecutionEngine_O::runFunction(Function_sp func, core::Str_sp fileName ) //, core::Cons_sp args )
-    {_G();
-        if ( func.nilp() ) {
-            SIMPLE_ERROR(BF("Function is nil"));
-        }
-	vector<llvm::GenericValue> argValues;
-//	argValues.push_back(llvm::GenericValue((void*)(&result)));
-//	argValues.push_back(llvm::GenericValue((void*)(&vf)));
-	ASSERTF(this->wrappedPtr()!=NULL,BF("You asked to runFunction but the pointer to the function is NULL"));
-	llvm::ExecutionEngine* engine = this->wrappedPtr();
-	llvm::Function* fn = func->wrappedPtr();
-	/* Force compilation like lli */
-	engine->finalizeObject();
-	/* Make sure a pointer for the function is available */
-	void* fnptr = engine->getPointerToFunction(fn);
-	if ( !fnptr ) {
-	  SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % fn->getName().data() );
-	}
-	
-	/* Run the function */
-//	printf( "%s:%d - Calling startup function in: %s - Figure out what to do here - I need to start using the unix backtrace and dwarf debugging information rather than setting up my own backtrace info in the IHF", __FILE__, __LINE__, fileName->c_str() );
-	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<T_O>());
-	engine->runFunction(fn,argValues);
-//	return result;
-    }
 
 
 
@@ -971,11 +924,11 @@ namespace llvmo
 	    .def("clearAllGlobalMappings",&llvm::ExecutionEngine::clearAllGlobalMappings)
 	    .def("addGlobalMapping",&ExecutionEngine_O::addGlobalMapping)
 //	    .def("addGlobalMappingForLoadTimeValueVector",&ExecutionEngine_O::addGlobalMappingForLoadTimeValueVector)
-	    .def("getCompiledFunction",&ExecutionEngine_O::getCompiledFunction)
+//	    .def("getCompiledFunction",&ExecutionEngine_O::getCompiledFunction)
 	    .def("getDataLayout", &llvm::ExecutionEngine::getDataLayout)
 	    .def("hasNamedModule", &ExecutionEngine_O::hasNamedModule)
 	    .def("dependentModuleNames", &ExecutionEngine_O::dependentModuleNames)
-	    .def("runFunction",&ExecutionEngine_O::runFunction)
+//	    .def("runFunction",&ExecutionEngine_O::runFunction)
 //	    .def("getPointerToFunction", &llvm::ExecutionEngine::getPointerToFunction)
 	    ;
 	
@@ -3560,6 +3513,67 @@ namespace llvmo
 
 
 
+    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName )
+    {_G();
+	// Stuff to support MCJIT
+	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
+	engine->finalizeObject();
+	ASSERTF(fn.notnilp(),BF("The Function must never be nil"));
+	void* p = engine->getPointerToFunction(fn->wrappedPtr());
+	if (!p) {
+	    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(sym));
+	}
+	LLVMFunctoid::fptr_type lisp_funcPtr = (LLVMFunctoid::fptr_type)(p);
+	string functoidName = sym.nilp() ? "" : sym->fullName();
+	LLVMFunctoid* functoid = gctools::ClassAllocator<LLVMFunctoid>::allocateClass(functoidName,lisp_funcPtr);
+	core::CompiledBody_sp compiledBody = core::CompiledBody_O::create(functoid,fn);
+	core::CompiledFunction_sp func = core::CompiledFunction_O::makeCompiledFunction( sym,
+											 compiledBody,
+											 activationFrameEnvironment,
+											 _Nil<core::SourceFileInfo_O>(), 0, 0,
+											 functionKind );
+// globalRunTimeValues are registered once        
+//        void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalRunTimeValueName->get()));
+//        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalRunTimeValueName->get().c_str(), globalPtr );
+//        IMPLEMENT_MEF(BF("Register the global runTimeValue pointer with the garbage collector"));
+	return func;
+    }
+
+
+
+
+
+
+
+    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, Function_sp func, core::Str_sp fileName, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
+    {_G();
+        if ( func.nilp() ) {
+            SIMPLE_ERROR(BF("Function is nil"));
+        }
+	vector<llvm::GenericValue> argValues;
+	ASSERTF(oengine->wrappedPtr()!=NULL,BF("You asked to runFunction but the pointer to the function is NULL"));
+	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
+	llvm::Function* fn = func->wrappedPtr();
+	/* Force compilation like lli */
+	engine->finalizeObject();
+	/* Make sure a pointer for the function is available */
+	void* fnptr = engine->getPointerToFunction(fn);
+	if ( !fnptr ) {
+	  SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % fn->getName().data() );
+	}
+	
+	/* Run the function */
+//	printf( "%s:%d - Calling startup function in: %s - Figure out what to do here - I need to start using the unix backtrace and dwarf debugging information rather than setting up my own backtrace info in the IHF", __FILE__, __LINE__, fileName->c_str() );
+	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<core::T_O>());
+        void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalLoadTimeValueName->get()));
+        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalLoadTimeValueName->get().c_str(), globalPtr );
+        ASSERT(globalPtr!=NULL);
+#ifdef USE_MPS
+        registerLoadTimeValuesRoot(reinterpret_cast<core::LoadTimeValues_O**>(globalPtr));
+#endif
+	engine->runFunction(fn,argValues);
+//	return result;
+    }
 
 
 
@@ -3882,6 +3896,12 @@ void initialize_llvmo_expose()
 
     SYMBOL_EXPORT_SC_(LlvmoPkg,llvm_value_p);
     Defun(llvm_value_p);
+
+
+    core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndGetCompiledFunction",&finalizeEngineAndRegisterWithGcAndGetCompiledFunction);
+    core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndRunFunction",&finalizeEngineAndRegisterWithGcAndRunFunction);
+
+    
 }
 
 

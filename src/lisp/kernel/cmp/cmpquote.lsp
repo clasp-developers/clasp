@@ -27,6 +27,7 @@
 
 (defvar *load-time-value-holder-global-var* nil
   "Store the current load-time-value data structure for COMPILE-FILE")
+(defvar *load-time-value-holder-name* "load-time-value-vector")
 
 (defvar *run-time-value-holder-global-var* nil
   "All load-time-values and quoted values are stored in this array accessed with an integer index"
@@ -692,7 +693,7 @@ marshaling of compiled quoted data"
 					     nil
 					     'llvm-sys:internal-linkage
 					     (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+)
-					     "load-time-value-vector"))
+					     *load-time-value-holder-name*))
 	     (*next-load-time-value-index* 0)
 	     (*next-load-time-symbol-index* 0)
 	     (*fixnum-coalesce* (make-hash-table :test #'eql))

@@ -6,10 +6,12 @@
 #include "core/numbers.h"
 #include "core/str.h"
 #include "core/builtInClass.h"
+#include "core/loadTimeValues.h"
 #include "core/posixTime.h" // was core/posixTime.cc???
 #include "core/standardClass.h"
 #include "core/structureClass.h"
 #include "core/wrappers.h"
+#include "main/gc_interface.fwd.h"
 
 
 extern "C" {
@@ -432,6 +434,8 @@ namespace gctools {
                               NULL,
                               0);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create scan root");
+
+        registerLoadTimeValuesRoot(&globalRunTimeValues);
 
         exit_code = startupFn(argc,argv,mpiEnabled,mpiRank,mpiSize);
 
