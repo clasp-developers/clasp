@@ -324,7 +324,12 @@ extern "C" {
 
 
 
+    vector<core::LoadTimeValues_O**>   globalLoadTimeValuesRoots;
 
+    void registerLoadTimeValuesRoot(core::LoadTimeValues_O** ptr)
+    {
+        globalLoadTimeValuesRoots.push_back(ptr);
+    }
 
 
 
@@ -336,15 +341,12 @@ extern "C" {
 //	mps_thr_t gc__thr = 0; // This isn't passed in but the scanners need it 
         MPS_SCAN_BEGIN(GC_SCAN_STATE) {
             MPS_LOG(BF("Starting rooted_HeapRoots"));
-#if 0
-            for ( HeapRoot* scur=rooted_HeapRoots; scur!=NULL; scur=scur->_next ) {
-                scur->onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
+
+//            printf("%s:%d  Fixing globalLoadTimeValuesRoots[%d]\n", __FILE__, __LINE__, globalLoadTimeValuesRoots.size() );
+            for ( auto& it : globalLoadTimeValuesRoots ) {
+                POINTER_FIX(*it);
             }
-            MPS_LOG(BF("Starting rooted_StackRoots"));
-            for ( StackRoot* lcur=rooted_StackRoots; lcur!=NULL; lcur=lcur->_next ) {
-                lcur->onStackScanGCRoots(GC_SCAN_ARGS_PASS);
-            }
-#endif
+//            printf("---------Done\n");
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
 #include "main/clasp_gc.cc"
