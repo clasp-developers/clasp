@@ -112,6 +112,7 @@ Return the module and the global variable that represents the load-time-value-ho
 
 (defparameter *run-time-module* nil)
 
+(defvar *load-time-value-holder-name* "load-time-value-vector")
 
 (defvar *the-module* nil
   "This stores the module into which compile puts its stuff")
