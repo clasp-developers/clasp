@@ -406,6 +406,18 @@ namespace gctools {
 
     
 #ifdef USE_MPS    
+
+
+    
+    
+#define ARGS_af_mpsTelemetryFlush "()"
+#define DECL_af_mpsTelemetryFlush ""
+#define DOCS_af_mpsTelemetryFlush "mpsTelemetryFlush"
+    void af_mpsTelemetryFlush()
+    {_G();
+        mps_telemetry_flush();
+    };
+
 #define ARGS_af_mpsTelemetrySet "(flags)"
 #define DECL_af_mpsTelemetrySet ""
 #define DOCS_af_mpsTelemetrySet "mpsTelemetrySet"
@@ -699,6 +711,7 @@ namespace gctools {
 #ifdef USE_MPS
             core::af_def(GcToolsPkg,"mpsTelemetrySet",&af_mpsTelemetrySet);
             core::af_def(GcToolsPkg,"mpsTelemetryReset",&af_mpsTelemetryReset);
+            core::af_def(GcToolsPkg,"mpsTelemetryFlush",&af_mpsTelemetryFlush);
 #endif
 
 

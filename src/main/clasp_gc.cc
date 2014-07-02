@@ -9603,4 +9603,5 @@ case KIND_ROOTCLASSALLOC_clbind__detail__class_map: {
  SMART_PTR_FIX(llvmo::_sym_FCMP_ORD);
  SMART_PTR_FIX(ext::_sym_lexicalVar);
 SMART_PTR_FIX(core::_sym_STARdebugLoadTimeValuesSTAR);
+SMART_PTR_FIX(core::_sym_STARdebugInterpretedFunctionsSTAR);
 #endif // defined(GC_GLOBALS)

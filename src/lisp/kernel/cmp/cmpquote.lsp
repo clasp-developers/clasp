@@ -27,7 +27,6 @@
 
 (defvar *load-time-value-holder-global-var* nil
   "Store the current load-time-value data structure for COMPILE-FILE")
-(defvar *load-time-value-holder-name* "load-time-value-vector")
 
 (defvar *run-time-value-holder-global-var* nil
   "All load-time-values and quoted values are stored in this array accessed with an integer index"

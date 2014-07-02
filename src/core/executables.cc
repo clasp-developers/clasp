@@ -344,6 +344,10 @@ namespace core
 
     T_mv Interpreted_O::INVOKE(int nargs, ArgArray args )
     {_G();
+        if ( _sym_STARdebugInterpretedFunctionsSTAR && _sym_STARdebugInterpretedFunctionsSTAR->symbolValue().notnilp() ) {
+//            printf("%s:%d   _sym_STARdebugInterpretedFunctionsSTAR->symbolValue().px_ref() = %p\n", __FILE__, __LINE__, _sym_STARdebugInterpretedFunctionsSTAR->symbolValue().px_ref() );
+            printf("%s:%d  Trapped an InterpretedFunction call: %s  code:\n%s\n", __FILE__, __LINE__, _rep_(this->_Name).c_str(), _rep_(this->_Code).c_str());
+        }
 	T_mv result;
 	LambdaListHandler_sp lambdaListHandler = this->getLambdaListHandler();
 	ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(lambdaListHandler,this->closedEnvironment());

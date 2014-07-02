@@ -326,7 +326,7 @@ namespace gctools {
 #define AMC_CHAIN_SIZE CHAIN_SIZE
         // Now the generation chain
         mps_gen_param_s gen_params[] = {
-            { AMC_CHAIN_SIZE, 0.85 },
+            { AMC_CHAIN_SIZE,   0.97 },
             { AMC_CHAIN_SIZE*6, 0.45 },
         };
 
