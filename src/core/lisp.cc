@@ -504,12 +504,12 @@ namespace core
 		);
 	    af_pathnameTranslations(Str_O::create("sys"),pts);
 
-            // setup the APP logical-pathname-translations
+            // setup the APP-RESOURCES logical-pathname-translations
             Cons_sp app = Cons_O::createList(
-                Cons_O::createList(Str_O::create("app:**;*.*"), bundle->getAppPathname())
+                Cons_O::createList(Str_O::create("app-resources:**;*.*"), bundle->getAppContentsResourcesPathname())
                 /* , more here */
                 );
-	    af_pathnameTranslations(Str_O::create("app"),app);
+	    af_pathnameTranslations(Str_O::create("app-resources"),app);
 	}
 #if 0  // I shouldn't be using PATH - I should be using PATHNAMEs
 	{_BLOCK_TRACE("Initializing special variable PATH");

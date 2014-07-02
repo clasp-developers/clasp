@@ -275,12 +275,16 @@ namespace core
 
 
 
-    Pathname_sp Bundle::getAppPathname()
+    Pathname_sp Bundle::getAppContentsResourcesPathname()
     {
 	stringstream ss;
 	ASSERT(!this->_RootDir.empty());
 	ss << this->_RootDir.string();
 	ss << DIR_SEPARATOR;
+        ss << "Contents";
+        ss << DIR_SEPARATOR;
+        ss << "Resources";
+        ss << DIR_SEPARATOR;
 	ss << "**/*.*";
 	return af_pathname(Str_O::create(ss.str()));
     }

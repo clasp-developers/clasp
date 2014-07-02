@@ -129,9 +129,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; TODO: Really - find a better way to do this than hard-coding paths
 (defconstant +intrinsics-bitcode-pathname+
-  #+use-refcount "app:Contents;Resources;lib;release;intrinsics_bitcode_refcount.o"
-  #+use-boehm "app:Contents;Resources;lib;release;intrinsics_bitcode_boehm.o"
-  #+use-mps "app:Contents;Resources;lib;release;intrinsics_bitcode_mps.o"
+  #+use-refcount "app-resources:lib;release;intrinsics_bitcode_refcount.o"
+  #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.o"
+  #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
 )
 (defconstant +image-pathname+ (pathname "sys:kernel;_image.bundle"))
 (defconstant +imagelto-pathname+ (pathname "sys:kernel;_imagelto.bundle"))
@@ -538,6 +538,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/trace
     lsp/loop2
     lsp/packlib
+    cmp/cmpinterpreted
     lsp/defpackage
     lsp/format
     #|

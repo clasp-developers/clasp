@@ -1,6 +1,7 @@
 #ifndef	lispStream_H //[
 #define lispStream_H
 
+#define MERGE_FDSTREAM
 
 #include <fstream>
 #include <iostream>
@@ -698,13 +699,36 @@ namespace core
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	FDStream_O();
+        FDStream_O() : Base()
+                     , _FStream(NULL)
+                     , _Buffer(NULL)
+                     , _Closeable(true)
+#ifdef MERGE_FDSTREAM
+                     , _RenameToOriginalOnClose(false)
+                     , _OriginalPathname(_Nil<Pathname_O>())
+#endif
+        {};
+
+
 	virtual ~FDStream_O();
 	
     protected: // instance variables here
 	FILE*	_FStream;
 	char*	_Buffer;
 	bool	_Closeable;
+#ifdef MERGE_FDSTREAM
+// From FDInStream
+	SourceFileInfo_sp 		_SourceFileInfo;
+	/*! Keep track of the line pos in the file */
+	StreamCursor		_Cursor;
+	LongLongInt		_gcount;
+	UnputChar		_Unput;
+// From FDOutStream
+	Pathname_sp	_ActivePathname;
+	bool		_RenameToOriginalOnClose;
+	Pathname_sp	_OriginalPathname;
+	StreamCursor	_OutputCursor;
+#endif
     public:
 	static FDStream_sp makeFromFileDescriptor(const string& name,
 						  int fileDescriptor, 
@@ -739,11 +763,13 @@ namespace core
     public:
 	
     protected: // instance variables here
+#ifndef MERGE_FDSTREAM
 	SourceFileInfo_sp 		_SourceFileInfo;
 	/*! Keep track of the line pos in the file */
 	StreamCursor		_Cursor;
 	LongLongInt		_gcount;
 	UnputChar		_Unput;
+#endif
     public:
 	static FDInStream_sp create(Pathname_sp fileSpec);
 	static FDInStream_sp create(FILE* fout, string const& name, bool closeable=true);
@@ -788,16 +814,23 @@ namespace core
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // ctor/dtor for classes with shared virtual base
-	explicit FDOutStream_O() : FDStream_O(), _RenameToOriginalOnClose(false), _OriginalPathname(_Nil<Pathname_O>()) {};
+	explicit FDOutStream_O() : FDStream_O()
+#ifndef MERGE_FDSTREAM
+                                 , _RenameToOriginalOnClose(false)
+                                 , _OriginalPathname(_Nil<Pathname_O>())
+#endif
+        {};
 	virtual ~FDOutStream_O() {};
     public:
 
 	
-    private: // instance variables here
+    protected: // instance variables here
+#ifndef MERGE_FDSTREAM
 	Pathname_sp	_ActivePathname;
 	bool		_RenameToOriginalOnClose;
 	Pathname_sp	_OriginalPathname;
 	StreamCursor	_OutputCursor;
+#endif
     public:
 	static FDOutStream_sp create(FILE* fout, string const& name, bool closeable=true);
  	static FDOutStream_sp create(Pathname_sp currentPath, std::ios_base::openmode mode);

@@ -2213,8 +2213,6 @@ T_sp StringOutStream_O::close(bool abort)
 
 
 
-    FDStream_O::FDStream_O() : Base(), _FStream(NULL), _Buffer(NULL), _Closeable(true) {};
-
     FDStream_O::~FDStream_O()
     {
 	if ( this->_FStream != NULL )
