@@ -184,13 +184,17 @@ namespace core
 #endif
 	int mode = RTLD_NOW | RTLD_GLOBAL;
 	Path_sp path = coerce::pathDesignator(pathDesig);
-	Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
-	string ts = pathWithProperExtension->asString();
-	void* handle = dlopen(ts.c_str(),mode);
-	if ( handle == NULL )
-	{
-	    string error = dlerror();
-	    return(Values(_Nil<T_O>(),Str_O::create(error)));
+	string ts0 = path->asString();
+	void* handle = dlopen(ts0.c_str(),mode);
+	if ( !handle ) {
+	  Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
+	  string ts = pathWithProperExtension->asString();
+	  handle = dlopen(ts.c_str(),mode);
+	  if ( !handle )
+	    {
+	      string error = dlerror();
+	      return(Values(_Nil<T_O>(),Str_O::create(error)));
+	    }
 	}
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     }
@@ -204,7 +208,7 @@ namespace core
     
 #define ARGS_af_dlsym "(handle name)"
 #define DECL_af_dlsym ""
-#define DOCS_af_dlsym "(dlsym handle name) handle is from dlopen or :rt_next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found."
+#define DOCS_af_dlsym "(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found."
     T_sp af_dlsym(T_sp ohandle, Str_sp name)
     {_G();
 	void* handle = NULL;

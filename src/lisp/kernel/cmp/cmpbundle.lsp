@@ -80,7 +80,7 @@
       (return-from execute-llc))
     #+(and :target-os-linux :address-model-64)
     (progn
-      (safe-system (bformat nil "llc -filetype=obj -march=x86-64 -relocation-model=pic %s" file))
+      (safe-system (bformat nil "llc -filetype=obj -march=x86-64 -relocation-model=pic -o=%s %s" output-file file))
       (return-from execute-llc))
     (error "Add support for running external llc")))
 
@@ -94,6 +94,14 @@
     (let ((all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
       (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
       (safe-system (bformat nil "ld -v %s -macosx_version_min 10.7 -flat_namespace -undefined warning -bundle -o %s" all-names bundle-file)))
+    (return-from execute-link))
+  #+target-os-linux
+  (let ((part-files (mapcar #'(lambda (pn) (namestring (probe-file (make-pathname :type (fasl-pathname-type "o") :defaults pn))))
+			    all-part-pathnames))
+	(bundle-file (core:coerce-to-filename bundle-pathname)))
+    (let ((all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
+      (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
+      (safe-system (bformat nil "clang++ -v %s -shared -o %s" all-names bundle-file)))
     (return-from execute-link))
   (error "Add support for this operating system to cmp:execute-link")
   )
