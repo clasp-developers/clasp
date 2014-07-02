@@ -499,7 +499,7 @@ ifeq ($(DEVELOPMENT_ENVIRONMENT),linuxClang)
 llvm-setup-debug:
 	-mkdir -p $(LLVM_SOURCE_DIR)/build-debug
 	(cd $(LLVM_SOURCE_DIR)/build-debug; \
-		../configure --enable-targets=x86_64 --enable-debug-symbols --enable-debug-runtime \
+		../configure --enable-targets=x86_64 --enable-debug-symbols --enable-debug-runtime --enable-profiling \
 		--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_DEBUG_DIR) --with-gcc-toolchain=$(HOME)/local/gcc-4.8.3 \
 		CC=$(HOME)/local/gcc-4.8.3/bin/gcc \
 		CXX=$(HOME)/local/gcc-4.8.3/bin/g++ \
@@ -512,7 +512,7 @@ llvm-setup-debug:
 llvm-setup-release:
 	-mkdir -p $(LLVM_SOURCE_DIR)/build-release
 	(cd $(LLVM_SOURCE_DIR)/build-release; \
-		../configure --enable-targets=x86_64  --enable-optimized --enable-assertions  \
+		../configure --enable-targets=x86_64  --enable-optimized --enable-assertions --enable-profiling  \
 		--prefix=$(CLASP_APP_RESOURCES_EXTERNALS_RELEASE_DIR) --with-gcc-toolchain=$(HOME)/local/gcc-4.8.3 \
 		CC=$(HOME)/local/gcc-4.8.3/bin/gcc \
 		CXX=$(HOME)/local/gcc-4.8.3/bin/g++ \
