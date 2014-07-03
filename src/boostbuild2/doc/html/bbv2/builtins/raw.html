@@ -1,0 +1,122 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Custom commands</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../tasks.html" title="Chapter 5. Common tasks">
+<link rel="prev" href="testing.html" title="Testing">
+<link rel="next" href="../reference/precompiled_headers.html" title="Precompiled Headers">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="testing.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../tasks.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../reference/precompiled_headers.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.builtins.raw"></a>Custom commands</h2></div></div></div>
+<p>
+      For most main target rules, Boost.Build automatically figures out
+      the commands to run.  When you want to use new
+      file types or support new tools, one approach is to extend Boost.Build to
+      support them smoothly, as documented in <a href="../extender.html" title="Chapter 7. Extender Manual">Chapter 7, <i>Extender Manual</i></a>.
+      However, if the new tool is only used in a single place, it
+      might be easier just to specify the commands to run explicitly.
+    </p>
+<p>
+      
+      Three main target rules can be used for that. The <code class="computeroutput">make
+      </code> rule allows you to construct a single file from any number
+      of source file, by running a command you specify. The <code class="computeroutput">
+      notfile</code> rule allows you to run an arbitrary command,
+      without creating any files. And finaly, the <code class="computeroutput">generate
+      </code> rule allows you to describe a transformation using
+      Boost.Build's virtual targets. This is higher-level than the file names that
+      the <code class="computeroutput">make</code> rule operates with and allows you to
+      create more than one target, create differently named targets depending on
+      properties or use more than one tool.
+    </p>
+<p>
+      The <code class="computeroutput">make</code> rule is used when you want to create
+      one file from a number of sources using some specific command. The
+      <code class="computeroutput">notfile</code> is used to unconditionally run a
+      command.
+    </p>
+<p>
+      Suppose you want to create the file <code class="filename">file.out</code> from
+      the file <code class="filename">file.in</code> by running the command <span><strong class="command">
+      in2out</strong></span>. Here is how you would do this in Boost.Build:
+</p>
+<pre class="programlisting">
+make file.out : file.in : @in2out ;
+actions in2out
+{
+    in2out $(&lt;) $(&gt;)
+}
+</pre>
+<p>
+      If you run <span><strong class="command">b2</strong></span> and <code class="filename">file.out</code> does
+      not exist, Boost.Build will run the <span><strong class="command">in2out</strong></span> command to
+      create that file. For more details on specifying actions, see <a href="../overview/jam_language.html#bbv2.overview.jam_language.actions">the section called &#8220;Boost.Jam Language&#8221;</a>.
+    </p>
+<p>
+      It could be that you just want to run some command unconditionally, and
+      that command does not create any specific files. For that you can use the
+      <code class="computeroutput">notfile</code> rule. For example:
+</p>
+<pre class="programlisting">
+notfile echo_something : @echo ;
+actions echo
+{
+    echo "something"
+}
+</pre>
+<p>
+      The only difference from the <code class="computeroutput">make</code> rule is
+      that the name of the target is not considered a name of a file, so
+      Boost.Build will unconditionally run the action.
+    </p>
+<p>
+      
+      The <code class="computeroutput">generate</code> rule is used when you want to
+      express transformations using Boost.Build's virtual targets, as opposed to
+      just filenames. The <code class="computeroutput">generate</code> rule has the
+      standard main target rule signature, but you are required to specify the
+      <code class="literal">generating-rule</code> property. The value of the property
+      should be in the form <code class="literal">
+      @<em class="replaceable"><code>rule-name</code></em></code>, the named rule should
+      have the following signature:
+</p>
+<pre class="programlisting">
+rule generating-rule ( project name : property-set : sources * )
+</pre>
+<p>
+      and will be called with an instance of the <code class="computeroutput">project-target</code>
+      class, the name of the main target, an instance of the
+      <code class="computeroutput">property-set</code> class containing build properties, and the list
+      of instances of the <code class="computeroutput">virtual-target</code> class corresponding to
+      sources. The rule must return a list of <code class="computeroutput">virtual-target</code>
+      instances. The interface of the <code class="computeroutput">virtual-target</code> class can be
+      learned by looking at the <code class="filename">build/virtual-target.jam</code>
+      file. The <code class="filename">generate</code> example contained in the
+      Boost.Build distribution illustrates how the <code class="literal">generate</code>
+      rule can be used.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="testing.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../tasks.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../reference/precompiled_headers.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

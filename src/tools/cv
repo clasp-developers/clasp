@@ -1,2 +1,0 @@
-#! /bin/bash -f
-mwxCando CANDO/viewer/CandoViewer/cv.l $1

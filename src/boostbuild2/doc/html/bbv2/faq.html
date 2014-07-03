@@ -1,0 +1,104 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 8. Frequently Asked Questions</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../index.html" title="Boost.Build V2 User Manual">
+<link rel="prev" href="extending/toolset_modules.html" title="Toolset modules">
+<link rel="next" href="faq/duplicate.html" title='
+      I am getting a "Duplicate name of actual target" error. What does that
+      mean?
+    '>
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="extending/toolset_modules.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="faq/duplicate.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="chapter" lang="en">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="bbv2.faq"></a>Chapter 8. Frequently Asked Questions</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="section"><a href="faq.html#bbv2.faq.featurevalue">
+      How do I get the current value of feature in Jamfile?
+    </a></span></dt>
+<dt><span class="section"><a href="faq/duplicate.html">
+      I am getting a "Duplicate name of actual target" error. What does that
+      mean?
+    </a></span></dt>
+<dt><span class="section"><a href="faq/envar.html">
+      Accessing environment variables
+    </a></span></dt>
+<dt><span class="section"><a href="faq/proporder.html">
+      How to control properties order?
+    </a></span></dt>
+<dt><span class="section"><a href="faq/liborder.html">
+      How to control the library linking order on Unix?
+    </a></span></dt>
+<dt><span class="section"><a href="faq/external.html">
+      Can I get capture external program output using a Boost.Jam variable?
+    </a></span></dt>
+<dt><span class="section"><a href="faq/projectroot.html">
+      How to get the project root (a.k.a. Jamroot) location?
+    </a></span></dt>
+<dt><span class="section"><a href="faq/flags.html">
+      How to change compilation flags for one file?
+    </a></span></dt>
+<dt><span class="section"><a href="faq/dll-path.html">
+      Why are the <code class="literal">dll-path</code> and <code class="literal">hardcode-dll-paths
+      </code> properties useful?
+    </a></span></dt>
+<dt><span class="section"><a href="recipies/site-config.html">Targets in site-config.jam</a></span></dt>
+<dt><span class="section"><a href="faq/header-only-libraries.html">Header-only libraries</a></span></dt>
+</dl>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.faq.featurevalue"></a>
+      How do I get the current value of feature in Jamfile?
+    </h2></div></div></div>
+<p>
+      This is not possible, since Jamfile does not have "current" value of any
+      feature, be it toolset, build variant or anything else. For a single
+      run of Boost.Build, any given main target can be
+      built with several property sets. For example, user can request two build
+      variants on the command line. Or one library is built as shared when used
+      from one application, and as static when used from another. Each Jamfile
+      is read only once so generally there is no single value of a feature you
+      can access in Jamfile.
+    </p>
+<p>
+      A feature has a specific value only when building a target, and there are
+      two ways you can use that value:
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li>
+          Use conditional requirements or indirect conditional requirements. See
+          <a href="overview/targets.html#bbv2.overview.targets.requirements.conditional">the section called &#8220;Requirements&#8221;</a>.
+        </li>
+<li>
+        Define a custom generator and a custom main target type. The custom
+        generator can do arbitrary processing or properties. See the <a href="extender.html" title="Chapter 7. Extender Manual">Chapter 7, <i>Extender Manual</i></a>.
+      </li>
+</ul></div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="extending/toolset_modules.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="faq/duplicate.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>
