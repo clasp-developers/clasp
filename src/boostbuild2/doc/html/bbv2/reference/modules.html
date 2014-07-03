@@ -1,0 +1,486 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Builtin modules</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../reference.html" title="Chapter 6. Reference">
+<link rel="prev" href="tools.html" title="Builtin tools">
+<link rel="next" href="class.html" title="Builtin classes">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="tools.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../reference.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="class.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.reference.modules"></a>Builtin modules</h2></div></div></div>
+<div class="toc"><dl>
+<dt><span class="section"><a href="modules.html#bbv2.reference.modules.modules">modules</a></span></dt>
+<dt><span class="section"><a href="modules.html#bbv2.reference.modules.path">path</a></span></dt>
+<dt><span class="section"><a href="modules.html#bbv2.reference.modules.type">type</a></span></dt>
+</dl></div>
+<p>
+      This section describes the modules that are provided
+      by Boost.Build.  The import rule allows rules from
+      one module to be used in another module or Jamfile.
+    </p>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="bbv2.reference.modules.modules"></a>modules</h3></div></div></div>
+<a class="indexterm" name="idp3645768"></a><p>
+        The <code class="computeroutput">modules</code> module defines basic functionality
+        for handling modules.
+      </p>
+<p>
+        A module defines a number of rules that can be used in other
+        modules.  Modules can contain code at the top level to initialize
+        the module.  This code is executed the first time the
+        module is loaded.
+        </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top"><p>
+            A Jamfile is a special kind of module which is managed by
+            the build system.  Although they cannot be loaded directly
+            by users, the other features of modules are still useful
+            for Jamfiles.
+          </p></td></tr>
+</table></div>
+<p>
+      </p>
+<p>
+        Each module has its own namespaces for variables and rules.  If two
+        modules A and B both use a variable named X, each one gets its own
+        copy of X.  They won't interfere with each other in any way.
+        Similarly, importing rules into one module has no effect on any other
+        module.
+      </p>
+<p>
+        Every module has two special variables.
+        <code class="computeroutput">$(__file__)</code> contains the name of the file that
+        the module was loaded from and <code class="computeroutput">$(__name__)</code>
+        contains the name of the module.
+        </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top"><p><code class="computeroutput">$(__file__)</code> does not contain
+        the full path to the file.  If you need this, use
+        <code class="computeroutput">modules.binding</code>.</p></td></tr>
+</table></div>
+<p>
+      </p>
+<div class="orderedlist"><ol type="1">
+<li>
+<a name="bbv2.reference.modules.modules.binding"></a><a class="indexterm" name="idp3651128"></a><code class="computeroutput">rule binding ( module-name )</code><p>Returns the filesystem binding of the given module.</p>
+<p>For example, a module can get its own location with:
+          </p>
+<pre class="programlisting">me = [ modules.binding $(__name__) ] ;</pre>
+<p>
+          </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.modules.poke"></a><a class="indexterm" name="idp3653408"></a><code class="computeroutput">rule poke ( module-name ? : variables + : value * )</code><p>Sets the module-local value of a variable.</p>
+<p>For example, to set a variable in the global module:
+          </p>
+<pre class="programlisting">modules.poke : ZLIB_INCLUDE : /usr/local/include ;</pre>
+<p>
+          </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.modules.peek"></a><a class="indexterm" name="idp3655744"></a><code class="computeroutput">rule peek ( module-name ? : variables + )</code><p>Returns the module-local value of a variable.</p>
+<p>
+            For example, to read a variable from the global module:
+            </p>
+<pre class="programlisting">local ZLIB_INCLUDE = [ modules.peek : ZLIB_INCLUDE ] ;</pre>
+<p>
+          </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.modules.call-in"></a><a class="indexterm" name="idp3658032"></a><code class="computeroutput">rule call-in ( module-name ? : rule-name args * : * ) </code><p>Call the given rule locally in the given module. Use
+          this for rules accepting rule names as arguments, so that
+          the passed rule may be invoked in the context of the rule's
+          caller (for example, if the rule accesses module globals or
+          is a local rule).
+          </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top"><p>rules called this way may accept at most
+          8 parameters.</p></td></tr>
+</table></div>
+<p>Example:
+</p>
+<pre class="programlisting">
+rule filter ( f : values * )
+{
+    local m = [ CALLER_MODULE ] ;
+    local result ;
+    for v in $(values)
+    {
+        if [ modules.call-in $(m) : $(f) $(v) ]
+        {
+            result += $(v) ;
+        }
+    }
+    return result ;
+}
+</pre>
+<p>
+          </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.modules.load"></a><a class="indexterm" name="idp3661024"></a><code class="computeroutput">rule load ( module-name : filename ? : search * )</code><p>Load the indicated module if it is not already loaded.</p>
+<div class="variablelist"><dl>
+<dt><span class="term"><code class="literal">module-name</code></span></dt>
+<dd><p>Name of module to load.</p></dd>
+</dl></div>
+<div class="variablelist"><dl>
+<dt><span class="term"><code class="literal">filename</code></span></dt>
+<dd><p>(partial) path to file; Defaults to <code class="computeroutput">$(module-name).jam</code></p></dd>
+</dl></div>
+<div class="variablelist"><dl>
+<dt><span class="term"><code class="literal">search</code></span></dt>
+<dd><p>Directories in which to search for filename.
+                  Defaults to <code class="computeroutput">$(BOOST_BUILD_PATH)</code>.</p></dd>
+</dl></div>
+</li>
+<li>
+<a name="bbv2.reference.modules.modules.import"></a><a class="indexterm" name="idp3666448"></a><code class="computeroutput">rule import ( module-names + : rules-opt * : rename-opt * )</code><p>Load the indicated module and import rule names into the
+          current module. Any members of <code class="computeroutput">rules-opt</code> will be
+          available without qualification in the caller's module. Any
+          members of <code class="computeroutput">rename-opt</code> will be taken as the names
+          of the rules in the caller's module, in place of the names they
+          have in the imported module.  If <code class="computeroutput">rules-opt = '*'</code>,
+          all rules from the indicated module are imported into the
+          caller's module. If <code class="computeroutput">rename-opt</code> is supplied, it must have the
+          same number of elements as <code class="computeroutput">rules-opt</code>.</p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top"><p>The <code class="literal">import</code> rule is available
+          without qualification in all modules.</p></td></tr>
+</table></div>
+<p>Examples:
+</p>
+<pre class="programlisting">
+import path ;
+import path : * ;
+import path : join ;
+import path : native make : native-path make-path ;
+</pre>
+<p>
+          </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.modules.clone-rules"></a><a class="indexterm" name="idp3671672"></a><code class="computeroutput">rule clone-rules ( source-module target-module )</code><p>Define exported copies in <code class="computeroutput">$(target-module)</code>
+          of all rules exported from <code class="computeroutput">$(source-module)</code>. Also
+          make them available in the global module with qualification,
+          so that it is just as though the rules were defined originally
+          in <code class="computeroutput">$(target-module)</code>.</p>
+</li>
+</ol></div>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="bbv2.reference.modules.path"></a>path</h3></div></div></div>
+<a class="indexterm" name="idp3674776"></a><p>
+    Performs various path manipulations. Paths are always in a 'normalized'
+    representation. In it, a path may be either:
+    
+    </p>
+<div class="itemizedlist"><ul type="disc">
+<li><p><code class="computeroutput">'.'</code>, or</p></li>
+<li><p>
+          <code class="computeroutput">['/'] [ ( '..' '/' )* (token '/')* token ]</code>
+        </p></li>
+</ul></div>
+<p>
+    
+    In plain english, a path can be rooted, <code class="computeroutput">'..'</code>
+    elements are allowed only at the beginning, and it never
+    ends in slash, except for the path consisting of slash only.
+  </p>
+<div class="orderedlist"><ol type="1">
+<li>
+<a name="bbv2.reference.modules.path.make"></a><a class="indexterm" name="idp3678608"></a><code class="computeroutput">rule make ( native )</code><p>Converts the native path into normalized form.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.native"></a><a class="indexterm" name="idp3680496"></a><code class="computeroutput">rule native ( path )</code><p>Builds the native representation of the path.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.is-rooted"></a><a class="indexterm" name="idp3682168"></a><code class="computeroutput">rule is-rooted ( path )</code><p>Tests if a path is rooted.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.has-parent"></a><a class="indexterm" name="idp3683840"></a><code class="computeroutput">rule has-parent ( path )</code><p>Tests if a path has a parent.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.basename"></a><a class="indexterm" name="idp3685552"></a><code class="computeroutput">rule basename ( path )</code><p>Returns the path without any directory components.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.parent"></a><a class="indexterm" name="idp3687304"></a><code class="computeroutput">rule parent ( path )</code><p>Returns the parent directory of the path. If no parent exists, an error is issued.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.reverse"></a><a class="indexterm" name="idp3689032"></a><code class="computeroutput">rule reverse ( path )</code><p>
+        Returns <code class="computeroutput">path2</code> such that
+        <code class="computeroutput">[ join path path2 ] = "."</code>.
+        The path may not contain <code class="computeroutput">".."</code>
+        element or be rooted.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.join"></a><a class="indexterm" name="idp3691768"></a><code class="computeroutput">rule join ( elements + )</code><p>
+        Concatenates the passed path elements. Generates an error if any
+        element other than the first one is rooted. Skips any empty or
+        undefined path elements.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.root"></a><a class="indexterm" name="idp3693648"></a><code class="computeroutput">rule root ( path root )</code><p>
+        If <code class="computeroutput">path</code> is relative, it is rooted at
+        <code class="computeroutput">root</code>. Otherwise, it is unchanged.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.pwd"></a><a class="indexterm" name="idp3696040"></a><code class="computeroutput">rule pwd ( )</code><p>Returns the current working directory.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.glob"></a><a class="indexterm" name="idp3697728"></a><code class="computeroutput">rule glob ( dirs * : patterns + : exclude-patterns * )</code><p>
+        Returns the list of files matching the given pattern in the specified
+        directory. Both directories and patterns are supplied as portable paths. Each
+        pattern should be a non-absolute path, and can't contain "." or ".." elements.
+        Each slash separated element of a pattern can contain the following special
+        characters:
+        </p>
+<div class="itemizedlist"><ul type="disc">
+<li><p>'?' matches any character</p></li>
+<li><p>'*' matches an arbitrary number of characters</p></li>
+</ul></div>
+<p>
+        A file $(d)/e1/e2/e3 (where 'd' is in $(dirs)) matches the pattern p1/p2/p3 if and
+        only if e1 matches p1, e2 matches p2 and so on.
+        
+        For example:
+</p>
+<pre class="programlisting">
+[ glob . : *.cpp ]
+[ glob . : */build/Jamfile ]
+</pre>
+<p>
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.glob-tree"></a><a class="indexterm" name="idp3701440"></a><code class="computeroutput">rule glob-tree ( roots * : patterns + : exclude-patterns * )</code><p>
+        Recursive version of <a href="modules.html#bbv2.reference.modules.path.glob">glob</a>.
+        Builds the glob of files while also searching in
+        the subdirectories of the given roots. An optional set of exclusion patterns
+        will filter out the matching entries from the result. The exclusions also
+        apply to the subdirectory scanning, such that directories that match the
+        exclusion patterns will not be searched.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.exists"></a><a class="indexterm" name="idp3704008"></a><code class="computeroutput">rule exists ( file )</code><p>Returns true if the specified file exists.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.all-parents"></a><a class="indexterm" name="idp3705672"></a><code class="computeroutput">rule all-parents ( path : upper_limit ? : cwd ? )</code><p>
+        Find out the absolute name of path and return the list of all the parents,
+        starting with the immediate one. Parents are returned as relative names. If
+        <code class="computeroutput">upper_limit</code> is specified, directories above it
+        will be pruned.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.glob-in-parents"></a><a class="indexterm" name="idp3708008"></a><code class="computeroutput">rule glob-in-parents ( dir : patterns + : upper-limit ? )</code><p>
+        Search for <code class="computeroutput">patterns</code> in parent directories
+        of <code class="computeroutput">dir</code>, up to and including
+        <code class="computeroutput">upper_limit</code>, if it is specified, or
+        till the filesystem root otherwise.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.relative"></a><a class="indexterm" name="idp3710960"></a><code class="computeroutput">rule relative ( child parent : no-error ? )</code><p>
+        Assuming <code class="computeroutput">child</code> is a subdirectory of
+        <code class="computeroutput">parent</code>, return the relative path from
+        <code class="computeroutput">parent</code> to <code class="computeroutput">child</code>.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.relative-to"></a><a class="indexterm" name="idp3714520"></a><code class="computeroutput">rule relative-to ( path1 path2 )</code><p>Returns the minimal path to path2 that is relative path1.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.programs-path"></a><a class="indexterm" name="idp3716552"></a><code class="computeroutput">rule programs-path ( )</code><p>
+        Returns the list of paths which are used by the operating system for
+        looking up programs.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.path.mkdirs"></a><a class="indexterm" name="idp3718608"></a><code class="computeroutput">rule makedirs ( path )</code><p>
+        Creates a directory and all parent directories that do not
+        already exist.
+      </p>
+</li>
+</ol></div>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="bbv2.reference.modules.type"></a>type</h3></div></div></div>
+<a class="indexterm" name="idp3720944"></a><p>
+    Deals with target type declaration and defines target class which supports
+    typed targets.
+  </p>
+<div class="orderedlist"><ol type="1">
+<li>
+<a name="bbv2.reference.modules.type.register"></a><a class="indexterm" name="idp3722792"></a><code class="computeroutput">rule register ( type : suffixes * : base-type ? )</code><p>
+        Registers a target type, possible derived from a
+        <code class="computeroutput">base-type</code>.  Providing a list
+        of suffixes here is a shortcut for separately calling the
+        <a href="modules.html#bbv2.reference.modules.type.register-suffixes">register-suffixes</a>
+        rule with the given suffixes and the
+        <a href="modules.html#bbv2.reference.modules.type.set-generated-target-suffix">set-generated-target-suffix</a>
+        rule with the first given suffix.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.register-suffixes"></a><a class="indexterm" name="idp3726816"></a><code class="computeroutput">rule register-suffixes ( suffixes + : type )</code><p>
+        Specifies that files with suffix from <code class="computeroutput">suffixes</code>
+        be recognized as targets of  type <code class="computeroutput">type</code>.
+        Issues an error if a different type is already specified for any
+        of the suffixes.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.registered"></a><a class="indexterm" name="idp3729784"></a><code class="computeroutput">rule registered ( type )</code><p>Returns true iff type has been registered.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.validate"></a><a class="indexterm" name="idp3731760"></a><code class="computeroutput">rule validate ( type )</code><p>Issues an error if <code class="computeroutput">type</code> is unknown.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.set-scanner"></a><a class="indexterm" name="idp3734176"></a><code class="computeroutput">rule set-scanner ( type : scanner )</code><p>Sets a scanner class that will be used for this type.</p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.get-scanner"></a><a class="indexterm" name="idp3736208"></a><code class="computeroutput">rule get-scanner ( type : property-set )</code><p>
+        Returns a scanner instance appropriate to <code class="computeroutput">type</code>
+        and <code class="computeroutput">property-set</code>.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.base"></a><a class="indexterm" name="idp3739152"></a><code class="computeroutput">rule base ( type )</code><p>
+        Returns a base type for the given type or nothing in case the given
+        type is not derived.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.all-bases"></a><a class="indexterm" name="idp3741136"></a><code class="computeroutput">rule all-bases ( type )</code><p>
+        Returns the given type and all of its base types in order of
+        their distance from type.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.all-derived"></a><a class="indexterm" name="idp3743248"></a><code class="computeroutput">rule all-derived ( type )</code><p>
+        Returns the given type and all of its derived types in order
+        of their distance from type.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.is-derived"></a><a class="indexterm" name="idp3745296"></a><code class="computeroutput">rule is-derived ( type base )</code><p>
+        Returns true if <code class="computeroutput">type</code> is equal to
+        <code class="computeroutput">base</code> or has <code class="computeroutput">base</code>
+        as its direct or indirect base.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.set-generated-target-suffix"></a><a class="indexterm" name="idp3748672"></a><code class="computeroutput">rule set-generated-target-suffix ( type : properties * : suffix )</code><p>
+        Sets a file suffix to be used when generating a target of <code class="computeroutput">type</code> with the
+        specified properties. Can be called with no properties if no suffix has
+        already been specified for the <code class="computeroutput">type</code>. The <code class="computeroutput">suffix</code> parameter can be an empty
+        string (<code class="computeroutput">""</code>) to indicate that no suffix should be used.
+      </p>
+<p>
+        Note that this does not cause files with <code class="computeroutput">suffix</code>
+        to be automatically recognized as being of <code class="computeroutput">type</code>.
+        Two different types can use the same suffix for their generated files
+        but only one type can be auto-detected for a file with that suffix.
+        User should explicitly specify which one using the
+        <a href="modules.html#bbv2.reference.modules.type.register-suffixes">register-suffixes</a>
+        rule.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.change-generated-target-suffix"></a><a class="indexterm" name="idp3754656"></a><code class="computeroutput">rule change-generated-target-suffix ( type : properties * : suffix )</code><p>
+        Change the suffix previously registered for this type/properties
+        combination. If suffix is not yet specified, sets it.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.generated-target-suffix"></a><a class="indexterm" name="idp3756944"></a><code class="computeroutput">rule generated-target-suffix ( type : property-set )</code><p>
+        Returns the suffix used when generating a file of
+        <code class="computeroutput">type</code> with the given properties.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.set-generated-target-prefix"></a><a class="indexterm" name="idp3759488"></a><code class="computeroutput">rule set-generated-target-prefix ( type : properties * : prefix )</code><p>
+        Sets a target prefix that should be used when generating targets of
+        <code class="computeroutput">type</code> with the specified properties. Can
+        be called with empty properties if no prefix for
+        <code class="computeroutput">type</code> has been specified yet.
+      </p>
+<p>
+        The <code class="computeroutput">prefix</code> parameter can be empty string
+        (<code class="computeroutput">""</code>) to indicate that no prefix
+        should be used.
+      </p>
+<p>
+        Usage example: library names use the <code class="computeroutput">"lib"</code>
+        prefix on unix.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.change-generated-target-prefix"></a><a class="indexterm" name="idp3764544"></a><code class="computeroutput">rule change-generated-target-prefix ( type : properties * : prefix )</code><p>
+        Change the prefix previously registered for this type/properties
+        combination. If prefix is not yet specified, sets it.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.generated-target-prefix"></a><a class="indexterm" name="idp3766776"></a><code class="computeroutput">rule generated-target-prefix ( type : property-set )</code><p>
+        Returns the prefix used when generating a file of
+        <code class="computeroutput">type</code> with the given properties.
+      </p>
+</li>
+<li>
+<a name="bbv2.reference.modules.type.type"></a><a class="indexterm" name="idp3769288"></a><code class="computeroutput">rule type ( filename )</code><p>
+        Returns file type given its name. If there are several
+        dots in filename, tries each suffix. E.g. for name of
+        "file.so.1.2" suffixes "2", "1", and "so" will be tried.
+      </p>
+</li>
+</ol></div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="tools.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../reference.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="class.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

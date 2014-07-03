@@ -1,2 +1,0 @@
-#! /bin/bash
-cando_d CANDO/tools/dbinfo.l $*
