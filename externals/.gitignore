@@ -1,8 +1,0 @@
-*.o
-*.so
-ecl/
-boehm-7.2/
-boost/
-boostbuild2/
-llvm/
-gmp-5.0.5/

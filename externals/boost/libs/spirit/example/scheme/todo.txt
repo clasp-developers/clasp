@@ -1,5 +1,0 @@
-Sexpr:
-- allow scheme-ish #t and #f
-- write parser and generator for binary on disk representation of sexpr
-- implement quote in sexpr grammar (e.g. 'sym '(1 2 3 4 5))
-- investigate storing and retrieving polymorphic pointers from utree

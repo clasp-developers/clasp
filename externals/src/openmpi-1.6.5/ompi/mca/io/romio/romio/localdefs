@@ -1,4 +1,0 @@
-#! /bin/sh
-LIBS=" "
-MPI_OFFSET_TYPE="long long"
-FORTRAN_MPI_OFFSET="integer*8"

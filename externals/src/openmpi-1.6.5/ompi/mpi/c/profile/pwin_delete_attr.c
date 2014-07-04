@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/win_delete_attr.c

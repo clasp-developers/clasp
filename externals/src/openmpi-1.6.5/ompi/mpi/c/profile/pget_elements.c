@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/get_elements.c

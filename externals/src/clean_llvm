@@ -1,7 +1,0 @@
-rm -rf ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/include/llvm*
-rm -rf ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/include/clang*
-rm -rf ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/lib/libclang*
-rm -rf ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/lib/libLLVM*
-rm ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/bin/clang
-rm ~/Development/cando/brcl/build/cando.app/Contents/Resources/externals/release/bin/clang++
-make llvm-release

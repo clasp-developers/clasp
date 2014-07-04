@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/type_get_name.c

@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/type_set_attr.c

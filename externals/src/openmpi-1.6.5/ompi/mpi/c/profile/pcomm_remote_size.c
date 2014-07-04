@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/comm_remote_size.c

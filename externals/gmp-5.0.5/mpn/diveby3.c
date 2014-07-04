@@ -1,1 +1,0 @@
-../mpn/generic/diveby3.c

@@ -1,3 +1,0 @@
-real_malloc.lo: real_malloc.c include/private/config.h
-
-include/private/config.h:

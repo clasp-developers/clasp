@@ -1,3 +1,0 @@
-#!/bin/bash
-"$2@CMAKE_INSTALL_SUBDIR@/@CMAKE_BUNDLE_NAME@.app/Contents/MacOS/@CMAKE_BUNDLE_NAME@" --mac-install
-exit 0

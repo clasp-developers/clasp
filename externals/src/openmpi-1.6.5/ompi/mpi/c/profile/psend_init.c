@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/send_init.c

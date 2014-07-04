@@ -1,5 +1,0 @@
-;;;(in-package :xlib)
-;;;(common-lisp:use-package (list :common-lisp))
-(provide :clx)
-(load "clx:defsystem.lisp")
-(load-clx (translate-logical-pathname "CLX:"))

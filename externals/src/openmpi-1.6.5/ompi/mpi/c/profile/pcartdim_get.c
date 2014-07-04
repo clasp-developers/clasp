@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/cartdim_get.c

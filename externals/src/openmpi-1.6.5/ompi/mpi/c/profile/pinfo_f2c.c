@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/info_f2c.c

@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/abort.c

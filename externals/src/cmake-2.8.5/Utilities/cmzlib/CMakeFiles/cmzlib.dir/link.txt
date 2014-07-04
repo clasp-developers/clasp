@@ -1,2 +1,0 @@
-/usr/bin/ar cr libcmzlib.a  CMakeFiles/cmzlib.dir/adler32.c.o CMakeFiles/cmzlib.dir/compress.c.o CMakeFiles/cmzlib.dir/crc32.c.o CMakeFiles/cmzlib.dir/deflate.c.o CMakeFiles/cmzlib.dir/gzio.c.o CMakeFiles/cmzlib.dir/inffast.c.o CMakeFiles/cmzlib.dir/inflate.c.o CMakeFiles/cmzlib.dir/inftrees.c.o CMakeFiles/cmzlib.dir/trees.c.o CMakeFiles/cmzlib.dir/uncompr.c.o CMakeFiles/cmzlib.dir/zutil.c.o
-/usr/bin/ranlib libcmzlib.a

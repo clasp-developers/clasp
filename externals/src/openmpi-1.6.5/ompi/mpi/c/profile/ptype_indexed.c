@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/type_indexed.c

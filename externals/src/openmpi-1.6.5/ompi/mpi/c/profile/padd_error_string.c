@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/add_error_string.c

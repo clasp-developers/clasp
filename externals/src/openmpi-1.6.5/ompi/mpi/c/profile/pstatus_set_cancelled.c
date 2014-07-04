@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/status_set_cancelled.c

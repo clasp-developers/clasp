@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/publish_name.c

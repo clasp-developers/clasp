@@ -1,1 +1,0 @@
-../../../../ompi/mpi/c/file_get_view.c
