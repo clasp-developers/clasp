@@ -1,0 +1,192 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Chapter 4. Overview</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../index.html" title="Boost.Build V2 User Manual">
+<link rel="prev" href="tutorial/prebuilt.html" title="Prebuilt targets">
+<link rel="next" href="overview/jam_language.html" title="Boost.Jam Language">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="tutorial/prebuilt.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="overview/jam_language.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="chapter" lang="en">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="bbv2.overview"></a>Chapter 4. Overview</h2></div></div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="section"><a href="overview.html#bbv2.overview.concepts">Concepts</a></span></dt>
+<dt><span class="section"><a href="overview/jam_language.html">Boost.Jam Language</a></span></dt>
+<dt><span class="section"><a href="overview/configuration.html">Configuration</a></span></dt>
+<dt><span class="section"><a href="overview/invocation.html">Invocation</a></span></dt>
+<dt><span class="section"><a href="overview/targets.html">Declaring Targets</a></span></dt>
+<dt><span class="section"><a href="overview/projects.html">Projects</a></span></dt>
+<dt><span class="section"><a href="overview/build_process.html">The Build Process</a></span></dt>
+</dl>
+</div>
+<p>
+      This section will provide the information necessary to create your own
+      projects using Boost.Build. The information provided here is relatively
+      high-level, and <a href="reference.html" title="Chapter 6. Reference">Chapter 6, <i>Reference</i></a> as well as the on-line
+      help system must be used to obtain low-level documentation (see <a href="overview/invocation.html#bbv2.reference.init.options.help"><code class="option">--help</code></a>).
+    </p>
+<p>
+      Boost.Build actually consists of two parts - Boost.Jam, a build engine
+      with its own interpreted language, and Boost.Build itself, implemented in
+      Boost.Jam's language. The chain of events when you type
+      <span><strong class="command">b2</strong></span> on the command line is as follows:
+      </p>
+<div class="orderedlist"><ol type="1">
+<li><p>
+            The Boost.Build executable tries to find Boost.Build modules and
+            loads the top-level module. The exact process is described in <a href="reference.html#bbv2.reference.init" title="Initialization">the section called &#8220;Initialization&#8221;</a>
+          </p></li>
+<li><p>
+            The top-level module loads user-defined configuration files,
+            <code class="filename">user-config.jam</code> and
+            <code class="filename">site-config.jam</code>, which define available toolsets.
+          </p></li>
+<li><p>
+            The Jamfile in the current directory is read. That in turn might
+            cause reading of further Jamfiles. As a result, a tree of projects
+            is created, with targets inside projects.
+          </p></li>
+<li><p>
+            Finally, using the build request specified on the command line,
+            Boost.Build decides which targets should be built and how. That
+            information is passed back to Boost.Jam, which takes care of
+            actually running the scheduled build action commands.
+          </p></li>
+</ol></div>
+<p>
+    </p>
+<p>
+      So, to be able to successfully use Boost.Build, you need to know only four
+      things:
+      </p>
+<div class="itemizedlist"><ul type="disc">
+<li><p>
+            <a href="overview/configuration.html" title="Configuration">How to configure
+            Boost.Build</a>
+          </p></li>
+<li><p>
+            <a href="overview/targets.html" title="Declaring Targets">How to declare targets in
+              Jamfiles</a>
+          </p></li>
+<li><p>
+            <a href="overview/build_process.html" title="The Build Process">How the build process
+              works</a>
+          </p></li>
+<li><p>
+            Some Basics about the Boost.Jam language. See <a href="overview/jam_language.html" title="Boost.Jam Language">the section called &#8220;Boost.Jam Language&#8221;</a>.
+          </p></li>
+</ul></div>
+<p>
+    </p>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.overview.concepts"></a>Concepts</h2></div></div></div>
+<p>Boost.Build has a few unique concepts that are introduced in this section. The best
+      way to explain the concepts is by comparison with more classical build tools.</p>
+<p>
+        When using any flavour of make, you directly specify <em class="firstterm">targets</em>
+        and commands that are used to create them from other target. The below example
+        creates <code class="filename">a.o</code> from <code class="filename">a.c</code> using a hardcoded
+        compiler invocation command.
+</p>
+<pre class="programlisting">
+a.o: a.c
+    g++ -o a.o -g a.c
+</pre>
+<p>
+        This is a rather low-level description mechanism and it's hard to adjust commands, options,
+        and sets of created targets depending on the compiler and operating system used.
+      </p>
+<p>
+        To improve portability, most modern build system provide a set of higher-level
+        functions that can be used in build description files. Consider this example:
+</p>
+<pre class="programlisting">
+add_program ("a", "a.c")
+</pre>
+<p>
+        This is a function call that creates the targets necessary to create a executable file
+        from the source file <code class="filename">a.c</code>. Depending on configured properties,
+        different command lines may be used. However, <code class="computeroutput">add_program</code> is higher-level,
+        but rather thin level. All targets are created immediately when the build description
+        is parsed, which makes it impossible to perform multi-variant builds. Often, change
+        in any build property requires a complete reconfiguration of the build tree.
+      </p>
+<p>
+        In order to support true multivariant builds, Boost.Build introduces the concept of a
+        <a class="indexterm" name="idp1214512"></a>
+        <a class="indexterm" name="idp1215192"></a>
+        <em class="firstterm">metatarget</em>&#8212;an object that is created when the build description
+        is parsed and can be called later with specific build properties to generate
+        actual targets.
+      </p>
+<p>
+        Consider an example:
+</p>
+<pre class="programlisting">
+exe a : a.cpp ;
+</pre>
+<p>
+        When this declaration is parsed, Boost.Build creates a metatarget, but does not
+        yet decide what files must be created, or what commands must be used. After
+        all build files are parsed, Boost.Build considers the properties requested on the
+        command line. Supposed you have invoked Boost.Build with:
+</p>
+<pre class="screen">
+b2 toolset=gcc toolset=msvc
+</pre>
+<p>
+        In that case, the metatarget will be called twice, once with <code class="computeroutput">toolset=gcc</code>
+        and once with <code class="computeroutput">toolset=msvc</code>. Both invocations will produce concrete
+        targets, that will have different extensions and use different command lines.
+      </p>
+<p>
+        Another key concept is
+        <a class="indexterm" name="idp1218880"></a>
+        <em class="firstterm">build property</em>. A build property is a variable
+        that affects the build process. It can be specified on the command line, and is
+        passed when calling a metatarget. While all build tools have a similar mechanism,
+        Boost.Build differs by requiring that all build properties are declared in advance,
+        and providing a large set of properties with portable semantics.
+      </p>
+<p>
+        The final concept is <a class="indexterm" name="idp1220272"></a>
+        <em class="firstterm">property propagation</em>. Boost.Build does not require that every
+        metatarget is called with the same properties. Instead, the
+        "top-level" metatargets are called with the properties specified on the command line.
+        Each metatarget can elect to augment or override some properties (in particular,
+        using the requirements mechanism, see <a href="overview/targets.html#bbv2.overview.targets.requirements" title="Requirements">the section called &#8220;Requirements&#8221;</a>).
+        Then, the dependency metatargets are called with the modified properties and produce
+        concrete targets that are then used in the build process. Of course, dependency metatargets
+        maybe in turn modify build properties and have dependencies of their own.
+      </p>
+<p>For a more in-depth treatment of the requirements and concepts, you may refer
+      to <a href="http://syrcose.ispras.ru/2009/files/04_paper.pdf" target="_top">SYRCoSE 2009 Boost.Build article</a>.
+      </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="tutorial/prebuilt.html"><img src="../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="overview/jam_language.html"><img src="../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

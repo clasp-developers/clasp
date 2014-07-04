@@ -1,0 +1,176 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Projects</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../overview.html" title="Chapter 4. Overview">
+<link rel="prev" href="targets.html" title="Declaring Targets">
+<link rel="next" href="build_process.html" title="The Build Process">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="targets.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../overview.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="build_process.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.overview.projects"></a>Projects</h2></div></div></div>
+<p>As mentioned before, targets are grouped into projects,
+      and each Jamfile is a separate project. Projects are useful
+      because they allow us to group related targets together, define
+      properties common to all those targets, and assign a symbolic
+      name to the project that can be used in referring to its
+      targets.
+      </p>
+<p>Projects are named using the
+      <code class="computeroutput">project</code> rule, which has the
+      following syntax:
+</p>
+<pre class="programlisting">
+project <em class="replaceable"><code>id</code></em> : <em class="replaceable"><code>attributes</code></em> ;
+</pre>
+<p>
+        Here, <em class="replaceable"><code>attributes</code></em> is a sequence of
+        rule arguments, each of which begins with an attribute-name
+        and is followed by any number of build properties. The list
+        of attribute names along with its handling is also shown in
+        the table below. For example, it is possible to write:
+</p>
+<pre class="programlisting">
+project tennis
+    : requirements &lt;threading&gt;multi
+    : default-build release
+    ;
+</pre>
+<p>
+      </p>
+<p>The possible attributes are listed below.</p>
+<p><span class="emphasis"><em>Project id</em></span> is a short way to denote a project, as
+        opposed to the Jamfile's pathname. It is a hierarchical path,
+        unrelated to filesystem, such as "boost/thread". <a href="../reference/definitions.html#bbv2.reference.ids" title="Target identifiers and references">Target references</a> make use of project ids to
+        specify a target.</p>
+<p><span class="emphasis"><em>Source location</em></span> specifies the directory where sources
+        for the project are located.</p>
+<p><span class="emphasis"><em>Project requirements</em></span> are requirements that apply to
+        all the targets in the projects as well as all subprojects.</p>
+<p><span class="emphasis"><em>Default build</em></span> is the build request that should be
+        used when no build request is specified explicitly.</p>
+<p><a name="bbv2.overview.projects.attributes.projectrule"></a>
+        The default values for those attributes are
+        given in the table below.
+
+        </p>
+<div class="table">
+<a name="idp3168000"></a><p class="title"><b>Table 4.3. </b></p>
+<table class="table" summary="">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Attribute</th>
+<th>Name</th>
+<th>Default value</th>
+<th>Handling by the <code class="computeroutput">project</code>
+                rule</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Project id</td>
+<td>none</td>
+<td>none</td>
+<td>Assigned from the first parameter of the 'project' rule.
+                  It is assumed to denote absolute project id.</td>
+</tr>
+<tr>
+<td>Source location</td>
+<td><code class="literal">source-location</code></td>
+<td>The location of jamfile for the project</td>
+<td>Sets to the passed value</td>
+</tr>
+<tr>
+<td>Requirements</td>
+<td><code class="literal">requirements</code></td>
+<td>The parent's requirements</td>
+<td>The parent's requirements are refined with the passed
+                  requirement and the result is used as the project
+                  requirements.</td>
+</tr>
+<tr>
+<td>Default build</td>
+<td><code class="literal">default-build</code></td>
+<td>none</td>
+<td>Sets to the passed value</td>
+</tr>
+<tr>
+<td>Build directory</td>
+<td><code class="literal">build-dir</code></td>
+<td>Empty if the parent has no build directory set.
+                Otherwise, the parent's build directory with the
+                relative path from parent to the current project
+                appended to it.
+                </td>
+<td>Sets to the passed value, interpreted as relative to the
+                  project's location.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+        </p>
+<p>Besides defining projects and main targets, Jamfiles
+      often invoke various utility rules. For the full list of rules
+      that can be directly used in Jamfile see
+      <a href="../reference/rules.html" title="Builtin rules">the section called &#8220;Builtin rules&#8221;</a>.
+      </p>
+<p>Each subproject inherits attributes, constants and rules
+      from its parent project, which is defined by the nearest
+      Jamfile in an ancestor directory above
+      the subproject.  The top-level project is declared in a file
+      called <code class="filename">Jamroot</code> rather than
+      <code class="filename">Jamfile</code>.  When loading a project,
+      Boost.Build looks for either <code class="filename">Jamroot</code> or
+      <code class="computeroutput">Jamfile</code>.  They are handled identically, except
+      that if the file is called <code class="filename">Jamroot</code>, the
+      search for a parent project is not performed.
+      </p>
+<p>Even when building in a subproject directory, parent
+      project files are always loaded before those of their
+      subprojects, so that every definition made in a parent project
+      is always available to its children. The loading order of any
+      other projects is unspecified.  Even if one project refers to
+      another via the <code class="computeroutput">use-project</code> or a target reference,
+      no specific order should be assumed.
+      </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../../../../../../../doc/html/images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top"><p>Giving the root project the special name
+        &#8220;<code class="filename">Jamroot</code>&#8221; ensures that
+        Boost.Build won't misinterpret a directory above it as the
+        project root just because the directory contains a Jamfile.
+        
+        </p></td></tr>
+</table></div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="targets.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../overview.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="build_process.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

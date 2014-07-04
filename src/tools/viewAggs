@@ -1,5 +1,0 @@
-#! /usr/bin/env python -O
-import sys
-import cando
-
-cando.appViewAggregate.start(sys.argv[1:])

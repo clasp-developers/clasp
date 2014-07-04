@@ -1,3 +1,0 @@
-#! /bin/bash -f
-gdb --args mwxCando_d CANDO/viewer/CandoViewer/cv.l $1
-

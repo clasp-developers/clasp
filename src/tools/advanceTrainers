@@ -1,2 +1,0 @@
-#! /bin/bash
-cando buildDatabase/advanceAllTrainers.csc $* |tee $0.log
