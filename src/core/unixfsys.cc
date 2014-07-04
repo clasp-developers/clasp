@@ -414,11 +414,8 @@ static Pathname_sp
 make_absolute_pathname(T_sp orig_pathname)
 {
     Pathname_sp base_dir = getcwd(false);
-    printf("%s:%d entered make_absolute_pathname: %s\n", __FILE__,__LINE__,_rep_(orig_pathname).c_str());
     Pathname_sp pathname = af_coerceToFilePathname(orig_pathname);
-    printf("%s:%d af_coerceToFilePathname: %s\n", __FILE__,__LINE__,_rep_(pathname).c_str());
     Pathname_sp result = brcl_mergePathnames(pathname, base_dir, kw::_sym_default);
-    printf("%s:%d brcl_mergePathnames: %s\n", __FILE__,__LINE__,_rep_(result).c_str());
     return result;
 }
 
@@ -510,11 +507,8 @@ file_truename(Pathname_sp pathname, Str_sp filename, int flags)
 #define DOCS_af_truename "truename"
 Pathname_sp af_truename(T_sp orig_pathname)
 {
-    printf("%s:%d  orig_pathname: %s\n", __FILE__, __LINE__, _rep_(orig_pathname).c_str());
     Pathname_sp pathname = make_absolute_pathname(orig_pathname);
-    printf("%s:%d  make_absolute_pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
     Pathname_sp base_dir = make_base_pathname(pathname);
-    printf("%s:%d  make_base_pathname: %s\n", __FILE__, __LINE__, _rep_(base_dir).c_str());
     Cons_sp dir;
     /* We process the directory part of the filename, removing all
      * possible symlinks. To do so, we inspect recursively the
@@ -525,7 +519,6 @@ Pathname_sp af_truename(T_sp orig_pathname)
      */
     for (dir = pathname->_Directory.as<Cons_O>(); dir.notnilp(); dir = cCdr(dir))
     {
-        printf("%s:%d Entering directory base_dir[%s]  oCar(dir)[%s]\n", __FILE__, __LINE__,_rep_(base_dir).c_str(),_rep_(oCar(dir)).c_str());
 	base_dir = enter_directory(base_dir, oCar(dir), false);
     }
     pathname = brcl_mergePathnames(base_dir, pathname, kw::_sym_default);

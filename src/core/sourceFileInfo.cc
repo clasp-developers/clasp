@@ -389,6 +389,7 @@ namespace core
 					     uint filePos,
 					     Function_sp expander)
     {_G();
+        if ( filePos == UNDEF_UINT ) filePos = 0;
         if ( _sym_STARmonitorRegisterSourceInfoSTAR->symbolValue().notnilp() ) {
             printf("%s:%d  registerSourceInfo  sourceFile: %s:%d:%d  --> %s\n", __FILE__, __LINE__, sourceFile->__repr__().c_str(), lineno, column, _rep_(key).c_str() );
             printf("%s:%d        *source-database* =\n",__FILE__, __LINE__);
@@ -400,7 +401,7 @@ namespace core
             if ( sfi.nilp() ) {
                 fileId = this->_Files.size();
                 this->_Files.push_back(sourceFile);
-                SourcePosInfo_sp finfo = SourcePosInfo_O::create(fileId,UNDEF_UINT,UNDEF_UINT,UNDEF_UINT,expander);
+                SourcePosInfo_sp finfo = SourcePosInfo_O::create(fileId,0,0,0,expander);
                 this->_SourcePosInfo->setf_gethash(sourceFile, finfo);
             } else {
                 fileId = sfi->_FileId;

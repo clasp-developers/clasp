@@ -1384,7 +1384,7 @@ T_sp brcl_close(T_sp strm, bool abort)
     {_OF();
 	if ( abort )
 	{
-	    _lisp->print(BF("-----Close for %s with abort=true called - I don't currently support abort=true\n") % this->_instanceClass()->classNameAsString() );
+//	    _lisp->print(BF("-----Close for %s with abort=true called - I don't currently support abort=true\n") % this->_instanceClass()->classNameAsString() );
 	}
 	this->_InStream.close();
         return _lisp->_true();
@@ -1692,7 +1692,7 @@ T_sp brcl_close(T_sp strm, bool abort)
     {_OF();
 	if ( abort )
 	{
-	    _lisp->print(BF("-----Close for %s with abort=true called - I don't currently support abort=true\n") % this->_instanceClass()->classNameAsString() );
+//	    _lisp->print(BF("-----Close for %s with abort=true called - I don't currently support abort=true\n") % this->_instanceClass()->classNameAsString() );
 	}
 	this->_In.pop();
 	this->_In.pop();
@@ -2155,7 +2155,7 @@ T_sp StringOutStream_O::close(bool abort)
 	if ( this->_FStream==NULL) return _lisp->_true();;
 	if ( abort )
 	{
-	    _lisp->print(BF("-----Close for %s with abort=true called - I don't currently support abort=true\n") % this->_instanceClass()->classNameAsString() );
+//	    _lisp->print(BF("-----Close for %s with abort=true called - I don't currently support abort=true\n") % this->_instanceClass()->classNameAsString() );
 	}
 	this->throw_if_no_file_descriptor();
 	fclose(this->_FStream);

@@ -85,9 +85,9 @@ namespace core
     TopLevelIHF::TopLevelIHF(InvocationHistoryStack& stack, T_sp expression )
 	: InvocationHistoryFrame(TopLevel,stack),
 	  _SourceFileInfo(_Nil<SourceFileInfo_O>()),
-	  _LineNumber(UNDEF_UINT),
-	  _Column(UNDEF_UINT),
-	  _FilePos(UNDEF_UINT)
+	  _LineNumber(0),
+	  _Column(0),
+	  _FilePos(0)
     {
 	if ( expression.notnilp() ) {
             if ( _lisp->sourceDatabase().notnilp() ) {

@@ -84,6 +84,8 @@
 
 
 
+(defun dbg-filename* (pn)
+  (bformat nil "%s.%s" (pathname-name pn) (pathname-type pn)))
 
 (defmacro with-dbg-compile-unit ((env source-pathname) &rest body)
   (let ((path (gensym))
@@ -92,7 +94,7 @@
     `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
 	 (progn
 	   (let* ((,path (pathname ,source-pathname))
-		  (,file-name (pathname-name ,path))
+		  (,file-name (dbg-filename* ,path))
 		  (,dir-name (directory-namestring ,path))
 		  (*dbg-compile-unit* (llvm-sys:create-compile-unit
 				       *the-module-dibuilder*
@@ -122,7 +124,7 @@
 	(dir-name (gensym)))
     `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
 	 (let* ((,path (pathname ,source-pathname))
-		(,file-name (pathname-name ,path))
+		(,file-name (dbg-filename* ,path))
 		(,dir-name (directory-namestring ,path))
 		(*dbg-current-file* (llvm-sys:create-file
 				     *the-module-dibuilder*

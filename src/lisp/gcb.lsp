@@ -2235,7 +2235,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 ;; garbage collection scanners.
 
 
-(load-compilation-database "app:Contents;Resources;buildDatabases;clasp_compile_commands.json")
+(load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
 
 (defvar *tools* nil)
 (defvar *arguments-adjuster* (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
@@ -2306,7 +2306,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 
-(defparameter *max-parallel-searches* 6)
+(defparameter *max-parallel-searches* 16)
 
 (defun fork-jobs (proc job-list)
   (setf (multitool-results *tools*) (make-project))
