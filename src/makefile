@@ -1,6 +1,4 @@
-jm
 
-include	$(CLASP_HOME)/makefile.inc
 
 #
 # Targets are subAll, subInstall, subClean
