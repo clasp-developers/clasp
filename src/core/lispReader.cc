@@ -436,9 +436,9 @@ namespace core
     Cons_sp read_list(Stream_sp sin, char end_char, bool allow_consing_dot)
     {_G();
         af_stackMonitor();
-	uint start_lineNumber=UNDEF_UINT;
-	uint start_column=UNDEF_UINT;
-	uint start_filePos = UNDEF_UINT;
+	uint start_lineNumber=0;
+	uint start_column=0;
+	uint start_filePos = 0;
 	bool got_dotted = false;
 	T_sp dotted_object = _Nil<T_O>();
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());

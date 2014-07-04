@@ -276,7 +276,7 @@ namespace core
 //    af_invokeInternalDebugger(_Nil<core::T_O>());
             printf("Resuming after Ctrl+C\n");
         } else if ( signo == SIGCHLD ) {
-            printf("A child terminated\n");
+//            printf("A child terminated\n");
         } else if ( signo == SIGABRT ) {
             printf("ABORT was called!!!!!!!!!!!!\n");
             af_invokeInternalDebugger(_Nil<core::T_O>());

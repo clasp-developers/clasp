@@ -49,7 +49,8 @@
 (use-package :core)
 
 (select-package :core)
-(make-package "FFI" :use '(:CL :CORE))
+(if (find-package "FFI") nil
+  (make-package "FFI" :use '(:CL :CORE)))
 
 ;; Setup a few things for the EXT package
 (select-package :ext)
@@ -194,106 +195,109 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(defparameter +ecl-syntax-progv-list+ (list
-				       '(
-					 *print-pprint-dispatch*'
-					 *print-array*
-					 *print-base*
-					 *print-case*
-					 *print-circle*
-					 *print-escape*
-					 *print-gensym*
-					 *print-length*
-					 *print-level*
-					 *print-lines*
-					 *print-miser-width*
-					 *print-pretty*
-					 *print-radix*
-					 *print-readably*
-					 *print-right-margin*
-					 *read-base*
-					 *read-default-float-format*
-					 *read-eval*
-					 *read-suppress*
-					 *readtable*
-					 si::*print-package*
-					 si::*print-structure*
-					 si::*sharp-eq-context*
-					 si::*circle-counter*)
-				       nil ;;  *pprint-dispatch-table* 
-				       t   ;;  *print-array* 
-				       10  ;;  *print-base* 
-				       :downcase ;;  *print-case* 
-				       t	 ;;  *print-circle* 
-				       t	 ;;  *print-escape* 
-				       t	 ;;  *print-gensym* 
-				       nil	 ;;  *print-length* 
-				       nil	 ;;  *print-level* 
-				       nil	 ;;  *print-lines* 
-				       nil ;;  *print-miser-width* 
-				       nil ;;  *print-pretty* 
-				       nil ;;  *print-radix* 
-				       t   ;;  *print-readably* 
-				       nil ;;  *print-right-margin* 
-				       10  ;;  *read-base* 
-				       'single-float ;;  *read-default-float-format* 
-				       t	     ;;  *read-eval* 
-				       nil	  ;;  *read-suppress* 
-				       *readtable* ;;  *readtable* 
-				       (find-package :cl) ;;  si::*print-package* 
-				       t ;  si::*print-structure* 
-				       nil ;  si::*sharp-eq-context* 
-				       nil ;  si::*circle-counter* 
-				       ))
+(defvar +ecl-syntax-progv-list+
+  (list
+   '(
+     *print-pprint-dispatch*'
+     *print-array*
+     *print-base*
+     *print-case*
+     *print-circle*
+     *print-escape*
+     *print-gensym*
+     *print-length*
+     *print-level*
+     *print-lines*
+     *print-miser-width*
+     *print-pretty*
+     *print-radix*
+     *print-readably*
+     *print-right-margin*
+     *read-base*
+     *read-default-float-format*
+     *read-eval*
+     *read-suppress*
+     *readtable*
+     si::*print-package*
+     si::*print-structure*
+     si::*sharp-eq-context*
+     si::*circle-counter*)
+   nil                              ;;  *pprint-dispatch-table* 
+   t                                ;;  *print-array* 
+   10                               ;;  *print-base* 
+   :downcase                        ;;  *print-case* 
+   t                                ;;  *print-circle* 
+   t                                ;;  *print-escape* 
+   t                                ;;  *print-gensym* 
+   nil                              ;;  *print-length* 
+   nil                              ;;  *print-level* 
+   nil                              ;;  *print-lines* 
+   nil                              ;;  *print-miser-width* 
+   nil                              ;;  *print-pretty* 
+   nil                              ;;  *print-radix* 
+   t                                ;;  *print-readably* 
+   nil                              ;;  *print-right-margin* 
+   10                               ;;  *read-base* 
+   'single-float                    ;;  *read-default-float-format* 
+   t                                ;;  *read-eval* 
+   nil                              ;;  *read-suppress* 
+   *readtable*                      ;;  *readtable* 
+   (find-package :cl)               ;;  si::*print-package* 
+   t                                ;  si::*print-structure* 
+   nil                              ;  si::*sharp-eq-context* 
+   nil                              ;  si::*circle-counter* 
+   ))
 
-(defparameter +io-syntax-progv-list+ (list '(
-					     *print-pprint-dispatch* #|  See end of pprint.lsp  |#
-					     *print-array*
-					     *print-base*
-					     *print-case*
-					     *print-circle*
-					     *print-escape*
-					     *print-gensym*
-					     *print-length*
-					     *print-level*
-					     *print-lines*
-					     *print-miser-width*
-					     *print-pretty*
-					     *print-radix*
-					     *print-readably*
-					     *print-right-margin*
-					     *read-base*
-					     *read-default-float-format*
-					     *read-eval*
-					     *read-suppress*
-					     *readtable*
-					     *package*
-					     si::*sharp-eq-context*
-					     si::*circle-counter*) ;
-					   nil ;;  *pprint-dispatch-table* 
-					   t   ;;  *print-array* 
-					   10  ;;  *print-base* 
-					   :upcase ;;  *print-case* 
-					   nil     ;;  *print-circle* 
-					   t	   ;;  *print-escape* 
-					   t	   ;;  *print-gensym* 
-					   nil     ;;  *print-length* 
-					   nil     ;;  *print-level* 
-					   nil     ;;  *print-lines* 
-					   nil ;;  *print-miser-width* 
-					   nil ;;  *print-pretty* 
-					   nil ;;  *print-radix* 
-					   t   ;;  *print-readably* 
-					   nil ;;  *print-right-margin* 
-					   10  ;;  *read-base* 
-					   'single-float ;;  *read-default-float-format* 
-					   t   ;;  *read-eval* 
-					   nil ;;  *read-suppress* 
-					   *readtable* ;;  *readtable* 
-					   (find-package :CL-USER) ;;  *package* 
-					   nil ;;  si::*sharp-eq-context* 
-					   nil ;;  si::*circle-counter* 
-					   ))
+(defvar +io-syntax-progv-list+
+  (list
+   '(
+     *print-pprint-dispatch* #|  See end of pprint.lsp  |#
+     *print-array*
+     *print-base*
+     *print-case*
+     *print-circle*
+     *print-escape*
+     *print-gensym*
+     *print-length*
+     *print-level*
+     *print-lines*
+     *print-miser-width*
+     *print-pretty*
+     *print-radix*
+     *print-readably*
+     *print-right-margin*
+     *read-base*
+     *read-default-float-format*
+     *read-eval*
+     *read-suppress*
+     *readtable*
+     *package*
+     si::*sharp-eq-context*
+     si::*circle-counter*)               ;
+   nil                                   ;;  *pprint-dispatch-table* 
+   t                                     ;;  *print-array* 
+   10                                    ;;  *print-base* 
+   :upcase                               ;;  *print-case* 
+   nil                                   ;;  *print-circle* 
+   t                                     ;;  *print-escape* 
+   t                                     ;;  *print-gensym* 
+   nil                                   ;;  *print-length* 
+   nil                                   ;;  *print-level* 
+   nil                                   ;;  *print-lines* 
+   nil                                   ;;  *print-miser-width* 
+   nil                                   ;;  *print-pretty* 
+   nil                                   ;;  *print-radix* 
+   t                                     ;;  *print-readably* 
+   nil                                   ;;  *print-right-margin* 
+   10                                    ;;  *read-base* 
+   'single-float ;;  *read-default-float-format* 
+   t             ;;  *read-eval* 
+   nil           ;;  *read-suppress* 
+   *readtable*   ;;  *readtable* 
+   (find-package :CL-USER)               ;;  *package* 
+   nil                                   ;;  si::*sharp-eq-context* 
+   nil                                   ;;  si::*circle-counter* 
+   ))
 
 
 
@@ -317,11 +321,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export '(defun))
 
 
-
+;; Discard documentation until helpfile.lsp is loaded
+(defun set-documentation (o d s) nil)
 
 
 ;; This is used extensively in the ecl compiler and once in predlib.lsp
-(defparameter *alien-declarations* ())
+(defvar *alien-declarations* ())
 
 
 
@@ -397,7 +402,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 #| If we aren't using the compiler then just load everything with the interpreter |#
 
 
-(defparameter *reversed-init-filenames* ())
+(defvar *reversed-init-filenames* ())
 
 (si::*fset 'iload #'interpreter-iload)
 #| Otherwise use the compiler |#
@@ -485,8 +490,11 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(defparameter *init-files*
+(defvar *init-files*
   '(
+    :base
+    init
+    cmp/jit-setup
     :start
     lsp/foundation
     lsp/export
@@ -538,7 +546,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/trace
     lsp/loop2
     lsp/packlib
-    cmp/cmpinterpreted
+;;    cmp/cmpinterpreted
     lsp/defpackage
     lsp/format
     #|
@@ -587,7 +595,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ))
 
 
-(defun select-source-files (last-file &key (first-file :start) (all-files *init-files*))
+(defun select-source-files (last-file &key first-file (all-files *init-files*))
+  (or first-file (error "You must provide first-file"))
   (let ((cur (member first-file all-files))
 	files
 	file)
@@ -651,7 +660,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        )))
 
 
-(defun compile-boot ( &optional last-file &key (first-file :start) (recompile nil) (reload nil) )
+(defun compile-boot ( &optional last-file &key first-file (recompile nil) (reload nil) )
   (bformat t "compile-boot  from: %s  to: %s\n" first-file last-file)
   (if (not recompile) (load-boot last-file))
   (let* ((files (select-source-files last-file :first-file first-file))
@@ -702,12 +711,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (defun compile-min-boot ()
-    (compile-boot :cmp :reload t)
-    (compile-boot :min :first-file :cmp)
-    (cmp:bundle-boot :min +min-image-pathname+))
+  (compile-boot :cmp :reload t :first-file :start)
+  (compile-boot :start :reload nil :first-file :base)
+  (compile-boot :min :first-file :cmp)
+  (cmp:bundle-boot :min +min-image-pathname+))
 
 (defun compile-min-recompile ()
-  (compile-boot :min :recompile t)
+  (compile-boot :start :reload nil :first-file :base)
+  (compile-boot :min :recompile t :first-file :start)
   (cmp:bundle-boot :min +min-image-pathname+))
 
 (defun switch-to-full ()
@@ -719,22 +730,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun compile-full ()
   (switch-to-full)
   ;; Load source code for everything - don't load bitcode
-  (load-boot :all :interp t)
+  (load-boot :all :interp t :first-file :start)
   ;; Compile everything - ignore old bitcode
-  (compile-boot :all :recompile t)
+  (compile-boot :all :recompile t :first-file :base)
   (cmp:bundle-boot-lto :all :output-pathname +imagelto-pathname+))
 
 
-#||
-(defun compile-all ()
-  (compile-boot :cmp :reload t)
-  (compile-boot :generic)
-  (compile-iload 'clos/fixup)
-  (load-boot :clos)
-  (iload 'clos/conditions)
-  (compile-iload 'clos/conditions)
-)
-||#
 (defun bootstrap-help ()
   (bformat t "Currently the (LOG x) macro is: %s\n" (macroexpand '(cmp:LOG x)))
   ;;(bformat t "And the cmp:*debug-compiler* variable is: %s\n" cmp:*debug-compiler*)
@@ -809,19 +810,20 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;; Start everything up
 
 ;; Print the features
-(bformat t "--------Features\n")
-(mapc #'(lambda (x) (bformat t "%s\n" x)) *features*)
+(eval-when (:execute)
+  (bformat t "--------Features\n")
+  (mapc #'(lambda (x) (bformat t "%s\n" x)) *features*))
 
 
 #+ignore-init-image
-(progn
+(eval-when (:execute)
   (if core:*command-line-load*
       (load core:*command-line-load*)
       (core:low-level-repl)))
 
 
 #-ignore-init-image
-(progn
+(eval-when (:execute)
   (ibundle #+ecl-min +min-image-pathname+ #-ecl-min +imagelto-pathname+)
   (require 'system)
   (load-brclrc)

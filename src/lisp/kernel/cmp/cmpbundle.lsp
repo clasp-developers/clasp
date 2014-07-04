@@ -128,14 +128,15 @@
 ;;; Gather a list of boot parts as pathnames
 ;;; Skip over keyword symbols in the boot part lists
 ;;;
-(defun boot-part-pathnames (last-file)
+(defun boot-part-pathnames (last-file &key first-file)
+  (or first-file (error "You must provide first-file"))
   (mapcan #'(lambda (part) (and (not (keywordp part)) (list (core::get-pathname-with-type part "lsp"))))
-	  (core::select-source-files last-file)))
+	  (core::select-source-files last-file :first-file first-file)))
 	  
 
-(defun bundle-boot (&optional (last-file :all) (bundle-pathname +image-pathname+))
+(defun bundle-boot (&optional (last-file :all) (first-file :base) (bundle-pathname +image-pathname+))
   "Use (bundle-boot _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
-  (let* ((parts-pathnames (boot-part-pathnames last-file))
+  (let* ((parts-pathnames (boot-part-pathnames last-file :first-file first-file))
 	 (wrapper-pathname (make-bundle-wrapper parts-pathnames bundle-pathname))
 	 (wrapper-and-parts-pathnames (cons wrapper-pathname parts-pathnames)))
     (mapc #'(lambda (pn) (execute-llc pn)) wrapper-and-parts-pathnames)
@@ -195,11 +196,12 @@
 
 
 
-(defun bundle-boot-lto ( &optional (last-part :all)
-                        &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)
-                          (output-pathname +imagelto-pathname+)
-                          debug-ir)
-  (let* ((part-pathnames (boot-part-pathnames last-part))
+(defun bundle-boot-lto (&optional (last-part :all)
+                                  &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)
+                                  (first-file :base)
+                                  (output-pathname +imagelto-pathname+)
+                                  debug-ir)
+  (let* ((part-pathnames (boot-part-pathnames last-part :first-file first-file))
 ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (make-pathname :type (fasl-pathname-type "bc") :defaults output-pathname))
          (module (link-bitcode-modules part-pathnames

@@ -271,6 +271,7 @@ namespace translate {
     STMT(MSDependentExistsStmt);
     STMT(NullStmt);
     STMT(OMPSimdDirective);
+    STMT(OMPForDirective);
     STMT(OMPParallelDirective);
 // firstOMPExecutableDirectiveConstant= OMPParallelDirectiveClass, lastOMPExecutableDirectiveConstant= OMPParallelDirectiveClass,
     STMT(ObjCAtCatchStmt);
@@ -593,6 +594,7 @@ STMT_REF_COUNT_ACCESSORS(Expr);
             STMT_REF_COUNT_ACCESSORS(MSDependentExistsStmt);
             STMT_REF_COUNT_ACCESSORS(NullStmt);
             STMT_REF_COUNT_ACCESSORS(OMPSimdDirective);
+            STMT_REF_COUNT_ACCESSORS(OMPForDirective);
             STMT_REF_COUNT_ACCESSORS(OMPParallelDirective);
 // firstOMPExecutableDirectiveConstant= OMPParallelDirectiveClass, lastOMPExecutableDirectiveConstant= OMPParallelDirectiveClass,
             STMT_REF_COUNT_ACCESSORS(ObjCAtCatchStmt);
@@ -905,6 +907,7 @@ namespace asttooling {
             CASE_STMT(MSDependentExistsStmt);
             CASE_STMT(NullStmt);
             CASE_STMT(OMPSimdDirective);
+            CASE_STMT(OMPForDirective);
             CASE_STMT(OMPParallelDirective);
 // firstOMPExecutableDirectiveConstant= OMPParallelDirectiveClass, lastOMPExecutableDirectiveConstant= OMPParallelDirectiveClass,
             CASE_STMT(ObjCAtCatchStmt);
@@ -1331,6 +1334,7 @@ namespace asttooling {
             , CLASS_STMT(NullStmt, Stmt)
             , CLASS_STMT(OMPExecutableDirective, Stmt)
             , CLASS_STMT(OMPSimdDirective, OMPExecutableDirective)
+            , CLASS_STMT(OMPForDirective, OMPExecutableDirective)
             , CLASS_STMT(OMPParallelDirective, OMPExecutableDirective)
             , CLASS_STMT(ObjCAtCatchStmt, Stmt)
             , CLASS_STMT(ObjCAtFinallyStmt, Stmt)

@@ -51,19 +51,25 @@ namespace core
 	LISP_CLASS(core,CorePkg,SourcePosInfo_O,"SourcePosInfo");
     public:
     public: // ctor/dtor for classes with shared virtual base
-	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _LineNumber(UNDEF_UINT),_Column(UNDEF_UINT), _FilePos(UNDEF_UINT) {};
+	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _LineNumber(0),_Column(0), _FilePos(0) {};
     public: // instance variables here
 	SourcePosInfo_O(uint spf, uint spln, uint spc, uint filePos, Function_sp expander=_Nil<Function_O>())
 	    : _FileId(spf), _LineNumber(spln), _Column(spc), _FilePos(filePos), _Expander(expander) {}
 
     public:
 
-        static SourcePosInfo_sp create(uint spf, uint spln=UNDEF_UINT, uint spc=UNDEF_UINT, uint filePos=UNDEF_UINT, Function_sp fn=_Nil<Function_O>() )
+        static SourcePosInfo_sp create(uint spf, uint spln=0, uint spc=0, uint filePos=0, Function_sp fn=_Nil<Function_O>() )
         {
+#if 0
+            if ( filePos==UNDEF_UINT ) {
+                printf("%s:%d Caught filePos=UNDEF_UINT\n", __FILE__, __LINE__ );
+            }
+#endif
             GC_ALLOCATE_VARIADIC(SourcePosInfo_O,me,spf,spln,spc,filePos,fn);
             return me;
         }
 
+            uint lineNumber() const { return this->_LineNumber; };
     protected:
 	uint	_FileId;
 	uint	_LineNumber;

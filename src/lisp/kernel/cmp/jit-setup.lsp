@@ -24,7 +24,7 @@ using features defined in corePackage.cc"
 
 
 
-(defparameter *default-target-triple* (generate-target-triple)
+(defvar *default-target-triple* (generate-target-triple)
   "The default target-triple for this machine")
 
 
@@ -82,7 +82,7 @@ using features defined in corePackage.cc"
   )
 
 
-(defparameter *run-time-module-counter* 1)
+(defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
   "Return the next module name"
   (prog1
@@ -108,9 +108,9 @@ Return the module and the global variable that represents the load-time-value-ho
 
 
 (llvm-sys:initialize-native-target)
-(defparameter *llvm-context* (llvm-sys::get-global-context))
+(defvar *llvm-context* (llvm-sys::get-global-context))
 
-(defparameter *run-time-module* nil)
+(defvar *run-time-module* nil)
 
 (defvar *load-time-value-holder-name* "load-time-value-vector")
 
@@ -118,7 +118,7 @@ Return the module and the global variable that represents the load-time-value-ho
   "This stores the module into which compile puts its stuff")
 
 
-(defparameter *the-module-dibuilder* nil
+(defvar *the-module-dibuilder* nil
   "Keeps track of the current DIBuilder for generating DWARF debugging information for *the-module*.
 No DIBuilder is defined for the default module")
 
