@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: The atomic_ops project
+Description: Atomic memory update operations portable implementation
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -latomic_ops
+Cflags: -I${includedir}

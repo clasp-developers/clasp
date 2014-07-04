@@ -1,2 +1,0 @@
-#! /bin/bash
-gdb --args cando_d CANDO/tools/dbinfo.l $*
