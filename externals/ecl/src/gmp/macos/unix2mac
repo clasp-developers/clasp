@@ -1,1 +1,0 @@
-$/="\r"; while(<>) {chomp; print "$_\n";};

@@ -1,1 +1,0 @@
-../mpn/generic/perfpow.c

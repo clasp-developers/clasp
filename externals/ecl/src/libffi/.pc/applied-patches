@@ -1,8 +1,0 @@
-stand-alone
-msvcc-warning
-ffi_last_abi
-win64-struct-args
-stdcall-x86-closure-fix
-ml64-safeseh
-debug-build
-win64-underscore

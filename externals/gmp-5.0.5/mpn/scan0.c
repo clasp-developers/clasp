@@ -1,1 +1,0 @@
-../mpn/generic/scan0.c

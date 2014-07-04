@@ -1,1 +1,0 @@
-../mpn/x86_64/aorrlsh2_n.asm

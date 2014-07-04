@@ -1,1 +1,0 @@
-../mpn/generic/gcd_lehmer.c
