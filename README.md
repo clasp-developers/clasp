@@ -1,4 +1,6 @@
-clasp
+clasp - 
+A (subset of) Common Lisp that interoperates with C++ and uses LLVM for JIT compilation to native code.
+
 ===============
 
 Libraries that clasp depends on can be setup using the repo: externals-clasp
