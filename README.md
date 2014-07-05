@@ -1,12 +1,11 @@
 Clasp
 ===============
-Clasp is a Common Lisp that interoperates with C++ and uses LLVM for JIT compilation to native code.
-Clasp is not yet a full featured Common Lisp - if you find differences between Clasp and the Common Lisp standard it is considered a bug in Clasp and please report it.
+Clasp is a Common Lisp that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.
 
+Clasp is not yet a full featured Common Lisp - if you find differences between Clasp and the Common Lisp standard it is considered a bug in Clasp and please feel free to report it.
 
 Libraries that clasp depends on can be setup using the repo: externals-clasp
 https://github.com/drmeister/externals-clasp.git
-
 
 To build everything from within the top level directory do the following.
 
