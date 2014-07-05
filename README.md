@@ -1,5 +1,4 @@
 Clasp
-
 ===============
 Clasp is a Common Lisp that interoperates with C++ and uses LLVM for JIT compilation to native code.
 Clasp is not yet a full featured Common Lisp - if you find differences between Clasp and the Common Lisp standard it is considered a bug in Clasp and please report it.
