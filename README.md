@@ -4,8 +4,9 @@ Clasp is a Common Lisp that interoperates with C++ and uses LLVM for just-in-tim
 
 Clasp is not yet a full featured Common Lisp - if you find differences between Clasp and the Common Lisp standard it is considered a bug in Clasp and please feel free to report it.
 
-Libraries that clasp depends on can be setup using the repo: externals-clasp
+Libraries that clasp depends on can be obtained using the repo: externals-clasp
 https://github.com/drmeister/externals-clasp.git
+
 
 To build everything from within the top level directory do the following.
 
@@ -13,3 +14,17 @@ To build everything from within the top level directory do the following.
 2) Edit local.config (ignored by the git repo) and configure it for your system
 3) make
 
+
+If you want to install the libraries separately they are:
+Contact me for more info - I can add more details to what is below.
+Boost build v2
+Boehm 7.2
+LLVM 3.5 (top of tree 3.4)
+Clang
+ecl
+gmp
+expat
+zlib
+openmpi
+readline
+                                                                                                        
