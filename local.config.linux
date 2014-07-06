@@ -1,0 +1,14 @@
+#
+# PREFIX = path to where the clasp application should go
+# EXTERNALS = path to the externals-clasp directory if desired - standard include/lib directories are searched in addition to EXTERNALS
+# TARGET-OS = {linux | darwin}
+# PJOBS = {number of processors available to build}
+# LINK = {static | dynamic}
+# ADDRESS-MODEL = { 32 | 64 }
+
+export PREFIX = $(HOME)/local/clasp
+export TARGET-OS = linux
+export PJOBS = 16
+export EXTERNALS = $(HOME)/local/externals-clasp
+export LINK = static
+export ADDRESS-MODEL = 64
