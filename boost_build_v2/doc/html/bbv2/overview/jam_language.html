@@ -1,0 +1,264 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Boost.Jam Language</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../overview.html" title="Chapter 4. Overview">
+<link rel="prev" href="../overview.html" title="Chapter 4. Overview">
+<link rel="next" href="configuration.html" title="Configuration">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../overview.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../overview.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="configuration.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.overview.jam_language"></a>Boost.Jam Language</h2></div></div></div>
+<p>
+        This section will describe the basics of the Boost.Jam language&#8212;just
+        enough for writing Jamfiles. For more information, please see the
+        <a href="../jam.html" title="Appendix A. Boost.Jam Documentation">Boost.Jam</a> documentation.
+      </p>
+<p>
+        <a href="../jam.html" title="Appendix A. Boost.Jam Documentation">Boost.Jam</a> has an interpreted, procedural
+        language. On the lowest level, a <a href="../jam.html" title="Appendix A. Boost.Jam Documentation">Boost.Jam
+        </a> program consists of variables and <a class="indexterm" name="idp1225440"></a> <em class="firstterm">rules</em> (the Jam term for
+        functions). They are grouped into modules&#8212;there is one global
+        module and a number of named modules. Besides that, a <a href="../jam.html" title="Appendix A. Boost.Jam Documentation">Boost.Jam</a> program contains classes and class
+        instances.
+      </p>
+<p>
+        Syntantically, a <a href="../jam.html" title="Appendix A. Boost.Jam Documentation">Boost.Jam</a> program
+        consists of two kind of elements&#8212;keywords (which have a special
+        meaning to <a href="../jam.html" title="Appendix A. Boost.Jam Documentation">Boost.Jam</a>) and literals.
+        Consider this code:
+</p>
+<pre class="programlisting">
+a = b ;
+</pre>
+<p>
+        which assigns the value <code class="literal">b</code> to the variable <code class="literal">a
+        </code>. Here, <code class="literal">=</code> and <code class="literal">;</code> are
+        keywords, while <code class="literal">a</code> and <code class="literal">b</code> are
+        literals.
+        </p>
+<div class="warning"><table border="0" summary="Warning">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Warning]" src="../../../../../../../doc/html/images/warning.png"></td>
+<th align="left">Warning</th>
+</tr>
+<tr><td align="left" valign="top"><p>
+            All syntax elements, even keywords, must be separated by spaces. For
+            example, omitting the space character before <code class="literal">;</code>
+            will lead to a syntax error.
+          </p></td></tr>
+</table></div>
+<p>
+        If you want to use a literal value that is the same as some keyword, the
+        value can be quoted:
+</p>
+<pre class="programlisting">
+a = "=" ;
+</pre>
+<p>
+      </p>
+<p>
+        All variables in <a href="../jam.html" title="Appendix A. Boost.Jam Documentation">Boost.Jam</a> have the same
+        type&#8212;list of strings. To define a variable one assigns a value to
+        it, like in the previous example. An undefined variable is the same as a
+        variable with an empty value. Variables can be accessed using the
+        <code class="computeroutput">$(<em class="replaceable"><code>variable</code></em>)</code> syntax. For example:
+</p>
+<pre class="programlisting">
+a = $(b) $(c) ;
+</pre>
+<p>
+      </p>
+<p>
+        Rules are defined by specifying the rule name, the parameter names, and
+        the allowed value list size for each parameter.
+</p>
+<pre class="programlisting">
+rule <em class="replaceable"><code>example</code></em>
+ (
+     <em class="replaceable"><code>parameter1</code></em> :
+     <em class="replaceable"><code>parameter2 ?</code></em> :
+     <em class="replaceable"><code>parameter3 +</code></em> :
+     <em class="replaceable"><code>parameter4 *</code></em>
+ )
+ {
+    # rule body
+ }
+ </pre>
+<p>
+        When this rule is called, the list passed as the first argument must
+        have exactly one value. The list passed as the second argument can
+        either have one value of be empty. The two remaining arguments can be
+        arbitrarily long, but the third argument may not be empty.
+      </p>
+<p>
+        The overview of <a href="../jam.html" title="Appendix A. Boost.Jam Documentation">Boost.Jam</a> language
+        statements is given below:
+</p>
+<pre class="programlisting">
+helper 1 : 2 : 3 ;
+x = [ helper 1 : 2 : 3 ] ;
+</pre>
+<p>
+        This code calls the named rule with the specified arguments. When the
+        result of the call must be used inside some expression, you need to add
+        brackets around the call, like shown on the second line.
+</p>
+<pre class="programlisting">
+if cond { statements } [ else { statements } ]
+</pre>
+<p>
+        This is a regular if-statement. The condition is composed of:
+        </p>
+<div class="itemizedlist"><ul type="disc">
+<li><p>
+              Literals (true if at least one string is not empty)
+            </p></li>
+<li><p>
+              Comparisons: <code class="computeroutput">a <em class="replaceable"><code>operator</code></em> b</code>
+              where <em class="replaceable"><code>operator</code></em> is one of
+              <code class="computeroutput">=</code>, <code class="computeroutput">!=</code>, <code class="computeroutput">&lt;</code>,
+              <code class="computeroutput">&gt;</code>, <code class="computeroutput">&lt;=</code> or <code class="computeroutput">&gt;=</code>. The
+              comparison is done pairwise between each string in the left and
+              the right arguments.
+            </p></li>
+<li><p>
+              Logical operations: <code class="computeroutput">! a</code>, <code class="computeroutput">a &amp;&amp; b</code>,
+              <code class="computeroutput">a || b</code>
+            </p></li>
+<li><p>
+              Grouping: <code class="computeroutput">( cond )</code>
+            </p></li>
+</ul></div>
+<p>
+</p>
+<pre class="programlisting">
+for var in list { statements }
+</pre>
+<p>
+        Executes statements for each element in list, setting the variable
+        <code class="varname">var</code> to the element value.
+</p>
+<pre class="programlisting">
+while cond { statements }
+</pre>
+<p>
+        Repeatedly execute statements while cond remains true upon entry.
+</p>
+<pre class="programlisting">
+return values ;
+</pre>
+<p>
+        This statement should be used only inside a rule and assigns
+        <code class="computeroutput">values</code> to the return value of the rule.
+        </p>
+<div class="warning"><table border="0" summary="Warning">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Warning]" src="../../../../../../../doc/html/images/warning.png"></td>
+<th align="left">Warning</th>
+</tr>
+<tr><td align="left" valign="top">
+<p>
+            The <code class="computeroutput">return</code> statement does not exit the rule. For
+            example:
+</p>
+<pre class="programlisting">
+rule test ( )
+{
+   if 1 = 1
+   {
+      return "reasonable" ;
+   }
+   return "strange" ;
+}
+</pre>
+<p>
+            will return <code class="literal">strange</code>, not
+            <code class="literal">reasonable</code>.
+          </p>
+</td></tr>
+</table></div>
+<p>
+</p>
+<pre class="programlisting">
+import <em class="replaceable"><code>module</code></em> ;
+import <em class="replaceable"><code>module</code></em> : <em class="replaceable"><code>rule</code></em> ;
+</pre>
+<p>
+        The first form imports the specified module. All rules from that
+        module are made available using the qualified name: <code class="computeroutput"><em class="replaceable"><code>
+        module</code></em>.<em class="replaceable"><code>rule</code></em></code>. The second
+        form imports the specified rules only, and they can be called using
+        unqualified names.
+      </p>
+<p><a name="bbv2.overview.jam_language.actions"></a>
+        Sometimes, you need to specify the actual command lines to be used
+        when creating targets. In the jam language, you use named actions to do
+        this. For example:
+</p>
+<pre class="programlisting">
+actions create-file-from-another
+{
+    create-file-from-another $(&lt;) $(&gt;)
+}
+</pre>
+<p>
+        This specifies a named action called <code class="literal">
+        create-file-from-another</code>. The text inside braces is the
+        command to invoke. The <code class="literal">$(&lt;)</code> variable will be
+        expanded to a list of generated files, and the <code class="literal">$(&gt;)
+        </code> variable will be expanded to a list of source files.
+      </p>
+<p>
+        To adjust the command line flexibly, you can define a rule with the same
+        name as the action and taking three parameters&#8212;targets, sources and
+        properties. For example:
+</p>
+<pre class="programlisting">
+rule create-file-from-another ( targets * : sources * : properties * )
+{
+   if &lt;variant&gt;debug in $(properties)
+   {
+       OPTIONS on $(targets) = --debug ;
+   }
+}
+actions create-file-from-another
+{
+    create-file-from-another $(OPTIONS) $(&lt;) $(&gt;)
+}
+</pre>
+<p>
+        In this example, the rule checks if a certain build property is specified.
+        If so, it sets the variable <code class="varname">OPTIONS</code> that is then used
+        inside the action. Note that the variables set "on a target" will be
+        visible only inside actions building that target, not globally. Were
+        they set globally, using variable named <code class="varname">OPTIONS</code> in
+        two unrelated actions would be impossible.
+      </p>
+<p>
+        More details can be found in the Jam reference, <a href="../../jam/language.html#jam.language.rules" title=" Rules">the section called &#8220; Rules&#8221;</a>.
+      </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../overview.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../overview.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="configuration.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

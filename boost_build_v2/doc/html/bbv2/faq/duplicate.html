@@ -1,0 +1,141 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>
+      I am getting a "Duplicate name of actual target" error. What does that
+      mean?
+    </title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../faq.html" title="Chapter 8. Frequently Asked Questions">
+<link rel="prev" href="../faq.html" title="Chapter 8. Frequently Asked Questions">
+<link rel="next" href="envar.html" title="
+      Accessing environment variables
+    ">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../faq.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../faq.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="envar.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.faq.duplicate"></a>
+      I am getting a "Duplicate name of actual target" error. What does that
+      mean?
+    </h2></div></div></div>
+<p>
+      The most likely case is that you are trying to compile the same file
+      twice, with almost the same, but differing properties. For example:
+</p>
+<pre class="programlisting">
+exe a : a.cpp : &lt;include&gt;/usr/local/include ;
+exe b : a.cpp ;
+</pre>
+<p>
+    </p>
+<p>
+      The above snippet requires two different compilations of
+      <code class="computeroutput">a.cpp</code>, which differ only in their <code class="literal">include</code>
+      property. Since the <code class="literal">include</code> feature is declared as
+      <code class="literal">free</code> Boost.Build does not create a separate build
+      directory for each of its values and those two builds would both produce
+      object files generated in the same build directory. Ignoring this and
+      compiling the file only once would be dangerous as different includes
+      could potentially cause completely different code to be compiled.
+    </p>
+<p>
+      To solve this issue, you need to decide if the file should be compiled
+      once or twice.
+    </p>
+<div class="orderedlist"><ol type="1">
+<li>
+<p>
+          To compile the file only once, make sure that properties are the same
+          for both target requests:
+</p>
+<pre class="programlisting">
+exe a : a.cpp : &lt;include&gt;/usr/local/include ;
+exe b : a.cpp : &lt;include&gt;/usr/local/include ;
+</pre>
+<p>
+          or:
+</p>
+<pre class="programlisting">
+alias a-with-include : a.cpp : &lt;include&gt;/usr/local/include ;
+exe a : a-with-include ;
+exe b : a-with-include ;
+</pre>
+<p>
+          or if you want the <code class="literal">includes</code> property not to affect
+          how any other sources added for the built <code class="computeroutput">a</code> and
+          <code class="computeroutput">b</code> executables would be compiled:
+</p>
+<pre class="programlisting">
+obj a-obj : a.cpp : &lt;include&gt;/usr/local/include ;
+exe a : a-obj ;
+exe b : a-obj ;
+</pre>
+<p>
+        </p>
+<p>
+          Note that in both of these cases the <code class="literal">include</code>
+          property will be applied only for building these object files and not
+          any other sources that might be added for targets <code class="computeroutput">a</code> and
+          <code class="computeroutput">b</code>.
+        </p>
+</li>
+<li>
+<p>
+          To compile the file twice, you can tell Boost.Build to compile it to
+          two separate object files like so:
+</p>
+<pre class="programlisting">
+      obj a_obj : a.cpp : &lt;include&gt;/usr/local/include ;
+      obj b_obj : a.cpp ;
+      exe a : a_obj ;
+      exe b : b_obj ;
+</pre>
+<p>
+          or you can make the object file targets local to the main target:
+</p>
+<pre class="programlisting">
+      exe a : [ obj a_obj : a.cpp : &lt;include&gt;/usr/local/include ] ;
+      exe b : [ obj a_obj : a.cpp ] ;
+</pre>
+<p>
+          which will cause Boost.Build to actually change the generated object
+          file names a bit for you and thus avoid any conflicts.
+        </p>
+<p>
+          Note that in both of these cases the <code class="literal">include</code>
+          property will be applied only for building these object files and not
+          any other sources that might be added for targets <code class="computeroutput">a</code> and
+          <code class="computeroutput">b</code>.
+        </p>
+</li>
+</ol></div>
+<p>
+      A good question is why Boost.Build can not use some of the above
+      approaches automatically. The problem is that such magic would only help
+      in half of the cases, while in the other half it would be silently doing
+      the wrong thing. It is simpler and safer to ask the user to clarify his
+      intention in such cases.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../faq.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../faq.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="envar.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>
