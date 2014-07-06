@@ -1,0 +1,4 @@
+
+export TARGET_OS = linux
+export PJOBS = 16
+export EXTERNALS = $(HOME)/local/externals-clasp

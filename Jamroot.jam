@@ -1,7 +1,7 @@
 import path ;
 import os ;
 
-using [ os.environ CLASP_TOOLSET ] ;
+using clang ; # CLASP_TOOLSET
 
 
 
@@ -105,7 +105,7 @@ project clasp : requirements
 #	<toolset>clang:<cxxflags>"-frelative-path=\/"
 #	<target-os>darwin:<linkflags>"--export-dynamic"
 
-	<include>$(pythonInclude)
+#	<include>$(pythonInclude)
 
 #This defines the size of a pointer - used in newhash.h
 #	<target-os>darwin:<define>POINTER_BITS=64
@@ -153,9 +153,9 @@ project clasp : requirements
 
 path-constant TOP : . ;
 path-constant COMMON : src/common ;
-path-constant APPCONT : build/cando.app/Contents ;
+path-constant APPCONT : [ os.environ PREFIX ] ;
 path-constant APPRES : $(APPCONT)/Resources ;
-path-constant APPRES-EXTERNALS : $(APPRES)/externals ;
+path-constant APPRES-EXTERNALS : [ os.environ EXTERNALS ] ;
 path-constant APPRES-EXTERNALS-RELEASE : $(APPRES-EXTERNALS)/release ;
 path-constant APPRES-EXTERNALS-DEBUG : $(APPRES-EXTERNALS)/debug ;
 path-constant APPRES-EXTERNALS-DEBUG-LIB : $(APPRES-EXTERNALS-DEBUG)/lib ;
@@ -168,11 +168,11 @@ path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/inclu
 path-constant APPRES-LISP : $(APPRES)/lisp ;
 path-constant APPBIN_LINUX : $(APPCONT)/bin ;
 path-constant APPBIN_OSX : $(APPCONT)/MacOS ;
-path-constant APPINC : $(APPRES)/include ;
-path-constant APPLIB : $(APPRES)/lib ;
-path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;
-path-constant APP-RELEASE-LIB : $(APPLIB)/release ;
-path-constant BUILD : build ;
+#path-constant APPINC : $(APPRES)/include ;
+#path-constant APPLIB : $(APPRES)/lib ;
+#path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;
+#path-constant APP-RELEASE-LIB : $(APPLIB)/release ;
+#path-constant BUILD : build ;
 
 
 
@@ -183,10 +183,10 @@ path-constant MPS-LIB : $(APPRES-EXTERNALS-COMMON-LIB) ;
 
 using cando : $(TOP) ;
 
-use-project externals : build/cando.app/Contents/Resources/externals ; # externals/src ;
+use-project externals : ./externals ;
 use-project internals : src ;
 use-project internals/core : src/core ;
-use-project boost : externals/src/boost ;
+# use-project boost : externals/src/boost ;
 use-project internals/llvmo : src/llvmo ;
 use-project internals/gctools : src/gctools ;
 use-project internals/asttooling : src/asttooling ;

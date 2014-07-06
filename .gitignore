@@ -8,3 +8,5 @@
 *.dylib
 \#*\#
 /build
+*.bundle
+*.out

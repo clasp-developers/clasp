@@ -107,6 +107,7 @@
 				       1    ; run-time version
 				       "split-name.log" ; splitname
                                        :full-debug
+                                       t
 				       )))
 	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
 	     (cmp-log "with-dbg-compile-unit source-pathname: %s\n" ,source-pathname)
