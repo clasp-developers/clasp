@@ -3,10 +3,7 @@ include local.config
 
 
 
-ifeq ($(EXTERNALS),)
-	export BJAM = bjam
-else
-	export BJAM = $(EXTERNALS)/release/bin/bjam
+ifneq ($(EXTERNALS),)
 	PATH := $(EXTERNALS)/release/bin:$(EXTERNALS)/common/bin:$(PATH)
 	export PATH
 endif
@@ -17,8 +14,10 @@ ifeq ($(WHAT),)
 endif
 
 all:
-	echo bjam = `file $(BJAM)`
-	(cd src/main;  $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) $(WHAT))
+	echo PJOBS=$(PJOBS)
+	echo TARGET-OS=$(TARGET-OS)
+	echo LINK=$(LINK)
+	(cd src/main;  bjam -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) $(WHAT))
 	make compile-sources
 
 compile-sources:
