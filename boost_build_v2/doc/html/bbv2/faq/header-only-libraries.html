@@ -1,0 +1,75 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Header-only libraries</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.69.1">
+<link rel="start" href="../../index.html" title="Boost.Build V2 User Manual">
+<link rel="up" href="../faq.html" title="Chapter 8. Frequently Asked Questions">
+<link rel="prev" href="../recipies/site-config.html" title="Targets in site-config.jam">
+<link rel="next" href="../jam.html" title="Appendix A. Boost.Jam Documentation">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="Boost C++ Libraries" width="277" height="86" src="../../../../../../../boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../recipies/site-config.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../faq.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../jam.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="bbv2.faq.header-only-libraries"></a>Header-only libraries</h2></div></div></div>
+<p>
+      In modern C++, libraries often consist of just header files, without any
+      source files to compile. To use such libraries, you need to add proper
+      includes and possibly defines to your project. But with a large number of
+      external libraries it becomes problematic to remember which libraries are
+      header only, and which ones you have to link to. However, with Boost.Build
+      a header-only library can be declared as Boost.Build target and all
+      dependents can use such library without having to remeber whether it is a
+      header-only library or not.
+    </p>
+<p>
+      Header-only libraries may be declared using the <code class="computeroutput">alias</code> rule,
+      specifying their include path as a part of its usage requirements, for
+      example:
+</p>
+<pre class="programlisting">
+alias my-lib
+    : # no sources
+    : # no build requirements
+    : # no default build
+    : &lt;include&gt;whatever ;
+</pre>
+<p>
+      The includes specified in usage requirements of <code class="computeroutput">my-lib</code> are
+      automatically added to all of its dependants' build properties. The
+      dependants need not care if <code class="computeroutput">my-lib</code> is a header-only or not,
+      and it is possible to later make <code class="computeroutput">my-lib</code> into a regular
+      compiled library without having to that its dependants' declarations.
+    </p>
+<p>
+      If you already have proper usage requirements declared for a project where
+      a header-only library is defined, you do not need to duplicate them for
+      the <code class="computeroutput">alias</code> target:
+</p>
+<pre class="programlisting">
+project my : usage-requirements &lt;include&gt;whatever ;
+alias mylib ;
+</pre>
+<p>
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright © 2006-2009 Vladimir Prus<p>Distributed under the Boost Software License, Version 1.0.
+      (See accompanying file <code class="filename">LICENSE_1_0.txt</code> or copy at 
+      <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../recipies/site-config.html"><img src="../../../../../../../doc/html/images/prev.png" alt="Prev"></a><a accesskey="u" href="../faq.html"><img src="../../../../../../../doc/html/images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../../../../../../doc/html/images/home.png" alt="Home"></a><a accesskey="n" href="../jam.html"><img src="../../../../../../../doc/html/images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

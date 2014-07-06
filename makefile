@@ -1,7 +1,9 @@
 
 include local.config
 
-
+BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
+BOOST_BUILD_V2_INSTALL = $(PREFIX)/boost_build_v2
+BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
 
 ifneq ($(EXTERNALS),)
 	PATH := $(EXTERNALS)/release/bin:$(EXTERNALS)/common/bin:$(PATH)
@@ -14,11 +16,17 @@ ifeq ($(WHAT),)
 endif
 
 all:
-	echo PJOBS=$(PJOBS)
-	echo TARGET-OS=$(TARGET-OS)
-	echo LINK=$(LINK)
-	(cd src/main;  bjam -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) $(WHAT))
+	make boostbuildv2-build
+	make clasp-build
 	make compile-sources
+
+testing:
+	which clang++
+clasp-build:
+	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) $(WHAT))
+
+boostbuildv2-build:
+	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL))
 
 compile-sources:
 	(cd src/main; make system-boot)
