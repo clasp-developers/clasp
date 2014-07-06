@@ -106,7 +106,7 @@ local sources =
 	    sequence.cc
 	    lispVector.cc
 	    loadTimeValues.cc
-	    python_wrappers.cc
+#	    python_wrappers.cc
 	    arrayObjects.cc
 #	    weakReference.cc
 #	    model.cc 

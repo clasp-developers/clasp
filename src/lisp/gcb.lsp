@@ -2242,7 +2242,8 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                                                          #("-DUSE_MPS"
                                                            "-DRUNNING_GC_BUILDER"
                                                            "-resource-dir"
-                                                           "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"))))
+                                                           #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"
+                                                           #+target-os-linux "/home/meister/local/gcc-4.8.3"))))
 
 (progn
   (setf *tools* (make-multitool :arguments-adjuster *arguments-adjuster*))

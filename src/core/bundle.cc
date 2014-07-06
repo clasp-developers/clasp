@@ -61,9 +61,7 @@ namespace core
 	this->initializeStartupWorkingDirectory();
 
 	string cwd = this->_StartupWorkingDir.string();
-
 	bf::path appDir = this->findAppDir(argv0,cwd,envVar);
-
 	// First crawl up the directory tree and look for the cando root
 	bf::path curPath = appDir;
 	while ( curPath.has_relative_path() )
@@ -71,7 +69,7 @@ namespace core
 	    // The following line used to contain curPath.leaf().find("cando") but that
 	    // is weird because .leaf()[-now depreciated-] returned a path and not a string!!!!!
 	    // I changed it to what should work now but the behavior might have changed!!!!!!! Aug15-2011
-	    if ( curPath.filename().string().find("cando")!=string::npos)
+	    if ( curPath.filename().string().find("clasp")!=string::npos)
 	    {
 		break;
 	    }
@@ -80,7 +78,7 @@ namespace core
 	if ( !curPath.has_relative_path() )
 	{
 	    THROW_HARD_ERROR(BF("Could not find the root directory of the cando application bundle.\n"
-				" It must contain the word \"cando\".\n"));
+				" It must contain the word \"clasp\".\n"));
 	}
 	this->_RootDir = curPath;
 	this->findSubDirectories(curPath);
