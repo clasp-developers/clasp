@@ -154,7 +154,8 @@ project clasp : requirements
 
 path-constant TOP : . ;
 path-constant COMMON : src/common ;
-path-constant APPCONT : [ os.environ PREFIX ] ;
+path-constant APPTOP : [ os.environ PREFIX ] ;
+path-constant APPCONT : $(APPTOP)/Contents ;
 path-constant APPRES : $(APPCONT)/Resources ;
 path-constant APPRES-EXTERNALS : [ os.environ EXTERNALS ] ;
 path-constant APPRES-EXTERNALS-RELEASE : $(APPRES-EXTERNALS)/release ;
@@ -167,8 +168,8 @@ path-constant APPRES-EXTERNALS-COMMON : $(APPRES-EXTERNALS)/common ;
 path-constant APPRES-EXTERNALS-COMMON-LIB : $(APPRES-EXTERNALS-COMMON)/lib ;
 path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/include ;
 path-constant APPRES-LISP : $(APPRES)/lisp ;
-path-constant APPBIN_LINUX : $(APPCONT)/bin ;
-path-constant APPBIN_OSX : $(APPCONT)/MacOS ;
+path-constant APPBIN_LINUX : $(APPTOP)/bin ;
+path-constant APPBIN_OSX : $(APPTOP)/MacOS ;
 path-constant APPINC : $(APPRES)/include ;
 path-constant APPLIB : $(APPRES)/lib ;
 path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;

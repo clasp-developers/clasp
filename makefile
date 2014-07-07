@@ -2,7 +2,7 @@
 include local.config
 
 BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
-BOOST_BUILD_V2_INSTALL = $(PREFIX)/boost_build_v2
+BOOST_BUILD_V2_INSTALL = $(PREFIX)/Contents/boost_build_v2
 BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
 
 ifneq ($(EXTERNALS),)
