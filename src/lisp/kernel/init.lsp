@@ -717,6 +717,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (compile-boot :min :first-file :cmp)
   (cmp:bundle-boot :min :base +min-image-pathname+))
 
+(defun load-min-boot-bundle ()
+  (load-boot :min)
+  (cmp:bundle-boot :min :base +min-image-pathname+))
+
 (defun compile-min-recompile ()
   (compile-boot :start :reload nil :first-file :base)
   (compile-boot :min :recompile t :first-file :start)

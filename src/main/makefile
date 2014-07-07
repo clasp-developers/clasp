@@ -18,6 +18,9 @@ system-recompile:
 system-min-boot:
 	$(CLASP) -I -f ecl-min -l "buildClaspMinBoot.lsp"
 
+system-min-boot-reuse:
+	$(CLASP) -I -f ecl-min -l "buildClaspMinBootReuse.lsp"
+
 # Use the old min-image
 system-min-recompile:
 	$(CLASP) -f ecl-min -l "buildClaspMinRecompile.lsp"
