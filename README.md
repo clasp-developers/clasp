@@ -10,9 +10,13 @@ https://github.com/drmeister/externals-clasp.git
 
 To build everything from within the top level directory do the following.
 
-1) Copy local.config.template to local.config
-2) Edit local.config (ignored by the git repo) and configure it for your system
-3) make
+1) Add the path to the llvm tools "llc" to PATH
+
+2) Copy local.config.template to local.config
+
+3) Edit local.config (ignored by the git repo) and configure it for your system
+
+4) make
 
 
 If you want to install the libraries separately they are:
