@@ -10,7 +10,7 @@ https://github.com/drmeister/externals-clasp.git
 
 To build everything from within the top level directory do the following.
 
-1) Ensure that the llvm tools "llc" are in your PATH
+1) Ensure that the llvm tools "llc" and the clasp exectuables will be in your PATH
 
 2) Copy local.config.template to local.config
 
