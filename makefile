@@ -12,7 +12,7 @@ endif
 
 
 ifeq ($(WHAT),)
-	WHAT = bundle release boehm
+	WHAT = bundle debug release boehm
 endif
 
 all:
@@ -22,6 +22,7 @@ all:
 
 testing:
 	which clang++
+
 clasp-build:
 	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) $(WHAT))
 
