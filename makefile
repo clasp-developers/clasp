@@ -6,7 +6,7 @@ BOOST_BUILD_V2_INSTALL = $(PREFIX)/boost_build_v2
 BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
 
 ifneq ($(EXTERNALS),)
-	PATH := $(EXTERNALS)/release/bin:$(EXTERNALS)/common/bin:$(PATH)
+	PATH := $(PATH):$(EXTERNALS)/release/bin:$(EXTERNALS)/common/bin
 	export PATH
 endif
 
