@@ -17,6 +17,7 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 
 project clasp : requirements
 	<define>INHERITED_FROM_SRC
+#        <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/usr/include/c++/4.2.1"
         <cxxflags>"-Wno-deprecated-register"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<cxxflags>"-fvisibility=default"

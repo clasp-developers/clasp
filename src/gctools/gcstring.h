@@ -205,7 +205,7 @@ namespace gctools {
                 vec = alloc.allocate(newCapacity);
                 memcpy(vec->_Data,this->_Contents->_Data,this->_Contents->_End*sizeof(value_type));
                 vec->_End = this->_Contents->_End;
-                pointer_to_moveable oldVec(this->_Contents);
+//                pointer_to_moveable oldVec(this->_Contents);
                 this->_Contents = vec;
                 GCTOOLS_ASSERT(newCapacity == this->_Contents->_Capacity);
                 GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
@@ -243,8 +243,8 @@ namespace gctools {
                 THROW_IF_ILLEGAL_CHARACTERS(this);
                 return;
             }
-            size_t oldEnd = this->_Contents->_End;
-            size_t oldCapacity = this->_Contents->_Capacity;
+//            size_t oldEnd = this->_Contents->_End;
+//            size_t oldCapacity = this->_Contents->_Capacity;
             if ( n == this->_Contents->_End ) return; // Size isn't changing;
             if ( n > this->_Contents->_End ) {
                 pointer_to_moveable vec(this->_Contents);
