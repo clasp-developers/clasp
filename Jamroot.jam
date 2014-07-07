@@ -168,10 +168,10 @@ path-constant APPRES-EXTERNALS-COMMON-INCLUDE : $(APPRES-EXTERNALS-COMMON)/inclu
 path-constant APPRES-LISP : $(APPRES)/lisp ;
 path-constant APPBIN_LINUX : $(APPCONT)/bin ;
 path-constant APPBIN_OSX : $(APPCONT)/MacOS ;
-#path-constant APPINC : $(APPRES)/include ;
-#path-constant APPLIB : $(APPRES)/lib ;
-#path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;
-#path-constant APP-RELEASE-LIB : $(APPLIB)/release ;
+path-constant APPINC : $(APPRES)/include ;
+path-constant APPLIB : $(APPRES)/lib ;
+path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;
+path-constant APP-RELEASE-LIB : $(APPLIB)/release ;
 #path-constant BUILD : build ;
 
 
