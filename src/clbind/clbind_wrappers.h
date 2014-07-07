@@ -454,7 +454,7 @@ namespace translate {
 #if 1
             printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nWhat follows may or may not be useful for diagnosing the problem.\nYou may need to write a from_object translator for the destination type\n",
                    __FILE__, __LINE__, _rep_(o).c_str());
-            clbind::Derivable<T>* dtptr = dynamic_cast<clbind::Derivable<T>*>(o.px_ref());
+//            clbind::Derivable<T>* dtptr = dynamic_cast<clbind::Derivable<T>*>(o.px_ref());
             printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__ );
             printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(o.px_ref()));
             printf("o.px_ref() = %p\n", o.px_ref());
