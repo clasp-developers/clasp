@@ -43,7 +43,7 @@ lib ncurses : : <search>$(APPRES-EXTERNALS-COMMON-LIB) <name>ncurses ;
 
 
 lib boost_filesystem : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_filesystem <variant>release ;
-lib boost_serialization : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_serialization <variant>release ;
+#lib boost_serialization : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_serialization <variant>release ;
 lib boost_program_options : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_program_options <variant>release ;
 lib boost_python : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_python <variant>release ;
 #lib boost_thread : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>boost_thread <variant>release ;
@@ -71,7 +71,7 @@ alias boost :
                 /externals//boost_regex
 #                /externals//boost_thread
                 /externals//boost_date_time
-                /externals//boost_serialization
+#                /externals//boost_serialization
                 /externals//boost_program_options
                 /externals//boost_system
 		/externals//boost_iostreams

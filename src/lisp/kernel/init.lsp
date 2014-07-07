@@ -600,6 +600,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (let ((cur (member first-file all-files))
 	files
 	file)
+    (or cur (error "first-file ~a was not a member of ~a" first-file all-files))
     (tagbody
      top
        (setq file (car cur))
@@ -705,8 +706,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (defun compile-cmp ()
-  (compile-boot :cmp :reload t)
-  (cmp:bundle-boot :cmp)
+  (compile-boot :cmp :reload t :first-file :start)
+  (compile-boot :start :reload nil :first-file :base)
 )
 
 
@@ -714,12 +715,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (compile-boot :cmp :reload t :first-file :start)
   (compile-boot :start :reload nil :first-file :base)
   (compile-boot :min :first-file :cmp)
-  (cmp:bundle-boot :min +min-image-pathname+))
+  (cmp:bundle-boot :min :base +min-image-pathname+))
 
 (defun compile-min-recompile ()
   (compile-boot :start :reload nil :first-file :base)
   (compile-boot :min :recompile t :first-file :start)
-  (cmp:bundle-boot :min +min-image-pathname+))
+  (cmp:bundle-boot :min :base +min-image-pathname+))
 
 (defun switch-to-full ()
   (setq *features* (remove :ecl-min *features*))

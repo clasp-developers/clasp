@@ -10,3 +10,6 @@
 /build
 *.bundle
 *.out
+boost_build_v2/b2
+boost_build_v2/bjam
+local.config

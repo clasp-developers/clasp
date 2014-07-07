@@ -9,3 +9,4 @@
 *.o-rc
 *.o-min-rc
 *.ll-min-rc
+*.pyc
