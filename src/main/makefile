@@ -1,4 +1,4 @@
-CLASP = $(PREFIX)/bin/clasp_boehm_o
+CLASP = clasp_boehm_o
 
 
 all:
