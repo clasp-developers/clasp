@@ -1,3 +1,6 @@
+CLASP = $(PREFIX)/bin/clasp_boehm_o
+
+
 all:
 	make system-boot
 	make clasp-gc
@@ -13,17 +16,17 @@ system-recompile:
 	make system-full
 
 system-min-boot:
-	clasp -I -f ecl-min -l "buildClaspMinBoot.lsp"
+	$(CLASP) -I -f ecl-min -l "buildClaspMinBoot.lsp"
 
 # Use the old min-image
 system-min-recompile:
-	clasp -f ecl-min -l "buildClaspMinRecompile.lsp"
+	$(CLASP) -f ecl-min -l "buildClaspMinRecompile.lsp"
 
 system-full:
-	clasp -f ecl-min -l "buildClasp.lsp"
+	$(CLASP) -f ecl-min -l "buildClasp.lsp"
 
 clasp-gc:
-	clasp -l "buildClaspGc.lsp"
+	$(CLASP) -l "buildClaspGc.lsp"
 
 compile-commands:
 	-bjam bundle release mps-prep -n -a >bjam.out
