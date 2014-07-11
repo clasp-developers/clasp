@@ -1,12 +1,18 @@
-;;
-;; I'm tring to get (search :test t) to work
-;; This should build the project for one file
-;;
 
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)
 
+(defconstant +resource-dir+ 
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"
+  #+target-os-linux "/home/meister/local/externals-clasp/release/bin/../lib/clang/3.5.0"
+  "Define the -resource-dir command line option for Clang compiler runs"
+)
 
+;;; --------------------------------------------------
+;;; --------------------------------------------------
+;;; Should not need to modify below here
+;;; --------------------------------------------------
+;;; --------------------------------------------------
 (defmacro gclog (fmt &rest args))
 
 (progn
@@ -2241,10 +2247,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defvar *arguments-adjuster* (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
                                                          #("-DUSE_MPS"
                                                            "-DRUNNING_GC_BUILDER"
-                                                           "-resource-dir"
-                                                           #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"
-                                                           #+target-os-linux "/home/meister/local/gcc-4.8.3"))))
-
+                                                           "-resource-dir" +resource-dir+))))
 (progn
   (setf *tools* (make-multitool :arguments-adjuster *arguments-adjuster*))
   (setup-cclass-search *tools*) ; search for all classes
@@ -2400,8 +2403,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
              :arguments-adjuster-code (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
                                                                   #("-DUSE_MPS"
                                                                     "-DRUNNING_GC_BUILDER"
-                                                                    "-resource-dir"
-                                                                    "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1")))))
+                                                                    "-resource-dir" +resource-dir+)))))
 
 
 
