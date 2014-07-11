@@ -549,7 +549,7 @@ namespace clbind
             {
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
-                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
+//                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
                 core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature> >::allocateClass(tname);
                 lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
             }
@@ -632,7 +632,7 @@ namespace clbind
         {
             constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring) : constructor_registration_base<Class,reg::null_type,default_constructor,Policies>(policies,name,arguments,declares,docstring) {};
             core::Creator* registerDefaultConstructor_() const {
-                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
+//                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
                 core::Creator* allocator = gctools::ClassAllocator<DerivableDefaultConstructorCreator<Class>>::allocateClass();
                 return allocator;
             }

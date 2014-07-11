@@ -790,6 +790,8 @@ namespace core
 	void inPackage(const string& packageName);
 	void selectPackage(Package_sp pack);
 	Package_sp getCurrentPackage() const;
+        void mapNameToPackage(const string& name, Package_sp pkg);
+        void unmapNameToPackage(const string& name);
 	Package_sp makePackage(const string& packageName, list<string> const& nicknames, list<string> const& usePackages);
 	bool usePackage(const string& packageName);
 

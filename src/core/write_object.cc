@@ -1,3 +1,5 @@
+/* This is copied from ECL write_object.c and modified for C++ */
+
 #define	DEBUG_LEVEL_FULL
 
 #include "core/foundation.h"
@@ -49,11 +51,11 @@ namespace core
 
     Fixnum search_print_circle(T_sp x)
     {
+//        printf("%s:%d Entered search_print_circle with x.px=%p\n", __FILE__, __LINE__, x.px_ref());
 	T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
 	HashTable_sp circle_stack = _sym_STARcircle_stackSTAR->symbolValue().as<HashTable_O>();
 	T_sp code;
-    
-	if (!circle_counter.fixnump()) {
+    	if (!circle_counter.fixnump()) {
 	    code = circle_stack->gethash(x,_NULL<T_O>());
 	    if (code._NULLp()) {
 		/* Was not found before */
@@ -111,9 +113,8 @@ namespace core
 	if (circle && !x._NULLp() && !x.fixnump() && !x.characterp() &&
 	    (af_listp(x) || !af_symbolp(x) || !x.as<Symbol_O>()->homePackage().nilp() ))
 	{
-	    T_sp circle_counter;
 	    Fixnum code;
-	    circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
+	    T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
 	    if (circle_counter.nilp() ) {
 		HashTable_sp hash = af_make_hash_table(cl::_sym_eq,
 						       Fixnum_O::create(1024),

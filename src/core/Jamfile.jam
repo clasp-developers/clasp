@@ -1,4 +1,4 @@
-import cando ;
+import bundler ;
 local dir = $(__file__:D) ;
 
 echo "core dir = $(dir)" ;
@@ -198,7 +198,7 @@ alias af : af_function_templates
 h symbol_apply_inc : generate_symbol_apply_inc.lisp ;
 
 
-cando.bundle $(dir) :
+bundler.bundle $(dir) :
 	     $(sources) :
 	     <link>static
              <implicit-dependency>mi
@@ -209,5 +209,7 @@ alias meta :     wrappers_functoids
                  wrappers_methoids
                  external_wrappers_indirect_methoids
                  mi symbol_apply_inc  ;   # removed af 
+
+
 
 # preprocessed corePackage : corePackage.cc : <variant>debug <define>SOURCE_DEBUG ;

@@ -24,12 +24,12 @@ namespace core
     }
 
 
-    Environment_scp ActivationFrame_O::currentVisibleEnvironment() const
+    Environment_sp ActivationFrame_O::currentVisibleEnvironment() const
     {_G();
 	return this->const_sharedThis<ActivationFrame_O>();
     }
 
-    ActivationFrame_scp ActivationFrame_O::getActivationFrame() const
+    ActivationFrame_sp ActivationFrame_O::getActivationFrame() const
     {
 	return this->const_sharedThis<ActivationFrame_O>();
     }

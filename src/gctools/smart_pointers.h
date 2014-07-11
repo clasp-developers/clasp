@@ -90,6 +90,9 @@ namespace gctools
 	/*! Get the pointer typcast to an integer quantity for hashing */
 	cl_intptr_t intptr() const { return ((uintptr_t)(this->px));};
 
+        smart_ptr<T> lock() const {
+            return *this; 
+        }
 
 	template <class o_class>
             inline smart_ptr<o_class> pointerAsUnsafe()

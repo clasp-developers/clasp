@@ -55,7 +55,7 @@ SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string& whatDoesE
 	this->_WhatTheEnumsRepresent = what;
     }
 
-    Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_cp asym, Symbol_cp& archiveSym, int enumIndex )
+    Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp const& archiveSym, int enumIndex )
     {_OF();
 	Symbol_sp sym = asym;
 	if ( sym.nilp() )

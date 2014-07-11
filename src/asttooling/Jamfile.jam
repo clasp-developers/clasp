@@ -1,4 +1,4 @@
-import cando ;
+import bundler ;
 local dir = $(__file__:D) ;
 
 #
@@ -35,7 +35,7 @@ sources =
 	/externals//boostAndExpatLibs
 	/externals//clang_lib ;
 
-cando.bundle $(dir) :
+bundler.bundle $(dir) :
 	     $(sources) :
 	     <link>static
 	     <implicit-dependency>mi
