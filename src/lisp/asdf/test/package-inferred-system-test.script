@@ -1,0 +1,8 @@
+(register-directory (subpathname *test-directory* "package-inferred-system-test/"))
+(load-system :package-inferred-system-test/a/x)
+(load-system :package-inferred-system-test/d)
+
+(signals package-inferred-system-missing-package-error (load-system :package-inferred-system-test/e))
+
+;; No such file.
+(signals missing-component (load-system :package-inferred-system-test/f))

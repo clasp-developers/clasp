@@ -1,0 +1,397 @@
+* Decree that versions older than 2 years are not supported;
+  yet, keep supporting an upgrade from whatever vendors provide
+  — so push them to provide recent stuff.
+  Already, swank-asdf doesn't support anything older than 2.014.6
+  (as provided by the first 2011 iteration of Quicklisp), and
+  I (fare) am pushing for swank-asdf to not support anything older
+  than 2.019 (still used by LispWorks 6.1).
+  Hopefully, sometime in 2014, everyone will have adopted ASDF 3.0.1, or even 3.1.2.
+  Maybe remove old versions from upgrade tests; or maybe not:
+  if we support old versions in any way,
+  it should be for upgrade only, and "punt" is acceptable.
+  Upgrade tests might be split in two test sets: short and long.
+
+* Moving toward cross-compilation (ASDF 3.2? 4?)
+   This would allow to get most of the benefits of XCVB
+   (reproducibility, scalability, applicability to mobile platforms, etc.),
+   except without the backward incompatibility of XCVB.
+   NB: the MOCL author would benefit a lot, and might chip in.
+** Need to further split asdf:perform in two parts:
+   A part that runs on the host and specifies (as SEXP or string to read)
+   forms that must be evaluated on the target machine, not the host:
+   (asdf:perform-forms target operation component)
+   The default implementation can fallback to running the
+   (asdf:perform operation component) on the target,
+   which if it is on specially crafted operation and component objects
+   that do not require recreating the component hierarchy and plan,
+   but still require loading the defsystem-depends-on dependencies:
+   on the target:
+
+   ;; null means the target is the current host.
+   ;; Or should the base class be plan-traversal or such?
+   (defmethod perform-form ((target null) operation component)
+     ;; :host means execute on the host. () is empty options.
+     `(:host () (asdf:perform ',op ',comp)))
+
+   ;; external-target means a cross compiler that we spawn.
+   (defmethod perform-form ((target external-target) operation component)
+     `(:target ;; who is to execute that? the target Lisp.
+       ;; options for the performing system:
+       (:depends-on ,(defsystem-dependencies
+                      (component-system component)))
+       ;; The actual forms to evaluate
+       (asdf:perform ,(fake-operation-form operation)
+                     ,(fake-component-form component))))
+
+   By specifying :host-common-lisp you can have forms run on the host.
+   By specifying :run-program, you can spawn a subprocess without
+   having to first spawn a Lisp that will call run-program. etc.
+
+   The other way around the default perform method could be:
+
+   (defmethod perform ((o t) (c t))
+     (let ((forms (perform-forms nil o c)))
+       (if (equal forms
+                  `((asdf:perform ',o ',c)))
+           (error "Missing perform method on ..." ...)
+           (map () 'eval-thunk forms))))
+
+   Note that in the general case, there are multiple forms,
+   that must be provided on the command line somehow
+   (see the lisp-invocation system and also how cl-launch does it),
+   with packages necessary to read latter forms being
+   created by former forms, so you cannot read everything in one go.
+   ASDF or at least UIOP should probably be provided in the target
+   image by default, anyway, without needing to be explicitly specified.
+   A more declarative interface to needing the defsystem-deps
+   is probably useful.
+** A real cross-compiling backend that works the way of XCVB
+   would need to compute a complete graph for the plan,
+   which could be achieved by inheriting from the code in POIU.
+   Thinking about it, the cross-compiling target object
+   could actually be the same as the plan object.
+   The basic case of in-image execution would need to be in ASDF,
+   while the actual cross-compilation case would be in an extension.
+** Audit all the current specializers of perform, and offer them a new way;
+   they can keep the perform method to run on older versions of ASDF.
+** Modify SBCL and other implementations so they provide UIOP
+   independently from ASDF?
+** The default perform-plan method could iterate over pre-computed forms,
+   in a way that does not involve the ASDF object model anymore,
+   making ASDF friendlier to self-upgrades.
+   Then, ASDF wouldn't need to be concatenated during upgrade
+   — but should still concatenate for bootstrap purposes,
+   when require'ing it as an implementation-provided module,
+   compiling from ASDF 2, or otherwise distributing as a single file.
+
+* Implementation bugs
+** CMUCL has bugs:
+*** In ASDF 2.32.13, sibling-dependencies is renamed to sideway-dependencies
+    in defclass component, a superclass of system, and upgrade from
+    2.32 or earlier thus fails with
+    Error in function KERNEL:CLASS-TYPEP:  Class is currently invalid:
+    #<KERNEL::STANDARD-CLASS ASDF/SYSTEM:SYSTEM {58398145}>
+    in a direct call from ASDF/FIND-SYSTEM:LOCATE-SYSTEM,
+    which suggests CMUCL's PCL fails to finalize classes properly.
+*** Non-default optimize settings may or may not subtly break PCL.
+    For the longest time (from 2.26.136 to 3.1.0.42), ASDF had:
+    (declaim (optimize (speed 1) (safety 3) (debug 3)))
+    This form may or may not work around that breakage in some cases:
+    (setf c::top-level-lambda-max 0)
+*** At some point there was massive breakage due to uninitialized slots
+    as revealed in 3.1.0.37 with
+    make t l=cmucl t=test-encodings.script
+    which was a different PCL bug from the above (without same workaround)
+    but possibly also triggered by the non-standard declaim.
+*** `#5(1 ,@`(2 3)))` returns #(1 2 3),
+     rather than #(1 2 3 2 3 2 3 2 3) or even better #(1 2 3 3 3).
+
+** SCL has bugs:
+*** it doesn't like run-program from a modified directory?
+*** it somehow pushes :non-base-chars-exist-p even though +non-base-chars-exist-p+ is NIL???
+
+** XCL has bad bugs:
+*** make-pathname doesn't handle :type nil properly and
+    has massive lossage in logical-pathname support.
+*** If using block () and return in search-for-system-definition
+    instead of return-from, XCL mistakenly has the return jump
+    to the end of the try function or something.
+*** It also takes a long time for errors to propagate into a debugging REPL —
+     Maybe O(n^3) behavior or worse in walking the C++ stack?
+*** The backtrace frames may contains unprintable objects.
+*** make-pathname fails to copy the version from the defaults.
+*** (make-pathname :host "ASDFTEST" :directory '(:absolute "system2" "module4")
+      :name nil :type nil) fails to handle the logical-pathname-ness of ASDFTEST.
+*** `#5(1 ,@`(2 3)))` returns #(1 2 3),
+     rather than #(1 2 3 2 3 2 3 2 3) or even better #(1 2 3 3 3).
+*** XCL recognizes :unspecific for a pathname type,
+   but prints the namestring with a dot separator!
+   (make-pathname :name "foo" :type :unspecific) ==> #P"foo."
+    If bug is ever fixed, upgrade *unspecific-pathname-type* in uiop/pathname.
+*** XCL doesn't properly process files the name of which contains a *
+
+** GCL is almost working again; but implementation bugs remain.
+   See November 2013 discussion on gcl-devel.
+*** Another GCL compiler bug:
+   when I changed the definition of getcwd from
+   (let ((*default-pathname-defaults* #p"")) (truename #p"")) to
+   (let ((*default-pathname-defaults* *nil-pathname*)) (truename *nil-pathname*))
+   to guard against e.g. a logical-pathname context while loading asdf
+   and parsing #p"", calls to getcwd result in a segfault.
+*** An another bug: gcl refuses dynamic-extent declaration on functions.
+   uiop/stream.lisp:         #-gcl (declare (dynamic-extent ,@(when
+   before `(#',beforef)) ,@(when after `(#',afterf))))
+*** (typep p 'logical-pathname) should be T if p has a logical-pathname host.
+*** apropos is case-sensitive and returns a same symbol many times
+*** compile-file fails to return proper secondary values in case of non-style WARNING.
+*** (pathname-directory #p"foo/") is incorrectly ("foo") instead of (:RELATIVE "foo")
+*** Missing: chdir, combine-fasls, and plenty more UIOP functions.
+*** Do whatever it takes to pass the asdf tests, add the above?
+*** Have (require "asdf") and (require "ASDF") both work.
+*** Trying to uiop:slurp-stream-forms from a stream with #+(or) :foo
+   (or read-file-forms from an file with same) results in an error,
+   rather than nil. This is probably a bug in #+ processing.
+   Unhappily, debian creates such a file in
+   /etc/common-lisp/asdf-output-translations.conf.d/01-common-lisp-controller.conf
+*** Tests that try to catch an error fail (but catching a warning succeeds),
+   which suggests brokenness in handler-bind and/or error.
+*** `#5(1 ,@`(2 3)))` returns #(1 2 3),
+     rather than #(1 2 3 2 3 2 3 2 3) or even better #(1 2 3 3 3).
+*** (DIRECTORY #p"*.*") fails to match files with pathname type NIL.
+*** GCL doesn't properly process files the name of which contains a *
+*** Require is useless, because there is no system search path,
+   and so you can't put ASDF (or anything) there.
+*** Low-level compiler bug:
+   ./cl-launch.sh -B redo_test sh gcl exec noupdate noinc file system noinit
+
+** ABCL has a few bugs.
+*** ABCL fails the timestamp propagation test.
+*** `#5(1 ,@`(2 3)))` returns #(1 2 3),
+   rather than #(1 2 3 2 3 2 3 2 3) or even better #(1 2 3 3 3).
+*** ABCL doesn't properly process files the name of which contains a *
+
+** ECL has issues with its bundles.
+   On MacOS X, test-bundle.script fails.
+   On Linux, test-program.script fails with recent ECL 237af2e,
+   but used to work quite fine earlier in 2013.
+*** ECL doesn't properly process files the name of which contains a *
+
+* Design & Implement some out-of-line configuration mechanism for various options?
+  i.e. let configuration files override some variables around some actions.
+** Could be used to override new backward-incompatible defaults
+   (e.g. for operation propagation, deferred warnings, etc.)
+** Use the above to bind variable around performing of actions.
+
+* Improve robustness
+** Fix bugs on http://bugs.launchpad.net/asdf/+bugs
+*** fix directory-files to not return directories on CCL, etc. Add tests.
+*** have a better defsystem form verifier - see lp#1007335
+*** have a function verify-strict-asd that can verify a asd is pure lp#541562
+   Then if it passes, use load-strict-asd.
+   If not, optionally issue a warning. Start migrating people toward that.
+** Include tests for prebuilt-system in test-bundle and in test-program.
+** Test that a package-system secondary system is properly superseded
+   when the primary system is redefined.
+
+* Learn to use cl-grid-test
+** So we can easily make sure ASDF changes don't break stuff,
+   and that breakage gets fixed quickly.
+** So we see if ASDF-USER can :use most (all?) of UIOP.
+  SB-GROVEL used (until 25c1769 from 2013-02-23) to :use both ASDF and
+  SB-EXT, which prevents ASDF from exporting RUN-PROGRAM, but
+  should not be a problem with ASDF-USER :use'ing UIOP.
+  A run of quicklisp is necessary, with an eye also for warnings
+  from .asd's that might be overriding definitions in UIOP(!)
+
+* Diagnostics
+** have a mode to explain WHY a component needs to be recompiled.
+** A ``dry run'' of an operation can be made with the following form:
+     (let ((asdf:*verbose-out* *standard-output*))
+       (loop :for (op . comp) :in
+         (asdf/plan:plan-actions
+          (asdf/plan:make-plan nil '<operation-name> '<system-name> :force t))
+         :do (asdf:explain op comp)))
+   What would be a nice interface for this functionality?
+
+* have with-input-file use the encodings mechanism?
+** Import asdf-encodings into UIOP? Sounds a lot of code for no users.
+
+* have a single test .asd that tests as many features as possible, use it for upgrade test.
+
+* Bug found by fe[nl]ix: infinite loop if the definitions in an asd file
+  are not in strict defsystem-depends-on dependency order.
+** At least document the issue.
+** Real solution: defer parsing and evaluation of defsystem forms.
+
+* Include some ABL test for stassats's (now obsolete?) thing:
+   (asdf:enable-asdf-binary-locations-compatibility
+   :centralize-lisp-binaries t :default-toplevel-directory *fasl-dir*)
+** Or deprecate and remove ABL compatibility altogether?
+   No one has been using ASDF1 for years.
+   There is no ABL to be compatible with —
+   is anyone still using the compatibility mode?
+   Maybe issue a warning, then a cerror, before to remove the code?
+
+* Make load-op a generic operation that selects the proper strategy?
+  for each system, module or file, according to component properties and user-configuration:
+  compile the lisp file then load the fasl (load-fasl-op on a cl-source-file),
+  load the lisp file without compiling (load-source-op),
+  compile all files for the system, link them and load the result
+   (load-fasl-op on the system),
+  compile all files for the system *and* its dependencies, link and load (monolithic-load-fasl-op),
+  concatenate all files for the system, then load the result (load-concatenated-source-op),
+  concatenate all files for the system, then link them and load the result (load-compiled-concatenated-op),
+  concatenate all files for the system *and* its dependencies, link and load (monolithic-load-compiled-concatenated-op).
+
+* operation cleanup?
+** Kill backward-compat functions after all clients have moved on.
+** Kill original-initargs -- BEWARE, it currently has clients!
+*** current ECL users used to depend on it for bundles, and may or may
+   not be satisfied with how it's not propagated anymore.
+*** SLIME uses it (!)
+*** weblocks uses it (!)
+** To allow semantically distinct operations of the same class:
+You'd need to have a protocol to canonicalize them
+in the *OPERATIONS* memoization table, not by class name,
+but by CONS of the class name and some CANONICAL-OPERATION-INITARGS.
+The latter would be a generic function called on the initargs,
+where any parasite initargs such as FORCE and FORCE-NOT have been removed,
+since they below to the PLAN, not the OPERATION:
+the OPERATE protocol would be refined to explicit split
+arguments to be passed to MAKE-PLAN or to MAKE-OPERATION.
+The default method for CANONICAL-OPERATION-INITARGS
+would SORT (a plist->alist of) the initargs,
+and that would replace the current ORIGINAL-INITARGS slot.
+For this scheme to work even in presence of undisciplined users
+using MAKE-INSTANCE on an operation class,
+the OPERATION class would have an extra slot EFFECTIVE-OPERATION,
+uninitialized by default (nil or unbound), whose accessor initializes it
+if it's uninitialized, by looking up a canonical instance in *OPERATIONS*,
+and if unfound registering the current operation as canonical.
+Then, each component's COMPONENT-OPERATION-TIME hash-table
+would be indexed by canonicalized operation object
+rather than by operation class,
+and POIU would have to be changed accordingly.
+Of course, this entire cleanup is incompatible
+with how SWANK and GBBopen currently abuse slots of operation,
+so these would have to be fixed first.
+And that's why I didn't do it.
+It looks like SWANK can be fixed soon, though, so we'll see.
+
+* Get rid of component-properties
+** directly use component-properties:
+*** yaclml.asd => misguided :features for version comparison
+*** amazon-ecs-20110418-git/amazon-ecs.asd => :website property
+*** hemlock.asd => bad implementation of latin1 encodings
+** .asd use :properties
+*** arnesi, arnesi+ => :features, misguided for version comparison and pseudo #+features
+*** lkcas, thopter => :long-name
+*** cl-irc cliki-bot rss cl-syslog com.informatimago.clext
+   com.informatimago.clisp com.informatimago.clmisc
+   com.informatimago.common-lisp.arithmetic
+   com.informatimago.common-lisp.bank
+   com.informatimago.common-lisp.cesarum
+   com.informatimago.common-lisp com.informatimago.common-lisp.csv
+   com.informatimago.common-lisp.cxx
+   com.informatimago.common-lisp.data-encoding
+   com.informatimago.common-lisp.diagram
+   com.informatimago.common-lisp.ed
+   com.informatimago.common-lisp.graphviz
+   com.informatimago.common-lisp.heap
+   com.informatimago.common-lisp.html-base
+   com.informatimago.common-lisp.html-generator
+   com.informatimago.common-lisp.html-parser
+   com.informatimago.common-lisp.http
+   com.informatimago.common-lisp.interactive
+   com.informatimago.common-lisp.invoice
+   com.informatimago.common-lisp.lisp
+   com.informatimago.common-lisp.lisp.ibcl
+   com.informatimago.common-lisp.lisp.stepper
+   com.informatimago.common-lisp.lisp-reader
+   com.informatimago.common-lisp.lisp-sexp
+   com.informatimago.common-lisp.lisp-text
+   com.informatimago.common-lisp.parser
+   com.informatimago.common-lisp.picture
+   com.informatimago.common-lisp.regexp
+   com.informatimago.common-lisp.rfc2822
+   com.informatimago.common-lisp.rfc3548
+   com.informatimago.common-lisp.telnet
+   com.informatimago.common-lisp.unix
+   linc
+   com.informatimago.lispdoc
+   com.informatimago.lua
+   com.informatimago.cocoa-playground
+   com.informatimago.objcl
+   com.informatimago.rdp
+   com.informatimago.rdp.basic
+   com.informatimago.rdp.basic.example
+   com.informatimago.rdp.example
+   com.informatimago.susv3
+   com.informatimago.common-lisp.tools.make-depends
+   com.informatimago.xcode
+   spartns
+   xlunit
+   => (uninterned!)
+   #:author-email #:date
+   (#:albert #:output-dirs)
+   (#:albert #:formats)
+   (#:albert #:docbook #:template)
+   (#:albert #:docbook #:bgcolor)
+   (#:albert #:docbook #:textcolor)
+   (#:albert #:docbook #:dtd)
+*** portableaserve
+   =>
+   ("system" "author" "email")
+   ("albert" "presentation" "output-dir")
+   ("albert" "presentation" "formats")
+   ("albert" "docbook" "dtd")
+   ("albert" "docbook" "template")
+*** com.clearly-useful.generic-collection-interface => :com.clearly-useful
+*** metatilities
+   => :ait-timeout :system-applicable-p
+*** ucw ucw-core
+   =>
+   version
+
+* ASDF4: search for this tag, rename things (incompatibly, thus) and cleanup code.
+
+* Documentation
+** See message from 2014-01-27 05:26:44 GMT for stuff to document.
+   http://thread.gmane.org/gmane.lisp.asdf.devel/3675/focus=3695
+** style guide for .asd files
+
+* UIOP
+** deferred-warnings support probably needs to be redone better.
+*** implement deferred warnings support on lispworks
+*** turn undefined function style-warnings into full warnings(?)
+*** work with cl-test-grid to eliminate deferred warnings from quicklisp libraries
+*** https://www.mail-archive.com/asdf-devel@common-lisp.net/msg03608.html
+*** czak@google.com rewrote part of deferred warnings support.
+   Ask him for the code he implemented at Google.
+
+** define-package cannot deal with symbols moving "forward".
+*** document that THOU SHALT NOT USE :RECYCLE with packages previously
+   defined by define-package when building from scratch.
+*** Maybe add a check? But how to tell whether you're building from scratch?
+*** Add some :moved-to directive to define-package, such that
+   (:moved-to forward-package symbols...)
+   will declare symbols as moved forward: when the symbol already exists,
+   it is moved to the forward package if that package already exists,
+   after the package created if it doesn't exist yet (!)
+*** There again, a check that a forward-package is not backward
+   would be very nice.
+
+* Migrate from component-depends-on to action-depends-on
+** I contend a future version of ASDF will replace
+   (component-depends-on operation component)
+   with (action-depends-on plan operation component).
+   This allows for different normalization strategies for dependencies
+   (including strategies that avoid resolving things to NIL),
+   a reified context for featurep checks, etc.
+** Easy but long backward-compatible transition:
+*** get all users to use the new gf and keep extending both new and old gf,
+   meanwhile the new gf has an around method that actually calls the old gf
+   except in testing mode and/or if we can check that they're using the new convention
+*** when everyone has migrated, remove the old mode and the short-circuit.
+** However, we cannot deprecate component-depends-on yet — not until we have
+   some transition in place to a better interface.

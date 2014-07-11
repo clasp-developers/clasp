@@ -1,0 +1,450 @@
+":" ; exec sbcl --script "$0" "$@" ; exit # -*- Lisp -*-
+;;;;; Really runs on any decent Common Lisp implementation
+;;;;; Can also be invoked by cl-launch 4: cl-launch "$0" "$@"
+
+;;; The code below exemplifies how to load and configure ASDF
+;;; as part of your own deterministic build.
+;;; See "User-configurable parts" for where you'd customize it to suit your build.
+;;;
+;;; Everything is MUCH simpler if you can assume your implementation has a recent-enough ASDF 3:
+;;; just (require "asdf"), then configure in a subsequent eval-when form,
+;;; in which you may then use asdf: and uiop: prefix.
+;;;
+;;; To use the user-configured ASDF rather than a deterministic self-contained project build,
+;;; see instead how cl-launch 4.0.4 loads ASDF.
+
+(in-package :cl-user) ;; That's may be default, but let's make double sure and tell SLIME.
+
+;; Do everything in eval-when, so this works
+;; whether this file is being loaded directly or compiled first.
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (let ((required-asdf-version  "3.0.1") ;; This script wants ASDF 3 (and no beta release).
+        (verbose *load-verbose*))
+    (labels ((asdf-symbol (name)
+               (and (find-package :asdf) (find-symbol (string name) :asdf)))
+             (asdf-call (name &rest args)
+               (apply (asdf-symbol name) args))
+             (asdf-version ()
+               (when (find-package :asdf)
+                 (or (symbol-value (or (asdf-symbol '*asdf-version*)
+                                       (asdf-symbol '*asdf-revision*)))
+                     "1.0")))
+             (subpath (parent &key directory name type version)
+               ;; We need subpath here, because we can't yet assume ASDF 3 and its subpathname
+               (merge-pathnames (make-pathname :defaults parent
+                                               :directory (cons :relative directory)
+                                               :name name :type type :version version)
+                                parent))
+             (here-directory ()
+               (subpath (or *compile-file-truename* *load-truename*
+                            (truename *default-pathname-defaults*))))
+             (load-and-configure-asdf ()
+               ;; First, try to require ASDF from the implementation, if not already loaded.
+               ;; Most implementations provide ASDF 3.0, LispWorks still lags with ASDF 2.019,
+               ;; and some unmaintained implementations, or obsolete implementations or versions thereof
+               ;; only provide ASDF 2, ASDF 1, or don't provide ASDF.
+               ;; Note that CLISP is case-sensitive, so we need to specify a lowercase string,
+               ;; and not the keyword :asdf or symbol 'asdf; old CLISP versions that don't provide ASDF
+               ;; may error at compile-time if we call (require "asdf") directly.
+               (ignore-errors (funcall 'require "asdf"))
+               ;; If ASDF 2 isn't provided, load our ASDF from source.
+               ;; ASDF 1 is not enough, because it won't heed our project's output-translations.
+               ;; (Beside, no one serious provides ASDF 1 anymore.)
+               (unless (member :asdf2 *features*)
+                 (let ((asdf-lisp (asdf-lisp)))
+                   (if (probe-file asdf-lisp)
+                       (load asdf-lisp)
+                       (error "This Lisp implementation fails to provide ASDF 2 or later"))))
+               ;; Configure ASDF
+               (configure-asdf)
+               (let ((provided-version (asdf-version)))
+                 ;; Upgrade ASDF to what we configured it to be.
+                 (asdf-call 'load-system :asdf)
+                 ;; If the implementation-provided version was too old,
+                 ;; we need to re-configure, because old configuration may have been moved away.
+                 (unless (asdf-call 'version-satisfies provided-version "2.27")
+                   (configure-asdf)))
+               (unless (asdf-call 'version-satisfies (asdf-version) required-asdf-version)
+                 (error "This program needs ASDF ~A but could only find ASDF ~A"
+                        required-asdf-version (asdf-version))))
+
+             ;; User-configurable parts
+             (asdf-lisp ()
+               ;; Here, define where your Lisp source code hierarchy stores its copy of ASDF.
+               ;; In your project, that might be :directory '("libraries" "asdf" "build")
+               ;; Or NIL, if you don't do use any fancy ASDF feature, and
+               ;; trust your implementation to provide a recent enough copy.
+               (subpath (here-directory) :directory '(:back "build") :name "asdf" :type "lisp"))
+             (configure-asdf ()
+               (let* ((source-directory
+                        ;; Here, define the top of your Lisp source code hierarchy.
+                        ;; If you can assume an implementation that has ASDF 2 or later
+                        ;; (you should: all serious ones do), you might compute it based on
+                        ;;   (asdf-call 'getenv "MY_PROJECT_ROOT") instead of (here-directory).
+                        ;; If you can assume an implementation that has ASDF 3 or later
+                        ;; (you probably can: most serious ones do), you might use instead
+                        ;;   (asdf-call 'getenv-pathname "MY_PROJECT_ROOT"
+                        ;;     :want-absolute t :ensure-directory t)
+                        (subpath (here-directory) :directory '(:back)))
+                      (source-registry
+                        `(:source-registry
+                          (:tree ,source-directory)
+                          ;; In a fully controlled build, you'd :ignore-inherited-configuration instead:
+                          :inherit-configuration))
+                      (output-directory
+                        ;; There again, you might want to use some getenv variant.
+                        ;; Also, "fasls" might be redundant for your project.
+                        (subpath source-directory :directory '("build" "fasls")))
+                      (output-translations
+                        `(:output-translations
+                          ;; Segregate output by ABI.
+                          ;; You could replace "asdf" below by the name of your project,
+                          ;; or not need it at all if everything is under your source-directory.
+                          (,source-directory (,output-directory :implementation "asdf"))
+                          ;; In a fully controlled build, we shouldn't be using code outside
+                          ;; our source-directory, but in case we do, we still want to control the output,
+                          ;; and easily detect the fact by looking at this directory
+                          (t (,output-directory :implementation "root"))
+                          ;; The above should already cover all paths that we use;
+                          ;; we don't want user configuration to interfere with the build.
+                          :ignore-inherited-configuration)))
+                 ;; No more user-configurable parts below.
+                 (asdf-call 'initialize-source-registry source-registry)
+                 (asdf-call 'initialize-output-translations output-translations))))
+      ;; Configure the printer
+      (setf *print-readably* nil ; allegro 5.0 may bork without this
+            *print-level* nil)
+      ;; Hush the compiler and loader
+      (setf *load-verbose* nil *load-print* nil
+            *compile-verbose* nil *compile-print* nil)
+      ;; Load and configure ASDF
+      (load-and-configure-asdf))))
+
+(in-package :asdf)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (load-systems :cl-ppcre :fare-utils :inferior-shell))
+
+(unless (featurep :cl-launch) (restore-image))
+
+(defpackage :asdf-builder
+  (:use :cl :uiop :asdf/operate :asdf :fare-utils :inferior-shell)
+  (:shadow #:DBG))
+
+(in-package :asdf-builder)
+
+(uiop-debug)
+
+(defun build-asdf ()
+  "Make sure asdf.lisp is built"
+  (load-system :asdf)
+  (values))
+
+
+;;; ASDF directory
+(defvar *asdf-dir*
+  (ensure-pathname (system-relative-pathname :asdf/defsystem ())
+                   :want-physical t :want-absolute t
+                   :want-existing t :truename t))
+(defun pn (&rest x)
+  (subpathname *asdf-dir* (and x (uiop:resolve-relative-location x))))
+(defun nn (&rest x)
+  (native-namestring (apply 'pn x)))
+
+;;; UIOP directory
+(defvar *uiop-dir* (pn "uiop/"))
+
+;;; build directory
+(defparameter *build-dir* (pn "build/"))
+(defparameter /build-dir/ (nn "build/"))
+(defun bpath (x &rest keys) (apply 'subpathname *build-dir* x keys))
+
+(defparameter *version-file*
+  (pn "version.lisp-expr"))
+
+(defparameter *version* (safe-read-file-form *version-file*))
+
+(defun enough-namestring! (base pathname)
+  (let ((e (enough-namestring base pathname)))
+    (assert (relative-pathname-p e))
+    e))
+
+(defun enough-namestrings (base pathnames)
+  (loop :with b = (ensure-pathname base :want-absolute t :want-directory t)
+        :for p :in pathnames
+        :collect (enough-namestring! p b)))
+
+(defun system-source-files (system)
+  (let* ((sys (find-system system))
+         (dir (ensure-pathname
+               (system-source-directory sys)
+               :want-absolute t :want-directory t))
+         (components
+           (required-components
+            sys :other-systems nil
+            :goal-operation 'load-op
+            :keep-operation 'load-op
+            :keep-component 'file-component))
+         (pathnames (mapcar 'component-pathname components)))
+    (enough-namestrings dir pathnames)))
+
+(defun tarname (name) (strcat name ".tar.gz"))
+
+(defun make-tarball-under-build (name base files)
+  (check-type name string)
+  (ensure-pathname base :want-absolute t :want-existing t :want-directory t)
+  (dolist (f files)
+    (check-type f string))
+  (let* ((base
+           (ensure-pathname
+            base
+            :want-absolute t :want-directory t
+            :want-existing t :truename t))
+         (destination
+           (ensure-pathname
+            name
+            :defaults *build-dir*
+            :want-relative t :ensure-absolute t
+            :ensure-subpath t :ensure-directory t))
+         (tarball
+           (ensure-pathname
+            (tarname name)
+            :defaults *build-dir*
+            :want-relative t :ensure-absolute t
+            :ensure-subpath t :want-file t
+            :ensure-directories-exist t)))
+    (assert (< 6 (length (pathname-directory destination))))
+    (when (probe-file* destination)
+      (error "Destination ~S already exists, not taking chances - you can delete it yourself."
+             destination))
+    (ensure-directories-exist destination)
+    (run `(cp "-pHux" --parents ,@files ,destination) :directory base :show t)
+    (run `(tar "zcfC" ,tarball ,*build-dir* (,name /)) :show t)
+    (delete-directory-tree destination :validate (lambda (x) (equal x destination)))
+    (values)))
+
+(defun driver-files ()
+  (list* "README" "uiop.asd" "asdf-driver.asd" (system-source-files :uiop)))
+(defun driver-name ()
+  (format nil "uiop-~A" *version*))
+(defun make-driver-tarball ()
+  (make-tarball-under-build (driver-name) *uiop-dir* (driver-files)))
+
+(defun asdf-defsystem-files ()
+  (list* "asdf.asd" "build/asdf.lisp" "version.lisp-expr" "header.lisp"
+         (system-source-files :asdf/defsystem)))
+(defun asdf-defsystem-name ()
+  (format nil "asdf-defsystem-~A" *version*))
+(defun make-asdf-defsystem-tarball ()
+  (build-asdf)
+  (make-tarball-under-build (asdf-defsystem-name) *asdf-dir* (asdf-defsystem-files)))
+
+(defun asdf-git-name ()
+  (strcat "asdf-" *version*))
+(defun make-git-tarball ()
+  (build-asdf)
+  (with-current-directory ((pn))
+    (run `(tar zcf ("build/" ,(asdf-git-name) ".tar.gz") build/asdf.lisp ,@(run/lines '(git ls-files)))
+         (asdf-git-name)) :show t)
+  (values))
+
+(defun asdf-lisp-name ()
+  (format nil "asdf-~A.lisp" *version*))
+
+(defun make-asdf-lisp ()
+  (build-asdf)
+  (concatenate-files (list (pn "build/asdf.lisp"))
+                     (pn "build/" (asdf-lisp-name))))
+
+(defun make-archive ()
+  (make-driver-tarball)
+  (make-asdf-defsystem-tarball)
+  (make-git-tarball)
+  (make-asdf-lisp)
+  (values))
+
+(defvar *clnet* "common-lisp.net")
+(defvar *clnet-asdf-public* "/project/asdf/public_html/")
+(defun public-path (x) (strcat *clnet-asdf-public* x))
+
+(defun publish-archive ()
+  (let ((tarballs (mapcar 'tarname (list (driver-name) (asdf-defsystem-name) (asdf-git-name)))))
+    (run (format nil "cd ~S && rsync ~{~S ~}~S common-lisp.net:/project/asdf/public_html/archives/"
+                 /build-dir/ tarballs (asdf-lisp-name)) :show t))
+  (format t "~&To download the tarballs, point your browser at:~%
+        http://common-lisp.net/project/asdf/archives/
+~%")
+  (values))
+
+(defun link-archive ()
+  (run (format nil "ln -sf ~S ~S ; ln -sf ~S ~S ; ln -sf ~S ~S ; ln -sf ~S ~S"
+               (tarname (driver-name))
+               (public-path "archives/uiop.tar.gz")
+               (tarname (asdf-defsystem-name))
+               (public-path "archives/asdf-defsystem.tar.gz")
+               (tarname (asdf-git-name))
+               (public-path "archives/asdf.tar.gz")
+               (asdf-lisp-name)
+               (public-path "archives/asdf.lisp"))
+       :show t :host *clnet*)
+  (values))
+
+(defun make-and-publish-archive ()
+  (make-archive)
+  (publish-archive)
+  (link-archive))
+
+(defparameter *versioned-files*
+  '(("version.lisp-expr" "\"" "\"")
+    ("asdf.asd" "  :version \"" "\" ;; to be automatically updated by make bump-version")
+    ("header.lisp" "This is ASDF " ": Another System Definition Facility.")
+    ("upgrade.lisp" "   (asdf-version \"" "\")")))
+
+(defparameter *old-version* nil)
+(defparameter *new-version* nil)
+
+(defun next-version (v)
+  (let ((pv (parse-version v 'error)))
+    (assert (first pv))
+    (assert (second pv))
+    (unless (third pv) (appendf pv (list 0)))
+    (unless (fourth pv) (appendf pv (list 0)))
+    (incf (car (last pv)))
+    (unparse-version pv)))
+
+(defun version-from-file ()
+  (safe-read-file-form *version-file*))
+
+(defun versions-from-args (&optional v1 v2)
+  (labels ((check (old new)
+             (parse-version old 'error)
+             (parse-version new 'error)
+             (values old new)))
+    (cond
+      ((and v1 v2) (check v1 v2))
+      (v1 (check (version-from-file) v1))
+      (t (let ((old (version-from-file)))
+           (check old (next-version old)))))))
+
+(deftype byte-vector () '(array (unsigned-byte 8) (*)))
+
+(defun maybe-replace-file (file transformer
+                           &key (reader 'read-file-string)
+                             (writer nil) (comparator 'equalp)
+                             (external-format *utf-8-external-format*))
+  (format t "Transforming file ~A... " (file-namestring file))
+  (let* ((old-contents (funcall reader file))
+         (new-contents (funcall transformer old-contents)))
+    (if (funcall comparator old-contents new-contents)
+        (format t "no changes needed!~%")
+        (let ((written-contents
+                (if writer
+                    (with-output (s ())
+                      (funcall writer s new-contents))
+                    new-contents)))
+          (check-type written-contents (or string (byte-vector)))
+          (clobber-file-with-vector file written-contents :external-format external-format)
+          (format t "done.~%")))))
+
+(defun version-transformer (new-version file prefix suffix &optional dont-warn)
+  (let* ((qprefix (cl-ppcre:quote-meta-chars prefix))
+         (versionrx "([0-9]+(\\.[0-9]+)+)")
+         (qsuffix (cl-ppcre:quote-meta-chars suffix))
+         (regex (strcat "(" qprefix ")(" versionrx ")(" qsuffix ")"))
+         (replacement
+           (constantly (strcat prefix new-version suffix))))
+    (lambda (text)
+      (multiple-value-bind (new-text foundp)
+          (cl-ppcre:regex-replace regex text replacement)
+        (unless (or foundp dont-warn)
+          (warn "Missing version in ~A" (file-namestring file)))
+        (values new-text foundp)))))
+
+(defun transform-file (new-version file prefix suffix)
+  (maybe-replace-file (pn file) (version-transformer new-version file prefix suffix)))
+
+(defun transform-files (new-version)
+  (loop :for f :in *versioned-files* :do (apply 'transform-file new-version f)))
+
+(defun test-transform-file (new-version file prefix suffix)
+  (let ((lines (read-file-lines (pn file))))
+    (dolist (l lines (progn (warn "Couldn't find a match in ~A" file) nil))
+      (multiple-value-bind (new-text foundp)
+          (funcall (version-transformer new-version file prefix suffix t) l)
+        (when foundp
+          (format t "Found a match:~%  ==> ~A~%Replacing with~%  ==> ~A~%~%"
+                  l new-text)
+          (return t))))))
+
+(defun test-transform (new-version)
+  (apply 'test-transform-file new-version (first *versioned-files*)))
+
+(defun bump-version (&optional v1 v2)
+  (multiple-value-bind (old-version new-version)
+      (versions-from-args v1 v2)
+    (a "Bumping ASDF version from " old-version " to " new-version)
+    (transform-files new-version)
+    (a "Rebuilding ASDF with bumped version")
+    (build-asdf)))
+
+(defparameter *version-tag-glob* "[0-9][.][0-9]*")
+
+(defun version-from-tag (&optional commit)
+  (first (run/lines `("git" "describe" "--tags" "--match" ,*version-tag-glob*) :show t)))
+
+(defun version-from-file (&optional commit)
+  (if commit
+      (run `("git" "show" (,commit":version.lisp-expr")) :output :form)
+      (read-file-form *version-file*)))
+
+(defun debian-version-from-file (&optional commit)
+  (let ((line
+          (if commit
+              (run `("git" "show" (,commit":debian/changelog")) :output :line)
+              (read-file-line "debian/changelog"))))
+    (cl-ppcre:register-groups-bind (ver) ("^cl-asdf [(]([0-9.:-]+)[)] " line)
+      ver)))
+
+(defun clean ()
+  (with-current-directory ((pn))
+    (run '(git clean -xfd)))
+  (values))
+
+(defun debian-package (&optional (release "release"))
+  (let* ((debian-version (debian-version-from-file release))
+         (version (version-from-file release)))
+    (unless (cl-ppcre:register-groups-bind (x epoch ver rel)
+                ("^(([0-9]+):)?([0-9.]+)-([0-9]+)$" debian-version)
+              (declare (ignorable x epoch rel))
+              (equal ver version))
+      (error "Debian version ~A doesn't match asdf version ~A" debian-version version))
+    (clean)
+    (format t "building package version ~A~%" (debian-version-from-file))
+    (run `(git-buildpackage
+           ;; --git-ignore-new ;; for testing purpose
+           (--git-debian-branch= ,release)
+           (--git-upstream-tag="%(version)s")
+           ;;--git-upstream-tree=tag ;; if the changelog says 3.1.2, looks at that tag
+           ;;(--git-upstream-branch= ,version) ;; if the changelog says 3.1.2, looks at that tag
+           --git-tag --git-retag
+           ;; --git-no-pristine-tar
+           --git-force-create
+           --git-ignore-branch)
+         :directory (pn) :show t)))
+
+(defun re (arg)
+  (eval (read-from-string arg)))
+
+;;;; Main entry point
+(defun main (args)
+  (block nil
+    (unless args
+      (format t "No command provided~%")
+      (return))
+    (if-let (sym (find-symbol* (string-upcase (first args)) :asdf-builder nil))
+      (let ((results (multiple-value-list (apply sym (rest args)))))
+        (when results
+          (format t "~&Results:~%~{  ~S~%~}" results)))
+      (format t "Command ~A not found~%" (first args)))))
+
+(main *command-line-arguments*)
