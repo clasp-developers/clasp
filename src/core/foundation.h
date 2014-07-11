@@ -430,6 +430,7 @@ namespace core
 #include <map>
 #include <set>
 #include <ostream>
+#include <iostream>
 #include <boost/format.hpp>
 //using namespace std;
 using string = std::string;
@@ -449,7 +450,6 @@ template <typename X>
 using set = std::set<X>;
 template <typename X>
 using deque = std::deque<X>;
-
 
 #if defined(USE_REFCOUNT)
 namespace boost
@@ -651,11 +651,7 @@ namespace core {
 #define	DEFINE_O_SMART_POINTERS(zclass) \
 	class zclass##_O;\
 	typedef gctools::smart_ptr<zclass##_O> zclass##_sp; /* Stack pointers */ \
-	typedef gctools::smart_ptr<zclass##_O> zclass##_hp; /* Heap pointers */ \
-	typedef gctools::smart_ptr</* TODO: const */ zclass##_O> zclass##_scp; \
-	typedef gctools::smart_ptr<zclass##_O> zclass##_rp;             \
-	typedef gctools::smart_ptr<zclass##_O> const& zclass##_cp;      \
-	typedef gctools::weak_smart_ptr<zclass##_O> zclass##_wp;        \
+	typedef gctools::smart_ptr<zclass##_O> zclass##_wp;        \
 	typedef gctools::multiple_values<zclass##_O> zclass##_mv;
 
 	// This ensures that smart pointers are only declared once
@@ -669,7 +665,7 @@ namespace core {
 
 namespace core
 {
-    typedef gctools::smart_ptr</* TODO: use const */ T_O>		T_scp;
+    typedef gctools::smart_ptr</* TODO: use const */ T_O>		T_sp;
 
     class Class_O;
     typedef gctools::smart_ptr<Class_O>	Class_sp;
@@ -819,10 +815,6 @@ namespace core {
 
     class ActivationFrame_O;
     typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
-    typedef gctools::weak_smart_ptr<ActivationFrame_O> ActivationFrame_wp;
-//    typedef const ActivationFrame_sp* const_ActivationFrame_spP;
-//    typedef const ActivationFrame_sp& const_ActivationFrame_spREF;
-    typedef ActivationFrame_sp& ActivationFrame_spREF;
 
 
 };

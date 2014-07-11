@@ -41,7 +41,7 @@ public:
 
 	/*!Associate the symbol with the enum
 	  If the symbol is nil then create a new one with the archiveString and return it */
-	Symbol_sp addSymbolEnumPair(Symbol_cp sym, Symbol_cp archiveSymbol, int enumIndex);
+	Symbol_sp addSymbolEnumPair(Symbol_sp sym, Symbol_sp const& archiveSymbol, int enumIndex);
 	int	enumIndexForSymbol(Symbol_sp sym);
 		/*! Return the enum associated with the symbol
 		 */

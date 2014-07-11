@@ -1,0 +1,54 @@
+;;; -*- Lisp -*-
+
+(setf (logical-pathname-translations "ASDF")
+      #+(or allegro clisp)
+      `(("**;*.*.*" ,(asdf::wilden *asdf-directory*)))
+      #-(or allegro clisp)
+      `(("**;*.asd.*" ,(make-pathname :type "asd" :defaults (asdf::wilden *asdf-directory*)))
+        ("**;*.lisp.*" ,(make-pathname :type "lisp" :defaults (asdf::wilden *asdf-directory*)))
+        ("**;*.*.*" ,(resolve-location
+                      `(,*asdf-directory* "build/fasls" :implementation "logical-host-asdf")
+                      :wilden t))))
+
+(setf asdf/cache:*asdf-cache* nil)
+
+(DBG :logical
+     (logical-pathname-translations "ASDF")
+     (translate-logical-pathname "ASDF:test;test-logical-pathname.asd")
+     (truename "ASDF:test;test-logical-pathname.asd")
+     (translate-logical-pathname "ASDF:test;test-logical-pathname.lisp")
+     (translate-logical-pathname "ASDF:test;test-logical-pathname.fasl"))
+
+#+(or gcl xcl) (leave-test "This implementation doesn't do Logical pathnames well enough" 0)
+
+(DBG "Test logical pathnames in central registry")
+(setf *central-registry* '(#p"ASDF:test;"))
+(initialize-source-registry '(:source-registry :ignore-inherited-configuration))
+(DBG "loading" (oos 'load-op :test-logical-pathname :force t))
+
+(DBG "Test logical pathnames in source-registry, non-recursive")
+(clear-system :test-logical-pathname)
+(setf *central-registry* '())
+(initialize-source-registry
+ '(:source-registry (:directory #p"ASDF:test;") :ignore-inherited-configuration))
+(load-system :test-logical-pathname :force t :verbose t)
+
+(DBG "Test logical pathnames in source-registry, recursive")
+(clear-system :test-logical-pathname)
+(setf *central-registry* '())
+(initialize-source-registry
+ ;; Bug: Allegro Express 8.2 and 9.0 incorrectly read #p"ASDF:" as relative.
+ ;; other bug: around 2.26.xx (before the nil-pathname cleanup, though),
+ ;; CLISP borks badly if the path below is #p"ASDF:"
+ ;; and it tries to load ASDF itself from a logical-pathname.
+ '(:source-registry (:tree #p"ASDF:test;")
+   :ignore-inherited-configuration))
+(load-system :test-logical-pathname :force t)
+
+#+(or clisp abcl) (leave-test "CLISP and ABCL translate logical pathnames in *LOAD-PATHNAME*" 0)
+
+(defparameter sys (find-system :test-logical-pathname))
+(assert (logical-pathname-p (component-pathname sys)))
+(assert (logical-pathname-p (system-source-file sys)))
+
+(DBG "Done")

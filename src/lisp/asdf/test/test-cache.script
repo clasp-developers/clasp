@@ -1,0 +1,35 @@
+;;; -*- Lisp -*-
+
+;;; test to check that the cache doesn't upset error signaling from FIND-SYSTEM
+
+
+(in-package asdf-test)
+
+(defparameter *all-systems*
+  (list
+   "test-asdf"
+   "test-asdf/all"
+   "test-asdf/1"
+   "test-asdf/2"
+   "test-asdf/4"
+   "test-asdf/test9-1"
+   "test-asdf/test-module-depend"
+   "test-asdf/test9-2"
+   "test-asdf/test9-3"
+   "test-asdf/test-source-directory-1"
+   "test-asdf/test-source-directory-2"
+   "test-asdf/bundle-1"
+   "test-asdf/bundle-2"
+   "test-asdf/force"
+   "test-asdf/force1"))
+
+(defun clear-caches-and-search ()
+  (setf asdf:*central-registry* nil)
+  (mapc #'asdf/find-system:clear-defined-system *all-systems*))
+
+(clear-caches-and-search)
+(assert (not (asdf:find-system "test-asdf/force1" nil)))
+(multiple-value-bind (ret cond)
+    (ignore-errors (asdf:find-system "test-asdf/force1" t))
+  (assert (not ret))
+  (assert (typep cond 'asdf:missing-component)))

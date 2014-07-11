@@ -35,7 +35,7 @@ namespace gctools
 
 
 
-    
+#if 0    
 #define ARGS_af_testVec0 "()"
 #define DECL_af_testVec0 ""
 #define DOCS_af_testVec0 "testVec0"
@@ -82,14 +82,15 @@ namespace gctools
         w.erase(w.begin()+13);
         vector_dump(w,"removed begin()+13 times");
     }
+#endif
 
-
+#if 0
 #define ARGS_af_testArray0 "()"
 #define DECL_af_testArray0 ""
 #define DOCS_af_testArray0 "testArray0"
     void af_testArray0()
     {_G();
-        int N = 4;
+//        int N = 4;
         printf("Creating Array0(4)\n");
         gctools::Array0<core::T_sp> v;
         v.allocate(4,_Nil<T_O>());
@@ -108,7 +109,7 @@ namespace gctools
         vf = ValueFrame_O::create_fill_args(_Nil<core::ActivationFrame_O>(),core::Fixnum_O::create(1), core::Fixnum_O::create(2), core::Fixnum_O::create(3));
         printf("Leaving scope\n");
     }
-
+#endif
 };
 
 #ifdef USE_BOEHM
@@ -698,8 +699,8 @@ namespace gctools {
             SYMBOL_EXPORT_SC_(GcToolsPkg,maxBootstrapKinds);
             SYMBOL_EXPORT_SC_(GcToolsPkg,bootstrapKindsP);
             SYMBOL_EXPORT_SC_(GcToolsPkg,bootstrapKindSymbols);
-            core::af_def(GcToolsPkg,"testVec0",&af_testVec0);
-            core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
+//            core::af_def(GcToolsPkg,"testVec0",&af_testVec0);
+//            core::af_def(GcToolsPkg,"testArray0",&af_testArray0);
             core::af_def(GcToolsPkg,"gcInfo",&af_gcInfo);
             core::af_def(GcToolsPkg,"gcMarker",&af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
             core::af_def(ClPkg,"room",&af_room,ARGS_af_room, DECL_af_room, DOCS_af_room);

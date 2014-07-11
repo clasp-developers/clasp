@@ -364,7 +364,7 @@ namespace core
     void testStrings()
     {
         Str_sp str = Str_O::create("This is a test");
-        printf("%s:%d  Str_sp = %s\n", __FILE__, __LINE__, str->c_str() );
+//        printf("%s:%d  Str_sp = %s\n", __FILE__, __LINE__, str->c_str() );
     }
 
     void Lisp_O::startupLispEnvironment(Bundle* bundle)
@@ -446,7 +446,7 @@ namespace core
 //#include "core_initScripting_inc.h"
 #undef Use_CorePkg
 
-            testStrings();
+//            testStrings();
 
 
 
@@ -1000,7 +1000,33 @@ namespace core
 	    this->_ExportSymbolCallback(sym,_lisp);
 	}
     }
-	
+
+
+    void Lisp_O::mapNameToPackage(const string& name, Package_sp pkg)
+    {
+        int packageIndex;
+        for ( packageIndex=0; packageIndex<this->_Roots._Packages.size(); ++packageIndex )
+        {
+            if ( this->_Roots._Packages[packageIndex] == pkg ) goto FOUND;
+        }
+        SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % pkg->getName());
+    FOUND:
+        this->_PackageNameIndexMap[name] = packageIndex;
+    }
+
+
+    void Lisp_O::unmapNameToPackage(const string& name)
+    {
+        map<string,int>::iterator it;
+        it = this->_PackageNameIndexMap.find(name);
+        if ( it==this->_PackageNameIndexMap.end() ) {
+            SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % name );
+        }
+        this->_PackageNameIndexMap.erase(it);
+    }
+
+
+
 
     Package_sp Lisp_O::makePackage(const string& name,list<string> const& nicknames, list<string> const& usePackages)
     {_G();
@@ -1012,7 +1038,7 @@ namespace core
 	Package_sp newPackage = Package_O::create(name);
 	int packageIndex = this->_Roots._Packages.size();
 	{
-            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.px_ref());
+//            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.px_ref());
 
 	    this->_PackageNameIndexMap[name] = packageIndex;
 	    this->_Roots._Packages.push_back(newPackage);

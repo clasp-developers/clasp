@@ -25,9 +25,6 @@ project internals/main : requirements
 
 lib rt : : <name>rt ;
 
-alias gclib : :
-      <gc>refcount ;
-
 alias gclib : /externals//boehm/libgc :
       <gc>boehm ;
 
@@ -60,7 +57,6 @@ sources =
 
 
 
-#local LIB = [ os.environ CANDO_APP_RESOURCES_LIB_DIR ] ;
 
 local deps =
              <implicit-dependency>/internals/gctools//mi/<link>static
@@ -77,12 +73,6 @@ local deps =
 	     ;
 
 
-
-exe clasp_refcount_o : main.cc $(sources)
-    	   : $(deps) <gc>refcount ;
-
-exe clasp_refcount_d : main.cc $(sources)
-    	   : $(deps) <gc>refcount ;
 
 exe clasp_boehm_o : main.cc $(sources)
                     /externals//lib_boehm
@@ -129,9 +119,6 @@ exe clasp_mpi_mps_d : mainMpi.cc $(sources) mpi_stuff
         	   : $(deps)
                    <gc>mps
 		   ;
-
-alias clasp : clasp_refcount_o : <variant>release <gc>refcount ;
-alias clasp : clasp_refcount_d : <variant>debug <gc>refcount ;
 
 alias clasp : clasp_boehm_o : <variant>release <gc>boehm ;
 alias clasp : clasp_boehm_d : <variant>debug <gc>boehm ;

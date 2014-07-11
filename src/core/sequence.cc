@@ -115,9 +115,15 @@ namespace core
 #define ARGS_af_subseq "(sequence start &optional end)"
 #define DECL_af_subseq ""
 #define DOCS_af_subseq "subseq"
-    T_mv af_subseq(Sequence_sp seq, Fixnum_sp start, T_sp end)
+    T_sp af_subseq(Sequence_sp seq, Fixnum_sp start, T_sp end)
     {_G();
-	return(Values(seq->subseq(start->get(),end)));
+        if ( seq.nilp() ) {
+            if ( start->get() == 0 && end.nilp() ) {
+                return _Nil<T_O>();
+            }
+            SIMPLE_ERROR(BF("Illegal arguments for subseq on NIL - they must be (subseq NIL 0 NIL)"));
+        }
+	return seq->subseq(start->get(),end);
     };
 
 
@@ -129,6 +135,7 @@ namespace core
 #define DOCS_af_copy_seq "copy_seq"
     T_sp af_copy_seq(Sequence_sp seq)
     {_G();
+        if ( seq.nilp() ) { return _Nil<T_O>(); };
 	return seq->subseq(0,_Nil<T_O>());
     };
 

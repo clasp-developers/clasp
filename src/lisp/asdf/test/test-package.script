@@ -1,0 +1,9 @@
+;;; -*- Lisp -*-
+
+
+(in-package :cl-user)
+(asdf-test::with-test ()
+ (defun module () 1)
+ (load "test-package.asd")
+ (defclass module () ())
+ (load "test-package.asd"))

@@ -38,7 +38,8 @@ compile-commands:
 	(cd src/main; make compile-commands)
 
 clean:
-	(cd src/main; rm -rf bin)
-	(cd src/core; rm -rf bin)
-	(cd src/gctools; rm -rf bin)
-	(cd src/llvmo; rm -rf bin)
+	(cd src/main; rm -rf bin bundle)
+	(cd src/core; rm -rf bin bundle)
+	(cd src/gctools; rm -rf bin bundle)
+	(cd src/llvmo; rm -rf bin bundle)
+	(cd src/cffi; rm -rf bin bundle)

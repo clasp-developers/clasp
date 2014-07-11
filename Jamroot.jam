@@ -3,12 +3,10 @@ import os ;
 
 using clang ; # CLASP_TOOLSET
 
-
-
+# using gc ;
 import feature ;
-feature.feature gc : refcount boehm mps mps-prep
+feature.feature gc : boehm mps mps-prep
                 : symmetric implicit composite propagated link-incompatible ;
-feature.compose <gc>refcount : <define>USE_REFCOUNT ;
 feature.compose <gc>boehm : <define>USE_BOEHM ;
 feature.compose <gc>mps : <define>USE_MPS ;
 feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # used for testing MPS
@@ -183,7 +181,7 @@ path-constant MPS-LIB : $(APPRES-EXTERNALS-COMMON-LIB) ;
 
 
 
-using cando : $(TOP) ;
+using bundler : $(TOP) ;
 
 use-project externals : ./externals ;
 use-project internals : src ;
@@ -207,10 +205,11 @@ use-project internals/lisp : src/lisp ;
 
 
 
-# use-project internals/addon : src/addon ;
-# use-project internals/units : src/units ;
-# use-project internals/chem : src/chem ;
-# use-project internals/kinematics : src/kinematics ;
-# use-project internals/packageManager : src/packageManager ;
-# use-project internals/cando : src/cando ;
-# use-project internals/tools : src/tools ;
+## If using cando
+use-project cando : cando ;
+use-project cando//addon : cando/addon ;
+use-project cando/units : cando/units ;
+use-project cando/chem : cando/chem ;
+use-project cando/src/kinematics : cando/src/kinematics ;
+use-project cando/src/packageManager : cando/src/packageManager ;
+use-project cando/src/main-cando : cando/src/main-cando ;

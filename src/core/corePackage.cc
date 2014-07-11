@@ -925,7 +925,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 
 
 
-    void add_defsetf_access_update(Symbol_cp access_fn, Symbol_cp update_fn )
+    void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn )
     {_G();
 	Cons_sp pair = Cons_O::create(access_fn,update_fn);
 	Cons_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue().as_or_nil<Cons_O>();

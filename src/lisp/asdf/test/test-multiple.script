@@ -1,0 +1,25 @@
+;;; -*- Lisp -*-
+
+(defparameter asd (subpathname *test-directory* "test-multiple.asd"))
+(defparameter tmp (subpathname *test-directory* "../build/"))
+(defparameter asd2 (subpathname tmp "test-multiple-too.asd"))
+(defparameter file4 (test-fasl "file4"))
+(setf *central-registry* `(,*test-directory* ,tmp))
+
+;; Don't rely on ln -s on Windows
+(cond
+  ((os-unix-p)
+   (multiple-value-bind (output error-output return-code)
+       (uiop:run-program
+	(format nil "ln -sf ~A ~A"
+		(native-namestring asd)
+		(native-namestring asd2)) :ignore-error-status t)
+     (declare (ignore output error-output))
+     (oos 'load-source-op (if (zerop return-code)
+			      'test-multiple-too
+			      'test-multiple))))
+  (t
+   (oos 'load-source-op 'test-multiple)))
+(assert (asymval :*file3* :test-package))
+(load-system 'test-multiple-free)
+(assert (probe-file* file4))

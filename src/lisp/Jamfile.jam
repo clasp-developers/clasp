@@ -5,4 +5,3 @@ install bundle : [ glob-tree *.l *.lsp *.sh : .svn old originals beforeTransform
 	       <install-source-root>. ;
 
 
-# cando/viewer/CandoViewer/candoViewer.xrc

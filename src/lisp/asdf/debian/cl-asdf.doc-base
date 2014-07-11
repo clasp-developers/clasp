@@ -1,0 +1,12 @@
+Document: asdf
+Title: ASDF User Manual
+Author: Danual Barlow
+Abstract: This manual describes the usage of ASDF
+Section: Programming
+
+Format: HTML
+Index: /usr/share/doc/cl-asdf/asdf/index.html
+Files: /usr/share/doc/cl-asdf/asdf/*.html
+
+Format: PDF
+Files: /usr/share/doc/cl-asdf/asdf.pdf.gz

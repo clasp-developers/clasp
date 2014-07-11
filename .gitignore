@@ -15,3 +15,4 @@ boost_build_v2/bjam
 local.config
 boost_build_v2/engine/bin.linuxx86_64
 boost_build_v2/engine/bootstrap
+cando/
