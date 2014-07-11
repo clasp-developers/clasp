@@ -21,7 +21,7 @@ rule init ( top ? ) {
      	  errors.error "Please set the project root in your Jamroot file" ;
      }
      .common = $(top)/src/common ;
-     .applib = $(top)/build/cando.app/Contents/Resources/lib ;
+     .applib = $(APPLIB) ;
      local ecl = [ common.get-invocation-command-nodefault cando : ecl ] ;
      if ! $(ecl) {
      	  ECHO "WARNING: Command ecl not found." ;

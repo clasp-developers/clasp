@@ -31,11 +31,12 @@ public: // virtual functions inherited from Object
 	string	__repr__() const;
 
 private: // instance variables
-	string		_Name;
+        gctools::gcstring  _Name;
 	HashTableEql_sp 	_InternalSymbols;
 	HashTableEql_sp 	_ExternalSymbols;
 	HashTableEqual_sp       _ShadowingSymbols;
         gctools::Vec0<Package_sp>	_UsingPackages;
+        gctools::Vec0<Package_sp>       _PackagesUsedBy;
 	bool		_KeywordPackage;
 	bool		_AmpPackage;
 	Cons_sp		_Nicknames;
@@ -48,7 +49,7 @@ public:	// Creation class functions
 
 public:
 
-	string packageName() const { return this->_Name;};
+	string packageName() const { return this->_Name.asStdString();};
 
 	T_mv packageHashTables() const;
 
@@ -82,7 +83,7 @@ public:
 
 //	bool areThereNameCollisions(Package_sp otherPackage);
 
-	string getName() { return this->_Name; };
+        string getName() const { return this->_Name.asStdString(); };
 	void setName(const string& n) { this->_Name = n; };
 
 	bool isExported(Symbol_sp sym);
@@ -111,6 +112,7 @@ public:
 	bool unintern(Symbol_sp sym );
 
 	Cons_sp packageUseList();
+        Cons_sp packageUsedByList();
 
 	/*! Import the symbols into this package - see CLHS */
 	void import( Cons_sp symbols );

@@ -311,10 +311,7 @@ namespace core
 #define	DEPRECIATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define	DEPRECIATEDP(s) SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") % __FUNCTION__ % __FILE__ % __LINE__ % (s));
 
-
-        class Cons_O;
-    typedef gctools::smart_ptr<Cons_O> Cons_sp;
-    typedef gctools::weak_smart_ptr<Cons_O> Cons_wp;
+    FORWARD(Cons);
 
 
 

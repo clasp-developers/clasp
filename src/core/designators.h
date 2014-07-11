@@ -29,6 +29,9 @@ namespace core
 	/*! Return a Package by interpreting a package designator */
 	extern Package_sp packageDesignator(T_sp obj );
 
+	/*! Return the name of a Package by interpreting a package or a string as a name */
+	extern string packageNameDesignator(T_sp obj );
+
 	/*! Return a Cons of packages by interpreting as a list of package designators */
 	extern Cons_sp listOfPackageDesignators(T_sp obj);
 

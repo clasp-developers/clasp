@@ -51,7 +51,8 @@ namespace core
 	{_G();
 	    if ( obj.nilp() )
 	    {
-		return _lisp->getCurrentPackage();
+                SIMPLE_ERROR(BF("NIL is not a valid package designator"));
+//		return _lisp->getCurrentPackage();
 	    } else if (af_packageP(obj) )
 	    {
 		return obj.as<Package_O>();
@@ -63,6 +64,17 @@ namespace core
 	    }
 	    return pkg;
 	}
+
+	string packageNameDesignator(T_sp obj)
+	{_G();
+            if (af_packageP(obj) )
+	    {
+		return obj.as<Package_O>()->getName();
+	    }
+	    Str_sp packageName = stringDesignator(obj);
+            return packageName->get();
+	}
+
 
 	Cons_sp listOfPackageDesignators(T_sp obj)
 	{_G();

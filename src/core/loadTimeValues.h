@@ -61,18 +61,18 @@ template<> struct gctools::GCInfo<core::LoadTimeValues_O> {
 
 
 
-#if 1
+#if 0
 namespace core {
     /*! This class will be allocated in a non-moving pool and store a smart_ptr
       to a LoadTimeValuesPointer_sp to which pointers can be taken and guaranteed
       that they will not become stale */
     FORWARD(MemoryLockedLoadTimeValuesPointer);
-    class MemoryLockedLoadTimeValuesPointer_O : public T_O
+    c l a s s MemoryLockedLoadTimeValuesPointer_O : public T_O
     {
         struct metadata_gc_do_not_move {};   // put this in a non-moveable pool
     private:
-	LISP_BASE1(T_O);
-	LISP_CLASS(core,CorePkg,MemoryLockedLoadTimeValuesPointer_O,"MemoryLockedLoadTimeValuePointer");
+	L I S P _BASE1(T_O);
+	L I S P _CLASS(core,CorePkg,MemoryLockedLoadTimeValuesPointer_O,"MemoryLockedLoadTimeValuePointer");
     public: // Simple default ctor/dtor
 	MemoryLockedLoadTimeValuesPointer_O() : Base(), _LoadTimeValues(_Nil<LoadTimeValues_O>()) {
             printf("%s:%d  MemoryLockedLoadTimeValuesPointer is DEPRECIATED()\n",__FILE__,__LINE__);

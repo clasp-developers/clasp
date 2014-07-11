@@ -173,7 +173,7 @@ namespace core {
 
 	    this->_ClassSymbol = OT::static_classSymbol();
 
-#if 1
+#if 0
             OT dummy;
             size_t offsetT = (size_t)((char*)(dynamic_cast<T_O*>(&dummy)) - (char*)(&dummy));
             size_t offsetGCO = (size_t)((char*)(dynamic_cast<gctools::GCObject*>(&dummy)) - (char*)(&dummy));

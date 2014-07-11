@@ -223,7 +223,7 @@ namespace core
 
 
 
-#if 1 // Depreciated
+#if 0 // Depreciated
 
     EXPOSE_CLASS(core,MemoryLockedLoadTimeValuesPointer_O);
 

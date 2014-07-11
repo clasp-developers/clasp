@@ -23,8 +23,8 @@ namespace ql
     class list : public gctools::StackBoundClass
     {
     private:
-	core::Cons_rp _First; // ROOT
-	core::Cons_rp _Tail; // ROOT 
+	core::Cons_sp _First; // ROOT
+	core::Cons_sp _Tail; // ROOT 
     public:
 	/*! ctor sets up _Lisp and the first element of the Cons */
     list(core::Lisp_sp lisp)
@@ -69,10 +69,10 @@ namespace ql
 	    return this->_First->length()-1;
 	};
 
-	inline list& operator<<(core::T_rp const& obj)
+	inline list& operator<<(core::T_sp const& obj)
 	{
 	    this->throwIfClosed();
-	    core::Cons_rp one = core::Cons_O::create(obj);
+	    core::Cons_sp one = core::Cons_O::create(obj);
 	    this->_Tail->setCdr(one);
 	    this->_Tail = one;
 	    return *this;
@@ -106,13 +106,13 @@ namespace ql
 	    return *this;
 	}
 	
-	inline core::Cons_rp cons() const
+	inline core::Cons_sp cons() const
 	{
 	    return cCdr(this->_First);
 	}
 
 	/*! Return all of the list including the (usually) dummy first element */
-	inline core::Cons_rp all() const
+	inline core::Cons_sp all() const
 	{
 	    return this->_First;
 	}
