@@ -641,6 +641,25 @@ TRANSLATE(core::Cons_O);
 
 namespace core
 {
+
+    /*! Set the value of the property in the plist, may insert a pair at the start,
+     return the new plist */
+    Cons_sp plistSetf(Cons_sp& plist, Symbol_sp key, T_sp val);
+    /*! Delete the key/value pair from the plist */
+    Cons_sp plistErase(Cons_sp& plist, Symbol_sp key);
+    /*! Return the value if found and the default if not */
+    T_sp plistGetf(Cons_sp plist, Symbol_sp key, T_sp defval=_Nil<T_O>());
+
+
+};
+
+
+
+
+
+
+namespace core
+{
     /*! Create a Cons or a SourceCodeCons that that copies the source code location of locCons */
     Cons_sp Cons_create(T_sp car,Cons_sp locCons);
 

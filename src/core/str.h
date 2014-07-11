@@ -57,6 +57,7 @@ namespace core
             this->_Contents.swap(temp);
         };
 	virtual T_sp asetUnsafe(int j, T_sp val);
+        gctools::gcstring& contents() { return this->_Contents; };
 	string __repr__() const;
 	uint countOccurances(const string& chars);
 	Cons_sp splitAtWhiteSpace();

@@ -1,0 +1,54 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	make
+	make -C doc all
+	ln -sf build/asdf.lisp .
+	touch build-stamp
+
+build-arch:
+build-indep: build
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	make -C doc veryclean
+	dh_clean
+
+# Build architecture-dependent files here.
+binary-arch: build
+# We have nothing to do by default.
+
+# Build architecture-independent files here.
+binary-indep: build
+	dh_testdir -i
+	dh_testroot -i
+	dh_prep -i
+	dh_installdirs -i
+	dh_install -i
+	#dh_lisp -i
+	dh_installdocs -i
+	dh_installinfo -i
+	dh_installexamples -i
+	dh_installchangelogs
+	dh_link --verbose -i
+	dh_strip -i
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_shlibdeps -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+source diff:
+	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary

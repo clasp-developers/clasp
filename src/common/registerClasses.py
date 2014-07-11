@@ -524,7 +524,7 @@ class	ClassGroup:
 #endif
     core::af_setf_findClass(%(CLASSNAME)s,%(OCLASS)s::static_classSymbol(),true,_Nil<core::Environment_O>());
     {
-        LispObjectCreator<%(OCLASS)s>* cb = gctools::ClassAllocator<LispObjectCreator<%(OCLASS)s>>::allocateClass();
+        core::LispObjectCreator<%(OCLASS)s>* cb = gctools::ClassAllocator<core::LispObjectCreator<%(OCLASS)s>>::allocateClass();
         %(OCLASS)s::___set_static_creator(cb);
     }
     LOG(BF("Set static_allocator for class(%%s) to %%X")%% %(OCLASS)s::static_className() %% (void*)(%(OCLASS)s::static_allocator) );
@@ -532,7 +532,7 @@ class	ClassGroup:
     {
         LOG(BF("Created nil for class[%%s]") %% %(OCLASS)s::static_className() );
     }
-    /* ----- the class and its nil are now defined and so is %(CLASSNAME)s::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to T_O::_nil in stage3   ----- */
+    /* ----- the class and its nil are now defined and so is %(CLASSNAME)s::___staticClass but the class _Slots and _Signature_ClassSlots are undefined - set them both to _Nil<T_O>() in stage3   ----- */
 """ % args)
 
         fout.write("#endif // CREATE_CLASS\n")

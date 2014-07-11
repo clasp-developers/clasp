@@ -1,0 +1,5 @@
+# As long as I (Faré) am in the loop,
+# I can maintain the debian package directly in the upstream git.
+# But when I'm gone, anything goes.
+version=3
+http://common-lisp.net/project/asdf/archives/ asdf-([0-9.]+)\.tar\.gz

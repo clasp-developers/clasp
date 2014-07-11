@@ -480,9 +480,6 @@ namespace core
 	string __repr__() const;
 	void setKind(Symbol_sp kind) { SIMPLE_ERROR(BF("leaf-snode does not have kind"));};
 	void setAttributesUnsafe(Cons_sp plist) { SIMPLE_ERROR(BF("leaf-snode does not have attributes"));};
-
-
-
 	explicit LeafSNode_O() : _Object(_Nil<T_O>()) {};
 	virtual ~LeafSNode_O() {};
 

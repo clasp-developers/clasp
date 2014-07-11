@@ -1,4 +1,4 @@
-import cando ;
+import bundler ;
 local dir = $(__file__:D) ;
 
 #
@@ -51,7 +51,7 @@ alias meta : clbind_functoids
                  clbind_constructor_functoids
                  ;
 
-cando.bundle $(dir) :
+bundler.bundle $(dir) :
 	     $(sources) :
 	     <link>static
 	     <implicit-dependency>mi

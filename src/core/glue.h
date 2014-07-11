@@ -155,21 +155,20 @@ namespace translate
 #define DECLARE_ENUM_SYMBOL_TRANSLATOR(enumType,psid) \
     namespace translate {						\
 	template <>							\
-        struct from_object<enumType,std::true_type>                              \
+        struct from_object<enumType,std::true_type>                     \
 	{								\
 	    typedef     enumType ExpectedType;				\
 	    typedef     enumType DeclareType;				\
 	    DeclareType _v;						\
 	    from_object(T_P o) : _v(static_cast<DeclareType>(core::lisp_lookupEnumForSymbol(psid,o.as<core::Symbol_O>()))) {}; \
-        }								\
 	};								\
 	template <>							\
-	    struct to_object<enumType>					\
+        struct to_object<enumType>					\
 	{								\
-	    typedef     enumType GivenType;		\
-	    static core::T_sp convert(enumType e)	\
+	    typedef     enumType GivenType;                             \
+	    static core::T_sp convert(enumType e)                       \
 	    {_G();							\
-		return core::lisp_lookupSymbolForEnum(psid,(int)(e)); \
+		return core::lisp_lookupSymbolForEnum(psid,(int)(e));   \
 	    }								\
 	};								\
     };

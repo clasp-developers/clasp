@@ -24,6 +24,31 @@ namespace core
 
 
 
+
+    
+    
+#define ARGS_cl_renamePackage "(package new-name &optional nick-names)"
+#define DECL_cl_renamePackage ""
+#define DOCS_cl_renamePackage "renamePackage"
+    Package_sp cl_renamePackage(T_sp pkg, T_sp newNameDesig, T_sp nickNameDesigs )
+    {_G();
+        Package_sp package = coerce::packageDesignator(pkg);
+        string newName = coerce::packageNameDesignator(newNameDesig);
+        Cons_sp nickNames = coerce::listOfStringDesignators(nickNameDesigs);
+        // Remove the old names from the Lisp system
+        _lisp->unmapNameToPackage(package->getName());
+        for ( Cons_sp cur = package->getNicknames(); cur.notnilp(); cur=cCdr(cur) ) {
+            _lisp->unmapNameToPackage(oCar(cur).as<Str_O>()->get());
+        }
+        // Set up the new names
+        package->setName(newName);
+        _lisp->mapNameToPackage(newName,package);
+        for ( Cons_sp cur = nickNames; cur.notnilp(); cur=cCdr(cur) ) {
+            _lisp->mapNameToPackage(oCar(cur).as<Str_O>()->get(),package);
+        };
+        package->setNicknames(nickNames);
+        return package;
+    };
     
     
 #define ARGS_cl_packageNicknames "(pkg)"
@@ -105,10 +130,10 @@ namespace core
 
     
     
-#define ARGS_af_list_all_packages "()"
-#define DECL_af_list_all_packages ""
-#define DOCS_af_list_all_packages "list_all_packages"
-    List_mv af_list_all_packages()
+#define ARGS_af_listAllPackages "()"
+#define DECL_af_listAllPackages ""
+#define DOCS_af_listAllPackages "listAllPackages"
+    List_mv af_listAllPackages()
     {_G();
 	Cons_sp packages = _Nil<Cons_O>();
 	for ( auto mi = _lisp->packages().begin(); mi!= _lisp->packages().end(); mi++ )
@@ -134,7 +159,7 @@ namespace core
 #define ARGS_af_use_package "(packages-to-use-desig &optional (package-desig *package*))"
 #define DECL_af_use_package ""
 #define DOCS_af_use_package "SeeCLHS use-package"
-    T_mv af_use_package(T_sp packages_to_use_desig, T_sp package_desig)
+    T_sp af_use_package(T_sp packages_to_use_desig, T_sp package_desig)
     {_G();
 	Cons_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
@@ -143,13 +168,13 @@ namespace core
 	    Package_sp package_to_use = oCar(cur).as<Package_O>();
 	    package->usePackage(package_to_use);
 	}
-	return(Values(_lisp->_true()));
+	return _lisp->_true();
     }
 
 #define ARGS_af_unuse_package "(packages-to-unuse-desig &optional (package-desig *package*))"
 #define DECL_af_unuse_package ""
 #define DOCS_af_unuse_package "SeeCLHS unuse-package"
-    T_mv af_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig)
+    T_sp af_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig)
     {_G();
 	Cons_sp packages_to_unuse = coerce::listOfPackageDesignators(packages_to_unuse_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
@@ -158,7 +183,7 @@ namespace core
 	    Package_sp package_to_unuse = oCar(cur).as<Package_O>();
 	    package->unusePackage(package_to_unuse);
 	}
-	return(Values(_lisp->_true()));
+	return _lisp->_true();
     }
 
 
@@ -278,6 +303,20 @@ namespace core
     };
 
 
+
+
+    
+    
+#define ARGS_cl_packageUsedByList "(pkg)"
+#define DECL_cl_packageUsedByList ""
+#define DOCS_cl_packageUsedByList "packageUsedByList"
+    Cons_sp cl_packageUsedByList(T_sp pkgDesig)
+    {_G();
+        Package_sp pkg = coerce::packageDesignator(pkgDesig);
+        return pkg->packageUsedByList();
+    };
+
+
     void Package_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<Package_O>()
@@ -291,8 +330,8 @@ namespace core
 	Defun(gentemp);
 	SYMBOL_EXPORT_SC_(ClPkg,makePackage);
 	Defun(makePackage);
-	SYMBOL_EXPORT_SC_(ClPkg,list_all_packages);
-	Defun(list_all_packages);
+	SYMBOL_EXPORT_SC_(ClPkg,listAllPackages);
+	Defun(listAllPackages);
 	SYMBOL_EXPORT_SC_(ClPkg,use_package);
 	Defun(use_package);
 	SYMBOL_EXPORT_SC_(ClPkg,unuse_package);
@@ -310,6 +349,8 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,unintern);
 	Defun(unintern);
 	ClDefun(packageNicknames);
+        ClDefun(renamePackage);
+        ClDefun(packageUsedByList);
     }
 
     void Package_O::exposePython(Lisp_sp lisp)
@@ -356,7 +397,7 @@ namespace core
     string	Package_O::__repr__() const
     {
 	stringstream ss;
-	ss << "#<" << this->_Name << ">";
+	ss << "#<" << this->_Name.asStdString() << ">";
 	return ss.str();
     }
 
@@ -491,6 +532,17 @@ namespace core
 	return res;
     }
 
+    Cons_sp Package_O::packageUsedByList()
+    {_OF();
+	Cons_sp res = _Nil<Cons_O>();
+	for ( auto si=this->_PackagesUsedBy.begin();
+	      si!=this->_PackagesUsedBy.end(); si++ )
+	{
+	    res = Cons_O::create(*si,res);
+	}
+	return res;
+    }
+
 
 
 
@@ -547,6 +599,8 @@ namespace core
 			       % (ss.str()));
  	}
 	this->_UsingPackages.push_back(usePackage);
+        Package_sp me(this);
+        usePackage->_PackagesUsedBy.push_back(me);
  	return true;
      }
  
@@ -554,12 +608,20 @@ namespace core
 
     bool Package_O::unusePackage(Package_sp usePackage)
     {_OF();
+        Package_sp me(this);
 	for ( auto it= this->_UsingPackages.begin();
 	      it!=this->_UsingPackages.end(); ++it )
 	{
 	    if ( (*it) == usePackage ) {
 		this->_UsingPackages.erase(it);
-		return true;
+                for ( auto jt=usePackage->_PackagesUsedBy.begin();
+                      jt!=usePackage->_PackagesUsedBy.end(); ++jt ) {
+                    if ( *jt == me ) {
+                        usePackage->_PackagesUsedBy.erase(jt);
+                        return true;
+                    }
+                }
+                SIMPLE_ERROR(BF("The unusePackage argument %s is not used by my package %s") % usePackage->getName() % this->getName() );
 	    }
 	}
 	return true;

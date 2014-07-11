@@ -1,0 +1,23 @@
+Debian Package cl-asdf
+----------------------
+
+This package was originally created for Debian by Kevin M. Rosenberg
+<kmr@debian.org> in Aug 2002.  It is now being kept up to date by
+Francois-Rene Rideau, who also maintains the upstream ASDF project at
+	http://common-lisp.net/project/asdf/
+
+To load ASDF into your Lisp system, you can give the command
+	(load "/usr/share/common-lisp/source/asdf/asdf.lisp")
+although in many implementations, you can just use
+	(require :asdf)
+
+Additionally, there is an optional module that you can load
+with the command
+	(load "/usr/share/common-lisp/source/asdf/wild-modules.lisp")
+
+This package is built from the git repository at
+	git://git.debian.org/git/pkg-common-lisp/cl-asdf.git
+This repository should be mostly identical to the release branch at
+	git://common-lisp.net/projects/asdf/asdf.git
+
+ -- Francois-Rene Rideau <fare@tunes.org>, Wed, 14 Jul 2010 13:49:26 -0400

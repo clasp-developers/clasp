@@ -717,7 +717,7 @@ namespace clbind
                 , isDerivableCxxClass<T>(0)
                 );
 
-            printf("%s:%d Should I be adding a wrapper cast???\n", __FILE__, __LINE__ );
+//            printf("%s:%d Should I be adding a wrapper cast???\n", __FILE__, __LINE__ );
             add_wrapper_cast((WrappedType*)0);
 
             generate_baseclass_list(detail::type_<Base>());

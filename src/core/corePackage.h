@@ -29,7 +29,7 @@ namespace core
 
     };
 
-    void add_defsetf_access_update(Symbol_cp access_fn, Symbol_cp update_fn);
+    void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn);
 
 
 };

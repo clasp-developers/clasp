@@ -1,0 +1,18 @@
+;;; -*- Lisp -*-
+
+(defun defsystem-error-handler (form &optional (error 'error))
+  (handler-case (eval form)
+    (error () t)
+    (:no-error (&rest values)
+      (declare (ignore values))
+      (error "Expected an error out of ~S" form))))
+
+(defmacro defsystem-error ((&optional (error 'error)) &rest r)
+  `(defsystem-error-handler '(def-test-system ,@r) ',error))
+
+(defsystem-error (non-system-system)
+    :foo :class :cl-source-file)
+
+(defsystem-error (non-toplevel-system)
+    :foo :components ((:system :bar)))
+

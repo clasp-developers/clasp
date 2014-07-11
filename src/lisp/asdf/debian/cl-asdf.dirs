@@ -1,0 +1,8 @@
+/usr/share/common-lisp/source/cl-asdf/
+/usr/share/common-lisp/source/cl-asdf/build/
+/usr/share/common-lisp/source/cl-asdf/uiop/
+/usr/share/common-lisp/source/cl-asdf/uiop/contrib/
+/usr/share/common-lisp/source/cl-asdf/contrib/
+/usr/share/doc/cl-asdf/
+/usr/share/doc/cl-asdf/examples/
+/etc/common-lisp/source-registry.conf.d/
