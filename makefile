@@ -4,6 +4,7 @@ include local.config
 BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
 BOOST_BUILD_V2_INSTALL = $(PREFIX)/Contents/boost_build_v2
 BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
+export CLASP_APP_RESOURCES_DIR = $(PREFIX)/Contents/Resources
 
 ifneq ($(EXTERNALS),)
 	PATH := $(PATH):$(EXTERNALS)/release/bin:$(EXTERNALS)/common/bin
@@ -17,6 +18,7 @@ endif
 
 all:
 	make boostbuildv2-build
+	make compile-commands
 	make clasp-build
 	make compile-sources
 
@@ -31,6 +33,9 @@ boostbuildv2-build:
 
 compile-sources:
 	(cd src/main; make system-boot)
+
+compile-commands:
+	(cd src/main; make compile-commands)
 
 clean:
 	(cd src/main; rm -rf bin)
