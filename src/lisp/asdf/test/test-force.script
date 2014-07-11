@@ -1,0 +1,54 @@
+;;; -*- Lisp -*-
+
+(load-system 'test-asdf/force)
+
+(defparameter file1 (test-fasl "file1"))
+(defparameter file1-date (file-write-date file1))
+(defparameter date1 (- file1-date 600))
+(defparameter date2 (- file1-date 300))
+
+(assert file1)
+(assert file1-date)
+
+(let ((plan (traverse 'load-op 'test-asdf/force :force t)))
+  (DBG "Check that :force t forces the current system but not its dependencies" plan)
+  (assert (asdf::plan-operates-on-p plan '("test-asdf/force" "file3")))
+  (assert (not (asdf::plan-operates-on-p plan '("test-asdf/force1" "file1")))))
+
+(let ((plan (traverse 'load-op 'test-asdf/force :force :all)))
+  (DBG "Check that :force :all forces the current system and its dependencies" plan)
+  (assert plan)
+  (assert (asdf::plan-operates-on-p plan '("test-asdf/force" "file3")))
+  (assert (asdf::plan-operates-on-p plan '("test-asdf/force1" "file1"))))
+
+(let ((plan (traverse 'load-op 'test-asdf/force :force :all :force-not t)))
+  (DBG "Check that :force-not takes precedence over :force, with t means \"all but current system\"" plan)
+  (assert plan)
+  (assert (asdf::plan-operates-on-p plan '("test-asdf/force" "file3")))
+  (assert (not (asdf::plan-operates-on-p plan '("test-asdf/force1" "file1")))))
+
+(let ((plan (traverse 'load-op 'test-asdf/force :force-not :all)))
+  (DBG "Check that :force-not :all means \"all systems\"" plan)
+  (assert (null plan)))
+
+(let ((plan (traverse 'load-op 'test-asdf/force :force :all :force-not :all)))
+  (DBG "Check that :force-not :all takes precedence over :force" plan)
+  (assert (null plan)))
+
+(let* ((*immutable-systems* (list-to-hash-set '("test-asdf/force1")))
+       (plan (traverse 'load-op 'test-asdf/force :force :all :force-not t)))
+  (DBG "Check that immutable-systems will block forcing" plan)
+  (assert plan)
+  (assert (asdf::plan-operates-on-p plan '("test-asdf/force" "file3")))
+  (assert (not (asdf::plan-operates-on-p plan '("test-asdf/force1" "file1")))))
+
+;; unforced, date should stay same
+(touch-file "test-asdf.asd" :timestamp date1)
+(touch-file "file1.lisp" :timestamp date1)
+(touch-file file1 :timestamp date2)
+(load-system 'test-asdf/force)
+(assert-equal (get-file-stamp file1) date2)
+
+;; forced, it should be later
+(load-system 'test-asdf/force :force :all)
+(assert-compare (>= (get-file-stamp file1) file1-date))

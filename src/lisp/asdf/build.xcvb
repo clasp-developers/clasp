@@ -1,0 +1,33 @@
+#+xcvb
+(module
+ (:fullname "/asdf"
+  :author ("Daniel Barlow and contributors")
+  :licence "MIT" ;; MIT-style license. See asdf.lisp
+  :description "ASDF"
+  :long-description "Another System Definition Facility."
+  :build-depends-on ("/uiop")
+  :supersedes-asdf ("asdf")
+  :build-image nil
+  :depends-on
+  ("upgrade"
+   "component"
+   "system"
+   "cache"
+   "find-system"
+   "find-component"
+   "operation"
+   "action"
+   "lisp-action"
+   "plan"
+   "operate"
+   "output-translations"
+   "source-registry"
+   "backward-internals"
+   "parse-defsystem"
+   "bundle"
+   "concatenate-source"
+   "backward-interface"
+   "package-inferred-system"
+   "interface"
+   "user"
+   "footer")))

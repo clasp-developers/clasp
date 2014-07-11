@@ -1,0 +1,73 @@
+As upstream maintainer, I do all development in master, and sometimes update release.
+
+* use git from the upstream repo
+	git clone ssh://common-lisp.net/project/asdf/git/asdf.git
+
+* checkout the release branch
+	git checkout release
+
+* do dark magic to create a release, merging with master.
+	git merge master
+
+* Don't forget to renumber the version, if needed
+	./bin/bump-version.sh 2.xx
+
+* Commit any relevant files, if needed
+	git add ...
+	git add -u
+	git commit
+
+* do the releasing:
+	git tag 2.xx ; make archive-copy ; make website ;
+        make push
+
+* edit debian files, then:
+	git commit
+
+* create debian package:
+	make debian-package
+
+* if unsatisfied, edit debian files some more then
+	git commit --amend
+  then goto previous point.
+
+If ever debian diverges from upstream, you should adapt accordingly.
+
+The below notes are obsolete, but might give you ideas how to do it.
+
+------>8------>8------>8------>8------>8------>8------>8------>8------>8------
+NB: old instructions, not currently valid since all debian development
+currently happens in the upstream git.
+
+To build this package you need to get the git repository:
+
+git clone git://git.debian.org/git/pkg-common-lisp/cl-asdf.git
+
+
+Get the upstream branch too:
+
+cd cl-asdf
+git checkout -t -b upstream remotes/origin/upstream
+
+Then you need to setup the following remotes:
+
+git remote add upstream git://common-lisp.net/projects/asdf/asdf.git
+
+To update the package from upstream do:
+
+git checkout upstream
+git pull upstream release:upstream
+git whatchanged
+#git tag upstream/<date> # not necessary anymore, now that we use the same as upstream.
+git checkout master
+git pull . upstream
+
+To build:
+
+git-buildpackage -uc -us
+
+please check your package with:
+
+lintian --verbose --info --display-info --md5sums *.changes
+
+Then commit any changes and either send me the diff or push this to somewhere were I can fetch it.
