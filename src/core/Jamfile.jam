@@ -52,6 +52,7 @@ local sources =
 	    symbolList.cc
 	    package.cc
       commonLispPackage.cc
+      allClSymbols.cc
       keywordPackage.cc
       extensionPackage.cc
       print.cc

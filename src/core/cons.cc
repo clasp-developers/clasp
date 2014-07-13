@@ -143,6 +143,7 @@ namespace core
 
 
 
+#if 0
     Cons_sp	Cons_O::createFromCommandLineArguments(int argc, char* argv[] )
     {
 	Cons_sp args = _Nil<Cons_O>();
@@ -162,6 +163,7 @@ namespace core
 	}
 	return((args));
     }
+#endif
 
     bool	isAllDigits(const string& s)
     {
@@ -468,6 +470,7 @@ namespace core
 
 
 
+#if 0
 /*!
  * Convert command line arguments into a Cons
  * keyed Arguments that start with "---" treat the words that follow them until
@@ -479,7 +482,7 @@ namespace core
  * eg: --file xxx.yyy ---entries 1 2 3 4 5 -- -to hello
  * 	-> file: "xxx.yyy" entries: (: 1 2 3 4 5) to: "hello"
  */
-    Cons_sp	Cons_O::createFromVectorStringsCommandLineArguments(const vector<string>& strings, Lisp_sp lisp )
+    Vector_sp	Cons_O::createFromVectorStringsCommandLineArguments(const vector<string>& strings )
     {_G();
 	vector<string>::const_iterator it;
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
@@ -533,8 +536,7 @@ namespace core
 	LOG(BF( "After parse|%s|") % _rep_(oCdr(first)));
 	return((cCdr(first)));
     }
-
-
+#endif
     
 
 //
@@ -1436,15 +1438,15 @@ namespace core
     void Cons_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<Cons_O>()
-	    .def("exactlyMatches",&Cons_O::exactlyMatches)
+	    .def("core:exactlyMatches",&Cons_O::exactlyMatches)
 	    .def("rplaca",&Cons_O::rplaca)
 	    .def("rplacd",&Cons_O::rplacd)
-	    .def("lookup",&Cons_O::olookupKeyObject)
-	    .def("lookupDefault",&Cons_O::olookupKeyObjectDefault)
-	    .def("filterOutNil",&Cons_O::filterOutNil)
-	    .def("extend",&Cons_O::extend)
-	    .def("cons-setf-car",&Cons_O::setf_car)
-	    .def("cons-setf-cdr",&Cons_O::setf_cdr)
+	    .def("core:lookup",&Cons_O::olookupKeyObject)
+	    .def("core:lookupDefault",&Cons_O::olookupKeyObjectDefault)
+	    .def("core:filterOutNil",&Cons_O::filterOutNil)
+	    .def("core:extend",&Cons_O::extend)
+	    .def("core:cons-setf-car",&Cons_O::setf_car)
+	    .def("core:cons-setf-cdr",&Cons_O::setf_cdr)
 //	    .def("walkToFindParsePos",&Cons_O::walkToFindParsePos)
 //	    .def("sourceFileInfo-lineno",&Cons_O::lineNumber)
 //	    .def("sourceFileInfo-column",&Cons_O::column)

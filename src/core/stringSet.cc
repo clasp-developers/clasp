@@ -131,7 +131,7 @@ namespace core {
 		this->insert(ln->object().as<Str_O>()->get());
 	    }
 	} else {
-	    VectorObjects_sp vec = VectorObjects_O::create(_Nil<T_O>(),this->strs.size(),cl::_sym_LeafSNode_O);
+	    VectorObjects_sp vec = VectorObjects_O::create(_Nil<T_O>(),this->strs.size(),core::_sym_LeafSNode_O);
 	    int i(0);
 	    set<string>::iterator	si;
 	    for ( si = this->strs.begin(); si!=this->strs.end(); si++ ) {

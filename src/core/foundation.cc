@@ -791,13 +791,13 @@ namespace core
 	Class_sp receiver_class = eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()).as<Class_O>();
 	Symbol_sp className = receiver_class->name();
 	string name = lispify_symbol_name(cname);
-#if 0
-	if ( name == "PRINT-TO-STRING")
+#if 1
+	if ( name.find("FIND") != string::npos )
 	{
             printf("%s:%d - Caught lisp_defineSingleDispatchMethod for %s\n", __FILE__, __LINE__, name.c_str() );
 	}
 #endif
-	Symbol_sp sym = _lisp->internWithPackageName(receiver_class->getPackageName(),name);
+	Symbol_sp sym = _lisp->internWithDefaultPackageName(receiver_class->getPackageName(),name);
 	Cons_sp ldeclares = lisp_parse_declares(_lisp,className->getPackage()->getName(),declares);
 	// NOTE: We are compiling the llhandler in the package of the class - not the package of the
 	// method name  -- sometimes the method name will belong to another class (ie: core:--init--)

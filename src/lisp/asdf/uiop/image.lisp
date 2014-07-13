@@ -329,14 +329,14 @@ of the function will be returned rather than interpreted as a boolean designatin
 
 ;;; Dumping an image
 
-(with-upgradability ()
-  (defun dump-image (filename &key output-name executable
-                                (postlude *image-postlude*)
-                                (dump-hook *image-dump-hook*)
-                                #+clozure prepend-symbols #+clozure (purify t)
-                                #+sbcl compression
-                                #+(and sbcl os-windows) application-type)
-    "Dump an image of the current Lisp environment at pathname FILENAME, with various options.
+#-clasp(with-upgradability ()
+         (defun dump-image (filename &key output-name executable
+                                       (postlude *image-postlude*)
+                                       (dump-hook *image-dump-hook*)
+                                       #+clozure prepend-symbols #+clozure (purify t)
+                                       #+sbcl compression
+                                       #+(and sbcl os-windows) application-type)
+           "Dump an image of the current Lisp environment at pathname FILENAME, with various options.
 
 First, finalize the image, by evaluating the POSTLUDE as per EVAL-INPUT, then calling each of
  the functions in DUMP-HOOK, in reverse order of registration by REGISTER-DUMP-HOOK.
@@ -345,124 +345,124 @@ If EXECUTABLE is true, create an standalone executable program that calls RESTOR
 
 Pass various implementation-defined options, such as PREPEND-SYMBOLS and PURITY on CCL,
 or COMPRESSION on SBCL, and APPLICATION-TYPE on SBCL/Windows."
-    ;; Note: at least SBCL saves only global values of variables in the heap image,
-    ;; so make sure things you want to dump are NOT just local bindings shadowing the global values.
-    (declare (ignorable filename output-name executable))
-    (setf *image-dumped-p* (if executable :executable t))
-    (setf *image-restored-p* :in-regress)
-    (setf *image-postlude* postlude)
-    (standard-eval-thunk *image-postlude*)
-    (setf *image-dump-hook* dump-hook)
-    (call-image-dump-hook)
-    (setf *image-restored-p* nil)
-    #-(or clisp clozure cmu lispworks sbcl scl)
-    (when executable
-      (error "Dumping an executable is not supported on this implementation! Aborting."))
-    #+allegro
-    (progn
-      (sys:resize-areas :global-gc t :pack-heap t :sift-old-areas t :tenure t) ; :new 5000000
-      (excl:dumplisp :name filename :suppress-allegro-cl-banner t))
-    #+clisp
-    (apply #'ext:saveinitmem filename
-           :quiet t
-           :start-package *package*
-           :keep-global-handlers nil
-           :executable (if executable 0 t) ;--- requires clisp 2.48 or later, still catches --clisp-x
+           ;; Note: at least SBCL saves only global values of variables in the heap image,
+           ;; so make sure things you want to dump are NOT just local bindings shadowing the global values.
+           (declare (ignorable filename output-name executable))
+           (setf *image-dumped-p* (if executable :executable t))
+           (setf *image-restored-p* :in-regress)
+           (setf *image-postlude* postlude)
+           (standard-eval-thunk *image-postlude*)
+           (setf *image-dump-hook* dump-hook)
+           (call-image-dump-hook)
+           (setf *image-restored-p* nil)
+           #-(or clisp clozure cmu lispworks sbcl scl)
            (when executable
-             (list
-              ;; :parse-options nil ;--- requires a non-standard patch to clisp.
-              :norc t :script nil :init-function #'restore-image)))
-    #+clozure
-    (flet ((dump (prepend-kernel)
-             (ccl:save-application filename :prepend-kernel prepend-kernel :purify purify
-                                            :toplevel-function (when executable #'restore-image))))
-      ;;(setf ccl::*application* (make-instance 'ccl::lisp-development-system))
-      (if prepend-symbols
-          (with-temporary-file (:prefix "ccl-symbols-" :direction :output :pathname path)
-            (require 'elf)
-            (funcall (fdefinition 'ccl::write-elf-symbols-to-file) path)
-            (dump path))
-          (dump t)))
-    #+(or cmu scl)
-    (progn
-      (ext:gc :full t)
-      (setf ext:*batch-mode* nil)
-      (setf ext::*gc-run-time* 0)
-      (apply 'ext:save-lisp filename
-             #+cmu :executable #+cmu t
-             (when executable '(:init-function restore-image :process-command-line nil))))
-    #+gcl
-    (progn
-      (si::set-hole-size 500) (si::gbc nil) (si::sgc-on t)
-      (si::save-system filename))
-    #+lispworks
-    (if executable
-        (lispworks:deliver 'restore-image filename 0 :interface nil)
-        (hcl:save-image filename :environment nil))
-    #+sbcl
-    (progn
-      ;;(sb-pcl::precompile-random-code-segments) ;--- it is ugly slow at compile-time (!) when the initial core is a big CLOS program. If you want it, do it yourself
-      (setf sb-ext::*gc-run-time* 0)
-      (apply 'sb-ext:save-lisp-and-die filename
-             :executable t ;--- always include the runtime that goes with the core
-             (append
-              (when compression (list :compression compression))
-              ;;--- only save runtime-options for standalone executables
-              (when executable (list :toplevel #'restore-image :save-runtime-options t))
-              #+(and sbcl os-windows) ;; passing :application-type :gui will disable the console window.
-              ;; the default is :console - only works with SBCL 1.1.15 or later.
-              (when application-type (list :application-type application-type)))))
-    #-(or allegro clisp clozure cmu gcl lispworks sbcl scl)
-    (error "Can't ~S ~S: UIOP doesn't support image dumping with ~A.~%"
-           'dump-image filename (nth-value 1 (implementation-type))))
+             (error "Dumping an executable is not supported on this implementation! Aborting."))
+           #+allegro
+           (progn
+             (sys:resize-areas :global-gc t :pack-heap t :sift-old-areas t :tenure t) ; :new 5000000
+             (excl:dumplisp :name filename :suppress-allegro-cl-banner t))
+           #+clisp
+           (apply #'ext:saveinitmem filename
+                  :quiet t
+                  :start-package *package*
+                  :keep-global-handlers nil
+                  :executable (if executable 0 t) ;--- requires clisp 2.48 or later, still catches --clisp-x
+                  (when executable
+                    (list
+                     ;; :parse-options nil ;--- requires a non-standard patch to clisp.
+                     :norc t :script nil :init-function #'restore-image)))
+           #+clozure
+           (flet ((dump (prepend-kernel)
+                    (ccl:save-application filename :prepend-kernel prepend-kernel :purify purify
+                                          :toplevel-function (when executable #'restore-image))))
+             ;;(setf ccl::*application* (make-instance 'ccl::lisp-development-system))
+             (if prepend-symbols
+                 (with-temporary-file (:prefix "ccl-symbols-" :direction :output :pathname path)
+                   (require 'elf)
+                   (funcall (fdefinition 'ccl::write-elf-symbols-to-file) path)
+                   (dump path))
+                 (dump t)))
+           #+(or cmu scl)
+           (progn
+             (ext:gc :full t)
+             (setf ext:*batch-mode* nil)
+             (setf ext::*gc-run-time* 0)
+             (apply 'ext:save-lisp filename
+                    #+cmu :executable #+cmu t
+                    (when executable '(:init-function restore-image :process-command-line nil))))
+           #+gcl
+           (progn
+             (si::set-hole-size 500) (si::gbc nil) (si::sgc-on t)
+             (si::save-system filename))
+           #+lispworks
+           (if executable
+               (lispworks:deliver 'restore-image filename 0 :interface nil)
+               (hcl:save-image filename :environment nil))
+           #+sbcl
+           (progn
+             ;;(sb-pcl::precompile-random-code-segments) ;--- it is ugly slow at compile-time (!) when the initial core is a big CLOS program. If you want it, do it yourself
+             (setf sb-ext::*gc-run-time* 0)
+             (apply 'sb-ext:save-lisp-and-die filename
+                    :executable t ;--- always include the runtime that goes with the core
+                    (append
+                     (when compression (list :compression compression))
+                     ;;--- only save runtime-options for standalone executables
+                     (when executable (list :toplevel #'restore-image :save-runtime-options t))
+                     #+(and sbcl os-windows) ;; passing :application-type :gui will disable the console window.
+                     ;; the default is :console - only works with SBCL 1.1.15 or later.
+                     (when application-type (list :application-type application-type)))))
+           #-(or allegro clisp clozure cmu gcl lispworks sbcl scl)
+           (error "Can't ~S ~S: UIOP doesn't support image dumping with ~A.~%"
+                  'dump-image filename (nth-value 1 (implementation-type))))
 
-  (defun create-image (destination lisp-object-files
-                       &key kind output-name prologue-code epilogue-code extra-object-files
-                         (prelude () preludep) (postlude () postludep)
-                         (entry-point () entry-point-p) build-args no-uiop)
-    (declare (ignorable destination lisp-object-files extra-object-files kind output-name
-                        prologue-code epilogue-code prelude preludep postlude postludep
-                        entry-point entry-point-p build-args no-uiop))
-    "On ECL, create an executable at pathname DESTINATION from the specified OBJECT-FILES and options"
-    ;; Is it meaningful to run these in the current environment?
-    ;; only if we also track the object files that constitute the "current" image,
-    ;; and otherwise simulate dump-image, including quitting at the end.
-    #-(or ecl mkcl) (error "~S not implemented for your implementation (yet)" 'create-image)
-    #+(or ecl mkcl)
-    (let ((epilogue-code
-            (if no-uiop
-                epilogue-code
-                (let ((forms
-                        (append
-                         (when epilogue-code `(,epilogue-code))
-                         (when postludep `((setf *image-postlude* ',postlude)))
-                         (when preludep `((setf *image-prelude* ',prelude)))
-                         (when entry-point-p `((setf *image-entry-point* ',entry-point)))
-                         (case kind
-                           ((:image)
-                            (setf kind :program) ;; to ECL, it's just another program.
-                            `((setf *image-dumped-p* t)
-                              (si::top-level #+ecl t) (quit)))
-                           ((:program)
-                            `((setf *image-dumped-p* :executable)
-                              (shell-boolean-exit
-                               (restore-image))))))))
-                  (when forms `(progn ,@forms))))))
-      #+ecl (check-type kind (member :dll :lib :static-library :program :object :fasl))
-      (apply #+ecl 'c::builder #+ecl kind
-             #+mkcl (ecase kind
-                      ((:dll) 'compiler::build-shared-library)
-                      ((:lib :static-library) 'compiler::build-static-library)
-                      ((:fasl) 'compiler::build-bundle)
-                      ((:program) 'compiler::build-program))
-             (pathname destination)
-             #+ecl :lisp-files #+mkcl :lisp-object-files (append lisp-object-files #+ecl extra-object-files)
-             #+ecl :init-name #+ecl (c::compute-init-name (or output-name destination) :kind kind)
-             (append
-              (when prologue-code `(:prologue-code ,prologue-code))
-              (when epilogue-code `(:epilogue-code ,epilogue-code))
-              #+mkcl (when extra-object-files `(:object-files ,extra-object-files))
-              build-args)))))
+         (defun create-image (destination lisp-object-files
+                              &key kind output-name prologue-code epilogue-code extra-object-files
+                                (prelude () preludep) (postlude () postludep)
+                                (entry-point () entry-point-p) build-args no-uiop)
+           (declare (ignorable destination lisp-object-files extra-object-files kind output-name
+                               prologue-code epilogue-code prelude preludep postlude postludep
+                               entry-point entry-point-p build-args no-uiop))
+           "On ECL, create an executable at pathname DESTINATION from the specified OBJECT-FILES and options"
+           ;; Is it meaningful to run these in the current environment?
+           ;; only if we also track the object files that constitute the "current" image,
+           ;; and otherwise simulate dump-image, including quitting at the end.
+           #-(or ecl mkcl) (error "~S not implemented for your implementation (yet)" 'create-image)
+           #+(or ecl mkcl)
+           (let ((epilogue-code
+                  (if no-uiop
+                      epilogue-code
+                      (let ((forms
+                             (append
+                              (when epilogue-code `(,epilogue-code))
+                              (when postludep `((setf *image-postlude* ',postlude)))
+                              (when preludep `((setf *image-prelude* ',prelude)))
+                              (when entry-point-p `((setf *image-entry-point* ',entry-point)))
+                              (case kind
+                                ((:image)
+                                 (setf kind :program) ;; to ECL, it's just another program.
+                                 `((setf *image-dumped-p* t)
+                                   (si::top-level #+ecl t) (quit)))
+                                ((:program)
+                                 `((setf *image-dumped-p* :executable)
+                                   (shell-boolean-exit
+                                    (restore-image))))))))
+                        (when forms `(progn ,@forms))))))
+             #+ecl (check-type kind (member :dll :lib :static-library :program :object :fasl))
+             (apply #+ecl 'c::builder #+ecl kind
+                    #+mkcl (ecase kind
+                             ((:dll) 'compiler::build-shared-library)
+                             ((:lib :static-library) 'compiler::build-static-library)
+                             ((:fasl) 'compiler::build-bundle)
+                             ((:program) 'compiler::build-program))
+                    (pathname destination)
+                    #+ecl :lisp-files #+mkcl :lisp-object-files (append lisp-object-files #+ecl extra-object-files)
+                    #+ecl :init-name #+ecl (c::compute-init-name (or output-name destination) :kind kind)
+                    (append
+                     (when prologue-code `(:prologue-code ,prologue-code))
+                     (when epilogue-code `(:epilogue-code ,epilogue-code))
+                     #+mkcl (when extra-object-files `(:object-files ,extra-object-files))
+                     build-args)))))
 
 
 ;;; Some universal image restore hooks

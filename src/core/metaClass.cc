@@ -677,9 +677,9 @@ namespace core {
     {
 	class_<Class_O>()
 	    .def("className",&Class_O::className)
-	    .def("direct-superclasses",&Class_O::directSuperclasses)
-            .def("hasCreator",&Class_O::hasCreator)
-            .def("getCreator",&Class_O::getCreator)
+	    .def("core:direct-superclasses",&Class_O::directSuperclasses)
+            .def("core:hasCreator",&Class_O::hasCreator)
+            .def("core:getCreator",&Class_O::getCreator)
 	    ;
 //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
 //	Defun(makeSureClosClassSlotsMatchClass);

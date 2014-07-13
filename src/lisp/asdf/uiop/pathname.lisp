@@ -489,7 +489,8 @@ or if it is a PATHNAME but some of its components are not recognized."
                   (name (pathname-name pathname))
                   (name (and (not (eq name :unspecific)) name))
                   (type (pathname-type pathname))
-                  (type (and (not (eq type :unspecific)) type)))
+                  (type (and (not (eq type :unspecific)) type))
+                  )
              (cond
                ((member dir '(nil :unspecific)))
                ((eq dir '(:relative)) (princ "./" s))

@@ -36,7 +36,7 @@ namespace core
 	void StrWithFillPtr_O::exposeCando(Lisp_sp lisp)
 	{_G();
 	    class_<StrWithFillPtr_O>()
-		.def("pushString",(void (StrWithFillPtr_O::*)(T_sp))&StrWithFillPtr_O::pushString)
+		.def("core:pushString",(void (StrWithFillPtr_O::*)(T_sp))&StrWithFillPtr_O::pushString)
 		;
 	}
 
