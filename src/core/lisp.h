@@ -313,7 +313,14 @@ namespace core
 	uint			_StackSampleCount;
 	uint			_StackSampleSize;
 	uint			_StackSampleMax;
+    public:
+        typedef char*           Argv[];
+        /*!Raw argc*/
+        int                     _Argc;
+        /*! Raw argv */
+        vector<string>          _Argv;
     private:
+
 	uint			_Mode;
 	/*! Store paths to important directories */
 	Bundle*			_Bundle;
@@ -741,6 +748,12 @@ namespace core
 
 	/*! Intern the symbol into the package with the given name */
 	Symbol_sp internWithPackageName(const string& packageName, const string& symbolName);
+
+	/*! Intern the symbol - if it doesn't have a package prefix in the symbolName then use packageName as the package.
+          If the symbolName has the form XXX:YYY then intern YYY in package XXX and export it.
+          If the symbolName has the form XXX::YYY then intern YYY in package XXX as an internal symbol.
+          If the symbolName has the form YYY then intern YYY in the package (packageName) as an internal symbol. */
+	Symbol_sp internWithDefaultPackageName(const string& defaultPackageName, const string& possiblePackagePrefixedSymbolName);
 
 
 	/*! Find the keyword symbol with the given name or intern it */

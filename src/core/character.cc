@@ -294,19 +294,20 @@ namespace core
         }
         int ci = 0;
         ADD_CHAR("Nul",ci++);
-        ADD_CHAR("Soh",ci++);
-        ADD_CHAR("Stx",ci++);
-        ADD_CHAR("Etx",ci++);
-        ADD_CHAR("Eot",ci++);
-        ADD_CHAR("Enq",ci++);
-        ADD_CHAR("Ack",ci++);
-        ADD_CHAR("Bel",ci++);
-        ADD_CHAR("Backspace",ci++);
-        ADD_CHAR("Tab",ci++);
-        ADD_CHAR("Newline",ci++);
-        ADD_CHAR("Vt",ci++);
-        ADD_CHAR("Page",ci++);
-        ADD_CHAR("Return",ci++);
+        ADD_CHAR("Soh",ci++); //1
+        ADD_CHAR("Stx",ci++); //2
+        ADD_CHAR("Etx",ci++); //3
+        ADD_CHAR("Eot",ci++); //4
+        ADD_CHAR("Enq",ci++); //5
+        ADD_CHAR("Ack",ci++); //6 
+        ADD_CHAR("Bel",ci++); //7
+        ADD_CHAR("Backspace",ci++); //8
+        ADD_CHAR("Tab",ci++); //9
+        ADD_CHAR("Newline",ci++); //10
+        ADD_CHAR("Linefeed",10); //10
+        ADD_CHAR("Vt",ci++); //11
+        ADD_CHAR("Page",ci++); //12
+        ADD_CHAR("Return",ci++); //13
         ADD_CHAR("So",ci++);
         ADD_CHAR("Si",ci++);
         ADD_CHAR("Dle",ci++);

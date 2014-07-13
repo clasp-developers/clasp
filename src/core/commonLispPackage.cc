@@ -31,7 +31,7 @@ namespace cl
 
 #pragma GCC visibility pop
 
-    SYMBOL_EXPORT_SC_(ClPkg,defaultPathnameDefaults);
+//    SYMBOL_EXPORT_SC_(ClPkg,defaultPathnameDefaults);
 
     core::Package_sp initialize_commonLispPackage()
     {

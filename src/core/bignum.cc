@@ -234,8 +234,8 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
     void Bignum_O::exposeCando(core::Lisp_sp lisp)
     {
 	core::class_<Bignum_O>()	
-	    .def("fits_sint_p",&Bignum_O::fits_sint_p)
-	    .def("as-uint64-string",&Bignum_O::as_uint64_string)
+	    .def("core:fitsSintP",&Bignum_O::fits_sint_p)
+	    .def("core:asUint64String",&Bignum_O::as_uint64_string)
 	    ;
 	af_def(CorePkg,"make-bignum",&Bignum_O::make,ARGS_Bignum_O_make,DECL_Bignum_O_make,DOCS_Bignum_O_make);
     }

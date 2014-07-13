@@ -27,10 +27,10 @@ namespace core
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rx = x.as<Ratio_O>();
-	    v0v1 = ceiling2(rx->numerator(),rx->denomenator());
+	    v0v1 = ceiling2(rx->numerator(),rx->denominator());
 	    v0 = v0v1;
 	    tv1 = v0v1.valueGet(1).as<Integer_O>();
-	    v1 = Ratio_O::create(tv1,rx->denomenator());
+	    v1 = Ratio_O::create(tv1,rx->denominator());
 	    break;
 	}
 	case number_SingleFloat: {
@@ -110,10 +110,10 @@ namespace core
 	    case number_Ratio:		/* FIX / RAT */
 	    {	
 		Ratio_sp ratio_y = y.as<Ratio_O>();
-		v0v1 = ceiling2(contagen_mul(x,ratio_y->denomenator()).as<Real_O>(),ratio_y->numerator());
+		v0v1 = ceiling2(contagen_mul(x,ratio_y->denominator()).as<Real_O>(),ratio_y->numerator());
 		v0 = v0v1;
 		Integer_sp iv1 = v0v1.valueGet(1).as<Integer_O>();;
-		v1 = Ratio_O::create(iv1,ratio_y->denomenator());
+		v1 = Ratio_O::create(iv1,ratio_y->denominator());
 		break;
 	    }
 	    case number_SingleFloat: {	/* FIX / SF */
@@ -171,10 +171,10 @@ namespace core
 	    case number_Ratio:		/* BIG / RAT */
 	    {
 		Ratio_sp ry = y.as<Ratio_O>();
-		v0v1 = ceiling2(contagen_mul(x, ry->denomenator()).as<Real_O>(), ry->numerator());
+		v0v1 = ceiling2(contagen_mul(x, ry->denominator()).as<Real_O>(), ry->numerator());
 		v0 = v0v1;
 		Integer_sp iv1 = v0v1.valueGet(1).as<Integer_O>();
-		v1 = Ratio_O::create(iv1,ry->denomenator());
+		v1 = Ratio_O::create(iv1,ry->denominator());
 		break;
 	    }
 	    case number_SingleFloat: {	/* BIG / SF */
@@ -215,19 +215,19 @@ namespace core
 	    case number_Ratio:{		/* RAT / RAT */
 		Ratio_sp rx = x.as<Ratio_O>();
 		Ratio_sp ry = y.as<Ratio_O>();
-		v0v1 = ceiling2(contagen_mul(rx->numerator(),ry->denomenator()).as<Integer_O>(),
-				contagen_mul(rx->denomenator(),ry->numerator()).as<Integer_O>());
+		v0v1 = ceiling2(contagen_mul(rx->numerator(),ry->denominator()).as<Integer_O>(),
+				contagen_mul(rx->denominator(),ry->numerator()).as<Integer_O>());
 		v0 = v0v1;
 		Integer_sp iv1 = v0v1.valueGet(1).as<Integer_O>();
-		v1 = Ratio_O::create(iv1,contagen_mul(rx->denomenator(),ry->denomenator()).as<Integer_O>());
+		v1 = Ratio_O::create(iv1,contagen_mul(rx->denominator(),ry->denominator()).as<Integer_O>());
 		break;
 	    }
 	    default:{		/* RAT / ANY */
 		Ratio_sp rx = x.as<Ratio_O>();
-		T_mv v0v1 = ceiling2(rx->numerator(),contagen_mul(rx->denomenator(),y).as<Real_O>());
+		T_mv v0v1 = ceiling2(rx->numerator(),contagen_mul(rx->denominator(),y).as<Real_O>());
 		v0 = v0v1;
 		tv1 = v0v1.valueGet(1).as<Real_O>();
-		v1 = contagen_div(tv1,rx->denomenator());
+		v1 = contagen_div(tv1,rx->denominator());
 	    }
 	    }
 	    break;
@@ -282,10 +282,10 @@ namespace core
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rx = x.as<Ratio_O>();
-	    v0v1 = truncate2(rx->numerator(),rx->denomenator());
+	    v0v1 = truncate2(rx->numerator(),rx->denominator());
 	    v0 = v0v1;
 	    iv1 = v0v1.valueGet(1).as<Integer_O>();
-	    v1 = Ratio_O::create(iv1,rx->denomenator());
+	    v1 = Ratio_O::create(iv1,rx->denominator());
 	    break;
 	}
 	case number_SingleFloat: {
@@ -341,10 +341,10 @@ T_mv floor1(Real_sp x)
 	break;
     case number_Ratio:{
 	Ratio_sp rx = x.as<Ratio_O>();
-	v0v1 = floor2(rx->numerator(),rx->denomenator());
+	v0v1 = floor2(rx->numerator(),rx->denominator());
 	v0 = v0v1;
 	iv1 = v0v1.valueGet(1).as<Integer_O>();
-	v1 = Ratio_O::create(iv1,rx->denomenator());
+	v1 = Ratio_O::create(iv1,rx->denominator());
 	break;
     }
     case number_SingleFloat: {
@@ -424,10 +424,10 @@ T_mv floor1(Real_sp x)
 	    case number_Ratio:		/* FIX / RAT */
 	    {	
 		Ratio_sp ratio_y = y.as<Ratio_O>();
-		v0v1 = floor2(contagen_mul(x,ratio_y->denomenator()).as<Integer_O>(),ratio_y->numerator());
+		v0v1 = floor2(contagen_mul(x,ratio_y->denominator()).as<Integer_O>(),ratio_y->numerator());
 		v0 = v0v1;
 		Integer_sp iv1 = v0v1.valueGet(1).as<Integer_O>();;
-		v1 = Ratio_O::create(iv1,ratio_y->denomenator());
+		v1 = Ratio_O::create(iv1,ratio_y->denominator());
 		break;
 	    }
 	    case number_SingleFloat: {	/* FIX / SF */
@@ -485,10 +485,10 @@ T_mv floor1(Real_sp x)
 	    case number_Ratio:		/* BIG / RAT */
 	    {
 		Ratio_sp ry = y.as<Ratio_O>();
-		v0v1 = floor2(contagen_mul(x, ry->denomenator()).as<Integer_O>(), ry->numerator());
+		v0v1 = floor2(contagen_mul(x, ry->denominator()).as<Integer_O>(), ry->numerator());
 		v0 = v0v1;
 		iv1 = v0v1.valueGet(1).as<Integer_O>();
-		v1 = Ratio_O::create(iv1,ry->denomenator());
+		v1 = Ratio_O::create(iv1,ry->denominator());
 		break;
 	    }
 	    case number_SingleFloat: {	/* BIG / SF */
@@ -529,19 +529,19 @@ T_mv floor1(Real_sp x)
 	    case number_Ratio:{		/* RAT / RAT */
 		Ratio_sp rx = x.as<Ratio_O>();
 		Ratio_sp ry = y.as<Ratio_O>();
-		v0v1 = floor2(contagen_mul(rx->numerator(),ry->denomenator()).as<Integer_O>(),
-			      contagen_mul(rx->denomenator(),ry->numerator()).as<Integer_O>());
+		v0v1 = floor2(contagen_mul(rx->numerator(),ry->denominator()).as<Integer_O>(),
+			      contagen_mul(rx->denominator(),ry->numerator()).as<Integer_O>());
 		v0 = v0v1;
 		iv1 = v0v1.valueGet(1).as<Integer_O>();
-		v1 = Ratio_O::create(iv1,contagen_mul(rx->denomenator(),ry->denomenator()).as<Integer_O>());
+		v1 = Ratio_O::create(iv1,contagen_mul(rx->denominator(),ry->denominator()).as<Integer_O>());
 		break;
 	    }
 	    default:{		/* RAT / ANY */
 		Ratio_sp rx = x.as<Ratio_O>();
-		v0v1 = floor2(rx->numerator(),contagen_mul(rx->denomenator(),y).as<Real_O>());
+		v0v1 = floor2(rx->numerator(),contagen_mul(rx->denominator(),y).as<Real_O>());
 		v0 = v0v1;
 		tv1 = v0v1.valueGet(1).as<Real_O>();
-		v1 = contagen_div(tv1,rx->denomenator());
+		v1 = contagen_div(tv1,rx->denominator());
 	    }
 	    }
 	    break;

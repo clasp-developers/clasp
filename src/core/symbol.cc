@@ -540,13 +540,12 @@ namespace core
     {_G();
 	// TODO: By default these symbols like SPECIALP are being dumped into the COMMON-LISP package - don't do that.
 	class_<Symbol_O>()
-	    .def("specialp",&Symbol_O::specialP)
-	    .def("STARmakeSpecial",&Symbol_O::makeSpecial)
-	    .def("STARmakeConstant",&Symbol_O::makeConstant)
-	    .def("fullName",&Symbol_O::fullName )
-//	    .def("namestring",&Symbol_O::fullName)
-	    .def("asKeywordSymbol",&Symbol_O::asKeywordSymbol)
-	    .def("setf_symbolFunction",&Symbol_O::setf_symbolFunction)
+	    .def("core:specialp",&Symbol_O::specialP)
+	    .def("core:STARmakeSpecial",&Symbol_O::makeSpecial)
+	    .def("core:STARmakeConstant",&Symbol_O::makeConstant)
+	    .def("core:fullName",&Symbol_O::fullName )
+	    .def("core:asKeywordSymbol",&Symbol_O::asKeywordSymbol)
+	    .def("core:setf_symbolFunction",&Symbol_O::setf_symbolFunction)
 	    .def("makunbound",&Symbol_O::makunbound)
 	    .DEF(Symbol_O,copy_symbol)
 	    ;

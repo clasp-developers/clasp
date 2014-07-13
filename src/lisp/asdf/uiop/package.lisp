@@ -284,7 +284,7 @@ or when loading the package is optional."
                                     (exportp t) (importp t) internp (error t))
     (let* ((package (or (find-package* package-designator error)
                         (return-from package-definition-form nil)))
-           (name (package-name package))
+           (name (copy-list (package-name package)))
            (nicknames (package-nicknames package))
            (use (mapcar #'package-name (package-use-list package)))
            (shadow ())

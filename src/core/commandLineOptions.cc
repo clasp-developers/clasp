@@ -107,7 +107,7 @@ namespace core {
 		// Pass whatever is left over to the Lisp environment
 		//
 		LOG(BF("Parsing what is left over into lisp environment arguments") );
-		Cons_sp args = Cons_O::createFromVectorStringsCommandLineArguments(to_pass_further,_lisp);
+		Vector_sp args = Cons_O::createFromVectorStringsCommandLineArguments(to_pass_further,_lisp);
 		LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args) );
 		this->_Roots._CommandLineArguments = args;
 

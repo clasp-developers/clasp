@@ -34,8 +34,10 @@ namespace asttooling {
 
         void RegistryMaps::registerMatcher(core::Symbol_sp MatcherName,
                                            MatcherDescriptor *Callback) {
+#ifdef DEBUG_ON
             ConstructorMap::iterator pos = this->find(MatcherName);
             ASSERTF(pos==Constructors.end(),BF("The MatcherName %s has already had a constructor defined for it") % _rep_(MatcherName));
+#endif
             Constructors.emplace_back(SymbolMatcherDescriptorPair(MatcherName,Callback));
             //Constructors[MatcherName] = Callback;
         }

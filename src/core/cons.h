@@ -189,8 +189,10 @@ namespace core {
 	    }
 	    return cCdr(first);
 	}
+#if 0
 	static Cons_sp createFromCommandLineArguments(int argc, char**argv);
-	static Cons_sp createFromVectorStringsCommandLineArguments(const vector<string>& strings , Lisp_sp e);
+	static Cons_sp createFromVectorStringsCommandLineArguments(const vector<string>& strings);
+#endif
     public:
 	static void appendInto(T_sp head, T_sp*& tailP, T_sp l);
 	static List_sp append(List_sp x, List_sp y);

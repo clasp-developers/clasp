@@ -56,6 +56,41 @@ namespace core
 
 
 
+
+    
+    
+#define ARGS_af_argc "()"
+#define DECL_af_argc ""
+#define DOCS_af_argc "argc"
+    int af_argc()
+    {_G();
+        return _lisp->_Argc;
+    };
+
+
+    
+    
+#define ARGS_af_argv "(idx)"
+#define DECL_af_argv ""
+#define DOCS_af_argv "argv"
+    Str_sp af_argv(int idx)
+    {_G();
+        return Str_O::create(_lisp->_Argv[idx]);
+    };
+    
+    
+#define ARGS_cl_set "(sym value)"
+#define DECL_cl_set ""
+#define DOCS_cl_set "set"
+    T_sp cl_set(Symbol_sp sym, T_sp val)
+    {_G();
+        if ( sym.nilp() ) {
+            SIMPLE_ERROR(BF("You cannot assign to the constant NIL"));
+        }
+        sym->setf_symbolValue(val);
+        return val;
+    };
+
     
     
 #define ARGS_af_dumpAddressOf "(arg)"
@@ -1786,6 +1821,9 @@ void initialize_primitives()
 	SYMBOL_EXPORT_SC_(ClPkg,getOutputStreamString);
 	Defun(getOutputStreamString);
 
+        SYMBOL_EXPORT_SC_(ClPkg,set);
+        ClDefun(set);
+
 	SYMBOL_SC_(CorePkg,testMemoryError);
 	Defun(testMemoryError);
 
@@ -1814,7 +1852,7 @@ void initialize_primitives()
 	SYMBOL_EXPORT_SC_(CorePkg,pointer);
 	Defun(pointer);
 
-	SYMBOL_EXPORT_SC_(CorePkg,getEnv);
+	SYMBOL_EXPORT_SC_(ExtPkg,getEnv);
 	Defun(getEnv);
 
         Defun(exceptionStackDump);
@@ -1827,6 +1865,8 @@ void initialize_primitives()
         Defun(testBasePointerConversion);
         Defun(dumpAddressOf);
         Defun(incompleteNextHigherPowerOf_2);
+        Defun(argc);
+        Defun(argv);
     }
 
 

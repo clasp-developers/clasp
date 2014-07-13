@@ -332,7 +332,7 @@ namespace core
 	    {
 		mpz_class za(na->as_mpz());
 		Ratio_sp rb = nb.as<Ratio_O>();
-		mpz_class zb_den = rb->denomenator_as_mpz();
+		mpz_class zb_den = rb->denominator_as_mpz();
 		mpz_class za_scaled = za*zb_den;
 		mpz_class zr = za_scaled+rb->numerator_as_mpz();
 		return Ratio_O::create(zr,zb_den);
@@ -370,18 +370,18 @@ namespace core
         case_Ratio_v_Bignum:
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
-		mpz_class z = ra->denomenator_as_mpz() * nb->as_mpz();
+		mpz_class z = ra->denominator_as_mpz() * nb->as_mpz();
 		mpz_class res = ra->numerator_as_mpz() + z;
-		return Ratio_O::create(res,ra->denomenator_as_mpz());
+		return Ratio_O::create(res,ra->denominator_as_mpz());
 	    }
         case_Ratio_v_Ratio:
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
 		Ratio_sp rb = nb.as<Ratio_O>();
-		mpz_class z1 = ra->numerator_as_mpz()*rb->denomenator_as_mpz();
-		mpz_class z = ra->denomenator_as_mpz()*rb->numerator_as_mpz();
+		mpz_class z1 = ra->numerator_as_mpz()*rb->denominator_as_mpz();
+		mpz_class z = ra->denominator_as_mpz()*rb->numerator_as_mpz();
 		z = z1 + z;
-		z1 = ra->denomenator_as_mpz()*rb->denomenator_as_mpz();
+		z1 = ra->denominator_as_mpz()*rb->denominator_as_mpz();
 		return Ratio_O::create(z,z1);
 	    }
         case_SingleFloat_v_Fixnum:
@@ -470,7 +470,7 @@ namespace core
 	    {
 		mpz_class za(na->as_mpz());
 		Ratio_sp rb = nb.as<Ratio_O>();
-		mpz_class zb_den = rb->denomenator_as_mpz();
+		mpz_class zb_den = rb->denominator_as_mpz();
 		mpz_class za_scaled = za*zb_den;
 		mpz_class zr = za_scaled-rb->numerator_as_mpz();
 		return Ratio_O::create(zr,zb_den);
@@ -508,18 +508,18 @@ namespace core
         case_Ratio_v_Bignum:
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
-		mpz_class z = ra->denomenator_as_mpz() * nb->as_mpz();
+		mpz_class z = ra->denominator_as_mpz() * nb->as_mpz();
 		mpz_class res = ra->numerator_as_mpz() - z;
-		return Ratio_O::create(res,ra->denomenator_as_mpz());
+		return Ratio_O::create(res,ra->denominator_as_mpz());
 	    }
         case_Ratio_v_Ratio:
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
 		Ratio_sp rb = nb.as<Ratio_O>();
-		mpz_class z1 = ra->numerator_as_mpz()*rb->denomenator_as_mpz();
-		mpz_class z = ra->denomenator_as_mpz()*rb->numerator_as_mpz();
+		mpz_class z1 = ra->numerator_as_mpz()*rb->denominator_as_mpz();
+		mpz_class z = ra->denominator_as_mpz()*rb->numerator_as_mpz();
 		z = z1 - z;
-		z1 = ra->denomenator_as_mpz()*rb->denomenator_as_mpz();
+		z1 = ra->denominator_as_mpz()*rb->denominator_as_mpz();
 		return Ratio_O::create(z,z1);
 	    }
         case_SingleFloat_v_Fixnum:
@@ -608,7 +608,7 @@ namespace core
 		mpz_class za(na->as_mpz());
 		Ratio_sp rb = nb.as<Ratio_O>();
 		mpz_class zr = za * rb->numerator_as_mpz();
-		return Ratio_O::create(zr,rb->denomenator_as_mpz());
+		return Ratio_O::create(zr,rb->denominator_as_mpz());
 	    }
         case_Fixnum_v_SingleFloat:
 	    {
@@ -643,13 +643,13 @@ namespace core
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
 		mpz_class z = nb->as_mpz();
-		return Rational_O::create(z*ra->numerator_as_mpz(),ra->denomenator_as_mpz());
+		return Rational_O::create(z*ra->numerator_as_mpz(),ra->denominator_as_mpz());
 	    }
         case_Ratio_v_Ratio:
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
 		Ratio_sp rb = nb.as<Ratio_O>();
-		return Rational_O::create(ra->numerator_as_mpz()*rb->numerator_as_mpz(),ra->denomenator_as_mpz()*rb->denomenator_as_mpz());
+		return Rational_O::create(ra->numerator_as_mpz()*rb->numerator_as_mpz(),ra->denominator_as_mpz()*rb->denominator_as_mpz());
 	    }
         case_SingleFloat_v_Fixnum:
         case_SingleFloat_v_Bignum:
@@ -743,7 +743,7 @@ namespace core
 	    return Rational_O::create(na->as_mpz(),nb->as_mpz());
 	case_Fixnum_v_Ratio:
 	case_Bignum_v_Ratio:
-	    return Rational_O::create(contagen_mul(na,nb.as<Ratio_O>()->denomenator()).as<Integer_O>(),
+	    return Rational_O::create(contagen_mul(na,nb.as<Ratio_O>()->denominator()).as<Integer_O>(),
 				      nb.as<Ratio_O>()->numerator());
 	case_Fixnum_v_SingleFloat:
 	    return SingleFloat_O::create(na->as_float()/nb->as_float());
@@ -758,15 +758,15 @@ namespace core
 	case_Ratio_v_Fixnum:
 	case_Ratio_v_Bignum:
 	    {
-		Integer_sp z = contagen_mul(na.as<Ratio_O>()->denomenator(),nb).as<Integer_O>();
+		Integer_sp z = contagen_mul(na.as<Ratio_O>()->denominator(),nb).as<Integer_O>();
 		return Rational_O::create(na.as<Ratio_O>()->numerator(),z);
 	    }
 	case_Ratio_v_Ratio:
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
 		Ratio_sp rb = nb.as<Ratio_O>();
-		Integer_sp num = contagen_mul(ra->numerator(),rb->denomenator()).as<Integer_O>();
-		Integer_sp denom = contagen_mul(ra->denomenator(),rb->numerator()).as<Integer_O>();
+		Integer_sp num = contagen_mul(ra->numerator(),rb->denominator()).as<Integer_O>();
+		Integer_sp denom = contagen_mul(ra->denominator(),rb->numerator()).as<Integer_O>();
 		return Rational_O::create(num,denom);
 	    }
 	case_SingleFloat_v_Fixnum:
@@ -1028,8 +1028,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    {
 		mpz_class za(na->as_mpz());
 		Ratio_sp rb = nb.as<Ratio_O>();
-		mpz_class zb_den = rb->denomenator_as_mpz();
-		mpz_class za_scaled = za*rb->denomenator_as_mpz();
+		mpz_class zb_den = rb->denominator_as_mpz();
+		mpz_class za_scaled = za*rb->denominator_as_mpz();
 		mpz_class zr = za_scaled-rb->numerator_as_mpz();
 		if ( zr < 0 ) return -1;
 		if ( zr == 0 ) return 0;
@@ -1093,7 +1093,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Ratio_v_Bignum:
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
-		mpz_class z = ra->denomenator_as_mpz() * nb->as_mpz();
+		mpz_class z = ra->denominator_as_mpz() * nb->as_mpz();
 		mpz_class raz = ra->numerator_as_mpz();
 		if ( raz < z ) return -1;
 		if ( raz == z ) return 0;
@@ -1103,8 +1103,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
 		Ratio_sp rb = nb.as<Ratio_O>();
-		mpz_class z1 = ra->numerator_as_mpz()*rb->denomenator_as_mpz();
-		mpz_class z = ra->denomenator_as_mpz()*rb->numerator_as_mpz();
+		mpz_class z1 = ra->numerator_as_mpz()*rb->denominator_as_mpz();
+		mpz_class z = ra->denominator_as_mpz()*rb->numerator_as_mpz();
 		if ( z1 < z ) return -1;
 		if ( z1 == z ) return 0;
 		return 1;
@@ -1259,8 +1259,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    {
 		mpz_class za(na->as_mpz());
 		Ratio_sp rb = nb.as<Ratio_O>();
-		mpz_class zb_den = rb->denomenator_as_mpz();
-		mpz_class za_scaled = za*rb->denomenator_as_mpz();
+		mpz_class zb_den = rb->denominator_as_mpz();
+		mpz_class za_scaled = za*rb->denominator_as_mpz();
 		mpz_class zr = za_scaled-rb->numerator_as_mpz();
 		return ( zr == 0 );
 	    }
@@ -1306,7 +1306,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Ratio_v_Bignum:
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
-		mpz_class z = ra->denomenator_as_mpz() * nb->as_mpz();
+		mpz_class z = ra->denominator_as_mpz() * nb->as_mpz();
 		mpz_class raz = ra->numerator_as_mpz();
 		return raz==z;
 	    }
@@ -1314,8 +1314,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    {
 		Ratio_sp ra = na.as<Ratio_O>();
 		Ratio_sp rb = nb.as<Ratio_O>();
-		mpz_class z1 = ra->numerator_as_mpz()*rb->denomenator_as_mpz();
-		mpz_class z = ra->denomenator_as_mpz()*rb->numerator_as_mpz();
+		mpz_class z1 = ra->numerator_as_mpz()*rb->denominator_as_mpz();
+		mpz_class z = ra->denominator_as_mpz()*rb->numerator_as_mpz();
 		return (z1==z);
 	    }
         case_SingleFloat_v_Fixnum:
@@ -1418,8 +1418,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    .def("zerop",&Number_O::zerop)
 	    .def("signum",&Number_O::signum)
 	    .def("abs",&Number_O::abs)
-	    .def("onePlus",&Number_O::onePlus)
-	    .def("oneMinus",&Number_O::oneMinus)
+	    .def("core:onePlus",&Number_O::onePlus)
+	    .def("core:oneMinus",&Number_O::oneMinus)
 	    ;
 	;
 	SYMBOL_EXPORT_SC_(ClPkg,max);
@@ -1573,7 +1573,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     void Float_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Float_O>()
-	    .def("castToInteger",&Float_O::castToInteger)
+	    .def("core:castToInteger",&Float_O::castToInteger)
 	    ;
     }
 
@@ -2041,10 +2041,10 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     void Fixnum_O::exposeCando(Lisp_sp lisp)
     {
 	core::class_<Fixnum_O>()
-	    .def("setFromString", &Fixnum_O::setFromString )
-	    .def("set", &Fixnum_O::set )
+	    .def("core:setFromString", &Fixnum_O::setFromString )
+//	    .def("core:set", &Fixnum_O::set )
 //	    .def("get", &Fixnum_O::get)
-	    .def("asChar",&Fixnum_O::asChar)
+	    .def("core:asChar",&Fixnum_O::asChar)
 	    ;
     }
     void Fixnum_O::exposePython(Lisp_sp lisp)
@@ -2053,7 +2053,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	PYTHON_CLASS(CorePkg,Fixnum,"","",_lisp)
 	    .def("valueAsString", &Fixnum_O::valueAsString )
 	    .def("setFromString", &Fixnum_O::setFromString )
-	    .def("set", &Fixnum_O::set)
+//	    .def("set", &Fixnum_O::set)
 //	    .def("get", &Fixnum_O::get)
 	    ;
 //    boost::python::def("create_Fixnum",&create_Fixnum );
@@ -2553,7 +2553,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {
 	class_<DoubleFloat_O>()
 	    .def("exp",&DoubleFloat_O::exp)
-	    .def("isnan",&DoubleFloat_O::isnan)
+	    .def("core:isnan",&DoubleFloat_O::isnan)
 	    ;
 	SYMBOL_SC_(CorePkg,nan);
 	Defun(nan);
@@ -2566,8 +2566,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	PYTHON_CLASS(CorePkg,Real,"","",_lisp)
 	    .def("valueAsString", &DoubleFloat_O::valueAsString )
 	    .def("setFromString", &DoubleFloat_O::setFromString )
-	    .def("set", &DoubleFloat_O::set)
-	    .def("get", &DoubleFloat_O::get)
+//	    .def("set", &DoubleFloat_O::set)
+//	    .def("get", &DoubleFloat_O::get)
 	    ;
 #endif
     }
@@ -2760,7 +2760,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     double Ratio_O::as_double() const
     {_G();
 	double d = this->_numerator->as_double();
-	d /= this->_denomenator->as_double();
+	d /= this->_denominator->as_double();
 	return d;
     }
 
@@ -2773,7 +2773,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     string Ratio_O::__repr__() const
     {_G();
 	stringstream ss;
-	ss << _rep_(this->_numerator) << "/" << _rep_(this->_denomenator);
+	ss << _rep_(this->_numerator) << "/" << _rep_(this->_denominator);
 	return ss.str();
     }
 
@@ -2787,14 +2787,14 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	return this->_numerator->as_mpz();
     }
 
-    mpz_class Ratio_O::denomenator_as_mpz() const
+    mpz_class Ratio_O::denominator_as_mpz() const
     {_G();
-	return this->_denomenator->as_mpz();
+	return this->_denominator->as_mpz();
     }
 
     Number_sp Ratio_O::abs() const
     {_G();
-	return Ratio_O::create(this->_numerator->abs().as<Integer_O>(), this->_denomenator);
+	return Ratio_O::create(this->_numerator->abs().as<Integer_O>(), this->_denominator);
     }
 
     bool Ratio_O::eql(T_sp obj) const
@@ -2812,7 +2812,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     Number_sp Ratio_O::copy() const
     {_G();
-	return Ratio_O::create(this->_numerator,this->_denomenator);
+	return Ratio_O::create(this->_numerator,this->_denominator);
     }
 
 
@@ -2820,13 +2820,13 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     void Ratio_O::sxhash(HashGenerator& hg) const
     {_G();
 	if ( hg.isFilling() ) hg.hashObject(this->_numerator);
-	if ( hg.isFilling() ) hg.hashObject(this->_denomenator);
+	if ( hg.isFilling() ) hg.hashObject(this->_denominator);
     }
 
 
     Number_sp Ratio_O::signum() const
     {_G();
-	ASSERT(this->_denomenator->plusp());
+	ASSERT(this->_denominator->plusp());
 	return this->_numerator->signum();
     }
 
@@ -2851,7 +2851,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {
 	this->Base::archiveBase(node);
 	node->archiveObject("numer",this->_numerator);
-	node->archiveObject("denom",this->_denomenator);
+	node->archiveObject("denom",this->_denominator);
     }
 #endif // defined(XML_ARCHIVE)
 
@@ -2861,7 +2861,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	vector<string> parts = split(str,"/");
 	ASSERT(parts.size() == 2);
 	this->_numerator = Integer_O::create(parts[0]);
-	this->_denomenator = Integer_O::create(parts[1]);
+	this->_denominator = Integer_O::create(parts[1]);
     }
 	
 

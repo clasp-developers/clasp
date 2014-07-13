@@ -294,23 +294,23 @@ namespace core
     {_G();
 	::core::class_<Array_O>()
 	      .DEF(Array_O,aref)
-	      .def("array-setf-aref",&Array_O::setf_aref,ARGS_Array_O_setf_aref,DECL_Array_O_setf_aref,DOCS_Array_O_setf_aref)
-	    .def("index",&Array_O::index)
-	      .def("arrayTotalSize",&Array_O::arrayTotalSize)
-	    .def("array-dimension",&Array_O::arrayDimension)
-	    .def("array-dimensions",&Array_O::arrayDimensions)
-	      .def("array-elementType",&Array_O::elementType)
-	    .def("array-rank",&Array_O::rank)
-	    .def("array-fill",&Array_O::arrayFill)
-	    .def("fill-array-with-elt",&Array_O::fillArrayWithElt)
-	      .def("svref",&Array_O::svref)
-	      .def("setf-svref",&Array_O::setf_svref)
-	      .def("rowMajorAset",&Array_O::rowMajorAset)
-	      .def("rowMajorAref",&Array_O::rowMajorAref)
-	      .def("arrayRowMajorIndex",&Array_O::arrayRowMajorIndex)
-	      .def("arrayHasFillPointerP",&Array_O::arrayHasFillPointerP)
+	      .def("core:array-setf-aref",&Array_O::setf_aref,ARGS_Array_O_setf_aref,DECL_Array_O_setf_aref,DOCS_Array_O_setf_aref)
+              .def("core:index",&Array_O::index)
+	      .def("cl:arrayTotalSize",&Array_O::arrayTotalSize)
+              .def("cl:array-dimension",&Array_O::arrayDimension)
+              .def("cl:array-dimensions",&Array_O::arrayDimensions)
+	      .def("cl:array-elementType",&Array_O::elementType)
+              .def("cl:array-rank",&Array_O::rank)
+              .def("core:array-fill",&Array_O::arrayFill)
+              .def("core:fill-array-with-elt",&Array_O::fillArrayWithElt)
+	      .def("cl:svref",&Array_O::svref)
+	      .def("core:setf-svref",&Array_O::setf_svref)
+	      .def("core:rowMajorAset",&Array_O::rowMajorAset)
+	      .def("cl:rowMajorAref",&Array_O::rowMajorAref)
+	      .def("cl:arrayRowMajorIndex",&Array_O::arrayRowMajorIndex)
+	      .def("cl:arrayHasFillPointerP",&Array_O::arrayHasFillPointerP)
 
-	;
+              ;
 	SYMBOL_SC_(CorePkg,copy_subarray);
 	Defun(copy_subarray);
 	SYMBOL_SC_(CorePkg,aset);

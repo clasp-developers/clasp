@@ -769,7 +769,7 @@ namespace core {
 #endif // defined(XML_ARCHIVE)
     private:
 	Integer_sp 	_numerator;
-	Integer_sp 	_denomenator;
+	Integer_sp 	_denominator;
     public:
 	static Ratio_sp create(Integer_sp num, Integer_sp denom)
 	{_G();
@@ -777,11 +777,11 @@ namespace core {
 	    if ( denom->as_mpz() < 0 )
 	    {
 		v->_numerator = num->negate().as<Integer_O>();
-		v->_denomenator = denom->negate().as<Integer_O>();
+		v->_denominator = denom->negate().as<Integer_O>();
 	    } else
 	    {
 		v->_numerator = num;
-		v->_denomenator = denom;
+		v->_denominator = denom;
 	    }
 	    return v;
 	};
@@ -789,7 +789,7 @@ namespace core {
 	{_G();
             GC_ALLOCATE(Ratio_O,r);
 	    r->_numerator = Integer_O::create(num);
-	    r->_denomenator = Integer_O::create(denom);
+	    r->_denominator = Integer_O::create(denom);
 	    return r;
 	}
 	static Ratio_sp create(const char* str)
@@ -803,11 +803,11 @@ namespace core {
 	NumberType number_type() const { return number_Ratio;};
 
 	Integer_sp numerator() const { return this->_numerator;};
-	Integer_sp denomenator() const { return this->_denomenator;};
+	Integer_sp denominator() const { return this->_denominator;};
 	Integer_sp num() const { return this->_numerator;};
-	Integer_sp den() const { return this->_denomenator;};
+	Integer_sp den() const { return this->_denominator;};
 	mpz_class numerator_as_mpz() const;
-	mpz_class denomenator_as_mpz() const;
+	mpz_class denominator_as_mpz() const;
 
 	void sxhash(HashGenerator& hg) const;
 	virtual Number_sp copy() const;
@@ -821,8 +821,8 @@ namespace core {
 	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql(T_sp obj) const;
 
-	Number_sp onePlus() const { return create(contagen_add(this->_numerator,this->_denomenator).as<Integer_O>(),this->_denomenator);};
-	Number_sp oneMinus() const { return create(contagen_sub(this->_numerator,this->_denomenator).as<Integer_O>(),this->_denomenator);};
+	Number_sp onePlus() const { return create(contagen_add(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
+	Number_sp oneMinus() const { return create(contagen_sub(this->_numerator,this->_denominator).as<Integer_O>(),this->_denominator);};
 
 	virtual float as_float() const;
 	virtual double as_double() const;

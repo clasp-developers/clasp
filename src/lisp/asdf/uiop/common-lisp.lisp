@@ -83,7 +83,7 @@
 #+clasp
 (eval-when (:load-toplevel :compile-toplevel :execute)
   (setf *load-verbose* nil)
-  (defun use-ecl-byte-compiler-p () t))
+  (defun use-ecl-byte-compiler-p () nil))
 
 #+gcl
 (eval-when (:load-toplevel :compile-toplevel :execute)

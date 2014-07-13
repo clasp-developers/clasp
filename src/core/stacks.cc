@@ -64,8 +64,8 @@ namespace core
             Fixnum_sp lineno = info.valueGet(1).as<Fixnum_O>();
             Fixnum_sp column = info.valueGet(2).as<Fixnum_O>();
 //	Fixnum_sp filePos = info.valueGet(3).as<Fixnum_O>();
-            uint ilineno = lineno.nilp() ? 0 : lineno->get();
-            uint icolumn = column.nilp() ? 0 : column->get();
+            ilineno = lineno.nilp() ? 0 : lineno->get();
+            icolumn = column.nilp() ? 0 : column->get();
 //	uint ifilePos = filePos.nilp() ? 0 : filePos->get();
         }
 	this->_Top->setLineNumberColumn(ilineno,icolumn);

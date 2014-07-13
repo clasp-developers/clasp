@@ -291,8 +291,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
     SYMBOL_EXPORT_SC_(ClPkg,simple_vector);
 
     SYMBOL_SC_(CorePkg,STARsystem_defsetf_update_functionsSTAR);
-    SYMBOL_SC_(CorePkg,STARstdinSTAR);
-    SYMBOL_SC_(CorePkg,STARstdoutSTAR);
+    SYMBOL_EXPORT_SC_(ExtPkg,_PLUS_processStandardInput_PLUS_);
+    SYMBOL_EXPORT_SC_(ExtPkg,_PLUS_processStandardOutput_PLUS_);
+    SYMBOL_EXPORT_SC_(ExtPkg,_PLUS_processErrorOutput_PLUS_);
     SYMBOL_EXPORT_SC_(ClPkg,STARstandard_inputSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,STARstandard_outputSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,STARerror_outputSTAR);
@@ -666,7 +667,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 	};
 	/* Set the values of some essential global symbols */
 #if 0
-	_sym_nil = _Nil<Symbol_O>();
 	_sym_nil->initialize();
 	_sym_nil->_Name = "NIL";
 	_lisp->_CorePackage->_add_symbol_to_package(_sym_nil);
@@ -753,14 +753,16 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 
 	FDInStream_sp stdin_stream = FDInStream_O::create(stdin,"*STDIN*",false);
 	Stream_sp stdout_stream = FDOutStream_O::create(stdout,"*STDOUT*",false);
+	Stream_sp stderr_stream = FDOutStream_O::create(stderr,"*STDERR*",false);
 	_sym_STARenablePrintPrettySTAR->defparameter(_Nil<T_O>()); // Just for debugging *print-pretty*
-	_sym_STARstdinSTAR->defparameter(stdin_stream);
-	_sym_STARstdoutSTAR->defparameter(stdout_stream);
+        ext::_sym__PLUS_processStandardInput_PLUS_->defparameter(stdin_stream);
+        ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);
+        ext::_sym__PLUS_processErrorOutput_PLUS_->defparameter(stderr_stream);
         _sym_STARsourceDatabaseSTAR->defparameter(_Nil<T_O>());
-	cl::_sym_STARstandard_inputSTAR->defparameter(SynonymStream_O::make(_sym_STARstdinSTAR));
-	cl::_sym_STARstandard_outputSTAR->defparameter(SynonymStream_O::make(_sym_STARstdoutSTAR));
-	cl::_sym_STARerror_outputSTAR->defparameter(SynonymStream_O::make(_sym_STARstdoutSTAR));
-	cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(_sym_STARstdoutSTAR));
+	cl::_sym_STARstandard_inputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardInput_PLUS_));
+	cl::_sym_STARstandard_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardOutput_PLUS_));
+	cl::_sym_STARerror_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
+	cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
 	cl::_sym_STARdebug_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream,stdout_stream));
 	cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream,stdout_stream));
         TwoWayStream_sp terminal = TwoWayStream_O::make(stdin_stream,stdout_stream);

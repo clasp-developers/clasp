@@ -141,7 +141,6 @@ namespace core
 
     int	SymbolList_O::indexOf(Symbol_sp nm)
     {_G();
-	int			idx;
 	LOG(BF("Looking for string(%s)") % nm->__repr__()  );
 	for ( auto it=this->_Contents.begin(); it!=this->_Contents.end(); it++ )
 	{

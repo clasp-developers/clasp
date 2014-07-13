@@ -584,7 +584,7 @@ namespace core
 	newNameDefun(ClPkg,packageP,packagep);
 	newNameDefun(ClPkg,functionP,functionp);
 	newNameDefun(ClPkg,compiled_function_p,compiled_function_p);
-	newNameDefun(ClPkg,genericFunctionP,genericFunctionP);
+	newNameDefun(CorePkg,genericFunctionP,genericFunctionP);
 	newNameDefun(ClPkg,keywordP,keywordp);
 	SYMBOL_EXPORT_SC_(ClPkg,atom);
 	Defun(atom);

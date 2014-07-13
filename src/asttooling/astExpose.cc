@@ -273,6 +273,9 @@ namespace translate {
     STMT(OMPSimdDirective);
     STMT(OMPForDirective);
     STMT(OMPParallelDirective);
+    STMT(OMPSectionDirective);
+    STMT(OMPSectionsDirective);
+    STMT(OMPSingleDirective);
 // firstOMPExecutableDirectiveConstant= OMPParallelDirectiveClass, lastOMPExecutableDirectiveConstant= OMPParallelDirectiveClass,
     STMT(ObjCAtCatchStmt);
     STMT(ObjCAtFinallyStmt);
@@ -909,6 +912,9 @@ namespace asttooling {
             CASE_STMT(OMPSimdDirective);
             CASE_STMT(OMPForDirective);
             CASE_STMT(OMPParallelDirective);
+            CASE_STMT(OMPSectionDirective);
+            CASE_STMT(OMPSectionsDirective);
+            CASE_STMT(OMPSingleDirective);
 // firstOMPExecutableDirectiveConstant= OMPParallelDirectiveClass, lastOMPExecutableDirectiveConstant= OMPParallelDirectiveClass,
             CASE_STMT(ObjCAtCatchStmt);
             CASE_STMT(ObjCAtFinallyStmt);
@@ -1336,6 +1342,9 @@ namespace asttooling {
             , CLASS_STMT(OMPSimdDirective, OMPExecutableDirective)
             , CLASS_STMT(OMPForDirective, OMPExecutableDirective)
             , CLASS_STMT(OMPParallelDirective, OMPExecutableDirective)
+            , CLASS_STMT(OMPSectionDirective, OMPExecutableDirective)
+            , CLASS_STMT(OMPSectionsDirective, OMPExecutableDirective)
+            , CLASS_STMT(OMPSingleDirective, OMPExecutableDirective)
             , CLASS_STMT(ObjCAtCatchStmt, Stmt)
             , CLASS_STMT(ObjCAtFinallyStmt, Stmt)
             , CLASS_STMT(ObjCAtSynchronizedStmt, Stmt)
