@@ -14,7 +14,7 @@ namespace core
     class StrWithFillPtr_O : public Str_O
     {
 	LISP_BASE1(Str_O);
-	LISP_CLASS(core,ClPkg,StrWithFillPtr_O,"base-string-with-fill-ptr");
+	LISP_CLASS(core,CorePkg,StrWithFillPtr_O,"base-string-with-fill-ptr");
     protected:
 	int	_FillPointer;
 	bool	_Adjustable;

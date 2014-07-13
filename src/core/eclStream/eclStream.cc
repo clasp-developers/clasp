@@ -607,7 +607,7 @@ namespace core
 
 
     
-#define ARGS_af_terpri "(&optional (output-stream core::*stdout*))"
+#define ARGS_af_terpri "(&optional (output-stream ext:+process-standard-output+))"
 #define DECL_af_terpri ""
 #define DOCS_af_terpri "Send a newline to the output stream"
     void af_terpri(T_sp outputStreamDesig)
@@ -619,7 +619,7 @@ namespace core
 
     
     
-#define ARGS_af_freshLine "(&optional (outputStream core:*stdout*))"
+#define ARGS_af_freshLine "(&optional (outputStream ext:+process-standard-output+))"
 #define DECL_af_freshLine ""
 #define DOCS_af_freshLine "freshLine"
     bool af_freshLine(T_sp outputStreamDesig)

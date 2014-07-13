@@ -148,9 +148,9 @@ namespace core
 	::core::class_<Sequence_O>()
 //	.initArgs("(self)")
 	      .def("elt",&Sequence_O::elt)
-	      .def("setf-elt",&Sequence_O::setf_elt,ARGS_Sequence_O_setf_elt,DECL_Sequence_O_setf_elt,DOCS_Sequence_O_setf_elt)
-	      .def("elt-set",&Sequence_O::setf_elt,ARGS_Sequence_O_setf_elt,DECL_Sequence_O_setf_elt,DOCS_Sequence_O_setf_elt)
-	      .def("setf_subseq",&Sequence_O::setf_subseq)
+	      .def("core:setf-elt",&Sequence_O::setf_elt,ARGS_Sequence_O_setf_elt,DECL_Sequence_O_setf_elt,DOCS_Sequence_O_setf_elt)
+	      .def("core:elt-set",&Sequence_O::setf_elt,ARGS_Sequence_O_setf_elt,DECL_Sequence_O_setf_elt,DOCS_Sequence_O_setf_elt)
+	      .def("core:setf_subseq",&Sequence_O::setf_subseq)
 	      ;
 	SYMBOL_EXPORT_SC_(ClPkg,make_sequence);
 	Defun(make_sequence);

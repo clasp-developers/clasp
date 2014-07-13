@@ -13,6 +13,9 @@
 //#i n c l u d e	"boost/fstream.hpp"
 #include "foundation.h"
 #include "object.h"
+#ifdef DEBUG_CL_SYMBOLS
+#include "allClSymbols.h"
+#endif
 #include "candoOpenMp.h"
 #include "exceptions.h"
 #include "commandLineOptions.h"
@@ -399,6 +402,10 @@ namespace core
         CoreExposer* coreExposerPtr = NULL;
 	BuiltInClass_sp classDummy;
 
+#ifdef DEBUG_CL_SYMBOLS
+        initializeAllClSymbols();
+#endif            
+
 
 	{ _BLOCK_TRACE("Initialize core classes");
 	    coreExposerPtr = CoreExposer::create_core_packages_and_classes();
@@ -447,7 +454,6 @@ namespace core
 #undef Use_CorePkg
 
 //            testStrings();
-
 
 
 
@@ -1239,7 +1245,17 @@ namespace core
 	    features = Cons_O::create(_lisp->internKeyword(lispify_symbol_name(options._Features[i])),features);
 	}
         features = Cons_O::create(_lisp->internKeyword("CLASP"),features);
-
+#ifdef _TARGET_OS_DARWIN
+        features = Cons_O::create(_lisp->internKeyword("DARWIN"),features);
+        features = Cons_O::create(_lisp->internKeyword("BSD"),features);
+        features = Cons_O::create(_lisp->internKeyword("OS-UNIX"),features);
+        features = Cons_O::create(_lisp->internKeyword("UNIX"),features);
+#endif
+#ifdef _TARGET_OS_LINUX
+        features = Cons_O::create(_lisp->internKeyword("UNIX"),features);
+        features = Cons_O::create(_lisp->internKeyword("OS-UNIX"),features);
+        features = Cons_O::create(_lisp->internKeyword("LINUX"),features);
+#endif        
 #ifdef VARARGS
 	features = Cons_O::create(_lisp->internKeyword("VARARGS"),features);
 #endif
@@ -1318,11 +1334,12 @@ namespace core
 	// Pass whatever is left over to the Lisp environment
 	//
 	LOG(BF("Parsing what is left over into lisp environment arguments") );
-	Cons_sp args = Cons_O::createFromVectorStringsCommandLineArguments(options._Args,_lisp);
+#if 0
+	Vector_sp args = Cons_O::createFromVectorStringsCommandLineArguments(options._Args,_lisp);
 	LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args) );
 	SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineArgumentsSTAR);
 	_sym_STARcommandLineArgumentsSTAR->defparameter(args);
-
+#endif
 #if 0
 	{
 	    //
@@ -1733,20 +1750,20 @@ namespace core
 
 
 
-#define	ARGS_af_setenv	"(name value)"
-#define	DECL_af_setenv	""
-#define	DOCS_af_setenv	"Set environment variable NAME to VALUE"
-    void af_setenv(Str_sp name, Str_sp value)
+#define	ARGS_ext_setenv	"(name value)"
+#define	DECL_ext_setenv	""
+#define	DOCS_ext_setenv	"Set environment variable NAME to VALUE"
+    void ext_setenv(Str_sp name, Str_sp value)
     {_G();
 	setenv(name->get().c_str(),value->get().c_str(),1);
     }
 
 
 
-#define	ARGS_af_getenv	"(name)"
-#define	DECL_af_getenv	""
-#define	DOCS_af_getenv	"Get environment variable NAME"
-    T_sp af_getenv(Str_sp name)
+#define	ARGS_ext_getenv	"(name)"
+#define	DECL_ext_getenv	""
+#define	DOCS_ext_getenv	"Get environment variable NAME"
+    T_sp ext_getenv(Str_sp name)
     {_G();
 	string s = name->get();
         char* e = getenv(s.c_str());
@@ -2930,7 +2947,7 @@ extern "C"
 */
 
 
-#define ARGS_af_princ "(obj &optional (output-stream-desig core::*stdout*))"
+#define ARGS_af_princ "(obj &optional (output-stream-desig ext:+process-standard-output+))"
 #define DECL_af_princ ""
 #define DOCS_af_princ "See CLHS: princ"
     void af_princ(T_sp obj, T_sp output_stream_desig )
@@ -2943,7 +2960,7 @@ extern "C"
 
 
 
-#define ARGS_af_prin1 "(obj &optional (output-stream-desig core::*stdout*))"
+#define ARGS_af_prin1 "(obj &optional (output-stream-desig ext::+process-standard-output+))"
 #define DECL_af_prin1 ""
 #define DOCS_af_prin1 "See CLHS: prin1"
     void af_prin1(T_sp obj, T_sp output_stream_desig )
@@ -2953,7 +2970,7 @@ extern "C"
 	eval::funcall(cl::_sym_write,obj,kw::_sym_stream,output_stream_desig);
     }
 
-#define ARGS_af_print "(obj &optional (output-stream-desig core::*stdout*))"
+#define ARGS_af_print "(obj &optional (output-stream-desig ext::+process-standard-output+))"
 #define DECL_af_print ""
 #define DOCS_af_print "See CLHS: print"
     void af_print(T_sp obj, T_sp output_stream_desig )
@@ -3300,6 +3317,30 @@ extern "C"
 	Package_sp package = this->findPackage(packageName);
 	return this->intern(symbolName,package);
     }
+
+
+    Symbol_sp Lisp_O::internWithDefaultPackageName(string const& defaultPackageName,
+                                                   string const& possiblePackagePrefixedSymbolName )
+    {
+        size_t pkgSep = possiblePackagePrefixedSymbolName.find(':',0);
+        if (pkgSep == string::npos) {
+            return this->internWithPackageName(defaultPackageName,possiblePackagePrefixedSymbolName);
+        }
+        size_t symbolNameStart = pkgSep+1;
+        bool exportit = true;
+        if (symbolNameStart<possiblePackagePrefixedSymbolName.size()-1) {
+            if (possiblePackagePrefixedSymbolName[symbolNameStart] == ':') {
+                ++symbolNameStart;
+                exportit = false;
+            }
+        }
+        string packageName = possiblePackagePrefixedSymbolName.substr(0,pkgSep);
+        string symbolName = possiblePackagePrefixedSymbolName.substr(symbolNameStart,possiblePackagePrefixedSymbolName.size());
+        Symbol_sp sym = this->internWithPackageName(packageName,symbolName);
+        if ( exportit ) sym->exportYourself();
+        return sym;
+    }
+
 
 
 
@@ -3665,10 +3706,10 @@ extern "C"
 
 	SYMBOL_EXPORT_SC_(ClPkg,error);
 	Defun(error);
-	SYMBOL_SC_(CorePkg,setenv);
-	Defun(setenv);
-	SYMBOL_SC_(CorePkg,getenv);
-	Defun(getenv);
+	SYMBOL_EXPORT_SC_(ExtPkg,setenv);
+	ExtDefun(setenv);
+	SYMBOL_EXPORT_SC_(ExtPkg,getenv);
+	ExtDefun(getenv);
 	SYMBOL_EXPORT_SC_(ClPkg,not);
 	Defun(not);
 
@@ -3859,6 +3900,10 @@ extern "C"
 	::_lisp = this->_Lisp;
 	const char* argv0 = "./";
 	if ( argc > 0 ) argv0 = argv[0];
+        this->_Lisp->_Argc = argc;
+        for ( int i=0; i<argc; ++i ) {
+            this->_Lisp->_Argv.push_back(string(argv[i]));
+        }
 	Bundle* bundle = new Bundle();
 	bundle->initialize(argv0,appPathEnvironmentVariable);
 	this->_Lisp->startupLispEnvironment(bundle);

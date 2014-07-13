@@ -662,7 +662,7 @@ if not possible."
 	   ((VECTOR SIMPLE-VECTOR #+unicode SIMPLE-BASE-STRING SIMPLE-STRING #+unicode BASE-STRING STRING BIT-VECTOR SIMPLE-BIT-VECTOR)
 	    (concatenate type object))
 	   (t
-	    (if (or (listp object) (vector object))
+	    (if (or (listp object) #+(and ecl (not clasp))(vector object) #+clasp(vectorp object))
 		(concatenate type object)
 		(error-coerce object type)))))
 	((eq (setq aux (first type)) 'COMPLEX)
@@ -681,7 +681,8 @@ if not possible."
 	 (unless (typep aux type)
 	   (error-coerce object type))
 	 aux)
-	((or (listp object) (vector object))
+;;	((or (listp object) (vector object))
+         ((or (listp object) #+(and ecl (not clasp))(vector object) #+clasp(vectorp object))
 	 (concatenate type object))
 	(t
 	 (error-coerce object type))))

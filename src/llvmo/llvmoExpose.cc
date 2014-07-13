@@ -3564,10 +3564,10 @@ namespace llvmo
 	/* Run the function */
 //	printf( "%s:%d - Calling startup function in: %s - Figure out what to do here - I need to start using the unix backtrace and dwarf debugging information rather than setting up my own backtrace info in the IHF", __FILE__, __LINE__, fileName->c_str() );
 	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<core::T_O>());
+#ifdef USE_MPS
         void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalLoadTimeValueName->get()));
 //        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalLoadTimeValueName->get().c_str(), globalPtr );
         ASSERT(globalPtr!=NULL);
-#ifdef USE_MPS
         registerLoadTimeValuesRoot(reinterpret_cast<core::LoadTimeValues_O**>(globalPtr));
 #endif
 	engine->runFunction(fn,argValues);

@@ -45,18 +45,19 @@
 a CL pathname satisfying all the specified constraints as per ENSURE-PATHNAME"
     (check-type string (or string null))
     (let* ((pathname
-             (when string
-               (with-pathname-defaults ()
-                 #+clozure (ccl:native-to-pathname string)
-                 #+sbcl (sb-ext:parse-native-namestring string)
-                 #-(or clozure sbcl)
-                 (if (os-unix-p)
-                     (parse-unix-namestring string :ensure-directory ensure-directory)
-                     (parse-namestring string)))))
+            (when string
+              (with-pathname-defaults ()
+                #+clozure (ccl:native-to-pathname string)
+                #+sbcl (sb-ext:parse-native-namestring string)
+                #-(or clozure sbcl)
+                (if (os-unix-p)
+                    (parse-unix-namestring string :ensure-directory ensure-directory)
+                    (parse-namestring string)))))
            (pathname
-             (if ensure-directory
-                 (and pathname (ensure-directory-pathname pathname))
-                 pathname)))
+            (if ensure-directory
+                (and pathname (ensure-directory-pathname pathname))
+                pathname))
+           )
       (apply 'ensure-pathname pathname constraints))))
 
 

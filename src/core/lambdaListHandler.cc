@@ -728,23 +728,30 @@ void bind_aux
 	    }
 	    case rest:
 	    {
-		Symbol_sp sarg = oarg.as<Symbol_O>();
-		LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
-		if ( restarg.isDefined() )
-		{
-		    SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString() );
-		}
-		restarg.setTarget(sarg);
+                if ( restarg.isDefined() )
+                {
+                    SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString() );
+                }
+                if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
+                    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
+                    restarg.setTarget(sarg);
+                } else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
+                    restarg.setTarget(carg);
+                }
 		break;
 	    }
 	    case dot_rest:
 	    {
-		Symbol_sp sarg = oarg.as<Symbol_O>();
 		if ( cCdr(cur).notnilp() )
 		{
 		    SIMPLE_ERROR(BF("Lambda list dot followed by more than one argument"));
 		}
-		restarg.setTarget(sarg);
+                if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
+                    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
+                    restarg.setTarget(sarg);
+                } else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
+                    restarg.setTarget(carg);
+                }
 		goto DONE;
 	    }
 	    case keyword:

@@ -136,14 +136,14 @@ namespace core {
 
     
     
-#define ARGS_cl_denomenator "(x)"
-#define DECL_cl_denomenator ""
-#define DOCS_cl_denomenator "denomenator"
-    Number_sp cl_denomenator(Number_sp x)
+#define ARGS_cl_denominator "(x)"
+#define DECL_cl_denominator ""
+#define DOCS_cl_denominator "denominator"
+    Number_sp cl_denominator(Number_sp x)
     {_G();
 	switch (brcl_t_of(x)) {
 	case number_Ratio:
-	    x = x.as<Ratio_O>()->denomenator();
+	    x = x.as<Ratio_O>()->denominator();
 	    break;
 	case number_Fixnum:
 	case number_Bignum:
@@ -168,7 +168,7 @@ namespace core {
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rx(x.as<Ratio_O>());
-	    Real_mv mv_v0 = brcl_floor2(rx->numerator(),rx->denomenator());
+	    Real_mv mv_v0 = brcl_floor2(rx->numerator(),rx->denominator());
 	    v0 = mv_v0;
 	    Integer_sp tv1 = mv_v0.valueGet(1).as<Integer_O>();
 	    v1 = brcl_make_ratio(tv1, rx->den());
@@ -1301,8 +1301,8 @@ namespace core {
 	ClDefun(float);
 	SYMBOL_EXPORT_SC_(ClPkg,numerator);
 	ClDefun(numerator);
-	SYMBOL_EXPORT_SC_(ClPkg,denomenator);
-	ClDefun(denomenator);
+	SYMBOL_EXPORT_SC_(ClPkg,denominator);
+	ClDefun(denominator);
 	SYMBOL_EXPORT_SC_(ClPkg,floor);
 	ClDefun(floor);
 	SYMBOL_EXPORT_SC_(ClPkg,ceiling);

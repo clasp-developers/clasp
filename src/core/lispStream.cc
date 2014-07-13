@@ -929,7 +929,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
 
     
-#define ARGS_af_terpri "(&optional (output-stream core::*stdout*))"
+#define ARGS_af_terpri "(&optional (output-stream ext:+process-standard-output+))"
 #define DECL_af_terpri ""
 #define DOCS_af_terpri "Send a newline to the output stream"
     void af_terpri(T_sp outputStreamDesig)
@@ -940,7 +940,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     
     
-#define ARGS_af_freshLine "(&optional (outputStream core:*stdout*))"
+#define ARGS_af_freshLine "(&optional (outputStream ext:+process-standard-output+))"
 #define DECL_af_freshLine ""
 #define DOCS_af_freshLine "freshLine"
     bool af_freshLine(T_sp outputStreamDesig)
@@ -1151,8 +1151,8 @@ T_sp brcl_close(T_sp strm, bool abort)
     void Stream_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<Stream_O>()
-	    .def("stream-lineNumber",&Stream_O::lineNumber)
-	    .def("stream-column",&Stream_O::column)
+	    .def("core:stream-lineNumber",&Stream_O::lineNumber)
+	    .def("core:stream-column",&Stream_O::column)
 	    ;
     }
 

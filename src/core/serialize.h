@@ -29,7 +29,7 @@ namespace core
     class SNode_O : public T_O
     {
 	LISP_BASE1(T_O);
-	LISP_VIRTUAL_CLASS(core,ClPkg,SNode_O,"SNode");
+	LISP_VIRTUAL_CLASS(core,CorePkg,SNode_O,"SNode");
     public: // Simple default ctor/dtor
 //	DEFAULT_CTOR_DTOR(SNode_O);
     private:
@@ -461,7 +461,7 @@ namespace core
     class LeafSNode_O : public SNode_O
     {
 	LISP_BASE1(SNode_O);
-	LISP_VIRTUAL_CLASS(core,ClPkg,LeafSNode_O,"LeafSNode");
+	LISP_VIRTUAL_CLASS(core,CorePkg,LeafSNode_O,"LeafSNode");
     protected:
 	T_sp 	_Object;
     public:
@@ -489,7 +489,7 @@ namespace core
     class BranchSNode_O : public SNode_O
     {
 	LISP_BASE1(SNode_O);
-	LISP_VIRTUAL_CLASS(core,ClPkg,BranchSNode_O,"BranchSNode");
+	LISP_VIRTUAL_CLASS(core,CorePkg,BranchSNode_O,"BranchSNode");
 	friend class LoadArchive_O;
 	friend class SNode_O;
 	friend class SexpSaveArchive_O;

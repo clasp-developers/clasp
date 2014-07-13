@@ -695,18 +695,18 @@ namespace core
 	::core::class_<HashTable_O> ht;
 	ht
 //	.initArgs("(self)")
-	      .def("hash-table-count",&HashTable_O::hashTableCount)
-	      .def("hash-table-size",&HashTable_O::hashTableSize)
-	      .def("hash-table-rehash-size",&HashTable_O::hashTableRehashSize)
-	      .def("hash-table-rehash-threshold",&HashTable_O::hashTableRehashThreshold)
+            .def("hash-table-count",&HashTable_O::hashTableCount)
+            .def("hash-table-size",&HashTable_O::hashTableSize)
+            .def("hash-table-rehash-size",&HashTable_O::hashTableRehashSize)
+            .def("hash-table-rehash-threshold",&HashTable_O::hashTableRehashThreshold)
 	    .def("hash-table-test",&HashTable_O::hashTableTest)
-	    .def("hashTableNumberOfHashes",&HashTable_O::hashTableNumberOfHashes)
-	    .def("hashTableAlistAtHash",&HashTable_O::hashTableAlistAtHash)
+	    .def("core:hashTableNumberOfHashes",&HashTable_O::hashTableNumberOfHashes)
+	    .def("core:hashTableAlistAtHash",&HashTable_O::hashTableAlistAtHash)
             ;
 	ht
-	    .def("hashTableSetfGethash",&HashTable_O::hash_table_setf_gethash)
-	    .DEF_DONT_EXPORT(HashTable_O,hash_table_dump)
-	;
+	    .def("core:hashTableSetfGethash",&HashTable_O::hash_table_setf_gethash)
+	    .def("core:hashTableDump", &HashTable_O::hash_table_dump)
+            ;
 	SYMBOL_EXPORT_SC_(ClPkg,make_hash_table);
 	Defun(make_hash_table);
 	SYMBOL_EXPORT_SC_(ClPkg,maphash);
