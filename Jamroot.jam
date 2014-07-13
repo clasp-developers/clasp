@@ -47,6 +47,7 @@ project clasp : requirements
 #       <define>DEBUG_LOG_MPS_KINDS     # Give more verbose MPS debugging messages that include kind names
 #       <define>SOURCE_DEBUG
 #	<define>DEBUG_MPS      # generate lots of debugging information for MPS
+        <define>DEBUG_CL_SYMBOLS
         <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs
 #       <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>USE_PUT_SELECT_CLASSES_IN_AMC_POOL

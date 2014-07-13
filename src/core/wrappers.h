@@ -79,8 +79,6 @@ public:
 namespace core {
 
 #define	DEF(ClassName,FunctionName) def(#FunctionName,&ClassName::FunctionName,ARGS_##ClassName##_##FunctionName,DECL_##ClassName##_##FunctionName,DOCS_##ClassName##_##FunctionName,true)
-#define DEF_DONT_EXPORT(ClassName,FunctionName) def(#FunctionName,&ClassName::FunctionName,ARGS_##ClassName##_##FunctionName,DECL_##ClassName##_##FunctionName,DOCS_##ClassName##_##FunctionName,false)
-
 };
 
 

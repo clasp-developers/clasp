@@ -919,11 +919,13 @@ namespace core
 	Cons_sp it = this->_SymbolIndex->find(sym);
 	if ( it.notnilp() )
 	{
+#if 0
 	    if ( idx != oCdr(it).as<Fixnum_O>()->get() )
 	    {
-		SIMPLE_ERROR(BF("The lexical variable[%s] is already defined with index[%d] - we tried to set it to[%d]") % _rep_(sym) % oCdr(it) % idx );
+		SIMPLE_ERROR(BF("The lexical variable[%s] is already defined with index[%d] - we tried to set it to[%d]") % _rep_(sym) % _rep_(oCdr(it)) % idx );
 	    }
 	    return;
+#endif
 	}
         this->_SymbolIndex->hash_table_setf_gethash(sym,Fixnum_O::create(idx));
     }

@@ -221,8 +221,8 @@ bool	almostEqualAbsoluteOrRelative(double va, double vb,
 	case number_Ratio: {
 //		const cl_env_ptr the_env = ecl_process_env();
 	    Ratio_sp ratio_x = x.as<Ratio_O>();
-	    mv_v1 = af_ceiling2(ratio_x->numerator(),ratio_x->denomenator());
-	    v1 = Ratio_O::create(mv_v1.getValue(1).as<Integer_O>(), ratio_x->denomenator());
+	    mv_v1 = af_ceiling2(ratio_x->numerator(),ratio_x->denominator());
+	    v1 = Ratio_O::create(mv_v1.getValue(1).as<Integer_O>(), ratio_x->denominator());
 	    break;
 	}
 	case number_SingleFloat: {

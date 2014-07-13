@@ -188,9 +188,13 @@ namespace asttooling {
 /// polymorphic matcher. For the former, we just construct the VariantMatcher.
 /// For the latter, we instantiate all the possible Matcher<T> of the poly
 /// matcher.
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
         static VariantMatcher outvalueToVariantMatcher(const DynTypedMatcher &Matcher) {
             return VariantMatcher::SingleMatcher(Matcher);
         }
+#pragma clang diagnostic pop
 
         template <typename T>
         static VariantMatcher outvalueToVariantMatcher(const T &PolyMatcher,

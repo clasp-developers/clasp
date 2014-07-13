@@ -1,6 +1,9 @@
 #define	DEBUG_LEVEL_FULL
 
 #include "core/foundation.h"
+#ifdef DEBUG_CL_SYMBOLS
+#include "allClSymbols.h"
+#endif
 #include "core/symbol.h"
 #include "core/common.h"
 #include "core/corePackage.h"
@@ -63,7 +66,7 @@ namespace core
 
     
     
-#define ARGS_af_unintern "(symbol &optional package)"
+#define ARGS_af_unintern "(symbol &optional (package *package*))"
 #define DECL_af_unintern ""
 #define DOCS_af_unintern "unintern"
     bool af_unintern(Symbol_sp sym, T_sp packageDesig)
@@ -72,7 +75,7 @@ namespace core
 	return pkg->unintern(sym);
     };
 
-#define ARGS_af_findSymbol "(sym &optional package)"
+#define ARGS_af_findSymbol "(sym &optional (package *package*))"
 #define DECL_af_findSymbol ""
 #define DOCS_af_findSymbol "findSymbol"
     T_mv af_findSymbol(const string& symbolname, T_sp packageDesig)
@@ -93,6 +96,17 @@ namespace core
     Bignum_sp nameToKey(const char* name)
     {_G();
 	return Bignum_O::create(Str_O::stringToBignum(name));
+    }
+
+    Bignum_sp symbolNameToKey(Symbol_sp sym)
+    {
+        Bignum_sp nameKey;
+        if ( sym.nilp() ) {
+            nameKey = nameToKey("NIL");
+        } else {
+            nameKey = nameToKey(sym->symbolName()->c_str());
+        }
+        return nameKey;
     }
     
     
@@ -322,7 +336,7 @@ namespace core
 	class_<Package_O>()
 //	    .def("allSymbols",&Package_O::allSymbols)
 	    .def("packageName",&Package_O::packageName)
-	    .def("PackageHashTables",&Package_O::hashTables)
+	    .def("core:PackageHashTables",&Package_O::hashTables)
 	    ;
 	SYMBOL_EXPORT_SC_(ClPkg,package_use_list);
 	Defun(package_use_list);
@@ -634,12 +648,16 @@ namespace core
 	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
 	{
 	    Symbol_sp sym = oCar(cur).as<Symbol_O>();
-	    if ( sym.nilp() ) continue;
-	    if ( sym->symbolNameAsString() == "" )
+	    if ( sym.notnilp() && sym->symbolNameAsString() == "" )
 	    {
 		SIMPLE_ERROR(BF("Problem exporting symbol - it has no name"));
 	    }
-	    Bignum_sp nameKey = nameToKey(sym->_Name->c_str());
+#ifdef DEBUG_CL_SYMBOLS
+            if ( sym.notnilp() && this == _lisp->commonLispPackage().px_ref() ) {
+                throwIfNotValidClSymbol(sym->symbolName()->get());
+            }
+#endif
+	    Bignum_sp nameKey = symbolNameToKey(sym);
 	    Symbol_sp foundSym, status;
 	    {MULTIPLE_VALUES_CONTEXT();
 		T_mv values = this->findSymbol(nameKey);
@@ -723,6 +741,12 @@ namespace core
 	Bignum_sp nameKey = nameToKey(symName);
 	if ( this->isKeywordPackage() || exportp )
 	{
+#ifdef DEBUG_CL_SYMBOLS
+            if ( sym.notnilp() && this == _lisp->commonLispPackage().px_ref() ) {
+                
+                throwIfNotValidClSymbol(sym->symbolName()->get());
+            }
+#endif
 	    this->_ExternalSymbols->hash_table_setf_gethash(nameKey,sym);
 	} else
 	{
@@ -757,6 +781,7 @@ namespace core
 	{
 	    sym->setf_symbolValue(sym);
 	}
+            
 //	trapSymbol(this,sym,name);
 	LOG(BF("Symbol[%s] interned as[%s]@%p")% name % _rep_(sym) % sym.get() );
 	return(Values(sym,status) );
@@ -770,8 +795,7 @@ namespace core
 	// The following is not completely conformant with CLHS
 	// unintern should throw an exception if removing a shadowing symbol
 	// uncovers a name conflict of the symbol in two packages that are being used
-	Bignum_sp nameKey = nameToKey(sym->_Name->c_str());
-
+	Bignum_sp nameKey = symbolNameToKey(sym);
 	{
 	    Symbol_sp sym, status;
 	    {MULTIPLE_VALUES_CONTEXT();
@@ -826,7 +850,7 @@ namespace core
 
     bool Package_O::isExported(Symbol_sp sym)
     {_OF();
-	Bignum_sp nameKey = nameToKey(sym->_Name->c_str());
+	Bignum_sp nameKey = symbolNameToKey(sym);
 	T_mv values = this->_ExternalSymbols->gethash(nameKey,_Nil<T_O>());
 	T_sp presentp = values.valueGet(1);
     	LOG(BF("isExported test of symbol[%s] isExported[%d]") % sym->symbolNameAsString() % presentp.isTrue() );
@@ -841,13 +865,10 @@ namespace core
 	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
 	{
 	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
-	    Bignum_sp nameKey = nameToKey(symbolToImport->_Name->c_str());
-	    Symbol_sp foundSymbol, status;
-	    {MULTIPLE_VALUES_CONTEXT();
-		Symbol_mv values = this->findSymbol(nameKey);
-		foundSymbol = values;
-		status = values.valueGet(1).as<Symbol_O>();
-	    }
+            Bignum_sp nameKey = symbolNameToKey(symbolToImport);
+            Symbol_mv values = this->findSymbol(nameKey);
+            Symbol_sp foundSymbol = values;
+            Symbol_sp status = values.valueGet(1).as<Symbol_O>();
 	    if ( status == kw::_sym_external || status == kw::_sym_internal )
 	    {
 		// do nothing
@@ -867,7 +888,7 @@ namespace core
 	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
 	{
 	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
-	    Bignum_sp nameKey = nameToKey(symbolToImport->_Name->c_str());
+	    Bignum_sp nameKey = symbolNameToKey(symbolToImport);
 	    Symbol_sp foundSymbol, status;
 	    {MULTIPLE_VALUES_CONTEXT();
 		Symbol_mv values = this->findSymbol(nameKey);

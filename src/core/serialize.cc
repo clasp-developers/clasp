@@ -49,16 +49,16 @@ namespace core
     void SNode_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<SNode_O>()
-	    .def("setKind",&SNode_O::setKind)
-	    .def("getKind",&SNode_O::getKind)
-	    .def("getVectorSNodes",&SNode_O::getVectorSNodes)
-	    .def("setVectorSNodes",&SNode_O::setVectorSNodesUnsafe)
-	    .def("setAttributes",&SNode_O::setAttributesUnsafe)
-	    .def("getAttributes",&SNode_O::getAttributes)
-	    .def("getUniqueId",&SNode_O::getUniqueId)
-	    .def("childWithUniqueId",&SNode_O::childWithUniqueId)
-	    .def("keys",&SNode_O::keys)
-	    .def("object",&SNode_O::object)
+	    .def("core:setKind",&SNode_O::setKind)
+	    .def("core:getKind",&SNode_O::getKind)
+	    .def("core:getVectorSNodes",&SNode_O::getVectorSNodes)
+	    .def("core:setVectorSNodes",&SNode_O::setVectorSNodesUnsafe)
+	    .def("core:setAttributes",&SNode_O::setAttributesUnsafe)
+	    .def("core:getAttributes",&SNode_O::getAttributes)
+	    .def("core:getUniqueId",&SNode_O::getUniqueId)
+	    .def("core:childWithUniqueId",&SNode_O::childWithUniqueId)
+	    .def("core:keys",&SNode_O::keys)
+	    .def("core:object",&SNode_O::object)
 	    ;
     }
     void SNode_O::exposePython(Lisp_sp lisp)
@@ -111,7 +111,7 @@ namespace core
 
     void BranchSNode_O::exposeCando(Lisp_sp lisp)
     {_G();
-	class_<BranchSNode_O>("make-branch-snode")
+	class_<BranchSNode_O>("core:make-branch-snode")
 	    ;
     }
     void BranchSNode_O::exposePython(Lisp_sp lisp)

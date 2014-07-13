@@ -54,9 +54,9 @@
 
 ;; Setup a few things for the EXT package
 (select-package :ext)
-(*make-special '*register-with-pde-hook*)
+(core:*make-special '*register-with-pde-hook*)
 (setq *register-with-pde-hook* ())
-(*make-special '*source-location*)
+(core:*make-special '*source-location*)
 (setq *source-location* nil)
 (export '*register-with-pde-hook*)
 (core::*fset 'register-with-pde
@@ -70,7 +70,7 @@
 			  ,output-form)
 		 ,output-form)))
       t)
-(*make-special '*invoke-debugger-hook*)
+(core:*make-special '*invoke-debugger-hook*)
 (setq *invoke-debugger-hook* nil)
 
 
@@ -790,7 +790,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
              (float (/ (- real-end real-start) internal-time-units-per-second))
              (float (/ (- run-end run-start) internal-time-units-per-second)))))
 
-(si::*make-special 'my-time)
+(core:*make-special 'my-time)
 (fset 'my-time
            #'(lambda (def env)
                (let ((form (cadr def)))

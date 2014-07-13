@@ -135,13 +135,13 @@ namespace core
     void Function_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Function_O>()
-	    .def("getLambdaListHandler",&Function_O::getLambdaListHandler)
-	    .def("macrop",&Function_O::macroP)
-	    .def("set-kind",&Function_O::set_kind)
-	    .def("functionKind",&Function_O::functionKind)
-	    .def("closedEnvironment",&Function_O::closedEnvironment)
+	    .def("core:getLambdaListHandler",&Function_O::getLambdaListHandler)
+	    .def("core:macrop",&Function_O::macroP)
+	    .def("core:setKind",&Function_O::set_kind)
+	    .def("core:functionKind",&Function_O::functionKind)
+	    .def("core:closedEnvironment",&Function_O::closedEnvironment)
 	    .def("functionName",&Function_O::getFunctionName)
-	    .def("functionFile",&Function_O::functionFile)
+	    .def("core:functionFile",&Function_O::functionFile)
 	    ;
 	ClDefun(functionLambdaExpression);
     }
@@ -704,7 +704,7 @@ namespace core
     void CompiledFunction_O::exposeCando(core::Lisp_sp lisp)
     {
 	core::class_<CompiledFunction_O>()
-	    .def("getBody",&CompiledFunction_O::getBody)
+	    .def("core:getBody",&CompiledFunction_O::getBody)
 	    ;
     }
     
