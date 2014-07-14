@@ -1460,7 +1460,7 @@ namespace core
 		    }
 		} else if ( expression.notnilp() )
 		{
-		    result = af_evalWithEnv(expression,environ);
+		    result = eval::af_topLevelEvalWithEnv(expression,environ);
                     gctools::Vec0<core::T_sp/*,gctools::RootedGCHolder*/> vresults;
                     vresults.resize(result.number_of_values());
                     if ( result.number_of_values() > 0 ) {

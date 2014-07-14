@@ -399,7 +399,7 @@ namespace core
 			     Cons_O::create(object),
 			     sin);
 	    }
-	    T_sp result = af_evalWithEnv(object,_Nil<Environment_O>());
+	    T_sp result = eval::af_topLevelEvalWithEnv(object,_Nil<Environment_O>());
 	    return(Values(result));
 	}
 	return( Values0<T_O>() );
