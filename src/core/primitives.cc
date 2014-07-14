@@ -459,12 +459,12 @@ namespace core
 #define ARGS_af_macroFunction "(symbol &optional env)"
 #define DECL_af_macroFunction ""
 #define DOCS_af_macroFunction "See CLHS: macroFunction"
-    T_mv af_macroFunction(Symbol_sp symbol, Environment_sp env)
+    T_sp af_macroFunction(Symbol_sp symbol, Environment_sp env)
     {_G();
 	Function_sp func = af_interpreter_lookup_macro(symbol,env);
-	if ( func.nilp() ) return(Values(_Nil<T_O>()));
-	if ( func->macroP() ) return(Values(func));
-	return(Values(_Nil<T_O>()));
+	if ( func.nilp() ) return _Nil<T_O>();
+	if ( func->macroP() ) return func;
+	return _Nil<T_O>();
     }
     
     
