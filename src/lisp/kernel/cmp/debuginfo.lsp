@@ -207,8 +207,10 @@
 	      (progn
 		(cmp-log "dbg-set-current-source-pos IGNORING\n")
 		nil)
-	      (let ((debugloc (llvm-sys:debug-loc-get line-number column *dbg-current-scope*)))
-		(llvm-sys:set-current-debug-location *irbuilder* debugloc)))))))
+            (let ((debugloc (llvm-sys:debug-loc-get line-number column *dbg-current-scope*)))
+              (llvm-sys:set-current-debug-location *irbuilder* debugloc))))
+        (values source-dir source-file line-number column)
+        )))
   )
 
     

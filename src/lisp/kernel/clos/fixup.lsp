@@ -137,18 +137,18 @@
     (declare (ignore a-o-k1))
     (multiple-value-bind (r2 opts2 rest2 key-flag2 keywords2 a-o-k2)
 	(si::process-lambda-list l2 'FUNCTION)
-	(and (= (length r2) (length r1))
-	     (= (length opts1) (length opts2))
-	     (eq (and (null rest1) (null key-flag1))
-		 (and (null rest2) (null key-flag2)))
-	     ;; All keywords mentioned in the genericf function
-	     ;; must be accepted by the method.
-	     (or (null key-flag1)
-		 (null key-flag2)
-		 a-o-k2
-		 (null (set-difference (all-keywords keywords1)
-				       (all-keywords keywords2))))
-	     t))))
+      (and (= (length r2) (length r1))
+           (= (length opts1) (length opts2))
+           (eq (and (null rest1) (null key-flag1))
+               (and (null rest2) (null key-flag2)))
+           ;; All keywords mentioned in the genericf function
+           ;; must be accepted by the method.
+           (or (null key-flag1)
+               (null key-flag2)
+               a-o-k2
+               (null (set-difference (all-keywords keywords1)
+                                     (all-keywords keywords2))))
+           t))))
 
 (defun add-method (gf method)
   ;; during boot it's a structure accessor

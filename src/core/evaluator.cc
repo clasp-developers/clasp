@@ -47,9 +47,6 @@ namespace core
         return accumulated;
     }
 
-
-    
-    
 #define ARGS_af_evalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
 #define DECL_af_evalWithEnv ""
 #define DOCS_af_evalWithEnv "evalWithEnv"
@@ -57,14 +54,6 @@ namespace core
     {_G();
 	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
 	T_mv result;
-	if (stepping)
-	{
-	    IMPLEMENT_MEF(BF("Implement stepping"));
-	}
-	if ( !execute )
-	{
-	    IMPLEMENT_MEF(BF("Implement !execute"));
-	}
 	// If we want to compile the form then do this
 	stackFrame.setActivationFrame(Environment_O::nilCheck_getActivationFrame(env));
         Cons_sp topLevelForms = separateTopLevelForms(_Nil<Cons_O>(),form)->nreverse().as<Cons_O>();
@@ -79,8 +68,6 @@ namespace core
             catch (Condition& err)
             {
                 _lisp->print(BF("%s:%d - A Condition was caught in readEvalPrint - _lisp shouldn't happen - exiting") % __FILE__ % __LINE__ );
-//	    _lisp->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
-//	    result = Values(_Nil<T_O>());
                 exit(1);
             }
             catch (HardError& err )
@@ -1828,7 +1815,72 @@ namespace core
 	}
 
 
+        T_mv t1Evaluate(T_sp exp, Environment_sp environment);
 
+	T_mv t1Progn(T_sp args, Environment_sp environment)
+	{_G();
+            T_mv result(_Nil<T_O>());
+	    Environment_sp localEnv(environment);
+            for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) ) {
+                result = t1Evaluate(oCar(cur),localEnv);
+            }
+            return result;
+	}
+
+	T_mv t1EvalWhen(T_sp args, Environment_sp environment)
+	{_G();
+	    Cons_sp situations = oCar(args).as_or_nil<Cons_O>();
+	    Cons_sp body = cCdr(args);
+	    bool execute = af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue();
+	    if ( execute ) return t1Progn(body,environment);
+	    return(Values(_Nil<T_O>()));
+	}
+
+	T_mv t1Locally(Cons_sp args, Environment_sp environment)
+	{_G();
+            IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
+        }
+
+	T_mv t1Macrolet(Cons_sp args, Environment_sp environment)
+	{_G();
+            IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
+        }
+
+	T_mv t1SymbolMacrolet(Cons_sp args, Environment_sp environment)
+	{_G();
+            IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
+        }
+
+        T_mv t1Evaluate(T_sp exp, Environment_sp environment)
+        {
+            if ( af_consP(exp) ) {
+                T_sp head = oCar(exp);
+                if ( head == cl::_sym_progn ) {
+                    return t1Progn(oCdr(exp),environment);
+                } else if ( head == cl::_sym_eval_when ) {
+                    return t1EvalWhen(oCdr(exp),environment);
+                } else if ( head == cl::_sym_locally ) {
+                    return t1Locally(oCdr(exp),environment);
+                } else if ( head == cl::_sym_macrolet ) {
+                    return t1Macrolet(oCdr(exp),environment);
+                } else if ( head == cl::_sym_symbol_macrolet ) {
+                    return t1SymbolMacrolet(oCdr(exp),environment);
+                }
+            }
+            return eval::funcall(_sym_evalWithEnv,exp,environment);
+        }
+
+
+#define ARGS_af_topLevelEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
+#define DECL_af_topLevelEvalWithEnv ""
+#define DOCS_af_topLevelEvalWithEnv "topLevelEvalWithEnv"
+    T_mv af_topLevelEvalWithEnv(T_sp form, Environment_sp env, bool stepping, bool compiler_env_p, bool execute)
+    {_G();
+        return t1Evaluate(form,env);
+    }
+
+
+    
 
 	T_mv evaluate(T_sp exp, Environment_sp environment)
 	{_G();
@@ -2104,8 +2156,10 @@ namespace core
 	    Defun(extractDeclaresDocstringCode);
 	    SYMBOL_SC_(CorePkg,evaluateVerbosity);
 	    Defun(evaluateVerbosity);
-	    SYMBOL_SC_(CorePkg,evalWithEnv);
+	    SYMBOL_EXPORT_SC_(CorePkg,evalWithEnv);
 	    Defun(evalWithEnv);
+	    SYMBOL_EXPORT_SC_(CorePkg,topLevelEvalWithEnv);
+	    Defun(topLevelEvalWithEnv);
 	    SYMBOL_SC_(CorePkg,evaluateDepth);
 	    Defun(evaluateDepth);	
 	    SYMBOL_SC_(CorePkg,classifyLetVariablesAndDeclares);

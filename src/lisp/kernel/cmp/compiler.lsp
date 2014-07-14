@@ -577,7 +577,9 @@ env is the parent environment of the (result-af) value frame"
 	(irc-set-insert-point thenbb)
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
-	(let ((thenv (codegen result #|REALLY? put result in result?|# ithen env)))
+	(let ((thenv (progn
+                       (dbg-set-current-source-pos env ithen)
+                       (codegen result #|REALLY? put result in result?|# ithen env))))
 	  ;;	  (unless thenv (break "thenv is nil") (return-from codegen-if nil))  ;; REALLY? return?????
 	  (irc-branch-if-no-terminator-inst mergebb)
 	  ;; Codegen of 'Then' can change the current block, update thenbb for the PHI.
@@ -586,7 +588,9 @@ env is the parent environment of the (result-af) value frame"
 	  ;; Emit else block
 	  (irc-begin-block elsebb)
 	  ;; REALLY? Again- do I use result here?
-	  (let ((elsev (codegen result ielse env)))
+	  (let ((elsev (progn
+                         (dbg-set-current-source-pos env ielse)
+                         (codegen result ielse env))))
 	    ;;	    (unless elsev (break "elsev is nil") (return-from codegen-if nil)) ;; REALLY? return???
 	    (irc-branch-if-no-terminator-inst mergebb)
 	    ;;Codegen of 'else' can change the current block, update elsebb for the phi
@@ -1032,17 +1036,17 @@ jump to blocks within this tagbody."
   ;;  (break "codegen-application")
   (assert-result-isa-llvm-value result)
   (dbg-set-current-source-pos env form)
-  (if (macro-function (car form) env)
-      (progn
-	(multiple-value-bind (expansion expanded-p)
-	    (compile-macroexpand form env)
-	  (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
-	  (irc-low-level-trace)
-	  (codegen result expansion env)))
-      ;; It's a regular function call
-      (progn
-	(irc-low-level-trace)
-	(codegen-call result form env))))
+  (cond
+   ((and (symbolp (car form)) (macro-function (car form) env))
+    (multiple-value-bind (expansion expanded-p)
+        (compile-macroexpand form env)
+      (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
+      (irc-low-level-trace)
+      (codegen result expansion env)))
+   (t
+    ;; It's a regular function call
+    (irc-low-level-trace)
+    (codegen-call result form env))))
 
 
 
@@ -1072,32 +1076,32 @@ jump to blocks within this tagbody."
 (defun codegen (result form env)
   (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
-  (multiple-value-bind (source-file lineno column)
-      (walk-to-find-source-info form)
+  (multiple-value-bind (source-directory source-filename lineno column)
+      (dbg-set-current-source-pos env form)
     (let* ((*current-form* form)
-	   (*current-env* env)
-	   (*current-line-number* (if lineno lineno 0))
-	   (*current-column* (if column column 0)))
+           (*current-env* env)
+           (*current-line-number* (if lineno lineno 0))
+           (*current-column* (if column column 0)))
       (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
       (cmp-log "codegen evaluate-depth[%d]  %s\n" (evaluate-depth) form)
       ;; 
       ;; If a *code-walker* is defined then invoke the code-walker
       ;; with the current form and environment 
       (when *code-walker*
-	(setq form (funcall *code-walker* form env)))
+        (setq form (funcall *code-walker* form env)))
       (if (atom form)
-	  (codegen-atom result form env)
-	  (let ((head (car form))
-		(rest (cdr form)))
-	    (cmp-log "About to codegen special-operator or application for: %s\n" form)
-	    ;;	(trace-linenumber-column (walk-to-find-parse-pos form) env)
-	    (if (and head (symbolp head) (augmented-special-operator-p head))
-		(progn
-		  (cmp-log "About to codegen-special-operator: %s %s\n" head rest)
-		  (codegen-special-operator result head rest env))
-		(progn
-		  (cmp-log "About to codegen-application: %s\n" form)
-		  (codegen-application result form env))))))))
+          (codegen-atom result form env)
+        (let ((head (car form))
+              (rest (cdr form)))
+          (cmp-log "About to codegen special-operator or application for: %s\n" form)
+          ;;	(trace-linenumber-column (walk-to-find-parse-pos form) env)
+          (if (and head (symbolp head) (augmented-special-operator-p head))
+              (progn
+                (cmp-log "About to codegen-special-operator: %s %s\n" head rest)
+                (codegen-special-operator result head rest env))
+            (progn
+              (cmp-log "About to codegen-application: %s\n" form)
+              (codegen-application result form env))))))))
 
 
 

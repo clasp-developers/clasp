@@ -484,7 +484,7 @@ void bind_aux
     }
 
 
-    bool switch_add_argument_mode(T_sp context, Symbol_sp symbol, ArgumentMode& mode, Lisp_sp lisp )
+    bool switch_add_argument_mode(T_sp context, Symbol_sp symbol, ArgumentMode& mode, T_sp& key_flag )
     {_G();
 	LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % symbol->__repr__() % symbol.get() );
 	bool isAmpSymbol = ( symbol == _sym_DOT || symbol->amp_symbol_p() );
@@ -553,6 +553,7 @@ void bind_aux
 	    switch (mode)
 	    {
 	    case keyword:
+                key_flag = _lisp->_true();
 	    case allowOtherKeys:
 		if ( context == cl::_sym_define_modify_macro ) goto ILLEGAL_MODE;
 		break;
@@ -659,6 +660,7 @@ void bind_aux
 	reqs.clear();
 	optionals.clear();
 	keys.clear();
+        key_flag = _Nil<T_O>();
 	auxs.clear();
 	allow_other_keys = _lisp->_false();
 	if ( original_lambda_list.nilp() ) return false;
@@ -675,7 +677,7 @@ void bind_aux
 	    if ( af_symbolp(oarg) )
 	    {
 		Symbol_sp sym = oarg.as<Symbol_O>();
-		if ( switch_add_argument_mode(context,sym,add_argument_mode,_lisp) )
+		if ( switch_add_argument_mode(context,sym,add_argument_mode,key_flag) )
 		{
 		    if ( add_argument_mode == allowOtherKeys )
 		    {
@@ -843,7 +845,6 @@ void bind_aux
 	    break;
 	}
     DONE:
-	key_flag = _lisp->_boolean(keys.size()>0);
 	return true;
     }
 
@@ -892,13 +893,11 @@ void bind_aux
 	    }
 	}
 	ql::list lkeys(_lisp);
-	bool keyFlag = false;
 	{ // optional arguments   keys = (num key1 var1 init1 flag1 ...)
 	    lkeys << Fixnum_O::create((int)keys.size());
 	    for ( auto& it : keys )
 	    {
 		lkeys << it._Keyword << it._ArgTarget << it._Default << it._Sensor._ArgTarget;
-		keyFlag = true;
 	    }
 	}
 	ql::list lauxs(_lisp);
@@ -914,7 +913,7 @@ void bind_aux
 	return(Values(lreqs.cons(),
 		      lopts.cons(),
 		      restarg._ArgTarget,
-		      _lisp->_boolean(keyFlag),
+		      key_flag,
 		      lkeys.cons(),
 		      allow_other_keys,
 		      lauxs.cons()));
