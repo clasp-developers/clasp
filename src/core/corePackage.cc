@@ -65,6 +65,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ExtPkg,specialVar);
     SYMBOL_EXPORT_SC_(ExtPkg,lexicalVar);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugLoadTimeValuesSTAR);
+    SYMBOL_EXPORT_SC_(CorePkg,STARdebugEvalSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugInterpretedFunctionsSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg,FullDebug);
 SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
@@ -814,6 +815,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 	_sym_STARdebugMonitorSTAR->defparameter(_Nil<T_O>());
         _sym_STARwatchDynamicBindingStackSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugLoadTimeValuesSTAR->defparameter(_Nil<T_O>());
+        _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
 	Cons_sp hooks = Cons_O::createList(
 	    Cons_O::create(Str_O::create("l"),_sym_loadSource),
