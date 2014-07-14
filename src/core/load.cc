@@ -52,7 +52,7 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	    _lisp->invocationHistoryStack().setExpressionForTop(x);
 	    _lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
 	    if (x.number_of_values() > 0 ) {
-		af_evalWithEnv(x,_Nil<Environment_O>());
+                eval::af_topLevelEvalWithEnv(x,_Nil<Environment_O>());
 		if ( print ) {
 		    _lisp->print(BF(";; -- read- %s\n") % _rep_(x));
 		};

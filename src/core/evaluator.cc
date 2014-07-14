@@ -1836,20 +1836,91 @@ namespace core
 	    return(Values(_Nil<T_O>()));
 	}
 
-	T_mv t1Locally(Cons_sp args, Environment_sp environment)
+	T_mv t1Locally(Cons_sp args, Environment_sp env)
 	{_G();
-            IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
-        }
+	    Cons_sp declares;
+	    Str_sp docstring;
+	    Cons_sp code;
+	    Cons_sp specials;
+	    extract_declares_docstring_code_specials(args,declares,false,docstring,code,specials);
+	    ValueEnvironment_sp le = ValueEnvironment_O::createForLocallySpecialEntries(specials,env);
+	    // ignore everything else for now
+	    return eval::t1Progn(code,le);
+	}
 
-	T_mv t1Macrolet(Cons_sp args, Environment_sp environment)
+	T_mv t1Macrolet(Cons_sp args, Environment_sp env)
 	{_G();
-            IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
-        }
+	    // TODO: handle trace
+	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
+	    MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
+	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
+	    Cons_sp cur = macros;
+	    LOG(BF("macros part=%s") % macros->__repr__() );
+	    Str_sp docString = _Nil<Str_O>();
+	    while ( cur.notnilp() )
+	    {
+		Cons_sp oneDef = oCar(cur).as_or_nil<Cons_O>();
+		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
+		T_sp olambdaList = oCadr(oneDef);
+		Cons_sp inner_body = cCdr(cCdr(oneDef)).as_or_nil<Cons_O>();
+		Cons_sp outer_func_cons = eval::funcall(comp::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
+		Cons_sp outer_ll = oCaddr(outer_func_cons).as_or_nil<Cons_O>();
+		Cons_sp outer_body = cCdddr(outer_func_cons);
+		Cons_sp declares;
+		Str_sp docstring;
+		Cons_sp code;
+		parse_lambda_body(outer_body,declares,docstring,code,_lisp);
+		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
+		Function_sp outer_func = Interpreted_O::create(name,outer_llh,
+							       declares,docstring,
+							       code,newEnv,
+							       kw::_sym_macro );
+		LOG(BF("func = %s") % outer_func_cons->__repr__() );
+		newEnv->addMacro(name,outer_func);
+//		newEnv->bind_function(name,outer_func);
+		cur = cCdr(cur);
+	    }
+	    Cons_sp declares;
+	    Cons_sp code;
+	    Str_sp docstring;
+	    Cons_sp specials;
+	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
+	    return t1Progn(code,newEnv);
+	}
 
-	T_mv t1SymbolMacrolet(Cons_sp args, Environment_sp environment)
+	T_mv t1SymbolMacrolet(Cons_sp args, Environment_sp env)
 	{_G();
-            IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
-        }
+	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
+	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
+	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
+	    Cons_sp cur = macros;
+	    LOG(BF("macros part=%s") % macros->__repr__() );
+	    Str_sp docString = _Nil<Str_O>();
+	    SYMBOL_SC_(CorePkg,whole);
+	    SYMBOL_SC_(CorePkg,env);
+	    Cons_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
+	    SYMBOL_EXPORT_SC_(ClPkg,ignore);
+	    Cons_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
+	    while ( cur.notnilp() )
+	    {
+		Cons_sp oneDef = oCar(cur).as_or_nil<Cons_O>();
+		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
+		Cons_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<Cons_O>());
+		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
+									     oCadr(declares).as_or_nil<Cons_O>(),
+									     cl::_sym_function);
+		Function_sp outer_func = Interpreted_O::create(_Nil<T_O>(),
+							       outer_llh,
+							       declares,
+							       _Nil<Str_O>(),
+							       expansion,
+							       newEnv,
+							       kw::_sym_macro );
+		newEnv->addSymbolMacro(name,outer_func);
+		cur = cCdr(cur);
+	    }
+	    return t1Locally(body,newEnv);
+	}
 
         T_mv t1Evaluate(T_sp exp, Environment_sp environment)
         {
@@ -1870,11 +1941,11 @@ namespace core
             return eval::funcall(_sym_evalWithEnv,exp,environment);
         }
 
-
+    
 #define ARGS_af_topLevelEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
 #define DECL_af_topLevelEvalWithEnv ""
 #define DOCS_af_topLevelEvalWithEnv "topLevelEvalWithEnv"
-    T_mv af_topLevelEvalWithEnv(T_sp form, Environment_sp env, bool stepping, bool compiler_env_p, bool execute)
+    T_mv af_topLevelEvalWithEnv(T_sp form, Environment_sp env, bool stepping,       bool compiler_env_p,      bool execute)
     {_G();
         return t1Evaluate(form,env);
     }

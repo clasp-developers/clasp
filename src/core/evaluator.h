@@ -22,19 +22,14 @@ namespace core
     Function_sp af_interpreter_lookup_symbol_macro(Symbol_sp sym, Environment_sp env);
 
 
-    /*! Evaluate within env.
-      See ecl/src/c/compiler.d:eval-with-env */
-    T_mv af_evalWithEnv(T_sp form, Environment_sp env, bool stepping=false, bool compiler_env_p=true, bool execute=true);
-
 
     namespace eval
     {
 
 
-
-
-
-
+        /*! Evaluate within env.
+          See ecl/src/c/compiler.d:eval-with-env */
+        T_mv af_topLevelEvalWithEnv(T_sp form, Environment_sp env, bool stepping=false, bool compiler_env_p=true, bool execute=true);
 
 	extern Cons_sp evaluateList(Cons_sp args, Environment_sp environment);
 	extern T_mv evaluateListReturnLast(Cons_sp args, Environment_sp environment);
