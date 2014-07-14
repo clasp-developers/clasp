@@ -1832,6 +1832,7 @@ namespace core
 	    Cons_sp situations = oCar(args).as_or_nil<Cons_O>();
 	    Cons_sp body = cCdr(args);
 	    bool execute = af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue();
+            execute |= af_member(cl::_sym_eval,situations,_Nil<T_O>(),_Nil<T_O>(), _Nil<T_O>()).isTrue();
 	    if ( execute ) return t1Progn(body,environment);
 	    return(Values(_Nil<T_O>()));
 	}
@@ -1871,6 +1872,7 @@ namespace core
 		Cons_sp code;
 		parse_lambda_body(outer_body,declares,docstring,code,_lisp);
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
+                // TODO: Change these to compiled functions when the compiler is available
 		Function_sp outer_func = Interpreted_O::create(name,outer_llh,
 							       declares,docstring,
 							       code,newEnv,
@@ -1909,6 +1911,7 @@ namespace core
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
 									     oCadr(declares).as_or_nil<Cons_O>(),
 									     cl::_sym_function);
+                // TODO: Change these to compiled functions when the compiler is available
 		Function_sp outer_func = Interpreted_O::create(_Nil<T_O>(),
 							       outer_llh,
 							       declares,
@@ -1925,8 +1928,17 @@ namespace core
         T_mv t1Evaluate(T_sp exp, Environment_sp environment)
         {
             if ( af_consP(exp) ) {
+                if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                    printf("%s:%d Checking if top-level form: %s\n", __FILE__, __LINE__, _rep_(exp).c_str() );
+                }
                 T_sp head = oCar(exp);
-                if ( head == cl::_sym_progn ) {
+                // TODO: Deal with Compiler macros here
+                Function_sp macroFunction = _Nil<Function_O>();
+                if ( af_symbolp(head) ) macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment).as<Function_O>();
+                if ( macroFunction.notnilp() ) {
+                    T_sp expanded = eval::funcall(macroFunction,exp,environment);
+                    return t1Evaluate(expanded,environment);
+                } else if ( head == cl::_sym_progn ) {
                     return t1Progn(oCdr(exp),environment);
                 } else if ( head == cl::_sym_eval_when ) {
                     return t1EvalWhen(oCdr(exp),environment);
