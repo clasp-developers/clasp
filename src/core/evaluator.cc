@@ -1938,6 +1938,9 @@ namespace core
                     return t1SymbolMacrolet(oCdr(exp),environment);
                 }
             }
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d About to evalWithEnv: %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+            }
             return eval::funcall(_sym_evalWithEnv,exp,environment);
         }
 
