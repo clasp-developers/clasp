@@ -371,6 +371,7 @@ will put a value into target-ref."
 		 (possible-kw-block (irc-basic-block-create "possible-kw-block"))
 		 (advance-arg-idx-block (irc-basic-block-create "advance-arg-idx-block"))
 		 (bad-kw-block (irc-basic-block-create "bad-kw-block"))
+                 (use-kw-block (irc-basic-block-create "use-kw-block"))
 		 (good-kw-block (irc-basic-block-create "good-kw-block"))
 		 )
 	    (irc-cond-br eq-aok-ref-and-arg-ref aok-block possible-kw-block)
@@ -395,26 +396,32 @@ will put a value into target-ref."
 		(irc-branch-to-and-begin-block (irc-basic-block-create (bformat nil "kw-%s-test" key)))
 		(irc-low-level-trace)
 		(let* ((kw-ref (compile-reference-to-literal key old-env))
-		       (eq-kw-and-arg (irc-trunc (irc-intrinsic "matchKeywordOnce" kw-ref arg-ref (elt sawkeys idx)) +i1+))
-		       (match-kw-block (irc-basic-block-create "match-kw-block")))
-		  (irc-cond-br eq-kw-and-arg match-kw-block next-kw-test-block)
-		  (irc-begin-block match-kw-block)
-		  (let* ((arg-idx+1 (irc-add phi-arg-idx (jit-constant-i32 1)))
-			 (kw-arg-ref (irc-gep va-list (list arg-idx+1))))
-		    (with-target-reference-do (target-ref target new-env) ; run-time binding
-		      (irc-intrinsic "copyTsp" target-ref kw-arg-ref))
-		    ;; Set the boolean flag to indicate that we saw this key
-		    (irc-store (jit-constant-i8 1) (elt sawkeys idx))
-		    (when flag
-		      (with-target-reference-do (flag-ref flag new-env)
-			(irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
-		    #|| ;; The old way was to write a value only if the target was UNBOUND - that was wrong
-		    (with-target-reference-if-runtime-unbound-do (flag-ref flag new-env) ; run-time binding ;
-		    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
+		       (test-kw-and-arg (irc-intrinsic "matchKeywordOnce" kw-ref arg-ref (elt sawkeys idx)))
+                       (no-kw-match (irc-icmp-eq test-kw-and-arg (jit-constant-i32 0)))
+		       (matched-kw-block (irc-basic-block-create "matched-kw-block"))
+		       (not-seen-before-kw-block (irc-basic-block-create "not-seen-before-kw-block"))
+                       )
+		  (irc-cond-br no-kw-match next-kw-test-block matched-kw-block)
+		  (irc-begin-block matched-kw-block)
+		  (let ((arg-idx+1 (irc-add phi-arg-idx (jit-constant-i32 1)))
+                        (kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-i32 2))))
+                    (irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
+                    (irc-begin-block not-seen-before-kw-block)
+                    (let ((kw-arg-ref (irc-gep va-list (list arg-idx+1))))
+                      (with-target-reference-do (target-ref target new-env) ; run-time binding
+                                                (irc-intrinsic "copyTsp" target-ref kw-arg-ref))
+                      ;; Set the boolean flag to indicate that we saw this key
+                      (irc-store (jit-constant-i8 1) (elt sawkeys idx))
+                      (when flag
+                        (with-target-reference-do (flag-ref flag new-env)
+                                                  (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
+                      #|| ;; The old way was to write a value only if the target was UNBOUND - that was wrong
+                      (with-target-reference-if-runtime-unbound-do (flag-ref flag new-env) ; run-time binding ; ; ;
+                      (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
 		  ||#
 		  (irc-br good-kw-block)
 		  (irc-begin-block next-kw-test-block)
-		  )))
+		  ))))
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
 	    (irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
 	    (let ((loop-bad-kw-idx (irc-intrinsic "kw_trackFirstUnexpectedKeyword"

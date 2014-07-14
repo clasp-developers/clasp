@@ -1899,10 +1899,9 @@ extern "C"
 
     extern int matchKeywordOnce(core::T_sp* xP, core::T_sp* yP, unsigned char* sawKeyAlreadyP)
     {
-	if (*sawKeyAlreadyP) return 0;
-//	ASSERT(xP!=NULL);
-//	ASSERT(yP!=NULL);
-	return ((*xP)==(*yP)) ? 1 : 0;
+        if ( (*xP)!=(*yP) ) return 0;
+        if (*sawKeyAlreadyP) return 2;
+        return 1;
     }
 
 

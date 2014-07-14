@@ -44,19 +44,26 @@
 
 
 
+(defun describe-form (form)
+  (case (car form)
+    (core:*fset (let* ((name (cadr (cadr form)))
+		       (is-macro (cadddr form))
+		       (header (if is-macro
+				   "defmacro"
+				   "defun")))
+		  (bformat t ";    %s %s\n" header name)))
+    (otherwise ()))) ;; describe more forms here
+
+
 
 (defun t1progn (form)
   "All forms in progn at top level are top level forms"
   (dolist (subform (cdr form))
     (t1expr subform)))
 
-
 (defun t1defparameter (form)
   "defparameter at the top level declares a variable in the global dynamic environment"
   (compile-top-level form))
-
-
-
 
 (defun t1eval-when (form)
   (let ((situations (cadr form))
@@ -75,19 +82,6 @@
       )
     ))
 
-
-(defun describe-form (form)
-  (case (car form)
-    (core:*fset (let* ((name (cadr (cadr form)))
-		       (is-macro (cadddr form))
-		       (header (if is-macro
-				   "defmacro"
-				   "defun")))
-		  (bformat t ";    %s %s\n" header name)))
-    (otherwise ()))) ;; describe more forms here
-
-
-
 (defun compile-top-level (form)
   (when *compile-print*
     (describe-form form))
@@ -95,12 +89,16 @@
     (with-ltv-function-codegen (result ltv-env)
       (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)))))
 
+(defun compiler-macro-function (sym) nil)
 
+(defun t1locally (form)
+  (error "Add support for t1locally"))
 
-(defun compiler-macro-function (sym)
-  nil)
+(defun t1macrolet (form)
+  (error "Add support for t1macrolet"))
 
-
+(defun t1symbol-macrolet (form)
+  (error "Add support for t1symbol-macrolet"))
 
 (defun t1expr (form)
   (cmp-log "t1expr-> %s\n" form)
@@ -108,6 +106,9 @@
     (cond
       ((eq head 'cl:eval-when) (t1eval-when form))
       ((eq head 'cl:progn) (t1progn form))
+      ((eq head 'cl:locally) (t1locally form))
+      ((eq head 'cl:macrolet) (t1macrolet form))
+      ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet form))
       ((eq head 'cl:defparameter)
        (eval `(defvar ,(cadr form)))
        (compile-top-level form))

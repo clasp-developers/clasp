@@ -602,7 +602,7 @@ Use special code 0 to cancel this operation.")
                                    expr)
                            )
                        values (multiple-value-list
-                               (eval-with-env - *break-env*))
+                               (top-level-eval-with-env - *break-env*))
                        /// // // / / values *** ** ** * * (car /))
                  (tpl-print values)))))
 	  (loop
@@ -1530,6 +1530,6 @@ value."
 				 (declare (ignore condition))
                                  (return-from safe-eval err-value))
                              #'invoke-debugger)))
-           (setf output (si::eval-with-env form env)
+           (setf output (si::top-level-eval-with-env form env)
                  ok t))
       (return-from safe-eval (if ok output err-value)))))
