@@ -1,3 +1,17 @@
+cl-asdf (2:3.1.3) unstable; urgency=low
+
+  Bug fix release:
+  * A bug in 3.1.2 caused errors when hot-upgrading from 3.1.2 ASDF.
+  * Fix bugs in ASDF component search caching. In some circumstances,
+    aggressive caching (particularly of negative results) interfered with
+    error-handling through restarts.  Also, in some cases use of caching
+    interfered with error-checking. Some of these issues are discussed in
+    ticket #1335323 on launchpad.
+  * Miscellaneous bug fixes and tweaks to UIOP.
+  * Documentation improvements.
+
+ -- Francois-Rene Rideau <fare@tunes.org>  Mon, 14 Jul 2014 16:54:49 -0400
+
 cl-asdf (2:3.1.2-2) unstable; urgency=low
 
   New release:

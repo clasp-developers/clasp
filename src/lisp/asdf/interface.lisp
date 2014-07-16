@@ -126,11 +126,13 @@
    #:package-inferred-system-missing-package-error
    #:operation-definition-warning #:operation-definition-error
 
-   #:try-recompiling
+   #:try-recompiling ; restarts
    #:retry
-   #:accept                     ; restarts
+   #:accept
    #:coerce-entry-to-directory
    #:remove-entry-from-registry
+   #:clear-configuration-and-retry
+
 
    #:*encoding-detection-hook*
    #:*encoding-external-format-hook*
@@ -166,5 +168,6 @@
    #:user-source-registry
    #:system-source-registry
    #:user-source-registry-directory
-   #:system-source-registry-directory))
+   #:system-source-registry-directory
+   ))
 

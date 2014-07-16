@@ -6,7 +6,8 @@
   (:export #:get-file-stamp #:compute-file-stamp #:register-file-stamp
            #:set-asdf-cache-entry #:unset-asdf-cache-entry #:consult-asdf-cache
            #:do-asdf-cache #:normalize-namestring
-           #:call-with-asdf-cache #:with-asdf-cache #:*asdf-cache*))
+           #:call-with-asdf-cache #:with-asdf-cache #:*asdf-cache*
+           #:clear-configuration-and-retry #:retry))
 (in-package :asdf/cache)
 
 ;;; This stamp cache is useful for:
@@ -42,8 +43,17 @@
     (let ((fun (if key #'(lambda () (consult-asdf-cache key thunk)) thunk)))
       (if (and *asdf-cache* (not override))
           (funcall fun)
-          (let ((*asdf-cache* (make-hash-table :test 'equal)))
-            (funcall fun)))))
+          (loop
+            (restart-case
+                (let ((*asdf-cache* (make-hash-table :test 'equal)))
+                  (return (funcall fun)))
+              (retry ()
+                :report (lambda (s)
+                          (format s (compatfmt "~@<Retry ASDF operation.~@:>"))))
+              (clear-configuration-and-retry ()
+                :report (lambda (s)
+                          (format s (compatfmt "~@<Retry ASDF operation after resetting the configuration.~@:>")))
+                (clear-configuration)))))))
 
   (defmacro with-asdf-cache ((&key key override) &body body)
     `(call-with-asdf-cache #'(lambda () ,@body) :override ,override :key ,key))

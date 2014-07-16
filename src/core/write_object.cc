@@ -6,6 +6,7 @@
 #include "core/object.h"
 #include "core/cons.h"
 #include "core/symbolTable.h"
+#include "core/str.h"
 #include "core/designators.h"
 #include "core/predicates.h"
 #include "core/lispStream.h"
@@ -92,7 +93,7 @@ namespace core
 
 
 
-    T_sp write_object(T_sp x, Stream_sp stream)
+    T_sp write_object(T_sp x, T_sp stream)
     {
 #if 1 //def ECL_CMU_FORMAT   // Disable this for now - until we get Grey streams working
 	if ( !_sym_STARenablePrintPrettySTAR.unboundp()
@@ -139,16 +140,16 @@ namespace core
 		/* Object is not referenced twice */
 	    } else if (code < 0) {
 		/* Object is referenced twice. We print its definition */
-		stream->writeChar('#');
-		Fixnum_sp fncode = Fixnum_O::create(-code);
-		fncode->__write__(stream);
-		stream->writeChar('=');
+                stringstream ss;
+                ss << '#' << -code << '=';
+                Str_sp out = Str_O::create(ss.str());
+                clasp_writeString(out,stream);
 	    } else {
 		/* Second reference to the object */
-		stream->writeChar('#');
-		Fixnum_sp fncode = Fixnum_O::create(code);
-		fncode->__write__(stream);
-		stream->writeChar('#');
+                stringstream ss;
+                ss << '#' << code << '#';
+                Str_sp out = Str_O::create(ss.str());
+                clasp_writeString(out,stream);
 		goto OUTPUT;
 	    }
 	}
@@ -167,7 +168,7 @@ namespace core
 #define DOCS_af_writeObject "writeObject"
     T_sp af_writeObject(T_sp obj, T_sp ostrm)
     {_G();
-        Stream_sp strm = coerce::outputStreamDesignator(ostrm);
+        T_sp strm = coerce::outputStreamDesignator(ostrm);
         return write_object(obj,strm);
     };
 

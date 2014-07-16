@@ -95,9 +95,9 @@ namespace core
 
 
     static Str_sp
-    clos_stream_write_string(T_sp strm, Str_sp str, Fixnum_sp start, T_sp end)
+    clos_stream_write_string(T_sp stream, Str_sp str, Fixnum_sp start, T_sp end)
     {
-        return eval::funcall(gray::_sym_stream_write_string,str,start,end).as<Str_O>();
+        return eval::funcall(gray::_sym_stream_write_string, stream, str,start,end).as<Str_O>();
     }
 
 
@@ -112,9 +112,9 @@ namespace core
     }
 
     static void
-    clos_stream_write_byte(T_sp c, T_sp strm)
+    clos_stream_write_byte(T_sp stream, T_sp c)
     {
-	eval::funcall(gray::_sym_stream_write_byte, strm, c);
+	eval::funcall(gray::_sym_stream_write_byte, stream, c);
     }
 
     static Character_sp
@@ -239,11 +239,13 @@ namespace core
 	return eval::funcall(gray::_sym_stream_element_type, strm);
     }
 
-#if 0
+#if 1
+    // There doesn't seem to be a grey stream function for file-length
     static T_sp
-    clos_stream_length(T_sp strm)
+    clos_stream_fileLength(T_sp strm)
     {
-	TYPE_ERROR(strm,cl::_sym_fileStream);
+        SYMBOL_EXPORT_SC_(ClPkg,fileLength);
+	TYPE_ERROR(strm,cl::_sym_fileLength);
     }
 #endif
 
@@ -291,23 +293,23 @@ namespace core
 */
 
 
-    Str_sp brcl_write_string(Str_sp str, T_sp strm, Fixnum_sp start, T_sp end)
+    Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart, Fixnum_sp end)
     {
 #ifdef CLOS_STREAMS
-	if ( strm.pointerp() && strm->instancep() )
+	if ( stream.pointerp() && stream->instancep() )
         {
-            return clos_stream_write_string(strm,str,start,end);
+            Fixnum_sp fnstart(istart);
+            return clos_stream_write_string(stream,str,fnstart,end);
         }
 #endif
-        Stream_sp ostrm = coerce::outputStreamDesignator(strm);
-	int istart = start->get();
+        Stream_sp ostream = coerce::outputStreamDesignator(stream).as<Stream_O>();
 	int iend = af_length(str);
 	if ( end.notnilp() )
 	{
 	    iend = MIN(iend,end.as<Fixnum_O>()->get());
 	}
         int ilen = iend-istart;
-        ostrm->writeBytes(&(str->get().c_str()[istart]),ilen);
+        ostream->writeBytes(&(str->get().c_str()[istart]),ilen);
         return str;
     }
 
@@ -369,7 +371,7 @@ namespace core
     }
 
 
-    void brcl_write_char(T_sp strm, Character_sp chr)
+    void clasp_writeChar(T_sp strm, Character_sp chr)
     {_G();
 #ifdef CLOS_STREAMS
 	if ( strm.pointerp() && strm->instancep() )
@@ -398,7 +400,7 @@ namespace core
 
 
 
-    bool brcl_fresh_line(T_sp strm)
+    bool clasp_freshLine(T_sp strm)
     {
 #ifdef CLOS_STREAMS
 	if ( strm.pointerp() && strm->instancep() )
@@ -421,7 +423,7 @@ namespace core
 
 
 
-    T_sp brcl_stream_element_type(T_sp strm)
+    T_sp clasp_streamElementType(T_sp strm)
     {_G();
 #ifdef CLOS_STREAMS
 	if ( strm.pointerp() && strm->instancep() )
@@ -514,7 +516,7 @@ namespace core
 	return ostrm->finishOutput();
     };
 
-    void brcl_force_output(T_sp strm)
+    void clasp_forceOutput(T_sp strm)
     {_G();
 #ifdef CLOS_STREAMS
 	if ( strm.pointerp() && strm->instancep() )
@@ -522,8 +524,21 @@ namespace core
 	    return clos_stream_force_output(strm);
 	}
 #endif
-	Stream_sp ostrm = coerce::outputStreamDesignator(strm);
+	Stream_sp ostrm = coerce::outputStreamDesignator(strm).as<Stream_O>();
 	return ostrm->forceOutput();
+    };
+
+
+    Integer_sp clasp_fileLength(T_sp strm)
+    {
+#ifdef CLOS_STREAMS
+	if ( strm.pointerp() && strm->instancep() )
+	{
+	    return clos_stream_fileLength(strm);
+	}
+#endif
+        Stream_sp ostrm = strm.as<Stream_O>();
+	return ostrm->fileLength();
     };
 
 
@@ -691,7 +706,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 #define DOCS_af_writeChar "writeChar"
     Character_sp af_writeChar(Character_sp chr, T_sp outputStream)
     {_G();
-        brcl_write_char(outputStream, chr);
+        clasp_writeChar(outputStream, chr);
         return chr;
     };
 
@@ -889,7 +904,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 #define DOCS_af_force_output "force_output"
     void af_force_output(T_sp ostrm)
     {_G();
-	brcl_force_output(ostrm);
+	clasp_forceOutput(ostrm);
     };
 
 
@@ -910,19 +925,19 @@ T_sp brcl_close(T_sp strm, bool abort)
 #define ARGS_af_writeString "(string &optional output-stream &key (start 0) end)"
 #define DECL_af_writeString ""
 #define DOCS_af_writeString "writeString"
-    String_sp af_writeString(Str_sp str, T_sp strm, Fixnum_sp start, T_sp end)
+    Str_sp af_writeString(Str_sp str, T_sp stream, int start, Fixnum_sp end)
     {_G();
-        return brcl_write_string(str,strm,start,end);
+        return clasp_writeString(str,stream,start,end);
     };
 
 
 #define ARGS_af_writeLine "(string &optional output-stream &key (start 0) end)"
 #define DECL_af_writeLine ""
 #define DOCS_af_writeLine "writeLine"
-    String_sp af_writeLine(Str_sp str, T_sp strm, Fixnum_sp start, T_sp end)
+    String_sp af_writeLine(Str_sp str, T_sp stream, Fixnum_sp start, T_sp end)
     {_G();
-        brcl_write_string(str,strm,start,end);
-        brcl_terpri(strm);
+        clasp_writeString(str,stream,start->get(),end);
+        brcl_terpri(stream);
         return str;
     };
 
@@ -945,7 +960,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 #define DOCS_af_freshLine "freshLine"
     bool af_freshLine(T_sp outputStreamDesig)
     {_G();
-        return brcl_fresh_line(outputStreamDesig);
+        return clasp_freshLine(outputStreamDesig);
     };
 
 
@@ -1061,6 +1076,18 @@ T_sp brcl_close(T_sp strm, bool abort)
 
 
 
+    bool Stream_O::freshLine()
+    {
+        if ( this->outputStreamP() ) {
+            if ( !this->atStartOfLine() )
+            {
+                this->writeln("");
+                return true;
+            }
+            return false;
+        }
+        SIMPLE_ERROR(BF("You cannot call freshline on an input stream"));
+    }
 
 
 
@@ -3146,6 +3173,17 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 // ------------------------------------------------------------
 
 
+
+    
+    
+#define ARGS_cl_makeBroadcastStream "(&rest streams)"
+#define DECL_cl_makeBroadcastStream ""
+#define DOCS_cl_makeBroadcastStream "makeBroadcastStream"
+    BroadcastStream_sp cl_makeBroadcastStream(Cons_sp streams)
+    {_G();
+        return BroadcastStream_O::create(streams);
+    };
+
     
 
     EXPOSE_CLASS(core,BroadcastStream_O);
@@ -3154,6 +3192,8 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     {
 	core::class_<BroadcastStream_O>()
 	    ;
+        SYMBOL_EXPORT_SC_(ClPkg,makeBroadcastStream);
+        ClDefun(makeBroadcastStream);
     }
     
     void BroadcastStream_O::exposePython(core::Lisp_sp lisp)
@@ -3164,6 +3204,49 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 #endif
     }
 
+
+
+    BroadcastStream_sp BroadcastStream_O::create(Cons_sp streams)
+    {
+        GC_ALLOCATE(BroadcastStream_O,fout );
+        fout->_Streams = streams;
+        return fout;
+    }
+
+    T_sp BroadcastStream_O::streamElementType() const {
+        T_sp result = _Nil<T_O>();
+        for ( Cons_sp cur=this->_Streams; cur.notnilp(); cur=cCdr(cur) ) {
+            result = clasp_streamElementType(oCar(cur));
+        }
+        return result;
+    }
+
+    bool BroadcastStream_O::freshLine()
+    {
+        bool result = false;
+        for ( Cons_sp cur=this->_Streams; cur.notnilp(); cur=cCdr(cur) ) {
+            result = clasp_freshLine(oCar(cur));
+        }
+        return result;
+    }
+
+    Integer_sp BroadcastStream_O::fileLength()
+    {
+        Integer_sp result = _Nil<Integer_O>();
+        for ( Cons_sp cur=this->_Streams; cur.notnilp(); cur=cCdr(cur) ) {
+            result = clasp_fileLength(oCar(cur));
+        }
+        return result;
+    }
+
+
+    void BroadcastStream_O::writeChar(brclChar c) {
+        for ( Cons_sp cur=this->_Streams; cur.notnilp(); cur=cCdr(cur) ) {
+            Character_sp cc = Character_O::create(c);
+            clasp_writeChar(oCar(cur),cc);
+        }
+    }
+        
 
 
 

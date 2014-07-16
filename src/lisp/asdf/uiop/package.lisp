@@ -317,7 +317,7 @@ or when loading the package is optional."
                        (imported)
                        (t (push name intern)))))))
         (labels ((sort-names (names)
-                   (sort names #'string<))
+                   (sort (copy-list names) #'string<))
                  (table-keys (table)
                    (loop :for k :being :the :hash-keys :of table :collect k))
                  (when-relevant (key value)

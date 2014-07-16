@@ -142,6 +142,7 @@ namespace core
 	/*! Low level listen function, returns the number of characters available to read */
 	virtual int listen() {SUBIMP();};
 
+        virtual Integer_sp fileLength() { SUBIMP(); };
 	/*! Clear-input */
 	virtual void clearInput();
 
@@ -173,6 +174,8 @@ namespace core
 	virtual Fixnum_sp writeVector(Vector_sp vec,Fixnum_sp start, Fixnum_sp end);
 
 	virtual uint outputColumn() const {SUBIMP();};
+
+        virtual bool freshLine();
 
 	/*! This is forceOutput */
 	virtual void flush() {SUBIMP();};
@@ -1053,6 +1056,7 @@ TRANSLATE(core::TwoWayStream_O);
 
 namespace core
 {
+    FORWARD(BroadcastStream);
     class BroadcastStream_O : public AnsiStream_O
     {
 	LISP_BASE1(AnsiStream_O);
@@ -1063,9 +1067,17 @@ namespace core
 	DEFAULT_CTOR_DTOR(BroadcastStream_O);
 	
     private: // instance variables here
-	
-	
+        Cons_sp         _Streams;
     public: // Functions here
+        static BroadcastStream_sp create(Cons_sp streams);
+
+        T_sp streamElementType() const;
+        bool freshLine();
+        Integer_sp fileLength();
+
+	virtual void writeChar(brclChar c);
+
+        
     }; // BroadcastStream class
     
 }; // core namespace
@@ -1131,6 +1143,8 @@ TRANSLATE(core::EchoStream_O);
 
 namespace core {
 
+    Str_sp af_writeString(Str_sp str, T_sp stream, int start, Fixnum_sp end);
+
     Sequence_sp af_writeSequence(Sequence_sp seq, Stream_sp stream, Fixnum_sp start, Fixnum_sp end);
 
     Stream_sp brcl_makeStreamFromFD(const string& name, int fd,
@@ -1148,6 +1162,9 @@ namespace core {
 
 
     bool cl_streamp(T_sp strm);
+
+    Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart=0, Fixnum_sp end=_Nil<Fixnum_O>());
+    void clasp_forceOutput(T_sp stream);
 
 };
 

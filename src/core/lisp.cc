@@ -463,6 +463,9 @@ namespace core
 	    initialize_documentation_primitives(_lisp);
 	    initialize_compiler_primitives(_lisp);
 	    initialize_backquote(_lisp);
+#ifdef DEBUG_CL_SYMBOLS
+        initializeAllClSymbolsFunctions();
+#endif            
 	    initialize_predicates();
 	    initialize_bformat(_lisp);
 	    initialize_sysprop();

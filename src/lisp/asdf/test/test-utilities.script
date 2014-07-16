@@ -160,6 +160,8 @@
     asdf/backward-interface:on-warnings
     asdf/find-system:contrib-sysdef-search
     asdf/find-system:sysdef-find-asdf
+    ;; restart
+    asdf/cache:clear-configuration-and-retry
     ))
 
 (defun defined-symbol-p (symbol)

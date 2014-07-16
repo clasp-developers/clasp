@@ -177,16 +177,16 @@ the corresponding VAR.  Returns NIL."
 ;; TODO: Rewrite this in C++ when you get the chance - a lot of stuff depends on it
 ;;  "Concatenate LISTS by changing them."
 
-(defun nconc (&rest lists)
-  (setq lists (do ((p lists (cdr p)))
-		  ((or (car p) (null p)) p)))
-  (do* ((top (car lists))
-	(splice top)
-	(here (cdr lists) (cdr here)))
-      ((null here) top)
-    (rplacd (last splice) (car here))
-    (if (car here)
-      (setq splice (car here)))))
+#+(or)(defun nconc (&rest lists)
+        (setq lists (do ((p lists (cdr p)))
+                        ((or (car p) (null p)) p)))
+        (do* ((top (car lists))
+              (splice top)
+              (here (cdr lists) (cdr here)))
+             ((null here) top)
+          (rplacd (last splice) (car here))
+          (if (car here)
+              (setq splice (car here)))))
 
 ;;
 ;;   "Return true if OBJECT is the same as some tail of LIST, otherwise false."

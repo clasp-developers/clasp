@@ -1550,7 +1550,7 @@ namespace core {
  * Unix shell except for brackets and curly braces
  */
     bool
-    brcl_string_match(T_sp s, size_t j, size_t ls,
+    clasp_stringMatch(T_sp s, size_t j, size_t ls,
 		      T_sp p, size_t i, size_t lp)
     {
 	while (i < lp) {
@@ -1569,7 +1569,7 @@ namespace core {
 		    return true;
 		}
 		while (j < ls) {
-		    if (brcl_string_match(s, j, ls, p, next, lp)) {
+		    if (clasp_stringMatch(s, j, ls, p, next, lp)) {
 			return true;
 		    }
 		    j++;
@@ -1610,7 +1610,7 @@ namespace core {
 	if (!af_stringP(mask)) {
 	    SIMPLE_ERROR(BF("%s is not supported as mask for pathname-match-p") % _rep_(mask));
 	}
-	return brcl_string_match(a, 0, af_length(a),
+	return clasp_stringMatch(a, 0, af_length(a),
 				 mask, 0, af_length(mask));
     }
 

@@ -348,6 +348,7 @@ Boehm and MPS use a single pointer"
   (primitive module name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return))
 
 (defun define-primitives-in-module (module)
+  (primitive module "testVarargs" +i32+ (list +i32+) :varargs t)
   (primitive-does-not-throw module "newFunction_sp" +void+ (list +Function_sp*+))
   (primitive-does-not-throw module "destructFunction_sp" +void+ (list +Function_sp*+))
   (primitive-does-not-throw module "newTsp" +void+ (list +tsp*+))

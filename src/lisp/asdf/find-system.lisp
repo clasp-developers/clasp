@@ -358,74 +358,65 @@ PATHNAME when not null is a path from which to load the system,
 either associated with FOUND-SYSTEM, or with the PREVIOUS system.
 PREVIOUS when not null is a previously loaded SYSTEM object of same name.
 PREVIOUS-TIME when not null is the time at which the PREVIOUS system was loaded."
-    (with-asdf-cache (:key `(locate-system ,name))
-      (let* ((name (coerce-name name))
-             (in-memory (system-registered-p name)) ; load from disk if absent or newer on disk
-             (previous (cdr in-memory))
-             (previous (and (typep previous 'system) previous))
-             (previous-time (car in-memory))
-             (found (search-for-system-definition name))
-             (found-system (and (typep found 'system) found))
-             (pathname (ensure-pathname
-                        (or (and (typep found '(or pathname string)) (pathname found))
-                            (and found-system (system-source-file found-system))
-                            (and previous (system-source-file previous)))
-                        :want-absolute t :resolve-symlinks *resolve-symlinks*))
-             (foundp (and (or found-system pathname previous) t)))
-        (check-type found (or null pathname system))
-        (unless (check-not-old-asdf-system name pathname)
-          (cond
-            (previous (setf found nil pathname nil))
-            (t
-             (setf found (sysdef-preloaded-system-search "asdf"))
-             (assert (typep found 'system))
-             (setf found-system found pathname nil))))
-        (values foundp found-system pathname previous previous-time))))
+    (let* ((name (coerce-name name))
+           (in-memory (system-registered-p name)) ; load from disk if absent or newer on disk
+           (previous (cdr in-memory))
+           (previous (and (typep previous 'system) previous))
+           (previous-time (car in-memory))
+           (found (search-for-system-definition name))
+           (found-system (and (typep found 'system) found))
+           (pathname (ensure-pathname
+                      (or (and (typep found '(or pathname string)) (pathname found))
+                          (and found-system (system-source-file found-system))
+                          (and previous (system-source-file previous)))
+                      :want-absolute t :resolve-symlinks *resolve-symlinks*))
+           (foundp (and (or found-system pathname previous) t)))
+      (check-type found (or null pathname system))
+      (unless (check-not-old-asdf-system name pathname)
+        (cond
+          (previous (setf found nil pathname nil))
+          (t
+           (setf found (sysdef-preloaded-system-search "asdf"))
+           (assert (typep found 'system))
+           (setf found-system found pathname nil))))
+      (values foundp found-system pathname previous previous-time)))
 
   (defmethod find-system ((name string) &optional (error-p t))
     (with-asdf-cache (:key `(find-system ,name))
       (let ((primary-name (primary-system-name name)))
         (unless (equal name primary-name)
           (find-system primary-name nil)))
-      (loop
-        (restart-case
-            (multiple-value-bind (foundp found-system pathname previous previous-time)
-                (locate-system name)
-              (when (and found-system (eq found-system previous)
-                         (or (first (gethash `(find-system ,name) *asdf-cache*))
-                             (and *immutable-systems* (gethash name *immutable-systems*))))
-                (return found-system))
-              (assert (eq foundp (and (or found-system pathname previous) t)))
-              (let ((previous-pathname (and previous (system-source-file previous)))
-                    (system (or previous found-system)))
-                (when (and found-system (not previous))
-                  (register-system found-system))
-                (when (and system pathname)
-                  (setf (system-source-file system) pathname))
-                (when (and pathname
-                           (let ((stamp (get-file-stamp pathname)))
-                             (and stamp
-                                  (not (and previous
-                                            (or (pathname-equal pathname previous-pathname)
-                                                (and pathname previous-pathname
-                                                     (pathname-equal
-                                                      (physicalize-pathname pathname)
-                                                      (physicalize-pathname previous-pathname))))
-                                            (stamp<= stamp previous-time))))))
-                  ;; only load when it's a pathname that is different or has newer content, and not an old asdf
-                  (load-asd pathname :name name)))
-              (let ((in-memory (system-registered-p name))) ; try again after loading from disk if needed
-                (return
-                  (cond
-                    (in-memory
-                     (when pathname
-                       (setf (car in-memory) (get-file-stamp pathname)))
-                     (cdr in-memory))
-                    (error-p
-                     (error 'missing-component :requires name))))))
-          (reinitialize-source-registry-and-retry ()
-            :report (lambda (s)
-                      (format s (compatfmt "~@<Retry finding system ~A after reinitializing the source-registry.~@:>") name))
-            (unset-asdf-cache-entry `(locate-system ,name))
-            (initialize-source-registry)))))))
-
+      (or (and *immutable-systems* (gethash name *immutable-systems*)
+               (cdr (system-registered-p name)))
+          (multiple-value-bind (foundp found-system pathname previous previous-time)
+              (locate-system name)
+            (assert (eq foundp (and (or found-system pathname previous) t)))
+            (let ((previous-pathname (and previous (system-source-file previous)))
+                  (system (or previous found-system)))
+              (when (and found-system (not previous))
+                (register-system found-system))
+              (when (and system pathname)
+                (setf (system-source-file system) pathname))
+              (when (and pathname
+                         (let ((stamp (get-file-stamp pathname)))
+                           (and stamp
+                                (not (and previous
+                                          (or (pathname-equal pathname previous-pathname)
+                                              (and pathname previous-pathname
+                                                   (pathname-equal
+                                                    (physicalize-pathname pathname)
+                                                    (physicalize-pathname previous-pathname))))
+                                          (stamp<= stamp previous-time))))))
+                ;; only load when it's a pathname that is different or has newer content, and not an old asdf
+                (load-asd pathname :name name)))
+            (let ((in-memory (system-registered-p name))) ; try again after loading from disk if needed
+              (cond
+                (in-memory
+                 (when pathname
+                   (setf (car in-memory) (get-file-stamp pathname)))
+                 (cdr in-memory))
+                (error-p
+                 (error 'missing-component :requires name))
+                (t ;; not found: don't keep negative cache, see lp#1335323
+                 (unset-asdf-cache-entry `(locate-system ,name))
+                 (return-from find-system nil)))))))))

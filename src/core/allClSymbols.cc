@@ -1,7 +1,8 @@
 #include <string>
 #include <map>
 #include "foundation.h"
-
+#include "package.h"
+#include "str.h"
 #include "allClSymbols.h"
 
 #ifdef DEBUG_CL_SYMBOLS
@@ -10,6 +11,7 @@ namespace core {
 
 
     map<string,int> globalAllClSymbols;
+    set<string> globalMissingClSymbols;
 
     void throwIfNotValidClSymbol(const string& name)
     {
@@ -20,6 +22,27 @@ namespace core {
         ++it->second;
     }
 
+
+
+
+    
+    
+#define ARGS_af_calculateMissingCommonLispSymbols "()"
+#define DECL_af_calculateMissingCommonLispSymbols ""
+#define DOCS_af_calculateMissingCommonLispSymbols "calculateMissingCommonLispSymbols"
+    T_sp af_calculateMissingCommonLispSymbols()
+    {
+        Package_sp commonLispPackage = _lisp->commonLispPackage();
+        Cons_sp missing = _Nil<T_O>();
+        for ( auto it : globalAllClSymbols ) {
+            T_mv sym = commonLispPackage->findSymbol(it.first);
+            T_sp found = sym.valueGet(1);
+            if ( found.nilp() ) {
+                missing = Cons_O::create(Str_O::create(it.first),missing);
+            }
+        }
+        return missing;
+    }
 
     void initializeAllClSymbols()
     {
@@ -1004,5 +1027,18 @@ namespace core {
         AddClSymbol("ZEROP");
     };
 
+
+
+
+    void initializeAllClSymbolsFunctions()
+    {
+        SYMBOL_EXPORT_SC_(CorePkg,calculateMissingCommonLispSymbols);
+        Defun(calculateMissingCommonLispSymbols);
+    };
+
 };
 #endif
+
+
+
+

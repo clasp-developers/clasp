@@ -12,6 +12,90 @@
 
 (in-package "SYSTEM")
 
+
+
+
+
+;;;;----------------------------------------------------------------------
+;;;;  Help files
+;;;;
+
+#+(or)
+(defun read-help-file (path)
+  (let* ((*package* (find-package "CL"))
+         (file (open path :direction :input)))
+    (do ((end nil)
+         (h (make-hash-table :size 1024 :test #'eql)))
+        (end h)
+      (do ((c (read-char file nil)))
+          ((or (not c) (eq c #\^_))
+           (when (not c) (setq end t)))
+        )
+      (when (not end)
+        (let* ((key (read file))
+               (value (read file)))
+          (si::hash-set key h value))))))
+
+#+(or)(defun dump-help-file (hash-table path &optional (merge nil))
+         (let ((entries nil))
+           (when merge
+             (let ((old-hash (read-help-file path)))
+               (push old-hash *documentation-pool*)
+               (maphash #'(lambda (key doc)
+                            (when doc
+                              (do* ((list doc)
+                                    (doc-type (first list))
+                                    (string (second list)))
+                                   (list)
+                                (set-documentation key doc-type string))))
+                        hash-table)
+               (setq hash-table (pop *documentation-pool*))))
+           (maphash #'(lambda (key doc)
+                        (when (and (symbolp key) doc)
+                          (push (cons key doc) entries)))
+                    hash-table)
+           (setq entries (sort entries #'string-lessp :key #'car))
+           (let* ((*package* (find-package "CL"))
+                  (file (open path :direction :output)))
+             (dolist (l entries)
+               (format file "~A~S~%~S~%" #\^_ (car l) (rest l)))
+             (close file)
+             path)))
+
+#+clasp (defun search-help-file (key path) nil) ;; we don't have help-files in clasp yet
+#+(or)
+(defun search-help-file (key path &aux (pos 0))
+  (labels ((bin-search (file start end &aux (delta 0) (middle 0) sym)
+             (declare (fixnum start end delta middle))
+             (when (< start end)
+               (setq middle (round (+ start end) 2))
+               (file-position file middle)
+               (if (and (plusp (setq delta (scan-for #\^_ file)))
+                        (<= delta (- end middle)))
+                   (if (equal key (setq sym (read file)))
+                       t
+                       (if (string< key sym)
+                           (bin-search file start (1- middle))
+                           (bin-search file (+ middle delta) end)))
+                   (bin-search file start (1- middle)))))
+           (scan-for (char file)
+             (do ((v #\space (read-char file nil nil))
+                  (n 0 (1+ n)))
+                 ((or (eql v #\^_) (not v)) (if v n -1))
+               (declare (fixnum n)))))
+    (when (not (probe-file path))
+      (return-from search-help-file nil))
+    (let* ((*package* (find-package "CL"))
+           (file (open path :direction :input))
+           output)
+      (when (bin-search file 0 (file-length file))
+        (setq output (read file)))
+      (close file)
+      output)))
+
+
+
+
 ;;;;----------------------------------------------------------------------
 ;;;; Documentation system
 ;;;;

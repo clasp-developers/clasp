@@ -55,6 +55,8 @@
 ;; Setup a few things for the EXT package
 (select-package :ext)
 (core:*make-special '*register-with-pde-hook*)
+(core:*make-special '*module-provider-functions*)
+(export '*module-provider-functions*)
 (setq *register-with-pde-hook* ())
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
@@ -393,8 +395,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(interpreter-iload 'cmp/jit-setup)
-(interpreter-iload 'clsymbols)
+(eval-when (:execute)
+  (interpreter-iload 'cmp/jit-setup)
+  (interpreter-iload 'clsymbols))
 
 
 

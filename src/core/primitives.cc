@@ -1610,7 +1610,11 @@ T_sp type_of(T_sp x)
 	return cl::_sym_cons;
     } else if ( af_pathnamep(x) )
     {
-	IMPLEMENT_ME();
+        if (af_logicalPathnameP(x)) {
+            return cl::_sym_logical_pathname;
+        } else {
+            return cl::_sym_pathname;
+        }
 #if 0
     case t_pathname:
 	t = x->pathname.logical? @'logical-pathname' : @'pathname';

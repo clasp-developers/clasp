@@ -962,22 +962,25 @@ Within the _irbuilder_ dynamic environment...
       code)))
 
 
+(defun irc-create-varargs-call (function-name args label)
+  (let ((func (get-function-or-error *the-module* function-name (car args)))
+        (iargs (mapcar (lambda (x) (jit-constant-i32 x)) args)))
+    (llvm-sys:create-call-array-ref *irbuilder* func (list* (jit-constant-i32 (length args)) iargs) label)))
+
+
 (defun irc-create-call (func args label)
-  (let ((a1 (car args))
-	(a2 (cadr args))
-	(a3 (caddr args))
-	(a4 (cadddr args))
-	(a5 (car (cddddr args))))
-    (let ((code (case (length args)
-		  (5 (llvm-sys:create-call5 *irbuilder* func a1 a2 a3 a4 a5 label))
-		  (4 (llvm-sys:create-call4 *irbuilder* func a1 a2 a3 a4 label))
-		  (3 (llvm-sys:create-call3 *irbuilder* func a1 a2 a3 label))
-		  (2 (llvm-sys:create-call2 *irbuilder* func a1 a2 label))
-		  (1 (llvm-sys:create-call1 *irbuilder* func a1 label))
-		  (0 (llvm-sys:create-call0 *irbuilder* func label ))
-		  (otherwise (error "illegal irc-intrinsic to ~a" func )))))
-      (unless code (error "irc-create-call returning nil"))
-      code)))
+  (let* ((ra args)
+         (code (case (length args)
+                 (0 (llvm-sys:create-call0 *irbuilder* func label ))
+                 (1 (llvm-sys:create-call1 *irbuilder* func (pop ra) label))
+                 (2 (llvm-sys:create-call2 *irbuilder* func (pop ra) (pop ra) label))
+                 (3 (llvm-sys:create-call3 *irbuilder* func (pop ra) (pop ra) (pop ra) label))
+                 (4 (llvm-sys:create-call4 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) label))
+                 (5 (llvm-sys:create-call5 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) (pop ra) label))
+                 (otherwise 
+                  (error "illegal irc-intrinsic to ~a" func )))))
+    (unless code (error "irc-create-call returning nil"))
+    code))
 
 
 (defparameter *current-unwind-landing-pad-dest* nil)

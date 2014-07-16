@@ -35,9 +35,9 @@ namespace cl
 
     core::Package_sp initialize_commonLispPackage()
     {
-	list<string> lnicknames = {"COMMON-LISP"};
+	list<string> lnicknames = {"CL"};
 	list<string> luse;
-	return _lisp->makePackage("CL",lnicknames,luse);
+	return _lisp->makePackage("COMMON-LISP",lnicknames,luse);
     }
 
 

@@ -6,6 +6,7 @@ namespace core {
 
     void throwIfNotValidClSymbol(const string& name);
     void initializeAllClSymbols();
+    void initializeAllClSymbolsFunctions();
 
 };
 #endif

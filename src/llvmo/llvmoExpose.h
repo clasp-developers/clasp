@@ -468,6 +468,32 @@ namespace translate
         DeclareType _v;
 	from_object(T_P object) : _v(object.as<llvmo::Value_O>()->wrappedPtr()) {};
     };
+    template <>
+    struct from_object<llvm::ArrayRef<llvm::Value*> > {
+        typedef std::vector<llvm::Value*> DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+            if ( o.nilp() ) {
+                _v.clear();
+                return;
+            } else if ( core::Cons_sp cvals = o.asOrNull<core::Cons_O>() ) {
+                for ( ; cvals.notnilp(); cvals=cCdr(cvals) ) {
+                    llvm::Value* vP = core::oCar(cvals).as<llvmo::Value_O>()->wrappedPtr();
+                    _v.push_back(vP);
+                }
+                return;
+            } else if ( core::Vector_sp vvals = o.asOrNull<core::Vector_O>() ) {
+                _v.resize(vvals->length());
+                for (int i(0),iEnd(vvals->length()); i<iEnd; ++i ) {
+                    _v[i] = vvals->elt(i).as<llvmo::Value_O>()->wrappedPtr();
+                }
+                return;
+            }
+            SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Value*>") % core::_rep_(o));
+        }
+    };
+        
+
 };
 ;
 /* to_object translators */

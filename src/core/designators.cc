@@ -152,33 +152,33 @@ namespace core
 
 
 
-	Stream_sp inputStreamDesignator(T_sp obj)
+	T_sp inputStreamDesignator(T_sp obj)
 	{_G();
 	    if ( obj.nilp() )
 	    {
-		return cl::_sym_STARstandard_inputSTAR->symbolValue().as<Stream_O>();
+		return cl::_sym_STARstandard_inputSTAR->symbolValue();
 	    } else if (obj == _lisp->_true() )
 	    {
-		return cl::_sym_STARterminal_ioSTAR->symbolValue().as<Stream_O>();
+		return cl::_sym_STARterminal_ioSTAR->symbolValue();
 	    } else if ( cl_streamp(obj) )
 	    {
-		return obj.as<Stream_O>();
+                return obj;
 	    }
 	    SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
 	}
 
 
-	Stream_sp outputStreamDesignator(T_sp obj)
+	T_sp outputStreamDesignator(T_sp obj)
 	{_G();
 	    if ( obj.nilp() )
 	    {
-		return cl::_sym_STARstandard_outputSTAR->symbolValue().as<Stream_O>();
+		return cl::_sym_STARstandard_outputSTAR->symbolValue();
 	    } else if (obj == _lisp->_true() )
 	    {
-		return cl::_sym_STARterminal_ioSTAR->symbolValue().as<Stream_O>();
+		return cl::_sym_STARterminal_ioSTAR->symbolValue();
 	    } else if ( cl_streamp(obj) )
 	    {
-		return obj.as<Stream_O>();
+                return obj;
 	    }
 	    SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
 	}

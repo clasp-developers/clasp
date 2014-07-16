@@ -65,6 +65,22 @@ extern "C"
     }
 
 
+
+    int testVarargs(int numargs, ...)
+    {
+//        printf("%s:%d Entered testVarargs with numargs=%d: ", __FILE__, __LINE__, numargs );
+        int i(0);
+        va_list argp;
+        va_start(argp,numargs);
+        for ( ; numargs; --numargs ) {
+            i = va_arg(argp,int);
+//            printf("%d ", i );
+        }
+        va_end(argp);
+//        printf("\n");
+        return i;
+    }
+
     void unreachableError()
     {
 	printf("%s:%d In unreachableError -  Hit an unreachable block\n",

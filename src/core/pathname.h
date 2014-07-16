@@ -148,6 +148,8 @@ TRANSLATE(core::LogicalPathname_O);
 
 
 namespace core {
+    bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
+                           T_sp p, size_t i, size_t lp);
     bool brcl_logical_hostname_p(T_sp host);
     bool brcl_wild_string_p(T_sp item);
     Str_sp brcl_namestring(T_sp x, int flags);

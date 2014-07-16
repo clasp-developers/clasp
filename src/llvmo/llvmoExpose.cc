@@ -2641,7 +2641,6 @@ namespace llvmo
 	    .def("CreateCondBr",&IRBuilder_O::ExternalType::CreateCondBr)
 	    .def("CreateSwitch",&IRBuilder_O::ExternalType::CreateSwitch)
 	    .def("CreateIndirectBr",&IRBuilder_O::ExternalType::CreateIndirectBr)
-//	    .def("CreateInvoke3",&IRBuilder_O::ExternalType::CreateInvoke3)
 	    .def("CreateInvoke",&IRBuilder_O::CreateInvoke)
 	    .def("CreateResume",&IRBuilder_O::ExternalType::CreateResume)
 	    .def("CreateUnreachable",&IRBuilder_O::ExternalType::CreateUnreachable)
@@ -2785,6 +2784,8 @@ namespace llvmo
 	    .def("CreatePHI",&IRBuilder_O::ExternalType::CreatePHI)
 	    ;
 
+        llvm::CallInst* (IRBuilder_O::ExternalType::*CreateCallArrayRef)(llvm::Value *Callee, llvm::ArrayRef< llvm::Value * > Args, const llvm::Twine &Name) = &IRBuilder_O::ExternalType::CreateCall;
+        irbuilder.def("CreateCallArrayRef",CreateCallArrayRef);
 
 	AVOID_OVERLOAD(irbuilder,llvm::CallInst*,CreateCall,0,(llvm::Value*,const llvm::Twine&));
 	AVOID_OVERLOAD(irbuilder,llvm::CallInst*,CreateCall,1,(llvm::Value*,llvm::Value*,const llvm::Twine&));

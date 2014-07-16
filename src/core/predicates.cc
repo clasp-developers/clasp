@@ -348,7 +348,10 @@ namespace core
     bool af_hashTableP(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
-	return obj.isA<HashTable_O>();
+        if ( HashTable_sp ht = obj.asOrNull<HashTable_O>() ) {
+            return true;
+        }
+        return false;
     };
 
 

@@ -38,9 +38,15 @@ public: // Functions here
     T_mv af_nreconc(List_sp list, T_sp tail);
     T_sp af_nth(int idx, T_sp arg);
     T_sp af_nthcdr(int idx, T_sp arg);
-
+    
 
     T_sp af_copyList(T_sp arg);
+
+    List_sp cl_nconc(Cons_sp rest);
+
+    /*! Replace the last CONS of l with y and return l,  if l was nil return y */
+    T_sp clasp_nconc(T_sp l, T_sp y);
+
 
 }; /* core */
 
