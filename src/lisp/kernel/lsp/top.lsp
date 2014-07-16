@@ -1215,16 +1215,17 @@ Use special code 0 to cancel this operation.")
   (values))
 
 (defun ihs-visible (i)
-  (let ((fname (ihs-fname i)))
-    #+clos
-    (when (and (consp fname) (eq 'SETF (car fname)))
-	  (setq fname (second fname)))
-    (or (eq fname 'EVAL)
-	(eq fname 'BYTECODES)
-	(and (not (member (symbol-package fname) *break-hidden-packages*
-			  :TEST #'eq))
-	     (not (null fname))
-	     (not (member fname *break-hidden-functions* :TEST #'eq))))))
+  #+(and ecl (not clasp))(let ((fname (ihs-fname i)))
+                           #+clos
+                           (when (and (consp fname) (eq 'SETF (car fname)))
+                             (setq fname (second fname)))
+                           (or (eq fname 'EVAL)
+                               (eq fname 'BYTECODES)
+                               (and (not (member (symbol-package fname) *break-hidden-packages*
+                                                 :TEST #'eq))
+                                    (not (null fname))
+                                    (not (member fname *break-hidden-functions* :TEST #'eq)))))
+  #+clasp (ihs-env i) #| every frame with an environment is visible in clasp |#)
 
 (defun ihs-fname (i)
   (let ((function (ihs-fun i)))

@@ -154,9 +154,49 @@ namespace core
     };
 
 
+/* Adapted from ECL list.d nconc function */
 
+    
+    
+#define ARGS_cl_nconc "(&rest lists)"
+#define DECL_cl_nconc ""
+#define DOCS_cl_nconc "tnconc"
+    List_sp cl_nconc(Cons_sp lists)
+    {_G();
+        T_sp head = _Nil<T_O>();
+        T_sp tail = _Nil<T_O>();
+        for ( Cons_sp cur = lists; cur.notnilp(); cur=cCdr(cur) ) {
+            T_sp new_tail;
+            T_sp other = oCar(cur);
+            if (other.nilp()) {
+                new_tail = tail;
+            } else if (Cons_sp cother = other.asOrNull<Cons_O>()) {
+                new_tail = af_last(other,1);
+            } else {
+                if (cur->cdr().notnilp()) {
+                    TYPE_ERROR_LIST(other);
+                }
+                new_tail = tail;
+            }
+            if (head.nilp()) {
+                head = other;
+            } else {
+                tail.as<Cons_O>()->rplacd(other);
+            }
+            tail = new_tail;
+        }
+        return head;
+    }
 
-
+    T_sp clasp_nconc(T_sp l, T_sp y)
+    {
+        if (l.nilp()) {
+            return y;
+        }
+        Cons_sp last = af_last(l.as<List_O>(),1).as<Cons_O>();
+        last ->rplacd(y);
+        return l;
+    }
 
 
 
@@ -217,6 +257,7 @@ namespace core
 	Defun(copyList); 
 	SYMBOL_EXPORT_SC_(ClPkg,last);
 	Defun(last);
+        ClDefun(nconc);
    }
 
     void List_O::exposePython(::core::Lisp_sp lisp)

@@ -1011,6 +1011,11 @@ jump to blocks within this tagbody."
 
 
 
+(defun codegen-llvm-inline (result rest env)
+  (eval `(progn ,@rest)))
+
+
+
 (defun codegen-special-operator (result head rest env)
   (cmp-log "entered codegen-special-operator head: %s rest: %s\n" head rest)
   (assert-result-isa-llvm-value result)
@@ -1051,7 +1056,7 @@ jump to blocks within this tagbody."
 
 
 (defun augmented-special-operator-p (x)
-  (or (special-operator-p x) (eq x 'cmp:dbg-i32) (eq x 'core:truly-the)))
+  (or (special-operator-p x) (assoc x cmp:+special-operator-dispatch+)))
 
 
 (defun codegen-atom (result obj env)
@@ -1099,9 +1104,9 @@ jump to blocks within this tagbody."
               (progn
                 (cmp-log "About to codegen-special-operator: %s %s\n" head rest)
                 (codegen-special-operator result head rest env))
-            (progn
-              (cmp-log "About to codegen-application: %s\n" form)
-              (codegen-application result form env))))))))
+              (progn
+                (cmp-log "About to codegen-application: %s\n" form)
+                (codegen-application result form env))))))))
 
 
 

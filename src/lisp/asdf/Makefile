@@ -140,7 +140,7 @@ test-lisp: build/asdf.lisp
 	@cd test; ./run-tests.sh ${l} ${t}
 t: test-lisp
 
-test: test-lisp test-clean-load test-load-systems doc
+test: doc test-lisp test-clean-load test-load-systems
 
 test-load-systems: build/asdf.lisp
 	./test/run-tests.sh -l ${l} ${s}

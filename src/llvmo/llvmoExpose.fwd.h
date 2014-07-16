@@ -3,6 +3,7 @@
 
 namespace llvmo
 {
+    FORWARD(Value);
     FORWARD(Module);
     FORWARD(LLVMContext);
     FORWARD(Function);

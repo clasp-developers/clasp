@@ -148,7 +148,7 @@ this function tries to locate the Windows FOLDER for one of
     "Map the VALIDATOR across the .conf files in DIRECTORY, the TAG will
 be applied to the results to yield a configuration form.  Current
 values of TAG include :source-registry and :output-translations."
-    (let ((files (sort (ignore-errors
+    (let ((files (sort (ignore-errors ;; SORT w/o COPY-LIST is OK: DIRECTORY returns a fresh list
                         (remove-if
                          'hidden-pathname-p
                          (directory* (make-pathname :name *wild* :type "conf" :defaults directory))))

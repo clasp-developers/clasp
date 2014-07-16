@@ -49,11 +49,11 @@ namespace core
 
 
 /*! Convert an Object input stream designator (as described by CLHS) into a Stream */
-	extern Stream_sp inputStreamDesignator(T_sp obj);
+	T_sp inputStreamDesignator(T_sp obj);
 
 
 /*! Convert an Object output stream designator (as described by CLHS) into a Stream */
-	extern Stream_sp outputStreamDesignator(T_sp obj);
+	T_sp outputStreamDesignator(T_sp obj);
 
     }; /* designators */
 

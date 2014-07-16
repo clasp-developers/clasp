@@ -5,6 +5,7 @@
 #include "core/cons.h"
 #include "core/symbolTable.h"
 #include "core/designators.h"
+#include "core/str.h"
 #include "core/evaluator.h"
 #include "core/lispStream.h"
 #include "core/primitives.h"
@@ -141,36 +142,36 @@ namespace core
 #define ARGS_af_write "(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*))"
 #define DECL_af_write ""
 #define DOCS_af_write "write"
-    T_mv af_write(T_sp x, T_sp strm, T_sp array, T_sp base,
+    T_sp af_write(T_sp x, T_sp strm, T_sp array, T_sp base,
 		  T_sp cas, T_sp escape, T_sp gensym, T_sp length,
 		  T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
 		  T_sp pretty, T_sp radix, T_sp readability, T_sp right_margin )
-{_G();
-    DynamicScopeManager scope(cl::_sym_STARprint_arraySTAR,array);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_baseSTAR,base);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_caseSTAR,cas);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_escapeSTAR,escape);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_gensymSTAR,gensym);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_lengthSTAR,length);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_levelSTAR,level);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_linesSTAR,lines);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_miser_widthSTAR,miser_width);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_pprint_dispatchSTAR,pprint_dispatch);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR,pretty);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_radixSTAR,radix);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR,readability);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_right_marginSTAR,right_margin);
-    Stream_sp ostrm = coerce::outputStreamDesignator(strm);
-    write_object(x,ostrm);
-    ostrm->forceOutput();
-    return Values(x);
-};
+    {_G();
+        DynamicScopeManager scope(cl::_sym_STARprint_arraySTAR,array);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_baseSTAR,base);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_caseSTAR,cas);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_escapeSTAR,escape);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_gensymSTAR,gensym);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_lengthSTAR,length);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_levelSTAR,level);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_linesSTAR,lines);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_miser_widthSTAR,miser_width);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_pprint_dispatchSTAR,pprint_dispatch);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR,pretty);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_radixSTAR,radix);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR,readability);
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_right_marginSTAR,right_margin);
+        T_sp ostrm = coerce::outputStreamDesignator(strm);
+        write_object(x,ostrm);
+        clasp_forceOutput(ostrm);
+        return Values(x);
+    };
 
 
 
 
     
-    
+#if 0    
 #define ARGS_af_writeAddr "(arg stream)"
 #define DECL_af_writeAddr ""
 #define DOCS_af_writeAddr "writeAddr"
@@ -183,7 +184,7 @@ namespace core
 	    else stream->writeChar('a'+k-10);
 	}
     }
-
+#endif
     
     
 #define ARGS_af_printUnreadableObjectFunction "(o stream type id function)"
@@ -191,32 +192,31 @@ namespace core
 #define DOCS_af_printUnreadableObjectFunction "printUnreadableObjectFunction - see ecl::print_unreadable.d"
     void af_printUnreadableObjectFunction(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function)
     {_G();
-	Stream_sp stream = coerce::outputStreamDesignator(ostream);
+	T_sp stream = coerce::outputStreamDesignator(ostream);
 	if ( brcl_print_readably() ) {
 	    PRINT_NOT_READABLE_ERROR(o);
-	} else
-	    stream->writeStr("#<");
-	if (type.notnilp()) {
-	    type = af_type_of(o);
-	    if ( !type.isA<Symbol_O>() )
-	    {
-		type = cl::_sym_StandardObject_O;
-	    }
-	    Symbol_sp typesym = type.as<Symbol_O>();
-	    string tname = typesym->symbolNameAsString();
-	    stream->writeStr(tname);
-	    stream->writeChar(' ');
-	}
-	if ( function.notnilp() )
-	{
-	    eval::funcall(function);
-	}
-	if ( id.notnilp() )
-	{
-	    stream->writeChar(' ');
-	    af_writeAddr(o,stream);
-	}
-	stream->writeChar('>');
+	} else {
+            stringstream ss;
+            ss << "#<";
+            if (type.notnilp()) {
+                type = af_type_of(o);
+                if ( !type.isA<Symbol_O>() )
+                {
+                    type = cl::_sym_StandardObject_O;
+                }
+                Symbol_sp typesym = type.as<Symbol_O>();
+                ss << typesym->symbolNameAsString();
+                ss << " ";
+            }
+            if ( function.notnilp() )
+            {
+                eval::funcall(function);
+            }
+            ss << o.px_ref();
+            ss << ">";
+            Str_sp str = Str_O::create(ss.str());
+            clasp_writeString(str,stream);
+        }
     };
 
 
@@ -226,11 +226,11 @@ namespace core
 
     void initialize_print()
     {
-	Defun(write);
-	SYMBOL_EXPORT_SC_(CorePkg,writeAddr);
-	Defun(writeAddr);
-	SYMBOL_EXPORT_SC_(CorePkg,printUnreadableObjectFunction);
-	Defun(printUnreadableObjectFunction);
+        Defun(write);
+//        SYMBOL_EXPORT_SC_(CorePkg,writeAddr);
+//        Defun(writeAddr);
+        SYMBOL_EXPORT_SC_(CorePkg,printUnreadableObjectFunction);
+        Defun(printUnreadableObjectFunction);
     }
 
 

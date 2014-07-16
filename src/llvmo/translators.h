@@ -9,6 +9,7 @@
 #include <llvm/IR/DIBuilder.h>
 #include "core/symbolTable.h"
 #include <core/str.h>
+#include "llvmo/llvmoExpose.fwd.h"
 
 
 namespace translate {
@@ -108,7 +109,10 @@ namespace translate {
             SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<std::string>") % core::_rep_(o));
         }
     };
-        
+
+
+
+
 
 
 

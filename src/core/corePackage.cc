@@ -89,6 +89,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_EXPORT_SC_(ClPkg,compileFile);
     SYMBOL_EXPORT_SC_(ClPkg,first);
     SYMBOL_EXPORT_SC_(ClPkg,float);
+    SYMBOL_EXPORT_SC_(ClPkg,logical_pathname);
+    SYMBOL_EXPORT_SC_(ClPkg,pathname);
     SYMBOL_EXPORT_SC_(CorePkg,STARllvmFunctionNameHookSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,pathnamep);
     SYMBOL_EXPORT_SC_(CorePkg,STARtopLevelCommandHookSTAR);
@@ -282,7 +284,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
     SYMBOL_SC_(CorePkg,declaredSpecial);
     SYMBOL_SC_(CorePkg,lexical);
     SYMBOL_EXPORT_SC_(ClPkg,stream);
-    SYMBOL_EXPORT_SC_(ClPkg,pathname);
     SYMBOL_EXPORT_SC_(ClPkg,boolean);
     SYMBOL_EXPORT_SC_(ClPkg,keyword);
     SYMBOL_EXPORT_SC_(ClPkg,array);
@@ -595,12 +596,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 
 	Package_sp commonLispPackage = cl::initialize_commonLispPackage();
 	Package_sp keywordPackage = kw::initialize_keywordPackage();
-	ext::initialize_extensionPackage();
-	comp::initialize_compPackage();
-	clos::initialize_closPackage();
-	gray::initialize_grayPackage();
-	cluser::initialize_commonLispUserPackage();
-
 
 //	ASSERT_lt(classesHandInitialized, get_nextGlobalClassSymbol())
 	//
@@ -618,6 +613,11 @@ SYMBOL_EXPORT_SC_(KeywordPkg,end);
 //	_lisp->_PackageNameIndexMap[KeywordPkg] = _lisp->_Roots._Packages.size();
 	_lisp->_Roots._CommonLispPackage = commonLispPackage;
 	commonLispPackage->usePackage(corePackage);
+	ext::initialize_extensionPackage();
+	comp::initialize_compPackage();
+	clos::initialize_closPackage();
+	gray::initialize_grayPackage();
+	cluser::initialize_commonLispUserPackage();
 	{_BLOCK_TRACEF(BF("Setup instance base classes for T_O"));
 	    T_O::___staticClass->setInstanceBaseClasses(_Nil<Cons_O>());
 	}

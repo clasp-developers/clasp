@@ -62,6 +62,13 @@ struct _TRACE {
 				kw::_sym_formatArguments, core::lisp_createList(_lst_), \
 				kw::_sym_expectedType, cl::_sym_cons,	\
 				kw::_sym_datum, _lst_ ));
+
+#define TYPE_ERROR_LIST(_lst_) \
+    ERROR(cl::_sym_simpleTypeError,					\
+	  core::lisp_createList(kw::_sym_formatControl,core::lisp_createStr("~S is not a list"), \
+				kw::_sym_formatArguments, core::lisp_createList(_lst_), \
+				kw::_sym_expectedType, cl::_sym_cons,	\
+				kw::_sym_datum, _lst_ ));
 	
 
 #define TYPE_ERROR(_datum_,_expectedType_) ERROR(cl::_sym_typeError,core::lisp_createList(kw::_sym_datum,_datum_,kw::_sym_expectedType,_expectedType_))

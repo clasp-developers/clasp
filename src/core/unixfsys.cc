@@ -772,10 +772,10 @@ Number_sp af_file_write_date(T_sp pathspec)
 
 
 
-#define ARGS_af_file_author "(file)"
-#define DECL_af_file_author ""
-#define DOCS_af_file_author "file_author"
-T_sp af_file_author(T_sp file)
+#define ARGS_cl_fileAuthor "(file)"
+#define DECL_cl_fileAuthor ""
+#define DOCS_cl_fileAuthor "file_author"
+T_sp cl_fileAuthor(T_sp file)
 {_G();
     T_sp output;
     Pathname_sp pn = af_pathname(file);
@@ -876,22 +876,23 @@ Pathname_sp af_userHomedirPathname(T_sp host)
 
 
 
-#if 0  // working
-
 
 
 static bool
 string_match(const char *s, T_sp pattern)
 {
     if (pattern.nilp() || pattern == kw::_sym_wild) {
-		return 1;
-	} else {
-		cl_index ls = strlen(s);
-		ecl_def_ct_base_string(strng, s, ls, /*auto*/, const);
-		return ecl_string_match(strng, 0, ls,
-					pattern, 0, ecl_length(pattern));
-	}
+        return 1;
+    } else {
+        int ls = strlen(s);
+        Str_sp strng = Str_O::create(s,strlen(s));
+        return clasp_stringMatch(strng,0,ls,
+                                  pattern,0,af_length(pattern));
+    }
 }
+
+
+#if 0 // working
 
 /*
  * list_current_directory() lists the files and directories which are contained
@@ -995,139 +996,16 @@ OUTPUT:
 	return cl_nreverse(out);
 }
 
-/*
- * dir_files() lists all files which are contained in the current directory and
- * which match the masks in PATHNAME. This routine is essentially a wrapper for
- * list_current_directory(), which transforms the list of strings into a list
- * of pathnames. BASEDIR is the truename of the current directory and it is
- * used to build these pathnames.
- */
-static T_sp
-dir_files(T_sp base_dir, T_sp pathname, int flags)
-{
-	T_sp all_files, output = _Nil<T_O>();
-	T_sp mask;
-	T_sp name = pathname->_Name;
-	T_sp type = pathname->_Type;
-	if (name.nilp() && type.nilp()) {
-		return cl_list(1, base_dir);
-	}
-	mask = ecl_make_pathname(ECL_NIL, ECL_NIL, ECL_NIL,
-                                 name, type, pathname->_Version,
-                                 kw::_sym_local);
-	for (all_files = list_directory(base_dir, ECL_NIL, mask, flags);
-	     !Null(all_files);
-	     all_files = ECL_CONS_CDR(all_files))
-	{
-		T_sp record = ECL_CONS_CAR(all_files);
-		T_sp nw = ECL_CONS_CAR(record);
-		T_sp kind = ECL_CONS_CDR(record);
-		if (kind != kw::_sym_directory) {
-			output = CONS(nw, output);
-		}
-	}
-	return output;
-}
 
-/*
- * dir_recursive() performs the dirty job of DIRECTORY. The routine moves
- * through the filesystem looking for files and directories which match
- * the masks in the arguments PATHNAME and DIRECTORY, collecting them in a
- * list.
- */
-static T_sp
-dir_recursive(T_sp base_dir, T_sp directory, T_sp filemask, int flags)
-{
-	T_sp item, output = _Nil<T_O>();
- AGAIN:
-	/* There are several possibilities here:
-	 *
-	 * 1) The list of subdirectories DIRECTORY is empty, and only PATHNAME
-	 * remains to be inspected. If there is no file name or type, then
-	 * we simply output the truename of the current directory. Otherwise
-	 * we have to find a file which corresponds to the description.
-	 */
-	if (directory.nilp()) {
-		return ecl_nconc(dir_files(base_dir, filemask, flags), output);
-	}
-	/*
-	 * 2) We have not yet exhausted the DIRECTORY component of the
-	 * pathname. We have to enter some subdirectory, determined by
-	 * CAR(DIRECTORY) and scan it.
-	 */
-	item = ECL_CONS_CAR(directory);
 
-	if (item == kw::_sym_wild || ecl_wild_string_p(item)) {
-		/*
-		 * 2.1) If CAR(DIRECTORY) is a string or :WILD, we have to
-		 * enter & scan all subdirectories in our curent directory.
-		 */
-		T_sp next_dir = list_directory(base_dir, item, ECL_NIL, flags);
-		for (; !Null(next_dir); next_dir = ECL_CONS_CDR(next_dir)) {
-			T_sp record = ECL_CONS_CAR(next_dir);
-			T_sp component = ECL_CONS_CAR(record);
-			T_sp kind = ECL_CONS_CDR(record);
-			if (kind != kw::_sym_directory)
-				continue;
-			item = dir_recursive(cl_pathname(component),
-					     ECL_CONS_CDR(directory),
-					     filemask, flags);
-			output = ecl_nconc(item, output);
-		}
-	} else if (item == kw::_sym_wild-inferiors) {
-		/*
-		 * 2.2) If CAR(DIRECTORY) is :WILD-INFERIORS, we have to do
-		 * scan all subdirectories from _all_ levels, looking for a
-		 * tree that matches the remaining part of DIRECTORY.
-		 */
-		T_sp next_dir = list_directory(base_dir, ECL_NIL, ECL_NIL, flags);
-		for (; !Null(next_dir); next_dir = ECL_CONS_CDR(next_dir)) {
-			T_sp record = ECL_CONS_CAR(next_dir);
-			T_sp component = ECL_CONS_CAR(record);
-			T_sp kind = ECL_CONS_CDR(record);
-			if (kind != kw::_sym_directory)
-				continue;
-			item = dir_recursive(cl_pathname(component),
-					     directory, filemask, flags);
-			output = ecl_nconc(item, output);
-		}
-		directory = ECL_CONS_CDR(directory);
-		goto AGAIN;
-	} else { /* :ABSOLUTE, :RELATIVE, :UP, component without wildcards */
-		/*
-		 * 2.2) If CAR(DIRECTORY) is :ABSOLUTE, :RELATIVE or :UP we update
-		 * the directory to reflect the root, the current or the parent one.
-		 */
-		base_dir = enter_directory(base_dir, item, 1);
-		/*
-		 * If enter_directory() fails, we simply ignore this path. This is
-		 * what other implementations do and is consistent with the behavior
-		 * for the file part.
-		 */
-		if (Null(base_dir))
-			return _Nil<T_O>();
-		directory = ECL_CONS_CDR(directory);
-		goto AGAIN;
-	}
-	return output;
-}
 
-@(defun directory (mask &key (resolve_symlinks ECL_T) &allow_other_keys)
-        T_sp base_dir;
-	T_sp output;
-@
-        mask = coerce_to_file_pathname(mask);
-        mask = make_absolute_pathname(mask);
-        base_dir = make_base_pathname(mask);
-	output = dir_recursive(base_dir, mask->_Directory, mask,
-                               Null(resolve_symlinks)? 0 : FOLLOW_SYMLINKS);
-        @(return output)
-@)
+
+
 
 @(defun ext::getcwd (&optional (change_d_p_d ECL_NIL))
 	T_sp output;
 @
-	output = cl_parse_namestring(3, current_dir(), ECL_NIL, ECL_NIL);
+	output = cl_parse_namestring(3, current_dir(), _Nil<T_O>(), _Nil<T_O>());
 	if (!Null(change_d_p_d)) {
 		ECL_SETQ(the_env, @'*default-pathname-defaults*', output);
 	}
@@ -1165,8 +1043,8 @@ si_get_library_pathname(void)
 	s->base_string.fillp = len;
         /* GetModuleFileName returns a file name. We have to strip
          * the directory component. */
-        s = cl_make_pathname(8, kw::_sym_name, ECL_NIL, kw::_sym_type, ECL_NIL,
-			     kw::_sym_version, ECL_NIL,
+        s = cl_make_pathname(8, kw::_sym_name, _Nil<T_O>(), kw::_sym_type, _Nil<T_O>(),
+			     kw::_sym_version, _Nil<T_O>(),
                              kw::_sym_defaults, s);
         s = ecl_namestring(s, BRCL_NAMESTRING_FORCE_BASE_STRING);
 	}
@@ -1200,7 +1078,7 @@ si_get_library_pathname(void)
 	namestring = ecl_namestring(directory,
                                     BRCL_NAMESTRING_TRUNCATE_IF_ERROR |
                                     BRCL_NAMESTRING_FORCE_BASE_STRING);
-	if (safe_chdir((char*)namestring->c_str(), ECL_NIL) < 0) {
+	if (safe_chdir((char*)namestring->c_str(), _Nil<T_O>()) < 0) {
 		T_sp c_error = brcl_strerror(errno);
 		const char *msg = "Can't change the current directory to ~A."
 			"~%C library error: ~S";
@@ -1283,9 +1161,9 @@ si_mkstemp(T_sp template)
 
 	phys = cl_translate_logical_pathname(1, template);
 	dir = cl_make_pathname(8,
-			       kw::_sym_type, ECL_NIL,
-	                       kw::_sym_name, ECL_NIL,
-	                       kw::_sym_version, ECL_NIL,
+			       kw::_sym_type, _Nil<T_O>(),
+	                       kw::_sym_name, _Nil<T_O>(),
+	                       kw::_sym_version, _Nil<T_O>(),
 	                       kw::_sym_defaults, phys);
 	dir = af_coerceToFilename(dir);
 	file = cl_file_namestring(phys);
@@ -1339,8 +1217,8 @@ si_mkstemp(T_sp template)
 T_sp
 si_rmdir(T_sp directory)
 {
-    return af_deleteFile(cl_make_pathname(6, kw::_sym_name, ECL_NIL,
-					   kw::_sym_type, ECL_NIL,
+    return af_deleteFile(cl_make_pathname(6, kw::_sym_name, _Nil<T_O>(),
+					   kw::_sym_type, _Nil<T_O>(),
 					   kw::_sym_defaults, directory));
 }
 
@@ -1368,7 +1246,7 @@ si_copy_file(T_sp orig, T_sp dest)
 		fclose(in);
 	}
 	brcl_enable_interrupts();
-	@(return (ok? ECL_T : ECL_NIL))
+	@(return (ok? ECL_T : _Nil<T_O>()))
 }
 
 T_sp
@@ -1394,6 +1272,151 @@ si_chmod(T_sp file, T_sp mode)
 #endif  // working
 
 
+
+#if 0
+
+
+/*
+ * dir_files() lists all files which are contained in the current directory and
+ * which match the masks in PATHNAME. This routine is essentially a wrapper for
+ * list_current_directory(), which transforms the list of strings into a list
+ * of pathnames. BASEDIR is the truename of the current directory and it is
+ * used to build these pathnames.
+ */
+static T_sp
+dir_files(T_sp base_dir, T_sp pathname, int flags)
+{
+	T_sp all_files, output = _Nil<T_O>();
+	T_sp mask;
+        Pathname_sp ppathname = pathname.as<Pathname_O>();
+	T_sp name = pathname->_Name;
+	T_sp type = pathname->_Type;
+	if (name.nilp() && type.nilp()) {
+		return cl_list(1, base_dir);
+	}
+	mask = clasp_makePathname(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
+                                 name, type, pathname->_Version,
+                                 kw::_sym_local);
+	for (all_files = list_directory(base_dir, _Nil<T_O>(), mask, flags);
+	     !Null(all_files);
+	     all_files = ECL_CONS_CDR(all_files))
+	{
+		T_sp record = ECL_CONS_CAR(all_files);
+		T_sp nw = ECL_CONS_CAR(record);
+		T_sp kind = ECL_CONS_CDR(record);
+		if (kind != kw::_sym_directory) {
+			output = CONS(nw, output);
+		}
+	}
+	return output;
+}
+
+/*
+ * dir_recursive() performs the dirty job of DIRECTORY. The routine moves
+ * through the filesystem looking for files and directories which match
+ * the masks in the arguments PATHNAME and DIRECTORY, collecting them in a
+ * list.
+ */
+static T_sp
+dir_recursive(T_sp base_dir, T_sp directory, T_sp filemask, int flags)
+{
+    T_sp item, output = _Nil<T_O>();
+AGAIN:
+    /* There are several possibilities here:
+     *
+     * 1) The list of subdirectories DIRECTORY is empty, and only PATHNAME
+     * remains to be inspected. If there is no file name or type, then
+     * we simply output the truename of the current directory. Otherwise
+     * we have to find a file which corresponds to the description.
+     */
+    if (directory.nilp()) {
+        return clasp_nconc(dir_files(base_dir, filemask, flags), output);
+    }
+    /*
+     * 2) We have not yet exhausted the DIRECTORY component of the
+     * pathname. We have to enter some subdirectory, determined by
+     * CAR(DIRECTORY) and scan it.
+     */
+    item = ECL_CONS_CAR(directory);
+
+    if (item == kw::_sym_wild || ecl_wild_string_p(item)) {
+        /*
+         * 2.1) If CAR(DIRECTORY) is a string or :WILD, we have to
+         * enter & scan all subdirectories in our curent directory.
+         */
+        T_sp next_dir = list_directory(base_dir, item, _Nil<T_O>(), flags);
+        for (; !Null(next_dir); next_dir = ECL_CONS_CDR(next_dir)) {
+            T_sp record = ECL_CONS_CAR(next_dir);
+            T_sp component = ECL_CONS_CAR(record);
+            T_sp kind = ECL_CONS_CDR(record);
+            if (kind != kw::_sym_directory)
+                continue;
+            item = dir_recursive(cl_pathname(component),
+                                 ECL_CONS_CDR(directory),
+                                 filemask, flags);
+            output = ecl_nconc(item, output);
+        }
+    } else if (item == kw::_sym_wild-inferiors) {
+        /*
+         * 2.2) If CAR(DIRECTORY) is :WILD-INFERIORS, we have to do
+         * scan all subdirectories from _all_ levels, looking for a
+         * tree that matches the remaining part of DIRECTORY.
+         */
+        T_sp next_dir = list_directory(base_dir, _Nil<T_O>(), _Nil<T_O>(), flags);
+        for (; !Null(next_dir); next_dir = ECL_CONS_CDR(next_dir)) {
+            T_sp record = ECL_CONS_CAR(next_dir);
+            T_sp component = ECL_CONS_CAR(record);
+            T_sp kind = ECL_CONS_CDR(record);
+            if (kind != kw::_sym_directory)
+                continue;
+            item = dir_recursive(cl_pathname(component),
+                                 directory, filemask, flags);
+            output = ecl_nconc(item, output);
+        }
+        directory = ECL_CONS_CDR(directory);
+        goto AGAIN;
+    } else { /* :ABSOLUTE, :RELATIVE, :UP, component without wildcards */
+        /*
+         * 2.2) If CAR(DIRECTORY) is :ABSOLUTE, :RELATIVE or :UP we update
+         * the directory to reflect the root, the current or the parent one.
+         */
+        base_dir = enter_directory(base_dir, item, 1);
+        /*
+         * If enter_directory() fails, we simply ignore this path. This is
+         * what other implementations do and is consistent with the behavior
+         * for the file part.
+         */
+        if (Null(base_dir))
+            return _Nil<T_O>();
+        directory = ECL_CONS_CDR(directory);
+        goto AGAIN;
+    }
+    return output;
+}
+
+
+
+
+
+
+
+#define ARGS_cl_directory "(mask &key (resolve-symlinks t) &allow-other-keys)"
+#define DECL_cl_directory ""
+#define DOCS_cl_directory "directory"
+T_sp cl_directory(T_sp mask, T_sp resolveSymlinks)
+{_G();
+    T_sp base_dir;
+    T_sp output;
+    mask = af_coerceToFilePathname(mask);
+    mask = make_absolute_pathname(mask); // in this file
+    base_dir = make_base_pathname(mask);
+    output = dir_recursive(base_dir, mask->_Directory, mask,
+                           resolveSymlinks.nilp() ? 0 : FOLLOW_SYMLINKS);
+    return output;
+};
+
+
+#endif
 
 
 
@@ -1466,6 +1489,7 @@ void initialize_unixfsys()
     Defun(getpid);
     Defun(getppid);
     Defun(waitpid);
+    ClDefun(fileAuthor);
 };
 
 
