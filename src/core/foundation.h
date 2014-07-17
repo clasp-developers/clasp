@@ -872,7 +872,13 @@ namespace core {
 /* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
    should be written, the closed over environment for the function, the number of args, three explicit args that will pass in registers (or be NULL)
    and a varargs list */
-typedef void (*LispCallingConventionPtr)(T_mv* result, ActivationFrame_sp env, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, ...);
+typedef void (*LispCallingConventionPtr)(T_mv* result, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, ...);
+
+
+
+#include "lispCallingConvention.h"
+
+
 //typedef void (*GenericFunctionCallingConventionPtr)(T_mv* result, ActivationFrame_sp env, Instance_sp genericFunction, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, ...);
 
 }
@@ -1191,7 +1197,7 @@ namespace core
 	str_type _Name;
     public:
 	virtual string describe() const {return "Functoid - subclass must implement describe()";};
-	virtual T_mv activate(ActivationFrame_sp closedOverFrame, int nargs, ArgArray argArray) {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
+	virtual ACTIVATE_PROTOTYPE() {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
         virtual size_t templatedSizeof() const = 0;
 	void dump() const
 	{
@@ -1211,10 +1217,12 @@ namespace core
 
     class Closure : public Functoid
     {
+    private:
+        // TODO-VARARGS:   There needs to be an environment saved in here
     public:
         void* operator new(size_t s) {THROW_HARD_ERROR(BF("Use gctools"));};
 	virtual string describe() const {return "Closure";};
-	virtual T_mv activate(ActivationFrame_sp closedOverEnv, int nargs, ArgArray argArray) {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
+	virtual ACTIVATE_PROTOTYPE() {printf("Subclass of Closure must implement 'activate'\n"); exit(1);};
 
 	Closure(const string& name) : Functoid(name) {};
 	virtual ~Closure() {};
