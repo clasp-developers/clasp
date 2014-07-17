@@ -34,25 +34,27 @@ $for template_ [[
         VariadicFunctoid(const string& name, Type ptr) : Functoid(name), fptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-        core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
+        LISP_CALLING_CONVENTION()
         {
-            if ( numArgs != (NumParams) )
+            if ( lcc_nargs != (NumParams) )
             {
-                core::wrongNumberOfArguments(numArgs,NumParams);
+                core::wrongNumberOfArguments(lcc_nargs,NumParams);
             }
-                $for Args_ [[
-                    translate::from_object<ARG$Args_> a$Args_(*args);
-                    ++args;
-                    ]]
-                $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
+            LCC_VA_START$numArgs();
+            $for Args_ [[translate::from_object<ARG$Args_> a$Args_(LCC_ARG$Args_());
+            ]]
+            LCC_VA_END$numArgs();
+     $$ Do the call
+            $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
             $if ret==RetVoid [[
-                    return Values0<core::T_O>();
-                    ]] $elif ret==RetMV [[
-                    return retval;
-                    ]] $else [[
-                    return Values(translate::to_object<RT>::convert(retval));
-                    ]]
-                }
+                *lcc_resultP = Values0<core::T_O>();
+            ]] $elif ret==RetMV [[
+                *lcc_resultP = retval;
+            ]] $else [[
+                *lcc_resultP = Values(translate::to_object<RT>::convert(retval));
+            ]]
+            return;
+        }
 
         };
         ]]
