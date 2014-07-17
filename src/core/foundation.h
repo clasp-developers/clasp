@@ -824,8 +824,10 @@ namespace core {
     typedef	core::T_sp* 	ArgArray;
 
 
+
 namespace core {
     class Instance_O;
+    typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
     typedef T_mv (*ArgArrayGenericFunctionPtr)(const Instance_O& gf, int nargs, ArgArray argArray);
@@ -865,6 +867,13 @@ namespace core {
  * \param replace The string to replace with
  */
     string searchAndReplaceString(const string& str, const string& search, const string& replace,Lisp_sp lisp);
+
+
+/* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
+   should be written, the closed over environment for the function, the number of args, three explicit args that will pass in registers (or be NULL)
+   and a varargs list */
+typedef void (*LispCallingConventionPtr)(T_mv* result, ActivationFrame_sp env, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, ...);
+//typedef void (*GenericFunctionCallingConventionPtr)(T_mv* result, ActivationFrame_sp env, Instance_sp genericFunction, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, ...);
 
 }
 

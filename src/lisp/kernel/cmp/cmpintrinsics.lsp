@@ -161,13 +161,14 @@ Boehm and MPS use a single pointer"
 
 (defconstant +fn-tmv*-afsp*-afsp*-argument-names+ '("result-ptr" "closed-af-ptr" "arguments-af-ptr"))
 (defconstant +fn-tmv*-afsp*-afsp*+ (llvm-sys:function-type-get +void+ (list +tmv*+ +afsp*+ +afsp*+ ))
+
+
   "The old style function prototypes, pass:
 1) A pointer for where to put the result
 2) A closed over runtime environment
 3) A activation frame containing the arguments")
 
 (defconstant +va-list+ +tsp*+)
-;;(defconstant +tagged-ptr+ +i8*+)
 (defconstant +fn-varargs-prototype-argument-names+ '("result-ptr" "closed-af-ptr" "num-varargs" "va-list"))
 (defconstant +fn-varargs-prototype+ (llvm-sys:function-type-get +void+ (list +tmv*+ +afsp*+ +i32+ +va-list+ ) #|| NOT VARARGS - use va-list ||# )
   "The new style function prototypes, pass:
@@ -184,12 +185,19 @@ Boehm and MPS use a single pointer"
 	     (defconstant +fn-prototype+ +fn-tmv*-afsp*-afsp*+)
 	     (defconstant +fn-prototype-argument-names+ +fn-tmv*-afsp*-afsp*-argument-names+))
 
+
 (defconstant +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
   "A pointer to the function prototype")
 
-
 (defconstant +fn-void+ (llvm-sys:function-type-get +void+ nil))
 (defconstant +fn-void-ptr+ (llvm-sys:type-get-pointer-to +fn-void+))
+
+
+(defconstant +lisp-calling-convention-argument-names+ '("result" "env" "nargs" "arg0" "arg1" "arg2"))
+(defconstant +lisp-calling-convention+ (llvm-sys:function-type-get +void+ (list +tmv*+ +afsp+ +i32+ +tsp+ +tsp+ +tsp+) t)
+  "The calling convention for generated function code - this must match foundation.h  core::FunctionCallingConvention" )
+(defconstant +lisp-calling-convention-ptr+ (llvm-sys:type-get-pointer-to +lisp-calling-convention+))
+
 
 
 
@@ -348,7 +356,10 @@ Boehm and MPS use a single pointer"
   (primitive module name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return))
 
 (defun define-primitives-in-module (module)
-  (primitive module "testVarargs" +i32+ (list +i32+) :varargs t)
+
+
+  (primitive module "lccGlobalFunction" +lisp-calling-convention-ptr+ (list +symsp+))
+
   (primitive-does-not-throw module "newFunction_sp" +void+ (list +Function_sp*+))
   (primitive-does-not-throw module "destructFunction_sp" +void+ (list +Function_sp*+))
   (primitive-does-not-throw module "newTsp" +void+ (list +tsp*+))

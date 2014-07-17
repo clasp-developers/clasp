@@ -33,6 +33,47 @@ using namespace core;
 
 #pragma GCC visibility push(default)
 
+
+extern "C"
+{
+
+    LispCallingConventionPtr lccGlobalFunction( core::Symbol_sp sym)
+    {
+        printf("%s:%d lccSymbolFunction for %s returning NULL for now\n", __FILE__, __LINE__, _rep_(sym).c_str() );
+        return NULL;
+    }
+
+
+#if 0
+    void varargs_lexicalFunction( core::Function_sp* resultP, int depth, int index, core::ActivationFrame_sp* evaluateFrameP )
+    {_G();
+	LOG(BF("About to invoke lexicalFunction depth[%d] index[%d]") % depth % index );
+	(*resultP) = (*evaluateFrameP)->lookupFunction(depth,index).as<core::Function_O>();
+	ASSERTF((*resultP).pointerp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
+		% depth % index % _rep_(*evaluateFrameP) );
+    }
+
+#endif
+
+
+
+    int testVarargs(int numargs, ...)
+    {
+//        printf("%s:%d Entered testVarargs with numargs=%d: ", __FILE__, __LINE__, numargs );
+        int i(0);
+        va_list argp;
+        va_start(argp,numargs);
+        for ( ; numargs; --numargs ) {
+            i = va_arg(argp,int);
+//            printf("%d ", i );
+        }
+        va_end(argp);
+//        printf("\n");
+        return i;
+    }
+
+
+};
 extern "C" 
 {
 
@@ -64,22 +105,6 @@ extern "C"
 	}
     }
 
-
-
-    int testVarargs(int numargs, ...)
-    {
-//        printf("%s:%d Entered testVarargs with numargs=%d: ", __FILE__, __LINE__, numargs );
-        int i(0);
-        va_list argp;
-        va_start(argp,numargs);
-        for ( ; numargs; --numargs ) {
-            i = va_arg(argp,int);
-//            printf("%d ", i );
-        }
-        va_end(argp);
-//        printf("\n");
-        return i;
-    }
 
     void unreachableError()
     {

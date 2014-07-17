@@ -961,11 +961,26 @@ Within the _irbuilder_ dynamic environment...
 	(irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))
       code)))
 
+(defun null-tsp ()
+  (llvm-sys:constant-struct-get +tsp+ (list (llvm-sys:constant-pointer-null-get +t-ptr+))))
 
-(defun irc-create-varargs-call (function-name args label)
-  (let ((func (get-function-or-error *the-module* function-name (car args)))
-        (iargs (mapcar (lambda (x) (jit-constant-i32 x)) args)))
-    (llvm-sys:create-call-array-ref *irbuilder* func (list* (jit-constant-i32 (length args)) iargs) label)))
+(defun null-afsp ()
+  (llvm-sys:constant-struct-get +afsp+ (list (llvm-sys:constant-pointer-null-get +af-ptr+))))
+
+
+(defun irc-varargs-funcall (lcc-func result closed-af args)
+  (let* ((nargs (length args))
+         (targs args)
+         ;; ensure that there are three fixed arguments
+         (real-args (case nargs
+                      (0 (list (null-tsp) (null-tsp) (null-tsp)))
+                      (1 (list (pop targs) (null-tsp) (null-tsp)))
+                      (2 (list (pop targs) (pop targs) (null-tsp)))
+                      (3 (list (pop targs) (pop targs) (pop targs)))
+                      (otherwise targs))))
+    (bformat t "About to create function with args: %s\n" real-args)
+    (bformat t "Warning: I'm not using the closed-env in irc-varargs-funcall\n")
+    (llvm-sys:create-call-array-ref *irbuilder* lcc-func (list* result (null-afsp) (jit-constant-i32 nargs) real-args) "")))
 
 
 (defun irc-create-call (func args label)
