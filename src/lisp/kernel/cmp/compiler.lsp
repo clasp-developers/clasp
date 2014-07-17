@@ -1011,8 +1011,12 @@ jump to blocks within this tagbody."
 
 
 
-(defun codegen-llvm-inline (result rest env)
-  (eval `(progn ,@rest)))
+(defun codegen-llvm-inline (result result-env-body compiler-env)
+  (destructuring-bind ((result-name env-name) &body body)
+      result-env-body
+    (eval `(let ((,result-name ,result)
+                 (,env-name ,compiler-env))
+             ,@body))))
 
 
 

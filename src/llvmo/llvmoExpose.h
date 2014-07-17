@@ -756,6 +756,32 @@ namespace translate
 	from_object(T_P object) : _v(object.as<llvmo::Constant_O>()->wrappedPtr()) {};
     };
 
+
+    template <>
+    struct from_object<llvm::ArrayRef<llvm::Constant*> > {
+        typedef std::vector<llvm::Constant*> DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+            if ( o.nilp() ) {
+                _v.clear();
+                return;
+            } else if ( core::Cons_sp cvals = o.asOrNull<core::Cons_O>() ) {
+                for ( ; cvals.notnilp(); cvals=cCdr(cvals) ) {
+                    llvm::Constant* vP = core::oCar(cvals).as<llvmo::Constant_O>()->wrappedPtr();
+                    _v.push_back(vP);
+                }
+                return;
+            } else if ( core::Vector_sp vvals = o.asOrNull<core::Vector_O>() ) {
+                _v.resize(vvals->length());
+                for (int i(0),iEnd(vvals->length()); i<iEnd; ++i ) {
+                    _v[i] = vvals->elt(i).as<llvmo::Constant_O>()->wrappedPtr();
+                }
+                return;
+            }
+            SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Constant*>") % core::_rep_(o));
+        }
+    };
+
 };
 ;
 
@@ -2824,6 +2850,49 @@ namespace translate
         static core::T_sp convert(llvm::ConstantInt* ptr)
         {_G(); return(( llvmo::ConstantInt_O::create(ptr)));}
     };
+};
+;
+
+
+
+
+namespace llvmo
+{
+    FORWARD(ConstantStruct);
+    class ConstantStruct_O : public Constant_O
+    {
+	LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::ConstantStruct,ConstantStruct_O,"ConstantStruct",Constant_O);
+	typedef llvm::ConstantStruct ExternalType;
+	typedef llvm::ConstantStruct* PointerToExternalType;
+
+    public:
+	PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr);};
+	PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr);};
+	void set_wrapped(PointerToExternalType ptr)
+	{
+/*        if (this->_ptr != NULL ) delete this->_ptr; */
+	    this->_ptr = ptr;
+	}
+	static ConstantStruct_sp create(llvm::ConstantStruct* ptr);
+	;
+	ConstantStruct_O() : Base() {};
+	~ConstantStruct_O() {}
+    public:
+    }; // ConstantStruct_O
+}; // llvmo
+TRANSLATE(llvmo::ConstantStruct_O);
+/* from_object translators */
+/* to_object translators */
+
+namespace translate
+{
+    template <>
+    struct to_object<llvm::ConstantStruct*>
+    {
+        static core::T_sp convert(llvm::ConstantStruct* ptr)
+        {_G(); return(( llvmo::ConstantStruct_O::create(ptr)));}
+    };
+
 };
 ;
 

@@ -2138,6 +2138,34 @@ namespace llvmo
 
 
 
+
+namespace llvmo
+{
+    ConstantStruct_sp ConstantStruct_O::create(llvm::ConstantStruct* ptr) {_G(); return core::RP_Create_wrapped<ConstantStruct_O,llvm::ConstantStruct*>(ptr);}
+    ;
+
+
+    EXPOSE_CLASS(llvmo,ConstantStruct_O);
+
+    void ConstantStruct_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<ConstantStruct_O>()
+	    ;
+	llvm::Constant* (*get1)(llvm::StructType *T, llvm::ArrayRef<llvm::Constant*> ) = &llvm::ConstantStruct::get;
+	core::af_def(LlvmoPkg,"constantStructGet",get1);
+    };
+
+    void ConstantStruct_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+
+
+}; // llvmo
+
+
+
+
 namespace llvmo
 {
     UndefValue_sp UndefValue_O::create(llvm::UndefValue* ptr) {_G(); return core::RP_Create_wrapped<UndefValue_O,llvm::UndefValue*>(ptr);}
@@ -2382,10 +2410,12 @@ namespace llvmo
 		SIMPLE_ERROR(BF("You tried to create an unsigned I%d with a value[%s] that requires %d bits to represent") % width % numstr % mpz_size_in_bits );
 	    }
 	}
+#if 0
 	if ( numbits < width )
 	{
 	    apint = apint.zext(width);
 	}
+#endif
 	self->_value = apint;
 	return self;
     }
