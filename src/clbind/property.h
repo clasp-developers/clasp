@@ -21,27 +21,22 @@ namespace clbind {
 
 
     template <typename GetterPolicies, typename OT, typename VariablePtrType >
-    class GetterMethoid : public core::Functoid {
+    class GetterMethoid : public core::BuiltinClosure {
     public:
-        typedef core::Functoid TemplatedBase;
+        typedef core::BuiltinClosure TemplatedBase;
     private:
         typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
         typedef clbind::Wrapper<MemberType>     WrapperType;
-        string                          _Name;
         VariablePtrType                 _MemberPtr;
     public:
         virtual size_t templatedSizeof() const { return sizeof(*this); };
     public:
-        GetterMethoid(const string& name, VariablePtrType p) : Functoid(name), _MemberPtr(p) {};
+        GetterMethoid(core::T_sp name, VariablePtrType p) : core::BuiltinClosure(name), _MemberPtr(p) {};
         DISABLE_NEW();
-        virtual core::T_mv activate(core::ActivationFrame_sp closedOverFrame, int nargs, ArgArray args) {
-            OT* objPtr = (*args).as<core::WrappedPointer_O>()->cast<OT>();
+        void LISP_CALLING_CONVENTION() {
+            OT* objPtr = (LCC_ARG0()).as<core::WrappedPointer_O>()->cast<OT>();
             MemberType& orig = (*objPtr).*(this->_MemberPtr);
-            return translate::to_object<MemberType,translate::adopt_pointer>::convert(orig);
-#if 0
-            MemberType* copy = new MemberType(orig);
-            return Values(WrapperType::create(copy,reg::registered_class<MemberType>::id));
-#endif
+            *lcc_resultP = translate::to_object<MemberType,translate::adopt_pointer>::convert(orig);
         }
     };
 
@@ -49,23 +44,20 @@ namespace clbind {
 
 namespace clbind {
     template <typename GetterPolicies, typename OT, typename MemberType >
-    class GetterMethoid<GetterPolicies,OT, MemberType*const(OT::*)> : public core::Functoid {
-        typedef core::Functoid TemplatedBase;
+    class GetterMethoid<GetterPolicies,OT, MemberType*const(OT::*)> : public core::BuiltinClosure {
+        typedef core::BuiltinClosure TemplatedBase;
     private:
         typedef clbind::Wrapper<MemberType>     WrapperType;
         string                          _Name;
         typedef MemberType*const(OT::*VariablePtrType);
         VariablePtrType                 _MemberPtr;
     public:
-        GetterMethoid(const string& name, VariablePtrType p) : Functoid(name), _MemberPtr(p) {};
+        GetterMethoid(core::T_sp name, VariablePtrType p) : BuiltinClosure(name), _MemberPtr(p) {};
         DISABLE_NEW();
-        virtual core::T_mv activate(core::ActivationFrame_sp closedOverFrame, int nargs, ArgArray args) {
-            OT* objPtr = (*args).as<core::WrappedPointer_O>()->cast<OT>();
+        void LISP_CALLING_CONVENTION() {
+            OT* objPtr = (LCC_ARG0()).as<core::WrappedPointer_O>()->cast<OT>();
             MemberType* ptr = (*objPtr).*(this->_MemberPtr);
-            return translate::to_object<MemberType*,translate::dont_adopt_pointer>::convert(ptr);
-#if 0
-            return Values(WrapperType::create(ptr,reg::registered_class<MemberType>::id));
-#endif
+            *lcc_resultP = translate::to_object<MemberType*,translate::dont_adopt_pointer>::convert(ptr);
         }
     };
 

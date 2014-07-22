@@ -17,10 +17,9 @@ namespace core
 
 
 
-
-    class SingleDispatchGenericFunction_O : public BuiltIn_O
+    class SingleDispatchGenericFunction_O : public Function_O
     {
-	LISP_BASE1(BuiltIn_O);
+	LISP_BASE1(Function_O);
 	LISP_CLASS(core,CorePkg,SingleDispatchGenericFunction_O,"single-dispatch-generic-function");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
@@ -34,14 +33,15 @@ namespace core
     public:
 	void initialize();
 	
-    private: // instance variables here
+    public: // instance variables here
+        T_sp            name;
 	/*! Store the methods here */
 	Cons_sp		_Methods;
-
+        LambdaListHandler_sp lambdaListHandler;
 	/*! Store the effective method functions hashed on the receiver class */
 	HashTable_sp	_classes_to_emf_table;
     private:
-	T_mv INVOKE(int nargs, ArgArray args);
+	void LISP_INVOKE();
     public:
 	static SingleDispatchGenericFunction_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
     public: // Functions here
@@ -81,19 +81,20 @@ namespace core
     public:
         DISABLE_NEW();
 	virtual string describe() const {return "SingleDispatchGenericFunctoid";};
-	virtual T_mv activate( ActivationFrame_sp closedEnv,int nargs, ArgArray args )
+	virtual void LISP_CALLING_CONVENTION()
 	{
-	    return this->_sdgf->INVOKE(nargs,args);
+            IMPLEMENT_MEF(BF("Handle single dispatch"));
+#if 0            
+	    *lcc_resultP = this->_sdgf->INVOKE(lcc_nargs, nargs,args);
+#endif
 	}
     };
 
 
-    class Lambda_emf : public Functoid
+    class Lambda_emf : public FunctionClosure
     {
         FRIEND_GC_SCANNER();
     private:
-	/*! Store the name of the function that this Lambda_emf invokes - for debugging */
-	Symbol_sp		_name;
 	/*! Store the method_function that this emf invokes.
 	  This function takes two arguments: (args next-emfun) */
 	Function_sp		_method_function;
@@ -102,17 +103,19 @@ namespace core
 	bool requires_activation_frame() const { return true;};
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:
-	Lambda_emf(const string& name,
+	Lambda_emf(T_sp name,
 		   SingleDispatchGenericFunction_sp gf,
-		   Symbol_sp emf_name,
 		   SingleDispatchMethod_sp cur_method );
         DISABLE_NEW();
 
-        virtual T_mv activate( ActivationFrame_sp closedEnv,int nargs, ArgArray args )
+        virtual void LISP_CALLING_CONVENTION()
         {
+            IMPLEMENT_ME();
+#if 0
             // The closedEnv 
             ASSERTF(closedEnv.nilp(),BF("Since I don't pass the closedEnv forward it I expect that it should always be nil - this time it wasn't - figure out what is up with that"));
             return this->_method_function->INVOKE(nargs,args);	    
+#endif
         }
     };
 

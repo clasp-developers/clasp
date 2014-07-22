@@ -6,17 +6,16 @@ $var ReturnTypeCount = 3
     $var RetSV = 0
     $var RetVoid = 1
     $var RetMV = 2
-    $var MaxArgs = 8
-    $var InnerCount = MaxArgs+1
+    $var MaxArgs = 16
     $range isConst 0..1
     $range ret 0..(ReturnTypeCount-1)
-    $range innerCount 0..(InnerCount-1)
+    $range innerCount 0..(MaxArgs-1)
     $for isConst [[
         $for ret [[
                 $for innerCount [[
                         $var numVoids = innerCount
                         $var numArgs = MaxArgs - numVoids
-                        $range Args_ 0..(numArgs-1)
+                        $range Args_ 1..(numArgs-1)
                         //
                         // ret = $ret  $if ret==RetSV [[RetSV]] $elif ret==RetVoid [[RetVoid]] $else [[RetMV]] 
                         //
@@ -24,38 +23,33 @@ $var ReturnTypeCount = 3
                         // numArgs = $numArgs 
                         // numVoids = $numVoids    
                         /* Specialization */
-                        template <int DispatchOn $if ret==RetVoid [[]] $else [[,typename RT]], typename OT $if numArgs [[,]]  $for Args_ ,[[typename ARG$Args_]] >
+                        template <int DispatchOn $if ret==RetVoid [[]] $else [[,typename RT]], typename OT $if numArgs>1 [[,]]  $for Args_ ,[[typename ARG$Args_]] >
                         class VariadicMethoid
                         <DispatchOn,$if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-                        : public Functoid {
+                        : public BuiltinClosure {
                         public:
-                                typedef Functoid TemplatedBase;
+                                typedef BuiltinClosure TemplatedBase;
                         public:
                             typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](OT::*Type)($for Args_ , [[ARG$Args_]]) $if isConst [[const]];
                             Type mptr;
                         public:
                             enum { NumParams = $numArgs };
-                            VariadicMethoid(const string& name, Type ptr) : Functoid(name), mptr(ptr) {};
+                            VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
                             DISABLE_NEW();
                             virtual size_t templatedSizeof() const { return sizeof(*this);};
-                            core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
+                            void LISP_CALLING_CONVENTION()
                             {
-                                if ( numArgs-1 != (NumParams) )
-                                {
-                                    core::wrongNumberOfArguments(numArgs,NumParams+1);
-                                }
-                                gctools::smart_ptr<OT> ot((*args).template as<OT>());
-                                $for Args_ [[
-                                        ++args;
-                                        translate::from_object<ARG$Args_> a$Args_(*args);
-                                        ]]
-                                    $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] ((*ot.get()).*mptr)($for Args_ ,[[a$Args_._v]]);
+                                if ( lcc_nargs != $numArgs ) core::wrongNumberOfArguments(lcc_nargs,$numArgs);
+                                gctools::smart_ptr<OT> ot((LCC_ARG0()).template as<OT>());
+                                $for Args_ [[translate::from_object<ARG$Args_> a$Args_(LCC_ARG$Args_());
+                                ]]
+                                $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] ((*ot.get()).*mptr)($for Args_ ,[[a$Args_._v]]);
                                 $if ret==RetVoid [[
-                                        return Values0<core::T_O>();
+                                        *lcc_resultP = Values0<core::T_O>();
                                         ]] $elif ret==RetMV [[
-                                        return retval;
+                                        *lcc_resultP = retval;
                                         ]] $else [[
-                                        return Values(translate::to_object<RT>::convert(retval));
+                                        *lcc_resultP = Values(translate::to_object<RT>::convert(retval));
                                         ]]
                                     }
 

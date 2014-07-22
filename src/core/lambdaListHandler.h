@@ -164,6 +164,9 @@ namespace core
 	void createBindingsInScope_argArray(int n_args, ArgArray argArray,
 				   DynamicScopeManager& scope );
 
+	void createBindingsInScope_argArray_TPtr(int n_args, T_O* argArray[],
+                                                 DynamicScopeManager& scope );
+
 	/*! Return a list of expressions that can be evaluated in (env) to generate a list of values that would
 	  be put into the classifiedSymbols */
 	Cons_sp lambdaListParts(Environment_sp env);

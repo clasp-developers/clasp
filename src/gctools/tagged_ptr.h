@@ -73,14 +73,13 @@ namespace gctools {
         }
 
 
-        tagged_ptr( const T * p, bool add_ref = true )
+        tagged_ptr( const T * p )
         {
             typedef typename std::remove_const<T>::type *no_const_T_ptr;
             this->px = const_cast<no_const_T_ptr>(p);
 #ifdef USE_TAGGED_PTR_P0
             this->pbase = ClientPtrToBasePtr(dynamic_cast<void*>(const_cast<no_const_T_ptr>(this->px)));
 #endif
-            BOOST_ASSERT(p==0 || pointerp());
         }
 
 
@@ -124,6 +123,7 @@ namespace gctools {
         {
         }
 
+
         ~tagged_ptr()
         {
         }
@@ -149,6 +149,25 @@ namespace gctools {
             rhs.pbase = 0;
 #endif
         }
+
+
+
+        core::T_O* asTPtr() const {
+            if (this->px&&tag_mask) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreinterpret-base-class"
+                return reinterpret_cast<core::T_O*>(this->px);
+#pragma clang diagnostic pop
+            } else {
+                return static_cast<core::T_O*>(this->px);
+            }
+        }
+
+
+
+
+
+
 
         tagged_ptr & operator=(tagged_ptr && rhs)
         {
@@ -282,6 +301,14 @@ namespace gctools {
         void _pxset(void* npx) const {
             this->px = reinterpret_cast<PointerType>(npx);
         }
+
+        core::T_O* asArg() const {
+            if (this->pointerp()) {
+                return dynamic_cast<core::T_O*>(this->px_ref());
+            }
+            return reinterpret_cast<core::T_O*>(this->px);
+        }
+
 
 #ifdef USE_TAGGED_PTR_P0
         void*& pbase_ref() const

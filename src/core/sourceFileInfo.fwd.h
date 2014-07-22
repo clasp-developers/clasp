@@ -4,6 +4,7 @@
 namespace core
 {
     FORWARD(SourceFileInfo);
+    FORWARD(SourcePosInfo);
     FORWARD(SourceManager);
 };
 

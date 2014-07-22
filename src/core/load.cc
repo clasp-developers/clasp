@@ -42,8 +42,10 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
     }
     try {
         DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
+        printf("%s:%d   Here set-up *load-pathname*, *load-truename* and *load-source-file-info*\n", __FILE__, __LINE__ );
 	while (true) {
 	    bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
+            printf("%s:%d   Here set-up *load-current-linenumber* and *load-current-column*\n", __FILE__, __LINE__ );
 	    T_sp x = read_lisp_object(strm,false,_Unbound<T_O>(),false);
 	    if ( x.unboundp() ) break;
 	    if ( echoReplRead ) {

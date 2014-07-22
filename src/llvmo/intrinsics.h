@@ -8,22 +8,25 @@ extern "C"
     typedef void (*fnVoidType)();
 
 
-    class  JITClosure : public core::Closure
+    class  JITClosure : public core::FunctionClosure
     {
     protected:
 	fnTmvActivationFramesp	_FuncPtr;
     public:
 	// By default the zeroth argument is dispatched on
-	explicit JITClosure(const string& name,fnTmvActivationFramesp fptr) : Closure(name), _FuncPtr(fptr) {};
+	explicit JITClosure(core::T_sp name,fnTmvActivationFramesp fptr) : FunctionClosure(name), _FuncPtr(fptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this);};
 	virtual string describe() const {return "JITClosure";};
-	core::T_mv activate(core::ActivationFrame_sp closedEnv,int nargs, ArgArray args)
+	void LISP_CALLING_CONVENTION()
 	{
+            IMPLEMENT_MEF(BF("Handle LISP_CALLING_CONVENTION"));
+#if 0
 	    core::T_mv result;
 	    core::ActivationFrame_sp tclosedEnv(closedEnv);
 	    this->_FuncPtr(&result,&tclosedEnv,nargs, args);
 	    return result;
+#endif
 	}
     };
 

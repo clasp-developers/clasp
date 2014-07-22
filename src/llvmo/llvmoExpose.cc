@@ -3555,18 +3555,25 @@ namespace llvmo
 	}
 	LLVMFunctoid::fptr_type lisp_funcPtr = (LLVMFunctoid::fptr_type)(p);
 	string functoidName = sym.nilp() ? "" : sym->fullName();
+        IMPLEMENT_MEF(BF("Handle the function name"));
+#if 0
+        stringstream llvmName;
+        llvmName << "llvmfunctoid>" << functoidName;
+        // use llvmName for closure
+        Symbol_sp sym = lisp_lispifyAndInternWithPackageNameIfNotGiven(_lisp->currentPackage()->packageName()->get(),llvmName.str());
+
 	LLVMFunctoid* functoid = gctools::ClassAllocator<LLVMFunctoid>::allocateClass(functoidName,lisp_funcPtr);
-	core::CompiledBody_sp compiledBody = core::CompiledBody_O::create(functoid,fn);
-	core::CompiledFunction_sp func = core::CompiledFunction_O::makeCompiledFunction( sym,
+#if 0 // Use this info in the creation of the LLVMFunctoid
+sym,
 											 compiledBody,
 											 activationFrameEnvironment,
 											 _Nil<core::SourceFileInfo_O>(), 0, 0,
 											 functionKind );
-// globalRunTimeValues are registered once        
-//        void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalRunTimeValueName->get()));
-//        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalRunTimeValueName->get().c_str(), globalPtr );
-//        IMPLEMENT_MEF(BF("Register the global runTimeValue pointer with the garbage collector"));
 	return func;
+#endif
+	core::CompiledBody_sp compiledBody = core::CompiledBody_O::create(functoid,fn);
+	core::CompiledFunction_sp func = core::CompiledFunction_O::make(funtoid);
+#endif
     }
 
 
@@ -3594,7 +3601,7 @@ namespace llvmo
 	
 	/* Run the function */
 //	printf( "%s:%d - Calling startup function in: %s - Figure out what to do here - I need to start using the unix backtrace and dwarf debugging information rather than setting up my own backtrace info in the IHF", __FILE__, __LINE__, fileName->c_str() );
-	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<core::T_O>());
+//	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<core::T_O>());
 #ifdef USE_MPS
         void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalLoadTimeValueName->get()));
 //        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalLoadTimeValueName->get().c_str(), globalPtr );

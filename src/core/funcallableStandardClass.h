@@ -98,7 +98,7 @@ namespace core {
         DISABLE_NEW();
 
         virtual string describe() const {return "FuncallableStandardClassInitializationFunctoid";};
-        FuncallableStandardClassInitializationFunctoid(const string& name, FuncallableStandardClass_sp c) : Functoid(name)
+        FuncallableStandardClassInitializationFunctoid(T_sp name, FuncallableStandardClass_sp c) : Functoid(name)
         { this->_FuncallableStandardClass = c;};
         virtual ~FuncallableStandardClassInitializationFunctoid() {};
     };

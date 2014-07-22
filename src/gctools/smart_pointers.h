@@ -281,7 +281,7 @@ namespace gctools
             int number_of_values() const { return this->_NULLp() ? 0 : 1;};
 
 	bool notnilp() const { return (!this->nilp());};
-	bool isTrue() const { return (!this->nilp() || internal_isTrue(this)); };
+	bool isTrue() const { return !this->nilp(); };
         bool base_fixnump() const { return this->BaseType::fixnump(); };
 	bool fixnump() const {return lisp_fixnumP(*this);};
 	bool characterp() const {return lisp_characterP(*this);};

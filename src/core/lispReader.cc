@@ -468,8 +468,7 @@ namespace core
                     _lisp->sourceDatabase()->registerSourceInfo(otherResult,
                                                                 sin->sourceFileInfo(),
                                                                 start_lineNumber,
-                                                                start_column,
-                                                                start_filePos);
+                                                                start_column );
                 }
 		return(otherResult);
 	    }
@@ -505,7 +504,7 @@ namespace core
 		    }
 		    Cons_sp one = Cons_O::create(obj,_Nil<Cons_O>());
                     if ( _lisp->sourceDatabase().notnilp() ) {
-                        _lisp->sourceDatabase()->registerSourceInfo(one,af_sourceFileInfo(sin),start_lineNumber,start_column,start_filePos);
+                        _lisp->sourceDatabase()->registerSourceInfo(one,af_sourceFileInfo(sin),start_lineNumber,start_column);
                     }
 		    LOG(BF("One = %s\n") % _rep_(one) );
 		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(af_sourceFileInfo(one)) );

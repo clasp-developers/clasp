@@ -463,7 +463,7 @@ namespace core
     {_G();
 	Function_sp func = af_interpreter_lookup_macro(symbol,env);
 	if ( func.nilp() ) return _Nil<T_O>();
-	if ( func->macroP() ) return func;
+	if ( func->closure->macroP() ) return func;
 	return _Nil<T_O>();
     }
     
@@ -676,10 +676,10 @@ namespace core
 	    {
 		SIMPLE_ERROR(BF("You cannot define a macro with the name[%s]") % _rep_(functionName) );
 	    }
-	    fn->set_kind(kw::_sym_macro);
+	    fn->closure->setKind(kw::_sym_macro);
 	} else
 	{
-	    fn->set_kind(kw::_sym_function);
+	    fn->closure->setKind(kw::_sym_function);
 	}
 	if ( af_symbolp(functionName) )
 	{
@@ -1112,7 +1112,7 @@ namespace core
 		++idx;
 	    }
 	    LOG(BF("About to evaluate map op[%s] on arguments[%s]") % _rep_(op) % _rep_(frame) );
-	    T_sp res = op->INVOKE(frame->length(),frame->argArray()); // T_sp res = eval::applyFunctionToActivationFrame(op,frame);
+            T_sp res = eval::apply(op,frame);
 	}
     RETURN:
 	return(Values(oCar(lists)));
@@ -1151,7 +1151,7 @@ namespace core
 	    }
 	    LOG(BF("About to evaluate map op[%s] on arguments[%s]")
 		% _rep_(op) % _rep_(frame) );
-	    T_sp res = op->INVOKE(frame->length(),frame->argArray()); // T_sp res = eval::applyFunctionToActivationFrame(op,frame);
+            T_sp res = eval::apply(op,frame);
 	    Cons_sp one = Cons_O::create(res);
 	    curResult->setCdr(one);
 	    curResult = one;

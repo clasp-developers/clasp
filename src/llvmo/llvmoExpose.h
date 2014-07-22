@@ -683,7 +683,7 @@ namespace translate
 
 namespace llvmo
 {
-    class LLVMFunctoid : public core::Functoid {
+    class LLVMFunctoid : public core::FunctionClosure {
     public:
 //	typedef core::T_sp (*fptr_type)( core::ActivationFrame_sp);
 #ifdef VARARGS
@@ -692,18 +692,22 @@ namespace llvmo
 	typedef void (*fptr_type)( core::T_mv*, core::ActivationFrame_sp, core::const_ActivationFrame_spREF);
 #endif
     private:
+        Function_sp             llvmFunction;
 	fptr_type		fptr;
 // constructor
     public:
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:
-	LLVMFunctoid( const string& name, fptr_type ptr) : Functoid("LLVMFunctoid->"+name), fptr(ptr) {};
+	LLVMFunctoid( core::T_sp name, fptr_type ptr, Function_sp llvmFunc) : FunctionClosure(name), fptr(ptr) {};
         DISABLE_NEW();
-	core::T_mv activate(core::ActivationFrame_sp closedEnv, int nargs, ArgArray args )
+	void LISP_CALLING_CONVENTION()
 	{_G();
+            IMPLEMENT_MEF(BF("Handle new approach"));
+#if 0
 	    core::T_mv result;
 	    (*(this->fptr))(&result,closedEnv,nargs,args);
 	    return result;
+#endif
 	};
 
     };

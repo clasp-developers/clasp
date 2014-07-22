@@ -1270,7 +1270,7 @@ namespace core
 		ss << "UNBOUND";
 	    } else {
 		Function_sp func = entry.as<Function_O>();
-		ss << "function "<< _rep_(func->getFunctionName());
+		ss << "function "<< _rep_(func->closure->name);
 	    }
 	    ss << std::endl;
 	    return true;

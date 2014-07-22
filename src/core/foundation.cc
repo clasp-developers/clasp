@@ -467,6 +467,15 @@ namespace core
 	return sym->symbolNameAsString();
     }
 
+    string symbol_packageName(Symbol_sp sym)
+    {
+        Package_sp p = sym->homePackage();
+        if ( p.nilp() ) {
+            return "";
+        }
+        return p->packageName();
+    }
+
     string symbol_repr(Symbol_sp sym)
     {
 	return _rep_(sym);
@@ -551,14 +560,8 @@ namespace core
 	return eval::applyToActivationFrame(funcDesig,frame);
     }
 
-#if 0
-    Symbol_sp lisp_allocate_packageless_sid(string const& name)
-    {
-	Symbol_sp sym = Symbol_O::create_classless_packageless(name);
-	return sym;
-    }
-#endif
 
+#if 0
     string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash)
     {_G();
 	if ( convertUnderscoreToDash )
@@ -568,7 +571,7 @@ namespace core
 	}
 	return cname;
     }
-
+#endif
 
     string _rep_(T_sp obj)
     {
@@ -595,11 +598,6 @@ namespace core
 #endif
     }
 
-
-    Lisp_sp lisp_lisp(Lisp_sp lisp)
-    {
-	return lisp;
-    }
 
     void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId )
     {_G();
@@ -649,33 +647,34 @@ namespace core
     }
 
 
-    T_sp lisp_ocar(Lisp_sp lisp, Cons_sp args)
+    T_sp lisp_ocar(Cons_sp args)
     {_G();
 	return oCar(args);
     }
 
-    T_sp lisp_ocadr(Lisp_sp lisp, Cons_sp args)
+    T_sp lisp_ocadr(Cons_sp args)
     {_G();
 	return oCadr(args);
     }
 
-    T_sp lisp_ocaddr(Lisp_sp lisp, Cons_sp args)
+    T_sp lisp_ocaddr(Cons_sp args)
     {_G();
 	return oCaddr(args);
     }
 
 
-    bool lisp_CoreBuiltInClassesInitialized(Lisp_sp lisp)
+    bool lisp_CoreBuiltInClassesInitialized()
     {_G();
-	return lisp->CoreBuiltInClassesInitialized();
+	return _lisp->CoreBuiltInClassesInitialized();
     }
 
-    bool lisp_BuiltInClassesInitialized(Lisp_sp lisp)
+    bool lisp_BuiltInClassesInitialized()
     {_G();
-	return lisp->BuiltInClassesInitialized();
+	return _lisp->BuiltInClassesInitialized();
     }
 
-    bool lisp_NilsCreated(Lisp_sp lisp)
+#if 0
+    bool lisp_NilsCreated()
     {_G();
 	return lisp->NilsCreated();
     }
@@ -687,11 +686,11 @@ namespace core
 	if ( o.nilp() ) return false;
 	return o.isTrue();
     }
+#endif
 
 
 
-
-    void	lisp_exposeClass(Lisp_sp lisp, const string& className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction)
+    void	lisp_exposeClass(const string& className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction)
     {_G();
 	DEPRECIATED();
 //    ASSERTP(lisp.notnilp(),"In lisp_exposeClass env can not be nil");
@@ -699,7 +698,7 @@ namespace core
 	{_BLOCK_TRACE("Invoking exposer static method");
 	    if ( exposeCandoFunction != NULL )
 	    {
-		(exposeCandoFunction)(lisp);
+		(exposeCandoFunction)(_lisp);
 		exposed = true;
 	    }
 	}
@@ -745,32 +744,32 @@ namespace core
 	_lisp->addClass(classSymbol,cb,base1ClassSymbol,base2ClassSymbol);
     }
 
-    Cons_sp lisp_parse_arguments(Lisp_sp lisp, const string& packageName, const string& args)
+    Cons_sp lisp_parse_arguments(const string& packageName, const string& args)
     {_G();
 	if ( args == "" ) return _Nil<Cons_O>();
 	Package_sp pkg = _lisp->findPackage(packageName);
 	ChangePackage changePackage(pkg);
 	Stream_sp str = StringInputStream_O::create(args);
-	Reader_sp reader = Reader_O::create(str,lisp);
+	Reader_sp reader = Reader_O::create(str);
 	T_sp osscons = reader->primitive_read(true,_Nil<T_O>(),false);
 	Cons_sp sscons = osscons.as_or_nil<Cons_O>();
 	return sscons;
     }
 
 
-    Cons_sp lisp_parse_declares(Lisp_sp lisp, const string& packageName, const string& declarestring)
+    Cons_sp lisp_parse_declares(const string& packageName, const string& declarestring)
     {_G();
 	if ( declarestring == "" ) return _Nil<Cons_O>();
 	Package_sp pkg = _lisp->findPackage(packageName);
 	ChangePackage changePackage(pkg);
 	Stream_sp str = StringInputStream_O::create(declarestring);
-	Reader_sp reader = Reader_O::create(str,lisp);
+	Reader_sp reader = Reader_O::create(str);
 	Cons_sp sscons = reader->primitive_read(true,_Nil<T_O>(),false).as_or_nil<Cons_O>();
 	return sscons;
     }
 
 
-    LambdaListHandler_sp lisp_function_lambda_list_handler(Lisp_sp lisp, Cons_sp lambda_list, Cons_sp declares )
+    LambdaListHandler_sp lisp_function_lambda_list_handler(Cons_sp lambda_list, Cons_sp declares )
     {_G();
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list,declares,cl::_sym_function);
 	return llh;
@@ -778,9 +777,9 @@ namespace core
 
 
 
-    void lisp_defineSingleDispatchMethod(const string& cname,
+    void lisp_defineSingleDispatchMethod(Symbol_sp sym,
 					 Symbol_sp classSymbol,
-					 Functoid* methoid,
+					 BuiltinClosure* methoid,
                                          int TemplateDispatchOn,
 					 const string& arguments,
 					 const string& declares,
@@ -790,15 +789,13 @@ namespace core
     {_G();
 	Class_sp receiver_class = eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()).as<Class_O>();
 	Symbol_sp className = receiver_class->name();
-	string name = lispify_symbol_name(cname);
-#if 1
+#if 0
 	if ( name.find("FIND") != string::npos )
 	{
             printf("%s:%d - Caught lisp_defineSingleDispatchMethod for %s\n", __FILE__, __LINE__, name.c_str() );
 	}
 #endif
-	Symbol_sp sym = _lisp->internWithDefaultPackageName(receiver_class->getPackageName(),name);
-	Cons_sp ldeclares = lisp_parse_declares(_lisp,className->getPackage()->getName(),declares);
+	Cons_sp ldeclares = lisp_parse_declares(className->getPackage()->getName(),declares);
 	// NOTE: We are compiling the llhandler in the package of the class - not the package of the
 	// method name  -- sometimes the method name will belong to another class (ie: core:--init--)
 	LambdaListHandler_sp llhandler;
@@ -809,7 +806,7 @@ namespace core
 	    llhandler = LambdaListHandler_O::create(number_of_required_arguments);
 	} else if ( arguments != "" )
 	{
-	    Cons_sp llraw = lisp_parse_arguments(_lisp,className->getPackage()->getName(),arguments);
+	    Cons_sp llraw = lisp_parse_arguments(className->getPackage()->getName(),arguments);
 	    Cons_sp llproc;
 	    /*-----*/
 	    MULTIPLE_VALUES_CONTEXT();
@@ -822,16 +819,16 @@ namespace core
 	    if ( sd_class_symbol.notnilp() && sd_class_symbol != classSymbol )
 	    {
 		SIMPLE_ERROR(BF("Mismatch between hard coded class[%s] and"
-				      " lambda-list single-dispatch argument class[%s] in argument list: %s")
-				   % _rep_(classSymbol) % _rep_(sd_class_symbol) % _rep_(llraw) );
+                                " lambda-list single-dispatch argument class[%s] in argument list: %s")
+                             % _rep_(classSymbol) % _rep_(sd_class_symbol) % _rep_(llraw) );
 	    }
-	    llhandler = lisp_function_lambda_list_handler(_lisp,llproc,ldeclares);
+	    llhandler = lisp_function_lambda_list_handler(llproc,ldeclares);
 	    if ( sd_symbol.notnilp() )
 	    {
 		int single_dispatch_argument_index = llhandler->single_dispatch_on_argument(sd_symbol);
                 if (single_dispatch_argument_index != 0 ) {
                     SIMPLE_ERROR(BF("There is no support for dispatching on anything but the first argument -"
-                                    " wrap this virtual function in a regular function and do the dispatch yourself  %s::%s") % _rep_(className) % cname );
+                                    " wrap this virtual function in a regular function and do the dispatch yourself  %s::%s") % _rep_(className) % _rep_(sym) );
                 }
 	    }
 	} else
@@ -845,7 +842,7 @@ namespace core
         if ( TemplateDispatchOn != 0 ) {
             SIMPLE_ERROR(BF("Mismatch between single_dispatch_argument_index[0] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s")
                          % TemplateDispatchOn
-                         % _rep_(classSymbol) % cname % arguments );
+                         % _rep_(classSymbol) % _rep_(sym) % arguments );
         }
 	if ( gfn.nilp() )
 	{
@@ -860,83 +857,33 @@ namespace core
 		    __FILE__, __LINE__, _rep_(sym).c_str() );
 	    return;
 	}
-	CompiledBody_sp compiledBody = CompiledBody_O::create(methoid,_Nil<T_O>());
-	ASSERTF(compiledBody.notnilp(),BF("CompiledBody of method must never be nil - it is!"));
 	Str_sp docStr = Str_O::create(docstring);
 	SYMBOL_SC_(KeywordPkg,body);
 	SYMBOL_SC_(KeywordPkg,lambda_list_handler);
 	SYMBOL_SC_(KeywordPkg,docstring);
 	LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p")
 	    % _rep_(sym) % _rep_(receiver_class) %  ((void*)(methoid)) );
-	af_ensure_single_dispatch_method(sym,receiver_class,llhandler,ldeclares,docStr,compiledBody);
+        Function_sp fn = Function_O::make(methoid);
+	af_ensure_single_dispatch_method(sym,receiver_class,llhandler,ldeclares,docStr,fn);
     }
 
 
-#if 0
-    void	lisp_defsetfSingleDispatchMethod(Lisp_sp lisp,
-						 const string& cname,
-						 Symbol_sp classSymbol,
-						 Functoid* meth,
-						 const string& argstring,
-						 const string& declarestring,
-						 const string& docstring,
-						 bool autoExport )
-    {_G();
-	string name = lispify_symbol_name(cname);
-	Symbol_sp accessorName = _lisp->intern(name);
-	Symbol_sp setfName = _lisp->intern(lispify_symbol_name("setf_"+name));
-	string pkgName = classSymbol->getPackage()->getName();
-	Cons_sp ll = lisp_parse_arguments(_lisp,pkgName,argstring);
-	Cons_sp ldeclares = lisp_parse_declares(_lisp,pkgName,declarestring);
-	LambdaListHandler_sp llh = lisp_function_lambda_list_handler(_lisp,ll,ldeclares);
-#if 0
-	FunctionPrimitive_sp setfFunc = FunctionPrimitive_O::create(setfName,meth,llh,docstring,kw::_sym_function,_lisp);
-#else
-	CompiledBody_sp cbmeth = CompiledBody_O::create(meth);
-	Function_sp setfFunc = BuiltIn_O::create(setfName,
-							  llh,
-							  cbmeth,
-						 _Nil<ActivationFrame_O>(),
-						 kw::_sym_function );
-#endif
-	FunctionSetfExpander_sp expander = FunctionSetfExpander_O::create(setfFunc,_lisp);
-	_lisp->print(BF("%s:%d ---> trying to add setfExpander for: %s") % __FILE__ % __LINE__ % setfName->__repr__() );
-//	lisp->addSetfExpander(accessorName,expander);
-    }
-#endif
 
-#if 0
-    void	lisp_defineSetf(Lisp_sp lisp, const string& cname,
-				Symbol_sp classSymbol,
-				Functoid* meth,
-				const string& arguments,
-				const string& docstring, bool autoExport )
-    {_G();
-	string name = lispify_symbol_name(cname);
-	Symbol_sp accessorName = _lisp->intern(name);
-	Symbol_sp setfName = _lisp->intern(lispify_symbol_name("setf_"+name));
-	IMPLEMENT_MEF(BF("Switch to compiled body"));
-	FunctionPrimitive_sp setfFunc = FunctionPrimitive_O::create(setfName,meth,arguments,docstring,kw::_sym_function,_lisp);
-	FunctionSetfExpander_sp expander = FunctionSetfExpander_O::create(setfFunc,_lisp);
-	lisp->addSetfExpander(accessorName,expander);
-    }
-#endif
-
-
-    void	lisp_throwIfBuiltInClassesNotInitialized(Lisp_sp lisp)
+    void	lisp_throwIfBuiltInClassesNotInitialized()
     {
-	lisp->throwIfBuiltInClassesNotInitialized();
+	_lisp->throwIfBuiltInClassesNotInitialized();
     }
 
-    string	lisp_classNameFromClassSymbol(Lisp_sp lisp, Symbol_sp classSymbol )
+    string	lisp_classNameFromClassSymbol( Symbol_sp classSymbol )
     {_G();
-	return lisp->classNameFromClassSymbol(classSymbol);
+	return _lisp->classNameFromClassSymbol(classSymbol);
     }
 
     Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol)
     {_G();
 	return eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()).as<Class_O>();
     }
+#if 0
     void lisp_setGlobalInt(Lisp_sp lisp, const string& pkg, const string& n, uint val )
     {_G();
 	Symbol_sp sym = lisp->internWithPackageName(pkg,n);
@@ -944,24 +891,14 @@ namespace core
 	sym->defparameter(i);
 //    lisp->globalEnvironment()->extend(sym,i);
     }
-
     Symbol_sp lisp_getClassSymbolForClassName(Lisp_sp lisp, const string& n)
     {
 	return lisp->getClassSymbolForClassName(n);
     }
-
-#if 0
-    /*! Return true if the class associated with (baseClassSymbol) is a base class of (classSymbol) */
-    bool lisp_subClassOrder(Lisp_sp lisp, Symbol_sp baseClassSymbol, Symbol_sp classSymbol )
-    {
-	Class_sp baseClass = lisp->classFromClassSymbol(baseClassSymbol);
-	Class_sp testClass = lisp->classFromClassSymbol(classSymbol);
-	return testClass->isSubClassOf(baseClass);
-    }
 #endif
 
 
-
+#if 0
     void lisp_defun_lispify_name(const string& packageName,
 				 const string& cname,
 				 Functoid* f,
@@ -975,21 +912,11 @@ namespace core
 	string name = lispify_symbol_name(cname);
 	lisp_defun(packageName,name,f,arguments,declstring,docstring,locked,autoExport,number_of_required_arguments);
     }
+#endif
 
-
-    void lisp_defun(const string& packageName,
-		    const string& cname,
-		    Functoid* f,
-		    const string& arguments,
-		    const string& declarestring,
-		    const string& docstring,
-		    int locked,
-		    bool autoExport,
-		    int number_of_required_arguments)
-    {_G();
-	string name = cname; // lispify above
-	LOG(BF("Adding form[%s] with arguments[%s]") % name % arguments );
-	string lispName = lisp_convertCNameToLispName(name,true);
+    Symbol_sp lisp_lispifyAndInternWithPackageNameIfNotGiven(const string& defaultPackageName, const string& name)
+    {
+	string lispName = lispify_symbol_name(name);
 #if 0
 	// Trap the definition of specific functions here
 	// sometimes I accidentally define things more than once and
@@ -1000,30 +927,37 @@ namespace core
 	    printf("%s:%d defining %s - break here to trap\n", __FILE__,__LINE__, lispName.c_str() );
 	}
 #endif
-	Symbol_sp sym = _lisp->internWithPackageName(packageName,lispName);
+	Symbol_sp sym = _lisp->internWithDefaultPackageName(defaultPackageName,lispName);
+        return sym;
+    }
+
+    void lisp_defun(Symbol_sp sym,
+                    const string& packageName,
+		    BuiltinClosure* fc,
+		    const string& arguments,
+		    const string& declarestring,
+		    const string& docstring,
+		    int locked,
+		    bool autoExport,
+		    int number_of_required_arguments)
+    {_G();
 	if ( sym->getReadOnlyFunction() )
 	{
 	    printf( "%s:%d - The symbol[%s] has already been assigned a function and will not be redefined\n", __FILE__, __LINE__, _rep_(sym).c_str() );
 	    return;
 	}
-	Cons_sp ldeclares = lisp_parse_declares(_lisp,packageName,declarestring);
+	Cons_sp ldeclares = lisp_parse_declares(packageName,declarestring);
 	LambdaListHandler_sp llh;
 	if ( (arguments == "" || arguments=="()") && number_of_required_arguments >= 0)
 	{
 	    llh = LambdaListHandler_O::create(number_of_required_arguments);
 	} else
 	{
-	    Cons_sp ll = lisp_parse_arguments(_lisp,packageName,arguments);
-	    llh = lisp_function_lambda_list_handler(_lisp,ll,_Nil<Cons_O>());
+	    Cons_sp ll = lisp_parse_arguments(packageName,arguments);
+	    llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>());
 	}
-
-	ASSERTNOTNULL(llh);
-	CompiledBody_sp cbf = CompiledBody_O::create(f,_Nil<T_O>());
-	Function_sp func = BuiltIn_O::create(sym,
-						      llh,
-						      cbf,
-					     _Nil<ActivationFrame_O>(),
-					     kw::_sym_function );
+        fc->finishSetup(llh,kw::_sym_function);
+	Function_sp func = Function_O::make(fc);
 	sym->setf_symbolFunction(func);
 	if ( autoExport ) sym->exportYourself();
 	if ( locked ) sym->setReadOnlyFunction(true);
@@ -1032,37 +966,25 @@ namespace core
 
 
 
-    void lisp_defmacro( const string& packageName,
-			const string& cname,
-			Functoid* f,
+    void lisp_defmacro( Symbol_sp sym,
+                        const string& packageName,
+			BuiltinClosure* f,
 			const string& arguments,
 			const string& declarestring,
 			const string& docstring,
 			bool autoExport )
     {_G();
-	string name = lispify_symbol_name(cname);
 	LOG(BF("Adding form[%s] with arguments[%s]") % name % arguments );
-	string lispName = lisp_convertCNameToLispName(name,true);
-	Symbol_sp sym = _lisp->internWithPackageName(packageName,lispName);
 	if ( sym->getReadOnlyFunction() )
 	{
 	    printf( "%s:%d - The symbol[%s] has already been assigned a function and will not be redefined\n", __FILE__, __LINE__, _rep_(sym).c_str() );
 	    return;
 	}
-	Cons_sp ll = lisp_parse_arguments(_lisp,packageName,arguments);
-	Cons_sp ldeclares = lisp_parse_declares(_lisp,packageName,declarestring);
-	LambdaListHandler_sp llh = lisp_function_lambda_list_handler(_lisp,ll,_Nil<Cons_O>());
-#if 0
-	FunctionPrimitive_sp func = FunctionPrimitive_O::create(sym,f,llh,""/*Docstring*/,kw::_sym_macro,_lisp);
-#else
-	CompiledBody_sp cbf = CompiledBody_O::create(f,_Nil<T_O>());
-	Function_sp func = BuiltIn_O::create(sym,
-						      llh,
-						      cbf,
-					     _Nil<ActivationFrame_O>(),
-					     kw::_sym_macro );
-#endif
-
+	Cons_sp ll = lisp_parse_arguments(packageName,arguments);
+	Cons_sp ldeclares = lisp_parse_declares(packageName,declarestring);
+	LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>());
+        f->finishSetup(llh,kw::_sym_macro);
+	Function_sp func = Function_O::make(f);
 //    Package_sp package = lisp->getPackage(packageName);
 //    package->addFunctionForLambdaListHandlerCreation(func);
 	sym->setf_symbolFunction(func);
@@ -1130,13 +1052,9 @@ namespace core
 
 
 
-    Symbol_sp lisp_symbolNil(Lisp_sp lisp)
+    void lisp_installGlobalInitializationCallback(InitializationCallback initGlobals)
     {
-	return _Nil<Symbol_O>();
-    }
-    void lisp_installGlobalInitializationCallback(Lisp_sp lisp, InitializationCallback initGlobals)
-    {
-	lisp->installGlobalInitializationCallback(initGlobals);
+	_lisp->installGlobalInitializationCallback(initGlobals);
     }
 
 #if 0

@@ -61,6 +61,8 @@ namespace core
 
 	inline T_mv apply( T_sp fn, Cons_sp argsPLUS )
 	{
+            IMPLEMENT_MEF(BF("Implement apply by fixing the code below"));
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 0;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -71,12 +73,15 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
+	    return func->invokeINVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0,
-		    Cons_sp argsPLUS )
+                           Cons_sp argsPLUS )
 	{
+            IMPLEMENT_ME();
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 1;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -88,11 +93,14 @@ namespace core
 		cur=cCdr(cur);
 	    }
 	    return func->INVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1,
-		    Cons_sp argsPLUS )
+                           Cons_sp argsPLUS )
 	{
+            IMPLEMENT_ME();
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 2;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -104,11 +112,14 @@ namespace core
 		cur=cCdr(cur);
 	    }
 	    return func->INVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2,
-		    Cons_sp argsPLUS )
+                           Cons_sp argsPLUS )
 	{
+            IMPLEMENT_ME();
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 3;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -120,11 +131,14 @@ namespace core
 		cur=cCdr(cur);
 	    }
 	    return func->INVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3,
-		    Cons_sp argsPLUS )
+                           Cons_sp argsPLUS )
 	{
+            IMPLEMENT_ME();
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 4;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -136,12 +150,15 @@ namespace core
 		cur=cCdr(cur);
 	    }
 	    return func->INVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4,
-		    Cons_sp argsPLUS )
+                           Cons_sp argsPLUS )
 	{
+            IMPLEMENT_ME();
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 5;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -153,11 +170,14 @@ namespace core
 		cur=cCdr(cur);
 	    }
 	    return func->INVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5,
-		    Cons_sp argsPLUS )
+                           Cons_sp argsPLUS )
 	{
+            IMPLEMENT_ME();
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 6;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -169,10 +189,13 @@ namespace core
 		cur=cCdr(cur);
 	    }
 	    return func->INVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, Cons_sp argsPLUS )
 	{
+            IMPLEMENT_ME();
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 7;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -184,10 +207,13 @@ namespace core
 		cur=cCdr(cur);
 	    }
 	    return func->INVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, Cons_sp argsPLUS )
 	{
+            IMPLEMENT_ME();
+#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 8;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -199,30 +225,56 @@ namespace core
 		cur=cCdr(cur);
 	    }
 	    return func->INVOKE(frame->length(),frame->argArray());
+#endif
 	}
 
 
 #define USE_ARRAY0
 
-	template <class... ARGS>
-	T_mv funcall(T_sp fn, ARGS&&... args) {
+
+	inline T_mv funcall(T_sp fn) {
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            gctools::Array0<T_sp> argArray;
-            argArray.allocate(0,_Nil<T_O>(),std::forward<ARGS>(args)...);
-	    if ( !func.pointerp() ) {
-		// While booting, cl::_sym_findClass will apply'd before it is bound to a symbol
-		if ( fn == cl::_sym_findClass ) {
-		    return(af_findClass(argArray[0].template as<Symbol_O>(),true,_Nil<Environment_O>()));
-		}
-		SIMPLE_ERROR(BF("Could not find function %s") % _rep_(fn) );
-	    }
-#ifdef USE_ARRAY0
-            return func->INVOKE(argArray.capacity(),argArray.data());
-#else
-            int nargs = sizeof...(ARGS);
-	    return func->INVOKE(nargs,argArray);
-#endif
-	}
+            Functoid* ft = func->closure;
+            T_mv result;
+            (*ft)(&result,0,NULL,NULL,NULL);
+            return result;
+        }
+
+	template <class ARG0>
+	inline T_mv funcall(T_sp fn, ARG0 arg0) {
+	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            Functoid* ft = func->closure;
+            T_mv result;
+            (*ft)(&result,1,arg0.asTPtr(),NULL,NULL);
+            return result;
+        }
+
+	template <class ARG0, class ARG1>
+	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
+	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            if ( !func.pointerp() ) {                                                                                                                        
+                // While booting, cl::_sym_findClass will apply'd before it is bound to a symbol                                                             
+                if ( fn == cl::_sym_findClass ) {                                                                                                            
+                    return(af_findClass(arg0,true,_Nil<Environment_O>()));                                                    
+                }                                                                                                                                            
+                SIMPLE_ERROR(BF("Could not find function %s") % _rep_(fn) );                                                                                 
+            }                                                                                                                                                
+
+            Functoid* ft = func->closure;
+            T_mv result;
+            (*ft)(&result,2,arg0.asTPtr(),arg1.asTPtr(),NULL);
+            return result;
+        }
+
+	template <class ARG0, class ARG1, class ARG2, class...ARGS>
+	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS...args) {
+	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            Functoid* ft = func->closure;
+            T_mv result;
+            size_t vnargs = sizeof...(ARGS);
+            (*ft)(&result,3+vnargs,arg0.asTPtr(),arg1.asTPtr(),arg2.asTPtr(),args.asTPtr()...);
+            return result;
+        }
     };
 };
 

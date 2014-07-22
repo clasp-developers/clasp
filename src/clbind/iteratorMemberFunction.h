@@ -17,11 +17,11 @@ namespace clbind {
     };
 
     template <typename Pols , typename OT, typename Begin, typename End >
-    class IteratorMethoid : public core::Functoid {
+    class IteratorMethoid : public core::BuiltinClosure {
     public:
-        typedef core::Functoid TemplatedBase;
+        typedef core::BuiltinClosure TemplatedBase;
     public:
-        IteratorMethoid(const string& name, Begin begin, End end) : core::Functoid(name), _begin(begin), _end(end) {};
+        IteratorMethoid(core::T_sp name, Begin begin, End end) : core::BuiltinClosure(name), _begin(begin), _end(end) {};
     private:
         typedef typename BeginReturnType<OT,Begin>::type      IteratorType;
         typedef Iterator<IteratorType,Pols>     WrappedIteratorType;
@@ -31,18 +31,15 @@ namespace clbind {
         virtual size_t templatedSizeof() const { return sizeof(*this); };
     public:
         DISABLE_NEW();
-        core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
+        void LISP_CALLING_CONVENTION()
         {
-            if ( numArgs != 1 )
-            {
-                core::wrongNumberOfArguments(numArgs,1);
-            }
-            OT* objPtr = (*args).as<core::WrappedPointer_O>()->cast<OT>();
+            if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
+            OT* objPtr = (LCC_ARG0()).as<core::WrappedPointer_O>()->cast<OT>();
             IteratorType itBegin = ((*objPtr).*(this->_begin))();
             IteratorType itEnd = ((*objPtr).*(this->_end))();
             GC_ALLOCATE_VARIADIC(WrappedIteratorType,smart_itBegin,itBegin);
             GC_ALLOCATE_VARIADIC(WrappedIteratorType,smart_itEnd,itEnd);
-            return Values(smart_itBegin,smart_itEnd);
+            *lcc_resultP = Values(smart_itBegin,smart_itEnd);
         }
 
 

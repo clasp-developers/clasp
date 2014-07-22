@@ -178,7 +178,7 @@ namespace clbind {
         typedef core::Functoid TemplatedBase;
     public:
         enum { NumParams = 0 };
-        DerivableDefaultConstructorFunctoid(const string& name) : core::Functoid(name) {};
+        DerivableDefaultConstructorFunctoid(core::T_sp name) : core::Functoid(name) {};
     public:
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:

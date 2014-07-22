@@ -40,9 +40,9 @@ namespace core
 
 
 
-    Reader_sp Reader_O::create(Stream_sp sin, Lisp_sp lisp)
+    Reader_sp Reader_O::create(Stream_sp sin)
     {	
-	Reader_sp reader = lisp->create<Reader_O>();
+	Reader_sp reader = Reader_O::create();
 	reader->_Input = sin;
        	return reader;
     }
@@ -297,10 +297,9 @@ namespace core
 		result = Cons_O::createList(cl::_sym_function, quotedObject);
                 if ( _lisp->sourceDatabase().notnilp() ) {
                     _lisp->sourceDatabase()->registerSourceInfo(result,
-							   this->_Input->sourceFileInfo(),
-							   this->_Input->lineNumber(),
-							   this->_Input->column(),
-							   this->_Input->tell());
+                                                                this->_Input->sourceFileInfo(),
+                                                                this->_Input->lineNumber(),
+                                                                this->_Input->column() );
                 }
 		goto RETURN;
 	    }
@@ -726,7 +725,7 @@ namespace core
             SourceManager_sp sm = _lisp->sourceDatabase();
             if ( sm.notnilp() ) {
                 sm->registerSourceInfo(one,af_sourceFileInfo(this->_Input),
-				      lineNumber,column,filePos);
+				      lineNumber,column);
             }
 	    cur->setCdr(one);
 	    cur = one;
