@@ -228,24 +228,36 @@ extern "C" {
 
     void mv_FUNCALL(core::T_mv* resultP, core::Function_sp* funcP, int nargs, core::T_sp* argarray)
     {
+        DEPRECIATED();
+#if 0
 	(*resultP) = (*funcP)->INVOKE(nargs,argarray);
+#endif
     }
 
     void sp_FUNCALL(core::T_sp* resultP, core::Function_sp* funcP, int nargs, core::T_sp* argarray)
     {
+        DEPRECIATED();
+#if 0
 	(*resultP) = (*funcP)->INVOKE(nargs,argarray);
+#endif
     }
 
 
 
     void mv_FUNCALL_activationFrame(core::T_mv* resultP, core::Function_sp* funcP, core::ActivationFrame_sp* afP)
     {
+        DEPRECIATED();
+#if 0
 	(*resultP) = (*funcP)->INVOKE((*afP)->length(),(*afP)->argArray());
+#endif
     }
 
     void sp_FUNCALL_activationFrame(core::T_sp* resultP, core::Function_sp* funcP, core::ActivationFrame_sp* afP)
     {
+        DEPRECIATED();
+#if 0
 	(*resultP) = (*funcP)->INVOKE((*afP)->length(),(*afP)->argArray());
+#endif
     }
 
 
@@ -612,6 +624,8 @@ extern "C"
 
 core::T_sp proto_makeCompiledFunction(fnTmvActivationFramesp funcPtr, char* sourceName, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
 {_G();
+    IMPLEMENT_MEF(BF("Handle new closures"));
+#if 0
     core::Functoid* f = gctools::ClassAllocator<JITClosure>::allocateClass("compiled",funcPtr);
     core::CompiledBody_sp cb = core::CompiledBody_O::create(f,_Nil<core::T_O>());
     string fileNamePath = sourceName;
@@ -628,6 +642,7 @@ core::T_sp proto_makeCompiledFunction(fnTmvActivationFramesp funcPtr, char* sour
     core::CompiledBody_sp compiledBody = compiledFunction->getBody();
     compiledBody->setCompiledFuncs(*compiledFuncsP);
     return compiledFunction;
+#endif
 };
 extern "C"
 {
@@ -671,7 +686,7 @@ extern "C"
     __attribute__((visibility("default"))) void invokeFASLLlvmFunctionVoid( fnVoidType fptr, char* fileName )
     {_G();
 //	IMPLEMENT_MEF(BF("Figure out what to do in this case"));
-	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<T_O>());
+//	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<T_O>());
 	fptr();
     };
 

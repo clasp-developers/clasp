@@ -52,10 +52,12 @@ namespace core
 #define DOCS_af_evalWithEnv "evalWithEnv"
     T_mv af_evalWithEnv(T_sp form, Environment_sp env, bool stepping, bool compiler_env_p, bool execute)
     {_G();
-	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
+        DEPRECIATED();
+//	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
 	T_mv result;
 	// If we want to compile the form then do this
-	stackFrame.setActivationFrame(Environment_O::nilCheck_getActivationFrame(env));
+//	stackFrame.setActivationFrame(Environment_O::nilCheck_getActivationFrame(env));
+        IMPLEMENT_MEF(BF("Don't use separateTopLevelForms - use the new top-level form stuff"));
         Cons_sp topLevelForms = separateTopLevelForms(_Nil<Cons_O>(),form)->nreverse().as<Cons_O>();
         for ( Cons_sp curtlf = topLevelForms; curtlf.notnilp(); curtlf=cCdr(curtlf) ) {
             T_sp thunk = eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(),oCar(curtlf),env);
@@ -201,7 +203,7 @@ namespace core
 	    if ( found ) return macro;
 	}
 	Function_sp fn = sym->symbolFunction();
-	if ( fn.pointerp() && fn->macroP() ) return fn;
+	if ( fn.pointerp() && fn->closure->macroP() ) return fn;
 	return _Nil<Function_O>();
     };
 
@@ -1205,10 +1207,10 @@ namespace core
 	    LambdaListHandler_sp llh;
 	    if ( lambda_list.nilp() )
 	    {
-		llh = lisp_function_lambda_list_handler(_lisp,_Nil<Cons_O>(),declares);
+		llh = lisp_function_lambda_list_handler(_Nil<Cons_O>(),declares);
 	    } else if ( af_consP(lambda_list) )
 	    {
-		llh = lisp_function_lambda_list_handler(_lisp,lambda_list.as_or_nil<Cons_O>(),declares);
+		llh = lisp_function_lambda_list_handler(lambda_list.as_or_nil<Cons_O>(),declares);
 		LOG(BF("Passed lambdaList: %s" ) % lambda_list->__repr__() );
 	    } else if ( af_lambda_list_handler_p(lambda_list) )
 	    {
@@ -1229,7 +1231,16 @@ namespace core
                     _lisp->sourceDatabase()->duplicateSourceInfo(body,code);
                 }
 	    }
-	    Function_sp proc = Interpreted_O::create(name,llh,declares,docstring,code,env,kw::_sym_function);
+            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
+            InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+                                                                                                , _Nil<SourcePosInfo_O>()
+                                                                                                , kw::_sym_function
+                                                                                                , llh
+                                                                                                , declares
+                                                                                                , docstring
+                                                                                                , env
+                                                                                                , code );
+            Function_sp proc = Function_O::make(ic);
 	    return proc;
 	}
 
@@ -1508,10 +1519,16 @@ namespace core
 		Cons_sp code;
 		parse_lambda_body(outer_body,declares,docstring,code,_lisp);
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
-		Function_sp outer_func = Interpreted_O::create(name,outer_llh,
-							       declares,docstring,
-							       code,newEnv,
-							       kw::_sym_macro );
+                printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , docstring
+                                                                                                    , newEnv
+                                                                                                    , code );
+                Function_sp outer_func = Function_O::make(ic);
 		LOG(BF("func = %s") % outer_func_cons->__repr__() );
 		newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
@@ -1549,13 +1566,16 @@ namespace core
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
 									     oCadr(declares).as_or_nil<Cons_O>(),
 									     cl::_sym_function);
-		Function_sp outer_func = Interpreted_O::create(_Nil<T_O>(),
-							       outer_llh,
-							       declares,
-							       _Nil<Str_O>(),
-							       expansion,
-							       newEnv,
-							       kw::_sym_macro );
+                printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass( _Nil<T_O>()
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , _Nil<Str_O>()
+                                                                                                    , newEnv
+                                                                                                    , expansion );
+                Function_sp outer_func = Function_O::make(ic);
 		newEnv->addSymbolMacro(name,outer_func);
 		cur = cCdr(cur);
 	    }
@@ -1637,6 +1657,18 @@ namespace core
 	}
 
 
+        T_mv applyToActivationFrame(Function_sp head, ActivationFrame_sp args)
+        {
+            Functoid* func = head->closure;
+            T_mv result;
+            size_t nargs = args->length();
+            T_sp* a = args->argArray();
+            switch (nargs) {
+#include "applyToActivationFrame.h"
+            default:
+                SIMPLE_ERROR(BF("Add support for applyToActivationFrame for %d arguments") % nargs);
+            };
+        }
 
 	T_mv applyToActivationFrame(T_sp head,ActivationFrame_sp args )
 	{_G();
@@ -1651,7 +1683,7 @@ namespace core
 		}
 		SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
 	    }
-	    return fn->INVOKE(args->length(),args->argArray()); // return applyFunctionToActivationFrame(fn,args);
+	    return applyToActivationFrame(fn,args);
 	}
 
 
@@ -1738,6 +1770,8 @@ namespace core
 	    T_mv result;
 	    if (oCar(headCons) == cl::_sym_lambda)
 	    {
+                IMPLEMENT_MEF(BF("Handle lambda better"));
+#if 0
 		ASSERTF(oCar(headCons)==cl::_sym_lambda,BF("Illegal head %s - must be a LAMBDA expression") % _rep_(headCons) );
 		//
 		// The head is a cons with a non-symbol for a head, evaluate it
@@ -1755,6 +1789,7 @@ namespace core
 		    try { result = eval::applyToActivationFrame(headCons,evaluatedArgs);}
 		    catch (...) { result = handleConditionInEvaluate(environment);};
 		}
+#endif
 	    } else
 	    {
 		SIMPLE_ERROR(BF("Illegal form: %s") % _rep_(form) );
@@ -1873,10 +1908,16 @@ namespace core
 		parse_lambda_body(outer_body,declares,docstring,code,_lisp);
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
-		Function_sp outer_func = Interpreted_O::create(name,outer_llh,
-							       declares,docstring,
-							       code,newEnv,
-							       kw::_sym_macro );
+                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , docstring
+                                                                                                    , newEnv
+                                                                                                    , code );
+                Function_sp outer_func = Function_O::make(ic);
 		LOG(BF("func = %s") % outer_func_cons->__repr__() );
 		newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
@@ -1897,7 +1938,7 @@ namespace core
 	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
 	    Cons_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
-	    Str_sp docString = _Nil<Str_O>();
+	    Str_sp docstring = _Nil<Str_O>();
 	    SYMBOL_SC_(CorePkg,whole);
 	    SYMBOL_SC_(CorePkg,env);
 	    Cons_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
@@ -1912,13 +1953,16 @@ namespace core
 									     oCadr(declares).as_or_nil<Cons_O>(),
 									     cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
-		Function_sp outer_func = Interpreted_O::create(_Nil<T_O>(),
-							       outer_llh,
-							       declares,
-							       _Nil<Str_O>(),
-							       expansion,
-							       newEnv,
-							       kw::_sym_macro );
+                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_Nil<T_O>()
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , docstring
+                                                                                                    , newEnv
+                                                                                                    , expansion );
+                Function_sp outer_func = Function_O::make(ic);
 		newEnv->addSymbolMacro(name,outer_func);
 		cur = cCdr(cur);
 	    }
@@ -2059,7 +2103,7 @@ namespace core
 		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(af_length(cCdr(form)),
 								     _Nil<ActivationFrame_O>()));
 		    evaluateIntoActivationFrame(evaluatedArgs,cCdr(form),environment);
-		    try { result = headFunc->INVOKE(evaluatedArgs->length(),evaluatedArgs->argArray()); } // result = eval::applyFunctionToActivationFrame(headFunc,evaluatedArgs);}
+		    try { result = eval::applyToActivationFrame(headFunc,evaluatedArgs);}
 		    catch (...) {result = handleConditionInEvaluate(environment);};
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);

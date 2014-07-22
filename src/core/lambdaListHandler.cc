@@ -18,11 +18,43 @@ namespace core
 {
 
 
+    void lambdaListHandler_createBindings(core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LISP_CALLING_CONVENTION_ARGS)
+    {
+        T_O* args[lcc_nargs];
+        switch (lcc_nargs)
+        {
+        case 1:
+            args[0] = lcc_fixed_arg0;
+            break;
+        case 2:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            break;
+        case 3:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            args[2] = lcc_fixed_arg2;
+            break;
+        default:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            args[2] = lcc_fixed_arg2;
+            for ( size_t it=3; it<lcc_nargs; ++it ) {
+                args[it] = va_arg(lcc_arglist,T_O*);
+            }
+            break;
+        }
+        llh->createBindingsInScope_argArray_TPtr(lcc_nargs,args,scope);
+    }
+
+
+
+
     T_sp evaluate_lambda_list_form(T_sp form, Environment_sp env)
     {
 	Environment_sp localEnv(env);
 	// TODO:: The code should be compiled and not interpreted
-	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
+//	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
 	return eval::evaluate(form,env);
     }
 
@@ -385,10 +417,26 @@ namespace core
 #define PASS_FUNCTION_OPTIONAL 	bind_optional_argArray
 #define PASS_FUNCTION_REST 	bind_rest_argArray
 #define PASS_FUNCTION_KEYWORD 	bind_keyword_argArray
-#define PASS_FUNCTION_SUFFIX 	argArray
 #define PASS_ARGS	     	int n_args, ArgArray ap
 #define PASS_ARGS_NUM		n_args
 #define PASS_NEXT_ARG()		ap[arg_idx]
+#include "argumentBinding.cc"
+#undef PASS_FUNCTION_REQUIRED
+#undef PASS_FUNCTION_OPTIONAL
+#undef PASS_FUNCTION_REST
+#undef PASS_FUNCTION_KEYWORD
+#undef PASS_ARGS
+#undef PASS_ARGS_NUM
+#undef PASS_NEXT_ARG
+
+
+#define PASS_FUNCTION_REQUIRED 	bind_required_argArray_TPtr
+#define PASS_FUNCTION_OPTIONAL 	bind_optional_argArray_TPtr
+#define PASS_FUNCTION_REST 	bind_rest_argArray_TPtr
+#define PASS_FUNCTION_KEYWORD 	bind_keyword_argArray_TPtr
+#define PASS_ARGS	     	int n_args, T_O* ap[]
+#define PASS_ARGS_NUM		n_args
+#define PASS_NEXT_ARG()		gctools::smart_ptr<T_O>(ap[arg_idx])
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -456,6 +504,24 @@ void bind_aux
 	}
 	bind_rest_argArray( this->_RestArgument, n_args, argArray, arg_idx, scope );
 	bind_keyword_argArray( this->_KeywordArguments, this->_AllowOtherKeys, n_args, argArray, arg_idx, scope );
+	bind_aux( this->_AuxArguments, scope );
+    }
+
+
+
+    void LambdaListHandler_O::createBindingsInScope_argArray_TPtr(int n_args, T_O* argArray[],
+	DynamicScopeManager& scope )
+    {_G();
+	if ( UNLIKELY(!this->_CreatesBindings) ) return;
+	int arg_idx = 0;
+	arg_idx = bind_required_argArray_TPtr( this->_RequiredArguments, n_args, argArray, arg_idx, scope );
+	arg_idx = bind_optional_argArray_TPtr( this->_OptionalArguments, n_args, argArray, arg_idx, scope );
+	if ( UNLIKELY(arg_idx < n_args && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
+            throwTooManyArgumentsError(n_args,this->numberOfLexicalVariables());
+//	    TOO_MANY_ARGUMENTS_ERROR();
+	}
+	bind_rest_argArray_TPtr( this->_RestArgument, n_args, argArray, arg_idx, scope );
+	bind_keyword_argArray_TPtr( this->_KeywordArguments, this->_AllowOtherKeys, n_args, argArray, arg_idx, scope );
 	bind_aux( this->_AuxArguments, scope );
     }
 

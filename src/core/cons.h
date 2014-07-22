@@ -105,7 +105,6 @@ namespace core {
 #if defined(OLD_SERIALIZE)
 	DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
-	friend class SourceCodeCons_O;
 	friend T_sp oCar(T_sp o);
 	friend T_sp oCdr(T_sp o);
 	friend Cons_sp cCar(T_sp o);
@@ -542,108 +541,13 @@ inline T_sp oNinth(T_sp o)  { return oCar(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCd
 inline T_sp oTenth(T_sp o)  { return oCar(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(o))))))))));};
 
 
-
-
-
-
-#if 0
-// Constructor function
-
-/*! SourceCodeCons is a Cons that results from parsing code
- * It keeps track of the file, line number and column where
- * this Cons was parsed from for error reporting.
- */
-    SMART(SourceCodeCons);
-    c l a s s SourceCodeCons_O : public Cons_O
-    {
-
-	L I S P _BASE1(Cons_O);
-	L I S P _CLASS(core,CorePkg,SourceCodeCons_O,"SourceCodeCons");
-#if defined(OLD_SERIALIZE)
-	DECLARE_SERIALIZE();
-#endif // defined(OLD_SERIALIZE)
-    public:
-	void initialize();
-#if defined(XML_ARCHIVE)
-	void	archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-    private:
-	SourceFileInfo_sp 	_SourceFileInfo;
-	int		_ParsePosLineNumber;
-	int		_ParsePosColumn;
-    public:
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, uint ln, uint col, SourceFileInfo_sp fileName);
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, T_sp o3, uint ln, uint col, SourceFileInfo_sp fileName);
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, uint ln, uint col, SourceFileInfo_sp fileName);
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, uint ln, uint col, SourceFileInfo_sp fileName );
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, uint ln, uint col, SourceFileInfo_sp fileName );
-	static SourceCodeCons_sp create(T_sp car, T_sp cdr,int lineNumber,int column,SourceFileInfo_sp fileName, Lisp_sp e );
-	static SourceCodeCons_sp create(int lineNumber,int column,SourceFileInfo_sp fileName, Lisp_sp e );
-
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, const LispParserPos& pos, SourceFileInfo_sp fileName);
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, T_sp o3, const LispParserPos& pos, SourceFileInfo_sp fileName);
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, const LispParserPos& pos, SourceFileInfo_sp filename );
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, const LispParserPos& pos, SourceFileInfo_sp fileName );
-	static SourceCodeCons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, const LispParserPos& pos, SourceFileInfo_sp fileName );
-	static SourceCodeCons_sp create(T_sp car, Cons_sp cdr, const LispParserPos& pos, SourceFileInfo_sp fileName, Lisp_sp lisp );
-
-	static SourceCodeCons_sp create(T_sp car, Lisp_sp lisp);
-
-	static SourceCodeCons_sp createWithDuplicateSourceCodeInfo(T_sp car, Cons_sp cdr, Cons_sp parsed, Lisp_sp e);
-	static SourceCodeCons_sp createWithDuplicateSourceCodeInfo(T_sp car, Cons_sp parsed, Lisp_sp e);
-	static SourceCodeCons_sp createWithDuplicateSourceCodeInfo(Cons_sp parsed, Lisp_sp lisp);
-    public:
-//	virtual bool equal(T_sp obj) const;
-
-
-	virtual bool hasParsePos() const { return this->_ParsePosLineNumber!=0;};
-	virtual void getParsePos(int& lineNumber, int& column) const
-	{
-	    lineNumber = this->_ParsePosLineNumber;
-	    column = this->_ParsePosColumn;
-	}
-
-	virtual SourceFileInfo_sp sourceFileInfo() const;
-
-	/*! Depth first search to find a Cons with ParsePos information */
-	virtual Cons_sp walkToFindParsePos() const;
-
-	void duplicateSourceCodeInfo(Cons_sp other);
-
-	int getParsePosLineNumber() const { return this->_ParsePosLineNumber; };
-	int getParsePosColumn() const { return this->_ParsePosColumn;};
-	string __repr__() const;
-
-	/*! Preserve source info of each cons node */
-	virtual Cons_sp copyList() const;
-
-
-	/*! Like Common Lisp copy-list */
-	virtual Cons_sp copyListCar() const;
-
-	/*! Return a new Cons with a tree copy of the current car*/
-	virtual Cons_sp copyTreeCar() const;
-
-
-
-    public:
-	explicit SourceCodeCons_O();
-	virtual ~SourceCodeCons_O();
-
-    };
-#endif
-
 };
 
 
 TRANSLATE(core::Cons_O);
-//TRANSLATE(core::SourceCodeCons_O);
-
-
 
 namespace core
 {
-
     /*! Set the value of the property in the plist, may insert a pair at the start,
      return the new plist */
     Cons_sp plistSetf(Cons_sp& plist, Symbol_sp key, T_sp val);
@@ -651,8 +555,6 @@ namespace core
     Cons_sp plistErase(Cons_sp& plist, Symbol_sp key);
     /*! Return the value if found and the default if not */
     T_sp plistGetf(Cons_sp plist, Symbol_sp key, T_sp defval=_Nil<T_O>());
-
-
 };
 
 
@@ -693,29 +595,6 @@ namespace core
 
 namespace core
 {
-    /*! Store the compiled body of a function referenced by a Functoid* */
-    class CompiledBody_O : public T_O
-    {
-	LISP_BASE1(T_O);
-	LISP_CLASS(core,CorePkg,CompiledBody_O,"compiled-body");
-    public: // ctor/dtor for classes with shared virtual base
-	explicit CompiledBody_O();
-    public:
-	static CompiledBody_sp create(Functoid* functoid, T_sp compiledFunctions);
-    private: // instance variables here
-	Functoid*	_Functoid;
-	/*! When a Lisp function is compiled, more than one LLVM function may be generated because of internal lambda etc.
-	  All of these functions are gathered together and stored within _CompiledFuncs for debugging */
-	T_sp 		_CompiledFuncs;
-    public: // Functions here
-	Functoid*	functoid() const { return this->_Functoid;};
-	T_sp compiledFuncs() const;
-	void setCompiledFuncs(T_sp compiledFuncs);
-	string __repr__() const;
-
-
-
-    }; // CompiledBody class
 
 
     template <typename T>
@@ -738,15 +617,6 @@ namespace core
     }
     
 }; // core namespace
-template<> struct gctools::GCInfo<core::CompiledBody_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true;
-    static bool constexpr Atomic = false;
-};
-TRANSLATE(core::CompiledBody_O);
-
-
 
 
 #endif //]

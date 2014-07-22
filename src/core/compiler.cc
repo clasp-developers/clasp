@@ -292,11 +292,22 @@ namespace core
 	// Convert the form into a thunk and return like COMPILE does
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
 	Cons_sp code = Cons_O::create(form,_Nil<Cons_O>());
-        if ( _lisp->sourceDatabase().notnilp() ) {
-            _lisp->sourceDatabase()->duplicateSourceInfo(form,code);
-        }
-	Interpreted_sp thunk = Interpreted_O::make(_Nil<T_O>(),llh,code);
-	thunk->closeOverEnvironment(env);
+        SourcePosInfo_sp info = _lisp->sourceDatabase()->registerSourceInfo(code
+                                                                            , core::_sym_STARloadCurrentSourceFileInfoSTAR->symbolValue().as<SourceFileInfo_O>()
+                                                                            , core::_sym_STARloadCurrentLinenumberSTAR->symbolValue().as<Fixnum_O>()->get()
+                                                                            , core::_sym_STARloadCurrentColumnSTAR->symbolValue().as<Fixnum_O>()->get() );
+        stringstream ss;
+        ss << "repl"<<_lisp->nextReplCounter();
+        Symbol_sp name = _lisp->intern(ss.str());
+        InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+                                                                                            ,info
+                                                                                            , kw::_sym_function
+                                                                                            , llh
+                                                                                            , _Nil<Cons_O>()
+                                                                                            , _Nil<Str_O>()
+                                                                                            , env
+                                                                                            , code );
+        Function_sp thunk = Function_O::make(ic);
 	return(Values(thunk,_Nil<T_O>(),_Nil<T_O>()));
     };
 

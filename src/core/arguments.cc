@@ -276,12 +276,6 @@ namespace core
 
 
 
-    bool ActivationFrameDynamicScopeManager::lexicalElementBoundP(const Argument& argument)
-    {
-	return((this->_Frame->boundp_entry(argument._ArgTargetFrameIndex)));
-    }
-
-
     void ActivationFrameDynamicScopeManager::new_binding(const Argument& argument, T_sp val)
     {
 	if ( argument._ArgTargetFrameIndex == SPECIAL_TARGET )
@@ -291,6 +285,12 @@ namespace core
 	}
 	ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget) );
 	this->_Frame->set_entry(argument._ArgTargetFrameIndex,val);
+    }
+
+
+    bool ActivationFrameDynamicScopeManager::lexicalElementBoundP(const Argument& argument)
+    {
+	return((this->_Frame->boundp_entry(argument._ArgTargetFrameIndex)));
     }
 
 
@@ -307,6 +307,45 @@ namespace core
     }
 
 
+
+
+    void StackFrameDynamicScopeManager::new_binding(const Argument& argument, T_sp val)
+    {
+	if ( argument._ArgTargetFrameIndex == SPECIAL_TARGET )
+	{
+	    this->DynamicScopeManager::new_binding(argument,val);
+	    return;
+	}
+	ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget) );
+	this->args[argument._ArgTargetFrameIndex] = val;
+    }
+
+
+    bool StackFrameDynamicScopeManager::lexicalElementBoundP(const Argument& argument)
+    {
+	return !this->args[argument._ArgTargetFrameIndex].unboundp();
+    }
+
+
+    Environment_sp StackFrameDynamicScopeManager::lexenv() const
+    {
+        return _Nil<Environment_O>();
+	SIMPLE_ERROR(BF("An Environment was requested from a StackFrameDynamicScopeManager"));
+//DynamicScopeManager... \n but only ValueEnvironmentDynamicScopeManagers have those.   \n On the other hand, ActivationFrameDynamicScopeManager::lexenv() \n should only be called when evaluating lambda-list init-forms \n (&optional,&key,&aux) and those should be evaluated in an environment \n that only has the lambda-list bindings in the top-level-environment \n - Since we attach the binding symbol names to the ActivationFrame we \n could just use the ActivationFrame of this ActivationFrameDynamicScopeManager \n as the environment that lexenv returns"));
+	// I'm going to return the ActivationFrame here and ASSERT that it must have debugging info
+	// attached.  I don't think the caller should be evaluating expressions in the environment
+	// represented by this->_Frame unless it has symbol names attached to it.
+	// I'm not sure the ActivationFrames with debugging information honor all of the
+	// variable/function lookup and update functions though so even with debugging information
+	// providing symbol names of variables it may not work - meister Nov 2013
+//	return this->_Frame;
+    }
+
+
+    ActivationFrame_sp StackFrameDynamicScopeManager::activationFrame() const
+    {
+        SIMPLE_ERROR(BF("Tried to get ActivationFrame from StackFrameDynamicScopeManager"));
+    }
 
 	
 };

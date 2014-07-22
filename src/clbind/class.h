@@ -89,6 +89,7 @@
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/logical.hpp>
 
+#include "core/foundation.h"
 
 #include <clbind/config.h>
 #include <clbind/scope.h>
@@ -418,13 +419,10 @@ namespace clbind
 
             void register_() const
             {
-                core::Functoid* methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies,Class,MethodPointerType>>::allocateClass(name,methodPtr);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-//                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
-//                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
-                
-
-                lisp_defineSingleDispatchMethod(name
+                core::Symbol_sp sym = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(symbol_packageName(classSymbol),name);
+                core::BuiltinClosure* methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies,Class,MethodPointerType>>::allocateClass(sym,methodPtr);
+                lisp_defineSingleDispatchMethod(sym
                                                 , classSymbol
                                                 , methoid
                                                 , 0
@@ -478,13 +476,15 @@ namespace clbind
 
             void register_() const
             {
-                core::Functoid* iterator_methoid = gctools::ClassAllocator<IteratorMethoid<Policies,Class,Begin,End>>::allocateClass(name,beginPtr,endPtr);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
+                core::Symbol_sp sym = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(symbol_packageName(classSymbol),name);
+                core::BuiltinClosure* methoid = gctools::ClassAllocator<IteratorMethoid<Policies,Class,Begin,End>>::allocateClass(sym,beginPtr,endPtr);
+
 //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
 //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
-                lisp_defineSingleDispatchMethod(name
+                lisp_defineSingleDispatchMethod(sym
                                                 , classSymbol
-                                                , iterator_methoid
+                                                , methoid
                                                 , 0
                                                 , m_arguments
                                                 , m_declares
@@ -550,8 +550,9 @@ namespace clbind
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
 //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
-                core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature> >::allocateClass(tname);
-                lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
+                core::Symbol_sp sym = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(core::lisp_currentPackageName(),tname);
+                core::BuiltinClosure* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature> >::allocateClass(sym);
+                lisp_defun(sym,core::lisp_currentPackageName(),f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
             }
 
 
@@ -606,11 +607,14 @@ namespace clbind
 
             void register_() const
             {
+                IMPLEMENT_MEF(BF("Do I use this code?"));
+#if 0
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
                 printf("%s:%d    constructor_registration_base::register_ called for derivable default constructor %s\n", __FILE__, __LINE__, m_name.c_str());
                 core::Functoid* f = gctools::ClassAllocator<DerivableDefaultConstructorFunctoid<Policies,Class>>::allocateClass(tname);
                 lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,0);
+#endif
             }
 
 
@@ -694,11 +698,12 @@ namespace clbind
             void register_() const
             {
                 const string n(name);
-                core::Functoid* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocateClass(n,get);
 //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
 //                printf("%p\n", i);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-                lisp_defineSingleDispatchMethod(name
+                core::Symbol_sp sym = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(symbol_packageName(classSymbol),n);
+                core::BuiltinClosure* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocateClass(sym,get);
+                lisp_defineSingleDispatchMethod(sym
                                                 , classSymbol
                                                 , getter
                                                 , 0

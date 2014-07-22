@@ -376,11 +376,14 @@ namespace core
 
 
 
-    T_mv Instance_O::INVOKE(int nargs, ArgArray args)
+    void Instance_O::LISP_INVOKE()
     {
+        IMPLEMENT_ME();
+#if 0
 	ASSERT(this->_Entry!=NULL);
 	LispCompiledFunctionIHF _frame(_lisp->invocationHistoryStack(),this->asSmartPtr());
 	return(( (this->_Entry)(*this,nargs,args)));
+#endif
     }
 
 

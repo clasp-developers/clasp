@@ -27,8 +27,9 @@ namespace core
 	/*! Store the receiver class for this method */
 	Class_sp	_receiver_class;
 	/*! Store the body of the method */
-	CompiledBody_sp		_body;
-	BuiltIn_sp	_method_builtin;
+	Function_sp     code;
+//        CompiledBody_sp		_body;
+//	BuiltIn_sp	_method_builtin;
 	/*! This is the LambdaListHandler for the Builtin method */
 	LambdaListHandler_sp	_argument_handler;
 	Cons_sp 	_declares;
@@ -40,7 +41,7 @@ namespace core
 					      Class_sp receiver,
 					      LambdaListHandler_sp lambda_list_handler,
 					      Cons_sp declares, Str_sp docstr,
-					      CompiledBody_sp body );
+					      Function_sp body );
     public: // Functions here
 
 	Class_sp receiver_class() const { return this->_receiver_class; };
@@ -63,7 +64,7 @@ TRANSLATE(core::SingleDispatchMethod_O);
 
 namespace core {
 
-
+#if 0
     class Lambda_call_next_method : public Functoid
     {
     private:
@@ -108,8 +109,9 @@ namespace core {
 
 
     };
+#endif
 
-
+#if 0
     class Lambda_next_method_p : public Functoid
     {
     private:
@@ -126,13 +128,19 @@ namespace core {
         DISABLE_NEW();
 
 	/*! Doesn't take any arguments */
+        void LISP_CALLING_CONVENTION()
+        {
+            IMPLEMENT_MEF(BF("Handle new calling method"));
+#if 0
 	T_sp invoke(Function_sp e,Cons_sp cnm_args, Environment_sp env, Lisp_sp lisp )
 	{_G();
 	    if ( this->_next_emfun.notnilp() ) return _lisp->_true();
 	    return _Nil<T_O>();
-	}
+        }
+#endif
+        }
     };
-
+#endif
 
 
 
@@ -141,7 +149,7 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-    class Lambda_method_function : public Functoid
+    class Lambda_method_function : public BuiltinClosure
     {
         FRIEND_GC_SCANNER();
     private:
@@ -150,8 +158,8 @@ namespace core {
     public:
 	string describe() const { return "Lambda_method_function";};
     public:
-	Lambda_method_function(const string& name, SingleDispatchMethod_sp method)
-	    : Functoid("Lambda_method_function->"+name)
+	Lambda_method_function(T_sp name, SingleDispatchMethod_sp method)
+	    : BuiltinClosure(name)
 	{_G();
 	    this->_method = method;
 	    this->_temporary_function = _Nil<Function_O>();
@@ -163,7 +171,7 @@ namespace core {
 
 	/*! The argument list is: (args next-emfun)
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
-	T_mv activate( ActivationFrame_sp closedEnv, int nargs, ArgArray args);
+	void LISP_INVOKE();
     };
 
 };

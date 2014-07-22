@@ -322,6 +322,7 @@ namespace core
     private:
 
 	uint			_Mode;
+        uint                    _ReplCounter;
 	/*! Store paths to important directories */
 	Bundle*			_Bundle;
 	/*! Stores whether the system is big-endian or not */
@@ -379,6 +380,8 @@ namespace core
 //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
     public:
         ExceptionStack& exceptionStack() { return this->_Roots._ExceptionStack; };
+    public:
+        uint nextReplCounter() { return ++this->_ReplCounter;};
     public:
 	void setupMpi(bool mpiEnabled, int mpiRank, int mpiSize);
 	bool mpiEnabled() { return this->_MpiEnabled;}

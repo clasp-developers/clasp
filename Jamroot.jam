@@ -198,15 +198,10 @@ use-project internals/clbind : src/clbind ;
 use-project internals/serveEvent : src/serveEvent ;
 use-project internals/lisp : src/lisp ;
 
-#use-project modules : modules ;
-#use-project modules/addon : modules/addon ;
-#use-project modules/units : modules/units ;
-#use-project modules/chem : modules/chem ;
-#use-project modules/kinematics : modules/kinematics ;
 
-
-
+##
 ## If using cando
+##
 use-project cando : cando ;
 use-project cando//addon : cando/addon ;
 use-project cando/units : cando/units ;

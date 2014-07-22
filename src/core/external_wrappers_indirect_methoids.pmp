@@ -1,21 +1,21 @@
-$var NumArgs = 16
+$var MaxArgs = 16
     $var ConstTypeCount = 2
     $var ReturnTypeCount = 2
     $var RetSV = 0
     $var RetVoid = 1
-    $var InnerCount = NumArgs+1
+    $var InnerCount = MaxArgs
     $var Templates = (InnerCount*ReturnTypeCount*ConstTypeCount)-1
     $var template_ = -1
     $range isConst 0..1
     $range ret 0..1
-    $range innerCount 0..(InnerCount-1)
+    $range innerCount 0..(MaxArgs-1)
     $for isConst [[
         $for ret [[
                 $for innerCount [[
                         $var template_ = isConst*(InnerCount*ReturnTypeCount)+ret*(InnerCount)+innerCount
                         $var numVoids = innerCount
-                        $var numArgs = NumArgs - numVoids
-                        $range Args_ 0..(numArgs-1)
+                        $var numArgs = MaxArgs - numVoids
+                        $range Args_ 1..(numArgs-1)
                         // TEMPLATE_TOP
                         // template_ = $template_
                         // isConst = $isConst
@@ -26,35 +26,30 @@ $var NumArgs = 16
                         // numVoids = $numVoids
                         // 
                         /* Specialization  */
-                        template <typename Pols, $if ret==RetVoid [[]] $else [[ typename RT, ]] typename OT $if numArgs [[,]] $for Args_ ,[[typename ARG$Args_]] >
+                        template <typename Pols, $if ret==RetVoid [[]] $else [[ typename RT, ]] typename OT $if numArgs>1 [[,]] $for Args_ ,[[typename ARG$Args_]] >
                         class IndirectVariadicMethoid
                         < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](OT::ExternalType::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-                        : public Functoid {
+                        : public BuiltinClosure {
                         public:
-                                typedef Functoid TemplatedBase;
+                                typedef BuiltinClosure TemplatedBase;
                         public:
 //        typedef std::function<$if ret==RetVoid [[void]] $else [[RT]] (OT& $if numArgs [[,]] $for Args_ , [[ARG$Args_]])> Type;
                         typedef $if ret==RetVoid [[void]] $else [[RT]] (OT::ExternalType::*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
                         Type mptr;
                         public:
                         enum { NumParams = $numArgs };
-                        IndirectVariadicMethoid(const string& name, Type ptr) : Functoid(name), mptr(ptr) {};
+                        IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
                         DISABLE_NEW();
                         virtual size_t templatedSizeof() const { return sizeof(*this); };
-                        core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
+                        void LISP_CALLING_CONVENTION()
                         {
-                            int countPureOutValues = CountPureOutValues<Pols>::value;
-                            if ( numArgs-1 != (NumParams-countPureOutValues) )
-                            {
-                                core::wrongNumberOfArguments(numArgs,(NumParams-countPureOutValues)+1);
-                            }
-                            gctools::smart_ptr<OT> ot((*args).template as<OT>());
-                            ++args;
+                            //int countPureOutValues = CountPureOutValues<Pols>::value;
+                            if ( lcc_nargs != $numArgs ) core::wrongNumberOfArguments(lcc_nargs,$numArgs);
+                            gctools::smart_ptr<OT> ot((LCC_ARG0()).template as<OT>());
                             $for Args_ [[
-                                    translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue_<$Args_> >::type > a$Args_(*args);
-                                    IncWhen<typename DoesNotContain_<Pols,pureOutValue_<$Args_> >::type >::go(args);
-                                    ]]
-                                $if ret==RetVoid [[]] $else [[ RT retval = ]] ((*(ot->wrappedPtr())).*(this->mptr))($for Args_ ,[[a$Args_._v]]);
+                                    translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue_<$Args_> >::type > a$Args_(LCC_ARG$Args_());
+                            ]]
+                            $if ret==RetVoid [[]] $else [[ RT retval = ]] ((*(ot->wrappedPtr())).*(this->mptr))($for Args_ ,[[a$Args_._v]]);
                             $if numArgs>0 [[
                                     core::MultipleValues& returnValues = _lisp->multipleValues();
                                     returnValues.setSize(0);
@@ -71,12 +66,12 @@ $var NumArgs = 16
                                     ]]
                                 $if ret==RetVoid [[
                                     $if numArgs==0 [[
-                                            return Values0<core::T_O>();
+                                            *lcc_resultP = Values0<core::T_O>();
                                             ]] $else [[
-                                            return gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+                                            *lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
                                             ]]
                                     ]] $else [[
-                                    return gctools::multiple_values<T_O>(translate::to_object<RT>::convert(retval),oidx);
+                                    *lcc_resultP = gctools::multiple_values<T_O>(translate::to_object<RT>::convert(retval),oidx);
                                     ]]
           
                                 }

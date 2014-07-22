@@ -177,6 +177,21 @@ namespace core
     };
 
 
+    class StackFrameDynamicScopeManager : public DynamicScopeManager
+    {
+    private:
+        size_t          nargs;
+        T_sp*           args;
+    public:
+	StackFrameDynamicScopeManager(size_t n, T_sp* a) : nargs(n), args(a) {};
+    public:
+	virtual void new_binding(const Argument& argument, T_sp val);
+	virtual bool lexicalElementBoundP(const Argument& argument);
+	ActivationFrame_sp activationFrame() const;
+	virtual Environment_sp lexenv() const;
+    };
+
+
 };
 
 #endif

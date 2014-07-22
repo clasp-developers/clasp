@@ -41,7 +41,7 @@ namespace core
 #define LOCK_af_ensure_single_dispatch_method 0
 #define ARGS_af_ensure_single_dispatch_method "(gfname receiver-class &key lambda-list-handler declares (docstring \"\") body )"
 #define DECL_af_ensure_single_dispatch_method ""    
-    void af_ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstring, CompiledBody_sp body )
+    void af_ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstring, Function_sp body )
     {_G();
 //	string docstr = docstring->get();
 	SingleDispatchGenericFunction_sp gf = gfname->symbolFunction().as<SingleDispatchGenericFunction_O>();//Lisp_O::find_single_dispatch_generic_function(gfname,true);
@@ -51,7 +51,7 @@ namespace core
             SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
         }
 
-        LambdaListHandler_sp gf_llh = gf->getLambdaListHandler();
+        LambdaListHandler_sp gf_llh = gf->lambdaListHandler;
         if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments() )
         {
             SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
@@ -106,9 +106,8 @@ namespace core
     SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh)
     {_G();
         GC_ALLOCATE(SingleDispatchGenericFunction_O,gf );
-	gf->setFunctionName(name);
-	gf->_Kind = kw::_sym_function;
-	gf->_LambdaListHandler = llh;
+	gf->name = name;
+	gf->lambdaListHandler = llh;
 	return gf;
     }
     
@@ -170,16 +169,18 @@ namespace core
 
 
 
-
+#if 0
     /*! I think this fills the role of the lambda returned by
       std-compute-discriminating-function (gf) AMOP-303 top
     */
-    T_mv SingleDispatchGenericFunction_O::INVOKE(int nargs, ArgArray args)
+    void SingleDispatchGenericFunction_O::LISP_INVOKE()
     {_OF();
+#ifdef DEBUG_ON
 	if ( nargs <= 0 ) {
 	    SIMPLE_ERROR(BF("Insufficient arguments %d for single-dispatch-generic-function - dispatching on %d") % nargs % 0 );
 	}
-	T_sp dispatchArg = args[0];
+#endif
+	T_sp dispatchArg = LCC_ARG0();
 	ASSERTF(!dispatchArg.unboundp(),BF("The dispatch object is UNBOUND"));
 	LispCompiledFunctionIHF _frame(_lisp->invocationHistoryStack(),this->asSmartPtr());
 	Class_sp dispatchArgClass = lisp_instance_class(dispatchArg);
@@ -200,9 +201,12 @@ namespace core
 	    LOG(BF("Found hashed effective method - using that"));
 	}
 	LOG(BF("Invoking the effective method function"));
+        IMPLEMENT_MEF(BF("Handle invoke"));
+#if 0
 	return emf->INVOKE(nargs,args);
+#endif
     };
-
+#endif
 
     class SingleDispatch_OrderByClassPrecedence
     {
@@ -232,7 +236,7 @@ namespace core
 	if ( UNLIKELY(applicableMethods->length() == 0 ))
 	{
 	    SIMPLE_ERROR(BF("There are no applicable methods of %s for receiver class %s")
-			 % _rep_(this->getFunctionName())
+			 % _rep_(this->name)
 			 % mc->instanceClassName() );
 	}
 #if 1
@@ -257,13 +261,11 @@ namespace core
 
 
 
-    Lambda_emf::Lambda_emf(const string& name,
-		   SingleDispatchGenericFunction_sp gf,
-		   Symbol_sp emf_name,
-		   SingleDispatchMethod_sp cur_method ) : Functoid("Lambda_emf->"+name)
+    Lambda_emf::Lambda_emf(T_sp name,
+                           SingleDispatchGenericFunction_sp gf,
+                           SingleDispatchMethod_sp cur_method ) : FunctionClosure(name)
 	{_G();
-	    this->_name = emf_name;
-	    this->_method_function = cur_method->_method_builtin;
+	    this->_method_function = cur_method->code;
 	}
 
 
@@ -278,27 +280,27 @@ namespace core
         // Construct a name for the emf by stringing together the generic function name
         // with the name of the receiver class - this is to help with debugging
         stringstream emf_name_ss;
-        string gfname = _rep_(this->getFunctionName());
+        string gfname = _rep_(this->name);
         Class_sp receiverClass = cur_method->receiver_class();
         LambdaListHandler_sp method_llh = cur_method->method_lambda_list_handler();
         Symbol_sp receiverClassNameSymbol = receiverClass->className();
         string receiverClassName = receiverClassNameSymbol->symbolNameAsString();
         emf_name_ss << gfname << "->" << receiverClassName;
-        Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_functionBlockName(this->getFunctionName())->getPackage());
+        Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_functionBlockName(this->name)->getPackage());
 
-
-        Lambda_emf* l_emf = gctools::ClassAllocator<Lambda_emf>::allocateClass(emf_name_ss.str()
+        Lambda_emf* l_emf = gctools::ClassAllocator<Lambda_emf>::allocateClass(emf_name
                                                                 ,this->sharedThis<SingleDispatchGenericFunction_O>()
-                                                                , emf_name
                                                                 , cur_method);
-
-
-        CompiledBody_sp cb_l_emf = CompiledBody_O::create(l_emf,_Nil<T_O>());
-        Function_sp emf = BuiltIn_O::create(emf_name,
+#if 0   // Roll the stuff below into the l_emf creation above
+create(emf_name,
                                             _Nil<LambdaListHandler_O>(),// LambdaListHandler_O::create(method_llh->numberOfLexicalVariables()), // _Nil<LambdaListHandler_O>(),
                                             cb_l_emf,
                                             _Nil<ActivationFrame_O>(),
                                             kw::_sym_function );
+
+#endif
+
+        Function_sp emf = Function_O::make(l_emf);
         return emf;
     }
 

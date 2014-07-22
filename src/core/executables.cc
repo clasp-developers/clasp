@@ -25,15 +25,50 @@ namespace core
 {
 
 
+    bool FunctionClosure::macroP() const
+    {
+        return this->kind == kw::_sym_macro;
+    }
+
+
+
+    void BuiltinClosure::LISP_CALLING_CONVENTION()
+    {
+        IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
+    };
+
+
+    void InterpretedClosure::LISP_CALLING_CONVENTION()
+    {
+        ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->lambdaListHandler,this->closedEnv);
+        ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
+        try {
+            lambdaListHandler_createBindings(this->lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+        } catch (...) {
+            handleArgumentHandlingExceptions(this);
+        }
+        ValueFrame_sp newActivationFrame = newValueEnvironment->getActivationFrame().as<ValueFrame_O>();
+        VectorObjects_sp debuggingInfo = lambdaListHandler->namesOfLexicalVariablesForDebugging();
+        newActivationFrame->attachDebuggingInfo(debuggingInfo);
+        InvocationHistoryFrame _frame(this,newActivationFrame);
+        *lcc_resultP = eval::sp_progn(this->code,newValueEnvironment);
+    };
+
+
+
+
+
+    LambdaListHandler_sp Function_O::getLambdaListHandler() const {IMPLEMENT_ME();};
+    bool Function_O::macroP() const {IMPLEMENT_ME();};
+    void Function_O::setKind(Symbol_sp k) {IMPLEMENT_ME();};
+    Symbol_sp Function_O::functionKind() const {IMPLEMENT_ME();};
+    Environment_sp Function_O::closedEnvironment() const{IMPLEMENT_ME();};
+    T_sp Function_O::functionName() const {IMPLEMENT_ME();};
+    T_sp Function_O::functionFile() const {IMPLEMENT_ME();};
+
 
 
     EXPOSE_CLASS(core,Function_O);
-//    EXPOSE_CLASS(core,PrimitiveWithArguments_O);
-//    EXPOSE_CLASS(core,FunctionPrimitive_O);
-//    REGISTER_CLASS(core,MacroPrimitive_O);
-//    REGISTER_CLASS(core,MethodPrimitive_O);
-    EXPOSE_CLASS(core,Interpreted_O);
-//    REGISTER_CLASS(core,MethodO_O);
 
     SYMBOL_EXPORT_SC_(KeywordPkg,calledFunction);
     SYMBOL_EXPORT_SC_(KeywordPkg,givenNumberOfArguments);
@@ -41,8 +76,10 @@ namespace core
     SYMBOL_EXPORT_SC_(KeywordPkg,unrecognizedKeyword);
 
 
-    void handleArgumentHandlingExceptions(Function_sp func)
+    void handleArgumentHandlingExceptions(FunctionClosure*)
     {
+        IMPLEMENT_MEF(BF("Handle new calling convention"));
+#if 0
         Function_sp localFunc = func;
         try {
             throw;
@@ -63,6 +100,7 @@ namespace core
                        , lisp_createList(kw::_sym_calledFunction, func
                                          , kw::_sym_unrecognizedKeyword, error.argument));
         }
+#endif
     }
 
 
@@ -76,57 +114,18 @@ namespace core
 	if ( fn.nilp() ) {
 	    WRONG_TYPE_ARG(fn,cl::_sym_Function_O);
 	}
+        
 	Cons_sp code = _Nil<Cons_O>();
-	if ( Interpreted_sp ifn = fn.asOrNull<Interpreted_O>() ) {
-	    code = ifn->getCode();
+	if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(fn->closure) ) {
+	    code = ic->code;
 	}
-	bool closedp = fn->closedEnvironment().notnilp();
-	T_sp name = fn->functionName();
+	bool closedp = true; // fn->closedEnvironment().notnilp();
+	T_sp name = fn->closure->name;
 	return Values(code,_lisp->_boolean(closedp),name);
     };
 
 
 
-
-
-    Environment_sp Function_O::closedEnvironment() const
-    {
-	SUBIMP();
-    }
-
-
-
-
-
-    T_mv Function_O::functionFile() const
-    {
-	string pathName = "-no-file-";
-	if ( this->_SourceFileInfo.notnilp() ) {
-	    pathName =  this->_SourceFileInfo->namestring();
-	}
-	return Values(Str_O::create(pathName),Fixnum_O::create(this->_LineNumber));
-    }
-
-
-    SourceFileInfo_sp Function_O::sourceFileInfo() const
-    {
-	return this->_SourceFileInfo;
-    }
-
-
-    bool Function_O::macroP() const
-    {
-	return (this->_Kind == kw::_sym_macro );
-    }
-
-
-
-
-    void Function_O::set_kind(Symbol_sp kind)
-    {_OF();
-	ASSERTF(kind==kw::_sym_function || kind==kw::_sym_macro,BF("Only :function or :macro are allowed"));
-	this->_Kind = kind;
-    }
 
 
 
@@ -137,10 +136,10 @@ namespace core
 	class_<Function_O>()
 	    .def("core:getLambdaListHandler",&Function_O::getLambdaListHandler)
 	    .def("core:macrop",&Function_O::macroP)
-	    .def("core:setKind",&Function_O::set_kind)
+	    .def("core:setKind",&Function_O::setKind)
 	    .def("core:functionKind",&Function_O::functionKind)
 	    .def("core:closedEnvironment",&Function_O::closedEnvironment)
-	    .def("functionName",&Function_O::getFunctionName)
+	    .def("functionName",&Function_O::functionName)
 	    .def("core:functionFile",&Function_O::functionFile)
 	    ;
 	ClDefun(functionLambdaExpression);
@@ -159,7 +158,7 @@ namespace core
     string Function_O::__repr__() const
     {_G();
 	ASSERTNOTNULL(this->_Name);
-	T_sp name = this->_Name;
+	T_sp name = this->closure->name;
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(name) << ">";
 	return ss.str();
@@ -175,22 +174,44 @@ namespace core
     }
 #endif // defined(XML_ARCHIVE)
 
-    void Function_O::setFunctionName(T_sp s)
+
+
+
+
+    EXPOSE_CLASS(core,CompiledFunction_O);
+    
+    void CompiledFunction_O::exposeCando(core::Lisp_sp lisp)
     {
-	this->_Name = s;
+	core::class_<CompiledFunction_O>()
+	    ;
+    }
+    
+    void CompiledFunction_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+#ifdef USEBOOSTPYTHON
+	PYTHON_CLASS(CorePkg,CompiledFunction,"","",_lisp)
+	    ;
+#endif
     }
 
-    T_sp Function_O::getFunctionName() const
-    {_OF();
-	ASSERTNOTNULL(this->_Name);
-	if ( this->_Name.nilp() ) return _Nil<T_O>();
-	return this->_Name;
-    }
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
     void Interpreted_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Interpreted_O>()
@@ -228,12 +249,14 @@ namespace core
 	LOG(BF("Creating a function named: %s")% _rep_(name));
 	proc = Interpreted_O::create();
 	proc->_Name = name;
-	proc->_LambdaListHandler = lambda_list_handler;
+        InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name,
+                                                                                            lambda_list_handler
+                                                                                            ,environ
+                                                                                            ,code);
+        proc->_InterptedClosure = ic;
 	proc->_Declares = declares;
 	proc->_DocString = docString;
 	proc->_Declares = declares;
-	proc->_Code = code;
-	proc->_ClosedEnvironment = environ;
 	SourceFileInfo_mv sfi = af_walkToFindSourceInfo(code);
 	if ( sfi.number_of_values() > 3 ) {
 	    proc->_SourceFileInfo = sfi;
@@ -334,15 +357,18 @@ namespace core
 
     void Interpreted_O::closeOverEnvironment(Environment_sp environ)
     {_G();
+        IMPLEMENT_MEF(BF("Shouldn't I be depreciated"))
+#if 0
 	ASSERTNOTNULL(environ);
 	this->_ClosedEnvironment = environ;
+#endif
     }
 
 
 
     // This is the old way of doing things using createBindingsInEnvironment
 
-    T_mv Interpreted_O::INVOKE(int nargs, ArgArray args )
+    void InterpretedClosure::LISP_CALLING_CONVENTION()
     {_G();
         if ( _sym_STARdebugInterpretedFunctionsSTAR && _sym_STARdebugInterpretedFunctionsSTAR->symbolValue().notnilp() ) {
 //            printf("%s:%d   _sym_STARdebugInterpretedFunctionsSTAR->symbolValue().px_ref() = %p\n", __FILE__, __LINE__, _sym_STARdebugInterpretedFunctionsSTAR->symbolValue().px_ref() );
@@ -505,7 +531,7 @@ namespace core
 
 //#define DEBUG_BUILTIN_INVOKE
 
-    T_mv BuiltIn_O::INVOKE(int nargs, ArgArray argArray)
+    void BuiltIn_O::INVOKE()   // OLD code
     {_G();
 	T_mv result;
 	LOG(BF("The body is a CompiledBody"));
@@ -659,7 +685,7 @@ namespace core
 
 
 
-    T_mv CompiledFunction_O::INVOKE(int nargs, ArgArray args)
+    void CompiledFunction_O::LISP_INVOKE()
     {_G();
 	af_stackMonitor();
 	T_mv result;
@@ -699,22 +725,12 @@ namespace core
 
 
     
-    EXPOSE_CLASS(core,CompiledFunction_O);
-    
-    void CompiledFunction_O::exposeCando(core::Lisp_sp lisp)
-    {
-	core::class_<CompiledFunction_O>()
-	    .def("core:getBody",&CompiledFunction_O::getBody)
-	    ;
-    }
-    
-    void CompiledFunction_O::exposePython(core::Lisp_sp lisp)
-    {_G();
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,CompiledFunction,"","",_lisp)
-	    ;
 #endif
-    }
+
+
+
+
+
 
 
 

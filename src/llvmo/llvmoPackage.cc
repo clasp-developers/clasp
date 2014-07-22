@@ -116,10 +116,10 @@ namespace llvmo
 
     
     
-#define ARGS_af_throwIfMismatchedStructureSizes "(&key tsp tmv lisp-compiled-function-ihf)"
+#define ARGS_af_throwIfMismatchedStructureSizes "(&key tsp tmv ihf)"
 #define DECL_af_throwIfMismatchedStructureSizes ""
 #define DOCS_af_throwIfMismatchedStructureSizes "throwIfMismatchedStructureSizes"
-    void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, Fixnum_sp lispCompiledFunctionIHFSize)
+    void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, Fixnum_sp givenIhfSize)
     {_G();
 	if ( tspSize.nilp() ) SIMPLE_ERROR(BF("You must provide a tspSize"));
 	if ( tmvSize.nilp() ) SIMPLE_ERROR(BF("You must provide a tmvSize"));
@@ -133,14 +133,14 @@ namespace llvmo
 	{
 	    SIMPLE_ERROR(BF("Mismatch between tmv size[%d] and core::T_mv size[%d]") % tmvSize->get() % T_mv_size );
 	}
-	if ( !lispCompiledFunctionIHFSize.nilp() )
+	if ( !givenIhfSize.nilp() )
 	{
-	    int LispCompiledFunctionIHF_size = sizeof(core::LispCompiledFunctionIHF);
-	    if ( lispCompiledFunctionIHFSize->get() != LispCompiledFunctionIHF_size )
+	    int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
+	    if ( givenIhfSize->get() != InvocationHistoryFrame_size )
 	    {
 		SIMPLE_ERROR(BF("Mismatch between IR lisp-compiled-function-ihf size[%d]"
 				" and sizeof(LispCompiledFunctionIHF)=[%d]")
-			     % lispCompiledFunctionIHFSize % LispCompiledFunctionIHF_size );
+			     % givenIhfSize % InvocationHistoryFrame_size );
 	    }
 	}
     };
@@ -223,7 +223,9 @@ namespace llvmo
 
     void dump_funcs(core::CompiledFunction_sp compiledFunction)
     {
-	core::CompiledBody_sp cb = compiledFunction->getBody();
+        IMPLEMENT_MEF(BF("Handle new functor approach"));
+#if 0
+        core::FunctionClosure* cb = compiledFunction->getBody();
 	core::T_sp funcs = cb->compiledFuncs();
 	if ( af_consP(funcs) )
 	{
@@ -242,6 +244,7 @@ namespace llvmo
 	    return;
 	}
 	printf("af_disassemble -> %s\n", _rep_(funcs).c_str() );
+#endif
     }
     
     
@@ -266,6 +269,8 @@ namespace llvmo
 #define DOCS_af_viewCFG "viewCFG"
     void af_viewCFG(core::CompiledFunction_sp compiledFunction)
     {_G();
+        IMPLEMENT_MEF(BF("Handle new functor approach"));
+#if 0
 	core::CompiledBody_sp cb = compiledFunction->getBody();
 	core::T_sp funcs = cb->compiledFuncs();
 	if ( af_consP(funcs) )
@@ -281,6 +286,7 @@ namespace llvmo
 	    }
 	    return;
 	}
+#endif
     };
 
 
@@ -290,6 +296,8 @@ namespace llvmo
 #define DOCS_af_viewCFGOnly "viewCFGOnly"
     void af_viewCFGOnly(core::CompiledFunction_sp compiledFunction)
     {_G();
+        IMPLEMENT_MEF(BF("Handle new functor approach"));
+#if 0
 	core::CompiledBody_sp cb = compiledFunction->getBody();
 	core::T_sp funcs = cb->compiledFuncs();
 	if ( af_consP(funcs) )
@@ -305,6 +313,7 @@ namespace llvmo
 	    }
 	    return;
 	}
+#endif
     };
 
 

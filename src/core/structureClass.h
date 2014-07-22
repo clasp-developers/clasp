@@ -110,7 +110,7 @@ namespace core {
         DISABLE_NEW();
 
         virtual string describe() const {return "StructureClassInitializationFunctoid";};
-        StructureClassInitializationFunctoid(const string& name, StructureClass_sp c) : Functoid("StructureClassInitializationFunctoid->"+name) { this->_StructureClass = c;};
+        StructureClassInitializationFunctoid(T_sp name, StructureClass_sp c) : Functoid(name) { this->_StructureClass = c;};
         virtual ~StructureClassInitializationFunctoid() {};
     };
 

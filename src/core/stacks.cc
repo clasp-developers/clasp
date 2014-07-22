@@ -25,11 +25,10 @@ namespace core
         return -1;
     }
 
-    InvocationHistoryFrame::InvocationHistoryFrame(IHFLeafKind kind, InvocationHistoryStack& stack) : _WroteToLog(false)
+    InvocationHistoryFrame::InvocationHistoryFrame(FunctionClosure* fc, ActivationFrame_sp env) :closure(fc), environment(env)
     {
-	this->_IHSFrameKind = kind;
-	this->_Stack = &stack;
-	this->_Next = stack.top();
+	this->_Stack = &_lisp->invocationHistoryStack();
+	this->_Next = this->_Stack->top();
 	if (this->_Next == NULL)
 	{
 	    this->_Index = 0;
@@ -37,7 +36,7 @@ namespace core
 	{
 	    this->_Index = this->_Next->_Index+1;
 	}
-	stack.push(this);
+	this->_Stack->push(this);
 	this->_Bds = _lisp->bindings().size();
     }
 
@@ -45,15 +44,6 @@ namespace core
     {
 	this->_Stack->pop();
     }
-
-
-    void InvocationHistoryFrame::setLineNumberColumnForCxxFunction(uint l, uint c, const char* f) {};
-
-
-
-
-
-
 
 
     void InvocationHistoryStack::setExpressionForTop(T_sp expression)
@@ -87,14 +77,16 @@ namespace core
 	return ss.str();
     }
 
+
+#if 0
     //! Define this to ensure that TopLevelIHF vtable is weak symbol
     void TopLevelIHF::keyFunctionForVtable() {};
 
 
 
 
-    TopLevelIHF::TopLevelIHF(InvocationHistoryStack& stack, T_sp expression )
-	: InvocationHistoryFrame(TopLevel,stack),
+    TopLevelIHF::TopLevelIHF(InvocationHistoryStack& stack, T_sp expression, FunctionClosure* fc )
+	: InvocationHistoryFrame(TopLevel,stack, fc),
 	  _SourceFileInfo(_Nil<SourceFileInfo_O>()),
 	  _LineNumber(0),
 	  _Column(0),
@@ -155,7 +147,7 @@ namespace core
 
     string CxxFunctionIHF::asString() const
     {
-	return this->asStringLowLevel(this->typeName(),_rep_(this->_Function->getFunctionName()),af_sourceFileInfo(this->_Function)->fileName(),this->_LineNumber,0);
+	return this->asStringLowLevel(this->typeName(),_rep_(this->_Function->closure->name),af_sourceFileInfo(this->_Function)->fileName(),this->_LineNumber,0);
     }
 
 
@@ -169,15 +161,13 @@ namespace core
 //	IMPLEMENT_MEF(BF("Switch to ArgArray"));
     }
 
-    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, Function_sp function)
-	: InvocationHistoryFrame(kind,stack),
-	  _Function(function),
+    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, FunctionClosure* fc)
+	: InvocationHistoryFrame(kind,stack,fc),
 	  _LineNumber(0),
 	  _Column(0)
     {};
-    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, Function_sp function, ActivationFrame_sp af)
-	: InvocationHistoryFrame(kind,stack),
-	  _Function(function),
+    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, FunctionClosure* fc, ActivationFrame_sp af)
+	: InvocationHistoryFrame(kind,stack,fc),
 	  _ActivationFrame(af),
 	  _LineNumber(0),
 	  _Column(0)
@@ -186,15 +176,10 @@ namespace core
 
     string LispFunctionIHF::sourcePathName() const
     {
-	return af_sourceFileInfo(this->_Function)->namestring();
+	return this->closure->sourcePosInfo->sourceFileInfo->namestring();
     }
 
 
-
-    Function_sp LispFunctionIHF::function() const
-    {
-	return this->_Function.as<Function_O>();
-    };
 
     ActivationFrame_sp LispFunctionIHF::activationFrame() const
     {
@@ -219,15 +204,16 @@ namespace core
 
     string LispInterpretedFunctionIHF::asString() const
     {
-	return this->asStringLowLevel(this->typeName(),_rep_(this->_Function->getFunctionName()), af_sourceFileInfo(this->_Function)->fileName(),
+	return this->asStringLowLevel(this->typeName(),_rep_(this->closure->name),
+                                      this->closure->sourceFileInfo->fileName(),
 				      this->_LineNumber,this->_Column);
     }
 
     string LispCompiledFunctionIHF::asString() const
     {
 	return this->asStringLowLevel(this->typeName(),
-				      _rep_(this->_Function->getFunctionName()),
-				      af_sourceFileInfo(this->_Function)->fileName(),
+				      _rep_(this->closure->name),
+				      this->closure->sourceFileInfo->fileName(),
 				      this->_LineNumber,
 				      this->_Column);
     }
@@ -238,13 +224,13 @@ namespace core
     string MacroExpansionIHF::asString() const
     {
 	return this->asStringLowLevel(this->typeName(),
-				      _rep_(this->_Function->getFunctionName()),
-				      af_sourceFileInfo(this->_Function)->fileName(),
+				      _rep_(this->closure->name),
+				      this->closure->sourceFileInfo->fileName(),
 				      this->_LineNumber,this->_Column);
     }
 
 
-
+#endif
 
     
 
@@ -488,14 +474,14 @@ namespace core
 #define ARGS_af_ihsFun "(arg)"
 #define DECL_af_ihsFun ""
 #define DOCS_af_ihsFun "ihsFunc"
-	Function_sp af_ihsFun(int idx)
-	{_G();
+    Function_sp af_ihsFun(int idx)
+    {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
 	if (cur)
 	{
-	Function_sp func = cur->function();
-	if ( func.pointerp() ) return func;
-    }
+            Function_sp func = Function_O::make(cur->closure); //QUESTION: Should I be returning a new function every time?  This will cause problems when comparing functions - but I don't think I do that anywhere.
+            if ( func.pointerp() ) return func;
+        }
 	return _Nil<Function_O>();
     };
 

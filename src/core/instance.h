@@ -123,7 +123,7 @@ namespace core
 	void reshapeInstance(int delta);
 
     public:
-	virtual T_mv INVOKE(int nargs, ArgArray argArray );
+	virtual void LISP_INVOKE();
     public: // Functions here
 	int numberOfSlots() const { return this->_Slots.size();};
 	/*! Return number of slots if not nil otherwise nil */

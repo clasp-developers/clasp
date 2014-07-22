@@ -63,7 +63,7 @@ namespace core
 
     T_sp LispDebugger::invoke()
     {_G();
-	DebuggerIHF debuggerStack(_lisp->invocationHistoryStack(),_Nil<ActivationFrame_O>());
+//	DebuggerIHF debuggerStack(_lisp->invocationHistoryStack(),_Nil<ActivationFrame_O>());
 	if ( this->_Condition.notnilp() )
 	{
 	    _lisp->print(BF("Debugger entered with condition: %s") % _rep_(this->_Condition) );
@@ -187,7 +187,7 @@ namespace core
 //		    ControlSingleStep singleStep(false);
 		    T_mv result;
 		    Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
-		    DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::nilCheck_getActivationFrame(env));
+//		    DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::nilCheck_getActivationFrame(env));
 		    result = _lisp->readEvalPrintString(sexp,env,true);
 		    if (!result)
 		    {
@@ -206,7 +206,7 @@ namespace core
 		string sexp = line.substr(0,99999);
 //		ControlSingleStep singleStep(false);
 		Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
-		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::nilCheck_getActivationFrame(env));
+//		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::nilCheck_getActivationFrame(env));
 		try {
 		    _lisp->readEvalPrintString(sexp,env,true);
 		} catch (DebuggerSaysAbortToRepl& err)
@@ -220,7 +220,7 @@ namespace core
 		string sexp = line.substr(2,99999);
 //		ControlSingleStep singleStep(false);
 		Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
-		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::nilCheck_getActivationFrame(env));
+//		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::nilCheck_getActivationFrame(env));
 		try {
 		    DynamicScopeManager scope(_sym_STARimplicit_compile_hookSTAR,_sym_implicit_compile_hook_default->symbolFunction());
 		    _lisp->readEvalPrintString(sexp,env,true);

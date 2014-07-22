@@ -85,7 +85,7 @@ namespace core
 
 
 
-    T_mv SingleDispatchEffectiveMethodFunction_O::INVOKE(int nargs, ArgArray argArray )
+    void SingleDispatchEffectiveMethodFunction_O::LISP_INVOKE()
     {_OF();
 	LOG(BF("My methods --> %s") % _rep_(this) );
 	IMPLEMENT_MEF(BF("Implement emf"));

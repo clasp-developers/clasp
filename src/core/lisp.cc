@@ -183,7 +183,8 @@ namespace core
 		       _StackSampleCount(0),
 		       _StackSampleSize(0),
 		       _StackSampleMax(0),
-		       _Bundle(NULL),
+		       _ReplCounter(1),
+                       _Bundle(NULL),
 		       _DebugStream(NULL),
 		       _SingleStepLevel(UndefinedUnsignedInt),
 		       _profiler(NULL), 
@@ -1431,9 +1432,9 @@ namespace core
 		_sym_STARcurrentColumnSTAR->setf_symbolValue(Fixnum_O::create(sin->column()));
 		T_sp expression = read_lisp_object(sin,false,_Unbound<T_O>(),false);
 		if ( expression.unboundp() ) break;
-		TopLevelIHF frame(_lisp->invocationHistoryStack(),expression);
-		_lisp->invocationHistoryStack().setExpressionForTop(expression);
-		_lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
+//		TopLevelIHF frame(_lisp->invocationHistoryStack(),expression);
+//		_lisp->invocationHistoryStack().setExpressionForTop(expression);
+//		_lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
 //		PushCodeStack codeStack(expression,_Nil<Environment_O>(),_lisp);
 		if ( _sym_STARechoReplReadSTAR->symbolValue().isTrue() )
 		{
@@ -1539,7 +1540,7 @@ namespace core
     void Lisp_O::readEvalPrintInteractive()
     {_OF();
 	Cons_sp expression;
-	TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<T_O>());
+//	TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<T_O>());
 	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLineNumberSTAR,Fixnum_O::create(0));
 	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(0));
 	while(1) {
@@ -2118,7 +2119,7 @@ namespace core
 		if ( _lisp->specialFormOrNil(headSymbol).nilp() )
 		{
 		    Function_sp func = af_interpreter_lookup_macro(headSymbol,env);
-		    if ( func.notnilp() && func->macroP() )
+		    if ( func.notnilp() && func->closure->macroP() )
 		    {
 			expansionFunction = func;
 		    }
@@ -2136,10 +2137,9 @@ namespace core
 	{
 	    T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
 	    Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
-	    T_sp macroHookArgs[3] = { expansionFunction, form, env };
-//	    ValueFrame_sp macroHookArgs(ValueFrame_O::create_fill(expansionFunction,form,env,_Nil<ActivationFrame_O>()));
-	    MacroExpansionIHF _frame(_lisp->invocationHistoryStack(),hookFunc);
-	    T_sp expanded = hookFunc->INVOKE(3, macroHookArgs); // eval::applyFunctionToActivationFrame(hookFunc,macroHookArgs);
+            ValueFrame_sp macroHookArgs = ValueFrame_O::create_fill_args(_Nil<ActivationFrame_O>(),expansionFunction,form,env);
+	    InvocationHistoryFrame _frame(hookFunc->closure,macroHookArgs);
+	    T_sp expanded = eval::applyToActivationFrame(hookFunc,macroHookArgs); // eval::applyFunctionToActivationFrame(hookFunc,macroHookArgs);
             if ( _lisp->sourceDatabase().notnilp() ) {
                 _lisp->sourceDatabase()->duplicateSourceInfoForMacroExpansion(form,expansionFunction,expanded);
             }
@@ -2208,7 +2208,7 @@ namespace core
                     {
                         ss << " ";
                         ss << af_classOf(af_symbolFunction((sym)))->classNameAsString();
-                        if ( af_symbolFunction(sym)->macroP() )
+                        if ( af_symbolFunction(sym)->closure->macroP() )
                         {
                             ss << "(MACRO)";
                         }
@@ -2286,7 +2286,7 @@ namespace core
 	ASSERTF(func.pointerp(),BF("funcall target[%s] is undefined") % _rep_(function_desig) );
 	Cons_sp passArgs = args;
 	ValueFrame_sp frame(ValueFrame_O::create(passArgs,_Nil<ActivationFrame_O>()));
-	return func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
+	return eval::applyToActivationFrame(func,frame); // func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
     }
 
 
@@ -2319,7 +2319,7 @@ namespace core
 	    Function_sp func = coerce::functionDesignator(head);
 	    if ( ActivationFrame_sp singleFrame = oCar(args).asOrNull<ActivationFrame_O>() )
 	    {
-		return func->INVOKE(singleFrame->length(),singleFrame->argArray()); // return eval::applyFunctionToActivationFrame(func,singleFrame);
+		return eval::applyToActivationFrame(func,singleFrame); // return func->INVOKE(singleFrame->length(),singleFrame->argArray()); // return eval::applyFunctionToActivationFrame(func,singleFrame);
 	    }
 	}
 	T_sp last = oCar(af_last(args));
@@ -2340,7 +2340,7 @@ namespace core
 	    last = oCdr(last);
 	}
 	Function_sp func = coerce::functionDesignator(head);
-	return func->INVOKE(frame->length(),frame->argArray());
+	return eval::applyToActivationFrame(func,frame);
     }
 
 
