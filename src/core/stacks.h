@@ -28,30 +28,29 @@ namespace core
 	InvocationHistoryStack* _Stack;
 	InvocationHistoryFrame*	_Next;
 	int			_Bds;
-	FunctionClosure* 	closure;
+	Closure* 	        closure;
         ActivationFrame_sp      environment;
-        int                     currentLineNumber;
-        int                     currentColumn;
+        int                     runningLineNumber;
+        int                     runningColumn;
     public:
-	InvocationHistoryFrame(FunctionClosure* fc, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
+	InvocationHistoryFrame(Closure* fc, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
 	ATTR_WEAK virtual ~InvocationHistoryFrame();
 	InvocationHistoryFrame* next() { return this->_Next;};
 	uint index() { return this->_Index;};
 	virtual string sourcePathName() const;
-	virtual int lineNumber() const;
-	virtual int column() const;
+	virtual int lineNumber() const { return this->runningLineNumber; };
+	virtual int column() const { return this->runningColumn; };
 	virtual void setLineNumberColumn(uint lineNumber, uint column) {
-            this->lineNumber = lineNumber;
-            this->column = column;
+            this->runningLineNumber = lineNumber;
+            this->runningColumn = column;
         };
 	virtual void setActivationFrame(ActivationFrame_sp af) { this->environment = af; };
 	virtual string asString();
-	virtual string typeName();
-	string asStringLowLevel(const string& type, const string& functionName,
+	string asStringLowLevel(const string& functionName,
 				const string& sourceFileName,
 				uint lineNumber, uint column ) const;
 
-	virtual ActivationFrame_sp activationFrame() const;
+	virtual ActivationFrame_sp activationFrame() const { return this->environment; };
 	virtual int bds() const {return this->_Bds;};
     public:
     };
@@ -232,6 +231,9 @@ namespace core {
 
 };
 
+
+
+#define PUSH_INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this);
 
 namespace core{
     void initialize_stacks();

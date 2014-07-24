@@ -29,17 +29,17 @@ namespace core {
     class FunctionClosure : public Closure
     {
     public:
-        SourcePosInfo_sp        sourcePosInfo;
+        SourcePosInfo_sp        _SourcePosInfo;
         Symbol_sp               kind;
     public:
         DISABLE_NEW();
         FunctionClosure(T_sp fn, SourcePosInfo_sp spo, Symbol_sp k )
             : Closure(fn)
-            , sourcePosInfo(spo)
+            , _SourcePosInfo(spo)
             , kind(k){};
         FunctionClosure(T_sp fn)
             : Closure(fn)
-            , sourcePosInfo(_Nil<SourcePosInfo_O>())
+            , _SourcePosInfo(_Nil<SourcePosInfo_O>())
             , kind(kw::_sym_function){};
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 
@@ -50,6 +50,10 @@ namespace core {
         virtual bool builtinP() const { return false; }
         virtual bool compiledP() const { return false; }
         virtual bool interpretedP() const { return false; }
+        SourcePosInfo_sp sourcePosInfo() const { return this->_SourcePosInfo;};
+        SourcePosInfo_sp setSourcePosInfo(T_sp sourceFile, int lineno, int column);
+        virtual int lineNumber() const;
+        virtual int column() const;
     };
 
 
@@ -70,14 +74,14 @@ namespace core {
         void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     public:  // was protected:
-        FunctionClosure*        closure;
+        Closure*        closure;
     public:
         Function_O() : Base()
                      , closure(NULL)
         {};
         virtual ~Function_O() {};
     public:
-        static Function_sp make(FunctionClosure* c) {
+        static Function_sp make(Closure* c) {
             GC_ALLOCATE(Function_O,f);
             f->closure = c;
             return f;

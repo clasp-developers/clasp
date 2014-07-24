@@ -25,12 +25,23 @@ namespace core
 {
 
 
+
     bool FunctionClosure::macroP() const
     {
         return this->kind == kw::_sym_macro;
     }
+    int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->lineNumber() : 0; };
+    int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->column() : 0; };
 
 
+    SourcePosInfo_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, int lineno, int column )
+    {
+        SourceFileInfo_mv sfi = af_sourceFileInfo(sourceFile);
+        Fixnum_sp fileId = sfi.valueGet(1).as<Fixnum_O>();
+        SourcePosInfo_sp spi = SourcePosInfo_O::create(fileId->get(),lineno,column);
+        this->_SourcePosInfo = spi;
+        return spi;
+    }
 
     void BuiltinClosure::LISP_CALLING_CONVENTION()
     {

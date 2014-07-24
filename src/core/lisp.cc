@@ -411,7 +411,6 @@ namespace core
 	{ _BLOCK_TRACE("Initialize core classes");
 	    coreExposerPtr = CoreExposer::create_core_packages_and_classes();
 // TODO: Should this be a WeakKeyHashTable?
-            this->_Roots._SourceFiles = HashTableEqual_O::create_default(); 
 	    {_BLOCK_TRACE("Define important predefined symbols for CorePkg");
 		coreExposerPtr->define_essential_globals(_lisp);
 		this->_PackagesInitialized = true;
@@ -1709,6 +1708,8 @@ namespace core
 #define ARGS_af_member "(item list &key key test test-not)"
 #define	DECL_af_member	""
 #define	DOCS_af_member	"See CLHS member"
+#define	FILE_af_member	__FILE__
+#define	LINE_af_member	__LINE__
     Cons_sp af_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not)
     {_G();
 	if ( tlist.nilp() ) return _Nil<Cons_O>();
@@ -1722,6 +1723,8 @@ namespace core
 #define ARGS_af_memberTest "(item list &key key test test-not)"
 #define	DECL_af_memberTest	""
 #define	DOCS_af_memberTest	"See CLHS memberTest"
+#define	FILE_af_memberTest	__FILE__
+#define	LINE_af_memberTest	__LINE__
     Cons_sp af_memberTest(T_sp item, Cons_sp list, T_sp key, T_sp test, T_sp test_not)
     {_G();
 	if ( list.nilp() ) return list;
@@ -1732,6 +1735,8 @@ namespace core
 #define ARGS_af_member1 "(item list test test-not key)"
 #define	DECL_af_member1	""
 #define	DOCS_af_member1	"Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1"
+#define	FILE_af_member1	__FILE__
+#define	LINE_af_member1	__LINE__
     Cons_sp af_member1(T_sp item, Cons_sp list, T_sp test, T_sp test_not, T_sp key)
     {_G();
 	if ( list.nilp() ) return list;
@@ -3524,19 +3529,51 @@ extern "C"
 
 
 
-    SourceFileInfo_sp Lisp_O::getSourceFileInfo(const string& fileName)
+    SourceFileInfo_mv Lisp_O::sourceFileInfo(const string& fileName)
     {
-        Str_sp key = Str_O::create(fileName);
-        T_sp it = this->_Roots._SourceFiles->gethash(key,_Nil<T_O>());
-	if ( it.nilp() ) return _Nil<SourceFileInfo_O>();
-	return it.as<SourceFileInfo_O>();
+        map<string,int>::iterator it = this->_SourceFileIndices.find(fileName);
+        if ( it == this->_SourceFileIndices.end() ) {
+            if ( this->_Roots._SourceFiles.size() == 0 ) {
+                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-no-file-");
+                this->_Roots._SourceFiles.push_back(unknown);
+            }
+            int idx = this->_Roots._SourceFiles.size();
+            this->_SourceFileIndices[fileName] = idx;
+            SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName);
+            this->_Roots._SourceFiles.push_back(sfi);
+            return Values(sfi,Fixnum_O::create(idx));
+        }
+        return Values(this->_Roots._SourceFiles[it->second],Fixnum_O::create(it->second));
     }
+    
+    
+#define ARGS_af_sourceFileInfo "(name)"
+#define DECL_af_sourceFileInfo ""
+#define DOCS_af_sourceFileInfo "sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index"
+    SourceFileInfo_mv af_sourceFileInfo(T_sp sourceFile)
+    {
+        if ( sourceFile.nilp() )
+        {
+            return af_sourceFileInfo(Fixnum_O::create(0));
+        } else if ( Str_sp strSourceFile = sourceFile.asOrNull<Str_O>() ) {
+            return _lisp->sourceFileInfo(strSourceFile->get());
+        } else if ( Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>() ) {
+            return _lisp->sourceFileInfo(af_namestring(pnSourceFile)->get());
+        } else if ( Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
+            if ( fnSourceFile->get() >= _lisp->_Roots._SourceFiles.size() ) {
+                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
+            }
+            return Values(_lisp->_Roots._SourceFiles[fnSourceFile->get()],fnSourceFile);
+        } else if ( Stream_sp so = sourceFile.asOrNull<Stream_O>() ) {
+            return af_sourceFileInfo(so->sourceFileInfo());
+        } else if ( SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>() ) {
+            return _lisp->sourceFileInfo(sfi->namestring());
+        } else if ( SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>() ) {
+            return af_sourceFileInfo(Fixnum_O::create(spi->_FileId));
+        }
+        SIMPLE_ERROR(BF("Add support for source-file-info for ~a") % _rep_(sourceFile));
+    };
 
-    void Lisp_O::setSourceFileInfo(const string& fileName, SourceFileInfo_sp info)
-    {
-        Str_sp key = Str_O::create(fileName);
-        this->_Roots._SourceFiles->setf_gethash(key,info);
-    }
 
 
 
@@ -3773,6 +3810,8 @@ extern "C"
 
 	SYMBOL_EXPORT_SC_(ClPkg,find_package);
 	Defun(find_package);
+
+        Defun(sourceFileInfo);
 
     }
 

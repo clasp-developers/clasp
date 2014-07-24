@@ -65,7 +65,8 @@ namespace core
         gctools::Vec0<T_sp>			_Slots;
 	ArgArrayGenericFunctionPtr 	        _Entry;
 	/*! TODO: I don't know what this is for
-	  - mimicking ECL instance->sig generation signature */
+	  - mimicking ECL instance->sig generation signature
+        Jul 2014 - I think it is pointed to the class slots in case they change - then the instances can be updated*/
 	T_sp 		_Sig;
     public:
 #if 0

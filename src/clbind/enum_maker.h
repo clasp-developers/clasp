@@ -105,7 +105,7 @@ namespace clbind
             {
                 core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName());
                 this->_converterSym->setf_symbolValue(converter);
-                core::Symbol_sp nameSym = core::lispify_intern_export(val.name_,core::lisp_currentPackageName());
+                core::Symbol_sp nameSym = core::lispify_intern(val.name_,core::lisp_currentPackageName(),true);
                 core::lisp_extendSymbolToEnumConverter(converter,nameSym,nameSym,val.val_);
                 return _from;
             }
@@ -116,7 +116,7 @@ namespace clbind
                 this->_converterSym->setf_symbolValue(converter);
                 for (value_vector::const_iterator i = values.begin(); i != values.end(); ++i)
                 {
-                    core::Symbol_sp nameSym = core::lispify_intern_export(i->name_,core::lisp_currentPackageName());
+                    core::Symbol_sp nameSym = core::lispify_intern(i->name_,core::lisp_currentPackageName(),true);
                     core::lisp_extendSymbolToEnumConverter(converter,nameSym,nameSym,i->val_);
                 }
                 return _from;

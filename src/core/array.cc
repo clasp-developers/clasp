@@ -105,11 +105,11 @@ namespace core
 	    int ifn = fn->get();
 	    if (ifn<0 || ifn >= nonincl_index)
 	    {
-		af_wrongIndex(filename,lineno,lisp_intern(CurrentPkg,function),array,which,index,nonincl_index);
+		af_wrongIndex(filename,lineno,lisp_intern(function,CurrentPkg),array,which,index,nonincl_index);
 	    }
 	    return ifn;
 	}
-	af_wrongIndex(filename,lineno,lisp_intern(CurrentPkg,function),array,which,index,nonincl_index);
+	af_wrongIndex(filename,lineno,lisp_intern(function,CurrentPkg),array,which,index,nonincl_index);
 	UNREACHABLE();
     }
 		

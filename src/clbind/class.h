@@ -420,7 +420,7 @@ namespace clbind
             void register_() const
             {
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-                core::Symbol_sp sym = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(symbol_packageName(classSymbol),name);
+                core::Symbol_sp sym = core::lispify_intern(name,symbol_packageName(classSymbol));
                 core::BuiltinClosure* methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies,Class,MethodPointerType>>::allocateClass(sym,methodPtr);
                 lisp_defineSingleDispatchMethod(sym
                                                 , classSymbol
@@ -477,7 +477,7 @@ namespace clbind
             void register_() const
             {
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-                core::Symbol_sp sym = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(symbol_packageName(classSymbol),name);
+                core::Symbol_sp sym = core::lispify_intern(name,symbol_packageName(classSymbol));
                 core::BuiltinClosure* methoid = gctools::ClassAllocator<IteratorMethoid<Policies,Class,Begin,End>>::allocateClass(sym,beginPtr,endPtr);
 
 //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
@@ -550,9 +550,9 @@ namespace clbind
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
 //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
-                core::Symbol_sp sym = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(core::lisp_currentPackageName(),tname);
+                core::Symbol_sp sym = core::lispify_intern(tname,core::lisp_currentPackageName());
                 core::BuiltinClosure* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature> >::allocateClass(sym);
-                lisp_defun(sym,core::lisp_currentPackageName(),f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
+                lisp_defun(sym,core::lisp_currentPackageName(),f,m_arguments,m_declares,m_docstring,"=external=",0,true,CountConstructorArguments<Signature>::value);
             }
 
 
@@ -701,7 +701,7 @@ namespace clbind
 //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
 //                printf("%p\n", i);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-                core::Symbol_sp sym = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(symbol_packageName(classSymbol),n);
+                core::Symbol_sp sym = core::lispify_intern(n,symbol_packageName(classSymbol));
                 core::BuiltinClosure* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocateClass(sym,get);
                 lisp_defineSingleDispatchMethod(sym
                                                 , classSymbol

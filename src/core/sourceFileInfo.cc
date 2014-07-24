@@ -51,11 +51,11 @@ namespace core
 {
 
 
-    
+#if 0    
 #define ARGS_af_sourceFileInfo "(arg)"
 #define DECL_af_sourceFileInfo ""
 #define DOCS_af_sourceFileInfo "sourceFileInfo"
-    SourceFileInfo_sp af_sourceFileInfo(T_sp obj)
+    SourceFileInfo_ af_sourceFileInfo(T_sp obj)
     {_G();
 	SourceFileInfo_sp result = _Nil<SourceFileInfo_O>();
 	if ( obj.nilp() ) {
@@ -71,7 +71,7 @@ namespace core
 	    result = so->sourceFileInfo();
 	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
 	{
-	    result = af_sourceFileInfo(fo->closure->sourcePosInfo);
+	    result = af_sourceFileInfo(fo->closure->sourcePosInfo());
         } else if ( SourcePosInfo_sp spi = obj.asOrNull<SourcePosInfo_O>() ) {
             result = _lisp->sourceDatabase()->sourceFileInfoFromIndex(spi->_FileId);
 	} else
@@ -84,7 +84,7 @@ namespace core
 	}
 	return result;
     };
-
+#endif
 
     
 #define ARGS_af_lineNumber "(arg)"
@@ -103,7 +103,7 @@ namespace core
 	    return so->lineNumber();
 	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
 	{
-            return af_lineNumber(fo->closure->sourcePosInfo);
+            return af_lineNumber(fo->closure->sourcePosInfo());
         } else if ( SourcePosInfo_sp info = obj.asOrNull<SourcePosInfo_O>() ) {
             return info->_LineNumber;
 	}
@@ -127,7 +127,7 @@ namespace core
 	    return so->column();
 	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
 	{
-            return af_column(fo->closure->sourcePosInfo);
+            return af_column(fo->closure->sourcePosInfo());
         } else if ( SourcePosInfo_sp info = obj.asOrNull<SourcePosInfo_O>() ) {
             return info->_Column;
 	}
@@ -168,7 +168,7 @@ namespace core
 
 
     
-    
+#if 0
 #define ARGS_af_SourceFileInfoGetOrCreate "(arg)"
 #define DECL_af_SourceFileInfoGetOrCreate ""
 #define DOCS_af_SourceFileInfoGetOrCreate "SourceFileInfoGetOrCreate"
@@ -183,6 +183,8 @@ namespace core
 	}
 	SIMPLE_ERROR(BF("Illegal argument for source-file-info-get-or-create"));
     }
+#endif
+
 
     SourceFileInfo_O::SourceFileInfo_O() : Base(), _PermanentPathName(NULL), _PermanentFileName(NULL) {};
 
@@ -191,21 +193,18 @@ namespace core
 	this->Base::initialize();
     }
 
-    SourceFileInfo_sp SourceFileInfo_O::getOrCreate(const string& str)
+    SourceFileInfo_sp SourceFileInfo_O::create(const string& str)
     {_G();
-	SourceFileInfo_sp spx = _lisp->getSourceFileInfo(str);
-	if ( spx.notnilp() ) return spx;
         GC_ALLOCATE(SourceFileInfo_O,spi );
 	spi->_pathname = af_pathname(Str_O::create(str));
-	_lisp->setSourceFileInfo(str,spi);
 	return spi;
     }
 
 
-    SourceFileInfo_sp SourceFileInfo_O::getOrCreate(Pathname_sp path)
+    SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path)
     {_G();
 	Str_sp s = af_namestring(path);
-	return SourceFileInfo_O::getOrCreate(s->get());
+	return SourceFileInfo_O::create(s->get());
     }
 
 
@@ -270,8 +269,8 @@ namespace core
 	core::class_<SourceFileInfo_O>()
 	    .def("source-file-info-pathname",&SourceFileInfo_O::pathname)
 	    ;
-	SYMBOL_SC_(CorePkg,SourceFileInfoGetOrCreate);
-	Defun(SourceFileInfoGetOrCreate);
+//	SYMBOL_SC_(CorePkg,SourceFileInfoGetOrCreate);
+//	Defun(SourceFileInfoGetOrCreate);
 	SYMBOL_EXPORT_SC_(CorePkg,walkToFindSourceInfo);
 	Defun(walkToFindSourceInfo);
     }
@@ -335,9 +334,11 @@ namespace core
     {_G();
         if ( _lisp->sourceDatabase().notnilp() ) {
             _lisp->print(BF("Source Manager entries: %d\n") % _lisp->sourceDatabase()->_SourcePosInfo->size());
+#if 0
             for ( int i=0, iEnd(_lisp->sourceDatabase()->_Files.size()); i<iEnd; ++i ) {
                 _lisp->print(BF("   File[%d] --> %s\n") % i % _lisp->sourceDatabase()->_Files[i]->namestring());
             }
+#endif
         } else {
             _lisp->print(BF("No source manager available"));
         }
@@ -389,7 +390,7 @@ namespace core
 
     SYMBOL_EXPORT_SC_(CorePkg,STARmonitorRegisterSourceInfoSTAR);
     SourcePosInfo_sp SourceManager_O::registerSourceInfo(T_sp key,
-                                                         SourceFileInfo_sp sourceFile,
+                                                         T_sp sourceFile,
                                                          uint lineno,
                                                          uint column )
     {_G();
@@ -400,17 +401,9 @@ namespace core
         }
         
         if ( this->availablep() ) {
-            SourcePosInfo_sp sfi = this->_SourcePosInfo->gethash(sourceFile,_Nil<SourcePosInfo_O>()).as<SourcePosInfo_O>();
-            uint fileId;
-            if ( sfi.nilp() ) {
-                fileId = this->_Files.size();
-                this->_Files.push_back(sourceFile);
-                SourcePosInfo_sp finfo = SourcePosInfo_O::create(fileId,0,0);
-                this->_SourcePosInfo->setf_gethash(sourceFile, finfo);
-            } else {
-                fileId = sfi->_FileId;
-            }
-            SourcePosInfo_sp info = SourcePosInfo_O::create(fileId,lineno,column);
+            SourceFileInfo_mv sfi = af_sourceFileInfo(sourceFile);
+            Fixnum_sp fileId = sfi.valueGet(1).as<Fixnum_O>();
+            SourcePosInfo_sp info = SourcePosInfo_O::create(fileId->get(),lineno,column);
             this->_SourcePosInfo->setf_gethash(key,info);
             return info;
         }
@@ -418,7 +411,11 @@ namespace core
     }
 
 
-
+#if 0
+    SourceFileInfo_sp SourceManager_O::sourceFileInfoFromIndex(int idx) const {
+        return this->_Files[idx];
+    }
+#endif
     SourcePosInfo_sp SourceManager_O::registerSourceInfoFromStream(T_sp obj, Stream_sp stream)
     {_G();
 	SourceFileInfo_sp sfi  = stream->sourceFileInfo();
@@ -486,7 +483,6 @@ namespace core
                     SourceFileInfo_sp sfi = info;
                     uint lineno = info.valueGet(1).as<Fixnum_O>()->get();
                     uint column = info.valueGet(2).as<Fixnum_O>()->get();
-                    uint filePos = info.valueGet(3).as<Fixnum_O>()->get();
                     this->registerSourceInfo(new_obj,sfi,lineno,column);
                 } else {
                     this->searchForSourceInfoAndDuplicateIt(orig_obj, new_obj);
@@ -508,7 +504,7 @@ namespace core
         if ( this->availablep() ) {
             SourcePosInfo_sp it = this->_SourcePosInfo->gethash(key,_Nil<SourcePosInfo_O>()).as<SourcePosInfo_O>();
             if (it.notnilp()) {
-                SourceFileInfo_sp sfi = this->_Files[it->_FileId];
+                SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(it->_FileId));
                 return Values(sfi,Fixnum_O::create(it->_LineNumber),
                               Fixnum_O::create(it->_Column));
             }

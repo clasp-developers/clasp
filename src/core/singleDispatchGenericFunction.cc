@@ -26,22 +26,29 @@ namespace core
 
 
 
-#define DOCS_af_ensure_single_dispatch_generic_function "ensure_single_dispatch_generic_function"
-#define ARGS_af_ensure_single_dispatch_generic_function "(gfname llhandler)"
-#define DECL_af_ensure_single_dispatch_generic_function ""    
-    void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llhandler )
+#define DOCS_af_ensureSingleDispatchGenericFunction "ensureSingleDispatchGenericFunction"
+#define ARGS_af_ensureSingleDispatchGenericFunction "(gfname llhandler)"
+#define DECL_af_ensureSingleDispatchGenericFunction ""    
+    SingleDispatchGenericFunction_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler )
     {_G();
-	SingleDispatchGenericFunction_sp gf = SingleDispatchGenericFunction_O::create(gfname,llhandler);
-	Lisp_O::setf_find_single_dispatch_generic_function(gfname,gf);
-	gfname->setf_symbolFunction(gf);
+        SingleDispatchGenericFunction_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname,false);
+        if ( gfn.nilp() ) {
+            if ( gfname->symbolFunction.notnilp() ) {
+                SIMPLE_ERROR(BF("The symbol %s already has a function bound to it - it cannot become a single-dispatch-generic-function") % _rep_(gfname));
+            }
+            gfn = SingleDispatchGenericFunction_O::create(gfname,llhandler);
+            Lisp_O::setf_find_single_dispatch_generic_function(gfname,gfn);
+            gfname->setf_symbolFunction(gfn);
+        }
+        return gfn;
     };
 
 
-#define DOCS_af_ensure_single_dispatch_method "ensure_single_dispatch_method creates a method and adds it to the single-dispatch-generic-function"
-#define LOCK_af_ensure_single_dispatch_method 0
-#define ARGS_af_ensure_single_dispatch_method "(gfname receiver-class &key lambda-list-handler declares (docstring \"\") body )"
-#define DECL_af_ensure_single_dispatch_method ""    
-    void af_ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstring, Function_sp body )
+#define DOCS_af_ensureSingleDispatchMethod "ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function"
+#define LOCK_af_ensureSingleDispatchMethod 0
+#define ARGS_af_ensureSingleDispatchMethod "(gfname receiver-class &key lambda-list-handler declares (docstring \"\") body )"
+#define DECL_af_ensureSingleDispatchMethod ""    
+    void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstring, Function_sp body )
     {_G();
 //	string docstr = docstring->get();
 	SingleDispatchGenericFunction_sp gf = gfname->symbolFunction().as<SingleDispatchGenericFunction_O>();//Lisp_O::find_single_dispatch_generic_function(gfname,true);
@@ -68,82 +75,18 @@ namespace core
                          % _rep_(receiver_class)
                          % lambda_list_handler->numberOfRequiredArguments() );
         }
-	gf->defmethod(gfname,method);
+	gf->closure->addMethod(method);
     };
 
     
 // ----------------------------------------------------------------------
 //
-    
-    EXPOSE_CLASS(core,SingleDispatchGenericFunction_O);
-    
-    void SingleDispatchGenericFunction_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<SingleDispatchGenericFunction_O>()
-//	    .def_readonly("single_dispatch_generic_function_methods",&SingleDispatchGenericFunction_O::_Methods,"Access the methods of the single-dispatch-generic-function")
-//	.initArgs("(self)")
-//	    .def("single-dispatch-generic-function-dispatch-on-index",&SingleDispatchGenericFunction_O::dispatch_on_index)
-	    .def("SingleDispatchGenericFunction-methods",&SingleDispatchGenericFunction_O::methods)
-	    ;
-	SYMBOL_SC_(CorePkg,ensure_single_dispatch_generic_function);
-	Defun(ensure_single_dispatch_generic_function);
-	SYMBOL_SC_(CorePkg,ensure_single_dispatch_generic_function);
-	Defun(ensure_single_dispatch_method);
-    }
-    
-    void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),SingleDispatchGenericFunction,"","",_LISP)
-//	.initArgs("(self)")
-	    ;
-#endif
-    }
 
-
-
-
-    SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh)
-    {_G();
-        GC_ALLOCATE(SingleDispatchGenericFunction_O,gf );
-	gf->name = name;
-	gf->lambdaListHandler = llh;
-	return gf;
-    }
-    
-    ::core::T_sp SingleDispatchGenericFunction_O::__init__(::core::Function_sp exec, ::core::Cons_sp args, ::core::Environment_sp env, ::core::Lisp_sp lisp)
-    {_G();
-//      this->Base::__init__(exec,args,env,lisp);
-//      arg = translate::from_object<XXXX>::convert(env->lookup(this->Package(),"YYY"));
-	return _Nil<T_O>();
-    }
-    
-#if 0
-#if defined(OLD_SERIALIZE)
-    void SingleDispatchGenericFunction_O::serialize(::serialize::SNodeP node)
-    {
-	IMPLEMENT_ME();
-        this->Bases::serialize(node);
-	// Archive other instance variables here
-    }
-#endif
-#endif    
-    
-    
-    void SingleDispatchGenericFunction_O::initialize()
-    {_OF();
-        this->Base::initialize();
-	this->_Methods = _Nil<Cons_O>();
-	this->_classes_to_emf_table = HashTableEql_O::create_default();
-    }
-
-
-
-    void SingleDispatchGenericFunction_O::defmethod(Symbol_sp name, SingleDispatchMethod_sp method)
+    void SingleDispatchGenericFunctionClosure::addMethod(SingleDispatchMethod_sp method)
     {_OF();
 	// Look to see if the method is already defined
 	LOG(BF("defmethod for symbol[%s] called with method with receiverClass[%s]")
-	    % _rep_(name) % _rep_(method->receiver_class()) );
+	    % _rep_(this->name) % _rep_(method->receiver_class()) );
 	bool replacedMethod = false;
 	{_BLOCK_TRACEF(BF("Checking if the receiver class already has a method"));
 	    for ( Cons_sp cur = this->_Methods; cur.notnilp(); cur=cCdr(cur) )
@@ -164,49 +107,26 @@ namespace core
 	    LOG(BF("This is a new method - adding it to the Methods list"));
 	    this->_Methods = Cons_O::create(method,this->_Methods);
 	}
-	this->_classes_to_emf_table->clrhash();
+	this->_classesToClosures->clrhash();
     }
 
 
 
-#if 0
-    /*! I think this fills the role of the lambda returned by
-      std-compute-discriminating-function (gf) AMOP-303 top
-    */
-    void SingleDispatchGenericFunction_O::LISP_INVOKE()
-    {_OF();
-#ifdef DEBUG_ON
-	if ( nargs <= 0 ) {
-	    SIMPLE_ERROR(BF("Insufficient arguments %d for single-dispatch-generic-function - dispatching on %d") % nargs % 0 );
+
+
+    Lambda_emf::Lambda_emf(T_sp name,
+                           SingleDispatchGenericFunction_sp gf,
+                           SingleDispatchMethod_sp cur_method ) : FunctionClosure(name)
+	{_G();
+	    this->_method_function = cur_method->code;
 	}
-#endif
-	T_sp dispatchArg = LCC_ARG0();
-	ASSERTF(!dispatchArg.unboundp(),BF("The dispatch object is UNBOUND"));
-	LispCompiledFunctionIHF _frame(_lisp->invocationHistoryStack(),this->asSmartPtr());
-	Class_sp dispatchArgClass = lisp_instance_class(dispatchArg);
-	ASSERTF(!dispatchArgClass.nilp(),BF("The dispatch class is NIL!!!! for dispatch obj: %s") % _rep_(dispatchArg));
-	LOG(BF("Invoked SingleDispatchGenericFunction[%s] with receiver class[%s]")
-	    % _rep_(this->getFunctionName()) % _rep_(dispatchArgClass) );
-	Function_sp emf =
-	    this->_classes_to_emf_table->gethash(dispatchArgClass,_Nil<SingleDispatchEffectiveMethodFunction_O>()).as<Function_O>();
-	if ( emf.nilp() )
-	{
-	    LOG(BF("There was no effective method function defined - building one"));
-	    emf = this->slow_method_lookup(dispatchArgClass);
-	    this->_classes_to_emf_table->hash_table_setf_gethash(dispatchArgClass,emf);
-//	    printf( "%s:%d - performed slow_method_lookup for sdgf: %s dispatchArgClass: %s\n", __FILE__, __LINE__, this->getFunctionName()->__repr__().c_str(), dispatchArgClass->__repr__().c_str() );
-	} else
-	{
-//	    printf( "%s:%d - used cached sdgf: %s dispatchArgClass: %s\n", __FILE__, __LINE__, this->getFunctionName()->__repr__().c_str(), dispatchArgClass->__repr__().c_str() );
-	    LOG(BF("Found hashed effective method - using that"));
-	}
-	LOG(BF("Invoking the effective method function"));
-        IMPLEMENT_MEF(BF("Handle invoke"));
-#if 0
-	return emf->INVOKE(nargs,args);
-#endif
-    };
-#endif
+
+
+
+
+
+
+
 
     class SingleDispatch_OrderByClassPrecedence
     {
@@ -219,7 +139,7 @@ namespace core
 	}
     };  
 
-    Function_sp SingleDispatchGenericFunction_O::slow_method_lookup(Class_sp mc)
+    Function_sp SingleDispatchGenericFunctionClosure::slow_method_lookup(Class_sp mc)
     {_OF();
 	LOG(BF("Looking for applicable methods for receivers of class[%s]") % _rep_(mc) );
         VectorObjects_sp applicableMethods = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),16,0,true);
@@ -261,19 +181,7 @@ namespace core
 
 
 
-    Lambda_emf::Lambda_emf(T_sp name,
-                           SingleDispatchGenericFunction_sp gf,
-                           SingleDispatchMethod_sp cur_method ) : FunctionClosure(name)
-	{_G();
-	    this->_method_function = cur_method->code;
-	}
-
-
-
-
-
-
-    Function_sp SingleDispatchGenericFunction_O::compute_effective_method_function(VectorObjects_sp applicableMethods)
+    Function_sp SingleDispatchGenericFunctionClosure::compute_effective_method_function(VectorObjects_sp applicableMethods)
     {_OF();
         SingleDispatchMethod_sp cur_method = applicableMethods->elt(0).as<SingleDispatchMethod_O>();
         ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
@@ -304,6 +212,120 @@ create(emf_name,
         return emf;
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    EXPOSE_CLASS(core,SingleDispatchGenericFunction_O);
+    
+    void SingleDispatchGenericFunction_O::exposeCando(::core::Lisp_sp lisp)
+    {
+	::core::class_<SingleDispatchGenericFunction_O>()
+//	    .def_readonly("single_dispatch_generic_function_methods",&SingleDispatchGenericFunction_O::_Methods,"Access the methods of the single-dispatch-generic-function")
+//	.initArgs("(self)")
+//	    .def("single-dispatch-generic-function-dispatch-on-index",&SingleDispatchGenericFunction_O::dispatch_on_index)
+	    .def("SingleDispatchGenericFunction-methods",&SingleDispatchGenericFunction_O::methods)
+	    ;
+	SYMBOL_EXPORT_SC_(CorePkg,ensureSingleDispatchGenericFunction);
+	Defun(ensureSingleDispatchGenericFunction);
+        SYMBOL_EXPORT_SC_(CorePkg,ensureSingleDispatchMethod);
+	Defun(ensureSingleDispatchMethod);
+    }
+    
+    void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp)
+    {
+#ifdef USEBOOSTPYTHON
+	PYTHON_CLASS(Pkg(),SingleDispatchGenericFunction,"","",_LISP)
+//	.initArgs("(self)")
+	    ;
+#endif
+    }
+
+
+
+
+    SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh)
+    {_G();
+        GC_ALLOCATE(SingleDispatchGenericFunction_O,gf );
+        gf->closure = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocateClass(name,llh);
+	return gf;
+    }
+    
+    
+#if 0
+#if defined(OLD_SERIALIZE)
+    void SingleDispatchGenericFunction_O::serialize(::serialize::SNodeP node)
+    {
+	IMPLEMENT_ME();
+        this->Bases::serialize(node);
+	// Archive other instance variables here
+    }
+#endif
+#endif    
+    
+    
+
+
+
+
+#if 0
+    /*! I think this fills the role of the lambda returned by
+      std-compute-discriminating-function (gf) AMOP-303 top
+    */
+    void SingleDispatchGenericFunction_O::LISP_INVOKE()
+    {_OF();
+#ifdef DEBUG_ON
+	if ( nargs <= 0 ) {
+	    SIMPLE_ERROR(BF("Insufficient arguments %d for single-dispatch-generic-function - dispatching on %d") % nargs % 0 );
+	}
+#endif
+	T_sp dispatchArg = LCC_ARG0();
+	ASSERTF(!dispatchArg.unboundp(),BF("The dispatch object is UNBOUND"));
+	LispCompiledFunctionIHF _frame(_lisp->invocationHistoryStack(),this->asSmartPtr());
+	Class_sp dispatchArgClass = lisp_instance_class(dispatchArg);
+	ASSERTF(!dispatchArgClass.nilp(),BF("The dispatch class is NIL!!!! for dispatch obj: %s") % _rep_(dispatchArg));
+	LOG(BF("Invoked SingleDispatchGenericFunction[%s] with receiver class[%s]")
+	    % _rep_(this->getFunctionName()) % _rep_(dispatchArgClass) );
+	Function_sp emf =
+	    this->_classes_to_emf_table->gethash(dispatchArgClass,_Nil<SingleDispatchEffectiveMethodFunction_O>()).as<Function_O>();
+	if ( emf.nilp() )
+	{
+	    LOG(BF("There was no effective method function defined - building one"));
+	    emf = this->slow_method_lookup(dispatchArgClass);
+	    this->_classes_to_emf_table->hash_table_setf_gethash(dispatchArgClass,emf);
+//	    printf( "%s:%d - performed slow_method_lookup for sdgf: %s dispatchArgClass: %s\n", __FILE__, __LINE__, this->getFunctionName()->__repr__().c_str(), dispatchArgClass->__repr__().c_str() );
+	} else
+	{
+//	    printf( "%s:%d - used cached sdgf: %s dispatchArgClass: %s\n", __FILE__, __LINE__, this->getFunctionName()->__repr__().c_str(), dispatchArgClass->__repr__().c_str() );
+	    LOG(BF("Found hashed effective method - using that"));
+	}
+	LOG(BF("Invoking the effective method function"));
+        IMPLEMENT_MEF(BF("Handle invoke"));
+#if 0
+	return emf->INVOKE(nargs,args);
+#endif
+    };
+#endif
 
 
 #if 0 // old algorithm

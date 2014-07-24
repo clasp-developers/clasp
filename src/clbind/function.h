@@ -78,7 +78,7 @@ namespace clbind {
 
             void register_() const
             {
-                core::Symbol_sp symbol = core::lisp_lispifyAndInternWithPackageNameIfNotGiven(core::lisp_currentPackageName(),name);
+                core::Symbol_sp symbol = core::lispify_intern(name,core::lisp_currentPackageName());
                 core::BuiltinClosure* functoid = gctools::ClassAllocator<VariadicFunctoid<FunctionPointerType,Policies>>::allocateClass(symbol,functionPtr);
                 core::lisp_defun(symbol
                                  , core::lisp_currentPackageName()
@@ -86,7 +86,8 @@ namespace clbind {
                                  , m_lambdalist
                                  , m_declares
                                  , m_docstring
-                                 , true
+                                 , "=external="
+                                 , 0
                                  , true
                                  , (CountFunctionArguments<FunctionPointerType>::value) );
 #if 0

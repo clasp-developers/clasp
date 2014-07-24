@@ -292,10 +292,11 @@ namespace core
 	// Convert the form into a thunk and return like COMPILE does
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
 	Cons_sp code = Cons_O::create(form,_Nil<Cons_O>());
-        SourcePosInfo_sp info = _lisp->sourceDatabase()->registerSourceInfo(code
-                                                                            , core::_sym_STARloadCurrentSourceFileInfoSTAR->symbolValue().as<SourceFileInfo_O>()
-                                                                            , core::_sym_STARloadCurrentLinenumberSTAR->symbolValue().as<Fixnum_O>()->get()
-                                                                            , core::_sym_STARloadCurrentColumnSTAR->symbolValue().as<Fixnum_O>()->get() );
+        SourceManager_sp db = _lisp->sourceDatabase();
+        SourcePosInfo_sp info = lisp_registerSourceInfo(code
+                                                       , core::_sym_STARloadCurrentSourceFileInfoSTAR->symbolValue().as<SourceFileInfo_O>()
+                                                       , core::_sym_STARloadCurrentLinenumberSTAR->symbolValue().as<Fixnum_O>()->get()
+                                                       , core::_sym_STARloadCurrentColumnSTAR->symbolValue().as<Fixnum_O>()->get() );
         stringstream ss;
         ss << "repl"<<_lisp->nextReplCounter();
         Symbol_sp name = _lisp->intern(ss.str());

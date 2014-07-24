@@ -943,7 +943,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 //    if ( oClass::static_classSymbol() == UndefinedUnsignedInt )
     if ( !IS_SYMBOL_DEFINED(oClass::static_classSymbol()))
     {
-	core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_packageName(),oClass::static_className());
+	core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_className(),oClass::static_packageName());
 	LOG(BF("Setting staticClassSymbol for class to: %d")% classSymbol );
 	oClass::___set_static_ClassSymbol(classSymbol);
 	if ( oClass::static_creator == NULL )
