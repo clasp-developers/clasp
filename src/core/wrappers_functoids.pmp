@@ -47,6 +47,7 @@ $for template_ [[
                 handleArgumentHandlingExceptions(this);
               }
             ]]
+            PUSH_INVOCATION_HISTORY_FRAME();
             this->invoke(lcc_resultP $for Args_ [[, argArray[$Args_] ]] );
         }
 

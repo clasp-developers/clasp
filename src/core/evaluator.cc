@@ -47,37 +47,33 @@ namespace core
         return accumulated;
     }
 
-#define ARGS_af_evalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
-#define DECL_af_evalWithEnv ""
-#define DOCS_af_evalWithEnv "evalWithEnv"
-    T_mv af_evalWithEnv(T_sp form, Environment_sp env, bool stepping, bool compiler_env_p, bool execute)
+#define ARGS_af_compileFormAndEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
+#define DECL_af_compileFormAndEvalWithEnv ""
+#define DOCS_af_compileFormAndEvalWithEnv "compileFormAndEvalWithEnv"
+    T_mv af_compileFormAndEvalWithEnv(T_sp form, Environment_sp env, bool stepping, bool compiler_env_p, bool execute)
     {_G();
-        DEPRECIATED();
 //	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
 	T_mv result;
 	// If we want to compile the form then do this
 //	stackFrame.setActivationFrame(Environment_O::nilCheck_getActivationFrame(env));
-        IMPLEMENT_MEF(BF("Don't use separateTopLevelForms - use the new top-level form stuff"));
-        Cons_sp topLevelForms = separateTopLevelForms(_Nil<Cons_O>(),form)->nreverse().as<Cons_O>();
-        for ( Cons_sp curtlf = topLevelForms; curtlf.notnilp(); curtlf=cCdr(curtlf) ) {
-            T_sp thunk = eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(),oCar(curtlf),env);
-            LOG(BF("After compile thunk[%s]") % _rep_(thunk) );
-            try {_BLOCK_TRACEF(BF("-eval/print stage-"));
-                ValueFrame_sp vf = ValueFrame_O::create(0,_Nil<ActivationFrame_O>());
-                result = eval::applyToActivationFrame(thunk,vf);
-                LOG(BF("---result[%s]") % _rep_(result) );
-            }
-            catch (Condition& err)
-            {
-                _lisp->print(BF("%s:%d - A Condition was caught in readEvalPrint - _lisp shouldn't happen - exiting") % __FILE__ % __LINE__ );
-                exit(1);
-            }
-            catch (HardError& err )
-            {
-                _lisp->print(BF("HardError - should never happen! Catch and convert to Condition below"));
-                IMPLEMENT_ME();
+        
+        T_sp thunk = eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(),form,env);
+        LOG(BF("After compile thunk[%s]") % _rep_(thunk) );
+        try {_BLOCK_TRACEF(BF("-eval/print stage-"));
+            ValueFrame_sp vf = ValueFrame_O::create(0,_Nil<ActivationFrame_O>());
+            result = eval::applyToActivationFrame(thunk,vf);
+            LOG(BF("---result[%s]") % _rep_(result) );
+        }
+        catch (Condition& err)
+        {
+            _lisp->print(BF("%s:%d - A Condition was caught in readEvalPrint - _lisp shouldn't happen - exiting") % __FILE__ % __LINE__ );
+            exit(1);
+        }
+        catch (HardError& err )
+        {
+            _lisp->print(BF("HardError - should never happen! Catch and convert to Condition below"));
+            IMPLEMENT_ME();
 //		    _lisp->enterDebugger();
-            }
         }
 	ASSERTNOTNULL(result);
 	return result;
@@ -1995,9 +1991,9 @@ namespace core
                 }
             }
             if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
-                printf("%s:%d About to evalWithEnv: %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+                printf("%s:%d About to compileFormAndEvalWithEnv: %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
             }
-            return eval::funcall(_sym_evalWithEnv,exp,environment);
+            return eval::funcall(_sym_compileFormAndEvalWithEnv,exp,environment);
         }
 
     
@@ -2286,8 +2282,8 @@ namespace core
 	    Defun(extractDeclaresDocstringCode);
 	    SYMBOL_SC_(CorePkg,evaluateVerbosity);
 	    Defun(evaluateVerbosity);
-	    SYMBOL_EXPORT_SC_(CorePkg,evalWithEnv);
-	    Defun(evalWithEnv);
+	    SYMBOL_EXPORT_SC_(CorePkg,compileFormAndEvalWithEnv);
+	    Defun(compileFormAndEvalWithEnv);
 	    SYMBOL_EXPORT_SC_(CorePkg,topLevelEvalWithEnv);
 	    Defun(topLevelEvalWithEnv);
 	    SYMBOL_SC_(CorePkg,evaluateDepth);

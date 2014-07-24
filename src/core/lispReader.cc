@@ -464,12 +464,10 @@ namespace core
 		Cons_sp otherResult = cCdr(first);
 		TRAP_BAD_CONS(otherResult);
 		if ( otherResult.nilp() ) return(Values(_Nil<Cons_O>()));
-                if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->registerSourceInfo(otherResult,
-                                                                sin->sourceFileInfo(),
-                                                                start_lineNumber,
-                                                                start_column );
-                }
+                lisp_registerSourceInfo(otherResult,
+                                        sin->sourceFileInfo(),
+                                        start_lineNumber,
+                                        start_column );
 		return(otherResult);
 	    }
 	    int ivalues;
@@ -503,9 +501,7 @@ namespace core
 			SIMPLE_ERROR(BF("More than one object after consing dot"));
 		    }
 		    Cons_sp one = Cons_O::create(obj,_Nil<Cons_O>());
-                    if ( _lisp->sourceDatabase().notnilp() ) {
-                        _lisp->sourceDatabase()->registerSourceInfo(one,af_sourceFileInfo(sin),start_lineNumber,start_column);
-                    }
+                    lisp_registerSourceInfo(one,af_sourceFileInfo(sin),start_lineNumber,start_column);
 		    LOG(BF("One = %s\n") % _rep_(one) );
 		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(af_sourceFileInfo(one)) );
 		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % af_sourceFileInfo(one)->fileName());

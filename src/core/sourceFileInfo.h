@@ -16,8 +16,8 @@ namespace core
 	LISP_CLASS(core,CorePkg,SourceFileInfo_O,"SourceFileInfo");
 	DECLARE_INIT();
     public:
-	static SourceFileInfo_sp getOrCreate(const string& fileNamePath);
-	static SourceFileInfo_sp getOrCreate(Pathname_sp path);
+	static SourceFileInfo_sp create(const string& fileNamePath);
+	static SourceFileInfo_sp create(Pathname_sp path);
 
     public: // ctor/dtor for classes with shared virtual base
 	explicit SourceFileInfo_O();
@@ -47,7 +47,7 @@ namespace core
     class SourcePosInfo_O : public T_O
     {
         friend class SourceManager_O;
-        friend SourceFileInfo_sp af_sourceFileInfo(T_sp obj);
+        friend SourceFileInfo_mv af_sourceFileInfo(T_sp obj);
 
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,SourcePosInfo_O,"SourcePosInfo");
@@ -74,7 +74,8 @@ namespace core
 
         SourceFileInfo_sp sourceFileInfo(SourceManager_sp sm) const;
             
-            uint lineNumber() const { return this->_LineNumber; };
+        uint lineNumber() const { return this->_LineNumber; };
+        int column() const { return this->_Column; };
     public:
 	uint	_FileId;
 	uint	_LineNumber;
@@ -106,15 +107,15 @@ namespace core {
         // Must be implemented first!!!!
         HashTableEq_sp                         _SourcePosInfo;
 	/*! All SourceFileInfo_sp source files are stored here indexed by integer FileId */
-        gctools::Vec0<SourceFileInfo_sp>		_Files;
+//        gctools::Vec0<SourceFileInfo_sp>		_Files;
     public: // Functions here
         /*! Return true if the SourceManager is available */
         bool availablep() const { return this->_SourcePosInfo.notnilp(); };
 
 	/*! Register the object with the source manager */
-	SourcePosInfo_sp registerSourceInfo(T_sp obj, SourceFileInfo_sp sourceFile, uint lineno, uint column);
+	SourcePosInfo_sp registerSourceInfo(T_sp obj, T_sp sourceFile, uint lineno, uint column);
 
-        SourceFileInfo_sp sourceFileInfoFromIndex(int idx) const;
+//        SourceFileInfo_sp sourceFileInfoFromIndex(int idx) const;
 
 	SourcePosInfo_sp registerSourceInfoFromStream(T_sp obj, Stream_sp stream);
 
@@ -137,8 +138,6 @@ namespace core {
     SourceFileInfo_mv af_walkToFindSourceInfo(T_sp obj);
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
 
-
-    SourceFileInfo_sp af_sourceFileInfo(T_sp obj);
 
 
 }; // core namespace

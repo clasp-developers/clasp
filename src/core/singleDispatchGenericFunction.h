@@ -14,6 +14,45 @@ namespace core
 
 
 
+    class SingleDispatchGenericFunctionClosure : public FunctionClosure
+    {
+    public:
+	/*! Store the methods here */
+	Cons_sp		_Methods;
+        LambdaListHandler_sp lambdaListHandler;
+	/*! Store the method functions hashed on the receiver class */
+	HashTable_sp	classesToClosures;
+    public:
+        DISABLE_NEW();
+        SingleDispatchGenericFunctionClosure(T_sp name, SourcePosInfo_sp sp, Symbol_sp k)
+            : FunctionClosure(name,sp,k)
+            , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
+        SingleDispatchGenericFunctionClosure(T_sp name)
+            : FunctionClosure(name)
+            , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
+        void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
+            this->lambdaListHandler = llh;
+            this->kind = k;
+        }
+        virtual size_t templatedSizeof() const { return sizeof(*this); };
+	virtual string describe() const {return "SingleDispatchGenericFunctionClosure";};
+	virtual void LISP_CALLING_CONVENTION();
+        bool singleDispatchGenericP() const { return true; };
+
+	/*! Define a method to this SingleDispatchGenericFunction
+	  If there is already a method with the same receiver then replace it
+	  unless it's locked. Whenever a method is defined the method combination table
+	  is wiped out */
+        void addMethod(SingleDispatchMethod_sp method);
+
+        Function_sp slow_method_lookup(Class_sp mc);
+        Function_sp compute_effective_method_function(VectorObjects_sp applicableMethods)
+
+
+    };
+
+
+
 
 
 
@@ -33,34 +72,9 @@ namespace core
     public:
 	void initialize();
 	
-    public: // instance variables here
-        T_sp            name;
-	/*! Store the methods here */
-	Cons_sp		_Methods;
-        LambdaListHandler_sp lambdaListHandler;
-	/*! Store the effective method functions hashed on the receiver class */
-	HashTable_sp	_classes_to_emf_table;
-    private:
-	void LISP_INVOKE();
     public:
 	static SingleDispatchGenericFunction_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
     public: // Functions here
-
-	/*! Return the index of the required argument that is dispatched on */
-//	int dispatch_on_index() const { return this->_DispatchOnIndex;};
-
-
-	/*! Define a method to this SingleDispatchGenericFunction
-	  If there is already a method with the same receiver then replace it
-	  unless it's locked. Whenever a method is defined the method combination table
-	  is wiped out */
-	void defmethod(Symbol_sp name, SingleDispatchMethod_sp method);
-
-	/*! Calculate the effective method function based on the receiver class */
-	Function_sp slow_method_lookup(Class_sp mc);
-
-	/*! Calculate and effective method function */
-	Function_sp compute_effective_method_function(VectorObjects_sp applicableMethods);
 
 	/*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
 	Cons_sp methods() const { return this->_Methods;};
@@ -118,6 +132,9 @@ namespace core
 #endif
         }
     };
+
+
+    SingleDispatchGenericFunction_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler );
 
 };
 

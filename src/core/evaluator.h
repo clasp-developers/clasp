@@ -61,8 +61,6 @@ namespace core
 
 	inline T_mv apply( T_sp fn, Cons_sp argsPLUS )
 	{
-            IMPLEMENT_MEF(BF("Implement apply by fixing the code below"));
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 0;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -73,15 +71,12 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->invokeINVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0,
                            Cons_sp argsPLUS )
 	{
-            IMPLEMENT_ME();
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 1;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -92,15 +87,12 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1,
                            Cons_sp argsPLUS )
 	{
-            IMPLEMENT_ME();
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 2;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -111,15 +103,12 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2,
                            Cons_sp argsPLUS )
 	{
-            IMPLEMENT_ME();
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 3;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -130,15 +119,12 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3,
                            Cons_sp argsPLUS )
 	{
-            IMPLEMENT_ME();
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 4;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -149,16 +135,13 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4,
                            Cons_sp argsPLUS )
 	{
-            IMPLEMENT_ME();
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 5;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -169,15 +152,12 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5,
                            Cons_sp argsPLUS )
 	{
-            IMPLEMENT_ME();
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 6;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -188,14 +168,11 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, Cons_sp argsPLUS )
 	{
-            IMPLEMENT_ME();
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 7;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -206,14 +183,11 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, Cons_sp argsPLUS )
 	{
-            IMPLEMENT_ME();
-#if 0
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 8;
 	    int numArgsPlus = af_length(argsPLUS);
@@ -224,8 +198,7 @@ namespace core
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-	    return func->INVOKE(frame->length(),frame->argArray());
-#endif
+            return applyToActivationFrame(func,frame);
 	}
 
 

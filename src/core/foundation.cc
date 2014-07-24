@@ -369,6 +369,7 @@ namespace core
 	return _lisp->internKeyword(lispName);
     }
 
+#if 0
     Symbol_sp lispify_intern(string const& name, string const& packageName)
     {
 	string lispName = lispify_symbol_name(name);
@@ -380,7 +381,7 @@ namespace core
         sym->exportYourself();
         return sym;
     }
-
+#endif
     Symbol_sp lisp_upcase_intern(string const& name, string const& packageName)
     {
 	string lispName = stringUpper(name);
@@ -835,36 +836,23 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("No arguments were provided and number_of_required_arguments is %d") % number_of_required_arguments);
 	}
-	if ( autoExport) sym->exportYourself();
-	LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]")
-	    % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport );
-	SingleDispatchGenericFunction_sp gfn = Lisp_O::find_single_dispatch_generic_function(sym,false);
         if ( TemplateDispatchOn != 0 ) {
             SIMPLE_ERROR(BF("Mismatch between single_dispatch_argument_index[0] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s")
                          % TemplateDispatchOn
                          % _rep_(classSymbol) % _rep_(sym) % arguments );
         }
-	if ( gfn.nilp() )
-	{
-	    af_ensure_single_dispatch_generic_function(sym,llhandler);
-	    gfn = _lisp->find_single_dispatch_generic_function(sym,true);
-	} else if ( !af_singleDispatchGenericFunctionP(gfn) )
-	{
-	    // Some other type of function is bound to this symbol - throw an exception
-	    string ts = _rep_(sym);
-	    printf( "%s:%d - The symbol[%s] has already been assigned a"
-		    " non-SingleDispatchGenericFunction and will not be redefined\n",
-		    __FILE__, __LINE__, _rep_(sym).c_str() );
-	    return;
-	}
+	if ( autoExport) sym->exportYourself();
+	LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]")
+	    % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport );
 	Str_sp docStr = Str_O::create(docstring);
+	SingleDispatchGenericFunction_sp gfn = af_ensureSingleDispatchGenericFunction(sym,llhandler);
 	SYMBOL_SC_(KeywordPkg,body);
 	SYMBOL_SC_(KeywordPkg,lambda_list_handler);
 	SYMBOL_SC_(KeywordPkg,docstring);
 	LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p")
 	    % _rep_(sym) % _rep_(receiver_class) %  ((void*)(methoid)) );
         Function_sp fn = Function_O::make(methoid);
-	af_ensure_single_dispatch_method(sym,receiver_class,llhandler,ldeclares,docStr,fn);
+	af_ensureSingleDispatchMethod(sym,receiver_class,llhandler,ldeclares,docStr,fn);
     }
 
 
@@ -914,7 +902,10 @@ namespace core
     }
 #endif
 
-    Symbol_sp lisp_lispifyAndInternWithPackageNameIfNotGiven(const string& defaultPackageName, const string& name)
+
+    /*! If the name has the structure XXX:YYY or XXX::YYY then intern YYY in package XXX either
+      exported or not respectively.   If there is no package prefix then use the defaultPackageName */
+    Symbol_sp lispify_intern( const string& name, const string& defaultPackageName, bool exportSymbol)
     {
 	string lispName = lispify_symbol_name(name);
 #if 0
@@ -928,6 +919,9 @@ namespace core
 	}
 #endif
 	Symbol_sp sym = _lisp->internWithDefaultPackageName(defaultPackageName,lispName);
+        if (exportSymbol) {
+            sym->exportYourself();
+        }
         return sym;
     }
 
@@ -937,7 +931,8 @@ namespace core
 		    const string& arguments,
 		    const string& declarestring,
 		    const string& docstring,
-		    int locked,
+                    const string& sourceFile,
+                    int lineNumber,
 		    bool autoExport,
 		    int number_of_required_arguments)
     {_G();
@@ -957,10 +952,10 @@ namespace core
 	    llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>());
 	}
         fc->finishSetup(llh,kw::_sym_function);
+        fc->setSourcePosInfo(Str_O::create(sourceFile),lineNumber,0);
 	Function_sp func = Function_O::make(fc);
 	sym->setf_symbolFunction(func);
 	if ( autoExport ) sym->exportYourself();
-	if ( locked ) sym->setReadOnlyFunction(true);
 	else sym->setReadOnlyFunction(false);
     }
 
@@ -1045,6 +1040,30 @@ namespace core
     string symbol_fullName(Symbol_sp s)
     {
 	return s->fullName();
+    }
+
+
+
+    core::SourcePosInfo_sp lisp_registerSourceInfo(T_sp obj
+                                                   , SourceFileInfo_sp sfo
+                                                   , int lineno
+                                                   , int column )
+    {
+        SourceManager_sp db = _lisp->sourceDatabase();
+        if ( db.notnilp() ) {
+            return db->registerSourceInfo(obj,sfo,lineno,column);
+        }
+        return _Nil<SourcePosInfo_O>();
+    }
+
+    core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
+                                                             , Stream_sp stream)
+    {
+        SourceManager_sp db = _lisp->sourceDatabase();
+        if ( db.notnilp() ) {
+            return db->registerSourceInfoFromStream(obj,stream);
+        }
+        return _Nil<SourcePosInfo_O>();
     }
 
 

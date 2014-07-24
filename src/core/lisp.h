@@ -199,6 +199,7 @@ namespace core
 
     class Lisp_O
     {
+        friend SourceFileInfo_mv af_sourceFileInfo(T_sp);
 	struct GCRoots //: public gctools::HeapRoot
         {
 	/*! The invocation history stack this should be per thread */
@@ -214,8 +215,7 @@ namespace core
             gctools::Vec0<core::Symbol_sp>      _ClassSymbolsHolder;
 	    HashTable_sp 		_SystemProperties;
 	    DynamicBindingStack 	_Bindings;
-	    /*! Map source file path strings to SourceFileInfo_sp */
-	    HashTableEqual_sp           _SourceFiles; // map<string,SourceFileInfo_sp> 	_SourceFiles;
+            gctools::Vec0<SourceFileInfo_sp>    _SourceFiles;
 	    /*! Store CATCH info */
 	    Cons_sp 			_CatchInfo;
 	    /* The global class table that maps class symbols to classes */
@@ -320,7 +320,8 @@ namespace core
         /*! Raw argv */
         vector<string>          _Argv;
     private:
-
+        /*! Map source file path strings to SourceFileInfo_sp */
+        map<string,int>         _SourceFileIndices; // map<string,SourceFileInfo_sp> 	_SourceFiles;
 	uint			_Mode;
         uint                    _ReplCounter;
 	/*! Store paths to important directories */
@@ -406,6 +407,8 @@ namespace core
         CharacterInfo& characterInfo() { return this->_Roots.charInfo; };
     public:
         gctools::Vec0<core::Symbol_sp>&     classSymbolsHolder() { return this->_Roots._ClassSymbolsHolder;};
+    public:
+        SourceFileInfo_mv sourceFileInfo(const string& fileName);
     public:
 	/*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
@@ -965,6 +968,8 @@ namespace core
     Class_mv af_findClass(Symbol_sp symbol, bool errorp=true, Environment_sp env=_Nil<Environment_O>());
     Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, Environment_sp env );
 
+
+    SourceFileInfo_mv af_sourceFileInfo(T_sp obj);
 
     void af_stackMonitor();
 

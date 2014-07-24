@@ -1826,6 +1826,55 @@ void initialize_primitives()
 	Defun(getOutputStreamString);
 
         SYMBOL_EXPORT_SC_(ClPkg,set);
+
+	SYMBOL_EXPORT_SC_(ClPkg,gensym);
+	Defun(gensym);
+
+	SYMBOL_EXPORT_SC_(ClPkg,type_of);
+	Defun(type_of);
+
+	SYMBOL_SC_(CorePkg,rem_f);
+	Defun(rem_f);
+
+	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
+	Defun(specialOperatorP);
+
+	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
+	Defun(macroFunction);
+
+	SYMBOL_SC_(CorePkg,separatePairList);
+	Defun(separatePairList);
+
+	SYMBOL_EXPORT_SC_(ClPkg,makeStringOutputStream);
+	Defun(makeStringOutputStream);
+
+	SYMBOL_EXPORT_SC_(ClPkg,getOutputStreamString);
+	Defun(getOutputStreamString);
+
+	SYMBOL_EXPORT_SC_(ClPkg,gensym);
+	Defun(gensym);
+
+	SYMBOL_EXPORT_SC_(ClPkg,type_of);
+	Defun(type_of);
+
+	SYMBOL_SC_(CorePkg,rem_f);
+	Defun(rem_f);
+
+	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
+	Defun(specialOperatorP);
+
+	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
+	Defun(macroFunction);
+
+	SYMBOL_SC_(CorePkg,separatePairList);
+	Defun(separatePairList);
+
+	SYMBOL_EXPORT_SC_(ClPkg,makeStringOutputStream);
+	Defun(makeStringOutputStream);
+
+	SYMBOL_EXPORT_SC_(ClPkg,getOutputStreamString);
+	Defun(getOutputStreamString);
+
         ClDefun(set);
 
 	SYMBOL_SC_(CorePkg,testMemoryError);

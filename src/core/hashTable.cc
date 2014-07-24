@@ -69,10 +69,11 @@ namespace core
     }
 
 
-#define LOCK_af_maphash 1
-#define	DOCS_af_maphash "see CLHS"
 #define ARGS_af_maphash "(function_desig hash_table)"
 #define DECL_af_maphash ""    
+#define	DOCS_af_maphash "see CLHS"
+#define	FILE_af_maphash __FILE__
+#define LINE_af_maphash __LINE__
     T_mv af_maphash(T_sp function_desig, HashTable_sp hash_table)
     {_G();
 	Function_sp func = coerce::functionDesignator(function_desig);
@@ -97,10 +98,9 @@ namespace core
     }
 
 
-#define LOCK_af_clrhash 1
-#define DOCS_af_clrhash "See CLHS"
 #define ARGS_af_clrhash "(hash_table)"
 #define DECL_af_clrhash ""    
+#define DOCS_af_clrhash "See CLHS"
     T_mv af_clrhash(HashTable_sp hash_table)
     {_G();
 	hash_table->clrhash();
@@ -435,9 +435,9 @@ namespace core
         return keyValueCons;
     }
 
-    #define ARGS_HashTable_O_gethash	"(key (self hash-table) &optional default_value)"
-    #define DECL_HashTable_O_gethash	""
-    #define DOCS_HashTable_O_gethash	"See CLHS"
+#define ARGS_HashTable_O_gethash "(key (self hash-table) &optional default_value)"
+#define DECL_HashTable_O_gethash ""
+#define DOCS_HashTable_O_gethash "See CLHS"
     T_mv HashTable_O::gethash(T_sp key,T_sp default_value )
     {_OF();
 	LOG(BF("gethash looking for key[%s]") % _rep_(key) );

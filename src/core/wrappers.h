@@ -52,11 +52,11 @@ namespace core{
 
 
     template <typename RT,typename... ARGS>
-    void af_def(const string& packageName, const string& name, RT (*fp)(ARGS...) , const string& arguments="", const string& declares="", const string& docstring="", int locked=1 )
+    void af_def(const string& packageName, const string& name, RT (*fp)(ARGS...) , const string& arguments="", const string& declares="", const string& docstring="", const string& sourceFile="", int sourceLine=0 )
     {_G();
-        Symbol_sp symbol = lisp_lispifyAndInternWithPackageNameIfNotGiven(packageName,name);
+        Symbol_sp symbol = lispify_intern(name,packageName);
         BuiltinClosure* f = gctools::ClassAllocator<VariadicFunctoid<RT(ARGS...)> >::allocateClass(symbol,fp);
-        lisp_defun(symbol,packageName,f,arguments,declares,docstring,locked,true,sizeof...(ARGS));
+        lisp_defun(symbol,packageName,f,arguments,declares,docstring,sourceFile,sourceLine,true,sizeof...(ARGS));
     }
 };
 
@@ -119,7 +119,7 @@ namespace core {
     {_G();
         stringstream ss;
         ss << "macro->" << packageName << ">>" << name;
-        Symbol_sp symbol = lisp_lispifyAndInternWithPackageNameIfNotGiven(packageName,ss.str());
+        Symbol_sp symbol = lispify_intern(ss.str(),packageName);
 	BuiltinClosure* f = gctools::ClassAllocator<MacroClosure>::allocateClass(symbol,mp);
 	lisp_defmacro(symbol,packageName,f,arguments,declares,docstring,autoExport);
     }
@@ -237,7 +237,7 @@ namespace core {
 	class_& def( string const& name, RT (OT::*mp)(ARGS...),
                      string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
 	{_G();
-            Symbol_sp symbol = lisp_lispifyAndInternWithPackageNameIfNotGiven(symbol_packageName(this->_ClassSymbol),name);
+            Symbol_sp symbol = lispify_intern(name,symbol_packageName(this->_ClassSymbol));
 	    BuiltinClosure* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...)>>::allocateClass(symbol,mp);
 	    lisp_defineSingleDispatchMethod(symbol
                                             ,this->_ClassSymbol
@@ -257,7 +257,7 @@ namespace core {
 	class_& def( string const& name, RT (OT::*mp)(ARGS...) const,
 		     string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
 	{_G();
-            Symbol_sp symbol = lisp_lispifyAndInternWithPackageNameIfNotGiven(symbol_packageName(this->_ClassSymbol),name);
+            Symbol_sp symbol = lispify_intern(name,symbol_packageName(this->_ClassSymbol));
 	    BuiltinClosure* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...) const>>::allocateClass(symbol,mp);
 	    lisp_defineSingleDispatchMethod(symbol,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
 	    return *this;

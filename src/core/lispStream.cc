@@ -1022,10 +1022,9 @@ T_sp brcl_close(T_sp strm, bool abort)
 
 
 
-#define	DOCS_af_read_line "See clhs"
-#define LOCK_af_read_line 1
 #define ARGS_af_read_line "(&optional input-stream (eof-error-p t) eof-value recursive-p)"
 #define DECL_af_read_line ""    
+#define	DOCS_af_read_line "See clhs"
     T_mv af_read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
 	bool eofErrorP = eof_error_p.isTrue();
@@ -1303,7 +1302,7 @@ T_sp brcl_close(T_sp strm, bool abort)
     {_G();
         GC_ALLOCATE(FileInStream_O,fin );
 	Pathname_sp pn = af_pathname(fileName);
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(pn);
+	fin->_SourceFileInfo = af_sourceFileInfo(pn);
 	fin->_InStream.open(fin->_SourceFileInfo->fileName().c_str());
 	return fin;
     }
@@ -1330,7 +1329,7 @@ T_sp brcl_close(T_sp strm, bool abort)
     {_G();
         GC_ALLOCATE(FileInStream_O,fin );
 	Str_sp truename = af_coerceToFilename(af_truename(path));
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(truename->get());
+	fin->_SourceFileInfo = af_sourceFileInfo(truename);
 	LOG(BF("Opening file[%s]") % fin->_SourceFileInfo->fileName());
 	fin->_InStream.open(truename->c_str());
 	if ( !fin->_InStream.good() )
@@ -1622,7 +1621,7 @@ T_sp brcl_close(T_sp strm, bool abort)
     {
         GC_ALLOCATE(FileInCompressedStream_O,fin );
 	Str_sp truename = af_coerceToFilename(af_truename(path));
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(truename->get());
+	fin->_SourceFileInfo = af_sourceFileInfo(truename);
 	fin->_RawStream.open(truename->c_str(),std::ios_base::in | std::ios_base::binary);
 	fin->_In.push(boost::iostreams::gzip_decompressor());
 	fin->_In.push(fin->_RawStream);
@@ -1930,7 +1929,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     SourceFileInfo_sp StringInputStream_O::sourceFileInfo() const
     {
-	return SourceFileInfo_O::getOrCreate("-StringInputStream-");
+	return af_sourceFileInfo(Str_O::create("-StringInputStream-"));
     }
 
 
@@ -2305,7 +2304,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     {_G();
 	Path_sp path = coerce::pathDesignator(file_descriptor);
         GC_ALLOCATE(FDInStream_O,fin );
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(path->asString());
+	fin->_SourceFileInfo = af_sourceFileInfo(Str_O::create(path->asString()));
 	fin->_FStream = fopen(path->asString().c_str(),"r");
 	return fin;
     }
@@ -2316,7 +2315,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
         GC_ALLOCATE(FDInStream_O,fin );
 	string fname = af_coerceToFilename(pname)->get();
 	fin->_FStream = fopen(fname.c_str(),"r");
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(fname);
+	fin->_SourceFileInfo = af_sourceFileInfo(Str_O::create(fname));
 	fin->_Closeable = true;
 	return fin;
     }
@@ -2325,7 +2324,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     {_G();
         GC_ALLOCATE(FDInStream_O,fin );
         fin->_FStream = fid;
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(name);
+	fin->_SourceFileInfo = af_sourceFileInfo(Str_O::create(name));
 	fin->_Closeable = closeable;
 	return fin;
     }
@@ -2696,7 +2695,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     {_G();
         GC_ALLOCATE(FDIOStream_O,fio );
 	fio->_FStream = fid;
-	fio->_SourceFileInfo = SourceFileInfo_O::getOrCreate(name);
+	fio->_SourceFileInfo = af_sourceFileInfo(Str_O::create(name));
 	fio->_Closeable = closeable;
 	return fio;
     }

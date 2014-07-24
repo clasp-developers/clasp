@@ -25,7 +25,9 @@ namespace core
         return -1;
     }
 
-    InvocationHistoryFrame::InvocationHistoryFrame(FunctionClosure* fc, ActivationFrame_sp env) :closure(fc), environment(env)
+    InvocationHistoryFrame::InvocationHistoryFrame(Closure* c, ActivationFrame_sp env) :closure(c), environment(env)
+                                                                                       , runningLineNumber(0)
+                                                                                       , runningColumn(0)
     {
 	this->_Stack = &_lisp->invocationHistoryStack();
 	this->_Next = this->_Stack->top();
@@ -62,8 +64,7 @@ namespace core
     }
 
 
-    string InvocationHistoryFrame::asStringLowLevel(const string& type,
-						    const string& funcName,
+    string InvocationHistoryFrame::asStringLowLevel(const string& funcName,
 						    const string& sourceFileName,
 						    uint lineNumber,
 						    uint column) const
@@ -71,11 +72,50 @@ namespace core
 	stringstream ss;
         if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
         if ( column == UNDEF_UINT ) column = 0;
-	ss << (BF("#%3d %8s %20s %5d col %2d %s") % this->_Index % type % sourceFileName % lineNumber % column  % funcName ).str();
+	ss << (BF("#%3d %20s %5d col %2d %s") % this->_Index % sourceFileName % lineNumber % column  % funcName ).str();
 //	ss << std::endl;
 //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
 	return ss.str();
     }
+
+
+
+    string InvocationHistoryFrame::sourcePathName() const
+    {
+        return af_sourceFileInfo(this->closure->sourcePosInfo())->namestring();
+    }
+
+
+
+    string InvocationHistoryFrame::asString()
+    {
+        SourceFileInfo_sp sfi = af_sourceFileInfo(this->closure->sourcePosInfo());
+        if ( this->runningLineNumber == 0 ) {
+            this->runningLineNumber = this->closure->lineNumber();
+            this->runningColumn = this->closure->column();
+        }
+	return this->asStringLowLevel(_rep_(this->closure->name),
+				      sfi->fileName(),
+				      this->runningLineNumber,
+                                      this->runningColumn);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #if 0

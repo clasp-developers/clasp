@@ -206,24 +206,25 @@ typedef std::size_t class_id;
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 #define DEFUN(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
 
-#define Defun(x) core::af_def(CurrentPkg,#x,&af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x); 
+#define Defun(x) core::af_def(CurrentPkg,#x,&af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, __FILE__, __LINE__); 
 #define Defun_maker(pkg,x) core::af_def(pkg,"make-" #x,&(x ## _O::make), ARGS_##x##_O_make, DECL_##x##_O_make, DOCS_##x##_O_make);
 
-#define ClDefun(x) core::af_def(ClPkg,#x,&cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x); 
-#define ExtDefun(x) core::af_def(ExtPkg,#x,&ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x); 
-#define ClosDefun(x) core::af_def(ClosPkg,#x,&clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x); 
-#define CoreDefun(x) core::af_def(CorePkg,#x,&core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x); 
+#define ClDefun(x) core::af_def(ClPkg,#x,&cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__); 
+#define ExtDefun(x) core::af_def(ExtPkg,#x,&ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__); 
+#define ClosDefun(x) core::af_def(ClosPkg,#x,&clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__); 
+#define CoreDefun(x) core::af_def(CorePkg,#x,&core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__); 
 
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
+//#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN_NAME(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
+//#define DEFUN_NAME(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
+//#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
 
+#if 0
 /*! Define a PAIR of accessor functions, the getter and setter */
 #define DEFACCESSORS(x) \
     af_def(CurrentPkg,#x,&af_##x,ARGS_af_##x,DOCS_af_##x,LOCK_af_##x); \
@@ -233,7 +234,7 @@ typedef std::size_t class_id;
 #define DEFACCESSORS_EXPORT(x) \
     af_def(CurrentPkg,#x,&af_##x,ARGS_af_##x,DECL_af_##x,DOCS_af_##x,LOCK_af_##x); \
     _lisp->add_accessor_pair(_sym_##x,_sym_setf_##x);
-
+#endif
 
 #define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
 /*! Use this in initializeCandoPrimitives to define a function
@@ -241,10 +242,10 @@ typedef std::size_t class_id;
 #define DEFGENERIC(pkg,x) defgeneric(pkg,#x,&gf_##x,ARGS_gf_##x,DOCS_gf_##x,_lisp); 
 
 
-
+#if 0
 /*! Use this in initializeCandoPrimitives to attach methods to the generic function */
 #define DEFMETHOD(x,id) defmethod(_sym_##x,md_##x##id,ARGS_md_##x##id,DECL_md_##x##id, DOCS_md_##x##id,_lisp);
-
+#endif
 
 	//
 	// Define this if you want to debug energy evaluation
@@ -488,6 +489,9 @@ namespace core
     /* AMS pool classes */
     class Symbol_O;
     class Null_O;
+    class Stream_O;
+    class SourcePosInfo_O;
+    class SourceFileInfo_O;
 
     class DynamicScopeManager;
 };
@@ -630,6 +634,9 @@ namespace core {
     typedef gctools::smart_ptr<T_O>	T_sp;
     typedef gctools::smart_ptr<Cons_O>  Cons_sp;
     typedef gctools::smart_ptr<VectorObjects_O>  VectorObjects_sp;
+    typedef gctools::smart_ptr<Stream_O>  Stream_sp;
+    typedef gctools::smart_ptr<SourcePosInfo_O>  SourcePosInfo_sp;
+    typedef gctools::smart_ptr<SourceFileInfo_O>  SourceFileInfo_sp;
 };
 
 #include "gctools/containers.h"
@@ -1032,10 +1039,11 @@ namespace core
     /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
       to convert a C++ name to a lisp symbol */
     string  lispify_symbol_name(string const& name);
-    Symbol_sp lisp_lispifyAndInternWithPackageNameIfNotGiven(const string& packageName, const string& name);
     Symbol_sp lispify_intern_keyword(string const& name);
-    Symbol_sp lispify_intern(string const& name, string const& packageName);
-    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
+//    Symbol_sp lispify_intern2(string const& name, string const& packageName);
+// lisp_lispifyAndInternWithPackageNameIfNotGiven
+    Symbol_sp lispify_intern( const string& name, const string& packageName, bool exportSymbol=true);
+//    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
     Symbol_sp lisp_upcase_intern(string const& name, string const& packageName);
     Symbol_sp lisp_upcase_intern_export(string const& name, string const& packageName);
     Lisp_sp lisp_fromObject(T_sp obj);
@@ -1099,7 +1107,7 @@ namespace core
 		       const string& docstring="", bool autoExport=true);
     void lisp_defun(Symbol_sp name, const string& packageName,
 		    BuiltinClosure*, const string& arguments="", const string& declarestring="",
-		    const string& docstring="", int locked=1, bool autoExport=true, int number_of_required_arguments=0 );
+		    const string& docstring="", const string& sourceFile="", int sourceLine=0, bool autoExport=true, int number_of_required_arguments=0 );
     void lisp_defgeneric( const string& packageName, const string& name,
 			 Functoid*, const string& arguments="", const string& docstring="", bool autoExport=true  );
     void lisp_defmethod(Symbol_sp gfSymbol, Functoid* func, const string& arguments, const string& docstring);
@@ -1171,7 +1179,7 @@ namespace core
     T_sp lisp_ocaddr(Cons_sp args);
     Symbol_sp lisp_internKeyword(const string& name);
     Symbol_sp lisp_intern(const string& name);
-    Symbol_sp lisp_intern(const string& pkgName, const string& symName);
+    Symbol_sp lisp_intern(const string& symName,const string& pkgName);
     T_sp lisp_VectorObjectsFromMultipleValues(T_mv values);
     string symbol_fullName(Symbol_sp s);
     void lisp_logException(const char* file, const char* fn, int line, const char* structure, T_sp condition );
@@ -1183,6 +1191,13 @@ namespace core
     int lisp_lookupEnumForSymbol( Symbol_sp predefSymId, T_sp symbol);
     core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
 
+    /*! Register source info for the object in the current source database */
+    core::SourcePosInfo_sp lisp_registerSourceInfo(T_sp obj
+                                                   , SourceFileInfo_sp sfo
+                                                   , int lineno
+                                                   , int column );
+    core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
+                                                             , Stream_sp stream);
 
 
     class Functoid 
@@ -1225,11 +1240,18 @@ namespace core
     private:
         // TODO-VARARGS:   There needs to be an environment saved in here
     public:
+	Closure(T_sp name) : Functoid(name) {};
+	virtual ~Closure() {};
+    public:
 	virtual string describe() const {return "Closure";};
 	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Closure must implement 'activate'\n"); exit(1);};
 
-	Closure(T_sp name) : Functoid(name) {};
-	virtual ~Closure() {};
+        virtual SourcePosInfo_sp sourcePosInfo() const {return _Nil<SourcePosInfo_O>();};
+        virtual bool macroP() const = 0;
+        virtual void setKind(Symbol_sp k)=0;
+        virtual bool compiledP() const =0;
+        virtual int lineNumber() const { return 0;}
+        virtual int column() const { return 0;};
     };
 
 
