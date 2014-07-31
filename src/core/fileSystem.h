@@ -20,7 +20,6 @@ namespace core {
 	friend class XmlSaveArchive_O;
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,Path_O,"path");
-	DECLARE_MAKE_INIT();
 public:
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);

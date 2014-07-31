@@ -43,6 +43,8 @@ local unity_sources =
       all.cc ;
 
 local sources = 
+    activationFrame.cc
+	    environment.cc 
 		objectSet.cc
 		profiler.cc 
 		lispDefinitions.cc 
@@ -102,12 +104,10 @@ local sources =
       vectorObjects.cc
 	    lambdaListHandler.cc
       corePackage.cc
-    activationFrame.cc
       cons.cc
       write_object.cc
 	    array.cc
 	foundation.cc 
-	    environment.cc 
       strWithFillPtr.cc
 	    lispMath.cc
 	    lispStream.cc

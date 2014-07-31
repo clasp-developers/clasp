@@ -32,18 +32,6 @@ namespace core {
   __END_DOC
 */
 
-#if 0
-#define INIT_ARGS_StringSet_O "(self entries)"
-#define DOCS_StringSet_O "A set of strings. entries--a cons of strings"
-    T_sp StringSet_O::__init__(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp)
-    {_OF();
-	Cons_sp entries = translate::from_object<Cons_O>::convert(env->lookup(Pkg(),"entries")->object());
-	LOG(BF("Inserting cons of strings[%s]") % entries->__repr__() );
-	this->insertConsStrings(entries);
-	return _Nil<T_O>();
-    }
-#endif
-
 
     StringSet_sp StringSet_O::insertConsStrings(Cons_sp vals)
     {

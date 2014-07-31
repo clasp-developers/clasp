@@ -141,30 +141,7 @@ namespace boost
 					    "docstring"      / * Optional default="" * /
 					    ))
 	*/
-#if 0
-	template <class OT>
-	    object raw_method(string const& methodName, 
-			      core::T_sp (OT::*rmp)(core::Function_sp,core::Cons_sp, core::Environment_sp, core::Lisp_sp ),
-			      core::Lisp_sp lisp,
-			      string const& argumentList="",
-			      string const& docstring="")
-	{
-	    core::Class_sp classOT = lisp->classFromClassSymbol(OT::static_classSymbol());
-	    string packageName = classOT->getPackageName();
-	    core::Symbol_sp methodSymbol = lisp->internWithPackageName(packageName,methodName);
-	    core::Methoid<OT>* methptr = new core::Methoid<OT>(rmp);
-	    core::MethodPrimitive_sp mp = core::MethodPrimitive_O::create(methodSymbol,classOT,methptr,argumentList,docstring,lisp);
-	    object ofn = detail::make_raw_function(
-		objects::py_function(
-		    detail::wrapped_dispatcher<core::MethodPrimitive_sp>(mp,lisp)
-		    , mpl::vector1<PyObject*>()
-		    , 0
-		    , (std::numeric_limits<unsigned>::max)()
-		    )
-		);
-	    return ofn;
-	}
-#endif
+
     }
 } // namespace boost::python
 

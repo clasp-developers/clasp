@@ -60,6 +60,20 @@
 namespace llvmo
 {
 
+
+    
+    
+#define ARGS_comp_setAssociatedFuncs "(func associated-funcs)"
+#define DECL_comp_setAssociatedFuncs ""
+#define DOCS_comp_setAssociatedFuncs "setAssociatedFuncs"
+#define FILE_comp_setAssociatedFuncs __FILE__
+#define LINE_comp_setAssociatedFuncs __LINE__
+    void comp_setAssociatedFuncs(core::CompiledFunction_sp cf, core::Cons_sp associatedFuncs)
+    {
+        CompiledClosure* closure = dynamic_cast<CompiledClosure*>(cf->closure);
+	closure->setAssociatedFunctions(associatedFuncs);
+    };
+
     
     
 #define ARGS_af_llvm_value_p "(arg)"
@@ -3543,7 +3557,7 @@ namespace llvmo
 
 
 
-    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName )
+    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName, core::T_sp fileName, int linenumber )
     {_G();
 	// Stuff to support MCJIT
 	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
@@ -3553,27 +3567,15 @@ namespace llvmo
 	if (!p) {
 	    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(sym));
 	}
-	LLVMFunctoid::fptr_type lisp_funcPtr = (LLVMFunctoid::fptr_type)(p);
-	string functoidName = sym.nilp() ? "" : sym->fullName();
-        IMPLEMENT_MEF(BF("Handle the function name"));
-#if 0
-        stringstream llvmName;
-        llvmName << "llvmfunctoid>" << functoidName;
-        // use llvmName for closure
-        Symbol_sp sym = lisp_lispifyAndInternWithPackageNameIfNotGiven(_lisp->currentPackage()->packageName()->get(),llvmName.str());
-
-	LLVMFunctoid* functoid = gctools::ClassAllocator<LLVMFunctoid>::allocateClass(functoidName,lisp_funcPtr);
-#if 0 // Use this info in the creation of the LLVMFunctoid
-sym,
-											 compiledBody,
-											 activationFrameEnvironment,
-											 _Nil<core::SourceFileInfo_O>(), 0, 0,
-											 functionKind );
-	return func;
-#endif
-	core::CompiledBody_sp compiledBody = core::CompiledBody_O::create(functoid,fn);
-	core::CompiledFunction_sp func = core::CompiledFunction_O::make(funtoid);
-#endif
+	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
+        core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::Cons_O>());
+        core::SourceFileInfo_mv sfi = af_sourceFileInfo(fileName);
+        int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();
+        core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,linenumber,0);
+        CompiledClosure* functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym,spi,kw::_sym_function,lisp_funcPtr,fn,activationFrameEnvironment,associatedFunctions);
+	core::CompiledFunction_sp func = core::CompiledFunction_O::make(functoid);
+        ASSERT(func);
+        return func;
     }
 
 
@@ -3582,7 +3584,7 @@ sym,
 
 
 
-    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, Function_sp func, core::Str_sp fileName, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
+    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, Function_sp func, core::Str_sp fileName, int linenumber, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
     {_G();
         if ( func.nilp() ) {
             SIMPLE_ERROR(BF("Function is nil"));
@@ -3934,6 +3936,7 @@ void initialize_llvmo_expose()
     SYMBOL_EXPORT_SC_(LlvmoPkg,llvm_value_p);
     Defun(llvm_value_p);
 
+    CompDefun(setAssociatedFuncs);
 
     core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndGetCompiledFunction",&finalizeEngineAndRegisterWithGcAndGetCompiledFunction);
     core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndRunFunction",&finalizeEngineAndRegisterWithGcAndRunFunction);

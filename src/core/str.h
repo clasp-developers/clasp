@@ -100,8 +100,8 @@ namespace core
     public:
 	//! dim ignore fill pointers - don't overload
 	uint length() const { return this->size(); };
-	T_sp prim_format(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp );
-	T_sp prim_formatCons(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp );
+//	T_sp prim_format(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp );
+//	T_sp prim_formatCons(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp );
 	virtual T_sp elementType() const;
 	virtual bool	equal(T_sp obj) const;
         virtual bool    equalp(T_sp obj) const;

@@ -34,19 +34,21 @@ namespace core
     protected:
 	uint		_EnvId;
     public:
-	static Environment_sp nilCheck_currentVisibleEnvironment(Environment_sp env);
-	static ActivationFrame_sp nilCheck_getActivationFrame(Environment_sp env);
+	static T_sp clasp_currentVisibleEnvironment(T_sp env);
+	static ActivationFrame_sp clasp_getActivationFrame(T_sp env);
+	static int clasp_countFunctionContainerEnvironments(T_sp env);
+	static bool clasp_findValue(T_sp env, Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value);
+	static bool clasp_findFunction(T_sp env, T_sp functionName, int& depth, int& index, Function_sp& func);
+	static bool clasp_findTag(T_sp env, Symbol_sp sym, int& depth, int& index);
+	static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int& depth, int& index, bool& shadowed, Function_sp& func);
+	static bool clasp_findMacro(T_sp env, Symbol_sp sym, int& depth, int& index, Function_sp& func);
+        static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
+        static T_sp clasp_lookupValue(T_sp env, int depth, int index );
+        static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index );
     protected:
-	static int nilCheck_countFunctionContainerEnvironments(Environment_sp env);
-	static void nilCheck_environmentStackFill(Environment_sp env, int level, stringstream& sout);
-	static Cons_sp nilCheck_gather_metadata(Environment_sp env, Symbol_sp key);
-	static bool nilCheck_findTag(Environment_sp env, Symbol_sp sym, int& depth, int& index);
-	static bool nilCheck_findValue(Environment_sp env, Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value);
-	static bool nilCheck_findFunction(Environment_sp env, T_sp functionName, int& depth, int& index, Function_sp& func);
-	static bool nilCheck_findMacro(Environment_sp env, Symbol_sp sym, int& depth, int& index, Function_sp& func);
-	static bool nilCheck_findSymbolMacro(Environment_sp env, Symbol_sp sym, int& depth, int& index, bool& shadowed, Function_sp& func);
-	static string nilCheck_summaryOfContents(Environment_sp env);
-
+	static void clasp_environmentStackFill(T_sp env, int level, stringstream& sout);
+	static Cons_sp clasp_gather_metadata(T_sp env, Symbol_sp key);
+	static string clasp_summaryOfContents(T_sp env);
     public:
 	uint environmentId() const { return this->_EnvId;};
 	void setEnvironmentId(uint id) { this->_EnvId = id;};
@@ -100,7 +102,8 @@ namespace core
 	  Otherwise return nil.  
 	*/
 	Cons_sp classifyValue(Symbol_sp sym) const;
-	virtual T_sp lookupValue(int depth, int index) const;
+	virtual T_sp _lookupValue(int depth, int index) const;
+        virtual T_sp _lookupTagbodyId(int depth, int index) const {SUBIMP();};
     public:
 	string environmentStackAsString();
 
@@ -136,16 +139,16 @@ namespace core
 	*/
 	Cons_sp classifyLookup(Symbol_sp sym) const;
 
-	virtual T_mv variable_lookup(Symbol_sp sym) const;
-	virtual T_mv variable_lookup(const string& package,const string& symStr) const;
+//	virtual T_mv variable_lookup(Symbol_sp sym) const;
+//	virtual T_mv variable_lookup(const string& package,const string& symStr) const;
 
-	virtual bool updateValue(Symbol_sp sym, T_sp value);
+	virtual bool _updateValue(Symbol_sp sym, T_sp value);
 //	virtual bool updateValueDontThrow(Symbol_sp sym, T_sp value);
 
 
     public: // extend the environment with forms
 	/*! Lookup the Form, if it doesn't exist return nil */
-	virtual Function_sp function_lookup(T_sp functionName);
+//	virtual Function_sp function_lookup(T_sp functionName);
 
 	/*! Classify function lookup
 	  If the function is not found return nil
@@ -328,16 +331,16 @@ namespace core
 	/*! Create an environment that extends a parent environment,
 	 Pass a Cons of 2-element conses that contain either `(lexical ,symbol-name) or `(special ,symbol-name) 
 	that distinguish if the symbol-name is a lexical one or a special one */
-	static ValueEnvironment_sp createForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent);
+	static ValueEnvironment_sp createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent);
 	/*! Create a fixed size environment for passing values to a function.
 	 This is used to maintain runtime-environment information. */
-	static ValueEnvironment_sp createForNumberOfEntries(int numberOfArguments, Environment_sp parent);
+	static ValueEnvironment_sp createForNumberOfEntries(int numberOfArguments, T_sp parent);
 
-	static ValueEnvironment_sp createForLocallySpecialEntries(Cons_sp specials, Environment_sp parent);
+	static ValueEnvironment_sp createForLocallySpecialEntries(Cons_sp specials, T_sp parent);
     private:
 	void setupForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent);
     public:
-	virtual T_sp lookupValue(int depth, int index) const;
+	virtual T_sp _lookupValue(int depth, int index) const;
     public:
 	/*! Return a summary of the contents of only this environment
 	 */
@@ -371,7 +374,7 @@ namespace core
 	bool lexicalSpecialP(Symbol_sp sym) const;
 
 
-	bool updateValue(Symbol_sp sym, T_sp value);
+	bool _updateValue(Symbol_sp sym, T_sp value);
 
 
 	/*! Extend the binder with the symbol/value pair and return the value */
@@ -582,8 +585,8 @@ namespace core
     public:
 //	typedef vector<HandlerHolder>::iterator	handlerIterator;
     public:
-	static BlockEnvironment_sp create(Environment_sp parent);
-	static BlockEnvironment_sp make(Symbol_sp blockSymbol, Environment_sp parent);
+	static BlockEnvironment_sp create(T_sp parent);
+	static BlockEnvironment_sp make(Symbol_sp blockSymbol, T_sp parent);
     public:
 	virtual string summaryOfContents() const;
     public:
@@ -872,7 +875,7 @@ namespace core
 	/*! Return the arguments as a list */
 	Cons_sp args() const { return this->_Args;};
 
-	T_mv variable_lookup(Symbol_sp val) const;
+//	T_mv variable_lookup(Symbol_sp val) const;
 
 	GlueEnvironment_O() : Base() {};
 	virtual ~GlueEnvironment_O() {};
@@ -889,8 +892,11 @@ namespace gctools {
 
 
 namespace core {
-    T_sp af_environmentActivationFrame(Environment_sp env);
-	};
+    T_sp af_environmentActivationFrame(T_sp env);
+
+    bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val);
+
+};
 
 
 #endif //]

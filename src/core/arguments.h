@@ -138,7 +138,7 @@ namespace core
 
 	void dump() const;
 
-	virtual Environment_sp lexenv() const;
+	virtual T_sp lexenv() const;
 
 	virtual ~DynamicScopeManager();
     };
@@ -157,7 +157,7 @@ namespace core
 	void new_variable(Cons_sp classifiedVariable, T_sp val);
 	void new_special(Cons_sp classifiedVariable);
 	virtual bool lexicalElementBoundP(const Argument& argument);
-	virtual /*Value*/Environment_sp lexenv() const { return this->_Environment; };
+	virtual T_sp lexenv() const { return this->_Environment; };
     };
 
 
@@ -172,23 +172,22 @@ namespace core
     public:
 	virtual void new_binding(const Argument& argument, T_sp val);
 	virtual bool lexicalElementBoundP(const Argument& argument);
-	ActivationFrame_sp activationFrame() const { return this->_Frame; };
-	virtual Environment_sp lexenv() const;
+	T_sp activationFrame() const { return this->_Frame; };
+	virtual T_sp lexenv() const;
     };
 
 
     class StackFrameDynamicScopeManager : public DynamicScopeManager
     {
     private:
-        size_t          nargs;
-        T_sp*           args;
+        gctools::smart_ptr<STACK_FRAME>        frame;
     public:
-	StackFrameDynamicScopeManager(size_t n, T_sp* a) : nargs(n), args(a) {};
+	StackFrameDynamicScopeManager(gctools::smart_ptr<STACK_FRAME> f) : frame(f) {};
     public:
 	virtual void new_binding(const Argument& argument, T_sp val);
 	virtual bool lexicalElementBoundP(const Argument& argument);
-	ActivationFrame_sp activationFrame() const;
-	virtual Environment_sp lexenv() const;
+	T_sp activationFrame() const;
+	virtual T_sp lexenv() const;
     };
 
 

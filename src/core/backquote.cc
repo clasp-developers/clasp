@@ -56,7 +56,7 @@ namespace core
 #define ARGS_af_quasiquote "(whole env)"
 #define DECL_af_quasiquote ""
 #define DOCS_af_quasiquote "quasiquote"
-    T_mv af_quasiquote(Cons_sp whole, Environment_sp env)
+    T_mv af_quasiquote(Cons_sp whole, T_sp env)
     {_G();
 	ASSERT(af_length(whole)==2);
 	T_sp form = oCadr(whole);
@@ -552,7 +552,7 @@ namespace core
 	Defun(backquote_append);
 
 	SYMBOL_SC_(CorePkg,quasiquote);
-	defmacro(CorePkg,"quasiquote",af_quasiquote,ARGS_af_quasiquote,DECL_af_quasiquote,DOCS_af_quasiquote,false);
+	defmacro(CorePkg,"quasiquote",af_quasiquote,ARGS_af_quasiquote,DECL_af_quasiquote,DOCS_af_quasiquote,__FILE__,__LINE__,false);
 
 	SYMBOL_SC_(CorePkg,STARbq_simplifySTAR);
 	_sym_STARbq_simplifySTAR->setf_symbolValue(_lisp->_true());

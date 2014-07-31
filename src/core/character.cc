@@ -907,20 +907,6 @@ void StandardChar_O::archiveBase(ArchiveP node)
 	SIMPLE_ERROR(BF("Wrong format for comparison with Char"));
     }
 
-#if 0
-    T_sp
-    StandardChar_O::sub(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
-    {_OF();
-	T_sp obj = args->ocar();
-	if ( obj->characterP() )
-	{
-	    Character_sp wn = obj.as<Character_O>();
-	    unsigned char cc = this->_Value - wn->asChar();
-	    return StandardChar_O::create(cc);
-	}
-	THROW(lisp->error(BF("Illegal argument for sub")));
-    }
-#endif
 
     Character_sp StandardChar_O::char_upcase() const
     {_OF();

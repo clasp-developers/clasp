@@ -21,6 +21,7 @@
 
 namespace kw {
     extern core::Symbol_sp _sym_function;
+    extern core::Symbol_sp _sym_macro;
 };
 
 
@@ -33,14 +34,19 @@ namespace core {
         Symbol_sp               kind;
     public:
         DISABLE_NEW();
-        FunctionClosure(T_sp fn, SourcePosInfo_sp spo, Symbol_sp k )
-            : Closure(fn)
+        FunctionClosure(T_sp name, SourcePosInfo_sp spo, Symbol_sp k, T_sp env )
+            : Closure(name,env)
             , _SourcePosInfo(spo)
-            , kind(k){};
-        FunctionClosure(T_sp fn)
-            : Closure(fn)
+            , kind(k)
+        {
+        };
+        FunctionClosure(T_sp name)
+            : Closure(name, _Nil<T_O>())
             , _SourcePosInfo(_Nil<SourcePosInfo_O>())
-            , kind(kw::_sym_function){};
+            , kind(kw::_sym_function)
+        {
+        };
+
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 	virtual string describe() const {return "SingleDispatchGenericFunctoid";};
@@ -121,19 +127,22 @@ namespace core
         LambdaListHandler_sp    lambdaListHandler;
         Cons_sp                 declares;
         Str_sp                  docstring;
-        Environment_sp          closedEnv;
 	Cons_sp                 code;
     public:
         DISABLE_NEW();
         InterpretedClosure(T_sp fn, SourcePosInfo_sp sp, Symbol_sp k
                            , LambdaListHandler_sp llh, Cons_sp dec, Str_sp doc
-                           , Environment_sp e, Cons_sp c)
-            : FunctionClosure(fn,sp,k)
+                           , T_sp e, Cons_sp c)
+            : FunctionClosure(fn,sp,k,e)
             , lambdaListHandler(llh)
             , declares(dec)
             , docstring(doc)
-            , closedEnv(e)
-            , code(c) {};
+            , code(c)
+        {
+            if ( sp.nilp() ) {
+                printf("%s:%d Caught creation of InterpretedClosure %s with nil SourcePosInfo\n", __FILE__,__LINE__,_rep_(fn).c_str());
+            }
+        };
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual string describe() const {return "InterpretedClosure";};
 	virtual void LISP_CALLING_CONVENTION();
@@ -149,7 +158,7 @@ namespace core
     public:
         DISABLE_NEW();
         BuiltinClosure(T_sp name, SourcePosInfo_sp sp, Symbol_sp k)
-            : FunctionClosure(name,sp,k)
+            : FunctionClosure(name,sp,k,_Nil<T_O>())
             , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         BuiltinClosure(T_sp name)
             : FunctionClosure(name)
@@ -186,9 +195,10 @@ namespace core {
         CompiledFunction_O() : Base() {};
         virtual ~CompiledFunction_O() {};
     public:
-        static Function_sp make(FunctionClosure* c) {
-            GC_ALLOCATE(Function_O,f);
+        static CompiledFunction_sp make(FunctionClosure* c) {
+            GC_ALLOCATE(CompiledFunction_O,f);
             f->closure = c;
+//            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);
             return f;
         }
     public:

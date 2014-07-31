@@ -16,6 +16,7 @@ extern "C" {
 #include "core/designators.h"
 #include "core/compPackage.h"
 #include "core/hashTable.h"
+#include "core/evaluator.h"
 #include "core/sourceFileInfo.h"
 #include "core/loadTimeValues.h"
 #include "core/multipleValues.h"
@@ -189,78 +190,71 @@ extern "C" {
     }
 
 
-    void va_coerceToFunction( core::Function_sp* resultP, core::T_sp* tP )
+    core::Closure* va_coerceToClosure( core::T_sp arg )
     {_G();
-	if ( !(*tP).pointerp() ) {
-	    SIMPLE_ERROR(BF(" symbol %s") % _rep_((*tP)));
+	if ( !arg.pointerp() ) {
+	    SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg));
 	}
-	*resultP = core::coerce::functionDesignator(*tP);
-	if ( (*resultP).nilp() ) {
-	    SIMPLE_ERROR(BF("Could not coerce %s to function") % _rep_(*tP));
+        core::Function_sp func = core::coerce::functionDesignator(arg);
+	if ( func.nilp() ) {
+	    SIMPLE_ERROR(BF("Could not coerce %s to function") % _rep_(arg));
 	}
+        return func->closure;
     }
 
-    void va_symbolFunction( core::Function_sp* resultP, core::Symbol_sp* symP )
+    core::Closure* va_symbolFunction( core::Symbol_sp* symP )
     {_G();
 	if ( !(*symP) || !(*symP).pointerp() ) {
 	    SIMPLE_ERROR(BF("The head of the form %s is not a function designator") % _rep_((*symP)));
 	}
-	    
-	*resultP = (*symP)->symbolFunction();
-	if ( !(*resultP).pointerp() ) {
+        core::Function_sp func = (*symP)->symbolFunction();
+	if ( !func.pointerp() ) {
 	    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
 	}
+        return func->closure;
     }
 
 
 
-    void va_lexicalFunction( core::Function_sp* resultP, int depth, int index, core::ActivationFrame_sp* evaluateFrameP )
+    core::Closure* va_lexicalFunction( int depth, int index, core::ActivationFrame_sp evaluateFrame )
     {_G();
 	LOG(BF("About to invoke lexicalFunction depth[%d] index[%d]") % depth % index );
-	(*resultP) = (*evaluateFrameP)->lookupFunction(depth,index).as<core::Function_O>();
-	ASSERTF((*resultP).pointerp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
-		% depth % index % _rep_(*evaluateFrameP) );
+        core::Function_sp func = evaluateFrame->lookupFunction(depth,index).as<core::Function_O>();
+	ASSERTF(func.pointerp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
+		% depth % index % _rep_(evaluateFrame) );
+        return func->closure;
     }
 
-
-
-
-
-    void mv_FUNCALL(core::T_mv* resultP, core::Function_sp* funcP, int nargs, core::T_sp* argarray)
+    void mv_FUNCALL( core::T_mv* resultP, core::Closure* closure, LISP_CALLING_CONVENTION_ARGS_BASE, ... )
     {
-        DEPRECIATED();
-#if 0
-	(*resultP) = (*funcP)->INVOKE(nargs,argarray);
-#endif
+        ASSERTF(resultP,BF("mv_FUNCALL resultP is NULL!!!"));
+        va_list lcc_arglist;
+        va_start( lcc_arglist, lcc_fixed_arg2 );
+        closure->invoke(resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+        va_end(lcc_arglist);
     }
 
-    void sp_FUNCALL(core::T_sp* resultP, core::Function_sp* funcP, int nargs, core::T_sp* argarray)
+    void sp_FUNCALL( core::T_sp* resultP, core::Closure* closure, LISP_CALLING_CONVENTION_ARGS_BASE, ... )
     {
-        DEPRECIATED();
-#if 0
-	(*resultP) = (*funcP)->INVOKE(nargs,argarray);
-#endif
+        ASSERTF(resultP,BF("sp_FUNCALL resultP is NULL!!!"));
+        va_list lcc_arglist;
+        va_start( lcc_arglist, lcc_fixed_arg2 );
+        core::T_mv result_mv;
+        closure->invoke(&result_mv,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+        (*resultP) = result_mv;
+        va_end(lcc_arglist);
     }
 
 
-
-    void mv_FUNCALL_activationFrame(core::T_mv* resultP, core::Function_sp* funcP, core::ActivationFrame_sp* afP)
+    void mv_FUNCALL_activationFrame(core::T_mv* resultP, core::Closure* closure, core::ActivationFrame_sp af)
     {
-        DEPRECIATED();
-#if 0
-	(*resultP) = (*funcP)->INVOKE((*afP)->length(),(*afP)->argArray());
-#endif
+        (*resultP) = core::eval::applyClosureToActivationFrame(closure,af);
     }
 
-    void sp_FUNCALL_activationFrame(core::T_sp* resultP, core::Function_sp* funcP, core::ActivationFrame_sp* afP)
+    void sp_FUNCALL_activationFrame(core::T_sp* resultP, core::Closure* closure, core::ActivationFrame_sp af)
     {
-        DEPRECIATED();
-#if 0
-	(*resultP) = (*funcP)->INVOKE((*afP)->length(),(*afP)->argArray());
-#endif
+        (*resultP) = core::eval::applyClosureToActivationFrame(closure,af);
     }
-
-
 
 
 
@@ -346,6 +340,37 @@ extern "C" {
 //	ASSERT(xP!=NULL);
 //	ASSERT(yP!=NULL);
 	return ((*xP)==(*yP)) ? 1 : 0;
+    }
+
+
+
+    extern void copyArgs(core::T_sp* destP, int nargs, core::T_O* arg0, core::T_O* arg1, core::T_O* arg2, va_list args )
+    {_G();
+        switch (nargs) {
+        case 0:
+            return;
+        case 1:
+            destP[0] = gctools::smart_ptr<core::T_O>(arg0);
+            return;
+        case 2:
+            destP[0] = gctools::smart_ptr<core::T_O>(arg0);
+            destP[1] = gctools::smart_ptr<core::T_O>(arg1);
+        case 3:
+            destP[0] = gctools::smart_ptr<core::T_O>(arg0);
+            destP[1] = gctools::smart_ptr<core::T_O>(arg1);
+            destP[2] = gctools::smart_ptr<core::T_O>(arg2);
+            return;
+        default:
+            destP[0] = gctools::smart_ptr<core::T_O>(arg0);
+            destP[1] = gctools::smart_ptr<core::T_O>(arg1);
+            destP[2] = gctools::smart_ptr<core::T_O>(arg2);
+            int idx = 3;
+            while (idx <nargs ) {
+                destP[idx] = gctools::smart_ptr<core::T_O>(va_arg(args,core::T_O*));
+                ++idx;
+            }
+            return;
+        }
     }
 
     extern void sp_copyTsp(core::T_sp* destP, core::T_sp* sourceP)
@@ -622,38 +647,27 @@ extern "C"
 
 
 
-core::T_sp proto_makeCompiledFunction(fnTmvActivationFramesp funcPtr, char* sourceName, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char* sourceName, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
 {_G();
-    IMPLEMENT_MEF(BF("Handle new closures"));
-#if 0
-    core::Functoid* f = gctools::ClassAllocator<JITClosure>::allocateClass("compiled",funcPtr);
-    core::CompiledBody_sp cb = core::CompiledBody_O::create(f,_Nil<core::T_O>());
-    string fileNamePath = sourceName;
-    core::T_sp functionName = *functionNameP;
-    core::SourceFileInfo_sp sourceFileInfo = SourceFileInfo_O::getOrCreate(fileNamePath);
-    core::CompiledFunction_sp compiledFunction =
-	core::CompiledFunction_O::makeCompiledFunction(functionName,
-						       cb,
-						       *frameP,
-						       sourceFileInfo,
-						       0,
-						       0,
-						       kw::_sym_function);
-    core::CompiledBody_sp compiledBody = compiledFunction->getBody();
-    compiledBody->setCompiledFuncs(*compiledFuncsP);
+    // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
+    core::Str_sp sourceStr = core::Str_O::create(sourceName);
+    core::SourceFileInfo_mv sfi = core::af_sourceFileInfo(sourceStr);
+    int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();   // sfindex could be written into the Module global for debugging
+    core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,lineno,column);
+    core::FunctionClosure* closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP,spi,kw::_sym_function,funcPtr,_Nil<llvmo::Function_O>(),*frameP,*compiledFuncsP);
+    core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
     return compiledFunction;
-#endif
 };
 extern "C"
 {
-    void sp_makeCompiledFunction( core::T_sp* resultCompiledFunctionP, fnTmvActivationFramesp funcPtr, char* sourceName, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+    void sp_makeCompiledFunction( core::T_sp* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
     {
-	(*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr,sourceName,functionNameP,compiledFuncsP,frameP);
+	(*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr,sourceName,lineno,column,functionNameP,compiledFuncsP,frameP);
     }
 
-    void mv_makeCompiledFunction( core::T_mv* resultCompiledFunctionP, fnTmvActivationFramesp funcPtr, char* sourceName, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+    void mv_makeCompiledFunction( core::T_mv* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
     {
-	(*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr,sourceName,functionNameP,compiledFuncsP,frameP));
+	(*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr,sourceName,lineno,column,functionNameP,compiledFuncsP,frameP));
     }
 
 };
@@ -663,15 +677,16 @@ extern "C"
 extern "C"
 {
     void invokeLlvmFunction( core::T_mv* resultP,
-			     fnTmvActivationFramesp fptr,
+			     fnLispCallingConvention fptr,
 			     core::ActivationFrame_sp* frameP)
     {_G();
-	core::ActivationFrame_sp closedEnv = _Nil<ActivationFrame_O>();
+	core::T_sp closedEnv = _Nil<T_O>();
 	ActivationFrame_sp frame = (*frameP);
 	if ( frame.nilp() ) {
-	    fptr(resultP,&closedEnv,0,NULL);
+	    fptr(resultP,&closedEnv,0,NULL,NULL,NULL,NULL);
 	} else {
-	    fptr(resultP,&closedEnv,frame->length(),frame->argArray());
+            DEPRECIATED();
+	    //fptr(resultP,closedEnv,frame->length(),frame->argArray());
 	}
 	ASSERTNOTNULL(*resultP);
     };
@@ -744,7 +759,7 @@ core::T_sp proto_lexicalValueRead( int depth, int index, core::ActivationFrame_s
     LOG(BF("(*renvP) --> %s") % (*renvP)->__repr__() );
     ActivationFrame_sp renv = *renvP;
     ASSERTF(renv,BF("lexicalValueRead is NULL depth[%d] index[%d] activationFrame: %s") % depth % index % _rep_((*renvP)));
-    core::T_sp res = renv->lookupValue(depth,index);
+    core::T_sp res = core::Environment_O::clasp_lookupValue(renv,depth,index); //renv->lookupValue(depth,index);
     return res;
 }
 
@@ -766,14 +781,14 @@ extern "C"
 extern "C"
 {
 
-    extern void makeValueFrame(core::ActivationFrame_sp* resultP, int numargs, int id)
+    extern void makeValueFrame(core::T_sp* resultActivationFrameP, int numargs, int id)
     // was ActivationFrame_sp
     {_G();
-	ASSERT(resultP!=NULL);
+	ASSERT(resultActivationFrameP!=NULL);
 	core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs,_Nil<core::ActivationFrame_O>()));
 	valueFrame->setEnvironmentId(id);
-	(*resultP) = valueFrame;
-	ASSERTNOTNULL(*resultP);
+	(*resultActivationFrameP) = valueFrame;
+        printf("%s:%d makeValueFrame address &result->%p (&result)->px->%p valueFrame->%p\n", __FILE__, __LINE__, resultActivationFrameP, resultActivationFrameP->px_ref(), valueFrame.px_ref() );
     }
 
     extern void makeTagbodyFrame(core::ActivationFrame_sp* resultP)
@@ -797,11 +812,16 @@ extern "C"
     }
 
 
-    extern void setParentOfActivationFrame( core::ActivationFrame_sp* resultP, core::ActivationFrame_sp* parentP)
+    extern void setParentOfActivationFrame( core::T_sp* resultP, core::T_sp* parentP)
     {
-	ASSERT(resultP!=NULL);
-	ASSERT(parentP!=NULL);
-	(*resultP)->setParentFrame(*parentP);
+        if ( resultP->framep() ) {
+            frame::SetParentFrame(*resultP,*parentP);
+            return;
+        } else if (ActivationFrame_sp af = (*resultP).as<ActivationFrame_O>() ) {
+            af->setParentFrame(*parentP);
+            return;
+        }
+        SIMPLE_ERROR(BF("Destination was not ActivationFrame"));
     }
 
 
@@ -1276,17 +1296,17 @@ extern "C"
 	printf("%s:%d Insert breakpoint here if you want to inspect af\n", __FILE__,__LINE__);
     }
 
-    void debugInspectObject_sp(core::T_sp* objP)
+    void debugInspectT_sp(core::T_sp* objP)
     {_G();
 	core::T_sp obj = (*objP);
-	printf("debugInspectObject@%p: %s\n", (void*)objP, _rep_(obj).c_str() );
+	printf("debugInspectObject@%p  obj.px_ref()=%p: %s\n", (void*)objP, (*objP).px_ref(), _rep_(obj).c_str() );
 	printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__,__LINE__);
     }
 
-    void debugInspectObject_mv(core::T_mv* objP)
+    void debugInspectT_mv(core::T_mv* objP)
     {_G();
-	core::T_mv obj = (*objP);
-	printf("debugInspectObject@%p: %s\n", (void*)objP, _rep_(obj).c_str() );
+	printf("debugInspectT_mv@%p\n", (void*)objP);
+        printf("   debugInspectT_mv  obj= %s\n", _rep_(*objP).c_str() );
 	printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__,__LINE__);
     }
 
@@ -1508,7 +1528,7 @@ extern "C"
 
     void throwDynamicGo(int depth, int index, core::ActivationFrame_sp* afP)
     {_G();
-	T_sp tagbodyId = (*afP)->lookupTagbodyId(depth,index);
+	T_sp tagbodyId = core::Environment_O::clasp_lookupTagbodyId((*afP),depth,index);
         int frame = _lisp->exceptionStack().findKey(TagbodyFrame,tagbodyId);
 	core::DynamicGo dgo(frame,index);
 #ifdef DEBUG_FLOW_CONTROL

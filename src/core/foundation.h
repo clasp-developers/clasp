@@ -201,7 +201,7 @@ typedef std::size_t class_id;
 #define SYMBOL_SC_(p,x)
 
     /*! Use this here in the header to declare an extern function if you want */
-#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
+//#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 #define DEFUN(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
@@ -209,7 +209,8 @@ typedef std::size_t class_id;
 #define Defun(x) core::af_def(CurrentPkg,#x,&af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, __FILE__, __LINE__); 
 #define Defun_maker(pkg,x) core::af_def(pkg,"make-" #x,&(x ## _O::make), ARGS_##x##_O_make, DECL_##x##_O_make, DOCS_##x##_O_make);
 
-#define ClDefun(x) core::af_def(ClPkg,#x,&cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__); 
+#define ClDefun(x) core::af_def(ClPkg,#x,&cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__);
+#define CompDefun(x) core::af_def(CompPkg,#x,&comp_##x, ARGS_comp_##x, DECL_comp_##x, DOCS_comp_##x, __FILE__, __LINE__); 
 #define ExtDefun(x) core::af_def(ExtPkg,#x,&ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__); 
 #define ClosDefun(x) core::af_def(ClosPkg,#x,&clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__); 
 #define CoreDefun(x) core::af_def(CorePkg,#x,&core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__); 
@@ -236,7 +237,7 @@ typedef std::size_t class_id;
     _lisp->add_accessor_pair(_sym_##x,_sym_setf_##x);
 #endif
 
-#define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
+//#define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
 #define DEFGENERIC(pkg,x) defgeneric(pkg,#x,&gf_##x,ARGS_gf_##x,DOCS_gf_##x,_lisp); 
@@ -482,8 +483,11 @@ namespace boost
 namespace core
 {
     class T_O;
+    typedef T_O FIXNUM;
+    typedef T_O STACK_FRAME;
     class Cons_O;
     class Pointer_O;
+    class Vector_O;
     class VectorObjects_O;
     class LoadTimeValues_O;
     /* AMS pool classes */
@@ -571,7 +575,7 @@ namespace reg {
             return id->name();
         }
 
-        std::type_info const* get_type_info() const { return this->id;};
+        std::type_info const* get_type_info() const {return this->id;};
     private:
         std::type_info const* id;
     };
@@ -584,15 +588,11 @@ namespace reg {
         static class_id const id;
     };
     template <class T>
-    class_id const registered_class<T>::id = allocate_class_id( typeid(T));
+    class_id const registered_class<T>::id = allocate_class_id(typeid(T));
     template <class T>
     struct registered_class<T const>
         : registered_class<T>
     {};
-
-
-
-
 };
 
 #define BF boost::format
@@ -857,7 +857,7 @@ namespace core {
     typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
     typedef void (*ExposeCandoFunction)(Lisp_sp);
     typedef void (*ExposePythonFunction)(Lisp_sp);
-    typedef T_mv (*SpecialFormCallback)(Cons_sp,Environment_sp);
+    typedef T_mv (*SpecialFormCallback)(Cons_sp,T_sp);
     typedef void (*MakePackageCallback)(string const& packageName,Lisp_sp);
     typedef void (*ExportSymbolCallback)(Symbol_sp symbol,Lisp_sp);
 
@@ -1055,6 +1055,8 @@ namespace core
     T_sp lisp_ArgArrayToCons(int nargs, ArgArray args);
     bool lisp_fixnumP(core::T_sp obj);
     Fixnum lisp_asFixnum(core::T_sp obj);
+    /*! Create a SourcePosInfo object for a C++ function */
+    SourcePosInfo_sp lisp_createSourcePosInfo(const string& sourceFile, int lineno);
 
     bool lisp_characterP(core::T_sp obj);
     bool lisp_BuiltInClassesInitialized();
@@ -1181,6 +1183,8 @@ namespace core
     Symbol_sp lisp_intern(const string& name);
     Symbol_sp lisp_intern(const string& symName,const string& pkgName);
     T_sp lisp_VectorObjectsFromMultipleValues(T_mv values);
+    /*! Search the sequence SEQ for the object OBJ and return its index and true if found - otherwise false and IDX is undef */
+    bool lisp_search(T_sp seq, T_sp obj, int& idx);
     string symbol_fullName(Symbol_sp s);
     void lisp_logException(const char* file, const char* fn, int line, const char* structure, T_sp condition );
 //    bool lisp_isGlobalInitializationAllowed(Lisp_sp lisp);
@@ -1203,7 +1207,7 @@ namespace core
     class Functoid 
     {
         FRIEND_GC_SCANNER();
-    public:
+    public:     
 	virtual string describe() const {return "Functoid - subclass must implement describe()";};
         void operator()( core::T_mv* lcc_resultP, int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, ... ) {
             va_list arglist;
@@ -1237,10 +1241,11 @@ namespace core
 
     class Closure : public Functoid
     {
-    private:
-        // TODO-VARARGS:   There needs to be an environment saved in here
     public:
-	Closure(T_sp name) : Functoid(name) {};
+        T_sp    closedEnvironment;
+    public:
+	Closure(T_sp name, T_sp env) : Functoid(name)
+                                     , closedEnvironment(env) {};
 	virtual ~Closure() {};
     public:
 	virtual string describe() const {return "Closure";};

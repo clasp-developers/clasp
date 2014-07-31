@@ -451,14 +451,16 @@ namespace core
 //		nilstr->__write__(stream);
 	    } else if ( x.unboundp() ) {
 		stream->writeStr("unbound");
-	    }
-	    break;
-	case gctools::smart_ptr<T_O>::character_tag:
-	    write_character(stream,x);
+	    } else if ( x.characterp() ) {
+                write_character(stream,x);
+            }
 	    break;
 	case gctools::smart_ptr<T_O>::fixnum_tag:
 	    write_fixnum(stream,x);
 	    break;
+        case gctools::smart_ptr<T_O>::frame_tag:
+            stream->writeStr("write_ugly_object(frame)");
+            break;
 	default:
 	    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
 	    break;

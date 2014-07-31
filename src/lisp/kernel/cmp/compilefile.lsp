@@ -87,7 +87,8 @@
     (describe-form form))
   (let ((fn (compile-thunk "repl" form nil)))
     (with-ltv-function-codegen (result ltv-env)
-      (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)))))
+      (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)
+                     ))))
 
 (defun compiler-macro-function (sym) nil)
 
@@ -195,8 +196,8 @@ and the pathname of the source file - this will also be used as the module initi
                     (with-dbg-file-descriptor (nil *compile-file-truename*)
                       ;;	    (let ((*generate-load-time-values* t))
                       (with-load-time-value-unit (ltv-init-fn)
-                        (do ((line-number (stream-line-number sin)
-                                          (stream-line-number sin))
+                        (do ((line-number (stream-linenumber sin)
+                                          (stream-linenumber sin))
                              (column (stream-column sin)
                                      (stream-column sin))
                              (form (progn (let ((rd (read sin nil eof-value))) rd))

@@ -10,6 +10,7 @@ namespace core
 {
     class SingleDispatchMethod_O : public T_O
     {
+        friend class SingleDispatchGenericFunctionClosure;
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,SingleDispatchMethod_O,"SingleDispatchMethod");
 	DECLARE_INIT();

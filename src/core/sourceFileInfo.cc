@@ -512,5 +512,14 @@ namespace core
         return Values(_Nil<SourceFileInfo_O>());
     }
 
+    SourcePosInfo_sp SourceManager_O::lookupSourcePosInfo(T_sp key)
+    {
+        if ( this->availablep() ) {
+            SourcePosInfo_sp it = this->_SourcePosInfo->gethash(key,_Nil<SourcePosInfo_O>()).as<SourcePosInfo_O>();
+            return it;
+        }
+        return _Nil<SourcePosInfo_O>();
+    }
+
 
 };

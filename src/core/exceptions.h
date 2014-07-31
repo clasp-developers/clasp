@@ -45,6 +45,7 @@ struct _TRACE {
 #define NO_INITIALIZERS_ERROR(_type_) {lisp_error_condition(__FUNCTION__,__FILE__,__LINE__,_type_,_Nil<core::Cons_O>()); THROW_NEVER_REACH(); }
 #define ERROR(_type_,_initializers_) {lisp_error_condition(__FUNCTION__,__FILE__,__LINE__,_type_,_initializers_); THROW_NEVER_REACH();}
 #define SIMPLE_ERROR(_boost_fmt_) {core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); THROW_NEVER_REACH();}
+#define NOT_ENVIRONMENT_ERROR(e) SIMPLE_ERROR(BF("Not an environment"))
 #define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */

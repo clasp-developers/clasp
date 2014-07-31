@@ -1177,8 +1177,6 @@ T_sp brcl_close(T_sp strm, bool abort)
     void Stream_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<Stream_O>()
-	    .def("core:stream-lineNumber",&Stream_O::lineNumber)
-	    .def("core:stream-column",&Stream_O::column)
 	    ;
     }
 
@@ -1535,18 +1533,6 @@ T_sp brcl_close(T_sp strm, bool abort)
 
 
 
-#if 0
-    T_sp FileOutStream_O::__init__(Function_sp exec, Cons_sp args, Environment_sp environ)
-    {
-	IMPLEMENT_ME();
-#if 0
-	this->_ActiveFilePath = translate::from_object<string>::convert(environ->lookup(CorePkg,"fileName"));
-	this->_Stream.open(this->_FileName.c_str(),std::ios_base::app|ios_base::out|std::ios_base::ate);
-    	// your stuff here
-#endif
-	return _Nil<T_O>();
-    }
-#endif
     void	FileOutStream_O::initialize()
     {
 	this->Base::initialize();
@@ -1628,13 +1614,6 @@ T_sp brcl_close(T_sp strm, bool abort)
 	return fin;
     }
 
-#if 0
-    T_sp FileInCompressedStream_O::__init__(Function_sp exec, Cons_sp args, Environment_sp environ, lisp)
-    {
-	IMPLEMENT_ME();
-	return _Nil<T_O>();
-    }
-#endif
     void FileInCompressedStream_O::clearInput()
     {
 	this->_Unput.clear();
@@ -1778,12 +1757,6 @@ T_sp brcl_close(T_sp strm, bool abort)
     }
 
 
-
-    T_sp FileOutCompressedStream_O::__init__(Function_sp exec, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
-    {
-	IMPLEMENT_ME();
-	return _Nil<T_O>();
-    }
 
 
     void FileOutCompressedStream_O::flush()
@@ -2069,12 +2042,6 @@ T_sp brcl_close(T_sp strm, bool abort)
     }	
 
 
-
-    T_sp StringOutStream_O::__init__(Function_sp exec, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
-    {
-	// your stuff here
-	return _Nil<T_O>();
-    }
 
 
     void	StringOutStream_O::initialize()
@@ -3385,6 +3352,41 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 	return seq;
     }
 
+
+
+
+    
+    
+#define ARGS_af_streamLinenumber "(stream)"
+#define DECL_af_streamLinenumber ""
+#define DOCS_af_streamLinenumber "streamLinenumber"
+    int af_streamLinenumber(T_sp tstream)
+    {
+        tstream = coerce::inputStreamDesignator(tstream);
+        if ( Stream_sp stream = tstream.as<Stream_O>() ) {
+            return stream->lineNumber();
+        }
+	IMPLEMENT_MEF(BF("Implement streamLinenumber for stream object: %s") % _rep_(tstream));
+    };
+ 
+#define ARGS_af_streamColumn "(stream)"
+#define DECL_af_streamColumn ""
+#define DOCS_af_streamColumn "streamColumn"
+    int af_streamColumn(T_sp tstream)
+    {
+        tstream = coerce::inputStreamDesignator(tstream);
+        if ( Stream_sp stream = tstream.as<Stream_O>() ) {
+            return stream->column();
+        }
+	IMPLEMENT_MEF(BF("Implement streamColumn for stream object: %s") % _rep_(tstream));
+    };
+
+
+
+
+
+
+
     void initialize_lispStream()
     {
 	SYMBOL_EXPORT_SC_(ClPkg,filePosition);
@@ -3437,6 +3439,10 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
         ClDefun(streamp);
         SYMBOL_EXPORT_SC_(ClPkg,close);
         ClDefun(close);
+        SYMBOL_EXPORT_SC_(CorePkg,streamLinenumber);
+        Defun(streamLinenumber);
+        SYMBOL_EXPORT_SC_(CorePkg,streamColumn);
+        Defun(streamColumn);
     }
 
 

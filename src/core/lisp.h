@@ -241,6 +241,8 @@ namespace core
             /*! This is needed by the compiler */
             ActivationFrame_sp          _ActivationFrameNil;
 
+            /*! SingleDispatchGenericFunction cache */
+            Cache*                      _SingleDispatchMethodCachePtr;
 #if CLOS
 	    /*! Generic functions method cache */
 	    Cache* 			_MethodCachePtr;
@@ -277,11 +279,9 @@ namespace core
 	friend class CoreExposer;
 	friend class ConditionHandlerManager;	
 	friend class BootStrapCoreSymbolMap;
-	friend T_sp sp_eval_when( Cons_sp args, Environment_sp env );
+	friend T_sp sp_eval_when( Cons_sp args, T_sp env );
 	template <class oclass> friend void define_base_class(Class_sp co, Class_sp cob, uint& classesUpdated );
 	template <class oclass> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class );
-	friend T_mv af_candoTrace( Cons_sp whole, Environment_sp env);
-	friend T_mv af_candoUntrace( Cons_sp whole, Environment_sp env );
 	friend T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value);
 	friend T_mv af_get_sysprop(T_sp key, T_sp area);
 
@@ -291,7 +291,7 @@ namespace core
     public:
 	static void initializeGlobals(Lisp_sp lisp);
 
-	friend T_sp prim_getForm(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp);
+//	friend T_sp prim_getForm(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp);
 	template <class oclass> friend BuiltInClass_sp hand_initialize_class(uint& classesHandInitialized, Lisp_sp prog,BuiltInClass_sp c);
     public:
 	static 	void lisp_initSymbols(Lisp_sp lisp);
@@ -300,6 +300,7 @@ namespace core
 	static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 	static const int MaxClosSlots; //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
 	static const int ClosCacheSize;
+        static const int SingleDispatchMethodCacheSize;
     public:
 	void initialize();
 #if defined(XML_ARCHIVE)
@@ -420,7 +421,7 @@ namespace core
 	LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string& name);
     public:
     /*! Keep track of every source file that is read by the system */
-	SourceFileInfo_sp getSourceFileInfo(const string& fileName);
+//	SourceFileInfo_sp getSourceFileInfo(const string& fileName);
     /*! Maintain a database of every source file read by the system */
 	void setSourceFileInfo(const string& fileName, SourceFileInfo_sp fileInfo);
 
@@ -451,6 +452,7 @@ namespace core
 	LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne;};
 #endif // ifdef BRCL_LONG_FLOAT
     public:
+        Cache* singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
 	Cache* methodCachePtr() const { return this->_Roots._MethodCachePtr;};
 	Cache* slotCachePtr() const { return this->_Roots._SlotCachePtr;};
 

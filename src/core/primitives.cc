@@ -1112,7 +1112,7 @@ namespace core
 		++idx;
 	    }
 	    LOG(BF("About to evaluate map op[%s] on arguments[%s]") % _rep_(op) % _rep_(frame) );
-            T_sp res = eval::apply(op,frame);
+            T_sp res = eval::applyToActivationFrame(op,frame);
 	}
     RETURN:
 	return(Values(oCar(lists)));
@@ -1151,7 +1151,7 @@ namespace core
 	    }
 	    LOG(BF("About to evaluate map op[%s] on arguments[%s]")
 		% _rep_(op) % _rep_(frame) );
-            T_sp res = eval::apply(op,frame);
+            T_sp res = eval::applyToActivationFrame(op,frame);
 	    Cons_sp one = Cons_O::create(res);
 	    curResult->setCdr(one);
 	    curResult = one;
@@ -1233,7 +1233,7 @@ namespace core
 #define ARGS_macro_backquote "(form env)"
 #define DECL_macro_backquote ""    
 #define DOCS_macro_backquote "backquote"
-    T_mv macro_backquote(Cons_sp form, Environment_sp env)
+    T_mv macro_backquote(Cons_sp form, T_sp env)
     {_G();
 	T_sp arg = oCadr(form);
 	LOG(BF("Expanding backquote going in: %s") % _rep_(arg) );
@@ -1799,7 +1799,7 @@ void initialize_primitives()
 	SYMBOL_SC_(CorePkg,gdbInspect);
 	Defun(gdbInspect);
 
-	defmacro(CorePkg,"backquote",&macro_backquote,ARGS_macro_backquote,DECL_macro_backquote,DOCS_macro_backquote);
+	defmacro(CorePkg,"backquote",&macro_backquote,ARGS_macro_backquote,DECL_macro_backquote,DOCS_macro_backquote,__FILE__,__LINE__);
 
 	SYMBOL_EXPORT_SC_(ClPkg,gensym);
 	Defun(gensym);

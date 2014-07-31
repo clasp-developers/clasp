@@ -2552,7 +2552,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     void DoubleFloat_O::exposeCando(Lisp_sp lisp)
     {
 	class_<DoubleFloat_O>()
-	    .def("exp",&DoubleFloat_O::exp)
+//	    .def("exp",&DoubleFloat_O::exp)
 	    .def("core:isnan",&DoubleFloat_O::isnan)
 	    ;
 	SYMBOL_SC_(CorePkg,nan);

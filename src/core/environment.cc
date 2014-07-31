@@ -25,6 +25,26 @@ namespace core
 
     
     
+#define ARGS_af_updateValue "(env symbol value)"
+#define DECL_af_updateValue ""
+#define DOCS_af_updateValue "updateValue"
+#define FILE_af_updateValue __FILE__
+#define LINE_af_updateValue __LINE__
+    bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val)
+    {
+        if ( env.nilp() ) {
+            SIMPLE_ERROR(BF("Cannot update value of %s in nil lexical environment") % _rep_(sym));
+        } else if ( env.framep() ) {
+            return frame::UpdateValue(env,sym,val);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_updateValue(sym,val);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
+    };
+
+
+    
+    
 #define ARGS_af_countFunctionContainerEnvironments "(arg)"
 #define DECL_af_countFunctionContainerEnvironments ""
 #define DOCS_af_countFunctionContainerEnvironments "countFunctionContainerEnvironments"
@@ -39,10 +59,11 @@ namespace core
 #define ARGS_af_environmentActivationFrame "(env)"
 #define DECL_af_environmentActivationFrame ""
 #define DOCS_af_environmentActivationFrame "environmentActivationFrame"
-    T_sp af_environmentActivationFrame(Environment_sp env)
+    T_sp af_environmentActivationFrame(T_sp env)
     {_G();
 	if ( env.nilp() ) return env;
-	return env->getActivationFrame();
+        if ( env.framep() ) return env;
+	return env.as<Environment_O>()->getActivationFrame();
     };
 
 
@@ -80,10 +101,15 @@ namespace core
 
     
     
-    int Environment_O::nilCheck_countFunctionContainerEnvironments(Environment_sp env)
+    int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env)
     {_G();
 	if ( env.nilp() ) return 0;
-	return env->countFunctionContainerEnvironments();
+        if ( env.framep() ) {
+            frame::countFunctionContainerEnvironments(env);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->countFunctionContainerEnvironments();
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     };
 
 
@@ -92,28 +118,32 @@ namespace core
 #define ARGS_af_runtimeEnvironment "(env)"
 #define DECL_af_runtimeEnvironment ""
 #define DOCS_af_runtimeEnvironment "Return the RuntimeEnvironment or nil"
-    T_mv af_runtimeEnvironment(T_sp tenv)
+    T_sp af_runtimeEnvironment(T_sp tenv)
     {_G();
-	if ( tenv.nilp() ) return(Values(_Nil<Environment_O>()));
-	Environment_sp env = tenv.as_or_nil<Environment_O>();
-	return(Values(env->runtimeEnvironment()));
+	if ( tenv.nilp() ) return _Nil<Environment_O>();
+        if ( tenv.framep() ) return tenv;
+	if ( Environment_sp env = tenv.asOrNull<Environment_O>() ) {
+            return env->runtimeEnvironment();
+        }
+        SIMPLE_ERROR(BF("No runtime environment available for %s") % _rep_(tenv));
     };
 
 
     
     
-    
-    
 #define ARGS_af_environmentId "(env)"
 #define DECL_af_environmentId ""
 #define DOCS_af_environmentId "environmentId"
-    int af_environmentId(Environment_sp env)
+    int af_environmentId(Environment_sp tenv)
     {_G();
-	if ( env.nilp() )
+	if ( tenv.nilp() )
 	{
 	    return 0;	
 	}
-	return env->environmentId();
+        if ( Environment_sp env = tenv.asOrNull<Environment_O>() ) {
+            return env->environmentId();
+        }
+        return 0;
     };
 
 
@@ -134,10 +164,15 @@ namespace core
     }
 
 
-    ActivationFrame_sp Environment_O::nilCheck_getActivationFrame(Environment_sp tenv)
+    ActivationFrame_sp Environment_O::clasp_getActivationFrame(T_sp tenv)
     {_G();
 	if ( tenv.nilp() ) return(_Nil<ActivationFrame_O>());
-	return(tenv->getActivationFrame());
+        if ( tenv.framep() ) {
+            return tenv;
+        } else if ( Environment_sp env = tenv.asOrNull<Environment_O>() ) {
+            return(env->getActivationFrame());
+        }
+        NOT_ENVIRONMENT_ERROR(tenv);
     };
 
 
@@ -175,7 +210,7 @@ namespace core
 	SYMBOL_SC_(CorePkg,environmentActivationFrame);
 	Defun(environmentActivationFrame);
 	SYMBOL_SC_(CorePkg,currentVisibleEnvironment);
-	af_def(CorePkg,"currentVisibleEnvironment",&Environment_O::nilCheck_currentVisibleEnvironment);
+	af_def(CorePkg,"currentVisibleEnvironment",&Environment_O::clasp_currentVisibleEnvironment);
 	SYMBOL_SC_(CorePkg,runtimeEnvironment);
 	Defun(runtimeEnvironment);
 	SYMBOL_SC_(CorePkg,environmentList);
@@ -203,10 +238,15 @@ namespace core
 
 
 
-    Environment_sp Environment_O::nilCheck_currentVisibleEnvironment(Environment_sp env)
+    T_sp Environment_O::clasp_currentVisibleEnvironment(T_sp env)
     {_G();
 	if ( env.nilp() ) return(_Nil<Environment_O>());
-	return(env->currentVisibleEnvironment());
+        if ( env.framep() ) {
+            return env;
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return(eenv->currentVisibleEnvironment());
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     };
 
     Environment_sp Environment_O::currentVisibleEnvironment() const
@@ -223,23 +263,29 @@ namespace core
     }
 
 
-    void Environment_O::nilCheck_environmentStackFill(Environment_sp env, int level, stringstream& sout)
+    void Environment_O::clasp_environmentStackFill(T_sp env, int level, stringstream& sout)
     {
 	if ( env.nilp() )
 	{
 	    sout << "NIL";
 	    return;
 	}
-	env->_environmentStackFill(level,sout);
+        if ( env.framep() ) {
+            sout << "clasp_environmentStackFill of tagged_env" << std::endl;
+            return;
+        }
+        if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            eenv->_environmentStackFill(level,sout);
+            return;
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 
     void Environment_O::_environmentStackFill(int level, stringstream& sout)
     {_OF();
 	sout << this->summaryOfContents();
-	if ( this->getParentEnvironment().notnilp() )
-	{
-	    nilCheck_environmentStackFill(this->getParentEnvironment(),level+1,sout);
-	}
+        T_sp parent = this->getParentEnvironment();
+        clasp_environmentStackFill(parent,level+1,sout);
     }
 
     string Environment_O::environmentStackAsString()
@@ -250,16 +296,21 @@ namespace core
     }
 
 
-    Cons_sp Environment_O::nilCheck_gather_metadata(Environment_sp env, Symbol_sp key)
+    Cons_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key)
     {
 	if ( env.nilp() ) return _Nil<Cons_O>();
-	return env->gather_metadata(key);
+        else if ( env.framep() ) {
+            SIMPLE_ERROR(BF("Illegal to call clasp_gather_metadata on tagged_frame"));
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->gather_metadata(key);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 
     Cons_sp Environment_O::gather_metadata(Symbol_sp key) const
     {_G();
 	if ( this->getParentEnvironment().nilp() ) return _Nil<Cons_O>();
-	return nilCheck_gather_metadata(this->getParentEnvironment(),key);
+	return clasp_gather_metadata(this->getParentEnvironment(),key);
     }
 
 
@@ -281,23 +332,46 @@ namespace core
 
 
 
-
-
-
-    T_sp Environment_O::lookupValue(int depth, int index ) const
-    {_G();
-	if ( depth == 0  )
-	{
-	    SIMPLE_ERROR(BF("Could not find value"));
-	}
-	if ( this->getParentEnvironment().nilp() ) 
-	{
-	    SIMPLE_ERROR(BF("Could not find value"));
-	}
-	--depth;
-	return this->getParentEnvironment()->lookupValue(depth,index);
+    T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index)
+    {
+        if ( env.nilp() ) {
+            SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
+        } else if ( env.framep() ) {
+            if ( depth == 0 ) {
+                return frame::Lookup(env,index);
+            }
+            --depth;
+            return clasp_lookupValue(frame::ParentFrame(env),depth,index);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_lookupValue(depth,index);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 
+
+
+    T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index)
+    {
+        if ( env.nilp() ) {
+            SIMPLE_ERROR(BF("Could find lookupTagbodyId after encountering top level environment"));
+        } else if ( env.framep() ) {
+            if ( depth == 0 ) {
+                return frame::LookupTagbodyId(env,index);
+            }
+            --depth;
+            return clasp_lookupTagbodyId(frame::ParentFrame(env),depth,index);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_lookupTagbodyId(depth,index);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
+    }
+
+
+
+    T_sp Environment_O::_lookupValue(int depth, int index ) const
+    {_G();
+        SUBIMP();
+    }
 
 
     string Environment_O::__repr__() const
@@ -322,13 +396,13 @@ namespace core
 
 
 
-    bool Environment_O::updateValue(Symbol_sp sym, T_sp obj)
+    bool Environment_O::_updateValue(Symbol_sp sym, T_sp obj)
     {_G();
 	if ( this->getParentEnvironment().nilp() )
 	{
 	    SIMPLE_ERROR(BF("Could not update local symbol(%s) because it was not defined") % _rep_(sym) );
 	}
-	return this->getParentEnvironment()->updateValue(sym,obj);
+	return this->getParentEnvironment()->_updateValue(sym,obj);
     }
 
 
@@ -349,7 +423,7 @@ namespace core
     }
 
 
-    bool Environment_O::nilCheck_findValue(Environment_sp env, Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value)
+    bool Environment_O::clasp_findValue(T_sp env, Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value)
     {_G();
 	if ( env.nilp() )
 	{
@@ -357,32 +431,53 @@ namespace core
 	    index = -1;
 	    return false;
 	}
-	return env->_findValue(sym,depth,index,special,value);
+        if ( env.framep() ) {
+            return frame::findValue(env,sym,depth,index,special,value);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_findValue(sym,depth,index,special,value);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
+    }
+
+
+    bool Environment_O::clasp_lexicalSpecialP(T_sp env, Symbol_sp sym)
+    {_G();
+	if ( env.nilp() ) { return false; 
+        } else if ( env.framep() ) {
+            return clasp_lexicalSpecialP(frame::ParentFrame(env),sym);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->lexicalSpecialP(sym);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 
 
     bool Environment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value) const
     {_G();
-	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
-	return nilCheck_findValue(parent,sym,depth,index,special,value);
+	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	return clasp_findValue(parent,sym,depth,index,special,value);
     }
 
 
-    bool Environment_O::nilCheck_findFunction(Environment_sp env, T_sp functionName, int& depth, int& index, Function_sp& func)
+    bool Environment_O::clasp_findFunction(T_sp env, T_sp functionName, int& depth, int& index, Function_sp& func)
     {
 	if ( env.nilp() ) 
 	{
 	    depth = -1;
 	    index = -1;
 	    return false;
-	}
-	return env->_findFunction(functionName,depth,index,func);
+	} else if ( env.framep() ) {
+            return frame::findFunction(env,functionName,depth,index,func);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_findFunction(functionName,depth,index,func);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 
 
     bool Environment_O::_findFunction(T_sp functionName, int& depth, int& index, Function_sp& func) const
     {_G();
-	return nilCheck_findFunction(this->getParentEnvironment(),functionName,depth,index,func);
+	return clasp_findFunction(this->getParentEnvironment(),functionName,depth,index,func);
     }
 
 
@@ -395,7 +490,7 @@ namespace core
 
 
 
-    bool Environment_O::nilCheck_findMacro(Environment_sp env, Symbol_sp sym, int& depth, int& index, Function_sp& func)
+    bool Environment_O::clasp_findMacro(T_sp env, Symbol_sp sym, int& depth, int& index, Function_sp& func)
     {
 	if ( env.nilp() )
 	{
@@ -404,13 +499,18 @@ namespace core
 	    index = -1;
 //	    func = sym->symbolFunction();
 	    return false;
-	}
-	return env->_findMacro(sym,depth,index,func);
+	} else if (env.framep()) {
+            return clasp_findMacro(frame::ParentFrame(env),sym,depth,index,func);
+        }
+        if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_findMacro(sym,depth,index,func);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 
     bool Environment_O::_findMacro(Symbol_sp sym, int& depth, int& index, Function_sp& func) const
     {_G();
-	return nilCheck_findMacro(this->getParentEnvironment(),sym,depth,index,func);
+	return clasp_findMacro(this->getParentEnvironment(),sym,depth,index,func);
     }
 
 
@@ -422,7 +522,7 @@ namespace core
     }
 
 
-    bool Environment_O::nilCheck_findSymbolMacro(Environment_sp env, Symbol_sp sym, int& depth, int& index, bool& shadowed, Function_sp& func)
+    bool Environment_O::clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int& depth, int& index, bool& shadowed, Function_sp& func)
     {_G();
 	if ( env.nilp() )
 	{
@@ -430,13 +530,17 @@ namespace core
 	    index = -1;
 	    shadowed = false;
 	    return false;
-	}
-	return env->_findSymbolMacro(sym,depth,index,shadowed,func);
+	} else if (env.framep()) {
+            return clasp_findSymbolMacro(frame::ParentFrame(env),sym,depth,index,shadowed,func);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_findSymbolMacro(sym,depth,index,shadowed,func);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 
     bool Environment_O::_findSymbolMacro(Symbol_sp sym, int& depth, int& index, bool& shadowed, Function_sp& func) const
     {_G();
-	return nilCheck_findSymbolMacro(this->getParentEnvironment(),sym,depth,index,shadowed,func);
+	return clasp_findSymbolMacro(this->getParentEnvironment(),sym,depth,index,shadowed,func);
     }
 
 
@@ -452,8 +556,7 @@ namespace core
 
     bool Environment_O::lexicalSpecialP(Symbol_sp sym) const
     {_G();
-	if (this->getParentEnvironment().nilp() ) return false;
-	return this->getParentEnvironment()->lexicalSpecialP(sym);
+        return clasp_lexicalSpecialP(this->getParentEnvironment(),sym);
     }
 
 
@@ -532,15 +635,20 @@ namespace core
 	return this->getParentEnvironment()->getBlockSymbolFrame(sym);
     }
 
-    bool Environment_O::nilCheck_findTag(Environment_sp env, Symbol_sp sym, int& depth, int& index)
+    bool Environment_O::clasp_findTag(T_sp env, Symbol_sp sym, int& depth, int& index)
     {
 	if ( env.nilp() ) return false;
-	return env->_findTag(sym,depth,index);
+        if ( env.framep() ) {
+            return frame::findTag(env,sym,depth,index);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_findTag(sym,depth,index);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 
     bool Environment_O::_findTag(Symbol_sp sym, int& depth, int& index) const
     {_G();
-	return nilCheck_findTag(this->getParentEnvironment(),sym,depth,index);
+	return clasp_findTag(this->getParentEnvironment(),sym,depth,index);
     }
 
 
@@ -553,7 +661,7 @@ namespace core
 
     int Environment_O::countFunctionContainerEnvironments() const
     {
-	return nilCheck_countFunctionContainerEnvironments(this->getParentEnvironment());
+	return clasp_countFunctionContainerEnvironments(this->getParentEnvironment());
     }
 
 
@@ -591,7 +699,7 @@ namespace core
 
 
 
-    string Environment_O::nilCheck_summaryOfContents(Environment_sp env)
+    string Environment_O::clasp_summaryOfContents(T_sp env)
     {
 	int tab = _sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>()->get();
 	stringstream ss;
@@ -599,8 +707,12 @@ namespace core
 	{
 	    ss << string(tab,' ')<<"#<Environment nil>" << std::endl;
 	    return ss.str();
-	}
-	return env->summaryOfContents();
+	} if ( env.framep() ) {
+            return frame::SummaryOfContents(env);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->summaryOfContents();
+        }
+        NOT_ENVIRONMENT_ERROR(env);
     }
 	
 
@@ -615,7 +727,7 @@ namespace core
 
 
 
-
+#if 0
     /*! If the value is lexical return (values val T).
       If the value is locally special return (values T nil).
       If the variable is not found return (values nil nil) */
@@ -631,16 +743,18 @@ namespace core
 	}
 	return(Values(value,_lisp->_true()));
     }
+#endif
 
+#if 0
     T_mv Environment_O::variable_lookup(const string& package, const string& symStr) const
     {_G();
 	// TODO: Ditch this function - we shouldn't lookup symbols like this
 	Symbol_sp sym = _lisp->internWithPackageName(package,symStr);
 	return this->variable_lookup(sym);
     }
+#endif
 
-
-
+#if 0
     Function_sp Environment_O::function_lookup(T_sp functionName)
     {_G();
 	int depth, index;
@@ -651,7 +765,7 @@ namespace core
 	}
 	return _Nil<Function_O>();
     }
-
+#endif
 
 
 
@@ -753,7 +867,7 @@ namespace core
 	Cons_sp parentGathered = _Nil<Cons_O>();
 	if ( this->getParentEnvironment().notnilp() )
 	{
-	    parentGathered = nilCheck_gather_metadata(this->getParentEnvironment(),key);
+	    parentGathered = clasp_gather_metadata(this->getParentEnvironment(),key);
 	}
 	Cons_sp keyValue = this->_Metadata->find(key);
 	if ( keyValue.notnilp() )
@@ -832,29 +946,29 @@ namespace core
 
     bool RuntimeVisibleEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index ) const
     {_G();
-	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
+	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
         ++depth;
-	return nilCheck_findTag(parent,sym,depth,index);
+	return clasp_findTag(parent,sym,depth,index);
     }
 
 
 
     bool RuntimeVisibleEnvironment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value) const
     {_G();
-	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
+	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	if ( parent.nilp() ) return false;
 	++depth;
-	return nilCheck_findValue(parent,sym,depth,index,special,value);
+	return clasp_findValue(parent,sym,depth,index,special,value);
     }
 
 
     bool RuntimeVisibleEnvironment_O::_findFunction(T_sp functionName, int& depth, int& index, Function_sp& func) const
     {
 //	if (this -> isNil()) return false;
-	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
+	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	LOG(BF("Moving down a level"));
 	++depth;
-	return nilCheck_findFunction(parent,functionName,depth,index,func);
+	return clasp_findFunction(parent,functionName,depth,index,func);
     }
 
 
@@ -889,19 +1003,19 @@ namespace core
     }
 
 
-    T_sp ValueEnvironment_O::lookupValue(int depth, int index ) const
+    T_sp ValueEnvironment_O::_lookupValue(int depth, int index ) const
     {_G();
 	if ( depth == 0  )
 	{
 	    return this->_ActivationFrame->entry(index);
 	}
-	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
+	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	if ( parent.nilp() ) 
 	{
 	    SIMPLE_ERROR(BF("Ran out of parent environments - could not find value"));
 	}
 	--depth;
-	return parent->lookupValue(depth,index);
+	return Environment_O::clasp_lookupValue(parent,depth,index);
     }
 
 
@@ -995,27 +1109,27 @@ namespace core
 
 
 
-    ValueEnvironment_sp ValueEnvironment_O::createForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent)
+    ValueEnvironment_sp ValueEnvironment_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent)
     {_G();
 	ValueEnvironment_sp env(ValueEnvironment_O::create());
 	env->setupForLambdaListHandler(llh,parent);
 	return env;
     }
 
-    ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int numberOfArguments, Environment_sp parent)
+    ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int numberOfArguments, T_sp parent)
     {_G();
 	ValueEnvironment_sp env(ValueEnvironment_O::create());
 	env->setupParent(parent);
-	env->_ActivationFrame = ValueFrame_O::create(numberOfArguments,nilCheck_getActivationFrame(nilCheck_currentVisibleEnvironment(parent)));
+	env->_ActivationFrame = ValueFrame_O::create(numberOfArguments,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
 	return env;
     }
 
 
-    ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(Cons_sp specials, Environment_sp parent)
+    ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(Cons_sp specials, T_sp parent)
     {_G();
 	ValueEnvironment_sp env(ValueEnvironment_O::create());
 	env->setupParent(parent);
-	env->_ActivationFrame = ValueFrame_O::create(0,nilCheck_getActivationFrame(nilCheck_currentVisibleEnvironment(parent)));
+	env->_ActivationFrame = ValueFrame_O::create(0,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
 	for ( Cons_sp cur=specials; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    env->defineSpecialBinding(oCar(cur).as<Symbol_O>());
@@ -1044,7 +1158,7 @@ namespace core
 		this->defineSpecialBinding(sym);
 	    }
 	}
-	this->_ActivationFrame = ValueFrame_O::create(numberOfLexicals,nilCheck_getActivationFrame(nilCheck_currentVisibleEnvironment(parent)));
+	this->_ActivationFrame = ValueFrame_O::create(numberOfLexicals,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
     }
 
 
@@ -1082,7 +1196,7 @@ namespace core
       If the symbol is lexical and was updated return true.
       If the symbol is locally special then don't update it (caller is responsible for doing that) and return false.
     */
-    bool ValueEnvironment_O::updateValue(Symbol_sp sym, T_sp obj)
+    bool ValueEnvironment_O::_updateValue(Symbol_sp sym, T_sp obj)
     {_G();
 	Cons_sp it = this->_SymbolIndex->find(sym);
 	if ( it.nilp() )
@@ -1092,7 +1206,7 @@ namespace core
 	    {
 		SIMPLE_ERROR(BF("Could not update local symbol(%s) because it was not defined") % _rep_(sym) );
 	    }
-	    return nilCheck_currentVisibleEnvironment(parent)->updateValue(sym,obj);
+	    return af_updateValue(clasp_currentVisibleEnvironment(parent),sym,obj);
 	}
         int ivalue = oCdr(it).as<Fixnum_O>()->get();
 	if ( ivalue < 0 )
@@ -1225,7 +1339,7 @@ namespace core
     FunctionValueEnvironment_sp FunctionValueEnvironment_O::createForEntries( int numEntries, Environment_sp parent )
     {_G();
 	FunctionValueEnvironment_sp environ(FunctionValueEnvironment_O::createEmpty(parent));
-	environ->_FunctionFrame = FunctionFrame_O::create(numEntries,nilCheck_getActivationFrame(nilCheck_currentVisibleEnvironment(parent)));
+	environ->_FunctionFrame = FunctionFrame_O::create(numEntries,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
 	return environ;
     }
 
@@ -1329,7 +1443,7 @@ namespace core
 
     ActivationFrame_sp CompileTimeEnvironment_O::getActivationFrame() const
     {_G();
-	return nilCheck_getActivationFrame(this->currentVisibleEnvironment());
+	return clasp_getActivationFrame(this->currentVisibleEnvironment());
     };
 
 
@@ -1337,14 +1451,14 @@ namespace core
     {_G();
 	Environment_sp parent = this->getParentEnvironment();
 	if ( parent.nilp() ) return _Nil<Environment_O>();
-	return nilCheck_currentVisibleEnvironment(parent);
+	return clasp_currentVisibleEnvironment(parent);
     }
 
 
      bool CompileTimeEnvironment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const
     {_G();
-     Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
-     return nilCheck_findValue(parent,sym,depth,index,special,value);
+     Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+     return clasp_findValue(parent,sym,depth,index,special,value);
     }
 
 
@@ -1449,7 +1563,7 @@ namespace core
 
 
 
-    BlockEnvironment_sp BlockEnvironment_O::create(Environment_sp parent)
+    BlockEnvironment_sp BlockEnvironment_O::create(T_sp parent)
     {_G();
 	BlockEnvironment_sp environ = BlockEnvironment_O::create();
 	environ->setupParent(parent);
@@ -1460,7 +1574,7 @@ namespace core
 
 
 
-    BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, Environment_sp parent)
+    BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, T_sp parent)
     {_G();
 	BlockEnvironment_sp environ = BlockEnvironment_O::create(parent);
 	environ->setBlockSymbol(blockSymbol);
@@ -1678,7 +1792,7 @@ namespace core
 
     int FunctionContainerEnvironment_O::countFunctionContainerEnvironments() const
     {
-	return nilCheck_countFunctionContainerEnvironments(this->getParentEnvironment())+1;
+	return clasp_countFunctionContainerEnvironments(this->getParentEnvironment())+1;
     }
 
 
@@ -1708,7 +1822,7 @@ namespace core
     {_G();
 	TagbodyEnvironment_sp environ = TagbodyEnvironment_O::create();
 	environ->setupParent(parent);
-     environ->_ActivationFrame = TagbodyFrame_O::create(nilCheck_getActivationFrame(nilCheck_currentVisibleEnvironment(parent)));
+     environ->_ActivationFrame = TagbodyFrame_O::create(clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
 	return environ;
     }
 
@@ -1801,7 +1915,7 @@ namespace core
 	    return false;
 	}
         ++depth;
-	return nilCheck_findTag(this->getParentEnvironment(),sym,depth,index);
+	return clasp_findTag(this->getParentEnvironment(),sym,depth,index);
     }
 
 
@@ -2026,12 +2140,13 @@ namespace core
     }
 
 
+#if 0
     T_mv GlueEnvironment_O::variable_lookup(Symbol_sp val) const
     {_G();
 	Cons_sp it = this->_Map->find(val);
 	return(Values(oCdr(it),_lisp->_true()));
     }
-
+#endif
 
 
 

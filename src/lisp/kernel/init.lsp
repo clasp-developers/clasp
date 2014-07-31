@@ -526,8 +526,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     cmp/cmpir
     cmp/cmpeh
     cmp/debuginfo
-    #+varargs cmp/lambdalistva
-    #-varargs cmp/lambdalist
+    cmp/lambdalistva
     cmp/cmpvars
     cmp/cmpquote
     cmp/compiler
@@ -664,7 +663,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        )))
 
 
-(defun compile-boot ( &optional last-file &key first-file (recompile nil) (reload nil) )
+(defun compile-boot ( &optional last-file &key (first-file :start) (recompile nil) (reload nil) )
   (bformat t "compile-boot  from: %s  to: %s\n" first-file last-file)
   (if (not recompile) (load-boot last-file))
   (let* ((files (select-source-files last-file :first-file first-file))

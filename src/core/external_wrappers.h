@@ -146,7 +146,7 @@ namespace core {
                              const string& lambda_list="", const string& declares="", const string& docstring="", bool autoExport=true )
         {_G();
             Symbol_sp symbol = lispify_intern(name,symbol_packageName(this->_ClassSymbol));
-            BuiltinClosure* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::ExternalType::*)(ARGS...)>>::allocateClass(symbol,mp);
+            BuiltinClosure* m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>,OT,RT(OT::ExternalType::*)(ARGS...)>>::allocateClass(symbol,mp);
             lisp_defineSingleDispatchMethod(symbol
                                             ,this->_ClassSymbol
                                             ,m
@@ -165,7 +165,7 @@ namespace core {
                              const string& lambda_list="", const string& declares="", const string& docstring="", bool autoExport=true )
         {_G();
             Symbol_sp symbol = lispify_intern(name,symbol_packageName(this->_ClassSymbol));
-            BuiltinClosure* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::ExternalType::*)(ARGS...) const>>::allocateClass(symbol,mp);
+            BuiltinClosure* m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>,OT,RT(OT::ExternalType::*)(ARGS...) const>>::allocateClass(symbol,mp);
             lisp_defineSingleDispatchMethod(symbol
                                             ,this->_ClassSymbol
                                             ,m

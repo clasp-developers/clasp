@@ -24,6 +24,7 @@ namespace core
     extern void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstring, Function_sp body );
 
 
+#if 0
     EXTERN_FN(read);
     EXTERN_FN(read_delimited_list);
     EXTERN_FN(convert_to_list_of_classes);
@@ -31,7 +32,7 @@ namespace core
     EXTERN_GENERIC(make_instance);
     EXTERN_GENERIC(ensure_class_using_class);
     EXTERN_GENERIC(reinitialize_instance);
-
+#endif
 
     T_sp af_type_of(T_sp x);
     T_mv af_notany(T_sp predicate, Cons_sp sequences);

@@ -36,12 +36,6 @@ namespace core
     }
 
 
-    T_sp StandardObject_O::__init__(Function_sp exec, Cons_sp args, Environment_sp bargs, Lisp_sp env)
-    {_G();
-	return _Nil<T_O>();
-    }
-
-
 
 #if defined(OLD_SERIALIZE)
     void	StandardObject_O::serialize(serialize::SNode node)

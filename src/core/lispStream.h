@@ -1166,6 +1166,9 @@ namespace core {
     Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart=0, Fixnum_sp end=_Nil<Fixnum_O>());
     void clasp_forceOutput(T_sp stream);
 
+    int af_streamLinenumber(T_sp strm);
+    int af_streamColumn(T_sp strm);
+
 };
 
 

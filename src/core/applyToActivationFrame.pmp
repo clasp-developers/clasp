@@ -1,4 +1,4 @@
-$var MaxArgs = 16
+$var MaxArgs = 32
 $range Args_ 0..MaxArgs
 $range Case_ 0..MaxArgs
 $for Case_ [[

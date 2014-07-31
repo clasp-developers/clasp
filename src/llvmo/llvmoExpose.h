@@ -683,31 +683,31 @@ namespace translate
 
 namespace llvmo
 {
-    class LLVMFunctoid : public core::FunctionClosure {
+    class CompiledClosure : public core::FunctionClosure {      
+        friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
     public:
-//	typedef core::T_sp (*fptr_type)( core::ActivationFrame_sp);
-#ifdef VARARGS
-	typedef void (*fptr_type)( core::T_mv*, core::ActivationFrame_sp, int nargs, core::T_sp* argArray );
-#else 
-	typedef void (*fptr_type)( core::T_mv*, core::ActivationFrame_sp, core::const_ActivationFrame_spREF);
-#endif
+        typedef void (*fptr_type) (LISP_CALLING_CONVENTION_RETURN, LISP_CALLING_CONVENTION_CLOSED_ENVIRONMENT, LISP_CALLING_CONVENTION_ARGS );
     private:
         Function_sp             llvmFunction;
 	fptr_type		fptr;
+        core::Cons_sp           associatedFunctions;
 // constructor
     public:
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:
-	LLVMFunctoid( core::T_sp name, fptr_type ptr, Function_sp llvmFunc) : FunctionClosure(name), fptr(ptr) {};
+	CompiledClosure( core::T_sp functionName, core::SourcePosInfo_sp spi, core::Symbol_sp type,
+                         fptr_type ptr, Function_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs)
+            : FunctionClosure(functionName,spi,type,renv)
+            , fptr(ptr)
+            , associatedFunctions(assocFuncs)
+        {};
+        void setAssociatedFunctions(core::Cons_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
+        bool compiledP() const { return true; };
+
         DISABLE_NEW();
 	void LISP_CALLING_CONVENTION()
 	{_G();
-            IMPLEMENT_MEF(BF("Handle new approach"));
-#if 0
-	    core::T_mv result;
-	    (*(this->fptr))(&result,closedEnv,nargs,args);
-	    return result;
-#endif
+            (*(this->fptr))(lcc_resultP,&(this->closedEnvironment),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
 	};
 
     };

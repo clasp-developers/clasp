@@ -32,9 +32,16 @@ namespace core
     SingleDispatchGenericFunction_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler )
     {_G();
         SingleDispatchGenericFunction_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname,false);
+//        printf("%s:%d find_single_dispatch_generic_function(%s) --> %p\n", __FILE__, __LINE__, _rep_(gfname).c_str(), gfn.px_ref() );
         if ( gfn.nilp() ) {
-            if ( gfname->symbolFunction.notnilp() ) {
-                SIMPLE_ERROR(BF("The symbol %s already has a function bound to it - it cannot become a single-dispatch-generic-function") % _rep_(gfname));
+            if ( gfname->symbolFunction().pointerp() ) {
+//                printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().px_ref());
+                if ( SingleDispatchGenericFunction_sp existingGf = gfname->symbolFunction().asOrNull<SingleDispatchGenericFunction_O>() ) {
+                    // a 
+                    SIMPLE_ERROR(BF("The symbol %s has a SingleDispatchGenericFunction bound to its function slot but no SingleDispatchGenericFunction with that name was found") % _rep_(gfname));
+                } else {
+                    SIMPLE_ERROR(BF("The symbol %s already has a function bound to it and it is not a SingleDispatchGenericFunction - it cannot become a SingleDispatchGenericFunction") % _rep_(gfname));
+                }
             }
             gfn = SingleDispatchGenericFunction_O::create(gfname,llhandler);
             Lisp_O::setf_find_single_dispatch_generic_function(gfname,gfn);
@@ -53,12 +60,13 @@ namespace core
 //	string docstr = docstring->get();
 	SingleDispatchGenericFunction_sp gf = gfname->symbolFunction().as<SingleDispatchGenericFunction_O>();//Lisp_O::find_single_dispatch_generic_function(gfname,true);
 	SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(gfname,receiver_class,lambda_list_handler,declares,docstring,body);
+        ASSERT(lambda_list_handler.notnilp());
         if ( !gf.pointerp() )
         {
             SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
         }
-
-        LambdaListHandler_sp gf_llh = gf->lambdaListHandler;
+        SingleDispatchGenericFunctionClosure* gfc = dynamic_cast<SingleDispatchGenericFunctionClosure*>(gf->closure);
+        LambdaListHandler_sp gf_llh = gfc->lambdaListHandler;
         if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments() )
         {
             SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
@@ -75,7 +83,7 @@ namespace core
                          % _rep_(receiver_class)
                          % lambda_list_handler->numberOfRequiredArguments() );
         }
-	gf->closure->addMethod(method);
+	gfc->addMethod(method);
     };
 
     
@@ -107,24 +115,40 @@ namespace core
 	    LOG(BF("This is a new method - adding it to the Methods list"));
 	    this->_Methods = Cons_O::create(method,this->_Methods);
 	}
-	this->_classesToClosures->clrhash();
     }
 
 
 
 
 
-    Lambda_emf::Lambda_emf(T_sp name,
-                           SingleDispatchGenericFunction_sp gf,
-                           SingleDispatchMethod_sp cur_method ) : FunctionClosure(name)
-	{_G();
-	    this->_method_function = cur_method->code;
-	}
-
-
-
-
-
+    /*! I think this fills the role of the lambda returned by
+      std-compute-discriminating-function (gf) AMOP-303 top
+    */
+    void SingleDispatchGenericFunctionClosure::LISP_CALLING_CONVENTION()
+    {
+        Function_sp func;
+        Cache* cache(_lisp->singleDispatchMethodCachePtr());
+        gctools::Vec0<T_sp>& vektor = cache->keys();
+        vektor[0] = this->name;
+        Class_sp dispatchArgClass = vektor[1] = lisp_instance_class(LCC_ARG0());
+        CacheRecord* e; //gctools::StackRootedPointer<CacheRecord> e;
+        try {
+            cache->search_cache(e); // e = ecl_search_cache(cache);
+        } catch (CacheError& err) {
+            printf("%s:%d - There was an CacheError searching the GF cache for the keys  You should try and get into cache->search_cache to see where the error is\n", __FILE__, __LINE__);
+            SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(this->name));
+        }
+//        printf("%s:%d searched on %s/%s  cache record = %p\n", __FILE__, __LINE__, _rep_(vektor[0]).c_str(), _rep_(vektor[1]).c_str(), e );
+        if ( e->_key.notnilp() ) {
+            func = e->_value.as<Function_O>();
+        } else {
+            func = this->slowMethodLookup(dispatchArgClass);
+            Sequence_sp keys = VectorObjects_O::create(vektor);
+            e->_key = keys;
+            e->_value = func;
+        }
+        func->closure->invoke(lcc_resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2, lcc_arglist );
+    }
 
 
 
@@ -139,10 +163,10 @@ namespace core
 	}
     };  
 
-    Function_sp SingleDispatchGenericFunctionClosure::slow_method_lookup(Class_sp mc)
+Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc)
     {_OF();
 	LOG(BF("Looking for applicable methods for receivers of class[%s]") % _rep_(mc) );
-        VectorObjects_sp applicableMethods = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),16,0,true);
+        gctools::Vec0<SingleDispatchMethod_sp> applicableMethods;
 	for ( Cons_sp cur = this->_Methods; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    SingleDispatchMethod_sp sdm = oCar(cur).as<SingleDispatchMethod_O>();
@@ -150,10 +174,10 @@ namespace core
 	    if ( mc->isSubClassOf(ac) )
 	    {
 		LOG(BF("Found applicable method with receiver class[%s]") % _rep_(ac) );
-                applicableMethods->vectorPushExtend(sdm);
+                applicableMethods.push_back(sdm);
             }
 	}
-	if ( UNLIKELY(applicableMethods->length() == 0 ))
+	if ( UNLIKELY(applicableMethods.size() == 0 ))
 	{
 	    SIMPLE_ERROR(BF("There are no applicable methods of %s for receiver class %s")
 			 % _rep_(this->name)
@@ -162,7 +186,7 @@ namespace core
 #if 1
 	/* Sort the methods from most applicable to least applicable */
 	SingleDispatch_OrderByClassPrecedence sort_by_class_precedence;
-	sort::quickSort(applicableMethods->begin(),applicableMethods->end(),sort_by_class_precedence);
+	sort::quickSort(applicableMethods.begin(),applicableMethods.end(),sort_by_class_precedence);
 #else // look for the most applicable method
         applicable_method = applicableMethods->elt(0).as<SingleDispatchMethod_O>();
         for ( int i(1),iEnd(applicableMethods->length()); i<iEnd; ++i ) {
@@ -173,45 +197,32 @@ namespace core
         }
         printf("%s:%d:%s The most applicable method is for class %s\n", __FILE__,__LINE__,__FUNCTION__,_rep_(applicable_method).c_str());
 #endif
-	Function_sp emf = this->compute_effective_method_function(applicableMethods);
-	return emf;
-    }
 
-
-
-
-
-    Function_sp SingleDispatchGenericFunctionClosure::compute_effective_method_function(VectorObjects_sp applicableMethods)
-    {_OF();
-        SingleDispatchMethod_sp cur_method = applicableMethods->elt(0).as<SingleDispatchMethod_O>();
+#if 0
+	Function_sp emf = this->computeEffectiveMethodFunction(applicableMethods);
+        return emf;
+#else
+        SingleDispatchMethod_sp cur_method = applicableMethods[0];
         ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
         // Construct a name for the emf by stringing together the generic function name
         // with the name of the receiver class - this is to help with debugging
-        stringstream emf_name_ss;
-        string gfname = _rep_(this->name);
-        Class_sp receiverClass = cur_method->receiver_class();
-        LambdaListHandler_sp method_llh = cur_method->method_lambda_list_handler();
-        Symbol_sp receiverClassNameSymbol = receiverClass->className();
-        string receiverClassName = receiverClassNameSymbol->symbolNameAsString();
-        emf_name_ss << gfname << "->" << receiverClassName;
-        Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_functionBlockName(this->name)->getPackage());
-
-        Lambda_emf* l_emf = gctools::ClassAllocator<Lambda_emf>::allocateClass(emf_name
-                                                                ,this->sharedThis<SingleDispatchGenericFunction_O>()
-                                                                , cur_method);
-#if 0   // Roll the stuff below into the l_emf creation above
-create(emf_name,
-                                            _Nil<LambdaListHandler_O>(),// LambdaListHandler_O::create(method_llh->numberOfLexicalVariables()), // _Nil<LambdaListHandler_O>(),
-                                            cb_l_emf,
-                                            _Nil<ActivationFrame_O>(),
-                                            kw::_sym_function );
-
+        return cur_method->code;
 #endif
-
-        Function_sp emf = Function_O::make(l_emf);
-        return emf;
     }
 
+
+
+#if 0
+    Function_sp SingleDispatchGenericFunctionClosure::computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods)
+    {_OF();
+        SingleDispatchMethod_sp cur_method = applicableMethods[0];
+        ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
+        // Construct a name for the emf by stringing together the generic function name
+        // with the name of the receiver class - this is to help with debugging
+        Function_sp code = cur_method->code;
+        return code;
+    }
+#endif
 
 
 
@@ -267,7 +278,9 @@ create(emf_name,
     SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh)
     {_G();
         GC_ALLOCATE(SingleDispatchGenericFunction_O,gf );
-        gf->closure = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocateClass(name,llh);
+        SingleDispatchGenericFunctionClosure* gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocateClass(name);
+        gfc->finishSetup(llh,kw::_sym_function);
+        gf->closure = gfc;
 	return gf;
     }
     

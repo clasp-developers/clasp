@@ -702,7 +702,7 @@ namespace core
 	    }
 	    uint lineNumber = this->_Input->lineNumber();
 	    uint column = this->_Input->column();
-	    uint filePos = this->_Input->tell();
+//	    uint filePos = this->_Input->tell();
 	    T_sp element = this->primitive_read(true,_Unbound<T_O>(),true);
 	    ASSERTNOTNULL(element);
 	    if ( element.unboundp() )
