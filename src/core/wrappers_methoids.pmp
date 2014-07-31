@@ -40,8 +40,8 @@ $for isConst [[
         void LISP_CALLING_CONVENTION()
         {   
           $if numArgs>0 [[
-            core::T_sp  argArray[$numArgs] = { _Unbound<core::T_O>() $for Args_ [[, _Unbound<core::T_O>()]]};
-            core::StackFrameDynamicScopeManager scope($numArgs,argArray);
+            ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
+            core::StackFrameDynamicScopeManager scope(frame);
             try {
               lambdaListHandler_createBindings(this->lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
             } catch (...) {
@@ -49,8 +49,9 @@ $for isConst [[
             }
           ]]
           PUSH_INVOCATION_HISTORY_FRAME();
-          this->invoke(lcc_resultP, argArray[0] $for Args_ [[, argArray[$Args_] ]] );
+          this->invoke(lcc_resultP, frame::Value(frameImpl,0) $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
         }
+
         void invoke(core::T_mv* lcc_resultP, core::T_sp arg0  $for Args_ [[, core::T_sp arg$Args_]] )
         {
           gctools::smart_ptr<OT> ot((arg0).template as<OT>());

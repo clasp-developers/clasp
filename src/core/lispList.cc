@@ -18,7 +18,7 @@ namespace core
 #define DOCS_af_nth "See CLHS nth"
     T_sp af_nth(int idx, T_sp arg)
     {_G();
-	if (arg.nilp()) return 0;
+	if (arg.nilp()) return _Nil<T_O>();
 	if ( List_sp list = arg.asOrNull<List_O>() )
 	{
 	    return list->onth(idx);

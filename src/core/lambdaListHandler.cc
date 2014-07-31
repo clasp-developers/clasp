@@ -20,7 +20,12 @@ namespace core
 
     void lambdaListHandler_createBindings(core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LISP_CALLING_CONVENTION_ARGS)
     {
-        T_O* args[lcc_nargs];
+        gctools::Frame0<T_O*> args;
+        args.allocate(lcc_nargs,NULL);
+//        T_O* args[32]; // lcc_nargs]; // lcc_nargs];
+        if ( lcc_nargs>32 ) {
+            SIMPLE_ERROR(BF("Cannot handle more than 32 args"));
+        }
         switch (lcc_nargs)
         {
         case 1:
@@ -44,15 +49,16 @@ namespace core
             }
             break;
         }
-        llh->createBindingsInScope_argArray_TPtr(lcc_nargs,args,scope);
+        llh->createBindingsInScope_argArray_TPtr(lcc_nargs,args.data(),scope);
+//        printf("%s:%d returning from lambdaListHandler_createBindings\n", __FILE__, __LINE__);
+        return;
     }
 
 
 
 
-    T_sp evaluate_lambda_list_form(T_sp form, Environment_sp env)
+    T_sp evaluate_lambda_list_form(T_sp form, T_sp env)
     {
-	Environment_sp localEnv(env);
 	// TODO:: The code should be compiled and not interpreted
 //	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
 	return eval::evaluate(form,env);

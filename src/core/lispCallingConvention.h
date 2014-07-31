@@ -1,8 +1,17 @@
 
-/*! This is a void function */
-#define LISP_CALLING_CONVENTION() invoke( core::T_mv* lcc_resultP, int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, va_list lcc_arglist )
 
-#define LISP_CALLING_CONVENTION_ARGS int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, va_list lcc_arglist 
+#define LISP_CALLING_CONVENTION_ARGS_BASE int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2
+#define LISP_CALLING_CONVENTION_ARGS_ELIPSIS LISP_CALLING_CONVENTION_ARGS_BASE, ...
+#define LISP_CALLING_CONVENTION_ARGS LISP_CALLING_CONVENTION_ARGS_BASE, va_list lcc_arglist 
+
+#define LISP_CALLING_CONVENTION_CLOSED_ENVIRONMENT core::T_sp* lcc_closedEnvironment
+#define LISP_CALLING_CONVENTION_RETURN core::T_mv* lcc_resultP
+//#define LISP_CALLING_CONVENTION_RETURN_ARGS core::T_mv* lcc_resultP, LISP_CALLING_CONVENTION_ARGS
+
+
+/*! This is a void function */
+#define LISP_CALLING_CONVENTION() invoke( LISP_CALLING_CONVENTION_RETURN, LISP_CALLING_CONVENTION_ARGS )
+
 
 #define LCC_ARG0() (gctools::smart_ptr<core::T_O>(lcc_fixed_arg0))
 #define LCC_ARG1() (gctools::smart_ptr<core::T_O>(lcc_fixed_arg1))

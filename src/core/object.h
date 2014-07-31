@@ -502,12 +502,9 @@ namespace core
 
 #define DECLARE_INIT_GLOBALS() public: static void lisp_initGlobals(core::Lisp_sp lisp);
 
-#define DECLARE_INIT() public:						\
-	core::T_sp __init__(core::Function_sp exec, core::Cons_sp args, core::Environment_sp environ, core::Lisp_sp lisp );
+#define DECLARE_INIT() 
 
-#define DECLARE_MAKE_INIT() public: \
-	core::T_sp make_init__(core::Function_sp exec, core::Cons_sp args, core::Environment_sp environ, core::Lisp_sp lisp );
-	
+#define DECLARE_MAKE_INIT()
 
 
 

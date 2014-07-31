@@ -74,29 +74,20 @@ Return the new environment."
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
   (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
-  (if (lambda-list-handler-required-lexical-arguments-only-p lambda-list-handler)
-      (compile-copy-only-required-arguments new-env
-					    lambda-list-handler
-					    (irc-renv new-env)
-					    argument-holder
-					    )
-      (let ((lexical-names (names-of-lexical-variables lambda-list-handler)))
-	;;	(break "I need to deal with more complex lambda-list that contains more than required arguments")
-	(cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
-	(cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name lexical-names)
-	(compile-lambda-list-code lambda-list-handler
-				  function-env
-				  argument-holder
-				  new-env)
-	(dbg-set-current-debug-location-here)
-	))
-;;  (irc-intrinsic "debugInspectActivationFrame" closed-over-renv)
-;;  (irc-intrinsic "debugInspectActivationFrame" (irc-renv new-env))
-;;  (irc-intrinsic "gdb")
-;;
-;; The setParentOfActivationFrame should be set before we compile the lambda-list-code
-;; otherwise it won't be able to access the closed over environment
-;;  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
+  (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
+  (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
+  (compile-general-lambda-list-code lambda-list-handler
+                            function-env
+                            argument-holder
+                            new-env)
+  (dbg-set-current-debug-location-here)
+  ;;  (irc-intrinsic "debugInspectActivationFrame" closed-over-renv)
+  ;;  (irc-intrinsic "debugInspectActivationFrame" (irc-renv new-env))
+  ;;  (irc-intrinsic "gdb")
+  ;;
+  ;; The setParentOfActivationFrame should be set before we compile the lambda-list-code
+  ;; otherwise it won't be able to access the closed over environment
+  ;;  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
   (irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env)
   )
 
@@ -129,8 +120,12 @@ COMPILE-FILE just throws this away")
 	   (let* ((arguments (llvm-sys:get-argument-list fn))
 		  (result (first arguments))
 		  (closed-over-renv (second arguments))
-		  (argument-holder #-varargs (third arguments) ; if #-varargs then use argument-activation-frame (third arguments)
-				   #+varargs (list (third arguments) (fourth arguments))) ; if #+varargs then use (list nargs va-list)
+		  (argument-holder (make-calling-convention
+                                    :nargs (third arguments)
+                                    :register-arg0 (fourth arguments)
+                                    :register-arg1 (fifth arguments)
+                                    :register-arg2 (sixth arguments)
+                                    :valist (seventh arguments)))
 		  traceid
 		  (new-env (irc-new-value-environment
 			    fn-env
@@ -207,7 +202,7 @@ COMPILE-FILE just throws this away")
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
   (let* ((*all-funcs-for-one-compile* nil)
-	 (function-name (cond   ;; function-name can be a symbol or a cons of the form (SETF _name_)
+	 (function-name (cond ;; function-name can be a symbol or a cons of the form (SETF _name_)
 			  ((eq (car lambda-or-lambda-block) 'lambda) 'lambda)
 			  ((eq (car lambda-or-lambda-block) 'ext::lambda-block) (cadr lambda-or-lambda-block))
 			  (t 'unknown-func-name-str-in-codegen-closure)))
@@ -218,8 +213,12 @@ COMPILE-FILE just throws this away")
 						       *all-funcs-for-one-compile*) env)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
-	  (irc-intrinsic "makeCompiledFunction" result compiled-fn *gv-source-path-name* (compile-reference-to-literal function-name env) funcs (irc-renv env)))
-	*all-funcs-for-one-compile*)))
+          (multiple-value-bind (source-dir source-filename lineno column)
+              (cmp:walk-form-for-source-info lambda-or-lambda-block)
+            (unless lineno (setq lineno 0))
+            (unless column (setq column 0))
+            (irc-intrinsic "makeCompiledFunction" result compiled-fn *gv-source-path-name* (jit-constant-i32 lineno) (jit-constant-i32 column) (compile-reference-to-literal function-name env) funcs (irc-renv env)))
+          *all-funcs-for-one-compile*))))
 
 
 
@@ -1126,7 +1125,11 @@ jump to blocks within this tagbody."
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
   (or (stringp name) (error "name must be a string"))
-  (let ((fn (with-new-function (fn fn-env :function-name name :parent-env env :function-form form)
+  (let ((fn (with-new-function (fn
+                                fn-env
+                                :function-name name
+                                :parent-env env
+                                :function-form form)
 	      (let* ((given-name (llvm-sys:get-name fn)))
 		;; Map the function argument names
 		(cmp-log "Creating repl function with name: %s\n" given-name)
@@ -1228,9 +1231,11 @@ be wrapped with to make a closure"
                            fn
                            (irc-environment-activation-frame wrapped-env)
                            function-kind
-                           *run-time-literals-external-name*)))
-                       (compiled-body (get-body compiled-function)))
-                  (set-compiled-funcs compiled-body *all-funcs-for-one-compile*)
+                           *run-time-literals-external-name*
+                           core:*load-current-source-file-info*
+                           core:*load-current-linenumber*
+                           ))))
+                  (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
                   (when name (setf-symbol-function name compiled-function))
                   (values compiled-function warnp failp))))))))))
 
@@ -1273,12 +1278,16 @@ be wrapped with to make a closure"
 						      lambda-list-handler nil "" code env))
 		     (compiled-function (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
                                          *run-time-execution-engine*
-                                         name fn
+                                         name
+                                         fn
                                          (irc-environment-activation-frame env)
                                          (function-kind fn)
-                                         *run-time-literals-external-name*)))
+                                         *run-time-literals-external-name*
+                                         core:*load-current-source-file-info*
+                                         core:*load-current-linenumber*
+                                         )))
 		(llvm-sys:disassemble* compiled-function))))
-	   (t (error "Unknown disassemble target")))))
+	   (t (error "Unknown target for disassemble: ~a" fn)))))
       ((and (consp desig) (or (eq (car desig) 'lambda) (eq (car desig) 'ext::lambda-block)))
        (let ((funcs (codegen-closure nil desig nil)))
 	 (dolist (i funcs)

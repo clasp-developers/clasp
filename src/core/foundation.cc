@@ -304,6 +304,21 @@ namespace core
     }
 
 
+    bool lisp_search(T_sp seq, T_sp obj, int& index)
+    {
+        if ( seq.nilp() ) {
+            return false;
+        } else if ( Vector_sp vec = seq.asOrNull<Vector_O>() ) {
+            for ( int i(0), iEnd(vec->dimension()); i<iEnd; ++i ) {
+                if ( vec->elt(i) == obj ) {
+                    index = i;
+                    return true;
+                }
+            }
+            return false;
+        }
+        SIMPLE_ERROR(BF("Add support for lisp_search to search %s") % _rep_(seq));
+    }
 
 
 
@@ -591,6 +606,13 @@ namespace core
 	} else if ( obj._NULLp() )
 	{
 	    return "!NULL!";
+        } else if ( obj.fixnump() ) {
+            stringstream ss;
+            ss << obj.fixnum();
+            return ss.str();
+        } else if ( obj.framep() ) {
+            stringstream ss;
+            ss << "Frame@" << (void*)(obj.frame());
 	} else if ( !obj )
 	{
 	    return "!!!UNDEFINED!!!";
@@ -851,6 +873,7 @@ namespace core
 	SYMBOL_SC_(KeywordPkg,docstring);
 	LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p")
 	    % _rep_(sym) % _rep_(receiver_class) %  ((void*)(methoid)) );
+        methoid->finishSetup(llhandler,kw::_sym_function);
         Function_sp fn = Function_O::make(methoid);
 	af_ensureSingleDispatchMethod(sym,receiver_class,llhandler,ldeclares,docStr,fn);
     }
@@ -1435,6 +1458,14 @@ namespace core
     T_sp lisp_createFixnum(int fn)
     {_G();
 	return Fixnum_O::create(fn);
+    }
+
+    SourcePosInfo_sp lisp_createSourcePosInfo(const string& fileName, int lineno )
+    {
+        Str_sp fn = Str_O::create(fileName);
+        SourceFileInfo_mv sfi_mv = af_sourceFileInfo(fn);
+        int sfindex = sfi_mv.valueGet(1).as<Fixnum_O>()->get();
+        return SourcePosInfo_O::create(sfindex,lineno,0);
     }
 
     T_sp lisp_createList(T_sp a1) {return Cons_O::create(a1,_Nil<T_O>());}

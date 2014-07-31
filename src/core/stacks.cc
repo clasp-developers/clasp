@@ -16,8 +16,8 @@ namespace core
 
 
 
-        /*! Return the index of the stack entry with the matching key.
-          If return -1 then the key wasn't found */
+    /*! Return the index of the stack entry with the matching key.
+      If return -1 then the key wasn't found */
     int ExceptionStack::findKey(FrameKind kind, T_sp key) {
         for ( int i(this->_Stack.size()-1); i>=0; --i ) {
             if (this->_Stack[i]._FrameKind == kind && this->_Stack[i]._Key == key) return i;
@@ -463,8 +463,8 @@ namespace core
 #define DOCS_af_ihsBacktraceNoArgs "ihsBacktraceNoArgs"
 	void af_ihsBacktraceNoArgs()
 	{_G();
-	af_ihsBacktrace(_lisp->_true(),_Nil<T_O>());
-    };
+            af_ihsBacktrace(_lisp->_true(),_Nil<T_O>());
+        };
 
     };
 
@@ -474,9 +474,9 @@ namespace core
 #define ARGS_af_ihsTop "()"
 #define DECL_af_ihsTop ""
 #define DOCS_af_ihsTop "ihsTop"
-	int af_ihsTop()
-	{_G();
-	return _lisp->invocationHistoryStack().top()->index();
+    int af_ihsTop()
+    {_G();
+        return _lisp->invocationHistoryStack().top()->index();
     };
 
 
@@ -486,8 +486,8 @@ namespace core
 #define ARGS_af_ihsPrev "(cur)"
 #define DECL_af_ihsPrev ""
 #define DOCS_af_ihsPrev "ihsPrev"
-	int af_ihsPrev(int idx)
-	{_G();
+    int af_ihsPrev(int idx)
+    {_G();
 	idx--;
 	if ( idx<0 ) idx = 0;
 	return idx;
@@ -500,8 +500,8 @@ namespace core
 #define ARGS_af_ihsNext "(cur)"
 #define DECL_af_ihsNext ""
 #define DOCS_af_ihsNext "ihsNext"
-	int af_ihsNext(int idx)
-	{_G();
+    int af_ihsNext(int idx)
+    {_G();
 	idx++;
 	if ( idx > _lisp->invocationHistoryStack().top()->index() ) idx = _lisp->invocationHistoryStack().top()->index();
 	return idx;
@@ -532,14 +532,14 @@ namespace core
 #define ARGS_af_ihsEnv "(cur)"
 #define DECL_af_ihsEnv ""
 #define DOCS_af_ihsEnv "ihsEnv"
-	Environment_sp af_ihsEnv(int idx)
-	{_G();
+    Environment_sp af_ihsEnv(int idx)
+    {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
 	if (cur)
 	{
-	Environment_sp env = cur->activationFrame();
-	if ( env.pointerp() ) return env;
-    }
+            Environment_sp env = cur->activationFrame();
+            if ( env.pointerp() ) return env;
+        }
 	return _Nil<Environment_O>();
     };
 
@@ -547,8 +547,8 @@ namespace core
 #define ARGS_af_ihsBds "(cur)"
 #define DECL_af_ihsBds ""
 #define DOCS_af_ihsBds "ihsBds"
-	int af_ihsBds(int idx)
-	{_G();
+    int af_ihsBds(int idx)
+    {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
 	if (cur) return cur->bds();
 	return 0;
@@ -561,36 +561,36 @@ namespace core
 #define ARGS_af_ihsCurrentFrame "()"
 #define DECL_af_ihsCurrentFrame ""
 #define DOCS_af_ihsCurrentFrame "ihsCurrentFrame"
-	int af_ihsCurrentFrame()
-	{_G();
-	    T_sp cf = _sym_STARihsCurrentSTAR->symbolValue();
-	    if ( cf.nilp() ) {
-		int icf = af_ihsTop();
-		return af_setIhsCurrentFrame(icf);
-	    }
-	    int icf = cf.as<Fixnum_O>()->get();
-	    if (icf < 0) {	
-		_sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
-		return 0;
-	    }
-	    if (icf >= af_ihsTop() ) {
-		_sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsTop()));
-		return af_ihsTop();
-	    }
-	    return icf;
-	}
+    int af_ihsCurrentFrame()
+    {_G();
+        T_sp cf = _sym_STARihsCurrentSTAR->symbolValue();
+        if ( cf.nilp() ) {
+            int icf = af_ihsTop();
+            return af_setIhsCurrentFrame(icf);
+        }
+        int icf = cf.as<Fixnum_O>()->get();
+        if (icf < 0) {	
+            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
+            return 0;
+        }
+        if (icf >= af_ihsTop() ) {
+            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsTop()));
+            return af_ihsTop();
+        }
+        return icf;
+    }
 
 
 #define ARGS_af_setIhsCurrentFrame "()"
 #define DECL_af_setIhsCurrentFrame ""
 #define DOCS_af_setIhsCurrentFrame "setIhsCurrentFrame"
-	int af_setIhsCurrentFrame(int icf)
-	{_G();
-	    if (icf < 0) icf = 0;
-	    else if (icf >= af_ihsTop() ) icf = af_ihsTop();
-	    _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
-	    return icf;
-	}
+    int af_setIhsCurrentFrame(int icf)
+    {_G();
+        if (icf < 0) icf = 0;
+        else if (icf >= af_ihsTop() ) icf = af_ihsTop();
+        _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
+        return icf;
+    }
 
 
 
@@ -600,8 +600,8 @@ namespace core
 #define ARGS_af_bdsTop "()"
 #define DECL_af_bdsTop ""
 #define DOCS_af_bdsTop "bdsTop"
-	int af_bdsTop()
-	{_G();
+    int af_bdsTop()
+    {_G();
 	return _lisp->bindings().top();
     };
 
@@ -611,8 +611,8 @@ namespace core
 #define ARGS_af_bdsVar "(idx)"
 #define DECL_af_bdsVar ""
 #define DOCS_af_bdsVar "bdsVar"
-	Symbol_sp af_bdsVar(int idx)
-	{_G();
+    Symbol_sp af_bdsVar(int idx)
+    {_G();
 	return _lisp->bindings().var(idx);
     };
 
@@ -623,8 +623,8 @@ namespace core
 #define ARGS_af_bdsVal "(idx)"
 #define DECL_af_bdsVal ""
 #define DOCS_af_bdsVal "bdsVal"
-	T_sp af_bdsVal(int idx)
-	{_G();
+    T_sp af_bdsVal(int idx)
+    {_G();
 	return _lisp->bindings().val(idx);
     };
 
@@ -634,8 +634,8 @@ namespace core
 
 
 
-	void initialize_stacks()
-	{
+    void initialize_stacks()
+    {
 	SYMBOL_SC_(CorePkg,ihsBacktrace);
 	Defun(ihsBacktrace);
 	SYMBOL_SC_(CorePkg,ihsTop);
@@ -660,4 +660,4 @@ namespace core
 
 
 
-    };
+};

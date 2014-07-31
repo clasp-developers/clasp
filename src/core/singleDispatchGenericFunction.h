@@ -21,14 +21,16 @@ namespace core
 	Cons_sp		_Methods;
         LambdaListHandler_sp lambdaListHandler;
 	/*! Store the method functions hashed on the receiver class */
-	HashTable_sp	classesToClosures;
+//	HashTable_sp	classesToClosures;
     public:
         DISABLE_NEW();
         SingleDispatchGenericFunctionClosure(T_sp name, SourcePosInfo_sp sp, Symbol_sp k)
-            : FunctionClosure(name,sp,k)
+            : FunctionClosure(name,sp,k,_Nil<T_O>()/*Env*/)
+            , _Methods(_Nil<Cons_O>())
             , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         SingleDispatchGenericFunctionClosure(T_sp name)
             : FunctionClosure(name)
+            , _Methods(_Nil<Cons_O>())
             , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
             this->lambdaListHandler = llh;
@@ -45,8 +47,8 @@ namespace core
 	  is wiped out */
         void addMethod(SingleDispatchMethod_sp method);
 
-        Function_sp slow_method_lookup(Class_sp mc);
-        Function_sp compute_effective_method_function(VectorObjects_sp applicableMethods)
+        Function_sp slowMethodLookup(Class_sp mc);
+        Function_sp computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods);
 
 
     };
@@ -63,21 +65,20 @@ namespace core
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
 	friend class SingleDispatchGenericFunctoid;
-
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(SingleDispatchGenericFunction_O);
     public: // ctor/dtor for classes with shared virtual base
 //    explicit SingleDispatchGenericFunction_O(core::Class_sp const& mc) : T_O(mc), Function(mc) {};
 //    virtual ~SingleDispatchGenericFunction_O() {};
     public:
-	void initialize();
-	
-    public:
 	static SingleDispatchGenericFunction_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
     public: // Functions here
 
 	/*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
-	Cons_sp methods() const { return this->_Methods;};
+	Cons_sp methods() const {
+            SingleDispatchGenericFunctionClosure* cl = dynamic_cast<SingleDispatchGenericFunctionClosure*>(this->closure);
+            return cl->_Methods;
+        };
 
     }; // SingleDispatchGenericFunction class
     

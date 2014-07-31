@@ -47,21 +47,57 @@ namespace gctools {
 
     public:
         static const uintptr_t tag_mask 	  = BOOST_BINARY(0011);
-        static const uintptr_t ptr_tag        = BOOST_BINARY(0000); // xxx00 means ptr
-        static const uintptr_t special_tag    = BOOST_BINARY(0001); // xxx01 means special val
-        static const uintptr_t character_tag  = BOOST_BINARY(0010); // xxx10 means character
-        static const uintptr_t fixnum_tag     = BOOST_BINARY(0011); // xxx11 means fixnum
+        static const uintptr_t ptr_tag            = BOOST_BINARY(0000); // xxx00 means ptr
+        static const uintptr_t special_tag        = BOOST_BINARY(0001); // xxx01 means special val
+        static const uintptr_t frame_tag= BOOST_BINARY(0010); // xxx10 means ValueFrame entirely on the stack
+        static const uintptr_t fixnum_tag         = BOOST_BINARY(0011); // xxx11 means fixnum
         static const uintptr_t ptr_mask = ~tag_mask;
     public:
         /*! Special taged values */
-        static const uintptr_t tagged_NULL 	  = BOOST_BINARY(00000)|special_tag;
-        static const uintptr_t tagged_unbound = BOOST_BINARY(00100)|special_tag; // 0x05
-        static const uintptr_t tagged_nil 	  = BOOST_BINARY(01000)|special_tag; // 0x09
-        static const uintptr_t tagged_deleted = BOOST_BINARY(01100)|special_tag; // 0x0D - used by WeakHashTable
-
+        static const uintptr_t tagged_NULL 	  = BOOST_BINARY(000000)|special_tag;
+        static const uintptr_t tagged_unbound     = BOOST_BINARY(000100)|special_tag; // 0x05
+        static const uintptr_t tagged_nil 	  = BOOST_BINARY(001000)|special_tag; // 0x09
+        static const uintptr_t tagged_deleted     = BOOST_BINARY(001100)|special_tag; // 0x0D - used by WeakHashTable
+        static const uintptr_t tagged_notnil      = BOOST_BINARY(010000)|special_tag; // 0x11
+        static const uintptr_t tagged_character   = BOOST_BINARY(010100)|special_tag; // 0x15
+        static const uintptr_t character_shift = 8;
+        static const uintptr_t fixnum_shift = 2;
 
     public:
+        static T* make_tagged_nil() {
+            return reinterpret_cast<T*>(tagged_nil);
+        }
+        static T* make_tagged_unbound() {
+            return reinterpret_cast<T*>(tagged_unbound);
+        } 
+       static T* make_tagged_notnil() {
+            return reinterpret_cast<T*>(tagged_notnil);
+        }
 
+        static T* make_tagged_frame(core::T_O** p) {
+            return reinterpret_cast<T*>((reinterpret_cast<uintptr_t>(p)&ptr_mask)|frame_tag);
+        }
+
+        static core::T_O** untagged_frame(T* ptr) {
+            return reinterpret_cast<core::T_O**>(reinterpret_cast<uintptr_t>(ptr)&ptr_mask);
+        }
+
+        static T* make_tagged_fixnum(int fn) {
+            return reinterpret_cast<T*>((fn<<fixnum_shift) | fixnum_tag);
+        }
+
+        static int untagged_fixnum(T* ptr) {
+            return (int)(reinterpret_cast<uintptr_t>(ptr)>>fixnum_shift);
+        }
+
+        static bool tagged_nilp(T* ptr) {
+            return (ptr == tagged_ptr<T>::make_tagged_nil());
+        }
+        static bool tagged_unboundp(T* ptr) {
+            return (ptr == tagged_ptr<T>::make_tagged_unbound());
+        }
+
+    public:
         typedef T element_type;
 
         tagged_ptr():
@@ -82,8 +118,10 @@ namespace gctools {
 #endif
         }
 
+        tagged_ptr(core::T_O** p) : px(make_tagged_frame(p)) {};
+            
 
-        explicit tagged_ptr( int p ): px( reinterpret_cast<T*>((p<<2) | fixnum_tag)) {};
+        explicit tagged_ptr( int p ): px( reinterpret_cast<T*>((p<<fixnum_shift) | fixnum_tag)) {};
 
 
         explicit tagged_ptr(uintptr_t p) : px((T*)p)
@@ -123,7 +161,6 @@ namespace gctools {
         {
         }
 
-
         ~tagged_ptr()
         {
         }
@@ -153,13 +190,13 @@ namespace gctools {
 
 
         core::T_O* asTPtr() const {
-            if (this->px&&tag_mask) {
+            if (this->pointerp()) {
+                return static_cast<core::T_O*>(this->px);
+            } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreinterpret-base-class"
                 return reinterpret_cast<core::T_O*>(this->px);
 #pragma clang diagnostic pop
-            } else {
-                return static_cast<core::T_O*>(this->px);
             }
         }
 
@@ -213,7 +250,7 @@ namespace gctools {
         void assert_pointer() const { BOOST_ASSERT(this->pointerp());}
 
         uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->px)&tag_mask;};
-        bool taggedp() const { return (this->px&&tag_mask);};
+        bool taggedp() const { return (this->px&tag_mask);};
 
         bool _NULLp() const { return (uintptr_t)this->px == tagged_NULL;};
 
@@ -225,12 +262,16 @@ namespace gctools {
 
         bool nilp() const { return (uintptr_t)this->px == tagged_nil;};
 
-        bool characterp() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==character_tag);};
+        bool framep() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==frame_tag);};
+        core::T_O** frame() const { return reinterpret_cast<core::T_O**>(reinterpret_cast<uintptr_t>(this->px)&ptr_mask); };
+
+//        bool characterp() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==character_tag);};
         bool fixnump() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==fixnum_tag);};
         // Handle get_fixnum
 
-        inline brclChar character() const { return ((reinterpret_cast<uintptr_t>(this->px)>>2));};
-        inline Fixnum fixnum() const { return ((reinterpret_cast<uintptr_t>(this->px)>>2));};
+        inline brclChar character() const { return ((reinterpret_cast<uintptr_t>(this->px)>>character_shift));};
+        inline Fixnum fixnum() const { return ((reinterpret_cast<uintptr_t>(this->px)>>fixnum_shift));};
+
 
 
 
@@ -331,7 +372,7 @@ namespace gctools {
         }
 
 
-    protected:
+    public:
         mutable PointerType px;
 #ifdef USE_TAGGED_PTR_P0
         mutable void*  p0;
@@ -538,6 +579,10 @@ template<class E, class T, class Y> basic_ostream<E, T> & operator<< (basic_ostr
 
 #endif // !defined(BOOST_NO_IOSTREAM)
 
+
+
 #endif  // #ifndef _TAGGED_PTR_HPP_INCLUDED
+
+
 
 

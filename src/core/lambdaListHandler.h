@@ -169,7 +169,7 @@ namespace core
 
 	/*! Return a list of expressions that can be evaluated in (env) to generate a list of values that would
 	  be put into the classifiedSymbols */
-	Cons_sp lambdaListParts(Environment_sp env);
+	Cons_sp lambdaListParts(T_sp env);
 
 	// ---------
 	// Following are the methods that deal with preparing Lexical ActivationFrames for arguments

@@ -132,6 +132,8 @@ namespace core {
           or (values) if nothing is found */
 	SourceFileInfo_mv lookupSourceInfo(T_sp obj);
 
+	SourcePosInfo_sp lookupSourcePosInfo(T_sp obj);
+
     }; // SourceManager class
 
 

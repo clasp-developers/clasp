@@ -121,6 +121,7 @@ namespace core
     const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
     const int Lisp_O::MaxClosSlots = 3; //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
     const int Lisp_O::ClosCacheSize = 65536;
+    const int Lisp_O::SingleDispatchMethodCacheSize = 65536;
 
 
     extern void lispScannerDebug(std::istream& sin);
@@ -173,6 +174,7 @@ namespace core
                                , _CatchInfo(_Nil<Cons_O>())
                                ,  _SpecialForms(_Unbound<HashTableEq_O>())
                                , _ActivationFrameNil(_Nil<ActivationFrame_O>())
+                               , _SingleDispatchMethodCachePtr(NULL)
                                , _MethodCachePtr(NULL)
                                , _SlotCachePtr(NULL)
                                , _NullStream(_Nil<Stream_O>())
@@ -580,6 +582,10 @@ namespace core
 	    this->_Roots._BignumRegister2 = Bignum_O::create(0);
 	    getcwd(true); // set *default-pathname-defaults*
 	};
+	{_BLOCK_TRACE("Creating Caches for SingleDispatchGenericFunctions");
+	    this->_Roots._SingleDispatchMethodCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
+            this->_Roots._SingleDispatchMethodCachePtr->setup(2,SingleDispatchMethodCacheSize);
+        }
 	{_BLOCK_TRACE("Creating Caches for CLOS");
 	    this->_Roots._MethodCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
 	    this->_Roots._MethodCachePtr->setup(MaxFunctionArguments,ClosCacheSize);
@@ -2716,7 +2722,6 @@ namespace core
 #define DOCS_af_universalErrorHandler "universalErrorHandler"
     T_mv af_universalErrorHandler(T_sp continueString, T_sp datum, Cons_sp initializers)
     {_G();
-	printf("%s:%d \n", __FILE__, __LINE__);
 	if ( af_stringP(datum) ) {
 	    af_format(_lisp->_true(),datum,initializers);
 	} else {
@@ -3552,8 +3557,7 @@ extern "C"
 #define DOCS_af_sourceFileInfo "sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index"
     SourceFileInfo_mv af_sourceFileInfo(T_sp sourceFile)
     {
-        if ( sourceFile.nilp() )
-        {
+        if ( sourceFile.nilp() ) {
             return af_sourceFileInfo(Fixnum_O::create(0));
         } else if ( Str_sp strSourceFile = sourceFile.asOrNull<Str_O>() ) {
             return _lisp->sourceFileInfo(strSourceFile->get());

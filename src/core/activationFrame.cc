@@ -35,7 +35,7 @@ namespace core
     }
 
 
-    string ActivationFrame_O::nilCheck_asString(ActivationFrame_sp af)
+    string ActivationFrame_O::clasp_asString(ActivationFrame_sp af)
     {
 	if ( af.nilp() ) 
 	{
@@ -56,26 +56,26 @@ namespace core
 
     bool ActivationFrame_O::_findTag(Symbol_sp sym, int& depth, int& index ) const
     {_G();
-	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
+	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
         ++depth;
-	return nilCheck_findTag(parent,sym,depth,index);
+	return clasp_findTag(parent,sym,depth,index);
     }
 
 
 
     bool ActivationFrame_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value) const
     {_G();
-	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
+	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	++depth;
-	return nilCheck_findValue(parent,sym,depth,index,special,value);
+	return clasp_findValue(parent,sym,depth,index,special,value);
     }
 
 
     bool ActivationFrame_O::_findFunction(T_sp functionName, int& depth, int& index, Function_sp& func) const
     {
-	Environment_sp parent = nilCheck_currentVisibleEnvironment(this->getParentEnvironment());
+	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	++depth;
-	return nilCheck_findFunction(parent,functionName,depth,index,func);
+	return clasp_findFunction(parent,functionName,depth,index,func);
     }
 
 
@@ -95,14 +95,14 @@ namespace core
     }
 
 
-    T_sp ActivationFrame_O::lookupTagbodyId(int depth, int index) const
+    T_sp ActivationFrame_O::_lookupTagbodyId(int depth, int index) const
     {_G();
 	if ( depth == 0 )
 	{
 	    SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__() );
 	}
 	--depth;
-	return(this->parentFrame()->lookupTagbodyId(depth,index));
+        return Environment_O::clasp_lookupTagbodyId(this->parentFrame(),depth,index);
     }
 
 
@@ -118,7 +118,7 @@ namespace core
     }
 	
 
-    T_sp ActivationFrame_O::lookupValue(int depth, int index) const
+    T_sp ActivationFrame_O::_lookupValue(int depth, int index) const
     {_G();
 	return this->lookupValueReference(depth,index);
     }
@@ -253,7 +253,7 @@ namespace core
 	}
     }
 	    
-    T_sp ValueFrame_O::lookupValue(int depth, int index) const
+    T_sp ValueFrame_O::_lookupValue(int depth, int index) const
     {_G();
 	return this->lookupValueReference(depth,index);
     }
@@ -304,11 +304,11 @@ namespace core
     /*! Update a value in the frame based on it's name
      This is only used by the interpreter and so it isn't expected to be fast
     */
-    bool ValueFrame_O::updateValue(Symbol_sp sym, T_sp obj)
+    bool ValueFrame_O::_updateValue(Symbol_sp sym, T_sp obj)
     {
 	if ( this->_DebuggingInfo.nilp() )
 	{
-	    return this->Base::updateValue(sym,obj);
+	    return this->Base::_updateValue(sym,obj);
 	}
 	Vector_sp debuggingInfo = this->_DebuggingInfo.as<Vector_O>();
 	for ( int i(0), iEnd(this->length()); i<iEnd; ++i ) {
@@ -318,7 +318,7 @@ namespace core
 	    }
 	}
 	if ( this->parentFrame().nilp() ) return false;
-	return this->parentFrame()->updateValue(sym,obj);
+	return this->parentFrame()->_updateValue(sym,obj);
     }
 
 
@@ -483,14 +483,14 @@ namespace core
 {
 
 
-    T_sp TagbodyFrame_O::lookupTagbodyId(int depth, int index) const
+    T_sp TagbodyFrame_O::_lookupTagbodyId(int depth, int index) const
     {_G();
 	if ( depth == 0 )
 	{
 	    return this->asSmartPtr();
 	}
 	--depth;
-	return(this->parentFrame()->lookupTagbodyId(depth,index));
+        return Environment_O::clasp_lookupTagbodyId(this->parentFrame(),depth,index);
     }
 
     string TagbodyFrame_O::summaryOfContents() const

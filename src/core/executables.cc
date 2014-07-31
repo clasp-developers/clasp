@@ -25,7 +25,6 @@ namespace core
 {
 
 
-
     bool FunctionClosure::macroP() const
     {
         return this->kind == kw::_sym_macro;
@@ -51,7 +50,7 @@ namespace core
 
     void InterpretedClosure::LISP_CALLING_CONVENTION()
     {
-        ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->lambdaListHandler,this->closedEnv);
+        ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->lambdaListHandler,this->closedEnvironment);
         ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
         try {
             lambdaListHandler_createBindings(this->lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
@@ -87,11 +86,9 @@ namespace core
     SYMBOL_EXPORT_SC_(KeywordPkg,unrecognizedKeyword);
 
 
-    void handleArgumentHandlingExceptions(FunctionClosure*)
+    void handleArgumentHandlingExceptions(FunctionClosure* closure)
     {
-        IMPLEMENT_MEF(BF("Handle new calling convention"));
-#if 0
-        Function_sp localFunc = func;
+        Function_sp func = Function_O::make(closure);
         try {
             throw;
         } catch (TooManyArgumentsError& error) {
@@ -111,7 +108,6 @@ namespace core
                        , lisp_createList(kw::_sym_calledFunction, func
                                          , kw::_sym_unrecognizedKeyword, error.argument));
         }
-#endif
     }
 
 

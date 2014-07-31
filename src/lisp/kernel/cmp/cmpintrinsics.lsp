@@ -147,43 +147,32 @@ Boehm and MPS use a single pointer"
 (defconstant +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
+#+(or)(progn
+        (defconstant +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
+        (defconstant +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
+        (defconstant +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
+        (defconstant +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
+        )
 
-(defconstant +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
-(defconstant +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
-(defconstant +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
-(defconstant +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
-
-(defconstant +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
-(defconstant +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
-(defconstant +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
-(defconstant +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
-
-
-(defconstant +fn-tmv*-afsp*-afsp*-argument-names+ '("result-ptr" "closed-af-ptr" "arguments-af-ptr"))
-(defconstant +fn-tmv*-afsp*-afsp*+ (llvm-sys:function-type-get +void+ (list +tmv*+ +afsp*+ +afsp*+ ))
+;; Substitute afsp* with tsp
+(defconstant +afsp+ +tsp+)
+(defconstant +afsp*+ +tsp*+)
 
 
-  "The old style function prototypes, pass:
-1) A pointer for where to put the result
-2) A closed over runtime environment
-3) A activation frame containing the arguments")
 
-(defconstant +va-list+ +tsp*+)
-(defconstant +fn-varargs-prototype-argument-names+ '("result-ptr" "closed-af-ptr" "num-varargs" "va-list"))
-(defconstant +fn-varargs-prototype+ (llvm-sys:function-type-get +void+ (list +tmv*+ +afsp*+ +i32+ +va-list+ ) #|| NOT VARARGS - use va-list ||# )
+(defconstant +va-list+ +i8*+)
+(defconstant +closure*+ +i8*+)
+(defconstant +fn-varargs-prototype-argument-names+ '("result-ptr" "closed-af-ptr" "num-varargs" "farg0" "farg1" "farg2" "va-list"))
+(defconstant +fn-varargs-prototype+ (llvm-sys:function-type-get +void+ (list +tmv*+ +afsp*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+ +va-list+ ) #|| NOT VARARGS - use va-list ||# )
   "The new style function prototypes, pass:
 1) A pointer for where to put the result
 2) A closed over runtime environment (linked list of activation frames)
 3) The number of arguments +i32+
 4) A varargs list of T_O* pointers ")
 
-#+varargs (progn
-	     (defconstant +fn-prototype+ +fn-varargs-prototype+)
-	     (defconstant +fn-prototype-argument-names+ +fn-varargs-prototype-argument-names+))
-
-#-varargs (progn
-	     (defconstant +fn-prototype+ +fn-tmv*-afsp*-afsp*+)
-	     (defconstant +fn-prototype-argument-names+ +fn-tmv*-afsp*-afsp*-argument-names+))
+(progn
+  (defconstant +fn-prototype+ +fn-varargs-prototype+)
+  (defconstant +fn-prototype-argument-names+ +fn-varargs-prototype-argument-names+))
 
 
 (defconstant +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
@@ -191,14 +180,6 @@ Boehm and MPS use a single pointer"
 
 (defconstant +fn-void+ (llvm-sys:function-type-get +void+ nil))
 (defconstant +fn-void-ptr+ (llvm-sys:type-get-pointer-to +fn-void+))
-
-
-(defconstant +lisp-calling-convention-argument-names+ '("result" "env" "nargs" "arg0" "arg1" "arg2"))
-(defconstant +lisp-calling-convention+ (llvm-sys:function-type-get +void+ (list +tmv*+ +afsp+ +i32+ +tsp+ +tsp+ +tsp+) t)
-  "The calling convention for generated function code - this must match foundation.h  core::FunctionCallingConvention" )
-(defconstant +lisp-calling-convention-ptr+ (llvm-sys:type-get-pointer-to +lisp-calling-convention+))
-
-
 
 
 ;;
@@ -358,7 +339,7 @@ Boehm and MPS use a single pointer"
 (defun define-primitives-in-module (module)
 
 
-  (primitive module "lccGlobalFunction" +lisp-calling-convention-ptr+ (list +symsp+))
+;  (primitive module "lccGlobalFunction" +lisp-calling-convention-ptr+ (list +symsp+))
 
   (primitive-does-not-throw module "newFunction_sp" +void+ (list +Function_sp*+))
   (primitive-does-not-throw module "destructFunction_sp" +void+ (list +Function_sp*+))
@@ -404,7 +385,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "makeDoubleFloat" +void+ (list +tsp*+ +double+))
   #+long-float (primitive-does-not-throw module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
   (primitive-does-not-throw module "makeString" +void+ (list +tsp*+ +i8*+))
-  (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +tsp*+ +tsp*+ +afsp*+))
+  (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+))
 
 
   (primitive module "fillRestTarget" +void+ (list +tsp*+ +afsp*+ +i32+ +i8*+))
@@ -422,7 +403,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "makeTagbodyFrame" +void+ (list +afsp*+))
   (primitive-does-not-throw module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
   (primitive-does-not-throw module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
-  (primitive-does-not-throw module "setParentOfActivationFrame" +void+ (list +afsp*+ +afsp*+))
+  (primitive-does-not-throw module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
   (primitive-does-not-throw module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
 
@@ -449,6 +430,8 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "activationFrameNil" +afsp*+ nil)
   (primitive-does-not-throw module "activationFrameSize" +i32+ (list +afsp*+))
   (primitive-does-not-throw module "activationFrameParentRef" +afsp*+ (list +afsp*+))
+
+  (primitive-does-not-throw module "copyArgs" +void+ (list +tsp*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+ +i8*+))
   (primitive module "throwTooManyArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive module "throwNotEnoughArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive module "throwIfExcessKeywordArguments" +void+ (list +i8*+ +afsp*+ +i32+))
@@ -460,8 +443,8 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "gdb" +void+ nil)
   (primitive-does-not-throw module "debugInvoke" +void+ nil)
   (primitive-does-not-throw module "debugInspectActivationFrame" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "debugInspectObject_sp" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "debugInspectObject_mv" +void+ (list +tmv*+))
+  (primitive-does-not-throw module "debugInspectT_sp" +void+ (list +tsp*+))
+  (primitive-does-not-throw module "debugInspectT_mv" +void+ (list +tmv*+))
 
   (primitive-does-not-throw module "debugPointer" +void+ (list +i8*+))
   (primitive-does-not-throw module "debugPrintObject" +void+ (list +i8*+ +tsp*+))
@@ -478,11 +461,11 @@ Boehm and MPS use a single pointer"
   (primitive module "va_throwNotEnoughArgumentsException" +void+ (list +i8*+ +i32+ +i32+))
   (primitive module "va_throwIfExcessKeywordArguments" +void+ (list +i8*+ +i32+ +tsp*+ +i32+))
   (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
-  (primitive module "va_coerceToFunction" +void+ (list +Function_sp*+ +tsp*+))
-  (primitive module "va_symbolFunction" +void+ (list +Function_sp*+ +symsp*+))  ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
-  (primitive module "va_lexicalFunction" +void+ (list +Function_sp*+ +i32+ +i32+ +afsp*+))
-  (primitive module "FUNCALL" +void+ (list +tsp*-or-tmv*+ +Function_sp*+ +i32+ +tsp*+)) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
-  (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +Function_sp*+ +afsp*+)) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
+  (primitive module "va_coerceToClosure" +closure*+ (list +tsp+))
+  (primitive module "va_symbolFunction" +closure*+ (list +symsp*+))  ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
+  (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +tsp+))
+  (primitive module "FUNCALL" +void+ (list +tsp*-or-tmv*+ +closure*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+) :varargs t) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
+  (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +tsp+) :varargs t) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
 
 
   (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +i32+ +tsp*+ +i32+ +i8*+))

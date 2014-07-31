@@ -801,23 +801,17 @@ namespace core {
 	    SIMPLE_ERROR(BF("The only argument for pathname is nil"));
 	}
     L:
-#ifdef BRCL_UNICODE
-	if ( String_sp stringx = x.asOrNull<String_O>() )
-	{
-	x = af_parseNamestring(x);
-    } else
-#endif
-	    if ( Str_sp strx = x.asOrNull<Str_O>() )
-	    {
-		x = af_parseNamestring(x);
-	    } else if ( x.isA<Pathname_O>() ) {
-		// do nothing
-	    } else if ( x.isA<Stream_O>() ) {
-		x = x.as<Stream_O>()->pathname();
-		goto L;
-	    } else {
-		WRONG_TYPE_ONLY_ARG(x,Cons_O::createList(cl::_sym_or,cl::_sym_fileStream,cl::_sym_string,cl::_sym_pathname));
-	    }
+        if ( Str_sp strx = x.asOrNull<Str_O>() )
+        {
+            x = af_parseNamestring(x);
+        } else if ( x.isA<Pathname_O>() ) {
+            // do nothing
+        } else if ( x.isA<Stream_O>() ) {
+            x = x.as<Stream_O>()->pathname();
+            goto L;
+        } else {
+            WRONG_TYPE_ONLY_ARG(x,Cons_O::createList(cl::_sym_or,cl::_sym_fileStream,cl::_sym_string,cl::_sym_pathname));
+        }
 	return x.as<Pathname_O>();
     }
 

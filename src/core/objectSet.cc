@@ -12,25 +12,6 @@
 namespace core {
 
 
-#if 0
-    T_sp ObjectSet_O::__init__(Function_sp exec, Cons_sp args, Environment_sp bargs, Lisp_sp lisp)
-    {_G();
-	T_sp ov = translate::from_object<T_sp>::convert(bargs->lookup(Pkg(),"values")->object());
-	if ( ov.notnilp() )
-	{
-	    if ( ov->consP() )
-	    {
-		Cons_sp co = ov.as_or_nil<Cons_O>();
-		this->addObjectsInCons(co);
-	    } else
-	    {
-		SIMPLE_ERROR(BF("Illegal argument for ObjectSet init"));
-	    }
-	}
-	return _Nil<T_O>();
-    }
-#endif
-
 
     void ObjectSet_O::initialize()
     {

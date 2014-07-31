@@ -223,10 +223,12 @@ namespace llvmo
 
     void dump_funcs(core::CompiledFunction_sp compiledFunction)
     {
-        IMPLEMENT_MEF(BF("Handle new functor approach"));
-#if 0
-        core::FunctionClosure* cb = compiledFunction->getBody();
-	core::T_sp funcs = cb->compiledFuncs();
+        core::Closure* cb = compiledFunction->closure;
+        if ( !cb->compiledP() ) {
+            SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
+        }
+        llvmo::CompiledClosure* cc = dynamic_cast<llvmo::CompiledClosure*>(cb);
+	core::T_sp funcs = cc->associatedFunctions;
 	if ( af_consP(funcs) )
 	{
 	    core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
@@ -244,7 +246,6 @@ namespace llvmo
 	    return;
 	}
 	printf("af_disassemble -> %s\n", _rep_(funcs).c_str() );
-#endif
     }
     
     
