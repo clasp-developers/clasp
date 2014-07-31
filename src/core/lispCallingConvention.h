@@ -1,6 +1,6 @@
 
 
-#define LISP_CALLING_CONVENTION_ARGS_BASE int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2
+#define LISP_CALLING_CONVENTION_ARGS_BASE size_t lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2
 #define LISP_CALLING_CONVENTION_ARGS_ELIPSIS LISP_CALLING_CONVENTION_ARGS_BASE, ...
 #define LISP_CALLING_CONVENTION_ARGS LISP_CALLING_CONVENTION_ARGS_BASE, va_list lcc_arglist 
 
