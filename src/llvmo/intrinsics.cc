@@ -346,6 +346,7 @@ extern "C" {
 
     extern void copyArgs(core::T_sp* destP, int nargs, core::T_O* arg0, core::T_O* arg1, core::T_O* arg2, va_list args )
     {_G();
+//        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
         switch (nargs) {
         case 0:
             return;
@@ -355,6 +356,7 @@ extern "C" {
         case 2:
             destP[0] = gctools::smart_ptr<core::T_O>(arg0);
             destP[1] = gctools::smart_ptr<core::T_O>(arg1);
+            return;
         case 3:
             destP[0] = gctools::smart_ptr<core::T_O>(arg0);
             destP[1] = gctools::smart_ptr<core::T_O>(arg1);
@@ -788,7 +790,7 @@ extern "C"
 	core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs,_Nil<core::ActivationFrame_O>()));
 	valueFrame->setEnvironmentId(id);
 	(*resultActivationFrameP) = valueFrame;
-        printf("%s:%d makeValueFrame address &result->%p (&result)->px->%p valueFrame->%p\n", __FILE__, __LINE__, resultActivationFrameP, resultActivationFrameP->px_ref(), valueFrame.px_ref() );
+//        printf("%s:%d makeValueFrame address &result->%p (&result)->px->%p valueFrame->%p\n", __FILE__, __LINE__, resultActivationFrameP, resultActivationFrameP->px_ref(), valueFrame.px_ref() );
     }
 
     extern void makeTagbodyFrame(core::ActivationFrame_sp* resultP)
