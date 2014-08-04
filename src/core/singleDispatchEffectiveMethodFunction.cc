@@ -31,13 +31,6 @@ namespace core
     }
     
     
-    ::core::T_sp SingleDispatchEffectiveMethodFunction_O::__init__(::core::Function_sp exec, ::core::Cons_sp args, ::core::Environment_sp env, ::core::Lisp_sp lisp)
-    {_G();
-//      this->Base::__init__(exec,args,env,lisp);
-//      arg = translate::from_object<XXXX>::convert(env->lookup(this->Package(),"YYY"));
-	return _Nil<T_O>();
-    }
-    
 #if 0
 #if defined(OLD_SERIALIZE)
     void SingleDispatchEffectiveMethodFunction_O::serialize(::serialize::SNodeP node)
@@ -85,7 +78,7 @@ namespace core
 
 
 
-    T_mv SingleDispatchEffectiveMethodFunction_O::INVOKE(int nargs, ArgArray argArray )
+    void SingleDispatchEffectiveMethodFunction_O::LISP_INVOKE()
     {_OF();
 	LOG(BF("My methods --> %s") % _rep_(this) );
 	IMPLEMENT_MEF(BF("Implement emf"));

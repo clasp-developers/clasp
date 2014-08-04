@@ -32,18 +32,6 @@ namespace core {
   __END_DOC
 */
 
-#if 0
-#define INIT_ARGS_StringSet_O "(self entries)"
-#define DOCS_StringSet_O "A set of strings. entries--a cons of strings"
-    T_sp StringSet_O::__init__(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp)
-    {_OF();
-	Cons_sp entries = translate::from_object<Cons_O>::convert(env->lookup(Pkg(),"entries")->object());
-	LOG(BF("Inserting cons of strings[%s]") % entries->__repr__() );
-	this->insertConsStrings(entries);
-	return _Nil<T_O>();
-    }
-#endif
-
 
     StringSet_sp StringSet_O::insertConsStrings(Cons_sp vals)
     {
@@ -343,11 +331,10 @@ namespace core {
 	    .def("containsSubset",&StringSet_O::containsSubset)
 //	    .def("remove",&StringSet_O::remove)
 	    .def("clear",&StringSet_O::clear)
-	    .def("first",&StringSet_O::first)
 	    .def("asString",&StringSet_O::asString)
 	    .def("setFromString",&StringSet_O::setFromString)
-	    .def("union",&StringSet_O::setUnion)
-	    .def("intersection",&StringSet_O::intersection)
+	    .def("StringSetUnion",&StringSet_O::setUnion)
+	    .def("StringSetIntersection",&StringSet_O::intersection)
 	    .def("relativeComplement",&StringSet_O::relativeComplement)
 	    .def("removeAll",&StringSet_O::removeAll)
 	    .def("cartesianProduct",&StringSet_O::cartesianProduct)
@@ -368,11 +355,10 @@ namespace core {
 	    .def("containsSubset",&StringSet_O::containsSubset)
 //	    .def("remove",&StringSet_O::remove)
 	    .def("clear",&StringSet_O::clear)
-	    .def("first",&StringSet_O::first)
 	    .def("asString",&StringSet_O::asString)
 	    .def("setFromString",&StringSet_O::setFromString)
-	    .def("union",&StringSet_O::setUnion)
-	    .def("intersection",&StringSet_O::intersection)
+	    .def("StringSetUnion",&StringSet_O::setUnion)
+	    .def("StringSetIntersection",&StringSet_O::intersection)
 	    .def("relativeComplement",&StringSet_O::relativeComplement)
 	    .def("cartesianProduct",&StringSet_O::cartesianProduct)
 	    .def("cartesianProductInsert",&StringSet_O::cartesianProductInsert)

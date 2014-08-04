@@ -30,6 +30,7 @@
 #include <core/symbolTable.h>
 #include <core/translators.h>
 #include "core/str.h"
+#include <core/arguments.h>
 #include "clbind/clbind.h"
 #include "llvmo/translators.h"
 #include <asttooling/astExpose.h>

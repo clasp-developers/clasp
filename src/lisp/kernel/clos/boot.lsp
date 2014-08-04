@@ -163,19 +163,12 @@
     ;; 2) Class T had its metaclass wrong. Fix it.
     ;;
 #+compare    (print (list "MLOG STAGE 2 - BRCL skips this"))
-#+force-lots-of-gcs (gctools:garbage-collect)
 #-brcl
     (si:instance-class-set (find-class 't) (find-class 'built-in-class))
-#+force-lots-of-gcs (gctools:garbage-collect)
     ;;
     ;; 3) Finalize
     ;;
 #+compare(print (list "MLOG STAGE 3"))
-#+force-lots-of-gcs(gctools:garbage-collect)
-#-force-lots-of-gcs(mapc #'si::instance-sig-set all-classes)
-#+force-lots-of-gcs(mapc (lambda (c) (format t "Listing class ~a~%" c) (gctools::garbage-collect)) all-classes)
-#+force-lots-of-gcs(mapc (lambda (c) (format t "About to gc and then instance-sig-set ~a~%" c) (gctools::garbage-collect) (si::instance-sig-set c)) all-classes)
-#+force-lots-of-gcs(gctools:garbage-collect)
     ;;
     ;; 4) This is needed for further optimization
     ;;

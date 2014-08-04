@@ -1,6 +1,8 @@
 #ifndef	clbind_H
 #define clbind_H
 
+#include <core/foundation.h>
+#include <core/arguments.h>
 #include <clbind/scope.h>
 #include <clbind/function.h>
 #include <clbind/class.h>

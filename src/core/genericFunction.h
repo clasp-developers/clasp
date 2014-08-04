@@ -7,15 +7,15 @@
 namespace core
 {
 
-    T_mv notFuncallableDispatch( const Instance_O& gf, int nargs, ArgArray args);
+    T_mv notFuncallableDispatch( Instance_sp gf, int nargs, ArgArray args);
     
-    T_mv generic_function_dispatch( const Instance_O& gf, int nargs, ArgArray args);
+    T_mv generic_function_dispatch( Instance_sp gf, int nargs, ArgArray args);
 
-    T_mv slotReaderDispatch( const Instance_O& gf, int nargs, ArgArray args);
+    T_mv slotReaderDispatch( Instance_sp gf, int nargs, ArgArray args);
 
-    T_mv slotWriterDispatch( const Instance_O& gf, int nargs, ArgArray args);
+    T_mv slotWriterDispatch( Instance_sp gf, int nargs, ArgArray args);
 
-    T_mv userFunctionDispatch( const Instance_O& gf, int nargs, ArgArray args);
+    T_mv userFunctionDispatch( Instance_sp gf, int nargs, ArgArray args);
 
 
     void initialize_genericFunction();

@@ -70,7 +70,7 @@ namespace core {
         DISABLE_NEW();
 
         virtual string describe() const {return "StandardClassInitializationFunctoid";};
-        StandardClassInitializationFunctoid(const string& name, StandardClass_sp c) : Functoid(name)
+        StandardClassInitializationFunctoid(T_sp name, StandardClass_sp c) : Functoid(name)
         { this->_StandardClass = c;};
         virtual ~StandardClassInitializationFunctoid() {};
     };

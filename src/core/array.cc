@@ -105,11 +105,11 @@ namespace core
 	    int ifn = fn->get();
 	    if (ifn<0 || ifn >= nonincl_index)
 	    {
-		af_wrongIndex(filename,lineno,lisp_intern(CurrentPkg,function),array,which,index,nonincl_index);
+		af_wrongIndex(filename,lineno,lisp_intern(function,CurrentPkg),array,which,index,nonincl_index);
 	    }
 	    return ifn;
 	}
-	af_wrongIndex(filename,lineno,lisp_intern(CurrentPkg,function),array,which,index,nonincl_index);
+	af_wrongIndex(filename,lineno,lisp_intern(function,CurrentPkg),array,which,index,nonincl_index);
 	UNREACHABLE();
     }
 		
@@ -323,11 +323,11 @@ namespace core
 	PYTHON_CLASS(CorePkg,Array,"","",_lisp)
 //	.initArgs("(self)")
 //	    .def_raw("aref",&Array_O::aref)
-	    .def("array-setf-aref",&Array_O::setf_aref)
-	    .def("index",&Array_O::index)
-	    .def("array-dimension",&Array_O::arrayDimension)
-	    .def("array-dimensions",&Array_O::arrayDimensions)
-	    .def("array-rank",&Array_O::rank)
+	    .def("core:array-setf-aref",&Array_O::setf_aref)
+	    .def("core:index",&Array_O::index)
+	    .def("cl:array-dimension",&Array_O::arrayDimension)
+	    .def("cl:array-dimensions",&Array_O::arrayDimensions)
+	    .def("cl:array-rank",&Array_O::rank)
 	    .def("copy-array",&Array_O::shallowCopy)
 	    .def("array-fill",&Array_O::arrayFill)
 	;

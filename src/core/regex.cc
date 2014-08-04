@@ -29,7 +29,7 @@ namespace core
 	core::class_<Regex_O>()
 	    .def("regexMatches",&Regex_O::regexMatches)
 	    .def("regexMatch",&Regex_O::regexMatch)
-//	    .def("regexSedReplace",&Regex_O::regexSedReplace)   // Need to rethink exposing this function so result is returned
+	    .def("regexSedReplace",&Regex_O::regexSedReplace)   // Need to rethink exposing this function so result is returned
 	;
         SYMBOL_EXPORT_SC_(CorePkg,makeRegex);
         Defun(makeRegex);

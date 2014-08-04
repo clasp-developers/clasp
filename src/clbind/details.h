@@ -149,6 +149,7 @@ namespace clbind {
 //
 // Counts instances of pureOutValue<N> where N is an int in the list of policies<...>
 //
+#if 0
     namespace detail {
         template <typename POL> 
         struct CountPureOutValues;
@@ -174,7 +175,42 @@ namespace clbind {
     };
     template <typename Policies>
     using CountPureOutValues = typename detail::CountPureOutValues<Policies>;
+#endif
 
+
+    namespace detail {
+        template <typename POL, int Shift> 
+        struct GatherPureOutValues;
+
+        template <int Shift>
+        struct GatherPureOutValues< policies<>, Shift >
+        {
+            static std::set<int> gather(const std::set<int>& entries) {
+                return entries;
+            };
+        };
+
+        template <typename... Tail, int N, int Shift>
+        struct GatherPureOutValues< policies<pureOutValue<N>,Tail...>, Shift >
+        {
+            static std::set<int> gather(const std::set<int>& entries) {
+                std::set<int> result(entries);
+                result.insert(N+Shift);
+                return result;
+            }
+        };
+
+        template <typename Head, typename... Tail, int Shift>
+        struct GatherPureOutValues< policies<Head,Tail...>, Shift >
+        {
+            static std::set<int> gather(const std::set<int>& entries) {
+                return entries;
+            };
+        };
+
+    };
+    template <typename Policies, int Shift>
+    using GatherPureOutValues = typename detail::GatherPureOutValues<Policies,Shift>;
 
 
 

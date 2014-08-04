@@ -1194,9 +1194,8 @@ be wrapped with to make a closure"
 					    (cmp-log "About to get-compiled-function with fn %s\n" fn)
 					    (llvm-sys:get-compiled-function *run-time-execution-engine* name fn
 									  (irc-environment-activation-frame wrapped-env)
-									  function-kind)))
-		       (compiled-body (get-body compiled-function)))
-		  (set-compiled-funcs compiled-body *all-funcs-for-one-compile*)
+									  function-kind))))
+		  (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
 		  (when name (setf-symbol-function name compiled-function))
 		  (values compiled-function warnp failp))))))))))
 

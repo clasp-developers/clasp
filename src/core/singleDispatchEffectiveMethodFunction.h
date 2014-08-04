@@ -30,7 +30,7 @@ namespace core
 	Cons_sp	_Methods;
 
     private:
-	T_mv INVOKE(int nargs, ArgArray args);
+	void LISP_INVOKE();
 	
     public: // Functions here
 

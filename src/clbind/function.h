@@ -78,18 +78,19 @@ namespace clbind {
 
             void register_() const
             {
-                core::Functoid* functoid = gctools::ClassAllocator<VariadicFunctoid<FunctionPointerType,Policies>>::allocateClass(name,functionPtr);
-                core::lisp_defun_lispify_name(core::lisp_currentPackageName()
-                                              , name
-                                              , functoid
-                                              , m_lambdalist
-                                              , m_declares
-                                              , m_docstring
-                                              , true
-                                              , true
-                                              , (CountFunctionArguments<FunctionPointerType>::value
-                                                 - CountPureOutValues<Policies>::value)
-                    );
+                core::Symbol_sp symbol = core::lispify_intern(name,core::lisp_currentPackageName());
+                core::BuiltinClosure* functoid = gctools::ClassAllocator<VariadicFunctoid<FunctionPointerType,Policies>>::allocateClass(symbol,functionPtr);
+                core::lisp_defun(symbol
+                                 , core::lisp_currentPackageName()
+                                 , functoid
+                                 , m_lambdalist
+                                 , m_declares
+                                 , m_docstring
+                                 , "=external="
+                                 , 0
+                                 , true
+                                 , (CountFunctionArguments<FunctionPointerType>::value)
+                                 , GatherPureOutValues<Policies,-1>::gather(std::set<int>()) );
 #if 0
                 object fn = make_function(L, f, deduce_signature(f), policies);
 

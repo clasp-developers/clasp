@@ -466,21 +466,8 @@ namespace core
 #endif
     }
 
-
-
-#define ARGS_af_makeDirectoryIterator "(path)"
-#define DECL_af_makeDirectoryIterator ""
-#define DOCS_af_makeDirectoryIterator "make DirectoryIterator args: path"
-    DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path)
-    {_G();
-	DirectoryIterator_sp me(DirectoryIterator_O::create());
-	SYMBOL_SC_(CorePkg,path);
-	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list(_lisp) << _sym_path << path ).cons()));
-	me->make_init__(_Nil<core::Function_O>(),env->args(),env,_lisp);
-	return(Values(me));
-    }
-
-    T_sp DirectoryIterator_O::make_init__(Function_sp exec, Cons_sp args, Environment_sp bargs, Lisp_sp lisp)
+#if 0
+    T_sp DirectoryIterator_O::make_init(Function_sp exec, Cons_sp args, T_sp bargs)
     {_G();
 	Path_sp path = coerce::pathDesignator(af_interpreter_lookup_variable(_sym_path,bargs));
 	if ( path.nilp() )
@@ -491,6 +478,24 @@ namespace core
 	this->first();
 	return _Nil<T_O>();
     }
+#endif
+
+
+#define ARGS_af_makeDirectoryIterator "(path)"
+#define DECL_af_makeDirectoryIterator ""
+#define DOCS_af_makeDirectoryIterator "make DirectoryIterator args: path"
+    DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path)
+    {_G();
+        IMPLEMENT_MEF(BF("What the heck was I doing below?"));
+#if 0
+	DirectoryIterator_sp me(DirectoryIterator_O::create());
+	SYMBOL_SC_(CorePkg,path);
+	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list(_lisp) << _sym_path << path ).cons()));
+	me->make_init(_Nil<core::Function_O>(),env->args(),env);
+	return(Values(me));
+#endif
+    }
+
 
 
     void DirectoryIterator_O::initialize()

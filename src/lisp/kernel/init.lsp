@@ -49,6 +49,10 @@
 (use-package :core)
 
 (select-package :core)
+(if (find-package "C") nil
+    (make-package "C" :use '(:cl :core)))
+
+(select-package :core)
 (if (find-package "FFI") nil
   (make-package "FFI" :use '(:CL :CORE)))
 
@@ -355,7 +359,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 					    loaded
 					    (bformat t "Could not load bundle %s - error: %s\n" (truename path) error-msg)))
                  (progn
-                   (bformat t "Loading %s\n" path)
+                   (bformat t "Loading %s\n" (truename path))
                    (load-bundle path)))))
 
 (*fset 'fset
@@ -413,7 +417,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun iload (fn &key load-bitcode)
   (setq *reversed-init-filenames* (cons fn *reversed-init-filenames*))
   (let* ((lsp-path (get-pathname-with-type fn "lsp"))
-	 (bc-path (get-pathname-with-type fn (fasl-pathname-type "bc")))
+	 (bc-path (fasl-pathname (get-pathname-with-type fn "bc")))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
 		      (if (not (probe-file bc-path))
@@ -447,7 +451,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (defun delete-init-file (module &key (really-delete t))
-  (let ((bitcode-path (get-pathname-with-type module (fasl-pathname-type "bc"))))
+  (let ((bitcode-path (fasl-pathname (get-pathname-with-type module "bc"))))
     (bformat t "Module: %s\n" module)
     (if (probe-file bitcode-path)
 	(if really-delete
@@ -462,7 +466,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun compile-iload (filename &key (reload nil) load-bitcode (recompile nil))
   (let* ((source-path (get-pathname-with-type filename "lsp"))
-	 (bitcode-path (get-pathname-with-type filename (fasl-pathname-type "bc")))
+	 (bitcode-path (fasl-pathname (get-pathname-with-type filename "bc")))
 	 (load-bitcode (if (probe-file bitcode-path)
 			   (if load-bitcode
 			       t
@@ -514,6 +518,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/mislib
     lsp/defstruct
     lsp/predlib
+    lsp/seq
     :tiny
 
     :pre-cmp
@@ -526,8 +531,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     cmp/cmpir
     cmp/cmpeh
     cmp/debuginfo
-    #+varargs cmp/lambdalistva
-    #-varargs cmp/lambdalist
+    cmp/lambdalistva
     cmp/cmpvars
     cmp/cmpquote
     cmp/compiler
@@ -542,7 +546,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/cmuutil
     lsp/seqmacros
     lsp/seqlib
-    lsp/seq
     lsp/assert
     lsp/iolib
     lsp/module
@@ -664,7 +667,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        )))
 
 
-(defun compile-boot ( &optional last-file &key first-file (recompile nil) (reload nil) )
+(defun compile-boot ( &optional last-file &key (first-file :start) (recompile nil) (reload nil) )
   (bformat t "compile-boot  from: %s  to: %s\n" first-file last-file)
   (if (not recompile) (load-boot last-file))
   (let* ((files (select-source-files last-file :first-file first-file))
@@ -737,7 +740,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   
 (defun compile-full ()
   (switch-to-full)
-  ;; Load source code for everything - don't load bitcode
   (load-boot :all :interp t :first-file :start)
   ;; Compile everything - ignore old bitcode
   (compile-boot :all :recompile t :first-file :base)
@@ -812,6 +814,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	(format t "Could not find pathname: ~a~%" brclrc))))
 
 
+(defun load-pos ()
+  (bformat t "Load pos: %s %s\n" core:*load-current-source-file-info* core:*load-current-linenumber*))
+(export 'load-pos)
+
 
 
 
@@ -832,7 +838,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 #-ignore-init-image
 (eval-when (:execute)
-  (ibundle #+ecl-min +min-image-pathname+ #-ecl-min +imagelto-pathname+)
+  (my-time (ibundle #+ecl-min +min-image-pathname+ #-ecl-min +imagelto-pathname+))
   (require 'system)
   (load-brclrc)
   (if core:*command-line-load*

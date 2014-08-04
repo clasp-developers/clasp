@@ -85,7 +85,7 @@ namespace core
   }
 
 
-
+    /*! TODO: I don't think this cache is location aware - it may need to be tuned to handle a moving garbage collector */
   void Cache::search_cache(CacheRecord*& min_e)
   {
     gctools::Vec0<CacheRecord>& table = this->_table;
@@ -98,20 +98,6 @@ namespace core
     int k;
     int idx = hi % total_size;
     ASSERTF(idx>=0,BF("idx must be positive"));
-#if 0
-    if ( idx==0 ) {
-      stringstream ss;
-      VectorObjectsWithFillPtr_sp vkeys = keys.as<VectorObjectsWithFillPtr_O>();
-      ss << "Number of keys: " << vkeys->length() << std::endl;
-      ss << "key values: " << std::endl;
-      for ( int uu=0; uu<keys->length(); uu++ ) {
-	ss << (BF("MLOG    vector_hash_key   key[%d] --> %ld") % uu % (keys->operator[](uu).intptr())).str() << std::endl;
-      }
-      string serr = ss.str();
-      cl_intptr_t hitest = this->vector_hash_key(keys);
-      SIMPLE_ERROR(BF("idx should never be == 0 but it was???  Check vector_hash_keys on keys to see if hi==0 isn't a valid hash index\n%s") % ss.str());
-    }
-#endif
 #if DEBUG_CLOS>=2
     printf("MLOG search_cache hash=%ld   hash-index=%d\n", hi, i);
 #endif
@@ -186,24 +172,6 @@ namespace core
   }
 
 
-
-#if 0
-  GC_RESULT Cache::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-  {
-    GC_SCANNER_BEGIN() {
-      SMART_PTR_FIX(this->_keys);
-      for ( auto it= this->_table.begin(); it<this->_table.end(); ++it )
-	{
-	  SMART_PTR_FIX(it->_key);
-	  SMART_PTR_FIX(it->_value);
-	}
-    } GC_SCANNER_END();
-    return GC_RES_OK;
-  }
-#endif
-    
-    
-    
 
 
   void initialize_cache()

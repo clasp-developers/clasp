@@ -76,6 +76,7 @@ namespace gctools
     public:
 	smart_ptr() : BaseType() {};
 	explicit smart_ptr(uintptr_t p) : BaseType(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
+        smart_ptr( core::T_O** p ) : BaseType(p) {};
 	smart_ptr( T* objP) : BaseType(objP) {};
 	explicit smart_ptr( void* objP) : BaseType(objP) {};
 	smart_ptr(const smart_ptr<T>& obj) : BaseType(obj) {};
@@ -87,6 +88,7 @@ namespace gctools
 #else
 	template <class Y>  smart_ptr(const boost::tagged_intrusive_ptr<Y>& yy) : BaseType(yy) {};
 #endif
+
 	/*! Get the pointer typcast to an integer quantity for hashing */
 	cl_intptr_t intptr() const { return ((uintptr_t)(this->px));};
 
@@ -281,7 +283,7 @@ namespace gctools
             int number_of_values() const { return this->_NULLp() ? 0 : 1;};
 
 	bool notnilp() const { return (!this->nilp());};
-	bool isTrue() const { return (!this->nilp() || internal_isTrue(this)); };
+	bool isTrue() const { return !this->nilp(); };
         bool base_fixnump() const { return this->BaseType::fixnump(); };
 	bool fixnump() const {return lisp_fixnumP(*this);};
 	bool characterp() const {return lisp_characterP(*this);};
@@ -307,6 +309,14 @@ template <class T>
 gctools::smart_ptr<T> _Nil()
 {
     gctools::smart_ptr<T> x(gctools::smart_ptr<T>::BaseType::tagged_nil);
+    return x;
+}
+
+/*! A value that is not Nil and can be used as a generalized True value */
+template <class T>
+gctools::smart_ptr<T> _NotNil()
+{
+    gctools::smart_ptr<T> x(gctools::smart_ptr<T>::BaseType::tagged_notnil);
     return x;
 }
 

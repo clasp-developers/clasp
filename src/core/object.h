@@ -502,12 +502,9 @@ namespace core
 
 #define DECLARE_INIT_GLOBALS() public: static void lisp_initGlobals(core::Lisp_sp lisp);
 
-#define DECLARE_INIT() public:						\
-	core::T_sp __init__(core::Function_sp exec, core::Cons_sp args, core::Environment_sp environ, core::Lisp_sp lisp );
+#define DECLARE_INIT() 
 
-#define DECLARE_MAKE_INIT() public: \
-	core::T_sp make_init__(core::Function_sp exec, core::Cons_sp args, core::Environment_sp environ, core::Lisp_sp lisp );
-	
+#define DECLARE_MAKE_INIT()
 
 
 
@@ -943,7 +940,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 //    if ( oClass::static_classSymbol() == UndefinedUnsignedInt )
     if ( !IS_SYMBOL_DEFINED(oClass::static_classSymbol()))
     {
-	core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_packageName(),oClass::static_className());
+	core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_className(),oClass::static_packageName());
 	LOG(BF("Setting staticClassSymbol for class to: %d")% classSymbol );
 	oClass::___set_static_ClassSymbol(classSymbol);
 	if ( oClass::static_creator == NULL )
@@ -963,7 +960,8 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
     // Sometimes we need to initialize globals - a callback can be setup by exposeCandoFunction
     if ( initGlobalCallback )
     {
-	lisp_installGlobalInitializationCallback(lisp,initGlobalCallback);
+        DEPRECIATED();
+//	lisp_installGlobalInitializationCallback(initGlobalCallback);
     }
 };
 

@@ -13,9 +13,9 @@ namespace core
 {
 
     template <typename FN>
-    class VariadicFunctoid : public Functoid {
+    class VariadicFunctoid : public BuiltinClosure {
     public:
-        typedef Functoid TemplatedBase;
+        typedef BuiltinClosure TemplatedBase;
         virtual size_t templatedSizeof() const { return sizeof(VariadicFunctoid<FN>);};
     };
 };
@@ -26,6 +26,8 @@ public:
     static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicFunctoid<T>::TemplatedBase>::Kind;
 };
 
+#include "arguments.h"
+#include "lambdaListHandler.fwd.h"
 namespace core {
 #include "wrappers_functoids.h"
 };
@@ -35,9 +37,9 @@ namespace core {
 
 namespace core {
     template <int DispatchOn, typename FN>
-    class VariadicMethoid : public Functoid {
+    class VariadicMethoid : public BuiltinClosure {
     public:
-        typedef Functoid TemplatedBase;
+        typedef BuiltinClosure TemplatedBase;
         size_t templatedSizeof() const { return sizeof(VariadicMethoid<DispatchOn,FN>);};
     };
 
@@ -50,10 +52,12 @@ namespace core{
 
 
     template <typename RT,typename... ARGS>
-    void af_def(const string& packageName, const string& name, RT (*fp)(ARGS...) , const string& arguments="", const string& declares="", const string& docstring="", int locked=1 )
+    void af_def(const string& packageName, const string& name, RT (*fp)(ARGS...) , const string& arguments="", const string& declares="", const string& docstring="", const string& sourceFile="", int sourceLine=0 )
     {_G();
-        Functoid* f = gctools::ClassAllocator<VariadicFunctoid<RT(ARGS...)> >::allocateClass(packageName+"::"+name,fp);
-        lisp_defun_lispify_name(packageName,name,f,arguments,declares,docstring,locked,true,sizeof...(ARGS));
+        Symbol_sp symbol = lispify_intern(name,packageName);
+        SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile,sourceLine);
+        BuiltinClosure* f = gctools::ClassAllocator<VariadicFunctoid<RT(ARGS...)> >::allocateClass(symbol,spi,kw::_sym_function,fp);
+        lisp_defun(symbol,packageName,f,arguments,declares,docstring,sourceFile,sourceLine,true,sizeof...(ARGS));
     }
 };
 
@@ -94,29 +98,32 @@ namespace core {
 //
 //
 // Wrapper for ActivationFrameMacroPtr
-    class ActivationFrameMacroWrapPtr : public Functoid {
+    class MacroClosure : public BuiltinClosure {
     private:
-	typedef	T_mv (*MacroPtr)(Cons_sp,Environment_sp);
+	typedef	T_mv (*MacroPtr)(Cons_sp,T_sp);
 	MacroPtr	mptr;
     public:
-	virtual string describe() const {return "ActivationFrameMacroWrapPtr";};
+	virtual string describe() const {return "MacroClosure";};
 // constructor
-	ActivationFrameMacroWrapPtr(const string& name, MacroPtr ptr) : Functoid(name),mptr(ptr) {}
+	MacroClosure(Symbol_sp name, SourcePosInfo_sp spi, MacroPtr ptr) : BuiltinClosure(name,spi,kw::_sym_macro),mptr(ptr) {}
         DISABLE_NEW();
-        size_t templatedSizeof() const { return sizeof(ActivationFrameMacroWrapPtr);};
-	T_mv activate( ActivationFrame_sp closedEnv, int nargs, ArgArray argArray)
+        size_t templatedSizeof() const { return sizeof(MacroClosure);};
+        virtual Symbol_sp getKind() const { return kw::_sym_macro; };
+	void LISP_CALLING_CONVENTION()
 	{_G();
-	    Cons_sp form = argArray[0].as_or_nil<Cons_O>();
-	    Environment_sp env = argArray[1].as_or_nil<Environment_O>();
-	    T_mv retval = (this->mptr)(form,env);
-	    return retval;
+	    Cons_sp form = LCC_ARG0().as_or_nil<Cons_O>();
+	    Environment_sp env = LCC_ARG1().as_or_nil<Environment_O>();
+            InvocationHistoryFrame _frame(this,Environment_O::clasp_getActivationFrame(env));
+	    *lcc_resultP = (this->mptr)(form,env);
 	};
     };
 
-    inline void defmacro(const string& packageName, const string& name, T_mv (*mp)(Cons_sp,Environment_sp env),const string& arguments="", const string& declares="", const string& docstring="", bool autoExport=true)
+    inline void defmacro(const string& packageName, const string& name, T_mv (*mp)(Cons_sp,T_sp env),const string& arguments, const string& declares, const string& docstring, const string& sourceFileName, int lineno, bool autoExport=true)
     {_G();
-	Functoid* f = gctools::ClassAllocator<ActivationFrameMacroWrapPtr>::allocateClass("macro->"+packageName+"::"+name,mp);
-	lisp_defmacro(packageName,name,f,arguments,declares,docstring,autoExport);
+        Symbol_sp symbol = lispify_intern(name,packageName);
+        SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName,lineno);
+	BuiltinClosure* f = gctools::ClassAllocator<MacroClosure>::allocateClass(symbol,spi,mp);
+	lisp_defmacro(symbol,packageName,f,arguments,declares,docstring,autoExport);
     }
 
 
@@ -187,6 +194,7 @@ namespace core {
 	    // 
 	    // If the class isn't in the class table then add it
 	    //
+#if 0
 	    if ( lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol()).nilp())
 	    {
                 DEPRECIATED();
@@ -198,6 +206,7 @@ namespace core {
 		    OT::Bases::baseClass1Id(),
 		    OT::Bases::baseClass2Id() );
 	    }
+#endif
 	    if (makerName != "")
 	    {
 		// use make-<className>
@@ -230,8 +239,17 @@ namespace core {
 	class_& def( string const& name, RT (OT::*mp)(ARGS...),
                      string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
 	{_G();
-	    Functoid* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...)>>::allocateClass(name,mp);
-	    lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
+            Symbol_sp symbol = lispify_intern(name,symbol_packageName(this->_ClassSymbol));
+	    BuiltinClosure* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...)>>::allocateClass(symbol,mp);
+	    lisp_defineSingleDispatchMethod(symbol
+                                            ,this->_ClassSymbol
+                                            ,m
+                                            ,0
+                                            ,lambda_list
+                                            ,declares
+                                            ,docstring
+                                            ,autoExport
+                                            ,sizeof...(ARGS)+1);
 	    return *this;
 	}
 
@@ -241,8 +259,9 @@ namespace core {
 	class_& def( string const& name, RT (OT::*mp)(ARGS...) const,
 		     string const& lambda_list="", const string& declares="", const string& docstring="",bool autoExport=true)
 	{_G();
-	    Functoid* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...) const>>::allocateClass(name,mp);
-	    lisp_defineSingleDispatchMethod(name,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
+            Symbol_sp symbol = lispify_intern(name,symbol_packageName(this->_ClassSymbol));
+	    BuiltinClosure* m = gctools::ClassAllocator<VariadicMethoid<0,RT(OT::*)(ARGS...) const>>::allocateClass(symbol,mp);
+	    lisp_defineSingleDispatchMethod(symbol,this->_ClassSymbol,m,0,lambda_list,declares,docstring,autoExport,sizeof...(ARGS)+1);
 	    return *this;
 	}
 

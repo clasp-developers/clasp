@@ -1,0 +1,12 @@
+$var MaxArgs = 64
+$range Args_ 0..MaxArgs
+$range Case_ 0..MaxArgs
+$for Case_ [[
+  $range Args_ 0..Case_-1
+  $range Fixed_ 0..2-Case_
+  case $Case_:
+    (*func)(&result,$Case_ $for Args_ [[, a[$Args_].asTPtr() ]] $for Fixed_ [[, NULL ]]  );
+    return result;
+  ]]
+
+         

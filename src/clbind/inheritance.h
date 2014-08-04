@@ -116,7 +116,7 @@ namespace clbind { namespace detail {
         inline ClassRep_sp class_map::get(class_id id) const
         {
             if (id >= m_classes.size())
-                return 0;
+                return _Nil<ClassRep_O>();
             return m_classes[id];
         }
 

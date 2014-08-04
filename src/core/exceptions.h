@@ -45,6 +45,7 @@ struct _TRACE {
 #define NO_INITIALIZERS_ERROR(_type_) {lisp_error_condition(__FUNCTION__,__FILE__,__LINE__,_type_,_Nil<core::Cons_O>()); THROW_NEVER_REACH(); }
 #define ERROR(_type_,_initializers_) {lisp_error_condition(__FUNCTION__,__FILE__,__LINE__,_type_,_initializers_); THROW_NEVER_REACH();}
 #define SIMPLE_ERROR(_boost_fmt_) {core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); THROW_NEVER_REACH();}
+#define NOT_ENVIRONMENT_ERROR(e) SIMPLE_ERROR(BF("Not an environment"))
 #define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */
@@ -90,14 +91,14 @@ struct _TRACE {
 #define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR(BF("Key %s not found") % _key_ )
 #define	CONTROL_ERROR() NO_INITIALIZERS_ERROR(cl::_sym_controlError);
 
-#define WRONG_TYPE_ARG(_datum_,_expectedType_) af_wrongTypeArgument(__FILE__,__LINE__,core::lisp_intern(CurrentPkg,__FUNCTION__),_datum_,_expectedType_)
+#define WRONG_TYPE_ARG(_datum_,_expectedType_) af_wrongTypeArgument(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_datum_,_expectedType_)
 
 
-#define WRONG_TYPE_KEY_ARG(_key_,_value_,_type_) af_wrongTypeKeyArg(__FILE__,__LINE__,core::lisp_intern(CurrentPkg,__FUNCTION__),_key_,_value_,_type_)
+#define WRONG_TYPE_KEY_ARG(_key_,_value_,_type_) af_wrongTypeKeyArg(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_key_,_value_,_type_)
 
-#define WRONG_TYPE_ONLY_ARG(_datum_,_expectedType_) af_wrongTypeOnlyArg(__FILE__,__LINE__,core::lisp_intern(CurrentPkg,__FUNCTION__),_datum_,_expectedType_)
+#define WRONG_TYPE_ONLY_ARG(_datum_,_expectedType_) af_wrongTypeOnlyArg(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_datum_,_expectedType_)
 
-#define WRONG_TYPE_NTH_ARG(_nth_,_datum_,_expectedType_) af_wrongTypeNthArg(__FILE__,__LINE__,core::lisp_intern(CurrentPkg,__FUNCTION__),_nth_,_datum_,_expectedType_)
+#define WRONG_TYPE_NTH_ARG(_nth_,_datum_,_expectedType_) af_wrongTypeNthArg(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_nth_,_datum_,_expectedType_)
 
 #define ARITHMATIC_ERROR(_operation_,_operands_) ERROR(cl::_sym_arithmaticError,core::lisp_createList(kw::_sym_operation,_operation_,kw::_sym_operands,_operands_))
 

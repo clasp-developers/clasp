@@ -199,6 +199,7 @@ namespace core
 
     class Lisp_O
     {
+        friend SourceFileInfo_mv af_sourceFileInfo(T_sp);
 	struct GCRoots //: public gctools::HeapRoot
         {
 	/*! The invocation history stack this should be per thread */
@@ -214,8 +215,7 @@ namespace core
             gctools::Vec0<core::Symbol_sp>      _ClassSymbolsHolder;
 	    HashTable_sp 		_SystemProperties;
 	    DynamicBindingStack 	_Bindings;
-	    /*! Map source file path strings to SourceFileInfo_sp */
-	    HashTableEqual_sp           _SourceFiles; // map<string,SourceFileInfo_sp> 	_SourceFiles;
+            gctools::Vec0<SourceFileInfo_sp>    _SourceFiles;
 	    /*! Store CATCH info */
 	    Cons_sp 			_CatchInfo;
 	    /* The global class table that maps class symbols to classes */
@@ -241,6 +241,8 @@ namespace core
             /*! This is needed by the compiler */
             ActivationFrame_sp          _ActivationFrameNil;
 
+            /*! SingleDispatchGenericFunction cache */
+            Cache*                      _SingleDispatchMethodCachePtr;
 #if CLOS
 	    /*! Generic functions method cache */
 	    Cache* 			_MethodCachePtr;
@@ -277,11 +279,9 @@ namespace core
 	friend class CoreExposer;
 	friend class ConditionHandlerManager;	
 	friend class BootStrapCoreSymbolMap;
-	friend T_sp sp_eval_when( Cons_sp args, Environment_sp env );
+	friend T_sp sp_eval_when( Cons_sp args, T_sp env );
 	template <class oclass> friend void define_base_class(Class_sp co, Class_sp cob, uint& classesUpdated );
 	template <class oclass> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class );
-	friend T_mv af_candoTrace( Cons_sp whole, Environment_sp env);
-	friend T_mv af_candoUntrace( Cons_sp whole, Environment_sp env );
 	friend T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value);
 	friend T_mv af_get_sysprop(T_sp key, T_sp area);
 
@@ -291,7 +291,7 @@ namespace core
     public:
 	static void initializeGlobals(Lisp_sp lisp);
 
-	friend T_sp prim_getForm(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp);
+//	friend T_sp prim_getForm(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp);
 	template <class oclass> friend BuiltInClass_sp hand_initialize_class(uint& classesHandInitialized, Lisp_sp prog,BuiltInClass_sp c);
     public:
 	static 	void lisp_initSymbols(Lisp_sp lisp);
@@ -300,6 +300,7 @@ namespace core
 	static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 	static const int MaxClosSlots; //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
 	static const int ClosCacheSize;
+        static const int SingleDispatchMethodCacheSize;
     public:
 	void initialize();
 #if defined(XML_ARCHIVE)
@@ -320,8 +321,10 @@ namespace core
         /*! Raw argv */
         vector<string>          _Argv;
     private:
-
+        /*! Map source file path strings to SourceFileInfo_sp */
+        map<string,int>         _SourceFileIndices; // map<string,SourceFileInfo_sp> 	_SourceFiles;
 	uint			_Mode;
+        uint                    _ReplCounter;
 	/*! Store paths to important directories */
 	Bundle*			_Bundle;
 	/*! Stores whether the system is big-endian or not */
@@ -380,6 +383,8 @@ namespace core
     public:
         ExceptionStack& exceptionStack() { return this->_Roots._ExceptionStack; };
     public:
+        uint nextReplCounter() { return ++this->_ReplCounter;};
+    public:
 	void setupMpi(bool mpiEnabled, int mpiRank, int mpiSize);
 	bool mpiEnabled() { return this->_MpiEnabled;}
 	int mpiRank() { return this->_MpiRank;}
@@ -404,6 +409,8 @@ namespace core
     public:
         gctools::Vec0<core::Symbol_sp>&     classSymbolsHolder() { return this->_Roots._ClassSymbolsHolder;};
     public:
+        SourceFileInfo_mv sourceFileInfo(const string& fileName);
+    public:
 	/*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
 	LoadTimeValues_sp getOrCreateLoadTimeValues(const string& name, int numberOfLoadTimeValues=0, int numberOfLoadTimeSymbols=0);
@@ -414,7 +421,7 @@ namespace core
 	LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string& name);
     public:
     /*! Keep track of every source file that is read by the system */
-	SourceFileInfo_sp getSourceFileInfo(const string& fileName);
+//	SourceFileInfo_sp getSourceFileInfo(const string& fileName);
     /*! Maintain a database of every source file read by the system */
 	void setSourceFileInfo(const string& fileName, SourceFileInfo_sp fileInfo);
 
@@ -445,6 +452,7 @@ namespace core
 	LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne;};
 #endif // ifdef BRCL_LONG_FLOAT
     public:
+        Cache* singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
 	Cache* methodCachePtr() const { return this->_Roots._MethodCachePtr;};
 	Cache* slotCachePtr() const { return this->_Roots._SlotCachePtr;};
 
@@ -631,6 +639,8 @@ namespace core
 	static SingleDispatchGenericFunction_sp setf_find_single_dispatch_generic_function(Symbol_sp gfSym, SingleDispatchGenericFunction_sp gf);
 	/*! Clear all generic functions */
 	static void forget_all_single_dispatch_generic_functions();
+        HashTableEq_sp singleDispatchGenericFunctionTable() const { return this->_Roots._SingleDispatchGenericFunctionTable; };
+    public:
 
 
 #if 0
@@ -962,6 +972,8 @@ namespace core
     Class_mv af_findClass(Symbol_sp symbol, bool errorp=true, Environment_sp env=_Nil<Environment_O>());
     Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, Environment_sp env );
 
+
+    SourceFileInfo_mv af_sourceFileInfo(T_sp obj);
 
     void af_stackMonitor();
 

@@ -141,7 +141,12 @@ namespace core
     bool af_interpretedFunctionP(T_sp arg)
     {_G();
 	if ( arg.nilp() ) return false;
-	return arg.isA<Interpreted_O>();
+        if ( arg.isA<Function_O>() ) {
+            if ( dynamic_cast<InterpretedClosure*>(arg.as<Function_O>()->closure) ) {
+                return true;
+            }
+        }
+        return false;
     };
 
 
@@ -456,11 +461,10 @@ namespace core
     bool af_compiled_function_p(T_sp o)
     {_G();
 	if ( o.nilp() ) return false;
-	if ( CompiledFunction_sp cf=o.asOrNull<CompiledFunction_O>() )
-	{
-	    return true;
-	}
-	return false;
+        if ( Function_sp fn = o.asOrNull<Function_O>() ) {
+            return fn->closure->compiledP();
+        }
+        return false;
     };
 
 #define ARGS_af_genericFunctionP "(arg)"
@@ -469,8 +473,9 @@ namespace core
     bool af_genericFunctionP(T_sp o)
     {_G();
 	if ( o.nilp() ) return false;
-	if ( CompiledFunction_sp cf=o.asOrNull<CompiledFunction_O>() )
+	if ( Function_sp cf=o.asOrNull<Function_O>() )
 	{
+            IMPLEMENT_MEF(BF("I should have a more sophisticated test here"));
 	    return true;
 	}
 	return false;

@@ -70,6 +70,7 @@ typedef int mode_t;
 #include "fileSystem.h"
 #include "strWithFillPtr.h"
 #include "symbolTable.h"
+#include "designators.h"
 #include "numbers.h"
 #include "evaluator.h"
 #include "unixfsys.h"
@@ -442,7 +443,7 @@ file_truename(Pathname_sp pathname, Str_sp filename, int flags)
 	    INTERNAL_ERROR(BF("file_truename:"
 			      " both FILENAME and PATHNAME are null!"));
 	}
-	pathname = af_pathname(filename);
+	pathname = cl_pathname(filename);
     } else if (Null(filename)) {
 	filename = brcl_namestring(pathname, BRCL_NAMESTRING_FORCE_BASE_STRING);
 	if (Null(filename)) {
@@ -703,7 +704,7 @@ directory_pathname_p(Pathname_sp path)
 #define DOCS_af_deleteFile "deleteFile"
 T_sp af_deleteFile(T_sp file)
 {_G();
-    Pathname_sp path = af_pathname(file);
+    Pathname_sp path = cl_pathname(file);
     int isdir = directory_pathname_p(path);
     Str_sp filename = coerce_to_posix_filename(path);
     int ok;
@@ -738,7 +739,7 @@ T_sp af_deleteFile(T_sp file)
 #define DOCS_af_probe_file "probe_file"
 Pathname_sp af_probe_file(T_sp filespec)
 {_G();
-    Pathname_sp pfile = af_pathname(filespec);
+    Pathname_sp pfile = cl_pathname(filespec);
 	/* INV: Both SI:FILE-KIND and TRUENAME complain if "file" has wildcards */
     return (af_file_kind(pfile, true).notnilp() ? af_truename(pfile) : _Nil<Pathname_O>());
 }
@@ -755,7 +756,7 @@ Pathname_sp af_probe_file(T_sp filespec)
 Number_sp af_file_write_date(T_sp pathspec)
 {_G();
     Number_sp time;
-    Pathname_sp pathname = af_pathname(pathspec);
+    Pathname_sp pathname = cl_pathname(pathspec);
     Str_sp filename = coerce_to_posix_filename(pathname);
     struct stat filestatus;
     time = _Nil<Number_O>();
@@ -778,7 +779,7 @@ Number_sp af_file_write_date(T_sp pathspec)
 T_sp cl_fileAuthor(T_sp file)
 {_G();
     T_sp output;
-    Pathname_sp pn = af_pathname(file);
+    Pathname_sp pn = cl_pathname(file);
     Str_sp filename = coerce_to_posix_filename(pn);
     struct stat filestatus;
     if (safe_stat((char*)filename->c_str(), &filestatus) < 0) {
@@ -891,9 +892,6 @@ string_match(const char *s, T_sp pattern)
     }
 }
 
-
-#if 0 // working
-
 /*
  * list_current_directory() lists the files and directories which are contained
  * in the current working directory (as given by current_dir()). If ONLY_DIR is
@@ -904,9 +902,8 @@ static T_sp
 list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
                int flags)
 {
-	const cl_env_ptr the_env = ecl_process_env();
 	T_sp out = _Nil<T_O>();
-	T_sp prefix = ecl_namestring(base_dir, BRCL_NAMESTRING_FORCE_BASE_STRING);
+	T_sp prefix = brcl_namestring(base_dir, BRCL_NAMESTRING_FORCE_BASE_STRING);
 	T_sp component, component_path, kind;
 	char *text;
 #if defined(HAVE_DIRENT_H)
@@ -914,7 +911,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 	struct dirent *entry;
 
 	brcl_disable_interrupts();
-	dir = opendir((char*)prefix->c_str());
+	dir = opendir((char*)prefix.as<Str_O>()->c_str());
 	if (dir == NULL) {
 		out = _Nil<T_O>();
 		goto OUTPUT;
@@ -932,7 +929,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 	for (;;) {
 		if (hFind == NULL) {
 			T_sp aux = make_constant_base_string(".\\*");
-			T_sp mask = si_base_string_concatenate(2, prefix, aux);
+			T_sp mask = af_base_string_concatenate(Cons_O::createList(prefix, aux));
 			hFind = FindFirstFile((char*)mask->c_str(), &fd);
 			if (hFind == INVALID_HANDLE_VALUE) {
 				out = _Nil<T_O>();
@@ -971,16 +968,17 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 			continue;
 		if (!string_match(text, text_mask))
 			continue;
-		component = make_constant_base_string(text);
-		component = si_base_string_concatenate(2, prefix, component);
+		component = Str_O::create(text);
+		component = af_base_string_concatenate(Cons_O::createList(prefix,component));
                 component_path = cl_pathname(component);
-                if (!Null(pathname_mask)) {
-                        if (Null(cl_pathname_match_p(component, pathname_mask)))
+                if (!pathname_mask.nilp() ) {
+                    if (!af_pathnameMatchP(component, pathname_mask)) // should this not be inverted?
                                 continue;
                 }
-                component_path = file_truename(component_path, component, flags);
-                kind = ecl_nth_value(the_env, 1);
-		out = CONS(CONS(component_path, kind), out);
+                T_mv component_path_mv = file_truename(component_path, component, flags);
+                component_path = component_path_mv;
+                kind = component_path_mv.valueGet(1);
+		out = Cons_O::create(Cons_O::create(component_path, kind), out);
 	}
 #ifdef HAVE_DIRENT_H
 	closedir(dir);
@@ -993,12 +991,13 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 #endif /* !HAVE_DIRENT_H */
 	brcl_enable_interrupts();
 OUTPUT:
-	return cl_nreverse(out);
+	return af_nreverse(out);
 }
 
 
 
 
+#if 0 // working
 
 
 
@@ -1096,54 +1095,6 @@ si_get_library_pathname(void)
 	@(return previous)
 @)
 
-T_sp
-si_mkdir(T_sp directory, T_sp mode)
-{
-	int modeint, ok;
-	T_sp filename = si_coerce_to_base_string(directory);
-
-        if (UNLIKELY(!ECL_FIXNUMP(mode) ||
-                         ecl_fixnum_minusp(mode) ||
-                         ecl_fixnum_greater(mode, ecl_make_fixnum(0777)))) {
-                FEwrong_type_nth_arg(@[si::mkdir], 2, mode,
-                                     ecl_make_integer_type(ecl_make_fixnum(0),
-                                                           ecl_make_fixnum(0777)));
-        }
-        modeint = ecl_fixnum(mode);
-	{
-		/* Ensure a clean string, without trailing slashes,
-		 * and null terminated. */
-		cl_index last = filename->base_string.fillp;
-		if (last > 1) {
-			ecl_character c = filename->c_str()[last-1];
-			if (IS_DIR_SEPARATOR(c))
-				last--;
-		}
-		filename = ecl_subseq(filename, 0, last);
-	}
-	brcl_disable_interrupts();
-#if defined(ECL_MS_WINDOWS_HOST)
-	ok = mkdir((char*)filename->c_str());
-#else
-	ok = mkdir((char*)filename->c_str(), modeint);
-#endif
-	brcl_enable_interrupts();
-
-	if (UNLIKELY(ok < 0)) {
-		T_sp c_error = brcl_strerror(errno);
-		const char *msg = "Could not create directory ~S"
-			"~%C library error: ~S";
-		eval::funcall(_sym_signalSimpleError,
-			      cl::_sym_fileError, /* condition */
-			      _lisp->_true(), /* continuable */
-			      /* format */
-			      Str_O::create(msg),
-			      Cons_O::createList( filename, c_error), /* format args */
-			      kw::_sym_pathname, /* file-error options */
-			      filename);
-	}
-	@(return filename)
-}
 
 T_sp
 si_mkstemp(T_sp template)
@@ -1273,8 +1224,6 @@ si_chmod(T_sp file, T_sp mode)
 
 
 
-#if 0
-
 
 /*
  * dir_files() lists all files which are contained in the current directory and
@@ -1284,28 +1233,32 @@ si_chmod(T_sp file, T_sp mode)
  * used to build these pathnames.
  */
 static T_sp
-dir_files(T_sp base_dir, T_sp pathname, int flags)
+dir_files(T_sp base_dir, T_sp tpathname, int flags)
 {
 	T_sp all_files, output = _Nil<T_O>();
 	T_sp mask;
-        Pathname_sp ppathname = pathname.as<Pathname_O>();
+        Pathname_sp pathname = tpathname.as<Pathname_O>();
 	T_sp name = pathname->_Name;
 	T_sp type = pathname->_Type;
 	if (name.nilp() && type.nilp()) {
-		return cl_list(1, base_dir);
+            return Cons_O::create(base_dir);
 	}
-	mask = clasp_makePathname(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
-                                 name, type, pathname->_Version,
-                                 kw::_sym_local);
+	mask = af_makePathname(_Nil<T_O>(), false,
+                               _Nil<T_O>(), false,
+                               _Nil<T_O>(), false,
+                               name, true,
+                               type, true,
+                               pathname->_Version, true,
+                               kw::_sym_local);
 	for (all_files = list_directory(base_dir, _Nil<T_O>(), mask, flags);
 	     !Null(all_files);
-	     all_files = ECL_CONS_CDR(all_files))
+	     all_files = oCdr(all_files))
 	{
-		T_sp record = ECL_CONS_CAR(all_files);
-		T_sp nw = ECL_CONS_CAR(record);
-		T_sp kind = ECL_CONS_CDR(record);
+		T_sp record = oCar(all_files);
+		T_sp nw = oCar(record);
+		T_sp kind = oCdr(record);
 		if (kind != kw::_sym_directory) {
-			output = CONS(nw, output);
+                    output = Cons_O::create(nw, output);
 		}
 	}
 	return output;
@@ -1337,43 +1290,43 @@ AGAIN:
      * pathname. We have to enter some subdirectory, determined by
      * CAR(DIRECTORY) and scan it.
      */
-    item = ECL_CONS_CAR(directory);
+    item = oCar(directory);
 
-    if (item == kw::_sym_wild || ecl_wild_string_p(item)) {
+    if (item == kw::_sym_wild || brcl_wild_string_p(item)) {
         /*
          * 2.1) If CAR(DIRECTORY) is a string or :WILD, we have to
          * enter & scan all subdirectories in our curent directory.
          */
         T_sp next_dir = list_directory(base_dir, item, _Nil<T_O>(), flags);
-        for (; !Null(next_dir); next_dir = ECL_CONS_CDR(next_dir)) {
-            T_sp record = ECL_CONS_CAR(next_dir);
-            T_sp component = ECL_CONS_CAR(record);
-            T_sp kind = ECL_CONS_CDR(record);
+        for (; !Null(next_dir); next_dir = oCdr(next_dir)) {
+            T_sp record = oCar(next_dir);
+            T_sp component = oCar(record);
+            T_sp kind = oCdr(record);
             if (kind != kw::_sym_directory)
                 continue;
             item = dir_recursive(cl_pathname(component),
-                                 ECL_CONS_CDR(directory),
+                                 oCdr(directory),
                                  filemask, flags);
-            output = ecl_nconc(item, output);
+            output = clasp_nconc(item, output);
         }
-    } else if (item == kw::_sym_wild-inferiors) {
+    } else if (item == kw::_sym_wild_inferiors) {
         /*
          * 2.2) If CAR(DIRECTORY) is :WILD-INFERIORS, we have to do
          * scan all subdirectories from _all_ levels, looking for a
          * tree that matches the remaining part of DIRECTORY.
          */
         T_sp next_dir = list_directory(base_dir, _Nil<T_O>(), _Nil<T_O>(), flags);
-        for (; !Null(next_dir); next_dir = ECL_CONS_CDR(next_dir)) {
-            T_sp record = ECL_CONS_CAR(next_dir);
-            T_sp component = ECL_CONS_CAR(record);
-            T_sp kind = ECL_CONS_CDR(record);
+        for (; !Null(next_dir); next_dir = oCdr(next_dir)) {
+            T_sp record = oCar(next_dir);
+            T_sp component = oCar(record);
+            T_sp kind = oCdr(record);
             if (kind != kw::_sym_directory)
                 continue;
             item = dir_recursive(cl_pathname(component),
                                  directory, filemask, flags);
-            output = ecl_nconc(item, output);
+            output = clasp_nconc(item, output);
         }
-        directory = ECL_CONS_CDR(directory);
+        directory = oCdr(directory);
         goto AGAIN;
     } else { /* :ABSOLUTE, :RELATIVE, :UP, component without wildcards */
         /*
@@ -1388,12 +1341,11 @@ AGAIN:
          */
         if (Null(base_dir))
             return _Nil<T_O>();
-        directory = ECL_CONS_CDR(directory);
+        directory = oCdr(directory);
         goto AGAIN;
     }
     return output;
 }
-
 
 
 
@@ -1410,13 +1362,11 @@ T_sp cl_directory(T_sp mask, T_sp resolveSymlinks)
     mask = af_coerceToFilePathname(mask);
     mask = make_absolute_pathname(mask); // in this file
     base_dir = make_base_pathname(mask);
-    output = dir_recursive(base_dir, mask->_Directory, mask,
+    output = dir_recursive(base_dir, af_pathnameDirectory(mask), mask,
                            resolveSymlinks.nilp() ? 0 : FOLLOW_SYMLINKS);
     return output;
 };
 
-
-#endif
 
 
 
@@ -1465,6 +1415,58 @@ Ratio_sp af_unixGetLocalTimeZone()
 
 
 
+#define ARGS_core_mkdir "(dir mode)"
+#define DECL_core_mkdir ""
+#define DOCS_core_mkdir "mkdir"
+T_sp core_mkdir(T_sp directory, T_sp mode)
+{
+    int modeint = 0;
+    int ok;
+    Str_sp filename = coerce::stringDesignator(directory);
+    if ( Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
+        modeint = fn->get();
+        if ( modeint < 0 || modeint > 0777 ) {
+            WRONG_TYPE_NTH_ARG(2,mode,cl::_sym_Fixnum_O);
+        }
+    }
+    {
+        /* Ensure a clean string, without trailing slashes,
+         * and null terminated. */
+        int last = af_length(filename);
+        if (last > 1) {
+            brclChar c = filename->schar(last-1);
+            if (IS_DIR_SEPARATOR(c))
+                last--;
+        }
+        filename = filename->subseq(0,Fixnum_O::create(last));
+    }
+//    brcl_disable_interrupts();
+#if defined(ECL_MS_WINDOWS_HOST)
+    ok = mkdir((char*)filename->c_str());
+#else
+    ok = mkdir((char*)filename->c_str(), modeint);
+#endif
+//    brcl_enable_interrupts();
+
+    if (UNLIKELY(ok < 0)) {
+        T_sp c_error = brcl_strerror(errno);
+        const char *msg = "Could not create directory ~S"
+            "~%C library error: ~S";
+        eval::funcall(_sym_signalSimpleError,
+                      cl::_sym_fileError, /* condition */
+                      _lisp->_true(), /* continuable */
+                      /* format */
+                      Str_O::create(msg),
+                      Cons_O::createList( filename, c_error), /* format args */
+                      kw::_sym_pathname, /* file-error options */
+                      filename);
+    }
+    return filename;
+}
+
+
+
+
 
 void initialize_unixfsys()
 {
@@ -1490,6 +1492,8 @@ void initialize_unixfsys()
     Defun(getppid);
     Defun(waitpid);
     ClDefun(fileAuthor);
+    CoreDefun(mkdir);
+    ClDefun(directory);
 };
 
 

@@ -35,7 +35,7 @@ SpecialForm_sp SpecialForm_O::create(Symbol_sp symbol, SpecialFormCallback fptr 
 }
 
 
-    T_mv SpecialForm_O::evaluate( Cons_sp args, Environment_sp environment )
+    T_mv SpecialForm_O::evaluate( Cons_sp args, T_sp environment )
     {_OF();
 	ASSERTP(this->_fptr!=NULL,"Functoid can not be NULL");
 	return (this->_fptr)(args,environment);

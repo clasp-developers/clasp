@@ -149,10 +149,9 @@ private:
 //    static void lisp_initGlobals(Lisp_sp lisp);
 public: // virtual functions inherited from Object
     void	initialize();
-    void	lispInitialize(Cons_sp kargs, Lisp_sp env);
 public:
     /*! Create a reader to read from an object indicated by the inputStreamDesignator (see CLHS) */
-    static Reader_sp create( Stream_sp sin, Lisp_sp lisp);
+    static Reader_sp create( Stream_sp sin);
 
     /*! Return true if c is in chrSet */
     bool inSet(char c, const char* chrSet);

@@ -16,8 +16,8 @@ namespace core
 
 
 
-        /*! Return the index of the stack entry with the matching key.
-          If return -1 then the key wasn't found */
+    /*! Return the index of the stack entry with the matching key.
+      If return -1 then the key wasn't found */
     int ExceptionStack::findKey(FrameKind kind, T_sp key) {
         for ( int i(this->_Stack.size()-1); i>=0; --i ) {
             if (this->_Stack[i]._FrameKind == kind && this->_Stack[i]._Key == key) return i;
@@ -25,11 +25,12 @@ namespace core
         return -1;
     }
 
-    InvocationHistoryFrame::InvocationHistoryFrame(IHFLeafKind kind, InvocationHistoryStack& stack) : _WroteToLog(false)
+    InvocationHistoryFrame::InvocationHistoryFrame(Closure* c, ActivationFrame_sp env) :closure(c), environment(env)
+                                                                                       , runningLineNumber(0)
+                                                                                       , runningColumn(0)
     {
-	this->_IHSFrameKind = kind;
-	this->_Stack = &stack;
-	this->_Next = stack.top();
+	this->_Stack = &_lisp->invocationHistoryStack();
+	this->_Next = this->_Stack->top();
 	if (this->_Next == NULL)
 	{
 	    this->_Index = 0;
@@ -37,7 +38,7 @@ namespace core
 	{
 	    this->_Index = this->_Next->_Index+1;
 	}
-	stack.push(this);
+	this->_Stack->push(this);
 	this->_Bds = _lisp->bindings().size();
     }
 
@@ -45,15 +46,6 @@ namespace core
     {
 	this->_Stack->pop();
     }
-
-
-    void InvocationHistoryFrame::setLineNumberColumnForCxxFunction(uint l, uint c, const char* f) {};
-
-
-
-
-
-
 
 
     void InvocationHistoryStack::setExpressionForTop(T_sp expression)
@@ -72,8 +64,8 @@ namespace core
     }
 
 
-    string InvocationHistoryFrame::asStringLowLevel(const string& type,
-						    const string& funcName,
+    string InvocationHistoryFrame::asStringLowLevel(Closure* closure,
+                                                    const string& funcName,
 						    const string& sourceFileName,
 						    uint lineNumber,
 						    uint column) const
@@ -81,20 +73,70 @@ namespace core
 	stringstream ss;
         if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
         if ( column == UNDEF_UINT ) column = 0;
-	ss << (BF("#%3d %8s %20s %5d col %2d %s") % this->_Index % type % sourceFileName % lineNumber % column  % funcName ).str();
+        char closureType = '?';
+        if ( closure->interpretedP() ) {
+            closureType = 'I';
+        } else if ( closure->compiledP() ) {
+            closureType = 'C';
+        } else if ( closure->builtinP() ) {
+            closureType = 'B';
+        }
+	ss << (BF("#%3d %c %20s %5d col %2d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
 //	ss << std::endl;
 //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
 	return ss.str();
     }
 
+
+
+    string InvocationHistoryFrame::sourcePathName() const
+    {
+        return af_sourceFileInfo(this->closure->sourcePosInfo())->namestring();
+    }
+
+
+
+    string InvocationHistoryFrame::asString()
+    {
+        SourceFileInfo_sp sfi = af_sourceFileInfo(this->closure->sourcePosInfo());
+        if ( this->runningLineNumber == 0 ) {
+            this->runningLineNumber = this->closure->lineNumber();
+            this->runningColumn = this->closure->column();
+        }
+	return this->asStringLowLevel(this->closure,
+                                      _rep_(this->closure->name),
+				      sfi->fileName(),
+				      this->runningLineNumber,
+                                      this->runningColumn);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
     //! Define this to ensure that TopLevelIHF vtable is weak symbol
     void TopLevelIHF::keyFunctionForVtable() {};
 
 
 
 
-    TopLevelIHF::TopLevelIHF(InvocationHistoryStack& stack, T_sp expression )
-	: InvocationHistoryFrame(TopLevel,stack),
+    TopLevelIHF::TopLevelIHF(InvocationHistoryStack& stack, T_sp expression, FunctionClosure* fc )
+	: InvocationHistoryFrame(TopLevel,stack, fc),
 	  _SourceFileInfo(_Nil<SourceFileInfo_O>()),
 	  _LineNumber(0),
 	  _Column(0),
@@ -155,7 +197,7 @@ namespace core
 
     string CxxFunctionIHF::asString() const
     {
-	return this->asStringLowLevel(this->typeName(),_rep_(this->_Function->getFunctionName()),af_sourceFileInfo(this->_Function)->fileName(),this->_LineNumber,0);
+	return this->asStringLowLevel(this->typeName(),_rep_(this->_Function->closure->name),af_sourceFileInfo(this->_Function)->fileName(),this->_LineNumber,0);
     }
 
 
@@ -169,15 +211,13 @@ namespace core
 //	IMPLEMENT_MEF(BF("Switch to ArgArray"));
     }
 
-    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, Function_sp function)
-	: InvocationHistoryFrame(kind,stack),
-	  _Function(function),
+    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, FunctionClosure* fc)
+	: InvocationHistoryFrame(kind,stack,fc),
 	  _LineNumber(0),
 	  _Column(0)
     {};
-    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, Function_sp function, ActivationFrame_sp af)
-	: InvocationHistoryFrame(kind,stack),
-	  _Function(function),
+    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, FunctionClosure* fc, ActivationFrame_sp af)
+	: InvocationHistoryFrame(kind,stack,fc),
 	  _ActivationFrame(af),
 	  _LineNumber(0),
 	  _Column(0)
@@ -186,15 +226,10 @@ namespace core
 
     string LispFunctionIHF::sourcePathName() const
     {
-	return af_sourceFileInfo(this->_Function)->namestring();
+	return this->closure->sourcePosInfo->sourceFileInfo->namestring();
     }
 
 
-
-    Function_sp LispFunctionIHF::function() const
-    {
-	return this->_Function.as<Function_O>();
-    };
 
     ActivationFrame_sp LispFunctionIHF::activationFrame() const
     {
@@ -219,15 +254,16 @@ namespace core
 
     string LispInterpretedFunctionIHF::asString() const
     {
-	return this->asStringLowLevel(this->typeName(),_rep_(this->_Function->getFunctionName()), af_sourceFileInfo(this->_Function)->fileName(),
+	return this->asStringLowLevel(this->typeName(),_rep_(this->closure->name),
+                                      this->closure->sourceFileInfo->fileName(),
 				      this->_LineNumber,this->_Column);
     }
 
     string LispCompiledFunctionIHF::asString() const
     {
 	return this->asStringLowLevel(this->typeName(),
-				      _rep_(this->_Function->getFunctionName()),
-				      af_sourceFileInfo(this->_Function)->fileName(),
+				      _rep_(this->closure->name),
+				      this->closure->sourceFileInfo->fileName(),
 				      this->_LineNumber,
 				      this->_Column);
     }
@@ -238,13 +274,13 @@ namespace core
     string MacroExpansionIHF::asString() const
     {
 	return this->asStringLowLevel(this->typeName(),
-				      _rep_(this->_Function->getFunctionName()),
-				      af_sourceFileInfo(this->_Function)->fileName(),
+				      _rep_(this->closure->name),
+				      this->closure->sourceFileInfo->fileName(),
 				      this->_LineNumber,this->_Column);
     }
 
 
-
+#endif
 
     
 
@@ -437,8 +473,8 @@ namespace core
 #define DOCS_af_ihsBacktraceNoArgs "ihsBacktraceNoArgs"
 	void af_ihsBacktraceNoArgs()
 	{_G();
-	af_ihsBacktrace(_lisp->_true(),_Nil<T_O>());
-    };
+            af_ihsBacktrace(_lisp->_true(),_Nil<T_O>());
+        };
 
     };
 
@@ -448,9 +484,9 @@ namespace core
 #define ARGS_af_ihsTop "()"
 #define DECL_af_ihsTop ""
 #define DOCS_af_ihsTop "ihsTop"
-	int af_ihsTop()
-	{_G();
-	return _lisp->invocationHistoryStack().top()->index();
+    int af_ihsTop()
+    {_G();
+        return _lisp->invocationHistoryStack().top()->index();
     };
 
 
@@ -460,8 +496,8 @@ namespace core
 #define ARGS_af_ihsPrev "(cur)"
 #define DECL_af_ihsPrev ""
 #define DOCS_af_ihsPrev "ihsPrev"
-	int af_ihsPrev(int idx)
-	{_G();
+    int af_ihsPrev(int idx)
+    {_G();
 	idx--;
 	if ( idx<0 ) idx = 0;
 	return idx;
@@ -474,8 +510,8 @@ namespace core
 #define ARGS_af_ihsNext "(cur)"
 #define DECL_af_ihsNext ""
 #define DOCS_af_ihsNext "ihsNext"
-	int af_ihsNext(int idx)
-	{_G();
+    int af_ihsNext(int idx)
+    {_G();
 	idx++;
 	if ( idx > _lisp->invocationHistoryStack().top()->index() ) idx = _lisp->invocationHistoryStack().top()->index();
 	return idx;
@@ -488,14 +524,14 @@ namespace core
 #define ARGS_af_ihsFun "(arg)"
 #define DECL_af_ihsFun ""
 #define DOCS_af_ihsFun "ihsFunc"
-	Function_sp af_ihsFun(int idx)
-	{_G();
+    Function_sp af_ihsFun(int idx)
+    {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
 	if (cur)
 	{
-	Function_sp func = cur->function();
-	if ( func.pointerp() ) return func;
-    }
+            Function_sp func = Function_O::make(cur->closure); //QUESTION: Should I be returning a new function every time?  This will cause problems when comparing functions - but I don't think I do that anywhere.
+            if ( func.pointerp() ) return func;
+        }
 	return _Nil<Function_O>();
     };
 
@@ -506,14 +542,14 @@ namespace core
 #define ARGS_af_ihsEnv "(cur)"
 #define DECL_af_ihsEnv ""
 #define DOCS_af_ihsEnv "ihsEnv"
-	Environment_sp af_ihsEnv(int idx)
-	{_G();
+    Environment_sp af_ihsEnv(int idx)
+    {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
 	if (cur)
 	{
-	Environment_sp env = cur->activationFrame();
-	if ( env.pointerp() ) return env;
-    }
+            Environment_sp env = cur->activationFrame();
+            if ( env.pointerp() ) return env;
+        }
 	return _Nil<Environment_O>();
     };
 
@@ -521,8 +557,8 @@ namespace core
 #define ARGS_af_ihsBds "(cur)"
 #define DECL_af_ihsBds ""
 #define DOCS_af_ihsBds "ihsBds"
-	int af_ihsBds(int idx)
-	{_G();
+    int af_ihsBds(int idx)
+    {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
 	if (cur) return cur->bds();
 	return 0;
@@ -535,36 +571,36 @@ namespace core
 #define ARGS_af_ihsCurrentFrame "()"
 #define DECL_af_ihsCurrentFrame ""
 #define DOCS_af_ihsCurrentFrame "ihsCurrentFrame"
-	int af_ihsCurrentFrame()
-	{_G();
-	    T_sp cf = _sym_STARihsCurrentSTAR->symbolValue();
-	    if ( cf.nilp() ) {
-		int icf = af_ihsTop();
-		return af_setIhsCurrentFrame(icf);
-	    }
-	    int icf = cf.as<Fixnum_O>()->get();
-	    if (icf < 0) {	
-		_sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
-		return 0;
-	    }
-	    if (icf >= af_ihsTop() ) {
-		_sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsTop()));
-		return af_ihsTop();
-	    }
-	    return icf;
-	}
+    int af_ihsCurrentFrame()
+    {_G();
+        T_sp cf = _sym_STARihsCurrentSTAR->symbolValue();
+        if ( cf.nilp() ) {
+            int icf = af_ihsTop();
+            return af_setIhsCurrentFrame(icf);
+        }
+        int icf = cf.as<Fixnum_O>()->get();
+        if (icf < 0) {	
+            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
+            return 0;
+        }
+        if (icf >= af_ihsTop() ) {
+            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsTop()));
+            return af_ihsTop();
+        }
+        return icf;
+    }
 
 
 #define ARGS_af_setIhsCurrentFrame "()"
 #define DECL_af_setIhsCurrentFrame ""
 #define DOCS_af_setIhsCurrentFrame "setIhsCurrentFrame"
-	int af_setIhsCurrentFrame(int icf)
-	{_G();
-	    if (icf < 0) icf = 0;
-	    else if (icf >= af_ihsTop() ) icf = af_ihsTop();
-	    _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
-	    return icf;
-	}
+    int af_setIhsCurrentFrame(int icf)
+    {_G();
+        if (icf < 0) icf = 0;
+        else if (icf >= af_ihsTop() ) icf = af_ihsTop();
+        _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(icf));
+        return icf;
+    }
 
 
 
@@ -574,8 +610,8 @@ namespace core
 #define ARGS_af_bdsTop "()"
 #define DECL_af_bdsTop ""
 #define DOCS_af_bdsTop "bdsTop"
-	int af_bdsTop()
-	{_G();
+    int af_bdsTop()
+    {_G();
 	return _lisp->bindings().top();
     };
 
@@ -585,8 +621,8 @@ namespace core
 #define ARGS_af_bdsVar "(idx)"
 #define DECL_af_bdsVar ""
 #define DOCS_af_bdsVar "bdsVar"
-	Symbol_sp af_bdsVar(int idx)
-	{_G();
+    Symbol_sp af_bdsVar(int idx)
+    {_G();
 	return _lisp->bindings().var(idx);
     };
 
@@ -597,8 +633,8 @@ namespace core
 #define ARGS_af_bdsVal "(idx)"
 #define DECL_af_bdsVal ""
 #define DOCS_af_bdsVal "bdsVal"
-	T_sp af_bdsVal(int idx)
-	{_G();
+    T_sp af_bdsVal(int idx)
+    {_G();
 	return _lisp->bindings().val(idx);
     };
 
@@ -608,8 +644,8 @@ namespace core
 
 
 
-	void initialize_stacks()
-	{
+    void initialize_stacks()
+    {
 	SYMBOL_SC_(CorePkg,ihsBacktrace);
 	Defun(ihsBacktrace);
 	SYMBOL_SC_(CorePkg,ihsTop);
@@ -634,4 +670,4 @@ namespace core
 
 
 
-    };
+};
