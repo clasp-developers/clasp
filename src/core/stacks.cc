@@ -64,7 +64,8 @@ namespace core
     }
 
 
-    string InvocationHistoryFrame::asStringLowLevel(const string& funcName,
+    string InvocationHistoryFrame::asStringLowLevel(Closure* closure,
+                                                    const string& funcName,
 						    const string& sourceFileName,
 						    uint lineNumber,
 						    uint column) const
@@ -72,7 +73,15 @@ namespace core
 	stringstream ss;
         if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
         if ( column == UNDEF_UINT ) column = 0;
-	ss << (BF("#%3d %20s %5d col %2d %s") % this->_Index % sourceFileName % lineNumber % column  % funcName ).str();
+        char closureType = '?';
+        if ( closure->interpretedP() ) {
+            closureType = 'I';
+        } else if ( closure->compiledP() ) {
+            closureType = 'C';
+        } else if ( closure->builtinP() ) {
+            closureType = 'B';
+        }
+	ss << (BF("#%3d %c %20s %5d col %2d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
 //	ss << std::endl;
 //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
 	return ss.str();
@@ -94,7 +103,8 @@ namespace core
             this->runningLineNumber = this->closure->lineNumber();
             this->runningColumn = this->closure->column();
         }
-	return this->asStringLowLevel(_rep_(this->closure->name),
+	return this->asStringLowLevel(this->closure,
+                                      _rep_(this->closure->name),
 				      sfi->fileName(),
 				      this->runningLineNumber,
                                       this->runningColumn);

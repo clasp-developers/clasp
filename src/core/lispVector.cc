@@ -18,6 +18,17 @@ namespace core
 //
 
 
+    
+    
+#define ARGS_cl_vector "(&rest args)"
+#define DECL_cl_vector ""
+#define DOCS_cl_vector "vector"
+    Vector_sp cl_vector(Cons_sp args)
+    {_G();
+	Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(),args,af_length(args),false);
+        return vec;
+    };
+
 
 
 #define DOCS_af_make_vector "make_vector See si_make_vector in ecl>>array.d"
@@ -201,6 +212,7 @@ namespace core
         ClDefun(vectorPush);
         SYMBOL_EXPORT_SC_(ClPkg,vectorPushExtend);
         ClDefun(vectorPushExtend);
+        ClDefun(vector);
     }
 
     void Vector_O::exposePython(::core::Lisp_sp lisp)

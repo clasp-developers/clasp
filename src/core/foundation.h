@@ -838,7 +838,7 @@ namespace core {
     typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
-    typedef T_mv (*ArgArrayGenericFunctionPtr)(const Instance_O& gf, int nargs, ArgArray argArray);
+    typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf, int nargs, ArgArray argArray);
 
     class Lisp_O;
     typedef Lisp_O* Lisp_sp;
@@ -1098,7 +1098,7 @@ namespace core
     T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp args );
     Cons_sp lisp_parse_arguments(const string& packageName, const string& args);
     Cons_sp lisp_parse_declares(const string& packageName, const string& declarestring);
-    LambdaListHandler_sp lisp_function_lambda_list_handler(Cons_sp lambda_list, Cons_sp declares );
+    LambdaListHandler_sp lisp_function_lambda_list_handler(Cons_sp lambda_list, Cons_sp declares, std::set<int> pureOutValues = std::set<int>() );
 #if 0
     void lisp_defun_lispify_name(const string& packageName, const string& name,
 				 Functoid*, const string& arguments="", const string& declarestring="",
@@ -1109,7 +1109,7 @@ namespace core
 		       const string& docstring="", bool autoExport=true);
     void lisp_defun(Symbol_sp name, const string& packageName,
 		    BuiltinClosure*, const string& arguments="", const string& declarestring="",
-		    const string& docstring="", const string& sourceFile="", int sourceLine=0, bool autoExport=true, int number_of_required_arguments=0 );
+		    const string& docstring="", const string& sourceFile="", int sourceLine=0, bool autoExport=true, int number_of_required_arguments=0, const std::set<int>& skipIndices=std::set<int>() );
     void lisp_defgeneric( const string& packageName, const string& name,
 			 Functoid*, const string& arguments="", const string& docstring="", bool autoExport=true  );
     void lisp_defmethod(Symbol_sp gfSymbol, Functoid* func, const string& arguments, const string& docstring);
@@ -1122,7 +1122,9 @@ namespace core
 						const string& declares="",
 						const string& docstring="",
 						bool autoExport=true,
-						int number_of_required_arguments = -1);
+						int number_of_required_arguments = -1,
+                                                std::set<int> pureOutIndices = std::set<int>()
+        );
 
 
     void	lisp_defsetfSingleDispatchMethod(Lisp_sp lisp, const string& name, Symbol_sp classSymbol,
@@ -1254,9 +1256,13 @@ namespace core
         virtual SourcePosInfo_sp sourcePosInfo() const {return _Nil<SourcePosInfo_O>();};
         virtual bool macroP() const = 0;
         virtual void setKind(Symbol_sp k)=0;
-        virtual bool compiledP() const =0;
+        virtual Symbol_sp getKind() const = 0;
+        virtual bool compiledP() const { return false; };
+        virtual bool interpretedP() const { return false; };
+        virtual bool builtinP() const { return false;};
         virtual int lineNumber() const { return 0;}
         virtual int column() const { return 0;};
+        virtual LambdaListHandler_sp lambdaListHandler() const = 0;
     };
 
 

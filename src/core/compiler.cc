@@ -66,7 +66,7 @@ namespace core
 	    initName = oinitFnName->get();
 	}
 
-	Pathname_sp path = af_pathname(pathDesig);
+	Pathname_sp path = cl_pathname(pathDesig);
 	if ( af_probe_file(path).notnilp() ) goto LOAD;
 	path->_Type = Str_O::create("bundle");
 	if ( af_probe_file(path).notnilp() ) goto LOAD;

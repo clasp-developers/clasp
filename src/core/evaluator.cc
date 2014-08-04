@@ -191,7 +191,7 @@ namespace core
 	    if ( found ) return macro;
 	}
 	Function_sp fn = sym->symbolFunction();
-	if ( fn.pointerp() && fn->closure->macroP() ) return fn;
+	if ( fn.pointerp() && fn->macroP() ) return fn;
 	return _Nil<Function_O>();
     };
 
@@ -1675,6 +1675,7 @@ namespace core
 		SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
 	    }
             Closure* closureP = fn->closure;
+            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToActivationFrame(closureP,args);
 	}
 
@@ -1794,8 +1795,12 @@ namespace core
 	{
 //		    LOG(BF("Evaluating specialForm non-atom: %s")% specialForm->__repr__() );
 	    T_mv result;
+#ifdef TRAP_ERRORS
 	    try { result = specialForm->evaluate(cCdr(form),environment);}
 	    catch (...) { result = handleConditionInEvaluate(environment); }
+#else
+            result = specialForm->evaluate(cCdr(form),environment);
+#endif
 	    ASSERTNOTNULL(result);
 	    return(result);
 	}
@@ -1846,6 +1851,9 @@ namespace core
 
 	T_mv t1Progn(T_sp args, T_sp environment)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1Progn args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
             T_mv result(_Nil<T_O>());
 	    Environment_sp localEnv(environment);
             for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) ) {
@@ -1856,6 +1864,9 @@ namespace core
 
 	T_mv t1EvalWhen(T_sp args, T_sp environment)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1EvalWhen args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
 	    Cons_sp situations = oCar(args).as_or_nil<Cons_O>();
 	    Cons_sp body = cCdr(args);
 	    bool execute = af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue();
@@ -1866,6 +1877,9 @@ namespace core
 
 	T_mv t1Locally(Cons_sp args, T_sp env)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1Locally args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
 	    Cons_sp declares;
 	    Str_sp docstring;
 	    Cons_sp code;
@@ -1878,6 +1892,9 @@ namespace core
 
 	T_mv t1Macrolet(Cons_sp args, T_sp env)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1Macrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
 	    // TODO: handle trace
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
@@ -1925,6 +1942,9 @@ namespace core
 
 	T_mv t1SymbolMacrolet(Cons_sp args, T_sp env)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1SymbolMacrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
 	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
@@ -1964,26 +1984,29 @@ namespace core
         T_mv t1Evaluate(T_sp exp, T_sp environment)
         {
             if ( af_consP(exp) ) {
-                if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
-                    printf("%s:%d Checking if top-level form: %s\n", __FILE__, __LINE__, _rep_(exp).c_str() );
-                }
                 T_sp head = oCar(exp);
+                if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                    printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str() );
+                }
                 // TODO: Deal with Compiler macros here
                 Function_sp macroFunction = _Nil<Function_O>();
-                if ( af_symbolp(head) ) macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment).as<Function_O>();
-                if ( macroFunction.notnilp() ) {
-                    T_sp expanded = eval::funcall(macroFunction,exp,environment);
-                    return t1Evaluate(expanded,environment);
-                } else if ( head == cl::_sym_progn ) {
-                    return t1Progn(oCdr(exp),environment);
-                } else if ( head == cl::_sym_eval_when ) {
-                    return t1EvalWhen(oCdr(exp),environment);
-                } else if ( head == cl::_sym_locally ) {
-                    return t1Locally(oCdr(exp),environment);
-                } else if ( head == cl::_sym_macrolet ) {
-                    return t1Macrolet(oCdr(exp),environment);
-                } else if ( head == cl::_sym_symbol_macrolet ) {
-                    return t1SymbolMacrolet(oCdr(exp),environment);
+                if ( af_symbolp(head) ) {
+                    macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment).as<Function_O>();
+                    if ( macroFunction.notnilp() ) {
+                        T_sp expanded = eval::funcall(macroFunction,exp,environment);
+                        return t1Evaluate(expanded,environment);
+                    } else if ( head == cl::_sym_progn ) {
+                        return t1Progn(oCdr(exp),environment);
+                    } else if ( head == cl::_sym_eval_when ) {
+//                        printf("%s:%d   head is eval-when\n", __FILE__, __LINE__ );
+                        return t1EvalWhen(oCdr(exp),environment);
+                    } else if ( head == cl::_sym_locally ) {
+                        return t1Locally(oCdr(exp),environment);
+                    } else if ( head == cl::_sym_macrolet ) {
+                        return t1Macrolet(oCdr(exp),environment);
+                    } else if ( head == cl::_sym_symbol_macrolet ) {
+                        return t1SymbolMacrolet(oCdr(exp),environment);
+                    }
                 }
             }
             if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
@@ -2074,8 +2097,12 @@ namespace core
 		    };// catch (...) {throw;};
 //		    LOG(BF("Expanded macro to: %s") % expanded->__repr__() );
 //		    LOG(BF("Evaluating macro in environment: %s") % environment->__repr__() );
+#ifdef TRAP_ERRORS
 		    try { result = eval::evaluate(expanded,environment);} // ->object(); }
 		    catch (...) {result = handleConditionInEvaluate(environment);}
+#else
+                    result = eval::evaluate(expanded,environment);
+#endif
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);
 		}
@@ -2097,8 +2124,12 @@ namespace core
 		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(af_length(cCdr(form)),
 								     _Nil<ActivationFrame_O>()));
 		    evaluateIntoActivationFrame(evaluatedArgs,cCdr(form),environment);
+#ifdef TRAP_ERRORS
 		    try { result = eval::applyToActivationFrame(headFunc,evaluatedArgs);}
 		    catch (...) {result = handleConditionInEvaluate(environment);};
+#else
+                    result = eval::applyToActivationFrame(headFunc,evaluatedArgs);
+#endif
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);
 		}else

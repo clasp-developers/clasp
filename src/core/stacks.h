@@ -46,7 +46,8 @@ namespace core
         };
 	virtual void setActivationFrame(ActivationFrame_sp af) { this->environment = af; };
 	virtual string asString();
-	string asStringLowLevel(const string& functionName,
+	string asStringLowLevel(Closure* closure,
+                                const string& functionName,
 				const string& sourceFileName,
 				uint lineNumber, uint column ) const;
 
@@ -233,7 +234,7 @@ namespace core {
 
 
 
-#define PUSH_INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this);
+#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this);
 
 namespace core{
     void initialize_stacks();

@@ -49,6 +49,27 @@ namespace core
 {
 
 
+    /*! Shouldn't this derive from a Functoid - it doesn't need a closedEnvironment */
+    class InstanceClosure : public FunctionClosure
+    {
+    public:
+	ArgArrayGenericFunctionPtr 	        entryPoint;
+        Instance_sp                             instance;
+    public:
+        DISABLE_NEW();
+        InstanceClosure(T_sp name,ArgArrayGenericFunctionPtr ep,Instance_sp inst)
+            : FunctionClosure(name)
+            , entryPoint(ep)
+            , instance(inst){};
+        virtual size_t templatedSizeof() const { return sizeof(*this); };
+	virtual string describe() const {return "InstanceClosure";};
+	virtual void LISP_CALLING_CONVENTION();
+        LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
+    };
+
+
+
+
 
     class Instance_O : public Function_O
     {
@@ -63,12 +84,12 @@ namespace core
 	int					_isgf;
 	Class_sp 				_Class;
         gctools::Vec0<T_sp>			_Slots;
-	ArgArrayGenericFunctionPtr 	        _Entry;
 	/*! TODO: I don't know what this is for
 	  - mimicking ECL instance->sig generation signature
         Jul 2014 - I think it is pointed to the class slots in case they change - then the instances can be updated*/
 	T_sp 		_Sig;
     public:
+        bool    isCallable() const { return this->closure!=NULL; };
 #if 0
     public: // Functions that mimic ECL_XXXX_XXXX macros (eg: ECL_CLASS_SLOTS(x))
 	// Instances that represent CL classes have slots that are hard-coded to represent
@@ -88,34 +109,9 @@ namespace core
 	T_sp GFUN_SPECIALIZERS() const { return this->_Slots[1]; };
 	T_sp GFUN_COMB() const { return this->_Slots[2]; };
     public: // The hard-coded indexes above are defined below to be used by Class
-#if 0
-	// These must match the +class-slots+ defined in hierarchy.lsp
-	static const int REF_EQL_SPECIALIZER_FLAG 	= 0;
-	static const int REF_SPECIALIZER_DIRECT_METHODS = 1;
-	static const int REF_SPECIALIZER_DIRECT_GENERIC_FUNCTIONS 	= 2;
-	static const int REF_CLASS_NAME 		= 3;
-	static const int REF_DIRECT_SUPERCLASSES	= 4;
-	static const int REF_DIRECT_SUBCLASSES		= 5;
-	static const int REF_SLOTS      		= 6;
-	static const int REF_CLASS_PRECEDENCE_LIST	= 7;
-	static const int REF_DIRECT_SLOTS 		= 8;
-	static const int REF_DIRECT_DEFAULT_INITARGS 	= 9;
-	static const int REF_DEFAULT_INITARGS 		= 10;
-	static const int REF_FINALIZED 			= 11;
-	static const int REF_DOCSTRING 			= 12;
-	static const int REF_SIZE 			= 13;
-	static const int REF_SEALEDP 			= 14;
-	static const int REF_PROTOTYPE 			= 15;
-	static const int REF_DEPENDENTS 		= 16;
-	static const int REF_VALID_INITARGS		= 17;
-	static const int REF_SLOT_TABLE 		= 18;
-	static const int REF_LOCATION_TABLE 		= 19;
-	static const int REF_OPTIMIZE_SLOT_ACCESS       = 20;
-	static const int REF_FORWARD		        = 21;
-	static const int REF_NUMBER_OF_SLOTS_IN_CLASSES = 22;
-#endif
     protected:
 	void initializeSlots(int numberOfSlots);
+        void ensureClosure(ArgArrayGenericFunctionPtr entryPoint);
     public:
 	static T_sp allocateInstance(T_sp _theClass, int numberOfSlots=0);
 	static T_sp allocateRawInstance(T_sp orig, T_sp _theClass, int numberOfSlots);
@@ -141,6 +137,9 @@ namespace core
 	virtual T_sp instanceSigSet();
 	virtual T_sp instanceSig() const;
 
+        bool macroP() const { return false; };
+        Symbol_sp functionKind() const { return kw::_sym_function; };
+        void setKind(Symbol_sp k);
 
         virtual bool equalp(T_sp obj) const;
 

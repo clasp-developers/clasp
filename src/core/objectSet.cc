@@ -206,8 +206,8 @@ void	ObjectSet_O::archive(ArchiveP node)
 //	.def("remove",&core::ObjectSet_O::remove)
 	.def("asCons",&ObjectSet_O::asCons)
 	.def("relativeComplement",&ObjectSet_O::relativeComplement)
-	.def("union",&ObjectSet_O::setUnion)
-	.def("intersection",&ObjectSet_O::intersection)
+	.def("core:objectSetUnion",&ObjectSet_O::setUnion)
+	.def("core:objectSetIntersection",&ObjectSet_O::intersection)
 	.def("contains",&ObjectSet_O::contains)
 	;
 }

@@ -1,6 +1,7 @@
 
 #define	DEBUG_LEVEL_FULL
 #include "core/common.h"
+#include "core/str.h"
 #include "core/environment.h"
 #include "symbolTable.h"
 #include "core/lambdaListHandler.h"
@@ -109,6 +110,12 @@ namespace core
     void SingleDispatchMethod_O::exposeCando(::core::Lisp_sp lisp)
     {
 	::core::class_<SingleDispatchMethod_O>()
+            .def("singleDispatchMethodName",&SingleDispatchMethod_O::singleDispatchMethodName)
+            .def("singleDispatchMethodReceiverClass",&SingleDispatchMethod_O::singleDispatchMethodReceiverClass)
+            .def("singleDispatchMethodCode",&SingleDispatchMethod_O::singleDispatchMethodCode)
+            .def("singleDispatchMethodLambdaListHandler",&SingleDispatchMethod_O::singleDispatchMethodLambdaListHandler)
+            .def("singleDispatchMethodDeclares",&SingleDispatchMethod_O::singleDispatchMethodDeclares)
+            .def("singleDispatchMethodDocstring",&SingleDispatchMethod_O::singleDispatchMethodDocstring)
 //	.initArgs("(self)")
 	    ;
     }

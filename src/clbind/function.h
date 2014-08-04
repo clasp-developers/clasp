@@ -89,7 +89,8 @@ namespace clbind {
                                  , "=external="
                                  , 0
                                  , true
-                                 , (CountFunctionArguments<FunctionPointerType>::value) );
+                                 , (CountFunctionArguments<FunctionPointerType>::value)
+                                 , GatherPureOutValues<Policies,-1>::gather(std::set<int>()) );
 #if 0
                 object fn = make_function(L, f, deduce_signature(f), policies);
 

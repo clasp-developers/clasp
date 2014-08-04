@@ -165,7 +165,12 @@ extern "C" {
     extern void va_throwIfExcessKeywordArguments( char* fnName, int nargs, core::T_sp* argArray, int argIdx)
     {_G();
 	if ( argIdx >= nargs ) return;
-        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
+        stringstream ss;
+        for ( int i(0); i<nargs; ++i ) {
+            ss << _rep_(argArray[i]) << " ";
+        }
+        SIMPLE_ERROR(BF("va_throwIfExcessKeywordArguments>> Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str() );
+//        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
 #if 0
 	stringstream ss;
 	for ( int ii = argIdx; ii < nargs; ii+=2 )
@@ -190,14 +195,14 @@ extern "C" {
     }
 
 
-    core::Closure* va_coerceToClosure( core::T_sp arg )
+    core::Closure* va_coerceToClosure( core::T_sp* argP )
     {_G();
-	if ( !arg.pointerp() ) {
-	    SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg));
+	if ( !(*argP).pointerp() ) {
+	    SIMPLE_ERROR(BF(" symbol %s") % _rep_((*argP)));
 	}
-        core::Function_sp func = core::coerce::functionDesignator(arg);
+        core::Function_sp func = core::coerce::functionDesignator((*argP));
 	if ( func.nilp() ) {
-	    SIMPLE_ERROR(BF("Could not coerce %s to function") % _rep_(arg));
+	    SIMPLE_ERROR(BF("Could not coerce %s to function") % _rep_((*argP)));
 	}
         return func->closure;
     }
@@ -216,12 +221,12 @@ extern "C" {
 
 
 
-    core::Closure* va_lexicalFunction( int depth, int index, core::ActivationFrame_sp evaluateFrame )
+    core::Closure* va_lexicalFunction( int depth, int index, core::T_sp* evaluateFrameP )
     {_G();
 	LOG(BF("About to invoke lexicalFunction depth[%d] index[%d]") % depth % index );
-        core::Function_sp func = evaluateFrame->lookupFunction(depth,index).as<core::Function_O>();
+        core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP,depth,index);
 	ASSERTF(func.pointerp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
-		% depth % index % _rep_(evaluateFrame) );
+		% depth % index % _rep_(*evaluateFrameP) );
         return func->closure;
     }
 
@@ -960,7 +965,12 @@ extern "C"
 	ASSERT(frameP->pointerp());
 	ASSERT(argIdx>=0);
 	if ( argIdx >= (*frameP)->length() ) return;
-        core::throwUnrecognizedKeywordArgumentError((*frameP)->argArray()[argIdx]);
+        stringstream ss;
+        for ( int i(0); i<(*frameP)->length(); ++i ) {
+            ss << _rep_((*frameP)->entry(i)) << " ";
+        }
+        SIMPLE_ERROR(BF("Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str() );
+//      core::throwUnrecognizedKeywordArgumentError((*frameP)->argArray()[argIdx]);
 #if 0
 	core::ActivationFrame_sp frame = (*frameP).as<core::ActivationFrame_O>();
 	if ( argIdx >= frame->length() ) return;
@@ -1032,152 +1042,6 @@ extern "C"
 extern "C"
 {
 
-
-    /*! Lookup the function associated with the name */
-    void symbolFunction(core::Function_sp* resultP, core::T_sp* name)
-    {
-	*resultP = (*name).as<Symbol_O>()->symbolFunction();
-    }
-
-
-    void lexicalFunction(core::Function_sp* resultP, int depth, int index,  core::ActivationFrame_sp* argumentsFrameP)
-    {
-	*resultP = (*argumentsFrameP)->parentFrameRef()->lookupFunction(depth,index).as<core::Function_O>();
-    }
-
-
-
-/*! TODO: Perhaps create another llvm structure type Function_sp* so we dont have
-  to downcast (*funcP) for every function invocation.  That will mean changing symbolFunction
-  and lexicalFunctionRead as well so that they return Function_sp*.*/
-    extern void invokePossibleMultipleValueFunction(core::T_mv* resultP, core::T_sp* funcP, core::ActivationFrame_sp* activationFrameP)
-    {_G();
-	DEPRECIATED();
-#if 0
-	ASSERT(resultP!=NULL);
-	ASSERT(funcP!=NULL);
-	ASSERT(activationFrameP!=NULL);
-	core::Function_sp func = (*funcP).as<core::Function_O>();
-	if ( !func.pointerp() ) 
-	{
-	    SIMPLE_ERROR(BF("There is no function passed"));
-	}
-	if ( func->macroP() )
-	{
-	    SIMPLE_ERROR(BF("You tried to invoke the function %s but it was a macro - you probably need to define the macro before it is invoked!") % _rep_(func->getFunctionName()) );
-	}
-#ifdef DEBUG_ON
-	for (int i=0; i<(*activationFrameP)->length(); i++ )
-	{
-	    ASSERTF((*activationFrameP)->entryReference(i).get()!=0,BF("An ActivationFrame with NULL argument at[%d] is about to be passed to the function: %s") % i % _rep_(func) );
-	}
-#endif
-	*resultP = func->INVOKE(*activationFrameP);
-	ASSERTNOTNULL(*resultP);
-#endif
-    }
-
-};
-
-
-
-
-
-
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-inline core::T_mv proto_invokePossibleMultipleValueSymbolFunction( core::Symbol_sp* symP,
-								   core::ActivationFrame_sp* argumentsFrameP)
-{_G();
-    DEPRECIATED();
-#if 0
-    ASSERT(argumentsFrameP!=NULL);
-    ASSERTF(symP!=NULL,BF("passed symbol is NULL"));
-    if ( (*symP).nilp() || !(*symP)->fboundp() ) {
-	SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
-    }
-    core::Function_sp func = (*symP)->symbolFunction();
-    if ( !func.pointerp() )
-    {
-	SIMPLE_ERROR(BF("There is no function named %s") % _rep_(*symP));
-    }
-    if ( func->macroP() )
-    {
-	SIMPLE_ERROR(BF("You wanted to invoke the function %s but it was a macro - you probably need to define the macro before it is invoked!") % _rep_((*symP)) );
-    }
-    return func->INVOKE(*argumentsFrameP);
-#endif
-}
-
-extern "C"
-{
-    void sp_invokePossibleMultipleValueSymbolFunction( core::T_sp* resultP,
-						       core::Symbol_sp* symP,
-						       core::ActivationFrame_sp* argumentsFrameP)
-    {
-	ASSERT(resultP!=NULL);
-	(*resultP) = proto_invokePossibleMultipleValueSymbolFunction(symP,argumentsFrameP);
-	ASSERTNOTNULL(*resultP);
-    }
-
-    void mv_invokePossibleMultipleValueSymbolFunction( core::T_mv* resultP,
-						       core::Symbol_sp* symP,
-						       core::ActivationFrame_sp* argumentsFrameP)
-    {
-	ASSERT(resultP!=NULL);
-	(*resultP) = proto_invokePossibleMultipleValueSymbolFunction(symP,argumentsFrameP);
-	ASSERTNOTNULL(*resultP);
-    }
-};
-
-
-
-
-#if 0
-/*! Invoke a lexical function with the given arguments and put the result in (*resultP) */
-core::T_mv proto_invokePossibleMultipleValueLexicalFunction(int depth, int index,
-							    core::ActivationFrame_sp* evaluateFrameP,
-							    core::ActivationFrame_sp* argumentsFrameP)
-{_G();
-    ASSERT(argumentsFrameP!=NULL);
-    LOG(BF("About to invoke lexicalFunction depth[%d] index[%d]") % depth % index );
-    core::Function_sp res = (*evaluateFrameP)->lookupFunction(depth,index).as<core::Function_O>();
-    if ( !res.pointerp() )
-    {
-	SIMPLE_ERROR(BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
-			   % depth % index % _rep_((*argumentsFrameP)) );
-    }
-    return res->INVOKE(*argumentsFrameP);
-}
-
-
-extern "C"
-{
-    void sp_invokePossibleMultipleValueLexicalFunction(core::T_sp* resultP, int depth, int index,
-						       core::ActivationFrame_sp* evaluateFrameP,
-						       core::ActivationFrame_sp* argumentsFrameP)
-    {
-	(*resultP) = proto_invokePossibleMultipleValueLexicalFunction(depth,index,evaluateFrameP,argumentsFrameP);
-	ASSERTNOTNULL(*resultP);
-    }
-    void mv_invokePossibleMultipleValueLexicalFunction(core::T_mv* resultP, int depth, int index,
-						       core::ActivationFrame_sp* evaluateFrameP,
-						       core::ActivationFrame_sp* argumentsFrameP)
-    {
-	(*resultP) = proto_invokePossibleMultipleValueLexicalFunction(depth,index,evaluateFrameP,argumentsFrameP);
-	ASSERTNOTNULL(*resultP);
-    }
-}
-#endif
-    
-
-extern "C"
-{
-
-
-
-
-
-
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
     void sp_symbolFunctionRead(core::T_sp* resultP, const core::Symbol_sp* symP)
     {_G();
@@ -1213,13 +1077,12 @@ extern "C"
 
 };
 
-
 core::T_sp proto_lexicalFunctionRead(int depth, int index, core::ActivationFrame_sp* renvP)
 {
     ASSERT(renvP!=NULL);
     LOG(BF("About to lexicalFunction depth[%d] index[%d]") % depth % index );
     LOG(BF("(*renvP) --> %s") % (*renvP)->__repr__() );
-    core::Function_sp res = (*renvP)->lookupFunction(depth,index).as<core::Function_O>();
+    core::Function_sp res = core::Environment_O::clasp_lookupFunction((*renvP),depth,index);
     if ( !res.pointerp() )
     {
 	SIMPLE_ERROR(BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
@@ -1227,7 +1090,6 @@ core::T_sp proto_lexicalFunctionRead(int depth, int index, core::ActivationFrame
     }
     return res;
 }
-
 
 extern "C"
 {
@@ -1242,6 +1104,7 @@ extern "C"
 	ASSERTNOTNULL(*resultP);
     }
 };
+
 
 extern "C"
 {
@@ -1832,7 +1695,8 @@ extern "C"
 	ASSERT(objP!=NULL);
 	if ( !af_keywordP((*objP)) )
 	{
-            core::throwUnrecognizedKeywordArgumentError(*objP);
+            SIMPLE_ERROR(BF("Not keyword %s")% _rep_(*objP));
+//            core::throwUnrecognizedKeywordArgumentError(*objP);
 	}
     }
 

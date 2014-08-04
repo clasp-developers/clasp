@@ -52,10 +52,8 @@ namespace core {
 	virtual string describe() const {return "SingleDispatchGenericFunctoid";};
 	virtual void LISP_CALLING_CONVENTION() =0;
         void setKind(Symbol_sp k) { this->kind = k; };
+        Symbol_sp getKind() const { return this->kind;};
         bool macroP() const;
-        virtual bool builtinP() const { return false; }
-        virtual bool compiledP() const { return false; }
-        virtual bool interpretedP() const { return false; }
         SourcePosInfo_sp sourcePosInfo() const { return this->_SourcePosInfo;};
         SourcePosInfo_sp setSourcePosInfo(T_sp sourceFile, int lineno, int column);
         virtual int lineNumber() const;
@@ -96,13 +94,13 @@ namespace core {
         string __repr__() const;
         string description() const { return "Function::description"; };
 
-        LambdaListHandler_sp getLambdaListHandler() const;
-        bool macroP() const;
-        void setKind(Symbol_sp k);
-        Symbol_sp functionKind() const;
+        virtual bool macroP() const;
+        virtual void setKind(Symbol_sp k);
+        virtual Symbol_sp functionKind() const;
+        LambdaListHandler_sp functionLambdaListHandler() const;
         Environment_sp closedEnvironment() const;
         T_sp functionName() const;
-        T_sp functionFile() const;
+        T_mv functionFile() const;
 
     };
 };
@@ -124,7 +122,7 @@ namespace core
     class InterpretedClosure : public FunctionClosure
     {
     public:
-        LambdaListHandler_sp    lambdaListHandler;
+        LambdaListHandler_sp    _lambdaListHandler;
         Cons_sp                 declares;
         Str_sp                  docstring;
 	Cons_sp                 code;
@@ -134,7 +132,7 @@ namespace core
                            , LambdaListHandler_sp llh, Cons_sp dec, Str_sp doc
                            , T_sp e, Cons_sp c)
             : FunctionClosure(fn,sp,k,e)
-            , lambdaListHandler(llh)
+            , _lambdaListHandler(llh)
             , declares(dec)
             , docstring(doc)
             , code(c)
@@ -147,6 +145,7 @@ namespace core
 	virtual string describe() const {return "InterpretedClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         bool interpretedP() const { return true; };
+        LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};
     };
 
 
@@ -154,23 +153,24 @@ namespace core
     class BuiltinClosure : public FunctionClosure
     {
     public:
-        LambdaListHandler_sp    lambdaListHandler;
+        LambdaListHandler_sp    _lambdaListHandler;
     public:
         DISABLE_NEW();
         BuiltinClosure(T_sp name, SourcePosInfo_sp sp, Symbol_sp k)
             : FunctionClosure(name,sp,k,_Nil<T_O>())
-            , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
+            , _lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         BuiltinClosure(T_sp name)
             : FunctionClosure(name)
-            , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
+            , _lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
-            this->lambdaListHandler = llh;
+            this->_lambdaListHandler = llh;
             this->kind = k;
         }
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual string describe() const {return "BuiltinClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         bool builtinP() const { return true; };
+        LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};
     };
 
 
@@ -195,7 +195,7 @@ namespace core {
         CompiledFunction_O() : Base() {};
         virtual ~CompiledFunction_O() {};
     public:
-        static CompiledFunction_sp make(FunctionClosure* c) {
+        static CompiledFunction_sp make(Closure* c) {
             GC_ALLOCATE(CompiledFunction_O,f);
             f->closure = c;
 //            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);

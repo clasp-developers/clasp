@@ -430,8 +430,8 @@ namespace clbind
                                                 , m_declares
                                                 , m_docstring
                                                 , true
-                                                , CountMethodArguments<MethodPointerType>::value
-                                                - CountPureOutValues<Policies>::value + 1 );
+                                                , CountMethodArguments<MethodPointerType>::value+1 // +1 for the self argument
+                                                , GatherPureOutValues<Policies,0>::gather(std::set<int>()) );
                 // I'm going to comment out the luabind way of defining member functions
                 // and use my way of defining member functions
                 //

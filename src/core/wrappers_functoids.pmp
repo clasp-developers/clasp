@@ -33,21 +33,17 @@ $for template_ [[
         Type fptr;
         public:
         enum { NumParams = $numArgs };
-        VariadicFunctoid(Symbol_sp name, SourcePosInfo_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+        VariadicFunctoid(T_sp name, SourcePosInfo_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
         void LISP_CALLING_CONVENTION()
         {
+            INVOCATION_HISTORY_FRAME();
             $if numArgs>0 [[
               ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
 	      core::StackFrameDynamicScopeManager scope(frame);
-              try {
-                lambdaListHandler_createBindings(this->lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
-              } catch (...) {
-                handleArgumentHandlingExceptions(this);
-              }
+              lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
             ]]
-            PUSH_INVOCATION_HISTORY_FRAME();
             this->invoke(lcc_resultP $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
         }
 

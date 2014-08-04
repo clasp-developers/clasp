@@ -362,6 +362,10 @@
 ;;;
 
 #+compare(print "combin.lsp 367")
+;; The following chokes in clasp because I don't have the method-combination class defined
+;; during compilation of the full clasp source code.
+;; I don't use compiler macros anyway so I'll feature this out
+#-clasp
 (eval-when (compile #+brcl-boot :load-toplevel)
   (let* ((class (find-class 'method-combination)))
     (define-compiler-macro method-combination-compiler (o)

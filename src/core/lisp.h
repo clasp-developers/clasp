@@ -639,6 +639,8 @@ namespace core
 	static SingleDispatchGenericFunction_sp setf_find_single_dispatch_generic_function(Symbol_sp gfSym, SingleDispatchGenericFunction_sp gf);
 	/*! Clear all generic functions */
 	static void forget_all_single_dispatch_generic_functions();
+        HashTableEq_sp singleDispatchGenericFunctionTable() const { return this->_Roots._SingleDispatchGenericFunctionTable; };
+    public:
 
 
 #if 0

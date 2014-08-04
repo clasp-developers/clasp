@@ -668,24 +668,19 @@ namespace core
 #define DOCS_af_STARfset "fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not."
 #define ARGS_af_STARfset "(function-name fn &optional macro)"
 #define DECL_af_STARfset ""    
-    T_mv af_STARfset(T_sp functionName, Function_sp fn, T_sp macro )
+    T_sp af_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro )
     {_G();
-	if ( macro.isTrue() )
-	{
-	    if ( !af_symbolp(functionName) )
-	    {
-		SIMPLE_ERROR(BF("You cannot define a macro with the name[%s]") % _rep_(functionName) );
-	    }
-	    fn->closure->setKind(kw::_sym_macro);
-	} else
-	{
-	    fn->closure->setKind(kw::_sym_function);
-	}
+        ASSERTF(functionObject,BF("function is undefined\n"));
+        if ( macro.isTrue() ) {
+            functionObject->setKind(kw::_sym_macro);
+        } else {
+            functionObject->setKind(kw::_sym_function);
+        }
 	if ( af_symbolp(functionName) )
 	{
 	    Symbol_sp symbol = functionName.as<Symbol_O>();
-	    symbol->setf_symbolFunction(fn);
-	    return Values(fn);
+	    symbol->setf_symbolFunction(functionObject);
+	    return functionObject;
 	} else if (af_consP(functionName))
 	{
 	    SYMBOL_EXPORT_SC_(ClPkg,setf);
@@ -693,8 +688,8 @@ namespace core
 	    if ( oCar(cur) == cl::_sym_setf )
 	    {
 		Symbol_sp symbol = oCadr(cur).as<Symbol_O>();
-		_lisp->set_setfDefinition(symbol,fn);
-		return Values(fn);
+		_lisp->set_setfDefinition(symbol,functionObject);
+		return functionObject;
 	    }
 	}
 	SIMPLE_ERROR(BF("Illegal name for function[%s]") % _rep_(functionName) );
@@ -1206,8 +1201,11 @@ namespace core
     T_mv af_mapcon(T_sp op, Cons_sp lists)
     {_G();
 	Cons_sp parts = af_maplist(op,lists).as_or_nil<Cons_O>();
+        T_sp result = cl_nconc(parts);
+#if 0
 	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
 	T_sp result = eval::applyToActivationFrame(cl::_sym_nconc,frame);
+#endif
 	return(Values(result));
     };
 
@@ -1218,8 +1216,11 @@ namespace core
     T_mv af_mapcan(T_sp op, Cons_sp lists)
     {_G();
 	Cons_sp parts = af_mapcar(op,lists).as_or_nil<Cons_O>();
+        T_sp result = cl_nconc(parts);
+#if 0
 	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
 	T_sp result = eval::applyToActivationFrame(cl::_sym_nconc,frame);
+#endif
 	return(Values(result));
     };
 
@@ -1328,7 +1329,7 @@ Stream_mv af_open(T_sp filespec_desig, Symbol_sp direction, T_sp element_type, T
     LOG(BF("if_exists[%s]") % _rep_(if_exists));
     LOG(BF("if_does_not_exist[%s]") % _rep_(if_does_not_exist));
     LOG(BF("external_format[%s]") % _rep_(external_format));
-    Pathname_sp filespec = af_pathname(filespec_desig);
+    Pathname_sp filespec = cl_pathname(filespec_desig);
     if ( direction == kw::_sym_input )
     {
 	LOG(BF("status"));

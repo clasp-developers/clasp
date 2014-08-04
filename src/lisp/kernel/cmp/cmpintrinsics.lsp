@@ -414,13 +414,13 @@ Boehm and MPS use a single pointer"
 
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
   
-  (primitive module "symbolFunction" +void+ (list +Function_sp*+ +tsp*+))
-  (primitive module "lexicalFunction" +void+ (list +Function_sp*+ +i32+ +i32+ +afsp*+))
+;;  (primitive module "symbolFunction" +void+ (list +Function_sp*+ +tsp*+))
+;;  (primitive module "lexicalFunction" +void+ (list +Function_sp*+ +i32+ +i32+ +afsp*+))
 
 
-  (primitive module "invokePossibleMultipleValueFunction" +void+ (list +tmv*+ +tsp*+ +afsp*+))
-  (primitive module "invokePossibleMultipleValueSymbolFunction" +void+ (list +tsp*-or-tmv*+ +symsp*+ +afsp*+))
-  (primitive module "invokePossibleMultipleValueLexicalFunction" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+ +afsp*+))
+;;  (primitive module "invokePossibleMultipleValueFunction" +void+ (list +tmv*+ +tsp*+ +afsp*+))
+;;  (primitive module "invokePossibleMultipleValueSymbolFunction" +void+ (list +tsp*-or-tmv*+ +symsp*+ +afsp*+))
+;;  (primitive module "invokePossibleMultipleValueLexicalFunction" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+ +afsp*+))
 
   (primitive module "invokeLlvmFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+))
   (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-void-ptr+))
@@ -461,11 +461,11 @@ Boehm and MPS use a single pointer"
   (primitive module "va_throwNotEnoughArgumentsException" +void+ (list +i8*+ +i32+ +i32+))
   (primitive module "va_throwIfExcessKeywordArguments" +void+ (list +i8*+ +i32+ +tsp*+ +i32+))
   (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
-  (primitive module "va_coerceToClosure" +closure*+ (list +tsp+))
+  (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +closure*+ (list +symsp*+))  ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
-  (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +tsp+))
+  (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +afsp*+))
   (primitive module "FUNCALL" +void+ (list +tsp*-or-tmv*+ +closure*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+) :varargs t) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
-  (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +tsp+) :varargs t) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
+  (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+) :varargs t) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
 
 
   (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +i32+ +tsp*+ +i32+ +i8*+))

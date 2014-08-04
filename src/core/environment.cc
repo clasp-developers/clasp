@@ -348,6 +348,23 @@ namespace core
         NOT_ENVIRONMENT_ERROR(env);
     }
 
+    Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index)
+    {
+        if ( env.nilp() ) {
+            SIMPLE_ERROR(BF("Could not lookup Function in top level environment"));
+        } else if ( env.framep() ) {
+            if ( depth == 0 ) {
+                SIMPLE_ERROR(BF("Currently I don't support functions in stack frames"));
+//              return frame::Lookup(env,index);
+            }
+            --depth;
+            return clasp_lookupFunction(frame::ParentFrame(env),depth,index);
+        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+            return eenv->_lookupFunction(depth,index);
+        }
+        NOT_ENVIRONMENT_ERROR(env);
+    }
+
 
 
     T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index)
@@ -369,6 +386,12 @@ namespace core
 
 
     T_sp Environment_O::_lookupValue(int depth, int index ) const
+    {_G();
+        SUBIMP();
+    }
+
+
+    Function_sp Environment_O::_lookupFunction(int depth, int index ) const
     {_G();
         SUBIMP();
     }

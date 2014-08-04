@@ -61,7 +61,7 @@ namespace core {
     void Iterator_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Iterator_O>()
-            .def("first",&Iterator_O::first)
+            .def("core:begin",&Iterator_O::first)
             .def("next",&Iterator_O::next)
             .def("isDone",&Iterator_O::isDone)
             .def("notDone",&Iterator_O::notDone)
@@ -76,7 +76,7 @@ namespace core {
     {_G();
 #ifdef	USEBOOSTPYTHON //[
 	PYTHON_CLASS(CorePkg,Iterator,"","",_lisp)
-            .def("first",&Iterator_O::first)
+            .def("core:begin",&Iterator_O::first)
             .def("next",&Iterator_O::next)
             .def("isDone",&Iterator_O::isDone)
             .def("notDone",&Iterator_O::notDone)

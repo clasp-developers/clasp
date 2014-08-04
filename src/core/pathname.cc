@@ -792,10 +792,10 @@ namespace core {
 
 
 
-#define ARGS_af_pathname "(arg)"
-#define DECL_af_pathname ""
-#define DOCS_af_pathname "pathname"
-    Pathname_sp af_pathname(T_sp x)
+#define ARGS_cl_pathname "(arg)"
+#define DECL_cl_pathname ""
+#define DOCS_cl_pathname "pathname"
+    Pathname_sp cl_pathname(T_sp x)
     {_G();
 	if ( x.nilp() ) {
 	    SIMPLE_ERROR(BF("The only argument for pathname is nil"));
@@ -818,7 +818,7 @@ namespace core {
     T_sp
     cl_logical_pathname(T_sp x)
     {
-	x = af_pathname(x);
+	x = cl_pathname(x);
 	if (!af_logicalPathnameP(x)) {
 	    eval::funcall(cl::_sym_simpleTypeError,
 			  kw::_sym_formatControl, Str_O::create("~S cannot be coerced to a logical pathname."),
@@ -841,7 +841,7 @@ namespace core {
 	T_sp host, device, directory, name, type, version;
 	Symbol_sp tocase;
     
-	Pathname_sp defaults = af_pathname(tdefaults);
+	Pathname_sp defaults = cl_pathname(tdefaults);
 	Pathname_sp path = af_parseNamestring(tpath, _Nil<T_O>(), defaults);
 	host = path->_Host;
 	if (host.nilp())
@@ -909,8 +909,8 @@ namespace core {
 	if ( defaults.nilp() ) {
 	    defaults = af_symbolValue(cl::_sym_STARdefaultPathnameDefaultsSTAR);
 	}
-	path = af_pathname(path);
-	defaults = af_pathname(defaults);
+	path = cl_pathname(path);
+	defaults = cl_pathname(defaults);
 	return brcl_mergePathnames(path,defaults,defaultVersion);
     }
 
@@ -931,7 +931,7 @@ namespace core {
     bool af_wildPathnameP(T_sp tpathname, T_sp component)
     {_G();
 	bool checked = 0;
-	Pathname_sp pathname = af_pathname(tpathname);
+	Pathname_sp pathname = cl_pathname(tpathname);
 	if (component.nilp() || component == kw::_sym_host) {
 	    if (pathname->_Host == kw::_sym_wild)
 		return true;
@@ -1027,7 +1027,7 @@ namespace core {
 #define DOCS_af_coerceToPhysicalPathname "coerceToPhysicalPathname"
     Pathname_sp af_coerceToPhysicalPathname(T_sp x)
     {
-	Pathname_sp px = af_pathname(x);
+	Pathname_sp px = cl_pathname(x);
 	if (af_logicalPathnameP(px))
 	    return af_translateLogicalPathname(px);
 	return px;
@@ -1097,7 +1097,7 @@ namespace core {
 	T_sp host;
         bool truncate_if_unreadable = flags & BRCL_NAMESTRING_TRUNCATE_IF_ERROR;
 
-	Pathname_sp x = af_pathname(tx);
+	Pathname_sp x = cl_pathname(tx);
 
 	/* INV: Pathnames can only be created by mergin, parsing namestrings
 	 * or using brcl_make_pathname(). In all of these cases BRCL will complain
@@ -1263,19 +1263,19 @@ namespace core {
 #define DOCS_af_parseNamestring "parseNamestring"
     Pathname_mv af_parseNamestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, Fixnum_sp end, bool junkAllowed)
     {_G();
-	Pathname_sp defaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue().as_or_nil<Pathname_O>() : af_pathname(tdefaults);
+	Pathname_sp defaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue().as_or_nil<Pathname_O>() : cl_pathname(tdefaults);
 	Pathname_sp output;
 	if (host.notnilp()) {
 	    host = af_string(host);
 	}
 	if (!af_stringP(thing)) {
-	    output = af_pathname(thing);
+	    output = cl_pathname(thing);
 	} else {
 	    T_sp default_host = host;
 	    size_t_pair p;
 	    size_t ee;
 	    if (default_host.nilp() && defaults.notnilp()) {
-		defaults = af_pathname(defaults);
+		defaults = cl_pathname(defaults);
 		default_host = defaults->_Host;
 	    }
 #ifdef BRCL_UNICODE
@@ -1319,7 +1319,7 @@ namespace core {
 						_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
 						kw::_sym_local);
 	} else {
-	    defaults = af_pathname(odefaults);
+	    defaults = cl_pathname(odefaults);
 	}
 	if (!hostp) host = defaults->_Host;
 	x = Pathname_O::makePathname(host, device, directory, name, type, version, scase);
@@ -1346,7 +1346,7 @@ namespace core {
 #define DOCS_af_pathnameHost "pathnameHost"
     T_sp af_pathnameHost(T_sp tpname, Symbol_sp scase)
     {_G();
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	return translate_component_case(pname->_Host,
 					normalize_case(pname, kw::_sym_local),
 					normalize_case(pname, scase));
@@ -1357,7 +1357,7 @@ namespace core {
 #define DOCS_af_pathnameDevice "pathnameDevice"
     T_sp af_pathnameDevice(T_sp tpname, Symbol_sp scase)
     {_G();
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	return translate_component_case(pname->_Device,
 					normalize_case(pname, kw::_sym_local),
 					normalize_case(pname, scase));
@@ -1369,7 +1369,7 @@ namespace core {
 #define DOCS_af_pathnameDirectory "pathnameDirectory"
     T_sp af_pathnameDirectory(T_sp tpname, Symbol_sp scase)
     {_G();
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	return translate_component_case(pname->_Directory,
 					normalize_case(pname, kw::_sym_local),
 					normalize_case(pname, scase));
@@ -1382,7 +1382,7 @@ namespace core {
 #define DOCS_af_pathnameName "pathnameName"
     T_sp af_pathnameName(T_sp tpname, Symbol_sp scase)
     {_G();
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	return translate_component_case(pname->_Name,
 					normalize_case(pname, kw::_sym_local),
 					normalize_case(pname, scase));
@@ -1394,7 +1394,7 @@ namespace core {
 #define DOCS_af_pathnameType "pathnameType"
     T_sp af_pathnameType(T_sp tpname, Symbol_sp scase)
     {_G();
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	return translate_component_case(pname->_Type,
 					normalize_case(pname, kw::_sym_local),
 					normalize_case(pname, scase));
@@ -1410,7 +1410,7 @@ namespace core {
 #define DOCS_af_pathnameVersion "pathnameVersion"
     T_sp af_pathnameVersion(T_sp tpname)
     {_G();
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	return pname->_Version;
     };
 
@@ -1423,7 +1423,7 @@ namespace core {
 #define DOCS_af_fileNamestring "fileNamestring"
     Str_sp af_fileNamestring(T_sp tpname)
     {
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	return brcl_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
 							pname->_Name,
 							pname->_Type,
@@ -1441,7 +1441,7 @@ namespace core {
 #define DOCS_af_directoryNamestring "directoryNamestring"
     Str_sp af_directoryNamestring(T_sp tpname)
     {_G();
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	return brcl_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(),
 							pname->_Directory,
 							_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
@@ -1457,7 +1457,7 @@ namespace core {
 #define DOCS_af_hostNamestring "hostNamestring"
     Str_sp af_hostNamestring(T_sp tpname)
     {_G();
-	Pathname_sp pname = af_pathname(tpname);
+	Pathname_sp pname = cl_pathname(tpname);
 	T_sp host = pname->_Host;
 	Str_sp shost;
 	if (host.nilp() || host == kw::_sym_wild) {
@@ -1481,8 +1481,8 @@ namespace core {
     Str_sp af_enoughNamestring(T_sp tpath, T_sp tdefaults)
 {_G();
     T_sp newpath, fname;
-    Pathname_sp defaults = tdefaults.nilp() ? brcl_defaultPathnameDefaults() : af_pathname(tdefaults);
-    Pathname_sp path = af_pathname(tpath);
+    Pathname_sp defaults = tdefaults.nilp() ? brcl_defaultPathnameDefaults() : cl_pathname(tdefaults);
+    Pathname_sp path = cl_pathname(tpath);
     T_sp pathdir = path->_Directory;
     T_sp defaultdir = defaults->_Directory;
     if (pathdir.nilp()) {
@@ -1649,8 +1649,8 @@ namespace core {
     bool af_pathnameMatchP(T_sp tpath, T_sp tmask)
     {
 	bool output = false;
-	Pathname_sp path = af_pathname(tpath);
-	Pathname_sp mask = af_pathname(tmask);
+	Pathname_sp path = cl_pathname(tpath);
+	Pathname_sp mask = cl_pathname(tmask);
 	if (af_logicalPathnameP(path) != af_logicalPathnameP(mask))
 	    goto OUTPUT;
 #if 0
@@ -1702,54 +1702,58 @@ namespace core {
 
     
     
-#define ARGS_af_pathnameTranslations "(host &optional set)"
+#define ARGS_af_pathnameTranslations "(&optional (host nil hostp) set)"
 #define DECL_af_pathnameTranslations ""
 #define DOCS_af_pathnameTranslations "core::pathnameTranslations"
-    T_sp af_pathnameTranslations(T_sp host, T_sp set)
+    T_sp af_pathnameTranslations(T_sp host, T_sp hostp, T_sp set)
     {_G();
-	size_t parsed_len, len;
-	T_sp pair, l;
-	/* Check that host is a valid host name */
-	if (brcl_unlikely(!af_stringP(host)))
-	    WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
-	host = af_string_upcase( host);
-	len = af_length(host);
-	parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
-	if (UNLIKELY(parsed_len < len)) {
-	    SIMPLE_ERROR(BF("Wrong host syntax %s") % _rep_(host));
-	}
-	/* Find its translation list */
-	if ( cl::_sym_assoc->fboundp() ) {
-	    pair = eval::funcall(cl::_sym_assoc,host,_lisp->pathnameTranslations(),kw::_sym_test, cl::_sym_string_equal);
-	} else {
-	    // If called before _sym_assoc is setup then invoke assoc directly */
-	    if (_lisp->pathnameTranslations().notnilp() ) {
-		pair = _lisp->pathnameTranslations()->assoc(host,_Nil<T_O>(),cl::_sym_string_equal,_Nil<T_O>() );
-	    } else {
-		pair = _Nil<Cons_O>();
-	    }
-	}
-	if (set.nilp()) {
-	    return (pair.nilp()) ? _Nil<T_O>() : oCadr(pair);
-	}
-	/* Set the new translation list */
-	if (brcl_unlikely(!af_listp(set))) {
-	    WRONG_TYPE_NTH_ARG(2,set,cl::_sym_list);
-	}
-	if (pair.nilp()) {
-	    pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));
-	    _lisp->setPathnameTranslations(Cons_O::create(pair, _lisp->pathnameTranslations()));
-	}
-	for (l = set, set = _Nil<T_O>(); !af_endp(l); l = CDR(l)) {
-	    T_sp item = CAR(l);
-	    T_sp from = coerce_to_from_pathname(oCar(item), host);
-	    T_sp to = af_pathname(oCadr(item));
-	    set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
-	}
-	set = af_nreverse(set.as_or_nil<Cons_O>());
-	CONS_CDR(pair).as_or_nil<Cons_O>()->rplaca(set);
-	return set;
+        if ( hostp.nilp() )
+            return _lisp->pathnameTranslations();
+        size_t parsed_len, len;
+        T_sp pair, l;
+        /* Check that host is a valid host name */
+        if (brcl_unlikely(!af_stringP(host)))
+            WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
+        host = af_string_upcase( host);
+        len = af_length(host);
+        parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
+        if (UNLIKELY(parsed_len < len)) {
+            SIMPLE_ERROR(BF("Wrong host syntax %s") % _rep_(host));
+        }
+        /* Find its translation list */
+        if ( cl::_sym_assoc->fboundp() ) {
+            pair = eval::funcall(cl::_sym_assoc,host,_lisp->pathnameTranslations(),kw::_sym_test, cl::_sym_string_equal);
+        } else {
+            // If called before _sym_assoc is setup then invoke assoc directly */
+            if (_lisp->pathnameTranslations().notnilp() ) {
+                pair = _lisp->pathnameTranslations()->assoc(host,_Nil<T_O>(),cl::_sym_string_equal,_Nil<T_O>() );
+            } else {
+                pair = _Nil<Cons_O>();
+            }
+        }
+        if (set.nilp()) {
+            return (pair.nilp()) ? _Nil<T_O>() : oCadr(pair);
+        }
+        /* Set the new translation list */
+        if (brcl_unlikely(!af_listp(set))) {
+            WRONG_TYPE_NTH_ARG(2,set,cl::_sym_list);
+        }
+        if (pair.nilp()) {
+            pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));
+            _lisp->setPathnameTranslations(Cons_O::create(pair, _lisp->pathnameTranslations()));
+        }
+        for (l = set, set = _Nil<T_O>(); !af_endp(l); l = CDR(l)) {
+            T_sp item = CAR(l);
+            T_sp from = coerce_to_from_pathname(oCar(item), host);
+            T_sp to = cl_pathname(oCadr(item));
+            set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
+        }
+        set = af_nreverse(set.as_or_nil<Cons_O>());
+        CONS_CDR(pair).as_or_nil<Cons_O>()->rplaca(set);
+        return set;
     }
+
+
 
 
     static T_sp
@@ -1913,12 +1917,12 @@ namespace core {
 	T_sp host, device, directory, name, type, version;
 	T_sp tocase;
 	/* The pathname from which we get the data */
-	Pathname_sp source = af_pathname(tsource);
+	Pathname_sp source = cl_pathname(tsource);
 	/* The mask applied to the source pathname */
-	Pathname_sp from = af_pathname(tfrom);
+	Pathname_sp from = cl_pathname(tfrom);
 	T_sp fromcase = normalize_case(from, kw::_sym_local);
 	/* The pattern which says what the output should look like */
-	Pathname_sp to = af_pathname(tto);
+	Pathname_sp to = cl_pathname(tto);
 	tocase = normalize_case(to, kw::_sym_local);
 
 	if (af_logicalPathnameP(source) != af_logicalPathnameP(from) )
@@ -1997,7 +2001,7 @@ namespace core {
     Pathname_sp af_translateLogicalPathname(T_sp tsource)
     {_G();
 	T_sp l, pair;
-	Pathname_sp pathname = af_pathname(tsource);
+	Pathname_sp pathname = cl_pathname(tsource);
     begin:
 	if (!af_logicalPathnameP(pathname)){
 	    return pathname;
@@ -2082,7 +2086,7 @@ namespace core {
 	Defun(coerceToPhysicalPathname);
 
 	SYMBOL_EXPORT_SC_(ClPkg,pathname);
-	Defun(pathname);
+	ClDefun(pathname);
 	SYMBOL_EXPORT_SC_(ClPkg,mergePathnames);
 	Defun(mergePathnames);
 	SYMBOL_EXPORT_SC_(ClPkg,wildPathnameP);

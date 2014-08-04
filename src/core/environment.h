@@ -44,6 +44,7 @@ namespace core
 	static bool clasp_findMacro(T_sp env, Symbol_sp sym, int& depth, int& index, Function_sp& func);
         static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
         static T_sp clasp_lookupValue(T_sp env, int depth, int index );
+        static Function_sp clasp_lookupFunction(T_sp env, int depth, int index );
         static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index );
     protected:
 	static void clasp_environmentStackFill(T_sp env, int level, stringstream& sout);
@@ -103,6 +104,7 @@ namespace core
 	*/
 	Cons_sp classifyValue(Symbol_sp sym) const;
 	virtual T_sp _lookupValue(int depth, int index) const;
+	virtual Function_sp _lookupFunction(int depth, int index) const;
         virtual T_sp _lookupTagbodyId(int depth, int index) const {SUBIMP();};
     public:
 	string environmentStackAsString();

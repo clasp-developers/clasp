@@ -6,7 +6,7 @@ namespace core
 
     FORWARD(LambdaListHandler);
 
-    extern void lambdaListHandler_createBindings(core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LISP_CALLING_CONVENTION_ARGS);
+    extern void lambdaListHandler_createBindings(core::FunctionClosure* closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LISP_CALLING_CONVENTION_ARGS);
 
                                           
 };

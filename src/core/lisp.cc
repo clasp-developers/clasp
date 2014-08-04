@@ -513,14 +513,14 @@ namespace core
 		Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
 		/* ,  more here */
 		);
-	    af_pathnameTranslations(Str_O::create("sys"),pts);
+	    af_pathnameTranslations(Str_O::create("sys"),_lisp->_true(),pts);
 
             // setup the APP-RESOURCES logical-pathname-translations
             Cons_sp app = Cons_O::createList(
                 Cons_O::createList(Str_O::create("app-resources:**;*.*"), bundle->getAppContentsResourcesPathname())
                 /* , more here */
                 );
-	    af_pathnameTranslations(Str_O::create("app-resources"),app);
+	    af_pathnameTranslations(Str_O::create("app-resources"),_lisp->_true(),app);
 	}
 #if 0  // I shouldn't be using PATH - I should be using PATHNAMEs
 	{_BLOCK_TRACE("Initializing special variable PATH");
@@ -595,7 +595,7 @@ namespace core
 #if 0 // wtf is this???
 	if ( this->_dont_load_startup )
 	{_BLOCK_TRACE("Load startup code");
-//	    Pathname_sp initPathname = af_pathname(Str_O::create("sys:brcl/init.lsp"));
+//	    Pathname_sp initPathname = cl_pathname(Str_O::create("sys:brcl/init.lsp"));
 	    Path_sp corePath = Path_O::create(this->_Bundle->getLispDir());
 	    corePath->path_append("/init");
 	    corePath->path_append("/coreFile.lisp");
@@ -1393,7 +1393,7 @@ namespace core
     {_OF();
 	Package_sp pack = this->getCurrentPackage();
 	bool inputWasStream = false;
-	Pathname_sp pathname = af_pathname(af_mergePathnames(filespec));
+	Pathname_sp pathname = cl_pathname(af_mergePathnames(filespec));
 //TODO:	Pathname_sp truename = af_truename(pathname);
 	DynamicScopeManager scope(_sym_STARsourcePathNameSTAR,af_namestring(pathname));
 	scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR,pathname);
@@ -2346,9 +2346,10 @@ namespace core
 	    frame->operator[](i) = oCar(obj);
 	    obj = oCdr(obj);
 	}
+        T_sp cur = last;
 	for ( int i(lenFirst); i<nargs; ++i ) {
-	    frame->operator[](i) = oCar(last);
-	    last = oCdr(last);
+	    frame->operator[](i) = oCar(cur);
+	    cur = oCdr(cur);
 	}
 	Function_sp func = coerce::functionDesignator(head);
 	return eval::applyToActivationFrame(func,frame);
@@ -2756,6 +2757,16 @@ namespace core
 	    LispDebugger debugger(condition);
 	    debugger.invoke();
 	}
+    };
+
+    
+    
+#define ARGS_core_singleDispatchGenericFunctionTable "()"
+#define DECL_core_singleDispatchGenericFunctionTable ""
+#define DOCS_core_singleDispatchGenericFunctionTable "singleDispatchGenericFunctionTable"
+    HashTable_sp core_singleDispatchGenericFunctionTable()
+    {_G();
+        return _lisp->singleDispatchGenericFunctionTable();
     };
 
 
@@ -3510,7 +3521,7 @@ extern "C"
 	    LOG(BF("Initialization source file[%s]") % this->_RCFileName);
 	    if ( this->_RCFileName != "" )
 	    {_BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName );
-		Pathname_sp initPathname = af_pathname(Str_O::create(this->_RCFileName));
+		Pathname_sp initPathname = cl_pathname(Str_O::create(this->_RCFileName));
 		af_load(initPathname);
 	    }
 	} else {
@@ -3645,6 +3656,7 @@ extern "C"
 	       DECL_Lisp_O_forget_all_single_dispatch_generic_functions,
 	       DOCS_Lisp_O_forget_all_single_dispatch_generic_functions);
 
+        CoreDefun(singleDispatchGenericFunctionTable);
 	SYMBOL_SC_(CorePkg,stackMonitor);
 	Defun(stackMonitor);
 	Defun(lowLevelRepl);

@@ -76,7 +76,7 @@ Return the new environment."
   (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
-  (compile-general-lambda-list-code lambda-list-handler
+  (compile-lambda-list-code lambda-list-handler
                             function-env
                             argument-holder
                             new-env)
@@ -338,10 +338,10 @@ COMPILE-FILE just throws this away")
       (irc-intrinsic "makeValueFrameFromReversedCons" accumulated-af accumulate-results (jit-constant-i32 (irc-next-environment-id)))
       (irc-intrinsic "setParentOfActivationFrame" accumulated-af (irc-renv env))
       (codegen funcDesignator (car rest) env)
-      (irc-intrinsic "va_coerceToFunction" func funcDesignator)
-      (irc-intrinsic "FUNCALL_activationFrame" result func accumulated-af) ; used to use temp-mv-result  as result
-;;      (irc-intrinsic "copyTmvOrSlice" result temp-mv-result)
-      )
+      (let ((closure (irc-intrinsic "va_coerceToClosure" funcDesignator)))
+        (irc-intrinsic "FUNCALL_activationFrame" result closure accumulated-af) ; used to use temp-mv-result  as result
+        ;;      (irc-intrinsic "copyTmvOrSlice" result temp-mv-result)
+        ))
     ))
 
 

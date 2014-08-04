@@ -29,7 +29,9 @@
 
 ;;; Add type declarations for the arguments of a METHOD. This implies
 ;;; copying the method arguments because the arguments may be modified.
-(defparameter *add-method-argument-declarations* nil)
+(eval-when (:execute #+clasp :compile-toplevel #+clasp :load-toplevel)
+  (defparameter *add-method-argument-declarations* nil)
+)
 
 
 ;;; ----------------------------------------------------------------------
@@ -151,38 +153,39 @@
     ;; that check, either in the method itself so that it is done
     ;; incrementally, or in COMPUTE-EFFECTIVE-METHOD.
     (when (and (member '&key lambda-list)
-	       (not (member '&allow-other-keys lambda-list)))
+               (not (member '&allow-other-keys lambda-list)))
       (let ((x (position '&aux lambda-list)))
-	(setf lambda-list
-		(append (subseq lambda-list 0 x)
-			'(&allow-other-keys)
-			(and x (subseq lambda-list x))
-                        nil))))
+        (setf lambda-list
+              (append (subseq lambda-list 0 x)
+                      '(&allow-other-keys)
+                      (and x (subseq lambda-list x))
+                      nil))))
     (let* ((copied-variables '())
-	   (class-declarations
-	    (nconc (when *add-method-argument-declarations*
-		     (loop for name in required-parameters
-			for type in specializers
-			when (and (not (eq type t)) (symbolp type))
-			do (push `(,name ,name) copied-variables) and
-			nconc `((type ,type ,name)
-				(si::no-check-type ,name))))
-		   (cdar declarations)))
-	   (block `(block ,(si::function-block-name name) ,@real-body))
-	   (method-lambda
-	    ;; Remove the documentation string and insert the
-	    ;; appropriate class declarations.  The documentation
-	    ;; string is removed to make it easy for us to insert
-	    ;; new declarations later, they will just go after the
-	    ;; second of the method lambda.  The class declarations
-	    ;; are inserted to communicate the class of the method's
-	    ;; arguments to the code walk.
-	    `(lambda ,lambda-list
-	       ,@(and class-declarations `((declare ,@class-declarations)))
-	       ,(if copied-variables
-		    `(let* ,copied-variables ,block)
-		     block))))
-      (values method-lambda declarations documentation))))
+           (class-declarations
+            (nconc (when *add-method-argument-declarations*
+                     (loop for name in required-parameters
+                        for type in specializers
+                        when (and (not (eq type t)) (symbolp type))
+                        do (push `(,name ,name) copied-variables) and
+                        nconc `((type ,type ,name)
+                                (si::no-check-type ,name))))
+                   (cdar declarations)))
+           (block `(block ,(si::function-block-name name) ,@real-body))
+           (method-lambda
+            ;; Remove the documentation string and insert the
+            ;; appropriate class declarations.  The documentation
+            ;; string is removed to make it easy for us to insert
+            ;; new declarations later, they will just go after the
+            ;; second of the method lambda.  The class declarations
+            ;; are inserted to communicate the class of the method's
+            ;; arguments to the code walk.
+            `(lambda ,lambda-list
+               ,@(and class-declarations `((declare ,@class-declarations)))
+               ,(if copied-variables
+                    `(let* ,copied-variables ,block)
+                    block))))
+      (values method-lambda declarations documentation)))
+  )
 
 (defun make-method-lambda (gf method method-lambda env)
 ;;  (print "REMOVEME----------------- method.lsp:184")
@@ -325,51 +328,55 @@
 (defun extract-specializer-names (specialized-lambda-list)
   (nth-value 2 (parse-specialized-lambda-list specialized-lambda-list)))
 
-(defun parse-specialized-lambda-list (specialized-lambda-list)
-  "This function takes a method lambda list and outputs the list of required
+
+;; For some reason clasp needs this at compile time but ecl does not
+(eval-when (:execute #+clasp :compile-toplevel #+clasp :load-toplevel)
+  (defun parse-specialized-lambda-list (specialized-lambda-list)
+    "This function takes a method lambda list and outputs the list of required
 arguments, the list of specializers and a new lambda list where the specializer
 have disappeared."
-  (declare (si::c-local))
-  ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
-  ;; syntactically correct and will output as a first argument the
-  ;; list of required arguments. We use this list to extract the
-  ;; specializers and build a lambda list without specializers.
-  (do* ((arglist (rest (si::process-lambda-list specialized-lambda-list 'METHOD))
-		 (rest arglist))
-	(lambda-list (copy-list specialized-lambda-list))
-	(ll lambda-list (rest ll))
-	(required-parameters '())
-	(specializers '())
-	arg variable specializer)
-       ((null arglist)
-	(values lambda-list
-		(nreverse required-parameters)
-		(nreverse specializers)))
-    (setf arg (first arglist))
-    (cond
-      ;; Just a variable
-      ((atom arg)
-       (setf variable arg specializer T))
-      ;; List contains more elements than variable and specializer
-      ((not (endp (cddr arg)))
-       (si::simple-program-error "Syntax error in method specializer ~A" arg))
-      ;; Specializer is NIL
-      ((null (setf variable (first arg)
-		   specializer (second arg)))
-       (si::simple-program-error
-	"NIL is not a valid specializer in a method lambda list"))
-      ;; Specializer is a class name
-      ((atom specializer))
-      ;; Specializer is (EQL value)
-      ((and (eql (first specializer) 'EQL)
-	    (cdr specializer)
-	    (endp (cddr specializer))))
-      ;; Otherwise, syntax error
-      (t
-       (si::simple-program-error "Syntax error in method specializer ~A" arg)))
-    (setf (first ll) variable)
-    (push variable required-parameters)
-    (push specializer specializers)))
+    (declare (si::c-local))
+    ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
+    ;; syntactically correct and will output as a first argument the
+    ;; list of required arguments. We use this list to extract the
+    ;; specializers and build a lambda list without specializers.
+    (do* ((arglist (rest (si::process-lambda-list specialized-lambda-list 'METHOD))
+                   (rest arglist))
+          (lambda-list (copy-list specialized-lambda-list))
+          (ll lambda-list (rest ll))
+          (required-parameters '())
+          (specializers '())
+          arg variable specializer)
+         ((null arglist)
+          (values lambda-list
+                  (nreverse required-parameters)
+                  (nreverse specializers)))
+      (setf arg (first arglist))
+      (cond
+        ;; Just a variable
+        ((atom arg)
+         (setf variable arg specializer T))
+        ;; List contains more elements than variable and specializer
+        ((not (endp (cddr arg)))
+         (si::simple-program-error "Syntax error in method specializer ~A" arg))
+        ;; Specializer is NIL
+        ((null (setf variable (first arg)
+                     specializer (second arg)))
+         (si::simple-program-error
+          "NIL is not a valid specializer in a method lambda list"))
+        ;; Specializer is a class name
+        ((atom specializer))
+        ;; Specializer is (EQL value)
+        ((and (eql (first specializer) 'EQL)
+              (cdr specializer)
+              (endp (cddr specializer))))
+        ;; Otherwise, syntax error
+        (t
+         (si::simple-program-error "Syntax error in method specializer ~A" arg)))
+      (setf (first ll) variable)
+      (push variable required-parameters)
+      (push specializer specializers)))
+  )
 
 (defun declaration-specializers (arglist declarations)
   (declare (si::c-local))

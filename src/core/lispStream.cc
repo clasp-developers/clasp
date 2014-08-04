@@ -1299,7 +1299,7 @@ T_sp brcl_close(T_sp strm, bool abort)
     FileInStream_sp FileInStream_O::make(T_sp fileName)
     {_G();
         GC_ALLOCATE(FileInStream_O,fin );
-	Pathname_sp pn = af_pathname(fileName);
+	Pathname_sp pn = cl_pathname(fileName);
 	fin->_SourceFileInfo = af_sourceFileInfo(pn);
 	fin->_InStream.open(fin->_SourceFileInfo->fileName().c_str());
 	return fin;
@@ -2553,7 +2553,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 #define DOCS_FDOutStream_O_make ""
     FDOutStream_sp FDOutStream_O::make(T_sp file_desig)
     {_G();
-	Pathname_sp activePathname = af_pathname(file_desig);
+	Pathname_sp activePathname = cl_pathname(file_desig);
 	FDOutStream_sp fout = FDOutStream_O::create(activePathname,std::ios_base::out);
 	return fout;
     }

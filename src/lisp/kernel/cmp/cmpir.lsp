@@ -961,6 +961,9 @@ Within the _irbuilder_ dynamic environment...
 (defun irc-struct-gep (struct idx &optional (label ""))
   (llvm-sys:create-struct-gep *irbuilder* struct idx label ))
 
+(defun irc-insert-value (struct val idx-list &optional (label ""))
+  (llvm-sys:create-insert-value *irbuilder* struct val idx-list label))
+
 (defun irc-extract-value (struct idx-list &optional (label ""))
   (llvm-sys:create-extract-value *irbuilder* struct idx-list label))
 
@@ -977,7 +980,7 @@ Within the _irbuilder_ dynamic environment...
                       (2 (list (pop temp-args) (pop temp-args) (null-t-ptr)))
                       (3 (list (pop temp-args) (pop temp-args) (pop temp-args)))
                       (otherwise temp-args))))
-    (bformat t "About to create funcall with result: %s  args: %s\n" result real-args)
+;;    (bformat t "About to create funcall with result: %s  args: %s\n" result real-args)
     (irc-intrinsic-args "FUNCALL" (list* result closure (jit-constant-i32 nargs) real-args) label)))
   
 ;----------------------------------------------------------------------

@@ -45,9 +45,9 @@
 (defun make-bundle-wrapper (parts bundle-name)
   (let* ((module (create-bundle-module parts :output-pathname bundle-name))
 	 (wrapper-name (pathname-name bundle-name))
-	 (wrapper-pathname (make-pathname :name wrapper-name
-                                          :type (fasl-pathname-type "bc")
-                                          :defaults bundle-name))
+	 (wrapper-pathname (fasl-pathname (make-pathname :name wrapper-name
+                                          :type "bc"
+                                          :defaults bundle-name)))
 	 )
     (bformat t "Writing bundle module to %s\n" (namestring wrapper-pathname))
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename wrapper-pathname))
@@ -68,27 +68,27 @@
 
 
 
-;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with llc and put the output in the
+;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
-(defun execute-llc (part-bitcode-pathname)
-  (let* ((name (probe-file (make-pathname :type (fasl-pathname-type "bc") :defaults part-bitcode-pathname)))
-	 (file (namestring (probe-file name)))
-         (output-file (namestring (make-pathname :type (fasl-pathname-type "o") :defaults (probe-file name)))))
+(defun execute-clang (part-bitcode-pathname)
+  (let* ((name (probe-file (make-pathname :type "bc" :defaults part-bitcode-pathname)))
+         (file (namestring (probe-file name)))
+         (output-file (namestring (make-pathname :type "o" :defaults (probe-file name)))))
     #+target-os-darwin
     (progn
-      (safe-system (bformat nil "llc -filetype=obj -o=%s %s" output-file file))
-      (return-from execute-llc))
+      (safe-system (bformat nil "clang -c -o %s %s" output-file file))
+      (return-from execute-clang))
     #+(and :target-os-linux :address-model-64)
     (progn
-      (safe-system (bformat nil "llc -filetype=obj -march=x86-64 -relocation-model=pic -o=%s %s" output-file file))
-      (return-from execute-llc))
-    (error "Add support for running external llc")))
+      (safe-system (bformat nil "clang -c -march=x86-64 -relocation-model=pic -o %s %s" output-file file))
+      (return-from execute-clang))
+    (error "Add support for running external clang")))
 
 
 
 (defun execute-link (bundle-pathname all-part-pathnames)
   #+target-os-darwin
-  (let ((part-files (mapcar #'(lambda (pn) (namestring (probe-file (make-pathname :type (fasl-pathname-type "o") :defaults pn))))
+  (let ((part-files (mapcar #'(lambda (pn) (namestring (probe-file (make-pathname :type "o" :defaults pn))))
 			    all-part-pathnames))
 	(bundle-file (core:coerce-to-filename bundle-pathname)))
     (let ((all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
@@ -96,7 +96,7 @@
       (safe-system (bformat nil "ld -v %s -macosx_version_min 10.7 -flat_namespace -undefined warning -bundle -o %s" all-names bundle-file)))
     (return-from execute-link))
   #+target-os-linux
-  (let ((part-files (mapcar #'(lambda (pn) (namestring (probe-file (make-pathname :type (fasl-pathname-type "o") :defaults pn))))
+  (let ((part-files (mapcar #'(lambda (pn) (namestring (probe-file (make-pathname :type "o" :defaults pn))))
 			    all-part-pathnames))
 	(bundle-file (core:coerce-to-filename bundle-pathname)))
     (let ((all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
@@ -119,7 +119,7 @@
   (let* ((wrapper-pathname (make-bundle-wrapper parts bundle-name))
 	 (wrapper-and-parts-pathnames (cons wrapper-pathname parts-pathnames))
 	 (bundle-pathname (make-pathname :name (string-downcase (string bundle-name)) :defaults *image-directory*)))
-    (mapc #'(lambda (pn) (execute-llc pn)) wrapper-and-parts-pathnames)
+    (mapc #'(lambda (pn) (execute-clang pn)) wrapper-and-parts-pathnames)
     (execute-link bundle-pathname wrapper-and-parts-pathnames)))
 
 
@@ -137,10 +137,10 @@
 (defun bundle-boot (&optional (last-file :all) (first-file :base) (bundle-pathname +image-pathname+))
   "Use (bundle-boot _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
   (let* ((parts-pathnames (boot-part-pathnames last-file :first-file first-file))
-	 (wrapper-pathname (make-bundle-wrapper parts-pathnames bundle-pathname))
-	 (wrapper-and-parts-pathnames (cons wrapper-pathname parts-pathnames)))
-    (mapc #'(lambda (pn) (execute-llc pn)) wrapper-and-parts-pathnames)
-    (execute-link bundle-pathname wrapper-and-parts-pathnames)))
+	 (wrapper-fasl-pathname (make-bundle-wrapper parts-pathnames bundle-pathname))
+	 (wrapper-and-parts-fasl-pathnames (cons wrapper-fasl-pathname (mapcar (lambda (x) (fasl-pathname x)) parts-pathnames))))
+    (mapc #'(lambda (pn) (execute-clang pn)) wrapper-and-parts-fasl-pathnames)
+    (execute-link bundle-pathname wrapper-and-parts-fasl-pathnames)))
 
 (export '(make-bundle bundle-boot))
 
@@ -176,16 +176,16 @@
           (multiple-value-bind (failure error-msg)
               (llvm-sys:link-in-module linker part-module)
             (when failure
-              (error "~a" error-msg)))
+              (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg)))
           )))
     (dolist (part-pn part-pathnames)
-      (let* ((bc-file (make-pathname :type (fasl-pathname-type "bc") :defaults part-pn)))
+      (let* ((bc-file (fasl-pathname (make-pathname :type "bc" :defaults part-pn))))
         (format t "Linking ~a~%" bc-file)
         (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
           (multiple-value-bind (failure error-msg)
               (llvm-sys:link-in-module linker part-module)
             (when failure
-              (error "~a" error-msg)))
+              (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg)))
           )))
     (format t "Running module pass manager~%")
     (let* ((linked-module (llvm-sys:get-module linker))
@@ -203,7 +203,7 @@
                                   debug-ir)
   (let* ((part-pathnames (boot-part-pathnames last-part :first-file first-file))
 ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
-	 (bundle-bitcode-pathname (make-pathname :type (fasl-pathname-type "bc") :defaults output-pathname))
+	 (bundle-bitcode-pathname (fasl-pathname (make-pathname :type "bc" :defaults output-pathname)))
          (module (link-bitcode-modules part-pathnames
                                        :additional-bitcode-pathnames (if intrinsics-bitcode-path
                                                                          (list intrinsics-bitcode-path)
@@ -211,8 +211,9 @@
                                        :output-pathname output-pathname
                                        :debug-ir debug-ir))
          )
+    (ensure-directories-exist bundle-bitcode-pathname)
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
-    (execute-llc bundle-bitcode-pathname)
+    (execute-clang bundle-bitcode-pathname)
     (execute-link output-pathname (list bundle-bitcode-pathname))
     ))
          

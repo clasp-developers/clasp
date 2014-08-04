@@ -676,7 +676,7 @@ namespace core {
     void Class_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Class_O>()
-	    .def("className",&Class_O::className)
+	    .def("core:nameOfClass",&Class_O::className)
 	    .def("core:direct-superclasses",&Class_O::directSuperclasses)
             .def("core:hasCreator",&Class_O::hasCreator)
             .def("core:getCreator",&Class_O::getCreator)

@@ -49,8 +49,8 @@ namespace core
     void SNode_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<SNode_O>()
-	    .def("core:setKind",&SNode_O::setKind)
-	    .def("core:getKind",&SNode_O::getKind)
+	    .def("core:setNodeKind",&SNode_O::setKind)
+	    .def("core:getNodeKind",&SNode_O::getKind)
 	    .def("core:getVectorSNodes",&SNode_O::getVectorSNodes)
 	    .def("core:setVectorSNodes",&SNode_O::setVectorSNodesUnsafe)
 	    .def("core:setAttributes",&SNode_O::setAttributesUnsafe)

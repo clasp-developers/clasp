@@ -151,7 +151,7 @@ Return nil if no matcher could be compiled."
          (id-to-node-map (idto-node-map nodes))
          (node (gethash *match-dump-tag* id-to-node-map))
          (context (context match))
-         (source-manager (source-manager match))
+         (source-manager (ast-tooling:source-manager match))
          (lang-options (get-lang-opts context))
          (begin (get-loc-start node))
          (_end (get-loc-end node))
@@ -204,7 +204,7 @@ Return nil if no matcher could be compiled."
   (let* ((nodes (nodes match))
          (*match-id-to-node-map* (idto-node-map nodes))
          (*match-ast-context* (context match))
-         (*match-source-manager* (source-manager match)))
+         (*match-source-manager* (ast-tooling:source-manager match)))
     (prog1
         (funcall (callback-code self))
       (advance-match-counter)
@@ -235,10 +235,10 @@ Return nil if no matcher could be compiled."
   (let* ((nodes (nodes match))
          (id-to-node-map (idto-node-map nodes))
          (node (gethash :whole id-to-node-map))
-         (source-manager (source-manager match))
+         (source-manager (ast-tooling:source-manager match))
          (*match-id-to-node-map* id-to-node-map)
          (*match-ast-context* (context match))
-         (*match-source-manager* (source-manager match)))
+         (*match-source-manager* (ast-tooling:source-manager match)))
     (when (source-loc-equal self node)
       (when (callback-code self)
         (funcall (callback-code self))
@@ -476,6 +476,7 @@ This can only be run in the context set up by the code-match-callback::run metho
   ((code :accessor simple-arguments-adjuster-code :initarg :code)))
 
 (core:defvirtual arguments-adjuster-adjust ((self simple-arguments-adjuster) args)
+  (format t "In arguments-adjuster-adjust self: ~a    args: ~a~%" self args)
   (let ((res (funcall (simple-arguments-adjuster-code self) args)))
     res))
 
@@ -1220,8 +1221,8 @@ correspond to the environment names superclasses that are also part of the clang
     (if (find-class symbol nil)
         (let* ((cpl (clos:class-precedence-list (find-class symbol)))
                (cast-pkg (find-package :cast))
-               (cast-cpl (remove-if-not #'(lambda (x) (eq cast-pkg (symbol-package (class-name x)))) cpl)))
-          (mapcar #'(lambda (x) (intern (symbol-name (class-name x)) :keyword)) cast-cpl))
+               (cast-cpl (remove-if-not #'(lambda (x) (eq cast-pkg (symbol-package (name-of-class x)))) cpl)))
+          (mapcar #'(lambda (x) (intern (symbol-name (name-of-class x)) :keyword)) cast-cpl))
         (signal 'wrong-matcher :node-type (identify-node-type node)))))
 
 

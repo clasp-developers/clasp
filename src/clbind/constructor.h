@@ -183,6 +183,7 @@ namespace clbind {
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:
         DISABLE_NEW();
+#if 0
         core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
         {
             int countPureOutValues = CountPureOutValues<Policies>::value;
@@ -195,6 +196,7 @@ namespace clbind {
             int oidx = 1;
             return gctools::multiple_values<core::T_O>(obj_gc_safe,oidx);
         }
+#endif
     };
 
 };

@@ -17,7 +17,7 @@
                                           )
                                      ,@code))))
 ;;                                     (lambda ,simple-lambda-list ,@code))))
-               (compiled-body (core:get-body fn)))
+               (compiled-body fn))
           `(core:ensure-single-dispatch-method ',name (find-class ',dispatch-class)
                                                  :lambda-list-handler (make-lambda-list-handler
                                                                        ',simple-lambda-list

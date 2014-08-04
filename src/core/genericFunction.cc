@@ -102,31 +102,30 @@ In ecl/src/c/interpreter.d  is the following code
     SYMBOL_SC_(ClosPkg,compute_effective_method_function);
 
     /*! This function copies ECL>>gfun.d generic_compute_applicable_method */
-    T_mv generic_compute_applicable_method(int nargs, ArgArray args,
-					   const Instance_O& gf)
+    T_mv generic_compute_applicable_method(Instance_sp gf, int nargs, ArgArray args)
     {
 	/* method not cached */
 	//cl_object memoize;
 	T_sp memoize;
 	T_mv methods = eval::funcall(clos::_sym_compute_applicable_methods_using_classes,
-				     gf.const_sharedThis<Instance_O>(),frame_to_classes(nargs,args));
+				     gf,frame_to_classes(nargs,args));
 	memoize = methods.valueGet(1); // unlikely_if (Null(memoize = env->values[1])) {
 	if (memoize.nilp())
 	{
 	    T_sp arglist = lisp_ArgArrayToCons(nargs,args); // used to be frame_to_list
 	    methods = eval::funcall(cl::_sym_compute_applicable_methods,
-				    gf.const_sharedThis<Instance_O>(),arglist);
+				    gf,arglist);
 	    if ( methods.nilp() )
 	    {
 		SYMBOL_EXPORT_SC_(ClPkg,no_applicable_method);
 		T_sp func = eval::funcall(cl::_sym_no_applicable_method,
-					  gf.const_sharedThis<Instance_O>(),arglist);
+					  gf,arglist);
 		args[0] = _Nil<T_O>();
 		return(Values(func,_Nil<T_O>()));
 	    }
 	}
 	methods = eval::funcall(clos::_sym_compute_effective_method_function,
-				gf.const_sharedThis<Instance_O>(),gf.GFUN_COMB(),methods);
+				gf,gf->GFUN_COMB(),methods);
 	return(Values(methods,_lisp->_true()));
     }
 
@@ -134,10 +133,9 @@ In ecl/src/c/interpreter.d  is the following code
     SYMBOL_SC_(ClosPkg,std_compute_effective_method);
 
     /*! This function copies ECL>>gfun.d restricted_compute_applicable_method */
-    T_mv restricted_compute_applicable_method(int nargs, ArgArray args,
-					      const Instance_O& gf)
+    T_mv restricted_compute_applicable_method(Instance_sp gf, int nargs, ArgArray args )
     {
-	Instance_sp igf = gf.const_sharedThis<Instance_O>();
+	Instance_sp igf = gf;
 	/* method not cached */
 	T_sp arglist = lisp_ArgArrayToCons(nargs,args); // used to be frame_to_list
 	T_sp methods = eval::funcall(clos::_sym_std_compute_applicable_methods,igf,arglist);
@@ -148,7 +146,7 @@ In ecl/src/c/interpreter.d  is the following code
 	    args[0] = _Nil<T_O>();
 	    return(Values(func,_Nil<T_O>()));
 	}
-	methods = eval::funcall(clos::_sym_std_compute_effective_method,igf,gf.GFUN_COMB(),methods);
+	methods = eval::funcall(clos::_sym_std_compute_effective_method,igf,gf->GFUN_COMB(),methods);
 	return(Values(methods,_lisp->_true()));
     }
 
@@ -156,14 +154,14 @@ In ecl/src/c/interpreter.d  is the following code
 
 
 
-    T_mv compute_applicable_method(int nargs, ArgArray args, T_sp gf)
+    T_mv compute_applicable_method(Instance_sp gf, int nargs, ArgArray args)
 {
     if (gf.as<Instance_O>()->isgf() == ECL_RESTRICTED_DISPATCH )
     {
-	return restricted_compute_applicable_method(nargs,args, *(gf.as<Instance_O>().get()));
+	return restricted_compute_applicable_method(gf,nargs,args);
     } else
     {
-	return generic_compute_applicable_method(nargs,args, *(gf.as<Instance_O>().get()));
+	return generic_compute_applicable_method(gf,nargs,args);
     }
 }
 
@@ -174,14 +172,14 @@ In ecl/src/c/interpreter.d  is the following code
 
 
 /*! Mimic ECL>>gfun.d fill_spec_vector */
-  gctools::Vec0<T_sp>& fill_spec_vector(gctools::Vec0<T_sp>& vektor,
-						  int nargs, ArgArray args, T_sp& gf)
+    gctools::Vec0<T_sp>& fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp>& vektor,
+						  int nargs, ArgArray args)
     {
 #if DEBUG_CLOS>=2
-	printf("MLOG fill_spec_vector - entered with gf  %s\n", gf.as<Instance_O>()->GFUN_NAME()->__repr__().c_str() );
+	printf("MLOG fill_spec_vector - entered with gf  %s\n", gf->GFUN_NAME()->__repr__().c_str() );
 #endif
 	int narg = nargs;
-	T_sp spec_how_list = gf.as<Instance_O>()->GFUN_SPECIALIZERS();
+	T_sp spec_how_list = gf->GFUN_SPECIALIZERS();
 	// cl_object *argtype = vector->vector.self.t; // ??
 	gctools::Vec0<T_sp>& argtype = vektor;
 	int spec_no = 1;
@@ -243,7 +241,7 @@ In ecl/src/c/interpreter.d  is the following code
 	Function_sp func;
 #if defined(CACHE_METHOD_LOOKUP)
         Cache* cache(_lisp->methodCachePtr()); // gctools::StackRootedPointer<Cache> cache(_lisp->methodCachePtr());
-	gctools::Vec0<T_sp>& vektor = fill_spec_vector(cache->keys(), nargs, args, gf); // Was ref
+	gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), nargs, args); // Was ref
         CacheRecord* e; //gctools::StackRootedPointer<CacheRecord> e;
         try {
             cache->search_cache(e); // e = ecl_search_cache(cache);
@@ -260,7 +258,7 @@ In ecl/src/c/interpreter.d  is the following code
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
-	    T_mv mv = compute_applicable_method( nargs, args, gf);
+	    T_mv mv = compute_applicable_method(gf, nargs, args );
 	    func = mv.as<Function_O>();
 	    if (mv.valueGet(1).notnilp() )
 	    {
@@ -312,15 +310,15 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
         return output;
 }
  */
- T_mv generic_function_dispatch( const Instance_O& gf, int nargs, ArgArray args)
+ T_mv generic_function_dispatch( Instance_sp gf, int nargs, ArgArray args)
     {
-	return standard_dispatch(gf.const_sharedThis<Instance_O>(),nargs,args);
+	return standard_dispatch(gf,nargs,args);
     }
 
 
     
     /*! Reproduces functionality in ecl_slot_reader_dispatch */
-T_mv slotReaderDispatch( const Instance_O& gf, int nargs, ArgArray args )
+T_mv slotReaderDispatch( Instance_sp gf, int nargs, ArgArray args )
     {
 	IMPLEMENT_MEF(BF("Implement slotReaderDispatch"));
     }
@@ -328,19 +326,19 @@ T_mv slotReaderDispatch( const Instance_O& gf, int nargs, ArgArray args )
 
 
     /*! Reproduces functionality in ecl_slot_writer_dispatch */
-T_mv slotWriterDispatch( const Instance_O& gf, int nargs, ArgArray args )
+T_mv slotWriterDispatch( Instance_sp gf, int nargs, ArgArray args )
     {
 	IMPLEMENT_MEF(BF("Implement slotWriterDispatch"));
     }
 
     /*! Reproduces functionality in user_function_dispatch */
-T_mv userFunctionDispatch( const Instance_O& gf, int nargs, ArgArray args )
+T_mv userFunctionDispatch( Instance_sp gf, int nargs, ArgArray args )
     {
 	IMPLEMENT_MEF(BF("Implement userFunctionDispatch"));
     }
 
     /*! Reproduces functionality in FEnot_funcallable_vararg */
-T_mv notFuncallableDispatch( const Instance_O& gf, int nargs, ArgArray args )
+T_mv notFuncallableDispatch( Instance_sp gf, int nargs, ArgArray args )
     {
 	IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
     }
