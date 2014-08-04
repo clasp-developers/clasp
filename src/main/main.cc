@@ -72,7 +72,7 @@ int startup(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize
     int exitCode = 0;
     try
     {
-	core::TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<core::T_O>());
+//	core::TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<core::T_O>());
 	core::_globalProfiler.start();
 	lispHolder.startup(argc, argv, "CANDO_APP");
 	clbind::ClbindExposer ClbindPkg(_lisp);

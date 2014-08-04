@@ -18,11 +18,54 @@ namespace core
 {
 
 
-    T_sp evaluate_lambda_list_form(T_sp form, Environment_sp env)
+    void lambdaListHandler_createBindings(core::FunctionClosure* closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LISP_CALLING_CONVENTION_ARGS)
     {
-	Environment_sp localEnv(env);
+        // TODO: I should allocate this on the stack - but clang doesn't behave consistently
+        // when I use variable stack arrays
+//        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
+        T_O** args = (T_O**)alloca(sizeof(T_O*)*lcc_nargs);
+        switch (lcc_nargs)
+        {
+        case 0:
+            break;
+        case 1:
+            args[0] = lcc_fixed_arg0;
+            break;
+        case 2:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            break;
+        case 3:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            args[2] = lcc_fixed_arg2;
+            break;
+        default:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            args[2] = lcc_fixed_arg2;
+            for ( size_t it=3; it<lcc_nargs; ++it ) {
+                args[it] = va_arg(lcc_arglist,T_O*);
+            }
+            break;
+        }
+        try {
+            llh->createBindingsInScope_argArray_TPtr(lcc_nargs,args,scope);
+        } catch (...) {
+            printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
+            handleArgumentHandlingExceptions(closure);
+        }
+//        printf("%s:%d returning from lambdaListHandler_createBindings\n", __FILE__, __LINE__);
+        return;
+    }
+
+
+
+
+    T_sp evaluate_lambda_list_form(T_sp form, T_sp env)
+    {
 	// TODO:: The code should be compiled and not interpreted
-	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
+//	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
 	return eval::evaluate(form,env);
     }
 
@@ -30,17 +73,28 @@ namespace core
 
 
 
-    TargetClassifier::TargetClassifier() : _LexicalIndex(0)
+    TargetClassifier::TargetClassifier(const std::set<int>& skip) : lexicalIndex(-1), skipLexicalIndices(skip)
     {_G();
 	this->_SpecialSymbols = _Nil<SymbolSet_O>();
 	this->_LambdaListSpecials = SymbolSet_O::create();
+        this->advanceLexicalIndex();
     };
-    TargetClassifier::TargetClassifier(SymbolSet_sp specialSymbols)
-	: _SpecialSymbols(specialSymbols), _LexicalIndex(0)
+    TargetClassifier::TargetClassifier(SymbolSet_sp specialSymbols, const std::set<int>& skip)
+	: _SpecialSymbols(specialSymbols)
+        , lexicalIndex(-1)
+        , skipLexicalIndices(skip)
     {
 	this->_LambdaListSpecials = SymbolSet_O::create();
+        this->advanceLexicalIndex();
     };
 
+    void TargetClassifier::advanceLexicalIndex()
+    {
+        while (true) {
+            ++this->lexicalIndex;
+            if ( this->skipLexicalIndices.count(this->lexicalIndex) == 0 ) return;
+        }
+    }
 
 
     /*! Any Special symbols that haven't been seen in the lambda list need to be added to the 
@@ -286,11 +340,14 @@ namespace core
 	    this->_LambdaListSpecials->insert(sym);
 	} else
 	{
-	    target._ArgTargetFrameIndex = this->_LexicalIndex;
+	    target._ArgTargetFrameIndex = this->lexicalIndex;
 	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(target._ArgTarget,Fixnum_O::create(target._ArgTargetFrameIndex)));
-	    ++this->_LexicalIndex;
+	    this->advanceLexicalIndex();
 	}
     }
+
+
+
 
     void LambdaListHandler_O::recursively_build_handlers_count_arguments(Cons_sp declares, T_sp context, TargetClassifier& classifier )
     {_G();
@@ -385,10 +442,26 @@ namespace core
 #define PASS_FUNCTION_OPTIONAL 	bind_optional_argArray
 #define PASS_FUNCTION_REST 	bind_rest_argArray
 #define PASS_FUNCTION_KEYWORD 	bind_keyword_argArray
-#define PASS_FUNCTION_SUFFIX 	argArray
 #define PASS_ARGS	     	int n_args, ArgArray ap
 #define PASS_ARGS_NUM		n_args
 #define PASS_NEXT_ARG()		ap[arg_idx]
+#include "argumentBinding.cc"
+#undef PASS_FUNCTION_REQUIRED
+#undef PASS_FUNCTION_OPTIONAL
+#undef PASS_FUNCTION_REST
+#undef PASS_FUNCTION_KEYWORD
+#undef PASS_ARGS
+#undef PASS_ARGS_NUM
+#undef PASS_NEXT_ARG
+
+
+#define PASS_FUNCTION_REQUIRED 	bind_required_argArray_TPtr
+#define PASS_FUNCTION_OPTIONAL 	bind_optional_argArray_TPtr
+#define PASS_FUNCTION_REST 	bind_rest_argArray_TPtr
+#define PASS_FUNCTION_KEYWORD 	bind_keyword_argArray_TPtr
+#define PASS_ARGS	     	int n_args, T_O* ap[]
+#define PASS_ARGS_NUM		n_args
+#define PASS_NEXT_ARG()		gctools::smart_ptr<T_O>(ap[arg_idx])
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -456,6 +529,24 @@ void bind_aux
 	}
 	bind_rest_argArray( this->_RestArgument, n_args, argArray, arg_idx, scope );
 	bind_keyword_argArray( this->_KeywordArguments, this->_AllowOtherKeys, n_args, argArray, arg_idx, scope );
+	bind_aux( this->_AuxArguments, scope );
+    }
+
+
+
+    void LambdaListHandler_O::createBindingsInScope_argArray_TPtr(int n_args, T_O* argArray[],
+	DynamicScopeManager& scope )
+    {_G();
+	if ( UNLIKELY(!this->_CreatesBindings) ) return;
+	int arg_idx = 0;
+	arg_idx = bind_required_argArray_TPtr( this->_RequiredArguments, n_args, argArray, arg_idx, scope );
+	arg_idx = bind_optional_argArray_TPtr( this->_OptionalArguments, n_args, argArray, arg_idx, scope );
+	if ( UNLIKELY(arg_idx < n_args && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
+            throwTooManyArgumentsError(n_args,this->numberOfLexicalVariables());
+//	    TOO_MANY_ARGUMENTS_ERROR();
+	}
+	bind_rest_argArray_TPtr( this->_RestArgument, n_args, argArray, arg_idx, scope );
+	bind_keyword_argArray_TPtr( this->_KeywordArguments, this->_AllowOtherKeys, n_args, argArray, arg_idx, scope );
 	bind_aux( this->_AuxArguments, scope );
     }
 
@@ -947,21 +1038,21 @@ void bind_aux
 
 
 
-    LambdaListHandler_sp LambdaListHandler_O::create(Cons_sp lambda_list, Cons_sp declares, T_sp context )
+    LambdaListHandler_sp LambdaListHandler_O::create(Cons_sp lambda_list, Cons_sp declares, T_sp context, const std::set<int>& skipFrameIndices )
     {_G();
 	ql::list all_arguments_list;
 	SymbolSet_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
-	TargetClassifier classifier(specialSymbols);
+	TargetClassifier classifier(specialSymbols,skipFrameIndices);
 	LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive(lambda_list,declares,context,classifier);
-	ollh->_NumberOfLexicalVariables = classifier.numberOfLexicalVariables();
+	ollh->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
 	return ollh;
     }
 
 
-    LambdaListHandler_sp LambdaListHandler_O::create(int numArgs)
+    LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int>& skipIndices)
     {_G();
         GC_ALLOCATE(LambdaListHandler_O,ollh );
-	ollh->create_required_arguments(numArgs);
+	ollh->create_required_arguments(numArgs,skipIndices);
 	return ollh;
     }
 
@@ -977,10 +1068,10 @@ void bind_aux
 	
 
 
-    void LambdaListHandler_O::create_required_arguments(int num)
+    void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>& skipIndices)
     {_OF();
-	TargetClassifier classifier;
-	for (int i=0; i<num; ++i )
+	TargetClassifier classifier(skipIndices);
+	for (int i=0, iEnd(num-skipIndices.size()); i<iEnd; ++i )
 	{
 	    Symbol_sp name = af_gensym(Str_O::create("arg"));
 	    RequiredArgument req(name,i);
@@ -989,7 +1080,7 @@ void bind_aux
 	}
 	this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
 	ASSERTF(this->_ClassifiedSymbolList.nilp() || af_consP(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
-	this->_NumberOfLexicalVariables = classifier.numberOfLexicalVariables();
+	this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
     }
 
 
@@ -1192,11 +1283,6 @@ void bind_aux
 	return false;
     }
 
-    int LambdaListHandler_O::numberOfRequiredArguments() const
-    {
-	return this->_RequiredArguments.size();
-    }
-
 
     Cons_sp LambdaListHandler_O::namesOfLexicalVariables() const
     {_G();
@@ -1244,6 +1330,11 @@ void bind_aux
 	    .def("processLambdaListHandler",&LambdaListHandler_O::processLambdaListHandler)
 	    .def("lambdaListHandlerRequiredLexicalArgumentsOnlyP",&LambdaListHandler_O::requiredLexicalArgumentsOnlyP)
 	    .def("numberOfRequiredArguments",&LambdaListHandler_O::numberOfRequiredArguments)
+	    .def("numberOfOptionalArguments",&LambdaListHandler_O::numberOfOptionalArguments)
+	    .def("numberOfRestArguments",&LambdaListHandler_O::numberOfRestArguments)
+	    .def("numberOfKeyArguments",&LambdaListHandler_O::numberOfKeyArguments)
+	    .def("numberOfAuxArguments",&LambdaListHandler_O::numberOfAuxArguments)
+            .def("allowOtherKeys",&LambdaListHandler_O::allowOtherKeys)
 	    .def("numberOfLexicalVariables",&LambdaListHandler_O::numberOfLexicalVariables)
 	    .def("namesOfLexicalVariables",&LambdaListHandler_O::namesOfLexicalVariables)
 	    .def("namesOfLexicalVariablesForDebugging",&LambdaListHandler_O::namesOfLexicalVariablesForDebugging)

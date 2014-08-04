@@ -58,14 +58,16 @@ namespace core
 	SymbolSet_sp 	_SpecialSymbols;
 	/*! symbols that are seen in the lambda-list and are special are accumulated here */
 	SymbolSet_sp    _LambdaListSpecials;
-	int		_LexicalIndex;
+	int		lexicalIndex;
 	ql::list	_AccumulatedClassifiedSymbols;
-	explicit TargetClassifier();
-	explicit TargetClassifier(SymbolSet_sp specialSymbols);
+        std::set<int>   skipLexicalIndices;
+	explicit TargetClassifier(const std::set<int>& skipLexicalIndices);
+	explicit TargetClassifier(SymbolSet_sp specialSymbols, const std::set<int>& skipLexicalIndices);
 	void classifyTarget(Argument& target);
 	Cons_sp finalClassifiedSymbols();
 	void targetIsSubLambdaList(Argument& target,LambdaListHandler_sp subHandler);
-	int numberOfLexicalVariables() const { return this->_LexicalIndex;};
+	int totalLexicalVariables() const { return this->lexicalIndex;};
+        void advanceLexicalIndex();
     };
 
 
@@ -118,10 +120,10 @@ namespace core
 	static LambdaListHandler_sp createRecursive(Cons_sp lambda_list, Cons_sp declares, T_sp context, TargetClassifier& classifier);
 
 	/*! Compile the lambda-list into an LambdaListHandler */
-	static LambdaListHandler_sp create(Cons_sp lambda_list, Cons_sp declares, T_sp context );
+	static LambdaListHandler_sp create(Cons_sp lambda_list, Cons_sp declares, T_sp context, const std::set<int>& pureOutValues = std::set<int>() );
 
 	/*! Create a simple LambdaListHandler that takes a fixed number of required arguments */
-	static LambdaListHandler_sp create(int numArgs);
+	static LambdaListHandler_sp create(int numArgs, const std::set<int>& pureOutValues = std::set<int>() );
     public:	// set up argument handling by hand
 
 	/*! Use the declares to adjust the behavior of the LambdaListHandler.
@@ -143,7 +145,7 @@ namespace core
 	void recursively_build_handlers_count_arguments(Cons_sp declares, T_sp context, TargetClassifier& classifier );
     public:
 //	void process_declares(Cons_sp declares);
-	void create_required_arguments(int numArgs);
+	void create_required_arguments(int numArgs, const std::set<int>& skipIndices );
     public:
 
 	/*! Promote the argument with the given symbol to have a FrameIndex of 0 and all 
@@ -164,9 +166,12 @@ namespace core
 	void createBindingsInScope_argArray(int n_args, ArgArray argArray,
 				   DynamicScopeManager& scope );
 
+	void createBindingsInScope_argArray_TPtr(int n_args, T_O* argArray[],
+                                                 DynamicScopeManager& scope );
+
 	/*! Return a list of expressions that can be evaluated in (env) to generate a list of values that would
 	  be put into the classifiedSymbols */
-	Cons_sp lambdaListParts(Environment_sp env);
+	Cons_sp lambdaListParts(T_sp env);
 
 	// ---------
 	// Following are the methods that deal with preparing Lexical ActivationFrames for arguments
@@ -174,8 +179,13 @@ namespace core
 	/*! Return true if the LambdaListHandler only has required arguments */
 	bool requiredLexicalArgumentsOnlyP() const;
 
-	int numberOfRequiredArguments() const;
-
+	int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
+        int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
+        int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
+        int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
+        int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
+        bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
+        
 //	uint _numberOfRequiredArguments() const;
 
 	/*! The total number of arguments that will be bound by this handler in a lexical ActivationFrame */

@@ -194,7 +194,7 @@ namespace core
 	SIMPLE_ERROR(BF("DynamicScopeManager doesn't bind anything other than SPECIAL_TARGET bindings - you gave it a binding to[%s] index[%d]") % _rep_(arg._ArgTarget) % arg._ArgTargetFrameIndex);
     }
 
-    Environment_sp DynamicScopeManager::lexenv() const
+    T_sp DynamicScopeManager::lexenv() const
     {
 	SIMPLE_ERROR(BF("A ValueEnvironment was requested from a DynamicScopeManager - only ValueEnvironmentDynamicScopeManagers have those"));
     }
@@ -276,12 +276,6 @@ namespace core
 
 
 
-    bool ActivationFrameDynamicScopeManager::lexicalElementBoundP(const Argument& argument)
-    {
-	return((this->_Frame->boundp_entry(argument._ArgTargetFrameIndex)));
-    }
-
-
     void ActivationFrameDynamicScopeManager::new_binding(const Argument& argument, T_sp val)
     {
 	if ( argument._ArgTargetFrameIndex == SPECIAL_TARGET )
@@ -294,7 +288,13 @@ namespace core
     }
 
 
-    Environment_sp ActivationFrameDynamicScopeManager::lexenv() const
+    bool ActivationFrameDynamicScopeManager::lexicalElementBoundP(const Argument& argument)
+    {
+	return((this->_Frame->boundp_entry(argument._ArgTargetFrameIndex)));
+    }
+
+
+    T_sp ActivationFrameDynamicScopeManager::lexenv() const
     {
 //	SIMPLE_ERROR(BF("A ValueEnvironment was requested from a DynamicScopeManager... \n but only ValueEnvironmentDynamicScopeManagers have those.   \n On the other hand, ActivationFrameDynamicScopeManager::lexenv() \n should only be called when evaluating lambda-list init-forms \n (&optional,&key,&aux) and those should be evaluated in an environment \n that only has the lambda-list bindings in the top-level-environment \n - Since we attach the binding symbol names to the ActivationFrame we \n could just use the ActivationFrame of this ActivationFrameDynamicScopeManager \n as the environment that lexenv returns"));
 	// I'm going to return the ActivationFrame here and ASSERT that it must have debugging info
@@ -307,6 +307,38 @@ namespace core
     }
 
 
+
+
+    void StackFrameDynamicScopeManager::new_binding(const Argument& argument, T_sp val)
+    {
+	if ( argument._ArgTargetFrameIndex == SPECIAL_TARGET )
+	{
+	    this->DynamicScopeManager::new_binding(argument,val);
+	    return;
+	}
+	ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget) );
+        core::T_O** array(frame::ValuesArray(this->frame));
+        array[argument._ArgTargetFrameIndex] = val.asTPtr();
+    }
+
+
+    bool StackFrameDynamicScopeManager::lexicalElementBoundP(const Argument& argument)
+    {
+        core::T_O** array(frame::ValuesArray(this->frame));
+	return !gctools::tagged_ptr<T_O>::tagged_unboundp(array[argument._ArgTargetFrameIndex]);
+    }
+
+
+    T_sp StackFrameDynamicScopeManager::lexenv() const
+    {
+        return this->frame;
+    }
+
+
+    T_sp StackFrameDynamicScopeManager::activationFrame() const
+    {
+        return this->frame;
+    }
 
 	
 };

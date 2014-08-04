@@ -463,7 +463,7 @@ namespace core
     {_G();
 	Function_sp func = af_interpreter_lookup_macro(symbol,env);
 	if ( func.nilp() ) return _Nil<T_O>();
-	if ( func->macroP() ) return func;
+	if ( func->closure->macroP() ) return func;
 	return _Nil<T_O>();
     }
     
@@ -668,24 +668,19 @@ namespace core
 #define DOCS_af_STARfset "fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not."
 #define ARGS_af_STARfset "(function-name fn &optional macro)"
 #define DECL_af_STARfset ""    
-    T_mv af_STARfset(T_sp functionName, Function_sp fn, T_sp macro )
+    T_sp af_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro )
     {_G();
-	if ( macro.isTrue() )
-	{
-	    if ( !af_symbolp(functionName) )
-	    {
-		SIMPLE_ERROR(BF("You cannot define a macro with the name[%s]") % _rep_(functionName) );
-	    }
-	    fn->set_kind(kw::_sym_macro);
-	} else
-	{
-	    fn->set_kind(kw::_sym_function);
-	}
+        ASSERTF(functionObject,BF("function is undefined\n"));
+        if ( macro.isTrue() ) {
+            functionObject->setKind(kw::_sym_macro);
+        } else {
+            functionObject->setKind(kw::_sym_function);
+        }
 	if ( af_symbolp(functionName) )
 	{
 	    Symbol_sp symbol = functionName.as<Symbol_O>();
-	    symbol->setf_symbolFunction(fn);
-	    return Values(fn);
+	    symbol->setf_symbolFunction(functionObject);
+	    return functionObject;
 	} else if (af_consP(functionName))
 	{
 	    SYMBOL_EXPORT_SC_(ClPkg,setf);
@@ -693,8 +688,8 @@ namespace core
 	    if ( oCar(cur) == cl::_sym_setf )
 	    {
 		Symbol_sp symbol = oCadr(cur).as<Symbol_O>();
-		_lisp->set_setfDefinition(symbol,fn);
-		return Values(fn);
+		_lisp->set_setfDefinition(symbol,functionObject);
+		return functionObject;
 	    }
 	}
 	SIMPLE_ERROR(BF("Illegal name for function[%s]") % _rep_(functionName) );
@@ -1112,7 +1107,7 @@ namespace core
 		++idx;
 	    }
 	    LOG(BF("About to evaluate map op[%s] on arguments[%s]") % _rep_(op) % _rep_(frame) );
-	    T_sp res = op->INVOKE(frame->length(),frame->argArray()); // T_sp res = eval::applyFunctionToActivationFrame(op,frame);
+            T_sp res = eval::applyToActivationFrame(op,frame);
 	}
     RETURN:
 	return(Values(oCar(lists)));
@@ -1151,7 +1146,7 @@ namespace core
 	    }
 	    LOG(BF("About to evaluate map op[%s] on arguments[%s]")
 		% _rep_(op) % _rep_(frame) );
-	    T_sp res = op->INVOKE(frame->length(),frame->argArray()); // T_sp res = eval::applyFunctionToActivationFrame(op,frame);
+            T_sp res = eval::applyToActivationFrame(op,frame);
 	    Cons_sp one = Cons_O::create(res);
 	    curResult->setCdr(one);
 	    curResult = one;
@@ -1206,8 +1201,11 @@ namespace core
     T_mv af_mapcon(T_sp op, Cons_sp lists)
     {_G();
 	Cons_sp parts = af_maplist(op,lists).as_or_nil<Cons_O>();
+        T_sp result = cl_nconc(parts);
+#if 0
 	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
 	T_sp result = eval::applyToActivationFrame(cl::_sym_nconc,frame);
+#endif
 	return(Values(result));
     };
 
@@ -1218,8 +1216,11 @@ namespace core
     T_mv af_mapcan(T_sp op, Cons_sp lists)
     {_G();
 	Cons_sp parts = af_mapcar(op,lists).as_or_nil<Cons_O>();
+        T_sp result = cl_nconc(parts);
+#if 0
 	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
 	T_sp result = eval::applyToActivationFrame(cl::_sym_nconc,frame);
+#endif
 	return(Values(result));
     };
 
@@ -1233,7 +1234,7 @@ namespace core
 #define ARGS_macro_backquote "(form env)"
 #define DECL_macro_backquote ""    
 #define DOCS_macro_backquote "backquote"
-    T_mv macro_backquote(Cons_sp form, Environment_sp env)
+    T_mv macro_backquote(Cons_sp form, T_sp env)
     {_G();
 	T_sp arg = oCadr(form);
 	LOG(BF("Expanding backquote going in: %s") % _rep_(arg) );
@@ -1328,7 +1329,7 @@ Stream_mv af_open(T_sp filespec_desig, Symbol_sp direction, T_sp element_type, T
     LOG(BF("if_exists[%s]") % _rep_(if_exists));
     LOG(BF("if_does_not_exist[%s]") % _rep_(if_does_not_exist));
     LOG(BF("external_format[%s]") % _rep_(external_format));
-    Pathname_sp filespec = af_pathname(filespec_desig);
+    Pathname_sp filespec = cl_pathname(filespec_desig);
     if ( direction == kw::_sym_input )
     {
 	LOG(BF("status"));
@@ -1799,7 +1800,7 @@ void initialize_primitives()
 	SYMBOL_SC_(CorePkg,gdbInspect);
 	Defun(gdbInspect);
 
-	defmacro(CorePkg,"backquote",&macro_backquote,ARGS_macro_backquote,DECL_macro_backquote,DOCS_macro_backquote);
+	defmacro(CorePkg,"backquote",&macro_backquote,ARGS_macro_backquote,DECL_macro_backquote,DOCS_macro_backquote,__FILE__,__LINE__);
 
 	SYMBOL_EXPORT_SC_(ClPkg,gensym);
 	Defun(gensym);
@@ -1826,6 +1827,55 @@ void initialize_primitives()
 	Defun(getOutputStreamString);
 
         SYMBOL_EXPORT_SC_(ClPkg,set);
+
+	SYMBOL_EXPORT_SC_(ClPkg,gensym);
+	Defun(gensym);
+
+	SYMBOL_EXPORT_SC_(ClPkg,type_of);
+	Defun(type_of);
+
+	SYMBOL_SC_(CorePkg,rem_f);
+	Defun(rem_f);
+
+	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
+	Defun(specialOperatorP);
+
+	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
+	Defun(macroFunction);
+
+	SYMBOL_SC_(CorePkg,separatePairList);
+	Defun(separatePairList);
+
+	SYMBOL_EXPORT_SC_(ClPkg,makeStringOutputStream);
+	Defun(makeStringOutputStream);
+
+	SYMBOL_EXPORT_SC_(ClPkg,getOutputStreamString);
+	Defun(getOutputStreamString);
+
+	SYMBOL_EXPORT_SC_(ClPkg,gensym);
+	Defun(gensym);
+
+	SYMBOL_EXPORT_SC_(ClPkg,type_of);
+	Defun(type_of);
+
+	SYMBOL_SC_(CorePkg,rem_f);
+	Defun(rem_f);
+
+	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
+	Defun(specialOperatorP);
+
+	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
+	Defun(macroFunction);
+
+	SYMBOL_SC_(CorePkg,separatePairList);
+	Defun(separatePairList);
+
+	SYMBOL_EXPORT_SC_(ClPkg,makeStringOutputStream);
+	Defun(makeStringOutputStream);
+
+	SYMBOL_EXPORT_SC_(ClPkg,getOutputStreamString);
+	Defun(getOutputStreamString);
+
         ClDefun(set);
 
 	SYMBOL_SC_(CorePkg,testMemoryError);

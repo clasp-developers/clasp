@@ -40,9 +40,9 @@ namespace core
 
 
 
-    Reader_sp Reader_O::create(Stream_sp sin, Lisp_sp lisp)
+    Reader_sp Reader_O::create(Stream_sp sin)
     {	
-	Reader_sp reader = lisp->create<Reader_O>();
+	Reader_sp reader = Reader_O::create();
 	reader->_Input = sin;
        	return reader;
     }
@@ -269,9 +269,7 @@ namespace core
 		}
 //		SourceLocation sourceLoc = this->_Input->sourceLocation();
 		result = Cons_O::createList(cl::_sym_quote, quotedObject );
-                if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
-                }
+                lisp_registerSourceInfoFromStream(result,this->_Input);
 	    goto RETURN;
 	    }
 	    case quotedString:
@@ -295,13 +293,10 @@ namespace core
 		}
 //		SourceLocation sl = this->_Input->sourceLocation();
 		result = Cons_O::createList(cl::_sym_function, quotedObject);
-                if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->registerSourceInfo(result,
-							   this->_Input->sourceFileInfo(),
-							   this->_Input->lineNumber(),
-							   this->_Input->column(),
-							   this->_Input->tell());
-                }
+                lisp_registerSourceInfo(result,
+                                        this->_Input->sourceFileInfo(),
+                                        this->_Input->lineNumber(),
+                                        this->_Input->column() );
 		goto RETURN;
 	    }
 	    case sharpMinus:
@@ -377,9 +372,7 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_backquote, quotedObject);
-                if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
-                }
+                lisp_registerSourceInfoFromStream(result,this->_Input);
 		goto RETURN;
 	    }
 // This is like a backQuote but two arguments must follow.
@@ -406,9 +399,7 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_double_backquote, templateObject);
-                if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
-                }
+                lisp_registerSourceInfoFromStream(result,this->_Input);
 		goto RETURN;
 	    }
 	    case comma:
@@ -420,9 +411,7 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_unquote,quotedObject);
-                if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
-                }
+                lisp_registerSourceInfoFromStream(result,this->_Input);
 		goto RETURN;
 	    }
 	    case commaAt:
@@ -434,9 +423,7 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_unquote_splice,quotedObject);
-                if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->registerSourceInfoFromStream(result,this->_Input);
-                }
+                lisp_registerSourceInfoFromStream(result,this->_Input);
 		goto RETURN;
 	    }
 	    case symbol:
@@ -715,7 +702,7 @@ namespace core
 	    }
 	    uint lineNumber = this->_Input->lineNumber();
 	    uint column = this->_Input->column();
-	    uint filePos = this->_Input->tell();
+//	    uint filePos = this->_Input->tell();
 	    T_sp element = this->primitive_read(true,_Unbound<T_O>(),true);
 	    ASSERTNOTNULL(element);
 	    if ( element.unboundp() )
@@ -723,11 +710,8 @@ namespace core
 		END_OF_FILE_ERROR(this->_Input);
 	    }
 	    Cons_sp one = Cons_O::create(element, _Nil<Cons_O>());
-            SourceManager_sp sm = _lisp->sourceDatabase();
-            if ( sm.notnilp() ) {
-                sm->registerSourceInfo(one,af_sourceFileInfo(this->_Input),
-				      lineNumber,column,filePos);
-            }
+            lisp_registerSourceInfo(one,af_sourceFileInfo(this->_Input),
+				      lineNumber,column);
 	    cur->setCdr(one);
 	    cur = one;
 	}

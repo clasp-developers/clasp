@@ -1,6 +1,10 @@
 #ifndef	core_ActivationFrame_H
 #define	core_ActivationFrame_H    
 
+//#define DEBUG_FRAME
+
+
+
 #include <utility>
 #include 	"foundation.h"
 #include 	"object.h"
@@ -31,7 +35,7 @@ namespace core
 	LISP_VIRTUAL_CLASS(core,CorePkg,ActivationFrame_O,"ActivationFrame");
     protected:
     public:
-	static string nilCheck_asString(ActivationFrame_sp af);
+	static string clasp_asString(ActivationFrame_sp af);
     public:
 	ActivationFrame_O() : Base() {};
 	virtual ~ActivationFrame_O() {};
@@ -46,10 +50,10 @@ namespace core
 	virtual ActivationFrame_sp getActivationFrame() const;
 
 
-	virtual T_sp lookupValue(int depth, int index) const;
+	virtual T_sp _lookupValue(int depth, int index) const;
 	virtual const T_sp& lookupValueReference(int depth, int index) const;
-	virtual T_sp lookupFunction(int depth, int index) const;
-	virtual T_sp lookupTagbodyId(int depth, int index) const;
+	virtual Function_sp _lookupFunction(int depth, int index) const;
+	virtual T_sp _lookupTagbodyId(int depth, int index) const;
 
 
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
@@ -239,10 +243,10 @@ namespace core
 
 
 
-	T_sp lookupValue(int depth, int index) const;
+	T_sp _lookupValue(int depth, int index) const;
 	const T_sp& lookupValueReference(int depth, int index) const;
 
-	virtual bool updateValue(Symbol_sp sym, T_sp obj );
+	virtual bool _updateValue(Symbol_sp sym, T_sp obj );
 	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
 
 
@@ -392,7 +396,7 @@ namespace core {
 	virtual string summaryOfContents() const;
 
 
-	virtual T_sp lookupFunction(int depth, int index) const;
+	virtual Function_sp _lookupFunction(int depth, int index) const;
 
     };
 
@@ -421,7 +425,7 @@ namespace core
 	virtual ActivationFrame_sp parentFrame() const { return this->_ParentFrame; };
 	virtual string summaryOfContents() const;
 
-        T_sp lookupTagbodyId(int depth, int index) const;
+        T_sp _lookupTagbodyId(int depth, int index) const;
 
 	TagbodyFrame_O() : Base() {};
 	virtual ~TagbodyFrame_O() {};
@@ -438,6 +442,203 @@ template<> struct gctools::GCInfo<core::TagbodyFrame_O> {
 };
 
 
+
+
+namespace frame
+{
+    typedef core::T_O*  ElementType;
+    typedef gctools::smart_ptr<core::STACK_FRAME>     FrameType;
+        
+    static const size_t IdxNumElements = 0;
+    static const size_t IdxParent = 1;
+    static const size_t IdxDebugInfo = 2;
+    static const size_t IdxValuesArray = 3;
+
+    /*! Calculate the number of elements required to represent the frame.
+     It's IdxValuesArray+#elements */
+    inline size_t FrameSize(size_t elements) {
+        return elements+IdxValuesArray;
+    }
+
+    /*! Return the start of the values array */
+    inline ElementType* ValuesArray(FrameType f) {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        return &frameImpl[IdxValuesArray];
+    }
+
+    inline size_t ValuesArraySize(core::T_O** frameImpl) { return gctools::tagged_ptr<core::T_O>::untagged_fixnum(frameImpl[IdxNumElements]);};
+
+    inline core::T_sp DebugInfo(FrameType f)
+    {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        return gctools::smart_ptr<core::T_O>(frameImpl[IdxDebugInfo]);
+    }
+
+    inline void SetDebugInfo(FrameType f, core::T_sp debugInfo) {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        frameImpl[IdxDebugInfo] = debugInfo.as<core::T_O>().asTPtr();
+    };
+
+    inline void InitializeStackValueFrame(core::T_O** frameImpl, size_t sz, core::T_sp parent=_Nil<core::T_O>())
+    {
+#ifdef DEBUG_FRAME
+        printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz );
+#endif
+        frameImpl[IdxNumElements] = gctools::tagged_ptr<core::T_O>::make_tagged_fixnum(sz);
+        frameImpl[IdxParent] = parent.asTPtr();
+        frameImpl[IdxDebugInfo] = gctools::tagged_ptr<core::T_O>::make_tagged_nil();
+        for ( size_t i(IdxValuesArray), iEnd(IdxValuesArray+sz); i<iEnd; ++i ) {
+            frameImpl[i] = gctools::tagged_ptr<core::T_O>::make_tagged_unbound();
+        }
+    };
+
+    inline void SetParentFrame(core::T_sp f, core::T_sp parent)
+    {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        frameImpl[IdxParent] = parent.asTPtr();
+    }
+        
+    inline gctools::smart_ptr<core::T_O> ParentFrame(core::T_O** frameImpl)
+    {
+        return gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]);
+    }
+    inline gctools::smart_ptr<core::T_O> ParentFrame(core::T_sp f)
+    {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        return ParentFrame(frameImpl);
+    }
+
+    inline gctools::smart_ptr<core::T_O> Lookup(core::T_sp f, int idx)
+    {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        return gctools::smart_ptr<core::T_O>(frameImpl[idx+IdxValuesArray]);
+    }
+
+    inline core::T_sp LookupTagbodyId(core::T_sp f, int idx)
+    {
+        IMPLEMENT_MEF(BF("I don't currently support LookupTagbodyId for tagged_frame"));
+#if 0   // If I supported this it might look like this
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        return gctools::smart_ptr<core::T_O>(frameImpl[idx+IdxValuesArray]);
+#endif
+    }
+
+    inline gctools::smart_ptr<core::T_O> Value(core::T_O** frameImpl, int idx) {
+        return gctools::smart_ptr<core::T_O>(frameImpl[idx+IdxValuesArray]);
+    }
+
+    inline int countFunctionContainerEnvironments(core::T_sp f) {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        return core::Environment_O::clasp_countFunctionContainerEnvironments(frameImpl[IdxParent]);
+    }
+
+
+    inline bool findValue(core::T_sp f, core::Symbol_sp sym, int& depth, int& index, bool& special, core::T_sp& value )
+    {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+	if ( gctools::tagged_ptr<core::T_O>::tagged_nilp(frameImpl[IdxDebugInfo]) ) {
+            ++depth;
+            return core::Environment_O::clasp_findValue(gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]),sym,depth,index,special,value);
+	}
+        core::T_sp debugInfo = gctools::smart_ptr<core::T_O>(frameImpl[IdxDebugInfo]);
+        if ( lisp_search(debugInfo,sym,index) ) {
+            value = frameImpl[index+IdxValuesArray];
+            return true;
+        }
+	++depth;
+	return core::Environment_O::clasp_findValue(ParentFrame(frameImpl),sym,depth,index,special,value);
+    }
+
+
+
+    inline bool findFunction(core::T_sp f, core::T_sp functionName, int& depth, int& index, core::Function_sp& func)
+    {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        core::T_sp parent = core::Environment_O::clasp_currentVisibleEnvironment(ParentFrame(frameImpl));
+	++depth;
+	return core::Environment_O::clasp_findFunction(parent,functionName,depth,index,func);
+    }
+
+
+    inline bool findTag(core::T_sp f, core::Symbol_sp sym, int& depth, int& index )
+    {_G();
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        core::T_sp parent = core::Environment_O::clasp_currentVisibleEnvironment(ParentFrame(frameImpl));
+        ++depth;
+	return core::Environment_O::clasp_findTag(parent,sym,depth,index);
+    }
+
+
+
+    inline string SummaryOfContents(core::T_sp env)
+    {
+        return "tagged_frame contents here";
+    }
+#if 0
+    string ValueFrame_O::summaryOfContents() const
+    {
+	stringstream ss;
+	ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId() << " :len " << this->length() << std::endl;
+	Vector_sp debuggingInfo = _Nil<Vector_O>();
+	if ( this->_DebuggingInfo.notnilp() )
+	{
+	    debuggingInfo = this->_DebuggingInfo.as<Vector_O>();
+	}
+	for ( int i=0; i<this->_Objects.capacity(); ++i )
+	{
+	    if ( debuggingInfo.notnilp() && (i < af_length(debuggingInfo)) )
+	    {
+		ss << _rep_(debuggingInfo->elt(i)) << " ";
+	    } else
+	    {
+		ss << ":arg"<<i<<"@" << (void*)(&(this->operator[](i))) << " ";
+	    }
+	    if ( !this->operator[](i) )
+	    {
+		ss << "UNDEFINED";
+	    } else if ( !this->boundp_entry(i) )
+	    {
+		ss << "!!UNBOUND!! ";
+	    } else
+	    {
+		if ( af_activation_frame_p(this->operator[](i)) )
+		{
+		    ss << "ActivationFrame@"<< (void*)(&(this->operator[](i)));
+		} else
+		{
+		    ss << _rep_(this->operator[](i)) << "  ";
+		}
+	    }
+	    ss << std::endl;
+	}
+	return((ss.str()));
+    }
+
+#endif
+
+
+
+    inline bool UpdateValue(core::T_sp f, core::Symbol_sp sym, core::T_sp obj)
+    {
+        core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
+        if ( gctools::tagged_ptr<core::T_O>::tagged_nilp(frameImpl[IdxDebugInfo]) ) {
+	    return core::af_updateValue(ParentFrame(frameImpl),sym,obj);
+	}
+        core::T_sp debugInfo = gctools::smart_ptr<core::T_O>(frameImpl[IdxDebugInfo]);
+        int index;
+        if ( lisp_search(debugInfo,sym,index) ) {
+            frameImpl[IdxValuesArray+index] = obj.asTPtr();
+            return true;
+        }
+        return core::af_updateValue(ParentFrame(frameImpl),sym,obj);
+    }
+
+};
+
+#define ALLOC_STACK_VALUE_FRAME(frameImpl,frame,numValues)     \
+    frame::ElementType frameImpl[frame::FrameSize(numValues)]; \
+    gctools::smart_ptr<core::STACK_FRAME> frame(frameImpl);    \
+    frame::InitializeStackValueFrame(frameImpl,numValues)
 
 
 

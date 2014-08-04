@@ -8,6 +8,8 @@ $var NumArgs = 16
 $var InnerCount = NumArgs+1
 $var Templates = InnerCount*ReturnTypeCount-1
 $range template_ 0..Templates
+
+
 $for template_ [[
         $var numVoids = template_ % InnerCount
         $var numArgs = NumArgs - numVoids
@@ -23,36 +25,44 @@ $for template_ [[
     template <$if ret==RetVoid [[]] $else [[typename RT $if numArgs [[,]] ]] $for Args_ ,[[typename ARG$Args_]] >
         class VariadicFunctoid
     <$if ret==RetVoid [[void]] $elif ret==RetSV [[RT ]] $else [[gctools::multiple_values<RT>]]($for Args_ , [[ARG$Args_]]) >
-        : public Functoid {
+        : public BuiltinClosure {
         public:
-            typedef Functoid TemplatedBase;
+            typedef BuiltinClosure TemplatedBase;
         public:
         typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](*Type) ($for Args_ , [[ARG$Args_]]);
         Type fptr;
         public:
         enum { NumParams = $numArgs };
-        VariadicFunctoid(const string& name, Type ptr) : Functoid(name), fptr(ptr) {};
+        VariadicFunctoid(T_sp name, SourcePosInfo_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-        core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
+        void LISP_CALLING_CONVENTION()
         {
-            if ( numArgs != (NumParams) )
-            {
-                core::wrongNumberOfArguments(numArgs,NumParams);
-            }
-                $for Args_ [[
-                    translate::from_object<ARG$Args_> a$Args_(*args);
-                    ++args;
-                    ]]
-                $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
+            INVOCATION_HISTORY_FRAME();
+            $if numArgs>0 [[
+              ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
+	      core::StackFrameDynamicScopeManager scope(frame);
+              lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+            ]]
+            this->invoke(lcc_resultP $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
+        }
+
+        void invoke(core::T_mv* lcc_resultP $for Args_  [[, core::T_sp arg$Args_]] )
+        {
+            $if numArgs>0 [[
+              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(arg$Args_);
+              ]]
+            ]]
+            $$ Do the call ------
+            $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] fptr($for Args_ ,[[a$Args_._v]]);
             $if ret==RetVoid [[
-                    return Values0<core::T_O>();
-                    ]] $elif ret==RetMV [[
-                    return retval;
-                    ]] $else [[
-                    return Values(translate::to_object<RT>::convert(retval));
-                    ]]
-                }
+              *lcc_resultP = Values0<core::T_O>();
+            ]] $elif ret==RetMV [[
+              *lcc_resultP = retval;
+            ]] $else [[
+              *lcc_resultP = Values(translate::to_object<RT>::convert(retval));
+            ]]
+        }
 
         };
         ]]

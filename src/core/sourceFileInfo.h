@@ -16,8 +16,8 @@ namespace core
 	LISP_CLASS(core,CorePkg,SourceFileInfo_O,"SourceFileInfo");
 	DECLARE_INIT();
     public:
-	static SourceFileInfo_sp getOrCreate(const string& fileNamePath);
-	static SourceFileInfo_sp getOrCreate(Pathname_sp path);
+	static SourceFileInfo_sp create(const string& fileNamePath);
+	static SourceFileInfo_sp create(Pathname_sp path);
 
     public: // ctor/dtor for classes with shared virtual base
 	explicit SourceFileInfo_O();
@@ -47,35 +47,41 @@ namespace core
     class SourcePosInfo_O : public T_O
     {
         friend class SourceManager_O;
+        friend SourceFileInfo_mv af_sourceFileInfo(T_sp obj);
+
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,SourcePosInfo_O,"SourcePosInfo");
     public:
     public: // ctor/dtor for classes with shared virtual base
-	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _LineNumber(0),_Column(0), _FilePos(0) {};
+	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _LineNumber(0),_Column(0) {}; //, _FilePos(0) {};
     public: // instance variables here
-	SourcePosInfo_O(uint spf, uint spln, uint spc, uint filePos, Function_sp expander=_Nil<Function_O>())
-	    : _FileId(spf), _LineNumber(spln), _Column(spc), _FilePos(filePos), _Expander(expander) {}
+	SourcePosInfo_O(uint spf, uint spln, uint spc) // , Function_sp expander=_Nil<Function_O>())
+	    : _FileId(spf), _LineNumber(spln), _Column(spc) //, _Expander(expander) {}
+        {};
 
     public:
 
-        static SourcePosInfo_sp create(uint spf, uint spln=0, uint spc=0, uint filePos=0, Function_sp fn=_Nil<Function_O>() )
+        static SourcePosInfo_sp create(uint spf, uint spln=0, uint spc=0 )
         {
 #if 0
             if ( filePos==UNDEF_UINT ) {
                 printf("%s:%d Caught filePos=UNDEF_UINT\n", __FILE__, __LINE__ );
             }
 #endif
-            GC_ALLOCATE_VARIADIC(SourcePosInfo_O,me,spf,spln,spc,filePos,fn);
+            GC_ALLOCATE_VARIADIC(SourcePosInfo_O,me,spf,spln,spc); // ,filePos,fn);
             return me;
         }
 
-            uint lineNumber() const { return this->_LineNumber; };
-    protected:
+        SourceFileInfo_sp sourceFileInfo(SourceManager_sp sm) const;
+            
+        uint lineNumber() const { return this->_LineNumber; };
+        int column() const { return this->_Column; };
+    public:
 	uint	_FileId;
 	uint	_LineNumber;
 	uint	_Column;
-	uint	_FilePos;
-	Function_sp 	_Expander;
+//	uint	_FilePos;
+//	Function_sp 	_Expander;
     };
 };
 template<> struct gctools::GCInfo<core::SourcePosInfo_O> {
@@ -101,15 +107,17 @@ namespace core {
         // Must be implemented first!!!!
         HashTableEq_sp                         _SourcePosInfo;
 	/*! All SourceFileInfo_sp source files are stored here indexed by integer FileId */
-        gctools::Vec0<SourceFileInfo_sp>		_Files;
+//        gctools::Vec0<SourceFileInfo_sp>		_Files;
     public: // Functions here
         /*! Return true if the SourceManager is available */
         bool availablep() const { return this->_SourcePosInfo.notnilp(); };
 
 	/*! Register the object with the source manager */
-	void registerSourceInfo(T_sp obj, SourceFileInfo_sp sourceFile, uint lineno, uint column, uint sourcePos, Function_sp expander=_Nil<Function_O>() );
+	SourcePosInfo_sp registerSourceInfo(T_sp obj, T_sp sourceFile, uint lineno, uint column);
 
-	void registerSourceInfoFromStream(T_sp obj, Stream_sp stream);
+//        SourceFileInfo_sp sourceFileInfoFromIndex(int idx) const;
+
+	SourcePosInfo_sp registerSourceInfoFromStream(T_sp obj, Stream_sp stream);
 
 	bool searchForSourceInfoAndDuplicateIt(T_sp orig, T_sp newObj);
 
@@ -124,14 +132,14 @@ namespace core {
           or (values) if nothing is found */
 	SourceFileInfo_mv lookupSourceInfo(T_sp obj);
 
+	SourcePosInfo_sp lookupSourcePosInfo(T_sp obj);
+
     }; // SourceManager class
 
 
     SourceFileInfo_mv af_walkToFindSourceInfo(T_sp obj);
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
 
-
-    SourceFileInfo_sp af_sourceFileInfo(T_sp obj);
 
 
 }; // core namespace

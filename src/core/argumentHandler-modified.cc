@@ -72,9 +72,9 @@ void	LambdaListHandler_O::archiveBase(ArchiveP node)
 
 
 
-Environment_sp LambdaListHandler_O::createEnvironmentAndParseArgumentsIntoIt(Cons_sp args, Environment_sp environ)
+Environment_sp LambdaListHandler_O::createEnvironmentAndParseArgumentsIntoIt(Cons_sp args, T_sp environ)
 {_G();
-    Environment_sp newEnviron = Environment_O::create(environ,_lisp);
+    Environment_sp newEnviron = Environment_O::create(environ);
     this->populateLocalEnvironment(args,newEnviron);
     return((newEnviron));
 }
@@ -110,7 +110,7 @@ LambdaListHandler_O& LambdaListHandler_O::addRequired(Symbol_sp sym)
 
 
 
-Cons_sp LambdaListHandler_O::populateLocalEnvironmentRequiredArguments(Cons_sp args, Environment_sp environment)
+Cons_sp LambdaListHandler_O::populateLocalEnvironmentRequiredArguments(Cons_sp args, T_sp environment)
 {_OF();
     Cons_sp cur = args;
     {_BLOCK_TRACE("Assigning positional arguments");

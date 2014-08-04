@@ -20,7 +20,7 @@ project clasp : requirements
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<cxxflags>"-fvisibility=default"
         <variant>debug:<cxxflags>"-O0 -g"
-        <variant>release:<cxxflags>"-O3"
+        <variant>release:<cxxflags>"-O3 -g"
         <linkflags>"-fvisibility=default"
 	<target-os>linux:<linkflags>-lpthread
 	<define>INCLUDED_FROM_CLASP
@@ -198,11 +198,6 @@ use-project internals/clbind : src/clbind ;
 use-project internals/serveEvent : src/serveEvent ;
 use-project internals/lisp : src/lisp ;
 
-#use-project modules : modules ;
-#use-project modules/addon : modules/addon ;
-#use-project modules/units : modules/units ;
-#use-project modules/chem : modules/chem ;
-#use-project modules/kinematics : modules/kinematics ;
 
 
 

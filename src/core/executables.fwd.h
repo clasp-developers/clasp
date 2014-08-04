@@ -3,8 +3,6 @@
 namespace core
 {
     FORWARD(Function);
-    FORWARD(Interpreted);
-    FORWARD(BuiltIn);
     FORWARD(CompiledFunction);
 }
 #endif

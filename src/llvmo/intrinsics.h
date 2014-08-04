@@ -4,29 +4,32 @@
 extern "C"
 {
 
-    typedef void (*fnTmvActivationFramesp)(core::T_mv*, core::ActivationFrame_sp*, int nargs, ArgArray args);
+    typedef void (*fnLispCallingConvention)(LISP_CALLING_CONVENTION_RETURN, LISP_CALLING_CONVENTION_CLOSED_ENVIRONMENT, LISP_CALLING_CONVENTION_ARGS );
     typedef void (*fnVoidType)();
 
-
-    class  JITClosure : public core::Closure
+#if 0
+    class  JITClosure : public core::FunctionClosure
     {
     protected:
-	fnTmvActivationFramesp	_FuncPtr;
+	fnLispCallingConvention	_FuncPtr;
     public:
 	// By default the zeroth argument is dispatched on
-	explicit JITClosure(const string& name,fnTmvActivationFramesp fptr) : Closure(name), _FuncPtr(fptr) {};
+	explicit JITClosure(core::T_sp name,core::T_sp closedEnv,fnLispCallingConvention fptr) : FunctionClosure(name,closedEnv), _FuncPtr(fptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this);};
 	virtual string describe() const {return "JITClosure";};
-	core::T_mv activate(core::ActivationFrame_sp closedEnv,int nargs, ArgArray args)
+	void LISP_CALLING_CONVENTION()
 	{
+            IMPLEMENT_MEF(BF("Handle LISP_CALLING_CONVENTION"));
+#if 0
 	    core::T_mv result;
 	    core::ActivationFrame_sp tclosedEnv(closedEnv);
 	    this->_FuncPtr(&result,&tclosedEnv,nargs, args);
 	    return result;
+#endif
 	}
     };
-
+#endif
 
 
 };

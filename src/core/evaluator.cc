@@ -47,35 +47,33 @@ namespace core
         return accumulated;
     }
 
-#define ARGS_af_evalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
-#define DECL_af_evalWithEnv ""
-#define DOCS_af_evalWithEnv "evalWithEnv"
-    T_mv af_evalWithEnv(T_sp form, Environment_sp env, bool stepping, bool compiler_env_p, bool execute)
+#define ARGS_af_compileFormAndEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
+#define DECL_af_compileFormAndEvalWithEnv ""
+#define DOCS_af_compileFormAndEvalWithEnv "compileFormAndEvalWithEnv"
+    T_mv af_compileFormAndEvalWithEnv(T_sp form, T_sp env, bool stepping, bool compiler_env_p, bool execute)
     {_G();
-	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
+//	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
 	T_mv result;
 	// If we want to compile the form then do this
-	stackFrame.setActivationFrame(Environment_O::nilCheck_getActivationFrame(env));
-        Cons_sp topLevelForms = separateTopLevelForms(_Nil<Cons_O>(),form)->nreverse().as<Cons_O>();
-        for ( Cons_sp curtlf = topLevelForms; curtlf.notnilp(); curtlf=cCdr(curtlf) ) {
-            T_sp thunk = eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(),oCar(curtlf),env);
-            LOG(BF("After compile thunk[%s]") % _rep_(thunk) );
-            try {_BLOCK_TRACEF(BF("-eval/print stage-"));
-                ValueFrame_sp vf = ValueFrame_O::create(0,_Nil<ActivationFrame_O>());
-                result = eval::applyToActivationFrame(thunk,vf);
-                LOG(BF("---result[%s]") % _rep_(result) );
-            }
-            catch (Condition& err)
-            {
-                _lisp->print(BF("%s:%d - A Condition was caught in readEvalPrint - _lisp shouldn't happen - exiting") % __FILE__ % __LINE__ );
-                exit(1);
-            }
-            catch (HardError& err )
-            {
-                _lisp->print(BF("HardError - should never happen! Catch and convert to Condition below"));
-                IMPLEMENT_ME();
+//	stackFrame.setActivationFrame(Environment_O::clasp_getActivationFrame(env));
+        
+        T_sp thunk = eval::funcall(_sym_STARimplicit_compile_hookSTAR->symbolValue(),form,env);
+        LOG(BF("After compile thunk[%s]") % _rep_(thunk) );
+        try {_BLOCK_TRACEF(BF("-eval/print stage-"));
+            ValueFrame_sp vf = ValueFrame_O::create(0,_Nil<ActivationFrame_O>());
+            result = eval::applyToActivationFrame(thunk,vf);
+            LOG(BF("---result[%s]") % _rep_(result) );
+        }
+        catch (Condition& err)
+        {
+            _lisp->print(BF("%s:%d - A Condition was caught in readEvalPrint - _lisp shouldn't happen - exiting") % __FILE__ % __LINE__ );
+            exit(1);
+        }
+        catch (HardError& err )
+        {
+            _lisp->print(BF("HardError - should never happen! Catch and convert to Condition below"));
+            IMPLEMENT_ME();
 //		    _lisp->enterDebugger();
-            }
         }
 	ASSERTNOTNULL(result);
 	return result;
@@ -88,28 +86,20 @@ namespace core
 #define ARGS_af_interpreter_lookup_variable "(symbol env)"
 #define DECL_af_interpreter_lookup_variable ""
 #define DOCS_af_interpreter_lookup_variable "environment_lookup_variable"
-    T_mv af_interpreter_lookup_variable(Symbol_sp sym, Environment_sp env)
+    T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env)
     {_G();
 	if ( env.notnilp() )
 	{
-	    T_mv result;
-	    bool foundp;
-	    {MULTIPLE_VALUES_CONTEXT();
-		result = env->variable_lookup(sym);
-		foundp = result.valueGet(1).as<T_O>().notnilp();
-	    }
-	    if (foundp)
-	    {
-		return(Values(result));
-	    } else if ( result.notnilp() )
-	    {
-		// It's a special variable
-		return(Values(sym->symbolValue()));
-	    }
+            int depth, index;
+            bool special;
+            T_sp value;
+            bool found = Environment_O::clasp_findValue(env,sym,depth,index,special,value);
+	    if (found) return value;
+            if (special) return sym->symbolValue();
 	}
 	if ( sym->specialP() || sym->boundP() )
 	{
-	    return(Values(sym->symbolValue()));
+	    return sym->symbolValue();
 	}
 	SIMPLE_ERROR(BF("Could not find variable %s in lexical/global environment") % _rep_(sym));
     };
@@ -118,19 +108,19 @@ namespace core
 #define ARGS_af_interpreter_lookup_function "(symbol env)"
 #define DECL_af_interpreter_lookup_function ""
 #define DOCS_af_interpreter_lookup_function "environment_lookup_function return the function or UNBOUND"
-    Function_sp af_interpreter_lookup_function(Symbol_sp name, Environment_sp env)
+    Function_sp af_interpreter_lookup_function(Symbol_sp name, T_sp env)
     {_G();
 	if ( env.notnilp() )
 	{
-	    Function_sp fn = env->function_lookup(name);
-	    if ( fn.notnilp() )
-	    {
-		return(Values(fn));
-	    }
+	    Function_sp fn;
+            int depth;
+            int index;
+            if ( Environment_O::clasp_findFunction( env, name, depth, index, fn ) ) {
+                return fn;
+            }
 	}
-	Function_sp fn = name->symbolFunction();
-	
-	return fn;
+        Function_sp fn = name->symbolFunction();
+        return fn;
     };
 
 
@@ -138,23 +128,23 @@ namespace core
 #define ARGS_af_interpreter_lookup_setf_function "(symbol env)"
 #define DECL_af_interpreter_lookup_setf_function ""
 #define DOCS_af_interpreter_lookup_setf_function "environment_lookup_setf_function"
-    Function_mv af_interpreter_lookup_setf_function(Cons_sp setf_name, Environment_sp env)
+    Function_sp af_interpreter_lookup_setf_function(Cons_sp setf_name, T_sp env)
     {_G();
 	Symbol_sp name = oCadr(setf_name).as<Symbol_O>();
 	if ( env.notnilp() )
 	{
-	    Function_sp fn = env->function_lookup(setf_name);
-	    if ( fn.notnilp() )
-	    {
-		return(Values(fn));
-	    }
+	    Function_sp fn;
+            int depth;
+            int index;
+            // TODO: This may not work properly - it looks like it will find regular functions
+            if ( Environment_O::clasp_findFunction( env, name, depth, index, fn ) ) return fn;
 	}
 	Function_sp fn = _lisp->get_setfDefinition(name);
 	if ( fn.notnilp() )
 	{
-	    return(Values(fn));
+	    return fn;
 	}
-	return(Values(_Nil<Function_O>()));
+	return _Nil<Function_O>();
     };
 
 
@@ -162,7 +152,7 @@ namespace core
 #define ARGS_af_interpreter_lookup_symbol_macro "(symbol env)"
 #define DECL_af_interpreter_lookup_symbol_macro ""
 #define DOCS_af_interpreter_lookup_symbol_macro "environment_lookup_symbol_macro_definition"
-    Function_sp af_interpreter_lookup_symbol_macro(Symbol_sp sym, Environment_sp env)
+    Function_sp af_interpreter_lookup_symbol_macro(Symbol_sp sym, T_sp env)
     {_G();
 	if ( sym.nilp() ) return _Nil<Function_O>();
 	if ( env.notnilp() )
@@ -171,7 +161,7 @@ namespace core
 	    int level=0;
 	    bool shadowed = false;
 	    Function_sp macro;
-	    bool found = env->findSymbolMacro(sym,depth,level,shadowed,macro);
+	    bool found = Environment_O::clasp_findSymbolMacro(env,sym,depth,level,shadowed,macro);
 	    if ( found ) return macro;
 	}
 	SYMBOL_SC_(CorePkg,symbolMacro);
@@ -189,7 +179,7 @@ namespace core
 #define ARGS_af_interpreter_lookup_macro "(symbol env)"
 #define DECL_af_interpreter_lookup_macro ""
 #define DOCS_af_interpreter_lookup_macro "environment_lookup_macro_definition"
-    Function_sp af_interpreter_lookup_macro(Symbol_sp sym, Environment_sp env)
+    Function_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env)
     {_G();
 	if ( sym.nilp() ) return _Nil<Function_O>();
 	if ( env.notnilp() )
@@ -197,7 +187,7 @@ namespace core
 	    int depth=0;
 	    int level=0;
 	    Function_sp macro;
-	    bool found = env->findMacro(sym,depth,level,macro);
+	    bool found = Environment_O::clasp_findMacro(env,sym,depth,level,macro);
 	    if ( found ) return macro;
 	}
 	Function_sp fn = sym->symbolFunction();
@@ -215,7 +205,7 @@ namespace core
 
     namespace interpret
     {
-	T_mv interpreter_cond(Cons_sp args, Environment_sp environment)
+	T_mv interpreter_cond(Cons_sp args, T_sp environment)
 	{_G();
 	    for ( Cons_sp cur = args; cur.notnilp(); cur = cCdr(cur) )
 	    {
@@ -239,7 +229,7 @@ namespace core
 	}
 
 	SYMBOL_EXPORT_SC_(ClPkg,case);
-	T_mv interpreter_case(Cons_sp args, Environment_sp environment)
+	T_mv interpreter_case(Cons_sp args, T_sp environment)
 	{_G();
 	    T_sp keyform = oCar(args);
 	    Cons_sp clauses = cCdr(args);
@@ -288,14 +278,14 @@ namespace core
 	}
 
 
-	void setq_symbol_value(Symbol_sp symbol, T_sp value, Environment_sp environment)
+	void setq_symbol_value(Symbol_sp symbol, T_sp value, T_sp environment)
 	{
-	    Environment_sp localEnv(environment);
-	    if ( symbol->specialP() || (environment.notnilp() && environment->lexicalSpecialP(symbol) ))
+	    if ( symbol->specialP() || Environment_O::clasp_lexicalSpecialP(environment,symbol) )
 	    {
 		symbol->setf_symbolValue(value);
+                return;
 	    } else {
-		bool updated = environment->updateValue(symbol,value);
+		bool updated = af_updateValue(environment,symbol,value);
 		if ( !updated )
 		{
 		    symbol->setf_symbolValue(value);
@@ -305,7 +295,7 @@ namespace core
 
 
 	SYMBOL_EXPORT_SC_(ClPkg,multipleValueSetq);
-	T_mv interpreter_multipleValueSetq(Cons_sp args, Environment_sp environment)
+	T_mv interpreter_multipleValueSetq(Cons_sp args, T_sp environment)
 	{_G();
 	    Cons_sp cur = oCar(args).as_or_nil<Cons_O>();
 	    T_sp form = oCadr(args);
@@ -335,7 +325,7 @@ namespace core
 
 
 	SYMBOL_EXPORT_SC_(ClPkg,prog1);
-	T_mv interpreter_prog1(Cons_sp args, Environment_sp environment)
+	T_mv interpreter_prog1(Cons_sp args, T_sp environment)
 	{_G();
 	    T_sp firstForm = oCar(args);
 	    Cons_sp forms = cCdr(args);
@@ -480,21 +470,20 @@ namespace core
   Evaluates each command and returns the value \scriptArg{lastObject} from evaluating the last command. This is what you use to write blocks of code.
   __END_DOC
 */
-	T_mv sp_progn(Cons_sp args, Environment_sp environment)
+	T_mv sp_progn(Cons_sp args, T_sp environment)
 	{_G();
-	    Environment_sp localEnv(environment);
 	    return eval::evaluateListReturnLast(args,environment);
 	}
 
 
 
-	T_mv sp_loadTimeValue(Cons_sp args, Environment_sp environment)
+	T_mv sp_loadTimeValue(Cons_sp args, T_sp environment)
 	{_G();
 	    T_sp form = oCar(args);
 	    return eval::evaluate(form,_Nil<Environment_O>());
 	}
 
-	T_mv sp_progv(Cons_sp args, Environment_sp environment)
+	T_mv sp_progv(Cons_sp args, T_sp environment)
 	{_G();
 	    Cons_sp symbols = eval::evaluate(oCar(args),environment).as_or_nil<Cons_O>();
 	    Cons_sp values = eval::evaluate(oCadr(args),environment).as_or_nil<Cons_O>();
@@ -509,14 +498,14 @@ namespace core
 	    return sp_progn(forms,environment);
 	}
 
-	T_mv sp_dbg_i32(Cons_sp args, Environment_sp env)
+	T_mv sp_dbg_i32(Cons_sp args, T_sp env)
 	{_G();
 	    Fixnum_sp num = oCar(args).as<Fixnum_O>();
 	    printf( "+++DBG-I32[%d]\n", num->get());
 	    return(Values(_Nil<T_O>()));
 	}
 
-	T_mv sp_evalWhen(Cons_sp args, Environment_sp environment)
+	T_mv sp_evalWhen(Cons_sp args, T_sp environment)
 	{_G();
 	    SYMBOL_SC_(KeywordPkg,execute);
 	    SYMBOL_SC_(KeywordPkg,load_toplevel);
@@ -537,7 +526,7 @@ namespace core
 
 
 
-	T_mv sp_the(Cons_sp args, Environment_sp env)
+	T_mv sp_the(Cons_sp args, T_sp env)
 	{_G();
 	    T_mv val = eval::evaluate(oCadr(args),env);
 	    return(val);
@@ -547,23 +536,23 @@ namespace core
 
 
 
-	T_mv sp_specialVar(Cons_sp args, Environment_sp env)
+	T_mv sp_specialVar(Cons_sp args, T_sp env)
 	{_G();
 	    Symbol_sp sym = oCar(args).as<Symbol_O>();
-	    return(Values(sym->symbolValue()));
+	    return Values(sym->symbolValue());
 	}
 
 
-	T_mv sp_lexicalVar(Cons_sp args, Environment_sp env)
+	T_mv sp_lexicalVar(Cons_sp args, T_sp env)
 	{_G();
 	    int depth = oCadr(args).as<Fixnum_O>()->get();
 	    int index = oCddr(args).as<Fixnum_O>()->get();
-	    return(Values(env->lookupValue(depth,index)));
+            return Values(Environment_O::clasp_lookupValue(env,depth,index));
 	}
 
 
 
-	T_mv sp_locally( Cons_sp args, Environment_sp env)
+	T_mv sp_locally( Cons_sp args, T_sp env)
 	{_G();
 	    Cons_sp declares;
 	    Str_sp docstring;
@@ -598,7 +587,7 @@ namespace core
 #define LOCK_sp_eval_when 1
 #define ARGS_sp_eval_when "(situation &rest body)"
 #define DECL_sp_eval_when ""
-	T_mv sp_eval_when( Cons_sp args, Environment_sp env)
+	T_mv sp_eval_when( Cons_sp args, T_sp env)
 	{_G();
 	    Cons_sp situation_list = oCar(args).as_or_nil<Cons_O>();
 	    Cons_sp body = cCdr(args);
@@ -674,7 +663,7 @@ namespace core
 #define DOCS_sp_step "step is implemented as a special"
 #define ARGS_sp_step "(form)"
 #define DECL_sp_step ""
-	T_mv sp_step( Cons_sp args, Environment_sp env)
+	T_mv sp_step( Cons_sp args, T_sp env)
 	{_G();
 	    IMPLEMENT_ME();
 	};
@@ -685,7 +674,7 @@ namespace core
 
 
 #define DOCS_sp_tagbody "tagbody special form - see CLHS"
-	T_mv sp_tagbody( Cons_sp args, Environment_sp env)
+	T_mv sp_tagbody( Cons_sp args, T_sp env)
 	{_G();
 	    TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
 	    //
@@ -702,7 +691,7 @@ namespace core
 		}
 	    }
 	    LOG(BF("sp_tagbody has extended the environment to: %s") % tagbodyEnv->__repr__() );
-            T_sp tagbodyId = Environment_O::nilCheck_getActivationFrame(tagbodyEnv).as<TagbodyFrame_O>();
+            T_sp tagbodyId = Environment_O::clasp_getActivationFrame(tagbodyEnv).as<TagbodyFrame_O>();
             int frame = _lisp->exceptionStack().push(TagbodyFrame,tagbodyId);
             // Start to evaluate the tagbody
             Cons_sp ip = args;
@@ -739,19 +728,18 @@ namespace core
 
 	
 #define DOCS_sp_go "go special form - see CLHS"
-	T_mv sp_go( Cons_sp args, Environment_sp env)
+	T_mv sp_go( Cons_sp args, T_sp env)
 	{_G();
 	    Symbol_sp tag = oCar(args).as<Symbol_O>();
-	    Environment_sp tagbodyEnvironment(_Nil<Environment_O>());
-            int depth;
-	    int index;
-	    bool foundTag = env->findTag(tag,depth,index);
+            int depth=0;
+	    int index=0;
+	    bool foundTag = Environment_O::clasp_findTag(env,tag,depth,index);
 	    if ( !foundTag )
 	    {
 		SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") 
                              % _rep_(tag) % _rep_(env) );
 	    }
-	    T_sp tagbodyId = Environment_O::nilCheck_getActivationFrame(env)->lookupTagbodyId(depth,index).as<TagbodyFrame_O>();
+	    T_sp tagbodyId = Environment_O::clasp_lookupTagbodyId(Environment_O::clasp_getActivationFrame(env),depth,index);
             int frame = _lisp->exceptionStack().findKey(TagbodyFrame,tagbodyId);
             if ( frame < 0 ) {
                 SIMPLE_ERROR(BF("Could not find tagbody frame for tag %s") % _rep_(tag) );
@@ -813,7 +801,7 @@ namespace core
 
 
 	/*! If evaluateInNewEnvironment is false then it behaves like let and if true it should behave like let* */
-	T_mv let_letSTAR( Cons_sp args, Environment_sp parentEnvironment, bool evaluateInNewEnvironment=false)
+	T_mv let_letSTAR( Cons_sp args, T_sp parentEnvironment, bool evaluateInNewEnvironment=false)
 	{_G();
 	    Cons_sp assignments = oCar(args).as_or_nil<Cons_O>();
 	    Cons_mv pairOfLists = af_separatePairList(assignments);
@@ -894,13 +882,13 @@ namespace core
   Assign lexical variables and then evaluate code in that context.
   __END_DOC
 */
-	T_mv sp_let( Cons_sp args, Environment_sp parentEnvironment)
+	T_mv sp_let( Cons_sp args, T_sp parentEnvironment)
 	{_G();
 	    return let_letSTAR(args,parentEnvironment,false);
 	}
 
 
-	T_mv sp_letSTAR( Cons_sp args, Environment_sp parentEnvironment)
+	T_mv sp_letSTAR( Cons_sp args, T_sp parentEnvironment)
 	{_G();
 	    return let_letSTAR(args,parentEnvironment,true);
 	}
@@ -918,7 +906,7 @@ namespace core
   If/then/else control statement.
   __END_DOC
 */
-	T_mv sp_if(Cons_sp args, Environment_sp environment)
+	T_mv sp_if(Cons_sp args, T_sp environment)
 	{_G();
 	    T_sp res;
 	    {
@@ -954,7 +942,7 @@ namespace core
   __END_DOC
 */
 #if 1
-	T_mv sp_cond(Cons_sp args, Environment_sp environment)
+	T_mv sp_cond(Cons_sp args, T_sp environment)
 	{_G();
 	    for ( Cons_sp cur = args; cur.notnilp(); cur = cCdr(cur) )
 	    {
@@ -980,7 +968,7 @@ namespace core
 
 
 
-	T_mv sp_block( Cons_sp args, Environment_sp environment)
+	T_mv sp_block( Cons_sp args, T_sp environment)
 	{_G();
 	    Symbol_sp blockSymbol = oCar(args).as<Symbol_O>();
 	    BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol,environment);
@@ -1003,7 +991,7 @@ namespace core
 	}
 
 
-	T_mv sp_returnFrom( Cons_sp args, Environment_sp environment)
+	T_mv sp_returnFrom( Cons_sp args, T_sp environment)
 	{_G();
 	    Symbol_sp blockSymbol = oCar(args).as<Symbol_O>();
             int frame = _lisp->exceptionStack().findKey(BlockFrame,blockSymbol);
@@ -1021,7 +1009,7 @@ namespace core
 	}
 
 #if 1 // new way using RAII
-	T_mv sp_unwindProtect( Cons_sp args, Environment_sp environment)
+	T_mv sp_unwindProtect( Cons_sp args, T_sp environment)
 	{_G();
             MultipleValues* mv = lisp_multipleValues();
             gctools::Vec0<T_sp>  save;
@@ -1048,7 +1036,7 @@ namespace core
 #else // old
   #if 0
         // use gctools::Vec0
-	T_mv sp_unwindProtect( Cons_sp args, Environment_sp environment)
+	T_mv sp_unwindProtect( Cons_sp args, T_sp environment)
 	{_G();
             T_mv result = Values(_Nil<T_O>());
             MultipleValues* mv = lisp_multipleValues();
@@ -1072,7 +1060,7 @@ namespace core
 	}
   #else
         // original
-	T_mv sp_unwindProtect( Cons_sp args, Environment_sp environment)
+	T_mv sp_unwindProtect( Cons_sp args, T_sp environment)
 	{_G();
 	    T_mv result = Values(_Nil<T_O>());
 	    VectorObjects_sp save(VectorObjects_O::create());
@@ -1097,7 +1085,7 @@ namespace core
 
 
 
-	T_mv sp_catch( Cons_sp args, Environment_sp environment)
+	T_mv sp_catch( Cons_sp args, T_sp environment)
 	{_G();
 	    T_sp mytag = eval::evaluate(oCar(args),environment);
             int frame = _lisp->exceptionStack().push(CatchFrame,mytag);
@@ -1120,7 +1108,7 @@ namespace core
 
 
 
-	T_mv sp_throw( Cons_sp args, Environment_sp environment)
+	T_mv sp_throw( Cons_sp args, T_sp environment)
 	{_G();
 	    T_sp throwTag = eval::evaluate(oCar(args),environment);
 	    T_mv result = Values(_Nil<T_O>());
@@ -1141,7 +1129,7 @@ namespace core
 
 
 
-	T_mv sp_multipleValueProg1(Cons_sp args, Environment_sp environment)
+	T_mv sp_multipleValueProg1(Cons_sp args, T_sp environment)
 	{_G();
 	    VectorObjects_sp save(VectorObjects_O::create());
 	    T_mv val0 = eval::evaluate(oCar(args), environment);
@@ -1154,7 +1142,7 @@ namespace core
 
 
 
-	T_mv sp_multipleValueCall(Cons_sp args, Environment_sp env)
+	T_mv sp_multipleValueCall(Cons_sp args, T_sp env)
 	{_G();
 	    Function_sp func;
 	    func = eval::evaluate(oCar(args),env).as<Function_O>();
@@ -1171,7 +1159,7 @@ namespace core
 		    resultList << retval.valueGet(i);
 		}
 	    }
-	    ValueFrame_sp vf = ValueFrame_O::create(resultList.cons(),Environment_O::nilCheck_getActivationFrame(env));
+	    ValueFrame_sp vf = ValueFrame_O::create(resultList.cons(),Environment_O::clasp_getActivationFrame(env));
 	    T_mv result = eval::applyToActivationFrame(func,vf);
 	    return(result);
 	}
@@ -1195,7 +1183,7 @@ namespace core
 
 
 	/*! Parse a lambda expression of the form ([declare*] ["docstring"] body...) */
-	Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, Cons_sp body, Environment_sp env)
+	Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, Cons_sp body, T_sp env)
 	{_G();
 	    Cons_sp declares;
 	    Str_sp docstring;
@@ -1205,10 +1193,10 @@ namespace core
 	    LambdaListHandler_sp llh;
 	    if ( lambda_list.nilp() )
 	    {
-		llh = lisp_function_lambda_list_handler(_lisp,_Nil<Cons_O>(),declares);
+		llh = lisp_function_lambda_list_handler(_Nil<Cons_O>(),declares);
 	    } else if ( af_consP(lambda_list) )
 	    {
-		llh = lisp_function_lambda_list_handler(_lisp,lambda_list.as_or_nil<Cons_O>(),declares);
+		llh = lisp_function_lambda_list_handler(lambda_list.as_or_nil<Cons_O>(),declares);
 		LOG(BF("Passed lambdaList: %s" ) % lambda_list->__repr__() );
 	    } else if ( af_lambda_list_handler_p(lambda_list) )
 	    {
@@ -1229,7 +1217,22 @@ namespace core
                     _lisp->sourceDatabase()->duplicateSourceInfo(body,code);
                 }
 	    }
-	    Function_sp proc = Interpreted_O::create(name,llh,declares,docstring,code,env,kw::_sym_function);
+//            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
+            SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(code);
+            if ( spi.nilp() ) {
+                SourceFileInfo_mv sfi_mv = af_sourceFileInfo(_sym_STARloadCurrentSourceFileInfoSTAR->symbolValue());
+                int sfindex = sfi_mv.valueGet(1).as<Fixnum_O>()->get();
+                spi = SourcePosInfo_O::create(sfindex,_sym_STARloadCurrentLinenumberSTAR->symbolValue().as<Fixnum_O>()->get());
+            }
+            InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+                                                                                                , spi
+                                                                                                , kw::_sym_function
+                                                                                                , llh
+                                                                                                , declares
+                                                                                                , docstring
+                                                                                                , env
+                                                                                                , code );
+            Function_sp proc = Function_O::make(ic);
 	    return proc;
 	}
 
@@ -1247,7 +1250,7 @@ namespace core
   (lambda (args...) body...) or (lambda-block name (args...) body...)
   __END_DOC
 */
-	T_mv sp_function(Cons_sp args, Environment_sp environment)
+	T_mv sp_function(Cons_sp args, T_sp environment)
 	{_G();
 	    ASSERTP(cCdr(args).nilp(),"You can provide only one argument - a symbol that has a function bound to it or a lambda");
 	    T_sp arg = oCar(args);
@@ -1320,7 +1323,7 @@ namespace core
 
 #if 0
 #define DOCS_sp_lambda_block "Like lambda but the first argument is a symbol that defines the name of the lambda"
-	T_mv sp_lambda_block( Cons_sp args, Environment_sp env)
+	T_mv sp_lambda_block( Cons_sp args, T_sp env)
 	{_G();
 	    ASSERTNOTNULL(args);
 	    Symbol_sp name = args->ocar().as<Symbol_O>();
@@ -1330,7 +1333,7 @@ namespace core
 
 #if 0
 #define DOCS_sp_lambda_with_handler "Like lambda but the first argument is a symbol that defines the name of the lambda and the second argument is a lambda-list-handler rather than a lambda-list"
-	T_mv sp_lambda_with_handler( Cons_sp args, Environment_sp env)
+	T_mv sp_lambda_with_handler( Cons_sp args, T_sp env)
 	{_G();
 	    ASSERTNOTNULL(args);
 	    Symbol_sp name = args->ocar().as<Symbol_O>();
@@ -1351,7 +1354,7 @@ namespace core
   Returns the \scriptArg{object} without evaluating it.
   __END_DOC
 */
-	T_mv sp_quote(Cons_sp args, Environment_sp environment)
+	T_mv sp_quote(Cons_sp args, T_sp environment)
 	{_G();
 	    ASSERTF(af_length(args)==1,BF("Only one argument allowed for QUOTE"));
 	    return(Values(oCar(args)));
@@ -1370,7 +1373,7 @@ namespace core
   Evaluate the arguments and put it into the local variable \scriptArg{symbol}.
   __END_DOC
 */
-	T_mv sp_setq(Cons_sp args, Environment_sp environment)
+	T_mv sp_setq(Cons_sp args, T_sp environment)
 	{_G();
 	    ASSERTP(cCdr(args).notnilp(),"You must provide at least 2 arguments");
 	    Cons_sp pairs = args;
@@ -1416,7 +1419,7 @@ namespace core
 
 
 
-	T_mv sp_flet(Cons_sp args, Environment_sp environment)
+	T_mv sp_flet(Cons_sp args, T_sp environment)
 	{_G();
 	    // TODO: handle trace
 	    T_sp functionName;
@@ -1450,7 +1453,7 @@ namespace core
   Define functions recursively in new lexical environments.
   __END_DOC
 */
-	T_mv sp_labels(Cons_sp args, Environment_sp environment)
+	T_mv sp_labels(Cons_sp args, T_sp environment)
 	{_G();
 	    // TODO: handle trace
 	    T_sp name;
@@ -1485,7 +1488,7 @@ namespace core
   Define macros recursively in new lexical environments.
   __END_DOC
 */
-	T_mv sp_macrolet(Cons_sp args, Environment_sp env)
+	T_mv sp_macrolet(Cons_sp args, T_sp env)
 	{_G();
 	    // TODO: handle trace
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
@@ -1508,10 +1511,16 @@ namespace core
 		Cons_sp code;
 		parse_lambda_body(outer_body,declares,docstring,code,_lisp);
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
-		Function_sp outer_func = Interpreted_O::create(name,outer_llh,
-							       declares,docstring,
-							       code,newEnv,
-							       kw::_sym_macro );
+                printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , docstring
+                                                                                                    , newEnv
+                                                                                                    , code );
+                Function_sp outer_func = Function_O::make(ic);
 		LOG(BF("func = %s") % outer_func_cons->__repr__() );
 		newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
@@ -1528,7 +1537,7 @@ namespace core
 
 
 
-	T_mv sp_symbolMacrolet(Cons_sp args, Environment_sp env)
+	T_mv sp_symbolMacrolet(Cons_sp args, T_sp env)
 	{_G();
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
@@ -1549,13 +1558,16 @@ namespace core
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
 									     oCadr(declares).as_or_nil<Cons_O>(),
 									     cl::_sym_function);
-		Function_sp outer_func = Interpreted_O::create(_Nil<T_O>(),
-							       outer_llh,
-							       declares,
-							       _Nil<Str_O>(),
-							       expansion,
-							       newEnv,
-							       kw::_sym_macro );
+                printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass( _Nil<T_O>()
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , _Nil<Str_O>()
+                                                                                                    , newEnv
+                                                                                                    , expansion );
+                Function_sp outer_func = Function_O::make(ic);
 		newEnv->addSymbolMacro(name,outer_func);
 		cur = cCdr(cur);
 	    }
@@ -1627,7 +1639,7 @@ namespace core
 
 
 
-	Function_sp lookupFunction(T_sp functionDesignator, Environment_sp env)
+	Function_sp lookupFunction(T_sp functionDesignator, T_sp env)
 	{_G();
 	    ASSERTF(functionDesignator,BF("In apply, the head function designator is UNDEFINED"));
 	    if ( Function_sp exec = functionDesignator.asOrNull<Function_O>() ) return exec;
@@ -1637,6 +1649,17 @@ namespace core
 	}
 
 
+        T_mv applyClosureToActivationFrame(Closure* func, ActivationFrame_sp args)
+        {
+            T_mv result;
+            size_t nargs = args->length();
+            T_sp* a = args->argArray();
+            switch (nargs) {
+#include "applyToActivationFrame.h"
+            default:
+                SIMPLE_ERROR(BF("Add support for applyToActivationFrame for %d arguments") % nargs);
+            };
+        }
 
 	T_mv applyToActivationFrame(T_sp head,ActivationFrame_sp args )
 	{_G();
@@ -1651,7 +1674,9 @@ namespace core
 		}
 		SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
 	    }
-	    return fn->INVOKE(args->length(),args->argArray()); // return applyFunctionToActivationFrame(fn,args);
+            Closure* closureP = fn->closure;
+            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+	    return applyClosureToActivationFrame(closureP,args);
 	}
 
 
@@ -1706,7 +1731,7 @@ namespace core
 
 
 
-	T_mv evaluate_atom(T_sp exp, Environment_sp environment)
+	T_mv evaluate_atom(T_sp exp, T_sp environment)
 	{
 	    T_mv result;
 	    LOG(BF("Evaluating atom: %s")% exp->__repr__());
@@ -1733,11 +1758,13 @@ namespace core
 	}
 
 
-	T_mv evaluate_lambdaHead( Cons_sp headCons, Cons_sp form, Environment_sp environment )
+	T_mv evaluate_lambdaHead( Cons_sp headCons, Cons_sp form, T_sp environment )
 	{
 	    T_mv result;
 	    if (oCar(headCons) == cl::_sym_lambda)
 	    {
+                IMPLEMENT_MEF(BF("Handle lambda better"));
+#if 0
 		ASSERTF(oCar(headCons)==cl::_sym_lambda,BF("Illegal head %s - must be a LAMBDA expression") % _rep_(headCons) );
 		//
 		// The head is a cons with a non-symbol for a head, evaluate it
@@ -1755,6 +1782,7 @@ namespace core
 		    try { result = eval::applyToActivationFrame(headCons,evaluatedArgs);}
 		    catch (...) { result = handleConditionInEvaluate(environment);};
 		}
+#endif
 	    } else
 	    {
 		SIMPLE_ERROR(BF("Illegal form: %s") % _rep_(form) );
@@ -1763,18 +1791,22 @@ namespace core
 	}
 
 
-	T_mv evaluate_specialForm( SpecialForm_sp specialForm, Cons_sp form, Environment_sp environment )
+	T_mv evaluate_specialForm( SpecialForm_sp specialForm, Cons_sp form, T_sp environment )
 	{
 //		    LOG(BF("Evaluating specialForm non-atom: %s")% specialForm->__repr__() );
 	    T_mv result;
+#ifdef TRAP_ERRORS
 	    try { result = specialForm->evaluate(cCdr(form),environment);}
 	    catch (...) { result = handleConditionInEvaluate(environment); }
+#else
+            result = specialForm->evaluate(cCdr(form),environment);
+#endif
 	    ASSERTNOTNULL(result);
 	    return(result);
 	}
 
 
-	T_mv evaluate_cond(Cons_sp form, Environment_sp environment )
+	T_mv evaluate_cond(Cons_sp form, T_sp environment )
 	{_G();
 	    T_mv result;
 	    try { result = interpret::interpreter_cond(cCdr(form),environment);}
@@ -1783,7 +1815,7 @@ namespace core
 	    return(result);
 	}
 	
-	T_mv evaluate_case(Cons_sp form, Environment_sp environment )
+	T_mv evaluate_case(Cons_sp form, T_sp environment )
 	{_G();	
 	    T_mv result;
 	    try { result = interpret::interpreter_case(cCdr(form),environment);}
@@ -1793,7 +1825,7 @@ namespace core
 	}
 
 
-	T_mv evaluate_multipleValueSetq(Cons_sp form, Environment_sp environment )
+	T_mv evaluate_multipleValueSetq(Cons_sp form, T_sp environment )
 	{_G();
 	    T_mv result;
 	    SYMBOL_EXPORT_SC_(ClPkg,multipleValueSetq);
@@ -1804,7 +1836,7 @@ namespace core
 	}
 
 
-	T_mv evaluate_prog1( Cons_sp form, Environment_sp environment )
+	T_mv evaluate_prog1( Cons_sp form, T_sp environment )
 	{_G();
 	    T_mv result;
 	    SYMBOL_EXPORT_SC_(ClPkg,prog1);
@@ -1815,10 +1847,13 @@ namespace core
 	}
 
 
-        T_mv t1Evaluate(T_sp exp, Environment_sp environment);
+        T_mv t1Evaluate(T_sp exp, T_sp environment);
 
-	T_mv t1Progn(T_sp args, Environment_sp environment)
+	T_mv t1Progn(T_sp args, T_sp environment)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1Progn args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
             T_mv result(_Nil<T_O>());
 	    Environment_sp localEnv(environment);
             for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) ) {
@@ -1827,8 +1862,11 @@ namespace core
             return result;
 	}
 
-	T_mv t1EvalWhen(T_sp args, Environment_sp environment)
+	T_mv t1EvalWhen(T_sp args, T_sp environment)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1EvalWhen args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
 	    Cons_sp situations = oCar(args).as_or_nil<Cons_O>();
 	    Cons_sp body = cCdr(args);
 	    bool execute = af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue();
@@ -1837,8 +1875,11 @@ namespace core
 	    return(Values(_Nil<T_O>()));
 	}
 
-	T_mv t1Locally(Cons_sp args, Environment_sp env)
+	T_mv t1Locally(Cons_sp args, T_sp env)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1Locally args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
 	    Cons_sp declares;
 	    Str_sp docstring;
 	    Cons_sp code;
@@ -1849,8 +1890,11 @@ namespace core
 	    return eval::t1Progn(code,le);
 	}
 
-	T_mv t1Macrolet(Cons_sp args, Environment_sp env)
+	T_mv t1Macrolet(Cons_sp args, T_sp env)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1Macrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
 	    // TODO: handle trace
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
@@ -1873,10 +1917,16 @@ namespace core
 		parse_lambda_body(outer_body,declares,docstring,code,_lisp);
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
-		Function_sp outer_func = Interpreted_O::create(name,outer_llh,
-							       declares,docstring,
-							       code,newEnv,
-							       kw::_sym_macro );
+                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , docstring
+                                                                                                    , newEnv
+                                                                                                    , code );
+                Function_sp outer_func = Function_O::make(ic);
 		LOG(BF("func = %s") % outer_func_cons->__repr__() );
 		newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
@@ -1890,14 +1940,17 @@ namespace core
 	    return t1Progn(code,newEnv);
 	}
 
-	T_mv t1SymbolMacrolet(Cons_sp args, Environment_sp env)
+	T_mv t1SymbolMacrolet(Cons_sp args, T_sp env)
 	{_G();
+            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                printf("%s:%d t1SymbolMacrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
+            }
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
 	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
 	    Cons_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
-	    Str_sp docString = _Nil<Str_O>();
+	    Str_sp docstring = _Nil<Str_O>();
 	    SYMBOL_SC_(CorePkg,whole);
 	    SYMBOL_SC_(CorePkg,env);
 	    Cons_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
@@ -1912,55 +1965,61 @@ namespace core
 									     oCadr(declares).as_or_nil<Cons_O>(),
 									     cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
-		Function_sp outer_func = Interpreted_O::create(_Nil<T_O>(),
-							       outer_llh,
-							       declares,
-							       _Nil<Str_O>(),
-							       expansion,
-							       newEnv,
-							       kw::_sym_macro );
+                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_Nil<T_O>()
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , docstring
+                                                                                                    , newEnv
+                                                                                                    , expansion );
+                Function_sp outer_func = Function_O::make(ic);
 		newEnv->addSymbolMacro(name,outer_func);
 		cur = cCdr(cur);
 	    }
 	    return t1Locally(body,newEnv);
 	}
 
-        T_mv t1Evaluate(T_sp exp, Environment_sp environment)
+        T_mv t1Evaluate(T_sp exp, T_sp environment)
         {
             if ( af_consP(exp) ) {
-                if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
-                    printf("%s:%d Checking if top-level form: %s\n", __FILE__, __LINE__, _rep_(exp).c_str() );
-                }
                 T_sp head = oCar(exp);
+                if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
+                    printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str() );
+                }
                 // TODO: Deal with Compiler macros here
                 Function_sp macroFunction = _Nil<Function_O>();
-                if ( af_symbolp(head) ) macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment).as<Function_O>();
-                if ( macroFunction.notnilp() ) {
-                    T_sp expanded = eval::funcall(macroFunction,exp,environment);
-                    return t1Evaluate(expanded,environment);
-                } else if ( head == cl::_sym_progn ) {
-                    return t1Progn(oCdr(exp),environment);
-                } else if ( head == cl::_sym_eval_when ) {
-                    return t1EvalWhen(oCdr(exp),environment);
-                } else if ( head == cl::_sym_locally ) {
-                    return t1Locally(oCdr(exp),environment);
-                } else if ( head == cl::_sym_macrolet ) {
-                    return t1Macrolet(oCdr(exp),environment);
-                } else if ( head == cl::_sym_symbol_macrolet ) {
-                    return t1SymbolMacrolet(oCdr(exp),environment);
+                if ( af_symbolp(head) ) {
+                    macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment).as<Function_O>();
+                    if ( macroFunction.notnilp() ) {
+                        T_sp expanded = eval::funcall(macroFunction,exp,environment);
+                        return t1Evaluate(expanded,environment);
+                    } else if ( head == cl::_sym_progn ) {
+                        return t1Progn(oCdr(exp),environment);
+                    } else if ( head == cl::_sym_eval_when ) {
+//                        printf("%s:%d   head is eval-when\n", __FILE__, __LINE__ );
+                        return t1EvalWhen(oCdr(exp),environment);
+                    } else if ( head == cl::_sym_locally ) {
+                        return t1Locally(oCdr(exp),environment);
+                    } else if ( head == cl::_sym_macrolet ) {
+                        return t1Macrolet(oCdr(exp),environment);
+                    } else if ( head == cl::_sym_symbol_macrolet ) {
+                        return t1SymbolMacrolet(oCdr(exp),environment);
+                    }
                 }
             }
             if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
-                printf("%s:%d About to evalWithEnv: %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+                printf("%s:%d About to compileFormAndEvalWithEnv: %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
             }
-            return eval::funcall(_sym_evalWithEnv,exp,environment);
+            return eval::funcall(_sym_compileFormAndEvalWithEnv,exp,environment);
         }
 
     
 #define ARGS_af_topLevelEvalWithEnv "(form &optional env stepping compiler-env-p (execute t))"
 #define DECL_af_topLevelEvalWithEnv ""
 #define DOCS_af_topLevelEvalWithEnv "topLevelEvalWithEnv"
-    T_mv af_topLevelEvalWithEnv(T_sp form, Environment_sp env, bool stepping,       bool compiler_env_p,      bool execute)
+    T_mv af_topLevelEvalWithEnv(T_sp form, T_sp env, bool stepping,       bool compiler_env_p,      bool execute)
     {_G();
         return t1Evaluate(form,env);
     }
@@ -1968,9 +2027,11 @@ namespace core
 
     
 
-	T_mv evaluate(T_sp exp, Environment_sp environment)
+	T_mv evaluate(T_sp exp, T_sp environment)
 	{_G();
-	    Environment_sp localEnvironment = environment;
+//	    Environment_sp localEnvironment = environment;
+//            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.px_ref());
+//            printf("    environment: %s\n", _rep_(environment).c_str() );
 	    T_mv result;
 	    af_stackMonitor();
 	    EvaluateDepthUpdater evaluateDepthUpdater;
@@ -1998,7 +2059,7 @@ namespace core
 	    {
 //		LOG(BF("Head[%s] is a Symbol") % headSym->__repr__() );
 		_lisp->invocationHistoryStack().setExpressionForTop(form);
-		_lisp->invocationHistoryStack().setActivationFrameForTop(Environment_O::nilCheck_getActivationFrame(environment));
+		_lisp->invocationHistoryStack().setActivationFrameForTop(Environment_O::clasp_getActivationFrame(environment));
 		if ( _lisp->isSingleStepOn() )
 		{
 		    IMPLEMENT_ME();
@@ -2036,12 +2097,16 @@ namespace core
 		    };// catch (...) {throw;};
 //		    LOG(BF("Expanded macro to: %s") % expanded->__repr__() );
 //		    LOG(BF("Evaluating macro in environment: %s") % environment->__repr__() );
+#ifdef TRAP_ERRORS
 		    try { result = eval::evaluate(expanded,environment);} // ->object(); }
 		    catch (...) {result = handleConditionInEvaluate(environment);}
+#else
+                    result = eval::evaluate(expanded,environment);
+#endif
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);
 		}
-		Environment_sp localEnv(environment);
+//		Environment_sp localEnv(environment);
 		headFunc = af_interpreter_lookup_function(headSym,environment);
 		if ( !headFunc.pointerp() )
 		{
@@ -2059,8 +2124,12 @@ namespace core
 		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(af_length(cCdr(form)),
 								     _Nil<ActivationFrame_O>()));
 		    evaluateIntoActivationFrame(evaluatedArgs,cCdr(form),environment);
-		    try { result = headFunc->INVOKE(evaluatedArgs->length(),evaluatedArgs->argArray()); } // result = eval::applyFunctionToActivationFrame(headFunc,evaluatedArgs);}
+#ifdef TRAP_ERRORS
+		    try { result = eval::applyToActivationFrame(headFunc,evaluatedArgs);}
 		    catch (...) {result = handleConditionInEvaluate(environment);};
+#else
+                    result = eval::applyToActivationFrame(headFunc,evaluatedArgs);
+#endif
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);
 		}else
@@ -2081,7 +2150,7 @@ namespace core
 
 
 	void evaluateIntoActivationFrame(ActivationFrame_sp af,
-					 Cons_sp args, Environment_sp environment )
+					 Cons_sp args, T_sp environment )
 	{_G();
 	    if ( args.nilp() )
 	    {
@@ -2110,7 +2179,7 @@ namespace core
 
 
 
-	Cons_sp evaluateList(Cons_sp args, Environment_sp environment)
+	Cons_sp evaluateList(Cons_sp args, T_sp environment)
 	{_G();
 	    Cons_sp firstCons = Cons_O::create(_Nil<T_O>());
 	    Cons_sp curCons = firstCons;
@@ -2148,7 +2217,7 @@ namespace core
 	    return cCdr(firstCons);
 	}
 
-	T_mv evaluateListReturnLast(Cons_sp args, Environment_sp environment)
+	T_mv evaluateListReturnLast(Cons_sp args, T_sp environment)
 	{_G();
 	    T_sp inObj;
 	    T_mv outObj;
@@ -2242,8 +2311,8 @@ namespace core
 	    Defun(extractDeclaresDocstringCode);
 	    SYMBOL_SC_(CorePkg,evaluateVerbosity);
 	    Defun(evaluateVerbosity);
-	    SYMBOL_EXPORT_SC_(CorePkg,evalWithEnv);
-	    Defun(evalWithEnv);
+	    SYMBOL_EXPORT_SC_(CorePkg,compileFormAndEvalWithEnv);
+	    Defun(compileFormAndEvalWithEnv);
 	    SYMBOL_EXPORT_SC_(CorePkg,topLevelEvalWithEnv);
 	    Defun(topLevelEvalWithEnv);
 	    SYMBOL_SC_(CorePkg,evaluateDepth);

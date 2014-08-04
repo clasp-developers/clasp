@@ -1022,10 +1022,9 @@ T_sp brcl_close(T_sp strm, bool abort)
 
 
 
-#define	DOCS_af_read_line "See clhs"
-#define LOCK_af_read_line 1
 #define ARGS_af_read_line "(&optional input-stream (eof-error-p t) eof-value recursive-p)"
 #define DECL_af_read_line ""    
+#define	DOCS_af_read_line "See clhs"
     T_mv af_read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
 	bool eofErrorP = eof_error_p.isTrue();
@@ -1178,8 +1177,6 @@ T_sp brcl_close(T_sp strm, bool abort)
     void Stream_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<Stream_O>()
-	    .def("core:stream-lineNumber",&Stream_O::lineNumber)
-	    .def("core:stream-column",&Stream_O::column)
 	    ;
     }
 
@@ -1302,8 +1299,8 @@ T_sp brcl_close(T_sp strm, bool abort)
     FileInStream_sp FileInStream_O::make(T_sp fileName)
     {_G();
         GC_ALLOCATE(FileInStream_O,fin );
-	Pathname_sp pn = af_pathname(fileName);
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(pn);
+	Pathname_sp pn = cl_pathname(fileName);
+	fin->_SourceFileInfo = af_sourceFileInfo(pn);
 	fin->_InStream.open(fin->_SourceFileInfo->fileName().c_str());
 	return fin;
     }
@@ -1330,7 +1327,7 @@ T_sp brcl_close(T_sp strm, bool abort)
     {_G();
         GC_ALLOCATE(FileInStream_O,fin );
 	Str_sp truename = af_coerceToFilename(af_truename(path));
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(truename->get());
+	fin->_SourceFileInfo = af_sourceFileInfo(truename);
 	LOG(BF("Opening file[%s]") % fin->_SourceFileInfo->fileName());
 	fin->_InStream.open(truename->c_str());
 	if ( !fin->_InStream.good() )
@@ -1536,18 +1533,6 @@ T_sp brcl_close(T_sp strm, bool abort)
 
 
 
-#if 0
-    T_sp FileOutStream_O::__init__(Function_sp exec, Cons_sp args, Environment_sp environ)
-    {
-	IMPLEMENT_ME();
-#if 0
-	this->_ActiveFilePath = translate::from_object<string>::convert(environ->lookup(CorePkg,"fileName"));
-	this->_Stream.open(this->_FileName.c_str(),std::ios_base::app|ios_base::out|std::ios_base::ate);
-    	// your stuff here
-#endif
-	return _Nil<T_O>();
-    }
-#endif
     void	FileOutStream_O::initialize()
     {
 	this->Base::initialize();
@@ -1622,20 +1607,13 @@ T_sp brcl_close(T_sp strm, bool abort)
     {
         GC_ALLOCATE(FileInCompressedStream_O,fin );
 	Str_sp truename = af_coerceToFilename(af_truename(path));
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(truename->get());
+	fin->_SourceFileInfo = af_sourceFileInfo(truename);
 	fin->_RawStream.open(truename->c_str(),std::ios_base::in | std::ios_base::binary);
 	fin->_In.push(boost::iostreams::gzip_decompressor());
 	fin->_In.push(fin->_RawStream);
 	return fin;
     }
 
-#if 0
-    T_sp FileInCompressedStream_O::__init__(Function_sp exec, Cons_sp args, Environment_sp environ, lisp)
-    {
-	IMPLEMENT_ME();
-	return _Nil<T_O>();
-    }
-#endif
     void FileInCompressedStream_O::clearInput()
     {
 	this->_Unput.clear();
@@ -1779,12 +1757,6 @@ T_sp brcl_close(T_sp strm, bool abort)
     }
 
 
-
-    T_sp FileOutCompressedStream_O::__init__(Function_sp exec, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
-    {
-	IMPLEMENT_ME();
-	return _Nil<T_O>();
-    }
 
 
     void FileOutCompressedStream_O::flush()
@@ -1930,7 +1902,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 
     SourceFileInfo_sp StringInputStream_O::sourceFileInfo() const
     {
-	return SourceFileInfo_O::getOrCreate("-StringInputStream-");
+	return af_sourceFileInfo(Str_O::create("-StringInputStream-"));
     }
 
 
@@ -2070,12 +2042,6 @@ T_sp brcl_close(T_sp strm, bool abort)
     }	
 
 
-
-    T_sp StringOutStream_O::__init__(Function_sp exec, Cons_sp args, Environment_sp environ, Lisp_sp lisp)
-    {
-	// your stuff here
-	return _Nil<T_O>();
-    }
 
 
     void	StringOutStream_O::initialize()
@@ -2305,7 +2271,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     {_G();
 	Path_sp path = coerce::pathDesignator(file_descriptor);
         GC_ALLOCATE(FDInStream_O,fin );
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(path->asString());
+	fin->_SourceFileInfo = af_sourceFileInfo(Str_O::create(path->asString()));
 	fin->_FStream = fopen(path->asString().c_str(),"r");
 	return fin;
     }
@@ -2316,7 +2282,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
         GC_ALLOCATE(FDInStream_O,fin );
 	string fname = af_coerceToFilename(pname)->get();
 	fin->_FStream = fopen(fname.c_str(),"r");
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(fname);
+	fin->_SourceFileInfo = af_sourceFileInfo(Str_O::create(fname));
 	fin->_Closeable = true;
 	return fin;
     }
@@ -2325,7 +2291,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     {_G();
         GC_ALLOCATE(FDInStream_O,fin );
         fin->_FStream = fid;
-	fin->_SourceFileInfo = SourceFileInfo_O::getOrCreate(name);
+	fin->_SourceFileInfo = af_sourceFileInfo(Str_O::create(name));
 	fin->_Closeable = closeable;
 	return fin;
     }
@@ -2587,7 +2553,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 #define DOCS_FDOutStream_O_make ""
     FDOutStream_sp FDOutStream_O::make(T_sp file_desig)
     {_G();
-	Pathname_sp activePathname = af_pathname(file_desig);
+	Pathname_sp activePathname = cl_pathname(file_desig);
 	FDOutStream_sp fout = FDOutStream_O::create(activePathname,std::ios_base::out);
 	return fout;
     }
@@ -2696,7 +2662,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
     {_G();
         GC_ALLOCATE(FDIOStream_O,fio );
 	fio->_FStream = fid;
-	fio->_SourceFileInfo = SourceFileInfo_O::getOrCreate(name);
+	fio->_SourceFileInfo = af_sourceFileInfo(Str_O::create(name));
 	fio->_Closeable = closeable;
 	return fio;
     }
@@ -3386,6 +3352,41 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 	return seq;
     }
 
+
+
+
+    
+    
+#define ARGS_af_streamLinenumber "(stream)"
+#define DECL_af_streamLinenumber ""
+#define DOCS_af_streamLinenumber "streamLinenumber"
+    int af_streamLinenumber(T_sp tstream)
+    {
+        tstream = coerce::inputStreamDesignator(tstream);
+        if ( Stream_sp stream = tstream.as<Stream_O>() ) {
+            return stream->lineNumber();
+        }
+	IMPLEMENT_MEF(BF("Implement streamLinenumber for stream object: %s") % _rep_(tstream));
+    };
+ 
+#define ARGS_af_streamColumn "(stream)"
+#define DECL_af_streamColumn ""
+#define DOCS_af_streamColumn "streamColumn"
+    int af_streamColumn(T_sp tstream)
+    {
+        tstream = coerce::inputStreamDesignator(tstream);
+        if ( Stream_sp stream = tstream.as<Stream_O>() ) {
+            return stream->column();
+        }
+	IMPLEMENT_MEF(BF("Implement streamColumn for stream object: %s") % _rep_(tstream));
+    };
+
+
+
+
+
+
+
     void initialize_lispStream()
     {
 	SYMBOL_EXPORT_SC_(ClPkg,filePosition);
@@ -3438,6 +3439,10 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
         ClDefun(streamp);
         SYMBOL_EXPORT_SC_(ClPkg,close);
         ClDefun(close);
+        SYMBOL_EXPORT_SC_(CorePkg,streamLinenumber);
+        Defun(streamLinenumber);
+        SYMBOL_EXPORT_SC_(CorePkg,streamColumn);
+        Defun(streamColumn);
     }
 
 

@@ -5,7 +5,7 @@ namespace core
 {
     namespace eval
     {
-	extern T_mv evaluate(T_sp exp, Environment_sp environment);
+	extern T_mv evaluate(T_sp exp, T_sp environment);
 /*! See the CLHS for "apply" - all arguments are in args 
   (functionDesignator) can be a Symbol or an Function
 */
@@ -13,8 +13,8 @@ namespace core
 
 //	extern T_mv applyFunctionToActivationFrame(Function_sp func, ActivationFrame_sp args );
 
-	extern T_mv sp_trace( Cons_sp args, Environment_sp env );
-	extern T_mv sp_untrace( Cons_sp args, Environment_sp env );
+	extern T_mv sp_trace( Cons_sp args, T_sp env );
+	extern T_mv sp_untrace( Cons_sp args, T_sp env );
 
 
     };

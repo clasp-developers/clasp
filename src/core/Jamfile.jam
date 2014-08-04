@@ -43,6 +43,50 @@ local unity_sources =
       all.cc ;
 
 local sources = 
+    activationFrame.cc
+	    environment.cc 
+		objectSet.cc
+		profiler.cc 
+		lispDefinitions.cc 
+		objRef.cc 
+		bundle.cc 
+		numerics.cc 
+		object.cc 
+	    stringSet.cc
+	    stringList.cc
+	    profile.cc
+      specializer.cc
+      write_ugly.cc
+      regex.cc
+      userData.cc
+      wrappedPointer.cc
+      serialize.cc
+      sexpLoadArchive.cc
+      sexpSaveArchive.cc
+	    readtable.cc
+      debugger.cc
+      float_to_digits.cc
+      num_arith.cc
+      numbers.cc
+      numberToString.cc
+      load.cc
+      num_co.cc
+      pathname.cc
+      commandLineOptions.cc
+      exceptions.cc 
+      commonLispUserPackage.cc
+	    metaClass.cc
+	    multipleValues.cc
+	    hashTable.cc
+	    hashTableEq.cc
+	    hashTableEql.cc
+	    hashTableEqual.cc
+	    hashTableEqualp.cc
+      stacks.cc
+      executables.cc 
+      testing.cc
+      predicates.cc
+      write_list.cc
 	    str.cc
       unixfsys.cc
 	    primitives.cc
@@ -60,12 +104,10 @@ local sources =
       vectorObjects.cc
 	    lambdaListHandler.cc
       corePackage.cc
-    activationFrame.cc
       cons.cc
       write_object.cc
 	    array.cc
 	foundation.cc 
-	    environment.cc 
       strWithFillPtr.cc
 	    lispMath.cc
 	    lispStream.cc
@@ -131,48 +173,6 @@ local sources =
 	    binder.cc
 		multiStringBuffer.cc
 		candoOpenMp.cc
-		objectSet.cc
-		profiler.cc 
-		lispDefinitions.cc 
-		objRef.cc 
-		bundle.cc 
-		numerics.cc 
-		object.cc 
-	    stringSet.cc
-	    stringList.cc
-	    profile.cc
-      specializer.cc
-      write_ugly.cc
-      regex.cc
-      userData.cc
-      wrappedPointer.cc
-      serialize.cc
-      sexpLoadArchive.cc
-      sexpSaveArchive.cc
-	    readtable.cc
-      debugger.cc
-      float_to_digits.cc
-      num_arith.cc
-      numbers.cc
-      numberToString.cc
-      load.cc
-      num_co.cc
-      pathname.cc
-      commandLineOptions.cc
-      exceptions.cc 
-      commonLispUserPackage.cc
-	    metaClass.cc
-	    multipleValues.cc
-	    hashTable.cc
-	    hashTableEq.cc
-	    hashTableEql.cc
-	    hashTableEqual.cc
-	    hashTableEqualp.cc
-      stacks.cc
-      executables.cc 
-      testing.cc
-      predicates.cc
-      write_list.cc
 	     /externals//boostAndExpatLibs 
              		;
 
@@ -180,21 +180,8 @@ local sources =
 #concrete .lisp files.
 h wrappers_functoids : wrappers_functoids.pmp ;
 h wrappers_methoids : wrappers_methoids.pmp ;
-
 h external_wrappers_indirect_methoids : external_wrappers_indirect_methoids.pmp ;
-
-h af_function_templates : generate_af_function_templates.lisp 
-  			prepare_af_method_templates.lisp ;
-
-h af_method_templates : generate_af_method_templates.lisp 
-  		      prepare_af_method_templates.lisp ;
-
-h af_external_method_templates : generate_af_external_method_templates.lisp
-		prepare_af_method_templates.lisp ;
-
-alias af : af_function_templates
-	 af_method_templates 
-	 af_external_method_templates ;
+h applyToActivationFrame : applyToActivationFrame.pmp ;
 
 h symbol_apply_inc : generate_symbol_apply_inc.lisp ;
 
@@ -209,6 +196,7 @@ bundler.bundle $(dir) :
 alias meta :     wrappers_functoids
                  wrappers_methoids
                  external_wrappers_indirect_methoids
+                 applyToActivationFrame
                  mi symbol_apply_inc  ;   # removed af 
 
 

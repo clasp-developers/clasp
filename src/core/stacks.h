@@ -15,8 +15,6 @@ namespace core
 
     class InvocationHistoryStack;
 
-    typedef enum { TopLevel, Debugger, CxxFunction, LispInterpretedFunction, LispCompiledFunction, MacroExpansionFunction } IHFLeafKind;
-
 
 #pragma GCC visibility push(default)
     class InvocationHistoryFrame //: public gctools::StackRoot
@@ -25,208 +23,43 @@ namespace core
     public:
 	static const int NoLine = -1;
 	static const int NoColumn = -1;
-    protected:
-	IHFLeafKind		_IHSFrameKind;
+    public:
 	uint			_Index;
 	InvocationHistoryStack* _Stack;
 	InvocationHistoryFrame*	_Next;
-	bool			_WroteToLog;
 	int			_Bds;
+	Closure* 	        closure;
+        ActivationFrame_sp      environment;
+        int                     runningLineNumber;
+        int                     runningColumn;
     public:
-	InvocationHistoryFrame(IHFLeafKind kind, InvocationHistoryStack& stack);
+	InvocationHistoryFrame(Closure* fc, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
 	ATTR_WEAK virtual ~InvocationHistoryFrame();
 	InvocationHistoryFrame* next() { return this->_Next;};
 	uint index() { return this->_Index;};
-	virtual string sourcePathName() const = 0;
-	virtual int lineNumber() const = 0;
-	virtual int column() const = 0;
-	virtual void setLineNumberColumn(uint lineNumber, uint column) = 0;
-	virtual void setLineNumberColumnForCxxFunction(uint lineNumber, uint column, const char* functionName);
-	virtual void setActivationFrame(ActivationFrame_sp af) = 0;
-	virtual string asString() const=0;
-	virtual string typeName() const=0;
-	string asStringLowLevel(const string& type, const string& functionName,
+	virtual string sourcePathName() const;
+	virtual int lineNumber() const { return this->runningLineNumber; };
+	virtual int column() const { return this->runningColumn; };
+	virtual void setLineNumberColumn(uint lineNumber, uint column) {
+            this->runningLineNumber = lineNumber;
+            this->runningColumn = column;
+        };
+	virtual void setActivationFrame(ActivationFrame_sp af) { this->environment = af; };
+	virtual string asString();
+	string asStringLowLevel(Closure* closure,
+                                const string& functionName,
 				const string& sourceFileName,
 				uint lineNumber, uint column ) const;
 
-	virtual Function_sp function() const =0;
-	virtual ActivationFrame_sp activationFrame() const =0;
+	virtual ActivationFrame_sp activationFrame() const { return this->environment; };
 	virtual int bds() const {return this->_Bds;};
     public:
     };
 
 
-    class ATTR_WEAK TopLevelIHF : public InvocationHistoryFrame
-    {
-	friend class InvocationHistoryStack;
-        typedef InvocationHistoryFrame Base;
-    protected:
-	SourceFileInfo_sp 	_SourceFileInfo;
-	ActivationFrame_sp 	_ActivationFrame;
-	uint 			_LineNumber;
-	uint			_Column;
-	uint			_FilePos;
-    public:
-        virtual void keyFunctionForVtable() ATTR_WEAK;
-    public:
-	TopLevelIHF(InvocationHistoryStack& stack,T_sp expression);
-	ATTR_WEAK virtual ~TopLevelIHF() {};
-	void setLineNumberColumn(uint lineNumber, uint column)
-	{
-	    this->_LineNumber = lineNumber;
-	    this->_Column = column;
-	}
-	void setActivationFrame(ActivationFrame_sp af)
-	{
-	    this->_ActivationFrame = af;
-	}
-	virtual string asString() const;
-	virtual string typeName() const { return " TopLevel";};
-	virtual Function_sp function() const { return _Nil<Function_O>();};
-	virtual ActivationFrame_sp activationFrame() const { return this->_ActivationFrame;};
-	virtual string sourcePathName() const;
-	virtual int lineNumber() const {return this->_LineNumber;};
-	virtual int column() const {return this->_Column;};
-    };
 #pragma GCC visibility pop
 
 
-    class DebuggerIHF : public InvocationHistoryFrame
-    {
-	friend class InvocationHistoryStack;
-        typedef InvocationHistoryFrame Base;
-    protected:
-	ActivationFrame_sp 	_ActivationFrame;
-    public:
-
-	DebuggerIHF(InvocationHistoryStack& stack,ActivationFrame_sp af)
-	    : InvocationHistoryFrame(Debugger,stack),
-	      _ActivationFrame(af)
-		  {};
-	virtual ~DebuggerIHF() {};
-	void setLineNumberColumn(uint lineNumber, uint column);
-	void setActivationFrame(ActivationFrame_sp af);
-	virtual ActivationFrame_sp activationFrame() const { return this->_ActivationFrame;};
-	virtual string asString() const;
-	virtual string typeName() const { return " Debugger";};
-	virtual Function_sp function() const { return _Nil<Function_O>();};
-	virtual string sourcePathName() const {return "";};
-	virtual int lineNumber() const {return NoLine;};
-	virtual int column() const {return NoColumn;};
-    };
-
-
-
-    class CxxFunctionIHF : public InvocationHistoryFrame
-    {
-	friend class InvocationHistoryStack;
-        typedef  InvocationHistoryFrame Base;
-    protected:
-	Function_sp 	        _Function;
-#if 0
-	int			_Nargs;
-	ArgArray		_Args;
-#endif
-	uint			_LineNumber;
-    public:
-    public:
-	CxxFunctionIHF(InvocationHistoryStack& stack, Function_sp function ) : InvocationHistoryFrame(CxxFunction,stack)
-                                                                             , _Function(function)
-#if 0
-                                                                             , _Nargs(0)
-                                                                             , _Args(NULL)
-#endif
-                                                                             , _LineNumber(0) {};
-#if 0    // comment out this constructor - it should never be called because we shouldn't support nargs/args
-	CxxFunctionIHF(InvocationHistoryStack& stack, Function_sp function , int nargs, ArgArray args ) : InvocationHistoryFrame(CxxFunction,stack)
-                                                                                                       , _Function(function)
-                                                                                                       , _Nargs(nargs)
-                                                                                                       , _Args(args)
-                                                                                                       , _LineNumber(0) {};
-#endif
-	virtual ~CxxFunctionIHF();
-//	virtual void setLineNumberColumnForCxxFunction(uint lineNumber, uint column, const char* functionName);
-
-	void setLineNumberColumn(uint lineNumber, uint column)
-	{
-	    this->_LineNumber = lineNumber;
-	}
-	void setActivationFrame(ActivationFrame_sp af);
-	ActivationFrame_sp activationFrame() const;
-	virtual string typeName() const { return "      C++";};
-	virtual string asString() const;
-	virtual string sourcePathName() const;
-	virtual int lineNumber() const {return this->_LineNumber;};
-	virtual int column() const {return 1;};
-	virtual Function_sp function() const { return this->_Function;};
-    };
-
-
-    class LispFunctionIHF : public InvocationHistoryFrame
-    {
-	friend class InvocationHistoryStack;
-        typedef InvocationHistoryFrame Base;
-    protected:
-	Function_sp 		_Function;
-	ActivationFrame_sp	_ActivationFrame;
-	uint			_LineNumber;
-	uint 			_Column;
-    public:
-    public:
-	LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, Function_sp function);
-	LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, Function_sp function, ActivationFrame_sp af);
-	void setLineNumberColumn(uint lineNumber, uint column);
-	void setActivationFrame(ActivationFrame_sp env);
-	virtual ~LispFunctionIHF() {};
-	virtual string asString() const =0;
-	virtual string typeName() const=0;
-
-	Function_sp function() const;
-	ActivationFrame_sp activationFrame() const;
-	virtual string sourcePathName() const;
-	virtual int lineNumber() const {return this->_LineNumber;};
-	virtual int column() const {return this->_Column;};
-    };
-
-
-
-    class LispInterpretedFunctionIHF : public LispFunctionIHF
-    {
-	friend class InvocationHistoryStack;
-        typedef LispFunctionIHF Base;
-    public:
-    public:
-	LispInterpretedFunctionIHF(InvocationHistoryStack& stack, Function_sp function, ActivationFrame_sp af )
-	    : LispFunctionIHF(LispInterpretedFunction,stack, function, af ) {};
-	virtual ~LispInterpretedFunctionIHF() {};
-	virtual string asString() const;
-	virtual string typeName() const { return "Interp.Lisp";};
-    };
-
-
-    class MacroExpansionIHF : public LispFunctionIHF
-    {
-	friend class InvocationHistoryStack;
-        typedef LispFunctionIHF Base;
-    public:
-	MacroExpansionIHF(InvocationHistoryStack& stack, Function_sp function )
-	    : LispFunctionIHF(MacroExpansionFunction,stack, function ) {};
-	virtual ~MacroExpansionIHF() {};
-	virtual string asString() const;
-	virtual string typeName() const { return "Macro.Lisp";};
-    };
-
-    class LispCompiledFunctionIHF : public LispFunctionIHF
-    {
-	friend class InvocationHistoryStack;
-    public:
-	LispCompiledFunctionIHF(InvocationHistoryStack& stack, Function_sp function )
-	    : LispFunctionIHF(LispCompiledFunction, stack, function) {};
-	virtual ~LispCompiledFunctionIHF() {};
-	virtual string asString() const;
-	virtual string typeName() const { return "CompiledLisp";};
-
-    };
 
 
     class InvocationHistoryStack
@@ -399,6 +232,9 @@ namespace core {
 
 };
 
+
+
+#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this);
 
 namespace core{
     void initialize_stacks();

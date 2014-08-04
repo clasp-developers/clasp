@@ -1,6 +1,7 @@
 
 #define	DEBUG_LEVEL_FULL
 #include "core/common.h"
+#include "core/str.h"
 #include "core/environment.h"
 #include "symbolTable.h"
 #include "core/lambdaListHandler.h"
@@ -13,7 +14,7 @@ namespace core {
 
 	/*! The argument list is: (args next-emfun)
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
-    T_mv Lambda_method_function::activate( ActivationFrame_sp closedEnv, int nargs, ArgArray args)
+    void Lambda_method_function::LISP_INVOKE()
 	{_G();
 #if 0
 	    ASSERTF(this->_method->_body.notnilp(),BF("The method body should never by nil"));
@@ -79,12 +80,17 @@ namespace core {
 	    }
 #endif
 #endif
+
+
+            IMPLEMENT_MEF(BF("Handle single dispatch method - fixup the code below"));
+#if 0 // Fix the following so that it will work 
 	    Functoid* functoid = this->_method->_body->functoid();
 	    ValueFrame_sp frame(ValueFrame_O::createForLambdaListHandler(this->_method->_argument_handler,_Nil<ActivationFrame_O>()));
 	    ActivationFrameDynamicScopeManager scope(frame);
-	    this->_method->_argument_handler->createBindingsInScope_argArray(nargs,args,scope);
+	    this->_method->_argument_handler->createBindingsInScope_argArray(llc_nargs,llc_fixed_arg0,llc_fixed_arg1,llc_fixed_arg2,llc_arglist,scope);
 //	    DBG_HOOK(BF("Check the new arguments"));
-	    return functoid->activate(_Nil<ActivationFrame_O>(),frame->length(),frame->argArray());
+	    return varargs_activateWithFrameef(functoid,frame->activate(,frame->length(),frame->argArray());
+#endif
 	}
 
 };
@@ -104,6 +110,12 @@ namespace core
     void SingleDispatchMethod_O::exposeCando(::core::Lisp_sp lisp)
     {
 	::core::class_<SingleDispatchMethod_O>()
+            .def("singleDispatchMethodName",&SingleDispatchMethod_O::singleDispatchMethodName)
+            .def("singleDispatchMethodReceiverClass",&SingleDispatchMethod_O::singleDispatchMethodReceiverClass)
+            .def("singleDispatchMethodCode",&SingleDispatchMethod_O::singleDispatchMethodCode)
+            .def("singleDispatchMethodLambdaListHandler",&SingleDispatchMethod_O::singleDispatchMethodLambdaListHandler)
+            .def("singleDispatchMethodDeclares",&SingleDispatchMethod_O::singleDispatchMethodDeclares)
+            .def("singleDispatchMethodDocstring",&SingleDispatchMethod_O::singleDispatchMethodDocstring)
 //	.initArgs("(self)")
 	    ;
     }
@@ -123,13 +135,13 @@ namespace core
 							   LambdaListHandler_sp llh,
 							   Cons_sp declares,
 							   Str_sp docstr,
-							   CompiledBody_sp body )
+							   Function_sp body )
     {_G();
         GC_ALLOCATE(SingleDispatchMethod_O,method );
 	method->_name = name;
 	method->_receiver_class = receiverClass;
 	ASSERTF(body.notnilp(),BF("The body of a method should never be nil"));
-	method->_body = body; 
+	method->code = body; 
 	method->_argument_handler = llh;
 	method->_declares = declares;
 	method->_docstring = docstr;
@@ -137,10 +149,12 @@ namespace core
 	// -- this function has to accept two arguments: (args next-emfun)
 	// So it's a chainable methoid, it can be called with a next-emfun argument
 	// which can be called by applying arguments to the local function "call-next-method"
-	Functoid* method_functoid = gctools::ClassAllocator<Lambda_method_function>::allocateClass(name->fullName(),method);
+#if 0
 	CompiledBody_sp cb_method_function_primitive = CompiledBody_O::create(method_functoid,_Nil<T_O>());
 	LambdaListHandler_sp llh_pass_arguments_through(_Nil<LambdaListHandler_O>());
+	BuiltinClosure* method_functoid = gctools::ClassAllocator<Lambda_method_function>::allocateClass(name,method);
 	method->_method_builtin = BuiltIn_O::make(name,llh_pass_arguments_through,cb_method_function_primitive);
+#endif
 	return method;
     }
 
@@ -159,8 +173,8 @@ namespace core
 	ss << "#<" << this->_instanceClass()->classNameAsString()
 	   << " :name " << _rep_(this->_name)
 	   << " :receiver-class " << _rep_(this->_receiver_class)
-	   << " :body " << _rep_(this->_body)
-	   << " :method_builtin " << _rep_(this->_method_builtin)
+	   << " :code " << _rep_(this->code)
+//	   << " :method_builtin " << _rep_(this->_method_builtin)
 	   << " >";
 	return ss.str();
     }

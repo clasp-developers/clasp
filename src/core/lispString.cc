@@ -238,12 +238,6 @@ namespace core
     }
 
 
-    T_sp String_O::__init__(::core::Function_sp exec, ::core::Cons_sp args, ::core::Environment_sp env, ::core::Lisp_sp lisp)
-    {_G();
-//      this->Base::__init__(exec,args,env,lisp);
-//      arg = translate::from_object<XXXX>::convert(env->lookup(this->Package(),"YYY"));
-	return _Nil<T_O>();
-    }
 
 #if defined(XML_ARCHIVE)
     void String_O::archiveBase(::core::ArchiveP node)

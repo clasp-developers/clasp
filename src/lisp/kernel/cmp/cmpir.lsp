@@ -839,6 +839,19 @@ Within the _irbuilder_ dynamic environment...
 		 (dotimes (i num)
 		   (irc-dtor "destructTsp" (irc-gep a (list (jit-constant-i32 i))))))))
 
+(defun irc-alloca-tsp-variable-array (env &key num (irbuilder *irbuilder-function-alloca*) (label ""))
+  (or num (error ":num keyword argument must be passed"))
+  (cmp-log "irc-alloca-tsp label: %s for %s\n" label irbuilder)
+  (with-alloca-insert-point
+      env irbuilder
+      :alloca (llvm-sys::create-alloca *irbuilder* +tsp+ num label)
+      :init (lambda (a)
+	      (dotimes (i num)
+		(irc-intrinsic "newTsp" (irc-gep a (list (jit-constant-i32 i))))))
+      :cleanup (lambda (a)
+		 (dotimes (i num)
+		   (irc-dtor "destructTsp" (irc-gep a (list (jit-constant-i32 i))))))))
+
 
 (defun irc-alloca-tsp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-tsp label: %s for %s\n" label irbuilder)
@@ -933,7 +946,44 @@ Within the _irbuilder_ dynamic environment...
   (irc-intrinsic "setjmp_user0_delete_tmv" setjmp.buf))
 
 
+; ----------------------------------------------------------------------
+(defun null-tsp ()
+  (llvm-sys:constant-struct-get +tsp+ (list (llvm-sys:constant-pointer-null-get +t-ptr+))))
 
+(defun null-t-ptr ()
+  (llvm-sys:constant-pointer-null-get +t-ptr+))
+
+(defun null-afsp ()
+  (llvm-sys:constant-struct-get +afsp+ (list (llvm-sys:constant-pointer-null-get +af-ptr+))))
+
+;----------------------------------------------------------------------
+
+(defun irc-struct-gep (struct idx &optional (label ""))
+  (llvm-sys:create-struct-gep *irbuilder* struct idx label ))
+
+(defun irc-insert-value (struct val idx-list &optional (label ""))
+  (llvm-sys:create-insert-value *irbuilder* struct val idx-list label))
+
+(defun irc-extract-value (struct idx-list &optional (label ""))
+  (llvm-sys:create-extract-value *irbuilder* struct idx-list label))
+
+(defun irc-smart-ptr-extract (smart-ptr)
+  (irc-extract-value smart-ptr (list 0)))
+
+(defun irc-funcall (result closure args &optional (label ""))
+  (let* ((nargs (length args))
+         (temp-args (mapcar (lambda (x) (irc-extract-value x (list 0))) args)) ;; extract t-ptr from t-sp
+         ;; ensure that there are three fixed arguments
+         (real-args (case nargs
+                      (0 (list (null-t-ptr) (null-t-ptr) (null-t-ptr)))
+                      (1 (list (pop temp-args) (null-t-ptr) (null-t-ptr)))
+                      (2 (list (pop temp-args) (pop temp-args) (null-t-ptr)))
+                      (3 (list (pop temp-args) (pop temp-args) (pop temp-args)))
+                      (otherwise temp-args))))
+;;    (bformat t "About to create funcall with result: %s  args: %s\n" result real-args)
+    (irc-intrinsic-args "FUNCALL" (list* result closure (jit-constant-i32 nargs) real-args) label)))
+  
+;----------------------------------------------------------------------
 
 
 
@@ -961,27 +1011,6 @@ Within the _irbuilder_ dynamic environment...
 	(irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))
       code)))
 
-(defun null-tsp ()
-  (llvm-sys:constant-struct-get +tsp+ (list (llvm-sys:constant-pointer-null-get +t-ptr+))))
-
-(defun null-afsp ()
-  (llvm-sys:constant-struct-get +afsp+ (list (llvm-sys:constant-pointer-null-get +af-ptr+))))
-
-
-(defun irc-varargs-funcall (lcc-func result closed-af args)
-  (let* ((nargs (length args))
-         (targs args)
-         ;; ensure that there are three fixed arguments
-         (real-args (case nargs
-                      (0 (list (null-tsp) (null-tsp) (null-tsp)))
-                      (1 (list (pop targs) (null-tsp) (null-tsp)))
-                      (2 (list (pop targs) (pop targs) (null-tsp)))
-                      (3 (list (pop targs) (pop targs) (pop targs)))
-                      (otherwise targs))))
-    (bformat t "About to create function with args: %s\n" real-args)
-    (bformat t "Warning: I'm not using the closed-env in irc-varargs-funcall\n")
-    (llvm-sys:create-call-array-ref *irbuilder* lcc-func (list* result (null-afsp) (jit-constant-i32 nargs) real-args) "")))
-
 
 (defun irc-create-call (func args label)
   (let* ((ra args)
@@ -992,8 +1021,9 @@ Within the _irbuilder_ dynamic environment...
                  (3 (llvm-sys:create-call3 *irbuilder* func (pop ra) (pop ra) (pop ra) label))
                  (4 (llvm-sys:create-call4 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) label))
                  (5 (llvm-sys:create-call5 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) (pop ra) label))
+                 (6 (llvm-sys:create-call-array-ref *irbuilder* func ra ""))
                  (otherwise 
-                  (error "illegal irc-intrinsic to ~a" func )))))
+                  (error "illegal irc-intrinsic to ~a - add support for ~a arguments" func (length ra) )))))
     (unless code (error "irc-create-call returning nil"))
     code))
 
@@ -1026,8 +1056,7 @@ Otherwise just create a function call"
 	(irc-create-invoke func args *current-unwind-landing-pad-dest* label))))
 
 
-
-(defun irc-intrinsic (function-name &rest args &aux (label ""))
+(defun irc-intrinsic-args (function-name args &optional (label ""))
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (last-arg (car (last args)))
 	 (real-args args))
@@ -1039,6 +1068,9 @@ Otherwise just create a function call"
     (let* ((args real-args)
 	   (code (irc-invoke-or-call func args label)))
       code)))
+
+(defun irc-intrinsic (function-name &rest args &aux (label ""))
+  (irc-intrinsic-args function-name args label))
 
 
 

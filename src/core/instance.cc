@@ -15,6 +15,53 @@ namespace core
 {
 
 
+
+
+
+
+    void InstanceClosure::LISP_CALLING_CONVENTION()
+    {
+        // TODO: I should allocate this on the stack - but clang doesn't behave consistently
+        // when I use variable stack arrays
+#if 0
+        gctools::Frame0<T_sp> fargs;
+        fargs.allocate(lcc_nargs,_Nil<T_O>());
+        T_sp* args = &fargs[0];
+#else
+        core::T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
+#endif
+        switch (lcc_nargs)
+        {
+        case 0:
+            break;
+        case 1:
+            args[0] = lcc_fixed_arg0;
+            break;
+        case 2:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            break;
+        case 3:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            args[2] = lcc_fixed_arg2;
+            break;
+        default:
+            args[0] = lcc_fixed_arg0;
+            args[1] = lcc_fixed_arg1;
+            args[2] = lcc_fixed_arg2;
+            for ( size_t it=3; it<lcc_nargs; ++it ) {
+                args[it] = va_arg(lcc_arglist,T_O*);
+            }
+            break;
+        }
+        (*lcc_resultP) = (this->entryPoint)(this->instance,lcc_nargs,args);
+    }
+
+
+
+
+
 #define ARGS_clos_setFuncallableInstanceFunction "(instance func)"
 #define DECL_clos_setFuncallableInstanceFunction ""
 #define DOCS_clos_setFuncallableInstanceFunction "setFuncallableInstanceFunction"
@@ -43,6 +90,12 @@ namespace core
 	SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Class_O - you tried to set it on a: %s")% _rep_(mc));
     };
 
+
+    void Instance_O::setKind(Symbol_sp k) {
+        if ( k == kw::_sym_macro ) {
+            SIMPLE_ERROR(BF("You cannot set a generic-function (instance) to macro"));
+        }
+    }
 
     void Instance_O::initializeSlots(int numberOfSlots)
     {
@@ -97,7 +150,7 @@ namespace core
     void Instance_O::archiveBase(ArchiveP node)
     {
 	if (node->saving()) {
-	    if ( this->_isgf || this->_Entry!=NULL ) {
+	    if ( this->_isgf || this->isCallable() ) {
 		SIMPLE_ERROR(BF("You cannot archive FUNCALLABLE instances or generic-functions"));
 	    }
 	    SYMBOL_EXPORT_SC_(KeywordPkg,iclass);
@@ -108,7 +161,7 @@ namespace core
 	    }
 	} else {
 	    this->_isgf = false;
-	    this->_Entry = NULL;
+	    this->closure = NULL;
 #if 1
 	    Symbol_sp className = node->getKind();
 //	    node->attribute(kw::_sym_iclass,className);
@@ -128,7 +181,7 @@ namespace core
     }
 
     Instance_O::Instance_O() :
-	Function_O(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Entry(NULL), _Sig(_Nil<T_O>()) {};
+	Function_O(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()) {};
 
     Instance_O::~Instance_O()
     {
@@ -276,7 +329,12 @@ namespace core
 	Instance_sp iobj = Instance_O::allocateInstance(this->_Class).as<Instance_O>();
 	iobj->_isgf = this->_isgf;
 	iobj->_Slots = this->_Slots;
-	iobj->_Entry = this->_Entry;
+        if ( this->closure != NULL ) {
+            InstanceClosure* ic = dynamic_cast<InstanceClosure*>(const_cast<Closure*>(this->closure));
+            iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(*ic);
+        } else {
+            iobj->closure = NULL;
+        }
 	iobj->_Sig = this->_Sig;
 	return iobj;
     }
@@ -298,7 +356,16 @@ namespace core
     SYMBOL_SC_(ClosPkg,standardOptimizedWriterMethod);
 
     
-    
+
+    void Instance_O::ensureClosure(ArgArrayGenericFunctionPtr entryPoint)
+    {
+        if ( this->closure == NULL ) {
+            this->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(this->GFUN_NAME(),entryPoint,this->asSmartPtr());
+        } else {
+            InstanceClosure* ic = dynamic_cast<InstanceClosure*>(this->closure);
+            ic->entryPoint = entryPoint;
+        }
+    };
     
 
     T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT)
@@ -314,28 +381,28 @@ namespace core
 	if (functionOrT == _lisp->_true() )
 	{
 	    this->_isgf = ECL_STANDARD_DISPATCH;
-	    this->_Entry = &generic_function_dispatch;
+            Instance_O::ensureClosure(&generic_function_dispatch);
 	} else if (functionOrT == cl::_sym_standardGenericFunction)
 	{
 	    this->_isgf = ECL_RESTRICTED_DISPATCH;
-	    this->_Entry = &generic_function_dispatch;
+            Instance_O::ensureClosure(&generic_function_dispatch);
 	} else if (functionOrT.nilp()) {
 	    this->_isgf = ECL_NOT_FUNCALLABLE;
-	    this->_Entry = notFuncallableDispatch;
+            Instance_O::ensureClosure(&notFuncallableDispatch);
 	} else if (functionOrT == clos::_sym_standardOptimizedReaderMethod )
 	{
 	    /* WARNING: We assume that f(a,...) behaves as f(a,b) */
 	    this->_isgf = ECL_READER_DISPATCH;
 	    // TODO: Switch to using slotReaderDispatch like ECL for improved performace
 //	    this->_Entry = &slotReaderDispatch;
-	    this->_Entry = &generic_function_dispatch;
+            Instance_O::ensureClosure(&generic_function_dispatch);
 	} else if (functionOrT == clos::_sym_standardOptimizedWriterMethod )
 	{
 	    /* WARNING: We assume that f(a,...) behaves as f(a,b) */
 	    this->_isgf = ECL_WRITER_DISPATCH;
 	    // TODO: Switch to using slotWriterDispatch like ECL for improved performace
 //	    this->_Entry = &slotWriterDispatch;
-	    this->_Entry = &generic_function_dispatch;
+            Instance_O::ensureClosure(&generic_function_dispatch);
 	} else if (!af_functionP(functionOrT)) 
 	{
 	    TYPE_ERROR(functionOrT,cl::_sym_function);
@@ -347,7 +414,7 @@ namespace core
 	    this->_isgf = ECL_USER_DISPATCH;
 	    // TODO: Switch to using userFunctionDispatch like ECL for improved performace
 //	    this->_Entry = &userFunctionDispatch;
-	    this->_Entry = &generic_function_dispatch;
+            Instance_O::ensureClosure(&generic_function_dispatch);
 	}
 	return(( this->sharedThis<Instance_O>()));
     }
@@ -376,11 +443,14 @@ namespace core
 
 
 
-    T_mv Instance_O::INVOKE(int nargs, ArgArray args)
+    void Instance_O::LISP_INVOKE()
     {
+        IMPLEMENT_ME();
+#if 0
 	ASSERT(this->_Entry!=NULL);
 	LispCompiledFunctionIHF _frame(_lisp->invocationHistoryStack(),this->asSmartPtr());
 	return(( (this->_Entry)(*this,nargs,args)));
+#endif
     }
 
 

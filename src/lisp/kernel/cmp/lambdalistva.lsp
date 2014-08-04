@@ -2,7 +2,38 @@
 
 (in-package :compiler)
 
+(defstruct (calling-convention (:type vector))
+  nargs
+  register-arg0
+  register-arg1
+  register-arg2
+  valist
+  args ;; This is where the args are copied into
+  )
 
+
+(defun calling-convention-copy-args (cc env)
+  (let* ((irbuilder *irbuilder-function-alloca*)
+         (args (with-alloca-insert-point
+                   env irbuilder
+                   :alloca (llvm-sys:create-alloca irbuilder +tsp+ (calling-convention-nargs cc) "rawargs")
+                   :init (lambda (alloca-obj)
+                           (irc-intrinsic "copyArgs"
+                                          alloca-obj
+                                          (calling-convention-nargs cc)
+                                          (calling-convention-register-arg0 cc)
+                                          (calling-convention-register-arg1 cc)
+                                          (calling-convention-register-arg2 cc)
+                                          (calling-convention-valist cc)))
+                   :cleanup (lambda (alloca-obj) nil)
+                   )))
+    (setf (calling-convention-args cc) args)))
+
+
+(defun calling-convention-args.gep (cc idx &optional target-idx)
+  (let ((label (if target-idx (bformat nil "arg-%d" target-idx) "rawarg")))
+    (irc-gep (calling-convention-args cc) (list idx) label)))
+                              
 
 
 ;;--------------------------------------------------
@@ -14,12 +45,13 @@
 ;;--------------------------------------------------
 
 
-(defun cmp-lookup-function (result fn-designator evaluate-env)
+(defun cmp-lookup-function (fn-designator evaluate-env)
+  "Return a pointer to a core::Closure"
   (if (atom fn-designator)
       (let ((classified (classify-function-lookup evaluate-env fn-designator)))
 	(if (eq (car classified) 'core::global-function)
-	    (irc-intrinsic "va_symbolFunction" result (irc-global-symbol fn-designator evaluate-env))
-	    (irc-intrinsic "va_lexicalFunction" result
+	    (irc-intrinsic "va_symbolFunction" (irc-global-symbol fn-designator evaluate-env))
+	    (irc-intrinsic "va_lexicalFunction"
 			   (jit-constant-i32 (caddr classified))
 			   (jit-constant-i32 (cadddr classified))
 			   (irc-renv evaluate-env))))
@@ -29,6 +61,7 @@
 
 
 
+#+(or)
 (defun codegen-call (result form evaluate-env)
   "Make and fill a value frame with the evaluated arguments and invoke the function with the value frame"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
@@ -50,6 +83,28 @@
       (irc-intrinsic "FUNCALL" result fn (jit-constant-i32 nargs) arg-array))))
 
 
+(defun codegen-call (result form evaluate-env)
+  "Make and fill a value frame with the evaluated arguments and invoke the function with the value frame"
+  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
+  (assert-result-isa-llvm-value result)
+  (let* ((sym (car form))
+	 (nargs (length (cdr form)))
+         args
+	 (temp-result (irc-alloca-tsp evaluate-env)))
+    (dbg-set-invocation-history-stack-top-source-pos form)
+    ;; evaluate the arguments into the array
+    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+    (do* ((cur-exp (cdr form) (cdr cur-exp))
+	  (exp (car cur-exp) (car cur-exp))
+	  (i 0 (+ 1 i)))
+	 ((endp cur-exp) nil)
+      (codegen temp-result exp evaluate-env)
+      (push (irc-load temp-result) args))
+    (let ((closure (cmp-lookup-function sym evaluate-env)))
+      (irc-funcall result closure (reverse args)))
+    ))
+
+
 
 
 
@@ -62,28 +117,27 @@
 ;;--------------------------------------------------
 
 
-(defun compile-copy-only-required-arguments (new-env ; The environment that will be enriched by the copied arguments
-					     lambda-list-handler ; Names of the copied arguments
-					     dest-activation-frame ; where the arguments will be copied to
-					     argument-holder) ; (contains narg and va-list )
-  (let ((number-of-required-arguments (number-of-required-arguments lambda-list-handler))
-	(nargs (first argument-holder))
-	(va-list (second argument-holder))
-	)
-    (compile-error-if-wrong-number-of-arguments nargs
-						number-of-required-arguments )
-    ;; enrich the new-env with the local variables
-    (dolist (classified-local (classified-symbols lambda-list-handler))
-      (cond
-	((eq (car classified-local) 'ext:lexical-var)
-	 (let ((local-sym (cadr classified-local))
-	       (local-idx (cddr classified-local)))
-	   (value-environment-define-lexical-binding new-env local-sym local-idx)))
-	((eq (car classified-local) 'ext:special-var)
-	 (value-environment-define-special-binding new-env (cdr classified-local)))
-	(t (error "Illegal variable classification: ~a" classified-local))))
-    (irc-intrinsic "va_fillActivationFrameWithRequiredVarargs" dest-activation-frame nargs va-list)
-    ))
+#+(or)(defun compile-copy-only-required-arguments (new-env ; The environment that will be enriched by the copied arguments
+                                                   lambda-list-handler ; Names of the copied arguments
+                                                   dest-activation-frame ; where the arguments will be copied to
+                                                   argument-holder) ; (contains narg and va-list )
+        (let ((number-of-required-arguments (number-of-required-arguments lambda-list-handler))
+              (nargs (first argument-holder))
+              (va-list (second argument-holder))
+              )
+          (compile-error-if-wrong-number-of-arguments nargs number-of-required-arguments )
+          ;; enrich the new-env with the local variables
+          (dolist (classified-local (classified-symbols lambda-list-handler))
+            (cond
+              ((eq (car classified-local) 'ext:lexical-var)
+               (let ((local-sym (cadr classified-local))
+                     (local-idx (cddr classified-local)))
+                 (value-environment-define-lexical-binding new-env local-sym local-idx)))
+              ((eq (car classified-local) 'ext:special-var)
+               (value-environment-define-special-binding new-env (cdr classified-local)))
+              (t (error "Illegal variable classification: ~a" classified-local))))
+          (irc-intrinsic "va_fillActivationFrameWithRequiredVarargs" dest-activation-frame nargs va-list)
+          ))
 
 
 
@@ -247,13 +301,12 @@ will put a value into target-ref."
 
 
 (defun compile-required-arguments (reqargs env
-				   nargs
-				   va-list
+                                   args ;;  nargs va-list
 				   new-env
 				   entry-arg-idx ;; this is now in a register
 				   )
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-required-arguments"))
-  (compile-error-if-not-enough-arguments nargs
+  (compile-error-if-not-enough-arguments (calling-convention-nargs args)
 					 (jit-constant-i32 (car reqargs)))
   (dbg-set-current-debug-location-here)
   ;; First save any special values
@@ -267,16 +320,14 @@ will put a value into target-ref."
 	(arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-i32 1) "arg-idx")))
        ((endp cur-req) arg-idx)
     (let* ((target-idx (cdr target))
-	   (val-ref (irc-gep va-list (list arg-idx)
-			     (bformat nil "arg-%d" target-idx ))))
+	   (val-ref (calling-convention-args.gep args arg-idx target-idx)))
       (with-target-reference-do (tref target new-env) ; run-time binding
 	(irc-intrinsic "copyTsp" tref val-ref)))))
 
 
 
 (defun compile-optional-arguments (optargs old-env
-				   nargs
-				   va-list
+				   args ;; nargs va-list
 				   new-env
 				   entry-arg-idx )
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-optional-arguments"))
@@ -302,10 +353,10 @@ will put a value into target-ref."
     (let ((arg-block (irc-basic-block-create "opt-arg"))
 	  (init-block (irc-basic-block-create "opt-init"))
 	  (cont-block (irc-basic-block-create "opt-cont"))
-	  (cmp (irc-icmp-slt arg-idx nargs "enough-given-args")))
+	  (cmp (irc-icmp-slt arg-idx (calling-convention-nargs args) "enough-given-args")))
       (irc-cond-br cmp arg-block init-block)
       (irc-begin-block arg-block)
-      (let ((val-ref (irc-gep va-list (list arg-idx))))
+      (let ((val-ref (calling-convention-args.gep args arg-idx)))
 	(with-target-reference-do (target-ref target new-env) ; run-time af binding
 	  (irc-intrinsic "copyTsp" target-ref val-ref))
 	(when flag
@@ -324,21 +375,19 @@ will put a value into target-ref."
 
 
 (defun compile-rest-arguments (rest-var old-env
-			       nargs
-			       va-list
+			       args ; nargs va-list
 			       new-env entry-arg-idx)
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-rest-arguments"))
   (with-target-reference-do (rest-ref rest-var new-env)
-    (irc-intrinsic "va_fillRestTarget" rest-ref nargs va-list
-	      entry-arg-idx *gv-current-function-name* )))
+    (irc-intrinsic "va_fillRestTarget" rest-ref (calling-convention-nargs args) (calling-convention-args args)
+                   entry-arg-idx *gv-current-function-name* )))
 
 
 
 (defun compile-key-arguments-parse-arguments (keyargs
 					      lambda-list-allow-other-keys
 					      old-env
-					      nargs
-					      va-list
+                                              args ; nargs va-list
 					      new-env
 					      entry-arg-idx
 					      sawkeys )
@@ -354,7 +403,7 @@ will put a value into target-ref."
 	   (loop-cont-block (irc-basic-block-create "loop-cont"))
 	   (kw-start-block (irc-basic-block-create "kw-begin-block")))
       (irc-branch-to-and-begin-block kw-start-block)
-      (let ((entry-arg-idx_lt_nargs (irc-icmp-slt entry-arg-idx nargs)) )
+      (let ((entry-arg-idx_lt_nargs (irc-icmp-slt entry-arg-idx (calling-convention-nargs args))) )
 	(irc-cond-br entry-arg-idx_lt_nargs loop-kw-args-block kw-exit-block))
       (irc-begin-block loop-kw-args-block)
       (let* ((phi-saw-aok (irc-phi +i32+ 2 "phi-saw-aok"))
@@ -364,7 +413,7 @@ will put a value into target-ref."
 	(irc-phi-add-incoming phi-arg-idx entry-arg-idx kw-start-block)
 	(irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
 	(irc-low-level-trace)
-	(let* ((arg-ref (irc-gep va-list (list phi-arg-idx))))
+	(let* ((arg-ref (calling-convention-args.gep args phi-arg-idx))) ;; (irc-gep va-list (list phi-arg-idx))))
 	  (irc-intrinsic "kw_throwIfNotKeyword" arg-ref)
 	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTsp" aok-ref arg-ref) +i1+)) ; compare arg-ref to a-o-k
 		 (aok-block (irc-basic-block-create "aok-block"))
@@ -378,8 +427,8 @@ will put a value into target-ref."
 	    (irc-begin-block aok-block)
 	    (let* ((loop-saw-aok (irc-intrinsic "va_allowOtherKeywords"
 					   phi-saw-aok
-					   nargs
-					   va-list
+					   (calling-convention-nargs args)
+					   (calling-convention-args args)
 					   phi-arg-idx)) )
 	      (irc-br advance-arg-idx-block)
 	      (irc-begin-block possible-kw-block)
@@ -407,7 +456,7 @@ will put a value into target-ref."
                         (kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-i32 2))))
                     (irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
                     (irc-begin-block not-seen-before-kw-block)
-                    (let ((kw-arg-ref (irc-gep va-list (list arg-idx+1))))
+                    (let ((kw-arg-ref (calling-convention-args.gep args arg-idx+1)))
                       (with-target-reference-do (target-ref target new-env) ; run-time binding
                                                 (irc-intrinsic "copyTsp" target-ref kw-arg-ref))
                       ;; Set the boolean flag to indicate that we saw this key
@@ -444,13 +493,13 @@ will put a value into target-ref."
 		(irc-phi-add-incoming phi.aok-bad-good.bad-kw-idx phi-bad-kw-idx good-kw-block)
 		(irc-low-level-trace)
 		(let* ((loop-arg-idx (irc-add phi-arg-idx (jit-constant-i32 2)))
-		       (loop-arg-idx_lt_nargs (irc-icmp-slt loop-arg-idx nargs)))
+		       (loop-arg-idx_lt_nargs (irc-icmp-slt loop-arg-idx (calling-convention-nargs args))))
 		  (irc-phi-add-incoming phi-saw-aok phi-arg-bad-good-aok advance-arg-idx-block)
 		  (irc-phi-add-incoming phi-bad-kw-idx phi.aok-bad-good.bad-kw-idx advance-arg-idx-block)
 		  (irc-phi-add-incoming phi-arg-idx loop-arg-idx advance-arg-idx-block)
 		  (irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		  (irc-begin-block loop-cont-block)
-		  (irc-intrinsic "va_throwIfBadKeywordArgument" phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx nargs va-list)
+		  (irc-intrinsic "va_throwIfBadKeywordArgument" phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx (calling-convention-nargs args) (calling-convention-args args))
 		  (let ((kw-done-block (irc-basic-block-create "kw-done-block")))
 		    (irc-branch-to-and-begin-block kw-done-block)
 		    (irc-branch-to-and-begin-block kw-exit-block)
@@ -493,8 +542,7 @@ will put a value into target-ref."
 (defun compile-key-arguments (keyargs
 			      lambda-list-allow-other-keys
 			      old-env
-			      nargs
-			      va-list
+                              args ; nargs va-list
 			      new-env
 			      entry-arg-idx)
   ;; First save and makunbound each of the targets
@@ -519,8 +567,7 @@ will put a value into target-ref."
     (let ((arg-idx (compile-key-arguments-parse-arguments keyargs
 							  lambda-list-allow-other-keys
 							  old-env
-							  nargs
-							  va-list
+                                                          args ; nargs va-list
 							  new-env
 							  entry-arg-idx
 							  sawkeys)))
@@ -533,8 +580,10 @@ will put a value into target-ref."
 
 		
 
-(defun compile-throw-if-excess-keyword-arguments (env nargs va-list arg-idx)
-  (irc-intrinsic "va_throwIfExcessKeywordArguments" *gv-current-function-name* nargs va-list arg-idx))
+(defun compile-throw-if-excess-keyword-arguments (env
+                                                  args ;; nargs va-list
+                                                  arg-idx)
+  (irc-intrinsic "va_throwIfExcessKeywordArguments" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-args args) arg-idx))
 
 
 
@@ -567,13 +616,14 @@ will put a value into target-ref."
 
 
 
-(defun compile-lambda-list-code (lambda-list-handler
-				 old-env
-				 argument-holder
-				 new-env
-				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
+(defun compile-general-lambda-list-code (lambda-list-handler
+                                         old-env
+                                         args
+                                         new-env)
+;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
   "Fill the dest-activation-frame with values using the
 lambda-list-handler/env/argument-activation-frame"
+  (calling-convention-copy-args args new-env)
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
@@ -581,38 +631,88 @@ lambda-list-handler/env/argument-activation-frame"
     (let* ((arg-idx (jit-constant-i32 0))
 	   (opt-arg-idx (compile-required-arguments reqargs
 						    old-env
-						    nargs
-						    va-list
+						    args ;; nargs va-list
 						    new-env arg-idx))
 	   (rest/key-arg-idx (if (/= 0 (car optargs))
 				 (compile-optional-arguments optargs
 							     old-env
-							     nargs
-							     va-list
+							     args ; nargs va-list
 							     new-env opt-arg-idx)
 				 opt-arg-idx))
 	   (dummy (when rest-var
 		    (compile-rest-arguments rest-var
 					    old-env
-					    nargs
-					    va-list
+					    args ; nargs va-list
 					    new-env
 					    rest/key-arg-idx)))
 	   (last-arg-idx (if key-flag
 			     (compile-key-arguments keyargs
 						    allow-other-keys
 						    old-env
-						    nargs
-						    va-list
+						    args ; nargs va-list
 						    new-env
 						    rest/key-arg-idx)
 			     rest/key-arg-idx)))
       (unless rest-var
-	(compile-throw-if-excess-keyword-arguments old-env nargs va-list last-arg-idx))
+	(compile-throw-if-excess-keyword-arguments old-env
+                                                   args ; nargs va-list
+                                                   last-arg-idx))
       (when (/= 0 (car auxargs))
 	(compile-aux-arguments auxargs old-env new-env))
       )
     ))
 
 
+(defun compile-<=3-required-arguments (reqargs
+                                       old-env
+                                       args
+                                       new-env)
+;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
+  "Fill the dest-activation-frame with values using the
+lambda-list-handler/env/argument-activation-frame"
+  ;; First save any special values
+  (compile-error-if-wrong-number-of-arguments (calling-convention-nargs args) (car reqargs))
+  (do* ((cur-req (cdr reqargs) (cdr cur-req))
+	(target (car cur-req) (car cur-req)))
+       ((endp cur-req) ())
+    (compile-save-if-special new-env target))
+  ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
+  (dbg-set-current-debug-location-here)
+  (let ((fixed-args (list (calling-convention-register-arg0 args)
+                          (calling-convention-register-arg1 args)
+                          (calling-convention-register-arg2 args))))
+    (do* ((cur-target (cdr reqargs) (cdr cur-target))
+          (cur-fixed-args fixed-args (cdr cur-fixed-args))
+          (target (car cur-target) (car cur-target))
+          (arg (car cur-fixed-args) (car cur-fixed-args))
+          )
+         ((null cur-target))
+      (let ((tsp-arg (irc-insert-value (llvm-sys:undef-value-get +tsp+) arg (list 0) "arg")))
+        (with-target-reference-do (tref target new-env) (irc-store tsp-arg tref))))
+    ))
+      
+
+
+(defun compile-lambda-list-code (lambda-list-handler
+                                 old-env
+                                 args
+                                 new-env)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
+      (process-lambda-list-handler lambda-list-handler)
+    (let ((req-opt-only (and (not rest-var)
+                             (not key-flag)
+                             (eql 0 (car keyargs))
+                             (eql 0 (car auxargs))
+                             (not allow-other-keys)))
+          (num-req (car reqargs))
+          (num-opt (car optargs)))
+      (cond
+        ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
+        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
+         (compile-<=3-required-arguments reqargs old-env args new-env))
+        ;; Test for 
+        ;; (x &optional y)
+        ;; (x y &optional z)
+        (t
+         (compile-general-lambda-list-code lambda-list-handler old-env args new-env))))))
 

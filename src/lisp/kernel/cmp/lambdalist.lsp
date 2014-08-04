@@ -1,4 +1,5 @@
 
+(error "Depreciated")
 
 (in-package :compiler)
 

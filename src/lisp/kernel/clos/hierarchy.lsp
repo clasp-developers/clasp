@@ -27,13 +27,13 @@
 ;;; ----------------------------------------------------------------------
 ;;; Class SPECIALIZER
 
-(eval-when (:compile-toplevel :execute #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +specializer-slots+
     '((flag :initform nil :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
       (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions))))
 
-(eval-when (:compile-toplevel :execute #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
     '((flag :initform t :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
@@ -43,7 +43,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; Class METHOD-COMBINATION
 
-(eval-when (:compile-toplevel :execute #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +method-combination-slots+
     `((name :initarg :name :accessor method-combination-name)
       (compiler :initarg :compiler :accessor method-combination-compiler)
@@ -52,7 +52,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; Class CLASS
 
-(eval-when (:compile-toplevel :execute #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +class-slots+
     `(,@+specializer-slots+
       (name :initarg :name :initform nil :accessor class-id)
@@ -93,7 +93,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-CLASS
 
-(eval-when (:compile-toplevel :execute #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +standard-class-slots+
     (append +class-slots+
 	    '((optimize-slot-access)
@@ -102,7 +102,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; STRUCTURE-CLASS
 
-(eval-when (:compile-toplevel :execute  #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +structure-class-slots+
     (append +class-slots+
 	    '((slot-descriptions)
@@ -117,7 +117,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-GENERIC-FUNCTION
 
-(eval-when (:compile-toplevel :execute  #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-generic-function-slots+
     '((name :initarg :name :initform nil
        :reader generic-function-name)
@@ -146,7 +146,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-METHOD
 
-(eval-when (:compile-toplevel :execute  #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-method-slots+
     '((the-generic-function :initarg :generic-function :initform nil
        :accessor method-generic-function)
@@ -170,7 +170,7 @@
 ;;; SLOT-DEFINITION
 ;;;
 
-(eval-when (:compile-toplevel :execute  #+old-brcl :load-toplevel)
+(eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defconstant +slot-definition-slots+
     '((name :initarg :name :initform nil :accessor slot-definition-name)
       (initform :initarg :initform :initform +initform-unsupplied+ :accessor slot-definition-initform)
@@ -185,7 +185,7 @@
       )))
 
 ;;; ----------------------------------------------------------------------
-(eval-when (:compile-toplevel :execute #+old-brcl :load-toplevel )
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel )
   ;;
   ;; All changes to this are connected to the changes in 
   ;; the code of cl_class_of() in src/instance.d
@@ -276,7 +276,7 @@
 ;;; 	standard-class			(class)
 ;;; 	funcallable-standard-class	(class)
 ;;;
-(eval-when (eval #+old-brcl :load-toplevel  )
+(eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (defconstant +class-hierarchy+
     `((standard-class)
 #+brcl

@@ -11,5 +11,6 @@
       (compile nil '(lambda (form &optional environment)
                      (multiple-value-bind (compiled-function warn fail)
                          (compile-in-env nil `(lambda () ,form) environment)
+;;                         (compile-in-env nil form environment)
                        (values compiled-function warn fail)))))
 

@@ -201,29 +201,31 @@ typedef std::size_t class_id;
 #define SYMBOL_SC_(p,x)
 
     /*! Use this here in the header to declare an extern function if you want */
-#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
+//#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 #define DEFUN(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
 
-#define Defun(x) core::af_def(CurrentPkg,#x,&af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x); 
+#define Defun(x) core::af_def(CurrentPkg,#x,&af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, __FILE__, __LINE__); 
 #define Defun_maker(pkg,x) core::af_def(pkg,"make-" #x,&(x ## _O::make), ARGS_##x##_O_make, DECL_##x##_O_make, DOCS_##x##_O_make);
 
-#define ClDefun(x) core::af_def(ClPkg,#x,&cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x); 
-#define ExtDefun(x) core::af_def(ExtPkg,#x,&ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x); 
-#define ClosDefun(x) core::af_def(ClosPkg,#x,&clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x); 
-#define CoreDefun(x) core::af_def(CorePkg,#x,&core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x); 
+#define ClDefun(x) core::af_def(ClPkg,#x,&cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__);
+#define CompDefun(x) core::af_def(CompPkg,#x,&comp_##x, ARGS_comp_##x, DECL_comp_##x, DOCS_comp_##x, __FILE__, __LINE__); 
+#define ExtDefun(x) core::af_def(ExtPkg,#x,&ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__); 
+#define ClosDefun(x) core::af_def(ClosPkg,#x,&clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__); 
+#define CoreDefun(x) core::af_def(CorePkg,#x,&core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__); 
 
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
+//#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN_NAME(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
+//#define DEFUN_NAME(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
+//#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
 
+#if 0
 /*! Define a PAIR of accessor functions, the getter and setter */
 #define DEFACCESSORS(x) \
     af_def(CurrentPkg,#x,&af_##x,ARGS_af_##x,DOCS_af_##x,LOCK_af_##x); \
@@ -233,18 +235,18 @@ typedef std::size_t class_id;
 #define DEFACCESSORS_EXPORT(x) \
     af_def(CurrentPkg,#x,&af_##x,ARGS_af_##x,DECL_af_##x,DOCS_af_##x,LOCK_af_##x); \
     _lisp->add_accessor_pair(_sym_##x,_sym_setf_##x);
+#endif
 
-
-#define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
+//#define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
 #define DEFGENERIC(pkg,x) defgeneric(pkg,#x,&gf_##x,ARGS_gf_##x,DOCS_gf_##x,_lisp); 
 
 
-
+#if 0
 /*! Use this in initializeCandoPrimitives to attach methods to the generic function */
 #define DEFMETHOD(x,id) defmethod(_sym_##x,md_##x##id,ARGS_md_##x##id,DECL_md_##x##id, DOCS_md_##x##id,_lisp);
-
+#endif
 
 	//
 	// Define this if you want to debug energy evaluation
@@ -481,14 +483,21 @@ namespace boost
 namespace core
 {
     class T_O;
+    typedef T_O FIXNUM;
+    typedef T_O STACK_FRAME;
     class Cons_O;
     class Pointer_O;
+    class Vector_O;
     class VectorObjects_O;
     class LoadTimeValues_O;
     /* AMS pool classes */
     class Symbol_O;
     class Null_O;
+    class Stream_O;
+    class SourcePosInfo_O;
+    class SourceFileInfo_O;
 
+    class DynamicScopeManager;
 };
 void dbg_hook(const char* errorString);
 
@@ -497,7 +506,7 @@ void dbg_hook(const char* errorString);
 
 namespace core {
 
-    bool internal_isTrue(const void* T_spPtr);
+//    bool internal_isTrue(const void* T_spPtr);
 
 };
 
@@ -566,7 +575,7 @@ namespace reg {
             return id->name();
         }
 
-        std::type_info const* get_type_info() const { return this->id;};
+        std::type_info const* get_type_info() const {return this->id;};
     private:
         std::type_info const* id;
     };
@@ -579,15 +588,11 @@ namespace reg {
         static class_id const id;
     };
     template <class T>
-    class_id const registered_class<T>::id = allocate_class_id( typeid(T));
+    class_id const registered_class<T>::id = allocate_class_id(typeid(T));
     template <class T>
     struct registered_class<T const>
         : registered_class<T>
     {};
-
-
-
-
 };
 
 #define BF boost::format
@@ -629,6 +634,9 @@ namespace core {
     typedef gctools::smart_ptr<T_O>	T_sp;
     typedef gctools::smart_ptr<Cons_O>  Cons_sp;
     typedef gctools::smart_ptr<VectorObjects_O>  VectorObjects_sp;
+    typedef gctools::smart_ptr<Stream_O>  Stream_sp;
+    typedef gctools::smart_ptr<SourcePosInfo_O>  SourcePosInfo_sp;
+    typedef gctools::smart_ptr<SourceFileInfo_O>  SourceFileInfo_sp;
 };
 
 #include "gctools/containers.h"
@@ -830,7 +838,7 @@ namespace core {
     typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
-    typedef T_mv (*ArgArrayGenericFunctionPtr)(const Instance_O& gf, int nargs, ArgArray argArray);
+    typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf, int nargs, ArgArray argArray);
 
     class Lisp_O;
     typedef Lisp_O* Lisp_sp;
@@ -849,7 +857,7 @@ namespace core {
     typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
     typedef void (*ExposeCandoFunction)(Lisp_sp);
     typedef void (*ExposePythonFunction)(Lisp_sp);
-    typedef T_mv (*SpecialFormCallback)(Cons_sp,Environment_sp);
+    typedef T_mv (*SpecialFormCallback)(Cons_sp,T_sp);
     typedef void (*MakePackageCallback)(string const& packageName,Lisp_sp);
     typedef void (*ExportSymbolCallback)(Symbol_sp symbol,Lisp_sp);
 
@@ -872,7 +880,13 @@ namespace core {
 /* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
    should be written, the closed over environment for the function, the number of args, three explicit args that will pass in registers (or be NULL)
    and a varargs list */
-typedef void (*LispCallingConventionPtr)(T_mv* result, ActivationFrame_sp env, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, ...);
+typedef void (*LispCallingConventionPtr)(T_mv* result, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, va_list rest );
+
+
+
+#include "lispCallingConvention.h"
+
+
 //typedef void (*GenericFunctionCallingConventionPtr)(T_mv* result, ActivationFrame_sp env, Instance_sp genericFunction, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, ...);
 
 }
@@ -1003,6 +1017,8 @@ namespace core
 
 
     class Functoid;
+    class FunctionClosure;
+    class BuiltinClosure;
 
 
 /* Callbacks that initialize the Lisp environment have this structure*/
@@ -1024,11 +1040,12 @@ namespace core
       to convert a C++ name to a lisp symbol */
     string  lispify_symbol_name(string const& name);
     Symbol_sp lispify_intern_keyword(string const& name);
-    Symbol_sp lispify_intern(string const& name, string const& packageName);
-    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
+//    Symbol_sp lispify_intern2(string const& name, string const& packageName);
+// lisp_lispifyAndInternWithPackageNameIfNotGiven
+    Symbol_sp lispify_intern( const string& name, const string& packageName, bool exportSymbol=true);
+//    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
     Symbol_sp lisp_upcase_intern(string const& name, string const& packageName);
     Symbol_sp lisp_upcase_intern_export(string const& name, string const& packageName);
-    Lisp_sp lisp_lisp(Lisp_sp lisp);
     Lisp_sp lisp_fromObject(T_sp obj);
     string lisp_currentPackageName();
     string lisp_classNameAsString(Class_sp c);
@@ -1038,23 +1055,24 @@ namespace core
     T_sp lisp_ArgArrayToCons(int nargs, ArgArray args);
     bool lisp_fixnumP(core::T_sp obj);
     Fixnum lisp_asFixnum(core::T_sp obj);
+    /*! Create a SourcePosInfo object for a C++ function */
+    SourcePosInfo_sp lisp_createSourcePosInfo(const string& sourceFile, int lineno);
 
     bool lisp_characterP(core::T_sp obj);
-    bool	lisp_BuiltInClassesInitialized(Lisp_sp lisp);
-    bool lisp_BuiltInClassesInitialized(Lisp_sp lisp);
-    bool lisp_NilsCreated(Lisp_sp lisp);
+    bool lisp_BuiltInClassesInitialized();
     void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);
     void lisp_symbolSetSymbolValue(Symbol_sp sym, T_sp val);
     string symbol_symbolName(Symbol_sp);
+    string symbol_packageName(Symbol_sp);
     string symbol_repr(Symbol_sp);
     Symbol_sp lisp_symbolNil();
     Class_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
-    void	lisp_exposeClass(Lisp_sp lisp, const string& className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction);
+    void	lisp_exposeClass(const string& className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction);
     void	lisp_addClass( Symbol_sp classSymbol, Creator* cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2=UNDEFINED_SYMBOL,Symbol_sp baseClassSymbol3=UNDEFINED_SYMBOL );
     void	lisp_addClass( Symbol_sp classSymbol );
     void	lisp_addClassAndInitialize( Symbol_sp classSymbol, Creator* cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2=UNDEFINED_SYMBOL,Symbol_sp baseClassSymbol3=UNDEFINED_SYMBOL );
-    void	lisp_throwIfBuiltInClassesNotInitialized(Lisp_sp lisp);
-    string	lisp_classNameFromClassSymbol(Lisp_sp lisp, Symbol_sp classSymbol );
+    void	lisp_throwIfBuiltInClassesNotInitialized();
+    string	lisp_classNameFromClassSymbol(Symbol_sp classSymbol );
     Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol );
     Class_sp lisp_instance_class(T_sp obj);
     Class_sp lisp_static_class(T_sp obj);
@@ -1073,37 +1091,40 @@ namespace core
     void lisp_error_condition(const char* functionName, const char* fileName, int lineNumber, T_sp baseCondition, T_sp initializers);
     void lisp_error(T_sp datum, T_sp arguments);
 
-    void lisp_setGlobalInt(Lisp_sp lisp, const string& package, const string& n, uint val );
+//    void lisp_setGlobalInt(const string& package, const string& n, uint val );
 //    Symbol_sp lisp_allocate_packageless_sid(string const& n);
-    Symbol_sp lisp_getClassSymbolForClassName(Lisp_sp lisp, const string& n);
-//    bool lisp_subClassOrder(Lisp_sp lisp, Symbol_sp baseClassSymbol, Symbol_sp classSymbol );
+    Symbol_sp lisp_getClassSymbolForClassName(const string& n);
     string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash=true);
     T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp args );
-    Cons_sp lisp_parse_arguments(Lisp_sp lisp, const string& packageName, const string& args);
-    Cons_sp lisp_parse_declares(Lisp_sp lisp, const string& packageName, const string& declarestring);
-    LambdaListHandler_sp lisp_function_lambda_list_handler(Lisp_sp lisp, Cons_sp lambda_list, Cons_sp declares );
-
+    Cons_sp lisp_parse_arguments(const string& packageName, const string& args);
+    Cons_sp lisp_parse_declares(const string& packageName, const string& declarestring);
+    LambdaListHandler_sp lisp_function_lambda_list_handler(Cons_sp lambda_list, Cons_sp declares, std::set<int> pureOutValues = std::set<int>() );
+#if 0
     void lisp_defun_lispify_name(const string& packageName, const string& name,
 				 Functoid*, const string& arguments="", const string& declarestring="",
 				 const string& docstring="", int locked=1, bool autoExport=true, int number_of_required_arguments=0 );
-    void lisp_defmacro(const string& packageName, const string& name,
-		       Functoid*, const string& arguments="", const string& declarestring="",
+#endif
+    void lisp_defmacro(Symbol_sp name, const string& packageName,
+                       BuiltinClosure*, const string& arguments="", const string& declarestring="",
 		       const string& docstring="", bool autoExport=true);
-    void lisp_defun(const string& packageName, const string& name,
-		    Functoid*, const string& arguments="", const string& declarestring="",
-		    const string& docstring="", int locked=1, bool autoExport=true, int number_of_required_arguments=0 );
+    void lisp_defun(Symbol_sp name, const string& packageName,
+		    BuiltinClosure*, const string& arguments="", const string& declarestring="",
+		    const string& docstring="", const string& sourceFile="", int sourceLine=0, bool autoExport=true, int number_of_required_arguments=0, const std::set<int>& skipIndices=std::set<int>() );
     void lisp_defgeneric( const string& packageName, const string& name,
 			 Functoid*, const string& arguments="", const string& docstring="", bool autoExport=true  );
-    void lisp_defmethod(Lisp_sp lisp, Symbol_sp gfSymbol, Functoid* func, const string& arguments, const string& docstring);
+    void lisp_defmethod(Symbol_sp gfSymbol, Functoid* func, const string& arguments, const string& docstring);
 
-    void	lisp_defineSingleDispatchMethod(const string& name, Symbol_sp classSymbol,
-						Functoid*,
+    void	lisp_defineSingleDispatchMethod(Symbol_sp name,
+                                                Symbol_sp classSymbol,
+						BuiltinClosure*,
                                                 int TemplateDispatchOn=0,
                                                 const string& lambda_list="",
 						const string& declares="",
 						const string& docstring="",
 						bool autoExport=true,
-						int number_of_required_arguments = -1);
+						int number_of_required_arguments = -1,
+                                                std::set<int> pureOutIndices = std::set<int>()
+        );
 
 
     void	lisp_defsetfSingleDispatchMethod(Lisp_sp lisp, const string& name, Symbol_sp classSymbol,
@@ -1112,7 +1133,7 @@ namespace core
     void	lisp_defsetf(Lisp_sp lisp, const string& name, Symbol_sp classSymbol,
 			     Functoid*, const string& arguments="", const string& docstring="", bool autoExport=true);
 
-    core::T_sp lisp_hiddenBinderLookup(Lisp_sp lisp, Symbol_sp sym);
+    core::T_sp lisp_hiddenBinderLookup(Symbol_sp sym);
 
 //
 // You define what is being sent to the debug log using these constants 
@@ -1157,45 +1178,53 @@ namespace core
 
 
     DebugStream* lisp_debugLog();
-    T_sp lisp_ocar(Lisp_sp lisp, Cons_sp args);
-    T_sp lisp_ocadr(Lisp_sp lisp, Cons_sp args);
-    T_sp lisp_ocaddr(Lisp_sp lisp, Cons_sp args);
+    T_sp lisp_ocar(Cons_sp args);
+    T_sp lisp_ocadr(Cons_sp args);
+    T_sp lisp_ocaddr(Cons_sp args);
     Symbol_sp lisp_internKeyword(const string& name);
     Symbol_sp lisp_intern(const string& name);
-    Symbol_sp lisp_intern(const string& pkgName, const string& symName);
+    Symbol_sp lisp_intern(const string& symName,const string& pkgName);
     T_sp lisp_VectorObjectsFromMultipleValues(T_mv values);
+    /*! Search the sequence SEQ for the object OBJ and return its index and true if found - otherwise false and IDX is undef */
+    bool lisp_search(T_sp seq, T_sp obj, int& idx);
     string symbol_fullName(Symbol_sp s);
     void lisp_logException(const char* file, const char* fn, int line, const char* structure, T_sp condition );
-    bool lisp_isGlobalInitializationAllowed(Lisp_sp lisp);
-    void lisp_installGlobalInitializationCallback(Lisp_sp lisp, InitializationCallback initGlobals);
-    Symbol_sp lisp_predefinedSymbol(Lisp_sp lisp, Symbol_sp symId);
-//    void lisp_hiddenBinderExtend(Lisp_sp lisp, Symbol_sp sym, T_sp obj);
+//    bool lisp_isGlobalInitializationAllowed(Lisp_sp lisp);
+//    void lisp_installGlobalInitializationCallback( InitializationCallback initGlobals);
     void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const& name, Symbol_sp const& archiveName, int value );
     /*! Return the index of the top of the stack */
     size_t lisp_pushCatchThrowException(T_sp throwTag, T_sp value);
     int lisp_lookupEnumForSymbol( Symbol_sp predefSymId, T_sp symbol);
     core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
 
+    /*! Register source info for the object in the current source database */
+    core::SourcePosInfo_sp lisp_registerSourceInfo(T_sp obj
+                                                   , SourceFileInfo_sp sfo
+                                                   , int lineno
+                                                   , int column );
+    core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
+                                                             , Stream_sp stream);
 
-
-#define DISABLE_NEW()                                                   \
-    void* operator new(size_t s) {DEPRECIATEDP("Disabled new");};       \
-    void* operator new(size_t s, const std::nothrow_t& tag) {DEPRECIATEDP("Disabled new");}; \
-    void* operator new(size_t s,void* ptr) { return ptr;};
 
     class Functoid 
     {
         FRIEND_GC_SCANNER();
-    protected:
-        typedef gctools::GCString<char,gctools::GCStringAllocator<gctools::GCString_moveable<char>>>         str_type;
-	str_type _Name;
-    public:
+    public:     
 	virtual string describe() const {return "Functoid - subclass must implement describe()";};
-	virtual T_mv activate(ActivationFrame_sp closedOverFrame, int nargs, ArgArray argArray) {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
+        void operator()( core::T_mv* lcc_resultP, int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, ... ) {
+            va_list arglist;
+            va_start(arglist,lcc_fixed_arg2);
+            this->invoke(lcc_resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,arglist);
+            va_end(arglist);
+        }
+
+//#define LISP_INVOKE() invoke( core::T_mv* lcc_resultP, int lcc_nargs, core::T_sp lcc_fixed_arg0, core::T_sp lcc_fixed_arg1, core::T_sp lcc_fixed_arg2, va_list lcc_arglist )
+
+	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
         virtual size_t templatedSizeof() const = 0;
 	void dump() const
 	{
-	    printf( "Functoid - %s\n", this->_Name.c_str() );
+	    printf( "Functoid - %s\n", _rep_(this->name).c_str());
 	}
 
 #if 0
@@ -1204,7 +1233,10 @@ namespace core
 	    return Values0<T_O>();
 	}
 #endif	    
-	Functoid( const string& name) : _Name(name) {};
+    public:
+        T_sp name;
+    public:
+	Functoid(T_sp n) : name(n) {};
 	virtual ~Functoid() {};
     };
 
@@ -1212,12 +1244,25 @@ namespace core
     class Closure : public Functoid
     {
     public:
-        void* operator new(size_t s) {THROW_HARD_ERROR(BF("Use gctools"));};
-	virtual string describe() const {return "Closure";};
-	virtual T_mv activate(ActivationFrame_sp closedOverEnv, int nargs, ArgArray argArray) {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
-
-	Closure(const string& name) : Functoid(name) {};
+        T_sp    closedEnvironment;
+    public:
+	Closure(T_sp name, T_sp env) : Functoid(name)
+                                     , closedEnvironment(env) {};
 	virtual ~Closure() {};
+    public:
+	virtual string describe() const {return "Closure";};
+	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Closure must implement 'activate'\n"); exit(1);};
+
+        virtual SourcePosInfo_sp sourcePosInfo() const {return _Nil<SourcePosInfo_O>();};
+        virtual bool macroP() const = 0;
+        virtual void setKind(Symbol_sp k)=0;
+        virtual Symbol_sp getKind() const = 0;
+        virtual bool compiledP() const { return false; };
+        virtual bool interpretedP() const { return false; };
+        virtual bool builtinP() const { return false;};
+        virtual int lineNumber() const { return 0;}
+        virtual int column() const { return 0;};
+        virtual LambdaListHandler_sp lambdaListHandler() const = 0;
     };
 
 
@@ -1304,6 +1349,13 @@ extern "C"
 };
 
 #include "exceptions.h"
+
+
+
+#define DISABLE_NEW()                                                   \
+    void* operator new(size_t s) {DEPRECIATEDP("Disabled new");};       \
+    void* operator new(size_t s, const std::nothrow_t& tag) {DEPRECIATEDP("Disabled new");}; \
+    void* operator new(size_t s,void* ptr) { return ptr;};
 
 
 

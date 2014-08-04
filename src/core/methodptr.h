@@ -8,7 +8,7 @@
 namespace core
 {
 
-
+#if 0
 template <typename OT>
 class OldStyleMethoid : public SingleDispatchMethoid
 {
@@ -21,7 +21,7 @@ public:
 	this->fptr = fp;
     };
 };
-
+#endif
 
 
 

@@ -188,11 +188,11 @@ No DIBuilder is defined for the default module")
 
 
 
-(defun fasl-pathname-type-impl (file-type &key min ref-count)
-  (core:bformat nil "%s%s%s"
-                file-type
-                (if min "-min" "")
-                (if ref-count "-rc" "")))
+(defun fasl-pathname-impl (pathname &key min)
+  (if min
+      (merge-pathnames (make-pathname :directory '(:relative "min")) pathname)
+      (merge-pathnames (make-pathname :directory '(:relative "full")) pathname)))
+
 
 (defun search* (sym list)
   (if (null list)
@@ -201,13 +201,10 @@ No DIBuilder is defined for the default module")
           t
           (search* sym (cdr list)))))
 
-(defun fasl-pathname-type (file-type)
-  (let ((is-min (cmp::search* :ecl-min *features*))
-        (is-ref-count (cmp::search* :use-refcount *features*)))
-    (fasl-pathname-type-impl file-type
-                             :min is-min
-                             :ref-count is-ref-count)))
-(export 'fasl-pathname-type)
+(defun fasl-pathname (pathname)
+  (let ((is-min (or (cmp::search* :clasp-min *features*) (cmp::search* :ecl-min *features*))))
+    (fasl-pathname-impl pathname :min is-min)))
+(export 'fasl-pathname)
 
 
 (defun jit-function-name (lname)
@@ -229,7 +226,7 @@ No DIBuilder is defined for the default module")
      "Load a bitcode file, link it and execute it"
      (let ((*package* *package*)
 	   (time-load-start (clock-gettime-nanoseconds)))
-       (bformat t "Loading module from file: %s\n" filename)
+;;       (bformat t "Loading module from file: %s\n" filename)
        (let* ((mod (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
 	      (engine-builder (llvm-sys:make-engine-builder mod)))
 	 ;; TODO: Set this up to use MCJIT
@@ -244,7 +241,7 @@ No DIBuilder is defined for the default module")
 	       (time-jit-start (clock-gettime-nanoseconds)))
            (if (not main-fn)
              (error "Could not find main function ~a loaded from file ~a" main-fn-name filename))
-	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn (namestring (truename filename)) *load-time-value-holder-name* )
+	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn (namestring (truename filename)) 0 *load-time-value-holder-name* )
 	   ))))
  nil)
 (export 'load-bitcode)

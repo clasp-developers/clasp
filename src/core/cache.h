@@ -40,19 +40,6 @@ namespace core
 	explicit Cache() {};
 	void setup(int keySize,int cacheSize);
 
-#if 0
-        GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-        {
-            GC_SCANNER_BEGIN() {
-                SMART_PTR_FIX(this->_keys);
-                for ( auto& itr_gc_safe : this->_table ) {
-                    SMART_PTR_FIX(itr_gc_safe._key);
-                    SMART_PTR_FIX(itr_gc_safe._value);
-                }
-            } GC_SCANNER_END();
-            return GC_RES_OK;
-        }
-#endif
 	/*! Search cache - like ecl_search_cache
 	  It takes no arguments - what is it searching????*/
 	void search_cache(CacheRecord*& e);
