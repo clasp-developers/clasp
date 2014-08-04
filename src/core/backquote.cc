@@ -78,10 +78,12 @@ namespace core
     {_G();
 	ql::list list; // (lists);
 	LOG(BF("Carrying out append with arguments: %s") % _rep_(lists) );
+        Cons_sp savedArgs = lists;
 	Cons_sp appendArg = lists;
 	for ( ; cCdr(appendArg).notnilp(); appendArg = cCdr(appendArg) )
 	{
-	    Cons_sp oneList = oCar(appendArg).as_or_nil<Cons_O>();
+            T_sp head = oCar(appendArg);
+	    Cons_sp oneList = head.as_or_nil<Cons_O>();
 	    for ( Cons_sp element=oneList; element.notnilp(); element = cCdr(element) )
 	    {
 		list << oCar(element);

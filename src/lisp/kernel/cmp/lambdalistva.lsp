@@ -2,8 +2,7 @@
 
 (in-package :compiler)
 
-
-(defstruct calling-convention
+(defstruct (calling-convention (:type vector))
   nargs
   register-arg0
   register-arg1
@@ -11,6 +10,7 @@
   valist
   args ;; This is where the args are copied into
   )
+
 
 (defun calling-convention-copy-args (cc env)
   (let* ((irbuilder *irbuilder-function-alloca*)
@@ -125,8 +125,7 @@
               (nargs (first argument-holder))
               (va-list (second argument-holder))
               )
-          (compile-error-if-wrong-number-of-arguments nargs
-                                                      number-of-required-arguments )
+          (compile-error-if-wrong-number-of-arguments nargs number-of-required-arguments )
           ;; enrich the new-env with the local variables
           (dolist (classified-local (classified-symbols lambda-list-handler))
             (cond
@@ -457,7 +456,7 @@ will put a value into target-ref."
                         (kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-i32 2))))
                     (irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
                     (irc-begin-block not-seen-before-kw-block)
-                    (let ((kw-arg-ref (calling-convention-args.gep arg-idx+1)))
+                    (let ((kw-arg-ref (calling-convention-args.gep args arg-idx+1)))
                       (with-target-reference-do (target-ref target new-env) ; run-time binding
                                                 (irc-intrinsic "copyTsp" target-ref kw-arg-ref))
                       ;; Set the boolean flag to indicate that we saw this key
@@ -664,4 +663,56 @@ lambda-list-handler/env/argument-activation-frame"
     ))
 
 
+(defun compile-<=3-required-arguments (reqargs
+                                       old-env
+                                       args
+                                       new-env)
+;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
+  "Fill the dest-activation-frame with values using the
+lambda-list-handler/env/argument-activation-frame"
+  ;; First save any special values
+  (compile-error-if-wrong-number-of-arguments (calling-convention-nargs args) (car reqargs))
+  (do* ((cur-req (cdr reqargs) (cdr cur-req))
+	(target (car cur-req) (car cur-req)))
+       ((endp cur-req) ())
+    (compile-save-if-special new-env target))
+  ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
+  (dbg-set-current-debug-location-here)
+  (let ((fixed-args (list (calling-convention-register-arg0 args)
+                          (calling-convention-register-arg1 args)
+                          (calling-convention-register-arg2 args))))
+    (do* ((cur-target (cdr reqargs) (cdr cur-target))
+          (cur-fixed-args fixed-args (cdr cur-fixed-args))
+          (target (car cur-target) (car cur-target))
+          (arg (car cur-fixed-args) (car cur-fixed-args))
+          )
+         ((null cur-target))
+      (let ((tsp-arg (irc-insert-value (llvm-sys:undef-value-get +tsp+) arg (list 0) "arg")))
+        (with-target-reference-do (tref target new-env) (irc-store tsp-arg tref))))
+    ))
+      
+
+
+(defun compile-lambda-list-code (lambda-list-handler
+                                 old-env
+                                 args
+                                 new-env)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
+      (process-lambda-list-handler lambda-list-handler)
+    (let ((req-opt-only (and (not rest-var)
+                             (not key-flag)
+                             (eql 0 (car keyargs))
+                             (eql 0 (car auxargs))
+                             (not allow-other-keys)))
+          (num-req (car reqargs))
+          (num-opt (car optargs)))
+      (cond
+        ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
+        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
+         (compile-<=3-required-arguments reqargs old-env args new-env))
+        ;; Test for 
+        ;; (x &optional y)
+        ;; (x y &optional z)
+        (t
+         (compile-general-lambda-list-code lambda-list-handler old-env args new-env))))))
 

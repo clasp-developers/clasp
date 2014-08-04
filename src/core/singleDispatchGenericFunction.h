@@ -19,7 +19,7 @@ namespace core
     public:
 	/*! Store the methods here */
 	Cons_sp		_Methods;
-        LambdaListHandler_sp lambdaListHandler;
+        LambdaListHandler_sp _lambdaListHandler;
 	/*! Store the method functions hashed on the receiver class */
 //	HashTable_sp	classesToClosures;
     public:
@@ -27,13 +27,13 @@ namespace core
         SingleDispatchGenericFunctionClosure(T_sp name, SourcePosInfo_sp sp, Symbol_sp k)
             : FunctionClosure(name,sp,k,_Nil<T_O>()/*Env*/)
             , _Methods(_Nil<Cons_O>())
-            , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
+            , _lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         SingleDispatchGenericFunctionClosure(T_sp name)
             : FunctionClosure(name)
             , _Methods(_Nil<Cons_O>())
-            , lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
+            , _lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
-            this->lambdaListHandler = llh;
+            this->_lambdaListHandler = llh;
             this->kind = k;
         }
         virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -46,6 +46,7 @@ namespace core
 	  unless it's locked. Whenever a method is defined the method combination table
 	  is wiped out */
         void addMethod(SingleDispatchMethod_sp method);
+        LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};
 
         Function_sp slowMethodLookup(Class_sp mc);
         Function_sp computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods);

@@ -40,12 +40,14 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 		       kw::_sym_default);
 	if ( strm.nilp() ) return;
     }
+#ifdef TRAP_ERRORS
     try {
+#endif
         DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
         /* Define the source file */
         SourceFileInfo_sp sfi = af_sourceFileInfo(source);
         scope.pushSpecialVariableAndSet(_sym_STARloadCurrentSourceFileInfoSTAR,sfi);
-        Pathname_sp pathname = af_pathname(source);
+        Pathname_sp pathname = cl_pathname(source);
         ASSERTF(pathname.pointerp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));;
         Pathname_sp truename = af_truename(source);
         ASSERTF(truename.pointerp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));;
@@ -73,10 +75,12 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	    }
 	}
 	strm->close(false);
+#ifdef TRAP_ERRORS
     } catch (...) {
 	strm->close(true); // abort
 	throw;
     }
+#endif
 }
 	
 

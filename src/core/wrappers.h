@@ -108,10 +108,12 @@ namespace core {
 	MacroClosure(Symbol_sp name, SourcePosInfo_sp spi, MacroPtr ptr) : BuiltinClosure(name,spi,kw::_sym_macro),mptr(ptr) {}
         DISABLE_NEW();
         size_t templatedSizeof() const { return sizeof(MacroClosure);};
+        virtual Symbol_sp getKind() const { return kw::_sym_macro; };
 	void LISP_CALLING_CONVENTION()
 	{_G();
 	    Cons_sp form = LCC_ARG0().as_or_nil<Cons_O>();
 	    Environment_sp env = LCC_ARG1().as_or_nil<Environment_O>();
+            InvocationHistoryFrame _frame(this,Environment_O::clasp_getActivationFrame(env));
 	    *lcc_resultP = (this->mptr)(form,env);
 	};
     };

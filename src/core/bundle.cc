@@ -268,7 +268,7 @@ namespace core
 	ss << this->_LispDir.string();
 	ss << DIR_SEPARATOR;
 	ss << "**/*.*";
-	return af_pathname(Str_O::create(ss.str()));
+	return cl_pathname(Str_O::create(ss.str()));
     }
 
 
@@ -284,7 +284,7 @@ namespace core
         ss << "Resources";
         ss << DIR_SEPARATOR;
 	ss << "**/*.*";
-	return af_pathname(Str_O::create(ss.str()));
+	return cl_pathname(Str_O::create(ss.str()));
     }
 
 

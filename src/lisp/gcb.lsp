@@ -2245,9 +2245,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 (defvar *tools* nil)
 (defvar *arguments-adjuster* (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
-                                                         #("-DUSE_MPS"
-                                                           "-DRUNNING_GC_BUILDER"
-                                                           "-resource-dir" +resource-dir+))))
+                                                         (vector "-DUSE_MPS"
+                                                                 "-DRUNNING_GC_BUILDER"
+                                                                 "-resource-dir" +resource-dir+))))
 (progn
   (setf *tools* (make-multitool :arguments-adjuster *arguments-adjuster*))
   (setup-cclass-search *tools*) ; search for all classes
@@ -2401,9 +2401,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (setq $tiny-test-search (lsel $* ".*/cons\.cc"))
   (load-asts $tiny-test-search
              :arguments-adjuster-code (lambda (args) (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
-                                                                  #("-DUSE_MPS"
-                                                                    "-DRUNNING_GC_BUILDER"
-                                                                    "-resource-dir" +resource-dir+)))))
+                                                                  (vector "-DUSE_MPS"
+                                                                          "-DRUNNING_GC_BUILDER"
+                                                                          "-resource-dir" +resource-dir+)))))
 
 
 

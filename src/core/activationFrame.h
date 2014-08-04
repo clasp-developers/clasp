@@ -52,7 +52,7 @@ namespace core
 
 	virtual T_sp _lookupValue(int depth, int index) const;
 	virtual const T_sp& lookupValueReference(int depth, int index) const;
-	virtual T_sp lookupFunction(int depth, int index) const;
+	virtual Function_sp _lookupFunction(int depth, int index) const;
 	virtual T_sp _lookupTagbodyId(int depth, int index) const;
 
 
@@ -396,7 +396,7 @@ namespace core {
 	virtual string summaryOfContents() const;
 
 
-	virtual T_sp lookupFunction(int depth, int index) const;
+	virtual Function_sp _lookupFunction(int depth, int index) const;
 
     };
 
@@ -637,7 +637,7 @@ namespace frame
 
 #define ALLOC_STACK_VALUE_FRAME(frameImpl,frame,numValues)     \
     frame::ElementType frameImpl[frame::FrameSize(numValues)]; \
-    gctools::smart_ptr<STACK_FRAME> frame(frameImpl);         \
+    gctools::smart_ptr<core::STACK_FRAME> frame(frameImpl);    \
     frame::InitializeStackValueFrame(frameImpl,numValues)
 
 

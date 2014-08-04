@@ -703,10 +703,11 @@ namespace llvmo
         {};
         void setAssociatedFunctions(core::Cons_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
         bool compiledP() const { return true; };
-
+        core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
         DISABLE_NEW();
 	void LISP_CALLING_CONVENTION()
 	{_G();
+            core::InvocationHistoryFrame _frame(this,this->closedEnvironment);
             (*(this->fptr))(lcc_resultP,&(this->closedEnvironment),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
 	};
 

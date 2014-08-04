@@ -150,7 +150,10 @@ namespace core
 		    SIMPLE_ERROR(BF("Add support for control[%s]") % cur);
 		}
 		++cur;
-	    } else
+	    } else if ( *cur == '%' ) {
+                ++cur;
+                tf << "%%";
+            } else
 	    {
 		tf << *cur;
 		++cur;

@@ -792,9 +792,9 @@ namespace core
     }
 
 
-    LambdaListHandler_sp lisp_function_lambda_list_handler(Cons_sp lambda_list, Cons_sp declares )
+    LambdaListHandler_sp lisp_function_lambda_list_handler(Cons_sp lambda_list, Cons_sp declares, std::set<int> pureOutValues )
     {_G();
-	LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list,declares,cl::_sym_function);
+	LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list,declares,cl::_sym_function, pureOutValues);
 	return llh;
     }
 
@@ -808,14 +808,15 @@ namespace core
 					 const string& declares,
 					 const string& docstring,
 					 bool autoExport,
-					 int number_of_required_arguments)
+					 int number_of_required_arguments,
+                                         const std::set<int> pureOutIndices )
     {_G();
 	Class_sp receiver_class = eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()).as<Class_O>();
 	Symbol_sp className = receiver_class->name();
-#if 0
-	if ( name.find("FIND") != string::npos )
+#if 1
+	if ( sym->symbolName()->get().find("JSONDATABASE-LOAD-FROM-FILE") != string::npos )
 	{
-            printf("%s:%d - Caught lisp_defineSingleDispatchMethod for %s\n", __FILE__, __LINE__, name.c_str() );
+            printf("%s:%d - Caught lisp_defineSingleDispatchMethod for %s\n", __FILE__, __LINE__, sym->symbolName()->get().c_str() );
 	}
 #endif
 	Cons_sp ldeclares = lisp_parse_declares(className->getPackage()->getName(),declares);
@@ -826,7 +827,7 @@ namespace core
 	{
 	    // If the arguments string is empty and number_of_required_arguments is >= 0 then create
 	    // a LambdaListHandler that supports that number of required arguments
-	    llhandler = LambdaListHandler_O::create(number_of_required_arguments);
+	    llhandler = LambdaListHandler_O::create(number_of_required_arguments,pureOutIndices);
 	} else if ( arguments != "" )
 	{
 	    Cons_sp llraw = lisp_parse_arguments(className->getPackage()->getName(),arguments);
@@ -845,7 +846,7 @@ namespace core
                                 " lambda-list single-dispatch argument class[%s] in argument list: %s")
                              % _rep_(classSymbol) % _rep_(sd_class_symbol) % _rep_(llraw) );
 	    }
-	    llhandler = lisp_function_lambda_list_handler(llproc,ldeclares);
+	    llhandler = lisp_function_lambda_list_handler(llproc,ldeclares,pureOutIndices);
 	    if ( sd_symbol.notnilp() )
 	    {
 		int single_dispatch_argument_index = llhandler->single_dispatch_on_argument(sd_symbol);
@@ -894,36 +895,7 @@ namespace core
     {_G();
 	return eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()).as<Class_O>();
     }
-#if 0
-    void lisp_setGlobalInt(Lisp_sp lisp, const string& pkg, const string& n, uint val )
-    {_G();
-	Symbol_sp sym = lisp->internWithPackageName(pkg,n);
-	Fixnum_sp i = Fixnum_O::create(val);
-	sym->defparameter(i);
-//    lisp->globalEnvironment()->extend(sym,i);
-    }
-    Symbol_sp lisp_getClassSymbolForClassName(Lisp_sp lisp, const string& n)
-    {
-	return lisp->getClassSymbolForClassName(n);
-    }
-#endif
 
-
-#if 0
-    void lisp_defun_lispify_name(const string& packageName,
-				 const string& cname,
-				 Functoid* f,
-				 const string& arguments,
-				 const string& declstring,
-				 const string& docstring,
-				 int locked,
-				 bool autoExport,
-				 int number_of_required_arguments )
-    {_G();
-	string name = lispify_symbol_name(cname);
-	lisp_defun(packageName,name,f,arguments,declstring,docstring,locked,autoExport,number_of_required_arguments);
-    }
-#endif
 
 
     /*! If the name has the structure XXX:YYY or XXX::YYY then intern YYY in package XXX either
@@ -957,7 +929,8 @@ namespace core
                     const string& sourceFile,
                     int lineNumber,
 		    bool autoExport,
-		    int number_of_required_arguments)
+		    int number_of_required_arguments,
+                    const std::set<int>& skipIndices )
     {_G();
 	if ( sym->getReadOnlyFunction() )
 	{
@@ -968,11 +941,17 @@ namespace core
 	LambdaListHandler_sp llh;
 	if ( (arguments == "" || arguments=="()") && number_of_required_arguments >= 0)
 	{
-	    llh = LambdaListHandler_O::create(number_of_required_arguments);
+	    llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
+            if ( skipIndices.size() > 0 ) {
+                stringstream ss;
+                for ( auto i: skipIndices) { ss << i << " "; }
+                printf("%s:%d number_of_required_arguments=%d  skip_indices = %s    llh = %s\n",
+                       __FILE__, __LINE__, number_of_required_arguments, ss.str().c_str(), _rep_(llh).c_str() );
+            }
 	} else
 	{
 	    Cons_sp ll = lisp_parse_arguments(packageName,arguments);
-	    llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>());
+	    llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>(), skipIndices);
 	}
         fc->finishSetup(llh,kw::_sym_function);
         fc->setSourcePosInfo(Str_O::create(sourceFile),lineNumber,0);

@@ -196,7 +196,7 @@ namespace core
     SourceFileInfo_sp SourceFileInfo_O::create(const string& str)
     {_G();
         GC_ALLOCATE(SourceFileInfo_O,spi );
-	spi->_pathname = af_pathname(Str_O::create(str));
+	spi->_pathname = cl_pathname(Str_O::create(str));
 	return spi;
     }
 
@@ -437,9 +437,12 @@ namespace core
                     return true;
                 } else {
                     if ( af_consP(orig_obj) ) {
-                        Cons_sp orig_cons = orig_obj.as<Cons_O>();
-                        for ( ; orig_cons.notnilp(); orig_cons=cCdr(orig_cons) ) {
-                            if ( this->searchForSourceInfoAndDuplicateIt(oCar(orig_cons),new_obj) ) return true;
+                        T_sp orig_cons = orig_obj;
+                        while (orig_cons.notnilp() && af_consP(orig_cons)) {
+                            orig_cons = oCdr(orig_cons);
+                            if ( af_consP(orig_cons) ) {
+                                if ( this->searchForSourceInfoAndDuplicateIt(oCar(orig_cons),new_obj) ) return true;
+                            }
                         }
                     }
                 }

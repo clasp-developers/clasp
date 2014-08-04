@@ -459,7 +459,7 @@ namespace core
     void Class_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Class_O>()
-	    .def("className",&Class_O::className)
+	    .def("core:className",&Class_O::className)
 	    .def("direct-superclasses",&Class_O::directSuperclasses)
 	    ;
 	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);

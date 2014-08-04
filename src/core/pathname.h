@@ -26,7 +26,7 @@ namespace cl {
 namespace core {
 
     FORWARD(Pathname);
-    Pathname_sp af_pathname(T_sp x);
+    Pathname_sp cl_pathname(T_sp x);
 
     Pathname_sp af_mergePathnames(T_sp arg, T_sp defaultPathname = _Nil<T_O>(), T_sp defaultVersion = kw::_sym_newest); // = af_symbolValue(cl::_sym_STARdefaultPathnameDefaultsSTAR), T_sp defaultVersion = kw::_sym_newest);
 
@@ -39,7 +39,7 @@ namespace core {
 
     T_sp af_pathnameHost(T_sp pathname, Symbol_sp acase);
     T_sp af_pathnameDevice(T_sp pathname, Symbol_sp acase);
-    T_sp af_pathnameDirectory(T_sp pathname, Symbol_sp acase);
+    T_sp af_pathnameDirectory(T_sp pathname, Symbol_sp acase = kw::_sym_local);
     T_sp af_pathnameName(T_sp pathname, Symbol_sp acase);
     T_sp af_pathnameType(T_sp pathname, Symbol_sp acase);
     T_sp af_pathnameVersion(T_sp pathname);
@@ -155,13 +155,14 @@ namespace core {
     Str_sp brcl_namestring(T_sp x, int flags);
     Pathname_sp brcl_mergePathnames(T_sp path, T_sp def, T_sp defaultVersion);
 
+    bool af_pathnameMatchP(T_sp path, T_sp mask);
     Str_sp af_namestring(T_sp x);
     Str_sp af_fileNamestring(T_sp tpname);
     Str_sp af_directoryNamestring(T_sp tpname);
     Str_sp af_hostNamestring(T_sp tpname);
     Str_sp af_enoughNamestring(T_sp tpath, T_sp tdefaults);
 
-    T_sp af_pathnameTranslations(T_sp host, T_sp set);
+    T_sp af_pathnameTranslations(T_sp host, T_sp hostp, T_sp set);
 
     /* If you want to call makePathname use:
 		Pathname_sp backupPathname = af_makePathname(_Nil<T_O>(), // host 

@@ -123,7 +123,7 @@ namespace core
 	return this->lookupValueReference(depth,index);
     }
 
-    T_sp ActivationFrame_O::lookupFunction(int depth, int index) const
+    Function_sp ActivationFrame_O::_lookupFunction(int depth, int index) const
     {_G();
 	if ( depth == 0 )
 	{
@@ -131,7 +131,7 @@ namespace core
 
 	}
 	--depth;
-	return(this->parentFrame()->lookupFunction(depth,index));
+        return Environment_O::clasp_lookupFunction(this->parentFrame(),depth,index);
     }
 
 
@@ -418,7 +418,7 @@ namespace core
     }
 
 
-    T_sp FunctionFrame_O::lookupFunction(int depth, int index) const
+    Function_sp FunctionFrame_O::_lookupFunction(int depth, int index) const
     {_G();
 	if ( depth == 0 )
 	{
@@ -426,10 +426,10 @@ namespace core
 	    {
 		SIMPLE_ERROR(BF("Out of range index[%d] for FunctionFrame with %d entries") % index % this->_Objects.capacity() );
 	    }
-	    return(this->entry(index));
+	    return(this->entry(index)).as<Function_O>();
 	}
 	--depth;
-	return(this->parentFrame()->lookupFunction(depth,index));
+	return Environment_O::clasp_lookupFunction(this->parentFrame(),depth,index);
     }
 
 

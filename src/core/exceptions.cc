@@ -60,24 +60,27 @@ namespace core {
 #endif
 
     TooFewArgumentsError::TooFewArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required) {
-        printf("%s:%d Constructed TooFewArgumentsError\n", __FILE__, __LINE__ );
+        printf("%s:%d Constructed TooFewArgumentsError given %d required %d\n", __FILE__, __LINE__, given, required );
     };
     TooManyArgumentsError::TooManyArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required) {};
 
 
     void throwTooFewArgumentsError(int given, int required)
     {
-        throw(TooFewArgumentsError(given,required));
+        SIMPLE_ERROR(BF("Too few arguments given %d required %d") % given % required );
+//        throw(TooFewArgumentsError(given,required));
     }
 
     void throwTooManyArgumentsError(int given, int required)
     {
-        throw(TooManyArgumentsError(given,required));
+        SIMPLE_ERROR(BF("Too many arguments error given: %d required: %d") % given % required );
+//        throw(TooManyArgumentsError(given,required));
     }
 
     void throwUnrecognizedKeywordArgumentError(T_sp kw)
     {
-        throw(UnrecognizedKeywordArgumentError(kw));
+        SIMPLE_ERROR(BF("Unrecognized keyword argument error: %s") % _rep_(kw));
+//        throw(UnrecognizedKeywordArgumentError(kw));
     }
 
     void wrongNumberOfArguments(int givenNumberOfArguments, int requiredNumberOfArguments)

@@ -280,7 +280,7 @@ namespace core
 #define ARGS_af_base_string_concatenate "(&rest args)"
 #define DECL_af_base_string_concatenate ""
 #define DOCS_af_base_string_concatenate "base_string_concatenate"
-    T_mv af_base_string_concatenate(Cons_sp args)
+    T_sp af_base_string_concatenate(Cons_sp args)
     {_G();
 	stringstream ss;
 	for ( Cons_sp cur = args; cur.notnilp(); cur = cCdr(cur) )
@@ -288,7 +288,7 @@ namespace core
 	    Str_sp str = coerce::stringDesignator(oCar(cur));
 	    ss << str->get();
 	}
-	return(Values(Str_O::create(ss.str())));
+	return Str_O::create(ss.str());
     };
 
 

@@ -54,16 +54,22 @@
 		  (bformat t ";    %s %s\n" header name)))
     (otherwise ()))) ;; describe more forms here
 
+(defun compile-top-level (form)
+  (when *compile-print*
+    (describe-form form))
+  (let ((fn (compile-thunk "repl" form nil)))
+    (with-ltv-function-codegen (result ltv-env)
+      (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)
+                     ))))
+
+(defun compiler-macro-function (sym) nil)
+
 
 
 (defun t1progn (form)
   "All forms in progn at top level are top level forms"
   (dolist (subform (cdr form))
     (t1expr subform)))
-
-(defun t1defparameter (form)
-  "defparameter at the top level declares a variable in the global dynamic environment"
-  (compile-top-level form))
 
 (defun t1eval-when (form)
   (let ((situations (cadr form))
@@ -82,24 +88,15 @@
       )
     ))
 
-(defun compile-top-level (form)
-  (when *compile-print*
-    (describe-form form))
-  (let ((fn (compile-thunk "repl" form nil)))
-    (with-ltv-function-codegen (result ltv-env)
-      (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)
-                     ))))
-
-(defun compiler-macro-function (sym) nil)
-
 (defun t1locally (form)
-  (error "Add support for t1locally"))
+  (error "Add support for cmp:t1locally"))
 
 (defun t1macrolet (form)
-  (error "Add support for t1macrolet"))
+  (error "Add support for cmp:t1macrolet"))
 
 (defun t1symbol-macrolet (form)
-  (error "Add support for t1symbol-macrolet"))
+  (error "Add support for cmp:t1symbol-macrolet"))
+
 
 (defun t1expr (form)
   (cmp-log "t1expr-> %s\n" form)
@@ -137,7 +134,7 @@
 
 (defun cfp-output-file-default (input-file)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*))
-	 (retyped (make-pathname :type (fasl-pathname-type "bc") :defaults defaults)))
+	 (retyped (fasl-pathname (make-pathname :type "bc" :defaults defaults))))
     retyped))
 
 ;;; Copied from sbcl sb!xc:compile-file-pathname
@@ -219,6 +216,7 @@ and the pathname of the source file - this will also be used as the module initi
                   (if found-errors
                       (break "Verify module found errors")))
                 (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-file))
+                (ensure-directories-exist output-file)
                 (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-file))
                 ))))))))
   

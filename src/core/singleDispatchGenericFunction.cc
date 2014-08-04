@@ -66,7 +66,7 @@ namespace core
             SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
         }
         SingleDispatchGenericFunctionClosure* gfc = dynamic_cast<SingleDispatchGenericFunctionClosure*>(gf->closure);
-        LambdaListHandler_sp gf_llh = gfc->lambdaListHandler;
+        LambdaListHandler_sp gf_llh = gfc->_lambdaListHandler;
         if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments() )
         {
             SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
