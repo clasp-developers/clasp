@@ -1,4 +1,6 @@
 CLASP = clasp_boehm_o
+export CLASP_APP_RESOURCES_DIR=$(HOME)/local/clasp/Contents/Resources
+
 
 
 all:
