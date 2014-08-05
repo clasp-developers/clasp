@@ -2,6 +2,7 @@
 #define executables_fwd_H
 namespace core
 {
+    class BuiltinClosure;
     FORWARD(Function);
     FORWARD(CompiledFunction);
 }
