@@ -2310,7 +2310,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 
-(defparameter *max-parallel-searches* 16)
+(defparameter *max-parallel-searches* 6)
 
 (defun fork-jobs (proc job-list)
   (setf (multitool-results *tools*) (make-project))

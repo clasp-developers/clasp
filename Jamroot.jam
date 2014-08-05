@@ -41,21 +41,13 @@ project clasp : requirements
 ##        and a production one that is compatible with MPS
 ##        Turn on USE_GCVECTOR_MALLOC_ALLOCATOR to use the malloc/free one
 
-#       <define>USE_GCVECTOR_MALLOC_ALLOCATOR      # DO NOT USE WITH USE_MPS - just for testing GCVector
-
-#         <define>DEBUG_MPS_AMS_POOL    # use the debugging AMS pool and run tests on it
-#       <define>DEBUG_LOG_MPS_KINDS     # Give more verbose MPS debugging messages that include kind names
 #       <define>SOURCE_DEBUG
-#	<define>DEBUG_MPS      # generate lots of debugging information for MPS
+#-------- mps options
+	<define>DEBUG_MPS      # generate lots of debugging information for MPS
+        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+#---------
         <define>DEBUG_CL_SYMBOLS
         <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs
-#       <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
-#        <define>USE_PUT_SELECT_CLASSES_IN_AMC_POOL
-#---------- dmalloc stuff
-#            <linkflags>-ldmallocxx
-#            <define>DMALLOC
-#            <define>DMALLOC_FUNC_CHECK
-# ------------------------------------------------------------
 	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>-stdlib=libc++
 	<target-os>darwin:<linkflags>-stdlib=libc++
@@ -65,6 +57,11 @@ project clasp : requirements
 	<define>__STDC_LIMIT_MACROS
 	<define>__STDC_CONSTANT_MACROS
 	<define>__STDC_FORMAT_MACROS
+#        <define>USE_PUT_SELECT_CLASSES_IN_AMC_POOL
+#       <define>DEBUG_MPS_AMS_POOL    # use the debugging AMS pool and run tests on it
+#       <define>DEBUG_LOG_MPS_KINDS     # Give more verbose MPS debugging messages that include kind names
+#       <define>USE_GCVECTOR_MALLOC_ALLOCATOR      # DO NOT USE WITH USE_MPS - just for testing GCVector
+
 
 #	<toolset>clang:<include>/usr/lib/c++/v1
 #	<define>USEBOOSTPYTHON

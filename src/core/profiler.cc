@@ -1,6 +1,7 @@
 #define	DEBUG_LEVEL_FULL       
 
 #include "foundation.h"
+#include "executables.fwd.h"
 #include "lisp.h"
 #include "lightProfiler.h"
 

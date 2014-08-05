@@ -498,6 +498,11 @@ namespace core
     class SourceFileInfo_O;
 
     class DynamicScopeManager;
+
+    class Functoid;
+    class FunctionClosure;
+    class BuiltinClosure;
+
 };
 void dbg_hook(const char* errorString);
 
@@ -1016,9 +1021,6 @@ namespace core
     class DebugStream;
 
 
-    class Functoid;
-    class FunctionClosure;
-    class BuiltinClosure;
 
 
 /* Callbacks that initialize the Lisp environment have this structure*/
