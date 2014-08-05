@@ -287,7 +287,10 @@ namespace gctools {
             mps_ap_t obj_ap = global_non_moving_ap;
             mps_addr_t addr;
             do {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
                 mps_res_t res = mps_reserve(&addr,obj_ap,sz);
+#pragma clang diagnostic pop
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
                 new (header) HeadT(GCKind<T>::Kind);
                 obj = BasePtrToMostDerivedPtr<T>(addr);
@@ -325,7 +328,10 @@ namespace gctools {
             mps_ap_t obj_ap = GCAllocationPoint<T>::get();
             mps_addr_t addr;
             do {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
                 mps_res_t res = mps_reserve(&addr,obj_ap,sz);
+#pragma clang diagnostic pop
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
                 new (header) HeadT(GCKind<T>::Kind);
                 obj = BasePtrToMostDerivedPtr<T>(addr);
@@ -375,7 +381,10 @@ namespace gctools {
             mps_addr_t addr;
             size_t size = sizeof_with_header<OT>();
             do {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
+#pragma clang diagnostic pop
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
                 new (header) HeadT(GCKind<OT>::Kind);
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
@@ -415,7 +424,10 @@ namespace gctools {
             mps_addr_t addr;
             size_t size = sizeof_with_header<OT>();
             do {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
+#pragma clang diagnostic pop
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
                 new (header) HeadT(GCKind<OT>::Kind);
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
@@ -458,7 +470,10 @@ namespace gctools {
             mps_addr_t addr;
             size_t size = sizeof_with_header<OT>();
             do {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
                 mps_res_t res = mps_reserve(&addr,obj_ap,size);
+#pragma clang diagnostic pop
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
                 new (header) HeadT(GCKind<OT>::Kind);
                 obj = BasePtrToMostDerivedPtr<OT>(addr);
@@ -841,7 +856,10 @@ namespace gctools {
             mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
             mps_addr_t base;
             do {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
                 mps_res_t res = mps_reserve(&base,obj_ap,sz);
+#pragma clang diagnostic pop
                 HeadT* header = reinterpret_cast<HeadT*>(base);
                 new (header) HeadT(GCKind<TY>::Kind);
 //                header->kind._Kind = gctools::GCKind<container_type>::Kind;

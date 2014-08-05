@@ -687,7 +687,7 @@ namespace llvmo
         friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
     public:
         typedef void (*fptr_type) (LISP_CALLING_CONVENTION_RETURN, LISP_CALLING_CONVENTION_CLOSED_ENVIRONMENT, LISP_CALLING_CONVENTION_ARGS );
-    private:
+    public:
         Function_sp             llvmFunction;
 	fptr_type		fptr;
         core::Cons_sp           associatedFunctions;

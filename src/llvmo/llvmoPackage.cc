@@ -264,58 +264,34 @@ namespace llvmo
 
 
     
-    
-#define ARGS_af_viewCFG "(fn)"
+#define ARGS_af_viewCFG "(fn &optional only)"
 #define DECL_af_viewCFG ""
-#define DOCS_af_viewCFG "viewCFG"
-    void af_viewCFG(core::CompiledFunction_sp compiledFunction)
+#define DOCS_af_viewCFG "viewCFG (view-cfg fn &optional only)"
+    void af_viewCFG(core::CompiledFunction_sp compiledFunction, core::T_sp only)
     {_G();
-        IMPLEMENT_MEF(BF("Handle new functor approach"));
-#if 0
-	core::CompiledBody_sp cb = compiledFunction->getBody();
-	core::T_sp funcs = cb->compiledFuncs();
-	if ( af_consP(funcs) )
-	{
-	    core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
-	    for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
-	    {
-		core::T_sp func = oCar(cur);
-		if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
-		{
-		    f->wrappedPtr()->viewCFG();
-		}
-	    }
-	    return;
-	}
-#endif
-    };
-
-
-    
-#define ARGS_af_viewCFGOnly "(fn)"
-#define DECL_af_viewCFGOnly ""
-#define DOCS_af_viewCFGOnly "viewCFGOnly"
-    void af_viewCFGOnly(core::CompiledFunction_sp compiledFunction)
-    {_G();
-        IMPLEMENT_MEF(BF("Handle new functor approach"));
-#if 0
-	core::CompiledBody_sp cb = compiledFunction->getBody();
-	core::T_sp funcs = cb->compiledFuncs();
-	if ( af_consP(funcs) )
-	{
-	    core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
-	    for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
-	    {
-		core::T_sp func = oCar(cur);
-		if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
-		{
-		    f->wrappedPtr()->viewCFGOnly();
-		}
-	    }
-	    return;
-	}
-#endif
-    };
+        if ( CompiledClosure* cl = dynamic_cast<CompiledClosure*>(compiledFunction->closure) ) {
+            core::T_sp funcs = cl->associatedFunctions;
+            if ( af_consP(funcs) )
+            {
+                core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
+                for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
+                {
+                    core::T_sp func = oCar(cur);
+                    if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
+                    {
+                        if (only.notnilp()) {
+                            f->wrappedPtr()->viewCFGOnly();
+                        } else {
+                            f->wrappedPtr()->viewCFG();
+                        }
+                    }
+                }
+                return;
+            }
+        }
+    }
+        
+;
 
 
 
@@ -358,7 +334,6 @@ namespace llvmo
 	    Defun(throwIfMismatchedStructureSizes);
 	    Defun(mangleSymbolName);
             Defun(viewCFG);
-            Defun(viewCFGOnly);
 	    //nothing
 	};
 	break;
