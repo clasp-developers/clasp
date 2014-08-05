@@ -375,3 +375,7 @@ the corresponding VAR.  Returns NIL."
 	  `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
       t)
 
+(defun class-name (x)
+  (name-of-class x))
+
+(export 'class-name)
