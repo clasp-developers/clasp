@@ -43,8 +43,8 @@ project clasp : requirements
 
 #       <define>SOURCE_DEBUG
 #-------- mps options
-	<define>DEBUG_MPS      # generate lots of debugging information for MPS
-        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+#	<define>DEBUG_MPS      # generate lots of debugging information for MPS
+#        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #---------
         <define>DEBUG_CL_SYMBOLS
         <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs
