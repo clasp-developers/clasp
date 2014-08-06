@@ -915,6 +915,7 @@ namespace core {
 
     class Creator
     {
+        struct metadata_always_fix_pointers_to_derived_classes;
     public:
         // Some Creators don't actually allocate anything - 
         // classes that don't have default allocators
@@ -1210,6 +1211,7 @@ namespace core
 
     class Functoid 
     {
+        struct metadata_always_fix_pointers_to_derived_classes;
         FRIEND_GC_SCANNER();
     public:     
 	virtual string describe() const {return "Functoid - subclass must implement describe()";};

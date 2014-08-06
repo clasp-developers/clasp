@@ -1712,6 +1712,37 @@ so that they don't have to be constantly recalculated"
 
 
 
+(defun derived-from-cclass (child ancestor &optional (project *project*))
+  (setq child (if (stringp child) (gethash child (project-classes project)) child))
+  (setq ancestor (if (stringp ancestor) (gethash ancestor (project-classes project)) ancestor))
+  (if (eq child ancestor)
+      t
+      (progn
+        (dolist (parent (cclass-bases child))
+          (when (derived-from-cclass parent ancestor)
+            (return-from derived-from-cclass t)))
+        (dolist (parent (cclass-vbases child))
+          (when (derived-from-cclass parent ancestor)
+            (return-from derived-from-cclass t)))
+        nil)))
+
+
+(defun inherits-metadata (cclass metadata &optional (project *project*))
+  (unless cclass (return-from inherits-metadata nil))
+  (setq cclass (if (stringp cclass) (gethash cclass (project-classes project)) cclass))
+  (unless cclass (return-from inherits-metadata nil))
+  (if (member metadata (cclass-metadata cclass))
+      t 
+      (progn
+        (dolist (parent (cclass-bases cclass))
+          (when (inherits-metadata parent metadata project)
+            (return-from inherits-metadata t)))
+        (dolist (parent (cclass-vbases cclass))
+          (when (inherits-metadata parent metadata project)
+            (return-from inherits-metadata t))))
+      nil))
+
+
 
 
 
@@ -1821,10 +1852,7 @@ so that they don't have to be constantly recalculated"
 
 (defun fixable-pointee-p (ctype)
   (let ((key (ctype-key ctype)))
-    (or (string= (ctype-key ctype) "core::Functoid")
-        (string= (ctype-key ctype) "core::Creator"))
-    ))
-
+    (inherits-metadata key :metadata_always_fix_pointers_to_derived_classes)))
 
 (defgeneric ignorable-ctype-p (ctype))
 
@@ -2266,7 +2294,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*lisp\.cc$"))
+                      (lsel $* ".*executables\.cc$"))
                       )
   )
 
