@@ -54,12 +54,14 @@ namespace gctools {
         static const uintptr_t ptr_mask = ~tag_mask;
     public:
         /*! Special taged values */
-        static const uintptr_t tagged_NULL 	  = BOOST_BINARY(000000)|special_tag;
+        static const uintptr_t _NULL              = BOOST_BINARY(000000);
+        static const uintptr_t tagged_NULL 	  = BOOST_BINARY(000000)|special_tag; // Should I have this????
         static const uintptr_t tagged_unbound     = BOOST_BINARY(000100)|special_tag; // 0x05
         static const uintptr_t tagged_nil 	  = BOOST_BINARY(001000)|special_tag; // 0x09
         static const uintptr_t tagged_deleted     = BOOST_BINARY(001100)|special_tag; // 0x0D - used by WeakHashTable
-        static const uintptr_t tagged_notnil      = BOOST_BINARY(010000)|special_tag; // 0x11
-        static const uintptr_t tagged_character   = BOOST_BINARY(010100)|special_tag; // 0x15
+        static const uintptr_t tagged_sameAsKey   = BOOST_BINARY(010000)|special_tag;
+        static const uintptr_t tagged_notnil      = BOOST_BINARY(010100)|special_tag;
+        static const uintptr_t tagged_character   = BOOST_BINARY(011000)|special_tag;
         static const uintptr_t character_shift = 8;
         static const uintptr_t fixnum_shift = 2;
 
@@ -237,7 +239,7 @@ namespace gctools {
         }
 
 
-        /*! Return true if px contains a pointer */
+        /*! Return true if px contains a non-NULL pointer */
         bool pointerp() const
         {
             return ((uintptr_t)(this->px)&tag_mask)==ptr_tag
@@ -259,6 +261,8 @@ namespace gctools {
         bool unboundp() const { return (uintptr_t)this->px == tagged_unbound;};
         bool notunboundp() const { return !this->unboundp();};
 
+        bool sameAsKeyP() const { return (uintptr_t)this->px == tagged_sameAsKey;};
+        bool notsameAsKeyP() const { return !this->sameAsKeyP();};
 
         bool nilp() const { return (uintptr_t)this->px == tagged_nil;};
 
@@ -392,9 +396,11 @@ namespace gctools {
       of GC managed object */
     class tagged_base_ptr {
     public:
-        static const uintptr_t unused = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_unbound;
+        static const uintptr_t _NULL = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_NULL;
+        static const uintptr_t unbound = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_unbound;
         static const uintptr_t deleted = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_deleted;
         tagged_base_ptr(uintptr_t v) : base(v) {};
+        tagged_base_ptr() : base() {};
 
         template <class U>
         static typename GCHeader<void>::HeaderType* toBasePtr(U* ptr) {
@@ -410,7 +416,24 @@ namespace gctools {
             }
         }
 
+        inline void* pointer() const { return reinterpret_cast<void*>(this->base_ref().px_ref()); };
+        inline bool NULLp() const { return this->base_ref().px_ref() == 0; };
+        inline bool pointerp() const { return this->base_ref().pointerp(); };
+        inline bool unboundp() const { return this->base_ref().unboundp(); };
+        inline bool sameAsKeyP() const { return this->base_ref().sameAsKeyP(); };
+        inline bool deletedp() const {
+#ifdef USE_MPS
+            return this->base_ref().deletedp();
+#endif
+#ifdef USE_BOEHM
+            return this->base_ref().deletedp() || this->NULLp(); // splatted values are deleted
+#endif
+        };
+        bool operator==(const tagged_base_ptr& other) { return this->base_ref().px_ref() == other.base_ref().px_ref(); };
         tagged_ptr<typename GCHeader<void>::HeaderType>& base_ref() { return this->base;};
+        const tagged_ptr<typename GCHeader<void>::HeaderType>& base_ref() const { return this->base;};
+
+        void** splattableAddress() const { return reinterpret_cast<void**>(&this->base.px_ref()); };
     public:
         tagged_ptr<typename GCHeader<void>::HeaderType> base;
     };
@@ -418,13 +441,21 @@ namespace gctools {
 
     /*! A class that inherits from tagged_base_ptr 
       and can be backcast back to one type of internal pointer.
-      It does this by calculating and storing an offset to the internal pointer.
+      It does this by calculating and storing an offset to the internal pointer 
+      in the tagged Fixnum (offset).
     */
     template <class T>
     class tagged_backcastable_base_ptr : public tagged_base_ptr {
+#if 0
     public:
-        tagged_backcastable_base_ptr(uintptr_t v) : tagged_base_ptr(v) {};
-        tagged_backcastable_base_ptr(tagged_ptr<T> objPtr) : tagged_base_ptr(objPtr) {
+        static const uintptr_t _NULL = tagged_base_ptr::_NULL;
+        static const uintptr_t unbound = tagged_base_ptr::unbound;
+        static const uintptr_t deleted = tagged_base_ptr::deleted;
+#endif
+    public:
+        explicit tagged_backcastable_base_ptr() : tagged_base_ptr(), offset() {};
+        explicit tagged_backcastable_base_ptr(uintptr_t v) : tagged_base_ptr(v), offset() {};
+        explicit tagged_backcastable_base_ptr(tagged_ptr<T> objPtr) : tagged_base_ptr(objPtr) {
             if ( objPtr.pointerp() ) {
                 const char* base_addr = reinterpret_cast<const char*>(this->base.px_ref());
                 const char* obj_addr = reinterpret_cast<const char*>(objPtr.px_ref());

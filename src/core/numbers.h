@@ -190,6 +190,7 @@ namespace core
 	static Integer_sp create(int v);
 	static Integer_sp create(const string& v) {mpz_class zv(v); return create(zv);};
 	static Integer_sp create(const char* v) {mpz_class zv(v); return create(zv);};
+	static Integer_sp create(size_t v);
 	static Integer_sp create(uint v);
 	static Integer_sp create(uint64_t v);
 	static Integer_sp create(float f);

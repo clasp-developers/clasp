@@ -66,7 +66,8 @@ namespace gctools
     mps_pool_t _global_amc_pool;
     mps_pool_t _global_amcz_pool;
     mps_pool_t _global_awl_pool;
-//    mps_ap_t _global_automatic_weak_link_allocation_point;
+    mps_ap_t _global_weak_link_allocation_point;
+    mps_ap_t _global_strong_link_allocation_point;
 //    mps_ap_t _global_mvff_allocation_point;
     mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
 
@@ -373,8 +374,24 @@ namespace gctools {
         } MPS_ARGS_END(args);
 
 
-        // Create the AWL pool here
-
+        // Create the AWL pool for weak hash tables here
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+            MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
+            MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, awlFindDependent );
+            res = mps_pool_create_k(&global_awl_pool, _global_arena, mps_class_awl(), args);
+        } MPS_ARGS_END(args);
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create awl pool");
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+            res = mps_ap_create_k(&global_strong_link_allocation_point, global_awl_pool, args);
+        } MPS_ARGS_END(args);
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create global_strong_link_allocation_point");
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_weak());
+            res = mps_ap_create_k(&global_weak_link_allocation_point, global_awl_pool, args);
+        } MPS_ARGS_END(args);
+        if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Couldn't create global_weak_link_allocation_point");
 
 
 
@@ -444,11 +461,13 @@ namespace gctools {
         mps_root_destroy(global_scan_root);
         mps_root_destroy(global_stack_root);
         mps_thread_dereg(global_thread);
-#ifdef USE_AWL_POOL
-        mps_ap_destroy(_global_automatic_weak_link_allocation_point);
-#endif
+        mps_ap_destroy(_global_weak_link_allocation_point);
+        mps_ap_destroy(_global_strong_link_allocation_point);
         mps_ap_destroy(_global_automatic_mostly_copying_zero_rank_allocation_point);
         mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
+        mps_ap_destroy(global_weak_link_allocation_point);
+        mps_ap_destroy(global_strong_link_allocation_point);
+        mps_pool_destroy(global_awl_pool);
         mps_pool_destroy(_global_amcz_pool);
         mps_ap_destroy(global_non_moving_ap);
         mps_pool_destroy(global_non_moving_pool);

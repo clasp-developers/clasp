@@ -245,6 +245,10 @@ case "$lisp" in
     command="${ECL:-ecl}"
     flags="-norc -load sys:cmp"
     eval="-eval" ;;
+  clasp)
+    command="${CLASP:-clasp}"
+    flags="-what-the-fudge-am-I-trying-to-achieve?"
+    eval="
   ecl_bytecodes)
     command="${ECL:-ecl}"
     flags="-norc -eval (ext::install-bytecodes-compiler)"

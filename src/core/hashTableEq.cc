@@ -70,16 +70,15 @@ namespace core
     }
 
     int HashTableEq_O::sxhashKey(T_sp obj,int bound,bool willAddKey) const
-    {_OF();
+    {
+	HashGenerator hg;
 #ifdef USE_MPS
+        // I do this again in sxhash_eq - I should only do it once!!!!!
         if ( willAddKey && obj.pointerp() ) {
             void* blockAddr = SmartPtrToBasePtr(obj);
             mps_ld_add(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker))
                        ,gctools::_global_arena,blockAddr);
         }
-#endif
-	HashGenerator hg;
-#ifdef USE_MPS
         HashTable_O::sxhash_eq(hg,obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)) : NULL );
 #else
         HashTable_O::sxhash_eq(hg,obj,NULL);

@@ -43,6 +43,9 @@ local unity_sources =
       all.cc ;
 
 local sources = 
+      weakKeyMapping.cc
+      weakHashTable.cc
+      weakPointer.cc
     activationFrame.cc
 	    environment.cc 
 		objectSet.cc
@@ -90,7 +93,6 @@ local sources =
 	    str.cc
       unixfsys.cc
 	    primitives.cc
-      weakHashTable.cc
 	    sourceFileInfo.cc
       lisp.cc
 	    symbolList.cc
@@ -151,7 +153,6 @@ local sources =
 	    loadTimeValues.cc
 #	    python_wrappers.cc
 	    arrayObjects.cc
-#	    weakReference.cc
 #	    model.cc 
 #	    symbolVector.cc
 	    symbolSet.cc

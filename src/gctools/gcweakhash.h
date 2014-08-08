@@ -47,117 +47,242 @@
 
 namespace gctools {
 
+    typedef enum { WeakBucketKind, WeakPointerKind, WeakMappingKind } WeakKinds;
 
-    template <class T,class U>
-    struct Buckets {
-        Buckets(int l) : length(l)
-                       , used(0)
-                       , deleted(0) 
-        {
-            for (size_t i(0); i<l; ++i ) {
-                this->bucket[i] = T(T::unused);
-            }
-        }
-
-        size_t size() const { return this->length.fixnum();};
-        T& operator[](size_t idx) { return this->bucket[idx];};
-        typedef T   value_type;
-        Buckets<U,T>* dependent;  /* the dependent object */
-        gctools::tagged_ptr<gctools::Fixnum_ty> length;                /* number of buckets (tagged) */
-        gctools::tagged_ptr<gctools::Fixnum_ty> used;                  /* number of buckets in use (tagged) */
-        gctools::tagged_ptr<gctools::Fixnum_ty> deleted;               /* number of deleted buckets (tagged) */
-        T bucket[0];              /* hash buckets */
+    struct WeakObject {
+        typedef gctools::tagged_ptr<gctools::Fixnum_ty> KindType;
+        WeakObject(WeakKinds k) : Kind(gctools::tagged_ptr<gctools::Fixnum_ty>(k)) {};
+        KindType Kind;
     };
 
-#if 0
-    template <typename KeyType>
-    typedef unsigned long (*HashFn<KeyType>)(KeyType obj, LocationDependencyPtrT ld);
+
+    template <class T,class U>
+    struct BucketsBase : public WeakObject {
+        BucketsBase(int l) : WeakObject(WeakBucketKind)
+                           , _length(l)
+                           , _used(gctools::tagged_ptr<gctools::Fixnum_ty>(0))
+                           , _deleted(gctools::tagged_ptr<gctools::Fixnum_ty>(0))
+        {
+            for (size_t i(0); i<l; ++i ) this->bucket[i] = T(T::unbound);
+        }
+
+        virtual ~BucketsBase() {};
+
+        T& operator[](size_t idx) { return this->bucket[idx];};
+        typedef T   value_type;
+        BucketsBase<U,T>* dependent;  /* the dependent object */
+        gctools::tagged_ptr<gctools::Fixnum_ty> _length;                /* number of buckets (tagged) */
+        gctools::tagged_ptr<gctools::Fixnum_ty> _used;                  /* number of buckets in use (tagged) */
+        gctools::tagged_ptr<gctools::Fixnum_ty> _deleted;               /* number of deleted buckets (tagged) */
+        T bucket[0];              /* hash buckets */
+
+        int length() const { return this->_length.fixnum(); };
+        int used() const { return this->_used.fixnum(); };
+        void setUsed(int val) { this->_used = gctools::tagged_ptr<gctools::Fixnum_ty>(val); };
+        int deleted() const { return this->_deleted.fixnum(); };
+        void setDeleted(int val) { this->_deleted = gctools::tagged_ptr<gctools::Fixnum_ty>(val); };
+    };
+
+
+    template <class T, class U, class Link>
+    struct Buckets;
+
+    template <class T,class U>
+    struct Buckets<T,U,WeakLinks> : public BucketsBase<T,U> {
+        typedef typename BucketsBase<T,U>::value_type value_type;
+        Buckets(int l) : BucketsBase<T,U>(l) {};
+        virtual ~Buckets() {
+#ifdef USE_BOEHM
+            for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
+                if (this->bucket[i].pointerp()) {
+                    int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[i].base_ref().px_ref()));
+                    if ( !result ) {
+                        THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+                    }
+                }
+            }
 #endif
+        }
 
-
-    template <class KeyType, class ValueType, class KeyBucketsAllocator, class ValueBucketsAllocator >
-    class WeakHashTable {
-    public:
-//  type_t type;                  /* TYPE_TABLE */
-//  cmp_t cmp;                    /* comparison function */
+        void set(size_t idx, const value_type& val) {
+#ifdef USE_BOEHM
+            if (this->bucket[idx].pointerp()) {
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].base_ref().px_ref()));
+                if (!result) {
+                    THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+                }
+            }
+            if (val.pointerp()) {
+                this->bucket[idx] = val;
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].base_ref().px_ref())
+                                                      ,reinterpret_cast<void*>(this->bucket[idx].base_ref().px_ref()));
+            } else {
+                this->bucket[idx] = val;
+            }
+#endif
 #ifdef USE_MPS
-        mps_ld_s ld;                  /* location dependency */
-        mps_ap_t key_ap, value_ap;    /* allocation points for keys and values */
-#endif 
+            this->bucket[idx] = val;
+#endif
+        }
+    };
+
+
+    template <class T,class U>
+    struct Buckets<T,U,StrongLinks> : public BucketsBase<T,U> {
+        typedef typename BucketsBase<T,U>::value_type value_type;
+        Buckets(int l) : BucketsBase<T,U>(l) {};
+        virtual ~Buckets() {}
+        void set(size_t idx, const value_type& val) {
+            this->bucket[idx] = val;
+        }
+    };
+
+
+    template <class KeyBucketsType, class ValueBucketsType >
+    class WeakHashTable {
+        friend class core::WeakKeyHashTable_O;
+    protected:
+        typedef WeakHashTable<KeyBucketsType,ValueBucketsType> MyType;
+        typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
+        typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
     public:
-        typedef Buckets<KeyType,ValueType>    KeyBucketsType;
-        typedef Buckets<ValueType,KeyType>  ValueBucketsType;
-    private:
-//    HashFn<KeyType>             hashFunction;                  /* hash function */
         KeyBucketsType*           Keys;           // hash buckets for keys
         ValueBucketsType*         Values;         // hash buckets for values
-
     public:
-        WeakHashTable() : Keys(NULL), Values(NULL) {};
-
-        size_t size() const { return this->Keys ? this->Keys->size() : 0; };
-        KeyType& keyAt(size_t idx)  { return (*this->Keys)[idx]; };
-        ValueType& valueAt(size_t idx)  { return (*this->Values)[idx]; };
-        void set(size_t idx, const KeyType& key, const ValueType& val) {
-            (*this->Keys)[idx] = key;
-            void** ptr = reinterpret_cast<void**>(&(*this->Keys)[idx].base_ref().px_ref());
-            KeyBucketsAllocator::weakLink(ptr);
-            (*this->Values)[idx] = val;
-        };
-
-#if 0
-        int find(KeyType key, bool willAdd, size_t& b)
-        {
-            //int buckets_find(buckets_t buckets, obj_t key, mps_ld_t ld, size_t *b)
-            unsigned long i, h, probe;
-            unsigned long l = buckets->length.fixnum() - 1;
-            int result = 0;
-            h = this->hashFunction(key, willAdd ? this->ld : NULL );
-            probe = (h >> 8) | 1;
-            h &= l;
-            i = h;
-            do {
-                obj_t k = this->Keys->bucket[i];
-                if(k.unboundp() || this->cmp(k, key)) {
-                    *b = i;
-                    return 1;
-                }
-                if(result == 0 && k.deletedp()) {
-                    *b = i;
-                    result = 1;
-                }
-                i = (i+probe) & l;
-            } while(i != h);
-            return result;
-        }
-#endif
-
         WeakHashTable(size_t length=0)
         {
-#if 0
-            mps_addr_t addr;
-            size_t l, size = ALIGN_OBJ(sizeof(table_s));
-            do {
-                mps_res_t res = mps_reserve(&addr, obj_ap, size);
-                if (res != MPS_RES_OK) error("out of memory in make_table");
-                obj = addr;
-                obj->table.type = TYPE_TABLE;
-                obj->table.keys = obj->table.values = NULL;
-            } while(!mps_commit(obj_ap, addr, size));
-#endif
             /* round up to next power of 2 */
             if ( length == 0 ) length = 2;
             size_t l;
             for( l = 1; l < length; l *= 2);
-            this->Keys = KeyBucketsAllocator::allocate(l);
-            this->Values = ValueBucketsAllocator::allocate(l);
+            this->Keys = KeyBucketsAllocatorType::allocate(l);
+            this->Values = ValueBucketsAllocatorType::allocate(l);
             this->Keys->dependent = this->Values;
             this->Values->dependent = this->Keys;
 #ifdef USE_MPS
             mps_ld_reset(&this->ld, _global_arena);
 #endif
         }
+
+        size_t length() const {
+            if ( this->Keys==NULL ) {
+                THROW_HARD_ERROR(BF("Keys should never be null"));
+            }
+            return this->Keys->length();
+        }
+
+        void swap(MyType& other)
+        {
+            KeyBucketsType* tempKeys = this->Keys;;
+            ValueBucketsType* tempValues = this->Values;
+            this->Keys = other.Keys;
+            this->Values = other.Values;
+            other.Keys = tempKeys;
+            other.Values = tempValues;
+        }
+            
     };
+
+
+
+
+// ======================================================================
+// ----------------------------------------------------------------------
+
+
+    template <class T,class U>
+    struct MappingBase : public WeakObject {
+        MappingBase(int l) : WeakObject(WeakMappingKind), bucket(T(T::unbound)) {};
+        virtual ~MappingBase() {};
+        typedef T   value_type;
+        MappingBase<U,T>* dependent;  /* the dependent object */
+        T bucket;              /* single buckets */
+    };
+
+
+    template <class T, class U, class Link>
+    struct Mapping;
+
+    template <class T,class U>
+    struct Mapping<T,U,WeakLinks> : public MappingBase<T,U> {
+        typedef typename MappingBase<T,U>::value_type value_type;
+        Mapping() : MappingBase<T,U>() {};
+        virtual ~Mapping() {
+#ifdef USE_BOEHM
+            if (this->bucket.pointerp()) {
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref()));
+                if ( !result ) {
+                    THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+                }
+            }
+#endif
+        }
+
+        void set(const value_type& val) {
+#ifdef USE_BOEHM
+            if (this->bucket.pointerp()) {
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref()));
+                if (!result) {
+                    THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+                }
+            }
+            if (val.pointerp()) {
+                this->bucket = val;
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref())
+                                                      ,reinterpret_cast<void*>(this->bucket.base_ref().px_ref()));
+            } else {
+                this->bucket = val;
+            }
+#endif
+#ifdef USE_MPS
+            this->bucket = val;
+#endif
+        }
+    };
+
+
+    template <class T,class U>
+    struct Mapping<T,U,StrongLinks> : public MappingBase<T,U> {
+        typedef typename MappingBase<T,U>::value_type value_type;
+        Mapping() : MappingBase<T,U>() {};
+        virtual ~Mapping() {}
+        void set(const value_type& val) {
+            this->bucket = val;
+        }
+    };
+
+
+
+    template <class KeyType, class ValueType >
+    class WeakKeyMappingPair {
+        friend class core::WeakKeyMapping_O;
+    protected:
+        typedef WeakKeyMappingPair<KeyType,ValueType> MyType;
+        typedef gctools::GCBucketAllocator<KeyType> KeyAllocatorType;
+        typedef gctools::GCBucketAllocator<ValueType> ValueAllocatorType;
+    public:
+        KeyType*           Key;           // hash buckets for keys
+        ValueType*         Value;         // hash buckets for values
+    public:
+        WeakKeyMappingPair()
+        {
+            this->Key = KeyAllocatorType::allocate();
+            this->Value = ValueAllocatorType::allocate();
+            this->Key->dependent = this->Value;
+            this->Value->dependent = this->Key;
+        }
+        void swap(MyType& other)
+        {
+            KeyType* tempKey = this->Key;;
+            ValueType* tempValue = this->Value;
+            this->Key = other.Key;
+            this->Value = other.Value;
+            other.Key = tempKey;
+            other.Value = tempValue;
+        }
+    };
+
+
 
 
 
@@ -325,6 +450,8 @@ namespace gctools {
         return NULL;
     }
 
+
+
     static int table_try_set(obj_t tbl, obj_t key, obj_t value)
     {
         size_t b;
@@ -460,6 +587,42 @@ namespace gctools {
  * method that uses them to fix those variables. See topic/root.
  */
 #endif
+
+    template <typename T>
+    struct WeakPointer : public WeakObject {
+        typedef T value_type;
+        WeakPointer(const T& val) : WeakObject(WeakPointerKind), value(val) {};
+        T      value;
+    };
+       
+
+    template <typename T,typename Allocator>
+    struct WeakPointerManager {
+        WeakPointerManager(const T& val) {
+            this->pointer = GCWeakPointerAllocator<WeakPointer<T>>::allocate(val);
+            if ( this->pointer->value.pointerp() ) {
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.base_ref().px_ref())
+                                                      , reinterpret_cast<void*>(this->pointer->value.base_ref().px_ref()));
+            }
+        }
+        virtual ~WeakPointerManager() {
+#ifdef USE_BOEHM
+            if (this->pointer->value.pointerp()) {
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.base_ref().px_ref()));
+                if ( !result ) {
+                    THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
+                }
+            }
+#endif
+        };
+
+        // This will need to be a tagged_backcastable_base_ptr
+        WeakPointer<T>*      pointer;
+        T value() const { return this->pointer->value; };
+        bool valid() const { return !this->pointer->value.NULLp(); };
+    };
+
+
 
 };
 

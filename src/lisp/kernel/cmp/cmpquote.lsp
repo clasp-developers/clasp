@@ -13,7 +13,7 @@
 
 
 (defvar *run-time-literal-holder-name* "<default>")
-(defvar *run-time-literal-holder* (load-time-value-array *run-time-literal-holder-name* 1024)
+(defvar *run-time-literal-holder* (load-time-value-array *run-time-literal-holder-name* 0)
   "Stores the literal values for the default module that COMPILE compiles functions into")
 (core::set-run-time-values-vector *run-time-literal-holder-name*)
 
