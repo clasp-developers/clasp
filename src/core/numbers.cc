@@ -1732,6 +1732,16 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	return Bignum_O::create(z);
     }
 
+    Integer_sp Integer_O::create(size_t v)
+    {_G();
+	if ( v <= MOST_POSITIVE_FIXNUM )
+	{
+	    return Fixnum_O::create((int)v);
+	}
+	Bignum z(v);
+	return Bignum_O::create(z);
+    }
+
 
     Integer_sp Integer_O::create(uint64_t v)
     {_G();

@@ -496,7 +496,8 @@ namespace core
     class Stream_O;
     class SourcePosInfo_O;
     class SourceFileInfo_O;
-
+    class WeakKeyHashTable_O;
+    class WeakKeyMapping_O;
     class DynamicScopeManager;
 
     class Functoid;

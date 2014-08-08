@@ -887,17 +887,30 @@ namespace gctools {
 
 
 
-#ifdef USE_AWL_POOL
 namespace gctools {
+
+#ifdef USE_BOEHM
+    inline void BoehmWeakLinkDebugFinalizer(void* base, void* data) {
+        printf("%s:%d Boehm finalized weak linked address %p at %p\n", __FILE__, __LINE__, base, data );
+    }
+#endif
+
+
+
 
     struct WeakLinks {};
     struct StrongLinks {};
 
-    template <class TY, class LinkType >
-    class GCBucketAllocator /* : public GCAlloc<TY> */ {
-    public:
+    template <class KT, class VT, class LT>
+    struct Buckets;
 
-        // type definitions
+    template <class TY>
+    class GCBucketAllocator /* : public GCAlloc<TY> */ {};
+
+    template <class VT>
+    class GCBucketAllocator<Buckets<VT,VT,WeakLinks>> {
+    public:
+        typedef Buckets<VT,VT,WeakLinks>       TY;
         typedef TY                container_type;
         typedef container_type*   container_pointer;
         typedef typename container_type::value_type          value_type;
@@ -913,8 +926,6 @@ namespace gctools {
          */
         GCBucketAllocator() throw() {}
         GCBucketAllocator(const GCBucketAllocator&) throw() {}
-        template <class U>
-        GCBucketAllocator(const GCBucketAllocator<U,LinkType>&) throw() {}
         ~GCBucketAllocator() throw() {}
 
         // return maximum number of elements that can be allocated
@@ -925,10 +936,12 @@ namespace gctools {
         // allocate but don't initialize num elements of type value_type
         static container_pointer allocate (size_type num, const void* = 0) {
 #ifdef USE_BOEHM
+            printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__ );
             size_t newBytes = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
-            container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
+            container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(newBytes);
             if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
             new (myAddress) container_type(num);
+            printf("%s:%d Check if Buckets has been initialized to unbound\n", __FILE__, __LINE__ );
             return myAddress;
 #endif
 #ifdef USE_MPS
@@ -937,33 +950,18 @@ namespace gctools {
             container_pointer myAddress(NULL);
             size_t size = sizeof_container_with_header<container_type>(num);
             do {
-                mps_res_t res = mps_reserve(&addr,_global_automatic_weak_link_allocation_point,size);
-                if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCContainerAllocator_mps"));
+                mps_res_t res = mps_reserve(&addr,_global_weak_link_allocation_point,size);
+                if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
                 HeadT* header = reinterpret_cast<HeadT*>(addr);
                 new (header) HeadT(GCKind<TY>::Kind);
                 myAddress = BasePtrToMostDerivedPtr<container_type>(addr);
                 new (myAddress) container_type(num);
             }
-            while (!mps_commit(_global_automatic_weak_link_allocation_point,addr,size));
+            while (!mps_commit(_global_weak_link_allocation_point,addr,size));
             GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
             return myAddress;
 #endif
         }
-
-        /*! Register that this is a weak pointer
-          On Boehm that means call GC_register_disappearing_link on it
-          On MPS we don't do anything */
-        static void weakLink(void** ptr)
-        {
-#ifdef USE_BOEHM
-            int res = GC_register_disappearing_link(ptr);
-            printf("%s:%d  Registered disappearing link %p  return val = %d\n", __FILE__, __LINE__, ptr, res );
-#endif
-#ifdef USE_MPS
-            // nothing
-#endif
-        }
-
 
         // initialize elements of allocated storage p with value value
         template <typename...ARGS>
@@ -983,8 +981,233 @@ namespace gctools {
             // Do nothing
         }
     };
+
+
+    //
+    // Specialize for strong links
+    //
+    template <class VT>
+    class GCBucketAllocator<Buckets<VT,VT,StrongLinks>> {
+    public:
+        typedef Buckets<VT,VT,StrongLinks>       TY;
+        typedef TY                container_type;
+        typedef container_type*   container_pointer;
+        typedef typename container_type::value_type          value_type;
+        typedef value_type*       pointer;
+        typedef const value_type* const_pointer;
+        typedef value_type&       reference;
+        typedef const value_type& const_reference;
+        typedef std::size_t      size_type;
+        typedef std::ptrdiff_t   difference_type;
+
+        /* constructors and destructor
+         * - nothing to do because the allocator has no state
+         */
+        GCBucketAllocator() throw() {}
+        GCBucketAllocator(const GCBucketAllocator&) throw() {}
+        ~GCBucketAllocator() throw() {}
+
+        // return maximum number of elements that can be allocated
+        size_type max_size () const throw() {
+            return std::numeric_limits<std::size_t>::max() / sizeof(value_type);
+        }
+
+        // allocate but don't initialize num elements of type value_type
+        static container_pointer allocate (size_type num, const void* = 0) {
+#ifdef USE_BOEHM
+            printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__ );
+            size_t newBytes = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
+            container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
+            if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
+            new (myAddress) container_type(num);
+            return myAddress;
+#endif
+#ifdef USE_MPS
+            typedef typename GCHeader<TY>::HeaderType HeadT;
+            mps_addr_t  addr;
+            container_pointer myAddress(NULL);
+            size_t size = sizeof_container_with_header<container_type>(num);
+            do {
+                mps_res_t res = mps_reserve(&addr,_global_strong_link_allocation_point,size);
+                if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
+                HeadT* header = reinterpret_cast<HeadT*>(addr);
+                new (header) HeadT(GCKind<TY>::Kind);
+                myAddress = BasePtrToMostDerivedPtr<container_type>(addr);
+                new (myAddress) container_type(num);
+            }
+            while (!mps_commit(_global_strong_link_allocation_point,addr,size));
+            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            return myAddress;
+#endif
+        }
+
+        // initialize elements of allocated storage p with value value
+        template <typename...ARGS>
+        void construct (pointer p, ARGS&&...args) {
+            // initialize memory with placement new
+            THROW_HARD_ERROR(BF("What do I do here"));
+//            new((void*)p)value_type(args...);
+        }
+
+        // destroy elements of initialized storage p
+        void destroy (pointer p) {
+            // Do nothing
+        }
+
+        // deallocate storage p of deleted elements
+        void deallocate (container_pointer p, size_type num) {
+            // Do nothing
+        }
+    };
+
+
+
+
+
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+
+    template <class KT, class VT, class LT>
+    struct Mapping;
+
+    template <class TY>
+    class GCMappingAllocator /* : public GCAlloc<TY> */ {};
+
+    template <class VT>
+    class GCMappingAllocator<Mapping<VT,VT,WeakLinks>> {
+    public:
+        typedef Mapping<VT,VT,WeakLinks>       TY;
+        typedef TY                container_type;
+        typedef TY*             container_pointer;
+        /* constructors and destructor
+         * - nothing to do because the allocator has no state
+         */
+        GCMappingAllocator() throw() {}
+        GCMappingAllocator(const GCMappingAllocator&) throw() {}
+        ~GCMappingAllocator() throw() {}
+
+
+        // allocate but don't initialize num elements of type value_type
+        static container_pointer allocate () {
+#ifdef USE_BOEHM
+            printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__ );
+            size_t newBytes = sizeof(container_type);
+            container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(newBytes);
+            if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
+            new (myAddress) container_type();
+            printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__ );
+            return myAddress;
+#endif
+#ifdef USE_MPS
+            typedef typename GCHeader<TY>::HeaderType HeadT;
+            mps_addr_t  addr;
+            container_pointer myAddress(NULL);
+            size_t size = sizeof(container_type);
+            do {
+                mps_res_t res = mps_reserve(&addr,_global_weak_link_allocation_point,size);
+                if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCMappingAllocator_mps"));
+                myAddress = reinterpret_cast<container_pointer>(addr);
+                new (myAddress) container_type();
+            }
+            while (!mps_commit(_global_weak_link_allocation_point,addr,size));
+            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            return myAddress;
+#endif
+        }
+
+    };
+
+
+
+    template <class VT>
+    class GCMappingAllocator<Mapping<VT,VT,StrongLinks>> {
+    public:
+        typedef Mapping<VT,VT,StrongLinks>       TY;
+        typedef TY                container_type;
+        typedef TY*             container_pointer;
+        /* constructors and destructor
+         * - nothing to do because the allocator has no state
+         */
+        GCMappingAllocator() throw() {}
+        GCMappingAllocator(const GCMappingAllocator&) throw() {}
+        ~GCMappingAllocator() throw() {}
+
+
+        // allocate but don't initialize num elements of type value_type
+        static container_pointer allocate () {
+#ifdef USE_BOEHM
+            printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__ );
+            size_t newBytes = sizeof(container_type);
+            container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
+            if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
+            new (myAddress) container_type();
+            printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__ );
+            return myAddress;
+#endif
+#ifdef USE_MPS
+            typedef typename GCHeader<TY>::HeaderType HeadT;
+            mps_addr_t  addr;
+            container_pointer myAddress(NULL);
+            size_t size = sizeof(container_type);
+            do {
+                mps_res_t res = mps_reserve(&addr,_global_strong_link_allocation_point,size);
+                if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCMappingAllocator_mps"));
+                myAddress = reinterpret_cast<container_pointer>(addr);
+                new (myAddress) container_type();
+            }
+            while (!mps_commit(_global_weak_link_allocation_point,addr,size));
+            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            return myAddress;
+#endif
+        }
+
+    };
+
+
+
+
+    template <class VT>
+    class GCWeakPointerAllocator {
+    public:
+        typedef VT* value_pointer;
+        typedef typename VT::value_type contained_type;
+        /* constructors and destructor
+         * - nothing to do because the allocator has no state
+         */
+        GCWeakPointerAllocator() throw() {}
+        GCWeakPointerAllocator(const GCWeakPointerAllocator&) throw() {}
+        ~GCWeakPointerAllocator() throw() {}
+
+        // allocate but don't initialize num elements of type value_type
+        static value_pointer allocate (const contained_type& val) {
+#ifdef USE_BOEHM
+            printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__ );
+            size_t newBytes = sizeof(VT);
+            value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(newBytes);
+            if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
+            new (myAddress) VT(val);
+            return myAddress;
+#endif
+#ifdef USE_MPS
+            mps_addr_t  addr;
+            size_t size = sizeof(VT);
+            do {
+                mps_res_t res = mps_reserve(&addr,_global_weak_pointer_allocation_point,size);
+                if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCWeakPointerAllocator_mps"));
+            }
+            while (!mps_commit(_global_weak_link_allocation_point,addr,size));
+            value_pointer myAddress = reinterpret_cast<value_pointer>(addr);
+            return myAddress;
+#endif
+        }
+    };
+
+
+
+
 };
-#endif // USE_AWL_POOL
     
 
 

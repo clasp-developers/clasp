@@ -6,6 +6,8 @@
 
 #define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x)
 
+#define USE_WEAK_POINTER
+
 
 #ifdef USE_BOEHM
 #include "gc/gc.h"
@@ -14,6 +16,8 @@
 #endif // USE_BOEHM
 
 #ifdef USE_MPS
+
+
 extern "C" 
 {
 #include "mps/code/mps.h"
@@ -219,7 +223,12 @@ namespace gctools {
     template <typename T>
     void* SmartPtrToBasePtr(smart_ptr<T> obj)
     {
-        void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.pbase()) - sizeof(Header_s));
+        void* ptr;
+        if ( obj.pointerp() ) {
+            ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.pbase()) - sizeof(Header_s));
+        } else {
+            ptr = reinterpret_cast<void*>(obj.px_ref());
+        }
         return ptr;
     }
 
@@ -255,6 +264,7 @@ namespace gctools {
 
 
 #include "gcalloc.h"
+#include "gcweakhash.h"
 
 
 #define GC_ALLOCATE(_class_,_obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()

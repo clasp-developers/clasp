@@ -340,8 +340,8 @@ namespace gctools {
     {_G();
         string smsg = "Total";
         if ( msg.notnilp() ) {
-        smsg = msg->get();
-    }
+            smsg = msg->get();
+        }
 #ifdef USE_MPS
         mps_word_t numCollections = mps_collections(gctools::_global_arena);
         size_t arena_committed = mps_arena_committed(gctools::_global_arena);
@@ -383,10 +383,10 @@ namespace gctools {
         totalSize += dumpResults("Reachable LispKinds", "lisp", static_ReachableLispKinds);
         totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
         printf("Done walk of memory  %lu ClassKinds   %lu LispKinds   %lu ContainerKinds   %lu StringKinds\n",
-            static_ReachableClassKinds->size(),
-            static_ReachableLispKinds->size(),
-            static_ReachableContainerKinds->size(),
-            static_ReachableStringKinds->size() );
+               static_ReachableClassKinds->size(),
+               static_ReachableLispKinds->size(),
+               static_ReachableContainerKinds->size(),
+               static_ReachableStringKinds->size() );
         printf("%s invalidHeaderTotalSize = %12lu\n", smsg.c_str(), invalidHeaderTotalSize );
         printf("%s memory usage (bytes):    %12lu\n", smsg.c_str(), totalSize );
         printf("%s GC_get_heap_size()       %12lu\n", smsg.c_str(),GC_get_heap_size() );

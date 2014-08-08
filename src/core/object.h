@@ -11,6 +11,7 @@
 
 
 #include "foundation.h"
+#include "newhash.h"
 #include "commonLispPackage.fwd.h"
 #include "corePackage.fwd.h"
 #include "keywordPackage.fwd.h"
@@ -380,7 +381,8 @@ namespace core
 	    unsigned long hash = 5381;
 	    for ( int i=0; i<this->_NextPartIndex; i++ )
 	    {
-		hash = ((hash << 5) + hash) + this->_Parts[i];
+                hash = hash_word(hash,this->_Parts[i]);
+//		hash = ((hash << 5) + hash) + this->_Parts[i];
 	    }
 	    if ( bound ) return hash % bound;
 	    return hash;

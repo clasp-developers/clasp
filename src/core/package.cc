@@ -724,8 +724,8 @@ namespace core
         // Dump every symbol
         printf("INTERNING symbol[%s]@%p\n", name.c_str(), sym.px_ref() );
 #endif
-#if 0
-	if ( name[0] == '+') // == "+HASH-TABLE-ENTRY-VALUE-HAS-BEEN-DELETED+")
+#if 1
+	if ( name == "WEAK-POINTER") // == "+HASH-TABLE-ENTRY-VALUE-HAS-BEEN-DELETED+")
 	{
 	    printf("%s:%d - Package_O::intern of %s@%p in package %s\n",
 		   __FILE__, __LINE__, name.c_str(), sym.px_ref(), pkg->getName().c_str() );
@@ -737,7 +737,7 @@ namespace core
 
     void Package_O::add_symbol_to_package(const char* symName,  Symbol_sp sym, bool exportp)
     {
-//	trapSymbol(this,sym,sym->_Name->get());
+	if (sym.pointerp()) trapSymbol(this,sym,symName);
 	Bignum_sp nameKey = nameToKey(symName);
 	if ( this->isKeywordPackage() || exportp )
 	{

@@ -21,31 +21,8 @@ namespace core
 #endif // defined(XML_ARCHIVE)
 	DEFAULT_CTOR_DTOR(WeakHashTable_O);
     private: // instance variables here
-    public:
-	static int sxhash_eq(T_sp obj);
+
     public: // Functions here
-
-	virtual T_sp hashTableTest() const { return cl::_sym_eq;};
-	bool keyTest(T_sp entryKey, T_sp searchKey) const;
-
-	int sxhashKey(T_sp key,int bound, bool willAddKey) const;
-
-        virtual int hashTableSize() const {SUBIMP();};
-        virtual void put(int idx, T_sp key, T_sp val) {SUBIMP();};
-        virtual T_mv get(int idx) {SUBIMP();};
-
-
-
-
-	T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>() ) ;
-
-	T_sp hash_table_setf_gethash(T_sp key, T_sp value);
-        void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key,val);};
-
-	void clrhash();
-
-	bool remhash(T_sp key);
-
 
 
     };
@@ -62,45 +39,67 @@ TRANSLATE(core::WeakHashTable_O);
 
 
 
-#if 0
-
 namespace core
 {
 
     FORWARD(WeakKeyHashTable);
-    c l a s s WeakKeyHashTable_O : public WeakHashTable_O
+    class WeakKeyHashTable_O : public WeakHashTable_O
     {
-	L I S P_BASE1(WeakHashTable_O);
-	L I S P_CLASS(core,CorePkg,WeakKeyHashTable_O,"WeakKeyHashTable");
+	LISP_BASE1(WeakHashTable_O);
+	LISP_CLASS(core,CorePkg,WeakKeyHashTable_O,"WeakKeyHashTable");
 #if defined(XML_ARCHIVE)
 	DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
-    private: // instance variables here
+    public: // instance variables here
         typedef gctools::tagged_backcastable_base_ptr<T_O> value_type;
-        gctools::WeakHashTable<value_type
-                               , value_type
-                               , gctools::GCBucketAllocator<gctools::Buckets<value_type,value_type>,gctools::WeakLinks>
-                               , gctools::GCBucketAllocator<gctools::Buckets<value_type,value_type>,gctools::StrongLinks> >
-            _HashTable;
+        typedef gctools::Buckets<value_type,value_type,gctools::WeakLinks> KeyBucketsType;
+        typedef gctools::Buckets<value_type,value_type,gctools::StrongLinks> ValueBucketsType;
+        
+        typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
+        typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
+        typedef gctools::WeakHashTable<KeyBucketsType,ValueBucketsType> HashTableType;
+        HashTableType  _HashTable;
+#ifdef USE_MPS
+        mps_ld_s        _LocationDependency;
+#endif        
+        
     public:
-        WeakKeyHashTable_O() : _HashTable(4) {};
+        WeakKeyHashTable_O() : _HashTable(16) {};
         WeakKeyHashTable_O(uint sz) : _HashTable(sz) {};
     public:
-	static WeakKeyHashTable_sp make(uint sz ); // ,  Number_sp rehashSize, double rehashThreshold);
+//	static WeakKeyHashTable_sp make(uint sz ); // ,  Number_sp rehashSize, double rehashThreshold);
         static WeakKeyHashTable_sp create_default();
     public:
-	static int sxhash_eq(T_sp obj);
+#ifdef USE_MPS
+        static uint sxhashKey(const value_type& key, bool willAddKey, mps_ld_s* locationDependency );
+        static int find(hash_table_type::KeyBucketsType* keys, const value_type& key, bool willAdd, mps_ld_s* ldP, size_t& b );
+#endif
+#ifdef USE_BOEHM
+        static uint sxhashKey(const value_type& key );
+        static int find(KeyBucketsType* keys, const value_type& key, size_t& b );
+#endif
+        int rehash(size_t new_length, const value_type& key, size_t& key_bucket);
+    public:
+        T_mv get(int idx);
+        int trySet(T_sp key, T_sp value);
     public: // Functions here
 
-        virtual int hashTableSize() const;
-        virtual void put(int idx, T_sp key, T_sp val);
-        virtual T_mv get(int idx);
+        virtual int tableSize() const;
+
+        void set( T_sp key, T_sp value );
+
+        bool fullp();
+
 
         void describe(); 
 	virtual T_sp hashTableTest() const { return cl::_sym_eq;};
 	bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
 	int sxhashKey(T_sp key,int bound, bool willAddKey) const;
+
+        T_mv gethash(T_sp key, T_sp defaultValue=_Nil<T_O>());
+	void remhash(T_sp key);
+	void clrhash();
 
 
     };
@@ -113,7 +112,6 @@ template<> struct gctools::GCInfo<core::WeakKeyHashTable_O> {
 };
 
 TRANSLATE(core::WeakKeyHashTable_O);
-#endif
 
 
 

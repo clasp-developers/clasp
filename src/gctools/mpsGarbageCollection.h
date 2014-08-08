@@ -313,10 +313,8 @@ namespace gctools {
     extern mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
     extern mps_ap_t global_non_moving_ap;
 
-#ifdef USE_AWL_POOL
     extern mps_pool_t _global_awl_pool;
     extern mps_ap_t _global_automatic_weak_link_allocation_point;
-#endif
 
 
     template <typename T> struct GCAllocationPoint
