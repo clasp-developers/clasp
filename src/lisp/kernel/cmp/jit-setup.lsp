@@ -8,6 +8,8 @@
   (select-package :cmp))
 
 
+(defconstant +debug-dwarf-version+ 4)
+
 
 (defun generate-target-triple ()
   "Uses *features* to generate the target triple for the current machine
