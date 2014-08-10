@@ -574,22 +574,11 @@ namespace core
 
     Cons_sp Cons_create_loc(T_sp car, T_sp cdr, const char* fileName, int line);
 
-#if 0
-/*! Create SourceCodeCons with location information tied to where the macro is defined */
-#define HERE_scCONS_CREATE(car) SourceCodeCons_O::create(car,_Nil<Cons_O>(),__LINE__,0,SourceFileInfo_O::getOrCreate(__FILE__),_lisp)
-#define HERE_scCONS_CREATE2(car,cdr) SourceCodeCons_O::create(car,cdr,__LINE__,0,SourceFileInfo_O::getOrCreate(__FILE__),_lisp)
-#define HERE_scCONS_CREATE_LIST2(c1,c2) SourceCodeCons_O::createList(c1,c2,__LINE__,0,SourceFileInfo_O::getOrCreate(__FILE__))
-#define HERE_scCONS_CREATE_LIST3(c1,c2,c3) SourceCodeCons_O::createList(c1,c2,c3,__LINE__,0,SourceFileInfo_O::getOrCreate(__FILE__))
-#define HERE_scCONS_CREATE_LIST4(c1,c2,c3,c4) SourceCodeCons_O::createList(c1,c2,c3,c4,__LINE__,0,SourceFileInfo_O::getOrCreate(__FILE__))
-#else
-
 #define HERE_scCONS_CREATE(car) Cons_O::create(car,_Nil<Cons_O>())
 #define HERE_scCONS_CREATE2(car,cdr) Cons_O::create(car,cdr)
 #define HERE_scCONS_CREATE_LIST2(c1,c2) Cons_O::createList(c1,c2)
 #define HERE_scCONS_CREATE_LIST3(c1,c2,c3) Cons_O::createList(c1,c2,c3)
 #define HERE_scCONS_CREATE_LIST4(c1,c2,c3,c4) Cons_O::createList(c1,c2,c3,c4)
-
-#endif
 };
 
 
