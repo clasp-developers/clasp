@@ -657,6 +657,12 @@ namespace core
     }
 
 
+    uint lisp_hash(uintptr_t x) 
+    {
+        HashGenerator hg;
+        hg.addPart(x);
+        return hg.hash();
+    }
 
     T_sp lisp_true()
     {

@@ -4,6 +4,7 @@
 
 namespace gctools {
 
+#if 0
     /*! Does not need safeRun */
     uint WeakHashTable::sxhashKey(const value_type& key
 #ifdef USE_MPS
@@ -22,8 +23,11 @@ namespace gctools {
         hg.addPart(reinterpret_cast<uintptr_t>(key.base_ref().px_ref()));
         return hg.hash();
     }
+#endif
 
 
+
+#if 0
     /*! No need to use safeRun - callers do that */
     int WeakHashTable::find(KeyBucketsType* keys, const value_type& key
 #ifdef USE_MPS
@@ -67,8 +71,9 @@ namespace gctools {
         } while(i != h);
         return result;
     }
+#endif
 
-
+#if 0
     /*! No need to safeRun this - WeakHashTable::set does that */
     int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value)
     {
@@ -97,7 +102,7 @@ namespace gctools {
         (*this->_Values).set(b,value_type(value));
         return 1;
     }
-
+#endif
 
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
@@ -108,7 +113,7 @@ namespace gctools {
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
-
+#if 0
     int WeakHashTable::rehash(size_t newLength, const value_type& key, size_t& key_bucket)
     {
         int result;
@@ -153,17 +158,17 @@ namespace gctools {
             } );
         return result;
     }
+#endif
 
 
-
-
+#if 0
 /* %%MPS: If we fail to find 'key' in the table, and if mps_ld_isstale
  * returns true, then some of the keys in the table might have been
  * moved by the garbage collector: in this case we need to re-hash the
  * table. See topic/location.
  * Return (values value t) or (values nil nil)
  */
-    core::T_mv WeakHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue)
+    core::T_mv WeakHashTable::htgethash(core::T_sp tkey, core::T_sp defaultValue)
     {
         core::T_mv result_mv;
         safeRun<void()>( [&result_mv,this,tkey,defaultValue] ()->void
@@ -206,9 +211,9 @@ namespace gctools {
             } );
         return result_mv;
     }
+#endif
 
-
-
+#if 0
     void WeakHashTable::set( core::T_sp key, core::T_sp value )
     {
         safeRun<void()>(
@@ -228,7 +233,9 @@ namespace gctools {
                 }
             });
     }
+#endif
 
+#if 0
     void WeakHashTable::remhash( core::T_sp tkey )
     {
         safeRun<void()>( [this,tkey] ()->void
@@ -264,9 +271,9 @@ namespace gctools {
                 }
             } );
     }
+#endif
 
-
-
+#if 0
     void WeakHashTable::clrhash()
     {
         safeRun<void()>( [this] ()->void
@@ -286,7 +293,7 @@ namespace gctools {
 #endif
             } );
     };
-
+#endif
 
 
 };
