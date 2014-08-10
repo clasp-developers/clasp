@@ -654,6 +654,7 @@ namespace core {
 
 namespace core {
     core::T_sp lisp_true();
+    uint lisp_hash(uintptr_t v);
 };
 
 #include "gctools/gcweak.h"
