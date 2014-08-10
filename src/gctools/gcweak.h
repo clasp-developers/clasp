@@ -644,14 +644,19 @@ namespace gctools {
     };
        
 
-    template <typename T,typename Allocator>
     struct WeakPointerManager {
-        WeakPointerManager(const T& val) {
-            this->pointer = GCWeakPointerAllocator<WeakPointer<T>>::allocate(val);
+        typedef gctools::tagged_backcastable_base_ptr<core::T_O> value_type;
+        typedef WeakPointerManager MyType;
+        typedef gctools::GCWeakPointerAllocator<WeakPointer<value_type> > AllocatorType;
+
+        WeakPointerManager(const value_type& val) {
+            this->pointer = AllocatorType::allocate(val);
+#ifdef USE_BOEHM
             if ( this->pointer->value.pointerp() ) {
                 GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.base_ref().px_ref())
                                                       , reinterpret_cast<void*>(this->pointer->value.base_ref().px_ref()));
             }
+#endif
         }
         virtual ~WeakPointerManager() {
 #ifdef USE_BOEHM
@@ -665,9 +670,30 @@ namespace gctools {
         };
 
         // This will need to be a tagged_backcastable_base_ptr
-        WeakPointer<T>*      pointer;
-        T value() const { return this->pointer->value; };
-        bool valid() const { return !this->pointer->value.NULLp(); };
+        WeakPointer<value_type>*      pointer;
+        core::T_mv value() const { 
+            core::T_mv result_mv;
+            safeRun<void()>( [&result_mv,this] ()->void
+                {
+                    if (!this->pointer->value.NULLp()) {
+                        result_mv = Values(gctools::smart_ptr<core::T_O>(this->pointer->value.backcast()),core::lisp_true());
+                        return;
+                    }
+                    result_mv = Values(_Nil<core::T_O>(),_Nil<core::T_O>());
+                } );
+            return result_mv;
+        }
+
+        bool valid() const
+        {
+            bool result;
+            safeRun<void()>( [&result,this] ()->void
+                {
+                    result = !this->pointer->value.NULLp();
+                } );
+            return result;
+        }
+
     };
 
 

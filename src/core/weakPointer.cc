@@ -66,17 +66,14 @@ namespace core
 
 
     bool WeakPointer_O::valid() const
-    {_OF();
+    {
         return this->_WeakObject.valid();
     }
 
     /*! Return (values value t) or (values nil nil) */
     T_mv WeakPointer_O::value() const
-    {_OF();
-        if (!this->valid()) {
-            return Values(_Nil<T_O>(),_Nil<T_O>());
-        }
-        return Values(gctools::smart_ptr<T_O>(this->_WeakObject.value().backcast()),_lisp->_true());
+    {
+        return this->_WeakObject.value();
     }
 
 
