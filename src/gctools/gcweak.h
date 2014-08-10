@@ -352,13 +352,15 @@ namespace gctools {
             other.Value = tempValue;
         }
 
-
+        bool unsafeValid() const {
+            return !this->Key->bucket.NULLp() && !this->Key->bucket.unboundp();
+        }
         bool valid() const
         {
             bool result;
             safeRun<void()>( [&result,this] ()->void
                 {
-                    result = !this->Key->bucket.NULLp() && !this->Key->bucket.unboundp();
+                    result = this->unsafeValid();
                 } );
             return result;
         };
@@ -370,7 +372,7 @@ namespace gctools {
             safeRun<void()>( [&result_mv,this] ()->void
                 {   
             
-                    if (!this->valid()) {
+                    if (!this->unsafeValid()) {
                         result_mv = Values(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>());
                         return;
                     }
