@@ -645,11 +645,14 @@ namespace core {
     typedef gctools::smart_ptr<SourceFileInfo_O>  SourceFileInfo_sp;
 };
 
+
 #include "gctools/containers.h"
 
 
 
 #include "multipleValues.h"
+
+#include "gctools/gcweak.h"
 
 #include "gctools/managedStatic.h"
 

@@ -1,3 +1,8 @@
+
+wrapfun: wrapfun.cc
+	clang++ -std=c++11 -stdlib=libc++ -o wrapfun wrapfun.cc
+
+
 jmp: jmp.cc
 	clang++ -o jmp jmp.cc
 

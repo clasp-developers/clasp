@@ -1,5 +1,5 @@
-#ifndef gctools_gcweakhash_H
-#define gctools_gcweakhash_H
+#ifndef gctools_gcweak_H
+#define gctools_gcweak_H
 
 /* Derived from scheme-advanced.c by ravenbrook */
 
@@ -45,7 +45,37 @@
  */
 
 
+#define GCWEAK_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, (x).str().c_str())
+
 namespace gctools {
+
+#define call_with_alloc_lock GC_call_with_alloc_lock
+
+    template <class Proto>
+    void* wrapRun(void* wrappedFn)
+    {
+        std::function<Proto>* fn = reinterpret_cast<std::function<Proto>*>(wrappedFn);
+        (*fn)();
+        return NULL;
+    }
+
+
+
+
+    template <class Proto>
+    void safeRun( std::function<Proto> f ) {
+        printf("Entered safeRun\n");
+        call_with_alloc_lock(wrapRun<Proto>,reinterpret_cast<void*>(&f));
+        printf("Leaving safeRun\n");
+    };
+
+
+
+
+};
+
+namespace gctools {
+
 
     typedef enum { WeakBucketKind, WeakPointerKind, WeakMappingKind } WeakKinds;
 
@@ -137,17 +167,20 @@ namespace gctools {
         }
     };
 
-
-    template <class KeyBucketsType, class ValueBucketsType >
     class WeakHashTable {
         friend class core::WeakKeyHashTable_O;
-    protected:
-        typedef WeakHashTable<KeyBucketsType,ValueBucketsType> MyType;
+    public:
+        typedef gctools::tagged_backcastable_base_ptr<core::T_O> value_type;
+        typedef gctools::Buckets<value_type,value_type,gctools::WeakLinks> KeyBucketsType;
+        typedef gctools::Buckets<value_type,value_type,gctools::StrongLinks> ValueBucketsType;
+    public:
+        typedef WeakHashTable MyType;
+    public:
         typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
         typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
     public:
-        KeyBucketsType*           Keys;           // hash buckets for keys
-        ValueBucketsType*         Values;         // hash buckets for values
+        KeyBucketsType*           _Keys;           // hash buckets for keys
+        ValueBucketsType*         _Values;         // hash buckets for values
     public:
         WeakHashTable(size_t length=0)
         {
@@ -155,32 +188,82 @@ namespace gctools {
             if ( length == 0 ) length = 2;
             size_t l;
             for( l = 1; l < length; l *= 2);
-            this->Keys = KeyBucketsAllocatorType::allocate(l);
-            this->Values = ValueBucketsAllocatorType::allocate(l);
-            this->Keys->dependent = this->Values;
-            this->Values->dependent = this->Keys;
+            this->_Keys = KeyBucketsAllocatorType::allocate(l);
+            this->_Values = ValueBucketsAllocatorType::allocate(l);
+            this->_Keys->dependent = this->_Values;
+            this->_Values->dependent = this->_Keys;
 #ifdef USE_MPS
             mps_ld_reset(&this->ld, _global_arena);
 #endif
         }
 
+    public:
+#ifdef USE_MPS
+        static uint sxhashKey(const value_type& key, mps_ld_s* locationDependencyP );
+#else
+        static uint sxhashKey(const value_type& key );
+#endif
+
+#ifdef USE_MPS
+        static int find(KeyBucketsType* keys, const value_type& key, mps_ld_s* ldP, size_t& b );
+#else
+        static int find(KeyBucketsType* keys, const value_type& key, size_t& b );
+#endif
+
+
+    public:
         size_t length() const {
-            if ( this->Keys==NULL ) {
+            if ( this->_Keys==NULL ) {
                 THROW_HARD_ERROR(BF("Keys should never be null"));
             }
-            return this->Keys->length();
+            return this->_Keys->length();
         }
+
 
         void swap(MyType& other)
         {
-            KeyBucketsType* tempKeys = this->Keys;;
-            ValueBucketsType* tempValues = this->Values;
-            this->Keys = other.Keys;
-            this->Values = other.Values;
-            other.Keys = tempKeys;
-            other.Values = tempValues;
+            KeyBucketsType* tempKeys = this->_Keys;;
+            ValueBucketsType* tempValues = this->_Values;
+            this->_Keys = other._Keys;
+            this->_Values = other._Values;
+            other._Keys = tempKeys;
+            other._Values = tempValues;
         }
-            
+
+        bool fullp() const {
+            bool fp;
+            safeRun<void()>( [&fp,this] ()->void {
+                    fp = (*this->_Keys).used() >= (*this->_Keys).length()/2;
+                } );
+            return fp;
+        }
+
+        int tableSize() const
+        {
+            int result;
+            safeRun<void()>( [&result,this] ()->void {
+                    size_t used, deleted;
+                    used = this->_Keys->used();
+                    deleted = this->_Keys->deleted();
+                    GCTOOLS_ASSERT(used >= deleted);
+                    result = used - deleted;
+                });
+            return result;
+        }
+
+
+
+
+
+        int rehash(size_t newLength, const value_type& key, size_t& key_bucket);
+        int trySet(core::T_sp tkey, core::T_sp value);
+        core::T_mv gethash(core::T_sp tkey, core::T_sp defaultValue);
+        void set( core::T_sp key, core::T_sp value );
+        void remhash( core::T_sp tkey );
+        void clrhash();
+
+    
+
     };
 
 
@@ -192,7 +275,7 @@ namespace gctools {
 
     template <class T,class U>
     struct MappingBase : public WeakObject {
-        MappingBase(int l) : WeakObject(WeakMappingKind), bucket(T(T::unbound)) {};
+        MappingBase(const T& val) : WeakObject(WeakMappingKind), bucket(val) {};
         virtual ~MappingBase() {};
         typedef T   value_type;
         MappingBase<U,T>* dependent;  /* the dependent object */
@@ -206,10 +289,19 @@ namespace gctools {
     template <class T,class U>
     struct Mapping<T,U,WeakLinks> : public MappingBase<T,U> {
         typedef typename MappingBase<T,U>::value_type value_type;
-        Mapping() : MappingBase<T,U>() {};
+        Mapping(const T& val) : MappingBase<T,U>(val) {
+#ifdef USE_BOEHM
+            if (this->bucket.pointerp()) {
+                printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref())
+                                                      ,reinterpret_cast<void*>(this->bucket.base_ref().px_ref()));
+            }
+#endif
+        };
         virtual ~Mapping() {
 #ifdef USE_BOEHM
             if (this->bucket.pointerp()) {
+                printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
                 int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref()));
                 if ( !result ) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
@@ -218,56 +310,35 @@ namespace gctools {
 #endif
         }
 
-        void set(const value_type& val) {
-#ifdef USE_BOEHM
-            if (this->bucket.pointerp()) {
-                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref()));
-                if (!result) {
-                    THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
-                }
-            }
-            if (val.pointerp()) {
-                this->bucket = val;
-                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref())
-                                                      ,reinterpret_cast<void*>(this->bucket.base_ref().px_ref()));
-            } else {
-                this->bucket = val;
-            }
-#endif
-#ifdef USE_MPS
-            this->bucket = val;
-#endif
-        }
     };
 
 
     template <class T,class U>
     struct Mapping<T,U,StrongLinks> : public MappingBase<T,U> {
         typedef typename MappingBase<T,U>::value_type value_type;
-        Mapping() : MappingBase<T,U>() {};
+        Mapping(const T& val) : MappingBase<T,U>(val) {};
         virtual ~Mapping() {}
-        void set(const value_type& val) {
-            this->bucket = val;
-        }
     };
 
 
 
-    template <class KeyType, class ValueType >
+    template <class TY >
     class WeakKeyMappingPair {
         friend class core::WeakKeyMapping_O;
     protected:
-        typedef WeakKeyMappingPair<KeyType,ValueType> MyType;
-        typedef gctools::GCBucketAllocator<KeyType> KeyAllocatorType;
-        typedef gctools::GCBucketAllocator<ValueType> ValueAllocatorType;
+        typedef Mapping<TY,TY,WeakLinks> KeyType;
+        typedef Mapping<TY,TY,StrongLinks> ValueType;
+        typedef WeakKeyMappingPair<TY>   MyType;
+        typedef gctools::GCMappingAllocator<KeyType> KeyAllocatorType;
+        typedef gctools::GCMappingAllocator<ValueType> ValueAllocatorType;
     public:
         KeyType*           Key;           // hash buckets for keys
         ValueType*         Value;         // hash buckets for values
     public:
-        WeakKeyMappingPair()
+        WeakKeyMappingPair(const TY& key, const TY& value)
         {
-            this->Key = KeyAllocatorType::allocate();
-            this->Value = ValueAllocatorType::allocate();
+            this->Key = KeyAllocatorType::allocate(key);
+            this->Value = ValueAllocatorType::allocate(value);
             this->Key->dependent = this->Value;
             this->Value->dependent = this->Key;
         }
@@ -626,4 +697,4 @@ namespace gctools {
 
 };
 
-#endif // gctools_gcweakhash_H
+#endif // gctools_gcweak_H

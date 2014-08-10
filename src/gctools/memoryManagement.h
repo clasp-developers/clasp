@@ -264,7 +264,6 @@ namespace gctools {
 
 
 #include "gcalloc.h"
-#include "gcweakhash.h"
 
 
 #define GC_ALLOCATE(_class_,_obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()

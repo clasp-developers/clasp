@@ -3,7 +3,7 @@
 
 #include "core/foundation.h"
 #include "core/object.h"
-#include "gctools/gcweakhash.h"
+#include "gctools/gcweak.h"
 #include "hashTable.h"
 #include "symbolTable.h"
 #include "corePackage.fwd.h"
@@ -51,13 +51,21 @@ namespace core
 	DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
     public: // instance variables here
+#if 1
+        typedef typename gctools::WeakHashTable::value_type value_type;
+        typedef typename gctools::WeakHashTable::KeyBucketsType KeyBucketsType;
+        typedef typename gctools::WeakHashTable::ValueBucketsType ValueBucketsType;
+        typedef typename gctools::WeakHashTable::KeyBucketsAllocatorType KeyBucketsAllocatorType;
+        typedef typename gctools::WeakHashTable::ValueBucketsAllocatorType ValueBucketsAllocatorType;
+        typedef gctools::WeakHashTable  HashTableType;
+#else
         typedef gctools::tagged_backcastable_base_ptr<T_O> value_type;
         typedef gctools::Buckets<value_type,value_type,gctools::WeakLinks> KeyBucketsType;
         typedef gctools::Buckets<value_type,value_type,gctools::StrongLinks> ValueBucketsType;
-        
         typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
         typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
         typedef gctools::WeakHashTable<KeyBucketsType,ValueBucketsType> HashTableType;
+#endif
         HashTableType  _HashTable;
 #ifdef USE_MPS
         mps_ld_s        _LocationDependency;
@@ -75,12 +83,12 @@ namespace core
         static int find(hash_table_type::KeyBucketsType* keys, const value_type& key, bool willAdd, mps_ld_s* ldP, size_t& b );
 #endif
 #ifdef USE_BOEHM
-        static uint sxhashKey(const value_type& key );
-        static int find(KeyBucketsType* keys, const value_type& key, size_t& b );
+//        static uint sxhashKey(const value_type& key );
+//        static int find(KeyBucketsType* keys, const value_type& key, size_t& b );
 #endif
-        int rehash(size_t new_length, const value_type& key, size_t& key_bucket);
+//        int rehash(size_t new_length, const value_type& key, size_t& key_bucket);
     public:
-        T_mv get(int idx);
+//        T_mv get(int idx);
         int trySet(T_sp key, T_sp value);
     public: // Functions here
 

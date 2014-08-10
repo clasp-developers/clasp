@@ -1090,13 +1090,13 @@ namespace gctools {
 
 
         // allocate but don't initialize num elements of type value_type
-        static container_pointer allocate () {
+        static container_pointer allocate (const VT& val) {
 #ifdef USE_BOEHM
             printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__ );
             size_t newBytes = sizeof(container_type);
             container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(newBytes);
             if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
-            new (myAddress) container_type();
+            new (myAddress) container_type(val);
             printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__ );
             return myAddress;
 #endif
@@ -1136,13 +1136,13 @@ namespace gctools {
 
 
         // allocate but don't initialize num elements of type value_type
-        static container_pointer allocate () {
+        static container_pointer allocate (const VT& val) {
 #ifdef USE_BOEHM
             printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__ );
             size_t newBytes = sizeof(container_type);
             container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
             if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
-            new (myAddress) container_type();
+            new (myAddress) container_type(val);
             printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__ );
             return myAddress;
 #endif
