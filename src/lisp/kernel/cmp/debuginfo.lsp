@@ -55,6 +55,8 @@
 (defvar *dibuilder-type-hash-table* nil
   "Map types to DITypes")
 
+(defconstant +debug-dwarf-version+ 4)
+
 (defmacro with-dibuilder ((module) &rest body)
   `(if *dbg-generate-dwarf*
        (let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module))
@@ -69,11 +71,11 @@
 							    (list
 							     (jit-constant-i32 2)
 							     (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
-							     (jit-constant-i32 2))))
+							     (jit-constant-i32 +debug-dwarf-version+))))
 	     (llvm-sys:add-module-flag *the-module*
 				       (llvm-sys:mdnode-get cmp:*llvm-context*
 							    (list
-							     (jit-constant-i32 1)
+							     (jit-constant-i32 2)
 							     (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
 							     (jit-constant-i32 llvm-sys:+debug-metadata-version+)))) ;; Debug Info Version
 	     "This should not be the return value - it should be what is returned in the unwind-protect body"

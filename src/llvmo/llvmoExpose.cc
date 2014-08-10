@@ -737,6 +737,22 @@ namespace llvmo
 
 	SYMBOL_EXPORT_SC_(LlvmoPkg,module_get_function_list);
 	Defun(module_get_function_list);
+
+        SYMBOL_EXPORT_SC_(LlvmoPkg,STARmoduleModFlagBehaviorSTAR);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagError);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagWarning);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagRequire);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagOverride);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppend);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppendUnique);
+        core::enum_<llvm::Module::ModFlagBehavior>(_sym_STARmoduleModFlagBehaviorSTAR,"llvm::Module::ModFlagBehavior")
+            .value(_sym_moduleFlagError,llvm::Module::Error)
+            .value(_sym_moduleFlagWarning,llvm::Module::Warning)
+            .value(_sym_moduleFlagRequire,llvm::Module::Require)
+            .value(_sym_moduleFlagOverride,llvm::Module::Override)
+            .value(_sym_moduleFlagAppend,llvm::Module::Append)
+            .value(_sym_moduleFlagAppendUnique,llvm::Module::AppendUnique)
+            ;
     };
 
     void Module_O::exposePython(core::Lisp_sp lisp)
