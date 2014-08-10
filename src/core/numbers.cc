@@ -1743,6 +1743,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     }
 
 
+#ifndef _TARGET_OS_LINUX
     Integer_sp Integer_O::create(uint64_t v)
     {_G();
 	if ( v <= MOST_POSITIVE_FIXNUM )
@@ -1755,7 +1756,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 		   _lisp->integer_ordering()._mpz_import_endian, 0, &v);
 	return Bignum_O::create(z);
     }
-
+#endif
     Integer_sp Integer_O::create(LongLongInt v)
     {_G();
 	if ( v >= MOST_NEGATIVE_FIXNUM && v <= MOST_POSITIVE_FIXNUM )

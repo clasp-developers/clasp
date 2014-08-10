@@ -343,7 +343,7 @@ namespace core {
 #define ARGS_core_weakSetfGethash "(ht key value)"
 #define DECL_core_weakSetfGethash ""
 #define DOCS_core_weakSetfGethash "weakSetfGethash"
-    void core_weakSetfGethash(WeakKeyHashTable_sp ht, T_sp key, T_sp val)
+    void core_weakSetfGethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val)
     {_G();
         ht->set(key,val);
     };
