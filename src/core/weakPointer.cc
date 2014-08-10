@@ -2,7 +2,7 @@
 
 #include "core/common.h"
 #include "core/environment.h"
-#include "weakReference.h"
+#include "weakPointer.h"
 #include "core/wrappers.h"
 namespace core
 {

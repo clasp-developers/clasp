@@ -31,8 +31,8 @@ namespace core {
 
     void WeakKeyHashTable_O::describe()
     {
-        KeyBucketsType& keys = *this->_HashTable.Keys;
-        ValueBucketsType& values = *this->_HashTable.Values;
+        KeyBucketsType& keys = *this->_HashTable._Keys;
+        ValueBucketsType& values = *this->_HashTable._Values;
         printf("WeakKeyHashTable   size: %zu\n", this->_HashTable.length());
         printf("   keys memory range:  %p  - %p \n", &keys[0].base_ref().px_ref(), &keys[this->_HashTable.length()].base_ref().px_ref());
         printf("   _HashTable.length = %d\n", keys.length() );
@@ -67,16 +67,20 @@ namespace core {
     }
 
 
-    int WeakKeyHashTable_O::tableSize() const
-    {
-        size_t used, deleted;
-        used = this->_HashTable.Keys->used();
-        deleted = this->_HashTable.Keys->deleted();
-        ASSERT(used >= deleted);
-        return used - deleted;
+
+    int WeakKeyHashTable_O::tableSize() const {
+        return this->_HashTable.tableSize();
     }
 
 
+
+    bool WeakKeyHashTable_O::fullp()
+    {
+        return this->_HashTable.fullp();
+    }
+
+
+#if 0
     /*! Return the key/value as three values
       (values key value invalid-key)
       invalid-key is one of nil, :unused :deleted :splatted 
@@ -101,19 +105,13 @@ namespace core {
         }
         return Values(_Nil<T_O>(), val, keyInfo );
     }
-
+#endif
     SYMBOL_EXPORT_SC_(KeywordPkg,splatted);
     SYMBOL_EXPORT_SC_(KeywordPkg,unbound);
     SYMBOL_EXPORT_SC_(KeywordPkg,deleted);
 
 
-    bool WeakKeyHashTable_O::fullp()
-    {
-        return (*this->_HashTable.Keys).used() >= (*this->_HashTable.Keys).length()/2;
-    }
-
-
-
+#if 0
 /* Rehash 'tbl' so that it has 'new_length' buckets. If 'key' is found
  * during this process, update 'key_bucket' to be the index of the
  * bucket containing 'key' and return true, otherwise return false.
@@ -159,85 +157,24 @@ namespace core {
                 (*newHashTable.Keys).setUsed((*newHashTable.Keys).used()+1); // TAG_COUNT(UNTAG_COUNT(new_keys->used) + 1);
             }
         }
-        ASSERT((*newHashTable.Keys).used() == this->tableSize() );
+        ASSERT((*newHashTable.Keys).used() == this->_HashTable.tableSize() );
         // assert(UNTAG_COUNT(new_keys->used) == table_size(tbl));
         this->_HashTable.swap(newHashTable);
         return result;
     }
-
-#ifdef USE_MPS
-    uint WeakKeyHashTable_O::sxhashKey(const value_type& key, mps_ld_s* locationDependencyP )
-#else
-    uint WeakKeyHashTable_O::sxhashKey(const value_type& key )
 #endif
-    {
-        HashGenerator hg;
-#ifdef USE_MPS
-        if ( locationDependencyP && key.pointerp()) {
-            mps_ld_add(locationDependencyP
-                       ,gctools::_global_arena
-                       ,key.base_ref().px_ref() );
-        }
-#endif
-        hg.addPart(reinterpret_cast<uintptr_t>(key.base_ref().px_ref()));
-        return hg.hash();
-    }
         
 
-
-#ifdef USE_MPS
-    int WeakKeyHashTable_O::find(KeyBucketsType* keys, const value_type& key, mps_ld_s* ldP, size_t& b )
-#else
-    int WeakKeyHashTable_O::find(KeyBucketsType* keys, const value_type& key, size_t& b )
-#endif
-    {
-        unsigned long i, h, probe;
-        unsigned long l = keys->length()-1;
-        int result = 0;
-#ifdef USE_MPS
-        h = WeakKeyHashTable_O::sxhashKey(key,ldP);
-#else
-        h = WeakKeyHashTable_O::sxhashKey(key);
-#endif
-        printf("%s:%d find key = %p  h = %lx   l = %lu\n", __FILE__, __LINE__, key.pointer(), h, l );
-        probe = (h >> 8) | 1;
-        h &= l;
-        i = h;
-        do {
-            value_type& k = (*keys)[i];
-            printf("%s:%d i = %lu   k = %p\n", __FILE__, __LINE__, i, k.pointer() );
-            if( k.unboundp() || k == key ) {
-                b = i;
-                printf("%s:%d  returning 1   b=%lu  k = %p\n", __FILE__, __LINE__, b, k.pointer() );
-                return 1;
-            }
-#ifdef USE_BOEHM
-            // Handle splatting
-            if (k.NULLp()) {
-                keys->set(i,value_type(gctools::tagged_ptr<T_O>::tagged_deleted));
-                ValueBucketsType* values = dynamic_cast<ValueBucketsType*>(keys->dependent);
-                (*values)[i] = value_type(gctools::tagged_ptr<T_O>::tagged_unbound);
-            }
-#endif
-            if ( result == 0 && ( k.deletedp() )) {
-                b = i;
-                result = 1;
-            }
-            i = (i+probe) & l;
-        } while(i != h);
-        return result;
-    }
-
-
+#if 0
     int WeakKeyHashTable_O::trySet(T_sp tkey, T_sp value)
     {
         size_t b;
         if ( tkey == value ) { value = gctools::smart_ptr<T_O>(gctools::tagged_ptr<T_O>::tagged_sameAsKey); };
         value_type key(tkey);
 #ifdef USE_MPS
-        int result = this->find(this->_HashTable.Keys,key,&this->_LocationDependency,b);
+        int result = this->_HashTable.find(this->_HashTable.Keys,key,&this->_LocationDependency,b);
 #else
-        int result = this->find(this->_HashTable.Keys,key,b);
+        int result = this->_HashTable.find(this->_HashTable.Keys,key,b);
 #endif
         if (!result) { // this->find(key, this->_HashTable.Keys, true, b)) {
             printf("%s:%d find returned 0\n", __FILE__, __LINE__ );
@@ -257,10 +194,10 @@ namespace core {
         return 1;
     }
 
+#endif
 
 
-
-
+#if 0
 /* %%MPS: If we fail to find 'key' in the table, and if mps_ld_isstale
  * returns true, then some of the keys in the table might have been
  * moved by the garbage collector: in this case we need to re-hash the
@@ -272,10 +209,10 @@ namespace core {
         value_type key(tkey);
         size_t pos;
 #ifdef USE_MPS
-        int result = WeakKeyHashTable_O::find(this->_HashTable.Keys,key,NULL,pos);
+        int result = gctools::WeakHashTable::find(this->_HashTable.Keys,key,NULL,pos);
 #endif
 #ifdef USE_BOEHM
-        int result = WeakKeyHashTable_O::find(this->_HashTable.Keys,key,pos);
+        int result = gctools::WeakHashTable::find(this->_HashTable.Keys,key,pos);
 #endif
         
         if (result) { // WeakKeyHashTable_O::find(this->_HashTable.Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
@@ -293,7 +230,7 @@ namespace core {
         }
 #ifdef USE_MPS
         if (key.pointerp() && mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.pointer() )) {
-            if (this->rehash( this->_HashTable.Keys->length(), key, &pos)) {
+            if (this->_HashTable.rehash( this->_HashTable.Keys->length(), key, &pos)) {
                 T_sp value = (*this->_HashTable.Values)[pos].backcast();
                 if ( value.sameAsKeyP() ) {
                     value = key.backcast();
@@ -304,16 +241,16 @@ namespace core {
 #endif
         return Values(defaultValue,_Nil<T_O>());
     }
+#endif
 
-
-
+#if 0
     void WeakKeyHashTable_O::set( T_sp key, T_sp value )
     {
         if (this->fullp() || !this->trySet(key,value) ) {
             int res;
             value_type dummyKey;
             size_t dummyPos;
-            this->rehash( (*this->_HashTable.Keys).length() * 2, dummyKey, dummyPos );
+            this->_HashTable.rehash( (*this->_HashTable.Keys).length() * 2, dummyKey, dummyPos );
             if ( key == value ) {
                 value = gctools::smart_ptr<T_O>(gctools::tagged_ptr<T_O>::tagged_sameAsKey);
             }
@@ -321,16 +258,17 @@ namespace core {
             ASSERT(res);
         }
     }
-
+#endif
+#if 0
     void WeakKeyHashTable_O::remhash( T_sp tkey )
     {
         size_t b;
         value_type key(tkey);
 #ifdef USE_MPS
-        int result = WeakKeyHashTable_O::find(this->_HashTable.Keys, key, NULL, b);
+        int result = gctools::WeakHashTable::find(this->_HashTable.Keys, key, NULL, b);
 #endif
 #ifdef USE_BOEHM
-        int result = WeakKeyHashTable_O::find(this->_HashTable.Keys, key, b);
+        int result = gctools::WeakHashTable::find(this->_HashTable.Keys, key, b);
 #endif
         if( ! result ||
             (*this->_HashTable.Keys)[b].unboundp() ||
@@ -340,7 +278,7 @@ namespace core {
             if(key.pointerp() && !mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.pointer()))
                 return;
 #endif
-            if(!this->rehash( (*this->_HashTable.Keys).length(), key, b))
+            if(!this->_HashTable.rehash( (*this->_HashTable.Keys).length(), key, b))
                 return;
         }
         if( !(*this->_HashTable.Keys)[b].unboundp() &&
@@ -354,9 +292,9 @@ namespace core {
             (*this->_HashTable.Values)[b] = value_type(gctools::tagged_ptr<T_O>::tagged_unbound);
         }
     }
+#endif
 
-
-
+#if 0
     void WeakKeyHashTable_O::clrhash()
     {
         size_t len = (*this->_HashTable.Keys).length();
@@ -374,7 +312,7 @@ namespace core {
 #endif
     }
 
-
+#endif
 
 
 
@@ -434,7 +372,7 @@ namespace core {
 #define DOCS_core_weakSplat "weakSplat"
     void core_weakSplat(WeakKeyHashTable_sp ht, Fixnum_sp idx)
     {_G();
-        (*ht->_HashTable.Keys).set(idx->get(),WeakKeyHashTable_O::value_type(gctools::tagged_ptr<T_O>::_NULL));
+        (*ht->_HashTable._Keys).set(idx->get(),WeakKeyHashTable_O::value_type(gctools::tagged_ptr<T_O>::_NULL));
     };
     
 
@@ -445,13 +383,13 @@ namespace core {
     {_G();
         size_t newLength;
         if ( sz.nilp() ) {
-            newLength = ht->_HashTable.Keys->length()*2;
+            newLength = ht->_HashTable._Keys->length()*2;
         } else {
             newLength = sz->get();
         }
         WeakKeyHashTable_O::value_type dummyKey;
         size_t dummyPos;
-        ht->rehash(newLength,dummyKey,dummyPos);
+        ht->_HashTable.rehash(newLength,dummyKey,dummyPos);
     };
     
     
@@ -462,7 +400,6 @@ namespace core {
     {
 	::core::class_<WeakKeyHashTable_O>()
             .def("weakHashTableSize",&WeakKeyHashTable_O::tableSize)
-            .def("weakHashTableGet",&WeakKeyHashTable_O::get)
 	    ;
         CoreDefun(makeWeakKeyHashTable);
         CoreDefun(weakGethash);

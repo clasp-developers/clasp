@@ -65,7 +65,9 @@ typedef bool _Bool;
 
 
 #include <core/foundation.h>
-#include "core/weakReference.h"
+#include "core/weakPointer.h"
+#include "core/weakKeyMapping.h"
+#include "core/weakHashTable.h"
 #include "core/bitVector.h"
 #include "core/funcallableStandardClass.h"
 #include "core/structureClass.h"
