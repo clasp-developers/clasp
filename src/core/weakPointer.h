@@ -23,8 +23,8 @@ public:
     static WeakPointer_sp make(T_sp obj);
 public:
 private: // instance variables here
-    typedef gctools::tagged_backcastable_base_ptr<T_O> value_type;
-    gctools::WeakPointerManager<value_type,gctools::GCWeakPointerAllocator<value_type>>	_WeakObject;
+    typedef typename gctools::WeakPointerManager::value_type value_type;
+    gctools::WeakPointerManager	_WeakObject;
 
 public: // Functions here
 	/*! Value the reference to the object.
