@@ -89,7 +89,6 @@ namespace core
 //        int rehash(size_t new_length, const value_type& key, size_t& key_bucket);
     public:
 //        T_mv get(int idx);
-        int trySet(T_sp key, T_sp value);
     public: // Functions here
 
         virtual int tableSize() const;

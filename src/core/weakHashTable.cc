@@ -165,154 +165,42 @@ namespace core {
 #endif
         
 
-#if 0
-    int WeakKeyHashTable_O::trySet(T_sp tkey, T_sp value)
-    {
-        size_t b;
-        if ( tkey == value ) { value = gctools::smart_ptr<T_O>(gctools::tagged_ptr<T_O>::tagged_sameAsKey); };
-        value_type key(tkey);
-#ifdef USE_MPS
-        int result = this->_HashTable.find(this->_HashTable.Keys,key,&this->_LocationDependency,b);
-#else
-        int result = this->_HashTable.find(this->_HashTable.Keys,key,b);
-#endif
-        if (!result) { // this->find(key, this->_HashTable.Keys, true, b)) {
-            printf("%s:%d find returned 0\n", __FILE__, __LINE__ );
-            return 0;
-        }
-        if ((*this->_HashTable.Keys)[b].unboundp()) {
-            this->_HashTable.Keys->set(b,key);
-            (*this->_HashTable.Keys).setUsed((*this->_HashTable.Keys).used()+1);
-            printf("%s:%d key was unboundp at %lu  used = %d\n", __FILE__, __LINE__, b, this->_HashTable.Keys->used() );
-        } else if ((*this->_HashTable.Keys)[b].deletedp()) {
-            this->_HashTable.Keys->set(b,key);
-            ASSERT((*this->_HashTable.Keys).deleted() > 0 );
-            (*this->_HashTable.Keys).setDeleted((*this->_HashTable.Keys).deleted()-1);
-            printf("%s:%d key was deletedp at %lu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_HashTable.Keys).deleted() );
-        }
-        (*this->_HashTable.Values).set(b,value_type(value));
-        return 1;
-    }
-
-#endif
 
 
-#if 0
 /* %%MPS: If we fail to find 'key' in the table, and if mps_ld_isstale
  * returns true, then some of the keys in the table might have been
  * moved by the garbage collector: in this case we need to re-hash the
  * table. See topic/location.
  * Return (values value t) or (values nil nil)
  */
-    T_mv WeakKeyHashTable_O::gethash(T_sp tkey, T_sp defaultValue)
+    T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue)
     {
-        value_type key(tkey);
-        size_t pos;
-#ifdef USE_MPS
-        int result = gctools::WeakHashTable::find(this->_HashTable.Keys,key,NULL,pos);
-#endif
-#ifdef USE_BOEHM
-        int result = gctools::WeakHashTable::find(this->_HashTable.Keys,key,pos);
-#endif
-        
-        if (result) { // WeakKeyHashTable_O::find(this->_HashTable.Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
-            value_type& k = (*this->_HashTable.Keys)[pos];
-            WEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.pointer() % k.unboundp() % k.base_ref().deletedp() % k.NULLp() );
-            if ( !k.unboundp() && !k.deletedp() ) {
-                WEAK_LOG(BF("Returning success!"));
-                T_sp value = (*this->_HashTable.Values)[pos].backcast();
-                if ( value.sameAsKeyP() ) {
-                    value = k.backcast();
-                }
-                return Values(value,_lisp->_true());
-            }
-            WEAK_LOG(BF("Falling through"));
-        }
-#ifdef USE_MPS
-        if (key.pointerp() && mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.pointer() )) {
-            if (this->_HashTable.rehash( this->_HashTable.Keys->length(), key, &pos)) {
-                T_sp value = (*this->_HashTable.Values)[pos].backcast();
-                if ( value.sameAsKeyP() ) {
-                    value = key.backcast();
-                }
-                return Values(value,_lisp->_true());
-            }
-        }
-#endif
-        return Values(defaultValue,_Nil<T_O>());
+        return this->_HashTable.gethash(key,defaultValue);
     }
-#endif
 
-#if 0
+
+
+
     void WeakKeyHashTable_O::set( T_sp key, T_sp value )
     {
-        if (this->fullp() || !this->trySet(key,value) ) {
-            int res;
-            value_type dummyKey;
-            size_t dummyPos;
-            this->_HashTable.rehash( (*this->_HashTable.Keys).length() * 2, dummyKey, dummyPos );
-            if ( key == value ) {
-                value = gctools::smart_ptr<T_O>(gctools::tagged_ptr<T_O>::tagged_sameAsKey);
-            }
-            res = this->trySet( key, value);
-            ASSERT(res);
-        }
+        this->_HashTable.set(key,value);
     }
-#endif
-#if 0
+
+
+
+
+
     void WeakKeyHashTable_O::remhash( T_sp tkey )
     {
-        size_t b;
-        value_type key(tkey);
-#ifdef USE_MPS
-        int result = gctools::WeakHashTable::find(this->_HashTable.Keys, key, NULL, b);
-#endif
-#ifdef USE_BOEHM
-        int result = gctools::WeakHashTable::find(this->_HashTable.Keys, key, b);
-#endif
-        if( ! result ||
-            (*this->_HashTable.Keys)[b].unboundp() ||
-            (*this->_HashTable.Keys)[b].deletedp() )
-        {
-#ifdef USE_MPS
-            if(key.pointerp() && !mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.pointer()))
-                return;
-#endif
-            if(!this->_HashTable.rehash( (*this->_HashTable.Keys).length(), key, b))
-                return;
-        }
-        if( !(*this->_HashTable.Keys)[b].unboundp() &&
-            !(*this->_HashTable.Keys)[b].deletedp() )
-        {
-#ifdef USE_BOEHM
-            IMPLEMENT_MEF(BF("Remove disappearing link to this entry"));
-#endif
-            this->_HashTable.Keys->set(b, value_type(value_type::deleted)); //[b] = value_type(gctools::tagged_ptr<T_O>::tagged_deleted);
-            (*this->_HashTable.Keys).setDeleted((*this->_HashTable.Keys).deleted()+1);
-            (*this->_HashTable.Values)[b] = value_type(gctools::tagged_ptr<T_O>::tagged_unbound);
-        }
+        this->_HashTable.remhash(tkey);
     }
-#endif
 
-#if 0
+
+
     void WeakKeyHashTable_O::clrhash()
     {
-        size_t len = (*this->_HashTable.Keys).length();
-        for ( size_t i(0); i<len; ++i ) {
-#ifdef USE_BOEHM
-            IMPLEMENT_MEF(BF("Remove disappearing links to this entry"));
-#endif
-            this->_HashTable.Keys->set(i,value_type(gctools::tagged_ptr<T_O>::tagged_unbound));
-            (*this->_HashTable.Values)[i] = value_type(gctools::tagged_ptr<T_O>::tagged_unbound);
-        }
-        (*this->_HashTable.Keys).setUsed(0);
-        (*this->_HashTable.Keys).setDeleted(0);
-#ifdef USE_MPS
-        mps_ld_reset(&this->_LocationDependency,gctools::_global_arena);
-#endif
+        this->_HashTable.clrhash();
     }
-
-#endif
 
 
 
