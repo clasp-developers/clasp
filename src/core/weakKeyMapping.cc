@@ -70,26 +70,14 @@ namespace core
 
 
     bool WeakKeyMapping_O::valid() const
-    {_OF();
-        return !this->_WeakObject.Key->bucket.NULLp() && !this->_WeakObject.Key->bucket.unboundp();
+    {
+        return this->_WeakObject.valid();
     }
 
     /*! Return (values key value t) or (values nil nil nil) */
     T_mv WeakKeyMapping_O::keyValue() const
     {_OF();
-        if (!this->valid()) {
-            return Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
-        }
-        value_type& key_ref = this->_WeakObject.Key->bucket;
-        value_type& value_ref = this->_WeakObject.Value->bucket;
-        T_sp key = key_ref.backcast();
-        T_sp value;
-        if ( value_ref.sameAsKeyP() ) {
-            value = key;
-        } else { 
-            value = value_ref.backcast();
-        }
-        return Values(key,value,_lisp->_true());
+        return this->_WeakObject.keyValue();
     }
 
     
