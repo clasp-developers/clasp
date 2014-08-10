@@ -55,8 +55,6 @@
 (defvar *dibuilder-type-hash-table* nil
   "Map types to DITypes")
 
-(defconstant +debug-dwarf-version+ 4)
-
 (defmacro with-dibuilder ((module) &rest body)
   `(if *dbg-generate-dwarf*
        (let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module))
