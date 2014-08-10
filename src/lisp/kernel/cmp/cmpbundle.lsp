@@ -80,7 +80,7 @@
       (return-from execute-clang))
     #+(and :target-os-linux :address-model-64)
     (progn
-      (safe-system (bformat nil "clang -c -march=x86-64 -relocation-model=pic -o %s %s" output-file file))
+      (safe-system (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file))
       (return-from execute-clang))
     (error "Add support for running external clang")))
 
