@@ -652,6 +652,10 @@ namespace core {
 
 #include "multipleValues.h"
 
+namespace core {
+    core::T_sp lisp_true();
+};
+
 #include "gctools/gcweak.h"
 
 #include "gctools/managedStatic.h"
@@ -900,6 +904,9 @@ typedef void (*LispCallingConventionPtr)(T_mv* result, int nargs, T_sp arg1, T_s
 
 }
 
+
+
+
 namespace kw
 {
     extern core::Symbol_sp _sym_formatControl;
@@ -1057,7 +1064,6 @@ namespace core
     string lisp_currentPackageName();
     string lisp_classNameAsString(Class_sp c);
     void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId );
-    core::T_sp lisp_true();
     core::T_sp lisp_false();
     T_sp lisp_ArgArrayToCons(int nargs, ArgArray args);
     bool lisp_fixnumP(core::T_sp obj);
