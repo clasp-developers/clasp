@@ -159,8 +159,9 @@ namespace core
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,ClPkg,Stream_O,"stream");
 	DECLARE_INIT_GLOBALS();
-    private:
-        FileOps         _FileOps;
+    public:
+        FileOps         ops;
+        Cons_sp         _ByteStack; // For unget in input streams
     public:
 	/*! Return the stream name as a pathname*/
 	Pathname_sp pathname() const;
@@ -758,6 +759,7 @@ namespace core
 	virtual ~FDStream_O();
 	
     protected: // instance variables here
+        Cons_sp _ByteStack;
 	FILE*	_FStream;
 	char*	_Buffer;
 	bool	_Closeable;
