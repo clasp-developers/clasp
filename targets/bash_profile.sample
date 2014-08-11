@@ -1,32 +1,20 @@
-# .bash_profile
-
-# Get the aliases and functions
-if [ -f ~/.bashrc ]; then
-	. ~/.bashrc
-fi
-
-# User specific environment and startup programs
-
-PATH=$HOME/Local/bin:$PATH
-
-export PATH
-
-
-
-echo "Starting .bash_profile"
-
-export PS1="\h:\W$ "
-export SVN_EDITOR=emacs
-alias emacs="emacs -nw"
-
-
 #
-# Set up CLASP for development
+# For developing clasp  set these environment variables
+# This allows us to build from within the C++ source code directories rather than 
+# always having to rely on the makefile in the top directory.
 #
-export CLASP_HOME=$HOME/Development/cando
-source $CLASP_HOME/targets/development.darwinClang
-export CLASP_LISP_SOURCE_DIR=$CLASP_HOME/src/lisp
-export PATH=$CLASP_HOME/build/darwin/cando.app/Contents/MacOS:$CLASP_APP/Contents/Resources/externals/release/bin:$PATH
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:~/Development/cando/build/cando.app/Contents/Resources/externals/release/lib
-test -r /sw/bin/init.sh && . /sw/bin/init.sh
+# CLASP_TARGET_OS = (darwin | linux)
+# PJOBS = {#cores available for parallel compilation}
+# PREFIX = {where to put built files}
+# EXTERNALS = {If using externals-clasp - where it lives}
+# CLASP_LISP_SOURCE_DIR = {path within clasp where lisp source lives.  This lets you edit/use the lisp source directly}
+#
+export CLASP_TARGET_OS=darwin
+export PJOBS=6
+export CLASP_CLANG_PATH=$HOME/local/externals-clasp/release/bin/clang++
+export PREFIX=$HOME/local/clasp
+export EXTERNALS=$HOME/local/externals-clasp
+export CLASP_LISP_SOURCE_DIR=$HOME/Development/clasp/src/lisp
+export PATH=$PATH:$HOME/local/clasp/Contents/boost_build_v2/bin:~/local/externals-clasp/release/bin:~/local/clasp/MacOS:$HOME/local/externals-clasp/common/bin
+
 
