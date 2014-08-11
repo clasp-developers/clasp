@@ -887,10 +887,6 @@ namespace core
 
 TRANSLATE(core::GlueEnvironment_O);
 
-namespace gctools {
-    template<> inline bool isNilDowncastableTo<core::Environment_O>() { return true;};
-};
-
 
 
 namespace core {

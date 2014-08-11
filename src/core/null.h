@@ -10,16 +10,16 @@ namespace core
 {
 
     FORWARD(Null);
-    class Null_O : public Symbol_O, public List_O
+    class Null_O : public Symbol_O
     {
-	LISP_VIRTUAL_BASE2(T_O,Symbol_O,List_O);
+	LISP_BASE1(Symbol_O); // ,List_O);
 	LISP_CLASS(core,ClPkg,Null_O,"null");
 	DECLARE_INIT();
 #if defined(XML_ARCHIVE)
 	DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
     public: // ctor/dtor for classes with shared virtual base
-	explicit Null_O() : T_O(), Symbol_O(), List_O() {};
+	explicit Null_O() : Symbol_O() {}; // List_O
 	virtual ~Null_O() {};
     public:
 	void initialize();
@@ -32,10 +32,6 @@ namespace core
 
 TRANSLATE(core::Null_O);
 
-
-namespace gctools {
-    template<> inline bool isNilDowncastableTo<core::Null_O>() { return true;};
-};
 
 #endif /* _core_Null_H */
 

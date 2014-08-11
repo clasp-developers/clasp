@@ -66,7 +66,7 @@ namespace core
 #define DOCS_af_aset "aset"
     T_sp af_aset(Array_sp array, Cons_sp indices_value)
     {_G();
-	int r = af_length(indices_value)-1;
+	int r = cl_length(indices_value)-1;
 	int j;
 	if ( Vector_sp vec = array.asOrNull<Vector_O>() )
 	{
@@ -76,7 +76,7 @@ namespace core
 	    }
 	    T_sp ind0 = oCar(indices_value);
 	    indices_value = cCdr(indices_value);
-	    j = Array_O::checkedIndex(__FILE__,__LINE__,__FUNCTION__,array,0,ind0,af_length(vec));
+	    j = Array_O::checkedIndex(__FILE__,__LINE__,__FUNCTION__,array,0,ind0,cl_length(vec));
 	    return vec->asetUnsafe(j,oCar(indices_value));
 	} else
 	{
@@ -169,7 +169,7 @@ namespace core
     int Array_O::index_val(Cons_sp indices,bool last_value_is_val, Cons_sp& val_cons) const
     {_OF();
 #ifdef DEBUG_ON
-	int indices_passed = af_length(indices) - (last_value_is_val ? 1 : 0 );
+	int indices_passed = cl_length(indices) - (last_value_is_val ? 1 : 0 );
 	ASSERTF(indices_passed==(int)this->rank(),
 		BF("Wrong number of indices[%d] must match rank[%d]")
 		% indices_passed % this->rank() );

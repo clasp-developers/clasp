@@ -65,7 +65,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 0;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>()));
 	    Cons_sp cur = argsPLUS;
@@ -81,7 +81,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 1;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0));
 	    Cons_sp cur = argsPLUS;
@@ -97,7 +97,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 2;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1));
 	    Cons_sp cur = argsPLUS;
@@ -113,7 +113,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 3;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2));
 	    Cons_sp cur = argsPLUS;
@@ -129,7 +129,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 4;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3));
 	    Cons_sp cur = argsPLUS;
@@ -146,7 +146,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 5;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3,a4));
 	    Cons_sp cur = argsPLUS;
@@ -162,7 +162,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 6;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3,a4,a5));
 	    Cons_sp cur = argsPLUS;
@@ -177,7 +177,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 7;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3,a4,a5,a6));
 	    Cons_sp cur = argsPLUS;
@@ -192,7 +192,7 @@ namespace core
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
 	    int numArgsPassed = 8;
-	    int numArgsPlus = af_length(argsPLUS);
+	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3,a4,a5,a6,a7));
 	    Cons_sp cur = argsPLUS;

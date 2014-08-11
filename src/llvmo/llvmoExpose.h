@@ -3528,7 +3528,7 @@ namespace llvmo
 	FunctionType_O() : Base() {};
 	~FunctionType_O() {}
     public: // static methods
-	static core::T_sp get(core::T_sp result_type, core::Sequence_sp params, core::T_sp is_var_arg);
+	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
     }; // FunctionType_O
 }; // llvmo
 TRANSLATE(llvmo::FunctionType_O);
@@ -3582,7 +3582,7 @@ namespace llvmo
 	IntegerType_O() : Base() {};
 	~IntegerType_O() {}
     public: // static methods
-	static core::T_sp get(core::T_sp result_type, core::Sequence_sp params, core::T_sp is_var_arg);
+	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
     }; // IntegerType_O
 }; // llvmo
 TRANSLATE(llvmo::IntegerType_O);
@@ -3632,7 +3632,7 @@ namespace llvmo
 	CompositeType_O() : Base() {};
 	~CompositeType_O() {}
     public: // static methods
-	static core::T_sp get(core::T_sp result_type, core::Sequence_sp params, core::T_sp is_var_arg);
+	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
     }; // CompositeType_O
 }; // llvmo
 TRANSLATE(llvmo::CompositeType_O);
@@ -3688,11 +3688,11 @@ namespace llvmo
 	~StructType_O() {}
     public: // static methods
 	/*! Get a structure using llvm:StructType::create(LLVMContext& context, ArrayRef<Type*>Elements,StringRef name,bool isPacked) */
-	static StructType_sp make(LLVMContext_sp context, core::Sequence_sp elements, core::Str_sp name, core::T_sp isPacked);
+	static StructType_sp make(LLVMContext_sp context, core::T_sp elements, core::Str_sp name, core::T_sp isPacked);
 
-	static StructType_sp get(LLVMContext_sp context, core::Sequence_sp elements, bool isPacked=false);
+	static StructType_sp get(LLVMContext_sp context, core::T_sp elements, bool isPacked=false);
     public:
-	void setBody(core::Sequence_sp elements, core::T_sp isPacked);
+	void setBody(core::T_sp elements, core::T_sp isPacked);
     }; // StructType_O
 }; // llvmo
 TRANSLATE(llvmo::StructType_O);
@@ -3743,7 +3743,7 @@ namespace llvmo
 	SequentialType_O() : Base() {};
 	~SequentialType_O() {}
     public: // static methods
-	static core::T_sp get(core::T_sp result_type, core::Sequence_sp params, core::T_sp is_var_arg);
+	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
     }; // SequentialType_O
 }; // llvmo
 TRANSLATE(llvmo::SequentialType_O);
@@ -3798,7 +3798,7 @@ namespace llvmo
 	PointerType_O() : Base() {};
 	~PointerType_O() {}
     public: // static methods
-	static core::T_sp get(core::T_sp result_type, core::Sequence_sp params, core::T_sp is_var_arg);
+	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
     }; // PointerType_O
 }; // llvmo
 TRANSLATE(llvmo::PointerType_O);
@@ -3901,7 +3901,7 @@ namespace llvmo
 	VectorType_O() : Base() {};
 	~VectorType_O() {}
     public: // static methods
-	static core::T_sp get(core::T_sp result_type, core::Sequence_sp params, core::T_sp is_var_arg);
+	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
     }; // VectorType_O
 }; // llvmo
 TRANSLATE(llvmo::VectorType_O);

@@ -177,7 +177,7 @@ namespace core
 	}
 	for ( int i=0; i<this->_Objects.capacity(); ++i )
 	{
-	    if ( debuggingInfo.notnilp() && (i < af_length(debuggingInfo)) )
+	    if ( debuggingInfo.notnilp() && (i < cl_length(debuggingInfo)) )
 	    {
 		ss << _rep_(debuggingInfo->elt(i)) << " ";
 	    } else
@@ -242,7 +242,7 @@ namespace core
 
     void ValueFrame_O::fillRestOfEntries(int istart, Cons_sp values)
     {_G();
-	ASSERTF((istart+af_length(values))==this->length(),BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart+af_length(values)) );
+	ASSERTF((istart+cl_length(values))==this->length(),BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart+cl_length(values)) );
 	int iend = this->length();
 	Cons_sp cur = values;
 	for (int i=istart; i<iend; ++i)
@@ -271,8 +271,8 @@ namespace core
 
     ValueFrame_sp ValueFrame_O::create(Cons_sp values,ActivationFrame_sp parent)
     {_G();
-	ValueFrame_sp vf = ValueFrame_O::create(af_length(values),parent);
-//	vf->allocateStorage(af_length(values));
+	ValueFrame_sp vf = ValueFrame_O::create(cl_length(values),parent);
+//	vf->allocateStorage(cl_length(values));
 	int idx = 0;
 	for ( core::Cons_sp cur = values; cur.notnilp(); cur=cCdr(cur) )
 	{
@@ -285,8 +285,8 @@ namespace core
 
     ValueFrame_sp ValueFrame_O::createFromReversedCons(Cons_sp values,ActivationFrame_sp parent)
     {_G();
-	ValueFrame_sp vf = ValueFrame_O::create(af_length(values),parent);
-	int len = af_length(values);
+	ValueFrame_sp vf = ValueFrame_O::create(cl_length(values),parent);
+	int len = cl_length(values);
 //	vf->allocateStorage(len);
 	int idx = len-1;
 	for ( core::Cons_sp cur = values; cur.notnilp(); cur=cCdr(cur) )

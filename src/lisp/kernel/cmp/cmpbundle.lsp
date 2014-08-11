@@ -73,10 +73,15 @@
 (defun execute-clang (part-bitcode-pathname)
   (let* ((name (probe-file (make-pathname :type "bc" :defaults part-bitcode-pathname)))
          (file (namestring (probe-file name)))
-         (output-file (namestring (make-pathname :type "o" :defaults (probe-file name)))))
+         (output-file (namestring (make-pathname :type "o" :defaults (probe-file name))))
+         (clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
+         (clang-executable (if clasp-clang-path
+                               clasp-clang-path
+                               "clang"))
+         )
     #+target-os-darwin
     (progn
-      (safe-system (bformat nil "clang -c -o %s %s" output-file file))
+      (safe-system (bformat nil "%s -c -o %s %s" clang-executable output-file file))
       (return-from execute-clang))
     #+(and :target-os-linux :address-model-64)
     (progn
@@ -101,7 +106,11 @@
 	(bundle-file (core:coerce-to-filename bundle-pathname)))
     (let ((all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
       (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
-      (safe-system (bformat nil "clang++ -v %s -shared -o %s" all-names bundle-file)))
+      (let ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
+            (clang-executable (if clasp-clang-path
+                                  clasp-clang-path
+                                  "clang")))
+            (safe-system (bformat nil "%s -v %s -shared -o %s" clang-executable all-names bundle-file))))
     (return-from execute-link))
   (error "Add support for this operating system to cmp:execute-link")
   )

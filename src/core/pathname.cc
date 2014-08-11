@@ -192,7 +192,7 @@ namespace core {
 	    return translate_component_case(list, fromcase, tocase);
 	} else {
 	    T_sp l;
-	    list = af_copyList(list);
+	    list = cl_copyList(list);
 	    for (l = list; l.notnilp(); l = CONS_CDR(l)) {
 		/* It is safe to pass anything to translate_component_case,
 		 * because it will only transform strings, leaving other
@@ -235,32 +235,32 @@ namespace core {
 	    if (item == kw::_sym_back) {
 		if (i == 0)
 		    return kw::_sym_error;
-		item = af_nth(i-1, directory);
+		item = cl_nth(i-1, directory);
 		if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors)
 		    return kw::_sym_error;
 		if (delete_back && i >= 2) {
 		    T_sp next = CONS_CDR(ptr);
-		    ptr = af_nthcdr(i-2, directory);
+		    ptr = cl_nthcdr(i-2, directory);
 		    ptr.as_or_nil<Cons_O>()->rplacd(next);
 		    i = i - 2 ; // Was i--;
 		}
 	    } else if (item == kw::_sym_up) {
 		if (i == 0)
 		    return kw::_sym_error;
-		item = af_nth(i-1, directory);
+		item = cl_nth(i-1, directory);
 		if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors)
 		    return kw::_sym_error;
 	    } else if (item == kw::_sym_relative || item == kw::_sym_absolute) {
 		if (i > 0)
 		    return kw::_sym_error;
 	    } else if (af_stringP(item)) {
-		size_t l = af_length(item);
+		size_t l = cl_length(item);
 #ifdef BRCL_UNICODE
 		if (brcl_fits_in_base_string(item)) {
 		    item = si_copy_to_simple_base_string(item);
-		} else
+		} else {
 #endif
-		    item = af_copy_seq(item.as<Sequence_O>());
+		    item = cl_copySeq(item.as<T_O>());
 		ptr.as_or_nil<Cons_O>()->rplaca(item);
 		if (logical)
 		    continue;
@@ -269,7 +269,7 @@ namespace core {
 			/* Single dot */
 			if (i == 0)
 			    return kw::_sym_error;
-			af_nthcdr(--i, directory).as_or_nil<Cons_O>()->rplacd(CONS_CDR(ptr));
+			cl_nthcdr(--i, directory).as_or_nil<Cons_O>()->rplacd(CONS_CDR(ptr));
 		    } else if (l == 2 && af_char(item,1) == '.') {
 			ptr.as_or_nil<Cons_O>()->rplaca(kw::_sym_up);
 			goto BEGIN;
@@ -354,8 +354,8 @@ namespace core {
 		component = kw::_sym_directory;
 		goto ERROR;
 	    }
-	} else if ( List_sp tl = directory.asOrNull<List_O>() ) {
-	    directory = af_copyList(directory);
+	} else if ( Cons_sp tl = directory.asOrNull<Cons_O>() ) {
+	    directory = cl_copyList(directory);
 	} else {
 	    x = directory;
 	    component = kw::_sym_directory;
@@ -373,8 +373,8 @@ namespace core {
 	    p->_Device =
 		translate_component_case(device, fromcase, tocase);
 	    directory =
-		translate_list_case(directory, fromcase, tocase).as<List_O>();
-	    p->_Directory = directory.as<List_O>();
+		translate_list_case(directory, fromcase, tocase); // .as<List_O>()
+	    p->_Directory = directory.as<Cons_O>();
 	    p->_Name =
 		translate_component_case(name, fromcase, tocase);
 	    p->_Type =
@@ -386,7 +386,7 @@ namespace core {
 	    eval::funcall(cl::_sym_error,cl::_sym_fileError, kw::_sym_pathname,p);
 	    //cl_error(3, @'file-error', kw::_sym_pathname, p);
 	}
-	p->_Directory = directory.as<List_O>();
+	p->_Directory = directory.as<Cons_O>();
 	return(p);
     }
 
@@ -408,7 +408,7 @@ namespace core {
 	    return pathname;
 	}
 	head = oCadr(directory);
-	if (af_stringP(head) && af_length(head) > 0 && 
+	if (af_stringP(head) && cl_length(head) > 0 && 
 	    af_char(head,0) == '~') {
 	    /* Remove the tilde component */
 	    directory.as_or_nil<Cons_O>()->rplacd(oCddr(directory));
@@ -567,7 +567,7 @@ namespace core {
 	    *end_of_dir = i;
 	    path = Cons_O::create(part, path);
 	}
-	return af_nreverse(path);
+	return cl_nreverse(path);
     }
 
     bool
@@ -678,7 +678,7 @@ namespace core {
 	    T_mv version_mv = af_parseInteger(aux.as<Str_O>(),0,_Nil<T_O>(),10,_lisp->_true());
 	    Integer_sp iversion = version_mv.as<Integer_O>();
 	    Fixnum_sp parsed_length = version_mv.valueGet(1).as<Fixnum_O>();
-	    if (parsed_length->get() == af_length(aux) &&
+	    if (parsed_length->get() == cl_length(aux) &&
 		af_integerP(iversion) && iversion->plusp()) {
 		version = iversion;
 	    } else if (af_string_equal(aux, kw::_sym_newest).notnilp()) {
@@ -739,7 +739,7 @@ namespace core {
 		    *ep = start;
 	    }
 	}
-	if (af_length(device) == 0)
+	if (cl_length(device) == 0)
 	    device = _Nil<T_O>();
     done_device_and_host:
 	path = parse_directories(s, 0, *ep, end, ep);
@@ -1076,7 +1076,7 @@ namespace core {
 			 % _rep_(pathname_orig->_Version));
 	}
 	if (_lisp->pathMax() != -1 &&
-	    af_length(namestring) >= _lisp->pathMax() - 16)
+	    cl_length(namestring) >= _lisp->pathMax() - 16)
 	    SIMPLE_ERROR(BF("Too long filename: %s.") % namestring->get());
 	return namestring;
     }
@@ -1499,7 +1499,7 @@ namespace core {
 					     kw::_sym_test, cl::_sym_equal).as<Integer_O>();
 	if (dir_begin.nilp()) {
 	    pathdir = _Nil<T_O>();
-	} else if (dir_begin->as_int() == af_length(defaultdir)) {
+	} else if (dir_begin->as_int() == cl_length(defaultdir)) {
 	    pathdir = eval::funcall(cl::_sym_subseq, pathdir, dir_begin);
 	    pathdir = Cons_O::create(kw::_sym_relative, pathdir);
 	}
@@ -1528,7 +1528,7 @@ namespace core {
     brcl_wild_string_p(T_sp item)
     {
 	if (af_stringP(item)) {
-	    size_t i, l = af_length(item);
+	    size_t i, l = cl_length(item);
 	    for (i = 0; i < l; i++) {
 		brclChar c = af_char(item, i);
 		if (c == '\\' || c == '*' || c == '?')
@@ -1604,8 +1604,8 @@ namespace core {
 	if (!af_stringP(mask)) {
 	    SIMPLE_ERROR(BF("%s is not supported as mask for pathname-match-p") % _rep_(mask));
 	}
-	return clasp_stringMatch(a, 0, af_length(a),
-				 mask, 0, af_length(mask));
+	return clasp_stringMatch(a, 0, cl_length(a),
+				 mask, 0, cl_length(mask));
     }
 
     static bool
@@ -1715,7 +1715,7 @@ namespace core {
         if (brcl_unlikely(!af_stringP(host)))
             WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
         host = af_string_upcase( host);
-        len = af_length(host);
+        len = cl_length(host);
         parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
         if (UNLIKELY(parsed_len < len)) {
             SIMPLE_ERROR(BF("Wrong host syntax %s") % _rep_(host));
@@ -1748,7 +1748,7 @@ namespace core {
             T_sp to = cl_pathname(oCadr(item));
             set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
         }
-        set = af_nreverse(set.as_or_nil<Cons_O>());
+        set = cl_nreverse(set.as_or_nil<Cons_O>());
         CONS_CDR(pair).as_or_nil<Cons_O>()->rplaca(set);
         return set;
     }
@@ -1768,8 +1768,8 @@ namespace core {
 		return kw::_sym_error;
 	    return l;
 	}
-	ls = af_length(source);
-	lm = af_length(match);
+	ls = cl_length(source);
+	lm = cl_length(match);
 	for(i = j = 0; i < ls && j < lm; ) {
 	    size_t pattern_char = af_char(match,j);
 	    if (pattern_char == '*') {
@@ -1821,7 +1821,7 @@ namespace core {
 		a = CDR(a);
 	    }
 	}
-	return af_nreverse(l.as_or_nil<Cons_O>());
+	return cl_nreverse(l.as_or_nil<Cons_O>());
     }
 
     static T_sp
@@ -1844,7 +1844,7 @@ namespace core {
 	    return pattern;
 
 	new_string = false;
-	l = af_length(pattern);
+	l = cl_length(pattern);
 	StrWithFillPtr_sp token = StrWithFillPtr_O::createBufferString();
 	for (j = i = 0; i < l; ) {
 	    size_t c = af_char(pattern, i);
@@ -1900,7 +1900,7 @@ namespace core {
 	    to = CDR(to);
 	}
 	if (af_consP(l))
-	    l = af_nreverse(l.as_or_nil<Cons_O>());
+	    l = cl_nreverse(l.as_or_nil<Cons_O>());
 	return l;
     }
 

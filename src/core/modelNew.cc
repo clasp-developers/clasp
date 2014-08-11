@@ -245,11 +245,11 @@ vector<listenerIterator>::iterator	tt;
 }
 
 
-ObjectList_sp	Model_O::listOfListenersForSignal(Symbol_sp signal)
+ObjectT_sp	Model_O::listOfListenersForSignal(Symbol_sp signal)
 {_G();
 listenerIterator	it;
 T_sp			obj;
-ObjectList_sp			res;
+ObjectT_sp			res;
     res = ObjectList_O::create();
     for ( it=this->_Listeners.lower_bound(signal); it!=this->_Listeners.upper_bound(signal); it++ )
     {

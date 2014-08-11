@@ -432,7 +432,7 @@ namespace core
 	Cons_sp list = olist.as_or_nil<Cons_O>();
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
-	    int list_length = af_length(list);
+	    int list_length = cl_length(list);
 	    if ( num.notnilp() )
 	    {
 		if ( list_length > num->get() )
@@ -442,16 +442,16 @@ namespace core
 		int need_length = num->get();
 		if ( list_length < need_length )
 		{
-		    Cons_sp reversed = af_nreverse(list).as_or_nil<Cons_O>();
+		    Cons_sp reversed = cl_nreverse(list).as_or_nil<Cons_O>();
 		    T_sp fill_entry = oCar(reversed);
 		    for ( int i=list_length; i<need_length; i++ )
 		    {
 			reversed = Cons_O::create(fill_entry,reversed);
 		    }
-		    list = af_nreverse(reversed).as_or_nil<Cons_O>();
+		    list = cl_nreverse(reversed).as_or_nil<Cons_O>();
 		}
 	    }
-	    VectorObjects_sp vec = VectorObjects_O::make(_Nil<T_O>(),list,af_length(list),false);
+	    VectorObjects_sp vec = VectorObjects_O::make(_Nil<T_O>(),list,cl_length(list),false);
 	    return(Values(vec));
 	}
 	return(Values(_Nil<T_O>()));
@@ -614,7 +614,7 @@ namespace core
 	Cons_sp list = olist.as_or_nil<Cons_O>();
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
-	    int list_length = af_length(list);
+	    int list_length = cl_length(list);
 	    if ( list_length != 2 )
 	    {
 		SIMPLE_ERROR(BF("#C complex number needs two numbers"));

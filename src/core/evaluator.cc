@@ -305,7 +305,7 @@ namespace core
 	    Cons_sp skipFirst = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
 	    Cons_sp add = skipFirst;
 	    // Assemble a Cons for sp_setq
-	    size_t valuesLength = af_length(values);
+	    size_t valuesLength = cl_length(values);
 	    for ( int i=0 ; cur.notnilp(); cur=cCdr(cur), ++i )
 	    {
 		Symbol_sp symbol = oCar(cur).as<Symbol_O>();
@@ -389,7 +389,7 @@ namespace core
 		}
 	    }
 	    code = body;
-	    declares = af_nreverse(declares).as_or_nil<Cons_O>();
+	    declares = cl_nreverse(declares).as_or_nil<Cons_O>();
 #else // This is my old code - it doesn't separate out specials
 	    Cons_sp cur = inputBody;
 	    documentation = _Nil<Str_O>();
@@ -827,7 +827,7 @@ namespace core
 	    // Set up the debugging info - it's empty to begin with
 	    ValueFrame_sp valueFrame = newEnvironment->getActivationFrame().as<ValueFrame_O>();
 	    VectorObjects_sp debuggingInfo = VectorObjects_O::create(_Nil<T_O>(),
-								     af_length(valueFrame),_Nil<T_O>());
+								     cl_length(valueFrame),_Nil<T_O>());
 	    valueFrame->attachDebuggingInfo(debuggingInfo);
 
 
@@ -1356,7 +1356,7 @@ namespace core
 */
 	T_mv sp_quote(Cons_sp args, T_sp environment)
 	{_G();
-	    ASSERTF(af_length(args)==1,BF("Only one argument allowed for QUOTE"));
+	    ASSERTF(cl_length(args)==1,BF("Only one argument allowed for QUOTE"));
 	    return(Values(oCar(args)));
 	}
 
@@ -1424,7 +1424,7 @@ namespace core
 	    // TODO: handle trace
 	    T_sp functionName;
 	    Cons_sp functions = oCar(args).as_or_nil<Cons_O>();
-	    FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(af_length(functions),environment);
+	    FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(cl_length(functions),environment);
 	    Cons_sp body = cCdr(args);
 	    Cons_sp cur = functions;
 	    LOG(BF("functions part=%s") % functions->__repr__() );
@@ -1462,7 +1462,7 @@ namespace core
 	    Cons_sp cur = functions;
 	    LOG(BF("functions part=%s") % functions->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
-	    FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(af_length(functions),environment);
+	    FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(cl_length(functions),environment);
 	    while ( cur.notnilp() )
 	    {
 		Cons_sp oneDef = cCar(cur);
@@ -1777,7 +1777,7 @@ namespace core
 			LispDebugger::step();
 #endif
 		    }
-		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(af_length(cCdr(form)),_Nil<ActivationFrame_O>()));
+		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(cCdr(form)),_Nil<ActivationFrame_O>()));
 		    evaluateIntoActivationFrame(evaluatedArgs,cCdr(form),environment);
 		    try { result = eval::applyToActivationFrame(headCons,evaluatedArgs);}
 		    catch (...) { result = handleConditionInEvaluate(environment);};
@@ -2121,7 +2121,7 @@ namespace core
 //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
 		if ( af_functionP(headFunc) )
 		{
-		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(af_length(cCdr(form)),
+		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(cCdr(form)),
 								     _Nil<ActivationFrame_O>()));
 		    evaluateIntoActivationFrame(evaluatedArgs,cCdr(form),environment);
 #ifdef TRAP_ERRORS

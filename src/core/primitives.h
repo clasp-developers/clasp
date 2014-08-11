@@ -38,7 +38,7 @@ namespace core
     T_mv af_notany(T_sp predicate, Cons_sp sequences);
     T_mv af_every(T_sp predicate, Cons_sp sequences);
 
-    List_mv af_mapcar(T_sp func_desig, Cons_sp lists);
+    T_sp cl_mapcar(T_sp func_desig, Cons_sp lists);
 
     T_sp af_append(Cons_sp lists);
 
@@ -72,10 +72,10 @@ namespace core
 	int		_Index;
     public:
 	VectorStepper(Vector_sp domain) : _Domain(domain), _Index(0) {}; 
-	virtual bool advance() { this->_Index++; return (this->_Index >= af_length(this->_Domain));};
+	virtual bool advance() { this->_Index++; return (this->_Index >= cl_length(this->_Domain));};
 	virtual T_sp element() const
 	{
-	    if (this->_Index<af_length(this->_Domain))
+	    if (this->_Index<cl_length(this->_Domain))
 	    {
 		return this->_Domain->elt(this->_Index);
 	    } else

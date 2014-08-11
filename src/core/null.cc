@@ -16,7 +16,6 @@ namespace core
     void Null_O::exposeCando(::core::Lisp_sp lisp)
     {
 	::core::class_<Null_O>()
-//	.initArgs("(self)")
 	;
     }
 
@@ -52,9 +51,10 @@ namespace core
 
     void Null_O::initialize()
     {_OF();
-        this->T_O::initialize();
+//        this->T_O::initialize();
+        IMPLEMENT_MEF(BF("Null needs to implement single inheritance"));
 	this->Symbol_O::initialize();
-	this->List_O::initialize();
+//	this->List_O::initialize();
     }
 
 
@@ -63,6 +63,6 @@ namespace core
     {_OF();
 	return "#<NULL--- NON-NULL instance of NULL!!!!!>";
     }
-    
+
 
 }; /* core */

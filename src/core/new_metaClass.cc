@@ -213,7 +213,7 @@ namespace core
     {_G();
 	if ( IS_SYMBOL_UNDEFINED(mc->className()) ) return;
 	if ( !supers->gethash(mc,_Unbound<T_O>()).unboundp() ) return;
-	supers->hash_table_setf_gethash(mc,Fixnum_O::create(af_length(arrayedSupers)));
+	supers->hash_table_setf_gethash(mc,Fixnum_O::create(cl_length(arrayedSupers)));
 	arrayedSupers->vectorPushExtend(mc,8);
 	for ( Cons_sp cur=mc->directSuperclasses(); cur.notnilp(); cur=cCdr(cur) )
 	{
@@ -228,7 +228,7 @@ namespace core
 	HashTable_sp supers(af_make_hash_table(cl::_sym_eq,Fixnum_O::create(8),DoubleFloat_O::create(1.5),DoubleFloat_O::create(2.0)));
 	VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),16,0,true));
 	this->accumulateSuperClasses(supers,arrayedSupers,this->sharedThis<Class_O>());
-	vector<list<int> > graph(af_length(arrayedSupers));
+	vector<list<int> > graph(cl_length(arrayedSupers));
 
 	class TopoSortSetup : public KeyValueMapper {
 	private:
@@ -251,7 +251,7 @@ namespace core
 	supers->lowLevelMapHash(&topoSortSetup);
 #ifdef DEBUG_ON
 	{
-	    for ( size_t zi(0),ziEnd(af_length(arrayedSupers)); zi<ziEnd; ++zi )
+	    for ( size_t zi(0),ziEnd(cl_length(arrayedSupers)); zi<ziEnd; ++zi )
 	    {
 		stringstream ss;
 		ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName() ).str();

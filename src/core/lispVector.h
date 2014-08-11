@@ -9,56 +9,58 @@
 namespace core
 {
 
-FORWARD(Vector);
-
-
+    FORWARD(Vector);
 
 /*! A one dimensional vector of objects */
-class Vector_O : public Array_O, public Sequence_O
-{
-    LISP_VIRTUAL_BASE2(T_O,Array_O,Sequence_O);
-    LISP_CLASS(core,ClPkg,Vector_O,"vector");
+// class Vector_O : public Array_O, public T_O
+    class Vector_O : public Array_O
+    {
+        LISP_BASE1(Array_O);
+        LISP_CLASS(core,ClPkg,Vector_O,"vector");
+    public:
+        void archiveBase(core::ArchiveP node);
+    public:
+        explicit Vector_O(): Array_O() {} ;
+        virtual ~Vector_O() {};
+    public:
+        void initialize();
+    private: // instance variables here
+
+    public: // Functions here
+
+        bool adjustableArrayP() const { return false;};
+        uint vector_length() const { return this->dimension();};
+        virtual uint dimension() const { SUBIMP(); };
+
+        virtual T_sp& operator[](uint index) {SUBIMP();}
+
+        virtual void swapElements(uint idx1, uint idx2) {SUBIMP();};
+
+        virtual size_t elementSizeInBytes() const {SUBIMP();}
+        virtual T_sp elementType() const {SUBIMP();}
+        virtual int rank() const { return 1;};
+        virtual int arrayDimension(int axisNumber) const;
+        virtual Cons_sp arrayDimensions() const;
+        virtual int arrayTotalSize() const { return this->length();};
+
+        virtual Fixnum_sp vectorPush(T_sp newElement) {SUBIMP();};
+        virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension=1) {SUBIMP();};
 
 
-public:
-    void archiveBase(core::ArchiveP node);
-public:
-    explicit Vector_O(): T_O(), Array_O(), Sequence_O() {} ;
-    virtual ~Vector_O() {};
-public:
-    void initialize();
-private: // instance variables here
+        virtual void setFillPointer(size_t idx) {SUBIMP();};
 
-public: // Functions here
-
-    bool adjustableArrayP() const { return false;};
-    uint vector_length() const { return this->dimension();};
-    virtual uint dimension() const { SUBIMP(); };
-    uint length() const { return this->dimension(); };
-
-    Sequence_sp reverse();
-    Sequence_sp nreverse();
-
-    virtual T_sp& operator[](uint index) {SUBIMP();}
-
-    virtual void swapElements(uint idx1, uint idx2) {SUBIMP();};
-
-    virtual size_t elementSizeInBytes() const {SUBIMP();}
-    virtual T_sp elementType() const {SUBIMP();}
-    virtual int rank() const { return 1;};
-    virtual int arrayDimension(int axisNumber) const;
-    virtual Cons_sp arrayDimensions() const;
-    virtual int arrayTotalSize() const { return this->length();};
-
-    virtual Fixnum_sp vectorPush(T_sp newElement) {SUBIMP();};
-    virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension=1) {SUBIMP();};
+        virtual void* addressOfBuffer() const {SUBIMP();};
 
 
-    virtual void setFillPointer(size_t idx) {SUBIMP();};
+        INHERIT_SEQUENCE virtual uint length() const { return this->dimension(); };              
+        INHERIT_SEQUENCE virtual T_sp reverse();
+        INHERIT_SEQUENCE virtual T_sp nreverse();
+        INHERIT_SEQUENCE virtual T_sp elt(int index) const {SUBIMP();};
+        INHERIT_SEQUENCE virtual T_sp setf_elt(int index, T_sp value) {SUBIMP();};
+        INHERIT_SEQUENCE virtual T_sp subseq(int start, T_sp end) const {SUBIMP();};
+        INHERIT_SEQUENCE virtual T_sp setf_subseq(int start, T_sp end, T_sp newSubseq) {SUBIMP();};
 
-    virtual void* addressOfBuffer() const {SUBIMP();};
-
-}; /* core */
+    }; /* core */
 };
 TRANSLATE(core::Vector_O);
 
@@ -75,7 +77,7 @@ namespace core {
 			T_sp displaced_to=_Nil<T_O>(),
 			T_sp displaced_index_offset=_Nil<T_O>(),
 			T_sp initial_element=_Nil<T_O>(),
-			Sequence_sp initial_contents=_Nil<Sequence_O>() );
+			T_sp initial_contents=_Nil<T_O>() );
 
 };
 #endif /* _core_Vector_H */

@@ -36,7 +36,7 @@ namespace core
 	    ASSERTF(!type.nilp(), BF("Tried to make-structure with type = nil"));
 //	printf("%s:%d  af_makeStructure of %s  slot_values: %s\n",
 //	       __FILE__, __LINE__, _rep_(type).c_str(), _rep_(slot_values).c_str());
-	    Instance_sp so = Instance_O::allocateInstance(ctype,af_length(slot_values)).as<Instance_O>();
+	    Instance_sp so = Instance_O::allocateInstance(ctype,cl_length(slot_values)).as<Instance_O>();
 	    int idx = 0;
 	    for ( Cons_sp slot=slot_values; !slot.nilp(); slot=cCdr(slot) )
 	    {
@@ -221,7 +221,7 @@ namespace core
     {_G();
 	StructureObject_sp co = StructureObject_O::create();
 	co->_Type = type;
-	co->_Slots.resize(af_length(slot_values));
+	co->_Slots.resize(cl_length(slot_values));
 	int i=0;
 	for ( Cons_sp cur=slot_values; cur.notnilp(); cur = cCdr(cur), i++ )
 	{

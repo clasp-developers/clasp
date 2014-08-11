@@ -234,15 +234,15 @@ namespace core
 #define ARGS_af_append2 "(l1 l2)"
 #define DECL_af_append2 ""
 #define DOCS_af_append2 "append2 - append l2 to l1 by copying l1 and pointing the end of it to l2"
-    List_sp af_append2(Cons_sp x, Cons_sp y)
+    T_sp af_append2(Cons_sp x, Cons_sp y)
     {_G();
         return Cons_O::append(x,y);
     };
 
 
-    List_sp Cons_O::append(List_sp x, List_sp y)
+    T_sp Cons_O::append(T_sp x, T_sp y)
     {
-	T_sp head(_Nil<List_O>()); // This will root the new list
+	T_sp head(_Nil<T_O>()); // This will root the new list
         T_sp* tailP = &head;    // This will keep track of the end of the new list
 	if ( x.notnilp() ) {
 	    Cons_O::appendInto(head,tailP,x);
@@ -252,11 +252,11 @@ namespace core
 	}
 	/* I WAS DOING THIS WHY??? head = y; */
         *tailP = y;
-	return head.as<List_O>();
+	return head;
     }
 
 #if 0
-    List_sp Cons_O::append(List_sp x, List_sp y)
+    T_sp Cons_O::append(T_sp x, T_sp y)
     {
 	T_sp head(_Nil<List_O>());
 	T_sp* tail_gc_safe = &head;
@@ -441,7 +441,7 @@ namespace core
 
 
 
-    Sequence_sp Cons_O::subseq(int start, T_sp end) const
+    T_sp Cons_O::subseq(int start, T_sp end) const
     {_G();
 	ql::list l(_lisp);
 	int iend;
@@ -542,7 +542,7 @@ namespace core
 //
 // Constructor
 //
-    Cons_O::Cons_O() : T_O(), Base(), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
+    Cons_O::Cons_O() : T_O(), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
     {
 	ASSERTNOTNULL(this->_Car);
 	ASSERTNOTNULL(this->_Cdr);
@@ -701,7 +701,7 @@ namespace core
 
 
 
-    Sequence_sp Cons_O::reverse()
+    T_sp Cons_O::reverse()
     {_G();
 	Cons_sp reversed = _Nil<Cons_O>();
 	Cons_sp cur = this->sharedThis<Cons_O>();
@@ -714,7 +714,7 @@ namespace core
     }
 
 
-    List_sp Cons_O::revappend(T_sp tail)
+    T_sp Cons_O::revappend(T_sp tail)
     {_G();
 	Cons_sp reversed = _Nil<Cons_O>();
 	Cons_sp cur = this->sharedThis<Cons_O>();
@@ -735,7 +735,7 @@ namespace core
 
 
 
-    Sequence_sp Cons_O::nreverse()
+    T_sp Cons_O::nreverse()
     {_OF();
 	Cons_sp reversed = _Nil<Cons_O>();
 	Cons_sp cur = this->sharedThis<Cons_O>();
@@ -752,7 +752,7 @@ namespace core
 
 
 
-    List_sp Cons_O::nreconc(T_sp tail)
+    T_sp Cons_O::nreconc(T_sp tail)
     {_OF();
 	Cons_sp reversed = _Nil<Cons_O>();
 	Cons_sp original_first = this->sharedThis<Cons_O>();

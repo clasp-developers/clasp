@@ -71,7 +71,7 @@ void	Binder_O::archiveBase(ArchiveP node)
 #if 0
     Render_sp Binder_O::rendered(Cons_sp kargs)
     {_G();
-	DisplayList_sp dl = _lisp->create<DisplayList_O>();
+	DisplayT_sp dl = _lisp->create<DisplayList_O>();
 	Binder_O::iterator	oi;
 	for ( oi=this->_Bindings.begin(); oi!=this->_Bindings.end(); oi++ )
 	{

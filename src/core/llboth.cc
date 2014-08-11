@@ -7,7 +7,7 @@
 	// Fill required arguments
 	{_BLOCK_TRACE("Assigning required arguments");
 	    LOG(BF("There are %d required arguments") % reqs.size() );
-	    if ( af_length(args) < reqs.size() )
+	    if ( cl_length(args) < reqs.size() )
 	    {
 		TOO_FEW_ARGUMENTS_ERROR();
 	    }
@@ -31,7 +31,7 @@
 						   /*,Environment_sp env*/ )
     {_G();
 	// Fill required arguments
-	size_t length_args(af_length(args));
+	size_t length_args(cl_length(args));
 	size_t reqs_size(reqs.size());
 	if ( length_args < reqs_size )
 	{
@@ -67,7 +67,7 @@
 	    for ( ; it!=optionals.end(); it++ )
 	    {
 		LOG(BF("Checking if it->_Target.nilp() = %d") % it->_ArgTarget.nilp() );
-		if ( arg_idx == af_length(args) )
+		if ( arg_idx == cl_length(args) )
 		{
 		    LOG(BF("It is nil - switching to filling with defaults"));
 		    break;
@@ -111,7 +111,7 @@
 						   /*ActivationFrame*/DynamicScopeManager& scope
 						   /*,Environment_sp env*/)
     {_G();
-	int num_args = af_length(args);
+	int num_args = cl_length(args);
 	// Fill required arguments
 	LOG(BF("There are %d optional arguments") % optionals.size() );
 	vector<OptionalArgument>::const_iterator it = optionals.begin();
@@ -188,7 +188,7 @@
 	{
 	    ql::list lrest(_lisp);
 	    // Create a copy of the rest of the list
-	    for ( int i=arg_idx, iEnd(af_length(args)); i<iEnd; i++ ) lrest << args->entry(i);
+	    for ( int i=arg_idx, iEnd(cl_length(args)); i<iEnd; i++ ) lrest << args->entry(i);
 	    scope.new_binding(restarg,lrest.cons());
 	}
     }
@@ -213,7 +213,7 @@
 	LOG(BF(":allow-other-keywords --> %d") % passed_allow_other_keys );
 	T_sp first_illegal_keyword(_Nil<T_O>());
 	{_BLOCK_TRACEF(BF("Copy passed keyword values to environment"));
-	    for ( int i(arg_idx),iEnd(af_length(args)); i<iEnd; i+=2 )
+	    for ( int i(arg_idx),iEnd(cl_length(args)); i<iEnd; i+=2 )
 	    {
 		Symbol_sp keyword = args->entry(i).as<Symbol_O>();
 		T_sp value = args->entry(i+1);
@@ -290,7 +290,7 @@
 	LOG(BF(":allow-other-keywords --> %d") % passed_allow_other_keys );
 	T_sp first_illegal_keyword(_Nil<T_O>());
 	{_BLOCK_TRACEF(BF("Copy passed keyword values to the ActivationFrame"));
-	    for ( int i=arg_idx,iEnd(af_length(args)); i<iEnd; i += 2 )
+	    for ( int i=arg_idx,iEnd(cl_length(args)); i<iEnd; i += 2 )
 	    {
 		Symbol_sp keyword = args->entry(i).as<Symbol_O>();
 		T_sp value = args->entry(i+1);

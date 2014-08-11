@@ -109,7 +109,6 @@ local sources =
       cons.cc
       write_object.cc
 	    array.cc
-	foundation.cc 
       strWithFillPtr.cc
 	    lispMath.cc
 	    lispStream.cc
@@ -175,6 +174,7 @@ local sources =
 		multiStringBuffer.cc
 		candoOpenMp.cc
 	     /externals//boostAndExpatLibs 
+	foundation.cc 
              		;
 
 #Declares virtual target af_function_templates dependent on the two

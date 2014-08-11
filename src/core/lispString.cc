@@ -12,9 +12,10 @@
 namespace core
 {
 
-    static bool member_charbag(brclChar c, Sequence_sp char_bag)
+    static bool member_charbag(brclChar c, SEQUENCE_sp char_bag)
     {
-	if ( List_sp lcur = char_bag.asOrNull<List_O>() ) {
+        if ( char_bag.nilp() ) return false;
+	if ( Cons_sp lcur = char_bag.asOrNull<Cons_O>() ) {
 	    for ( ; lcur.notnilp(); lcur = cCdr(lcur) ) {
 		if ( oCar(lcur)->eql(Character_O::create(c))) return true;
 	    }
@@ -26,12 +27,12 @@ namespace core
 	return false;
     }
 
-    static Str_sp string_trim0(bool left_trim, bool right_trim, Sequence_sp char_bag, T_sp tstrng)
+    static Str_sp string_trim0(bool left_trim, bool right_trim, T_sp char_bag, T_sp tstrng)
     {
 	int i, j;
 	Str_sp strng = coerce::stringDesignator(tstrng);
 	i = 0;
-	j = af_length(strng);
+	j = cl_length(strng);
 	if (left_trim)
 	{
 	    for (;  i < j;  i++) {
@@ -54,26 +55,26 @@ namespace core
 
     
     
-#define ARGS_af_string_trim "(charbag str)"
-#define DECL_af_string_trim ""
-#define DOCS_af_string_trim "string_trim"
-    Str_sp af_string_trim(Sequence_sp charbag, T_sp str)
+#define ARGS_cl_stringTrim "(charbag str)"
+#define DECL_cl_stringTrim ""
+#define DOCS_cl_stringTrim "string_trim"
+    Str_sp cl_stringTrim(T_sp charbag, T_sp str)
     {_G();
 	return string_trim0(true,true,charbag,str);
     };
 
-#define ARGS_af_string_left_trim "(charbag str)"
-#define DECL_af_string_left_trim ""
-#define DOCS_af_string_left_trim "string_left_trim"
-    Str_sp af_string_left_trim(Sequence_sp charbag, T_sp str)
+#define ARGS_cl_stringLeftTrim "(charbag str)"
+#define DECL_cl_stringLeftTrim ""
+#define DOCS_cl_stringLeftTrim "string_left_trim"
+    Str_sp cl_stringLeftTrim(T_sp charbag, T_sp str)
     {_G();
 	return string_trim0(true,false,charbag,str);
     };
 
-#define ARGS_af_string_right_trim "(charbag str)"
-#define DECL_af_string_right_trim ""
-#define DOCS_af_string_right_trim "string_right_trim"
-    Str_sp af_string_right_trim(Sequence_sp charbag, T_sp str)
+#define ARGS_cl_stringRightTrim "(charbag str)"
+#define DECL_cl_stringRightTrim ""
+#define DOCS_cl_stringRightTrim "string_right_trim"
+    Str_sp cl_stringRightTrim(T_sp charbag, T_sp str)
     {_G();
 	return string_trim0(false,true,charbag,str);
     };
@@ -218,12 +219,12 @@ namespace core
 	Defun(nstring_upcase);
 	SYMBOL_EXPORT_SC_(ClPkg,nstring_downcase);
 	Defun(nstring_downcase);
-	SYMBOL_EXPORT_SC_(ClPkg,string_trim);
-	Defun(string_trim);
-	SYMBOL_EXPORT_SC_(ClPkg,string_left_trim);
-	Defun(string_left_trim);
-	SYMBOL_EXPORT_SC_(ClPkg,string_right_trim);
-	Defun(string_right_trim);
+	SYMBOL_EXPORT_SC_(ClPkg,stringTrim);
+	ClDefun(stringTrim);
+	SYMBOL_EXPORT_SC_(ClPkg,stringLeftTrim);
+	ClDefun(stringLeftTrim);
+	SYMBOL_EXPORT_SC_(ClPkg,stringRightTrim);
+	ClDefun(stringRightTrim);
 	SYMBOL_EXPORT_SC_(ClPkg,char);
 	Defun(char);
     }

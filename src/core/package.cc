@@ -144,17 +144,17 @@ namespace core
 
     
     
-#define ARGS_af_listAllPackages "()"
-#define DECL_af_listAllPackages ""
-#define DOCS_af_listAllPackages "listAllPackages"
-    List_mv af_listAllPackages()
+#define ARGS_cl_listAllPackages "()"
+#define DECL_cl_listAllPackages ""
+#define DOCS_cl_listAllPackages "listAllPackages"
+    T_sp cl_listAllPackages()
     {_G();
 	Cons_sp packages = _Nil<Cons_O>();
 	for ( auto mi = _lisp->packages().begin(); mi!= _lisp->packages().end(); mi++ )
 	{
 	    packages = Cons_O::create(*mi,packages);
 	}
-	return(Values(packages));
+	return packages;
     }
 
 
@@ -345,7 +345,7 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,makePackage);
 	Defun(makePackage);
 	SYMBOL_EXPORT_SC_(ClPkg,listAllPackages);
-	Defun(listAllPackages);
+	ClDefun(listAllPackages);
 	SYMBOL_EXPORT_SC_(ClPkg,use_package);
 	Defun(use_package);
 	SYMBOL_EXPORT_SC_(ClPkg,unuse_package);

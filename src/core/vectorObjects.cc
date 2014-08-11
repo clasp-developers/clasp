@@ -25,7 +25,7 @@ namespace core
 #define ARGS_VectorObjects_O_make "(initial-element initial-contents dimension adjustable)"
 #define DECL_VectorObjects_O_make ""
 #define DOCS_VectorObjects_O_make "make VectorObjects args: initial-element initial-contents dimension"
-    VectorObjects_sp VectorObjects_O::make(T_sp initialElement, Sequence_sp initialContents, int dimension, bool adjustable)
+    VectorObjects_sp VectorObjects_O::make(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable)
     {_G();
         GC_ALLOCATE(VectorObjects_O,vo );
 	vo->setup(initialElement,initialContents,dimension,adjustable);
@@ -33,7 +33,7 @@ namespace core
     }
 
 
-    VectorObjects_O::VectorObjects_O() :  T_O(), Base(), _ElementType(cl::_sym_T_O), _Adjustable(true) {};
+    VectorObjects_O::VectorObjects_O() :  Base(), _ElementType(cl::_sym_T_O), _Adjustable(true) {};
 
     void VectorObjects_O::exposeCando(::core::Lisp_sp lisp)
     {
@@ -76,7 +76,7 @@ namespace core
 
 
 
-    void VectorObjects_O::setup(T_sp initialElement, Sequence_sp initialContents, int dimension, bool adjustable)
+    void VectorObjects_O::setup(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable)
     {_G();
 	this->_Adjustable = adjustable;
 	if ( initialElement.notnilp() && initialContents.notnilp() )
@@ -94,10 +94,10 @@ namespace core
 
 
 
-void VectorObjects_O::fillInitialContents(Sequence_sp ic)
+void VectorObjects_O::fillInitialContents(T_sp ic)
 {
-    if ( ic->length() != this->dimension() )
-	SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % ic->length() % this->dimension() );
+    if ( cl_length(ic) != this->dimension() )
+	SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl_length(ic) % this->dimension() );
     if ( Cons_sp cInitialContents = ic.asOrNull<Cons_O>() ) {
 	size_t i = 0;
 	for ( Cons_sp cur=cInitialContents; cur.notnilp(); cur=cCdr(cur))
@@ -119,7 +119,7 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
 
 
 
-    void VectorObjects_O::adjust(T_sp initialElement, Sequence_sp initialContents, int dimension )
+    void VectorObjects_O::adjust(T_sp initialElement, T_sp initialContents, int dimension )
     {_G();
 	if ( initialElement.notnilp() && initialContents.notnilp() )
 	{
@@ -200,7 +200,7 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
 
     int VectorObjects_O::arrayRowMajorIndex(Cons_sp indices) const
     {
-	ASSERTF(af_length(indices) == 1, BF("Vectors have only one dimension - you passed indices %s") % _rep_(indices) );
+	ASSERTF(cl_length(indices) == 1, BF("Vectors have only one dimension - you passed indices %s") % _rep_(indices) );
 	return oCar(indices).as<Fixnum_O>()->get();
     }
 
@@ -217,7 +217,7 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
 
     T_sp VectorObjects_O::aref(Cons_sp indices) const
     {_G();
-	ASSERTF(af_length(indices)==1,BF("Vectors only support one index - passed: %s") % _rep_(indices) );
+	ASSERTF(cl_length(indices)==1,BF("Vectors only support one index - passed: %s") % _rep_(indices) );
 	return this->elt(oCar(indices).as<Integer_O>()->as_int());
     }
 
@@ -229,7 +229,7 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
 
     T_sp VectorObjects_O::setf_aref(Cons_sp indices_val)
     {_G();
-	ASSERTF(af_length(indices_val)==2,BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val) );
+	ASSERTF(cl_length(indices_val)==2,BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val) );
 	return this->setf_elt(oCar(indices_val).as<Integer_O>()->as_int(),oCadr(indices_val));
     }
 
@@ -245,7 +245,7 @@ void VectorObjects_O::fillInitialContents(Sequence_sp ic)
     };
 
 
-    Sequence_sp VectorObjects_O::subseq(int istart, T_sp end) const
+    T_sp VectorObjects_O::subseq(int istart, T_sp end) const
     {_G();
 	int iend = (end.nilp()) ? this->length() : end.as<Fixnum_O>()->get();
 	if ( istart < 0 || iend > this->length() )

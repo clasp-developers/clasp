@@ -80,7 +80,7 @@ namespace core
         if ( hash_table.nilp() ) {
             SIMPLE_ERROR(BF("maphash called with nil hash-table"));
         }
-	for ( size_t it=0, itEnd = af_length(hash_table->_HashTable); it<itEnd; ++it )
+	for ( size_t it=0, itEnd = cl_length(hash_table->_HashTable); it<itEnd; ++it )
 	{
 
 	    Cons_sp first = hash_table->_HashTable->operator[](it).as_or_nil<Cons_O>();
@@ -353,9 +353,9 @@ namespace core
     uint HashTable_O::calculateHashTableCount() const
     {_OF();
 	uint cnt = 0;
-	for ( size_t it(0), itEnd(af_length(this->_HashTable)); it<itEnd; ++it )
+	for ( size_t it(0), itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
-	    cnt += af_length((this->_HashTable->operator[](it)).as_or_nil<Cons_O>());
+	    cnt += cl_length((this->_HashTable->operator[](it)).as_or_nil<Cons_O>());
 	}
 	return cnt;
     }
@@ -364,7 +364,7 @@ namespace core
 
     uint HashTable_O::hashTableSize() const
     {_OF();
-	return af_length(this->_HashTable);
+	return cl_length(this->_HashTable);
     }
 
 
@@ -413,7 +413,7 @@ namespace core
     Cons_sp HashTable_O::bucketsFind(T_sp key) const
     {
         ASSERT(this->_HashTable);
-        uint index = this->sxhashKey(key,af_length(this->_HashTable), false );
+        uint index = this->sxhashKey(key,cl_length(this->_HashTable), false );
         Cons_sp keyValueCons = this->findAssoc(index,key);
         return keyValueCons;
     }
@@ -494,7 +494,7 @@ namespace core
 //        printf("%s:%d key@%p value@%p\n", __FILE__, __LINE__, key.px_ref(), value.px_ref() );
         Cons_sp keyValuePair = this->tableRef(key);
         if ( keyValuePair.nilp() ) {
-            uint index = this->sxhashKey(key,af_length(this->_HashTable),true /*Will add key*/);
+            uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /*Will add key*/);
             Cons_sp newKeyValue = Cons_O::create(key,value);
 //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.px_ref());
             Cons_sp newEntry = Cons_O::create(newKeyValue,this->_HashTable->operator[](index));
@@ -508,7 +508,7 @@ namespace core
         } else {
             keyValuePair->setOCdr(value);
         }
-        if ( this->_HashTableCount > this->_RehashThreshold*af_length(this->_HashTable) )
+        if ( this->_HashTableCount > this->_RehashThreshold*cl_length(this->_HashTable) )
         {
             LOG(BF("Expanding hash table"));
             this->rehash(true,_Unbound<T_O>());
@@ -519,24 +519,24 @@ namespace core
     Cons_sp HashTable_O::rehash(bool expandTable, T_sp findKey )
     {_OF();
 	ASSERTF(!this->_RehashSize->zerop(),BF("RehashSize is zero - it shouldn't be"));
-	ASSERTF(af_length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
+	ASSERTF(cl_length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
         Cons_sp foundKeyValuePair(_Nil<Cons_O>());
-	LOG(BF("At start of expandHashTable current hash table size: %d") % af_length(this->_HashTable) );
+	LOG(BF("At start of expandHashTable current hash table size: %d") % cl_length(this->_HashTable) );
         uint newSize = 0;
         if ( expandTable ) {
             if ( af_integerP(this->_RehashSize) ) {
-                newSize = af_length(this->_HashTable) + this->_RehashSize.as<Integer_O>()->as_int();
+                newSize = cl_length(this->_HashTable) + this->_RehashSize.as<Integer_O>()->as_int();
             } else if ( af_floatP(this->_RehashSize) ) {
-                newSize = af_length(this->_HashTable) * this->_RehashSize->as_double();
+                newSize = cl_length(this->_HashTable) * this->_RehashSize->as_double();
             }
         } else {
-            newSize = af_length(this->_HashTable);
+            newSize = cl_length(this->_HashTable);
         }
 	VectorObjects_sp oldTable(VectorObjects_O::create());
 	oldTable->swap(this->_HashTable);
 	newSize = this->resizeEmptyTable(newSize);
 	LOG(BF("Resizing table to size: %d") % newSize );
-	for ( size_t it(0), itEnd(af_length(oldTable)); it<itEnd; ++it )
+	for ( size_t it(0), itEnd(cl_length(oldTable)); it<itEnd; ++it )
 	{
 	    {_BLOCK_TRACEF(BF("Re-indexing hash table row index[%d]") % it );
 #ifdef DEBUG_ALL
@@ -569,7 +569,7 @@ namespace core
                                 foundKeyValuePair = pair;
                             }
                         }
-                        uint index = this->sxhashKey(key,af_length(this->_HashTable),true /* Will add key */);
+                        uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /* Will add key */);
                         LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
                         cur->setCdr(this->_HashTable->operator[](index).as_or_nil<Cons_O>());
                         this->_HashTable->operator[](index) = cur;
@@ -602,7 +602,7 @@ namespace core
 #ifndef DUMP_LOW_LEVEL
 	ss << "#<" << this->_instanceClass()->classNameAsString() << std::endl;
 #endif
-	for ( size_t it(0),itEnd(af_length(this->_HashTable)); it<itEnd; ++it )
+	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
 	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
 	    ss << "HashTable["<<it<<"]: " << std::endl;
@@ -627,7 +627,7 @@ namespace core
 
     void HashTable_O::mapHash(std::function<void(T_sp,T_sp)> const& fn)
     {
-	for ( size_t it(0),itEnd(af_length(this->_HashTable)); it<itEnd; ++it )
+	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
 	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
 	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
@@ -642,7 +642,7 @@ namespace core
 
     void HashTable_O::terminatingMapHash(std::function<bool(T_sp,T_sp)> const& fn)
     {
-	for ( size_t it(0),itEnd(af_length(this->_HashTable)); it<itEnd; ++it )
+	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
 	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
 	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
@@ -660,7 +660,7 @@ namespace core
 
     void HashTable_O::lowLevelMapHash(KeyValueMapper* mapper) const
     {_OF();
-	for ( size_t it(0),itEnd(af_length(this->_HashTable)); it<itEnd; ++it )
+	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
 	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
 	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
@@ -679,12 +679,12 @@ namespace core
 
     int HashTable_O::hashTableNumberOfHashes() const
     {
-	return af_length(this->_HashTable);
+	return cl_length(this->_HashTable);
     }
 
     Cons_sp HashTable_O::hashTableAlistAtHash(int hash) const
     {
-	ASSERTF(hash >=0 && hash < af_length(this->_HashTable),BF("Illegal hash value[%d] must between [0,%d)") % hash % af_length(this->_HashTable));
+	ASSERTF(hash >=0 && hash < cl_length(this->_HashTable),BF("Illegal hash value[%d] must between [0,%d)") % hash % cl_length(this->_HashTable));
 	return this->_HashTable->operator[](hash).as_or_nil<Cons_O>();
     }
 

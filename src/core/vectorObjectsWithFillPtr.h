@@ -22,7 +22,7 @@ namespace core
     private: // instance variables here
 	int 		_FillPtr;
     public:
-	static VectorObjectsWithFillPtr_sp make(T_sp initial_element, Sequence_sp initial_values, int dimension, int fillPtr, bool adjustable );
+	static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, int fillPtr, bool adjustable );
 
     public: // Functions here
 

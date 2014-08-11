@@ -58,7 +58,7 @@ namespace core
 #define DOCS_af_quasiquote "quasiquote"
     T_mv af_quasiquote(Cons_sp whole, T_sp env)
     {_G();
-	ASSERT(af_length(whole)==2);
+	ASSERT(cl_length(whole)==2);
 	T_sp form = oCadr(whole);
 	return af_backquote_completely_process(form);
     };
@@ -163,7 +163,7 @@ namespace core
 		{
 		    SIMPLE_ERROR(BF("Malformed ,%s") % _rep_(p) );
 		}
-		nreconc = af_nreconc(q,Cons_O::create(oCadr(cp))).as_or_nil<Cons_O>(); // eval::funcall(cl::_sym_nreconc,q,Cons_O::create(oCadr(cp)))); // HERE_scCONS_CREATE(oCadr(cp))).as_or_nil<Cons_O>();
+		nreconc = cl_nreconc(q,Cons_O::create(oCadr(cp))).as_or_nil<Cons_O>(); // eval::funcall(cl::_sym_nreconc,q,Cons_O::create(oCadr(cp)))); // HERE_scCONS_CREATE(oCadr(cp))).as_or_nil<Cons_O>();
 		result = Cons_O::create(_sym_STARbq_appendSTAR, nreconc);
 		goto DONE;
 	    }
@@ -185,7 +185,7 @@ namespace core
 	    step++;
 	}
 	{
-	    nr = af_nreconc(q,Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p))).as_or_nil<Cons_O>();
+	    nr = cl_nreconc(q,Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p))).as_or_nil<Cons_O>();
 //	    nr = eval::funcall(cl::_sym_nreconc,q,Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p))).as_or_nil<Cons_O>();
 	}
 	result = Cons_O::create(_sym_STARbq_appendSTAR, nr);
@@ -373,9 +373,9 @@ namespace core
 				 Cons_O::create(oCdar(args))
 						).isTrue() )
 	    {
-		Cons_sp rev1 = af_reverse(oCdar(args).as_or_nil<Cons_O>()).as_or_nil<Cons_O>();
-		Cons_sp rev2 = af_reverse(cCdr(rev1)).as_or_nil<Cons_O>();
-		Cons_sp car_last_car_args = oCar(af_last(oCar(args).as_or_nil<Cons_O>())).as_or_nil<Cons_O>();
+		Cons_sp rev1 = cl_reverse(oCdar(args).as_or_nil<Cons_O>()).as_or_nil<Cons_O>();
+		Cons_sp rev2 = cl_reverse(cCdr(rev1)).as_or_nil<Cons_O>();
+		Cons_sp car_last_car_args = oCar(cl_last(oCar(args).as_or_nil<Cons_O>())).as_or_nil<Cons_O>();
 		result = af_backquote_attach_conses(rev2,
 					   af_backquote_attach_append(_sym_STARbq_appendSTAR,
 								      car_last_car_args,
@@ -459,7 +459,7 @@ namespace core
 	     && af_backquote_null_or_quoted(result).isTrue() )
 	{
 	    Cons_sp ti = Cons_O::create(items.as_or_nil<Cons_O>());
-	    Cons_sp tl = Cons_O::createList(af_mapcar(cl::_sym_cadr,ti), oCadr(result));
+	    Cons_sp tl = Cons_O::createList(cl_mapcar(cl::_sym_cadr,ti), oCadr(result));
 	    return Cons_O::createList(_sym_STARbq_quoteSTAR,af_backquote_append(tl));
 	} else if ( af_equal(result,_sym_STARbq_quote_nilSTAR->symbolValue()))
 	{

@@ -30,7 +30,7 @@ public:
 
 
     bool bitVectorP() const { return true;};
-    explicit BitVector_O(): T_O(), Vector_O() {} ;
+    explicit BitVector_O(): Vector_O() {} ;
     virtual ~BitVector_O() {};
 
 };
@@ -105,7 +105,7 @@ public:
 
 
 
-    explicit SimpleBitVector_O(): T_O(), BitVector_O() {} ;
+    explicit SimpleBitVector_O(): BitVector_O() {} ;
     SimpleBitVector_O(const SimpleBitVector_O& bv);
     virtual ~SimpleBitVector_O() {};
 };

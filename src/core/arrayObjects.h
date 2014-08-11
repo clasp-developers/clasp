@@ -20,7 +20,7 @@ class ArrayObjects_O : public Array_O
     DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
 public:
-    explicit ArrayObjects_O() : T_O(), Base() {};
+    explicit ArrayObjects_O() : Base() {};
     virtual ~ArrayObjects_O() {};
 public:
 	void initialize();

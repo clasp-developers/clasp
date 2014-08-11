@@ -7,7 +7,7 @@
   PASS_FUNCTION_REST 		bind_rest_var_args			bind_rest_af
   PASS_FUNCTION_KEYWORD 	bind_keyword_var_args			bind_keyword_af
   PASS_ARGS  			'int n_args, va_list ap'		'ActivationFrame_sp args'
-  PASS_ARGS_NUM 		'n_args'				'af_length(args)'
+  PASS_ARGS_NUM 		'n_args'				'cl_length(args)'
   PASS_NEXT_ARG() 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
 

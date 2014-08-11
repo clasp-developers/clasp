@@ -425,7 +425,7 @@ namespace core
 	    } else if ( af_consP(element) )
 	    {
 		Cons_sp pair = element.as_or_nil<Cons_O>();
-		size_t pairlen = af_length(pair);
+		size_t pairlen = cl_length(pair);
 		if ( pairlen == 2 || pairlen == 1 )
 		{
 		    firsts << oCar(pair);
@@ -883,7 +883,7 @@ namespace core
 	    T_sp obj = oCar(cur);
 	    if ( af_vectorP(obj) )
 	    {
-		if (af_length(obj.as<Vector_O>()) == 0 ) goto EMPTY;
+		if (cl_length(obj.as<Vector_O>()) == 0 ) goto EMPTY;
                 VectorStepper* vP(gctools::ClassAllocator<VectorStepper>::allocateClass(obj.as<Vector_O>()));
                 this->_Steppers.push_back(vP);
 	    } else if ( af_consP(obj) )
@@ -1051,12 +1051,12 @@ namespace core
   __BEGIN_DOC(candoScript.general.mapcar)
   __END_DOC
 */
-#define LOCK_af_mapcar 1
-#define DOCS_af_mapcar "See CLHS for mapcar"
-#define ARGS_af_mapcar "(func_desig &rest lists)"
-#define DECL_af_mapcar ""    
+#define LOCK_cl_mapcar 1
+#define DOCS_cl_mapcar "See CLHS for mapcar"
+#define ARGS_cl_mapcar "(func_desig &rest lists)"
+#define DECL_cl_mapcar ""    
     SYMBOL_EXPORT_SC_(ClPkg,mapcar);
-    List_mv af_mapcar(T_sp func_desig, Cons_sp lists)
+    T_sp cl_mapcar(T_sp func_desig, Cons_sp lists)
     {_G();
 	Function_sp func = coerce::functionDesignator(func_desig);
 	ListOfListSteppers steppers(lists);
@@ -1069,7 +1069,7 @@ namespace core
 	    result << res;
 	    steppers.advanceSteppers();
 	}
-	return(Values(result.cons()));
+	return result.cons();
     }
 
 
@@ -1091,11 +1091,11 @@ namespace core
 	    argumentLists->vectorPushExtend(oCar(carg),8);
 	}
 	Cons_sp result, curResult;
-	ValueFrame_sp frame(ValueFrame_O::create(af_length(argumentLists),_Nil<ActivationFrame_O>()));
+	ValueFrame_sp frame(ValueFrame_O::create(cl_length(argumentLists),_Nil<ActivationFrame_O>()));
 	while (1)
 	{
 	    int idx = 0;
-	    for ( size_t it(0), itEnd(af_length(argumentLists)); it<itEnd; ++it )
+	    for ( size_t it(0), itEnd(cl_length(argumentLists)); it<itEnd; ++it )
 	    {
 		if ( argumentLists->operator[](it).nilp() )
 		{
@@ -1116,11 +1116,12 @@ namespace core
 
 
 
-#define	DOCS_af_maplist "See CLHS maplist"
-#define ARGS_af_maplist "(func_desig &rest lists)"
-#define DECL_af_maplist ""    
-    T_mv af_maplist(T_sp func_desig, Cons_sp lists)
+#define	DOCS_cl_maplist "See CLHS maplist"
+#define ARGS_cl_maplist "(func_desig &rest lists)"
+#define DECL_cl_maplist ""    
+    T_sp cl_maplist(T_sp func_desig, Cons_sp lists)
     {_G();
+//        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
 	Function_sp op = coerce::functionDesignator(func_desig);
 	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<Cons_O>(),_Nil<Cons_O>(),16,0,true));
 //	vector<Cons_sp> argumentLists;
@@ -1130,20 +1131,23 @@ namespace core
 	    argumentLists->vectorPushExtend(oCar(carg),8);
 //	    argumentLists.push_back(oCar(carg).as_or_nil<Cons_O>());
 	}
+//        printf("%s:%d  argumentLists = %s\n", __FILE__, __LINE__, _rep_(argumentLists).c_str() );
 	Cons_sp result, curResult;
 	result = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
-	ValueFrame_sp frame(ValueFrame_O::create(af_length(argumentLists),_Nil<ActivationFrame_O>()));
+	ValueFrame_sp frame(ValueFrame_O::create(cl_length(argumentLists),_Nil<ActivationFrame_O>()));
 	curResult = result;
 	while (1)
 	{
 	    int idx = 0;
-	    for ( int it(0), itEnd(af_length(argumentLists)); it<itEnd; ++it )
+//            printf("%s:%d  length(argumentLists) = %d   argumentLists->fillPointer()=%d\n", __FILE__, __LINE__, cl_length(argumentLists), argumentLists->fillPointer() );
+	    for ( int it(0), itEnd(cl_length(argumentLists)); it<itEnd; ++it )
 	    {
-		T_sp val = argumentLists->operator[](it);
+		T_sp val = (*argumentLists)[it];
 		if ( val.nilp() ) goto RETURN; // hit nil in arguments - exit
 		frame->set_entry(idx,val);
 		idx++;
 	    }
+//            printf("%s:%d op %s on frame: %s\n", __FILE__, __LINE__, _rep_(op).c_str(), _rep_(frame).c_str() );
 	    LOG(BF("About to evaluate map op[%s] on arguments[%s]")
 		% _rep_(op) % _rep_(frame) );
             T_sp res = eval::applyToActivationFrame(op,frame);
@@ -1151,14 +1155,14 @@ namespace core
 	    curResult->setCdr(one);
 	    curResult = one;
 	    // Advance to the next element
-	    for ( int it(0), itEnd(af_length(argumentLists)); it<itEnd; ++it )
+	    for ( int it(0), itEnd(cl_length(argumentLists)); it<itEnd; ++it )
 	    {
 		argumentLists->operator[](it) = cCdr(argumentLists->operator[](it));
 //		*it = cCdr((*it));
 	    }
 	}
     RETURN:
-	return(Values(cCdr(result)));
+	return cCdr(result);
     }
 
 
@@ -1168,7 +1172,7 @@ namespace core
 #define DECL_af_mapl ""    
     T_mv af_mapl(Function_sp op, Cons_sp lists)
     {_G();
-	af_maplist(op,lists);
+	cl_maplist(op,lists);
 	return(Values(oCar(lists)));
     }
 
@@ -1200,7 +1204,7 @@ namespace core
 #define DOCS_af_mapcon "mapcon"
     T_mv af_mapcon(T_sp op, Cons_sp lists)
     {_G();
-	Cons_sp parts = af_maplist(op,lists).as_or_nil<Cons_O>();
+	Cons_sp parts = cl_maplist(op,lists).as_or_nil<Cons_O>();
         T_sp result = cl_nconc(parts);
 #if 0
 	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
@@ -1215,7 +1219,7 @@ namespace core
 #define DOCS_af_mapcan "mapcan"
     T_mv af_mapcan(T_sp op, Cons_sp lists)
     {_G();
-	Cons_sp parts = af_mapcar(op,lists).as_or_nil<Cons_O>();
+	Cons_sp parts = cl_mapcar(op,lists).as_or_nil<Cons_O>();
         T_sp result = cl_nconc(parts);
 #if 0
 	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
@@ -1296,9 +1300,9 @@ T_sp af_append(Cons_sp lists)
 #define DECL_af_sequence_start_end ""
 #define DOCS_af_sequence_start_end "Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence."\
     " I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length)."
-    T_mv af_sequence_start_end(T_sp func, Sequence_sp sequence, Fixnum_sp start, Fixnum_sp end)
+    T_mv af_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, Fixnum_sp end)
     {_G();
-	uint len = af_length(sequence);
+	uint len = cl_length(sequence);
 	if ( end.nilp() ) end = Fixnum_O::create(len);
 	if ( start->get() < 0 )
 	{
@@ -1484,7 +1488,7 @@ Symbol_mv af_type_to_symbol(T_sp x)
     else if ( af_complexP(x) ) return(Values(cl::_sym_Complex_O));
     else if ( af_symbolp(x) ) return(Values(cl::_sym_Symbol_O));
     else if ( af_packageP(x) ) return(Values(cl::_sym_Package_O));
-    else if ( af_listp(x) ) return(Values(cl::_sym_List_O));
+    else if ( af_listp(x) ) return(Values(cl::_sym_list));
     else if ( af_hashTableP(x) ) return(Values(cl::_sym_HashTable_O));
     else if ( af_vectorP(x) ) return(Values(cl::_sym_Vector_O));
     else if ( af_bitVectorP(x) ) return(Values(cl::_sym_BitVector_O));
@@ -1559,7 +1563,7 @@ T_sp type_of(T_sp x)
 	{
 	    t = cl::_sym_array;
 	} else t = cl::_sym_simple_array;
-	return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(Fixnum_O::create(1),Fixnum_O::create(af_length(sx)))).cons();
+	return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(Fixnum_O::create(1),Fixnum_O::create(cl_length(sx)))).cons();
     } else if ( af_vectorP(x) )
     {
 	Vector_sp vx = x.as<Vector_O>();
@@ -1571,7 +1575,7 @@ T_sp type_of(T_sp x)
 	    return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions() ).cons();
 	} else
 	{
-	    return (ql::list(_lisp) << cl::_sym_simple_vector << Fixnum_O::create(af_length(vx))).cons();
+	    return (ql::list(_lisp) << cl::_sym_simple_vector << Fixnum_O::create(cl_length(vx))).cons();
 	}
     } else if (af_arrayP(x))
     {
@@ -1590,7 +1594,7 @@ T_sp type_of(T_sp x)
 	{
 	    t = cl::_sym_array;
 	} else t = cl::_sym_simple_array;
-	return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(Fixnum_O::create(1),Fixnum_O::create(af_length(bx)))).cons();
+	return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(Fixnum_O::create(1),Fixnum_O::create(cl_length(bx)))).cons();
     } else if ( WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>() ) {
         return pp->_instanceClass()->className();
     } else if ( af_structurep(x) )
@@ -1743,13 +1747,13 @@ void initialize_primitives()
 
 
 	SYMBOL_EXPORT_SC_(ClPkg,mapcar);
-	Defun(mapcar);
+	ClDefun(mapcar);
 
 	SYMBOL_EXPORT_SC_(ClPkg,mapc);
 	Defun(mapc);
 
 	SYMBOL_EXPORT_SC_(ClPkg,maplist);
-	Defun(maplist);
+	ClDefun(maplist);
 
 	SYMBOL_EXPORT_SC_(ClPkg,mapl);
 	Defun(mapl);

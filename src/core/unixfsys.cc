@@ -115,7 +115,7 @@ coerce_to_posix_filename(Pathname_sp pathname)
 	 * this is not supported on all POSIX platforms (most notably Windows)
 	 */
     Str_sp sfilename = af_coerceToFilename(pathname).as<Str_O>();
-    return af_string_right_trim(Str_O::create(DIR_SEPARATOR), sfilename);
+    return cl_stringRightTrim(Str_O::create(DIR_SEPARATOR), sfilename);
 }
 
 static int
@@ -370,7 +370,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure)
 /* We now compose a new path based on the base directory and
  * the new component. We have to verify that the new pathname is
  * a directory and if it is a link recover the true name. */
-    List_sp ldir = Cons_O::append(base_dir->_Directory, Cons_O::createList(aux));
+    T_sp ldir = Cons_O::append(base_dir->_Directory, Cons_O::createList(aux));
     output = eval::funcall(cl::_sym_makePathname,
 			   kw::_sym_directory, ldir,
 			   kw::_sym_defaults, base_dir).as<Pathname_O>();
@@ -398,8 +398,8 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure)
 		     % _rep_(subdir) % _rep_(base_dir));
     }
     if (subdir == kw::_sym_up) {
-	List_sp newdir= output->_Directory;
-	newdir = af_nbutlast(newdir,Fixnum_O::create(2));
+	T_sp newdir= output->_Directory;
+	newdir = cl_nbutlast(newdir,Fixnum_O::create(2));
 	if (Null(newdir)) {
 	    if (ignore_if_failure) return _Nil<Pathname_O>();
 	    SIMPLE_ERROR(BF("Pathname contained an :UP component  "
@@ -888,7 +888,7 @@ string_match(const char *s, T_sp pattern)
         int ls = strlen(s);
         Str_sp strng = Str_O::create(s,strlen(s));
         return clasp_stringMatch(strng,0,ls,
-                                  pattern,0,af_length(pattern));
+                                  pattern,0,cl_length(pattern));
     }
 }
 
@@ -991,7 +991,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 #endif /* !HAVE_DIRENT_H */
 	brcl_enable_interrupts();
 OUTPUT:
-	return af_nreverse(out);
+	return cl_nreverse(out);
 }
 
 
@@ -1432,7 +1432,7 @@ T_sp core_mkdir(T_sp directory, T_sp mode)
     {
         /* Ensure a clean string, without trailing slashes,
          * and null terminated. */
-        int last = af_length(filename);
+        int last = cl_length(filename);
         if (last > 1) {
             brclChar c = filename->schar(last-1);
             if (IS_DIR_SEPARATOR(c))

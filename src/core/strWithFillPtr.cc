@@ -18,7 +18,7 @@
 namespace core
 {
 
-    StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, int fill_ptr, bool adjustable, Sequence_sp initialContents)
+    StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, int fill_ptr, bool adjustable, T_sp initialContents)
     {_G();
         GC_ALLOCATE(StrWithFillPtr_O,str );
 	str->_Contents = string(dimension, initial_element);
@@ -171,7 +171,7 @@ namespace core
     }
 
     void StrWithFillPtr_O::pushString(T_sp str) {
-	this->pushSubString( str, 0, af_length(str));
+	this->pushSubString( str, 0, cl_length(str));
     }
 
 

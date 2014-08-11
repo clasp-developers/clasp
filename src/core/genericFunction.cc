@@ -184,7 +184,7 @@ In ecl/src/c/interpreter.d  is the following code
 	gctools::Vec0<T_sp>& argtype = vektor;
 	int spec_no = 1;
 	argtype[0] = gf;
-	vektor.resize(1+af_length(spec_how_list),_Nil<T_O>());
+	vektor.resize(1+cl_length(spec_how_list),_Nil<T_O>());
 #if DEBUG_CLOS>=2
 	printf("MLOG fill_spec_vector - writing to argtype[%d] at %p wrote: %lX\n",
 	       0, argtype[0].px_address(), argtype[0].intptr());
@@ -262,7 +262,7 @@ In ecl/src/c/interpreter.d  is the following code
 	    func = mv.as<Function_O>();
 	    if (mv.valueGet(1).notnilp() )
 	    {
-	      Sequence_sp keys = VectorObjects_O::create(vektor);
+	      T_sp keys = VectorObjects_O::create(vektor);
 		if (e->_key.notnilp())
 		{
                     try {

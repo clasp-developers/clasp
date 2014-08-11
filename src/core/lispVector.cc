@@ -25,7 +25,7 @@ namespace core
 #define DOCS_cl_vector "vector"
     Vector_sp cl_vector(Cons_sp args)
     {_G();
-	Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(),args,af_length(args),false);
+	Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(),args,cl_length(args),false);
         return vec;
     };
 
@@ -42,7 +42,7 @@ namespace core
 			T_sp displaced_to,
 			T_sp displaced_index_offset,
 			T_sp initial_element,
-			Sequence_sp initialContents )
+			T_sp initialContents )
     {_G();
 	ASSERTF(displaced_to.nilp(),BF("Add support for make-vector :displaced-to"));
 	ASSERTF(displaced_index_offset.nilp() || displaced_index_offset.as<Fixnum_O>()->get()==0,BF("Add support for make-vector non-zero :displaced-index-offset "));
@@ -110,9 +110,7 @@ namespace core
 
     void Vector_O::initialize()
     {_OF();
-	this->Bases::Base1::Base::initialize();
-	this->Bases::Base1::initialize();
-	this->Bases::Base2::initialize();
+        this->Base::initialize();
     }
 
 
@@ -135,10 +133,10 @@ namespace core
 
 
 
-    Sequence_sp Vector_O::reverse()
+    T_sp Vector_O::reverse()
     {_OF();
 	int thisLength = this->length();
-	Vector_sp newVec = eval::funcall(_sym_make_vector,this->_instanceClass()->className(),Fixnum_O::create(thisLength)).as<Sequence_O>().as<Vector_O>();
+	Vector_sp newVec = eval::funcall(_sym_make_vector,this->_instanceClass()->className(),Fixnum_O::create(thisLength)).as<T_O>().as<Vector_O>();
 	for ( int i=0; i<thisLength; i++ )
 	{
 	    int ri = thisLength - i;
@@ -157,7 +155,7 @@ namespace core
 //  0 1 2 3 4
 //  + + 
 //  4 3 2 1 0 
-    Sequence_sp Vector_O::nreverse()
+    T_sp Vector_O::nreverse()
     {_OF();
 	int thisLength = this->length();
 	int halfLength = thisLength/2;  // 5/2 = 2  0 
@@ -167,7 +165,7 @@ namespace core
 	    int ri = thisLength-i;
 	    this->swapElements(i,ri);
 	}
-	return this->sharedThis<Sequence_O>();
+	return this->sharedThis<T_O>();
     }
 
 

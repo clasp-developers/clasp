@@ -13,31 +13,31 @@ namespace core
 //
 
 
-#define ARGS_af_nth "(idx arg)"
-#define DECL_af_nth ""
-#define DOCS_af_nth "See CLHS nth"
-    T_sp af_nth(int idx, T_sp arg)
+#define ARGS_cl_nth "(idx arg)"
+#define DECL_cl_nth ""
+#define DOCS_cl_nth "See CLHS nth"
+    T_sp cl_nth(int idx, T_sp arg)
     {_G();
 	if (arg.nilp()) return _Nil<T_O>();
-	if ( List_sp list = arg.asOrNull<List_O>() )
+	if ( Cons_sp list = arg.asOrNull<Cons_O>() )
 	{
 	    return list->onth(idx);
 	}
-	TYPE_ERROR(arg,cl::_sym_List_O);
+	TYPE_ERROR(arg,cl::_sym_list);
     };
 
 
-#define ARGS_af_nthcdr "(idx arg)"
-#define DECL_af_nthcdr ""
-#define DOCS_af_nthcdr "See CLHS nth"
-    T_sp af_nthcdr(int idx, T_sp arg)
+#define ARGS_cl_nthcdr "(idx arg)"
+#define DECL_cl_nthcdr ""
+#define DOCS_cl_nthcdr "See CLHS nth"
+    T_sp cl_nthcdr(int idx, T_sp arg)
     {_G();
 	if (arg.nilp()) return arg;
-	if ( List_sp list = arg.asOrNull<List_O>() )
+	if ( Cons_sp list = arg.asOrNull<Cons_O>() )
 	{
 	    return list->onthcdr(idx);
 	}
-	TYPE_ERROR(arg,cl::_sym_List_O);
+	TYPE_ERROR(arg,cl::_sym_list);
     };
 
 
@@ -45,17 +45,17 @@ namespace core
 
     
     
-#define ARGS_af_copyList "(arg)"
-#define DECL_af_copyList ""
-#define DOCS_af_copyList "copyList"
-    T_sp af_copyList(T_sp arg)
+#define ARGS_cl_copyList "(arg)"
+#define DECL_cl_copyList ""
+#define DOCS_cl_copyList "copyList"
+    T_sp cl_copyList(T_sp arg)
     {_G();
 	if ( arg.nilp() ) return arg;
-	if ( List_sp l = arg.asOrNull<List_O>() )
+	if ( Cons_sp l = arg.asOrNull<Cons_O>() )
 	{
 	    return l->copyList();
 	}
-	TYPE_ERROR(arg,cl::_sym_List_O);
+	TYPE_ERROR(arg,cl::_sym_list);
     };
 
 
@@ -64,10 +64,10 @@ namespace core
 #define ARGS_af_butlast "(list &optional (n 1))"
 #define DECL_af_butlast ""
 #define DOCS_af_butlast "butlast"
-    T_mv af_butlast(List_sp list, Integer_sp n)
+    T_mv af_butlast(T_sp list, Integer_sp n)
     {_G();
 	int ni = n->as_int();
-	int keepi = af_length(list)-ni;
+	int keepi = cl_length(list)-ni;
 	if ( keepi <= 0 ) return(Values(_Nil<Cons_O>()));
 	ql::list res;
 	Cons_sp cur = list.as_or_nil<Cons_O>();
@@ -81,14 +81,14 @@ namespace core
 
 
 
-#define ARGS_af_nbutlast "(list &optional (n 1))"
-#define DECL_af_nbutlast ""
-#define DOCS_af_nbutlast "butlast"
-    List_sp af_nbutlast(List_sp list, Integer_sp n)
+#define ARGS_cl_nbutlast "(list &optional (n 1))"
+#define DECL_cl_nbutlast ""
+#define DOCS_cl_nbutlast "butlast"
+    T_sp cl_nbutlast(T_sp list, Integer_sp n)
     {_G();
 	int ni = n->as_int();
-	int keepi = af_length(list)-ni;
-	if ( keepi <= 0 ) return (_Nil<List_O>());
+	int keepi = cl_length(list)-ni;
+	if ( keepi <= 0 ) return (_Nil<T_O>());
 	Cons_sp cur = list.as<Cons_O>();
 	Cons_sp prev = _Nil<Cons_O>();;
 	for ( int i=0; i<keepi; i++ )
@@ -106,7 +106,7 @@ namespace core
 #define ARGS_af_list "(&rest objects)"
 #define DECL_af_list ""
 #define DOCS_af_list "See CLHS: list"
-    T_sp af_list(List_sp objects)
+    T_sp af_list(T_sp objects)
     {_G();
 	return objects;
     };
@@ -139,18 +139,21 @@ namespace core
     }
 
 
-#define DOCS_af_last "last - see CLHS"
-#define LOCK_af_last 1
-#define ARGS_af_last "(list &optional (on 1))"
-#define DECL_af_last ""    
-    T_sp af_last(List_sp list, int n)
+#define DOCS_cl_last "last - see CLHS"
+#define LOCK_cl_last 1
+#define ARGS_cl_last "(list &optional (on 1))"
+#define DECL_cl_last ""    
+    T_sp cl_last(T_sp list, int n)
     {_G();
 	if ( list.nilp() ) return list;
 	if ( n < 0 )
 	{
 	    CELL_ERROR(Fixnum_O::create(n));
 	}
-	return list->last(n);
+        if ( Cons_sp clist = list.asOrNull<Cons_O>() ) {
+            return clist->last(n);
+        }
+        TYPE_ERROR(list,cl::_sym_list);
     };
 
 
@@ -161,7 +164,7 @@ namespace core
 #define ARGS_cl_nconc "(&rest lists)"
 #define DECL_cl_nconc ""
 #define DOCS_cl_nconc "tnconc"
-    List_sp cl_nconc(Cons_sp lists)
+    T_sp cl_nconc(Cons_sp lists)
     {_G();
         T_sp head = _Nil<T_O>();
         T_sp tail = _Nil<T_O>();
@@ -171,7 +174,7 @@ namespace core
             if (other.nilp()) {
                 new_tail = tail;
             } else if (Cons_sp cother = other.asOrNull<Cons_O>()) {
-                new_tail = af_last(other,1);
+                new_tail = cl_last(other,1);
             } else {
                 if (cur->cdr().notnilp()) {
                     TYPE_ERROR_LIST(other);
@@ -193,9 +196,12 @@ namespace core
         if (l.nilp()) {
             return y;
         }
-        Cons_sp last = af_last(l.as<List_O>(),1).as<Cons_O>();
-        last ->rplacd(y);
-        return l;
+        if ( Cons_sp conslist = l.asOrNull<Cons_O>()) {
+            Cons_sp last = cl_last(conslist,1).as<Cons_O>();
+            last->rplacd(y);
+            return conslist;
+        }
+        TYPE_ERROR(l,cl::_sym_list);
     }
 
 
@@ -207,27 +213,33 @@ namespace core
 #define LOCK_af_revappend 1
 #define ARGS_af_revappend "(list tail)"
 #define DECL_af_revappend ""
-    T_mv af_revappend(List_sp list, T_sp tail)
+    T_sp af_revappend(T_sp list, T_sp tail)
     {_G();
-	if ( list.nilp() ) return(Values(tail));
-	return(Values(list->revappend(tail)));
+	if ( list.nilp() ) return(tail);
+        if ( Cons_sp clist = list.asOrNull<Cons_O>() ) {
+            return clist->revappend(tail);
+        }
+        TYPE_ERROR(list,cl::_sym_list);
     };
 
 
 
-#define DOCS_af_nreconc "nreconc"
-#define LOCK_af_nreconc 1
-#define ARGS_af_nreconc "(list tail)"
-#define DECL_af_nreconc ""
-    T_mv af_nreconc(List_sp list, T_sp tail)
+#define DOCS_cl_nreconc "nreconc"
+#define LOCK_cl_nreconc 1
+#define ARGS_cl_nreconc "(list tail)"
+#define DECL_cl_nreconc ""
+    T_sp cl_nreconc(T_sp list, T_sp tail)
     {_G();
-	if ( list.nilp() ) return(Values(tail));
-	return(Values(list->nreconc(tail)));
+	if ( list.nilp() ) return(tail);
+        if ( Cons_sp clist = list.asOrNull<Cons_O>() ) {
+            return clist->nreconc(tail);
+        }
+        TYPE_ERROR(list,cl::_sym_list);
     };
 
 
 
-
+#if 0
     EXPOSE_CLASS(core,List_O);
 
     void List_O::exposeCando(Lisp_sp lisp)
@@ -237,10 +249,15 @@ namespace core
 	    //	    .def("nreconc",&List_O::nreconc)	I need to wrap this
 	    //	.initArgs("(self)")
 	    ;
+    }
+#endif
+
+    void initialize_list()
+    {
 	SYMBOL_EXPORT_SC_(ClPkg,revappend);
  	Defun(revappend);
 	SYMBOL_EXPORT_SC_(ClPkg,nreconc);
-	Defun(nreconc);
+	ClDefun(nreconc);
 	SYMBOL_EXPORT_SC_(ClPkg,list);
 	Defun(list);
 	SYMBOL_EXPORT_SC_(ClPkg,listSTAR);
@@ -248,18 +265,19 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,butlast);
 	Defun(butlast);
 	SYMBOL_EXPORT_SC_(ClPkg,nbutlast);
-	Defun(nbutlast);
+	ClDefun(nbutlast);
 	SYMBOL_EXPORT_SC_(ClPkg,nth);
-	Defun(nth);
+	ClDefun(nth);
 	SYMBOL_EXPORT_SC_(ClPkg,nthcdr);
-	Defun(nthcdr);
+	ClDefun(nthcdr);
 	SYMBOL_EXPORT_SC_(ClPkg,copyList);
-	Defun(copyList); 
+	ClDefun(copyList); 
 	SYMBOL_EXPORT_SC_(ClPkg,last);
-	Defun(last);
+	ClDefun(last);
         ClDefun(nconc);
    }
 
+#if 0
     void List_O::exposePython(::core::Lisp_sp lisp)
     {
 #ifdef USEBOOSTPYTHON
@@ -268,7 +286,7 @@ namespace core
 	    ;
 #endif
     }
-
+#endif
 
 
 #if 0
