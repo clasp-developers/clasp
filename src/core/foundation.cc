@@ -508,10 +508,10 @@ namespace core
 	    return core::Null_O::___staticClass;
 	} else if (!o)
 	{
-	    SIMPLE_ERROR(BF("You cannot get the class of NULL"));
+	    SIMPLE_ERROR(BF("There is no class of NULL"));
 	} else if (o.unboundp())
 	{
-	    SIMPLE_ERROR(BF("You cannot get the class of UNBOUND"));
+	    SIMPLE_ERROR(BF("There is no class of UNBOUND"));
 	} else if (o._NULLp())
 	{
 	    SIMPLE_ERROR(BF("You cannot get the class of _NULL"));

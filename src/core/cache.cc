@@ -116,7 +116,7 @@ namespace core
 	}
 	/* Else we only know that the record has been
 	 * deleted, but we might find our data ahead. */
-      } else if ( argno == af_length(hkey.as<VectorObjects_O>()) ) { // if (argno == hkey->vector.fillp) {
+      } else if ( argno == cl_length(hkey.as<VectorObjects_O>()) ) { // if (argno == hkey->vector.fillp) {
 	int n; // cl_index n;
 	for (n = 0; n < argno; n++) {
 	  if ( keys[n] != hkey.as<VectorObjects_O>()->operator[](n))

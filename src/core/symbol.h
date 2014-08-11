@@ -26,7 +26,7 @@ namespace core {
     SMART(Function);
 
     FORWARD(Symbol);
-    class Symbol_O : virtual public T_O
+    class Symbol_O : public T_O
     {
         struct metadata_bootstrap_class {};
         struct metadata_gc_do_not_move {};

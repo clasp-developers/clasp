@@ -40,7 +40,7 @@ namespace core
 	{
 	    if ( i>= MultipleValues::MultipleValuesLimit )
 	    {
-		SIMPLE_ERROR(BF("Overflow when returning multiple values - only %d are supported and you tried to return %d values") % MultipleValuesLimit % af_length(args) );
+		SIMPLE_ERROR(BF("Overflow when returning multiple values - only %d are supported and you tried to return %d values") % MultipleValuesLimit % cl_length(args) );
 	    }
 	    T_sp obj = oCar(cur);
 	    this->valueSet(i,obj);
@@ -97,13 +97,13 @@ namespace core
 
     T_mv multipleValuesLoadFromVector(VectorObjects_sp load)
     {
-	if ( af_length(load) > 0 )
+	if ( cl_length(load) > 0 )
 	{
-	    T_mv mvn(load->operator[](0),af_length(load));
+	    T_mv mvn(load->operator[](0),cl_length(load));
 	    core::MultipleValues* mv = lisp_multipleValues();
             SUPPRESS_GC();
             int i(0);
-            int iEnd(af_length(load));
+            int iEnd(cl_length(load));
             mv->setSize(iEnd);
 	    for (; i<iEnd; ++i ) {mv->valueSet(i,load->operator[](i));}
             ENABLE_GC();
@@ -125,7 +125,7 @@ namespace core
 
     core::T_mv ValuesFromCons(core::Cons_sp vals)
     {
-	size_t len = af_length(vals);
+	size_t len = cl_length(vals);
 	if ( len == 0 )
 	{
 	    return core::T_mv(_Nil<core::T_O>(),0);

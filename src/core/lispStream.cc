@@ -303,7 +303,7 @@ namespace core
         }
 #endif
         Stream_sp ostream = coerce::outputStreamDesignator(stream).as<Stream_O>();
-	int iend = af_length(str);
+	int iend = cl_length(str);
 	if ( end.notnilp() )
 	{
 	    iend = MIN(iend,end.as<Fixnum_O>()->get());
@@ -1849,7 +1849,7 @@ T_sp brcl_close(T_sp strm, bool abort)
 #define DOCS_StringInputStream_O_make ""
     StringInputStream_sp StringInputStream_O::make(Str_sp string, Fixnum_sp start, T_sp end)
     {_G();
-	int iend = af_length(string);
+	int iend = cl_length(string);
 	if ( end.notnilp() ) iend = MIN(end.as<Fixnum_O>()->get(),iend);
 	int istart = start->get();
 	StringInputStream_sp sin = StringInputStream_O::create(string->substr(istart,iend-istart));
@@ -2158,6 +2158,32 @@ T_sp StringOutStream_O::close(bool abort)
 
 
 
+
+
+
+/* ----------------------------------------------------------------------
+   ----------------------------------------------------------------------
+
+   FileDescriptorStream functions
+
+   ----------------------------------------------------------------------
+*/
+#if 0
+
+    int FDStream_O::out_write_byte8(T_sp strm, unsigned char *c, size_t n)
+    {
+        FileDescriptorStream_sp fds = strm.as<FileDescriptorStream_O>();
+        FILE* fout = fds->FILE();
+        ssize_t out;
+        do {
+            out = write(filedes, c, sizeof(char*n));
+        } while ( out < 0 && restartable_io_error(fds,"write") );
+        return out;
+    }
+
+#endif
+
+    
 
 
 
@@ -3306,9 +3332,9 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 #define ARGS_af_writeSequence "(seq stream &key (start 0) end)"
 #define DECL_af_writeSequence ""
 #define DOCS_af_writeSequence "writeSequence"
-    Sequence_sp af_writeSequence(Sequence_sp seq, Stream_sp stream, Fixnum_sp fstart, Fixnum_sp tend)
+    T_sp af_writeSequence(T_sp seq, Stream_sp stream, Fixnum_sp fstart, Fixnum_sp tend)
     {_G();
-	int limit = af_length(seq);
+	int limit = cl_length(seq);
 	unlikely_if( !af_fixnumP(fstart) ||
 		     (fstart->get()<0) ||
 		     (fstart->get() > limit)) {
@@ -3332,7 +3358,7 @@ FDStream_sp FDStream_O::setBufferingMode(Symbol_sp bufferModeSymbol)
 	if (af_listp(seq)) {
 	    T_sp elt_type = stream->streamElementType();
 	    bool ischar = (elt_type == cl::_sym_BaseChar_O) || (elt_type == cl::_sym_Character_O);
-	    T_sp s = af_nthcdr(start, seq);
+	    T_sp s = cl_nthcdr(start, seq);
 	    for ( ; ; s = CONS_CDR(s) ) {
 		if (start < end) {
 		    T_sp elt = CONS_CAR(s);

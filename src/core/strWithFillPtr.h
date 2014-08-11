@@ -31,10 +31,10 @@ namespace core
             v->setFromChars(nm);
 	    return v;
 	};
-	static StrWithFillPtr_sp create(char initial_element, int dimension, int fill_ptr, bool adjustable,Sequence_sp initialContents=_Nil<Sequence_O>());
+	static StrWithFillPtr_sp create(char initial_element, int dimension, int fill_ptr, bool adjustable,T_sp initialContents=_Nil<T_O>());
 	/*! Create a buffer BUFFER_STRING_LEN size, fill_ptr=0, adjustable=true */
 	static StrWithFillPtr_sp createBufferString(size_t bufferSize=BUFFER_STRING_SIZE) {
-	    return StrWithFillPtr_O::create(' ',bufferSize,0,true,_Nil<Sequence_O>());
+	    return StrWithFillPtr_O::create(' ',bufferSize,0,true,_Nil<T_O>());
 	};
     public:
 	virtual bool adjustableArrayP() const { return this->_Adjustable;}
@@ -43,6 +43,7 @@ namespace core
 	virtual string get() const { return std::string(this->_Contents.data(),this->_FillPointer);};
 	virtual uint size() const { return this->_FillPointer;};
 
+        
 	void incrementFillPointer(int offset);
 	void setFillPointer(size_t fp);
 
@@ -74,7 +75,7 @@ namespace core
 
     string __repr__() const;
     public:
-	explicit StrWithFillPtr_O() : T_O(), Base(), _FillPointer(0), _Adjustable(false) {};
+	explicit StrWithFillPtr_O() : Base(), _FillPointer(0), _Adjustable(false) {};
 	virtual ~StrWithFillPtr_O() {};
     };
 

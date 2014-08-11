@@ -369,7 +369,7 @@ namespace core {
 	HashTableEq_sp supers = HashTableEq_O::create_default();
 	VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),16,0,true));
 	this->accumulateSuperClasses(supers,arrayedSupers,this->sharedThis<Class_O>());
-	vector<list<int> > graph(af_length(arrayedSupers));
+	vector<list<int> > graph(cl_length(arrayedSupers));
 
 	class TopoSortSetup : public KeyValueMapper {
 	private:
@@ -392,7 +392,7 @@ namespace core {
 	supers->lowLevelMapHash(&topoSortSetup);
 #ifdef DEBUG_ON
 	{
-	    for ( size_t zi(0),ziEnd(af_length(arrayedSupers)); zi<ziEnd; ++zi )
+	    for ( size_t zi(0),ziEnd(cl_length(arrayedSupers)); zi<ziEnd; ++zi )
 	    {
 		stringstream ss;
 		ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName() ).str();
@@ -512,7 +512,7 @@ namespace core {
 
     void Class_O::setInstanceBaseClasses(Cons_sp classes)
     {_OF();
-	this->instanceSet(REF_DIRECT_SUPERCLASSES,af_copyList(classes));
+	this->instanceSet(REF_DIRECT_SUPERCLASSES,cl_copyList(classes));
 	this->lowLevel_calculateClassPrecedenceList();
     }
 

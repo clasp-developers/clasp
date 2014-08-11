@@ -1125,11 +1125,8 @@ Class_sp af_classOf(T_sp obj);
 
 TRANSLATE(core::T_O);
 
-#if 0
-namespace gctools {
-    template<> inline bool isNilDowncastableTo<core::T_O>() { return true;};
-};
-#endif
+/*! Used to indicate that methods should be inherited from sequence */
+#define INHERIT_SEQUENCE 
 
 
 #include "metaClass.h"

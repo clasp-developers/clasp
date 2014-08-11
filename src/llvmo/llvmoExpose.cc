@@ -639,28 +639,27 @@ namespace llvmo
 namespace llvmo
 {
 
-    void convert_sequence_types_to_vector(core::Sequence_sp elements, vector<llvm::Type*>& velements)
+    void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type*>& velements)
     {_G();
-	core::Sequence_sp save_elements = elements;
-	if ( af_consP(elements) )
-	{
-	    for ( core::Cons_sp cur = elements.as<core::Cons_O>(); cur.notnilp(); cur = cCdr(cur) )
+	core::T_sp save_elements = elements;
+        if ( elements.nilp() ) {
+            return;
+        } else if ( core::Cons_sp celements = elements.asOrNull<core::Cons_O>() ) {
+	    for ( core::Cons_sp cur = celements; cur.notnilp(); cur = cCdr(cur) )
 	    {
 		velements.push_back(oCar(cur).as<Type_O>()->wrappedPtr());
 	    }
-	} else if ( af_vectorP(elements) )
-	{
-	    core::Vector_sp vec = elements.as<core::Vector_O>();
-	    for ( int i=0; i< vec->length(); i++ )
+            return;
+	} else if ( core::Vector_sp vecelements = elements.asOrNull<core::Vector_O>() ) {
+	    for ( int i=0; i< vecelements->length(); i++ )
 	    {
-		core::T_sp element = vec->elt(i);
+		core::T_sp element = vecelements->elt(i);
 		Type_sp ty = element.as<Type_O>();
 		velements.push_back(ty->wrappedPtr());
 	    }
-	} else
-	{
-	    SIMPLE_ERROR(BF("Could not convert %s into vector<llvm::Type*>") % _rep_(elements) );
+            return;
 	}
+        WRONG_TYPE_NTH_ARG(0,elements,cl::_sym_sequence);
     }
 
 
@@ -3231,7 +3230,7 @@ namespace llvmo
 #define ARGS_FunctionType_O_get "(result &optional params is_var_arg)"
 #define DECL_FunctionType_O_get ""
 #define DOCS_FunctionType_O_get "Docs for FunctionType get"
-    core::T_sp FunctionType_O::get(core::T_sp result_type, core::Sequence_sp params, core::T_sp is_var_arg)
+    core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg)
     {_G();
 	translate::from_object<llvm::Type*> r(result_type);
 	bool iva = is_var_arg.isTrue();
@@ -3334,7 +3333,7 @@ namespace llvmo
 #define ARGS_StructType_O_make "(context &key elements name is-packed)"
 #define DECL_StructType_O_make ""
 #define DOCS_StructType_O_make "make StructType args: context &key name elements is-packed"
-    StructType_sp StructType_O::make(LLVMContext_sp context, core::Sequence_sp elements, core::Str_sp name, core::T_sp isPacked )
+    StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, core::Str_sp name, core::T_sp isPacked )
     {_G();
 	llvm::StructType* result = NULL;
 	translate::from_object<llvm::StringRef> srname(name);
@@ -3353,7 +3352,7 @@ namespace llvmo
 
 
 
-    StructType_sp StructType_O::get(LLVMContext_sp context, core::Sequence_sp elements, bool isPacked )
+    StructType_sp StructType_O::get(LLVMContext_sp context, core::T_sp elements, bool isPacked )
     {_G();
 	llvm::StructType* result = NULL;
 	if ( elements.notnilp() )
@@ -3371,7 +3370,7 @@ namespace llvmo
 
 
 
-    void StructType_O::setBody( core::Sequence_sp elements, core::T_sp isPacked )
+    void StructType_O::setBody( core::T_sp elements, core::T_sp isPacked )
     {_G();
 	llvm::StructType* st = this->wrapped();
 	if ( elements.notnilp() )

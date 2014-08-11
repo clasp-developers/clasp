@@ -143,7 +143,7 @@ namespace core
             func = e->_value.as<Function_O>();
         } else {
             func = this->slowMethodLookup(dispatchArgClass);
-            Sequence_sp keys = VectorObjects_O::create(vektor);
+            T_sp keys = VectorObjects_O::create(vektor);
             e->_key = keys;
             e->_value = func;
         }

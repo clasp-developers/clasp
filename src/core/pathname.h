@@ -90,7 +90,7 @@ namespace core
     public:
 	T_sp 	_Host;
 	T_sp 	_Device;
-	List_sp	_Directory;
+	T_sp	_Directory;
 	T_sp 	_Name;
 	T_sp 	_Type;
 	T_sp 	_Version;

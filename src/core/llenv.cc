@@ -6,7 +6,7 @@ int bind_required_arguments
 {_G();
     // Fill required arguments
     LOG(BF("There are %d required arguments") % reqs.size() );
-    size_t length_args(af_length(args));
+    size_t length_args(cl_length(args));
     size_t reqs_size(reqs.size());
     if ( length_args < reqs_size )
     {
@@ -38,7 +38,7 @@ int bind_optional_arguments
   int arg_idx,
   DynamicScopeManager& scope )
 {_G();
-    int num_args = af_length(args);
+    int num_args = cl_length(args);
     // Fill required arguments
     LOG(BF("There are %d optional arguments") % optionals.size() );
     vector<OptionalArgument>::const_iterator it = optionals.begin();
@@ -121,7 +121,7 @@ int bind_keyword_arguments
     LOG(BF(":allow-other-keywords --> %d") % passed_allow_other_keys );
     T_sp first_illegal_keyword(_Nil<T_O>());
     {_BLOCK_TRACEF(BF("Copy passed keyword values to environment"));
-	for ( int i(arg_idx),iEnd(af_length(args)); i<iEnd; i+=2 )
+	for ( int i(arg_idx),iEnd(cl_length(args)); i<iEnd; i+=2 )
 	{
 	    Symbol_sp keyword = args->entry(i).as<Symbol_O>();
 	    T_sp value = args->entry(i+1);

@@ -468,6 +468,8 @@ namespace core
 #ifdef DEBUG_CL_SYMBOLS
         initializeAllClSymbolsFunctions();
 #endif            
+        initialize_sequence();
+        initialize_list();
 	    initialize_predicates();
 	    initialize_bformat(_lisp);
 	    initialize_sysprop();
@@ -1722,7 +1724,7 @@ namespace core
 	if ( Cons_sp list = tlist.asOrNull<Cons_O>() ) {
 	    return(list->member(item,key,test,test_not));
 	}
-	WRONG_TYPE_NTH_ARG(2,tlist,cl::_sym_List_O);
+	WRONG_TYPE_NTH_ARG(2,tlist,cl::_sym_list);
 	UNREACHABLE();
     }
 
@@ -2317,11 +2319,11 @@ namespace core
 #define ARGS_af_apply "(head &rest args)"
 #define DECL_af_apply ""
 #define DOCS_af_apply "apply"
-    T_mv af_apply(T_sp head, List_sp args)
+    T_mv af_apply(T_sp head, T_sp args)
     {_G();
 	/* Special case when apply is called with one arg and that arg is an ActivationFrame
 	   APPLY directly to that ActivationFrame */
-	int lenArgs = af_length(args);
+	int lenArgs = cl_length(args);
 	if ( lenArgs == 0 ) {
 	    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs );
 	}
@@ -2333,12 +2335,12 @@ namespace core
 		return eval::applyToActivationFrame(func,singleFrame); // return func->INVOKE(singleFrame->length(),singleFrame->argArray()); // return eval::applyFunctionToActivationFrame(func,singleFrame);
 	    }
 	}
-	T_sp last = oCar(af_last(args));
+	T_sp last = oCar(cl_last(args));
 	if ( !af_listp(last) ) {
 	    SIMPLE_ERROR(BF("Last argument is not a list"));
 	}
 	int lenFirst = lenArgs-1;
-	int lenRest = af_length(last);
+	int lenRest = cl_length(last);
 	int nargs = lenFirst + lenRest;
 	ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
 	T_sp obj = args;
@@ -2383,7 +2385,7 @@ namespace core
     Cons_sp af_sorted(Cons_sp unsorted)
     {_G();
         gctools::Vec0<T_sp/*,gctools::RootedGCHolder*/>     sorted;
-	if ( af_length(unsorted) == 0 ) return _Nil<Cons_O>();
+	if ( cl_length(unsorted) == 0 ) return _Nil<Cons_O>();
 	fillVec0FromCons(sorted,unsorted);
 	OrderByLessThan orderer;
 	sort::quickSort(sorted.begin(),sorted.end(),orderer);
@@ -2397,7 +2399,7 @@ namespace core
     Cons_mv af_sorted(Cons_sp unsorted)
     {_G();
 	VectorObjects_sp sorted(VectorObjects_O::create());
-	if ( af_length(unsorted) == 0 ) return(Values(_Nil<Cons_O>()));
+	if ( cl_length(unsorted) == 0 ) return(Values(_Nil<Cons_O>()));
 	sorted->fillFromCons(unsorted);
 	OrderByLessThan orderer;
 	sort::quickSort(sorted->begin(),sorted->end(),orderer,_lisp);
@@ -2435,7 +2437,7 @@ namespace core
         gctools::Vec0<T_sp/*,gctools::RootedGCHolder*/> sorted;
 	Function_sp sortProc = coerce::functionDesignator(predicate);
 	LOG(BF("Unsorted data: %s") % _rep_(sequence) );
-	if ( af_length(sequence) == 0 ) return _Nil<Cons_O>();
+	if ( cl_length(sequence) == 0 ) return _Nil<Cons_O>();
 	fillVec0FromCons(sorted,sequence);
 	LOG(BF("Sort function: %s") % _rep_(sortProc) );
 	OrderBySortFunction orderer(sortProc);
@@ -3481,7 +3483,7 @@ extern "C"
 	stringstream strace;
 	Cons_sp btReversed = this->getBackTrace();
 	Cons_sp bt = btReversed->reverse().as_or_nil<Cons_O>();;
-	strace << "Cando-backtrace number of entries: " << af_length(bt) <<std::endl;
+	strace << "Cando-backtrace number of entries: " << cl_length(bt) <<std::endl;
 	while ( bt.notnilp() )
 	{
 	    T_sp code = bt->ocar();

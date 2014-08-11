@@ -165,7 +165,7 @@ namespace core
 
     Cons_mv LambdaListHandler_O::process_single_dispatch_lambda_list(Cons_sp llraw, bool allow_first_argument_default_dispatcher)
     {_G();
-	Cons_sp llprocessed = af_copyList(llraw).as_or_nil<Cons_O>();
+	Cons_sp llprocessed = cl_copyList(llraw).as_or_nil<Cons_O>();
 	Symbol_sp sd_symbol = _Nil<Symbol_O>();
 	Symbol_sp sd_class = _Nil<Symbol_O>();
 	bool saw_amp = false;
@@ -184,7 +184,7 @@ namespace core
 	    } else if ( af_consP(arg) )
 	    {
 		Cons_sp carg = arg.as_or_nil<Cons_O>();
-		if ( af_length(carg) != 2 )
+		if ( cl_length(carg) != 2 )
 		{
 		    SYMBOL_SC_(CorePkg,singleDispatchWrongNumberArgumentsError);
 		    SYMBOL_SC_(KeywordPkg,arguments);
@@ -231,7 +231,7 @@ namespace core
       generate temporary symbols */
     Cons_sp LambdaListHandler_O::process_macro_lambda_list(Cons_sp lambda_list )
     {_G();
-	Cons_sp new_lambda_list = af_copyList(lambda_list).as_or_nil<Cons_O>();
+	Cons_sp new_lambda_list = cl_copyList(lambda_list).as_or_nil<Cons_O>();
 	Symbol_sp whole_symbol = _Nil<Symbol_O>();
 	Symbol_sp environment_symbol = _Nil<Symbol_O>();
 	if ( oCar(new_lambda_list) == cl::_sym_AMPwhole )
@@ -426,7 +426,7 @@ namespace core
 #define PASS_FUNCTION_REST 	bind_rest_af
 #define PASS_FUNCTION_KEYWORD 	bind_keyword_af
 #define PASS_ARGS	     	ActivationFrame_sp args
-#define PASS_ARGS_NUM		af_length(args)
+#define PASS_ARGS_NUM		cl_length(args)
 #define PASS_NEXT_ARG()		args->entry(arg_idx)
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
@@ -505,8 +505,8 @@ void bind_aux
 	int arg_idx = 0;
 	arg_idx = bind_required_af( this->_RequiredArguments, args, arg_idx, scope );
 	arg_idx = bind_optional_af( this->_OptionalArguments, args, arg_idx, scope );
-	if ( UNLIKELY(arg_idx < af_length(args) && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
-            throwTooManyArgumentsError(af_length(args),this->numberOfLexicalVariables());
+	if ( UNLIKELY(arg_idx < cl_length(args) && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
+            throwTooManyArgumentsError(cl_length(args),this->numberOfLexicalVariables());
 //	    TOO_MANY_ARGUMENTS_ERROR();
 	}
 	bind_rest_af( this->_RestArgument, args, arg_idx, scope );
@@ -756,7 +756,7 @@ void bind_aux
 	allow_other_keys = _lisp->_false();
 	if ( original_lambda_list.nilp() ) return false;
 	throw_if_invalid_context(context);
-	Cons_sp arguments = af_copyList(original_lambda_list).as_or_nil<Cons_O>();
+	Cons_sp arguments = cl_copyList(original_lambda_list).as_or_nil<Cons_O>();
 	LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % arguments->__repr__() );
 	ArgumentMode add_argument_mode = required;
 	restarg.clear();
@@ -1294,13 +1294,13 @@ void bind_aux
 		namesRev = Cons_O::create(oCadr(oCar(cur)),namesRev);
 	    }
 	}
-	return af_nreverse(namesRev).as_or_nil<Cons_O>();
+	return cl_nreverse(namesRev).as_or_nil<Cons_O>();
     }
 
     void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging()
     {
 	Cons_sp names = this->namesOfLexicalVariables();
-	this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(),names,af_length(names),false);
+	this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(),names,cl_length(names),false);
     }
 
     VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging()

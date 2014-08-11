@@ -173,7 +173,7 @@ namespace core
     T_mv af_parseInteger(Str_sp str, uint start, T_sp end, uint radix, T_sp junkAllowed)
     {_G();
 	int istart = MAX(0,start);
-	int iend = af_length(str);
+	int iend = cl_length(str);
 	if ( end.notnilp() )
 	{
 	    iend = MIN(iend,end.as<Fixnum_O>()->get());
@@ -304,9 +304,9 @@ namespace core
 	string1 = coerce::stringDesignator(string1_desig);
 	string2 = coerce::stringDesignator(string2_desig);
 	istart1 = MAX(start1->get(),0);
-	iend1 = MIN(end1.nilp() ? af_length(string1) : end1->get(),af_length(string1));
+	iend1 = MIN(end1.nilp() ? cl_length(string1) : end1->get(),cl_length(string1));
 	istart2 = MAX(start2->get(),0);
-	iend2 = MIN(end2.nilp() ? af_length(string2) : end2->get(),af_length(string2));
+	iend2 = MIN(end2.nilp() ? cl_length(string2) : end2->get(),cl_length(string2));
     }
 
 
@@ -551,7 +551,7 @@ namespace core
 
 
 
-    Str_sp Str_O::create(char initial_element, int dimension, Sequence_sp seq )
+    Str_sp Str_O::create(char initial_element, int dimension, T_sp seq )
     {_G();
         GC_ALLOCATE(Str_O,str );
 	str->_Contents = string(dimension, initial_element);
@@ -616,7 +616,7 @@ namespace core
 
     T_sp Str_O::elt(int index) const
     {_OF();
-	ASSERTF(index>=0 && index<this->size(),BF("Index out of range for string: %d") % index );
+	ASSERTF(index>=0 && index<this->size(),BF("Index %d out of range for elt of string size: %d") % index % this->size() );
 	char c = this->_Contents[index];
 	Character_sp ch = Character_O::create(c);
 	return ch;
@@ -642,14 +642,14 @@ namespace core
 
     T_sp Str_O::aref(Cons_sp indices) const
     {_OF();
-	ASSERTF(af_length(indices)==1,BF("Illegal index for string: %s") % _rep_(indices) );
+	ASSERTF(cl_length(indices)==1,BF("Illegal index for string: %s") % _rep_(indices) );
 	int index = oCar(indices).as<Fixnum_O>()->get();
 	return this->elt(index);
     }
 
     T_sp Str_O::setf_aref(Cons_sp indices_val)
     {_OF();
-	ASSERTF(af_length(indices_val)==2,BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val) );
+	ASSERTF(cl_length(indices_val)==2,BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val) );
 	int index = oCar(indices_val).as<Fixnum_O>()->get();
 	return this->setf_elt(index,oCadr(indices_val));
     }
@@ -1193,7 +1193,7 @@ namespace core
 
 
 
-    Sequence_sp Str_O::subseq(int start, T_sp end) const
+    T_sp Str_O::subseq(int start, T_sp end) const
     {_G();
 	if ( start < 0 )
 	{
@@ -1211,7 +1211,7 @@ namespace core
 	return news;
     }
 
-    Sequence_sp Str_O::setf_subseq(int start, T_sp end, Sequence_sp new_subseq)
+    T_sp Str_O::setf_subseq(int start, T_sp end, T_sp new_subseq)
     {_G();
 	IMPLEMENT_ME();
     }
@@ -1254,11 +1254,11 @@ namespace core
 
 
 
-    void Str_O::fillInitialContents(Sequence_sp seq)
+    void Str_O::fillInitialContents(T_sp seq)
     {
 	if ( Cons_sp ls = seq.asOrNull<Cons_O>() )
 	{
-	    if ( af_length(seq) != this->dimension() ) goto ERROR;
+	    if ( cl_length(seq) != this->dimension() ) goto ERROR;
 	    size_t i = 0;
 	    for (Cons_sp cur=ls; cur.notnilp(); cur=cCdr(cur))
 	    {
@@ -1280,7 +1280,7 @@ namespace core
 	}
 	return;
     ERROR:
-	SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % af_length(seq) % _rep_(seq->__class()->className()) % this->dimension() );
+	SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl_length(seq) % _rep_(seq->__class()->className()) % this->dimension() );
     }
 
 

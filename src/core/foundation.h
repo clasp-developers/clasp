@@ -638,6 +638,8 @@ extern void brcl_mps_debug_container(const char* ctype,const char* name, int siz
 
 namespace core {
     typedef gctools::smart_ptr<T_O>	T_sp;
+    typedef T_sp SEQUENCE_sp;
+    typedef T_sp LIST_sp;
     typedef gctools::smart_ptr<Cons_O>  Cons_sp;
     typedef gctools::smart_ptr<VectorObjects_O>  VectorObjects_sp;
     typedef gctools::smart_ptr<Stream_O>  Stream_sp;

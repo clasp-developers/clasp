@@ -228,7 +228,7 @@ namespace core
 	    new_symbol->_Function = this->_Function;
 	    new_symbol->_IsConstant = this->_IsConstant;
 	    new_symbol->_ReadOnlyFunction = this->_ReadOnlyFunction;
-	    new_symbol->_PropertyList = af_copyList(this->_PropertyList).as_or_nil<Cons_O>();
+	    new_symbol->_PropertyList = cl_copyList(this->_PropertyList).as_or_nil<Cons_O>();
 	}
 	return new_symbol;
     };

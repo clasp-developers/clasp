@@ -22,7 +22,7 @@ class String_O : public Vector_O
     DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
 public:
-    explicit String_O() : T_O(), Base() {};
+    explicit String_O() : Base() {};
     virtual ~String_O() {};
 public:
 	void initialize();
@@ -55,9 +55,9 @@ namespace core {
 
     bool brcl_memberChar(brclChar c, T_sp charBag);
 
-    Str_sp af_string_trim(Sequence_sp charbag, T_sp str);
-    Str_sp af_string_left_trim(Sequence_sp charbag, T_sp str);
-    Str_sp af_string_right_trim(Sequence_sp charbag, T_sp str);
+    Str_sp cl_stringTrim(T_sp charbag, T_sp str);
+    Str_sp cl_stringLeftTrim(T_sp charbag, T_sp str);
+    Str_sp cl_stringRightTrim(T_sp charbag, T_sp str);
 };
 #endif /* _core_String_H */
 

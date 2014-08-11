@@ -26,6 +26,46 @@
 namespace core
 {
 
+
+
+    struct FileOps {
+        size_t (*write_byte8)(T_sp strm, unsigned char *c, size_t n);
+        size_t (*read_byte8)(T_sp strm, unsigned char *c, size_t n);
+
+        void (*write_byte)(T_sp c, T_sp strm);
+        T_sp (*read_byte)(T_sp strm);
+
+        int (*read_char)(T_sp strm);
+        int (*write_char)(T_sp strm, int c);
+        void (*unread_char)(T_sp strm, int c);
+        int (*peek_char)(T_sp strm);
+
+        size_t (*read_vector)(T_sp strm, T_sp data, size_t start, size_t end);
+        size_t (*write_vector)(T_sp strm, T_sp data, size_t start, size_t end);
+
+        int (*listen)(T_sp strm);
+        void (*clear_input)(T_sp strm);
+        void (*clear_output)(T_sp strm);
+        void (*finish_output)(T_sp strm);
+        void (*force_output)(T_sp strm);
+
+        int (*input_p)(T_sp strm);
+        int (*output_p)(T_sp strm);
+        int (*interactive_p)(T_sp strm);
+        T_sp (*element_type)(T_sp strm);
+
+        T_sp (*length)(T_sp strm);
+        T_sp (*get_position)(T_sp strm);
+        T_sp (*set_position)(T_sp strm, T_sp pos);
+        int (*column)(T_sp strm);
+
+        T_sp (*close)(T_sp strm);
+    };
+
+
+
+
+
 // Define types of streams
 // See ecl object.h:600
 
@@ -93,13 +133,13 @@ namespace core
 
 
 
-	// Line counting stuff for input streams
-#define CURSOR_HANDLING_FUNCTIONS() \
-	virtual uint lineNumber() const {return this->_Cursor.lineNumber();}; 		\
-	virtual uint column() const {return this->_Cursor.column();};				\
-	virtual void invalidateCursor() {this->_Cursor.invalidate();}			\
-	virtual void advanceLineNumber(int num=1) {this->_Cursor.advanceLineNumber(num);}; \
-	virtual void advanceColumn(int num=1) {this->_Cursor.advanceColumn(num);}; \
+    // Line counting stuff for input streams
+#define CURSOR_HANDLING_FUNCTIONS()                                     \
+    virtual uint lineNumber() const {return this->_Cursor.lineNumber();}; \
+    virtual uint column() const {return this->_Cursor.column();};       \
+    virtual void invalidateCursor() {this->_Cursor.invalidate();}       \
+    virtual void advanceLineNumber(int num=1) {this->_Cursor.advanceLineNumber(num);}; \
+    virtual void advanceColumn(int num=1) {this->_Cursor.advanceColumn(num);}; \
 
 // last
 
@@ -119,6 +159,8 @@ namespace core
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,ClPkg,Stream_O,"stream");
 	DECLARE_INIT_GLOBALS();
+    private:
+        FileOps         _FileOps;
     public:
 	/*! Return the stream name as a pathname*/
 	Pathname_sp pathname() const;
@@ -866,7 +908,6 @@ TRANSLATE(core::FDOutStream_O);
 
 
 
-
 namespace core {
     FORWARD(FDIOStream);
     class FDIOStream_O : public FDInStream_O, public FDOutStream_O
@@ -890,7 +931,6 @@ namespace core {
     
 }; // core namespace
 TRANSLATE(core::FDIOStream_O);
-
 
 
 
@@ -1145,7 +1185,7 @@ namespace core {
 
     Str_sp af_writeString(Str_sp str, T_sp stream, int start, Fixnum_sp end);
 
-    Sequence_sp af_writeSequence(Sequence_sp seq, Stream_sp stream, Fixnum_sp start, Fixnum_sp end);
+    T_sp af_writeSequence(T_sp seq, Stream_sp stream, Fixnum_sp start, Fixnum_sp end);
 
     Stream_sp brcl_makeStreamFromFD(const string& name, int fd,
 				    BrclStreamModeEnum mode,

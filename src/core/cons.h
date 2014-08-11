@@ -98,9 +98,9 @@ template<> struct gctools::GCInfo<core::Cons_O> {
 
 namespace core {
     
-    class Cons_O : public List_O
+    class Cons_O : public T_O
     {
-	LISP_BASE1(List_O);
+	LISP_BASE1(T_O);
 	LISP_CLASS(core,ClPkg,Cons_O,"Cons");
 #if defined(OLD_SERIALIZE)
 	DECLARE_SERIALIZE();
@@ -194,7 +194,7 @@ namespace core {
 #endif
     public:
 	static void appendInto(T_sp head, T_sp*& tailP, T_sp l);
-	static List_sp append(List_sp x, List_sp y);
+	static T_sp append(T_sp x, T_sp y);
     public:
 	/*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
 	void sxhash(HashGenerator& hg) const;
@@ -303,13 +303,13 @@ namespace core {
 	Cons_sp extend(Cons_sp rest);
 
 	/*! Return the reversed list */
-	Sequence_sp reverse();
+	T_sp reverse();
 
 	/*! Return the reversed list */
-	Sequence_sp nreverse();
+	T_sp nreverse();
 
-	virtual List_sp revappend(T_sp tail);
-	virtual List_sp nreconc(T_sp tail);
+	virtual T_sp revappend(T_sp tail);
+	virtual T_sp nreconc(T_sp tail);
 
 	/*! Set the next pointer for this element */
 	void	setCdr(Cons_sp o);
@@ -420,8 +420,8 @@ namespace core {
 //	void setOwnerOfAllEntries(T_sp obj);
 
 
-	virtual Sequence_sp subseq(int start, T_sp end) const;
-	virtual Sequence_sp setf_subseq(int start, T_sp end, Sequence_sp new_subseq) {_G(); IMPLEMENT_ME();};
+	virtual T_sp subseq(int start, T_sp end) const;
+	virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq) {_G(); IMPLEMENT_ME();};
 
 
 

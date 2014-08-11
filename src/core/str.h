@@ -33,7 +33,7 @@ namespace core
 	static Str_sp create(const string& nm);
 	static Str_sp create(const char* nm);
 	static Str_sp create(const char* nm, int numChars);
-	static Str_sp create(brclChar initial_element, int dimension, Sequence_sp initialContents);
+	static Str_sp create(brclChar initial_element, int dimension, T_sp initialContents);
 	static Str_sp create(Str_sp orig);
     public:
 	static Bignum stringToBignum(const char* str);
@@ -111,6 +111,7 @@ namespace core
 	virtual	bool	operator>(T_sp obj) const;
 	virtual	bool	operator>=(T_sp obj) const;
 
+        virtual uint dimension() const { return this->size(); };
 
 	virtual T_sp string_EQ_(Str_sp string2, int start1, int end1, int start2, int end2 ) const;
 	virtual T_sp string_NE_(Str_sp string2, int start1, int end1, int start2, int end2 ) const;
@@ -145,8 +146,8 @@ namespace core
         
 
 
-        virtual Sequence_sp subseq(int start, T_sp end) const;
-        virtual Sequence_sp setf_subseq(int start, T_sp end, Sequence_sp new_subseq);
+        virtual T_sp subseq(int start, T_sp end) const;
+        virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq);
 
 
 	virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end);
@@ -155,10 +156,10 @@ namespace core
 	virtual void* addressOfBuffer() const;
 	virtual size_t elementSizeInBytes() const { return sizeof(brclChar);};
 
-	virtual void fillInitialContents(Sequence_sp initialContents);
+	virtual void fillInitialContents(T_sp initialContents);
 
     public:
-	explicit Str_O() : T_O(), Base() {};
+	explicit Str_O() : Base() {};
 	virtual ~Str_O();
     };
 

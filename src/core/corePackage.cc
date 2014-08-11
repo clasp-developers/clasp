@@ -59,6 +59,10 @@ namespace core
 {
     const char* CorePkg_nicknames[] = { "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/ };
 
+    SYMBOL_EXPORT_SC_(ClPkg,elt);
+    SYMBOL_EXPORT_SC_(ClPkg,null);
+    SYMBOL_EXPORT_SC_(ClPkg,sequence);
+    SYMBOL_EXPORT_SC_(ClPkg,list);
     SYMBOL_EXPORT_SC_(ClPkg,callNextMethod);
     SYMBOL_EXPORT_SC_(ClPkg,nextMethodP);
     SYMBOL_EXPORT_SC_(ExtPkg,truly_the);

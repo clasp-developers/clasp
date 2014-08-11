@@ -72,14 +72,14 @@ namespace core
 #define ARGS_af_environmentList "(env)"
 #define DECL_af_environmentList ""
 #define DOCS_af_environmentList "Return a list of environment parents"
-    Sequence_sp af_environmentList(Environment_sp env)
+    T_sp af_environmentList(Environment_sp env)
     {_G();
 	Cons_sp result = _Nil<Cons_O>();
 	for ( Environment_sp ecur=env; ecur.notnilp(); ecur=ecur->getParentEnvironment() )
 	{
 	    result = Cons_O::create(ecur,result);
 	}
-	return(af_nreverse(result).as<Sequence_O>());
+	return(cl_nreverse(result));
     };
 
 
@@ -94,7 +94,7 @@ namespace core
 	{
 	    result = Cons_O::create(lisp_static_class(ecur),result);
 	}
-	return af_nreverse(result);
+	return cl_nreverse(result);
     };
 
 
@@ -1195,7 +1195,7 @@ namespace core
                 if ( ivalue == SPECIAL_TARGET )
                 {
                     ss << "SPECIAL-VAR";
-                } else if ( ivalue >= af_length(this->_ActivationFrame) )
+                } else if ( ivalue >= cl_length(this->_ActivationFrame) )
                 {
                     ss << "ActivationFrame->index["<<ivalue<<"]->OUT-OF-RANGE";
                 } else if ( this->_ActivationFrame->boundp_entry(ivalue) )

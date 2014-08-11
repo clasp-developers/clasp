@@ -337,7 +337,7 @@ namespace core {
 
 	static FunctionFrame_sp create(Cons_sp args,ActivationFrame_sp parent)
 	{_G();
-	    FunctionFrame_sp vf(FunctionFrame_O::create(af_length(args),parent));
+	    FunctionFrame_sp vf(FunctionFrame_O::create(cl_length(args),parent));
 //	    vf->allocateStorage(args->length());
 	    int idx = 0;
 	    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) )
@@ -586,7 +586,7 @@ namespace frame
 	}
 	for ( int i=0; i<this->_Objects.capacity(); ++i )
 	{
-	    if ( debuggingInfo.notnilp() && (i < af_length(debuggingInfo)) )
+	    if ( debuggingInfo.notnilp() && (i < cl_length(debuggingInfo)) )
 	    {
 		ss << _rep_(debuggingInfo->elt(i)) << " ";
 	    } else

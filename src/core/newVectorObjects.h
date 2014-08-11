@@ -30,18 +30,18 @@ namespace core
 	bool		        _Adjustable;
         vec::MutableVector<T_sp>*     _Values;
     public:
-	void fillInitialContents(Sequence_sp ic);
+	void fillInitialContents(T_sp ic);
     public:
         iterator begin() { return this->_Values->begin();};
         iterator end() { return this->_Values->begin()+this->length();};
     public:
 	static VectorObjects_sp create(T_sp initial_element, int dimension, T_sp elementType);
-	static VectorObjects_sp make(T_sp initial_element, Sequence_sp initialContents, int dimension, bool adjustable );
+	static VectorObjects_sp make(T_sp initial_element, T_sp initialContents, int dimension, bool adjustable );
 
 
     public:
-	void setup(T_sp initial_element, Sequence_sp initialContents, int dimension, bool adjustable);
-	void adjust(T_sp initial_element, Sequence_sp initialContents, int dimension );
+	void setup(T_sp initial_element, T_sp initialContents, int dimension, bool adjustable);
+	void adjust(T_sp initial_element, T_sp initialContents, int dimension );
 
 	void setElementType(T_sp elementType) { this->_ElementType = elementType;};
 	T_sp elementType() const { return this->_ElementType;};
@@ -78,8 +78,8 @@ namespace core
 	uint length() const { return this->_Values->size();};
 	string __repr__() const;
 
-	virtual Sequence_sp subseq(int start, T_sp end) const;
-	virtual Sequence_sp setf_subseq(int start, T_sp end, Sequence_sp new_subseq) {_G(); IMPLEMENT_ME();};
+	virtual T_sp subseq(int start, T_sp end) const;
+	virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq) {_G(); IMPLEMENT_ME();};
 
 
     };

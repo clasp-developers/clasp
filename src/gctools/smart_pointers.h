@@ -52,8 +52,6 @@ namespace gctools
     template <class T> class weak_smart_ptr;
 
 
-    template <class T> inline bool isNilDowncastableTo() {return false;};
-
     void initialize_smart_pointers();
 
 #if defined(USE_REFCOUNT)
@@ -128,11 +126,7 @@ namespace gctools
 	    if ( this->BaseType::fixnump()) {
 		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
 	    }
-	    if ( this->nilp()
-#if 0  // everything downcasts to nil
-		 && isNilDowncastableTo<o_class>()
-#endif
-		) {
+	    if ( this->nilp()) {
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
 		return nil;
 	    }
@@ -158,11 +152,7 @@ namespace gctools
 		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
 	    }
 
-	    if ( this->nilp()
-#if 0  // everything downcasts to nil
-		 && isNilDowncastableTo<o_class>()
-#endif
-		) {
+	    if ( this->nilp()) {
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
 		return nil;
 	    }

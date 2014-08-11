@@ -63,7 +63,7 @@ namespace core
     bool af_listp(T_sp arg)
     {_G();
 	if ( arg.nilp() ) return true;
-	return arg.isA<List_O>();
+        return arg.isA<Cons_O>();
     };
 
 

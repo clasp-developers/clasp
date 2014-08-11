@@ -183,7 +183,7 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
     LongLongInt ArrayObjects_O::setDimensions(Cons_sp dim,T_sp initialElement)
     {_OF();
 	LongLongInt elements = 1;
-	this->_Dimensions.resize(af_length(dim));
+	this->_Dimensions.resize(cl_length(dim));
 	int idx = 0;
 	for ( ; dim.notnilp(); dim = cCdr(dim) )
 	{
