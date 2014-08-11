@@ -726,6 +726,27 @@ void assert_type_integer(int index, T_sp p)
 
 
 
+void FEerror(const string& fmt, int nargs, ... )
+{
+    Str_sp sfmt = Str_O::create(fmt);
+    va_list args;
+    va_start(args,nargs);
+    ql::list l;
+    while (nargs) {
+        T_sp arg = gctools::smart_ptr<T_O>(va_arg(args,T_O*));
+        l << arg;
+        --nargs;
+    }
+    eval::funcall(core::_sym_universalErrorHandler
+                  , _Nil<T_O>() // not correctable
+                  , sfmt
+                  , l.cons() );
+    UNREACHABLE();
+}
+                  
+
+
+
 
 
 void initialize_exceptions()

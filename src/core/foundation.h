@@ -308,6 +308,8 @@ typedef	unsigned int uint;
 typedef int Fixnum; // a fixnum that can be represented within a tagged pointer
 typedef Fixnum cl_fixnum;
 typedef size_t _Index; // 
+typedef int claspCharacter;
+typedef int cl_index;
 
 struct size_t_pair {
     size_t start;

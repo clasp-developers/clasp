@@ -38,6 +38,9 @@ struct _TRACE {
 
 #define TRACE() _TRACE ___trace(__FILE__,__LINE__,__FUNCTION__)
 
+/*! Indicate the function does not return */
+#define NO_RETURN
+
 #define	DBG_HOOK(fmt) dbg_hook((fmt).str().c_str())
 
 #define INTERNAL_ERROR(_msg_) THROW_HARD_ERROR(_msg_)
@@ -82,6 +85,7 @@ struct _TRACE {
 #define STREAM_ERROR(st) ERROR(cl::_sym_streamError,core::lisp_createList(kw::_sym_stream,st))
 #define PACKAGE_ERROR(p) ERROR(cl::_sym_packageError,core::lisp_createList(kw::_sym_package,p))
 #define	END_OF_FILE_ERROR(st) ERROR(cl::_sym_endOfFile,core::lisp_createList(kw::_sym_stream,st))
+#define	CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream,core::lisp_createList(kw::_sym_stream,st))
 
 #define READER_ERROR(_fmt_,_fmtArgs_,_stream_) af_readerError(__FILE__,__LINE__,INTERN(__FUNCTION__),_fmt_,_fmtArgs_,_stream_)
 #define PARSE_ERROR(_fmt_,_fmtArgs_) af_readerError(__FILE__,__LINE__,INTERN(__FUNCTION__),_fmt_,_fmtArgs_,_Nil<Stream_O>())
@@ -631,6 +635,8 @@ namespace core
         void assert_type_integer(T_sp p,int idx);
 	
 
+
+    void FEerror(const string& fmt, int numArgs, ... );
 
         void initialize_exceptions();
 
