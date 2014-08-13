@@ -5247,6 +5247,7 @@ namespace core
             return output;
         }
         ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_stream_external_format, strm, cl::_sym_Stream_O);
+        UNREACHABLE();
     }
 
 
