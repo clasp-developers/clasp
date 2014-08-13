@@ -160,7 +160,7 @@ namespace core
 
         void describe();
 
-	void __write__(Stream_sp sout) const; // Look in write_ugly.cc
+	void __write__(T_sp sout) const; // Look in write_ugly.cc
 
 
     }; // Instance class

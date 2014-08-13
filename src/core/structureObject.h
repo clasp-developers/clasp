@@ -58,7 +58,7 @@ namespace core {
 
 	void allocate_slot_storage(uint numberOfSlots, T_sp initialValue);
 
-	void __write__(Stream_sp stream) const;
+	void __write__(T_sp stream) const;
 
 	string __repr__() const;
 

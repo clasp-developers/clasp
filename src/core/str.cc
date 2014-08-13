@@ -1285,7 +1285,7 @@ namespace core
 
 
 
-    void Str_O::__write__(Stream_sp stream) const
+    void Str_O::__write__(T_sp stream) const
     {
 	int ndx;
 	if ( !brcl_print_escape() && !brcl_print_readably() )

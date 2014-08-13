@@ -21,7 +21,7 @@
 namespace core
 {
 
-    void Cons_O::__write__(Stream_sp stream) const
+    void Cons_O::__write__(T_sp stream) const
     {
 	T_sp x;
 	bool circle;

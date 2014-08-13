@@ -1779,6 +1779,8 @@ namespace core {
     };
 
 
+    Integer_O::~Integer_O() {};
+
     EXPOSE_CLASS(core,Integer_O);
 
     void Integer_O::exposeCando(Lisp_sp lisp)

@@ -114,9 +114,9 @@ namespace core
 	virtual ~Pathname_O() {};
 
 	virtual string __repr__() const;
-	//! Common Lisp __write__(Stream_sp strm) 
-	virtual void __write__(Stream_sp strm) const;
-	virtual void __writeReadable__(Stream_sp strm) const;
+	//! Common Lisp __write__(T_sp strm) 
+	virtual void __write__(T_sp strm) const;
+	virtual void __writeReadable__(T_sp strm) const;
 
     };
 

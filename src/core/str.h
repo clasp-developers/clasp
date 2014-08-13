@@ -134,7 +134,7 @@ namespace core
 	/*! Return the value at the indices */
 	virtual T_sp setf_aref(Cons_sp indices_val);
 
-	virtual void __write__(Stream_sp strm) const;
+	virtual void __write__(T_sp strm) const;
 
 	virtual T_sp elt(int index) const;
 	virtual T_sp setf_elt(int index, T_sp value);

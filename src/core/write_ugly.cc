@@ -50,7 +50,7 @@ namespace core
 {
 
 
-    void Pathname_O::__writeReadable__(Stream_sp strm) const
+    void Pathname_O::__writeReadable__(T_sp strm) const
     {
 	ql::list l;
 	l << cl::_sym_makePathname
@@ -68,7 +68,7 @@ namespace core
 
 	    
 
-    void Pathname_O::__write__(Stream_sp strm) const
+    void Pathname_O::__write__(T_sp strm) const
     {
 	Pathname_sp path = this->const_sharedThis<Pathname_O>();
         T_sp namestring = brcl_namestring(path, 0);
@@ -89,7 +89,7 @@ namespace core
         write_ugly_object(namestring,strm);
     }
 
-    void Character_O::__write__(Stream_sp stream) const
+    void Character_O::__write__(T_sp stream) const
     {
         int i = this->charCode();
 	if (!brcl_print_escape() && !brcl_print_readably()) {
@@ -106,7 +106,7 @@ namespace core
     }
 
 
-    void Instance_O::__write__(Stream_sp stream) const
+    void Instance_O::__write__(T_sp stream) const
     {
 	eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream );
     }
@@ -114,7 +114,7 @@ namespace core
 
 
 
-    void StructureObject_O::__write__(Stream_sp stream) const
+    void StructureObject_O::__write__(T_sp stream) const
     {
         if (UNLIKELY(!this->_Type.isA<Symbol_O>()) )
 	    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
@@ -135,7 +135,7 @@ namespace core
     }
 
 
-    void Integer_O::__write__(Stream_sp stream) const
+    void Integer_O::__write__(T_sp stream) const
     {
 	StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
         int print_base = brcl_print_base();
@@ -408,7 +408,7 @@ namespace core
 #endif // working
 
 
-    void write_fixnum(Stream_sp strm, T_sp i)
+    void write_fixnum(T_sp strm, T_sp i)
     {
 	Fixnum_sp fn = Fixnum_O::create(i.fixnum());
 	fn->__write__(strm);
