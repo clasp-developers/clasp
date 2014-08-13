@@ -5,6 +5,7 @@
 #include "symbolTable.h"
 #include "arguments.h"
 #include "str.h"
+#include "lispStream.h"
 #include "primitives.h"
 #include "unixfsys.h"
 #include "pathname.h"
