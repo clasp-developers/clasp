@@ -43,7 +43,7 @@ namespace core
     T_sp af_append(Cons_sp lists);
 
     
-    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
+//    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
 
     Symbol_mv af_gensym(T_sp x);
 
