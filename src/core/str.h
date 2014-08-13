@@ -186,7 +186,7 @@ namespace core {
     T_sp af_base_string_concatenate(Cons_sp args);
 
 
-    claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos);};
+    inline claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos);};
 
 };
 

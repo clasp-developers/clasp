@@ -36,9 +36,10 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	strm = cl_open(source,
 		       kw::_sym_input,
 		       cl::_sym_Character_O,
-		       _Nil<T_O>(),
-		       _Nil<T_O>(),
-		       kw::_sym_default);
+		       _Nil<T_O>(), _Nil<T_O>(),
+		       _Nil<T_O>(), _Nil<T_O>(),
+		       kw::_sym_default,
+                       _Nil<T_O>());
 	if ( strm.nilp() ) return;
     }
 #ifdef TRAP_ERRORS

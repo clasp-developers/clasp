@@ -643,7 +643,7 @@ namespace core
     void FEerror(const string& fmt, int numArgs, ... );
     void FElibc_error( const char* fmt, int nargs, ... );
     void FEcannot_open( T_sp fn );
-    void CEerror(T_sp c, const char* fmt, int numArgs, ... );
+    T_sp CEerror(T_sp c, const char* fmt, int numArgs, ... );
 
     void clasp_internal_error(const char* error);
 
