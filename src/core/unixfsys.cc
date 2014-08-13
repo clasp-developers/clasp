@@ -108,12 +108,13 @@ namespace core {
 
 
 static Str_sp
-coerce_to_posix_filename(Pathname_sp pathname)
+coerce_to_posix_filename(T_sp pathname)
 {
 	/* This converts a pathname designator into a namestring, with the
 	 * particularity that directories do not end with a slash '/', because
 	 * this is not supported on all POSIX platforms (most notably Windows)
 	 */
+    ASSERT(pathname);
     Str_sp sfilename = af_coerceToFilename(pathname).as<Str_O>();
     return cl_stringRightTrim(Str_O::create(DIR_SEPARATOR), sfilename);
 }
@@ -306,8 +307,9 @@ file_kind(char *filename, bool follow_links) {
 #define ARGS_af_file_kind "(filename follow-links)"
 #define DECL_af_file_kind ""
 #define DOCS_af_file_kind "file_kind"
-    Symbol_sp af_file_kind(Pathname_sp filename, bool follow_links)
+    Symbol_sp af_file_kind(T_sp filename, bool follow_links)
     {_G();
+        ASSERT(filename);
 	Str_sp sfilename = coerce_to_posix_filename(filename);
 	return file_kind((char*)(sfilename->c_str()), follow_links);
     }

@@ -1046,13 +1046,14 @@ namespace core {
 #define ARGS_af_coerceToFilename "(pathname-orig)"
 #define DECL_af_coerceToFilename ""
 #define DOCS_af_coerceToFilename "coerceToFilename"
-    Str_sp af_coerceToFilename(Pathname_sp pathname_orig)
+    Str_sp af_coerceToFilename(T_sp pathname_orig)
     {_G();
 	Str_sp namestring;
 	Pathname_sp pathname;
 
 	/* We always go through the pathname representation and thus
 	 * cl_namestring() always outputs a fresh new string */
+        ASSERT(pathname_orig);
 	pathname = af_coerceToFilePathname(pathname_orig);
 	if (af_wildPathnameP(pathname,_Nil<T_O>()))
 	{
@@ -1069,12 +1070,12 @@ namespace core {
 			    "\n :NAME %s"
 			    "\n :TYPE %s"
 			    "\n :VERSION %s")
-			 % _rep_(pathname_orig->_Host)
-			 % _rep_(pathname_orig->_Device)
-			 % _rep_(pathname_orig->_Directory)
-			 % _rep_(pathname_orig->_Name)
-			 % _rep_(pathname_orig->_Type)
-			 % _rep_(pathname_orig->_Version));
+			 % _rep_(pathname->_Host)
+			 % _rep_(pathname->_Device)
+			 % _rep_(pathname->_Directory)
+			 % _rep_(pathname->_Name)
+			 % _rep_(pathname->_Type)
+			 % _rep_(pathname->_Version));
 	}
 	if (_lisp->pathMax() != -1 &&
 	    cl_length(namestring) >= _lisp->pathMax() - 16)
@@ -1104,7 +1105,7 @@ namespace core {
 	 * or using brcl_make_pathname(). In all of these cases BRCL will complain
 	 * at creation time if the pathname has wrong components.
 	 */
-	StringOutputStream_sp buffer = StringOutputStream_O::create(); //(128, 1);
+	T_sp buffer = clasp_make_string_output_stream(); //(128, 1);
 	logical = af_logicalPathnameP(x);
 	host = x->_Host;
 	if (logical) {

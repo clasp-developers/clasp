@@ -13,6 +13,7 @@ namespace core
 
     class StrWithFillPtr_O : public Str_O
     {
+        friend int& StringFillp(StrWithFillPtr_sp);
         friend T_sp str_out_get_position(T_sp strm);
 	LISP_BASE1(Str_O);
 	LISP_CLASS(core,CorePkg,StrWithFillPtr_O,"base-string-with-fill-ptr");

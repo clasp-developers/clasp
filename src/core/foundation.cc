@@ -625,7 +625,7 @@ namespace core
     {
 #define USE_WRITE_OBJECT
 #if defined(USE_WRITE_OBJECT)
-	StringOutputStream_sp sout = StringOutputStream_O::create();
+	T_sp sout = clasp_make_string_output_stream();
 	write_object(obj,sout);
 	return cl_get_output_stream_string(sout).as<Str_O>()->get();
 #else

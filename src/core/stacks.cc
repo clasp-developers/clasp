@@ -446,9 +446,9 @@ namespace core
 #define DOCS_af_ihsBacktrace "ihsBacktrace"
     T_sp af_ihsBacktrace(T_sp outputDesignator, T_sp msg)
     {_G();
-	Stream_sp ss;
+	T_sp ss;
 	if ( outputDesignator.nilp() ) {
-	    ss = StringOutputStream_O::create();
+	    ss = clasp_make_string_output_stream();
 	} else {
 	    ss = coerce::outputStreamDesignator(outputDesignator);
 	}

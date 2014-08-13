@@ -175,10 +175,10 @@ namespace core
         return sout->_Contents;
     }
 
-    int& StringFillp(String_sp s)
+    int& StringFillp(StrWithFillPtr_sp s)
     {
-        Str_sp ss = s.as<Str_O>();
-        return s->fillPointer();
+        StrWithFillPtr_sp ss = s.as<StrWithFillPtr_O>();
+        return ss->_FillPointer;
     }
 
 
@@ -730,14 +730,23 @@ namespace core
     static cl_index
     generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end)
     {
-        IMPLEMENT_MEF(BF("Implement element type for vectors"));
-#if 0
-        cl_elttype elttype;
-	const struct FileOps *ops;
-	if (start >= end)
-            return start;
-	ops = stream_dispatch_table(strm);
-        elttype = clasp_array_elttype(data);
+	if (start >= end) return start;
+	const FileOps& ops = stream_dispatch_table(strm);
+        Vector_sp vec = data.as<Vector_O>();
+        T_sp elementType = vec->elementType();
+        if ( elementType == cl::_sym_BaseChar_O && af_characterP(vec->elt(0))) {
+            claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;			
+            for (; start < end; start++) {
+                write_char(strm, clasp_charCode(vec->elt(start)));
+            }
+        } else {
+            SIMPLE_ERROR(BF("Add support for generic_write_vector for %s") % _rep_(elementType));
+        }
+
+
+            
+#if 0 // Currently we don't support
+        cl_elttype elttype = clasp_array_elttype(data);
 	if (elttype == clasp_aet_bc ||
 #ifdef ECL_UNICODE
 	    elttype == clasp_aet_ch ||
@@ -753,38 +762,37 @@ namespace core
                 write_byte(clasp_elt(data, start), strm);
             }
 	}
-	return start;
 #endif
+	return start;
     }
 
     static cl_index
     generic_read_vector(T_sp strm, T_sp data, cl_index start, cl_index end)
     {
-        IMPLEMENT_MEF(BF("Implement element type for vectors"));
-#if 0
-	const struct FileOps *ops;
-	T_sp expected_type;
 	if (start >= end)
             return start;
-	expected_type = clasp_stream_element_type(strm);
-	ops = stream_dispatch_table(strm);
+        Vector_sp vec = data.as<Vector_O>();
+        const FileOps& ops = stream_dispatch_table(strm);
+	T_sp expected_type = clasp_stream_element_type(strm);
 	if (expected_type == cl::_sym_BaseChar_O || expected_type == cl::_sym_Character_O) {
             claspCharacter (*read_char)(T_sp) = ops.read_char;			
             for (; start < end; start++) {
                 cl_fixnum c = read_char(strm);
                 if (c == EOF) break;
-                clasp_elt_set(data, start, ECL_CODE_CHAR(c));
+                vec->setf_elt(start, Character_O::create(c) );//clasp_charCode(c));
             }
 	} else {
+            SIMPLE_ERROR(BF("Handle generic_read_vector for %s") % _rep_(expected_type));
+#if 0
             T_sp (*read_byte)(T_sp) = ops.read_byte;
             for (; start < end; start++) {
                 T_sp x = read_byte(strm);
                 if (Null(x)) break;
                 clasp_elt_set(data, start, x);
             }
+#endif
 	}
 	return start;
-#endif
     }
 
 
@@ -1608,7 +1616,7 @@ namespace core
 
     T_sp str_out_get_position(T_sp strm)
     {
-	return Integer_O::create((size_t)(StringOutputStreamOutputString(strm)->fillPointer()));
+	return Integer_O::create((size_t)(StringFillp(StringOutputStreamOutputString(strm))));
     }
 
     static T_sp
@@ -1700,7 +1708,7 @@ namespace core
     }
 
     T_sp
-    clasp_make_string_output_stream(cl_index line_length, int extended)
+    clasp_make_string_output_stream(cl_index line_length, bool extended)
     {
 #ifdef ECL_UNICODE
 	T_sp s = extended?
@@ -1754,8 +1762,10 @@ namespace core
 	T_sp strng;
 	unlikely_if (!AnsiStreamTypeP(strm, clasp_smm_string_output))
             af_wrongTypeOnlyArg(__FILE__,__LINE__,cl::_sym_getOutputStreamString,strm,cl::_sym_StringStream_O);
-	strng = cl_copySeq(StringOutputStreamOutputString(strm));
-	StringFillp(StringOutputStreamOutputString(strm)) = 0;
+        StrWithFillPtr_sp buffer = StringOutputStreamOutputString(strm);
+//        printf("%s:%d StringOutputStreamOutputString = %s\n", __FILE__, __LINE__, buffer->get().c_str());
+	strng = cl_copySeq(buffer);
+	StringFillp(buffer) = 0;
 	return strng;
     }
 
@@ -3115,8 +3125,8 @@ namespace core
     static cl_index
     io_file_read_vector(T_sp strm, T_sp data, cl_index start, cl_index end)
     {
-        IMPLEMENT_ME();
 #if 0
+        IMPLEMENT_ME();
 	cl_elttype t = clasp_array_elttype(data);
 	if (start >= end)
             return start;
@@ -3133,14 +3143,13 @@ namespace core
                 return start + bytes / sizeof(cl_fixnum);
             }
 	}
-	return generic_read_vector(strm, data, start, end);
 #endif
+	return generic_read_vector(strm, data, start, end);
     }
 
     static cl_index
     io_file_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end)
     {
-        IMPLEMENT_ME();
 #if 0
 	cl_elttype t = clasp_array_elttype(data);
 	if (start >= end)
@@ -3158,8 +3167,8 @@ namespace core
                 return start + bytes / sizeof(cl_fixnum);
             }
 	}
-	return generic_write_vector(strm, data, start, end);
 #endif
+	return generic_write_vector(strm, data, start, end);
     }
 
     const FileOps io_file_ops = {
@@ -4895,6 +4904,7 @@ namespace core
     T_sp
     clasp_file_position(T_sp strm)
     {
+//        printf("%s:%d strm = %s\n", __FILE__, __LINE__, _rep_(strm).c_str());
 	return stream_dispatch_table(strm).get_position(strm);
     }
 
@@ -5346,6 +5356,7 @@ namespace core
 	Str_sp filename = af_coerceToFilename(fn);
 	string fname = filename->get();
 	bool appending = 0;
+        ASSERT(filename);
 	bool exists = af_file_kind(filename, _T<T_O>()).notnilp();
 	if (smm == clasp_smm_input || smm == clasp_smm_probe) {
             if (!exists) {
