@@ -6081,6 +6081,14 @@ namespace core {
     }
 
 
+    SourceFileInfo_sp clasp_input_source_file_info(T_sp strm)
+    {
+        Str_sp filename = clasp_filename(strm);
+        SourceFileInfo_sp sfi = af_sourceFileInfo(filename);
+        return sfi;
+    }
+
+
 };
 
 

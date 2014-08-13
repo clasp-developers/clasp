@@ -781,6 +781,13 @@ CEerror(T_sp c, const char *err, int narg, ...)
 }
 
 
+void clasp_internal_error(const char* msg)
+{
+    printf("%s:%d %s\n", __FILE__, __LINE__, msg);
+    SIMPLE_ERROR(BF("Internal error: %s\n") % msg);
+}
+
+
 void initialize_exceptions()
 {
     SYMBOL_EXPORT_SC_(CorePkg,signalSimpleError);

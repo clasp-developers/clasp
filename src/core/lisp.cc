@@ -1896,7 +1896,7 @@ namespace core
     T_mv af_saveCando(T_sp obj, T_sp pathDesignator)
     {_G();
 	Path_sp path = coerce::pathDesignator(pathDesignator);
-	Stream_sp sout = af_open(path,
+	Stream_sp sout = cl_open(path,
 				 kw::_sym_output,
 				 cl::_sym_standard_char,
 				 _Nil<Symbol_O>(),
@@ -1915,7 +1915,7 @@ namespace core
     T_mv af_loadCando(T_sp pathDesignator)
     {_G();
 	Path_sp path = coerce::pathDesignator(pathDesignator);
-	Stream_sp sin = af_open(path,kw::_sym_input,cl::_sym_standard_char,_Nil<Symbol_O>(),_Nil<Symbol_O>(),kw::_sym_default);
+	Stream_sp sin = cl_open(path,kw::_sym_input,cl::_sym_standard_char,_Nil<Symbol_O>(),_Nil<Symbol_O>(),kw::_sym_default);
 	T_sp obj = _lisp->sread(sin.as<Stream_O>(),true,_Nil<T_O>());
 	sin->close();
 	return(Values(obj));

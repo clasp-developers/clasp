@@ -32,7 +32,7 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	    SIMPLE_ERROR(BF("Stream must be an input stream"));
 	}
     } else {
-	strm = af_open(source,
+	strm = cl_open(source,
 		       kw::_sym_input,
 		       cl::_sym_Character_O,
 		       _Nil<T_O>(),
