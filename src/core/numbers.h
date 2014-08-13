@@ -295,7 +295,7 @@ namespace core
 	  If BITS < 0 shift right, if BITS >0 shift left. */
 	virtual Integer_sp shift(int bits) const {SUBIMP();};
 
-	virtual uint64_t as_uint64() const {SUBIMP();};
+	virtual uint64_t as_uint64() const;
 	virtual void __write__(Stream_sp strm) const;
 	DEFAULT_CTOR_DTOR(Integer_O);
     };
@@ -1281,7 +1281,7 @@ TRANSLATE(core::Complex_O);	// superclass Number_O
 	  If BITS < 0 shift right, if BITS >0 shift left. */
 	virtual Integer_sp shift(int bits) const {SUBIMP();};
 
-	virtual uint64_t as_uint64() const {SUBIMP();};
+	virtual uint64_t as_uint64() const;
 	virtual void __write__(Stream_sp strm) const;
 	DEFAULT_CTOR_DTOR(Integer_O);
     };

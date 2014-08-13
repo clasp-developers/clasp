@@ -1770,10 +1770,13 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 		   _lisp->integer_ordering()._mpz_import_endian, 0, &v);
 	return Bignum_O::create(z);
     }
+};
 
-
-
-
+namespace core {
+    uint64_t Integer_O::as_uint64() const
+    {
+        SUBIMP();
+    };
 
 
     EXPOSE_CLASS(core,Integer_O);
