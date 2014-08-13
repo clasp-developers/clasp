@@ -392,7 +392,7 @@ namespace core
         friend Str_sp& IOFileStreamFilename(T_sp);
         friend T_sp& IOFileStreamEltType(T_sp);
 	LISP_BASE1(FileStream_O);
-	LISP_CLASS(core,ClPkg,IOFileStream_O,"iofile-stream");
+	LISP_CLASS(core,CorePkg,IOFileStream_O,"iofile-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
@@ -450,7 +450,7 @@ namespace core {
         friend Str_sp& IOStreamStreamFilename(T_sp strm);
         friend FILE*& IOStreamStreamFile(T_sp strm);
 	LISP_BASE1(FileStream_O);
-	LISP_CLASS(core,ClPkg,IOStreamStream_O,"iostream-stream");
+	LISP_CLASS(core,CorePkg,IOStreamStream_O,"iostream-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
