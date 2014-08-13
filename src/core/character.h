@@ -56,7 +56,7 @@ namespace core
 	virtual bool equalp(T_sp other) const;
 	virtual int toInt() const {SUBIMP();};
 	int charCode() const { return this->toInt(); };
-	void __write__(Stream_sp sout) const; // Look in write_ugly.cc
+	void __write__(T_sp sout) const; // Look in write_ugly.cc
     };
 };
 template<> struct gctools::GCInfo<core::Character_O> {

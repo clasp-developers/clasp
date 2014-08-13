@@ -434,7 +434,7 @@ void	T_O::describe()
 
 
 
-void T_O::__write__(Stream_sp strm) const
+void T_O::__write__(T_sp strm) const
 {
     clasp_write_string(this->__repr__(),strm);
 }

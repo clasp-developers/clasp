@@ -296,7 +296,7 @@ namespace core
 	virtual Integer_sp shift(int bits) const {SUBIMP();};
 
 	virtual uint64_t as_uint64() const;
-	virtual void __write__(Stream_sp strm) const;
+	virtual void __write__(T_sp strm) const;
 	DEFAULT_CTOR_DTOR(Integer_O);
     };
 
@@ -1270,8 +1270,6 @@ TRANSLATE(core::Complex_O);	// superclass Number_O
 	static Integer_sp createLongFloat(LongFloat f);
     public:
 
-	virtual int as_int() const;
-
 	virtual bool evenp() const { SUBIMP(); };
 	virtual bool oddp() const { SUBIMP(); };
 
@@ -1282,8 +1280,9 @@ TRANSLATE(core::Complex_O);	// superclass Number_O
 	virtual Integer_sp shift(int bits) const {SUBIMP();};
 
 	virtual uint64_t as_uint64() const;
-	virtual void __write__(Stream_sp strm) const;
-	DEFAULT_CTOR_DTOR(Integer_O);
+	virtual void __write__(T_sp strm) const;
+        Integer_O() {};
+        virtual ~Integer_O();
     };
 
 };

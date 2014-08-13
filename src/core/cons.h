@@ -398,7 +398,7 @@ namespace core {
 	}
 
 	string __repr__() const;
-	void __write__(Stream_sp stream) const;
+	void __write__(T_sp stream) const;
 
 
         T_sp product(Cons_sp list);
