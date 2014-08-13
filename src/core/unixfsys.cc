@@ -530,7 +530,7 @@ Pathname_sp af_truename(T_sp orig_pathname)
 
 
 int
-ecl_backup_open(const char *filename, int option, int mode)
+clasp_backup_open(const char *filename, int option, int mode)
 {
     stringstream sbackup;
     sbackup << filename << ".BAK";
@@ -555,7 +555,7 @@ ecl_backup_open(const char *filename, int option, int mode)
 }
 
 Integer_sp
-ecl_file_len(int f)
+clasp_file_len(int f)
 {
 	struct stat filestatus;
 	brcl_disable_interrupts();
@@ -1426,7 +1426,7 @@ T_sp core_mkdir(T_sp directory, T_sp mode)
     if ( Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
         modeint = fn->get();
         if ( modeint < 0 || modeint > 0777 ) {
-            WRONG_TYPE_NTH_ARG(2,mode,cl::_sym_Fixnum_O);
+            QERROR_WRONG_TYPE_NTH_ARG(2,mode,cl::_sym_Fixnum_O);
         }
     }
     {
@@ -1434,7 +1434,7 @@ T_sp core_mkdir(T_sp directory, T_sp mode)
          * and null terminated. */
         int last = cl_length(filename);
         if (last > 1) {
-            brclChar c = filename->schar(last-1);
+            claspChar c = filename->schar(last-1);
             if (IS_DIR_SEPARATOR(c))
                 last--;
         }

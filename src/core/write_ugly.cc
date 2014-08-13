@@ -62,7 +62,7 @@ namespace core
 	  << kw::_sym_type << this->_Type
 	  << kw::_sym_version << this->_Version
 	  << kw::_sym_defaults << _Nil<T_O>();
-	strm->writeStr("#.");
+	clasp_write_string("#.",strm);
 	write_object(l.cons(),strm);
     }
 
@@ -80,12 +80,12 @@ namespace core
 	    }
 	    namestring = brcl_namestring(path, 1);
 	    if (namestring.nilp()) {
-		strm->writeStr("#<Unprintable pathname>");
+		clasp_write_string("#<Unprintable pathname>",strm);
 		return;
 	    }
         }
         if (readably || brcl_print_escape())
-	    strm->writeStr("#P");
+	    clasp_write_string("#P",strm);
         write_ugly_object(namestring,strm);
     }
 
@@ -93,14 +93,14 @@ namespace core
     {
         int i = this->charCode();
 	if (!brcl_print_escape() && !brcl_print_readably()) {
-	    stream->writeChar(i);
+	    clasp_write_char(i,stream);
 	} else {
-	    stream->writeStr("#\\");
+	    clasp_write_string("#\\",stream);
 	    if (i < 32 || i >= 127) {
 		Str_sp name = eval::funcall(cl::_sym_char_name,this->const_sharedThis<Character_O>()).as<Str_O>();
-		stream->writeStr(name->get());
+		clasp_write_string(name->get(),stream);
 	    } else {
-		stream->writeChar(i);
+		clasp_write_char(i,stream);
 	    }
 	}
     }
@@ -122,7 +122,7 @@ namespace core
 	SYMBOL_EXPORT_SC_(CorePkg,STARprint_structureSTAR);
         T_sp print_function = af_get_sysprop(this->_Type,_sym_structure_print_function);
         if (Null(print_function) || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
-	    stream->writeStr("#S");
+	    clasp_write_string("#S",stream);
 	    /* structure_to_list conses slot names and values into
 	     * a list to be printed.  print shouldn't allocate
 	     * memory - Beppe
@@ -143,7 +143,7 @@ namespace core
 			   Fixnum_O::create(print_base),
 			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
 			   true);
-	af_writeSequence(buffer,stream,Fixnum_O::create(0),_Nil<Fixnum_O>());
+	cl_writeSequence(buffer,stream,Fixnum_O::create(0),_Nil<Fixnum_O>());
     }
 
 
@@ -232,8 +232,8 @@ namespace core
 			@':rehash-threshold', cl_hash_table_rehash_threshold(x),
 			@':test', cl_hash_table_test(x));
 	    T_sp init =
-		cl_list(3, @'ext::hash-table-fill', make,
-			cl_list(2, @'quote', si_hash_table_content(x)));
+		Cons_O::createList( @'ext::hash-table-fill', make,
+			Cons_O::createList( @'quote', si_hash_table_content(x)));
 	    writestr_stream("#.", stream);
 	    si_write_ugly_object(init, stream);
 	} else {
@@ -417,16 +417,16 @@ namespace core
 
     void write_character(Stream_sp strm, T_sp chr)
     {
-        brclChar i = chr.character();
+        claspChar i = chr.character();
 	if (!brcl_print_escape() && !brcl_print_readably()) {
-	    strm->writeChar(i);
+	    clasp_write_char(i,strm);
 	} else {
-	    strm->writeStr("#\\");
+	    clasp_write_string("#\\",strm);
 	    if (i < 32 || i >= 127) {
 		Str_sp name = cl_char_name(Character_O::create(i));
-		strm->writeStr(name->get());
+		clasp_write_string(name->get(),strm);
 	    } else {
-		strm->writeChar(i);
+		clasp_write_char(i,strm);
 	    }
 	}
     }
@@ -437,7 +437,7 @@ namespace core
 	if ( !x ) {
 	    if (brcl_print_readably())
 		PRINT_NOT_READABLE_ERROR(x);
-	    stream->writeStr("#<OBJNULL>");
+	    clasp_write_string("#<OBJNULL>",stream);
 	    goto DONE;
 	}	
 	switch (x.tag()) {
@@ -446,11 +446,11 @@ namespace core
 	    break;
 	case gctools::smart_ptr<T_O>::special_tag:
 	    if ( x.nilp() ) { // ECL appears to shunt this off to write_list
-                stream->writeStr("NIL");
+                clasp_write_string("NIL",stream);
 //                Str_sp nilstr = Str_O::create("NIL");
 //		nilstr->__write__(stream);
 	    } else if ( x.unboundp() ) {
-		stream->writeStr("unbound");
+		clasp_write_string("unbound",stream);
 	    } else if ( x.characterp() ) {
                 write_character(stream,x);
             }
@@ -459,7 +459,7 @@ namespace core
 	    write_fixnum(stream,x);
 	    break;
         case gctools::smart_ptr<T_O>::frame_tag:
-            stream->writeStr("write_ugly_object(frame)");
+            clasp_write_string("write_ugly_object(frame)",stream);
             break;
 	default:
 	    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());

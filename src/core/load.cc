@@ -28,7 +28,7 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
     Stream_sp strm;
     if ( cl_streamp(source) ) {
 	strm = source.as<Stream_O>();
-	if ( !strm->inputStreamP() ) {
+	if ( !clasp_input_stream_p(strm)) {
 	    SIMPLE_ERROR(BF("Stream must be an input stream"));
 	}
     } else {
@@ -57,8 +57,8 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	while (true) {
 	    bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
 	    T_sp x = read_lisp_object(strm,false,_Unbound<T_O>(),false);
-            DynamicScopeManager innerScope(_sym_STARloadCurrentLinenumberSTAR,Fixnum_O::create(af_streamLinenumber(strm)));
-            innerScope.pushSpecialVariableAndSet(_sym_STARloadCurrentColumnSTAR,Fixnum_O::create(af_streamColumn(strm)));
+            DynamicScopeManager innerScope(_sym_STARloadCurrentLinenumberSTAR,Fixnum_O::create(clasp_input_lineno(strm)));
+            innerScope.pushSpecialVariableAndSet(_sym_STARloadCurrentColumnSTAR,Fixnum_O::create(clasp_input_column(strm)));
 	    if ( x.unboundp() ) break;
 	    if ( echoReplRead ) {
 		_lisp->print(BF("Read: %s\n") % _rep_(x) );
@@ -74,10 +74,10 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
                 gctools::af_cleanup();
 	    }
 	}
-	strm->close(false);
+	cl_close(strm);
 #ifdef TRAP_ERRORS
     } catch (...) {
-	strm->close(true); // abort
+	cl_close(strm);
 	throw;
     }
 #endif

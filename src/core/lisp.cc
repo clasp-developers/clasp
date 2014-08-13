@@ -561,7 +561,7 @@ namespace core
 
 	{_BLOCK_TRACE("Setup system values");
 	    FILE* null_out = fopen("/tmp/null","w");
-	    this->_Roots._NullStream = FDOutStream_O::create(null_out,"/tmp/null",false);
+	    this->_Roots._NullStream = IOStreamStream_O::makeIO("/tmp/null",null_out);
 	    this->_Roots._RehashSize = DoubleFloat_O::create(2.0);
 	    this->_Roots._RehashThreshold = DoubleFloat_O::create(0.9);
 	    this->_Roots._ImaginaryUnit = Complex_O::create(0.0,1.0);
@@ -1435,8 +1435,8 @@ namespace core
 	{
 	    TRY()
 	    {
-		_sym_STARcurrentLineNumberSTAR->setf_symbolValue(Fixnum_O::create(sin->lineNumber()));
-		_sym_STARcurrentColumnSTAR->setf_symbolValue(Fixnum_O::create(sin->column()));
+		_sym_STARcurrentLineNumberSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_lineno(sin)));
+		_sym_STARcurrentColumnSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_column(sin)));
 		T_sp expression = read_lisp_object(sin,false,_Unbound<T_O>(),false);
 		if ( expression.unboundp() ) break;
 //		TopLevelIHF frame(_lisp->invocationHistoryStack(),expression);
@@ -1521,11 +1521,11 @@ namespace core
 
     T_mv Lisp_O::readEvalPrintString(const string& code, Environment_sp environ, bool printResults )
     {_OF();
-	StringInputStream_sp sin = StringInputStream_O::create(code);
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLineNumberSTAR,Fixnum_O::create(sin->lineNumber()));
-	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(sin->column()));
+	StringInputStream_sp sin = StringInputStream_O::make(code);
+	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLineNumberSTAR,Fixnum_O::create(clasp_input_lineno(sin)));
+	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(clasp_input_column(sin)));
 	T_mv result = this->readEvalPrint(sin,environ,printResults);
-	sin->close();
+	cl_close(sin);
 	return result;
     }
 
@@ -1555,7 +1555,7 @@ namespace core
 	  stringstream prompt;
 	  prompt << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << ">>> ";
 	  line = myReadLine(prompt.str());
-	  StringInputStream_sp sin = StringInputStream_O::create(line);
+	  StringInputStream_sp sin = StringInputStream_O::make(line);
 	  this->readEvalPrint(sin,_Nil<Environment_O>(),true);
 	}
     }
@@ -1724,7 +1724,7 @@ namespace core
 	if ( Cons_sp list = tlist.asOrNull<Cons_O>() ) {
 	    return(list->member(item,key,test,test_not));
 	}
-	WRONG_TYPE_NTH_ARG(2,tlist,cl::_sym_list);
+	QERROR_WRONG_TYPE_NTH_ARG(2,tlist,cl::_sym_list);
 	UNREACHABLE();
     }
 
@@ -2790,10 +2790,10 @@ extern "C"
 
 
 
-#define ARGS_af_error "(datum &rest arguments)"
-#define DECL_af_error ""
-#define DOCS_af_error "See CLHS error"
-    void af_error(T_sp datum, Cons_sp initializers)
+#define ARGS_cl_error "(datum &rest arguments)"
+#define DECL_cl_error ""
+#define DOCS_cl_error "See CLHS error"
+    void cl_error(T_sp datum, Cons_sp initializers)
     {_G();
 	int nestedErrorDepth = _sym_STARnestedErrorDepthSTAR->symbolValue().as<Fixnum_O>()->get();
 	if ( nestedErrorDepth > 10 )
@@ -2814,7 +2814,7 @@ extern "C"
 	    Function_sp fn = _sym_universalErrorHandler->symbolFunction();
 	    eval::funcall(fn,_Nil<T_O>(),datum,initializers);
 	}
-	THROW_HARD_ERROR(BF("af_error should never return because universal-error-handler should never return - but it did"));
+	THROW_HARD_ERROR(BF("cl_error should never return because universal-error-handler should never return - but it did"));
     }
 
 
@@ -3003,10 +3003,10 @@ extern "C"
     {_G();
 	DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR,_lisp->_true());
 	Stream_sp sout = coerce::outputStreamDesignator(output_stream_desig);
-	sout->writeStr("\n");
+	clasp_write_string("\n",sout);
 	af_prin1(obj,sout);
-	sout->writeStr(" ");
-	sout->flush();
+	clasp_write_string(" ",sout);
+	clasp_force_output(sout);
     }
 
     
@@ -3582,7 +3582,7 @@ extern "C"
             }
             return Values(_lisp->_Roots._SourceFiles[fnSourceFile->get()],fnSourceFile);
         } else if ( Stream_sp so = sourceFile.asOrNull<Stream_O>() ) {
-            return af_sourceFileInfo(so->sourceFileInfo());
+            return af_sourceFileInfo(clasp_input_source_file_info(so));
         } else if ( SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>() ) {
             return _lisp->sourceFileInfo(sfi->namestring());
         } else if ( SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>() ) {
@@ -3763,7 +3763,7 @@ extern "C"
 	Defun(repr);
 
 	SYMBOL_EXPORT_SC_(ClPkg,error);
-	Defun(error);
+	ClDefun(error);
 	SYMBOL_EXPORT_SC_(ExtPkg,setenv);
 	ExtDefun(setenv);
 	SYMBOL_EXPORT_SC_(ExtPkg,getenv);

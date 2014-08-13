@@ -101,16 +101,7 @@ namespace gctools {
         pointer_type data() const { return this->_Array.data(); };
         reference operator[](size_t i) { return this->_Array[i]; };
         const_reference operator[](size_t i) const { return this->_Array[i]; };
-#if 0
-        GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
-            GC_RESULT res;
-            for ( iterator it = this->begin(); it!=this->end(); ++it ) {
-                res = (*it).onHeapScanGCRoots(GC_SCAN_ARGS_PASS);
-                if ( res != GC_RES_OK ) return res;
-            }
-            return GC_RES_OK;
-        }
-#endif            
+        void clear() { this->_Array.clear();};
     };
 
 

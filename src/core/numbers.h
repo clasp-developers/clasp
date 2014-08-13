@@ -190,7 +190,7 @@ namespace core
 	static Integer_sp create(int v);
 	static Integer_sp create(const string& v) {mpz_class zv(v); return create(zv);};
 	static Integer_sp create(const char* v) {mpz_class zv(v); return create(zv);};
-	static Integer_sp create(size_t v);
+	static Integer_sp create(size_t v); // unsigned
 	static Integer_sp create(uint v);
 #ifndef _TARGET_OS_LINUX
 	static Integer_sp create(uint64_t v);
@@ -200,6 +200,7 @@ namespace core
 	static Integer_sp createLongFloat(LongFloat f);
     public:
 
+	virtual int as_int() const;
 
 	virtual bool evenp() const { SUBIMP(); };
 	virtual bool oddp() const { SUBIMP(); };
@@ -926,7 +927,7 @@ namespace core {
 	return x->bit_length();
     }
 
-    Integer_sp brcl_ash(Integer_sp x, int bits);
+    Integer_sp clasp_ash(Integer_sp x, int bits);
 
     inline float brcl_to_float(Number_sp x) { return x->as_float(); };
     inline double brcl_to_double(Number_sp x) { return x->as_double(); };
@@ -1006,8 +1007,8 @@ namespace core {
 #define BRCL_FIXNUMP(n) (n.isA<Fixnum_O>())
 
     /*! In num_co.cc */
-    Real_mv brcl_floor1(Real_sp x);
-    Real_mv brcl_floor2(Real_sp x,Real_sp y);
+    Real_mv clasp_floor1(Real_sp x);
+    Real_mv clasp_floor2(Real_sp x,Real_sp y);
     Real_mv brcl_ceiling1(Real_sp x);
     Real_mv brcl_ceiling2(Real_sp x,Real_sp y);
 
@@ -1026,8 +1027,17 @@ namespace core {
 #define brcl_greater(x,y) (brcl_number_compare((x),(y)) > 0)
 
 
+    unsigned char clasp_toUint8(T_sp n);
+    signed char clasp_toSignedInt8(T_sp n);
+    cl_index clasp_toSize(T_sp f);
 
 
+
+    Integer_sp cl_logior(Cons_sp integers);
+    Integer_sp cl_logand(Cons_sp integers);
+
+
+    cl_fixnum fixint(T_sp x);
 
     /*! Initialize all math functions here */
     void initialize_numbers();

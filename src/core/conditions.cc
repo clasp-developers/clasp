@@ -128,9 +128,9 @@ namespace core
 	{
 	    return ce->message();
 	}
-	StringOutStream_sp sout = StringOutStream_O::make();
+	StringOutputStream_sp sout = StringOutputStream_O::create();
 	eval::funcall(cl::_sym_printObject,condition,sout);
-	return sout->str();
+	return cl_get_output_stream_string(sout).as<Str_O>()->get();
     }
 
 

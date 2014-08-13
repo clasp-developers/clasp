@@ -16,21 +16,161 @@
 #include "object.h"
 #include "numerics.h"
 #include "character.h"
+#include "lispString.fwd.h"
 #include "pathname.fwd.h"
 #include "lispVector.fwd.h"
 #include "sourceFileInfo.fwd.h"
 #include "strWithFillPtr.fwd.h"
 #include "intStackQueue.h"
 
+#define OPEN_R	"rb"
+#define OPEN_W	"wb"
+#define OPEN_RW	"r+b"
+#define OPEN_A	"ab"
+#define OPEN_RA	"a+b"
 
 namespace core
 {
 
+    enum StreamMode {		/*  stream mode  */
+	clasp_smm_input,		/*  input  */
+	clasp_smm_input_file,		/*  input  */
+	clasp_smm_output,		/*  output  */
+	clasp_smm_output_file,	/*  output  */
+	clasp_smm_io,			/*  input-output  */
+	clasp_smm_io_file,		/*  input-output  */
+	clasp_smm_synonym,		/*  synonym  */
+	clasp_smm_broadcast,		/*  broadcast  */
+	clasp_smm_concatenated,	/*  concatenated  */
+	clasp_smm_two_way,		/*  two way  */
+	clasp_smm_echo,		/*  echo  */
+	clasp_smm_string_input,	/*  string input  */
+	clasp_smm_string_output,	/*  string output  */
+	clasp_smm_probe,		/*  probe (only used in open_stream())  */
+#if defined(ECL_WSOCK)
+	clasp_smm_input_wsock,	/*  input socket (Win32) */
+	clasp_smm_output_wsock,	/*  output socket (Win32) */
+	clasp_smm_io_wsock,		/*  input/output socket (Win32) */
+#endif
+#if defined(ECL_MS_WINDOWS_HOST)
+	clasp_smm_io_wcon,		/*  windows console (Win32) */
+#endif
+	clasp_smm_sequence_input,	/*  sequence input  */
+	clasp_smm_sequence_output	/*  sequence output  */
+    };
+
+    typedef enum {
+	CLASP_STREAM_BINARY = 0,
+	CLASP_STREAM_FORMAT = 0xF,
+#ifndef ECL_UNICODE
+	CLASP_STREAM_DEFAULT_FORMAT = 1,
+#else
+	CLASP_STREAM_DEFAULT_FORMAT = 2,
+	CLASP_STREAM_ISO_8859_1 = 1,
+	CLASP_STREAM_LATIN_1 = 1,
+	CLASP_STREAM_UTF_8 = 2,
+	CLASP_STREAM_UCS_2 = 3,
+	CLASP_STREAM_UCS_2LE = 5 + 128,
+	CLASP_STREAM_UCS_2BE = 5,
+	CLASP_STREAM_UCS_4 = 6,
+	CLASP_STREAM_UCS_4LE = 7 + 128,
+	CLASP_STREAM_UCS_4BE = 7,
+	CLASP_STREAM_USER_FORMAT = 8,
+	CLASP_STREAM_US_ASCII = 10,
+#endif
+	CLASP_STREAM_CR = 16,
+	CLASP_STREAM_LF = 32,
+	CLASP_STREAM_SIGNED_BYTES = 64,
+	CLASP_STREAM_LITTLE_ENDIAN = 128,
+	CLASP_STREAM_C_STREAM = 256,
+	CLASP_STREAM_MIGHT_SEEK = 512,
+	CLASP_STREAM_CLOSE_COMPONENTS = 1024
+    } StreamFlagsEnum;
+
+
+}
+namespace core
+{
+    cl_index clasp_read_byte8(T_sp stream, unsigned char *c, cl_index n);
+    cl_index clasp_write_byte8(T_sp stream, unsigned char *c, cl_index n);
+
+    void clasp_force_output(T_sp strm);
+
+    T_sp clasp_read_byte(T_sp strm);
+    void clasp_write_byte(T_sp c, T_sp strm);
+
+    claspCharacter clasp_read_char(T_sp strm);
+    void clasp_unread_char(claspCharacter c, T_sp strm);
+    claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
+    claspCharacter clasp_peek_char(T_sp strm);
+    int clasp_listen_stream(T_sp strm);
+
+    void clasp_clear_input(T_sp strm);
+    void clasp_clear_output(T_sp strm);
+    void clasp_force_output(T_sp strm);
+
+    void clasp_finish_output(T_sp strm);
+    int clasp_file_column(T_sp strm);
+    int clasp_input_lineno(T_sp strm);
+    int clasp_input_column(T_sp strm);
+    SourceFileInfo_sp clasp_input_source_file_info(T_sp strm);
+    Pathname_sp clasp_input_pathname(T_sp strm);
+    /*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
+    Str_sp clasp_filename(T_sp strm, bool errorp=false);
+    
+    T_sp cl_get_output_stream_string(T_sp strm);
+
+    T_sp clasp_file_length(T_sp strm);
+    T_sp clasp_file_position(T_sp strm);
+    T_sp clasp_file_position_set(T_sp strm, T_sp pos);
+    bool clasp_input_stream_p(T_sp strm);
+    bool clasp_output_stream_p(T_sp strm);
+    T_sp clasp_stream_element_type(T_sp strm);
+    int clasp_interactive_stream_p(T_sp strm);
+    T_sp clasp_off_t_to_integer(clasp_off_t offset);
+    clasp_off_t clasp_integer_to_off_t(T_sp i);
+
+
+    T_sp cl_stream_element_type(T_sp strm);
+    T_sp cl_stream_external_format(T_sp strm);
+
+    T_sp clasp_make_stream_from_FILE(T_sp fname
+                                     , FILE* f
+                                     , enum StreamMode smm
+                                     , cl_fixnum byte_size=8
+                                     , int flags= CLASP_STREAM_DEFAULT_FORMAT
+                                     , T_sp external_format=_Nil<T_O>() );
+
+    T_sp clasp_make_stream_from_fd(T_sp fname
+                                   , int fd
+                                   , enum StreamMode smm
+                                   , cl_fixnum byte_size=8
+                                   , int flags= CLASP_STREAM_DEFAULT_FORMAT
+                                   , T_sp external_format=_Nil<T_O>() );
+
+    T_sp cl_make_synonym_stream(T_sp sym);
+    T_sp cl_make_two_way_stream(T_sp in, T_sp out);
+
+    T_sp cl_make_string_input_stream(Str_sp strng, Fixnum_sp istart, Fixnum_sp iend);
+
+    T_sp cl_close(T_sp strm, T_sp abort=_Nil<T_O>() );
+};
+
+namespace core
+{
+
+#define CLASP_LISTEN_NO_CHAR	0
+#define CLASP_LISTEN_AVAILABLE	1
+#define CLASP_LISTEN_EOF		-1
+
+    typedef int (*cl_eformat_decoder)(T_sp stream);
+    typedef int (*cl_eformat_encoder)(T_sp stream, unsigned char *buffer, int c);
+    typedef cl_index (*cl_eformat_read_byte8)(T_sp object, unsigned char *buffer, cl_index n);
 
 
     struct FileOps {
-        size_t (*write_byte8)(T_sp strm, unsigned char *c, size_t n);
-        size_t (*read_byte8)(T_sp strm, unsigned char *c, size_t n);
+        cl_index (*write_byte8)(T_sp strm, unsigned char *c, cl_index n);
+        cl_index (*read_byte8)(T_sp strm, unsigned char *c, cl_index n);
 
         void (*write_byte)(T_sp c, T_sp strm);
         T_sp (*read_byte)(T_sp strm);
@@ -40,8 +180,8 @@ namespace core
         void (*unread_char)(T_sp strm, int c);
         int (*peek_char)(T_sp strm);
 
-        size_t (*read_vector)(T_sp strm, T_sp data, size_t start, size_t end);
-        size_t (*write_vector)(T_sp strm, T_sp data, size_t start, size_t end);
+        cl_index (*read_vector)(T_sp strm, T_sp data, cl_index start, cl_index end);
+        cl_index (*write_vector)(T_sp strm, T_sp data, cl_index start, cl_index end);
 
         int (*listen)(T_sp strm);
         void (*clear_input)(T_sp strm);
@@ -124,7 +264,7 @@ namespace core
 	UnputChar() : _HasUnputChar(false) {};
 	void clear() { this->_HasUnputChar = false;};
 	LongLongInt tellg() { return this->_HasUnputChar ? -1 : 0; };
-	void putback(brclChar c) { this->_UnputChar = c; this->_HasUnputChar = true;};
+	void putback(claspChar c) { this->_UnputChar = c; this->_HasUnputChar = true;};
 	int get_char() { this->_HasUnputChar = false; return this->_UnputChar;};
 	int peek_char() { return this->_UnputChar;};
 	bool has_unput_char() { return this->_HasUnputChar;};
@@ -153,6 +293,12 @@ namespace core
 
 namespace core
 {
+
+
+
+
+
+
     SMART(Stream);
     class Stream_O : public T_O
     {
@@ -161,97 +307,49 @@ namespace core
 	DECLARE_INIT_GLOBALS();
     public:
         FileOps         ops;
+        int             _Closed;
+        StreamMode      _Mode;
+        char*           _Buffer;
+        Symbol_sp       _Format;
+        int             _ByteSize;
+        int             _Flags; // bitmap of flags
         Cons_sp         _ByteStack; // For unget in input streams
+        cl_eformat_encoder _Encoder;
+        cl_eformat_decoder _Decoder;
+        Fixnum          _LastCode[2];
+        claspCharacter _EofChar;
+        int             _LastOp;
+        int             _LastChar;
+        T_sp            _ExternalFormat;
+        int             _OutputColumn;
     public:
-	/*! Return the stream name as a pathname*/
-	Pathname_sp pathname() const;
-
-	virtual bool inputStreamP() const {return false;};
-	virtual bool outputStreamP() const {return false;};
-	virtual bool interactiveStreamP() const {return false;};
-
-        virtual void setInteractive(bool i) { SUBIMP(); };
-
-
-	virtual T_sp streamElementType() const { SUBIMP();};
-
-	// Input stream methods
-	virtual bool eof() const {SUBIMP();};
-	virtual int peek_char() {SUBIMP();};
-	/*! Low level character get */
-	virtual int _get() {SUBIMP();};
-	/*! Low level putback character */
-	virtual void putback(char c) {SUBIMP();};
-	/*! Low level listen function, returns the number of characters available to read */
-	virtual int listen() {SUBIMP();};
-
-        virtual Integer_sp fileLength() { SUBIMP(); };
-	/*! Clear-input */
-	virtual void clearInput();
-
-	/*! Return next character and advance cursor */
-	virtual int get(){SUBIMP();};
-
-	/*! read_char see CLHS - return the next character in the stream */
-//	virtual T_sp read_char(bool eof_error_p, T_sp eof_value, bool recursive_p){SUBIMP();};
-
-
-	  
-	virtual void unread_char(brclChar c) {SUBIMP();};
-
-//	virtual void readLine(string& buf, bool& hitEof );
-	virtual int read(unsigned char* buffer, int num );
-	virtual LongLongInt gcount() {SUBIMP();};
-
-	virtual LongLongInt tell() {SUBIMP();};
-	virtual void seek(LongLongInt pos) {SUBIMP();};
-	virtual LongLongInt fileSize() {SUBIMP();};
-
-
-	// Output stream methods
-	virtual int writeBytes(const char* c, int n);
-	virtual void writeStr(string const& str);
-	virtual void writeChar(brclChar c) {SUBIMP();};
-	virtual void writeByte(Integer_sp c) {SUBIMP();};
-	virtual void writeln(string const& str) {SUBIMP();};
-	virtual Fixnum_sp writeVector(Vector_sp vec,Fixnum_sp start, Fixnum_sp end);
-
-	virtual uint outputColumn() const {SUBIMP();};
-
-        virtual bool freshLine();
-
-	/*! This is forceOutput */
-	virtual void flush() {SUBIMP();};
-
-	/*! Clear-input */
-	virtual void clearOutput() {SUBIMP();};
-	virtual void finishOutput() {this->flush();};
-	void forceOutput() { this->flush();};
-
-
-	virtual bool atStartOfLine() const {SUBIMP();};
-
-	// Line counting stuff for input streams
-	virtual uint lineNumber() const {SUBIMP();};
-	virtual uint column() const {SUBIMP();};
-	virtual SourceFileInfo_sp sourceFileInfo() const {SUBIMP();};
-	virtual void invalidateCursor() {SUBIMP();};
-	virtual void advanceLineNumber(int num=1) {SUBIMP();};
-	virtual void advanceColumn(int num=1) {SUBIMP();};
-
-	virtual bool good() const {SUBIMP();};
-
-
-	virtual string readEntireFile() {SUBIMP();};
-
-	// Other
-	virtual T_sp close(bool abort=false);
-        Stream_O() {};
-        virtual ~Stream_O() {};
+        Stream_O() : _Closed(0)
+                   , _Buffer(NULL)
+                   , _Format(_Nil<Symbol_O>())
+                   , _ByteSize(8)
+                   , _Flags(0)
+                   , _ByteStack(_Nil<Cons_O>())
+                   , _Encoder(NULL)
+                   , _Decoder(NULL)
+                   , _LastCode{EOF,EOF}
+            , _EofChar(EOF)
+            , _ExternalFormat(_Nil<T_O>())
+            , _OutputColumn(0)
+        {};
+        virtual ~Stream_O();
+    public:
+        Str_sp filename() const;
+        int lineno() const;
+        int column() const;
     };
 
 };
-TRANSLATE(core::Stream_O);
+template<> struct gctools::GCInfo<core::Stream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 
 
@@ -265,64 +363,10 @@ namespace core
 	LISP_CLASS(core,ExtPkg,AnsiStream_O,"AnsiStream");
 	DECLARE_INIT_GLOBALS();
     public:
-	virtual bool inputStreamP() const {return false;};
-	virtual bool outputStreamP() const {return false;};
-
-
-	// Input stream methods
-	virtual bool eof() const {SUBIMP();};
-	virtual int peek_char() {SUBIMP();};
-	/*! Low level character get */
-	virtual int _get() {SUBIMP();};
-	/*! Low level putback character */
-	virtual void putback(char c) {SUBIMP();};
-
-	/*! Return next character and advance cursor */
-	virtual int get();
-
-	/*! read_char see CLHS - return the next character in the stream */
-//	virtual T_sp read_char(bool eof_error_p, T_sp eof_value, bool recursive_p);
-
-
-	  
-	virtual void unread_char(brclChar c);
-
-//	virtual void readLine(string& buf, bool& hitEof ) {SUBIMP();};
-//	virtual int read(unsigned char* buffer, int num ){SUBIMP();};
-	virtual LongLongInt gcount() {SUBIMP();};
-
-	virtual LongLongInt tell() {SUBIMP();};
-	virtual void seek(LongLongInt pos) {SUBIMP();};
-	virtual LongLongInt fileSize() {SUBIMP();};
-
-
-	// Output stream methods
-	virtual void writeChar(brclChar c) {SUBIMP();};
-	virtual void writeln(string const& str) {SUBIMP();};
-
-	virtual void flush() {SUBIMP();};
-
-	virtual bool atStartOfLine() const {SUBIMP();};
-	// Line counting stuff for input streams
-	virtual uint lineNumber() const {SUBIMP();};
-	virtual uint column() const {SUBIMP();};
-	virtual SourceFileInfo_sp sourceFileInfo() const {SUBIMP();};
-	virtual void invalidateCursor() {SUBIMP();};
-	virtual void advanceLineNumber(int num=1) {SUBIMP();};
-	virtual void advanceColumn(int num=1) {SUBIMP();};
-
-	virtual bool good() const {SUBIMP();};
-
-
-	virtual string readEntireFile() {SUBIMP();};
-
-	// Other
-//	virtual T_sp close(bool abort=false);
 	DEFAULT_CTOR_DTOR(AnsiStream_O);
     };
 
 };
-TRANSLATE(core::AnsiStream_O);
 
 
 
@@ -339,244 +383,119 @@ namespace core
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(FileStream_O);
 	
-    private: // instance variables here
-	
     public: // Functions here
     }; // FileStream class
-    
-}; // core namespace
-TRANSLATE(core::FileStream_O);
 
-
-
-namespace core
-{
-    class FileInStream_O : public FileStream_O
+    class IOFileStream_O : public FileStream_O
     {
+        friend int& IOFileStreamDescriptor(T_sp);
+        friend Str_sp& IOFileStreamFilename(T_sp);
+        friend T_sp& IOFileStreamEltType(T_sp);
 	LISP_BASE1(FileStream_O);
-	LISP_CLASS(core,CorePkg,FileInStream_O,"FileInStream");
-    public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(FileInStream_O);
-    public:
-	void initialize();
-	
-    private: // instance variables here
-	SourceFileInfo_sp 	_SourceFileInfo;
-        std::ifstream	_InStream;
-	UnputChar	_Unput;
-	/*! Keep track of the line pos in the file */
-	StreamCursor		_Cursor;
-    public:
-	static FileInStream_sp create(Pathname_sp fileSpec);
-	static FileInStream_sp make(T_sp fileDesig);
-
-    public: // Functions here
-	virtual bool inputStreamP() const {return true;};
-	virtual string readEntireFile();
-	LongLongInt tell();
-	int listen();
-	void clearInput();
-	void seek(LongLongInt);
-	LongLongInt fileSize();
-	SourceFileInfo_sp sourceFileInfo() const { return this->_SourceFileInfo;};
-//	int read(unsigned char* buffer, int num );
-	LongLongInt gcount();
-	int _get();
-	/*! Low level putback character */
-	virtual void putback(char c);
-	int peek_char();
-//	void readLine(string& buf, bool& hitEof);
-	bool good() const;
-	bool eof() const;
-
-	string __repr__() const;
-
-	// Line counting stuff for input streams
-	CURSOR_HANDLING_FUNCTIONS();
-
-	T_sp close(bool abort=false);
-
-    }; // FileInStream class
-    
-}; // core namespace
-TRANSLATE(core::FileInStream_O);
-
-
-
-
-namespace core
-{
-    class FileOutStream_O : public FileStream_O
-    {
-	LISP_BASE1(FileStream_O);
-	LISP_CLASS(core,CorePkg,FileOutStream_O,"FileOutStream");
+	LISP_CLASS(core,ClPkg,IOFileStream_O,"iofile-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(FileOutStream_O);
-    public: // ctor/dtor for classes with shared virtual base
-//    explicit FileOutStream_O(core::Class_sp const& mc) : T_O(mc), FileStream(mc) {};
-//    virtual ~FileOutStream_O() {};
-    public:
-	void initialize();
-
+	DEFAULT_CTOR_DTOR(IOFileStream_O);
 	
     private: // instance variables here
-	Pathname_sp	_ActivePathname;
-	bool		_RenameToOriginalOnClose;
-	Pathname_sp	_OriginalPathname;
-        std::ofstream	_Stream;
-	StreamCursor	_OutputCursor;
-
-    public:
- 	static FileOutStream_sp create(Pathname_sp currentPath, std::ios_base::openmode mode);
-	static FileOutStream_sp createTemporary(Pathname_sp temporaryPath, Pathname_sp originalPath, std::ios_base::openmode mode);
-
-	
-	
+        Str_sp  _Filename;
+        T_sp    _ElementType;
+	int     _FileDescriptor;
     public: // Functions here
-	virtual bool outputStreamP() const {return true;};
+        static T_sp makeInput(const string& name, int fd ) {
+            return clasp_make_stream_from_fd(str_create(name)
+                                             ,fd
+                                             ,clasp_smm_input_file
+                                             ,8
+                                             ,CLASP_STREAM_DEFAULT_FORMAT
+                                             ,_Nil<T_O>());
+        }
+        static T_sp makeOutput(const string& name, int fd ) {
+            return clasp_make_stream_from_fd(str_create(name)
+                                             ,fd
+                                             ,clasp_smm_output_file
+                                             ,8
+                                             ,CLASP_STREAM_DEFAULT_FORMAT
+                                             ,_Nil<T_O>());
+        }
+        static T_sp makeIO(const string& name, int fd ) {
+            return clasp_make_stream_from_fd(str_create(name)
+                                             ,fd
+                                             ,clasp_smm_io_file
+                                             ,8
+                                             ,CLASP_STREAM_DEFAULT_FORMAT
+                                             ,_Nil<T_O>());
+        }
+        static T_sp make(const string& name
+                         , int fd
+                         , enum StreamMode smm
+                         , T_sp elementType
+                         , T_sp externalFormat );
+public:
+        Str_sp filename() const { return this->_Filename; };
+    }; 
+};
+template<> struct gctools::GCInfo<core::IOFileStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
-	LongLongInt tellp() { return this->_Stream.tellp();};
-	void seekp(LongLongInt pos) {this->_Stream.seekp(pos,std::ios_base::beg);};
-	void flush() { this->_Stream.flush();};
-	virtual void writeChar(brclChar c);
-	virtual void writeln(const string& str);
-	virtual uint outputColumn() const;
-	virtual bool atStartOfLine() const;
-	virtual T_sp close(bool abort=false);
-
-
-
-
-    }; // FileOutStream class
-    
-}; // core namespace
-TRANSLATE(core::FileOutStream_O);
-
-
-
-
-
-namespace core
-{
-    class FileInCompressedStream_O : public FileStream_O
+namespace core {    
+    class IOStreamStream_O : public FileStream_O
     {
+        friend T_sp& IOStreamStreamEltType(T_sp strm);
+        friend Str_sp& IOStreamStreamFilename(T_sp strm);
+        friend FILE*& IOStreamStreamFile(T_sp strm);
 	LISP_BASE1(FileStream_O);
-	LISP_CLASS(core,CorePkg,FileInCompressedStream_O,"FileInCompressedStream");
+	LISP_CLASS(core,ClPkg,IOStreamStream_O,"iostream-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(FileInCompressedStream_O);
-    public: // ctor/dtor for classes with shared virtual base
-//    explicit FileInCompressedStream_O(core::Class_sp const& mc) : T_O(mc), FileStream(mc) {};
-//    virtual ~FileInCompressedStream_O() {};
-    public:
-	void initialize();
+	DEFAULT_CTOR_DTOR(IOStreamStream_O);
 	
-    public:
-	typedef boost::iostreams::filtering_istream	StreamType;
     private: // instance variables here
-	SourceFileInfo_sp 	_SourceFileInfo;
-        std::ifstream	_RawStream;
-	StreamType	_In;
-	StreamCursor	_Cursor;
-	UnputChar	_Unput;
-    public:
-	static FileInCompressedStream_sp createGzip(Pathname_sp fileSpec);
-
+        Str_sp  _Filename;
+        T_sp    _ElementType;
+	FILE*   _File;
     public: // Functions here
-	virtual bool inputStreamP() const {return true;};
-
-
-	void clearInput();
-	int listen();
-
-	StreamType& stream() { return this->_In;};
-	SourceFileInfo_sp sourceFileInfo() const { return this->_SourceFileInfo;};
-
-	int _get();
-	/*! Low level putback character */
-	virtual void putback(char c);
-
-//	virtual void readLine(string& sbuf, bool& hitEof);
-//	virtual int read(unsigned char* buffer, int num );
-	virtual LongLongInt gcount();
-
-	virtual LongLongInt fileSize();
-	bool good() const;
-	virtual bool eof() const;
-	virtual T_sp close(bool abort=false);
-
-	virtual int peek_char();
-
-	// Line counting stuff for input streams
-	CURSOR_HANDLING_FUNCTIONS();
-
-
-
-    }; // FileInCompressedStream class
-    
+        static T_sp makeInput(const string& name, FILE* f ) {
+            return clasp_make_stream_from_FILE(str_create(name)
+                                             ,f
+                                             ,clasp_smm_input
+                                             ,8
+                                             ,CLASP_STREAM_DEFAULT_FORMAT
+                                             ,_Nil<T_O>());
+        }
+        static T_sp makeOutput(const string& name, FILE* f ) {
+            return clasp_make_stream_from_FILE(str_create(name)
+                                             ,f
+                                             ,clasp_smm_output
+                                             ,8
+                                             ,CLASP_STREAM_DEFAULT_FORMAT
+                                             ,_Nil<T_O>());
+        };
+        static T_sp makeIO(const string& name, FILE* f ) {
+            return clasp_make_stream_from_FILE(str_create(name)
+                                             ,f
+                                             ,clasp_smm_io
+                                             ,8
+                                             ,CLASP_STREAM_DEFAULT_FORMAT
+                                             ,_Nil<T_O>());
+        };
+    public:
+        Str_sp filename() const { return this->_Filename; };
+    }; 
 }; // core namespace
-TRANSLATE(core::FileInCompressedStream_O);
-
-
-
-
-namespace core
-{
-    class FileOutCompressedStream_O : public FileStream_O
-    {
-	LISP_BASE1(FileStream_O);
-	LISP_CLASS(core,CorePkg,FileOutCompressedStream_O,"FileOutCompressedStream");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-    public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(FileOutCompressedStream_O);
-    public: // ctor/dtor for classes with shared virtual base
-//    explicit FileOutCompressedStream_O(core::Class_sp const& mc) : T_O(mc), FileStream(mc) {};
-//    virtual ~FileOutCompressedStream_O() {};
-    public:
-	void initialize();
-	
-    public:
-	typedef boost::iostreams::filtering_ostream	StreamType;
-
-    private: // instance variables here
-	Pathname_sp	_ActivePathname;
-	bool		_RenameActiveToOriginalOnClose;
-	Pathname_sp		_OriginalPathname;
-        std::ofstream	_RawStream;
-	StreamType	_Out;
-	StreamCursor	_Cursor;
-    public:
-	static FileOutCompressedStream_sp createGzip(Pathname_sp path);
-	static FileOutCompressedStream_sp createGzipTemporary(Pathname_sp activePath, Pathname_sp originalPath);
-	
-	
-    public: // Functions here
-	virtual bool outputStreamP() const {return true;};
-
-
-	LongLongInt tellp() { IMPLEMENT_ME();};
-	void seekp(LongLongInt pos) { IMPLEMENT_ME();};
-	void flush();
-	virtual void writeChar(brclChar c);
-	virtual void writeln(const string& str);
-	virtual uint column() const;
-	virtual bool atStartOfLine() const;
-	virtual T_sp close(bool abort=false);
-
-
-
-
-    }; // FileOutCompressedStream class
+template<> struct gctools::GCInfo<core::IOStreamStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
     
-}; // core namespace
-TRANSLATE(core::FileOutCompressedStream_O);
-
-
-
 
 
 
@@ -597,419 +516,99 @@ namespace core
 //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
 //    virtual ~StringStream_O() {};
 	
-    private: // instance variables here
-	
-	
     public: // Functions here
     }; // StringStream class
     
-}; // core namespace
-TRANSLATE(core::StringStream_O);
 
+    class StringOutputStream_O : public StringStream_O
+    {
+        friend StrWithFillPtr_sp& StringOutputStreamOutputString(T_sp);
+	LISP_BASE1(StringStream_O);
+	LISP_CLASS(core,CorePkg,StringOutputStream_O,"string-output-stream");
+	DECLARE_INIT();
+//    DECLARE_ARCHIVE();
+    public: // Simple default ctor/dtor
+	DEFAULT_CTOR_DTOR(StringOutputStream_O);
+    public: // ctor/dtor for classes with shared virtual base
+//    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
+//    virtual ~StringStream_O() {};
+    private: // instance variables here
+        StrWithFillPtr_sp       _Contents;
+    public: // Functions here
+    }; // StringStream class
+};
+template<> struct gctools::GCInfo<core::StringOutputStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
-
-namespace core
-{
+namespace core {
     class StringInputStream_O : public StringStream_O
     {
+        friend cl_fixnum& StringInputStreamInputPosition(T_sp strm);
+        friend cl_fixnum& StringInputStreamInputLimit(T_sp strm);
+        friend Str_sp& StringInputStreamInputString(T_sp strm);
 	LISP_BASE1(StringStream_O);
-	LISP_CLASS(core,CorePkg,StringInputStream_O,"StringInputStream");
+	LISP_CLASS(core,CorePkg,StringInputStream_O,"string-input-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(StringInputStream_O);
     public: // ctor/dtor for classes with shared virtual base
-//    explicit StringInputStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
-//    virtual ~StringInputStream_O() {};
-    public:
-	void initialize();
-	
+//    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
+//    virtual ~StringStream_O() {};
     private: // instance variables here
-        std::istringstream	_Stream;
-	StreamCursor		_Cursor;
-	UnputChar		_Unput;
-    public:	// Creation class functions
-	static StringInputStream_sp create(string const& contents);
-	
-	static StringInputStream_sp make(Str_sp string, Fixnum_sp start, T_sp end);
+        Str_sp       _Contents;
+        cl_fixnum       _InputPosition;
+        cl_fixnum       _InputLimit;
     public: // Functions here
-	virtual bool inputStreamP() const {return true;};
-
-	void clearInput();
-
-
-	virtual SourceFileInfo_sp sourceFileInfo() const;
-
-	virtual int peek_char();
-	/*! Low level putback character */
-	virtual void putback(char c);
-	int _get();
-	int listen();
-
-//	virtual void readLine(string& sbuf, bool& hitEof);
-
-	virtual void seek(LongLongInt pos);
-	virtual LongLongInt tell();
-
-	
-	virtual LongLongInt fileSize();
-//	virtual int read(unsigned char* buffer, int num );
-	virtual LongLongInt gcount();
-	virtual string readEntireFile();
-	bool good() const;
-	virtual bool eof() const;
-	virtual T_sp close(bool abort=false);
-
-
-	// Line counting stuff for input streams
-	CURSOR_HANDLING_FUNCTIONS();
-
-
-
-
-    }; // StringInputStream class
-    
-}; // core namespace
-TRANSLATE(core::StringInputStream_O);
-template<> struct gctools::GCInfo<core::StringInputStream_O> {
-    static bool constexpr NeedsInitialization = true;
-    static bool constexpr NeedsFinalization = true;
-    static bool constexpr Moveable = false;
-    static bool constexpr Atomic = false;
+        static T_sp make(const string& str);
+    }; // StringStream class
 };
-
-
-
-namespace core
-{
-    class StringOutStream_O : public StringStream_O
-    {
-	LISP_BASE1(StringStream_O);
-	LISP_CLASS(core,CorePkg,StringOutStream_O,"StringOutStream");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-    public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(StringOutStream_O);
-    public:
-	void initialize();
-	
-    private: // instance variables here
-	StrWithFillPtr_sp _String;
-	StreamCursor 	_OutputCursor;
-    public:
-	static StringOutStream_sp make();
-	static StringOutStream_sp create(StrWithFillPtr_sp str);
-	
-    public: // Functions here
-	StringOutStream_O( const StringOutStream_O& ss ); //!< Copy constructor
-
-	virtual bool outputStreamP() const {return true;};
-
-	void clear();	
-	virtual void writeChar(brclChar c);
-	virtual void writeln(const string& str);
-	virtual bool atStartOfLine() const;
-	virtual uint outputColumn() const;
-
-	virtual void flush();
-
-	virtual LongLongInt tell();
-
-	/*! Return the string contents of the stream */
-	string str();
-
-	T_sp close(bool abort=false);
-
-    }; // StringOutStream class
-    
-}; // core namespace
-TRANSLATE(core::StringOutStream_O);
-template<> struct gctools::GCInfo<core::StringOutStream_O> {
-    static bool constexpr NeedsInitialization = true;
-    static bool constexpr NeedsFinalization = false;
+template<> struct gctools::GCInfo<core::StringInputStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
     static bool constexpr Moveable = true;
     static bool constexpr Atomic = false;
 };
-
-
-
-
-
-
-namespace core
-{
-    class FDStream_O : public AnsiStream_O
-    {
-	LISP_BASE1(AnsiStream_O);
-	LISP_CLASS(core,CorePkg,FDStream_O,"fd-stream");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-    public: // Simple default ctor/dtor
-        FDStream_O() : Base()
-                     , _FStream(NULL)
-                     , _Buffer(NULL)
-                     , _Closeable(true)
-#ifdef MERGE_FDSTREAM
-                     , _RenameToOriginalOnClose(false)
-                     , _OriginalPathname(_Nil<Pathname_O>())
-#endif
-        {};
-
-
-	virtual ~FDStream_O();
-	
-    protected: // instance variables here
-        Cons_sp _ByteStack;
-	FILE*	_FStream;
-	char*	_Buffer;
-	bool	_Closeable;
-#ifdef MERGE_FDSTREAM
-// From FDInStream
-	SourceFileInfo_sp 		_SourceFileInfo;
-	/*! Keep track of the line pos in the file */
-	StreamCursor		_Cursor;
-	LongLongInt		_gcount;
-	UnputChar		_Unput;
-// From FDOutStream
-	Pathname_sp	_ActivePathname;
-	bool		_RenameToOriginalOnClose;
-	Pathname_sp	_OriginalPathname;
-	StreamCursor	_OutputCursor;
-#endif
-    public:
-	static FDStream_sp makeFromFileDescriptor(const string& name,
-						  int fileDescriptor, 
-						  Symbol_sp direction, /* :input, :output, :io */
-						  T_sp elementType,
-						  T_sp externalFormat );
-    public: // Functions here
-	virtual BrclStreamModeEnum getStreamMode() {SUBIMP();};
-	void throw_if_no_file_descriptor() const;
-
-	FDStream_sp setBufferingMode(Symbol_sp bufferModeSymbol);
-
-	T_sp close(bool abort=false);
-    }; // FDStream class
     
-}; // core namespace
-TRANSLATE(core::FDStream_O);
-
-
-
-namespace core
-{
-    class FDInStream_O : virtual public FDStream_O
-    {
-	LISP_BASE1(FDStream_O);
-	LISP_CLASS(core,CorePkg,FDInStream_O,"fd-in-stream");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-    public: // ctor/dtor for classes with shared virtual base
-	explicit FDInStream_O() : FDStream_O() {};
-	virtual ~FDInStream_O() {};
-    public:
-	
-    protected: // instance variables here
-#ifndef MERGE_FDSTREAM
-	SourceFileInfo_sp 		_SourceFileInfo;
-	/*! Keep track of the line pos in the file */
-	StreamCursor		_Cursor;
-	LongLongInt		_gcount;
-	UnputChar		_Unput;
-#endif
-    public:
-	static FDInStream_sp create(Pathname_sp fileSpec);
-	static FDInStream_sp create(FILE* fout, string const& name, bool closeable=true);
-	static FDInStream_sp make(T_sp file_desig);
-    public: // Functions here
-	virtual BrclStreamModeEnum getStreamMode() {return brcl_stream_mode_input;};
-	virtual bool inputStreamP() const {return true;};
-	virtual string readEntireFile();
-	LongLongInt tell();
-	void seek(LongLongInt);
-	LongLongInt fileSize();
-	SourceFileInfo_sp sourceFileInfo() const { return this->_SourceFileInfo;};
-//	int read(unsigned char* buffer, int num );
-	LongLongInt gcount();
-	int _get();
-	int listen();
-	/*! Low level putback character */
-	virtual void putback(char c);
-	void clearInput();
-	int peek_char();
-//	void readLine(string& buf, bool& hitEof);
-	bool good() const;
-	bool eof() const;
-
-	// Line counting stuff for input streams
-	CURSOR_HANDLING_FUNCTIONS();
-
-    }; // FDInStream class
-    
-}; // core namespace
-TRANSLATE(core::FDInStream_O);
-
-
-
-
-namespace core
-{
-    class FDOutStream_O : virtual public FDStream_O
-    {
-	LISP_BASE1(FDStream_O);
-	LISP_CLASS(core,CorePkg,FDOutStream_O,"fd-out-stream");
-	DECLARE_INIT();
-//    DECLARE_ARCHIVE();
-    public: // ctor/dtor for classes with shared virtual base
-	explicit FDOutStream_O() : FDStream_O()
-#ifndef MERGE_FDSTREAM
-                                 , _RenameToOriginalOnClose(false)
-                                 , _OriginalPathname(_Nil<Pathname_O>())
-#endif
-        {};
-	virtual ~FDOutStream_O() {};
-    public:
-
-	
-    protected: // instance variables here
-#ifndef MERGE_FDSTREAM
-	Pathname_sp	_ActivePathname;
-	bool		_RenameToOriginalOnClose;
-	Pathname_sp	_OriginalPathname;
-	StreamCursor	_OutputCursor;
-#endif
-    public:
-	static FDOutStream_sp create(FILE* fout, string const& name, bool closeable=true);
- 	static FDOutStream_sp create(Pathname_sp currentPath, std::ios_base::openmode mode);
-	static FDOutStream_sp createTemporary(Pathname_sp temporaryPath, Pathname_sp originalPath, std::ios_base::openmode mode );
-	static FDOutStream_sp make(T_sp file_desig);
-
-    public:
-	void do_open(Pathname_sp currentPath, std::ios_base::openmode mode);
-    public: // Functions here
-	virtual BrclStreamModeEnum getStreamMode() {return brcl_stream_mode_output;};
-	virtual bool outputStreamP() const {return true;};
-
-	LongLongInt tellp();
-	void seekp(LongLongInt pos);
-	void flush();
-	virtual void writeChar(brclChar c);
-	virtual void writeln(const string& str);
-	virtual uint outputColumn() const;
-	virtual bool atStartOfLine() const;
-	virtual T_sp close(bool abort=false);
-
-
-
-
-    }; // FDOutStream class
-    
-}; // core namespace
-TRANSLATE(core::FDOutStream_O);
-
-
-
-
-namespace core {
-    FORWARD(FDIOStream);
-    class FDIOStream_O : public FDInStream_O, public FDOutStream_O
-    {
-	LISP_VIRTUAL_BASE2(FDStream_O,FDInStream_O,FDOutStream_O);
-	LISP_CLASS(core,CorePkg,FDIOStream_O,"fd-io-stream");
-//    DECLARE_ARCHIVE();
-    public: // ctor/dtor for classes with shared virtual base
-	explicit FDIOStream_O() : FDStream_O(), FDInStream_O(), FDOutStream_O() {};
-	virtual ~FDIOStream_O() {};
-    public:
-	static FDIOStream_sp create(Pathname_sp fileSpec);
-	static FDIOStream_sp create(FILE* fio, string const& name, bool closeable=true);
-	static FDIOStream_sp make(T_sp file_desig);
-    public: // Functions here
-	virtual BrclStreamModeEnum getStreamMode() {return brcl_stream_mode_io;};
-	virtual bool inputStreamP() const {return true;};
-	virtual bool outputStreamP() const {return true;};
-
-    }; // FDIOStream class
-    
-}; // core namespace
-TRANSLATE(core::FDIOStream_O);
-
-
-
-
-
-
-
-
 
 
 namespace core
 {
     class SynonymStream_O : public AnsiStream_O
     {
+        friend Symbol_sp& SynonymStreamSymbol(T_sp strm);
+        friend T_sp& SynonymStreamStream(T_sp);
 	LISP_BASE1(AnsiStream_O);
 	LISP_CLASS(core,ClPkg,SynonymStream_O,"synonym-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	SynonymStream_O();
-	virtual ~SynonymStream_O();
-	
+	SynonymStream_O() : _SynonymSymbol(_Nil<Symbol_O>()), _Stream(_Nil<T_O>()) {};
+        virtual ~SynonymStream_O() {};
+
     protected: // instance variables here
 	Symbol_sp 	_SynonymSymbol;
-
+        T_sp            _Stream;
     public:
-	static SynonymStream_sp make(Symbol_sp symbol);
+	static SynonymStream_sp make(Symbol_sp symbol) {
+            return cl_make_synonym_stream(symbol);
+        }
     public: // Functions here
-
-
-	T_sp close(bool abort=false);
-
-	Stream_sp stream();
-	Stream_sp stream() const;
-
-	virtual bool inputStreamP() const;
-	virtual string readEntireFile();
-	LongLongInt tell();
-	void seek(LongLongInt);
-	LongLongInt fileSize();
-	SourceFileInfo_sp sourceFileInfo() const;
-//	int read(unsigned char* buffer, int num );
-	LongLongInt gcount();
-	string __repr__() const;
-	int _get();
-	int listen();
-
-	/*! Low level putback character */
-	virtual void putback(char c);
-	int peek_char();
-//	void readLine(string& buf, bool& hitEof);
-	bool good() const;
-	bool eof() const;
-
-	void flush();
-
-	void clearInput();
-
-	virtual bool outputStreamP() const;
-
-	virtual void writeChar(brclChar c);
-	virtual void writeln(const string& str);
-	virtual bool atStartOfLine() const;
-	// Line counting stuff for input streams
-
-	virtual uint lineNumber() const;
-	virtual uint column() const;
-	virtual uint outputColumn() const;
-	virtual void invalidateCursor();
-	virtual void advanceLineNumber(int num=1);
-	virtual void advanceColumn(int num=1);
-
+        Str_sp filename() const { return clasp_filename(this->_Stream);};
 
     }; // SynonymStream class
     
 }; // core namespace
-TRANSLATE(core::SynonymStream_O);
+template<> struct gctools::GCInfo<core::SynonymStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 
 
@@ -1023,77 +622,31 @@ namespace core
 {
     class TwoWayStream_O : public AnsiStream_O
     {
+        friend T_sp& TwoWayStreamInput(T_sp);
+        friend T_sp& TwoWayStreamOutput(T_sp);
 	LISP_BASE1(AnsiStream_O);
 	LISP_CLASS(core,ClPkg,TwoWayStream_O,"two-way-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	TwoWayStream_O();
-	virtual ~TwoWayStream_O();
-	
+	TwoWayStream_O() : _In(_Nil<T_O>()), _Out(_Nil<T_O>()) {};
+	virtual ~TwoWayStream_O() {};
     protected: // instance variables here
-	Stream_sp 	_in_stream;
-	Stream_sp 	_out_stream;
-        bool            interactive;
-    public: // Functions here
-	void throw_if_no_file_descriptor() const;
-	T_sp close(bool abort=false);
-
-
+	T_sp 	_In;
+	T_sp 	_Out;
     public:
-	static TwoWayStream_sp make(Stream_sp in_stream, Stream_sp out_stream);
-    public: // Functions here
-	virtual bool inputStreamP() const {return true;};
-	virtual string readEntireFile();
-        virtual bool interactiveStreamP() const { return this->interactive;};
-        virtual void setInteractive(bool i) { this->interactive = i;};
-	LongLongInt tell();
-	void seek(LongLongInt);
-	LongLongInt fileSize();
-	void clearInput();
-//	int read(unsigned char* buffer, int num );
-	LongLongInt gcount();
-	int _get();
-	int listen();
-
-	/*! Low level putback character */
-	virtual void putback(char c);
-	int peek_char();
-//	void readLine(string& buf, bool& hitEof);
-	bool good() const;
-	bool eof() const;
-
-	virtual bool outputStreamP() const {return true;};
-
-	string __repr__() const;
-
-	void flush();
-	virtual void writeChar(brclChar c);
-	virtual void writeln(const string& str);
-	virtual bool atStartOfLine() const;
-
-	Stream_sp in_stream();
-	Stream_sp in_stream() const;
-	Stream_sp out_stream();
-	Stream_sp out_stream() const;
-
-	Stream_sp input_stream() { return this->in_stream();};
-	Stream_sp output_stream() { return this->out_stream();};
-	Stream_sp input_stream_const() const { return this->in_stream();};
-	Stream_sp output_stream_const() const { return this->out_stream();};
-
-	void advanceColumn(int num=1) {this->input_stream()->advanceColumn(num);};
-	void advanceLineNumber(int num=1) {this->input_stream()->advanceLineNumber(num);};
-	virtual uint lineNumber() const {return this->input_stream_const()->lineNumber();};
-	virtual uint column() const {return this->input_stream_const()->column();}
-	virtual SourceFileInfo_sp sourceFileInfo() const {return this->input_stream_const()->sourceFileInfo();};
-
-	virtual uint outputColumn() const { return this->out_stream()->outputColumn();};
-
+        static T_sp make(T_sp in, T_sp out) {
+            return cl_make_two_way_stream(in,out);
+        };
     }; // TwoWayStream class
     
 }; // core namespace
-TRANSLATE(core::TwoWayStream_O);
+template<> struct gctools::GCInfo<core::TwoWayStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 
 namespace core
@@ -1101,6 +654,7 @@ namespace core
     FORWARD(BroadcastStream);
     class BroadcastStream_O : public AnsiStream_O
     {
+        friend T_sp& BroadcastStreamList(T_sp strm);
 	LISP_BASE1(AnsiStream_O);
 	LISP_CLASS(core,ClPkg,BroadcastStream_O,"BroadcastStream");
 	DECLARE_INIT();
@@ -1109,21 +663,18 @@ namespace core
 	DEFAULT_CTOR_DTOR(BroadcastStream_O);
 	
     private: // instance variables here
-        Cons_sp         _Streams;
+        T_sp         _Streams;
     public: // Functions here
-        static BroadcastStream_sp create(Cons_sp streams);
-
-        T_sp streamElementType() const;
-        bool freshLine();
-        Integer_sp fileLength();
-
-	virtual void writeChar(brclChar c);
-
-        
     }; // BroadcastStream class
     
 }; // core namespace
-TRANSLATE(core::BroadcastStream_O);
+template<> struct gctools::GCInfo<core::BroadcastStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 
 
 
@@ -1132,23 +683,26 @@ namespace core
 {
     class ConcatenatedStream_O : public AnsiStream_O
     {
+        friend T_sp& ConcatenatedStreamList(T_sp strm);
 	LISP_BASE1(AnsiStream_O);
 	LISP_CLASS(core,ClPkg,ConcatenatedStream_O,"ConcatenatedStream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(ConcatenatedStream_O);
-	
     private: // instance variables here
-	
-	
+        T_sp    _List;
     public: // Functions here
-	int listen();
-
     }; // ConcatenatedStream class
     
 }; // core namespace
-TRANSLATE(core::ConcatenatedStream_O);
+template<> struct gctools::GCInfo<core::ConcatenatedStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
 
 
 
@@ -1156,6 +710,8 @@ namespace core
 {
     class EchoStream_O : public AnsiStream_O
     {
+        friend T_sp& EchoStreamInput(T_sp);
+        friend T_sp& EchoStreamOutput(T_sp);
 	LISP_BASE1(AnsiStream_O);
 	LISP_CLASS(core,ClPkg,EchoStream_O,"EchoStream");
 	DECLARE_INIT();
@@ -1164,52 +720,48 @@ namespace core
 	DEFAULT_CTOR_DTOR(EchoStream_O);
 	
     private: // instance variables here
-	
+        T_sp _In;
+        T_sp _Out;
 	
     public: // Functions here
-	int listen();
-
     }; // EchoStream class
 
-
-    T_sp af_peekChar(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursivep);
-    T_sp af_readChar(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p);
-
-
-    void initialize_lispStream();
-
-}; // core namespace
-TRANSLATE(core::EchoStream_O);
-
+};
+template<> struct gctools::GCInfo<core::EchoStream_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 
 namespace core {
 
-    Str_sp af_writeString(Str_sp str, T_sp stream, int start, Fixnum_sp end);
+    T_sp cl_peekChar(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursivep);
+    T_sp cl_readChar(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p);
 
-    T_sp af_writeSequence(T_sp seq, Stream_sp stream, Fixnum_sp start, Fixnum_sp end);
 
-    Stream_sp brcl_makeStreamFromFD(const string& name, int fd,
-				    BrclStreamModeEnum mode,
-				    int byteSize,
-				    int flags,
-				    T_sp externalFormat );
 
-    Stream_sp brcl_makeStreamFromFILE(const string& name,
-				      FILE* file,
-				      BrclStreamModeEnum mode,
-				      int byteSize,
-				      int flags,
-				      T_sp externalFormat);
+    Str_sp cl_writeString(Str_sp str, T_sp stream, int start, Fixnum_sp end);
+
+    T_sp cl_writeSequence(T_sp seq, T_sp stream, Fixnum_sp start, Fixnum_sp end);
 
 
     bool cl_streamp(T_sp strm);
 
     Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart=0, Fixnum_sp end=_Nil<Fixnum_O>());
-    void clasp_forceOutput(T_sp stream);
 
-    int af_streamLinenumber(T_sp strm);
-    int af_streamColumn(T_sp strm);
+//    int af_streamLinenumber(T_sp strm);
+//    int af_streamColumn(T_sp strm);
+
+
+    void clasp_terpri(T_sp strm);
+    void clasp_write_characters(const char* buf, int sz, T_sp strm);
+    void clasp_write_string(const string& str, T_sp strm);
+    void clasp_writeln_string(const string& str, T_sp strm);
+
+    void initialize_lispStream();
+
 
 };
 

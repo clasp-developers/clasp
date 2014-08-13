@@ -102,11 +102,11 @@ namespace core {
 		break;
 #endif
 	    default:
-		WRONG_TYPE_NTH_ARG(2,y,cl::_sym_float);
+		QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_float);
 	    }
 	    break;
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	return x.as<Float_O>();
     }
@@ -128,7 +128,7 @@ namespace core {
 	case number_Bignum:
 	    break;
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Rational_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Rational_O);
 	}
 	return x;
     }
@@ -150,14 +150,14 @@ namespace core {
 	    x = brcl_make_fixnum(1);
 	    break;
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Rational_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Rational_O);
 	}
 	return x;
     }
 
 
 
-    Real_mv brcl_floor1(Real_sp x)
+    Real_mv clasp_floor1(Real_sp x)
     {
 	Real_sp v0, v1;
 	switch (brcl_t_of(x)) {
@@ -168,7 +168,7 @@ namespace core {
 	    break;
 	case number_Ratio: {
 	    Ratio_sp rx(x.as<Ratio_O>());
-	    Real_mv mv_v0 = brcl_floor2(rx->numerator(),rx->denominator());
+	    Real_mv mv_v0 = clasp_floor2(rx->numerator(),rx->denominator());
 	    v0 = mv_v0;
 	    Integer_sp tv1 = mv_v0.valueGet(1).as<Integer_O>();
 	    v1 = brcl_make_ratio(tv1, rx->den());
@@ -198,19 +198,19 @@ namespace core {
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	brcl_return2(the_env, v0, v1);
     }
 
-    Real_mv brcl_floor2(Real_sp x, Real_sp y)
+    Real_mv clasp_floor2(Real_sp x, Real_sp y)
     {
 //	const cl_env_ptr the_env = brcl_process_env();
 	Real_sp v0, v1;
 	NumberType ty;
 	ty = brcl_t_of(y);
 	if (brcl_unlikely(!BRCL_REAL_TYPE_P(y))) {
-	    WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Real_O);
 	}
 	switch(brcl_t_of(x)) {
 	case number_Fixnum:
@@ -243,7 +243,7 @@ namespace core {
 	    case number_Ratio:		/* FIX / RAT */
 	    {
 		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v0 = brcl_floor2(brcl_times(x, ry->den()).as<Real_O>(), ry->num());
+		Real_mv mv_v0 = clasp_floor2(brcl_times(x, ry->den()).as<Real_O>(), ry->num());
 		v0 = mv_v0;
 		Integer_sp t1 = mv_v0.valueGet(1).as<Integer_O>();
 //		v1 = brcl_make_ratio(brcl_nth_value(the_env, 1), y->den());
@@ -298,7 +298,7 @@ namespace core {
 	    case number_Ratio:		/* BIG / RAT */
 	    {
 		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v0 = brcl_floor2(brcl_times(x, ry->den()).as<Real_O>(), ry->num());
+		Real_mv mv_v0 = clasp_floor2(brcl_times(x, ry->den()).as<Real_O>(), ry->num());
 		v0 = mv_v0;
 		Integer_sp tv1 = mv_v0.valueGet(1).as<Integer_O>();
 		v1 = brcl_make_ratio(tv1, ry->den());
@@ -340,7 +340,7 @@ namespace core {
 	    {
 		Ratio_sp rx = x.as<Ratio_O>();
 		Ratio_sp ry = y.as<Ratio_O>();
-		Real_mv mv_v0 = brcl_floor2(brcl_times(rx->num(), ry->den()).as<Real_O>(),
+		Real_mv mv_v0 = clasp_floor2(brcl_times(rx->num(), ry->den()).as<Real_O>(),
 					    brcl_times(rx->den(), ry->num()).as<Real_O>());
 		v0 = mv_v0;
 		Integer_sp tv1 = mv_v0.valueGet(1).as<Integer_O>();
@@ -350,7 +350,7 @@ namespace core {
 	    default:		/* RAT / ANY */
 	    {
 		Ratio_sp rx = x.as<Ratio_O>();
-		Real_mv mv_v0 = brcl_floor2(rx->num(), brcl_times(rx->den(), y).as<Real_O>());
+		Real_mv mv_v0 = clasp_floor2(rx->num(), brcl_times(rx->den(), y).as<Real_O>());
 		v0 = mv_v0;
 		Number_sp tv1 = mv_v0.valueGet(1).as<Number_O>();
 		v1 = brcl_divide(tv1, rx->den()).as<Real_O>();
@@ -387,7 +387,7 @@ namespace core {
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	return Values(v0,v1);
     }
@@ -402,9 +402,9 @@ namespace core {
     Real_mv cl_floor(Real_sp x, Real_sp y)
     {_G();
 	if (y.nilp())
-	    return brcl_floor1(x);
+	    return clasp_floor1(x);
 	else
-	    return brcl_floor2(x, y);
+	    return clasp_floor2(x, y);
     }
 
 
@@ -453,7 +453,7 @@ namespace core {
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	return Values(v0,v1);
     }
@@ -464,7 +464,7 @@ namespace core {
 	NumberType ty;
 	ty = brcl_t_of(y);
 	if (brcl_unlikely(!BRCL_REAL_TYPE_P(y))) {
-	    WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Real_O);
 	}
 	switch(brcl_t_of(x)) {
 	case number_Fixnum: {
@@ -639,7 +639,7 @@ namespace core {
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG( 1, x, cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG( 1, x, cl::_sym_Real_O);
 	}
 	brcl_return2(the_env, v0, v1);
     }
@@ -705,7 +705,7 @@ namespace core {
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	brcl_return2(the_env, v0, v1);
     }
@@ -715,7 +715,7 @@ namespace core {
 	if (brcl_plusp(x) != brcl_plusp(y))
 	    return brcl_ceiling2(x, y);
 	else
-	    return brcl_floor2(x, y);
+	    return clasp_floor2(x, y);
     }
 
 
@@ -809,7 +809,7 @@ namespace core {
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	brcl_return2(the_env, v0, v1);
     }
@@ -948,7 +948,7 @@ namespace core {
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	}
 	return Values(x, brcl_make_fixnum(e), brcl_make_single_float(s));
     }
@@ -967,7 +967,7 @@ namespace core {
 	if (BRCL_FIXNUMP(y)) {
 	    k = brcl_fixnum(y);
 	} else {
-	    WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Fixnum_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Fixnum_O);
 	}
 	switch (brcl_t_of(x)) {
 	case number_SingleFloat:
@@ -982,7 +982,7 @@ namespace core {
 	    break;
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	}
 	return x;
     }
@@ -1005,7 +1005,7 @@ namespace core {
 		    return signbit(brcl_long_float(x));
 #endif
 	    default:
-		    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
+		    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	    }
 	    SIMPLE_ERROR(BF("Illegal argument for brcl_signbit: %s") % _rep_(x));
     }
@@ -1042,7 +1042,7 @@ namespace core {
       }
 #endif
       default:
-	  WRONG_TYPE_NTH_ARG(2,y,cl::_sym_float);
+	  QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_float);
       }
       return y;
     }
@@ -1070,7 +1070,7 @@ namespace core {
 	    break;
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	}
 	return ix;
     }
@@ -1133,7 +1133,7 @@ namespace core {
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	}
 	return brcl_make_fixnum(precision);
     }
@@ -1201,7 +1201,7 @@ namespace core {
 	    break;
 	}
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_float);
 	}
 	ASSERT(rx.notnilp());
 	return Values( rx, brcl_make_fixnum(e), brcl_make_fixnum(s));
@@ -1243,7 +1243,7 @@ namespace core {
 	    break;
 	}
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
 	}
 	return x.as<Real_O>();
     }
@@ -1288,7 +1288,7 @@ namespace core {
 	    x = x.as<Complex_O>()->imaginary();
 	    break;
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
 	}
 	return x.as<Real_O>();
     }

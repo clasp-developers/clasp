@@ -43,6 +43,9 @@ local unity_sources =
       all.cc ;
 
 local sources = 
+      corePackage.cc
+      lisp.cc
+	    lispStream.cc
       weakKeyMapping.cc
       weakHashTable.cc
       weakPointer.cc
@@ -94,7 +97,6 @@ local sources =
       unixfsys.cc
 	    primitives.cc
 	    sourceFileInfo.cc
-      lisp.cc
 	    symbolList.cc
 	    package.cc
       commonLispPackage.cc
@@ -105,13 +107,11 @@ local sources =
       vectorObjectsWithFillPtr.cc
       vectorObjects.cc
 	    lambdaListHandler.cc
-      corePackage.cc
       cons.cc
       write_object.cc
 	    array.cc
       strWithFillPtr.cc
 	    lispMath.cc
-	    lispStream.cc
       grayPackage.cc
       closPackage.cc
       compPackage.cc

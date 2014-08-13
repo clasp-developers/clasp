@@ -95,7 +95,7 @@ public:
     }
 
 
-    explicit tagged_intrusive_ptr( brclChar c) : px(reinterpret_cast<T*>((c<<2) | character_tag)) {};
+    explicit tagged_intrusive_ptr( claspChar c) : px(reinterpret_cast<T*>((c<<8) | character_tag)) {};
     explicit tagged_intrusive_ptr( int p ): px( reinterpret_cast<T*>((p<<2) | fixnum_tag)) {};
 
     explicit tagged_intrusive_ptr(uintptr_t p) : px(reinterpret_cast<T*>(p))
@@ -224,7 +224,7 @@ public:
     // Handle get_fixnum
 
 
-    inline brclChar character() const { return ((reinterpret_cast<uintptr_t>(this->px)>>2));};
+    inline claspChar character() const { return ((reinterpret_cast<uintptr_t>(this->px)>>8));};
     inline Fixnum fixnum() const { return ((reinterpret_cast<uintptr_t>(this->px)>>2));};
 
     T * pxget() const

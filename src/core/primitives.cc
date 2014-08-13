@@ -374,24 +374,13 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("Add support for non character string output streams - you asked for %s") % _rep_(elementType) );
 	}
-	StringOutStream_sp ss = StringOutStream_O::make();
+	StringOutputStream_sp ss = StringOutputStream_O::create();
 	return(Values(ss));
     };
 
 
 
     
-    
-#define ARGS_af_getOutputStreamString "(stringOutputStream)"
-#define DECL_af_getOutputStreamString ""
-#define DOCS_af_getOutputStreamString "getOutputStreamString"
-    string af_getOutputStreamString(StringOutStream_sp stringOutputStream)
-    {_G();
-	return stringOutputStream->str();
-    };
-
-
-
     
     
 #define ARGS_af_testMemoryError "()"
@@ -834,7 +823,7 @@ namespace core
 #define DECL_af_read_preserving_whitespace ""    
     T_sp af_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
-	DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR,BRCL_T);
+	DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR,_T<T_O>());
 	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 	return(read_lisp_object(sin,eof_error_p.isTrue(),eof_value,recursive_p));
     }
@@ -1078,12 +1067,13 @@ namespace core
   __BEGIN_DOC(candoScript.general.mapcar)
   __END_DOC
 */
-#define LOCK_af_mapc 1
-#define	DOCS_af_mapc "See CLHS mapc"
-#define	ARGS_af_mapc "(op &rest lists)"
-#define DECL_af_mapc ""    
-    T_mv af_mapc(Function_sp op, Cons_sp lists)
+#define LOCK_cl_mapc 1
+#define	DOCS_cl_mapc "See CLHS mapc"
+#define	ARGS_cl_mapc "(op &rest lists)"
+#define DECL_cl_mapc ""    
+    T_sp cl_mapc(T_sp top, Cons_sp lists)
     {_G();
+        Function_sp op = coerce::functionDesignator(top);
 	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),8,0,true));
 	// Copy the arguments into argumentLists
 	for ( Cons_sp carg = lists; carg.notnilp(); carg = cCdr(carg))
@@ -1110,7 +1100,7 @@ namespace core
             T_sp res = eval::applyToActivationFrame(op,frame);
 	}
     RETURN:
-	return(Values(oCar(lists)));
+	return oCar(lists);
     }
 
 
@@ -1166,14 +1156,15 @@ namespace core
     }
 
 
-#define LOCK_af_mapl 1
-#define	DOCS_af_mapl "See CLHS maplist"
-#define ARGS_af_mapl "(op &rest lists)"
-#define DECL_af_mapl ""    
-    T_mv af_mapl(Function_sp op, Cons_sp lists)
+#define LOCK_cl_mapl 1
+#define	DOCS_cl_mapl "See CLHS maplist"
+#define ARGS_cl_mapl "(op &rest lists)"
+#define DECL_cl_mapl ""    
+    T_sp cl_mapl(T_sp top, Cons_sp lists)
     {_G();
+        Function_sp op = coerce::functionDesignator(top);
 	cl_maplist(op,lists);
-	return(Values(oCar(lists)));
+	return oCar(lists);
     }
 
 
@@ -1199,10 +1190,10 @@ namespace core
 
     
     
-#define ARGS_af_mapcon "(op &rest lists)"
-#define DECL_af_mapcon ""
-#define DOCS_af_mapcon "mapcon"
-    T_mv af_mapcon(T_sp op, Cons_sp lists)
+#define ARGS_cl_mapcon "(op &rest lists)"
+#define DECL_cl_mapcon ""
+#define DOCS_cl_mapcon "mapcon"
+    T_mv cl_mapcon(T_sp op, Cons_sp lists)
     {_G();
 	Cons_sp parts = cl_maplist(op,lists).as_or_nil<Cons_O>();
         T_sp result = cl_nconc(parts);
@@ -1214,10 +1205,10 @@ namespace core
     };
 
 
-#define ARGS_af_mapcan "(op &rest lists)"
-#define DECL_af_mapcan ""
-#define DOCS_af_mapcan "mapcan"
-    T_mv af_mapcan(T_sp op, Cons_sp lists)
+#define ARGS_cl_mapcan "(op &rest lists)"
+#define DECL_cl_mapcan ""
+#define DOCS_cl_mapcan "mapcan"
+    T_mv cl_mapcan(T_sp op, Cons_sp lists)
     {_G();
 	Cons_sp parts = cl_mapcar(op,lists).as_or_nil<Cons_O>();
         T_sp result = cl_nconc(parts);
@@ -1322,7 +1313,7 @@ T_sp af_append(Cons_sp lists)
 
 
 
-
+#if 0
 #define ARGS_af_open "(filespec_desig &key (direction :input) element-type if-exists if-does-not-exist (external-format :default))"
 #define DECL_af_open ""
 #define DOCS_af_open ""
@@ -1430,7 +1421,7 @@ Stream_mv af_open(T_sp filespec_desig, Symbol_sp direction, T_sp element_type, T
     LOG(BF("status"));
     IMPLEMENT_ME();
 }
-
+#endif
 
 #define ARGS_af_gensym "(&optional x)"
 #define DECL_af_gensym ""
@@ -1563,7 +1554,7 @@ T_sp type_of(T_sp x)
 	{
 	    t = cl::_sym_array;
 	} else t = cl::_sym_simple_array;
-	return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(Fixnum_O::create(1),Fixnum_O::create(cl_length(sx)))).cons();
+	return (ql::list(_lisp) << t << cl::_sym_BaseChar_O << Cons_O::createList(Fixnum_O::create(1),Fixnum_O::create(cl_length(sx)))).cons();
     } else if ( af_vectorP(x) )
     {
 	Vector_sp vx = x.as<Vector_O>();
@@ -1607,7 +1598,7 @@ T_sp type_of(T_sp x)
 	else if (x.isA<ConcatenatedStream_O>() ) 	return cl::_sym_ConcatenatedStream_O;
 	else if (x.isA<TwoWayStream_O>() ) 		return cl::_sym_TwoWayStream_O;
 	else if (x.isA<StringInputStream_O>() ) 	return _sym_StringInputStream_O;
-	else if (x.isA<StringOutStream_O>() ) 	return _sym_StringOutStream_O;
+	else if (x.isA<StringOutputStream_O>() ) 	return _sym_StringOutputStream_O;
 	else if (x.isA<EchoStream_O>() ) 		return cl::_sym_EchoStream_O;
 	else return cl::_sym_FileStream_O;
     } else if ( af_listp(x) )
@@ -1750,22 +1741,22 @@ void initialize_primitives()
 	ClDefun(mapcar);
 
 	SYMBOL_EXPORT_SC_(ClPkg,mapc);
-	Defun(mapc);
+	ClDefun(mapc);
 
 	SYMBOL_EXPORT_SC_(ClPkg,maplist);
 	ClDefun(maplist);
 
 	SYMBOL_EXPORT_SC_(ClPkg,mapl);
-	Defun(mapl);
+	ClDefun(mapl);
 
 	SYMBOL_SC_(CorePkg,mapappend);
 	Defun(mapappend);
 
 	SYMBOL_EXPORT_SC_(ClPkg,mapcan);
-	Defun(mapcan);
+	ClDefun(mapcan);
 
 	SYMBOL_EXPORT_SC_(ClPkg,mapcon);
-	Defun(mapcon);
+	ClDefun(mapcon);
 
 	SYMBOL_SC_(CorePkg,macroexpand_default);
 	Defun(macroexpand_default);
@@ -1789,8 +1780,8 @@ void initialize_primitives()
 	SYMBOL_SC_(CorePkg,sequence_start_end);
 	Defun(sequence_start_end);
 
-	SYMBOL_EXPORT_SC_(ClPkg,open);
-	Defun(open);
+//	SYMBOL_EXPORT_SC_(ClPkg,open);
+//	Defun(open);
 
 	SYMBOL_EXPORT_SC_(ClPkg,ash);
 	Defun(ash);
@@ -1827,8 +1818,6 @@ void initialize_primitives()
 	SYMBOL_EXPORT_SC_(ClPkg,makeStringOutputStream);
 	Defun(makeStringOutputStream);
 
-	SYMBOL_EXPORT_SC_(ClPkg,getOutputStreamString);
-	Defun(getOutputStreamString);
 
         SYMBOL_EXPORT_SC_(ClPkg,set);
 
@@ -1853,9 +1842,6 @@ void initialize_primitives()
 	SYMBOL_EXPORT_SC_(ClPkg,makeStringOutputStream);
 	Defun(makeStringOutputStream);
 
-	SYMBOL_EXPORT_SC_(ClPkg,getOutputStreamString);
-	Defun(getOutputStreamString);
-
 	SYMBOL_EXPORT_SC_(ClPkg,gensym);
 	Defun(gensym);
 
@@ -1876,9 +1862,6 @@ void initialize_primitives()
 
 	SYMBOL_EXPORT_SC_(ClPkg,makeStringOutputStream);
 	Defun(makeStringOutputStream);
-
-	SYMBOL_EXPORT_SC_(ClPkg,getOutputStreamString);
-	Defun(getOutputStreamString);
 
         ClDefun(set);
 

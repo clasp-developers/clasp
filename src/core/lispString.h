@@ -33,6 +33,9 @@ private: // instance variables here
 public: // Functions here
 
 
+    virtual int pushCharExtend(claspChar c, int extension = 0) {SUBIMP(); };
+    virtual int& fillPointer() const {SUBIMP();};
+
 
 };
 
@@ -51,9 +54,9 @@ namespace core {
     Str_sp af_string_downcase(T_sp arg);
 
 
-    brclChar af_char(T_sp str, int idx);
+    claspChar af_char(T_sp str, int idx);
 
-    bool brcl_memberChar(brclChar c, T_sp charBag);
+    bool brcl_memberChar(claspChar c, T_sp charBag);
 
     Str_sp cl_stringTrim(T_sp charbag, T_sp str);
     Str_sp cl_stringLeftTrim(T_sp charbag, T_sp str);

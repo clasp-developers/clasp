@@ -31,7 +31,7 @@ namespace core
     public:
 	void initialize();
     public:
-	static Character_sp create(brclChar c);
+        static Character_sp create(claspChar c);
 	static Character_sp create(int c);
 	/*! Create a character from a name like TAB, NEWLINE, LINEFEED, PAGE, RETURN, SPACE */
 	static Character_sp create_from_name(string const& name);
@@ -42,8 +42,8 @@ namespace core
 
 
     public: // Functions here
-	virtual brclChar asChar() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-	virtual brclChar get() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+	virtual claspChar asChar() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+	virtual claspChar get() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual Character_sp char_upcase() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual Character_sp char_downcase() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 	virtual bool upper_case_p() const {SUBIMP();};
@@ -115,13 +115,13 @@ namespace core {
     private:
 	unsigned char	_Value;
     public:
-	static StandardChar_sp create(brclChar nm);
+	static StandardChar_sp create(claspChar nm);
 	/*! Create a character from a name like TAB, NEWLINE, LINEFEED, PAGE, RETURN, SPACE */
 	static StandardChar_sp create_from_name(string const& name);
 
     public:
-	brclChar asChar() const { return this->_Value;};
-	brclChar get() const { return this->_Value;};
+	claspChar asChar() const { return this->_Value;};
+	claspChar get() const { return this->_Value;};
 	void sxhash(HashGenerator& hg) const;
 	virtual T_sp deepCopy() const;
 	string __repr__() const;
@@ -225,9 +225,9 @@ namespace core {
 namespace translate
 {
     template <>
-    struct	from_object<brclChar,std::true_type>
+    struct	from_object<claspChar,std::true_type>
     {
-	typedef	brclChar	DeclareType;
+	typedef	claspChar	DeclareType;
 	DeclareType _v;
 	from_object(T_P o)
 	{
@@ -260,7 +260,7 @@ TRANSLATE(core::Character_O);
 
 
 namespace core {
-    brclChar brcl_charCode(T_sp elt); // like ecl_char_code
+    claspChar clasp_charCode(T_sp elt); // like ecl_char_code
 };
 
 #endif

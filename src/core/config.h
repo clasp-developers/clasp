@@ -19,7 +19,8 @@
 
 #define CHAR_CODE_LIMIT	256 /* ASCII or unicode character code limit */
 
-typedef char brclChar;
+typedef char claspChar;
+typedef int claspCharacter; 
 #define BRCL_CHAR(x) ((x)&0xff)
 
 
@@ -64,4 +65,20 @@ typedef char brclChar;
 #define CALL_ARGUMENTS_LIMIT	64
 
 #define BRCL_INTERNAL_TIME_UNITS_PER_SECOND 1000
+#endif
+
+
+#define CLASP_CHAR_CODE_LINEFEED '\n'
+#define CLASP_CHAR_CODE_NEWLINE '\n'
+#define CLASP_CHAR_CODE_RETURN '\r'
+
+
+#ifndef HAVE_FSEEKO
+#define clasp_off_t int
+#define clasp_fseeko fseek
+#define clasp_ftello ftell
+#else
+#define clasp_off_t off_t
+#define clasp_fseeko fseeko
+#define clasp_ftello ftello
 #endif

@@ -285,6 +285,38 @@ namespace core
     }
 
 
+
+
+    char* clasp_alloc_atomic(size_t buffer)
+    {
+        return (char*)malloc(buffer);
+    }
+
+
+    void clasp_dealloc(char* buffer)
+    {
+        if ( buffer ) {
+            free(buffer);
+        }
+    }
+
+
+
+    Cons_sp clasp_grab_rest_args( va_list args, int nargs)
+    {
+        ql::list l;
+        while (nargs) {
+            T_sp arg = gctools::smart_ptr<T_O>(va_arg(args,T_O*));
+            l << arg;
+            --nargs;
+        }
+        return l.cons();
+    }
+
+
+
+
+
     void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol) {
         if ( _sym_STARallCxxClassesSTAR->symbolValueUnsafe() ) {
             _sym_STARallCxxClassesSTAR->setf_symbolValue(Cons_O::create(classSymbol,_sym_STARallCxxClassesSTAR->symbolValue()));
@@ -593,9 +625,9 @@ namespace core
     {
 #define USE_WRITE_OBJECT
 #if defined(USE_WRITE_OBJECT)
-	StringOutStream_sp sout = StringOutStream_O::make();
+	StringOutputStream_sp sout = StringOutputStream_O::create();
 	write_object(obj,sout);
-	return sout->str();
+	return cl_get_output_stream_string(sout).as<Str_O>()->get();
 #else
 	if ( obj.nilp() )
 	{
@@ -778,7 +810,8 @@ namespace core
 	if ( args == "" ) return _Nil<Cons_O>();
 	Package_sp pkg = _lisp->findPackage(packageName);
 	ChangePackage changePackage(pkg);
-	Stream_sp str = StringInputStream_O::create(args);
+        Str_sp ss = Str_O::create(args);
+	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<T_O>());
 	Reader_sp reader = Reader_O::create(str);
 	T_sp osscons = reader->primitive_read(true,_Nil<T_O>(),false);
 	Cons_sp sscons = osscons.as_or_nil<Cons_O>();
@@ -791,7 +824,8 @@ namespace core
 	if ( declarestring == "" ) return _Nil<Cons_O>();
 	Package_sp pkg = _lisp->findPackage(packageName);
 	ChangePackage changePackage(pkg);
-	Stream_sp str = StringInputStream_O::create(declarestring);
+        Str_sp ss = Str_O::create(declarestring);
+	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<T_O>());
 	Reader_sp reader = Reader_O::create(str);
 	Cons_sp sscons = reader->primitive_read(true,_Nil<T_O>(),false).as_or_nil<Cons_O>();
 	return sscons;

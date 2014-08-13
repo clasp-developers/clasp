@@ -86,12 +86,12 @@ namespace core
 	bool done = false;
 	while (!done)
 	{
-	    Character_sp nc = af_readChar(stream,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
+	    Character_sp nc = cl_readChar(stream,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	    char cc = nc->asChar();
 	    if ( cc == '"' ) break;
 	    if ( cc == '\\' )
 	    {
-		nc = af_readChar(stream,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
+		nc = cl_readChar(stream,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 		cc = nc->asChar();
 		if ( cc == 'n' ) cc = '\n';
 	    }
@@ -129,18 +129,18 @@ namespace core
 	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
 	Fixnum_sp new_backquote_level = Fixnum_O::create(backquote_level->get()-1);
 	DynamicScopeManager scope(_sym_STARbackquote_levelSTAR,new_backquote_level);
-	char nextc = sin->peek_char();
+	char nextc = clasp_peek_char(sin);
 //	ql::source_code_list list(sin->lineNumber(),sin->column(),af_sourceFileInfo(sin));
 	ql::list list;
 	Symbol_sp head = _sym_unquote;
 	if ( nextc == '@' )
 	{
 	    head = _sym_unquote_splice;
-	    af_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
+	    cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	} else if ( nextc == '.')
 	{
 	    head = _sym_unquote_nsplice;
-	    af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+	    cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	}
 	T_sp comma_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
         list << head << comma_object;
@@ -165,8 +165,8 @@ namespace core
     {_G();
 	SourceFileInfo_sp info = af_sourceFileInfo(sin);
 	SIMPLE_ERROR(BF("Unmatched close parenthesis in file: %s line: %s")
-			   % info->fileName()
-			   % sin->lineNumber() );
+                     % info->fileName()
+                     % clasp_input_lineno(sin) );
 	return(Values(_Nil<T_O>()));
     };
 
@@ -190,12 +190,12 @@ namespace core
 #define DECL_af_reader_skip_semicolon_comment ""    
     T_mv af_reader_skip_semicolon_comment(Stream_sp sin, Character_sp ch)
     {_G();
-	ASSERT(sin->inputStreamP());
+	ASSERT(clasp_input_stream_p(sin));
 	stringstream str;
 	bool done = false;
 	while (!done)
 	{
-	    Character_sp nc = af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+	    Character_sp nc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	    char cc = nc->asChar();
 	    if ( cc == '\n' ) break;
 	}
@@ -213,27 +213,27 @@ namespace core
 #define DECL_af_dispatch_macro_character ""    
     T_mv af_dispatch_macro_character(Stream_sp sin, Character_sp ch)
     {_G();
-	char cpeek = sin->peek_char();
+	char cpeek = clasp_peek_char(sin);
 	bool sawnumarg = false;
 	uint numarg = 0;
 	while (isdigit(cpeek))
 	{
 	    sawnumarg = true;
-	    int cget = sin->get();
+	    int cget = clasp_read_char(sin);
 	    if ( cget == EOF )
 	    {
 		SIMPLE_ERROR(BF("Hit eof in sharp macro"));
 	    }
 	    numarg *= 10;
 	    numarg += (cget - '0');
-	    cpeek = sin->peek_char();
+	    cpeek = clasp_peek_char(sin);
 	}
 	Fixnum_sp onumarg = _Nil<Fixnum_O>();
 	if ( sawnumarg )
 	{
 	    onumarg = Fixnum_O::create(numarg);
 	}
-	Character_sp subchar = af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+	Character_sp subchar = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	Function_sp macro_func = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>()->get_dispatch_macro_character(ch,subchar);
 	if ( macro_func.nilp() )
 	{	
@@ -246,21 +246,21 @@ namespace core
     /*! See SACLA reader.lisp::read-ch */
     Character_sp read_ch(Stream_sp sin)
     {_G();
-	Character_sp nc = af_readChar(sin,BRCL_NIL,BRCL_NIL,BRCL_T).as<Character_O>();
+	Character_sp nc = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	return nc;
     }
 
     /*! See SACLA reader.lisp::read-ch-or-die */
     Character_sp read_ch_or_die(Stream_sp sin)
     {_G();
-	Character_sp nc = af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+	Character_sp nc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	return nc;
     }
 
     /*! See SACLA reader.lisp::unread-ch */
     void unread_ch(Stream_sp sin, Character_sp c)
     {_G();
-	sin->unread_char(c->asChar());
+	clasp_unread_char(c->asChar(),sin);
     }
 
 
@@ -473,7 +473,7 @@ namespace core
 	    return Values(_Nil<T_O>());
 	}
 	for (dimcount = 0 ; ; dimcount++) {
-	    ch = af_readChar(sin,BRCL_NIL,BRCL_NIL,BRCL_T).as<Character_O>();
+	    ch = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	    if (ch.nilp()) break;
 	    Symbol_sp syntaxType = rtbl->syntax_type(ch);
 	    if (syntaxType == kw::_sym_terminating_macro_character
@@ -828,26 +828,26 @@ namespace core
 #define DECL_af_sharp_vertical_bar ""    
     T_mv af_sharp_vertical_bar(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
-	ASSERT(sin->inputStreamP());
+	ASSERT(clasp_input_stream_p(sin));
 	bool done = false;
 	while (!done)
 	{
-	    Character_sp nc = af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+	    Character_sp nc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	    char cc = nc->asChar();
 	    if ( cc == '#' )
 	    {
-		char nextc = sin->peek_char();
+		char nextc = clasp_peek_char(sin);
 		if ( nextc == '|')
 		{
-		    Character_sp nextsubc = af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+		    Character_sp nextsubc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 		    eval::funcall(_sym_sharp_vertical_bar,sin,nextsubc,num);
 		}
 	    } else if ( cc == '|' )
 	    {
-		char nextc = sin->peek_char();
+		char nextc = clasp_peek_char(sin);
 		if ( nextc == '#')
 		{
-		    Character_sp nextsubc = af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+		    Character_sp nextsubc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 		    goto DONE;
 		}
 	    }

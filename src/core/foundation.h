@@ -308,7 +308,6 @@ typedef	unsigned int uint;
 typedef int Fixnum; // a fixnum that can be represented within a tagged pointer
 typedef Fixnum cl_fixnum;
 typedef size_t _Index; // 
-typedef int claspCharacter;
 typedef int cl_index;
 
 struct size_t_pair {
@@ -1449,8 +1448,6 @@ namespace core
 
 
 #define unlikely_if(x) if(UNLIKELY(x))
-#define BRCL_T (_lisp->_true())
-#define BRCL_NIL (_Nil<core::T_O>())
 
 
 
@@ -1460,7 +1457,32 @@ namespace core
 #endif
 
 
+namespace core {
+    struct cl_env {};
+    typedef cl_env* cl_env_ptr;
+    inline cl_env_ptr clasp_process_env() { return NULL;};
+    inline void clasp_disable_interrupts_env(const cl_env_ptr) {};
+    inline void clasp_enable_interrupts_env(const cl_env_ptr) {};
+    inline void clasp_disable_interrupts() {};
+    inline void clasp_enable_interrupts() {};
 
+};
+
+
+namespace core {
+    /*! Allocate an atomic buffer with malloc */
+    char* clasp_alloc_atomic(size_t buffer_size);
+    /*! The buffer above must be deallocated using this call*/
+    void clasp_dealloc(char* buffer);
+};
+
+
+namespace core {
+    typedef va_list clasp_va_list;
+#define clasp_va_start va_start
+    Cons_sp clasp_grab_rest_args(va_list args, int nargs);
+#define clasp_va_end va_end    
+};
 
 #endif //]
 

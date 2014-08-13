@@ -32,7 +32,7 @@ namespace core {
     StrWithFillPtr_sp af_bignumToString(StrWithFillPtr_sp buffer, const Bignum& bn, Fixnum_sp base)
     {_G();
 	if ( base->get()<2 || base->get()>36) {
-	    WRONG_TYPE_NTH_ARG(3,base,Cons_O::createList(cl::_sym_integer,Fixnum_O::create(2),Fixnum_O::create(360)));
+	    QERROR_WRONG_TYPE_NTH_ARG(3,base,Cons_O::createList(cl::_sym_integer,Fixnum_O::create(2),Fixnum_O::create(360)));
 	}
 	size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), base->ref());
 	if ( bn<0 ) str_size++;
@@ -113,7 +113,7 @@ namespace core {
 	} else if ( integer.isA<Bignum_O>() ) {
 	    af_bignumToString(buffer,integer.as<Bignum_O>()->get(),base);
 	} else {
-	    WRONG_TYPE_NTH_ARG(2,base,cl::_sym_integer);
+	    QERROR_WRONG_TYPE_NTH_ARG(2,base,cl::_sym_integer);
 	}
 	return buffer;
     }

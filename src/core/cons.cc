@@ -357,11 +357,6 @@ namespace core
     };
 
 
-    SourceFileInfo_sp Cons_O::sourceFileInfo() const
-    {_G();
-	return((_Nil<SourceFileInfo_O>()));
-    }
-
 
     bool Cons_O::exactlyMatches(Cons_sp other) const
     {_G();

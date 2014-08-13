@@ -701,21 +701,21 @@ namespace sockets {
 				T_sp elementType,		//#3
 				T_sp externalFormat )	//#4
     {_G();
-	Symbol_sp direction;
+        core::StreamMode direction;
 	switch (streamMode) {
 	case core::brcl_stream_mode_input:
-	    direction = kw::_sym_input;
+	    direction = clasp_smm_input_file;
 	    break;
 	case core::brcl_stream_mode_output:
-	    direction = kw::_sym_output;
+	    direction = clasp_smm_output_file;
 	    break;
 	case core::brcl_stream_mode_io:
-	    direction = kw::_sym_io;
+	    direction = clasp_smm_io_file;
 	    break;
 	default: {
 	    SIMPLE_ERROR(BF("Illegal stream mode %d") % streamMode );
 	}}
-	Stream_sp stream = core::FDStream_O::makeFromFileDescriptor(name,fd,direction,elementType,externalFormat);
+	Stream_sp stream = core::IOFileStream_O::make(name,fd,direction,elementType,externalFormat);
 	return stream;
     }
 

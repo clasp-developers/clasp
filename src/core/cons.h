@@ -401,15 +401,7 @@ namespace core {
 	void __write__(Stream_sp stream) const;
 
 
-	virtual bool hasParsePos() const { return false;};
-	virtual void getParsePos(int& ln, int& col) const {_OF(); ln=0; col=0; };
-	virtual int getParsePosLineNumber() const {_OF(); return 0;};
-	virtual int getParsePosColumn() const {return 0;};
-	virtual SourceFileInfo_sp sourceFileInfo() const;
-	int lineNumber() const { return this->getParsePosLineNumber();};
-	int column() const { return this->getParsePosColumn();};
-
-	T_sp product(Cons_sp list);
+        T_sp product(Cons_sp list);
 	T_sp max(Cons_sp list);
 	T_sp min(Cons_sp list);
 	T_sp booleanOr(Cons_sp list);

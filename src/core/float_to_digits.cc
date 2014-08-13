@@ -24,7 +24,7 @@
 namespace core {
 
 #define PRINT_BASE brcl_make_fixnum(10)
-#define EXPT_RADIX(x) brcl_ash(brcl_make_fixnum(1),x)
+#define EXPT_RADIX(x) clasp_ash(brcl_make_fixnum(1),x)
 
     typedef struct {
         Real_sp r;
@@ -232,9 +232,9 @@ namespace core {
 				    10,
 				    true /* adjustable */,
 				    brcl_make_fixnum(0) /* fill pointer */,
-				    BRCL_NIL /* displacement */,
-				    BRCL_NIL /* displ. offset */,
-				    BRCL_NIL /* initial_element */,
+				    _Nil<T_O>() /* displacement */,
+				    _Nil<T_O>() /* displ. offset */,
+				    _Nil<T_O>() /* initial_element */,
 				    _Nil<Cons_O>() /* initial_contents */).as<StrWithFillPtr_O>();
         generate(digits, approx);
         return Values(brcl_make_fixnum(k), digits);

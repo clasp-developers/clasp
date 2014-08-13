@@ -27,6 +27,7 @@
 namespace core {
 
 
+    SYMBOL_EXPORT_SC_(CorePkg,integer_divide);
     Integer_sp brcl_integer_divide(Integer_sp x, Integer_sp y)
     {
 	NumberType tx, ty;
@@ -40,7 +41,7 @@ namespace core {
 	    } else if (ty == number_Bignum) {
 		return _brcl_fix_divided_by_big(brcl_fixnum(x), y.as<Bignum_O>()->get());
 	    } else {
-		WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Integer_O);
+		ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide,2,y,cl::_sym_Integer_O);
 	    }
 	}
 	if (tx == number_Bignum) {
@@ -49,10 +50,10 @@ namespace core {
 	    } else if (ty == number_Fixnum) {
 		return _brcl_big_divided_by_fix(x.as<Bignum_O>()->get(), brcl_fixnum(y));
 	    } else {
-		WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Integer_O);
+		QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Integer_O);
 	    }
 	}
-	WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Integer_O);
+	ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide,1,x,cl::_sym_Integer_O);
 	UNREACHABLE();
     }
 
@@ -90,7 +91,7 @@ namespace core {
 	case number_Bignum:
 	    break;
 	default:
-	    WRONG_TYPE_NTH_ARG(yidx,x,cl::_sym_Integer_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(yidx,x,cl::_sym_Integer_O);
 	}
 	switch (brcl_t_of(y)) {
 	case number_Fixnum: {
@@ -100,7 +101,7 @@ namespace core {
 	case number_Bignum:
 	    break;
 	default:
-	    WRONG_TYPE_NTH_ARG(1+yidx,y,cl::_sym_Integer_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1+yidx,y,cl::_sym_Integer_O);
         }
         return _brcl_big_gcd(x.as<Bignum_O>(), y.as<Bignum_O>());
     }

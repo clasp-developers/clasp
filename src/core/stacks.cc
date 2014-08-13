@@ -448,18 +448,18 @@ namespace core
     {_G();
 	Stream_sp ss;
 	if ( outputDesignator.nilp() ) {
-	    ss = StringOutStream_O::create();
+	    ss = StringOutputStream_O::create();
 	} else {
 	    ss = coerce::outputStreamDesignator(outputDesignator);
 	}
 	if ( !msg.nilp() )
 	{
-	    ss->writeln((BF("\n%s")%_rep_(msg)).str());
+	    clasp_writeln_string(((BF("\n%s")%_rep_(msg)).str()),ss);
 	}
-	ss->writeln((BF("%s") % _lisp->invocationHistoryStack().asString()).str());
+	clasp_writeln_string(((BF("%s") % _lisp->invocationHistoryStack().asString()).str()),ss);
 	if (outputDesignator.nilp() )
 	{
-	    return Str_O::create(ss.as<StringOutStream_O>()->str());
+	    return cl_get_output_stream_string(ss);
 	}
 	return _Nil<T_O>();
     };

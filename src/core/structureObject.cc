@@ -93,7 +93,7 @@ namespace core
 	{
 	    if ( !af_structureSubtypep(af_classOf(so),type) )
 	    {
-		WRONG_TYPE_NTH_ARG(1,obj,type);
+		QERROR_WRONG_TYPE_NTH_ARG(1,obj,type);
 	    }
 	    return so->instanceRef(idx);
 	}
@@ -103,7 +103,7 @@ namespace core
 	    T_sp soclass = af_type_of(so);
 	    if ( !af_structureSubtypep(soclass,type) )
 	    {
-		WRONG_TYPE_NTH_ARG(1,obj,type);
+		QERROR_WRONG_TYPE_NTH_ARG(1,obj,type);
 	    }
 	    return so->structureRef(idx);
 	}
@@ -126,7 +126,7 @@ namespace core
 	{
 	    if ( !af_structureSubtypep(af_classOf(so),type) )
 	    {
-		WRONG_TYPE_NTH_ARG(1,obj,type);
+		QERROR_WRONG_TYPE_NTH_ARG(1,obj,type);
 	    }
 	    return so->instanceSet(idx,val);
 	}
@@ -136,7 +136,7 @@ namespace core
 	    T_sp sotype = af_type_of(so);
 	    if ( !af_structureSubtypep(sotype,type) )
 	    {
-		WRONG_TYPE_NTH_ARG(1,obj,type);
+		QERROR_WRONG_TYPE_NTH_ARG(1,obj,type);
 	    }
 	    return so->structureSet(idx,val);
 	}
