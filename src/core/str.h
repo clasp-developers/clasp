@@ -33,7 +33,7 @@ namespace core
 	static Str_sp create(const string& nm);
 	static Str_sp create(const char* nm);
 	static Str_sp create(const char* nm, int numChars);
-	static Str_sp create(brclChar initial_element, int dimension, T_sp initialContents);
+	static Str_sp create(claspChar initial_element, int dimension, T_sp initialContents);
 	static Str_sp create(Str_sp orig);
     public:
 	static Bignum stringToBignum(const char* str);
@@ -90,8 +90,8 @@ namespace core
         const_iterator begin() const { return this->_Contents.data(); }
         const_iterator end() const { return this->_Contents.data()+this->size(); };
 
-	brclChar schar(int index) const;
-        brclChar scharSet(int index, brclChar c);
+	claspChar schar(int index) const;
+        claspChar scharSet(int index, claspChar c);
 
 	/*! Return the index of where substring is found 
 	  or nil
@@ -154,7 +154,7 @@ namespace core
 
 
 	virtual void* addressOfBuffer() const;
-	virtual size_t elementSizeInBytes() const { return sizeof(brclChar);};
+	virtual size_t elementSizeInBytes() const { return sizeof(claspChar);};
 
 	virtual void fillInitialContents(T_sp initialContents);
 
@@ -184,6 +184,9 @@ namespace core {
     T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1=Fixnum_O::create(0), Fixnum_sp end1=_Nil<Fixnum_O>(), Fixnum_sp start2=Fixnum_O::create(0), Fixnum_sp end2=_Nil<Fixnum_O>() );
 
     T_sp af_base_string_concatenate(Cons_sp args);
+
+
+    claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos);};
 
 };
 

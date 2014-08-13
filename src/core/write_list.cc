@@ -30,45 +30,45 @@ namespace core
 	T_sp y;
 	SYMBOL_EXPORT_SC_(CorePkg,_SHARP__BANG_);
 	if ( this->_Car == _sym__SHARP__BANG_) {
-	    stream->writeStr("#!");
+	    clasp_write_string("#!",stream);
 	    x = this->_Cdr;
 	    write_object(x,stream);
 	    return;
 	}
 	if (af_consP(this->_Cdr) && oCdr(this->_Cdr).nilp() ) {
 	    if ( this->_Car == cl::_sym_quote ) {
-		stream->writeChar('\'');
+		clasp_write_char('\'',stream);
 		x = oCar(this->_Cdr);
 		write_object(x,stream);
 		return;
 	    }
 	    if ( this->_Car == cl::_sym_function) {
-		stream->writeChar('#');
-		stream->writeChar('\'');
+		clasp_write_char('#',stream);
+		clasp_write_char('\'',stream);
 		x = oCar(this->_Cdr);
 		write_object(x,stream);
 		return;
 	    }
 	    if ( this->_Car == _sym_quasiquote ) {
-		stream->writeChar('`');
+		clasp_write_char('`',stream);
 		x = oCar(this->_Cdr);
 		write_object(x,stream);
 		return;
 	    }
 	    if ( this->_Car == _sym_unquote ) {
-		stream->writeChar(',');
+		clasp_write_char(',',stream);
 		x = oCar(this->_Cdr);
 		write_object(x,stream);
 		return;
 	    }
 	    if ( this->_Car == _sym_unquote_splice ) {
-		stream->writeStr(",@");
+		clasp_write_string(",@",stream);
 		x = oCar(this->_Cdr);
 		write_object(x,stream);
 		return;
 	    }
 	    if ( this->_Car == _sym_unquote_nsplice ) {
-		stream->writeStr(",.");
+		clasp_write_string(",.",stream);
 		x = oCar(this->_Cdr);
 		write_object(x, stream);
 		return;
@@ -83,14 +83,14 @@ namespace core
 	    print_length = brcl_print_length();
 	}
 	if (print_level == 0) {
-	    stream->writeChar('#');
+	    clasp_write_char('#',stream);
 	    return;
 	}
 	x = this->const_sharedThis<Cons_O>();
-	stream->writeChar('(');
+	clasp_write_char('(',stream);
 	for (i = 0;  ;  i++) {
 	    if (i >= print_length) {
-		stream->writeStr("...");
+		clasp_write_string("...",stream);
 		break;
 	    }
 	    y = oCar(x);
@@ -101,18 +101,18 @@ namespace core
 		(circle && will_print_as_hash(x)))
 	    {
 		if (!x.nilp()) {
-		    stream->writeChar(' ');
-		    stream->writeStr(". ");
+		    clasp_write_char(' ',stream);
+		    clasp_write_string(". ",stream);
 		    write_object(x, stream);
 		}
 		break;
 	    }
 	    if (i == 0 && !y._NULLp() && af_symbolp(y))
-		stream->writeChar(' ');
+		clasp_write_char(' ',stream);
 	    else
-		stream->writeChar(' ');
+		clasp_write_char(' ',stream);
 	}
-	stream->writeChar(')');
+	clasp_write_char(')',stream);
     }
 
 

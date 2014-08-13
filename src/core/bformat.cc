@@ -87,7 +87,7 @@ namespace core
 	    if ( cl_streamp(output) )
 	    {
 		Stream_sp outputStream = output.as<Stream_O>();
-		outputStream->writeStr(fmter_str);
+		clasp_write_string(fmter_str,outputStream);
 		return(Values(_Nil<T_O>()));
 	    } else if ( output.nilp() )
 	    {

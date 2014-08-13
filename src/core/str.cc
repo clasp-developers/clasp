@@ -855,9 +855,9 @@ namespace core
 	    goto RETURN_FALSE;
     END_STRING2:
     RETURN_FALSE:
-	    return BRCL_NIL;
+	    return _Nil<T_O>();
     RETURN_TRUE:
-	    return BRCL_T;
+	    return _T<T_O>();
     }
 	    
 
@@ -880,9 +880,9 @@ namespace core
 	    goto RETURN_FALSE;
     END_STRING2: // Did not hit end of string 1 at this point
     RETURN_TRUE: // strings are not equal
-	    return BRCL_T;
+	    return _T<T_O>();
     RETURN_FALSE:
-	    return BRCL_NIL;
+	    return _Nil<T_O>();
     }
 	    
 
@@ -910,7 +910,7 @@ namespace core
 	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     END_STRING2:
     RETURN_FALSE:
-	    return BRCL_NIL;
+	    return _Nil<T_O>();
     }
 	    
 
@@ -935,7 +935,7 @@ namespace core
 	}
     END_STRING1:
     RETURN_FALSE:
-	return BRCL_NIL;
+	return _Nil<T_O>();
     END_STRING2:
     RETURN_TRUE:
 	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
@@ -968,7 +968,7 @@ namespace core
 	    goto RETURN_FALSE;
     END_STRING2:
     RETURN_FALSE:
-	    return BRCL_NIL;
+	    return _Nil<T_O>();
     RETURN_TRUE:
 	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
@@ -998,7 +998,7 @@ namespace core
 	goto RETURN_FALSE;
     END_STRING2:
     RETURN_FALSE:
-	return BRCL_NIL;
+	return _Nil<T_O>();
     RETURN_TRUE:
 	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
@@ -1029,9 +1029,9 @@ namespace core
 	    goto RETURN_FALSE;
     END_STRING2:
     RETURN_FALSE:
-	    return BRCL_NIL;
+	    return _Nil<T_O>();
     RETURN_TRUE:
-	    return BRCL_T;
+	    return _T<T_O>();
     }
 
 
@@ -1055,9 +1055,9 @@ namespace core
 	    goto RETURN_FALSE;
     END_STRING2: // Did not hit end of string 1 at this point
     RETURN_TRUE: // strings are not equal
-	    return BRCL_T;
+	    return _T<T_O>();
     RETURN_FALSE:
-	    return BRCL_NIL;
+	    return _Nil<T_O>();
     }
 	    
 
@@ -1087,7 +1087,7 @@ namespace core
 	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     END_STRING2:
     RETURN_FALSE:
-	    return BRCL_NIL;
+	    return _Nil<T_O>();
     }
 	    
 
@@ -1114,7 +1114,7 @@ namespace core
 	}
     END_STRING1:
     RETURN_FALSE:
-	return BRCL_NIL;
+	return _Nil<T_O>();
     END_STRING2:
     RETURN_TRUE:
 	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
@@ -1149,7 +1149,7 @@ namespace core
 	    goto RETURN_FALSE;
     END_STRING2:
     RETURN_FALSE:
-	    return BRCL_NIL;
+	    return _Nil<T_O>();
     RETURN_TRUE:
 	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
@@ -1181,7 +1181,7 @@ namespace core
 	goto RETURN_FALSE;
     END_STRING2:
     RETURN_FALSE:
-	return BRCL_NIL;
+	return _Nil<T_O>();
     RETURN_TRUE:
 	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
@@ -1217,13 +1217,13 @@ namespace core
     }
 
 
-    brclChar Str_O::schar(int index) const
+    claspChar Str_O::schar(int index) const
     {
 	ASSERTF(index >= 0 && index < this->size(),BF("schar index out of bounds[%d] - must be less than %d") % index % this->size() );
 	return this->_Contents[index];
     }
 
-    brclChar Str_O::scharSet(int index, brclChar c) 
+    claspChar Str_O::scharSet(int index, claspChar c) 
     {
 	ASSERTF(index >= 0 && index < this->size(),BF("schar index out of bounds[%d] - must be less than %d") % index % this->size() );
         this->_Contents[index] = c;
@@ -1292,17 +1292,17 @@ namespace core
 	{
 	    for (ndx = 0;  ndx < this->size(); ndx++ )
 	    {
-		stream->writeChar(this->_Contents[ndx]);
+		clasp_write_char(this->_Contents[ndx],stream);
 	    }
         } else {
-	    stream->writeChar('"');
+	    clasp_write_char('"',stream);
 	    for (ndx = 0;  ndx < this->size(); ndx++ )
 	    {
 		char c = this->_Contents[ndx];
-		if (c == '"' || c == '\\') stream->writeChar('\\');
-		stream->writeChar(c);
+		if (c == '"' || c == '\\') clasp_write_char('\\',stream);
+		clasp_write_char(c,stream);
 	    }
-	    stream->writeChar('"');
+	    clasp_write_char('"',stream);
         }
     }
 

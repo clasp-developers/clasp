@@ -20,6 +20,7 @@ namespace gray
 
 
     SYMBOL_SC_(GrayPkg,aSingleGraySymbol);
+    SYMBOL_EXPORT_SC_(GrayPkg,open_stream_p);
     SYMBOL_EXPORT_SC_(GrayPkg,stream_read_byte);
     SYMBOL_EXPORT_SC_(GrayPkg,stream_write_byte);
     SYMBOL_EXPORT_SC_(GrayPkg,stream_read_byte);

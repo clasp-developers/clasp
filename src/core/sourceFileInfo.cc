@@ -97,10 +97,10 @@ namespace core
 	    return 0;
 	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() )
 	{
-	    return co->lineNumber();
+            IMPLEMENT_MEF(BF("Handle cons for af_lineNumber"));
 	} else if ( Stream_sp so = obj.asOrNull<Stream_O>() )
 	{
-	    return so->lineNumber();
+	    return clasp_input_lineno(so);
 	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
 	{
             return af_lineNumber(fo->closure->sourcePosInfo());
@@ -121,10 +121,10 @@ namespace core
 	    return 0;
 	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() )
 	{
-	    return co->column();
+            IMPLEMENT_MEF(BF("Handle cons for af_column"));
 	} else if ( Stream_sp so = obj.asOrNull<Stream_O>() )
 	{
-	    return so->column();
+	    return clasp_input_column(so);
 	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
 	{
             return af_column(fo->closure->sourcePosInfo());
@@ -418,9 +418,9 @@ namespace core
 #endif
     SourcePosInfo_sp SourceManager_O::registerSourceInfoFromStream(T_sp obj, Stream_sp stream)
     {_G();
-	SourceFileInfo_sp sfi  = stream->sourceFileInfo();
-	uint lineNumber = stream->lineNumber();
-	uint column = stream->column();
+	SourceFileInfo_sp sfi  = clasp_input_source_file_info(stream);
+	uint lineNumber = clasp_input_lineno(stream);
+	uint column = clasp_input_column(stream);
 	return this->registerSourceInfo(obj,sfi,lineNumber,column);
     }
 

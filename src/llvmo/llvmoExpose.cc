@@ -659,7 +659,7 @@ namespace llvmo
 	    }
             return;
 	}
-        WRONG_TYPE_NTH_ARG(0,elements,cl::_sym_sequence);
+        QERROR_WRONG_TYPE_NTH_ARG(0,elements,cl::_sym_sequence);
     }
 
 

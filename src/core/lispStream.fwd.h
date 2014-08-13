@@ -3,20 +3,17 @@
 namespace core
 {
     FORWARD(Stream);
-    FORWARD(FileStream);
-    FORWARD(FileInStream);
-    FORWARD(FileOutStream);
-    FORWARD(FileInCompressedStream);
-    FORWARD(FileOutCompressedStream);
+    FORWARD(AnsiStream);
     FORWARD(StringStream);
     FORWARD(StringInputStream);
-    FORWARD(StringOutStream);
-    FORWARD(FDStream);
-    FORWARD(FDInStream);
-    FORWARD(FDOutStream);
+    FORWARD(StringOutputStream);
     FORWARD(SynonymStream);
-    FORWARD(SynonymInStream);
-    FORWARD(SynonymOutStream);
     FORWARD(TwoWayStream);
+    FORWARD(BroadcastStream);
+    FORWARD(EchoStream);
+    FORWARD(FileStream);
+    FORWARD(IOFileStream);
+    FORWARD(IOStreamStream);
+    FORWARD(ConcatenatedStream);
 }
 #endif

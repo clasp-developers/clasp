@@ -58,7 +58,7 @@ namespace core
       See CLHS 2.1.4.2 */
     uint constituentChar(Character_sp ch, uint trait=0)
     {
-	brclChar x(ch->asChar());
+	claspChar x(ch->asChar());
 	if ( trait!=0 ) return (x|trait);
 	uint result = 0;
 	int readBase = cl::_sym_STARread_baseSTAR->symbolValue().as<Fixnum_O>()->get();
@@ -438,21 +438,19 @@ namespace core
         af_stackMonitor();
 	uint start_lineNumber=0;
 	uint start_column=0;
-	uint start_filePos = 0;
 	bool got_dotted = false;
 	T_sp dotted_object = _Nil<T_O>();
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
 	Cons_sp cur = first;
-	start_lineNumber = sin->lineNumber();
-	start_column = sin->column();
-	start_filePos = sin->tell();
+	start_lineNumber = clasp_input_lineno(sin);
+	start_column = clasp_input_column(sin);
 	while (1)
 	{
-	    Character_sp cp = af_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
+	    Character_sp cp = cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
 	    LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp) );
 	    if ( cp->asChar() == end_char )
 	    {
-		af_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true());
+		cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true());
 		if ( dotted_object.notnilp() )
 		{
 		    cur->setOCdr(dotted_object);
@@ -465,7 +463,7 @@ namespace core
 		TRAP_BAD_CONS(otherResult);
 		if ( otherResult.nilp() ) return(Values(_Nil<Cons_O>()));
                 lisp_registerSourceInfo(otherResult,
-                                        sin->sourceFileInfo(),
+                                        clasp_input_source_file_info(sin),
                                         start_lineNumber,
                                         start_column );
 		return(otherResult);
@@ -484,7 +482,7 @@ namespace core
 		    if ( allow_consing_dot )
 		    {	
 			got_dotted = true;
-			Character_sp cdotp = af_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
+			Character_sp cdotp = cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
 			if ( cdotp->asChar() == end_char )
 			{
 			    SIMPLE_ERROR(BF("Nothing after consing dot"));
@@ -550,7 +548,7 @@ namespace core
             increment_read_lisp_object_recursion_depth recurse;
             if ( recurse.value() > recurse.max() ) {
                 printf("%s:%d read_lisp_object_recursion_depth %d has exceeded max (%d) - there is a problem reading line %d\n",
-                       __FILE__, __LINE__, recurse.value(), recurse.max(), sin->lineNumber() );
+                       __FILE__, __LINE__, recurse.value(), recurse.max(), clasp_input_lineno(sin) );
             }
 	    while (1)
 	    {
@@ -600,7 +598,7 @@ namespace core
 #if 1	
 	static int monitorReaderStep = 0;
 	if ( (monitorReaderStep % 1000 ) == 0 && af_member(_sym_monitorReader,_sym_STARdebugMonitorSTAR->symbolValue(),_Nil<T_O>()).notnilp()) {
-	    printf("%s:%d:%s stream %s -> pos = %lld\n",__FILE__,__LINE__,__FUNCTION__, _rep_(sin->pathname()).c_str(),sin->tell());
+	    printf("%s:%d:%s stream %s -> pos = %d\n",__FILE__,__LINE__,__FUNCTION__, _rep_(clasp_input_pathname(sin)).c_str(),clasp_file_position(sin).as<Fixnum_O>()->get());
 	}
 	++monitorReaderStep;
 #endif
@@ -611,7 +609,7 @@ namespace core
 	/* See the CLHS 2.2 Reader Algorithm  - continue has the effect of jumping to step 1 */
     step1:
 	LOG(BF("step1"));
-	x = af_readChar(sin,_Nil<T_O>(),_Unbound<Character_O>(),_lisp->_true()).as<Character_O>();
+	x = cl_readChar(sin,_Nil<T_O>(),_Unbound<Character_O>(),_lisp->_true()).as<Character_O>();
 	if ( x.unboundp() )
 	{
 	    if ( eofErrorP ) STREAM_ERROR(sin);
@@ -648,7 +646,7 @@ namespace core
 	{
 	    LOG(BF("step5 - single-escape-character char[%c]") % x->asChar());
 	    LOG(BF("Handling single escape"));
-	    y = af_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
+	    y = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	    token.clear();
 	    token.push_back(constituentChar(y,TRAIT_ALPHABETIC));
 	    LOG(BF("Read y[%s]") % y->asChar() );
@@ -675,7 +673,7 @@ namespace core
     step8:
 	LOG(BF("step8"));
 	{
-	    y = af_readChar(sin,BRCL_NIL,BRCL_NIL,BRCL_T).as<Character_O>();
+	    y = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	    if ( y.nilp() )
 	    {
 		LOG(BF("Hit eof"));
@@ -693,7 +691,7 @@ namespace core
 	    }
 	    if ( y8_syntax_type == kw::_sym_single_escape_character)
 	    {
-		z = af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+		z = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 		token.push_back(constituentChar(z,TRAIT_ALPHABETIC));
 		LOG(BF("Single escape read z[%s] accumulated token[%s]")
 		    % z->asChar() % tokenStr(token) );
@@ -704,7 +702,7 @@ namespace core
 	    if ( y8_syntax_type == kw::_sym_terminating_macro_character )
 	    {
 		LOG(BF("UNREADING char y[%s]") % y->asChar() );
-		sin->unread_char(y->asChar());
+		clasp_unread_char(y->asChar(),sin);
 		goto step10;
 	    }
 	    if ( y8_syntax_type == kw::_sym_whitespace_character )
@@ -713,7 +711,7 @@ namespace core
 		if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue() )
 		{
 		    LOG(BF("unreading y[%s]") % y->asChar() );
-		    sin->unread_char(y->asChar());
+		    clasp_unread_char(y->asChar(),sin);
 		}
 		goto step10;
 	    }
@@ -721,7 +719,7 @@ namespace core
     step9:
 	LOG(BF("step9"));
 	{
-	    y = af_readChar(sin,BRCL_T,BRCL_NIL,BRCL_T).as<Character_O>();
+	    y = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
 	    Symbol_sp y9_syntax_type = readTable->syntax_type(y);
 	    LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % y->asChar() % _rep_(y9_syntax_type) );
 	    if ( (y9_syntax_type == kw::_sym_constituent_character)
@@ -738,7 +736,7 @@ namespace core
 	    if ( y9_syntax_type == kw::_sym_single_escape_character )
 	    {
 		LOG(BF("Handling single_escape_character"));
-		z = af_readChar(sin,BRCL_NIL,_Unbound<Character_O>(),BRCL_T).as<Character_O>();
+		z = cl_readChar(sin,_Nil<T_O>(),_Unbound<Character_O>(),_T<T_O>()).as<Character_O>();
 		if ( z.unboundp() ) {
 		    STREAM_ERROR(sin);
 		}
@@ -767,6 +765,7 @@ namespace core
 	TRAP_BAD_CONS(object);
 	return(Values(object));
     }
+
 
 
 

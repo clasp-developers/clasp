@@ -9,6 +9,9 @@ namespace core
 {
 
 
+    Integer_sp clasp_file_len(int f);
+    int clasp_backup_open(const char *filename, int option, int mode);
+
 
     extern Str_sp af_currentDir();
     Pathname_sp af_truename(T_sp filespec);

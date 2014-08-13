@@ -127,7 +127,20 @@ namespace core
 	int size() { return this->_Steppers.size();};
 
     };
+};
 
+
+namespace core {
+    T_sp cl_mapc(T_sp op, Cons_sp lists);
+    T_sp cl_mapcar(T_sp op, Cons_sp lists);
+
+};
+
+
+
+
+
+namespace core {
 
     /*! Return the SourceFileInfo for the obj - if obj is nil then return 
       one for anonymous */

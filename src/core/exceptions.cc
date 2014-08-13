@@ -720,7 +720,7 @@ void assert_type_integer(int index, T_sp p)
 {
     if ( !p.isA<Integer_O>() )
     {
-	WRONG_TYPE_NTH_ARG(index,p,cl::_sym_Integer_O);
+	QERROR_WRONG_TYPE_NTH_ARG(index,p,cl::_sym_Integer_O);
     }
 }
 
@@ -746,7 +746,39 @@ void FEerror(const string& fmt, int nargs, ... )
                   
 
 
+void FElibc_error(const char *msg, int nargs, ...)
+{
+    T_sp error = Str_O::create(strerror(errno));
+    Str_sp smsg = Str_O::create(msg);
+    va_list args;
+    va_start(args,nargs);
+    Cons_sp l = clasp_grab_rest_args(args,nargs);
+    FEerror("~?~%C library explanation: ~A.", 3,
+            smsg.asTPtr(), l.asTPtr(),
+            error.asTPtr());
+}
 
+
+void FEcannot_open(T_sp fileName)
+{
+    cl_error(cl::_sym_fileError,Cons_O::createList( kw::_sym_pathname, fileName));
+}
+
+
+
+
+T_sp
+CEerror(T_sp c, const char *err, int narg, ...)
+{
+    clasp_va_list args;
+    clasp_va_start(args,narg);
+    T_sp result = eval::funcall(core::_sym_universalErrorHandler,
+                                c, // correctable
+                                Str_O::create(err), // continue format string
+                                clasp_grab_rest_args(args,narg));
+    clasp_va_end(args);
+    return result;
+}
 
 
 void initialize_exceptions()

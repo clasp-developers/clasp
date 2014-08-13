@@ -93,8 +93,7 @@ namespace gctools {
 #endif
         }
 
-
-
+        void clear() { this->_Contents = NULL; };
 
         template <typename...ARGS>
         void allocate(size_t numExtraArgs, const value_type& initialElement, ARGS&&...args)

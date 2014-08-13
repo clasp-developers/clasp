@@ -60,7 +60,7 @@ namespace gctools {
         static const uintptr_t tagged_nil 	  = BOOST_BINARY(001000)|special_tag; // 0x09
         static const uintptr_t tagged_deleted     = BOOST_BINARY(001100)|special_tag; // 0x0D - used by WeakHashTable
         static const uintptr_t tagged_sameAsKey   = BOOST_BINARY(010000)|special_tag;
-        static const uintptr_t tagged_notnil      = BOOST_BINARY(010100)|special_tag;
+        static const uintptr_t tagged_T           = BOOST_BINARY(010100)|special_tag;
         static const uintptr_t tagged_character   = BOOST_BINARY(011000)|special_tag;
         static const uintptr_t character_shift = 8;
         static const uintptr_t fixnum_shift = 2;
@@ -72,8 +72,8 @@ namespace gctools {
         static T* make_tagged_unbound() {
             return reinterpret_cast<T*>(tagged_unbound);
         } 
-       static T* make_tagged_notnil() {
-            return reinterpret_cast<T*>(tagged_notnil);
+       static T* make_tagged_T() {
+            return reinterpret_cast<T*>(tagged_T);
         }
 
         static T* make_tagged_frame(core::T_O** p) {
@@ -273,7 +273,7 @@ namespace gctools {
         bool fixnump() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==fixnum_tag);};
         // Handle get_fixnum
 
-        inline brclChar character() const { return ((reinterpret_cast<uintptr_t>(this->px)>>character_shift));};
+        inline claspChar character() const { return ((reinterpret_cast<uintptr_t>(this->px)>>character_shift));};
         inline Fixnum fixnum() const { return ((reinterpret_cast<uintptr_t>(this->px)>>fixnum_shift));};
 
 

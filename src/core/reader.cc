@@ -244,7 +244,7 @@ namespace core
 	    {
 		if ( eofErrorP )
 		{
-		    END_OF_FILE_ERROR(this->_Input);
+		    ERROR_END_OF_FILE(this->_Input);
 		}
 		/* eof is returned as nil */
 		result = eofValue;
@@ -294,9 +294,9 @@ namespace core
 //		SourceLocation sl = this->_Input->sourceLocation();
 		result = Cons_O::createList(cl::_sym_function, quotedObject);
                 lisp_registerSourceInfo(result,
-                                        this->_Input->sourceFileInfo(),
-                                        this->_Input->lineNumber(),
-                                        this->_Input->column() );
+                                        clasp_input_source_file_info(this->_Input),
+                                        clasp_input_lineno(this->_Input),
+                                        clasp_input_column(this->_Input));
 		goto RETURN;
 	    }
 	    case sharpMinus:
@@ -330,15 +330,15 @@ namespace core
 		stringstream ss;
 		int iread = 0;
 		Character_sp ch;
-		ss << this->_Input->get();
+		ss << clasp_read_char(this->_Input);
 		iread++;
 		bool done = false;
 		while ( !done )
 		{
-		    unsigned char c = this->_Input->peek_char();
+		    unsigned char c = clasp_peek_char(this->_Input);
 		    if ( isalpha(c) )
 		    {
-			ss << this->_Input->get();
+			ss << clasp_read_char(this->_Input);
 			iread++;
 		    }
 		    else done = true;
@@ -453,13 +453,13 @@ namespace core
 
     int Reader_O::peekChar()
     {
-	return this->_Input->peek_char();
+	return clasp_peek_char(this->_Input);
     }
 
     int Reader_O::nextChar()
     {_OF(); 
 	char c;
-	c = this->_Input->get();
+	c = clasp_read_char(this->_Input);
 	return c;
     }
 
@@ -481,11 +481,11 @@ namespace core
 	while ( 1 ) {
 	    int c = this->nextChar();
 	    if ( c == EOF ) break;
-	    if ( c == '#' && this->_Input->peek_char() == '|' )
+	    if ( c == '#' && clasp_peek_char(this->_Input) == '|' )
 	    {
 		this->nextChar();
 		commentCount++;
-	    } else if ( c == '|' && this->_Input->peek_char() == '#' )
+	    } else if ( c == '|' && clasp_peek_char(this->_Input) == '#' )
 	    {
 		this->nextChar();
 		commentCount--;
@@ -497,7 +497,7 @@ namespace core
     int Reader_O::skipWhiteSpace()
     {_OF();
 	while (1) {
-	    int c = this->_Input->peek_char();
+	    int c = clasp_peek_char(this->_Input);
 	    if ( c == EOF ) return c;
 	    LOG(BF("Peek[%c/%d]") % c % (int)c);
 //	    if ( c == ' ' || c == '\n' || c == '\t' || c == '' || c == '\r' )
@@ -539,7 +539,7 @@ namespace core
 	ss << firstChar;
 	while (1)
 	{
-	    int ic = this->_Input->peek_char();
+	    int ic = clasp_peek_char(this->_Input);
 	    LOG(BF("Peeked token dec[%d] char[%c]") % ic % (char)ic );
 	    if ( ic == -1 ) 
 	    {
@@ -558,7 +558,7 @@ namespace core
     string Reader_O::readDoubleQuoteString()
     {_OF();
 	stringstream acc;
-	uint startLineNumber = this->_Input->lineNumber();
+	uint startLineNumber = clasp_input_lineno(this->_Input);
 	while(1)
 	{
 	    int c = this->peekChar();
@@ -594,7 +594,7 @@ namespace core
     string Reader_O::posAsString()
     {
 	stringstream ss;
-	ss << this->_Input->lineNumber() << ":" << this->_Input->column() << " " << af_sourceFileInfo(this->_Input)->fileName();
+	ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << af_sourceFileInfo(this->_Input)->fileName();
 	return ss.str();
     }
 
@@ -700,14 +700,14 @@ namespace core
 		this->nextChar();
 		break;
 	    }
-	    uint lineNumber = this->_Input->lineNumber();
-	    uint column = this->_Input->column();
+	    uint lineNumber = clasp_input_lineno(this->_Input);
+	    uint column = clasp_input_column(this->_Input);
 //	    uint filePos = this->_Input->tell();
 	    T_sp element = this->primitive_read(true,_Unbound<T_O>(),true);
 	    ASSERTNOTNULL(element);
 	    if ( element.unboundp() )
 	    {
-		END_OF_FILE_ERROR(this->_Input);
+		ERROR_END_OF_FILE(this->_Input);
 	    }
 	    Cons_sp one = Cons_O::create(element, _Nil<Cons_O>());
             lisp_registerSourceInfo(one,af_sourceFileInfo(this->_Input),

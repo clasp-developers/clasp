@@ -1047,13 +1047,13 @@ namespace asttooling {
 #define ARGS_af_getNameForDiagnostic "(decl stream lang-opts qualified)"
 #define DECL_af_getNameForDiagnostic ""
 #define DOCS_af_getNameForDiagnostic "getNameForDiagnostic"
-    void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl* decl, core::Stream_sp stream, LangOptions& langOps, bool qualified)
+    void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl* decl, core::T_sp stream, LangOptions& langOps, bool qualified)
     {_G();
         string str;
         llvm::raw_string_ostream ostr(str);
 	decl->getNameForDiagnostic(ostr,langOps,qualified);
         printf("getNameForDiagnostic<%s>\n", str.c_str());
-        stream->writeBytes(str.c_str(),str.size());
+        clasp_write_characters(str.c_str(),str.size(),stream);
     };
 
 

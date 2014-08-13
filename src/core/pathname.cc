@@ -773,8 +773,9 @@ namespace core {
 	return Pathname_O::tilde_expand(newpath);
     }
 
-    Pathname_sp
-    brcl_defaultPathnameDefaults(void)
+    
+    SYMBOL_SC_(CorePkg,defaultPathnameDefaults);
+    Pathname_sp core_defaultPathnameDefaults(void)
     {
 	/* This routine outputs the value of *default-pathname-defaults*
 	 * coerced to type PATHNAME. Special care is taken so that we do
@@ -783,7 +784,7 @@ namespace core {
 	Pathname_sp path = af_symbolValue(cl::_sym_STARdefaultPathnameDefaultsSTAR).as<Pathname_O>();
 	unlikely_if (!af_pathnamep(path)) {
 	    DynamicScopeManager(cl::_sym_STARdefaultPathnameDefaultsSTAR,getcwd());
-	    WRONG_TYPE_KEY_ARG(cl::_sym_STARdefaultPathnameDefaultsSTAR,path,cl::_sym_Pathname_O);
+	    ERROR_WRONG_TYPE_KEY_ARG(core::_sym_defaultPathnameDefaults,cl::_sym_STARdefaultPathnameDefaultsSTAR,path,cl::_sym_Pathname_O);
 	}
 	return path;
     }
@@ -807,10 +808,10 @@ namespace core {
         } else if ( x.isA<Pathname_O>() ) {
             // do nothing
         } else if ( x.isA<Stream_O>() ) {
-            x = x.as<Stream_O>()->pathname();
+            x = clasp_filename(x);
             goto L;
         } else {
-            WRONG_TYPE_ONLY_ARG(x,Cons_O::createList(cl::_sym_or,cl::_sym_fileStream,cl::_sym_string,cl::_sym_pathname));
+            ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_pathname,x,Cons_O::createList(cl::_sym_or,cl::_sym_fileStream,cl::_sym_string,cl::_sym_pathname));
         }
 	return x.as<Pathname_O>();
     }
@@ -1103,7 +1104,7 @@ namespace core {
 	 * or using brcl_make_pathname(). In all of these cases BRCL will complain
 	 * at creation time if the pathname has wrong components.
 	 */
-	StringOutStream_sp buffer = StringOutStream_O::make(); //(128, 1);
+	StringOutputStream_sp buffer = StringOutputStream_O::create(); //(128, 1);
 	logical = af_logicalPathnameP(x);
 	host = x->_Host;
 	if (logical) {
@@ -1111,22 +1112,22 @@ namespace core {
 		truncate_if_unreadable)
 		return _Nil<Str_O>();
 	    if (host.notnilp()) {
-		af_writeSequence(host.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
-		buffer->writeStr(":");
+		cl_writeSequence(host.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		clasp_write_string(":",buffer);
 	    }
 	} else {
 	    if ((y = x->_Device).notnilp()) {
-		af_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
-		buffer->writeStr(":");
+		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		clasp_write_string(":",buffer);
 	    }
 	    if (host.notnilp()) {
 #if !defined(BRCL_MS_WINDOWS_HOST)
 		if (y.nilp()) {
-		    buffer->writeStr("file:");
+		    clasp_write_string("file:",buffer);
 		}
 #endif
-		buffer->writeStr("//");
-		af_writeSequence(host.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		clasp_write_string("//",buffer);
+		cl_writeSequence(host.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
 	    }
 	}
 	l = x->_Directory;
@@ -1135,42 +1136,42 @@ namespace core {
 	y = CONS_CAR(l);
 	if (y == kw::_sym_relative) {
 	    if (logical)
-		buffer->writeChar(';');
+		clasp_write_char(';',buffer);
 	} else {
 	    if (!logical)
-		buffer->writeStr(DIR_SEPARATOR);
+		clasp_write_string(DIR_SEPARATOR,buffer);
 	}
 	l = CONS_CDR(l);
 	for ( ; l.notnilp(); l = CONS_CDR(l)) {
 	    y = CONS_CAR(l);
 	    if (y == kw::_sym_up) {
-		buffer->writeStr("..");
+		clasp_write_string("..",buffer);
 	    } else if (y == kw::_sym_wild) {
-		buffer->writeStr("*");
+		clasp_write_string("*",buffer);
 	    } else if (y == kw::_sym_wild_inferiors) {
-		buffer->writeStr("**");
+		clasp_write_string("**",buffer);
 	    } else if (y != kw::_sym_back) {
-		af_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
 	    } else {
 		/* Directory :back has no namestring representation */
 		return _Nil<Str_O>();
 	    }
-	    buffer->writeChar(logical? ';' : DIR_SEPARATOR_CHAR);
+	    clasp_write_char(logical? ';' : DIR_SEPARATOR_CHAR,buffer);
 	}
     NO_DIRECTORY:
-	if (buffer->tell() == 0 ) {
+	if (clasp_file_position(buffer).as<Fixnum_O>()->get() == 0 ) {
 	    if ((af_stringP(x->_Name) &&
 		 brcl_memberChar(':', x->_Name)) ||
 		(af_stringP(x->_Type) &&
 		 brcl_memberChar(':', x->_Type)))
-		buffer->writeStr(":");
+		clasp_write_string(":",buffer);
 	}
 	y = x->_Name;
 	if (y.notnilp()) {
 	    if (y == kw::_sym_wild) {
-		buffer->writeStr("*");
+		clasp_write_string("*",buffer);
 	    } else {
-		af_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
 	    }
 	} else if (!logical && !x->_Type.nilp()) {
 	    /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
@@ -1183,20 +1184,20 @@ namespace core {
 	    return _Nil<Str_O>();
         } else if (y.notnilp()) {
 	    if (y == kw::_sym_wild) {
-		buffer->writeStr(".*");
+		clasp_write_string(".*",buffer);
 	    } else {
-		buffer->writeStr(".");
-		af_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
+		clasp_write_string(".",buffer);
+		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
 	    }
 	}
 	y = x->_Version;
 	if (logical) {
 	    if (y.notnilp()) {
-		buffer->writeStr(".");
+		clasp_write_string(".",buffer);
 		if (y == kw::_sym_wild) {
-		    buffer->writeStr("*");
+		    clasp_write_string("*",buffer);
 		} else if (y == kw::_sym_newest) {
-		    af_writeSequence(af_symbolName(y.as<Symbol_O>()), buffer,
+		    cl_writeSequence(af_symbolName(y.as<Symbol_O>()), buffer,
 					 Fixnum_O::create(0), _Nil<Fixnum_O>());
 		} else {
 		    /* Since the printer is not reentrant,
@@ -1212,7 +1213,7 @@ namespace core {
 		    if (i == 0)
 			b[i++] = '0';
 		    while (i--) {
-			buffer->writeChar(b[i]);
+			clasp_write_char(b[i],buffer);
 		    }
 		}
 	    }
@@ -1227,7 +1228,7 @@ namespace core {
 		return _Nil<Str_O>();
 	    }
 	}
-        Str_sp sbuffer = Str_O::create(buffer->str());
+        Str_sp sbuffer = cl_get_output_stream_string(buffer).as<Str_O>();
 #ifdef BRCL_UNICODE
 	if (BRCL_EXTENDED_STRING_P(buffer) &&
             (flags & BRCL_NAMESTRING_FORCE_BASE_STRING)) {
@@ -1314,7 +1315,7 @@ namespace core {
 	Pathname_sp x;
 	Pathname_sp defaults;
 	if (odefaults.nilp()) {
-	    defaults = brcl_defaultPathnameDefaults();
+	    defaults = core_defaultPathnameDefaults();
 	    defaults = Pathname_O::makePathname(defaults->_Host,
 						_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
 						kw::_sym_local);
@@ -1481,7 +1482,7 @@ namespace core {
     Str_sp af_enoughNamestring(T_sp tpath, T_sp tdefaults)
 {_G();
     T_sp newpath, fname;
-    Pathname_sp defaults = tdefaults.nilp() ? brcl_defaultPathnameDefaults() : cl_pathname(tdefaults);
+    Pathname_sp defaults = tdefaults.nilp() ? core_defaultPathnameDefaults() : cl_pathname(tdefaults);
     Pathname_sp path = cl_pathname(tpath);
     T_sp pathdir = path->_Directory;
     T_sp defaultdir = defaults->_Directory;
@@ -1530,7 +1531,7 @@ namespace core {
 	if (af_stringP(item)) {
 	    size_t i, l = cl_length(item);
 	    for (i = 0; i < l; i++) {
-		brclChar c = af_char(item, i);
+		claspChar c = af_char(item, i);
 		if (c == '\\' || c == '*' || c == '?')
 		    return 1;
 	    }
@@ -1713,7 +1714,7 @@ namespace core {
         T_sp pair, l;
         /* Check that host is a valid host name */
         if (brcl_unlikely(!af_stringP(host)))
-            WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
+            QERROR_WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
         host = af_string_upcase( host);
         len = cl_length(host);
         parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
@@ -1736,7 +1737,7 @@ namespace core {
         }
         /* Set the new translation list */
         if (brcl_unlikely(!af_listp(set))) {
-            WRONG_TYPE_NTH_ARG(2,set,cl::_sym_list);
+            QERROR_WRONG_TYPE_NTH_ARG(2,set,cl::_sym_list);
         }
         if (pair.nilp()) {
             pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));

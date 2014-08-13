@@ -84,7 +84,7 @@ struct _TRACE {
 #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError,obj)
 #define STREAM_ERROR(st) ERROR(cl::_sym_streamError,core::lisp_createList(kw::_sym_stream,st))
 #define PACKAGE_ERROR(p) ERROR(cl::_sym_packageError,core::lisp_createList(kw::_sym_package,p))
-#define	END_OF_FILE_ERROR(st) ERROR(cl::_sym_endOfFile,core::lisp_createList(kw::_sym_stream,st))
+#define	ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile,core::lisp_createList(kw::_sym_stream,st))
 #define	CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream,core::lisp_createList(kw::_sym_stream,st))
 
 #define READER_ERROR(_fmt_,_fmtArgs_,_stream_) af_readerError(__FILE__,__LINE__,INTERN(__FUNCTION__),_fmt_,_fmtArgs_,_stream_)
@@ -98,11 +98,13 @@ struct _TRACE {
 #define WRONG_TYPE_ARG(_datum_,_expectedType_) af_wrongTypeArgument(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_datum_,_expectedType_)
 
 
-#define WRONG_TYPE_KEY_ARG(_key_,_value_,_type_) af_wrongTypeKeyArg(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_key_,_value_,_type_)
+#define ERROR_WRONG_TYPE_KEY_ARG(_fn_,_key_,_value_,_type_) af_wrongTypeKeyArg(__FILE__,__LINE__,_fn_,_key_,_value_,_type_)
 
-#define WRONG_TYPE_ONLY_ARG(_datum_,_expectedType_) af_wrongTypeOnlyArg(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_datum_,_expectedType_)
+#define ERROR_WRONG_TYPE_ONLY_ARG(_fn_,_datum_,_expectedType_) af_wrongTypeOnlyArg(__FILE__,__LINE__,_fn_,_datum_,_expectedType_)
 
-#define WRONG_TYPE_NTH_ARG(_nth_,_datum_,_expectedType_) af_wrongTypeNthArg(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_nth_,_datum_,_expectedType_)
+#define ERROR_WRONG_TYPE_NTH_ARG(_fn_,_nth_,_datum_,_expectedType_) af_wrongTypeNthArg(__FILE__,__LINE__,_fn_,_nth_,_datum_,_expectedType_)
+
+#define QERROR_WRONG_TYPE_NTH_ARG(_nth_,_datum_,_expectedType_) af_wrongTypeNthArg(__FILE__,__LINE__,core::lisp_intern(__FUNCTION__,CurrentPkg),_nth_,_datum_,_expectedType_)
 
 #define ARITHMATIC_ERROR(_operation_,_operands_) ERROR(cl::_sym_arithmaticError,core::lisp_createList(kw::_sym_operation,_operation_,kw::_sym_operands,_operands_))
 
@@ -633,12 +635,19 @@ namespace core
 
 
         void assert_type_integer(T_sp p,int idx);
+
+    T_sp af_signalSimpleError(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 	
 
 
     void FEerror(const string& fmt, int numArgs, ... );
+    void FElibc_error( const char* fmt, int nargs, ... );
+    void FEcannot_open( T_sp fn );
+    void CEerror(T_sp c, const string& fmt, int numArgs, ... );
 
-        void initialize_exceptions();
+    void clasp_internal_error(const char* error);
+
+    void initialize_exceptions();
 
 
 

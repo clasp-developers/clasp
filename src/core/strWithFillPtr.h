@@ -13,6 +13,7 @@ namespace core
 
     class StrWithFillPtr_O : public Str_O
     {
+        friend T_sp str_out_get_position(T_sp strm);
 	LISP_BASE1(Str_O);
 	LISP_CLASS(core,CorePkg,StrWithFillPtr_O,"base-string-with-fill-ptr");
     protected:
@@ -44,8 +45,10 @@ namespace core
 	virtual uint size() const { return this->_FillPointer;};
 
         
+        bool hasFillPointerP() const { return true;};
 	void incrementFillPointer(int offset);
 	void setFillPointer(size_t fp);
+        bool arrayHasFillPointerP() const { return true; };
 
 	void adjustSize(int adjustment);
 	void setSize(int sz);
@@ -61,7 +64,7 @@ namespace core
 	virtual Fixnum_sp vectorPush(T_sp newElement);
 	virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension=0);
 
-	int pushCharExtend(brclChar c, int extension = 0);
+	int pushCharExtend(claspChar c, int extension = 0);
 
 	/*! Push the contents of string designator (str) from (start) to (end) */
 	void pushSubString(T_sp str, size_t start, size_t end );

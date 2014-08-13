@@ -207,6 +207,7 @@ namespace core
             ExceptionStack              _ExceptionStack;
 	/*! Multiple values - this should be per thread */
 	    MultipleValues 		_MultipleValues;
+            Stream_sp                   _TerminalIO;
 	    /*! Bignum registers should be one per thread */
 	    Bignum_sp 			_BignumRegister0;
 	    Bignum_sp 			_BignumRegister1;
@@ -977,7 +978,7 @@ namespace core
 
     void af_stackMonitor();
 
-    void af_error(T_sp err, Cons_sp initializers);
+    void cl_error(T_sp err, Cons_sp initializers);
 };
 
 

@@ -58,7 +58,7 @@ namespace core
 	    break;
 	}
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	return Values(v0,v1);
     }
@@ -259,7 +259,7 @@ namespace core
 	    break;
 	}
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	return Values(v0,v1);
     }
@@ -313,7 +313,7 @@ namespace core
 	    break;
 	}
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	return Values(v0,v1);
     }
@@ -372,7 +372,7 @@ T_mv floor1(Real_sp x)
 	break;
     }
     default:
-	WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
     }
     return Values(v0,v1);
 }
@@ -573,7 +573,7 @@ T_mv floor1(Real_sp x)
 	    break;
 	}
 	default:
-	    WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Real_O);
 	}
 	return Values(v0,v1);
     }

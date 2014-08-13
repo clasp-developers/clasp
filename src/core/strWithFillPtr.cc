@@ -106,7 +106,7 @@ namespace core
     }
 
 
-    int	StrWithFillPtr_O::pushCharExtend(brclChar c, int extension)
+    int	StrWithFillPtr_O::pushCharExtend(claspChar c, int extension)
     {
 	if ( this->_FillPointer >= this->_Contents.size() )
 	{

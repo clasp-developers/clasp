@@ -117,10 +117,10 @@ namespace core
 
     
     
-#define ARGS_af_logand "(&rest integers)"
-#define DECL_af_logand ""
-#define DOCS_af_logand "logand"
-    Integer_mv af_logand(Cons_sp integers)
+#define ARGS_cl_logand "(&rest integers)"
+#define DECL_cl_logand ""
+#define DOCS_cl_logand "logand"
+    Integer_sp cl_logand(Cons_sp integers)
     {_G();
 	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
 	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
@@ -130,14 +130,14 @@ namespace core
 	    mpz_and(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
 	}
-	return(Values(Integer_O::create(acc)));
+	return Integer_O::create(acc);
     };
 
 
-#define ARGS_af_logior "(&rest integers)"
-#define DECL_af_logior ""
-#define DOCS_af_logior "logior"
-    Integer_mv af_logior(Cons_sp integers)
+#define ARGS_cl_logior "(&rest integers)"
+#define DECL_cl_logior ""
+#define DOCS_cl_logior "logior"
+    Integer_sp cl_logior(Cons_sp integers)
     {_G();
 	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
 	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
@@ -147,7 +147,7 @@ namespace core
 	    mpz_ior(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
 	}
-	return(Values(Integer_O::create(acc)));
+	return Integer_O::create(acc);
     };
 
 #define ARGS_af_logxor "(&rest integers)"
@@ -197,10 +197,10 @@ namespace core
 
     
     
-#define ARGS_af_logandc1 "(a b)"
-#define DECL_af_logandc1 ""
-#define DOCS_af_logandc1 "logandc1"
-    T_mv af_logandc1(Integer_sp a, Integer_sp b)
+#define ARGS_cl_logandc1 "(a b)"
+#define DECL_cl_logandc1 ""
+#define DOCS_cl_logandc1 "logandc1"
+    T_mv cl_logandc1(Integer_sp a, Integer_sp b)
     {_G();
 	mpz_class za = a->as_mpz();
 	mpz_class zb = b->as_mpz();
@@ -212,10 +212,10 @@ namespace core
     };
 
 
-#define ARGS_af_logandc2 "(a b)"
-#define DECL_af_logandc2 ""
-#define DOCS_af_logandc2 "logandc2"
-    T_mv af_logandc2(Integer_sp a, Integer_sp b)
+#define ARGS_cl_logandc2 "(a b)"
+#define DECL_cl_logandc2 ""
+#define DOCS_cl_logandc2 "logandc2"
+    T_mv cl_logandc2(Integer_sp a, Integer_sp b)
     {_G();
 	mpz_class za = a->as_mpz();
 	mpz_class zb = b->as_mpz();
@@ -228,10 +228,10 @@ namespace core
 
 
     
-#define ARGS_af_logorc1 "(a b)"
-#define DECL_af_logorc1 ""
-#define DOCS_af_logorc1 "logorc1"
-    T_mv af_logorc1(Integer_sp a, Integer_sp b)
+#define ARGS_cl_logorc1 "(a b)"
+#define DECL_cl_logorc1 ""
+#define DOCS_cl_logorc1 "logorc1"
+    T_mv cl_logorc1(Integer_sp a, Integer_sp b)
     {_G();
 	mpz_class za = a->as_mpz();
 	mpz_class zb = b->as_mpz();
@@ -243,10 +243,10 @@ namespace core
     };
 
 
-#define ARGS_af_logorc2 "(a b)"
-#define DECL_af_logorc2 ""
-#define DOCS_af_logorc2 "logorc2"
-    T_mv af_logorc2(Integer_sp a, Integer_sp b)
+#define ARGS_cl_logorc2 "(a b)"
+#define DECL_cl_logorc2 ""
+#define DOCS_cl_logorc2 "logorc2"
+    T_mv cl_logorc2(Integer_sp a, Integer_sp b)
     {_G();
 	mpz_class za = a->as_mpz();
 	mpz_class zb = b->as_mpz();
@@ -1743,6 +1743,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     }
 
 
+
 #ifndef _TARGET_OS_LINUX
     Integer_sp Integer_O::create(uint64_t v)
     {_G();
@@ -1771,6 +1772,10 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     }
 
 
+
+
+
+
     EXPOSE_CLASS(core,Integer_O);
 
     void Integer_O::exposeCando(Lisp_sp lisp)
@@ -1780,13 +1785,13 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	    .def("oddp",&Integer_O::oddp)
 	    ;
 	SYMBOL_EXPORT_SC_(ClPkg,logand);
-	Defun(logand);
+	ClDefun(logand);
 	SYMBOL_EXPORT_SC_(ClPkg,logior);
-	Defun(logior);
+	ClDefun(logior);
 	SYMBOL_EXPORT_SC_(ClPkg,logandc1);
-	Defun(logandc1);
+	ClDefun(logandc1);
 	SYMBOL_EXPORT_SC_(ClPkg,logandc2);
-	Defun(logandc2);
+	ClDefun(logandc2);
 	SYMBOL_EXPORT_SC_(ClPkg,logeqv);
 	Defun(logeqv);
 	SYMBOL_EXPORT_SC_(ClPkg,lognand);
@@ -1796,9 +1801,9 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	SYMBOL_EXPORT_SC_(ClPkg,lognot);
 	Defun(lognot);
 	SYMBOL_EXPORT_SC_(ClPkg,logorc1);
-	Defun(logorc1);
+	ClDefun(logorc1);
 	SYMBOL_EXPORT_SC_(ClPkg,logorc2);
-	Defun(logorc2);
+	ClDefun(logorc2);
 	SYMBOL_EXPORT_SC_(ClPkg,logxor);
 	Defun(logxor);
     }
@@ -3720,7 +3725,7 @@ expt_zero(Number_sp x, Number_sp y)
     ty = brcl_t_of(y);
     tx = brcl_t_of(x);
     if (brcl_unlikely(!x.isA<Number_O>())) {
-	WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
+	QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
     }
     /* INV: The most specific numeric types come first. */
     switch ((ty > tx)? ty : tx) {
@@ -3758,7 +3763,7 @@ brcl_expt(Number_sp x, Number_sp y)
     ty = brcl_t_of(y);
     tx = brcl_t_of(x);
     if (brcl_unlikely(!x.isA<Number_O>())) {
-	WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
+	QERROR_WRONG_TYPE_NTH_ARG(1,x,cl::_sym_Number_O);
     }
     if (brcl_zerop(x)) {
 	z = brcl_times(x, y);
@@ -4026,7 +4031,7 @@ Number_sp brcl_atan1(Number_sp y)
 	    return brcl_log1_complex_inner(this->const_sharedThis<Bignum_O>(),Fixnum_O::create(0));
 	} else {
 	    Fixnum l = brcl_integer_length(this->const_sharedThis<Bignum_O>()) - 1;
-	    Number_sp r = brcl_make_ratio(this->asSmartPtr(), brcl_ash(Fixnum_O::create(1), l));
+	    Number_sp r = brcl_make_ratio(this->asSmartPtr(), clasp_ash(Fixnum_O::create(1), l));
 	    float d = logf(r->as_float()) + l * logf(2.0);
 	    return SingleFloat_O::create(d);
         }
@@ -4193,12 +4198,63 @@ Number_sp brcl_atan1(Number_sp y)
     };
 
 
-Integer_sp brcl_ash(Integer_sp x, int bits)
+Integer_sp clasp_ash(Integer_sp x, int bits)
 {
     return x->shift(bits);
 };
 
 
+    unsigned char clasp_toUint8(T_sp n)
+    {
+        if (Fixnum_sp fn = n.as<Fixnum_O>()) {
+            Fixnum fi = fn->get();
+            if ( fi>=0 && fi<=255 ) {
+                return fi;
+            }
+        }
+        TYPE_ERROR(n,Cons_O::create(cl::_sym_UnsignedByte,Fixnum_O::create(8)));
+    }
+
+signed char clasp_toSignedInt8(T_sp n)
+    {
+        if (Fixnum_sp fn = n.as<Fixnum_O>()) {
+            Fixnum fi = fn->get();
+            if ( fi>=-128 && fi<=127 ) {
+                return fi;
+            }
+        }
+        TYPE_ERROR(n,Cons_O::create(cl::_sym_SignedByte,Fixnum_O::create(8)));
+    }
+
+
+cl_index clasp_toSize(T_sp f)
+{
+    if ( Fixnum_sp fn = f.as<Fixnum_O>() ) {
+        Fixnum ff = fn->get();
+        if ( ff >= 0 ) {
+            return ff;
+        }
+    }
+    TYPE_ERROR(f,Cons_O::createList(cl::_sym_Integer_O,Fixnum_O::create(0),Fixnum_O::create(MOST_POSITIVE_FIXNUM)));
+}
+
+
+cl_fixnum
+fixint(T_sp x)
+{
+    if (af_fixnumP(x))
+        return x.as<Fixnum_O>()->get();
+    if (af_bignumP(x)) {
+        IMPLEMENT_MEF(BF("Implement convert Bignum to fixint"));
+#if 0
+        if (mpz_fits_slong_p(x->big.big_num)) {
+            return mpz_get_si(x->big.big_num);
+        }
+#endif
+    }
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_Fixnum_O,x,cl::_sym_Fixnum_O);
+    UNREACHABLE();
+}
 
 
 

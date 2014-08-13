@@ -25,7 +25,7 @@ FEtype_error_fixnum(cl_object x) {
 
 void
 FEtype_error_size(cl_object x) {
-	FEwrong_type_argument(cl_list(3, @'integer', ecl_make_fixnum(0),
+    FEwrong_type_argument(Cons_O::createList( @'integer', ecl_make_fixnum(0),
 				      ecl_make_fixnum(MOST_POSITIVE_FIXNUM)),
 			      x);
 }
@@ -44,7 +44,7 @@ void
 FEtype_error_proper_list(cl_object x) {
 	cl_error(9, @'simple-type-error', @':format-control',
 		    make_constant_base_string("Not a proper list ~D"),
-		    @':format-arguments', cl_list(1, x),
+                 @':format-arguments', Cons_O::createList( x),
 		    @':expected-type', ecl_read_from_cstring("si::proper-list"),
 		    @':datum', x);
 }
@@ -56,7 +56,7 @@ FEcircular_list(cl_object x)
 	ecl_bds_bind(ecl_process_env(), @'*print-circle*', ECL_T);
 	cl_error(9, @'simple-type-error', @':format-control',
 		    make_constant_base_string("Circular list ~D"),
-		    @':format-arguments', cl_list(1, x),
+                 @':format-arguments', Cons_O::createList( x),
 		    @':expected-type', @'list',
 		    @':datum', x);
 }
@@ -68,8 +68,8 @@ FEtype_error_index(cl_object seq, cl_fixnum ndx)
 	cl_index l = ECL_INSTANCEP(seq)? seq->instance.length : ecl_length(seq);
 	cl_error(9, @'simple-type-error', @':format-control',
 		    make_constant_base_string("~S is not a valid index into the object ~S"),
-		    @':format-arguments', cl_list(2, n, seq),
-		    @':expected-type', cl_list(3, @'integer', ecl_make_fixnum(0), ecl_make_fixnum(l-1)),
+                 @':format-arguments', Cons_O::createList( n, seq),
+                 @':expected-type', Cons_O::createList( @'integer', ecl_make_fixnum(0), ecl_make_fixnum(l-1)),
 		    @':datum', n);
 }
 
@@ -217,7 +217,7 @@ assert_type_non_negative_integer(cl_object p)
 		if (_ecl_big_sign(p) >= 0)
 			return;
 	}
-	FEwrong_type_argument(cl_list(3,@'integer',ecl_make_fixnum(0),@'*'), p);
+	FEwrong_type_argument(Cons_O::createList(@'integer',ecl_make_fixnum(0),@'*'), p);
 }
 
 void
@@ -246,7 +246,7 @@ cl_type_of(cl_object x)
 #endif
 	case t_fixnum:
 	case t_bignum:
-		t = cl_list(3, @'integer', x, x); break;
+            t = Cons_O::createList( @'integer', x, x); break;
 	case t_character: {
 		int i = ECL_CHAR_CODE(x);
 		if (ecl_standard_char_p(i)) {
@@ -273,21 +273,21 @@ cl_type_of(cl_object x)
 			t = @'array';
 		else
 			t = @'simple-array';
-		t = cl_list(3, t, ecl_elttype_to_symbol(ecl_array_elttype(x)),
+		t = Cons_O::createList( t, ecl_elttype_to_symbol(ecl_array_elttype(x)),
                             cl_array_dimensions(x));
 		break;
 	case t_vector:
 		if (ECL_ADJUSTABLE_ARRAY_P(x) ||
 		    !Null(CAR(x->vector.displaced))) {
-			t = cl_list(3, @'vector', ecl_elttype_to_symbol(ecl_array_elttype(x)),
+                    t = Cons_O::createList( @'vector', ecl_elttype_to_symbol(ecl_array_elttype(x)),
 				    ecl_make_fixnum(x->vector.dim));
 		} else if (ECL_ARRAY_HAS_FILL_POINTER_P(x) ||
 			   (cl_elttype)x->vector.elttype != ecl_aet_object) {
-			t = cl_list(3, @'simple-array',
+                    t = Cons_O::createList( @'simple-array',
                                     ecl_elttype_to_symbol(ecl_array_elttype(x)),
 				    cl_array_dimensions(x));
 		} else {
-			t = cl_list(2, @'simple-vector', ecl_make_fixnum(x->vector.dim));
+                    t = Cons_O::createList( @'simple-vector', ecl_make_fixnum(x->vector.dim));
 		}
 		break;
 #ifdef ECL_UNICODE
@@ -298,7 +298,7 @@ cl_type_of(cl_object x)
 			t = @'array';
 		else
 			t = @'simple-array';
-		t = cl_list(3, t, @'character', cl_list(1, ecl_make_fixnum(x->string.dim)));
+		t = Cons_O::createList( t, @'character', Cons_O::createList( ecl_make_fixnum(x->string.dim)));
 		break;
 #endif
 	case t_base_string:
@@ -308,7 +308,7 @@ cl_type_of(cl_object x)
 			t = @'array';
 		else
 			t = @'simple-array';
-		t = cl_list(3, t, @'base-char', cl_list(1, ecl_make_fixnum(x->base_string.dim)));
+		t = Cons_O::createList( t, @'base-char', Cons_O::createList( ecl_make_fixnum(x->base_string.dim)));
 		break;
 	case t_bitvector:
 		if (ECL_ADJUSTABLE_ARRAY_P(x) ||
@@ -317,7 +317,7 @@ cl_type_of(cl_object x)
 			t = @'array';
 		else
 			t = @'simple-array';
-		t = cl_list(3, t, @'bit', cl_list(1, ecl_make_fixnum(x->vector.dim)));
+		t = Cons_O::createList( t, @'bit', Cons_O::createList( ecl_make_fixnum(x->vector.dim)));
 		break;
 //#ifndef CLOS
 	case t_structure:
@@ -357,5 +357,5 @@ cl_type_of(cl_object x)
 cl_object
 ecl_make_integer_type(cl_object min, cl_object max)
 {
-        return cl_list(3, @'integer', min, max);
+    return Cons_O::createList( @'integer', min, max);
 }

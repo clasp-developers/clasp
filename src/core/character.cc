@@ -512,7 +512,7 @@ namespace core
     {_G();
 	Fixnum basis = radix->get();
 	if ( basis < 2 || basis > 36 ) {
-	    WRONG_TYPE_NTH_ARG(2,radix,Integer_O::makeIntegerType(2,36));
+	    QERROR_WRONG_TYPE_NTH_ARG(2,radix,Integer_O::makeIntegerType(2,36));
 	}
 	Fixnum value = brcl_digitp(c->toInt(),basis);
 	return (value<0) ? _Nil<Fixnum_O>() : Fixnum_O::create(value);
@@ -549,6 +549,11 @@ namespace core
 	};
 
 
+    claspChar clasp_charCode(T_sp c)
+    {
+        Character_sp cc = c.as<Character_O>();
+        return cc->asChar();
+    }
 
 
 // ----------------------------------------------------------------------

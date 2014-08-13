@@ -37,7 +37,7 @@ namespace core
 	    {
 		DynamicScopeManager scope(cl::_sym_STARprint_circleSTAR,_lisp->_true());
 		printf("%s:%d - Building BranchSNode for:\n", __FILE__, __LINE__);
-		StringOutStream_sp ss = StringOutStream_O::create();
+		StringOutputStream_sp ss = StringOutputStream_O::create();
 		write_object(obj,ss);
 		printf("     %s\n", ss->str().c_str());
 	    }

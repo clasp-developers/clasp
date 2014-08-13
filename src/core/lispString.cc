@@ -12,7 +12,7 @@
 namespace core
 {
 
-    static bool member_charbag(brclChar c, SEQUENCE_sp char_bag)
+    static bool member_charbag(claspChar c, SEQUENCE_sp char_bag)
     {
         if ( char_bag.nilp() ) return false;
 	if ( Cons_sp lcur = char_bag.asOrNull<Cons_O>() ) {
@@ -100,7 +100,7 @@ namespace core
 #define ARGS_af_char "(str idx)"
 #define DECL_af_char ""
 #define DOCS_af_char "char"
-    brclChar af_char(T_sp ostr, int idx)
+    claspChar af_char(T_sp ostr, int idx)
     {_G();
 	/* Return the character at idx - ignore fill pointers */
 #ifdef UNICODE
@@ -114,7 +114,7 @@ namespace core
 	    }
 	    return (*str)[idx];
 	}
-	WRONG_TYPE_NTH_ARG(1,ostr,cl::_sym_string);
+	QERROR_WRONG_TYPE_NTH_ARG(1,ostr,cl::_sym_string);
 	THROW_HARD_ERROR(BF("Should never reach here"));
     };
 
@@ -185,7 +185,7 @@ namespace core
 
 
 
-    bool brcl_memberChar(brclChar c, T_sp charBag )
+    bool brcl_memberChar(claspChar c, T_sp charBag )
     {_G();
 	if ( Str_sp scharBag = charBag.asOrNull<Str_O>() )
 	{

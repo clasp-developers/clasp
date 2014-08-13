@@ -249,7 +249,7 @@ bool	almostEqualAbsoluteOrRelative(double va, double vb,
 	}
 #endif
 	default:
-	    WRONG_TYPE_NTH_ARG(_sym_ceiling, 1, x, _sym_Real_O);
+	    QERROR_WRONG_TYPE_NTH_ARG(_sym_ceiling, 1, x, _sym_Real_O);
 	}
 	return Values(v0,v1);
     }

@@ -163,7 +163,7 @@ namespace core
         scope.pushSpecialVariableAndSet(cl::_sym_STARprint_right_marginSTAR,right_margin);
         T_sp ostrm = coerce::outputStreamDesignator(strm);
         write_object(x,ostrm);
-        clasp_forceOutput(ostrm);
+        clasp_force_output(ostrm);
         return Values(x);
     };
 
@@ -180,8 +180,10 @@ namespace core
 	cl_intptr_t i = arg.intptr();
 	for ( int j=sizeof(i)*8-4; j>= 0; j-=4 ) {
 	    int k = (i>>j) &0xf;
-	    if ( k < 10 ) stream->writeChar('0'+k);
-	    else stream->writeChar('a'+k-10);
+	    if ( k < 10 )
+                clasp_write_char('0'+k,stream);
+	    else
+                clasp_write_char('a'+k-10,stream);
 	}
     }
 #endif

@@ -16,7 +16,7 @@ namespace core {
 	LISP_BASE1(SaveArchive_O);
 	LISP_CLASS(core,CorePkg,SexpSaveArchive_O,"SexpSaveArchive");
     public:
-	void write(SNode_sp snode, HashTable_sp snodeToRef, Stream_sp stream );
+	void write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream );
 
 	virtual void 	sexpSaveArchiveWrite( T_sp streamDesignator );
 

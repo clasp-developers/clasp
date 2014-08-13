@@ -302,11 +302,12 @@ gctools::smart_ptr<T> _Nil()
     return x;
 }
 
+
 /*! A value that is not Nil and can be used as a generalized True value */
 template <class T>
-gctools::smart_ptr<T> _NotNil()
+gctools::smart_ptr<T> _T()
 {
-    gctools::smart_ptr<T> x(gctools::smart_ptr<T>::BaseType::tagged_notnil);
+    gctools::smart_ptr<T> x(gctools::smart_ptr<T>::BaseType::tagged_T);
     return x;
 }
 

@@ -45,54 +45,54 @@ namespace core
     }
 
 
-    void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, Stream_sp stream )
+    void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream )
     {_G();
 	if ( snode->refCount() > 1 ) {
 	    Fixnum_sp ref = snodeToRef->gethash(snode,_Nil<T_O>()).as<Fixnum_O>();
 	    if ( ref.notnilp() ) {
-		stream->writeChar('#');
+                clasp_write_char('#',stream);
 		ref->__write__(stream);
-		stream->writeChar('#');
+                clasp_write_char('#',stream);
 		return;
 	    } else {
 		ref = Fixnum_O::create(snodeToRef->hashTableCount()+1);
 		snodeToRef->hash_table_setf_gethash(snode,ref);
-		stream->writeChar('#');
+		clasp_write_char('#',stream);
 		ref->__write__(stream);
-		stream->writeChar('=');
+		clasp_write_char('=',stream);
 	    }
 	}
 	if ( snode->leafSNodeP() ) {
 	    T_sp obj = snode->object();
 	    write_ugly_object(obj,stream);
-	    stream->writeChar(' ');
+	    clasp_write_char(' ',stream);
 	} else {
 	    BranchSNode_sp bsnode = snode.as<BranchSNode_O>();
-	    stream->writeChar('\n');
-	    stream->writeChar('(');
+	    clasp_write_char('\n',stream);
+	    clasp_write_char('(',stream);
 	    write_ugly_object(bsnode->_Kind,stream);
-	    stream->writeStr(" (");
+	    clasp_write_string(" (",stream);
 	    for ( Cons_sp cur=bsnode->_SNodePList; cur.notnilp(); cur=cCddr(cur) )
 	    {
 		write_ugly_object(oCar(cur),stream);
-		stream->writeChar(' ');
+		clasp_write_char(' ',stream);
 		SNode_sp property = oCadr(cur).as<SNode_O>();
 		this->write(property,snodeToRef,stream);
-		stream->writeChar(' ');
+		clasp_write_char(' ',stream);
 	    }
-	    stream->writeStr(") ");
+	    clasp_write_string(") ",stream);
 	    if ( bsnode->_VectorSNodes.notnilp() && bsnode->_VectorSNodes->length()>0) {
-		stream->writeStr(" #");
+		clasp_write_string(" #",stream);
 		write_ugly_object(Fixnum_O::create(bsnode->_VectorSNodes->length()),stream);
-		stream->writeStr("( ");
+		clasp_write_string("( ",stream);
 		for ( int i(0), iEnd(bsnode->_VectorSNodes->length()); i<iEnd; ++i ) {
 		    SNode_sp snode = bsnode->_VectorSNodes->elt(i).as<SNode_O>();
 		    this->write(snode,snodeToRef,stream);
-		    stream->writeChar(' ');
+		    clasp_write_char(' ',stream);
 		}
-		stream->writeChar(')');
+		clasp_write_char(')',stream);
 	    }
-	    stream->writeChar(')');
+        clasp_write_char(')',stream);
 	}
     }
 
