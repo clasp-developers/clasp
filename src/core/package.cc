@@ -742,7 +742,7 @@ namespace core
 	if ( this->isKeywordPackage() || exportp )
 	{
 #ifdef DEBUG_CL_SYMBOLS
-            if ( sym.notnilp() && this == _lisp->commonLispPackage().px_ref() ) {
+            if ( sym.notnilp() && !sym.tp() && this == _lisp->commonLispPackage().px_ref() ) {
                 
                 throwIfNotValidClSymbol(sym->symbolName()->get());
             }
