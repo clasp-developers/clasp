@@ -152,6 +152,8 @@ namespace core
     T_sp cl_make_two_way_stream(T_sp in, T_sp out);
 
     T_sp cl_make_string_input_stream(Str_sp strng, Fixnum_sp istart, Fixnum_sp iend);
+    T_sp clasp_make_string_output_stream(cl_index line_length=128, bool extended=false);
+
 
     T_sp cl_close(T_sp strm, T_sp abort=_Nil<T_O>() );
 };

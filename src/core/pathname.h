@@ -49,7 +49,7 @@ namespace core {
     bool af_wildPathnameP(T_sp pathname,T_sp component);
 
     Pathname_sp af_coerceToPhysicalPathname(T_sp x);
-    Str_sp af_coerceToFilename(Pathname_sp pathname_orig);
+    Str_sp af_coerceToFilename(T_sp pathname_orig);
     Pathname_sp af_coerceToFilePathname(T_sp tpathname);
 
     void initialize_pathname();
@@ -70,7 +70,7 @@ namespace core
 	friend bool af_wildPathnameP(T_sp tpathname, T_sp component);
 	friend Pathname_sp af_coerceToPhysicalPathname(T_sp x);
 	friend Pathname_sp af_coerceToFilePathname(T_sp x);
-	friend Str_sp af_coerceToFilename(Pathname_sp pathname);
+	friend Str_sp af_coerceToFilename(T_sp pathname);
 	friend Str_sp brcl_namestring(T_sp tx, int flags);
 	friend Pathname_mv af_parseNamestring(T_sp thing, T_sp host, T_sp defaults, Fixnum_sp start, Fixnum_sp end, bool junk_allowed);
 	friend Pathname_sp af_makePathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);

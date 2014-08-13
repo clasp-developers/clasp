@@ -265,11 +265,14 @@ namespace gctools {
         bool notsameAsKeyP() const { return !this->sameAsKeyP();};
 
         bool nilp() const { return (uintptr_t)this->px == tagged_nil;};
+        bool tp() const { return (uintptr_t)this->px == tagged_T;};
 
         bool framep() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==frame_tag);};
         core::T_O** frame() const { return reinterpret_cast<core::T_O**>(reinterpret_cast<uintptr_t>(this->px)&ptr_mask); };
 
 //        bool characterp() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==character_tag);};
+
+        bool specialp() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==special_tag);}
         bool fixnump() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==fixnum_tag);};
         // Handle get_fixnum
 

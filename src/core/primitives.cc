@@ -374,7 +374,7 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("Add support for non character string output streams - you asked for %s") % _rep_(elementType) );
 	}
-	StringOutputStream_sp ss = StringOutputStream_O::create();
+	T_sp ss = clasp_make_string_output_stream();
 	return(Values(ss));
     };
 
