@@ -5239,14 +5239,14 @@ namespace core
         if ( Instance_sp instance = strm.asOrNull<Instance_O>() ) {
             output = kw::_sym_default;
         } else if (Stream_sp s = strm.asOrNull<Stream_O>() ) {
-            ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_stream_external_format, strm, cl::_sym_Stream_O);
+            if (StreamMode(s) == clasp_smm_synonym) {
+                strm = SynonymStreamStream(strm);
+                goto AGAIN;
+            }
+            output = StreamFormat(strm);
+            return output;
         }
-	if (StreamMode(strm) == clasp_smm_synonym) {
-            strm = SynonymStreamStream(strm);
-            goto AGAIN;
-	}
-	output = StreamFormat(strm);
-	return output;
+        ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_stream_external_format, strm, cl::_sym_Stream_O);
     }
 
 
