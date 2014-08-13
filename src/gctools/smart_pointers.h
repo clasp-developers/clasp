@@ -130,6 +130,10 @@ namespace gctools
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
 		return nil;
 	    }
+            if ( this->tp()) {
+                smart_ptr<o_class> t(smart_ptr<o_class>::tagged_T);
+                return t;
+            }
 	    if ( this->unboundp() ) {
 		smart_ptr<o_class> unbound(smart_ptr<o_class>::tagged_unbound);
 		return unbound;
@@ -156,6 +160,10 @@ namespace gctools
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
 		return nil;
 	    }
+            if ( this->tp()) {
+                smart_ptr<o_class> t(smart_ptr<o_class>::tagged_T);
+                return t;
+            }
 	    if ( this->unboundp() ) {
 		smart_ptr<o_class> unbound(smart_ptr<o_class>::tagged_unbound);
 		return unbound;
