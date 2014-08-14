@@ -6792,7 +6792,7 @@ void initialize_lispStream()
 	SYMBOL_EXPORT_SC_(CorePkg,fileColumn);
 	ClDefun(fileColumn);
 	SYMBOL_EXPORT_SC_(CorePkg,makeStringOutputStreamFromString);
-        Defun(make_string_output_stream_from_string);
+        CoreDefun(make_string_output_stream_from_string);
 	SYMBOL_EXPORT_SC_(CorePkg,makeStringOutputStream);
 	ClDefun(makeStringOutputStream);
 	ClDefun(writeSequence);
