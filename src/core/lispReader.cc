@@ -673,7 +673,7 @@ namespace core
     step8:
 	LOG(BF("step8"));
 	{
-	    y = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	    y = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	    if ( y.nilp() )
 	    {
 		LOG(BF("Hit eof"));
@@ -691,7 +691,7 @@ namespace core
 	    }
 	    if ( y8_syntax_type == kw::_sym_single_escape_character)
 	    {
-		z = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+		z = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 		token.push_back(constituentChar(z,TRAIT_ALPHABETIC));
 		LOG(BF("Single escape read z[%s] accumulated token[%s]")
 		    % z->asChar() % tokenStr(token) );
@@ -719,7 +719,7 @@ namespace core
     step9:
 	LOG(BF("step9"));
 	{
-	    y = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	    y = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	    Symbol_sp y9_syntax_type = readTable->syntax_type(y);
 	    LOG(BF("Step9: Read y[%s] y9_syntax_type[%s]") % y->asChar() % _rep_(y9_syntax_type) );
 	    if ( (y9_syntax_type == kw::_sym_constituent_character)
@@ -736,7 +736,7 @@ namespace core
 	    if ( y9_syntax_type == kw::_sym_single_escape_character )
 	    {
 		LOG(BF("Handling single_escape_character"));
-		z = cl_readChar(sin,_Nil<T_O>(),_Unbound<Character_O>(),_T<T_O>()).as<Character_O>();
+		z = cl_readChar(sin,_Nil<T_O>(),_Unbound<Character_O>(),_lisp->_true()).as<Character_O>();
 		if ( z.unboundp() ) {
 		    STREAM_ERROR(sin);
 		}
