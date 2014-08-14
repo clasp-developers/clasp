@@ -239,17 +239,18 @@ namespace core
         return c->_List;
     }
 
-    T_sp& SynonymStreamStream(T_sp strm)
-    {
-        SynonymStream_sp ss = strm.as<SynonymStream_O>();
-        return ss->_Stream;
-    }
-
     Symbol_sp& SynonymStreamSymbol(T_sp strm)
     {
         SynonymStream_sp ss = strm.as<SynonymStream_O>();
         return ss->_SynonymSymbol;
     }
+
+    T_sp SynonymStreamStream(T_sp strm)
+    {
+        Symbol_sp sym = SynonymStreamSymbol(strm);
+        return sym->symbolValue();
+    }
+
 
     Str_sp& FileStreamFilename(T_sp strm)
     {
@@ -6134,6 +6135,7 @@ namespace core {
     };
 
     
+    
     int Stream_O::lineno() const {
         return 0;
     };
@@ -6142,6 +6144,11 @@ namespace core {
         return 0;
     };
 
+
+    Str_sp SynonymStream_O::filename() const {
+        T_sp strm = SynonymStreamStream(this->asSmartPtr());
+        return clasp_filename(strm);
+    };
     
 };
 

@@ -7,8 +7,8 @@
 namespace core
 {
 
-    T_mv af_format(T_sp dest, T_sp control, Cons_sp args );
-    T_mv af_bformat(T_sp dest, const string& control, Cons_sp args );
+    T_sp af_format(T_sp dest, T_sp control, Cons_sp args );
+    T_sp af_bformat(T_sp dest, const string& control, Cons_sp args );
 
 
 
