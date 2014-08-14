@@ -6440,11 +6440,12 @@ namespace core {
 
 
 
-#define ARGS_cl_peekChar "(&optional peek_type strm (eof_errorp t) eof_value recursivep)"
+#define ARGS_cl_peekChar "(&optional peek_type (strm ext:+process-standard-input+) (eof_errorp t) eof_value recursivep)"
 #define DECL_cl_peekChar ""
 #define DOCS_cl_peekChar "peekChar"
     T_sp cl_peekChar(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursive_p)
     {_G();
+        ASSERT(strm.notnilp());
 	if ( !clasp_input_stream_p(strm) ) SIMPLE_ERROR(BF("Not input-stream"));
 	if ( peek_type.nilp() ) {
 	    int c = clasp_peek_char(strm);
@@ -6481,11 +6482,12 @@ namespace core {
 	return eof_value;
     }
 
-#define ARGS_cl_readChar "(&optional strm eof_error_p eof_value recursive_p)"
+#define ARGS_cl_readChar "(&optional (strm ext:+process-standard-input+) (eof_error_p t) eof_value recursive_p)"
 #define DECL_cl_readChar ""
 #define DOCS_cl_readChar "readChar"
     T_sp cl_readChar(T_sp strm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
+        ASSERT(strm.notnilp());
         int c = clasp_read_char(strm);
 	if ( c == EOF )
 	{
@@ -6502,7 +6504,7 @@ namespace core {
     }
 
 
-#define ARGS_cl_read_from_string "(content &optional eof-error-p eof-value &key (start 0) (end -1) preserve-whitespace)"
+#define ARGS_cl_read_from_string "(content &optional (eof-error-p t) eof-value &key (start 0) end preserve-whitespace)"
 #define DECL_cl_read_from_string ""
 #define DOCS_cl_read_from_string "read_from_string"
     T_mv cl_read_from_string(Str_sp content, T_sp eof_error_p, T_sp eof_value, Fixnum_sp start, Fixnum_sp end, T_sp preserve_whitespace )
@@ -6551,11 +6553,12 @@ namespace core {
 
 
 
-#define ARGS_cl_read_line "(&optional input-stream (eof-error-p t) eof-value recursive-p)"
+#define ARGS_cl_read_line "(&optional (input-stream ext:+process-standard-input+) (eof-error-p t) eof-value recursive-p)"
 #define DECL_cl_read_line ""    
 #define	DOCS_cl_read_line "See clhs"
     T_mv cl_read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
+        ASSERT(sin.notnilp());
 	bool eofErrorP = eof_error_p.isTrue();
 //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
 	if ( sin.nilp() ) sin = cl::_sym_STARstandard_inputSTAR->symbolValue();
@@ -6605,6 +6608,7 @@ namespace core {
 #define DOCS_cl_terpri "Send a newline to the output stream"
     void cl_terpri(T_sp outputStreamDesig)
     {_G();
+        ASSERT(outputStreamDesig.notnilp());
         clasp_terpri(outputStreamDesig);
     };
 
@@ -6629,6 +6633,7 @@ namespace core {
 #define DOCS_cl_freshLine "freshLine"
     bool cl_freshLine(T_sp outputStreamDesig)
     {
+        ASSERT(outputStreamDesig.notnilp());
         return clasp_freshLine(outputStreamDesig);
     };
 
@@ -6656,20 +6661,22 @@ namespace core {
     
     
 
-#define ARGS_cl_writeString "(string &optional output-stream &key (start 0) end)"
+#define ARGS_cl_writeString "(string &optional (output-stream ext:+process-standard-output+) &key (start 0) end)"
 #define DECL_cl_writeString ""
 #define DOCS_cl_writeString "writeString"
     Str_sp cl_writeString(Str_sp str, T_sp stream, int start, Fixnum_sp end)
     {_G();
+        ASSERT(stream.notnilp());
         return clasp_writeString(str,stream,start,end);
     };
 
 
-#define ARGS_cl_writeLine "(string &optional output-stream &key (start 0) end)"
+#define ARGS_cl_writeLine "(string &optional (output-stream ext:+process-standard-output+) &key (start 0) end)"
 #define DECL_cl_writeLine ""
 #define DOCS_cl_writeLine "writeLine"
     String_sp cl_writeLine(Str_sp str, T_sp stream, Fixnum_sp start, T_sp end)
     {_G();
+        ASSERT(stream.notnilp());
         clasp_writeString(str,stream,start->get(),end);
         clasp_terpri(stream);
         return str;
@@ -6681,16 +6688,18 @@ namespace core {
 #define DOCS_cl_writeByte "writeByte"
     Integer_sp cl_writeByte(Integer_sp byte, T_sp stream)
     {_G();
+        ASSERT(stream.notnilp());
         stream = coerce::outputStreamDesignator(stream);
         clasp_write_byte(byte,stream);
 	return(byte);
     };
 
-#define ARGS_cl_writeChar "(string &optional output-stream)"
+#define ARGS_cl_writeChar "(string &optional (output-stream ext:+process-standard-output+))"
 #define DECL_cl_writeChar ""
 #define DOCS_cl_writeChar "writeChar"
     Character_sp cl_writeChar(Character_sp chr, T_sp stream)
     {_G();
+        ASSERT(stream.notnilp());
         stream = coerce::outputStreamDesignator(stream);
         clasp_write_char(chr->asChar(),stream);
         return chr;
@@ -6698,32 +6707,35 @@ namespace core {
 
 
 
-#define ARGS_cl_clearInput "(&optional dstrm)"
+#define ARGS_cl_clearInput "(&optional (dstrm ext:+process-standard-input+))"
 #define DECL_cl_clearInput ""
 #define DOCS_cl_clearInput "clearInput"
     void cl_clearInput(T_sp dstrm)
     {_G();
+        ASSERT(dstrm.notnilp());
         dstrm = coerce::inputStreamDesignator(dstrm);
 	clasp_clear_input(dstrm);
     }
 
 
-#define ARGS_cl_clearOutput "(&optional dstrm)"
+#define ARGS_cl_clearOutput "(&optional (dstrm ext:+process-standard-output+))"
 #define DECL_cl_clearOutput ""
 #define DOCS_cl_clearOutput "clearOutput"
     void cl_clearOutput(T_sp dstrm)
     {_G();
+        ASSERT(dstrm.notnilp());
         dstrm = coerce::outputStreamDesignator(dstrm);
 	clasp_clear_output(dstrm);
     }
 
 
 
-#define ARGS_cl_listen "(&optional dstrm)"
+#define ARGS_cl_listen "(&optional (dstrm ext:+process-standard-input+))"
 #define DECL_cl_listen ""
 #define DOCS_cl_listen "listen"
     bool cl_listen(T_sp strm)
     {_G();
+        ASSERT(strm.notnilp());
         strm = coerce::inputStreamDesignator(strm);
 	return clasp_listen_stream(strm);
     }
@@ -6732,41 +6744,44 @@ namespace core {
 
     
     
-#define ARGS_cl_force_output "(&optional strm)"
+#define ARGS_cl_force_output "(&optional (strm ext:+process-standard-output+))"
 #define DECL_cl_force_output ""
 #define DOCS_cl_force_output "force_output"
     void cl_force_output(T_sp ostrm)
     {_G();
+        ASSERT(ostrm.notnilp());
         ostrm = coerce::outputStreamDesignator(ostrm);
 	clasp_force_output(ostrm);
     };
 
 
-#define ARGS_cl_finish_output "(&optional strm)"
+#define ARGS_cl_finish_output "(&optional (strm ext:+process-standard-output+))"
 #define DECL_cl_finish_output ""
 #define DOCS_cl_finish_output "finish_output"
     void cl_finish_output(T_sp ostrm)
     {_G();
+        ASSERT(ostrm.notnilp());
         ostrm = coerce::outputStreamDesignator(ostrm);
 	clasp_finish_output(ostrm);
     };
 
 
 
-#define ARGS_cl_unread_char "(char &optional strm)"
+#define ARGS_cl_unread_char "(char &optional (strm ext:+process-standard-input+))"
 #define DECL_cl_unread_char ""
 #define DOCS_cl_unread_char "unread_char"
     void cl_unread_char(Character_sp ch, T_sp dstrm)
     {_G();
+        ASSERT(dstrm.notnilp());
         dstrm = coerce::inputStreamDesignator(dstrm);
         clasp_unread_char(ch->asChar(),dstrm);
     };
 
 
-#define ARGS_cl_fileColumn "(arg)"
-#define DECL_cl_fileColumn ""
-#define DOCS_cl_fileColumn "column"
-    T_sp cl_fileColumn(T_sp ostrm)
+#define ARGS_core_fileColumn "(arg)"
+#define DECL_core_fileColumn ""
+#define DOCS_core_fileColumn "column"
+    T_sp core_fileColumn(T_sp ostrm)
     {_G();
 	Stream_sp strm = coerce::outputStreamDesignator(ostrm);
         return Fixnum_O::create(clasp_file_column(strm));
@@ -6860,7 +6875,7 @@ void initialize_lispStream()
 	SYMBOL_EXPORT_SC_(ClPkg,unread_char);
 	ClDefun(unread_char);
 	SYMBOL_EXPORT_SC_(CorePkg,fileColumn);
-	ClDefun(fileColumn);
+        CoreDefun(fileColumn);
 	SYMBOL_EXPORT_SC_(CorePkg,makeStringOutputStreamFromString);
         CoreDefun(make_string_output_stream_from_string);
 	SYMBOL_EXPORT_SC_(CorePkg,makeStringOutputStream);
