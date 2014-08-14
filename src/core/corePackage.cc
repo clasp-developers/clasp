@@ -726,9 +726,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym_t = cl::_sym_T_O;
 #endif
         _lisp->commonLispPackage()->add_symbol_to_package("NIL",_Nil<Symbol_O>(),true);
-        _lisp->commonLispPackage()->add_symbol_to_package("T",_T<Symbol_O>(),true);
-	_lisp->_Roots._TrueObject = _T<T_O>(); // cl::_sym_T_O;
-	//cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
+	_lisp->_Roots._TrueObject = cl::_sym_T_O;
+	cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
 	cl::_sym_STARload_printSTAR->exportYourself()->defparameter(_lisp->_false());
 	cl::_sym_STARload_verboseSTAR->exportYourself()->defparameter(_lisp->_false());
 	cl::_sym_STARread_suppressSTAR->exportYourself()->defparameter(_lisp->_false());
@@ -882,7 +881,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	    );
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("brclrc"),_sym_loadSource),hooks);
 	ext::_sym_STARloadHooksSTAR->defparameter(hooks);
-	ext::_sym_STARdefault_external_formatSTAR->defparameter(_T<T_O>());
+	ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
 	_sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
 #if 0
 

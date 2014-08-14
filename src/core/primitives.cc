@@ -823,7 +823,7 @@ namespace core
 #define DECL_af_read_preserving_whitespace ""    
     T_sp af_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
-	DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR,_T<T_O>());
+	DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR,_lisp->_true());
 	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 	return(read_lisp_object(sin,eof_error_p.isTrue(),eof_value,recursive_p));
     }

@@ -724,7 +724,7 @@ namespace core
 	ops.length = closed_stream_length;
 	ops.close = generic_close;
 	StreamClosed(strm) = 1;
-	return _T<T_O>();
+	return _lisp->_true();
     }
 
     static cl_index
@@ -1189,7 +1189,7 @@ namespace core
 	unlikely_if (Null(character)) {
             return decoding_error(stream, buffer, 1);
 	}
-	if (character == _T<T_O>()) {
+	if (character == _lisp->_true()) {
             if (clasp_read_byte8(stream, buffer+1, 1) < 1) {
                 return EOF;
             } else {
@@ -1246,7 +1246,7 @@ namespace core
             unlikely_if (Null(character)) {
                 return decoding_error(stream, buffer, i);
             }
-            if (character == _T<T_O>()) {
+            if (character == _lisp->_true()) {
                 /* Need more characters */
                 continue;
             }
@@ -1275,7 +1275,7 @@ namespace core
                 claspCharacter n = 0;
                 if (p != table_list) {
                     /* Must output a escape sequence */
-                    T_sp x = clasp_gethash_safe(_T<T_O>(), table, _Nil<T_O>());
+                    T_sp x = clasp_gethash_safe(_lisp->_true(), table, _Nil<T_O>());
                     while (!Null(x)) {
                         buffer[0] = brcl_fixnum(oCar(x));
                         buffer++;
@@ -1636,7 +1636,7 @@ namespace core
             while (disp-- > 0)
                 clasp_write_char(' ', strm);
 	}
-	return _T<T_O>();
+	return _lisp->_true();
     }
 
     static int
@@ -1845,7 +1845,7 @@ namespace core
             }
 	}
 	StringInputStreamInputPosition(strm) = disp;
-	return _T<T_O>();
+	return _lisp->_true();
     }
 
     const FileOps str_in_ops = {
@@ -2189,7 +2189,7 @@ namespace core
     {
 	T_sp l = BroadcastStreamList(strm);
 	if (Null(l))
-            return _T<T_O>();
+            return _lisp->_true();
 	return clasp_stream_element_type(oCar(l));
     }
 
@@ -3097,7 +3097,7 @@ namespace core
             mode = SEEK_SET;
 	}
 	disp = lseek(f, disp, mode);
-	return (disp == (clasp_off_t)-1)? _Nil<T_O>() : _T<T_O>();
+	return (disp == (clasp_off_t)-1)? _Nil<T_O>() : _lisp->_true();
     }
 
     static int
@@ -3281,7 +3281,7 @@ namespace core
             flags = parse_external_format(stream, oCdr(format), flags);
             format = oCar(format);
 	}
-        if (format == _T<T_O>()) {
+        if (format == _lisp->_true()) {
 #ifdef ECL_UNICODE
             return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8;
 #else
@@ -3379,7 +3379,7 @@ namespace core
 	StreamOps(stream).write_char = eformat_write_char;
 	switch (flags & CLASP_STREAM_FORMAT) {
 	case CLASP_STREAM_BINARY:
-            IOStreamStreamEltType(stream) = Cons_O::createList( _T<T_O>(), Fixnum_O::create(byte_size));
+            IOStreamStreamEltType(stream) = Cons_O::createList( _lisp->_true(), Fixnum_O::create(byte_size));
             StreamFormat(stream) = t;
             StreamOps(stream).read_char = not_character_read_char;
             StreamOps(stream).write_char = not_character_write_char;
@@ -3583,7 +3583,7 @@ namespace core
 	StreamOutputColumn(stream) = 0;
 	IOFileStreamDescriptor(stream) = fd;
 	StreamLastOp(stream) = 0;
-//	si_set_finalizer(stream, _T<T_O>());
+//	si_set_finalizer(stream, _lisp->_true());
 	return stream;
     }
 
@@ -3772,7 +3772,7 @@ namespace core
 	clasp_disable_interrupts();
 	mode = clasp_fseeko(f, disp, mode);
 	clasp_enable_interrupts();
-	return mode? _Nil<T_O>() : _T<T_O>();
+	return mode? _Nil<T_O>() : _lisp->_true();
     }
 
     static int
@@ -4545,7 +4545,7 @@ namespace core
             }
 	}
 	SEQ_INPUT_POSITION(strm) = disp;
-	return _T<T_O>();
+	return _lisp->_true();
     }
 
     const FileOps seq_in_ops = {
@@ -4693,7 +4693,7 @@ namespace core
             }
 	}
 	SEQ_OUTPUT_POSITION(strm) = disp;
-	return _T<T_O>();
+	return _lisp->_true();
     }
 
     const FileOps seq_out_ops = {
@@ -5197,7 +5197,7 @@ namespace core
 #define DOCS_cl_input_stream_p "input_stream_p"
     T_sp cl_input_stream_p(T_sp strm)
     {_G();
-	return (clasp_input_stream_p(strm) ? _T<T_O>() : _Nil<T_O>());
+	return (clasp_input_stream_p(strm) ? _lisp->_true() : _Nil<T_O>());
     }
 
 
@@ -5209,7 +5209,7 @@ namespace core
 #define DOCS_cl_output_stream_p "output_stream_p"
     T_sp cl_output_stream_p(T_sp strm)
     {
-	return (clasp_output_stream_p(strm) ? _T<T_O>() : _Nil<T_O>());
+	return (clasp_output_stream_p(strm) ? _lisp->_true() : _Nil<T_O>());
     }
 
 #define ARGS_cl_interactive_stream_p "(arg)"
@@ -5218,7 +5218,7 @@ namespace core
     T_sp
     cl_interactive_stream_p(T_sp strm)
     {
-	return (stream_dispatch_table(strm).interactive_p(strm)? _T<T_O>() : _Nil<T_O>());
+	return (stream_dispatch_table(strm).interactive_p(strm)? _lisp->_true() : _Nil<T_O>());
     }
 
     T_sp
@@ -5232,7 +5232,7 @@ namespace core
 	}
 	unlikely_if (!AnsiStreamP(strm))
             ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_open_stream_p, strm, cl::_sym_Stream_O);
-	return (StreamClosed(strm) ? _Nil<T_O>() : _T<T_O>());
+	return (StreamClosed(strm) ? _Nil<T_O>() : _lisp->_true());
     }
 
     T_sp
@@ -5288,7 +5288,7 @@ namespace core
             clasp_write_char(c, out);
 	}
 	clasp_force_output(out);
-	return _T<T_O>();
+	return _lisp->_true();
     }
 
 
@@ -5357,7 +5357,7 @@ namespace core
 	string fname = filename->get();
 	bool appending = 0;
         ASSERT(filename);
-	bool exists = af_file_kind(filename, _T<T_O>()).notnilp();
+	bool exists = af_file_kind(filename, _lisp->_true()).notnilp();
 	if (smm == clasp_smm_input || smm == clasp_smm_probe) {
             if (!exists) {
                 if (if_does_not_exist == kw::_sym_error) {
@@ -5444,7 +5444,7 @@ namespace core
             eval::funcall(cl::_sym_close,output);
 	} else {
             StreamFlags(output) |= CLASP_STREAM_MIGHT_SEEK;
-//            si_set_finalizer(output, _T<T_O>());
+//            si_set_finalizer(output, _lisp->_true());
             /* Set file pointer to the correct position */
             clasp_file_position_set(output, appending? _Nil<Fixnum_O>() : Fixnum_O::create(0));
 	}
@@ -5815,13 +5815,13 @@ namespace core
     static void
     unread_error(T_sp s)
     {
-	CEerror(_T<T_O>(), "Error when using UNREAD-CHAR on stream ~D", 1, s.asTPtr());
+	CEerror(_lisp->_true(), "Error when using UNREAD-CHAR on stream ~D", 1, s.asTPtr());
     }
 
     static void
     unread_twice(T_sp s)
     {
-	CEerror(_T<T_O>(), "Used UNREAD-CHAR twice on stream ~D", 1, s.asTPtr());
+	CEerror(_lisp->_true(), "Used UNREAD-CHAR twice on stream ~D", 1, s.asTPtr());
     }
 
     static void

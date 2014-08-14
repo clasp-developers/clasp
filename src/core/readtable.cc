@@ -140,7 +140,7 @@ namespace core
 	} else if ( nextc == '.')
 	{
 	    head = _sym_unquote_nsplice;
-	    cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	    cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	}
 	T_sp comma_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
         list << head << comma_object;
@@ -195,7 +195,7 @@ namespace core
 	bool done = false;
 	while (!done)
 	{
-	    Character_sp nc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	    Character_sp nc = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	    char cc = nc->asChar();
 	    if ( cc == '\n' ) break;
 	}
@@ -233,7 +233,7 @@ namespace core
 	{
 	    onumarg = Fixnum_O::create(numarg);
 	}
-	Character_sp subchar = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	Character_sp subchar = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	Function_sp macro_func = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>()->get_dispatch_macro_character(ch,subchar);
 	if ( macro_func.nilp() )
 	{	
@@ -246,14 +246,14 @@ namespace core
     /*! See SACLA reader.lisp::read-ch */
     Character_sp read_ch(Stream_sp sin)
     {_G();
-	Character_sp nc = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	Character_sp nc = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	return nc;
     }
 
     /*! See SACLA reader.lisp::read-ch-or-die */
     Character_sp read_ch_or_die(Stream_sp sin)
     {_G();
-	Character_sp nc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	Character_sp nc = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	return nc;
     }
 
@@ -473,7 +473,7 @@ namespace core
 	    return Values(_Nil<T_O>());
 	}
 	for (dimcount = 0 ; ; dimcount++) {
-	    ch = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	    ch = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	    if (ch.nilp()) break;
 	    Symbol_sp syntaxType = rtbl->syntax_type(ch);
 	    if (syntaxType == kw::_sym_terminating_macro_character
@@ -832,14 +832,14 @@ namespace core
 	bool done = false;
 	while (!done)
 	{
-	    Character_sp nc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+	    Character_sp nc = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	    char cc = nc->asChar();
 	    if ( cc == '#' )
 	    {
 		char nextc = clasp_peek_char(sin);
 		if ( nextc == '|')
 		{
-		    Character_sp nextsubc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+		    Character_sp nextsubc = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 		    eval::funcall(_sym_sharp_vertical_bar,sin,nextsubc,num);
 		}
 	    } else if ( cc == '|' )
@@ -847,7 +847,7 @@ namespace core
 		char nextc = clasp_peek_char(sin);
 		if ( nextc == '#')
 		{
-		    Character_sp nextsubc = cl_readChar(sin,_T<T_O>(),_Nil<T_O>(),_T<T_O>()).as<Character_O>();
+		    Character_sp nextsubc = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 		    goto DONE;
 		}
 	    }

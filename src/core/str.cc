@@ -857,7 +857,7 @@ namespace core
     RETURN_FALSE:
 	    return _Nil<T_O>();
     RETURN_TRUE:
-	    return _T<T_O>();
+	    return _lisp->_true();
     }
 	    
 
@@ -880,7 +880,7 @@ namespace core
 	    goto RETURN_FALSE;
     END_STRING2: // Did not hit end of string 1 at this point
     RETURN_TRUE: // strings are not equal
-	    return _T<T_O>();
+	    return _lisp->_true();
     RETURN_FALSE:
 	    return _Nil<T_O>();
     }
@@ -1031,7 +1031,7 @@ namespace core
     RETURN_FALSE:
 	    return _Nil<T_O>();
     RETURN_TRUE:
-	    return _T<T_O>();
+	    return _lisp->_true();
     }
 
 
@@ -1055,7 +1055,7 @@ namespace core
 	    goto RETURN_FALSE;
     END_STRING2: // Did not hit end of string 1 at this point
     RETURN_TRUE: // strings are not equal
-	    return _T<T_O>();
+	    return _lisp->_true();
     RETURN_FALSE:
 	    return _Nil<T_O>();
     }

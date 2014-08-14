@@ -60,8 +60,7 @@ namespace gctools {
         static const uintptr_t tagged_nil 	  = BOOST_BINARY(001000)|special_tag; // 0x09
         static const uintptr_t tagged_deleted     = BOOST_BINARY(001100)|special_tag; // 0x0D - used by WeakHashTable
         static const uintptr_t tagged_sameAsKey   = BOOST_BINARY(010000)|special_tag;
-        static const uintptr_t tagged_T           = BOOST_BINARY(010100)|special_tag;
-        static const uintptr_t tagged_character   = BOOST_BINARY(011000)|special_tag;
+        static const uintptr_t tagged_character   = BOOST_BINARY(010100)|special_tag;
         static const uintptr_t character_shift = 8;
         static const uintptr_t fixnum_shift = 2;
 
@@ -72,10 +71,6 @@ namespace gctools {
         static T* make_tagged_unbound() {
             return reinterpret_cast<T*>(tagged_unbound);
         } 
-       static T* make_tagged_T() {
-            return reinterpret_cast<T*>(tagged_T);
-        }
-
         static T* make_tagged_frame(core::T_O** p) {
             return reinterpret_cast<T*>((reinterpret_cast<uintptr_t>(p)&ptr_mask)|frame_tag);
         }
@@ -265,7 +260,6 @@ namespace gctools {
         bool notsameAsKeyP() const { return !this->sameAsKeyP();};
 
         bool nilp() const { return (uintptr_t)this->px == tagged_nil;};
-        bool tp() const { return (uintptr_t)this->px == tagged_T;};
 
         bool framep() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==frame_tag);};
         core::T_O** frame() const { return reinterpret_cast<core::T_O**>(reinterpret_cast<uintptr_t>(this->px)&ptr_mask); };

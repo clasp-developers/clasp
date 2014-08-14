@@ -449,8 +449,6 @@ namespace core
                 clasp_write_string("NIL",stream);
 //                Str_sp nilstr = Str_O::create("NIL");
 //		nilstr->__write__(stream);      
-            } else if ( x.tp() ) {
-                clasp_write_string("T",stream);
 	    } else if ( x.unboundp() ) {
 		clasp_write_string("unbound",stream);
 	    } else if ( x.characterp() ) {

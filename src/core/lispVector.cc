@@ -64,7 +64,7 @@ namespace core
 	    if ( fill_pointer.notnilp() )
 	    {
 		int ifp = 0;
-		if ( fill_pointer == _T<T_O>() ) ifp = dimension;
+		if ( fill_pointer == _lisp->_true() ) ifp = dimension;
 		else ifp = MIN(dimension,abs(fill_pointer.as<Fixnum_O>()->get()));
 		return StrWithFillPtr_O::create(c,dimension,ifp,adjustable,initialContents);
 	    }
@@ -74,7 +74,7 @@ namespace core
 	    if ( fill_pointer.notnilp() )
 	    {
 		int ifp = 0;
-		if ( fill_pointer == _T<T_O>() ) ifp = dimension;
+		if ( fill_pointer == _lisp->_true() ) ifp = dimension;
 		else ifp = fill_pointer.as<Fixnum_O>()->get();
 		return VectorObjectsWithFillPtr_O::make(initial_element,initialContents,dimension,ifp,adjustable);
 	    } else
