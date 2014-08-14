@@ -106,11 +106,11 @@
 	(bundle-file (core:coerce-to-filename bundle-pathname)))
     (let ((all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
       (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
-      (let ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
-            (clang-executable (if clasp-clang-path
-                                  clasp-clang-path
-                                  "clang")))
-            (safe-system (bformat nil "%s -v %s -shared -o %s" clang-executable all-names bundle-file))))
+      (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
+             (clang-executable (if clasp-clang-path
+                                   clasp-clang-path
+                                 "clang")))
+        (safe-system (bformat nil "%s -v %s -shared -o %s" clang-executable all-names bundle-file))))
     (return-from execute-link))
   (error "Add support for this operating system to cmp:execute-link")
   )
