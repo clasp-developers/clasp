@@ -378,21 +378,24 @@ namespace core
 {
     class FileStream_O : public AnsiStream_O
     {
+        friend Str_sp& FileStreamFilename(T_sp);
+        friend T_sp& FileStreamEltType(T_sp);
 	LISP_BASE1(AnsiStream_O);
 	LISP_CLASS(core,ClPkg,FileStream_O,"file-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(FileStream_O);
-	
+    private:
+        Str_sp  _Filename;
+        T_sp    _ElementType;
     public: // Functions here
+        Str_sp filename() const { return this->_Filename; };
     }; // FileStream class
 
     class IOFileStream_O : public FileStream_O
     {
         friend int& IOFileStreamDescriptor(T_sp);
-        friend Str_sp& IOFileStreamFilename(T_sp);
-        friend T_sp& IOFileStreamEltType(T_sp);
 	LISP_BASE1(FileStream_O);
 	LISP_CLASS(core,CorePkg,IOFileStream_O,"iofile-stream");
 	DECLARE_INIT();
@@ -401,8 +404,6 @@ namespace core
 	DEFAULT_CTOR_DTOR(IOFileStream_O);
 	
     private: // instance variables here
-        Str_sp  _Filename;
-        T_sp    _ElementType;
 	int     _FileDescriptor;
     public: // Functions here
         static T_sp makeInput(const string& name, int fd ) {
@@ -435,7 +436,6 @@ namespace core
                          , T_sp elementType
                          , T_sp externalFormat );
 public:
-        Str_sp filename() const { return this->_Filename; };
     }; 
 };
 template<> struct gctools::GCInfo<core::IOFileStream_O> {
@@ -448,8 +448,6 @@ template<> struct gctools::GCInfo<core::IOFileStream_O> {
 namespace core {    
     class IOStreamStream_O : public FileStream_O
     {
-        friend T_sp& IOStreamStreamEltType(T_sp strm);
-        friend Str_sp& IOStreamStreamFilename(T_sp strm);
         friend FILE*& IOStreamStreamFile(T_sp strm);
 	LISP_BASE1(FileStream_O);
 	LISP_CLASS(core,CorePkg,IOStreamStream_O,"iostream-stream");
@@ -459,8 +457,6 @@ namespace core {
 	DEFAULT_CTOR_DTOR(IOStreamStream_O);
 	
     private: // instance variables here
-        Str_sp  _Filename;
-        T_sp    _ElementType;
 	FILE*   _File;
     public: // Functions here
         static T_sp makeInput(const string& name, FILE* f ) {
@@ -488,7 +484,6 @@ namespace core {
                                              ,_Nil<T_O>());
         };
     public:
-        Str_sp filename() const { return this->_Filename; };
     }; 
 }; // core namespace
 template<> struct gctools::GCInfo<core::IOStreamStream_O> {
