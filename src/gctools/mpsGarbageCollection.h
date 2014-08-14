@@ -314,7 +314,8 @@ namespace gctools {
     extern mps_ap_t global_non_moving_ap;
 
     extern mps_pool_t _global_awl_pool;
-    extern mps_ap_t _global_automatic_weak_link_allocation_point;
+    extern mps_ap_t _global_weak_link_allocation_point;
+    extern mps_ap_t _global_strong_link_allocation_point;
 
 
     template <typename T> struct GCAllocationPoint

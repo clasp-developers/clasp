@@ -49,7 +49,14 @@
 
 namespace gctools {
 
+#ifdef USE_BOEHM
 #define call_with_alloc_lock GC_call_with_alloc_lock
+#else
+    typedef void* (*fn_type)(void*  client_data);
+    void call_with_alloc_lock( fn_type fn, void* client_data) {
+        fn(client_data);
+    }
+#endif
 
     template <class Proto>
     void* wrapRun(void* wrappedFn)
@@ -83,6 +90,8 @@ namespace gctools {
         typedef gctools::tagged_ptr<gctools::Fixnum_ty> KindType;
         WeakObject(WeakKinds k) : Kind(gctools::tagged_ptr<gctools::Fixnum_ty>(k)) {};
         KindType Kind;
+        virtual void* dependentPtr() const { return NULL; };
+        
     };
 
 
@@ -97,6 +106,8 @@ namespace gctools {
         }
 
         virtual ~BucketsBase() {};
+
+        void* dependentPtr() const { return reinterpret_cast<void*>(this->dependent); };
 
         T& operator[](size_t idx) { return this->bucket[idx];};
         typedef T   value_type;
@@ -181,6 +192,10 @@ namespace gctools {
     public:
         KeyBucketsType*           _Keys;           // hash buckets for keys
         ValueBucketsType*         _Values;         // hash buckets for values
+#ifdef USE_MPS
+        mps_ld_s        _LocationDependency;
+#endif        
+
     public:
         WeakHashTable(size_t length=0)
         {
@@ -193,7 +208,7 @@ namespace gctools {
             this->_Keys->dependent = this->_Values;
             this->_Values->dependent = this->_Keys;
 #ifdef USE_MPS
-            mps_ld_reset(&this->ld, _global_arena);
+            mps_ld_reset(&this->_LocationDependency, _global_arena);
 #endif
         }
 
@@ -408,14 +423,14 @@ namespace gctools {
                     }
 #ifdef USE_MPS
                     if (key.pointerp() && mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.pointer() )) {
-                        if (this->rehash( this->_Keys->length(), key, &pos)) {
-                            T_sp value = (*this->_Values)[pos].backcast();
+                        if (this->rehash( this->_Keys->length(), key, pos)) {
+                            core::T_sp value = (*this->_Values)[pos].backcast();
                             if ( value.sameAsKeyP() ) {
                                 value = key.backcast();
                             }
-                            result_mv = Values(value,_lisp->_true());
-                            return
-                                }
+                            result_mv = Values(value,core::lisp_true());
+                            return;
+                        }
                     }
 #endif
                     result_mv = Values(defaultValue,_Nil<core::T_O>());
@@ -519,6 +534,7 @@ namespace gctools {
         MappingBase(const T& val) : WeakObject(WeakMappingKind), bucket(val) {};
         virtual ~MappingBase() {};
         typedef T   value_type;
+        void* dependentPtr() const { return reinterpret_cast<void*>(this->dependent); };
         MappingBase<U,T>* dependent;  /* the dependent object */
         T bucket;              /* single buckets */
     };
