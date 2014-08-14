@@ -4,6 +4,7 @@
 #include "core/environment.h"
 #include "core/str.h"
 #include "core/symbolTable.h"
+#include "core/designators.h"
 #include "core/evaluator.h"
 #include "core/lispStream.h"
 #include "bformat.h"
@@ -23,9 +24,14 @@ namespace core
 #define ARGS_af_bformat "(destination control &rest args)"
 #define DECL_af_bformat ""
 #define DOCS_af_bformat "Like CL format but uses C/boost format strings"    
-    T_mv af_bformat(T_sp destination, const string& control, Cons_sp args )
+    T_sp af_bformat(T_sp destination, const string& control, Cons_sp args )
     {_G();
-	T_sp output = destination;
+	T_sp output;
+        if ( destination.nilp() ) {
+            output = clasp_make_string_output_stream();
+        } else {
+            output = coerce::outputStreamDesignator(destination);
+        }
 	boost::format fmter(control);
 	string fmter_str;
 	TRY()
@@ -76,26 +82,11 @@ namespace core
 		  {
 		      SIMPLE_ERROR(BF("Unknown bformat command error"));
 		  }
-	if ( output == _lisp->_true() )
-	{
-	    eval::funcall(cl::_sym_write,
-			  Str_O::create(fmter_str),
-			  kw::_sym_escape, _Nil<T_O>());
-	    return(Values(_Nil<T_O>()));
-	} else
-	{
-	    if ( cl_streamp(output) )
-	    {
-		Stream_sp outputStream = output.as<Stream_O>();
-		clasp_write_string(fmter_str,outputStream);
-		return(Values(_Nil<T_O>()));
-	    } else if ( output.nilp() )
-	    {
-		return(Values(Str_O::create(fmter_str)));
-	    }
-	    SIMPLE_ERROR(BF("Illegal output stream arguments[%s]") % _rep_(output) );
-	}
-	return(Values(_Nil<T_O>()));
+        clasp_write_string(fmter_str,output);
+        if ( destination.nilp() ) {
+            return cl_get_output_stream_string(output);
+        }
+        return _Nil<T_O>();
     }
 
 
@@ -109,7 +100,7 @@ namespace core
 #define ARGS_af_format "(destination control &rest args)"
 #define DECL_af_format ""
 #define DOCS_af_format "Subset of CL format - this does the job until the real format is installed"
-    T_mv af_format(T_sp destination, T_sp control, Cons_sp args)
+    T_sp af_format(T_sp destination, T_sp control, Cons_sp args)
     {_G();
 	stringstream tf;
 	if ( af_functionP(control) )
@@ -159,7 +150,7 @@ namespace core
 		++cur;
 	    }
 	}
-	return((af_bformat(destination,tf.str(),args)));
+	return af_bformat(destination,tf.str(),args);
     };
 
 

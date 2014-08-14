@@ -578,24 +578,23 @@ namespace core
     class SynonymStream_O : public AnsiStream_O
     {
         friend Symbol_sp& SynonymStreamSymbol(T_sp strm);
-        friend T_sp& SynonymStreamStream(T_sp);
+        friend T_sp SynonymStreamStream(T_sp);
 	LISP_BASE1(AnsiStream_O);
 	LISP_CLASS(core,ClPkg,SynonymStream_O,"synonym-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	SynonymStream_O() : _SynonymSymbol(_Nil<Symbol_O>()), _Stream(_Nil<T_O>()) {};
+	SynonymStream_O() : _SynonymSymbol(_Nil<Symbol_O>()) {};
         virtual ~SynonymStream_O() {};
 
     protected: // instance variables here
 	Symbol_sp 	_SynonymSymbol;
-        T_sp            _Stream;
     public:
 	static SynonymStream_sp make(Symbol_sp symbol) {
             return cl_make_synonym_stream(symbol);
         }
     public: // Functions here
-        Str_sp filename() const { return clasp_filename(this->_Stream);};
+        Str_sp filename() const;
 
     }; // SynonymStream class
     
