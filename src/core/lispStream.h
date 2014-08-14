@@ -218,7 +218,7 @@ namespace core
 
     class StreamCursor
     {
-    private:
+    public:
 	/*! Tell that _LineNumber/_Column mean something */
 	bool		_CursorIsValid;
 	/*! Keep track of line number and column - if not valid return 0 */

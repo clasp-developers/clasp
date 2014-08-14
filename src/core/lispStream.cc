@@ -6073,7 +6073,7 @@ namespace core {
     {
         if ( Stream_sp sin = strm.asOrNull<Stream_O>() ) {
             StreamCursor& ic = StreamInputCursor(sin);
-            return sin->_LineNumber;
+            return ic._LineNumber;
         }
         return 0;
     }
@@ -6082,7 +6082,7 @@ namespace core {
     {
         if ( Stream_sp sin = strm.asOrNull<Stream_O>() ) {
             StreamCursor& ic = StreamInputCursor(sin);
-            return sin->_Column;
+            return ic._Column;
         }
         return 0;
     }
