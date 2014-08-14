@@ -1847,6 +1847,34 @@ namespace core
 	}
 
 
+        SYMBOL_EXPORT_SC_(CompPkg,compile_lambda_SLASH_lambda_block);
+        Function_sp compileLambda(T_sp name, T_sp kind, LambdaListHandler_sp llh, Str_sp declares, Str_sp docstring, Cons_sp code, Environment_sp env )
+        {
+            Function_sp result;
+            if ( comp::_sym_compile_lambda_SLASH_lambda_block->fboundp() ) {
+                result = eval::funcall(comp::_sym_compile_lambda_SLASH_lambda_block
+                                       ,name
+                                       , llh
+                                       , declares
+                                       , docstring
+                                       , code
+                                       , env
+                                       , _Nil<T_O>()
+                                       , _Nil<T_O>() );
+            } else {
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kind
+                                                                                                    , llh
+                                                                                                    , declares
+                                                                                                    , docstring
+                                                                                                    , env
+                                                                                                    , code );
+                result = Function_O::make(ic);
+            }
+            return result;
+        }
+                
         T_mv t1Evaluate(T_sp exp, T_sp environment);
 
 	T_mv t1Progn(T_sp args, T_sp environment)
@@ -1918,6 +1946,14 @@ namespace core
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
                 printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
+#if 1
+                Function_sp outer_func = compileLambda(name,kw::_sym_macro
+                                                       ,outer_llh
+                                                       ,declares
+                                                       ,docstring
+                                                       ,code
+                                                       ,newEnv );
+#else
                 InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
                                                                                                     , _Nil<SourcePosInfo_O>()
                                                                                                     , kw::_sym_macro
@@ -1927,6 +1963,7 @@ namespace core
                                                                                                     , newEnv
                                                                                                     , code );
                 Function_sp outer_func = Function_O::make(ic);
+#endif
 		LOG(BF("func = %s") % outer_func_cons->__repr__() );
 		newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
