@@ -324,6 +324,7 @@ namespace core
         int             _LastChar;
         T_sp            _ExternalFormat;
         int             _OutputColumn;
+        StreamCursor    _InputCursor;
     public:
         Stream_O() : _Closed(0)
                    , _Buffer(NULL)
