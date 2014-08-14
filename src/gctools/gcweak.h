@@ -745,4 +745,14 @@ namespace gctools {
 
 };
 
+extern "C" {
+
+    mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
+    mps_addr_t weak_obj_skip(mps_addr_t base);
+    void weak_obj_fwd(mps_addr_t old, mps_addr_t newv);
+    mps_addr_t weak_obj_isfwd(mps_addr_t addr);
+    void weak_obj_pad(mps_addr_t addr, size_t size);
+
+};
+
 #endif // gctools_gcweak_H
