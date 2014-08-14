@@ -82,23 +82,47 @@ namespace gctools {
 namespace gctools {
 
 
-    typedef enum { WeakBucketKind, WeakPointerKind, WeakMappingKind } WeakKinds;
+    typedef enum { WeakBucketKind, StrongBucketKind, WeakMappingKind, StrongMappingKind, WeakPointerKind
+                   , WeakFwdKind, WeakFwd2Kind
+                   , WeakPadKind, WeakPad1Kind
+                   /*Other MPS kinds here */ } WeakKinds;
 
     struct WeakObject {
         typedef gctools::tagged_ptr<gctools::Fixnum_ty> KindType;
         WeakObject(WeakKinds k) : Kind(gctools::tagged_ptr<gctools::Fixnum_ty>(k)) {};
         KindType Kind;
+        int kind() const { return this->Kind.fixnum(); };
+        void setKind(WeakKinds k) { this->Kind = gctools::tagged_ptr<gctools::Fixnum_ty>(k); };
         virtual void* dependentPtr() const { return NULL; };
         
     };
 
+    struct weak_fwd_s : public WeakObject {
+        WeakObject* fwd;                    /* forwarded object */
+        gctools::tagged_ptr<gctools::Fixnum_ty> size; /* total size of this object */
+    };
+
+    struct weak_fwd2_s : public WeakObject {
+        WeakObject* fwd;                    /* forwarded object */
+    };
+
+
+    struct weak_pad_s : public WeakObject {
+        WeakObject* fwd;                    /* forwarded object */
+        gctools::tagged_ptr<gctools::Fixnum_ty> size; /* total size of this object */
+    };
+
+    struct weak_pad1_s : public WeakObject {
+    };
+
+
 
     template <class T,class U>
     struct BucketsBase : public WeakObject {
-        BucketsBase(int l) : WeakObject(WeakBucketKind)
-                           , _length(l)
-                           , _used(gctools::tagged_ptr<gctools::Fixnum_ty>(0))
-                           , _deleted(gctools::tagged_ptr<gctools::Fixnum_ty>(0))
+        BucketsBase(WeakKinds k,int l) : WeakObject(k)
+                                       , _length(gctools::tagged_ptr<gctools::Fixnum_ty>(l))
+                                       , _used(gctools::tagged_ptr<gctools::Fixnum_ty>(0))
+                                       , _deleted(gctools::tagged_ptr<gctools::Fixnum_ty>(0))
         {
             for (size_t i(0); i<l; ++i ) this->bucket[i] = T(T::unbound);
         }
@@ -129,7 +153,7 @@ namespace gctools {
     template <class T,class U>
     struct Buckets<T,U,WeakLinks> : public BucketsBase<T,U> {
         typedef typename BucketsBase<T,U>::value_type value_type;
-        Buckets(int l) : BucketsBase<T,U>(l) {};
+        Buckets(int l) : BucketsBase<T,U>(WeakBucketKind,l) {};
         virtual ~Buckets() {
 #ifdef USE_BOEHM
             for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
@@ -169,19 +193,23 @@ namespace gctools {
     template <class T,class U>
     struct Buckets<T,U,StrongLinks> : public BucketsBase<T,U> {
         typedef typename BucketsBase<T,U>::value_type value_type;
-        Buckets(int l) : BucketsBase<T,U>(l) {};
+        Buckets(int l) : BucketsBase<T,U>(StrongBucketKind,l) {};
         virtual ~Buckets() {}
         void set(size_t idx, const value_type& val) {
             this->bucket[idx] = val;
         }
     };
 
+    typedef gctools::tagged_backcastable_base_ptr<core::T_O> BucketValueType;
+    typedef gctools::Buckets<BucketValueType,BucketValueType,gctools::WeakLinks> WeakBucketsObjectType;
+    typedef gctools::Buckets<BucketValueType,BucketValueType,gctools::StrongLinks> StrongBucketsObjectType;
+
     class WeakHashTable {
         friend class core::WeakKeyHashTable_O;
     public:
-        typedef gctools::tagged_backcastable_base_ptr<core::T_O> value_type;
-        typedef gctools::Buckets<value_type,value_type,gctools::WeakLinks> KeyBucketsType;
-        typedef gctools::Buckets<value_type,value_type,gctools::StrongLinks> ValueBucketsType;
+        typedef BucketValueType value_type;
+        typedef WeakBucketsObjectType KeyBucketsType;
+        typedef StrongBucketsObjectType ValueBucketsType;
     public:
         typedef WeakHashTable MyType;
     public:
@@ -576,13 +604,17 @@ namespace gctools {
     };
 
 
+    typedef gctools::tagged_backcastable_base_ptr<core::T_O> MappingValueType;
+    typedef gctools::Mapping<BucketValueType,BucketValueType,gctools::WeakLinks> WeakMappingObjectType;
+    typedef gctools::Mapping<BucketValueType,BucketValueType,gctools::StrongLinks> StrongMappingObjectType;
+
 
     class WeakKeyMappingPair {
         friend class core::WeakKeyMapping_O;
     protected:
-        typedef gctools::tagged_backcastable_base_ptr<core::T_O> value_type;
-        typedef Mapping<value_type,value_type,WeakLinks> KeyType;
-        typedef Mapping<value_type,value_type,StrongLinks> ValueType;
+        typedef MappingValueType value_type;
+        typedef WeakMappingObjectType KeyType;
+        typedef StrongMappingObjectType ValueType;
         typedef WeakKeyMappingPair              MyType;
         typedef gctools::GCMappingAllocator<KeyType> KeyAllocatorType;
         typedef gctools::GCMappingAllocator<ValueType> ValueAllocatorType;
@@ -650,18 +682,17 @@ namespace gctools {
 
 
 
-    template <typename T>
     struct WeakPointer : public WeakObject {
-        typedef T value_type;
-        WeakPointer(const T& val) : WeakObject(WeakPointerKind), value(val) {};
-        T      value;
+        typedef gctools::tagged_backcastable_base_ptr<core::T_O> value_type;
+        WeakPointer(const value_type& val) : WeakObject(WeakPointerKind), value(val) {};
+        value_type      value;
     };
        
 
     struct WeakPointerManager {
-        typedef gctools::tagged_backcastable_base_ptr<core::T_O> value_type;
+        typedef typename gctools::WeakPointer::value_type  value_type;
         typedef WeakPointerManager MyType;
-        typedef gctools::GCWeakPointerAllocator<WeakPointer<value_type> > AllocatorType;
+        typedef gctools::GCWeakPointerAllocator<WeakPointer> AllocatorType;
 
         WeakPointerManager(const value_type& val) {
             this->pointer = AllocatorType::allocate(val);
@@ -684,7 +715,7 @@ namespace gctools {
         };
 
         // This will need to be a tagged_backcastable_base_ptr
-        WeakPointer<value_type>*      pointer;
+        WeakPointer*      pointer;
         core::T_mv value() const { 
             core::T_mv result_mv;
             safeRun<void()>( [&result_mv,this] ()->void

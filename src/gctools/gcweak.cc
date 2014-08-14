@@ -1,6 +1,9 @@
 #include "core/foundation.h"
 #include "gcweak.h"
 #include "core/object.h"
+#ifdef USE_MPS
+#include "mps/code/mps.h"
+#endif
 
 namespace gctools {
 
@@ -305,3 +308,203 @@ namespace gctools {
 
 
 };
+
+#ifdef USE_MPS
+extern "C" {
+    using namespace gctools;
+    mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit)
+    {
+        MPS_SCAN_BEGIN(ss) {
+            while (base < limit) {
+                WeakObject* weakObj = reinterpret_cast<WeakObject*>(base);
+                switch (weakObj->kind()) {
+                case WeakBucketKind:
+                {      
+                    WeakBucketsObjectType* obj = reinterpret_cast<WeakBucketsObjectType*>(weakObj);
+                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&obj->dependent));
+                    for ( int i(0), iEnd(obj->length()); i<iEnd; ++i ) {
+                        mps_addr_t p = reinterpret_cast<mps_addr_t>(obj->bucket[i].base_ref().px_ref());
+                        if (MPS_FIX1(ss,p)) {
+                            mps_res_t res = MPS_FIX2(ss,&p);
+                            if ( res != MPS_RES_OK ) return res;
+                            if ( p == NULL && obj->dependent ) {
+                                obj->dependent->bucket[i] = WeakBucketsObjectType::value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted);
+                                obj->bucket[i] = WeakBucketsObjectType::value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted);
+                            } else {
+                                obj->bucket[i].base_ref().px_ref() = reinterpret_cast<gctools::Header_s*>(p);
+                            }
+                        }
+                    }
+                    base = (char*)base + sizeof(WeakBucketsObjectType)+sizeof(typename WeakBucketsObjectType::value_type)*obj->length();
+                }
+                break;
+                case StrongBucketKind:
+                {      
+                    StrongBucketsObjectType* obj = reinterpret_cast<StrongBucketsObjectType*>(base);
+                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&obj->dependent));
+                    for ( int i(0), iEnd(obj->length()); i<iEnd; ++i ) {
+                        MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->bucket[i].base_ref().px_ref())));
+                    }
+                    base = (char*)base + sizeof(StrongBucketsObjectType)+sizeof(typename StrongBucketsObjectType::value_type)*obj->length();
+                }
+                case WeakMappingKind:
+                {      
+                    WeakMappingObjectType* obj = reinterpret_cast<WeakMappingObjectType*>(weakObj);
+                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&obj->dependent));
+                    mps_addr_t p = reinterpret_cast<mps_addr_t>(obj->bucket.base_ref().px_ref());
+                    if (MPS_FIX1(ss,p)) {
+                        mps_res_t res = MPS_FIX2(ss,&p);
+                        if ( res != MPS_RES_OK ) return res;
+                        if ( p == NULL && obj->dependent ) {
+                            obj->dependent->bucket = WeakBucketsObjectType::value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted);
+                            obj->bucket = WeakBucketsObjectType::value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted);
+                        } else {
+                            obj->bucket.base_ref().px_ref() = reinterpret_cast<gctools::Header_s*>(p);
+                        }
+                    }
+                    base = (char*)base + sizeof(WeakMappingObjectType);
+                }
+                break;
+                case StrongMappingKind:
+                {      
+                    StrongMappingObjectType* obj = reinterpret_cast<StrongMappingObjectType*>(base);
+                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&obj->dependent));
+                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->bucket.base_ref().px_ref())));
+                    base = (char*)base + sizeof(StrongMappingObjectType);
+                }
+                break;
+                case WeakPointerKind:
+                {      
+                    WeakPointer* obj = reinterpret_cast<WeakPointer*>(base);
+                    MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->value.base_ref().px_ref())));
+                    base = (char*)base + sizeof(WeakPointer);
+                }
+                break;
+                default:
+                    THROW_HARD_ERROR(BF("Handle other weak kind %d") % weakObj->kind());
+                }
+            };
+        } MPS_SCAN_END(ss);
+        return MPS_RES_OK;
+    }
+
+
+
+    mps_addr_t weak_obj_skip(mps_addr_t base)
+    {
+        WeakObject* weakObj = reinterpret_cast<WeakObject*>(base);
+        switch (weakObj->kind()) {
+        case WeakBucketKind:
+        {      
+            WeakBucketsObjectType* obj = reinterpret_cast<WeakBucketsObjectType*>(weakObj);
+            base = (char*)base + sizeof(WeakBucketsObjectType)+sizeof(typename WeakBucketsObjectType::value_type)*obj->length();
+        }
+        break;
+        case StrongBucketKind:
+        {      
+            StrongBucketsObjectType* obj = reinterpret_cast<StrongBucketsObjectType*>(base);
+            base = (char*)base + sizeof(StrongBucketsObjectType)+sizeof(typename StrongBucketsObjectType::value_type)*obj->length();
+        }
+        case WeakMappingKind:
+        {      
+            base = (char*)base + sizeof(WeakMappingObjectType);
+        }
+        break;
+        case StrongMappingKind:
+        {      
+            base = (char*)base + sizeof(StrongMappingObjectType);
+        }
+        break;
+        case WeakPointerKind:
+        {      
+            base = (char*)base + sizeof(WeakPointer);
+        }
+        break;
+        case WeakFwdKind:
+        {      
+            weak_fwd_s* obj = reinterpret_cast<weak_fwd_s*>(base);
+            base = (char*)base + Align(obj->size.fixnum());
+        }
+        break;
+        case WeakFwd2Kind:
+        {      
+            base = (char*)base + Align(sizeof(weak_fwd2_s));
+        }
+        break;
+        case WeakPadKind:
+        {      
+            weak_pad_s* obj = reinterpret_cast<weak_pad_s*>(base);
+            base = (char*)base + Align(obj->size.fixnum());
+        }
+        break;
+        case WeakPad1Kind:
+        {      
+            base = (char*)base + Align(sizeof(weak_pad1_s));
+        }
+        default:
+            THROW_HARD_ERROR(BF("Handle weak_obj_skip other weak kind %d") % weakObj->kind());
+        }
+        return base;
+    };
+
+
+    void weak_obj_fwd(mps_addr_t old, mps_addr_t newv)
+    {
+        WeakObject* weakObj = reinterpret_cast<WeakObject*>(old);
+        mps_addr_t limit = weak_obj_skip(old);
+        size_t size = (char *)limit - (char *)old;
+        assert(size >= Align(sizeof(weak_fwd2_s)));
+        if (size == Align(sizeof(weak_fwd2_s))) {
+            weak_fwd2_s* weak_fwd2_obj = reinterpret_cast<weak_fwd2_s*>(weakObj);
+            weak_fwd2_obj->setKind(WeakFwd2Kind);
+            weak_fwd2_obj->fwd = reinterpret_cast<WeakObject*>(newv);
+        } else {
+            weak_fwd_s* weak_fwd_obj = reinterpret_cast<weak_fwd_s*>(weakObj);
+            weak_fwd_obj->setKind(WeakFwdKind);
+            weak_fwd_obj->fwd = reinterpret_cast<WeakObject*>(newv);
+            weak_fwd_obj->size = gctools::tagged_ptr<gctools::Fixnum_ty>(size);
+        }
+    }
+
+
+    mps_addr_t weak_obj_isfwd(mps_addr_t addr)
+    {
+        WeakObject* obj = reinterpret_cast<WeakObject*>(addr);
+        switch (obj->kind()) {
+        case WeakFwd2Kind:
+        {
+            weak_fwd2_s* weak_fwd2_obj = reinterpret_cast<weak_fwd2_s*>(obj);
+            return weak_fwd2_obj->fwd;
+        }
+        case WeakFwdKind:
+        {
+            weak_fwd_s* weak_fwd_obj = reinterpret_cast<weak_fwd_s*>(obj);
+            return weak_fwd_obj->fwd;
+        }
+        }
+        return NULL;
+    }
+
+
+
+    void weak_obj_pad(mps_addr_t addr, size_t size)
+    {
+        WeakObject* weakObj = reinterpret_cast<WeakObject*>(addr);
+        assert(size >= Align(sizeof(weak_pad1_s)));
+        if (size == Align(sizeof(weak_pad1_s))) {
+            weakObj->setKind(WeakPad1Kind);
+        } else {
+            weakObj->setKind(WeakPadKind);
+            weak_pad_s* weak_pad_obj = reinterpret_cast<weak_pad_s*>(addr);
+            weak_pad_obj->size = gctools::tagged_ptr<gctools::Fixnum_ty>(size);
+        }
+    }
+
+
+
+
+
+
+
+};
+#endif
