@@ -53,7 +53,7 @@ namespace gctools {
 #define call_with_alloc_lock GC_call_with_alloc_lock
 #else
     typedef void* (*fn_type)(void*  client_data);
-    void call_with_alloc_lock( fn_type fn, void* client_data) {
+inline     void call_with_alloc_lock( fn_type fn, void* client_data) {
         fn(client_data);
     }
 #endif
