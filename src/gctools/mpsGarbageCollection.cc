@@ -381,17 +381,17 @@ namespace gctools {
 
 
 
-        mps_fmt_t awl_obj_fmt;
+        mps_fmt_t weak_obj_fmt;
         MPS_ARGS_BEGIN(args) {
 #ifndef RUNNING_GC_BUILDER
             MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
-            MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, awl_obj_scan);
-            MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, awl_obj_skip);
-            MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, awl_obj_fwd);
-            MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, awl_obj_isfwd);
-            MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, awl_obj_pad);
+            MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, weak_obj_scan);
+            MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, weak_obj_skip);
+            MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, weak_obj_fwd);
+            MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, weak_obj_isfwd);
+            MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, weak_obj_pad);
 #endif
-            res = mps_fmt_create_k(&awl_obj_fmt, _global_arena, args);
+            res = mps_fmt_create_k(&weak_obj_fmt, _global_arena, args);
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create obj format");
 
@@ -399,7 +399,7 @@ namespace gctools {
 
         // Create the AWL pool for weak hash tables here
         MPS_ARGS_BEGIN(args) {
-            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, awl_obj_fmt);
+            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, weak_obj_fmt);
             MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
             MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, awlFindDependent );
             res = mps_pool_create_k(&_global_awl_pool, _global_arena, mps_class_awl(), args);
