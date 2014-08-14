@@ -1682,9 +1682,14 @@ namespace core
     };
 
 
-    T_sp
-    si_make_string_output_stream_from_string(T_sp s)
-    {
+
+    
+    
+#define ARGS_core_make_string_output_stream_from_string "(s)"
+#define DECL_core_make_string_output_stream_from_string ""
+#define DOCS_core_make_string_output_stream_from_string "make_string_output_stream_from_string"
+    T_sp core_make_string_output_stream_from_string(T_sp s)
+    {_G();
 	T_sp strm = StringOutputStream_O::create();
 	unlikely_if (!af_stringP(s) || !s.as<Array_O>()->arrayHasFillPointerP() )
             FEerror("~S is not a -string with a fill-pointer.", 1, s.asTPtr());
@@ -1720,7 +1725,7 @@ namespace core
 #else
 	T_sp s = StrWithFillPtr_O::createBufferString(line_length);// clasp_alloc_adjustable_base_string(line_length);
 #endif
-	return si_make_string_output_stream_from_string(s);
+	return core_make_string_output_stream_from_string(s);
     }
 
 
@@ -6786,6 +6791,8 @@ void initialize_lispStream()
 	ClDefun(unread_char);
 	SYMBOL_EXPORT_SC_(CorePkg,fileColumn);
 	ClDefun(fileColumn);
+	SYMBOL_EXPORT_SC_(CorePkg,makeStringOutputStreamFromString);
+        Defun(make_string_output_stream_from_string);
 	SYMBOL_EXPORT_SC_(CorePkg,makeStringOutputStream);
 	ClDefun(makeStringOutputStream);
 	ClDefun(writeSequence);
