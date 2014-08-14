@@ -130,7 +130,7 @@ namespace core
         return stream->_LastChar;
     }
 
-    T_sp StreamByteStack(T_sp strm)
+    Cons_sp& StreamByteStack(T_sp strm)
     {
         Stream_sp stream = strm.as<Stream_O>();
         return stream->_ByteStack;
