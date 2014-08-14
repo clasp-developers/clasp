@@ -16,7 +16,7 @@
 using features defined in corePackage.cc"
   (let ((tt nil))
     (setq tt
-	  #+(and target-os-darwin address-model-64) "x86_64-apple-macosx10.7.0" ;; minimum required OSX level (Mountain Lion)
+	  #+(and target-os-darwin address-model-64) "x86_64-apple-macosx10.9.0" ;; minimum required OSX level (Mountain Lion)
 	  #+(and target-os-linux address-model-32) "i386-pc-linux-gnu"
 	  #+(and target-os-linux address-model-64) "x86_64-unknown-linux-gnu"
 	  )

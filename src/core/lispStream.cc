@@ -1,4 +1,4 @@
-
+//#define DEBUG_CURSOR 1
 
 
 
@@ -44,7 +44,6 @@
 #include "lispReader.h"
 #include "fileSystem.h"
 #include "wrappers.h"
-
 namespace core
 {
     FileOps& StreamOps(T_sp strm)
@@ -284,6 +283,43 @@ namespace core
 
 };
 
+
+
+namespace core
+{
+    void StreamCursor::advanceLineNumber(T_sp strm, claspCharacter c, int num)
+    {
+        this->_PrevLineNumber = this->_LineNumber;
+        this->_PrevColumn = this->_Column;
+        this->_LineNumber += num;
+        this->_Column = 0;
+#ifdef DEBUG_CURSOR
+        if ( core::_sym_STARdebugMonitorSTAR.notnilp() ) {
+            printf("%s:%d stream=%s advanceLineNumber=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm,false)->get().c_str(),c, c, this->_LineNumber, this->_Column);
+        }
+#endif
+    }
+    void StreamCursor::advanceColumn(T_sp strm, claspCharacter c,int num)
+    {
+        this->_PrevLineNumber = this->_LineNumber;
+        this->_PrevColumn = this->_Column;
+        this->_Column++;
+#ifdef DEBUG_CURSOR
+        if ( core::_sym_STARdebugMonitorSTAR.notnilp() ) {
+            printf("%s:%d stream=%s advanceColumn=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm,false)->get().c_str(),c, c, this->_LineNumber, this->_Column);
+        }
+#endif
+    }
+    void StreamCursor::backup(T_sp strm, claspCharacter c) {
+        this->_LineNumber = this->_PrevLineNumber;
+        this->_Column = this->_PrevColumn;
+#ifdef DEBUG_CURSOR
+        if ( core::_sym_STARdebugMonitorSTAR.notnilp() ) {
+            printf("%s:%d stream=%s backup=%c/%d ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm,false)->get().c_str(),c, c, this->_LineNumber, this->_Column );
+        }
+#endif
+    }
+};
 
 namespace core
 {
@@ -821,6 +857,7 @@ namespace core
             }
             StreamByteStack(strm) = l;
             StreamLastChar(strm) = EOF;
+            StreamInputCursor(strm).backup(strm,c);
 	}
     }
 
@@ -850,9 +887,10 @@ namespace core
             StreamLastCode(strm,0) = c;
             StreamLastCode(strm,1) = EOF;
 	}
+#if 0
 	if ( c == '\n' )
 	{
-	    StreamInputCursor(strm).advanceLineNumber();
+	    StreamInputCursor(strm).advanceLineNumber(c);
 	} else if ( c == '\r' )
 	{
 #if 0
@@ -861,10 +899,12 @@ namespace core
 		c = this->_get();
 	    }
 #endif
-	    StreamInputCursor(strm).advanceLineNumber();
+	    StreamInputCursor(strm).advanceLineNumber(c);
         } else {
-            StreamInputCursor(strm).advanceColumn();
+            StreamInputCursor(strm).advanceColumn(c);
         }
+#endif
+        StreamInputCursor(strm).advanceForChar(strm,c,StreamLastChar(strm));
 	return c;
     }
 
@@ -892,9 +932,9 @@ namespace core
 	if (c == CLASP_CHAR_CODE_RETURN) {
             c = CLASP_CHAR_CODE_NEWLINE;
             StreamLastChar(strm) = c;
-            StreamInputCursor(strm).advanceLineNumber();
+            StreamInputCursor(strm).advanceLineNumber(strm,c);
 	} else {
-            StreamInputCursor(strm).advanceColumn();
+            StreamInputCursor(strm).advanceColumn(strm,c);
 	}
 	return c;
     }
@@ -917,9 +957,9 @@ namespace core
                 StreamLastCode(strm,1) = EOF;
             }
             StreamLastChar(strm) = c;
-            StreamInputCursor(strm).advanceLineNumber();
+            StreamInputCursor(strm).advanceLineNumber(strm,c);
 	} else {
-            StreamInputCursor(strm).advanceColumn();
+            StreamInputCursor(strm).advanceColumn(strm,c);
         }
 	return c;
     }
