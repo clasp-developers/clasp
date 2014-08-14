@@ -5997,17 +5997,12 @@ THIS NEEDS TO BE TAKEN OUT
     
 
 
-#if 0
 #define ARGS_af_streamLinenumber "(stream)"
 #define DECL_af_streamLinenumber ""
 #define DOCS_af_streamLinenumber "streamLinenumber"
     int af_streamLinenumber(T_sp tstream)
     {
-        tstream = coerce::inputStreamDesignator(tstream);
-        if ( Stream_sp stream = tstream.as<Stream_O>() ) {
-            return stream->lineNumber();
-        }
-	IMPLEMENT_MEF(BF("Implement streamLinenumber for stream object: %s") % _rep_(tstream));
+        return clasp_input_lineno(tstream);
     };
  
 #define ARGS_af_streamColumn "(stream)"
@@ -6015,13 +6010,8 @@ THIS NEEDS TO BE TAKEN OUT
 #define DOCS_af_streamColumn "streamColumn"
     int af_streamColumn(T_sp tstream)
     {
-        tstream = coerce::inputStreamDesignator(tstream);
-        if ( Stream_sp stream = tstream.as<Stream_O>() ) {
-            return stream->column();
-        }
-	IMPLEMENT_MEF(BF("Implement streamColumn for stream object: %s") % _rep_(tstream));
+        return clasp_input_column(tstream);
     };
-#endif
 
 
 };
@@ -6800,12 +6790,10 @@ void initialize_lispStream()
         SYMBOL_EXPORT_SC_(ClPkg,get_output_stream_string);
         ClDefun(get_output_stream_string);
         ClDefun(open);
-#if 0
         SYMBOL_EXPORT_SC_(CorePkg,streamLinenumber);
         Defun(streamLinenumber);
         SYMBOL_EXPORT_SC_(CorePkg,streamColumn);
         Defun(streamColumn);
-#endif
     }
 
 
