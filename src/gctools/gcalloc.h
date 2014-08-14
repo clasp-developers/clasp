@@ -1109,7 +1109,7 @@ namespace gctools {
                 mps_res_t res = mps_reserve(&addr,_global_weak_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCMappingAllocator_mps"));
                 myAddress = reinterpret_cast<container_pointer>(addr);
-                new (myAddress) container_type();
+                new (myAddress) container_type(val);
             }
             while (!mps_commit(_global_weak_link_allocation_point,addr,size));
             GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
@@ -1155,7 +1155,7 @@ namespace gctools {
                 mps_res_t res = mps_reserve(&addr,_global_strong_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCMappingAllocator_mps"));
                 myAddress = reinterpret_cast<container_pointer>(addr);
-                new (myAddress) container_type();
+                new (myAddress) container_type(val);
             }
             while (!mps_commit(_global_weak_link_allocation_point,addr,size));
             GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
@@ -1194,7 +1194,7 @@ namespace gctools {
             mps_addr_t  addr;
             size_t size = sizeof(VT);
             do {
-                mps_res_t res = mps_reserve(&addr,_global_weak_pointer_allocation_point,size);
+                mps_res_t res = mps_reserve(&addr,_global_weak_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCWeakPointerAllocator_mps"));
             }
             while (!mps_commit(_global_weak_link_allocation_point,addr,size));

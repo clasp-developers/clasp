@@ -67,9 +67,6 @@ namespace core
         typedef gctools::WeakHashTable<KeyBucketsType,ValueBucketsType> HashTableType;
 #endif
         HashTableType  _HashTable;
-#ifdef USE_MPS
-        mps_ld_s        _LocationDependency;
-#endif        
         
     public:
         WeakKeyHashTable_O() : _HashTable(16) {};
@@ -78,19 +75,6 @@ namespace core
 //	static WeakKeyHashTable_sp make(uint sz ); // ,  Number_sp rehashSize, double rehashThreshold);
         static WeakKeyHashTable_sp create_default();
     public:
-#ifdef USE_MPS
-        static uint sxhashKey(const value_type& key, bool willAddKey, mps_ld_s* locationDependency );
-        static int find(hash_table_type::KeyBucketsType* keys, const value_type& key, bool willAdd, mps_ld_s* ldP, size_t& b );
-#endif
-#ifdef USE_BOEHM
-//        static uint sxhashKey(const value_type& key );
-//        static int find(KeyBucketsType* keys, const value_type& key, size_t& b );
-#endif
-//        int rehash(size_t new_length, const value_type& key, size_t& key_bucket);
-    public:
-//        T_mv get(int idx);
-    public: // Functions here
-
         virtual int tableSize() const;
 
         void set( T_sp key, T_sp value );
