@@ -228,6 +228,7 @@
 // SYMBOL_TABLE_ENTRY        ClPkg  226 integerDecodeFloat             INTEGER-DECODE-FLOAT           export ; cName=_sym_integerDecodeFloat lispName=INTEGER-DECODE-FLOAT
 // SYMBOL_TABLE_ENTRY      CorePkg  227 bq_remove_tokens               BQ-REMOVE-TOKENS               private ; cName=_sym_bq_remove_tokens lispName=BQ-REMOVE-TOKENS
 // SYMBOL_TABLE_ENTRY      CorePkg  228 STARstartRunTimeSTAR           *START-RUN-TIME*               export ; cName=_sym_STARstartRunTimeSTAR lispName=*START-RUN-TIME*
+<<<<<<< HEAD
 // SYMBOL_TABLE_ENTRY      CompPkg  229 compile_lambda_SLASH_lambda_block COMPILE-LAMBDA/LAMBDA-BLOCK    export ; cName=_sym_compile_lambda_SLASH_lambda_block lispName=COMPILE-LAMBDA/LAMBDA-BLOCK
 // SYMBOL_TABLE_ENTRY        ClPkg  230 nconc                          NCONC                          export ; cName=_sym_nconc lispName=NCONC
 // SYMBOL_TABLE_ENTRY   KeywordPkg  231 _uid                           -UID                           export ; cName=_sym__uid lispName=-UID
@@ -235,6 +236,15 @@
 // SYMBOL_TABLE_ENTRY        ClPkg  233 write_sequence                 WRITE-SEQUENCE                 export ; cName=_sym_write_sequence lispName=WRITE-SEQUENCE
 // SYMBOL_TABLE_ENTRY        ClPkg  234 most_negative_fixnum           MOST-NEGATIVE-FIXNUM           export ; cName=_sym_most_negative_fixnum lispName=MOST-NEGATIVE-FIXNUM
 // SYMBOL_TABLE_ENTRY      CorePkg  235 testVal                        TEST-VAL                       export ; cName=_sym_testVal lispName=TEST-VAL
+=======
+// SYMBOL_TABLE_ENTRY        ClPkg  229 nconc                          NCONC                          export ; cName=_sym_nconc lispName=NCONC
+// SYMBOL_TABLE_ENTRY   KeywordPkg  230 _uid                           -UID                           export ; cName=_sym__uid lispName=-UID
+// SYMBOL_TABLE_ENTRY      CorePkg  231 tooFewArgumentsError           TOO-FEW-ARGUMENTS-ERROR        export ; cName=_sym_tooFewArgumentsError lispName=TOO-FEW-ARGUMENTS-ERROR
+// SYMBOL_TABLE_ENTRY        ClPkg  232 write_sequence                 WRITE-SEQUENCE                 export ; cName=_sym_write_sequence lispName=WRITE-SEQUENCE
+// SYMBOL_TABLE_ENTRY        ClPkg  233 most_negative_fixnum           MOST-NEGATIVE-FIXNUM           export ; cName=_sym_most_negative_fixnum lispName=MOST-NEGATIVE-FIXNUM
+// SYMBOL_TABLE_ENTRY      CorePkg  234 testVal                        TEST-VAL                       export ; cName=_sym_testVal lispName=TEST-VAL
+// SYMBOL_TABLE_ENTRY      CorePkg  235 makeStringOutputStreamFromString MAKE-STRING-OUTPUT-STREAM-FROM-STRING export ; cName=_sym_makeStringOutputStreamFromString lispName=MAKE-STRING-OUTPUT-STREAM-FROM-STRING
+>>>>>>> 85f757e6e2a00461d274eee446f2b8d0cb5f2627
 // SYMBOL_TABLE_ENTRY      CorePkg  236 invokeInternalDebugger         INVOKE-INTERNAL-DEBUGGER       private ; cName=_sym_invokeInternalDebugger lispName=INVOKE-INTERNAL-DEBUGGER
 // SYMBOL_TABLE_ENTRY      CorePkg  237 color                          COLOR                          private ; cName=_sym_color lispName=COLOR
 // SYMBOL_TABLE_ENTRY        ClPkg  238 shadowing_import               SHADOWING-IMPORT               export ; cName=_sym_shadowing_import lispName=SHADOWING-IMPORT

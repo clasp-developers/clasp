@@ -229,6 +229,7 @@
 // SYMBOL_TABLE_ENTRY        ClPkg  226 integerDecodeFloat             INTEGER-DECODE-FLOAT           export ; cName=_sym_integerDecodeFloat lispName=INTEGER-DECODE-FLOAT
 // SYMBOL_TABLE_ENTRY      CorePkg  227 bq_remove_tokens               BQ-REMOVE-TOKENS               private ; cName=_sym_bq_remove_tokens lispName=BQ-REMOVE-TOKENS
 // SYMBOL_TABLE_ENTRY      CorePkg  228 STARstartRunTimeSTAR           *START-RUN-TIME*               export ; cName=_sym_STARstartRunTimeSTAR lispName=*START-RUN-TIME*
+<<<<<<< HEAD
 // SYMBOL_TABLE_ENTRY      CompPkg  229 compile_lambda_SLASH_lambda_block COMPILE-LAMBDA/LAMBDA-BLOCK    export ; cName=_sym_compile_lambda_SLASH_lambda_block lispName=COMPILE-LAMBDA/LAMBDA-BLOCK
 // SYMBOL_TABLE_ENTRY        ClPkg  230 nconc                          NCONC                          export ; cName=_sym_nconc lispName=NCONC
 // SYMBOL_TABLE_ENTRY   KeywordPkg  231 _uid                           -UID                           export ; cName=_sym__uid lispName=-UID
@@ -236,6 +237,15 @@
 // SYMBOL_TABLE_ENTRY        ClPkg  233 write_sequence                 WRITE-SEQUENCE                 export ; cName=_sym_write_sequence lispName=WRITE-SEQUENCE
 // SYMBOL_TABLE_ENTRY        ClPkg  234 most_negative_fixnum           MOST-NEGATIVE-FIXNUM           export ; cName=_sym_most_negative_fixnum lispName=MOST-NEGATIVE-FIXNUM
 // SYMBOL_TABLE_ENTRY      CorePkg  235 testVal                        TEST-VAL                       export ; cName=_sym_testVal lispName=TEST-VAL
+=======
+// SYMBOL_TABLE_ENTRY        ClPkg  229 nconc                          NCONC                          export ; cName=_sym_nconc lispName=NCONC
+// SYMBOL_TABLE_ENTRY   KeywordPkg  230 _uid                           -UID                           export ; cName=_sym__uid lispName=-UID
+// SYMBOL_TABLE_ENTRY      CorePkg  231 tooFewArgumentsError           TOO-FEW-ARGUMENTS-ERROR        export ; cName=_sym_tooFewArgumentsError lispName=TOO-FEW-ARGUMENTS-ERROR
+// SYMBOL_TABLE_ENTRY        ClPkg  232 write_sequence                 WRITE-SEQUENCE                 export ; cName=_sym_write_sequence lispName=WRITE-SEQUENCE
+// SYMBOL_TABLE_ENTRY        ClPkg  233 most_negative_fixnum           MOST-NEGATIVE-FIXNUM           export ; cName=_sym_most_negative_fixnum lispName=MOST-NEGATIVE-FIXNUM
+// SYMBOL_TABLE_ENTRY      CorePkg  234 testVal                        TEST-VAL                       export ; cName=_sym_testVal lispName=TEST-VAL
+// SYMBOL_TABLE_ENTRY      CorePkg  235 makeStringOutputStreamFromString MAKE-STRING-OUTPUT-STREAM-FROM-STRING export ; cName=_sym_makeStringOutputStreamFromString lispName=MAKE-STRING-OUTPUT-STREAM-FROM-STRING
+>>>>>>> 85f757e6e2a00461d274eee446f2b8d0cb5f2627
 // SYMBOL_TABLE_ENTRY      CorePkg  236 invokeInternalDebugger         INVOKE-INTERNAL-DEBUGGER       private ; cName=_sym_invokeInternalDebugger lispName=INVOKE-INTERNAL-DEBUGGER
 // SYMBOL_TABLE_ENTRY      CorePkg  237 color                          COLOR                          private ; cName=_sym_color lispName=COLOR
 // SYMBOL_TABLE_ENTRY        ClPkg  238 shadowing_import               SHADOWING-IMPORT               export ; cName=_sym_shadowing_import lispName=SHADOWING-IMPORT
@@ -1308,9 +1318,15 @@ DO_SYMBOL(_sym_STARprint_baseSTAR,222,ClPkg,"*PRINT-BASE*",true);
 DO_SYMBOL(_sym_disassemble,223,ClPkg,"DISASSEMBLE",true);
 DO_SYMBOL(_sym__MINUS_,224,ClPkg,"-",true);
 DO_SYMBOL(_sym_integerDecodeFloat,226,ClPkg,"INTEGER-DECODE-FLOAT",true);
+<<<<<<< HEAD
 DO_SYMBOL(_sym_nconc,230,ClPkg,"NCONC",true);
 DO_SYMBOL(_sym_write_sequence,233,ClPkg,"WRITE-SEQUENCE",true);
 DO_SYMBOL(_sym_most_negative_fixnum,234,ClPkg,"MOST-NEGATIVE-FIXNUM",true);
+=======
+DO_SYMBOL(_sym_nconc,229,ClPkg,"NCONC",true);
+DO_SYMBOL(_sym_write_sequence,232,ClPkg,"WRITE-SEQUENCE",true);
+DO_SYMBOL(_sym_most_negative_fixnum,233,ClPkg,"MOST-NEGATIVE-FIXNUM",true);
+>>>>>>> 85f757e6e2a00461d274eee446f2b8d0cb5f2627
 DO_SYMBOL(_sym_shadowing_import,238,ClPkg,"SHADOWING-IMPORT",true);
 DO_SYMBOL(_sym_unintern,243,ClPkg,"UNINTERN",true);
 DO_SYMBOL(_sym_stringp,244,ClPkg,"STRINGP",true);
@@ -1854,8 +1870,14 @@ DO_SYMBOL(_sym_IntArray_O,221,CorePkg,"INT-ARRAY",true);
 DO_SYMBOL(_sym_evaluateDepth,225,CorePkg,"EVALUATE-DEPTH",false);
 DO_SYMBOL(_sym_bq_remove_tokens,227,CorePkg,"BQ-REMOVE-TOKENS",false);
 DO_SYMBOL(_sym_STARstartRunTimeSTAR,228,CorePkg,"*START-RUN-TIME*",true);
+<<<<<<< HEAD
 DO_SYMBOL(_sym_tooFewArgumentsError,232,CorePkg,"TOO-FEW-ARGUMENTS-ERROR",true);
 DO_SYMBOL(_sym_testVal,235,CorePkg,"TEST-VAL",true);
+=======
+DO_SYMBOL(_sym_tooFewArgumentsError,231,CorePkg,"TOO-FEW-ARGUMENTS-ERROR",true);
+DO_SYMBOL(_sym_testVal,234,CorePkg,"TEST-VAL",true);
+DO_SYMBOL(_sym_makeStringOutputStreamFromString,235,CorePkg,"MAKE-STRING-OUTPUT-STREAM-FROM-STRING",true);
+>>>>>>> 85f757e6e2a00461d274eee446f2b8d0cb5f2627
 DO_SYMBOL(_sym_invokeInternalDebugger,236,CorePkg,"INVOKE-INTERNAL-DEBUGGER",false);
 DO_SYMBOL(_sym_color,237,CorePkg,"COLOR",false);
 DO_SYMBOL(_sym_forward_referenced_class,239,CorePkg,"FORWARD-REFERENCED-CLASS",false);
@@ -2254,7 +2276,10 @@ DO_SYMBOL(_sym_truly_the,1202,ExtPkg,"TRULY-THE",true);
 #ifdef CompPkg_SYMBOLS
 DO_SYMBOL(_sym_aSingleCompilerSymbol,37,CompPkg,"A-SINGLE-COMPILER-SYMBOL",false);
 DO_SYMBOL(_sym_parse_macro,82,CompPkg,"PARSE-MACRO",false);
+<<<<<<< HEAD
 DO_SYMBOL(_sym_compile_lambda_SLASH_lambda_block,229,CompPkg,"COMPILE-LAMBDA/LAMBDA-BLOCK",true);
+=======
+>>>>>>> 85f757e6e2a00461d274eee446f2b8d0cb5f2627
 DO_SYMBOL(_sym_STARlowLevelTraceSTAR,838,CompPkg,"*LOW-LEVEL-TRACE*",true);
 DO_SYMBOL(_sym_STARlowLevelTracePrintSTAR,910,CompPkg,"*LOW-LEVEL-TRACE-PRINT*",true);
 #endif
@@ -2330,7 +2355,11 @@ DO_SYMBOL(_sym_wild,183,KeywordPkg,"WILD",true);
 DO_SYMBOL(_sym_external,186,KeywordPkg,"EXTERNAL",true);
 DO_SYMBOL(_sym_newest,188,KeywordPkg,"NEWEST",true);
 DO_SYMBOL(_sym_ignoreInitImage,216,KeywordPkg,"IGNORE-INIT-IMAGE",true);
+<<<<<<< HEAD
 DO_SYMBOL(_sym__uid,231,KeywordPkg,"-UID",true);
+=======
+DO_SYMBOL(_sym__uid,230,KeywordPkg,"-UID",true);
+>>>>>>> 85f757e6e2a00461d274eee446f2b8d0cb5f2627
 DO_SYMBOL(_sym_pathname,252,KeywordPkg,"PATHNAME",true);
 DO_SYMBOL(_sym_single_escape_character,254,KeywordPkg,"SINGLE-ESCAPE-CHARACTER",true);
 DO_SYMBOL(_sym_passThrough,276,KeywordPkg,"PASS-THROUGH",true);
