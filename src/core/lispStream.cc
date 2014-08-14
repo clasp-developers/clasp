@@ -825,6 +825,21 @@ namespace core
     }
 
     static claspCharacter
+    eformat_read_char_no_cursor(T_sp strm)
+    {
+	claspCharacter c = StreamDecoder(strm)(strm);
+	unlikely_if (c == StreamEofChar(strm))
+            return EOF;
+	if (c != EOF) {
+            StreamLastChar(strm) = c;
+            StreamLastCode(strm,0) = c;
+            StreamLastCode(strm,1) = EOF;
+	}
+	return c;
+    }
+
+
+    static claspCharacter
     eformat_read_char(T_sp strm)
     {
 	claspCharacter c = StreamDecoder(strm)(strm);
@@ -835,6 +850,21 @@ namespace core
             StreamLastCode(strm,0) = c;
             StreamLastCode(strm,1) = EOF;
 	}
+	if ( c == '\n' )
+	{
+	    StreamInputCursor(strm).advanceLineNumber();
+	} else if ( c == '\r' )
+	{
+#if 0
+	    if ( this->peek_char() == '\n')
+	    {
+		c = this->_get();
+	    }
+#endif
+	    StreamInputCursor(strm).advanceLineNumber();
+        } else {
+            StreamInputCursor(strm).advanceColumn();
+        }
 	return c;
     }
 
@@ -858,7 +888,7 @@ namespace core
     static claspCharacter
     eformat_read_char_cr(T_sp strm)
     {
-	claspCharacter c = eformat_read_char(strm);
+	claspCharacter c = eformat_read_char_no_cursor(strm);
 	if (c == CLASP_CHAR_CODE_RETURN) {
             c = CLASP_CHAR_CODE_NEWLINE;
             StreamLastChar(strm) = c;
@@ -873,9 +903,9 @@ namespace core
     static claspCharacter
     eformat_read_char_crlf(T_sp strm)
     {
-	claspCharacter c = eformat_read_char(strm);
+	claspCharacter c = eformat_read_char_no_cursor(strm);
 	if (c == CLASP_CHAR_CODE_RETURN) {
-            c = eformat_read_char(strm);
+            c = eformat_read_char_no_cursor(strm);
             if (c == CLASP_CHAR_CODE_LINEFEED) {
                 StreamLastCode(strm,0) = CLASP_CHAR_CODE_RETURN;
                 StreamLastCode(strm,1) = c;
