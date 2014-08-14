@@ -225,29 +225,23 @@ namespace core
 	LongLongInt	_LineNumber;
 	/*! Keep track of column - if not valid return 0 */
 	uint		_Column;
+	LongLongInt	_PrevLineNumber;
+	/*! Keep track of column - if not valid return 0 */
+	uint		_PrevColumn;
     public:
 	StreamCursor(): _CursorIsValid(true), _LineNumber(1), _Column(0) {};
     public:
-	void advanceLineNumber(int num=1)
-	{
-	    this->_LineNumber += num;
-	    this->_Column = 0;
-	}
-	void advanceColumn(int num=1)
-	{
-	    this->_Column++;
-	}
+	void advanceLineNumber(T_sp strm, claspCharacter c, int num=1);
+	void advanceColumn(T_sp strm, claspCharacter c,int num=1);
 	void invalidate() { this->_CursorIsValid = false;};
-	void advanceForChar(char c)
+	void advanceForChar(T_sp strm, char c, char previous)
 	{
-	    if (c == '\n' || c == '\r')
-		this->advanceLineNumber();
+	    if ((c == '\n' || c == '\r') && previous != '\r')
+		this->advanceLineNumber(strm,c);
 	    else
-		this->advanceColumn();
+		this->advanceColumn(strm,c);
 	}
-	void backup() {
-	    this->_Column--;
-	}
+	void backup(T_sp strm, claspCharacter c);
     public:
 	LongLongInt lineNumber() const { return this->_LineNumber;};
 	uint column() const { return this->_Column;};
@@ -255,35 +249,6 @@ namespace core
 	bool isValid() const { return this->_CursorIsValid;};
     };
 
-
-    /*! Used to store one unput char */
-    class UnputChar
-    {
-    private:
-	bool		_HasUnputChar;
-	int		_UnputChar;
-    public:
-	UnputChar() : _HasUnputChar(false) {};
-	void clear() { this->_HasUnputChar = false;};
-	LongLongInt tellg() { return this->_HasUnputChar ? -1 : 0; };
-	void putback(claspChar c) { this->_UnputChar = c; this->_HasUnputChar = true;};
-	int get_char() { this->_HasUnputChar = false; return this->_UnputChar;};
-	int peek_char() { return this->_UnputChar;};
-	bool has_unput_char() { return this->_HasUnputChar;};
-	void updateCursor(StreamCursor& c) { c.backup();};
-    };
-
-
-
-    // Line counting stuff for input streams
-#define CURSOR_HANDLING_FUNCTIONS()                                     \
-    virtual uint lineNumber() const {return this->_Cursor.lineNumber();}; \
-    virtual uint column() const {return this->_Cursor.column();};       \
-    virtual void invalidateCursor() {this->_Cursor.invalidate();}       \
-    virtual void advanceLineNumber(int num=1) {this->_Cursor.advanceLineNumber(num);}; \
-    virtual void advanceColumn(int num=1) {this->_Cursor.advanceColumn(num);}; \
-
-// last
 
 
 };
