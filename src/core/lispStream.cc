@@ -136,6 +136,11 @@ namespace core
         return stream->_ByteStack;
     }
 
+    StreamCursor& StreamInputCursor(T_sp strm)
+    {
+        Stream_sp stream = strm.as<Stream_O>();
+        return stream->_InputCursor;
+    }
 
     Fixnum& StreamLastCode(T_sp strm, int index)
     {
@@ -857,20 +862,13 @@ namespace core
 	if (c == CLASP_CHAR_CODE_RETURN) {
             c = CLASP_CHAR_CODE_NEWLINE;
             StreamLastChar(strm) = c;
+            StreamInputCursor(strm).advanceLineNumber();
+	} else {
+            StreamInputCursor(strm).advanceColumn();
 	}
 	return c;
     }
 
-    static claspCharacter
-    eformat_write_char_cr(T_sp strm, claspCharacter c)
-    {
-	if (c == CLASP_CHAR_CODE_NEWLINE) {
-            eformat_write_char(strm, CLASP_CHAR_CODE_RETURN);
-            StreamOutputColumn(strm) = 0;
-            return c;
-	}
-	return eformat_write_char(strm, c);
-    }
 
     static claspCharacter
     eformat_read_char_crlf(T_sp strm)
@@ -889,8 +887,22 @@ namespace core
                 StreamLastCode(strm,1) = EOF;
             }
             StreamLastChar(strm) = c;
-	}
+            StreamInputCursor(strm).advanceLineNumber();
+	} else {
+            StreamInputCursor(strm).advanceColumn();
+        }
 	return c;
+    }
+
+    static claspCharacter
+    eformat_write_char_cr(T_sp strm, claspCharacter c)
+    {
+	if (c == CLASP_CHAR_CODE_NEWLINE) {
+            eformat_write_char(strm, CLASP_CHAR_CODE_RETURN);
+            StreamOutputColumn(strm) = 0;
+            return c;
+	}
+	return eformat_write_char(strm, c);
     }
 
     static claspCharacter
@@ -6060,7 +6072,8 @@ namespace core {
     int clasp_input_lineno(T_sp strm)
     {
         if ( Stream_sp sin = strm.asOrNull<Stream_O>() ) {
-            return sin->lineno();
+            StreamCursor& ic = StreamInputCursor(sin);
+            return sin->_LineNumber;
         }
         return 0;
     }
@@ -6068,7 +6081,8 @@ namespace core {
     int clasp_input_column(T_sp strm)
     {
         if ( Stream_sp sin = strm.asOrNull<Stream_O>() ) {
-            return sin->column();
+            StreamCursor& ic = StreamInputCursor(sin);
+            return sin->_Column;
         }
         return 0;
     }
