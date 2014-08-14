@@ -745,6 +745,7 @@ namespace gctools {
 
 };
 
+#ifdef USE_MPS
 extern "C" {
 
     mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
@@ -754,5 +755,6 @@ extern "C" {
     void weak_obj_pad(mps_addr_t addr, size_t size);
 
 };
+#endif
 
 #endif // gctools_gcweak_H
