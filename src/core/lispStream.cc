@@ -251,35 +251,25 @@ namespace core
         return ss->_SynonymSymbol;
     }
 
+    Str_sp& FileStreamFilename(T_sp strm)
+    {
+        FileStream_sp fds = strm.as<FileStream_O>();
+        return fds->_Filename;
+    }
+
+    T_sp& FileStreamEltType(T_sp strm)
+    {
+        FileStream_sp iofs = strm.as<FileStream_O>();
+        return iofs->_ElementType;
+    }
+
     int& IOFileStreamDescriptor(T_sp strm)
     {
         IOFileStream_sp fds = strm.as<IOFileStream_O>();
         return fds->_FileDescriptor;
     }
 
-    Str_sp& IOFileStreamFilename(T_sp strm)
-    {
-        IOFileStream_sp fds = strm.as<IOFileStream_O>();
-        return fds->_Filename;
-    }
 
-    T_sp& IOFileStreamEltType(T_sp strm)
-    {
-        IOFileStream_sp iofs = strm.as<IOFileStream_O>();
-        return iofs->_ElementType;
-    }
-
-    T_sp& IOStreamStreamEltType(T_sp strm)
-    {
-        IOStreamStream_sp io = strm.as<IOStreamStream_O>();
-        return io->_ElementType;
-    }
-
-    Str_sp& IOStreamStreamFilename(T_sp strm)
-    {
-        IOStreamStream_sp io = strm.as<IOStreamStream_O>();
-        return io->_Filename;
-    }
     FILE*& IOStreamStreamFile(T_sp strm)
     {
         IOStreamStream_sp io = strm.as<IOStreamStream_O>();
@@ -3028,7 +3018,7 @@ namespace core
     static T_sp
     io_file_element_type(T_sp strm)
     {
-	return IOFileStreamEltType(strm);
+	return FileStreamEltType(strm);
     }
 
     static T_sp
@@ -3379,7 +3369,7 @@ namespace core
 	StreamOps(stream).write_char = eformat_write_char;
 	switch (flags & CLASP_STREAM_FORMAT) {
 	case CLASP_STREAM_BINARY:
-            IOStreamStreamEltType(stream) = Cons_O::createList( _lisp->_true(), Fixnum_O::create(byte_size));
+            FileStreamEltType(stream) = Cons_O::createList( _lisp->_true(), Fixnum_O::create(byte_size));
             StreamFormat(stream) = t;
             StreamOps(stream).read_char = not_character_read_char;
             StreamOps(stream).write_char = not_character_write_char;
@@ -3387,28 +3377,28 @@ namespace core
 #ifdef ECL_UNICODE
             /*case ECL_ISO_8859_1:*/
 	case CLASP_STREAM_LATIN_1:
-            IOStreamStreamEltType(stream) = cl::_sym_BaseChar_O;
+            FileStreamEltType(stream) = cl::_sym_BaseChar_O;
             byte_size = 8;
             StreamFormat(stream) = kw::_sym_latin_1;
             stream->stream.encoder = passthrough_encoder;
             StreamDecoder(stream) = passthrough_decoder;
             break;
 	case CLASP_STREAM_UTF_8:
-            IOStreamStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_Character_O;
             byte_size = 8;
             StreamFormat(stream) = @':utf-8';
             stream->stream.encoder = utf_8_encoder;
             StreamDecoder(stream) = utf_8_decoder;
             break;
 	case CLASP_STREAM_UCS_2:
-            IOStreamStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_Character_O;
             byte_size = 8*2;
             StreamFormat(stream) = @':ucs-2';
             stream->stream.encoder = ucs_2_encoder;
             StreamDecoder(stream) = ucs_2_decoder;
             break;
 	case CLASP_STREAM_UCS_2BE:
-            IOStreamStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_Character_O;
             byte_size = 8*2;
             if (flags & CLASP_STREAM_LITTLE_ENDIAN) {
                 StreamFormat(stream) = @':ucs-2le';
@@ -3421,14 +3411,14 @@ namespace core
             }
             break;
 	case CLASP_STREAM_UCS_4:
-            IOStreamStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_Character_O;
             byte_size = 8*4;
             StreamFormat(stream) = @':ucs-4be';
             stream->stream.encoder = ucs_4_encoder;
             StreamDecoder(stream) = ucs_4_decoder;
             break;
 	case CLASP_STREAM_UCS_4BE:
-            IOStreamStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_Character_O;
             byte_size = 8*4;
             if (flags & CLASP_STREAM_LITTLE_ENDIAN) {
                 StreamFormat(stream) = @':ucs-4le';
@@ -3441,7 +3431,7 @@ namespace core
             }
             break;
 	case CLASP_STREAM_USER_FORMAT:
-            IOStreamStreamEltType(stream) = cl::_sym_Character_O;
+            FileStreamEltType(stream) = cl::_sym_Character_O;
             byte_size = 8;
             StreamFormat(stream) = StreamFormat(stream)_table;
             if (af_consP(StreamFormat(stream))) {
@@ -3453,7 +3443,7 @@ namespace core
             }
             break;
 	case CLASP_STREAM_US_ASCII:
-            IOStreamStreamEltType(stream) = cl::_sym_BaseChar_O;
+            FileStreamEltType(stream) = cl::_sym_BaseChar_O;
             byte_size = 8;
             StreamFormat(stream) = @':us-ascii';
             StreamEncoder(stream) = ascii_encoder;
@@ -3461,7 +3451,7 @@ namespace core
             break;
 #else
 	case CLASP_STREAM_DEFAULT_FORMAT:
-            IOStreamStreamEltType(stream) = cl::_sym_BaseChar_O;
+            FileStreamEltType(stream) = cl::_sym_BaseChar_O;
             byte_size = 8;
             StreamFormat(stream) = kw::_sym_passThrough;
             StreamEncoder(stream) = passthrough_encoder;
@@ -3555,7 +3545,7 @@ namespace core
     clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm,
                                  cl_fixnum byte_size, int flags, T_sp external_format)
     {
-	T_sp stream = FileStream_O::create();
+	T_sp stream = IOFileStream_O::create();
 	switch(smm) {
 	case clasp_smm_input:
             smm = clasp_smm_input_file;
@@ -3579,7 +3569,7 @@ namespace core
 	StreamMode(stream) = smm;
 	StreamClosed(stream) = 0;
 	set_stream_elt_type(stream, byte_size, flags, external_format);
-	IOFileStreamFilename(stream) = fname; /* not really used */
+	FileStreamFilename(stream) = fname; /* not really used */
 	StreamOutputColumn(stream) = 0;
 	IOFileStreamDescriptor(stream) = fd;
 	StreamLastOp(stream) = 0;
@@ -4370,7 +4360,7 @@ namespace core
             FEerror("Not a valid mode ~D for clasp_make_stream_from_FILE", 1, Fixnum_O::create(smm).asTPtr());
 	}
 	set_stream_elt_type(stream, byte_size, flags, external_format);
-	IOStreamStreamFilename(stream) = fname; /* not really used */
+	FileStreamFilename(stream) = fname; /* not really used */
 	StreamOutputColumn(stream) = 0;
         IOStreamStreamFile(stream) = reinterpret_cast<FILE*>(f);
 	StreamLastOp(stream) = 0;
@@ -6356,7 +6346,7 @@ namespace core {
     {
         Str_sp sname = Str_O::create(name);
         T_sp stream = clasp_make_file_stream_from_fd(sname,fd,smm,8,CLASP_STREAM_DEFAULT_FORMAT,externalFormat);
-        IOFileStreamEltType(stream) = elementType;
+        FileStreamEltType(stream) = elementType;
         return stream;
     }
         
@@ -6802,6 +6792,7 @@ void initialize_lispStream()
         ClDefun(close);
         SYMBOL_EXPORT_SC_(ClPkg,get_output_stream_string);
         ClDefun(get_output_stream_string);
+        ClDefun(open);
 #if 0
         SYMBOL_EXPORT_SC_(CorePkg,streamLinenumber);
         Defun(streamLinenumber);
