@@ -6574,7 +6574,6 @@ namespace core {
 		}
 	    } else {
 		char cc = ch->get();
-                IMPLEMENT_MEF(BF("Better eoln handling in read_line"));
 		if ( cc == '\n') {
 		    break;
 		} else if ( cc == '\r' ) {
@@ -6900,6 +6899,7 @@ void initialize_lispStream()
         Defun(streamLinenumber);
         SYMBOL_EXPORT_SC_(CorePkg,streamColumn);
         Defun(streamColumn);
+        ClDefun(make_string_input_stream);
     }
 
 
