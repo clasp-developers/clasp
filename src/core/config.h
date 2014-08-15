@@ -72,6 +72,7 @@ typedef int claspCharacter;
 #define CLASP_CHAR_CODE_NEWLINE '\n'
 #define CLASP_CHAR_CODE_RETURN '\r'
 
+#define HAVE_FSEEKO
 
 #ifndef HAVE_FSEEKO
 #define clasp_off_t int
