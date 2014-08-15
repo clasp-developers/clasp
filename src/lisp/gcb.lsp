@@ -2338,7 +2338,16 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 
-(defparameter *max-parallel-searches* 6)
+(defparameter *max-parallel-searches* (parse-integer (core:getenv "PJOBS")))
+
+(defun split-jobs (job-list jobs-per-group)
+  (do* ((cur job-list (nthcdr jobs-per-group job-list))
+        (part (subseq job-list 0 job-list) (subseq job-list 0 job-list))
+        (parts (car part parts) (car part parts)))
+      ((null cur) parts)))
+
+
+
 
 (defun fork-jobs (proc job-list)
   (setf (multitool-results *tools*) (make-project))

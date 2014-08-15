@@ -8,7 +8,7 @@
 namespace gctools {
 
 
-#ifdef USE_MPS
+#if 0 //def USE_MPS
     void call_with_alloc_lock( fn_type fn, void* client_data)
     {
         fn(client_data);

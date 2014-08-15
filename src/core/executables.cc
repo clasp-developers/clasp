@@ -100,7 +100,7 @@ namespace core
         return this->closure->name;
     }
 
-    T_mv Function_O::functionFile() const {
+    T_mv Function_O::functionSourcePos() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         SourcePosInfo_sp spi = this->closure->sourcePosInfo();
         SourceFileInfo_sp sfi = af_sourceFileInfo(spi);
@@ -177,7 +177,7 @@ namespace core
 	    .def("core:functionKind",&Function_O::functionKind)
 	    .def("core:closedEnvironment",&Function_O::closedEnvironment)
 	    .def("functionName",&Function_O::functionName)
-	    .def("core:functionFile",&Function_O::functionFile)
+	    .def("core:functionSourcePos",&Function_O::functionSourcePos)
             .def("core:functionLambdaListHandler",&Function_O::functionLambdaListHandler)
 	    ;
 	ClDefun(functionLambdaExpression);

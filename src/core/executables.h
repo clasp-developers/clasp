@@ -100,7 +100,7 @@ namespace core {
         LambdaListHandler_sp functionLambdaListHandler() const;
         Environment_sp closedEnvironment() const;
         T_sp functionName() const;
-        T_mv functionFile() const;
+        T_mv functionSourcePos() const;
 
     };
 };
