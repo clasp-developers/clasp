@@ -5554,7 +5554,6 @@ namespace core
                  T_sp external_format,
                  T_sp cstream )
     {_G();
-        printf("%s:%d In open with filename=%s\n", __FILE__, __LINE__, _rep_(filename).c_str());
         T_sp strm;
         enum StreamMode smm;
         int flags = 0;
@@ -5641,7 +5640,7 @@ namespace core
 	FD_SET(fileno, &fds);
 	retv = select(fileno + 1, &fds, NULL, NULL, &tv);
 	if (UNLIKELY(retv < 0))
-            file_libc_error(@[stream-error], stream, "Error while listening to stream.", 0);
+            file_libc_error(cl::_sym_streamError, stream, "Error while listening to stream.", 0);
 	else if (retv > 0)
             return CLASP_LISTEN_AVAILABLE;
 	else
@@ -5728,13 +5727,12 @@ namespace core
             /* regular file */
             clasp_off_t old_pos = clasp_ftello(fp), end_pos;
             unlikely_if (old_pos<0) {
-                printf("%s:%d ftello error old_pos = %ld error = %s\n", __FILE__, __LINE__, old_pos, strerror(errno));
+//                printf("%s:%d ftello error old_pos = %ld error = %s\n", __FILE__, __LINE__, old_pos, strerror(errno));
                 file_libc_error(cl::_sym_fileError, stream,
                                 "Unable to check file position in SEEK_END", 0);
             }
             unlikely_if (clasp_fseeko(fp, 0, SEEK_END) != 0) {
-                printf("%s:%d Seek error fp=%p error = %s\n", __FILE__, __LINE__, fp, strerror(errno)
-                    );
+//                printf("%s:%d Seek error fp=%p error = %s\n", __FILE__, __LINE__, fp, strerror(errno));
                 file_libc_error(cl::_sym_fileError, stream,
                                 "Unable to check file position in SEEK_END", 0);
             }
@@ -6027,9 +6025,8 @@ namespace core
 #if 0
 
     void
-    init_file(void)
+    initialize_lispStream(void)
     {
-        IMPLEMENT_MEF(BF("Implement this elsewhere"));
 	int flags;
 	T_sp standard_input;
 	T_sp standard_output;

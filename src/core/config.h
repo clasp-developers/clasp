@@ -72,7 +72,11 @@ typedef int claspCharacter;
 #define CLASP_CHAR_CODE_NEWLINE '\n'
 #define CLASP_CHAR_CODE_RETURN '\r'
 
-#define HAVE_FSEEKO
+
+// This should be set up by autoconf or bjam
+
+#define HAVE_SELECT 1
+#define HAVE_FSEEKO 1
 
 #ifndef HAVE_FSEEKO
 #define clasp_off_t int
