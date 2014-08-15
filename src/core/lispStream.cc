@@ -5708,6 +5708,7 @@ namespace core
     static int
     flisten(T_sp stream, FILE *fp)
     {
+        ASSERT(stream.notnilp());
 	int aux;
 	if (feof(fp))
             return CLASP_LISTEN_EOF;
@@ -5723,13 +5724,15 @@ namespace core
 	{
             /* regular file */
             clasp_off_t old_pos = clasp_ftello(fp), end_pos;
-            unlikely_if (clasp_fseeko(fp, 0, SEEK_END) != 0)
+            unlikely_if (clasp_fseeko(fp, 0, SEEK_END) != 0) {
+                printf("%s:%d Seek error fp=%p\n", __FILE__, __LINE__, fp);
                 file_libc_error(cl::_sym_fileError, stream,
-                                "Unable to check file position", 0);
+                                "Unable to check file position in SEEK_END", 0);
+            }
             end_pos = clasp_ftello(fp);
             unlikely_if (clasp_fseeko(fp, old_pos, SEEK_SET) != 0)
                 file_libc_error(cl::_sym_fileError, stream,
-                                "Unable to check file position", 0);
+                                "Unable to check file position in SEEK_SET", 0);
             return (end_pos > old_pos ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_EOF);
 	}
 	return !CLASP_LISTEN_AVAILABLE;
@@ -5892,10 +5895,11 @@ namespace core
 	T_sp rest = clasp_grab_rest_args(args,narg);
         clasp_va_end(args);
 
-        af_signalSimpleError( error_type, _Nil<T_O>(),
-                              Str_O::create("~?~%C library explanation: ~A."),
-                              Cons_O::createList( Str_O::create(msg), rest,
-                                                  error), _Nil<T_O>());
+        eval::funcall(core::_sym_signalSimpleError,
+                      error_type, _Nil<T_O>(),
+                      Str_O::create("~?~%C library explanation: ~A."),
+                      Cons_O::createList( Str_O::create(msg), rest,
+                                          error), _Nil<T_O>());
     }
 
     static void
