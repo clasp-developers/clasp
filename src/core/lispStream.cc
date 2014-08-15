@@ -3138,7 +3138,7 @@ namespace core
 	unlikely_if (offset < 0)
             io_error(strm);
 	if (sizeof(clasp_off_t) == sizeof(long)) {
-            output = Integer_O::create(offset);
+            output = Integer_O::create((LongLongInt)offset);
 	} else {
             output = clasp_off_t_to_integer(offset);
 	}
@@ -3811,7 +3811,7 @@ namespace core
 	if (offset < 0)
             io_error(strm);
 	if (sizeof(clasp_off_t) == sizeof(long)) {
-            output = Integer_O::create(offset);
+            output = Integer_O::create((LongLongInt)offset);
 	} else {
             output = clasp_off_t_to_integer(offset);
 	}
@@ -5281,6 +5281,7 @@ namespace core
 #define DOCS_cl_input_stream_p "input_stream_p"
     T_sp cl_input_stream_p(T_sp strm)
     {_G();
+        ASSERT(strm!=NULL);
 	return (clasp_input_stream_p(strm) ? _lisp->_true() : _Nil<T_O>());
     }
 
@@ -5293,6 +5294,7 @@ namespace core
 #define DOCS_cl_output_stream_p "output_stream_p"
     T_sp cl_output_stream_p(T_sp strm)
     {
+        ASSERT(strm!=NULL);
 	return (clasp_output_stream_p(strm) ? _lisp->_true() : _Nil<T_O>());
     }
 
@@ -5302,6 +5304,7 @@ namespace core
     T_sp
     cl_interactive_stream_p(T_sp strm)
     {
+        ASSERT(strm!=NULL);
 	return (stream_dispatch_table(strm).interactive_p(strm)? _lisp->_true() : _Nil<T_O>());
     }
 
@@ -5717,15 +5720,21 @@ namespace core
             return CLASP_LISTEN_AVAILABLE;
 #endif
 	aux = file_listen(stream, fileno(fp));
-	if (aux != -3)
+        if (aux != -3)
             return aux;
-	/* This code is portable, and implements the expected behavior for regular files.
-	   It will fail on noninteractive streams. */
-	{
+	 /* This code is portable, and implements the expected behavior for regular files.
+	    It will fail on noninteractive streams. */
+        {
             /* regular file */
             clasp_off_t old_pos = clasp_ftello(fp), end_pos;
+            unlikely_if (old_pos<0) {
+                printf("%s:%d ftello error old_pos = %ld error = %s\n", __FILE__, __LINE__, old_pos, strerror(errno));
+                file_libc_error(cl::_sym_fileError, stream,
+                                "Unable to check file position in SEEK_END", 0);
+            }
             unlikely_if (clasp_fseeko(fp, 0, SEEK_END) != 0) {
-                printf("%s:%d Seek error fp=%p\n", __FILE__, __LINE__, fp);
+                printf("%s:%d Seek error fp=%p error = %s\n", __FILE__, __LINE__, fp, strerror(errno)
+                    );
                 file_libc_error(cl::_sym_fileError, stream,
                                 "Unable to check file position in SEEK_END", 0);
             }
@@ -5743,7 +5752,7 @@ namespace core
     {
 	T_sp output;
 	if (sizeof(clasp_off_t) == sizeof(cl_fixnum)) {
-            output = Integer_O::create(offset);
+            output = Integer_O::create((LongLongInt)offset);
 	} else if (offset <= MOST_POSITIVE_FIXNUM) {
             output = Fixnum_O::create((cl_fixnum)offset);
 	} else {
