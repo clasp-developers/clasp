@@ -1,4 +1,8 @@
 
+testSeek: testSeek.cc
+	clang++  -o testSeek testSeek.cc
+
+
 wrapfun: wrapfun.cc
 	clang++ -std=c++11 -stdlib=libc++ -o wrapfun wrapfun.cc
 

@@ -2357,13 +2357,13 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (core:exit))
 
 (defvar *parallel-search-pids* nil)
-(defun parallel-search-all (&key test)
+(defun parallel-search-all (&key test one-at-a-time)
   "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
   (setq *parallel-search-pids* nil)
   (let ((all-jobs (if test
                       $test-search
                       (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$"))))
-        (spare-processes 1 #+(or)*max-parallel-searches*))
+        (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
     (serialize:save-archive all-jobs (project-pathname "project-all" "dat"))
     (format t "all-jobs: ~a~%" all-jobs)
     (dotimes (proc (length all-jobs))
