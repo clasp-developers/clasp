@@ -660,7 +660,7 @@ namespace core
 	for (; bs >= 8; bs -= 8) {
             if (read_byte8(strm, &c, 1) < 1)
                 return _Nil<T_O>();
-            if (output) {
+            if (output.notnilp()) {
                 output = cl_logior(Cons_O::createList(Fixnum_O::create(c),
                                                       clasp_ash(output, 8)));
             } else if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES) {
@@ -2983,7 +2983,7 @@ namespace core
 	cl_index out = 0;
 	while (n) {
             T_sp l = StreamByteStack(strm);
-            if (l == _Nil<T_O>())
+            if (l.nilp())
                 return out + StreamOps(strm).read_byte8(strm, c, n);
             *(c++) = brcl_fixnum(oCar(l));
             out++;
@@ -5503,7 +5503,7 @@ namespace core
             FEerror("Illegal stream mode ~S", 1, Fixnum_O::create(smm).asTPtr());
 	}
 	if (flags & CLASP_STREAM_C_STREAM) {
-            FILE *fp;
+            FILE *fp = NULL;
             safe_close(f);
             /* We do not use fdopen() because Windows seems to
              * have problems with the resulting streams. Furthermore, even for
@@ -5515,6 +5515,7 @@ namespace core
             case clasp_smm_output:
             case clasp_smm_io: fp = safe_fopen(fname.c_str(), OPEN_RW); break;
             default:; /* never reached */
+                SIMPLE_ERROR(BF("Illegal smm mode: %d for CLASP_STREAM_C_STREAM") % smm);
                 UNREACHABLE();
             }
             output = clasp_make_stream_from_FILE(fn, fp, smm, byte_size, flags,
@@ -5545,11 +5546,12 @@ namespace core
     T_sp cl_open(T_sp filename,
                  T_sp direction,
                  T_sp element_type, 
-                 T_sp if_exists, T_sp iesp,
-                 T_sp if_does_not_exist, T_sp idnesp,
+                 T_sp if_exists, bool iesp,
+                 T_sp if_does_not_exist, bool idnesp,
                  T_sp external_format,
                  T_sp cstream )
     {_G();
+        printf("%s:%d In open with filename=%s\n", __FILE__, __LINE__, _rep_(filename).c_str());
         T_sp strm;
         enum StreamMode smm;
         int flags = 0;
