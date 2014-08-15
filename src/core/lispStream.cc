@@ -5237,8 +5237,14 @@ namespace core
 	return Fixnum_O::create(clasp_file_column(strm));
     }
 
-    T_sp
-    cl_file_length(T_sp strm)
+
+
+    
+    
+#define ARGS_cl_file_length "(strm)"
+#define DECL_cl_file_length ""
+#define DOCS_cl_file_length "file_length"
+    T_sp cl_file_length(T_sp strm)
     {
 	return clasp_file_length(strm);
     }
@@ -6900,6 +6906,7 @@ void initialize_lispStream()
         SYMBOL_EXPORT_SC_(CorePkg,streamColumn);
         Defun(streamColumn);
         ClDefun(make_string_input_stream);
+        ClDefun(file_length);
     }
 
 
