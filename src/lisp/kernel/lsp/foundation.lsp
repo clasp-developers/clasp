@@ -360,7 +360,7 @@ the corresponding VAR.  Returns NIL."
   (core:function-name x))
 
 (defun compiled-function-file (x)
-  (core:function-file x))
+  (core:function-source-pos x))
 
 
 (in-package :cl)
