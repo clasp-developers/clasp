@@ -727,8 +727,8 @@ namespace core {
     T_sp cl_open(T_sp filename,
                  T_sp direction,
                  T_sp element_type, 
-                 T_sp if_exists, T_sp iesp,
-                 T_sp if_does_not_exist, T_sp idnesp,
+                 T_sp if_exists, bool iesp,
+                 T_sp if_does_not_exist, bool idnesp,
                  T_sp external_format,
                  T_sp cstream );
 
