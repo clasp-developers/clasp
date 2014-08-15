@@ -5551,7 +5551,7 @@ namespace core
                  T_sp external_format,
                  T_sp cstream )
     {_G();
-        printf("%s:%d In open with filename=%s\n", __FILE__, __LINE__, _rep_(filename).c_str());
+//        printf("%s:%d In open with filename=%s\n", __FILE__, __LINE__, _rep_(filename).c_str());
         T_sp strm;
         enum StreamMode smm;
         int flags = 0;
