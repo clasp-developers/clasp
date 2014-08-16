@@ -402,7 +402,17 @@ namespace gctools {
 #endif
     };
 
+};
 
+extern "C" {
+    void dbg_room()
+    {
+        af_room(_Nil<core::T_O>(),core::Fixnum_O::create(0),_Nil<core::Str_O>());
+    }
+
+}
+
+namespace gctools {
 
 
     

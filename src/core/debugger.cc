@@ -301,30 +301,30 @@ extern "C" {
 #define ARGS_af_gotoIhsTop "()"
 #define DECL_af_gotoIhsTop ""
 #define DOCS_af_gotoIhsTop "gotoIhsTop"
-    void af_gotoIhsTop()
-    {_G();
-        _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsTop()));
-    };
+        void af_gotoIhsTop()
+        {_G();
+            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsTop()));
+        };
 	
 
 #define ARGS_af_gotoIhsPrev "()"
 #define DECL_af_gotoIhsPrev ""
 #define DOCS_af_gotoIhsPrev "gotoIhsPrev"
-    void af_gotoIhsPrev()
-    {_G();
-        int ihsCur = af_ihsCurrentFrame();
-        _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsPrev(ihsCur)));
-    };
+        void af_gotoIhsPrev()
+        {_G();
+            int ihsCur = af_ihsCurrentFrame();
+            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsPrev(ihsCur)));
+        };
 	
 
 #define ARGS_af_gotoIhsNext "()"
 #define DECL_af_gotoIhsNext ""
 #define DOCS_af_gotoIhsNext "gotoIhsNext"
-    void af_gotoIhsNext()
-    {_G();
-        int ihsCur = af_ihsCurrentFrame();
-        _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsNext(ihsCur)));
-    };
+        void af_gotoIhsNext()
+        {_G();
+            int ihsCur = af_ihsCurrentFrame();
+            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsNext(ihsCur)));
+        };
 	
 
 	
@@ -332,12 +332,12 @@ extern "C" {
 #define ARGS_af_printCurrentIhsFrame "()"
 #define DECL_af_printCurrentIhsFrame ""
 #define DOCS_af_printCurrentIhsFrame "printCurrentIhsFrame"
-    void af_printCurrentIhsFrame()
-    {_G();
-        int ihsCur = af_ihsCurrentFrame();
-        Function_sp fun = af_ihsFun(ihsCur);
-        printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
-    };
+        void af_printCurrentIhsFrame()
+        {_G();
+            int ihsCur = af_ihsCurrentFrame();
+            Function_sp fun = af_ihsFun(ihsCur);
+            printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
+        };
 
 
 
@@ -346,67 +346,77 @@ extern "C" {
 #define ARGS_af_printCurrentIhsFrameEnvironment "()"
 #define DECL_af_printCurrentIhsFrameEnvironment ""
 #define DOCS_af_printCurrentIhsFrameEnvironment "printCurrentIhsFrameEnvironment"
-    void af_printCurrentIhsFrameEnvironment()
-    {_G();
-        Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
-        if ( env.notnilp() )
-        {
-            printf("%s\n", env->environmentStackAsString().c_str());
-        } else 
-        {
-            printf("-- Only global environment available --\n");
+        void af_printCurrentIhsFrameEnvironment()
+        {_G();
+            Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
+            if ( env.notnilp() )
+            {
+                printf("%s\n", env->environmentStackAsString().c_str());
+            } else 
+            {
+                printf("-- Only global environment available --\n");
+            }
         }
-    }
 	
 	
 #define ARGS_af_evalPrint "(arg)"
 #define DECL_af_evalPrint ""
 #define DOCS_af_evalPrint "evalPrint"
-    void af_evalPrint(const string& expr)
-    {_G();
-        printf("If this locks up then there was an error in the evaluation\n");
-        printf("Figure out how to make debugger.cc>>af_evalPrint always return\n");
-        int ihsCur = af_ihsCurrentFrame();
-        Environment_sp env = af_ihsEnv(ihsCur);
-        _lisp->readEvalPrintString(expr,env,true);
-    };
+        void af_evalPrint(const string& expr)
+        {_G();
+            printf("If this locks up then there was an error in the evaluation\n");
+            printf("Figure out how to make debugger.cc>>af_evalPrint always return\n");
+            int ihsCur = af_ihsCurrentFrame();
+            Environment_sp env = af_ihsEnv(ihsCur);
+            _lisp->readEvalPrintString(expr,env,true);
+        };
 
 
 
-    void dbg_describe(T_sp obj)
-    {
-        DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
-	stringstream ss;
-	printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());
-	ss << _rep_(obj);
-	printf("dbg_describe: %s\n", ss.str().c_str());
-    }
-
-    void dbg_describeActivationFrame(ActivationFrame_sp obj)
-    {
-        DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
-	stringstream ss;
-	printf("dbg_describe ActivationFrame class--> %s\n",_rep_(obj->__class()->className()).c_str());
-	ss << _rep_(obj);
-	printf("dbg_describe: %s\n", ss.str().c_str());
-    }
-
-
-    void dbg_describeTPtr(T_O* raw)
-    {
-        if ( raw == NULL ) {
-            printf("dbg_describe: NULL\n");
-            return;
+        void dbg_describe(T_sp obj)
+        {
+            DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
+            stringstream ss;
+            printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());
+            ss << _rep_(obj);
+            printf("dbg_describe: %s\n", ss.str().c_str());
         }
-        T_sp obj = gctools::smart_ptr<T_O>(raw);
-        DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
-	stringstream ss;
-	printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());
-	ss << _rep_(obj);
-	printf("dbg_describe: %s\n", ss.str().c_str());
-    }
+
+        void dbg_describeActivationFrame(ActivationFrame_sp obj)
+        {
+            DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
+            stringstream ss;
+            printf("dbg_describe ActivationFrame class--> %s\n",_rep_(obj->__class()->className()).c_str());
+            ss << _rep_(obj);
+            printf("dbg_describe: %s\n", ss.str().c_str());
+        }
+
+
+        void dbg_describeTPtr(T_O* raw)
+        {
+            if ( raw == NULL ) {
+                printf("dbg_describe: NULL\n");
+                return;
+            }
+            T_sp obj = gctools::smart_ptr<T_O>(raw);
+            DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
+            stringstream ss;
+            printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());
+            ss << _rep_(obj);
+            printf("dbg_describe: %s\n", ss.str().c_str());
+        }
 
     };
+
+
+    /*! Sets the flag that controlC has been pressed so that when
+      the process continues it will drop into the debugging repl */
+    void dbg_controlC()
+    {
+        SET_SIGNAL(SIGINT);
+        printf("%s:%d   Simulating SIGINT (Control-C) signal - debugging REPL will start up when you continue\n", __FILE__, __LINE__ );
+    }
+
 };
 
 
