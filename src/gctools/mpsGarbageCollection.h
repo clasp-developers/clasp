@@ -403,6 +403,29 @@ namespace gctools {
     template <typename T> class smart_ptr;
 };
 
+
+#if 1
+template <typename T>
+inline mps_res_t smartPtrFix(mps_ss_t _ss
+                        , mps_word_t _mps_zs
+                        , mps_word_t _mps_w
+                        , mps_word_t& _mps_ufs
+                        , mps_word_t _mps_wt
+                        , const gctools::smart_ptr<T>* sptrP
+#ifdef DEBUG_MPS
+                        , const char* sptr_name
+#endif
+    ) {
+    DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP)  % (sptrP)->px_ref()); 
+    if ( sptrP->pointerp() ) {                                    
+	if ( MPS_FIX1(_ss,(sptrP)->px_ref()) ) {          
+	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&sptrP->px_ref())); 
+            if (res != MPS_RES_OK) return res;              
+        }								
+    };
+    return MPS_RES_OK;
+};
+#else
 template <typename T>
 inline mps_res_t smartPtrFix(mps_ss_t _ss
                         , mps_word_t _mps_zs
@@ -438,6 +461,14 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss
     };
     return MPS_RES_OK;
 };
+#endif
+
+
+
+
+
+
+
 
 #ifdef DEBUG_MPS
 #define SMART_PTR_FIX(_smartptr_) smartPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,&_smartptr_,#_smartptr_)

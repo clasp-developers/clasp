@@ -945,16 +945,13 @@ namespace gctools {
             return myAddress;
 #endif
 #ifdef USE_MPS
-            typedef typename GCHeader<TY>::HeaderType HeadT;
             mps_addr_t  addr;
             container_pointer myAddress(NULL);
-            size_t size = sizeof_container_with_header<container_type>(num);
+            size_t size = sizeof_container<container_type>(num);
             do {
                 mps_res_t res = mps_reserve(&addr,_global_weak_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
-                HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT(GCKind<TY>::Kind);
-                myAddress = BasePtrToMostDerivedPtr<container_type>(addr);
+                container_pointer myAddress = reinterpret_cast<container_pointer>(addr);
                 new (myAddress) container_type(num);
             }
             while (!mps_commit(_global_weak_link_allocation_point,addr,size));
@@ -1023,16 +1020,13 @@ namespace gctools {
             return myAddress;
 #endif
 #ifdef USE_MPS
-            typedef typename GCHeader<TY>::HeaderType HeadT;
             mps_addr_t  addr;
             container_pointer myAddress(NULL);
-            size_t size = sizeof_container_with_header<container_type>(num);
+            size_t size = sizeof_container<container_type>(num);
             do {
                 mps_res_t res = mps_reserve(&addr,_global_strong_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
-                HeadT* header = reinterpret_cast<HeadT*>(addr);
-                new (header) HeadT(GCKind<TY>::Kind);
-                myAddress = BasePtrToMostDerivedPtr<container_type>(addr);
+                container_pointer myAddress = reinterpret_cast<container_pointer>(addr);
                 new (myAddress) container_type(num);
             }
             while (!mps_commit(_global_strong_link_allocation_point,addr,size));
@@ -1193,12 +1187,13 @@ namespace gctools {
 #ifdef USE_MPS
             mps_addr_t  addr;
             size_t size = sizeof(VT);
+            value_pointer myAddress;
             do {
                 mps_res_t res = mps_reserve(&addr,_global_weak_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCWeakPointerAllocator_mps"));
-            }
-            while (!mps_commit(_global_weak_link_allocation_point,addr,size));
-            value_pointer myAddress = reinterpret_cast<value_pointer>(addr);
+                myAddress = reinterpret_cast<value_pointer>(addr);
+                new (myAddress) VT(val);
+            } while (!mps_commit(_global_weak_link_allocation_point,addr,size));
             return myAddress;
 #endif
         }
