@@ -1858,9 +1858,7 @@ namespace core
                                        , declares
                                        , docstring
                                        , code
-                                       , env
-                                       , _Nil<T_O>()
-                                       , _Nil<T_O>() );
+                                       , env );
             } else {
                 InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
                                                                                                     , _Nil<SourcePosInfo_O>()
