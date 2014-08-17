@@ -47,7 +47,7 @@ namespace translate
         from_object(T_P o)
         {
             if (o.fixnump()) {
-                _v = o.fixnum();
+                _v = o.asFixnum();
                 return;
             } else if (core::Integer_sp i = o.asOrNull<core::Integer_O>()) {
                 _v = i->as_uint();
@@ -66,7 +66,7 @@ namespace translate
         from_object(T_P o)
         {
             if (o.fixnump()) {
-                _v = o.fixnum();
+                _v = o.asFixnum();
                 return;
             } else if (core::Integer_sp i = o.asOrNull<core::Integer_O>()) {
                 _v = i->as_int();
