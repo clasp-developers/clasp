@@ -1,5 +1,6 @@
 #define	DEBUG_LEVEL_FULL
 
+#include <csignal>
 #include <execinfo.h>
 #include "foundation.h"
 #include "object.h"

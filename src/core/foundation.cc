@@ -287,13 +287,16 @@ namespace core
 //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
             }
         }
+#ifdef USE_MPS
         ++_global_pollTicksGC;
-        if ( !core::_sym_STARpollTicksPerGcSTAR.unboundp()
+        if ( core::_sym_STARpollTicksPerGcSTAR
+             && !core::_sym_STARpollTicksPerGcSTAR.unboundp()
              && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp()
              && _global_pollTicksGC >= core::_sym_STARpollTicksPerGcSTAR->symbolValue().as<Fixnum_O>()->get()) {
             _global_pollTicksGC = 0;
             gctools::af_cleanup();
         }
+#endif
     }
 
 
