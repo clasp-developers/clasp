@@ -371,10 +371,11 @@ namespace gctools {
 #define DOCS_af_allocPatternEnd "allocPatternEnd - end the current alloc-pattern - return what it was"
     Symbol_sp af_allocPatternEnd()
     {
+        Symbol_sp pattern(_Nil<core::Symbol_O>());
 #ifdef USE_MPS
         core::Cons_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
         if ( patternStack.nilp() ) return _Nil<core::Symbol_O>();
-        core::Symbol_sp pattern = oCar(patternStack).as<core::Symbol_O>();
+        pattern = oCar(patternStack).as<core::Symbol_O>();
         gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
         if ( pattern == _sym_ramp ) {
             mps_ap_alloc_pattern_end(_global_automatic_mostly_copying_allocation_point
@@ -383,8 +384,8 @@ namespace gctools {
             mps_ap_alloc_pattern_end(_global_automatic_mostly_copying_allocation_point
                                        , mps_alloc_pattern_ramp_collect_all() );
         }
-        return pattern;
 #endif
+        return pattern;
     };
 
 
