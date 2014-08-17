@@ -2356,6 +2356,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 (defun fork-jobs (proc job-list)
   (setf (multitool-results *tools*) (make-project))
+  (format t "====== Running jobs: ~a~%" job-list)
   (batch-run-multitool *tools* :filenames job-list)
   (format t "------------ About to save-archive --------------~%")
   (serialize:save-archive (multitool-results *tools*) (project-pathname (format nil "project~a" proc) "dat"))
@@ -2369,14 +2370,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                                   $test-search
                                   (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
                               *jobs-per-group*
-                              )
+                              ))
         (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
     (serialize:save-archive all-jobs (project-pathname "project-all" "dat"))
     (format t "all-jobs: ~a~%" all-jobs)
     (dotimes (proc (length all-jobs))
       (setq spare-processes (1- spare-processes))
       (core:system "sleep 1")
-      (let* ((job-list (list (elt all-jobs proc)))
+      (let* ((job-list (elt all-jobs proc))
              (pid (core:fork)))
         (if (eql 0 pid)
             (fork-jobs proc job-list)
