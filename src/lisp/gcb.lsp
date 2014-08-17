@@ -2231,8 +2231,11 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   )
 |#
 
-(defun generate-code (&optional (analysis *analysis*))
-  (with-open-file (stream (make-pathname :name "clasp_gc" :type "cc" :defaults (main-directory-pathname)) :direction :output :if-exists :supersede)
+(defun generate-code (&key (analysis *analysis*) test)
+  (let ((filename (if test
+                      "test_clasp_gc"
+                      "clasp_gc")))
+  (with-open-file (stream (make-pathname :name filename :type "cc" :defaults (main-directory-pathname)) :direction :output :if-exists :supersede)
     (format stream "#ifdef DECLARE_FORWARDS~%")
     (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
     (format stream "#endif // DECLARE_FORWARDS~%")
@@ -2260,7 +2263,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format stream "#if defined(GC_GLOBALS)~%")
     (generate-code-for-global-variables stream analysis)
     (format stream "#endif // defined(GC_GLOBALS)~%")
-    ))
+    )))
 
 ;; ----------------------------------------------------------------------
 ;;
@@ -2294,7 +2297,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*executables\.cc$"))
+                      (lsel $* ".*weak.*\.cc$"))
                       )
   )
 

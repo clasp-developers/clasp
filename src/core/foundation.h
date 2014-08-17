@@ -608,11 +608,11 @@ namespace reg {
 
 namespace core {
 extern int _global_signalTrap;
-    void lisp_processSignal(int signo);
+    void lisp_pollSignals();
 
 };
 #define SET_SIGNAL(s) {core::_global_signalTrap = s;}
-#define POLL_SIGNALS() if (core::_global_signalTrap) core::lisp_processSignal(core::_global_signalTrap);
+#define POLL_SIGNALS() core::lisp_pollSignals();
 
 
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);

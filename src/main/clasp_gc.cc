@@ -9897,6 +9897,9 @@ case KIND_ROOTCLASSALLOC_clbind__detail__class_map: {
  SMART_PTR_FIX(core::CatchEnvironment_O::___staticClassSymbol);
  SMART_PTR_FIX(llvmo::_sym_IndirectBrInst_O);
  SMART_PTR_FIX(gctools::_sym_maxBootstrapKinds);
+SMART_PTR_FIX(gctools::_sym_ramp);
+SMART_PTR_FIX(gctools::_sym_rampCollectAll);
+SMART_PTR_FIX(gctools::_sym_STARallocPatternStackSTAR);
  SMART_PTR_FIX(kw::_sym_package);
  SMART_PTR_FIX(cl::_sym_string_EQ_);
  SMART_PTR_FIX(sockets::_sym_ll_getSockoptBool);
@@ -10845,4 +10848,5 @@ case KIND_ROOTCLASSALLOC_clbind__detail__class_map: {
  SMART_PTR_FIX(cl::_sym_print);
  SMART_PTR_FIX(llvmo::_sym_AttributeReadOnly);
  POINTER_FIX(core::ObjRef_O::static_creator);
+SMART_PTR_FIX(core::_sym_STARpollTicksPerGcSTAR);
 #endif // defined(GC_GLOBALS)

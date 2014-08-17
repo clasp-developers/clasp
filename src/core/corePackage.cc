@@ -59,6 +59,7 @@ namespace core
 {
     const char* CorePkg_nicknames[] = { "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/ };
 
+    SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);
     SYMBOL_EXPORT_SC_(KeywordPkg,cr);
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);
@@ -852,6 +853,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym_STARdebugReaderSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARloadPathnameSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARloadTruenameSTAR->defparameter(_Nil<T_O>());
+        core::_sym_STARpollTicksPerGcSTAR->defparameter(Fixnum_O::create(POLL_TICKS_PER_GC));
 	core::_sym_STARloadCurrentSourceFileInfoSTAR->defparameter(_Nil<T_O>());
 	core::_sym_STARloadCurrentLinenumberSTAR->defparameter(Fixnum_O::create(0));
 	core::_sym_STARloadCurrentColumnSTAR->defparameter(Fixnum_O::create(0));

@@ -72,6 +72,11 @@ namespace gctools
 	static const uintptr_t nil = BaseType::tagged_nil;
 	static const uintptr_t unbound = BaseType::tagged_unbound;
     public:
+        static smart_ptr<T> createFixnum(int f) {
+            smart_ptr<T> ret(f);
+            return ret;
+        }
+    public:
 	smart_ptr() : BaseType() {};
 	explicit smart_ptr(uintptr_t p) : BaseType(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
         smart_ptr( core::T_O** p ) : BaseType(p) {};

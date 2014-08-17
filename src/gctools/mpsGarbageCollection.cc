@@ -193,6 +193,7 @@ extern "C" {
 
     int processMpsMessages(void)
     {
+        printf("%s:%d Processing MPS messages\n", __FILE__, __LINE__ );
         int messages(0);
         core::Number_sp startTime = core::cl_getInternalRunTime().as<core::Number_O>();
         mps_message_type_t type;
