@@ -7,6 +7,8 @@
 #define BYTE_SIZE 8
 
 
+#define POLL_TICKS_PER_GC 10240
+
 
 #if defined(_ADDRESS_MODEL_64)
 #define INTPTR_BITS 64

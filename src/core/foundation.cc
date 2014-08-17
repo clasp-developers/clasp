@@ -20,6 +20,7 @@
 #include "ql.h"
 #include "lispStream.h"
 //#i n c l u d e "genericFunction.h"
+#include "gctools/gctoolsPackage.h"
 #include "core/multipleValues.h"
 #include "core/lambdaListHandler.h"
 #include "core/reader.h"
@@ -261,26 +262,37 @@ namespace core
 {
 
     int _global_signalTrap = 0;
+    int _global_pollTicksGC = 0;
 
     
-    void lisp_processSignal(int signo)
+    void lisp_pollSignals()
     {
-        SET_SIGNAL(0);
-        if (signo == SIGINT) {
-            printf("You pressed Ctrl+C\n");
-            try {
-                core::eval::funcall(cl::_sym_break,core::Str_O::create("Break on Ctrl+C"));
-            } catch (...) {
-                throw;
-            }
+        if ( core::_global_signalTrap ) {
+            SET_SIGNAL(0);
+            int signo = core::_global_signalTrap;
+            if (signo == SIGINT) {
+                printf("You pressed Ctrl+C\n");
+                try {
+                    core::eval::funcall(cl::_sym_break,core::Str_O::create("Break on Ctrl+C"));
+                } catch (...) {
+                    throw;
+                }
 //    af_invokeInternalDebugger(_Nil<core::T_O>());
-            printf("Resuming after Ctrl+C\n");
-        } else if ( signo == SIGCHLD ) {
+                printf("Resuming after Ctrl+C\n");
+            } else if ( signo == SIGCHLD ) {
 //            printf("A child terminated\n");
-        } else if ( signo == SIGABRT ) {
-            printf("ABORT was called!!!!!!!!!!!!\n");
-            af_invokeInternalDebugger(_Nil<core::T_O>());
+            } else if ( signo == SIGABRT ) {
+                printf("ABORT was called!!!!!!!!!!!!\n");
+                af_invokeInternalDebugger(_Nil<core::T_O>());
 //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
+            }
+        }
+        ++_global_pollTicksGC;
+        if ( !core::_sym_STARpollTicksPerGcSTAR.unboundp()
+             && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp()
+             && _global_pollTicksGC >= core::_sym_STARpollTicksPerGcSTAR->symbolValue().as<Fixnum_O>()->get()) {
+            _global_pollTicksGC = 0;
+            gctools::af_cleanup();
         }
     }
 

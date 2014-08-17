@@ -24,6 +24,7 @@ project clasp : requirements
         <target-os>darwin:<cxxflags>"-gdwarf-4"
         <variant>debug:<cxxflags>"-O0 -g"
         <variant>release:<cxxflags>"-O3 -g"
+        <variant>release:<cflags>"-O3 -g"
         <linkflags>"-fvisibility=default"
 	<target-os>linux:<linkflags>-lpthread
 	<define>INCLUDED_FROM_CLASP
@@ -48,9 +49,11 @@ project clasp : requirements
 #-------- mps options
 #	<define>DEBUG_MPS      # generate lots of debugging information for MPS
 #        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+#         <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
+#         <define>CONFIG_THREAD_SINGLE #  Single threaded
 #---------
-        <define>DEBUG_CL_SYMBOLS
-        <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs
+#       <define>DEBUG_CL_SYMBOLS
+#       <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs
 	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>-stdlib=libc++
 	<target-os>darwin:<linkflags>-stdlib=libc++

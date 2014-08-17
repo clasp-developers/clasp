@@ -333,6 +333,61 @@ namespace gctools {
     }
 
 
+
+    SYMBOL_EXPORT_SC_(GcToolsPkg,STARallocPatternStackSTAR);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,ramp);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,rampCollectAll);
+
+#define ARGS_af_allocPatternBegin "(pattern)"
+#define DECL_af_allocPatternBegin ""
+#define DOCS_af_allocPatternBegin "allocPatternBegin - pass either gctools:ramp or gctools:ramp-collect-all"
+    void af_allocPatternBegin(Symbol_sp pattern)
+    {
+#ifdef USE_MPS
+        if ( pattern == _sym_ramp || pattern == _sym_rampCollectAll ) {
+            core::Cons_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
+            patternStack = core::Cons_O::create(pattern,patternStack);
+            gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
+            if ( pattern == _sym_ramp ) {
+                mps_ap_alloc_pattern_begin(_global_automatic_mostly_copying_allocation_point
+                                           , mps_alloc_pattern_ramp() );
+            } else {
+                mps_ap_alloc_pattern_begin(_global_automatic_mostly_copying_allocation_point
+                                           , mps_alloc_pattern_ramp_collect_all() );
+            }
+            return;
+        }
+        SIMPLE_ERROR(BF("Only options for alloc-pattern-begin is %s@%p and %s@%p - you passed: %s@%p")
+                     % _rep_(_sym_ramp) % _sym_rampCollectAll.px_ref()
+                     % _rep_(_sym_rampCollectAll) % _sym_rampCollectAll.px_ref()
+                     % _rep_(pattern) % pattern.px_ref());
+#endif
+    };
+
+
+
+#define ARGS_af_allocPatternEnd "()"
+#define DECL_af_allocPatternEnd ""
+#define DOCS_af_allocPatternEnd "allocPatternEnd - end the current alloc-pattern - return what it was"
+    Symbol_sp af_allocPatternEnd()
+    {
+#ifdef USE_MPS
+        core::Cons_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
+        if ( patternStack.nilp() ) return _Nil<core::Symbol_O>();
+        core::Symbol_sp pattern = oCar(patternStack).as<core::Symbol_O>();
+        gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
+        if ( pattern == _sym_ramp ) {
+            mps_ap_alloc_pattern_end(_global_automatic_mostly_copying_allocation_point
+                                       , mps_alloc_pattern_ramp() );
+        } else {
+            mps_ap_alloc_pattern_end(_global_automatic_mostly_copying_allocation_point
+                                       , mps_alloc_pattern_ramp_collect_all() );
+        }
+        return pattern;
+#endif
+    };
+
+
 #define ARGS_af_room "(&optional x (marker 0) msg)"
 #define DECL_af_room ""
 #define DOCS_af_room "room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)"
@@ -719,6 +774,9 @@ namespace gctools {
             core::af_def(GcToolsPkg,"maxBootstrapKinds",&af_maxBootstrapKinds);
             core::af_def(GcToolsPkg,"bootstrapKindP",&af_bootstrapKindP);
             core::af_def(GcToolsPkg,"bootstrapKindSymbols",&af_bootstrapKindSymbols);
+            core::af_def(GcToolsPkg,"allocPatternBegin",&af_allocPatternBegin);
+            core::af_def(GcToolsPkg,"allocPatternEnd",&af_allocPatternEnd);
+            _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
 #ifdef USE_MPS
             core::af_def(GcToolsPkg,"mpsTelemetrySet",&af_mpsTelemetrySet);
             core::af_def(GcToolsPkg,"mpsTelemetryReset",&af_mpsTelemetryReset);

@@ -92,6 +92,7 @@ namespace gctools {
                    /*Other MPS kinds here */ } WeakKinds;
 
     struct WeakObject {
+        struct metadata_always_fix_pointers_to_derived_classes;
         typedef gctools::tagged_ptr<gctools::Fixnum_ty> KindType;
         WeakObject(WeakKinds k) : Kind(gctools::tagged_ptr<gctools::Fixnum_ty>(k)) {};
         KindType Kind;
