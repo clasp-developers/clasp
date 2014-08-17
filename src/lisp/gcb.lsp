@@ -2231,7 +2231,8 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   )
 |#
 
-(defun generate-code (&key (analysis *analysis*) test)
+(defun generate-code (&key (project *project*) test)
+  (analyze-code project)
   (let ((filename (if test
                       "test_clasp_gc"
                       "clasp_gc")))
@@ -2344,12 +2345,12 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defparameter *max-parallel-searches* (parse-integer (core:getenv "PJOBS")))
 (defparameter *jobs-per-group* 10)
 
-(defun split-jobs (job-list jobs-per-group)
-  (do* ((cur job-list (nthcdr jobs-per-group cur))
-        (num (min jobs-per-group (length cur)) (min jobs-per-group (length cur)))
-        (part (subseq cur 0 num) (subseq cur 0 num))
-        (parts (when part (list part)) (if part (cons part parts) parts)))
-      ((null cur) parts)))
+(defun split-jobs (job-list num-parallel)
+  (let ((jobvec (make-array num-parallel)))
+    (do* ((i 0 (mod (1+ i) num-parallel))
+          (one-job (pop job-list) (pop job-list)))
+         ((null job-list) (loop for idx below (length jobvec) collect (elt jobvec idx)))
+     (push one-job (elt jobvec i)))))
 
 
 
