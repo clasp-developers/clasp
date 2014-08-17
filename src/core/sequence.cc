@@ -137,7 +137,7 @@ namespace core
     T_sp cl_subseq(T_sp seq, int start, T_sp end)
     {_G();
         if ( seq.nilp() ) {
-            if ( start == 0 && end.nilp() ) {
+            if ( start == 0 && (end.nilp() || (end.fixnump() && end.as<Fixnum_O>()->get() == 0))  ) {
                 return _Nil<T_O>();
             }
             SIMPLE_ERROR(BF("Illegal arguments for subseq on NIL - they must be (subseq NIL 0 NIL)"));

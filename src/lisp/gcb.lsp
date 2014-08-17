@@ -2342,13 +2342,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 (defparameter *max-parallel-searches* (parse-integer (core:getenv "PJOBS")))
+(defparameter *jobs-per-group* 10)
 
 (defun split-jobs (job-list jobs-per-group)
-  (do* ((cur job-list (nthcdr jobs-per-group job-list))
-        (part (subseq job-list 0 job-list) (subseq job-list 0 job-list))
-        (parts (car part parts) (car part parts)))
+  (do* ((cur job-list (nthcdr jobs-per-group cur))
+        (num (min jobs-per-group (length cur)) (min jobs-per-group (length cur)))
+        (part (subseq cur 0 num) (subseq cur 0 num))
+        (parts (when part (list part)) (if part (cons part parts) parts)))
       ((null cur) parts)))
-
 
 
 
@@ -2363,9 +2364,11 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defun parallel-search-all (&key test one-at-a-time)
   "Run *max-parallel-searches* processes at a time - whenever one finishes, start the next"
   (setq *parallel-search-pids* nil)
-  (let ((all-jobs (if test
-                      $test-search
-                      (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$"))))
+  (let ((all-jobs (split-jobs (if test
+                                  $test-search
+                                  (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
+                              *jobs-per-group*
+                              )
         (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
     (serialize:save-archive all-jobs (project-pathname "project-all" "dat"))
     (format t "all-jobs: ~a~%" all-jobs)
