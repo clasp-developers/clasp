@@ -145,10 +145,16 @@
 ;;; So I haven't really tried to make this precisely ANSI-compatible
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
-(defun compile-file-pathname (input-file &key (output-file nil output-file-p))
+(defun compile-file-pathname (input-file &key (output-file nil output-file-p) target-backend)
   (if output-file-p
       (merge-pathnames output-file (cfp-output-file-default input-file))
-      (cfp-output-file-default input-file)))
+      (cond
+        (target-backend
+         (let ((target-host (string target-backend)))
+           (load-logical-pathname-translations target-host)
+           (merge-pathname (pathname :host target-host) (cfp-output-file-default input-file))))
+        (t
+         (cfp-output-file-default input-file)))))
 
 
 (defun cf-module-name (type pathname)
@@ -164,6 +170,7 @@ and the pathname of the source file - this will also be used as the module initi
 		       (external-format :default)
 ;;; type can be either :kernel or :user
 		       (type :user)
+                       target-backend
 		       )
   "See CLHS compile-file"
   ;; TODO: Save read-table and package with unwind-protect

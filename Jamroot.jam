@@ -22,7 +22,7 @@ project clasp : requirements
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<cxxflags>"-fvisibility=default"
         <target-os>darwin:<cxxflags>"-gdwarf-4"
-        <variant>debug:<cxxflags>"-O0 -g"
+        <variant>debug:<cxxflags>"-v -O0 -g"
         <variant>release:<cxxflags>"-O3 -g"
         <variant>release:<cflags>"-O3 -g"
         <linkflags>"-fvisibility=default"
