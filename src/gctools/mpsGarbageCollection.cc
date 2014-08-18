@@ -195,15 +195,19 @@ extern "C" {
     int processMpsMessages(void)
     {
         int messages(0);
+        int mFinalize(0);
+        int mGcStart(0);
+        int mGc(0);
         core::Number_sp startTime = core::cl_getInternalRunTime().as<core::Number_O>();
         mps_message_type_t type;
         while (mps_message_queue_type(&type, gctools::_global_arena)) {
             mps_message_t message;
             mps_bool_t b;
             b = mps_message_get(&message, gctools::_global_arena, type);
-            assert(b); /* we just checked there was one */
             ++messages;
+            assert(b); /* we just checked there was one */
             if (type == mps_message_type_gc_start()) {
+                ++mGcStart;
 #if 0
                 DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_gc_start"));
                 printf("Message: mps_message_type_gc_start\n");
@@ -212,6 +216,7 @@ extern "C" {
                 printf("  clock: %lu\n", (unsigned long)mps_message_clock(_global_arena, message));
 #endif
             } else if ( type == mps_message_type_gc() ) {
+                ++mGc;
                 DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_gc"));
 #if 0
                 printf("Message: mps_message_type_gc()\n");
@@ -225,6 +230,7 @@ extern "C" {
                 printf("    clock: %lu\n", (unsigned long)mps_message_clock(_global_arena, message));
 #endif
             } else if ( type == mps_message_type_finalization() ) {
+                ++mFinalize;
 //                printf("%s:%d mps_message_type_finalization received\n", __FILE__, __LINE__);
                 DEBUG_MPS_MESSAGE(BF("Message: mps_message_type_finalization"));
                 mps_addr_t ref_o;
@@ -238,9 +244,9 @@ extern "C" {
 #if 1
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
         core::Number_sp endTime = core::cl_getInternalRunTime().as<core::Number_O>();
-        core::Number_sp deltaTime = core::contagen_sub(endTime,startTime);
+        core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::Fixnum_O::create(1000));
         core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
-        printf("%s:%d [processMpsMessages %s seconds %d messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), messages);
+        printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
         fflush(stdout);
 #endif
         return messages;
@@ -300,7 +306,7 @@ namespace gctools {
         void* local_stack_marker;
         _global_stack_marker = &local_stack_marker;
 
-        size_t arenaSize = 50 * 32 * 1024 * 1024;
+        size_t arenaSize = 10 * 32 * 1024 * 1024;
         mps_res_t res;
         MPS_ARGS_BEGIN(args) {
             MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, arenaSize );

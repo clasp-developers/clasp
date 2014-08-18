@@ -190,7 +190,7 @@ No DIBuilder is defined for the default module")
 
 
 
-(defun fasl-pathname-impl (pathname &key min)
+(defun fasl-pathname-impl (pathname &key min gc)
   (if min
       (merge-pathnames (make-pathname :directory '(:relative "min")) pathname)
       (merge-pathnames (make-pathname :directory '(:relative "full")) pathname)))
@@ -202,6 +202,12 @@ No DIBuilder is defined for the default module")
       (if (eq (car list) sym)
           t
           (search* sym (cdr list)))))
+
+(defparameter *compile-file-target* nil)
+(defconstant +target-min-boehm+ :min-boehm)
+(defconstant +target-full-boehm+ :full-boehm)
+(defconstant +target-min-mps+ :min-mps)
+(defconstant +target-full-mps+ :full-mps)
 
 (defun fasl-pathname (pathname)
   (let ((is-min (or (cmp::search* :clasp-min *features*) (cmp::search* :ecl-min *features*))))

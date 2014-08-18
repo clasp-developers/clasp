@@ -38,8 +38,10 @@ compile-commands:
 	(cd src/main; make compile-commands)
 
 clasp-mps:
-	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle debug release mps)
+	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle release debug mps)
 
+clasp-mps-fresh:
+	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle release debug mps -a)
 
 clean:
 	(cd src/main; rm -rf bin bundle)

@@ -73,15 +73,15 @@ namespace core
 	stringstream ss;
         if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
         if ( column == UNDEF_UINT ) column = 0;
-        char closureType = '?';
+        string closureType = "unknown";
         if ( closure->interpretedP() ) {
-            closureType = 'I';
+            closureType = "interpr.";
         } else if ( closure->compiledP() ) {
-            closureType = 'C';
+            closureType = "compiled";
         } else if ( closure->builtinP() ) {
-            closureType = 'B';
+            closureType = "builtin";
         }
-	ss << (BF("#%3d %c %20s %5d col %2d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
+	ss << (BF("#%3d %8s %20s %5d col %2d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
 //	ss << std::endl;
 //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
 	return ss.str();

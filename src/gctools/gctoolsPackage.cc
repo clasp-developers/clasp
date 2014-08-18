@@ -516,6 +516,7 @@ namespace gctools {
 #ifdef USE_MPS
         mps_arena_collect(_global_arena);
         processMpsMessages();
+        mps_arena_release(_global_arena);
 #endif
 //        printf("Garbage collection done\n");
     };
