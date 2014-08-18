@@ -140,9 +140,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.o"
   #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
 )
-(defconstant +image-pathname+ (pathname "sys:kernel;_image.bundle"))
-(defconstant +imagelto-pathname+ (pathname "sys:kernel;_imagelto.bundle"))
-(defconstant +min-image-pathname+ (pathname "sys:kernel;_min_image.bundle"))
+(defconstant +image-pathname+ (pathname "kernel;_image.bundle"))
+(defconstant +imagelto-pathname+ (pathname "kernel;_imagelto.bundle"))
+(defconstant +min-image-pathname+ (pathname "kernel;_min_image.bundle"))
 (export '(+image-pathname+ +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
 
 (let ((imagelto-date (file-write-date +imagelto-pathname+))
@@ -518,6 +518,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/mislib
     lsp/defstruct
     lsp/predlib
+    lsp/iolib
     lsp/seq
     :tiny
 
@@ -547,7 +548,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/seqmacros
     lsp/seqlib
     lsp/assert
-    lsp/iolib
+;;    lsp/iolib
     lsp/module
     lsp/trace
     lsp/loop2
