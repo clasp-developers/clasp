@@ -8,6 +8,7 @@
 #include "core/builtInClass.h"
 #include "core/loadTimeValues.h"
 #include "core/posixTime.h" // was core/posixTime.cc???
+#include "core/symbolTable.h"
 #include "core/standardClass.h"
 #include "core/structureClass.h"
 #include "core/wrappers.h"
@@ -193,7 +194,6 @@ extern "C" {
 
     int processMpsMessages(void)
     {
-        printf("%s:%d Processing MPS messages\n", __FILE__, __LINE__ );
         int messages(0);
         core::Number_sp startTime = core::cl_getInternalRunTime().as<core::Number_O>();
         mps_message_type_t type;
@@ -235,13 +235,13 @@ extern "C" {
             }
             mps_message_discard(gctools::_global_arena, message);
         }
-#if 0
+#if 1
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
         core::Number_sp endTime = core::cl_getInternalRunTime().as<core::Number_O>();
         core::Number_sp deltaTime = core::contagen_sub(endTime,startTime);
         core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
-//        printf("[processMpsMessages %s seconds]\n", _rep_(deltaSeconds).c_str());
-//        fflush(stdout);
+        printf("%s:%d [processMpsMessages %s seconds %d messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), messages);
+        fflush(stdout);
 #endif
         return messages;
     };

@@ -268,8 +268,8 @@ namespace core
     void lisp_pollSignals()
     {
         if ( core::_global_signalTrap ) {
-            SET_SIGNAL(0);
             int signo = core::_global_signalTrap;
+            SET_SIGNAL(0);
             if (signo == SIGINT) {
                 printf("You pressed Ctrl+C\n");
                 try {
