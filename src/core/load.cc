@@ -73,7 +73,7 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 		    _lisp->print(BF(";; -- read- %s\n") % _rep_(x));
 		};
                 eval::af_topLevelEvalWithEnv(x,_Nil<Environment_O>());
-                gctools::af_cleanup();
+//                gctools::af_cleanup();
 	    }
 	}
 	cl_close(strm);
