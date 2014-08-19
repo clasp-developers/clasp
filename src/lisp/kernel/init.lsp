@@ -369,7 +369,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 					(if loaded
 					    loaded
 					    (bformat t "Could not load bundle %s - error: %s\n" (truename path) error-msg)))
-                 (let* ((image-path (target-backend-pathname path))
+                 (let* ((tb (default-target-backend))
+                        (image-path (target-backend-pathname path :target-backend tb))
                         (image-file (probe-file image-path)))
                    (if image-file nil (error "Could not find ~a" image-path))
                    (bformat t "Loading image %s\n" image-path)
@@ -475,10 +476,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	(bformat t "    File doesn't exist: %s\n" (namestring bitcode-path))
 	)))
 
+(defun recursive-find (item seq)
+  (if seq
+      (if (eq item (car seq))
+          t
+          (recursive-find item (cdr seq)))))
+
 (defvar *target-backend* nil)
+
+;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend ()
-  (let* ((stage #+ecl-min "min" #-ecl-min "full")
-         (garbage-collector #+use-boehm "boehm" #+use-mps "mps")
+  (let* ((stage (if (recursive-find :ecl-min *features*) "min" "full"))
+         (garbage-collector (if (recursive-find :use-mps *features*) "mps" "boehm"))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
 
@@ -751,9 +760,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun compile-min-boot (&key (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
          (bitcodes1 (compile-boot :start :cmp :reload t ))
-         (bitcodes0 (compile-boot :base :start :reload nil :recompile t ))
+         ;(bitcodes0 (compile-boot :base :start :reload nil :recompile t ))
          (bitcodes2 (compile-boot :cmp :min ))
-         (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
+         (all-bitcodes (nconc bitcodes1 bitcodes2)))
     (cmp:bundle-boot
            (target-backend-pathname +min-image-pathname+ )
            :lisp-bitcode-files all-bitcodes
