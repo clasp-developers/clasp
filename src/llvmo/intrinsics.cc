@@ -625,6 +625,16 @@ extern "C"
 	(*fnP) = ns;
     }
 
+    void makePathname( core::T_sp* fnP, const char* cstr)
+    {_G();
+// placement new into memory passed into this function
+	ASSERT(fnP!=NULL);
+        
+        core::Str_sp str = core::Str_O::create(cstr);
+	core::Pathname_sp ns = core::cl_pathname(str);  
+	(*fnP) = ns;
+    }
+
 
     void makeShortFloat( core::T_sp* fnP, double s)
     {_G();

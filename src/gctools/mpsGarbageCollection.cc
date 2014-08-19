@@ -241,7 +241,7 @@ extern "C" {
             }
             mps_message_discard(gctools::_global_arena, message);
         }
-#if 1
+#if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
         core::Number_sp endTime = core::cl_getInternalRunTime().as<core::Number_O>();
         core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::Fixnum_O::create(1000));

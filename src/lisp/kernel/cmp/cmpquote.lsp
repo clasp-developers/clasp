@@ -407,6 +407,16 @@ and walk the car and cdr"
 						      (list (jit-constant-i32 0) (jit-constant-i32 0)) "ptr")))
 	     (irc-intrinsic "makeString" ltv-ref ptr))))
 
+(defvar *pathname-coalesce* nil)
+(defun codegen-ltv/pathname (result pathname env)
+  "Return IR code that generates a string"
+  (with-coalesce-load-time-value (ltv-ref result pathname env)
+    :coalesce-hash-table *pathname-coalesce*
+    :maker (let* ((constant (llvm-sys:make-string-global *the-module* (namestring pathname)))
+		  (ptr (llvm-sys:create-in-bounds-gep *irbuilder* constant
+						      (list (jit-constant-i32 0) (jit-constant-i32 0)) "ptr")))
+	     (irc-intrinsic "makePathname" ltv-ref ptr))))
+
 
 
 
@@ -705,6 +715,7 @@ marshaling of compiled quoted data"
 	     (*double-float-coalesce* (make-hash-table :test #'eql))
 	     #+long-float(*long-float-coalesce* (make-hash-table :test #'eql))
 	     (*string-coalesce* (make-hash-table :test #'equal))
+	     (*pathname-coalesce* (make-hash-table :test #'equal))
 	     (*character-coalesce* (make-hash-table :test #'eql))
 	     (*nil-coalesce* (make-hash-table :test #'eq))
 	     (*t-coalesce* (make-hash-table :test #'eq))
@@ -791,6 +802,17 @@ marshaling of compiled quoted data"
 ;; ----------------------------------------------------------
 
 
+;;
+;; If you need to add a new type XXX to codegen-literal
+;; Look at codegen-ltv/string or codegen-ltv/pathname
+;; 1) You will need to define a dynamic variable *XXX-coalesce* and initialize 
+;; it as a hash table in with-load-time-value-unit
+;; 2) You will then need to write a codegen-ltv/XXX that generates code that
+;; will recreate the XXX object from values you can write into global variables in the module
+;; or directly into the code as arguments to the makeXXX function
+;; 3) You will then need to implement a makeXXX function in intrinsics.cc
+;; 4) You will need to expose the makeXXX function in cmpintrinsics.lsp
+;;
 (defun codegen-literal (result obj env)
   "Generate a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
   (if *generate-compile-file-load-time-values*
@@ -798,6 +820,7 @@ marshaling of compiled quoted data"
 	((null obj) (codegen-ltv/nil result env))
 	((integerp obj) (codegen-ltv/integer result obj env))
 	((stringp obj) (codegen-ltv/string result obj env))
+	((pathnamep obj) (codegen-ltv/pathname result obj env))
 	((floatp obj) (codegen-ltv/float result obj env))
 	((symbolp obj) (codegen-ltv/symbol result obj env))
 	((characterp obj) (codegen-ltv/character result obj env))
