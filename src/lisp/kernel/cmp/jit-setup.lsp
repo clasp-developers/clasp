@@ -190,11 +190,6 @@ No DIBuilder is defined for the default module")
 
 
 
-(defun fasl-pathname-impl (pathname &key min gc)
-  (if min
-      (merge-pathnames (make-pathname :directory '(:relative "min")) pathname)
-      (merge-pathnames (make-pathname :directory '(:relative "full")) pathname)))
-
 
 (defun search* (sym list)
   (if (null list)
@@ -209,16 +204,11 @@ No DIBuilder is defined for the default module")
 (defconstant +target-min-mps+ :min-mps)
 (defconstant +target-full-mps+ :full-mps)
 
-(defun fasl-pathname (pathname)
-  (let ((is-min (or (cmp::search* :clasp-min *features*) (cmp::search* :ecl-min *features*))))
-    (fasl-pathname-impl pathname :min is-min)))
-(export 'fasl-pathname)
-
 
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
   (cond
-    ((pathnamep lname) (bformat nil "__MAIN_%s" (pathname-name lname)))
+    ((pathnamep lname) (bformat nil "__MAIN_%s" (string-upcase (pathname-name lname))))
     ((symbolp lname) (bformat nil "FN-SYMB.%s" (symbol-name lname)))
     ((stringp lname) lname)
     ((and (consp lname) (eq (car lname) 'setf)) (bformat nil "FN-SETF.%s" (symbol-name (cadr lname))))

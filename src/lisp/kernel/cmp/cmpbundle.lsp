@@ -45,9 +45,9 @@
 (defun make-bundle-wrapper (parts bundle-name)
   (let* ((module (create-bundle-module parts :output-pathname bundle-name))
 	 (wrapper-name (pathname-name bundle-name))
-	 (wrapper-pathname (fasl-pathname (make-pathname :name wrapper-name
+	 (wrapper-pathname (make-pathname :name wrapper-name
                                           :type "bc"
-                                          :defaults bundle-name)))
+                                          :defaults bundle-name))
 	 )
     (bformat t "Writing bundle module to %s\n" (namestring wrapper-pathname))
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename wrapper-pathname))
@@ -66,54 +66,61 @@
 
 
 
+(defun generate-compile-command (bitcode-pathname)
+  (let* ((bitcode-physical-pathname (translate-logical-pathname bitcode-pathname))
+         (file (namestring bitcode-physical-pathname))
+         (output-file (namestring (make-pathname :type "o" :defaults bitcode-physical-pathname))))
+    #+(and :target-os-linux :address-model-64)
+    (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -reolcation-model=pic -o %s %s" output-file file) output-file))
+    #+target-os-darwin
+    (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
+           (clang-executable (if clasp-clang-path
+                                 clasp-clang-path
+                                 "clang")))
+      (return-from generate-compile-command (values (bformat nil "%s -c -o %s %s" clang-executable output-file file) output-file)))
+    (error "Add support for running external clang to cmpbundle.lsp>generate-compile-command on this system")))
+
+
 
 
 ;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
-(defun execute-clang (part-bitcode-pathname)
-  (let* ((name (probe-file (make-pathname :type "bc" :defaults part-bitcode-pathname)))
-         (file (namestring (probe-file name)))
-         (output-file (namestring (make-pathname :type "o" :defaults (probe-file name))))
-         (clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
+(defun generate-object-file (part-bitcode-pathname &key test)
+  (multiple-value-bind (compile-command object-filename)
+      (generate-compile-command part-bitcode-pathname)
+    (if test
+        (bformat t "About to evaluate: %s\n" compile-command)
+        (safe-system compile-command))
+    object-filename))
+
+
+
+(defun generate-link-command (all-names bundle-file)
+  #+target-os-darwin
+  (return-from generate-link-command
+    (bformat nil "ld -v %s -macosx_version_min 10.7 -flat_namespace -undefined warning -bundle -o %s" all-names bundle-file))
+  #+target-os-linux
+  (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
          (clang-executable (if clasp-clang-path
                                clasp-clang-path
-                               "clang"))
-         )
-    #+target-os-darwin
-    (progn
-      (safe-system (bformat nil "%s -c -o %s %s" clang-executable output-file file))
-      (return-from execute-clang))
-    #+(and :target-os-linux :address-model-64)
-    (progn
-      (safe-system (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file))
-      (return-from execute-clang))
-    (error "Add support for running external clang")))
-
-
-
-(defun execute-link (bundle-pathname all-part-pathnames)
-  #+target-os-darwin
-  (let ((part-files (mapcar #'(lambda (pn) (namestring (probe-file (make-pathname :type "o" :defaults pn))))
-			    all-part-pathnames))
-	(bundle-file (core:coerce-to-filename bundle-pathname)))
-    (let ((all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
-      (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
-      (safe-system (bformat nil "ld -v %s -macosx_version_min 10.7 -flat_namespace -undefined warning -bundle -o %s" all-names bundle-file)))
-    (return-from execute-link))
-  #+target-os-linux
-  (let ((part-files (mapcar #'(lambda (pn) (namestring (probe-file (make-pathname :type "o" :defaults pn))))
-			    all-part-pathnames))
-	(bundle-file (core:coerce-to-filename bundle-pathname)))
-    (let ((all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
-      (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
-      (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
-             (clang-executable (if clasp-clang-path
-                                   clasp-clang-path
-                                 "clang")))
-        (safe-system (bformat nil "%s -v %s -shared -o %s" clang-executable all-names bundle-file))))
-    (return-from execute-link))
+                               "clang")))
+    (return-from generate-link-command (bformat nil "%s -v %s -shared -o %s" clang-executable all-names bundle-file)))
   (error "Add support for this operating system to cmp:execute-link")
   )
+    
+
+(defun execute-link (bundle-pathname all-part-pathnames &key test)
+  (let* ((part-files (mapcar #'(lambda (pn) (namestring (translate-logical-pathname (make-pathname :type "o" :defaults pn))))
+                             all-part-pathnames))
+         (bundle-file (core:coerce-to-filename bundle-pathname))
+         (all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
+    (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
+    (let ((link-command (generate-link-command all-names bundle-file)))
+      (if test
+          (bformat t "About to execute: %s\n" link-command)
+          (safe-system link-command))))
+)
+
 
 
 
@@ -128,8 +135,8 @@
   (let* ((wrapper-pathname (make-bundle-wrapper parts bundle-name))
 	 (wrapper-and-parts-pathnames (cons wrapper-pathname parts-pathnames))
 	 (bundle-pathname (make-pathname :name (string-downcase (string bundle-name)) :defaults *image-directory*)))
-    (mapc #'(lambda (pn) (execute-clang pn)) wrapper-and-parts-pathnames)
-    (execute-link bundle-pathname wrapper-and-parts-pathnames)))
+    (let ((all-object-files (mapc #'(lambda (pn) (execute-clang pn)) wrapper-and-parts-pathnames)))
+      (execute-link bundle-pathname all-object-files))))
 
 
 
@@ -137,19 +144,23 @@
 ;;; Gather a list of boot parts as pathnames
 ;;; Skip over keyword symbols in the boot part lists
 ;;;
-(defun boot-part-pathnames (last-file &key first-file)
+(defun boot-bitcode-pathnames (last-file &key first-file target-backend)
   (or first-file (error "You must provide first-file"))
-  (mapcan #'(lambda (part) (and (not (keywordp part)) (list (core::get-pathname-with-type part "lsp"))))
-	  (core::select-source-files last-file :first-file first-file)))
+  (let* ((source-files (mapcan #'(lambda (part) (and (not (keywordp part)) (list (core::get-pathname-with-type part "lsp"))))
+                               (core::select-source-files last-file :first-file first-file)))
+         (bitcode-files (mapcar (lambda (k) (compile-file-pathname k :target-backend target-backend))
+                                source-files)))
+    bitcode-files))
+(export 'boot-bitcode-pathnames)
 	  
 
-(defun bundle-boot (&optional (last-file :all) (first-file :base) (bundle-pathname +image-pathname+))
+(defun bundle-boot (pathname-destination &key lisp-bitcode-files (target-backend (default-target-backend)) test) ;; &optional (bundle-pathname +image-pathname+))
   "Use (bundle-boot _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
-  (let* ((parts-pathnames (boot-part-pathnames last-file :first-file first-file))
-	 (wrapper-fasl-pathname (make-bundle-wrapper parts-pathnames bundle-pathname))
-	 (wrapper-and-parts-fasl-pathnames (cons wrapper-fasl-pathname (mapcar (lambda (x) (fasl-pathname x)) parts-pathnames))))
-    (mapc #'(lambda (pn) (execute-clang pn)) wrapper-and-parts-fasl-pathnames)
-    (execute-link bundle-pathname wrapper-and-parts-fasl-pathnames)))
+  (let* ((core:*target-backend* target-backend)
+         (wrapper-fasl-pathname (make-bundle-wrapper lisp-bitcode-files pathname-destination))
+	 (wrapper-and-parts-fasl-pathnames (cons wrapper-fasl-pathname lisp-bitcode-files)))
+    (let ((object-files (mapcar #'(lambda (pn) (generate-object-file pn :test test)) wrapper-and-parts-fasl-pathnames)))
+      (execute-link (target-backend-pathname pathname-destination :target-backend target-backend) object-files :test test))))
 
 (export '(make-bundle bundle-boot))
 
@@ -172,6 +183,7 @@
                                               (output-pathname +image-pathname+)
                                               debug-ir)
   "Link a bunch of modules together, return the linked module"
+  (error "Implement target-backend keyword argument")
   (format t "part-pathnames ~a~%" part-pathnames)
   (let* ((module (create-bundle-module part-pathnames :output-pathname output-pathname))
          (linker (llvm-sys:make-linker module))
@@ -188,7 +200,7 @@
               (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg)))
           )))
     (dolist (part-pn part-pathnames)
-      (let* ((bc-file (fasl-pathname (make-pathname :type "bc" :defaults part-pn))))
+      (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
         (format t "Linking ~a~%" bc-file)
         (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
           (multiple-value-bind (failure error-msg)
@@ -199,7 +211,7 @@
     (format t "Running module pass manager~%")
     (let* ((linked-module (llvm-sys:get-module linker))
            (mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
-      (llvm-sys:write-bitcode-to-file linked-module (core:coerce-to-filename (pathname "_image_test.bc")))
+      (llvm-sys:write-bitcode-to-file linked-module (core:coerce-to-filename (pathname "image_test.bc")))
       (llvm-sys:pass-manager-run mpm linked-module)
       linked-module)))
 
@@ -210,9 +222,10 @@
                                   (first-file :base)
                                   (output-pathname +imagelto-pathname+)
                                   debug-ir)
+  (error "implement target-backend")
   (let* ((part-pathnames (boot-part-pathnames last-part :first-file first-file))
 ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
-	 (bundle-bitcode-pathname (fasl-pathname (make-pathname :type "bc" :defaults output-pathname)))
+	 (bundle-bitcode-pathname (make-pathname :type "bc" :defaults output-pathname))
          (module (link-bitcode-modules part-pathnames
                                        :additional-bitcode-pathnames (if intrinsics-bitcode-path
                                                                          (list intrinsics-bitcode-path)
@@ -227,3 +240,7 @@
     ))
          
 (export '(bundle-boot-lto))
+
+
+
+

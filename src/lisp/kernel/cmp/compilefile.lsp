@@ -134,7 +134,7 @@
 
 (defun cfp-output-file-default (input-file)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*))
-	 (retyped (fasl-pathname (make-pathname :type "bc" :defaults defaults))))
+	 (retyped (make-pathname :type "bc" :defaults defaults)))
     retyped))
 
 ;;; Copied from sbcl sb!xc:compile-file-pathname
@@ -152,7 +152,7 @@
         (target-backend
          (let ((target-host (string target-backend)))
            (load-logical-pathname-translations target-host)
-           (merge-pathname (pathname :host target-host) (cfp-output-file-default input-file))))
+           (merge-pathnames (make-pathname :host target-host) (cfp-output-file-default input-file))))
         (t
          (cfp-output-file-default input-file)))))
 
@@ -222,9 +222,9 @@ and the pathname of the source file - this will also be used as the module initi
                       )
                   (if found-errors
                       (break "Verify module found errors")))
-                (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-file))
-                (ensure-directories-exist output-file)
-                (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-file))
+                (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path))
+                (ensure-directories-exist output-path)
+                (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-path))
                 ))))))))
   
     

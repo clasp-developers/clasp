@@ -61,7 +61,7 @@ namespace core
 	DynamicScopeManager dynScopeManager2(cl::_sym_STARpackageSTAR,cl::_sym_STARpackageSTAR->symbolValue());
 
 	string initName = "";
-	if ( !oinitFnName.nilp() )
+	if ( oinitFnName.notnilp() )
 	{
 	    initName = oinitFnName->get();
 	}

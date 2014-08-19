@@ -21,6 +21,16 @@
 (setq *features* (cons :debug-compiler *features*))
 (setq *features* (cons :compile-mcjit *features*))
 
+
+(progn
+  (core:pathname-translations "min-boehm" '(("**;*.*" #P"SYS:build;system;min-boehm;**;*.*")))
+  (core:pathname-translations "full-boehm" '(("**;*.*" #P"SYS:build;system;full-boehm;**;*.*")))
+  (core:pathname-translations "min-mps" '(("**;*.*" #P"SYS:build;system;min-mps;**;*.*")))
+  (core:pathname-translations "full-mps" '(("**;*.*" #P"SYS:build;system;full-mps;**;*.*")))
+  )
+
+
+
 ;;(setq *features* (cons :compare *features*)) ;; compare ecl to brcl
 
 ;; When boostrapping in stages, set this feature,
@@ -140,10 +150,11 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.o"
   #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
 )
-(defconstant +image-pathname+ (pathname "kernel;_image.bundle"))
-(defconstant +imagelto-pathname+ (pathname "kernel;_imagelto.bundle"))
-(defconstant +min-image-pathname+ (pathname "kernel;_min_image.bundle"))
+(defconstant +image-pathname+ (pathname "image.bundle"))
+(defconstant +imagelto-pathname+ (pathname "imagelto.bundle"))
+(defconstant +min-image-pathname+ (pathname "min-image.bundle"))
 (export '(+image-pathname+ +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
+
 
 (let ((imagelto-date (file-write-date +imagelto-pathname+))
       (intrinsics-date (file-write-date +intrinsics-bitcode-pathname+)))
@@ -358,9 +369,11 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 					(if loaded
 					    loaded
 					    (bformat t "Could not load bundle %s - error: %s\n" (truename path) error-msg)))
-                 (progn
-                   (bformat t "Loading %s\n" (truename path))
-                   (load-bundle path)))))
+                 (let* ((image-path (target-backend-pathname path))
+                        (image-file (probe-file image-path)))
+                   (if image-file nil (error "Could not find ~a" image-path))
+                   (bformat t "Loading image %s\n" image-path)
+                   (load-bundle image-path)))))
 
 (*fset 'fset
        #'(lambda (whole env)
@@ -414,10 +427,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (si::*fset 'iload #'interpreter-iload)
 #| Otherwise use the compiler |#
 #-nocmp
-(defun iload (fn &key load-bitcode)
+(defun iload (fn &key load-bitcode )
   (setq *reversed-init-filenames* (cons fn *reversed-init-filenames*))
   (let* ((lsp-path (get-pathname-with-type fn "lsp"))
-	 (bc-path (fasl-pathname (get-pathname-with-type fn "bc")))
+	 (bc-path (target-backend-pathname (get-pathname-with-type fn "bc") ))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
 		      (if (not (probe-file bc-path))
@@ -451,7 +464,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (defun delete-init-file (module &key (really-delete t))
-  (let ((bitcode-path (fasl-pathname (get-pathname-with-type module "bc"))))
+  (let ((bitcode-path (target-backend-pathname (get-pathname-with-type module "bc"))))
     (bformat t "Module: %s\n" module)
     (if (probe-file bitcode-path)
 	(if really-delete
@@ -462,11 +475,22 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	(bformat t "    File doesn't exist: %s\n" (namestring bitcode-path))
 	)))
 
+(defvar *target-backend* nil)
+(defun default-target-backend ()
+  (let* ((stage #+ecl-min "min" #-ecl-min "full")
+         (garbage-collector #+use-boehm "boehm" #+use-mps "mps")
+         (target-backend (bformat nil "%s-%s" stage garbage-collector)))
+    target-backend))
 
+(defun target-backend-pathname (pathname &key (target-backend *target-backend*) &allow-other-keys)
+  (merge-pathnames (make-pathname :host target-backend) pathname))
+
+(export '(default-target-backend target-backend-pathname))
+        
 
 (defun compile-iload (filename &key (reload nil) load-bitcode (recompile nil))
   (let* ((source-path (get-pathname-with-type filename "lsp"))
-	 (bitcode-path (fasl-pathname (get-pathname-with-type filename "bc")))
+	 (bitcode-path (target-backend-pathname (get-pathname-with-type filename "bc")))
 	 (load-bitcode (if (probe-file bitcode-path)
 			   (if load-bitcode
 			       t
@@ -477,7 +501,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 			   nil)))
     (if (and load-bitcode (not recompile))
 	(progn
-	  (bformat t "Skipping compilation of %s - it's bitcode file is more recent\n" (truename source-path))
+	  (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" (truename source-path) (translate-logical-pathname bitcode-path))
 	  ;;	  (bformat t "   Loading the compiled file: %s\n" (path-file-name bitcode-path))
 	  ;;	  (load-bitcode (as-string bitcode-path))
 	  )
@@ -485,13 +509,15 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  (bformat t "\n")
 	  (bformat t "Compiling %s - will reload: %s\n" (truename source-path) reload)
 	  (let ((cmp::*module-startup-prefix* "kernel"))
-	    (compile-file source-path :output-file bitcode-path :print t :verbose t :type :kernel)
+            (compile-file source-path :output-file bitcode-path :print t :verbose t :type :kernel :target-backend *target-backend*)
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" (truename bitcode-path))
 		  (load-bitcode bitcode-path))
 		(bformat t "      Skipping reload\n"))
-	    )))))
+	    )))
+    bitcode-path
+    ))
 
 
 
@@ -547,10 +573,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/cmuutil
     lsp/seqmacros
     lsp/seqlib
+    lsp/trace
     lsp/assert
 ;;    lsp/iolib
     lsp/module
-    lsp/trace
     lsp/loop2
     lsp/packlib
 ;;    cmp/cmpinterpreted
@@ -652,8 +678,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(defun load-boot ( &optional (last-file :all) &key (first-file :start) interp load-bitcode )
-  (let* ((files (select-source-files last-file :first-file first-file))
+(defun load-boot ( first-file last-file &key interp load-bitcode (target-backend (default-target-backend)))
+  (let* ((*target-backend* target-backend)
+         (files (select-source-files last-file :first-file first-file))
 	 (cur files))
     (tagbody
      top
@@ -668,29 +695,31 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        )))
 
 
-(defun compile-boot ( &optional last-file &key (first-file :start) (recompile nil) (reload nil) )
+(defun compile-boot (first-file last-file &key recompile reload)
   (bformat t "compile-boot  from: %s  to: %s\n" first-file last-file)
-  (if (not recompile) (load-boot last-file))
+  (if (not recompile)
+        (load-boot first-file last-file))
   (let* ((files (select-source-files last-file :first-file first-file))
-	 (cur files))
+	 (cur files)
+         bitcode-files)
     (tagbody
      top
        (if (endp cur) (go done))
-       (compile-iload (car cur) :recompile recompile :reload reload)
+       (let ((one-bitcode (compile-iload (car cur) :recompile recompile :reload reload )))
+         (setq bitcode-files (cons one-bitcode bitcode-files)))
        (setq cur (cdr cur))
        (go top)
      done
-       )))
+       )
+    (reverse bitcode-files)))
 
-
-(defun recompile-boot ()
-  (core::compile-boot nil :recompile t))
 
 
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
-(defun clean-boot ( &optional after-file &key no-prompt)
-  (let* ((files (select-trailing-source-files after-file))
+(defun clean-boot ( &optional after-file &key no-prompt (target-backend (default-target-backend)))
+  (let* ((*target-backend* target-backend)
+         (files (select-trailing-source-files after-file))
 	 (cur files))
     (bformat t "Will remove modules: %s\n" files)
     (bformat t "cur=%s\n" cur)
@@ -702,7 +731,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  (tagbody
 	   top
 	     (if (endp cur) (go done))
-	     (delete-init-file (car cur) :really-delete t)
+	     (delete-init-file (car cur) :really-delete t )
 	     (setq cur (cdr cur))
 	     (go top)
 	   done
@@ -712,26 +741,31 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(defun compile-cmp ()
-  (compile-boot :cmp :reload t :first-file :start)
-  (compile-boot :start :reload nil :first-file :base)
-)
+(defun compile-cmp (&key (target-backend (default-target-backend)))
+  (let ((*target-backend* target-backend))
+        (compile-boot :start :cmp :reload t )
+        (compile-boot :base :start :reload nil )
+        ))
 
 
-(defun compile-min-boot ()
-  (compile-boot :cmp :reload t :first-file :start)
-  (compile-boot :start :reload nil :first-file :base)
-  (compile-boot :min :first-file :cmp)
-  (cmp:bundle-boot :min :base +min-image-pathname+))
+(defun compile-min-boot (&key (target-backend (default-target-backend)))
+  (let* ((*target-backend* target-backend)
+         (bitcodes1 (compile-boot :start :cmp :reload t ))
+         (bitcodes0 (compile-boot :base :start :reload nil :recompile t ))
+         (bitcodes2 (compile-boot :cmp :min ))
+         (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
+    (cmp:bundle-boot
+           (target-backend-pathname +min-image-pathname+ )
+           :lisp-bitcode-files all-bitcodes
+           )))
 
-(defun load-min-boot-bundle ()
-  (load-boot :min)
-  (cmp:bundle-boot :min :base +min-image-pathname+))
 
-(defun compile-min-recompile ()
-  (compile-boot :start :reload nil :first-file :base)
-  (compile-boot :min :recompile t :first-file :start)
-  (cmp:bundle-boot :min :base +min-image-pathname+))
+(defun compile-min-recompile (&key (target-backend (default-target-backend)))
+  (let ((*target-backend* target-backend)
+        (bitcode-files (append (compile-boot :base :start :reload nil ) 
+                               (compile-boot :start :min :recompile t ))))
+    (cmp:bundle-boot (target-backend-pathname +min-image-pathname+ )
+                     :lisp-bitcode-files bitcode-files )))
 
 (defun switch-to-full ()
   (setq *features* (remove :ecl-min *features*))
@@ -739,12 +773,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*)
 )
   
-(defun compile-full ()
+(defun compile-full () ;;&key target-backend (default-target-backend))
   (switch-to-full)
-  (load-boot :all :interp t :first-file :start)
-  ;; Compile everything - ignore old bitcode
-  (compile-boot :all :recompile t :first-file :base)
-  (cmp:bundle-boot-lto :all :output-pathname +imagelto-pathname+))
+  (let ((*target-backend* (default-target-backend)))
+    (load-boot :start :all :interp t )
+    ;; Compile everything - ignore old bitcode
+    (let ((bitcode-files (compile-boot :base :all :recompile t )))
+      (cmp:bundle-boot-lto (target-backend-pathname +imagelto-pathname+ )
+                           bitcode-files ))))
 
 
 (defun bootstrap-help ()
@@ -753,7 +789,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (bformat t "Compiler LOG macro will slow down compilation\n")
   (bformat t "\n")
   (bformat t "Useful commands:\n")
-  (bformat t "(load-boot stage &key :interp t )   - Load the minimal system\n")
+  (bformat t "(load-boot from-stage to-stage &key :interp t )   - Load the minimal system\n")
   (bformat t "(compile-boot stage &key :reload t) - Compile whatever parts of the system have changed\n")
   (bformat t "(clean-boot stage)                  - Remove all boot files after after-file\n")
   (bformat t "Available modules: %s\n" *init-files*)

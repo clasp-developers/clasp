@@ -26,7 +26,7 @@ successfully, T is returned, else error."
   (let ((*autoload-translations* nil))
     (unless (or (string-equal host "sys")
                 (si::pathname-translations host))
-      (with-open-file (in-str (make-pathname :defaults "sys:translations;"
+      (with-open-file (in-str (make-pathname :defaults #+clasp "sys:translations;" #+(and ecl (not clasp)) "sys"
                                              :name (string-downcase host)
                                              :type "translations"))
         (if *load-verbose*

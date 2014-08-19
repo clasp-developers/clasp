@@ -1,37 +1,55 @@
-CLASP = clasp_mps_o
+CLASP_BOEHM = clasp_boehm_o
+CLASP_MPS = clasp_mps_o
 export CLASP_APP_RESOURCES_DIR=$(HOME)/local/clasp/Contents/Resources
 
 
 
 all:
-	make system-boot
+	make boehm
 	make clasp-gc
 
 
 
-system-boot:
-	make system-min-boot
-	make system-full
+boehm:
+	make min-boehm
+	make full-boehm
 
-system-recompile:
-	make system-min-recompile
-	make system-full
+boehm-recompile:
+	make min-boehm-recompile
+	make full-boehm
 
-system-min-boot:
-	$(CLASP) -I -f ecl-min -l "buildClaspMinBoot.lsp"
+min-boehm:
+	$(CLASP_BOEHM) -I -f ecl-min -l "buildClaspMinBoot.lsp"
 
-system-min-boot-reuse:
-	$(CLASP) -I -f ecl-min -l "buildClaspMinBootReuse.lsp"
+min-boehm-recompile:
+	$(CLASP_BOEHM) -f ecl-min -l "buildClaspMinRecompile.lsp"
 
-# Use the old min-image
-system-min-recompile:
-	$(CLASP) -f ecl-min -l "buildClaspMinRecompile.lsp"
+full-boehm:
+	$(CLASP_BOEHM) -f ecl-min -l "buildClasp.lsp"
 
-system-full:
-	$(CLASP) -f ecl-min -l "buildClasp.lsp"
+
+mps:
+	make min-mps
+	make full-mps
+
+mps-recompile:
+	make min-mps-recompile
+	make full-mps
+
+min-mps:
+	$(CLASP_MPS) -I -f ecl-min -l "buildClaspMinBoot.lsp"
+
+min-mps-recompile:
+	$(CLASP_MPS) -f ecl-min -l "buildClaspMinRecompile.lsp"
+
+full-mps:
+	$(CLASP_MPS) -f ecl-min -l "buildClasp.lsp"
+
+
+
 
 clasp-gc:
-	$(CLASP) -l "buildClaspGc.lsp"
+	$(CLASP_BOEHM) -l "buildClaspGc.lsp"
 
 compile-commands:
 	-bjam bundle release mps-prep -n -a >bjam.out
