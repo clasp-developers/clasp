@@ -309,7 +309,7 @@ namespace gctools {
         size_t arenaSize = 10 * 32 * 1024 * 1024;
         mps_res_t res;
         MPS_ARGS_BEGIN(args) {
-//            MPS_ARGS_ADD(args,MPS_KEY_ARENA_INCREMENTAL, 0 );
+            MPS_ARGS_ADD(args,MPS_KEY_ARENA_INCREMENTAL, 0 );
             MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, arenaSize );
             res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
         } MPS_ARGS_END(args);
