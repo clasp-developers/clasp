@@ -482,15 +482,16 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
           t
           (recursive-find item (cdr seq)))))
 
-(defvar *target-backend* nil)
-(export '*target-backend*)
-
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend ()
   (let* ((stage (if (recursive-find :ecl-min *features*) "min" "full"))
          (garbage-collector (if (recursive-find :use-mps *features*) "mps" "boehm"))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
+
+(defvar *target-backend* (default-target-backend))
+(export '*target-backend*)
+
 
 (defun target-backend-pathname (pathname &key (target-backend *target-backend*) &allow-other-keys)
 ;;  (if target-backend nil (error "target-backend is nil"))
@@ -499,7 +500,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export '(default-target-backend target-backend-pathname))
         
 
-(defun compile-iload (filename &key (reload nil) load-bitcode (recompile nil))
+(defun compile-kernel-file (filename &key (reload nil) load-bitcode (recompile nil))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((source-path (get-pathname-with-type filename "lsp"))
 	 (bitcode-path (target-backend-pathname (get-pathname-with-type filename "bc")))
@@ -554,7 +555,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/setf
     lsp/listlib
     lsp/mislib
-    lsp/defstruct
+    #-defstruct-test lsp/defstruct
+    #+defstruct-test lsp/defstruct-test
+    :defstruct-test
     lsp/predlib
     lsp/iolib
     lsp/seq
@@ -718,7 +721,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (tagbody
      top
        (if (endp cur) (go done))
-       (let ((one-bitcode (compile-iload (car cur) :recompile recompile :reload reload )))
+       (let ((one-bitcode (compile-kernel-file (car cur) :recompile recompile :reload reload )))
          (setq bitcode-files (cons one-bitcode bitcode-files)))
        (setq cur (cdr cur))
        (go top)
