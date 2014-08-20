@@ -255,7 +255,9 @@
                (t
                 (error "~S is an illegal structure slot option."
                          os))))))
-    (list slot-name default-init slot-type read-only offset nil)))
+    (let ((slot-desc-ret (list slot-name default-init slot-type read-only offset nil)))
+      (defstruct-log "parse-slot-description --> %s\n" slot-desc-ret)
+      slot-desc-ret)))
 
 
 ;;; OVERWRITE-SLOT-DESCRIPTIONS overwrites the old slot-descriptions
@@ -450,12 +452,14 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
           (setq offset (1+ offset)))
 
     ;; Parse slot-descriptions, incrementing OFFSET for each one.
+    (defstruct-log "For name: %s Before slot-descriptions = %s\n" name slot-descriptions )
     (do ((ds slot-descriptions (cdr ds))
          (sds nil))
         ((endp ds)
          (setq slot-descriptions (nreverse sds)))
       (push (parse-slot-description (car ds) offset) sds)
       (setq offset (1+ offset)))
+    (defstruct-log "For name: %s after slot-descriptions = %s\n" name slot-descriptions )
 
     ;; If TYPE is non-NIL and structure is named,
     ;;  add the slot for the structure-name to the slot-descriptions.
@@ -470,6 +474,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
 
     ;; Append the slot-descriptions of the included structure.
     ;; The slot-descriptions in the include option are also counted.
+    (defstruct-log "For name: %s About to parse-slot-descriptions before slot-descriptions = %s\n" name slot-descriptions)
     (cond ((null include))
           ((endp (cdr include))
            (setq slot-descriptions
@@ -483,6 +488,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                                   (cdr include))
                           (get-sysprop (car include) 'STRUCTURE-SLOT-DESCRIPTIONS))
                          slot-descriptions))))
+    (defstruct-log "For name: %s Done parse-slot-descriptions after slot-descriptions = %s\n" name slot-descriptions)
 
     (cond (no-constructor
            ;; If a constructor option is NIL,

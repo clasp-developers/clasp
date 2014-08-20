@@ -44,3 +44,8 @@
     hash))
 
 (defparameter *special-operator-dispatch* (make-dispatch-table +special-operator-dispatch+))
+
+#+debug-mps
+(progn
+  (bformat t "Dumping *special-operator-dispatch* = %s\n" *special-operator-dispatch*)
+  (maphash #'(lambda (k v) (bformat t "Special operator = %s\n" k )) *special-operator-dispatch*))
