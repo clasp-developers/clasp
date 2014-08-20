@@ -43,7 +43,7 @@
 	(core::hash-table-setf-gethash hash name function)))
     hash))
 
-(defparameter *special-operator-dispatch* (make-dispatch-table +special-operator-dispatch+))
+(defvar *special-operator-dispatch* (make-dispatch-table +special-operator-dispatch+))
 
 #+debug-mps
 (progn
