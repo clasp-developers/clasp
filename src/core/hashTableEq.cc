@@ -80,7 +80,8 @@ namespace core
                        ,gctools::_global_arena,blockAddr);
         }
         HashTable_O::sxhash_eq(hg,obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)) : NULL );
-#else
+#endif
+#ifdef USE_BOEHM
         HashTable_O::sxhash_eq(hg,obj,NULL);
 #endif
 	return hg.hash(bound);
