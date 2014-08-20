@@ -309,6 +309,7 @@ namespace gctools {
         size_t arenaSize = 10 * 32 * 1024 * 1024;
         mps_res_t res;
         MPS_ARGS_BEGIN(args) {
+//            MPS_ARGS_ADD(args,MPS_KEY_ARENA_INCREMENTAL, 0 );
             MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, arenaSize );
             res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
         } MPS_ARGS_END(args);
@@ -491,8 +492,6 @@ namespace gctools {
         mps_root_destroy(global_scan_root);
         mps_root_destroy(global_stack_root);
         mps_thread_dereg(global_thread);
-        mps_ap_destroy(_global_weak_link_allocation_point);
-        mps_ap_destroy(_global_strong_link_allocation_point);
         mps_ap_destroy(_global_automatic_mostly_copying_zero_rank_allocation_point);
         mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
         mps_ap_destroy(_global_weak_link_allocation_point);
@@ -504,6 +503,7 @@ namespace gctools {
         mps_pool_destroy(_global_amc_pool);
         mps_arena_park(_global_arena);
         mps_chain_destroy(only_chain);
+        mps_fmt_destroy(weak_obj_fmt);
         mps_fmt_destroy(obj_fmt);
         mps_arena_destroy(_global_arena);
 
