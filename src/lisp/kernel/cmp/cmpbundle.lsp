@@ -183,7 +183,6 @@
                                               (output-pathname +image-pathname+)
                                               debug-ir)
   "Link a bunch of modules together, return the linked module"
-  (error "Implement target-backend keyword argument")
   (format t "part-pathnames ~a~%" part-pathnames)
   (let* ((module (create-bundle-module part-pathnames :output-pathname output-pathname))
          (linker (llvm-sys:make-linker module))
@@ -217,13 +216,13 @@
 
 
 
-(defun bundle-boot-lto (&optional (last-part :all)
-                                  &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)
-                                  (first-file :base)
-                                  (output-pathname +imagelto-pathname+)
-                                  debug-ir)
-  (error "implement target-backend")
-  (let* ((part-pathnames (boot-part-pathnames last-part :first-file first-file))
+(defun bundle-boot-lto (output-pathname
+                        &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)
+                          lisp-bitcode-files
+                          debug-ir
+                          (target-backend (default-target-backend)))
+  (let* ((*target-backend* target-backend)
+         (part-pathnames lisp-bitcode-files)
 ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (make-pathname :type "bc" :defaults output-pathname))
          (module (link-bitcode-modules part-pathnames
@@ -235,7 +234,7 @@
          )
     (ensure-directories-exist bundle-bitcode-pathname)
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
-    (execute-clang bundle-bitcode-pathname)
+    (generate-object-file bundle-bitcode-pathname)
     (execute-link output-pathname (list bundle-bitcode-pathname))
     ))
          
