@@ -71,7 +71,7 @@
          (file (namestring bitcode-physical-pathname))
          (output-file (namestring (make-pathname :type "o" :defaults bitcode-physical-pathname))))
     #+(and :target-os-linux :address-model-64)
-    (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -reolcation-model=pic -o %s %s" output-file file) output-file))
+    (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file))
     #+target-os-darwin
     (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
            (clang-executable (if clasp-clang-path

@@ -73,12 +73,6 @@ namespace core
     {
 	HashGenerator hg;
 #ifdef USE_MPS
-        // I do this again in sxhash_eq - I should only do it once!!!!!
-        if ( willAddKey && obj.pointerp() ) {
-            void* blockAddr = SmartPtrToBasePtr(obj);
-            mps_ld_add(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker))
-                       ,gctools::_global_arena,blockAddr);
-        }
         HashTable_O::sxhash_eq(hg,obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)) : NULL );
 #endif
 #ifdef USE_BOEHM
