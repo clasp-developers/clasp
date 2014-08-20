@@ -483,6 +483,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
           (recursive-find item (cdr seq)))))
 
 (defvar *target-backend* nil)
+(export '*target-backend*)
 
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend ()
@@ -492,12 +493,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     target-backend))
 
 (defun target-backend-pathname (pathname &key (target-backend *target-backend*) &allow-other-keys)
+;;  (if target-backend nil (error "target-backend is nil"))
   (merge-pathnames (make-pathname :host target-backend) pathname))
 
 (export '(default-target-backend target-backend-pathname))
         
 
 (defun compile-iload (filename &key (reload nil) load-bitcode (recompile nil))
+;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((source-path (get-pathname-with-type filename "lsp"))
 	 (bitcode-path (target-backend-pathname (get-pathname-with-type filename "bc")))
 	 (load-bitcode (if (probe-file bitcode-path)
@@ -516,9 +519,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  )
 	(progn
 	  (bformat t "\n")
-	  (bformat t "Compiling %s - will reload: %s\n" (truename source-path) reload)
+	  (bformat t "Compiling %s to %s - will reload: %s\n" (truename source-path) bitcode-path reload)
 	  (let ((cmp::*module-startup-prefix* "kernel"))
-            (compile-file source-path :output-file bitcode-path :print t :verbose t :type :kernel :target-backend *target-backend*)
+            (compile-file source-path :output-file bitcode-path :print t :verbose t :type :kernel)
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" (truename bitcode-path))
@@ -705,6 +708,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (defun compile-boot (first-file last-file &key recompile reload)
+;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (bformat t "compile-boot  from: %s  to: %s\n" first-file last-file)
   (if (not recompile)
         (load-boot first-file last-file))
@@ -771,8 +775,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend)
-        (bitcode-files (append (compile-boot :base :start :reload nil ) 
-                               (compile-boot :start :min :recompile t ))))
+        (bitcode-files (compile-boot :start :min :recompile t )))
     (cmp:bundle-boot (target-backend-pathname +min-image-pathname+ )
                      :lisp-bitcode-files bitcode-files )))
 
@@ -782,14 +785,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*)
 )
   
-(defun compile-full () ;;&key target-backend (default-target-backend))
+(defun compile-full () ;; &key (target-backend (default-target-backend)))
   (switch-to-full)
   (let ((*target-backend* (default-target-backend)))
     (load-boot :start :all :interp t )
     ;; Compile everything - ignore old bitcode
     (let ((bitcode-files (compile-boot :base :all :recompile t )))
-      (cmp:bundle-boot-lto (target-backend-pathname +imagelto-pathname+ )
-                           bitcode-files ))))
+      (cmp:bundle-boot-lto (target-backend-pathname +imagelto-pathname+)
+                           :lisp-bitcode-files bitcode-files ))))
 
 
 (defun bootstrap-help ()
@@ -881,19 +884,23 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
       (load core:*command-line-load*)
       (core:low-level-repl)))
 
-
+(defvar *loaded-image* nil)
 #-ignore-init-image
 (eval-when (:execute)
-  (my-time (ibundle #+ecl-min +min-image-pathname+ #-ecl-min +imagelto-pathname+))
-  (require 'system)
-  (load-brclrc)
-  (if core:*command-line-load*
-      (load core:*command-line-load*)
-      #-ecl-min(progn
-		 (bformat t "Starting Clasp\n")
-		 (top-level))
-      #+ecl-min(progn
-		 (bformat t "Starting Clasp-min\n")
-		 (core::low-level-repl))
+  (if (not *loaded-image*)
+      (progn
+        (setq *loaded-image* t)
+        (bformat t "init.lsp> Loading image bundle\n")
+        (my-time (ibundle #+ecl-min +min-image-pathname+ #-ecl-min +imagelto-pathname+))
+        (require 'system)
+        (load-brclrc)
+        (if core:*command-line-load*
+            (load core:*command-line-load*)
+            #-ecl-min(progn
+                       (bformat t "Starting Clasp\n")
+                       (top-level))
+            #+ecl-min(progn
+                       (bformat t "Starting Clasp-min\n")
+                       (core::low-level-repl))
+            ))
       ))
-
