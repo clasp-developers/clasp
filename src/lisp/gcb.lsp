@@ -147,6 +147,7 @@
 (defstruct analysis
   project
   manager
+  (cur-enum-value 0)
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
 ;;  classes-with-fixptrs
@@ -1309,7 +1310,7 @@ so that they don't have to be constantly recalculated"
                              (setf (gethash key (analysis-enums analysis))
                                    (make-templated-enum :key key
                                                         :name (class-enum-name key species)
-                                                        :value nil ;; (incf (analysis-cur-enum-value analysis))
+                                                        :value (incf (analysis-cur-enum-value analysis))
                                                         :cclass single-base
                                                         :species species)))))))
          ;; save every alloc associated with this templated-enum
@@ -1324,7 +1325,7 @@ so that they don't have to be constantly recalculated"
            (setf (gethash key (analysis-enums analysis))
                  (make-simple-enum :key key
                                    :name (class-enum-name key species)
-                                   :value nil ;; (incf (analysis-cur-enum-value analysis))
+                                   :value (incf (analysis-cur-enum-value analysis))
                                    :cclass class
                                    :alloc alloc
                                    :species species)))))))
@@ -2226,8 +2227,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   )
 |#
 
-(defun generate-code (&key (project *project*) test)
-  (analyze-code project)
+(defun generate-code (&key (analysis *analysis*) test)
   (let ((filename (if test
                       "test_clasp_gc"
                       "clasp_gc")))
@@ -2338,7 +2338,6 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 (defparameter *max-parallel-searches* (parse-integer (core:getenv "PJOBS")))
-(defparameter *jobs-per-group* 10)
 
 (defun split-jobs (job-list num-parallel)
   (let ((jobvec (make-array num-parallel)))
@@ -2349,9 +2348,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 
 
-(defun fork-jobs (proc job-list)
+(defun run-forked-job (proc job-list)
   (setf (multitool-results *tools*) (make-project))
-  (format t "====== Running jobs: ~a~%" job-list)
+  (format t "====== Running jobs in fork #~a: ~a~%" proc job-list)
   (batch-run-multitool *tools* :filenames job-list)
   (format t "------------ About to save-archive --------------~%")
   (serialize:save-archive (multitool-results *tools*) (project-pathname (format nil "project~a" proc) "dat"))
@@ -2364,7 +2363,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (let ((all-jobs (split-jobs (if test
                                   $test-search
                                   (reverse (lremove (lremove $* ".*mps\.c$") ".*gc_interface\.cc$")))
-                              *jobs-per-group*
+                              *max-parallel-searches*
                               ))
         (spare-processes (if one-at-a-time 1 *max-parallel-searches*)))
     (serialize:save-archive all-jobs (project-pathname "project-all" "dat"))
@@ -2375,7 +2374,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
       (let* ((job-list (elt all-jobs proc))
              (pid (core:fork)))
         (if (eql 0 pid)
-            (fork-jobs proc job-list)
+            (run-forked-job proc job-list)
             (when (eql spare-processes 0)
               (core:waitpid -1 0)
               (setq spare-processes (1+ spare-processes)))))
