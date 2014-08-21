@@ -521,7 +521,8 @@ namespace core
 	ASSERTF(!this->_RehashSize->zerop(),BF("RehashSize is zero - it shouldn't be"));
 	ASSERTF(cl_length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
         Cons_sp foundKeyValuePair(_Nil<Cons_O>());
-	LOG(BF("At start of expandHashTable current hash table size: %d") % cl_length(this->_HashTable) );
+        uint startCount = this->hashTableCount();
+	LOG(BF("At start of expandHashTable current hash table size: %d") % startSize );
         uint newSize = 0;
         if ( expandTable ) {
             if ( af_integerP(this->_RehashSize) ) {
@@ -577,6 +578,10 @@ namespace core
 		}
 	    }
 	}
+        uint endCount = this->hashTableCount();
+        if (startCount!=endCount) {
+            SIMPLE_ERROR(BF("After rehash the hash-table-count is %d but at start it was %d") % endCount % startCount );
+        }
         return foundKeyValuePair;
     }
     
