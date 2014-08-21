@@ -146,15 +146,10 @@
 
 (defstruct analysis
   project
-  (cur-enum-value 0)
   manager
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
-  classes-with-fixptrs
-;;  (species-to-enum (make-hash-table :test #'eq))
-;;  (alloc-to-enum (make-hash-table :test #'eq))
-;;  list-of-all-enums
-;;  (contains-fixptr (make-hash-table :test #'eq))
+;;  classes-with-fixptrs
   )
 
 
@@ -1314,7 +1309,7 @@ so that they don't have to be constantly recalculated"
                              (setf (gethash key (analysis-enums analysis))
                                    (make-templated-enum :key key
                                                         :name (class-enum-name key species)
-                                                        :value (incf (analysis-cur-enum-value analysis))
+                                                        :value nil ;; (incf (analysis-cur-enum-value analysis))
                                                         :cclass single-base
                                                         :species species)))))))
          ;; save every alloc associated with this templated-enum
@@ -1329,7 +1324,7 @@ so that they don't have to be constantly recalculated"
            (setf (gethash key (analysis-enums analysis))
                  (make-simple-enum :key key
                                    :name (class-enum-name key species)
-                                   :value (incf (analysis-cur-enum-value analysis))
+                                   :value nil ;; (incf (analysis-cur-enum-value analysis))
                                    :cclass class
                                    :alloc alloc
                                    :species species)))))))
