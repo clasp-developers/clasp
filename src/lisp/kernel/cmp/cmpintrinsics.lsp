@@ -223,6 +223,9 @@ Boehm and MPS use a single pointer"
     (typeid-core-return-from "_ZTIN4core10ReturnFromE")
     ))
 
+;;#+debug-mps (bformat t "cmp::*exceptions* --> %s\n" *exceptions*)
+
+
 (defvar *exception-types-hash-table* (make-hash-table :test #'eq)
   "Map exception names to exception class extern 'C' names")
 

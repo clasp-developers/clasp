@@ -256,7 +256,7 @@
                 (error "~S is an illegal structure slot option."
                          os))))))
     (let ((slot-desc-ret (list slot-name default-init slot-type read-only offset nil)))
-      (defstruct-logs "parse-slot-description --> %s\n" slot-desc-ret)
+      (defstruct-log "parse-slot-description --> %s\n" slot-desc-ret)
       slot-desc-ret)))
 
 
