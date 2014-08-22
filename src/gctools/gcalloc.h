@@ -225,7 +225,7 @@ namespace gctools {
         template <typename...ARGS>
         void construct (pointer p, ARGS&&...args) {
             // initialize memory with placement new
-            new((void*)p)value_type(args...);
+            new((void*)p)value_type(std::forward<ARGS>(args)...);
         }
 
         // destroy elements of initialized storage p
@@ -694,7 +694,7 @@ namespace gctools {
         template <typename...ARGS>
         void construct (pointer p, ARGS&&...args) {
             // initialize memory with placement new
-            new((void*)p) value_type(args...);
+            new((void*)p) value_type(std::forward<ARGS>(args)...);
         }
 
         // destroy elements of initialized storage p
@@ -785,7 +785,7 @@ namespace gctools {
         template <typename...ARGS>
         void construct (pointer p, ARGS&&...args) {
             // initialize memory with placement new
-            new((void*)p) value_type(args...);
+            new((void*)p) value_type(std::forward<ARGS>(args)...);
         }
 
         // destroy elements of initialized storage p
@@ -965,7 +965,7 @@ namespace gctools {
         void construct (pointer p, ARGS&&...args) {
             // initialize memory with placement new
             THROW_HARD_ERROR(BF("What do I do here"));
-//            new((void*)p)value_type(args...);
+//            new((void*)p)value_type(std::forward<ARGS>(args)...);
         }
 
         // destroy elements of initialized storage p
@@ -1040,7 +1040,7 @@ namespace gctools {
         void construct (pointer p, ARGS&&...args) {
             // initialize memory with placement new
             THROW_HARD_ERROR(BF("What do I do here"));
-//            new((void*)p)value_type(args...);
+//            new((void*)p)value_type(std::forward<ARGS>(args)...);
         }
 
         // destroy elements of initialized storage p

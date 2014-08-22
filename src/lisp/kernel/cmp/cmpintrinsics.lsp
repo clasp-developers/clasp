@@ -448,6 +448,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "debugInvoke" +void+ nil)
   (primitive-does-not-throw module "debugInspectActivationFrame" +void+ (list +afsp*+))
   (primitive-does-not-throw module "debugInspectT_sp" +void+ (list +tsp*+))
+  (primitive-does-not-throw module "debugInspectTPtr" +void+ (list +t-ptr+))
   (primitive-does-not-throw module "debugInspectT_mv" +void+ (list +tmv*+))
 
   (primitive-does-not-throw module "debugPointer" +void+ (list +i8*+))

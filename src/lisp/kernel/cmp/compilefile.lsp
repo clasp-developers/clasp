@@ -148,11 +148,7 @@
 (defun compile-file-pathname (input-file &key (output-file nil output-file-p))
   (if output-file-p
       (merge-pathnames output-file (cfp-output-file-default input-file))
-      (cond
-        (core:*target-backend*
-         (target-backend-pathname (cfp-output-file-default input-file)))
-        (t
-         (cfp-output-file-default input-file)))))
+      (cfp-output-file-default input-file)))
 
 
 (defun cf-module-name (type pathname)
@@ -208,7 +204,7 @@ and the pathname of the source file - this will also be used as the module initi
                                 (*current-column* column))
                             (t1expr form)
                             ))
-                        (compile-main-function output-file ltv-init-fn )
+                        (compile-main-function output-path ltv-init-fn )
                         ))))
                 (cmp-log "About to verify the module\n")
                 (cmp-log-dump *the-module*)

@@ -144,7 +144,7 @@ int main(int argc, char* argv[] )
 {	// Do not touch debug log until after MPI init
 
 #ifdef USE_BOEHM
-    GC_set_all_interior_pointers(1);
+//    GC_set_all_interior_pointers(1);
     GC_set_warn_proc(clasp_warn_proc);
     GC_init();
 #endif

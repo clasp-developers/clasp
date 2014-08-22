@@ -1178,6 +1178,13 @@ extern "C"
 	printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__,__LINE__);
     }
 
+    void debugInspectTPtr(core::T_O* tP)
+    {
+        core::T_sp obj = gctools::smart_ptr<core::T_O>(tP);
+	printf("debugInspectTPtr@%p  obj.px_ref()=%p: %s\n", (void*)tP, obj.px_ref(), _rep_(obj).c_str() );
+	printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__,__LINE__);
+    }
+
     void debugInspectT_mv(core::T_mv* objP)
     {_G();
 	printf("debugInspectT_mv@%p\n", (void*)objP);
