@@ -127,12 +127,19 @@ namespace gctools {
 
 //    typedef Header_s<void>* Header_t;
 
-    /*! The two least-significant bits of the header uintptr_t value
+    /*!
+
+      A Header is 16 bytes long and consists of two uintptr_t (8 bytes) values.
+      The first uintptr_t is (header) the second uintptr_t is data[0].
+      The (header) uintptr_t is a tagged value where the
+      two least significant bits are the tag.
+
+      The two least-significant bits of the header uintptr_t value
       describe the data.
-      1r00 == This is an illegal setting for the two lsbs - this is used to
-              indicate that the preceeding uintptr_t defines a header.
+      1r00 == This is an illegal setting for the two lsbs.
+              This may be used to indicate that the real header is in the preceeding 16 bytes.
       1r01 == This tag indicates that the other bits in the header
-      represent a Kind value >> 2
+      represent a Kind value >> 2 (shifted right 2 bits).
       1r10 == This tag indicates that the header contains a forwarding
       pointer.    The following uintptr_t contains the length of
       the block from the client pointer.

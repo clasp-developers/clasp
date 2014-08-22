@@ -30,28 +30,15 @@ namespace core
 	try
 	{
 	    curPath = boost_filesystem::current_path();
-	    cwd = curPath.string();
 	} catch (std::runtime_error& e)
 	{
 	    printf("%s:%d - There was a problem getting the current_path - error[%s]\n",
 		   __FILE__, __LINE__, e.what() );
 	    printf("     This appears to be a problem with boost_filesystem\n");
 	    printf("     - see https://svn.boost.org/trac/boost/ticket/4688\n" );
-	    printf("About to read environment variable\n");
-	    char* rawcwd = getenv("CLASP_STARTUP_DIRECTORY");
-	    printf("%s:%d      Read environment variable CLASP_STARTUP_DIRECTORY\n",__FILE__,__LINE__);
-	    if ( rawcwd == NULL )
-	    {
-		printf( "    You could set the environment variable BRCL_STARTUP_DIRECTORY as a work-around until it is fixed\n");
-		printf( "     otherwise I have to exit now\n");
-		exit(1);
-	    } else
-	    {
-		cwd = rawcwd;
-		printf( "    I extracted the startup directory from BRCL_STARTUP_DIRECTORY --> [%s]\n", rawcwd );
-		printf( "%s:%d    Proceeding with program\n", __FILE__, __LINE__ );
-	    }
+            SIMPLE_ERROR(BF("There is a problem with boost_filesystem"));
 	}
+        cwd = curPath.string();
 	this->_StartupWorkingDir = boost_filesystem::path(cwd);
     }
 

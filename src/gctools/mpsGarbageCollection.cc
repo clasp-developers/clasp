@@ -333,9 +333,9 @@ namespace gctools {
 
 
 #ifdef DEBUG_LOAD_TIME_VALUES
-#define CHAIN_SIZE 256 // 6400
+#define CHAIN_SIZE 6400 // 256 // 6400
 #else
-#define CHAIN_SIZE 256 // 6400
+#define CHAIN_SIZE 6400 // 256 // 6400
 #endif
 
 #define AMC_CHAIN_SIZE CHAIN_SIZE

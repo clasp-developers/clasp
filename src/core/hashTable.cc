@@ -22,6 +22,31 @@ namespace core
 
 
 
+#ifdef USE_MPS
+        static int LockDepth = 0;
+    struct HashTableLocker {
+        HashTableLocker() {
+            if ( LockDepth == 0 ) {
+//                printf("%s:%d clamping the arena\n", __FILE__, __LINE__ );
+                mps_arena_clamp(gctools::_global_arena);
+            }
+            ++LockDepth;
+        };
+        ~HashTableLocker() {
+            if ( LockDepth == 1 ) {
+//                printf("%s:%d releasing the arena\n", __FILE__, __LINE__ );
+                mps_arena_release(gctools::_global_arena);
+            }
+            --LockDepth;
+        }
+    };
+#define HASH_TABLE_LOCK() HashTableLocker zzzzHashTableLocker;
+#endif
+#ifdef USE_BOEHM
+#define HASH_TABLE_LOCK()
+#endif
+
+
 // ----------------------------------------------------------------------
 //
 
@@ -76,10 +101,12 @@ namespace core
 #define LINE_af_maphash __LINE__
     T_mv af_maphash(T_sp function_desig, HashTable_sp hash_table)
     {_G();
+//        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.px_ref());
 	Function_sp func = coerce::functionDesignator(function_desig);
         if ( hash_table.nilp() ) {
             SIMPLE_ERROR(BF("maphash called with nil hash-table"));
         }
+        HASH_TABLE_LOCK();
 	for ( size_t it=0, itEnd = cl_length(hash_table->_HashTable); it<itEnd; ++it )
 	{
 
@@ -94,6 +121,7 @@ namespace core
                 }
 	    }
 	}
+//        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.px_ref());
 	return(Values(_Nil<T_O>()));
     }
 
@@ -518,6 +546,7 @@ namespace core
 
     Cons_sp HashTable_O::rehash(bool expandTable, T_sp findKey )
     {_OF();
+//        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
 	ASSERTF(!this->_RehashSize->zerop(),BF("RehashSize is zero - it shouldn't be"));
 	ASSERTF(cl_length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
         Cons_sp foundKeyValuePair(_Nil<Cons_O>());
@@ -632,6 +661,7 @@ namespace core
 
     void HashTable_O::mapHash(std::function<void(T_sp,T_sp)> const& fn)
     {
+        HASH_TABLE_LOCK();
 	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
 	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
@@ -647,6 +677,7 @@ namespace core
 
     void HashTable_O::terminatingMapHash(std::function<bool(T_sp,T_sp)> const& fn)
     {
+        HASH_TABLE_LOCK();
 	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
 	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
@@ -665,6 +696,7 @@ namespace core
 
     void HashTable_O::lowLevelMapHash(KeyValueMapper* mapper) const
     {_OF();
+        HASH_TABLE_LOCK();
 	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
 	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
