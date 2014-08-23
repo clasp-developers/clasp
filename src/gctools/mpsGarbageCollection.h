@@ -89,6 +89,9 @@ extern "C" {
     /*! Implemented in gc_interace.cc */
     mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 
+    /*! Dump a representation of the object at the base pointer to stdout */
+    void obj_dump_base(mps_addr_t base);
+
     /*! Implemented in gc_interace.cc */
     mps_addr_t obj_skip(mps_addr_t base);
 

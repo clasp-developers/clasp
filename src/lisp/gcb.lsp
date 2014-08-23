@@ -1425,11 +1425,8 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum)))
     (format fout "case ~a: {~%" enum-name)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-    (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
-      (dolist (instance-var all-instance-variables)
-        (code-for-instance-var fout +ptr-name+ instance-var)))
     (format fout "    typedef ~A type_~A;~%" key enum-name)
-    (format fout "    sout << \"~a\" << " size: " << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) ;~%" enum-name enum-name )
+    (format fout "    sout << \"~a size[\" << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) << \"]\" ;~%" enum-name enum-name )
     (format fout "} break;~%")
     ))
 
@@ -1491,7 +1488,7 @@ so that they don't have to be constantly recalculated"
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (format fout "case ~a: {~%" enum-name)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-    (format fout "    sout << \"~a\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) ;~%" enum-name enum-name )
+    (format fout "    sout << \"~a size[\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) << \"]\" ;~%" enum-name +ptr-name+ )
     (format fout "} break;~%")
     ))
 
@@ -1621,7 +1618,30 @@ so that they don't have to be constantly recalculated"
 
 
 
-
+(defun skipper-for-gcstring (fout enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (decl (containeralloc-ctype alloc))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (format fout "case ~a: {~%" enum-name)
+    (format fout "// processing ~a~%" alloc)
+    (if (cxxrecord-ctype-p decl)
+        (progn
+          (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
+        (let* ((parms (class-template-specialization-ctype-arguments decl))
+               (parm0 (car parms))
+               (parm0-ctype (gc-template-argument-ctype parm0)))
+          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+          (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+;;          (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
+          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
+          (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+          (format fout "    client = (char*)client + Align(header_and_gcstring_size);~%")
+;;          (format fout "    base = (char*)base + length;~%")
+          ))
+    (format fout "} break;~%")
+    ))
 
 (defun dumper-for-gcstring (fout enum anal)
   (check-type enum simple-enum)

@@ -192,19 +192,7 @@ extern "C" {
         gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
         MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
         if ( header->kindP() ) {
-#if 0
-            Seg seg;
-            gctools::GCKindEnum kind;
-            unsigned int length;
-            if (SegOfAddr(&seg,gctools::_global_arena,header)) {
-                ShieldExpose(gctools::_global_arena,seg);
-                kind = (gctools::GCKindEnum)(header->kind.Kind);
-                length = header->kind.Length;
-                ShieldCover(gctools::_global_arena,seg);
-            };
-#else
             gctools::GCKindEnum kind = header->kind();
-#endif        
             switch (kind) {     
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP
@@ -228,6 +216,41 @@ extern "C" {
         }
         DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p") % client);
 	return client;
+    }
+
+
+    /*! I'm using a format_header so MPS gives me the object-pointer */
+    void obj_dump_base( mps_addr_t base )
+    {
+        gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
+        void* client = BasePtrToMostDerivedPtr<void>(base);
+        MPS_LOG(BF("obj_dump base=%p  header-desc: %s") % base % header->description());
+        stringstream sout;
+        if ( header->kindP() ) {
+            gctools::GCKindEnum kind = header->kind();
+            switch (kind) {     
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_DUMP
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_DUMP
+#endif
+            default: {
+                fprintf(stderr,"Garbage collection tried to obj_skip an object of unknown kind: %s\n", header->description().c_str() );
+                assert(0);
+                abort();
+            }
+            };
+        } else if (header->fwdP()) {
+            void* forwardPointer = header->fwdPointer();
+            sout << "FWD pointer[" << forwardPointer << "] size[" << header->fwdSize() << "]";
+        } else if (header->pad1P()) {
+            sout << "PAD1 size[" << header->pad1Size() << "]";
+        } else if (header->padP()) {
+            sout << "PAD size[" << header->padSize() << "]";
+        } else {
+            sout << "INVALID HEADER!!!!!";
+        }
+        printf("Base@%p %s\n", base, sout.str().c_str());
     }
 
 

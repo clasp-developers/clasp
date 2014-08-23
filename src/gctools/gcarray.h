@@ -29,6 +29,7 @@ namespace gctools {
         T           _Data[SZ]; // Store _Capacity numbers of T structs/classes starting here
 
     public:
+        size_t size() const { return this->capacity(); };
         size_t capacity() const { return this->_Alive ? this->_Capacity : 0;};
         value_type* data() { return this->_Data; };
         value_type& operator[](size_t i) { return this->_Data[i]; };    
@@ -112,7 +113,7 @@ namespace gctools {
             this->_Contents = implAddress;
         }            
 
-
+        size_t size() const { return this->capacity(); };
         size_t capacity() const { return this->_Contents ? this->_Contents->_Capacity : 0; };
         bool alivep() const { return this->_Contents ? this->_Contents->_Alive : false; };
 
