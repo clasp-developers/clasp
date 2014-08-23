@@ -91,6 +91,22 @@ namespace core
     };
 
 
+
+
+#define ARGS_core_copyInstance "(obj)"
+#define DECL_core_copyInstance ""
+#define DOCS_core_copyInstance "copy-instance returns a shallow copy of the instance"
+    Instance_sp core_copyInstance(Instance_sp obj)
+    {_G();
+        Instance_sp cp = obj->copyInstance();
+        return cp;
+    };
+
+
+
+
+
+
     void Instance_O::setKind(Symbol_sp k) {
         if ( k == kw::_sym_macro ) {
             SIMPLE_ERROR(BF("You cannot set a generic-function (instance) to macro"));
@@ -222,7 +238,6 @@ namespace core
     void Instance_O::exposeCando(core::Lisp_sp lisp)
     {
 	core::class_<Instance_O>()
-	    .def("copyInstance",&Instance_O::copyInstance) // TODO: Change this to Instance_O::copyInstance
 	    ;
 
 	af_def(CorePkg,"allocateRawInstance",&Instance_O::allocateRawInstance);
@@ -230,6 +245,7 @@ namespace core
 	ClosDefun(setFuncallableInstanceFunction);
 	SYMBOL_EXPORT_SC_(CorePkg,instanceClassSet);
 	Defun(instanceClassSet);
+        CoreDefun(copyInstance);
     }
 
     void Instance_O::exposePython(core::Lisp_sp lisp)

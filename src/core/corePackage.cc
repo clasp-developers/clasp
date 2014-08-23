@@ -98,6 +98,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,list);
     SYMBOL_EXPORT_SC_(ClPkg,callNextMethod);
     SYMBOL_EXPORT_SC_(ClPkg,nextMethodP);
+    SYMBOL_EXPORT_SC_(ExtPkg,STARinspectorHookSTAR);
     SYMBOL_SC_(ExtPkg,integer8);
     SYMBOL_SC_(ExtPkg,byte8);
     SYMBOL_EXPORT_SC_(ExtPkg,STARdefault_external_formatSTAR);
@@ -884,6 +885,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("brclrc"),_sym_loadSource),hooks);
 	ext::_sym_STARloadHooksSTAR->defparameter(hooks);
 	ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
+        ext::_sym_STARinspectorHookSTAR->defparameter(_Nil<T_O>());
 	_sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
 #if 0
 
