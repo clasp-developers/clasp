@@ -106,14 +106,14 @@ namespace core
         if ( hash_table.nilp() ) {
             SIMPLE_ERROR(BF("maphash called with nil hash-table"));
         }
-        HASH_TABLE_LOCK();
-	for ( size_t it=0, itEnd = cl_length(hash_table->_HashTable); it<itEnd; ++it )
+//        HASH_TABLE_LOCK();
+        VectorObjects_sp table = hash_table->_HashTable;
+	for ( size_t it=0, itEnd = cl_length(table); it<itEnd; ++it )
 	{
-
-	    Cons_sp first = hash_table->_HashTable->operator[](it).as_or_nil<Cons_O>();
+	    Cons_sp first = (*table)[it].as<Cons_O>();
 	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
 	    {
-		Cons_sp entry = oCar(cur).as_or_nil<Cons_O>();
+		Cons_sp entry = oCar(cur).as<Cons_O>();
                 T_sp key = oCar(entry);
                 T_sp value = oCdr(entry);
                 if ( value.notunboundp() ) {
@@ -562,8 +562,7 @@ namespace core
         } else {
             newSize = cl_length(this->_HashTable);
         }
-	VectorObjects_sp oldTable(VectorObjects_O::create());
-	oldTable->swap(this->_HashTable);
+	VectorObjects_sp oldTable = this->_HashTable;
 	newSize = this->resizeEmptyTable(newSize);
 	LOG(BF("Resizing table to size: %d") % newSize );
 	for ( size_t it(0), itEnd(cl_length(oldTable)); it<itEnd; ++it )
@@ -601,8 +600,8 @@ namespace core
                         }
                         uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /* Will add key */);
                         LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
-                        cur->setCdr(this->_HashTable->operator[](index).as_or_nil<Cons_O>());
-                        this->_HashTable->operator[](index) = cur;
+                        Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index).as_or_nil<Cons_O>());
+                        this->_HashTable->operator[](index) = newCur;
                     }
 		}
 	    }
@@ -661,10 +660,11 @@ namespace core
 
     void HashTable_O::mapHash(std::function<void(T_sp,T_sp)> const& fn)
     {
-        HASH_TABLE_LOCK();
-	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
+//        HASH_TABLE_LOCK();
+        VectorObjects_sp table = this->_HashTable;
+	for ( size_t it(0),itEnd(cl_length(table)); it<itEnd; ++it )
 	{
-	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
+	    Cons_sp first = (*table)[it].as<Cons_O>();
 	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
 	    {
                 Cons_sp pair = cCar(cur);
@@ -677,10 +677,11 @@ namespace core
 
     void HashTable_O::terminatingMapHash(std::function<bool(T_sp,T_sp)> const& fn)
     {
-        HASH_TABLE_LOCK();
-	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
+//        HASH_TABLE_LOCK();
+        VectorObjects_sp table = this->_HashTable;
+	for ( size_t it(0),itEnd(cl_length(table)); it<itEnd; ++it )
 	{
-	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
+	    Cons_sp first = (*table)[it].as<Cons_O>();
 	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
 	    {
                 Cons_sp pair = cCar(cur);
@@ -696,10 +697,11 @@ namespace core
 
     void HashTable_O::lowLevelMapHash(KeyValueMapper* mapper) const
     {_OF();
-        HASH_TABLE_LOCK();
-	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
+//        HASH_TABLE_LOCK();
+        VectorObjects_sp table = this->_HashTable;
+	for ( size_t it(0),itEnd(cl_length(table)); it<itEnd; ++it )
 	{
-	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
+	    Cons_sp first = (*table)[it].as<Cons_O>();
 	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
 	    {
                 Cons_sp pair = cCar(cur);

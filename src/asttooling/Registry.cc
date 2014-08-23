@@ -32,8 +32,8 @@ namespace asttooling {
 
 
 
-        void RegistryMaps::registerMatcher(core::Symbol_sp MatcherName,
-                                           MatcherDescriptor *Callback) {
+        void RegistryMaps::_registerMatcher(core::Symbol_sp MatcherName,
+                                           MatcherDescriptor *Callback) const {
 #ifdef DEBUG_ON
             ConstructorMap::iterator pos = this->find(MatcherName);
             ASSERTF(pos==Constructors.end(),BF("The MatcherName %s has already had a constructor defined for it") % _rep_(MatcherName));
@@ -43,7 +43,7 @@ namespace asttooling {
         }
 
 #define REGISTER_MATCHER(name)                                          \
-        registerMatcher(core::lispify_intern_keyword(#name), internal::makeMatcherAutoMarshall( \
+        _registerMatcher(core::lispify_intern_keyword(#name), internal::makeMatcherAutoMarshall( \
                             ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
 #define SPECIFIC_MATCHER_OVERLOAD(name, Id)                     \
         static_cast< ::clang::ast_matchers::name##_Type##Id>(   \
@@ -56,14 +56,16 @@ namespace asttooling {
                 internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), \
                                                   core::lispify_intern_keyword(#name)) \
             };                                                          \
-            registerMatcher(core::lispify_intern_keyword(#name),  \
+            _registerMatcher(core::lispify_intern_keyword(#name),        \
                             gctools::ClassAllocator<internal::OverloadedMatcherDescriptor>::allocateClass(Callbacks) \
             /*new internal::OverloadedMatcherDescriptor(Callbacks)*/   \
             );                                                       \
     } while (0)
 
 /// \brief Generate a registry map with all the known matchers.
-        RegistryMaps::RegistryMaps() {
+        RegistryMaps::RegistryMaps() : Initialized(false) {};
+        void RegistryMaps::lazyInitialize() const {
+            if ( this->Initialized ) return;
   // TODO: Here is the list of the missing matchers, grouped by reason.
   //
   // Need Variant/Parser fixes:
