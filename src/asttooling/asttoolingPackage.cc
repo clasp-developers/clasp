@@ -12,7 +12,7 @@
 #include "tools.h"
 #include "core/str.h"
 #include "core/wrappers.h"
-
+#include "Registry.h"
 
 namespace asttooling
 {

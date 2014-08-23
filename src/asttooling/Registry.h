@@ -124,6 +124,9 @@ private:
     Registry() LLVM_DELETED_FUNCTION;
 };
 
+
+    void initialize_Registry();
+
 }  // namespace asttooling
 
 #endif  // asttooling_registry_H
