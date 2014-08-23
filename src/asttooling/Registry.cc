@@ -312,7 +312,8 @@ namespace asttooling {
             }
         }
 
-        static gctools::ManagedStatic<RegistryMaps> RegistryData;
+//        static gctools::ManagedStatic<RegistryMaps> RegistryData;
+        RegistryMaps* RegistryData;
 
     } // RegMap namespace - was anonymous namespace
     using namespace RegMap;
@@ -365,4 +366,10 @@ namespace asttooling {
         return clang::ast_matchers::dynamic::VariantMatcher();
     }
 
+
+
+    void initialize_Registry()
+    {
+        RegistryData = gctools::RootClassAllocator<RegistryMaps>::allocate();
+    }
 };
