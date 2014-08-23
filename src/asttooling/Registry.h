@@ -80,6 +80,8 @@ namespace asttooling {
             bool Initialized;
             mutable ConstructorMap Constructors;
         };
+
+        extern RegistryMaps* RegistryData; // defined in Registry.cc
     };
 
 class Registry {

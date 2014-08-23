@@ -1239,6 +1239,7 @@ so that they don't have to be constantly recalculated"
   scan          ;; Function - generates scanner for species
   skip          ;; Function - generates obj_skip code for species
   finalize      ;; Function - generates obj_finalize code for species
+  dump          ;; Function - fills a stringstream with a dump of the species
   index
   )
   
@@ -1417,6 +1418,21 @@ so that they don't have to be constantly recalculated"
     (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
     (format fout "} break;~%")))
 
+(defun dumper-for-lispallocs (fout enum anal)
+  (assert (simple-enum-p enum))
+  (let* ((alloc (simple-enum-alloc enum))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (format fout "case ~a: {~%" enum-name)
+    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+    (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
+      (dolist (instance-var all-instance-variables)
+        (code-for-instance-var fout +ptr-name+ instance-var)))
+    (format fout "    typedef ~A type_~A;~%" key enum-name)
+    (format fout "    sout << \"~a\" << " size: " << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) ;~%" enum-name enum-name )
+    (format fout "} break;~%")
+    ))
+
 
 (defun finalizer-for-lispallocs (fout enum anal)
   (check-type enum simple-enum)
@@ -1432,6 +1448,7 @@ so that they don't have to be constantly recalculated"
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
     (format fout "    return;~%")
     (format fout "} break;~%")))
+
 
 
 (defun scanner-for-templated-lispallocs (fout enum anal)
@@ -1453,6 +1470,7 @@ so that they don't have to be constantly recalculated"
     (format fout "    client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
     (format fout "} break;~%")
     ))
+
 (defun skipper-for-templated-lispallocs (fout enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
@@ -1465,6 +1483,18 @@ so that they don't have to be constantly recalculated"
     (format fout "    client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
     (format fout "} break;~%")
     ))
+
+(defun dumper-for-templated-lispallocs (fout enum anal)
+  (assert (templated-enum-p enum))
+  (let* ((key (enum-key enum))
+         (enum-name (enum-name enum)))
+    (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
+    (format fout "case ~a: {~%" enum-name)
+    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+    (format fout "    sout << \"~a\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) ;~%" enum-name enum-name )
+    (format fout "} break;~%")
+    ))
+
 (defun finalizer-for-templated-lispallocs (fout enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
@@ -1498,7 +1528,6 @@ so that they don't have to be constantly recalculated"
                (parm0-ctype (gc-template-argument-ctype parm0)))
           (format fout "// parm0-ctype = ~a~%" parm0-ctype)
           (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-;;          (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
           (format fout "    for (~a::iterator it = ~a->begin(); it!=~a->end(); ++it) {~%" key +ptr-name+ +ptr-name+)
           (format fout "        // A scanner for ~a~%" parm0-ctype)
           (cond
@@ -1536,13 +1565,34 @@ so that they don't have to be constantly recalculated"
                (parm0-ctype (gc-template-argument-ctype parm0)))
           (format fout "// parm0-ctype = ~a~%" parm0-ctype)
           (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-          ;;          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-          ;;          (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-          ;;          (format fout "    base = (char*)base + Align(header_and_gccontainer_size);~%")
-          ;; OLD             (format fout "    base = (char*)base + length;~%")
           (format fout "    typedef typename ~A type_~A;~%" key enum-name)
           (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
           (format fout "    client = (char*)client + header_and_gccontainer_size;~%" enum-name)))
+    ;;              (format fout "    base = (char*)base + length;~%")
+    (format fout "} break;~%")
+    ))
+
+(defun dumper-for-gccontainer (fout enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (decl (containeralloc-ctype alloc))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (format fout "case ~a: {~%" enum-name)
+    (format fout "// processing ~a~%" alloc)
+    (if (cxxrecord-ctype-p decl)
+        (progn
+          (format fout "    THROW_HARD_ERROR(BF(\"Should never dumper ~a\"));~%" (cxxrecord-ctype-key decl)))
+        (let* ((parms (class-template-specialization-ctype-arguments decl))
+               (parm0 (car parms))
+               (parm0-ctype (gc-template-argument-ctype parm0)))
+          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+          (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+          (format fout "    sout << \"~a\" << \" size/capacity[\" << ~a->size() << \"/\" << ~a->capacity();~%" key +ptr-name+ +ptr-name+)
+          (format fout "    typedef typename ~A type_~A;~%" key enum-name)
+          (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+          (format fout "    sout << \"bytes[\" << header_and_gccontainer_size << \"]\";~%" )
+          ))
     ;;              (format fout "    base = (char*)base + length;~%")
     (format fout "} break;~%")
     ))
@@ -1573,7 +1623,7 @@ so that they don't have to be constantly recalculated"
 
 
 
-(defun skipper-for-gcstring (fout enum anal)
+(defun dumper-for-gcstring (fout enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
@@ -1589,11 +1639,9 @@ so that they don't have to be constantly recalculated"
                (parm0-ctype (gc-template-argument-ctype parm0)))
           (format fout "// parm0-ctype = ~a~%" parm0-ctype)
           (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-;;          (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
           (format fout "    typedef typename ~A type_~A;~%" key enum-name)
           (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-          (format fout "    client = (char*)client + Align(header_and_gcstring_size);~%")
-;;          (format fout "    base = (char*)base + length;~%")
+          (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcstring_size << \"]\";~%" enum-name )
           ))
     (format fout "} break;~%")
     ))
@@ -1631,6 +1679,7 @@ so that they don't have to be constantly recalculated"
                                                                        (gctools::bootstrap-kind-p (alloc-key x))))
                                        :scan 'scanner-for-lispallocs
                                        :skip 'skipper-for-lispallocs
+                                       :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        ))
     (add-species manager (make-species :name :lispalloc
@@ -1639,48 +1688,56 @@ so that they don't have to be constantly recalculated"
                                                                        (not (alloc-template-specializer-p x *analysis*))))
                                        :scan 'scanner-for-lispallocs
                                        :skip 'skipper-for-lispallocs
+                                       :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        ))
     (add-species manager (make-species :name :templated-lispalloc
                                        :discriminator (lambda (x) (and (lispalloc-p x) (alloc-template-specializer-p x *analysis*)))
                                        :scan 'scanner-for-templated-lispallocs
                                        :skip 'skipper-for-templated-lispallocs
+                                       :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
                                        ))
     (add-species manager (make-species :name :GCVECTOR
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCVector" (alloc-key x))))
                                        :scan 'scanner-for-gccontainer
                                        :skip 'skipper-for-gccontainer
+                                       :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
                                        ))
     (add-species manager (make-species :name :GCARRAY
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCArray" (alloc-key x))))
                                        :scan 'scanner-for-gccontainer
                                        :skip 'skipper-for-gccontainer
+                                       :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
                                        ))
     (add-species manager (make-species :name :GCSTRING
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCString" (alloc-key x))))
                                        :scan 'skipper-for-gcstring ;; don't need to scan
                                        :skip 'skipper-for-gcstring
+                                       :dump 'dumper-for-gcstring
                                        :finalize 'finalizer-for-gcstring
                                        ))
     (add-species manager (make-species :name :classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (not (alloc-template-specializer-p x *analysis*))))
                                        :scan 'scanner-for-lispallocs
                                        :skip 'skipper-for-lispallocs
+                                       :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        ))
     (add-species manager (make-species :name :rootclassalloc
                                        :discriminator (lambda (x) (rootclassalloc-p x))
                                        :scan 'scanner-for-lispallocs
                                        :skip 'skipper-for-lispallocs
+                                       :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        ))
     (add-species manager (make-species :name :templated-classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (alloc-template-specializer-p x *analysis*)))
                                        :scan 'scanner-for-templated-lispallocs
                                        :skip 'skipper-for-templated-lispallocs
+                                       :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
                                        ))
     manager))
@@ -1991,6 +2048,11 @@ so that they don't have to be constantly recalculated"
     (sort enums #'(lambda (a b) (< (enum-value a) (enum-value b))))))
 
 
+(defun build-mps-dump (fout anal)
+  (let* ((sorted-enums (sorted-enums anal)))
+    (dolist (enum sorted-enums)
+      (funcall (species-dump (enum-species enum)) fout enum anal))))
+
 
 
 (defun build-mps-scan (fout anal)
@@ -2244,6 +2306,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format stream "#if defined(GC_KIND_SELECTORS)~%")
     (generate-gckind-for-enums stream analysis)
     (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
+    (format stream "#if defined(GC_OBJ_DUMP)~%")
+    (build-mps-dump stream analysis)
+    (format stream "#endif // defined(GC_OBJ_DUMP)~%")
     (format stream "#if defined(GC_OBJ_SCAN)~%")
     (build-mps-scan stream analysis)
     (format stream "#endif // defined(GC_OBJ_SCAN)~%")
