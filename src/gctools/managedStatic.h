@@ -28,21 +28,14 @@ namespace gctools {
     template<typename T> struct object_deleter {
         static void call(void * Ptr) { /*delete (T*)Ptr;*/ }
     };
-#if 0
-    template<typename T, size_t N> struct object_deleter<T[N]> {
-        static void call(void * Ptr) { delete[] (T*)Ptr; }
-    };
-#endif
  
     /// ManagedStaticBase - Common base class for ManagedStatic instances.
+    template <typename CC>
     class ManagedStaticBase {
     protected:
         // This should only be used as a static variable, which guarantees that this
         // will be zero initialized.
-        mutable void *Ptr;
-//        mutable void (*DeleterFn)(void*);
-//        mutable const ManagedStaticBase *Next;
- 
+        mutable CC *Ptr;
         void RegisterManagedStatic(void *(*Creator)() )
         {
 //            ASSERT(Creator!=NULL);
@@ -73,7 +66,7 @@ namespace gctools {
             } else {
 #endif
 //                ASSERTF(!Ptr && !Next, BF("Partially initialized ManagedStatic!?"));
-                Ptr = Creator();
+                this->Ptr = reinterpret_cast<CC*>(Creator());
                 //DeleterFn = Deleter;
                 
                 // Add to list of managed statics.
@@ -90,33 +83,33 @@ namespace gctools {
     };
  
     template<class C>
-    class ManagedStatic : public ManagedStaticBase {
+    class ManagedStatic : public ManagedStaticBase<C> {
     public:
  
         // Accessors.
         C &operator*() {
-            void* tmp = Ptr;
+            C* tmp = this->Ptr;
 //            if (llvm_is_multithreaded()) sys::MemoryFence();
             if (!tmp) RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/);
-            return *static_cast<C*>(Ptr);
+            return *static_cast<C*>(this->Ptr);
         }
         C *operator->() {
-            void* tmp = Ptr;
+            C* tmp = this->Ptr;
 //            if (llvm_is_multithreaded()) sys::MemoryFence();
-            if (!tmp) RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/ );
-            return static_cast<C*>(Ptr);
+            if (!tmp) this->RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/ );
+            return static_cast<C*>(this->Ptr);
         }
         const C &operator*() const {
-            void* tmp = Ptr;
+            C* tmp = this->Ptr;
 //            if (llvm_is_multithreaded()) sys::MemoryFence();
             if (!tmp) RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/);
-            return *static_cast<C*>(Ptr);
+            return *static_cast<C*>(this->Ptr);
         }
         const C *operator->() const {
-            void* tmp = Ptr;
+            C* tmp = this->Ptr;
 //            if (llvm_is_multithreaded()) sys::MemoryFence();
             if (!tmp) RegisterManagedStatic(object_creator<C> /*, object_deleter<C>::call*/);
-            return static_cast<C*>(Ptr);
+            return static_cast<C*>(this->Ptr);
         }
     };
 

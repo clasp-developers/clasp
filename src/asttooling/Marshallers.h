@@ -81,6 +81,7 @@ namespace asttooling {
 /// Provides a \c create() method that constructs the matcher from the provided
 /// arguments.
         class MatcherDescriptor {
+            struct metadata_always_fix_pointers_to_derived_classes;
         public:
             virtual ~MatcherDescriptor() {}
             virtual VariantMatcher create(core::Cons_sp NameRange,

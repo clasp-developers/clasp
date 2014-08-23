@@ -287,6 +287,41 @@ namespace gctools {
     }
 
 
+    bool parseClaspMpsConfig(size_t& arenaMb, size_t& spareCommitLimitMb, size_t& nurseryKb, size_t& nurseryMortalityPercent, size_t& generation1Kb, size_t& generation1MortalityPercent )
+    {
+        char* cur = getenv("CLASP_MPS_CONFIG");
+        size_t values[20];
+        int numValues = 0;
+        if ( cur ) {
+            while (*cur && numValues<20) {
+                values[numValues] = strtol(cur,&cur,10);
+                ++numValues;
+            }
+            if (numValues > 6) numValues = 6;
+            switch (numValues) {
+            case 6: generation1MortalityPercent = values[5];
+            case 5: generation1Kb = values[4];
+            case 4: nurseryMortalityPercent = values[3];
+            case 3: nurseryKb = values[2];
+            case 2: spareCommitLimitMb = values[1];
+            case 1: arenaMb = values[0];
+                printf("CLASP_MPS_CONFIG...\n");
+                printf("                    arenaMb = %lu\n", arenaMb);
+                printf("         spareCommitLimitMb = %lu\n", spareCommitLimitMb);
+                printf("                  nurseryKb = %lu\n", nurseryKb );
+                printf("    nurseryMortalityPercent = %lu\n", nurseryMortalityPercent);
+                printf("              generation1Kb = %lu\n", generation1Kb);
+                printf("generation1MortalityPercent = %lu\n", generation1MortalityPercent);
+                return true;
+                break;
+            default:
+                break;
+            };
+        }
+        return false;
+    }
+        
+
 #define LENGTH(array)	(sizeof(array) / sizeof(array[0]))
 
     int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], mps_fmt_auto_header_s* obj_fmt_sP, bool mpiEnabled, int mpiRank, int mpiSize)
@@ -306,17 +341,38 @@ namespace gctools {
         void* local_stack_marker;
         _global_stack_marker = &local_stack_marker;
 
-        size_t arenaSize = 10 * 32 * 1024 * 1024;
+#ifdef DEBUG_LOAD_TIME_VALUES
+#define CHAIN_SIZE 6400 // 256 // 6400
+#else
+#define CHAIN_SIZE 6400 // 256 // 6400
+#endif
+
+        size_t arenaSizeMb = 320;
+        size_t spareCommitLimitMb = 32;
+        size_t nurseryKb = CHAIN_SIZE;
+        size_t nurseryMortalityPercent = 97;
+        size_t generation1Kb = CHAIN_SIZE*6;
+        size_t generation1MortalityPercent = 45;
+
+        parseClaspMpsConfig( arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent );
+
+#define AMC_CHAIN_SIZE CHAIN_SIZE
+        // Now the generation chain
+        mps_gen_param_s gen_params[] = {
+            { nurseryKb, nurseryMortalityPercent/100.0 },   // { Nursery_size, Nursery_mortality }
+            { generation1Kb, generation1MortalityPercent/100.0 },   // { Generation1_size, Generation1_mortality }
+        };
+
         mps_res_t res;
         MPS_ARGS_BEGIN(args) {
             MPS_ARGS_ADD(args,MPS_KEY_ARENA_INCREMENTAL, 0 );
-            MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, arenaSize );
+            MPS_ARGS_ADD(args,MPS_KEY_ARENA_SIZE, arenaSizeMb*1024*1024 );
             res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create MPS arena");
 
         // David suggested this - it never gives back memory to the OS
-//        mps_arena_spare_commit_limit_set(_global_arena, arenaSize );
+        mps_arena_spare_commit_limit_set(_global_arena, spareCommitLimitMb*1024*1024 );
 
         mps_fmt_t obj_fmt;
         MPS_ARGS_BEGIN(args) {
@@ -330,20 +386,6 @@ namespace gctools {
             res = mps_fmt_create_k(&obj_fmt, _global_arena, args);
         } MPS_ARGS_END(args);
         if (res != MPS_RES_OK) GC_RESULT_ERROR(res,"Could not create obj format");
-
-
-#ifdef DEBUG_LOAD_TIME_VALUES
-#define CHAIN_SIZE 6400 // 256 // 6400
-#else
-#define CHAIN_SIZE 6400 // 256 // 6400
-#endif
-
-#define AMC_CHAIN_SIZE CHAIN_SIZE
-        // Now the generation chain
-        mps_gen_param_s gen_params[] = {
-            { AMC_CHAIN_SIZE,   0.97 },
-            { AMC_CHAIN_SIZE*6, 0.45 },
-        };
 
         mps_chain_t only_chain;
         res = mps_chain_create(&only_chain,

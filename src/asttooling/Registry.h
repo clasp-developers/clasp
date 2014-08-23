@@ -34,33 +34,37 @@ namespace asttooling {
     namespace RegMap {
         class SymbolMatcherDescriptorPair {
 	public:
-            SymbolMatcherDescriptorPair(core::Symbol_sp k, const internal::MatcherDescriptor* v) : Name(k), matcher(v) {};
+            SymbolMatcherDescriptorPair(core::Symbol_sp k, /*const*/ internal::MatcherDescriptor* v) : Name(k), matcher(v) {};
             core::Symbol_sp     Name;
-            const internal::MatcherDescriptor*    matcher;
+            internal::MatcherDescriptor*    matcher;
         };
 
 
         class RegistryMaps {
+            struct metadata_always_fix_pointers_to_derived_classes;
             FRIEND_GC_SCANNER();
             friend class SymbolMatcherDescriptorPair;
         public:
             RegistryMaps();
             ~RegistryMaps();
 
+            void lazyInitialize() const;
+
             typedef gctools::Vec0<SymbolMatcherDescriptorPair> ConstructorMap;
             typedef ConstructorMap::iterator iterator;
             typedef ConstructorMap::const_iterator const_iterator;
-            iterator begin() { return this->Constructors.begin();};
-            iterator end() { return this->Constructors.end();};
-            const_iterator begin() const { return this->Constructors.begin();};
-            const_iterator end() const { return this->Constructors.end();};
+            iterator begin() { this->lazyInitialize(); return this->Constructors.begin();};
+            iterator end() { this->lazyInitialize(); return this->Constructors.end();};
+            const_iterator begin() const { this->lazyInitialize(); return this->Constructors.begin();};
+            const_iterator end() const { this->lazyInitialize(); return this->Constructors.end();};
 
-            const ConstructorMap &constructors() const { return this->Constructors; }
+            const ConstructorMap &constructors() const { this->lazyInitialize(); return this->Constructors; }
 
 
             /*! Find the constructor associated with the symbol */
             ConstructorMap::iterator find(core::Symbol_sp key)
             {
+                this->lazyInitialize();
                 ConstructorMap::iterator it;
                 for ( it = this->Constructors.begin(); it!=this->Constructors.end(); ++it ) {
                     if (it->Name == key ) return it;
@@ -70,10 +74,11 @@ namespace asttooling {
 
 
         private:
-            void registerMatcher(core::Symbol_sp MatcherName, internal::MatcherDescriptor *Callback);
+            void _registerMatcher(core::Symbol_sp MatcherName, internal::MatcherDescriptor *Callback) const;
             /*! This is used to replace the map<Symbol_sp,const MatcherDescriptor*> that used to be a ConstructorMap */
         private:
-            ConstructorMap Constructors;
+            bool Initialized;
+            mutable ConstructorMap Constructors;
         };
     };
 
