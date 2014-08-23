@@ -356,11 +356,16 @@ namespace gctools {
 
         parseClaspMpsConfig( arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent );
 
+        double nurseryMortalityFraction = nurseryMortalityPercent/100.0;
+        double generation1MortalityFraction = generation1MortalityPercent/100.0;
+
+        printf( "arenaSizeMb[%lu] spareCommitLimitMb[%lu] nurseryKb[%lu] nurseryMortalityFraction[%f] generation1Kb[%lu] generation1MortalityFraction[%f]\n", arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityFraction, generation1Kb, generation1MortalityFraction );
+
 #define AMC_CHAIN_SIZE CHAIN_SIZE
         // Now the generation chain
         mps_gen_param_s gen_params[] = {
-            { nurseryKb, nurseryMortalityPercent/100.0 },   // { Nursery_size, Nursery_mortality }
-            { generation1Kb, generation1MortalityPercent/100.0 },   // { Generation1_size, Generation1_mortality }
+            { nurseryKb, nurseryMortalityFraction },   // { Nursery_size, Nursery_mortality }
+            { generation1Kb, generation1MortalityFraction },   // { Generation1_size, Generation1_mortality }
         };
 
         mps_res_t res;

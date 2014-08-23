@@ -313,7 +313,7 @@ namespace asttooling {
         }
 
 //        static gctools::ManagedStatic<RegistryMaps> RegistryData;
-        RegistryMaps* RegistryData;
+        RegistryMaps* RegistryData = NULL;
 
     } // RegMap namespace - was anonymous namespace
     using namespace RegMap;
