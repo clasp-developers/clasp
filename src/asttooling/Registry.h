@@ -83,36 +83,37 @@ namespace asttooling {
     };
 
 class Registry {
+    struct metadata_always_fix_pointers_to_derived_classes;
 public:
-  /// \brief Construct a matcher from the registry by name.
-  ///
-  /// Consult the registry of known matchers and construct the appropriate
-  /// matcher by name.
-  ///
-  /// \param MatcherName The name of the matcher to instantiate.
-  ///
-  /// \param NameRange The location of the name in the matcher source.
-  ///   Useful for error reporting.
-  ///
-  /// \param Args The argument list for the matcher. The number and types of the
-  ///   values must be valid for the matcher requested. Otherwise, the function
-  ///   will return an error.
-  ///
-  /// \return The matcher object constructed if no error was found.
-  ///   A null matcher if the matcher is not found, or if the number of
-  ///   arguments or argument types do not match the signature.
-  ///   In that case \c Error will contain the description of the error.
+    /// \brief Construct a matcher from the registry by name.
+    ///
+    /// Consult the registry of known matchers and construct the appropriate
+    /// matcher by name.
+    ///
+    /// \param MatcherName The name of the matcher to instantiate.
+    ///
+    /// \param NameRange The location of the name in the matcher source.
+    ///   Useful for error reporting.
+    ///
+    /// \param Args The argument list for the matcher. The number and types of the
+    ///   values must be valid for the matcher requested. Otherwise, the function
+    ///   will return an error.
+    ///
+    /// \return The matcher object constructed if no error was found.
+    ///   A null matcher if the matcher is not found, or if the number of
+    ///   arguments or argument types do not match the signature.
+    ///   In that case \c Error will contain the description of the error.
     static clang::ast_matchers::dynamic::VariantMatcher constructMatcher(core::Symbol_sp  MatcherName,
                                                                          core::Cons_sp NameRange,
                                                                          core::Vector_sp Args,
                                                                          Diagnostics* Error);
 
-  /// \brief Construct a matcher from the registry and bind it.
-  ///
-  /// Similar the \c constructMatcher() above, but it then tries to bind the
-  /// matcher to the specified \c BindID.
-  /// If the matcher is not bindable, it sets an error in \c Error and returns
-  /// a null matcher.
+    /// \brief Construct a matcher from the registry and bind it.
+    ///
+    /// Similar the \c constructMatcher() above, but it then tries to bind the
+    /// matcher to the specified \c BindID.
+    /// If the matcher is not bindable, it sets an error in \c Error and returns
+    /// a null matcher.
     static clang::ast_matchers::dynamic::VariantMatcher constructBoundMatcher(core::Symbol_sp MatcherName,
                                                                               core::Cons_sp NameRange,
                                                                               StringRef BindID,
@@ -120,7 +121,7 @@ public:
                                                                               Diagnostics* Error);
 
 private:
-  Registry() LLVM_DELETED_FUNCTION;
+    Registry() LLVM_DELETED_FUNCTION;
 };
 
 }  // namespace asttooling

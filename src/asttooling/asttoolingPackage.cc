@@ -77,6 +77,7 @@ namespace asttooling
 //	    initialize_tools();
 	    initialize_clangTooling();
             initialize_astVisitor();
+            initialize_Registry();
 	};
 	break;
 	case candoGlobals:
