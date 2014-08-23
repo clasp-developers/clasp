@@ -222,9 +222,14 @@ extern "C" {
     /*! I'm using a format_header so MPS gives me the object-pointer */
     void obj_dump_base( mps_addr_t base )
     {
+        mps_bool_t inArena = mps_arena_has_addr(_global_arena,base);
+        if ( !inArena ) {
+            printf("Address@%p is not in the arena\n", base);
+            return;
+        }
         gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(base);
         void* client = BasePtrToMostDerivedPtr<void>(base);
-        MPS_LOG(BF("obj_dump base=%p  header-desc: %s") % base % header->description());
+        MPS_LOG(BF("obj_dump base=%p header-desc: %s") % base % header->description());
         stringstream sout;
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
