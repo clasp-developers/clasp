@@ -150,12 +150,54 @@
   (cur-enum-value 0)
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
-;;  classes-with-fixptrs
+  (hierarchy (make-hash-table :test #'equal))
+  hierarchy-roots
   )
 
 
+;; ----------------------------------------------------------------------
+;;
+;; Class hierarchy
+;;
+;; ----------------------------------------------------------------------
 
 
+(defstruct hnode
+  parent
+  children )
+
+(defun in-enums-p (name analysis)
+  (multiple-value-bind (enum enum-p)
+      (gethash name (analysis-enums analysis))
+    enum-p))
+
+(defun add-to-hierarchy (class-name analysis)
+  (let* ((project (analysis-project analysis))
+         (nodes (analysis-hierarchy analysis))
+         (class (gethash class-name (project-classes project)))
+         (base-names (append (cclass-bases class) (cclass-vbases class))))
+    (cond
+     ((> (length base-names) 1)
+      (format t "Class ~a has multiple bases: ~a~%" class-name base-names))
+     (t
+      (dolist (class-base-name base-names)
+        (multiple-value-bind (hnode hnode-p)
+            (gethash class-base-name nodes)
+          (if hnode-p
+              (push class-name (hnode-children hnode))
+            (let ((new-hnode (make-hnode :parent class-base-name
+                                         :children (list class-name))))
+              (setf (gethash class-base-name nodes) new-hnode))))))
+     (push class-name (analysis-hierarchy-roots analysis)))))
+
+(defun analyze-hierarchy (analysis)
+  (format t "------Analyzing class hierarchy~%")
+  (maphash #'(lambda (node-name enum)
+               (add-to-hierarchy node-name analysis))
+           (analysis-enums analysis)))
+
+
+          
 
 ;; ----------------------------------------------------------------------
 ;;
@@ -1772,13 +1814,7 @@ so that they don't have to be constantly recalculated"
                                   :manager (setup-manager)))
   (organize-allocs-into-species-and-create-enums *analysis*)
   (generate-forward-declarations *analysis*)
-  #|
-;;  (multiple-value-bind (simple-enums templated-enums) ; ; ; ; ;
-;;      (categorize-enums *analysis*)   ; ; ; ; ;
-;;      (break "Do something with the enums") ; ; ; ; ;
-;;      (setf (analysis-list-of-all-enums *analysis*) list-of-all-enums) ; ; ; ; ;
-    ))
-|#
+  (analyze-hierarchy *analysis*)
   t
   )
 

@@ -27,8 +27,6 @@ class BitVector_O : public Vector_O
     LISP_BASE1(Vector_O);
     LISP_CLASS(core,ClPkg,BitVector_O,"bit-vector");
 public:
-
-
     bool bitVectorP() const { return true;};
     explicit BitVector_O(): Vector_O() {} ;
     virtual ~BitVector_O() {};

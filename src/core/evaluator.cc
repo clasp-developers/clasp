@@ -1847,7 +1847,8 @@ namespace core
 	}
 
 
-        SYMBOL_EXPORT_SC_(CompPkg,compile_lambda_SLASH_lambda_block);
+        SYMBOL_EXPORT_SC_(CompPkg,compileInEnv);
+#if 0
         Function_sp compileLambda(T_sp name, T_sp kind, LambdaListHandler_sp llh, Str_sp declares, Str_sp docstring, Cons_sp code, Environment_sp env )
         {
             Function_sp result;
@@ -1872,6 +1873,7 @@ namespace core
             }
             return result;
         }
+#endif
                 
         T_mv t1Evaluate(T_sp exp, T_sp environment);
 
@@ -1935,6 +1937,13 @@ namespace core
 		T_sp olambdaList = oCadr(oneDef);
 		Cons_sp inner_body = cCdr(cCdr(oneDef)).as_or_nil<Cons_O>();
 		Cons_sp outer_func_cons = eval::funcall(comp::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
+#if 1
+//                printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
+                Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
+                                                       , _Nil<T_O>()
+                                                       , outer_func_cons
+                                                       ,newEnv ).as<Function_O>();
+#else
 		Cons_sp outer_ll = oCaddr(outer_func_cons).as_or_nil<Cons_O>();
 		Cons_sp outer_body = cCdddr(outer_func_cons);
 		Cons_sp declares;
@@ -1944,14 +1953,6 @@ namespace core
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
                 printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
-#if 1
-                Function_sp outer_func = compileLambda(name,kw::_sym_macro
-                                                       ,outer_llh
-                                                       ,declares
-                                                       ,docstring
-                                                       ,code
-                                                       ,newEnv );
-#else
                 InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
                                                                                                     , _Nil<SourcePosInfo_O>()
                                                                                                     , kw::_sym_macro
@@ -1963,6 +1964,7 @@ namespace core
                 Function_sp outer_func = Function_O::make(ic);
 #endif
 		LOG(BF("func = %s") % outer_func_cons->__repr__() );
+                printf("%s:%d addMacro name: %s  macro: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func).c_str());
 		newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
 		cur = cCdr(cur);
