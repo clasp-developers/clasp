@@ -387,8 +387,8 @@ namespace core
     }
 
 
-    SaveArchive_O::SaveArchive_O() 
-    {
+    void SaveArchive_O::initialize() {
+        this->Base::initialize();
 	this->_SNodeForObject = HashTable_O::create(cl::_sym_eq);
 	this->_TopNode = BranchSNode_O::create();
     }
@@ -442,8 +442,10 @@ namespace core
     void LoadArchive_O::initialize()
     {
         this->Base::initialize();
+        this->_ObjectForSNode = HashTableEq_O::create_default();
         this->_NodesToFinalize = HashTableEq_O::create_default();
     }
+
 
     void LoadArchive_O::addNodeToFinalize(SNode_sp node)
     {_G();

@@ -609,18 +609,26 @@ namespace core
 
 	Cons_sp keys() const;
 
-	DEFAULT_CTOR_DTOR(LoadArchive_O);
+        LoadArchive_O() : _ObjectForSNode(_Nil<HashTable_O>()), _NodesToFinalize(_Nil<HashTable_O>()) {};
     };
+};
+
+template<> struct gctools::GCInfo<core::LoadArchive_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
 
 
-
-
-
+namespace core {
     SMART(SaveArchive);
     class SaveArchive_O : public Archive_O
     {
 	LISP_BASE1(Archive_O);
 	LISP_CLASS(core,CorePkg,SaveArchive_O,"SaveArchive");
+    public:
+        void initialize();
     private:
 	HashTable_sp 		_SNodeForObject;
     public:
@@ -629,27 +637,22 @@ namespace core
     public:
 	bool	isSaveArchive() { return true; };
 	virtual void put(Symbol_sp name, T_sp obj);
-	SaveArchive_O();
+        SaveArchive_O() : _SNodeForObject(_Nil<HashTable_O>()) {};
 	virtual ~SaveArchive_O() {};
     };
-
-
-
-
-
-
-
-
-
-
-
-
-
 };
-TRANSLATE(core::SNode_O);
-TRANSLATE(core::Archive_O);
-TRANSLATE(core::LoadArchive_O);
-TRANSLATE(core::SaveArchive_O);
+template<> struct gctools::GCInfo<core::SaveArchive_O> {
+    static bool constexpr NeedsInitialization = true;
+    static bool constexpr NeedsFinalization = false;
+    static bool constexpr Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
+
+
+
+
+
 
 
 #endif

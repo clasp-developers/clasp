@@ -2378,7 +2378,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (progn
   (lnew $test-search)
   (setq $test-search (append
-                      (lsel $* ".*weak.*\.cc$"))
+                      (lsel $* ".*weakPointer.*\.cc$"))
                       )
   )
 
