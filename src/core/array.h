@@ -10,7 +10,7 @@ namespace core
 {
 
 FORWARD(Array);
-class Array_O : virtual public T_O
+class Array_O : public T_O
 {
     friend class ArrayObjects_O;
     LISP_BASE1(T_O);
@@ -22,7 +22,7 @@ class Array_O : virtual public T_O
     DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
 public:
-    explicit Array_O(): T_O() {};
+    explicit Array_O() {};
     virtual ~Array_O() {};
 
 public:

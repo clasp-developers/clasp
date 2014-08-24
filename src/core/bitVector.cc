@@ -48,7 +48,7 @@ namespace core {
 // Constructor
 //
 
-    SimpleBitVector_O::SimpleBitVector_O(const SimpleBitVector_O& bv) : T_O(bv), BitVector_O(bv)
+    SimpleBitVector_O::SimpleBitVector_O(const SimpleBitVector_O& bv) : BitVector_O(bv)
     {_OF();
 	uint	i;
 	this->_Length = bv._Length;
