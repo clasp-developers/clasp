@@ -348,11 +348,11 @@ namespace gctools {
 #endif
 
         size_t arenaSizeMb = 320;
-        size_t spareCommitLimitMb = 32;
+        size_t spareCommitLimitMb = 320;
         size_t nurseryKb = CHAIN_SIZE;
-        size_t nurseryMortalityPercent = 97;
-        size_t generation1Kb = CHAIN_SIZE*6;
-        size_t generation1MortalityPercent = 45;
+        size_t nurseryMortalityPercent = 80;
+        size_t generation1Kb = CHAIN_SIZE*4;
+        size_t generation1MortalityPercent = 50;
 
         parseClaspMpsConfig( arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent );
 

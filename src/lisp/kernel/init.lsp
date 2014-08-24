@@ -590,7 +590,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/seqlib
     lsp/trace
     lsp/assert
-;;    lsp/iolib
+    lsp/describe
     lsp/module
     lsp/loop2
     lsp/packlib
@@ -599,9 +599,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/format
     #|
     arraylib
-    describe
-    iolib
-    listlib
     numlib
     |#
     :min
@@ -632,7 +629,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     clos/print
     clos/streams
     lsp/pprint
-    lsp/describe
     clos/inspect
     lsp/ffi
     :front
