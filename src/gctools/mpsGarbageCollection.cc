@@ -341,12 +341,7 @@ namespace gctools {
         void* local_stack_marker;
         _global_stack_marker = &local_stack_marker;
 
-#ifdef DEBUG_LOAD_TIME_VALUES
 #define CHAIN_SIZE 6400 // 256 // 6400
-#else
-#define CHAIN_SIZE 6400 // 256 // 6400
-#endif
-
         size_t arenaSizeMb = 320;
         size_t spareCommitLimitMb = 320;
         size_t nurseryKb = CHAIN_SIZE;
