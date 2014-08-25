@@ -46,6 +46,12 @@ full-mps:
 	$(CLASP_MPS) -f ecl-min -l "buildClasp.lsp"
 
 
+short-compile-mps:
+	time $(CLASP_MPS) -f ecl-min -l "shortCompile.lsp"
+
+short-compile-boehm:
+	time $(CLASP_BOEHM) -f ecl-min -l "shortCompile.lsp"
+
 
 
 clasp-gc:
