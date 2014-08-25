@@ -86,6 +86,7 @@
   value
   cclass
   species
+  children
   )
 
 (defstruct (simple-enum (:include enum))
@@ -150,8 +151,7 @@
   (cur-enum-value 0)
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
-  (hierarchy (make-hash-table :test #'equal))
-  hierarchy-roots
+  enum-roots
   )
 
 
@@ -171,35 +171,28 @@
       (gethash name (analysis-enums analysis))
     enum-p))
 
-(defun add-to-hierarchy (class-name analysis)
+
+(defun notify-parents (class-name analysis)
   (let* ((project (analysis-project analysis))
-         (nodes (analysis-hierarchy analysis))
          (class (gethash class-name (project-classes project)))
          (base-names (append (cclass-bases class) (cclass-vbases class))))
-    (multiple-value-bind (hnode hnode-p)
-        (gethash class-name nodes)
-      (unless hnode-p (setf (gethash class-name nodes) (make-hnode :parent class-name))))
     (if (and base-names (not (string= class-name "core::T_O")))
-        (cond
-         ((> (length base-names) 1)
-          (format t "Class ~a has multiple bases: ~a~%" class-name base-names))
-         (t
+        (progn
+          (when (> (length base-names) 1)
+            (format t "Class ~a has multiple bases: ~a~%" class-name base-names))
           (dolist (class-base-name base-names)
-            (multiple-value-bind (hnode hnode-p)
-                (gethash class-base-name nodes)
-              (if hnode-p
-                  (push class-name (hnode-children hnode))
-                (let ((new-hnode (make-hnode :parent class-base-name
-                                             :children (list class-name))))
-                  (setf (gethash class-base-name nodes) new-hnode)))))))
-      (let ((new-hnode (make-hnode :parent class-name :children nil)))
-        (setf (gethash class-name nodes) new-hnode)
-        (push class-name (analysis-hierarchy-roots analysis))))))
+            (multiple-value-bind (parent-enum parent-enum-p)
+                (gethash class-base-name (analysis-enums analysis))
+              (if parent-enum-p
+                  (push class-name (enum-children parent-enum))
+                (format t "Not informing ~a that it has the child ~a because it is outside of the enum hierarchy~%" class-base-name class-name))
+              )))
+      (push class-name (analysis-enum-roots analysis)))))
 
 (defun build-hierarchy (analysis)
   (format t "------Analyzing class hierarchy~%")
   (maphash #'(lambda (node-name enum)
-               (add-to-hierarchy node-name analysis))
+               (notify-parents node-name analysis))
            (analysis-enums analysis)))
 
 
@@ -208,7 +201,7 @@
         (enum-value (analysis-cur-enum-value analysis)))
     (setf (enum-value enum) enum-value)
     (incf (analysis-cur-enum-value analysis))
-    (dolist (child (hnode-children (gethash name (analysis-hierarchy analysis))))
+    (dolist (child (enum-children enum))
       (traverse child analysis))))
 
 (defun analyze-hierarchy (analysis)
@@ -1382,7 +1375,7 @@ so that they don't have to be constantly recalculated"
                              (setf (gethash key (analysis-enums analysis))
                                    (make-templated-enum :key key
                                                         :name (class-enum-name key species)
-                                                        :value (incf (analysis-cur-enum-value analysis))
+                                                        :value :unassigned ;;(incf (analysis-cur-enum-value analysis))
                                                         :cclass single-base
                                                         :species species)))))))
          ;; save every alloc associated with this templated-enum
@@ -1397,7 +1390,7 @@ so that they don't have to be constantly recalculated"
            (setf (gethash key (analysis-enums analysis))
                  (make-simple-enum :key key
                                    :name (class-enum-name key species)
-                                   :value (incf (analysis-cur-enum-value analysis))
+                                   :value :unassigned ;;(incf (analysis-cur-enum-value analysis))
                                    :cclass class
                                    :alloc alloc
                                    :species species)))))))
