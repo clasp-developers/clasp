@@ -176,28 +176,57 @@
          (nodes (analysis-hierarchy analysis))
          (class (gethash class-name (project-classes project)))
          (base-names (append (cclass-bases class) (cclass-vbases class))))
-    (cond
-     ((> (length base-names) 1)
-      (format t "Class ~a has multiple bases: ~a~%" class-name base-names))
-     (t
-      (dolist (class-base-name base-names)
-        (multiple-value-bind (hnode hnode-p)
-            (gethash class-base-name nodes)
-          (if hnode-p
-              (push class-name (hnode-children hnode))
-            (let ((new-hnode (make-hnode :parent class-base-name
-                                         :children (list class-name))))
-              (setf (gethash class-base-name nodes) new-hnode))))))
-     (push class-name (analysis-hierarchy-roots analysis)))))
+    (multiple-value-bind (hnode hnode-p)
+        (gethash class-name nodes)
+      (unless hnode-p (setf (gethash class-name nodes) (make-hnode :parent class-name))))
+    (if (and base-names (not (string= class-name "core::T_O")))
+        (cond
+         ((> (length base-names) 1)
+          (format t "Class ~a has multiple bases: ~a~%" class-name base-names))
+         (t
+          (dolist (class-base-name base-names)
+            (multiple-value-bind (hnode hnode-p)
+                (gethash class-base-name nodes)
+              (if hnode-p
+                  (push class-name (hnode-children hnode))
+                (let ((new-hnode (make-hnode :parent class-base-name
+                                             :children (list class-name))))
+                  (setf (gethash class-base-name nodes) new-hnode)))))))
+      (let ((new-hnode (make-hnode :parent class-name :children nil)))
+        (setf (gethash class-name nodes) new-hnode)
+        (push class-name (analysis-hierarchy-roots analysis))))))
 
-(defun analyze-hierarchy (analysis)
+(defun build-hierarchy (analysis)
   (format t "------Analyzing class hierarchy~%")
   (maphash #'(lambda (node-name enum)
                (add-to-hierarchy node-name analysis))
            (analysis-enums analysis)))
 
 
-          
+(defun traverse (name analysis)
+  (let ((enum (gethash name (analysis-enums analysis)))
+        (enum-value (analysis-cur-enum-value analysis)))
+    (setf (enum-value enum) enum-value)
+    (incf (analysis-cur-enum-value analysis))
+    (dolist (child (hnode-children (gethash name (analysis-hierarchy analysis))))
+      (traverse child analysis))))
+
+(defun analyze-hierarchy (analysis)
+  (build-hierarchy analysis)
+  (setf (analysis-cur-enum-value analysis) 1)
+  (dolist (root (analysis-hierarchy-roots analysis))
+    (traverse root analysis)))
+
+(defun hierarchy-end-range (class-name analysis)
+  (let ((hnode (gethash class-name (analysis-hierarchy analysis))))
+    (if (null (hnode-children hnode))
+        (enum-value (gethash class-name (analysis-enums analysis)))
+      (hierarchy-end-range (car (last (hnode-children hnode))) analysis))))
+
+        
+(defun hierarchy-class-range (class-name analysis)
+  (let ((hnode (gethash class-name (analysis-hierarchy analysis))))
+    (values (enum-value (gethash class-name (analysis-enums analysis))) (hierarchy-end-range class-name analysis))))
 
 ;; ----------------------------------------------------------------------
 ;;
