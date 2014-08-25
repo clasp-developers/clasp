@@ -2407,7 +2407,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format stream "#endif // defined(GC_ENUM)~%")
     (format stream "#if defined(GC_INSTANCE_OF)~%")
     (generate-instance-of-code stream analysis)
-    (format stream "endif // defined(GC_INSTANCE_OF)~%")
+    (format stream "#endif // defined(GC_INSTANCE_OF)~%")
     (format stream "#if defined(GC_KIND_NAME_MAP)~%")
     (generate-kind-name-map stream analysis)
     (format stream "#endif // defined(GC_KIND_NAME_MAP)~%")
