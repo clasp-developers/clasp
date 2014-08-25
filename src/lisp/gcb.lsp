@@ -204,11 +204,22 @@
     (dolist (child (enum-children enum))
       (traverse child analysis))))
 
-(defun analyze-hierarchy (analysis)
+(defun assign-enum-values-to-hierarchy (analysis)
   (build-hierarchy analysis)
   (setf (analysis-cur-enum-value analysis) 1)
   (dolist (root (analysis-enum-roots analysis))
     (traverse root analysis)))
+
+(defun assign-enum-values-to-those-without (analysis)
+  (maphash (lambda (name enum)
+             (when (eq (enum-value enum) :unassigned)
+               (setf (enum-value enum) (analysis-cur-enum-value analysis))
+               (incf (analysis-cur-enum-value analysis))))
+           (analysis-enums analysis)))
+
+(defun analyze-hierarchy (analysis)
+  (assign-enum-values-to-hierarchy analysis)
+  (assign-enum-values-to-those-without analysis))
 
 (defun hierarchy-end-range (class-name analysis)
   (let ((enum (gethash class-name (analysis-enums analysis))))
