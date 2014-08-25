@@ -230,7 +230,23 @@
         
 (defun hierarchy-class-range (class-name analysis)
   (let ((enum (gethash class-name (analysis-enums analysis))))
-    (values (enum-value enum (hierarchy-end-range class-name analysis)))))
+    (values (enum-value enum) (hierarchy-end-range class-name analysis))))
+
+
+(defun generate-instance-of-code (fout analysis)
+  (maphash (lambda (key enum) 
+             (format fout "template <typename T> bool instanceOf<~a>(void* base) {~%" key)
+             (format fout "   int kindVal = gctools::kindValue(base);~%")
+             (multiple-value-bind (low high)
+                 (hierarchy-class-range key analysis)
+               (format fout "   // low high --> ~a ~a ~%" low high)
+               (if (eql low high)
+                   (format fout "    return (kindVal == ~a);~%" low)
+                   (format fout "    return ((~a <= kindVal) && (kindVal <= ~a));~%" low high)
+                   ))
+             (format fout "};~%"))
+           (analysis-enums analysis)))
+
 
 ;; ----------------------------------------------------------------------
 ;;
@@ -2389,6 +2405,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format stream "#if defined(GC_ENUM)~%")
     (generate-alloc-enum stream analysis)
     (format stream "#endif // defined(GC_ENUM)~%")
+    (format stream "#if defined(GC_INSTANCE_OF)~%")
+    (generate-instance-of-code stream analysis)
+    (format stream "endif // defined(GC_INSTANCE_OF)~%")
     (format stream "#if defined(GC_KIND_NAME_MAP)~%")
     (generate-kind-name-map stream analysis)
     (format stream "#endif // defined(GC_KIND_NAME_MAP)~%")
