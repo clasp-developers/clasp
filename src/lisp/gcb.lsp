@@ -207,19 +207,19 @@
 (defun analyze-hierarchy (analysis)
   (build-hierarchy analysis)
   (setf (analysis-cur-enum-value analysis) 1)
-  (dolist (root (analysis-hierarchy-roots analysis))
+  (dolist (root (analysis-enum-roots analysis))
     (traverse root analysis)))
 
 (defun hierarchy-end-range (class-name analysis)
-  (let ((hnode (gethash class-name (analysis-hierarchy analysis))))
-    (if (null (hnode-children hnode))
-        (enum-value (gethash class-name (analysis-enums analysis)))
-      (hierarchy-end-range (car (last (hnode-children hnode))) analysis))))
+  (let ((enum (gethash class-name (analysis-enums analysis))))
+    (if (null (enum-children enum))
+        (enum-value enum)
+      (hierarchy-end-range (car (last (enum-children enum))) analysis))))
 
         
 (defun hierarchy-class-range (class-name analysis)
-  (let ((hnode (gethash class-name (analysis-hierarchy analysis))))
-    (values (enum-value (gethash class-name (analysis-enums analysis))) (hierarchy-end-range class-name analysis))))
+  (let ((enum (gethash class-name (analysis-enums analysis))))
+    (values (enum-value enum (hierarchy-end-range class-name analysis)))))
 
 ;; ----------------------------------------------------------------------
 ;;
