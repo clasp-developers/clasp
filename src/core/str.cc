@@ -1288,7 +1288,7 @@ namespace core
     void Str_O::__write__(T_sp stream) const
     {
 	int ndx;
-	if ( !brcl_print_escape() && !brcl_print_readably() )
+	if ( !clasp_print_escape() && !clasp_print_readably() )
 	{
 	    for (ndx = 0;  ndx < this->size(); ndx++ )
 	    {

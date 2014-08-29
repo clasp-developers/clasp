@@ -59,6 +59,7 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm data-layout-pass) ;; (llvm-sys:data-layout-copy *data-layout*))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass))
@@ -70,16 +71,17 @@ using features defined in corePackage.cc"
 
 
 (defun create-function-pass-manager-for-compile (module)
-  (let ((function-pass-manager (llvm-sys:make-function-pass-manager module))
+  (let ((fpm (llvm-sys:make-function-pass-manager module))
         (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*)) )
-    (llvm-sys:function-pass-manager-add function-pass-manager data-layout-pass)
-    (llvm-sys:function-pass-manager-add function-pass-manager (llvm-sys:create-basic-alias-analysis-pass))
-    (llvm-sys:function-pass-manager-add function-pass-manager (llvm-sys:create-instruction-combining-pass))
-    (llvm-sys:function-pass-manager-add function-pass-manager (llvm-sys:create-reassociate-pass))
-    (llvm-sys:function-pass-manager-add function-pass-manager (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add function-pass-manager (llvm-sys:create-cfgsimplification-pass))
-    (llvm-sys:do-initialization function-pass-manager)
-    function-pass-manager
+    (llvm-sys:function-pass-manager-add fpm data-layout-pass)
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass))
+    (llvm-sys:do-initialization fpm)
+    fpm
     )
   )
 

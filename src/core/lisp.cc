@@ -185,6 +185,7 @@ namespace core
 		       _StackSampleCount(0),
 		       _StackSampleSize(0),
 		       _StackSampleMax(0),
+                       _PrintSymbolsProperly(false),
 		       _ReplCounter(1),
                        _Bundle(NULL),
 		       _DebugStream(NULL),
@@ -594,6 +595,9 @@ namespace core
 	    this->_Roots._SlotCachePtr = gctools::ClassAllocator<Cache>::allocateClass();
 	    this->_Roots._SlotCachePtr->setup(MaxClosSlots,ClosCacheSize);
 	}
+        {_BLOCK_TRACE("Start printing symbols properly");
+            this->_PrintSymbolsProperly = true;
+        }
 #if 0 // wtf is this???
 	if ( this->_dont_load_startup )
 	{_BLOCK_TRACE("Load startup code");
@@ -1187,11 +1191,11 @@ namespace core
 
 
 
-    Path_sp Lisp_O::translateLogicalPathname(T_sp logicalPathName)
+    Path_sp Lisp_O::translateLogicalPathname(T_sp obj)
     {_G();
-	if ( logicalPathName.isA<Str_O>() )
+	if ( Str_sp logicalPathName = obj.asOrNull<Str_O>() )
 	{
-	    string fileName = logicalPathName.as<Str_O>()->get();
+	    string fileName = logicalPathName->get();
 	    return Path_O::create(fileName);
 	    SIMPLE_ERROR(BF("include "+fileName+" error, file does not exist"));
 	} else
@@ -1202,11 +1206,11 @@ namespace core
 
 
 
-    Path_sp Lisp_O::translateLogicalPathnameUsingPaths(T_sp logicalPathName)
+    Path_sp Lisp_O::translateLogicalPathnameUsingPaths(T_sp obj)
     {_G();
-	if ( logicalPathName.isA<Str_O>() )
+	if ( Str_sp logicalPathName = obj.asOrNull<Str_O>() )
 	{
-	    string fileName = logicalPathName.as<Str_O>()->get();
+	    string fileName = logicalPathName->get();
 	    LOG(BF("Looking for file: %s") % fileName.c_str()  );
 	    LOG(BF("Looking in current directory"));
 	    boost_filesystem::path onePath("./");
@@ -3294,6 +3298,9 @@ extern "C"
 	    package = coerce::packageDesignator(optionalPackageDesignator);
 	}
 	ASSERTNOTNULL(package);
+        if ( package.nilp() ) {
+            SIMPLE_ERROR(BF("The package %s has not been found") % _rep_(optionalPackageDesignator).c_str());
+        }
 	return package->intern(symbolName).as<Symbol_O>();
     }
 
@@ -3552,12 +3559,12 @@ extern "C"
         map<string,int>::iterator it = this->_SourceFileIndices.find(fileName);
         if ( it == this->_SourceFileIndices.end() ) {
             if ( this->_Roots._SourceFiles.size() == 0 ) {
-                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-no-file-");
+                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-no-file-",0);
                 this->_Roots._SourceFiles.push_back(unknown);
             }
             int idx = this->_Roots._SourceFiles.size();
             this->_SourceFileIndices[fileName] = idx;
-            SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName);
+            SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName,idx);
             this->_Roots._SourceFiles.push_back(sfi);
             return Values(sfi,Fixnum_O::create(idx));
         }

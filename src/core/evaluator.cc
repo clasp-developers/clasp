@@ -1910,7 +1910,7 @@ namespace core
 		T_sp olambdaList = oCadr(oneDef);
 		Cons_sp inner_body = cCdr(cCdr(oneDef)).as_or_nil<Cons_O>();
 		Cons_sp outer_func_cons = eval::funcall(comp::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
-#if 0
+#if 1
 //                printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
                 Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
                                                        , _Nil<T_O>()
@@ -1948,7 +1948,7 @@ namespace core
 	    Str_sp docstring;
 	    Cons_sp specials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
-            printf("%s:%d macrolet evaluating code: %s  in env: %s\n", __FILE__, __LINE__, _rep_(code).c_str(), _rep_(newEnv).c_str());
+//            printf("%s:%d macrolet evaluating code: %s  in env: %s\n", __FILE__, __LINE__, _rep_(code).c_str(), _rep_(newEnv).c_str());
 	    return t1Progn(code,newEnv);
 	}
 

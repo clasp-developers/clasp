@@ -74,10 +74,9 @@ namespace gctools {
 #else
     typedef enum { KIND_null, KIND_max } GCKindEnum;
 #endif
+
+
 };
-
-
-
 
 
 
@@ -404,7 +403,41 @@ namespace gctools {
         return ptr;
     }
 
+
+
 };
+
+
+
+namespace core {
+    class T_O;
+    class WrappedPointer_O;
+    class Functoid;
+    class Creator;
+    class Iterator_O;
+};
+namespace clbind {
+    class ConstructorCreator;
+};
+
+
+#define DECLARE_FORWARDS
+#include GARBAGE_COLLECTION_INCLUDE
+#undef DECLARE_FORWARDS
+
+
+namespace gctools {
+#if !defined(RUNNING_GC_BUILDER)
+#define GC_DYNAMIC_CAST
+#include GARBAGE_COLLECTION_INCLUDE // "main/clasp_gc.cc"
+#undef GC_DYNAMIC_CAST
+#endif
+
+};
+
+
+
+
 
 
         

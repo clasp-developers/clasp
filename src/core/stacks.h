@@ -30,17 +30,20 @@ namespace core
 	int			_Bds;
 	Closure* 	        closure;
         ActivationFrame_sp      environment;
+        int                     runningSourceFileInfoHandle;
         int                     runningLineNumber;
         int                     runningColumn;
     public:
 	InvocationHistoryFrame(Closure* fc, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
+	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
 	ATTR_WEAK virtual ~InvocationHistoryFrame();
 	InvocationHistoryFrame* next() { return this->_Next;};
 	uint index() { return this->_Index;};
 	virtual string sourcePathName() const;
 	virtual int lineNumber() const { return this->runningLineNumber; };
 	virtual int column() const { return this->runningColumn; };
-	virtual void setLineNumberColumn(uint lineNumber, uint column) {
+	virtual void setSourcePos(int fileHandle, uint lineNumber, uint column) {
+            this->runningSourceFileInfoHandle = fileHandle;
             this->runningLineNumber = lineNumber;
             this->runningColumn = column;
         };
@@ -98,14 +101,14 @@ namespace core
 
 	void setExpressionForTop(T_sp expression);
 
-	void setLineNumberColumnForTop(uint lineNumber, uint column)
+	void setSourcePosForTop(int sourceFileHandle, uint lineNumber, uint column)
 	{
 	    if ( this->_Top==NULL )
 	    {
 		printf("%s:%d IHSTop must never be NULL!\n", __FILE__, __LINE__);
 		exit(1);
 	    }
-	    this->_Top->setLineNumberColumn(lineNumber,column);
+	    this->_Top->setSourcePos(sourceFileHandle,lineNumber,column);
 	}
 
 	void setActivationFrameForTop(ActivationFrame_sp af)
@@ -118,9 +121,9 @@ namespace core
 	    this->_Top->setActivationFrame(af);
 	}
 	    
-	void setLineNumberForTop(uint lineNumber)
+	void setSourcePosForTop(int sourceFileHandle, uint lineNumber)
 	{
-	    this->_Top->setLineNumberColumn(lineNumber,0);
+	    this->_Top->setSourcePos(sourceFileHandle,lineNumber,0);
 	}
 
 	vector<InvocationHistoryFrame*> asVectorFrames();

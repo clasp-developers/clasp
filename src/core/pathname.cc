@@ -91,7 +91,7 @@ namespace core {
     in_local_case_p(T_sp str, T_sp cas)
     {
 	if (cas == kw::_sym_downcase)
-	    return brcl_string_case(str.as<Str_O>()) < 0;
+	    return clasp_string_case(str.as<Str_O>()) < 0;
 	return true;
     }
 
@@ -99,7 +99,7 @@ namespace core {
     in_antilocal_case_p(T_sp str, T_sp cas)
     {
 	if (cas == kw::_sym_downcase)
-	    return brcl_string_case(str.as<Str_O>()) > 0;
+	    return clasp_string_case(str.as<Str_O>()) > 0;
 	return false;
     }
 
@@ -133,7 +133,7 @@ namespace core {
     translate_from_common(T_sp tstr, T_sp tocase)
     {
 	Str_sp str = tstr.as<Str_O>();
-	int string_case = brcl_string_case(str);
+	int string_case = clasp_string_case(str);
 	if (string_case > 0) { /* ALL_UPPER */
 	    return to_local_case(str, tocase);
 	} else if (string_case < 0) { /* ALL_LOWER */

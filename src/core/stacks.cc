@@ -25,9 +25,11 @@ namespace core
         return -1;
     }
 
-    InvocationHistoryFrame::InvocationHistoryFrame(Closure* c, ActivationFrame_sp env) :closure(c), environment(env)
-                                                                                       , runningLineNumber(0)
-                                                                                       , runningColumn(0)
+    InvocationHistoryFrame::InvocationHistoryFrame(Closure* c, ActivationFrame_sp env)
+        :closure(c), environment(env)
+        , runningSourceFileInfoHandle(c->sourceFileInfoHandle())
+        , runningLineNumber(c->lineNumber())
+        , runningColumn(c->column())
     {
 	this->_Stack = &_lisp->invocationHistoryStack();
 	this->_Next = this->_Stack->top();
@@ -42,6 +44,35 @@ namespace core
 	this->_Bds = _lisp->bindings().size();
     }
 
+
+
+    InvocationHistoryFrame::InvocationHistoryFrame(int sourceFileInfoHandle,
+                                                   int lineno,
+                                                   int column,
+                                                   ActivationFrame_sp env)
+        : closure(NULL), environment(env)
+        , runningSourceFileInfoHandle(sourceFileInfoHandle)
+        , runningLineNumber(lineno)
+        , runningColumn(column)
+    {
+	this->_Stack = &_lisp->invocationHistoryStack();
+	this->_Next = this->_Stack->top();
+	if (this->_Next == NULL)
+	{
+	    this->_Index = 0;
+	} else
+	{
+	    this->_Index = this->_Next->_Index+1;
+	}
+	this->_Stack->push(this);
+	this->_Bds = _lisp->bindings().size();
+    }
+
+
+
+
+
+
     InvocationHistoryFrame::~InvocationHistoryFrame()
     {
 	this->_Stack->pop();
@@ -53,14 +84,18 @@ namespace core
         uint ilineno(0), icolumn(0);
         if ( _lisp->sourceDatabase().notnilp() ) {
             SourceFileInfo_mv info = _lisp->sourceDatabase()->lookupSourceInfo(expression);
-            Fixnum_sp lineno = info.valueGet(1).as<Fixnum_O>();
-            Fixnum_sp column = info.valueGet(2).as<Fixnum_O>();
+            if ( info.notnilp() ) {
+                Fixnum_sp lineno = info.valueGet(1).as<Fixnum_O>();
+                Fixnum_sp column = info.valueGet(2).as<Fixnum_O>();
 //	Fixnum_sp filePos = info.valueGet(3).as<Fixnum_O>();
-            ilineno = lineno.nilp() ? 0 : lineno->get();
-            icolumn = column.nilp() ? 0 : column->get();
+                ilineno = lineno.nilp() ? 0 : lineno->get();
+                icolumn = column.nilp() ? 0 : column->get();
 //	uint ifilePos = filePos.nilp() ? 0 : filePos->get();
+                this->_Top->setSourcePos(info->fileHandle(),ilineno,icolumn);
+            } else {
+                this->_Top->setSourcePos(0,0,0);
+            }
         }
-	this->_Top->setLineNumberColumn(ilineno,icolumn);
     }
 
 
@@ -74,14 +109,16 @@ namespace core
         if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
         if ( column == UNDEF_UINT ) column = 0;
         string closureType = "unknown";
+        if (closure) {
         if ( closure->interpretedP() ) {
-            closureType = "interpr.";
+            closureType = "interpr. ";
         } else if ( closure->compiledP() ) {
-            closureType = "compiled";
+            closureType = "compiled ";
         } else if ( closure->builtinP() ) {
-            closureType = "builtin";
+            closureType = "builtin  ";
         }
-	ss << (BF("#%3d %8s %20s %5d col %2d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
+        } else closureType = "toplevel";
+	ss << (BF("#%3d %9s %20s %5d col %2d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
 //	ss << std::endl;
 //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
 	return ss.str();
@@ -91,20 +128,22 @@ namespace core
 
     string InvocationHistoryFrame::sourcePathName() const
     {
-        return af_sourceFileInfo(this->closure->sourcePosInfo())->namestring();
+        return af_sourceFileInfo(Fixnum_O::create(this->runningSourceFileInfoHandle))->namestring();
     }
 
 
 
     string InvocationHistoryFrame::asString()
     {
-        SourceFileInfo_sp sfi = af_sourceFileInfo(this->closure->sourcePosInfo());
-        if ( this->runningLineNumber == 0 ) {
-            this->runningLineNumber = this->closure->lineNumber();
-            this->runningColumn = this->closure->column();
+        string name;
+        SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(this->runningSourceFileInfoHandle));
+        if ( this->closure ) {
+            name = _rep_(this->closure->name);
+        } else {
+            name = "REPL";
         }
 	return this->asStringLowLevel(this->closure,
-                                      _rep_(this->closure->name),
+                                      name,
 				      sfi->fileName(),
 				      this->runningLineNumber,
                                       this->runningColumn);

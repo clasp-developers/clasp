@@ -15,6 +15,7 @@ extern "C" {
 #include "core/arguments.h"
 #include "core/designators.h"
 #include "core/compPackage.h"
+#include "core/package.h"
 #include "core/hashTable.h"
 #include "core/evaluator.h"
 #include "core/sourceFileInfo.h"
@@ -695,10 +696,14 @@ extern "C"
 {
     void invokeLlvmFunction( core::T_mv* resultP,
 			     fnLispCallingConvention fptr,
-			     core::ActivationFrame_sp* frameP)
-    {_G();
+			     core::ActivationFrame_sp* frameP,
+                             int* sourceFileInfoHandleP,
+                             int lineno,
+                             int column )
+    {
 	core::T_sp closedEnv = _Nil<T_O>();
 	ActivationFrame_sp frame = (*frameP);
+        core::InvocationHistoryFrame invFrame(*sourceFileInfoHandleP,lineno,column);
 	if ( frame.nilp() ) {
 	    fptr(resultP,&closedEnv,0,NULL,NULL,NULL,NULL);
 	} else {
@@ -709,8 +714,8 @@ extern "C"
     };
 
 
-    void invokeLlvmFunctionVoid( fnVoidType fptr )
-    {_G();
+    void invokeLlvmFunctionVoid( fnVoidType fptr)
+    {
 	fptr();
     };
 
@@ -1465,6 +1470,21 @@ extern "C"
     }
 
 
+    void assignSourceFileInfoHandle(const char* moduleName, int* sourceFileInfoHandleP)
+    {
+        core::Str_sp mname = core::Str_O::create(moduleName);
+        SourceFileInfo_mv sfi_mv = core::af_sourceFileInfo(mname);
+        int sfindex = sfi_mv.valueGet(1).as<core::Fixnum_O>()->get();
+        *sourceFileInfoHandleP = sfindex;
+    }
+
+    void debugSourceFileInfoHandle(int* sourceFileInfoHandleP)
+    {
+        int sfindex = *sourceFileInfoHandleP;
+        core::Fixnum_sp fn = core::Fixnum_O::create(sfindex);
+        SourceFileInfo_sp sfi = core::af_sourceFileInfo(fn);
+        printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
+    }
 };
 
 
@@ -1842,9 +1862,9 @@ extern "C"
 extern "C"
 {
 
-    void trace_setLineNumberColumnForIHSTop( int ln, int col )
+    void trace_setLineNumberColumnForIHSTop( int* sourceFileInfoHandleP, int ln, int col )
     {
-	_lisp->invocationHistoryStack().setLineNumberColumnForTop(ln,col);
+	_lisp->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP,ln,col);
     }
 
     void trace_setActivationFrameForIHSTop(core::ActivationFrame_sp* afP)

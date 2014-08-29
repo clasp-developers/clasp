@@ -43,6 +43,7 @@ local unity_sources =
       all.cc ;
 
 local sources = 
+      write_symbol.cc
       corePackage.cc
       lisp.cc
 	    lispStream.cc

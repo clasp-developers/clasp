@@ -125,7 +125,11 @@ namespace gctools
 	{
 	    /*! this->nilp() should only return nil for Null_O,Symbol_O,List_O,Sequence_O */
 	    if (this->pointerp()) {
+#ifdef USE_CLASP_DYNAMIC_CAST
+                smart_ptr<o_class> ret(gctools::DynamicCast<o_class*,T>::castOrNULL(this->px));
+#else
 		smart_ptr<o_class> ret(dynamic_cast<o_class*>(this->px));
+#endif
 		return ret;
 	    }
 	    if ( this->BaseType::fixnump()) {
@@ -150,7 +154,12 @@ namespace gctools
             inline smart_ptr<o_class> asOrNull() const
 	{
 	    if (this->pointerp()) {
-		smart_ptr</* TODO: const */ o_class> ret(const_cast<o_class*>(dynamic_cast<const o_class*>(this->px)));
+#ifdef USE_CLASP_DYNAMIC_CAST
+                smart_ptr<o_class> ret(const_cast<o_class*>(gctools::DynamicCast<const o_class*,T>::castOrNULL(this->px)));
+#else
+		smart_ptr<o_class> ret(dynamic_cast<o_class*>(this->px));
+#endif
+//		smart_ptr</* TODO: const */ o_class> ret(const_cast<o_class*>(dynamic_cast<const o_class*>(this->px)));
 		return ret;
 	    }
 	    if ( this->BaseType::fixnump()) {
@@ -245,7 +254,6 @@ namespace gctools
 	    return ret;
 	}
 
-
 	template <class o_class>
             inline bool isA() const
 	{
@@ -262,7 +270,6 @@ namespace gctools
 	    if (!ret) return false;
 	    return true;
 	}
-
 
 
 	/*! Return the offset in bytes between this.px and this - you need to modify the base

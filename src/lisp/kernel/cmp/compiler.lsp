@@ -117,6 +117,7 @@ COMPILE-FILE just throws this away")
 				:function-name name
 				:parent-env env-around-lambda
 				:function-form code)
+           (cmp-log "Starting new function name: %s\n" name)
 	   (let* ((arguments (llvm-sys:get-argument-list fn))
 		  (result (first arguments))
 		  (closed-over-renv (second arguments))
@@ -127,18 +128,20 @@ COMPILE-FILE just throws this away")
                                     :register-arg2 (sixth arguments)
                                     :valist (seventh arguments)))
 		  traceid
-		  (new-env (irc-new-value-environment
-			    fn-env
-			    :lambda-list-handler lambda-list-handler
-			    :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
-			    :fill-runtime-form (lambda (lambda-args-env)
-						 (compile-arguments name
-								    lambda-list-handler
-								    fn-env
-								    closed-over-renv
-								    argument-holder
-								    lambda-args-env
-								    )))))
+		  (new-env (progn
+                             (cmp-log "Creating new-value-environment for arguments\n")
+                             (irc-new-value-environment
+                              fn-env
+                              :lambda-list-handler lambda-list-handler
+                              :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
+                              :fill-runtime-form (lambda (lambda-args-env)
+                                                   (compile-arguments name
+                                                                      lambda-list-handler
+                                                                      fn-env
+                                                                      closed-over-renv
+                                                                      argument-holder
+                                                                      lambda-args-env
+                                                                      ))))))
 	     (dbg-set-current-debug-location-here)
 ;;;		(irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env)
 	     (with-try new-env
@@ -149,6 +152,7 @@ COMPILE-FILE just throws this away")
 		(irc-unwind-environment new-env)))
 	     )
 	   )))
+    (cmp-log "About to dump the function at the end of compile-lambda/lambda-block\n")
     (cmp-log-dump fn)
     (irc-verify-function fn)
     (push fn *all-funcs-for-one-compile*)
@@ -967,12 +971,19 @@ jump to blocks within this tagbody."
 	(multiple-value-bind (index fn)
 	    (compile-ltv-thunk "load-time-value-func" form nil)
 	  ;; Invoke the repl function here
-	  (with-ltv-function-codegen (result ltv-env)
-	    (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)))
+          (multiple-value-bind (source-dir source-file lineno column)
+              (walk-form-for-source-info form)
+            (with-ltv-function-codegen (result ltv-env)
+              (irc-intrinsic "invokeLlvmFunction" result fn
+                             (irc-renv ltv-env)
+                             *gv-source-file-info-handle*
+                             (jit-constant-i32 lineno)
+                             (jit-constant-i32 column)
+                             )))
 	  (irc-intrinsic "getLoadTimeValue" result *load-time-value-holder-global-var* (jit-constant-i32 index)))
 	(progn
 	  (cmp-log "About to generate load-time-value for COMPILE")
-;;	  (break "Handle load-time-value for COMPILE")
+          ;;	  (break "Handle load-time-value for COMPILE")
 	  (let ((ltv (eval form)))
 	    (codegen-rtv/all result ltv env))))))
 
@@ -1071,6 +1082,7 @@ jump to blocks within this tagbody."
 	    ((null obj) (codegen-ltv/nil result env))
 	    ((integerp obj) (codegen-ltv/integer result obj env))
 	    ((stringp obj) (codegen-ltv/string result obj env))
+            ((pathnamep obj) (codegen-ltv/pathname result obj env))
 	    ((floatp obj) (codegen-ltv/float result obj env))
 	    ((characterp obj) (codegen-ltv/character result obj env))
 	    ((arrayp obj) (codegen-ltv/array result obj env))
@@ -1211,6 +1223,12 @@ be wrapped with to make a closure"
                    (*gv-source-path-name* (jit-make-global-string-ptr
                                            truename
                                            "source-path-name"))
+                   (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
+                                                                                +i32+ ; type
+                                                                                nil ; constant
+                                                                                'llvm-sys:internal-linkage
+                                                                                (jit-constant-i32 0)
+                                                                                "source-file-info-handle"))
                    (*all-funcs-for-one-compile* nil))
               (multiple-value-bind (fn function-kind wrapped-env warnp failp)
                   (with-dibuilder (*the-module*)
@@ -1295,3 +1313,9 @@ be wrapped with to make a closure"
       (t (error "Cannot disassemble")))))
   
 
+(defun compiler-stats ()
+  (bformat t "Accumulated finalization time %s\n" llvm-sys:*accumulated-llvm-finalization-time*)
+  (bformat t "Most recent finalization time %s\n" llvm-sys:*most-recent-llvm-finalization-time*)
+  (bformat t "Number of compilations %s\n" llvm-sys:*number-of-llvm-finalizations*)
+)
+(export 'compiler-stats)

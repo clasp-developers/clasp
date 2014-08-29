@@ -72,7 +72,7 @@ namespace core
     {
 	Pathname_sp path = this->const_sharedThis<Pathname_O>();
         T_sp namestring = brcl_namestring(path, 0);
-        bool readably = brcl_print_readably();
+        bool readably = clasp_print_readably();
         if (namestring.nilp()) {
 	    if (readably) {
 		path->__writeReadable__(strm);
@@ -84,7 +84,7 @@ namespace core
 		return;
 	    }
         }
-        if (readably || brcl_print_escape())
+        if (readably || clasp_print_escape())
 	    clasp_write_string("#P",strm);
         write_ugly_object(namestring,strm);
     }
@@ -92,7 +92,7 @@ namespace core
     void Character_O::__write__(T_sp stream) const
     {
         int i = this->charCode();
-	if (!brcl_print_escape() && !brcl_print_readably()) {
+	if (!clasp_print_escape() && !clasp_print_readably()) {
 	    clasp_write_char(i,stream);
 	} else {
 	    clasp_write_string("#\\",stream);
@@ -104,6 +104,8 @@ namespace core
 	    }
 	}
     }
+
+
 
 
     void Instance_O::__write__(T_sp stream) const
@@ -138,7 +140,7 @@ namespace core
     void Integer_O::__write__(T_sp stream) const
     {
 	StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
-        int print_base = brcl_print_base();
+        int print_base = clasp_print_base();
         af_integerToString(buffer,this->const_sharedThis<Integer_O>(),
 			   Fixnum_O::create(print_base),
 			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
@@ -418,7 +420,7 @@ namespace core
     void write_character(Stream_sp strm, T_sp chr)
     {
         claspChar i = chr.character();
-	if (!brcl_print_escape() && !brcl_print_readably()) {
+	if (!clasp_print_escape() && !clasp_print_readably()) {
 	    clasp_write_char(i,strm);
 	} else {
 	    clasp_write_string("#\\",strm);
@@ -435,7 +437,7 @@ namespace core
     T_sp write_ugly_object(T_sp x, Stream_sp stream)
     {
 	if ( !x ) {
-	    if (brcl_print_readably())
+	    if (clasp_print_readably())
 		PRINT_NOT_READABLE_ERROR(x);
 	    clasp_write_string("#<OBJNULL>",stream);
 	    goto DONE;

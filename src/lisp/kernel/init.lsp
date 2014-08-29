@@ -352,12 +352,17 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (merge-pathnames (pathname (string module))
 		   (make-pathname :host "sys" :directory '(:absolute "kernel") :type type)))
 
+(defun lisp-source-pathname (module)
+  (or (probe-file (get-pathname-with-type module "lsp"))
+      (probe-file (get-pathname-with-type module "lisp"))
+      (error "Could not find source file for ~a" module)))
+
 
 
 
 
 (si::*fset 'interpreter-iload
-	  #'(lambda (module &aux (pathname (get-pathname-with-type module)))
+	  #'(lambda (module &aux (pathname (lisp-source-pathname module)))
 	      (let ((name (namestring pathname)))
 		(bformat t "Loading interpreted file: %s\n" (namestring name))
 		(load pathname)))
@@ -430,7 +435,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 #-nocmp
 (defun iload (fn &key load-bitcode )
   (setq *reversed-init-filenames* (cons fn *reversed-init-filenames*))
-  (let* ((lsp-path (get-pathname-with-type fn "lsp"))
+  (let* ((lsp-path (lisp-source-pathname fn))
 	 (bc-path (target-backend-pathname (get-pathname-with-type fn "bc") ))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
@@ -502,7 +507,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun compile-kernel-file (filename &key (reload nil) load-bitcode (recompile nil))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (let* ((source-path (get-pathname-with-type filename "lsp"))
+  (let* ((source-path (lisp-source-pathname filename))
 	 (bitcode-path (target-backend-pathname (get-pathname-with-type filename "bc")))
 	 (load-bitcode (if (probe-file bitcode-path)
 			   (if load-bitcode
@@ -561,6 +566,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/predlib
     lsp/iolib
     lsp/seq
+    lsp/cmuutil
+    lsp/seqmacros
+    lsp/seqlib
+    lsp/trace
     :tiny
 
     :pre-cmp
@@ -585,10 +594,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     cmp/cmprepl
     :cmprepl
     lsp/sharpmacros
-    lsp/cmuutil
-    lsp/seqmacros
-    lsp/seqlib
-    lsp/trace
+;;    lsp/cmuutil
+;;    lsp/seqmacros
+;;    lsp/seqlib
+;;    lsp/trace
     lsp/assert
     lsp/describe
     lsp/module
@@ -631,6 +640,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/pprint
     clos/inspect
     lsp/ffi
+;;    asdf/build/asdf
     :front
     lsp/top
     :all
@@ -887,10 +897,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 #-ignore-init-image
 (eval-when (:execute)
   (if (not *loaded-image*)
-      (progn
+      (let ((image-pathname (target-backend-pathname #+ecl-min +min-image-pathname+
+                                                     #-ecl-min +imagelto-pathname+
+                                                     :target-backend (default-target-backend))))
         (setq *loaded-image* t)
-        (bformat t "init.lsp> Loading image bundle\n")
-        (my-time (ibundle #+ecl-min +min-image-pathname+ #-ecl-min +imagelto-pathname+))
+        (bformat t "init.lsp> Loading image bundle %s\n" image-pathname)
+        (my-time (ibundle image-pathname))
         (require 'system)
         (load-brclrc)
         (if core:*command-line-load*

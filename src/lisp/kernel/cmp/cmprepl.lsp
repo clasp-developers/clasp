@@ -9,6 +9,7 @@
   
 (setq *implicit-compile-hook*
       (compile nil '(lambda (form &optional environment)
+;;                     (bformat t "implicitly compiling: %s\n" form)
                      (multiple-value-bind (compiled-function warn fail)
                          (compile-in-env nil `(lambda () ,form) environment)
 ;;                         (compile-in-env nil form environment)

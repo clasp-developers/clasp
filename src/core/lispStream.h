@@ -722,6 +722,8 @@ namespace core {
     void clasp_write_string(const string& str, T_sp strm);
     void clasp_writeln_string(const string& str, T_sp strm);
 
+    claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
+
     void initialize_lispStream();
 
     T_sp cl_open(T_sp filename,

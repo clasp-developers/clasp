@@ -382,6 +382,7 @@ extern "C" {
 #include "main/clasp_gc.cc"
 #undef GC_GLOBALS
 #endif
+//#define DO_SYMBOL(sym,id,pkg,name,exprt) 
             MPS_LOG(BF("Done roots_scan"));
         } MPS_SCAN_END(GC_SCAN_STATE);
 	return MPS_RES_OK;

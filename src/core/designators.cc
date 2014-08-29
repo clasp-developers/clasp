@@ -53,9 +53,8 @@ namespace core
 	    {
                 SIMPLE_ERROR(BF("NIL is not a valid package designator"));
 //		return _lisp->getCurrentPackage();
-	    } else if (af_packageP(obj) )
-	    {
-		return obj.as<Package_O>();
+	    } else if (Package_sp apkg = obj.asOrNull<Package_O>() ) {
+                return apkg;
 	    }
 	    Str_sp packageName = stringDesignator(obj);
 	    Package_sp pkg = _lisp->findPackage(packageName->get());

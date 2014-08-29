@@ -56,6 +56,7 @@ namespace core {
         bool macroP() const;
         SourcePosInfo_sp sourcePosInfo() const { return this->_SourcePosInfo;};
         SourcePosInfo_sp setSourcePosInfo(T_sp sourceFile, int lineno, int column);
+        virtual int sourceFileInfoHandle() const;
         virtual int lineNumber() const;
         virtual int column() const;
     };

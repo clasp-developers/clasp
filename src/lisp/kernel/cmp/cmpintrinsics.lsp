@@ -426,7 +426,7 @@ Boehm and MPS use a single pointer"
 ;;  (primitive module "invokePossibleMultipleValueSymbolFunction" +void+ (list +tsp*-or-tmv*+ +symsp*+ +afsp*+))
 ;;  (primitive module "invokePossibleMultipleValueLexicalFunction" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+ +afsp*+))
 
-  (primitive module "invokeLlvmFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+))
+  (primitive module "invokeLlvmFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i32*+ +i32+ +i32+))
   (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-void-ptr+))
 
   (primitive module "invokeFASLLlvmFunctionVoid" +void+ (list +fn-void-ptr+ +i8*+))
@@ -479,7 +479,7 @@ Boehm and MPS use a single pointer"
 
 
   (primitive-does-not-throw module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i32+ +i32+))
+  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i32*+ +i32+ +i32+))
 
   (primitive-does-not-throw module "trace_exitFunctionScope" +void+ (list +i32+) )
   (primitive-does-not-throw module "trace_exitBlockScope" +void+ (list +i32+ ) )
@@ -525,6 +525,9 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "loadTimeSymbolReference" +symsp*+ (list +ltv**+ +i32+))
   (primitive-does-not-throw module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
   (primitive-does-not-throw module "dumpLoadTimeValues" +void+ (list +ltv**+))
+
+  (primitive-does-not-throw module "assignSourceFileInfoHandle" +void+ (list +i8*+ +i32*+))
+  (primitive-does-not-throw module "debugSourceFileInfoHandle" +void+ (list +i32*+))
 
   (primitive-does-not-throw module "ltv_makeCons" +void+ (list +tsp*+))
   (primitive-does-not-throw module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
@@ -574,8 +577,11 @@ Boehm and MPS use a single pointer"
 
 
 (defvar *compile-file-pathname* nil "Store the path-name of the currently compiled file")
-(defvar *gv-source-path-name* nil ;; (jit-make-global-string-ptr *compile-file-pathname* "compile-file-pathname")
+(defvar *gv-source-path-name* nil 
   "Store a global value that defines the filename of the current compilation")
+(defvar *gv-source-file-info-handle* nil
+  "Store a global value that stores an integer handle assigned at load-time that uniquely 
+identifies the current source file.  Used for tracing and debugging")
 (defvar *current-line-number* 0 "Store the line number of the currently compiled form")
 (defvar *current-column* 0 "Store the column of the currently compiled form")
 (defvar *current-form* nil "The current form being compiled")

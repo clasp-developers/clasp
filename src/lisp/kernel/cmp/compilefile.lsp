@@ -60,64 +60,88 @@
   (let ((fn (compile-thunk "repl" form nil)))
     (with-ltv-function-codegen (result ltv-env)
       (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)
+                     *gv-source-file-info-handle*
+                     (jit-constant-i32 *current-line-number*)
+                     (jit-constant-i32 *current-column*)
                      ))))
 
-(defun compiler-macro-function (sym) nil)
+(defun compiler-macro-function (sym &optional env) nil)
 
 
 
-(defun t1progn (form)
+(defun t1progn (rest env)
   "All forms in progn at top level are top level forms"
-  (dolist (subform (cdr form))
-    (t1expr subform)))
+  (dolist (form rest)
+    (t1expr form env)))
 
-(defun t1eval-when (form)
-  (let ((situations (cadr form))
-	(body (cddr form)))
+(defun t1eval-when (rest env)
+  (let ((situations (car rest))
+	(body (cdr rest)))
     (when (or (member 'core:compile situations) (member :compile-toplevel situations))
       (cmp-log "Performing eval-when :compile-toplevel side-effects\n")
       (cmp-log "Evaluating: %s\n" body)
-      (eval `(progn ,@body))
+      (si:top-level-eval-with-env `(progn ,@body) env)
       (cmp-log "Done eval-when compile-toplevel side-effects\n"))
     (when (or (member 'core:load situations) (member :load-toplevel situations))
       (cmp-log "Compiling body due to :load-toplevel --> %s\n" body)
       ;; Each subform is a top-level form
       (dolist (subform body)
-	(t1expr subform))
+	(t1expr subform env))
       (cmp-log "Done compiling body due to :load-toplevel\n")
       )
     ))
 
-(defun t1locally (form)
-  (error "Add support for cmp:t1locally"))
 
-(defun t1macrolet (form)
-  (error "Add support for cmp:t1macrolet"))
+(defun t1locally (rest env)
+  (multiple-value-bind (declares code docstring specials)
+      (process-declarations rest nil)
+    ;; TODO: Do something with the declares!!!!!  They should be put into the environment
+    (let ((new-env (core:make-value-environment-for-locally-special-entries specials env)))
+      (t1progn code new-env))))
+      
+(defun t1macrolet (rest env)
+  (let* ((macros (car rest))
+	 (body (cdr rest))
+	 (macro-env (irc-new-macrolet-environment env)))
+    (mapc #'(lambda (macro-def &aux (name (car macro-def))
+				 (vl (cadr macro-def))
+				 (macro-body (cddr macro-def)))
+	      (let* ((lambdablock (parse-macro name vl macro-body))
+		     (macro-fn (eval (list 'function lambdablock))))
+		(set-kind macro-fn :macro)
+		(add-macro macro-env name macro-fn)))
+	  macros )
+    (multiple-value-bind (declares code docstring specials )
+	(process-declarations body)
+      (augment-environment-with-declares macro-env declares)
+      (t1progn code macro-env))))
 
-(defun t1symbol-macrolet (form)
+
+(defun t1symbol-macrolet (rest env)
   (error "Add support for cmp:t1symbol-macrolet"))
 
 
-(defun t1expr (form)
+(defun t1expr (form &optional env)
   (cmp-log "t1expr-> %s\n" form)
   (let ((head (if (atom form) form (car form))))
     (cond
-      ((eq head 'cl:eval-when) (t1eval-when form))
-      ((eq head 'cl:progn) (t1progn form))
-      ((eq head 'cl:locally) (t1locally form))
-      ((eq head 'cl:macrolet) (t1macrolet form))
-      ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet form))
-      ((eq head 'cl:defparameter)
+      ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))
+      ((eq head 'cl:progn) (t1progn (cdr form) env))
+      ((eq head 'cl:locally) (t1locally (cdr form) env))
+      ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
+      ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
+#||      ((eq head 'cl:defparameter)
        (eval `(defvar ,(cadr form)))
        (compile-top-level form))
       ((eq head 'cl:defvar)
        (eval `(defvar ,(cadr form)))
        (compile-top-level form))
-      ((compiler-macro-function head)
-       (error "Handle compiler macro functions"))
-      ((macro-function head)
-       (let ((expanded (macroexpand form)))
-	 (t1expr expanded)))
+||#
+      ((compiler-macro-function head env)
+       (error "Handle compiler macro functions in env"))
+      ((macro-function head env)
+       (let ((expanded (macroexpand form env)))
+	 (t1expr expanded env)))
       (t (compile-top-level form)))
     ))
        
@@ -186,6 +210,12 @@ and the pathname of the source file - this will also be used as the module initi
               (let* ((*compile-file-pathname* given-input-pathname)
                      (*compile-file-truename* (truename *compile-file-pathname*))
                      (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
+                     (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
+                                                                                  +i32+ ; type
+                                                                                  nil ; constant
+                                                                                  'llvm-sys:internal-linkage
+                                                                                  (jit-constant-i32 -1)
+                                                                                  "source-file-info-handle"))
                      (*compile-print* print)
                      (*compile-verbose* verbose))
                 (with-dibuilder (*the-module*)

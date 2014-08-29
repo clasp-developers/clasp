@@ -9,6 +9,7 @@
 #include "standardObject.h"
 #include "multipleValues.h"
 #include "core/sequence.h"
+#include "core/primitives.h"
 #include "hashTableEqual.h"
 #include "hashTableEq.h"
 #include "activationFrame.h"
@@ -400,6 +401,9 @@ namespace core
     string Environment_O::__repr__() const
     {_G();
 	stringstream ss;
+        ss << "#<" << lisp_classNameAsString(af_classOf(this->asSmartPtr())) << ">";
+        return ss.str();
+#if 0
 	int tab = _sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>()->get();
 	{
 	    ss << (BF("--------------------------- %20s :id %5d -----") % this->_instanceClass()->classNameAsString() % this->_EnvId ).str() << std::endl;
@@ -415,6 +419,7 @@ namespace core
 	    ss << string(tab,' ') << " ]" << std::endl;
 	}
 	return ss.str();
+#endif
     }
 
 
@@ -1270,6 +1275,7 @@ namespace core
 	    ;
 	af_def(CorePkg,"makeValueEnvironment",&ValueEnvironment_O::createForLambdaListHandler);
 	af_def(CorePkg,"makeValueEnvironmentForNumberOfEntries",&ValueEnvironment_O::createForNumberOfEntries);
+	af_def(CorePkg,"makeValueEnvironmentForLocallySpecialEntries",&ValueEnvironment_O::createForLocallySpecialEntries);
     }
 
     void ValueEnvironment_O::exposePython(core::Lisp_sp lisp)

@@ -193,18 +193,19 @@ namespace core
 	this->Base::initialize();
     }
 
-    SourceFileInfo_sp SourceFileInfo_O::create(const string& str)
+    SourceFileInfo_sp SourceFileInfo_O::create(const string& str, int handle)
     {_G();
         GC_ALLOCATE(SourceFileInfo_O,spi );
 	spi->_pathname = cl_pathname(Str_O::create(str));
+        spi->_FileHandle = handle;
 	return spi;
     }
 
 
-    SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path)
+    SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle )
     {_G();
 	Str_sp s = af_namestring(path);
-	return SourceFileInfo_O::create(s->get());
+        return SourceFileInfo_O::create(s->get(),handle);
     }
 
 

@@ -724,8 +724,8 @@ namespace core
         // Dump every symbol
         printf("INTERNING symbol[%s]@%p\n", name.c_str(), sym.px_ref() );
 #endif
-#if 1
-	if ( name == "WEAK-POINTER") // == "+HASH-TABLE-ENTRY-VALUE-HAS-BEEN-DELETED+")
+#if 0
+	if ( name == "COERCE-NAME") // == "+HASH-TABLE-ENTRY-VALUE-HAS-BEEN-DELETED+")
 	{
 	    printf("%s:%d - Package_O::intern of %s@%p in package %s\n",
 		   __FILE__, __LINE__, name.c_str(), sym.px_ref(), pkg->getName().c_str() );

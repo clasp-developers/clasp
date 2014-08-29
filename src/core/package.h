@@ -193,6 +193,9 @@ public:
     };
 
 
+
+    T_mv af_findSymbol(const string& symbolName, T_sp packageDesig);
+
 };
 TRANSLATE(core::Package_O);
 #endif //]
