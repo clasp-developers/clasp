@@ -60,12 +60,6 @@ namespace core
 	DynamicScopeManager dynScopeManager1(cl::_sym_STARreadtableSTAR,cl::_sym_STARreadtableSTAR->symbolValue());
 	DynamicScopeManager dynScopeManager2(cl::_sym_STARpackageSTAR,cl::_sym_STARpackageSTAR->symbolValue());
 
-	string initName = "";
-	if ( oinitFnName.notnilp() )
-	{
-	    initName = oinitFnName->get();
-	}
-
 	Pathname_sp path = cl_pathname(pathDesig);
 	if ( af_probe_file(path).notnilp() ) goto LOAD;
 	path->_Type = Str_O::create("bundle");
@@ -98,8 +92,13 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("Cannot generate llvm function name for %s because *llvm-function-name-hook* is not defined") % name );
 	}
-	Str_sp sMainName = eval::funcall(_sym_STARllvmFunctionNameHookSTAR->symbolValue(), path).as<Str_O>();
-	string mainName = sMainName->get();
+	string mainName = "";
+	if ( oinitFnName.notnilp() )
+	{
+	    mainName = oinitFnName->get();
+	} else {
+            mainName = eval::funcall(_sym_STARllvmFunctionNameHookSTAR->symbolValue(), path).as<Str_O>()->get();
+        }
 	InitFnPtr fnP = (InitFnPtr)dlsym(handle,mainName.c_str());
 	if ( fnP == NULL )
 	{

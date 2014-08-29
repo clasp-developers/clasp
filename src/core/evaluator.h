@@ -67,12 +67,22 @@ namespace core
 	    int numArgsPassed = 0;
 	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
+#if 0
+            ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
+	    Cons_sp cur = argsPLUS;
+//            frame::Element
+	    for ( int i=numArgsPassed; i<nargs; ++i ) {
+		frame->operator[](i) = oCar(cur);
+		cur=cCdr(cur);
+	    }
+#else
 	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>()));
 	    Cons_sp cur = argsPLUS;
 	    for ( int i=numArgsPassed; i<nargs; ++i ) {
 		frame->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
+#endif
             return applyToActivationFrame(func,frame);
 	}
 

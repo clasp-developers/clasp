@@ -382,7 +382,54 @@ extern "C" {
 #include "main/clasp_gc.cc"
 #undef GC_GLOBALS
 #endif
-//#define DO_SYMBOL(sym,id,pkg,name,exprt) 
+
+#ifndef RUNNING_GC_BUILDER
+#if 0
+#define GC_GLOBAL_SYMBOLS
+#include "main/clasp_gc.cc"
+#undef GC_GLOBAL_SYMBOLS
+#else
+#define ClPkg cl
+#define CorePkg core
+
+#define AstToolingPkg_SYMBOLS
+//#define CLUserPkg_SYMBOLS
+#define CffiPkg_SYMBOLS
+#define ClPkg_SYMBOLS
+#define ClangAstPkg_SYMBOLS
+#define ClbindPkg_SYMBOLS
+#define ClosPkg_SYMBOLS
+#define CommonLispUserPkg_SYMBOLS
+#define CompPkg_SYMBOLS
+#define CorePkg_SYMBOLS
+#define ExtPkg_SYMBOLS
+#define GcToolsPkg_SYMBOLS
+#define GrayPkg_SYMBOLS
+#define KeywordPkg_SYMBOLS
+#define LlvmoPkg_SYMBOLS
+#define MpiPkg_SYMBOLS
+#define ServeEventPkg_SYMBOLS
+#define SocketsPkg_SYMBOLS
+
+#define DO_SYMBOL(sym,id,pkg,name,exprt) SMART_PTR_FIX(pkg::sym)
+#include "core/symbols_scraped_inc.h"
+#include "asttooling/symbols_scraped_inc.h"
+#include "cffi/symbols_scraped_inc.h"
+#include "clbind/symbols_scraped_inc.h"
+#include "core/symbols_scraped_inc.h"
+#include "gctools/symbols_scraped_inc.h"
+#include "llvmo/symbols_scraped_inc.h"
+#include "mpip/symbols_scraped_inc.h"
+#include "serveEvent/symbols_scraped_inc.h"
+#include "sockets/symbols_scraped_inc.h"
+#undef ClPkg
+#undef CorePkg
+#endif
+#endif // RUNNING_GC_BUILDER
+
+
+
+
             MPS_LOG(BF("Done roots_scan"));
         } MPS_SCAN_END(GC_SCAN_STATE);
 	return MPS_RES_OK;
