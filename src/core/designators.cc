@@ -110,18 +110,15 @@ namespace core
 
 	Str_sp stringDesignator(T_sp obj)
 	{_G();
-	    if ( obj.nilp() )
-	    {
+	    if ( obj.nilp() ) {
 		return af_symbolName(_Nil<Symbol_O>());
 	    } else if ( Str_sp str = obj.asOrNull<Str_O>() ) {
 		return str;
-	    } else if ( Symbol_sp sym = obj.asOrNull<Symbol_O>() )
-	    {
+	    } else if ( Symbol_sp sym = obj.asOrNull<Symbol_O>() ) {
 		return af_symbolName(sym);
-	    } else if ( af_characterP(obj) )
-	    {
+	    } else if ( Character_sp chr = obj.asOrNull<Character_O>() ) {
 		stringstream ss;
-		ss << obj.as<Character_O>()->asChar();
+		ss << chr->asChar();
 		return Str_O::create(ss.str());
 	    }
 	    SIMPLE_ERROR(BF("Illegal string designator[%s] of class[%s]") % _rep_(obj) % _rep_(lisp_instance_class(obj)) );
