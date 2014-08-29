@@ -316,6 +316,37 @@ namespace core
 
 
 
+    
+    
+#define ARGS_core_applysPerSecond "(fn &rest args)"
+#define DECL_core_applysPerSecond ""
+#define DOCS_core_applysPerSecond "applysPerSecond"
+    T_sp core_applysPerSecond(T_sp fn, T_sp args)
+    {_G();
+        LightTimer timer;
+        int nargs = cl_length(args);
+        ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
+        for ( int pow=0; pow<16; ++pow ) {
+            int times = 1 << pow*2;
+            timer.reset();
+            timer.start();
+            T_sp cur = args;
+            // Fill frame here
+            for ( int i(0); i<times; ++i ) {
+                eval::apply(fn,args);
+            }
+            timer.stop();
+            if ( timer.getAccumulatedTime() > 0.5 ) {
+                return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
+            }
+        }
+        printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
+        return _Nil<T_O>();
+    }
+
+
+
+
     void initialize_compiler_primitives(Lisp_sp lisp)
     {_G();
 //	SYMBOL_SC_(CorePkg,processDeclarations);
@@ -338,7 +369,8 @@ namespace core
 	
 	SYMBOL_SC_(CorePkg,loadBundle);
 	Defun(loadBundle);
-	
+
+        CoreDefun(applysPerSecond);
 
     }
 
