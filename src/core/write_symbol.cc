@@ -174,7 +174,7 @@ namespace core {
     forced_print_package(T_sp package)
     {
 	T_sp print_package = _sym_STARprintPackageSTAR->symbolValue();
-	return !Null(print_package) && (print_package != package);
+	return print_package.notnilp() && (print_package != package);
     }
 
     void

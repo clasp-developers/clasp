@@ -54,8 +54,8 @@ short-compile-boehm:
 
 
 
-clasp-gc:
-	$(CLASP_BOEHM) -l "buildClaspGc.lsp"
+clasp-gc-interface:
+	$(CLASP_BOEHM) -l "buildClaspGC.lsp"
 
 compile-commands:
 	-bjam bundle release mps-prep -n -a >bjam.out
