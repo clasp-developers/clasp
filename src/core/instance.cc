@@ -28,6 +28,7 @@ namespace core
         fargs.allocate(lcc_nargs,_Nil<T_O>());
         T_sp* args = &fargs[0];
 #else
+//        core::T_O* args = (T_O*)alloca(sizeof(T_O)*lcc_nargs);
         core::T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
 #endif
         switch (lcc_nargs)

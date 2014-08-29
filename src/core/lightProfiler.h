@@ -46,6 +46,7 @@ public:
 	    this->_Description = description;
 	    this->_Parent = parent;
 	}
+    void reset() { this->_AccumulatedTime = 0.0; };
 	uint getId() { return this->_Id; };
 	bool getIsOn() { return this->_IsOn;};
 	uint getCalls() { return this->_Calls;};

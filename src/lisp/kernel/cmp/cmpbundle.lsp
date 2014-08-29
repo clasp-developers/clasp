@@ -72,12 +72,14 @@
          (output-file (namestring (make-pathname :type "o" :defaults bitcode-physical-pathname))))
     #+(and :target-os-linux :address-model-64)
     (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file))
-    #+target-os-darwin
+    #+(and target-os-darwin use-clang)
     (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
            (clang-executable (if clasp-clang-path
                                  clasp-clang-path
                                  "clang")))
       (return-from generate-compile-command (values (bformat nil "%s -c -o %s %s" clang-executable output-file file) output-file)))
+    #+(and target-os-darwin (not use-clang))
+    (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file))
     (error "Add support for running external clang to cmpbundle.lsp>generate-compile-command on this system")))
 
 

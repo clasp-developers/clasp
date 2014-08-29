@@ -635,11 +635,18 @@ namespace frame
 
 };
 
+
+#if 1
 #define ALLOC_STACK_VALUE_FRAME(frameImpl,frame,numValues)     \
     frame::ElementType frameImpl[frame::FrameSize(numValues)]; \
     gctools::smart_ptr<core::STACK_FRAME> frame(frameImpl);    \
     frame::InitializeStackValueFrame(frameImpl,numValues)
-
+#else
+#define ALLOC_STACK_VALUE_FRAME(frameImpl,frame,numValues)     \
+    frame::ElementType* frameImpl = (frame::ElementType*)(alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues))); \
+    gctools::smart_ptr<core::STACK_FRAME> frame(frameImpl);    \
+    frame::InitializeStackValueFrame(frameImpl,numValues)
+#endif
 
 
 #endif
