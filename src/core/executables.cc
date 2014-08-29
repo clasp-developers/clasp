@@ -41,6 +41,8 @@ namespace core
     {
         return this->kind == kw::_sym_macro;
     }
+    int FunctionClosure::sourceFileInfoHandle() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->fileHandle() : 0; };
+
     int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->lineNumber() : 0; };
     int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->column() : 0; };
 

@@ -11,7 +11,8 @@ namespace core
 
     Str_sp cl_char_name(Character_sp och);
 
-    int brcl_string_case(Str_sp s);
+    int clasp_string_case(Str_sp s);
+    Fixnum clasp_digitp( int ch, int basis );
 
     bool af_standard_char_p(Character_sp ch);
 
@@ -261,6 +262,15 @@ TRANSLATE(core::Character_O);
 
 namespace core {
     claspChar clasp_charCode(T_sp elt); // like ecl_char_code
+    bool clasp_invalid_character_p(int c);
+
+    claspCharacter clasp_char_upcase(claspCharacter code);
+
+    claspCharacter clasp_char_downcase(claspCharacter code);
+    bool clasp_alphanumericp(claspCharacter i);
+
+
+
 };
 
 #endif

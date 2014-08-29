@@ -1278,6 +1278,7 @@ namespace core
         virtual bool compiledP() const { return false; };
         virtual bool interpretedP() const { return false; };
         virtual bool builtinP() const { return false;};
+        virtual int sourceFileInfoHandle() const = 0;
         virtual int lineNumber() const { return 0;}
         virtual int column() const { return 0;};
         virtual LambdaListHandler_sp lambdaListHandler() const = 0;

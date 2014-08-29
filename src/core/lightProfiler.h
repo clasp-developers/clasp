@@ -39,7 +39,7 @@ private:
 	uint _Child;
 	clock_t		_StartTime;
 public:
-	LightTimer(LightProfiler* profiler);
+	LightTimer(LightProfiler* profiler=NULL);
 	void setup(uint id, const string& description, uint parent )
 	{
 	    this->_Id = id;

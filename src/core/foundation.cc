@@ -657,6 +657,8 @@ namespace core
             stringstream ss;
             ss << obj.fixnum();
             return ss.str();
+        } else if ( obj.symbolp() ) {
+            ss << obj->
         } else if ( obj.framep() ) {
             stringstream ss;
             ss << "Frame@" << (void*)(obj.frame());

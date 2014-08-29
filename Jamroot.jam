@@ -51,6 +51,7 @@ project clasp : requirements
 #        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #         <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #         <define>CONFIG_THREAD_SINGLE #  Single threaded
+          <define>USE_CLASP_DYNAMIC_CAST
 #---------
 #       <define>DEBUG_CL_SYMBOLS
 #       <define>DEBUG_LOAD_TIME_VALUES   # generate lots of debugging information when accessing ltvs

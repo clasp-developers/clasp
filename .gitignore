@@ -7,7 +7,6 @@
 *.a
 *.dylib
 \#*\#
-/build
 *.bundle
 *.out
 boost_build_v2/b2

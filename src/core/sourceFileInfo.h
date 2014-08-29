@@ -16,8 +16,8 @@ namespace core
 	LISP_CLASS(core,CorePkg,SourceFileInfo_O,"SourceFileInfo");
 	DECLARE_INIT();
     public:
-	static SourceFileInfo_sp create(const string& fileNamePath);
-	static SourceFileInfo_sp create(Pathname_sp path);
+	static SourceFileInfo_sp create(const string& fileNamePath, int handle);
+	static SourceFileInfo_sp create(Pathname_sp path, int handle);
 
     public: // ctor/dtor for classes with shared virtual base
 	explicit SourceFileInfo_O();
@@ -28,7 +28,9 @@ namespace core
 	/*! Allocated buffer that stores the file name until the program exits */
 	char* 	_PermanentPathName;
 	char*	_PermanentFileName;
+        int     _FileHandle;
     public: // Functions here
+        int fileHandle() const { return this->_FileHandle; };
 	string fileName() const;
 	string parentPathName() const;
 	string namestring() const;
@@ -73,7 +75,8 @@ namespace core
         }
 
         SourceFileInfo_sp sourceFileInfo(SourceManager_sp sm) const;
-            
+
+        int fileHandle() const { return this->_FileId; };
         uint lineNumber() const { return this->_LineNumber; };
         int column() const { return this->_Column; };
     public:

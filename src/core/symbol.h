@@ -22,6 +22,7 @@
 
 namespace core {
 
+
     SMART(Package);
     SMART(Function);
 
@@ -156,6 +157,8 @@ namespace core {
 	Symbol_sp exportYourself(bool doit=true);
 
 	void dump();
+
+        void __write__(T_sp stream) const; // in write_symbol.cc
 
 	string __repr__() const;
 	string __str__() { return _rep_(this);};

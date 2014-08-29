@@ -1007,6 +1007,22 @@ namespace core
 	this->_Syntax = HashTableEql_O::create_default();
     }
 
+
+    clasp_readtable_case ReadTable_O::getReadTableCaseAsEnum()
+    {
+        Symbol_sp ccase = this->_Case;
+        if ( ccase == kw::_sym_upcase ) {
+            return clasp_case_upcase;
+        } else if ( ccase == kw::_sym_downcase ) {
+            return clasp_case_downcase;
+        } else if ( ccase == kw::_sym_invert ) {
+            return clasp_case_invert;
+        } else if ( ccase == kw::_sym_preserve ) {
+            return clasp_case_preserve;
+        }
+        SIMPLE_ERROR(BF("Unknown readtable case: %s") % _rep_(this->_Case));
+    }
+
     Symbol_sp ReadTable_O::setf_readtable_case( Symbol_sp newCase)
     {_OF();
 	if ( (newCase == kw::_sym_upcase)

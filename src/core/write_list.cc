@@ -75,7 +75,7 @@ namespace core
 	    }
 	}
 	circle = brcl_print_circle();
-	if (brcl_print_readably()) {
+	if (clasp_print_readably()) {
 	    print_level = MOST_POSITIVE_FIXNUM;
 	    print_length = MOST_POSITIVE_FIXNUM;
 	} else {

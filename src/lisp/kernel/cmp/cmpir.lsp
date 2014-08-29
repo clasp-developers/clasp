@@ -482,7 +482,7 @@
 ;;  "Control if low-level block tracing is on or off"
 (defparameter *next-low-level-trace-index* 1000000001)
 (defmacro irc-low-level-trace (&optional where)
-  `(if (or (member :all ',cmp:*low-level-trace*) (member ,where ',cmp:*low-level-trace*))
+  `(if (or (member :all ',cmp:*low-level-trace*) (member ,where cmp:*low-level-trace*))
        (progn
 	 (let ((llt (get-function-or-error *the-module* "lowLevelTrace")))
 	   (llvm-sys:create-call1 *irbuilder* llt (jit-constant-i32 *next-low-level-trace-index*) ""))
@@ -615,6 +615,7 @@
 			      )
 			     &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
+  (cmp-log "Expanding with-new-function name: %s\n" function-name)
   (let ((cleanup-block-gs (gensym "cleanup-block"))
 	(traceid-gs (gensym "traceid"))
 	(irbuilder-alloca (gensym))
@@ -638,9 +639,11 @@
 	       (let* ((*gv-current-function-name* (jit-make-global-string-ptr *current-function-name* "fn-name"))
 		      (*exception-handler-cleanup-block* (irc-get-exception-handler-cleanup-block ,fn-env))
 		      (*exception-clause-types-to-handle* nil))
+                 (cmp-log "with-landing-pad around body\n")
 		 (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
 		   ,@body
 		   )
+                 (cmp-log "with-landing-pad around irc-function-cleanup-and-return\n")
 		 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
 		   (irc-function-cleanup-and-return ,fn-env #||,*current-invocation-history-frame*||#))
 		 ,fn)))))
@@ -679,10 +682,10 @@ and then the irbuilder-alloca, irbuilder-body"
     ;; Setup exception handling and cleanup landing pad
     (irc-set-function-for-environment func-env fn)
     (with-irbuilder (func-env irbuilder-cur)
-      (let* ((body (irc-basic-block-create "body" fn))
-	     (entry-branch (irc-br body)))
+      (let* ((body-block (irc-basic-block-create "body" fn))
+	     (entry-branch (irc-br body-block)))
 	(llvm-sys:set-insert-point-instruction irbuilder-alloca entry-branch)
-	(llvm-sys:set-insert-point-basic-block irbuilder-body body)))
+	(llvm-sys:set-insert-point-basic-block irbuilder-body body-block)))
     (irc-setup-cleanup-return-block func-env)
     (irc-setup-cleanup-landing-pad-block func-env) ;; used in irc-function-cleanup-and-return
     (setq cleanup-block (irc-setup-exception-handler-cleanup-block func-env)) ;; used in irc-function-cleanup-and-return

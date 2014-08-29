@@ -6919,6 +6919,7 @@ void initialize_lispStream()
         Defun(streamColumn);
         ClDefun(make_string_input_stream);
         ClDefun(file_length);
+        ClDefun(makeBroadcastStream);
     }
 
 

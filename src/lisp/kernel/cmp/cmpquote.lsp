@@ -357,6 +357,7 @@ and walk the car and cdr"
 			(pn-value-ptr (llvm-sys:create-in-bounds-gep
 				       *irbuilder*
 				       pn-gv (list (jit-constant-i32 0) (jit-constant-i32 0)) "pn")))
+                   (irc-low-level-trace :ltv)
 		   (irc-intrinsic "internSymbol_tsp" ltv-temp sn-value-ptr pn-value-ptr))
 		 (irc-intrinsic "makeSymbol_tsp" ltv-temp sn-value-ptr)
 		 ))))
@@ -623,6 +624,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 			(pn-value-ptr (llvm-sys:create-in-bounds-gep
 				       *irbuilder*
 				       pn-gv (list (jit-constant-i32 0) (jit-constant-i32 0)) "pn")))
+                   (irc-low-level-trace :ltv)
 		   (irc-intrinsic "internSymbol_symsp" lts-temp sn-value-ptr pn-value-ptr))
 		 (irc-intrinsic "makeSymbol_symsp" lts-temp sn-value-ptr)
 		 ))
@@ -735,7 +737,11 @@ marshaling of compiled quoted data"
 								 *load-time-value-holder-global-var*
 								 *gv-source-path-name*
 								 (jit-constant-i32 ltv-value-counter)
-								 (jit-constant-i32 ltv-symbol-counter))))
+								 (jit-constant-i32 ltv-symbol-counter))
+                                                       (irc-intrinsic "assignSourceFileInfoHandle"
+                                                                      *gv-source-path-name*
+                                                                      *gv-source-file-info-handle*)
+                                                       ))
 	   (initialize-special-load-time-values ,fn-env-gs)
 	   ,@body)
 	 (with-irbuilder (,fn-env-gs *irbuilder-ltv-function-body*)

@@ -39,6 +39,8 @@ LightTimer::LightTimer(LightProfiler* profiler) : _Profiler(profiler), _Id(0), _
     } else {
 	THROW_HARD_ERROR(BF("Could not determine clock conversion"));
     }
+#else
+// #error "What initialization needs to be done for LightTimer on non DARWIN systems"
 #endif
 }
 

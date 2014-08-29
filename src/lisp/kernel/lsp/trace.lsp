@@ -156,27 +156,38 @@ all functions."
 	   (floor indent 4)
 	 (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
 	 (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-       (format *trace-output*
-	       "~D> (~S~{ ~S~})~%"
-	       *trace-level* fname vals))
+       #+formatter(format *trace-output*
+                          "~D> (~S~{ ~S~})~%"
+                          *trace-level* fname vals)
+       #-formatter(bformat *trace-output*
+                           "%s> %s %s\n"
+                           *trace-level* fname vals)
+       )
       (EXIT
        (multiple-value-bind (bars rem)
 	   (floor indent 4)
 	 (dotimes (i bars) (princ "|   " *trace-output*))
 	 (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-       (format *trace-output*
-	       "<~D (~S~{ ~S~})~%"
-	       *trace-level*
-	       fname vals)
+       #+formatter(format *trace-output*
+                          "<~D (~S~{ ~S~})~%"
+                          *trace-level*
+                          fname vals)
+       #-formatter(bformat *trace-output*
+                           "<%s %s %s\n"
+                           *trace-level* fname vals)
+
        ))
     (when extras
       (multiple-value-bind (bars rem)
 	  (floor indent 4)
 	(dotimes (i bars) (princ "|   " *trace-output*))
 	(when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-      (format *trace-output*
-	      "~0,4@T\\\\ ~{ ~S~}~%"
-	      extras))))
+      #+formatter (format *trace-output*
+                          "~0,4@T\\\\ ~{ ~S~}~%"
+                          extras)
+      #-formatter (bformat *trace-output*
+                           "      %s\n" extras)
+      )))
 
 (defun trace-record (fname)
   (declare (si::c-local))

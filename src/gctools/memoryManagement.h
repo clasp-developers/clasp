@@ -168,6 +168,26 @@ namespace gctools {
 
 };
 
+
+
+namespace gctools {
+    template <typename TPTR, typename O>
+    struct DynamicCast {
+        static bool isA(O* ptr) {
+            return (dynamic_cast<TPTR>(ptr)!=NULL);
+        }
+        static TPTR castOrNULL(O* client) {
+            return dynamic_cast<TPTR>(client);
+        }
+    };
+};
+
+
+
+
+
+
+
 #ifdef USE_BOEHM
 #include "boehmGarbageCollection.h"
 #endif

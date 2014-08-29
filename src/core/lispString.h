@@ -34,7 +34,7 @@ public: // Functions here
 
 
     virtual int pushCharExtend(claspChar c, int extension = 0) {SUBIMP(); };
-    virtual int& fillPointer() const {SUBIMP();};
+    virtual int fillPointer() const {SUBIMP();};
 
 
 };

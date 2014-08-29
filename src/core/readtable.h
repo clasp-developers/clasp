@@ -9,6 +9,13 @@
 namespace core
 {
 
+enum clasp_readtable_case {
+	clasp_case_upcase,
+	clasp_case_downcase,
+	clasp_case_invert,
+	clasp_case_preserve
+};
+
 
     FORWARD(ReadTable);
     class ReadTable_O : public T_O
@@ -41,6 +48,8 @@ namespace core
 	string __repr__() const;
 
 	Symbol_sp setf_readtable_case(Symbol_sp newCase);
+        clasp_readtable_case getReadTableCaseAsEnum();
+        Symbol_sp getReadTableCase() const { return this->_Case;};
 
 	/*! syntax-type returns the syntax type of a character */
 	Symbol_sp syntax_type(Character_sp ch) const;

@@ -15,11 +15,34 @@
 namespace core
 {
 
+claspCharacter
+clasp_char_upcase(claspCharacter code)
+{
+	return toupper(code);
+}
+
+claspCharacter
+clasp_char_downcase(claspCharacter code)
+{
+	return tolower(code);
+}
+
+bool
+clasp_alphanumericp(claspCharacter i)
+{
+	return isalnum(i);
+}
+
+
+bool
+clasp_invalid_character_p(int c)
+{
+	return (c <= 32) || (c == 127);
+}
 
 
 
-
-int brcl_string_case(Str_sp s)
+int clasp_string_case(Str_sp s)
 {
     int upcase = 0;
     for (Str_O::iterator it = s->begin(); it!=s->end(); ++it ) {
@@ -486,7 +509,7 @@ namespace core
     };
 
 
-    Fixnum brcl_digitp( int ch, int basis )
+    Fixnum clasp_digitp( int ch, int basis )
     {
 	if (('0' <= ch) && (ch<='9') && (ch<'0'+basis))
 	    return ch-'0';
@@ -514,7 +537,7 @@ namespace core
 	if ( basis < 2 || basis > 36 ) {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,radix,Integer_O::makeIntegerType(2,36));
 	}
-	Fixnum value = brcl_digitp(c->toInt(),basis);
+	Fixnum value = clasp_digitp(c->toInt(),basis);
 	return (value<0) ? _Nil<Fixnum_O>() : Fixnum_O::create(value);
     };
 

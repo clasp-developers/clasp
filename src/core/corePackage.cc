@@ -59,6 +59,8 @@ namespace core
 {
     const char* CorePkg_nicknames[] = { "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/ };
 
+    SYMBOL_EXPORT_SC_(ClPkg,nil);
+
     SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);
     SYMBOL_EXPORT_SC_(KeywordPkg,cr);
@@ -717,16 +719,19 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 #undef CorePkg_EXPORT
 	};
 	/* Set the values of some essential global symbols */
-#if 0
-	_sym_nil->initialize();
-	_sym_nil->_Name = "NIL";
-	_lisp->_CorePackage->_add_symbol_to_package(_sym_nil);
-	_sym_nil->_WeakPackage = _lisp->_CorePackage;
-	_sym_nil->setf_symbolValue(_Nil<T_O>());
-	_sym_nil->makeSpecial();
-	_sym_nil->exportYourself();
-	_sym_t = cl::_sym_T_O;
+	cl::_sym_nil->initialize();
+	cl::_sym_nil->_Name = Str_O::create("NIL");
+#if 1
+        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );
+//	_lisp->_Roots._CommonLispPackage->add_symbol_to_package("NIL"cl::_sym_nil);
+	cl::_sym_nil->_HomePackage = _lisp->_Roots._CommonLispPackage;
+#else 
+	_lisp->_CoreLispPackage->_add_symbol_to_package(cl::_sym_nil);
+	cl::_sym_nil->_WeakPackage = _lisp->_CoreLispPackage;
 #endif
+	cl::_sym_nil->setf_symbolValue(_Nil<T_O>());
+	cl::_sym_nil->makeSpecial();
+	cl::_sym_nil->exportYourself();
         _lisp->commonLispPackage()->add_symbol_to_package("NIL",_Nil<Symbol_O>(),true);
 	_lisp->_Roots._TrueObject = cl::_sym_T_O;
 	cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);

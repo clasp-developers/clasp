@@ -44,6 +44,7 @@ namespace core
 	virtual void setFromChars(const char* v) { this->Str_O::set(v); this->_FillPointer = this->_Contents.size();}
 	virtual string get() const { return std::string(this->_Contents.data(),this->_FillPointer);};
 	virtual uint size() const { return this->_FillPointer;};
+        virtual int fillPointer() const { return this->_FillPointer;};
 
         
         bool hasFillPointerP() const { return true;};

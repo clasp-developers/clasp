@@ -316,6 +316,8 @@ namespace core
 	uint			_StackSampleSize;
 	uint			_StackSampleMax;
     public:
+        bool                    _PrintSymbolsProperly;
+    public:
         typedef char*           Argv[];
         /*!Raw argc*/
         int                     _Argc;

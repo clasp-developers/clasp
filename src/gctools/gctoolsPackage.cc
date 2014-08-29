@@ -528,7 +528,7 @@ namespace gctools {
     void af_cleanup()
     {_G();
 #ifdef USE_MPS
-        int messages = processMpsMessages();
+        processMpsMessages();
 #endif
     };
 

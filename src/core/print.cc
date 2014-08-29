@@ -16,7 +16,7 @@
 namespace core
 {
 
-    int brcl_print_base(void)
+    int clasp_print_base(void)
     {
 	T_sp object = cl::_sym_STARprint_baseSTAR->symbolValue();
 	int base;
@@ -91,7 +91,7 @@ namespace core
 	return cl::_sym_STARprint_radixSTAR->symbolValue().isTrue();
     }
 
-    Symbol_sp brcl_print_case(void)
+    Symbol_sp clasp_print_case(void)
     {
 	T_sp output = cl::_sym_STARprint_caseSTAR->symbolValue();
 	if ( Symbol_sp soutput = output.asOrNull<Symbol_O>() )
@@ -109,7 +109,7 @@ namespace core
 		     % _rep_(output) );
     }
 
-    bool brcl_print_gensym(void)
+    bool clasp_print_gensym(void)
     {
 	return cl::_sym_STARprint_gensymSTAR->symbolValue().isTrue();
     }
@@ -119,12 +119,12 @@ namespace core
 	return cl::_sym_STARprint_arraySTAR->symbolValue().isTrue();
     }
 
-    bool brcl_print_readably(void)
+    bool clasp_print_readably(void)
     {
 	return cl::_sym_STARprint_readablySTAR->symbolValue().isTrue();
     }
 
-    bool brcl_print_escape(void)
+    bool clasp_print_escape(void)
     {
 	return cl::_sym_STARprint_escapeSTAR->symbolValue().isTrue();
     }
@@ -195,7 +195,7 @@ namespace core
     void af_printUnreadableObjectFunction(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function)
     {_G();
 	T_sp stream = coerce::outputStreamDesignator(ostream);
-	if ( brcl_print_readably() ) {
+	if ( clasp_print_readably() ) {
 	    PRINT_NOT_READABLE_ERROR(o);
 	} else {
             stringstream ss;

@@ -10,15 +10,15 @@
 namespace core
 {
 
-    int brcl_print_base();
+    int clasp_print_base();
     int brcl_print_level();
     int brcl_print_length();
     bool brcl_print_radix();
-    Symbol_sp brcl_print_case();
-    bool brcl_print_gensym();
+    Symbol_sp clasp_print_case();
+    bool clasp_print_gensym();
     bool brcl_print_array();
-    bool brcl_print_readably();
-    bool brcl_print_escape();
+    bool clasp_print_readably();
+    bool clasp_print_escape();
     bool brcl_print_circle();
 
     T_mv af_write(T_sp x, T_sp strm, T_sp array, T_sp base,
