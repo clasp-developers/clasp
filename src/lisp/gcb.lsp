@@ -2392,9 +2392,16 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-macro-name ((var cxxrecord-ctype)) "RECORD_FIX")
 
 
-(defun generate-code-for-global-variables (stream analysis)
+(defun generate-code-for-global-non-symbol-variables (stream analysis)
   (maphash (lambda (k v)
-             (when (fix-variable-p v analysis)
+             (when (and (fix-variable-p v analysis) (not (search "_sym_" (global-variable-name v))))
+               (format stream " ~a(~a);~%" (fix-macro-name v) (global-variable-name v))))
+           (project-global-variables (analysis-project analysis)))
+  )
+
+(defun generate-code-for-global-symbols (stream analysis)
+  (maphash (lambda (k v)
+             (when (and (fix-variable-p v analysis) (search "_sym_" (global-variable-name v)))
                (format stream " ~a(~a);~%" (fix-macro-name v) (global-variable-name v))))
            (project-global-variables (analysis-project analysis)))
   )
@@ -2445,8 +2452,11 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (build-mps-uses-finalize stream analysis)
     (format stream "#endif // defined(GC_OBJ_USES_FINALIZE)~%")
     (format stream "#if defined(GC_GLOBALS)~%")
-    (generate-code-for-global-variables stream analysis)
+    (generate-code-for-global-non-symbol-variables stream analysis)
     (format stream "#endif // defined(GC_GLOBALS)~%")
+    (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
+    (generate-code-for-global-symbols stream analysis)
+    (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%")
     )))
 
 ;; ----------------------------------------------------------------------
