@@ -21,7 +21,7 @@
 	     (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-pathname*) "source-pathname")))
 	(let ((fn (with-new-function
 		      (bundle-func func-env
-				   :function-name (jit-function-name output-pathname)
+				   :function-name output-pathname
 				   :parent-env nil
 				   :linkage 'llvm-sys:external-linkage
                                    :function-type +fn-void+
@@ -224,6 +224,7 @@
                           debug-ir
                           (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
+         (output-pathname (pathname output-pathname))
          (part-pathnames lisp-bitcode-files)
 ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (make-pathname :type "bc" :defaults output-pathname))

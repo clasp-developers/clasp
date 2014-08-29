@@ -212,7 +212,7 @@ No DIBuilder is defined for the default module")
   (cond
     ((pathnamep lname) (bformat nil "__MAIN_%s" (string-upcase (pathname-name lname))))
     ((symbolp lname) (bformat nil "FN-SYMB.%s" (symbol-name lname)))
-    ((stringp lname) lname)
+    ((stringp lname) (jit-function-name (pathname lname)))
     ((and (consp lname) (eq (car lname) 'setf)) (bformat nil "FN-SETF.%s" (symbol-name (cadr lname))))
     (t (error "Illegal lisp function name[~a]" lname))))
 (export 'jit-function-name)
