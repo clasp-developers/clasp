@@ -1,0 +1,256 @@
+/* -*- mode: c; c-basic-offset: 8 -*- */
+/*
+    write_symbol.d -- print a symbol.
+*/
+/*
+    Copyright (c) 1984, Taiichi Yuasa and Masami Hagiya.
+    Copyright (c) 1990, Giuseppe Attardi.
+    Copyright (c) 2001, Juan Jose Garcia Ripoll.
+
+    ECL is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    See file '../Copyright' for full details.
+*/
+
+#include "foundation.h"
+#include "object.h"
+#include "symbol.h"
+#include "lispStream.h"
+#include "character.h"
+#include "strWithFillPtr.h"
+#include "package.h"
+#include "symbolTable.h"
+#include "readtable.h"
+#include "print.h"
+
+namespace core {
+
+    static bool
+    potential_number_p(Str_sp s, int base)
+    {
+	/* See ANSI 2.3.1.1 */
+	static cl_index i, l;
+        claspCharacter c;
+	/* A potential number must contain at least one digit */
+	bool some_digit = false;
+
+	l = s->length();// .as<StrWithFillPtr_O>()->fillPointer();
+	if (l == 0)
+            return false;
+	c = clasp_char(s, 0);
+
+	/* A potential number must begin with a digit, sign or
+           extension character (^ _) */
+	if (clasp_digitp(c,base) >= 0)
+            some_digit = true;
+	else if (c != '+' && c != '-' && c != '^' && c != '_')
+            return false;
+
+	/* A potential number cannot end with a sign */
+        c = clasp_char(s, l-1);
+	if (c == '+' || c == '-')
+            return false;
+
+	for (i = 1;  i < l;  i++) {
+            c = clasp_char(s, i);
+            /* It can only contain digits, signs, ratio markers,
+             * extension characters and number markers. Number
+             * markers are letters, but two adjacent letters fail
+             * to be a number marker. */
+            if (clasp_digitp(c, base) >= 0) {
+                some_digit = true;
+            } else if (c == '+' || c == '-' ||
+                       c == '/' || c == '.' || c == '^' || c == '_') {
+                continue;
+            } else if (isalpha(c) &&
+                       (((i+1) >= l) || !isalpha(clasp_char(s, i+1)))) {
+                continue;
+            } else {
+                return false;
+            }
+	}
+	return some_digit;
+    }
+
+#define needs_to_be_inverted(s) (clasp_string_case(s) != 0)
+
+    static bool
+    all_dots(Str_sp s)
+    {
+	for (cl_index i = 0, iEnd(s->length());  i < iEnd; ++i)
+            if (clasp_char(s, i) != '.')
+                return 0;
+	return 1;
+    }
+
+    static bool
+    needs_to_be_escaped(Str_sp s, T_sp readtable, T_sp print_case)
+    {
+	int action = readtable.as<ReadTable_O>()->getReadTableCaseAsEnum();
+	if (potential_number_p(s, clasp_print_base()))
+            return 1;
+	/* The value of *PRINT-ESCAPE* is T. We need to check whether the
+	 * symbol name S needs to be escaped. This will happen if it has some
+	 * strange character, or if it has a lowercase character (because such
+	 * a character cannot be read with the standard readtable) or if the
+	 * string has to be escaped according to readtable case and the rules
+	 * of 22.1.3.3.2. */
+	for (cl_index i = 0, iEnd(s->length()); i < iEnd;  i++) {
+            int c = clasp_char(s, i);
+            Character_sp cc = Character_O::create(c);
+//            int syntax = clasp_readtable_get(readtable, c, 0);
+            Symbol_sp syntax = readtable.as<ReadTable_O>()->syntax_type(cc);
+#if 0
+            if (syntax != cat_constituent ||
+                clasp_invalid_character_p(c) ||
+                (c) == ':')
+                return 1;
+#endif
+            if ( syntax != kw::_sym_constituent_character ||
+                 clasp_invalid_character_p(c) ||
+                 (c) == ':' )
+                return 1;
+            if ((action == clasp_case_downcase) && isupper(c))
+                return 1;
+            if (islower(c))
+                return 1;
+	}
+	return 0;
+    }
+
+#define needs_to_be_inverted(s) (clasp_string_case(s) != 0)
+
+    static void
+    write_symbol_string(Str_sp s, int action, T_sp print_case,
+                        T_sp stream, bool escape)
+    {
+	bool capitalize;
+	if (action == clasp_case_invert) {
+            if (!needs_to_be_inverted(s))
+                action = clasp_case_preserve;
+	}
+	if (escape)
+            clasp_write_char('|', stream);
+	capitalize = 1;
+	for (cl_index i = 0, iEnd(s->length());  i < iEnd;  i++) {
+            int c = clasp_char(s, i);
+            if (escape) {
+                if (c == '|' || c == '\\') {
+                    clasp_write_char('\\', stream);
+                }
+            } else if (action != clasp_case_preserve) {
+                if (isupper(c)) {
+                    if ((action == clasp_case_invert) ||
+                        ((action == clasp_case_upcase) &&
+                         ((print_case == kw::_sym_downcase) ||
+                          ((print_case == kw::_sym_capitalize) && !capitalize))))
+                    {
+                        c = clasp_char_downcase(c);
+                    }
+                    capitalize = 0;
+                } else if (islower(c)) {
+                    if ((action == clasp_case_invert) ||
+                        ((action == clasp_case_downcase) &&
+                         ((print_case == kw::_sym_upcase) ||
+                          ((print_case == kw::_sym_capitalize) && capitalize))))
+                    {
+                        c = clasp_char_upcase(c);
+                    }
+                    capitalize = 0;
+                } else {
+                    capitalize = !clasp_alphanumericp(c);
+                }
+            }
+            clasp_write_char(c, stream);
+	}
+	if (escape)
+            clasp_write_char('|', stream);
+    }
+
+    static bool
+    forced_print_package(T_sp package)
+    {
+	T_sp print_package = _sym_STARprintPackageSTAR->symbolValue();
+	return !Null(print_package) && (print_package != package);
+    }
+
+    void
+    clasp_write_symbol(Symbol_sp x, T_sp stream)
+    {
+	ReadTable_sp readtable = _lisp->getCurrentReadTable();
+	T_sp print_case = clasp_print_case();
+	Package_sp package;
+	Str_sp name;
+	bool print_readably = clasp_print_readably();
+	bool forced_package = 0;
+
+	if (Null(x)) {
+            package = cl::_sym_nil->homePackage();
+            name = cl::_sym_nil->symbolName();
+	} else {
+            package = x.as<Symbol_O>()->homePackage();
+            name = x.as<Symbol_O>()->symbolName();
+	}
+
+	if (!print_readably && !clasp_print_escape()) {
+            write_symbol_string(name, readtable.as<ReadTable_O>()->getReadTableCaseAsEnum(),
+                                print_case, stream, 0);
+            return;
+	}
+	/* From here on, print-escape is true which means that it should
+	 * be possible to recover the same symbol by reading it with
+	 * the standard readtable (which has readtable-case = :UPCASE)
+	 */
+	if (Null(package)) {
+            if (print_readably || clasp_print_gensym())
+                clasp_write_string("#:", stream);
+	} else if (package == _lisp->keywordPackage()) {
+            clasp_write_char(':', stream);
+	} else if ((forced_package = forced_print_package(package)))
+        {
+            T_mv symbol_mv = af_findSymbol(name->get(),_lisp->getCurrentPackage());
+            Symbol_sp sym = symbol_mv;
+            Symbol_sp intern_flag = symbol_mv.valueGet(1).as<Symbol_O>();
+            if ( (sym != x) || intern_flag.nilp() )
+
+                // if (_lisp->findSymbol(name, _lisp->getCurrentPackage(), &intern_flag) != x || (intern_flag == 0))
+            {
+                T_sp name = Str_O::create(package->packageName());
+                write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
+                                    print_case, stream,
+                                    needs_to_be_escaped(name, readtable, print_case));
+                Symbol_mv sym2_mv = af_findSymbol(x->symbolName()->get(),package);
+                Symbol_sp sym2 = sym2_mv;
+                Symbol_sp intern_flag2 = sym2_mv.valueGet(1).as<Symbol_O>();
+                if (sym2 != x)
+                    SIMPLE_ERROR(BF("Cannot print symbol[%s]") % _rep_(x) );
+                if (intern_flag2 == kw::_sym_internal || forced_package) {
+                    clasp_write_string("::", stream);
+                } else if (intern_flag2 == kw::_sym_external) {
+                    clasp_write_char(':', stream);
+                } else {
+                    SIMPLE_ERROR(BF("Pathological symbol --- cannot print"));
+                }
+            }
+        }
+	write_symbol_string(name, readtable->getReadTableCaseAsEnum(), print_case, stream,
+			    needs_to_be_escaped(name, readtable, print_case) ||
+			    all_dots(name));
+    }
+
+
+    void Symbol_O::__write__(T_sp stream) const
+    {
+        if ( _lisp->_PrintSymbolsProperly ) {
+            clasp_write_symbol(this->asSmartPtr(),stream);
+        } else {
+            string name = this->formattedName(false);
+            clasp_write_string(name,stream);
+        }
+    }
+
+
+};
