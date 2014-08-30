@@ -24,7 +24,7 @@ namespace core
     {
 	if (arg.nilp()) {
             return 0;
-        } else if ( Cons_sp l = arg.asOrNull<Cons_O>() ) {
+        } else if (  Cons_sp l = arg.asOrNull<Cons_O>() ) {
 	    return l->length();
 	} else if ( Vector_sp vec = arg.asOrNull<Vector_O>() ) {
             return vec->length();
