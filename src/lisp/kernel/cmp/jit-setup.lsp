@@ -210,9 +210,9 @@ No DIBuilder is defined for the default module")
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
   (cond
-    ((pathnamep lname) (bformat nil "__MAIN_%s" (string-upcase (pathname-name lname))))
+    ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
     ((symbolp lname) (bformat nil "FN-SYMB.%s" (symbol-name lname)))
-    ((stringp lname) (jit-function-name (pathname lname)))
+    ((stringp lname) lname)
     ((and (consp lname) (eq (car lname) 'setf)) (bformat nil "FN-SETF.%s" (symbol-name (cadr lname))))
     (t (error "Illegal lisp function name[~a]" lname))))
 (export 'jit-function-name)

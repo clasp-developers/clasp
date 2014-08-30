@@ -582,7 +582,7 @@ Boehm and MPS use a single pointer"
 (defvar *gv-source-file-info-handle* nil
   "Store a global value that stores an integer handle assigned at load-time that uniquely 
 identifies the current source file.  Used for tracing and debugging")
-(defvar *current-line-number* 0 "Store the line number of the currently compiled form")
+(defvar *current-lineno* 0 "Store the line number of the currently compiled form")
 (defvar *current-column* 0 "Store the column of the currently compiled form")
 (defvar *current-form* nil "The current form being compiled")
 (defvar *current-env* nil "Current environment")

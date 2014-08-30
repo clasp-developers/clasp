@@ -13872,7 +13872,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(llvmo::_sym_DW_TAG_variant_part);
  SMART_PTR_FIX(core::_sym_database_dir);
  SMART_PTR_FIX(cl::_sym_arithmeticError);
- SMART_PTR_FIX(asttooling::_sym_smartPtr);
  SMART_PTR_FIX(llvmo::_sym_DW_TAG_imported_declaration);
  SMART_PTR_FIX(llvmo::_sym_Xor);
  SMART_PTR_FIX(core::_sym_STARprint_source_code_consSTAR);
@@ -13934,7 +13933,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(core::_sym_member1);
  SMART_PTR_FIX(sockets::_sym_TCP_NODELAY);
  SMART_PTR_FIX(sockets::_sym__PLUS_eagain_PLUS_);
- SMART_PTR_FIX(asttooling::_sym_inheritance);
  SMART_PTR_FIX(sockets::_sym__PLUS_af_inet_PLUS_);
  SMART_PTR_FIX(llvmo::_sym_FPToUI);
  SMART_PTR_FIX(core::_sym_slBoundp);
@@ -13963,7 +13961,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(cl::_sym__PLUS_);
  SMART_PTR_FIX(llvmo::_sym_DW_TAG_enumerator);
  SMART_PTR_FIX(core::_sym_coerceToFilePathname);
- SMART_PTR_FIX(asttooling::_sym_testStructureCreation);
  SMART_PTR_FIX(cl::_sym_AMPenvironment);
  SMART_PTR_FIX(cl::_sym_null);
  SMART_PTR_FIX(cl::_sym_string_lessp);
@@ -14096,13 +14093,11 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(llvmo::_sym_module_get_function_list);
  SMART_PTR_FIX(cffi::_sym_int8);
  SMART_PTR_FIX(core::_sym_IntArray_O);
- SMART_PTR_FIX(asttooling::_sym_parameters);
  SMART_PTR_FIX(cl::_sym_imagpart);
  SMART_PTR_FIX(kw::_sym_rtld_default);
  SMART_PTR_FIX(core::_sym_sharp_left_parenthesis);
  SMART_PTR_FIX(core::_sym_ensureSingleDispatchGenericFunction);
  SMART_PTR_FIX(cl::_sym_standard_char);
- SMART_PTR_FIX(asttooling::_sym_astSearch);
  SMART_PTR_FIX(cl::_sym_catch);
  SMART_PTR_FIX(llvmo::_sym_StoreInst_O);
  SMART_PTR_FIX(llvmo::_sym_FSub);
@@ -14265,7 +14260,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(kw::_sym_full);
  SMART_PTR_FIX(cl::_sym_vectorPush);
  SMART_PTR_FIX(core::_sym_dot);
- SMART_PTR_FIX(asttooling::_sym_garbageCollectorScanner);
  SMART_PTR_FIX(llvmo::_sym_FCMP_FALSE);
  SMART_PTR_FIX(llvmo::_sym_IRBuilder_O);
  SMART_PTR_FIX(kw::_sym_absolute);
@@ -14330,7 +14324,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(comp::_sym_compileInEnv);
  SMART_PTR_FIX(llvmo::_sym_DIType_O);
  SMART_PTR_FIX(llvmo::_sym_ModulePass_O);
- SMART_PTR_FIX(asttooling::_sym_globalVariables);
  SMART_PTR_FIX(cl::_sym_two_way_stream_input_stream);
  SMART_PTR_FIX(cl::_sym_mismatch);
  SMART_PTR_FIX(core::_sym_lexical);
@@ -14530,7 +14523,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(llvmo::_sym_GlobalValue_O);
  SMART_PTR_FIX(llvmo::_sym_TerminatorInst_O);
  SMART_PTR_FIX(kw::_sym_external);
- SMART_PTR_FIX(asttooling::_sym_localVariables);
  SMART_PTR_FIX(llvmo::_sym_ExternalLinkage);
  SMART_PTR_FIX(cl::_sym_STARstandard_outputSTAR);
  SMART_PTR_FIX(llvmo::_sym_DW_TAG_access_declaration);
@@ -14585,7 +14577,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(core::_sym_isAssignableTo);
  SMART_PTR_FIX(core::_sym_makeRegex);
  SMART_PTR_FIX(gray::_sym_stream_listen);
- SMART_PTR_FIX(asttooling::_sym_astRewriteRepr);
  SMART_PTR_FIX(cl::_sym_echo_stream_output_stream);
  SMART_PTR_FIX(cl::_sym_nextMethodP);
  SMART_PTR_FIX(core::_sym_eltSet);
@@ -14761,7 +14752,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(cl::_sym_packageError);
  SMART_PTR_FIX(cl::_sym_mod);
  SMART_PTR_FIX(kw::_sym_execute);
- SMART_PTR_FIX(asttooling::_sym_astRewriteNullaryMemberFunctions);
  SMART_PTR_FIX(cl::_sym_most_negative_long_float);
  SMART_PTR_FIX(cl::_sym_standard_char_p);
  SMART_PTR_FIX(cl::_sym_pathname);
@@ -15130,7 +15120,6 @@ case KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_: {
  SMART_PTR_FIX(cl::_sym_open_stream_p);
  SMART_PTR_FIX(cl::_sym_STARprint_circleSTAR);
  SMART_PTR_FIX(ext::_sym__PLUS_processStandardInput_PLUS_);
- SMART_PTR_FIX(asttooling::_sym_astRewriteFunctionNames);
  SMART_PTR_FIX(cl::_sym_AMPwhole);
  SMART_PTR_FIX(llvmo::_sym_FCMP_UEQ);
  SMART_PTR_FIX(llvmo::_sym_LShr);

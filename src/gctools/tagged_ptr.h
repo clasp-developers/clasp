@@ -110,9 +110,6 @@ namespace gctools {
         {
             typedef typename std::remove_const<T>::type *no_const_T_ptr;
             this->px = const_cast<no_const_T_ptr>(p);
-#ifdef USE_TAGGED_PTR_P0
-            this->pbase = ClientPtrToBasePtr(dynamic_cast<void*>(const_cast<no_const_T_ptr>(this->px)));
-#endif
         }
 
         tagged_ptr(core::T_O** p) : px(make_tagged_frame(p)) {};
@@ -125,9 +122,6 @@ namespace gctools {
         {
             // ASSERT that the p does not correspond to a pointer
             BOOST_ASSERT( (p&tag_mask)!=ptr_tag );
-#ifdef USE_TAGGED_PTR_P0
-            this->pbase = NULL;
-#endif
         }
 
 
@@ -136,27 +130,19 @@ namespace gctools {
         template<class U>
             tagged_ptr( tagged_ptr<U> const & rhs )
         {
-            if ( rhs.pointerp() ) {
-                px = dynamic_cast<T*>(rhs.pxget());
-#ifdef USE_TAGGED_PTR_P0
-                pbase = ClientPtrToBasePtr(dynamic_cast<void*>(px));
-#endif
+            if ( LIKELY(rhs.pointerp()) ) {
+                px = DynamicCast<T*,U*>::castOrNULL(rhs.pxget());
+                if ( px==0 ) {
+                    THROW_HARD_ERROR(BF("You tried to assign an object to a variable of an incompatible type"));
+                }
             } else {
                 uintptr_t upx = reinterpret_cast<uintptr_t>(rhs.pxget());
                 px = (T*)upx;
-#ifdef USE_TAGGED_PTR_P0
-                pbase = NULL;
-#endif
             }
         }
 
 
-        tagged_ptr(tagged_ptr const & rhs): px( rhs.px )
-#ifdef USE_TAGGED_PTR_P0
-                                          ,pbase(rhs.pbase)
-#endif
-        {
-        }
+        tagged_ptr(tagged_ptr const & rhs): px( rhs.px ) {}
 
         ~tagged_ptr()
         {
@@ -187,7 +173,7 @@ namespace gctools {
 
 
         core::T_O* asTPtr() const {
-            if (this->pointerp()) {
+            if (LIKELY(this->pointerp())) {
                 return static_cast<core::T_O*>(this->px);
             } else {
 #pragma clang diagnostic push
@@ -237,8 +223,8 @@ namespace gctools {
         /*! Return true if px contains a non-NULL pointer */
         bool pointerp() const
         {
-            return ((uintptr_t)(this->px)&tag_mask)==ptr_tag
-                && ((uintptr_t)(this->px)&ptr_mask);
+            return ((uintptr_t)(this->px)&tag_mask)==ptr_tag    // Is ptr
+                && ((uintptr_t)(this->px)&ptr_mask);            // Is not NULL
         };
 
         bool not_pointerp() const { return !this->pointerp();};
@@ -284,28 +270,30 @@ namespace gctools {
 
         T * get() const
         {
-            if ( LIKELY(px==0 || pointerp()) ) {return px;}
+            if ( LIKELY(pointerp() || px==0) ) {return px;}
             if ( nilp() ) lisp_errorDereferencedNil();
             if ( unboundp() ) lisp_errorDereferencedUnbound();
-            BOOST_ASSERT_MSG( !nilp(), "You tried to dereference NIL");
-            BOOST_ASSERT_MSG( !unboundp(), "You tried to dereference UNBOUND");
-//	nilp() and unboundp() no longer dereference to nil and unbound instances
-//	if ( nilp() ) return intrusive_ptr_nil_instance<T>();
-//	if ( unboundp() ) return intrusive_ptr_unbound_instance<T>();
-            // handle more cases
-            BOOST_ASSERT_MSG(false,"You tried to dereference something that wasn't a pointer");
-            return NULL;
+            lisp_errorIllegalDereference(px);
+            return NULL; // should not get here
 //        return px;
         }
 
         T & operator*() const
         {
+#ifdef RUN_SAFE
             return *(this->get());
+#else
+            return *this->px;
+#endif
         }
 
         T * operator->() const
         {
+#ifdef RUN_SAFE
             return this->get();
+#else
+            return this->px;
+#endif
         }
 
 // implicit conversion to "bool"

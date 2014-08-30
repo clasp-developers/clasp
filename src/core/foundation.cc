@@ -98,6 +98,11 @@ namespace reg {
     }
 };
 
+    void lisp_errorIllegalDereference(void* v)
+    {
+        SIMPLE_ERROR(BF("Tried to dereference px=%p") % v);
+    }
+
 
     void lisp_errorDereferencedNil()
     {

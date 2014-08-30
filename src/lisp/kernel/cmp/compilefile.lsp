@@ -61,7 +61,7 @@
     (with-ltv-function-codegen (result ltv-env)
       (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)
                      *gv-source-file-info-handle*
-                     (jit-constant-i32 *current-line-number*)
+                     (jit-constant-i32 *current-lineno*)
                      (jit-constant-i32 *current-column*)
                      ))))
 
@@ -150,7 +150,7 @@
 
 
 (defun print-source-pos ()
-  (bformat t "%s:%d:%d\n" *compile-file-pathname* *current-line-number* *current-column*))
+  (bformat t "%s:%d:%d\n" *compile-file-pathname* *current-lineno* *current-column*))
 
 
 
@@ -230,7 +230,7 @@ and the pathname of the source file - this will also be used as the module initi
                              (form (progn (let ((rd (read sin nil eof-value))) rd))
                                    (progn (let ((rd (read sin nil eof-value))) rd))))
                             ((eq form eof-value) nil)
-                          (let ((*current-line-number* line-number)
+                          (let ((*current-lineno* line-number)
                                 (*current-column* column))
                             (t1expr form)
                             ))

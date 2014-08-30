@@ -63,7 +63,7 @@ namespace core
 
 	inline T_mv apply( T_sp fn, Cons_sp argsPLUS )
 	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>());
 	    int numArgsPassed = 0;
 	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
@@ -237,14 +237,13 @@ namespace core
 	template <class ARG0, class ARG1>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( !func.pointerp() ) {                                                                                                                        
-                // While booting, cl::_sym_findClass will apply'd before it is bound to a symbol                                                             
-                if ( fn == cl::_sym_findClass ) {                                                                                                            
-                    return(af_findClass(arg0,true,_Nil<Environment_O>()));                                                    
-                }                                                                                                                                            
-                SIMPLE_ERROR(BF("Could not find function %s") % _rep_(fn) );                                                                                 
-            }                                                                                                                                                
-
+            if ( !func.pointerp() ) {
+                // While booting, cl::_sym_findClass will apply'd before it is bound to a symbol
+                if ( fn == cl::_sym_findClass ) {
+                    return(af_findClass(arg0.template as<Symbol_O>(),true,_Nil<Environment_O>()));
+                }
+                SIMPLE_ERROR(BF("Could not find function %s") % _rep_(fn) );
+            }
             Functoid* ft = func->closure;
             T_mv result;
             (*ft)(&result,2,arg0.asTPtr(),arg1.asTPtr(),NULL);

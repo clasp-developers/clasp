@@ -43,7 +43,7 @@ namespace core
     }
     int FunctionClosure::sourceFileInfoHandle() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->fileHandle() : 0; };
 
-    int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->lineNumber() : 0; };
+    int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->lineno() : 0; };
     int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->column() : 0; };
 
 
@@ -106,7 +106,7 @@ namespace core
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         SourcePosInfo_sp spi = this->closure->sourcePosInfo();
         SourceFileInfo_sp sfi = af_sourceFileInfo(spi);
-        return Values(sfi,Fixnum_O::create(spi->lineNumber()));
+        return Values(sfi,Fixnum_O::create(spi->lineno()));
     }
 
 

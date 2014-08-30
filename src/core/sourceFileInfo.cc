@@ -87,25 +87,25 @@ namespace core
 #endif
 
     
-#define ARGS_af_lineNumber "(arg)"
-#define DECL_af_lineNumber ""
-#define DOCS_af_lineNumber "lineNumber"
-    uint af_lineNumber(T_sp obj)
+#define ARGS_af_lineno "(arg)"
+#define DECL_af_lineno ""
+#define DOCS_af_lineno "lineNumber"
+    uint af_lineno(T_sp obj)
     {_G();
 	if ( obj.nilp() )
 	{
 	    return 0;
 	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() )
 	{
-            IMPLEMENT_MEF(BF("Handle cons for af_lineNumber"));
+            IMPLEMENT_MEF(BF("Handle cons for af_lineno"));
 	} else if ( Stream_sp so = obj.asOrNull<Stream_O>() )
 	{
 	    return clasp_input_lineno(so);
 	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
 	{
-            return af_lineNumber(fo->closure->sourcePosInfo());
+            return af_lineno(fo->closure->sourcePosInfo());
         } else if ( SourcePosInfo_sp info = obj.asOrNull<SourcePosInfo_O>() ) {
-            return info->_LineNumber;
+            return info->_Lineno;
 	}
 	SIMPLE_ERROR(BF("Implement lineNumber for %s") % _rep_(obj));
     };
@@ -292,6 +292,17 @@ namespace core
 
     EXPOSE_CLASS(core,SourcePosInfo_O);
 
+    string SourcePosInfo_O::__repr__() const
+    {
+        stringstream ss;
+        ss << "#<" << this->_instanceClass()->classNameAsString();
+        ss << " :fileId " << this->_FileId;
+        ss << " :lineno " << this->_Lineno;
+        ss << " :column " << this->_Column;
+        ss << ">";
+        return ss.str();
+    }
+
     void SourcePosInfo_O::exposeCando(core::Lisp_sp lisp)
     {
 	core::class_<SourcePosInfo_O>()
@@ -412,11 +423,6 @@ namespace core
     }
 
 
-#if 0
-    SourceFileInfo_sp SourceManager_O::sourceFileInfoFromIndex(int idx) const {
-        return this->_Files[idx];
-    }
-#endif
     SourcePosInfo_sp SourceManager_O::registerSourceInfoFromStream(T_sp obj, Stream_sp stream)
     {_G();
 	SourceFileInfo_sp sfi  = clasp_input_source_file_info(stream);
@@ -509,7 +515,7 @@ namespace core
             SourcePosInfo_sp it = this->_SourcePosInfo->gethash(key,_Nil<SourcePosInfo_O>()).as<SourcePosInfo_O>();
             if (it.notnilp()) {
                 SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(it->_FileId));
-                return Values(sfi,Fixnum_O::create(it->_LineNumber),
+                return Values(sfi,Fixnum_O::create(it->_Lineno),
                               Fixnum_O::create(it->_Column));
             }
         }

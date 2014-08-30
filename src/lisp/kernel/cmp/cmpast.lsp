@@ -1061,7 +1061,7 @@ jump to blocks within this tagbody."
       (walk-to-find-source-info form)
     (let* ((*current-form* form)
 	   (*current-env* env)
-	   (*current-line-number* (if lineno lineno 0))
+	   (*current-lineno* (if lineno lineno 0))
 	   (*current-column* (if column column 0)))
       (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
       (cmp-log "codegen evaluate-depth[%d]  %s\n" (evaluate-depth) form)

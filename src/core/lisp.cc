@@ -1393,53 +1393,17 @@ namespace core
 
 
 
-#if 0
-    void Lisp_O::load(T_sp filespec, bool verbose,
-		      bool print, bool ifDoesNotExist )
-    {_OF();
-	Package_sp pack = this->getCurrentPackage();
-	bool inputWasStream = false;
-	Pathname_sp pathname = cl_pathname(af_mergePathnames(filespec));
-//TODO:	Pathname_sp truename = af_truename(pathname);
-	DynamicScopeManager scope(_sym_STARsourcePathNameSTAR,af_namestring(pathname));
-	scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR,pathname);
-//TODO:	scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR,Str_O::create(
-	Stream_sp sin = FDInStream_O::create(pathname);
-	try // exception safe
-	{
-	    DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLineNumberSTAR,Fixnum_O::create(sin->lineNumber()));
-	    DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(sin->column()));
-	    TopLevelIHF topFrame(_lisp->invocationHistoryStack(),af_sourceFileInfo(sin));
-	    this->readEvalPrint(sin,_Nil<Environment_O>(),print);
-	} catch (...)
-	{
-	    this->selectPackage(pack);
-	    if ( inputWasStream )
-	    {
-		sin = _Nil<Stream_O>();
-	    }
-	    sin->close();
-	    throw;
-	}
-	this->selectPackage(pack);
-	if ( inputWasStream )
-	{
-	    sin = _Nil<Stream_O>();
-	}
-	sin->close();
-    }
-#endif
-    
 
-    T_mv Lisp_O::readEvalPrint(T_sp isd, Environment_sp environ, bool printResults)
+    T_mv Lisp_O::readEvalPrint(T_sp inputStream, Environment_sp environ, bool printResults)
     {_OF();
 	T_mv result = Values(_Nil<T_O>());
-	Stream_sp sin = coerce::inputStreamDesignator(isd);
+	Stream_sp sin = coerce::inputStreamDesignator(inputStream);
+	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentSourceFileInfoSTAR,af_sourceFileInfo(sin));
 	while (1)
 	{
 	    TRY()
 	    {
-		_sym_STARcurrentLineNumberSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_lineno(sin)));
+		_sym_STARcurrentLinenoSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_lineno(sin)));
 		_sym_STARcurrentColumnSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_column(sin)));
 		T_sp expression = read_lisp_object(sin,false,_Unbound<T_O>(),false);
 		if ( expression.unboundp() ) break;
@@ -1526,7 +1490,7 @@ namespace core
     T_mv Lisp_O::readEvalPrintString(const string& code, Environment_sp environ, bool printResults )
     {_OF();
 	StringInputStream_sp sin = StringInputStream_O::make(code);
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLineNumberSTAR,Fixnum_O::create(clasp_input_lineno(sin)));
+	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLinenoSTAR,Fixnum_O::create(clasp_input_lineno(sin)));
 	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(clasp_input_column(sin)));
 	T_mv result = this->readEvalPrint(sin,environ,printResults);
 	cl_close(sin);
@@ -1552,7 +1516,7 @@ namespace core
     {_OF();
 	Cons_sp expression;
 //	TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<T_O>());
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLineNumberSTAR,Fixnum_O::create(0));
+	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLinenoSTAR,Fixnum_O::create(0));
 	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(0));
 	while(1) {
 	  string line;
@@ -3500,7 +3464,7 @@ extern "C"
 		Cons_sp entry = code.as_or_nil<Cons_O>();
 		if ( entry->hasParsePos() )
 		{
-		    sline << af_sourceFileInfo(entry)->permanentFileName() << ":" << af_lineNumber(entry) << " " << entry->__repr__();
+		    sline << af_sourceFileInfo(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
 		} else
 		{
 		    sline << "no-function: " << entry->__repr__();
@@ -3589,7 +3553,8 @@ extern "C"
             }
             return Values(_lisp->_Roots._SourceFiles[fnSourceFile->get()],fnSourceFile);
         } else if ( Stream_sp so = sourceFile.asOrNull<Stream_O>() ) {
-            return af_sourceFileInfo(clasp_input_source_file_info(so));
+            T_sp sfi = clasp_input_source_file_info(so);
+            return af_sourceFileInfo(sfi);
         } else if ( SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>() ) {
             return _lisp->sourceFileInfo(sfi->namestring());
         } else if ( SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>() ) {
