@@ -575,6 +575,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     :pre-cmp
 
     cmp/cmpsetup
+    cmp/cmpenv-proclaim
+;    cmp/cmpenv-fun
     cmp/cmpglobals
     cmp/cmptables
     cmp/cmpvar

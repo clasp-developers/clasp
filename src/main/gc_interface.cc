@@ -384,19 +384,22 @@ extern "C" {
 #endif
 
 #ifndef RUNNING_GC_BUILDER
-#if 0
-#define GC_GLOBAL_SYMBOLS
-#include "main/clasp_gc.cc"
-#undef GC_GLOBAL_SYMBOLS
+#if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
+ #define GC_GLOBAL_SYMBOLS
+ #include "main/clasp_gc.cc"
+ #undef GC_GLOBAL_SYMBOLS
 #else
-#define ClPkg cl
-#define CorePkg core
+
+//
+// Ok, this looks nasty but it allows us to avoid running the static analyzer 
+// every time we add or remove a symbol.  Every symbol that is scraped from 
+// the source must be listed here and fixed for the garbage collector
+//
 
 #define AstToolingPkg_SYMBOLS
-//#define CLUserPkg_SYMBOLS
 #define CffiPkg_SYMBOLS
 #define ClPkg_SYMBOLS
-#define ClangAstPkg_SYMBOLS
+//#define ClangAstPkg_SYMBOLS    // symbols not declared global
 #define ClbindPkg_SYMBOLS
 #define ClosPkg_SYMBOLS
 #define CommonLispUserPkg_SYMBOLS
@@ -407,9 +410,28 @@ extern "C" {
 #define GrayPkg_SYMBOLS
 #define KeywordPkg_SYMBOLS
 #define LlvmoPkg_SYMBOLS
-#define MpiPkg_SYMBOLS
+//#define MpiPkg_SYMBOLS
 #define ServeEventPkg_SYMBOLS
 #define SocketsPkg_SYMBOLS
+
+#define AstToolingPkg asttooling
+#define CffiPkg cffi
+#define ClPkg cl
+//#define ClangAstPkg clang
+#define ClbindPkg clbind
+#define ClosPkg clos
+#define CommonLispUserPkg 
+#define CompPkg comp
+#define CorePkg core
+#define ExtPkg ext
+#define GcToolsPkg gctools
+#define GrayPkg gray
+#define KeywordPkg kw
+#define LlvmoPkg llvmo
+//#define MpiPkg mpi
+#define ServeEventPkg serveEvent
+#define SocketsPkg sockets
+
 
 #define DO_SYMBOL(sym,id,pkg,name,exprt) SMART_PTR_FIX(pkg::sym)
 #include "core/symbols_scraped_inc.h"
@@ -422,8 +444,44 @@ extern "C" {
 #include "mpip/symbols_scraped_inc.h"
 #include "serveEvent/symbols_scraped_inc.h"
 #include "sockets/symbols_scraped_inc.h"
+
+#undef AstToolingPkg
+#undef CffiPkg
 #undef ClPkg
+//#undef ClangAstPkg
+#undef ClbindPkg
+#undef ClosPkg
+#undef CommonLispUserPkg
+#undef CompPkg
 #undef CorePkg
+#undef ExtPkg
+#undef GcToolsPkg
+#undef GrayPkg
+#undef KeywordPkg
+#undef LlvmoPkg
+//#undef MpiPkg
+#undef ServeEventPkg
+#undef SocketsPkg
+
+#undef AstToolingPkg_SYMBOLS
+#undef CffiPkg_SYMBOLS
+#undef ClPkg_SYMBOLS
+//#undef ClangAstPkg_SYMBOLS
+#undef ClbindPkg_SYMBOLS
+#undef ClosPkg_SYMBOLS
+#undef CommonLispUserPkg_SYMBOLS
+#undef CompPkg_SYMBOLS
+#undef CorePkg_SYMBOLS
+#undef ExtPkg_SYMBOLS
+#undef GcToolsPkg_SYMBOLS
+#undef GrayPkg_SYMBOLS
+#undef KeywordPkg_SYMBOLS
+#undef LlvmoPkg_SYMBOLS
+//#undef MpiPkg_SYMBOLS
+#undef ServeEventPkg_SYMBOLS
+#undef SocketsPkg_SYMBOLS
+
+
 #endif
 #endif // RUNNING_GC_BUILDER
 

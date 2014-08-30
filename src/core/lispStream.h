@@ -116,7 +116,7 @@ namespace core
     SourceFileInfo_sp clasp_input_source_file_info(T_sp strm);
     Pathname_sp clasp_input_pathname(T_sp strm);
     /*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
-    Str_sp clasp_filename(T_sp strm, bool errorp=false);
+    T_sp clasp_filename(T_sp strm, bool errorp=false);
     
     T_sp cl_get_output_stream_string(T_sp strm);
 
@@ -277,7 +277,7 @@ namespace core
         int             _Closed;
         StreamMode      _Mode;
         char*           _Buffer;
-        Symbol_sp       _Format;
+        T_sp       _Format;
         int             _ByteSize;
         int             _Flags; // bitmap of flags
         Cons_sp         _ByteStack; // For unget in input streams
@@ -306,9 +306,9 @@ namespace core
         {};
         virtual ~Stream_O();
     public:
-        Str_sp filename() const;
-        int lineno() const;
-        int column() const;
+        virtual T_sp filename() const;
+        virtual int lineno() const;
+        virtual int column() const;
     };
 
 };
@@ -344,19 +344,20 @@ namespace core
 {
     class FileStream_O : public AnsiStream_O
     {
-        friend Str_sp& FileStreamFilename(T_sp);
+        friend T_sp& FileStreamFilename(T_sp);
         friend T_sp& FileStreamEltType(T_sp);
 	LISP_BASE1(AnsiStream_O);
 	LISP_CLASS(core,ClPkg,FileStream_O,"file-stream");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(FileStream_O);
-    private:
-        Str_sp  _Filename;
+        FileStream_O() {};
+    protected:
+        T_sp  _Filename;
         T_sp    _ElementType;
     public: // Functions here
-        Str_sp filename() const { return this->_Filename; };
+        virtual string __repr__() const;
+        T_sp filename() const { return this->_Filename; };
     }; // FileStream class
 
     class IOFileStream_O : public FileStream_O
@@ -367,8 +368,7 @@ namespace core
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(IOFileStream_O);
-	
+	IOFileStream_O() {};
     private: // instance variables here
 	int     _FileDescriptor;
     public: // Functions here
@@ -420,8 +420,7 @@ namespace core {
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
-	DEFAULT_CTOR_DTOR(IOStreamStream_O);
-	
+	IOStreamStream_O() {};
     private: // instance variables here
 	FILE*   _File;
     public: // Functions here
@@ -560,7 +559,7 @@ namespace core
             return cl_make_synonym_stream(symbol);
         }
     public: // Functions here
-        Str_sp filename() const;
+        T_sp filename() const;
 
     }; // SynonymStream class
     

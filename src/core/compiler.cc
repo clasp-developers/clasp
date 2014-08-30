@@ -292,21 +292,23 @@ namespace core
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
 	Cons_sp code = Cons_O::create(form,_Nil<Cons_O>());
         SourceManager_sp db = _lisp->sourceDatabase();
-        SourcePosInfo_sp info = lisp_registerSourceInfo(code
-                                                       , core::_sym_STARloadCurrentSourceFileInfoSTAR->symbolValue().as<SourceFileInfo_O>()
-                                                       , core::_sym_STARloadCurrentLinenumberSTAR->symbolValue().as<Fixnum_O>()->get()
-                                                       , core::_sym_STARloadCurrentColumnSTAR->symbolValue().as<Fixnum_O>()->get() );
+        SourcePosInfo_sp sourcePosInfo = lisp_registerSourceInfo(
+            code
+            , core::_sym_STARcurrentSourceFileInfoSTAR->symbolValue().as<SourceFileInfo_O>()
+            , core::_sym_STARcurrentLinenoSTAR->symbolValue().as<Fixnum_O>()->get()
+            , core::_sym_STARcurrentColumnSTAR->symbolValue().as<Fixnum_O>()->get() );
         stringstream ss;
         ss << "repl"<<_lisp->nextReplCounter();
         Symbol_sp name = _lisp->intern(ss.str());
-        InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
-                                                                                            ,info
-                                                                                            , kw::_sym_function
-                                                                                            , llh
-                                                                                            , _Nil<Cons_O>()
-                                                                                            , _Nil<Str_O>()
-                                                                                            , env
-                                                                                            , code );
+        InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
+            name
+            , sourcePosInfo
+            , kw::_sym_function
+            , llh
+            , _Nil<Cons_O>()
+            , _Nil<Str_O>()
+            , env
+            , code );
         Function_sp thunk = Function_O::make(ic);
 	return(Values(thunk,_Nil<T_O>(),_Nil<T_O>()));
     };
@@ -320,7 +322,7 @@ namespace core
 #define ARGS_core_applysPerSecond "(fn &rest args)"
 #define DECL_core_applysPerSecond ""
 #define DOCS_core_applysPerSecond "applysPerSecond"
-    T_sp core_applysPerSecond(T_sp fn, T_sp args)
+    T_sp core_applysPerSecond(T_sp fn, Cons_sp args)
     {_G();
         LightTimer timer;
         int nargs = cl_length(args);
@@ -340,6 +342,136 @@ namespace core
             }
         }
         printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
+        return _Nil<T_O>();
+    }
+
+
+
+#define ARGS_core_functionLookupsPerSecond "(fn &rest args)"
+#define DECL_core_functionLookupsPerSecond ""
+#define DOCS_core_functionLookupsPerSecond "functionLookupsPerSecond"
+    T_sp core_functionLookupsPerSecond(T_sp fn, Cons_sp args)
+    {_G();
+        LightTimer timer;
+        int nargs = cl_length(args);
+        ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
+        for ( int pow=0; pow<16; ++pow ) {
+            int times = 1 << pow*2;
+            timer.reset();
+            timer.start();
+            T_sp cur = args;
+            // Fill frame here
+            for ( int i(0); i<times; ++i ) {
+                eval::lookupFunction(fn,_Nil<T_O>);
+            }
+            timer.stop();
+            if ( timer.getAccumulatedTime() > 0.5 ) {
+                return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
+            }
+        }
+        printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
+        return _Nil<T_O>();
+    }
+
+
+    T_sp callByValue(T_sp v1, T_sp v2, T_sp v3, T_sp v4)
+    {
+        return v4;
+    }
+
+
+#define ARGS_core_callsByValuePerSecond "()"
+#define DECL_core_callsByValuePerSecond ""
+#define DOCS_core_callsByValuePerSecond "callsByValuePerSecond"
+    T_sp core_callsByValuePerSecond()
+    {_G();
+        LightTimer timer;
+        T_sp v1;
+        T_sp v2;
+        T_sp v3;
+        T_sp v4;
+        printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
+        for ( int pow=0; pow<32; ++pow ) {
+            size_t times = 1 << pow*2;
+            timer.reset();
+            timer.start();
+            for ( size_t i=0; i<times; ++i ) {
+                callByValue(v1,v2,v3,v4);
+            }
+            timer.stop();
+            if ( timer.getAccumulatedTime() > 0.5 ) {
+                return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
+            }
+        }
+        return _Nil<T_O>();
+    }
+
+
+    T_sp callByConstRef(const T_sp& v1, const T_sp& v2, const T_sp& v3, const T_sp& v4)
+    {
+        return v4;
+    }
+
+
+#define ARGS_core_callsByConstantReferencePerSecond "()"
+#define DECL_core_callsByConstantReferencePerSecond ""
+#define DOCS_core_callsByConstantReferencePerSecond "callsByConstantReferencePerSecond"
+    T_sp core_callsByConstantReferencePerSecond()
+    {_G();
+        LightTimer timer;
+        T_sp v1;
+        T_sp v2;
+        T_sp v3;
+        T_sp v4;
+        printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
+        for ( int pow=0; pow<32; ++pow ) {
+            size_t times = 1 << pow*2;
+            timer.reset();
+            timer.start();
+            for ( size_t i=0; i<times; ++i ) {
+                callByConstRef(v1,v2,v3,v4);
+            }
+            timer.stop();
+            if ( timer.getAccumulatedTime() > 0.5 ) {
+                return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
+            }
+        }
+        return _Nil<T_O>();
+    }
+
+
+    T_sp callByPointer( T_O* v1,  T_O* v2, T_O* v3, T_O* v4)  __attribute__ ((noinline)) ;
+
+    T_sp callByPointer( T_O* v1,  T_O* v2, T_O* v3, T_O* v4)
+    {
+        asm("");
+        return v4;
+    }
+
+
+#define ARGS_core_callsByPointerPerSecond "()"
+#define DECL_core_callsByPointerPerSecond ""
+#define DOCS_core_callsByPointerPerSecond "callsByPointerPerSecond"
+    T_sp core_callsByPointerPerSecond()
+    {_G();
+        LightTimer timer;
+        T_O* v1=NULL;
+        T_O* v2=NULL;
+        T_O* v3=NULL;
+        T_O* v4=NULL;
+        printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
+        for ( int pow=0; pow<32; ++pow ) {
+            size_t times = 1 << pow*2;
+            timer.reset();
+            timer.start();
+            for ( size_t i=0; i<times; ++i ) {
+                callByConstRef(v1,v2,v3,v4);
+            }
+            timer.stop();
+            if ( timer.getAccumulatedTime() > 0.5 ) {
+                return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
+            }
+        }
         return _Nil<T_O>();
     }
 
@@ -370,6 +502,10 @@ namespace core
 	Defun(loadBundle);
 
         CoreDefun(applysPerSecond);
+        CoreDefun(functionLookupsPerSecond);
+        CoreDefun(callsByValuePerSecond);
+        CoreDefun(callsByConstantReferencePerSecond);
+        CoreDefun(callsByPointerPerSecond);
 
     }
 

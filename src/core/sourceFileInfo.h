@@ -55,10 +55,10 @@ namespace core
 	LISP_CLASS(core,CorePkg,SourcePosInfo_O,"SourcePosInfo");
     public:
     public: // ctor/dtor for classes with shared virtual base
-	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _LineNumber(0),_Column(0) {}; //, _FilePos(0) {};
+	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Lineno(0),_Column(0) {}; //, _FilePos(0) {};
     public: // instance variables here
 	SourcePosInfo_O(uint spf, uint spln, uint spc) // , Function_sp expander=_Nil<Function_O>())
-	    : _FileId(spf), _LineNumber(spln), _Column(spc) //, _Expander(expander) {}
+	    : _FileId(spf), _Lineno(spln), _Column(spc) //, _Expander(expander) {}
         {};
 
     public:
@@ -73,15 +73,15 @@ namespace core
             GC_ALLOCATE_VARIADIC(SourcePosInfo_O,me,spf,spln,spc); // ,filePos,fn);
             return me;
         }
-
+        string __repr__() const;
         SourceFileInfo_sp sourceFileInfo(SourceManager_sp sm) const;
 
         int fileHandle() const { return this->_FileId; };
-        uint lineNumber() const { return this->_LineNumber; };
+        uint lineno() const { return this->_Lineno; };
         int column() const { return this->_Column; };
     public:
 	uint	_FileId;
-	uint	_LineNumber;
+	uint	_Lineno;
 	uint	_Column;
 //	uint	_FilePos;
 //	Function_sp 	_Expander;

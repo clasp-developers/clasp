@@ -42,47 +42,38 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
                        _Nil<T_O>());
 	if ( strm.nilp() ) return;
     }
-#ifdef TRAP_ERRORS
-    try {
-#endif
-        DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
-        /* Define the source file */
-        SourceFileInfo_sp sfi = af_sourceFileInfo(source);
-        scope.pushSpecialVariableAndSet(_sym_STARloadCurrentSourceFileInfoSTAR,sfi);
-        Pathname_sp pathname = cl_pathname(source);
-        ASSERTF(pathname.pointerp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));;
-        Pathname_sp truename = af_truename(source);
-        ASSERTF(truename.pointerp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));;
-        scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR,pathname);
-        scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR,truename);
+    DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
+    /* Define the source file */
+    SourceFileInfo_sp sfi = af_sourceFileInfo(source);
+    scope.pushSpecialVariableAndSet(_sym_STARcurrentSourceFileInfoSTAR,sfi);
+    Pathname_sp pathname = cl_pathname(source);
+    ASSERTF(pathname.pointerp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));;
+    Pathname_sp truename = af_truename(source);
+    ASSERTF(truename.pointerp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));;
+    scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR,pathname);
+    scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR,truename);
 //        printf("%s:%d   Here set-up *load-pathname*, *load-truename* and *load-source-file-info* for source: %s\n", __FILE__, __LINE__, _rep_(source).c_str() );
-	while (true) {
-	    bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
-	    T_sp x = read_lisp_object(strm,false,_Unbound<T_O>(),false);
-            DynamicScopeManager innerScope(_sym_STARloadCurrentLinenumberSTAR,Fixnum_O::create(clasp_input_lineno(strm)));
-            innerScope.pushSpecialVariableAndSet(_sym_STARloadCurrentColumnSTAR,Fixnum_O::create(clasp_input_column(strm)));
-	    if ( x.unboundp() ) break;
-	    if ( echoReplRead ) {
-		_lisp->print(BF("Read: %s\n") % _rep_(x) );
-	    }
-	    _lisp->invocationHistoryStack().setExpressionForTop(x);
-	    _lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
-	    if (x.number_of_values() > 0 ) {
+    while (true) {
+        bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
+        T_sp x = read_lisp_object(strm,false,_Unbound<T_O>(),false);
+        DynamicScopeManager innerScope(_sym_STARcurrentLinenoSTAR,Fixnum_O::create(clasp_input_lineno(strm)));
+        innerScope.pushSpecialVariableAndSet(_sym_STARcurrentColumnSTAR,Fixnum_O::create(clasp_input_column(strm)));
+        if ( x.unboundp() ) break;
+        if ( echoReplRead ) {
+            _lisp->print(BF("Read: %s\n") % _rep_(x) );
+        }
+        _lisp->invocationHistoryStack().setExpressionForTop(x);
+        _lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
+        if (x.number_of_values() > 0 ) {
 //                printf("%s:%d  ;; -- read- %s\n", __FILE__, __LINE__, _rep_(x).c_str() );
-		if ( print ) {
-		    _lisp->print(BF(";; -- read- %s\n") % _rep_(x));
-		};
-                eval::af_topLevelEvalWithEnv(x,_Nil<Environment_O>());
+            if ( print ) {
+                _lisp->print(BF(";; -- read- %s\n") % _rep_(x));
+            };
+            eval::af_topLevelEvalWithEnv(x,_Nil<Environment_O>());
 //                gctools::af_cleanup();
-	    }
-	}
-	cl_close(strm);
-#ifdef TRAP_ERRORS
-    } catch (...) {
-	cl_close(strm);
-	throw;
+        }
     }
-#endif
+    cl_close(strm);
 }
 	
 

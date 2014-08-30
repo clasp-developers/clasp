@@ -349,7 +349,7 @@
 
 
 (defun irc-i32-current-line-number ()
-  (jit-constant-i32 *current-line-number*))
+  (jit-constant-i32 *current-lineno*))
 
 (defun irc-i32-current-column ()
   (jit-constant-i32 *current-column*))

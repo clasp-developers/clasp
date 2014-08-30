@@ -87,13 +87,11 @@ namespace core
             if ( info.notnilp() ) {
                 Fixnum_sp lineno = info.valueGet(1).as<Fixnum_O>();
                 Fixnum_sp column = info.valueGet(2).as<Fixnum_O>();
-//	Fixnum_sp filePos = info.valueGet(3).as<Fixnum_O>();
                 ilineno = lineno.nilp() ? 0 : lineno->get();
                 icolumn = column.nilp() ? 0 : column->get();
-//	uint ifilePos = filePos.nilp() ? 0 : filePos->get();
                 this->_Top->setSourcePos(info->fileHandle(),ilineno,icolumn);
             } else {
-                this->_Top->setSourcePos(0,0,0);
+//                this->_Top->setSourcePos(0,0,0);
             }
         }
     }

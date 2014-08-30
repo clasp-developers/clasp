@@ -82,7 +82,7 @@ namespace core
         return stream->_Buffer;
     }
 
-    Symbol_sp& StreamFormat(T_sp strm)
+    T_sp& StreamFormat(T_sp strm)
     {
         Stream_sp stream = strm.as<Stream_O>();
         return stream->_Format;
@@ -256,7 +256,7 @@ namespace core
     }
 
 
-    Str_sp& FileStreamFilename(T_sp strm)
+    T_sp& FileStreamFilename(T_sp strm)
     {
         FileStream_sp fds = strm.as<FileStream_O>();
         return fds->_Filename;
@@ -6145,11 +6145,12 @@ namespace core {
     }
 
 
-    Str_sp clasp_filename(T_sp strm, bool errorp)
+    T_sp clasp_filename(T_sp strm, bool errorp)
     {
-        Str_sp fn = _Nil<Str_O>();
+        T_sp fn = _Nil<T_O>();
         if ( AnsiStreamP(strm) ) {
-            fn = strm.as<Stream_O>()->filename();
+            Stream_sp ss = strm.as<Stream_O>();
+            fn = ss->filename();
         }
         if ( fn.nilp() ) {
             if ( errorp ) {
@@ -6183,7 +6184,7 @@ namespace core {
 
     SourceFileInfo_sp clasp_input_source_file_info(T_sp strm)
     {
-        Str_sp filename = clasp_filename(strm);
+        T_sp filename = clasp_filename(strm);
         SourceFileInfo_sp sfi = af_sourceFileInfo(filename);
         return sfi;
     }
@@ -6227,8 +6228,8 @@ namespace core {
 
 
 
-    Str_sp Stream_O::filename() const {
-        return _Nil<Str_O>();
+    T_sp Stream_O::filename() const {
+        return _Nil<T_O>();
     };
 
     
@@ -6242,7 +6243,7 @@ namespace core {
     };
 
 
-    Str_sp SynonymStream_O::filename() const {
+    T_sp SynonymStream_O::filename() const {
         T_sp strm = SynonymStreamStream(this->asSmartPtr());
         return clasp_filename(strm);
     };
@@ -6377,6 +6378,13 @@ namespace core {
     };
 };
 namespace core {
+
+    string FileStream_O::__repr__() const {
+        stringstream ss;
+        ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) << ">";
+        return ss.str();
+    }
+
     void FileStream_O::exposeCando(Lisp_sp lisp)
     {
 	class_<FileStream_O>()

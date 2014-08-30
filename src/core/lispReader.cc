@@ -499,7 +499,8 @@ namespace core
 			SIMPLE_ERROR(BF("More than one object after consing dot"));
 		    }
 		    Cons_sp one = Cons_O::create(obj,_Nil<Cons_O>());
-                    lisp_registerSourceInfo(one,af_sourceFileInfo(sin),start_lineNumber,start_column);
+                    SourceFileInfo_sp sfi = af_sourceFileInfo(sin);
+                    lisp_registerSourceInfo(one,sfi,start_lineNumber,start_column);
 		    LOG(BF("One = %s\n") % _rep_(one) );
 		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(af_sourceFileInfo(one)) );
 		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % af_sourceFileInfo(one)->fileName());

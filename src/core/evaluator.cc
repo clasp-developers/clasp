@@ -1220,18 +1220,19 @@ namespace core
 //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
             SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(code);
             if ( spi.nilp() ) {
-                SourceFileInfo_mv sfi_mv = af_sourceFileInfo(_sym_STARloadCurrentSourceFileInfoSTAR->symbolValue());
+                SourceFileInfo_mv sfi_mv = af_sourceFileInfo(_sym_STARcurrentSourceFileInfoSTAR->symbolValue());
                 int sfindex = sfi_mv.valueGet(1).as<Fixnum_O>()->get();
-                spi = SourcePosInfo_O::create(sfindex,_sym_STARloadCurrentLinenumberSTAR->symbolValue().as<Fixnum_O>()->get());
+                spi = SourcePosInfo_O::create(sfindex,_sym_STARcurrentLinenoSTAR->symbolValue().as<Fixnum_O>()->get());
             }
-            InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
-                                                                                                , spi
-                                                                                                , kw::_sym_function
-                                                                                                , llh
-                                                                                                , declares
-                                                                                                , docstring
-                                                                                                , env
-                                                                                                , code );
+            InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
+                name
+                , spi
+                , kw::_sym_function
+                , llh
+                , declares
+                , docstring
+                , env
+                , code );
             Function_sp proc = Function_O::make(ic);
 	    return proc;
 	}
@@ -1795,12 +1796,7 @@ namespace core
 	{
 //		    LOG(BF("Evaluating specialForm non-atom: %s")% specialForm->__repr__() );
 	    T_mv result;
-#ifdef TRAP_ERRORS
-	    try { result = specialForm->evaluate(cCdr(form),environment);}
-	    catch (...) { result = handleConditionInEvaluate(environment); }
-#else
             result = specialForm->evaluate(cCdr(form),environment);
-#endif
 	    ASSERTNOTNULL(result);
 	    return(result);
 	}
@@ -2123,12 +2119,7 @@ namespace core
 		    };// catch (...) {throw;};
 //		    LOG(BF("Expanded macro to: %s") % expanded->__repr__() );
 //		    LOG(BF("Evaluating macro in environment: %s") % environment->__repr__() );
-#ifdef TRAP_ERRORS
-		    try { result = eval::evaluate(expanded,environment);} // ->object(); }
-		    catch (...) {result = handleConditionInEvaluate(environment);}
-#else
                     result = eval::evaluate(expanded,environment);
-#endif
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);
 		}
@@ -2150,12 +2141,7 @@ namespace core
 		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(cCdr(form)),
 								     _Nil<ActivationFrame_O>()));
 		    evaluateIntoActivationFrame(evaluatedArgs,cCdr(form),environment);
-#ifdef TRAP_ERRORS
-		    try { result = eval::applyToActivationFrame(headFunc,evaluatedArgs);}
-		    catch (...) {result = handleConditionInEvaluate(environment);};
-#else
                     result = eval::applyToActivationFrame(headFunc,evaluatedArgs);
-#endif
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);
 		}else

@@ -171,13 +171,13 @@ namespace gctools {
 
 
 namespace gctools {
-    template <typename TPTR, typename O>
+    template <typename TOPTR, typename FROMPTR>
     struct DynamicCast {
-        static bool isA(O* ptr) {
-            return (dynamic_cast<TPTR>(ptr)!=NULL);
+        static bool isA(FROMPTR ptr) {
+            return (dynamic_cast<TOPTR>(ptr)!=NULL);
         }
-        static TPTR castOrNULL(O* client) {
-            return dynamic_cast<TPTR>(client);
+        static TOPTR castOrNULL(FROMPTR client) {
+            return dynamic_cast<TOPTR>(client);
         }
     };
 };

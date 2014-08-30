@@ -1100,7 +1100,7 @@ jump to blocks within this tagbody."
       (dbg-set-current-source-pos env form)
     (let* ((*current-form* form)
            (*current-env* env)
-           (*current-line-number* (if lineno lineno 0))
+           (*current-lineno* (if lineno lineno 0))
            (*current-column* (if column column 0)))
       (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
       (cmp-log "codegen evaluate-depth[%d]  %s\n" (evaluate-depth) form)
@@ -1250,8 +1250,8 @@ be wrapped with to make a closure"
                            (irc-environment-activation-frame wrapped-env)
                            function-kind
                            *run-time-literals-external-name*
-                           core:*load-current-source-file-info*
-                           core:*load-current-linenumber*
+                           core:*current-source-file-info*
+                           core:*current-lineno*
                            ))))
                   (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
                   (when name (setf-symbol-function name compiled-function))
@@ -1301,8 +1301,8 @@ be wrapped with to make a closure"
                                          (irc-environment-activation-frame env)
                                          (function-kind fn)
                                          *run-time-literals-external-name*
-                                         core:*load-current-source-file-info*
-                                         core:*load-current-linenumber*
+                                         core:*current-source-file-info*
+                                         core:*current-lineno*
                                          )))
 		(llvm-sys:disassemble* compiled-function))))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))
