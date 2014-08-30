@@ -24,10 +24,10 @@ namespace core {
     class LightProfiler;
 
 
-class LightTimer
-{
-private:
-    LightProfiler* _Profiler;
+    class LightTimer
+    {
+    private:
+        LightProfiler* _Profiler;
     	uint		_Id;
     	bool		_IsOn;
 	double		_AccumulatedTime;
@@ -38,7 +38,7 @@ private:
 	uint _Sibling;
 	uint _Child;
 	clock_t		_StartTime;
-public:
+    public:
 	LightTimer(LightProfiler* profiler=NULL);
 	void setup(uint id, const string& description, uint parent )
 	{
@@ -46,7 +46,7 @@ public:
 	    this->_Description = description;
 	    this->_Parent = parent;
 	}
-    void reset() { this->_AccumulatedTime = 0.0; };
+        void reset() { this->_AccumulatedTime = 0.0; };
 	uint getId() { return this->_Id; };
 	bool getIsOn() { return this->_IsOn;};
 	uint getCalls() { return this->_Calls;};
@@ -65,16 +65,16 @@ public:
 	uint	getNumberOfCalls() { return this->_Calls;};
 	double	getAccumulatedTime() { return this->_AccumulatedTime;};
 
-};
+    };
 
 
-class	LightEventCounter
-{
-private:
+    class	LightEventCounter
+    {
+    private:
 	string		_Description;
 	uint		_Calls;
 	uint		_Problems;
-public:
+    public:
 
 	void	setDescription(string desc) { this->_Description = desc;};
 	string	getDescription() { return this->_Description;};
@@ -83,24 +83,25 @@ public:
 	uint	getProblems() {return this->_Problems;};
 	LightEventCounter();
 	virtual ~LightEventCounter();
-};
+    };
 
 
 
-class LightProfiler
-{
-public:
-    LightProfiler();
-private:
+    class LightProfiler
+    {
+    public:
+        LightProfiler();
+    private:
     	vector<LightTimer>		_Timers;
 	vector<LightEventCounter>	_EventCounters;
 	vector< vector<bool> >		_TimerStateStack;
 	bool				_MessagesEnabled;
-public:
+    public:
 //	LightTimer*	getTimer(int id);
 //	LightTimer*	createTimer(uint parent, uint id, 
 //					const string& name);
-	uint	createTimer(uint parent, const string& name);
+        void createTimers(uint num);
+	uint createTimer(uint parent, const string& name);
 	uint	createEventCounter(string name);
 
 	void		pushTimerStates();
@@ -116,7 +117,7 @@ public:
 
 
 	virtual ~LightProfiler();
-};
+    };
 
 
 };

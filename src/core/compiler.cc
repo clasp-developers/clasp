@@ -348,10 +348,10 @@ namespace core
 
 
 
-#define ARGS_core_functionLookupsPerSecond "(fn &rest args)"
+#define ARGS_core_functionLookupsPerSecond "(stage fn &rest args)"
 #define DECL_core_functionLookupsPerSecond ""
 #define DOCS_core_functionLookupsPerSecond "functionLookupsPerSecond"
-    T_sp core_functionLookupsPerSecond(T_sp fn, Cons_sp args)
+    T_sp core_functionLookupsPerSecond(int stage, T_sp fn, Cons_sp args)
     {_G();
         LightTimer timer;
         int nargs = cl_length(args);
@@ -363,13 +363,75 @@ namespace core
             T_sp cur = args;
             // Fill frame here
             for ( int i(0); i<times; ++i ) {
-                eval::lookupFunction(fn,_Nil<T_O>());
-                int nargs = cl_length(args);
-                ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
+                if ( stage>=0 ) {
+                    Function_sp func = eval::lookupFunction(fn,_Nil<T_O>());
+                    if ( stage>=1 ) {
+                        int nargs = cl_length(args);
+                        if ( stage>=2 ) { // This is expensive
+                            ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
+                            if ( stage>=3 ) {
+                                Cons_sp cur = args;
+                                for ( int i=nargs; i<nargs; ++i ) {
+                                    frame->operator[](i) = oCar(cur);
+                                    cur=cCdr(cur);
+                                }
+                                if ( stage >= 4) {
+                                    Closure* closureP = func->closure;
+                                    ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+                                    eval::applyClosureToActivationFrame(closureP,frame);
+                                }
+                            }
+                        }
+                    }
+                }
             }
             timer.stop();
-            if ( timer.getAccumulatedTime() > 0.5 ) {
+            if ( timer.getAccumulatedTime() > 0.1 ) {
                 return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
+            }
+        }
+        printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
+        return _Nil<T_O>();
+    }
+
+
+
+
+#define ARGS_core_timeApply "(stage fn &rest args)"
+#define DECL_core_timeApply ""
+#define DOCS_core_timeApply "timeApply"
+    T_sp core_timeApply(int stage, T_sp fn, Cons_sp args)
+    {_G();
+        LightProfiler profiler;
+        profiler.createTimers(5);
+        int nargs = cl_length(args);
+        ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
+        for ( int pow=0; pow<16; ++pow ) {
+            int times = 1 << pow*2;
+            T_sp cur = args;
+            // Fill frame here
+            for ( int i(0); i<times; ++i ) {
+                profiler.reset();
+                profiler.timer(0).start();
+                Function_sp func = eval::lookupFunction(fn,_Nil<T_O>());
+                profiler.timer(1).start();
+                int nargs = cl_length(args);
+                profiler.timer(2).start();
+                ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
+                profiler.timer(3).start();
+                Cons_sp cur = args;
+                for ( int i=nargs; i<nargs; ++i ) {
+                    frame->operator[](i) = oCar(cur);
+                    cur=cCdr(cur);
+                }
+                profiler.timer(4).start();
+                Closure* closureP = func->closure;
+                ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+                eval::applyClosureToActivationFrame(closureP,frame);
+                profiler.allTimersStop();
+            }
+            if ( profiler.getLongestTime() > 0.1 ) {
+                profiler.dump();
             }
         }
         printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
@@ -506,6 +568,7 @@ namespace core
 
         CoreDefun(applysPerSecond);
         CoreDefun(functionLookupsPerSecond);
+        CoreDefun(timeApply);
         CoreDefun(callsByValuePerSecond);
         CoreDefun(callsByConstantReferencePerSecond);
         CoreDefun(callsByPointerPerSecond);
