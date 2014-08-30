@@ -344,6 +344,9 @@ namespace core {
 	/*! Return the number of elements in the list*/
 	uint	length() const;
 
+        /*! Calculate the length the fastest way I can think of */
+        uint fastUnsafeLength() const;
+
 	/*! Return an arbitrary member of the list or an empty member*/
 	template <class o_class>
 	gctools::smart_ptr<o_class> listref(int i) { return this->olistref(i).as<o_class>();};

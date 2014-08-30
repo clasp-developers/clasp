@@ -353,6 +353,80 @@ namespace core
     }
 
 
+#if 0
+#define ARGS_core_globalFuncallCyclesPerSecond "(stage fn &rest args)"
+#define DECL_core_globalFuncallCyclesPerSecond ""
+#define DOCS_core_globalFuncallCyclesPerSecond "globalFuncallCyclesPerSecond"
+    T_sp core_globalFuncallCyclesPerSecond(int stage, Symbol_sp fn, Cons_sp args )
+    {_G();
+        LightTimer timer;
+        int nargs = cl_length(args);
+        T_sp v1, v2, v3;
+        T_O* rawArgs[64];
+        int nargs = af_length(args);
+        Cons_sp cur = args;
+        for ( int i=0; i<nargs; ++i ) {
+            rawArgs[i] = oCar(cur).asTPtr();
+            cur=cCdr(cur);
+        }
+        ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
+        for ( int pow=0; pow<16; ++pow ) {
+            int times = 1 << pow*2;  // the number of times to run the inner loop
+            timer.reset();
+            timer.start();   // Wrap a timer around the repeated inner loop
+            T_sp cur = args;
+            // Fill frame here
+            for ( int i(0); i<times; ++i ) {
+                // Compare to call by value
+                callByValue(v1,v2,v3,v4);
+                if ( stage>=1 ) {
+                    closure = va_symbolFunction(&fn);
+                    if ( stage>=2 ) {
+                        switch (nargs) {
+                        case 0:
+                            mv_FUNCALL(&result_mv,closure,NULL,NULL,NULL);
+                            break;
+                        case 1:
+                            mv_FUNCALL(&result_mv,closure,rawArg[0],NULL,NULL);
+                            break;
+                        case 2:
+                            mv_FUNCALL(&result_mv,closure,rawArg[0],rawArg[1],NULL);
+                            break;
+                        case 3:
+                            mv_FUNCALL(&result_mv,closure,rawArg[0],rawArg[1],rawArg[2]);
+                            break;
+
+                        mv_FUNCALL(&result_mv,closure,
+                        int nargs = cl_length(args);
+                        if ( stage>=3 ) { // This is expensive
+                            ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
+                            if ( stage>=4 ) {
+                                Cons_sp cur = args;
+                                for ( int i=nargs; i<nargs; ++i ) {
+                                    frame->operator[](i) = oCar(cur);
+                                    cur=cCdr(cur);
+                                }
+                                if ( stage >= 5) {
+                                    Closure* closureP = func->closure;
+                                    ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+                                    eval::applyClosureToActivationFrame(closureP,frame);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            timer.stop();
+            if ( timer.getAccumulatedTime() > 0.1 ) {
+                return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
+            }
+        }
+        printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
+        return _Nil<T_O>();
+    }
+#endif
+
+
 
 #define ARGS_core_partialApplysPerSecond "(stage fn args)"
 #define DECL_core_partialApplysPerSecond ""
@@ -373,9 +447,23 @@ namespace core
                 // Compare to call by value
                 callByValue(v1,v2,v3,v4);
                 if ( stage>=1 ) {
+#if 1
+                    Function_O* func = reinterpret_cast<Function_O*>(fn.px_ref());
+#else
                     Function_sp func = eval::lookupFunction(fn,_Nil<T_O>());
+#endif
                     if ( stage>=2 ) {
+#if 1  // This is the fastest alternative I can think of relative to cl_length()
+                        int nargs;
+                        if ( args.nilp() ) {
+                            nargs = 0;
+                        } else {
+                            Cons_O* cargsP = reinterpret_cast<Cons_O*>(args.px_ref());
+                            nargs = cargsP->length();
+                        }
+#else
                         int nargs = cl_length(args);
+#endif
                         if ( stage>=3 ) { // This is expensive
                             ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
                             if ( stage>=4 ) {
@@ -527,6 +615,7 @@ namespace core
 	Defun(loadBundle);
 
         CoreDefun(applysPerSecond);
+//        CoreDefun(globalFuncallCyclesPerSecond);
         CoreDefun(partialApplysPerSecond);
         CoreDefun(callsByValuePerSecond);
         CoreDefun(callsByConstantReferencePerSecond);
