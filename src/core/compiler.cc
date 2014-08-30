@@ -9,6 +9,7 @@
 #include "symbolTable.h"
 #include "core/str.h"
 #include "compiler.h"
+#include "sequence.h"
 #include "pathname.h"
 #include "unixfsys.h"
 #include "lambdaListHandler.h"
@@ -362,7 +363,9 @@ namespace core
             T_sp cur = args;
             // Fill frame here
             for ( int i(0); i<times; ++i ) {
-                eval::lookupFunction(fn,_Nil<T_O>);
+                eval::lookupFunction(fn,_Nil<T_O>());
+                int nargs = cl_length(args);
+                ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
