@@ -4,6 +4,7 @@
 #include "core/common.h"
 #include "core/environment.h"
 #include "fileSystem.h"
+#include "lightProfiler.h"
 #include "designators.h"
 #include "evaluator.h"
 #include "symbolTable.h"
@@ -346,36 +347,44 @@ namespace core
         return _Nil<T_O>();
     }
 
+     __attribute__ ((noinline)) T_sp callByValue(T_sp v1, T_sp v2, T_sp v3, T_sp v4)
+    {
+        return v4;
+    }
 
 
-#define ARGS_core_functionLookupsPerSecond "(stage fn &rest args)"
-#define DECL_core_functionLookupsPerSecond ""
-#define DOCS_core_functionLookupsPerSecond "functionLookupsPerSecond"
-    T_sp core_functionLookupsPerSecond(int stage, T_sp fn, Cons_sp args)
+
+#define ARGS_core_partialApplysPerSecond "(stage fn args)"
+#define DECL_core_partialApplysPerSecond ""
+#define DOCS_core_partialApplysPerSecond "partialApplysPerSecond"
+    T_sp core_partialApplysPerSecond(int stage, T_sp fn, Cons_sp args)
     {_G();
         LightTimer timer;
         int nargs = cl_length(args);
+        T_sp v1, v2, v3, v4;
         ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
         for ( int pow=0; pow<16; ++pow ) {
-            int times = 1 << pow*2;
+            int times = 1 << pow*2;  // the number of times to run the inner loop
             timer.reset();
-            timer.start();
+            timer.start();   // Wrap a timer around the repeated inner loop
             T_sp cur = args;
             // Fill frame here
             for ( int i(0); i<times; ++i ) {
-                if ( stage>=0 ) {
+                // Compare to call by value
+                callByValue(v1,v2,v3,v4);
+                if ( stage>=1 ) {
                     Function_sp func = eval::lookupFunction(fn,_Nil<T_O>());
-                    if ( stage>=1 ) {
+                    if ( stage>=2 ) {
                         int nargs = cl_length(args);
-                        if ( stage>=2 ) { // This is expensive
+                        if ( stage>=3 ) { // This is expensive
                             ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
-                            if ( stage>=3 ) {
+                            if ( stage>=4 ) {
                                 Cons_sp cur = args;
                                 for ( int i=nargs; i<nargs; ++i ) {
                                     frame->operator[](i) = oCar(cur);
                                     cur=cCdr(cur);
                                 }
-                                if ( stage >= 4) {
+                                if ( stage >= 5) {
                                     Closure* closureP = func->closure;
                                     ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
                                     eval::applyClosureToActivationFrame(closureP,frame);
@@ -397,52 +406,7 @@ namespace core
 
 
 
-#define ARGS_core_timeApply "(stage fn &rest args)"
-#define DECL_core_timeApply ""
-#define DOCS_core_timeApply "timeApply"
-    T_sp core_timeApply(int stage, T_sp fn, Cons_sp args)
-    {_G();
-        LightProfiler profiler;
-        profiler.createTimers(5);
-        int nargs = cl_length(args);
-        ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
-        for ( int pow=0; pow<16; ++pow ) {
-            int times = 1 << pow*2;
-            T_sp cur = args;
-            // Fill frame here
-            for ( int i(0); i<times; ++i ) {
-                profiler.reset();
-                profiler.timer(0).start();
-                Function_sp func = eval::lookupFunction(fn,_Nil<T_O>());
-                profiler.timer(1).start();
-                int nargs = cl_length(args);
-                profiler.timer(2).start();
-                ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
-                profiler.timer(3).start();
-                Cons_sp cur = args;
-                for ( int i=nargs; i<nargs; ++i ) {
-                    frame->operator[](i) = oCar(cur);
-                    cur=cCdr(cur);
-                }
-                profiler.timer(4).start();
-                Closure* closureP = func->closure;
-                ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-                eval::applyClosureToActivationFrame(closureP,frame);
-                profiler.allTimersStop();
-            }
-            if ( profiler.getLongestTime() > 0.1 ) {
-                profiler.dump();
-            }
-        }
-        printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
-        return _Nil<T_O>();
-    }
 
-
-    T_sp callByValue(T_sp v1, T_sp v2, T_sp v3, T_sp v4)
-    {
-        return v4;
-    }
 
 
 #define ARGS_core_callsByValuePerSecond "()"
@@ -472,7 +436,7 @@ namespace core
     }
 
 
-    T_sp callByConstRef(const T_sp& v1, const T_sp& v2, const T_sp& v3, const T_sp& v4)
+     __attribute__ ((noinline)) T_sp callByConstRef(const T_sp& v1, const T_sp& v2, const T_sp& v3, const T_sp& v4)
     {
         return v4;
     }
@@ -504,12 +468,8 @@ namespace core
         return _Nil<T_O>();
     }
 
-
-    T_sp callByPointer( T_O* v1,  T_O* v2, T_O* v3, T_O* v4)  __attribute__ ((noinline)) ;
-
-    T_sp callByPointer( T_O* v1,  T_O* v2, T_O* v3, T_O* v4)
+    __attribute__ ((noinline)) T_sp callByPointer( T_O* v1,  T_O* v2, T_O* v3, T_O* v4)
     {
-        asm("");
         return v4;
     }
 
@@ -530,7 +490,7 @@ namespace core
             timer.reset();
             timer.start();
             for ( size_t i=0; i<times; ++i ) {
-                callByConstRef(v1,v2,v3,v4);
+                callByPointer(v1,v2,v3,v4);
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
@@ -567,8 +527,7 @@ namespace core
 	Defun(loadBundle);
 
         CoreDefun(applysPerSecond);
-        CoreDefun(functionLookupsPerSecond);
-        CoreDefun(timeApply);
+        CoreDefun(partialApplysPerSecond);
         CoreDefun(callsByValuePerSecond);
         CoreDefun(callsByConstantReferencePerSecond);
         CoreDefun(callsByPointerPerSecond);

@@ -22,8 +22,8 @@ project clasp : requirements
 	<cxxflags>"-fvisibility=default"
         <target-os>darwin:<cxxflags>"-gdwarf-4"
         <variant>debug:<cxxflags>"-O0 -g"
-        <variant>release:<cxxflags>"-O3"
-        <variant>release:<cflags>"-O3"
+        <variant>release:<cxxflags>"-O3 -g"
+        <variant>release:<cflags>"-O3 -g"
         <linkflags>"-fvisibility=default"
 	<target-os>linux:<linkflags>-lpthread
 	<define>INCLUDED_FROM_CLASP

@@ -31,7 +31,7 @@ namespace core {
     {
         struct metadata_bootstrap_class {};
         struct metadata_gc_do_not_move {};
-    private:
+    public:
 	Str_sp			_Name;
 	Package_sp		_HomePackage;
 	T_sp 			_Value;
@@ -40,9 +40,7 @@ namespace core {
 	bool			_IsConstant;
 	bool			_ReadOnlyFunction;
 	Cons_sp			_PropertyList;
-
     private:
-        
 	friend class Class_O;
 	friend class Package_O;
 	friend class CoreExposer;

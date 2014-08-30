@@ -210,10 +210,12 @@ extern "C" {
 
     core::Closure* va_symbolFunction( core::Symbol_sp* symP )
     {_G();
+#ifdef RUN_SAFE
 	if ( !(*symP) || !(*symP).pointerp() ) {
 	    SIMPLE_ERROR(BF("The head of the form %s is not a function designator") % _rep_((*symP)));
 	}
-        core::Function_sp func = (*symP)->symbolFunction();
+#endif
+        core::Function_sp func = (*symP)->_Function;
 	if ( !func.pointerp() ) {
 	    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
 	}

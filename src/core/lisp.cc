@@ -190,7 +190,6 @@ namespace core
                        _Bundle(NULL),
 		       _DebugStream(NULL),
 		       _SingleStepLevel(UndefinedUnsignedInt),
-		       _profiler(NULL), 
 		       _MpiEnabled(false), 
 		       _MpiRank(0),
 		       _MpiSize(1),
@@ -228,7 +227,6 @@ namespace core
 	{
 	    delete this->_Bundle;    
 	}
-	if ( this->_profiler != NULL )    {	delete this->_profiler; }
 	if ( this->_DebugStream!=NULL )    
 	{ 
 	    this->_DebugStream->endNode(DEBUG_TOPLEVEL);
@@ -337,7 +335,6 @@ namespace core
 //	lisp->__resetInitializationOwner();
 	_lisp->_DebugStream = new DebugStream(mpiRank);
 	LOG(BF("The lisp environment DebugStream has been created"));
-	_lisp->_profiler = new LightProfiler();
 	return _lisp;
     }
 

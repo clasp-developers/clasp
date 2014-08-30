@@ -48,6 +48,7 @@
 #include "core/vectorObjectsWithFillPtr.h"
 #include "main/gc_interface.fwd.h"
 #include "llvmoExpose.h"
+#include "core/lightProfiler.h"
 #include "insertPoint.h"
 #include "debugLoc.h"
 #include "core/external_wrappers.h"

@@ -151,6 +151,44 @@ LightTimer	*timer;
 }
 #endif
 
+
+
+
+    void LightProfiler::createTimers(uint num)
+    {
+        for ( int i=0; i<num; ++i ) {
+            LightTimer child;
+            this->_Timers.emplace_back(LightTimer());
+        }
+    }
+
+
+    double LightProfiler::getLongestTime()
+    {
+        double max = 0.0;
+        for ( auto& t: this->_Timers ) {
+            if (max<t.getAccumulatedTime()) {
+                max = t.getAccumulatedTime();
+            }
+        }
+        return max;
+    }
+
+    void LightProfiler::resetAllTimers()
+    {
+        for ( auto& t: this->_Timers ) {
+            t.reset();
+        }
+    }
+
+    void LightProfiler::stopAllTimers()
+    {
+        for ( auto& t: this->_Timers ) {
+            t.stop();
+        }
+    }
+
+            
 void	LightProfiler::dumpChildTimers(uint level, uint top)
 {
     uint		child;
@@ -208,6 +246,10 @@ int		root;
 //    printf( "\n%s\n", ss.str().c_str() );
 #endif
     this->dumpChildTimers(0,root);
+
+    for ( int i=0; i<this->_Timers.size(); ++i ) {
+        printf("Timer %d accumulatedTime %lf\n", i, this->_Timers[i].getAccumulatedTime());
+    }
 
     for ( uint i=0; i<this->_EventCounters.size(); i++ ) {
 	int problems = this->_EventCounters[i].getProblems();
