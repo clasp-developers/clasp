@@ -569,3291 +569,3291 @@ KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_ = 286,
 }
 #endif // defined(GC_ENUM)
 #if defined(GC_DYNAMIC_CAST)
-template <typename O> struct DynamicCast<core::Cache*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Cache*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 235 235 
     return (kindVal == 235);
   };
-  static core::Cache* castOrNULL(O* client) {
-    if (DynamicCast<core::Cache*,O>::isA(client)) {
+  static core::Cache* castOrNULL(FP client) {
+    if (DynamicCast<core::Cache*,FP>::isA(client)) {
       return reinterpret_cast<core::Cache*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SingleFloat_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SingleFloat_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 104 104 
     return (kindVal == 104);
   };
-  static core::SingleFloat_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SingleFloat_O*,O>::isA(client)) {
+  static core::SingleFloat_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SingleFloat_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SingleFloat_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Binder_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Binder_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 234 234 
     return (kindVal == 234);
   };
-  static core::Binder_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Binder_O*,O>::isA(client)) {
+  static core::Binder_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Binder_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Binder_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::FuncallableStandardClass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::FuncallableStandardClass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 216 216 
     return (kindVal == 216);
   };
-  static core::FuncallableStandardClass_O* castOrNULL(O* client) {
-    if (DynamicCast<core::FuncallableStandardClass_O*,O>::isA(client)) {
+  static core::FuncallableStandardClass_O* castOrNULL(FP client) {
+    if (DynamicCast<core::FuncallableStandardClass_O*,FP>::isA(client)) {
       return reinterpret_cast<core::FuncallableStandardClass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::RecursiveDirectoryIterator_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::RecursiveDirectoryIterator_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 69 69 
     return (kindVal == 69);
   };
-  static core::RecursiveDirectoryIterator_O* castOrNULL(O* client) {
-    if (DynamicCast<core::RecursiveDirectoryIterator_O*,O>::isA(client)) {
+  static core::RecursiveDirectoryIterator_O* castOrNULL(FP client) {
+    if (DynamicCast<core::RecursiveDirectoryIterator_O*,FP>::isA(client)) {
       return reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::LoadArchive_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::LoadArchive_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 76 77 
     return ((76 <= kindVal) && (kindVal <= 77));
   };
-  static core::LoadArchive_O* castOrNULL(O* client) {
-    if (DynamicCast<core::LoadArchive_O*,O>::isA(client)) {
+  static core::LoadArchive_O* castOrNULL(FP client) {
+    if (DynamicCast<core::LoadArchive_O*,FP>::isA(client)) {
       return reinterpret_cast<core::LoadArchive_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::BaseChar_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::BaseChar_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 82 83 
     return ((82 <= kindVal) && (kindVal <= 83));
   };
-  static core::BaseChar_O* castOrNULL(O* client) {
-    if (DynamicCast<core::BaseChar_O*,O>::isA(client)) {
+  static core::BaseChar_O* castOrNULL(FP client) {
+    if (DynamicCast<core::BaseChar_O*,FP>::isA(client)) {
       return reinterpret_cast<core::BaseChar_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ConstantInt_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ConstantInt_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 196 196 
     return (kindVal == 196);
   };
-  static llvmo::ConstantInt_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ConstantInt_O*,O>::isA(client)) {
+  static llvmo::ConstantInt_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ConstantInt_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ConstantInt_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::FunctionPassManager_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::FunctionPassManager_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 145 145 
     return (kindVal == 145);
   };
-  static llvmo::FunctionPassManager_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::FunctionPassManager_O*,O>::isA(client)) {
+  static llvmo::FunctionPassManager_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::FunctionPassManager_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::NamedMDNode_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::NamedMDNode_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 199 199 
     return (kindVal == 199);
   };
-  static llvmo::NamedMDNode_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::NamedMDNode_O*,O>::isA(client)) {
+  static llvmo::NamedMDNode_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::NamedMDNode_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::NamedMDNode_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SymbolSet_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SymbolSet_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 233 233 
     return (kindVal == 233);
   };
-  static core::SymbolSet_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SymbolSet_O*,O>::isA(client)) {
+  static core::SymbolSet_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SymbolSet_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SymbolSet_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::HashTable_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::HashTable_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 228 232 
     return ((228 <= kindVal) && (kindVal <= 232));
   };
-  static core::HashTable_O* castOrNULL(O* client) {
-    if (DynamicCast<core::HashTable_O*,O>::isA(client)) {
+  static core::HashTable_O* castOrNULL(FP client) {
+    if (DynamicCast<core::HashTable_O*,FP>::isA(client)) {
       return reinterpret_cast<core::HashTable_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::BitVector_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::BitVector_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 122 123 
     return ((122 <= kindVal) && (kindVal <= 123));
   };
-  static core::BitVector_O* castOrNULL(O* client) {
-    if (DynamicCast<core::BitVector_O*,O>::isA(client)) {
+  static core::BitVector_O* castOrNULL(FP client) {
+    if (DynamicCast<core::BitVector_O*,FP>::isA(client)) {
       return reinterpret_cast<core::BitVector_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::VectorObjects_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::VectorObjects_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 120 121 
     return ((120 <= kindVal) && (kindVal <= 121));
   };
-  static core::VectorObjects_O* castOrNULL(O* client) {
-    if (DynamicCast<core::VectorObjects_O*,O>::isA(client)) {
+  static core::VectorObjects_O* castOrNULL(FP client) {
+    if (DynamicCast<core::VectorObjects_O*,FP>::isA(client)) {
       return reinterpret_cast<core::VectorObjects_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StrWithFillPtr_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StrWithFillPtr_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 119 119 
     return (kindVal == 119);
   };
-  static core::StrWithFillPtr_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StrWithFillPtr_O*,O>::isA(client)) {
+  static core::StrWithFillPtr_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StrWithFillPtr_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StrWithFillPtr_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::CallInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::CallInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 182 182 
     return (kindVal == 182);
   };
-  static llvmo::CallInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::CallInst_O*,O>::isA(client)) {
+  static llvmo::CallInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::CallInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::CallInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::WeakPointer_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::WeakPointer_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 227 227 
     return (kindVal == 227);
   };
-  static core::WeakPointer_O* castOrNULL(O* client) {
-    if (DynamicCast<core::WeakPointer_O*,O>::isA(client)) {
+  static core::WeakPointer_O* castOrNULL(FP client) {
+    if (DynamicCast<core::WeakPointer_O*,FP>::isA(client)) {
       return reinterpret_cast<core::WeakPointer_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ValueFrame_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ValueFrame_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 46 46 
     return (kindVal == 46);
   };
-  static core::ValueFrame_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ValueFrame_O*,O>::isA(client)) {
+  static core::ValueFrame_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ValueFrame_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ValueFrame_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SymbolList_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SymbolList_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 226 226 
     return (kindVal == 226);
   };
-  static core::SymbolList_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SymbolList_O*,O>::isA(client)) {
+  static core::SymbolList_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SymbolList_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SymbolList_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::SwitchInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::SwitchInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 180 180 
     return (kindVal == 180);
   };
-  static llvmo::SwitchInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::SwitchInst_O*,O>::isA(client)) {
+  static llvmo::SwitchInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::SwitchInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::SwitchInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::TagbodyEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::TagbodyEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 42 42 
     return (kindVal == 42);
   };
-  static core::TagbodyEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::TagbodyEnvironment_O*,O>::isA(client)) {
+  static core::TagbodyEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::TagbodyEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::TagbodyEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::MacroletEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::MacroletEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 38 38 
     return (kindVal == 38);
   };
-  static core::MacroletEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::MacroletEnvironment_O*,O>::isA(client)) {
+  static core::MacroletEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::MacroletEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::MacroletEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::MultiStringBuffer_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::MultiStringBuffer_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 225 225 
     return (kindVal == 225);
   };
-  static core::MultiStringBuffer_O* castOrNULL(O* client) {
-    if (DynamicCast<core::MultiStringBuffer_O*,O>::isA(client)) {
+  static core::MultiStringBuffer_O* castOrNULL(FP client) {
+    if (DynamicCast<core::MultiStringBuffer_O*,FP>::isA(client)) {
       return reinterpret_cast<core::MultiStringBuffer_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::AllocaInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::AllocaInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 172 172 
     return (kindVal == 172);
   };
-  static llvmo::AllocaInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::AllocaInst_O*,O>::isA(client)) {
+  static llvmo::AllocaInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::AllocaInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::AllocaInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::DoubleFloat_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::DoubleFloat_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 103 103 
     return (kindVal == 103);
   };
-  static core::DoubleFloat_O* castOrNULL(O* client) {
-    if (DynamicCast<core::DoubleFloat_O*,O>::isA(client)) {
+  static core::DoubleFloat_O* castOrNULL(FP client) {
+    if (DynamicCast<core::DoubleFloat_O*,FP>::isA(client)) {
       return reinterpret_cast<core::DoubleFloat_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SymbolToEnumConverter_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SymbolToEnumConverter_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 224 224 
     return (kindVal == 224);
   };
-  static core::SymbolToEnumConverter_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SymbolToEnumConverter_O*,O>::isA(client)) {
+  static core::SymbolToEnumConverter_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SymbolToEnumConverter_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SymbolToEnumConverter_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Module_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Module_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 198 198 
     return (kindVal == 198);
   };
-  static llvmo::Module_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Module_O*,O>::isA(client)) {
+  static llvmo::Module_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Module_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Module_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StringSet_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StringSet_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 223 223 
     return (kindVal == 223);
   };
-  static core::StringSet_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StringSet_O*,O>::isA(client)) {
+  static core::StringSet_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StringSet_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StringSet_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Symbol_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Symbol_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 221 222 
     return ((221 <= kindVal) && (kindVal <= 222));
   };
-  static core::Symbol_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Symbol_O*,O>::isA(client)) {
+  static core::Symbol_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Symbol_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Symbol_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::UserData_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::UserData_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 205 205 
     return (kindVal == 205);
   };
-  static core::UserData_O* castOrNULL(O* client) {
-    if (DynamicCast<core::UserData_O*,O>::isA(client)) {
+  static core::UserData_O* castOrNULL(FP client) {
+    if (DynamicCast<core::UserData_O*,FP>::isA(client)) {
       return reinterpret_cast<core::UserData_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::FenceInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::FenceInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 181 181 
     return (kindVal == 181);
   };
-  static llvmo::FenceInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::FenceInst_O*,O>::isA(client)) {
+  static llvmo::FenceInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::FenceInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::FenceInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Str_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Str_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 118 119 
     return ((118 <= kindVal) && (kindVal <= 119));
   };
-  static core::Str_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Str_O*,O>::isA(client)) {
+  static core::Str_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Str_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Str_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ActivationFrame_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ActivationFrame_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 43 46 
     return ((43 <= kindVal) && (kindVal <= 46));
   };
-  static core::ActivationFrame_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ActivationFrame_O*,O>::isA(client)) {
+  static core::ActivationFrame_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ActivationFrame_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ActivationFrame_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::T_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::T_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 11 234 
     return ((11 <= kindVal) && (kindVal <= 234));
   };
-  static core::T_O* castOrNULL(O* client) {
-    if (DynamicCast<core::T_O*,O>::isA(client)) {
+  static core::T_O* castOrNULL(FP client) {
+    if (DynamicCast<core::T_O*,FP>::isA(client)) {
       return reinterpret_cast<core::T_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<clbind::DummyCreator*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<clbind::DummyCreator*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 6 6 
     return (kindVal == 6);
   };
-  static clbind::DummyCreator* castOrNULL(O* client) {
-    if (DynamicCast<clbind::DummyCreator*,O>::isA(client)) {
+  static clbind::DummyCreator* castOrNULL(FP client) {
+    if (DynamicCast<clbind::DummyCreator*,FP>::isA(client)) {
       return reinterpret_cast<clbind::DummyCreator*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::FunctionValueEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::FunctionValueEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 41 41 
     return (kindVal == 41);
   };
-  static core::FunctionValueEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::FunctionValueEnvironment_O*,O>::isA(client)) {
+  static core::FunctionValueEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::FunctionValueEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SymbolMacroletEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SymbolMacroletEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 37 37 
     return (kindVal == 37);
   };
-  static core::SymbolMacroletEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SymbolMacroletEnvironment_O*,O>::isA(client)) {
+  static core::SymbolMacroletEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SymbolMacroletEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::HashTableEq_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::HashTableEq_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 232 232 
     return (kindVal == 232);
   };
-  static core::HashTableEq_O* castOrNULL(O* client) {
-    if (DynamicCast<core::HashTableEq_O*,O>::isA(client)) {
+  static core::HashTableEq_O* castOrNULL(FP client) {
+    if (DynamicCast<core::HashTableEq_O*,FP>::isA(client)) {
       return reinterpret_cast<core::HashTableEq_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<asttooling::AstVisitor_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<asttooling::AstVisitor_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 220 220 
     return (kindVal == 220);
   };
-  static asttooling::AstVisitor_O* castOrNULL(O* client) {
-    if (DynamicCast<asttooling::AstVisitor_O*,O>::isA(client)) {
+  static asttooling::AstVisitor_O* castOrNULL(FP client) {
+    if (DynamicCast<asttooling::AstVisitor_O*,FP>::isA(client)) {
       return reinterpret_cast<asttooling::AstVisitor_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::TerminatorInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::TerminatorInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 173 180 
     return ((173 <= kindVal) && (kindVal <= 180));
   };
-  static llvmo::TerminatorInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::TerminatorInst_O*,O>::isA(client)) {
+  static llvmo::TerminatorInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::TerminatorInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::TerminatorInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DILexicalBlock_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DILexicalBlock_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 64 64 
     return (kindVal == 64);
   };
-  static llvmo::DILexicalBlock_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DILexicalBlock_O*,O>::isA(client)) {
+  static llvmo::DILexicalBlock_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DILexicalBlock_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::String_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::String_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 117 119 
     return ((117 <= kindVal) && (kindVal <= 119));
   };
-  static core::String_O* castOrNULL(O* client) {
-    if (DynamicCast<core::String_O*,O>::isA(client)) {
+  static core::String_O* castOrNULL(FP client) {
+    if (DynamicCast<core::String_O*,FP>::isA(client)) {
       return reinterpret_cast<core::String_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StandardObject_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StandardObject_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 209 219 
     return ((209 <= kindVal) && (kindVal <= 219));
   };
-  static core::StandardObject_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StandardObject_O*,O>::isA(client)) {
+  static core::StandardObject_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StandardObject_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StandardObject_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ConcatenatedStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ConcatenatedStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 26 26 
     return (kindVal == 26);
   };
-  static core::ConcatenatedStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ConcatenatedStream_O*,O>::isA(client)) {
+  static core::ConcatenatedStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ConcatenatedStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ConcatenatedStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::WrappedPointer_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::WrappedPointer_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 208 208 
     return (kindVal == 208);
   };
-  static core::WrappedPointer_O* castOrNULL(O* client) {
-    if (DynamicCast<core::WrappedPointer_O*,O>::isA(client)) {
+  static core::WrappedPointer_O* castOrNULL(FP client) {
+    if (DynamicCast<core::WrappedPointer_O*,FP>::isA(client)) {
       return reinterpret_cast<core::WrappedPointer_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ResumeInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ResumeInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 179 179 
     return (kindVal == 179);
   };
-  static llvmo::ResumeInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ResumeInst_O*,O>::isA(client)) {
+  static llvmo::ResumeInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ResumeInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ResumeInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::WeakHashTable_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::WeakHashTable_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 206 207 
     return ((206 <= kindVal) && (kindVal <= 207));
   };
-  static core::WeakHashTable_O* castOrNULL(O* client) {
-    if (DynamicCast<core::WeakHashTable_O*,O>::isA(client)) {
+  static core::WeakHashTable_O* castOrNULL(FP client) {
+    if (DynamicCast<core::WeakHashTable_O*,FP>::isA(client)) {
       return reinterpret_cast<core::WeakHashTable_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::FunctionContainerEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::FunctionContainerEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 36 36 
     return (kindVal == 36);
   };
-  static core::FunctionContainerEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::FunctionContainerEnvironment_O*,O>::isA(client)) {
+  static core::FunctionContainerEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::FunctionContainerEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::LLVMContext_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::LLVMContext_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 197 197 
     return (kindVal == 197);
   };
-  static llvmo::LLVMContext_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::LLVMContext_O*,O>::isA(client)) {
+  static llvmo::LLVMContext_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::LLVMContext_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::LLVMContext_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Rational_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Rational_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 105 109 
     return ((105 <= kindVal) && (kindVal <= 109));
   };
-  static core::Rational_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Rational_O*,O>::isA(client)) {
+  static core::Rational_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Rational_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Rational_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StringInputStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StringInputStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 23 23 
     return (kindVal == 23);
   };
-  static core::StringInputStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StringInputStream_O*,O>::isA(client)) {
+  static core::StringInputStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StringInputStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StringInputStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ImmutablePass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ImmutablePass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 132 133 
     return ((132 <= kindVal) && (kindVal <= 133));
   };
-  static llvmo::ImmutablePass_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ImmutablePass_O*,O>::isA(client)) {
+  static llvmo::ImmutablePass_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ImmutablePass_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ImmutablePass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Value_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Value_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 157 196 
     return ((157 <= kindVal) && (kindVal <= 196));
   };
-  static llvmo::Value_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Value_O*,O>::isA(client)) {
+  static llvmo::Value_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Value_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Value_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DIDerivedType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DIDerivedType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 63 63 
     return (kindVal == 63);
   };
-  static llvmo::DIDerivedType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DIDerivedType_O*,O>::isA(client)) {
+  static llvmo::DIDerivedType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DIDerivedType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DIDerivedType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::GlobalVariable_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::GlobalVariable_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 193 193 
     return (kindVal == 193);
   };
-  static llvmo::GlobalVariable_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::GlobalVariable_O*,O>::isA(client)) {
+  static llvmo::GlobalVariable_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::GlobalVariable_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::GlobalVariable_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::LeafSNode_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::LeafSNode_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 202 202 
     return (kindVal == 202);
   };
-  static core::LeafSNode_O* castOrNULL(O* client) {
-    if (DynamicCast<core::LeafSNode_O*,O>::isA(client)) {
+  static core::LeafSNode_O* castOrNULL(FP client) {
+    if (DynamicCast<core::LeafSNode_O*,FP>::isA(client)) {
       return reinterpret_cast<core::LeafSNode_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::PassManager_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::PassManager_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 144 144 
     return (kindVal == 144);
   };
-  static llvmo::PassManager_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::PassManager_O*,O>::isA(client)) {
+  static llvmo::PassManager_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::PassManager_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::PassManager_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<clbind::detail::class_map*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<clbind::detail::class_map*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 10 10 
     return (kindVal == 10);
   };
-  static clbind::detail::class_map* castOrNULL(O* client) {
-    if (DynamicCast<clbind::detail::class_map*,O>::isA(client)) {
+  static clbind::detail::class_map* castOrNULL(FP client) {
+    if (DynamicCast<clbind::detail::class_map*,FP>::isA(client)) {
       return reinterpret_cast<clbind::detail::class_map*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::LightUserData_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::LightUserData_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 204 205 
     return ((204 <= kindVal) && (kindVal <= 205));
   };
-  static core::LightUserData_O* castOrNULL(O* client) {
-    if (DynamicCast<core::LightUserData_O*,O>::isA(client)) {
+  static core::LightUserData_O* castOrNULL(FP client) {
+    if (DynamicCast<core::LightUserData_O*,FP>::isA(client)) {
       return reinterpret_cast<core::LightUserData_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::FunctionType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::FunctionType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 155 155 
     return (kindVal == 155);
   };
-  static llvmo::FunctionType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::FunctionType_O*,O>::isA(client)) {
+  static llvmo::FunctionType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::FunctionType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::FunctionType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DICompileUnit_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DICompileUnit_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 62 62 
     return (kindVal == 62);
   };
-  static llvmo::DICompileUnit_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DICompileUnit_O*,O>::isA(client)) {
+  static llvmo::DICompileUnit_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DICompileUnit_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DICompileUnit_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Linker_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Linker_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 156 156 
     return (kindVal == 156);
   };
-  static llvmo::Linker_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Linker_O*,O>::isA(client)) {
+  static llvmo::Linker_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Linker_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Linker_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::BranchInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::BranchInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 178 178 
     return (kindVal == 178);
   };
-  static llvmo::BranchInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::BranchInst_O*,O>::isA(client)) {
+  static llvmo::BranchInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::BranchInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::BranchInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Constant_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Constant_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 183 196 
     return ((183 <= kindVal) && (kindVal <= 196));
   };
-  static llvmo::Constant_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Constant_O*,O>::isA(client)) {
+  static llvmo::Constant_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Constant_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Constant_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ReturnInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ReturnInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 177 177 
     return (kindVal == 177);
   };
-  static llvmo::ReturnInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ReturnInst_O*,O>::isA(client)) {
+  static llvmo::ReturnInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ReturnInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ReturnInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::LexicalEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::LexicalEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 31 42 
     return ((31 <= kindVal) && (kindVal <= 42));
   };
-  static core::LexicalEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::LexicalEnvironment_O*,O>::isA(client)) {
+  static core::LexicalEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::LexicalEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::LexicalEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::LoadTimeValues_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::LoadTimeValues_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 203 203 
     return (kindVal == 203);
   };
-  static core::LoadTimeValues_O* castOrNULL(O* client) {
-    if (DynamicCast<core::LoadTimeValues_O*,O>::isA(client)) {
+  static core::LoadTimeValues_O* castOrNULL(FP client) {
+    if (DynamicCast<core::LoadTimeValues_O*,FP>::isA(client)) {
       return reinterpret_cast<core::LoadTimeValues_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Function_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Function_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 192 192 
     return (kindVal == 192);
   };
-  static llvmo::Function_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Function_O*,O>::isA(client)) {
+  static llvmo::Function_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Function_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Function_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SNode_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SNode_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 200 202 
     return ((200 <= kindVal) && (kindVal <= 202));
   };
-  static core::SNode_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SNode_O*,O>::isA(client)) {
+  static core::SNode_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SNode_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SNode_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ExternalObject_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ExternalObject_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 128 199 
     return ((128 <= kindVal) && (kindVal <= 199));
   };
-  static core::ExternalObject_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ExternalObject_O*,O>::isA(client)) {
+  static core::ExternalObject_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ExternalObject_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ExternalObject_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SourceManager_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SourceManager_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 127 127 
     return (kindVal == 127);
   };
-  static core::SourceManager_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SourceManager_O*,O>::isA(client)) {
+  static core::SourceManager_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SourceManager_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SourceManager_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::StructType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::StructType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 153 153 
     return (kindVal == 153);
   };
-  static llvmo::StructType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::StructType_O*,O>::isA(client)) {
+  static llvmo::StructType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::StructType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::StructType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StandardChar_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StandardChar_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 83 83 
     return (kindVal == 83);
   };
-  static core::StandardChar_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StandardChar_O*,O>::isA(client)) {
+  static core::StandardChar_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StandardChar_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StandardChar_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Null_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Null_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 222 222 
     return (kindVal == 222);
   };
-  static core::Null_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Null_O*,O>::isA(client)) {
+  static core::Null_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Null_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Null_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::User_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::User_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 162 196 
     return ((162 <= kindVal) && (kindVal <= 196));
   };
-  static llvmo::User_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::User_O*,O>::isA(client)) {
+  static llvmo::User_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::User_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::User_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::InsertPoint_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::InsertPoint_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 126 126 
     return (kindVal == 126);
   };
-  static llvmo::InsertPoint_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::InsertPoint_O*,O>::isA(client)) {
+  static llvmo::InsertPoint_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::InsertPoint_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::InsertPoint_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SequenceStepper*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SequenceStepper*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 7 9 
     return ((7 <= kindVal) && (kindVal <= 9));
   };
-  static core::SequenceStepper* castOrNULL(O* client) {
-    if (DynamicCast<core::SequenceStepper*,O>::isA(client)) {
+  static core::SequenceStepper* castOrNULL(FP client) {
+    if (DynamicCast<core::SequenceStepper*,FP>::isA(client)) {
       return reinterpret_cast<core::SequenceStepper*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SpecialForm_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SpecialForm_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 90 90 
     return (kindVal == 90);
   };
-  static core::SpecialForm_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SpecialForm_O*,O>::isA(client)) {
+  static core::SpecialForm_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SpecialForm_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SpecialForm_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Specializer_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Specializer_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 211 219 
     return ((211 <= kindVal) && (kindVal <= 219));
   };
-  static core::Specializer_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Specializer_O*,O>::isA(client)) {
+  static core::Specializer_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Specializer_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Specializer_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StructureClass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StructureClass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 219 219 
     return (kindVal == 219);
   };
-  static core::StructureClass_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StructureClass_O*,O>::isA(client)) {
+  static core::StructureClass_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StructureClass_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StructureClass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ObjRef_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ObjRef_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 125 125 
     return (kindVal == 125);
   };
-  static core::ObjRef_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ObjRef_O*,O>::isA(client)) {
+  static core::ObjRef_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ObjRef_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ObjRef_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::BuiltInClass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::BuiltInClass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 217 218 
     return ((217 <= kindVal) && (kindVal <= 218));
   };
-  static core::BuiltInClass_O* castOrNULL(O* client) {
-    if (DynamicCast<core::BuiltInClass_O*,O>::isA(client)) {
+  static core::BuiltInClass_O* castOrNULL(FP client) {
+    if (DynamicCast<core::BuiltInClass_O*,FP>::isA(client)) {
       return reinterpret_cast<core::BuiltInClass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::IntegerType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::IntegerType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 154 154 
     return (kindVal == 154);
   };
-  static llvmo::IntegerType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::IntegerType_O*,O>::isA(client)) {
+  static llvmo::IntegerType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::IntegerType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::IntegerType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Reader_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Reader_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 124 124 
     return (kindVal == 124);
   };
-  static core::Reader_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Reader_O*,O>::isA(client)) {
+  static core::Reader_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Reader_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Reader_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Type_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Type_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 147 155 
     return ((147 <= kindVal) && (kindVal <= 155));
   };
-  static llvmo::Type_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Type_O*,O>::isA(client)) {
+  static llvmo::Type_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Type_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Type_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::RuntimeVisibleEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::RuntimeVisibleEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 39 42 
     return ((39 <= kindVal) && (kindVal <= 42));
   };
-  static core::RuntimeVisibleEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::RuntimeVisibleEnvironment_O*,O>::isA(client)) {
+  static core::RuntimeVisibleEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::RuntimeVisibleEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DataLayout_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DataLayout_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 146 146 
     return (kindVal == 146);
   };
-  static llvmo::DataLayout_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DataLayout_O*,O>::isA(client)) {
+  static llvmo::DataLayout_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DataLayout_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DataLayout_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::CompositeType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::CompositeType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 148 153 
     return ((148 <= kindVal) && (kindVal <= 153));
   };
-  static llvmo::CompositeType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::CompositeType_O*,O>::isA(client)) {
+  static llvmo::CompositeType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::CompositeType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::CompositeType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Instance_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Instance_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 89 89 
     return (kindVal == 89);
   };
-  static core::Instance_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Instance_O*,O>::isA(client)) {
+  static core::Instance_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Instance_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Instance_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DIDescriptor_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DIDescriptor_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 61 61 
     return (kindVal == 61);
   };
-  static llvmo::DIDescriptor_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DIDescriptor_O*,O>::isA(client)) {
+  static llvmo::DIDescriptor_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DIDescriptor_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DIDescriptor_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::InvokeInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::InvokeInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 176 176 
     return (kindVal == 176);
   };
-  static llvmo::InvokeInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::InvokeInst_O*,O>::isA(client)) {
+  static llvmo::InvokeInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::InvokeInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::InvokeInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::PassManagerBase_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::PassManagerBase_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 143 145 
     return ((143 <= kindVal) && (kindVal <= 145));
   };
-  static llvmo::PassManagerBase_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::PassManagerBase_O*,O>::isA(client)) {
+  static llvmo::PassManagerBase_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::PassManagerBase_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::PassManagerBase_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DIFile_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DIFile_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 60 60 
     return (kindVal == 60);
   };
-  static llvmo::DIFile_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DIFile_O*,O>::isA(client)) {
+  static llvmo::DIFile_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DIFile_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DIFile_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::VAArgInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::VAArgInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 171 171 
     return (kindVal == 171);
   };
-  static llvmo::VAArgInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::VAArgInst_O*,O>::isA(client)) {
+  static llvmo::VAArgInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::VAArgInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::VAArgInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ShortFloat_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ShortFloat_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 102 102 
     return (kindVal == 102);
   };
-  static core::ShortFloat_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ShortFloat_O*,O>::isA(client)) {
+  static core::ShortFloat_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ShortFloat_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ShortFloat_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Array_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Array_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 114 123 
     return ((114 <= kindVal) && (kindVal <= 123));
   };
-  static core::Array_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Array_O*,O>::isA(client)) {
+  static core::Array_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Array_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Array_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::PassManagerBuilder_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::PassManagerBuilder_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 142 142 
     return (kindVal == 142);
   };
-  static llvmo::PassManagerBuilder_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::PassManagerBuilder_O*,O>::isA(client)) {
+  static llvmo::PassManagerBuilder_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::PassManagerBuilder_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::InstanceCreator*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::InstanceCreator*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 5 5 
     return (kindVal == 5);
   };
-  static core::InstanceCreator* castOrNULL(O* client) {
-    if (DynamicCast<core::InstanceCreator*,O>::isA(client)) {
+  static core::InstanceCreator* castOrNULL(FP client) {
+    if (DynamicCast<core::InstanceCreator*,FP>::isA(client)) {
       return reinterpret_cast<core::InstanceCreator*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::UnwindProtectEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::UnwindProtectEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 35 35 
     return (kindVal == 35);
   };
-  static core::UnwindProtectEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::UnwindProtectEnvironment_O*,O>::isA(client)) {
+  static core::UnwindProtectEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::UnwindProtectEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Fixnum_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Fixnum_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 109 109 
     return (kindVal == 109);
   };
-  static core::Fixnum_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Fixnum_O*,O>::isA(client)) {
+  static core::Fixnum_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Fixnum_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Fixnum_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ForeignData_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ForeignData_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 141 141 
     return (kindVal == 141);
   };
-  static core::ForeignData_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ForeignData_O*,O>::isA(client)) {
+  static core::ForeignData_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ForeignData_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ForeignData_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::EchoStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::EchoStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 25 25 
     return (kindVal == 25);
   };
-  static core::EchoStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::EchoStream_O*,O>::isA(client)) {
+  static core::EchoStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::EchoStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::EchoStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::UndefValue_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::UndefValue_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 195 195 
     return (kindVal == 195);
   };
-  static llvmo::UndefValue_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::UndefValue_O*,O>::isA(client)) {
+  static llvmo::UndefValue_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::UndefValue_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::UndefValue_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Creator*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Creator*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 3 6 
     return ((3 <= kindVal) && (kindVal <= 6));
   };
-  static core::Creator* castOrNULL(O* client) {
-    if (DynamicCast<core::Creator*,O>::isA(client)) {
+  static core::Creator* castOrNULL(FP client) {
+    if (DynamicCast<core::Creator*,FP>::isA(client)) {
       return reinterpret_cast<core::Creator*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::BasicBlock_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::BasicBlock_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 161 161 
     return (kindVal == 161);
   };
-  static llvmo::BasicBlock_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::BasicBlock_O*,O>::isA(client)) {
+  static llvmo::BasicBlock_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::BasicBlock_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::BasicBlock_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::UnreachableInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::UnreachableInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 175 175 
     return (kindVal == 175);
   };
-  static llvmo::UnreachableInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::UnreachableInst_O*,O>::isA(client)) {
+  static llvmo::UnreachableInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::UnreachableInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::UnreachableInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::CompileTimeEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::CompileTimeEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 32 38 
     return ((32 <= kindVal) && (kindVal <= 38));
   };
-  static core::CompileTimeEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::CompileTimeEnvironment_O*,O>::isA(client)) {
+  static core::CompileTimeEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::CompileTimeEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Attribute_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Attribute_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 113 113 
     return (kindVal == 113);
   };
-  static llvmo::Attribute_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Attribute_O*,O>::isA(client)) {
+  static llvmo::Attribute_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Attribute_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Attribute_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::VectorStepper*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::VectorStepper*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 9 9 
     return (kindVal == 9);
   };
-  static core::VectorStepper* castOrNULL(O* client) {
-    if (DynamicCast<core::VectorStepper*,O>::isA(client)) {
+  static core::VectorStepper* castOrNULL(FP client) {
+    if (DynamicCast<core::VectorStepper*,FP>::isA(client)) {
       return reinterpret_cast<core::VectorStepper*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::BranchSNode_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::BranchSNode_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 201 201 
     return (kindVal == 201);
   };
-  static core::BranchSNode_O* castOrNULL(O* client) {
-    if (DynamicCast<core::BranchSNode_O*,O>::isA(client)) {
+  static core::BranchSNode_O* castOrNULL(FP client) {
+    if (DynamicCast<core::BranchSNode_O*,FP>::isA(client)) {
       return reinterpret_cast<core::BranchSNode_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ReadTable_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ReadTable_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 112 112 
     return (kindVal == 112);
   };
-  static core::ReadTable_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ReadTable_O*,O>::isA(client)) {
+  static core::ReadTable_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ReadTable_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ReadTable_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::CompiledFunction_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::CompiledFunction_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 88 88 
     return (kindVal == 88);
   };
-  static core::CompiledFunction_O* castOrNULL(O* client) {
-    if (DynamicCast<core::CompiledFunction_O*,O>::isA(client)) {
+  static core::CompiledFunction_O* castOrNULL(FP client) {
+    if (DynamicCast<core::CompiledFunction_O*,FP>::isA(client)) {
       return reinterpret_cast<core::CompiledFunction_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DataLayoutPass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DataLayoutPass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 133 133 
     return (kindVal == 133);
   };
-  static llvmo::DataLayoutPass_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DataLayoutPass_O*,O>::isA(client)) {
+  static llvmo::DataLayoutPass_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DataLayoutPass_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DataLayoutPass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SynonymStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SynonymStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 24 24 
     return (kindVal == 24);
   };
-  static core::SynonymStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SynonymStream_O*,O>::isA(client)) {
+  static core::SynonymStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SynonymStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SynonymStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::PosixTime_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::PosixTime_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 111 111 
     return (kindVal == 111);
   };
-  static core::PosixTime_O* castOrNULL(O* client) {
-    if (DynamicCast<core::PosixTime_O*,O>::isA(client)) {
+  static core::PosixTime_O* castOrNULL(FP client) {
+    if (DynamicCast<core::PosixTime_O*,FP>::isA(client)) {
       return reinterpret_cast<core::PosixTime_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::VectorObjectsWithFillPtr_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::VectorObjectsWithFillPtr_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 121 121 
     return (kindVal == 121);
   };
-  static core::VectorObjectsWithFillPtr_O* castOrNULL(O* client) {
-    if (DynamicCast<core::VectorObjectsWithFillPtr_O*,O>::isA(client)) {
+  static core::VectorObjectsWithFillPtr_O* castOrNULL(FP client) {
+    if (DynamicCast<core::VectorObjectsWithFillPtr_O*,FP>::isA(client)) {
       return reinterpret_cast<core::VectorObjectsWithFillPtr_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Number_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Number_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 98 110 
     return ((98 <= kindVal) && (kindVal <= 110));
   };
-  static core::Number_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Number_O*,O>::isA(client)) {
+  static core::Number_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Number_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Number_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::UnaryInstruction_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::UnaryInstruction_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 169 172 
     return ((169 <= kindVal) && (kindVal <= 172));
   };
-  static llvmo::UnaryInstruction_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::UnaryInstruction_O*,O>::isA(client)) {
+  static llvmo::UnaryInstruction_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::UnaryInstruction_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::IntArray_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::IntArray_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 97 97 
     return (kindVal == 97);
   };
-  static core::IntArray_O* castOrNULL(O* client) {
-    if (DynamicCast<core::IntArray_O*,O>::isA(client)) {
+  static core::IntArray_O* castOrNULL(FP client) {
+    if (DynamicCast<core::IntArray_O*,FP>::isA(client)) {
       return reinterpret_cast<core::IntArray_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Float_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Float_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 100 104 
     return ((100 <= kindVal) && (kindVal <= 104));
   };
-  static core::Float_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Float_O*,O>::isA(client)) {
+  static core::Float_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Float_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Float_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Class_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Class_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 212 219 
     return ((212 <= kindVal) && (kindVal <= 219));
   };
-  static core::Class_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Class_O*,O>::isA(client)) {
+  static core::Class_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Class_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Class_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::MDNode_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::MDNode_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 160 160 
     return (kindVal == 160);
   };
-  static llvmo::MDNode_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::MDNode_O*,O>::isA(client)) {
+  static llvmo::MDNode_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::MDNode_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::MDNode_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StringOutputStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StringOutputStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 22 22 
     return (kindVal == 22);
   };
-  static core::StringOutputStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StringOutputStream_O*,O>::isA(client)) {
+  static core::StringOutputStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StringOutputStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StringOutputStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::IndirectBrInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::IndirectBrInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 174 174 
     return (kindVal == 174);
   };
-  static llvmo::IndirectBrInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::IndirectBrInst_O*,O>::isA(client)) {
+  static llvmo::IndirectBrInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::IndirectBrInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StringList_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StringList_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 96 96 
     return (kindVal == 96);
   };
-  static core::StringList_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StringList_O*,O>::isA(client)) {
+  static core::StringList_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StringList_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StringList_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::MDString_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::MDString_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 159 159 
     return (kindVal == 159);
   };
-  static llvmo::MDString_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::MDString_O*,O>::isA(client)) {
+  static llvmo::MDString_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::MDString_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::MDString_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::CandoException_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::CandoException_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 95 95 
     return (kindVal == 95);
   };
-  static core::CandoException_O* castOrNULL(O* client) {
-    if (DynamicCast<core::CandoException_O*,O>::isA(client)) {
+  static core::CandoException_O* castOrNULL(FP client) {
+    if (DynamicCast<core::CandoException_O*,FP>::isA(client)) {
       return reinterpret_cast<core::CandoException_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Vector_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Vector_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 116 123 
     return ((116 <= kindVal) && (kindVal <= 123));
   };
-  static core::Vector_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Vector_O*,O>::isA(client)) {
+  static core::Vector_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Vector_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Vector_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::SequentialType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::SequentialType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 149 152 
     return ((149 <= kindVal) && (kindVal <= 152));
   };
-  static llvmo::SequentialType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::SequentialType_O*,O>::isA(client)) {
+  static llvmo::SequentialType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::SequentialType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::SequentialType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::APFloat_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::APFloat_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 140 140 
     return (kindVal == 140);
   };
-  static llvmo::APFloat_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::APFloat_O*,O>::isA(client)) {
+  static llvmo::APFloat_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::APFloat_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::APFloat_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ArrayType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ArrayType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 152 152 
     return (kindVal == 152);
   };
-  static llvmo::ArrayType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ArrayType_O*,O>::isA(client)) {
+  static llvmo::ArrayType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ArrayType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ArrayType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::LandingPadInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::LandingPadInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 168 168 
     return (kindVal == 168);
   };
-  static llvmo::LandingPadInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::LandingPadInst_O*,O>::isA(client)) {
+  static llvmo::LandingPadInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::LandingPadInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::LandingPadInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ConstantExpr_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ConstantExpr_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 194 194 
     return (kindVal == 194);
   };
-  static llvmo::ConstantExpr_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ConstantExpr_O*,O>::isA(client)) {
+  static llvmo::ConstantExpr_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ConstantExpr_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ConstantExpr_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::IOStreamStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::IOStreamStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 19 19 
     return (kindVal == 19);
   };
-  static core::IOStreamStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::IOStreamStream_O*,O>::isA(client)) {
+  static core::IOStreamStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::IOStreamStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::IOStreamStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::VectorType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::VectorType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 151 151 
     return (kindVal == 151);
   };
-  static llvmo::VectorType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::VectorType_O*,O>::isA(client)) {
+  static llvmo::VectorType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::VectorType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::VectorType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Package_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Package_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 94 94 
     return (kindVal == 94);
   };
-  static core::Package_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Package_O*,O>::isA(client)) {
+  static core::Package_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Package_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Package_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DIScope_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DIScope_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 59 59 
     return (kindVal == 59);
   };
-  static llvmo::DIScope_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DIScope_O*,O>::isA(client)) {
+  static llvmo::DIScope_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DIScope_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DIScope_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Regex_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Regex_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 93 93 
     return (kindVal == 93);
   };
-  static core::Regex_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Regex_O*,O>::isA(client)) {
+  static core::Regex_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Regex_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Regex_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::GlueEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::GlueEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 30 30 
     return (kindVal == 30);
   };
-  static core::GlueEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::GlueEnvironment_O*,O>::isA(client)) {
+  static core::GlueEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::GlueEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::GlueEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StringStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StringStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 21 23 
     return ((21 <= kindVal) && (kindVal <= 23));
   };
-  static core::StringStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StringStream_O*,O>::isA(client)) {
+  static core::StringStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StringStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StringStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Complex_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Complex_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 110 110 
     return (kindVal == 110);
   };
-  static core::Complex_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Complex_O*,O>::isA(client)) {
+  static core::Complex_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Complex_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Complex_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SexpSaveArchive_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SexpSaveArchive_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 75 75 
     return (kindVal == 75);
   };
-  static core::SexpSaveArchive_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SexpSaveArchive_O*,O>::isA(client)) {
+  static core::SexpSaveArchive_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SexpSaveArchive_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SexpSaveArchive_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DebugLoc_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DebugLoc_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 92 92 
     return (kindVal == 92);
   };
-  static llvmo::DebugLoc_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DebugLoc_O*,O>::isA(client)) {
+  static llvmo::DebugLoc_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DebugLoc_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DebugLoc_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::GlobalValue_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::GlobalValue_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 191 193 
     return ((191 <= kindVal) && (kindVal <= 193));
   };
-  static llvmo::GlobalValue_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::GlobalValue_O*,O>::isA(client)) {
+  static llvmo::GlobalValue_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::GlobalValue_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::GlobalValue_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::WeakKeyMapping_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::WeakKeyMapping_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 91 91 
     return (kindVal == 91);
   };
-  static core::WeakKeyMapping_O* castOrNULL(O* client) {
-    if (DynamicCast<core::WeakKeyMapping_O*,O>::isA(client)) {
+  static core::WeakKeyMapping_O* castOrNULL(FP client) {
+    if (DynamicCast<core::WeakKeyMapping_O*,FP>::isA(client)) {
       return reinterpret_cast<core::WeakKeyMapping_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Function_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Function_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 85 90 
     return ((85 <= kindVal) && (kindVal <= 90));
   };
-  static core::Function_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Function_O*,O>::isA(client)) {
+  static core::Function_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Function_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Function_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Metaobject_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Metaobject_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 210 219 
     return ((210 <= kindVal) && (kindVal <= 219));
   };
-  static core::Metaobject_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Metaobject_O*,O>::isA(client)) {
+  static core::Metaobject_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Metaobject_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Metaobject_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::MicroHeap_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::MicroHeap_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 84 84 
     return (kindVal == 84);
   };
-  static core::MicroHeap_O* castOrNULL(O* client) {
-    if (DynamicCast<core::MicroHeap_O*,O>::isA(client)) {
+  static core::MicroHeap_O* castOrNULL(FP client) {
+    if (DynamicCast<core::MicroHeap_O*,FP>::isA(client)) {
       return reinterpret_cast<core::MicroHeap_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::BroadcastStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::BroadcastStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 20 20 
     return (kindVal == 20);
   };
-  static core::BroadcastStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::BroadcastStream_O*,O>::isA(client)) {
+  static core::BroadcastStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::BroadcastStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::BroadcastStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Argument_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Argument_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 158 158 
     return (kindVal == 158);
   };
-  static llvmo::Argument_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Argument_O*,O>::isA(client)) {
+  static llvmo::Argument_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Argument_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Argument_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::HashTableEql_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::HashTableEql_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 231 231 
     return (kindVal == 231);
   };
-  static core::HashTableEql_O* castOrNULL(O* client) {
-    if (DynamicCast<core::HashTableEql_O*,O>::isA(client)) {
+  static core::HashTableEql_O* castOrNULL(FP client) {
+    if (DynamicCast<core::HashTableEql_O*,FP>::isA(client)) {
       return reinterpret_cast<core::HashTableEql_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SexpLoadArchive_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SexpLoadArchive_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 77 77 
     return (kindVal == 77);
   };
-  static core::SexpLoadArchive_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SexpLoadArchive_O*,O>::isA(client)) {
+  static core::SexpLoadArchive_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SexpLoadArchive_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SexpLoadArchive_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::FunctionFrame_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::FunctionFrame_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 45 45 
     return (kindVal == 45);
   };
-  static core::FunctionFrame_O* castOrNULL(O* client) {
-    if (DynamicCast<core::FunctionFrame_O*,O>::isA(client)) {
+  static core::FunctionFrame_O* castOrNULL(FP client) {
+    if (DynamicCast<core::FunctionFrame_O*,FP>::isA(client)) {
       return reinterpret_cast<core::FunctionFrame_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DIArray_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DIArray_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 58 58 
     return (kindVal == 58);
   };
-  static llvmo::DIArray_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DIArray_O*,O>::isA(client)) {
+  static llvmo::DIArray_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DIArray_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DIArray_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Character_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Character_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 80 83 
     return ((80 <= kindVal) && (kindVal <= 83));
   };
-  static core::Character_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Character_O*,O>::isA(client)) {
+  static core::Character_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Character_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Character_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ArrayObjects_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ArrayObjects_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 115 115 
     return (kindVal == 115);
   };
-  static core::ArrayObjects_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ArrayObjects_O*,O>::isA(client)) {
+  static core::ArrayObjects_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ArrayObjects_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ArrayObjects_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::LongFloat_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::LongFloat_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 101 101 
     return (kindVal == 101);
   };
-  static core::LongFloat_O* castOrNULL(O* client) {
-    if (DynamicCast<core::LongFloat_O*,O>::isA(client)) {
+  static core::LongFloat_O* castOrNULL(FP client) {
+    if (DynamicCast<core::LongFloat_O*,FP>::isA(client)) {
       return reinterpret_cast<core::LongFloat_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ConsStepper*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ConsStepper*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 8 8 
     return (kindVal == 8);
   };
-  static core::ConsStepper* castOrNULL(O* client) {
-    if (DynamicCast<core::ConsStepper*,O>::isA(client)) {
+  static core::ConsStepper* castOrNULL(FP client) {
+    if (DynamicCast<core::ConsStepper*,FP>::isA(client)) {
       return reinterpret_cast<core::ConsStepper*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SourcePosInfo_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SourcePosInfo_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 79 79 
     return (kindVal == 79);
   };
-  static core::SourcePosInfo_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SourcePosInfo_O*,O>::isA(client)) {
+  static core::SourcePosInfo_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SourcePosInfo_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SourcePosInfo_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ConstantDataArray_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ConstantDataArray_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 185 185 
     return (kindVal == 185);
   };
-  static llvmo::ConstantDataArray_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ConstantDataArray_O*,O>::isA(client)) {
+  static llvmo::ConstantDataArray_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ConstantDataArray_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ConstantFP_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ConstantFP_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 190 190 
     return (kindVal == 190);
   };
-  static llvmo::ConstantFP_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ConstantFP_O*,O>::isA(client)) {
+  static llvmo::ConstantFP_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ConstantFP_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ConstantFP_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::RegexMatch_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::RegexMatch_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 78 78 
     return (kindVal == 78);
   };
-  static core::RegexMatch_O* castOrNULL(O* client) {
-    if (DynamicCast<core::RegexMatch_O*,O>::isA(client)) {
+  static core::RegexMatch_O* castOrNULL(FP client) {
+    if (DynamicCast<core::RegexMatch_O*,FP>::isA(client)) {
       return reinterpret_cast<core::RegexMatch_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::WeakKeyHashTable_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::WeakKeyHashTable_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 207 207 
     return (kindVal == 207);
   };
-  static core::WeakKeyHashTable_O* castOrNULL(O* client) {
-    if (DynamicCast<core::WeakKeyHashTable_O*,O>::isA(client)) {
+  static core::WeakKeyHashTable_O* castOrNULL(FP client) {
+    if (DynamicCast<core::WeakKeyHashTable_O*,FP>::isA(client)) {
       return reinterpret_cast<core::WeakKeyHashTable_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Archive_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Archive_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 73 77 
     return ((73 <= kindVal) && (kindVal <= 77));
   };
-  static core::Archive_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Archive_O*,O>::isA(client)) {
+  static core::Archive_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Archive_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Archive_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<clbind::ClassRegistry_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<clbind::ClassRegistry_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 72 72 
     return (kindVal == 72);
   };
-  static clbind::ClassRegistry_O* castOrNULL(O* client) {
-    if (DynamicCast<clbind::ClassRegistry_O*,O>::isA(client)) {
+  static clbind::ClassRegistry_O* castOrNULL(FP client) {
+    if (DynamicCast<clbind::ClassRegistry_O*,FP>::isA(client)) {
       return reinterpret_cast<clbind::ClassRegistry_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::AtomicCmpXchgInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::AtomicCmpXchgInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 167 167 
     return (kindVal == 167);
   };
-  static llvmo::AtomicCmpXchgInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::AtomicCmpXchgInst_O*,O>::isA(client)) {
+  static llvmo::AtomicCmpXchgInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::AtomicCmpXchgInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::BlockEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::BlockEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 34 34 
     return (kindVal == 34);
   };
-  static core::BlockEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::BlockEnvironment_O*,O>::isA(client)) {
+  static core::BlockEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::BlockEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::BlockEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::DirectoryIterator_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::DirectoryIterator_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 68 68 
     return (kindVal == 68);
   };
-  static core::DirectoryIterator_O* castOrNULL(O* client) {
-    if (DynamicCast<core::DirectoryIterator_O*,O>::isA(client)) {
+  static core::DirectoryIterator_O* castOrNULL(FP client) {
+    if (DynamicCast<core::DirectoryIterator_O*,FP>::isA(client)) {
       return reinterpret_cast<core::DirectoryIterator_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::FileStatus_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::FileStatus_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 71 71 
     return (kindVal == 71);
   };
-  static core::FileStatus_O* castOrNULL(O* client) {
-    if (DynamicCast<core::FileStatus_O*,O>::isA(client)) {
+  static core::FileStatus_O* castOrNULL(FP client) {
+    if (DynamicCast<core::FileStatus_O*,FP>::isA(client)) {
       return reinterpret_cast<core::FileStatus_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::PosixTimeDuration_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::PosixTimeDuration_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 70 70 
     return (kindVal == 70);
   };
-  static core::PosixTimeDuration_O* castOrNULL(O* client) {
-    if (DynamicCast<core::PosixTimeDuration_O*,O>::isA(client)) {
+  static core::PosixTimeDuration_O* castOrNULL(FP client) {
+    if (DynamicCast<core::PosixTimeDuration_O*,FP>::isA(client)) {
       return reinterpret_cast<core::PosixTimeDuration_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::TagbodyFrame_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::TagbodyFrame_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 44 44 
     return (kindVal == 44);
   };
-  static core::TagbodyFrame_O* castOrNULL(O* client) {
-    if (DynamicCast<core::TagbodyFrame_O*,O>::isA(client)) {
+  static core::TagbodyFrame_O* castOrNULL(FP client) {
+    if (DynamicCast<core::TagbodyFrame_O*,FP>::isA(client)) {
       return reinterpret_cast<core::TagbodyFrame_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Integer_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Integer_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 107 109 
     return ((107 <= kindVal) && (kindVal <= 109));
   };
-  static core::Integer_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Integer_O*,O>::isA(client)) {
+  static core::Integer_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Integer_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Integer_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ExtendedChar_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ExtendedChar_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 81 81 
     return (kindVal == 81);
   };
-  static core::ExtendedChar_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ExtendedChar_O*,O>::isA(client)) {
+  static core::ExtendedChar_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ExtendedChar_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ExtendedChar_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SaveArchive_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SaveArchive_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 74 75 
     return ((74 <= kindVal) && (kindVal <= 75));
   };
-  static core::SaveArchive_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SaveArchive_O*,O>::isA(client)) {
+  static core::SaveArchive_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SaveArchive_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SaveArchive_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Bignum_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Bignum_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 108 108 
     return (kindVal == 108);
   };
-  static core::Bignum_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Bignum_O*,O>::isA(client)) {
+  static core::Bignum_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Bignum_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Bignum_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Instruction_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Instruction_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 163 182 
     return ((163 <= kindVal) && (kindVal <= 182));
   };
-  static llvmo::Instruction_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Instruction_O*,O>::isA(client)) {
+  static llvmo::Instruction_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Instruction_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Instruction_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::LogicalPathname_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::LogicalPathname_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 28 28 
     return (kindVal == 28);
   };
-  static core::LogicalPathname_O* castOrNULL(O* client) {
-    if (DynamicCast<core::LogicalPathname_O*,O>::isA(client)) {
+  static core::LogicalPathname_O* castOrNULL(FP client) {
+    if (DynamicCast<core::LogicalPathname_O*,FP>::isA(client)) {
       return reinterpret_cast<core::LogicalPathname_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StdClass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StdClass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 214 216 
     return ((214 <= kindVal) && (kindVal <= 216));
   };
-  static core::StdClass_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StdClass_O*,O>::isA(client)) {
+  static core::StdClass_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StdClass_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StdClass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Real_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Real_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 99 109 
     return ((99 <= kindVal) && (kindVal <= 109));
   };
-  static core::Real_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Real_O*,O>::isA(client)) {
+  static core::Real_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Real_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Real_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::APInt_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::APInt_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 139 139 
     return (kindVal == 139);
   };
-  static llvmo::APInt_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::APInt_O*,O>::isA(client)) {
+  static llvmo::APInt_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::APInt_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::APInt_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Iterator_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Iterator_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 67 69 
     return ((67 <= kindVal) && (kindVal <= 69));
   };
-  static core::Iterator_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Iterator_O*,O>::isA(client)) {
+  static core::Iterator_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Iterator_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Iterator_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::CatchEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::CatchEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 33 33 
     return (kindVal == 33);
   };
-  static core::CatchEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::CatchEnvironment_O*,O>::isA(client)) {
+  static core::CatchEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::CatchEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::CatchEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DISubprogram_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DISubprogram_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 57 57 
     return (kindVal == 57);
   };
-  static llvmo::DISubprogram_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DISubprogram_O*,O>::isA(client)) {
+  static llvmo::DISubprogram_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DISubprogram_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DISubprogram_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::LambdaListHandler_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::LambdaListHandler_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 66 66 
     return (kindVal == 66);
   };
-  static core::LambdaListHandler_O* castOrNULL(O* client) {
-    if (DynamicCast<core::LambdaListHandler_O*,O>::isA(client)) {
+  static core::LambdaListHandler_O* castOrNULL(FP client) {
+    if (DynamicCast<core::LambdaListHandler_O*,FP>::isA(client)) {
       return reinterpret_cast<core::LambdaListHandler_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ValueEnvironment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ValueEnvironment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 40 40 
     return (kindVal == 40);
   };
-  static core::ValueEnvironment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ValueEnvironment_O*,O>::isA(client)) {
+  static core::ValueEnvironment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ValueEnvironment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ValueEnvironment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ConstantArray_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ConstantArray_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 189 189 
     return (kindVal == 189);
   };
-  static llvmo::ConstantArray_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ConstantArray_O*,O>::isA(client)) {
+  static llvmo::ConstantArray_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ConstantArray_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ConstantArray_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::FileStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::FileStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 17 19 
     return ((17 <= kindVal) && (kindVal <= 19));
   };
-  static core::FileStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::FileStream_O*,O>::isA(client)) {
+  static core::FileStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::FileStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::FileStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StructureObject_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StructureObject_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 65 65 
     return (kindVal == 65);
   };
-  static core::StructureObject_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StructureObject_O*,O>::isA(client)) {
+  static core::StructureObject_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StructureObject_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StructureObject_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DebugInfo_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DebugInfo_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 53 64 
     return ((53 <= kindVal) && (kindVal <= 64));
   };
-  static llvmo::DebugInfo_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DebugInfo_O*,O>::isA(client)) {
+  static llvmo::DebugInfo_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DebugInfo_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DebugInfo_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Path_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Path_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 52 52 
     return (kindVal == 52);
   };
-  static core::Path_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Path_O*,O>::isA(client)) {
+  static core::Path_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Path_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Path_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SingleDispatchGenericFunction_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SingleDispatchGenericFunction_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 87 87 
     return (kindVal == 87);
   };
-  static core::SingleDispatchGenericFunction_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SingleDispatchGenericFunction_O*,O>::isA(client)) {
+  static core::SingleDispatchGenericFunction_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SingleDispatchGenericFunction_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SingleDispatchGenericFunction_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Ratio_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Ratio_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 106 106 
     return (kindVal == 106);
   };
-  static core::Ratio_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Ratio_O*,O>::isA(client)) {
+  static core::Ratio_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Ratio_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Ratio_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DIType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DIType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 56 56 
     return (kindVal == 56);
   };
-  static llvmo::DIType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DIType_O*,O>::isA(client)) {
+  static llvmo::DIType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DIType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DIType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ConstantPointerNull_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ConstantPointerNull_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 188 188 
     return (kindVal == 188);
   };
-  static llvmo::ConstantPointerNull_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ConstantPointerNull_O*,O>::isA(client)) {
+  static llvmo::ConstantPointerNull_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ConstantPointerNull_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SimpleBitVector_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SimpleBitVector_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 123 123 
     return (kindVal == 123);
   };
-  static core::SimpleBitVector_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SimpleBitVector_O*,O>::isA(client)) {
+  static core::SimpleBitVector_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SimpleBitVector_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SimpleBitVector_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::EngineBuilder_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::EngineBuilder_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 138 138 
     return (kindVal == 138);
   };
-  static llvmo::EngineBuilder_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::EngineBuilder_O*,O>::isA(client)) {
+  static llvmo::EngineBuilder_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::EngineBuilder_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::EngineBuilder_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<asttooling::RegMap::RegistryMaps*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<asttooling::RegMap::RegistryMaps*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 2 2 
     return (kindVal == 2);
   };
-  static asttooling::RegMap::RegistryMaps* castOrNULL(O* client) {
-    if (DynamicCast<asttooling::RegMap::RegistryMaps*,O>::isA(client)) {
+  static asttooling::RegMap::RegistryMaps* castOrNULL(FP client) {
+    if (DynamicCast<asttooling::RegMap::RegistryMaps*,FP>::isA(client)) {
       return reinterpret_cast<asttooling::RegMap::RegistryMaps*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<clbind::ConstructorCreator*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<clbind::ConstructorCreator*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 4 4 
     return (kindVal == 4);
   };
-  static clbind::ConstructorCreator* castOrNULL(O* client) {
-    if (DynamicCast<clbind::ConstructorCreator*,O>::isA(client)) {
+  static clbind::ConstructorCreator* castOrNULL(FP client) {
+    if (DynamicCast<clbind::ConstructorCreator*,FP>::isA(client)) {
       return reinterpret_cast<clbind::ConstructorCreator*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<clbind::ClassRep_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<clbind::ClassRep_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 218 218 
     return (kindVal == 218);
   };
-  static clbind::ClassRep_O* castOrNULL(O* client) {
-    if (DynamicCast<clbind::ClassRep_O*,O>::isA(client)) {
+  static clbind::ClassRep_O* castOrNULL(FP client) {
+    if (DynamicCast<clbind::ClassRep_O*,FP>::isA(client)) {
       return reinterpret_cast<clbind::ClassRep_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::StandardClass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::StandardClass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 215 215 
     return (kindVal == 215);
   };
-  static core::StandardClass_O* castOrNULL(O* client) {
-    if (DynamicCast<core::StandardClass_O*,O>::isA(client)) {
+  static core::StandardClass_O* castOrNULL(FP client) {
+    if (DynamicCast<core::StandardClass_O*,FP>::isA(client)) {
       return reinterpret_cast<core::StandardClass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::HashTableEqualp_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::HashTableEqualp_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 230 230 
     return (kindVal == 230);
   };
-  static core::HashTableEqualp_O* castOrNULL(O* client) {
-    if (DynamicCast<core::HashTableEqualp_O*,O>::isA(client)) {
+  static core::HashTableEqualp_O* castOrNULL(FP client) {
+    if (DynamicCast<core::HashTableEqualp_O*,FP>::isA(client)) {
       return reinterpret_cast<core::HashTableEqualp_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::PointerType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::PointerType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 150 150 
     return (kindVal == 150);
   };
-  static llvmo::PointerType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::PointerType_O*,O>::isA(client)) {
+  static llvmo::PointerType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::PointerType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::PointerType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Pointer_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Pointer_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 51 51 
     return (kindVal == 51);
   };
-  static core::Pointer_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Pointer_O*,O>::isA(client)) {
+  static core::Pointer_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Pointer_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Pointer_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::DirectoryEntry_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::DirectoryEntry_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 50 50 
     return (kindVal == 50);
   };
-  static core::DirectoryEntry_O* castOrNULL(O* client) {
-    if (DynamicCast<core::DirectoryEntry_O*,O>::isA(client)) {
+  static core::DirectoryEntry_O* castOrNULL(FP client) {
+    if (DynamicCast<core::DirectoryEntry_O*,FP>::isA(client)) {
       return reinterpret_cast<core::DirectoryEntry_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::HashTableEqual_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::HashTableEqual_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 229 229 
     return (kindVal == 229);
   };
-  static core::HashTableEqual_O* castOrNULL(O* client) {
-    if (DynamicCast<core::HashTableEqual_O*,O>::isA(client)) {
+  static core::HashTableEqual_O* castOrNULL(FP client) {
+    if (DynamicCast<core::HashTableEqual_O*,FP>::isA(client)) {
       return reinterpret_cast<core::HashTableEqual_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ExecutionEngine_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ExecutionEngine_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 137 137 
     return (kindVal == 137);
   };
-  static llvmo::ExecutionEngine_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ExecutionEngine_O*,O>::isA(client)) {
+  static llvmo::ExecutionEngine_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ExecutionEngine_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::PHINode_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::PHINode_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 166 166 
     return (kindVal == 166);
   };
-  static llvmo::PHINode_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::PHINode_O*,O>::isA(client)) {
+  static llvmo::PHINode_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::PHINode_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::PHINode_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::TwoWayStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::TwoWayStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 16 16 
     return (kindVal == 16);
   };
-  static core::TwoWayStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::TwoWayStream_O*,O>::isA(client)) {
+  static core::TwoWayStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::TwoWayStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::TwoWayStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ForwardReferencedClass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ForwardReferencedClass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 213 213 
     return (kindVal == 213);
   };
-  static core::ForwardReferencedClass_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ForwardReferencedClass_O*,O>::isA(client)) {
+  static core::ForwardReferencedClass_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ForwardReferencedClass_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ForwardReferencedClass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::ObjectSet_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::ObjectSet_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 49 49 
     return (kindVal == 49);
   };
-  static core::ObjectSet_O* castOrNULL(O* client) {
-    if (DynamicCast<core::ObjectSet_O*,O>::isA(client)) {
+  static core::ObjectSet_O* castOrNULL(FP client) {
+    if (DynamicCast<core::ObjectSet_O*,FP>::isA(client)) {
       return reinterpret_cast<core::ObjectSet_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SourceFileInfo_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SourceFileInfo_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 48 48 
     return (kindVal == 48);
   };
-  static core::SourceFileInfo_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SourceFileInfo_O*,O>::isA(client)) {
+  static core::SourceFileInfo_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SourceFileInfo_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SourceFileInfo_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SingleDispatchMethod_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SingleDispatchMethod_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 47 47 
     return (kindVal == 47);
   };
-  static core::SingleDispatchMethod_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SingleDispatchMethod_O*,O>::isA(client)) {
+  static core::SingleDispatchMethod_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SingleDispatchMethod_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SingleDispatchMethod_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DIBuilder_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DIBuilder_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 136 136 
     return (kindVal == 136);
   };
-  static llvmo::DIBuilder_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DIBuilder_O*,O>::isA(client)) {
+  static llvmo::DIBuilder_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DIBuilder_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DIBuilder_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DIBasicType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DIBasicType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 55 55 
     return (kindVal == 55);
   };
-  static llvmo::DIBasicType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DIBasicType_O*,O>::isA(client)) {
+  static llvmo::DIBasicType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DIBasicType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DIBasicType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::LoadInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::LoadInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 170 170 
     return (kindVal == 170);
   };
-  static llvmo::LoadInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::LoadInst_O*,O>::isA(client)) {
+  static llvmo::LoadInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::LoadInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::LoadInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::IRBuilder_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::IRBuilder_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 135 135 
     return (kindVal == 135);
   };
-  static llvmo::IRBuilder_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::IRBuilder_O*,O>::isA(client)) {
+  static llvmo::IRBuilder_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::IRBuilder_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::IRBuilder_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Environment_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Environment_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 29 46 
     return ((29 <= kindVal) && (kindVal <= 46));
   };
-  static core::Environment_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Environment_O*,O>::isA(client)) {
+  static core::Environment_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Environment_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Environment_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::IRBuilderBase_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::IRBuilderBase_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 134 135 
     return ((134 <= kindVal) && (kindVal <= 135));
   };
-  static llvmo::IRBuilderBase_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::IRBuilderBase_O*,O>::isA(client)) {
+  static llvmo::IRBuilderBase_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::IRBuilderBase_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::BlockAddress_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::BlockAddress_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 187 187 
     return (kindVal == 187);
   };
-  static llvmo::BlockAddress_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::BlockAddress_O*,O>::isA(client)) {
+  static llvmo::BlockAddress_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::BlockAddress_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::BlockAddress_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Pathname_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Pathname_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 27 28 
     return ((27 <= kindVal) && (kindVal <= 28));
   };
-  static core::Pathname_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Pathname_O*,O>::isA(client)) {
+  static core::Pathname_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Pathname_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Pathname_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Lisp_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Lisp_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 1 1 
     return (kindVal == 1);
   };
-  static core::Lisp_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Lisp_O*,O>::isA(client)) {
+  static core::Lisp_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Lisp_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Lisp_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::DICompositeType_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::DICompositeType_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 54 54 
     return (kindVal == 54);
   };
-  static llvmo::DICompositeType_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::DICompositeType_O*,O>::isA(client)) {
+  static llvmo::DICompositeType_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::DICompositeType_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::DICompositeType_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ModulePass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ModulePass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 131 133 
     return ((131 <= kindVal) && (kindVal <= 133));
   };
-  static llvmo::ModulePass_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ModulePass_O*,O>::isA(client)) {
+  static llvmo::ModulePass_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ModulePass_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ModulePass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::StoreInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::StoreInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 165 165 
     return (kindVal == 165);
   };
-  static llvmo::StoreInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::StoreInst_O*,O>::isA(client)) {
+  static llvmo::StoreInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::StoreInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::StoreInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Stream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Stream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 14 26 
     return ((14 <= kindVal) && (kindVal <= 26));
   };
-  static core::Stream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Stream_O*,O>::isA(client)) {
+  static core::Stream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Stream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Stream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::SingleDispatchEffectiveMethodFunction_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::SingleDispatchEffectiveMethodFunction_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 86 86 
     return (kindVal == 86);
   };
-  static core::SingleDispatchEffectiveMethodFunction_O* castOrNULL(O* client) {
-    if (DynamicCast<core::SingleDispatchEffectiveMethodFunction_O*,O>::isA(client)) {
+  static core::SingleDispatchEffectiveMethodFunction_O* castOrNULL(FP client) {
+    if (DynamicCast<core::SingleDispatchEffectiveMethodFunction_O*,FP>::isA(client)) {
       return reinterpret_cast<core::SingleDispatchEffectiveMethodFunction_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ConstantStruct_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ConstantStruct_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 186 186 
     return (kindVal == 186);
   };
-  static llvmo::ConstantStruct_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ConstantStruct_O*,O>::isA(client)) {
+  static llvmo::ConstantStruct_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ConstantStruct_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ConstantStruct_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::FunctionPass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::FunctionPass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 130 130 
     return (kindVal == 130);
   };
-  static llvmo::FunctionPass_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::FunctionPass_O*,O>::isA(client)) {
+  static llvmo::FunctionPass_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::FunctionPass_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::FunctionPass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::AtomicRMWInst_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::AtomicRMWInst_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 164 164 
     return (kindVal == 164);
   };
-  static llvmo::AtomicRMWInst_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::AtomicRMWInst_O*,O>::isA(client)) {
+  static llvmo::AtomicRMWInst_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::AtomicRMWInst_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<cffi::Pointer_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<cffi::Pointer_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 13 13 
     return (kindVal == 13);
   };
-  static cffi::Pointer_O* castOrNULL(O* client) {
-    if (DynamicCast<cffi::Pointer_O*,O>::isA(client)) {
+  static cffi::Pointer_O* castOrNULL(FP client) {
+    if (DynamicCast<cffi::Pointer_O*,FP>::isA(client)) {
       return reinterpret_cast<cffi::Pointer_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::IOFileStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::IOFileStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 18 18 
     return (kindVal == 18);
   };
-  static core::IOFileStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::IOFileStream_O*,O>::isA(client)) {
+  static core::IOFileStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::IOFileStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::IOFileStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::Cons_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::Cons_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 12 12 
     return (kindVal == 12);
   };
-  static core::Cons_O* castOrNULL(O* client) {
-    if (DynamicCast<core::Cons_O*,O>::isA(client)) {
+  static core::Cons_O* castOrNULL(FP client) {
+    if (DynamicCast<core::Cons_O*,FP>::isA(client)) {
       return reinterpret_cast<core::Cons_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<core::AnsiStream_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<core::AnsiStream_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 15 26 
     return ((15 <= kindVal) && (kindVal <= 26));
   };
-  static core::AnsiStream_O* castOrNULL(O* client) {
-    if (DynamicCast<core::AnsiStream_O*,O>::isA(client)) {
+  static core::AnsiStream_O* castOrNULL(FP client) {
+    if (DynamicCast<core::AnsiStream_O*,FP>::isA(client)) {
       return reinterpret_cast<core::AnsiStream_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::Pass_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::Pass_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 129 133 
     return ((129 <= kindVal) && (kindVal <= 133));
   };
-  static llvmo::Pass_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::Pass_O*,O>::isA(client)) {
+  static llvmo::Pass_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::Pass_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::Pass_O*>(client);
     }
     return NULL;
   };
 };
-template <typename O> struct DynamicCast<llvmo::ConstantDataSequential_O*,O> {
-  static bool isA(O* client) {
+template <typename FP> struct DynamicCast<llvmo::ConstantDataSequential_O*,FP> {
+  static bool isA(FP client) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
     int kindVal = header->kind();
     // low high --> 184 185 
     return ((184 <= kindVal) && (kindVal <= 185));
   };
-  static llvmo::ConstantDataSequential_O* castOrNULL(O* client) {
-    if (DynamicCast<llvmo::ConstantDataSequential_O*,O>::isA(client)) {
+  static llvmo::ConstantDataSequential_O* castOrNULL(FP client) {
+    if (DynamicCast<llvmo::ConstantDataSequential_O*,FP>::isA(client)) {
       return reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
     }
     return NULL;
