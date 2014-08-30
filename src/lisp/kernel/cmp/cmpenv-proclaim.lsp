@@ -99,13 +99,13 @@
      (proclaim-var decl-name (cdr decl)))
     (otherwise
      (cond ((member (car decl) si:*alien-declarations*))
-	   ((multiple-value-bind (ok type)
-		(valid-type-specifier decl-name)
-	      (when ok
-		(proclaim-var type (rest decl))
-		t)))
-           ((maybe-add-policy decl *cmp-env-root*))            
-	   ((let ((proclaimer (get-sysprop (car decl) :proclaim)))
+	   #-clasp ((multiple-value-bind (ok type)
+                        (valid-type-specifier decl-name)
+                      (when ok
+                        (proclaim-var type (rest decl))
+                        t)))
+           #-clasp ((maybe-add-policy decl *cmp-env-root*))            
+	   #-clasp ((let ((proclaimer (get-sysprop (car decl) :proclaim)))
 	      (when (functionp proclaimer)
 		(mapc proclaimer (rest decl))
 		t)))

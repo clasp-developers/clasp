@@ -101,6 +101,12 @@ namespace core {
 //	LightTimer*	createTimer(uint parent, uint id, 
 //					const string& name);
         void createTimers(uint num);
+        void resetAllTimers();
+        void stopAllTimers();
+
+        double getLongestTime();
+
+
 	uint createTimer(uint parent, const string& name);
 	uint	createEventCounter(string name);
 

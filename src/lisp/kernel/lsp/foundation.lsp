@@ -378,6 +378,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	  `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
       t)
 
+(defun warn (x &rest args)
+  (bformat t "WARN: %s %s\n" x args))
+
 (defun class-name (x)
   (name-of-class x))
 

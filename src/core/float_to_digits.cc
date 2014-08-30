@@ -171,7 +171,7 @@ namespace core {
     }
 
     static void
-    change_precision(float_approx *approx, Real_sp position, Real_sp relativep)
+    change_precision(float_approx *approx, Real_sp position, T_sp relativep)
     {
         cl_fixnum pos;
         if (Null(position))
@@ -220,7 +220,7 @@ namespace core {
 #define DECL_core_float_to_digits ""
 #define DOCS_core_float_to_digits "float_to_digits"
     T_mv core_float_to_digits(StrWithFillPtr_sp digits, Float_sp number, Real_sp position,
-			      Real_sp relativep)
+			      T_sp relativep)
     {
         cl_fixnum k;
         float_approx approx[1];

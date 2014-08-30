@@ -10,7 +10,6 @@
 #include "foundation.h"
 #include "object.h"
 #include "holder.h"
-#include "lightProfiler.h"
 #include "lispStream.fwd.h"
 #include "executables.fwd.h"
 #include "character.fwd.h"
@@ -336,7 +335,6 @@ namespace core
 	uint			_SingleStepLevel;
 	int			_TraceLevel;
 	int			_DebuggerLevel;
-	LightProfiler*           _profiler;
 	/*! Global environment initialization hooks can be added until
 	  the environment is started up.
 	*/
@@ -380,7 +378,6 @@ namespace core
 	InvocationHistoryStack&	invocationHistoryStack();
 	MultipleValues&		multipleValues();
     public:
-	LightProfiler& profiler() { return *(this->_profiler);};
 	DebugStream& debugLog() {HARD_ASSERT(this->_DebugStream!=NULL);return *(this->_DebugStream);};
 //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
     public:
