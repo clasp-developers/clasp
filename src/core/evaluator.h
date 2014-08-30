@@ -83,7 +83,9 @@ namespace core
 		cur=cCdr(cur);
 	    }
 #endif
-            return applyToActivationFrame(func,frame);
+            Closure* closureP = func->closure;
+            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+	    return applyClosureToActivationFrame(closureP,frame);
 	}
 
 	inline T_mv apply( T_sp fn, T_sp a0,
