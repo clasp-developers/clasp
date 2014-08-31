@@ -572,11 +572,11 @@ namespace core
 	    this->_Roots._SingleFloatPlusZero = SingleFloat_O::create(0.0);
 	    this->_Roots._DoubleFloatMinusZero = DoubleFloat_O::create(-0.0);
 	    this->_Roots._DoubleFloatPlusZero = DoubleFloat_O::create(0.0);
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	    this->_Roots._LongFloatOne = LongFloat_O::create(1.0);
 	    this->_Roots._LongFloatMinusZero = LongFloat_O::create(-0.0l);
 	    this->_Roots._LongFloatPlusZero = LongFloat_O::create(0.0l);
-#endif // ifdef BRCL_LONG_FLOAT
+#endif // ifdef CLASP_LONG_FLOAT
 	    this->_Roots._BignumRegister0 = Bignum_O::create(0);
 	    this->_Roots._BignumRegister1 = Bignum_O::create(0);
 	    this->_Roots._BignumRegister2 = Bignum_O::create(0);

@@ -657,11 +657,13 @@ extern "C"
 	(*fnP) = core::DoubleFloat_sp(core::DoubleFloat_O::create(s));  
     }
 
+#ifdef CLASP_LONG_FLOAT
     void makeLongFloat( core::T_sp* fnP, LongFloat s)
     {_G();
 	ASSERT(fnP!=NULL);
 	(*fnP) = core::LongFloat_sp(core::LongFloat_O::create(s));  
     }
+#endif
 
 };
 

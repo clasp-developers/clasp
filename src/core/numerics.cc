@@ -239,7 +239,7 @@ bool	almostEqualAbsoluteOrRelative(double va, double vb,
 	    v1 = DoubleFloat_O::create(d - y);
 	    break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = x.as<LongFloat_O>()->get();
 	    LongFloat y = ceill(d);
@@ -310,7 +310,7 @@ ecl_ceiling2(Number_sp x, Number_sp y)
 		  v1 = ecl_make_double_float(p*n - q*n);
 		  break;
 		}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 		case number_LongFloat: {	/* FIX / LF */
 		  LongFloat n = ecl_long_float(y);
 		  LongFloat p = ecl_fixnum(x)/n;
@@ -356,7 +356,7 @@ ecl_ceiling2(Number_sp x, Number_sp y)
 		  v1 = ecl_make_double_float(p*n - q*n);
 		  break;
 		}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 		case number_LongFloat: {	/* BIG / LF */
 		  LongFloat n = ecl_long_float(y);
 		  LongFloat p = _ecl_big_to_double(x)/n;
@@ -398,7 +398,7 @@ ecl_ceiling2(Number_sp x, Number_sp y)
 		v1 = ecl_make_double_float(p*n - q*n);
 		break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {		/* LF / ANY */
 		LongFloat n = ecl_to_long_double(y);
 		LongFloat p = ecl_long_float(x)/n;
@@ -457,7 +457,7 @@ number_remainder(cl_object x, cl_object y, cl_object q)
   switch (tx = x->number_type()) {
 	case number_SingleFloat:
 	case number_DoubleFloat:
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 #endif
 		if (y == OBJNULL || ty == tx)
@@ -470,7 +470,7 @@ number_remainder(cl_object x, cl_object y, cl_object q)
 			x = ecl_make_single_float(ecl_to_double(x)); break;
 		case number_DoubleFloat:
 			x = ecl_make_double_float(ecl_to_double(x)); break;
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 		case number_LongFloat:
 			x = ecl_make_long_float(ecl_to_long_double(x)); break;
 #endif
@@ -546,7 +546,7 @@ ecl_floor1(cl_object x)
 		v1 = ecl_make_double_float(d - y);
 		break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 		LongFloat d = ecl_long_float(x);
 		LongFloat y = floorl(d);
@@ -617,7 +617,7 @@ ecl_floor2(cl_object x, cl_object y)
 		  v1 = ecl_make_double_float((p - q)*n);
 		  break;
 		}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 		case number_LongFloat: {	/* FIX / LF */
 		  LongFloat n = ecl_long_float(y);
 		  LongFloat p = ecl_fixnum(x) / n;
@@ -663,7 +663,7 @@ ecl_floor2(cl_object x, cl_object y)
 		  v1 = ecl_make_double_float((p - q)*n);
 		  break;
 		}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 		case number_LongFloat: {	/* BIG / LF */
 		  LongFloat n = ecl_long_float(y);
 		  LongFloat p = _ecl_big_to_double(x) / n;
@@ -708,7 +708,7 @@ ecl_floor2(cl_object x, cl_object y)
 		v1 = ecl_make_double_float(p*n - q*n);
 		break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {		/* LF / ANY */
 		LongFloat n = ecl_to_long_double(y);
 		LongFloat p = ecl_long_float(x)/n;
@@ -762,7 +762,7 @@ ecl_truncate1(cl_object x)
 		v1 = ecl_make_double_float(d - y);
 		break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 		LongFloat d = ecl_long_float(x);
 		LongFloat y = d > 0? floorl(d) : ceill(d);
@@ -811,7 +811,7 @@ round_double(double d)
 	}
 }
 
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 static LongFloat
 round_long_double(LongFloat d)
 {
@@ -859,7 +859,7 @@ ecl_round1(cl_object x)
 		v1 = ecl_make_double_float(d - q);
 		break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 		LongFloat d = ecl_long_float(x);
 		LongFloat q = round_long_double(d);
@@ -972,7 +972,7 @@ cl_decode_float(cl_object x)
 		x = ecl_make_double_float(d);
 		break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 		LongFloat d = ecl_long_float(x);
 		if (d >= 0.0)
@@ -1010,7 +1010,7 @@ cl_scale_float(cl_object x, cl_object y)
 	case number_DoubleFloat:
 		x = ecl_make_double_float(ldexp(ecl_double_float(x), k));
 		break;
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 		x = ecl_make_long_float(ldexpl(ecl_long_float(x), k));
 		break;
@@ -1039,7 +1039,7 @@ ecl_signbit(cl_object x)
 		return signbit(ecl_single_float(x));
 	case number_DoubleFloat:
 		return signbit(ecl_double_float(x));
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 		return signbit(ecl_long_float(x));
 #endif
@@ -1066,7 +1066,7 @@ ecl_signbit(cl_object x)
                 if (signbit(f) != negativep) y = ecl_make_double_float(-f);
 		break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 		LongFloat f = ecl_long_float(y);
                 if (signbit(f) != negativep) y = ecl_make_long_float(-f);
@@ -1090,7 +1090,7 @@ cl_float_digits(cl_object x)
 	case number_DoubleFloat:
 		x = Fixnum_O::create(DBL_MANT_DIG);
 		break;
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 		x = Fixnum_O::create(LDBL_MANT_DIG);
 		break;
@@ -1137,7 +1137,7 @@ cl_float_precision(cl_object x)
 		}
 		break;
 	}
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 		LongFloat f = ecl_long_float(x);
 		if (f == 0.0) {
@@ -1167,7 +1167,7 @@ cl_integer_decode_float(cl_object x)
 	int e, s = 1;
 
 	switch (x->number_type()) {
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 		LongFloat d = ecl_long_float(x);
                 if (signbit(d)) {
@@ -1238,7 +1238,7 @@ cl_realpart(cl_object x)
 	case number_Ratio:
 	case number_SingleFloat:
 	case number_DoubleFloat:
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 #endif
 		break;
@@ -1272,7 +1272,7 @@ cl_imagpart(cl_object x)
                 else
                         x = cl_core.doublefloat_zero;
 		break;
-#ifdef ECL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
                 if (signbit(ecl_long_float(x)))
                         x = cl_core.longfloat_minus_zero;

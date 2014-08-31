@@ -57,8 +57,8 @@ typedef int claspCharacter;
 #define HAVE_DIRENT_H 1
 
 
-/*! Don't use LongFloat */
-//#define BRCL_LONG_FLOAT 1
+/*! Don't use LongFloat - they are doubles */
+//#define CLASP_LONG_FLOAT 1
 
 
 #define BRCL_ARRAY_DIMENSION_LIMIT (1024*1024)

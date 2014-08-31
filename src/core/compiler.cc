@@ -447,19 +447,18 @@ namespace core
                 // Compare to call by value
                 callByValue(v1,v2,v3,v4);
                 if ( stage>=1 ) {
-#if 1
+#if 0
                     Function_O* func = reinterpret_cast<Function_O*>(fn.px_ref());
 #else
                     Function_sp func = eval::lookupFunction(fn,_Nil<T_O>());
 #endif
                     if ( stage>=2 ) {
-#if 1  // This is the fastest alternative I can think of relative to cl_length()
+#if 0  // This is the fastest alternative I can think of relative to cl_length()
                         int nargs;
                         if ( args.nilp() ) {
                             nargs = 0;
                         } else {
-                            Cons_O* cargsP = reinterpret_cast<Cons_O*>(args.px_ref());
-                            nargs = cargsP->length();
+                            nargs = args->fastUnsafeLength();
                         }
 #else
                         int nargs = cl_length(args);

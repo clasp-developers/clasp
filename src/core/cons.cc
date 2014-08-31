@@ -979,17 +979,6 @@ namespace core
 	return((sz));
     };
 
-    uint Cons_O::fastUnsafeLength() const
-    {
-        uint sz=1;
-        CdrType_O* cur = this->_Cdr.px_ref();
-        while (!gctools::tagged_nilp(cur)) {
-            ++sz;
-            cur = reinterpret_cast<CdrType_O*>(cur->_Cdr);
-        }
-        return sz;
-    }
-            
 
 
     T_sp	Cons_O::olistref(int idx)

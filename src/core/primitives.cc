@@ -1475,7 +1475,9 @@ Symbol_mv af_type_to_symbol(T_sp x)
     else if ( af_ratioP(x) ) return(Values(cl::_sym_Ratio_O));
     else if ( af_singleFloatP(x) ) return(Values(cl::_sym_SingleFloat_O));
     else if ( af_doubleFloatP(x) ) return(Values(cl::_sym_DoubleFloat_O));
+#ifdef CLASP_LONG_FLOAT
     else if ( af_longFloatP(x) ) return(Values(cl::_sym_LongFloat_O));
+#endif
     else if ( af_complexP(x) ) return(Values(cl::_sym_Complex_O));
     else if ( af_symbolp(x) ) return(Values(cl::_sym_Symbol_O));
     else if ( af_packageP(x) ) return(Values(cl::_sym_Package_O));

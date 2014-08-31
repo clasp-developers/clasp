@@ -59,7 +59,7 @@ namespace core {
 	    limit_f = (number.as<DoubleFloat_O>()->get() ==
 		       ldexp(FLT_RADIX, DBL_MANT_DIG-1));
 	    break;
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 	    min_e = LDBL_MIN_EXP;
 	    limit_f = (number.as<LongFloat_O>()->get() ==

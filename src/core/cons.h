@@ -345,7 +345,18 @@ namespace core {
 	uint	length() const;
 
         /*! Calculate the length the fastest way I can think of */
-        uint fastUnsafeLength() const;
+        inline uint fastUnsafeLength() const
+        {
+            uint sz=1;
+            Cons_O* cur = reinterpret_cast<Cons_O*>(this->_Cdr.px_ref());
+            while (!gctools::tagged_ptr<Cons_O>::tagged_nilp(cur)) {
+                ++sz;
+                cur = reinterpret_cast<Cons_O*>(reinterpret_cast<Cons_O*>(cur)->_Cdr.px_ref());
+            }
+            return sz;
+        }
+            
+
 
 	/*! Return an arbitrary member of the list or an empty member*/
 	template <class o_class>

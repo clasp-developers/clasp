@@ -81,7 +81,7 @@ namespace core {
 	switch (tx = x->number_type()) {
 	case number_SingleFloat:
 	case number_DoubleFloat:
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 #endif
 	    if (y.nilp() || ty == tx)
@@ -96,7 +96,7 @@ namespace core {
 	    case number_DoubleFloat:
 		x = brcl_make_double_float(brcl_to_double(x)).as<Real_O>();
 		break;
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat:
 		x = brcl_make_long_float(brcl_to_long_float(x)).as<Real_O>();
 		break;
@@ -188,7 +188,7 @@ namespace core {
 	    v1 = brcl_make_double_float(d - y);
 	    break;
 	}
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = brcl_long_float(x);
 	    LongFloat y = floorl(d);
@@ -267,7 +267,7 @@ namespace core {
 		v1 = brcl_make_double_float((p - q)*n);
 		break;
 	    }
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* FIX / LF */
 		LongFloat n = brcl_long_float(y);
 		LongFloat p = brcl_fixnum(x) / n;
@@ -320,7 +320,7 @@ namespace core {
 		v1 = brcl_make_double_float((p - q)*n);
 		break;
 	    }
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* BIG / LF */
 		LongFloat n = brcl_long_float(y);
 		LongFloat p = _brcl_big_to_double(x.as<Bignum_O>()) / n;
@@ -376,7 +376,7 @@ namespace core {
 	    v1 = brcl_make_double_float(p*n - q*n);
 	    break;
 	}
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {		/* LF / ANY */
 	    LongFloat n = brcl_to_long_double(y);
 	    LongFloat p = brcl_long_float(x)/n;
@@ -443,7 +443,7 @@ namespace core {
 	    v1 = brcl_make_double_float(d - y);
 	    break;
 	}
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = brcl_long_float(x);
 	    LongFloat y = ceill(d);
@@ -520,7 +520,7 @@ namespace core {
 		v1 = brcl_make_double_float(p*n - q*n);
 		break;
 	    }
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* FIX / LF */
 		LongFloat n = brcl_long_float(y);
 		LongFloat p = brcl_fixnum(x)/n;
@@ -573,7 +573,7 @@ namespace core {
 		v1 = brcl_make_double_float(p*n - q*n);
 		break;
 	    }
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* BIG / LF */
 		LongFloat n = brcl_long_float(y);
 		LongFloat p = _brcl_big_to_double(x.as<Bignum_O>())/n;
@@ -628,7 +628,7 @@ namespace core {
 	    v1 = brcl_make_double_float(p*n - q*n);
 	    break;
 	}
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {		/* LF / ANY */
 	    LongFloat n = brcl_to_long_double(y);
 	    LongFloat p = brcl_long_float(x)/n;
@@ -695,7 +695,7 @@ namespace core {
 	    v1 = brcl_make_double_float(d - y);
 	    break;
 	}
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = brcl_long_float(x);
 	    LongFloat y = d > 0? floorl(d) : ceill(d);
@@ -749,7 +749,7 @@ namespace core {
 	}
     }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
     static LongFloat round_long_double(LongFloat d)
     {
 	if (d >= 0) {
@@ -799,7 +799,7 @@ namespace core {
 	    v1 = brcl_make_double_float(d - q);
 	    break;
 	}
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = brcl_long_float(x);
 	    LongFloat q = round_long_double(d);
@@ -933,7 +933,7 @@ namespace core {
 	    x = brcl_make_double_float(d);
 	    break;
 	}
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = brcl_long_float(x);
 	    if (d >= 0.0)
@@ -976,7 +976,7 @@ namespace core {
 	case number_DoubleFloat:
 	    x = brcl_make_double_float(ldexp(brcl_double_float(x), k));
 	    break;
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 	    x = brcl_make_long_float(ldexpl(brcl_long_float(x), k));
 	    break;
@@ -1000,7 +1000,7 @@ namespace core {
 		    return std::signbit(brcl_single_float(x));
 	    case number_DoubleFloat:
 		    return std::signbit(brcl_double_float(x));
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat:
 		    return signbit(brcl_long_float(x));
 #endif
@@ -1034,7 +1034,7 @@ namespace core {
 	  if (std::signbit(f) != negativep) y = brcl_make_double_float(-f);
 	  break;
       }
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
       case number_LongFloat: {
 	  LongFloat f = brcl_long_float(y);
 	  if (std::signbit(f) != negativep) y = brcl_make_long_float(-f);
@@ -1064,7 +1064,7 @@ namespace core {
 	case number_DoubleFloat:
 	    ix = brcl_make_fixnum(DBL_MANT_DIG);
 	    break;
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 	    ix = brcl_make_fixnum(LDBL_MANT_DIG);
 	    break;
@@ -1115,7 +1115,7 @@ namespace core {
 	    }
 	    break;
 	}
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat f = brcl_long_float(x);
 	    if (f == 0.0) {
@@ -1150,7 +1150,7 @@ namespace core {
 	int e = 0, s = 1;
 	Real_sp rx(_Nil<Real_O>());
 	switch (brcl_t_of(x)) {
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat: {
 	    LongFloat d = brcl_long_float(x);
 	    if (std::signbit(d)) {
@@ -1234,7 +1234,7 @@ namespace core {
 	case number_Ratio:
 	case number_SingleFloat:
 	case number_DoubleFloat:
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 #endif
 	    break;
@@ -1276,7 +1276,7 @@ namespace core {
 	    else
 		x = _lisp->doubleFloatPlusZero();
 	    break;
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	case number_LongFloat:
 	    if (std::signbit(brcl_long_float(x)))
 		x = _lisp->longFloatMinusZero();
