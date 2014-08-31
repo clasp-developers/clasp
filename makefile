@@ -22,6 +22,8 @@ all:
 	make clasp-build
 	make compile-sources
 
+
+
 testing:
 	which clang++
 
@@ -32,7 +34,7 @@ boostbuildv2-build:
 	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL))
 
 compile-sources:
-	(cd src/main; make system-boot)
+	(cd src/main; make)
 
 compile-commands:
 	(cd src/main; make compile-commands)
