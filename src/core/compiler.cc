@@ -519,7 +519,7 @@ namespace core
         return Cons_O::createList(val,val,val,val,val);
     };
 
-    T_sp getTrue()
+    T_sp bitOLogicWithObjects()
     {
         T_sp val = _lisp->_true();
         T_sp val2 = _Nil<T_O>();
@@ -532,7 +532,7 @@ namespace core
 #define ARGS_core_operationsPerSecond "(op &optional arg)"
 #define DECL_core_operationsPerSecond ""
 #define DOCS_core_operationsPerSecond "operationsPerSecond"
-    T_mv core_operationsPerSecond(int stage, T_sp arg)
+    T_mv core_operationsPerSecond(int op, T_sp arg)
     {_G();
         LightTimer timer;
         T_sp v1, v2, v3, v4;
@@ -545,7 +545,7 @@ namespace core
             // Fill frame here
             for ( int i(0); i<times; ++i ) {
                 // Compare to call by value
-                switch (stage) {
+                switch (op) {
                 case 0: break;
                 case 1: {
                     callByValue(v1,v2,v3,v4);
@@ -572,7 +572,7 @@ namespace core
                     break;
                 }
                 case 7: {
-                    getTrue();
+                    bitOLogicWithObjects();
                     break;
                 }
                 default:
@@ -583,7 +583,7 @@ namespace core
             if ( timer.getAccumulatedTime() > 0.5 ) break;
         }
         string name;
-        switch (stage) {
+        switch (op) {
         case 0: name = "nothing"; break;
         case 1: name = "callByValue-3args"; break;
         case 2: name = "allocate fixnum on heap"; break;
@@ -591,7 +591,7 @@ namespace core
         case 4: name = "alloc value frame on heap, 5 elements"; break;
         case 5: name = "alloc stack frame, 5 elements"; break;
         case 6: name = "cons list 5 elements"; break;
-        case 7: name = "get true"; break;
+        case 7: name = "logic with T and nil"; break;
         default:
             return Values(_Nil<T_O>());
         }
