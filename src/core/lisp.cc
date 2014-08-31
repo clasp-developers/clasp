@@ -2938,40 +2938,43 @@ extern "C"
 */
 
 
-#define ARGS_af_princ "(obj &optional (output-stream-desig ext:+process-standard-output+))"
-#define DECL_af_princ ""
-#define DOCS_af_princ "See CLHS: princ"
-    void af_princ(T_sp obj, T_sp output_stream_desig )
+#define ARGS_cl_princ "(obj &optional (output-stream-desig ext:+process-standard-output+))"
+#define DECL_cl_princ ""
+#define DOCS_cl_princ "See CLHS: princ"
+    T_sp cl_princ(T_sp obj, T_sp output_stream_desig )
     {_G();
 	DynamicScopeManager scope1(cl::_sym_STARprint_escapeSTAR,_Nil<T_O>());
 	DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR,_Nil<T_O>());
 	eval::funcall(cl::_sym_write,obj,kw::_sym_stream,output_stream_desig);
+        return obj;
     }
 
 
 
 
-#define ARGS_af_prin1 "(obj &optional (output-stream-desig ext::+process-standard-output+))"
-#define DECL_af_prin1 ""
-#define DOCS_af_prin1 "See CLHS: prin1"
-    void af_prin1(T_sp obj, T_sp output_stream_desig )
+#define ARGS_cl_prin1 "(obj &optional (output-stream-desig ext::+process-standard-output+))"
+#define DECL_cl_prin1 ""
+#define DOCS_cl_prin1 "See CLHS: prin1"
+    T_sp  cl_prin1(T_sp obj, T_sp output_stream_desig )
     {_G();
 	DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR,_lisp->_true());
 	Stream_sp sout = coerce::outputStreamDesignator(output_stream_desig);
 	eval::funcall(cl::_sym_write,obj,kw::_sym_stream,output_stream_desig);
+        return obj;
     }
 
-#define ARGS_af_print "(obj &optional (output-stream-desig ext::+process-standard-output+))"
-#define DECL_af_print ""
-#define DOCS_af_print "See CLHS: print"
-    void af_print(T_sp obj, T_sp output_stream_desig )
+#define ARGS_cl_print "(obj &optional (output-stream-desig ext::+process-standard-output+))"
+#define DECL_cl_print ""
+#define DOCS_cl_print "See CLHS: print"
+    T_sp cl_print(T_sp obj, T_sp output_stream_desig )
     {_G();
 	DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR,_lisp->_true());
 	Stream_sp sout = coerce::outputStreamDesignator(output_stream_desig);
 	clasp_write_string("\n",sout);
-	af_prin1(obj,sout);
+	cl_prin1(obj,sout);
 	clasp_write_string(" ",sout);
 	clasp_force_output(sout);
+        return obj;
     }
 
     
@@ -3692,11 +3695,11 @@ extern "C"
 	SYMBOL_SC_(CorePkg,findFileInLispPath);
 	Defun(findFileInLispPath);
 	SYMBOL_EXPORT_SC_(ClPkg,print);
-	Defun(print);
+	ClDefun(print);
 	SYMBOL_EXPORT_SC_(ClPkg,prin1);
-	Defun(prin1);
+	ClDefun(prin1);
 	SYMBOL_EXPORT_SC_(ClPkg,princ);
-	Defun(princ);
+	ClDefun(princ);
 
 	SYMBOL_EXPORT_SC_(ClPkg,findClass);
 	Defun(findClass);

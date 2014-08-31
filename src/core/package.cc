@@ -75,10 +75,10 @@ namespace core
 	return pkg->unintern(sym);
     };
 
-#define ARGS_af_findSymbol "(sym &optional (package *package*))"
-#define DECL_af_findSymbol ""
-#define DOCS_af_findSymbol "findSymbol"
-    T_mv af_findSymbol(const string& symbolname, T_sp packageDesig)
+#define ARGS_cl_findSymbol "(sym &optional (package *package*))"
+#define DECL_cl_findSymbol ""
+#define DOCS_cl_findSymbol "findSymbol"
+    T_mv cl_findSymbol(const string& symbolname, T_sp packageDesig)
 {_G();
     Package_sp package = coerce::packageDesignator(packageDesig);
     return package->findSymbol(symbolname);
@@ -359,7 +359,7 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,shadowing_import);
 	Defun(shadowing_import);
 	SYMBOL_EXPORT_SC_(ClPkg,findSymbol);
-	Defun(findSymbol);
+	ClDefun(findSymbol);
 	SYMBOL_EXPORT_SC_(ClPkg,unintern);
 	Defun(unintern);
 	ClDefun(packageNicknames);
