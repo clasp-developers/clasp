@@ -174,7 +174,9 @@ namespace core {
     forced_print_package(T_sp package)
     {
 	T_sp print_package = _sym_STARprintPackageSTAR->symbolValue();
-	return print_package.notnilp() && (print_package != package);
+	bool result = print_package.notnilp() && (print_package != package);
+//        printf("%s:%d forced_print_package result=%d\n", __FILE__, __LINE__, result );
+        return result;
     }
 
     void
@@ -196,6 +198,7 @@ namespace core {
 	}
 
 	if (!print_readably && !clasp_print_escape()) {
+//            printf("%s:%d quick print of symbol print_readably=%d print_escape=%d\n",__FILE__,__LINE__, print_readably, clasp_print_escape());
             write_symbol_string(name, readtable.as<ReadTable_O>()->getReadTableCaseAsEnum(),
                                 print_case, stream, 0);
             return;
@@ -209,20 +212,22 @@ namespace core {
                 clasp_write_string("#:", stream);
 	} else if (package == _lisp->keywordPackage()) {
             clasp_write_char(':', stream);
-	} else if ((forced_package = forced_print_package(package)))
-        {
-            T_mv symbol_mv = af_findSymbol(name->get(),_lisp->getCurrentPackage());
-            Symbol_sp sym = symbol_mv;
-            Symbol_sp intern_flag = symbol_mv.valueGet(1).as<Symbol_O>();
-            if ( (sym != x) || intern_flag.nilp() )
-
-                // if (_lisp->findSymbol(name, _lisp->getCurrentPackage(), &intern_flag) != x || (intern_flag == 0))
+	} else {
+            bool print_package = false;
+            if ((forced_package = forced_print_package(package))) print_package = true;
+            if (!print_package) {
+                T_mv symbol_mv = cl_findSymbol(name->get(),_lisp->getCurrentPackage());
+                Symbol_sp sym = symbol_mv;
+                Symbol_sp intern_flag = symbol_mv.valueGet(1).as<Symbol_O>();
+                if ( (sym != x) || intern_flag.nilp() ) print_package = true;
+            }
+            if (print_package)
             {
                 T_sp name = Str_O::create(package->packageName());
                 write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
                                     print_case, stream,
                                     needs_to_be_escaped(name, readtable, print_case));
-                Symbol_mv sym2_mv = af_findSymbol(x->symbolName()->get(),package);
+                Symbol_mv sym2_mv = cl_findSymbol(x->symbolName()->get(),package);
                 Symbol_sp sym2 = sym2_mv;
                 Symbol_sp intern_flag2 = sym2_mv.valueGet(1).as<Symbol_O>();
                 if (sym2 != x)

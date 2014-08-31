@@ -450,7 +450,9 @@ namespace core
 #if 0
                     Function_O* func = reinterpret_cast<Function_O*>(fn.px_ref());
 #else
-                    Function_sp func = eval::lookupFunction(fn,_Nil<T_O>());
+                    
+                    Function_sp func;
+                    func = eval::lookupFunction(fn,_Nil<T_O>());
 #endif
                     if ( stage>=2 ) {
 #if 0  // This is the fastest alternative I can think of relative to cl_length()
@@ -488,6 +490,112 @@ namespace core
         }
         printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
         return _Nil<T_O>();
+    }
+
+    T_sp allocFixnum()
+    {
+        Fixnum_sp fn = Fixnum_O::create(3);
+        return fn;
+    }
+
+    void dynamicCastArg(T_sp a)
+    {
+        Cons_sp c = a.as<Cons_O>();
+    }
+
+    void allocateValueFrame5()
+    {
+        ValueFrame_sp v = ValueFrame_O::create(5,_Nil<ActivationFrame_O>());
+    }
+
+    void allocateStackFrame5()
+    {
+        ALLOC_STACK_VALUE_FRAME(frameImpl,frame,5);
+    }
+
+    Cons_sp consList5()
+    {
+        T_sp val = _Nil<T_O>();
+        return Cons_O::createList(val,val,val,val,val);
+    };
+
+    T_sp getTrue()
+    {
+        T_sp val = _lisp->_true();
+        T_sp val2 = _Nil<T_O>();
+        if (val2.nilp()) {
+            return val;
+        }
+        return val2;
+    };
+
+#define ARGS_core_operationsPerSecond "(op &optional arg)"
+#define DECL_core_operationsPerSecond ""
+#define DOCS_core_operationsPerSecond "operationsPerSecond"
+    T_mv core_operationsPerSecond(int stage, T_sp arg)
+    {_G();
+        LightTimer timer;
+        T_sp v1, v2, v3, v4;
+        T_sp ocons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+        int times = 0;
+        for ( int pow=0; pow<16; ++pow ) {
+            times = 1 << pow*2;  // the number of times to run the inner loop
+            timer.reset();
+            timer.start();   // Wrap a timer around the repeated inner loop
+            // Fill frame here
+            for ( int i(0); i<times; ++i ) {
+                // Compare to call by value
+                switch (stage) {
+                case 0: break;
+                case 1: {
+                    callByValue(v1,v2,v3,v4);
+                    break;
+                }
+                case 2: {
+                    allocFixnum();
+                    break;
+                }
+                case 3: {
+                    dynamicCastArg(ocons);
+                    break;
+                }
+                case 4: {
+                    allocateValueFrame5();
+                    break;
+                }
+                case 5: {
+                    allocateStackFrame5();
+                    break;
+                }
+                case 6: {
+                    consList5();
+                    break;
+                }
+                case 7: {
+                    getTrue();
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+            timer.stop();
+            if ( timer.getAccumulatedTime() > 0.5 ) break;
+        }
+        string name;
+        switch (stage) {
+        case 0: name = "nothing"; break;
+        case 1: name = "callByValue-3args"; break;
+        case 2: name = "allocate fixnum on heap"; break;
+        case 3: name = "dynamic cast down"; break;
+        case 4: name = "alloc value frame on heap, 5 elements"; break;
+        case 5: name = "alloc stack frame, 5 elements"; break;
+        case 6: name = "cons list 5 elements"; break;
+        case 7: name = "get true"; break;
+        default:
+            return Values(_Nil<T_O>());
+        }
+        return Values(DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime()),Str_O::create(name));
     }
 
 
@@ -616,6 +724,7 @@ namespace core
         CoreDefun(applysPerSecond);
 //        CoreDefun(globalFuncallCyclesPerSecond);
         CoreDefun(partialApplysPerSecond);
+        CoreDefun(operationsPerSecond);
         CoreDefun(callsByValuePerSecond);
         CoreDefun(callsByConstantReferencePerSecond);
         CoreDefun(callsByPointerPerSecond);
