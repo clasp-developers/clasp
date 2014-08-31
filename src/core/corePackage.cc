@@ -761,10 +761,10 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	cl::_sym_most_positive_double_float->defconstant(DoubleFloat_O::create(DBL_MAX));
 
 	SYMBOL_EXPORT_SC_(ClPkg,least_negative_normalized_long_float);
-	cl::_sym_least_negative_normalized_long_float->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
+	cl::_sym_least_negative_normalized_long_float->defconstant(DoubleFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
 
 	SYMBOL_EXPORT_SC_(ClPkg,least_positive_normalized_long_float);
-	cl::_sym_least_positive_normalized_long_float->defconstant(LongFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
+	cl::_sym_least_positive_normalized_long_float->defconstant(DoubleFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
 
 
 

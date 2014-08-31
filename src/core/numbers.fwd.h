@@ -11,7 +11,9 @@ FORWARD(Number);
     FORWARD(ShortFloat);
     FORWARD(SingleFloat);
     FORWARD(DoubleFloat);
+#ifdef CLASP_LONG_FLOAT
     FORWARD(LongFloat);
+#endif
     FORWARD(Complex);
     FORWARD(Ratio);
     FORWARD(Bool);

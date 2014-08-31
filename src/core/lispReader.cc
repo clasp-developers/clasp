@@ -392,7 +392,7 @@ namespace core
 	    {
 		char* lastValid = NULL;
 		string numstr = fix_exponent_char(tokenStr(token,start-token.data()).c_str());
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 		LongFloat d = ::strtold(numstr.c_str(),&lastValid);
 		return LongFloat_O::create(d);
 #else

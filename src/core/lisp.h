@@ -263,11 +263,11 @@ namespace core
 	    DoubleFloat_sp 		_DoubleFloatPlusZero;
 	    SingleFloat_sp 		_SingleFloatOne;
 	    DoubleFloat_sp 		_DoubleFloatOne;
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	    LongFloat_sp 		_LongFloatMinusZero;
 	    LongFloat_sp 		_LongFloatPlusZero;
 	    LongFloat_sp 		_LongFloatOne;
-#endif // ifdef BRCL_LONG_FLOAT
+#endif // ifdef CLASP_LONG_FLOAT
 
 	    GCRoots();
 
@@ -446,11 +446,11 @@ namespace core
 	DoubleFloat_sp doubleFloatPlusZero() const { return this->_Roots._DoubleFloatPlusZero;};
 	SingleFloat_sp singleFloatOne() const { return this->_Roots._SingleFloatOne;};
 	DoubleFloat_sp doubleFloatOne() const { return this->_Roots._DoubleFloatOne;};
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	LongFloat_sp longFloatMinusZero() const { return this->_Roots._LongFloatMinusZero;};
 	LongFloat_sp longFloatPlusZero() const { return this->_Roots._LongFloatPlusZero;};
 	LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne;};
-#endif // ifdef BRCL_LONG_FLOAT
+#endif // ifdef CLASP_LONG_FLOAT
     public:
         Cache* singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
 	Cache* methodCachePtr() const { return this->_Roots._MethodCachePtr;};

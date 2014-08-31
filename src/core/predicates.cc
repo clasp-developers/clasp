@@ -236,6 +236,7 @@ namespace core
 	return obj.isA<Rational_O>();
     };
 
+#ifdef CLASP_LONG_FLOAT
 #define ARGS_af_longFloatP "(arg)"
 #define DECL_af_longFloatP ""
 #define DOCS_af_longFloatP "longFloatP"
@@ -244,6 +245,7 @@ namespace core
 	if (obj.nilp()) return false;
 	return obj.isA<LongFloat_O>();
     };
+#endif
 
 #define ARGS_af_shortFloatP "(arg)"
 #define DECL_af_shortFloatP ""
@@ -605,7 +607,9 @@ namespace core
 	af_def(ClosPkg,"classp",&af_classp,ARGS_af_classp,DECL_af_classp,DOCS_af_classp);
 	Defun(lambda_list_handler_p);
 	Defun(ratioP);
+#ifdef CLASP_LONG_FLOAT
 	Defun(longFloatP);
+#endif
 	Defun(shortFloatP);
 	Defun(singleFloatP);
 	Defun(pathP);

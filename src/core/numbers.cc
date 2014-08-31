@@ -397,6 +397,7 @@ namespace core
         case_DoubleFloat_v_SingleFloat:
         case_DoubleFloat_v_DoubleFloat:
 	    return DoubleFloat_O::create(na->as_double()+nb->as_double());
+#ifdef CLASP_LONG_FLOAT
         case_Fixnum_v_LongFloat:
         case_Bignum_v_LongFloat:
 	case_Ratio_v_LongFloat:
@@ -410,6 +411,7 @@ namespace core
         case_LongFloat_v_LongFloat:
 	    return LongFloat_O::create(na->as_long_float()+nb->as_long_float());
         case_Complex_v_LongFloat:
+#endif // CLASP_LONG_FLOAT
         case_Complex_v_Fixnum:
         case_Complex_v_Bignum:
         case_Complex_v_Ratio:
@@ -426,7 +428,9 @@ namespace core
 	case_Ratio_v_Complex:
 	case_SingleFloat_v_Complex:
 	case_DoubleFloat_v_Complex:
+#ifdef CLASP_LONG_FLOAT
         case_LongFloat_v_Complex:
+#endif
 	Complex_v_Y:
 	    return Complex_O::create(contagen_add(na,nb.as<Complex_O>()->real()).as<Real_O>(),
 				     nb.as<Complex_O>()->imaginary());
@@ -535,6 +539,7 @@ namespace core
         case_DoubleFloat_v_SingleFloat:
         case_DoubleFloat_v_DoubleFloat:
 	    return DoubleFloat_O::create(na->as_double()-nb->as_double());
+#ifdef CLASP_LONG_FLOAT
         case_Fixnum_v_LongFloat:
         case_Bignum_v_LongFloat:
 	case_Ratio_v_LongFloat:
@@ -547,6 +552,7 @@ namespace core
         case_LongFloat_v_DoubleFloat:
         case_LongFloat_v_LongFloat:
 	    return LongFloat_O::create(na->as_long_float()-nb->as_long_float());
+#endif
         case_Complex_v_LongFloat:
         case_Complex_v_Fixnum:
         case_Complex_v_Bignum:
@@ -663,6 +669,7 @@ namespace core
         case_DoubleFloat_v_SingleFloat:
         case_DoubleFloat_v_DoubleFloat:
 	    return DoubleFloat_O::create(na->as_double() * nb->as_double());
+#ifdef CLASP_LONG_FLOAT
         case_Fixnum_v_LongFloat:
         case_Bignum_v_LongFloat:
 	case_Ratio_v_LongFloat:
@@ -675,6 +682,7 @@ namespace core
         case_LongFloat_v_DoubleFloat:
         case_LongFloat_v_LongFloat:
 	    return LongFloat_O::create(na->as_long_float() * nb->as_long_float());
+#endif
         case_Complex_v_LongFloat:
         case_Complex_v_Fixnum:
         case_Complex_v_Bignum:
@@ -781,6 +789,7 @@ namespace core
 	case_DoubleFloat_v_SingleFloat:
 	case_DoubleFloat_v_DoubleFloat:
 	    return DoubleFloat_O::create(na->as_double()/nb->as_double());
+#ifdef CLASP_LONG_FLOAT
 	case_Fixnum_v_LongFloat:
 	case_Bignum_v_LongFloat:
 	case_Ratio_v_LongFloat:
@@ -793,6 +802,7 @@ namespace core
 	case_LongFloat_v_DoubleFloat:
 	case_LongFloat_v_LongFloat:
 	    return LongFloat_O::create(na->as_long_float()/nb->as_long_float());
+#endif
 	case_Complex_v_Fixnum:
 	case_Complex_v_Bignum:
 	case_Complex_v_Ratio:
@@ -967,7 +977,7 @@ double_fix_compare(Fixnum n, double d)
 	}
 }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 static int
 long_double_fix_compare(Fixnum n, LongFloat d)
 {
@@ -1135,7 +1145,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 		if ( a == b ) return 0;
 		return 1;
 	    }
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
         case_Fixnum_v_LongFloat:
 	    return long_double_fix_compare(na.as<Fixnum_O>()->get(),nb.as<LongFloat_O>()->get());
 	    break;
@@ -2605,7 +2615,7 @@ namespace core {
 // LongFloat stuff
 
 
-
+#ifdef CLASP_LONG_FLOAT
     float LongFloat_O::as_float() const
     {
 	return (float)this->_Value;
@@ -2765,7 +2775,7 @@ namespace core {
 #endif
     }
 
-
+#endif
 
 
 
@@ -3075,6 +3085,7 @@ Number_sp DoubleFloat_O::sqrt() const
     }
 }
 
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::sqrt() const
 {
     if ( this->minusp() ) {
@@ -3084,7 +3095,7 @@ Number_sp LongFloat_O::sqrt() const
 	return LongFloat_O::create(sqrtl(this->_Value));
     }
 }    
-
+#endif
 
 
 
@@ -3152,7 +3163,7 @@ Number_sp DoubleFloat_O::sin() const
     return DoubleFloat_O::create(::sin(this->_Value));
 }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::sin() const
 {
     return LongFloat_O::create(sinl(this->_Value));
@@ -3228,7 +3239,7 @@ Number_sp DoubleFloat_O::cos() const
     return DoubleFloat_O::create(::cos(this->_Value));
 }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::cos() const
 {
         return LongFloat_O::create(cosl(this->_Value));
@@ -3312,7 +3323,7 @@ Number_sp DoubleFloat_O::tan() const
     return DoubleFloat_O::create(::tan(this->_Value));
 }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::tan() const
 {
     return LongFloat_O::create(tanl(this->_Value));
@@ -3376,7 +3387,7 @@ Number_sp DoubleFloat_O::sinh() const
     return DoubleFloat_O::create(::sinh(this->_Value));
 }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::sinh() const
 {
         return LongFloat_O::create(sinhl(this->_Value));
@@ -3449,7 +3460,7 @@ Number_sp DoubleFloat_O::cosh() const
     return DoubleFloat_O::create(::cosh(this->_Value));
 }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::cosh() const
 {
         return LongFloat_O::create(coshl(this->_Value));
@@ -3524,7 +3535,7 @@ Number_sp DoubleFloat_O::tanh() const
     return DoubleFloat_O::create(::tanh(this->_Value));
 }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::tanh() const
 {
         return LongFloat_O::create(tanhl(this->_Value));
@@ -3643,7 +3654,7 @@ Number_sp Rational_O::exp() const
         return DoubleFloat_O::create(::exp(this->_Value));
     }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::exp() const
 {
     return LongFloat_O::create(expl(this->_Value));
@@ -3742,7 +3753,7 @@ expt_zero(Number_sp x, Number_sp y)
 	return _lisp->singleFloatOne();
     case number_DoubleFloat:
 	return _lisp->doubleFloatOne();
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
     case number_LongFloat:
 	return _lisp->longFloatOne();
 #endif
@@ -3864,7 +3875,7 @@ brcl_atan2_double(double y, double x)
     }
 }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 static LongFloat
 brcl_atan2_LongFloat(LongFloat y, LongFloat x)
 {
@@ -3903,7 +3914,7 @@ Number_sp brcl_atan2(Number_sp y, Number_sp x)
     Number_sp output;
     BRCL_MATHERR_CLEAR;
     {
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
 	NumberType tx = x->number_type();
 	NumberType ty = y->number_type();
 	if (tx < ty)
@@ -4068,7 +4079,7 @@ Number_sp brcl_atan1(Number_sp y)
         return brcl_make_double_float(log(f));
     }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
     Number_sp LongFloat_O::log1() const
     {
         LongFloat f = this->as_long_float();
@@ -4113,7 +4124,7 @@ Number_sp brcl_atan1(Number_sp y)
 	return (log(u)*x)/(u-(double)1);
     }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
     template <>
     LongFloat _log1p<LongFloat>(LongFloat x)
     {
@@ -4158,7 +4169,7 @@ Number_sp brcl_atan1(Number_sp y)
         return brcl_make_double_float(_log1p(f));
     }
 
-#ifdef BRCL_LONG_FLOAT
+#ifdef CLASP_LONG_FLOAT
     Number_sp LongFloat_O::log1p() const
     {
 	LongFloat f = this->as_long_float();
