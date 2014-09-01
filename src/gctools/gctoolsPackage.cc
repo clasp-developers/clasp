@@ -504,6 +504,22 @@ namespace gctools {
 #endif
 
 
+
+
+    
+    
+#define ARGS_af_stackDepth "()"
+#define DECL_af_stackDepth ""
+#define DOCS_af_stackDepth "stackDepth"
+    core::T_sp af_stackDepth()
+    {
+        int z=0;
+        void* zp = &z;
+        size_t stackDepth =  (char*)_global_stack_marker - (char*)zp;
+        return core::Fixnum_O::create((uint)stackDepth);
+    };
+
+
 #define ARGS_af_garbageCollect "()"
 #define DECL_af_garbageCollect ""
 #define DOCS_af_garbageCollect "garbageCollect"
@@ -772,6 +788,7 @@ namespace gctools {
             core::af_def(GcToolsPkg,"gcMarker",&af_gcMarker, ARGS_af_gcMarker, DECL_af_gcMarker, DOCS_af_gcMarker);
             core::af_def(ClPkg,"room",&af_room,ARGS_af_room, DECL_af_room, DOCS_af_room);
             core::af_def(GcToolsPkg,"garbageCollect",&af_garbageCollect);
+            core::af_def(GcToolsPkg,"stackDepth",&af_stackDepth);
             core::af_def(GcToolsPkg,"cleanup",&af_cleanup);
             core::af_def(GcToolsPkg,"maxBootstrapKinds",&af_maxBootstrapKinds);
             core::af_def(GcToolsPkg,"bootstrapKindP",&af_bootstrapKindP);

@@ -32,6 +32,7 @@
     (symbol-macrolet .  codegen-symbol-macrolet)
     (progv .  codegen-progv)
     (cmp:llvm-inline . codegen-llvm-inline)
+    (cmp::gc-profiling . codegen-gc-profiling)
     ))
 
 

@@ -15,6 +15,7 @@
 #include "unixfsys.h"
 #include "lambdaListHandler.h"
 #include "multipleValues.h"
+#include "activationFrame.h"
 #include "pointer.h"
 #include "environment.h"
 #include "core/wrappers.h"
@@ -339,7 +340,7 @@ namespace core
                 eval::apply(fn,args);
             }
             timer.stop();
-            if ( timer.getAccumulatedTime() > 0.5 ) {
+            if ( timer.getAccumulatedTime() > 0.1 ) {
                 return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
             }
         }
@@ -466,13 +467,25 @@ namespace core
                         int nargs = cl_length(args);
 #endif
                         if ( stage>=3 ) { // This is expensive
+#if 1 // heap based frame
                             ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
                             if ( stage>=4 ) {
                                 Cons_sp cur = args;
-                                for ( int i=nargs; i<nargs; ++i ) {
+                                for ( int i=0; i<nargs; ++i ) {
                                     frame->operator[](i) = oCar(cur);
                                     cur=cCdr(cur);
                                 }
+#else
+                            // ALLOC_STACK_VALUE_FRAME(frameImpl,frob,nargs);   // I cant do this in a loop!!!
+                            // frame::SetParentFrame(frob,_Nil<T_O>());
+                            // if ( stage>=4 ) {
+                            //     Cons_sp cur = args;
+                            //     T_O** values = frame::ValuesArray(frob);
+                            //     for ( int i=0; i<nargs; ++i ) {
+                            //         values[i] = oCar(cur).asTPtr();
+                            //         cur = cCdr(cur);
+                            //     }
+#endif
                                 if ( stage >= 5) {
                                     Closure* closureP = func->closure;
                                     ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
@@ -529,16 +542,42 @@ namespace core
         return val2;
     };
 
+    T_sp allocCons()
+    {
+        Cons_sp fn = Cons_O::create();
+        return fn;
+    }
+
+    T_sp lexicalFrameLookup(T_sp fr, int depth, int index)
+    {
+        T_sp val = Environment_O::clasp_lookupValue(fr,depth,index);
+        return val;
+    }
+
+
 #define ARGS_core_operationsPerSecond "(op &optional arg)"
 #define DECL_core_operationsPerSecond ""
 #define DOCS_core_operationsPerSecond "operationsPerSecond"
     T_mv core_operationsPerSecond(int op, T_sp arg)
     {_G();
+        ALLOC_STACK_VALUE_FRAME(frameImpl1,frame1,5);
+        frame::SetParentFrame(frame1,_Nil<T_O>());
+        T_O** values1 = frame::ValuesArray(frame1);
+        int val=0;
+        for (int i=0; i<5; ++i ) values1[i] = Fixnum_O::create(++val).asTPtr();
+        ALLOC_STACK_VALUE_FRAME(frameImpl2,frame2,5);
+        frame::SetParentFrame(frame2,frame1);
+        T_O** values2 = frame::ValuesArray(frame1);
+        for (int i=0; i<5; ++i ) values2[i] = Fixnum_O::create(++val).asTPtr();
+        ALLOC_STACK_VALUE_FRAME(frameImpl3,frame3,5);
+        frame::SetParentFrame(frame3,frame2);
+        T_O** values3 = frame::ValuesArray(frame1);
+        for (int i=0; i<5; ++i ) values3[i] = Fixnum_O::create(++val).asTPtr();
         LightTimer timer;
         T_sp v1, v2, v3, v4;
         T_sp ocons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
         int times = 0;
-        for ( int pow=0; pow<16; ++pow ) {
+        for ( int pow=5; pow<16; pow = pow+2 ) {
             times = 1 << pow*2;  // the number of times to run the inner loop
             timer.reset();
             timer.start();   // Wrap a timer around the repeated inner loop
@@ -575,6 +614,18 @@ namespace core
                     bitOLogicWithObjects();
                     break;
                 }
+                case 8: {
+                    allocCons();
+                    break;
+                }
+                case 9: {
+                    lexicalFrameLookup(frame3,0,0);
+                    break;
+                }
+                case 10: {
+                    lexicalFrameLookup(frame3,2,0);
+                    break;
+                }
                 default:
                     break;
                 }
@@ -592,6 +643,9 @@ namespace core
         case 5: name = "alloc stack frame, 5 elements"; break;
         case 6: name = "cons list 5 elements"; break;
         case 7: name = "logic with T and nil"; break;
+        case 8: name = "alloc/abandon cons on heap"; break;
+        case 9: name = "lexicalFrameLookup(frame3,0,0)"; break;
+        case 10: name = "lexicalFrameLookup(frame3,2,3)"; break;
         default:
             return Values(_Nil<T_O>());
         }

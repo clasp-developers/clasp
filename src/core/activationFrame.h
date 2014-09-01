@@ -3,8 +3,7 @@
 
 //#define DEBUG_FRAME
 
-
-
+#include <alloca.h>
 #include <utility>
 #include 	"foundation.h"
 #include 	"object.h"
@@ -636,15 +635,15 @@ namespace frame
 };
 
 
-#if 1
-#define ALLOC_STACK_VALUE_FRAME(frameImpl,frame,numValues)     \
+#if 0 // VLA version
+#define ALLOC_STACK_VALUE_FRAME(frameImpl,oframe,numValues)     \
     frame::ElementType frameImpl[frame::FrameSize(numValues)]; \
-    gctools::smart_ptr<core::STACK_FRAME> frame(frameImpl);    \
+    gctools::smart_ptr<core::STACK_FRAME> oframe(frameImpl);    \
     frame::InitializeStackValueFrame(frameImpl,numValues)
-#else
-#define ALLOC_STACK_VALUE_FRAME(frameImpl,frame,numValues)     \
-    frame::ElementType* frameImpl = (frame::ElementType*)(alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues))); \
-    gctools::smart_ptr<core::STACK_FRAME> frame(frameImpl);    \
+#else // alloca version
+#define ALLOC_STACK_VALUE_FRAME(frameImpl,oframe,numValues)     \
+    frame::ElementType* frameImpl = (frame::ElementType*)(__builtin_alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues))); \
+    gctools::smart_ptr<core::STACK_FRAME> oframe(frameImpl);    \
     frame::InitializeStackValueFrame(frameImpl,numValues)
 #endif
 

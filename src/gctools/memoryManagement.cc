@@ -10,6 +10,8 @@
 
 namespace gctools {
 
+    void* _global_stack_marker;
+
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;

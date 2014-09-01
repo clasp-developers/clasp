@@ -190,6 +190,9 @@ int main(int argc, char* argv[] )
     core::CommandLineOptions options(argc,argv);
 
 
+    void* stackMarker=NULL;  // ALWAYS USE A void* to mark the stack top otherwise MPS will complain about alignment
+    gctools::_global_stack_marker = &stackMarker;
+
 #if defined(USE_MPS)
     int exitCode = gctools::initializeMemoryPoolSystem(&startup,argc,argv, NULL, mpiEnabled, mpiRank, mpiSize);
 #else

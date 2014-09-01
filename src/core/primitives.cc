@@ -1197,10 +1197,6 @@ namespace core
     {_G();
 	Cons_sp parts = cl_maplist(op,lists).as_or_nil<Cons_O>();
         T_sp result = cl_nconc(parts);
-#if 0
-	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
-	T_sp result = eval::applyToActivationFrame(cl::_sym_nconc,frame);
-#endif
 	return(Values(result));
     };
 

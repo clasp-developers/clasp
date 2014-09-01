@@ -1029,6 +1029,13 @@ jump to blocks within this tagbody."
              ,@body))))
 
 
+(defun codegen-gc-profiling (result result-env-body compiler-env)
+  "This is not a code generating operation, it invokes the garbage-collector
+profiling tools to see how the GC operates while compilation is happening.
+To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-profiling))))
+"
+  (micro-profiling:micro-profile-ops))
+
 
 (defun codegen-special-operator (result head rest env)
   (cmp-log "entered codegen-special-operator head: %s rest: %s\n" head rest)

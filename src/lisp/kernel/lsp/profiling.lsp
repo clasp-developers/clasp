@@ -1,11 +1,18 @@
-(defpackage #:micro-profiling
-  (:use #:cl)
-  (:nicknames #:mp)
-  (:export #:test-b #:time-ops #:deep-stack-time-ops)
-)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Do microprofiling to assess the GC speed under different stack conditions
+;;
+;; Use (micro-profile-ops) to generate timings for different low-level operations
+;;
+;; I added a special-operator to the compiler called cmp::gc-profiling
+;;
 
-(in-package #:mp)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (make-package "MICRO-PROFILING" :use '("CORE" "CL")))
 
+
+(in-package "MICRO-PROFILING")
+(export '(#:micro-profile-ops #:deep-stack-micro-profile-ops))
 (defun b (x y z) )
 (defun a () )
 
@@ -65,7 +72,7 @@
 ;;
 ;; Generate timings for all of the operations
 ;;
-(defun time-ops ()
+(defun micro-profile-ops ()
   (format t "Stack depth: ~a~%" (gctools:stack-depth))
   (do* ((i 1 (1+ i))
         (res (time-operation i) (time-operation i)))
@@ -80,9 +87,9 @@
 ;; are more pinned objects to deal with.  Boehm doesn't have this problem
 ;; because all objects are pinned all the time (non-moving GC).
 ;;
-(defun deep-stack-time-ops (depth)
+(defun deep-stack-micro-profile-ops (depth)
   (if (eql depth 0)
-      (time-ops)
-      (deep-stack-time-ops (1- depth))))
+      (micro-profile-ops)
+      (deep-stack-micro-profile-ops (1- depth))))
 
 
