@@ -68,152 +68,26 @@ namespace core
 	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
 #if 0
-            ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
+            ALLOC_STACK_VALUE_FRAME(frameImpl,frob,nargs);
 	    Cons_sp cur = argsPLUS;
-//            frame::Element
+            T_O** values = frame::ValuesArray(frob);
 	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
+		values[i] = oCar(cur).asTPtr();
 		cur=cCdr(cur);
 	    }
 #else
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>()));
+	    ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>()));
 	    Cons_sp cur = argsPLUS;
 	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
+		frob->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
 #endif
             Closure* closureP = func->closure;
             ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-	    return applyClosureToActivationFrame(closureP,frame);
+	    return applyClosureToActivationFrame(closureP,frob);
 	}
 
-	inline T_mv apply( T_sp fn, T_sp a0,
-                           Cons_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-	    int numArgsPassed = 1;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0));
-	    Cons_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            return applyToActivationFrame(func,frame);
-	}
-
-	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1,
-                           Cons_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-	    int numArgsPassed = 2;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1));
-	    Cons_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            return applyToActivationFrame(func,frame);
-	}
-
-	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2,
-                           Cons_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-	    int numArgsPassed = 3;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2));
-	    Cons_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            return applyToActivationFrame(func,frame);
-	}
-
-	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3,
-                           Cons_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-	    int numArgsPassed = 4;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3));
-	    Cons_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            return applyToActivationFrame(func,frame);
-	}
-
-
-	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4,
-                           Cons_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-	    int numArgsPassed = 5;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3,a4));
-	    Cons_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            return applyToActivationFrame(func,frame);
-	}
-
-	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5,
-                           Cons_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-	    int numArgsPassed = 6;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3,a4,a5));
-	    Cons_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            return applyToActivationFrame(func,frame);
-	}
-
-	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, Cons_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-	    int numArgsPassed = 7;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3,a4,a5,a6));
-	    Cons_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            return applyToActivationFrame(func,frame);
-	}
-
-	inline T_mv apply( T_sp fn, T_sp a0, T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, Cons_sp argsPLUS )
-	{
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-	    int numArgsPassed = 8;
-	    int numArgsPlus = cl_length(argsPLUS);
-	    int nargs = numArgsPassed + numArgsPlus;
-	    ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),a0,a1,a2,a3,a4,a5,a6,a7));
-	    Cons_sp cur = argsPLUS;
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		frame->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
-	    }
-            return applyToActivationFrame(func,frame);
-	}
 
 
 #define USE_ARRAY0

@@ -555,6 +555,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/evalmacros
     lsp/claspmacros
     lsp/testing
+    lsp/profiling    ;; Do micro-profiling of the GC
     lsp/logging
     lsp/makearray
     lsp/setf

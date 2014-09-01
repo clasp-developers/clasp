@@ -1557,12 +1557,11 @@ namespace core
 	    dbg.invoke();
 //	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
 	}
-	eval::apply(_sym_signalSimpleError,
-			baseCondition,
-			_Nil<T_O>(),
-			Str_O::create(ss.str()),
-		    _Nil<Cons_O>(),
-			initializers.as_or_nil<Cons_O>()
+	eval::apply(_sym_signalSimpleError, Cons_O::createList(baseCondition,
+                                                           _Nil<T_O>(),
+                                                           Str_O::create(ss.str()),
+                                                           _Nil<Cons_O>(),
+                                                           initializers.as_or_nil<Cons_O>())
 	    );
     }
 
@@ -1581,7 +1580,7 @@ namespace core
 //	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
 	}
         Cons_sp cargs = arguments.as<Cons_O>();
-	eval::apply(cl::_sym_error, datum, cargs );
+	eval::apply(cl::_sym_error, Cons_O::createList(datum, cargs) );
     }
 
 

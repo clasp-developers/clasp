@@ -45,88 +45,6 @@ namespace gctools {
 };
 
 
-#if 0
-namespace gctools {
-
-    struct HeapRoot;
-    struct StackRoot;
-
-    /*! This is a common root class for HeapRoot and StackRoot
-      Inherit from one of these if you want the GC refactoring tool to write 
-      a scanner for the object automatically. */
-    struct GC_Automated {};
-
-    /*! Inherit from GC_Manual if you (the programmer)
-      will write and maintain the scanGCRoots function for any
-      subclass.
-      THIS IS USED BY MultipleValues.
-    */
-    struct GC_Manual {};
-
-
-
-    extern 	HeapRoot* 	rooted_HeapRoots;
-    extern	StackRoot* 	rooted_StackRoots;
-
-    /*! HeapRoots create a double linked list of nodes so that
-      when the system shuts down they can unlink themselves without crashing */
-    struct HeapRoot : public GC_Automated
-    {
-	HeapRoot*	_prev;
-	HeapRoot* _next;
-	HeapRoot() : _prev(NULL), _next(NULL) {};
-	virtual ~HeapRoot() { this->detachFromGCRoot(); };
-        virtual const char* repr() const { printf("%s:%d Subclass must implement repr\n", __FILE__, __LINE__ ); return "HeapRoot";};
-
-	/*! Link this node into the list of static roots.
-	  Do this in the correct order so that if GC happens
-	  rooted_HeapRoots is always pointing to valid roots */
-	void attachToGCRoot() {
-	    this->_next = rooted_HeapRoots;
-	    this->_prev = NULL;
-	    if ( rooted_HeapRoots != NULL ) {
-		rooted_HeapRoots->_prev = this;
-	    }
-	    rooted_HeapRoots = this;
-            //          printf("%s:%d HeapRoot::attachToGCRoot for %s\n", __FILE__, __LINE__, this->repr() );
-	}
-
-	void detachFromGCRoot() {
-	    if ( this->_prev != NULL ) this->_prev->_next = this->_next;
-	    else rooted_HeapRoots = this->_next;
-	    if ( this->_next != NULL ) this->_next->_prev = this->_prev;
-//            printf("%s:%d HeapRoot::detachFromGCRoot for %s\n", __FILE__, __LINE__, this->repr() );
-	}
-    };
-
-
-    /*! Stack roots create a FIFO stack of nodes */
-    struct StackRoot : public GC_Automated
-    {
-	StackRoot* _next;
-	StackRoot() : _next(NULL) {};
-	virtual ~StackRoot() { this->detachFromGCRoot(); };
-        virtual const char* repr() const {
-            printf("%s:%d Subclass must implement repr\n", __FILE__, __LINE__ ); return "StackRoot";
-        };
-
-	void attachToGCRoot() {
-	    this->_next = rooted_StackRoots;
-	    rooted_StackRoots = this;
-            printf("%s:%d attachToGCRoot for %s\n", __FILE__, __LINE__, this->repr() );
-	}
-	void detachFromGCRoot() {
-	    rooted_StackRoots = this->_next;
-#ifdef LOG_MPS
-            printf("%s:%d StackRoot::detachFromGCRoot for %s\n", __FILE__, __LINE__, this->repr() );
-#endif
-	}
-    };
-
-
-};
-#endif
-
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -137,6 +55,10 @@ namespace gctools {
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 namespace gctools {
+
+    extern void* _global_stack_marker;
+
+
     /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
     template <class OT> struct GCKind;
 };

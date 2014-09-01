@@ -62,7 +62,6 @@ namespace gctools
 */
 
     mps_arena_t	_global_arena;
-    void* _global_stack_marker;
 //    mps_pool_t _global_mvff_pool;
     mps_pool_t _global_amc_pool;
     mps_pool_t _global_amcz_pool;
@@ -337,9 +336,6 @@ namespace gctools {
         {
             THROW_HARD_ERROR(BF("Handle obj_fmt_sP != NULL"));
         }
-
-        void* local_stack_marker;
-        _global_stack_marker = &local_stack_marker;
 
 #define CHAIN_SIZE 6400 // 256 // 6400
         size_t arenaSizeMb = 320;
