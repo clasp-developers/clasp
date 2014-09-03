@@ -1063,16 +1063,34 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (assert-result-isa-llvm-value result)
   (dbg-set-current-source-pos env form)
   (cond
-   ((and (symbolp (car form)) (macro-function (car form) env))
-    (multiple-value-bind (expansion expanded-p)
-        (compile-macroexpand form env)
-      (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
-      (irc-low-level-trace)
-      (codegen result expansion env)))
-   (t
-    ;; It's a regular function call
-    (irc-low-level-trace)
-    (codegen-call result form env))))
+    ((and (symbolp (car form))
+          (not (core:lexical-function (car form) env))
+          (not (core:lexical-macro-function (car form) env))
+          (compiler-macro-function (car form) env))
+     (warn "Handle compiler-macro expansion here for ~a" (car form)))
+#||    ((and (symbolp (car form))
+          (not (core:lexical-function (car form) env))
+          (not (core:lexical-macro-function (car form) env))
+          (compiler-macro-function (car form) env))
+     (let ((expander (compiler-macro-function (car form) env)
+     (multiple-value-bind (expansion expanded-p)
+         (compiler-macro-function (car form) env)
+       (cmp-log "COMPILE-MACROEXPANDed form[%s] expanded to [%s]\n" form expansion)
+       (irc-low-level-trace)
+       (codegen result expansion env)))
+||#
+    ((and (symbolp (car form))
+          (not (core:lexical-function (car form) env))
+          (macro-function (car form) env))
+     (multiple-value-bind (expansion expanded-p)
+         (macroexpand form env)
+       (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
+       (irc-low-level-trace)
+       (codegen result expansion env)))
+    (t
+     ;; It's a regular function call
+     (irc-low-level-trace)
+     (codegen-call result form env))))
 
 
 

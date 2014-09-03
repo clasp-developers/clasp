@@ -182,14 +182,12 @@ namespace core
     Function_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env)
     {_G();
 	if ( sym.nilp() ) return _Nil<Function_O>();
-	if ( env.notnilp() )
-	{
-	    int depth=0;
-	    int level=0;
-	    Function_sp macro;
-	    bool found = Environment_O::clasp_findMacro(env,sym,depth,level,macro);
-	    if ( found ) return macro;
-	}
+        if ( core_lexicalFunction(sym,env).notnilp()) return _Nil<Function_O>();
+        int depth=0;
+        int level=0;
+        Function_sp macro;
+        bool found = Environment_O::clasp_findMacro(env,sym,depth,level,macro);
+        if ( found ) return macro;
 	Function_sp fn = sym->symbolFunction();
 	if ( fn.pointerp() && fn->macroP() ) return fn;
 	return _Nil<Function_O>();

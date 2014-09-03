@@ -145,7 +145,7 @@ namespace core
 			   Fixnum_O::create(print_base),
 			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
 			   true);
-	cl_writeSequence(buffer,stream,Fixnum_O::create(0),_Nil<Fixnum_O>());
+        cl_writeSequence(buffer,stream,Fixnum_O::create(0),_Nil<Fixnum_O>());
     }
 
 
@@ -417,7 +417,7 @@ namespace core
     }
 
 
-    void write_character(Stream_sp strm, T_sp chr)
+    void write_character(T_sp strm, T_sp chr)
     {
         claspChar i = chr.character();
 	if (!clasp_print_escape() && !clasp_print_readably()) {
@@ -434,7 +434,7 @@ namespace core
     }
 
 
-    T_sp write_ugly_object(T_sp x, Stream_sp stream)
+    T_sp write_ugly_object(T_sp x, T_sp stream)
     {
 	if ( !x ) {
 	    if (clasp_print_readably())
@@ -478,7 +478,7 @@ namespace core
 #define DOCS_af_writeUglyObject "writeUglyObject"
     T_sp af_writeUglyObject(T_sp obj, T_sp ostrm)
     {_G();
-        Stream_sp strm = coerce::outputStreamDesignator(ostrm);
+        T_sp strm = coerce::outputStreamDesignator(ostrm);
         return write_ugly_object(obj,strm);
     };
 

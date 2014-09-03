@@ -10,6 +10,10 @@
 
 namespace cl {
     extern core::Symbol_sp _sym_findClass;
+    extern core::Symbol_sp _sym_undefinedFunction;
+};
+namespace kw {
+    extern core::Symbol_sp _sym_name;
 };
 
 namespace core
@@ -64,6 +68,9 @@ namespace core
 	inline T_mv apply( T_sp fn, Cons_sp argsPLUS )
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<T_O>());
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(fn);
+            }
 	    int numArgsPassed = 0;
 	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
@@ -95,6 +102,9 @@ namespace core
 
 	inline T_mv funcall(T_sp fn) {
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(fn);
+            }
             Functoid* ft = func->closure;
             T_mv result;
             (*ft)(&result,0,NULL,NULL,NULL);
@@ -104,6 +114,9 @@ namespace core
 	template <class ARG0>
 	inline T_mv funcall(T_sp fn, ARG0 arg0) {
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(fn);
+            }
             Functoid* ft = func->closure;
             T_mv result;
             (*ft)(&result,1,arg0.asTPtr(),NULL,NULL);
@@ -118,7 +131,7 @@ namespace core
                 if ( fn == cl::_sym_findClass ) {
                     return(af_findClass(arg0.template as<Symbol_O>(),true,_Nil<Environment_O>()));
                 }
-                SIMPLE_ERROR(BF("Could not find function %s") % _rep_(fn) );
+                ERROR_UNDEFINED_FUNCTION(fn);
             }
             Functoid* ft = func->closure;
             T_mv result;
@@ -129,6 +142,9 @@ namespace core
 	template <class ARG0, class ARG1, class ARG2, class...ARGS>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS...args) {
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(fn);
+            }
             Functoid* ft = func->closure;
             T_mv result;
             size_t vnargs = sizeof...(ARGS);

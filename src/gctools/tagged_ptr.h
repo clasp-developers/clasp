@@ -133,7 +133,7 @@ namespace gctools {
             if ( LIKELY(rhs.pointerp()) ) {
                 px = DynamicCast<T*,U*>::castOrNULL(rhs.pxget());
                 if ( px==0 ) {
-                    THROW_HARD_ERROR(BF("You tried to assign an object to a variable of an incompatible type"));
+                    THROW_HARD_ERROR(BF("DynamicCast<T*,U*> failed due to an illegal cast"));
                 }
             } else {
                 uintptr_t upx = reinterpret_cast<uintptr_t>(rhs.pxget());

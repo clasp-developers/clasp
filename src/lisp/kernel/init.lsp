@@ -572,12 +572,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/seqlib
     lsp/trace
     :tiny
-
     :pre-cmp
-
+    ;; Compiler code
     cmp/cmpsetup
     cmp/cmpenv-proclaim
-;    cmp/cmpenv-fun
     cmp/cmpglobals
     cmp/cmptables
     cmp/cmpvar
@@ -597,10 +595,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     cmp/cmprepl
     :cmprepl
     lsp/sharpmacros
-;;    lsp/cmuutil
-;;    lsp/seqmacros
-;;    lsp/seqlib
-;;    lsp/trace
     lsp/assert
     lsp/describe
     lsp/module
@@ -801,6 +795,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (switch-to-full)
   (let ((*target-backend* (default-target-backend)))
     (load-boot :start :all :interp t )
+;;    (switch-to-full)
     ;; Compile everything - ignore old bitcode
     (let ((bitcode-files (compile-boot :base :all :recompile t )))
       (cmp:bundle-boot-lto (target-backend-pathname +imagelto-pathname+)

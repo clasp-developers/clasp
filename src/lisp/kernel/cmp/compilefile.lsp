@@ -65,9 +65,6 @@
                      (jit-constant-i32 *current-column*)
                      ))))
 
-(defun compiler-macro-function (sym &optional env) nil)
-
-
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"
@@ -130,15 +127,16 @@
       ((eq head 'cl:locally) (t1locally (cdr form) env))
       ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
       ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
-#||      ((eq head 'cl:defparameter)
-       (eval `(defvar ,(cadr form)))
-       (compile-top-level form))
-      ((eq head 'cl:defvar)
-       (eval `(defvar ,(cadr form)))
-       (compile-top-level form))
-||#
       ((compiler-macro-function head env)
-       (error "Handle compiler macro functions in env"))
+       (warn "Handle compiler macro functions in env for ~a" head))
+#||      ((and (not (core:lexical-macro-function head env))
+            (compiler-macro-function head env))
+       (multiple-value-bind (expansion expanded-p)
+           (compiler-macro-function head env)
+         (cmp-log "COMPILE-MACROEXPANDed form[%s] expanded to [%s]\n" form expansion)
+         (irc-low-level-trace)
+         (t1expr expansion env)))
+||#
       ((macro-function head env)
        (let ((expanded (macroexpand form env)))
 	 (t1expr expanded env)))

@@ -134,9 +134,12 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
        ,(ext:register-with-pde whole)
        ',name)))
 
-(defun compiler-macro-function (name &optional env)
+#+compiler-macros(defun compiler-macro-function (name &optional env)
 ;;  (declare (ignorable env))
   (get-sysprop name 'sys::compiler-macro))
+
+#-compiler-macros(defun compiler-macro-function (name &optional env)
+                   nil)
 
 ;;; Each of the following macros is also defined as a special form,
 ;;; as required by CLtL. Some of them are used by the compiler (e.g.

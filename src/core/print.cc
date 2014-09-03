@@ -103,10 +103,9 @@ namespace core
 		return soutput;
 	    }
 	}
-	SIMPLE_ERROR(BF("The value of *PRINT-CASE*\n %S\n"
+	SIMPLE_ERROR(BF("The value of *PRINT-CASE*\n"
 			"is not of the expected type"
-			"(MEMBER :UPCASE :DOWNCASE :CAPITALIZE)")
-		     % _rep_(output) );
+			"(MEMBER :UPCASE :DOWNCASE :CAPITALIZE)"));
     }
 
     bool clasp_print_gensym(void)
@@ -223,6 +222,64 @@ namespace core
 
 
 
+    
+    
+#define ARGS_cl_pprint "(obj &optional (stream ext::+process-standard-output+))"
+#define DECL_cl_pprint ""
+#define DOCS_cl_pprint "pprint"
+    void cl_pprint(T_sp obj, T_sp stream)
+    {_G();
+        DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR,_lisp->_true());
+        scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR,_lisp->_true());
+        stream = coerce::outputStreamDesignator(stream);
+	clasp_write_char('\n', stream);
+	write_object(obj, stream);
+	clasp_force_output(stream);
+    }
+
+
+
+#define ARGS_cl_princ "(obj &optional (output-stream-desig ext:+process-standard-output+))"
+#define DECL_cl_princ ""
+#define DOCS_cl_princ "See CLHS: princ"
+    T_sp cl_princ(T_sp obj, T_sp output_stream_desig )
+    {_G();
+	DynamicScopeManager scope1(cl::_sym_STARprint_escapeSTAR,_Nil<T_O>());
+	DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR,_Nil<T_O>());
+	eval::funcall(cl::_sym_write,obj,kw::_sym_stream,output_stream_desig);
+        return obj;
+    }
+
+
+
+
+#define ARGS_cl_prin1 "(obj &optional (output-stream-desig ext::+process-standard-output+))"
+#define DECL_cl_prin1 ""
+#define DOCS_cl_prin1 "See CLHS: prin1"
+    T_sp  cl_prin1(T_sp obj, T_sp output_stream_desig )
+    {_G();
+	DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR,_lisp->_true());
+	T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
+	eval::funcall(cl::_sym_write,obj,kw::_sym_stream,output_stream_desig);
+        return obj;
+    }
+
+#define ARGS_cl_print "(obj &optional (output-stream-desig ext::+process-standard-output+))"
+#define DECL_cl_print ""
+#define DOCS_cl_print "See CLHS: print"
+    T_sp cl_print(T_sp obj, T_sp output_stream_desig )
+    {_G();
+	DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR,_lisp->_true());
+	T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
+	clasp_write_string("\n",sout);
+	cl_prin1(obj,sout);
+	clasp_write_string(" ",sout);
+	clasp_force_output(sout);
+        return obj;
+    }
+
+    
+    
 
 
 
@@ -233,6 +290,13 @@ namespace core
 //        Defun(writeAddr);
         SYMBOL_EXPORT_SC_(CorePkg,printUnreadableObjectFunction);
         Defun(printUnreadableObjectFunction);
+        ClDefun(pprint);
+	SYMBOL_EXPORT_SC_(ClPkg,print);
+	ClDefun(print);
+	SYMBOL_EXPORT_SC_(ClPkg,prin1);
+	ClDefun(prin1);
+	SYMBOL_EXPORT_SC_(ClPkg,princ);
+	ClDefun(princ);
     }
 
 

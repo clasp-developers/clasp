@@ -59,8 +59,42 @@ namespace core
 {
     const char* CorePkg_nicknames[] = { "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/ };
 
-    SYMBOL_EXPORT_SC_(ClPkg,nil);
+    SYMBOL_EXPORT_SC_(ClPkg,printNotReadableObject);
 
+
+    SYMBOL_EXPORT_SC_(ClPkg,condition);
+    SYMBOL_EXPORT_SC_(ClPkg,seriousCondition);
+    SYMBOL_EXPORT_SC_(ClPkg,error);
+    SYMBOL_EXPORT_SC_(ClPkg,programError);
+    SYMBOL_EXPORT_SC_(ClPkg,cellError);
+    SYMBOL_EXPORT_SC_(ClPkg,unboundVariable);
+    SYMBOL_EXPORT_SC_(ClPkg,unboundSlot);
+    SYMBOL_EXPORT_SC_(ClPkg,undefinedFunction);
+    SYMBOL_EXPORT_SC_(ClPkg,packageError);
+    SYMBOL_EXPORT_SC_(ClPkg,arithmeticError);
+    SYMBOL_EXPORT_SC_(ClPkg,floatingPointOverflow);
+    SYMBOL_EXPORT_SC_(ClPkg,floatingPointInexact);
+    SYMBOL_EXPORT_SC_(ClPkg,floatingPointInvalidOperation);
+    SYMBOL_EXPORT_SC_(ClPkg,floatingPointUnderflow);
+    SYMBOL_EXPORT_SC_(ClPkg,divisionByZero);
+    SYMBOL_EXPORT_SC_(ClPkg,printNotReadable);
+    SYMBOL_EXPORT_SC_(ClPkg,fileError);
+    SYMBOL_EXPORT_SC_(ClPkg,streamError);
+    SYMBOL_EXPORT_SC_(ClPkg,endOfFile);
+    SYMBOL_EXPORT_SC_(ClPkg,parseError);
+    SYMBOL_EXPORT_SC_(ClPkg,readerError);
+    SYMBOL_EXPORT_SC_(ClPkg,controlError);
+    SYMBOL_EXPORT_SC_(ClPkg,typeError);
+    SYMBOL_EXPORT_SC_(ClPkg,simpleTypeError);
+    SYMBOL_EXPORT_SC_(ClPkg,simpleError);
+    SYMBOL_EXPORT_SC_(ClPkg,storageCondition);
+    SYMBOL_EXPORT_SC_(ClPkg,simpleCondition);
+    SYMBOL_EXPORT_SC_(ClPkg,simpleWarning);
+    SYMBOL_EXPORT_SC_(ClPkg,warning);
+    SYMBOL_EXPORT_SC_(ClPkg,styleWarning);
+
+
+    SYMBOL_EXPORT_SC_(ClPkg,nil);
     SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);
     SYMBOL_EXPORT_SC_(KeywordPkg,cr);
@@ -291,16 +325,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_SC_(CorePkg,setThrowPosition);
     SYMBOL_EXPORT_SC_(CorePkg,tooFewArgumentsError);
     SYMBOL_EXPORT_SC_(CorePkg,tooManyArgumentsError);
-    SYMBOL_EXPORT_SC_(ClPkg,readerError);
-    SYMBOL_EXPORT_SC_(ClPkg,streamError);
-    SYMBOL_EXPORT_SC_(ClPkg,endOfFile);
-    SYMBOL_EXPORT_SC_(ClPkg,packageError);
-    SYMBOL_EXPORT_SC_(ClPkg,parseError);
-    SYMBOL_EXPORT_SC_(ClPkg,printNotReadable);
-    SYMBOL_EXPORT_SC_(ClPkg,printNotReadableObject);
     SYMBOL_EXPORT_SC_(KeywordPkg,object);
-    SYMBOL_EXPORT_SC_(ClPkg,cellError);
-    SYMBOL_EXPORT_SC_(ClPkg,simpleError);
     SYMBOL_SC_(KeywordPkg,formatControl);
     SYMBOL_SC_(KeywordPkg,formatArguments);
     SYMBOL_SC_(KeywordPkg,name);

@@ -8,7 +8,8 @@
 ;;
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (make-package "MICRO-PROFILING" :use '("CORE" "CL")))
+  (if (not (find-package "MICRO-PROFILING"))
+      (make-package "MICRO-PROFILING" :use '("CORE" "CL"))))
 
 
 (in-package "MICRO-PROFILING")

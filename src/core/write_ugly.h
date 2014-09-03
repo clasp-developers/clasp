@@ -9,7 +9,7 @@
 namespace core
 {
 
-    T_sp write_ugly_object(T_sp x, Stream_sp stream);
+    T_sp write_ugly_object(T_sp x, T_sp stream);
 
 
     void initialize_write_ugly_object();
