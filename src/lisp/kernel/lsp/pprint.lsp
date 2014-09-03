@@ -1403,7 +1403,7 @@
 	  (pprint-newline :linear stream)
 	  (write-object (pprint-pop) stream)))))
 
-#+ecl-min  
+#+(or ecl-min clasp)
 (defmacro pprint-tagbody-guts (stream)
   `(loop
      (pprint-exit-if-list-exhausted)

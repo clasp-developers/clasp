@@ -110,6 +110,7 @@ struct _TRACE {
 
 #define ERROR_DIVISION_BY_ZERO(_x_,_y_) ERROR(cl::_sym_divisionByZero,core::lisp_createList(kw::_sym_operation,cl::_sym__DIVIDE_,kw::_sym_operands,core::lisp_createList(_x_,_y_)))
 
+#define ERROR_UNDEFINED_FUNCTION(_f_) ERROR(cl::_sym_undefinedFunction,core::lisp_createList(kw::_sym_name,_f_));
 #define FE_ERROR(_type_,_args_) 
 
 namespace core 

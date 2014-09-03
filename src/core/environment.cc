@@ -26,6 +26,37 @@ namespace core
 
     
     
+#define ARGS_core_lexicalFunction "(name env)"
+#define DECL_core_lexicalFunction ""
+#define DOCS_core_lexicalFunction "lexicalFunction - If found return (values T fn depth index) otherwise nil"
+    T_mv core_lexicalFunction(T_sp name, T_sp env)
+    {_G();
+        int depth = 0;
+        int index = 0;
+        Function_sp func;
+        if ( Environment_O::clasp_findFunction(env,name,depth,index,func) ) {
+            return Values(_lisp->_true(),func,Fixnum_O::create(depth),Fixnum_O::create(index));
+        }
+        return Values(_Nil<T_O>());
+    };
+
+#define ARGS_core_lexicalMacroFunction "(name env)"
+#define DECL_core_lexicalMacroFunction ""
+#define DOCS_core_lexicalMacroFunction "lexicalMacroFunction - If found return (values T fn depth index) otherwise nil"
+    T_mv core_lexicalMacroFunction(T_sp name, T_sp env)
+    {_G();
+        int depth = 0;
+        int index = 0;
+        Function_sp func;
+        if ( Environment_O::clasp_findMacro(env,name,depth,index,func) ) {
+            return Values(_lisp->_true(),func,Fixnum_O::create(depth),Fixnum_O::create(index));
+        }
+        return Values(_Nil<T_O>());
+    };
+
+
+    
+    
 #define ARGS_af_updateValue "(env symbol value)"
 #define DECL_af_updateValue ""
 #define DOCS_af_updateValue "updateValue"
@@ -220,6 +251,8 @@ namespace core
 	Defun(environmentTypeList);
 	SYMBOL_SC_(CorePkg,environmentId);
 	Defun(environmentId);
+        CoreDefun(lexicalFunction);
+        CoreDefun(lexicalMacroFunction);
     }
 
     void Environment_O::exposePython(Lisp_sp lisp)
@@ -402,8 +435,7 @@ namespace core
     {_G();
 	stringstream ss;
         ss << "#<" << lisp_classNameAsString(af_classOf(this->asSmartPtr())) << ">";
-        return ss.str();
-#if 0
+#if 1
 	int tab = _sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>()->get();
 	{
 	    ss << (BF("--------------------------- %20s :id %5d -----") % this->_instanceClass()->classNameAsString() % this->_EnvId ).str() << std::endl;
@@ -418,8 +450,8 @@ namespace core
 	    }
 	    ss << string(tab,' ') << " ]" << std::endl;
 	}
-	return ss.str();
 #endif
+        return ss.str();
     }
 
 

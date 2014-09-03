@@ -99,7 +99,7 @@ namespace core
     void SexpSaveArchive_O::sexpSaveArchiveWrite(T_sp streamDesignator )
     {
 	DynamicScopeManager scope(_sym_STARserializerArchiveSTAR,this->asSmartPtr());
-	Stream_sp stream = coerce::outputStreamDesignator(streamDesignator);
+	T_sp stream = coerce::outputStreamDesignator(streamDesignator);
 	HashTable_sp sNodeToRef = HashTable_O::create(cl::_sym_eq);
 	scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR,_lisp->_true());
 	scope.pushSpecialVariableAndSet(cl::_sym_STARprint_escapeSTAR,_lisp->_true());

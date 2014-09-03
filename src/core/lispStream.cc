@@ -6667,7 +6667,7 @@ namespace core {
     {
         stream = coerce::outputStreamDesignator(stream);
         if ( !AnsiStreamP(stream) ) {
-            Fixnum_sp fnstart(istart);
+            Fixnum_sp fnstart = Fixnum_O::create(istart);
             eval::funcall(gray::_sym_stream_write_string, stream, str, fnstart, end);
             return str;
         }
@@ -6806,9 +6806,9 @@ namespace core {
 #define ARGS_core_fileColumn "(arg)"
 #define DECL_core_fileColumn ""
 #define DOCS_core_fileColumn "column"
-    T_sp core_fileColumn(T_sp ostrm)
+    T_sp core_fileColumn(T_sp strm)
     {_G();
-	Stream_sp strm = coerce::outputStreamDesignator(ostrm);
+	strm = coerce::outputStreamDesignator(strm);
         return Fixnum_O::create(clasp_file_column(strm));
     };
     
@@ -6838,8 +6838,9 @@ namespace core {
 	    end = tend->get();
 	}
 	if ( end <= start ) {
-	    goto OUTPUT;
+            return seq;
 	}
+        const FileOps& ops = stream_dispatch_table(stream);
 	if (af_listp(seq)) {
 	    T_sp elt_type = cl_stream_element_type(stream);
 	    bool ischar = (elt_type == cl::_sym_BaseChar_O) || (elt_type == cl::_sym_Character_O);
@@ -6857,7 +6858,7 @@ namespace core {
 		}
 	    }
 	} else {
-	    StreamOps(stream).write_vector(stream,seq.as<Vector_O>(), start, end );
+	    ops.write_vector(stream,seq.as<Vector_O>(), start, end );
 	}
     OUTPUT:
 	return seq;

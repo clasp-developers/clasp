@@ -2261,7 +2261,9 @@ namespace core
     T_mv af_funcall(T_sp function_desig, Cons_sp args)
     {_G();
 	Function_sp func = coerce::functionDesignator(function_desig);
-	ASSERTF(func.pointerp(),BF("funcall target[%s] is undefined") % _rep_(function_desig) );
+        if ( func.nilp() ) {
+            ERROR_UNDEFINED_FUNCTION(function_desig);
+        }
 	Cons_sp passArgs = args;
 	ValueFrame_sp frame(ValueFrame_O::create(passArgs,_Nil<ActivationFrame_O>()));
 	return eval::applyToActivationFrame(func,frame); // func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
@@ -2295,6 +2297,9 @@ namespace core
 	if ( lenArgs == 1 && oCar(args).notnilp() )
 	{
 	    Function_sp func = coerce::functionDesignator(head);
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(head);
+            }
 	    if ( ActivationFrame_sp singleFrame = oCar(args).asOrNull<ActivationFrame_O>() )
 	    {
 		return eval::applyToActivationFrame(func,singleFrame); // return func->INVOKE(singleFrame->length(),singleFrame->argArray()); // return eval::applyFunctionToActivationFrame(func,singleFrame);
@@ -2937,48 +2942,6 @@ extern "C"
   __END_DOC
 */
 
-
-#define ARGS_cl_princ "(obj &optional (output-stream-desig ext:+process-standard-output+))"
-#define DECL_cl_princ ""
-#define DOCS_cl_princ "See CLHS: princ"
-    T_sp cl_princ(T_sp obj, T_sp output_stream_desig )
-    {_G();
-	DynamicScopeManager scope1(cl::_sym_STARprint_escapeSTAR,_Nil<T_O>());
-	DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR,_Nil<T_O>());
-	eval::funcall(cl::_sym_write,obj,kw::_sym_stream,output_stream_desig);
-        return obj;
-    }
-
-
-
-
-#define ARGS_cl_prin1 "(obj &optional (output-stream-desig ext::+process-standard-output+))"
-#define DECL_cl_prin1 ""
-#define DOCS_cl_prin1 "See CLHS: prin1"
-    T_sp  cl_prin1(T_sp obj, T_sp output_stream_desig )
-    {_G();
-	DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR,_lisp->_true());
-	Stream_sp sout = coerce::outputStreamDesignator(output_stream_desig);
-	eval::funcall(cl::_sym_write,obj,kw::_sym_stream,output_stream_desig);
-        return obj;
-    }
-
-#define ARGS_cl_print "(obj &optional (output-stream-desig ext::+process-standard-output+))"
-#define DECL_cl_print ""
-#define DOCS_cl_print "See CLHS: print"
-    T_sp cl_print(T_sp obj, T_sp output_stream_desig )
-    {_G();
-	DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR,_lisp->_true());
-	Stream_sp sout = coerce::outputStreamDesignator(output_stream_desig);
-	clasp_write_string("\n",sout);
-	cl_prin1(obj,sout);
-	clasp_write_string(" ",sout);
-	clasp_force_output(sout);
-        return obj;
-    }
-
-    
-    
 
 
 
@@ -3694,12 +3657,6 @@ extern "C"
 //	defNoWrapPackage(CorePkg,"globals", &prim_globals,_LISP);
 	SYMBOL_SC_(CorePkg,findFileInLispPath);
 	Defun(findFileInLispPath);
-	SYMBOL_EXPORT_SC_(ClPkg,print);
-	ClDefun(print);
-	SYMBOL_EXPORT_SC_(ClPkg,prin1);
-	ClDefun(prin1);
-	SYMBOL_EXPORT_SC_(ClPkg,princ);
-	ClDefun(princ);
 
 	SYMBOL_EXPORT_SC_(ClPkg,findClass);
 	Defun(findClass);

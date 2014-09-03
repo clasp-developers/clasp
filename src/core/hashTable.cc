@@ -55,7 +55,7 @@ namespace core
 
 #define LOCK_af_make_hash_table 1
 #define DOCS_af_make_hash_table "see CLHS"
-#define	ARGS_af_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (orehash_threshold 1.0))"
+#define	ARGS_af_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0))"
 #define DECL_af_make_hash_table ""    
     HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold)
     {_G();

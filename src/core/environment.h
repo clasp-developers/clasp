@@ -894,6 +894,8 @@ namespace core {
 
     bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val);
 
+    T_mv core_lexicalFunction(T_sp sym, T_sp env);
+    T_mv core_lexicalMacroFunction(T_sp sym, T_sp env);
 };
 
 
