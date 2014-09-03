@@ -36,3 +36,7 @@ tags:
 
 allTags at:
 	echo no ctags -R
+
+
+cleanBins:
+	-find . -name 'bin' -exec rm -rf {} \;
