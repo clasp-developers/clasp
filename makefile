@@ -13,7 +13,7 @@ endif
 
 
 ifeq ($(WHAT),)
-	WHAT = bundle debug release boehm
+	WHAT = bundle debug release boehm mps-prep
 endif
 
 all:
@@ -21,7 +21,7 @@ all:
 	make compile-commands
 	make clasp-build
 	make compile-sources
-
+	(cd src/main; make clasp-gc-interface)
 
 
 testing:
