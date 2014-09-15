@@ -192,14 +192,18 @@ template<> struct gctools::GCInfo<core::Symbol_O> {
     static bool constexpr Atomic = false;
 };
 
-#if 0
-namespace gctools {
-    template<> inline bool isNilDowncastableTo<core::Symbol_O>() { return true;};
+
+
+namespace core {
+    template <class OT>
+    class SymbolMap : public gctools::SmallMap<Symbol_sp,gctools::smart_ptr<OT>> {
+        typedef gctools::SmallMap<Symbol_sp,gctools::smart_ptr<OT>> BaseType;
+    public:
+        typedef typename BaseType::iterator iterator;
+        typedef typename BaseType::const_iterator const_iterator;
+    };
+
 };
-
-#endif
-
-
 
 
 

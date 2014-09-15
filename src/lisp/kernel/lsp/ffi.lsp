@@ -1,6 +1,6 @@
 (defpackage ffi
   (:use :cl :core)
-  (:export "WITH-FOREIGN-OBJECT" "WITH-FOREIGN-OBJECTS")
+  (:export #:WITH-FOREIGN-OBJECT #:WITH-FOREIGN-OBJECTS)
   )
 
 

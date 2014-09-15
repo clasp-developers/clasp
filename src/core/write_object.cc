@@ -96,8 +96,8 @@ namespace core
     T_sp write_object(T_sp x, T_sp stream)
     {
 #if 1 //def ECL_CMU_FORMAT   // Disable this for now - until we get Grey streams working
-	if ( !cl::_sym_STARprint_prettySTAR.unboundp()
-             && cl::_sym_STARprint_prettySTAR->symbolValueUnsafe().notnilp() ) {
+	if (!cl::_sym_STARprint_prettySTAR.unboundp()
+            && cl::_sym_STARprint_prettySTAR->symbolValueUnsafe().notnilp() ) {
             T_sp objx = x;
 	    T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, objx);
             T_sp f0 = mv_f;

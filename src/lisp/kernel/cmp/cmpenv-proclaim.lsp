@@ -110,7 +110,7 @@
 		(mapc proclaimer (rest decl))
 		t)))
 	   (t
-	    (warn "Unknown declaration specifier ~s" decl-name))))))
+	    (warn-or-ignore "Unknown declaration specifier ~s" decl-name))))))
 
 (defun proclaim-var (type vl)
   (dolist (var vl)

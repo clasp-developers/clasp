@@ -201,7 +201,6 @@ and the pathname of the source file - this will also be used as the module initi
 	    (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
           (with-one-source-database
               (cmp-log "About to start with-compilation-unit\n")
-          
             (with-compilation-unit (:override nil
                                               :module module
                                               :function-pass-manager function-pass-manager)

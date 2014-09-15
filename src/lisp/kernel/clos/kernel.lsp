@@ -314,7 +314,7 @@
 		result)))
 	(dolist (meth (cdr scan))
 	  (when (eq (compare-methods most-specific
-				     meth args-specializers f) 2)
+				     meth args-specializers f) #-clasp 2 #+clasp 'spec-2)
 	    (setq most-specific meth)))
 	(setq scan (delete most-specific scan))
 	(push most-specific ordered-list)))))
@@ -334,8 +334,8 @@
     (ecase (compare-specializers (first spec-list-1)
 				 (first spec-list-2)
 				 (first args-specializers))
-      (1 '1)
-      (2 '2)
+      (#-clasp 1 #+clasp 'spec-1 #-clasp '1 #+clasp 'spec-1)
+      (#-clasp 2 #+clasp 'spec-2 #-clasp '2 #+clasp 'spec-2)
       (= 
        (compare-specializers-lists (cdr spec-list-1)
 				   (cdr spec-list-2)
@@ -370,12 +370,12 @@
   (with-early-accessors (+standard-class-slots+ +standard-class-slots+)
     (let* ((cpl (class-precedence-list arg-class)))
       (cond ((eq spec-1 spec-2) '=)
-	    ((fast-subtypep spec-1 spec-2) '1)
-	    ((fast-subtypep spec-2 spec-1) '2)
-	    ((eql-specializer-flag spec-1) '1) ; is this engough?
-	    ((eql-specializer-flag spec-2) '2) ; Beppe
-	    ((member spec-1 (member spec-2 cpl)) '2)
-	    ((member spec-2 (member spec-1 cpl)) '1)
+	    ((fast-subtypep spec-1 spec-2) #-clasp '1 #+clasp 'spec-1)
+	    ((fast-subtypep spec-2 spec-1) #-clasp '2 #+clasp 'spec-2)
+	    ((eql-specializer-flag spec-1) #-clasp '1 #+clasp 'spec-1) ; is this engough?
+	    ((eql-specializer-flag spec-2) #-clasp '2 #+clasp 'spec-2) ; Beppe
+	    ((member spec-1 (member spec-2 cpl)) #-clasp '2 #+clasp 'spec-2)
+	    ((member spec-2 (member spec-1 cpl)) #-clasp '1 #+clasp 'spec-1)
 	    ;; This will force an error in the caller
 	    (t nil)))))
 

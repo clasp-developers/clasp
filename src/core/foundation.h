@@ -436,7 +436,7 @@ namespace core
 #include <ostream>
 #include <iostream>
 #include <boost/format.hpp>
-//using namespace std;
+
 using string = std::string;
 using type_info = std::type_info;
 template <typename X, typename Y>
@@ -800,10 +800,11 @@ namespace core {
 
 
 
-    typedef	struct NullTerminatedEnumAssocationStruct : public gctools::GCIgnoreClass	{
+    struct NullTerminatedEnumAssociation {
+        NullTerminatedEnumAssociation(const string& key, int eval) : _Key(key), _Enum(eval) {};
 	string	_Key;
 	int	_Enum;
-    } NullTerminatedEnumAssociation;
+    };
 
 
 
@@ -1065,6 +1066,10 @@ namespace core
 //    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
     Symbol_sp lisp_upcase_intern(string const& name, string const& packageName);
     Symbol_sp lisp_upcase_intern_export(string const& name, string const& packageName);
+
+    /*! Write characters to the stream */
+    void lisp_write(const boost::format& fmt, T_sp stream);
+
     Lisp_sp lisp_fromObject(T_sp obj);
     string lisp_currentPackageName();
     string lisp_classNameAsString(Class_sp c);

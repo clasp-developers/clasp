@@ -99,8 +99,6 @@ namespace core
 
 
 
-
-
     Cons_sp Cons_O::createList(T_sp o1)
     {
 	return(Cons_O::create(o1,_Nil<Cons_O>()));

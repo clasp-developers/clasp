@@ -61,7 +61,6 @@ namespace core
 
     SYMBOL_EXPORT_SC_(ClPkg,printNotReadableObject);
 
-
     SYMBOL_EXPORT_SC_(ClPkg,condition);
     SYMBOL_EXPORT_SC_(ClPkg,seriousCondition);
     SYMBOL_EXPORT_SC_(ClPkg,error);
@@ -142,6 +141,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ExtPkg,specialVar);
     SYMBOL_EXPORT_SC_(ExtPkg,lexicalVar);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugLoadTimeValuesSTAR);
+    SYMBOL_EXPORT_SC_(CorePkg,STARdebugGenericDispatchSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugEvalSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugInterpretedFunctionsSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg,FullDebug);
@@ -180,6 +180,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_EXPORT_SC_(KeywordPkg,none);
     SYMBOL_EXPORT_SC_(KeywordPkg,line);
     SYMBOL_EXPORT_SC_(KeywordPkg,full);
+    SYMBOL_EXPORT_SC_(KeywordPkg,message);
     SYMBOL_EXPORT_SC_(KeywordPkg,line_buffered);
     SYMBOL_EXPORT_SC_(KeywordPkg,fully_buffered);
 
@@ -821,6 +822,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	cl::_sym_STARprint_linesSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARprint_miser_widthSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARprint_pprint_dispatchSTAR->defparameter(_Nil<T_O>());
+	_sym_STARenablePrintPrettySTAR->defparameter(_Nil<T_O>()); // _lisp->_true()); // Just for debugging *print-pretty*
 	cl::_sym_STARprint_prettySTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARprint_radixSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARprint_readablySTAR->defparameter(_Nil<T_O>());
@@ -831,7 +833,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	T_sp stdin_stream = IOStreamStream_O::makeInput("*STDIN*",stdin);
 	T_sp stdout_stream = IOStreamStream_O::makeOutput("*STDOUT*",stdout);
 	T_sp stderr_stream = IOStreamStream_O::makeOutput("*STDERR*",stderr);
-	_sym_STARenablePrintPrettySTAR->defparameter(_Nil<T_O>()); // Just for debugging *print-pretty*
         ext::_sym__PLUS_processStandardInput_PLUS_->defparameter(stdin_stream);
         ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);
         ext::_sym__PLUS_processErrorOutput_PLUS_->defparameter(stderr_stream);
@@ -891,6 +892,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym_STARdebugMonitorSTAR->defparameter(_Nil<T_O>());
         _sym_STARwatchDynamicBindingStackSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugLoadTimeValuesSTAR->defparameter(_Nil<T_O>());
+        _sym_STARdebugGenericDispatchSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
 	Cons_sp hooks = Cons_O::createList(
@@ -903,7 +905,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	    Cons_O::create(Str_O::create("bc"),_sym_loadBitcode),
 	    Cons_O::create(Str_O::create("bundle"),_sym_loadBundle)
 	    );
-	hooks = Cons_O::create(Cons_O::create(Str_O::create("brclrc"),_sym_loadSource),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("clasprc"),_sym_loadSource),hooks);
 	ext::_sym_STARloadHooksSTAR->defparameter(hooks);
 	ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
         ext::_sym_STARinspectorHookSTAR->defparameter(_Nil<T_O>());

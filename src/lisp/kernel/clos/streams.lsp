@@ -565,12 +565,10 @@
 
 (defmethod streamp ((stream stream))
   (declare (ignore stream))
-  (print "gray:streamp stream class argument")
   t)
 
 (defmethod streamp ((stream t))
   (declare (ignore stream))
-  (print "gray:streamp t class argument")
   nil)
 
 

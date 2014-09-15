@@ -13,6 +13,8 @@ namespace gctools {
 
 
 #include "gcvector.h"
+#include "gcSmallMap.h"
+#include "gcSmallSet.h"
 #include "gcarray.h"
 
 namespace gctools {
@@ -146,6 +148,24 @@ namespace gctools {
     public:
         typedef Vec0_impl<GCVector<T,GCContainerAllocator<GCVector_moveable<T> > > > Base;
         Vec0() : Base() {};
+    };
+
+
+    template <class K,class V>
+    class SmallMap : public GCSmallMap<K,V,GCContainerAllocator<GCVector_moveable<pair<K,V> > > >
+    {
+    public:
+        typedef GCSmallMap<K,V,GCContainerAllocator<GCVector_moveable<pair<K,V> > > > Base;
+        SmallMap() : Base() {};
+    };
+
+
+    template <class K>
+    class SmallOrderedSet : public GCSmallSet<K,GCContainerAllocator<GCVector_moveable<K> > >
+    {
+    public:
+        typedef GCSmallSet<K,GCContainerAllocator<GCVector_moveable<K> > > Base;
+        SmallOrderedSet() : Base() {};
     };
 
     template <class T>

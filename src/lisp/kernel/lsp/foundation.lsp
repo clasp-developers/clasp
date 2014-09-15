@@ -342,13 +342,6 @@ the corresponding VAR.  Returns NIL."
 
 
 
-(defvar *print-pretty* t)
-(defvar *print-level* nil)
-(defvar *print-length* nil)
-(defvar *print-base* 10)
-(defvar *print-radix* nil)
-(defvar *read-default-float-format* 'double-float)
-
 
 (if (not (fboundp 'compile))
     (defun proclaim (d)
@@ -380,6 +373,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun warn (x &rest args)
   (bformat t "WARN: %s %s\n" x args))
+
+(defun warn-or-ignore (x &rest args)
+  nil)
+(export 'warn-or-ignore)
 
 (defun class-name (x)
   (name-of-class x))

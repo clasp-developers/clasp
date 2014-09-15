@@ -5,6 +5,7 @@
 #include "vectorObjectsWithFillPtr.h"
 #include "newhash.h"
 #include "cache.h"
+#include "wrappers.h"
 
 namespace core
 {
@@ -174,8 +175,22 @@ namespace core
 
 
 
+    
+    
+#define ARGS_core_clearGenericFunctionDispatchCache "()"
+#define DECL_core_clearGenericFunctionDispatchCache ""
+#define DOCS_core_clearGenericFunctionDispatchCache "clearGenericFunctionDispatchCache"
+    void core_clearGenericFunctionDispatchCache()
+    {_G();
+        printf("%s:%d Clearing generic function dispatch cache\n",__FILE__,__LINE__);
+        _lisp->methodCachePtr()->empty();
+    };
+
+
+
   void initialize_cache()
   {_G();
+      CoreDefun(clearGenericFunctionDispatchCache);
   }
 
 

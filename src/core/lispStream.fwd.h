@@ -15,5 +15,10 @@ namespace core
     FORWARD(IOFileStream);
     FORWARD(IOStreamStream);
     FORWARD(ConcatenatedStream);
+
+
+    void clasp_write(const boost::format& fmt, T_sp strm);
+
+
 }
 #endif

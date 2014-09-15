@@ -31,7 +31,9 @@
 
 
 (defun calling-convention-args.gep (cc idx &optional target-idx)
-  (let ((label (if target-idx (bformat nil "arg-%d" target-idx) "rawarg")))
+  (let ((label (if (and target-idx core::*enable-print-pretty*)
+                   (bformat nil "arg-%d" target-idx)
+                   "rawarg")))
     (irc-gep (calling-convention-args cc) (list idx) label)))
                               
 

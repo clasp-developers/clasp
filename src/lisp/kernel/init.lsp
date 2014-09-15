@@ -55,7 +55,13 @@
 
 ;; Setup a few things for the CMP package
 (select-package :cmp)
-(export '(bundle-boot))
+
+;;; cmp:*implicit-compilation* is set to T in cmp/cmprepl.lsp
+(SYS:*MAKE-SPECIAL 'cmp:*implicit-compilation*)
+(setq cmp:*implicit-compilation* nil)
+(export '(cmp:*implicit-compilation*))
+
+(export '(link-system))
 (use-package :core)
 
 (select-package :core)
@@ -200,8 +206,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-
-
 (defconstant +ecl-optimization-settings+ 
   '((optimize (safety 2) (speed 1) (debug 1) (space 1))
     (ext:check-arguments-type nil)))
@@ -326,6 +330,15 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (core::select-package :cl)
+(defvar *print-pretty* nil)  ;; Turn this on by default
+(defvar *print-level* nil)
+(defvar *print-length* nil)
+(defvar *print-base* 10)
+(defvar *print-radix* nil)
+(defvar *read-default-float-format* 'double-float)
+
+
+
 (core::export 'defun)
 (core::select-package :core)
 
@@ -364,7 +377,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (si::*fset 'interpreter-iload
 	  #'(lambda (module &aux (pathname (lisp-source-pathname module)))
 	      (let ((name (namestring pathname)))
-		(bformat t "Loading interpreted file: %s\n" (namestring name))
+                (if cmp:*implicit-compilation*
+                    (bformat t "Loading/compiling source: %s\n" (namestring name))
+                    (bformat t "Loading/interpreting source: %s\n" (namestring name)))
 		(load pathname)))
 	  nil)
 
@@ -461,7 +476,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  (load-bitcode bc-path))
 	(if (probe-file lsp-path)
 	    (progn
-	      (bformat t "Loading interpreted file: %s\n" (truename lsp-path))
+              (if cmp:*implicit-compilation*
+                  (bformat t "Loading/compiling source: %s\n" (truename lsp-path))
+                  (bformat t "Loading/interpreting source: %s\n" (truename lsp-path)))
 	      (load lsp-path))
 	    (bformat t "No interpreted or bitcode file for %s could be found\n" (truename lsp-path))))
     ))
@@ -627,7 +644,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     clos/generic
     :generic
     clos/fixup
-    :clos
     clos/extraclasses
     lsp/defvirtual
     :stage3
@@ -636,6 +652,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     clos/streams
     lsp/pprint
     clos/inspect
+    :clos
     lsp/ffi
 ;;    asdf/build/asdf
     :front
@@ -646,12 +663,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ))
 
 
-(defun select-source-files (last-file &key first-file (all-files *init-files*))
-  (or first-file (error "You must provide first-file"))
-  (let ((cur (member first-file all-files))
+(defun select-source-files (last-file &key first-file system)
+  (or first-file (error "You must provide first-file to select-source-files"))
+  (or system (error "You must provide system to select-source-files"))
+  (let ((cur (member first-file system))
 	files
 	file)
-    (or cur (error "first-file ~a was not a member of ~a" first-file all-files))
+    (or cur (error "first-file ~a was not a member of ~a" first-file system))
     (tagbody
      top
        (setq file (car cur))
@@ -674,8 +692,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(defun select-trailing-source-files (after-file &key (all-files *init-files*))
-  (let ((cur (reverse all-files))
+(defun select-trailing-source-files (after-file &key system)
+  (or system (error "You must provide :system to select-trailing-source-files"))
+  (let ((cur (reverse system))
 	files file)
     (tagbody
      top
@@ -696,9 +715,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(defun load-boot ( first-file last-file &key interp load-bitcode (target-backend (default-target-backend)))
+(defun load-system ( first-file last-file &key interp load-bitcode (target-backend (default-target-backend)) (system *init-files*))
   (let* ((*target-backend* target-backend)
-         (files (select-source-files last-file :first-file first-file))
+         (files (select-source-files last-file :first-file first-file :system system))
 	 (cur files))
     (tagbody
      top
@@ -713,12 +732,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        )))
 
 
-(defun compile-boot (first-file last-file &key recompile reload)
+(defun compile-system (first-file last-file &key recompile reload (system *init-files*))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (bformat t "compile-boot  from: %s  to: %s\n" first-file last-file)
+  (bformat t "compile-system  from: %s  to: %s\n" first-file last-file)
   (if (not recompile)
-        (load-boot first-file last-file))
-  (let* ((files (select-source-files last-file :first-file first-file))
+        (load-system first-file last-file :system system))
+  (let* ((files (select-source-files last-file :first-file first-file :system system))
 	 (cur files)
          bitcode-files)
     (tagbody
@@ -736,9 +755,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
-(defun clean-boot ( &optional after-file &key no-prompt (target-backend (default-target-backend)))
+(defun clean-system ( &optional after-file &key no-prompt (target-backend (default-target-backend))
+                                           (system *init-files*))
   (let* ((*target-backend* target-backend)
-         (files (select-trailing-source-files after-file))
+         (files (select-trailing-source-files after-file :system system))
 	 (cur files))
     (bformat t "Will remove modules: %s\n" files)
     (bformat t "cur=%s\n" cur)
@@ -762,18 +782,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun compile-cmp (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend))
-        (compile-boot :start :cmp :reload t )
-        (compile-boot :base :start :reload nil )
+        (compile-system :start :cmp :reload t )
+        (compile-system :base :start :reload nil )
         ))
 
 
-(defun compile-min-boot (&key (target-backend (default-target-backend)))
+(defun compile-min-system (&key (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
-         (bitcodes1 (compile-boot :start :cmp :reload t ))
-         ;(bitcodes0 (compile-boot :base :start :reload nil :recompile t ))
-         (bitcodes2 (compile-boot :cmp :min ))
+         (bitcodes1 (compile-system :start :cmp :reload t ))
+         ;(bitcodes0 (compile-system :base :start :reload nil :recompile t ))
+         (bitcodes2 (compile-system :cmp :min ))
          (all-bitcodes (nconc bitcodes1 bitcodes2)))
-    (cmp:bundle-boot
+    (cmp:link-system
            (target-backend-pathname +min-image-pathname+ )
            :lisp-bitcode-files all-bitcodes
            )))
@@ -781,8 +801,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend)
-        (bitcode-files (compile-boot :start :min :recompile t )))
-    (cmp:bundle-boot (target-backend-pathname +min-image-pathname+ )
+        (bitcode-files (compile-system :start :min :recompile t )))
+    (cmp:link-system (target-backend-pathname +min-image-pathname+ )
                      :lisp-bitcode-files bitcode-files )))
 
 (defun switch-to-full ()
@@ -794,24 +814,32 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun compile-full () ;; &key (target-backend (default-target-backend)))
   (switch-to-full)
   (let ((*target-backend* (default-target-backend)))
-    (load-boot :start :all :interp t )
+    (load-system :start :all :interp t )
 ;;    (switch-to-full)
     ;; Compile everything - ignore old bitcode
-    (let ((bitcode-files (compile-boot :base :all :recompile t )))
-      (cmp:bundle-boot-lto (target-backend-pathname +imagelto-pathname+)
+    (let ((bitcode-files (compile-system :base :all :recompile t )))
+      (cmp:link-system-lto (target-backend-pathname +imagelto-pathname+)
+                           :lisp-bitcode-files bitcode-files ))))
+
+(defun compile-clos () ;; &key (target-backend (default-target-backend)))
+  (switch-to-full)
+  (let ((*target-backend* (default-target-backend)))
+    (load-system :start :clos :interp t )
+;;    (switch-to-full)
+    ;; Compile everything - ignore old bitcode
+    (let ((bitcode-files (compile-system :base :all :recompile t )))
+      (cmp:link-system-lto (target-backend-pathname +imagelto-pathname+)
                            :lisp-bitcode-files bitcode-files ))))
 
 
-(defun bootstrap-help ()
-  (bformat t "Currently the (LOG x) macro is: %s\n" (macroexpand '(cmp:LOG x)))
-  ;;(bformat t "And the cmp:*debug-compiler* variable is: %s\n" cmp:*debug-compiler*)
-  (bformat t "Compiler LOG macro will slow down compilation\n")
-  (bformat t "\n")
-  (bformat t "Useful commands:\n")
-  (bformat t "(load-boot from-stage to-stage &key :interp t )   - Load the minimal system\n")
-  (bformat t "(compile-boot stage &key :reload t) - Compile whatever parts of the system have changed\n")
-  (bformat t "(clean-boot stage)                  - Remove all boot files after after-file\n")
-  (bformat t "Available modules: %s\n" *init-files*)
+(defun help-build ()
+  (bformat t "Useful build commands:\n")
+  (bformat t "(load-system from-stage to-stage &key (interp t/nil) (system *init-files*))\n")
+  (bformat t "          - Load parts of the system\n")
+  (bformat t "(compile-system from-stage to-stage &key :reload t (system *init-files*))\n")
+  (bformat t "          - Compile whatever parts of the system have changed\n")
+  (bformat t "(clean-system after-stage)\n")
+  (bformat t "          - Remove all built files after after-stage\n")
   )
 
 
@@ -860,14 +888,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export 'my-time)
                  
 
-(defun load-brclrc ()
+(defun load-clasprc ()
   "Load the users startup code"
-  (let ((brclrc (make-pathname :name ""
-			       :type "brclrc"
+  (let ((clasprc (make-pathname :name ""
+			       :type "clasprc"
 			       :defaults (user-homedir-pathname))))
-    (if (probe-file brclrc)
-	(load brclrc)
-	(format t "Could not find pathname: ~a~%" brclrc))))
+    (if (probe-file clasprc)
+	(load clasprc)
+	(format t "Could not find pathname: ~a~%" clasprc))))
 
 
 (defun load-pos ()
@@ -877,7 +905,32 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Setup the build system for SICL
+;;
+;;
+(defun setup-sicl () (load "sys:kernel;sicl;sinit.lsp"))
+(export 'setup-sicl)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Setup the build system for ASDF
+;;
+;;
+(defun setup-asdf () (load "sys:kernel;sys-asdf.lsp"))
+(export 'setup-asdf)
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; Start everything up
+;;
 
 ;; Print the features
 (eval-when (:execute)
@@ -902,7 +955,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
         (bformat t "init.lsp> Loading image bundle %s\n" image-pathname)
         (my-time (ibundle image-pathname))
         (require 'system)
-        (load-brclrc)
+        (load-clasprc)
         (if core:*command-line-load*
             (load core:*command-line-load*)
             #-ecl-min(progn
@@ -913,3 +966,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                        (core::low-level-repl))
             ))
       ))
+
+
+

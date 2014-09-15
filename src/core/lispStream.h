@@ -720,7 +720,6 @@ namespace core {
     void clasp_write_characters(const char* buf, int sz, T_sp strm);
     void clasp_write_string(const string& str, T_sp strm);
     void clasp_writeln_string(const string& str, T_sp strm);
-
     claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
     void initialize_lispStream();
@@ -732,6 +731,9 @@ namespace core {
                  T_sp if_does_not_exist, bool idnesp,
                  T_sp external_format,
                  T_sp cstream );
+
+    T_sp clasp_openRead(const string& name);
+    T_sp clasp_openWrite(const string& name);
 
 };
 

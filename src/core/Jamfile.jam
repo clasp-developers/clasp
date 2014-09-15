@@ -16,8 +16,6 @@ project internals/core : requirements
 	<include>..
 	<toolset>darwin:<define>darwin
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
-#	<toolset>darwin:<cxxflags>"-fopenmp"
-#-include pch.h"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
 	<toolset>clang:<cxxflags>"-Warray-bounds"
 	<toolset>gcc:<cxxflags>"-Wno-unused-variable"
@@ -43,6 +41,7 @@ local unity_sources =
       all.cc ;
 
 local sources = 
+      smallMap.cc
       write_symbol.cc
       corePackage.cc
       lisp.cc

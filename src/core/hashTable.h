@@ -112,6 +112,7 @@ namespace core
 	void lowLevelMapHash(KeyValueMapper* mapper) const;
 
 	void mapHash(std::function<void(T_sp, T_sp)> const& fn);
+        void maphash(std::function<void(T_sp,T_sp)> const& fn) { this->mapHash(fn); };
 
         /*! maps function across a hash table until the function returns false */
 	void terminatingMapHash(std::function<bool(T_sp, T_sp)> const& fn);
