@@ -84,8 +84,6 @@ namespace gctools {
     }
 #endif
 
-#if 0
-    /*! No need to safeRun this - WeakHashTable::set does that */
     int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value)
     {
         size_t b;
@@ -93,9 +91,9 @@ namespace gctools {
         value_type key(tkey);
         int result = WeakHashTable::find(this->_Keys,key
 #if USE_MPS
-                                           , &this->_LocationDependency
+                                         , &this->_LocationDependency
 #endif
-                                           ,b);
+                                         ,b);
         if (!result) { // this->find(key, this->_HashTable.Keys, true, b)) {
             printf("%s:%d find returned 0\n", __FILE__, __LINE__ );
             return 0;
@@ -106,14 +104,15 @@ namespace gctools {
             printf("%s:%d key was unboundp at %lu  used = %d\n", __FILE__, __LINE__, b, this->_Keys->used() );
         } else if ((*this->_Keys)[b].deletedp()) {
             this->_Keys->set(b,key);
-            ASSERT((*this->_Keys).deleted() > 0 );
+            GCTOOLS_ASSERT((*this->_Keys).deleted() > 0 );
             (*this->_Keys).setDeleted((*this->_Keys).deleted()-1);
             printf("%s:%d key was deletedp at %lu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted() );
         }
         (*this->_Values).set(b,value_type(value));
         return 1;
     }
-#endif
+
+
 
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------

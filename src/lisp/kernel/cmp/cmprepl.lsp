@@ -15,3 +15,5 @@
 ;;                         (compile-in-env nil form environment)
                        (values compiled-function warn fail)))))
 
+;; From now on every S-exp is compiled before evaluation
+(setq *implicit-compilation* t)

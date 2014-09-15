@@ -231,6 +231,25 @@ namespace gctools {
 
 
 
+namespace gctools {
+
+    int handleFatalCondition();
+
+    /* Start up the garbage collector and the main function.
+       The main function is wrapped within this function */
+    int startupGarbageCollectorAndSystem( MainFunctionType startupFn
+                                              , int argc
+                                              , char* argv[]
+                                              , bool mpiEnabled
+                                              , int mpiRank
+                                          , int mpiSize );
+
+
+
+};
+
+
+
 #endif // _brcl_memoryManagement_H
     
 

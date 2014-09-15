@@ -24,6 +24,14 @@
 #include "primitives.fwd.h"
 
 
+namespace cl {
+    extern core::Symbol_sp _sym_cellError;
+};
+namespace kw {
+    extern core::Symbol_sp _sym_name;
+};
+
+
 struct _TRACE {
     string      _File;
     string      _Function;
@@ -321,6 +329,7 @@ namespace core
 #define HALT(bfmsg) THROW_HARD_ERROR(BF("%s:%d HALTED --- %s\n") % __FILE__ % __LINE__% (bfmsg).str() );
 #define	N_A_()	THROW_HARD_ERROR(BF("%s:%d->%s not applicable for this class") % __FILE__ % __LINE__ % __FUNCTION__ );
 #define INCOMPLETE(bf) SIMPLE_ERROR(BF("Finish implementing me!!!! function(%s) file(%s) lineNumber(%s): %s") % __FUNCTION__ % __FILE__ % __LINE__ % (bf).str())
+#define	FIX_ME() SIMPLE_ERROR(BF("Fix me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__ );
 #define	IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__ );
 #define	IMPLEMENT_MEF(bfmsg) SIMPLE_ERROR(BF("Implement me!!! %s\nfunction(%s) file(%s) lineNumber(%s)") % (bfmsg).str() % __FUNCTION__ % __FILE__ % __LINE__ );
 #define	DEPRECIATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);

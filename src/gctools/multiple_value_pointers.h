@@ -67,6 +67,13 @@ namespace gctools
 	};
 
 
+        core::T_sp second() const {
+            return this->valueGet(1);
+        }
+        core::T_sp third() const {
+            return this->valueGet(1);
+        }
+
 	void dump() 
 	{
 	    if (this->_number_of_values > 0 )

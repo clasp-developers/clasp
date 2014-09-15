@@ -37,6 +37,7 @@
 #include "backquote.h"
 #include "testing.h"
 #include "bformat.h"
+#include "cache.h"
 #include "environment.h"
 #include "extensionPackage.h"
 #include "binder.h"
@@ -462,6 +463,7 @@ namespace core
 	    initialize_stacks();
 	    initialize_documentation_primitives(_lisp);
 	    initialize_compiler_primitives(_lisp);
+            initialize_cache();
 	    initialize_backquote(_lisp);
 #ifdef DEBUG_CL_SYMBOLS
         initializeAllClSymbolsFunctions();

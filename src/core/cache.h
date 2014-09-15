@@ -32,9 +32,9 @@ namespace core
 	int				_generation;
 
     private:
-	void empty();
 	void clearOneFromCache(T_sp target);
     public:
+	void empty();
     
 	/*! Constructor - like ecl_make_cache */
 	explicit Cache() {};
@@ -55,6 +55,11 @@ namespace core
 	const gctools::Vec0<T_sp>& keys() const { return this->_keys;};
 
 
+
+
     };
+
+
+    void initialize_cache();
 };
 #endif // _core_cache_H

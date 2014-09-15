@@ -129,6 +129,23 @@ namespace core {
 	 */
 //	uint		_CdrLength;	// Keep track of the length of the cons
     public:
+        template <class T>
+        static Cons_sp createFromVec0(const gctools::Vec0<T>& vec) {
+            Cons_sp res = _Nil<Cons_O>();
+            for ( int i(vec.size()-1);i>=0;--i) {
+                res = Cons_O::create(vec[i],res);
+            }
+            return res;
+        }
+
+        template <class T>
+        void fillVec0(gctools::Vec0<T>& vec) {
+            vec.clear();
+            for ( Cons_sp me=this->asSmartPtr(); me.notnilp(); me=cCdr(me) ) {
+                vec.push_back(oCar(me).as<typename T::Type>());
+            }
+        }
+
 	static Cons_sp createFrom_va_list(va_list& va_args);
 	static Cons_sp createList(T_sp o1);
 	static Cons_sp createList(T_sp o1, T_sp o2);
@@ -430,7 +447,6 @@ namespace core {
 	virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq) {_G(); IMPLEMENT_ME();};
 
 
-
 	/*! Return the value associated with the property of the plist - implements CL getf */
 	T_sp getf(T_sp key, T_sp defValue) const;
 
@@ -613,6 +629,24 @@ namespace core
     
 }; // core namespace
 
+
+
+namespace core {
+
+    /* Erase the entry with _key_ from the list. Return the new list. 
+     In cases where the key was in the first entry the first entry is unhooked and the CDR is returned.
+    In other cases the entry is unhooked from the inside of the alist*/
+    Cons_sp alist_erase(Cons_sp alist, T_sp key);
+
+    /*! Push the key/val onto the alist.  This will shadow other entries with the same val */
+    Cons_sp alist_push(Cons_sp alist, T_sp key, T_sp val );
+
+    /*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
+    Cons_sp alist_get(Cons_sp alist, T_sp key);
+
+    string alist_asString(Cons_sp alist);
+
+};
 
 #endif //]
 

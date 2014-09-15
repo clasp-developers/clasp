@@ -211,10 +211,10 @@ use-project internals/lisp : src/lisp ;
 
 
 ## If using cando
-#use-project cando : cando ;
-#use-project cando//addon : cando/addon ;
-#use-project cando/units : cando/units ;
-#use-project cando/chem : cando/chem ;
-#use-project cando/src/kinematics : cando/src/kinematics ;
-#use-project cando/src/packageManager : cando/src/packageManager ;
-#use-project cando/src/main-cando : cando/src/main-cando ;
+use-project cando : cando ;
+use-project cando/addon : cando/addon ;
+use-project cando/units : cando/units ;
+use-project cando/chem : cando/chem ;
+use-project cando/src/kinematics : cando/src/kinematics ;
+use-project cando/src/packageManager : cando/src/packageManager ;
+use-project cando/main-cando : cando/main-cando ;

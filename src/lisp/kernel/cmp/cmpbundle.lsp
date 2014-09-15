@@ -47,8 +47,7 @@
 	 (wrapper-name (pathname-name bundle-name))
 	 (wrapper-pathname (make-pathname :name wrapper-name
                                           :type "bc"
-                                          :defaults bundle-name))
-	 )
+                                          :defaults bundle-name)))
     (bformat t "Writing bundle module to %s\n" (namestring wrapper-pathname))
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename wrapper-pathname))
     wrapper-pathname)
@@ -133,7 +132,7 @@
 ;;;   
 (defun make-bundle (parts-pathnames &optional (bundle-name +image-pathname+)
 		    &aux (bundle-type (if (eq bundle-name '_image) 'kernel 'user)))
-  "Use (bundle-boot _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
+  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
   (let* ((wrapper-pathname (make-bundle-wrapper parts bundle-name))
 	 (wrapper-and-parts-pathnames (cons wrapper-pathname parts-pathnames))
 	 (bundle-pathname (make-pathname :name (string-downcase (string bundle-name)) :defaults *image-directory*)))
@@ -156,15 +155,16 @@
 (export 'boot-bitcode-pathnames)
 	  
 
-(defun bundle-boot (pathname-destination &key lisp-bitcode-files (target-backend (default-target-backend)) test) ;; &optional (bundle-pathname +image-pathname+))
-  "Use (bundle-boot _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
+(defun link-system (pathname-destination &key lisp-bitcode-files (target-backend (default-target-backend)) test) ;; &optional (bundle-pathname +image-pathname+))
+  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
   (let* ((core:*target-backend* target-backend)
+         (pathname-destination (target-backend-pathname pathname-destination :target-backend target-backend))
          (wrapper-fasl-pathname (make-bundle-wrapper lisp-bitcode-files pathname-destination))
 	 (wrapper-and-parts-fasl-pathnames (cons wrapper-fasl-pathname lisp-bitcode-files)))
     (let ((object-files (mapcar #'(lambda (pn) (generate-object-file pn :test test)) wrapper-and-parts-fasl-pathnames)))
-      (execute-link (target-backend-pathname pathname-destination :target-backend target-backend) object-files :test test))))
+      (execute-link pathname-destination object-files :test test))))
 
-(export '(make-bundle bundle-boot))
+(export '(make-bundle link-system))
 
 
 
@@ -218,7 +218,7 @@
 
 
 
-(defun bundle-boot-lto (output-pathname
+(defun link-system-lto (output-pathname
                         &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)
                           lisp-bitcode-files
                           debug-ir
@@ -241,7 +241,7 @@
     (execute-link output-pathname (list bundle-bitcode-pathname))
     ))
          
-(export '(bundle-boot-lto))
+(export '(link-system-lto))
 
 
 

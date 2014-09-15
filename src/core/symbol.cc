@@ -296,11 +296,15 @@ namespace core
     T_sp Symbol_O::setf_symbolValue(T_sp val)
     {_OF();
 	ASSERT(!this->_IsConstant);
-#if 0
+#if 0 // I used this to test *print-pretty*
 	// trap a change in a dynamic variable
-	if ( this->_Name == "*PRINT-ESCAPE*")
+	if ( this->_Name.as<Str_O>()->get() == "*PRINT-PRETTY*")
 	{
-	    printf("setf_symbolValue of *print-escape* to %s\n", val->__repr__().c_str() );
+            if ( val.notnilp() && _sym_STARenablePrintPrettySTAR->symbolValue().nilp() ) {
+                // force *print-pretty* to nil if *enable-print-pretty* == nil 
+                val = _Nil<T_O>();
+                printf("forcing setf_symbolValue of *print-pretty* to nil because !core::*enable-print-pretty*\n" );
+            }
 	}
 #endif
 	this->_Value = val;

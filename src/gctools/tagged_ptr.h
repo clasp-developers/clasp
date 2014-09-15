@@ -353,8 +353,9 @@ namespace gctools {
             return this->pbase;
 #else   
             if (this->pointerp()) {
+                return reinterpret_cast<void*>(this->px);
                 // Shouldn't this point to the mps base?
-                return dynamic_cast<void*>(this->px);
+//                return dynamic_cast<void*>(this->px);
             }
             return NULL;
 #endif
@@ -389,7 +390,7 @@ namespace gctools {
 
         template <class U>
         static typename GCHeader<void>::HeaderType* toBasePtr(U* ptr) {
-            return reinterpret_cast<typename GCHeader<void>::HeaderType*>(ClientPtrToBasePtr(dynamic_cast<void*>(ptr)));
+            return reinterpret_cast<typename GCHeader<void>::HeaderType*>(ClientPtrToBasePtr(ptr));
         }
             
         template <class U>

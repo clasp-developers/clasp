@@ -396,7 +396,8 @@ namespace gctools {
             return result;
         }
 
-        int trySet(core::T_sp tkey, core::T_sp value)
+        int trySet(core::T_sp tkey, core::T_sp value);
+#if 0
         {
             size_t b;
             if ( tkey == value ) { value = gctools::smart_ptr<core::T_O>(gctools::tagged_ptr<core::T_O>::tagged_sameAsKey); };
@@ -423,6 +424,7 @@ namespace gctools {
             (*this->_Values).set(b,value_type(value));
             return 1;
         }
+#endif
 
 
 

@@ -348,6 +348,11 @@ namespace core
         sym->setf_symbolValue(val);
     }
 
+    void lisp_write(const boost::format& fmt, T_sp strm )
+    {
+        clasp_write_string(fmt.str(),strm);
+    }
+
 
 
     Symbol_sp lisp_symbolNil()
@@ -643,7 +648,7 @@ namespace core
 
     string _rep_(T_sp obj)
     {
-#define USE_WRITE_OBJECT
+//#define USE_WRITE_OBJECT
 #if defined(USE_WRITE_OBJECT)
 	T_sp sout = clasp_make_string_output_stream();
 	write_object(obj,sout);
@@ -662,11 +667,6 @@ namespace core
             stringstream ss;
             ss << obj.fixnum();
             return ss.str();
-        } else if ( obj.symbolp() ) {
-            ss << obj->
-        } else if ( obj.framep() ) {
-            stringstream ss;
-            ss << "Frame@" << (void*)(obj.frame());
 	} else if ( !obj )
 	{
 	    return "!!!UNDEFINED!!!";

@@ -7,6 +7,7 @@
 #include "core/primitives.h"
 #include "core/evaluator.h"
 #include "core/multipleValues.h"
+#include "core/str.h"
 #include "core/predicates.h"
 #include "core/vectorObjectsWithFillPtr.h"
 #include "core/cache.h"
@@ -238,6 +239,9 @@ In ecl/src/c/interpreter.d  is the following code
 
     T_mv standard_dispatch(T_sp gf, int nargs, ArgArray args)
     {
+        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
+            printf("%s:%d:%s Entered standard_dispatch  gf->%s\n", __FILE__, __LINE__, __FUNCTION__, gf.as<Function_O>()->functionName().as<Str_O>()->get().c_str() );
+        }
 	Function_sp func;
 #if defined(CACHE_METHOD_LOOKUP)
         Cache* cache(_lisp->methodCachePtr()); // gctools::StackRootedPointer<Cache> cache(_lisp->methodCachePtr());
@@ -280,7 +284,7 @@ In ecl/src/c/interpreter.d  is the following code
 	// This is where it fails because applicable_method does not downcast to a Function
 	func = applicable_method.as<Function_O>();
 #endif
-            // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
+        // SPEEDUP TODO: This is used for all generic function calls - do something better than copying the ValueFrame??????
 	ValueFrame_sp frame(ValueFrame_O::createForArgArray(nargs,args,_Nil<ActivationFrame_O>()));
 	return eval::funcall(func,frame,_Nil<T_O>());
     }

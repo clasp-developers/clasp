@@ -189,21 +189,18 @@
 (defun dbg-set-current-source-pos (env form)
   (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
   (when (consp form)
-    (when (and *dbg-generate-dwarf* *the-module-dibuilder*)
-      (multiple-value-bind (source-dir source-file line-number column)
-	  (walk-form-for-source-info form)
-	(when *dbg-current-scope*
-	  ;;	(cmp-log-dump *the-module*)
-	  (cmp-log "dbg-set-current-source-pos to %s:%d for %s\n" source-file line-number form)
-	  (if (eql line-number 0)
-	      (progn
-		(cmp-log "dbg-set-current-source-pos IGNORING\n")
-		nil)
+    (multiple-value-bind (source-dir source-file line-number column)
+        (walk-form-for-source-info form)
+      (when (and *dbg-generate-dwarf* *the-module-dibuilder* *dbg-current-scope*)
+        ;;	(cmp-log-dump *the-module*)
+        (cmp-log "dbg-set-current-source-pos to %s:%d for %s\n" source-file line-number form)
+        (if (eql line-number 0)
+            (progn
+              (cmp-log "dbg-set-current-source-pos IGNORING\n")
+              nil)
             (let ((debugloc (llvm-sys:debug-loc-get line-number column *dbg-current-scope*)))
               (llvm-sys:set-current-debug-location *irbuilder* debugloc))))
-        (values source-dir source-file line-number column)
-        )))
-  )
+      (values source-dir source-file line-number column))))
 
     
 
