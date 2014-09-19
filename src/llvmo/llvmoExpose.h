@@ -3483,12 +3483,8 @@ namespace translate
 	DeclareType _v;
 	from_object(T_P object) {_G(); this->_v = (object.as<llvmo::Type_O>()->wrappedPtr());};
     };
-};
-;
-/* to_object translators */
 
-namespace translate
-{
+/* to_object translators */
     template <>
     struct to_object<llvm::Type*>
     {
@@ -3798,7 +3794,10 @@ namespace llvmo
 	PointerType_O() : Base() {};
 	~PointerType_O() {}
     public: // static methods
-	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
+//	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
+    public: // static methods
+	static PointerType_sp get(Type_sp elementType, uint addressSpace);
+
     }; // PointerType_O
 }; // llvmo
 TRANSLATE(llvmo::PointerType_O);

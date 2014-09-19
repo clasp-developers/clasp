@@ -765,7 +765,7 @@ namespace gctools {
 
 
 #define GcToolsPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {gctools::cname = _lisp->internWithPackageName(pkg,lispname); gctools::cname->exportYourself(exportp);}
+#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {gctools::cname = _lisp->internUniqueWithPackageName(pkg,lispname); gctools::cname->exportYourself(exportp);}
 #include "gctools/symbols_scraped_inc.h"
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS

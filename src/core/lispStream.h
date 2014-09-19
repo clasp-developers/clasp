@@ -731,6 +731,7 @@ namespace core {
                  T_sp if_does_not_exist, bool idnesp,
                  T_sp external_format,
                  T_sp cstream );
+    T_mv cl_read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value=_Nil<T_O>(), T_sp recursive_p=_Nil<T_O>());
 
     T_sp clasp_openRead(const string& name);
     T_sp clasp_openWrite(const string& name);

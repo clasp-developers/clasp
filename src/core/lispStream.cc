@@ -6696,6 +6696,7 @@ namespace core {
     };
 
 
+
 #define ARGS_cl_writeLine "(string &optional (output-stream ext:+process-standard-output+) &key (start 0) end)"
 #define DECL_cl_writeLine ""
 #define DOCS_cl_writeLine "writeLine"
@@ -6865,6 +6866,35 @@ namespace core {
     }
 
 
+
+    T_sp clasp_openRead(const string& name)
+    {
+        Str_sp filename = Str_O::create(name);
+        enum StreamMode smm = clasp_smm_input;
+        T_sp if_exists = _Nil<T_O>();
+        T_sp if_does_not_exist = _Nil<T_O>();
+        cl_fixnum byte_size = 8;
+        int flags = CLASP_STREAM_DEFAULT_FORMAT;
+        T_sp external_format = _Nil<T_O>();
+        T_sp strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist,
+                               byte_size, flags, external_format);
+        return strm;
+    }
+
+
+    T_sp clasp_openWrite(const string& name)
+    {
+        Str_sp filename = Str_O::create(name);
+        enum StreamMode smm = clasp_smm_output;
+        T_sp if_exists = _Nil<T_O>();
+        T_sp if_does_not_exist = _Nil<T_O>();
+        cl_fixnum byte_size = 8;
+        int flags = CLASP_STREAM_DEFAULT_FORMAT;
+        T_sp external_format = _Nil<T_O>();
+        T_sp strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist,
+                               byte_size, flags, external_format);
+        return strm;
+    }
 
 void initialize_lispStream()
     {

@@ -728,6 +728,15 @@ namespace core
     }
 
 
+    string HashTable_O::keysAsString()
+    {
+        stringstream ss;
+        this->maphash( [&ss,this] (T_sp key, T_sp val) {
+                ss << _rep_(key) << " ";
+            } );
+        return ss.str();
+    }
+
 
     void HashTable_O::exposeCando(::core::Lisp_sp lisp)
     {_G();

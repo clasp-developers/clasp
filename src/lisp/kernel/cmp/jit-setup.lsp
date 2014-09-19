@@ -37,6 +37,53 @@ using features defined in corePackage.cc"
 
 
 
+(defun make-boot-function-global-variable (module func-ptr)
+  (llvm-sys:make-global-variable module
+                                 +fn-void-ptr-array1+ ; type
+                                 t ; is constant
+                                 'llvm-sys:appending-linkage
+                                 (llvm-sys:constant-array-get +fn-void-ptr-array1+ (list func-ptr))
+                                 llvm-sys:+global-boot-functions-name+)
+  (llvm-sys:make-global-variable module
+                                 +i32+ ; type
+                                 t ; is constant
+                                 'llvm-sys:internal-linkage
+                                 (jit-constant-i32 1)
+                                 llvm-sys:+global-boot-functions-name-size+)
+  )
+
+
+(defun calculate-global-boot-functions-name-size (module)
+  (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
+         (ptype (llvm-sys:get-type funcs))
+         (atype (llvm-sys:get-sequential-element-type ptype))
+         (num-elements (llvm-sys:get-array-num-elements atype)))
+    (break "Check variables")))
+    
+(defun remove-main-function-if-exists (module)
+  (let ((fn (llvm-sys:get-function module llvm-sys:+clasp-main-function-name+)))
+    (if fn
+      (llvm-sys:erase-from-parent fn))))
+
+(defun add-main-function (module)
+  (bformat t "add-main-function start\n")
+  (bformat t "add-main-function dump>> *gv-source-path-name* = %s\n" *gv-source-path-name*)
+  (let ((*the-module* module))
+    (let ((fn (with-new-function
+                  (main-func func-env
+                             :function-name llvm-sys:+clasp-main-function-name+
+                             :parent-env nil
+                             :linkage 'llvm-sys:external-linkage
+                             :function-type +fn-void+
+                             :argument-names nil)
+                (let* ((boot-functions (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name+ t))
+                       (boot-functions-size (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t))
+                       (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-void-ptr-pointer+ "fnptr-pointer"))
+                       )
+                  (irc-intrinsic "invokeMainFunctions" bc-bf boot-functions-size)))))
+      fn)))
+
+
 
 
 

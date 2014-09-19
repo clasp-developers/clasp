@@ -962,8 +962,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
     // Sometimes we need to initialize globals - a callback can be setup by exposeCandoFunction
     if ( initGlobalCallback )
     {
-        DEPRECIATED();
-//	lisp_installGlobalInitializationCallback(initGlobalCallback);
+	initGlobalCallback(_lisp);// lisp_installGlobalInitializationCallback(initGlobalCallback);
     }
 };
 

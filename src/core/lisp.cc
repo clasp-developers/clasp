@@ -3213,7 +3213,7 @@ extern "C"
 
 
 
-    Symbol_sp Lisp_O::intern(const string& name, T_sp optionalPackageDesignator )
+    Symbol_mv Lisp_O::intern(const string& name, T_sp optionalPackageDesignator )
     {_G();
 #if DEBUG_ENVIRONMENT_CREATION
 //    ASSERT(this->_PackagesInitialized);
@@ -3230,7 +3230,10 @@ extern "C"
         if ( package.nilp() ) {
             SIMPLE_ERROR(BF("The package %s has not been found") % _rep_(optionalPackageDesignator).c_str());
         }
-	return package->intern(symbolName).as<Symbol_O>();
+        T_mv symStatus = package->intern(symbolName);
+        Symbol_sp sym = symStatus;
+        T_sp status = symStatus.second();
+        return Values(sym,status);
     }
 
 /*! The optionalPackageDesignator is nil */
@@ -3271,6 +3274,19 @@ extern "C"
     {_G();
 	Package_sp package = this->findPackage(packageName);
 	return this->intern(symbolName,package);
+    }
+
+
+    Symbol_sp Lisp_O::internUniqueWithPackageName(string const& packageName, string const& symbolName)
+    {_G();
+	Package_sp package = this->findPackage(packageName);
+        Symbol_mv symStatus = this->intern(symbolName,package);
+        T_sp status = symStatus.second();
+        if ( status.notnilp() ) {
+            printf("%s:%d WARNING! Lisp_O::internUniqueWithPackageName found existing symbol: %s\n",
+                   __FILE__, __LINE__, symbolName.c_str());
+        }
+	return symStatus;
     }
 
 

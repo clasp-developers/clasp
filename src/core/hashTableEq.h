@@ -23,6 +23,7 @@ namespace core
     public:
 	static HashTableEq_sp create(uint sz,  Number_sp rehashSize, double rehashThreshold);
         static HashTableEq_sp create_default();
+        static HashTableEq_sp createFromPList(Cons_sp plist, Symbol_sp nilTerminatedValidKeywords[] );
     public:
 	static int sxhash_eq(T_sp obj);
     public: // Functions here

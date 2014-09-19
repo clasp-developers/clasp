@@ -17,8 +17,6 @@ namespace core
     FORWARD(ConcatenatedStream);
 
 
-    void clasp_write(const boost::format& fmt, T_sp strm);
-
 
 }
 #endif

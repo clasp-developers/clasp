@@ -718,6 +718,16 @@ extern "C"
     };
 
 
+    void invokeMainFunctions( fnVoidType fptr[], int* numfunP)
+    {
+        int numfun = *numfunP;
+        printf("%s:%d invokeMainFunctions(%d)\n", __FILE__, __LINE__, numfun);
+        for ( int i=0; i<numfun; ++i ) {
+            (fptr[i])();
+        }
+    }
+
+
     void invokeLlvmFunctionVoid( fnVoidType fptr)
     {
 	fptr();

@@ -51,6 +51,16 @@ public:
 	HashTableEq_sp          _Symbols;
     public:
 	static SymbolSet_sp make(Cons_sp vals);
+        template <class T>
+        static SymbolSet_sp createFromKeysOfSymbolMap(const core::SymbolMap<T>& m)
+        {
+            SymbolSet_sp ss = SymbolSet_O::create();
+            for (typename SymbolMap<T>::const_iterator it=m.begin(); it!=m.end(); ++it ) {
+                ss->insert(it->first);
+            }
+            return ss;
+        }
+                
     public:
 
 	SymbolSet_sp	copy();
@@ -92,6 +102,9 @@ public:
 	 * Return AxB as defined by a wrapper
 	 */
 	ObjectSet_sp cartesianProductWrapped(SymbolSet_sp b, const SymbolSetCartesianProductWrapper& wrapper);
+
+        /*! Return the first element that you find, return second ==true if an element was found */
+        Symbol_mv first();
 
 	string	asString();
         std::ostream&	dumpToStream( std::ostream& o );

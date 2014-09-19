@@ -5,6 +5,11 @@
 #include "core/common.h"
 
 
+#define CLASP_LINK_PASS_NAME "ClaspLinkPass"
+#define CLASP_MAIN_FUNCTION_NAME "__ClaspMain"
+#define GLOBAL_BOOT_FUNCTIONS_NAME "globalClaspBootFunctions"
+#define GLOBAL_BOOT_FUNCTIONS_SIZE_NAME "globalClaspBootFunctionsSize"
+
 NAMESPACE_PACKAGE_ASSOCIATION(llvmo,LlvmoPkg,"LLVM-SYS");
 
 

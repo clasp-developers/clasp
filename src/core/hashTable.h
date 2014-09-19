@@ -121,6 +121,8 @@ namespace core
 	int hashTableNumberOfHashes() const;
 	/*! Return the start of the alist in the HashTable Vector0 at hash value */
 	Cons_sp hashTableAlistAtHash(int hash) const;
+
+        string keysAsString();
     };
 
 

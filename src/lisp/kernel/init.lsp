@@ -793,7 +793,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
          ;(bitcodes0 (compile-system :base :start :reload nil :recompile t ))
          (bitcodes2 (compile-system :cmp :min ))
          (all-bitcodes (nconc bitcodes1 bitcodes2)))
-    (cmp:link-system
+    (cmp:link-system-lto
            (target-backend-pathname +min-image-pathname+ )
            :lisp-bitcode-files all-bitcodes
            )))
@@ -802,7 +802,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend)
         (bitcode-files (compile-system :start :min :recompile t )))
-    (cmp:link-system (target-backend-pathname +min-image-pathname+ )
+    (cmp:link-system-lto (target-backend-pathname +min-image-pathname+ )
                      :lisp-bitcode-files bitcode-files )))
 
 (defun switch-to-full ()

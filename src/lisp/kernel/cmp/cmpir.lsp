@@ -363,6 +363,9 @@
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
+        (bformat t "In irc-generate-terminate-code\n")
+        (bformat t "*gv-source-path-name* = %s\n" *gv-source-path-name*)
+        (bformat t "*gv-current-function-name* = %s\n" *gv-current-function-name*)
 	(irc-intrinsic "clasp_terminate" *gv-source-path-name* (irc-i32-current-line-number) (irc-i32-current-column) *gv-current-function-name* )
 	(irc-unreachable)
 	))
@@ -708,6 +711,7 @@ and then the irbuilder-alloca, irbuilder-body"
 
 
 (defun irc-function-cleanup-and-return (env)
+  (bformat t "irc-function-cleanup-and-return dump>> *gv-source-path-name* = %s\n" *gv-source-path-name*)
   (when env
     (let ((return-block (irc-basic-block-create "return-block")))
       (irc-br return-block)
@@ -985,7 +989,7 @@ Within the _irbuilder_ dynamic environment...
                       (3 (list (pop temp-args) (pop temp-args) (pop temp-args)))
                       (otherwise temp-args))))
 ;;    (bformat t "About to create funcall with result: %s  args: %s\n" result real-args)
-    (irc-intrinsic-args "FUNCALL" (list* result closure (jit-constant-i32 nargs) real-args) label)))
+    (irc-intrinsic-args "FUNCALL" (list* result closure (jit-constant-i32 nargs) real-args) :label label)))
   
 ;----------------------------------------------------------------------
 
@@ -1060,22 +1064,22 @@ Otherwise just create a function call"
 	(irc-create-invoke func args *current-unwind-landing-pad-dest* label))))
 
 
-(defun irc-intrinsic-args (function-name args &optional (label ""))
+(defun irc-intrinsic-args (function-name args &key (label "") suppress-arg-type-checking)
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (last-arg (car (last args)))
 	 (real-args args))
     (when (stringp last-arg)
       (setq real-args (nbutlast args))
       (setq label last-arg))
-    (throw-if-mismatched-arguments function-name real-args)
+    (if (not suppress-arg-type-checking)
+        (throw-if-mismatched-arguments function-name real-args))
 ;;    (mapc #'(lambda (x) (unless (or #|(not x)|# (llvm-sys:valuep x)) (error "All arguments for ~a must be llvm:Value types or nil but ~a isn't - you passed: ~a" function-name x real-args))) real-args)
     (let* ((args real-args)
 	   (code (irc-invoke-or-call func args label)))
       code)))
 
 (defun irc-intrinsic (function-name &rest args &aux (label ""))
-  (irc-intrinsic-args function-name args label))
-
+  (irc-intrinsic-args function-name args :label label))
 
 
 

@@ -39,20 +39,28 @@ int startup(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize
     try
     {
 	lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
+
 	clbind::ClbindExposer ClbindPkg(_lisp);
 	_lisp->installPackage(&ClbindPkg);
+
 	llvmo::LlvmoExposer llvmopkg(_lisp);
 	_lisp->installPackage(&llvmopkg);
+
 	cffi::CffiExposer cffipkg(_lisp);
 	_lisp->installPackage(&cffipkg);
+
 	gctools::GcToolsExposer GcToolsPkg(_lisp);
 	_lisp->installPackage(&GcToolsPkg);
+
 	sockets::SocketsExposer SocketsPkg(_lisp);
 	_lisp->installPackage(&SocketsPkg);
+
 	serveEvent::ServeEventExposer ServeEventPkg(_lisp);
 	_lisp->installPackage(&ServeEventPkg);
+
 	asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
 	_lisp->installPackage(&AsttoolingPkg);
+
 #ifdef USE_MPI
 	mpip::MpiExposer TheMpiPkg(_lisp);
 	_lisp->installPackage(&TheMpiPkg);

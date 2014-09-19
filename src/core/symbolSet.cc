@@ -287,6 +287,20 @@ namespace core {
         return nset;
     }
 
+
+    Symbol_mv SymbolSet_O::first()
+    {
+        T_sp found = _Nil<T_O>();
+        Symbol_sp result=_Nil<Symbol_O>();
+        this->_Symbols->terminatingMapHash( [&found,&result] (T_sp key, T_sp val) -> bool {
+                result = key;
+                found = _lisp->_true();
+                return false;
+            } );
+        return Values(result,found);
+    }
+
+        
     Cons_sp	SymbolSet_O::asCons()
     {_G();
         Cons_sp cur = _Nil<Cons_O>();

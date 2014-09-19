@@ -180,7 +180,12 @@ Boehm and MPS use a single pointer"
 
 (defconstant +fn-void+ (llvm-sys:function-type-get +void+ nil))
 (defconstant +fn-void-ptr+ (llvm-sys:type-get-pointer-to +fn-void+))
-
+(defconstant +fn-void-ptr-array0+ (llvm-sys:array-type-get +fn-void-ptr+ 0))
+(defconstant +fn-void-ptr-array0*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-array0+))
+(defconstant +fn-void-ptr-array1+ (llvm-sys:array-type-get +fn-void-ptr+ 1))
+(defconstant +fn-void-ptr-array1*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-array1+))
+(defconstant +fn-void-ptr-pointer+ (llvm-sys:pointer-type-get +fn-void-ptr+ 0))
+(defconstant +fn-void-ptr-pointer*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-pointer+))
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
@@ -426,6 +431,7 @@ Boehm and MPS use a single pointer"
 ;;  (primitive module "invokePossibleMultipleValueSymbolFunction" +void+ (list +tsp*-or-tmv*+ +symsp*+ +afsp*+))
 ;;  (primitive module "invokePossibleMultipleValueLexicalFunction" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+ +afsp*+))
 
+  (primitive module "invokeMainFunctions" +void+ (list +fn-void-ptr-pointer+ +i32*+))
   (primitive module "invokeLlvmFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i32*+ +i32+ +i32+))
   (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-void-ptr+))
 
@@ -582,6 +588,10 @@ Boehm and MPS use a single pointer"
 (defvar *gv-source-file-info-handle* nil
   "Store a global value that stores an integer handle assigned at load-time that uniquely 
 identifies the current source file.  Used for tracing and debugging")
+
+(defvar *gv-boot-functions* nil
+  "A global value that stores a pointer to the boot function for the Module.
+It has appending linkage.")
 (defvar *current-lineno* 0 "Store the line number of the currently compiled form")
 (defvar *current-column* 0 "Store the column of the currently compiled form")
 (defvar *current-form* nil "The current form being compiled")

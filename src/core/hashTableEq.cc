@@ -44,6 +44,34 @@ namespace core
     }
 
 
+    HashTableEq_sp HashTableEq_O::createFromPList(Cons_sp plist, Symbol_sp nilTerminatedValidKeywords[] )
+    {
+        HashTableEq_sp ht = HashTableEq_O::create_default();
+        while ( plist.notnilp() ) {
+            Symbol_sp key = oCar(plist).as<Symbol_O>();
+            T_sp val = oCadr(plist);
+            plist = cCddr(plist);
+            bool hit = false;
+            for ( int i(0); nilTerminatedValidKeywords[i].notnilp(); ++i ) {
+                if ( key == nilTerminatedValidKeywords[i] ) {
+                    hit = true;
+                    break;
+
+                }
+            }
+            if (!hit) {
+                stringstream ss;
+                for ( int j(0); nilTerminatedValidKeywords[j].notnilp(); ++j) {
+                    ss << " " << _rep_(nilTerminatedValidKeywords[j]);
+                }
+                SIMPLE_ERROR(BF("Illegal keyword %s valid keywords: %s") % _rep_(key) % ss.str() );
+            } else {
+                ht->setf_gethash(key,val);
+            }
+        }
+        return ht;
+    }
+
 
 
 #if 0
