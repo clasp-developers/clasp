@@ -3462,6 +3462,7 @@ namespace llvmo
 	Type_O() : Base(), _ptr(NULL)  {};
 	~Type_O() {if (_ptr != NULL ) {/* delete _ptr;*/ _ptr = NULL;};}
 
+        core::Integer_sp getArrayNumElements() const;
 
 	PointerType_sp getPointerTo(int addressSpace=0);
 
