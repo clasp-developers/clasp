@@ -3193,7 +3193,7 @@ namespace llvmo
 
     core::Integer_sp Type_O::getArrayNumElements() const {
         uint64_t v64 = this->wrappedPtr()->getArrayNumElements();
-        core::Integer_sp ival = core::Integer_O::create((uint64)(v64));
+        core::Integer_sp ival = core::Integer_O::create((uint64_t)(v64));
         return ival;
     }
 
@@ -3203,7 +3203,7 @@ namespace llvmo
     {_G();
 	core::externalClass_<Type_O>()
 	    .def("type-get-pointer-to",&Type_O::getPointerTo,ARGS_PointerType_O_getPointerTo,DECL_PointerType_O_getPointerTo,DOCS_PointerType_O_getPointerTo)
-            .def("getArrayNumElements", &llvm::Type_O::getArrayNumElements)
+            .def("getArrayNumElements", &Type_O::getArrayNumElements)
             .def("getSequentialElementType",&llvm::Type::getSequentialElementType)
 	    ;
 	core::af_def(LlvmoPkg,"type-get-float-ty",&llvm::Type::getFloatTy);
