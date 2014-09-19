@@ -39,6 +39,12 @@ private:
     gctools::Vec0<Symbol_sp>	_Contents;
 public:
     typedef	gctools::Vec0<Symbol_sp>::iterator	iterator;
+    typedef	gctools::Vec0<Symbol_sp>::const_iterator	const_iterator;
+
+    iterator begin() { return this->_Contents.begin();};
+    iterator end() { return this->_Contents.end();};
+    const_iterator begin() const { return this->_Contents.begin();};
+    const_iterator end() const { return this->_Contents.end();};
 
 	int	size() { return this->_Contents.size(); };
 	void	prepend(Symbol_sp s);

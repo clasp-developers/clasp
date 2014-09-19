@@ -1428,6 +1428,59 @@ namespace core
 
 
 
+    Cons_sp alist_erase(Cons_sp alist, T_sp key )
+    {
+        if ( alist.nilp() ) return alist;
+        if ( oCar(oCar(alist)) == key ) {
+            return cCdr(alist);
+        }
+        Cons_sp prev_alist = alist;
+        Cons_sp cur = cCdr(alist);
+        while ( alist.notnilp() ) {
+            if ( oCar(oCar(alist)) == key ) {
+                prev_alist->rplacd(cCdr(alist));
+                return alist;
+            }
+            prev_alist = cur;
+            cur = cCdr(cur);
+        }
+        return alist;
+    }
+
+    Cons_sp alist_push(Cons_sp alist, T_sp key, T_sp val)
+    {
+        Cons_sp one = Cons_O::create(key,val);
+        alist = Cons_O::create(one,alist);
+        return alist;
+    }
+
+    Cons_sp alist_get(Cons_sp alist, T_sp key)
+    {
+        while (alist.notnilp()) {
+            if (oCar(oCar(alist))==key) {
+                return alist;
+            }
+            alist = cCdr(alist);
+        }
+        return _Nil<Cons_O>();
+    }
+
+
+
+    string alist_asString(Cons_sp alist)
+    {
+        stringstream ss;
+        while (alist.notnilp()) {
+            ss << _rep_(oCar(oCar(alist))) << " ";
+            alist = cCdr(alist);
+        }
+        return ss.str();
+    }
+
+
+    
+    
+    
 
     void Cons_O::exposeCando(Lisp_sp lisp)
     {_G();
@@ -1497,6 +1550,11 @@ namespace core
 	af_def(ClPkg,"Eighth",&oEighth);
 	af_def(ClPkg,"Ninth",&oNinth);
 	af_def(ClPkg,"Tenth",&oTenth);
+        
+        af_def(CorePkg,"alist_erase",&alist_erase);
+        af_def(CorePkg,"alist_push",&alist_push);
+        af_def(CorePkg,"alist_get",&alist_get);
+        af_def(CorePkg,"alist_asString",&alist_asString);
     }
 
 

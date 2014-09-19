@@ -24,6 +24,7 @@
 		     ))))
     ;;    (cmp-log-dump main-fn)
     (cmp-log "Done compile-main-function")
+    main-fn
     )
   )
 
@@ -231,7 +232,10 @@ and the pathname of the source file - this will also be used as the module initi
                                 (*current-column* column))
                             (t1expr form)
                             ))
-                        (compile-main-function output-path ltv-init-fn )
+                        (let ((main-fn (compile-main-function output-path ltv-init-fn )))
+                          (make-boot-function-global-variable *the-module* main-fn)
+                          (add-main-function *the-module*) ;; This is the real main function
+                          )
                         ))))
                 (cmp-log "About to verify the module\n")
                 (cmp-log-dump *the-module*)

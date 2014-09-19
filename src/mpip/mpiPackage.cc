@@ -57,7 +57,7 @@ namespace mpip {
 #endif
 
 #define MpiPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
+#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
 #include "mpip/symbols_scraped_inc.h"
 #undef DO_SYMBOL
 #undef MpiPkg_SYMBOLS

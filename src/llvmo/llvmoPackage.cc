@@ -15,10 +15,10 @@
 #include "clbindLlvmExpose.h"
 #include "debugInfoExpose.h"
 #include "intrinsics.h"
+#include "claspLinkPass.h"
 #include "core/environment.h"
 #include "core/str.h"
 #include "core/wrappers.h"
-
 
 
 
@@ -308,7 +308,7 @@ namespace llvmo
 	case candoClasses:
 	{
 #define LlvmoPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
+#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
 #include "llvmo/symbols_scraped_inc.h"
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
@@ -316,7 +316,7 @@ namespace llvmo
 #define ALL_STAGES
 #define Use_LlvmoPkg
 #define INVOKE_REGISTER
-#define LOOKUP_SYMBOL(pkg,name) _lisp->internWithPackageName(pkg,name)
+#define LOOKUP_SYMBOL(pkg,name) _lisp->internUniqueWithPackageName(pkg,name)
 #include "llvmo_initClasses_inc.h"
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
@@ -343,6 +343,15 @@ namespace llvmo
 	    initialize_llvmo_expose();
             initialize_clbind_llvm_expose();
 	    initialize_dwarf_constants();
+            initialize_claspLinkPass();
+            SYMBOL_EXPORT_SC_(LlvmoPkg,_PLUS_ClaspMainFunctionName_PLUS_);
+            SYMBOL_EXPORT_SC_(LlvmoPkg,_PLUS_globalBootFunctionsName_PLUS_);
+            SYMBOL_EXPORT_SC_(LlvmoPkg,_PLUS_globalBootFunctionsNameSize_PLUS_);
+            _sym__PLUS_ClaspMainFunctionName_PLUS_->defconstant(core::Str_O::create(CLASP_MAIN_FUNCTION_NAME));
+
+            _sym__PLUS_globalBootFunctionsName_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_NAME));
+            _sym__PLUS_globalBootFunctionsNameSize_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_SIZE_NAME));
+
 
 //	initializeLlvmConstants(_lisp);
 		};

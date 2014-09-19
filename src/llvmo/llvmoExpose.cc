@@ -178,6 +178,11 @@ namespace llvmo
 
 namespace llvmo
 {
+
+
+
+    
+
 EXPOSE_CLASS(llvmo,Pass_O);
 
 void Pass_O::exposeCando(core::Lisp_sp lisp)
@@ -1151,8 +1156,8 @@ namespace llvmo
     void PassManager_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<PassManager_O>()
-	    .def("pass-manager-add",&llvm::PassManager::add)
-	    .def("pass-manager-run",&llvm::PassManager::run)
+	    .def("passManagerAdd",&llvm::PassManager::add)
+	    .def("passManagerRun",&llvm::PassManager::run)
 	    ;
         core::af_def(LlvmoPkg,"makePassManager",&PassManager_O::make,ARGS_PassManager_O_make,DECL_PassManager_O_make,DOCS_PassManager_O_make);
     };
@@ -3191,6 +3196,8 @@ namespace llvmo
     {_G();
 	core::externalClass_<Type_O>()
 	    .def("type-get-pointer-to",&Type_O::getPointerTo,ARGS_PointerType_O_getPointerTo,DECL_PointerType_O_getPointerTo,DOCS_PointerType_O_getPointerTo)
+            .def("getArrayNumElements", &llvm::Type::getArrayNumElements)
+            .def("getSequentialElementType",&llvm::Type::getSequentialElementType)
 	    ;
 	core::af_def(LlvmoPkg,"type-get-float-ty",&llvm::Type::getFloatTy);
 	core::af_def(LlvmoPkg,"type-get-double-ty",&llvm::Type::getDoubleTy);
@@ -3475,11 +3482,22 @@ namespace llvmo
 {
     EXPOSE_CLASS(llvmo,PointerType_O);
 
+#define ARGS_PointerType_O_get "(element-type &optional (address-space 0))"
+#define DECL_PointerType_O_get ""
+#define DOCS_PointerType_O_get "Docs for PointerType get"
+    PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpace)
+    {_G();
+	PointerType_sp at = PointerType_O::create();
+	llvm::PointerType* llvm_at = llvm::PointerType::get(elementType->wrappedPtr(),addressSpace);
+	at->set_wrapped(llvm_at);
+	return at;
+    }
 
     void PointerType_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<PointerType_O>()
 	    ;
+	core::af_def(LlvmoPkg,"pointer-type-get",&PointerType_O::get,ARGS_PointerType_O_get,DECL_PointerType_O_get,DOCS_PointerType_O_get);
     };
 
     void PointerType_O::exposePython(core::Lisp_sp lisp)

@@ -11,37 +11,8 @@
 (defun bundle-name-as-string (bundle-name)
   (string-downcase (symbol-name bundle-name)))
 
-(defun create-bundle-module (part-pathnames &key (output-pathname +image-pathname+))
-  (multiple-value-bind (module function-pass-manager)
-      (cmp:create-llvm-module-for-compile-file (pathname-name output-pathname))
-    (with-compilation-unit (:override nil
-				      :module module
-				      :function-pass-manager function-pass-manager)
-      (let* ((*compile-file-pathname* output-pathname)
-	     (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-pathname*) "source-pathname")))
-	(let ((fn (with-new-function
-		      (bundle-func func-env
-				   :function-name output-pathname
-				   :parent-env nil
-				   :linkage 'llvm-sys:external-linkage
-                                   :function-type +fn-void+
-                                   :argument-names nil
-                                   )
-		    (dolist (part-pathname part-pathnames)
-		      (let* ((part-name (pathname-name part-pathname))
-			     (gv-part-name (jit-make-global-string-ptr part-name "part-path-name")))
-			(bformat t "Adding function to evaluate compiled top level forms for: %s\n" part-name)
-			(let* ((efn (llvm-sys:function-create +fn-void+
-							      'llvm-sys::external-linkage
-							      (jit-function-name part-pathname)
-							      *the-module*))
-			       (result (car (llvm-sys:get-argument-list bundle-func)))
-			       )
-			  (irc-intrinsic "invokeFASLLlvmFunctionVoid" efn gv-part-name)))))))
-	  (llvm-sys:dump fn)
-	  *the-module*)))))
 
-
+#||
 (defun make-bundle-wrapper (parts bundle-name)
   (let* ((module (create-bundle-module parts :output-pathname bundle-name))
 	 (wrapper-name (pathname-name bundle-name))
@@ -52,7 +23,7 @@
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename wrapper-pathname))
     wrapper-pathname)
   )
-
+||#
 
 (defvar *echo-system* t)
 (defun safe-system (cmd)
@@ -124,7 +95,7 @@
 
 
 
-
+#||
 ;;; Make a .bundle file on OS X or a .so file on linux
 ;;; Provide the pathnames for the bitcode files (parts-pathnames)
 ;;; if the bundle-name is _image then it's the one kernel image
@@ -138,7 +109,7 @@
 	 (bundle-pathname (make-pathname :name (string-downcase (string bundle-name)) :defaults *image-directory*)))
     (let ((all-object-files (mapc #'(lambda (pn) (execute-clang pn)) wrapper-and-parts-pathnames)))
       (execute-link bundle-pathname all-object-files))))
-
+||#
 
 
 ;;;
@@ -154,7 +125,7 @@
     bitcode-files))
 (export 'boot-bitcode-pathnames)
 	  
-
+#||
 (defun link-system (pathname-destination &key lisp-bitcode-files (target-backend (default-target-backend)) test) ;; &optional (bundle-pathname +image-pathname+))
   "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
   (let* ((core:*target-backend* target-backend)
@@ -165,6 +136,7 @@
       (execute-link pathname-destination object-files :test test))))
 
 (export '(make-bundle link-system))
+||#
 
 
 
@@ -174,6 +146,7 @@
          (pass-manager (llvm-sys:make-pass-manager)))
     (llvm-sys:populate-module-pass-manager pass-manager-builder pass-manager)
     (llvm-sys:populate-ltopass-manager pass-manager-builder pass-manager nil t nil)
+    (llvm-sys:add-global-boot-functions-size-pass pass-manager)
 #|    (when debug-ir
       (let ((
         (llvm-sys:pass-manager-add pass-manager (llvm-sys:create-debug-irpass nil nil )))
@@ -186,37 +159,66 @@
                                               debug-ir)
   "Link a bunch of modules together, return the linked module"
   (format t "part-pathnames ~a~%" part-pathnames)
-  (let* ((module (create-bundle-module part-pathnames :output-pathname output-pathname))
-         (linker (llvm-sys:make-linker module))
-         (all-bitcodes (append additional-bitcode-pathnames part-pathnames))
-         )
-    ;; Don't enforce .bc extension for additional-bitcode-pathnames
-    (dolist (part-pn additional-bitcode-pathnames)
-      (let* ((bc-file part-pn))
-        (format t "Linking ~a~%" bc-file)
-        (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-          (multiple-value-bind (failure error-msg)
-              (llvm-sys:link-in-module linker part-module)
-            (when failure
-              (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg)))
-          )))
-    (dolist (part-pn part-pathnames)
-      (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
-        (format t "Linking ~a~%" bc-file)
-        (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-          (multiple-value-bind (failure error-msg)
-              (llvm-sys:link-in-module linker part-module)
-            (when failure
-              (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg)))
-          )))
-    (format t "Running module pass manager~%")
-    (let* ((linked-module (llvm-sys:get-module linker))
-           (mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
-      (llvm-sys:write-bitcode-to-file linked-module (core:coerce-to-filename (pathname "image_test.bc")))
-      (llvm-sys:pass-manager-run mpm linked-module)
-      linked-module)))
+  (with-compiler-env ()
+    (multiple-value-bind (module function-pass-manager)
+        (cmp:create-llvm-module-for-compile-file (pathname-name output-pathname))
+      (with-compilation-unit (:override nil
+                                        :module module
+                                        :function-pass-manager function-pass-manager)
+        (let* ((*compile-file-pathname* output-pathname)
+               (*compile-file-truename* (truename *compile-file-pathname*))
+               (*gv-source-path-name* (jit-make-global-string-ptr (namestring output-pathname) "source-pathname"))
+               (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
+                                                                            +i32+ ; type
+                                                                            nil ; constant
+                                                                            'llvm-sys:internal-linkage
+                                                                            (jit-constant-i32 -1)
+                                                                            "source-file-info-handle")))
+          (bformat t "link-bitcode-modules dump>> *gv-source-path-name* = %s\n" *gv-source-path-name*)
+          (with-dibuilder (*the-module*)
+            (bformat t "link-bitcode-modules dump>>5 *gv-source-path-name* = %s\n" *gv-source-path-name*)
+            (with-dbg-compile-unit (nil *compile-file-truename*)
+              (bformat t "link-bitcode-modules dump>>4 *gv-source-path-name* = %s\n" *gv-source-path-name*)
+              (with-dbg-file-descriptor (nil *compile-file-truename*)
+                (bformat t "link-bitcode-modules dump>>3 *gv-source-path-name* = %s\n" *gv-source-path-name*)
+                (let ((linker (llvm-sys:make-linker *the-module*))
+                      (all-bitcodes (append additional-bitcode-pathnames part-pathnames)))
+                  ;; Don't enforce .bc extension for additional-bitcode-pathnames
+                  (dolist (part-pn additional-bitcode-pathnames)
+                    (let* ((bc-file part-pn))
+                      (format t "Linking ~a~%" bc-file)
+                      (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                        (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                        (multiple-value-bind (failure error-msg)
+                            (llvm-sys:link-in-module linker part-module)
+                          (when failure
+                            (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))))))
+                  (dolist (part-pn part-pathnames)
+                    (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
+                      (format t "Linking ~a~%" bc-file)
+                      (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                        (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                        (multiple-value-bind (failure error-msg)
+                            (llvm-sys:link-in-module linker part-module)
+                          (when failure
+                            (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
+                  (format t "Running module pass manager~%")
+                  (bformat t "link-bitcode-modules dump>>2 *gv-source-path-name* = %s\n" *gv-source-path-name*)
+                  (calculate-global-boot-functions-name-size *the-module*)
+                  ;; Here add the main function
+                  (let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
+                    (llvm-sys:pass-manager-run mpm *the-module*)
+#||                    (bformat t "xxxx\n")
+                    (bformat t "link-bitcode-modules dump>>9 *gv-source-path-name* = %s\n" *gv-source-path-name*)
+                    (add-main-function *the-module*) ;; Add a new ClaspMain function
+||#
+                    (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test.bc")))
+                    *the-module*))))))))))
 
-
+#||
+(load-system :start :cmp :interp t)
+(cmp:link-system-lto #P"tiny.bundle" :lisp-bitcode-files (list #P"tiny1.bc" #P"tiny2.bc"))
+||#
 
 (defun link-system-lto (output-pathname
                         &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)

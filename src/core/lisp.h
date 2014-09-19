@@ -166,7 +166,7 @@ namespace core
 
 //#define	DEFINE_FIRST_SYMBOL_FOR_PACKAGE(pkgName) {}
 //#define CREATE_SYMBOL(sidsym,rsid,pkg,name) sidsym = _lisp->internWithPackageName(pkg,name);
-#define DEFAULT_LOOKUP_SYMBOL(pkg,name) _lisp->internWithPackageName(pkg,name)
+#define DEFAULT_LOOKUP_SYMBOL(pkg,name) _lisp->internUniqueWithPackageName(pkg,name)
 
 #define	FLAG_Continue	1
 #define	FLAG_Break 	2
@@ -747,7 +747,7 @@ namespace core
 
 
 	/*! Find symbol or intern - symbolName can have package:[:]name form	*/
-	Symbol_sp intern(const string& symbolName, T_sp optionalPackageDesignator);
+	Symbol_mv intern(const string& symbolName, T_sp optionalPackageDesignator);
 
 
 	/*! Find symbol or intern - symbolName can have package:[:]name form. */
@@ -755,6 +755,10 @@ namespace core
 
 	/*! Find symbol or intern - symbolName can have package:[:]name form. */
 	Symbol_sp intern(const string& symbolName , const string& pkgName );
+
+
+	/*! Intern the symbol into the package with the given name. Warn if the symbol already exists */
+	Symbol_sp internUniqueWithPackageName(const string& packageName, const string& symbolName);
 
 	/*! Intern the symbol into the package with the given name */
 	Symbol_sp internWithPackageName(const string& packageName, const string& symbolName);

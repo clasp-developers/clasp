@@ -50,7 +50,7 @@ namespace cffi
 	case candoClasses:
 	{
 #define CffiPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
+#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
 #include "cffi/symbols_scraped_inc.h"
 #undef DO_SYMBOL
 #undef CffiPkg_SYMBOLS

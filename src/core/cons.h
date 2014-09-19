@@ -568,6 +568,7 @@ inline T_sp oTenth(T_sp o)  { return oCar(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCd
 
 TRANSLATE(core::Cons_O);
 
+#if 0
 namespace core
 {
     /*! Set the value of the property in the plist, may insert a pair at the start,
@@ -578,7 +579,7 @@ namespace core
     /*! Return the value if found and the default if not */
     T_sp plistGetf(Cons_sp plist, Symbol_sp key, T_sp defval=_Nil<T_O>());
 };
-
+#endif
 
 
 

@@ -53,7 +53,7 @@ namespace asttooling
 	case candoClasses:
 	{
 #define AstToolingPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
+#define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
 #include "asttooling/symbols_scraped_inc.h"
 #undef DO_SYMBOL
 #undef AstToolingPkg_SYMBOLS
