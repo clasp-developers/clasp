@@ -179,7 +179,10 @@
                (bcnum 0))
           (let ((linker (llvm-sys:make-linker *the-module*)))
             ;; Don't enforce .bc extension for additional-bitcode-pathnames
-            (if prefix-module (llvm-sys:link-in-module linker prefix-module))
+            (if prefix-module
+                (progn
+                  (remove-main-function-if-exists prefix-module)
+                  (llvm-sys:link-in-module linker prefix-module)))
             (dolist (part-pn additional-bitcode-pathnames)
               (let* ((bc-file part-pn))
                 (format t "Linking ~a~%" bc-file)
@@ -199,7 +202,10 @@
                       (llvm-sys:link-in-module linker part-module)
                     (when failure
                       (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
-            (if postfix-module (llvm-sys:link-in-module linker postfix-module))
+            (if postfix-module
+                (progn
+                  (remove-main-function-if-exists postfix-module)
+                  (llvm-sys:link-in-module linker postfix-module)))
             (format t "Running module pass manager~%")
             (reset-global-boot-functions-name-size *the-module*)
             (add-main-function *the-module*) ;; Here add the main function

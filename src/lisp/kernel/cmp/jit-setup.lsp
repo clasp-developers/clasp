@@ -61,20 +61,6 @@ using features defined in corePackage.cc"
   )
 
 
-(defun reset-global-boot-functions-name-size (module)
-  (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
-         (ptype (llvm-sys:get-type funcs))
-         (atype (llvm-sys:get-sequential-element-type ptype))
-         (num-elements (llvm-sys:get-array-num-elements atype))
-         (var (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t)))
-    (if var
-        (llvm-sys:set-initializer var (jit-constant-i32 num-elements))
-        (llvm-sys:make-global-variable module
-                                       +i32+ ; type
-                                       t     ; is constant
-                                       'llvm-sys:internal-linkage
-                                       (jit-constant-i32 num-elements)
-                                       llvm-sys:+global-boot-functions-name-size+))))
 
     
 (defun remove-main-function-if-exists (module)
@@ -82,8 +68,24 @@ using features defined in corePackage.cc"
     (if fn
       (llvm-sys:erase-from-parent fn))))
 
+(defun reset-global-boot-functions-name-size (module)
+  (remove-main-function-if-exists module)
+  (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
+         (ptype (llvm-sys:get-type funcs))
+         (atype (llvm-sys:get-sequential-element-type ptype))
+         (num-elements (llvm-sys:get-array-num-elements atype))
+         (var (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t)))
+    (if var (llvm-sys:erase-from-parent var))
+    (llvm-sys:make-global-variable module
+                                   +i32+ ; type
+                                   t     ; is constant
+                                   'llvm-sys:internal-linkage
+                                   (jit-constant-i32 num-elements)
+                                   llvm-sys:+global-boot-functions-name-size+)))
+
 (defun add-main-function (module)
   (let ((*the-module* module))
+    (remove-main-function-if-exists module)
     (let ((fn (with-new-function
                   (main-func func-env
                              :function-name llvm-sys:+clasp-main-function-name+
