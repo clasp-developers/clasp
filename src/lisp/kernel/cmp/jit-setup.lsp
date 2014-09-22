@@ -16,7 +16,7 @@
 using features defined in corePackage.cc"
   (let ((tt nil))
     (setq tt
-	  #+(and target-os-darwin address-model-64) "x86_64-apple-macosx10.9.0" ;; minimum required OSX level (Mountain Lion)
+	  #+(and target-os-darwin address-model-64) "x86_64-apple-macosx10.9.4" ;; minimum required OSX level (Mountain Lion)
 	  #+(and target-os-linux address-model-32) "i386-pc-linux-gnu"
 	  #+(and target-os-linux address-model-64) "x86_64-unknown-linux-gnu"
 	  )
@@ -36,6 +36,14 @@ using features defined in corePackage.cc"
     m))
 
 
+(defun make-gv-source-file-info-handle-in-*the-module* ()
+  (llvm-sys:make-global-variable *the-module*
+                                 +i32+  ; type
+                                 nil    ; constant
+                                 'llvm-sys:internal-linkage
+                                 (jit-constant-i32 -1)
+                                 "source-file-info-handle"))
+
 
 (defun make-boot-function-global-variable (module func-ptr)
   (llvm-sys:make-global-variable module
@@ -53,12 +61,21 @@ using features defined in corePackage.cc"
   )
 
 
-(defun calculate-global-boot-functions-name-size (module)
+(defun reset-global-boot-functions-name-size (module)
   (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
          (ptype (llvm-sys:get-type funcs))
          (atype (llvm-sys:get-sequential-element-type ptype))
-         (num-elements (llvm-sys:get-array-num-elements atype)))
-    (break "Check variables")))
+         (num-elements (llvm-sys:get-array-num-elements atype))
+         (var (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t)))
+    (if var
+        (llvm-sys:set-initializer var (jit-constant-i32 num-elements))
+        (llvm-sys:make-global-variable module
+                                       +i32+ ; type
+                                       t     ; is constant
+                                       'llvm-sys:internal-linkage
+                                       (jit-constant-i32 num-elements)
+                                       llvm-sys:+global-boot-functions-name-size+))))
+
     
 (defun remove-main-function-if-exists (module)
   (let ((fn (llvm-sys:get-function module llvm-sys:+clasp-main-function-name+)))
@@ -66,8 +83,6 @@ using features defined in corePackage.cc"
       (llvm-sys:erase-from-parent fn))))
 
 (defun add-main-function (module)
-  (bformat t "add-main-function start\n")
-  (bformat t "add-main-function dump>> *gv-source-path-name* = %s\n" *gv-source-path-name*)
   (let ((*the-module* module))
     (let ((fn (with-new-function
                   (main-func func-env
@@ -102,8 +117,9 @@ using features defined in corePackage.cc"
 (defvar *use-function-pass-manager-for-compile-file* t)
 (defun create-function-pass-manager-for-compile-file (module)
   (let ((fpm (llvm-sys:make-function-pass-manager module))
-        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*)) )
-    (llvm-sys:function-pass-manager-add fpm data-layout-pass) ;; (llvm-sys:data-layout-copy *data-layout*))
+;;        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*))
+        )
+;;    (llvm-sys:function-pass-manager-add fpm data-layout-pass) ;; (llvm-sys:data-layout-copy *data-layout*))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
@@ -119,8 +135,9 @@ using features defined in corePackage.cc"
 
 (defun create-function-pass-manager-for-compile (module)
   (let ((fpm (llvm-sys:make-function-pass-manager module))
-        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*)) )
-    (llvm-sys:function-pass-manager-add fpm data-layout-pass)
+;;        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*))
+        )
+;;    (llvm-sys:function-pass-manager-add fpm data-layout-pass)
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
@@ -145,15 +162,14 @@ using features defined in corePackage.cc"
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
 Return the module and the global variable that represents the load-time-value-holder as
 \(value module global-run-time-values function-pass-manager\)."
-  (let* ((module (llvm-create-module (next-run-time-module-name)))
-	 (engine-builder (llvm-sys:make-engine-builder module)))
-    (llvm-sys:set-target-options engine-builder '(llvm-sys:jitemit-debug-info t
-						  llvm-sys:jitemit-debug-info-to-disk t))
-    (llvm-sys:set-use-mcjit engine-builder t)
-    (let* ((execution-engine (llvm-sys:create engine-builder))
-	   (function-pass-manager (create-function-pass-manager-for-compile module)))
-      (values module execution-engine function-pass-manager))))
+  (llvm-create-module (next-run-time-module-name)))
 
+(defun create-run-time-execution-engine (module)
+  (let ((engine-builder (llvm-sys:make-engine-builder module)))
+    (llvm-sys:set-target-options engine-builder '(llvm-sys:jitemit-debug-info t
+                                                  llvm-sys:jitemit-debug-info-to-disk t))
+    ;;    (llvm-sys:set-use-mcjit engine-builder t)
+    (llvm-sys:create engine-builder)))
 
 
 
@@ -165,8 +181,9 @@ Return the module and the global variable that represents the load-time-value-ho
 
 (defvar *load-time-value-holder-name* "load-time-value-vector")
 
-(defvar *the-module* nil
-  "This stores the module into which compile puts its stuff")
+(defvar *the-module* nil "This stores the module into which compile puts its stuff")
+(defvar *run-time-execution-engine* nil)
+(defvar *the-function-pass-manager* nil "the function-pass-manager applied to runtime functions")
 
 
 (defvar *the-module-dibuilder* nil
@@ -274,21 +291,18 @@ No DIBuilder is defined for the default module")
      (let ((*package* *package*)
 	   (time-load-start (clock-gettime-nanoseconds)))
 ;;       (bformat t "Loading module from file: %s\n" filename)
-       (let* ((mod (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
-	      (engine-builder (llvm-sys:make-engine-builder mod)))
-	 ;; TODO: Set this up to use MCJIT
+       (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
+	      (engine-builder (llvm-sys:make-engine-builder module)))
+	 ;; After make-engine-builder MODULE becomes invalid!!!!!
 	 (llvm-sys:set-target-options engine-builder
 				      '(llvm-sys:jitemit-debug-info t
 					llvm-sys:jitemit-debug-info-to-disk t))
-	 (llvm-sys:set-use-mcjit engine-builder t)
+;;	 (llvm-sys:set-use-mcjit engine-builder t)
 	 (let*((execution-engine (llvm-sys:create engine-builder))
 	       (stem (string-downcase (pathname-name filename)))
-               (main-fn-name (jit-function-name (pathname filename)))
-	       (main-fn (llvm-sys:get-function mod main-fn-name))
+               (main-fn-name llvm-sys:+clasp-main-function-name+)
 	       (time-jit-start (clock-gettime-nanoseconds)))
-           (if (not main-fn)
-             (error "Could not find main function ~a loaded from file ~a" main-fn-name filename))
-	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn (namestring (truename filename)) 0 *load-time-value-holder-name* )
+	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn-name (namestring (truename filename)) 0 *load-time-value-holder-name* )
 	   ))))
  nil)
 (export 'load-bitcode)

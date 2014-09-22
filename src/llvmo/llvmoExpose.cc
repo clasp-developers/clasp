@@ -178,24 +178,44 @@ namespace llvmo
 
 namespace llvmo
 {
+   
 
+    EXPOSE_CLASS(llvmo,Pass_O);
 
+    void Pass_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+        core::externalClass_<Pass_O>()
+            ;
+    };
 
-    
-
-EXPOSE_CLASS(llvmo,Pass_O);
-
-void Pass_O::exposeCando(core::Lisp_sp lisp)
-{_G();
-    core::externalClass_<Pass_O>()
-;
-};
-
-	   void Pass_O::exposePython(core::Lisp_sp lisp)
-	   {_G();
-	       IMPLEMENT_ME();
-           };
+    void Pass_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+        IMPLEMENT_ME();
+    };
 }; // llvmo
+
+
+namespace llvmo
+{
+   
+
+    EXPOSE_CLASS(llvmo,TargetMachine_O);
+
+    void TargetMachine_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+        core::externalClass_<TargetMachine_O>()
+            ;
+    };
+
+    void TargetMachine_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+        IMPLEMENT_ME();
+    };
+}; // llvmo
+
+
+
+
 namespace llvmo
 {
 }
@@ -339,12 +359,12 @@ namespace llvmo
 #define DOCS_af_writeIrToFile "writeIrToFile"
     void af_writeIrToFile(Module_sp module, core::Str_sp path)
     {_G();
-	string ErrorInfo;
+        std::error_code errcode;
 	string pathName = path->get();
-	llvm::raw_fd_ostream OS(pathName.c_str(), ErrorInfo, ::llvm::sys::fs::OpenFlags::F_None);
-	if ( !ErrorInfo.empty())
+	llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
+	if (errcode)
 	{
-	    SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % ErrorInfo );
+	    SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message() );
 	}
 	llvm::AssemblyAnnotationWriter* aaw = new llvm::AssemblyAnnotationWriter();
 	module->wrappedPtr()->print(OS,aaw);
@@ -393,11 +413,11 @@ namespace llvmo
     void af_writeBitcodeToFile(Module_sp module, core::Str_sp pathname)
     {_G();
 	string pn = pathname->get();
-	string ErrorInfo;
-	llvm::raw_fd_ostream OS(pn.c_str(),ErrorInfo, ::llvm::sys::fs::OpenFlags::F_None);
-	if ( !ErrorInfo.empty())
+        std::error_code errcode;
+	llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
+	if ( errcode)
 	{
-	    SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % ErrorInfo );
+	    SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message() );
 	}
 	llvm::WriteBitcodeToFile(module->wrappedPtr(),OS);
     };
@@ -410,15 +430,15 @@ namespace llvmo
 #define DOCS_af_parseBitcodeFile "parseBitcodeFile"
     Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context )
     {_G();
-	string error;
-	std::unique_ptr<llvm::MemoryBuffer> membuf;
-	llvm::MemoryBuffer::getFile(filename->get(),membuf);
-	llvm::ErrorOr<llvm::Module *>eom = llvm::parseBitcodeFile(membuf.get(),
-                                                            *(context->wrappedPtr()));
-        
-	if ( eom.getError() )
+        llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
+        if (std::error_code ec = eo_membuf.getError() )
 	{
-	    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % error);
+	    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
+	}
+        llvm::ErrorOr<llvm::Module *>eom = llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
+        if ( std::error_code eo2 = eom.getError() )
+	{
+	    SIMPLE_ERROR(BF("Could not parse bitcode for file %s - error: %s") % filename->get() % eo2.message());
 	}
 
 #if 0
@@ -888,7 +908,9 @@ namespace llvmo
 	}
         this->_DependentModules->setf_gethash(key,module);
 //	this->_DependentModules[name] = module;
-	this->wrappedPtr()->addModule(module->wrappedPtr());
+        std::unique_ptr<llvm::Module> ownedModule(module->wrappedPtr());
+        module->set_wrapped(NULL);
+	this->wrappedPtr()->addModule(std::move(ownedModule));
     }
 
 
@@ -925,6 +947,14 @@ namespace llvmo
 	this->wrappedPtr()->addGlobalMapping(value->wrappedPtr(),ptr->ptr());
     }
 
+    void ExecutionEngine_O::addModule(Module_sp module)
+    {
+        llvm::ExecutionEngine* ee = this->wrappedPtr();
+        std::unique_ptr<llvm::Module> mod(module->wrappedPtr());
+        module->set_wrapped(NULL);
+        ee->addModule(std::move(mod));
+    }
+
 #if 0
     void ExecutionEngine_O::addGlobalMappingForLoadTimeValueVector(GlobalValue_sp value,const string& name)
     {
@@ -956,6 +986,7 @@ namespace llvmo
     {_G();
 	core::externalClass_<ExecutionEngine_O>()
 	    .def("clearAllGlobalMappings",&llvm::ExecutionEngine::clearAllGlobalMappings)
+            .def("addModule",&ExecutionEngine_O::addModule) // Adds via std::unique_ptr<Module>
 	    .def("addGlobalMapping",&ExecutionEngine_O::addGlobalMapping)
 //	    .def("addGlobalMappingForLoadTimeValueVector",&ExecutionEngine_O::addGlobalMappingForLoadTimeValueVector)
 //	    .def("getCompiledFunction",&ExecutionEngine_O::getCompiledFunction)
@@ -965,7 +996,6 @@ namespace llvmo
 //	    .def("runFunction",&ExecutionEngine_O::runFunction)
 //	    .def("getPointerToFunction", &llvm::ExecutionEngine::getPointerToFunction)
 	    ;
-	
     };
 
     void ExecutionEngine_O::exposePython(core::Lisp_sp lisp)
@@ -1028,7 +1058,7 @@ namespace llvmo
     EXPOSE_CLASS(llvmo,DataLayoutPass_O);
 
 
-
+#if 0
 #define ARGS_DataLayoutPass_O_make "(module)"
 #define DECL_DataLayoutPass_O_make ""
 #define DOCS_DataLayoutPass_O_make ""
@@ -1038,13 +1068,13 @@ namespace llvmo
 	self->_ptr = new llvm::DataLayoutPass(dl);
 	return self;
     };
-
+#endif
 
     void DataLayoutPass_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<DataLayoutPass_O>()
 	    ;
-        core::af_def(LlvmoPkg,"makeDataLayoutPass",&DataLayoutPass_O::make,ARGS_DataLayoutPass_O_make,DECL_DataLayoutPass_O_make,DOCS_DataLayoutPass_O_make);
+//        core::af_def(LlvmoPkg,"makeDataLayoutPass",&DataLayoutPass_O::make,ARGS_DataLayoutPass_O_make,DECL_DataLayoutPass_O_make,DOCS_DataLayoutPass_O_make);
     };
 
     void DataLayoutPass_O::exposePython(core::Lisp_sp lisp)
@@ -1178,10 +1208,12 @@ namespace llvmo
 #define ARGS_EngineBuilder_O_make "(module)"
 #define DECL_EngineBuilder_O_make ""
 #define DOCS_EngineBuilder_O_make ""
-    EngineBuilder_sp EngineBuilder_O::make(llvm::Module* module)
+    EngineBuilder_sp EngineBuilder_O::make(Module_sp module)
     {_G();
         GC_ALLOCATE(EngineBuilder_O,self );
-	self->_ptr = new llvm::EngineBuilder(module);
+        std::unique_ptr<llvm::Module> ownedModule(module->wrappedPtr());
+        module->set_wrapped(NULL);
+	self->_ptr = new llvm::EngineBuilder(std::move(ownedModule));
 	self->_ptr->setErrorStr(&(self->_ErrorStr));
 	return self;
     };
@@ -1206,7 +1238,7 @@ namespace llvmo
 	}
     }
 
-
+#if 0
     void EngineBuilder_O::setUseMCJIT(bool use_mcjit)
     {_G();
 	this->wrappedPtr()->setUseMCJIT(use_mcjit);
@@ -1222,7 +1254,7 @@ namespace llvmo
 	}
 #endif
     }
-
+#endif
 	
 
     void EngineBuilder_O::setTargetOptions(core::Cons_sp optionsPlist)
@@ -1266,7 +1298,7 @@ namespace llvmo
 	    .def("error_string",&EngineBuilder_O::error_string)
 	    .def("setEngineKind",&EngineBuilder_O::setEngineKind)
 	    .def("setTargetOptions",&EngineBuilder_O::setTargetOptions)
-	    .def("setUseMCJIT",&EngineBuilder_O::setUseMCJIT)
+//	    .def("setUseMCJIT",&EngineBuilder_O::setUseMCJIT)
 //	    .def("getPointerToFunction",&llvm::EngineBuilder::getPointerToFunction)
 //	    .def("createTargetMachine",createTargetMachine)
 	    ;
@@ -1641,6 +1673,8 @@ namespace llvmo
     void GlobalVariable_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<GlobalVariable_O>()
+	    .def("eraseFromParent", &llvm::GlobalVariable::eraseFromParent)
+            .def("setInitializer",&llvm::GlobalVariable::setInitializer)
 	    ;
 	Defun_maker(LlvmoPkg,GlobalVariable);
     };
@@ -3193,7 +3227,7 @@ namespace llvmo
 
     core::Integer_sp Type_O::getArrayNumElements() const {
         uint64_t v64 = this->wrappedPtr()->getArrayNumElements();
-        core::Integer_sp ival = core::Integer_O::create((uint64_t)(v64));
+        core::Integer_sp ival = core::Integer_O::create(v64);
         return ival;
     }
 
@@ -3633,25 +3667,17 @@ namespace llvmo
 
 
 
-    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, Function_sp func, core::Str_sp fileName, int linenumber, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
+    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, const string& mainFuncName, core::Str_sp fileName, int linenumber, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
     {_G();
-        if ( func.nilp() ) {
-            SIMPLE_ERROR(BF("Function is nil"));
-        }
 	vector<llvm::GenericValue> argValues;
 	ASSERTF(oengine->wrappedPtr()!=NULL,BF("You asked to runFunction but the pointer to the function is NULL"));
 	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
         finalizeEngineAndTime(engine);
-	llvm::Function* fn = func->wrappedPtr();
 	/* Make sure a pointer for the function is available */
-	void* fnptr = engine->getPointerToFunction(fn);
-	if ( !fnptr ) {
-            SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % fn->getName().data() );
-	}
-	
-	/* Run the function */
+        llvm::Function* fn = engine->FindFunctionNamed(mainFuncName.c_str());
+	if ( !fn ) {SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % mainFuncName );}
+        /* Run the function */
 //	printf( "%s:%d - Calling startup function in: %s - Figure out what to do here - I need to start using the unix backtrace and dwarf debugging information rather than setting up my own backtrace info in the IHF", __FILE__, __LINE__, fileName->c_str() );
-//	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<core::T_O>());
 #ifdef USE_MPS
         void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalLoadTimeValueName->get()));
 //        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalLoadTimeValueName->get().c_str(), globalPtr );

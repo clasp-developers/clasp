@@ -52,7 +52,7 @@ namespace translate {
     template <>
     struct to_object<llvm::StringRef>
     {
-	static core::T_sp convert(llvm::StringRef & sr)
+	static core::T_sp convert(const llvm::StringRef & sr)
 	{return core::Str_O::create(sr.data(),sr.size()); }
     };
 

@@ -11,7 +11,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/Linker/Linker.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/JIT.h"
+//#include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/MCJIT.h"
 #include "llvm/ExecutionEngine/JITMemoryManager.h"
 #include "llvm/ExecutionEngine/SectionMemoryManager.h"
@@ -205,6 +205,66 @@ namespace translate
     {
         static core::T_sp convert(llvm::Pass* ptr)
         {_G(); return((core::RP_Create_wrapped<llvmo::Pass_O,llvm::Pass*>(ptr)));}
+    };
+};
+;
+
+
+namespace llvmo
+{
+    FORWARD(TargetMachine);
+    class TargetMachine_O : public core::ExternalObject_O
+    {
+	LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::TargetMachine,TargetMachine_O,"TargetMachine",core::ExternalObject_O);
+	typedef llvm::TargetMachine ExternalType;
+	typedef llvm::TargetMachine* PointerToExternalType;
+
+    protected:
+	PointerToExternalType _ptr;
+    public:
+	virtual void* externalObject() const
+	{
+	    return this->_ptr;
+	};
+	PointerToExternalType wrappedPtr() const
+	{
+	    return this->_ptr;
+	}
+
+    public:
+	void set_wrapped(PointerToExternalType ptr)
+	{
+/*        if (this->_ptr != NULL ) delete this->_ptr; */
+	    this->_ptr = ptr;
+	}
+	TargetMachine_O() : Base(), _ptr(NULL)  {};
+	~TargetMachine_O() {if (_ptr != NULL ) {/* delete _ptr;*/ _ptr = NULL;};}
+
+    }; // TargetMachine_O
+}; // llvmo
+TRANSLATE(llvmo::TargetMachine_O);
+/* from_object translators */
+
+namespace translate
+{
+    template <>
+    struct from_object<llvm::TargetMachine*,std::true_type>
+    {
+        typedef llvm::TargetMachine* DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::TargetMachine_O>()->wrappedPtr()) {};
+    };
+};
+
+/* to_object translators */
+
+namespace translate
+{
+    template <>
+    struct to_object<llvm::TargetMachine*>
+    {
+        static core::T_sp convert(llvm::TargetMachine* ptr)
+        {_G(); return((core::RP_Create_wrapped<llvmo::TargetMachine_O,llvm::TargetMachine*>(ptr)));}
     };
 };
 ;
@@ -1076,6 +1136,8 @@ namespace llvmo
 	ExecutionEngine_O() : Base(), _ptr(NULL)  {};
 	~ExecutionEngine_O() {if (_ptr != NULL ) {/* delete _ptr;*/ _ptr = NULL;};}
 
+        void addModule(Module_sp module);
+
 	core::Function_sp getCompiledFunction(core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp env, core::Symbol_sp functionKind);
 
 	void addNamedModule(const string& name, Module_sp module);
@@ -1532,7 +1594,7 @@ namespace llvmo
 
 	EngineBuilder_O() : Base(), _ptr(NULL)  {};
 	~EngineBuilder_O() {if (_ptr != NULL ) {/* delete _ptr;*/ _ptr = NULL;};}
-	static EngineBuilder_sp make(llvm::Module* module);
+	static EngineBuilder_sp make(Module_sp module);
 
 	/*! Create the ExecutionEngine */
 	ExecutionEngine_sp createExecutionEngine();
@@ -1546,7 +1608,7 @@ namespace llvmo
 	void setTargetOptions(core::Cons_sp plist);
 
 	/*! Set to use MCJIT */
-	void setUseMCJIT(bool mcjit);
+//	void setUseMCJIT(bool mcjit);
 
     }; // EngineBuilder_O
 }; // llvmo

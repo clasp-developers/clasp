@@ -363,9 +363,6 @@
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
-        (bformat t "In irc-generate-terminate-code\n")
-        (bformat t "*gv-source-path-name* = %s\n" *gv-source-path-name*)
-        (bformat t "*gv-current-function-name* = %s\n" *gv-current-function-name*)
 	(irc-intrinsic "clasp_terminate" *gv-source-path-name* (irc-i32-current-line-number) (irc-i32-current-column) *gv-current-function-name* )
 	(irc-unreachable)
 	))
@@ -711,7 +708,6 @@ and then the irbuilder-alloca, irbuilder-body"
 
 
 (defun irc-function-cleanup-and-return (env)
-  (bformat t "irc-function-cleanup-and-return dump>> *gv-source-path-name* = %s\n" *gv-source-path-name*)
   (when env
     (let ((return-block (irc-basic-block-create "return-block")))
       (irc-br return-block)

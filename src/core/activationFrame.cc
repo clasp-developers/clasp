@@ -197,7 +197,7 @@ namespace core
 		    ss << "ActivationFrame@"<< (void*)(&(this->operator[](i)));
 		} else
 		{
-		    ss << _rep_(this->operator[](i)) << "  ";
+		    ss << "-->" << _rep_(this->operator[](i)) << "  ";
 		}
 	    }
 	    ss << std::endl;

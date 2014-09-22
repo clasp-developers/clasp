@@ -43,6 +43,7 @@ namespace std { class type_info; };
 #include <map>
 
 
+#define CLASP_MAIN_FUNCTION_NAME "CLASP_MAIN"
 
 
 
@@ -1297,9 +1298,10 @@ namespace core
 
 
 
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/random.hpp>
-
+#pragma clang diagnostic pop
 
 namespace core
 {

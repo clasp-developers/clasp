@@ -8,8 +8,12 @@
 #include <vector>
 #include <set>
 #undef tolower
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#pragma clang diagnostic pop
+
 #include "foundation.h"
 #include "numerics.h"
 #include "object.h"

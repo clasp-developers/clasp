@@ -1223,24 +1223,18 @@ be wrapped with to make a closure"
 (defun compile-in-env (name &optional definition env)
   "Compile in the given environment"
   (with-compiler-env ()
-    (multiple-value-bind (*the-module*
-			  *run-time-execution-engine*
-			  *the-function-pass-manager*)
-	(create-run-time-module-for-compile)
-      (declare (special *the-module*
-			*run-time-execution-engine*
-			*the-function-pass-manager*))
+    (let ((*the-module* (create-run-time-module-for-compile)))
       (define-primitives-in-module *the-module*)
       (let* ((*run-time-value-holder-global-var*
 	      (llvm-sys:make-global-variable *the-module*
                                              +run-and-load-time-value-holder-global-var-type+
 					     nil
 					     'llvm-sys:external-linkage
-					     nil ;; (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+ )
+					     nil 
 					     *run-time-literals-external-name*)))
         (with-compilation-unit (:override nil
                                           :module *the-module*
-                                          :function-pass-manager *the-function-pass-manager*)
+                                          :function-pass-manager (create-function-pass-manager-for-compile *the-module*))
           (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
             (let* ((truename (if *load-truename*
                                  (namestring *load-truename*)
@@ -1261,23 +1255,31 @@ be wrapped with to make a closure"
                       (with-dbg-file-descriptor (nil truename)
                         (multiple-value-bind (fn fn-kind wrenv warnp failp)
                             (compile* name definition env)
-                          (values fn fn-kind wrenv warnp failp)
-                          ))))
+                          (values fn fn-kind wrenv warnp failp)))))
                 (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
                 (cmp-log-dump *the-module*)
-                (let* ((compiled-function
-                        (progn
-                          (cmp-log "About to finalize-engine with fn %s\n" fn)
-                          (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-                           *run-time-execution-engine*
-                           name
-                           fn
-                           (irc-environment-activation-frame wrapped-env)
-                           function-kind
-                           *run-time-literals-external-name*
-                           core:*current-source-file-info*
-                           core:*current-lineno*
-                           ))))
+                (if (not *run-time-execution-engine*)
+                    ;; SETUP THE *run-time-execution-engine* here for the first time
+                    ;; using the current module in *the-module*
+                    ;; At this point the *the-module* will become invalid because
+                    ;; the execution-engine will take ownership of it
+                    (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
+                    (llvm-sys:add-module *run-time-execution-engine* *the-module*))
+                ;; At this point the Module in *the-module* is invalid because the
+                ;; execution-engine owns it
+                (setq *the-module* nil)
+                (cmp-log "About to finalize-engine with fn %s\n" fn)
+                (let* ((fn-name (llvm-sys:get-name fn))
+                       (compiled-function
+                        (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+                         *run-time-execution-engine*
+                         name
+                         fn ;; This may not be valid anymore
+                         (irc-environment-activation-frame wrapped-env)
+                         function-kind
+                         *run-time-literals-external-name*
+                         core:*current-source-file-info*
+                         core:*current-lineno*)))
                   (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
                   (when name (setf-symbol-function name compiled-function))
                   (values compiled-function warnp failp))))))))))
@@ -1318,18 +1320,19 @@ be wrapped with to make a closure"
 		  (env (closed-environment fn))
 		  (lambda-list-handler (get-lambda-list-handler fn)))
 	      (let* ((fn (compile-lambda/lambda-block name
-						      lambda-list-handler nil "" code env))
-		     (compiled-function (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-                                         *run-time-execution-engine*
-                                         name
-                                         fn
-                                         (irc-environment-activation-frame env)
-                                         (function-kind fn)
-                                         *run-time-literals-external-name*
-                                         core:*current-source-file-info*
-                                         core:*current-lineno*
-                                         )))
-		(llvm-sys:disassemble* compiled-function))))
+						      lambda-list-handler nil "" code env)))
+                (or *run-time-execution-engine* (error "You must set up the *run-time-execution-engine* first before calling disassemble - the easiest way is to compile something first"))
+                (compiled-function (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+                                    *run-time-execution-engine*
+                                    name
+                                    fn
+                                    (irc-environment-activation-frame env)
+                                    (function-kind fn)
+                                    *run-time-literals-external-name*
+                                    core:*current-source-file-info*
+                                    core:*current-lineno*
+                                    )))
+              (llvm-sys:disassemble* compiled-function)))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))
       ((and (consp desig) (or (eq (car desig) 'lambda) (eq (car desig) 'ext::lambda-block)))
        (let ((funcs (codegen-closure nil desig nil)))

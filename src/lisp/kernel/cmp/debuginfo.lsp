@@ -29,7 +29,7 @@
 
 (defun dbg-create-function-type (difile function-type)
   "Currently create a bogus function type"
-  (let ((arg-array (llvm-sys:get-or-create-array
+  (let ((arg-array (llvm-sys:get-or-create-type-array
 		    *the-module-dibuilder*
 		    (list
 		     (llvm-sys:create-basic-type *the-module-dibuilder* "int" 32 32 llvm-sys:+dw-ate-signed-fixed+)
@@ -177,7 +177,7 @@
                                                     *dbg-current-file*
                                                     ,lineno
                                                     ,column
-                                                    0 #| TODO: Dwarf path discriminator   |# )))
+                                                    #| 0  -- not used anymore TODO: Dwarf path discriminator   |# )))
                (cmp-log "with-dbg-lexical-block\n")
                ,@body))
            (progn

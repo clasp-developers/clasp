@@ -33,12 +33,15 @@ namespace {
         errs() << "Number of elements: " << num << '\n';
         funcs->dump();
         llvm::ConstantInt* ci = llvm::ConstantInt::get(M.getContext(), llvm::APInt(/*nbits*/32, num, true));
+#pragma clang diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
         llvm::GlobalVariable* gv = new llvm::GlobalVariable(M
                                                             , llvm::IntegerType::get(M.getContext(),32)
                                                             , true
                                                             , llvm::GlobalValue::InternalLinkage
                                                             , ci
                                                             , GLOBAL_BOOT_FUNCTIONS_SIZE_NAME );
+#pragma clang diagnostic pop
         return true;  // Change this to true once we modify the module
     }
   };

@@ -408,7 +408,7 @@ namespace asttooling {
             ,class_<clang::tooling::JSONCompilationDatabase,bases<clang::tooling::CompilationDatabase> >("JSONCompilationDatabase",no_default_constructor)
             ,def("JSONCompilationDatabase-loadFromFile",
                   &clang::tooling::JSONCompilationDatabase::loadFromFile,
-                  policies</*adopt<result>,*/ pureOutValue<2> >())
+                  policies<adopt<result>, pureOutValue<2> >())
             ,class_<clang::ASTConsumer>("Clang-ASTConsumer",no_default_constructor)
             ,class_<clang::LangOptions>("LangOptions",no_default_constructor)
             ,class_<clang::Lexer>("Lexer",no_default_constructor)
@@ -464,7 +464,7 @@ namespace asttooling {
             ,class_<clang::ASTFrontendAction,clang::FrontendAction>("Clang-ASTFrontendAction",no_default_constructor)
             ,class_<clang::SyntaxOnlyAction,clang::ASTFrontendAction>("Clang-SyntaxOnlyAction",no_default_constructor)
             ,derivable_class_<DerivableASTFrontendAction,clang::ASTFrontendAction>("ASTFrontendAction")
-            .  def("CreateASTConsumer",&DerivableASTFrontendAction::CreateASTConsumer)
+            .  def("CreateASTConsumer",&DerivableASTFrontendAction::CreateASTConsumer,policies<adopt<result> >())
             ,class_<clang::tooling::ClangTool>("ClangTool",no_default_constructor)
             .  def_constructor("newClangTool",constructor<const clang::tooling::CompilationDatabase&,llvm::ArrayRef<std::string> >())
             .  def("clearArgumentsAdjusters",&clang::tooling::ClangTool::clearArgumentsAdjusters)

@@ -13,7 +13,7 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/JIT.h"
+//#include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Analysis/Passes.h"
@@ -53,6 +53,7 @@ namespace llvmo
 	LISP_CLASS(llvmo,LlvmoPkg,DebugInfo_O,"DebugInfo");
     public:
 	virtual operator llvm::DIDescriptor*() {SUBIMP();};
+	virtual operator llvm::DICompositeType*() {SUBIMP();};
 	virtual operator llvm::DIType*() {SUBIMP();};
 	virtual ~DebugInfo_O() {};
     }; // DebugInfo_O
@@ -99,6 +100,7 @@ namespace translate
     {
 	typedef llvm::DIDescriptor& DeclareType;
         DeclareType _v;
+        //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
 	from_object(T_P object) : _v(*(object.as<llvmo::DebugInfo_O>()->operator llvm::DIDescriptor*())) {};
     };
 };
@@ -208,6 +210,46 @@ namespace translate
 
 
 
+namespace llvmo
+{
+    FORWARD(DITypeArray);
+    class DITypeArray_O : public DebugInfo_O
+		    , public llvm::DITypeArray
+    {
+	LISP_BASE1(DebugInfo_O);
+	LISP_CLASS(llvmo,LlvmoPkg,DITypeArray_O,"ditypearray");
+	typedef llvm::DITypeArray OtherType;
+    public:
+	DITypeArray_O(const OtherType& val) : llvm::DITypeArray(val) {};
+	DITypeArray_O() : Base() {};
+	virtual ~DITypeArray_O() {}
+
+    }; // DITypeArray_O
+}; // llvmo
+TRANSLATE(llvmo::DITypeArray_O);
+
+namespace translate
+{
+    template <>
+    struct to_object<llvm::DITypeArray>
+    {
+        static core::T_sp convert(const llvm::DITypeArray& val)
+        {_G();
+            GC_ALLOCATE_VARIADIC(llvmo::DITypeArray_O,obj,val);
+	    return((obj));
+	};
+    };
+    template <>
+    struct from_object<llvm::DITypeArray,std::true_type>
+    {
+	typedef llvm::DITypeArray& DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(*(object.as<llvmo::DITypeArray_O>())) {};
+    };
+};
+
+
+
 
 
 
@@ -299,6 +341,7 @@ namespace translate
 	    return (obj);
 	};
     };
+#if 0 // old style
     template <>
     struct from_object<llvm::DISubprogram,std::true_type>
     {
@@ -314,6 +357,8 @@ namespace translate
 	    SIMPLE_ERROR(BF("Cannot convert %s to llvm::DISubprogram") % _rep_(object) );
 	}
     };
+
+#endif
 };
 
 
@@ -357,8 +402,10 @@ namespace translate
     {
 	typedef llvm::DIType& DeclareType;
 	DeclareType _v;
+        //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
 	from_object(T_P object) : _v(*(object.as<llvmo::DebugInfo_O>()->operator llvm::DIType*())) {};
     };
+
 };
 
 
@@ -510,7 +557,59 @@ namespace translate
     {
 	typedef llvm::DICompositeType& DeclareType;
 	DeclareType _v;
-	from_object(T_P object) : _v(*(object.as<llvmo::DICompositeType_O>())) {};
+        //! Handle inheritance by casting up to DebugInfo_O and then down to the desired class
+	from_object(T_P object) : _v(*(object.as<llvmo::DebugInfo_O>()->operator llvm::DICompositeType*())) {};
+    };
+};
+
+
+
+
+
+
+
+namespace llvmo
+{
+    FORWARD(DISubroutineType);
+    class DISubroutineType_O : public DebugInfo_O
+			    , public llvm::DISubroutineType
+    {
+	LISP_BASE1(DebugInfo_O);
+	LISP_CLASS(llvmo,LlvmoPkg,DISubroutineType_O,"DISubroutineType");
+	typedef llvm::DISubroutineType OtherType;
+    private:
+    public:
+        //! Provide a convertor for every type this might be cast to
+ 	virtual operator llvm::DIDescriptor* () { return this;};
+ 	virtual operator llvm::DIType* () { return this;};
+ 	virtual operator llvm::DICompositeType* () { return this;};
+	DISubroutineType_O() : Base() {};
+	DISubroutineType_O(const OtherType& val) : OtherType(val) {};
+	virtual ~DISubroutineType_O() {}
+
+    }; // DISubroutineType_O
+}; // llvmo
+TRANSLATE(llvmo::DISubroutineType_O);
+/* from_object translators */
+/* to_object translators */
+
+namespace translate
+{
+    template <>
+    struct to_object<llvm::DISubroutineType>
+    {
+        static core::T_sp convert(const llvm::DISubroutineType& val)
+        {_G();
+            GC_ALLOCATE_VARIADIC(llvmo::DISubroutineType_O,obj,val);
+	    return (obj);
+	};
+    };
+    template <>
+    struct from_object<llvm::DISubroutineType,std::true_type>
+    {
+	typedef llvm::DISubroutineType& DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(*(object.as<llvmo::DISubroutineType_O>())) {};
     };
 };
 
@@ -653,6 +752,7 @@ namespace llvmo
 	};
 
 	DIArray_sp getOrCreateArray(core::Cons_sp elements);
+	DITypeArray_sp getOrCreateTypeArray(core::Cons_sp elements);
 
 	DIBuilder_O() : Base(), _ptr(NULL)  {};
 	virtual ~DIBuilder_O() {if (_ptr != NULL ) { delete _ptr; _ptr = NULL;};}

@@ -1,5 +1,9 @@
 
 (defparameter *engine-builder* (llvm-sys:make-engine-builder *the-module*))
+;; NOTE:  *the-module* becomes invalid after call to make-engine-builder - is this OK?
+
+
+
 ;;
 ;; --------       Here set the execution engine kind 
 ;;                INTERPRETER or JIT (for native code)

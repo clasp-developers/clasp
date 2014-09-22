@@ -15,15 +15,14 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 
 project clasp : requirements
 	<define>INHERITED_FROM_SRC
-
+        <warnings>on
         <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
-        <cxxflags>"-Wno-deprecated-register"
+        <cxxflags>"-Wno-deprecated-register -Wunused-local-typedef"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<cxxflags>"-fvisibility=default"
-        <target-os>darwin:<cxxflags>"-gdwarf-4"
-        <variant>debug:<cxxflags>"-O0 -g"
-        <variant>release:<cxxflags>"-O3 -g"
-        <variant>release:<cflags>"-O3 -g"
+        <variant>debug:<cxxflags>"-O0 -gdwarf-4"
+        <variant>release:<cxxflags>"-O3 -gdwarf-4"
+        <variant>release:<cflags>"-O3 -gdwarf-4"
         <linkflags>"-fvisibility=default"
 	<target-os>linux:<linkflags>-lpthread
 	<define>INCLUDED_FROM_CLASP

@@ -63,9 +63,10 @@ Options are :tagbody :go :all :eh-landing-pads
 (defvar *data-layout* nil)
 (let* ((module (llvm-create-module (next-run-time-module-name)))
        (engine-builder (llvm-sys:make-engine-builder module)))
+       ;; module is invalid after make-engine-builder call
   (llvm-sys:set-target-options engine-builder '(llvm-sys:jitemit-debug-info t
 						llvm-sys:jitemit-debug-info-to-disk t))
-  (llvm-sys:set-use-mcjit engine-builder t)
+;;  (llvm-sys:set-use-mcjit engine-builder t)
   (let* ((execution-engine (llvm-sys:create engine-builder)))
     (setq *data-layout* (llvm-sys:get-data-layout execution-engine))))
 

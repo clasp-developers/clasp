@@ -226,6 +226,25 @@ namespace llvmo
 
 namespace llvmo
 {
+    EXPOSE_CLASS(llvmo,DISubroutineType_O);
+
+    void DISubroutineType_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::class_<DISubroutineType_O>()
+	    ;
+    };
+
+    void DISubroutineType_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+}; // llvmo
+
+
+
+
+namespace llvmo
+{
     EXPOSE_CLASS(llvmo,DIArray_O);
 
     void DIArray_O::exposeCando(core::Lisp_sp lisp)
@@ -235,6 +254,24 @@ namespace llvmo
     };
 
     void DIArray_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+}; // llvmo
+
+
+
+namespace llvmo
+{
+    EXPOSE_CLASS(llvmo,DITypeArray_O);
+
+    void DITypeArray_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::class_<DITypeArray_O>()
+	    ;
+    };
+
+    void DITypeArray_O::exposePython(core::Lisp_sp lisp)
     {_G();
 	IMPLEMENT_ME();
     };
@@ -339,17 +376,20 @@ namespace llvmo
     void DIBuilder_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	using namespace llvm;
-	DISubprogram (DIBuilder::*createFunction_ptr)(DIDescriptor , StringRef ,
-							    StringRef ,
-							    DIFile , unsigned ,
-							    DICompositeType, bool,
-							    bool,
-							    unsigned,
-							    unsigned,
-							    bool,
-							    Function*,
-							    MDNode*,
-							    MDNode*) = &llvm::DIBuilder::createFunction;
+	DISubprogram (DIBuilder::*createFunction_ptr)(DIDescriptor, // Scope
+                                                      StringRef , // Name
+                                                      StringRef , // LinkageName
+                                                      DIFile ,      // File
+                                                      unsigned ,    // lineno
+                                                      DICompositeType,  // Ty
+                                                      bool,
+                                                      bool,
+                                                      unsigned,
+                                                      unsigned,
+                                                      bool,
+                                                      Function*,
+                                                      MDNode*,
+                                                      MDNode*) = &llvm::DIBuilder::createFunction;
 	core::externalClass_<DIBuilder_O>()
 	    .def("createCompileUnit",&llvm::DIBuilder::createCompileUnit)
 	    .def("createFile",&llvm::DIBuilder::createFile)
@@ -358,6 +398,7 @@ namespace llvmo
 	    .def("createBasicType",&llvm::DIBuilder::createBasicType)
 	    .def("createNullPtrType",&llvm::DIBuilder::createNullPtrType)
 	    .def("getOrCreateArray",&DIBuilder_O::getOrCreateArray)
+	    .def("getOrCreateTypeArray",&DIBuilder_O::getOrCreateTypeArray)
 	    .def("createUnspecifiedParameter",&llvm::DIBuilder::createUnspecifiedParameter)
 	    .def("createSubroutineType",&llvm::DIBuilder::createSubroutineType)
 	    .def("finalize",&llvm::DIBuilder::finalize)
@@ -399,6 +440,38 @@ namespace llvmo
 	llvm::ArrayRef<llvm::Value*> array(vector_values);
 	llvm::DIArray diarray = this->wrappedPtr()->getOrCreateArray(array);
         GC_ALLOCATE_VARIADIC(llvmo::DIArray_O,obj,diarray);
+	return obj;
+    }
+
+
+
+    DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::Cons_sp elements)
+    {_G();
+//		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
+//		printf("     cons --> %s\n", cur->__repr__().c_str() );
+	vector<llvm::Value*> vector_values;
+	for ( core::Cons_sp cur = elements; cur.notnilp(); cur=cCdr(cur) )
+	{
+	    if ( Value_sp val = oCar(cur).asOrNull<Value_O>() )
+	    {
+//			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
+		vector_values.push_back(val->wrappedPtr());
+	    } else if ( DebugInfo_sp di = oCar(cur).asOrNull<DebugInfo_O>() )
+	    {
+//			printf("      getting DIDescriptor*\n");
+		llvm::DIDescriptor* didescriptor = di->operator llvm::DIDescriptor*();
+//			printf("      convert DIDescrptor* to MDNode* --> %p\n", didescriptor );
+		llvm::MDNode* mdnode_didescriptor = *didescriptor;
+//			printf("      push_back mdnode_didescriptor --> %p\n", mdnode_didescriptor );
+		vector_values.push_back(mdnode_didescriptor);
+	    } else
+	    {
+		SIMPLE_ERROR(BF("Handle conversion of %s to llvm::Value*") % _rep_(oCar(cur)) );
+	    }
+	}
+	llvm::ArrayRef<llvm::Value*> array(vector_values);
+	llvm::DITypeArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
+        GC_ALLOCATE_VARIADIC(llvmo::DITypeArray_O,obj,diarray);
 	return obj;
     }
 

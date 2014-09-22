@@ -1772,7 +1772,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {_G();
 	if ( v >= MOST_NEGATIVE_FIXNUM && v <= MOST_POSITIVE_FIXNUM )
 	{
-	    return Integer_O::create((int)v);
+	    return Integer_O::create((uint)v);
 	}
 	Bignum z;
 	mpz_import(z.get_mpz_t(),2,_lisp->integer_ordering()._mpz_import_word_order,

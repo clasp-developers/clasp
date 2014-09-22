@@ -145,8 +145,8 @@
   (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
          (pass-manager (llvm-sys:make-pass-manager)))
     (llvm-sys:populate-module-pass-manager pass-manager-builder pass-manager)
-    (llvm-sys:populate-ltopass-manager pass-manager-builder pass-manager nil t nil)
-    (llvm-sys:add-global-boot-functions-size-pass pass-manager)
+    (llvm-sys:populate-ltopass-manager pass-manager-builder pass-manager nil)
+;;    (llvm-sys:add-global-boot-functions-size-pass pass-manager)   ;; I do this outside of a module pass
 #|    (when debug-ir
       (let ((
         (llvm-sys:pass-manager-add pass-manager (llvm-sys:create-debug-irpass nil nil )))
@@ -156,6 +156,8 @@
 
 (defun link-bitcode-modules (part-pathnames &key additional-bitcode-pathnames
                                               (output-pathname +image-pathname+)
+                                              prefix-module
+                                              postfix-module
                                               debug-ir)
   "Link a bunch of modules together, return the linked module"
   (format t "part-pathnames ~a~%" part-pathnames)
@@ -173,75 +175,72 @@
                                                                             nil ; constant
                                                                             'llvm-sys:internal-linkage
                                                                             (jit-constant-i32 -1)
-                                                                            "source-file-info-handle")))
-          (bformat t "link-bitcode-modules dump>> *gv-source-path-name* = %s\n" *gv-source-path-name*)
-          (with-dibuilder (*the-module*)
-            (bformat t "link-bitcode-modules dump>>5 *gv-source-path-name* = %s\n" *gv-source-path-name*)
-            (with-dbg-compile-unit (nil *compile-file-truename*)
-              (bformat t "link-bitcode-modules dump>>4 *gv-source-path-name* = %s\n" *gv-source-path-name*)
-              (with-dbg-file-descriptor (nil *compile-file-truename*)
-                (bformat t "link-bitcode-modules dump>>3 *gv-source-path-name* = %s\n" *gv-source-path-name*)
-                (let ((linker (llvm-sys:make-linker *the-module*))
-                      (all-bitcodes (append additional-bitcode-pathnames part-pathnames)))
-                  ;; Don't enforce .bc extension for additional-bitcode-pathnames
-                  (dolist (part-pn additional-bitcode-pathnames)
-                    (let* ((bc-file part-pn))
-                      (format t "Linking ~a~%" bc-file)
-                      (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                        (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
-                        (multiple-value-bind (failure error-msg)
-                            (llvm-sys:link-in-module linker part-module)
-                          (when failure
-                            (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))))))
-                  (dolist (part-pn part-pathnames)
-                    (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
-                      (format t "Linking ~a~%" bc-file)
-                      (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                        (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
-                        (multiple-value-bind (failure error-msg)
-                            (llvm-sys:link-in-module linker part-module)
-                          (when failure
-                            (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
-                  (format t "Running module pass manager~%")
-                  (bformat t "link-bitcode-modules dump>>2 *gv-source-path-name* = %s\n" *gv-source-path-name*)
-                  (calculate-global-boot-functions-name-size *the-module*)
-                  ;; Here add the main function
-                  (let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
-                    (llvm-sys:pass-manager-run mpm *the-module*)
-#||                    (bformat t "xxxx\n")
-                    (bformat t "link-bitcode-modules dump>>9 *gv-source-path-name* = %s\n" *gv-source-path-name*)
-                    (add-main-function *the-module*) ;; Add a new ClaspMain function
-||#
-                    (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test.bc")))
-                    *the-module*))))))))))
+                                                                            "source-file-info-handle"))
+               (bcnum 0))
+          (let ((linker (llvm-sys:make-linker *the-module*)))
+            ;; Don't enforce .bc extension for additional-bitcode-pathnames
+            (if prefix-module (llvm-sys:link-in-module linker prefix-module))
+            (dolist (part-pn additional-bitcode-pathnames)
+              (let* ((bc-file part-pn))
+                (format t "Linking ~a~%" bc-file)
+                (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                  (multiple-value-bind (failure error-msg)
+                      (llvm-sys:link-in-module linker part-module)
+                    (when failure
+                      (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
+                    ))))
+            (dolist (part-pn part-pathnames)
+              (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
+                (format t "Linking ~a~%" bc-file)
+                (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                  (multiple-value-bind (failure error-msg)
+                      (llvm-sys:link-in-module linker part-module)
+                    (when failure
+                      (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
+            (if postfix-module (llvm-sys:link-in-module linker postfix-module))
+            (format t "Running module pass manager~%")
+            (reset-global-boot-functions-name-size *the-module*)
+            (add-main-function *the-module*) ;; Here add the main function
+            (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc")))
+            (let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
+              (llvm-sys:pass-manager-run mpm *the-module*)
+              *the-module*)))))))
 
 #||
 (load-system :start :cmp :interp t)
+(compile-file "tiny1.lsp")
+(compile-file "tiny2.lsp")
 (cmp:link-system-lto #P"tiny.bundle" :lisp-bitcode-files (list #P"tiny1.bc" #P"tiny2.bc"))
 ||#
 
 (defun link-system-lto (output-pathname
                         &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)
                           lisp-bitcode-files
+                          prefix-form
+                          postfix-form
                           debug-ir
                           (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
          (output-pathname (pathname output-pathname))
          (part-pathnames lisp-bitcode-files)
-;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
+         ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (make-pathname :type "bc" :defaults output-pathname))
+         (prefix-module (if prefix-form (compile-form-into-module prefix-form "prefixForm")))
+         (postfix-module (if postfix-form (compile-form-into-module postfix-form "postfixForm")))
          (module (link-bitcode-modules part-pathnames
                                        :additional-bitcode-pathnames (if intrinsics-bitcode-path
                                                                          (list intrinsics-bitcode-path)
                                                                          nil)
                                        :output-pathname output-pathname
-                                       :debug-ir debug-ir))
-         )
+                                       :prefix-module prefix-module
+                                       :postfix-module postfix-module
+                                       :debug-ir debug-ir)))
     (ensure-directories-exist bundle-bitcode-pathname)
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
     (generate-object-file bundle-bitcode-pathname)
-    (execute-link output-pathname (list bundle-bitcode-pathname))
-    ))
+    (execute-link output-pathname (list bundle-bitcode-pathname))))
          
 (export '(link-system-lto))
 
