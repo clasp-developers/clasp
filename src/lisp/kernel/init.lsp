@@ -8,6 +8,8 @@
   #+emacs-inferior-lisp t
   #-emacs-inferior-lisp nil)
 
+(sys:*make-special 'core::*boot-verbose*)
+(setq core::*boot-verbose* nil)
 (setq cl:*print-circle* nil)
 (setq *echo-repl-read* nil)
 (setq *load-print* nil)
@@ -375,13 +377,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (si::*fset 'interpreter-iload
-	  #'(lambda (module &aux (pathname (lisp-source-pathname module)))
-	      (let ((name (namestring pathname)))
-                (if cmp:*implicit-compilation*
-                    (bformat t "Loading/compiling source: %s\n" (namestring name))
-                    (bformat t "Loading/interpreting source: %s\n" (namestring name)))
-		(load pathname)))
-	  nil)
+           #'(lambda (module &aux (pathname (lisp-source-pathname module)))
+               (let ((name (namestring pathname)))
+                 (if cmp:*implicit-compilation*
+                     (bformat t "Loading/compiling source: %s\n" (namestring name))
+                     (bformat t "Loading/interpreting source: %s\n" (namestring name))))
+               (load pathname))
+           nil)
 
 (si::*fset 'ibundle
 	   #'(lambda (path)
@@ -394,7 +396,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                         (image-file (probe-file image-path)))
                    (if image-file nil (error "Could not find ~a" image-path))
                    (bformat t "Loading image %s\n" image-path)
-                   (load-bundle image-path)))))
+                   (load-bundle image-path llvm-sys:+clasp-main-function-name+)))))
 
 (*fset 'fset
        #'(lambda (whole env)
@@ -434,8 +436,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (eval-when (:execute)
-  (interpreter-iload 'cmp/jit-setup)
-  (interpreter-iload 'clsymbols))
+  (load (lisp-source-pathname 'cmp/jit-setup))
+  (load (lisp-source-pathname 'clsymbols)))
 
 
 
@@ -488,7 +490,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun delete-init-file (module &key (really-delete t))
   (let ((bitcode-path (target-backend-pathname (get-pathname-with-type module "bc"))))
-    (bformat t "Module: %s\n" module)
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
@@ -931,11 +932,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;
 ;; Start everything up
 ;;
-
-;; Print the features
-(eval-when (:execute)
-  (bformat t "--------Features\n")
-  (mapc #'(lambda (x) (bformat t "%s\n" x)) *features*))
 
 
 #+ignore-init-image

@@ -9,8 +9,8 @@ lib libclangEdit : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangEdit <va
 lib libclangEdit : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangEdit <variant>debug <link>static ;
 lib libclangAnalysis : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangAnalysis <variant>release <link>static ;
 lib libclangAnalysis : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangAnalysis <variant>debug <link>static ;
-lib libclangRewriteCore : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangRewriteCore <variant>release <link>static ;
-lib libclangRewriteCore : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangRewriteCore <variant>debug <link>static ;
+lib libclangRewrite : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangRewrite <variant>release <link>static ;
+lib libclangRewrite : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangRewrite <variant>debug <link>static ;
 lib libclangRewriteFrontend : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangRewriteFrontend <variant>release <link>static ;
 lib libclangRewriteFrontend : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangRewriteFrontend <variant>debug <link>static ;
 lib libclangARCMigrate : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangARCMigrate <variant>release <link>static ;
@@ -47,7 +47,7 @@ alias clang_lib :
     libclangAST
     libclangEdit
     libclangAnalysis
-    libclangRewriteCore
+    libclangRewrite
     libclangRewriteFrontend
     libclangARCMigrate
     libclangStaticAnalyzerCore
@@ -64,7 +64,7 @@ alias clang_lib :
     libclangDynamicASTMatchers
     libclangASTMatchers
    : <link>static ;
-# llvmOrder = ['LLVMSupport', 'LLVMX86Utils', 'LLVMCore', 'LLVMBitReader', 'LLVMObject', 'LLVMMC', 'LLVMX86AsmPrinter', 'LLVMX86Info', 'LLVMX86Desc', 'LLVMTarget', 'LLVMAnalysis', 'LLVMipa', 'LLVMTransformUtils', 'LLVMInstCombine', 'LLVMScalarOpts', 'LLVMCodeGen', 'LLVMMCParser', 'LLVMAsmPrinter', 'LLVMSelectionDAG', 'LLVMX86CodeGen', 'LLVMX86AsmParser', 'LLVMX86Disassembler', 'LLVMAsmParser', 'LLVMBitWriter', 'LLVMInstrumentation', 'LLVMVectorize', 'LLVMipo', 'LLVMIRReader', 'LLVMLinker', 'LLVMObjCARCOpts', 'LLVMOption', 'LLVMProfileData', 'LLVMRuntimeDyld', 'LLVMExecutionEngine', 'LLVMInterpreter', 'LLVMMCJIT', 'LLVMJIT']
+# llvmOrder = ['LLVMSupport', 'LLVMX86Utils', 'LLVMCore', 'LLVMBitReader', 'LLVMObject', 'LLVMMC', 'LLVMX86AsmPrinter', 'LLVMX86Info', 'LLVMMCDisassembler', 'LLVMX86Desc', 'LLVMTarget', 'LLVMAnalysis', 'LLVMipa', 'LLVMTransformUtils', 'LLVMInstCombine', 'LLVMScalarOpts', 'LLVMCodeGen', 'LLVMMCParser', 'LLVMAsmPrinter', 'LLVMSelectionDAG', 'LLVMX86CodeGen', 'LLVMX86AsmParser', 'LLVMX86Disassembler', 'LLVMAsmParser', 'LLVMBitWriter', 'LLVMInstrumentation', 'LLVMVectorize', 'LLVMipo', 'LLVMIRReader', 'LLVMLinker', 'LLVMObjCARCOpts', 'LLVMOption', 'LLVMProfileData', 'LLVMRuntimeDyld', 'LLVMExecutionEngine', 'LLVMInterpreter', 'LLVMMCJIT', 'LLVMJIT']
 lib libLLVMSupport : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMSupport <variant>release <link>static ;
 lib libLLVMSupport : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMSupport <variant>debug <link>static ;
 lib libLLVMX86Utils : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMX86Utils <variant>release <link>static ;
@@ -83,6 +83,8 @@ lib libLLVMX86Info : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMX86Info
 lib libLLVMX86Info : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMX86Info <variant>debug <link>static ;
 lib libLLVMX86Desc : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMX86Desc <variant>release <link>static ;
 lib libLLVMX86Desc : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMX86Desc <variant>debug <link>static ;
+lib libLLVMMCDisassembler : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMMCDisassembler <variant>debug <link>static ;
+lib libLLVMMCDisassembler : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMMCDisassembler <variant>release <link>static ;
 lib libLLVMTarget : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMTarget <variant>release <link>static ;
 lib libLLVMTarget : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMTarget <variant>debug <link>static ;
 lib libLLVMAnalysis : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMAnalysis <variant>release <link>static ;
@@ -137,8 +139,8 @@ lib libLLVMInterpreter : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMInt
 lib libLLVMInterpreter : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMInterpreter <variant>debug <link>static ;
 lib libLLVMMCJIT : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMMCJIT <variant>release <link>static ;
 lib libLLVMMCJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMMCJIT <variant>debug <link>static ;
-lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMJIT <variant>release <link>static ;
-lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMJIT <variant>debug <link>static ;
+#lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>LLVMJIT <variant>release <link>static ;
+#lib libLLVMJIT : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>LLVMJIT <variant>debug <link>static ;
 alias llvm_lib :
     libLLVMSupport
     libLLVMX86Utils
@@ -148,6 +150,7 @@ alias llvm_lib :
     libLLVMMC
     libLLVMX86AsmPrinter
     libLLVMX86Info
+    libLLVMMCDisassembler
     libLLVMX86Desc
     libLLVMTarget
     libLLVMAnalysis
@@ -176,5 +179,5 @@ alias llvm_lib :
     libLLVMExecutionEngine
     libLLVMInterpreter
     libLLVMMCJIT
-    libLLVMJIT
+#    libLLVMJIT
   : <link>static ;

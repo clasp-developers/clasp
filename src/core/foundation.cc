@@ -1004,12 +1004,14 @@ namespace core
 	if ( (arguments == "" || arguments=="()") && number_of_required_arguments >= 0)
 	{
 	    llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
+#if 0
             if ( skipIndices.size() > 0 ) {
                 stringstream ss;
                 for ( auto i: skipIndices) { ss << i << " "; }
                 printf("%s:%d number_of_required_arguments=%d  skip_indices = %s    llh = %s\n",
                        __FILE__, __LINE__, number_of_required_arguments, ss.str().c_str(), _rep_(llh).c_str() );
             }
+#endif
 	} else
 	{
 	    Cons_sp ll = lisp_parse_arguments(packageName,arguments);

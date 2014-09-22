@@ -13,7 +13,7 @@
   (let ((main-fn (with-new-function (main-fn fn-env
 					     :function-name name
 					     :parent-env nil
-					     :linkage 'llvm-sys:external-linkage ;; 'llvm-sys:external-linkage
+					     :linkage 'llvm-sys:internal-linkage ;; 'llvm-sys:external-linkage
 					     :function-type +fn-void+
 					     :argument-names nil)
 		   (irc-low-level-trace)
@@ -155,6 +155,30 @@
 
 
 
+
+(defun compile-form-into-module (form name)
+  (let* ((module (create-llvm-module-for-compile-file name)))
+    (with-compilation-unit (:override nil
+                                      :module module
+                                      :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
+      (let* ((*compile-file-pathname* nil)
+             (*compile-file-truename* name)
+             (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
+             (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*))
+             (*compile-print* nil)
+             (*compile-verbose* nil))
+        (with-dibuilder (*the-module*)
+          (with-dbg-compile-unit (nil *compile-file-truename*)
+            (with-dbg-file-descriptor (nil *compile-file-truename*)
+              (with-load-time-value-unit (ltv-init-fn)
+                (compile-top-level form)
+                (let ((main-fn (compile-main-function name ltv-init-fn )))
+                  (make-boot-function-global-variable *the-module* main-fn)
+                  (add-main-function *the-module*))))
+            *the-module*))))))
+
+
+
 (defun cfp-output-file-default (input-file)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*))
 	 (retyped (make-pathname :type "bc" :defaults defaults)))
@@ -191,65 +215,58 @@ and the pathname of the source file - this will also be used as the module initi
   "See CLHS compile-file"
   ;; TODO: Save read-table and package with unwind-protect
   (with-compiler-env ()
-    (let ((input-pathname (probe-file given-input-pathname)))
-      (multiple-value-bind (module function-pass-manager)
-	  (create-llvm-module-for-compile-file (namestring input-pathname))
-	(let* ((sin (open input-pathname :direction :input))
-	       (module-name (cf-module-name type input-pathname))
-	       (output-path (compile-file-pathname input-pathname :output-file output-file))
-	       (eof-value (gensym)))
-	  (when verbose
-	    (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
-          (with-one-source-database
-              (cmp-log "About to start with-compilation-unit\n")
-            (with-compilation-unit (:override nil
-                                              :module module
-                                              :function-pass-manager function-pass-manager)
-              (let* ((*compile-file-pathname* given-input-pathname)
-                     (*compile-file-truename* (truename *compile-file-pathname*))
-                     (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
-                     (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
-                                                                                  +i32+ ; type
-                                                                                  nil ; constant
-                                                                                  'llvm-sys:internal-linkage
-                                                                                  (jit-constant-i32 -1)
-                                                                                  "source-file-info-handle"))
-                     (*compile-print* print)
-                     (*compile-verbose* verbose))
-                (with-dibuilder (*the-module*)
-                  (with-dbg-compile-unit (nil *compile-file-truename*)
-                    (with-dbg-file-descriptor (nil *compile-file-truename*)
-                      ;;	    (let ((*generate-load-time-values* t))
-                      (with-load-time-value-unit (ltv-init-fn)
-                        (do ((line-number (stream-linenumber sin)
-                                          (stream-linenumber sin))
-                             (column (stream-column sin)
-                                     (stream-column sin))
-                             (form (progn (let ((rd (read sin nil eof-value))) rd))
-                                   (progn (let ((rd (read sin nil eof-value))) rd))))
-                            ((eq form eof-value) nil)
-                          (let ((*current-lineno* line-number)
-                                (*current-column* column))
-                            (t1expr form)
-                            ))
-                        (let ((main-fn (compile-main-function output-path ltv-init-fn )))
-                          (make-boot-function-global-variable *the-module* main-fn)
-                          (add-main-function *the-module*) ;; This is the real main function
-                          )
-                        ))))
-                (cmp-log "About to verify the module\n")
-                (cmp-log-dump *the-module*)
-                (multiple-value-bind (found-errors error-message)
-                    (progn
-                      (cmp-log "About to verify module prior to writing bitcode\n")
-                      (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
-                      )
-                  (if found-errors
-                      (break "Verify module found errors")))
-                (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path))
-                (ensure-directories-exist output-path)
-                (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-path))
-                ))))))))
+    (let* ((input-pathname (probe-file given-input-pathname))
+           (sin (open input-pathname :direction :input))
+           (output-path (compile-file-pathname input-pathname :output-file output-file))
+           (eof-value (gensym))
+           (module (create-llvm-module-for-compile-file (namestring input-pathname)))
+           (module-name (cf-module-name type input-pathname)))
+      (when verbose
+        (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
+      (with-one-source-database
+          (cmp-log "About to start with-compilation-unit\n")
+        (with-compilation-unit (:override nil
+                                          :module module
+                                          :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
+          (let* ((*compile-file-pathname* given-input-pathname)
+                 (*compile-file-truename* (truename *compile-file-pathname*))
+                 (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
+                 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*))
+                 (*compile-print* print)
+                 (*compile-verbose* verbose))
+            (with-dibuilder (*the-module*)
+              (with-dbg-compile-unit (nil *compile-file-truename*)
+                (with-dbg-file-descriptor (nil *compile-file-truename*)
+                  (with-load-time-value-unit (ltv-init-fn)
+                    (do ((line-number (stream-linenumber sin)
+                                      (stream-linenumber sin))
+                         (column (stream-column sin)
+                                 (stream-column sin))
+                         (form (progn (let ((rd (read sin nil eof-value))) rd))
+                               (progn (let ((rd (read sin nil eof-value))) rd))))
+                        ((eq form eof-value) nil)
+                      (let ((*current-lineno* line-number)
+                            (*current-column* column))
+                        (t1expr form)
+                        ))
+                    (let ((main-fn (compile-main-function output-path ltv-init-fn )))
+                      (make-boot-function-global-variable *the-module* main-fn)
+                      (add-main-function *the-module*))))))
+            (cmp-log "About to verify the module\n")
+            (cmp-log-dump *the-module*)
+            (multiple-value-bind (found-errors error-message)
+                (progn
+                  (cmp-log "About to verify module prior to writing bitcode\n")
+                  (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
+                  )
+              (if found-errors
+                  (break "Verify module found errors")))
+            (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path))
+            (ensure-directories-exist output-path)
+            (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-path))
+            ))
+        )
+      )))
   
     
 

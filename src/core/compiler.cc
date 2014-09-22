@@ -100,7 +100,7 @@ namespace core
 	{
 	    mainName = oinitFnName->get();
 	} else {
-            mainName = eval::funcall(_sym_STARllvmFunctionNameHookSTAR->symbolValue(), path).as<Str_O>()->get();
+            mainName = CLASP_MAIN_FUNCTION_NAME;
         }
 	InitFnPtr fnP = (InitFnPtr)dlsym(handle,mainName.c_str());
 	if ( fnP == NULL )

@@ -76,17 +76,18 @@ namespace asttooling
     class DerivableASTFrontendAction : public clbind::Derivable<clang::ASTFrontendAction> {
         typedef clang::ASTFrontendAction      Base;
     public:
-        virtual clang::ASTConsumer* CreateASTConsumer(
+        virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
             clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
             core::T_sp obj =  core::eval::funcall(_sym_CreateASTConsumer
                                                   , this->asSmartPtr()
                                                   , translate::to_object<clang::CompilerInstance&>::convert(Compiler)
                                                   , translate::to_object<llvm::StringRef>::convert(InFile));
-            translate::from_object<clang::ASTConsumer*> result(obj);
-            return result._v;
+            // translate::from_object<std::unique_ptr<clang::ASTConsumer>> result(obj);
+            // return result._v;
+            return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
         }
 
-        clang::ASTConsumer* default_CreateASTConsumer(
+        std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(
             clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
             return this->Base::CreateASTConsumer(Compiler,InFile);
         }
@@ -102,17 +103,16 @@ namespace asttooling
     class DerivableSyntaxOnlyAction : public clbind::Derivable<clang::SyntaxOnlyAction> {
         typedef clang::SyntaxOnlyAction      Base;
     public:
-        virtual clang::ASTConsumer* CreateASTConsumer(
+        virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
             clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
             core::T_sp obj =  core::eval::funcall(_sym_CreateASTConsumer
                                                   , this->asSmartPtr()
                                                   , translate::to_object<clang::CompilerInstance&>::convert(Compiler)
                                                   , translate::to_object<llvm::StringRef>::convert(InFile));
-            translate::from_object<clang::ASTConsumer*> result(obj);
-            return result._v;
+            return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
         }
 
-        clang::ASTConsumer* default_CreateASTConsumer(
+        std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(
             clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
             return this->Base::CreateASTConsumer(Compiler,InFile);
         }

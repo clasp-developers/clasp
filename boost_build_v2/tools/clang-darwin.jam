@@ -85,7 +85,9 @@ toolset.flags clang-darwin.compile OPTIONS <optimization>space : -Os ;
 
 toolset.flags clang-darwin.compile OPTIONS <inlining>off  : -fno-inline ;
 toolset.flags clang-darwin.compile OPTIONS <inlining>on   : -Wno-inline ;
-toolset.flags clang-darwin.compile OPTIONS <inlining>full : -finline-functions -Wno-inline ;
+# Removed -finline-functions for LLVM3.5
+#toolset.flags clang-darwin.compile OPTIONS <inlining>full : -finline-functions -Wno-inline ;
+toolset.flags clang-darwin.compile OPTIONS <inlining>full : -Wno-inline ;
 
 toolset.flags clang-darwin.compile OPTIONS <warnings>off : -w ;
 toolset.flags clang-darwin.compile OPTIONS <warnings>on  : -Wall ;

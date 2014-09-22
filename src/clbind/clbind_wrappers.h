@@ -253,6 +253,56 @@ namespace translate {
     };
 
 
+    /*! Translate pointers that I adopt */
+    template <typename T>
+    class to_object<const std::unique_ptr<T>&,translate::adopt_pointer> {
+    public:
+        typedef std::unique_ptr<const T/*,debug_deleter<T>*/ >       HolderType;
+        typedef clbind::Wrapper<const T,HolderType>                  WrapperType;
+        typedef WrapperType GivenType;
+        static core::T_sp convert(const std::unique_ptr<T> ptr) {
+            if ( ptr == NULL ) {
+                return _Nil<core::T_O>();
+            }
+            gctools::smart_ptr<WrapperType> wrapper = WrapperType::create(ptr,reg::registered_class<T>::id);
+            return wrapper;
+        }
+    };
+
+    /*! Translate pointers that I adopt */
+    template <typename T>
+    class to_object<std::unique_ptr<T>,translate::adopt_pointer> {
+    public:
+        typedef std::unique_ptr<T/*,debug_deleter<T>*/ >       HolderType;
+        typedef clbind::Wrapper<T,HolderType>                  WrapperType;
+        typedef WrapperType GivenType;
+        static core::T_sp convert(std::unique_ptr<T> ptr) {
+            if ( ptr == NULL ) {
+                return _Nil<core::T_O>();
+            }
+            return WrapperType::create(std::move(ptr),reg::registered_class<T>::id);
+        }
+    };
+
+
+    /*! Translate pointers that I adopt - ignore the dont_adopt_pointer
+     because returning unique_ptr's are always adopted.
+    This should never be invoked because I specialize clbind_functoids and clbind_methoids 
+    on std::unique_ptr */
+    template <typename T>
+    class to_object<std::unique_ptr<T>,translate::dont_adopt_pointer> {
+    public:
+        typedef std::unique_ptr<T/*,debug_deleter<T>*/ >       HolderType;
+        typedef clbind::Wrapper<T,HolderType>                  WrapperType;
+        typedef WrapperType GivenType;
+        static core::T_sp convert(std::unique_ptr<T> ptr) {
+            if ( ptr == NULL ) {
+                return _Nil<core::T_O>();
+            }
+            return WrapperType::create(std::move(ptr),reg::registered_class<T>::id);
+        }
+    };
+
 
     /*! Translate pointers that I adopt */
     template <typename T>
@@ -429,7 +479,49 @@ namespace translate {
      *
      */
 
+    /*! This specialization presents a problem.
+      How can xxx._v  where from_object<std::unique_ptr<T>> xxx(...) be passed
+      to a function without using std::move(xxx._v)???????  
+      The compiler should throw an error because the copy_constructor of unique_ptr has
+      been deleted!   Has a function that consumes a std::unique_ptr not been wrapped yet
+    by Clasp?    How does this work???
+    */
+    template <typename T>
+    struct from_object<std::unique_ptr<T>> {
+        typedef std::unique_ptr<T> DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+            if ( o.nilp() ) {
+                this->_v = std::unique_ptr<T>(static_cast<T*>(NULL));
+                return;
+            } else if ( core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>() ) {
+                this->_v = std::unique_ptr<T>(o.as<core::WrappedPointer_O>()->cast<T>());
+                return;
+            } else if ( core::Pointer_sp pp = o.asOrNull<core::Pointer_O>() ) {
+                this->_v = std::unique_ptr<T>(static_cast<T*>(pp->ptr()));
+                return;
+            } else if ( clbind::Derivable<T>* dp = dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) ) {
+                this->_v = std::unique_ptr<T>(dp->pointerToAlienWithin());
+                return;
+            }
 
+#if 1
+            printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nWhat follows may or may not be useful for diagnosing the problem.\nYou may need to write a from_object translator for the destination type\n",
+                   __FILE__, __LINE__, _rep_(o).c_str());
+//            clbind::Derivable<T>* dtptr = dynamic_cast<clbind::Derivable<T>*>(o.px_ref());
+            printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__ );
+            printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(o.px_ref()));
+            printf("o.px_ref() = %p\n", o.px_ref());
+            printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T*),typeid(T*).name());
+            printf("typeid(o.px_ref())@%p  typeid(o.px_ref()).name=%s\n", &typeid(o.px_ref()),typeid(o.px_ref()).name());
+            printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T>*), typeid(clbind::Derivable<T>*).name());
+            printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void*>(o.px_ref()));
+            printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");
+            o.px_ref()->describe();
+#endif
+            SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(o) % typeid(o).name() % typeid(T*).name() );
+        }
+    };
 
 
     template <typename T>

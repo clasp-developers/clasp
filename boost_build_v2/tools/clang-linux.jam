@@ -77,7 +77,9 @@ toolset.flags clang-linux.compile OPTIONS <optimization>space : -Os ;
 # note: clang silently ignores some of these inlining options
 toolset.flags clang-linux.compile OPTIONS <inlining>off  : -fno-inline ;
 toolset.flags clang-linux.compile OPTIONS <inlining>on   : -Wno-inline ;
-toolset.flags clang-linux.compile OPTIONS <inlining>full : -finline-functions -Wno-inline ;
+# Removed -finline-functions for LLVM3.5
+#toolset.flags clang-linux.compile OPTIONS <inlining>full : -finline-functions -Wno-inline ;
+toolset.flags clang-linux.compile OPTIONS <inlining>full : -Wno-inline ;
 
 toolset.flags clang-linux.compile OPTIONS <warnings>off : -w ;
 toolset.flags clang-linux.compile OPTIONS <warnings>on  : -Wall ;

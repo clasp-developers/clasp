@@ -76,6 +76,8 @@
 #include <vector>
 #include <cassert>
 
+#pragma GCC diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/bind.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
@@ -88,6 +90,7 @@
 #include <boost/mpl/find_if.hpp>
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/logical.hpp>
+#pragma GCC diagnostic pop
 
 #include "core/foundation.h"
 

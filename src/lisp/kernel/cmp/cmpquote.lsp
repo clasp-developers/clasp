@@ -678,7 +678,7 @@ evaluate POSTSCRIPT with their final values in ltv-value-counter and ltv-symbol-
 
 (defmacro with-load-time-value-unit ((ltv-init-fn) &rest body)
   "Wraps generation of load-time-values. This is only invoked from COMPILE-FILE and it creates
-the ___loadTimeDataInitializer function and sets up everything for the coalescence and
+the 'runAll' function and sets up everything for the coalescence and
 marshaling of compiled quoted data"
   (let ((cleanup-block-gs (gensym "ltv-cleanup-block"))
 	(irbuilder-alloca (gensym "ltv-irbuilder-alloca"))
@@ -689,7 +689,7 @@ marshaling of compiled quoted data"
     `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs
 					,irbuilder-alloca ,
 					irbuilder-body #||,ltv-invocation-history-frame||#)
-	 (irc-function-create "___loadTimeDataInitializer" nil nil
+	 (irc-function-create "runAll" nil nil
 			      :function-type +fn-void+
 			      :argument-names nil)
        (let ((*load-time-value-initialization-function* ,ltv-init-fn)

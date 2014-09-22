@@ -6,10 +6,15 @@
 #endif
 
 #include <stdlib.h>
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include "boost/filesystem.hpp"
 #include "boost/algorithm/string.hpp"
 #include "boost/program_options.hpp"
+#pragma GCC diagnostic pop
 //#i n c l u d e	"boost/fstream.hpp"
 #include "foundation.h"
 #include "object.h"
@@ -3282,10 +3287,12 @@ extern "C"
 	Package_sp package = this->findPackage(packageName);
         Symbol_mv symStatus = this->intern(symbolName,package);
         T_sp status = symStatus.second();
+#if 0
         if ( status.notnilp() ) {
             printf("%s:%d WARNING! Lisp_O::internUniqueWithPackageName found existing symbol: %s\n",
                    __FILE__, __LINE__, symbolName.c_str());
         }
+#endif
 	return symStatus;
     }
 

@@ -93,7 +93,7 @@ void clasp_warn_proc(char *msg, GC_word arg)
         } catch ( core::ExitProgram& ee )
         {
 // Do nothing
-            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
+//            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
             exitCode = ee.getExitResult();
         } catch ( core::TerminateProgramIfBatch& ee )
         {

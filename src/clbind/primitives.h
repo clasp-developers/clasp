@@ -30,7 +30,8 @@
 #include "clbind/config.h"
 //#include <clbind/detail/yes_no.hpp>
 
-namespace clbind { namespace detail
+namespace clbind {
+    namespace detail
 {
 	template<class T>
 	struct identity
@@ -46,6 +47,7 @@ namespace clbind { namespace detail
 
 	struct cl_to_cpp {};
 	struct cpp_to_cl {};
+
 
 	template<class T> struct by_value {};
 	template<class T> struct by_reference {};
@@ -79,5 +81,21 @@ namespace clbind { namespace detail
 	}
 
 }}
+
+namespace clbind {
+    template <class T> class move_if_unique_ptr_and_forward_otherwise {
+    public:
+        static T&& doit(T&& t) {
+            return std::forward<T>(t);
+        };
+    };
+
+    template <class U> class move_if_unique_ptr_and_forward_otherwise<std::unique_ptr<U>> {
+    public:
+        static std::unique_ptr<U>&& doit(std::unique_ptr<U>&& t) {
+            return std::move(t);
+        }
+    };
+};
 
 #endif // CLBIND_PRIMITIVES_HPP_INCLUDED
