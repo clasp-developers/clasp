@@ -24,12 +24,12 @@
 (setq *features* (cons :compile-mcjit *features*))
 
 
-(progn
-  (core:pathname-translations "min-boehm" '(("**;*.*" #P"SYS:build;system;min-boehm;**;*.*")))
-  (core:pathname-translations "full-boehm" '(("**;*.*" #P"SYS:build;system;full-boehm;**;*.*")))
-  (core:pathname-translations "min-mps" '(("**;*.*" #P"SYS:build;system;min-mps;**;*.*")))
-  (core:pathname-translations "full-mps" '(("**;*.*" #P"SYS:build;system;full-mps;**;*.*")))
-  )
+#+(or)(progn
+        (core:pathname-translations "min-boehm" '(("**;*.*" #P"SYS:build;system;min-boehm;**;*.*")))
+        (core:pathname-translations "full-boehm" '(("**;*.*" #P"SYS:build;system;full-boehm;**;*.*")))
+        (core:pathname-translations "min-mps" '(("**;*.*" #P"SYS:build;system;min-mps;**;*.*")))
+        (core:pathname-translations "full-mps" '(("**;*.*" #P"SYS:build;system;full-mps;**;*.*")))
+        )
 
 
 
@@ -159,21 +159,25 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
 )
 (defconstant +image-pathname+ (pathname "image.bundle"))
+#||
 (defconstant +imagelto-pathname+ (pathname "imagelto.bundle"))
 (defconstant +min-image-pathname+ (pathname "min-image.bundle"))
-(export '(+image-pathname+ +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
+(defconstant +min-startup-image-pathname+ (pathname "min-startup-image.bundle"))
+||#
+(export '(+image-pathname+ +intrinsics-bitcode-pathname+))
+;; +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
 
 
-(let ((imagelto-date (file-write-date +imagelto-pathname+))
+(let ((image-date (file-write-date +image-pathname+))
       (intrinsics-date (file-write-date +intrinsics-bitcode-pathname+)))
-  (if imagelto-date
+  (if image-date
       (if intrinsics-date
-          (if (< imagelto-date intrinsics-date)
+          (if (< image-date intrinsics-date)
               (progn
                 (bformat t "!\n")
                 (bformat t "!\n")
                 (bformat t "!\n")
-                (bformat t "! WARNING:   The file %s is out of date \n" +imagelto-pathname+ )
+                (bformat t "! WARNING:   The file %s is out of date \n" +image-pathname+ )
                 (bformat t "!            relative to %s\n" +intrinsics-bitcode-pathname+)
                 (bformat t "!\n")
                 (bformat t "!  Solution: Recompile the Common Lisp code\n")
@@ -195,7 +199,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
         (bformat t "!\n")
         (bformat t "!\n")
         (bformat t "!\n")
-        (bformat t "WARNING:   Could not determine file-write-date of %s\n" +imagelto-pathname+)
+        (bformat t "WARNING:   Could not determine file-write-date of %s\n" +image-pathname+)
         (bformat t "!\n")
         (bformat t "!\n")
         (bformat t "!\n")
@@ -795,7 +799,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
          (bitcodes2 (compile-system :cmp :min ))
          (all-bitcodes (nconc bitcodes1 bitcodes2)))
     (cmp:link-system-lto
-           (target-backend-pathname +min-image-pathname+ )
+           (target-backend-pathname +image-pathname+ )
            :lisp-bitcode-files all-bitcodes
            )))
 
@@ -803,8 +807,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend)
         (bitcode-files (compile-system :start :min :recompile t )))
-    (cmp:link-system-lto (target-backend-pathname +min-image-pathname+ )
+    (cmp:link-system-lto (target-backend-pathname +image-pathname+ )
                      :lisp-bitcode-files bitcode-files )))
+
+
 
 (defun switch-to-full ()
   (setq *features* (remove :ecl-min *features*))
@@ -816,11 +822,16 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (switch-to-full)
   (let ((*target-backend* (default-target-backend)))
     (load-system :start :all :interp t )
-;;    (switch-to-full)
-    ;; Compile everything - ignore old bitcode
     (let ((bitcode-files (compile-system :base :all :recompile t )))
-      (cmp:link-system-lto (target-backend-pathname +imagelto-pathname+)
-                           :lisp-bitcode-files bitcode-files ))))
+      (cmp:link-system-lto (target-backend-pathname +image-pathname+)
+                           :lisp-bitcode-files bitcode-files
+                           :postfix-form '(progn
+                                          (bformat t "Starting Clasp 0.1\n")
+                                          (cl:in-package :cl-user)
+                                          (require 'system)
+                                          (load-clasprc)
+                                          (core:top-level))))))
+
 
 (defun compile-clos () ;; &key (target-backend (default-target-backend)))
   (switch-to-full)
@@ -829,7 +840,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;    (switch-to-full)
     ;; Compile everything - ignore old bitcode
     (let ((bitcode-files (compile-system :base :all :recompile t )))
-      (cmp:link-system-lto (target-backend-pathname +imagelto-pathname+)
+      (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                            :lisp-bitcode-files bitcode-files ))))
 
 
@@ -944,8 +955,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 #-ignore-init-image
 (eval-when (:execute)
   (if (not *loaded-image*)
-      (let ((image-pathname (target-backend-pathname #+ecl-min +min-image-pathname+
-                                                     #-ecl-min +imagelto-pathname+
+      (let ((image-pathname (target-backend-pathname +image-pathname+
                                                      :target-backend (default-target-backend))))
         (setq *loaded-image* t)
         (bformat t "init.lsp> Loading image bundle %s\n" image-pathname)

@@ -287,13 +287,3 @@ exceptions to higher levels of the code and unwinding the stack.
 		 (irc-begin-block ,cont-block-gs)
 		 )
 	       )))))))
-
-
-
-
-
-
-
-
-
-

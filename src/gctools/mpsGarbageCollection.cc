@@ -1,3 +1,29 @@
+/*
+    File: mpsGarbageCollection.cc
+*/
+
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+ 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+ 
+See file 'clasp/Copyright' for full details.
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 
 
 
@@ -323,7 +349,7 @@ namespace gctools {
 
 #define LENGTH(array)	(sizeof(array) / sizeof(array[0]))
 
-    int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], mps_fmt_auto_header_s* obj_fmt_sP, bool mpiEnabled, int mpiRank, int mpiSize)
+    int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], bool mpiEnabled, int mpiRank, int mpiSize)
     {
         if ( Alignment() == 16 ) {
             printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
@@ -331,11 +357,6 @@ namespace gctools {
         global_sizeof_fwd = AlignUp(sizeof(Header_s)+sizeof(uintptr_t));
         global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
-        // Create the object format
-        if ( obj_fmt_sP != NULL )
-        {
-            THROW_HARD_ERROR(BF("Handle obj_fmt_sP != NULL"));
-        }
 
 #define CHAIN_SIZE 6400 // 256 // 6400
         size_t arenaSizeMb = 320;
@@ -560,6 +581,3 @@ namespace gctools {
 
 
 };
-
-
-

@@ -69,7 +69,8 @@ THE SOFTWARE.
 
 (defun write-entire-file (contents pn)
   (with-open-file (fout pn :direction :output :if-exists :rename)
-    (write contents :escape nil :stream fout)))
+    (write contents :escape nil :stream fout)
+    (terpri fout)))
 
 (defun remove-copyright (contents notice)
   "Remove the copyright and return the contents.  
@@ -99,14 +100,15 @@ If the copyright was removed the return the second value t"
          (contents (read-entire-file pn)))
     (multiple-value-bind (no-copyright saw-copyright)
         (remove-copyright contents notice)
-      (let ((result (insert-copyright no-copyright pn notice saw-copyright)))
-        (write-entire-file result pn)))))
+      (let* ((result (insert-copyright no-copyright pn notice saw-copyright))
+             (trimmed (string-right-trim '(#\newline #\linefeed #\nul #\space) result)))
+        (write-entire-file trimmed pn)))))
 
 
 (defun copywrite-all-files (pathname-list)
   (dolist (pn pathname-list)
-    (format t "copywriting ~a~%" line)
-    (copywrite-one-file (pathname line))))
+    (format t "copywriting ~a~%" pn)
+    (copywrite-one-file pn)))
 
 
 ;;(copywrite-one-file "/Users/meister/Development/clasp/src/core/foundation.h")
@@ -117,4 +119,4 @@ If the copyright was removed the return the second value t"
                            (directory "/Users/meister/Development/clasp/src/**/*.cc")
                            (directory "/Users/meister/Development/clasp/src/lisp/kernel/cmp/*.lsp")))
 
-(copywrite *all-files*)
+(copywrite-all-files *all-files*)

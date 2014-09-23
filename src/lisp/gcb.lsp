@@ -3,7 +3,7 @@
 ;;(push :gc-warnings *features*)
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr//lib/clang/5.1"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
   #+target-os-linux "/home/meister/local/externals-clasp/release/bin/../lib/clang/3.5.0"
   "Define the -resource-dir command line option for Clang compiler runs"
 )

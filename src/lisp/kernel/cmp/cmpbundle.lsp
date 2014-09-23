@@ -1,3 +1,28 @@
+;;;
+;;;    File: cmpbundle.lsp
+;;;
+
+;; Copyright (c) 2014, Christian E. Schafmeister
+;; 
+;; CLASP is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU Library General Public
+;; License as published by the Free Software Foundation; either
+;; version 2 of the License, or (at your option) any later version.
+;; 
+;; See file 'clasp/Copyright' for full details.
+;; 
+;; The above copyright notice and this permission notice shall be included in
+;; all copies or substantial portions of the Software.
+;;
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+;; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+;; THE SOFTWARE.
+
+;; -^-
 
 (in-package :cmp)
 
@@ -144,7 +169,7 @@
 (defun create-module-pass-manager-for-lto (&key output-pathname debug-ir)
   (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
          (pass-manager (llvm-sys:make-pass-manager)))
-    (llvm-sys:populate-module-pass-manager pass-manager-builder pass-manager)
+;;    (llvm-sys:populate-module-pass-manager pass-manager-builder pass-manager)
     (llvm-sys:populate-ltopass-manager pass-manager-builder pass-manager nil)
 ;;    (llvm-sys:add-global-boot-functions-size-pass pass-manager)   ;; I do this outside of a module pass
 #|    (when debug-ir
@@ -168,7 +193,7 @@
                                         :module module
                                         :function-pass-manager function-pass-manager)
         (let* ((*compile-file-pathname* output-pathname)
-               (*compile-file-truename* (truename *compile-file-pathname*))
+               (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
                (*gv-source-path-name* (jit-make-global-string-ptr (namestring output-pathname) "source-pathname"))
                (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
                                                                             +i32+ ; type
@@ -206,13 +231,13 @@
                 (progn
                   (remove-main-function-if-exists postfix-module)
                   (llvm-sys:link-in-module linker postfix-module)))
-            (format t "Running module pass manager~%")
             (reset-global-boot-functions-name-size *the-module*)
             (add-main-function *the-module*) ;; Here add the main function
             (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc")))
             (let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
-              (llvm-sys:pass-manager-run mpm *the-module*)
-              *the-module*)))))))
+              (format t "Running link time optimization module pass manager~%")
+              (llvm-sys:pass-manager-run mpm *the-module*))
+            *the-module*))))))
 
 #||
 (load-system :start :cmp :interp t)
@@ -251,5 +276,8 @@
 (export '(link-system-lto))
 
 
+(defun builder (kind destination &rest keywords)
+  (bformat t "builder kind[%s] destination[%s] keywords: %s\n" kind destination keywords)
+  (break "Check parameters"))
 
-
+(export '(builder))
