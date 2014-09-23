@@ -33,6 +33,9 @@ THE SOFTWARE.
 #include "memoryManagement.h"
 //#include "main/allHeaders.cc"
 
+#ifdef _TARGET_OS_LINUX
+# include <signal.h>
+#endif
 
 
 namespace gctools {

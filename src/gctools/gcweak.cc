@@ -63,53 +63,7 @@ namespace gctools {
 #endif
 
 
-
 #if 0
-    /*! No need to use safeRun - callers do that */
-    int WeakHashTable::find(KeyBucketsType* keys, const value_type& key
-#ifdef USE_MPS
-                            , mps_ld_s* ldP
-#endif
-                            , size_t& b )
-    {
-        unsigned long i, h, probe;
-        unsigned long l = keys->length()-1;
-        int result = 0;
-        h = WeakHashTable::sxhashKey(key
-#ifdef USE_MPS
-                                     ,ldP
-#endif
-            );
-        printf("%s:%d find key = %p  h = %lx   l = %lu\n", __FILE__, __LINE__, key.pointer(), h, l );
-        probe = (h >> 8) | 1;
-        h &= l;
-        i = h;
-        do {
-            value_type& k = (*keys)[i];
-            printf("%s:%d i = %lu   k = %p\n", __FILE__, __LINE__, i, k.pointer() );
-            if( k.unboundp() || k == key ) {
-                b = i;
-                printf("%s:%d  returning 1   b=%lu  k = %p\n", __FILE__, __LINE__, b, k.pointer() );
-                return 1;
-            }
-#ifdef USE_BOEHM
-            // Handle splatting
-            if (k.NULLp()) {
-                keys->set(i,value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted));
-                ValueBucketsType* values = dynamic_cast<ValueBucketsType*>(keys->dependent);
-                (*values)[i] = value_type(gctools::tagged_ptr<core::T_O>::tagged_unbound);
-            }
-#endif
-            if ( result == 0 && ( k.deletedp() )) {
-                b = i;
-                result = 1;
-            }
-            i = (i+probe) & l;
-        } while(i != h);
-        return result;
-    }
-#endif
-
     int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value)
     {
         size_t b;
@@ -137,7 +91,7 @@ namespace gctools {
         (*this->_Values).set(b,value_type(value));
         return 1;
     }
-
+#endif
 
 
     // ----------------------------------------------------------------------
