@@ -16,7 +16,7 @@ To build clasp from within the top level directory do the following.
 
 2) Copy local.config.template to local.config
 
-3) Edit local.config (ignored by the git repo) and configure it for your system
+3) Edit local.config and configure it for your system
 
 4) make
 
