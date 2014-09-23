@@ -4,7 +4,7 @@ Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM 
 
 See http://drmeister.wordpress.com/2014/09/18/announcing-clasp/ for the announcement.
 
-Clasp is not yet a full ANSI compliant Common Lisp - if you find differences between Clasp and the Common Lisp standard it is considered a bug in Clasp and please feel free to report it.
+Clasp is not yet a full ANSI compliant Common Lisp - if you find differences between Clasp and the Common Lisp standard they are considered bugs in Clasp and please feel free to report them.
 
 Libraries that clasp depends on can be obtained using the repository: externals-clasp
 https://github.com/drmeister/externals-clasp.git
