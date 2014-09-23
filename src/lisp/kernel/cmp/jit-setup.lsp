@@ -1,3 +1,28 @@
+;;;
+;;;    File: jit-setup.lsp
+;;;
+
+;; Copyright (c) 2014, Christian E. Schafmeister
+;; 
+;; CLASP is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU Library General Public
+;; License as published by the Free Software Foundation; either
+;; version 2 of the License, or (at your option) any later version.
+;; 
+;; See file 'clasp/Copyright' for full details.
+;; 
+;; The above copyright notice and this permission notice shall be included in
+;; all copies or substantial portions of the Software.
+;;
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+;; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+;; THE SOFTWARE.
+
+;; -^-
 
 ;;
 ;; Prepare the llvm system
@@ -105,7 +130,7 @@ using features defined in corePackage.cc"
 
 
 (defun create-llvm-module-for-compile-file (module-name)
-  "Return a new module and the function-pass-manager for the module"
+  "Return a new module"
   (let ((module (llvm-create-module module-name))
 	fpm)
     ;; Define the primitives for the module
@@ -119,7 +144,7 @@ using features defined in corePackage.cc"
 (defvar *use-function-pass-manager-for-compile-file* t)
 (defun create-function-pass-manager-for-compile-file (module)
   (let ((fpm (llvm-sys:make-function-pass-manager module))
-;;        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*))
+        ;;        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*))
         )
 ;;    (llvm-sys:function-pass-manager-add fpm data-layout-pass) ;; (llvm-sys:data-layout-copy *data-layout*))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
@@ -128,11 +153,9 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass))
-    (if *debug-ir*
-      (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
+    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
     (llvm-sys:do-initialization fpm)
     fpm))
-
 
 
 (defun create-function-pass-manager-for-compile (module)
@@ -308,5 +331,3 @@ No DIBuilder is defined for the default module")
 	   ))))
  nil)
 (export 'load-bitcode)
-
-

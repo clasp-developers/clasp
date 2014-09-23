@@ -1,3 +1,29 @@
+/*
+    File: stacks.cc
+*/
+
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+ 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+ 
+See file 'clasp/Copyright' for full details.
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 #include "foundation.h"
 #include "stacks.h"
 #include "object.h"
@@ -106,17 +132,17 @@ namespace core
 	stringstream ss;
         if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
         if ( column == UNDEF_UINT ) column = 0;
-        string closureType = "unknown";
+        string closureType = "/?";
         if (closure) {
         if ( closure->interpretedP() ) {
-            closureType = "interpr. ";
+            closureType = "/i";
         } else if ( closure->compiledP() ) {
-            closureType = "compiled ";
+            closureType = "/c";
         } else if ( closure->builtinP() ) {
-            closureType = "builtin  ";
+            closureType = "/b";
         }
         } else closureType = "toplevel";
-	ss << (BF("#%3d %9s %20s %5d col %2d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
+	ss << (BF("#%3d%2s %20s %5d/%-3d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
 //	ss << std::endl;
 //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
 	return ss.str();
@@ -353,9 +379,8 @@ namespace core
 	    } else {
 		ss << "   ";
 	    }
-	    ss << "frame[";
-            ss.width(3);
-            ss << i<<"] = " << cur->asString() << std::endl;
+	    ss << "frame";
+            ss << cur->asString() << std::endl;
 	}
 	return ss.str();
     }

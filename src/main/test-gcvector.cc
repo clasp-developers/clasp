@@ -1,3 +1,29 @@
+/*
+    File: test-gcvector.cc
+*/
+
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+ 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+ 
+See file 'clasp/Copyright' for full details.
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 case KIND_GCVECTOR_gctools__GCVector_struct_asttooling__Diagnostics__ErrorContent_class_gctools__GCAlloc_malloc_class_gctools__GCVector_impl_struct_asttooling__Diagnostics__ErrorContent____: {
 // processing #S(GCCONTAINER :KEY "gctools::GCVector<struct asttooling::Diagnostics::ErrorContent,class gctools::GCAlloc_malloc<class gctools::GCVector_impl<struct asttooling::Diagnostics::ErrorContent> >>" :NAME "gctools::GCVector" :BASES ("gctools::GCContainer") :VBASES CL:NIL :HAS-DESTRUCTOR CL:NIL :DECL-TYPE #S(CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<struct asttooling::Diagnostics::ErrorContent,class gctools::GCAlloc_malloc<class gctools::GCVector_impl<struct asttooling::Diagnostics::ErrorContent> >>" :ARGUMENTS (#S(GC-TEMPLATE-ARGUMENT :CL:INDEX 0 :CTYPE #S(CXXRECORD-CTYPE :KEY "asttooling::Diagnostics::ErrorContent")) #S(GC-TEMPLATE-ARGUMENT :CL:INDEX 1 :CTYPE #S(CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCAlloc_malloc<class gctools::GCVector_impl<struct asttooling::Diagnostics::ErrorContent>>" :ARGUMENTS (#S(GC-TEMPLATE-ARGUMENT :CL:INDEX 0 :CTYPE #S(CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector_impl<struct asttooling::Diagnostics::ErrorContent>" :ARGUMENTS (#S(GC-TEMPLATE-ARGUMENT :CL:INDEX 0 :CTYPE #S(CXXRECORD-CTYPE :KEY "asttooling::Diagnostics::ErrorContent")))))))))))
 // parm0-ctype = #S(CXXRECORD-CTYPE :KEY "asttooling::Diagnostics::ErrorContent")

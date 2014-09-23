@@ -1,3 +1,29 @@
+/*
+    File: improperRestraintTerms.cc
+*/
+
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+ 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+ 
+See file 'clasp/Copyright' for full details.
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 double CosPhi, CosPhiMinusPhase, DePhi, DphiDx1, DphiDx2, DphiDx3, DphiDx4, DphiDy1, DphiDy2, DphiDy3, DphiDy4, DphiDz1, DphiDz2, DphiDz3, DphiDz4, dx1, dx2, dx3, dx4, dy1, dy2, dy3, dy4, dz1, dz2, dz3, dz4, EImproperRestraint, fx1, fx2, fx3, fx4, fy1, fy2, fy3, fy4, fz1, fz2, fz3, fz4, LenA, LenB, ReciprocalLenA, ReciprocalLenB, RecLenARecLenB, SinPhi, SinPhiMinusPhase, SinPhiMinusPhaseMax, SinPhiMinusPhaseMin, tx1, tx10, tx100, tx101, tx102, tx103, tx104, tx105, tx106, tx107, tx108, tx109, tx11, tx110, tx12, tx13, tx14, tx15, tx16, tx17, tx18, tx19, tx2, tx20, tx21, tx22, tx23, tx24, tx25, tx26, tx27, tx28, tx29, tx3, tx30, tx31, tx32, tx33, tx34, tx35, tx36, tx37, tx38, tx39, tx4, tx40, tx41, tx42, tx43, tx44, tx45, tx46, tx47, tx48, tx49, tx5, tx50, tx51, tx52, tx53, tx54, tx55, tx56, tx57, tx58, tx59, tx6, tx60, tx61, tx62, tx63, tx64, tx65, tx66, tx67, tx68, tx69, tx7, tx70, tx71, tx72, tx73, tx74, tx75, tx76, tx77, tx78, tx79, tx8, tx80, tx81, tx82, tx83, tx84, tx85, tx86, tx87, tx88, tx89, tx9, tx90, tx91, tx92, tx93, tx94, tx95, tx96, tx97, tx98, tx99, tzz111, tzz112, tzz113, tzz114, tzz115, tzz116, tzz120, tzz121, tzz122, tzz123, tzz124, tzz128, tzz129, tzz130, xxxxDummy;
 	tx77 = -x2; 		/* rule 1 */
 	tx1 = tx77*y1; 		/* rule 2 */

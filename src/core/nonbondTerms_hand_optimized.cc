@@ -1,3 +1,29 @@
+/*
+    File: nonbondTerms_hand_optimized.cc
+*/
+
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+ 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+ 
+See file 'clasp/Copyright' for full details.
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 double dx1,dy1,dz1,eeel,evdw,fx1,fx2,fy1,fy2,fz1,fz2,tx1,tx11,tx12,tx13,tx14,tx16,tx17,tx18,tx19,tx2,tx20,tx21,tx22,tx23,tx24,tx25,tx26,tx27,tx28,tx29,tx3,tx31,tx32,tx33,tx34,tx35,tx36,tx4,tx5,tx6,tx7,tx8,tx9,tzz38,tzz39,tzz40,tzz41,tzz42,tzz43,tzz44,xxxxDummy;
 	tx1 = -x2; 		/* rule 1 */
 	tx2 = -y2; 		/* rule 2 */

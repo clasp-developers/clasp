@@ -1,3 +1,29 @@
+/*
+    File: intrinsics.cc
+*/
+
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+ 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+ 
+See file 'clasp/Copyright' for full details.
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 #define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
 extern "C" {
@@ -304,7 +330,8 @@ extern "C" {
 	new(sharedP) core::Function_sp();
 	
     }
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
     void destructFunction_sp(core::Function_sp* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
@@ -313,15 +340,6 @@ extern "C" {
 	  (*sharedP).~dummy();
 	}
     }
-
-
-    void newTsp(core::T_sp* sharedP)
-    {_G();
-	ASSERT(sharedP!=NULL);
-	new(sharedP) core::T_sp();
-	
-    }
-
     void destructTsp(core::T_sp* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
@@ -330,6 +348,31 @@ extern "C" {
 	  (*sharedP).~dummy();
 	}
     }
+    void destructTmv(core::T_mv* sharedP)
+    {_G();
+	ASSERT(sharedP!=NULL);
+	if ( (*sharedP).pointerp() ) {
+	  typedef core::T_mv dummy;
+	  (*sharedP).~dummy();
+	}
+    }
+    void destructAFsp(core::ActivationFrame_sp* frameP)
+    {_G();
+	ASSERT(frameP!=NULL);
+	if ( (*frameP).pointerp() ) {
+	    typedef core::ActivationFrame_sp dummy;
+	    (*frameP).~dummy();
+	}
+    }
+#pragma clang diagnostic pop
+
+    void newTsp(core::T_sp* sharedP)
+    {_G();
+	ASSERT(sharedP!=NULL);
+	new(sharedP) core::T_sp();
+	
+    }
+
 
     void resetTsp(core::T_sp* sharedP)
     {_G();
@@ -434,15 +477,6 @@ extern "C" {
 
 
 
-    void destructTmv(core::T_mv* sharedP)
-    {_G();
-	ASSERT(sharedP!=NULL);
-	if ( (*sharedP).pointerp() ) {
-	  typedef core::T_mv dummy;
-	  (*sharedP).~dummy();
-	}
-    }
-
 
 
 
@@ -504,15 +538,6 @@ extern "C"
     }
 
 
-
-    void destructAFsp(core::ActivationFrame_sp* frameP)
-    {_G();
-	ASSERT(frameP!=NULL);
-	if ( (*frameP).pointerp() ) {
-	    typedef core::ActivationFrame_sp dummy;
-	    (*frameP).~dummy();
-	}
-    }
 
 
     void sp_makeNil(core::T_sp* result)
@@ -1911,7 +1936,3 @@ namespace llvmo {
     }
 
 };
-
-
-
-

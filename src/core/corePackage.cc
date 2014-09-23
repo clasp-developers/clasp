@@ -1,3 +1,29 @@
+/*
+    File: corePackage.cc
+*/
+
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+ 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+ 
+See file 'clasp/Copyright' for full details.
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 #define DEBUG_LEVEL_FULL
 #include <limits.h>
 #include <float.h>
@@ -95,6 +121,9 @@ namespace core
 
     SYMBOL_EXPORT_SC_(ClPkg,nil);
     SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
+
+    SYMBOL_EXPORT_SC_(KeywordPkg,ecl_min);
+    SYMBOL_EXPORT_SC_(KeywordPkg,use_mps);
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);
     SYMBOL_EXPORT_SC_(KeywordPkg,cr);
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);
@@ -744,7 +773,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	cl::_sym_nil->initialize();
 	cl::_sym_nil->_Name = Str_O::create("NIL");
 #if 1
-        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );
+//        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );
 //	_lisp->_Roots._CommonLispPackage->add_symbol_to_package("NIL"cl::_sym_nil);
 	cl::_sym_nil->_HomePackage = _lisp->_Roots._CommonLispPackage;
 #else 
