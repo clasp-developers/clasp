@@ -23,12 +23,13 @@ To build clasp from within the top level directory do the following.
 
 If you want to install the libraries separately they are:
 Contact me for more info - I can add more details to what is below.
-Boost build v2
-Boehm 7.2
-LLVM/clang 3.5
-ecl
-gmp
-expat
-zlib
-readline
+Boost build v2<p>
+boost libraries ver 1.55<p>
+Boehm 7.2<p>
+LLVM/clang 3.5<p>
+ecl ver 12<p>
+gmp-5.0.5<p>
+expat-2.0.1<p>
+zlib-1.2.8<p>
+readline-6.2<p>
                                                                                                         
