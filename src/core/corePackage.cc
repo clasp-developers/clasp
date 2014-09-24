@@ -123,6 +123,8 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,nil);
     SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
 
+    SYMBOL_EXPORT_SC_(KeywordPkg,load);
+    SYMBOL_EXPORT_SC_(KeywordPkg,eval);
     SYMBOL_EXPORT_SC_(KeywordPkg,ecl_min);
     SYMBOL_EXPORT_SC_(KeywordPkg,use_mps);
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);

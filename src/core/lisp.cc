@@ -1390,17 +1390,32 @@ namespace core
 
         this->_IgnoreInitImage = options._DontLoadImage;
 	this->_IgnoreInitLsp = options._DontLoadInitLsp;
-	if ( options._HasLoadFile ) {
-	    _sym_STARcommandLineLoadSTAR->defparameter(Str_O::create(options._LoadFile));
-	    this->_Interactive = false;
-	} else {
-	    this->_Interactive = true;
-	    if ( this->_Interactive ) {
-		Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
-		features = Cons_O::create(KW("interactive"),features);
-		cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-	    }
-	}
+        
+        SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineLoadEvalSequenceSTAR);
+        Cons_sp loadEvals = _Nil<Cons_O>();
+        for ( auto it : options._LoadEvalList ) {
+            Cons_sp one;
+            if ( it.first==cloEval ) {
+                one = Cons_O::create(kw::_sym_eval,Str_O::create(it.second));
+            } else {
+                one = Cons_O::create(kw::_sym_load,Str_O::create(it.second));
+            }
+            loadEvals = Cons_O::create(one,loadEvals);
+        }
+        _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl_nreverse(loadEvals));
+                
+        this->_Interactive = options._Interactive;
+        if ( this->_Interactive ) {
+            Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+            features = Cons_O::create(KW("interactive"),features);
+            cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
+        }
+        if ( options._NoRc ) {
+            Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+            features = Cons_O::create(KW("no-rc"),features);
+            cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
+        }
+
 
 	if (options._GotRandomNumberSeed) {
 	    seedRandomNumberGenerators(options._RandomNumberSeed);
@@ -1412,15 +1427,6 @@ namespace core
 	    _sym_STARcommandLineImageSTAR->defparameter(cl_pathname(Str_O::create(options._ImageFile)));
         } else {
             _sym_STARcommandLineImageSTAR->defparameter(core_startupImagePathname());
-        }
-        //
-        // Get the script from the command line or the input-file
-        //
-        if ( options._HasExecCode ) 
-        {
-            string script = options._ExecCode;
-            SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineExecSTAR);
-            _sym_STARcommandLineExecSTAR->defparameter(Str_O::create(script));
         }
 	LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode );
     }

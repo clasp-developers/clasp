@@ -1,4 +1,3 @@
-
 ;; Set features :ecl-min for minimal system without CLOS
 ;; :clos to compile with CLOS
 ;;
@@ -47,16 +46,19 @@
 ;;(use-package :core)
 
 ;; Setup a few things for the GRAY streams package
-(core::select-package :gray)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (core::select-package :gray))
 (core:shadow '(STREAM-ELEMENT-TYPE OPEN-STREAM-P OUTPUT-STREAM-P INPUT-STREAM-P STREAMP CLOSE))
 (core:use-package :core)
 
 ;; Setup a few things for the CORE package
-(select-package :core)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (select-package :core))
 (use-package '(:compiler :clos :ext))
 
 ;; Setup a few things for the CMP package
-(select-package :cmp)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (select-package :cmp))
 
 ;;; cmp:*implicit-compilation* is set to T in cmp/cmprepl.lsp
 (SYS:*MAKE-SPECIAL 'cmp:*implicit-compilation*)
@@ -66,16 +68,19 @@
 (export '(link-system))
 (use-package :core)
 
-(select-package :core)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (select-package :core))
 (if (find-package "C") nil
     (make-package "C" :use '(:cl :core)))
 
-(select-package :core)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (select-package :core))
 (if (find-package "FFI") nil
   (make-package "FFI" :use '(:CL :CORE)))
 
 ;; Setup a few things for the EXT package
-(select-package :ext)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (select-package :ext))
 (core:*make-special '*register-with-pde-hook*)
 (core:*make-special '*module-provider-functions*)
 (export '*module-provider-functions*)
@@ -84,22 +89,22 @@
 (setq *source-location* nil)
 (export '*register-with-pde-hook*)
 (core::*fset 'register-with-pde
-      #'(lambda (whole env)
-	  (let* ((definition (second whole))
-		 (output-form (third whole)))
-	    `(if ext:*register-with-pde-hook*
-		 (funcall ext:*register-with-pde-hook*
-			  (copy-tree *source-location*)
-			  ,definition
-			  ,output-form)
-		 ,output-form)))
-      t)
+             #'(lambda (whole env)
+                 (let* ((definition (second whole))
+                        (output-form (third whole)))
+                   `(if ext:*register-with-pde-hook*
+                        (funcall ext:*register-with-pde-hook*
+                                 (copy-tree *source-location*)
+                                 ,definition
+                                 ,output-form)
+                      ,output-form)))
+             t)
+(export 'register-with-pde)
 (core:*make-special '*invoke-debugger-hook*)
 (setq *invoke-debugger-hook* nil)
 
-
-
-(core:select-package :core)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (core:select-package :core))
 
 
 (si::*fset 'core::defvar #'(lambda (whole env)
@@ -323,7 +328,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(core::select-package :cl)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (core::select-package :cl))
 (defvar *print-pretty* nil)  ;; Turn this on by default
 (defvar *print-level* nil)
 (defvar *print-length* nil)
@@ -334,7 +340,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (core::export 'defun)
-(core::select-package :core)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (core::select-package :core))
 
 (si::*fset 'defun
 	  #'(lambda (def env)
@@ -485,10 +492,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
-	      (bformat t "     Deleting: %s\n" (truename bitcode-path))
+	      (bformat t "     Deleting bitcode: %s\n" (truename bitcode-path))
 	      (delete-file bitcode-path))
 	      )
-	(bformat t "    File doesn't exist: %s\n" (namestring bitcode-path))
 	)))
 
 (defun recursive-find (item seq)
@@ -556,6 +562,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     :base
     init
     cmp/jit-setup
+    clsymbols
     :start
     lsp/foundation
     lsp/export
@@ -779,24 +786,32 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
         (compile-system :base :start :reload nil )
         ))
 
+(defconstant +minimal-epilogue-form+ '(progn
+                                        (process-command-line-load-eval-sequence)
+                                        (bformat t "Starting clasp-min low-level-repl\n")
+                                        (core::low-level-repl)))
 
 (defun compile-min-system (&key (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
          (bitcodes1 (compile-system :start :cmp :reload t ))
-         ;(bitcodes0 (compile-system :base :start :reload nil :recompile t ))
+         (bitcodes0 (compile-system :base :start :reload nil :recompile t ))
          (bitcodes2 (compile-system :cmp :min ))
-         (all-bitcodes (nconc bitcodes1 bitcodes2)))
+         (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
     (cmp:link-system-lto
            (target-backend-pathname +image-pathname+ )
            :lisp-bitcode-files all-bitcodes
+           :epilogue-form +minimal-epilogue-form+
            )))
 
 
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend)
-        (bitcode-files (compile-system :start :min :recompile t )))
+        (bitcode-files0 (compile-system :base :start :recompile t))
+        (bitcode-files1 (compile-system :start :min :recompile t ))
+        )
     (cmp:link-system-lto (target-backend-pathname +image-pathname+ )
-                     :lisp-bitcode-files bitcode-files )))
+                     :lisp-bitcode-files (nconc bitcode-files0 bitcode-files1)
+                     :epilogue-form +minimal-epilogue-form+)))
 
 
 
@@ -813,12 +828,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (let ((bitcode-files (compile-system :base :all :recompile t )))
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                            :lisp-bitcode-files bitcode-files
-                           :postfix-form '(progn
-                                          (bformat t "Starting Clasp 0.1\n")
-                                          (cl:in-package :cl-user)
-                                          (require 'system)
-                                          (load-clasprc)
-                                          (core:top-level))))))
+                           :epilogue-form '(progn
+                                             (bformat t "Starting Clasp 0.1\n")
+                                             (cl:in-package :cl-user)
+                                             (require 'system)
+                                             (load-clasprc)
+                                             (process-command-line-load-eval-sequence)
+                                             (when (member :interactive *features*) (core:top-level)))))))
 
 
 (defun compile-clos () ;; &key (target-backend (default-target-backend)))
@@ -933,34 +949,16 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;
 
 
+(defun process-command-line-load-eval-sequence ()
+  (mapcar #'(lambda (entry)
+              (if (eq (car entry) :load)
+                  (load (cdr entry))
+                (eval (read-from-string (cdr entry)))))
+          core::*command-line-load-eval-sequence*)
+  )
+
+
 (eval-when (:execute)
-  (if core:*command-line-load*
-      (load core:*command-line-load*)
-      (core:low-level-repl)))
-
-(defvar *loaded-image* nil)
-#-ignore-init-image
-(bformat t "Starting low-level-repl\n")
-(core::low-level-repl)
-#+(or) (eval-when (:execute)
-         (if (not *loaded-image*)
-             (let ((image-pathname (target-backend-pathname +image-pathname+
-                                                            :target-backend (default-target-backend))))
-               (setq *loaded-image* t)
-               (bformat t "init.lsp> Loading image bundle %s\n" image-pathname)
-               (my-time (ibundle image-pathname))
-               (require 'system)
-               (load-clasprc)
-               (if core:*command-line-load*
-                   (load core:*command-line-load*)
-                 #-ecl-min(progn
-                            (bformat t "Starting Clasp\n")
-                            (top-level))
-                 #+ecl-min(progn
-                            (bformat t "Starting Clasp-min\n")
-                            (core::low-level-repl))
-                 ))
-           ))
-
-
+  (process-command-line-load-eval-sequence)
+  (core:low-level-repl))
 
