@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <vector>
 #include <queue>
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
+//#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/dynamic_bitset.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tuple/tuple.hpp>

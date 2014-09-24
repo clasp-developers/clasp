@@ -331,7 +331,7 @@ extern "C" {
 	
     }
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
+//#pragma clang diagnostic ignored "-Wunused-local-typedef"
     void destructFunction_sp(core::Function_sp* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);

@@ -36,7 +36,7 @@ THE SOFTWARE.
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
+//#pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #include "boost/filesystem.hpp"
 #include "boost/algorithm/string.hpp"
 #include "boost/program_options.hpp"

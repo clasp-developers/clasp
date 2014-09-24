@@ -30,8 +30,8 @@ THE SOFTWARE.
 #include "clasp_gmpxx.h"
 #include <math.h>
 #include <limits.h>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
+#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #include <boost/archive/tmpdir.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -39,7 +39,7 @@ THE SOFTWARE.
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/assume_abstract.hpp>
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 
 #include "foundation.h"

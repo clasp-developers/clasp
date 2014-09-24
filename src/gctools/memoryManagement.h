@@ -230,10 +230,7 @@ namespace gctools {
 };
 
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include "gcalloc.h"
-#pragma clang diagnostic pop
 
 
 #define GC_ALLOCATE(_class_,_obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()

@@ -27,7 +27,7 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_NONE
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
+//#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/algorithm/string.hpp>
 #pragma clang diagnostic pop
 #include <string>
