@@ -221,7 +221,7 @@ namespace core
 	char* lispdir = getenv("CLASP_LISP_SOURCE_DIR");
 	if ( lispdir != NULL )
 	{
-	    printf("Using CLASP_LISP_SOURCE_DIR --> %s\n", lispdir );
+//	    printf("Using CLASP_LISP_SOURCE_DIR --> %s\n", lispdir );
 	    this->_LispDir = boost_filesystem::path(lispdir);
 	}
     }

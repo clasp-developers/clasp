@@ -38,17 +38,15 @@ namespace core
     CommandLineOptions::CommandLineOptions(int argc, char* argv[])
         : _DontLoadImage(false),
           _DontLoadInitLsp(false),
-          _HasExecCode(false),
-          _ExecCode(""),
-          _HasLoadFile(false),
-          _LoadFile(""),
           _HasImageFile(false),
           _ImageFile(""),
           _GotRandomNumberSeed(false),
           _RandomNumberSeed(0),
+          _Interactive(true),
           _Version(false),
-          _SilentStartup(true)
-
+          _SilentStartup(true),
+          _NoRc(false)
+          
 #if 0   // uses boost::program_options which is broken on OS X with -std=c++11
     {
 	try 
@@ -193,20 +191,26 @@ namespace core
 	    string arg = argv[iarg];
 	    if ( arg == "-h" || arg == "--help" ) {
 		printf("clasp options\n"
-		       "-I/--ignore-image    - Don't load the boot image\n"
+		       "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
                        "-i/--image file      - Use the file as the boot image\n"
+                       "-N/--non-interactive - Suppress all repls\n"
 		       "-v/--version         - Print version\n"
 		       "-s/--verbose         - Print more info while booting\n"
 		       "-f/--feature feature - Add the feature to *features*\n"
-		       "-e/--exec cmd        - Execute a command\n"
-		       "-l/--load file       - LOAD the file\n"
-		       "-n/--noload          - Don't load the init.lsp (very minimal environment)\n"
+		       "-e/--eval {form}     - Evaluate a form\n"
+		       "-l/--load {file}     - LOAD the file\n"
+                       "-r/--norc            - Don't load the ~/.clasprc file\n"
+		       "-n/--noinit          - Don't load the init.lsp (very minimal environment)\n"
 		       "-s/--seed #          - Seed the random number generator\n"
 		       "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n");
 		exit(1);
-	    } else if ( arg == "-I" || arg == "--ignore-mage" ) {
+	    } else if ( arg == "-I" || arg == "--ignore-image" ) {
 		this->_DontLoadImage = true;
-	    } else if ( arg == "-n" || arg == "--noload") {
+            } else if ( arg == "-N" || arg == "--non-interactive") {
+                this->_Interactive = false;
+            } else if ( arg == "-r" || arg == "--norc" ) {
+                this->_NoRc = true;
+	    } else if ( arg == "-n" || arg == "--noinit") {
 		this->_DontLoadInitLsp = true;
 	    } else if ( arg == "-v" || arg == "--version" ) {
 		this->_Version = true;
@@ -221,15 +225,15 @@ namespace core
                 this->_HasImageFile = true;
 		this->_ImageFile = argv[iarg+1];
 		iarg++;
-	    } else if ( arg == "-e" || arg == "--exec" ) {
-		ASSERTF(iarg<(argc+1),BF("Missing argument for --exec,-e"));
-                this->_HasExecCode = true;
-		this->_ExecCode = argv[iarg+1];
+	    } else if ( arg == "-e" || arg == "--eval" ) {
+		ASSERTF(iarg<(argc+1),BF("Missing argument for --eval,-e"));
+                pair<LoadEvalEnum,std::string> eval(std::make_pair(cloEval,argv[iarg+1]));
+                this->_LoadEvalList.push_back(eval);
 		iarg++;
 	    } else if ( arg == "-l" || arg == "--load" ) {
 		ASSERTF(iarg<(argc+1),BF("Missing argument for --load,-l"));
-                this->_HasLoadFile = true;
-		this->_LoadFile = argv[iarg+1];
+                pair<LoadEvalEnum,std::string> eval(std::make_pair(cloLoad,argv[iarg+1]));
+                this->_LoadEvalList.push_back(eval);
 		iarg++;
 	    } else if ( arg == "-s" || arg == "--seed") {
 		this->_RandomNumberSeed = atoi(argv[iarg+1]);
