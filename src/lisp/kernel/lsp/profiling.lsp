@@ -14,8 +14,6 @@
 
 (in-package "MICRO-PROFILING")
 (export '(#:micro-profile-ops #:deep-stack-micro-profile-ops))
-(defun b (x y z) )
-(defun a () )
 
 (defun ns-per-partial-apply (stage fn args)
   (let ((rate (core:partial-applys-per-second stage fn args)))
