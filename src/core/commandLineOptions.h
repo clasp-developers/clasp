@@ -30,21 +30,24 @@ THE SOFTWARE.
 namespace core {
 
 
-struct CommandLineOptions {
-    CommandLineOptions(int argc, char* argv[]);
-
-    bool 		_DontLoadInit;
-    bool 		_IgnoreInitImage;
-    std::vector<std::string>	_Features;
-    std::string 		_ExecCode;
-    std::string 		_LoadFile;
-    bool 		_GotRandomNumberSeed;
-    long		_RandomNumberSeed;
-    bool		_Interactive;
-    bool 		_Version;
-    bool 		_SilentStartup;
-    std::vector<std::string>	_Args;
-};
+    struct CommandLineOptions {
+        CommandLineOptions(int argc, char* argv[]);
+        bool 		_DontLoadImage;
+        bool 		_DontLoadInitLsp;
+        std::vector<std::string>	_Features;
+        bool                        _HasExecCode;
+        std::string 		_ExecCode;
+        bool                        _HasLoadFile;
+        std::string 		_LoadFile;
+        bool                        _HasImageFile;
+        std::string                 _ImageFile;
+        bool 		_GotRandomNumberSeed;
+        long		_RandomNumberSeed;
+        bool		_Interactive;
+        bool 		_Version;
+        bool 		_SilentStartup;
+        std::vector<std::string>	_Args;
+    };
 
 
 

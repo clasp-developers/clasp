@@ -168,40 +168,28 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;; +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
 
 
-(let ((image-date (file-write-date +image-pathname+))
+(let ((image-date (file-write-date core:*command-line-image*))
       (intrinsics-date (file-write-date +intrinsics-bitcode-pathname+)))
   (if image-date
       (if intrinsics-date
           (if (< image-date intrinsics-date)
               (progn
                 (bformat t "!\n")
-                (bformat t "!\n")
-                (bformat t "!\n")
                 (bformat t "! WARNING:   The file %s is out of date \n" +image-pathname+ )
                 (bformat t "!            relative to %s\n" +intrinsics-bitcode-pathname+)
                 (bformat t "!\n")
                 (bformat t "!  Solution: Recompile the Common Lisp code\n")
                 (bformat t "!\n")
-                (bformat t "!\n")
-                (bformat t "!\n")
                 ))
           (progn
             (bformat t "!\n")
-            (bformat t "!\n")
-            (bformat t "!\n")
-            (bformat t "WARNING:   Could not determine file-write-date of %s\n" +intrinsics-bitcode-pathname+)
-            (bformat t "!\n")
-            (bformat t "!\n")
+            (bformat t "! WARNING:   Could not determine file-write-date of %s\n" +intrinsics-bitcode-pathname+)
             (bformat t "!\n")
             )
           )
       (progn
         (bformat t "!\n")
-        (bformat t "!\n")
-        (bformat t "!\n")
-        (bformat t "WARNING:   Could not determine file-write-date of %s\n" +image-pathname+)
-        (bformat t "!\n")
-        (bformat t "!\n")
+        (bformat t "WARNING:   Could not determine file-write-date of %s\n" *command-line-image*)
         (bformat t "!\n")
         )
       ))
@@ -945,7 +933,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;
 
 
-#+ignore-init-image
 (eval-when (:execute)
   (if core:*command-line-load*
       (load core:*command-line-load*)
@@ -953,25 +940,27 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defvar *loaded-image* nil)
 #-ignore-init-image
-(eval-when (:execute)
-  (if (not *loaded-image*)
-      (let ((image-pathname (target-backend-pathname +image-pathname+
-                                                     :target-backend (default-target-backend))))
-        (setq *loaded-image* t)
-        (bformat t "init.lsp> Loading image bundle %s\n" image-pathname)
-        (my-time (ibundle image-pathname))
-        (require 'system)
-        (load-clasprc)
-        (if core:*command-line-load*
-            (load core:*command-line-load*)
-            #-ecl-min(progn
-                       (bformat t "Starting Clasp\n")
-                       (top-level))
-            #+ecl-min(progn
-                       (bformat t "Starting Clasp-min\n")
-                       (core::low-level-repl))
-            ))
-      ))
+(bformat t "Starting low-level-repl\n")
+(core::low-level-repl)
+#+(or) (eval-when (:execute)
+         (if (not *loaded-image*)
+             (let ((image-pathname (target-backend-pathname +image-pathname+
+                                                            :target-backend (default-target-backend))))
+               (setq *loaded-image* t)
+               (bformat t "init.lsp> Loading image bundle %s\n" image-pathname)
+               (my-time (ibundle image-pathname))
+               (require 'system)
+               (load-clasprc)
+               (if core:*command-line-load*
+                   (load core:*command-line-load*)
+                 #-ecl-min(progn
+                            (bformat t "Starting Clasp\n")
+                            (top-level))
+                 #+ecl-min(progn
+                            (bformat t "Starting Clasp-min\n")
+                            (core::low-level-repl))
+                 ))
+           ))
 
 
 

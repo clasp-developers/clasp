@@ -87,6 +87,7 @@ namespace core
 
     SYMBOL_EXPORT_SC_(ClPkg,printNotReadableObject);
 
+    SYMBOL_EXPORT_SC_(ClPkg,provide);
     SYMBOL_EXPORT_SC_(ClPkg,condition);
     SYMBOL_EXPORT_SC_(ClPkg,seriousCondition);
     SYMBOL_EXPORT_SC_(ClPkg,error);
@@ -891,6 +892,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym_cArgumentsLimit->defconstant(Fixnum_O::create(Lisp_O::MaxFunctionArguments));
 	_sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
 	_sym_STARclassNameHashTableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
+	_sym_STARcurrentSourceFileInfoSTAR->defparameter(_Nil<T_O>());
 	_sym_STARcurrentLinenoSTAR->defparameter(Fixnum_O::create(0));
 	_sym_STARcurrentColumnSTAR->defparameter(Fixnum_O::create(0));
 	_sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());

@@ -376,9 +376,8 @@ namespace core
 	 * before everything else to extend the environment
 	 */
 	string			_RCFileName;
-	bool			_dont_load_startup; // true if the startup shouldn't be loaded
-	bool			_ScriptInFile;
-	string			_FileNameOrCode;
+        bool                    _IgnoreInitImage;
+	bool			_IgnoreInitLsp; // true if the startup shouldn't be loaded
 	map<string,int>		_PackageNameIndexMap;
 	/*! Keep track of every new environment that is created */
 	uint			_EnvironmentId;

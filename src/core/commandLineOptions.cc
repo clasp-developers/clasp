@@ -31,16 +31,23 @@ THE SOFTWARE.
 #include "boost/program_options.hpp"
 #include "commandLineOptions.h"
 
-namespace core {
+namespace core
+{
 
 
-    CommandLineOptions::CommandLineOptions(int argc, char* argv[]) : _DontLoadInit(false),
-								     _IgnoreInitImage(false),
-								     _ExecCode(""),
-								     _GotRandomNumberSeed(false),
-								     _RandomNumberSeed(0),
-								     _Version(false),
-								     _SilentStartup(true)
+    CommandLineOptions::CommandLineOptions(int argc, char* argv[])
+        : _DontLoadImage(false),
+          _DontLoadInitLsp(false),
+          _HasExecCode(false),
+          _ExecCode(""),
+          _HasLoadFile(false),
+          _LoadFile(""),
+          _HasImageFile(false),
+          _ImageFile(""),
+          _GotRandomNumberSeed(false),
+          _RandomNumberSeed(0),
+          _Version(false),
+          _SilentStartup(true)
 
 #if 0   // uses boost::program_options which is broken on OS X with -std=c++11
     {
@@ -185,22 +192,22 @@ namespace core {
 	while (iarg<argc) {
 	    string arg = argv[iarg];
 	    if ( arg == "-h" || arg == "--help" ) {
-		printf("brcl options\n"
-		       "-I/--ignore-image  - ignore the boot image\n"
-		       "-v/--version       - print version\n"
-		       "-s/--verbose       - print more info as booting\n"
+		printf("clasp options\n"
+		       "-I/--ignore-image    - Don't load the boot image\n"
+                       "-i/--image file      - Use the file as the boot image\n"
+		       "-v/--version         - Print version\n"
+		       "-s/--verbose         - Print more info while booting\n"
 		       "-f/--feature feature - Add the feature to *features*\n"
 		       "-e/--exec cmd        - Execute a command\n"
 		       "-l/--load file       - LOAD the file\n"
-		       "-n/--noload          - Don't load the init.lsp (very bare start)\n"
+		       "-n/--noload          - Don't load the init.lsp (very minimal environment)\n"
 		       "-s/--seed #          - Seed the random number generator\n"
-		       "{ARGS}*              - Add arguments to core:*command-line-arguments*\n"
-		       "Run with brcl -I -f ecl-min to bootstrap minimal image\n"
-		       "Run with brcl -f ecl-min to load minimal image and compile full image\n"
-		       "Run with brcl to run and load full image\n");
+		       "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n");
 		exit(1);
 	    } else if ( arg == "-I" || arg == "--ignore-mage" ) {
-		this->_IgnoreInitImage = true;
+		this->_DontLoadImage = true;
+	    } else if ( arg == "-n" || arg == "--noload") {
+		this->_DontLoadInitLsp = true;
 	    } else if ( arg == "-v" || arg == "--version" ) {
 		this->_Version = true;
 	    } else if ( arg == "-s" || arg == "--verbose" ) {
@@ -209,16 +216,21 @@ namespace core {
 		ASSERTF(iarg<(argc+1),BF("Missing argument for --feature,-f"));
 		this->_Features.push_back(argv[iarg+1]);
 		iarg++;
+	    } else if ( arg == "-i" || arg == "--image" ) {
+		ASSERTF(iarg<(argc+1),BF("Missing argument for --image,-i"));
+                this->_HasImageFile = true;
+		this->_ImageFile = argv[iarg+1];
+		iarg++;
 	    } else if ( arg == "-e" || arg == "--exec" ) {
 		ASSERTF(iarg<(argc+1),BF("Missing argument for --exec,-e"));
+                this->_HasExecCode = true;
 		this->_ExecCode = argv[iarg+1];
 		iarg++;
 	    } else if ( arg == "-l" || arg == "--load" ) {
 		ASSERTF(iarg<(argc+1),BF("Missing argument for --load,-l"));
+                this->_HasLoadFile = true;
 		this->_LoadFile = argv[iarg+1];
 		iarg++;
-	    } else if ( arg == "-n" || arg == "--noload") {
-		this->_DontLoadInit = true;
 	    } else if ( arg == "-s" || arg == "--seed") {
 		this->_RandomNumberSeed = atoi(argv[iarg+1]);
 		iarg++;

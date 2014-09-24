@@ -36,7 +36,8 @@ namespace core
 
     T_sp varArgsList(int numArgs, ... );
 
-
+    T_sp core_startupImagePathname();
+    T_mv core_loadBundle(T_sp pathDesig, Str_sp initFnName=_Nil<Str_O>());
 
 
     T_mv af_implicit_compile_hook_default(T_sp form, Environment_sp env);
