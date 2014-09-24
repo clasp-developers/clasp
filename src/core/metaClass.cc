@@ -31,7 +31,7 @@ THE SOFTWARE.
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-#pragma GCC diagnostic ignored "-Wunused-local-typedef"
+//#pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #include <boost/graph/vector_as_graph.hpp>
 #include <boost/graph/topological_sort.hpp>
 #pragma clang diagnostic pop

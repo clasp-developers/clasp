@@ -103,7 +103,7 @@ THE SOFTWARE.
 #include <cassert>
 
 #pragma GCC diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
+//#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/bind.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
