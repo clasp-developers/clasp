@@ -181,8 +181,8 @@
 
 (defun link-bitcode-modules (part-pathnames &key additional-bitcode-pathnames
                                               (output-pathname +image-pathname+)
-                                              prefix-module
-                                              postfix-module
+                                              prologue-module
+                                              epilogue-module
                                               debug-ir)
   "Link a bunch of modules together, return the linked module"
   (format t "part-pathnames ~a~%" part-pathnames)
@@ -204,10 +204,11 @@
                (bcnum 0))
           (let ((linker (llvm-sys:make-linker *the-module*)))
             ;; Don't enforce .bc extension for additional-bitcode-pathnames
-            (if prefix-module
+            (if prologue-module
                 (progn
-                  (remove-main-function-if-exists prefix-module)
-                  (llvm-sys:link-in-module linker prefix-module)))
+                  (bformat t "Linking prologue-form\n")
+                  (remove-main-function-if-exists prologue-module)
+                  (llvm-sys:link-in-module linker prologue-module)))
             (dolist (part-pn additional-bitcode-pathnames)
               (let* ((bc-file part-pn))
                 (format t "Linking ~a~%" bc-file)
@@ -227,10 +228,11 @@
                       (llvm-sys:link-in-module linker part-module)
                     (when failure
                       (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
-            (if postfix-module
+            (if epilogue-module
                 (progn
-                  (remove-main-function-if-exists postfix-module)
-                  (llvm-sys:link-in-module linker postfix-module)))
+                  (bformat t "Linking epilogue-form\n")
+                  (remove-main-function-if-exists epilogue-module)
+                  (llvm-sys:link-in-module linker epilogue-module)))
             (reset-global-boot-functions-name-size *the-module*)
             (add-main-function *the-module*) ;; Here add the main function
             (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc")))
@@ -249,8 +251,8 @@
 (defun link-system-lto (output-pathname
                         &key (intrinsics-bitcode-path +intrinsics-bitcode-pathname+)
                           lisp-bitcode-files
-                          prefix-form
-                          postfix-form
+                          prologue-form
+                          epilogue-form
                           debug-ir
                           (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
@@ -258,15 +260,15 @@
          (part-pathnames lisp-bitcode-files)
          ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (make-pathname :type "bc" :defaults output-pathname))
-         (prefix-module (if prefix-form (compile-form-into-module prefix-form "prefixForm")))
-         (postfix-module (if postfix-form (compile-form-into-module postfix-form "postfixForm")))
+         (prologue-module (if prologue-form (compile-form-into-module prologue-form "prologueForm")))
+         (epilogue-module (if epilogue-form (compile-form-into-module epilogue-form "epilogueForm")))
          (module (link-bitcode-modules part-pathnames
                                        :additional-bitcode-pathnames (if intrinsics-bitcode-path
                                                                          (list intrinsics-bitcode-path)
                                                                          nil)
                                        :output-pathname output-pathname
-                                       :prefix-module prefix-module
-                                       :postfix-module postfix-module
+                                       :prologue-module prologue-module
+                                       :epilogue-module epilogue-module
                                        :debug-ir debug-ir)))
     (ensure-directories-exist bundle-bitcode-pathname)
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))

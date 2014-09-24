@@ -29,16 +29,14 @@ THE SOFTWARE.
 
 namespace core {
 
+    typedef enum { cloLoad, cloEval } LoadEvalEnum;
 
     struct CommandLineOptions {
         CommandLineOptions(int argc, char* argv[]);
         bool 		_DontLoadImage;
         bool 		_DontLoadInitLsp;
         std::vector<std::string>	_Features;
-        bool                        _HasExecCode;
-        std::string 		_ExecCode;
-        bool                        _HasLoadFile;
-        std::string 		_LoadFile;
+        std::vector<pair<LoadEvalEnum,std::string>> _LoadEvalList;
         bool                        _HasImageFile;
         std::string                 _ImageFile;
         bool 		_GotRandomNumberSeed;
@@ -46,6 +44,7 @@ namespace core {
         bool		_Interactive;
         bool 		_Version;
         bool 		_SilentStartup;
+        bool            _NoRc;
         std::vector<std::string>	_Args;
     };
 
