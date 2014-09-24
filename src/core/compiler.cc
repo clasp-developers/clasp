@@ -85,10 +85,10 @@ namespace core
 
     
     
-#define ARGS_core_defaultTargetBackend "()"
-#define DECL_core_defaultTargetBackend ""
-#define DOCS_core_defaultTargetBackend "defaultTargetBackend"
-    T_sp core_defaultTargetBackend()
+#define ARGS_core_startupImagePathname "()"
+#define DECL_core_startupImagePathname ""
+#define DOCS_core_startupImagePathname "startupImagePathname"
+    T_sp core_startupImagePathname()
     {_G();
         Cons_sp min = cl::_sym_STARfeaturesSTAR->symbolValue().as<Cons_O>()->memberEq(kw::_sym_ecl_min);
         Cons_sp mps = cl::_sym_STARfeaturesSTAR->symbolValue().as<Cons_O>()->memberEq(kw::_sym_use_mps);
@@ -98,16 +98,24 @@ namespace core
         if ( mps.notnilp() ) strGc = "mps";
         stringstream ss;
         ss << strStage << "-" << strGc;
-        return Str_O::create(ss.str());
+        ss << ":image.bundle";
+        Str_sp spath = Str_O::create(ss.str());
+        Pathname_sp pn = cl_pathname(spath);
+        return pn;
     };
 
     
     
-#define ARGS_af_loadBundle "(name &optional init-fn-name)"
-#define DECL_af_loadBundle ""
-#define DOCS_af_loadBundle "loadBundle"
-    T_mv af_loadBundle(T_sp pathDesig, Str_sp oinitFnName)
+#define ARGS_core_loadBundle "(name &optional init-fn-name)"
+#define DECL_core_loadBundle ""
+#define DOCS_core_loadBundle "loadBundle"
+    T_mv core_loadBundle(T_sp pathDesig, Str_sp oinitFnName)
     {_G();
+        DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
+        /* Define the source file */
+        SourceFileInfo_sp sfi = af_sourceFileInfo(pathDesig);
+        scope.pushSpecialVariableAndSet(_sym_STARcurrentSourceFileInfoSTAR,sfi);
+
 	DynamicScopeManager dynScopeManager1(cl::_sym_STARreadtableSTAR,cl::_sym_STARreadtableSTAR->symbolValue());
 	DynamicScopeManager dynScopeManager2(cl::_sym_STARpackageSTAR,cl::_sym_STARpackageSTAR->symbolValue());
 
@@ -138,10 +146,6 @@ namespace core
 	{
 	    string error = dlerror();
 	    return(Values(_Nil<T_O>(),Str_O::create(error)));
-	}
-	if ( _sym_STARllvmFunctionNameHookSTAR->symbolValue().nilp() )
-	{
-	    SIMPLE_ERROR(BF("Cannot generate llvm function name for %s because *llvm-function-name-hook* is not defined") % name );
 	}
 	string mainName = "";
 	if ( oinitFnName.notnilp() )
@@ -821,7 +825,7 @@ namespace core
 	Defun(dladdr);
 	
 	SYMBOL_SC_(CorePkg,loadBundle);
-	Defun(loadBundle);
+	CoreDefun(loadBundle);
 
         CoreDefun(applysPerSecond);
 //        CoreDefun(globalFuncallCyclesPerSecond);
@@ -830,6 +834,7 @@ namespace core
         CoreDefun(callsByValuePerSecond);
         CoreDefun(callsByConstantReferencePerSecond);
         CoreDefun(callsByPointerPerSecond);
+        CoreDefun(startupImagePathname);
 
     }
 

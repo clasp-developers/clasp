@@ -227,7 +227,6 @@ namespace core
 		       _MpiSize(1),
 		       _Interactive(true),
 		       _EmbeddedInPython(false), 
-		       _dont_load_startup(false),
 		       _BootClassTableIsValid(true),
 		       _PathMax(MAXPATHLEN)
     {
@@ -1304,8 +1303,27 @@ namespace core
 
     void Lisp_O::parseCommandLineArguments(int argc,char* argv[], bool compileInputFile)
     {_G();
+        int endArg = argc;
+        for ( int i=0; i<argc; ++i ) {
+            if ( strcmp(argv[i],"--") == 0 ) {
+                endArg = i;
+            }
+        }
 
-	CommandLineOptions options(argc,argv);
+	//
+	// Pass whatever is left over to the Lisp environment
+	//
+	LOG(BF("Parsing what is left over into lisp environment arguments") );
+        gctools::Vec0<T_sp> vargs;
+        for ( int j(endArg+1); j<argc; ++j ) {
+            vargs.push_back(Str_O::create(argv[j]));
+        }
+	VectorObjects_sp args = VectorObjects_O::create(vargs);
+	LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args) );
+	SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineArgumentsSTAR);
+	_sym_STARcommandLineArgumentsSTAR->defparameter(args);
+
+	CommandLineOptions options(endArg,argv);
 	
 	Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
 	for ( int i=0; i<options._Features.size(); ++i )
@@ -1370,14 +1388,9 @@ namespace core
 //	this->_FunctionName = execName;
 	this->_RCFileName = "sys:" KERNEL_NAME ";init.lsp";
 
-	if ( options._IgnoreInitImage ) {
-	    SYMBOL_EXPORT_SC_(KeywordPkg,ignoreInitImage);
-	    Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
-	    features = Cons_O::create(kw::_sym_ignoreInitImage,features);
-	    cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-	}
-
-	if ( options._LoadFile != "" ) {
+        this->_IgnoreInitImage = options._DontLoadImage;
+	this->_IgnoreInitLsp = options._DontLoadInitLsp;
+	if ( options._HasLoadFile ) {
 	    _sym_STARcommandLineLoadSTAR->defparameter(Str_O::create(options._LoadFile));
 	    this->_Interactive = false;
 	} else {
@@ -1388,56 +1401,28 @@ namespace core
 		cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 	    }
 	}
-	this->_dont_load_startup = options._DontLoadInit;
 
-	if (options._GotRandomNumberSeed)
-	{
+	if (options._GotRandomNumberSeed) {
 	    seedRandomNumberGenerators(options._RandomNumberSeed);
-	} else
-	{
+	} else {
 	    seedRandomNumberGenerators(this->mpiRank());
 	}
-
-	//
-	// Pass whatever is left over to the Lisp environment
-	//
-	LOG(BF("Parsing what is left over into lisp environment arguments") );
-#if 0
-	Vector_sp args = Cons_O::createFromVectorStringsCommandLineArguments(options._Args,_lisp);
-	LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args) );
-	SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineArgumentsSTAR);
-	_sym_STARcommandLineArgumentsSTAR->defparameter(args);
-#endif
-#if 0
-	{
-	    //
-	    // Get the script from the command line or the input-file
-	    //
-	    if ( vm.count("exec") != 0 )
-	    {
-		string script = vm["exec"].as<string>();
-		this->_ScriptInFile = false;
-		this->_FileNameOrCode = script+"\n";
-	    } else 
-	    {
-		LOG(BF("Evaluating first argument as the script name") );
-		Symbol_sp sym = _sym_STARARGSSTAR;
-		LOG(BF("Binding symbol(%s) to: %s") % sym->fullName() % _rep_(this->_CommandLineArguments) );
-		sym->setf_symbolValue(this->_Roots._CommandLineArguments);
-//        this->globalEnvironment()->extend(sym,this->_CommandLineArguments);
-		this->_ScriptInFile = true;
-		T_sp cla = oCar(this->_Roots._CommandLineArguments);
-		this->_FileNameOrCode = "";
-		if ( cla.notnilp() ) this->_FileNameOrCode = oCar(this->_Roots._CommandLineArguments).as<Str_O>()->get();
-	    }
-	    po::notify(vm);
-	} catch (po::error& e)
-	  {
-	      std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-	      std::cerr << desc << std::endl;
-	  }
+	if ( options._HasImageFile ) {
+            SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineImageSTAR);
+	    _sym_STARcommandLineImageSTAR->defparameter(cl_pathname(Str_O::create(options._ImageFile)));
+        } else {
+            _sym_STARcommandLineImageSTAR->defparameter(core_startupImagePathname());
+        }
+        //
+        // Get the script from the command line or the input-file
+        //
+        if ( options._HasExecCode ) 
+        {
+            string script = options._ExecCode;
+            SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineExecSTAR);
+            _sym_STARcommandLineExecSTAR->defparameter(Str_O::create(script));
+        }
 	LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode );
-#endif
     }
 
 
@@ -3526,25 +3511,25 @@ extern "C"
 	//
 	// Compile and evaluate the .rc code to extend the environment in lisp
 	//
-	if ( !this->_dont_load_startup)
+	if ( !this->_IgnoreInitImage )
 	{
-	    LOG(BF("Initialization source file[%s]") % this->_RCFileName);
-	    if ( this->_RCFileName != "" )
+            Pathname_sp initPathname = _sym_STARcommandLineImageSTAR->symbolValue().as<Pathname_O>();
+            core_loadBundle(initPathname);
+	} else if ( !this->_IgnoreInitLsp ) {
+	    // Assume that if there is no program then
+	    // we want an interactive script
+	    //
 	    {_BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName );
 		Pathname_sp initPathname = cl_pathname(Str_O::create(this->_RCFileName));
 		af_load(initPathname);
 	    }
-	} else {
-	    // Assume that if there is no program then
-	    // we want an interactive script
-	    //
-//	    if ( this->_Interactive )
+        } else {
 	    {_BLOCK_TRACE("Interactive REPL");
 		//
 		// Implement a Read-Eval-Print-Loop
 		//
-		this->print(BF("BRIDGE-COMMON-LISP (copyright Christian E. Schafmeister 2013) - 1.0\n"));
-		this->print(BF("Built in top level shell\n"));
+		this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
+		this->print(BF("Low level repl\n"));
 		while ( 1 ) {
 		    this->readEvalPrintInteractive();
 		}
