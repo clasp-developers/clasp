@@ -13,37 +13,35 @@ endif
 
 
 ifeq ($(WHAT),)
-	WHAT = bundle debug release boehm mps-prep
+	WHAT = bundle debug release boehm mps
 endif
 
 all:
 	make boostbuildv2-build
 	make compile-commands
-	make clasp-build
-	make compile-sources
-	(cd src/main; make clasp-gc-interface)
+	make clasp-mps
+	make clasp-boehm
 
 
 testing:
 	which clang++
 
-clasp-build:
-	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) $(WHAT))
+
+clasp-mps:
+	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle release mps)
+	(cd src/main; make mps)
+
+clasp-boehm:
+	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle release boehm)
+	(cd src/main; make boehm)
+
 
 boostbuildv2-build:
 	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL))
 
-compile-sources:
-	(cd src/main; make)
-
 compile-commands:
 	(cd src/main; make compile-commands)
 
-clasp-mps:
-	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle release debug mps)
-
-clasp-mps-fresh:
-	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle release debug mps -a)
 
 clean:
 	(cd src/main; rm -rf bin bundle)
@@ -51,3 +49,7 @@ clean:
 	(cd src/gctools; rm -rf bin bundle)
 	(cd src/llvmo; rm -rf bin bundle)
 	(cd src/cffi; rm -rf bin bundle)
+	(cd src/clbind; rm -rf bin bundle)
+	(cd src/sockets; rm -rf bin bundle)
+	(cd src/serveEvent; rm -rf bin bundle)
+	(cd $(PREFIX); rm -rf *)
