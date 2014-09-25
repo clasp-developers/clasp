@@ -10,7 +10,7 @@ Libraries that clasp depends on can be obtained using the repository: externals-
 https://github.com/drmeister/externals-clasp.git<br>
 You can build externals-clasp or you can use the makefile as a guide configure your environment by hand.
 
-**INSTALLATION**
+**BUILDING CLASP**
 
 Clasp has been compiled on OS X 10.9.5 using Xcode 6.0.1
 
