@@ -140,6 +140,7 @@ typedef bool _Bool;
 #include "core/posixTime.h"
 #include "core/pointer.h"
 #include "core/objRef.h"
+#include "core/smallMap.h"
 #include "core/pathname.h"
 #include "core/strWithFillPtr.h"
 #include "core/weakHashTable.h"
