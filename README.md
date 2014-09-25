@@ -22,13 +22,11 @@ To build Clasp from within the top level directory do the following.
 
 2) Edit local.config and configure it for your system
 
-3) Type: _make_   to build mps and boehm versions of Clasp 
-
-or type: _make-boehm_   to make the boehm version of Clasp
-
+3) Type: _make_   to build mps and boehm versions of Clasp<br>
+or type: _make-boehm_   to make the boehm version of Clasp<br>
 or type: _make-mps_     to make the MPS version of Clasp
 
-4) Install the directory in $PREFIX/MacOS or $PREFIX/bin (from local.config) in your path<p>
+4) Install the directory in $PREFIX/MacOS or $PREFIX/bin (from local.config) in your path<br>
    then type: clasp_mps_o     to start the Lisp REPL of the MPS version of Clasp
    or type:   clasp_boehm_o   to start the Lisp REPL of the Boehm version of Clasp
 
@@ -37,13 +35,13 @@ or type: _make-mps_     to make the MPS version of Clasp
 
 If you want to install the libraries separately they are:<br>
 Contact me for more info - I can add more details to what is below.<br>
-Boost build v2<p>
-boost libraries ver 1.55<p>
-Boehm 7.2<p>
-LLVM/clang 3.5<p>
-ecl ver 12<p>
-gmp-5.0.5<p>
-expat-2.0.1<p>
-zlib-1.2.8<p>
-readline-6.2<p>
+Boost build v2<br>
+boost libraries ver 1.55<br>
+Boehm 7.2<br>
+LLVM/clang 3.5<br>
+ecl ver 12<br>
+gmp-5.0.5<br>
+expat-2.0.1<br>
+zlib-1.2.8<br>
+readline-6.2<br>
                                                                                                         
