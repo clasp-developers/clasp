@@ -35,8 +35,8 @@ or type: _make-mps_     to make the MPS version of Clasp
 5) Type: (print "Hello world")  in the REPL and away you go (more documentation to follow)
 
 
-If you want to install the libraries separately they are:<p>
-Contact me for more info - I can add more details to what is below.<p>
+If you want to install the libraries separately they are:<br>
+Contact me for more info - I can add more details to what is below.<br>
 Boost build v2<p>
 boost libraries ver 1.55<p>
 Boehm 7.2<p>
