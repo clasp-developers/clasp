@@ -6,7 +6,10 @@ export CLASP_APP_RESOURCES_DIR=$(HOME)/local/clasp/Contents/Resources
 
 all:
 	make boehm
-	make clasp-gc-interface
+	make mps
+
+
+#	make clasp-gc-interface
 
 
 
