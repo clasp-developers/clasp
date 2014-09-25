@@ -52,4 +52,6 @@ clean:
 	(cd src/clbind; rm -rf bin bundle)
 	(cd src/sockets; rm -rf bin bundle)
 	(cd src/serveEvent; rm -rf bin bundle)
+ifneq ($(PREFIX),)
 	(cd $(PREFIX); rm -rf *)
+endif
