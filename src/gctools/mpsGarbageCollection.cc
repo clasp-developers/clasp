@@ -352,7 +352,7 @@ namespace gctools {
     int initializeMemoryPoolSystem( MainFunctionType startupFn, int argc, char* argv[], bool mpiEnabled, int mpiRank, int mpiSize)
     {
         if ( Alignment() == 16 ) {
-            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
+//            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
         }
         global_sizeof_fwd = AlignUp(sizeof(Header_s)+sizeof(uintptr_t));
         global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
@@ -371,7 +371,7 @@ namespace gctools {
         double nurseryMortalityFraction = nurseryMortalityPercent/100.0;
         double generation1MortalityFraction = generation1MortalityPercent/100.0;
 
-        printf( "arenaSizeMb[%lu] spareCommitLimitMb[%lu] nurseryKb[%lu] nurseryMortalityFraction[%f] generation1Kb[%lu] generation1MortalityFraction[%f]\n", arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityFraction, generation1Kb, generation1MortalityFraction );
+//        printf( "arenaSizeMb[%lu] spareCommitLimitMb[%lu] nurseryKb[%lu] nurseryMortalityFraction[%f] generation1Kb[%lu] generation1MortalityFraction[%f]\n", arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityFraction, generation1Kb, generation1MortalityFraction );
 
 #define AMC_CHAIN_SIZE CHAIN_SIZE
         // Now the generation chain
