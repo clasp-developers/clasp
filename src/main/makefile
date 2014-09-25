@@ -1,5 +1,11 @@
-CLASP_BOEHM = clasp_boehm_o
-CLASP_MPS = clasp_mps_o
+ifneq($(PREFIX),)
+  CLASP_BOEHM = $PREFIX/clasp_boehm_o
+  CLASP_MPS = $PREFIX/clasp_mps_o
+else
+  CLASP_BOEHM = clasp_boehm_o
+  CLASP_MPS = clasp_mps_o
+endif
+
 export CLASP_APP_RESOURCES_DIR=$(HOME)/local/clasp/Contents/Resources
 
 
