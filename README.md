@@ -28,8 +28,15 @@ or type: _make-boehm_   to make the boehm version of Clasp
 
 or type: _make-mps_     to make the MPS version of Clasp
 
-If you want to install the libraries separately they are:
-Contact me for more info - I can add more details to what is below.
+4) Install the directory in $PREFIX/MacOS or $PREFIX/bin (from local.config) in your path<p>
+   then type: clasp_mps_o     to start the Lisp REPL of the MPS version of Clasp
+   or type:   clasp_boehm_o   to start the Lisp REPL of the Boehm version of Clasp
+
+5) Type: (print "Hello world")  in the REPL and away you go (more documentation to follow)
+
+
+If you want to install the libraries separately they are:<p>
+Contact me for more info - I can add more details to what is below.<p>
 Boost build v2<p>
 boost libraries ver 1.55<p>
 Boehm 7.2<p>
