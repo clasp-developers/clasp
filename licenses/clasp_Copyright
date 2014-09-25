@@ -1,0 +1,48 @@
+---- BEGINNING OF COPYRIGHT FOR THE CLASP CORE ENVIRONMENT ------------
+
+  Copyright (c) 2014, Christian E Schafmeister
+	      All Rights Reserved
+
+  CLASP is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Library General Public License as published
+  by the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version; see file 'Copying'.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Library General Public License for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+
+
+  PLEASE NOTE THAT:
+
+  This license covers all of the CLASP program except for the directories
+        src/lisp/kernel/lsp
+        src/lisp/kernel/clos
+        src/mps
+
+  Commercial uses of clasp using the Memory Pool System garbage collector
+  should refer to the mps_license.txt and consult with Ravenbrook Inc. 
+  about commercial licenses.
+
+
+  Look at the precise copyright of these extensions in the corresponding
+  files.
+
+  Report bugs, comments, suggestions to the ecl mailing list:
+  https://github.com/drmeister/clasp
+
+---- END OF COPYRIGHT FOR THE CLASP CORE ENVIRONMENT ------------------

@@ -10,7 +10,7 @@ Libraries that clasp depends on can be obtained using the repository: externals-
 https://github.com/drmeister/externals-clasp.git
 You can build externals-clasp or you can configure your environment by hand.
 
-INSTALLATION
+**INSTALLATION**
 
 Clasp has been compiled on OS X 10.9.5 using Xcode 6.0.1
 
@@ -22,11 +22,11 @@ To build Clasp from within the top level directory do the following.
 
 2) Edit local.config and configure it for your system
 
-3) Type: make   to build mps and boehm versions of Clasp 
+3) Type: _make_   to build mps and boehm versions of Clasp 
 
-or type: make-boehm   to make the boehm version of Clasp
+or type: _make-boehm_   to make the boehm version of Clasp
 
-or type: make-mps     to make the MPS version of Clasp
+or type: _make-mps_     to make the MPS version of Clasp
 
 If you want to install the libraries separately they are:
 Contact me for more info - I can add more details to what is below.
