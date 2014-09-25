@@ -8,7 +8,7 @@
 
 export PREFIX = $(HOME)/local/clasp
 export TARGET-OS = linux
-export PJOBS = 16
+export PJOBS = 4
 export EXTERNALS = $(HOME)/local/externals-clasp
 export LINK = static
 export ADDRESS-MODEL = 64
