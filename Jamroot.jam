@@ -1,7 +1,7 @@
 import path ;
 import os ;
 
-using clang ; # : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE)/bin/clang++  ; # CLASP_TOOLSET
+using clang : : [ os.environ CLASP_CLANG_PATH ] ; #   $(APPRES-EXTERNALS-RELEASE)/bin/clang++  ; # CLASP_TOOLSET
 
 # using gc ;
 import feature ;
