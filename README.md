@@ -13,18 +13,20 @@ You can build externals-clasp or you can configure your environment by hand.
 INSTALLATION
 
 Clasp has been compiled on OS X 10.9.5 using Xcode 6.0.1
+
 Clasp has been compiled on recent (post 2013) versions of Ubuntu Linux
 
 To build Clasp from within the top level directory do the following.
 
-1) Ensure that the llvm tools "llc" and the clasp exectuables (at the correct versions as in externals-clasp) are in your PATH
+1) Copy local.config.darwin or local.config.linux to local.config
 
-2) Copy local.config.template to local.config
+2) Edit local.config and configure it for your system
 
-3) Edit local.config and configure it for your system
+3) Type: make   to build mps and boehm versions of Clasp 
 
-4) make
+or type: make-boehm   to make the boehm version of Clasp
 
+or type: make-mps     to make the MPS version of Clasp
 
 If you want to install the libraries separately they are:
 Contact me for more info - I can add more details to what is below.
