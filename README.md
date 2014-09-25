@@ -18,19 +18,21 @@ Clasp has been compiled on recent (post 2013) versions of Ubuntu Linux
 
 To build Clasp from within the top level directory do the following.
 
-1) Copy local.config.darwin or local.config.linux to local.config
+1) Strongly consider downloading/building the externals-clasp repository - it contains all of the external libraries that LLVM depends on.
 
-2) Edit local.config and configure it for your system
+2) Copy local.config.darwin or local.config.linux to local.config
 
-3) Type:    _make_        to build mps and boehm versions of Clasp<br>
+3) Edit local.config and configure it for your system
+
+4) Type:    _make_        to build mps and boehm versions of Clasp<br>
    or type: _make-boehm_  to make the boehm version of Clasp<br>
    or type: _make-mps_    to make the MPS version of Clasp
 
-4) Install the directory in $PREFIX/MacOS or $PREFIX/bin (from local.config) in your path<br>
+5) Install the directory in $PREFIX/MacOS or $PREFIX/bin (from local.config) in your path<br>
    then type: clasp_mps_o     to start the Lisp REPL of the MPS version of Clasp<br>
    or type:   clasp_boehm_o   to start the Lisp REPL of the Boehm version of Clasp
 
-5) Type: (print "Hello world")  in the REPL and away you go (more documentation to follow)
+6) Type: (print "Hello world")  in the REPL and away you go (more documentation to follow)
 
 
 If you want to install the libraries separately they are:<br>
