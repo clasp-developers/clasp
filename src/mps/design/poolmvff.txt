@@ -1,0 +1,155 @@
+.. mode: -*- rst -*-
+
+MVFF pool class
+===============
+
+:Tag: design.mps.poolmvff
+:Author: Gavin Matthews
+:Date: 1998-09-09
+:Organization: Harlequin
+:Status: incomplete doc
+:Revision: $Id$
+:Index terms:
+   pair: MVFF pool class; design
+   single: pool class; MVFF design
+
+
+Introduction
+------------
+
+_`.intro`: This is the design of the MVFF (Manual Variable First-Fit)
+pool class. This pool implements a first (or last) fit policy for
+variable-sized manually-managed objects, with control over first/last,
+segment preference high/low, and slot fit low/high.
+
+The pool was created in a response to a belief that the ScriptWorks
+EPDL/EPDR's first fit policy is beneficial for some classes of client
+behaviour, but the performance of a linear free list was unacceptable.
+
+
+Overview
+--------
+
+_`.over`: This pool implements certain variants of the address-ordered
+first-fit policy. The implementation allows allocation across segment
+boundaries.
+
+_`.over.buffer`: Buffered allocation is also supported, but in that
+case, the buffer-filling policy is worst-fit. Buffered and unbuffered
+allocation can be used at the same time, but in that case, the first
+ap must be created before any allocations.
+
+_`.over.buffer.class`: The pool uses the simplest buffer class,
+``BufferClass``. This is appropriate since these buffers don't attach
+to segments, and hence don't constrain buffered regions to lie within
+segment boundaries.
+
+
+Methods
+-------
+
+_`.method.buffer`: The buffer methods implement a worst-fit fill
+strategy.
+
+
+Implementation
+--------------
+
+_`.impl.alloc_list`: The pool stores the address ranges that it has
+acquired from the arena in a CBS (see design.mps.cbs_).
+
+_`.impl.free-list`: The pool stores its free list in a CBS (see
+design.mps.cbs_), failing over in emergencies to a Freelist (see
+design.mps.freelist_) when the CBS cannot allocate new control
+structures. This is the reason for the alignment restriction above.
+
+.. _design.mps.cbs: cbs
+.. _design.mps.freelist: freelist
+
+
+Details
+-------
+
+_`.design.acquire-size`: When acquiring memory from the arena, we use
+``extendBy`` as the unit of allocation unless the object won't fit, in
+which case we use the object size (in both cases we align up to the
+arena alignment).
+
+_`.design.acquire-fail`: If allocating ``extendBy``, we try again with
+an aligned size just large enough for the object we're allocating.
+This is in response to request.mps.170186_.
+
+.. _request.mps.170186: https://info.ravenbrook.com/project/mps/import/2001-11-05/mmprevol/request/mps/170186
+
+
+Document History
+----------------
+
+- 1998-09-09 Gavin Matthews. Wrote a list of methods and function plus
+  some notes.
+
+- 1999-01-06 Pekka P. Pirinen. Added overview, removed bogus
+  ``ArenaEnter`` design, and described buffered allocation.
+
+- Modified for the "Sunset On Segments" redesign of segments. Buffered
+  allocation is no longer limited to segment boundaries.
+
+- 2002-06-07 RB_ Converted from MMInfo database design document.
+
+- 2013-05-10 RB_ Converted to reStructuredText. Updated to document
+  keyword arguments, replacing varargs.
+
+- 2013-06-04 GDR_ The CBS module no longer maintains its own emergency
+  list, so MVFF handles the fail-over from its CBS to a Freelist.
+
+- 2014-04-15 GDR_ The address ranges acquired from the arena are now
+  stored in a CBS; segments are no longer used for this purpose.
+
+- 2014-06-12 GDR_ Remove public interface documentation (this is in
+  the reference manual).
+
+.. _RB: http://www.ravenbrook.com/consultants/rb/
+.. _GDR: http://www.ravenbrook.com/consultants/gdr/
+
+
+Copyright and License
+---------------------
+
+Copyright © 2013-2014 Ravenbrook Limited. All rights reserved.
+<http://www.ravenbrook.com/>. This is an open source license. Contact
+Ravenbrook for commercial licensing options.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+#. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+#. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+#. Redistributions in any form must be accompanied by information on how
+   to obtain complete source code for this software and any
+   accompanying software that uses this software.  The source code must
+   either be included in the distribution or be available for no more than
+   the cost of distribution plus a nominal fee, and must be freely
+   redistributable under reasonable conditions.  For an executable file,
+   complete source code means the source code for all modules it contains.
+   It does not include source code for modules or files that typically
+   accompany the major components of the operating system on which the
+   executable file runs.
+
+**This software is provided by the copyright holders and contributors
+"as is" and any express or implied warranties, including, but not
+limited to, the implied warranties of merchantability, fitness for a
+particular purpose, or non-infringement, are disclaimed.  In no event
+shall the copyright holders and contributors be liable for any direct,
+indirect, incidental, special, exemplary, or consequential damages
+(including, but not limited to, procurement of substitute goods or
+services; loss of use, data, or profits; or business interruption)
+however caused and on any theory of liability, whether in contract,
+strict liability, or tort (including negligence or otherwise) arising in
+any way out of the use of this software, even if advised of the
+possibility of such damage.**
