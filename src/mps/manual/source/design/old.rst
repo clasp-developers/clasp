@@ -1,0 +1,69 @@
+.. _design-old:
+
+Old design
+**********
+
+.. warning::
+
+    Much of the documentation in this section is very old: some of it
+    dates back to the origin of the MPS in 1995. It has not been
+    brought up to date or checked for correctness, so it is mainly of
+    historical interest. As pieces of documentation are brought up to
+    date, they will be moved to the main :ref:`design` section.
+
+.. toctree::
+    :numbered:
+
+    alloc-frame
+    arena
+    arenavm
+    bt
+    buffer
+    check
+    class-interface
+    collection
+    diag
+    finalize
+    fix
+    io
+    lib
+    lock
+    locus
+    message
+    message-gc
+    object-debug
+    pool
+    poolamc
+    poolams
+    poolawl
+    poollo
+    poolmfs
+    poolmrg
+    poolmv
+    poolmvt
+    poolmvff
+    prot
+    protan
+    protli
+    protsu
+    protocol
+    pthreadext
+    reservoir
+    root
+    scan
+    seg
+    shield
+    sso1al
+    strategy
+    telemetry
+    tests
+    thread-manager
+    thread-safety
+    trace
+    version-library
+    version
+    vm
+    vman
+    vmo1
+    vmso
+    writef
