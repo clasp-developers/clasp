@@ -1,14 +1,27 @@
-#
-# PREFIX = path to where the clasp application should go
-# EXTERNALS = path to the externals-clasp directory if desired - standard include/lib directories are searched in addition to EXTERNALS
-# TARGET-OS = {linux | darwin}
-# PJOBS = {number of processors available to build}
-# LINK = {static | dynamic}
-# ADDRESS-MODEL = { 32 | 64 }
 
-export PREFIX = $(HOME)/local/clasp
+#
+# What system are you building on?   linux or darwin
+#
 export TARGET-OS = linux
-export PJOBS = 4
-export EXTERNALS = $(HOME)/local/externals-clasp
+
+#
+# This defines where clasp should put the built clasp application
+#
+export CLASP_BUILD_TARGET_DIR = $(HOME)/local/clasp
+
+#
+# This defines where externals-clasp put the built libraries
+# that clasp needs
+#
+export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/local/externals-clasp
+
+#
+# This defines how many processors you have available to build with
+# More processors = faster build
+#
+export PJOBS = 16
+
+
+# --- Dont change the stuff below ---
 export LINK = static
 export ADDRESS-MODEL = 64

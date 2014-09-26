@@ -1,12 +1,27 @@
 
-export PREFIX = $(HOME)/local/clasp
-export TARGET-OS = darwin
-export PJOBS = 4
-export LINK = static
-export EXTERNALS = $(HOME)/local/externals-clasp
+#
+# What system are you building on?   linux or darwin
+#
+export TARGET-OS = linux
 
 #
-# Use the builtin clang that came with Xcode6.0.1 because
-# the OS X header files don't appear to work with the TOT clang
+# This defines where clasp should put the built clasp application
 #
-export CLASP_CLANG_PATH = /usr/bin/clang   
+export CLASP_BUILD_TARGET_DIR = $(HOME)/local/clasp
+
+#
+# This defines where externals-clasp put the built libraries
+# that clasp needs
+#
+export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/local/externals-clasp
+
+#
+# This defines how many processors you have available to build with
+# More processors = faster build
+#
+export PJOBS = 16
+
+
+# --- Dont change the stuff below ---
+export LINK = static
+export ADDRESS-MODEL = 64
