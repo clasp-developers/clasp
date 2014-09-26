@@ -57,7 +57,6 @@ Boost build v2<br>
 boost libraries ver 1.55<br>
 Boehm 7.2<br>
 LLVM/clang 3.5<br>
-ecl ver 12<br>
 gmp-5.0.5<br>
 expat-2.0.1<br>
 zlib-1.2.8<br>
