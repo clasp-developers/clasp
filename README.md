@@ -36,7 +36,7 @@ As in externals-clasp the following configuration variables are important.
 |        | I use $HOME/local/clasp |
 | **EXTERNALS_BUILD_TARGET_DIR**  | This defines where Clasp build will find the externals-clasp libraries  |
 |   | I use $HOME/local/externals-clasp |
-|**TARGET-OS**                    |Currently either _linux_ or _darwin_|
+|**TARGET_OS**                    |Currently either _linux_ or _darwin_|
 |**PJOBS**                        |The number of processors you have available to build with|
 
 
