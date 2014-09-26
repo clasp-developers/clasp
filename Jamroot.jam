@@ -165,7 +165,7 @@ path-constant COMMON : src/common ;
 path-constant APPTOP : [ os.environ CLASP_BUILD_TARGET_DIR ] ;
 path-constant APPCONT : $(APPTOP)/Contents ;
 path-constant APPRES : $(APPCONT)/Resources ;
-path-constant APPRES-EXTERNALS : [ os.environ EXTERNALS ] ;
+path-constant APPRES-EXTERNALS : [ os.environ EXTERNALS_BUILD_TARGET_DIR ] ;
 path-constant APPRES-EXTERNALS-RELEASE : $(APPRES-EXTERNALS)/release ;
 path-constant APPRES-EXTERNALS-DEBUG : $(APPRES-EXTERNALS)/debug ;
 path-constant APPRES-EXTERNALS-DEBUG-LIB : $(APPRES-EXTERNALS-DEBUG)/lib ;
