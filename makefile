@@ -1,9 +1,9 @@
 include local.config
 
 BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
-BOOST_BUILD_V2_INSTALL = $(PREFIX)/Contents/boost_build_v2
+BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v2
 BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
-export CLASP_APP_RESOURCES_DIR = $(PREFIX)/Contents/Resources
+export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 
 ifneq ($(EXTERNALS),)
 	PATH := $(PATH):$(EXTERNALS)/release/bin:$(EXTERNALS)/common/bin
@@ -51,6 +51,6 @@ clean:
 	(cd src/clbind; rm -rf bin bundle)
 	(cd src/sockets; rm -rf bin bundle)
 	(cd src/serveEvent; rm -rf bin bundle)
-ifneq ($(PREFIX),)
-	(cd $(PREFIX); rm -rf *)
+ifneq ($(CLASP_BUILD_TARGET_DIR),)
+	(cd $(CLASP_BUILD_TARGET_DIR); rm -rf *)
 endif
