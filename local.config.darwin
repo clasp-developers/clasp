@@ -19,9 +19,12 @@ export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/local/externals-clasp
 # This defines how many processors you have available to build with
 # More processors = faster build
 #
-export PJOBS = 16
+export PJOBS = 6
 
 
 # --- Dont change the stuff below ---
 export LINK = static
 export ADDRESS-MODEL = 64
+export TOOLSET = darwin-clang
+# Use the built in clang for OS X 10.9.5 XCode 6.0.1v
+export CLASP_CLANG_PATH = /usr/bin/clang

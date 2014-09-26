@@ -25,13 +25,20 @@ all:
 testing:
 	which clang++
 
-
 clasp-mps:
+	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release mps)
+	(cd src/main; make mps)
+
+clasp-mps2:
 	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET_OS) link=$(LINK) bundle release mps)
 	(cd src/main; make mps)
 
-clasp-boehm:
+clasp-boehm2:
 	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET_OS) link=$(LINK) bundle release boehm)
+	(cd src/main; make boehm)
+
+clasp-boehm:
+	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
 
 
