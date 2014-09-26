@@ -27,7 +27,18 @@ To build Clasp from within the top level directory do the following.
 
 2) Copy local.config.darwin or local.config.linux to local.config
 
-3) Edit local.config and configure it for your system
+3) Edit local.config and configure it for your system<br>
+As in externals-clasp the following configuration variables are important.
+
+| Variable  |   Description 
+| ------------- | --------------|
+| **CLASP_BUILD_TARGET_DIR**  | This defines where make will put the Clasp application  |
+|        | I use $HOME/local/clasp |
+| **EXTERNALS_BUILD_TARGET_DIR**  | This defines where Clasp build will find the externals-clasp libraries  |
+|   | I use $HOME/local/externals-clasp |
+|**TARGET-OS**                    |Currently either _linux_ or _darwin_|
+|**PJOBS**                        |The number of processors you have available to build with|
+
 
 4) Type:    _make_        to build mps and boehm versions of Clasp<br>
    or type: _make-boehm_  to make the boehm version of Clasp<br>
