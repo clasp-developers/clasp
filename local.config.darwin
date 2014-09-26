@@ -2,7 +2,7 @@
 #
 # What system are you building on?   linux or darwin
 #
-export TARGET-OS = linux
+export TARGET_OS = linux
 
 #
 # This defines where clasp should put the built clasp application
