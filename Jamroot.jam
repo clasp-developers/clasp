@@ -19,6 +19,7 @@ project clasp : requirements
         <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
         <cxxflags>"-Wno-deprecated-register"
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
+	<target-os>linux:<linkflags>-lpthread
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
@@ -28,7 +29,6 @@ project clasp : requirements
         <variant>release:<cxxflags>"-O3 -gdwarf-4"
         <variant>release:<cflags>"-O3 -gdwarf-4"
         <linkflags>"-fvisibility=default"
-	<target-os>linux:<linkflags>-lpthread
 	<define>INCLUDED_FROM_CLASP
 	<include>$(APPRES-EXTERNALS-RELEASE-INCLUDE)
 	<define>EXPAT
