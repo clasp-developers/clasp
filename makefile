@@ -1,4 +1,3 @@
-
 include local.config
 
 BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
@@ -19,8 +18,8 @@ endif
 all:
 	make boostbuildv2-build
 	make compile-commands
-	make clasp-mps
 	make clasp-boehm
+	make clasp-mps
 
 
 testing:
