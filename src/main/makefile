@@ -1,4 +1,6 @@
-ifneq($(PREFIX),)
+
+
+ifneq ($(PREFIX),)
   CLASP_BOEHM = $PREFIX/clasp_boehm_o
   CLASP_MPS = $PREFIX/clasp_mps_o
 else
