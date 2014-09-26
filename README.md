@@ -1,5 +1,9 @@
 Clasp
 ===============
+
+<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">Please read regarding installing Clasp on Sept 25, 2014</a>
+
+
 Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.
 
 See http://drmeister.wordpress.com/2014/09/18/announcing-clasp/ for the announcement.
