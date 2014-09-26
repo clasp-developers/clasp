@@ -27,11 +27,11 @@ testing:
 
 
 clasp-mps:
-	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle release mps)
+	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET_OS) link=$(LINK) bundle release mps)
 	(cd src/main; make mps)
 
 clasp-boehm:
-	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET-OS) link=$(LINK) bundle release boehm)
+	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET_OS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
 
 
