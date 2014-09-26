@@ -29,6 +29,11 @@ project clasp : requirements
         <variant>release:<cxxflags>"-O3 -gdwarf-4"
         <variant>release:<cflags>"-O3 -gdwarf-4"
         <linkflags>"-fvisibility=default"
+<<<<<<< HEAD
+=======
+        <target-os>darwin:<linkflags>"-lc++"
+	<target-os>linux:<linkflags>-lpthread
+>>>>>>> b8e4b4394de734600732aca58f8c7510a26bd1c7
 	<define>INCLUDED_FROM_CLASP
 	<include>$(APPRES-EXTERNALS-RELEASE-INCLUDE)
 	<define>EXPAT
