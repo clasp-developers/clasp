@@ -27,13 +27,24 @@ To build Clasp from within the top level directory do the following.
 
 2) Copy local.config.darwin or local.config.linux to local.config
 
-3) Edit local.config and configure it for your system
+3) Edit local.config and configure it for your system<br>
+As in externals-clasp the following configuration variables are important.
+
+| Variable  |   Description 
+| ------------- | --------------|
+| **CLASP_BUILD_TARGET_DIR**  | This defines where make will put the Clasp application  |
+|        | I use $HOME/local/clasp |
+| **EXTERNALS_BUILD_TARGET_DIR**  | This defines where Clasp build will find the externals-clasp libraries  |
+|   | I use $HOME/local/externals-clasp |
+|**TARGET-OS**                    |Currently either _linux_ or _darwin_|
+|**PJOBS**                        |The number of processors you have available to build with|
+
 
 4) Type:    _make_        to build mps and boehm versions of Clasp<br>
    or type: _make-boehm_  to make the boehm version of Clasp<br>
    or type: _make-mps_    to make the MPS version of Clasp
 
-5) Install the directory in $PREFIX/MacOS or $PREFIX/bin (from local.config) in your path<br>
+5) Install the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) in your path<br>
    then type: clasp_mps_o     to start the Lisp REPL of the MPS version of Clasp<br>
    or type:   clasp_boehm_o   to start the Lisp REPL of the Boehm version of Clasp
 
@@ -46,7 +57,6 @@ Boost build v2<br>
 boost libraries ver 1.55<br>
 Boehm 7.2<br>
 LLVM/clang 3.5<br>
-ecl ver 12<br>
 gmp-5.0.5<br>
 expat-2.0.1<br>
 zlib-1.2.8<br>
