@@ -44,7 +44,7 @@ As in externals-clasp the following configuration variables are important.
    or type: _make-boehm_  to make the boehm version of Clasp<br>
    or type: _make-mps_    to make the MPS version of Clasp
 
-5) Install the directory in $PREFIX/MacOS or $PREFIX/bin (from local.config) in your path<br>
+5) Install the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) in your path<br>
    then type: clasp_mps_o     to start the Lisp REPL of the MPS version of Clasp<br>
    or type:   clasp_boehm_o   to start the Lisp REPL of the Boehm version of Clasp
 
