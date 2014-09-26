@@ -18,7 +18,7 @@ Clasp has been compiled on recent (post 2013) versions of Ubuntu Linux
 
 To build Clasp from within the top level directory do the following.
 
-1) Strongly consider downloading/building the <a href="github.com/drmeister/externals-clasp">externals-clasp repository</a><br>
+1) Strongly consider downloading/building the <a href="https://github.com/drmeister/externals-clasp">externals-clasp repository</a><br>
 - it contains all of the external libraries that LLVM depends on.
 
 2) Copy local.config.darwin or local.config.linux to local.config
