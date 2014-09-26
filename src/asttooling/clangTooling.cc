@@ -494,7 +494,7 @@ namespace asttooling {
             ,class_<clang::tooling::ClangTool>("ClangTool",no_default_constructor)
             .  def_constructor("newClangTool",constructor<const clang::tooling::CompilationDatabase&,llvm::ArrayRef<std::string> >())
             .  def("clearArgumentsAdjusters",&clang::tooling::ClangTool::clearArgumentsAdjusters)
-            .  def("setArgumentsAdjuster",&clang::tooling::ClangTool::setArgumentsAdjuster)
+//            .  def("addArgumentsAdjuster",&clang::tooling::ClangTool::addArgumentsAdjuster)
             .  def("appendArgumentsAdjuster",&clang::tooling::ClangTool::appendArgumentsAdjuster)
             .  def("clangToolRun",&clang::tooling::ClangTool::run)
 //            .  def("buildASTs",&clang::tooling::ClangTool::buildASTs,policies<outValue<1> >())
