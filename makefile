@@ -41,6 +41,11 @@ clasp-boehm:
 	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
 
+#toolset=clang-linux   
+#toolset=clang
+clasp-boehm-compute:
+	(cd src/main; $(BJAM) -j$(PJOBS) toolset=clang link=$(LINK) bundle release boehm)
+	(cd src/main; make boehm)
 
 boostbuildv2-build:
 	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL))
