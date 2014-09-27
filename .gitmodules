@@ -1,0 +1,4 @@
+[submodule "src/mps"]
+	path = src/mps
+	url = https://github.com/Ravenbrook/mps-temporary
+	branch = dev/2014-08-18/non-incremental
