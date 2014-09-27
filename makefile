@@ -54,7 +54,7 @@ clasp-boehm-compute:
 	(cd src/main; make boehm)
 
 boostbuildv2-build:
-	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL))
+	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL) --ignore-site-config)
 
 compile-commands:
 	(cd src/main; make compile-commands)
