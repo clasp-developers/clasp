@@ -1,8 +1,8 @@
 include local.config
 
-BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
-BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v2
-BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
+export BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
+export BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v2
+export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
 export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 
 ifneq ($(EXTERNALS),)
@@ -24,9 +24,9 @@ endif
 
 all:
 	make boostbuildv2-build
-	make compile-commands
 	make clasp-boehm
 	make clasp-mps
+	make compile-commands
 
 
 testing:
@@ -47,6 +47,12 @@ clasp-boehm2:
 clasp-boehm:
 	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
+
+shell:
+	@echo This shell sets up environment variables like BJAM 
+	@echo as they are defined when commands execute within the makefile
+	bash
+
 
 #toolset=clang-linux   
 clasp-boehm-compute:
