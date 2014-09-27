@@ -72,3 +72,8 @@ clean:
 ifneq ($(CLASP_BUILD_TARGET_DIR),)
 	(cd $(CLASP_BUILD_TARGET_DIR); rm -rf *)
 endif
+
+
+
+mps-submodule:
+	git submodule add -b dev/2014-08-18/non-incremental  https://github.com/Ravenbrook/mps-temporary ./src/mps

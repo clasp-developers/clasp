@@ -40,3 +40,8 @@ allTags at:
 
 cleanBins:
 	-find . -name 'bin' -exec rm -rf {} \;
+
+mps-submodule:
+	git submodule add -b dev/2014-08-18/non-incremental https://github.com/Ravenbrook/mps-temporary mps
+
+
