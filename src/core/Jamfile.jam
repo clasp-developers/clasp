@@ -184,7 +184,7 @@ h wrappers_methoids : wrappers_methoids.pmp ;
 h external_wrappers_indirect_methoids : external_wrappers_indirect_methoids.pmp ;
 h applyToActivationFrame : applyToActivationFrame.pmp ;
 
-h symbol_apply_inc : generate_symbol_apply_inc.lisp ;
+#h symbol_apply_inc : generate_symbol_apply_inc.lisp ;
 
 
 bundler.bundle $(dir) :
@@ -198,7 +198,9 @@ alias meta :     wrappers_functoids
                  wrappers_methoids
                  external_wrappers_indirect_methoids
                  applyToActivationFrame
-                 mi symbol_apply_inc  ;   # removed af 
+                 ;
+
+#                 mi symbol_apply_inc  ;   # removed af 
 
 
 
