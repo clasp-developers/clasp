@@ -1,8 +1,8 @@
 
 
-ifneq ($(PREFIX),)
-  CLASP_BOEHM = $PREFIX/clasp_boehm_o
-  CLASP_MPS = $PREFIX/clasp_mps_o
+ifneq ($(CLASP_BUILD_TARGET_DIR),)
+  CLASP_BOEHM = $(CLASP_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o
+  CLASP_MPS = $(CLASP_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_mps_o
 else
   CLASP_BOEHM = clasp_boehm_o
   CLASP_MPS = clasp_mps_o
