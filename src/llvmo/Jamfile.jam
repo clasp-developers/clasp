@@ -115,4 +115,4 @@ bundler.bundle $(dir) :
              <dependency>install_intrinsics_bitcode
              <implicit-dependency>/internals/clbind//mi
 	     <implicit-dependency>mi 
-	     <implicit-dependency>/internals/core//symbol_apply_inc ;
+	     <implicit-dependency>/internals/core//mi ;
