@@ -33,6 +33,7 @@ testing:
 	which clang++
 
 clasp-mps:
+	git submodules update --init  # ensure that the src/mps submodule is updated
 	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release mps)
 	(cd src/main; make mps)
 
@@ -77,3 +78,6 @@ endif
 
 mps-submodule:
 	git submodule add -b dev/2014-08-18/non-incremental  https://github.com/Ravenbrook/mps-temporary ./src/mps
+
+
+
