@@ -828,13 +828,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (let ((bitcode-files (compile-system :base :all :recompile t )))
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                            :lisp-bitcode-files bitcode-files
+                           :prologue-form '(progn
+                                            (bformat t "Starting Clasp 0.1... loading image... it takes a few seconds\n"))
                            :epilogue-form '(progn
-                                             (bformat t "Starting Clasp 0.1\n")
-                                             (cl:in-package :cl-user)
-                                             (require 'system)
-                                             (load-clasprc)
-                                             (process-command-line-load-eval-sequence)
-                                             (when (member :interactive *features*) (core:top-level)))))))
+                                            (cl:in-package :cl-user)
+                                            (require 'system)
+                                            (load-clasprc)
+                                            (process-command-line-load-eval-sequence)
+                                            (when (member :interactive *features*) (core:top-level)))))))
 
 
 (defun compile-clos () ;; &key (target-backend (default-target-backend)))
