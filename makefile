@@ -11,6 +11,13 @@ ifneq ($(EXTERNALS),)
 endif
 
 
+ifeq ($(TARGET_OS),linux)
+  export EXECUTABLE_DIR=bin
+endif
+ifeq ($(TARGET_OS),darwin)
+  export EXECUTABLE_DIR=MacOS
+endif
+
 ifeq ($(WHAT),)
 	WHAT = bundle debug release boehm mps
 endif
@@ -42,9 +49,8 @@ clasp-boehm:
 	(cd src/main; make boehm)
 
 #toolset=clang-linux   
-#toolset=clang
 clasp-boehm-compute:
-	(cd src/main; $(BJAM) -j$(PJOBS) toolset=clang link=$(LINK) bundle release boehm)
+	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
 
 boostbuildv2-build:
