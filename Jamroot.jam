@@ -17,9 +17,10 @@ project clasp : requirements
 	<define>INHERITED_FROM_SRC
         <warnings>on
         <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
+#        <target-os>linux:<cxxflags>"-v -resource-dir /home/meister/local/gcc-4.8.3"
         <cxxflags>"-Wno-deprecated-register"
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
-	<target-os>linux:<linkflags>-lpthread
+	<target-os>linux:<linkflags>"-lpthread -ldl"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
