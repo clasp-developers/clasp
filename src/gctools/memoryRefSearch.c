@@ -1,5 +1,5 @@
 
-
+#ifdef USE_MPS
 #include "mps/code/mpscams.h"  // AMS pool
 #include "mps/code/mpscamc.h" // AMC pool
 #include "mps/code/ring.h"
@@ -32,3 +32,5 @@ void memory_find_ref(Arena arena, Addr ref, void* searcher )
     }
 #endif
 }
+
+#endif
