@@ -19,7 +19,7 @@ export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/local/externals-clasp
 # This defines how many processors you have available to build with
 # More processors = faster build
 #
-export PJOBS = 16
+export PJOBS = 4
 
 
 # --- Dont change the stuff below ---
