@@ -35,7 +35,7 @@ testing:
 	which clang++
 
 clasp-mps:
-	git submodules update --init  # ensure that the src/mps submodule is updated
+	git submodule update --init  # ensure that the src/mps submodule is updated
 	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release mps)
 	(cd src/main; make mps)
 
