@@ -5,8 +5,10 @@ export BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v
 export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
 export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 
-ifneq ($(EXTERNALS),)
-	PATH := $(PATH):$(EXTERNALS)/release/bin:$(EXTERNALS)/common/bin
+export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \W]> ')
+
+ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
+	PATH := $(PATH):$(EXTERNALS_BUILD_TARGET_DIR)/release/bin:$(EXTERNALS_BUILD_TARGET_DIR)/common/bin
 	export PATH
 endif
 
