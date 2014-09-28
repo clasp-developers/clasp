@@ -18,7 +18,7 @@ You must build externals-clasp prior to building Clasp
 
 Clasp has been compiled on OS X 10.9.5 using Xcode 6.0.1
 
-Clasp has been compiled on recent (post 2013) versions of Ubuntu Linux
+Clasp has been compiled on recent (post 2013) versions of Ubuntu Linux; see the bottom for more info.
 
 To build Clasp from within the top level directory do the following.
 
@@ -51,12 +51,13 @@ As in externals-clasp the following configuration variables are important.
 6) Type: (print "Hello world")  in the REPL and away you go (more documentation to follow)
 
 
-If you want to install the libraries separately they are:<br>
-Contact me for more info - I can add more details to what is below.<br>
+If you want to install the libraries separately its more complicated because Clasp requires a particular version of LLVM/Clang3.6 which hasn't been officially released yet but is present in externals-clang.
+This should all become easier in a couple of months when LLVM/Clang3.6 is released.<br>
+These are the requirements as of Sep 28, 2014.<br>
+LLVM/clang 3.5 COMPILER (on some systems Clang3.6 will work but there can be problems with installed header files)<br>
 Boost build v2<br>
 boost libraries ver 1.55<br>
 Boehm 7.2<br>
-LLVM/clang 3.5<br>
 gmp-5.0.5<br>
 expat-2.0.1<br>
 zlib-1.2.8<br>
