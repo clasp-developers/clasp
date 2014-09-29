@@ -1,7 +1,7 @@
 Clasp
 ===============
 
-<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Sept 28, 2014 --  Please read regarding installing Clasp</a>
+<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Sept 29, 2014 --  Please read regarding installing Clasp</a>
 
 **If you have questions come ask them on IRC at freenode #clasp**
 
