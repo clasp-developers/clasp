@@ -55,8 +55,8 @@ As in externals-clasp the following configuration variables are important.
 
 4) Type:    _make_        to build mps and boehm versions of Clasp<br>
    or type: _make boostbuildv2-build_      followed by<br>
-     either _make-boehm_  to make the boehm version of Clasp<br>
-         or _make-mps_    to make the MPS version of Clasp
+     either _make clasp-boehm_  to make the boehm version of Clasp<br>
+         or _make clasp-mps_    to make the MPS version of Clasp
          
 If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order things are built in but I haven't tracked it down yet.
 
