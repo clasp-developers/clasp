@@ -74,7 +74,7 @@ LLVM/clang 3.5 COMPILER (on some systems Clang3.6 will work but there can be pro
 Boost build v2<br>
 boost libraries ver 1.55<br>
 Boehm 7.2<br>
-gmp-5.0.5<br>
+gmp-6.0.0<br>
 expat-2.0.1<br>
 zlib-1.2.8<br>
 readline-6.2<br>
