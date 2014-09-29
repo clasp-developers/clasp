@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "clasp_gmpxx.h"
+//#include "clasp_gmpxx.h"
 #include "boost/format.hpp"
 #include "common.h"
 #include "numbers.h"
@@ -45,7 +45,7 @@ THE SOFTWARE.
 #include "wrappers.h"
 
 
-namespace core 
+namespace core
 {
 
     SYMBOL_EXPORT_SC_(ClPkg,divisionByZero);
@@ -70,9 +70,9 @@ namespace core
 	    eval::funcall(cl::_sym_error,condition);
 	}
     }
-    
-    
-    
+
+
+
 #define ARGS_af_fixnum_number_of_bits "()"
 #define DECL_af_fixnum_number_of_bits ""
 #define DOCS_af_fixnum_number_of_bits "fixnum_number_of_bits"
@@ -86,7 +86,7 @@ namespace core
 
 
 
-    
+
     Real_sp brcl_max2(Real_sp x, Real_sp y)
     {_G();
 	Real_sp max = x;
@@ -122,8 +122,8 @@ namespace core
 	return min;
     }
 
-    
-    
+
+
 #define ARGS_cl_max "(max &rest nums)"
 #define DECL_cl_max ""
 #define DOCS_cl_max "max"
@@ -141,8 +141,8 @@ namespace core
 	return max;
     }
 
-    
-    
+
+
 #define ARGS_cl_logand "(&rest integers)"
 #define DECL_cl_logand ""
 #define DOCS_cl_logand "logand"
@@ -221,8 +221,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_logandc1 "(a b)"
 #define DECL_cl_logandc1 ""
 #define DOCS_cl_logandc1 "logandc1"
@@ -253,7 +253,7 @@ namespace core
     };
 
 
-    
+
 #define ARGS_cl_logorc1 "(a b)"
 #define DECL_cl_logorc1 ""
 #define DOCS_cl_logorc1 "logorc1"
@@ -327,9 +327,9 @@ namespace core
     };
 
 
-    
-    
-    
+
+
+
 
 
 
@@ -868,13 +868,13 @@ namespace core
 	SIMPLE_ERROR(BF("Add support to div numbers %s[%s] and %s[%s]")
 		     % _rep_(na) % na->_instanceClass()->classNameAsString()
 		     % _rep_(nb) % nb->_instanceClass()->classNameAsString() );
-    }	
+    }
 
 
 
 
-    
-    
+
+
 #define ARGS_af__PLUS_ "(&rest numbers)"
 #define DECL_af__PLUS_ ""
 #define DOCS_af__PLUS_ "See CLHS: +"
@@ -1028,7 +1028,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
 
 /* ----------------------------------------------------------------------
-   
+
    basic_compare
 
 */
@@ -1194,7 +1194,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 		if ( a == b ) return 0;
 		return 1;
 	    }
-#endif	    
+#endif
 	default:
 	    SIMPLE_ERROR(BF("Cannot compare two numbers of class %s and %s")
 			 % na->_instanceClass()->classNameAsString() % nb->_instanceClass()->classNameAsString());
@@ -1219,7 +1219,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	}
 	return _lisp->_true();
     };
-    
+
 
 
 
@@ -1684,8 +1684,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
 
 
-    
-    
+
+
 #define ARGS_af_nan "(num)"
 #define DECL_af_nan ""
 #define DOCS_af_nan "Return a number that is NAN"
@@ -1920,7 +1920,7 @@ namespace core {
 	return num;
     }
 
-    
+
 
     LongLongInt Fixnum_O::as_LongLongInt() const
     {
@@ -1973,7 +1973,7 @@ namespace core {
 	{
 //	    node.setObject(this->sharedThis<Fixnum_O>());
 	} else
-	{	
+	{
 	    IMPLEMENT_ME();
 	}
     }
@@ -2180,7 +2180,7 @@ namespace core {
 	return ShortFloat_O::create(fabs(this->_Value));
     }
 
-    
+
 
     Number_sp ShortFloat_O::copy() const
     {_OF();
@@ -2271,7 +2271,7 @@ namespace core {
 
 
     EXPOSE_CLASS(core,ShortFloat_O);
- 
+
 
     void ShortFloat_O::exposeCando(Lisp_sp lisp)
     {
@@ -2428,7 +2428,7 @@ namespace core {
 	return SingleFloat_O::create(fabs(this->_Value));
     }
 
-    
+
     string SingleFloat_O::__repr__() const
     {_G();
 	stringstream ss;
@@ -2442,7 +2442,7 @@ namespace core {
 
 
     EXPOSE_CLASS(core,SingleFloat_O);
- 
+
 
     void SingleFloat_O::exposeCando(Lisp_sp lisp)
     {
@@ -2539,7 +2539,7 @@ namespace core {
 	ss << this->_Value;
 	return ss.str();
     }
-	
+
 
     void DoubleFloat_O::setFromString(const string& str)
     {_G();
@@ -2604,7 +2604,7 @@ namespace core {
 
 
     EXPOSE_CLASS(core,DoubleFloat_O);
- 
+
 
     void DoubleFloat_O::exposeCando(Lisp_sp lisp)
     {
@@ -2920,7 +2920,7 @@ namespace core {
 	this->_numerator = Integer_O::create(parts[0]);
 	this->_denominator = Integer_O::create(parts[1]);
     }
-	
+
 
 
 
@@ -3040,7 +3040,7 @@ namespace core {
     {
 	class_<Complex_O>()
 	    ;
-	;	
+	;
     }
 
     void Complex_O::exposePython(Lisp_sp lisp)
@@ -3120,7 +3120,7 @@ Number_sp LongFloat_O::sqrt() const
     } else {
 	return LongFloat_O::create(sqrtl(this->_Value));
     }
-}    
+}
 #endif
 
 
@@ -3577,8 +3577,8 @@ Number_sp Complex_O::tanh() const
 
 
 
-    
-    
+
+
 #define ARGS_cl_tanh "(x)"
 #define DECL_cl_tanh ""
 #define DOCS_cl_tanh "tanh"
@@ -4002,8 +4002,8 @@ Number_sp brcl_atan1(Number_sp y)
 
 
 
-	
-	
+
+
 #define ARGS_af_atan "(x &optional y)"
 #define DECL_af_atan ""
 #define DOCS_af_atan "atan"
@@ -4046,7 +4046,7 @@ Number_sp brcl_atan1(Number_sp y)
 	    Real_sp aux = p;
 	    p = a; a = aux;
 	} else if (rel == 0) {
-	    /* if a == p, 
+	    /* if a == p,
 	     * log(sqrt(a^2+p^2)) = log(2a^2)/2
 	     */
 	    a = brcl_times(a, a).as<Real_O>();
@@ -4066,7 +4066,7 @@ Number_sp brcl_atan1(Number_sp y)
 
 
 
-    
+
     Number_sp Bignum_O::log1() const
     {
 	if ( this->minusp()) {
@@ -4178,7 +4178,7 @@ Number_sp brcl_atan1(Number_sp y)
     }
 
 
-   
+
     Number_sp SingleFloat_O::log1p() const
     {
 	float f = this->as_float();
@@ -4229,8 +4229,8 @@ Number_sp brcl_atan1(Number_sp y)
 
 
 
-    
-    
+
+
 #define ARGS_af_log1p "(arg)"
 #define DECL_af_log1p ""
 #define DOCS_af_log1p "log1p"
