@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "clasp_gmpxx.h"
+//#include "clasp_gmpxx.h"
 #include <ctype.h>
 #include "core/common.h"
 #include "core/environment.h"
@@ -169,12 +169,12 @@ namespace core
 	}
 	return cur;
     };
-	
-		
 
 
-    
-    
+
+
+
+
 #define ARGS_af_searchString "(str1 start1 end1 str2 start2 end2)"
 #define DECL_af_searchString ""
 #define DOCS_af_searchString "searchString"
@@ -190,9 +190,9 @@ namespace core
         return Fixnum_O::create(static_cast<int>(pos+start2->get()));
     };
 
-    
-    
-    
+
+
+
 #define ARGS_af_parseInteger "(string &key (start 0) end (radix 10) junk-allowed)"
 #define DECL_af_parseInteger ""
 #define DOCS_af_parseInteger "parseInteger"
@@ -219,7 +219,7 @@ namespace core
 		return(Values(_Nil<T_O>(),Fixnum_O::create(cur)));
 	    }
 	}
-	PARSE_ERROR(Str_O::create("Could not parse integer from ~S"), Cons_O::create(str));	
+	PARSE_ERROR(Str_O::create("Could not parse integer from ~S"), Cons_O::create(str));
 	UNREACHABLE();
     };
 
@@ -270,11 +270,11 @@ namespace core
 #if 0
 	stringstream ss;
 	ss << bn;
-	LOG(BF("stringToBignum string[%s] bignum[%s]") % str % ss.str() ); 
+	LOG(BF("stringToBignum string[%s] bignum[%s]") % str % ss.str() );
 #endif
 	return bn;
     }
-	
+
 
 
 
@@ -282,8 +282,8 @@ namespace core
 	return cl::_sym_BaseChar_O;
     }
 
-    
-    
+
+
 #define ARGS_af_make_string "(size &key initial-element (element-type 'character))"
 #define DECL_af_make_string ""
 #define DOCS_af_make_string "See CLHS: make_string"
@@ -301,8 +301,8 @@ namespace core
 	return(Values(ns));
     };
 
-    
-    
+
+
 #define ARGS_af_base_string_concatenate "(&rest args)"
 #define DECL_af_base_string_concatenate ""
 #define DOCS_af_base_string_concatenate "base_string_concatenate"
@@ -339,7 +339,7 @@ namespace core
 #define DOCS_af_string_EQ_ "string_EQ_"
 #define LOCK_af_string_EQ_ 1
 #define ARGS_af_string_EQ_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_EQ_ ""    
+#define DECL_af_string_EQ_ ""
     T_mv af_string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -352,7 +352,7 @@ namespace core
 #define DOCS_af_string_NE_ "string_NE_"
 #define LOCK_af_string_NE_ 1
 #define ARGS_af_string_NE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_NE_ ""    
+#define DECL_af_string_NE_ ""
     T_mv af_string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -365,7 +365,7 @@ namespace core
 #define DOCS_af_string_LT_ "string_LT_"
 #define LOCK_af_string_LT_ 1
 #define ARGS_af_string_LT_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_LT_ ""    
+#define DECL_af_string_LT_ ""
     T_mv af_string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -378,7 +378,7 @@ namespace core
 #define DOCS_af_string_GT_ "string_GT_"
 #define LOCK_af_string_GT_ 1
 #define ARGS_af_string_GT_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_GT_ ""    
+#define DECL_af_string_GT_ ""
     T_mv af_string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -391,7 +391,7 @@ namespace core
 #define DOCS_af_string_LE_ "string_LE_"
 #define LOCK_af_string_LE_ 1
 #define ARGS_af_string_LE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_LE_ ""    
+#define DECL_af_string_LE_ ""
     T_mv af_string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -404,7 +404,7 @@ namespace core
 #define DOCS_af_string_GE_ "string_GE_"
 #define LOCK_af_string_GE_ 1
 #define ARGS_af_string_GE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_GE_ ""    
+#define DECL_af_string_GE_ ""
     T_mv af_string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -420,7 +420,7 @@ namespace core
 #define DOCS_af_string_equal "string_equal"
 #define LOCK_af_string_equal 1
 #define ARGS_af_string_equal "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_equal ""    
+#define DECL_af_string_equal ""
     T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -433,7 +433,7 @@ namespace core
 #define DOCS_af_string_not_equal "string_not_equal"
 #define LOCK_af_string_not_equal 1
 #define ARGS_af_string_not_equal "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_not_equal ""    
+#define DECL_af_string_not_equal ""
     T_mv af_string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -445,7 +445,7 @@ namespace core
 #define DOCS_af_string_lessp "string_lessp"
 #define LOCK_af_string_lessp 1
 #define ARGS_af_string_lessp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_lessp ""    
+#define DECL_af_string_lessp ""
     T_mv af_string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -457,7 +457,7 @@ namespace core
 #define DOCS_af_string_greaterp "string_greaterp"
 #define LOCK_af_string_greaterp 1
 #define ARGS_af_string_greaterp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_greaterp ""    
+#define DECL_af_string_greaterp ""
     T_mv af_string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -469,7 +469,7 @@ namespace core
 #define DOCS_af_string_not_greaterp "string_not_greaterp"
 #define LOCK_af_string_not_greaterp 1
 #define ARGS_af_string_not_greaterp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_not_greaterp ""    
+#define DECL_af_string_not_greaterp ""
     T_mv af_string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -481,7 +481,7 @@ namespace core
 #define DOCS_af_string_not_lessp "string_not_lessp"
 #define LOCK_af_string_not_lessp 1
 #define ARGS_af_string_not_lessp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
-#define DECL_af_string_not_lessp ""    
+#define DECL_af_string_not_lessp ""
     T_mv af_string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
@@ -591,7 +591,7 @@ namespace core
     {_G();
 	if ( node->saving() )
 	{
-	    // Do nothing 
+	    // Do nothing
 	} else
 	{
 	    IMPLEMENT_ME();
@@ -885,7 +885,7 @@ namespace core
     RETURN_TRUE:
 	    return _lisp->_true();
     }
-	    
+
 
     /*! bounding index designator range from 0 to the end of each string */
     T_sp Str_O::string_NE_(Str_sp string2, int start1, int end1, int start2, int end2) const
@@ -910,7 +910,7 @@ namespace core
     RETURN_FALSE:
 	    return _Nil<T_O>();
     }
-	    
+
 
     /*! bounding index designator range from 0 to the end of each string */
     T_sp Str_O::string_LT_(Str_sp string2, int start1, int end1, int start2, int end2) const
@@ -938,7 +938,7 @@ namespace core
     RETURN_FALSE:
 	    return _Nil<T_O>();
     }
-	    
+
 
 
     /*! bounding index designator range from 0 to the end of each string */
@@ -966,7 +966,7 @@ namespace core
     RETURN_TRUE:
 	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
-	    
+
 
 
 
@@ -998,7 +998,7 @@ namespace core
     RETURN_TRUE:
 	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
-	    
+
 
 
     /*! bounding index designator range from 0 to the end of each string */
@@ -1028,7 +1028,7 @@ namespace core
     RETURN_TRUE:
 	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
-	    
+
 
 
 
@@ -1085,7 +1085,7 @@ namespace core
     RETURN_FALSE:
 	    return _Nil<T_O>();
     }
-	    
+
 
     /*! bounding index designator range from 0 to the end of each string */
     T_sp Str_O::string_lessp(Str_sp string2, int start1, int end1, int start2, int end2) const
@@ -1115,7 +1115,7 @@ namespace core
     RETURN_FALSE:
 	    return _Nil<T_O>();
     }
-	    
+
 
 
     /*! bounding index designator range from 0 to the end of each string */
@@ -1145,7 +1145,7 @@ namespace core
     RETURN_TRUE:
 	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
-	    
+
 
 
 
@@ -1179,7 +1179,7 @@ namespace core
     RETURN_TRUE:
 	    return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
-	    
+
 
 
     /*! bounding index designator range from 0 to the end of each string */
@@ -1211,7 +1211,7 @@ namespace core
     RETURN_TRUE:
 	return Fixnum_O::create((int)(cp1-this->_Contents.c_str()));
     }
-	    
+
 
     Str_O::~Str_O()
     {
@@ -1249,7 +1249,7 @@ namespace core
 	return this->_Contents[index];
     }
 
-    claspChar Str_O::scharSet(int index, claspChar c) 
+    claspChar Str_O::scharSet(int index, claspChar c)
     {
 	ASSERTF(index >= 0 && index < this->size(),BF("schar index out of bounds[%d] - must be less than %d") % index % this->size() );
         this->_Contents[index] = c;

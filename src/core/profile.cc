@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -36,7 +36,7 @@ THE SOFTWARE.
 #include <mach/mach.h>
 #endif
 
-#include "clasp_gmpxx.h"
+//#include "clasp_gmpxx.h"
 
 #include "core/foundation.h"
 #include "core/object.h"
@@ -88,9 +88,9 @@ namespace core
 
 
 
-    
-    
-    
+
+
+
 #define ARGS_af_clock_gettime_nanoseconds "()"
 #define DECL_af_clock_gettime_nanoseconds ""
 #define DOCS_af_clock_gettime_nanoseconds "clock_gettime_nanoseconds"
@@ -104,7 +104,7 @@ namespace core
 
 
 
-    
+
 #define ARGS_af_testProfileTimer "(delay)"
 #define DECL_af_testProfileTimer ""
 #define DOCS_af_testProfileTimer "testProfileTimer"
@@ -265,7 +265,7 @@ public:
 	return true;
     }
 };
-#endif		
+#endif
 
     void dump_profile()
     {

@@ -16,9 +16,9 @@ import generators ;
 
 feature.extend-subfeature toolset clang : platform : darwin ;
 
-toolset.inherit-generators clang-darwin 
-  <toolset>clang <toolset-clang:platform>darwin 
-  : gcc 
+toolset.inherit-generators clang-darwin
+  <toolset>clang <toolset-clang:platform>darwin
+  : gcc
   # Don't inherit PCH generators. They were not tested, and probably
   # don't work for this compiler.
   : gcc.mingw.link gcc.mingw.link.dll gcc.compile.c.pch gcc.compile.c++.pch
@@ -29,18 +29,18 @@ generators.override clang-darwin.prebuilt : builtin.prebuilt ;
 generators.override clang-darwin.searched-lib-generator : searched-lib-generator ;
 
 toolset.inherit-rules clang-darwin : gcc ;
-toolset.inherit-flags clang-darwin : gcc 
-        : <inlining>off <inlining>on <inlining>full <optimization>space 
+toolset.inherit-flags clang-darwin : gcc
+        : <inlining>off <inlining>on <inlining>full <optimization>space
           <warnings>off <warnings>all <warnings>on
           <architecture>x86/<address-model>32
           <architecture>x86/<address-model>64
         ;
-        
+
 if [ MATCH (--debug-configuration) : [ modules.peek : ARGV ] ]
 {
     .debug-configuration = true ;
 }
-                       
+
 # vectorization diagnostics
 feature vectorize : off on full ;
 
@@ -52,19 +52,19 @@ feature make-bundle : no yes : incidental ;
 #   compile and link options allow you to specify addition command line options for each version
 rule init ( version ? :  command * : options * )
 {
-    command = [ common.get-invocation-command clang-darwin : clang++ 
+    command = [ common.get-invocation-command clang-darwin : clang++
         : $(command) ] ;
 
     # Determine the version
     local command-string = $(command:J=" ") ;
     if $(command)
-    {    
+    {
         version ?= [ MATCH "^([0-9.]+)"
             : [ SHELL "$(command-string) -dumpversion" ] ] ;
     }
 
     local condition = [ common.check-init-parameters clang-darwin
-        : version $(version) ] ;    
+        : version $(version) ] ;
 
     common.handle-options clang-darwin : $(condition) : $(command) : $(options) ;
 
@@ -90,7 +90,7 @@ toolset.flags clang-darwin.compile OPTIONS <inlining>on   : -Wno-inline ;
 toolset.flags clang-darwin.compile OPTIONS <inlining>full : -Wno-inline ;
 
 toolset.flags clang-darwin.compile OPTIONS <warnings>off : -w ;
-toolset.flags clang-darwin.compile OPTIONS <warnings>on  : -Wall ;
+toolset.flags clang-darwin.compile OPTIONS <warnings>on  :  ;
 toolset.flags clang-darwin.compile OPTIONS <warnings>all : -Wall -pedantic ;
 toolset.flags clang-darwin.compile OPTIONS <warnings-as-errors>on : -Werror ;
 
@@ -124,11 +124,11 @@ rule archive ( targets * : sources * : properties * )
   # Always remove archive and start again. Here's rationale from
   # Andre Hentz:
   #
-  # I had a file, say a1.c, that was included into liba.a. 
-  # I moved a1.c to a2.c, updated my Jamfiles and rebuilt. 
-  # My program was crashing with absurd errors. 
-  # After some debugging I traced it back to the fact that a1.o was *still* 
-  # in liba.a 
+  # I had a file, say a1.c, that was included into liba.a.
+  # I moved a1.c to a2.c, updated my Jamfiles and rebuilt.
+  # My program was crashing with absurd errors.
+  # After some debugging I traced it back to the fact that a1.o was *still*
+  # in liba.a
   #
   # Rene Rivera:
   #
