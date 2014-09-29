@@ -1,10 +1,10 @@
 Clasp
 ===============
 
-<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">Please read regarding installing Clasp on Sept 25, 2014</a>
+<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Sept 28, 2014 --  Please read regarding installing Clasp</a>
 
 
-Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.
+Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.  
 
 See http://drmeister.wordpress.com/2014/09/18/announcing-clasp/ for the announcement.
 
@@ -16,9 +16,10 @@ You must build externals-clasp prior to building Clasp
 
 **BUILDING CLASP**
 
-Clasp has been compiled on OS X 10.9.5 using Xcode 6.0.1
-
-Clasp has been compiled on recent (post 2013) versions of Ubuntu Linux; see the bottom for more info.
+| Systems that Clasp is know to build on |
+| -------------------------------------- |
+| OS X 10.9.5 using Xcode 6.0.1          |
+| Linux systems with gcc 4.8              |
 
 To build Clasp from within the top level directory do the following.
 
