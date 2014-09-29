@@ -46,23 +46,11 @@ clasp-mps:
 	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release mps)
 	(cd src/main; make mps)
 
-clasp-mps2:
-	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET_OS) link=$(LINK) bundle release mps)
-	(cd src/main; make mps)
-
-clasp-boehm2:
-	(cd src/main; $(BJAM) -j$(PJOBS) target-os=$(TARGET_OS) link=$(LINK) bundle release boehm)
-	(cd src/main; make boehm)
 
 clasp-boehm:
 	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
 
-
-#toolset=clang-linux
-clasp-boehm-compute:
-	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release boehm)
-	(cd src/main; make boehm)
 
 boostbuildv2-build:
 	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL) --ignore-site-config)
