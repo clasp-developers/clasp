@@ -53,16 +53,16 @@ As in externals-clasp the following configuration variables are important.
 |**PJOBS**                        |The number of processors you have available to build with|
 
 
-4) Type:    _make_        to build mps and boehm versions of Clasp<br>
-   or type: _make boostbuildv2-build_      followed by<br>
-     either _make clasp-boehm_  to make the boehm version of Clasp<br>
-         or _make clasp-mps_    to make the MPS version of Clasp
+4) Type:    **make**        to build mps and boehm versions of Clasp<br>
+   or type: **make boostbuildv2-build**      followed by<br>
+     either **make clasp-boehm**  to make the boehm version of Clasp<br>
+         or **make clasp-mps**    to make the MPS version of Clasp
          
 If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order things are built in but I haven't tracked it down yet.
 
 5) Install the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) in your path<br>
-   then type: clasp_mps_o     to start the Lisp REPL of the MPS version of Clasp<br>
-   or type:   clasp_boehm_o   to start the Lisp REPL of the Boehm version of Clasp
+   then type: **clasp_mps_o**     to start the Lisp REPL of the MPS version of Clasp<br>
+   or type:   **clasp_boehm_o**   to start the Lisp REPL of the Boehm version of Clasp
 
 6) Type: (print "Hello world")  in the REPL and away you go (more documentation to follow)
 
