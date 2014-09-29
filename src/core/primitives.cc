@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -83,8 +83,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_argc "()"
 #define DECL_af_argc ""
 #define DOCS_af_argc "argc"
@@ -94,8 +94,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_argv "(idx)"
 #define DECL_af_argv ""
 #define DOCS_af_argv "argv"
@@ -103,8 +103,8 @@ namespace core
     {_G();
         return Str_O::create(_lisp->_Argv[idx]);
     };
-    
-    
+
+
 #define ARGS_cl_set "(sym value)"
 #define DECL_cl_set ""
 #define DOCS_cl_set "set"
@@ -117,8 +117,8 @@ namespace core
         return val;
     };
 
-    
-    
+
+
 #define ARGS_af_dumpAddressOf "(arg)"
 #define DECL_af_dumpAddressOf ""
 #define DOCS_af_dumpAddressOf "dumpAddressOf"
@@ -127,8 +127,8 @@ namespace core
         void* ptr = arg.pbase();
         printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr );
     };
-    
-    
+
+
 #define ARGS_af_incompleteNextHigherPowerOf_2 "(arg)"
 #define DECL_af_incompleteNextHigherPowerOf_2 ""
 #define DOCS_af_incompleteNextHigherPowerOf_2 "incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing"
@@ -138,8 +138,8 @@ namespace core
         return 1<< ((sizeof(f)*8) - __builtin_clz(f));
     };
 
-    
-    
+
+
 #define ARGS_af_testBasePointerConversion "(arg)"
 #define DECL_af_testBasePointerConversion ""
 #define DOCS_af_testBasePointerConversion "testBasePointerConversion"
@@ -155,8 +155,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_exceptionStackDump "()"
 #define DECL_af_exceptionStackDump ""
 #define DOCS_af_exceptionStackDump "exceptionStackDump"
@@ -186,8 +186,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_allRegisteredClassNames "()"
 #define DECL_af_allRegisteredClassNames ""
 #define DOCS_af_allRegisteredClassNames "allRegisteredClassNames"
@@ -199,8 +199,8 @@ namespace core
         }
         return vo;
     };
-    
-    
+
+
 #define ARGS_af_toTaggedFixnum "(arg)"
 #define DECL_af_toTaggedFixnum ""
 #define DOCS_af_toTaggedFixnum "toTaggedFixnum"
@@ -211,8 +211,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_fromTaggedFixnum "(val)"
 #define DECL_af_fromTaggedFixnum ""
 #define DOCS_af_fromTaggedFixnum "fromTaggedFixnum"
@@ -238,8 +238,8 @@ namespace core
     }
 
 
-    
-    
+
+
 #define ARGS_af_getEnv "(arg)"
 #define DECL_af_getEnv ""
 #define DOCS_af_getEnv "getEnv"
@@ -252,9 +252,9 @@ namespace core
 	return Str_O::create(sres);
     };
 
-    
 
-    
+
+
 #define ARGS_af_pointer "(arg)"
 #define DECL_af_pointer ""
 #define DOCS_af_pointer "Return the value of the pointer - used by conditions.lsp"
@@ -263,8 +263,8 @@ namespace core
 	return obj.intptr();
     };
 
-    
-    
+
+
 #define ARGS_af_isTrue "(arg)"
 #define DECL_af_isTrue ""
 #define DOCS_af_isTrue "isTrue"
@@ -274,8 +274,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_substitute "(arg)"
 #define DECL_af_substitute ""
 #define DOCS_af_substitute "substitute"
@@ -285,8 +285,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_unbound "()"
 #define DECL_af_unbound ""
 #define DOCS_af_unbound "Return the UNBOUND value"
@@ -295,8 +295,8 @@ namespace core
 	return _Unbound<T_O>();
     };
 
-    
-    
+
+
 #define ARGS_af_smartPointerDetails "()"
 #define DECL_af_smartPointerDetails ""
 #define DOCS_af_smartPointerDetails "smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer"
@@ -316,8 +316,8 @@ namespace core
 	return Values(ptrType,pxOffset,pxSize);
     }
 
-    
-    
+
+
 #define ARGS_af_values "(&rest args)"
 #define DECL_af_values ""
 #define DOCS_af_values "values"
@@ -331,8 +331,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_values_list "(list)"
 #define DECL_af_values_list ""
 #define DOCS_af_values_list "values_list"
@@ -358,15 +358,15 @@ namespace core
 	return _Nil<Symbol_O>();
     }
 
-    
-    
+
+
 #define ARGS_af_functionBlockName "(functionName)"
 #define DECL_af_functionBlockName ""
 #define DOCS_af_functionBlockName "See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx"
     Symbol_mv af_functionBlockName(T_sp functionName)
     {_G();
 	Symbol_sp output = functionBlockName(functionName);
-	if ( output.nilp() ) 
+	if ( output.nilp() )
 	{
 	    SIMPLE_ERROR(BF("Invalid function name: %s") % _rep_(functionName) );
 	}
@@ -376,8 +376,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_validFunctionNameP "(arg)"
 #define DECL_af_validFunctionNameP ""
 #define DOCS_af_validFunctionNameP "validFunctionNameP"
@@ -387,9 +387,9 @@ namespace core
 	if ( name.nilp() ) return(Values(_Nil<T_O>()));
 	return(Values(_lisp->_true()));
     };
-    
-    
-    
+
+
+
 
 #define ARGS_af_makeStringOutputStream "(&key (elementType 'character))"
 #define DECL_af_makeStringOutputStream ""
@@ -406,9 +406,9 @@ namespace core
 
 
 
-    
-    
-    
+
+
+
 #define ARGS_af_testMemoryError "()"
 #define DECL_af_testMemoryError ""
 #define DOCS_af_testMemoryError "testMemoryError"
@@ -421,8 +421,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_separatePairList "(listOfPairs)"
 #define DECL_af_separatePairList ""
 #define DOCS_af_separatePairList "Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element"
@@ -459,8 +459,8 @@ namespace core
 
 
 
-    
-#if DEPRECIATED_C_FUNCTION    
+
+#if DEPRECIATED_C_FUNCTION
 #define ARGS_af_c_function "(sym)"
 #define DECL_af_c_function ""
 #define DOCS_af_c_function "c_function"
@@ -469,8 +469,8 @@ namespace core
 	return(Values(_lisp->lookup_c_function_ptr(sym)));
     };
 #endif
-    
-    
+
+
 #define ARGS_af_macroFunction "(symbol &optional env)"
 #define DECL_af_macroFunction ""
 #define DOCS_af_macroFunction "See CLHS: macroFunction"
@@ -481,8 +481,8 @@ namespace core
 	if ( func->closure->macroP() ) return func;
 	return _Nil<T_O>();
     }
-    
-    
+
+
 #define ARGS_af_specialOperatorP "(symbol)"
 #define DECL_af_specialOperatorP ""
 #define DOCS_af_specialOperatorP "See CLHS: special-operator-p"
@@ -540,8 +540,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_ash "(integer count)"
 #define DECL_af_ash ""
 #define DOCS_af_ash "CLHS: ash"
@@ -560,8 +560,8 @@ namespace core
     };
 
 
-    
-    
+
+
 
 #define ARGS_af_break "(&optional fmt-control &rest args)"
 #define DECL_af_break ""
@@ -574,9 +574,9 @@ namespace core
 	dbg_hook("built in break");
     };
 
-    
-    
-    
+
+
+
 #define ARGS_af_gdb "(&optional msg)"
 #define DECL_af_gdb ""
 #define DOCS_af_gdb "hook to invoke gdb"
@@ -603,8 +603,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_constantp "(obj &optional env)"
 #define DECL_af_constantp ""
 #define DOCS_af_constantp "constantp"
@@ -625,8 +625,8 @@ namespace core
 	return false;
     };
 
-    
-    
+
+
 #define ARGS_af_identity "(arg)"
 #define DECL_af_identity ""
 #define DOCS_af_identity "identity"
@@ -654,7 +654,7 @@ namespace core
 
 
 #define ARGS_af_null "(obj)"
-#define DECL_af_null ""    
+#define DECL_af_null ""
 #define DOCS_af_null "null test - return true if the object is the empty list otherwise return nil"
 #define LOCK_af_null 1
     T_mv af_null(T_sp obj)
@@ -667,7 +667,7 @@ namespace core
 #define LOCK_af_classOf 1
 #define DOCS_af_classOf "return class of object - see CLHS"
 #define ARGS_af_classOf "(obj)"
-#define DECL_af_classOf ""    
+#define DECL_af_classOf ""
     Class_sp af_classOf(T_sp obj)
     {_G();
 	Class_sp result = lisp_instance_class(obj);
@@ -682,7 +682,7 @@ namespace core
 #define LOCK_af_STARfset 1
 #define DOCS_af_STARfset "fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not."
 #define ARGS_af_STARfset "(function-name fn &optional macro)"
-#define DECL_af_STARfset ""    
+#define DECL_af_STARfset ""
     T_sp af_STARfset(T_sp functionName, Function_sp functionObject, T_sp macro )
     {_G();
         ASSERTF(functionObject,BF("function is undefined\n"));
@@ -714,8 +714,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_fdefinition "(function-name)"
 #define DECL_af_fdefinition ""
 #define DOCS_af_fdefinition "fdefinition"
@@ -742,7 +742,7 @@ namespace core
 
 
 
-    
+
 #define ARGS_af_fboundp "(function-name)"
 #define DECL_af_fboundp ""
 #define DOCS_af_fboundp "fboundp"
@@ -773,7 +773,7 @@ namespace core
 
 
 
-    
+
 #define ARGS_af_fmakunbound "(function-name)"
 #define DECL_af_fmakunbound ""
 #define DOCS_af_fmakunbound "fmakunbound"
@@ -810,7 +810,7 @@ namespace core
 #define LOCK_af_read_delimited_list 1
 #define DOCS_af_read_delimited_list "read a list up to a specific character - see CLHS"
 #define ARGS_af_read_delimited_list "(char &optional input-stream-designator recursive-p)"
-#define DECL_af_read_delimited_list ""    
+#define DECL_af_read_delimited_list ""
     T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p)
     {_G();
 	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
@@ -836,7 +836,7 @@ namespace core
 #define LOCK_af_read 1
 #define DOCS_af_read "read an object from a stream - see CLHS"
 #define ARGS_af_read "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
-#define DECL_af_read ""    
+#define DECL_af_read ""
     T_sp af_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
 	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
@@ -846,7 +846,7 @@ namespace core
 
 #define DOCS_af_read_preserving_whitespace "read an object from a stream while preserving whitespace - see CLHS"
 #define ARGS_af_read_preserving_whitespace "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
-#define DECL_af_read_preserving_whitespace ""    
+#define DECL_af_read_preserving_whitespace ""
     T_sp af_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
 	DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR,_lisp->_true());
@@ -864,7 +864,7 @@ namespace core
 
 
 
-#if 0 
+#if 0
     GC_RESULT VectorStepper::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
     {
 #ifdef USE_MPS
@@ -906,7 +906,7 @@ namespace core
 		if (obj.as_or_nil<Cons_O>().nilp()) goto EMPTY;
                 ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(obj.as_or_nil<Cons_O>()));
                 this->_Steppers.push_back(cP);
-	    } else if ( obj.nilp() ) 
+	    } else if ( obj.nilp() )
 	    {
 		goto EMPTY;
 	    } else
@@ -1011,7 +1011,7 @@ namespace core
 #define LOCK_af_every 1
 #define DOCS_af_every "See CLHS for every"
 #define ARGS_af_every "(predicate &rest sequences)"
-#define DECL_af_every ""    
+#define DECL_af_every ""
     T_mv af_every(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
@@ -1023,7 +1023,7 @@ namespace core
 #define LOCK_af_some 1
 #define DOCS_af_some "See CLHS for some"
 #define ARGS_af_some "(predicate &rest sequences)"
-#define DECL_af_some ""    
+#define DECL_af_some ""
     T_mv af_some(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
@@ -1037,7 +1037,7 @@ namespace core
 #define LOCK_af_notany 1
 #define DOCS_af_notany "See CLHS for notany"
 #define ARGS_af_notany "(predicate &rest sequences)"
-#define DECL_af_notany ""    
+#define DECL_af_notany ""
     T_mv af_notany(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
@@ -1050,7 +1050,7 @@ namespace core
 #define LOCK_af_notevery 1
 #define DOCS_af_notevery "See CLHS for notevery"
 #define ARGS_af_notevery "(predicate &rest sequences)"
-#define DECL_af_notevery ""    
+#define DECL_af_notevery ""
     T_mv af_notevery(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
@@ -1069,7 +1069,7 @@ namespace core
 #define LOCK_cl_mapcar 1
 #define DOCS_cl_mapcar "See CLHS for mapcar"
 #define ARGS_cl_mapcar "(func_desig &rest lists)"
-#define DECL_cl_mapcar ""    
+#define DECL_cl_mapcar ""
     SYMBOL_EXPORT_SC_(ClPkg,mapcar);
     T_sp cl_mapcar(T_sp func_desig, Cons_sp lists)
     {_G();
@@ -1096,7 +1096,7 @@ namespace core
 #define LOCK_cl_mapc 1
 #define	DOCS_cl_mapc "See CLHS mapc"
 #define	ARGS_cl_mapc "(op &rest lists)"
-#define DECL_cl_mapc ""    
+#define DECL_cl_mapc ""
     T_sp cl_mapc(T_sp top, Cons_sp lists)
     {_G();
         Function_sp op = coerce::functionDesignator(top);
@@ -1134,7 +1134,7 @@ namespace core
 
 #define	DOCS_cl_maplist "See CLHS maplist"
 #define ARGS_cl_maplist "(func_desig &rest lists)"
-#define DECL_cl_maplist ""    
+#define DECL_cl_maplist ""
     T_sp cl_maplist(T_sp func_desig, Cons_sp lists)
     {_G();
 //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
@@ -1185,7 +1185,7 @@ namespace core
 #define LOCK_cl_mapl 1
 #define	DOCS_cl_mapl "See CLHS maplist"
 #define ARGS_cl_mapl "(op &rest lists)"
-#define DECL_cl_mapl ""    
+#define DECL_cl_mapl ""
     T_sp cl_mapl(T_sp top, Cons_sp lists)
     {_G();
         Function_sp op = coerce::functionDesignator(top);
@@ -1200,7 +1200,7 @@ namespace core
 #define LOCK_af_mapappend 1
 #define DOCS_af_mapappend "mapappend is like mapcar except that the results are appended together - see AMOP 280"
 #define ARGS_af_mapappend "(fun &rest cargs)"
-#define DECL_af_mapappend ""    
+#define DECL_af_mapappend ""
     T_mv af_mapappend(Function_sp fun, Cons_sp cargs)
     {_G();
 	IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
@@ -1214,8 +1214,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_mapcon "(op &rest lists)"
 #define DECL_cl_mapcon ""
 #define DOCS_cl_mapcon "mapcon"
@@ -1249,7 +1249,7 @@ namespace core
 
 
 #define ARGS_macro_backquote "(form env)"
-#define DECL_macro_backquote ""    
+#define DECL_macro_backquote ""
 #define DOCS_macro_backquote "backquote"
     T_mv macro_backquote(Cons_sp form, T_sp env)
     {_G();
@@ -1295,8 +1295,8 @@ T_sp af_append(Cons_sp lists)
 
 
 
-    
-    
+
+
 #define ARGS_af_coerce_to_function "(arg)"
 #define DECL_af_coerce_to_function ""
 #define DOCS_af_coerce_to_function "coerce_to_function"
@@ -1307,8 +1307,8 @@ T_sp af_append(Cons_sp lists)
 
 
 
-    
-    
+
+
 #define ARGS_af_sequence_start_end "(func sequence start end)"
 #define DECL_af_sequence_start_end ""
 #define DOCS_af_sequence_start_end "Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence."\
@@ -1374,20 +1374,20 @@ Stream_mv af_open(T_sp filespec_desig, Symbol_sp direction, T_sp element_type, T
 	    {
 		LOG(BF("supersede"));
 		// First write output to a temporary file and then rename it to the original on close
-		Pathname_sp temporaryFileSpec = af_makePathname(_Nil<T_O>(), // host 
-								false, // hostp 
-								_Nil<T_O>(), // device 
-								false, // devicep 
-								_Nil<T_O>(), // directory 
-								false, // directoryp 
-								_Nil<T_O>(), // name 
-								false, // namep 
+		Pathname_sp temporaryFileSpec = af_makePathname(_Nil<T_O>(), // host
+								false, // hostp
+								_Nil<T_O>(), // device
+								false, // devicep
+								_Nil<T_O>(), // directory
+								false, // directoryp
+								_Nil<T_O>(), // name
+								false, // namep
 								Str_O::create(filespec->_Type.as<Str_O>()->get()+"Temp"), //type
-								true, // typep 
-								_Nil<T_O>(), // version 
-								false, // versionp 
-								kw::_sym_local, // scase 
-								filespec // defaults 
+								true, // typep
+								_Nil<T_O>(), // version
+								false, // versionp
+								kw::_sym_local, // scase
+								filespec // defaults
 		    );
 		if ( external_format == kw::_sym_default)
 		{
