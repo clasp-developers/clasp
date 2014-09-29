@@ -20,6 +20,7 @@ Clasp uses a lot of leading edge C++11 language features and so it needs a minim
 | Systems that Clasp is known to build on |
 | -------------------------------------- |
 | OS X 10.9.5 using Xcode 6.0.1          |
+| Debian Jessie(Testing) - after apt-get ncurses-dev, libbz2-dev (for externals-clasp)|
 | Linux systems with gcc 4.8              |
 | Not linux systems with gcc 4.9!!! See note below|
 
