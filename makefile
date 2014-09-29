@@ -2,7 +2,7 @@ include local.config
 
 export BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
 export BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v2
-export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam
+export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam --ignore-site-config
 export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]> ')
@@ -32,7 +32,7 @@ all:
 
 
 shell:
-	@echo This shell sets up environment variables like BJAM 
+	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile
 	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
 	bash
@@ -59,7 +59,7 @@ clasp-boehm:
 	(cd src/main; make boehm)
 
 
-#toolset=clang-linux   
+#toolset=clang-linux
 clasp-boehm-compute:
 	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
@@ -88,6 +88,3 @@ endif
 
 mps-submodule:
 	git submodule add -b dev/2014-08-18/non-incremental  https://github.com/Ravenbrook/mps-temporary ./src/mps
-
-
-
