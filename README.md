@@ -46,7 +46,7 @@ As in externals-clasp the following configuration variables are important.
 
 
 4) Type:    _make_        to build mps and boehm versions of Clasp<br>
-   or type: _make boostbuildv2-build      followed by<br>
+   or type: _make boostbuildv2-build_      followed by<br>
      either _make-boehm_  to make the boehm version of Clasp<br>
          or _make-mps_    to make the MPS version of Clasp
 
