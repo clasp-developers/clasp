@@ -16,34 +16,40 @@ You must build externals-clasp prior to building Clasp
 
 **BUILDING CLASP**
 
-| Systems that Clasp is know to build on |
+Clasp uses a lot of leading edge C++11 language features and so it needs a minimum of Clang 3.5 or gcc 4.8 to compile externals-clasp.   externals-clasp installs a local version of Clang 3.6 that is used to compile Clasp.
+
+| Systems that Clasp is known to build on |
 | -------------------------------------- |
 | OS X 10.9.5 using Xcode 6.0.1          |
 | Linux systems with gcc 4.8              |
+| Not linux systems with gcc 4.9!!! See note below|
+
+Note: We ran into a problem installing on a Debian Wheezy system upgraded to gcc 4.9.  I'm doing some things to try and get around this.
 
 To build Clasp from within the top level directory do the following.
 
-1) Strongly consider downloading/building the <a href="https://github.com/drmeister/externals-clasp">externals-clasp repository</a><br>
-- it contains all of the external libraries that LLVM depends on.
+1) You need to down/build the <a href="https://github.com/drmeister/externals-clasp">externals-clasp repository</a><br>
+- it contains all of the external libraries that Clasp depends on and it downloads the specific version of LLVM 3.6 that Clasp needs.
 
-2) Copy local.config.darwin or local.config.linux to local.config
+2) Copy local.config.darwin or local.config.linux to local.config depending on your system
 
 3) Edit local.config and configure it for your system<br>
 As in externals-clasp the following configuration variables are important.
 
 | Variable  |   Description 
 | ------------- | --------------|
-| **CLASP_BUILD_TARGET_DIR**  | This defines where make will put the Clasp application  |
-|        | I use $HOME/local/clasp |
+| **CLASP_BUILD_TARGET_DIR**    | This defines where make will put the Clasp application  |
+|                               | I use $HOME/local/clasp |
 | **EXTERNALS_BUILD_TARGET_DIR**  | This defines where Clasp build will find the externals-clasp libraries  |
-|   | I use $HOME/local/externals-clasp |
+|                                 | I use $HOME/local/externals-clasp |
 |**TARGET_OS**                    |Currently either _linux_ or _darwin_|
 |**PJOBS**                        |The number of processors you have available to build with|
 
 
 4) Type:    _make_        to build mps and boehm versions of Clasp<br>
-   or type: _make-boehm_  to make the boehm version of Clasp<br>
-   or type: _make-mps_    to make the MPS version of Clasp
+   or type: _make boostbuildv2-build      followed by
+     either _make-boehm_  to make the boehm version of Clasp<br>
+         or _make-mps_    to make the MPS version of Clasp
 
 5) Install the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) in your path<br>
    then type: clasp_mps_o     to start the Lisp REPL of the MPS version of Clasp<br>
