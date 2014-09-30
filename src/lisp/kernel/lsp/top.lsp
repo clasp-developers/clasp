@@ -25,7 +25,7 @@
 (export '(*break-readtable* *break-on-warnings*
 	  *tpl-evalhook* *tpl-prompt-hook*))
 
-#+brcl(defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
+#+clasp(defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
 (defparameter *quit-tag* (cons nil nil))
 (defparameter *quit-tags* nil)
 (defparameter *break-level* 0)		; nesting level of error loops
@@ -60,7 +60,7 @@
 	~@
 	Compile files.  With no arguments, uses values from latest :cf~@
 	command.  File extensions are optional.~%")
-      ((:exit #-brcl :eof) quit :eval
+      ((:exit :eof) quit :eval
        ":exit or ^D	Exit Lisp"
        ":exit &eval &optional (status 0)		[Top level command]~@
 	~@
@@ -554,8 +554,8 @@ Use special code 0 to cancel this operation.")
   (let* ((*ihs-base* *ihs-top*)
 	 (*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
 	 (*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
-	 #-brcl (*frs-base* (or (sch-frs-base *frs-top* *ihs-base*) (1+ (frs-top))))
-	 #-brcl (*frs-top* (frs-top))
+	 #-clasp (*frs-base* (or (sch-frs-base *frs-top* *ihs-base*) (1+ (frs-top))))
+	 #-clasp (*frs-top* (frs-top))
 	 (*quit-tags* (cons *quit-tag* *quit-tags*))
 	 (*quit-tag* *quit-tags*)	; any unique new value
 	 (*tpl-level* (1+ *tpl-level*))
@@ -570,7 +570,7 @@ Use special code 0 to cancel this operation.")
              ;; would be interferring the behavior of code that relies
              ;; on conditions for communication (for instance our compiler)
              ;; and which expect nothing to happen by default.
-             (handler-bind 
+             (handler-bind
                  ((serious-condition
 		   (lambda (condition)
 		     (cond ((< break-level 1)
@@ -595,8 +595,8 @@ Use special code 0 to cancel this operation.")
                      (setf quiet t))
                  (setq - (locally (declare (notinline tpl-read))
                            (tpl-prompt)
-                           #-brcl(tpl-read)
-                           #+brcl(let ((expr (tpl-read)))
+                           #-clasp(tpl-read)
+                           #+clasp(let ((expr (tpl-read)))
                                    (when sys:*echo-repl-tpl-read*
                                      (format t "#|REPL echo|# ~s~%" expr))
                                    expr)
@@ -610,7 +610,7 @@ Use special code 0 to cancel this operation.")
 	   (when
 	       (catch *quit-tag*
 		 (if (zerop break-level)
-		   (with-simple-restart 
+		   (with-simple-restart
                     (restart-toplevel "Go back to Top-Level REPL.")
                     (rep))
 		   (with-simple-restart
@@ -668,9 +668,9 @@ Use special code 0 to cancel this operation.")
 (defparameter *debug-tpl-commands* nil)
 
 (defun harden-command (cmd-form)
-  `(block 
+  `(block
     tpl-command
-    (handler-bind 
+    (handler-bind
      ((error (lambda (condition)
 	       (unless *debug-tpl-commands*
 		 (format t "~&Command aborted.~%Received condition of type: ~A~%~A"
@@ -839,7 +839,7 @@ Use special code 0 to cancel this operation.")
     (nreverse output)))
 
 (defun lambda-list-from-annotations (name)
-  (declare (si::c-local)) 
+  (declare (si::c-local))
   (let ((args (ext:get-annotation name :lambda-list nil)))
     (values args (and args t))))
 
@@ -876,7 +876,7 @@ Use special code 0 to cancel this operation.")
     (t
      (lambda-list-from-annotations (compiled-function-name function)))))
 
-#-(or ecl-min brcl)
+#-(or ecl-min clasp)
 (defun decode-env-elt (env ndx)
   (ffi:c-inline (env ndx) (:object :fixnum) :object  ;; I'm turning off this c-inline because I don't know what it does meister 2013
                 "
@@ -937,7 +937,7 @@ Use special code 0 to cancel this operation.")
     (if (vectorp env)
       #+ecl-min
       nil
-      #-(or ecl-min brcl) ;; I'm turning off this c-inline for brcl because I don't know what it does meister 2013
+      #-(or ecl-min clasp) ;; I'm turning off this c-inline for clasp because I don't know what it does meister 2013
       (let* ((next (decode-ihs-env
                     (ffi:c-inline (env) (:object) :object
                                   "(#0)->vector.self.t[0]" :one-liner t))))
@@ -1029,8 +1029,8 @@ Use special code 0 to cancel this operation.")
 	(*print-pretty* t)
 	(*print-escape* nil)
 	(*print-readably* nil))
-    #+brcl(core:print-current-ihs-frame-environment)
-    #-brcl(multiple-value-bind (local-variables special-variables functions blocks restarts)
+    #+clasp(core:print-current-ihs-frame-environment)
+    #-clasp(multiple-value-bind (local-variables special-variables functions blocks restarts)
         (ihs-environment *ihs-current*)
       (format t "~:[~;Local functions: ~:*~{~s~^, ~}.~%~]" functions)
       (format t "~:[~;Block names: ~:*~{~s~^, ~}.~%~]" blocks)
@@ -1373,7 +1373,7 @@ package."
 	(restart-commands (list "Restart commands")))
     (when display
       (format display (if restarts
-			  "~&Available restarts:~2%" 
+			  "~&Available restarts:~2%"
 			  "~&No restarts available.~%")))
     (loop for restart in restarts
        and i from 1
@@ -1406,7 +1406,7 @@ package."
 
 (defun check-default-debugger-runaway ()
   (when (< *default-debugger-maximum-depth* *break-level*)
-    #+threads 
+    #+threads
     (progn
       (format *error-output*
 	      "~&Excessive debugger depth! Probable infinite recursion!~%~
@@ -1415,7 +1415,7 @@ package."
 	;; we tried to be polite but it does not seem to work.
 	(quit -1))
       (exit-process))
-    #-threads 
+    #-threads
     (progn
       (format *error-output*
 	    "~&Excessive debugger depth! Probable infinite recursion!~%~
@@ -1442,7 +1442,7 @@ package."
   (loop for process in *console-waiting-list*
      for rank from 1
      do (format t (if (eq process mp:*current-process*)
-                      "   >~D: ~A~%" 
+                      "   >~D: ~A~%"
                       "    ~D: ~A~%")
                 rank process))
   (terpri)
@@ -1482,7 +1482,7 @@ package."
 	 ;; an extended set of commands which includes invoking the associated
 	 ;; restarts.
 	 (let* ((restart-commands (compute-restart-commands condition :display t))
-		(debug-commands 
+		(debug-commands
 		 ;;(adjoin restart-commands (adjoin break-commands *tpl-commands*))
 		 (update-debug-commands restart-commands)
 		  ))
@@ -1501,7 +1501,7 @@ package."
     (when old-hook
       (let ((*debugger-hook* nil))
         (funcall old-hook condition old-hook))))
-  (locally 
+  (locally
     (declare (notinline default-debugger))
     (if (<= 0 *tpl-level*) ;; Do we have a top-level REPL above us?
         (default-debugger condition)
