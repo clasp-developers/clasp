@@ -43,12 +43,12 @@ testing:
 
 clasp-mps:
 	git submodule update --init  # ensure that the src/mps submodule is updated
-	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release mps)
+	(cd src/main; $(BJAM) -j$(PJOBS) cxxflags=$(CXXFLAGS) link=$(LINK) bundle release mps)
 	(cd src/main; make mps)
 
 
 clasp-boehm:
-	(cd src/main; $(BJAM) -j$(PJOBS) link=$(LINK) bundle release boehm)
+	(cd src/main; $(BJAM) -j$(PJOBS) cxxflags=$(CXXFLAGS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
 
 

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -147,7 +147,7 @@ extern "C" void add_history(char* line);
 #endif
 
 
-namespace core 
+namespace core
 {
 
     const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
@@ -222,11 +222,11 @@ namespace core
                        _Bundle(NULL),
 		       _DebugStream(NULL),
 		       _SingleStepLevel(UndefinedUnsignedInt),
-		       _MpiEnabled(false), 
+		       _MpiEnabled(false),
 		       _MpiRank(0),
 		       _MpiSize(1),
 		       _Interactive(true),
-		       _EmbeddedInPython(false), 
+		       _EmbeddedInPython(false),
 		       _BootClassTableIsValid(true),
 		       _PathMax(MAXPATHLEN)
     {
@@ -254,14 +254,14 @@ namespace core
 	this->_Roots._TrueObject.reset();
 
 //    this->_ClassesByClassSymbol.clear();
-	if ( this->_Bundle != NULL )    
+	if ( this->_Bundle != NULL )
 	{
-	    delete this->_Bundle;    
+	    delete this->_Bundle;
 	}
-	if ( this->_DebugStream!=NULL )    
-	{ 
+	if ( this->_DebugStream!=NULL )
+	{
 	    this->_DebugStream->endNode(DEBUG_TOPLEVEL);
-	    delete this->_DebugStream; 
+	    delete this->_DebugStream;
 	}
     }
 
@@ -287,7 +287,7 @@ namespace core
         return _Nil<Cons_O>();
     }
 #endif
- 
+
 
 
     void print_startup_info()
@@ -296,7 +296,7 @@ namespace core
 	printf("%s:%d BRIDGE-COMMON-LISP startup\n", __FILE__, __LINE__ );
 #endif
     };
-	
+
 
 
 
@@ -416,7 +416,7 @@ namespace core
 	this->_Mode = FLAG_EXECUTE;
 
 	::_lisp = this; // this->sharedThis<Lisp_O>();
-	
+
 //	initializeProfiler(this->profiler(),_lisp);
 	this->_TraceLevel = 0;
 	this->_DebuggerLevel = 0;
@@ -427,7 +427,7 @@ namespace core
 	this->_EnvironmentInitialized = false;
 	this->_EnvironmentId = 0;
 	this->_Roots._CommandLineArguments.reset();
-	
+
 	this->_Bundle = bundle;
 
 
@@ -436,7 +436,7 @@ namespace core
 
 #ifdef DEBUG_CL_SYMBOLS
         initializeAllClSymbols();
-#endif            
+#endif
 
 
 	{ _BLOCK_TRACE("Initialize core classes");
@@ -497,7 +497,7 @@ namespace core
 	    initialize_backquote(_lisp);
 #ifdef DEBUG_CL_SYMBOLS
         initializeAllClSymbolsFunctions();
-#endif            
+#endif
         initialize_sequence();
         initialize_list();
 	    initialize_predicates();
@@ -599,7 +599,7 @@ namespace core
 	coreExposerPtr->expose(_lisp,Exposer::candoFunctions);
 	coreExposerPtr->expose(_lisp,Exposer::candoGlobals);
 	{_BLOCK_TRACE("Call global initialization callbacks");
-	    for ( vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin(); 
+	    for ( vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin();
 		  ic!=this->_GlobalInitializationCallbacks.end(); ic++ )
 	    {
 		(*ic)(_lisp);
@@ -764,7 +764,7 @@ namespace core
             } );
 	return names;
     }
-	
+
 
     /*! How is this going to work with moving garbage collection?
      We return a reference to the LoadTimeValues_sp smart_ptr in the LoadtimeValueArrays hash-table
@@ -927,7 +927,7 @@ namespace core
 
 
 	{_BLOCK_TRACE("Call global initialization callbacks");
-	    for ( vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin()+firstNewGlobalCallback; 
+	    for ( vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin()+firstNewGlobalCallback;
 		  ic!=this->_GlobalInitializationCallbacks.end(); ic++ )
 	    {
 		(*ic)(_lisp);
@@ -1324,7 +1324,7 @@ namespace core
 	_sym_STARcommandLineArgumentsSTAR->defparameter(args);
 
 	CommandLineOptions options(endArg,argv);
-	
+
 	Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
 	for ( int i=0; i<options._Features.size(); ++i )
 	{
@@ -1341,7 +1341,7 @@ namespace core
         features = Cons_O::create(_lisp->internKeyword("UNIX"),features);
         features = Cons_O::create(_lisp->internKeyword("OS-UNIX"),features);
         features = Cons_O::create(_lisp->internKeyword("LINUX"),features);
-#endif        
+#endif
 #ifdef VARARGS
 	features = Cons_O::create(_lisp->internKeyword("VARARGS"),features);
 #endif
@@ -1372,7 +1372,7 @@ namespace core
         features = Cons_O::create(_lisp->internKeyword("USE-TAGGED-PTR-P0"), features);
 #endif // USE_TAGGED_PTR_P0
 #ifdef USE_AMC_POOL
-        // Informs that the Automatic-Mostly-Copying Pool is being used 
+        // Informs that the Automatic-Mostly-Copying Pool is being used
         printf("%s:%d  USE-AMC-POOL is turned on\n", __FILE__, __LINE__ );
         features = Cons_O::create(_lisp->internKeyword("USE-AMC-POOL"), features);
 #endif
@@ -1384,13 +1384,13 @@ namespace core
 	_sym_STARprintVersionOnStartupSTAR->defparameter(_lisp->_boolean(options._Version));
 	SYMBOL_EXPORT_SC_(CorePkg,STARsilentStartupSTAR);
 	_sym_STARsilentStartupSTAR->defparameter(_lisp->_boolean(options._SilentStartup));
-    
+
 //	this->_FunctionName = execName;
 	this->_RCFileName = "sys:" KERNEL_NAME ";init.lsp";
 
         this->_IgnoreInitImage = options._DontLoadImage;
 	this->_IgnoreInitLsp = options._DontLoadInitLsp;
-        
+
         SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineLoadEvalSequenceSTAR);
         Cons_sp loadEvals = _Nil<Cons_O>();
         for ( auto it : options._LoadEvalList ) {
@@ -1403,7 +1403,7 @@ namespace core
             loadEvals = Cons_O::create(one,loadEvals);
         }
         _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl_nreverse(loadEvals));
-                
+
         this->_Interactive = options._Interactive;
         if ( this->_Interactive ) {
             Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
@@ -1506,8 +1506,8 @@ namespace core
 		}
 	    }
 	    catch (Condition& err)
-	    {	
-		// Catch condition from reader means just ask for another s-exp if 
+	    {
+		// Catch condition from reader means just ask for another s-exp if
 		// interactive and terminate if batch
 		this->print(BF("%s:%d Caught Condition from reader") % __FILE__ % __LINE__ );
 		exit(1);
@@ -1544,8 +1544,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_lowLevelRepl "()"
 #define DECL_af_lowLevelRepl ""
 #define DOCS_af_lowLevelRepl "lowLevelRepl - this is a built in repl for when the top-level repl isn't available"
@@ -1576,7 +1576,7 @@ namespace core
 
 
 
-    
+
 #define ARGS_af_stackUsed "()"
 #define DECL_af_stackUsed ""
 #define DOCS_af_stackUsed "stackUsed"
@@ -1602,7 +1602,7 @@ namespace core
         }
     };
 
-    
+
 #define ARGS_af_stackSizeWarning "(arg)"
 #define DECL_af_stackSizeWarning ""
 #define DOCS_af_stackSizeWarning "stackSizeWarning"
@@ -1619,8 +1619,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_stackMonitor "()"
 #define DECL_af_stackMonitor ""
 #define DOCS_af_stackMonitor "monitor stack for problems - warn if getting too large"
@@ -1651,8 +1651,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_setupStackMonitor "(&key warn-size sample-size)"
 #define DECL_af_setupStackMonitor ""
 #define DOCS_af_setupStackMonitor "setupStackMonitor"
@@ -1676,8 +1676,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_exit "(&optional (exit-value 0))"
 #define DECL_af_exit ""
 #define DOCS_af_exit "exit"
@@ -1696,8 +1696,8 @@ namespace core
 
 
 
-    
-    
+
+
 
 
 
@@ -1938,8 +1938,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_findClass "(symbol &optional (errorp t) environment)"
 #define DECL_af_findClass ""
 #define DOCS_af_findClass "findClass"
@@ -2443,9 +2443,9 @@ namespace core
     };
 
 
-    
-    
-    
+
+
+
 #define ARGS_af_sort "(sequence predicate)"
 #define DECL_af_sort ""
 #define DOCS_af_sort "Like CLHS: sort but does not support key"
@@ -2475,9 +2475,9 @@ namespace core
   Return the current file name and line number in a two element Cons.
   __END_DOC
 */
-    
-    
-    
+
+
+
 #define ARGS_af_sourceFileName "()"
 #define DECL_af_sourceFileName ""
 #define DOCS_af_sourceFileName "Return the current sourceFileName"
@@ -2491,7 +2491,7 @@ namespace core
 	return Values(Str_O::create(path->fileName()),Str_O::create(parent_path->asString()));
     }
 
-    
+
 #define ARGS_af_sourceLineColumn "()"
 #define DECL_af_sourceLineColumn ""
 #define DOCS_af_sourceLineColumn "sourceLineColumn"
@@ -2510,9 +2510,9 @@ namespace core
   Return a backtrace as a list of SourceCodeCons.
   __END_DOC
 */
-    
-    
-    
+
+
+
 
 
 
@@ -2600,9 +2600,9 @@ namespace core
   Change the current working directory.
   __END_DOC
 */
-    
-    
-    
+
+
+
 #define ARGS_af_setCurrentWorkingDirectory "(dir)"
 #define DECL_af_setCurrentWorkingDirectory ""
 #define DOCS_af_setCurrentWorkingDirectory "setCurrentWorkingDirectory"
@@ -2621,9 +2621,9 @@ namespace core
   __END_DOC
 */
 
-    
-    
-    
+
+
+
 #define ARGS_af_isTopLevelScript "()"
 #define DECL_af_isTopLevelScript ""
 #define DOCS_af_isTopLevelScript "isTopLevelScript"
@@ -2646,9 +2646,9 @@ namespace core
   __END_DOC
 */
 
-    
-    
-    
+
+
+
 #define ARGS_af_debugLogOn "()"
 #define DECL_af_debugLogOn ""
 #define DOCS_af_debugLogOn "debugLogOn"
@@ -2667,9 +2667,9 @@ namespace core
   the crash happens and then examine the output.
   __END_DOC
 */
-    
-    
-    
+
+
+
 #define ARGS_af_debugLogOff "()"
 #define DECL_af_debugLogOff ""
 #define DOCS_af_debugLogOff "debugLogOff"
@@ -2694,7 +2694,7 @@ namespace core
 #define ARGS_af_export "(symDes &optional (packageDes *package*))"
 #define DECL_af_export ""
 #define DOCS_af_export "CLHS: export"
-    void af_export(T_sp symDes,T_sp packageDes)	
+    void af_export(T_sp symDes,T_sp packageDes)
     {_G();
 	Cons_sp symbols = coerce::listOfSymbols(symDes);
 	Package_sp package = coerce::packageDesignator(packageDes);
@@ -2704,8 +2704,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_exportToPython "(symbolsDesig)"
 #define DECL_af_exportToPython ""
 #define DOCS_af_exportToPython "exportToPython"
@@ -2735,8 +2735,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_universalErrorHandler "(continue-string datum initializers)"
 #define DECL_af_universalErrorHandler ""
 #define DOCS_af_universalErrorHandler "universalErrorHandler"
@@ -2756,7 +2756,7 @@ namespace core
 
 
 
-    
+
 #define ARGS_af_invokeInternalDebugger "(&optional condition)"
 #define DECL_af_invokeInternalDebugger ""
 #define DOCS_af_invokeInternalDebugger "invokeInternalDebugger"
@@ -2778,8 +2778,8 @@ namespace core
 	}
     };
 
-    
-    
+
+
 #define ARGS_core_singleDispatchGenericFunctionTable "()"
 #define DECL_core_singleDispatchGenericFunctionTable ""
 #define DOCS_core_singleDispatchGenericFunctionTable "singleDispatchGenericFunctionTable"
@@ -2790,7 +2790,7 @@ namespace core
 
 
 extern "C"
-{    
+{
 
 #define ARGS_af_invokeInternalDebuggerFromGdb "()"
 #define DECL_af_invokeInternalDebuggerFromGdb ""
@@ -2841,13 +2841,13 @@ extern "C"
   \scriptCmd{load}{Text::fileName}
 
   Open the \sa{fileName}, compile and evaluate its contents.
-  It looks through all of the directories in the global variable PATH and then 
+  It looks through all of the directories in the global variable PATH and then
   the Scripts directory in the Cando application directory.
 
   __END_DOC
 */
 
-    
+
 
 
 
@@ -2865,9 +2865,9 @@ extern "C"
   Return true if \scriptArg{object} can be assigned to a C++ variable of class \scriptArg{classObject}.
   __END_DOC
 */
-    
-    
-    
+
+
+
 #define ARGS_af_isAssignableTo "(tag secondArgument)"
 #define DECL_af_isAssignableTo ""
 #define DOCS_af_isAssignableTo "isAssignableTo"
@@ -2885,9 +2885,9 @@ extern "C"
   Return true if \scriptArg{object} can be assigned to a C++ variable of class \scriptArg{classObject}.
   __END_DOC
 */
-    
-    
-    
+
+
+
 #define ARGS_af_isSubClassOf "(tag mc)"
 #define DECL_af_isSubClassOf ""
 #define DOCS_af_isSubClassOf "isSubClassOf"
@@ -2909,9 +2909,9 @@ extern "C"
   Return a string representation of the object.
   __END_DOC
 */
-    
-    
-    
+
+
+
 #define ARGS_af_repr "(arg)"
 #define DECL_af_repr ""
 #define DOCS_af_repr "Return a string representation of the object"
@@ -2966,9 +2966,9 @@ extern "C"
   Push a prefix to be printed everytime print is called the arguments followed by a new line.
   __END_DOC
 */
-    
-    
-    
+
+
+
 
 /*
   __BEGIN_DOC(candoScript.general.printPopPrefix,printPopPrefix)
@@ -2977,9 +2977,9 @@ extern "C"
   Pop a prefix to be printed everytime print is called the arguments followed by a new line.
   __END_DOC
 */
-    
-    
-    
+
+
+
 
 /*
   __BEGIN_DOC(candoScript.general.print,print)
@@ -3102,7 +3102,7 @@ extern "C"
     {_G();
         SingleDispatchGenericFunction_sp fn = _lisp->_Roots._SingleDispatchGenericFunctionTable->gethash(gfSym,_Nil<T_O>()).as<SingleDispatchGenericFunction_O>();
 
-	if ( fn.nilp() ) 
+	if ( fn.nilp() )
 	{
 	    if ( errorp )
 	    {
@@ -3163,7 +3163,7 @@ extern "C"
     }
 
 #endif
-	  
+
 
 
 #if 0
@@ -3288,7 +3288,7 @@ extern "C"
 	ASSERTNOTNULL(curPackage);
 	return this->intern(symbolName,curPackage);
     }
-    
+
 
 
 
@@ -3436,7 +3436,7 @@ extern "C"
 	    return;
 	}
 	vector<string> vnames = split(snames," ");
-	for ( vector<string>::iterator it=vnames.begin(); it!=vnames.end(); it++ ) 
+	for ( vector<string>::iterator it=vnames.begin(); it!=vnames.end(); it++ )
 	{
 	    Symbol_sp sym = this->intern(*it);
 	    if ( sym->fboundp() )
@@ -3464,7 +3464,7 @@ extern "C"
 	    return;
 	}
 	vector<string> vnames = split(snames," ");
-	for ( auto it=vnames.begin(); it!=vnames.end(); it++ ) 
+	for ( auto it=vnames.begin(); it!=vnames.end(); it++ )
 	{
 	    Symbol_sp sym = this->intern(*it);
 	    if ( sym->fboundp() )
@@ -3562,8 +3562,8 @@ extern "C"
         }
         return Values(this->_Roots._SourceFiles[it->second],Fixnum_O::create(it->second));
     }
-    
-    
+
+
 #define ARGS_af_sourceFileInfo "(name)"
 #define DECL_af_sourceFileInfo ""
 #define DOCS_af_sourceFileInfo "sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index"
@@ -3805,7 +3805,7 @@ extern "C"
 
 	SYMBOL_SC_(CorePkg,setCurrentWorkingDirectory);
 	Defun(setCurrentWorkingDirectory);
-	
+
 	SYMBOL_EXPORT_SC_(ClPkg,acons);
 	Defun(acons);
 	SYMBOL_EXPORT_SC_(ClPkg,assoc);
@@ -3935,7 +3935,7 @@ extern "C"
 
 
 
-    
+
 
 
 
@@ -3986,7 +3986,7 @@ extern "C"
     Exposer::Exposer(Lisp_sp lisp, const string& packageName, const char* nicknames[])
     {_G();
 	if ( !lisp->recognizesPackage(packageName) )
-	{	
+	{
 	    list<string> lnnames;
 	    for ( int i=0; strcmp(nicknames[i],"")!=0; i++ )
 	    {
@@ -4005,7 +4005,7 @@ extern "C"
     Exposer::Exposer(Lisp_sp lisp, const string& packageName )
     {_G();
 	if ( !lisp->recognizesPackage(packageName) )
-	{	
+	{
 	    list<string> lnnames;
 	    list<string> lpkgs;
 	    this->_Package = lisp->makePackage(packageName,lnnames,lpkgs);

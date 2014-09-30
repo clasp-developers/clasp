@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -112,8 +112,8 @@ namespace llvmo
 //	llvm_interface::addSymbol = &addSymbolAsGlobal;
     }
 
-    
-    
+
+
 #define ARGS_af_mangleSymbolName "(arg)"
 #define DECL_af_mangleSymbolName ""
 #define DOCS_af_mangleSymbolName "Mangle the LLVM symbol name so that it will be a legal symbol for ld"
@@ -140,8 +140,8 @@ namespace llvmo
     };
 
 
-    
-    
+
+
 #define ARGS_af_throwIfMismatchedStructureSizes "(&key tsp tmv ihf)"
 #define DECL_af_throwIfMismatchedStructureSizes ""
 #define DOCS_af_throwIfMismatchedStructureSizes "throwIfMismatchedStructureSizes"
@@ -176,7 +176,7 @@ namespace llvmo
 
 
 
-#if 0    
+#if 0
 #define ARGS_af_memoryLockedSymbolForLlvm "(symbol)"
 #define DECL_af_memoryLockedSymbolForLlvm ""
 #define DOCS_af_memoryLockedSymbolForLlvm "Lookup or create a boost::shared_ptr<Symbol_O> for a Symbol and return the pointer to it"
@@ -241,8 +241,8 @@ namespace llvmo
 
 
 
-    
-    
+
+
 
 
 
@@ -273,8 +273,8 @@ namespace llvmo
 	}
 	printf("af_disassemble -> %s\n", _rep_(funcs).c_str() );
     }
-    
-    
+
+
 #define ARGS_af_disassembleSTAR "(fn)"
 #define DECL_af_disassembleSTAR ""
 #define DOCS_af_disassembleSTAR "disassembleSTAR"
@@ -289,7 +289,7 @@ namespace llvmo
 
 
 
-    
+
 #define ARGS_af_viewCFG "(fn &optional only)"
 #define DECL_af_viewCFG ""
 #define DOCS_af_viewCFG "viewCFG (view-cfg fn &optional only)"
@@ -316,7 +316,7 @@ namespace llvmo
             }
         }
     }
-        
+
 ;
 
 
@@ -328,7 +328,7 @@ namespace llvmo
 	//
 	// Initialize the intrinsic functions in intrinsics.cc
 	//
-	
+
 	switch (what)
 	{
 	case candoClasses:
@@ -348,7 +348,7 @@ namespace llvmo
 #undef INVOKE_REGISTER
 #undef Use_LlvmoPkg
 #undef ALL_STAGES
-	}	
+	}
 	break;
 	case candoFunctions:
 	{
@@ -400,7 +400,7 @@ namespace llvmo
 
 
 
-	
+
 };
 
 
@@ -423,7 +423,7 @@ namespace llvmo
 #define EXPAND_CLASS_MACROS
 #if defined(USE_MPS) // MPS doesn't need INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS
 #define _CLASS_MACRO(_U_)				\
-    STATIC_CLASS_INFO(_U_);			
+    STATIC_CLASS_INFO(_U_);
 #else
 #define _CLASS_MACRO(_U_)				\
     STATIC_CLASS_INFO(_U_);			\
