@@ -1,7 +1,9 @@
 Clasp
 ===============
 
-<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Sept 28, 2014 --  Please read regarding installing Clasp</a>
+<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Sept 29, 2014 --  Please read regarding installing Clasp</a>
+
+**If you have questions come ask them on IRC at freenode #clasp**
 
 
 Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.  
@@ -20,7 +22,10 @@ Clasp uses a lot of leading edge C++11 language features and so it needs a minim
 | Systems that Clasp is known to build on |
 | -------------------------------------- |
 | OS X 10.9.5 using Xcode 6.0.1          |
-| Debian Jessie(Testing) - after apt-get ncurses-dev, libbz2-dev (for externals-clasp)|
+| Debian Jessie(also known as Debian-Testing) - after apt-get ncurses-dev, libbz2-dev (for externals-clasp)|
+| Debian Sid(also known as Debian-Unstable) |
+
+If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
 | Systems that Clasp had problems building on |
 | ---------------------------------------- |
@@ -48,16 +53,16 @@ As in externals-clasp the following configuration variables are important.
 |**PJOBS**                        |The number of processors you have available to build with|
 
 
-4) Type:    _make_        to build mps and boehm versions of Clasp<br>
-   or type: _make boostbuildv2-build_      followed by<br>
-     either _make-boehm_  to make the boehm version of Clasp<br>
-         or _make-mps_    to make the MPS version of Clasp
+4) Type:    **make**        to build mps and boehm versions of Clasp<br>
+   or type: **make boostbuildv2-build**      followed by<br>
+     either **make clasp-boehm**  to make the boehm version of Clasp<br>
+         or **make clasp-mps**    to make the MPS version of Clasp
          
 If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order things are built in but I haven't tracked it down yet.
 
 5) Install the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) in your path<br>
-   then type: clasp_mps_o     to start the Lisp REPL of the MPS version of Clasp<br>
-   or type:   clasp_boehm_o   to start the Lisp REPL of the Boehm version of Clasp
+   then type: **clasp_mps_o**     to start the Lisp REPL of the MPS version of Clasp<br>
+   or type:   **clasp_boehm_o**   to start the Lisp REPL of the Boehm version of Clasp
 
 6) Type: (print "Hello world")  in the REPL and away you go (more documentation to follow)
 
@@ -69,7 +74,7 @@ LLVM/clang 3.5 COMPILER (on some systems Clang3.6 will work but there can be pro
 Boost build v2<br>
 boost libraries ver 1.55<br>
 Boehm 7.2<br>
-gmp-5.0.5<br>
+gmp-6.0.0<br>
 expat-2.0.1<br>
 zlib-1.2.8<br>
 readline-6.2<br>
