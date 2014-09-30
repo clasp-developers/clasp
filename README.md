@@ -51,6 +51,7 @@ As in externals-clasp the following configuration variables are important.
 |                                 | I use $HOME/local/externals-clasp |
 |**TARGET_OS**                    |Currently either _linux_ or _darwin_|
 |**PJOBS**                        |The number of processors you have available to build with|
+|**CXXFLAGS**                     |If you set this  export CXXFLAGS = -v  it will print more debugging info during build |
 
 
 4) Type:    **make**        to build mps and boehm versions of Clasp<br>
