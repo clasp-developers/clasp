@@ -49,10 +49,34 @@ clasp-mps:
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release mps)
 	(cd src/main; make mps)
 
+# Compile the CL sources for min-mps: and full-mps
+cl-mps:
+	(cd src/main; make mps)
+
+# Compile the CL sources for min-mps: using the existing min-mps: - FAST
+cl-min-mps-recompile:
+	(cd src/main; make min-mps-recompile)
+
+# Compile the CL sources for full-mps:
+cl-full-mps:
+	(cd src/main; make full-mps)
+
 
 clasp-boehm:
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release boehm)
 	(cd src/main; make boehm)
+
+# Compile the CL sources for min-boehm: and full-boehm
+cl-boehm:
+	(cd src/main; make boehm)
+
+# Compile the CL sources for min-boehm: using the existing min-boehm: - FAST
+cl-min-boehm-recompile:
+	(cd src/main; make min-boehm-recompile)
+
+# Compile the CL sources for full-boehm:
+cl-full-boehm:
+	(cd src/main; make full-boehm)
 
 
 boostbuildv2-build:
