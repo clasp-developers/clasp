@@ -72,6 +72,7 @@ clean:
 	(cd src/sockets; rm -rf bin bundle)
 	(cd src/serveEvent; rm -rf bin bundle)
 ifneq ($(CLASP_BUILD_TARGET_DIR),)
+	install -d $(CLASP_BUILD_TARGET_DIR)
 	(cd $(CLASP_BUILD_TARGET_DIR); rm -rf *)
 endif
 
