@@ -24,6 +24,9 @@ Clasp uses a lot of leading edge C++11 language features and so it needs a minim
 | OS X 10.9.5 using Xcode 6.0.1          |
 | Debian Jessie(also known as Debian-Testing) - after apt-get ncurses-dev, libbz2-dev (for externals-clasp)|
 | Debian Sid(also known as Debian-Unstable) |
+| Gentoo Linux(note 1) |
+
+Note 1: See https://gist.github.com/jasom/5b7b40debea3558cf09e
 
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
