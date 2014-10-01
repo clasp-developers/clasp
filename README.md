@@ -5,9 +5,7 @@ Clasp
 
 **If you have questions come ask them on IRC at freenode #clasp**
 
-
 Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.  
-
 See http://drmeister.wordpress.com/2014/09/18/announcing-clasp/ for the announcement.
 
 Clasp is not yet a full ANSI compliant Common Lisp - if you find differences between Clasp and the Common Lisp standard they are considered bugs in Clasp and please feel free to report them.
@@ -15,7 +13,7 @@ Clasp is not yet a full ANSI compliant Common Lisp - if you find differences bet
 **Libraries that clasp depends on can be obtained using the repository: <a href="https://github.com/drmeister/externals-clasp.git">externals-clasp</a>**<br>
 You must build externals-clasp prior to building Clasp
 
-**BUILDING CLASP**
+## Building Clasp
 
 Clasp uses a lot of leading edge C++11 language features and so it needs a minimum of Clang 3.5 or gcc 4.8 to compile externals-clasp.   externals-clasp installs a local version of Clang 3.6 that is used to compile Clasp.
 
@@ -82,3 +80,8 @@ gmp-6.0.0<br>
 expat-2.0.1<br>
 zlib-1.2.8<br>
 readline-6.2<br>
+
+
+## Acknowledgments 
+
+Clasp was supported by the Defense Threat Reduction Agency (DOD-DTRA) (HDTRA1-09-1-0009) the National Institutes of Health (NIH/NIGMS Grant number: 2R01GM067866-07A2) and the National Science Foundation (Grant number: 1300231)
