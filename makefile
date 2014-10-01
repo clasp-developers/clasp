@@ -73,7 +73,7 @@ clean:
 	(cd src/serveEvent; rm -rf bin bundle)
 ifneq ($(CLASP_BUILD_TARGET_DIR),)
 	install -d $(CLASP_BUILD_TARGET_DIR)
-	(cd $(CLASP_BUILD_TARGET_DIR); rm -rf *)
+	-(find $(CLASP_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)
 endif
 
 
