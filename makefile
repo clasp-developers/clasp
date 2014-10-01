@@ -28,6 +28,7 @@ ifeq ($(WHAT),)
 endif
 
 all:
+	git submodule update --init  # ensure that the src/mps submodule is updated
 	make boostbuildv2-build
 	make clasp-boehm
 	make clasp-mps
@@ -45,7 +46,6 @@ testing:
 	which clang++
 
 clasp-mps:
-	git submodule update --init  # ensure that the src/mps submodule is updated
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release mps)
 	(cd src/main; make mps)
 

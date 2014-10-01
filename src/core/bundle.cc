@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -40,8 +40,8 @@ namespace core
 {
 
 
-    
-    
+
+
 
     Bundle::Bundle()
     {
@@ -187,31 +187,41 @@ namespace core
     void	Bundle::findSubDirectories(boost_filesystem::path rootDir)
     {
 	string	appDirName;
-#ifdef	darwin
+#ifdef	_TARGET_OS_DARWIN
 	appDirName = "macos";
 #else
 	appDirName = "bin";
 #endif
+        ASSERTF(appDirName != "", BF("Could not figure out what OS this is running on in Bundle::findSubDirectories"));
 	bf::recursive_directory_iterator	dirs(rootDir);
 	while ( dirs!=bf::recursive_directory_iterator() )
 	{
 	    if ( is_directory(dirs->path()) )
 	    {
 		string leaf = dirs->path().filename().string();
+                int dirsSize = dirs->path().string().size();
 		std::transform(leaf.begin(),leaf.end(),leaf.begin(),::tolower);
-		if ( leaf == appDirName )
+		if ( leaf == appDirName  )
 		{
 		    this->_AppDir = dirs->path();
-		} else if ( leaf == "resources" )
+		} else if ( leaf == "resources"
+                            && (this->_ResourcesDir.empty()
+                                || (dirsSize < this->_ResourcesDir.string().size())) )
 		{
 		    this->_ResourcesDir = dirs->path();
-		} else if ( leaf == "databases" )
+		} else if ( leaf == "databases"
+                            && (this->_DatabasesDir.empty()
+                                || (dirsSize < this->_DatabasesDir.string().size()) ))
 		{
 		    this->_DatabasesDir = dirs->path();
-		} else if ( leaf == "lib" )
+		} else if ( leaf == "lib"
+                            && (this->_LibDir.empty()
+                                || (dirsSize < this->_LibDir.string().size()) ))
 		{
 		    this->_LibDir = dirs->path();
-		} else if ( leaf == "lisp" )
+		} else if ( leaf == "lisp"
+                            && (this->_LispDir.empty()
+                                || (dirsSize < this->_LispDir.string().size())))
 		{
 		    this->_LispDir = dirs->path();
 		}
