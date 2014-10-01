@@ -13,7 +13,7 @@ Clasp is not yet a full ANSI compliant Common Lisp - if you find differences bet
 **Libraries that clasp depends on can be obtained using the repository: <a href="https://github.com/drmeister/externals-clasp.git">externals-clasp</a>**<br>
 You must build externals-clasp prior to building Clasp
 
-## Building Clasp
+## Systems Clasp has built on
 
 Clasp uses a lot of leading edge C++11 language features and so it needs a minimum of Clang 3.5 or gcc 4.8 to compile externals-clasp.   externals-clasp installs a local version of Clang 3.6 that is used to compile Clasp.
 
@@ -33,6 +33,8 @@ If you experience problems with the systems above please submit an issue here or
 | Debian Wheezy with with gcc 4.9!!! See note below|
 
 Note: We ran into a problem installing on a Debian Wheezy system upgraded to gcc 4.9.  I'm doing some things to try and get around this.
+
+## Building Clasp
 
 To build Clasp from within the top level directory do the following.
 
