@@ -52,7 +52,7 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
 
      	echo Scraping in $(dir) ;
 
-     	out = [ SHELL "cd $(dir); export PYTHONPATH=`pwd`:${PYTHONPATH}; python2 $(.common)/symbolScraper.py *.cc *.h" : exit-status ] ;
+     	out = [ SHELL "cd $(dir); export PYTHONPATH=`pwd`:${PYTHONPATH}; python $(.common)/symbolScraper.py *.cc *.h" : exit-status ] ;
 
 	if $(out[2]) = 0 {
      	   ECHO $(out[1]) ;
@@ -135,7 +135,7 @@ actions register-classes
 {
 	cd $(>[1]:D)
 	bname=`basename $(>[1]:D)`
-	python2 $(.common)/registerClasses.py $(<) $(<:D)/${bname}_initScripting_inc.h *Package.h otherPackageClasses.h *.h $(<:D)/*.h *.cc $(<:D)/*.cc > registerClasses.log
+	python $(.common)/registerClasses.py $(<) $(<:D)/${bname}_initScripting_inc.h *Package.h otherPackageClasses.h *.h $(<:D)/*.h *.cc $(<:D)/*.cc > registerClasses.log
 }
 
 actions ltoh
@@ -147,7 +147,7 @@ actions ltoh
 actions ptoh
 {
     cd $(>[1]:D)
-    python2 $(.common)/pump.py $(>[1]) $(<)
+    python $(.common)/pump.py $(>[1]) $(<)
 }
 
 actions ltocc
