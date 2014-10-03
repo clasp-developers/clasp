@@ -22,6 +22,11 @@ export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/local/externals-clasp
 export PJOBS = 4
 
 
+#
+# Define the path to the python2 interpreter
+#
+export PYTHON2 = /usr/bin/python2
+
 # --- Dont change the stuff below ---
 export LINK = static
 export ADDRESS-MODEL = 64

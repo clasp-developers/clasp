@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -33,7 +33,7 @@ THE SOFTWARE.
 //#define DEBUG_ASSERTS
 //#endif
 
-// To debug memory usage turn this on and then you can mark 
+// To debug memory usage turn this on and then you can mark
 // objects as they are allocated with an integer using gctools::MARKER
 #ifdef USE_BOEHM
 //#define USE_BOEHM_MEMORY_MARKER
@@ -66,6 +66,11 @@ namespace std { class type_info; };
 //#define USE_TAGGED_PTR_P0 1
 #endif
 
+
+
+#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+
+
 #include <map>
 
 
@@ -96,7 +101,7 @@ namespace std { class type_info; };
 #else
 #define DEBUG_MPS_ALLOCATION(poolName,addr,gcobject_addr,size,kind)
 //#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr)
-#define DEBUG_MPS_MESSAGE(_bf_) 
+#define DEBUG_MPS_MESSAGE(_bf_)
 #define DEBUG_MPS_FIX_BEFORE(pbase,px,offset)
 #define	DEBUG_MPS_FIX_AFTER(pbase,px)
 #define DEBUG_MPS_CONTAINER(ctype,cnt)
@@ -132,7 +137,7 @@ typedef std::size_t class_id;
   set to 1 to turn on checking of NULLS using invokePossibleMultipleValueFunction
   set to 0 if you want to turn it off
 */
-#define DEBUG_TRAP_NULLS 0   
+#define DEBUG_TRAP_NULLS 0
 
 
 /*! Set to 1 to support CLOS_STREAMS
@@ -153,7 +158,7 @@ typedef std::size_t class_id;
 
 
 // Switching to new AtomTree kinematics
-// This breaks a lot of old code and depreciates a lot of other code 
+// This breaks a lot of old code and depreciates a lot of other code
 #define	KINEMATICS	1
 
 		//
@@ -231,26 +236,26 @@ typedef std::size_t class_id;
 //#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
+#define DEFUN(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp);
 
-#define Defun(x) core::af_def(CurrentPkg,#x,&af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, __FILE__, __LINE__); 
+#define Defun(x) core::af_def(CurrentPkg,#x,&af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, __FILE__, __LINE__);
 #define Defun_maker(pkg,x) core::af_def(pkg,"make-" #x,&(x ## _O::make), ARGS_##x##_O_make, DECL_##x##_O_make, DOCS_##x##_O_make);
 
 #define ClDefun(x) core::af_def(ClPkg,#x,&cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__);
-#define CompDefun(x) core::af_def(CompPkg,#x,&comp_##x, ARGS_comp_##x, DECL_comp_##x, DOCS_comp_##x, __FILE__, __LINE__); 
-#define ExtDefun(x) core::af_def(ExtPkg,#x,&ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__); 
-#define ClosDefun(x) core::af_def(ClosPkg,#x,&clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__); 
-#define CoreDefun(x) core::af_def(CorePkg,#x,&core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__); 
+#define CompDefun(x) core::af_def(CompPkg,#x,&comp_##x, ARGS_comp_##x, DECL_comp_##x, DOCS_comp_##x, __FILE__, __LINE__);
+#define ExtDefun(x) core::af_def(ExtPkg,#x,&ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__);
+#define ClosDefun(x) core::af_def(ClosPkg,#x,&clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__);
+#define CoreDefun(x) core::af_def(CorePkg,#x,&core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__);
 
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
+//#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_NAME(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp); 
+//#define DEFUN_NAME(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp);
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp); 
+//#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
 
 #if 0
 /*! Define a PAIR of accessor functions, the getter and setter */
@@ -267,7 +272,7 @@ typedef std::size_t class_id;
 //#define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
-#define DEFGENERIC(pkg,x) defgeneric(pkg,#x,&gf_##x,ARGS_gf_##x,DOCS_gf_##x,_lisp); 
+#define DEFGENERIC(pkg,x) defgeneric(pkg,#x,&gf_##x,ARGS_gf_##x,DOCS_gf_##x,_lisp);
 
 
 #if 0
@@ -323,9 +328,9 @@ typedef std::size_t class_id;
  * In Archive object data can either be stored as separate strings
  * or it can be stored as in a MultiStringBuffer
  *
- * Set to 1 if you want to use a MultiStringBuffer 
+ * Set to 1 if you want to use a MultiStringBuffer
  * Set to 0 if you don't
- */ 
+ */
 #define	ARCHIVE_MULTI_STRING_BUFFER	1
 
 #include <cstddef>
@@ -334,7 +339,7 @@ typedef std::size_t class_id;
 typedef	unsigned int uint;
 typedef int Fixnum; // a fixnum that can be represented within a tagged pointer
 typedef Fixnum cl_fixnum;
-typedef size_t _Index; // 
+typedef size_t _Index; //
 typedef int cl_index;
 
 struct size_t_pair {
@@ -492,7 +497,7 @@ namespace boost
 
 /* --------------------------------------------------
    --------------------------------------------------
-   
+
    Memory Pool System stuff
 
    --------------------------------------------------
@@ -578,7 +583,7 @@ namespace reg {
 
     class type_id
         : public boost::less_than_comparable<type_id>
-        , public gctools::GCIgnoreClass 
+        , public gctools::GCIgnoreClass
     {
     public:
         type_id()
@@ -961,7 +966,7 @@ namespace core {
     {
         struct metadata_always_fix_pointers_to_derived_classes;
     public:
-        // Some Creators don't actually allocate anything - 
+        // Some Creators don't actually allocate anything -
         // classes that don't have default allocators
         virtual bool allocates() const { return true;};
         /*! If this is the allocator for a primary CxxAdapter class then return true, */
@@ -986,7 +991,7 @@ namespace core {
 // calls to initialize anything you want before the program
 // runs.
 //
-//		__INITIALIZE_PYTHON and __INITIALIZE_PYTHON_AFTER 
+//		__INITIALIZE_PYTHON and __INITIALIZE_PYTHON_AFTER
 //		initialize the Python interface after all of the classes have been registered
 //
 //		__INITIALIZE and __INITIALIZE_AFTER
@@ -1055,7 +1060,7 @@ namespace core
 
 
 
-namespace core 
+namespace core
 {
 
 #define	_NEW_(x) (new x)
@@ -1186,7 +1191,7 @@ namespace core
     core::T_sp lisp_hiddenBinderLookup(Symbol_sp sym);
 
 //
-// You define what is being sent to the debug log using these constants 
+// You define what is being sent to the debug log using these constants
 #define	DEBUG_CPP_FUNCTION	0x0001
 #define	DEBUG_CPP_BLOCK		0x0002
 #define	DEBUG_SCRIPT		0x0003
@@ -1256,11 +1261,11 @@ namespace core
                                                              , Stream_sp stream);
 
 
-    class Functoid 
+    class Functoid
     {
         struct metadata_always_fix_pointers_to_derived_classes;
         FRIEND_GC_SCANNER();
-    public:     
+    public:
 	virtual string describe() const {return "Functoid - subclass must implement describe()";};
         void operator()( core::T_mv* lcc_resultP, int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, ... ) {
             va_list arglist;
@@ -1283,7 +1288,7 @@ namespace core
 	    //IMPLEMENT_ME();
 	    return Values0<T_O>();
 	}
-#endif	    
+#endif
     public:
         T_sp name;
     public:
@@ -1395,7 +1400,7 @@ namespace llvm_interface
 extern "C"
 {
 #define 	_LISP _lisp
-    extern core::Lisp_sp _lisp;
+    DLL_PUBLIC extern core::Lisp_sp _lisp;
 };
 
 #include "exceptions.h"
@@ -1513,7 +1518,7 @@ namespace core {
     typedef va_list clasp_va_list;
 #define clasp_va_start va_start
     Cons_sp clasp_grab_rest_args(va_list args, int nargs);
-#define clasp_va_end va_end    
+#define clasp_va_end va_end
 };
 
 #endif //]

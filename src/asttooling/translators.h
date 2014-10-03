@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -143,7 +143,7 @@ namespace translate {
 	    SIMPLE_ERROR(BF("Add support to convert other types to vector<string>"));
 	}
     };
-    
+
 #if 0 // You will need the following from_object and to_object to wrap ClangTool::buildASTs
     // You will also need to make clbind::Wrappers do the right thing with std::unique_ptrs
     //

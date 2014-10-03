@@ -1373,7 +1373,7 @@ package."
 	(restart-commands (list "Restart commands")))
     (when display
       (format display (if restarts
-			  "~&Available restarts:~2%"
+			  "~&Available restarts:~&(use :r1 or :r2 to invoke restart 1 or 2 respectively)~2%"
 			  "~&No restarts available.~%")))
     (loop for restart in restarts
        and i from 1

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -125,7 +125,6 @@ namespace std
 // Clbind requires that no function called directly or indirectly
 // by clbind throws an exception (throwing exceptions through
 // C code has undefined behavior, lua is written in C).
-
 #ifdef CLBIND_DYNAMIC_LINK
 # ifdef BOOST_WINDOWS
 #  ifdef CLBIND_BUILDING
@@ -135,6 +134,8 @@ namespace std
 #  endif
 # else
 #  if defined(_GNUC_) && _GNUC_ >=4
+#   define CLBIND_API __attribute__ ((visibility("default")))
+#  else
 #   define CLBIND_API __attribute__ ((visibility("default")))
 #  endif
 # endif

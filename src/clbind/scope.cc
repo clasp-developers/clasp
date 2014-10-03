@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -72,12 +72,12 @@ namespace clbind { namespace detail {
     }
 
     } // namespace detail
-    
+
     scope::scope()
         : m_chain(0)
     {
     }
-    
+
     scope::scope(std::auto_ptr<detail::registration> reg)
         : m_chain(reg.release())
     {
@@ -101,16 +101,16 @@ namespace clbind { namespace detail {
     {
         delete m_chain;
     }
-    
+
     scope& scope::operator,(scope s)
     {
-        if (!m_chain) 
+        if (!m_chain)
         {
             m_chain = s.m_chain;
             s.m_chain = 0;
             return *this;
         }
-        
+
         for (detail::registration* c = m_chain;; c = c->m_next)
         {
             if (!c->m_next)
@@ -137,7 +137,7 @@ namespace clbind { namespace detail {
 namespace clbind {
 
 
-    
+
     package_::package_(string const& name, std::list<std::string> nicknames, std::list<string> usePackageNames )
         : m_name(name)
         , m_nicknames(nicknames)
