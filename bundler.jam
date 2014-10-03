@@ -2,6 +2,7 @@ import errors ;
 import type ;
 import generators ;
 import common ;
+import os ;
 import path ;
 import project ;
 import feature ;
@@ -23,9 +24,9 @@ rule init ( top ? ) {
      .common = $(top)/src/common ;
      .applib = $(APPLIB) ;
      local ecl = [ common.get-invocation-command-nodefault clasp : ecl ] ;
-     if ! $(ecl) {
-     	  ECHO "WARNING: Command ecl not found." ;
-     } 
+#     if ! $(ecl) {
+#     	  ECHO "WARNING: Command ecl not found." ;
+#     }
 }
 
 type.register P : pmp ;   # use pmp so that pump.py dumps output to stdout
@@ -59,19 +60,19 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
      	} else {
           ECHO "No changes found" ;
         }
-	
+
 	local lib = $(dir:B) ;
 
 	make $(lib)_scrape_flag.h : symbols_scraped_inc.h : @bundler.scraped : <changes>$(out[2]) ;
 
-	make $(lib)_initClasses_inc.h : 
-	     [ path.glob $(dir) : *.h ] : 
-	     @bundler.register-classes : 
+	make $(lib)_initClasses_inc.h :
+	     [ path.glob $(dir) : *.h ] :
+	     @bundler.register-classes :
 	     <dependency>$(.common)/registerClasses.py ;
 
 	alias mi : $(lib)_initClasses_inc.h $(lib)_scrape_flag.h ;
 
-	lib $(lib)_boehm_opt : 
+	lib $(lib)_boehm_opt :
 	    $(sources) :
 	    $(properties) $(opt_props) <gc>boehm
         <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
@@ -81,7 +82,7 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
 	    $(properties) $(dbg_props) <gc>boehm
 	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
 
-	lib $(lib)_mps_opt : 
+	lib $(lib)_mps_opt :
 	    $(sources) :
 	    $(properties) $(opt_props) <gc>mps
         <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
@@ -91,7 +92,7 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
 	    $(properties) $(dbg_props) <gc>mps
 	    <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_dbg.dylib" ;
 
-	lib $(lib)_mps_prep_opt : 
+	lib $(lib)_mps_prep_opt :
 	    $(sources) :
 	    $(properties) $(opt_props) <gc>mps-prep
         <target-os>darwin:<make-bundle>no:<linkflags>"-install_name @executable_path/../Resources/lib/lib$(lib)_opt.dylib" ;
@@ -131,11 +132,14 @@ actions scraped
 	touch $(<)
 }
 
+
+PYTHON2 = [ os.environ PYTHON2 ] ;
+
 actions register-classes
 {
 	cd $(>[1]:D)
 	bname=`basename $(>[1]:D)`
-	python $(.common)/registerClasses.py $(<) $(<:D)/${bname}_initScripting_inc.h *Package.h otherPackageClasses.h *.h $(<:D)/*.h *.cc $(<:D)/*.cc > registerClasses.log
+	$(PYTHON2) $(.common)/registerClasses.py $(<) $(<:D)/${bname}_initScripting_inc.h *Package.h otherPackageClasses.h *.h $(<:D)/*.h *.cc $(<:D)/*.cc > registerClasses.log
 }
 
 actions ltoh
@@ -147,7 +151,7 @@ actions ltoh
 actions ptoh
 {
     cd $(>[1]:D)
-    python $(.common)/pump.py $(>[1]) $(<)
+    $(PYTHON2) $(.common)/pump.py $(>[1]) $(<)
 }
 
 actions ltocc

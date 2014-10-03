@@ -7,6 +7,13 @@ export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]> ')
 
+#
+# If the local.config doesn't define PYTHON2 then provide a default
+#
+ifeq ($(PYTHON2),)
+	export PYTHON2 = /usr/bin/python
+endif
+
 ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
 	PATH := $(EXTERNALS_BUILD_TARGET_DIR)/release/bin:$(EXTERNALS_BUILD_TARGET_DIR)/common/bin:$(PATH)
 	export PATH

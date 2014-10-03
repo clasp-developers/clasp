@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 #define	DEBUG_LEVEL_FULL
-       
+
 //
 // (C) 2004 Christian E. Schafmeister
 //
@@ -177,7 +177,7 @@ extern "C"
 /*
  * Store the global lisp object
  */
-core::Lisp_sp _lisp;
+    core::Lisp_sp _lisp;
 
     bool debug_mps = true;
 };
@@ -295,7 +295,7 @@ namespace core
     int _global_signalTrap = 0;
     int _global_pollTicksGC = 0;
 
-    
+
     void lisp_pollSignals()
     {
         if ( core::_global_signalTrap ) {
@@ -418,8 +418,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_lispifyName "(name)"
 #define DECL_af_lispifyName ""
 #define DOCS_af_lispifyName "lispifyName"
@@ -526,7 +526,7 @@ namespace core
 	    if ( lispify_match(cur,"_SLASH_")) { stream_pass1 << "/"; continue;}
 	    if ( lispify_match(cur,"PERCENT")) {stream_pass1 << "%"; continue;}
 	    if ( lispify_match(cur,"_PLUS_")) { stream_pass1 << "+"; continue;}
-	    if ( lispify_match(cur,"_EQ_")) {stream_pass1 << "="; continue;} 
+	    if ( lispify_match(cur,"_EQ_")) {stream_pass1 << "="; continue;}
 	    if ( lispify_match(cur,"_NE_")) {stream_pass1 << "/="; continue;}
 	    if ( lispify_match(cur,"_LT_")) {stream_pass1 << "<"; continue;}
 	    if ( lispify_match(cur,"_GT_")) {stream_pass1 << ">"; continue;}
@@ -633,7 +633,7 @@ namespace core
 	}
 	return o->__class();
     }
-	
+
 
     bool lisp_fixnumP(T_sp o)
     {
@@ -737,7 +737,7 @@ namespace core
     }
 
 
-    uint lisp_hash(uintptr_t x) 
+    uint lisp_hash(uintptr_t x)
     {
         HashGenerator hg;
         hg.addPart(x);
@@ -994,7 +994,7 @@ namespace core
 #if 0
 	// Trap the definition of specific functions here
 	// sometimes I accidentally define things more than once and
-	// we can't have that - so this will trap the first definition of 
+	// we can't have that - so this will trap the first definition of
 	// a particular signal
 	if ( lispName == "CREATE-COMPILE-UNIT")
 	{
@@ -1316,7 +1316,7 @@ namespace core
 
     static bool printv_dangling_newline = true;
 
-    void	printv( const char* fmt, ...) 
+    void	printv( const char* fmt, ...)
     {_G();
 // # p r a g m a omp critical ( printv )
 	{
@@ -1490,15 +1490,15 @@ namespace core
 	}
 	return sout.str();
     }
-	
+
 
     // Trim Both leading and trailing spaces
     string trimWhiteSpace( const string& str)
     {
 	// Find the first character position after excluding leading blank spaces
-	size_t startpos = str.find_first_not_of(" \t"); 
+	size_t startpos = str.find_first_not_of(" \t");
 	// Find the first character position from reverse af
-	size_t endpos = str.find_last_not_of(" \t"); 
+	size_t endpos = str.find_last_not_of(" \t");
 	// if all spaces or empty return an empty string
 	if(( string::npos == startpos ) || ( string::npos == endpos))
 	{
@@ -1894,6 +1894,6 @@ namespace core
 
         Defun(lispifyName);
     };
-    
+
 
 };
