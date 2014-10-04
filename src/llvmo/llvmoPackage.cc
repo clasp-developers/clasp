@@ -247,7 +247,7 @@ namespace llvmo
 
 
 
-    void dump_funcs(core::CompiledFunction_sp compiledFunction)
+    void dump_funcs(core::Function_sp compiledFunction)
     {
         core::Closure* cb = compiledFunction->closure;
         if ( !cb->compiledP() ) {
@@ -278,7 +278,7 @@ namespace llvmo
 #define ARGS_af_disassembleSTAR "(fn)"
 #define DECL_af_disassembleSTAR ""
 #define DOCS_af_disassembleSTAR "disassembleSTAR"
-    void af_disassembleSTAR(core::CompiledFunction_sp cf)
+    void af_disassembleSTAR(core::Function_sp cf)
     {_G();
 	if (cf.pointerp()) {
 	    dump_funcs(cf);
@@ -293,7 +293,7 @@ namespace llvmo
 #define ARGS_af_viewCFG "(fn &optional only)"
 #define DECL_af_viewCFG ""
 #define DOCS_af_viewCFG "viewCFG (view-cfg fn &optional only)"
-    void af_viewCFG(core::CompiledFunction_sp compiledFunction, core::T_sp only)
+    void af_viewCFG(core::Function_sp compiledFunction, core::T_sp only)
     {_G();
         if ( CompiledClosure* cl = dynamic_cast<CompiledClosure*>(compiledFunction->closure) ) {
             core::T_sp funcs = cl->associatedFunctions;

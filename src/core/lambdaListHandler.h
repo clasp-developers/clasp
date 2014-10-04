@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -120,6 +120,7 @@ namespace core
         gctools::Vec0<RequiredArgument>	_RequiredArguments;
         gctools::Vec0<OptionalArgument>	_OptionalArguments;
 	RestArgument			_RestArgument;
+        T_sp                            _KeyFlag;
         gctools::Vec0<KeywordArgument>	_KeywordArguments;
 	T_sp				_AllowOtherKeys;
         gctools::Vec0<AuxArgument>	_AuxArguments;
@@ -174,7 +175,7 @@ namespace core
 	void create_required_arguments(int numArgs, const std::set<int>& skipIndices );
     public:
 
-	/*! Promote the argument with the given symbol to have a FrameIndex of 0 and all 
+	/*! Promote the argument with the given symbol to have a FrameIndex of 0 and all
 	  arguments that formerly preceeded it will be slid up by one.
 	  This is used to enable single dispatching on any required argument.
 	  An exception will be thrown if the (target) symbol is not a valid target of the LambdaListHandler
@@ -208,10 +209,11 @@ namespace core
 	int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
         int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
         int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
+        bool hasKeyFlag() const { return this->_KeyFlag.isTrue(); };
         int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
         int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
         bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
-        
+
 //	uint _numberOfRequiredArguments() const;
 
 	/*! The total number of arguments that will be bound by this handler in a lexical ActivationFrame */

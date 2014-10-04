@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -165,7 +165,7 @@ namespace core
         }
         core::Creator* allocatorP = (cl->getCreator());
         T_sp obj = allocatorP->allocate();
-	if ( obj.nilp()) 
+	if ( obj.nilp())
 	{
 	    printf("%s:%d allocateInstance returning nil!!!\n", __FILE__, __LINE__);
 	}
@@ -177,14 +177,12 @@ namespace core
     /*! See ECL>>instance.d>>si_allocate_raw_instance */
     T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots)
     {_G();
-	T_sp output = Instance_O::allocateInstance(theClass,numberOfSlots);
-	if ( orig.nilp() )
-	{
+	Instance_sp output = Instance_O::allocateInstance(theClass,numberOfSlots);
+	if ( orig.nilp() ) {
 	    orig = output;
-	} else
-	{
-	    orig->instanceClassSet(theClass.as<Class_O>());
-	    orig->adoptSlots(output);
+	} else if ( Instance_sp iorig = orig.asOrNull<Instance_O>() ) {
+	    iorig->instanceClassSet(theClass.as<Class_O>());
+	    iorig->_Slots = output->_Slots; // orig->adoptSlots(output);
 	}
 	return(orig);
     }
@@ -314,7 +312,7 @@ namespace core
     {
 	stringstream ss;
 	ss << "#S(";
-	if ( this->_Class.nilp() ) 
+	if ( this->_Class.nilp() )
 	{
 	    ss << "<CLASS-IS_NIL> ";
 	} else if ( Class_sp mc = this->_Class.asOrNull<Class_O>() )
@@ -364,7 +362,7 @@ namespace core
 	ss << ")" << std::endl;
 	return(( ss.str()));
     }
-	    
+
 
 
     T_sp Instance_O::copyInstance() const
@@ -398,7 +396,7 @@ namespace core
     SYMBOL_SC_(ClosPkg,standardOptimizedReaderMethod);
     SYMBOL_SC_(ClosPkg,standardOptimizedWriterMethod);
 
-    
+
 
     void Instance_O::ensureClosure(ArgArrayGenericFunctionPtr entryPoint)
     {
@@ -409,7 +407,7 @@ namespace core
             ic->entryPoint = entryPoint;
         }
     };
-    
+
 
     T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT)
     {_G();
@@ -446,7 +444,7 @@ namespace core
 	    // TODO: Switch to using slotWriterDispatch like ECL for improved performace
 //	    this->_Entry = &slotWriterDispatch;
             Instance_O::ensureClosure(&generic_function_dispatch);
-	} else if (!af_functionP(functionOrT)) 
+	} else if (!af_functionP(functionOrT))
 	{
 	    TYPE_ERROR(functionOrT,cl::_sym_function);
 	    //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
@@ -510,7 +508,7 @@ namespace core
         }
     }
 
-    
+
 
 
 

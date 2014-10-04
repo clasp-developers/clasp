@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -123,7 +123,7 @@ namespace core
     }
 
 
-    /*! Any Special symbols that haven't been seen in the lambda list need to be added to the 
+    /*! Any Special symbols that haven't been seen in the lambda list need to be added to the
       AccumulatedClassifiedSymbols */
     Cons_sp TargetClassifier::finalClassifiedSymbols()
     {
@@ -172,7 +172,7 @@ namespace core
 	LOG(BF("Returning symbolSet: %s") % specials->__repr__() );
 	return specials;
     }
-	    
+
 
 
     /* Process llraw as a single-dispatch lambda-list.
@@ -322,7 +322,7 @@ namespace core
 	return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);
     }
 
-				  
+
 
 
 
@@ -335,6 +335,7 @@ namespace core
 	this->_RequiredArguments.clear();
 	this->_OptionalArguments.clear();
 	this->_RestArgument.clear();
+        this->_KeyFlag = _Nil<T_O>();
 	this->_KeywordArguments.clear();
 	this->_AllowOtherKeys = _Nil<T_O>();
 	this->_AuxArguments.clear();
@@ -446,7 +447,7 @@ namespace core
     SYMBOL_SC_(CorePkg,tooFewArguments);
 
 
-// Setup argument binding for ActivationFrame 
+// Setup argument binding for ActivationFrame
 #define PASS_FUNCTION_REQUIRED 	bind_required_af
 #define PASS_FUNCTION_OPTIONAL 	bind_optional_af
 #define PASS_FUNCTION_REST 	bind_rest_af
@@ -735,7 +736,7 @@ void bind_aux
 
 
 
-/*! Process the arguments and return the components 
+/*! Process the arguments and return the components
  * context may be: ordinary, macro, destructuring, deftype,
  * define_method_combination, defsetf  HOWEVER ECL>>clos/method.lsp:line 402 passes T!!!!
  * and determines the
@@ -955,7 +956,7 @@ void bind_aux
 		cur = ocur.as_or_nil<Cons_O>();
 		continue;
 	    }
-	    // This is a dotted list. The cdr must be a symbol and 
+	    // This is a dotted list. The cdr must be a symbol and
 	    // treat it like &rest
 	    Symbol_sp sarg = ocur.as<Symbol_O>();
 	    restarg.setTarget(sarg);
@@ -969,9 +970,9 @@ void bind_aux
 
 
 
-    
-    
-    
+
+
+
 #define ARGS_af_processLambdaList "(vl context)"
 #define DECL_af_processLambdaList ""
 #define DOCS_af_processLambdaList "processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!"
@@ -1052,8 +1053,8 @@ void bind_aux
  */
 
 
-    
-    
+
+
 
     LambdaListHandler_sp LambdaListHandler_O::createRecursive(Cons_sp lambda_list, Cons_sp declares, T_sp context, TargetClassifier& classifier)
     {_G();
@@ -1091,7 +1092,7 @@ void bind_aux
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list,declares,context);
 	return llh;
     }
-	
+
 
 
     void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>& skipIndices)
@@ -1113,7 +1114,6 @@ void bind_aux
 
     void LambdaListHandler_O::parse_lambda_list_declares(Cons_sp lambda_list, Cons_sp declareSpecifierList, T_sp context, TargetClassifier& classifier )
     {_OF();
-	T_sp key_flag;
 	T_sp whole;
 	Symbol_sp environment;
 	this->_LambdaList = lambda_list;
@@ -1123,7 +1123,7 @@ void bind_aux
 						   this->_RequiredArguments,
 						   this->_OptionalArguments,
 						   this->_RestArgument,
-						   key_flag,
+						   this->_KeyFlag,
 						   this->_KeywordArguments,
 						   this->_AllowOtherKeys,
 						   this->_AuxArguments );
@@ -1150,7 +1150,7 @@ void bind_aux
 
     int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp target)
     {_G();
-	for ( auto& ri : this->_RequiredArguments ) 
+	for ( auto& ri : this->_RequiredArguments )
 	{
 	    if ( ri._symbolP() )
 	    {
@@ -1202,9 +1202,11 @@ void bind_aux
 	    ss << " &rest ";
 	    ss << this->_RestArgument.asString();
 	}
+        if ( this->_KeyFlag.notnilp() ) {
+            ss << " &key ";
+        }
 	if ( this->_KeywordArguments.size() > 0 )
 	{
-	    ss << " &keys ";
 	    ss << asString(this->_KeywordArguments);
 	}
 	if ( this->_AllowOtherKeys.isTrue() )
@@ -1258,7 +1260,7 @@ void bind_aux
 	    }
 	}
 	ql::list keys(_lisp);
-	bool keyFlag = false;
+	bool keyFlag = this->_KeyFlag.notnilp();
 	{ // optional arguments   keys = (num key1 var1 init1 flag1 ...)
 	    keys << Fixnum_O::create((int)this->_KeywordArguments.size());
 	    for ( gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();

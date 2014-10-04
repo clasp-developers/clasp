@@ -114,4 +114,4 @@ mps-submodule:
 
 
 asdf-submodule:
-	git submodule add https://github.com/drmeister/asdf.git ./src/lisp/kernel/asdf
+	git submodule add --name updatedAsdf https://github.com/drmeister/asdf.git ./src/lisp/kernel/asdf
