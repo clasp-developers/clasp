@@ -53,7 +53,7 @@ rule bundle ( dir : sources * : properties * : opt_props * : dbg_props * )
 
      	echo Scraping in $(dir) ;
 
-     	out = [ SHELL "cd $(dir); export PYTHONPATH=`pwd`:${PYTHONPATH}; python $(.common)/symbolScraper.py *.cc *.h" : exit-status ] ;
+     	out = [ SHELL "cd $(dir); export PYTHONPATH=`pwd`:${PYTHONPATH}; $(PYTHON2) $(.common)/symbolScraper.py *.cc *.h" : exit-status ] ;
 
 	if $(out[2]) = 0 {
      	   ECHO $(out[1]) ;

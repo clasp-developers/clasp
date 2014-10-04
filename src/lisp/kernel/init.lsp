@@ -205,7 +205,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(defconstant +ecl-optimization-settings+ 
+(defconstant +ecl-optimization-settings+
   '((optimize (safety 2) (speed 1) (debug 1) (space 1))
     (ext:check-arguments-type nil)))
 (defconstant +ecl-unsafe-declarations+
@@ -242,30 +242,30 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      si::*print-structure*
      si::*sharp-eq-context*
      si::*circle-counter*)
-   nil                              ;;  *pprint-dispatch-table* 
-   t                                ;;  *print-array* 
-   10                               ;;  *print-base* 
-   :downcase                        ;;  *print-case* 
-   t                                ;;  *print-circle* 
-   t                                ;;  *print-escape* 
-   t                                ;;  *print-gensym* 
-   nil                              ;;  *print-length* 
-   nil                              ;;  *print-level* 
-   nil                              ;;  *print-lines* 
-   nil                              ;;  *print-miser-width* 
-   nil                              ;;  *print-pretty* 
-   nil                              ;;  *print-radix* 
-   t                                ;;  *print-readably* 
-   nil                              ;;  *print-right-margin* 
-   10                               ;;  *read-base* 
-   'single-float                    ;;  *read-default-float-format* 
-   t                                ;;  *read-eval* 
-   nil                              ;;  *read-suppress* 
-   *readtable*                      ;;  *readtable* 
-   (find-package :cl)               ;;  si::*print-package* 
-   t                                ;  si::*print-structure* 
-   nil                              ;  si::*sharp-eq-context* 
-   nil                              ;  si::*circle-counter* 
+   nil                              ;;  *pprint-dispatch-table*
+   t                                ;;  *print-array*
+   10                               ;;  *print-base*
+   :downcase                        ;;  *print-case*
+   t                                ;;  *print-circle*
+   t                                ;;  *print-escape*
+   t                                ;;  *print-gensym*
+   nil                              ;;  *print-length*
+   nil                              ;;  *print-level*
+   nil                              ;;  *print-lines*
+   nil                              ;;  *print-miser-width*
+   nil                              ;;  *print-pretty*
+   nil                              ;;  *print-radix*
+   t                                ;;  *print-readably*
+   nil                              ;;  *print-right-margin*
+   10                               ;;  *read-base*
+   'single-float                    ;;  *read-default-float-format*
+   t                                ;;  *read-eval*
+   nil                              ;;  *read-suppress*
+   *readtable*                      ;;  *readtable*
+   (find-package :cl)               ;;  si::*print-package*
+   t                                ;  si::*print-structure*
+   nil                              ;  si::*sharp-eq-context*
+   nil                              ;  si::*circle-counter*
    ))
 
 (defvar +io-syntax-progv-list+
@@ -294,29 +294,29 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      *package*
      si::*sharp-eq-context*
      si::*circle-counter*)               ;
-   nil                                   ;;  *pprint-dispatch-table* 
-   t                                     ;;  *print-array* 
-   10                                    ;;  *print-base* 
-   :upcase                               ;;  *print-case* 
-   nil                                   ;;  *print-circle* 
-   t                                     ;;  *print-escape* 
-   t                                     ;;  *print-gensym* 
-   nil                                   ;;  *print-length* 
-   nil                                   ;;  *print-level* 
-   nil                                   ;;  *print-lines* 
-   nil                                   ;;  *print-miser-width* 
-   nil                                   ;;  *print-pretty* 
-   nil                                   ;;  *print-radix* 
-   t                                     ;;  *print-readably* 
-   nil                                   ;;  *print-right-margin* 
-   10                                    ;;  *read-base* 
-   'single-float ;;  *read-default-float-format* 
-   t             ;;  *read-eval* 
-   nil           ;;  *read-suppress* 
-   *readtable*   ;;  *readtable* 
-   (find-package :CL-USER)               ;;  *package* 
-   nil                                   ;;  si::*sharp-eq-context* 
-   nil                                   ;;  si::*circle-counter* 
+   nil                                   ;;  *pprint-dispatch-table*
+   t                                     ;;  *print-array*
+   10                                    ;;  *print-base*
+   :upcase                               ;;  *print-case*
+   nil                                   ;;  *print-circle*
+   t                                     ;;  *print-escape*
+   t                                     ;;  *print-gensym*
+   nil                                   ;;  *print-length*
+   nil                                   ;;  *print-level*
+   nil                                   ;;  *print-lines*
+   nil                                   ;;  *print-miser-width*
+   nil                                   ;;  *print-pretty*
+   nil                                   ;;  *print-radix*
+   t                                     ;;  *print-readably*
+   nil                                   ;;  *print-right-margin*
+   10                                    ;;  *read-base*
+   'single-float ;;  *read-default-float-format*
+   t             ;;  *read-eval*
+   nil           ;;  *read-suppress*
+   *readtable*   ;;  *readtable*
+   (find-package :CL-USER)               ;;  *package*
+   nil                                   ;;  si::*sharp-eq-context*
+   nil                                   ;;  si::*circle-counter*
    ))
 
 
@@ -519,7 +519,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (merge-pathnames (make-pathname :host target-backend) pathname))
 
 (export '(default-target-backend target-backend-pathname))
-        
+
 
 (defun compile-kernel-file (filename &key (reload nil) load-bitcode (recompile nil))
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
@@ -680,7 +680,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 		 (if (not (keywordp file))
 		     (setq files (cons file files)))
 		 (go done))))
-       (if (not (keywordp file)) 
+       (if (not (keywordp file))
 	   (setq files (cons file files)))
        (setq cur (cdr cur))
        (go top)
@@ -703,7 +703,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        (if after-file
 	   (if (eq after-file file)
 	       (go done)))
-       (if (not (keywordp file)) 
+       (if (not (keywordp file))
 	   (setq files (cons file files)))
        (setq cur (cdr cur))
        (go top)
@@ -820,7 +820,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (push :clos *features*)
   (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*)
 )
-  
+
 (defun compile-full () ;; &key (target-backend (default-target-backend)))
   (switch-to-full)
   (let ((*target-backend* (default-target-backend)))
@@ -875,7 +875,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (defun tpl-hook (cmd)
-  (cond 
+  (cond
     ((eq (car cmd) :pwd) (tpl-default-pathname-defaults-command))
     ((eq (car cmd) :cd) (tpl-change-default-pathname-defaults-dir-command (cadr cmd)))
     (t (bformat t "Unknown command %s\n" cmd)))
@@ -903,7 +903,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                  `(my-do-time #'(lambda () ,form))))
            t)
 (export 'my-time)
-                 
+
 
 (defun load-clasprc ()
   "Load the users startup code"
@@ -940,6 +940,11 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun setup-asdf () (load "sys:kernel;sys-asdf.lsp"))
 (export 'setup-asdf)
 
+(defun compile-asdf ()
+  (compile-file "sys:kernel;asdf;build;asdf.lisp")
+  (cmp::link-bundle-lto "sys:kernel;asdf;build;asdf.bundle"
+                       :lisp-bitcode-files (list #P"sys:kernel;asdf;build;asdf.bc"))
+)
 
 
 
@@ -962,4 +967,3 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)
   (core:low-level-repl))
-

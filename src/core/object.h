@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <map>
 #include <typeinfo>
 #ifdef	__GNUG__
-#include <cxxabi.h> 
+#include <cxxabi.h>
 #endif
 #ifndef	OBJECT_H //[
 #define	OBJECT_H
@@ -237,14 +237,14 @@ namespace core
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-//      OOOO     OOOO         OO  OOOOOO   OO   OOOOOO                  
-//    OO    OO   OO  OO       OO  OO     OO  OO   OO                    
-//    OO    OO   OO  OO       OO  OO     OO       OO                    
-//    OO    OO   OOOO         OO  OOOO   OO       OO                    
-//    OO    OO   OO  OO       OO  OO     OO       OO                    
-//    OO    OO   OO  OO   OO  OO  OO     OO  OO   OO                    
-//      OOOO     OOOO       OO    OOOOOO   OO     OO                    
-//                                                                        
+//      OOOO     OOOO         OO  OOOOOO   OO   OOOOOO
+//    OO    OO   OO  OO       OO  OO     OO  OO   OO
+//    OO    OO   OO  OO       OO  OO     OO       OO
+//    OO    OO   OOOO         OO  OOOO   OO       OO
+//    OO    OO   OO  OO       OO  OO     OO       OO
+//    OO    OO   OO  OO   OO  OO  OO     OO  OO   OO
+//      OOOO     OOOO       OO    OOOOOO   OO     OO
+//
 //
 //
 
@@ -378,7 +378,7 @@ namespace core
     public:
 	HashGenerator() : _NextPartIndex(0) {};
 	bool addPart(uint part)
-	{ 
+	{
 	    if ( this->_NextPartIndex >= MaxParts ) return false;
 	    this->_Parts[this->_NextPartIndex] = part;
 	    ++this->_NextPartIndex;
@@ -387,7 +387,7 @@ namespace core
 
 	/*Add the bignum across multiple parts, return true if everything was added */
 	bool addPart(const mpz_class& bignum);
-	
+
 
 	/*! Return true if not accepting any more parts */
 	bool isFull() const
@@ -429,7 +429,7 @@ namespace core
 
 	void hashObject(T_sp obj);
     };
-		
+
 
 
 //    extern Symbol_sp _sym_list;
@@ -488,7 +488,7 @@ namespace core
     static string Package()  {return oClass::static_packageName();};	\
     static string Pkg()  { return Package(); };				\
     static void exposeCando(core::Lisp_sp);				\
-    static void exposePython(core::Lisp_sp);				
+    static void exposePython(core::Lisp_sp);
 
 #define	__COMMON_CLASS_PARTS(oNamespace,oPackage,oClass,oclassName)	\
 	__COMMON_VIRTUAL_CLASS_PARTS(oNamespace,oPackage,oClass,oclassName) \
@@ -496,7 +496,7 @@ namespace core
 	{								\
             GC_ALLOCATE(oClass,obj);                                    \
             return obj;                                                 \
-	};						
+	};
 
 #define LISP_TEMPLATE_CLASS(oClass)				\
 	__COMMON_VIRTUAL_CLASS_PARTS(CurrentPkg,oClass,typeid(oClass).name())
@@ -530,7 +530,7 @@ namespace core
 
 #define DECLARE_INIT_GLOBALS() public: static void lisp_initGlobals(core::Lisp_sp lisp);
 
-#define DECLARE_INIT() 
+#define DECLARE_INIT()
 
 #define DECLARE_MAKE_INIT()
 
@@ -638,7 +638,7 @@ namespace core
 
 
     public: // Serialization stuff -----------------------------
-	
+
 	    /*! New serializer that uses s-exp */
 #if defined(OLD_SERIALIZE)
 	virtual void serialize(serialize::SNode node);
@@ -691,7 +691,7 @@ namespace core
 	virtual string descriptionNoConst() { return this->description();};
 	//! A pretty-print representation
 	virtual string __repr__() const { return this->description();};
-	//! Common Lisp __write__(T_sp strm) 
+	//! Common Lisp __write__(T_sp strm)
 	virtual void __write__(T_sp strm) const;
 	//! A pretty-print representation
 	virtual string __str__() { return _rep_(this->sharedThis<T_O>());};
@@ -726,13 +726,13 @@ namespace core
 	 */
 	virtual bool eq(T_sp obj) const;
 	/*! Return true if the two objects are the same object.
-	 * If they aren't the same object for numbers and values 
+	 * If they aren't the same object for numbers and values
 	 * the values are compared.
 	 */
 	virtual bool eql(T_sp obj) const;
 
 	/*! Only compares numbers. Return true if the two numbers are equivalent ignoring type.
-	 * If they aren't the same object for numbers and values 
+	 * If they aren't the same object for numbers and values
 	 * the values are compared.
 	 */
 //	virtual bool eqn(T_sp obj) const;
@@ -755,7 +755,7 @@ namespace core
 	 * All other relative comparisons call this one
 	 * so if you define this in a subclass then all the other comparisons
 	 * will work
-	 * but you can define the others if you want 
+	 * but you can define the others if you want
 	 *
 	 * -lt- is the only one that has to be defined if you want relative comparisons
 	 * but the others can be defined to improve efficiency
@@ -775,9 +775,6 @@ namespace core
         /*! Allocate space for (slots) slots and initialize them */
         virtual void initializeSlots(int slots);
 
-        /*! Copy the slots of source into this instance */
-        virtual void adoptSlots(T_sp source);
-
 	/*! ECL slot handling, slots are indexed with integers */
 	virtual T_sp instanceRef(int idx) const;
 	/*! ECL slot handling, slots are indexed with integers */
@@ -794,12 +791,12 @@ namespace core
 	  otherwise return nil */
 	virtual T_sp oinstancepSTAR() const { return _Nil<T_O>();};
 	/*! Return number of slots if instance of Instance_O otherwise return nil */
-	virtual T_sp oinstancep() const { return _Nil<T_O>();}; // 
+	virtual T_sp oinstancep() const { return _Nil<T_O>();}; //
 	bool instancep() const { return oinstancep().isTrue();};
 
 	bool genericFunctionP() const { return false;};
 	/*! Return number of slots if instance of Instance_O otherwise return nil */
-	virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>();}; // 
+	virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>();}; //
 	bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue();};
 
 
@@ -1001,21 +998,21 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 // Defines the class method that defines nil for this class
 // and avoids the static initialization fiasco
 //
-// uint oClass::___staticClassSymbol; = UndefinedUnsignedInt;		
+// uint oClass::___staticClassSymbol; = UndefinedUnsignedInt;
 #define	_REGISTER_CLASS_HEADER_COMMON(oClass)				\
     core::Symbol_sp oClass::___staticClassSymbol;			\
     core::Class_sp oClass::___staticClass;                              \
     int oClass::static_Kind;                                            \
-    core::Creator* oClass::static_creator = NULL;		
+    core::Creator* oClass::static_creator = NULL;
 
 #define STATIC_CLASS_INFO(oClass)					\
     /*	oClass* oClass::___staticDereferencedNilInstance;	*/	\
     /*  oClass* oClass::___staticDereferencedUnboundInstance;	*/	\
     /* gctools::smart_ptr<oClass> oClass::_nil; */				\
-    /* gctools::smart_ptr<oClass> oClass::_unbound;	*/		
+    /* gctools::smart_ptr<oClass> oClass::_unbound;	*/
 
 
-	
+
 
 #define _REGISTER_CLASS_HEADER(ns,oClass)				\
     _REGISTER_CLASS_HEADER_COMMON(oClass);				\
@@ -1057,7 +1054,7 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 
 
 /*!
- * Use this from now on. 
+ * Use this from now on.
  * 1) Assumes "c" namespace
  * 2) Exposers are static functions within the class (exposeCando,exposePython)
  */
@@ -1151,7 +1148,7 @@ Class_sp af_classOf(T_sp obj);
 TRANSLATE(core::T_O);
 
 /*! Used to indicate that methods should be inherited from sequence */
-#define INHERIT_SEQUENCE 
+#define INHERIT_SEQUENCE
 
 
 #include "metaClass.h"

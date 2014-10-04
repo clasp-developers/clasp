@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -107,8 +107,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_lowLevelDescribe "(arg)"
 #define DECL_af_lowLevelDescribe ""
 #define DOCS_af_lowLevelDescribe "lowLevelDescribe"
@@ -121,8 +121,8 @@ namespace core
 	obj->describe();
     };
 
-    
-    
+
+
 #define ARGS_af_eq "(x y)"
 #define DECL_af_eq ""
 #define DOCS_af_eq "eq"
@@ -132,8 +132,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_eql "(x y)"
 #define DECL_af_eql ""
 #define DOCS_af_eql "eql"
@@ -147,8 +147,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_equal "(x y)"
 #define DECL_af_equal ""
 #define DOCS_af_equal "equal"
@@ -177,8 +177,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_copyTree "(arg)"
 #define DECL_af_copyTree ""
 #define DOCS_af_copyTree "copyTree"
@@ -194,8 +194,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_implementationClass "(arg)"
 #define DECL_af_implementationClass ""
 #define DOCS_af_implementationClass "implementationClass"
@@ -203,7 +203,7 @@ namespace core
     {_G();
 	return lisp_static_class(arg);
     };
-    
+
 
 
 #define ARGS_af_instanceClass "(arg)"
@@ -215,8 +215,8 @@ namespace core
     };
 
 
-    
-    
+
+
 #define ARGS_af_classNameAsString "(arg)"
 #define DECL_af_classNameAsString ""
 #define DOCS_af_classNameAsString "classNameAsString"
@@ -226,12 +226,12 @@ namespace core
 	return c->name()->fullName();
     };
 
-    
 
-    
-    
-    
-    
+
+
+
+
+
 #define ARGS_af_instanceSig "(arg)"
 #define DECL_af_instanceSig ""
 #define DOCS_af_instanceSig "instanceSig"
@@ -242,8 +242,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_instanceSigSet "(arg)"
 #define DECL_af_instanceSigSet ""
 #define DOCS_af_instanceSigSet "instanceSigSet"
@@ -252,8 +252,8 @@ namespace core
 	return arg->instanceSigSet();
     };
 
-    
-    
+
+
 #define ARGS_af_instanceSet "(obj idx val)"
 #define DECL_af_instanceSet ""
 #define DOCS_af_instanceSet "instanceSet - set the (idx) slot of (obj) to (val)"
@@ -265,8 +265,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_instanceRef "(obj idx)"
 #define DECL_af_instanceRef ""
 #define DOCS_af_instanceRef "instanceRef - return the (idx) slot value of (obj)"
@@ -277,8 +277,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_instancep "(obj)"
 #define DECL_af_instancep ""
 #define DOCS_af_instancep "instancep"
@@ -287,8 +287,8 @@ namespace core
 	return obj->oinstancep();
     };
 
-    
-    
+
+
 #define ARGS_af_isNil "(arg)"
 #define DECL_af_isNil ""
 #define DOCS_af_isNil "isNil"
@@ -308,7 +308,7 @@ namespace core
 
     string T_O::className() const
     {
-	// TODO: refactor this as ->__class()->classNameAsString 
+	// TODO: refactor this as ->__class()->classNameAsString
 	// everywhere where we have obj->className()
 	return this->__class()->classNameAsString();
     }
@@ -371,7 +371,7 @@ namespace core
     }
 
 
-static BignumExportBuffer static_HashGenerator_addPart_buffer;  
+static BignumExportBuffer static_HashGenerator_addPart_buffer;
 
     bool HashGenerator::addPart(const mpz_class& bignum)
     {
@@ -380,7 +380,7 @@ static BignumExportBuffer static_HashGenerator_addPart_buffer;
 	buffer = (unsigned int*)::mpz_export(buffer, &count,
                                             _lisp->integer_ordering()._mpz_import_word_order,
                                             _lisp->integer_ordering()._mpz_import_size,
-                                            _lisp->integer_ordering()._mpz_import_endian, 
+                                            _lisp->integer_ordering()._mpz_import_endian,
                                             0,
                                             bignum.get_mpz_t() );
 	if ( buffer != NULL )
@@ -510,13 +510,13 @@ bool	T_O::loadFinalize(core::ArchiveP node)
 }
 
 string	T_O::descriptionOfContents() const
-{ 
+{
     return "";
 };
 
 
 string	T_O::description() const
-{_OF(); 
+{_OF();
     stringstream ss;
     if ( this == _lisp->_true().get() )
     {
@@ -526,11 +526,11 @@ string	T_O::description() const
         T_O* me_gc_safe = const_cast<T_O*>(this);
 	ss << "#<" << me_gc_safe->_instanceClass()->classNameAsString() << " ";
 
-	ss  << "@" << std::hex << this << std::dec; 
+	ss  << "@" << std::hex << this << std::dec;
 	ss <<")";
 	ss << this->descriptionOfContents() << " > ";
     }
-    return ss.str(); 
+    return ss.str();
 };
 
 
@@ -577,10 +577,6 @@ void T_O::initializeSlots(int slots)
 };
 
 
-void T_O::adoptSlots(T_sp cl)
-{
-    SIMPLE_ERROR(BF("T_O::adoptSlots invoked - subclass must implement") );
-};
 
 T_sp T_O::instanceRef(int idx) const
 {_G();
@@ -680,7 +676,7 @@ void T_O::exposePython(Lisp_sp lisp)
 	.def("stringp", &T_O::stringP)
 	.def("booleanp", &T_O::booleanP)
 	.def("specialFormp", &T_O::specialFormP)
-	.def("isNil",&T_O::isNil) 
+	.def("isNil",&T_O::isNil)
 //	.def("notNil",&T_O::notNil)
 	.def("eq", &T_O::eq)
 //	.def("eql", &T_O::eql)
@@ -741,8 +737,8 @@ void T_O::exposePython(Lisp_sp lisp)
 #endif
 }
 
-	
-	
+
+
 
 
 
@@ -751,9 +747,9 @@ namespace core
 
 
 
-    
 
-	
+
+
     EXPOSE_CLASS(core,T_O);
 
 
