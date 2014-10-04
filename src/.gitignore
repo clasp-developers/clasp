@@ -12,3 +12,8 @@
 *.pyc
 symbols_scraped_inc.h
 _symbolTableAfterBuild.txt
+symbols_scraped.txt
+symbols_scraped_sorted.txt
+symbols_scraped_sorted_uniq.txt
+symbols_static.txt
+symbols_static_sorted.txt
