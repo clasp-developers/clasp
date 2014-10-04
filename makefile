@@ -42,15 +42,6 @@ all:
 	make compile-commands
 
 
-testall:
-	git submodule update --init  # ensure that the src/mps submodule is updated
-	make boostbuildv2-build
-	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle boehm mps)
-	make clasp-boehm
-	make clasp-mps
-	make compile-commands
-
-
 
 shell:
 	@echo This shell sets up environment variables like BJAM
