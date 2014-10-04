@@ -2,6 +2,3 @@
 	path = src/mps
 	url = https://github.com/Ravenbrook/mps-temporary
 	branch = dev/2014-08-18/non-incremental
-[submodule "src/lisp/kernel/asdf"]
-	path = src/lisp/kernel/asdf
-	url = https://github.com/drmeister/asdf.git
