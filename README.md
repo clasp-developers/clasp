@@ -36,7 +36,7 @@ If you experience problems with the systems above please submit an issue here or
 
 To build Clasp from within the top level directory do the following.
 
-1) You need to down/build the <a href="https://github.com/drmeister/externals-clasp">externals-clasp repository</a><br>
+1) You need to download and build the <a href="https://github.com/drmeister/externals-clasp">externals-clasp repository</a><br>
 - it contains all of the external libraries that Clasp depends on and it downloads the specific version of LLVM 3.6 that Clasp needs.
 
 2) Copy local.config.darwin or local.config.linux to local.config depending on your system
