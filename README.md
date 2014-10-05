@@ -51,10 +51,8 @@ As in externals-clasp the following configuration variables are important.
 | **EXTERNALS_BUILD_TARGET_DIR**  | This defines where Clasp build will find the externals-clasp libraries  |
 |                                 | I use $HOME/local/externals-clasp |
 |**TARGET_OS**                    |Currently either _linux_ or _darwin_|
-|**PJOBS**                        |The number of processors you have available to build with.|
-|                                 | Set PJOBS <= the number of cores you have. Also if you have less than 8GB |
-|                                 | memory you should set PJOBS low otherwise your system will swap like crazy. |
-|**CXXFLAGS**                     |If you set this  export CXXFLAGS = -v  it will print more debugging info during build |
+|**PJOBS**                        |The number of processors you have available to build with. Set PJOBS <= the number of cores you have. Also if you have less than 8GB memory you should set PJOBS to 2 or 1, otherwise your system will swap like crazy |
+|**CXXFLAGS**                     |If you set this export CXXFLAGS = -v  it will print more debugging info during the build |
 
 
 4) Type:    **make**        to build mps and boehm versions of Clasp<br>
