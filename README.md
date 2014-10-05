@@ -59,7 +59,7 @@ To build Clasp from within the top level directory do the following.
          
 If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order in which boost-build builds things but I haven't sorted it down yet.
 
-5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) in your PATH<br>
+5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) to your PATH<br>
 
 6) To run the MPS version of Clasp use
 <pre># <b>clasp_mps_o</b></pre>
