@@ -41,8 +41,7 @@ To build Clasp from within the top level directory do the following.
 
 2) Copy local.config.darwin or local.config.linux to local.config depending on your system
 
-3) Edit local.config and configure it for your system<br>
-As in externals-clasp the following configuration variables are important.
+3) Edit local.config and configure it for your system. The following configuration variables affect the build process.
 
 | Variable  |   Description 
 | ------------- | --------------|
