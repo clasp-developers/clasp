@@ -80,7 +80,7 @@ HELLO-WORLD
 "Clasp is running.  Huzzah!!!"
 &gt; <b>(quit)</b>
 </pre>
-Clasp will run within Emacs using *inferior-lisp* and in the future it will have a SLIME interface (volunteer programmers will be showered with appreciation).
+Clasp will run within Emacs using \*inferior-lisp\* and in the future Clasp will have a SLIME interface (volunteer programmers will be showered with appreciation and praise!).
 
 Note 1:  You can make just one version of Clasp
 <pre># <b>make boostbuildv2-build</b> </pre>
