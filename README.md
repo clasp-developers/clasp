@@ -89,10 +89,12 @@ and then to make the boehm version of Clasp use
 or to make the mps version of Clasp use
 <pre># <b>make clasp-mps</b></pre>
 
-If you want to install the libraries separately its more complicated because Clasp requires a particular version of LLVM/Clang3.6 which hasn't been officially released yet but is present in externals-clang.
+## External libraries
+
+If you want to install the external libraries separately its more complicated because Clasp requires a particular version of LLVM/Clang3.6 which hasn't been officially released yet but is present in externals-clang.
 This should all become easier in a couple of months when LLVM/Clang3.6 is released.<br>
 These are the requirements as of Sep 28, 2014.<br>
-LLVM/clang 3.5 COMPILER (on some systems Clang3.6 will work but there can be problems with installed header files)<br>
+LLVM/clang 3.5 compiler<br>
 Boost build v2<br>
 boost libraries ver 1.55<br>
 Boehm 7.2<br>
