@@ -67,7 +67,7 @@ If you see the error "fatal error: 'core_scrape_flag.h' file not found" just sto
 and to run the Boehm version of Clasp use
 <pre># <b>clasp_boehm_o</b></pre>
 
-6) When the Clasp REPL prompt appears you can type Common Lisp commands.
+7) When the Clasp REPL prompt appears you can type Common Lisp commands.
 <pre>Starting Clasp 0.1... loading image... it takes a few seconds
 Loading .clasprc
 Top level.
