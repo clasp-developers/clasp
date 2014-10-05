@@ -54,19 +54,39 @@ To build Clasp from within the top level directory do the following.
 |**CXXFLAGS**                     |If you set this export CXXFLAGS = -v  it will print more debugging info during the build |
 
 
-4) Type:    **make**        to build mps and boehm versions of Clasp<br>
-   or type: **make boostbuildv2-build**      followed by<br>
-     either **make clasp-boehm**  to make the boehm version of Clasp<br>
-         or **make clasp-mps**    to make the MPS version of Clasp
+4) Make both the mps and boehm versions of Clasp (see note 1 for other options).
+<pre># <b>make</b></pre>
          
-If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order things are built in but I haven't tracked it down yet.
+If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order in which boost-build builds things but I haven't sorted it down yet.
 
-5) Install the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) in your path<br>
-   then type: **clasp_mps_o**     to start the Lisp REPL of the MPS version of Clasp<br>
-   or type:   **clasp_boehm_o**   to start the Lisp REPL of the Boehm version of Clasp
+5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) in your PATH<br>
 
-6) Type: (print "Hello world")  in the REPL and away you go (more documentation to follow)
+6) To run the MPS version of Clasp use
+<pre># <b>clasp_mps_o</b></pre>
 
+and to run the Boehm version of Clasp use
+<pre># <b>clasp_boehm_o</b></pre>
+
+6) When the Clasp REPL prompt appears you can type Common Lisp commands.
+<pre>Starting Clasp 0.1... loading image... it takes a few seconds
+Loading .clasprc
+Top level.
+&gt; <b>(defun hello-world () (print "Clasp is running.  Huzzah!!!"))</b>
+
+HELLO-WORLD
+&gt; <b>(hello-world)</b>
+
+"Clasp is running.  Huzzah!!!" 
+"Clasp is running.  Huzzah!!!"
+&gt; <b>(quit)</b>
+</pre>
+
+Note 1:  You can make just one version of Clasp
+<pre># <b>make boostbuildv2-build</b> </pre>
+and then to make the boehm version of Clasp use
+<pre># <b>make clasp-boehm</b></pre>
+or to make the mps version of Clasp use
+<pre># <b>make clasp-mps</b></pre>
 
 If you want to install the libraries separately its more complicated because Clasp requires a particular version of LLVM/Clang3.6 which hasn't been officially released yet but is present in externals-clang.
 This should all become easier in a couple of months when LLVM/Clang3.6 is released.<br>
