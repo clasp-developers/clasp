@@ -57,9 +57,9 @@ To build Clasp from within the top level directory do the following.
 4) Make both the mps and boehm versions of Clasp (see note 1 for other options).
 <pre># <b>make</b></pre>
          
-If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order in which boost-build builds things but I haven't sorted it down yet.
+If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order in which boost-build builds things but I haven't sorted it out yet.
 
-5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS or $**CLASP_BUILD_TARGET_DIR**/bin (from local.config) to your PATH<br>
+5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS (OS X) or $**CLASP_BUILD_TARGET_DIR**/bin (linux) (from local.config) to your PATH<br>
 
 6) To run the MPS version of Clasp use
 <pre># <b>clasp_mps_o</b></pre>
@@ -80,6 +80,7 @@ HELLO-WORLD
 "Clasp is running.  Huzzah!!!"
 &gt; <b>(quit)</b>
 </pre>
+Clasp will run within Emacs using *inferior-lisp* and in the future it will have a SLIME interface (volunteer programmers will be showered with appreciation).
 
 Note 1:  You can make just one version of Clasp
 <pre># <b>make boostbuildv2-build</b> </pre>
