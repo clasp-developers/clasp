@@ -1,7 +1,7 @@
 Clasp
 ===============
 
-<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Sept 29, 2014 --  Please read regarding installing Clasp</a>
+<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Oct 5, 2014 --  Please read regarding installing Clasp</a>
 
 **If you have questions come ask them on IRC at freenode #clasp**
 
@@ -15,24 +15,22 @@ You must build externals-clasp prior to building Clasp
 
 ## Systems Clasp has built on
 
-Clasp uses a lot of leading edge C++11 language features and so it needs a minimum of Clang 3.5 or gcc 4.8 to compile externals-clasp.   externals-clasp installs a local version of Clang 3.6 that is used to compile Clasp.
+Clasp needs an advanced C++ compiler that supports C++11 (minimum clang 3.5 or gcc 4.8).
+
+Clasp also needs a very specific version of the llvm/clang 3.6 libraries that are not part of a standard release.
+This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally, the externals-clasp/llvm3.6 builds a clang3.6 compiler, which can be used by the Clasp build system to compile Clasp.
 
 | Systems that Clasp is known to build on |
 | -------------------------------------- |
 | OS X 10.9.5 using Xcode 6.0.1          |
 | Debian Jessie(also known as Debian-Testing) - after apt-get ncurses-dev, libbz2-dev (for externals-clasp)|
 | Debian Sid(also known as Debian-Unstable) |
-| Gentoo Linux(note 1) |
-
-Note 1: See https://gist.github.com/jasom/5b7b40debea3558cf09e
+| Gentoo Linux(See Issue #20) |
+| Arch Linux |
+| OpenSuse 13.1 (See issue #19) |
+| Debian Wheezy with gcc 4.9 (See issue #21) |
 
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
-
-| Systems that Clasp had problems building on |
-| ---------------------------------------- |
-| Debian Wheezy with with gcc 4.9!!! See note below|
-
-Note: We ran into a problem installing on a Debian Wheezy system upgraded to gcc 4.9.  I'm doing some things to try and get around this.
 
 ## Building Clasp
 
