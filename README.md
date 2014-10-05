@@ -11,7 +11,7 @@ See http://drmeister.wordpress.com/2014/09/18/announcing-clasp/ for the announce
 Clasp is not yet a full ANSI compliant Common Lisp - if you find differences between Clasp and the Common Lisp standard they are considered bugs in Clasp and please feel free to report them.
 
 **Libraries that clasp depends on can be obtained using the repository: <a href="https://github.com/drmeister/externals-clasp.git">externals-clasp</a>**<br>
-You must build externals-clasp prior to building Clasp
+Currently you must build externals-clasp prior to building Clasp - we will eliminate the need for this in future releases.
 
 ## Systems Clasp has built on
 
