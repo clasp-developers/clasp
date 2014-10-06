@@ -3,14 +3,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -24,17 +24,17 @@
 
 ;; -^-
 
-(defparameter *engine-builder* (llvm-sys:make-engine-builder *the-module*))
+(defvar *engine-builder* (llvm-sys:make-engine-builder *the-module*))
 ;; NOTE:  *the-module* becomes invalid after call to make-engine-builder - is this OK?
 
 
 
 ;;
-;; --------       Here set the execution engine kind 
+;; --------       Here set the execution engine kind
 ;;                INTERPRETER or JIT (for native code)
 ;;
 ;;(llvm-sys:set-engine-kind *engine-builder* 'llvm-sys:interpreter)
 (llvm-sys:set-target-options *engine-builder* '(llvm-sys:jitemit-debug-info t))
-(defparameter *the-execution-engine* (llvm-sys:create *engine-builder*))
+(defvar *the-execution-engine* (llvm-sys:create *engine-builder*))
 (if (is-undefined *the-execution-engine*)
   (error "The execution engine could not be created: ~a" (llvm-sys:error-string *engine-builder*)))

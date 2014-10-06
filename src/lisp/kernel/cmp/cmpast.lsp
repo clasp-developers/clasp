@@ -3,14 +3,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -23,7 +23,7 @@
 ;; THE SOFTWARE.
 
 ;; -^-
- 
+
 ;;
 (in-package :cmp)
 
@@ -55,7 +55,7 @@
 
 (defstruct (ast-lambda/lambda-block (:include ast-node)))
 
-  
+
 
 (defun parse-macro (name vl body &optional env)
   (multiple-value-bind (lblock ppn doc)
@@ -107,7 +107,7 @@ Return the new environment."
   (cmp-log "compile-arguments closed-over-renv: %s\n" closed-over-renv)
   ;; This is where we make the value frame for the passed arguments
   ;;
-  ;; keywords:  ESCAPE ANALYSIS escape analysis TODO 
+  ;; keywords:  ESCAPE ANALYSIS escape analysis TODO
   ;; Currently all bindings are on the heap
   ;; - we should move some/all of these bindings onto the stack
   ;; There should be information in new-env??? that can tell us what
@@ -437,7 +437,7 @@ WORKING HERE WORKING HERE
 		))
 	  (unless (cddr cur)
 	    (irc-intrinsic "copyTsp" result temp-res))
-	    
+
 	  )
 	;; There were no pairs, return nil
 	(codegen-literal result nil env)))
@@ -514,7 +514,7 @@ env is the parent environment of the (result-af) value frame"
 			   :number-of-arguments (number-of-lexical-variables lambda-list-handler) ;; lambda-list-handler lambda-list-handler
 			   :label (symbol-name operator-symbol)))
 		 ;; There is a huge problem with setting evaluate-env for 'let
-		 ;; in that the let evaluate-environment is not the same environment 
+		 ;; in that the let evaluate-environment is not the same environment
 		 ;; used by with-try and codegen-fill-let/let*-environment
 		 ;; The problem is that the code generated within codegen-fill-let/let*-environment
 		 ;; connects to the env dispatcher rather than the new-env dispatcher
@@ -591,7 +591,7 @@ env is the parent environment of the (result-af) value frame"
       ;; example had: CondV = Builder.CreateFCmpONE(CondV,ConstantFP::get(getGlobalContext(),APFloat(0.0)),"ifcond")
 ;;      (break "make sure that divergence with kaleidoscope demo works")
       ;;      (setq condv (llvm-sys:create-fcmp-one))
-      ;; Create blocks for the then and else cases. Insert the 'then' block at 
+      ;; Create blocks for the then and else cases. Insert the 'then' block at
       ;; the end of the function
       (let* ((thenbb (irc-basic-block-create "then" *current-function*))
 	     (elsebb (irc-basic-block-create "else" ))
@@ -642,7 +642,7 @@ env is the parent environment of the (result-af) value frame"
 
 (defun tagbody.enumerate-tag-blocks (code tagbody-env)
   (let (result (index 0))
-    (mapl #'(lambda (x) 
+    (mapl #'(lambda (x)
 	      (if (and (car x) (symbolp (car x)))
 		  (progn
 		      (setq result (cons (list index (irc-basic-block-create (bformat nil "tagbody-%s-%s" (car x) index)) x) result))
@@ -1004,7 +1004,7 @@ jump to blocks within this tagbody."
 	  (split-vars-declares-forms '((a b) (declare z1) (declare z2) (print "Hi")))
 	  (split-vars-declares-forms '((a b) ))
 	  |#
-   
+
 
 (defparameter *nexti* 10000)
 (defun codegen-dbg-i32 (result rest env)
@@ -1090,9 +1090,9 @@ jump to blocks within this tagbody."
 	   (*current-column* (if column column 0)))
       (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
       (cmp-log "codegen evaluate-depth[%d]  %s\n" (evaluate-depth) form)
-      ;; 
+      ;;
       ;; If a *code-walker* is defined then invoke the code-walker
-      ;; with the current form and environment 
+      ;; with the current form and environment
       (when *code-walker*
 	(setq form (funcall *code-walker* form env)))
       (if (atom form)
@@ -1131,7 +1131,7 @@ jump to blocks within this tagbody."
 		  ;;	(break "codegen repl form")
 		  (dbg-set-current-debug-location-here)
 		  (codegen result form fn-env)
-		  (dbg-set-current-debug-location-here) 
+		  (dbg-set-current-debug-location-here)
 		  )))))
     (cmp-log "Dumping the repl function\n")
     (cmp-log-dump fn)
@@ -1194,35 +1194,35 @@ be wrapped with to make a closure"
 					     nil
 					     'llvm-sys:external-linkage nil ;; (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+)
 					     *run-time-literals-external-name*)))
-	(with-compilation-unit (:override nil
-					  :module *the-module*
-					  :function-pass-manager *the-function-pass-manager*)
-	  (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
-	    (let* ((truename (if *load-truename*
-				 (namestring *load-truename*)
-				 "compile-in-env"))
-		   (*gv-source-path-name* (jit-make-global-string-ptr
-					   truename
-					   "source-path-name"))
-		   (*all-funcs-for-one-compile* nil))
-	      (multiple-value-bind (fn function-kind wrapped-env warnp failp)
-		  (with-dibuilder (*the-module*)
-		    (with-dbg-compile-unit (nil truename)
-		      (with-dbg-file-descriptor (nil truename)
-			(multiple-value-bind (fn fn-kind wrenv warnp failp)
-			    (compile* name definition env)
-			  (values fn fn-kind wrenv warnp failp)
-			  ))))
-		(cmp-log "------------  Finished building MCJIT Module - about to get-compiled-function  Final module follows...\n")
-		(cmp-log-dump *the-module*)
-		(let* ((compiled-function (progn
-					    (cmp-log "About to get-compiled-function with fn %s\n" fn)
-					    (llvm-sys:get-compiled-function *run-time-execution-engine* name fn
-									  (irc-environment-activation-frame wrapped-env)
-									  function-kind))))
-		  (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
-		  (when name (setf-symbol-function name compiled-function))
-		  (values compiled-function warnp failp))))))))))
+	(with-compilation-unit ()
+            (with-module (:module *the-module* :function-pass-manager *the-function-pass-manager*)
+              (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
+                (let* ((truename (if *load-truename*
+                                     (namestring *load-truename*)
+                                     "compile-in-env"))
+                       (*gv-source-path-name* (jit-make-global-string-ptr
+                                               truename
+                                               "source-path-name"))
+                       (*all-funcs-for-one-compile* nil))
+                  (multiple-value-bind (fn function-kind wrapped-env warnp failp)
+                      (with-dibuilder (*the-module*)
+                        (with-dbg-compile-unit (nil truename)
+                          (with-dbg-file-descriptor (nil truename)
+                            (multiple-value-bind (fn fn-kind wrenv warnp failp)
+                                (compile* name definition env)
+                              (values fn fn-kind wrenv warnp failp)
+                              ))))
+                    (cmp-log "------------  Finished building MCJIT Module - about to get-compiled-function  Final module follows...\n")
+                    (cmp-log-dump *the-module*)
+                    (let* ((compiled-function
+                            (progn
+                              (cmp-log "About to get-compiled-function with fn %s\n" fn)
+                              (llvm-sys:get-compiled-function *run-time-execution-engine* name fn
+                                                              (irc-environment-activation-frame wrapped-env)
+                                                              function-kind))))
+                      (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
+                      (when name (setf-symbol-function name compiled-function))
+                      (values compiled-function warnp failp)))))))))))
 
 
 
