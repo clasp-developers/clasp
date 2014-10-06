@@ -53,10 +53,8 @@ To build Clasp from within the top level directory do the following.
 |                                            | Set PJOBS <= the number of cores you have.                              |
 |                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
 |                                            | otherwise your system will swap like crazy                              |
-+--------------------------------------------+-------------------------------------------------------------------------+
 | **CXXFLAGS**                               | If you set this export CXXFLAGS = -v  it will print more debugging info |
 |                                            | during the build                                                        |
-+--------------------------------------------+-------------------------------------------------------------------------+
 
 4) Make both the mps and boehm versions of Clasp (see note 1 for other options).
 <pre># <b>make</b></pre>
