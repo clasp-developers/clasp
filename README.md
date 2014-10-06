@@ -20,9 +20,8 @@ Clasp needs an advanced C++ compiler that supports C++11 (minimum clang 3.5 or g
 Clasp also needs a very specific version of the llvm/clang 3.6 libraries that are not part of a standard release.
 This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally, the externals-clasp/llvm3.6 builds a clang3.6 compiler, which can be used by the Clasp build system to compile Clasp.
 
-+-------------------------------------------+
 |  Systems that Clasp is known to build on  |
-+===========================================+
+| ----------------------------------------- |
 |  OS X 10.9.5 using Xcode 6.0.1            |
 |  Debian Testing(Jessie) - see issue #22   |
 |  Debian Unstable(Sid)                     |
@@ -30,7 +29,6 @@ This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally,
 |  Arch Linux                               |
 |  OpenSuse 13.1 - see issue #19            |
 |  Debian Stable (Wheezy) - see issue #21   |
-+-------------------------------------------+
 
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
@@ -45,25 +43,17 @@ To build Clasp from within the top level directory do the following.
 
 3) Edit local.config and configure it for your system. The following configuration variables affect the build process.
 
-+--------------------------------------------+-------------------------------------------------------------------------+
 | Variable                                   |   Description                                                           |
-+============================================+=========================================================================+
-| **CLASP_BUILD_TARGET_DIR**                 | This defines where make will put the Clasp application                  |
-|                                            | I use $HOME/local/clasp                                                 |
-+--------------------------------------------+-------------------------------------------------------------------------+
-| **EXTERNALS_BUILD_TARGET_DIR**             | This defines where Clasp build will find the externals-clasp libraries  |
-|                                            | I use $HOME/local/externals-clasp                                       |
-+--------------------------------------------+-------------------------------------------------------------------------+
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| **CLASP_BUILD_TARGET_DIR**                 | This defines where make will put the Clasp application. I use $HOME/local/clasp |
+| **EXTERNALS_BUILD_TARGET_DIR**             | This defines where Clasp build will find the externals-clasp libraries.  I use $HOME/local/externals-clasp |
 | **TARGET_OS**                              | Currently either _linux_ or _darwin_                                    |
-+--------------------------------------------+-------------------------------------------------------------------------+
 | **PJOBS**                                  | The number of processors you have available to build with.              |
 |                                            | Set PJOBS <= the number of cores you have.                              |
 |                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
 |                                            | otherwise your system will swap like crazy                              |
-+--------------------------------------------+-------------------------------------------------------------------------+
 | **CXXFLAGS**                               | If you set this export CXXFLAGS = -v  it will print more debugging info |
 |                                            | during the build                                                        |
-+--------------------------------------------+-------------------------------------------------------------------------+
 
 4) Make both the mps and boehm versions of Clasp (see note 1 for other options).
 <pre># <b>make</b></pre>
