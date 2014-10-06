@@ -20,9 +20,7 @@ Clasp needs an advanced C++ compiler that supports C++11 (minimum clang 3.5 or g
 Clasp also needs a very specific version of the llvm/clang 3.6 libraries that are not part of a standard release.
 This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally, the externals-clasp/llvm3.6 builds a clang3.6 compiler, which can be used by the Clasp build system to compile Clasp.
 
-| ------------------------------------------- |
 |  Systems that Clasp is known to build on  |
-| =========================================== |
 |  OS X 10.9.5 using Xcode 6.0.1            |
 |  Debian Testing(Jessie) - see issue #22   |
 |  Debian Unstable(Sid)                     |
@@ -30,7 +28,6 @@ This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally,
 |  Arch Linux                               |
 |  OpenSuse 13.1 - see issue #19            |
 |  Debian Stable (Wheezy) - see issue #21   |
-| ------------------------------------------- |
 
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
