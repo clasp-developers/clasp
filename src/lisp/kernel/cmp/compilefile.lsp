@@ -209,8 +209,9 @@
 
 
 (defun compile-form-into-module (form name)
-  (let* ((module (create-llvm-module-for-compile-file name)))
-    (with-compilation-unit ()
+  (let* ((module (create-llvm-module-for-compile-file name))
+         conditions)
+    (with-compiler-env (conditions)
       (with-module (:module module
                             :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
         (let* ((*compile-file-pathname* nil)
@@ -229,19 +230,6 @@
                     (add-main-function *the-module*))))
               *the-module*)))))))
 
-
-
-#+ecl-min (defun compile-file-t1expr (form)
-            (t1expr form))
-
-#-ecl-min (defun compile-file-t1expr (form)
-            (restart-case (t1expr form)
-              (record-failure (x)
-                (bformat t "File: %s %d  error: %s\n" *compile-file-truename* *current-lineno* x)
-                (setq *compilation-failures-p t))
-              (record-warning (x)
-                (bformat t "File: %s %d  warning: %s\n" *compile-file-truename* *current-lineno* x)
-                (setq *compilation-warnings-p t))))
 
 
 (defun cfp-output-file-default (input-file)
@@ -291,7 +279,7 @@ and the pathname of the source file - this will also be used as the module initi
 		       (external-format :default)
 ;;; type can be either :kernel or :user
 		       (type :user)
-                       conditions
+                     &aux conditions
 		       )
   "See CLHS compile-file"
   ;; TODO: Save read-table and package with unwind-protect
@@ -328,7 +316,7 @@ and the pathname of the source file - this will also be used as the module initi
                         ((eq form eof-value) nil)
                       (let ((*current-lineno* line-number)
                             (*current-column* column))
-                        (compile-file-t1expr form)))
+                        (t1expr form)))
                     (let ((main-fn (compile-main-function output-path ltv-init-fn )))
                       (make-boot-function-global-variable *the-module* main-fn)
                       (add-main-function *the-module*))))))

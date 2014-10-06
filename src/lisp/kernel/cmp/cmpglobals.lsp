@@ -24,6 +24,8 @@
 
 ;; -^-
 
+(in-package :cmp)
+
 (defvar *global-vars* nil)     ; variables declared special
 (defvar *active-protection* nil)
 (defvar *pending-actions* nil)
