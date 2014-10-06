@@ -3,14 +3,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -54,19 +54,46 @@
   )
 
 
-(defmacro with-compilation-unit ((&key override module function-pass-manager ) &rest body)
-  `(let* ((*the-module* ,module)
-	  (*the-function-pass-manager* ,function-pass-manager)
-	  (*all-functions-for-one-compile* nil)
-	  (*generate-load-time-values* t)
-	  )
+(defmacro with-module ((&key module function-pass-manager) &rest body)
+  `(let ((*the-module* ,module)
+         (*the-function-pass-manager* ,function-pass-manager)
+         (*all-functions-for-one-compile* nil)
+         (*generate-load-time-values* t))
      (declare (special *the-function-pass-manager*))
      (with-irbuilder (nil (llvm-sys:make-irbuilder *llvm-context*))
-       ,@body
-       )
-     )
-  )
+       ,@body)))
 
+
+(defun do-compilation-unit (closure &key override)
+  (cond (override
+	 (let* ((*active-protection* nil))
+	   (do-compilation-unit closure)))
+	((null *active-protection*)
+	 (let* ((*active-protection* t)
+		(*pending-actions* nil))
+	   (unwind-protect (do-compilation-unit closure)
+             (dolist (action *pending-actions*)
+               (funcall action)))))
+	(t
+	 (funcall closure))))
+
+(defmacro with-compilation-unit ((&rest options) &body body)
+ `(do-compilation-unit #'(lambda () ,@body) ,@options))
+
+
+
+#||
+(defvar *compilation-messages* nil)
+(defvar *compilation-warnings-p* nil)
+(defvar *compilation-failures-p* nil)
+         #+ecl-min (progn ,@body)
+         #-ecl-min (handler-bind
+                       ((error #'(lambda (c)
+                                   (invoke-restart 'record-failure c)))
+                        (warning #'(lambda (c)
+                                     (invoke-restart 'record-warning c))))
+                     ,@body))
+||#
 
 
 
@@ -121,7 +148,7 @@
     ;; TODO: Do something with the declares!!!!!  They should be put into the environment
     (let ((new-env (core:make-value-environment-for-locally-special-entries specials env)))
       (t1progn code new-env))))
-      
+
 (defun t1macrolet (rest env)
   (let* ((macros (car rest))
 	 (body (cdr rest))
@@ -168,7 +195,7 @@
 	 (t1expr expanded env)))
       (t (compile-top-level form)))
     ))
-       
+
 
 
 
@@ -183,25 +210,38 @@
 
 (defun compile-form-into-module (form name)
   (let* ((module (create-llvm-module-for-compile-file name)))
-    (with-compilation-unit (:override nil
-                                      :module module
-                                      :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
-                           (let* ((*compile-file-pathname* nil)
-                                  (*compile-file-truename* name)
-                                  (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
-                                  (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*))
-                                  (*compile-print* nil)
-                                  (*compile-verbose* nil))
-                             (with-dibuilder (*the-module*)
-                                             (with-dbg-compile-unit (nil *compile-file-truename*)
-                                                                    (with-dbg-file-descriptor (nil *compile-file-truename*)
-                                                                                              (with-load-time-value-unit (ltv-init-fn)
-                                                                                                                         (compile-top-level form)
-                                                                                                                         (let ((main-fn (compile-main-function name ltv-init-fn )))
-                                                                                                                           (make-boot-function-global-variable *the-module* main-fn)
-                                                                                                                           (add-main-function *the-module*))))
-                                                                    *the-module*))))))
+    (with-compilation-unit ()
+      (with-module (:module module
+                            :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
+        (let* ((*compile-file-pathname* nil)
+               (*compile-file-truename* name)
+               (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
+               (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*))
+               (*compile-print* nil)
+               (*compile-verbose* nil))
+          (with-dibuilder (*the-module*)
+            (with-dbg-compile-unit (nil *compile-file-truename*)
+              (with-dbg-file-descriptor (nil *compile-file-truename*)
+                (with-load-time-value-unit (ltv-init-fn)
+                  (compile-top-level form)
+                  (let ((main-fn (compile-main-function name ltv-init-fn )))
+                    (make-boot-function-global-variable *the-module* main-fn)
+                    (add-main-function *the-module*))))
+              *the-module*)))))))
 
+
+
+#+ecl-min (defun compile-file-t1expr (form)
+            (t1expr form))
+
+#-ecl-min (defun compile-file-t1expr (form)
+            (restart-case (t1expr form)
+              (record-failure (x)
+                (bformat t "File: %s %d  error: %s\n" *compile-file-truename* *current-lineno* x)
+                (setq *compilation-failures-p t))
+              (record-warning (x)
+                (bformat t "File: %s %d  warning: %s\n" *compile-file-truename* *current-lineno* x)
+                (setq *compilation-warnings-p t))))
 
 
 (defun cfp-output-file-default (input-file)
@@ -217,7 +257,7 @@
 ;;; So I haven't really tried to make this precisely ANSI-compatible
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
-(defun compile-file-pathname (input-file &key (output-file nil output-file-p))
+(defun compile-file-pathname (input-file &key (output-file nil output-file-p) &allow-other-keys)
   (if output-file-p
       (merge-pathnames output-file (cfp-output-file-default input-file))
       (cfp-output-file-default input-file)))
@@ -228,31 +268,47 @@
 and the pathname of the source file - this will also be used as the module initialization function name"
   (string-downcase (bformat nil "___%s_%s" (string type) (pathname-name pathname))))
 
+
+
+(defun compile-file-results (output-file conditions)
+  (let (warnings-p failures-p)
+    (dolist (cond conditions)
+      (cond
+        ((typep cond 'error)
+         (setq failures-p t))
+        ((typep cond 'warning)
+         (setq warnings-p t))
+        (t (error "Illegal condition ~a" cond))))
+    (values output-file warnings-p failures-p)))
+
+
 (defun compile-file (given-input-pathname
 		     &key
 		       (output-file (cfp-output-file-default given-input-pathname))
 		       (verbose *compile-verbose*)
 		       (print *compile-print*)
+                       (system-p t)
 		       (external-format :default)
 ;;; type can be either :kernel or :user
 		       (type :user)
+                       conditions
 		       )
   "See CLHS compile-file"
   ;; TODO: Save read-table and package with unwind-protect
-  (with-compiler-env ()
+  (with-compiler-env (conditions)
     (let* ((input-pathname (probe-file given-input-pathname))
            (sin (open input-pathname :direction :input))
            (output-path (compile-file-pathname input-pathname :output-file output-file))
            (eof-value (gensym))
            (module (create-llvm-module-for-compile-file (namestring input-pathname)))
-           (module-name (cf-module-name type input-pathname)))
+           (module-name (cf-module-name type input-pathname))
+           warnings-p failure-p)
       (when verbose
         (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
       (with-one-source-database
           (cmp-log "About to start with-compilation-unit\n")
-        (with-compilation-unit (:override nil
-                                          :module module
-                                          :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
+        (with-module (:module module
+                              :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
           (let* ((*compile-file-pathname* given-input-pathname)
                  (*compile-file-truename* (truename *compile-file-pathname*))
                  (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
@@ -272,8 +328,7 @@ and the pathname of the source file - this will also be used as the module initi
                         ((eq form eof-value) nil)
                       (let ((*current-lineno* line-number)
                             (*current-column* column))
-                        (t1expr form)
-                        ))
+                        (compile-file-t1expr form)))
                     (let ((main-fn (compile-main-function output-path ltv-init-fn )))
                       (make-boot-function-global-variable *the-module* main-fn)
                       (add-main-function *the-module*))))))
@@ -289,10 +344,9 @@ and the pathname of the source file - this will also be used as the module initi
             (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path))
             (ensure-directories-exist output-path)
             (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-path))
-            ))
-        )
-      )))
-  
-    
+            )))
+      (compile-file-results output-path conditions))))
+
+
 
 (export 'compile-file)

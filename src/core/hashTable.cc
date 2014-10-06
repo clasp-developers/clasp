@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -82,7 +82,7 @@ namespace core
 #define LOCK_af_make_hash_table 1
 #define DOCS_af_make_hash_table "see CLHS"
 #define	ARGS_af_make_hash_table "(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0))"
-#define DECL_af_make_hash_table ""    
+#define DECL_af_make_hash_table ""
     HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold)
     {_G();
 	int isize = size->as_int();
@@ -121,7 +121,7 @@ namespace core
 
 
 #define ARGS_af_maphash "(function_desig hash_table)"
-#define DECL_af_maphash ""    
+#define DECL_af_maphash ""
 #define	DOCS_af_maphash "see CLHS"
 #define	FILE_af_maphash __FILE__
 #define LINE_af_maphash __LINE__
@@ -153,7 +153,7 @@ namespace core
 
 
 #define ARGS_af_clrhash "(hash_table)"
-#define DECL_af_clrhash ""    
+#define DECL_af_clrhash ""
 #define DOCS_af_clrhash "See CLHS"
     T_mv af_clrhash(HashTable_sp hash_table)
     {_G();
@@ -164,8 +164,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_hashTableEntryDeletedP "(cons)"
 #define DECL_af_hashTableEntryDeletedP ""
 #define DOCS_af_hashTableEntryDeletedP "hashTableEntryDeletedP"
@@ -177,8 +177,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_hash_eql "(&rest args)"
 #define DECL_af_hash_eql ""
 #define DOCS_af_hash_eql "hash_eql generates an eql hash for a list of objects"
@@ -186,7 +186,7 @@ namespace core
     {_G();
 	HashGenerator hg;
 	for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) )
-	{	
+	{
 	    HashTable_O::sxhash_eql(hg,oCar(cur),NULL);
 	    if ( hg.isFull() ) break;
 	}
@@ -201,7 +201,7 @@ namespace core
     {_G();
 	HashGenerator hg;
 	for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) )
-	{	
+	{
 	    HashTable_O::sxhash_equal(hg,oCar(cur),NULL);
 	    if ( hg.isFull() ) break;
 	}
@@ -216,7 +216,7 @@ namespace core
     {_G();
 	HashGenerator hg;
 	for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) )
-	{	
+	{
 	    HashTable_O::sxhash_equalp(hg,oCar(cur),NULL);
 	    if ( hg.isFull() ) break;
 	}
@@ -229,8 +229,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_remhash "(key hashtable)"
 #define DECL_af_remhash ""
 #define DOCS_af_remhash "remhash"
@@ -277,7 +277,7 @@ namespace core
 	obj->T_O::sxhash(hg);
     }
 
-						    
+
 
     void HashTable_O::sxhash_eql(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
@@ -351,7 +351,7 @@ namespace core
 
 
 
-	
+
 #if 0
     void HashTable_O::serialize(::serialize::SNodeP node)
     {
@@ -451,8 +451,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_gethash "(key hash-table &optional default_value)"
 #define DECL_cl_gethash ""
 #define DOCS_cl_gethash "gethash"
@@ -638,7 +638,7 @@ namespace core
         }
         return foundKeyValuePair;
     }
-    
+
 
     string HashTable_O::__repr__() const
     {
@@ -821,6 +821,6 @@ namespace core
 #endif
     }
 
-    
+
 
 }; /* core */

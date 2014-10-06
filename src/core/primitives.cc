@@ -84,6 +84,84 @@ namespace core
 
 
 
+#define ARGS_cl_lispImplementationType "()"
+#define DECL_cl_lispImplementationType ""
+#define DOCS_cl_lispImplementationType "lispImplementationType"
+    T_sp cl_lispImplementationType()
+    {_G();
+        return Str_O::create("Clasp");
+    };
+
+
+
+#define ARGS_cl_lispImplementationVersion "()"
+#define DECL_cl_lispImplementationVersion ""
+#define DOCS_cl_lispImplementationVersion "lispImplementationVersion"
+    T_sp cl_lispImplementationVersion()
+    {_G();
+        return Str_O::create(CLASP_VERSION);
+    };
+
+
+
+
+
+#define ARGS_core_lispImplementationId "()"
+#define DECL_core_lispImplementationId ""
+#define DOCS_core_lispImplementationId "lispImplementationId - the git commit sha1 code"
+    T_sp core_lispImplementationId()
+    {_G();
+        return Str_O::create(CLASP_GIT_COMMIT);
+    };
+
+
+
+
+
+#define ARGS_cl_softwareType "()"
+#define DECL_cl_softwareType ""
+#define DOCS_cl_softwareType "softwareType"
+    T_sp cl_softwareType()
+    {_G();
+        return _Nil<T_O>();
+    };
+
+#define ARGS_cl_softwareVersion "()"
+#define DECL_cl_softwareVersion ""
+#define DOCS_cl_softwareVersion "softwareVersion"
+    T_sp cl_softwareVersion()
+    {_G();
+        return _Nil<T_O>();
+    };
+
+
+
+
+#define ARGS_cl_machineType "()"
+#define DECL_cl_machineType ""
+#define DOCS_cl_machineType "machineType"
+    T_sp cl_machineType()
+    {_G();
+        return _Nil<T_O>();
+    };
+
+#define ARGS_cl_machineVersion "()"
+#define DECL_cl_machineVersion ""
+#define DOCS_cl_machineVersion "machineVersion"
+    T_sp cl_machineVersion()
+    {_G();
+        return _Nil<T_O>();
+    };
+
+#define ARGS_cl_machineInstance "()"
+#define DECL_cl_machineInstance ""
+#define DOCS_cl_machineInstance "machineInstance"
+    T_sp cl_machineInstance()
+    {_G();
+        return _Nil<T_O>();
+    };
+
+
 
 #define ARGS_af_argc "()"
 #define DECL_af_argc ""
@@ -1932,6 +2010,14 @@ void initialize_primitives()
         Defun(incompleteNextHigherPowerOf_2);
         Defun(argc);
         Defun(argv);
+        ClDefun(lispImplementationVersion);
+        ClDefun(lispImplementationType);
+        CoreDefun(lispImplementationId);
+        ClDefun(softwareVersion);
+        ClDefun(softwareType);
+        ClDefun(machineVersion);
+        ClDefun(machineType);
+        ClDefun(machineInstance);
     }
 
 
