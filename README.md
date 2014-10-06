@@ -21,6 +21,7 @@ Clasp also needs a very specific version of the llvm/clang 3.6 libraries that ar
 This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally, the externals-clasp/llvm3.6 builds a clang3.6 compiler, which can be used by the Clasp build system to compile Clasp.
 
 |  Systems that Clasp is known to build on  |
+| ----------------------------------------- |
 |  OS X 10.9.5 using Xcode 6.0.1            |
 |  Debian Testing(Jessie) - see issue #22   |
 |  Debian Unstable(Sid)                     |
