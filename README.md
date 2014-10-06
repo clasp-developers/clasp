@@ -29,6 +29,7 @@ This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally,
 |  Arch Linux                               |
 |  OpenSuse 13.1 - see issue #19            |
 |  Debian Stable (Wheezy) - see issue #21   |
+|  Ubuntu 14.04 - see issue #26             |
 
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
