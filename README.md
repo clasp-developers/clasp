@@ -5,7 +5,7 @@ Clasp
 
 **If you have questions come ask them on IRC at freenode #clasp**
 
-Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.  
+Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.
 See http://drmeister.wordpress.com/2014/09/18/announcing-clasp/ for the announcement.
 
 Clasp is not yet a full ANSI compliant Common Lisp - if you find differences between Clasp and the Common Lisp standard they are considered bugs in Clasp and please feel free to report them.
@@ -20,15 +20,17 @@ Clasp needs an advanced C++ compiler that supports C++11 (minimum clang 3.5 or g
 Clasp also needs a very specific version of the llvm/clang 3.6 libraries that are not part of a standard release.
 This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally, the externals-clasp/llvm3.6 builds a clang3.6 compiler, which can be used by the Clasp build system to compile Clasp.
 
-| Systems that Clasp is known to build on |
-| -------------------------------------- |
-| OS X 10.9.5 using Xcode 6.0.1          |
-| Debian Testing(Jessie) - see issue #22 |
-| Debian Unstable(Sid) |
-| Gentoo Linux - see Issue #20 |
-| Arch Linux |
-| OpenSuse 13.1 - see issue #19 |
-| Debian Stable(Wheezy) - see issue #21 |
++-------------------------------------------+
+|  Systems that Clasp is known to build on  |
++===========================================+
+|  OS X 10.9.5 using Xcode 6.0.1            |
+|  Debian Testing(Jessie) - see issue #22   |
+|  Debian Unstable(Sid)                     |
+|  Gentoo Linux - see Issue #20             |
+|  Arch Linux                               |
+|  OpenSuse 13.1 - see issue #19            |
+|  Debian Stable (Wheezy) - see issue #21   |
++-------------------------------------------+
 
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
@@ -43,20 +45,29 @@ To build Clasp from within the top level directory do the following.
 
 3) Edit local.config and configure it for your system. The following configuration variables affect the build process.
 
-| Variable  |   Description 
-| ------------- | --------------|
-| **CLASP_BUILD_TARGET_DIR**    | This defines where make will put the Clasp application  |
-|                               | I use $HOME/local/clasp |
-| **EXTERNALS_BUILD_TARGET_DIR**  | This defines where Clasp build will find the externals-clasp libraries  |
-|                                 | I use $HOME/local/externals-clasp |
-|**TARGET_OS**                    |Currently either _linux_ or _darwin_|
-|**PJOBS**                        |The number of processors you have available to build with. Set PJOBS <= the number of cores you have. Also if you have less than 8GB memory you should set PJOBS to 2 or 1, otherwise your system will swap like crazy |
-|**CXXFLAGS**                     |If you set this export CXXFLAGS = -v  it will print more debugging info during the build |
-
++--------------------------------------------+-------------------------------------------------------------------------+
+| Variable                                   |   Description                                                           |
++============================================+=========================================================================+
+| **CLASP_BUILD_TARGET_DIR**                 | This defines where make will put the Clasp application                  |
+|                                            | I use $HOME/local/clasp                                                 |
++--------------------------------------------+-------------------------------------------------------------------------+
+| **EXTERNALS_BUILD_TARGET_DIR**             | This defines where Clasp build will find the externals-clasp libraries  |
+|                                            | I use $HOME/local/externals-clasp                                       |
++--------------------------------------------+-------------------------------------------------------------------------+
+| **TARGET_OS**                              | Currently either _linux_ or _darwin_                                    |
++--------------------------------------------+-------------------------------------------------------------------------+
+| **PJOBS**                                  | The number of processors you have available to build with.              |
+|                                            | Set PJOBS <= the number of cores you have.                              |
+|                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
+|                                            | otherwise your system will swap like crazy                              |
++--------------------------------------------+-------------------------------------------------------------------------+
+| **CXXFLAGS**                               | If you set this export CXXFLAGS = -v  it will print more debugging info |
+|                                            | during the build                                                        |
++--------------------------------------------+-------------------------------------------------------------------------+
 
 4) Make both the mps and boehm versions of Clasp (see note 1 for other options).
 <pre># <b>make</b></pre>
-         
+
 If you see the error "fatal error: 'core_scrape_flag.h' file not found" just stop the build with control-C and type "make" again. It will sort itself out.  It's something to do with the order in which boost-build builds things but I haven't sorted it out yet.
 
 5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS (OS X) or $**CLASP_BUILD_TARGET_DIR**/bin (linux) (from local.config) to your PATH<br>
@@ -76,7 +87,7 @@ Top level.
 HELLO-WORLD
 &gt; <b>(hello-world)</b>
 
-"Clasp is running.  Huzzah!!!" 
+"Clasp is running.  Huzzah!!!"
 "Clasp is running.  Huzzah!!!"
 &gt; <b>(quit)</b>
 </pre>
@@ -104,6 +115,6 @@ zlib-1.2.8<br>
 readline-6.2<br>
 
 
-## Acknowledgments 
+## Acknowledgments
 
 Clasp was supported by the Defense Threat Reduction Agency (DOD-DTRA) (HDTRA1-09-1-0009) the National Institutes of Health (NIH/NIGMS Grant number: 2R01GM067866-07A2) and the National Science Foundation (Grant number: 1300231)
