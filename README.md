@@ -43,8 +43,8 @@ To build Clasp from within the top level directory do the following.
 
 3) Edit local.config and configure it for your system. The following configuration variables affect the build process.
 
-+--------------------------------------------+-------------------------------------------------------------------------+
 | Variable                                   |   Description                                                           |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
 +============================================+=========================================================================+
 | **CLASP_BUILD_TARGET_DIR**                 | This defines where make will put the Clasp application                  |
 |                                            | I use $HOME/local/clasp                                                 |
