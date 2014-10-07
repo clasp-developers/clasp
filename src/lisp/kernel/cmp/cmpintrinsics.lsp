@@ -3,14 +3,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -55,26 +55,6 @@ Set this to other IRBuilders to make code go where you want")
 
 
 
-(defmacro with-compiler-env ( (&rest options) &rest body )
-  "Initialize the environment to protect nested compilations from each other"
-  `(let ((*the-module* nil)
-	 (*irbuilder-ltv-function-alloca* nil)
-	 (*irbuilder-ltv-function-body* nil)
-	 (*irbuilder-function-alloca* nil)
-	 (*irbuilder-function-body* nil)
-	 (*generate-compile-file-load-time-values* nil)
-	 (*next-load-time-value-index* nil)
-	 (*load-time-value-holder-global-var* nil)
-	 (*load-time-value-coalesce* nil)
-	 (*load-time-initializer-environment* nil)
-	 (*the-module-dibuilder* nil)
-	 (*readtable* *readtable*)
-	 (*package* *package*)
-	 )
-     ,@body
-     ))
-     
-
 
 ;;
 ;; Create types
@@ -95,9 +75,9 @@ Set this to other IRBuilders to make code go where you want")
 ;;(defconstant +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
 (defconstant +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
 
-(defconstant +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty" 
+(defconstant +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
 (defconstant +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
-(defconstant +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count" 
+(defconstant +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
 
 ;;
 ;; Setup setjmp_buf type
@@ -132,10 +112,10 @@ Boehm and MPS use a single pointer"
 ;;
 ;; If I use an opaque type then the symbol type gets duplicated and that causes
 ;; problems - try just using an int
-;;(defconstant +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O" 
+;;(defconstant +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
 (defconstant +sym+ (llvm-sys:type-get-int32-ty *llvm-context*))
 (defconstant +sym-ptr+ (llvm-sys:type-get-pointer-to +sym+))
-(defconstant +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp" 
+(defconstant +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp"
 (defconstant +symsp*+ (llvm-sys:type-get-pointer-to +symsp+))
 
 
@@ -144,7 +124,7 @@ Boehm and MPS use a single pointer"
 ;;
 (defconstant +Function+ (llvm-sys:type-get-int32-ty *llvm-context*))
 (defconstant +Function-ptr+ (llvm-sys:type-get-pointer-to +Function+))
-(defconstant +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp" 
+(defconstant +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp"
 (defconstant +Function_sp*+ (llvm-sys:type-get-pointer-to +Function_sp+))
 
 
@@ -152,13 +132,13 @@ Boehm and MPS use a single pointer"
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
 (defconstant +t+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
 (defconstant +t-ptr+ (llvm-sys:type-get-pointer-to +t+))
-(defconstant +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t-ptr+) nil))  ;; "T_sp" 
+(defconstant +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t-ptr+) nil))  ;; "T_sp"
 (defconstant +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
 (defconstant +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
 (defconstant +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
 
-(defconstant +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t-ptr+ +i32+) nil))  ;; "T_mv" 
+(defconstant +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t-ptr+ +i32+) nil))  ;; "T_mv"
 (defconstant +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
 (defconstant +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
 
@@ -167,7 +147,7 @@ Boehm and MPS use a single pointer"
 (defconstant +ltv+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "LoadTimeValue_O"
 (defconstant +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
 (defconstant +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
-(defconstant +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp" 
+(defconstant +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
 (defconstant +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
 (defconstant +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
@@ -239,7 +219,7 @@ Boehm and MPS use a single pointer"
   (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size))
 
 
-;; 
+;;
 ;; Define exception types in the module
 ;;
 ;; TODO:  Holy crap! We are using hard-coded mangled clang names for the typeinfo records for each
@@ -268,7 +248,7 @@ Boehm and MPS use a single pointer"
 	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname +i8+)))
     i8*))
 
-  
+
 
 
 
@@ -314,7 +294,7 @@ Boehm and MPS use a single pointer"
 		(error "Calling ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
 	      (setq i (1+ i))
 	      ) required-args-ty passed-args-ty args)))
-    
+
 (defconstant +tsp*-or-tmv*+ :tsp*-or-tmv*
   "This is a stand-in for a first argument type that can either be tsp* or tmv*")
 
@@ -332,7 +312,7 @@ Boehm and MPS use a single pointer"
 
 
 
-      
+
 (defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
   (let ((fn (llvm-sys:function-create (llvm-sys:function-type-get return-ty args-ty varargs)
 				      'llvm-sys::External-linkage
@@ -447,7 +427,7 @@ Boehm and MPS use a single pointer"
   (primitive module "functionFrameReference" +tsp*+ (list +afsp*+ +i32+))
 
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
-  
+
 ;;  (primitive module "symbolFunction" +void+ (list +Function_sp*+ +tsp*+))
 ;;  (primitive module "lexicalFunction" +void+ (list +Function_sp*+ +i32+ +i32+ +afsp*+))
 
@@ -601,17 +581,18 @@ Boehm and MPS use a single pointer"
 
 ;;------------------------------------------------------------
 ;;
-;; Setup dynamic variables 
+;; Setup dynamic variables
 ;;
 ;;
 
 
 
 (defvar *compile-file-pathname* nil "Store the path-name of the currently compiled file")
-(defvar *gv-source-path-name* nil 
+(defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
+(defvar *gv-source-path-name* nil
   "Store a global value that defines the filename of the current compilation")
 (defvar *gv-source-file-info-handle* nil
-  "Store a global value that stores an integer handle assigned at load-time that uniquely 
+  "Store a global value that stores an integer handle assigned at load-time that uniquely
 identifies the current source file.  Used for tracing and debugging")
 
 (defvar *gv-boot-functions* nil

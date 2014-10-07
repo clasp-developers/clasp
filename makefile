@@ -1,11 +1,19 @@
 include local.config
 
+export GIT_COMMIT := $(shell git rev-parse HEAD)
+
 export BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
 export BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v2
 export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam --ignore-site-config -q
 export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]> ')
+
+ifeq ($(TARGET_OS),linux)
+  export DEVEMACS = emacs -nw ./
+else
+  export DEVEMACS = open -a emacs ./
+endif
 
 #
 # If the local.config doesn't define PYTHON2 then provide a default
@@ -18,6 +26,9 @@ ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
 	PATH := $(EXTERNALS_BUILD_TARGET_DIR)/release/bin:$(EXTERNALS_BUILD_TARGET_DIR)/common/bin:$(PATH)
 	export PATH
 endif
+
+export PATH := $(BOOST_BUILD_V2_INSTALL)/bin:$(PATH)
+
 
 ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
@@ -42,12 +53,24 @@ all:
 	make compile-commands
 
 
+#
+# When developing, set the CLASP_LISP_SOURCE_DIR environment variable
+# to tell clasp to use the development source directly rather than the
+# stuff in the clasp build target directory.  This saves us the trouble of
+# constantly having to copy the lisp sources to the target directory.
+export DEV_CLASP_LISP_SOURCE_DIR := $(shell echo `pwd`/src/lisp)
 
-shell:
+devemacs:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile
 	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
-	bash
+	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) $(DEVEMACS))
+
+devshell:
+	@echo This shell sets up environment variables like BJAM
+	@echo as they are defined when commands execute within the makefile
+	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
+	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) bash)
 
 
 testing:

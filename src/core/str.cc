@@ -801,7 +801,8 @@ namespace core
 
     bool Str_O::equalp(T_sp obj) const
     {
-        if (Str_sp s2 = obj.asOrNull<Str_O>() ) {
+        if ( obj.nilp() ) return false;
+        else if (Str_sp s2 = obj.asOrNull<Str_O>() ) {
             if ( this->length() != s2->length() ) return false;
 	    return this->string_equal(s2,0,this->length(),0,this->length());
 	}
