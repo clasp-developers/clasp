@@ -32,35 +32,56 @@
 (defconstant +fatal-format+ "**  %s\n")
 
 
-(defstruct compiler-message
+(defstruct (compiler-message (:type vector))
   (prefix "Note")
   (format +note-format+)
+  message
+  source-dir
+  source-filename
   lineno
   column
   top-level-form
   form)
 
-(defstruct (compiler-note (:include compiler-message)))
+(defstruct (compiler-note (:include compiler-message)
+                          (:type vector)))
 
 (defstruct (compiler-warning
+             (:type vector)
              (:include compiler-message
                        (prefix "Warning")
                        (format +warn-format+))))
 
 (defstruct (compiler-error
+             (:type vector)
              (:include compiler-message
                        (prefix "Error")
                        (format +error-format+))))
 
 (defstruct (compiler-fatal-error
-             (:include compiler-message
+             (:type vector)
+             (:include compiler-error
                        (prefix "Fatal Error")
                        (format +fatal-format+))))
 
 (defstruct (compiler-style-warning
-             (:include compiler-message
+             (:type vector)
+             (:include compiler-warning
                        (prefix "Style Warning")
                        (format +warn-format+))))
+
+
+
+(defun compiler-error (form message &rest args)
+  (multiple-value-bind (source-dir source-file lineno column)
+      (walk-form-for-source-info form)
+    (let ((err (make-compiler-error :message (apply bformat nil message args)
+                                    :lineno lineno
+                                    :source-dir source-dir
+                                    :source-filename source-file)))
+      (push err *compilation-messages*)
+      (throw 'compiler-error nil))))
+
 
 #||
 (defstruct (
@@ -129,7 +150,7 @@
 (defun print-compiler-message (c stream)
   (bformat stream ";;; %s\n" c))
 
-(defvar *compilation-conditions* nil)
+(defvar *compilation-messages* nil)
 (defmacro with-compiler-env ( (conditions &rest options) &rest body )
   "Initialize the environment to protect nested compilations from each other"
   `(let ((*the-module* nil)
@@ -145,19 +166,7 @@
 	 (*the-module-dibuilder* nil)
 	 (*readtable* *readtable*)
 	 (*package* *package*)
-         (*compilation-conditions* nil)
+         (*compilation-messages* nil)
 	 )
-
-     #+(or)(handler-bind
-               ((compiler-warning #'(lambda (c)
-                                      (push c *compilation-conditions*)
-                                      (print-compiler-message c t)))
-                (compiler-error #'(lambda (c)
-                                    (signal c)
-                                    (push c *compilation-conditions*)
-                                    (print-compiler-message c t)
-                                    (abort))))
-             ,@body)
-     (progn
-       ,@body)
-     ))
+     (unwind-protect (progn ,@body)
+       (setq conditions *compilation-messages*))))
