@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -40,9 +40,9 @@ THE SOFTWARE.
 
     See file '../Copyright' for full details.
 
-    BRCL is free software; you can redistribute it and/or 
+    BRCL is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either 
+    License as published by the Free Software Foundation; either
     version 2 of the License, or (at your option) any later version.
 
 */
@@ -434,7 +434,7 @@ namespace core {
 	    return pathname;
 	}
 	head = oCadr(directory);
-	if (af_stringP(head) && cl_length(head) > 0 && 
+	if (af_stringP(head) && cl_length(head) > 0 &&
 	    af_char(head,0) == '~') {
 	    /* Remove the tilde component */
 	    directory.as_or_nil<Cons_O>()->rplacd(oCddr(directory));
@@ -799,7 +799,7 @@ namespace core {
 	return Pathname_O::tilde_expand(newpath);
     }
 
-    
+
     SYMBOL_SC_(CorePkg,defaultPathnameDefaults);
     Pathname_sp core_defaultPathnameDefaults(void)
     {
@@ -867,7 +867,7 @@ namespace core {
     {_G();
 	T_sp host, device, directory, name, type, version;
 	Symbol_sp tocase;
-    
+
 	Pathname_sp defaults = cl_pathname(tdefaults);
 	Pathname_sp path = af_parseNamestring(tpath, _Nil<T_O>(), defaults);
 	host = path->_Host;
@@ -999,7 +999,7 @@ namespace core {
 		{
 		    return true;
 		}
-	    } 
+	    }
 	}
 	if (checked == 0) {
 	    SIMPLE_ERROR(BF("%s is not a valid pathname component") % _rep_(component) );
@@ -1017,8 +1017,8 @@ namespace core {
  * INV: The pathname is absolute.
  */
 
-    
-    
+
+
 #define ARGS_af_coerceToFilePathname "(tpathname)"
 #define DECL_af_coerceToFilePathname ""
 #define DOCS_af_coerceToFilePathname "coerceToFilePathname"
@@ -1047,8 +1047,8 @@ namespace core {
  * performing the appropiate transformation if P was a logical pathname.
  */
 
-    
-    
+
+
 #define ARGS_af_coerceToPhysicalPathname "(x)"
 #define DECL_af_coerceToPhysicalPathname ""
 #define DOCS_af_coerceToPhysicalPathname "coerceToPhysicalPathname"
@@ -1270,9 +1270,9 @@ namespace core {
     }
 
 
-    
-    
-    
+
+
+
 #define ARGS_af_namestring "(pathname)"
 #define DECL_af_namestring ""
 #define DOCS_af_namestring "namestring"
@@ -1284,8 +1284,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_parseNamestring "(thing &optional host defaults &key (start 0) end junk-allowed)"
 #define DECL_af_parseNamestring ""
 #define DOCS_af_parseNamestring "parseNamestring"
@@ -1332,8 +1332,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_makePathname "(&key (host nil hostp) (device nil devicep) (directory nil directoryp) (name nil namep) (type nil typep) (version nil versionp) ((:case scase) :local) defaults)"
 #define DECL_af_makePathname ""
 #define DOCS_af_makePathname "makePathname"
@@ -1367,8 +1367,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_pathnameHost "(pname &key ((:case scase) :local))"
 #define DECL_af_pathnameHost ""
 #define DOCS_af_pathnameHost "pathnameHost"
@@ -1431,8 +1431,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_pathnameVersion "(pname)"
 #define DECL_af_pathnameVersion ""
 #define DOCS_af_pathnameVersion "pathnameVersion"
@@ -1444,8 +1444,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_fileNamestring "(tpname)"
 #define DECL_af_fileNamestring ""
 #define DOCS_af_fileNamestring "fileNamestring"
@@ -1462,8 +1462,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_directoryNamestring "(tpname)"
 #define DECL_af_directoryNamestring ""
 #define DOCS_af_directoryNamestring "directoryNamestring"
@@ -1477,9 +1477,9 @@ namespace core {
 			       BRCL_NAMESTRING_TRUNCATE_IF_ERROR);
     }
 
-    
-    
-    
+
+
+
 #define ARGS_af_hostNamestring "(tpname)"
 #define DECL_af_hostNamestring ""
 #define DOCS_af_hostNamestring "hostNamestring"
@@ -1498,11 +1498,11 @@ namespace core {
 
 
 //#define EN_MATCH(p1,p2,el) (brcl_equalp(p1->pathname.el, p2->pathname.el)? _Nil<T_O>() : p1->pathname.el)
-#define EN_MATCH(p1,p2,el) (p1->el->equalp(p2->el) ? _Nil<T_O>() : p1->el)
+#define EN_MATCH(p1,p2,el) (af_equalp(p1->el,p2->el) ? _Nil<T_O>() : p1->el)
 
 
-    
-    
+
+
 #define ARGS_af_enoughNamestring "(tpath &optional defaults)"
 #define DECL_af_enoughNamestring ""
 #define DOCS_af_enoughNamestring "enoughNamestring"
@@ -1669,8 +1669,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_pathnameMatchP "(tpath tmask)"
 #define DECL_af_pathnameMatchP ""
 #define DOCS_af_pathnameMatchP "pathnameMatchP"
@@ -1728,8 +1728,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_pathnameTranslations "(&optional (host nil hostp) set)"
 #define DECL_af_pathnameTranslations ""
 #define DOCS_af_pathnameTranslations "core::pathnameTranslations"
@@ -1934,8 +1934,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_af_translatePathname "(source from to &key ((:case scase) :local))"
 #define DECL_af_translatePathname ""
 #define DOCS_af_translatePathname "translatePathname"
@@ -2020,9 +2020,9 @@ namespace core {
 	SIMPLE_ERROR(BF("Number of wildcards in %s do not match  %s") % _rep_(from) % _rep_(to));
     }
 
-    
-    
-    
+
+
+
 #define ARGS_af_translateLogicalPathname "(source &key)"
 #define DECL_af_translateLogicalPathname ""
 #define DOCS_af_translateLogicalPathname "translateLogicalPathname"
@@ -2050,7 +2050,7 @@ namespace core {
 
 
     EXPOSE_CLASS(core,Pathname_O);
-   
+
 
     void Pathname_O::exposeCando(Lisp_sp lisp)
     {

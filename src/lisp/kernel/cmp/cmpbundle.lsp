@@ -3,14 +3,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -104,7 +104,7 @@
     (return-from generate-link-command (bformat nil "%s -v %s -shared -o %s" clang-executable all-names bundle-file)))
   (error "Add support for this operating system to cmp:execute-link")
   )
-    
+
 
 (defun execute-link (bundle-pathname all-part-pathnames &key test)
   (let* ((part-files (mapcar #'(lambda (pn) (namestring (translate-logical-pathname (make-pathname :type "o" :defaults pn))))
@@ -125,7 +125,7 @@
 ;;; Provide the pathnames for the bitcode files (parts-pathnames)
 ;;; if the bundle-name is _image then it's the one kernel image
 ;;; If it is anything else then it's a user image
-;;;   
+;;;
 (defun make-bundle (parts-pathnames &optional (bundle-name +image-pathname+)
 		    &aux (bundle-type (if (eq bundle-name '_image) 'kernel 'user)))
   "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
@@ -149,7 +149,7 @@
                                 source-files)))
     bitcode-files))
 (export 'boot-bitcode-pathnames)
-	  
+
 #||
 (defun link-system (pathname-destination &key lisp-bitcode-files (target-backend (default-target-backend)) test) ;; &optional (bundle-pathname +image-pathname+))
   "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
@@ -177,21 +177,21 @@
         (llvm-sys:pass-manager-add pass-manager (llvm-sys:create-debug-irpass nil nil )))
 |#
     pass-manager))
-         
+
 
 (defun link-bitcode-modules (part-pathnames &key additional-bitcode-pathnames
                                               (output-pathname +image-pathname+)
                                               prologue-module
                                               epilogue-module
-                                              debug-ir)
+                                              debug-ir
+                             &aux conditions)
   "Link a bunch of modules together, return the linked module"
   (format t "part-pathnames ~a~%" part-pathnames)
-  (with-compiler-env ()
+  (with-compiler-env (conditions)
     (multiple-value-bind (module function-pass-manager)
         (cmp:create-llvm-module-for-compile-file (pathname-name output-pathname))
-      (with-compilation-unit (:override nil
-                                        :module module
-                                        :function-pass-manager function-pass-manager)
+      (with-module (:module module
+                            :function-pass-manager function-pass-manager)
         (let* ((*compile-file-pathname* output-pathname)
                (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
                (*gv-source-path-name* (jit-make-global-string-ptr (namestring output-pathname) "source-pathname"))
@@ -274,7 +274,7 @@
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
     (generate-object-file bundle-bitcode-pathname)
     (execute-link output-pathname (list bundle-bitcode-pathname))))
-         
+
 (export '(link-system-lto))
 
 
