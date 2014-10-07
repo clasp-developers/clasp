@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -296,6 +296,63 @@ namespace translate
 ;
 
 
+
+namespace llvmo
+{
+    FORWARD(LLVMTargetMachine);
+    class LLVMTargetMachine_O : public TargetMachine_O
+    {
+        LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::LLVMTargetMachine,LLVMTargetMachine_O,"LLVMTargetMachine",TargetMachine_O);
+        typedef llvm::LLVMTargetMachine ExternalType;
+        typedef llvm::LLVMTargetMachine* PointerToExternalType;
+
+    public:    PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr);};
+        void set_wrapped(PointerToExternalType ptr)
+        {
+/*        if (this->_ptr != NULL ) delete this->_ptr; */
+            this->_ptr = ptr;
+        }
+        LLVMTargetMachine_O() : Base() {};
+        ~LLVMTargetMachine_O() {}
+
+    }; // LLVMTargetMachine_O
+}; // llvmo
+TRANSLATE(llvmo::LLVMTargetMachine_O);
+/* from_object translators */
+
+namespace translate
+{
+    template <>
+    struct from_object<llvm::LLVMTargetMachine*,std::true_type>
+    {
+        typedef llvm::LLVMTargetMachine* DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(object.as<llvmo::LLVMTargetMachine_O>()->wrappedPtr()) {};
+    };
+};
+;
+/* to_object translators */
+
+namespace translate
+{
+    template <>
+    struct to_object<llvm::LLVMTargetMachine*>
+    {
+        static core::T_sp convert(llvm::LLVMTargetMachine* ptr)
+        {_G(); return((core::RP_Create_wrapped<llvmo::LLVMTargetMachine_O,llvm::LLVMTargetMachine*>(ptr)));}
+    };
+};
+;
+
+
+
+
+
+
+
+
+
+
 namespace llvmo
 {
 FORWARD(FunctionPass);
@@ -578,7 +635,7 @@ namespace translate
             SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Value*>") % core::_rep_(o));
         }
     };
-        
+
 
 };
 ;
@@ -642,17 +699,17 @@ namespace llvmo
 //    explicit Attribute_O() : T_O(), T(mc) {};
 //    virtual ~Attribute_O() {};
     public:
-	
+
     private: // instance variables here
 	llvm::Attribute		_Attribute;
-	
+
     public: // Functions here
 	static Attribute_sp get(LLVMContext_sp context,core::Cons_sp attribute_symbols);
 
 	llvm::Attribute attributes() { return this->_Attribute;};
 	void setAttribute(llvm::Attribute attr) { this->_Attribute = attr;};
     }; // Attribute class
-    
+
 }; // llvmo namespace
 TRANSLATE(llvmo::Attribute_O);
 namespace translate
@@ -769,7 +826,7 @@ namespace translate
 
 namespace llvmo
 {
-    class CompiledClosure : public core::FunctionClosure {      
+    class CompiledClosure : public core::FunctionClosure {
         friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
     public:
         typedef void (*fptr_type) (LISP_CALLING_CONVENTION_RETURN, LISP_CALLING_CONVENTION_CLOSED_ENVIRONMENT, LISP_CALLING_CONVENTION_ARGS );
@@ -1242,7 +1299,7 @@ namespace llvmo {
 	llvm::Function* getFunction(core::Str_sp dispatchName);
 
 	/*! Get or create a string GlobalVariable with the given name.
-	  Make sure that the string passed is the same as the string 
+	  Make sure that the string passed is the same as the string
 	  in the GlobalVariable.
 	I created this method to avoid lots of duplicate strings being
 	created as global variables within the Module. */
@@ -1343,7 +1400,7 @@ namespace llvmo
         typedef llvm::DataLayoutPass ExternalType;
         typedef llvm::DataLayoutPass* PointerToExternalType;
     public:
-        static DataLayoutPass_sp make(llvm::DataLayout const& orig); 
+        static DataLayoutPass_sp make(llvm::DataLayout const& orig);
     public:
         PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr);};
         void set_wrapped(PointerToExternalType ptr)
@@ -1412,7 +1469,7 @@ c l a s s TargetData_O : public ImmutablePass_O
     typedef llvm::TargetData* PointerToExternalType;
 
 public:
-    static TargetData_sp copy(llvm::TargetData const& orig); 
+    static TargetData_sp copy(llvm::TargetData const& orig);
 public:
     PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr);};
     void set_wrapped(PointerToExternalType ptr)
@@ -3469,7 +3526,7 @@ namespace llvmo
 	void addAttr(llvm::Attribute a);
 
     public:
-	
+
     }; // Argument_O
 }; // llvmo
 TRANSLATE(llvmo::Argument_O);
@@ -3512,7 +3569,7 @@ namespace translate
 
 
 
-    
+
 
 
 
@@ -4068,7 +4125,7 @@ namespace translate
 		this->_v = converter->enumForSymbol<llvm::GlobalValue::LinkageTypes>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::GlobalValue::LinkageType") % _rep_(object) );    
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::GlobalValue::LinkageType") % _rep_(object) );
 	}
     };
 
@@ -4087,7 +4144,7 @@ namespace translate
 		this->_v = converter->enumForSymbol<llvm::VerifierFailureAction>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::VerifierFailureAction") % _rep_(object) );    
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::VerifierFailureAction") % _rep_(object) );
 	}
     };
 #endif
@@ -4106,7 +4163,7 @@ namespace translate
 		this->_v = converter->enumForSymbol<llvm::AtomicOrdering>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicOrdering") % _rep_(object) );    
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicOrdering") % _rep_(object) );
 	}
     };
 
@@ -4125,7 +4182,7 @@ namespace translate
 		this->_v = converter->enumForSymbol<llvm::SynchronizationScope>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::SynchronizationScope") % _rep_(object) );    
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::SynchronizationScope") % _rep_(object) );
 	}
     };
 
@@ -4144,7 +4201,7 @@ namespace translate
 		this->_v = converter->enumForSymbol<llvm::AtomicRMWInst::BinOp>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicRMWInst::BinOp") % _rep_(object) );    
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicRMWInst::BinOp") % _rep_(object) );
 	}
     };
 
@@ -4163,7 +4220,7 @@ namespace translate
 		this->_v = converter->enumForSymbol<llvm::Instruction::CastOps>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Instruction::CastOps") % _rep_(object) );    
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Instruction::CastOps") % _rep_(object) );
 	}
     };
 
@@ -4180,7 +4237,7 @@ namespace translate
 		this->_v = converter->enumForSymbol<llvm::Instruction::BinaryOps>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Instruction::BinaryOps") % _rep_(object) );    
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Instruction::BinaryOps") % _rep_(object) );
 	}
     };
 
@@ -4199,7 +4256,7 @@ namespace translate
 		this->_v = converter->enumForSymbol<llvm::CmpInst::Predicate>(sym);
 		return;
 	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::CmpInst::Predicate") % _rep_(object) );    
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::CmpInst::Predicate") % _rep_(object) );
 	}
     };
 
@@ -4210,7 +4267,7 @@ namespace translate
 
 namespace llvmo
 {
-    
+
     void initialize_llvmo_expose();
 }
 
