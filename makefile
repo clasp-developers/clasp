@@ -10,9 +10,9 @@ export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]> ')
 
 ifeq ($(TARGET_OS),linux)
-  export DEVENV = emacs -nw ./
+  export DEVEMACS = emacs -nw ./
 else
-  export DEVENV = open -a emacs ./
+  export DEVEMACS = open -a emacs ./
 endif
 
 #
@@ -58,13 +58,19 @@ all:
 # to tell clasp to use the development source directly rather than the
 # stuff in the clasp build target directory.  This saves us the trouble of
 # constantly having to copy the lisp sources to the target directory.
-export DEVENV_CLASP_LISP_SOURCE_DIR := $(shell echo `pwd`/src/lisp)
+export DEV_CLASP_LISP_SOURCE_DIR := $(shell echo `pwd`/src/lisp)
 
-devenv:
+devemacs:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile
 	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
-	(CLASP_LISP_SOURCE_DIR=$(DEVENV_CLASP_LISP_SOURCE_DIR) $(DEVENV))
+	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) $(DEVEMACS))
+
+devshell:
+	@echo This shell sets up environment variables like BJAM
+	@echo as they are defined when commands execute within the makefile
+	@echo EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_BUILD_TARGET_DIR)
+	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) bash)
 
 
 testing:

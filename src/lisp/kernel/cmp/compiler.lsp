@@ -1186,7 +1186,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 (defun compile-thunk (name form env)
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (or (stringp name) (error "name must be a string"))
+  (or (stringp name) (error "Name must be a string"))
   (let ((fn (with-new-function (fn
                                 fn-env
                                 :function-name name

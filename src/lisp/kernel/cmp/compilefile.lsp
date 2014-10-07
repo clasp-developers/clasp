@@ -77,6 +77,7 @@
 	(t
 	 (funcall closure))))
 
+(export 'do-compilation-unit)
 (defmacro with-compilation-unit ((&rest options) &body body)
  `(do-compilation-unit #'(lambda () ,@body) ,@options))
 
@@ -197,6 +198,9 @@
     ))
 
 
+(defun compile-file-t1expr (form)
+  (catch 'compiler-error
+    (t1expr form)))
 
 
 
@@ -262,9 +266,9 @@ and the pathname of the source file - this will also be used as the module initi
   (let (warnings-p failures-p)
     (dolist (cond conditions)
       (cond
-        ((typep cond 'error)
+        ((typep cond 'compiler-error)
          (setq failures-p t))
-        ((typep cond 'warning)
+        ((typep cond 'compiler-warning)
          (setq warnings-p t))
         (t (error "Illegal condition ~a" cond))))
     (values output-file warnings-p failures-p)))
@@ -316,7 +320,7 @@ and the pathname of the source file - this will also be used as the module initi
                         ((eq form eof-value) nil)
                       (let ((*current-lineno* line-number)
                             (*current-column* column))
-                        (t1expr form)))
+                        (compile-file-t1expr form)))
                     (let ((main-fn (compile-main-function output-path ltv-init-fn )))
                       (make-boot-function-global-variable *the-module* main-fn)
                       (add-main-function *the-module*))))))
@@ -333,6 +337,8 @@ and the pathname of the source file - this will also be used as the module initi
             (ensure-directories-exist output-path)
             (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-path))
             )))
+      (dolist (c conditions)
+        (bformat t "%s\n" c))
       (compile-file-results output-path conditions))))
 
 
