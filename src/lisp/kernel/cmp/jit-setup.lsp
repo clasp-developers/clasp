@@ -3,14 +3,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -87,7 +87,7 @@ using features defined in corePackage.cc"
 
 
 
-    
+
 (defun remove-main-function-if-exists (module)
   (let ((fn (llvm-sys:get-function module llvm-sys:+clasp-main-function-name+)))
     (if fn
@@ -311,7 +311,7 @@ No DIBuilder is defined for the default module")
 
 (si::*fset
  'load-bitcode
- #'(lambda (filename)
+ #'(lambda (filename &optional verbose print external_format)
      "Load a bitcode file, link it and execute it"
      (let ((*package* *package*)
 	   (time-load-start (clock-gettime-nanoseconds)))
@@ -328,6 +328,7 @@ No DIBuilder is defined for the default module")
                (main-fn-name llvm-sys:+clasp-main-function-name+)
 	       (time-jit-start (clock-gettime-nanoseconds)))
 	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn-name (namestring (truename filename)) 0 *load-time-value-holder-name* )
-	   ))))
+	   )))
+     t)
  nil)
 (export 'load-bitcode)

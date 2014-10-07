@@ -469,6 +469,7 @@ namespace core
 
     bool Instance_O::equalp(T_sp obj) const
     {
+        if ( obj.nilp() ) return false;
         if ( this->eq(obj) ) return true;
         if ( Instance_sp iobj = obj.asOrNull<Instance_O>() ) {
             if ( this->_Class != iobj->_Class ) return false;

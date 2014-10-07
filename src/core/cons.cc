@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -79,10 +79,10 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_getf "(plist indicator &optional default-value)"
-#define DECL_af_getf ""	
+#define DECL_af_getf ""
 #define DOCS_af_getf "getf"
     T_mv af_getf(Cons_sp plist, T_sp indicator, T_sp default_value)
     {_G();
@@ -106,7 +106,7 @@ namespace core
 #define DOCS_af_make_list "make_list"
 #define LOCK_af_make_list 1
 #define ARGS_af_make_list "(osize &key initial_element)"
-#define DECL_af_make_list ""    
+#define DECL_af_make_list ""
     T_mv af_make_list(Integer_sp osize, T_sp initial_element)
     {_G();
 	int size = osize->as_int();
@@ -129,7 +129,7 @@ namespace core
     {
 	return(Cons_O::create(o1,_Nil<Cons_O>()));
     }
-	    
+
 
     Cons_sp Cons_O::createList(T_sp o1, T_sp o2)
     {
@@ -210,7 +210,7 @@ namespace core
 
 
 #if 1
-    /*! Copied from ecl append_into 
+    /*! Copied from ecl append_into
      This copies the CAR's in l into new CONS nodes
     that are appended to the list pointed to by **tailPP
     which is advanced with every element.
@@ -253,8 +253,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_append2 "(l1 l2)"
 #define DECL_af_append2 ""
 #define DOCS_af_append2 "append2 - append l2 to l1 by copying l1 and pointing the end of it to l2"
@@ -311,8 +311,8 @@ namespace core
 	return((_Nil<Cons_O>()));
     }
 
-    
-    
+
+
 
 
 
@@ -341,7 +341,7 @@ namespace core
 	{_G();
 	    this->_test_pass = true;
 	    if ( testNot.notnilp() )
-	    {	
+	    {
 		if ( test.notnilp() )
 		{
 		    SIMPLE_ERROR(BF("both test and test-not were defined"));
@@ -376,8 +376,8 @@ namespace core
 	    bool result = eval::funcall(this->_test_func,this->_item,obj).isTrue();
 	    return((result == this->_test_pass));
 	}
-		
-	    
+
+
     };
 
 
@@ -483,7 +483,7 @@ namespace core
 	}
 	return((l.cons()));
     }
-    
+
 
 
 
@@ -556,7 +556,7 @@ namespace core
 	return((cCdr(first)));
     }
 #endif
-    
+
 
 //
 // Constructor
@@ -668,6 +668,7 @@ namespace core
 
     bool Cons_O::equalp(T_sp obj) const
     {
+        if ( obj.nilp() ) return false;
 	if ( this->eq(obj) ) return((true));
 	if ( !af_consP(obj) )
 	{
@@ -801,7 +802,7 @@ namespace core
 	cur->setCar(val);
 	return((val));
     }
-	
+
     T_sp Cons_O::elt(int index) const
     {_OF();
 	if ( index < 0 || index >= this->length() )
@@ -821,7 +822,7 @@ namespace core
 	return((this->setf_nth(index,value)));
     }
 
-	    
+
 
     Cons_sp Cons_O::filterOutNil()
     {_G();
@@ -968,7 +969,7 @@ namespace core
 	    }
 	}
 	return((cCdr(first)));
-    }	
+    }
 
     Cons_sp Cons_O::copyTreeCar() const
     {_OF();
@@ -1222,7 +1223,7 @@ namespace core
 					       int column,
 					       SourceFileInfo_sp fileName, Lisp_sp e )
     {
-        
+
         GC_ALLOCATE(SourceCodeCons_O,ll );
 	    ll->setCar(car);
 	    ll->setOCdr(cdr);
@@ -1504,9 +1505,9 @@ namespace core
     }
 
 
-    
-    
-    
+
+
+
 
     void Cons_O::exposeCando(Lisp_sp lisp)
     {_G();
@@ -1576,7 +1577,7 @@ namespace core
 	af_def(ClPkg,"Eighth",&oEighth);
 	af_def(ClPkg,"Ninth",&oNinth);
 	af_def(ClPkg,"Tenth",&oTenth);
-        
+
         af_def(CorePkg,"alist_erase",&alist_erase);
         af_def(CorePkg,"alist_push",&alist_push);
         af_def(CorePkg,"alist_get",&alist_get);

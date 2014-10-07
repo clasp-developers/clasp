@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -120,14 +120,14 @@ int clasp_string_case(Str_sp s)
 	}
 	return _lisp->_true();
     };
-    
 
 
 
-    
-    
-    
-    
+
+
+
+
+
 #define ARGS_af_charUpcase "(char)"
 #define DECL_af_charUpcase ""
 #define DOCS_af_charUpcase "charUpcase"
@@ -351,7 +351,7 @@ namespace core
         ADD_CHAR("Etx",ci++); //3
         ADD_CHAR("Eot",ci++); //4
         ADD_CHAR("Enq",ci++); //5
-        ADD_CHAR("Ack",ci++); //6 
+        ADD_CHAR("Ack",ci++); //6
         ADD_CHAR("Bel",ci++); //7
         ADD_CHAR("Backspace",ci++); //8
         ADD_CHAR("Tab",ci++); //9
@@ -478,8 +478,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_standard_char_p "(ch)"
 #define DECL_af_standard_char_p ""
 #define DOCS_af_standard_char_p "See CLHS: standard_char_p"
@@ -495,40 +495,40 @@ namespace core
 	     || c == '%'
 	     || c == '"'
 	     || c == '\''
-	     || c == '(' //      left parenthesis, or open parenthesis    
-	     || c == ')' //      right parenthesis, or close parenthesis  
-	     || c == ',' //      comma                                    
-	     || c == '_' //      low line, or underscore                  
-	     || c == '-' //      hyphen, or minus [sign]                  
-	     || c == '.' //      full stop, period, or dot                
-	     || c == '/' //      solidus, or slash                        
-	     || c == ':' //      colon                                    
-	     || c == ';' //      semicolon                                
-	     || c == '?' //      question mark                            
-	     || c == '+' //      plus [sign]                              
-	     || c == '<' //      less-than [sign]                         
-	     || c == '=' //      equals [sign]                            
-	     || c == '>' //      greater-than [sign]                      
-	     || c == '#' //      number sign, or sharp[sign]              
-	     || c == '%' //      percent [sign]                           
-	     || c == '&' //      ampersand                                
-	     || c == '*' //      asterisk, or star                        
-	     || c == '@' //      commercial at, or at-sign                
-	     || c == '[' //      left [square] bracket                    
-	     || c == '\\' //      reverse solidus, or backslash            
-	     || c == ']' //      right [square] bracket                   
-	     || c == '{' //      left curly bracket, or left brace        
-	     || c == '|' //      vertical bar                             
-	     || c == '}' //      right curly bracket, or right brace      
-	     || c == '`' //      grave accent, or backquote               
-	     || c == '^' //      circumflex accent                        
-	     || c == '~' //      tilde                 
+	     || c == '(' //      left parenthesis, or open parenthesis
+	     || c == ')' //      right parenthesis, or close parenthesis
+	     || c == ',' //      comma
+	     || c == '_' //      low line, or underscore
+	     || c == '-' //      hyphen, or minus [sign]
+	     || c == '.' //      full stop, period, or dot
+	     || c == '/' //      solidus, or slash
+	     || c == ':' //      colon
+	     || c == ';' //      semicolon
+	     || c == '?' //      question mark
+	     || c == '+' //      plus [sign]
+	     || c == '<' //      less-than [sign]
+	     || c == '=' //      equals [sign]
+	     || c == '>' //      greater-than [sign]
+	     || c == '#' //      number sign, or sharp[sign]
+	     || c == '%' //      percent [sign]
+	     || c == '&' //      ampersand
+	     || c == '*' //      asterisk, or star
+	     || c == '@' //      commercial at, or at-sign
+	     || c == '[' //      left [square] bracket
+	     || c == '\\' //      reverse solidus, or backslash
+	     || c == ']' //      right [square] bracket
+	     || c == '{' //      left curly bracket, or left brace
+	     || c == '|' //      vertical bar
+	     || c == '}' //      right curly bracket, or right brace
+	     || c == '`' //      grave accent, or backquote
+	     || c == '^' //      circumflex accent
+	     || c == '~' //      tilde
 	    ) return true;
 	return false;
     };
 
-    
-    
+
+
 #define ARGS_af_alpha_char_p "(ch)"
 #define DECL_af_alpha_char_p ""
 #define DOCS_af_alpha_char_p "alpha_char_p"
@@ -555,8 +555,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_digitCharP "(c &optional (radix 10))"
 #define DECL_cl_digitCharP ""
 #define DOCS_cl_digitCharP "digitCharP"
@@ -736,12 +736,13 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
     bool Character_O::equalp(T_sp other) const
     {_OF();
+        if ( other.nilp() ) return false;
 	if ( Character_sp cother = other.as<Character_O>() ) {
 	    return ( toupper(cother->asChar()) == toupper(this->asChar()) );
 	}
 	return false;
     }
-    
+
 
 
 
@@ -774,7 +775,7 @@ void Character_O::archiveBase(::core::ArchiveP node)
         this->Base::initialize();
     }
 
-    
+
 
 
 
@@ -878,7 +879,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 	return this->const_sharedThis<StandardChar_O>();
     }
 
-   
+
 
     void StandardChar_O::setFromString(const string& strVal)
     {
@@ -1008,7 +1009,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     {_G();
 	return this->_Value!='\n';
     }
-    
+
 
 
 
@@ -1067,7 +1068,7 @@ void ExtendedChar_O::archiveBase(::core::ArchiveP node)
         this->Base::initialize();
     }
 
-    
+
 
 
 

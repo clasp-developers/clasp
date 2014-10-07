@@ -2836,6 +2836,17 @@ extern "C"
 
 
 
+
+#define ARGS_cl_cerror "(cformat eformat &rest arguments)"
+#define DECL_cl_cerror ""
+#define DOCS_cl_cerror "See CLHS cerror"
+    void cl_cerror(T_sp cformat, T_sp eformat, Cons_sp arguments)
+    {_G();
+        eval::funcall(_sym_universalErrorHandler,cformat, eformat, arguments);
+    }
+
+
+
 /*
   __BEGIN_DOC(candoScript.general.load,load)
   \scriptCmd{load}{Text::fileName}
@@ -3520,14 +3531,22 @@ extern "C"
 	if ( !this->_IgnoreInitImage )
 	{
             Pathname_sp initPathname = _sym_STARcommandLineImageSTAR->symbolValue().as<Pathname_O>();
-            core_loadBundle(initPathname);
+            T_mv result = core_loadBundle(initPathname);
+            if ( result.nilp() ) {
+                T_sp err = result.second();
+                printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str() );
+            }
 	} else if ( !this->_IgnoreInitLsp ) {
 	    // Assume that if there is no program then
 	    // we want an interactive script
 	    //
 	    {_BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName );
 		Pathname_sp initPathname = cl_pathname(Str_O::create(this->_RCFileName));
-		af_load(initPathname);
+		T_mv result = af_load(initPathname);
+                if ( result.nilp() ) {
+                    T_sp err = result.second();
+                    printf("Could not load %s\n", _rep_(initPathname).c_str() );
+                }
 	    }
         } else {
 	    {_BLOCK_TRACE("Interactive REPL");
@@ -3758,6 +3777,8 @@ extern "C"
 
 	SYMBOL_EXPORT_SC_(ClPkg,error);
 	ClDefun(error);
+	SYMBOL_EXPORT_SC_(ClPkg,cerror);
+	ClDefun(cerror);
 	SYMBOL_EXPORT_SC_(ExtPkg,setenv);
 	ExtDefun(setenv);
 	SYMBOL_EXPORT_SC_(ExtPkg,getenv);
