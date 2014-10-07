@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -63,10 +63,10 @@ namespace core
 #define LOCK_af_record_field 1
 #define ARGS_af_record_field "(record key sub-key)"
 #define DECL_af_record_field ""
-    T_mv af_record_field(Cons_sp record, T_sp key, T_sp sub_key)
+    T_sp af_record_field(Cons_sp record, T_sp key, T_sp sub_key)
     {_G();
 	Cons_sp cons = eval::funcall(_sym_record_cons,record,key,sub_key).as_or_nil<Cons_O>();;
-	return(Values(cCdr(cons)));
+	return oCdr(cons);
     }
 
 
@@ -169,5 +169,5 @@ namespace core
     }
 
 
-    
+
 }; /* namespace */

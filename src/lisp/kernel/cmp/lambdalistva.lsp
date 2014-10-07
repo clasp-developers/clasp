@@ -3,14 +3,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -60,7 +60,7 @@
                    (bformat nil "arg-%d" target-idx)
                    "rawarg")))
     (irc-gep (calling-convention-args cc) (list idx) label)))
-                              
+
 
 
 ;;--------------------------------------------------
@@ -114,22 +114,27 @@
   "Make and fill a value frame with the evaluated arguments and invoke the function with the value frame"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  (let* ((sym (car form))
-	 (nargs (length (cdr form)))
-         args
-	 (temp-result (irc-alloca-tsp evaluate-env)))
-    (dbg-set-invocation-history-stack-top-source-pos form)
-    ;; evaluate the arguments into the array
-    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-    (do* ((cur-exp (cdr form) (cdr cur-exp))
-	  (exp (car cur-exp) (car cur-exp))
-	  (i 0 (+ 1 i)))
-	 ((endp cur-exp) nil)
-      (codegen temp-result exp evaluate-env)
-      (push (irc-load temp-result) args))
-    (let ((closure (cmp-lookup-function sym evaluate-env)))
-      (irc-funcall result closure (reverse args)))
-    ))
+  (let* ((head (car form)))
+    (cond
+      ((and (atom head) (symbolp head))
+       (let ((nargs (length (cdr form)))
+             args
+             (temp-result (irc-alloca-tsp evaluate-env)))
+         (dbg-set-invocation-history-stack-top-source-pos form)
+         ;; evaluate the arguments into the array
+         ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+         (do* ((cur-exp (cdr form) (cdr cur-exp))
+               (exp (car cur-exp) (car cur-exp))
+               (i 0 (+ 1 i)))
+              ((endp cur-exp) nil)
+           (codegen temp-result exp evaluate-env)
+           (push (irc-load temp-result) args))
+         (let ((closure (cmp-lookup-function head evaluate-env)))
+           (irc-funcall result closure (reverse args)))
+         ))
+      ((and (consp head) (eq head 'lambda))
+       (error "Handle lambda applications"))
+      (t (compiler-error form "Illegal head for form %s" head)))))
 
 
 
@@ -322,7 +327,7 @@ will put a value into target-ref."
        ;; otherwise the target may shadow a variable in the lexical environment
        (define-binding-in-value-environment* ,env ,target)
        )))
-	 
+
 
 
 
@@ -397,7 +402,7 @@ will put a value into target-ref."
 	(when flag
 	  (with-target-reference-do (flag-ref flag new-env) ; copy nil into flag-ref
 	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil new-env))))
-	(irc-br cont-block) 
+	(irc-br cont-block)
 	(irc-begin-block cont-block)))))
 
 
@@ -563,7 +568,7 @@ will put a value into target-ref."
 	  (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil new-env))))
       (irc-low-level-trace)
       (irc-branch-to-and-begin-block next-kw-block))))
-    
+
 
 
 (defun compile-key-arguments (keyargs
@@ -602,10 +607,10 @@ will put a value into target-ref."
       (compile-key-arguments-fill-in-init-forms keyargs new-env sawkeys )
       (irc-low-level-trace)
       arg-idx)))
-  
 
 
-		
+
+
 
 (defun compile-throw-if-excess-keyword-arguments (env
                                                   args ;; nargs va-list
@@ -717,7 +722,7 @@ lambda-list-handler/env/argument-activation-frame"
       (let ((tsp-arg (irc-insert-value (llvm-sys:undef-value-get +tsp+) arg (list 0) "arg")))
         (with-target-reference-do (tref target new-env) (irc-store tsp-arg tref))))
     ))
-      
+
 
 
 (defun compile-lambda-list-code (lambda-list-handler
@@ -737,7 +742,7 @@ lambda-list-handler/env/argument-activation-frame"
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
         ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
          (compile-<=3-required-arguments reqargs old-env args new-env))
-        ;; Test for 
+        ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)
         (t

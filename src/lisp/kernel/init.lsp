@@ -596,6 +596,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     cmp/cmpglobals
     cmp/cmptables
     cmp/cmpvar
+    cmp/cmputil
     cmp/cmpintrinsics
     cmp/cmpir
     cmp/cmpeh

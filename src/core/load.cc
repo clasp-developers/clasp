@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -50,7 +50,7 @@ namespace core {
 #define ARGS_af_loadSource "(source &optional verbose print external-format)"
 #define DECL_af_loadSource ""
 #define DOCS_af_loadSource "loadSource"
-void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
+T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 {_G();
     Stream_sp strm;
     if ( cl_streamp(source) ) {
@@ -66,7 +66,7 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 		       _Nil<T_O>(), _Nil<T_O>(),
 		       kw::_sym_default,
                        _Nil<T_O>());
-	if ( strm.nilp() ) return;
+	if ( strm.nilp() ) return _Nil<T_O>();
     }
     DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
     /* Define the source file */
@@ -100,8 +100,9 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
         }
     }
     cl_close(strm);
+    return _lisp->_true();
 }
-	
+
 
 
 
@@ -154,7 +155,7 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 		if (!Null(ok)) {
 		    return ok;
 		}
-	    } 
+	    }
 	}
 	if (!Null(pntype) && (pntype != kw::_sym_wild )) {
 	    /* If filename already has an extension, make sure
@@ -226,10 +227,9 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	    }
 	    if (!Null(ok))
 #endif
-		af_loadSource(filename, verbose, print, external_format);
-	    ok = _lisp->_true();
+		ok = af_loadSource(filename, verbose, print, external_format);
 	}
-	if (!Null(ok)) {
+	if (ok.nilp()) {
 	    SIMPLE_ERROR(BF("LOAD: Could not load file %s (Error: %s") % _rep_(filename) % _rep_(ok));
 	}
 	if (print.notnilp() ) {
@@ -237,9 +237,9 @@ void af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 			  Str_O::create("~&;;; Loading ~s~%"),
 			  filename);
 	}
-	return filename;
+	return _lisp->_true();
     }
-	    
+
 
     void initialize_load()
     {
