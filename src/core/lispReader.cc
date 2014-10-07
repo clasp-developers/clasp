@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -53,7 +53,7 @@ THE SOFTWARE.
 #include "readtable.h"
 #include "wrappers.h"
 
-namespace core 
+namespace core
 {
 
 #define TRAIT_DIGIT			0X000100
@@ -124,10 +124,11 @@ namespace core
 	if ( x > ' ' && x < 127 ) return (TRAIT_ALPHABETIC | x);
 	return (TRAIT_INVALID | x);
     LETTER:
-	if (    x == 'd' || x == 'D'
-	     || x == 'e' || x == 'E'
-	     || x == 'f' || x == 'F'
-	     || x == 'l' || x == 'L' ) result |= TRAIT_EXPONENTMARKER;
+	if ( x == 'd' || x == 'D'
+             || x == 'e' || x == 'E'
+             || x == 'f' || x == 'F'
+             || x == 's' || x == 'S'
+             || x == 'l' || x == 'L' ) result |= TRAIT_EXPONENTMARKER;
 	return result;
     }
 
@@ -135,7 +136,7 @@ namespace core
 #define DOCS_af_nread "nread"
 #define LOCK_af_nread 1
 #define ARGS_af_nread "(sin &optional (eof-error-p t) eof-value)"
-#define DECL_af_nread ""    
+#define DECL_af_nread ""
     T_mv af_nread(Stream_sp sin, T_sp eof_error_p, T_sp eof_value )
     {_G();
 	T_sp result = read_lisp_object(sin,eof_error_p.isTrue(),eof_value,false);
@@ -179,7 +180,7 @@ namespace core
 	tstart,
 	tsyms, tsymf, tsymr, tsymx, tsymy, tsymdot, tsymz,
 	tsymk, tsymkw, tsymbad, tsyme, tsymex, tsymp, tsympv,
-	tintt, tintp, 
+	tintt, tintp,
 	tratio,
 	tfloat0, tfloate, tfloatp } TokenState;
 
@@ -202,7 +203,7 @@ namespace core
 	return ss.str();
     }
 
-	
+
 
 
 
@@ -444,7 +445,7 @@ namespace core
 	   c stack values list)
       (loop
        (setq c (peek-char t stream t nil t))
-       (when (char= char c)           ; found the closing parenthesis.           
+       (when (char= char c)           ; found the closing parenthesis.
 	(when (eq (first stack) *consing-dot*)
 	 (error "Nothing appears after . in list."))
 	(read-char stream t nil t)
@@ -508,7 +509,7 @@ namespace core
 		if ( obj == _sym_dot )
 		{
 		    if ( allow_consing_dot )
-		    {	
+		    {
 			got_dotted = true;
 			Character_sp cdotp = cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
 			if ( cdotp->asChar() == end_char )
@@ -542,7 +543,7 @@ namespace core
     }
 
 
-    
+
     /*! Used when USE_SHARP_EQUAL_HASH_TABLES is not defined */
     SYMBOL_SC_(CorePkg,STARsharp_equal_alistSTAR);
     SYMBOL_SC_(CorePkg,STARsharp_sharp_alistSTAR);
@@ -606,15 +607,15 @@ namespace core
 	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,HashTableEql_O::create(40,Fixnum_O::create(4000),0.8));
 	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR,HashTableEq_O::create(40,Fixnum_O::create(4000),0.8));
 #endif
-            
+
 	    result = read_lisp_object(sin,eofErrorP,eofValue,true);
 	}
 	if ( result.nilp() ) return(Values(_Nil<T_O>()));
 	return(result);
     }
-	    
 
-	    
+
+
 
 
 
@@ -624,7 +625,7 @@ namespace core
       Return the result in a MultipleValues object - if it is empty then nothing was read */
     T_mv lisp_object_query(Stream_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
     {_G();
-#if 1	
+#if 1
 	static int monitorReaderStep = 0;
 	if ( (monitorReaderStep % 1000 ) == 0 && af_member(_sym_monitorReader,_sym_STARdebugMonitorSTAR->symbolValue(),_Nil<T_O>()).notnilp()) {
 	    printf("%s:%d:%s stream %s -> pos = %d\n",__FILE__,__LINE__,__FUNCTION__, _rep_(clasp_filename(sin,false)).c_str(),clasp_file_position(sin).as<Fixnum_O>()->get());
@@ -816,7 +817,7 @@ namespace core
     {_G();
 	SYMBOL_SC_(CorePkg,nread);
 	Defun(nread);
-	
+
 	// functions for reader
 
     }

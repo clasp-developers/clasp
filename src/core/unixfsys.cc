@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -54,7 +54,7 @@ THE SOFTWARE.
 # include <direct.h>
 # define access _access
 # define F_OK 0
-typedef int mode_t; 
+typedef int mode_t;
 #endif
 
 #include <sys/types.h>
@@ -165,8 +165,8 @@ safe_chdir(const char *path, Str_sp prefix)
 
 
 
-    
-    
+
+
 #define ARGS_af_fork "()"
 #define DECL_af_fork ""
 #define DOCS_af_fork "fork"
@@ -178,8 +178,8 @@ safe_chdir(const char *path, Str_sp prefix)
 
 
 
-    
-    
+
+
 #define ARGS_af_waitpid "(pid options)"
 #define DECL_af_waitpid ""
 #define DOCS_af_waitpid "waitpid - see unix waitpid - returns status"
@@ -210,8 +210,8 @@ safe_chdir(const char *path, Str_sp prefix)
         return pid;
     };
 
-    
-    
+
+
 #define ARGS_af_chdir "(pathname)"
 #define DECL_af_chdir ""
 #define DOCS_af_chdir "chdir"
@@ -328,8 +328,8 @@ file_kind(char *filename, bool follow_links) {
 
 
 
-    
-    
+
+
 #define ARGS_af_file_kind "(filename follow-links)"
 #define DECL_af_file_kind ""
 #define DOCS_af_file_kind "file_kind"
@@ -574,7 +574,7 @@ clasp_backup_open(const char *filename, int option, int mode)
 #endif
     if (rename(filename, backupfilename.c_str())) {
 	brcl_enable_interrupts();
-	SIMPLE_ERROR(BF("Cannot rename the file %s to %s.") 
+	SIMPLE_ERROR(BF("Cannot rename the file %s to %s.")
 		     % Str_O::create(filename)
 		     % Str_O::create(backupfilename));
     }
@@ -596,10 +596,10 @@ clasp_file_len(int f)
 
 
 
-#define ARGS_af_renameFile "(oldn newn &key (if-exists :error))"
-#define DECL_af_renameFile ""
-#define DOCS_af_renameFile "renameFile"
-T_mv af_renameFile(T_sp oldn, T_sp newn, T_sp if_exists)
+#define ARGS_cl_renameFile "(oldn newn &key (if-exists :error))"
+#define DECL_cl_renameFile ""
+#define DOCS_cl_renameFile "renameFile"
+T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists)
 {_G();
     Str_sp old_filename, new_filename;
     Pathname_sp old_truename, new_truename;
@@ -776,8 +776,8 @@ Pathname_sp af_probe_file(T_sp filespec)
 
 
 
-    
-    
+
+
 #define ARGS_af_file_write_date "(pathspec)"
 #define DECL_af_file_write_date ""
 #define DOCS_af_file_write_date "file_write_date"
@@ -1146,7 +1146,7 @@ si_mkstemp(T_sp template)
 	                       kw::_sym_defaults, phys);
 	dir = af_coerceToFilename(dir);
 	file = cl_file_namestring(phys);
-	
+
 	l = dir->base_string.fillp;
 	memcpy(strTempDir, dir->c_str(), l);
 	strTempDir[l] = 0;
@@ -1522,6 +1522,7 @@ void initialize_unixfsys()
     ClDefun(fileAuthor);
     CoreDefun(mkdir);
     ClDefun(directory);
+    ClDefun(renameFile);
 };
 
 
