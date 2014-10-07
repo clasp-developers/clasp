@@ -249,10 +249,18 @@
 ;;; So I haven't really tried to make this precisely ANSI-compatible
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
-(defun compile-file-pathname (input-file &key (output-file nil output-file-p) &allow-other-keys)
-  (if output-file-p
-      (merge-pathnames output-file (cfp-output-file-default input-file))
-      (cfp-output-file-default input-file)))
+(defun compile-file-pathname (input-file &key (output-file nil output-file-p)
+                                           (type :object)
+                                           &allow-other-keys)
+  (let* ((pn (if output-file-p
+                (merge-pathnames output-file (cfp-output-file-default input-file))
+                (cfp-output-file-default input-file)))
+         (ext (case type
+                (:object "bc")
+                (:fasl (if (member :target-os-darwin *features*)
+                           "bundle"
+                           "so")))))
+    (make-pathname :type ext :defaults pn)))
 
 
 (defun cf-module-name (type pathname)

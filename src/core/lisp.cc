@@ -2836,6 +2836,17 @@ extern "C"
 
 
 
+
+#define ARGS_cl_cerror "(cformat eformat &rest arguments)"
+#define DECL_cl_cerror ""
+#define DOCS_cl_cerror "See CLHS cerror"
+    void cl_cerror(T_sp cformat, T_sp eformat, Cons_sp arguments)
+    {_G();
+        eval::funcall(_sym_universalErrorHandler,cformat, eformat, arguments);
+    }
+
+
+
 /*
   __BEGIN_DOC(candoScript.general.load,load)
   \scriptCmd{load}{Text::fileName}
@@ -3766,6 +3777,8 @@ extern "C"
 
 	SYMBOL_EXPORT_SC_(ClPkg,error);
 	ClDefun(error);
+	SYMBOL_EXPORT_SC_(ClPkg,cerror);
+	ClDefun(cerror);
 	SYMBOL_EXPORT_SC_(ExtPkg,setenv);
 	ExtDefun(setenv);
 	SYMBOL_EXPORT_SC_(ExtPkg,getenv);
