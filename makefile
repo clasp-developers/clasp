@@ -122,6 +122,7 @@ clean:
 	(cd src/core; rm -rf bin bundle)
 	(cd src/gctools; rm -rf bin bundle)
 	(cd src/llvmo; rm -rf bin bundle)
+	(cd src/asttooling; rm -rf bin bundle)
 	(cd src/cffi; rm -rf bin bundle)
 	(cd src/clbind; rm -rf bin bundle)
 	(cd src/sockets; rm -rf bin bundle)

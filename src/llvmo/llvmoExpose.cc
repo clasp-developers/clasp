@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -88,8 +88,8 @@ namespace llvmo
 {
 
 
-    
-    
+
+
 #define ARGS_comp_setAssociatedFuncs "(func associated-funcs)"
 #define DECL_comp_setAssociatedFuncs ""
 #define DOCS_comp_setAssociatedFuncs "setAssociatedFuncs"
@@ -101,8 +101,8 @@ namespace llvmo
 	closure->setAssociatedFunctions(associatedFuncs);
     };
 
-    
-    
+
+
 #define ARGS_af_llvm_value_p "(arg)"
 #define DECL_af_llvm_value_p ""
 #define DOCS_af_llvm_value_p "llvm_value_p"
@@ -116,7 +116,7 @@ namespace llvmo
 	return false;
     };
 
-    LLVMContext_sp LLVMContext_O::get_global_context() 
+    LLVMContext_sp LLVMContext_O::get_global_context()
     {_G();
         GC_ALLOCATE(LLVMContext_O,context );
 	context->_ptr = &(llvm::getGlobalContext());
@@ -152,8 +152,8 @@ namespace llvmo
 
 
 
-    
-    
+
+
 #define ARGS_Linker_O_make "(module)"
 #define DECL_Linker_O_make ""
 #define DOCS_Linker_O_make "Linker_O_make"
@@ -165,8 +165,8 @@ namespace llvmo
     };
 
 
-    
-    
+
+
 #define ARGS_af_linkInModule "(linker module)"
 #define DECL_af_linkInModule ""
 #define DOCS_af_linkInModule "linkInModule"
@@ -204,7 +204,7 @@ namespace llvmo
 
 namespace llvmo
 {
-   
+
 
     EXPOSE_CLASS(llvmo,Pass_O);
 
@@ -223,7 +223,7 @@ namespace llvmo
 
 namespace llvmo
 {
-   
+
 
     EXPOSE_CLASS(llvmo,TargetMachine_O);
 
@@ -242,9 +242,33 @@ namespace llvmo
 
 
 
+
 namespace llvmo
 {
-}
+
+    bool LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile( PassManagerBase_sp pm,
+                                                core::T_sp stream,
+                                                core::Symbol_sp fileType)
+    {
+        IMPLEMENT_ME();
+    }
+
+
+
+    EXPOSE_CLASS(llvmo,LLVMTargetMachine_O);
+
+    void LLVMTargetMachine_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+        core::externalClass_<LLVMTargetMachine_O>()
+            .def("LLVMTargetMachine_addPassesToEmitFile",&LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile);
+            ;
+    };
+
+    void LLVMTargetMachine_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+        IMPLEMENT_ME();
+    };
+}; // llvmo
 
 
 namespace llvmo
@@ -314,7 +338,7 @@ EXPOSE_CLASS(llvmo,PassManagerBase_O);
 void PassManagerBase_O::exposeCando(core::Lisp_sp lisp)
 {_G();
     core::externalClass_<PassManagerBase_O>()
-        
+
 ;
 };
 
@@ -401,8 +425,8 @@ namespace llvmo
 
 
 
-    
-    
+
+
 #define ARGS_af_verifyModule "(module action)"
 #define DECL_af_verifyModule ""
 #define DOCS_af_verifyModule "verifyModule returns (values result errorinfo)"
@@ -417,8 +441,8 @@ namespace llvmo
 
 
 
-    
-    
+
+
 #define ARGS_af_verifyFunction "(function)"
 #define DECL_af_verifyFunction ""
 #define DOCS_af_verifyFunction "verifyFunction"
@@ -431,8 +455,8 @@ namespace llvmo
 	return Values( _lisp->_boolean(result), core::Str_O::create(errorInfo));
     };
 
-    
-    
+
+
 #define ARGS_af_writeBitcodeToFile "(module pathname)"
 #define DECL_af_writeBitcodeToFile ""
 #define DOCS_af_writeBitcodeToFile "writeBitcodeToFile"
@@ -449,8 +473,8 @@ namespace llvmo
     };
 
 
-    
-    
+
+
 #define ARGS_af_parseBitcodeFile "(filename context)"
 #define DECL_af_parseBitcodeFile ""
 #define DOCS_af_parseBitcodeFile "parseBitcodeFile"
@@ -483,8 +507,8 @@ namespace llvmo
     };
 
 
-    
-    
+
+
 #define ARGS_af_valuep "(arg)"
 #define DECL_af_valuep ""
 #define DOCS_af_valuep "Return true if the arg is derived from llvm::Value"
@@ -510,9 +534,9 @@ namespace llvmo
 	return translate::to_object<llvm::Attribute>::convert(at).as<Attribute_O>();
     }
 #endif
-    
+
     EXPOSE_CLASS(llvmo,Attribute_O);
-    
+
     void Attribute_O::exposeCando(core::Lisp_sp lisp)
     {
 	core::class_<Attribute_O>()
@@ -583,7 +607,7 @@ namespace llvmo
 	core::af_def(LlvmoPkg,"attributeGet",&Attribute_O::get);
 #endif
     }
-    
+
     void Attribute_O::exposePython(core::Lisp_sp lisp)
     {_G();
 #ifdef USEBOOSTPYTHON
@@ -595,8 +619,8 @@ namespace llvmo
 
 
 
-    
-    
+
+
 #define ARGS_af_makeStringGlobal "(module svalue)"
 #define DECL_af_makeStringGlobal ""
 #define DOCS_af_makeStringGlobal "makeStringGlobal"
@@ -616,7 +640,7 @@ namespace llvmo
 	llvm::Module* mod = module->wrappedPtr();
 	using namespace llvm;
 	ArrayType* ArrayTy_0 = ArrayType::get(IntegerType::get(mod->getContext(), 8), svalue->length()+1 );
-	GlobalVariable* gvar_array__str = new GlobalVariable(/*Module=*/*mod, 
+	GlobalVariable* gvar_array__str = new GlobalVariable(/*Module=*/*mod,
 							     /*Type=*/ArrayTy_0,
 							     /*isConstant=*/true,
 							     /*Linkage=*/GlobalValue::InternalLinkage,
@@ -671,14 +695,14 @@ namespace llvmo
 
 
 
-    
-    
+
+
 #define ARGS_af_valid "(value)"
 #define DECL_af_valid ""
 #define DOCS_af_valid "Return true if this is a valid LLMV value, meaning its pointer is not NULL"
     bool af_valid(Value_sp value)
     {_G();
-	// nil is a valid 
+	// nil is a valid
 	if ( value.nilp() ) return true;
 	return value->valid();
     }
@@ -734,8 +758,8 @@ namespace llvmo
 
 
 
-    
-    
+
+
 #define ARGS_af_module_get_function_list "(module)"
 #define DECL_af_module_get_function_list ""
 #define DOCS_af_module_get_function_list "module_get_function_list"
@@ -1281,7 +1305,7 @@ namespace llvmo
 #endif
     }
 #endif
-	
+
 
     void EngineBuilder_O::setTargetOptions(core::Cons_sp optionsPlist)
     {_G();
@@ -1315,7 +1339,7 @@ namespace llvmo
 
     void EngineBuilder_O::exposeCando(core::Lisp_sp lisp)
     {_G();
-	
+
 //	llvm::ExecutionEngine* (llvm::EngineBuilder::*create)() = &llvm::EngineBuilder::create;
 //	llvm::ExecutionEngine* (llvm::EngineBuilder::*create_targetMachine)(llvm::TargetMachine*) = &llvm::EngineBuilder::create;
 
@@ -1374,7 +1398,7 @@ namespace llvmo
 
     void PassManagerBuilder_O::exposeCando(core::Lisp_sp lisp)
     {_G();
-	
+
 	core::externalClass_<PassManagerBuilder_O>()
 	    .def("populateModulePassManager",&llvm::PassManagerBuilder::populateModulePassManager)
 	    .def("populateLTOPassManager",&llvm::PassManagerBuilder::populateLTOPassManager)
@@ -2415,7 +2439,7 @@ namespace llvmo
         self->_value = api;
         return self;
     }
-        
+
 
 
 #define ARGS_APInt_O_makeAPInt "(value)"
@@ -2482,7 +2506,7 @@ namespace llvmo
 	if (af_fixnumP(value) )
 	{
 	    core::Fixnum_sp fixnum_value = value.as<core::Fixnum_O>();
-	    if ( !sign && fixnum_value->get() < 0 ) 
+	    if ( !sign && fixnum_value->get() < 0 )
 	    {
 		SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % fixnum_value->get() );
 	    }
@@ -2741,7 +2765,7 @@ namespace llvmo
 		ss << " :function UNDEFINED-FUNCTION! ";
 	    }
 	} else
-	{ 
+	{
 	    ss << " :insert-block-name UNDEFINED-BASIC_BLOCK! ";
 	}
 	ss << " >";
@@ -2804,7 +2828,7 @@ namespace llvmo
 //	llvm::Value* (IRBuilder_O::ExternalType::&CreateShl_value_value)(llvm::Value*,llvm::Value*,const llvm::Twine&,bool,bool) = IRBuilder_O::ExternalType::CreateShl;
 //	llvm::Value* (IRBuilder_O::ExternalType::&CreateShl_value_apint)(llvm::Value*,const llvm::APInt&,const llvm::Twine&,bool,bool) = IRBuilder_O::ExternalType::CreateShl;
 //	llvm::Value* (IRBuilder_O::ExternalType::&CreateShl_value_uint64)(llvm::Value*,uint64_t,const llvm::Twine&,bool,bool) = IRBuilder_O::ExternalType::CreateShl;
-	
+
 	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateLShr,_value_value,(llvm::Value*,llvm::Value*,const llvm::Twine&,bool));
 	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateLShr,_value_apint,(llvm::Value*,llvm::APInt const&,const llvm::Twine&,bool));
 	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateLShr,_value_uint64,(llvm::Value*,uint64_t,const llvm::Twine&,bool));
@@ -2954,7 +2978,7 @@ namespace llvmo
 
 #endif
 
-	core::af_def(LlvmoPkg,"make-irbuilder",&IRBuilder_O::make,ARGS_IRBuilder_O_make,DECL_IRBuilder_O_make,DOCS_IRBuilder_O_make);	
+	core::af_def(LlvmoPkg,"make-irbuilder",&IRBuilder_O::make,ARGS_IRBuilder_O_make,DECL_IRBuilder_O_make,DOCS_IRBuilder_O_make);
 
     };
 
@@ -3100,8 +3124,8 @@ namespace llvmo
 namespace llvmo
 {
 
-    
-    
+
+
 #define ARGS_af_FunctionCreate "(ty linkage n m)"
 #define DECL_af_FunctionCreate ""
 #define DOCS_af_FunctionCreate "FunctionCreate - wrapps llvm::Function::Create"
@@ -3127,7 +3151,7 @@ namespace llvmo
     {
 	this->wrappedPtr()->getBasicBlockList().push_back(basicBlock->wrappedPtr());
     }
-    
+
 
 
     EXPOSE_CLASS(llvmo,Function_O);
@@ -3402,8 +3426,8 @@ namespace llvmo
 
 
 
-    
-    
+
+
 
 #define ARGS_StructType_O_make "(context &key elements name is-packed)"
 #define DECL_StructType_O_make ""
@@ -3637,8 +3661,8 @@ namespace llvmo
 
 
 
-#if 0    
-    
+#if 0
+
 #define ARGS_af_createDebugIRPass "(filename-postfix)"
 #define DECL_af_createDebugIRPass ""
 #define DOCS_af_createDebugIRPass "createDebugIRPass"

@@ -689,6 +689,10 @@ namespace core
 	} else if ( obj._NULLp() )
 	{
 	    return "!NULL!";
+        } else if ( Fixnum_sp fn = obj.asOrNull<Fixnum_O>() ) {
+            stringstream ss;
+            ss << fn->get();
+            return ss.str();
         } else if ( obj.fixnump() ) {
             stringstream ss;
             ss << obj.fixnum();
