@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -58,7 +58,7 @@ namespace core
 
 
     typedef void (*InitFnPtr)();
-    
+
 
 
 
@@ -83,8 +83,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_core_startupImagePathname "()"
 #define DECL_core_startupImagePathname ""
 #define DOCS_core_startupImagePathname "startupImagePathname"
@@ -104,12 +104,12 @@ namespace core
         return pn;
     };
 
-    
-    
-#define ARGS_core_loadBundle "(name &optional init-fn-name)"
+
+
+#define ARGS_core_loadBundle "(name &optional verbose print external-format)"
 #define DECL_core_loadBundle ""
 #define DOCS_core_loadBundle "loadBundle"
-    T_mv core_loadBundle(T_sp pathDesig, Str_sp oinitFnName)
+    T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format )
     {_G();
         DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
         /* Define the source file */
@@ -147,13 +147,7 @@ namespace core
 	    string error = dlerror();
 	    return(Values(_Nil<T_O>(),Str_O::create(error)));
 	}
-	string mainName = "";
-	if ( oinitFnName.notnilp() )
-	{
-	    mainName = oinitFnName->get();
-	} else {
-            mainName = CLASP_MAIN_FUNCTION_NAME;
-        }
+	string mainName = CLASP_MAIN_FUNCTION_NAME;
 	InitFnPtr fnP = (InitFnPtr)dlsym(handle,mainName.c_str());
 	if ( fnP == NULL )
 	{
@@ -166,7 +160,7 @@ namespace core
 
 
 
-    
+
 #define ARGS_af_dlload "(pathDesig)"
 #define DECL_af_dlload ""
 #define DOCS_af_dlload "dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error))"
@@ -223,7 +217,7 @@ namespace core
 
 
 
-    
+
 #define ARGS_af_dlopen "(pathDesig)"
 #define DECL_af_dlopen ""
 #define DOCS_af_dlopen "dlopen - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error))"
@@ -258,8 +252,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_dlsym "(handle name)"
 #define DECL_af_dlsym ""
 #define DOCS_af_dlsym "(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found."
@@ -275,7 +269,7 @@ namespace core
 	{
 	    Symbol_sp sym = ohandle.asOrNull<Symbol_O>();
 	    SYMBOL_SC_(KeywordPkg,rtld_default);
-	    SYMBOL_SC_(KeywordPkg,rtld_next);	
+	    SYMBOL_SC_(KeywordPkg,rtld_next);
 	    SYMBOL_SC_(KeywordPkg,rtld_self);
 	    SYMBOL_SC_(KeywordPkg,rtld_main_only);
 	    if ( sym == kw::_sym_rtld_default )
@@ -309,7 +303,7 @@ namespace core
 
 
 
-    
+
 #define ARGS_af_dladdr "(addr)"
 #define DECL_af_dladdr ""
 #define DOCS_af_dladdr "(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)"
@@ -335,9 +329,9 @@ namespace core
 
 
 
-    
-    
-    
+
+
+
 #define ARGS_af_implicit_compile_hook_default "(form &optional environment)"
 #define DECL_af_implicit_compile_hook_default ""
 #define DOCS_af_implicit_compile_hook_default "implicit_compile_hook_default"
@@ -372,8 +366,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_core_applysPerSecond "(fn &rest args)"
 #define DECL_core_applysPerSecond ""
 #define DOCS_core_applysPerSecond "applysPerSecond"
@@ -503,7 +497,7 @@ namespace core
 #if 0
                     Function_O* func = reinterpret_cast<Function_O*>(fn.px_ref());
 #else
-                    
+
                     Function_sp func;
                     func = eval::lookupFunction(fn,_Nil<T_O>());
 #endif
@@ -814,16 +808,16 @@ namespace core
 	_sym_STARimplicit_compile_hookSTAR->defparameter(_sym_implicit_compile_hook_default->symbolFunction());
 	SYMBOL_SC_(CorePkg,dlload);
 	Defun(dlload);
-	
+
 	SYMBOL_SC_(CorePkg,dlopen);
 	Defun(dlopen);
-	
+
 	SYMBOL_SC_(CorePkg,dlsym);
 	Defun(dlsym);
-	
+
 	SYMBOL_SC_(CorePkg,dladdr);
 	Defun(dladdr);
-	
+
 	SYMBOL_SC_(CorePkg,loadBundle);
 	CoreDefun(loadBundle);
 

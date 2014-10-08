@@ -273,7 +273,8 @@
     (ensure-directories-exist bundle-bitcode-pathname)
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
     (generate-object-file bundle-bitcode-pathname)
-    (execute-link output-pathname (list bundle-bitcode-pathname))))
+    (execute-link output-pathname (list bundle-bitcode-pathname))
+    (truename output-pathname)))
 
 (export '(link-system-lto))
 
@@ -283,3 +284,9 @@
   (break "Check parameters"))
 
 (export '(builder))
+
+
+(defun build-fasl (out-file &key lisp-files)
+  "Return the truename of the output file"
+  (link-system-lto out-file :lisp-bitcode-files lisp-files))
+(export 'build-fasl)
