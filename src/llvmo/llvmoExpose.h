@@ -299,6 +299,7 @@ namespace translate
 
 namespace llvmo
 {
+    FORWARD(PassManagerBase);
     FORWARD(LLVMTargetMachine);
     class LLVMTargetMachine_O : public TargetMachine_O
     {
@@ -312,6 +313,11 @@ namespace llvmo
 /*        if (this->_ptr != NULL ) delete this->_ptr; */
             this->_ptr = ptr;
         }
+
+//        static LLVMTargetMachine_sp makeLLVMTargetMachine(
+        bool LLVMTargetMachine_addPassesToEmitFile( PassManagerBase_sp pm,
+                                                    core::T_sp stream,
+                                                    core::Symbol_sp fileType);
         LLVMTargetMachine_O() : Base() {};
         ~LLVMTargetMachine_O() {}
 
