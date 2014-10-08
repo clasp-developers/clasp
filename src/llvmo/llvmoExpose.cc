@@ -230,7 +230,6 @@ namespace llvmo
     void TargetMachine_O::exposeCando(core::Lisp_sp lisp)
     {_G();
         core::externalClass_<TargetMachine_O>()
-            .def("addPassesToEmitFile",&llvm::TargetMachine::addPassesToEmitFile)
             ;
     };
 
@@ -246,11 +245,22 @@ namespace llvmo
 
 namespace llvmo
 {
+
+    bool LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile( PassManagerBase_sp pm,
+                                                core::T_sp stream,
+                                                core::Symbol_sp fileType)
+    {
+        IMPLEMENT_ME();
+    }
+
+
+
     EXPOSE_CLASS(llvmo,LLVMTargetMachine_O);
 
     void LLVMTargetMachine_O::exposeCando(core::Lisp_sp lisp)
     {_G();
         core::externalClass_<LLVMTargetMachine_O>()
+            .def("LLVMTargetMachine_addPassesToEmitFile",&LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile);
             ;
     };
 

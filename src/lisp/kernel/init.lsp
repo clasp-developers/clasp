@@ -938,12 +938,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;  Setup the build system for ASDF
 ;;
 ;;
-(defun setup-asdf () (load "sys:kernel;sys-asdf.lsp"))
+(defun setup-asdf () (load "sys:kernel;asdf;build;asdf.lsp"))
 (export 'setup-asdf)
 
 (defun compile-asdf ()
   (compile-file "sys:kernel;asdf;build;asdf.lisp")
-  (cmp::link-bundle-lto "sys:kernel;asdf;build;asdf.bundle"
+  (cmp::link-system-lto "sys:kernel;asdf;build;asdf.bundle"
                        :lisp-bitcode-files (list #P"sys:kernel;asdf;build;asdf.bc"))
 )
 
