@@ -311,7 +311,7 @@ No DIBuilder is defined for the default module")
 
 (si::*fset
  'load-bitcode
- #'(lambda (filename)
+ #'(lambda (filename &optional verbose print external_format)
      "Load a bitcode file, link it and execute it"
      (let ((*package* *package*)
 	   (time-load-start (clock-gettime-nanoseconds)))
