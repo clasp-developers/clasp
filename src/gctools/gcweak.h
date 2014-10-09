@@ -311,7 +311,7 @@ namespace gctools {
                 printf("%s:%d i = %lu   k = %p\n", __FILE__, __LINE__, i, k.pointer() );
                 if( k.unboundp() || k == key ) {
                     b = i;
-                    printf("%s:%d  returning 1   b=%lu  k = %p\n", __FILE__, __LINE__, b, k.pointer() );
+                    printf("%s:%d  returning 1   b=%zu  k = %p\n", __FILE__, __LINE__, b, k.pointer() );
                     return 1;
                 }
 #ifdef USE_BOEHM
@@ -439,12 +439,12 @@ namespace gctools {
             if ((*this->_Keys)[b].unboundp()) {
                 this->_Keys->set(b,key);
                 (*this->_Keys).setUsed((*this->_Keys).used()+1);
-                printf("%s:%d key was unboundp at %lu  used = %d\n", __FILE__, __LINE__, b, this->_Keys->used() );
+                printf("%s:%d key was unboundp at %zu  used = %d\n", __FILE__, __LINE__, b, this->_Keys->used() );
             } else if ((*this->_Keys)[b].deletedp()) {
                 this->_Keys->set(b,key);
                 GCTOOLS_ASSERT((*this->_Keys).deleted() > 0 );
                 (*this->_Keys).setDeleted((*this->_Keys).deleted()-1);
-                printf("%s:%d key was deletedp at %lu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted() );
+                printf("%s:%d key was deletedp at %zu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted() );
             }
             (*this->_Values).set(b,value_type(value));
             return 1;

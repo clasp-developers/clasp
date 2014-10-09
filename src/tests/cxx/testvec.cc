@@ -50,7 +50,7 @@ THE SOFTWARE.
         size_t newBytes = vec::MutableVector<value_type>::_sizeof(_C_); \
         myAddress = (vec::MutableVector<value_type>*)malloc(newBytes);  \
         if (!myAddress) THROW_OUT_OF_MEMORY();                          \
-        LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));              \
+        LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));              \
     }
 
 
@@ -82,7 +82,7 @@ public:
 template <typename X>
 void dump(vec::MutableVector<X>*& mv )
 {
-    printf("vec@%p _C[%lu] _E[%lu] ", mv, mv->capacity(), mv->size() );
+    printf("vec@%p _C[%zu] _E[%zu] ", mv, mv->capacity(), mv->size() );
     for ( int i(0); i<(*mv).capacity(); ++i ) {
         if (i == (*mv).size()) printf("| ");
         (*mv)[i].dump();
