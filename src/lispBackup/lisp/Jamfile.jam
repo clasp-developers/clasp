@@ -1,5 +1,0 @@
-project internals/lisp ;
-
-install bundle : [ glob-tree *.l *.lsp *.sh : .svn old originals beforeTransform unit_tests HelloWorld tw.l ] viewer/CandoViewer/candoViewer.xrc
-	       : <location>$(APPLISP)
-	       <install-source-root>. ;
