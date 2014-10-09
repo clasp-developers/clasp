@@ -1,3 +1,0 @@
-
-all:
-	mwxCando helloWorld.l
