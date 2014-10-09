@@ -35,6 +35,6 @@ THE SOFTWARE.
 
 int main(int argc, const char* argv[])
 {
-    printf("sizeof myvector<void*> = %lu\n", sizeof(myvector<void*>));
-    printf("sizeof myvector<int> = %lu\n", sizeof(myvector<int>));
+    printf("sizeof myvector<void*> = %zu\n", sizeof(myvector<void*>));
+    printf("sizeof myvector<int> = %zu\n", sizeof(myvector<int>));
 }
