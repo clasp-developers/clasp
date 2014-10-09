@@ -495,7 +495,7 @@ namespace gctools {
                 new (myAddress) TY(num);
             } while (!mps_commit(obj_ap,addr,size));
             globalMpsMetrics.movingAllocation(size);
-            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            GC_LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));
             POLL_SIGNALS();
             DEBUG_MPS_ALLOCATION("containerAMC", addr, myAddress, size, gctools::GCKind<TY>::Kind);
             return myAddress;
@@ -586,7 +586,7 @@ namespace gctools {
                 new (myAddress) TY(num);
             } while (!mps_commit(obj_ap,addr,size));
             globalMpsMetrics.nonMovingAllocation(size);
-            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            GC_LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));
             POLL_SIGNALS();
             DEBUG_MPS_ALLOCATION("container_MVFF", addr, myAddress, size, gctools::GCKind<TY>::Kind);
             return myAddress;
@@ -768,7 +768,7 @@ namespace gctools {
                 new (myAddress) container_type(num);
             }
             while (!mps_commit(_global_weak_link_allocation_point,addr,size));
-            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            GC_LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));
             return myAddress;
 #endif
         }
@@ -843,7 +843,7 @@ namespace gctools {
                 new (myAddress) container_type(num);
             }
             while (!mps_commit(_global_strong_link_allocation_point,addr,size));
-            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            GC_LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));
             return myAddress;
 #endif
         }
@@ -919,7 +919,7 @@ namespace gctools {
                 new (myAddress) container_type(val);
             }
             while (!mps_commit(_global_weak_link_allocation_point,addr,size));
-            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            GC_LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));
             return myAddress;
 #endif
         }
@@ -965,7 +965,7 @@ namespace gctools {
                 new (myAddress) container_type(val);
             }
             while (!mps_commit(_global_weak_link_allocation_point,addr,size));
-            GC_LOG(("malloc@%p %lu bytes\n",myAddress,newBytes));
+            GC_LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));
             return myAddress;
 #endif
         }

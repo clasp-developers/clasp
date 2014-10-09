@@ -180,7 +180,7 @@ namespace gctools {
             if ( this->_Contents->_End == this->_Contents->_Capacity ) {
                 // This is where we grow the Vector
                 size_t newCapacity = this->_Contents->_Capacity * GCVectorGrow;
-                GC_LOG(("Increasing capacity to %lu\n", newCapacity));
+                GC_LOG(("Increasing capacity to %zu\n", newCapacity));
 #ifdef DEBUG_ASSERTS
                 if ( newCapacity > 65536 ) {
                     printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__ );
@@ -281,7 +281,7 @@ namespace gctools {
             }
             // Placement destructor calls to release stuff past _End
             for ( size_t i(n); i<this->_Contents->_End; ++i ) {
-                GC_LOG(("Placement dtor called on element[%lu]\n", i));
+                GC_LOG(("Placement dtor called on element[%zu]\n", i));
                 alloc.destroy(&(*this->_Contents)[i]);
             }
             // Everything after _End is now abandoned
@@ -405,11 +405,11 @@ namespace gctools {
     template <typename Vector>
     void vector_dump(const Vector& v, const char* head="" )
     {
-        printf("%s vec@%p _C[%lu] _E[%lu] ", head, v.contents(), v.capacity(), v.size() );
+        printf("%s vec@%p _C[%zu] _E[%zu] ", head, v.contents(), v.capacity(), v.size() );
         size_t i;
         for ( i=0; i<v.capacity(); ++i ) {
             if (i == v.size()) printf("/ ");
-            printf("[%lu]=", i);
+            printf("[%zu]=", i);
             v[i].dump();
         }
         if ( i==v.size() ) printf("/ ");

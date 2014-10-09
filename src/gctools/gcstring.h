@@ -367,7 +367,7 @@ namespace gctools {
             if ( strlen(this->_Contents->_End == this->_Contents->_Capacity ) {
                 // This is where we grow the Vector
                 size_t newCapacity = this->_Contents->_Capacity * GCStringGrow;
-                GC_LOG(("Increasing capacity to %lu\n", newCapacity));
+                GC_LOG(("Increasing capacity to %zu\n", newCapacity));
 #ifdef DEBUG_ASSERTS
                 if ( newCapacity > 65536 ) {
                     printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__ );

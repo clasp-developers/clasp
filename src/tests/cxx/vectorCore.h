@@ -75,7 +75,7 @@ namespace vec {
             size_t headerSz = sizeof(my_type);
             size_t dataSz = sizeof(T)*n;
             size_t totalSz = headerSz+dataSz;
-            LOG(("headerSz[%lu] + ( value_size[%lu] * n[%lu] -> dataSz[%lu] ) --> totalSz[%lu]\n",
+            LOG(("headerSz[%zu] + ( value_size[%zu] * n[%zu] -> dataSz[%zu] ) --> totalSz[%zu]\n",
                  headerSz, sizeof(T), n, dataSz, totalSz));
             return totalSz;
         };
@@ -89,7 +89,7 @@ namespace vec {
                 size_t sz = vec::MutableVector<value_type>::_sizeof(capacity);
                 myAddress = (vec::MutableVector<value_type>*)malloc(vec::MutableVector<value_type>::_sizeof(capacity));
                 if (!myAddress) THROW_OUT_OF_MEMORY();
-                LOG(("malloc@%p %lu bytes\n",myAddress,sz));
+                LOG(("malloc@%p %zu bytes\n",myAddress,sz));
             }
 #else
             GC_VECTOR_ALLOCATE(value_type,capacity,myAddress);
@@ -132,7 +132,7 @@ namespace vec {
                     size_t newBytes = vec::MutableVector<value_type>::_sizeof(newCapacity);
                     newAddress = (vec::MutableVector<value_type>*)malloc(newBytes);
                     if (!newAddress) THROW_OUT_OF_MEMORY();
-                    LOG(("malloc@%p %lu bytes\n",newAddress,newBytes));
+                    LOG(("malloc@%p %zu bytes\n",newAddress,newBytes));
                     new (newAddress) my_type(newCapacity);
                     for ( size_t zi(0); zi<this->_End; ++zi ) {                   
                         // the array at newAddress is undefined - placement new to copy
@@ -165,7 +165,7 @@ namespace vec {
                     size_t newBytes = vec::MutableVector<value_type>::_sizeof(newCapacity);
                     newAddress = (vec::MutableVector<value_type>*)malloc(newBytes);
                     if (!newAddress) THROW_OUT_OF_MEMORY();
-                    LOG(("malloc@%p %lu bytes\n",newAddress,newBytes));
+                    LOG(("malloc@%p %zu bytes\n",newAddress,newBytes));
                     new (newAddress) my_type(newCapacity);
                     for ( size_t zi(0); zi<this->_End; ++zi ) {                   
                         // the array at newAddress is undefined - placement new to copy
