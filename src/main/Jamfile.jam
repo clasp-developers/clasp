@@ -140,5 +140,8 @@ install bundle : clasp
 #			<dll-path>$(APPLIB)
 		   	# <variant>debug:<dll-path>$(APPRES-EXTERNALS-DEBUG-LIB) #Uncomment to get the debug version of llvm
 #                         <dll-path>$(APPRES-EXTERNALS-RELEASE-LIB)
+# Add the link path for the externals-clasp libraries to the executable(s)
+                        <dll-path>$(APPRES-EXTERNALS-RELEASE-LIB)
+                        <dll-path>$(APPRES-EXTERNALS-COMMON-LIB)
                         ;
 

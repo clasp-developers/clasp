@@ -4,7 +4,7 @@ export GIT_COMMIT := $(shell git rev-parse HEAD)
 
 export BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
 export BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v2
-export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam --ignore-site-config -q
+export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]> ')
