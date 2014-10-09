@@ -23,12 +23,13 @@ This version of the llvm/clang3.6 is included in externals-clasp.  Incidentally,
 |  Systems that Clasp is known to build on  |
 | ----------------------------------------- |
 |  OS X 10.9.5 using Xcode 6.0.1            |
-|  Debian Testing(Jessie) - see issue #22   |
+|  Debian Testing(Jessie) - [see issue #22](https://github.com/drmeister/clasp/issues/22)   |
 |  Debian Unstable(Sid)                     |
-|  Gentoo Linux - see Issue #20             |
+|  Gentoo Linux - [see issue #20](https://github.com/drmeister/clasp/issues/20)             |
 |  Arch Linux                               |
-|  OpenSuse 13.1 - see issue #19            |
-|  Debian Stable (Wheezy) - see issue #21   |
+|  OpenSuse 13.1 - [see issue #19](https://github.com/drmeister/clasp/issues/19)            |
+|  Debian Stable (Wheezy) - [see issue #21](https://github.com/drmeister/clasp/issues/21)   |
+|  Ubuntu 14.04 - [see issue #26](https://github.com/drmeister/clasp/issues/26)             |
 
 If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
 
