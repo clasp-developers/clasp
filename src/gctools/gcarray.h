@@ -160,10 +160,10 @@ namespace gctools {
     template <typename Array>
     void Array0_dump(const Array& v, const char* head="" )
     {
-        printf("%s Array0@%p _Alive[%d] _C[%lu]", head, v.contents(), v.alivep(), v.capacity() );
+        printf("%s Array0@%p _Alive[%d] _C[%zu]", head, v.contents(), v.alivep(), v.capacity() );
         size_t i;
         for ( i=0; i<v.capacity(); ++i ) {
-            printf("[%lu]=", i);
+            printf("[%zu]=", i);
             printf("%s ", _rep_(v[i]).c_str());
         }
         printf("\n");
