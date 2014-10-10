@@ -84,6 +84,8 @@ namespace core
 
 
 
+
+
 #define ARGS_cl_lispImplementationType "()"
 #define DECL_cl_lispImplementationType ""
 #define DOCS_cl_lispImplementationType "lispImplementationType"

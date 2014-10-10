@@ -1070,6 +1070,7 @@ jump to blocks within this tagbody."
 	    ((integerp obj) (codegen-ltv/integer result obj env))
 	    ((stringp obj) (codegen-ltv/string result obj env))
 	    ((floatp obj) (codegen-ltv/float result obj env))
+            ((complexp obj) (codegen-ltv/complex result obj env))
 	    ((characterp obj) (codegen-ltv/character result obj env))
 	    ((arrayp obj) (codegen-ltv/array result obj env))
 	    ((hash-table-p obj) (codegen-ltv/container result obj env))

@@ -3,14 +3,14 @@
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
+;;
 ;; CLASP is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Library General Public
 ;; License as published by the Free Software Foundation; either
 ;; version 2 of the License, or (at your option) any later version.
-;; 
+;;
 ;; See directory 'clasp/licenses' for full details.
-;; 
+;;
 ;; The above copyright notice and this permission notice shall be included in
 ;; all copies or substantial portions of the Software.
 ;;
@@ -78,7 +78,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
   (let ((ltv-idx *next-load-time-value-index*))
     (incf *next-load-time-value-index*)
     ltv-idx))
-	
+
 
 
 
@@ -128,7 +128,7 @@ Return the ltv index of the value."
 	     (irc-low-level-trace)
 	     (let ((,ltv-ref (irc-intrinsic ,push-and-get-reference-fn-name  *load-time-value-holder-global-var* (jit-constant-i32 ,index-gs))))
 	       (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*) ;(irc-get-cleanup-landing-pad-block ,env)
-		 (cmp-log "About to generate code for load-time-value maker: %s\n" ',maker) 
+		 (cmp-log "About to generate code for load-time-value maker: %s\n" ',maker)
 ;;		 (break "Where will codegeneration go?")
 		 ,maker))
 	     ;; insert block may have changed in maker
@@ -138,7 +138,7 @@ Return the ltv index of the value."
 	 (irc-intrinsic ,copy-value-fn-name ,result *load-time-value-holder-global-var* (jit-constant-i32 ,index-gs)))
        ,index-gs
        )))
-	     
+
 
 
 (defmacro with-initialize-load-time-value ((ltv-ref ltv-idx env) &rest initializer)
@@ -149,7 +149,7 @@ Return the ltv index of the value."
 	 ,@initializer))
      ;; insert block may have changed in initializer
      ))
-	     
+
 
 (defmacro with-walk-structure ((obj env) &key maker walker)
   (let ((idx-gs (gensym "idx"))
@@ -163,7 +163,7 @@ Return the ltv index of the value."
 	     (core::hash-table-setf-gethash *node-table* ,obj ,idx-gs)
 	     ,walker
 	     ,idx-gs)))))
-	     
+
 
 
 
@@ -177,7 +177,7 @@ Return the ltv index of the value."
   (with-walk-structure (cur env)
     :maker (codegen-literal nil cur env)))
 
-			   
+
 
 (defun walk-structure-cons (cur env)
   "If the CONS cur is not in the *node-table* then create
@@ -342,10 +342,10 @@ and walk the car and cdr"
 
 
 
-  
 
 
-(defvar *fixnum-coalesce* nil 
+
+(defvar *fixnum-coalesce* nil
   "Store a hash-table-eql of fixnums to indices")
 
 (defun codegen-ltv-fixnum (result obj env)
@@ -473,6 +473,17 @@ and walk the car and cdr"
 		  (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
 	     (irc-intrinsic "makeDoubleFloat" ltv-ref constant-ap-arg))))
 
+(defvar *complex-coalesce* nil)
+(defun codegen-ltv-complex (result complex env)
+  "Return IR code that generates a complex number"
+  (with-coalesce-load-time-value (ltv-ref result complex env)
+    :coalesce-hash-table *complex-coalesce*
+    :maker (let* ((constant-r (llvm-sys:make-apfloat-double (realpart complex)))
+                  (constant-i (llvm-sys:make-apfloat-double (imagpart complex)))
+		  (constant-ap-arg-r (llvm-sys:constant-fp-get *llvm-context* constant-r))
+		  (constant-ap-arg-i (llvm-sys:constant-fp-get *llvm-context* constant-i)))
+	     (irc-intrinsic "makeComplex" ltv-ref constant-ap-arg-r constant-ap-arg-i))))
+
 
 #+long-float(defvar *long-float-coalesce* nil)
 #+long-float(defun codegen-ltv-long-float (result val env)
@@ -492,6 +503,8 @@ and walk the car and cdr"
     #+long-float((long-float-p arg)   (codegen-ltv-long-float result arg env))
     (t (error "Illegal argument ~a for codegen-float" arg))))
 
+(defun codegen-ltv/complex (result arg env)
+  (codegen-ltv-complex result arg env))
 
 
 
@@ -627,7 +640,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
   (let ((load-time-symbol-idx *next-load-time-symbol-index*))
     (incf *next-load-time-symbol-index*)
     load-time-symbol-idx))
-	
+
 
 
 
@@ -680,7 +693,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 
 (defmacro with-load-time-value-counters ((ltv-value-counter ltv-symbol-counter &key postscript ) &rest body)
-  "Wrap code that modifies *next-load-time-value-index* and *next-load-time-symbol-index* and then 
+  "Wrap code that modifies *next-load-time-value-index* and *next-load-time-symbol-index* and then
 evaluate POSTSCRIPT with their final values in ltv-value-counter and ltv-symbol-counter respectively"
   `(let (,ltv-value-counter
 	 ,ltv-symbol-counter
@@ -740,6 +753,7 @@ marshaling of compiled quoted data"
 	     #+short-float(*short-float-coalesce* (make-hash-table :test #'eql))
 	     (*single-float-coalesce* (make-hash-table :test #'eql))
 	     (*double-float-coalesce* (make-hash-table :test #'eql))
+	     (*complex-coalesce* (make-hash-table :test #'eql))
 	     #+long-float(*long-float-coalesce* (make-hash-table :test #'eql))
 	     (*string-coalesce* (make-hash-table :test #'equal))
 	     (*pathname-coalesce* (make-hash-table :test #'equal))
@@ -751,7 +765,7 @@ marshaling of compiled quoted data"
 	     )
 	 ;; Evaluate the body into here - this will generate code in new functions
 	 ;; and generate code to invoke those new functions within the *irbuilder-ltv-function-body* irbuilder
-	 ;; it will also setup all of the literals, load-time-values and symbols 
+	 ;; it will also setup all of the literals, load-time-values and symbols
 	 ;;
 
 	 (with-load-time-value-counters (ltv-value-counter
@@ -815,7 +829,7 @@ marshaling of compiled quoted data"
 		   (dbg-set-current-debug-location-here)
 		   (codegen ltv-result form fn-env)
 		   (irc-intrinsic "copyTsp" fn-result ltv-result)
-		   (dbg-set-current-debug-location-here) 
+		   (dbg-set-current-debug-location-here)
 		   )))))
     (cmp-log-dump fn)
     (irc-verify-function fn t)
@@ -836,7 +850,7 @@ marshaling of compiled quoted data"
 ;;
 ;; If you need to add a new type XXX to codegen-literal
 ;; Look at codegen-ltv/string or codegen-ltv/pathname
-;; 1) You will need to define a dynamic variable *XXX-coalesce* and initialize 
+;; 1) You will need to define a dynamic variable *XXX-coalesce* and initialize
 ;; it as a hash table in with-load-time-value-unit
 ;; 2) You will then need to write a codegen-ltv/XXX that generates code that
 ;; will recreate the XXX object from values you can write into global variables in the module
@@ -853,6 +867,7 @@ marshaling of compiled quoted data"
 	((stringp obj) (codegen-ltv/string result obj env))
 	((pathnamep obj) (codegen-ltv/pathname result obj env))
 	((floatp obj) (codegen-ltv/float result obj env))
+	((complexp obj) (codegen-ltv/complex result obj env))
 	((symbolp obj) (codegen-ltv/symbol result obj env))
 	((characterp obj) (codegen-ltv/character result obj env))
 	((arrayp obj) (codegen-ltv/array result obj env))

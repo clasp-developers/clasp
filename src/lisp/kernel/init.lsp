@@ -614,6 +614,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     :cmprepl
     lsp/sharpmacros
     lsp/assert
+    lsp/numlib
     lsp/describe
     lsp/module
     lsp/loop2
