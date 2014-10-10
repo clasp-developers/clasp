@@ -53,6 +53,12 @@ all:
 	make clasp-mps
 	make compile-commands
 
+only-boehm:
+	git submodule update --init  # ensure that the src/mps submodule is updated
+	make boostbuildv2-build
+	make clasp-boehm
+
+
 
 #
 # When developing, set the CLASP_LISP_SOURCE_DIR environment variable
