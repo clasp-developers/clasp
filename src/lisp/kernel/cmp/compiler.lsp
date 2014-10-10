@@ -1134,6 +1134,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 	    ((stringp obj) (codegen-ltv/string result obj env))
             ((pathnamep obj) (codegen-ltv/pathname result obj env))
 	    ((floatp obj) (codegen-ltv/float result obj env))
+            ((complexp obj) (codegen-ltv/complex result obj env))
 	    ((characterp obj) (codegen-ltv/character result obj env))
 	    ((arrayp obj) (codegen-ltv/array result obj env))
 	    ((hash-table-p obj) (codegen-ltv/container result obj env))

@@ -20,7 +20,7 @@
   (print "Done"))
 
 ;; Temporary check-type - everything is true
-(fset 'check-type 
+(fset 'check-type
       #'(lambda (whole env) t)
       t)
 
@@ -359,6 +359,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (core:function-source-pos x))
 
 
+(defun warn-or-ignore (x &rest args)
+  nil)
+(export 'warn-or-ignore)
+
+
 (in-package :cl)
 
 ;; We do not use this macroexpanso, and thus we do not care whether
@@ -374,9 +379,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun warn (x &rest args)
   (bformat t "WARN: %s %s\n" x args))
 
-(defun warn-or-ignore (x &rest args)
-  nil)
-(export 'warn-or-ignore)
 
 (defun class-name (x)
   (name-of-class x))

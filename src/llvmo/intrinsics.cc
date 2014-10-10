@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -102,7 +102,7 @@ extern "C"
 
 
 };
-extern "C" 
+extern "C"
 {
 
     const std::type_info& typeidCoreCatchThrow = typeid(core::CatchThrow);
@@ -156,7 +156,7 @@ extern "C"
 		    break;
 		}
 	    }
-	    printf( "LowLevel-trace#%d -> %u\n", -i, _LLVMLowLevelTraceQueue[cur]); 
+	    printf( "LowLevel-trace#%d -> %u\n", -i, _LLVMLowLevelTraceQueue[cur]);
 	}
     }
 
@@ -328,7 +328,7 @@ extern "C" {
     {_G();
 	ASSERT(sharedP!=NULL);
 	new(sharedP) core::Function_sp();
-	
+
     }
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -370,7 +370,7 @@ extern "C" {
     {_G();
 	ASSERT(sharedP!=NULL);
 	new(sharedP) core::T_sp();
-	
+
     }
 
 
@@ -451,7 +451,7 @@ extern "C" {
     {_G();
 	ASSERT(sharedP!=NULL);
 	new(sharedP) core::T_mv();
-	
+
     }
 
     void resetTmv(core::T_mv* sharedP)
@@ -511,7 +511,7 @@ extern "C"
     {_G();
 	ASSERT(frameP!=NULL);
 	new(frameP) core::ActivationFrame_sp();
-	
+
     }
 
     void newAFsp_ValueFrameOfSize(core::ActivationFrame_sp* frameP, int size)
@@ -625,7 +625,7 @@ extern "C"
     void makeFixnum( core::T_sp* fnP, int s)
     {_G();
 	ASSERT(fnP!=NULL);
-	(*fnP) = core::Fixnum_sp(core::Fixnum_O::create(s));  
+	(*fnP) = core::Fixnum_sp(core::Fixnum_O::create(s));
     }
 
     void makeCharacter( core::T_sp* fnP, int s)
@@ -638,7 +638,7 @@ extern "C"
     {_G();
 	ASSERT(fnP!=NULL);
 	string str = cP;
-	core::Bignum_sp ns = core::Bignum_O::make(str);  
+	core::Bignum_sp ns = core::Bignum_O::make(str);
 	(*fnP) = ns;
     }
 
@@ -649,7 +649,7 @@ extern "C"
     {_G();
 // placement new into memory passed into this function
 	ASSERT(fnP!=NULL);
-	core::Str_sp ns = core::Str_O::create(str);  
+	core::Str_sp ns = core::Str_O::create(str);
 	(*fnP) = ns;
     }
 
@@ -657,9 +657,9 @@ extern "C"
     {_G();
 // placement new into memory passed into this function
 	ASSERT(fnP!=NULL);
-        
+
         core::Str_sp str = core::Str_O::create(cstr);
-	core::Pathname_sp ns = core::cl_pathname(str);  
+	core::Pathname_sp ns = core::cl_pathname(str);
 	(*fnP) = ns;
     }
 
@@ -667,26 +667,32 @@ extern "C"
     void makeShortFloat( core::T_sp* fnP, double s)
     {_G();
 	ASSERT(fnP!=NULL);
-	(*fnP) = core::ShortFloat_sp(core::ShortFloat_O::create(s));  
+	(*fnP) = core::ShortFloat_sp(core::ShortFloat_O::create(s));
     }
 
     void makeSingleFloat( core::T_sp* fnP, float s)
     {_G();
 	ASSERT(fnP!=NULL);
-	(*fnP) = core::SingleFloat_sp(core::SingleFloat_O::create(s));  
+	(*fnP) = core::SingleFloat_sp(core::SingleFloat_O::create(s));
     }
 
     void makeDoubleFloat( core::T_sp* fnP, double s)
     {_G();
 	ASSERT(fnP!=NULL);
-	(*fnP) = core::DoubleFloat_sp(core::DoubleFloat_O::create(s));  
+	(*fnP) = core::DoubleFloat_sp(core::DoubleFloat_O::create(s));
+    }
+
+    void makeComplex( core::T_sp* fnP, double r, double i)
+    {_G();
+	ASSERT(fnP!=NULL);
+	(*fnP) = core::Complex_sp(core::Complex_O::create(r,i));
     }
 
 #ifdef CLASP_LONG_FLOAT
     void makeLongFloat( core::T_sp* fnP, LongFloat s)
     {_G();
 	ASSERT(fnP!=NULL);
-	(*fnP) = core::LongFloat_sp(core::LongFloat_O::create(s));  
+	(*fnP) = core::LongFloat_sp(core::LongFloat_O::create(s));
     }
 #endif
 
@@ -973,7 +979,7 @@ extern "C"
     }
 
 
-    /*! Look for the :allow-other-keywords XX keyword argument and 
+    /*! Look for the :allow-other-keywords XX keyword argument and
       calculate (or (*ampAllowOtherKeywordsP) XX) return 1 if result is true otherwise 0 */
     extern int checkForAllowOtherKeywords(int ampAllowOtherKeywords, core::ActivationFrame_sp* frameP, int argIdx)
     {_G();
@@ -1000,7 +1006,7 @@ extern "C"
 	    {
 		core::T_sp val = vf->entry(ii+1);
 		if ( val.isTrue() ) return 1;
-		// TODO: Handle :allow-other-keys nil :allow-other-keys t 
+		// TODO: Handle :allow-other-keys nil :allow-other-keys t
 		// In safe mode this should throw an exceptions
 		// (see 3.4.1.4.1.1 Examples of Suppressing Keyword Argument Checking)
 	    }
@@ -1262,7 +1268,7 @@ extern "C"
     {_G();
 	std::cout << "++++++ JIT-PRINT-OBJECT: ";
 	std::cout << msg << " --> ";
-	if ( objP==NULL ) 
+	if ( objP==NULL )
 	{
 	    std::cout << "objP is UNDEFINED";
 	} else if ( !(*objP).pointerp() )
@@ -1274,7 +1280,7 @@ extern "C"
 	}
 	std::cout << std::endl;
     }
-	
+
 
     void debugPrintI32( int i32 )
     {_G();
@@ -1285,7 +1291,7 @@ extern "C"
     void singleStepCallback()
     {
     }
-	
+
 
     void throwCatchThrow(core::T_sp* tagP)
     {
@@ -1355,10 +1361,10 @@ extern "C"
 
 
 extern "C"
-{	
+{
 
 
-// Return 1 if exception depth is zero				- blockTestDepth0 
+// Return 1 if exception depth is zero				- blockTestDepth0
 // Set the result from the ReturnFrom exception return value   	- blockStoreResult
 //
 
@@ -1371,7 +1377,7 @@ extern "C"
 
 
 
-    
+
     int pushCatchFrame(core::T_sp* tagP)
     {_G();
 	ASSERT(tagP!=NULL);
@@ -1405,7 +1411,7 @@ core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(int catchFrame, unsig
     {
 	return gctools::multiple_values<core::T_O>::createFromValues(); // ctExceptionP->getReturnedObject();
     }
-    // rethrow the exception 
+    // rethrow the exception
 #ifdef	DEBUG_FLOW_CONTROL
     printf("Re-throwing CatchThrow tag[%s]\n", ctExceptionP->getThrownTag()->__repr__().c_str() );
 #endif
@@ -1804,7 +1810,7 @@ extern "C"
 	T_mv* 	tmvP;
 	int	ival;
     };
-	
+
     struct SetjmpBufTy
     {
 	void*	lowLevelFrame;
@@ -1844,7 +1850,7 @@ extern "C"
 	bufP->user0.tmvP->reset();
 	delete bufP->user0.tmvP;
     }
-    
+
 
 };
 
