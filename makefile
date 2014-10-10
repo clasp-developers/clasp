@@ -1,6 +1,7 @@
 include local.config
 
-export GIT_COMMIT := $(shell git rev-parse HEAD)
+export GIT_COMMIT := $(shell cat 'minor-version-id.txt')
+
 
 export BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
 export BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v2
@@ -140,3 +141,8 @@ mps-submodule:
 
 asdf-submodule:
 	git submodule add --name updatedAsdf https://github.com/drmeister/asdf.git ./src/lisp/kernel/asdf
+
+
+git-push-master:
+	git rev-parse HEAD > minor-version-id.txt
+	git push origin master
