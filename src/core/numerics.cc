@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #define	DEBUG_LEVEL_NONE
-
+#include <float.h>
 #include "lisp.h"
 #include "numerics.h"
 #ifdef	darwin
@@ -37,6 +37,7 @@ THE SOFTWARE.
 #endif
 #include "core/bignum.h"
 #include <boost/random.hpp>
+#include "symbolTable.h"
 #include "wrappers.h"
 
 
@@ -1395,6 +1396,50 @@ void exposeCando_Numerics()
     CoreDefun(asinh);
     CoreDefun(acosh);
     CoreDefun(atanh);
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeSingleFloat);
+    cl::_sym_mostPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MAX));
+    cl::_sym_mostNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MAX));
+    cl::_sym_leastPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MIN));
+    cl::_sym_leastNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MIN));
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeShortFloat);
+    cl::_sym_mostPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MAX));
+    cl::_sym_mostNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MAX));
+    cl::_sym_leastPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MIN));
+    cl::_sym_leastNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MIN));
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveDoubleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeDoubleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveDoubleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeDoubleFloat);
+    cl::_sym_mostPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
+    cl::_sym_mostNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
+    cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
+    cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
+
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedDoubleFloat);
+    cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(cl::_sym_leastNegativeSingleFloat->symbolValue());
+    cl::_sym_leastNegativeNormalizedShortFloat->defconstant(cl::_sym_leastNegativeShortFloat->symbolValue());
+    cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(cl::_sym_leastNegativeDoubleFloat->symbolValue());
+
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedDoubleFloat);
+    cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(cl::_sym_leastPositiveSingleFloat->symbolValue());
+    cl::_sym_leastPositiveNormalizedShortFloat->defconstant(cl::_sym_leastPositiveShortFloat->symbolValue());
+    cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(cl::_sym_leastPositiveDoubleFloat->symbolValue());
+
 }
 
 
