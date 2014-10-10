@@ -185,8 +185,6 @@ typedef std::size_t class_id;
 
 
 
-
-
 //#undef SOURCE_DEBUG
 //#define ENABLE_PROFILING 1
 //

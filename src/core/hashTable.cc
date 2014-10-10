@@ -459,6 +459,9 @@ namespace core
     T_mv cl_gethash(T_sp key, T_sp hashTable, T_sp default_value)
     {_G();
         HashTable_sp ht = hashTable.as<HashTable_O>();
+        if ( ht.nilp() ) {
+            SIMPLE_ERROR(BF("You tried to call gethash on nil hashtable"));
+        }
         return ht->gethash(key,default_value);
     };
 
