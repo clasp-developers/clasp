@@ -27,6 +27,8 @@ THE SOFTWARE.
 
 #define	DEBUG_LEVEL_NONE
 #include <float.h>
+#include <math.h>
+
 #include "lisp.h"
 #include "numerics.h"
 #ifdef	darwin
@@ -1440,6 +1442,8 @@ void exposeCando_Numerics()
     cl::_sym_leastPositiveNormalizedShortFloat->defconstant(cl::_sym_leastPositiveShortFloat->symbolValue());
     cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(cl::_sym_leastPositiveDoubleFloat->symbolValue());
 
+    SYMBOL_EXPORT_SC_(ClPkg,pi);
+    cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
 }
 
 
@@ -1447,16 +1451,16 @@ void exposeCando_Numerics()
 #ifdef	USEBOOSTPYTHON
 
     void exposePython_Numerics()
-{
-    boost::python::def("mixedBaseDigitsToBignum",&mixedBaseDigitsToBignum);
-    boost::python::def("bignumToMixedBaseDigits",&bignumToMixedBaseDigits);
-    boost::python::def("numberOfIndicesForMixedBase",&numberOfIndicesForMixedBase);
-    boost::python::def("seedRandomNumberGenerators", &seedRandomNumberGenerators);
-    boost::python::def("seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-    boost::python::def("randomNumber01", &randomNumber01);
-    boost::python::def("randomNumberNormal01", &randomNumberNormal01);
-    boost::python::def("almostEqualAbsoluteOrRelative", &almostEqualAbsoluteOrRelative);
-}
+    {
+        boost::python::def("mixedBaseDigitsToBignum",&mixedBaseDigitsToBignum);
+        boost::python::def("bignumToMixedBaseDigits",&bignumToMixedBaseDigits);
+        boost::python::def("numberOfIndicesForMixedBase",&numberOfIndicesForMixedBase);
+        boost::python::def("seedRandomNumberGenerators", &seedRandomNumberGenerators);
+        boost::python::def("seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
+        boost::python::def("randomNumber01", &randomNumber01);
+        boost::python::def("randomNumberNormal01", &randomNumberNormal01);
+        boost::python::def("almostEqualAbsoluteOrRelative", &almostEqualAbsoluteOrRelative);
+    }
 
 #endif
 };

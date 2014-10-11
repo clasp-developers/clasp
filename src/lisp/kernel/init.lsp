@@ -592,6 +592,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     :pre-cmp
     ;; Compiler code
     cmp/cmpsetup
+    cmp/cmpenv-fun
     cmp/cmpenv-proclaim
     cmp/cmpglobals
     cmp/cmptables
@@ -618,6 +619,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/describe
     lsp/module
     lsp/loop2
+    lsp/assorted
     lsp/packlib
 ;;    cmp/cmpinterpreted
     lsp/defpackage
@@ -913,8 +915,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 			       :type "clasprc"
 			       :defaults (user-homedir-pathname))))
     (if (probe-file clasprc)
-	(load clasprc)
-	(format t "Could not find pathname: ~a~%" clasprc))))
+	(load clasprc))))
 
 
 (defun load-pos ()
