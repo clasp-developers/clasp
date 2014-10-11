@@ -40,7 +40,8 @@ project internals/core : requirements
 local unity_sources =
       all.cc ;
 
-local sources = 
+local sources =
+      bits.cc
       smallMap.cc
       write_symbol.cc
       corePackage.cc
@@ -50,14 +51,14 @@ local sources =
       weakHashTable.cc
       weakPointer.cc
     activationFrame.cc
-	    environment.cc 
+	    environment.cc
 		objectSet.cc
-		profiler.cc 
-		lispDefinitions.cc 
-		objRef.cc 
-		bundle.cc 
-		numerics.cc 
-		object.cc 
+		profiler.cc
+		lispDefinitions.cc
+		objRef.cc
+		bundle.cc
+		numerics.cc
+		object.cc
 	    stringSet.cc
 	    stringList.cc
 	    profile.cc
@@ -79,7 +80,7 @@ local sources =
       num_co.cc
       pathname.cc
       commandLineOptions.cc
-      exceptions.cc 
+      exceptions.cc
       commonLispUserPackage.cc
 	    metaClass.cc
 	    multipleValues.cc
@@ -89,7 +90,7 @@ local sources =
 	    hashTableEqual.cc
 	    hashTableEqualp.cc
       stacks.cc
-      executables.cc 
+      executables.cc
       testing.cc
       predicates.cc
       write_list.cc
@@ -116,7 +117,7 @@ local sources =
       closPackage.cc
       compPackage.cc
 	    bootStrapCoreSymbolMap.cc
-	    symbol.cc 
+	    symbol.cc
 	    evaluator.cc
 	    builtInClass.cc
 	    standardClass.cc
@@ -152,7 +153,7 @@ local sources =
 	    loadTimeValues.cc
 #	    python_wrappers.cc
 	    arrayObjects.cc
-#	    model.cc 
+#	    model.cc
 #	    symbolVector.cc
 	    symbolSet.cc
 	    reader.cc
@@ -173,8 +174,8 @@ local sources =
 	    binder.cc
 		multiStringBuffer.cc
 		candoOpenMp.cc
-	     /externals//boostAndExpatLibs 
-	foundation.cc 
+	     /externals//boostAndExpatLibs
+	foundation.cc
              		;
 
 #Declares virtual target af_function_templates dependent on the two
@@ -200,7 +201,7 @@ alias meta :     wrappers_functoids
                  applyToActivationFrame
                  ;
 
-#                 mi symbol_apply_inc  ;   # removed af 
+#                 mi symbol_apply_inc  ;   # removed af
 
 
 

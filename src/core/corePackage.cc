@@ -123,6 +123,9 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,asinh);
     SYMBOL_EXPORT_SC_(ClPkg,acosh);
     SYMBOL_EXPORT_SC_(ClPkg,atanh);
+    SYMBOL_EXPORT_SC_(ClPkg,dynamic_extent);
+    SYMBOL_EXPORT_SC_(ClPkg,ftype);
+
 
     SYMBOL_EXPORT_SC_(CorePkg,asin);
     SYMBOL_EXPORT_SC_(CorePkg,acos);

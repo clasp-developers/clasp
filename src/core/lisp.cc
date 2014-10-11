@@ -73,6 +73,7 @@ THE SOFTWARE.
 #include "extensionPackage.h"
 #include "binder.h"
 #include "numbers.h"
+#include "bits.h"
 #include "load.h"
 #include "bignum.h"
 //#i n c l u d e "setfExpander.h"
@@ -500,6 +501,7 @@ namespace core
 #endif
         initialize_sequence();
         initialize_list();
+        initialize_bits();
 	    initialize_predicates();
 	    initialize_bformat(_lisp);
 	    initialize_sysprop();
