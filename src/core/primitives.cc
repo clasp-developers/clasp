@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
+#include <unistd.h>
 #include "core/foundation.h"
 #include "core/object.h"
 #include "core/cons.h"
@@ -81,6 +82,22 @@ namespace core
 
 
 
+
+
+
+#define ARGS_cl_sleep "(seconds)"
+#define DECL_cl_sleep ""
+#define DOCS_cl_sleep "sleep"
+    void cl_sleep(Real_sp seconds)
+    {_G();
+        SYMBOL_EXPORT_SC_(ClPkg,sleep);
+        if ( seconds.nilp() ) {
+            ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep,seconds,cl::_sym_Number_O);
+        }
+        double dsec = seconds.as<Real_O>()->as_double();
+        int usec = dsec*1000.0;
+        usleep(usec);
+    }
 
 
 
@@ -1771,9 +1788,10 @@ T_mv af_rem_f(Cons_sp plist, Symbol_sp indicator)
 Integer_sp cl_sxhash(T_sp obj)
 {_G();
     if ( obj.nilp() ) return Fixnum_O::create(1);
-
-    IMPLEMENT_MEF(BF("Implement sxhash"));
-};
+    HashGenerator hg;
+    obj->sxhash(hg);
+    return Integer_O::create(hg.hash());
+}
 
 
 
@@ -2020,6 +2038,8 @@ void initialize_primitives()
         ClDefun(machineVersion);
         ClDefun(machineType);
         ClDefun(machineInstance);
+        ClDefun(sxhash);
+        ClDefun(sleep);
     }
 
 

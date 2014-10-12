@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -48,7 +48,7 @@ THE SOFTWARE.
 #include "core/wrappers.h"
 namespace core
 {
-    
+
 // ----------------------------------------------------------------------
 //
 
@@ -60,7 +60,34 @@ namespace core
     }
 
 
-    
+
+
+
+#define ARGS_cl_makeDispatchMacroCharacter "(char &optional non-terminating-p (readtable *readtable*))"
+#define DECL_cl_makeDispatchMacroCharacter ""
+#define DOCS_cl_makeDispatchMacroCharacter "makeDispatchMacroCharacter"
+#define FILE_cl_makeDispatchMacroCharacter __FILE__
+#define LINE_cl_makeDispatchMacroCharacter __LINE__
+    T_sp cl_makeDispatchMacroCharacter(Character_sp ch, T_sp nonTerminatingP, ReadTable_sp readtable)
+    {_G();
+        readtable->make_dispatch_macro_character(ch,nonTerminatingP);
+        return _lisp->_true();
+    };
+
+
+
+#define ARGS_cl_getMacroCharacter "(char &optional readtable)"
+#define DECL_cl_getMacroCharacter ""
+#define DOCS_cl_getMacroCharacter "getMacroCharacter"
+    T_sp cl_getMacroCharacter(Character_sp chr, ReadTable_sp readtable)
+    {_G();
+        if ( readtable.nilp() ) {
+            readtable = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>();
+        }
+        return readtable->get_macro_character(chr);
+    };
+
+
 #define ARGS_af_setDispatchMacroCharacter "(dispChar subChar newFunction &optional (readtable *readtable*))"
 #define DECL_af_setDispatchMacroCharacter ""
 #define DOCS_af_setDispatchMacroCharacter "setDispatchMacroCharacter"
@@ -71,8 +98,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_af_getDispatchMacroCharacter "(dispChar subChar &optional (readtable *readtable*))"
 #define DECL_af_getDispatchMacroCharacter ""
 #define DOCS_af_getDispatchMacroCharacter "getDispatchMacroCharacter"
@@ -81,8 +108,8 @@ namespace core
 	return(Values(readtable->get_dispatch_macro_character(dispChar,subChar)));
     };
 
-    
-    
+
+
 #define ARGS_af_setMacroCharacter "(ch func_desig &optional non-terminating-p (readtable *readtable*))"
 #define DECL_af_setMacroCharacter ""
 #define DOCS_af_setMacroCharacter "setMacroCharacter"
@@ -105,7 +132,7 @@ namespace core
 #define LOCK_af_reader_double_quote_string 1
 #define DOCS_af_reader_double_quote_string "reader_double_quote_string"
 #define ARGS_af_reader_double_quote_string "(stream chr)"
-#define DECL_af_reader_double_quote_string ""    
+#define DECL_af_reader_double_quote_string ""
     T_mv af_reader_double_quote_string(Stream_sp stream, Character_sp ch)
     {_G();
 	stringstream str;
@@ -130,7 +157,7 @@ namespace core
 #define LOCK_af_reader_backquoted_expression 1
 #define DOCS_af_reader_backquoted_expression "reader_backquoted_expression"
 #define ARGS_af_reader_backquoted_expression "(sin ch)"
-#define DECL_af_reader_backquoted_expression ""    
+#define DECL_af_reader_backquoted_expression ""
     T_mv af_reader_backquoted_expression(Stream_sp sin, Character_sp ch)
     {_G();
 	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
@@ -149,7 +176,7 @@ namespace core
 #define LOCK_af_reader_comma_form 1
 #define DOCS_af_reader_comma_form "reader_comma_form"
 #define ARGS_af_reader_comma_form "(sin ch)"
-#define DECL_af_reader_comma_form ""    
+#define DECL_af_reader_comma_form ""
     T_mv af_reader_comma_form(Stream_sp sin, Character_sp ch)
     {_G();
 	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
@@ -176,7 +203,7 @@ namespace core
 #define LOCK_af_reader_list_allow_consing_dot 1
 #define DOCS_af_reader_list_allow_consing_dot "reader_list_allow_consing_dot"
 #define ARGS_af_reader_list_allow_consing_dot "(sin ch)"
-#define DECL_af_reader_list_allow_consing_dot ""    
+#define DECL_af_reader_list_allow_consing_dot ""
     T_mv af_reader_list_allow_consing_dot(Stream_sp sin, Character_sp ch)
     {_G();
 	Cons_sp list = read_list(sin,')',true);
@@ -186,7 +213,7 @@ namespace core
 #define LOCK_af_reader_error_unmatched_close_parenthesis 1
 #define DOCS_af_reader_error_unmatched_close_parenthesis "reader_error_unmatched_close_parenthesis"
 #define ARGS_af_reader_error_unmatched_close_parenthesis "(sin ch)"
-#define DECL_af_reader_error_unmatched_close_parenthesis ""    
+#define DECL_af_reader_error_unmatched_close_parenthesis ""
     T_mv af_reader_error_unmatched_close_parenthesis(Stream_sp sin, Character_sp ch)
     {_G();
 	SourceFileInfo_sp info = af_sourceFileInfo(sin);
@@ -199,7 +226,7 @@ namespace core
 #define LOCK_af_reader_quote 1
 #define DOCS_af_reader_quote "reader_quote"
 #define ARGS_af_reader_quote "(sin ch)"
-#define DECL_af_reader_quote ""    
+#define DECL_af_reader_quote ""
     T_mv af_reader_quote(Stream_sp sin, Character_sp ch)
     {_G();
 //	ql::source_code_list result(sin->lineNumber(),sin->column(),af_sourceFileInfo(sin));
@@ -213,7 +240,7 @@ namespace core
 #define LOCK_af_reader_skip_semicolon_comment 1
 #define DOCS_af_reader_skip_semicolon_comment "reader_skip_semicolon_comment"
 #define ARGS_af_reader_skip_semicolon_comment "(sin ch)"
-#define DECL_af_reader_skip_semicolon_comment ""    
+#define DECL_af_reader_skip_semicolon_comment ""
     T_mv af_reader_skip_semicolon_comment(Stream_sp sin, Character_sp ch)
     {_G();
 	ASSERT(clasp_input_stream_p(sin));
@@ -236,7 +263,7 @@ namespace core
 #define LOCK_af_dispatch_macro_character 1
 #define DOCS_af_dispatch_macro_character "dispatch_macro_character"
 #define ARGS_af_dispatch_macro_character "(sin ch)"
-#define DECL_af_dispatch_macro_character ""    
+#define DECL_af_dispatch_macro_character ""
     T_mv af_dispatch_macro_character(Stream_sp sin, Character_sp ch)
     {_G();
 	char cpeek = clasp_peek_char(sin);
@@ -262,7 +289,7 @@ namespace core
 	Character_sp subchar = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	Function_sp macro_func = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>()->get_dispatch_macro_character(ch,subchar);
 	if ( macro_func.nilp() )
-	{	
+	{
 	    SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
 	}
 	return eval::funcall(macro_func,sin,subchar,onumarg);
@@ -376,12 +403,12 @@ namespace core
 	    cur_char = cCdr(cur_char);
 	}
     }
-    
+
 
 #define LOCK_af_sharp_backslash 1
 #define DOCS_af_sharp_backslash "sharp_backslash"
 #define ARGS_af_sharp_backslash "(stream ch num)"
-#define DECL_af_sharp_backslash ""	    
+#define DECL_af_sharp_backslash ""
     T_mv af_sharp_backslash(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	stringstream sslexemes;
@@ -413,7 +440,7 @@ namespace core
 #define LOCK_af_sharp_dot 1
 #define DOCS_af_sharp_dot "sharp_dot"
 #define ARGS_af_sharp_dot "(stream ch num)"
-#define DECL_af_sharp_dot ""    
+#define DECL_af_sharp_dot ""
     T_mv af_sharp_dot(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	T_sp object = read_lisp_object(sin,true,_Nil<T_O>(),true);
@@ -437,7 +464,7 @@ namespace core
 #define LOCK_af_sharp_single_quote 1
 #define DOCS_af_sharp_single_quote "sharp_single_quote"
 #define ARGS_af_sharp_single_quote "(stream ch num)"
-#define DECL_af_sharp_single_quote ""    
+#define DECL_af_sharp_single_quote ""
     T_mv af_sharp_single_quote(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
@@ -450,7 +477,7 @@ namespace core
 #define LOCK_af_sharp_left_parenthesis 1
 #define DOCS_af_sharp_left_parenthesis "sharp_left_parenthesis"
 #define ARGS_af_sharp_left_parenthesis "(stream ch num)"
-#define DECL_af_sharp_left_parenthesis ""    
+#define DECL_af_sharp_left_parenthesis ""
     T_mv af_sharp_left_parenthesis(Stream_sp sin, Character_sp ch, Fixnum_sp num)
     {_G();
 	Character_sp right_paren = Character_O::create(')');
@@ -487,13 +514,13 @@ namespace core
 #define LOCK_af_sharp_asterisk 1
 #define DOCS_af_sharp_asterisk "sharp_asterisk"
 #define ARGS_af_sharp_asterisk "(stream ch num)"
-#define DECL_af_sharp_asterisk ""    
+#define DECL_af_sharp_asterisk ""
     T_mv af_sharp_asterisk(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	int dimcount, dim =0;
 	stringstream pattern;
 	ReadTable_sp rtbl = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>();
-	
+
 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() ) {
 	    read_lisp_object(sin,true,_Nil<T_O>(),true);
 	    return Values(_Nil<T_O>());
@@ -545,7 +572,7 @@ namespace core
 #define LOCK_af_sharp_colon 1
 #define DOCS_af_sharp_colon "sharp_colon"
 #define ARGS_af_sharp_colon "(stream ch num)"
-#define DECL_af_sharp_colon ""    
+#define DECL_af_sharp_colon ""
     T_mv af_sharp_colon(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	stringstream sslexemes;
@@ -565,7 +592,7 @@ namespace core
 #define LOCK_af_sharp_r 1
 #define DOCS_af_sharp_r "sharp_r"
 #define ARGS_af_sharp_r "(stream subchar radix)"
-#define DECL_af_sharp_r ""    
+#define DECL_af_sharp_r ""
     T_mv af_sharp_r(Stream_sp sin, Character_sp ch, Fixnum_sp radix)
     {_G();
 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
@@ -601,7 +628,7 @@ namespace core
 #define LOCK_af_sharp_b 1
 #define DOCS_af_sharp_b "sharp_b"
 #define ARGS_af_sharp_b "(stream ch num)"
-#define DECL_af_sharp_b ""    
+#define DECL_af_sharp_b ""
     T_mv af_sharp_b(Stream_sp sin, Character_sp ch, Fixnum_sp num)
     {_G();
 	return af_sharp_r(sin,ch,Fixnum_O::create(2));
@@ -611,7 +638,7 @@ namespace core
 #define LOCK_af_sharp_o 1
 #define DOCS_af_sharp_o "sharp_o"
 #define ARGS_af_sharp_o "(stream ch num)"
-#define DECL_af_sharp_o ""    
+#define DECL_af_sharp_o ""
     T_mv af_sharp_o(Stream_sp sin, Character_sp ch, Fixnum_sp num)
     {_G();
 	return af_sharp_r(sin,ch,Fixnum_O::create(8));
@@ -621,7 +648,7 @@ namespace core
 #define LOCK_af_sharp_x 1
 #define DOCS_af_sharp_x "sharp_x"
 #define ARGS_af_sharp_x "(stream ch num)"
-#define DECL_af_sharp_x ""    
+#define DECL_af_sharp_x ""
     T_mv af_sharp_x(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	return af_sharp_r(sin,ch,Fixnum_O::create(16));
@@ -632,7 +659,7 @@ namespace core
 #define LOCK_af_sharp_c 1
 #define DOCS_af_sharp_c "sharp_c"
 #define ARGS_af_sharp_c "(stream ch num)"
-#define DECL_af_sharp_c ""    
+#define DECL_af_sharp_c ""
     T_mv af_sharp_c(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	Character_sp right_paren = Character_O::create(')');
@@ -656,7 +683,7 @@ namespace core
 #define LOCK_af_sharp_a 1
 #define DOCS_af_sharp_a "sharp_a"
 #define ARGS_af_sharp_a "(stream ch num)"
-#define DECL_af_sharp_a ""    
+#define DECL_af_sharp_a ""
     T_mv af_sharp_a(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	IMPLEMENT_MEF(BF("Implement sharp_a"));
@@ -665,7 +692,7 @@ namespace core
 #define LOCK_af_sharp_s 1
 #define DOCS_af_sharp_s "sharp_s"
 #define ARGS_af_sharp_s "(stream ch num)"
-#define DECL_af_sharp_s ""    
+#define DECL_af_sharp_s ""
     T_mv af_sharp_s(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	IMPLEMENT_MEF(BF("Implement sharp_s"));
@@ -674,7 +701,7 @@ namespace core
 #define LOCK_af_sharp_p 1
 #define DOCS_af_sharp_p "sharp_p"
 #define ARGS_af_sharp_p "(stream ch num)"
-#define DECL_af_sharp_p ""    
+#define DECL_af_sharp_p ""
     T_mv af_sharp_p(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	bool suppress = cl::_sym_STARread_suppressSTAR->symbolValue().isTrue();
@@ -696,7 +723,7 @@ namespace core
 // #define LOCK_af_sharp_equal 1
 // #define DOCS_af_sharp_equal "sharp_equal"
 // #define ARGS_af_sharp_equal "(stream ch num)"
-// #define DECL_af_sharp_equal ""    
+// #define DECL_af_sharp_equal ""
 //     T_mv af_sharp_equal(Stream_sp sin, Character_sp ch, Fixnum_sp num)
 //     {_G();
 // 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
@@ -731,7 +758,7 @@ namespace core
 // #define LOCK_af_sharp_sharp 1
 // #define DOCS_af_sharp_sharp "sharp_sharp"
 // #define ARGS_af_sharp_sharp "(stream ch num)"
-// #define DECL_af_sharp_sharp ""    
+// #define DECL_af_sharp_sharp ""
 //     T_mv af_sharp_sharp(Stream_sp sin, Character_sp ch, Fixnum_sp num)
 //     {_G();
 // 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
@@ -758,7 +785,7 @@ namespace core
 #define DOCS_af_reader_feature_p "feature_p takes one argument - a feature test"
 #define LOCK_af_reader_feature_p 1
 #define ARGS_af_reader_feature_p "(feature-test)"
-#define DECL_af_reader_feature_p ""    
+#define DECL_af_reader_feature_p ""
     T_mv af_reader_feature_p(T_sp feature_test)
     {_G();
 	if ( feature_test.nilp() ) return(Values(_Nil<T_O>()));
@@ -785,8 +812,8 @@ namespace core
 	    SIMPLE_ERROR(BF("Illegal feature test: %s") % _rep_(features_cons) );
 	}
     }
-	    
-	
+
+
 
     /*! Read a feature test in the keyword package */
     T_sp read_feature_test(Stream_sp sin)
@@ -796,14 +823,14 @@ namespace core
 	T_sp feature = read_lisp_object(sin,true,_Nil<T_O>(),true);
 	return feature;
     }
-	    
+
 
 
 
 #define LOCK_af_sharp_plus 1
 #define DOCS_af_sharp_plus "sharp_plus"
 #define ARGS_af_sharp_plus "(stream ch num)"
-#define DECL_af_sharp_plus ""    
+#define DECL_af_sharp_plus ""
     T_mv af_sharp_plus(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	T_sp feat = read_feature_test(sin);
@@ -828,7 +855,7 @@ namespace core
 #define LOCK_af_sharp_minus 1
 #define DOCS_af_sharp_minus "sharp_minus"
 #define ARGS_af_sharp_minus "(stream ch num)"
-#define DECL_af_sharp_minus ""    
+#define DECL_af_sharp_minus ""
     T_mv af_sharp_minus(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	T_sp feat = read_feature_test(sin);
@@ -851,7 +878,7 @@ namespace core
 #define LOCK_af_sharp_vertical_bar 1
 #define DOCS_af_sharp_vertical_bar "sharp_vertical_bar"
 #define ARGS_af_sharp_vertical_bar "(stream ch num)"
-#define DECL_af_sharp_vertical_bar ""    
+#define DECL_af_sharp_vertical_bar ""
     T_mv af_sharp_vertical_bar(Stream_sp sin, Character_sp ch, T_sp num)
     {_G();
 	ASSERT(clasp_input_stream_p(sin));
@@ -897,7 +924,7 @@ namespace core
 
 
 
-    
+
     EXPOSE_CLASS(core,ReadTable_O);
     SYMBOL_SC_(KeywordPkg,syntax);
     SYMBOL_SC_(KeywordPkg,whitespace_character);
@@ -996,11 +1023,11 @@ namespace core
 	}
 	return rt;
     }
-				
-			       
 
-    
-    
+
+
+
+
 #if 0
 #if defined(OLD_SERIALIZE)
     void ReadTable_O::serialize(::serialize::SNodeP node)
@@ -1010,7 +1037,7 @@ namespace core
 	// Archive other instance variables here
     }
 #endif
-    
+
 #if defined(XML_ARCHIVE)
     void ReadTable_O::archiveBase(::core::ArchiveP node)
     {
@@ -1020,8 +1047,8 @@ namespace core
     }
 #endif // defined(XML_ARCHIVE)
 #endif
-    
-    
+
+
     SYMBOL_SC_(KeywordPkg,upcase);
     SYMBOL_SC_(KeywordPkg,downcase);
     SYMBOL_SC_(KeywordPkg,preserve);
@@ -1096,7 +1123,7 @@ namespace core
 	ss << "> ";
 	return ss.str();
     }
-	    
+
 
 
     Symbol_sp ReadTable_O::syntax_type(Character_sp ch) const
@@ -1136,7 +1163,7 @@ namespace core
 	Cons_sp plist = syntax->gethash(ch,_Nil<Cons_O>()).as_or_nil<Cons_O>();
 	ql::list qplist(_lisp);
 	SYMBOL_SC_(KeywordPkg,dispatch_table);
-	// add the :dispatch-table (make-hash-table) property 
+	// add the :dispatch-table (make-hash-table) property
 	qplist << kw::_sym_dispatch_table
 	       << HashTableEql_O::create_default()
 	    & plist;
@@ -1187,7 +1214,7 @@ namespace core
 	Function_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<T_O>()).as<Function_O>();
 	return func;
     }
-	
+
 
 
 
@@ -1285,8 +1312,10 @@ namespace core
 	Defun(setDispatchMacroCharacter);
 	SYMBOL_EXPORT_SC_(ClPkg,getDispatchMacroCharacter);
 	Defun(getDispatchMacroCharacter);
+        ClDefun(getMacroCharacter);
+        ClDefun(makeDispatchMacroCharacter);
     }
-    
+
     void ReadTable_O::exposePython(::core::Lisp_sp lisp)
     {
 #ifdef USEBOOSTPYTHON
@@ -1295,7 +1324,7 @@ namespace core
 	    ;
 #endif
     }
-    
+
 
 
 }; /* core */

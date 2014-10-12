@@ -81,6 +81,11 @@
 
           list-length pairlis ed copy-alist
           tree-equal get-properties short-site-name long-site-name
+          digit-char
+
+          array-in-bounds-p bit-and bit-ior bit-xor bit-eqv
+          bit-nand bit-nor bit-andc1 bit-andc2 bit-orc1 bit-orc2
+          bit-not vector-pop
 	  ))
 
 (defparameter * nil)

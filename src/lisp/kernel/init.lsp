@@ -575,6 +575,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/profiling    ;; Do micro-profiling of the GC
     lsp/logging
     lsp/makearray
+    lsp/arraylib
     lsp/setf
     lsp/listlib
     lsp/mislib

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -56,8 +56,8 @@ namespace core
             }
             return this->buffer;
         };
-    
-    
+
+
 #define ARGS_Bignum_O_make "(value_in_string)"
 #define DECL_Bignum_O_make ""
 #define DOCS_Bignum_O_make "make"
@@ -69,7 +69,7 @@ namespace core
     };
 
 
- 
+
     Bignum Bignum_O::as_mpz() const
     {_G();
 	return((this->_value));
@@ -101,7 +101,7 @@ namespace core
 	SIMPLE_ERROR(BF("Cannot convert Bignum %s to sint") % this->__repr__() );
     }
 
-static BignumExportBuffer static_Bignum_O_as_uint64_buffer;  
+static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
     uint64_t Bignum_O::as_uint64() const
     {_G();
@@ -110,7 +110,7 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 	valsP = (unsigned int*)::mpz_export(valsP, &count,
 					    _lisp->integer_ordering()._mpz_import_word_order,
 					    _lisp->integer_ordering()._mpz_import_size,
-					    _lisp->integer_ordering()._mpz_import_endian, 
+					    _lisp->integer_ordering()._mpz_import_endian,
 					    0,
 					    this->_value.get_mpz_t() );
 	if ( valsP == NULL )
@@ -259,7 +259,7 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 
     void Bignum_O::exposeCando(core::Lisp_sp lisp)
     {
-	core::class_<Bignum_O>()	
+	core::class_<Bignum_O>()
 	    .def("core:fitsSintP",&Bignum_O::fits_sint_p)
 	    .def("core:asUint64String",&Bignum_O::as_uint64_string)
 	    ;
@@ -335,5 +335,11 @@ static BignumExportBuffer static_Bignum_O_as_uint64_buffer;
 	return _brcl_big_divided_by_big(bx, y);
     }
 
-    
+    void clasp_big_register_free(Bignum_sp b)
+    {
+        // ECL just returns but we
+        // could clear out the bignum register if it's too big
+        return;
+    }
+
 };
