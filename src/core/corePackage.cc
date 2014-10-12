@@ -125,6 +125,13 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,atanh);
     SYMBOL_EXPORT_SC_(ClPkg,dynamic_extent);
     SYMBOL_EXPORT_SC_(ClPkg,ftype);
+    SYMBOL_EXPORT_SC_(ClPkg,boole);
+    SYMBOL_EXPORT_SC_(ClPkg,callArgumentsLimit);
+    SYMBOL_EXPORT_SC_(ClPkg,arrayDimensionLimit);
+    SYMBOL_EXPORT_SC_(ClPkg,arrayTotalSizeLimit);
+    SYMBOL_EXPORT_SC_(ClPkg,lambdaParametersLimit);
+
+    SYMBOL_EXPORT_SC_(CorePkg,bitArrayOp);
 
 
     SYMBOL_EXPORT_SC_(CorePkg,asin);
@@ -926,6 +933,10 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym_STARdebugReaderSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARloadPathnameSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARloadTruenameSTAR->defparameter(_Nil<T_O>());
+        cl::_sym_callArgumentsLimit->defconstant(Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+        cl::_sym_lambdaParametersLimit->defconstant(Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+        cl::_sym_arrayDimensionLimit->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
+        cl::_sym_arrayTotalSizeLimit->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
         core::_sym_STARpollTicksPerGcSTAR->defparameter(Fixnum_O::create(POLL_TICKS_PER_GC));
 	comp::_sym_STARlowLevelTraceSTAR->defparameter(_Nil<core::T_O>());
 	comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<core::T_O>());

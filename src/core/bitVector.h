@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -54,6 +54,7 @@ class BitVector_O : public Vector_O
     LISP_CLASS(core,ClPkg,BitVector_O,"bit-vector");
 public:
     bool bitVectorP() const { return true;};
+    virtual int offset() const {return 0; }; // displaced arrays?  used in bits.cc
     explicit BitVector_O(): Vector_O() {} ;
     virtual ~BitVector_O() {};
 
@@ -64,6 +65,7 @@ public:
 SMART(SimpleBitVector);
 class SimpleBitVector_O : public BitVector_O
 {
+    friend T_sp core_bitArrayOp(T_sp o, T_sp x, T_sp y, T_sp r);
     LISP_BASE1(BitVector_O);
     LISP_CLASS(core,ClPkg,SimpleBitVector_O,"simple-bit-vector");
 private:
@@ -74,6 +76,7 @@ public:
 public:
 
     uint dimension() const { return this->_Length;};
+    unsigned char* bytes() const { return const_cast<unsigned char*>(this->bits.data());};
 
     void	getOnIndices(vector<uint>& vals);
 	void		setOnIndices(const vector<uint>& indices );
@@ -117,7 +120,7 @@ public:
 
 #if 0
     virtual T_sp& operator[](uint index);
-    
+
     virtual T_sp getElementObject(uint index) const;
 
     virtual T_sp setElementObject(uint index, T_sp val);

@@ -335,6 +335,7 @@ typedef std::size_t class_id;
 
 
 typedef	unsigned int uint;
+typedef unsigned char byte;
 typedef int Fixnum; // a fixnum that can be represented within a tagged pointer
 typedef Fixnum cl_fixnum;
 typedef size_t _Index; //
