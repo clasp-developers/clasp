@@ -25,6 +25,18 @@ THE SOFTWARE.
 */
 /* -^- */
 #define	DEBUG_LEVEL_FULL
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <libproc.h>
+
+#include <stdlib.h>
+#include <limits.h>
 #include "foundation.h"
 #include "object.h"
 #include "bundle.h"
@@ -69,10 +81,14 @@ namespace core
     }
 
 
-    void	Bundle::initialize(const string& argv0, const string& envVar)
+    void	Bundle::initialize(const string& raw_argv0, const string& envVar)
     {
-	this->initializeStartupWorkingDirectory();
 
+        char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
+        pid_t pid = getpid();
+        int ret = proc_pidpath (pid, pathbuf, sizeof(pathbuf));
+//        printf("%s:%d pid path = %s\n", __FILE__, __LINE__, pathbuf );
+        string argv0 = string(pathbuf);
 	string cwd = this->_StartupWorkingDir.string();
 	bf::path appDir = this->findAppDir(argv0,cwd,envVar);
 	// First crawl up the directory tree and look for the cando root
