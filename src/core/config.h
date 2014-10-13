@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -48,7 +48,7 @@ THE SOFTWARE.
 #define CHAR_CODE_LIMIT	256 /* ASCII or unicode character code limit */
 
 typedef char claspChar;
-typedef int claspCharacter; 
+typedef int claspCharacter;
 #define BRCL_CHAR(x) ((x)&0xff)
 
 
@@ -65,7 +65,7 @@ typedef int claspCharacter;
 
 
 // OS X 10.6   LINUX 4096???
-#define MAXPATHLEN	250
+#define CLASP_MAXPATHLEN	250
 
 /*! TODO: Tie this to the Fixnum tagged pointer implementation */
 #define FIXNUM_BITS 32
