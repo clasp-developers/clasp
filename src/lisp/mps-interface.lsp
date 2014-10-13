@@ -152,6 +152,7 @@
   (cur-enum-value 0)
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
+  sorted-enums
   enum-roots
   )
 
@@ -1457,10 +1458,6 @@ so that they don't have to be constantly recalculated"
 
 
 
-(defun sort-enums-by-index (enums)
-  (sort (copy-list enums) #'(lambda (a b) (< (enum-value a) (enum-value b)))))
-
-
 
 (defstruct array-fixer
   element-type)
@@ -1497,7 +1494,7 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a: /* ~a */ {~%" (enum-value enum) enum-name)
 ;;    (format fout "Header_s* header = reinterpret_cast<Header_s*>(base);~%")
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
@@ -1519,7 +1516,7 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
     (gclog "skipper-for-lispallocs -> inheritance classid[~a]  value[~a]~%" key (enum-value enum))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
     (format fout "    typedef ~A type_~A;~%" key enum-name)
     (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
     (format fout "} break;~%")))
@@ -1529,7 +1526,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
 ;;    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
     (format fout "    typedef ~A type_~A;~%" key enum-name)
     (format fout "    sout << \"~a size[\" << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) << \"]\" ;~%" enum-name enum-name )
@@ -1545,7 +1542,7 @@ so that they don't have to be constantly recalculated"
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (gclog "build-mps-finalize-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
@@ -1559,7 +1556,7 @@ so that they don't have to be constantly recalculated"
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
 ;;    (format fout "    typedef ~a MyType;~%" key)
 ;;    (format fout "    typedef typename gctools::GCHeader<MyType>::HeaderType HeadT;~%")
 ;;    (format fout "    HeadT* header = reinterpret_cast<HeadT*>(base);~%")
@@ -1579,7 +1576,7 @@ so that they don't have to be constantly recalculated"
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    base = (char*)base + length;~%")
 ;;    (format fout "    typedef ~A type_~A;~%" key enum-name)
@@ -1592,7 +1589,7 @@ so that they don't have to be constantly recalculated"
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
     (format fout "    sout << \"~a size[\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) << \"]\" ;~%" enum-name +ptr-name+ )
     (format fout "} break;~%")
@@ -1605,7 +1602,7 @@ so that they don't have to be constantly recalculated"
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
@@ -1621,7 +1618,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1662,7 +1659,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1685,7 +1682,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1712,7 +1709,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1734,7 +1731,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1759,7 +1756,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1784,7 +1781,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a: {~%" enum-name)
+    (format fout "case ~a /* ~a */ : {~%" (enum-value enum) enum-name)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1875,6 +1872,17 @@ so that they don't have to be constantly recalculated"
 
 
 
+(defun sort-enums-by-value (analysis)
+  (let (names)
+    (maphash #'(lambda (k e)
+                 (push (cons (enum-value e) e) names))
+             (analysis-enums analysis))
+    (setf (analysis-sorted-enums analysis)
+          (mapcar #'(lambda (val-enum)
+                    (cdr val-enum))
+                (sort names #'< :key #'car)))))
+
+
 
 (defparameter *analysis* nil)
 (defun analyze-project (&optional (project *project*))
@@ -1883,6 +1891,7 @@ so that they don't have to be constantly recalculated"
   (organize-allocs-into-species-and-create-enums *analysis*)
   (generate-forward-declarations *analysis*)
   (analyze-hierarchy *analysis*)
+  (sort-enums-by-value *analysis*)
   t
   )
 
@@ -2166,40 +2175,30 @@ so that they don't have to be constantly recalculated"
       nil))))
     
 
-(defun sorted-enums (analysis)
-  (let (enums)
-    (maphash (lambda (key enum) (push enum enums)) (analysis-enums analysis))
-    (sort enums #'(lambda (a b) (< (enum-value a) (enum-value b))))))
-
 
 (defun build-mps-dump (fout anal)
-  (let* ((sorted-enums (sorted-enums anal)))
-    (dolist (enum sorted-enums)
-      (funcall (species-dump (enum-species enum)) fout enum anal))))
+  (dolist (enum (analysis-sorted-enums anal))
+    (funcall (species-dump (enum-species enum)) fout enum anal)))
 
 
 
 (defun build-mps-scan (fout anal)
-  (let* ((sorted-enums (sorted-enums anal)))
-    (dolist (enum sorted-enums)
-      (funcall (species-scan (enum-species enum)) fout enum anal))))
+  (dolist (enum (analysis-sorted-enums anal))
+      (funcall (species-scan (enum-species enum)) fout enum anal)))
 
 
 (defun build-mps-skip (fout anal)
-  (let* ((sorted-enums (sorted-enums anal)))
-    (dolist (enum sorted-enums)
-      (funcall (species-skip (enum-species enum)) fout enum anal))))
+  (dolist (enum (analysis-sorted-enums anal))
+    (funcall (species-skip (enum-species enum)) fout enum anal)))
 
 
 (defun build-mps-finalize (fout anal)
-  (let* ((sorted-enums (sorted-enums anal)))
-    (dolist (enum sorted-enums)
-      (funcall (species-finalize (enum-species enum)) fout enum anal))))
+  (dolist (enum (analysis-sorted-enums anal))
+    (funcall (species-finalize (enum-species enum)) fout enum anal)))
 
 (defun build-mps-uses-finalize (fout anal)
-  (let* ((sorted-enums (sorted-enums anal)))
-    (dolist (enum sorted-enums)
-      (funcall (species-finalize (enum-species enum)) fout enum anal))))
+  (dolist (enum (analysis-sorted-enums anal))
+    (funcall (species-finalize (enum-species enum)) fout enum anal)))
 
 
 
@@ -2333,14 +2332,13 @@ so that they don't have to be constantly recalculated"
 
 
 (defun generate-alloc-enum (&optional (fout t) (anal *analysis*))
-  (let ((all-enums (analysis-enums anal))
-        (maxenum 0))
+  (let ((maxenum 0))
     (format fout "enum { KIND_null = 0, ~%")
-    (maphash (lambda (key enum)
+    (mapc (lambda (enum)
                (format fout "~A = ~A,~%" (enum-name enum) (enum-value enum))
                (when (> (enum-value enum) maxenum)
                  (setq maxenum (enum-value enum))))
-             (analysis-enums anal)
+             (analysis-sorted-enums anal)
              )
     (format fout "  KIND_max = ~a~%" maxenum)
     (format fout "}~%" )
@@ -2348,10 +2346,10 @@ so that they don't have to be constantly recalculated"
 
 
 (defun generate-kind-name-map (fout anal)
-    (maphash (lambda (key enum)
-      (let* ((enum-name (enum-name enum)))
-        (format fout "   case ~A: return \"~A\";~%" enum-name enum-name)))
-             (analysis-enums anal))
+  (mapc (lambda (enum)
+          (let* ((enum-name (enum-name enum)))
+            (format fout "   case ~A /* ~a */: return \"~A\";~%" (enum-value enum) enum-name enum-name)))
+        (analysis-sorted-enums anal))
   )
 
 
@@ -2420,48 +2418,50 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   )
 |#
 
+  
 (defun generate-code (&key (analysis *analysis*) test)
   (let ((filename (if test
                       "test_clasp_gc"
-                      "clasp_gc")))
-  (with-open-file (stream (make-pathname :name filename :type "cc" :defaults (main-directory-pathname)) :direction :output :if-exists :supersede)
-    (format stream "#ifdef DECLARE_FORWARDS~%")
-    (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
-    (format stream "#endif // DECLARE_FORWARDS~%")
-    (format stream "#if defined(GC_ENUM)~%")
-    (generate-alloc-enum stream analysis)
-    (format stream "#endif // defined(GC_ENUM)~%")
-    (format stream "#if defined(GC_DYNAMIC_CAST)~%")
-    (generate-dynamic-cast-code stream analysis)
-    (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
-    (format stream "#if defined(GC_KIND_NAME_MAP)~%")
-    (generate-kind-name-map stream analysis)
-    (format stream "#endif // defined(GC_KIND_NAME_MAP)~%")
-    (format stream "#if defined(GC_KIND_SELECTORS)~%")
-    (generate-gckind-for-enums stream analysis)
-    (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
-    (format stream "#if defined(GC_OBJ_DUMP)~%")
-    (build-mps-dump stream analysis)
-    (format stream "#endif // defined(GC_OBJ_DUMP)~%")
-    (format stream "#if defined(GC_OBJ_SCAN)~%")
-    (build-mps-scan stream analysis)
-    (format stream "#endif // defined(GC_OBJ_SCAN)~%")
-    (format stream "#if defined(GC_OBJ_SKIP)~%")
-    (build-mps-skip stream analysis)
-    (format stream "#endif // defined(GC_OBJ_SKIP)~%")
-    (format stream "#if defined(GC_OBJ_FINALIZE)~%")
-    (build-mps-finalize stream analysis)
-    (format stream "#endif // defined(GC_OBJ_FINALIZE)~%")
-    (format stream "#if defined(GC_OBJ_USES_FINALIZE)~%")
-    (build-mps-uses-finalize stream analysis)
-    (format stream "#endif // defined(GC_OBJ_USES_FINALIZE)~%")
-    (format stream "#if defined(GC_GLOBALS)~%")
-    (generate-code-for-global-non-symbol-variables stream analysis)
-    (format stream "#endif // defined(GC_GLOBALS)~%")
-    (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
-    (generate-code-for-global-symbols stream analysis)
-    (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%")
-    )))
+                    "clasp_gc"))
+        )
+    (with-open-file (stream (make-pathname :name filename :type "cc" :defaults (main-directory-pathname)) :direction :output :if-exists :supersede)
+                    (format stream "#ifdef DECLARE_FORWARDS~%")
+                    (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
+                    (format stream "#endif // DECLARE_FORWARDS~%")
+                    (format stream "#if defined(GC_ENUM)~%")
+                    (generate-alloc-enum stream analysis)
+                    (format stream "#endif // defined(GC_ENUM)~%")
+                    (format stream "#if defined(GC_DYNAMIC_CAST)~%")
+                    (generate-dynamic-cast-code stream analysis)
+                    (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
+                    (format stream "#if defined(GC_KIND_NAME_MAP)~%")
+                    (generate-kind-name-map stream analysis)
+                    (format stream "#endif // defined(GC_KIND_NAME_MAP)~%")
+                    (format stream "#if defined(GC_KIND_SELECTORS)~%")
+                    (generate-gckind-for-enums stream analysis)
+                    (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
+                    (format stream "#if defined(GC_OBJ_DUMP)~%")
+                    (build-mps-dump stream analysis)
+                    (format stream "#endif // defined(GC_OBJ_DUMP)~%")
+                    (format stream "#if defined(GC_OBJ_SCAN)~%")
+                    (build-mps-scan stream analysis)
+                    (format stream "#endif // defined(GC_OBJ_SCAN)~%")
+                    (format stream "#if defined(GC_OBJ_SKIP)~%")
+                    (build-mps-skip stream analysis)
+                    (format stream "#endif // defined(GC_OBJ_SKIP)~%")
+                    (format stream "#if defined(GC_OBJ_FINALIZE)~%")
+                    (build-mps-finalize stream analysis)
+                    (format stream "#endif // defined(GC_OBJ_FINALIZE)~%")
+                    (format stream "#if defined(GC_OBJ_USES_FINALIZE)~%")
+                    (build-mps-uses-finalize stream analysis)
+                    (format stream "#endif // defined(GC_OBJ_USES_FINALIZE)~%")
+                    (format stream "#if defined(GC_GLOBALS)~%")
+                    (generate-code-for-global-non-symbol-variables stream analysis)
+                    (format stream "#endif // defined(GC_GLOBALS)~%")
+                    (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
+                    (generate-code-for-global-symbols stream analysis)
+                    (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%")
+                    )))
 
 ;; ----------------------------------------------------------------------
 ;;
