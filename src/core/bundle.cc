@@ -33,7 +33,9 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#ifdef _TARGET_OS_DARWIN
 #include <libproc.h>
+#endif
 
 #include <stdlib.h>
 #include <limits.h>
@@ -83,12 +85,23 @@ namespace core
 
     void	Bundle::initialize(const string& raw_argv0, const string& envVar)
     {
-
-        char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
         pid_t pid = getpid();
+#ifdef _TARGET_OS_DARWIN
+        char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
         int ret = proc_pidpath (pid, pathbuf, sizeof(pathbuf));
 //        printf("%s:%d pid path = %s\n", __FILE__, __LINE__, pathbuf );
         string argv0 = string(pathbuf);
+#endif
+#ifdef _TARGET_OS_LINUX
+        stringstream path;
+        path << "/proc/" << pid << "/exe";
+        char buffer[PATH_MAX+1];
+        char* rp = realpath(path.str().c_str(),buffer);
+        if ( !rp ) {
+            printf("%s:%d Could not resolve pid realpath for %s\n", __FILE__,__LINE__,path.str().c_str());
+        }
+        string argv0 = string(rp);
+#endif
 	string cwd = this->_StartupWorkingDir.string();
 	bf::path appDir = this->findAppDir(argv0,cwd,envVar);
 	// First crawl up the directory tree and look for the cando root
