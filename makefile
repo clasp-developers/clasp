@@ -58,6 +58,11 @@ only-boehm:
 	make boostbuildv2-build
 	make clasp-boehm
 
+boehm-build-mps-interface:
+	git submodule update --init  # ensure that the src/mps submodule is updated
+	make boostbuildv2-build
+	make clasp-boehm
+	(cd src/main; make mps-interface)
 
 
 #

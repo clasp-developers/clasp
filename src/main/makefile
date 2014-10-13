@@ -82,7 +82,8 @@ run-clasp:
 
 
 mps-interface:
+	make compile-commands
 	@echo Building mps-prep
-	bjam -j$PJOBS bundle release mps-prep
+	bjam -j$(PJOBS) bundle release mps-prep
 	@echo Running parallel search and generating code when done
 	clasp_boehm_o -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
