@@ -229,7 +229,7 @@ namespace core
 		       _Interactive(true),
 		       _EmbeddedInPython(false),
 		       _BootClassTableIsValid(true),
-		       _PathMax(MAXPATHLEN)
+		       _PathMax(CLASP_MAXPATHLEN)
     {
 	this->_Roots._Bindings.reserve(1024);
 	this->_GlobalInitializationCallbacks.clear();
