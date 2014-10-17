@@ -1,5 +1,6 @@
 include local.config
 
+
 export GIT_COMMIT := $(shell cat 'minor-version-id.txt')
 
 
@@ -47,6 +48,8 @@ ifeq ($(WHAT),)
 endif
 
 all:
+	@echo Dumping local.config
+	cat local.config
 	git submodule update --init  # ensure that the src/mps submodule is updated
 	make boostbuildv2-build
 	make clasp-boehm
