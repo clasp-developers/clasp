@@ -25,7 +25,7 @@ project clasp : requirements
         <warnings>on
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
-        <cxxflags>"-Wno-unused-local-typedef"
+        <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
         <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
         <cxxflags>"-Wno-deprecated-register"
         <define>CLBIND_DYNAMIC_LINK

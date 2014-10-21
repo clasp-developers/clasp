@@ -446,11 +446,11 @@ namespace clbind {
     class ConstructorCreator;
 };
 
-
+#ifndef RUNNING_GC_BUILDER
 #define DECLARE_FORWARDS
 #include GARBAGE_COLLECTION_INCLUDE
 #undef DECLARE_FORWARDS
-
+#endif
 
 namespace gctools {
 #if !defined(RUNNING_GC_BUILDER)
