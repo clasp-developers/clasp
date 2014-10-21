@@ -71,7 +71,7 @@ clasp-gc-interface:
 compile-commands:
 	-bjam bundle release mps-prep -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+	python ../common/buildJSON.py clang bjam.out `clasp_boehm_o -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
 
 
 run-clang-check:

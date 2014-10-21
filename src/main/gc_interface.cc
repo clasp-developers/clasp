@@ -183,21 +183,21 @@ typedef bool _Bool;
 
 extern "C"  {
     using namespace gctools;
-    const char* obj_name( gctools::GCKindEnum kind )
-    {
-	switch (kind) {
+
+
 #ifndef RUNNING_GC_BUILDER
 #define GC_KIND_NAME_MAP
 #include "main/clasp_gc.cc"
 #undef GC_KIND_NAME_MAP
-#else
-            // RUNNING_GC_BUILDER
-
+#define GC_KIND_NAME_MAP_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_KIND_NAME_MAP_TABLE
 #endif
-	default: {
-	    return "UNKNOWN KIND in obj_name";
-	}
-	}
+
+
+    const char* obj_name( gctools::GCKindEnum kind )
+    {
+      return (KIND_NAME_MAP_table[kind])();
     }
 
 
@@ -210,8 +210,14 @@ extern "C" {
     using namespace gctools;
 
 
-
-
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_SKIP
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_SKIP
+#define GC_OBJ_SKIP_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_SKIP_TABLE
+#endif
 
     /*! I'm using a format_header so MPS gives me the object-pointer */
     mps_addr_t obj_skip( mps_addr_t client )
@@ -220,18 +226,7 @@ extern "C" {
         MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
-            switch (kind) {     
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_SKIP
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_SKIP
-#endif
-        default: {
-            fprintf(stderr,"Garbage collection tried to obj_skip an object of unknown kind: %s\n", header->description().c_str() );
-            assert(0);
-            abort();
-        }
-        };
+	    return (OBJ_SKIP_TABLE[kind])(client);
         } else if (header->fwdP()) {
             client = (char*)(client)+header->fwdSize();
         } else if (header->pad1P()) {
@@ -244,6 +239,17 @@ extern "C" {
         DEBUG_MPS_MESSAGE(BF("Leaving obj_skip with client@%p") % client);
 	return client;
     }
+
+
+
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_DUMP
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_DUMP
+#define GC_OBJ_DUMP_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_DUMP_TABLE
+#endif
 
 
     /*! I'm using a format_header so MPS gives me the object-pointer */
@@ -260,18 +266,7 @@ extern "C" {
         stringstream sout;
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
-            switch (kind) {     
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_DUMP
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_DUMP
-#endif
-            default: {
-                fprintf(stderr,"Garbage collection tried to obj_skip an object of unknown kind: %s\n", header->description().c_str() );
-                assert(0);
-                abort();
-            }
-            };
+	    return (OBJ_DUMP_MAP_table[kind])();
         } else if (header->fwdP()) {
             void* forwardPointer = header->fwdPointer();
             sout << "FWD pointer[" << forwardPointer << "] size[" << header->fwdSize() << "]";
@@ -284,7 +279,6 @@ extern "C" {
         }
         printf("Base@%p %s\n", base, sout.str().c_str());
     }
-
 
     int trap_obj_scan = 0;
 
@@ -304,6 +298,14 @@ extern "C" {
 #define SHIELD_SAFE_TELEMETRY(CLIENT,PARGS)
 #endif
 
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_SCAN
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_SCAN
+#define GC_OBJ_SCAN_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_SCAN_TABLE
+#endif
 
     GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit)
     {
@@ -314,31 +316,9 @@ extern "C" {
                 gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
                 MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
                 if ( header->kindP() ) {
-#if 0
-                    Seg seg;
-                    gctools::GCKindEnum kind;
-                    unsigned int length;
-                    if (SegOfAddr(&seg,gctools::_global_arena,header)) {
-                        ShieldExpose(gctools::_global_arena,seg);
-                        kind = (gctools::GCKindEnum)(header->kind.Kind);
-                        length = header->kind.Length;
-                        ShieldCover(gctools::_global_arena,seg);
-                    };
-#else
                     GCKindEnum kind = header->kind();
-#endif        
-                    switch (kind) {     
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_SCAN
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_SCAN
-#endif
-                    default: {
-                        fprintf(stderr,"Garbage collection tried to obj_skip an object of unknown kind[%s]\n", header->description().c_str() );
-                        assert(0);
-                        abort();
-                    }
-                    };
+		    GC_RESULT res = (OBJ_SCAN_table[kind])(ss,client,limit);
+		    if ( res != GC_RESULT_OK ) return res;
                 } else if (header->fwdP()) {
                     client = (char*)(client)+header->fwdSize();
                 } else if (header->pad1P()) {
@@ -353,29 +333,23 @@ extern "C" {
         return MPS_RES_OK;
     }
 
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_FINALIZE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_FINALIZE
+#endif
 
 
             /*! I'm using a format_header so MPS gives me the object-pointer */
 #define GC_FINALIZE_METHOD
             void obj_finalize( mps_addr_t client )
             {
-                gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-                ASSERTF(header->kindP(),BF("obj_finalized called without a valid object"));
-                gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
-                DEBUG_MPS_MESSAGE(BF("Finalizing client@%p   kind=%s") % client % header->description() );
-                switch (kind) {
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_FINALIZE
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_FINALIZE
-#endif
-        default: {
-            fprintf(stderr,"Garbage collection tried to obj_finalize an object of unknown   kind[%d]\n", kind);
-            assert(0);
-            abort();
-        }
-        };
-    }
+	      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+	      ASSERTF(header->kindP(),BF("obj_finalized called without a valid object"));
+	      gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
+	      DEBUG_MPS_MESSAGE(BF("Finalizing client@%p   kind=%s") % client % header->description() );
+	      (OBJ_FINALIZE_table[kind])(client);
+	    };
 #undef GC_FINALIZE_METHOD
 
 
