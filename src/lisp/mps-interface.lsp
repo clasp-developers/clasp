@@ -1488,75 +1488,93 @@ so that they don't have to be constantly recalculated"
   "This variable is used to temporarily hold a pointer to a Wrapper<...> object - we want the GC to ignore it")
 
 
-(defun scanner-for-lispallocs (fout enum anal)
+(defstruct destination
+  stream
+  table-name
+  function-list
+  function-declaration
+  function-type
+  function-prefix )
+
+(defun with-destination ((fout dest enum) &body body)
+  (let ((fn-gs (gensym)))
+    `(let* ((,fout (destination-stream ,dest))
+	    (,fn-gs (format nil "~a-~a" (destination-function-prefix ,dest)
+			    (enum-name ,enum))))
+       (push (cons (enum-value ,enum) ,fn-gs) (destination-function-list ,dest))
+       (format ,fout (destination-function-declaration ,dest) ,fn-gs)
+       (format ,fout "{~%")
+       ,@body
+       (format ,fout "}~%"))))
+
+
+
+(defun scanner-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a: /* ~a */ {~%" (enum-value enum) enum-name)
-;;    (format fout "Header_s* header = reinterpret_cast<Header_s*>(base);~%")
-;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-    (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
-      (when all-instance-variables
-        (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
-;;      (when (string= enum-name "KIND_LISPALLOC_core__CompiledBody_O")
-;;        (break "Check all-instance-variables"))
-      (dolist (instance-var all-instance-variables)
-        (code-for-instance-var fout +ptr-name+ instance-var)))
-    (format fout "    typedef ~A type_~A;~%" key enum-name)
-    (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
-    (format fout "} break;~%")
-    ))
+    (with-destination (fout dest enum)
+		      ;;    (format fout "Header_s* header = reinterpret_cast<Header_s*>(base);~%")
+		      ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
+		      (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
+			(when all-instance-variables
+			  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
+			;;      (when (string= enum-name "KIND_LISPALLOC_core__CompiledBody_O")
+			;;        (break "Check all-instance-variables"))
+			(dolist (instance-var all-instance-variables)
+			  (code-for-instance-var fout +ptr-name+ instance-var)))
+		      (format fout "    typedef ~A type_~A;~%" key enum-name)
+		      (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
+		      )))
 
 
-(defun skipper-for-lispallocs (fout enum anal)
+(defun skipper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
     (gclog "skipper-for-lispallocs -> inheritance classid[~a]  value[~a]~%" key (enum-value enum))
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
-    (format fout "    typedef ~A type_~A;~%" key enum-name)
-    (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
-    (format fout "} break;~%")))
+    (with-destination (fout dest enum)
+		      (format fout "    typedef ~A type_~A;~%" key enum-name)
+		      (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
+		      )))
 
-(defun dumper-for-lispallocs (fout enum anal)
+(defun dumper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
 ;;    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
     (format fout "    typedef ~A type_~A;~%" key enum-name)
     (format fout "    sout << \"~a size[\" << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) << \"]\" ;~%" enum-name enum-name )
-    (format fout "} break;~%")
-    ))
+    )))
 
 
-(defun finalizer-for-lispallocs (fout enum anal)
+(defun finalizer-for-lispallocs (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
          (enum-name (enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
+    (with-destination (fout dest enum)
     (gclog "build-mps-finalize-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
-    (format fout "    return;~%")
-    (format fout "} break;~%")))
+    (format fout "    return;~%"))))
 
 
 
-(defun scanner-for-templated-lispallocs (fout enum anal)
+(defun scanner-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
 ;;    (format fout "    typedef ~a MyType;~%" key)
 ;;    (format fout "    typedef typename gctools::GCHeader<MyType>::HeaderType HeadT;~%")
 ;;    (format fout "    HeadT* header = reinterpret_cast<HeadT*>(base);~%")
@@ -1568,57 +1586,52 @@ so that they don't have to be constantly recalculated"
 ;;    (format fout "    base = (char*)base + length;~%")
 ;;    (format fout "    typedef ~A type_~A;~%" key enum-name)
     (format fout "    client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
-    (format fout "} break;~%")
-    ))
+    )))
 
-(defun skipper-for-templated-lispallocs (fout enum anal)
+(defun skipper-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
-    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-;;    (format fout "    base = (char*)base + length;~%")
-;;    (format fout "    typedef ~A type_~A;~%" key enum-name)
-    (format fout "    client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
-    (format fout "} break;~%")
-    ))
+    (with-destination (fout dest enum)
+		      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+		      ;;    (format fout "    base = (char*)base + length;~%")
+		      ;;    (format fout "    typedef ~A type_~A;~%" key enum-name)
+		      (format fout "    client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
+		      )))
 
-(defun dumper-for-templated-lispallocs (fout enum anal)
+(defun dumper-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
     (format fout "    sout << \"~a size[\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) << \"]\" ;~%" enum-name +ptr-name+ )
-    (format fout "} break;~%")
-    ))
+    )))
 
-(defun finalizer-for-templated-lispallocs (fout enum anal)
+(defun finalizer-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
-    (format fout "} break;~%")
-    ))
+    )))
 
 
 
 
-(defun scanner-for-gccontainer (fout enum anal)
+(defun scanner-for-gccontainer (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1649,17 +1662,16 @@ so that they don't have to be constantly recalculated"
           (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
           (format fout "    client = (char*)client + header_and_gccontainer_size;~%" enum-name)))
     ;;              (format fout "    base = (char*)base + length;~%")
-    (format fout "} break;~%")
-    ))
+    )))
 
 
-(defun skipper-for-gccontainer (fout enum anal)
+(defun skipper-for-gccontainer (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1673,16 +1685,15 @@ so that they don't have to be constantly recalculated"
           (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
           (format fout "    client = (char*)client + header_and_gccontainer_size;~%" enum-name)))
     ;;              (format fout "    base = (char*)base + length;~%")
-    (format fout "} break;~%")
-    ))
+    )))
 
-(defun dumper-for-gccontainer (fout enum anal)
+(defun dumper-for-gccontainer (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1698,18 +1709,17 @@ so that they don't have to be constantly recalculated"
           (format fout "    sout << \"bytes[\" << header_and_gccontainer_size << \"]\";~%" )
           ))
     ;;              (format fout "    base = (char*)base + length;~%")
-    (format fout "} break;~%")
-    ))
+    )))
 
 
 
-(defun finalizer-for-gccontainer (fout enum anal)
+(defun finalizer-for-gccontainer (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1719,8 +1729,7 @@ so that they don't have to be constantly recalculated"
                (parm0-ctype (gc-template-argument-ctype parm0)))
 ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize containers ~a\"));" (record-ctype-key decl))))
-    (format fout "} break;~%")
-    ))
+    )))
 
 
 
@@ -1750,13 +1759,13 @@ so that they don't have to be constantly recalculated"
     (format fout "} break;~%")
     ))
 
-(defun dumper-for-gcstring (fout enum anal)
+(defun dumper-for-gcstring (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a /* ~a */: {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1770,18 +1779,17 @@ so that they don't have to be constantly recalculated"
           (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
           (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcstring_size << \"]\";~%" enum-name )
           ))
-    (format fout "} break;~%")
-    ))
+    )))
 
 
 
-(defun finalizer-for-gcstring (fout enum anal)
+(defun finalizer-for-gcstring (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (format fout "case ~a /* ~a */ : {~%" (enum-value enum) enum-name)
+    (with-destination (fout dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1791,8 +1799,7 @@ so that they don't have to be constantly recalculated"
                (parm0-ctype (gc-template-argument-ctype parm0)))
 ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize gcstrings ~a\"));" (record-ctype-key decl))))
-    (format fout "} break;~%")
-    ))
+    )))
 
 
 (defun string-left-matches (str sub)
@@ -2176,29 +2183,25 @@ so that they don't have to be constantly recalculated"
     
 
 
-(defun build-mps-dump (fout anal)
+(defun build-mps-dump (dest anal)
   (dolist (enum (analysis-sorted-enums anal))
-    (funcall (species-dump (enum-species enum)) fout enum anal)))
+    (funcall (species-dump (enum-species enum)) dest enum anal)))
 
-
-
-(defun build-mps-scan (fout anal)
+(defun build-mps-scan (dest anal)
   (dolist (enum (analysis-sorted-enums anal))
-      (funcall (species-scan (enum-species enum)) fout enum anal)))
+      (funcall (species-scan (enum-species enum)) dest enum anal)))
 
-
-(defun build-mps-skip (fout anal)
+(defun build-mps-skip (dest anal)
   (dolist (enum (analysis-sorted-enums anal))
-    (funcall (species-skip (enum-species enum)) fout enum anal)))
+    (funcall (species-skip (enum-species enum)) dest enum anal)))
 
-
-(defun build-mps-finalize (fout anal)
+(defun build-mps-finalize (dest anal)
   (dolist (enum (analysis-sorted-enums anal))
-    (funcall (species-finalize (enum-species enum)) fout enum anal)))
+    (funcall (species-finalize (enum-species enum)) dest enum anal)))
 
-(defun build-mps-uses-finalize (fout anal)
+(defun build-mps-uses-finalize (dest anal)
   (dolist (enum (analysis-sorted-enums anal))
-    (funcall (species-finalize (enum-species enum)) fout enum anal)))
+    (funcall (species-finalize (enum-species enum)) dest enum anal)))
 
 
 
@@ -2345,12 +2348,13 @@ so that they don't have to be constantly recalculated"
     ))
 
 
-(defun generate-kind-name-map (fout anal)
+(defun impl-generate-kind-name-map (dest anal)
   (mapc (lambda (enum)
           (let* ((enum-name (enum-name enum)))
-            (format fout "   case ~A /* ~a */: return \"~A\";~%" (enum-value enum) enum-name enum-name)))
-        (analysis-sorted-enums anal))
-  )
+	    (with-destination (fout dest enum)
+			      (format fout "return \"~A\";~%" enum-name)))
+	  (analysis-sorted-enums anal))
+	))
 
 
 
@@ -2418,6 +2422,31 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   )
 |#
 
+(defun generate-function-table (dest)
+  (format (destination-stream dest)
+	  "~a ~a[] = { NULL ~%"
+	  (destination-function-type dest)
+	  (destination-table-name dest))
+  (let ((entries (reverse (destination-function-list dest))))
+    (dolist (entry entries)
+      (format (destination-stream dest) "  /* ~a */ , ~a~%" (car entry) (cdr entry)))))
+
+
+(defun generate-kind-name-map (stream analysis)
+  (let ((destination (make-destination :stream stream
+				       :table-name "KIND_NAME_MAP"
+				       :function-declaration "string ~a()"
+				       :function-prefix "kind_name"
+				       :function-type "void (*)()")))
+  (format stream "#if defined(GC_KIND_NAME_MAP)~%")
+  (impl-generate-kind-name-map destination analysis)
+  (format stream "#endif // defined(GC_KIND_NAME_MAP)~%")
+  (format stream "#if defined(GC_KIND_NAME_MAP_TABLE)~%")
+  (format stream "// Generate table here~%")
+  (generate-function-table destination)
+  (format stream "#endif // defined(GC_KIND_NAME_MAP_TABLE)~%")
+)
+
   
 (defun generate-code (&key (analysis *analysis*) test)
   (let ((filename (if test
@@ -2434,12 +2463,10 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                     (format stream "#if defined(GC_DYNAMIC_CAST)~%")
                     (generate-dynamic-cast-code stream analysis)
                     (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
-                    (format stream "#if defined(GC_KIND_NAME_MAP)~%")
-                    (generate-kind-name-map stream analysis)
-                    (format stream "#endif // defined(GC_KIND_NAME_MAP)~%")
                     (format stream "#if defined(GC_KIND_SELECTORS)~%")
                     (generate-gckind-for-enums stream analysis)
                     (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
+		    (generate-kind-name-map stream analysis)
                     (format stream "#if defined(GC_OBJ_DUMP)~%")
                     (build-mps-dump stream analysis)
                     (format stream "#endif // defined(GC_OBJ_DUMP)~%")
