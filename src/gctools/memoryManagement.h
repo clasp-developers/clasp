@@ -36,8 +36,11 @@ THE SOFTWARE.
 
 
 #ifdef USE_BOEHM
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-attributes"
 #include "gc/gc.h"
 #include "gc/gc_allocator.h"
+#pragma clang diagnostic pop
         typedef void* LocationDependencyPtrT;
 #endif // USE_BOEHM
 
