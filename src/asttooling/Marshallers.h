@@ -143,7 +143,7 @@ namespace asttooling {
                 return Marshaller(Func, MatcherName, NameRange, Args, Error);
             }
 
-        private:
+        GCPRIVATE:
             const MarshallerType Marshaller;
             void (* const Func)();
             const core::Symbol_sp MatcherName;
@@ -173,7 +173,7 @@ namespace asttooling {
                 return Func(MatcherName, NameRange, Args, Error);
             }
 
-        private:
+        GCPRIVATE:
             const RunFunc Func;
             const core::Symbol_sp MatcherName;
         };
@@ -397,7 +397,7 @@ namespace asttooling {
                 return Constructed[0];
             }
 
-        private:
+        GCPRIVATE:
             gctools::Vec0<MatcherDescriptor *> Overloads;
         };
 
@@ -436,7 +436,7 @@ namespace asttooling {
                 return VariantMatcher::VariadicOperatorMatcher(Func, InnerArgs);
             }
 
-        private:
+        GCPRIVATE:
             const unsigned MinCount;
             const unsigned MaxCount;
             const VarFunc Func;

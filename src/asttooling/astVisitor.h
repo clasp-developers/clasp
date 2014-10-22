@@ -43,7 +43,7 @@ namespace asttooling {
         LISP_BASE1(core::T_O);
         LISP_CLASS(asttooling,AstToolingPkg,AstVisitor_O,"AstVisitor");
         
-    private:
+    GCPRIVATE:
         core::T_sp        _Target;
     public:
 

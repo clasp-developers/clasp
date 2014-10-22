@@ -106,7 +106,7 @@ namespace core
     public: // ctor/dtor for classes with shared virtual base
 	explicit Instance_O();
 	virtual ~Instance_O();
-    protected: // instance variables here
+    GCPROTECTED: // instance variables here
 	int					_isgf;
 	Class_sp 				_Class;
         gctools::Vec0<T_sp>			_Slots;

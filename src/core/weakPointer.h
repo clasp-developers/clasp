@@ -48,7 +48,7 @@ class WeakPointer_O : public T_O
 public:
     static WeakPointer_sp make(T_sp obj);
 public:
-private: // instance variables here
+GCPRIVATE: // instance variables here
     typedef typename gctools::WeakPointerManager::value_type value_type;
     gctools::WeakPointerManager	_WeakObject;
 

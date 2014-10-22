@@ -145,7 +145,7 @@ namespace core {
 	typedef T_O	CdrType_O;
 	typedef T_sp 	CarType_sp;
 	typedef T_sp 	CdrType_sp;
-    protected:
+    GCPRIVATE:
 	CarType_sp	_Car;
 	CdrType_sp	_Cdr;
 	/*! Keep track of the length of the cons along the cdr chain

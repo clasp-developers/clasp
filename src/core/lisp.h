@@ -157,7 +157,7 @@ namespace core
     public:
 	typedef enum { candoClasses, candoFunctions, candoGlobals,
 		       pythonClasses, pythonFunctions, pythonGlobals } WhatToExpose;
-    private:
+    GCPRIVATE:
 	// The package is put here
 	Package_sp 	_Package;
 	string		_PackageName;

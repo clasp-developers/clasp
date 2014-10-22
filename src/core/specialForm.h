@@ -55,7 +55,7 @@ public: // virtual functions inherited from Object
 #endif // defined(XML_ARCHIVE)
 //	string	__repr__() const;
 
-private: // instance variables
+GCPRIVATE: // instance variables
 	Symbol_sp		_SpecialSymbol;
 	SpecialFormCallback	_fptr;
 public:

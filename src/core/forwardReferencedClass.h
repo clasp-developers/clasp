@@ -50,7 +50,7 @@ namespace core {
     public:
 	void initialize();
 
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
 	BuiltInClass_sp	_InstanceCoreClass;
 
     public: // Functions here

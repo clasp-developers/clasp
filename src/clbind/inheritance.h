@@ -135,7 +135,7 @@ namespace clbind { namespace detail {
             ClassRep_sp get(class_id id) const;
             void put(class_id id, ClassRep_sp cls);
             
-        private:
+        GCPRIVATE:
             gctools::Vec0<ClassRep_sp> m_classes;
         };
 

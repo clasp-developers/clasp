@@ -704,7 +704,7 @@ namespace core {
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    private:
+    GCPRIVATE:
 	Real_sp	_real;
 	Real_sp	_imaginary;
     public:
@@ -793,7 +793,7 @@ namespace core {
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    private:
+    GCPRIVATE:
 	Integer_sp 	_numerator;
 	Integer_sp 	_denominator;
     public:

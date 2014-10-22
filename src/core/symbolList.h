@@ -61,7 +61,7 @@ public:
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-private:
+GCPRIVATE:
     gctools::Vec0<Symbol_sp>	_Contents;
 public:
     typedef	gctools::Vec0<Symbol_sp>::iterator	iterator;

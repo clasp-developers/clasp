@@ -1200,7 +1200,7 @@ namespace llvmo
 
         void initialize();
 
-    protected:
+    GCPROTECTED:
 	PointerToExternalType _ptr;
         core::HashTableEqual_sp _DependentModules;
     public:
@@ -1270,7 +1270,7 @@ namespace llvmo {
 	typedef llvm::Module ExternalType;
 	typedef llvm::Module* PointerToExternalType;
         void initialize();
-    protected:
+    GCPROTECTED:
 	PointerToExternalType _ptr;
         core::HashTableEqual_sp _UniqueGlobalVariableStrings;
     public:
@@ -3350,7 +3350,7 @@ namespace llvmo
 	typedef llvm::Function ExternalType;
 	typedef llvm::Function* PointerToExternalType;
 
-    private:
+    GCPRIVATE:
 	core::LoadTimeValues_sp 	_RunTimeValues;
     public:
 	/*! If a Function is compiled with COMPILE then quoted values and literals need to be stored

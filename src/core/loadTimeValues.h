@@ -49,7 +49,7 @@ namespace core
 //    explicit LoadTimeValues_O(core::Class_sp const& mc) : T_O(mc), VectorObjectsWithFillPtr(mc) {};
 //    virtual ~LoadTimeValues_O() {};
 
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         gctools::Vec0<T_sp>      	_Objects;
         gctools::Vec0<Symbol_sp>	_Symbols;
 	

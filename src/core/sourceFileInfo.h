@@ -49,7 +49,7 @@ namespace core
 	explicit SourceFileInfo_O();
 	virtual ~SourceFileInfo_O() {};
 	void initialize();
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
 	Pathname_sp	_pathname;
 	/*! Allocated buffer that stores the file name until the program exits */
 	char* 	_PermanentPathName;

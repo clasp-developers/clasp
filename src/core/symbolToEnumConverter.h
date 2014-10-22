@@ -52,7 +52,7 @@ public:
 public: // virtual functions inherited from Object
 	void	initialize();
 
-private: // instance variables
+GCPRIVATE: // instance variables
 		/*! Store what the the enumIndex values represent
 		 * Used when errors are thrown
 		 */

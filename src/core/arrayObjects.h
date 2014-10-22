@@ -51,7 +51,7 @@ public:
 public:
 	void initialize();
 
-private: // instance variables here
+GCPRIVATE: // instance variables here
     vector<int>			_Dimensions;
     T_sp			_ElementType;
     gctools::Vec0<T_sp>	_Values;

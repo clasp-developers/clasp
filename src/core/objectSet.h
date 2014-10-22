@@ -62,7 +62,7 @@ public:
 	void	archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 
-private:
+GCPRIVATE:
     HashTableEq_sp _Set;
 
 public:

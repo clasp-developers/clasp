@@ -52,7 +52,7 @@ namespace core
     public:
 	void initialize();
 	
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
 	Cons_sp	_Methods;
 
     private:
