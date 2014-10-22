@@ -73,7 +73,7 @@ public:
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 
-    private:
+    GCPRIVATE:
 	HashTableEq_sp          _Symbols;
     public:
 	static SymbolSet_sp make(Cons_sp vals);

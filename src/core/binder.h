@@ -64,7 +64,7 @@ namespace core
 #endif // defined(OLD_SERIALIZE)
     public:
 	void archiveBase(ArchiveP node);
-    private:
+    GCPRIVATE:
         HashTableEq_sp          _Bindings;
         VectorObjects_sp        _Values;
     public:

@@ -136,7 +136,7 @@ public:
 	DECLARE_MAKE_INIT();
     public:
 	void initialize();
-    private:
+    GCPRIVATE:
 	Path_sp _Path;
 	/* A new CurrentIterator is created (new) whenever first() is called
 	   So we have to manage the memory for _CurrentIterator
@@ -172,7 +172,7 @@ private:
 	DECLARE_MAKE_INIT();
     public:
 	void initialize();
-    private:
+    GCPRIVATE:
 	Path_sp _Path;
 	bool	_EnterHidden;
 	/* A new CurrentIterator is created (new) whenever first() is called

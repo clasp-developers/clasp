@@ -226,7 +226,7 @@ extern "C" {
         MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
-	    return (OBJ_SKIP_TABLE[kind])(client);
+	    return (OBJ_SKIP_table[kind])(client);
         } else if (header->fwdP()) {
             client = (char*)(client)+header->fwdSize();
         } else if (header->pad1P()) {
@@ -241,17 +241,19 @@ extern "C" {
     }
 
 
+};
 
 #ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_DUMP
+#define GC_OBJ_DUMP_MAP
 #include "main/clasp_gc.cc"
-#undef GC_OBJ_DUMP
-#define GC_OBJ_DUMP_TABLE
+#undef GC_OBJ_DUMP_MAP
+#define GC_OBJ_DUMP_MAP_TABLE
 #include "main/clasp_gc.cc"
-#undef GC_OBJ_DUMP_TABLE
+#undef GC_OBJ_DUMP_MAP_TABLE
 #endif
 
 
+extern "C" {
     /*! I'm using a format_header so MPS gives me the object-pointer */
     void obj_dump_base( mps_addr_t base )
     {
@@ -266,7 +268,7 @@ extern "C" {
         stringstream sout;
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
-	    return (OBJ_DUMP_MAP_table[kind])();
+	    (OBJ_DUMP_MAP_table[kind])(client);
         } else if (header->fwdP()) {
             void* forwardPointer = header->fwdPointer();
             sout << "FWD pointer[" << forwardPointer << "] size[" << header->fwdSize() << "]";
@@ -318,7 +320,7 @@ extern "C" {
                 if ( header->kindP() ) {
                     GCKindEnum kind = header->kind();
 		    GC_RESULT res = (OBJ_SCAN_table[kind])(ss,client,limit);
-		    if ( res != GC_RESULT_OK ) return res;
+		    if ( res != MPS_RES_OK ) return res;
                 } else if (header->fwdP()) {
                     client = (char*)(client)+header->fwdSize();
                 } else if (header->pad1P()) {
@@ -337,6 +339,9 @@ extern "C" {
 #define GC_OBJ_FINALIZE
 #include "main/clasp_gc.cc"
 #undef GC_OBJ_FINALIZE
+#define GC_OBJ_FINALIZE_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_FINALIZE_TABLE
 #endif
 
 

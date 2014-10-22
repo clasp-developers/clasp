@@ -64,7 +64,7 @@ namespace core {
     {
 	LISP_BASE1(T_O); // LISP_BASE1(StandardObject_O);
 	LISP_CLASS(core,CorePkg,ExternalObject_O,"ExternalObject");
-    private:
+    GCPRIVATE:
         Class_sp _Class;
     public:
 	virtual bool eq(T_sp obj) const;

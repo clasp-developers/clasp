@@ -173,7 +173,7 @@ namespace clbind {
             return *m_classes;
         }
 
-    private:
+    GCPRIVATE:
 
 #if 0
         void cache_operators(core::Lisp_sp);

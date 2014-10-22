@@ -148,7 +148,7 @@ namespace core
     {
 	LISP_BASE1(ActivationFrame_O);
 	LISP_CLASS(core,CorePkg,ValueFrame_O,"ValueFrame");
-    protected:
+    GCPROTECTED:
 	ActivationFrame_sp	        _ParentFrame;
         gctools::Frame0<T_sp>                 _Objects;
 //IndirectObjectArray             _Objects;
@@ -327,7 +327,7 @@ namespace core {
     {
 	LISP_BASE1(ActivationFrame_O);
 	LISP_CLASS(core,CorePkg,FunctionFrame_O,"FunctionFrame");
-    private:
+    GCPRIVATE:
 	ActivationFrame_sp	_ParentFrame;
         gctools::Frame0<T_sp>                 _Objects;
 //        IndirectObjectArray     _Objects;
@@ -441,7 +441,7 @@ namespace core
     {
 	LISP_BASE1(ActivationFrame_O);
 	LISP_CLASS(core,CorePkg,TagbodyFrame_O,"TagbodyFrame");
-    private:
+    GCPRIVATE:
 	ActivationFrame_sp	_ParentFrame;
     public:
 	static TagbodyFrame_sp create(ActivationFrame_sp parent);

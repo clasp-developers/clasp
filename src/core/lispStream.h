@@ -384,7 +384,7 @@ namespace core
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
         FileStream_O() {};
-    protected:
+    GCPROTECTED:
         T_sp  _Filename;
         T_sp    _ElementType;
     public: // Functions here
@@ -526,7 +526,7 @@ namespace core
     public: // ctor/dtor for classes with shared virtual base
 //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
 //    virtual ~StringStream_O() {};
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         StrWithFillPtr_sp       _Contents;
     public: // Functions here
     }; // StringStream class
@@ -553,7 +553,7 @@ namespace core {
     public: // ctor/dtor for classes with shared virtual base
 //    explicit StringStream_O(core::Class_sp const& mc) : T_O(mc),AnsiStream(mc) {};
 //    virtual ~StringStream_O() {};
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         Str_sp       _Contents;
         cl_fixnum       _InputPosition;
         cl_fixnum       _InputLimit;
@@ -584,7 +584,7 @@ namespace core
 	SynonymStream_O() : _SynonymSymbol(_Nil<Symbol_O>()) {};
         virtual ~SynonymStream_O() {};
 
-    protected: // instance variables here
+    GCPROTECTED: // instance variables here
 	Symbol_sp 	_SynonymSymbol;
     public:
 	static SynonymStream_sp make(Symbol_sp symbol) {
@@ -624,7 +624,7 @@ namespace core
     public: // Simple default ctor/dtor
 	TwoWayStream_O() : _In(_Nil<T_O>()), _Out(_Nil<T_O>()) {};
 	virtual ~TwoWayStream_O() {};
-    protected: // instance variables here
+    GCPROTECTED: // instance variables here
 	T_sp 	_In;
 	T_sp 	_Out;
     public:
@@ -655,7 +655,7 @@ namespace core
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(BroadcastStream_O);
 	
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         T_sp         _Streams;
     public: // Functions here
     }; // BroadcastStream class
@@ -683,7 +683,7 @@ namespace core
 //    DECLARE_ARCHIVE();
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(ConcatenatedStream_O);
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         T_sp    _List;
     public: // Functions here
     }; // ConcatenatedStream class
@@ -712,7 +712,7 @@ namespace core
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(EchoStream_O);
 	
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         T_sp _In;
         T_sp _Out;
 	

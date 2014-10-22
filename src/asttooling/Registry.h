@@ -102,7 +102,7 @@ namespace asttooling {
         private:
             void _registerMatcher(core::Symbol_sp MatcherName, internal::MatcherDescriptor *Callback) const;
             /*! This is used to replace the map<Symbol_sp,const MatcherDescriptor*> that used to be a ConstructorMap */
-        private:
+        GCPRIVATE:
             bool Initialized;
             mutable ConstructorMap Constructors;
         };

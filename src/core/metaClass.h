@@ -300,6 +300,7 @@ namespace core {
     class InstanceCreator : public Creator
     {
         FRIEND_GC_SCANNER();
+    public:
         Symbol_sp       _className;
     public:
         DECLARE_onHeapScanGCRoots();

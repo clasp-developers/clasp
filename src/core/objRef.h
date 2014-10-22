@@ -49,7 +49,7 @@ public:
 	void	archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 	void	initialize();
-private:
+GCPRIVATE:
 	string		_Selector;
 	string		_Name;
 	ObjRef_sp	_SubRef;

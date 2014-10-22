@@ -48,7 +48,7 @@ namespace core
 	friend class Lambda_method_function;
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(SingleDispatchMethod_O);
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
 		/*! Store the generic function name */
 	Symbol_sp	_name;
 	/*! Store the receiver class for this method */

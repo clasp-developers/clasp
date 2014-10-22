@@ -51,7 +51,7 @@ namespace core
     {
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,SmallMap_O,"SmallMap");
-    private:
+    GCPRIVATE:
         typedef gctools::SmallMap<T_sp,T_sp> map_type;
         map_type                map;
     public:

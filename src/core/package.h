@@ -56,7 +56,7 @@ public: // virtual functions inherited from Object
 #endif // defined(XML_ARCHIVE)
 	string	__repr__() const;
 
-private: // instance variables
+GCPRIVATE: // instance variables
         gctools::gcstring  _Name;
 	HashTableEql_sp 	_InternalSymbols;
 	HashTableEql_sp 	_ExternalSymbols;

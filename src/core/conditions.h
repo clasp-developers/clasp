@@ -60,7 +60,7 @@ namespace core
 	static CandoException_sp create(const string& msg);
 	static CandoException_sp create(const boost::format& fmt);
 
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         gctools::gcstring _message;
 	
     public: // Functions here

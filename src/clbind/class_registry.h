@@ -86,7 +86,7 @@ namespace clbind {
 
         ClassRep_sp find_class(type_id const& info) const;
 
-    private:
+    GCPRIVATE:
 
         /*! Index on the type_id.id converted to a core::Pointer and use EQL equality */
         core::HashTableEql_sp         m_classes;

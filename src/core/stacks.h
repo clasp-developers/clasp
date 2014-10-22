@@ -237,7 +237,7 @@ namespace core {
 
     class ExceptionStack {
         FRIEND_GC_SCANNER();
-    private:
+    public:
         gctools::Vec0<ExceptionEntry>   _Stack;
     public:
         ExceptionEntry& operator[](int i) { return this->_Stack[i];};

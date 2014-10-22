@@ -243,7 +243,7 @@ namespace core
     {
 	LISP_BASE1(Environment_O);
 	LISP_CLASS(core,CorePkg,LexicalEnvironment_O,"LexicalEnvironment");
-    protected:
+    GCPROTECTED:
 	//! Use setupParent to update this
     	Environment_sp	_ParentEnvironment;
 	
@@ -297,7 +297,7 @@ namespace core
     {
 	LISP_BASE1(LexicalEnvironment_O);
 	LISP_CLASS(core,CorePkg,RuntimeVisibleEnvironment_O,"RuntimeVisibleEnvironment");
-    protected:
+    GCPROTECTED:
         T_sp    _RuntimeEnvironment;
     public:
 	void setRuntimeEnvironment(T_sp renv) { this->_RuntimeEnvironment = renv;};
@@ -349,7 +349,7 @@ namespace core
 	LISP_BASE1(RuntimeVisibleEnvironment_O);
 	LISP_CLASS(core,CorePkg,ValueEnvironment_O,"ValueEnvironment");
         void initialize();
-    protected:
+    GCPROTECTED:
 	/*! Maps symbols to their index within the activation frame or if the index is -1 then the symbol is locally special */
 	HashTableEq_sp          _SymbolIndex;
 	ActivationFrame_sp 	_ActivationFrame;
@@ -454,7 +454,7 @@ namespace core
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    protected:
+    GCPROTECTED:
 	/*! Map function names to Fixnum indices.
 	  A function name is either a symbol or a cons of the form (setf XXXX) */
 	HashTableEqual_sp 	_FunctionIndices;
@@ -608,7 +608,7 @@ namespace core
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    private:
+    GCPRIVATE:
 	Symbol_sp 	_BlockSymbol;
     public:
 //	typedef vector<HandlerHolder>::iterator	handlerIterator;
@@ -729,7 +729,7 @@ namespace core
 //    virtual ~TagbodyEnvironment_O() {};
     public:
 	void initialize();
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
 	HashTableEq_sp                  _Tags;
         gctools::Vec0<Cons_sp>	_TagCode;
 	ActivationFrame_sp 	        _ActivationFrame;
@@ -796,7 +796,7 @@ namespace core
 //    virtual ~MacroletEnvironment_O() {};
     public:
 	void initialize();
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         HashTableEq_sp          _Macros;
     public: // Codes here
 	static MacroletEnvironment_sp make(Environment_sp env);
@@ -842,7 +842,7 @@ namespace core
 //    virtual ~SymbolMacroletEnvironment_O() {};
     public:
 	void initialize();
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
 	HashTableEq_sp          _Macros;
     public: // Codes here
 	static SymbolMacroletEnvironment_sp make(Environment_sp env);
@@ -890,7 +890,7 @@ namespace core
 	LISP_BASE1(Environment_O);
 	LISP_CLASS(core,CorePkg,GlueEnvironment_O,"GlueEnvironment");
         void initialize();
-    protected:
+    GCPROTECTED:
 	/*! Maps symbols to their index within the activation frame or if the index is -1 then the symbol is locally special */
 	HashTableEq_sp          _Map;
 	Cons_sp 		_Args;

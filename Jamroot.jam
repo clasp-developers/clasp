@@ -23,6 +23,7 @@ GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 project clasp : requirements
 	<define>INHERITED_FROM_SRC
         <warnings>on
+        <cxxflags>"-ferror-limit=999"
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"

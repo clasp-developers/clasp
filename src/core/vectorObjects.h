@@ -58,7 +58,7 @@ namespace core
         typedef gctools::Vec0<T_sp>        vector_type;
         typedef gctools::Vec0<T_sp>::iterator iterator;
 
-    protected: // instance variables here -- REMEMBER to update swap(...) if you add/remove variables
+    GCPROTECTED: // instance variables here -- REMEMBER to update swap(...) if you add/remove variables
 	T_sp 		_ElementType;
 	bool		_Adjustable;
         vector_type      _Values;

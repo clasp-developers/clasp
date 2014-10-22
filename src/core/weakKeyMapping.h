@@ -50,7 +50,7 @@ namespace core
     public:
         static WeakKeyMapping_sp make(T_sp key, T_sp val);
     public:
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
         typedef typename gctools::WeakKeyMappingPair::value_type  value_type;
         gctools::WeakKeyMappingPair 	_WeakObject;
 
