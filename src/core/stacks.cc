@@ -546,10 +546,13 @@ namespace core
 #define ARGS_af_ihsTop "()"
 #define DECL_af_ihsTop ""
 #define DOCS_af_ihsTop "ihsTop"
-    int af_ihsTop()
-    {_G();
-        return _lisp->invocationHistoryStack().top()->index();
-    };
+  int af_ihsTop()
+  {_G();
+    if ( _lisp->invocationHistoryStack().top() == NULL ) {
+      return 0;
+    }
+    return _lisp->invocationHistoryStack().top()->index();
+  };
 
 
 
