@@ -669,6 +669,7 @@ namespace core
 	    af_format(_lisp->_true(),fmt,args);
 	}
 	dbg_hook("built in break");
+	af_invokeInternalDebugger(_Nil<core::T_O>());
     };
 
 
@@ -685,6 +686,7 @@ namespace core
 	    smsg = _rep_(obj);
 	}
         dbg_hook(smsg.c_str());
+	af_invokeInternalDebugger(_Nil<core::T_O>());
     };
 
 
@@ -695,6 +697,7 @@ namespace core
     {_G();
 	printf("gdbInspect object: %s\n", _rep_(o).c_str());
 	dbg_hook(msg->get().c_str());
+	af_invokeInternalDebugger(_Nil<core::T_O>());
     };
 
 

@@ -165,7 +165,7 @@ namespace gctools
 	mps_addr_t limit = obj_skip(old_client);
 	size_t size = (char *)limit - (char *)old_client;
         if ( size < global_sizeof_fwd ) {
-            THROW_HARD_ERROR(BF("obj_fwd needs size >= %zu") % global_sizeof_fwd );
+            THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % global_sizeof_fwd );
         }
         Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(old_client));
         header->setFwdSize(size);
@@ -191,7 +191,7 @@ namespace gctools
     static void obj_pad(mps_addr_t base, size_t size)
     {
 	size_t alignment = Alignment();
-	MPS_LOG(BF("base = %p ALIGNMENT = %zd size=%zu ") % base % alignment % size );
+	MPS_LOG(BF("base = %p ALIGNMENT = %d size=%u ") % base % alignment % size );
 	assert(size >= alignment );
 	Header_s* header = reinterpret_cast<Header_s*>(base);
         if (size == alignment) {

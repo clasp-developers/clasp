@@ -447,8 +447,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_SC_(KeywordPkg,load_toplevel);
     SYMBOL_SC_(KeywordPkg,execute);
 
-    SYMBOL_EXPORT_SC_(ClPkg,array_dimension_limit);
-
     SYMBOL_EXPORT_SC_(ClPkg,STARread_evalSTAR);
     SYMBOL_SC_(CorePkg,STARdocumentation_poolSTAR);
     SYMBOL_SC_(CorePkg,STARexecutable_nameSTAR);
@@ -822,9 +820,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	cl::_sym_STARread_evalSTAR->defparameter(_lisp->_true());
 	_sym_STARenvironmentPrintingTabSTAR->defparameter(Fixnum_O::create(0));
 	_sym_STARenvironmentPrintingTabIncrementSTAR->defparameter(Fixnum_O::create(6));
-	cl::_sym_array_dimension_limit->defconstant(Fixnum_O::create(65535));
-
-
 	SYMBOL_EXPORT_SC_(ClPkg,most_negative_double_float);
 	cl::_sym_most_negative_double_float->defconstant(DoubleFloat_O::create(DBL_MIN));
 	SYMBOL_EXPORT_SC_(ClPkg,most_negative_fixnum);
