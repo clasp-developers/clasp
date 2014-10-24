@@ -1,4 +1,7 @@
 
+computedGoto: computedGoto.cc
+	/usr/bin/clang++ -o computedGoto computedGoto.cc
+
 targv0: targv0.cc
 	clang++ -o targv0 targv0.cc
 
