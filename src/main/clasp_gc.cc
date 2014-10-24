@@ -15432,7 +15432,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(core::_sym_DOT);
  SMART_PTR_FIX(cl::_sym_type_of);
  SMART_PTR_FIX(llvmo::_sym_STARaSTAR);
- SMART_PTR_FIX(cl::_sym_most_negative_short_float);
  SMART_PTR_FIX(core::_sym_sourceLineColumn);
  SMART_PTR_FIX(core::_sym_render);
  SMART_PTR_FIX(cl::_sym_directory);
@@ -15474,7 +15473,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(kw::_sym_none);
  SMART_PTR_FIX(cl::_sym_boolean);
  SMART_PTR_FIX(kw::_sym_downcase);
- SMART_PTR_FIX(cl::_sym_most_negative_double_float);
  SMART_PTR_FIX(cl::_sym_getInternalRealTime);
  SMART_PTR_FIX(cl::_sym_nstring_upcase);
  SMART_PTR_FIX(cl::_sym_AMPaux);
@@ -15751,7 +15749,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(core::_sym_clock_gettime_nanoseconds);
  SMART_PTR_FIX(core::_sym_Pointer_O);
  SMART_PTR_FIX(ext::_sym_AnsiStream_O);
- SMART_PTR_FIX(cl::_sym_most_positive_double_float);
  SMART_PTR_FIX(llvmo::_sym_LinkerPrivateWeakLinkage);
  SMART_PTR_FIX(core::_sym_pathnameTranslations);
  SMART_PTR_FIX(cl::_sym_deleteFile);
@@ -15978,7 +15975,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(core::_sym_structure_print_function);
  SMART_PTR_FIX(cl::_sym_restart);
  SMART_PTR_FIX(ext::_sym_getenv);
- SMART_PTR_FIX(cl::_sym_most_positive_single_float);
  SMART_PTR_FIX(cl::_sym_string_greaterp);
  SMART_PTR_FIX(core::_sym_HashTableEqualp_O);
  SMART_PTR_FIX(llvmo::_sym_ConstantDataArray_O);
@@ -16061,7 +16057,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(core::_sym_FunctionFrame_O);
  SMART_PTR_FIX(cl::_sym__GT_);
  SMART_PTR_FIX(llvmo::_sym_ConstantInt_O);
- SMART_PTR_FIX(cl::_sym_most_negative_long_float);
  SMART_PTR_FIX(core::_sym_sharp_c);
  SMART_PTR_FIX(asttooling::_sym_run);
  SMART_PTR_FIX(core::_sym_slot);
@@ -16266,7 +16261,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(llvmo::_sym_DISubroutineType_O);
  SMART_PTR_FIX(cl::_sym__TIMES_);
  SMART_PTR_FIX(kw::_sym_link);
- SMART_PTR_FIX(cl::_sym_most_negative_single_float);
  SMART_PTR_FIX(core::_sym_environmentId);
  SMART_PTR_FIX(kw::_sym_wild_inferiors);
  SMART_PTR_FIX(llvmo::_sym_PrivateLinkage);
@@ -16339,7 +16333,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(core::_sym_hash_eql);
  SMART_PTR_FIX(cl::_sym_char_NE_);
  SMART_PTR_FIX(kw::_sym_rtld_main_only);
- SMART_PTR_FIX(cl::_sym_least_negative_normalized_long_float);
  SMART_PTR_FIX(cl::_sym_translateLogicalPathname);
  SMART_PTR_FIX(serveEvent::_sym_ll_serveEventNoTimeout);
  SMART_PTR_FIX(cffi::_sym_PERCENTforeign_type_alignment);
@@ -16394,7 +16387,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(llvmo::_sym_DILexicalBlock_O);
  SMART_PTR_FIX(core::_sym_backquote_remove_tokens);
  SMART_PTR_FIX(core::_sym_tooManyArgumentsError);
- SMART_PTR_FIX(cl::_sym_least_positive_normalized_long_float);
  SMART_PTR_FIX(cl::_sym_logorc1);
  SMART_PTR_FIX(core::_sym_STARimplicit_compile_hookSTAR);
  SMART_PTR_FIX(llvmo::_sym_PassManager_O);
@@ -16512,7 +16504,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(core::_sym_STARmonitorRegisterSourceInfoSTAR);
  SMART_PTR_FIX(sockets::_sym_SO_TYPE);
  SMART_PTR_FIX(core::_sym_singleDispatchMissingDispatchArgumentError);
- SMART_PTR_FIX(cl::_sym_most_positive_long_float);
  SMART_PTR_FIX(llvmo::_sym_attributesGet);
  SMART_PTR_FIX(kw::_sym_capitalize);
  SMART_PTR_FIX(cl::_sym_realpart);
@@ -16996,7 +16987,6 @@ void (*OBJ_FINALIZE_table[])(mps_addr_t client) = { NULL
  SMART_PTR_FIX(asttooling::_sym_onEndOfTranslationUnit);
  SMART_PTR_FIX(cl::_sym_readerError);
  SMART_PTR_FIX(llvmo::_sym_UDiv);
- SMART_PTR_FIX(cl::_sym_most_positive_short_float);
  SMART_PTR_FIX(core::_sym_MacroletEnvironment_O);
  SMART_PTR_FIX(llvmo::_sym_DW_TAG_imported_unit);
  SMART_PTR_FIX(core::_sym_STARstartRunTimeSTAR);

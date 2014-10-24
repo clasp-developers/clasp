@@ -1430,17 +1430,20 @@ void exposeCando_Numerics()
     SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedSingleFloat);
     SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedShortFloat);
     SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedDoubleFloat);
-    cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(cl::_sym_leastNegativeSingleFloat->symbolValue());
-    cl::_sym_leastNegativeNormalizedShortFloat->defconstant(cl::_sym_leastNegativeShortFloat->symbolValue());
-    cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(cl::_sym_leastNegativeDoubleFloat->symbolValue());
-
+    // SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedLongFloat);
+    cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
+    // cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
 
     SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedSingleFloat);
     SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedShortFloat);
     SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedDoubleFloat);
-    cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(cl::_sym_leastPositiveSingleFloat->symbolValue());
-    cl::_sym_leastPositiveNormalizedShortFloat->defconstant(cl::_sym_leastPositiveShortFloat->symbolValue());
-    cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(cl::_sym_leastPositiveDoubleFloat->symbolValue());
+    // SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedLongFloat);
+    cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
+    // cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
 
     SYMBOL_EXPORT_SC_(ClPkg,pi);
     cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));

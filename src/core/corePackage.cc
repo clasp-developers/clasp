@@ -820,35 +820,37 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	cl::_sym_STARread_evalSTAR->defparameter(_lisp->_true());
 	_sym_STARenvironmentPrintingTabSTAR->defparameter(Fixnum_O::create(0));
 	_sym_STARenvironmentPrintingTabIncrementSTAR->defparameter(Fixnum_O::create(6));
-	SYMBOL_EXPORT_SC_(ClPkg,most_negative_double_float);
-	cl::_sym_most_negative_double_float->defconstant(DoubleFloat_O::create(DBL_MIN));
 	SYMBOL_EXPORT_SC_(ClPkg,most_negative_fixnum);
 	cl::_sym_most_negative_fixnum->defconstant(Fixnum_O::create(MOST_NEGATIVE_FIXNUM));
-	SYMBOL_EXPORT_SC_(ClPkg,most_negative_long_float);
-	cl::_sym_most_negative_long_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-	SYMBOL_EXPORT_SC_(ClPkg,most_negative_short_float);
-	cl::_sym_most_negative_short_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-	SYMBOL_EXPORT_SC_(ClPkg,most_negative_single_float);
-	cl::_sym_most_negative_single_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-	SYMBOL_EXPORT_SC_(ClPkg,most_positive_double_float);
-	cl::_sym_most_positive_double_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-
-	SYMBOL_EXPORT_SC_(ClPkg,least_negative_normalized_long_float);
-	cl::_sym_least_negative_normalized_long_float->defconstant(DoubleFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-
-	SYMBOL_EXPORT_SC_(ClPkg,least_positive_normalized_long_float);
-	cl::_sym_least_positive_normalized_long_float->defconstant(DoubleFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
-
-
-
 	SYMBOL_EXPORT_SC_(ClPkg,most_positive_fixnum);
 	cl::_sym_most_positive_fixnum->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
-	SYMBOL_EXPORT_SC_(ClPkg,most_positive_long_float);
-	cl::_sym_most_positive_long_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-	SYMBOL_EXPORT_SC_(ClPkg,most_positive_short_float);
-	cl::_sym_most_positive_short_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-	SYMBOL_EXPORT_SC_(ClPkg,most_positive_single_float);
-	cl::_sym_most_positive_single_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+
+
+	// SYMBOL_EXPORT_SC_(ClPkg,most_negative_double_float);
+	// cl::_sym_most_negative_double_float->defconstant(DoubleFloat_O::create(DBL_MIN));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_negative_long_float);
+	// cl::_sym_most_negative_long_float->defconstant(DoubleFloat_O::create(DBL_MIN));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_negative_short_float);
+	// cl::_sym_most_negative_short_float->defconstant(DoubleFloat_O::create(DBL_MIN));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_negative_single_float);
+	// cl::_sym_most_negative_single_float->defconstant(DoubleFloat_O::create(DBL_MIN));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_positive_double_float);
+	// cl::_sym_most_positive_double_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+	// SYMBOL_EXPORT_SC_(ClPkg,least_negative_normalized_long_float);
+	// cl::_sym_least_negative_normalized_long_float->defconstant(DoubleFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
+	// SYMBOL_EXPORT_SC_(ClPkg,least_positive_normalized_long_float);
+	// cl::_sym_least_positive_normalized_long_float->defconstant(DoubleFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
+
+
+
+	// SYMBOL_EXPORT_SC_(ClPkg,most_positive_long_float);
+	// cl::_sym_most_positive_long_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_positive_short_float);
+	// cl::_sym_most_positive_short_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_positive_single_float);
+	// cl::_sym_most_positive_single_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+
+	
 	cl::_sym_STARread_baseSTAR->defparameter(Fixnum_O::create(10));
 	SYMBOL_SC_(CorePkg,cl_fixnum_bits);
 	_sym_cl_fixnum_bits->defconstant(Fixnum_O::create((int)(sizeof(int)/8)));
