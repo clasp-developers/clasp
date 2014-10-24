@@ -197,7 +197,10 @@ extern "C"  {
 
     const char* obj_name( gctools::GCKindEnum kind )
     {
+#ifndef RUNNING_GC_BUILDER
       return (KIND_NAME_MAP_table[kind])();
+#endif
+      return "NONE";
     }
 
 
@@ -226,7 +229,11 @@ extern "C" {
         MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
+#ifndef RUNNING_GC_BUILDER
 	    return (OBJ_SKIP_table[kind])(client);
+#else
+            return NULL;
+#endif
         } else if (header->fwdP()) {
             client = (char*)(client)+header->fwdSize();
         } else if (header->pad1P()) {
@@ -268,7 +275,11 @@ extern "C" {
         stringstream sout;
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
+#ifndef RUNNING_GC_BUILDER
 	    (OBJ_DUMP_MAP_table[kind])(client);
+#else
+            // do nothing
+#endif
         } else if (header->fwdP()) {
             void* forwardPointer = header->fwdPointer();
             sout << "FWD pointer[" << forwardPointer << "] size[" << header->fwdSize() << "]";
@@ -319,7 +330,11 @@ extern "C" {
                 MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
                 if ( header->kindP() ) {
                     GCKindEnum kind = header->kind();
+#ifndef RUNNING_GC_BUILDER
 		    GC_RESULT res = (OBJ_SCAN_table[kind])(ss,client,limit);
+#else
+                    GC_RESULT res = MPS_RES_OK;
+#endif
 		    if ( res != MPS_RES_OK ) return res;
                 } else if (header->fwdP()) {
                     client = (char*)(client)+header->fwdSize();
@@ -353,7 +368,12 @@ extern "C" {
 	      ASSERTF(header->kindP(),BF("obj_finalized called without a valid object"));
 	      gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
 	      DEBUG_MPS_MESSAGE(BF("Finalizing client@%p   kind=%s") % client % header->description() );
+#ifndef RUNNING_GC_BUILDER
 	      (OBJ_FINALIZE_table[kind])(client);
+#else
+              // do nothing
+#endif
+
 	    };
 #undef GC_FINALIZE_METHOD
 
