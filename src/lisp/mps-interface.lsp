@@ -1496,21 +1496,21 @@ so that they don't have to be constantly recalculated"
 (defstruct destination
   stream
   table-name
-  function-list
-  function-declaration
-  function-table-type
-  function-prefix )
+  label-list
+  label-prefix )
 
-(defmacro with-destination ((fout dest enum) &body body)
-  (let ((fn-gs (gensym)))
+(defmacro with-destination ((fout dest enum &optional continue) &body body)
+  (let ((label-gs (gensym)))
     `(let* ((,fout (destination-stream ,dest))
-	    (,fn-gs (format nil "~a_~a" (destination-function-prefix ,dest)
-			    (enum-name ,enum))))
-       (push (cons (enum-value ,enum) ,fn-gs) (destination-function-list ,dest))
-       (format ,fout (destination-function-declaration ,dest) ,fn-gs)
+	    (,label-gs (format nil "~a_~a" (destination-label-prefix ,dest)
+                               (enum-name ,enum))))
+       (push (cons (enum-value ,enum) ,label-gs) (destination-label-list ,dest))
+       (format ,fout "~a:~%" ,label-gs)
        (format ,fout "{~%")
        ,@body
-       (format ,fout "}~%"))))
+       (format ,fout "}~%")
+       ,(if continue `(format ,fout "~a;~%" ,continue))
+       )))
 
 
 (defun scanner-dummy (dest enum anal)
@@ -1519,8 +1519,8 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-destination (fout dest enum)
-		      (format fout "    return MPS_RES_OK;~%")
+    (with-destination (fout dest enum "goto TOP")
+		      (format fout "    // Should never be invoked~%")
 		      )))
 
 
@@ -1530,10 +1530,9 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-destination (fout dest enum)
+    (with-destination (fout dest enum "goto TOP")
 		      ;;    (format fout "Header_s* header = reinterpret_cast<Header_s*>(base);~%")
 		      ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-		      (format fout "  MPS_SCAN_BEGIN(ss) {~%")
 		      (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
 			(when all-instance-variables
 			  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
@@ -1543,8 +1542,6 @@ so that they don't have to be constantly recalculated"
 			  (code-for-instance-var fout +ptr-name+ instance-var)))
 		      (format fout "    typedef ~A type_~A;~%" key enum-name)
 		      (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
-		      (format fout "  } MPS_SCAN_END(ss);~%")
-		      (format fout "    return MPS_RES_OK;~%")
 		      )))
 
 
@@ -1568,9 +1565,7 @@ so that they don't have to be constantly recalculated"
     (with-destination (fout dest enum)
 		      ;;    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 		      (format fout "    typedef ~A type_~A;~%" key enum-name)
-		      (format fout "    stringstream sout;~%")
 		      (format fout "    sout << \"~a size[\" << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) << \"]\" ;~%" enum-name enum-name )
-		      (format fout "    return sout.str();~%")
 		      )))
 
 
@@ -1595,12 +1590,11 @@ so that they don't have to be constantly recalculated"
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-destination (fout dest enum)
+    (with-destination (fout dest enum "goto TOP")
 		      ;;    (format fout "    typedef ~a MyType;~%" key)
 		      ;;    (format fout "    typedef typename gctools::GCHeader<MyType>::HeaderType HeadT;~%")
 		      ;;    (format fout "    HeadT* header = reinterpret_cast<HeadT*>(base);~%")
 		      ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-		      (format fout "  MPS_SCAN_BEGIN(ss) {~%")
 		      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 		      (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
 			(dolist (instance-var all-instance-variables)
@@ -1608,8 +1602,6 @@ so that they don't have to be constantly recalculated"
 		      ;;    (format fout "    base = (char*)base + length;~%")
 		      ;;    (format fout "    typedef ~A type_~A;~%" key enum-name)
 		      (format fout "    client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
-		      (format fout "  } MPS_SCAN_END(ss); ~%")
-		      (format fout "    return MPS_RES_OK;~%")
 		      )))
 
 (defun skipper-for-templated-lispallocs (dest enum anal)
@@ -1632,9 +1624,7 @@ so that they don't have to be constantly recalculated"
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (with-destination (fout dest enum)
 		      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-		      (format fout "    stringstream sout;~%")
 		      (format fout "    sout << \"~a size[\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) << \"]\" ;~%" enum-name +ptr-name+ )
-		      (format fout "    return sout.str();~%")
 		      )))
 
 (defun finalizer-for-templated-lispallocs (dest enum anal)
@@ -1658,9 +1648,8 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum)
+    (with-destination (fout dest enum "goto TOP")
 		      ;;    (format fout "// processing ~a~%" alloc)
-		      (format fout "  MPS_SCAN_BEGIN(ss) {~%")
 		      (if (cxxrecord-ctype-p decl)
 			  (progn
 			    (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
@@ -1689,10 +1678,6 @@ so that they don't have to be constantly recalculated"
 			  (format fout "    typedef typename ~A type_~A;~%" key enum-name)
 			  (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
 			  (format fout "    client = (char*)client + header_and_gccontainer_size;~%" enum-name)))
-		      (format fout "  } MPS_SCAN_END(ss); ~%")
-
-		      (format fout "    return MPS_RES_OK;~%")
-
 		      ;;              (format fout "    base = (char*)base + length;~%")
 		      )))
 
@@ -1736,14 +1721,12 @@ so that they don't have to be constantly recalculated"
 			       (parm0-ctype (gc-template-argument-ctype parm0)))
 			  ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
 			  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-			  (format fout "    stringstream sout;~%")
 			  (format fout "    sout << \"~a\" << \" size/capacity[\" << ~a->size() << \"/\" << ~a->capacity();~%" key +ptr-name+ +ptr-name+)
 			  (format fout "    typedef typename ~A type_~A;~%" key enum-name)
 			  (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
 			  (format fout "    sout << \"bytes[\" << header_and_gccontainer_size << \"]\";~%" )
 			  ))
 		      ;;              (format fout "    base = (char*)base + length;~%")
-		      (format fout "     return sout.str();~%")
 		      )))
 
 
@@ -1813,10 +1796,8 @@ so that they don't have to be constantly recalculated"
 			  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 			  (format fout "    typedef typename ~A type_~A;~%" key enum-name)
 			  (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-			  (format fout "    stringstream sout;~%")
 			  (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcstring_size << \"]\";~%" enum-name )
 			  ))
-		      (format fout "    return sout.str();~%")
 		      )))
 
 
@@ -2456,14 +2437,13 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   )
 |#
 
-(defun generate-function-table (dest)
+(defun generate-label-table (dest)
   (format (destination-stream dest)
-	  "~a = { NULL ~%"
-	  (destination-function-table-type dest)
+	  "static void* ~a_table[] = { NULL ~%"
 	  (destination-table-name dest))
-  (let ((entries (reverse (destination-function-list dest))))
+  (let ((entries (reverse (destination-label-list dest))))
     (dolist (entry entries)
-      (format (destination-stream dest) "  /* ~a */ , ~a~%" (car entry) (cdr entry))))
+      (format (destination-stream dest) "  /* ~a */ , &&~a~%" (car entry) (cdr entry))))
   (format (destination-stream dest) "};~%")
   )
 
@@ -2471,14 +2451,12 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (let ((dest-gs (gensym)))
     `(let ((,dest-gs (make-destination :stream ,stream
 				       :table-name ,table-name
-				       :function-declaration ,function-declaration
-				       :function-prefix ,function-prefix
-				       :function-table-type ,function-table-type)))
+				       :label-prefix ,function-prefix)))
        (format ,stream "#if defined(GC_~a)~%" ,table-name)
        (funcall ,generator ,dest-gs ,analysis)
        (format stream "#endif // defined(GC_~a)~%" ,table-name)
        (format stream "#if defined(GC_~a_TABLE)~%" ,table-name)
-       (generate-function-table ,dest-gs)
+       (generate-label-table ,dest-gs)
        (format stream "#endif // defined(GC_~a_TABLE)~%" ,table-name))))
 
 
