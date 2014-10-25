@@ -366,6 +366,7 @@ namespace gctools {
         size_t generation1Kb = CHAIN_SIZE*4;
         size_t generation1MortalityPercent = 50;
 
+	// Try something like   export CLASP_MPS_CONFIG="32 32 16 80 32 80"   to debug MPS
         parseClaspMpsConfig( arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent );
 
         double nurseryMortalityFraction = nurseryMortalityPercent/100.0;

@@ -10047,7 +10047,7 @@ mps_addr_t (*OBJ_SKIP_table[])(mps_addr_t) = { NULL
 };
 #endif // defined(GC_OBJ_SKIP_TABLE)
 #if defined(GC_OBJ_SCAN)
-GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
     POINTER_FIX(obj_gc_safe->_Roots._ExceptionStack._Stack._Vector._Contents);
@@ -10097,7 +10097,7 @@ GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::RegMap::RegistryMaps* obj_gc_safe = reinterpret_cast<asttooling::RegMap::RegistryMaps*>(client);
     POINTER_FIX(obj_gc_safe->Constructors._Vector._Contents);
@@ -10106,14 +10106,14 @@ GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps(mps_ss_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_core__Creator(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_core__Creator(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Creator* obj_gc_safe = reinterpret_cast<core::Creator*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     clbind::ConstructorCreator* obj_gc_safe = reinterpret_cast<clbind::ConstructorCreator*>(client);
     SMART_PTR_FIX(obj_gc_safe->_mostDerivedClassSymbol);
@@ -10121,7 +10121,7 @@ GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator(mps_ss_t
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__InstanceCreator(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__InstanceCreator(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::InstanceCreator* obj_gc_safe = reinterpret_cast<core::InstanceCreator*>(client);
     SMART_PTR_FIX(obj_gc_safe->_className);
@@ -10130,21 +10130,21 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__InstanceCreator(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_clbind__DummyCreator(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_clbind__DummyCreator(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef clbind::DummyCreator type_KIND_CLASSALLOC_clbind__DummyCreator;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_clbind__DummyCreator)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__SequenceStepper(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__SequenceStepper(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::SequenceStepper type_KIND_CLASSALLOC_core__SequenceStepper;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__SequenceStepper)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__ConsStepper(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__ConsStepper(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ConsStepper* obj_gc_safe = reinterpret_cast<core::ConsStepper*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Cur);
@@ -10153,7 +10153,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__ConsStepper(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__VectorStepper(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__VectorStepper(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::VectorStepper* obj_gc_safe = reinterpret_cast<core::VectorStepper*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Domain);
@@ -10162,7 +10162,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__VectorStepper(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_clbind__detail__class_map(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_clbind__detail__class_map(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     clbind::detail::class_map* obj_gc_safe = reinterpret_cast<clbind::detail::class_map*>(client);
     POINTER_FIX(obj_gc_safe->m_classes._Vector._Contents);
@@ -10171,14 +10171,14 @@ GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_clbind__detail__class_map(mps_ss_t ss, mp
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__T_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__T_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::T_O type_KIND_BOOTSTRAP_core__T_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__T_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Cons_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Cons_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Car);
@@ -10188,14 +10188,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Cons_O(mps_ss_t ss, mps_addr_t& client, 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_cffi__Pointer_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_cffi__Pointer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef cffi::Pointer_O type_KIND_LISPALLOC_cffi__Pointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_cffi__Pointer_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Stream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Stream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10206,7 +10206,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Stream_O(mps_ss_t ss, mps_addr_t& client
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__AnsiStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__AnsiStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10217,7 +10217,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__AnsiStream_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__TwoWayStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__TwoWayStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10230,7 +10230,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__TwoWayStream_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FileStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__FileStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10243,7 +10243,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__FileStream_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__IOFileStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__IOFileStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10256,7 +10256,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__IOFileStream_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__IOStreamStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__IOStreamStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10269,7 +10269,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__IOStreamStream_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BroadcastStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__BroadcastStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10281,7 +10281,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__BroadcastStream_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__StringStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10292,7 +10292,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__StringStream_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringOutputStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__StringOutputStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10304,7 +10304,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__StringOutputStream_O(mps_ss_t ss, mps_ad
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringInputStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__StringInputStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10316,7 +10316,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__StringInputStream_O(mps_ss_t ss, mps_add
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SynonymStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SynonymStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10328,7 +10328,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SynonymStream_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__EchoStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__EchoStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10341,7 +10341,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__EchoStream_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ConcatenatedStream_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ConcatenatedStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
@@ -10353,7 +10353,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ConcatenatedStream_O(mps_ss_t ss, mps_ad
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Pathname_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Pathname_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Host);
@@ -10367,7 +10367,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Pathname_O(mps_ss_t ss, mps_addr_t& clie
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LogicalPathname_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__LogicalPathname_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Host);
@@ -10381,14 +10381,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__LogicalPathname_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Environment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Environment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Environment_O type_KIND_LISPALLOC_core__Environment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Environment_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__GlueEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__GlueEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::GlueEnvironment_O* obj_gc_safe = reinterpret_cast<core::GlueEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Map);
@@ -10398,7 +10398,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__GlueEnvironment_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LexicalEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__LexicalEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::LexicalEnvironment_O* obj_gc_safe = reinterpret_cast<core::LexicalEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10408,7 +10408,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__LexicalEnvironment_O(mps_ss_t ss, mps_ad
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__CompileTimeEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__CompileTimeEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::CompileTimeEnvironment_O* obj_gc_safe = reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10418,7 +10418,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__CompileTimeEnvironment_O(mps_ss_t ss, mp
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__CatchEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__CatchEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::CatchEnvironment_O* obj_gc_safe = reinterpret_cast<core::CatchEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10428,7 +10428,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__CatchEnvironment_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BlockEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__BlockEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::BlockEnvironment_O* obj_gc_safe = reinterpret_cast<core::BlockEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10439,7 +10439,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__BlockEnvironment_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__UnwindProtectEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__UnwindProtectEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::UnwindProtectEnvironment_O* obj_gc_safe = reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10449,7 +10449,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__UnwindProtectEnvironment_O(mps_ss_t ss, 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionContainerEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionContainerEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::FunctionContainerEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10459,7 +10459,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionContainerEnvironment_O(mps_ss_t 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SymbolMacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10470,7 +10470,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O(mps_ss_t ss,
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__MacroletEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__MacroletEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::MacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::MacroletEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10481,7 +10481,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__MacroletEnvironment_O(mps_ss_t ss, mps_a
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::RuntimeVisibleEnvironment_O* obj_gc_safe = reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10492,7 +10492,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O(mps_ss_t ss,
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ValueEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ValueEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::ValueEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10505,7 +10505,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ValueEnvironment_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionValueEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionValueEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::FunctionValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10518,7 +10518,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionValueEnvironment_O(mps_ss_t ss, 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__TagbodyEnvironment_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__TagbodyEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::TagbodyEnvironment_O* obj_gc_safe = reinterpret_cast<core::TagbodyEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
@@ -10532,14 +10532,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__TagbodyEnvironment_O(mps_ss_t ss, mps_ad
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ActivationFrame_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ActivationFrame_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::ActivationFrame_O type_KIND_LISPALLOC_core__ActivationFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ActivationFrame_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__TagbodyFrame_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__TagbodyFrame_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::TagbodyFrame_O* obj_gc_safe = reinterpret_cast<core::TagbodyFrame_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentFrame);
@@ -10548,7 +10548,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__TagbodyFrame_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionFrame_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionFrame_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::FunctionFrame_O* obj_gc_safe = reinterpret_cast<core::FunctionFrame_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentFrame);
@@ -10558,7 +10558,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionFrame_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ValueFrame_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ValueFrame_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ValueFrame_O* obj_gc_safe = reinterpret_cast<core::ValueFrame_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentFrame);
@@ -10569,7 +10569,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ValueFrame_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchMethod_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchMethod_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SingleDispatchMethod_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethod_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_name);
@@ -10583,7 +10583,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchMethod_O(mps_ss_t ss, mps_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SourceFileInfo_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SourceFileInfo_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SourceFileInfo_O* obj_gc_safe = reinterpret_cast<core::SourceFileInfo_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_pathname);
@@ -10592,7 +10592,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SourceFileInfo_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ObjectSet_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ObjectSet_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ObjectSet_O* obj_gc_safe = reinterpret_cast<core::ObjectSet_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Set);
@@ -10601,126 +10601,126 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ObjectSet_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__DirectoryEntry_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__DirectoryEntry_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::DirectoryEntry_O type_KIND_LISPALLOC_core__DirectoryEntry_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__DirectoryEntry_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Pointer_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Pointer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Pointer_O type_KIND_LISPALLOC_core__Pointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Pointer_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Path_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Path_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Path_O type_KIND_LISPALLOC_core__Path_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Path_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DebugInfo_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DebugInfo_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DebugInfo_O type_KIND_LISPALLOC_llvmo__DebugInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DebugInfo_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DICompositeType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DICompositeType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DICompositeType_O type_KIND_LISPALLOC_llvmo__DICompositeType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DICompositeType_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIBasicType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIBasicType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DIBasicType_O type_KIND_LISPALLOC_llvmo__DIBasicType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIBasicType_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DIType_O type_KIND_LISPALLOC_llvmo__DIType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIType_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DISubprogram_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DISubprogram_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DISubprogram_O type_KIND_LISPALLOC_llvmo__DISubprogram_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DISubprogram_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIArray_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DIArray_O type_KIND_LISPALLOC_llvmo__DIArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIArray_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DITypeArray_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DITypeArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DITypeArray_O type_KIND_LISPALLOC_llvmo__DITypeArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DITypeArray_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DISubroutineType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DISubroutineType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DISubroutineType_O type_KIND_LISPALLOC_llvmo__DISubroutineType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DISubroutineType_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIScope_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIScope_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DIScope_O type_KIND_LISPALLOC_llvmo__DIScope_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIScope_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIFile_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIFile_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DIFile_O type_KIND_LISPALLOC_llvmo__DIFile_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIFile_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIDescriptor_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIDescriptor_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DIDescriptor_O type_KIND_LISPALLOC_llvmo__DIDescriptor_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIDescriptor_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DICompileUnit_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DICompileUnit_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DICompileUnit_O type_KIND_LISPALLOC_llvmo__DICompileUnit_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DICompileUnit_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIDerivedType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIDerivedType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DIDerivedType_O type_KIND_LISPALLOC_llvmo__DIDerivedType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIDerivedType_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DILexicalBlock_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DILexicalBlock_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DILexicalBlock_O type_KIND_LISPALLOC_llvmo__DILexicalBlock_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DILexicalBlock_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StructureObject_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__StructureObject_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::StructureObject_O* obj_gc_safe = reinterpret_cast<core::StructureObject_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Type);
@@ -10730,7 +10730,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__StructureObject_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LambdaListHandler_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__LambdaListHandler_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::LambdaListHandler_O* obj_gc_safe = reinterpret_cast<core::LambdaListHandler_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_LambdaList);
@@ -10751,14 +10751,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__LambdaListHandler_O(mps_ss_t ss, mps_add
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_TEMPLATED_LISPALLOC_core__Iterator_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_TEMPLATED_LISPALLOC_core__Iterator_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__DirectoryIterator_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__DirectoryIterator_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::DirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::DirectoryIterator_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Path);
@@ -10767,7 +10767,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__DirectoryIterator_O(mps_ss_t ss, mps_add
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Path);
@@ -10776,21 +10776,21 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O(mps_ss_t ss
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__PosixTimeDuration_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__PosixTimeDuration_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::PosixTimeDuration_O type_KIND_LISPALLOC_core__PosixTimeDuration_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__PosixTimeDuration_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FileStatus_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__FileStatus_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::FileStatus_O type_KIND_LISPALLOC_core__FileStatus_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FileStatus_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_clbind__ClassRegistry_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_clbind__ClassRegistry_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->m_classes);
@@ -10799,7 +10799,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_clbind__ClassRegistry_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Archive_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Archive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Archive_O* obj_gc_safe = reinterpret_cast<core::Archive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
@@ -10808,7 +10808,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Archive_O(mps_ss_t ss, mps_addr_t& clien
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SaveArchive_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SaveArchive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SaveArchive_O* obj_gc_safe = reinterpret_cast<core::SaveArchive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
@@ -10818,7 +10818,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SaveArchive_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SexpSaveArchive_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SexpSaveArchive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SexpSaveArchive_O* obj_gc_safe = reinterpret_cast<core::SexpSaveArchive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
@@ -10828,7 +10828,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SexpSaveArchive_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LoadArchive_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__LoadArchive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::LoadArchive_O* obj_gc_safe = reinterpret_cast<core::LoadArchive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
@@ -10839,7 +10839,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__LoadArchive_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SexpLoadArchive_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SexpLoadArchive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SexpLoadArchive_O* obj_gc_safe = reinterpret_cast<core::SexpLoadArchive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
@@ -10850,56 +10850,56 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SexpLoadArchive_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__RegexMatch_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__RegexMatch_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::RegexMatch_O type_KIND_LISPALLOC_core__RegexMatch_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__RegexMatch_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SourcePosInfo_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SourcePosInfo_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::SourcePosInfo_O type_KIND_LISPALLOC_core__SourcePosInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SourcePosInfo_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Character_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Character_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Character_O type_KIND_LISPALLOC_core__Character_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Character_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ExtendedChar_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ExtendedChar_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::ExtendedChar_O type_KIND_LISPALLOC_core__ExtendedChar_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ExtendedChar_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BaseChar_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__BaseChar_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::BaseChar_O type_KIND_LISPALLOC_core__BaseChar_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BaseChar_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StandardChar_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__StandardChar_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::StandardChar_O type_KIND_LISPALLOC_core__StandardChar_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StandardChar_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__MicroHeap_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__MicroHeap_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::MicroHeap_O type_KIND_LISPALLOC_core__MicroHeap_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__MicroHeap_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Function_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Function_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -10908,7 +10908,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Function_O(mps_ss_t ss, mps_addr_t& clie
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SingleDispatchEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchEffectiveMethodFunction_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -10918,7 +10918,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O(
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SingleDispatchGenericFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunction_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -10927,7 +10927,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O(mps_ss_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__CompiledFunction_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__CompiledFunction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::CompiledFunction_O* obj_gc_safe = reinterpret_cast<core::CompiledFunction_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -10936,7 +10936,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__CompiledFunction_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Instance_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Instance_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -10948,7 +10948,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Instance_O(mps_ss_t ss, mps_addr_t& clie
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SpecialForm_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SpecialForm_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SpecialForm_O* obj_gc_safe = reinterpret_cast<core::SpecialForm_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -10958,7 +10958,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SpecialForm_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakKeyMapping_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakKeyMapping_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::WeakKeyMapping_O* obj_gc_safe = reinterpret_cast<core::WeakKeyMapping_O*>(client);
     POINTER_FIX(obj_gc_safe->_WeakObject.Key);
@@ -10968,21 +10968,21 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakKeyMapping_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DebugLoc_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DebugLoc_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::DebugLoc_O type_KIND_LISPALLOC_llvmo__DebugLoc_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DebugLoc_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Regex_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Regex_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Regex_O type_KIND_LISPALLOC_core__Regex_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Regex_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Package_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Package_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
     POINTER_FIX(obj_gc_safe->_Name._Contents);
@@ -10997,7 +10997,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Package_O(mps_ss_t ss, mps_addr_t& clien
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__CandoException_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__CandoException_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::CandoException_O* obj_gc_safe = reinterpret_cast<core::CandoException_O*>(client);
     POINTER_FIX(obj_gc_safe->_message._Contents);
@@ -11006,70 +11006,70 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__CandoException_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringList_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__StringList_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::StringList_O type_KIND_LISPALLOC_core__StringList_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringList_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__IntArray_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__IntArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::IntArray_O type_KIND_LISPALLOC_core__IntArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__IntArray_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Number_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Number_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Number_O type_KIND_LISPALLOC_core__Number_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Number_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Real_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Real_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Real_O type_KIND_LISPALLOC_core__Real_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Real_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Float_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Float_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Float_O type_KIND_LISPALLOC_core__Float_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Float_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ShortFloat_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ShortFloat_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::ShortFloat_O type_KIND_LISPALLOC_core__ShortFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ShortFloat_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__DoubleFloat_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__DoubleFloat_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::DoubleFloat_O type_KIND_LISPALLOC_core__DoubleFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__DoubleFloat_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleFloat_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleFloat_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::SingleFloat_O type_KIND_LISPALLOC_core__SingleFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleFloat_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Rational_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Rational_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Rational_O type_KIND_LISPALLOC_core__Rational_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Rational_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Ratio_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Ratio_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_numerator);
@@ -11079,28 +11079,28 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Ratio_O(mps_ss_t ss, mps_addr_t& client,
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Integer_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Integer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Integer_O type_KIND_LISPALLOC_core__Integer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Integer_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Bignum_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Bignum_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Bignum_O type_KIND_LISPALLOC_core__Bignum_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Bignum_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Fixnum_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Fixnum_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Fixnum_O type_KIND_LISPALLOC_core__Fixnum_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Fixnum_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Complex_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Complex_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_real);
@@ -11110,14 +11110,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Complex_O(mps_ss_t ss, mps_addr_t& clien
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__PosixTime_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__PosixTime_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::PosixTime_O type_KIND_LISPALLOC_core__PosixTime_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__PosixTime_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ReadTable_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ReadTable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ReadTable_O* obj_gc_safe = reinterpret_cast<core::ReadTable_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Case);
@@ -11127,21 +11127,21 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ReadTable_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Attribute_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Attribute_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::Attribute_O type_KIND_LISPALLOC_llvmo__Attribute_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Attribute_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Array_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Array_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Array_O type_KIND_LISPALLOC_core__Array_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Array_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ArrayObjects_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ArrayObjects_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ArrayObjects_O* obj_gc_safe = reinterpret_cast<core::ArrayObjects_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
@@ -11151,21 +11151,21 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ArrayObjects_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Vector_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Vector_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Vector_O type_KIND_LISPALLOC_core__Vector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Vector_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__String_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__String_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::String_O type_KIND_LISPALLOC_core__String_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__String_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Str_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Str_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Str_O* obj_gc_safe = reinterpret_cast<core::Str_O*>(client);
     POINTER_FIX(obj_gc_safe->_Contents._Contents);
@@ -11174,7 +11174,7 @@ GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Str_O(mps_ss_t ss, mps_addr_t& client, m
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StrWithFillPtr_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__StrWithFillPtr_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::StrWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::StrWithFillPtr_O*>(client);
     POINTER_FIX(obj_gc_safe->_Contents._Contents);
@@ -11183,7 +11183,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__StrWithFillPtr_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__VectorObjects_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__VectorObjects_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::VectorObjects_O* obj_gc_safe = reinterpret_cast<core::VectorObjects_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
@@ -11193,7 +11193,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__VectorObjects_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::VectorObjectsWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::VectorObjectsWithFillPtr_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
@@ -11203,21 +11203,21 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O(mps_ss_t ss, 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BitVector_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__BitVector_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::BitVector_O type_KIND_LISPALLOC_core__BitVector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BitVector_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SimpleBitVector_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SimpleBitVector_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::SimpleBitVector_O type_KIND_LISPALLOC_core__SimpleBitVector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SimpleBitVector_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SmallMap_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SmallMap_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
     POINTER_FIX(obj_gc_safe->map._Contents);
@@ -11226,7 +11226,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SmallMap_O(mps_ss_t ss, mps_addr_t& clie
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Reader_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Reader_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Reader_O* obj_gc_safe = reinterpret_cast<core::Reader_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Input);
@@ -11235,7 +11235,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Reader_O(mps_ss_t ss, mps_addr_t& client
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ObjRef_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ObjRef_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ObjRef_O* obj_gc_safe = reinterpret_cast<core::ObjRef_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_SubRef);
@@ -11244,14 +11244,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ObjRef_O(mps_ss_t ss, mps_addr_t& client
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__InsertPoint_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__InsertPoint_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef llvmo::InsertPoint_O type_KIND_LISPALLOC_llvmo__InsertPoint_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__InsertPoint_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SourceManager_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SourceManager_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SourceManager_O* obj_gc_safe = reinterpret_cast<core::SourceManager_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_SourcePosInfo);
@@ -11260,7 +11260,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SourceManager_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ExternalObject_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ExternalObject_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11269,7 +11269,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ExternalObject_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Pass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Pass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11278,7 +11278,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Pass_O(mps_ss_t ss, mps_addr_t& client,
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionPass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionPass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11287,7 +11287,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionPass_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ModulePass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ModulePass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11296,7 +11296,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ModulePass_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ImmutablePass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ImmutablePass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11305,7 +11305,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ImmutablePass_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DataLayoutPass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DataLayoutPass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::DataLayoutPass_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayoutPass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11314,7 +11314,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DataLayoutPass_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IRBuilderBase_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IRBuilderBase_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11323,7 +11323,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IRBuilderBase_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IRBuilder_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IRBuilder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11332,7 +11332,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IRBuilder_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIBuilder_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIBuilder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11341,7 +11341,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIBuilder_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ExecutionEngine_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ExecutionEngine_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11351,7 +11351,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ExecutionEngine_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__EngineBuilder_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__EngineBuilder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11360,7 +11360,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__EngineBuilder_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__APInt_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__APInt_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11369,7 +11369,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__APInt_O(mps_ss_t ss, mps_addr_t& client
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__APFloat_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__APFloat_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11378,7 +11378,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__APFloat_O(mps_ss_t ss, mps_addr_t& clie
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ForeignData_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ForeignData_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ForeignData_O* obj_gc_safe = reinterpret_cast<core::ForeignData_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11388,7 +11388,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ForeignData_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManagerBuilder_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManagerBuilder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::PassManagerBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11397,7 +11397,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManagerBuilder_O(mps_ss_t ss, mps_a
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManagerBase_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManagerBase_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11406,7 +11406,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManagerBase_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManager_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManager_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11415,7 +11415,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManager_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionPassManager_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionPassManager_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11424,7 +11424,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionPassManager_O(mps_ss_t ss, mps_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DataLayout_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DataLayout_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::DataLayout_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayout_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11433,7 +11433,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DataLayout_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Type_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Type_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11442,7 +11442,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Type_O(mps_ss_t ss, mps_addr_t& client,
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__CompositeType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__CompositeType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::CompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::CompositeType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11451,7 +11451,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__CompositeType_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__SequentialType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__SequentialType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::SequentialType_O* obj_gc_safe = reinterpret_cast<llvmo::SequentialType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11460,7 +11460,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__SequentialType_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PointerType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PointerType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11469,7 +11469,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PointerType_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__VectorType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__VectorType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11478,7 +11478,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__VectorType_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ArrayType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ArrayType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11487,7 +11487,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ArrayType_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__StructType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__StructType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11496,7 +11496,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__StructType_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IntegerType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IntegerType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11505,7 +11505,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IntegerType_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionType_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11514,7 +11514,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionType_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Linker_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Linker_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Linker_O* obj_gc_safe = reinterpret_cast<llvmo::Linker_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11523,7 +11523,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Linker_O(mps_ss_t ss, mps_addr_t& clien
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Value_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Value_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11532,7 +11532,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Value_O(mps_ss_t ss, mps_addr_t& client
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Argument_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Argument_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11541,7 +11541,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Argument_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__MDString_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__MDString_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11550,7 +11550,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__MDString_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__MDNode_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__MDNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11559,7 +11559,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__MDNode_O(mps_ss_t ss, mps_addr_t& clien
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BasicBlock_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BasicBlock_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11568,7 +11568,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BasicBlock_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__User_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__User_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11577,7 +11577,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__User_O(mps_ss_t ss, mps_addr_t& client,
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Instruction_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Instruction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11586,7 +11586,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Instruction_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AtomicRMWInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AtomicRMWInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11595,7 +11595,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AtomicRMWInst_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__StoreInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__StoreInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11604,7 +11604,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__StoreInst_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PHINode_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PHINode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11613,7 +11613,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PHINode_O(mps_ss_t ss, mps_addr_t& clie
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11622,7 +11622,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O(mps_ss_t ss, mps_ad
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LandingPadInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LandingPadInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11631,7 +11631,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LandingPadInst_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UnaryInstruction_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UnaryInstruction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11640,7 +11640,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UnaryInstruction_O(mps_ss_t ss, mps_add
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LoadInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LoadInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11649,7 +11649,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LoadInst_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__VAArgInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__VAArgInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11658,7 +11658,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__VAArgInst_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AllocaInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AllocaInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11667,7 +11667,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AllocaInst_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__TerminatorInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__TerminatorInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::TerminatorInst_O* obj_gc_safe = reinterpret_cast<llvmo::TerminatorInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11676,7 +11676,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__TerminatorInst_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IndirectBrInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IndirectBrInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11685,7 +11685,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IndirectBrInst_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UnreachableInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UnreachableInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11694,7 +11694,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UnreachableInst_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__InvokeInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__InvokeInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11703,7 +11703,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__InvokeInst_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ReturnInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ReturnInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11712,7 +11712,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ReturnInst_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BranchInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BranchInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11721,7 +11721,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BranchInst_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ResumeInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ResumeInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11730,7 +11730,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ResumeInst_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__SwitchInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__SwitchInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11739,7 +11739,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__SwitchInst_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FenceInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FenceInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11748,7 +11748,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FenceInst_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__CallInst_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__CallInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11757,7 +11757,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__CallInst_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Constant_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Constant_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11766,7 +11766,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Constant_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantDataSequential_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantDataSequential_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11775,7 +11775,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantDataSequential_O(mps_ss_t ss, m
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantDataArray_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantDataArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11784,7 +11784,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantDataArray_O(mps_ss_t ss, mps_ad
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantStruct_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantStruct_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11793,7 +11793,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantStruct_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BlockAddress_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BlockAddress_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11802,7 +11802,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BlockAddress_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantPointerNull_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantPointerNull_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11811,7 +11811,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantPointerNull_O(mps_ss_t ss, mps_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantArray_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11820,7 +11820,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantArray_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantFP_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantFP_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11829,7 +11829,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantFP_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__GlobalValue_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__GlobalValue_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11838,7 +11838,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__GlobalValue_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Function_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Function_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11848,7 +11848,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Function_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__GlobalVariable_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__GlobalVariable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11857,7 +11857,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__GlobalVariable_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantExpr_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantExpr_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11866,7 +11866,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantExpr_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UndefValue_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UndefValue_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11875,7 +11875,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UndefValue_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantInt_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantInt_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11884,7 +11884,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantInt_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__TargetMachine_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__TargetMachine_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11893,7 +11893,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__TargetMachine_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11902,7 +11902,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O(mps_ss_t ss, mps_ad
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LLVMContext_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LLVMContext_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::LLVMContext_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMContext_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11911,7 +11911,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LLVMContext_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Module_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Module_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::Module_O* obj_gc_safe = reinterpret_cast<llvmo::Module_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11921,7 +11921,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Module_O(mps_ss_t ss, mps_addr_t& clien
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__NamedMDNode_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__NamedMDNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11930,14 +11930,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__NamedMDNode_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SNode_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::SNode_O type_KIND_LISPALLOC_core__SNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SNode_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BranchSNode_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__BranchSNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::BranchSNode_O* obj_gc_safe = reinterpret_cast<core::BranchSNode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Kind);
@@ -11948,7 +11948,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__BranchSNode_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LeafSNode_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__LeafSNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::LeafSNode_O* obj_gc_safe = reinterpret_cast<core::LeafSNode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Object);
@@ -11957,7 +11957,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__LeafSNode_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LoadTimeValues_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__LoadTimeValues_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
     POINTER_FIX(obj_gc_safe->_Objects._Vector._Contents);
@@ -11967,28 +11967,28 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__LoadTimeValues_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LightUserData_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__LightUserData_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::LightUserData_O type_KIND_LISPALLOC_core__LightUserData_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LightUserData_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__UserData_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__UserData_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::UserData_O type_KIND_LISPALLOC_core__UserData_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__UserData_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakHashTable_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakHashTable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::WeakHashTable_O type_KIND_LISPALLOC_core__WeakHashTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakHashTable_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakKeyHashTable_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakKeyHashTable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
     POINTER_FIX(obj_gc_safe->_HashTable._Keys);
@@ -11998,7 +11998,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakKeyHashTable_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::WrappedPointer_O* obj_gc_safe = reinterpret_cast<core::WrappedPointer_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -12006,28 +12006,28 @@ GC_RESULT obj_scan_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O(mps_ss_t ss, 
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StandardObject_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StandardObject_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::StandardObject_O type_KIND_BOOTSTRAP_core__StandardObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StandardObject_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Metaobject_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Metaobject_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Metaobject_O type_KIND_BOOTSTRAP_core__Metaobject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Metaobject_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Specializer_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Specializer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::Specializer_O type_KIND_BOOTSTRAP_core__Specializer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Specializer_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Class_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Class_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Class_O* obj_gc_safe = reinterpret_cast<core::Class_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
@@ -12038,7 +12038,7 @@ GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Class_O(mps_ss_t ss, mps_addr_t& client,
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ForwardReferencedClass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__ForwardReferencedClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::ForwardReferencedClass_O* obj_gc_safe = reinterpret_cast<core::ForwardReferencedClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
@@ -12050,7 +12050,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__ForwardReferencedClass_O(mps_ss_t ss, mp
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StdClass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StdClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::StdClass_O* obj_gc_safe = reinterpret_cast<core::StdClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
@@ -12061,7 +12061,7 @@ GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StdClass_O(mps_ss_t ss, mps_addr_t& clie
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StandardClass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StandardClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::StandardClass_O* obj_gc_safe = reinterpret_cast<core::StandardClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
@@ -12073,7 +12073,7 @@ GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StandardClass_O(mps_ss_t ss, mps_addr_t&
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FuncallableStandardClass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__FuncallableStandardClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::FuncallableStandardClass_O* obj_gc_safe = reinterpret_cast<core::FuncallableStandardClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
@@ -12085,7 +12085,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__FuncallableStandardClass_O(mps_ss_t ss, 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__BuiltInClass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__BuiltInClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::BuiltInClass_O* obj_gc_safe = reinterpret_cast<core::BuiltInClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
@@ -12096,7 +12096,7 @@ GC_RESULT obj_scan_KIND_BOOTSTRAP_core__BuiltInClass_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_clbind__ClassRep_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_clbind__ClassRep_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
@@ -12108,7 +12108,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_clbind__ClassRep_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StructureClass_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StructureClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::StructureClass_O* obj_gc_safe = reinterpret_cast<core::StructureClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
@@ -12120,7 +12120,7 @@ GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StructureClass_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__AstVisitor_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__AstVisitor_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Target);
@@ -12129,7 +12129,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__AstVisitor_O(mps_ss_t ss, mps_addr
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Symbol_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Symbol_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Symbol_O* obj_gc_safe = reinterpret_cast<core::Symbol_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Name);
@@ -12142,7 +12142,7 @@ GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Symbol_O(mps_ss_t ss, mps_addr_t& client
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Null_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Null_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Null_O* obj_gc_safe = reinterpret_cast<core::Null_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Name);
@@ -12155,14 +12155,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Null_O(mps_ss_t ss, mps_addr_t& client, 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringSet_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__StringSet_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::StringSet_O type_KIND_LISPALLOC_core__StringSet_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringSet_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolToEnumConverter_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolToEnumConverter_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SymbolToEnumConverter_O* obj_gc_safe = reinterpret_cast<core::SymbolToEnumConverter_O*>(client);
     POINTER_FIX(obj_gc_safe->_WhatTheEnumsRepresent._Contents);
@@ -12175,14 +12175,14 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolToEnumConverter_O(mps_ss_t ss, mps
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__MultiStringBuffer_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__MultiStringBuffer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     typedef core::MultiStringBuffer_O type_KIND_LISPALLOC_core__MultiStringBuffer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__MultiStringBuffer_O)) + global_alignup_sizeof_header;
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolList_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolList_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SymbolList_O* obj_gc_safe = reinterpret_cast<core::SymbolList_O*>(client);
     POINTER_FIX(obj_gc_safe->_Contents._Vector._Contents);
@@ -12191,7 +12191,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolList_O(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakPointer_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakPointer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::WeakPointer_O* obj_gc_safe = reinterpret_cast<core::WeakPointer_O*>(client);
     POINTER_FIX(obj_gc_safe->_WeakObject.pointer);
@@ -12200,7 +12200,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakPointer_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTable_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::HashTable_O* obj_gc_safe = reinterpret_cast<core::HashTable_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
@@ -12210,7 +12210,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTable_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEqual_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEqual_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::HashTableEqual_O* obj_gc_safe = reinterpret_cast<core::HashTableEqual_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
@@ -12220,7 +12220,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEqual_O(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEqualp_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEqualp_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::HashTableEqualp_O* obj_gc_safe = reinterpret_cast<core::HashTableEqualp_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
@@ -12230,7 +12230,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEqualp_O(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEql_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEql_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::HashTableEql_O* obj_gc_safe = reinterpret_cast<core::HashTableEql_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
@@ -12240,7 +12240,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEql_O(mps_ss_t ss, mps_addr_t& 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEq_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEq_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::HashTableEq_O* obj_gc_safe = reinterpret_cast<core::HashTableEq_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
@@ -12250,7 +12250,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEq_O(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolSet_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolSet_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SymbolSet_O* obj_gc_safe = reinterpret_cast<core::SymbolSet_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Symbols);
@@ -12259,7 +12259,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolSet_O(mps_ss_t ss, mps_addr_t& cli
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Binder_O(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_core__Binder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Binder_O* obj_gc_safe = reinterpret_cast<core::Binder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Bindings);
@@ -12269,7 +12269,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_core__Binder_O(mps_ss_t ss, mps_addr_t& client
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__Cache(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__Cache(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::Cache* obj_gc_safe = reinterpret_cast<core::Cache*>(client);
     POINTER_FIX(obj_gc_safe->_keys._Vector._Contents);
@@ -12279,7 +12279,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__Cache(mps_ss_t ss, mps_addr_t& client, 
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::DynamicBinding>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::DynamicBinding>*>(client);
     for (gctools::GCVector_moveable<core::DynamicBinding>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12292,7 +12292,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12304,7 +12304,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -12316,7 +12316,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory(mps
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<asttooling::ContextFrame>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ContextFrame>*>(client);
     for (gctools::GCVector_moveable<asttooling::ContextFrame>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12328,7 +12328,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextF
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<asttooling::Message>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::Message>*>(client);
     for (gctools::GCVector_moveable<asttooling::Message>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12340,10 +12340,10 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCSTRING_gctools__GCString_moveable_char_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCSTRING_gctools__GCString_moveable_char_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
     for (gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12356,7 +12356,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__s
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>*>(client);
     for (gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12368,7 +12368,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::ExceptionEntry>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::ExceptionEntry>*>(client);
     for (gctools::GCVector_moveable<core::ExceptionEntry>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12380,7 +12380,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12392,7 +12392,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<asttooling::ErrorContent>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ErrorContent>*>(client);
     for (gctools::GCVector_moveable<asttooling::ErrorContent>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12405,7 +12405,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorCon
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12417,7 +12417,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -12429,7 +12429,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction(mps_ss_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::BuiltinClosure* obj_gc_safe = reinterpret_cast<core::BuiltinClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
@@ -12441,7 +12441,7 @@ GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure(mps_ss_t ss, m
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__InterpretedClosure(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__InterpretedClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::InterpretedClosure* obj_gc_safe = reinterpret_cast<core::InterpretedClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
@@ -12457,7 +12457,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__InterpretedClosure(mps_ss_t ss, mps_add
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_llvmo__CompiledClosure(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_llvmo__CompiledClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     llvmo::CompiledClosure* obj_gc_safe = reinterpret_cast<llvmo::CompiledClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
@@ -12471,7 +12471,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_llvmo__CompiledClosure(mps_ss_t ss, mps_addr_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<asttooling::ParserValue>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ParserValue>*>(client);
     for (gctools::GCVector_moveable<asttooling::ParserValue>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12483,7 +12483,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserVa
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::internal::OverloadedMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::OverloadedMatcherDescriptor*>(client);
     POINTER_FIX(obj_gc_safe->Overloads._Vector._Contents);
@@ -12492,7 +12492,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescri
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableMatchCallback(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableMatchCallback(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::DerivableMatchCallback* obj_gc_safe = reinterpret_cast<asttooling::DerivableMatchCallback*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -12504,7 +12504,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableMatchCallback(mps_ss_t ss
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12516,7 +12516,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12528,7 +12528,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Character_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Character_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Character_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Character_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Character_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12540,7 +12540,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::SequenceStepper *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SequenceStepper *>*>(client);
     for (gctools::GCVector_moveable<core::SequenceStepper *>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12552,7 +12552,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceSteppe
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__CoreExposer(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__CoreExposer(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::CoreExposer* obj_gc_safe = reinterpret_cast<core::CoreExposer*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Package);
@@ -12561,7 +12561,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__CoreExposer(mps_ss_t ss, mps_addr_t& cl
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::SingleDispatchGenericFunctionClosure* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunctionClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
@@ -12575,7 +12575,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure(mp
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::SymbolStorage>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolStorage>*>(client);
     for (gctools::GCVector_moveable<core::SymbolStorage>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12587,7 +12587,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::OptionalArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::OptionalArgument>*>(client);
     for (gctools::GCVector_moveable<core::OptionalArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12601,7 +12601,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgume
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>*>(client);
     for (gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12613,7 +12613,7 @@ GC_RESULT obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_cor
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::DerivableArgumentsAdjuster* obj_gc_safe = reinterpret_cast<asttooling::DerivableArgumentsAdjuster*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -12625,7 +12625,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster(mps_ss_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,3>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,3>*>(client);
     for (gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,3>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12637,7 +12637,7 @@ GC_RESULT obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_cor
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__MacroClosure(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__MacroClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::MacroClosure* obj_gc_safe = reinterpret_cast<core::MacroClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
@@ -12650,7 +12650,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__MacroClosure(mps_ss_t ss, mps_addr_t& c
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
     POINTER_FIX(obj_gc_safe->closure);
@@ -12662,7 +12662,7 @@ GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction(mps_ss_
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::internal::FixedArgCountMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::FixedArgCountMatcherDescriptor*>(client);
     SMART_PTR_FIX(obj_gc_safe->MatcherName);
@@ -12671,7 +12671,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDes
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::internal::FreeFuncMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::FreeFuncMatcherDescriptor*>(client);
     SMART_PTR_FIX(obj_gc_safe->MatcherName);
@@ -12680,7 +12680,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescript
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::AuxArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::AuxArgument>*>(client);
     for (gctools::GCVector_moveable<core::AuxArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12693,7 +12693,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_(m
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::SymbolClassPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolClassPair>*>(client);
     for (gctools::GCVector_moveable<core::SymbolClassPair>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12706,7 +12706,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPai
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::KeywordArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::KeywordArgument>*>(client);
     for (gctools::GCVector_moveable<core::KeywordArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12721,7 +12721,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgumen
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::CacheRecord>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::CacheRecord>*>(client);
     for (gctools::GCVector_moveable<core::CacheRecord>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12734,7 +12734,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_(m
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__InstanceClosure(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_core__InstanceClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     core::InstanceClosure* obj_gc_safe = reinterpret_cast<core::InstanceClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
@@ -12747,7 +12747,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_core__InstanceClosure(mps_ss_t ss, mps_addr_t
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<core::RequiredArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::RequiredArgument>*>(client);
     for (gctools::GCVector_moveable<core::RequiredArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12759,7 +12759,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgume
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12771,7 +12771,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     asttooling::internal::VariadicOperatorMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::VariadicOperatorMatcherDescriptor*>(client);
     SMART_PTR_FIX(obj_gc_safe->MatcherName);
@@ -12780,7 +12780,7 @@ GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcher
   } MPS_SCAN_END(ss);
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12792,7 +12792,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>*>(client);
     for (gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12805,7 +12805,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__
   } MPS_SCAN_END(ss); 
     return MPS_RES_OK;
 }
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O__(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit){
+GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
   MPS_SCAN_BEGIN(ss) {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Str_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Str_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Str_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
@@ -12819,7 +12819,7 @@ GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_c
 }
 #endif // defined(GC_OBJ_SCAN)
 #if defined(GC_OBJ_SCAN_TABLE)
-GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit) = { NULL 
+GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit) = { NULL 
   /* 1 */ , obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O
   /* 2 */ , obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps
   /* 3 */ , obj_scan_KIND_TEMPLATED_CLASSALLOC_core__Creator
