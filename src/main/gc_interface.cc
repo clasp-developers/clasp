@@ -185,20 +185,18 @@ extern "C"  {
     using namespace gctools;
 
 
-#ifndef RUNNING_GC_BUILDER
-#define GC_KIND_NAME_MAP
-#include "main/clasp_gc.cc"
-#undef GC_KIND_NAME_MAP
-#define GC_KIND_NAME_MAP_TABLE
-#include "main/clasp_gc.cc"
-#undef GC_KIND_NAME_MAP_TABLE
-#endif
 
 
     const char* obj_name( gctools::GCKindEnum kind )
     {
 #ifndef RUNNING_GC_BUILDER
-      return (KIND_NAME_MAP_table[kind])();
+#define GC_KIND_NAME_MAP_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_KIND_NAME_MAP_TABLE
+        goto *(KIND_NAME_MAP_table[kind]);
+#define GC_KIND_NAME_MAP
+#include "main/clasp_gc.cc"
+#undef GC_KIND_NAME_MAP
 #endif
       return "NONE";
     }
@@ -213,24 +211,24 @@ extern "C" {
     using namespace gctools;
 
 
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_SKIP
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_SKIP
-#define GC_OBJ_SKIP_TABLE
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_SKIP_TABLE
-#endif
 
     /*! I'm using a format_header so MPS gives me the object-pointer */
     mps_addr_t obj_skip( mps_addr_t client )
     {
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_SKIP_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_SKIP_TABLE
+#endif
         gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
         MPS_LOG(BF("obj_skip client = %p   header=%p  header-desc: %s") % client % header % header->description());
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
-	    return (OBJ_SKIP_table[kind])(client);
+	    goto *(OBJ_SKIP_table[kind]);
+#define GC_OBJ_SKIP
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_SKIP
 #else
             return NULL;
 #endif
@@ -250,20 +248,17 @@ extern "C" {
 
 };
 
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_DUMP_MAP
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_DUMP_MAP
-#define GC_OBJ_DUMP_MAP_TABLE
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_DUMP_MAP_TABLE
-#endif
-
 
 extern "C" {
     /*! I'm using a format_header so MPS gives me the object-pointer */
     void obj_dump_base( mps_addr_t base )
     {
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_DUMP_MAP_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_DUMP_MAP_TABLE
+#endif
+
         mps_bool_t inArena = mps_arena_has_addr(_global_arena,base);
         if ( !inArena ) {
             printf("Address@%p is not in the arena\n", base);
@@ -276,7 +271,10 @@ extern "C" {
         if ( header->kindP() ) {
             gctools::GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
-	    (OBJ_DUMP_MAP_table[kind])(client);
+	    goto *(OBJ_DUMP_MAP_table[kind]);
+#define GC_OBJ_DUMP_MAP
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_DUMP_MAP
 #else
             // do nothing
 #endif
@@ -311,17 +309,14 @@ extern "C" {
 #define SHIELD_SAFE_TELEMETRY(CLIENT,PARGS)
 #endif
 
+    GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit)
+    {
 #ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_SCAN
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_SCAN
 #define GC_OBJ_SCAN_TABLE
 #include "main/clasp_gc.cc"
 #undef GC_OBJ_SCAN_TABLE
 #endif
 
-    GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit)
-    {
         DEBUG_MPS_MESSAGE(BF("obj_scan started - Incoming client %p   limit: %p") % client % limit );
         MPS_SCAN_BEGIN(GC_SCAN_STATE) {
             while (client<limit)
@@ -331,11 +326,11 @@ extern "C" {
                 if ( header->kindP() ) {
                     GCKindEnum kind = header->kind();
 #ifndef RUNNING_GC_BUILDER
-		    GC_RESULT res = (OBJ_SCAN_table[kind])(ss,client,limit);
-#else
-                    GC_RESULT res = MPS_RES_OK;
+		    goto *(OBJ_SCAN_table[kind]);
+#define GC_OBJ_SCAN
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_SCAN
 #endif
-		    if ( res != MPS_RES_OK ) return res;
                 } else if (header->fwdP()) {
                     client = (char*)(client)+header->fwdSize();
                 } else if (header->pad1P()) {
@@ -345,31 +340,33 @@ extern "C" {
                 } else {
                     THROW_HARD_ERROR(BF("Illegal header at %p") % header );
                 }
+            TOP:
+                continue;
             }
         } MPS_SCAN_END(GC_SCAN_STATE);
         return MPS_RES_OK;
     }
-
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_FINALIZE
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_FINALIZE
-#define GC_OBJ_FINALIZE_TABLE
-#include "main/clasp_gc.cc"
-#undef GC_OBJ_FINALIZE_TABLE
-#endif
 
 
             /*! I'm using a format_header so MPS gives me the object-pointer */
 #define GC_FINALIZE_METHOD
             void obj_finalize( mps_addr_t client )
             {
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_FINALIZE_TABLE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_FINALIZE_TABLE
+#endif
+
 	      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
 	      ASSERTF(header->kindP(),BF("obj_finalized called without a valid object"));
 	      gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
 	      DEBUG_MPS_MESSAGE(BF("Finalizing client@%p   kind=%s") % client % header->description() );
 #ifndef RUNNING_GC_BUILDER
-	      (OBJ_FINALIZE_table[kind])(client);
+	      goto *(OBJ_FINALIZE_table[kind]);
+#define GC_OBJ_FINALIZE
+#include "main/clasp_gc.cc"
+#undef GC_OBJ_FINALIZE
 #else
               // do nothing
 #endif
