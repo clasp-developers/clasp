@@ -78,6 +78,14 @@
           isqrt phase signum cis asin acos asinh acosh
           atanh ffloor fceiling ftruncate fround logtest
           byte byte-size byte-position ldb ldb-test mask-field dpb deposit-field
+
+          list-length pairlis ed copy-alist
+          tree-equal get-properties short-site-name long-site-name
+          digit-char
+
+          array-in-bounds-p bit-and bit-ior bit-xor bit-eqv
+          bit-nand bit-nor bit-andc1 bit-andc2 bit-orc1 bit-orc2
+          bit-not vector-pop
 	  ))
 
 (defparameter * nil)

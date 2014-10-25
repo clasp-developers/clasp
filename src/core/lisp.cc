@@ -73,6 +73,7 @@ THE SOFTWARE.
 #include "extensionPackage.h"
 #include "binder.h"
 #include "numbers.h"
+#include "bits.h"
 #include "load.h"
 #include "bignum.h"
 //#i n c l u d e "setfExpander.h"
@@ -228,7 +229,7 @@ namespace core
 		       _Interactive(true),
 		       _EmbeddedInPython(false),
 		       _BootClassTableIsValid(true),
-		       _PathMax(MAXPATHLEN)
+		       _PathMax(CLASP_MAXPATHLEN)
     {
 	this->_Roots._Bindings.reserve(1024);
 	this->_GlobalInitializationCallbacks.clear();
@@ -500,6 +501,7 @@ namespace core
 #endif
         initialize_sequence();
         initialize_list();
+        initialize_bits();
 	    initialize_predicates();
 	    initialize_bformat(_lisp);
 	    initialize_sysprop();

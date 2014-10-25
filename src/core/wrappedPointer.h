@@ -42,7 +42,7 @@ namespace core {
         FRIEND_GC_SCANNER();
         LISP_BASE1(core::T_O);
 	LISP_CLASS(core,CorePkg,WrappedPointer_O,"WrappedPointer");
-    protected:
+    GCPROTECTED:
         core::Class_sp _Class;
     public:
         virtual core::Class_sp _instanceClass() const { return this->_Class;};

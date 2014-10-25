@@ -1,5 +1,6 @@
 include local.config
 
+
 export GIT_COMMIT := $(shell cat 'minor-version-id.txt')
 
 
@@ -8,7 +9,7 @@ export BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v
 export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
 export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
 
-export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]> ')
+export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
 ifeq ($(TARGET_OS),linux)
   export DEVEMACS = emacs -nw ./
@@ -47,11 +48,24 @@ ifeq ($(WHAT),)
 endif
 
 all:
+	@echo Dumping local.config
+	cat local.config
 	git submodule update --init  # ensure that the src/mps submodule is updated
 	make boostbuildv2-build
 	make clasp-boehm
 	make clasp-mps
 	make compile-commands
+
+only-boehm:
+	git submodule update --init  # ensure that the src/mps submodule is updated
+	make boostbuildv2-build
+	make clasp-boehm
+
+boehm-build-mps-interface:
+	git submodule update --init  # ensure that the src/mps submodule is updated
+	make boostbuildv2-build
+	make clasp-boehm
+	(cd src/main; make mps-interface)
 
 
 #

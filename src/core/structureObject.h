@@ -62,7 +62,7 @@ namespace core {
 #endif
 	void	archiveBase(ArchiveP node);
 	void	initialize();
-    private:
+    GCPRIVATE:
 	T_sp 		_Type;
         gctools::Vec0<T_sp>	_Slots;
     public:

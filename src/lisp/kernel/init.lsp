@@ -172,7 +172,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export '(+image-pathname+ +intrinsics-bitcode-pathname+))
 ;; +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
 
-
+;; Don't bother with this test anymore
+#+(or)
 (let ((image-date (file-write-date core:*command-line-image*))
       (intrinsics-date (file-write-date +intrinsics-bitcode-pathname+)))
   (if image-date
@@ -186,18 +187,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                 (bformat t "!  Solution: Recompile the Common Lisp code\n")
                 (bformat t "!\n")
                 ))
-          (progn
-            (bformat t "!\n")
-            (bformat t "! WARNING:   Could not determine file-write-date of %s\n" +intrinsics-bitcode-pathname+)
-            (bformat t "!\n")
-            )
-          )
-      (progn
-        (bformat t "!\n")
-        (bformat t "WARNING:   Could not determine file-write-date of %s\n" *command-line-image*)
-        (bformat t "!\n")
-        )
-      ))
+	(progn
+	  (bformat t "!\n")
+	  (bformat t "! WARNING:   Could not determine file-write-date of %s\n" +intrinsics-bitcode-pathname+)
+	  (bformat t "!\n")
+	  )
+	)
+    (progn
+      (bformat t "!\n")
+      (bformat t "WARNING:   Could not determine file-write-date of %s\n" *command-line-image*)
+      (bformat t "!\n")
+      )
+    ))
 
 
 
@@ -575,6 +576,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/profiling    ;; Do micro-profiling of the GC
     lsp/logging
     lsp/makearray
+    lsp/arraylib
     lsp/setf
     lsp/listlib
     lsp/mislib
@@ -592,6 +594,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     :pre-cmp
     ;; Compiler code
     cmp/cmpsetup
+    cmp/cmpenv-fun
     cmp/cmpenv-proclaim
     cmp/cmpglobals
     cmp/cmptables
@@ -618,6 +621,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/describe
     lsp/module
     lsp/loop2
+    lsp/assorted
     lsp/packlib
 ;;    cmp/cmpinterpreted
     lsp/defpackage
@@ -831,13 +835,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                            :lisp-bitcode-files bitcode-files
                            :prologue-form '(progn
-                                            (bformat t "Starting Clasp 0.1... loading image... it takes a few seconds\n"))
-                           :epilogue-form '(progn
-                                            (cl:in-package :cl-user)
-                                            (require 'system)
-                                            (load-clasprc)
-                                            (process-command-line-load-eval-sequence)
-                                            (when (member :interactive *features*) (core:top-level)))))))
+					     (if (member :interactive *features*) (bformat t "Starting Clasp 0.11 ... loading image... it takes a few seconds\n")))
+			   :epilogue-form '(progn
+					     (cl:in-package :cl-user)
+					     (require 'system)
+					     (load-clasprc)
+					     (process-command-line-load-eval-sequence)
+					     (when (member :interactive *features*) (core:top-level)))))))
 
 
 (defun compile-clos () ;; &key (target-backend (default-target-backend)))
@@ -913,8 +917,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 			       :type "clasprc"
 			       :defaults (user-homedir-pathname))))
     (if (probe-file clasprc)
-	(load clasprc)
-	(format t "Could not find pathname: ~a~%" clasprc))))
+	(load clasprc))))
 
 
 (defun load-pos ()

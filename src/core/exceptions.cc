@@ -151,6 +151,7 @@ namespace core {
 	printf("%s\n", _rep_(baseCondition).c_str() );
 	af_format(_lisp->_true(), formatControl, formatArgs.as<Cons_O>() );
 	dbg_hook("af_signalSimpleError");
+	af_invokeInternalDebugger(_Nil<core::T_O>());
 	printf("%s:%d  Continuing...\n",__FILE__,__LINE__);
 	return _Nil<T_O>();
     };

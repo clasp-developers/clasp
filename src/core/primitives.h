@@ -93,7 +93,7 @@ namespace core
     class VectorStepper : public SequenceStepper
     {
         FRIEND_GC_SCANNER();
-    private:
+    GCPRIVATE:
 	Vector_sp	_Domain;
 	int		_Index;
     public:
@@ -118,7 +118,7 @@ namespace core
     class ConsStepper : public SequenceStepper
     {
         FRIEND_GC_SCANNER();
-    private:
+    public://private
 	Cons_sp	_Cur;
     public:
 	ConsStepper(Cons_sp first) : _Cur(first) {};

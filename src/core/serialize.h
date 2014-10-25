@@ -488,7 +488,7 @@ namespace core
     {
 	LISP_BASE1(SNode_O);
 	LISP_VIRTUAL_CLASS(core,CorePkg,LeafSNode_O,"LeafSNode");
-    protected:
+    GCPROTECTED:
 	T_sp 	_Object;
     public:
 	static LeafSNode_sp create(T_sp kind);
@@ -519,7 +519,7 @@ namespace core
 	friend class LoadArchive_O;
 	friend class SNode_O;
 	friend class SexpSaveArchive_O;
-    private:
+    GCPRIVATE:
 	Symbol_sp 			_Kind;
 	/*! PLIST of keyword symbols to SNode_sp */
 	Cons_sp 			_SNodePList;
@@ -578,7 +578,7 @@ namespace core
     {
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,Archive_O,"Archive");
-    protected:
+    GCPROTECTED:
 	int		_Version;
 	BranchSNode_sp	_TopNode;
 	int		_NextUniqueId;
@@ -615,7 +615,7 @@ namespace core
         void initialize();
     public:
 	void addNodeToFinalize(SNode_sp node);
-    private:
+    GCPRIVATE:
 	HashTable_sp 		_ObjectForSNode;
 	HashTable_sp            _NodesToFinalize; // UnorderedSet<SNode_O> _NodesToFinalize;
     public:
@@ -655,7 +655,7 @@ namespace core {
 	LISP_CLASS(core,CorePkg,SaveArchive_O,"SaveArchive");
     public:
         void initialize();
-    private:
+    GCPRIVATE:
 	HashTable_sp 		_SNodeForObject;
     public:
 	/*! Return the SNode for the object */

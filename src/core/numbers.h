@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -54,7 +54,7 @@ THE SOFTWARE.
 #define BRCL_PI2_L 1.57079632679489661923132169163975144l
 
 
-namespace core 
+namespace core
 {
 
 
@@ -309,7 +309,7 @@ namespace core {
 
 	virtual bool evenp() const { return !(this->_Value&1); };
 	virtual bool oddp() const { return (this->_Value&1);};
-    
+
 	virtual	bool	eqn(T_sp obj) const;
 	virtual	bool	eql(T_sp obj) const;
 
@@ -438,7 +438,7 @@ namespace core {
 	virtual LongFloat as_long_float() const;
 
 	Integer_sp castToInteger() const;
-    
+
 	DEFAULT_CTOR_DTOR(ShortFloat_O);
     };
 
@@ -514,7 +514,7 @@ namespace core {
 	virtual LongFloat as_long_float() const;
 
 	Integer_sp castToInteger() const;
-    
+
 	DEFAULT_CTOR_DTOR(SingleFloat_O);
     };
 
@@ -580,7 +580,7 @@ namespace core {
 	virtual Number_sp log1() const;
 	virtual Number_sp log1p() const;
 
-    
+
 	virtual float as_float() const;
 	virtual double as_double() const;
 	virtual LongFloat as_long_float() const;
@@ -684,7 +684,7 @@ namespace core {
 	virtual Number_sp cosh() const;
 	virtual Number_sp tanh() const;
 #endif
-    
+
 	DEFAULT_CTOR_DTOR(LongFloat_O);
     };
 };
@@ -704,7 +704,7 @@ namespace core {
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    private:
+    GCPRIVATE:
 	Real_sp	_real;
 	Real_sp	_imaginary;
     public:
@@ -793,7 +793,7 @@ namespace core {
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    private:
+    GCPRIVATE:
 	Integer_sp 	_numerator;
 	Integer_sp 	_denominator;
     public:
@@ -853,7 +853,7 @@ namespace core {
 	virtual float as_float() const;
 	virtual double as_double() const;
 	virtual LongFloat as_long_float() const;
-    
+
 	// functions shared by all Real
 
 	bool plusp() const {
@@ -863,7 +863,7 @@ namespace core {
     bool minusp() const {
 	return this->_numerator->minusp();
     }
-    
+
 	DEFAULT_CTOR_DTOR(Ratio_O);
     };
 
@@ -896,7 +896,7 @@ namespace core {
     {
 	return x->log1p();
     };
-       
+
 
     inline bool brcl_zerop(Number_sp n)
     {
@@ -944,7 +944,7 @@ namespace core {
 
 
 
-    inline int brcl_integer_length(Integer_sp x)
+    inline int clasp_integer_length(Integer_sp x)
     {
 	return x->bit_length();
     }

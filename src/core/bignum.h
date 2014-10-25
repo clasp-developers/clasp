@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -51,7 +51,7 @@ namespace core
     };
 
 
-        
+
     class Bignum_O : public Integer_O
     {
 	LISP_BASE1(Integer_O);
@@ -65,10 +65,10 @@ namespace core
 //    virtual ~Bignum_O() {};
     public:
 //	void initialize();
-	
+
     private: // instance variables here
 	Bignum 	_value;
-	
+
     public: // Functions here
 	static Bignum_sp make(const string& value_in_string);
 	static Bignum_sp create(int i)
@@ -99,6 +99,7 @@ namespace core
 	virtual Number_sp copy() const;
 	string description() const { stringstream ss; ss << this->_value;return ss.str();};
 	void set(int val) { this->_value = val; };
+	void setFixnum(cl_fixnum val) { this->_value = val; };
 	Bignum get() const;
 	Bignum get_or_if_nil_default(Bignum default_value) const;
 	Number_sp abs() const;
@@ -131,7 +132,7 @@ namespace core
     public:
 	virtual	string	valueAsString() const { stringstream ss; ss<<this->_value;return ss.str();};
 	virtual	void	setFromString( const string& strVal );
-	
+
 	virtual int as_int() const;
 	virtual uint64_t as_uint64() const;
 	string as_uint64_string() const;
@@ -145,13 +146,13 @@ namespace core
 
 	virtual bool evenp() const { return (mpz_get_ui(this->_value.get_mpz_t())&1)==0;};
 	virtual bool oddp() const { return (mpz_get_ui(this->_value.get_mpz_t())&1)!=0;};
-    
+
 
 
 	Number_sp log1() const;
 
     }; // Bignum class
-    
+
 }; // core namespace
 TRANSLATE(core::Bignum_O);
 
@@ -190,7 +191,7 @@ namespace core
     Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b);
     Integer_mv big_floor(Bignum_sp a, Bignum_sp b);
 
-    inline Integer_sp _brcl_big_register_normalize(Bignum_sp x) {
+    inline Integer_sp _clasp_big_register_normalize(Bignum_sp x) {
 	return Integer_O::create(x->get());
     }
 
@@ -211,6 +212,7 @@ namespace core
 	return a->as_double();
     }
 
+    void clasp_big_register_free(Bignum_sp x);
 
     Integer_sp _brcl_fix_divided_by_big(const Fixnum& x, const Bignum& y);
     Integer_sp _brcl_big_divided_by_fix(const Bignum& x, const Fixnum& y);

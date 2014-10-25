@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -793,7 +793,7 @@ namespace core
         Vector_sp vec = data.as<Vector_O>();
         T_sp elementType = vec->elementType();
         if ( elementType == cl::_sym_BaseChar_O && af_characterP(vec->elt(0))) {
-            claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;			
+            claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
             for (; start < end; start++) {
                 write_char(strm, clasp_charCode(vec->elt(start)));
             }
@@ -802,7 +802,7 @@ namespace core
         }
 
 
-            
+
 #if 0 // Currently we don't support
         cl_elttype elttype = clasp_array_elttype(data);
 	if (elttype == clasp_aet_bc ||
@@ -810,7 +810,7 @@ namespace core
 	    elttype == clasp_aet_ch ||
 #endif
 	    (elttype == clasp_aet_object && CLASPCHARACTERP(clasp_elt(data, 0)))) {
-            claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;			
+            claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
             for (; start < end; start++) {
                 write_char(strm, clasp_char_code(clasp_elt(data, start)));
             }
@@ -833,7 +833,7 @@ namespace core
         const FileOps& ops = stream_dispatch_table(strm);
 	T_sp expected_type = clasp_stream_element_type(strm);
 	if (expected_type == cl::_sym_BaseChar_O || expected_type == cl::_sym_Character_O) {
-            claspCharacter (*read_char)(T_sp) = ops.read_char;			
+            claspCharacter (*read_char)(T_sp) = ops.read_char;
             for (; start < end; start++) {
                 cl_fixnum c = read_char(strm);
                 if (c == EOF) break;
@@ -1779,8 +1779,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_core_make_string_output_stream_from_string "(s)"
 #define DECL_core_make_string_output_stream_from_string ""
 #define DOCS_core_make_string_output_stream_from_string "make_string_output_stream_from_string"
@@ -1827,8 +1827,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_makeStringOutputStream "(&key (element-type 'character))"
 #define DECL_cl_makeStringOutputStream ""
 #define DOCS_cl_makeStringOutputStream "makeStringOutputStream"
@@ -1856,8 +1856,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_get_output_stream_string "(strm)"
 #define DECL_cl_get_output_stream_string ""
 #define DOCS_cl_get_output_stream_string "get_output_stream_string"
@@ -2018,8 +2018,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_make_string_input_stream "(strng &optional (istart 0) iend)"
 #define DECL_cl_make_string_input_stream ""
 #define DOCS_cl_make_string_input_stream "make_string_input_stream"
@@ -2378,8 +2378,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_makeBroadcastStream "(&rest ap)"
 #define DECL_cl_makeBroadcastStream ""
 #define DOCS_cl_makeBroadcastStream "makeBroadcastStream"
@@ -2708,8 +2708,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_makeConcatenatedStream "(&rest ap)"
 #define DECL_cl_makeConcatenatedStream ""
 #define DOCS_cl_makeConcatenatedStream "makeConcatenatedStream"
@@ -3420,7 +3420,7 @@ namespace core
 #ifdef ECL_UNICODE
     PARSE_SYMBOLS:
 	if (format == @':utf-8') {
-            return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8; 
+            return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8;
 	}
 	if (format == @':ucs-2') {
             return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2;
@@ -3447,7 +3447,7 @@ namespace core
             return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_LATIN_1;
 	}
 	if (format == @':us-ascii') {
-            return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_US_ASCII; 
+            return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_US_ASCII;
 	}
 	if (ECL_HASH_TABLE_P(format)) {
             stream->stream.format_table = format;
@@ -4015,7 +4015,7 @@ namespace core
     };
 
 /**********************************************************************
- * WINSOCK STREAMS  
+ * WINSOCK STREAMS
  */
 
 #if defined(ECL_WSOCK)
@@ -4063,7 +4063,7 @@ namespace core
                     wsock_error("Cannot write bytes to Windows"
                                 " socket ~S.~%~A", strm);
                     break; /* stop writing */
-                } else {			
+                } else {
                     out += res;
                     n -= res;
                 }
@@ -4074,7 +4074,7 @@ namespace core
     }
 
     static int
-    winsock_stream_listen(T_sp strm) 
+    winsock_stream_listen(T_sp strm)
     {
 	SOCKET s;
 	unlikely_if (StreamByteStack(strm).notnilp() ) { // != _Nil<T_O>()) {
@@ -4088,7 +4088,7 @@ namespace core
             struct timeval tv = { 0, 0 };
             fd_set fds;
             cl_index result;
-			
+
             FD_ZERO( &fds );
             FD_SET(s, &fds);
             clasp_disable_interrupts();
@@ -4097,8 +4097,8 @@ namespace core
                 wsock_error("Cannot listen on Windows "
                             "socket ~S.~%~A", strm );
             clasp_enable_interrupts();
-            return ( result > 0 
-                     ? CLASP_LISTEN_AVAILABLE 
+            return ( result > 0
+                     ? CLASP_LISTEN_AVAILABLE
                      : CLASP_LISTEN_NO_CHAR );
 	}
     }
@@ -4281,7 +4281,7 @@ namespace core
     }
 
     static int
-    wcon_stream_listen(T_sp strm) 
+    wcon_stream_listen(T_sp strm)
     {
 	HANDLE h = (HANDLE)IOFileStreamDescriptor(strm);
 	INPUT_RECORD aux;
@@ -5265,8 +5265,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_file_length "(strm)"
 #define DECL_cl_file_length ""
 #define DOCS_cl_file_length "file_length"
@@ -5277,8 +5277,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_filePosition "(file-stream &optional position)"
 #define DECL_cl_filePosition ""
 #define DOCS_cl_filePosition "filePosition"
@@ -5300,8 +5300,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_input_stream_p "(strm)"
 #define DECL_cl_input_stream_p ""
 #define DOCS_cl_input_stream_p "input_stream_p"
@@ -5313,8 +5313,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_output_stream_p "(arg)"
 #define DECL_cl_output_stream_p ""
 #define DOCS_cl_output_stream_p "output_stream_p"
@@ -5375,8 +5375,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_streamp "(arg)"
 #define DECL_cl_streamp ""
 #define DOCS_cl_streamp "streamp"
@@ -5567,14 +5567,14 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_open "(filename &key (direction :input) (element-type 'character) (if-exists nil iesp) (if-does-not-exist nil idnesp) (external-format :default) (cstream T))"
 #define DECL_cl_open ""
 #define DOCS_cl_open "open"
     T_sp cl_open(T_sp filename,
                  T_sp direction,
-                 T_sp element_type, 
+                 T_sp element_type,
                  T_sp if_exists, bool iesp,
                  T_sp if_does_not_exist, bool idnesp,
                  T_sp external_format,
@@ -5635,8 +5635,8 @@ namespace core
 
 
 
-    
-    
+
+
 #define ARGS_cl_close "(strm &key abort)"
 #define DECL_cl_close ""
 #define DOCS_cl_close "close"
@@ -6109,7 +6109,7 @@ namespace core
         ECL_SET(@'ext::+process-error-output+', error_output);
 	ECL_SET(@'*error-output*', error_output);
 THIS NEEDS TO BE TAKEN OUT
-	cl_core.terminal_io = aux 
+	cl_core.terminal_io = aux
             = cl_make_two_way_stream(standard_input, standard_output);
 
 	ECL_SET(@'*terminal-io*', aux);
@@ -6125,7 +6125,7 @@ THIS NEEDS TO BE TAKEN OUT
 
 
 
-    
+
 
 
 #define ARGS_af_streamLinenumber "(stream)"
@@ -6135,7 +6135,7 @@ THIS NEEDS TO BE TAKEN OUT
     {
         return clasp_input_lineno(tstream);
     };
- 
+
 #define ARGS_af_streamColumn "(stream)"
 #define DECL_af_streamColumn ""
 #define DOCS_af_streamColumn "streamColumn"
@@ -6258,8 +6258,8 @@ namespace core {
         return _Nil<T_O>();
     };
 
-    
-    
+
+
     int Stream_O::lineno() const {
         return 0;
     };
@@ -6273,7 +6273,7 @@ namespace core {
         T_sp strm = SynonymStreamStream(this->asSmartPtr());
         return clasp_filename(strm);
     };
-    
+
 };
 
 
@@ -6487,7 +6487,7 @@ namespace core {
         FileStreamEltType(stream) = elementType;
         return stream;
     }
-        
+
 
 
 
@@ -6599,14 +6599,14 @@ namespace core {
 	    {
 		return(Values(eof_value,_lisp->_true()));
 	    }
-	}	
+	}
 	return(Values(res,clasp_file_position(sin)));
     }
 
 
 
 #define ARGS_cl_read_line "(&optional (input-stream ext:+process-standard-input+) (eof-error-p t) eof-value recursive-p)"
-#define DECL_cl_read_line ""    
+#define DECL_cl_read_line ""
 #define	DOCS_cl_read_line "See clhs"
     T_mv cl_read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
@@ -6667,7 +6667,7 @@ namespace core {
   bool clasp_freshLine(T_sp s)
     {
         s = coerce::outputStreamDesignator(s);
-	if ( !AnsiStreamP(s) ) 
+	if ( !AnsiStreamP(s) )
 	{
             return eval::funcall(gray::_sym_stream_fresh_line,s).isTrue();
 	}
@@ -6677,7 +6677,7 @@ namespace core {
             return true;
 	}
         return false;
-    }        
+    }
 
 #define ARGS_cl_freshLine "(&optional (outputStream ext:+process-standard-output+))"
 #define DECL_cl_freshLine ""
@@ -6709,8 +6709,8 @@ namespace core {
 
 
 
-    
-    
+
+
 
 #define ARGS_cl_writeString "(string &optional (output-stream ext:+process-standard-output+) &key (start 0) end)"
 #define DECL_cl_writeString ""
@@ -6794,8 +6794,8 @@ namespace core {
 
 
 
-    
-    
+
+
 #define ARGS_cl_force_output "(&optional (strm ext:+process-standard-output+))"
 #define DECL_cl_force_output ""
 #define DOCS_cl_force_output "force_output"
@@ -6838,7 +6838,7 @@ namespace core {
 	strm = coerce::outputStreamDesignator(strm);
         return Fixnum_O::create(clasp_file_column(strm));
     };
-    
+
 
     /*! Translated from ecl::si_do_write_sequence */
 #define ARGS_cl_writeSequence "(seq stream &key (start 0) end)"
@@ -6985,6 +6985,7 @@ void initialize_lispStream()
         ClDefun(make_string_input_stream);
         ClDefun(file_length);
         ClDefun(makeBroadcastStream);
+        ClDefun(makeConcatenatedStream);
     }
 
 

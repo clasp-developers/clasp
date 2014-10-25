@@ -64,7 +64,7 @@ namespace core
 	friend T_mv af_maphash(T_sp function_desig, HashTable_sp hash_table);
 	friend T_mv af_clrhash(HashTable_sp hash_table );
 
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
 	uint		_InitialSize;
 	Number_sp	_RehashSize;
 	double		_RehashThreshold;

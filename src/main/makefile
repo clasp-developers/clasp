@@ -71,7 +71,7 @@ clasp-gc-interface:
 compile-commands:
 	-bjam bundle release mps-prep -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+	python ../common/buildJSON.py clang bjam.out `clasp_boehm_o -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
 
 
 run-clang-check:
@@ -82,7 +82,8 @@ run-clasp:
 
 
 mps-interface:
+	make compile-commands
 	@echo Building mps-prep
-	bjam -j$PJOBS bundle release mps-prep
+	bjam -j$(PJOBS) bundle release mps-prep
 	@echo Running parallel search and generating code when done
 	clasp_boehm_o -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"

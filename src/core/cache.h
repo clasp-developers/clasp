@@ -53,6 +53,7 @@ namespace core
     class Cache
     {
         FRIEND_GC_SCANNER();
+    GCPRIVATE:
 	gctools::Vec0<T_sp> 	        _keys;
         gctools::Vec0<CacheRecord>	_table;
 	int				_generation;

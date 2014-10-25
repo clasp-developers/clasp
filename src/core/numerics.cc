@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 
 #define	DEBUG_LEVEL_NONE
+#include <float.h>
+#include <math.h>
 
 #include "lisp.h"
 #include "numerics.h"
@@ -37,6 +39,7 @@ THE SOFTWARE.
 #endif
 #include "core/bignum.h"
 #include <boost/random.hpp>
+#include "symbolTable.h"
 #include "wrappers.h"
 
 
@@ -1395,6 +1398,55 @@ void exposeCando_Numerics()
     CoreDefun(asinh);
     CoreDefun(acosh);
     CoreDefun(atanh);
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeSingleFloat);
+    cl::_sym_mostPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MAX));
+    cl::_sym_mostNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MAX));
+    cl::_sym_leastPositiveSingleFloat->defconstant(SingleFloat_O::create(FLT_MIN));
+    cl::_sym_leastNegativeSingleFloat->defconstant(SingleFloat_O::create(-FLT_MIN));
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeShortFloat);
+    cl::_sym_mostPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MAX));
+    cl::_sym_mostNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MAX));
+    cl::_sym_leastPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MIN));
+    cl::_sym_leastNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MIN));
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveDoubleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeDoubleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostPositiveDoubleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,mostNegativeDoubleFloat);
+    cl::_sym_mostPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
+    cl::_sym_mostNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
+    cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
+    cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
+
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedDoubleFloat);
+    // SYMBOL_EXPORT_SC_(ClPkg,leastNegativeNormalizedLongFloat);
+    cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
+    // cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
+
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedSingleFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedShortFloat);
+    SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedDoubleFloat);
+    // SYMBOL_EXPORT_SC_(ClPkg,leastPositiveNormalizedLongFloat);
+    cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(SingleFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
+    cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
+    // cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
+
+    SYMBOL_EXPORT_SC_(ClPkg,pi);
+    cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
 }
 
 
@@ -1402,16 +1454,16 @@ void exposeCando_Numerics()
 #ifdef	USEBOOSTPYTHON
 
     void exposePython_Numerics()
-{
-    boost::python::def("mixedBaseDigitsToBignum",&mixedBaseDigitsToBignum);
-    boost::python::def("bignumToMixedBaseDigits",&bignumToMixedBaseDigits);
-    boost::python::def("numberOfIndicesForMixedBase",&numberOfIndicesForMixedBase);
-    boost::python::def("seedRandomNumberGenerators", &seedRandomNumberGenerators);
-    boost::python::def("seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-    boost::python::def("randomNumber01", &randomNumber01);
-    boost::python::def("randomNumberNormal01", &randomNumberNormal01);
-    boost::python::def("almostEqualAbsoluteOrRelative", &almostEqualAbsoluteOrRelative);
-}
+    {
+        boost::python::def("mixedBaseDigitsToBignum",&mixedBaseDigitsToBignum);
+        boost::python::def("bignumToMixedBaseDigits",&bignumToMixedBaseDigits);
+        boost::python::def("numberOfIndicesForMixedBase",&numberOfIndicesForMixedBase);
+        boost::python::def("seedRandomNumberGenerators", &seedRandomNumberGenerators);
+        boost::python::def("seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
+        boost::python::def("randomNumber01", &randomNumber01);
+        boost::python::def("randomNumberNormal01", &randomNumberNormal01);
+        boost::python::def("almostEqualAbsoluteOrRelative", &almostEqualAbsoluteOrRelative);
+    }
 
 #endif
 };

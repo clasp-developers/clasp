@@ -56,7 +56,8 @@ extern "C"
 typedef int (*MainFunctionType)(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize );
 
 #define GC_LOG(x)
-
+#define GCPRIVATE public
+#define GCPROTECTED public
 
 #include "hardErrors.h"
 

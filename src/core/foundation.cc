@@ -284,7 +284,7 @@ namespace llvm_interface
 	//
 	printf("\n\n%s\n%s:%d dbg_hook(...) was called\n",error,__FILE__,__LINE__);
 
-	af_invokeInternalDebugger(_Nil<core::T_O>());
+	//	af_invokeInternalDebugger(_Nil<core::T_O>());
     }
 
 
@@ -443,16 +443,19 @@ namespace core
     {
 	TRY_BOOST_FORMAT_STRING(fmt,fmt_str);
 	dbg_hook(fmt_str.c_str());
+	af_invokeInternalDebugger(_Nil<core::T_O>());
     }
 
     void errorFormatted(const string& msg)
     {
 	dbg_hook(msg.c_str());
+	af_invokeInternalDebugger(_Nil<core::T_O>());
     }
 
     void errorFormatted(const char* msg)
     {
 	dbg_hook(msg);
+	af_invokeInternalDebugger(_Nil<core::T_O>());
     }
 
     string lisp_currentPackageName()
@@ -1557,44 +1560,47 @@ namespace core
 
 
 
-    void lisp_error_simple(const char* functionName, const char* fileName, int lineNumber, const boost::format& fmt)
-    {
-	stringstream ss;
-	ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
-	ss << fmt.str();
-	if ( !_sym_signalSimpleError->fboundp() )
-	{
-	    printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str() );
-	    LispDebugger dbg;
-	    dbg.invoke();
-//	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
-	}
-	SYMBOL_EXPORT_SC_(ClPkg,programError);
-	eval::funcall(_sym_signalSimpleError,
-		    cl::_sym_programError, 		//arg0
-		    _Nil<T_O>(),		// arg1
-		    Str_O::create(fmt.str()),	// arg2
-		    _Nil<Cons_O>());
+  void lisp_error_simple(const char* functionName, const char* fileName, int lineNumber, const boost::format& fmt)
+  {
+    stringstream ss;
+    ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
+    ss << fmt.str();
+    if ( !_sym_signalSimpleError->fboundp() ) {
+      printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str() );
+      dbg_hook(ss.str().c_str());
+      if ( _lisp->invocationHistoryStack().top() == NULL ) {
+	throw(core::HardError(__FILE__,__FUNCTION__,__LINE__,BF("System starting up - debugger not available yet:  %s") % ss.str() ));
+      }
+      LispDebugger dbg;
+      dbg.invoke();
+      //	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
     }
+    SYMBOL_EXPORT_SC_(ClPkg,programError);
+    eval::funcall(_sym_signalSimpleError,
+		  cl::_sym_programError, 		//arg0
+		  _Nil<T_O>(),		// arg1
+		  Str_O::create(fmt.str()),	// arg2
+		  _Nil<Cons_O>());
+  }
 
     void lisp_error_condition(const char* functionName, const char* fileName, int lineNumber, T_sp baseCondition, T_sp initializers )
     {
-	stringstream ss;
-	ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl << _rep_(baseCondition) << " :initializers " << _rep_(initializers) << std::endl;
-	if ( !_sym_signalSimpleError->fboundp() )
+      stringstream ss;
+      ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl << _rep_(baseCondition) << " :initializers " << _rep_(initializers) << std::endl;
+      if ( !_sym_signalSimpleError->fboundp() )
 	{
-	    ss << "Error " << _rep_(baseCondition) << " initializers: " << _rep_(initializers)<< std::endl;
-	    printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str() );
-	    LispDebugger dbg;
-	    dbg.invoke();
-//	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
+	  ss << "Error " << _rep_(baseCondition) << " initializers: " << _rep_(initializers)<< std::endl;
+	  printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str() );
+	  LispDebugger dbg;
+	  dbg.invoke();
+	  //	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
 	}
-	eval::apply(_sym_signalSimpleError, Cons_O::createList(baseCondition,
-                                                           _Nil<T_O>(),
-                                                           Str_O::create(ss.str()),
-                                                           _Nil<Cons_O>(),
-                                                           initializers.as_or_nil<Cons_O>())
-	    );
+      eval::apply(_sym_signalSimpleError, Cons_O::createList(baseCondition,
+							     _Nil<T_O>(),
+							     Str_O::create(ss.str()),
+							     _Nil<Cons_O>(),
+							     initializers.as_or_nil<Cons_O>())
+		  );
     }
 
 
@@ -1602,102 +1608,102 @@ namespace core
 
     void lisp_error(T_sp datum, T_sp arguments )
     {
-	if ( !cl::_sym_error->fboundp() )
+      if ( !cl::_sym_error->fboundp() )
 	{
-            stringstream ss;
-	    ss << "Error " << _rep_(datum) << " initializers: " << _rep_(arguments)<< std::endl;
-	    printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str() );
-	    LispDebugger dbg;
-	    dbg.invoke();
-//	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
+	  stringstream ss;
+	  ss << "Error " << _rep_(datum) << " initializers: " << _rep_(arguments)<< std::endl;
+	  printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str() );
+	  LispDebugger dbg;
+	  dbg.invoke();
+	  //	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
 	}
-        Cons_sp cargs = arguments.as<Cons_O>();
-	eval::apply(cl::_sym_error, Cons_O::createList(datum, cargs) );
+      Cons_sp cargs = arguments.as<Cons_O>();
+      eval::apply(cl::_sym_error, Cons_O::createList(datum, cargs) );
     }
 
 
     string stringUpper(const string& s)
     {_G();
-	LOG(BF("Converting string(%s) to uppercase")% s);
-	stringstream ss;
-	for ( uint si=0; si<s.length(); si++ )
+      LOG(BF("Converting string(%s) to uppercase")% s);
+      stringstream ss;
+      for ( uint si=0; si<s.length(); si++ )
 	{
-	    ss << (char)(toupper(s[si]));
+	  ss << (char)(toupper(s[si]));
 	}
-	LOG(BF("Returning stringUpper(%s)")% ss.str() );
-	return ss.str();
+      LOG(BF("Returning stringUpper(%s)")% ss.str() );
+      return ss.str();
     }
 
     string stringUpper(const char* s)
     {_G();
-	LOG(BF("Converting const char*(%s) to uppercase")% s);
-	stringstream ss;
-	for ( ; *s; s++ )
+      LOG(BF("Converting const char*(%s) to uppercase")% s);
+      stringstream ss;
+      for ( ; *s; s++ )
 	{
-	    ss << (char)(toupper(*s));
+	  ss << (char)(toupper(*s));
 	}
-	LOG(BF("Returning stringUpper(%s)")% ss.str() );
-	return ss.str();
+      LOG(BF("Returning stringUpper(%s)")% ss.str() );
+      return ss.str();
     }
 
 
 
     T_sp lisp_ArgArrayToCons(int nargs, ArgArray args)
     {
-	Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
-        Cons_O::CdrType_sp* curP = &first;
-//        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
-	for ( int i(0); i<nargs; ++i ) {
-	    Cons_sp one = Cons_O::create(args[i]);
-            *curP = one; // cur.setPointee(one); //*cur = one;
-	    curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
-	}
-	return first;
+      Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
+      Cons_O::CdrType_sp* curP = &first;
+      //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
+      for ( int i(0); i<nargs; ++i ) {
+	Cons_sp one = Cons_O::create(args[i]);
+	*curP = one; // cur.setPointee(one); //*cur = one;
+	curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
+      }
+      return first;
     }
 
 
     vector<string> split(const string& str, const string& delimiters)
     {
-	vector<string>	parts;
-	tokenize(str,parts,delimiters);
-	return parts;
+      vector<string>	parts;
+      tokenize(str,parts,delimiters);
+      return parts;
     }
 
 
 
-/*! DONT PUT DEBUGGING CODE IN TOKENIZE!!!!  IT IS USED BY DebugStream
- */
+    /*! DONT PUT DEBUGGING CODE IN TOKENIZE!!!!  IT IS USED BY DebugStream
+     */
     void tokenize(const string& str,
 		  vector<string>& tokens,
 		  const string& delimiters)
     {
-	tokens.erase(tokens.begin(),tokens.end());
-	// Skip delimiters at beginning.
-	string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-	// Find first "non-delimiter".
-	string::size_type pos     = str.find_first_of(delimiters, lastPos);
-	while (string::npos != pos || string::npos != lastPos) {
-	    // Found a token, add it to the vector.
-	    tokens.push_back(str.substr(lastPos, pos - lastPos));
-	    // Skip delimiters.  Note the "not_of"
-	    lastPos = str.find_first_not_of(delimiters, pos);
-	    // Find next "non-delimiter"
-	    pos = str.find_first_of(delimiters, lastPos);
-	}
+      tokens.erase(tokens.begin(),tokens.end());
+      // Skip delimiters at beginning.
+      string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+      // Find first "non-delimiter".
+      string::size_type pos     = str.find_first_of(delimiters, lastPos);
+      while (string::npos != pos || string::npos != lastPos) {
+	// Found a token, add it to the vector.
+	tokens.push_back(str.substr(lastPos, pos - lastPos));
+	// Skip delimiters.  Note the "not_of"
+	lastPos = str.find_first_not_of(delimiters, pos);
+	// Find next "non-delimiter"
+	pos = str.find_first_of(delimiters, lastPos);
+      }
     }
 
 
     string	searchAndReplaceString( const string& str, const string& search, const string& replace, Lisp_sp lisp )
     {_G();
-	string			result;
-	string::size_type	pos = 0;
-	result = str;
-	while ( (pos = result.find(search,pos))!= string::npos )
+      string			result;
+      string::size_type	pos = 0;
+      result = str;
+      while ( (pos = result.find(search,pos))!= string::npos )
 	{
-	    result.replace( pos, search.size(), replace );
-	    pos++;
+	  result.replace( pos, search.size(), replace );
+	  pos++;
 	}
-	return result;
+      return result;
     }
 
 
@@ -1706,63 +1712,63 @@ namespace core
 			  std::queue<string>& tokens,
 			  const string& delimiters)
     {
-//    LOG(BF("foundation.cc::tokenize-- Entered") );
-	// Skip delimiters at beginning.
-	string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-	// Find first "non-delimiter".
-	string::size_type pos     = str.find_first_of(delimiters, lastPos);
-	while (string::npos != pos || string::npos != lastPos) {
-	    // Found a token, add it to the vector.
-	    tokens.push(str.substr(lastPos, pos - lastPos));
-	    // Skip delimiters.  Note the "not_of"
-	    lastPos = str.find_first_not_of(delimiters, pos);
-	    // Find next "non-delimiter"
-	    pos = str.find_first_of(delimiters, lastPos);
-	}
+      //    LOG(BF("foundation.cc::tokenize-- Entered") );
+      // Skip delimiters at beginning.
+      string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+      // Find first "non-delimiter".
+      string::size_type pos     = str.find_first_of(delimiters, lastPos);
+      while (string::npos != pos || string::npos != lastPos) {
+	// Found a token, add it to the vector.
+	tokens.push(str.substr(lastPos, pos - lastPos));
+	// Skip delimiters.  Note the "not_of"
+	lastPos = str.find_first_not_of(delimiters, pos);
+	// Find next "non-delimiter"
+	pos = str.find_first_of(delimiters, lastPos);
+      }
     }
 
-//
-//	Compare a wildcard containing string to a regular string
-//
-//	Wildcard strings can contain '*' or '?'
-//
-//	Return true if it matches and false if it doesn't
-//
+    //
+    //	Compare a wildcard containing string to a regular string
+    //
+    //	Wildcard strings can contain '*' or '?'
+    //
+    //	Return true if it matches and false if it doesn't
+    //
     bool	wildcmp(string const&	sWild,
 			string const&	sRegular )
     {
-	const char	*wild, *mp, *cp;
-	const char	*regular;
+      const char	*wild, *mp, *cp;
+      const char	*regular;
 
-	cp = NULL;
-	mp = NULL;
-	wild = sWild.c_str();
-	regular = sRegular.c_str();
-	while ((*regular) && (*wild != '*')) {
-	    if ((*wild != *regular) && (*wild != '?')) return false;
-	    wild++;
-	    regular++;
+      cp = NULL;
+      mp = NULL;
+      wild = sWild.c_str();
+      regular = sRegular.c_str();
+      while ((*regular) && (*wild != '*')) {
+	if ((*wild != *regular) && (*wild != '?')) return false;
+	wild++;
+	regular++;
+      }
+
+      while (*regular) {
+	if (*wild == '*') {
+	  if (!*++wild) return true;
+	  mp = wild;
+	  cp = regular+1;
+	} else if ((*wild == *regular) || (*wild == '?')) {
+	  wild++;
+	  regular++;
+	} else {
+	  wild = mp;
+	  regular = cp++;
 	}
 
-	while (*regular) {
-	    if (*wild == '*') {
-		if (!*++wild) return true;
-		mp = wild;
-		cp = regular+1;
-	    } else if ((*wild == *regular) || (*wild == '?')) {
-		wild++;
-		regular++;
-	    } else {
-		wild = mp;
-		regular = cp++;
-	    }
+      }
 
-	}
-
-	while (*wild == '*') {
-	    wild++;
-	}
-	return !*wild;
+      while (*wild == '*') {
+	wild++;
+      }
+      return !*wild;
     }
 
 
@@ -1770,34 +1776,34 @@ namespace core
 
     void	StringStack::pop()
     {
-	HARD_ASSERT(this->parts.size()>0);
-	this->parts.pop_back();
+      HARD_ASSERT(this->parts.size()>0);
+      this->parts.pop_back();
     };
 
     string	StringStack::all(const string& separator)
     {
-	stringstream	ss;
-	ss.str("");
-	if ( this->parts.size() > 0 )
+      stringstream	ss;
+      ss.str("");
+      if ( this->parts.size() > 0 )
 	{
-	    ss << this->parts[0];
+	  ss << this->parts[0];
 	}
-	for (uint i=1;i<this->parts.size();i++){
-	    ss<<separator;
-	    ss<<this->parts[i];
-	}
-	return ss.str();
+      for (uint i=1;i<this->parts.size();i++){
+	ss<<separator;
+	ss<<this->parts[i];
+      }
+      return ss.str();
     };
 
 
 
     const char* trimSourceFilePathName(const char* longName)
     {
-	if ( longName == NULL ) return NULL;
-	const char* cp = longName+strlen(longName);
-	while (cp > longName && *cp != '/' ) --cp;
-	if ( *cp == '/' ) ++cp;
-	return cp;
+      if ( longName == NULL ) return NULL;
+      const char* cp = longName+strlen(longName);
+      while (cp > longName && *cp != '/' ) --cp;
+      if ( *cp == '/' ) ++cp;
+      return cp;
     }
 
 
@@ -1811,16 +1817,16 @@ namespace core
 
     void throwIfClassesNotInitialized(const Lisp_sp& lisp)
     {
-	if (!_ClassesAreInitialized)
+      if (!_ClassesAreInitialized)
 	{
-	    lisp->print(BF("Debug information was being written when classes have not yet been initialized"));
-	    lisp->print(BF("This should never happen."));
-	    lisp->print(BF( "Run with the debugger and use the following commands:" ));
-	    lisp->print(BF( "l foundation.cc:1" ));
-	    lisp->print(BF( "search throwIfClassesNotInitialized" ));
-	    lisp->print(BF( "--> set a breakpoint in the if block" ));
-	    lisp->print(BF( "Then backtrace to find the offending initialization routine." ));
-	    exit(1);
+	  lisp->print(BF("Debug information was being written when classes have not yet been initialized"));
+	  lisp->print(BF("This should never happen."));
+	  lisp->print(BF( "Run with the debugger and use the following commands:" ));
+	  lisp->print(BF( "l foundation.cc:1" ));
+	  lisp->print(BF( "search throwIfClassesNotInitialized" ));
+	  lisp->print(BF( "--> set a breakpoint in the if block" ));
+	  lisp->print(BF( "Then backtrace to find the offending initialization routine." ));
+	  exit(1);
 	}
     }
 
@@ -1848,21 +1854,21 @@ namespace core
 #if 0
     void initializeExposeClasses(bool exposeCando, bool exposePython )
     {_errorF();
-	ClassManager::iterator	it;
-	int			passes = 0;
-	bool			exposedOne = true;
-	while ( exposedOne )
+      ClassManager::iterator	it;
+      int			passes = 0;
+      bool			exposedOne = true;
+      while ( exposedOne )
 	{
-	    LOG(BF("initializeExposeClasses passes=%d") % passes  );
-	    exposedOne = false;
-	    for ( it=rootClassManager().begin(); it!=rootClassManager().end(); it++ )
+	  LOG(BF("initializeExposeClasses passes=%d") % passes  );
+	  exposedOne = false;
+	  for ( it=rootClassManager().begin(); it!=rootClassManager().end(); it++ )
 	    {
-		// If we have an Exposer defined then check if our BaseClass has
-		// been exposed
-		exposedOne = it->exposeYourself(exposeCando,exposePython);
+	      // If we have an Exposer defined then check if our BaseClass has
+	      // been exposed
+	      exposedOne = it->exposeYourself(exposeCando,exposePython);
 	    }
-	    passes++;
-	    ASSERTP(passes<10, "There were more than 10 passes carried out when exposing classes");
+	  passes++;
+	  ASSERTP(passes<10, "There were more than 10 passes carried out when exposing classes");
 	}
     }
 #endif
@@ -1870,34 +1876,34 @@ namespace core
 
     void initializeCandoScript(Lisp_sp lisp)
     {_G();
-	DEPRECIATED();
+      DEPRECIATED();
     }
 
     void initializePythonScript(Lisp_sp lisp)
     {_G();
-	DEPRECIATED();
-//    initializeExposeClasses(false,true);
+      DEPRECIATED();
+      //    initializeExposeClasses(false,true);
     }
 
 
 #ifdef	USEBOOSTPYTHON
     __INITIALIZE_PYTHON(InitPython_Foundation)
-    void InitPython_Foundation()
-    {
+      void InitPython_Foundation()
+      {
 	boost::python::def("print",&print);
 	boost::python::def("println",&println);
 	boost::python::def("printvPushPrefix",&printvPushPrefix);
 	boost::python::def("printvPopPrefix",&printvPopPrefix);
 
-    }
+      }
 #endif
 
 
     void initialize_foundation()
     {
 
-        Defun(lispifyName);
+      Defun(lispifyName);
     };
 
 
-};
+  };

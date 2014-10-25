@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -118,7 +118,27 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,simpleWarning);
     SYMBOL_EXPORT_SC_(ClPkg,warning);
     SYMBOL_EXPORT_SC_(ClPkg,styleWarning);
+    SYMBOL_EXPORT_SC_(ClPkg,asin);
+    SYMBOL_EXPORT_SC_(ClPkg,acos);
+    SYMBOL_EXPORT_SC_(ClPkg,asinh);
+    SYMBOL_EXPORT_SC_(ClPkg,acosh);
+    SYMBOL_EXPORT_SC_(ClPkg,atanh);
+    SYMBOL_EXPORT_SC_(ClPkg,dynamic_extent);
+    SYMBOL_EXPORT_SC_(ClPkg,ftype);
+    SYMBOL_EXPORT_SC_(ClPkg,boole);
+    SYMBOL_EXPORT_SC_(ClPkg,callArgumentsLimit);
+    SYMBOL_EXPORT_SC_(ClPkg,arrayDimensionLimit);
+    SYMBOL_EXPORT_SC_(ClPkg,arrayTotalSizeLimit);
+    SYMBOL_EXPORT_SC_(ClPkg,lambdaParametersLimit);
 
+    SYMBOL_EXPORT_SC_(CorePkg,bitArrayOp);
+
+
+    SYMBOL_EXPORT_SC_(CorePkg,asin);
+    SYMBOL_EXPORT_SC_(CorePkg,acos);
+    SYMBOL_EXPORT_SC_(CorePkg,asinh);
+    SYMBOL_EXPORT_SC_(CorePkg,acosh);
+    SYMBOL_EXPORT_SC_(CorePkg,atanh);
 
     SYMBOL_EXPORT_SC_(ClPkg,nil);
     SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
@@ -130,7 +150,7 @@ namespace core
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);
     SYMBOL_EXPORT_SC_(KeywordPkg,cr);
     SYMBOL_EXPORT_SC_(KeywordPkg,lf);
-    SYMBOL_EXPORT_SC_(KeywordPkg,littleEndian); 
+    SYMBOL_EXPORT_SC_(KeywordPkg,littleEndian);
     SYMBOL_EXPORT_SC_(KeywordPkg,bigEndian);
     SYMBOL_EXPORT_SC_(KeywordPkg,crlf);
     SYMBOL_EXPORT_SC_(KeywordPkg,latin_1);
@@ -337,7 +357,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_EXPORT_SC_(ClPkg,STARprint_miser_widthSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,STARprint_pprint_dispatchSTAR);
 
-    
+
     SYMBOL_EXPORT_SC_(CorePkg,signalSimpleError);
     SYMBOL_SC_(CorePkg,invokeInternalDebugger);
     SYMBOL_EXPORT_SC_(ClPkg,STARdebuggerHookSTAR);
@@ -426,8 +446,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_SC_(KeywordPkg,compile_toplevel);
     SYMBOL_SC_(KeywordPkg,load_toplevel);
     SYMBOL_SC_(KeywordPkg,execute);
-
-    SYMBOL_EXPORT_SC_(ClPkg,array_dimension_limit);
 
     SYMBOL_EXPORT_SC_(ClPkg,STARread_evalSTAR);
     SYMBOL_SC_(CorePkg,STARdocumentation_poolSTAR);
@@ -545,7 +563,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_EXPORT_SC_(ClPkg,progn);
     SYMBOL_SC_(CorePkg,backquote);
     SYMBOL_SC_(CorePkg,double_backquote);
-    SYMBOL_SC_(CorePkg,unquote); 
+    SYMBOL_SC_(CorePkg,unquote);
     // was S Y M B O L _SC_(CorePkg,comma);
     SYMBOL_SC_(CorePkg,unquote_splice);
     // was S Y M B O L _SC_(CorePkg,comma_atsign);
@@ -627,7 +645,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 //#i n c l u d e "symbols_scraped_inc.h"
 //-----------------------------------------------------------------------------
 	}
-	
+
 	    break;
 	case pythonClasses:
 	{
@@ -642,7 +660,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	}
 	    break;
 	case pythonFunctions:
-#ifdef USEBOOSTPYTHON	    
+#ifdef USEBOOSTPYTHON
 	    exposePython_Numerics();
 #endif
 	    break;
@@ -735,7 +753,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 
 
 #if 0
-        // 
+        //
         // Test hashtables
         //
         printf("%s:%d Testing hashtables\n", __FILE__, __LINE__ );
@@ -779,7 +797,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 //        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );
 //	_lisp->_Roots._CommonLispPackage->add_symbol_to_package("NIL"cl::_sym_nil);
 	cl::_sym_nil->_HomePackage = _lisp->_Roots._CommonLispPackage;
-#else 
+#else
 	_lisp->_CoreLispPackage->_add_symbol_to_package(cl::_sym_nil);
 	cl::_sym_nil->_WeakPackage = _lisp->_CoreLispPackage;
 #endif
@@ -802,38 +820,37 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	cl::_sym_STARread_evalSTAR->defparameter(_lisp->_true());
 	_sym_STARenvironmentPrintingTabSTAR->defparameter(Fixnum_O::create(0));
 	_sym_STARenvironmentPrintingTabIncrementSTAR->defparameter(Fixnum_O::create(6));
-	cl::_sym_array_dimension_limit->defconstant(Fixnum_O::create(65535));
-
-
-	SYMBOL_EXPORT_SC_(ClPkg,most_negative_double_float);
-	cl::_sym_most_negative_double_float->defconstant(DoubleFloat_O::create(DBL_MIN));
 	SYMBOL_EXPORT_SC_(ClPkg,most_negative_fixnum);
 	cl::_sym_most_negative_fixnum->defconstant(Fixnum_O::create(MOST_NEGATIVE_FIXNUM));
-	SYMBOL_EXPORT_SC_(ClPkg,most_negative_long_float);
-	cl::_sym_most_negative_long_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-	SYMBOL_EXPORT_SC_(ClPkg,most_negative_short_float);
-	cl::_sym_most_negative_short_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-	SYMBOL_EXPORT_SC_(ClPkg,most_negative_single_float);
-	cl::_sym_most_negative_single_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-	SYMBOL_EXPORT_SC_(ClPkg,most_positive_double_float);
-	cl::_sym_most_positive_double_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-
-	SYMBOL_EXPORT_SC_(ClPkg,least_negative_normalized_long_float);
-	cl::_sym_least_negative_normalized_long_float->defconstant(DoubleFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-
-	SYMBOL_EXPORT_SC_(ClPkg,least_positive_normalized_long_float);
-	cl::_sym_least_positive_normalized_long_float->defconstant(DoubleFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
-
-
-
 	SYMBOL_EXPORT_SC_(ClPkg,most_positive_fixnum);
 	cl::_sym_most_positive_fixnum->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
-	SYMBOL_EXPORT_SC_(ClPkg,most_positive_long_float);
-	cl::_sym_most_positive_long_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-	SYMBOL_EXPORT_SC_(ClPkg,most_positive_short_float);
-	cl::_sym_most_positive_short_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-	SYMBOL_EXPORT_SC_(ClPkg,most_positive_single_float);
-	cl::_sym_most_positive_single_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+
+
+	// SYMBOL_EXPORT_SC_(ClPkg,most_negative_double_float);
+	// cl::_sym_most_negative_double_float->defconstant(DoubleFloat_O::create(DBL_MIN));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_negative_long_float);
+	// cl::_sym_most_negative_long_float->defconstant(DoubleFloat_O::create(DBL_MIN));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_negative_short_float);
+	// cl::_sym_most_negative_short_float->defconstant(DoubleFloat_O::create(DBL_MIN));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_negative_single_float);
+	// cl::_sym_most_negative_single_float->defconstant(DoubleFloat_O::create(DBL_MIN));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_positive_double_float);
+	// cl::_sym_most_positive_double_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+	// SYMBOL_EXPORT_SC_(ClPkg,least_negative_normalized_long_float);
+	// cl::_sym_least_negative_normalized_long_float->defconstant(DoubleFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
+	// SYMBOL_EXPORT_SC_(ClPkg,least_positive_normalized_long_float);
+	// cl::_sym_least_positive_normalized_long_float->defconstant(DoubleFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
+
+
+
+	// SYMBOL_EXPORT_SC_(ClPkg,most_positive_long_float);
+	// cl::_sym_most_positive_long_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_positive_short_float);
+	// cl::_sym_most_positive_short_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+	// SYMBOL_EXPORT_SC_(ClPkg,most_positive_single_float);
+	// cl::_sym_most_positive_single_float->defconstant(DoubleFloat_O::create(DBL_MAX));
+
+	
 	cl::_sym_STARread_baseSTAR->defparameter(Fixnum_O::create(10));
 	SYMBOL_SC_(CorePkg,cl_fixnum_bits);
 	_sym_cl_fixnum_bits->defconstant(Fixnum_O::create((int)(sizeof(int)/8)));
@@ -913,6 +930,10 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym_STARdebugReaderSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARloadPathnameSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARloadTruenameSTAR->defparameter(_Nil<T_O>());
+        cl::_sym_callArgumentsLimit->defconstant(Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+        cl::_sym_lambdaParametersLimit->defconstant(Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+        cl::_sym_arrayDimensionLimit->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
+        cl::_sym_arrayTotalSizeLimit->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
         core::_sym_STARpollTicksPerGcSTAR->defparameter(Fixnum_O::create(POLL_TICKS_PER_GC));
 	comp::_sym_STARlowLevelTraceSTAR->defparameter(_Nil<core::T_O>());
 	comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<core::T_O>());
@@ -1010,7 +1031,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 
 	ql::list features(_lisp);
 	//
-	// The following will fail at compile time if a _TARGET_OS_xxxx wasn't defined 
+	// The following will fail at compile time if a _TARGET_OS_xxxx wasn't defined
 	// Check src/Jamfile.jam to add definitions for other <target-os> types
 	//
 	features << target_os;
@@ -1027,11 +1048,11 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 
 #endif //End old system checking
 	//
-	// The following will fail at compile time if a _TARGET_OS_xxxx wasn't defined 
+	// The following will fail at compile time if a _TARGET_OS_xxxx wasn't defined
 	// Check src/Jamfile.jam to add definitions for other <target-os> types
 	//
 	features << address_model;
-	
+
 	// Now add other standard features
 	features << kw::_sym_brcl;
 
@@ -1054,7 +1075,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 
 
 #define EXPAND_CLASS_MACROS
-#define _CLASS_MACRO(_T_)   STATIC_CLASS_INFO(_T_);			
+#define _CLASS_MACRO(_T_)   STATIC_CLASS_INFO(_T_);
 #include "core_initClasses_inc.h"
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS

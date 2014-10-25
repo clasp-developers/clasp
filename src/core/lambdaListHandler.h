@@ -109,7 +109,7 @@ namespace core
 //	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 //	string	__repr__() const;
-    protected: // instance variables
+    GCPROTECTED: // instance variables
 	/*! If _CreatesBindings is true then no bindings will be set by this
 	  LambdaListHandler */
 	bool				_CreatesBindings;

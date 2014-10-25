@@ -185,8 +185,7 @@ struct ReachableContainer {
 static size_t invalidHeaderTotalSize = 0;
 int globalSearchMarker = 0;
 extern "C" {    
-    extern void GC_mercury_enumerate_reachable_objects();
-    void GC_callback_reachable_object(void* ptr, size_t sz)
+    void boehm_callback_reachable_object(GC_word* ptr, size_t sz)
     {
         sz <<= 2; // convert to bytes
         gctools::Header_s* h = reinterpret_cast<gctools::Header_s*>(ptr);
@@ -457,7 +456,7 @@ namespace gctools {
         static_ReachableContainerKinds = new(ReachableContainerMap);
         static_ReachableStringKinds = new(ReachableContainerMap);
         invalidHeaderTotalSize = 0;
-        GC_mercury_enumerate_reachable_objects();
+        GC_enumerate_reachable_objects(boehm_callback_reachable_object);
         printf("Walked LispKinds\n");
         size_t totalSize(0);
         totalSize += dumpResults("Reachable StringKinds", "strs", static_ReachableStringKinds);

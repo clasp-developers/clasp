@@ -4072,7 +4072,7 @@ Number_sp brcl_atan1(Number_sp y)
 	if ( this->minusp()) {
 	    return brcl_log1_complex_inner(this->const_sharedThis<Bignum_O>(),Fixnum_O::create(0));
 	} else {
-	    Fixnum l = brcl_integer_length(this->const_sharedThis<Bignum_O>()) - 1;
+	    Fixnum l = clasp_integer_length(this->const_sharedThis<Bignum_O>()) - 1;
 	    Number_sp r = brcl_make_ratio(this->asSmartPtr(), clasp_ash(Fixnum_O::create(1), l));
 	    float d = logf(r->as_float()) + l * logf(2.0);
 	    return SingleFloat_O::create(d);
@@ -4302,6 +4302,19 @@ fixint(T_sp x)
 
 
 
+#define ARGS_cl_integerLength "(i)"
+#define DECL_cl_integerLength ""
+#define DOCS_cl_integerLength "integerLength"
+#define FILE_cl_integerLength __FILE__
+#define LINE_cl_integerLength __LINE__
+    int cl_integerLength(Integer_sp i)
+    {_G();
+        return clasp_integer_length(i);
+    };
+
+
+
+
 
     void initialize_numbers()
     {
@@ -4329,6 +4342,7 @@ fixint(T_sp x)
 	ClDefun(expt);
 	SYMBOL_EXPORT_SC_(ClPkg,exp);
 	ClDefun(exp);
+        ClDefun(integerLength);
     }
 
 

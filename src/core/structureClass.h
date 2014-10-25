@@ -60,7 +60,7 @@ namespace core {
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 	void	initialize();
-    protected:
+    GCPROTECTED:
 	Class_sp			_InstanceCoreClass;
     public:
 	/*! Special creator used when starting up lisp environment, the object returned will be a root */

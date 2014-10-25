@@ -48,7 +48,7 @@ namespace core
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    protected:
+    GCPROTECTED:
         typedef gctools::gcstring         str_type;
         str_type _Contents;
     public:

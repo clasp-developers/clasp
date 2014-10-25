@@ -55,7 +55,7 @@ enum clasp_readtable_case {
     public:
 	void initialize();
 
-    private: // instance variables here
+    GCPRIVATE: // instance variables here
 	Symbol_sp	_Case;
 	/*! _Syntax is a HashTable and each value is a plist */
 	HashTable_sp	_Syntax; 
