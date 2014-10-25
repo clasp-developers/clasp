@@ -2527,9 +2527,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 						 (funcall (species-skip (enum-species enum)) dest enum anal))))
 		    (do-generator stream analysis
 				  :table-name "OBJ_SCAN"
-				  :function-declaration "GC_RESULT ~a(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit)"
+				  :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
 				  :function-prefix "obj_scan"
-				  :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t ss, mps_addr_t& client, mps_addr_t limit)"
+				  :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
 				  :generator (lambda (dest anal)
 					       (dolist (enum (analysis-sorted-enums anal))
 						 (funcall (species-scan (enum-species enum)) dest enum anal))))
