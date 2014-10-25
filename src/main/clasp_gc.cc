@@ -6488,1196 +6488,1435 @@ obj_dump_KIND_ROOTCLASSALLOC_core__Lisp_O:
     typedef core::Lisp_O type_KIND_ROOTCLASSALLOC_core__Lisp_O;
     sout << "KIND_ROOTCLASSALLOC_core__Lisp_O size[" << (AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_core__Lisp_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps:
 {
     typedef asttooling::RegMap::RegistryMaps type_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps;
     sout << "KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps size[" << (AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_TEMPLATED_CLASSALLOC_core__Creator:
 {
     core::Creator* obj_gc_safe = reinterpret_cast<core::Creator*>(client);
     sout << "KIND_TEMPLATED_CLASSALLOC_core__Creator size[" << (AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator:
 {
     clbind::ConstructorCreator* obj_gc_safe = reinterpret_cast<clbind::ConstructorCreator*>(client);
     sout << "KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator size[" << (AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__InstanceCreator:
 {
     typedef core::InstanceCreator type_KIND_CLASSALLOC_core__InstanceCreator;
     sout << "KIND_CLASSALLOC_core__InstanceCreator size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__InstanceCreator))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_clbind__DummyCreator:
 {
     typedef clbind::DummyCreator type_KIND_CLASSALLOC_clbind__DummyCreator;
     sout << "KIND_CLASSALLOC_clbind__DummyCreator size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_clbind__DummyCreator))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__SequenceStepper:
 {
     typedef core::SequenceStepper type_KIND_CLASSALLOC_core__SequenceStepper;
     sout << "KIND_CLASSALLOC_core__SequenceStepper size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__SequenceStepper))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__ConsStepper:
 {
     typedef core::ConsStepper type_KIND_CLASSALLOC_core__ConsStepper;
     sout << "KIND_CLASSALLOC_core__ConsStepper size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__ConsStepper))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__VectorStepper:
 {
     typedef core::VectorStepper type_KIND_CLASSALLOC_core__VectorStepper;
     sout << "KIND_CLASSALLOC_core__VectorStepper size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__VectorStepper))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 {
     typedef clbind::detail::class_map type_KIND_ROOTCLASSALLOC_clbind__detail__class_map;
     sout << "KIND_ROOTCLASSALLOC_clbind__detail__class_map size[" << (AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_clbind__detail__class_map))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__T_O:
 {
     typedef core::T_O type_KIND_BOOTSTRAP_core__T_O;
     sout << "KIND_BOOTSTRAP_core__T_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__T_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Cons_O:
 {
     typedef core::Cons_O type_KIND_LISPALLOC_core__Cons_O;
     sout << "KIND_LISPALLOC_core__Cons_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Cons_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_cffi__Pointer_O:
 {
     typedef cffi::Pointer_O type_KIND_LISPALLOC_cffi__Pointer_O;
     sout << "KIND_LISPALLOC_cffi__Pointer_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_cffi__Pointer_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Stream_O:
 {
     typedef core::Stream_O type_KIND_LISPALLOC_core__Stream_O;
     sout << "KIND_LISPALLOC_core__Stream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Stream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__AnsiStream_O:
 {
     typedef core::AnsiStream_O type_KIND_LISPALLOC_core__AnsiStream_O;
     sout << "KIND_LISPALLOC_core__AnsiStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__AnsiStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__TwoWayStream_O:
 {
     typedef core::TwoWayStream_O type_KIND_LISPALLOC_core__TwoWayStream_O;
     sout << "KIND_LISPALLOC_core__TwoWayStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__TwoWayStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__FileStream_O:
 {
     typedef core::FileStream_O type_KIND_LISPALLOC_core__FileStream_O;
     sout << "KIND_LISPALLOC_core__FileStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__FileStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__IOFileStream_O:
 {
     typedef core::IOFileStream_O type_KIND_LISPALLOC_core__IOFileStream_O;
     sout << "KIND_LISPALLOC_core__IOFileStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__IOFileStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__IOStreamStream_O:
 {
     typedef core::IOStreamStream_O type_KIND_LISPALLOC_core__IOStreamStream_O;
     sout << "KIND_LISPALLOC_core__IOStreamStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__IOStreamStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__BroadcastStream_O:
 {
     typedef core::BroadcastStream_O type_KIND_LISPALLOC_core__BroadcastStream_O;
     sout << "KIND_LISPALLOC_core__BroadcastStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__BroadcastStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__StringStream_O:
 {
     typedef core::StringStream_O type_KIND_LISPALLOC_core__StringStream_O;
     sout << "KIND_LISPALLOC_core__StringStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__StringStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__StringOutputStream_O:
 {
     typedef core::StringOutputStream_O type_KIND_LISPALLOC_core__StringOutputStream_O;
     sout << "KIND_LISPALLOC_core__StringOutputStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__StringOutputStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__StringInputStream_O:
 {
     typedef core::StringInputStream_O type_KIND_LISPALLOC_core__StringInputStream_O;
     sout << "KIND_LISPALLOC_core__StringInputStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__StringInputStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SynonymStream_O:
 {
     typedef core::SynonymStream_O type_KIND_LISPALLOC_core__SynonymStream_O;
     sout << "KIND_LISPALLOC_core__SynonymStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SynonymStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__EchoStream_O:
 {
     typedef core::EchoStream_O type_KIND_LISPALLOC_core__EchoStream_O;
     sout << "KIND_LISPALLOC_core__EchoStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__EchoStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ConcatenatedStream_O:
 {
     typedef core::ConcatenatedStream_O type_KIND_LISPALLOC_core__ConcatenatedStream_O;
     sout << "KIND_LISPALLOC_core__ConcatenatedStream_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ConcatenatedStream_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Pathname_O:
 {
     typedef core::Pathname_O type_KIND_LISPALLOC_core__Pathname_O;
     sout << "KIND_LISPALLOC_core__Pathname_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Pathname_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__LogicalPathname_O:
 {
     typedef core::LogicalPathname_O type_KIND_LISPALLOC_core__LogicalPathname_O;
     sout << "KIND_LISPALLOC_core__LogicalPathname_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__LogicalPathname_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Environment_O:
 {
     typedef core::Environment_O type_KIND_LISPALLOC_core__Environment_O;
     sout << "KIND_LISPALLOC_core__Environment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Environment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__GlueEnvironment_O:
 {
     typedef core::GlueEnvironment_O type_KIND_LISPALLOC_core__GlueEnvironment_O;
     sout << "KIND_LISPALLOC_core__GlueEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__GlueEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__LexicalEnvironment_O:
 {
     typedef core::LexicalEnvironment_O type_KIND_LISPALLOC_core__LexicalEnvironment_O;
     sout << "KIND_LISPALLOC_core__LexicalEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__LexicalEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__CompileTimeEnvironment_O:
 {
     typedef core::CompileTimeEnvironment_O type_KIND_LISPALLOC_core__CompileTimeEnvironment_O;
     sout << "KIND_LISPALLOC_core__CompileTimeEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__CompileTimeEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__CatchEnvironment_O:
 {
     typedef core::CatchEnvironment_O type_KIND_LISPALLOC_core__CatchEnvironment_O;
     sout << "KIND_LISPALLOC_core__CatchEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__CatchEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__BlockEnvironment_O:
 {
     typedef core::BlockEnvironment_O type_KIND_LISPALLOC_core__BlockEnvironment_O;
     sout << "KIND_LISPALLOC_core__BlockEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__BlockEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__UnwindProtectEnvironment_O:
 {
     typedef core::UnwindProtectEnvironment_O type_KIND_LISPALLOC_core__UnwindProtectEnvironment_O;
     sout << "KIND_LISPALLOC_core__UnwindProtectEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__UnwindProtectEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__FunctionContainerEnvironment_O:
 {
     typedef core::FunctionContainerEnvironment_O type_KIND_LISPALLOC_core__FunctionContainerEnvironment_O;
     sout << "KIND_LISPALLOC_core__FunctionContainerEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionContainerEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O:
 {
     typedef core::SymbolMacroletEnvironment_O type_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O;
     sout << "KIND_LISPALLOC_core__SymbolMacroletEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__MacroletEnvironment_O:
 {
     typedef core::MacroletEnvironment_O type_KIND_LISPALLOC_core__MacroletEnvironment_O;
     sout << "KIND_LISPALLOC_core__MacroletEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__MacroletEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O:
 {
     typedef core::RuntimeVisibleEnvironment_O type_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O;
     sout << "KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ValueEnvironment_O:
 {
     typedef core::ValueEnvironment_O type_KIND_LISPALLOC_core__ValueEnvironment_O;
     sout << "KIND_LISPALLOC_core__ValueEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ValueEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__FunctionValueEnvironment_O:
 {
     typedef core::FunctionValueEnvironment_O type_KIND_LISPALLOC_core__FunctionValueEnvironment_O;
     sout << "KIND_LISPALLOC_core__FunctionValueEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionValueEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__TagbodyEnvironment_O:
 {
     typedef core::TagbodyEnvironment_O type_KIND_LISPALLOC_core__TagbodyEnvironment_O;
     sout << "KIND_LISPALLOC_core__TagbodyEnvironment_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__TagbodyEnvironment_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ActivationFrame_O:
 {
     typedef core::ActivationFrame_O type_KIND_LISPALLOC_core__ActivationFrame_O;
     sout << "KIND_LISPALLOC_core__ActivationFrame_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ActivationFrame_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__TagbodyFrame_O:
 {
     typedef core::TagbodyFrame_O type_KIND_LISPALLOC_core__TagbodyFrame_O;
     sout << "KIND_LISPALLOC_core__TagbodyFrame_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__TagbodyFrame_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__FunctionFrame_O:
 {
     typedef core::FunctionFrame_O type_KIND_LISPALLOC_core__FunctionFrame_O;
     sout << "KIND_LISPALLOC_core__FunctionFrame_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionFrame_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ValueFrame_O:
 {
     typedef core::ValueFrame_O type_KIND_LISPALLOC_core__ValueFrame_O;
     sout << "KIND_LISPALLOC_core__ValueFrame_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ValueFrame_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SingleDispatchMethod_O:
 {
     typedef core::SingleDispatchMethod_O type_KIND_LISPALLOC_core__SingleDispatchMethod_O;
     sout << "KIND_LISPALLOC_core__SingleDispatchMethod_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchMethod_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SourceFileInfo_O:
 {
     typedef core::SourceFileInfo_O type_KIND_LISPALLOC_core__SourceFileInfo_O;
     sout << "KIND_LISPALLOC_core__SourceFileInfo_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SourceFileInfo_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ObjectSet_O:
 {
     typedef core::ObjectSet_O type_KIND_LISPALLOC_core__ObjectSet_O;
     sout << "KIND_LISPALLOC_core__ObjectSet_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ObjectSet_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__DirectoryEntry_O:
 {
     typedef core::DirectoryEntry_O type_KIND_LISPALLOC_core__DirectoryEntry_O;
     sout << "KIND_LISPALLOC_core__DirectoryEntry_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__DirectoryEntry_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Pointer_O:
 {
     typedef core::Pointer_O type_KIND_LISPALLOC_core__Pointer_O;
     sout << "KIND_LISPALLOC_core__Pointer_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Pointer_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Path_O:
 {
     typedef core::Path_O type_KIND_LISPALLOC_core__Path_O;
     sout << "KIND_LISPALLOC_core__Path_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Path_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DebugInfo_O:
 {
     typedef llvmo::DebugInfo_O type_KIND_LISPALLOC_llvmo__DebugInfo_O;
     sout << "KIND_LISPALLOC_llvmo__DebugInfo_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DebugInfo_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DICompositeType_O:
 {
     typedef llvmo::DICompositeType_O type_KIND_LISPALLOC_llvmo__DICompositeType_O;
     sout << "KIND_LISPALLOC_llvmo__DICompositeType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DICompositeType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DIBasicType_O:
 {
     typedef llvmo::DIBasicType_O type_KIND_LISPALLOC_llvmo__DIBasicType_O;
     sout << "KIND_LISPALLOC_llvmo__DIBasicType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIBasicType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DIType_O:
 {
     typedef llvmo::DIType_O type_KIND_LISPALLOC_llvmo__DIType_O;
     sout << "KIND_LISPALLOC_llvmo__DIType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DISubprogram_O:
 {
     typedef llvmo::DISubprogram_O type_KIND_LISPALLOC_llvmo__DISubprogram_O;
     sout << "KIND_LISPALLOC_llvmo__DISubprogram_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DISubprogram_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DIArray_O:
 {
     typedef llvmo::DIArray_O type_KIND_LISPALLOC_llvmo__DIArray_O;
     sout << "KIND_LISPALLOC_llvmo__DIArray_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIArray_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DITypeArray_O:
 {
     typedef llvmo::DITypeArray_O type_KIND_LISPALLOC_llvmo__DITypeArray_O;
     sout << "KIND_LISPALLOC_llvmo__DITypeArray_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DITypeArray_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DISubroutineType_O:
 {
     typedef llvmo::DISubroutineType_O type_KIND_LISPALLOC_llvmo__DISubroutineType_O;
     sout << "KIND_LISPALLOC_llvmo__DISubroutineType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DISubroutineType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DIScope_O:
 {
     typedef llvmo::DIScope_O type_KIND_LISPALLOC_llvmo__DIScope_O;
     sout << "KIND_LISPALLOC_llvmo__DIScope_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIScope_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DIFile_O:
 {
     typedef llvmo::DIFile_O type_KIND_LISPALLOC_llvmo__DIFile_O;
     sout << "KIND_LISPALLOC_llvmo__DIFile_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIFile_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DIDescriptor_O:
 {
     typedef llvmo::DIDescriptor_O type_KIND_LISPALLOC_llvmo__DIDescriptor_O;
     sout << "KIND_LISPALLOC_llvmo__DIDescriptor_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIDescriptor_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DICompileUnit_O:
 {
     typedef llvmo::DICompileUnit_O type_KIND_LISPALLOC_llvmo__DICompileUnit_O;
     sout << "KIND_LISPALLOC_llvmo__DICompileUnit_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DICompileUnit_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DIDerivedType_O:
 {
     typedef llvmo::DIDerivedType_O type_KIND_LISPALLOC_llvmo__DIDerivedType_O;
     sout << "KIND_LISPALLOC_llvmo__DIDerivedType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIDerivedType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DILexicalBlock_O:
 {
     typedef llvmo::DILexicalBlock_O type_KIND_LISPALLOC_llvmo__DILexicalBlock_O;
     sout << "KIND_LISPALLOC_llvmo__DILexicalBlock_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DILexicalBlock_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__StructureObject_O:
 {
     typedef core::StructureObject_O type_KIND_LISPALLOC_core__StructureObject_O;
     sout << "KIND_LISPALLOC_core__StructureObject_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__StructureObject_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__LambdaListHandler_O:
 {
     typedef core::LambdaListHandler_O type_KIND_LISPALLOC_core__LambdaListHandler_O;
     sout << "KIND_LISPALLOC_core__LambdaListHandler_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__LambdaListHandler_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_TEMPLATED_LISPALLOC_core__Iterator_O:
 {
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
     sout << "KIND_TEMPLATED_LISPALLOC_core__Iterator_O size[" << (AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__DirectoryIterator_O:
 {
     typedef core::DirectoryIterator_O type_KIND_LISPALLOC_core__DirectoryIterator_O;
     sout << "KIND_LISPALLOC_core__DirectoryIterator_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__DirectoryIterator_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O:
 {
     typedef core::RecursiveDirectoryIterator_O type_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O;
     sout << "KIND_LISPALLOC_core__RecursiveDirectoryIterator_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__PosixTimeDuration_O:
 {
     typedef core::PosixTimeDuration_O type_KIND_LISPALLOC_core__PosixTimeDuration_O;
     sout << "KIND_LISPALLOC_core__PosixTimeDuration_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__PosixTimeDuration_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__FileStatus_O:
 {
     typedef core::FileStatus_O type_KIND_LISPALLOC_core__FileStatus_O;
     sout << "KIND_LISPALLOC_core__FileStatus_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__FileStatus_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_clbind__ClassRegistry_O:
 {
     typedef clbind::ClassRegistry_O type_KIND_LISPALLOC_clbind__ClassRegistry_O;
     sout << "KIND_LISPALLOC_clbind__ClassRegistry_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_clbind__ClassRegistry_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Archive_O:
 {
     typedef core::Archive_O type_KIND_LISPALLOC_core__Archive_O;
     sout << "KIND_LISPALLOC_core__Archive_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Archive_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SaveArchive_O:
 {
     typedef core::SaveArchive_O type_KIND_LISPALLOC_core__SaveArchive_O;
     sout << "KIND_LISPALLOC_core__SaveArchive_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SaveArchive_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SexpSaveArchive_O:
 {
     typedef core::SexpSaveArchive_O type_KIND_LISPALLOC_core__SexpSaveArchive_O;
     sout << "KIND_LISPALLOC_core__SexpSaveArchive_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SexpSaveArchive_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__LoadArchive_O:
 {
     typedef core::LoadArchive_O type_KIND_LISPALLOC_core__LoadArchive_O;
     sout << "KIND_LISPALLOC_core__LoadArchive_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadArchive_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SexpLoadArchive_O:
 {
     typedef core::SexpLoadArchive_O type_KIND_LISPALLOC_core__SexpLoadArchive_O;
     sout << "KIND_LISPALLOC_core__SexpLoadArchive_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SexpLoadArchive_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__RegexMatch_O:
 {
     typedef core::RegexMatch_O type_KIND_LISPALLOC_core__RegexMatch_O;
     sout << "KIND_LISPALLOC_core__RegexMatch_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__RegexMatch_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SourcePosInfo_O:
 {
     typedef core::SourcePosInfo_O type_KIND_LISPALLOC_core__SourcePosInfo_O;
     sout << "KIND_LISPALLOC_core__SourcePosInfo_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SourcePosInfo_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Character_O:
 {
     typedef core::Character_O type_KIND_LISPALLOC_core__Character_O;
     sout << "KIND_LISPALLOC_core__Character_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Character_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ExtendedChar_O:
 {
     typedef core::ExtendedChar_O type_KIND_LISPALLOC_core__ExtendedChar_O;
     sout << "KIND_LISPALLOC_core__ExtendedChar_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ExtendedChar_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__BaseChar_O:
 {
     typedef core::BaseChar_O type_KIND_LISPALLOC_core__BaseChar_O;
     sout << "KIND_LISPALLOC_core__BaseChar_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__BaseChar_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__StandardChar_O:
 {
     typedef core::StandardChar_O type_KIND_LISPALLOC_core__StandardChar_O;
     sout << "KIND_LISPALLOC_core__StandardChar_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__StandardChar_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__MicroHeap_O:
 {
     typedef core::MicroHeap_O type_KIND_LISPALLOC_core__MicroHeap_O;
     sout << "KIND_LISPALLOC_core__MicroHeap_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__MicroHeap_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Function_O:
 {
     typedef core::Function_O type_KIND_LISPALLOC_core__Function_O;
     sout << "KIND_LISPALLOC_core__Function_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Function_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O:
 {
     typedef core::SingleDispatchEffectiveMethodFunction_O type_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O;
     sout << "KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O:
 {
     typedef core::SingleDispatchGenericFunction_O type_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O;
     sout << "KIND_LISPALLOC_core__SingleDispatchGenericFunction_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__CompiledFunction_O:
 {
     typedef core::CompiledFunction_O type_KIND_LISPALLOC_core__CompiledFunction_O;
     sout << "KIND_LISPALLOC_core__CompiledFunction_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__CompiledFunction_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Instance_O:
 {
     typedef core::Instance_O type_KIND_LISPALLOC_core__Instance_O;
     sout << "KIND_LISPALLOC_core__Instance_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Instance_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SpecialForm_O:
 {
     typedef core::SpecialForm_O type_KIND_LISPALLOC_core__SpecialForm_O;
     sout << "KIND_LISPALLOC_core__SpecialForm_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SpecialForm_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__WeakKeyMapping_O:
 {
     typedef core::WeakKeyMapping_O type_KIND_LISPALLOC_core__WeakKeyMapping_O;
     sout << "KIND_LISPALLOC_core__WeakKeyMapping_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakKeyMapping_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DebugLoc_O:
 {
     typedef llvmo::DebugLoc_O type_KIND_LISPALLOC_llvmo__DebugLoc_O;
     sout << "KIND_LISPALLOC_llvmo__DebugLoc_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DebugLoc_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Regex_O:
 {
     typedef core::Regex_O type_KIND_LISPALLOC_core__Regex_O;
     sout << "KIND_LISPALLOC_core__Regex_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Regex_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Package_O:
 {
     typedef core::Package_O type_KIND_LISPALLOC_core__Package_O;
     sout << "KIND_LISPALLOC_core__Package_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Package_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__CandoException_O:
 {
     typedef core::CandoException_O type_KIND_LISPALLOC_core__CandoException_O;
     sout << "KIND_LISPALLOC_core__CandoException_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__CandoException_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__StringList_O:
 {
     typedef core::StringList_O type_KIND_LISPALLOC_core__StringList_O;
     sout << "KIND_LISPALLOC_core__StringList_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__StringList_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__IntArray_O:
 {
     typedef core::IntArray_O type_KIND_LISPALLOC_core__IntArray_O;
     sout << "KIND_LISPALLOC_core__IntArray_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__IntArray_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Number_O:
 {
     typedef core::Number_O type_KIND_LISPALLOC_core__Number_O;
     sout << "KIND_LISPALLOC_core__Number_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Number_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Real_O:
 {
     typedef core::Real_O type_KIND_LISPALLOC_core__Real_O;
     sout << "KIND_LISPALLOC_core__Real_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Real_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Float_O:
 {
     typedef core::Float_O type_KIND_LISPALLOC_core__Float_O;
     sout << "KIND_LISPALLOC_core__Float_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Float_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ShortFloat_O:
 {
     typedef core::ShortFloat_O type_KIND_LISPALLOC_core__ShortFloat_O;
     sout << "KIND_LISPALLOC_core__ShortFloat_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ShortFloat_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__DoubleFloat_O:
 {
     typedef core::DoubleFloat_O type_KIND_LISPALLOC_core__DoubleFloat_O;
     sout << "KIND_LISPALLOC_core__DoubleFloat_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__DoubleFloat_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SingleFloat_O:
 {
     typedef core::SingleFloat_O type_KIND_LISPALLOC_core__SingleFloat_O;
     sout << "KIND_LISPALLOC_core__SingleFloat_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleFloat_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Rational_O:
 {
     typedef core::Rational_O type_KIND_LISPALLOC_core__Rational_O;
     sout << "KIND_LISPALLOC_core__Rational_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Rational_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Ratio_O:
 {
     typedef core::Ratio_O type_KIND_LISPALLOC_core__Ratio_O;
     sout << "KIND_LISPALLOC_core__Ratio_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Ratio_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Integer_O:
 {
     typedef core::Integer_O type_KIND_LISPALLOC_core__Integer_O;
     sout << "KIND_LISPALLOC_core__Integer_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Integer_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Bignum_O:
 {
     typedef core::Bignum_O type_KIND_LISPALLOC_core__Bignum_O;
     sout << "KIND_LISPALLOC_core__Bignum_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Bignum_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Fixnum_O:
 {
     typedef core::Fixnum_O type_KIND_LISPALLOC_core__Fixnum_O;
     sout << "KIND_LISPALLOC_core__Fixnum_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Fixnum_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Complex_O:
 {
     typedef core::Complex_O type_KIND_LISPALLOC_core__Complex_O;
     sout << "KIND_LISPALLOC_core__Complex_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Complex_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__PosixTime_O:
 {
     typedef core::PosixTime_O type_KIND_LISPALLOC_core__PosixTime_O;
     sout << "KIND_LISPALLOC_core__PosixTime_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__PosixTime_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ReadTable_O:
 {
     typedef core::ReadTable_O type_KIND_LISPALLOC_core__ReadTable_O;
     sout << "KIND_LISPALLOC_core__ReadTable_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ReadTable_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Attribute_O:
 {
     typedef llvmo::Attribute_O type_KIND_LISPALLOC_llvmo__Attribute_O;
     sout << "KIND_LISPALLOC_llvmo__Attribute_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Attribute_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Array_O:
 {
     typedef core::Array_O type_KIND_LISPALLOC_core__Array_O;
     sout << "KIND_LISPALLOC_core__Array_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Array_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ArrayObjects_O:
 {
     typedef core::ArrayObjects_O type_KIND_LISPALLOC_core__ArrayObjects_O;
     sout << "KIND_LISPALLOC_core__ArrayObjects_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ArrayObjects_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Vector_O:
 {
     typedef core::Vector_O type_KIND_LISPALLOC_core__Vector_O;
     sout << "KIND_LISPALLOC_core__Vector_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Vector_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__String_O:
 {
     typedef core::String_O type_KIND_LISPALLOC_core__String_O;
     sout << "KIND_LISPALLOC_core__String_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__String_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__Str_O:
 {
     typedef core::Str_O type_KIND_BOOTSTRAP_core__Str_O;
     sout << "KIND_BOOTSTRAP_core__Str_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Str_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__StrWithFillPtr_O:
 {
     typedef core::StrWithFillPtr_O type_KIND_LISPALLOC_core__StrWithFillPtr_O;
     sout << "KIND_LISPALLOC_core__StrWithFillPtr_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__StrWithFillPtr_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__VectorObjects_O:
 {
     typedef core::VectorObjects_O type_KIND_LISPALLOC_core__VectorObjects_O;
     sout << "KIND_LISPALLOC_core__VectorObjects_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjects_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O:
 {
     typedef core::VectorObjectsWithFillPtr_O type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O;
     sout << "KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__BitVector_O:
 {
     typedef core::BitVector_O type_KIND_LISPALLOC_core__BitVector_O;
     sout << "KIND_LISPALLOC_core__BitVector_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__BitVector_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SimpleBitVector_O:
 {
     typedef core::SimpleBitVector_O type_KIND_LISPALLOC_core__SimpleBitVector_O;
     sout << "KIND_LISPALLOC_core__SimpleBitVector_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SimpleBitVector_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SmallMap_O:
 {
     typedef core::SmallMap_O type_KIND_LISPALLOC_core__SmallMap_O;
     sout << "KIND_LISPALLOC_core__SmallMap_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SmallMap_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Reader_O:
 {
     typedef core::Reader_O type_KIND_LISPALLOC_core__Reader_O;
     sout << "KIND_LISPALLOC_core__Reader_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Reader_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ObjRef_O:
 {
     typedef core::ObjRef_O type_KIND_LISPALLOC_core__ObjRef_O;
     sout << "KIND_LISPALLOC_core__ObjRef_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ObjRef_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__InsertPoint_O:
 {
     typedef llvmo::InsertPoint_O type_KIND_LISPALLOC_llvmo__InsertPoint_O;
     sout << "KIND_LISPALLOC_llvmo__InsertPoint_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__InsertPoint_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SourceManager_O:
 {
     typedef core::SourceManager_O type_KIND_LISPALLOC_core__SourceManager_O;
     sout << "KIND_LISPALLOC_core__SourceManager_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SourceManager_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ExternalObject_O:
 {
     typedef core::ExternalObject_O type_KIND_LISPALLOC_core__ExternalObject_O;
     sout << "KIND_LISPALLOC_core__ExternalObject_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ExternalObject_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Pass_O:
 {
     typedef llvmo::Pass_O type_KIND_LISPALLOC_llvmo__Pass_O;
     sout << "KIND_LISPALLOC_llvmo__Pass_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Pass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__FunctionPass_O:
 {
     typedef llvmo::FunctionPass_O type_KIND_LISPALLOC_llvmo__FunctionPass_O;
     sout << "KIND_LISPALLOC_llvmo__FunctionPass_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionPass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ModulePass_O:
 {
     typedef llvmo::ModulePass_O type_KIND_LISPALLOC_llvmo__ModulePass_O;
     sout << "KIND_LISPALLOC_llvmo__ModulePass_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ModulePass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ImmutablePass_O:
 {
     typedef llvmo::ImmutablePass_O type_KIND_LISPALLOC_llvmo__ImmutablePass_O;
     sout << "KIND_LISPALLOC_llvmo__ImmutablePass_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ImmutablePass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DataLayoutPass_O:
 {
     typedef llvmo::DataLayoutPass_O type_KIND_LISPALLOC_llvmo__DataLayoutPass_O;
     sout << "KIND_LISPALLOC_llvmo__DataLayoutPass_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DataLayoutPass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__IRBuilderBase_O:
 {
     typedef llvmo::IRBuilderBase_O type_KIND_LISPALLOC_llvmo__IRBuilderBase_O;
     sout << "KIND_LISPALLOC_llvmo__IRBuilderBase_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IRBuilderBase_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__IRBuilder_O:
 {
     typedef llvmo::IRBuilder_O type_KIND_LISPALLOC_llvmo__IRBuilder_O;
     sout << "KIND_LISPALLOC_llvmo__IRBuilder_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IRBuilder_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DIBuilder_O:
 {
     typedef llvmo::DIBuilder_O type_KIND_LISPALLOC_llvmo__DIBuilder_O;
     sout << "KIND_LISPALLOC_llvmo__DIBuilder_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIBuilder_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ExecutionEngine_O:
 {
     typedef llvmo::ExecutionEngine_O type_KIND_LISPALLOC_llvmo__ExecutionEngine_O;
     sout << "KIND_LISPALLOC_llvmo__ExecutionEngine_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ExecutionEngine_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__EngineBuilder_O:
 {
     typedef llvmo::EngineBuilder_O type_KIND_LISPALLOC_llvmo__EngineBuilder_O;
     sout << "KIND_LISPALLOC_llvmo__EngineBuilder_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__EngineBuilder_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__APInt_O:
 {
     typedef llvmo::APInt_O type_KIND_LISPALLOC_llvmo__APInt_O;
     sout << "KIND_LISPALLOC_llvmo__APInt_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__APInt_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__APFloat_O:
 {
     typedef llvmo::APFloat_O type_KIND_LISPALLOC_llvmo__APFloat_O;
     sout << "KIND_LISPALLOC_llvmo__APFloat_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__APFloat_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ForeignData_O:
 {
     typedef core::ForeignData_O type_KIND_LISPALLOC_core__ForeignData_O;
     sout << "KIND_LISPALLOC_core__ForeignData_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ForeignData_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__PassManagerBuilder_O:
 {
     typedef llvmo::PassManagerBuilder_O type_KIND_LISPALLOC_llvmo__PassManagerBuilder_O;
     sout << "KIND_LISPALLOC_llvmo__PassManagerBuilder_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManagerBuilder_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__PassManagerBase_O:
 {
     typedef llvmo::PassManagerBase_O type_KIND_LISPALLOC_llvmo__PassManagerBase_O;
     sout << "KIND_LISPALLOC_llvmo__PassManagerBase_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManagerBase_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__PassManager_O:
 {
     typedef llvmo::PassManager_O type_KIND_LISPALLOC_llvmo__PassManager_O;
     sout << "KIND_LISPALLOC_llvmo__PassManager_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManager_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__FunctionPassManager_O:
 {
     typedef llvmo::FunctionPassManager_O type_KIND_LISPALLOC_llvmo__FunctionPassManager_O;
     sout << "KIND_LISPALLOC_llvmo__FunctionPassManager_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionPassManager_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__DataLayout_O:
 {
     typedef llvmo::DataLayout_O type_KIND_LISPALLOC_llvmo__DataLayout_O;
     sout << "KIND_LISPALLOC_llvmo__DataLayout_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DataLayout_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Type_O:
 {
     typedef llvmo::Type_O type_KIND_LISPALLOC_llvmo__Type_O;
     sout << "KIND_LISPALLOC_llvmo__Type_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Type_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__CompositeType_O:
 {
     typedef llvmo::CompositeType_O type_KIND_LISPALLOC_llvmo__CompositeType_O;
     sout << "KIND_LISPALLOC_llvmo__CompositeType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__CompositeType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__SequentialType_O:
 {
     typedef llvmo::SequentialType_O type_KIND_LISPALLOC_llvmo__SequentialType_O;
     sout << "KIND_LISPALLOC_llvmo__SequentialType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__SequentialType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__PointerType_O:
 {
     typedef llvmo::PointerType_O type_KIND_LISPALLOC_llvmo__PointerType_O;
     sout << "KIND_LISPALLOC_llvmo__PointerType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PointerType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__VectorType_O:
 {
     typedef llvmo::VectorType_O type_KIND_LISPALLOC_llvmo__VectorType_O;
     sout << "KIND_LISPALLOC_llvmo__VectorType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__VectorType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ArrayType_O:
 {
     typedef llvmo::ArrayType_O type_KIND_LISPALLOC_llvmo__ArrayType_O;
     sout << "KIND_LISPALLOC_llvmo__ArrayType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ArrayType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__StructType_O:
 {
     typedef llvmo::StructType_O type_KIND_LISPALLOC_llvmo__StructType_O;
     sout << "KIND_LISPALLOC_llvmo__StructType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__StructType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__IntegerType_O:
 {
     typedef llvmo::IntegerType_O type_KIND_LISPALLOC_llvmo__IntegerType_O;
     sout << "KIND_LISPALLOC_llvmo__IntegerType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IntegerType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__FunctionType_O:
 {
     typedef llvmo::FunctionType_O type_KIND_LISPALLOC_llvmo__FunctionType_O;
     sout << "KIND_LISPALLOC_llvmo__FunctionType_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionType_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Linker_O:
 {
     typedef llvmo::Linker_O type_KIND_LISPALLOC_llvmo__Linker_O;
     sout << "KIND_LISPALLOC_llvmo__Linker_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Linker_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Value_O:
 {
     typedef llvmo::Value_O type_KIND_LISPALLOC_llvmo__Value_O;
     sout << "KIND_LISPALLOC_llvmo__Value_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Value_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Argument_O:
 {
     typedef llvmo::Argument_O type_KIND_LISPALLOC_llvmo__Argument_O;
     sout << "KIND_LISPALLOC_llvmo__Argument_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Argument_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__MDString_O:
 {
     typedef llvmo::MDString_O type_KIND_LISPALLOC_llvmo__MDString_O;
     sout << "KIND_LISPALLOC_llvmo__MDString_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__MDString_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__MDNode_O:
 {
     typedef llvmo::MDNode_O type_KIND_LISPALLOC_llvmo__MDNode_O;
     sout << "KIND_LISPALLOC_llvmo__MDNode_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__MDNode_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__BasicBlock_O:
 {
     typedef llvmo::BasicBlock_O type_KIND_LISPALLOC_llvmo__BasicBlock_O;
     sout << "KIND_LISPALLOC_llvmo__BasicBlock_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BasicBlock_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__User_O:
 {
     typedef llvmo::User_O type_KIND_LISPALLOC_llvmo__User_O;
     sout << "KIND_LISPALLOC_llvmo__User_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__User_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Instruction_O:
 {
     typedef llvmo::Instruction_O type_KIND_LISPALLOC_llvmo__Instruction_O;
     sout << "KIND_LISPALLOC_llvmo__Instruction_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Instruction_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__AtomicRMWInst_O:
 {
     typedef llvmo::AtomicRMWInst_O type_KIND_LISPALLOC_llvmo__AtomicRMWInst_O;
     sout << "KIND_LISPALLOC_llvmo__AtomicRMWInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AtomicRMWInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__StoreInst_O:
 {
     typedef llvmo::StoreInst_O type_KIND_LISPALLOC_llvmo__StoreInst_O;
     sout << "KIND_LISPALLOC_llvmo__StoreInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__StoreInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__PHINode_O:
 {
     typedef llvmo::PHINode_O type_KIND_LISPALLOC_llvmo__PHINode_O;
     sout << "KIND_LISPALLOC_llvmo__PHINode_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PHINode_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O:
 {
     typedef llvmo::AtomicCmpXchgInst_O type_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O;
     sout << "KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__LandingPadInst_O:
 {
     typedef llvmo::LandingPadInst_O type_KIND_LISPALLOC_llvmo__LandingPadInst_O;
     sout << "KIND_LISPALLOC_llvmo__LandingPadInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LandingPadInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__UnaryInstruction_O:
 {
     typedef llvmo::UnaryInstruction_O type_KIND_LISPALLOC_llvmo__UnaryInstruction_O;
     sout << "KIND_LISPALLOC_llvmo__UnaryInstruction_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UnaryInstruction_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__LoadInst_O:
 {
     typedef llvmo::LoadInst_O type_KIND_LISPALLOC_llvmo__LoadInst_O;
     sout << "KIND_LISPALLOC_llvmo__LoadInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LoadInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__VAArgInst_O:
 {
     typedef llvmo::VAArgInst_O type_KIND_LISPALLOC_llvmo__VAArgInst_O;
     sout << "KIND_LISPALLOC_llvmo__VAArgInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__VAArgInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__AllocaInst_O:
 {
     typedef llvmo::AllocaInst_O type_KIND_LISPALLOC_llvmo__AllocaInst_O;
     sout << "KIND_LISPALLOC_llvmo__AllocaInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AllocaInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__TerminatorInst_O:
 {
     typedef llvmo::TerminatorInst_O type_KIND_LISPALLOC_llvmo__TerminatorInst_O;
     sout << "KIND_LISPALLOC_llvmo__TerminatorInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TerminatorInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__IndirectBrInst_O:
 {
     typedef llvmo::IndirectBrInst_O type_KIND_LISPALLOC_llvmo__IndirectBrInst_O;
     sout << "KIND_LISPALLOC_llvmo__IndirectBrInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IndirectBrInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__UnreachableInst_O:
 {
     typedef llvmo::UnreachableInst_O type_KIND_LISPALLOC_llvmo__UnreachableInst_O;
     sout << "KIND_LISPALLOC_llvmo__UnreachableInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UnreachableInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__InvokeInst_O:
 {
     typedef llvmo::InvokeInst_O type_KIND_LISPALLOC_llvmo__InvokeInst_O;
     sout << "KIND_LISPALLOC_llvmo__InvokeInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__InvokeInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ReturnInst_O:
 {
     typedef llvmo::ReturnInst_O type_KIND_LISPALLOC_llvmo__ReturnInst_O;
     sout << "KIND_LISPALLOC_llvmo__ReturnInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ReturnInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__BranchInst_O:
 {
     typedef llvmo::BranchInst_O type_KIND_LISPALLOC_llvmo__BranchInst_O;
     sout << "KIND_LISPALLOC_llvmo__BranchInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BranchInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ResumeInst_O:
 {
     typedef llvmo::ResumeInst_O type_KIND_LISPALLOC_llvmo__ResumeInst_O;
     sout << "KIND_LISPALLOC_llvmo__ResumeInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ResumeInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__SwitchInst_O:
 {
     typedef llvmo::SwitchInst_O type_KIND_LISPALLOC_llvmo__SwitchInst_O;
     sout << "KIND_LISPALLOC_llvmo__SwitchInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__SwitchInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__FenceInst_O:
 {
     typedef llvmo::FenceInst_O type_KIND_LISPALLOC_llvmo__FenceInst_O;
     sout << "KIND_LISPALLOC_llvmo__FenceInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FenceInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__CallInst_O:
 {
     typedef llvmo::CallInst_O type_KIND_LISPALLOC_llvmo__CallInst_O;
     sout << "KIND_LISPALLOC_llvmo__CallInst_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__CallInst_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Constant_O:
 {
     typedef llvmo::Constant_O type_KIND_LISPALLOC_llvmo__Constant_O;
     sout << "KIND_LISPALLOC_llvmo__Constant_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Constant_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ConstantDataSequential_O:
 {
     typedef llvmo::ConstantDataSequential_O type_KIND_LISPALLOC_llvmo__ConstantDataSequential_O;
     sout << "KIND_LISPALLOC_llvmo__ConstantDataSequential_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantDataSequential_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ConstantDataArray_O:
 {
     typedef llvmo::ConstantDataArray_O type_KIND_LISPALLOC_llvmo__ConstantDataArray_O;
     sout << "KIND_LISPALLOC_llvmo__ConstantDataArray_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantDataArray_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ConstantStruct_O:
 {
     typedef llvmo::ConstantStruct_O type_KIND_LISPALLOC_llvmo__ConstantStruct_O;
     sout << "KIND_LISPALLOC_llvmo__ConstantStruct_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantStruct_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__BlockAddress_O:
 {
     typedef llvmo::BlockAddress_O type_KIND_LISPALLOC_llvmo__BlockAddress_O;
     sout << "KIND_LISPALLOC_llvmo__BlockAddress_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BlockAddress_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ConstantPointerNull_O:
 {
     typedef llvmo::ConstantPointerNull_O type_KIND_LISPALLOC_llvmo__ConstantPointerNull_O;
     sout << "KIND_LISPALLOC_llvmo__ConstantPointerNull_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantPointerNull_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ConstantArray_O:
 {
     typedef llvmo::ConstantArray_O type_KIND_LISPALLOC_llvmo__ConstantArray_O;
     sout << "KIND_LISPALLOC_llvmo__ConstantArray_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantArray_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ConstantFP_O:
 {
     typedef llvmo::ConstantFP_O type_KIND_LISPALLOC_llvmo__ConstantFP_O;
     sout << "KIND_LISPALLOC_llvmo__ConstantFP_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantFP_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__GlobalValue_O:
 {
     typedef llvmo::GlobalValue_O type_KIND_LISPALLOC_llvmo__GlobalValue_O;
     sout << "KIND_LISPALLOC_llvmo__GlobalValue_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__GlobalValue_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Function_O:
 {
     typedef llvmo::Function_O type_KIND_LISPALLOC_llvmo__Function_O;
     sout << "KIND_LISPALLOC_llvmo__Function_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Function_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__GlobalVariable_O:
 {
     typedef llvmo::GlobalVariable_O type_KIND_LISPALLOC_llvmo__GlobalVariable_O;
     sout << "KIND_LISPALLOC_llvmo__GlobalVariable_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__GlobalVariable_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ConstantExpr_O:
 {
     typedef llvmo::ConstantExpr_O type_KIND_LISPALLOC_llvmo__ConstantExpr_O;
     sout << "KIND_LISPALLOC_llvmo__ConstantExpr_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantExpr_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__UndefValue_O:
 {
     typedef llvmo::UndefValue_O type_KIND_LISPALLOC_llvmo__UndefValue_O;
     sout << "KIND_LISPALLOC_llvmo__UndefValue_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UndefValue_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__ConstantInt_O:
 {
     typedef llvmo::ConstantInt_O type_KIND_LISPALLOC_llvmo__ConstantInt_O;
     sout << "KIND_LISPALLOC_llvmo__ConstantInt_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantInt_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__TargetMachine_O:
 {
     typedef llvmo::TargetMachine_O type_KIND_LISPALLOC_llvmo__TargetMachine_O;
     sout << "KIND_LISPALLOC_llvmo__TargetMachine_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TargetMachine_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O:
 {
     typedef llvmo::LLVMTargetMachine_O type_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O;
     sout << "KIND_LISPALLOC_llvmo__LLVMTargetMachine_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__LLVMContext_O:
 {
     typedef llvmo::LLVMContext_O type_KIND_LISPALLOC_llvmo__LLVMContext_O;
     sout << "KIND_LISPALLOC_llvmo__LLVMContext_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LLVMContext_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__Module_O:
 {
     typedef llvmo::Module_O type_KIND_LISPALLOC_llvmo__Module_O;
     sout << "KIND_LISPALLOC_llvmo__Module_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Module_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_llvmo__NamedMDNode_O:
 {
     typedef llvmo::NamedMDNode_O type_KIND_LISPALLOC_llvmo__NamedMDNode_O;
     sout << "KIND_LISPALLOC_llvmo__NamedMDNode_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__NamedMDNode_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SNode_O:
 {
     typedef core::SNode_O type_KIND_LISPALLOC_core__SNode_O;
     sout << "KIND_LISPALLOC_core__SNode_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SNode_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__BranchSNode_O:
 {
     typedef core::BranchSNode_O type_KIND_LISPALLOC_core__BranchSNode_O;
     sout << "KIND_LISPALLOC_core__BranchSNode_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__BranchSNode_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__LeafSNode_O:
 {
     typedef core::LeafSNode_O type_KIND_LISPALLOC_core__LeafSNode_O;
     sout << "KIND_LISPALLOC_core__LeafSNode_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__LeafSNode_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__LoadTimeValues_O:
 {
     typedef core::LoadTimeValues_O type_KIND_LISPALLOC_core__LoadTimeValues_O;
     sout << "KIND_LISPALLOC_core__LoadTimeValues_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadTimeValues_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__LightUserData_O:
 {
     typedef core::LightUserData_O type_KIND_LISPALLOC_core__LightUserData_O;
     sout << "KIND_LISPALLOC_core__LightUserData_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__LightUserData_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__UserData_O:
 {
     typedef core::UserData_O type_KIND_LISPALLOC_core__UserData_O;
     sout << "KIND_LISPALLOC_core__UserData_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__UserData_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__WeakHashTable_O:
 {
     typedef core::WeakHashTable_O type_KIND_LISPALLOC_core__WeakHashTable_O;
     sout << "KIND_LISPALLOC_core__WeakHashTable_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakHashTable_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__WeakKeyHashTable_O:
 {
     typedef core::WeakKeyHashTable_O type_KIND_LISPALLOC_core__WeakKeyHashTable_O;
     sout << "KIND_LISPALLOC_core__WeakKeyHashTable_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakKeyHashTable_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O:
 {
     core::WrappedPointer_O* obj_gc_safe = reinterpret_cast<core::WrappedPointer_O*>(client);
     sout << "KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O size[" << (AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__StandardObject_O:
 {
     typedef core::StandardObject_O type_KIND_BOOTSTRAP_core__StandardObject_O;
     sout << "KIND_BOOTSTRAP_core__StandardObject_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StandardObject_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__Metaobject_O:
 {
     typedef core::Metaobject_O type_KIND_BOOTSTRAP_core__Metaobject_O;
     sout << "KIND_BOOTSTRAP_core__Metaobject_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Metaobject_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__Specializer_O:
 {
     typedef core::Specializer_O type_KIND_BOOTSTRAP_core__Specializer_O;
     sout << "KIND_BOOTSTRAP_core__Specializer_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Specializer_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__Class_O:
 {
     typedef core::Class_O type_KIND_BOOTSTRAP_core__Class_O;
     sout << "KIND_BOOTSTRAP_core__Class_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Class_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__ForwardReferencedClass_O:
 {
     typedef core::ForwardReferencedClass_O type_KIND_LISPALLOC_core__ForwardReferencedClass_O;
     sout << "KIND_LISPALLOC_core__ForwardReferencedClass_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__ForwardReferencedClass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__StdClass_O:
 {
     typedef core::StdClass_O type_KIND_BOOTSTRAP_core__StdClass_O;
     sout << "KIND_BOOTSTRAP_core__StdClass_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StdClass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__StandardClass_O:
 {
     typedef core::StandardClass_O type_KIND_BOOTSTRAP_core__StandardClass_O;
     sout << "KIND_BOOTSTRAP_core__StandardClass_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StandardClass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__FuncallableStandardClass_O:
 {
     typedef core::FuncallableStandardClass_O type_KIND_LISPALLOC_core__FuncallableStandardClass_O;
     sout << "KIND_LISPALLOC_core__FuncallableStandardClass_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__FuncallableStandardClass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__BuiltInClass_O:
 {
     typedef core::BuiltInClass_O type_KIND_BOOTSTRAP_core__BuiltInClass_O;
     sout << "KIND_BOOTSTRAP_core__BuiltInClass_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__BuiltInClass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_clbind__ClassRep_O:
 {
     typedef clbind::ClassRep_O type_KIND_LISPALLOC_clbind__ClassRep_O;
     sout << "KIND_LISPALLOC_clbind__ClassRep_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_clbind__ClassRep_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__StructureClass_O:
 {
     typedef core::StructureClass_O type_KIND_BOOTSTRAP_core__StructureClass_O;
     sout << "KIND_BOOTSTRAP_core__StructureClass_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StructureClass_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_asttooling__AstVisitor_O:
 {
     typedef asttooling::AstVisitor_O type_KIND_LISPALLOC_asttooling__AstVisitor_O;
     sout << "KIND_LISPALLOC_asttooling__AstVisitor_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__AstVisitor_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_BOOTSTRAP_core__Symbol_O:
 {
     typedef core::Symbol_O type_KIND_BOOTSTRAP_core__Symbol_O;
     sout << "KIND_BOOTSTRAP_core__Symbol_O size[" << (AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Symbol_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Null_O:
 {
     typedef core::Null_O type_KIND_LISPALLOC_core__Null_O;
     sout << "KIND_LISPALLOC_core__Null_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Null_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__StringSet_O:
 {
     typedef core::StringSet_O type_KIND_LISPALLOC_core__StringSet_O;
     sout << "KIND_LISPALLOC_core__StringSet_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__StringSet_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SymbolToEnumConverter_O:
 {
     typedef core::SymbolToEnumConverter_O type_KIND_LISPALLOC_core__SymbolToEnumConverter_O;
     sout << "KIND_LISPALLOC_core__SymbolToEnumConverter_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolToEnumConverter_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__MultiStringBuffer_O:
 {
     typedef core::MultiStringBuffer_O type_KIND_LISPALLOC_core__MultiStringBuffer_O;
     sout << "KIND_LISPALLOC_core__MultiStringBuffer_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__MultiStringBuffer_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SymbolList_O:
 {
     typedef core::SymbolList_O type_KIND_LISPALLOC_core__SymbolList_O;
     sout << "KIND_LISPALLOC_core__SymbolList_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolList_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__WeakPointer_O:
 {
     typedef core::WeakPointer_O type_KIND_LISPALLOC_core__WeakPointer_O;
     sout << "KIND_LISPALLOC_core__WeakPointer_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakPointer_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__HashTable_O:
 {
     typedef core::HashTable_O type_KIND_LISPALLOC_core__HashTable_O;
     sout << "KIND_LISPALLOC_core__HashTable_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTable_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__HashTableEqual_O:
 {
     typedef core::HashTableEqual_O type_KIND_LISPALLOC_core__HashTableEqual_O;
     sout << "KIND_LISPALLOC_core__HashTableEqual_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEqual_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__HashTableEqualp_O:
 {
     typedef core::HashTableEqualp_O type_KIND_LISPALLOC_core__HashTableEqualp_O;
     sout << "KIND_LISPALLOC_core__HashTableEqualp_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEqualp_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__HashTableEql_O:
 {
     typedef core::HashTableEql_O type_KIND_LISPALLOC_core__HashTableEql_O;
     sout << "KIND_LISPALLOC_core__HashTableEql_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEql_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__HashTableEq_O:
 {
     typedef core::HashTableEq_O type_KIND_LISPALLOC_core__HashTableEq_O;
     sout << "KIND_LISPALLOC_core__HashTableEq_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEq_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__SymbolSet_O:
 {
     typedef core::SymbolSet_O type_KIND_LISPALLOC_core__SymbolSet_O;
     sout << "KIND_LISPALLOC_core__SymbolSet_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolSet_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_core__Binder_O:
 {
     typedef core::Binder_O type_KIND_LISPALLOC_core__Binder_O;
     sout << "KIND_LISPALLOC_core__Binder_O size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_core__Binder_O))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__Cache:
 {
     typedef core::Cache type_KIND_CLASSALLOC_core__Cache;
     sout << "KIND_CLASSALLOC_core__Cache size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__Cache))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_:
 {
     gctools::GCVector_moveable<core::DynamicBinding>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::DynamicBinding>*>(client);
@@ -7686,6 +7925,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>*>(client);
@@ -7694,11 +7934,13 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Sourc
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
 {
     typedef asttooling::DerivableFrontendActionFactory type_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory;
     sout << "KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_:
 {
     gctools::GCVector_moveable<asttooling::ContextFrame>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ContextFrame>*>(client);
@@ -7707,6 +7949,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
 {
     gctools::GCVector_moveable<asttooling::Message>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::Message>*>(client);
@@ -7715,6 +7958,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCSTRING_gctools__GCString_moveable_char_:
 {
     gctools::GCString_moveable<char>* obj_gc_safe = reinterpret_cast<gctools::GCString_moveable<char>*>(client);
@@ -7722,6 +7966,7 @@ obj_dump_KIND_GCSTRING_gctools__GCString_moveable_char_:
     size_t header_and_gcstring_size = AlignUp(sizeof_container<type_KIND_GCSTRING_gctools__GCString_moveable_char_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "KIND_GCSTRING_gctools__GCString_moveable_char_" << "bytes[" << header_and_gcstring_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
     gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
@@ -7730,6 +7975,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_c
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_:
 {
     gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>*>(client);
@@ -7738,6 +7984,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherD
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
 {
     gctools::GCVector_moveable<core::ExceptionEntry>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::ExceptionEntry>*>(client);
@@ -7746,6 +7993,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>*>(client);
@@ -7754,6 +8002,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Packa
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
 {
     gctools::GCVector_moveable<asttooling::ErrorContent>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ErrorContent>*>(client);
@@ -7762,6 +8011,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>*>(client);
@@ -7770,26 +8020,31 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
 {
     typedef asttooling::DerivableSyntaxOnlyAction type_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction;
     sout << "KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure:
 {
     core::BuiltinClosure* obj_gc_safe = reinterpret_cast<core::BuiltinClosure*>(client);
     sout << "KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure size[" << (AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__InterpretedClosure:
 {
     typedef core::InterpretedClosure type_KIND_CLASSALLOC_core__InterpretedClosure;
     sout << "KIND_CLASSALLOC_core__InterpretedClosure size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__InterpretedClosure))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_llvmo__CompiledClosure:
 {
     typedef llvmo::CompiledClosure type_KIND_CLASSALLOC_llvmo__CompiledClosure;
     sout << "KIND_CLASSALLOC_llvmo__CompiledClosure size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_llvmo__CompiledClosure))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_:
 {
     gctools::GCVector_moveable<asttooling::ParserValue>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ParserValue>*>(client);
@@ -7798,16 +8053,19 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor:
 {
     typedef asttooling::internal::OverloadedMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor;
     sout << "KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
 {
     typedef asttooling::DerivableMatchCallback type_KIND_LISPALLOC_asttooling__DerivableMatchCallback;
     sout << "KIND_LISPALLOC_asttooling__DerivableMatchCallback size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableMatchCallback))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>*>(client);
@@ -7816,6 +8074,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Singl
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>*>(client);
@@ -7824,6 +8083,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Character_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Character_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Character_O>>*>(client);
@@ -7832,6 +8092,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Chara
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Character_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_:
 {
     gctools::GCVector_moveable<core::SequenceStepper *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SequenceStepper *>*>(client);
@@ -7840,16 +8101,19 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__CoreExposer:
 {
     typedef core::CoreExposer type_KIND_CLASSALLOC_core__CoreExposer;
     sout << "KIND_CLASSALLOC_core__CoreExposer size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__CoreExposer))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure:
 {
     typedef core::SingleDispatchGenericFunctionClosure type_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure;
     sout << "KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
     gctools::GCVector_moveable<core::SymbolStorage>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolStorage>*>(client);
@@ -7858,6 +8122,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_:
 {
     gctools::GCVector_moveable<core::OptionalArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::OptionalArgument>*>(client);
@@ -7866,6 +8131,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_:
 {
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>*>(client);
@@ -7874,11 +8140,13 @@ obj_dump_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster:
 {
     typedef asttooling::DerivableArgumentsAdjuster type_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster;
     sout << "KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_:
 {
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,3>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,3>*>(client);
@@ -7887,26 +8155,31 @@ obj_dump_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__MacroClosure:
 {
     typedef core::MacroClosure type_KIND_CLASSALLOC_core__MacroClosure;
     sout << "KIND_CLASSALLOC_core__MacroClosure size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__MacroClosure))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
     typedef asttooling::DerivableASTFrontendAction type_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction;
     sout << "KIND_LISPALLOC_asttooling__DerivableASTFrontendAction size[" << (AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor:
 {
     typedef asttooling::internal::FixedArgCountMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor;
     sout << "KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor:
 {
     typedef asttooling::internal::FreeFuncMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor;
     sout << "KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
     gctools::GCVector_moveable<core::AuxArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::AuxArgument>*>(client);
@@ -7915,6 +8188,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
 {
     gctools::GCVector_moveable<core::SymbolClassPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolClassPair>*>(client);
@@ -7923,6 +8197,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
 {
     gctools::GCVector_moveable<core::KeywordArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::KeywordArgument>*>(client);
@@ -7931,6 +8206,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
 {
     gctools::GCVector_moveable<core::CacheRecord>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::CacheRecord>*>(client);
@@ -7939,11 +8215,13 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_core__InstanceClosure:
 {
     typedef core::InstanceClosure type_KIND_CLASSALLOC_core__InstanceClosure;
     sout << "KIND_CLASSALLOC_core__InstanceClosure size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_core__InstanceClosure))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
     gctools::GCVector_moveable<core::RequiredArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::RequiredArgument>*>(client);
@@ -7952,6 +8230,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>*>(client);
@@ -7960,11 +8239,13 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbo
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor:
 {
     typedef asttooling::internal::VariadicOperatorMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor;
     sout << "KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor size[" << (AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor))+global_alignup_sizeof_header) << "]" ;
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>*>(client);
@@ -7973,6 +8254,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__Cla
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_:
 {
     gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>*>(client);
@@ -7981,6 +8263,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatc
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O__:
 {
     gctools::GCVector_moveable<gctools::smart_ptr<core::Str_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Str_O>>*>(client);
@@ -7989,6 +8272,7 @@ obj_dump_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     sout << "bytes[" << header_and_gccontainer_size << "]";
 }
+goto BOTTOM;
 #endif // defined(GC_OBJ_DUMP_MAP)
 #if defined(GC_OBJ_DUMP_MAP_TABLE)
 static void* OBJ_DUMP_MAP_table[] = { NULL 
@@ -10331,13 +10615,8 @@ static void* OBJ_SKIP_table[] = { NULL
 };
 #endif // defined(GC_OBJ_SKIP_TABLE)
 #if defined(GC_OBJ_SCAN)
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
     POINTER_FIX(obj_gc_safe->_Roots._ExceptionStack._Stack._Vector._Contents);
     POINTER_FIX(obj_gc_safe->_Roots._MultipleValues._Values._Vector._Contents);
@@ -10384,160 +10663,95 @@ obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O:
     typedef core::Lisp_O type_KIND_ROOTCLASSALLOC_core__Lisp_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_core__Lisp_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::RegMap::RegistryMaps* obj_gc_safe = reinterpret_cast<asttooling::RegMap::RegistryMaps*>(client);
     POINTER_FIX(obj_gc_safe->Constructors._Vector._Contents);
     typedef asttooling::RegMap::RegistryMaps type_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps;
     client = (char*)client + AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_core__Creator(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_TEMPLATED_CLASSALLOC_core__Creator:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Creator* obj_gc_safe = reinterpret_cast<core::Creator*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     clbind::ConstructorCreator* obj_gc_safe = reinterpret_cast<clbind::ConstructorCreator*>(client);
     SMART_PTR_FIX(obj_gc_safe->_mostDerivedClassSymbol);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__InstanceCreator(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__InstanceCreator:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::InstanceCreator* obj_gc_safe = reinterpret_cast<core::InstanceCreator*>(client);
     SMART_PTR_FIX(obj_gc_safe->_className);
     typedef core::InstanceCreator type_KIND_CLASSALLOC_core__InstanceCreator;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__InstanceCreator)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_clbind__DummyCreator(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_clbind__DummyCreator:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef clbind::DummyCreator type_KIND_CLASSALLOC_clbind__DummyCreator;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_clbind__DummyCreator)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__SequenceStepper(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__SequenceStepper:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::SequenceStepper type_KIND_CLASSALLOC_core__SequenceStepper;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__SequenceStepper)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__ConsStepper(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__ConsStepper:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ConsStepper* obj_gc_safe = reinterpret_cast<core::ConsStepper*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Cur);
     typedef core::ConsStepper type_KIND_CLASSALLOC_core__ConsStepper;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__ConsStepper)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__VectorStepper(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__VectorStepper:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::VectorStepper* obj_gc_safe = reinterpret_cast<core::VectorStepper*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Domain);
     typedef core::VectorStepper type_KIND_CLASSALLOC_core__VectorStepper;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__VectorStepper)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_ROOTCLASSALLOC_clbind__detail__class_map(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     clbind::detail::class_map* obj_gc_safe = reinterpret_cast<clbind::detail::class_map*>(client);
     POINTER_FIX(obj_gc_safe->m_classes._Vector._Contents);
     typedef clbind::detail::class_map type_KIND_ROOTCLASSALLOC_clbind__detail__class_map;
     client = (char*)client + AlignUp(sizeof(type_KIND_ROOTCLASSALLOC_clbind__detail__class_map)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__T_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__T_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::T_O type_KIND_BOOTSTRAP_core__T_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__T_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Cons_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Cons_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Car);
     SMART_PTR_FIX(obj_gc_safe->_Cdr);
     typedef core::Cons_O type_KIND_LISPALLOC_core__Cons_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Cons_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_cffi__Pointer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_cffi__Pointer_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef cffi::Pointer_O type_KIND_LISPALLOC_cffi__Pointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_cffi__Pointer_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Stream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Stream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10545,14 +10759,9 @@ obj_scan_KIND_LISPALLOC_core__Stream_O:
     typedef core::Stream_O type_KIND_LISPALLOC_core__Stream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Stream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__AnsiStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__AnsiStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10560,14 +10769,9 @@ obj_scan_KIND_LISPALLOC_core__AnsiStream_O:
     typedef core::AnsiStream_O type_KIND_LISPALLOC_core__AnsiStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__AnsiStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__TwoWayStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__TwoWayStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10577,14 +10781,9 @@ obj_scan_KIND_LISPALLOC_core__TwoWayStream_O:
     typedef core::TwoWayStream_O type_KIND_LISPALLOC_core__TwoWayStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__TwoWayStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FileStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__FileStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10594,14 +10793,9 @@ obj_scan_KIND_LISPALLOC_core__FileStream_O:
     typedef core::FileStream_O type_KIND_LISPALLOC_core__FileStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FileStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__IOFileStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__IOFileStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10611,14 +10805,9 @@ obj_scan_KIND_LISPALLOC_core__IOFileStream_O:
     typedef core::IOFileStream_O type_KIND_LISPALLOC_core__IOFileStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__IOFileStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__IOStreamStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__IOStreamStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10628,14 +10817,9 @@ obj_scan_KIND_LISPALLOC_core__IOStreamStream_O:
     typedef core::IOStreamStream_O type_KIND_LISPALLOC_core__IOStreamStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__IOStreamStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BroadcastStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__BroadcastStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10644,14 +10828,9 @@ obj_scan_KIND_LISPALLOC_core__BroadcastStream_O:
     typedef core::BroadcastStream_O type_KIND_LISPALLOC_core__BroadcastStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BroadcastStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__StringStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10659,14 +10838,9 @@ obj_scan_KIND_LISPALLOC_core__StringStream_O:
     typedef core::StringStream_O type_KIND_LISPALLOC_core__StringStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringOutputStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__StringOutputStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10675,14 +10849,9 @@ obj_scan_KIND_LISPALLOC_core__StringOutputStream_O:
     typedef core::StringOutputStream_O type_KIND_LISPALLOC_core__StringOutputStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringOutputStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringInputStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__StringInputStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10691,14 +10860,9 @@ obj_scan_KIND_LISPALLOC_core__StringInputStream_O:
     typedef core::StringInputStream_O type_KIND_LISPALLOC_core__StringInputStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringInputStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SynonymStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SynonymStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10707,14 +10871,9 @@ obj_scan_KIND_LISPALLOC_core__SynonymStream_O:
     typedef core::SynonymStream_O type_KIND_LISPALLOC_core__SynonymStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SynonymStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__EchoStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__EchoStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10724,14 +10883,9 @@ obj_scan_KIND_LISPALLOC_core__EchoStream_O:
     typedef core::EchoStream_O type_KIND_LISPALLOC_core__EchoStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__EchoStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ConcatenatedStream_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ConcatenatedStream_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Format);
     SMART_PTR_FIX(obj_gc_safe->_ByteStack);
@@ -10740,14 +10894,9 @@ obj_scan_KIND_LISPALLOC_core__ConcatenatedStream_O:
     typedef core::ConcatenatedStream_O type_KIND_LISPALLOC_core__ConcatenatedStream_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ConcatenatedStream_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Pathname_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Pathname_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Host);
     SMART_PTR_FIX(obj_gc_safe->_Device);
@@ -10758,14 +10907,9 @@ obj_scan_KIND_LISPALLOC_core__Pathname_O:
     typedef core::Pathname_O type_KIND_LISPALLOC_core__Pathname_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Pathname_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LogicalPathname_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__LogicalPathname_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Host);
     SMART_PTR_FIX(obj_gc_safe->_Device);
@@ -10776,81 +10920,51 @@ obj_scan_KIND_LISPALLOC_core__LogicalPathname_O:
     typedef core::LogicalPathname_O type_KIND_LISPALLOC_core__LogicalPathname_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LogicalPathname_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Environment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Environment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Environment_O type_KIND_LISPALLOC_core__Environment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Environment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__GlueEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__GlueEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::GlueEnvironment_O* obj_gc_safe = reinterpret_cast<core::GlueEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Map);
     SMART_PTR_FIX(obj_gc_safe->_Args);
     typedef core::GlueEnvironment_O type_KIND_LISPALLOC_core__GlueEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__GlueEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LexicalEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__LexicalEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::LexicalEnvironment_O* obj_gc_safe = reinterpret_cast<core::LexicalEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
     typedef core::LexicalEnvironment_O type_KIND_LISPALLOC_core__LexicalEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LexicalEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__CompileTimeEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__CompileTimeEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::CompileTimeEnvironment_O* obj_gc_safe = reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
     typedef core::CompileTimeEnvironment_O type_KIND_LISPALLOC_core__CompileTimeEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CompileTimeEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__CatchEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__CatchEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::CatchEnvironment_O* obj_gc_safe = reinterpret_cast<core::CatchEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
     typedef core::CatchEnvironment_O type_KIND_LISPALLOC_core__CatchEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CatchEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BlockEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__BlockEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::BlockEnvironment_O* obj_gc_safe = reinterpret_cast<core::BlockEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
@@ -10858,42 +10972,27 @@ obj_scan_KIND_LISPALLOC_core__BlockEnvironment_O:
     typedef core::BlockEnvironment_O type_KIND_LISPALLOC_core__BlockEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BlockEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__UnwindProtectEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__UnwindProtectEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::UnwindProtectEnvironment_O* obj_gc_safe = reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
     typedef core::UnwindProtectEnvironment_O type_KIND_LISPALLOC_core__UnwindProtectEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__UnwindProtectEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionContainerEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__FunctionContainerEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::FunctionContainerEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
     typedef core::FunctionContainerEnvironment_O type_KIND_LISPALLOC_core__FunctionContainerEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionContainerEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SymbolMacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
@@ -10901,14 +11000,9 @@ obj_scan_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O:
     typedef core::SymbolMacroletEnvironment_O type_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__MacroletEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__MacroletEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::MacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::MacroletEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
@@ -10916,14 +11010,9 @@ obj_scan_KIND_LISPALLOC_core__MacroletEnvironment_O:
     typedef core::MacroletEnvironment_O type_KIND_LISPALLOC_core__MacroletEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__MacroletEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::RuntimeVisibleEnvironment_O* obj_gc_safe = reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
@@ -10931,14 +11020,9 @@ obj_scan_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O:
     typedef core::RuntimeVisibleEnvironment_O type_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ValueEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ValueEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::ValueEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
@@ -10948,14 +11032,9 @@ obj_scan_KIND_LISPALLOC_core__ValueEnvironment_O:
     typedef core::ValueEnvironment_O type_KIND_LISPALLOC_core__ValueEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ValueEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionValueEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__FunctionValueEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::FunctionValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
@@ -10965,14 +11044,9 @@ obj_scan_KIND_LISPALLOC_core__FunctionValueEnvironment_O:
     typedef core::FunctionValueEnvironment_O type_KIND_LISPALLOC_core__FunctionValueEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionValueEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__TagbodyEnvironment_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__TagbodyEnvironment_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::TagbodyEnvironment_O* obj_gc_safe = reinterpret_cast<core::TagbodyEnvironment_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentEnvironment);
     SMART_PTR_FIX(obj_gc_safe->_Metadata);
@@ -10983,52 +11057,32 @@ obj_scan_KIND_LISPALLOC_core__TagbodyEnvironment_O:
     typedef core::TagbodyEnvironment_O type_KIND_LISPALLOC_core__TagbodyEnvironment_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__TagbodyEnvironment_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ActivationFrame_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ActivationFrame_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::ActivationFrame_O type_KIND_LISPALLOC_core__ActivationFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ActivationFrame_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__TagbodyFrame_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__TagbodyFrame_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::TagbodyFrame_O* obj_gc_safe = reinterpret_cast<core::TagbodyFrame_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentFrame);
     typedef core::TagbodyFrame_O type_KIND_LISPALLOC_core__TagbodyFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__TagbodyFrame_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FunctionFrame_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__FunctionFrame_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::FunctionFrame_O* obj_gc_safe = reinterpret_cast<core::FunctionFrame_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentFrame);
     POINTER_FIX(obj_gc_safe->_Objects._Array._Contents);
     typedef core::FunctionFrame_O type_KIND_LISPALLOC_core__FunctionFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FunctionFrame_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ValueFrame_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ValueFrame_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ValueFrame_O* obj_gc_safe = reinterpret_cast<core::ValueFrame_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ParentFrame);
     POINTER_FIX(obj_gc_safe->_Objects._Array._Contents);
@@ -11036,14 +11090,9 @@ obj_scan_KIND_LISPALLOC_core__ValueFrame_O:
     typedef core::ValueFrame_O type_KIND_LISPALLOC_core__ValueFrame_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ValueFrame_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchMethod_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SingleDispatchMethod_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SingleDispatchMethod_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethod_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_name);
     SMART_PTR_FIX(obj_gc_safe->_receiver_class);
@@ -11054,241 +11103,136 @@ obj_scan_KIND_LISPALLOC_core__SingleDispatchMethod_O:
     typedef core::SingleDispatchMethod_O type_KIND_LISPALLOC_core__SingleDispatchMethod_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchMethod_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SourceFileInfo_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SourceFileInfo_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SourceFileInfo_O* obj_gc_safe = reinterpret_cast<core::SourceFileInfo_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_pathname);
     typedef core::SourceFileInfo_O type_KIND_LISPALLOC_core__SourceFileInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SourceFileInfo_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ObjectSet_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ObjectSet_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ObjectSet_O* obj_gc_safe = reinterpret_cast<core::ObjectSet_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Set);
     typedef core::ObjectSet_O type_KIND_LISPALLOC_core__ObjectSet_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ObjectSet_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__DirectoryEntry_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__DirectoryEntry_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::DirectoryEntry_O type_KIND_LISPALLOC_core__DirectoryEntry_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__DirectoryEntry_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Pointer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Pointer_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Pointer_O type_KIND_LISPALLOC_core__Pointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Pointer_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Path_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Path_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Path_O type_KIND_LISPALLOC_core__Path_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Path_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DebugInfo_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DebugInfo_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DebugInfo_O type_KIND_LISPALLOC_llvmo__DebugInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DebugInfo_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DICompositeType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DICompositeType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DICompositeType_O type_KIND_LISPALLOC_llvmo__DICompositeType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DICompositeType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIBasicType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DIBasicType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DIBasicType_O type_KIND_LISPALLOC_llvmo__DIBasicType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIBasicType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DIType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DIType_O type_KIND_LISPALLOC_llvmo__DIType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DISubprogram_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DISubprogram_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DISubprogram_O type_KIND_LISPALLOC_llvmo__DISubprogram_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DISubprogram_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DIArray_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DIArray_O type_KIND_LISPALLOC_llvmo__DIArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIArray_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DITypeArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DITypeArray_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DITypeArray_O type_KIND_LISPALLOC_llvmo__DITypeArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DITypeArray_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DISubroutineType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DISubroutineType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DISubroutineType_O type_KIND_LISPALLOC_llvmo__DISubroutineType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DISubroutineType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIScope_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DIScope_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DIScope_O type_KIND_LISPALLOC_llvmo__DIScope_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIScope_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIFile_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DIFile_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DIFile_O type_KIND_LISPALLOC_llvmo__DIFile_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIFile_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIDescriptor_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DIDescriptor_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DIDescriptor_O type_KIND_LISPALLOC_llvmo__DIDescriptor_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIDescriptor_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DICompileUnit_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DICompileUnit_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DICompileUnit_O type_KIND_LISPALLOC_llvmo__DICompileUnit_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DICompileUnit_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIDerivedType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DIDerivedType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DIDerivedType_O type_KIND_LISPALLOC_llvmo__DIDerivedType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIDerivedType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DILexicalBlock_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DILexicalBlock_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DILexicalBlock_O type_KIND_LISPALLOC_llvmo__DILexicalBlock_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DILexicalBlock_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StructureObject_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__StructureObject_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::StructureObject_O* obj_gc_safe = reinterpret_cast<core::StructureObject_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Type);
     POINTER_FIX(obj_gc_safe->_Slots._Vector._Contents);
     typedef core::StructureObject_O type_KIND_LISPALLOC_core__StructureObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StructureObject_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LambdaListHandler_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__LambdaListHandler_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::LambdaListHandler_O* obj_gc_safe = reinterpret_cast<core::LambdaListHandler_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_LambdaList);
     SMART_PTR_FIX(obj_gc_safe->_ClassifiedSymbolList);
@@ -11306,127 +11250,77 @@ obj_scan_KIND_LISPALLOC_core__LambdaListHandler_O:
     typedef core::LambdaListHandler_O type_KIND_LISPALLOC_core__LambdaListHandler_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LambdaListHandler_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_TEMPLATED_LISPALLOC_core__Iterator_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_TEMPLATED_LISPALLOC_core__Iterator_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__DirectoryIterator_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__DirectoryIterator_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::DirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::DirectoryIterator_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Path);
     typedef core::DirectoryIterator_O type_KIND_LISPALLOC_core__DirectoryIterator_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__DirectoryIterator_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Path);
     typedef core::RecursiveDirectoryIterator_O type_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__PosixTimeDuration_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__PosixTimeDuration_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::PosixTimeDuration_O type_KIND_LISPALLOC_core__PosixTimeDuration_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__PosixTimeDuration_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FileStatus_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__FileStatus_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::FileStatus_O type_KIND_LISPALLOC_core__FileStatus_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FileStatus_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_clbind__ClassRegistry_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_clbind__ClassRegistry_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->m_classes);
     typedef clbind::ClassRegistry_O type_KIND_LISPALLOC_clbind__ClassRegistry_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_clbind__ClassRegistry_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Archive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Archive_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Archive_O* obj_gc_safe = reinterpret_cast<core::Archive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
     typedef core::Archive_O type_KIND_LISPALLOC_core__Archive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Archive_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SaveArchive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SaveArchive_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SaveArchive_O* obj_gc_safe = reinterpret_cast<core::SaveArchive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
     SMART_PTR_FIX(obj_gc_safe->_SNodeForObject);
     typedef core::SaveArchive_O type_KIND_LISPALLOC_core__SaveArchive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SaveArchive_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SexpSaveArchive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SexpSaveArchive_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SexpSaveArchive_O* obj_gc_safe = reinterpret_cast<core::SexpSaveArchive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
     SMART_PTR_FIX(obj_gc_safe->_SNodeForObject);
     typedef core::SexpSaveArchive_O type_KIND_LISPALLOC_core__SexpSaveArchive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SexpSaveArchive_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LoadArchive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__LoadArchive_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::LoadArchive_O* obj_gc_safe = reinterpret_cast<core::LoadArchive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
     SMART_PTR_FIX(obj_gc_safe->_ObjectForSNode);
@@ -11434,14 +11328,9 @@ obj_scan_KIND_LISPALLOC_core__LoadArchive_O:
     typedef core::LoadArchive_O type_KIND_LISPALLOC_core__LoadArchive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadArchive_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SexpLoadArchive_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SexpLoadArchive_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SexpLoadArchive_O* obj_gc_safe = reinterpret_cast<core::SexpLoadArchive_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_TopNode);
     SMART_PTR_FIX(obj_gc_safe->_ObjectForSNode);
@@ -11449,144 +11338,84 @@ obj_scan_KIND_LISPALLOC_core__SexpLoadArchive_O:
     typedef core::SexpLoadArchive_O type_KIND_LISPALLOC_core__SexpLoadArchive_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SexpLoadArchive_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__RegexMatch_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__RegexMatch_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::RegexMatch_O type_KIND_LISPALLOC_core__RegexMatch_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__RegexMatch_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SourcePosInfo_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SourcePosInfo_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::SourcePosInfo_O type_KIND_LISPALLOC_core__SourcePosInfo_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SourcePosInfo_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Character_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Character_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Character_O type_KIND_LISPALLOC_core__Character_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Character_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ExtendedChar_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ExtendedChar_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::ExtendedChar_O type_KIND_LISPALLOC_core__ExtendedChar_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ExtendedChar_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BaseChar_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__BaseChar_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::BaseChar_O type_KIND_LISPALLOC_core__BaseChar_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BaseChar_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StandardChar_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__StandardChar_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::StandardChar_O type_KIND_LISPALLOC_core__StandardChar_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StandardChar_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__MicroHeap_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__MicroHeap_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::MicroHeap_O type_KIND_LISPALLOC_core__MicroHeap_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__MicroHeap_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Function_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Function_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     typedef core::Function_O type_KIND_LISPALLOC_core__Function_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Function_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SingleDispatchEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchEffectiveMethodFunction_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     SMART_PTR_FIX(obj_gc_safe->_Methods);
     typedef core::SingleDispatchEffectiveMethodFunction_O type_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SingleDispatchGenericFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunction_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     typedef core::SingleDispatchGenericFunction_O type_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__CompiledFunction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__CompiledFunction_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::CompiledFunction_O* obj_gc_safe = reinterpret_cast<core::CompiledFunction_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     typedef core::CompiledFunction_O type_KIND_LISPALLOC_core__CompiledFunction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CompiledFunction_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Instance_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Instance_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -11595,64 +11424,39 @@ obj_scan_KIND_LISPALLOC_core__Instance_O:
     typedef core::Instance_O type_KIND_LISPALLOC_core__Instance_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Instance_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SpecialForm_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SpecialForm_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SpecialForm_O* obj_gc_safe = reinterpret_cast<core::SpecialForm_O*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     SMART_PTR_FIX(obj_gc_safe->_SpecialSymbol);
     typedef core::SpecialForm_O type_KIND_LISPALLOC_core__SpecialForm_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SpecialForm_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakKeyMapping_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__WeakKeyMapping_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::WeakKeyMapping_O* obj_gc_safe = reinterpret_cast<core::WeakKeyMapping_O*>(client);
     POINTER_FIX(obj_gc_safe->_WeakObject.Key);
     POINTER_FIX(obj_gc_safe->_WeakObject.Value);
     typedef core::WeakKeyMapping_O type_KIND_LISPALLOC_core__WeakKeyMapping_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakKeyMapping_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DebugLoc_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DebugLoc_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::DebugLoc_O type_KIND_LISPALLOC_llvmo__DebugLoc_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DebugLoc_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Regex_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Regex_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Regex_O type_KIND_LISPALLOC_core__Regex_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Regex_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Package_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Package_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
     POINTER_FIX(obj_gc_safe->_Name._Contents);
     SMART_PTR_FIX(obj_gc_safe->_InternalSymbols);
@@ -11664,1386 +11468,841 @@ obj_scan_KIND_LISPALLOC_core__Package_O:
     typedef core::Package_O type_KIND_LISPALLOC_core__Package_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Package_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__CandoException_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__CandoException_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::CandoException_O* obj_gc_safe = reinterpret_cast<core::CandoException_O*>(client);
     POINTER_FIX(obj_gc_safe->_message._Contents);
     typedef core::CandoException_O type_KIND_LISPALLOC_core__CandoException_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__CandoException_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringList_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__StringList_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::StringList_O type_KIND_LISPALLOC_core__StringList_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringList_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__IntArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__IntArray_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::IntArray_O type_KIND_LISPALLOC_core__IntArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__IntArray_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Number_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Number_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Number_O type_KIND_LISPALLOC_core__Number_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Number_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Real_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Real_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Real_O type_KIND_LISPALLOC_core__Real_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Real_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Float_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Float_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Float_O type_KIND_LISPALLOC_core__Float_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Float_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ShortFloat_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ShortFloat_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::ShortFloat_O type_KIND_LISPALLOC_core__ShortFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ShortFloat_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__DoubleFloat_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__DoubleFloat_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::DoubleFloat_O type_KIND_LISPALLOC_core__DoubleFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__DoubleFloat_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SingleFloat_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SingleFloat_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::SingleFloat_O type_KIND_LISPALLOC_core__SingleFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SingleFloat_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Rational_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Rational_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Rational_O type_KIND_LISPALLOC_core__Rational_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Rational_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Ratio_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Ratio_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_numerator);
     SMART_PTR_FIX(obj_gc_safe->_denominator);
     typedef core::Ratio_O type_KIND_LISPALLOC_core__Ratio_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Ratio_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Integer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Integer_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Integer_O type_KIND_LISPALLOC_core__Integer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Integer_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Bignum_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Bignum_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Bignum_O type_KIND_LISPALLOC_core__Bignum_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Bignum_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Fixnum_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Fixnum_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Fixnum_O type_KIND_LISPALLOC_core__Fixnum_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Fixnum_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Complex_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Complex_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_real);
     SMART_PTR_FIX(obj_gc_safe->_imaginary);
     typedef core::Complex_O type_KIND_LISPALLOC_core__Complex_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Complex_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__PosixTime_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__PosixTime_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::PosixTime_O type_KIND_LISPALLOC_core__PosixTime_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__PosixTime_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ReadTable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ReadTable_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ReadTable_O* obj_gc_safe = reinterpret_cast<core::ReadTable_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Case);
     SMART_PTR_FIX(obj_gc_safe->_Syntax);
     typedef core::ReadTable_O type_KIND_LISPALLOC_core__ReadTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ReadTable_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Attribute_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Attribute_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::Attribute_O type_KIND_LISPALLOC_llvmo__Attribute_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Attribute_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Array_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Array_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Array_O type_KIND_LISPALLOC_core__Array_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Array_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ArrayObjects_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ArrayObjects_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ArrayObjects_O* obj_gc_safe = reinterpret_cast<core::ArrayObjects_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
     POINTER_FIX(obj_gc_safe->_Values._Vector._Contents);
     typedef core::ArrayObjects_O type_KIND_LISPALLOC_core__ArrayObjects_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ArrayObjects_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Vector_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Vector_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Vector_O type_KIND_LISPALLOC_core__Vector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Vector_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__String_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__String_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::String_O type_KIND_LISPALLOC_core__String_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__String_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Str_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__Str_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Str_O* obj_gc_safe = reinterpret_cast<core::Str_O*>(client);
     POINTER_FIX(obj_gc_safe->_Contents._Contents);
     typedef core::Str_O type_KIND_BOOTSTRAP_core__Str_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Str_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StrWithFillPtr_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__StrWithFillPtr_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::StrWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::StrWithFillPtr_O*>(client);
     POINTER_FIX(obj_gc_safe->_Contents._Contents);
     typedef core::StrWithFillPtr_O type_KIND_LISPALLOC_core__StrWithFillPtr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StrWithFillPtr_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__VectorObjects_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__VectorObjects_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::VectorObjects_O* obj_gc_safe = reinterpret_cast<core::VectorObjects_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
     POINTER_FIX(obj_gc_safe->_Values._Vector._Contents);
     typedef core::VectorObjects_O type_KIND_LISPALLOC_core__VectorObjects_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjects_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::VectorObjectsWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::VectorObjectsWithFillPtr_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_ElementType);
     POINTER_FIX(obj_gc_safe->_Values._Vector._Contents);
     typedef core::VectorObjectsWithFillPtr_O type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BitVector_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__BitVector_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::BitVector_O type_KIND_LISPALLOC_core__BitVector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BitVector_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SimpleBitVector_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SimpleBitVector_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::SimpleBitVector_O type_KIND_LISPALLOC_core__SimpleBitVector_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SimpleBitVector_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SmallMap_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SmallMap_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
     POINTER_FIX(obj_gc_safe->map._Contents);
     typedef core::SmallMap_O type_KIND_LISPALLOC_core__SmallMap_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SmallMap_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Reader_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Reader_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Reader_O* obj_gc_safe = reinterpret_cast<core::Reader_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Input);
     typedef core::Reader_O type_KIND_LISPALLOC_core__Reader_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Reader_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ObjRef_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ObjRef_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ObjRef_O* obj_gc_safe = reinterpret_cast<core::ObjRef_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_SubRef);
     typedef core::ObjRef_O type_KIND_LISPALLOC_core__ObjRef_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ObjRef_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__InsertPoint_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__InsertPoint_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef llvmo::InsertPoint_O type_KIND_LISPALLOC_llvmo__InsertPoint_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__InsertPoint_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SourceManager_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SourceManager_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SourceManager_O* obj_gc_safe = reinterpret_cast<core::SourceManager_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_SourcePosInfo);
     typedef core::SourceManager_O type_KIND_LISPALLOC_core__SourceManager_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SourceManager_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ExternalObject_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ExternalObject_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef core::ExternalObject_O type_KIND_LISPALLOC_core__ExternalObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ExternalObject_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Pass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Pass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::Pass_O type_KIND_LISPALLOC_llvmo__Pass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Pass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionPass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__FunctionPass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::FunctionPass_O type_KIND_LISPALLOC_llvmo__FunctionPass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionPass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ModulePass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ModulePass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ModulePass_O type_KIND_LISPALLOC_llvmo__ModulePass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ModulePass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ImmutablePass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ImmutablePass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ImmutablePass_O type_KIND_LISPALLOC_llvmo__ImmutablePass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ImmutablePass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DataLayoutPass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DataLayoutPass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::DataLayoutPass_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayoutPass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::DataLayoutPass_O type_KIND_LISPALLOC_llvmo__DataLayoutPass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DataLayoutPass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IRBuilderBase_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__IRBuilderBase_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::IRBuilderBase_O type_KIND_LISPALLOC_llvmo__IRBuilderBase_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IRBuilderBase_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IRBuilder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__IRBuilder_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::IRBuilder_O type_KIND_LISPALLOC_llvmo__IRBuilder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IRBuilder_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DIBuilder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DIBuilder_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::DIBuilder_O type_KIND_LISPALLOC_llvmo__DIBuilder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DIBuilder_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ExecutionEngine_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ExecutionEngine_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     SMART_PTR_FIX(obj_gc_safe->_DependentModules);
     typedef llvmo::ExecutionEngine_O type_KIND_LISPALLOC_llvmo__ExecutionEngine_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ExecutionEngine_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__EngineBuilder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__EngineBuilder_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::EngineBuilder_O type_KIND_LISPALLOC_llvmo__EngineBuilder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__EngineBuilder_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__APInt_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__APInt_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::APInt_O type_KIND_LISPALLOC_llvmo__APInt_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__APInt_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__APFloat_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__APFloat_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::APFloat_O type_KIND_LISPALLOC_llvmo__APFloat_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__APFloat_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ForeignData_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ForeignData_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ForeignData_O* obj_gc_safe = reinterpret_cast<core::ForeignData_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     SMART_PTR_FIX(obj_gc_safe->_Kind);
     typedef core::ForeignData_O type_KIND_LISPALLOC_core__ForeignData_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ForeignData_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManagerBuilder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__PassManagerBuilder_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::PassManagerBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::PassManagerBuilder_O type_KIND_LISPALLOC_llvmo__PassManagerBuilder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManagerBuilder_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManagerBase_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__PassManagerBase_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::PassManagerBase_O type_KIND_LISPALLOC_llvmo__PassManagerBase_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManagerBase_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PassManager_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__PassManager_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::PassManager_O type_KIND_LISPALLOC_llvmo__PassManager_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PassManager_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionPassManager_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__FunctionPassManager_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::FunctionPassManager_O type_KIND_LISPALLOC_llvmo__FunctionPassManager_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionPassManager_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__DataLayout_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__DataLayout_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::DataLayout_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayout_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::DataLayout_O type_KIND_LISPALLOC_llvmo__DataLayout_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__DataLayout_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Type_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Type_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::Type_O type_KIND_LISPALLOC_llvmo__Type_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Type_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__CompositeType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__CompositeType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::CompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::CompositeType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::CompositeType_O type_KIND_LISPALLOC_llvmo__CompositeType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__CompositeType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__SequentialType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__SequentialType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::SequentialType_O* obj_gc_safe = reinterpret_cast<llvmo::SequentialType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::SequentialType_O type_KIND_LISPALLOC_llvmo__SequentialType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__SequentialType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PointerType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__PointerType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::PointerType_O type_KIND_LISPALLOC_llvmo__PointerType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PointerType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__VectorType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__VectorType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::VectorType_O type_KIND_LISPALLOC_llvmo__VectorType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__VectorType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ArrayType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ArrayType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ArrayType_O type_KIND_LISPALLOC_llvmo__ArrayType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ArrayType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__StructType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__StructType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::StructType_O type_KIND_LISPALLOC_llvmo__StructType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__StructType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IntegerType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__IntegerType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::IntegerType_O type_KIND_LISPALLOC_llvmo__IntegerType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IntegerType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FunctionType_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__FunctionType_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::FunctionType_O type_KIND_LISPALLOC_llvmo__FunctionType_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FunctionType_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Linker_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Linker_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Linker_O* obj_gc_safe = reinterpret_cast<llvmo::Linker_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::Linker_O type_KIND_LISPALLOC_llvmo__Linker_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Linker_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Value_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Value_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::Value_O type_KIND_LISPALLOC_llvmo__Value_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Value_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Argument_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Argument_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::Argument_O type_KIND_LISPALLOC_llvmo__Argument_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Argument_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__MDString_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__MDString_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::MDString_O type_KIND_LISPALLOC_llvmo__MDString_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__MDString_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__MDNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__MDNode_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::MDNode_O type_KIND_LISPALLOC_llvmo__MDNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__MDNode_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BasicBlock_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__BasicBlock_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::BasicBlock_O type_KIND_LISPALLOC_llvmo__BasicBlock_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BasicBlock_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__User_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__User_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::User_O type_KIND_LISPALLOC_llvmo__User_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__User_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Instruction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Instruction_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::Instruction_O type_KIND_LISPALLOC_llvmo__Instruction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Instruction_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AtomicRMWInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__AtomicRMWInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::AtomicRMWInst_O type_KIND_LISPALLOC_llvmo__AtomicRMWInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AtomicRMWInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__StoreInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__StoreInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::StoreInst_O type_KIND_LISPALLOC_llvmo__StoreInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__StoreInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__PHINode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__PHINode_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::PHINode_O type_KIND_LISPALLOC_llvmo__PHINode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__PHINode_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::AtomicCmpXchgInst_O type_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LandingPadInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__LandingPadInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::LandingPadInst_O type_KIND_LISPALLOC_llvmo__LandingPadInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LandingPadInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UnaryInstruction_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__UnaryInstruction_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::UnaryInstruction_O type_KIND_LISPALLOC_llvmo__UnaryInstruction_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UnaryInstruction_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LoadInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__LoadInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::LoadInst_O type_KIND_LISPALLOC_llvmo__LoadInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LoadInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__VAArgInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__VAArgInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::VAArgInst_O type_KIND_LISPALLOC_llvmo__VAArgInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__VAArgInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__AllocaInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__AllocaInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::AllocaInst_O type_KIND_LISPALLOC_llvmo__AllocaInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__AllocaInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__TerminatorInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__TerminatorInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::TerminatorInst_O* obj_gc_safe = reinterpret_cast<llvmo::TerminatorInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::TerminatorInst_O type_KIND_LISPALLOC_llvmo__TerminatorInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TerminatorInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__IndirectBrInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__IndirectBrInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::IndirectBrInst_O type_KIND_LISPALLOC_llvmo__IndirectBrInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__IndirectBrInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UnreachableInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__UnreachableInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::UnreachableInst_O type_KIND_LISPALLOC_llvmo__UnreachableInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UnreachableInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__InvokeInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__InvokeInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::InvokeInst_O type_KIND_LISPALLOC_llvmo__InvokeInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__InvokeInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ReturnInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ReturnInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ReturnInst_O type_KIND_LISPALLOC_llvmo__ReturnInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ReturnInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BranchInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__BranchInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::BranchInst_O type_KIND_LISPALLOC_llvmo__BranchInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BranchInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ResumeInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ResumeInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ResumeInst_O type_KIND_LISPALLOC_llvmo__ResumeInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ResumeInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__SwitchInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__SwitchInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::SwitchInst_O type_KIND_LISPALLOC_llvmo__SwitchInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__SwitchInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__FenceInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__FenceInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::FenceInst_O type_KIND_LISPALLOC_llvmo__FenceInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__FenceInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__CallInst_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__CallInst_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::CallInst_O type_KIND_LISPALLOC_llvmo__CallInst_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__CallInst_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Constant_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Constant_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::Constant_O type_KIND_LISPALLOC_llvmo__Constant_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Constant_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantDataSequential_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ConstantDataSequential_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ConstantDataSequential_O type_KIND_LISPALLOC_llvmo__ConstantDataSequential_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantDataSequential_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantDataArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ConstantDataArray_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ConstantDataArray_O type_KIND_LISPALLOC_llvmo__ConstantDataArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantDataArray_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantStruct_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ConstantStruct_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ConstantStruct_O type_KIND_LISPALLOC_llvmo__ConstantStruct_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantStruct_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__BlockAddress_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__BlockAddress_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::BlockAddress_O type_KIND_LISPALLOC_llvmo__BlockAddress_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__BlockAddress_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantPointerNull_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ConstantPointerNull_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ConstantPointerNull_O type_KIND_LISPALLOC_llvmo__ConstantPointerNull_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantPointerNull_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantArray_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ConstantArray_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ConstantArray_O type_KIND_LISPALLOC_llvmo__ConstantArray_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantArray_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantFP_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ConstantFP_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ConstantFP_O type_KIND_LISPALLOC_llvmo__ConstantFP_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantFP_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__GlobalValue_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__GlobalValue_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::GlobalValue_O type_KIND_LISPALLOC_llvmo__GlobalValue_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__GlobalValue_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Function_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Function_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     SMART_PTR_FIX(obj_gc_safe->_RunTimeValues);
     typedef llvmo::Function_O type_KIND_LISPALLOC_llvmo__Function_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Function_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__GlobalVariable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__GlobalVariable_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::GlobalVariable_O type_KIND_LISPALLOC_llvmo__GlobalVariable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__GlobalVariable_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantExpr_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ConstantExpr_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ConstantExpr_O type_KIND_LISPALLOC_llvmo__ConstantExpr_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantExpr_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__UndefValue_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__UndefValue_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::UndefValue_O type_KIND_LISPALLOC_llvmo__UndefValue_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__UndefValue_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__ConstantInt_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__ConstantInt_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::ConstantInt_O type_KIND_LISPALLOC_llvmo__ConstantInt_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__ConstantInt_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__TargetMachine_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__TargetMachine_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::TargetMachine_O type_KIND_LISPALLOC_llvmo__TargetMachine_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__TargetMachine_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::LLVMTargetMachine_O type_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__LLVMContext_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__LLVMContext_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::LLVMContext_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMContext_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::LLVMContext_O type_KIND_LISPALLOC_llvmo__LLVMContext_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__LLVMContext_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__Module_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__Module_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::Module_O* obj_gc_safe = reinterpret_cast<llvmo::Module_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     SMART_PTR_FIX(obj_gc_safe->_UniqueGlobalVariableStrings);
     typedef llvmo::Module_O type_KIND_LISPALLOC_llvmo__Module_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__Module_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_llvmo__NamedMDNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_llvmo__NamedMDNode_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     typedef llvmo::NamedMDNode_O type_KIND_LISPALLOC_llvmo__NamedMDNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_llvmo__NamedMDNode_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SNode_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::SNode_O type_KIND_LISPALLOC_core__SNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SNode_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__BranchSNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__BranchSNode_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::BranchSNode_O* obj_gc_safe = reinterpret_cast<core::BranchSNode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Kind);
     SMART_PTR_FIX(obj_gc_safe->_SNodePList);
@@ -13051,133 +12310,78 @@ obj_scan_KIND_LISPALLOC_core__BranchSNode_O:
     typedef core::BranchSNode_O type_KIND_LISPALLOC_core__BranchSNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__BranchSNode_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LeafSNode_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__LeafSNode_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::LeafSNode_O* obj_gc_safe = reinterpret_cast<core::LeafSNode_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Object);
     typedef core::LeafSNode_O type_KIND_LISPALLOC_core__LeafSNode_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LeafSNode_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LoadTimeValues_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__LoadTimeValues_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
     POINTER_FIX(obj_gc_safe->_Objects._Vector._Contents);
     POINTER_FIX(obj_gc_safe->_Symbols._Vector._Contents);
     typedef core::LoadTimeValues_O type_KIND_LISPALLOC_core__LoadTimeValues_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LoadTimeValues_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__LightUserData_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__LightUserData_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::LightUserData_O type_KIND_LISPALLOC_core__LightUserData_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__LightUserData_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__UserData_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__UserData_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::UserData_O type_KIND_LISPALLOC_core__UserData_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__UserData_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakHashTable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__WeakHashTable_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::WeakHashTable_O type_KIND_LISPALLOC_core__WeakHashTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakHashTable_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakKeyHashTable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__WeakKeyHashTable_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
     POINTER_FIX(obj_gc_safe->_HashTable._Keys);
     POINTER_FIX(obj_gc_safe->_HashTable._Values);
     typedef core::WeakKeyHashTable_O type_KIND_LISPALLOC_core__WeakKeyHashTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakKeyHashTable_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::WrappedPointer_O* obj_gc_safe = reinterpret_cast<core::WrappedPointer_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Class);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StandardObject_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__StandardObject_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::StandardObject_O type_KIND_BOOTSTRAP_core__StandardObject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StandardObject_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Metaobject_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__Metaobject_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Metaobject_O type_KIND_BOOTSTRAP_core__Metaobject_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Metaobject_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Specializer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__Specializer_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::Specializer_O type_KIND_BOOTSTRAP_core__Specializer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Specializer_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Class_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__Class_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Class_O* obj_gc_safe = reinterpret_cast<core::Class_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_creator);
@@ -13185,14 +12389,9 @@ obj_scan_KIND_BOOTSTRAP_core__Class_O:
     typedef core::Class_O type_KIND_BOOTSTRAP_core__Class_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Class_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__ForwardReferencedClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__ForwardReferencedClass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::ForwardReferencedClass_O* obj_gc_safe = reinterpret_cast<core::ForwardReferencedClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_creator);
@@ -13201,14 +12400,9 @@ obj_scan_KIND_LISPALLOC_core__ForwardReferencedClass_O:
     typedef core::ForwardReferencedClass_O type_KIND_LISPALLOC_core__ForwardReferencedClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__ForwardReferencedClass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StdClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__StdClass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::StdClass_O* obj_gc_safe = reinterpret_cast<core::StdClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_creator);
@@ -13216,14 +12410,9 @@ obj_scan_KIND_BOOTSTRAP_core__StdClass_O:
     typedef core::StdClass_O type_KIND_BOOTSTRAP_core__StdClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StdClass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StandardClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__StandardClass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::StandardClass_O* obj_gc_safe = reinterpret_cast<core::StandardClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_creator);
@@ -13232,14 +12421,9 @@ obj_scan_KIND_BOOTSTRAP_core__StandardClass_O:
     typedef core::StandardClass_O type_KIND_BOOTSTRAP_core__StandardClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StandardClass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__FuncallableStandardClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__FuncallableStandardClass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::FuncallableStandardClass_O* obj_gc_safe = reinterpret_cast<core::FuncallableStandardClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_creator);
@@ -13248,14 +12432,9 @@ obj_scan_KIND_LISPALLOC_core__FuncallableStandardClass_O:
     typedef core::FuncallableStandardClass_O type_KIND_LISPALLOC_core__FuncallableStandardClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__FuncallableStandardClass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__BuiltInClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__BuiltInClass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::BuiltInClass_O* obj_gc_safe = reinterpret_cast<core::BuiltInClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_creator);
@@ -13263,14 +12442,9 @@ obj_scan_KIND_BOOTSTRAP_core__BuiltInClass_O:
     typedef core::BuiltInClass_O type_KIND_BOOTSTRAP_core__BuiltInClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__BuiltInClass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_clbind__ClassRep_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_clbind__ClassRep_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_creator);
@@ -13279,14 +12453,9 @@ obj_scan_KIND_LISPALLOC_clbind__ClassRep_O:
     typedef clbind::ClassRep_O type_KIND_LISPALLOC_clbind__ClassRep_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_clbind__ClassRep_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__StructureClass_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__StructureClass_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::StructureClass_O* obj_gc_safe = reinterpret_cast<core::StructureClass_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Signature_ClassSlots);
     POINTER_FIX(obj_gc_safe->_creator);
@@ -13295,27 +12464,17 @@ obj_scan_KIND_BOOTSTRAP_core__StructureClass_O:
     typedef core::StructureClass_O type_KIND_BOOTSTRAP_core__StructureClass_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__StructureClass_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__AstVisitor_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_asttooling__AstVisitor_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Target);
     typedef asttooling::AstVisitor_O type_KIND_LISPALLOC_asttooling__AstVisitor_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__AstVisitor_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_BOOTSTRAP_core__Symbol_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_BOOTSTRAP_core__Symbol_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Symbol_O* obj_gc_safe = reinterpret_cast<core::Symbol_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Name);
     SMART_PTR_FIX(obj_gc_safe->_HomePackage);
@@ -13325,14 +12484,9 @@ obj_scan_KIND_BOOTSTRAP_core__Symbol_O:
     typedef core::Symbol_O type_KIND_BOOTSTRAP_core__Symbol_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_BOOTSTRAP_core__Symbol_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Null_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Null_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Null_O* obj_gc_safe = reinterpret_cast<core::Null_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Name);
     SMART_PTR_FIX(obj_gc_safe->_HomePackage);
@@ -13342,25 +12496,15 @@ obj_scan_KIND_LISPALLOC_core__Null_O:
     typedef core::Null_O type_KIND_LISPALLOC_core__Null_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Null_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__StringSet_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__StringSet_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::StringSet_O type_KIND_LISPALLOC_core__StringSet_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__StringSet_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolToEnumConverter_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SymbolToEnumConverter_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SymbolToEnumConverter_O* obj_gc_safe = reinterpret_cast<core::SymbolToEnumConverter_O*>(client);
     POINTER_FIX(obj_gc_safe->_WhatTheEnumsRepresent._Contents);
     SMART_PTR_FIX(obj_gc_safe->_EnumToSymbol);
@@ -13370,162 +12514,102 @@ obj_scan_KIND_LISPALLOC_core__SymbolToEnumConverter_O:
     typedef core::SymbolToEnumConverter_O type_KIND_LISPALLOC_core__SymbolToEnumConverter_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolToEnumConverter_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__MultiStringBuffer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__MultiStringBuffer_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     typedef core::MultiStringBuffer_O type_KIND_LISPALLOC_core__MultiStringBuffer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__MultiStringBuffer_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolList_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SymbolList_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SymbolList_O* obj_gc_safe = reinterpret_cast<core::SymbolList_O*>(client);
     POINTER_FIX(obj_gc_safe->_Contents._Vector._Contents);
     typedef core::SymbolList_O type_KIND_LISPALLOC_core__SymbolList_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolList_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__WeakPointer_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__WeakPointer_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::WeakPointer_O* obj_gc_safe = reinterpret_cast<core::WeakPointer_O*>(client);
     POINTER_FIX(obj_gc_safe->_WeakObject.pointer);
     typedef core::WeakPointer_O type_KIND_LISPALLOC_core__WeakPointer_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__WeakPointer_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTable_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__HashTable_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::HashTable_O* obj_gc_safe = reinterpret_cast<core::HashTable_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
     SMART_PTR_FIX(obj_gc_safe->_HashTable);
     typedef core::HashTable_O type_KIND_LISPALLOC_core__HashTable_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTable_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEqual_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__HashTableEqual_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::HashTableEqual_O* obj_gc_safe = reinterpret_cast<core::HashTableEqual_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
     SMART_PTR_FIX(obj_gc_safe->_HashTable);
     typedef core::HashTableEqual_O type_KIND_LISPALLOC_core__HashTableEqual_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEqual_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEqualp_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__HashTableEqualp_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::HashTableEqualp_O* obj_gc_safe = reinterpret_cast<core::HashTableEqualp_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
     SMART_PTR_FIX(obj_gc_safe->_HashTable);
     typedef core::HashTableEqualp_O type_KIND_LISPALLOC_core__HashTableEqualp_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEqualp_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEql_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__HashTableEql_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::HashTableEql_O* obj_gc_safe = reinterpret_cast<core::HashTableEql_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
     SMART_PTR_FIX(obj_gc_safe->_HashTable);
     typedef core::HashTableEql_O type_KIND_LISPALLOC_core__HashTableEql_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEql_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__HashTableEq_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__HashTableEq_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::HashTableEq_O* obj_gc_safe = reinterpret_cast<core::HashTableEq_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_RehashSize);
     SMART_PTR_FIX(obj_gc_safe->_HashTable);
     typedef core::HashTableEq_O type_KIND_LISPALLOC_core__HashTableEq_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__HashTableEq_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__SymbolSet_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__SymbolSet_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SymbolSet_O* obj_gc_safe = reinterpret_cast<core::SymbolSet_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Symbols);
     typedef core::SymbolSet_O type_KIND_LISPALLOC_core__SymbolSet_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__SymbolSet_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_core__Binder_O(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_core__Binder_O:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Binder_O* obj_gc_safe = reinterpret_cast<core::Binder_O*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Bindings);
     SMART_PTR_FIX(obj_gc_safe->_Values);
     typedef core::Binder_O type_KIND_LISPALLOC_core__Binder_O;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_core__Binder_O)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__Cache(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__Cache:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::Cache* obj_gc_safe = reinterpret_cast<core::Cache*>(client);
     POINTER_FIX(obj_gc_safe->_keys._Vector._Contents);
     POINTER_FIX(obj_gc_safe->_table._Vector._Contents);
     typedef core::Cache type_KIND_CLASSALLOC_core__Cache;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__Cache)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::DynamicBinding>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::DynamicBinding>*>(client);
     for (gctools::GCVector_moveable<core::DynamicBinding>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->_Var);
@@ -13535,14 +12619,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -13551,14 +12630,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Sourc
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -13567,14 +12641,9 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
     typedef asttooling::DerivableFrontendActionFactory type_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<asttooling::ContextFrame>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ContextFrame>*>(client);
     for (gctools::GCVector_moveable<asttooling::ContextFrame>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->Range);
@@ -13583,14 +12652,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<asttooling::Message>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::Message>*>(client);
     for (gctools::GCVector_moveable<asttooling::Message>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->Range);
@@ -13599,13 +12663,6 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCSTRING_gctools__GCString_moveable_char_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-    return MPS_RES_OK;
-}
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCSTRING_gctools__GCString_moveable_char_:
 {
@@ -13614,7 +12671,6 @@ obj_scan_KIND_GCSTRING_gctools__GCString_moveable_char_:
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
     for (gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->first);
@@ -13624,14 +12680,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_c
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>*>(client);
     for (gctools::GCVector_moveable<asttooling::internal::MatcherDescriptor *>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           POINTER_FIX(*it);
@@ -13640,14 +12691,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherD
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::ExceptionEntry>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::ExceptionEntry>*>(client);
     for (gctools::GCVector_moveable<core::ExceptionEntry>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->_Key);
@@ -13656,14 +12702,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -13672,14 +12713,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Packa
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<asttooling::ErrorContent>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ErrorContent>*>(client);
     for (gctools::GCVector_moveable<asttooling::ErrorContent>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     POINTER_FIX(it->ContextStack._Vector._Contents);
@@ -13689,14 +12725,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -13705,14 +12736,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -13721,14 +12747,9 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
     typedef asttooling::DerivableSyntaxOnlyAction type_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::BuiltinClosure* obj_gc_safe = reinterpret_cast<core::BuiltinClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
     SMART_PTR_FIX(obj_gc_safe->closedEnvironment);
@@ -13737,14 +12758,9 @@ obj_scan_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure:
     SMART_PTR_FIX(obj_gc_safe->_lambdaListHandler);
     client = (char*)client + AlignUp(obj_gc_safe->templatedSizeof()) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__InterpretedClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__InterpretedClosure:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::InterpretedClosure* obj_gc_safe = reinterpret_cast<core::InterpretedClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
     SMART_PTR_FIX(obj_gc_safe->closedEnvironment);
@@ -13757,14 +12773,9 @@ obj_scan_KIND_CLASSALLOC_core__InterpretedClosure:
     typedef core::InterpretedClosure type_KIND_CLASSALLOC_core__InterpretedClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__InterpretedClosure)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_llvmo__CompiledClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_llvmo__CompiledClosure:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     llvmo::CompiledClosure* obj_gc_safe = reinterpret_cast<llvmo::CompiledClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
     SMART_PTR_FIX(obj_gc_safe->closedEnvironment);
@@ -13775,14 +12786,9 @@ obj_scan_KIND_CLASSALLOC_llvmo__CompiledClosure:
     typedef llvmo::CompiledClosure type_KIND_CLASSALLOC_llvmo__CompiledClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_llvmo__CompiledClosure)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<asttooling::ParserValue>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ParserValue>*>(client);
     for (gctools::GCVector_moveable<asttooling::ParserValue>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->Range);
@@ -13791,27 +12797,17 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::internal::OverloadedMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::OverloadedMatcherDescriptor*>(client);
     POINTER_FIX(obj_gc_safe->Overloads._Vector._Contents);
     typedef asttooling::internal::OverloadedMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableMatchCallback(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::DerivableMatchCallback* obj_gc_safe = reinterpret_cast<asttooling::DerivableMatchCallback*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -13820,14 +12816,9 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
     typedef asttooling::DerivableMatchCallback type_KIND_LISPALLOC_asttooling__DerivableMatchCallback;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableMatchCallback)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -13836,14 +12827,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Singl
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -13852,14 +12838,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Character_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Character_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<core::Character_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Character_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Character_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -13868,14 +12849,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Chara
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Character_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::SequenceStepper *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SequenceStepper *>*>(client);
     for (gctools::GCVector_moveable<core::SequenceStepper *>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           POINTER_FIX(*it);
@@ -13884,27 +12860,17 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__CoreExposer(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__CoreExposer:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::CoreExposer* obj_gc_safe = reinterpret_cast<core::CoreExposer*>(client);
     SMART_PTR_FIX(obj_gc_safe->_Package);
     typedef core::CoreExposer type_KIND_CLASSALLOC_core__CoreExposer;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__CoreExposer)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::SingleDispatchGenericFunctionClosure* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunctionClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
     SMART_PTR_FIX(obj_gc_safe->closedEnvironment);
@@ -13915,14 +12881,9 @@ obj_scan_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure:
     typedef core::SingleDispatchGenericFunctionClosure type_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::SymbolStorage>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolStorage>*>(client);
     for (gctools::GCVector_moveable<core::SymbolStorage>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->_Symbol);
@@ -13931,14 +12892,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::OptionalArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::OptionalArgument>*>(client);
     for (gctools::GCVector_moveable<core::OptionalArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->_ArgTarget);
@@ -13949,14 +12905,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>*>(client);
     for (gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -13965,14 +12916,9 @@ obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::DerivableArgumentsAdjuster* obj_gc_safe = reinterpret_cast<asttooling::DerivableArgumentsAdjuster*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -13981,14 +12927,9 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster:
     typedef asttooling::DerivableArgumentsAdjuster type_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,3>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,3>*>(client);
     for (gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,3>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -13997,14 +12938,9 @@ obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__MacroClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__MacroClosure:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::MacroClosure* obj_gc_safe = reinterpret_cast<core::MacroClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
     SMART_PTR_FIX(obj_gc_safe->closedEnvironment);
@@ -14014,14 +12950,9 @@ obj_scan_KIND_CLASSALLOC_core__MacroClosure:
     typedef core::MacroClosure type_KIND_CLASSALLOC_core__MacroClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__MacroClosure)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
     POINTER_FIX(obj_gc_safe->closure);
     SMART_PTR_FIX(obj_gc_safe->_Class);
@@ -14030,40 +12961,25 @@ obj_scan_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
     typedef asttooling::DerivableASTFrontendAction type_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction;
     client = (char*)client + AlignUp(sizeof(type_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::internal::FixedArgCountMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::FixedArgCountMatcherDescriptor*>(client);
     SMART_PTR_FIX(obj_gc_safe->MatcherName);
     typedef asttooling::internal::FixedArgCountMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::internal::FreeFuncMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::FreeFuncMatcherDescriptor*>(client);
     SMART_PTR_FIX(obj_gc_safe->MatcherName);
     typedef asttooling::internal::FreeFuncMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::AuxArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::AuxArgument>*>(client);
     for (gctools::GCVector_moveable<core::AuxArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->_ArgTarget);
@@ -14073,14 +12989,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::SymbolClassPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolClassPair>*>(client);
     for (gctools::GCVector_moveable<core::SymbolClassPair>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->symbol);
@@ -14090,14 +13001,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::KeywordArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::KeywordArgument>*>(client);
     for (gctools::GCVector_moveable<core::KeywordArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->_ArgTarget);
@@ -14109,14 +13015,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::CacheRecord>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::CacheRecord>*>(client);
     for (gctools::GCVector_moveable<core::CacheRecord>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->_key);
@@ -14126,14 +13027,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_core__InstanceClosure(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_core__InstanceClosure:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     core::InstanceClosure* obj_gc_safe = reinterpret_cast<core::InstanceClosure*>(client);
     SMART_PTR_FIX(obj_gc_safe->name);
     SMART_PTR_FIX(obj_gc_safe->closedEnvironment);
@@ -14143,14 +13039,9 @@ obj_scan_KIND_CLASSALLOC_core__InstanceClosure:
     typedef core::InstanceClosure type_KIND_CLASSALLOC_core__InstanceClosure;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_core__InstanceClosure)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<core::RequiredArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::RequiredArgument>*>(client);
     for (gctools::GCVector_moveable<core::RequiredArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->_ArgTarget);
@@ -14159,14 +13050,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -14175,27 +13061,17 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbo
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     asttooling::internal::VariadicOperatorMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::VariadicOperatorMatcherDescriptor*>(client);
     SMART_PTR_FIX(obj_gc_safe->MatcherName);
     typedef asttooling::internal::VariadicOperatorMatcherDescriptor type_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor;
     client = (char*)client + AlignUp(sizeof(type_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor)) + global_alignup_sizeof_header;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -14204,14 +13080,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__Cla
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>*>(client);
     for (gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
     SMART_PTR_FIX(it->Name);
@@ -14221,14 +13092,9 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatc
     size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_>(obj_gc_safe->capacity()))+AlignUp(sizeof(gctools::Header_s));
     client = (char*)client + header_and_gccontainer_size;
 }
-<<<<<<< HEAD
-GC_RESULT obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O__(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit){
-  MPS_SCAN_BEGIN(ss) {
-=======
 goto TOP;
 obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O__:
 {
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
     gctools::GCVector_moveable<gctools::smart_ptr<core::Str_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Str_O>>*>(client);
     for (gctools::GCVector_moveable<gctools::smart_ptr<core::Str_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
           SMART_PTR_FIX(*it);
@@ -14240,293 +13106,6 @@ obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O
 goto TOP;
 #endif // defined(GC_OBJ_SCAN)
 #if defined(GC_OBJ_SCAN_TABLE)
-<<<<<<< HEAD
-GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit) = { NULL 
-  /* 1 */ , obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O
-  /* 2 */ , obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps
-  /* 3 */ , obj_scan_KIND_TEMPLATED_CLASSALLOC_core__Creator
-  /* 4 */ , obj_scan_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator
-  /* 5 */ , obj_scan_KIND_CLASSALLOC_core__InstanceCreator
-  /* 6 */ , obj_scan_KIND_CLASSALLOC_clbind__DummyCreator
-  /* 7 */ , obj_scan_KIND_CLASSALLOC_core__SequenceStepper
-  /* 8 */ , obj_scan_KIND_CLASSALLOC_core__ConsStepper
-  /* 9 */ , obj_scan_KIND_CLASSALLOC_core__VectorStepper
-  /* 10 */ , obj_scan_KIND_ROOTCLASSALLOC_clbind__detail__class_map
-  /* 11 */ , obj_scan_KIND_BOOTSTRAP_core__T_O
-  /* 12 */ , obj_scan_KIND_LISPALLOC_core__Cons_O
-  /* 13 */ , obj_scan_KIND_LISPALLOC_cffi__Pointer_O
-  /* 14 */ , obj_scan_KIND_LISPALLOC_core__Stream_O
-  /* 15 */ , obj_scan_KIND_LISPALLOC_core__AnsiStream_O
-  /* 16 */ , obj_scan_KIND_LISPALLOC_core__TwoWayStream_O
-  /* 17 */ , obj_scan_KIND_LISPALLOC_core__FileStream_O
-  /* 18 */ , obj_scan_KIND_LISPALLOC_core__IOFileStream_O
-  /* 19 */ , obj_scan_KIND_LISPALLOC_core__IOStreamStream_O
-  /* 20 */ , obj_scan_KIND_LISPALLOC_core__BroadcastStream_O
-  /* 21 */ , obj_scan_KIND_LISPALLOC_core__StringStream_O
-  /* 22 */ , obj_scan_KIND_LISPALLOC_core__StringOutputStream_O
-  /* 23 */ , obj_scan_KIND_LISPALLOC_core__StringInputStream_O
-  /* 24 */ , obj_scan_KIND_LISPALLOC_core__SynonymStream_O
-  /* 25 */ , obj_scan_KIND_LISPALLOC_core__EchoStream_O
-  /* 26 */ , obj_scan_KIND_LISPALLOC_core__ConcatenatedStream_O
-  /* 27 */ , obj_scan_KIND_LISPALLOC_core__Pathname_O
-  /* 28 */ , obj_scan_KIND_LISPALLOC_core__LogicalPathname_O
-  /* 29 */ , obj_scan_KIND_LISPALLOC_core__Environment_O
-  /* 30 */ , obj_scan_KIND_LISPALLOC_core__GlueEnvironment_O
-  /* 31 */ , obj_scan_KIND_LISPALLOC_core__LexicalEnvironment_O
-  /* 32 */ , obj_scan_KIND_LISPALLOC_core__CompileTimeEnvironment_O
-  /* 33 */ , obj_scan_KIND_LISPALLOC_core__CatchEnvironment_O
-  /* 34 */ , obj_scan_KIND_LISPALLOC_core__BlockEnvironment_O
-  /* 35 */ , obj_scan_KIND_LISPALLOC_core__UnwindProtectEnvironment_O
-  /* 36 */ , obj_scan_KIND_LISPALLOC_core__FunctionContainerEnvironment_O
-  /* 37 */ , obj_scan_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O
-  /* 38 */ , obj_scan_KIND_LISPALLOC_core__MacroletEnvironment_O
-  /* 39 */ , obj_scan_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O
-  /* 40 */ , obj_scan_KIND_LISPALLOC_core__ValueEnvironment_O
-  /* 41 */ , obj_scan_KIND_LISPALLOC_core__FunctionValueEnvironment_O
-  /* 42 */ , obj_scan_KIND_LISPALLOC_core__TagbodyEnvironment_O
-  /* 43 */ , obj_scan_KIND_LISPALLOC_core__ActivationFrame_O
-  /* 44 */ , obj_scan_KIND_LISPALLOC_core__TagbodyFrame_O
-  /* 45 */ , obj_scan_KIND_LISPALLOC_core__FunctionFrame_O
-  /* 46 */ , obj_scan_KIND_LISPALLOC_core__ValueFrame_O
-  /* 47 */ , obj_scan_KIND_LISPALLOC_core__SingleDispatchMethod_O
-  /* 48 */ , obj_scan_KIND_LISPALLOC_core__SourceFileInfo_O
-  /* 49 */ , obj_scan_KIND_LISPALLOC_core__ObjectSet_O
-  /* 50 */ , obj_scan_KIND_LISPALLOC_core__DirectoryEntry_O
-  /* 51 */ , obj_scan_KIND_LISPALLOC_core__Pointer_O
-  /* 52 */ , obj_scan_KIND_LISPALLOC_core__Path_O
-  /* 53 */ , obj_scan_KIND_LISPALLOC_llvmo__DebugInfo_O
-  /* 54 */ , obj_scan_KIND_LISPALLOC_llvmo__DICompositeType_O
-  /* 55 */ , obj_scan_KIND_LISPALLOC_llvmo__DIBasicType_O
-  /* 56 */ , obj_scan_KIND_LISPALLOC_llvmo__DIType_O
-  /* 57 */ , obj_scan_KIND_LISPALLOC_llvmo__DISubprogram_O
-  /* 58 */ , obj_scan_KIND_LISPALLOC_llvmo__DIArray_O
-  /* 59 */ , obj_scan_KIND_LISPALLOC_llvmo__DITypeArray_O
-  /* 60 */ , obj_scan_KIND_LISPALLOC_llvmo__DISubroutineType_O
-  /* 61 */ , obj_scan_KIND_LISPALLOC_llvmo__DIScope_O
-  /* 62 */ , obj_scan_KIND_LISPALLOC_llvmo__DIFile_O
-  /* 63 */ , obj_scan_KIND_LISPALLOC_llvmo__DIDescriptor_O
-  /* 64 */ , obj_scan_KIND_LISPALLOC_llvmo__DICompileUnit_O
-  /* 65 */ , obj_scan_KIND_LISPALLOC_llvmo__DIDerivedType_O
-  /* 66 */ , obj_scan_KIND_LISPALLOC_llvmo__DILexicalBlock_O
-  /* 67 */ , obj_scan_KIND_LISPALLOC_core__StructureObject_O
-  /* 68 */ , obj_scan_KIND_LISPALLOC_core__LambdaListHandler_O
-  /* 69 */ , obj_scan_KIND_TEMPLATED_LISPALLOC_core__Iterator_O
-  /* 70 */ , obj_scan_KIND_LISPALLOC_core__DirectoryIterator_O
-  /* 71 */ , obj_scan_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O
-  /* 72 */ , obj_scan_KIND_LISPALLOC_core__PosixTimeDuration_O
-  /* 73 */ , obj_scan_KIND_LISPALLOC_core__FileStatus_O
-  /* 74 */ , obj_scan_KIND_LISPALLOC_clbind__ClassRegistry_O
-  /* 75 */ , obj_scan_KIND_LISPALLOC_core__Archive_O
-  /* 76 */ , obj_scan_KIND_LISPALLOC_core__SaveArchive_O
-  /* 77 */ , obj_scan_KIND_LISPALLOC_core__SexpSaveArchive_O
-  /* 78 */ , obj_scan_KIND_LISPALLOC_core__LoadArchive_O
-  /* 79 */ , obj_scan_KIND_LISPALLOC_core__SexpLoadArchive_O
-  /* 80 */ , obj_scan_KIND_LISPALLOC_core__RegexMatch_O
-  /* 81 */ , obj_scan_KIND_LISPALLOC_core__SourcePosInfo_O
-  /* 82 */ , obj_scan_KIND_LISPALLOC_core__Character_O
-  /* 83 */ , obj_scan_KIND_LISPALLOC_core__ExtendedChar_O
-  /* 84 */ , obj_scan_KIND_LISPALLOC_core__BaseChar_O
-  /* 85 */ , obj_scan_KIND_LISPALLOC_core__StandardChar_O
-  /* 86 */ , obj_scan_KIND_LISPALLOC_core__MicroHeap_O
-  /* 87 */ , obj_scan_KIND_LISPALLOC_core__Function_O
-  /* 88 */ , obj_scan_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O
-  /* 89 */ , obj_scan_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O
-  /* 90 */ , obj_scan_KIND_LISPALLOC_core__CompiledFunction_O
-  /* 91 */ , obj_scan_KIND_LISPALLOC_core__Instance_O
-  /* 92 */ , obj_scan_KIND_LISPALLOC_core__SpecialForm_O
-  /* 93 */ , obj_scan_KIND_LISPALLOC_core__WeakKeyMapping_O
-  /* 94 */ , obj_scan_KIND_LISPALLOC_llvmo__DebugLoc_O
-  /* 95 */ , obj_scan_KIND_LISPALLOC_core__Regex_O
-  /* 96 */ , obj_scan_KIND_LISPALLOC_core__Package_O
-  /* 97 */ , obj_scan_KIND_LISPALLOC_core__CandoException_O
-  /* 98 */ , obj_scan_KIND_LISPALLOC_core__StringList_O
-  /* 99 */ , obj_scan_KIND_LISPALLOC_core__IntArray_O
-  /* 100 */ , obj_scan_KIND_LISPALLOC_core__Number_O
-  /* 101 */ , obj_scan_KIND_LISPALLOC_core__Real_O
-  /* 102 */ , obj_scan_KIND_LISPALLOC_core__Float_O
-  /* 103 */ , obj_scan_KIND_LISPALLOC_core__ShortFloat_O
-  /* 104 */ , obj_scan_KIND_LISPALLOC_core__DoubleFloat_O
-  /* 105 */ , obj_scan_KIND_LISPALLOC_core__SingleFloat_O
-  /* 106 */ , obj_scan_KIND_LISPALLOC_core__Rational_O
-  /* 107 */ , obj_scan_KIND_LISPALLOC_core__Ratio_O
-  /* 108 */ , obj_scan_KIND_LISPALLOC_core__Integer_O
-  /* 109 */ , obj_scan_KIND_LISPALLOC_core__Bignum_O
-  /* 110 */ , obj_scan_KIND_LISPALLOC_core__Fixnum_O
-  /* 111 */ , obj_scan_KIND_LISPALLOC_core__Complex_O
-  /* 112 */ , obj_scan_KIND_LISPALLOC_core__PosixTime_O
-  /* 113 */ , obj_scan_KIND_LISPALLOC_core__ReadTable_O
-  /* 114 */ , obj_scan_KIND_LISPALLOC_llvmo__Attribute_O
-  /* 115 */ , obj_scan_KIND_LISPALLOC_core__Array_O
-  /* 116 */ , obj_scan_KIND_LISPALLOC_core__ArrayObjects_O
-  /* 117 */ , obj_scan_KIND_LISPALLOC_core__Vector_O
-  /* 118 */ , obj_scan_KIND_LISPALLOC_core__String_O
-  /* 119 */ , obj_scan_KIND_BOOTSTRAP_core__Str_O
-  /* 120 */ , obj_scan_KIND_LISPALLOC_core__StrWithFillPtr_O
-  /* 121 */ , obj_scan_KIND_LISPALLOC_core__VectorObjects_O
-  /* 122 */ , obj_scan_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O
-  /* 123 */ , obj_scan_KIND_LISPALLOC_core__BitVector_O
-  /* 124 */ , obj_scan_KIND_LISPALLOC_core__SimpleBitVector_O
-  /* 125 */ , obj_scan_KIND_LISPALLOC_core__SmallMap_O
-  /* 126 */ , obj_scan_KIND_LISPALLOC_core__Reader_O
-  /* 127 */ , obj_scan_KIND_LISPALLOC_core__ObjRef_O
-  /* 128 */ , obj_scan_KIND_LISPALLOC_llvmo__InsertPoint_O
-  /* 129 */ , obj_scan_KIND_LISPALLOC_core__SourceManager_O
-  /* 130 */ , obj_scan_KIND_LISPALLOC_core__ExternalObject_O
-  /* 131 */ , obj_scan_KIND_LISPALLOC_llvmo__Pass_O
-  /* 132 */ , obj_scan_KIND_LISPALLOC_llvmo__FunctionPass_O
-  /* 133 */ , obj_scan_KIND_LISPALLOC_llvmo__ModulePass_O
-  /* 134 */ , obj_scan_KIND_LISPALLOC_llvmo__ImmutablePass_O
-  /* 135 */ , obj_scan_KIND_LISPALLOC_llvmo__DataLayoutPass_O
-  /* 136 */ , obj_scan_KIND_LISPALLOC_llvmo__IRBuilderBase_O
-  /* 137 */ , obj_scan_KIND_LISPALLOC_llvmo__IRBuilder_O
-  /* 138 */ , obj_scan_KIND_LISPALLOC_llvmo__DIBuilder_O
-  /* 139 */ , obj_scan_KIND_LISPALLOC_llvmo__ExecutionEngine_O
-  /* 140 */ , obj_scan_KIND_LISPALLOC_llvmo__EngineBuilder_O
-  /* 141 */ , obj_scan_KIND_LISPALLOC_llvmo__APInt_O
-  /* 142 */ , obj_scan_KIND_LISPALLOC_llvmo__APFloat_O
-  /* 143 */ , obj_scan_KIND_LISPALLOC_core__ForeignData_O
-  /* 144 */ , obj_scan_KIND_LISPALLOC_llvmo__PassManagerBuilder_O
-  /* 145 */ , obj_scan_KIND_LISPALLOC_llvmo__PassManagerBase_O
-  /* 146 */ , obj_scan_KIND_LISPALLOC_llvmo__PassManager_O
-  /* 147 */ , obj_scan_KIND_LISPALLOC_llvmo__FunctionPassManager_O
-  /* 148 */ , obj_scan_KIND_LISPALLOC_llvmo__DataLayout_O
-  /* 149 */ , obj_scan_KIND_LISPALLOC_llvmo__Type_O
-  /* 150 */ , obj_scan_KIND_LISPALLOC_llvmo__CompositeType_O
-  /* 151 */ , obj_scan_KIND_LISPALLOC_llvmo__SequentialType_O
-  /* 152 */ , obj_scan_KIND_LISPALLOC_llvmo__PointerType_O
-  /* 153 */ , obj_scan_KIND_LISPALLOC_llvmo__VectorType_O
-  /* 154 */ , obj_scan_KIND_LISPALLOC_llvmo__ArrayType_O
-  /* 155 */ , obj_scan_KIND_LISPALLOC_llvmo__StructType_O
-  /* 156 */ , obj_scan_KIND_LISPALLOC_llvmo__IntegerType_O
-  /* 157 */ , obj_scan_KIND_LISPALLOC_llvmo__FunctionType_O
-  /* 158 */ , obj_scan_KIND_LISPALLOC_llvmo__Linker_O
-  /* 159 */ , obj_scan_KIND_LISPALLOC_llvmo__Value_O
-  /* 160 */ , obj_scan_KIND_LISPALLOC_llvmo__Argument_O
-  /* 161 */ , obj_scan_KIND_LISPALLOC_llvmo__MDString_O
-  /* 162 */ , obj_scan_KIND_LISPALLOC_llvmo__MDNode_O
-  /* 163 */ , obj_scan_KIND_LISPALLOC_llvmo__BasicBlock_O
-  /* 164 */ , obj_scan_KIND_LISPALLOC_llvmo__User_O
-  /* 165 */ , obj_scan_KIND_LISPALLOC_llvmo__Instruction_O
-  /* 166 */ , obj_scan_KIND_LISPALLOC_llvmo__AtomicRMWInst_O
-  /* 167 */ , obj_scan_KIND_LISPALLOC_llvmo__StoreInst_O
-  /* 168 */ , obj_scan_KIND_LISPALLOC_llvmo__PHINode_O
-  /* 169 */ , obj_scan_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O
-  /* 170 */ , obj_scan_KIND_LISPALLOC_llvmo__LandingPadInst_O
-  /* 171 */ , obj_scan_KIND_LISPALLOC_llvmo__UnaryInstruction_O
-  /* 172 */ , obj_scan_KIND_LISPALLOC_llvmo__LoadInst_O
-  /* 173 */ , obj_scan_KIND_LISPALLOC_llvmo__VAArgInst_O
-  /* 174 */ , obj_scan_KIND_LISPALLOC_llvmo__AllocaInst_O
-  /* 175 */ , obj_scan_KIND_LISPALLOC_llvmo__TerminatorInst_O
-  /* 176 */ , obj_scan_KIND_LISPALLOC_llvmo__IndirectBrInst_O
-  /* 177 */ , obj_scan_KIND_LISPALLOC_llvmo__UnreachableInst_O
-  /* 178 */ , obj_scan_KIND_LISPALLOC_llvmo__InvokeInst_O
-  /* 179 */ , obj_scan_KIND_LISPALLOC_llvmo__ReturnInst_O
-  /* 180 */ , obj_scan_KIND_LISPALLOC_llvmo__BranchInst_O
-  /* 181 */ , obj_scan_KIND_LISPALLOC_llvmo__ResumeInst_O
-  /* 182 */ , obj_scan_KIND_LISPALLOC_llvmo__SwitchInst_O
-  /* 183 */ , obj_scan_KIND_LISPALLOC_llvmo__FenceInst_O
-  /* 184 */ , obj_scan_KIND_LISPALLOC_llvmo__CallInst_O
-  /* 185 */ , obj_scan_KIND_LISPALLOC_llvmo__Constant_O
-  /* 186 */ , obj_scan_KIND_LISPALLOC_llvmo__ConstantDataSequential_O
-  /* 187 */ , obj_scan_KIND_LISPALLOC_llvmo__ConstantDataArray_O
-  /* 188 */ , obj_scan_KIND_LISPALLOC_llvmo__ConstantStruct_O
-  /* 189 */ , obj_scan_KIND_LISPALLOC_llvmo__BlockAddress_O
-  /* 190 */ , obj_scan_KIND_LISPALLOC_llvmo__ConstantPointerNull_O
-  /* 191 */ , obj_scan_KIND_LISPALLOC_llvmo__ConstantArray_O
-  /* 192 */ , obj_scan_KIND_LISPALLOC_llvmo__ConstantFP_O
-  /* 193 */ , obj_scan_KIND_LISPALLOC_llvmo__GlobalValue_O
-  /* 194 */ , obj_scan_KIND_LISPALLOC_llvmo__Function_O
-  /* 195 */ , obj_scan_KIND_LISPALLOC_llvmo__GlobalVariable_O
-  /* 196 */ , obj_scan_KIND_LISPALLOC_llvmo__ConstantExpr_O
-  /* 197 */ , obj_scan_KIND_LISPALLOC_llvmo__UndefValue_O
-  /* 198 */ , obj_scan_KIND_LISPALLOC_llvmo__ConstantInt_O
-  /* 199 */ , obj_scan_KIND_LISPALLOC_llvmo__TargetMachine_O
-  /* 200 */ , obj_scan_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O
-  /* 201 */ , obj_scan_KIND_LISPALLOC_llvmo__LLVMContext_O
-  /* 202 */ , obj_scan_KIND_LISPALLOC_llvmo__Module_O
-  /* 203 */ , obj_scan_KIND_LISPALLOC_llvmo__NamedMDNode_O
-  /* 204 */ , obj_scan_KIND_LISPALLOC_core__SNode_O
-  /* 205 */ , obj_scan_KIND_LISPALLOC_core__BranchSNode_O
-  /* 206 */ , obj_scan_KIND_LISPALLOC_core__LeafSNode_O
-  /* 207 */ , obj_scan_KIND_LISPALLOC_core__LoadTimeValues_O
-  /* 208 */ , obj_scan_KIND_LISPALLOC_core__LightUserData_O
-  /* 209 */ , obj_scan_KIND_LISPALLOC_core__UserData_O
-  /* 210 */ , obj_scan_KIND_LISPALLOC_core__WeakHashTable_O
-  /* 211 */ , obj_scan_KIND_LISPALLOC_core__WeakKeyHashTable_O
-  /* 212 */ , obj_scan_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O
-  /* 213 */ , obj_scan_KIND_BOOTSTRAP_core__StandardObject_O
-  /* 214 */ , obj_scan_KIND_BOOTSTRAP_core__Metaobject_O
-  /* 215 */ , obj_scan_KIND_BOOTSTRAP_core__Specializer_O
-  /* 216 */ , obj_scan_KIND_BOOTSTRAP_core__Class_O
-  /* 217 */ , obj_scan_KIND_LISPALLOC_core__ForwardReferencedClass_O
-  /* 218 */ , obj_scan_KIND_BOOTSTRAP_core__StdClass_O
-  /* 219 */ , obj_scan_KIND_BOOTSTRAP_core__StandardClass_O
-  /* 220 */ , obj_scan_KIND_LISPALLOC_core__FuncallableStandardClass_O
-  /* 221 */ , obj_scan_KIND_BOOTSTRAP_core__BuiltInClass_O
-  /* 222 */ , obj_scan_KIND_LISPALLOC_clbind__ClassRep_O
-  /* 223 */ , obj_scan_KIND_BOOTSTRAP_core__StructureClass_O
-  /* 224 */ , obj_scan_KIND_LISPALLOC_asttooling__AstVisitor_O
-  /* 225 */ , obj_scan_KIND_BOOTSTRAP_core__Symbol_O
-  /* 226 */ , obj_scan_KIND_LISPALLOC_core__Null_O
-  /* 227 */ , obj_scan_KIND_LISPALLOC_core__StringSet_O
-  /* 228 */ , obj_scan_KIND_LISPALLOC_core__SymbolToEnumConverter_O
-  /* 229 */ , obj_scan_KIND_LISPALLOC_core__MultiStringBuffer_O
-  /* 230 */ , obj_scan_KIND_LISPALLOC_core__SymbolList_O
-  /* 231 */ , obj_scan_KIND_LISPALLOC_core__WeakPointer_O
-  /* 232 */ , obj_scan_KIND_LISPALLOC_core__HashTable_O
-  /* 233 */ , obj_scan_KIND_LISPALLOC_core__HashTableEqual_O
-  /* 234 */ , obj_scan_KIND_LISPALLOC_core__HashTableEqualp_O
-  /* 235 */ , obj_scan_KIND_LISPALLOC_core__HashTableEql_O
-  /* 236 */ , obj_scan_KIND_LISPALLOC_core__HashTableEq_O
-  /* 237 */ , obj_scan_KIND_LISPALLOC_core__SymbolSet_O
-  /* 238 */ , obj_scan_KIND_LISPALLOC_core__Binder_O
-  /* 239 */ , obj_scan_KIND_CLASSALLOC_core__Cache
-  /* 240 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_
-  /* 241 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__
-  /* 242 */ , obj_scan_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory
-  /* 243 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_
-  /* 244 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_
-  /* 245 */ , obj_scan_KIND_GCSTRING_gctools__GCString_moveable_char_
-  /* 246 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___
-  /* 247 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__internal__MatcherDescriptor_P_
-  /* 248 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_
-  /* 249 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__
-  /* 250 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_
-  /* 251 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__
-  /* 252 */ , obj_scan_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction
-  /* 253 */ , obj_scan_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure
-  /* 254 */ , obj_scan_KIND_CLASSALLOC_core__InterpretedClosure
-  /* 255 */ , obj_scan_KIND_CLASSALLOC_llvmo__CompiledClosure
-  /* 256 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_
-  /* 257 */ , obj_scan_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor
-  /* 258 */ , obj_scan_KIND_LISPALLOC_asttooling__DerivableMatchCallback
-  /* 259 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__
-  /* 260 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__
-  /* 261 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Character_O__
-  /* 262 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SequenceStepper_P_
-  /* 263 */ , obj_scan_KIND_CLASSALLOC_core__CoreExposer
-  /* 264 */ , obj_scan_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure
-  /* 265 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_
-  /* 266 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_
-  /* 267 */ , obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_
-  /* 268 */ , obj_scan_KIND_LISPALLOC_asttooling__DerivableArgumentsAdjuster
-  /* 269 */ , obj_scan_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__3_
-  /* 270 */ , obj_scan_KIND_CLASSALLOC_core__MacroClosure
-  /* 271 */ , obj_scan_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction
-  /* 272 */ , obj_scan_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor
-  /* 273 */ , obj_scan_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor
-  /* 274 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_
-  /* 275 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_
-  /* 276 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_
-  /* 277 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_
-  /* 278 */ , obj_scan_KIND_CLASSALLOC_core__InstanceClosure
-  /* 279 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_
-  /* 280 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__
-  /* 281 */ , obj_scan_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor
-  /* 282 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__
-  /* 283 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_
-  /* 284 */ , obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O__
-=======
 static void* OBJ_SCAN_table[] = { NULL 
   /* 1 */ , &&obj_scan_KIND_ROOTCLASSALLOC_core__Lisp_O
   /* 2 */ , &&obj_scan_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps
@@ -14812,7 +13391,6 @@ static void* OBJ_SCAN_table[] = { NULL
   /* 282 */ , &&obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__
   /* 283 */ , &&obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_
   /* 284 */ , &&obj_scan_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Str_O__
->>>>>>> 4abd045613ca0df1608d6ba09aa46dd96ce5f252
 };
 #endif // defined(GC_OBJ_SCAN_TABLE)
 #if defined(GC_OBJ_FINALIZE)
