@@ -54,7 +54,6 @@ all:
 	make boostbuildv2-build
 	make clasp-boehm
 	make clasp-mps
-	make compile-commands
 
 only-boehm:
 	git submodule update --init  # ensure that the src/mps submodule is updated
