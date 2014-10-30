@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "llvm/Support/raw_ostream.h"
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/ADT/Triple.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Constants.h>
@@ -223,8 +224,6 @@ namespace llvmo
 
 namespace llvmo
 {
-
-
     EXPOSE_CLASS(llvmo,TargetMachine_O);
 
     void TargetMachine_O::exposeCando(core::Lisp_sp lisp)
@@ -234,6 +233,54 @@ namespace llvmo
     };
 
     void TargetMachine_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+        IMPLEMENT_ME();
+    };
+}; // llvmo
+
+
+
+namespace llvmo
+{
+    EXPOSE_CLASS(llvmo,Triple_O);
+
+    void Triple_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+        core::externalClass_<Triple_O>()
+            ;
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_UnknownArch);	
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_arm);
+	core::enum_<llvm::Triple::ArchType>(_sym_ArchType,"ArchType")
+	    .value(_sym_ArchType_UnknownArch,llvm::Triple::UnknownArch)
+	    .value(_sym_ArchType_arm,llvm::Triple::arm)
+	    ;
+
+    };
+
+    void Triple_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+        IMPLEMENT_ME();
+    };
+}; // llvmo
+
+
+
+
+
+namespace llvmo
+{
+
+
+    EXPOSE_CLASS(llvmo,TargetOptions_O);
+
+    void TargetOptions_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+        core::externalClass_<TargetOptions_O>()
+            ;
+    };
+
+    void TargetOptions_O::exposePython(core::Lisp_sp lisp)
     {_G();
         IMPLEMENT_ME();
     };
