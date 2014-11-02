@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include "llvm/Analysis/Passes.h"
 #include "llvm/PassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#include <llvm/ADT/Triple.h>
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/IR/Instructions.h"
@@ -234,6 +235,228 @@ namespace translate
     };
 };
 ;
+
+
+
+
+
+namespace llvmo
+{
+    FORWARD(Triple);
+    class Triple_O : public core::ExternalObject_O
+    {
+	LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::Triple,Triple_O,"Triple",core::ExternalObject_O);
+	typedef llvm::Triple ExternalType;
+	typedef llvm::Triple* PointerToExternalType;
+
+    protected:
+	PointerToExternalType _ptr;
+    public:
+	static Triple_sp make(const string& triple);
+    public:
+	virtual void* externalObject() const
+	{
+	    return this->_ptr;
+	};
+	PointerToExternalType wrappedPtr() const
+	{
+	    return this->_ptr;
+	}
+
+    public:
+	void set_wrapped(PointerToExternalType ptr)
+	{
+	  if (this->_ptr != NULL ) delete this->_ptr;
+	  this->_ptr = ptr;
+	}
+	Triple_O() : Base(), _ptr(NULL)  {};
+	~Triple_O() {if (_ptr != NULL ) { delete _ptr; _ptr = NULL;};}
+
+    }; // Triple_O
+}; // llvmo
+TRANSLATE(llvmo::Triple_O);
+/* from_object translators */
+
+namespace translate
+{
+    template <>
+    struct from_object<llvm::Triple*,std::true_type>
+    {
+        typedef llvm::Triple* DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::Triple_O>()->wrappedPtr()) {};
+    };
+
+    template <>
+    struct from_object<llvm::Triple&,std::true_type>
+    {
+        typedef llvm::Triple& DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v( *object.as<llvmo::Triple_O>()->wrappedPtr()) {};
+    };
+};
+
+/* to_object translators */
+
+namespace translate
+{
+    template <>
+    struct to_object<llvm::Triple*>
+    {
+        static core::T_sp convert(llvm::Triple* ptr)
+        {_G(); return((core::RP_Create_wrapped<llvmo::Triple_O,llvm::Triple*>(ptr)));}
+    };
+};
+;
+
+
+
+
+namespace llvmo
+{
+    FORWARD(TargetOptions);
+    class TargetOptions_O : public core::ExternalObject_O
+    {
+	LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::TargetOptions,TargetOptions_O,"TargetOptions",core::ExternalObject_O);
+	typedef llvm::TargetOptions ExternalType;
+	typedef llvm::TargetOptions* PointerToExternalType;
+
+    protected:
+	PointerToExternalType _ptr;
+    public:
+	static TargetOptions_sp make();
+    public:
+	virtual void* externalObject() const
+	{
+	    return this->_ptr;
+	};
+	PointerToExternalType wrappedPtr() const
+	{
+	    return this->_ptr;
+	}
+
+    public:
+	void set_wrapped(PointerToExternalType ptr)
+	{
+	    if (this->_ptr != NULL ) delete this->_ptr;
+	    this->_ptr = ptr;
+	}
+    public:
+	bool JITEmitDebugInfo();
+	void setfJITEmitDebugInfo(bool val);
+	bool JITEmitDebugInfoToDisk();
+	void setfJITEmitDebugInfoToDisk(bool val);
+    public:
+	TargetOptions_O() : Base(), _ptr(NULL)  {};
+	~TargetOptions_O() {if (_ptr != NULL ) { delete _ptr; _ptr = NULL;};}
+
+    }; // TargetOptions_O
+}; // llvmo
+TRANSLATE(llvmo::TargetOptions_O);
+/* from_object translators */
+
+namespace translate
+{
+    template <>
+    struct from_object<llvm::TargetOptions*,std::true_type>
+    {
+        typedef llvm::TargetOptions* DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::TargetOptions_O>()->wrappedPtr()) {};
+    };
+};
+
+/* to_object translators */
+
+namespace translate
+{
+    template <>
+    struct to_object<llvm::TargetOptions*>
+    {
+        static core::T_sp convert(llvm::TargetOptions* ptr)
+        {_G(); return((core::RP_Create_wrapped<llvmo::TargetOptions_O,llvm::TargetOptions*>(ptr)));}
+    };
+};
+;
+
+
+
+
+
+
+
+
+namespace llvmo
+{
+    FORWARD(Target);
+    class Target_O : public core::ExternalObject_O
+    {
+	LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::Target,Target_O,"Target",core::ExternalObject_O);
+	typedef llvm::Target ExternalType;
+	typedef llvm::Target* PointerToExternalType;
+
+    protected:
+	PointerToExternalType _ptr;
+    public:
+	virtual void* externalObject() const
+	{
+	    return this->_ptr;
+	};
+	PointerToExternalType wrappedPtr() const
+	{
+	    return this->_ptr;
+	}
+
+    public:
+	void set_wrapped(PointerToExternalType ptr)
+	{
+/*        if (this->_ptr != NULL ) delete this->_ptr; */
+	    this->_ptr = ptr;
+	}
+	Target_O() : Base(), _ptr(NULL)  {};
+	~Target_O() {if (_ptr != NULL ) {/* delete _ptr;*/ _ptr = NULL;};}
+
+    }; // Target_O
+}; // llvmo
+TRANSLATE(llvmo::Target_O);
+/* from_object translators */
+
+namespace translate
+{
+    template <>
+    struct from_object<llvm::Target*,std::true_type>
+    {
+        typedef llvm::Target* DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v( object.nilp() ? NULL : object.as<llvmo::Target_O>()->wrappedPtr()) {};
+    };
+};
+/* to_object translators */
+namespace translate
+{
+    template <>
+    struct to_object<llvm::Target*,translate::dont_adopt_pointer>
+    {
+      static core::T_sp convert(llvm::Target* ptr)
+        {_G(); return((core::RP_Create_wrapped<llvmo::Target_O,llvm::Target*>(ptr)));}
+    };
+
+    template <>
+    struct to_object<const llvm::Target*>
+    {
+      static core::T_sp convert(const llvm::Target* ptr)
+      {_G(); return((core::RP_Create_wrapped<llvmo::Target_O,llvm::Target*>(const_cast<llvm::Target*>(ptr))));}
+    };
+};
+;
+
+
+
+
+
+
+
+
 
 
 namespace llvmo
@@ -1822,7 +2045,7 @@ namespace llvmo
 	/*! Set the target options (see llvm:EngineBuilder::setTargetOptions).
 	  Options are passed as a p-list with keyword/value pairs like :jitemit-debug-info t.
 	*/
-	void setTargetOptions(core::Cons_sp plist);
+	void setTargetOptions(TargetOptions_sp targetOptions);
 
 	/*! Set to use MCJIT */
 //	void setUseMCJIT(bool mcjit);
@@ -1893,7 +2116,7 @@ namespace llvmo
 	/*! Set the target options (see llvm:PassManagerBuilder::setTargetOptions).
 	  Options are passed as a p-list with keyword/value pairs like :jitemit-debug-info t.
 	*/
-	void setTargetOptions(core::Cons_sp plist);
+	//	void setTargetOptions(TargetOptions_sp targetOptions);
 
 	/*! Set to use MCJIT */
 	void setUseMCJIT(bool mcjit);

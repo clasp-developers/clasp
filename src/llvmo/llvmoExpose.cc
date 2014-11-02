@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include <llvm/Transforms/Instrumentation.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
 #include <llvm/PassManager.h>
@@ -222,6 +223,85 @@ namespace llvmo
 }; // llvmo
 
 
+
+namespace llvmo
+{
+    EXPOSE_CLASS(llvmo,Target_O);
+
+    void Target_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+        core::externalClass_<Target_O>()
+            ;
+    };
+
+    void Target_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+        IMPLEMENT_ME();
+    };
+}; // llvmo
+
+
+namespace translate
+{
+    template <>
+    struct from_object<llvm::CodeGenOpt::Level,std::true_type>
+    {
+        typedef llvm::CodeGenOpt::Level DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(llvm::CodeGenOpt::Default) {
+	    if ( object.nilp() ) {
+		SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+	    }
+	    if ( core::Symbol_sp so = object.asOrNull<core::Symbol_O>() ) {
+		core::SymbolToEnumConverter_sp converter = llvmo::_sym_CodeGenOpt->symbolValue().as<core::SymbolToEnumConverter_O>();
+		this->_v = converter->enumForSymbol<llvm::CodeGenOpt::Level>(so);
+	    } else {
+		SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+	    }
+	}
+    };
+	
+    template <>
+    struct from_object<llvm::Reloc::Model,std::true_type>
+    {
+	typedef llvm::Reloc::Model DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(llvm::Reloc::Default) {
+	    if ( object.nilp() ) {
+		SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+	    }
+	    if ( core::Symbol_sp so = object.asOrNull<core::Symbol_O>() ) {
+		core::SymbolToEnumConverter_sp converter = llvmo::_sym_RelocModel->symbolValue().as<core::SymbolToEnumConverter_O>();
+		this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
+	    } else {
+		SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+	    }
+	}
+    };
+
+    template <>
+    struct from_object<llvm::CodeModel::Model,std::true_type>
+    {
+	typedef llvm::CodeModel::Model DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(llvm::CodeModel::Default) {
+	    if ( object.nilp() ) {
+		SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+	    }
+	    if ( core::Symbol_sp so = object.asOrNull<core::Symbol_O>() ) {
+		core::SymbolToEnumConverter_sp converter = llvmo::_sym_CodeModel->symbolValue().as<core::SymbolToEnumConverter_O>();
+		this->_v = converter->enumForSymbol<llvm::CodeModel::Model>(so);
+	    } else {
+		SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+	    }
+	}
+
+    };
+
+};
+
+
+
 namespace llvmo
 {
     EXPOSE_CLASS(llvmo,TargetMachine_O);
@@ -230,6 +310,46 @@ namespace llvmo
     {_G();
         core::externalClass_<TargetMachine_O>()
             ;
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt_None);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt_Less);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt_Default);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt_Aggressive);
+	core::enum_<llvm::CodeGenOpt::Level>(_sym_CodeGenOpt,"CodeGenOpt")
+	    .value(_sym_CodeGenOpt_None,llvm::CodeGenOpt::None)
+	    .value(_sym_CodeGenOpt_Less,llvm::CodeGenOpt::Less)
+	    .value(_sym_CodeGenOpt_Default,llvm::CodeGenOpt::Default)
+	    .value(_sym_CodeGenOpt_Aggressive,llvm::CodeGenOpt::Aggressive)
+	    ;
+
+	SYMBOL_EXPORT_SC_(LlvmoPkg,RelocModel);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,RelocModel_Default);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,RelocModel_Static);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,RelocModel_PIC_);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,RelocModel_DynamicNoPIC);
+	core::enum_<llvm::Reloc::Model>(_sym_RelocModel,"RelocModel")
+	    .value(_sym_RelocModel_Default,llvm::Reloc::Model::Default)
+	    .value(_sym_RelocModel_Static,llvm::Reloc::Model::Static)
+	    .value(_sym_RelocModel_PIC_,llvm::Reloc::Model::PIC_)
+	    .value(_sym_RelocModel_DynamicNoPIC,llvm::Reloc::Model::DynamicNoPIC)
+	    ;
+	
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeModel);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeModel_Default);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeModel_JITDefault);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeModel_Small);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeModel_Kernel);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeModel_Medium);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeModel_Large);
+	core::enum_<llvm::CodeModel::Model>(_sym_CodeModel,"CodeModel")
+	    .value(_sym_CodeModel_Default,llvm::CodeModel::Default)
+	    .value(_sym_CodeModel_JITDefault,llvm::CodeModel::JITDefault)
+	    .value(_sym_CodeModel_Small,llvm::CodeModel::Small)
+	    .value(_sym_CodeModel_Kernel,llvm::CodeModel::Kernel)
+	    .value(_sym_CodeModel_Medium,llvm::CodeModel::Medium)
+	    .value(_sym_CodeModel_Large,llvm::CodeModel::Large)
+	    ;
+
     };
 
     void TargetMachine_O::exposePython(core::Lisp_sp lisp)
@@ -256,8 +376,256 @@ namespace llvmo
 	    .value(_sym_ArchType_arm,llvm::Triple::arm)
 	    ;
 
+#define ARGS_Triple_O_make "(triple-str)"
+#define DECL_Triple_O_make ""
+#define DOCS_Triple_O_make "Triple_O_make"
+    Triple_sp Triple_O::make(const string& triple)
+    {_G();
+	GC_ALLOCATE(Triple_O,self );
+	self->_ptr = new llvm::Triple(triple);
+	return self;
     };
 
+    void Triple_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<Triple_O>()
+	    .def("getTriple",&llvm::Triple::getTriple)
+	    .def("getArchName",&llvm::Triple::getArchName)
+	    .def("getVendorName",&llvm::Triple::getVendorName)
+	    .def("getOSName",&llvm::Triple::getOSName)
+	    .def("getEnvironmentName",&llvm::Triple::getEnvironmentName)
+	    .def("getOSAndEnvironmentName",&llvm::Triple::getOSAndEnvironmentName)
+	    ;
+	core::af_def(LlvmoPkg,"make-Triple",&Triple_O::make,ARGS_Triple_O_make,DECL_Triple_O_make,DOCS_Triple_O_make);
+	core::af_def(LlvmoPkg,"triple-normalize",llvm::Triple::normalize);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_UnknownArch);	
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_arm);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_armeb);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_aarch64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_aarch64_be);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_hexagon);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_mips);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_mipsel);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_mips64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_mips64el);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_msp430);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_ppc);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_ppc64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_ppc64le);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_r600);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_sparc);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_sparcv9);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_systemz);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_tce);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_thumb);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_thumbeb);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_x86);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_x86_64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_xcore);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_nvptx);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_nvptx64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_le32);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_le64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_amdil);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_amdil64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_hsail);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_hsail64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_spir);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_spir64);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_kalimba);
+	core::enum_<llvm::Triple::ArchType>(_sym_ArchType,"ArchType")
+	    .value(_sym_ArchType_UnknownArch,llvm::Triple::UnknownArch)
+	    .value(_sym_ArchType_arm,llvm::Triple::arm)
+	    .value(_sym_ArchType_armeb,llvm::Triple::armeb)      // ARM (big endian): armeb
+	    .value(_sym_ArchType_aarch64,llvm::Triple::aarch64)    // AArch64 (little endian):     aarch64_be, // AArch64 (big endian): aarch64_be
+	    .value(_sym_ArchType_hexagon,llvm::Triple::hexagon)    // Hexagon: hexagon
+	    .value(_sym_ArchType_mips,llvm::Triple::mips)       // MIPS: mips, mipsallegrex
+	    .value(_sym_ArchType_mipsel,llvm::Triple::mipsel)     // MIPSEL: mipsel, mipsallegrexel
+	    .value(_sym_ArchType_mips64,llvm::Triple::mips64)     // MIPS64: mips64
+	    .value(_sym_ArchType_mips64el,llvm::Triple::mips64el)   // MIPS64EL: mips64el
+	    .value(_sym_ArchType_msp430,llvm::Triple::msp430)     // MSP430: msp430
+	    .value(_sym_ArchType_ppc,llvm::Triple::ppc)        // PPC: powerpc
+	    .value(_sym_ArchType_ppc64,llvm::Triple::ppc64)      // PPC64: powerpc64, ppu
+	    .value(_sym_ArchType_ppc64le,llvm::Triple::ppc64le)    // PPC64LE: powerpc64le
+	    .value(_sym_ArchType_r600,llvm::Triple::r600)       // R600: AMD GPUs HD2XXX - HD6XXX
+	    .value(_sym_ArchType_sparc,llvm::Triple::sparc)      // Sparc: sparc
+	    .value(_sym_ArchType_sparcv9,llvm::Triple::sparcv9)    // Sparcv9: Sparcv9
+	    .value(_sym_ArchType_systemz,llvm::Triple::systemz)    // SystemZ: s390x
+	    .value(_sym_ArchType_tce,llvm::Triple::tce)        // TCE (http://tce.cs.tut.fi/): tce
+	    .value(_sym_ArchType_thumb,llvm::Triple::thumb)      // Thumb (little endian): thumb, thumbv.*
+	    .value(_sym_ArchType_thumbeb,llvm::Triple::thumbeb)    // Thumb (big endian): thumbeb
+	    .value(_sym_ArchType_x86,llvm::Triple::x86)        // X86: i[3-9]86
+	    .value(_sym_ArchType_x86_64,llvm::Triple::x86_64)     // X86-64: amd64, x86_64
+	    .value(_sym_ArchType_xcore,llvm::Triple::xcore)      // XCore: xcore
+	    .value(_sym_ArchType_nvptx,llvm::Triple::nvptx)      // NVPTX: 32-bit
+	    .value(_sym_ArchType_nvptx64,llvm::Triple::nvptx64)    // NVPTX: 64-bit
+	    .value(_sym_ArchType_le32,llvm::Triple::le32)       // le32: generic little-endian 32-bit CPU (PNaCl / Emscripten)
+	    .value(_sym_ArchType_le64,llvm::Triple::le64)       // le64: generic little-endian 64-bit CPU (PNaCl / Emscripten)
+	    .value(_sym_ArchType_amdil,llvm::Triple::amdil)      // AMDIL
+	    .value(_sym_ArchType_amdil64,llvm::Triple::amdil64)    // AMDIL with 64-bit pointers
+	    .value(_sym_ArchType_hsail,llvm::Triple::hsail)      // AMD HSAIL
+	    .value(_sym_ArchType_hsail64,llvm::Triple::hsail64)    // AMD HSAIL with 64-bit pointers
+	    .value(_sym_ArchType_spir,llvm::Triple::spir)       // SPIR: standard portable IR for OpenCL 32-bit version
+	    .value(_sym_ArchType_spir64,llvm::Triple::spir64)     // SPIR: standard portable IR for OpenCL 64-bit version
+	    .value(_sym_ArchType_kalimba,llvm::Triple::kalimba)     // Kalimba: generic kalimba
+	    ;
+
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_NoSubArch);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v8);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v7);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v7em);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v7m);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v7s);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v6);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v6m);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v6t2);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v5);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v5te);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_ARMSubArch_v4t);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_KalimbaSubArch_v3);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_KalimbaSubArch_v4);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType_KalimbaSubArch_v5);
+
+	SYMBOL_EXPORT_SC_(LlvmoPkg,SubArchType);
+	core::enum_<llvm::Triple::SubArchType>(_sym_SubArchType,"SubArchType")
+	    .value(_sym_SubArchType_NoSubArch,llvm::Triple::NoSubArch)
+	    .value(_sym_SubArchType_ARMSubArch_v8,llvm::Triple::ARMSubArch_v8)
+	    .value(_sym_SubArchType_ARMSubArch_v7,llvm::Triple::ARMSubArch_v7)
+	    .value(_sym_SubArchType_ARMSubArch_v7em,llvm::Triple::ARMSubArch_v7em)
+	    .value(_sym_SubArchType_ARMSubArch_v7m,llvm::Triple::ARMSubArch_v7m)
+	    .value(_sym_SubArchType_ARMSubArch_v7s,llvm::Triple::ARMSubArch_v7s)
+	    .value(_sym_SubArchType_ARMSubArch_v6,llvm::Triple::ARMSubArch_v6)
+	    .value(_sym_SubArchType_ARMSubArch_v6m,llvm::Triple::ARMSubArch_v6m)
+	    .value(_sym_SubArchType_ARMSubArch_v6t2,llvm::Triple::ARMSubArch_v6t2)
+	    .value(_sym_SubArchType_ARMSubArch_v5,llvm::Triple::ARMSubArch_v5)
+	    .value(_sym_SubArchType_ARMSubArch_v5te,llvm::Triple::ARMSubArch_v5te)
+	    .value(_sym_SubArchType_ARMSubArch_v4t,llvm::Triple::ARMSubArch_v4t)
+	    .value(_sym_SubArchType_KalimbaSubArch_v3,llvm::Triple::KalimbaSubArch_v3)
+	    .value(_sym_SubArchType_KalimbaSubArch_v4,llvm::Triple::KalimbaSubArch_v4)
+	    .value(_sym_SubArchType_KalimbaSubArch_v5,llvm::Triple::KalimbaSubArch_v5)
+	    ;
+
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_UnknownVendor);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_Apple);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_PC);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_SCEI);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_BGP);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_BGQ);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_Freescale);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_IBM);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_ImaginationTechnologies);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_MipsTechnologies);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_NVIDIA);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType_CSR);
+
+	SYMBOL_EXPORT_SC_(LlvmoPkg,VendorType);
+	core::enum_<llvm::Triple::VendorType>(_sym_VendorType,"VendorType")
+	    .value(_sym_VendorType_UnknownVendor,llvm::Triple::UnknownVendor)
+	    .value(_sym_VendorType_Apple,llvm::Triple::Apple)
+	    .value(_sym_VendorType_PC,llvm::Triple::PC)
+	    .value(_sym_VendorType_SCEI,llvm::Triple::SCEI)
+	    .value(_sym_VendorType_BGP,llvm::Triple::BGP)
+	    .value(_sym_VendorType_BGQ,llvm::Triple::BGQ)
+	    .value(_sym_VendorType_Freescale,llvm::Triple::Freescale)
+	    .value(_sym_VendorType_IBM,llvm::Triple::IBM)
+	    .value(_sym_VendorType_ImaginationTechnologies,llvm::Triple::ImaginationTechnologies)
+	    .value(_sym_VendorType_MipsTechnologies,llvm::Triple::MipsTechnologies)
+	    .value(_sym_VendorType_NVIDIA,llvm::Triple::NVIDIA)
+	    .value(_sym_VendorType_CSR,llvm::Triple::CSR)
+
+	    SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_UnknownOS);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_Darwin);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_DragonFly);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_FreeBSD);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_IOS);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_KFreeBSD);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_Linux);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_Lv2);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_MacOSX);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_NetBSD);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_OpenBSD);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_Solaris);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_Win32);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_Haiku);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_Minix);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_RTEMS);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_NaCl);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_CNK);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_Bitrig);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_AIX);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_CUDA);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType_NVCL);
+	
+	SYMBOL_EXPORT_SC_(LlvmoPkg,OSType);
+	core::enum_<llvm::Triple::OSType>(_sym_OSType,"OSType")
+	    .value(_sym_OSType_UnknownOS,llvm::Triple::UnknownOS)
+	    .value(_sym_OSType_Darwin,llvm::Triple::Darwin)
+	    .value(_sym_OSType_DragonFly,llvm::Triple::DragonFly)
+	    .value(_sym_OSType_FreeBSD,llvm::Triple::FreeBSD)
+	    .value(_sym_OSType_IOS,llvm::Triple::IOS)
+	    .value(_sym_OSType_KFreeBSD,llvm::Triple::KFreeBSD)
+	    .value(_sym_OSType_Linux,llvm::Triple::Linux)
+	    .value(_sym_OSType_Lv2,llvm::Triple::Lv2)
+	    .value(_sym_OSType_MacOSX,llvm::Triple::MacOSX)
+	    .value(_sym_OSType_NetBSD,llvm::Triple::NetBSD)
+	    .value(_sym_OSType_OpenBSD,llvm::Triple::OpenBSD)
+	    .value(_sym_OSType_Solaris,llvm::Triple::Solaris)
+	    .value(_sym_OSType_Win32,llvm::Triple::Win32)
+	    .value(_sym_OSType_Haiku,llvm::Triple::Haiku)
+	    .value(_sym_OSType_Minix,llvm::Triple::Minix)
+	    .value(_sym_OSType_RTEMS,llvm::Triple::RTEMS)
+	    .value(_sym_OSType_NaCl,llvm::Triple::NaCl)
+	    .value(_sym_OSType_CNK,llvm::Triple::CNK)
+	    .value(_sym_OSType_Bitrig,llvm::Triple::Bitrig)
+	    .value(_sym_OSType_AIX,llvm::Triple::AIX)
+	    .value(_sym_OSType_CUDA,llvm::Triple::CUDA)
+	    .value(_sym_OSType_NVCL,llvm::Triple::NVCL)
+	    ;
+      
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_UnknownEnvironment);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_GNU);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_GNUEABI);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_GNUEABIHF);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_GNUX32);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_CODE16);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_EABI);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_EABIHF);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_Android);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_MSVC);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_Itanium);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType_Cygnus);
+
+	SYMBOL_EXPORT_SC_(LlvmoPkg,EnvironmentType);
+	core::enum_<llvm::Triple::EnvironmentType>(_sym_EnvironmentType,"EnvironmentType")
+	    .value(_sym_EnvironmentType_UnknownEnvironment,llvm::Triple::UnknownEnvironment)
+	    .value(_sym_EnvironmentType_GNU,llvm::Triple::GNU)
+	    .value(_sym_EnvironmentType_GNUEABI,llvm::Triple::GNUEABI)
+	    .value(_sym_EnvironmentType_GNUEABIHF,llvm::Triple::GNUEABIHF)
+	    .value(_sym_EnvironmentType_GNUX32,llvm::Triple::GNUX32)
+	    .value(_sym_EnvironmentType_CODE16,llvm::Triple::CODE16)
+	    .value(_sym_EnvironmentType_EABI,llvm::Triple::EABI)
+	    .value(_sym_EnvironmentType_EABIHF,llvm::Triple::EABIHF)
+	    .value(_sym_EnvironmentType_Android,llvm::Triple::Android)
+	    .value(_sym_EnvironmentType_MSVC,llvm::Triple::MSVC)
+	    .value(_sym_EnvironmentType_Itanium,llvm::Triple::Itanium)
+	    .value(_sym_EnvironmentType_Cygnus,llvm::Triple::Cygnus)
+
+	    SYMBOL_EXPORT_SC_(LlvmoPkg,ObjectFormatType_UnknownObjectFormat);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ObjectFormatType_COFF);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ObjectFormatType_ELF);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ObjectFormatType_MachO);
+
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ObjectFormatType);
+	core::enum_<llvm::Triple::ObjectFormatType>(_sym_ObjectFormatType,"ObjectFormatType")
+	    .value(_sym_ObjectFormatType_UnknownObjectFormat,llvm::Triple::UnknownObjectFormat)
+	    .value(_sym_ObjectFormatType_COFF,llvm::Triple::COFF)
+	    .value(_sym_ObjectFormatType_ELF,llvm::Triple::ELF)
+	    .value(_sym_ObjectFormatType_MachO,llvm::Triple::MachO)
+	    ;
+    };
+
+  
     void Triple_O::exposePython(core::Lisp_sp lisp)
     {_G();
         IMPLEMENT_ME();
@@ -271,13 +639,49 @@ namespace llvmo
 namespace llvmo
 {
 
+#define ARGS_TargetOptions_O_make "()"
+#define DECL_TargetOptions_O_make ""
+#define DOCS_TargetOptions_O_make "TargetOptions_O_make"
+    TargetOptions_sp TargetOptions_O::make()
+    {_G();
+        GC_ALLOCATE(TargetOptions_O,self);
+        self->_ptr = new llvm::TargetOptions();
+	return self;
+    };
 
-    EXPOSE_CLASS(llvmo,TargetOptions_O);
+    
+    bool TargetOptions_O::JITEmitDebugInfo()
+    {
+	return this->wrappedPtr()->JITEmitDebugInfo;
+    }
+
+    void TargetOptions_O::setfJITEmitDebugInfo(bool val)
+    {
+	this->wrappedPtr()->JITEmitDebugInfo = val;
+    }
+
+        
+    bool TargetOptions_O::JITEmitDebugInfoToDisk()
+    {
+	return this->wrappedPtr()->JITEmitDebugInfoToDisk;
+    }
+
+    void TargetOptions_O::setfJITEmitDebugInfoToDisk(bool val)
+    {
+	this->wrappedPtr()->JITEmitDebugInfoToDisk = val;
+    }
+
+  EXPOSE_CLASS(llvmo,TargetOptions_O);
 
     void TargetOptions_O::exposeCando(core::Lisp_sp lisp)
     {_G();
         core::externalClass_<TargetOptions_O>()
+	    .def("JITEmitDebugInfo",&TargetOptions_O::JITEmitDebugInfo)
+	    .def("setfJITEmitDebugInfo",&TargetOptions_O::setfJITEmitDebugInfo)
+	    .def("JITEmitDebugInfoToDisk",&TargetOptions_O::JITEmitDebugInfoToDisk)
+	    .def("setfJITEmitDebugInfoToDisk",&TargetOptions_O::setfJITEmitDebugInfoToDisk)
             ;
+        Defun_maker(LlvmoPkg,TargetOptions);
     };
 
     void TargetOptions_O::exposePython(core::Lisp_sp lisp)
@@ -834,47 +1238,48 @@ namespace llvmo
 
     void Module_O::exposeCando(core::Lisp_sp lisp)
     {_G();
-	using namespace llvm;
-	GlobalVariable* (llvm::Module::*getGlobalVariable_nc)(StringRef,bool) = &llvm::Module::getGlobalVariable;
-	GlobalVariable* (Module::*getNamedGlobal_nc)(StringRef) = &Module::getNamedGlobal;
-	void (Module::*addModuleFlag_nc)(MDNode *Node) = &Module::addModuleFlag;
-	core::externalClass_<Module_O>()
-	    .def("dump",  &llvm::Module::dump)
-	    .def("addModuleFlag",addModuleFlag_nc)
-	    .def("getModuleIdentifier",&llvm::Module::getModuleIdentifier)
-	    .def("getFunction", &llvmo::Module_O::getFunction)
-	    .def("getGlobalVariable", getGlobalVariable_nc)
-	    .def("getNamedGlobal", getNamedGlobal_nc)
-	    .def("getOrInsertGlobal", &llvm::Module::getOrInsertGlobal)
-	    .def("moduleValid",&Module_O::valid)
-	    .def("getGlobalList",&Module_O::getGlobalList)
-	    .def("getOrCreateUniquedStringGlobalVariable",&Module_O::getOrCreateUniquedStringGlobalVariable)
-	    .def("dump_namedMDList",&Module_O::dump_namedMDList)
-	    .def("moduleDelete",&Module_O::moduleDelete)
-	    .def("setTargetTriple",&llvm::Module::setTargetTriple)
-	    ;
-	core::af_def(LlvmoPkg,"make-Module",&Module_O::make,ARGS_Module_O_make,DECL_Module_O_make,DOCS_Module_O_make);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,verifyModule);
-	Defun(verifyModule);
+      using namespace llvm;
+      GlobalVariable* (llvm::Module::*getGlobalVariable_nc)(StringRef,bool) = &llvm::Module::getGlobalVariable;
+      GlobalVariable* (Module::*getNamedGlobal_nc)(StringRef) = &Module::getNamedGlobal;
+      void (Module::*addModuleFlag_nc)(MDNode *Node) = &Module::addModuleFlag;
+      core::externalClass_<Module_O>()
+	.def("dump",  &llvm::Module::dump)
+	.def("addModuleFlag",addModuleFlag_nc)
+	.def("getModuleIdentifier",&llvm::Module::getModuleIdentifier)
+	.def("getFunction", &llvmo::Module_O::getFunction)
+	.def("getGlobalVariable", getGlobalVariable_nc)
+	.def("getNamedGlobal", getNamedGlobal_nc)
+	.def("getOrInsertGlobal", &llvm::Module::getOrInsertGlobal)
+	.def("moduleValid",&Module_O::valid)
+	.def("getGlobalList",&Module_O::getGlobalList)
+	.def("getOrCreateUniquedStringGlobalVariable",&Module_O::getOrCreateUniquedStringGlobalVariable)
+	.def("dump_namedMDList",&Module_O::dump_namedMDList)
+	.def("moduleDelete",&Module_O::moduleDelete)
+	.def("setTargetTriple",&llvm::Module::setTargetTriple)
+	.def("getTargetTriple",&llvm::Module::getTargetTriple)
+	;
+      core::af_def(LlvmoPkg,"make-Module",&Module_O::make,ARGS_Module_O_make,DECL_Module_O_make,DOCS_Module_O_make);
+      SYMBOL_EXPORT_SC_(LlvmoPkg,verifyModule);
+      Defun(verifyModule);
 
-	SYMBOL_EXPORT_SC_(LlvmoPkg,module_get_function_list);
-	Defun(module_get_function_list);
+      SYMBOL_EXPORT_SC_(LlvmoPkg,module_get_function_list);
+      Defun(module_get_function_list);
 
-        SYMBOL_EXPORT_SC_(LlvmoPkg,STARmoduleModFlagBehaviorSTAR);
-        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagError);
-        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagWarning);
-        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagRequire);
-        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagOverride);
-        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppend);
-        SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppendUnique);
-        core::enum_<llvm::Module::ModFlagBehavior>(_sym_STARmoduleModFlagBehaviorSTAR,"llvm::Module::ModFlagBehavior")
-            .value(_sym_moduleFlagError,llvm::Module::Error)
-            .value(_sym_moduleFlagWarning,llvm::Module::Warning)
-            .value(_sym_moduleFlagRequire,llvm::Module::Require)
-            .value(_sym_moduleFlagOverride,llvm::Module::Override)
-            .value(_sym_moduleFlagAppend,llvm::Module::Append)
-            .value(_sym_moduleFlagAppendUnique,llvm::Module::AppendUnique)
-            ;
+      SYMBOL_EXPORT_SC_(LlvmoPkg,STARmoduleModFlagBehaviorSTAR);
+      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagError);
+      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagWarning);
+      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagRequire);
+      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagOverride);
+      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppend);
+      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppendUnique);
+      core::enum_<llvm::Module::ModFlagBehavior>(_sym_STARmoduleModFlagBehaviorSTAR,"llvm::Module::ModFlagBehavior")
+	.value(_sym_moduleFlagError,llvm::Module::Error)
+	.value(_sym_moduleFlagWarning,llvm::Module::Warning)
+	.value(_sym_moduleFlagRequire,llvm::Module::Require)
+	.value(_sym_moduleFlagOverride,llvm::Module::Override)
+	.value(_sym_moduleFlagAppend,llvm::Module::Append)
+	.value(_sym_moduleFlagAppendUnique,llvm::Module::AppendUnique)
+	;
     };
 
     void Module_O::exposePython(core::Lisp_sp lisp)
@@ -1354,29 +1759,9 @@ namespace llvmo
 #endif
 
 
-    void EngineBuilder_O::setTargetOptions(core::Cons_sp optionsPlist)
+    void EngineBuilder_O::setTargetOptions(TargetOptions_sp options)
     {_G();
-	SYMBOL_EXPORT_SC_(LlvmoPkg,JITEmitDebugInfo);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,JITEmitDebugInfoToDisk);
-	llvm::TargetOptions targetOptions;
-	for ( core::Cons_sp cur=optionsPlist; cur.notnilp(); cur=cCddr(cur) )
-	{
-	    core::Symbol_sp kw = oCar(cur).as<core::Symbol_O>();
-	    core::T_sp val = oCadr(cur);
-	    unsigned ival = 0;
-	    if ( val.isTrue() ) ival = 1;
-	    if ( kw == _sym_JITEmitDebugInfo )
-	    {
-		targetOptions.JITEmitDebugInfo = ival;
-	    } else if ( kw == _sym_JITEmitDebugInfoToDisk )
-	    {
-		targetOptions.JITEmitDebugInfoToDisk = ival;
-	    } else
-	    {
-		SIMPLE_ERROR(BF("Unrecognized TargetOption keyword[%s]") % _rep_(kw) );
-	    }
-	}
-	this->wrappedPtr()->setTargetOptions(targetOptions);
+	this->wrappedPtr()->setTargetOptions(*options->wrappedPtr());
     }
 
 
@@ -3787,6 +4172,20 @@ namespace llvmo
 
 
 
+    /*! Return (values target nil) if successful or (values nil error-message) if not */
+    Target_mv TargetRegistryLookupTarget(const std::string& ArchName, Triple_sp triple )
+    {
+	string message;
+	llvm::Target* target = const_cast<llvm::Target*>(llvm::TargetRegistry::lookupTarget(ArchName,*triple->wrappedPtr(),message));
+	if ( target == NULL ) {
+	    return Values(_Nil<Target_O>(),core::Str_O::create(message));
+	}
+	Target_sp targeto = core::RP_Create_wrapped<Target_O,llvm::Target*>(target);
+	return Values(targeto,_Nil<core::Str_O>());
+    }
+		      
+	
+
 
 
 
@@ -4118,6 +4517,12 @@ namespace llvmo
         _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
         _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
         _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::Fixnum_O::create(0));
+
+
+	core::af_def(LlvmoPkg,"TargetRegistryLookupTarget", &TargetRegistryLookupTarget); 
+
+
+	
     }
 
 

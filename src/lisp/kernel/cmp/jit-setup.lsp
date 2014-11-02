@@ -190,10 +190,11 @@ Return the module and the global variable that represents the load-time-value-ho
   (llvm-create-module (next-run-time-module-name)))
 
 (defun create-run-time-execution-engine (module)
-  (let ((engine-builder (llvm-sys:make-engine-builder module)))
-    (llvm-sys:set-target-options engine-builder '(llvm-sys:jitemit-debug-info t
-                                                  llvm-sys:jitemit-debug-info-to-disk t))
-    ;;    (llvm-sys:set-use-mcjit engine-builder t)
+  (let ((engine-builder (llvm-sys:make-engine-builder module))
+	(target-options (llvm-sys:make-target-options)))
+    (llvm-sys:setf-jitemit-debug-info target-options t)
+    (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
+    (llvm-sys:set-target-options engine-builder target-options)
     (llvm-sys:create engine-builder)))
 
 
@@ -317,12 +318,13 @@ No DIBuilder is defined for the default module")
 	   (time-load-start (clock-gettime-nanoseconds)))
 ;;       (bformat t "Loading module from file: %s\n" filename)
        (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
-	      (engine-builder (llvm-sys:make-engine-builder module)))
+	      (engine-builder (llvm-sys:make-engine-builder module))
 	 ;; After make-engine-builder MODULE becomes invalid!!!!!
-	 (llvm-sys:set-target-options engine-builder
-				      '(llvm-sys:jitemit-debug-info t
-					llvm-sys:jitemit-debug-info-to-disk t))
-;;	 (llvm-sys:set-use-mcjit engine-builder t)
+	      (target-options (llvm-sys:make-target-options)))
+	 (llvm-sys:setf-jitemit-debug-info target-options t)
+	 (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
+	 (llvm-sys:set-target-options engine-builder target-options)
+;;;	 (llvm-sys:set-use-mcjit engine-builder t)
 	 (let*((execution-engine (llvm-sys:create engine-builder))
 	       (stem (string-downcase (pathname-name filename)))
                (main-fn-name llvm-sys:+clasp-main-function-name+)
