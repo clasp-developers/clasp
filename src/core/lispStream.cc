@@ -6347,6 +6347,12 @@ namespace core {
         PYTHON_CLASS(ClPkg,Number,"","",_lisp);
 #endif
     };
+
+
+    void StringOutputStream_O::fill(const string& data) 
+    {
+	this->_Contents->pushString(data.c_str());
+    }
 };
 
 

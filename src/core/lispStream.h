@@ -434,6 +434,7 @@ namespace core
                          , T_sp elementType
                          , T_sp externalFormat );
 public:
+	int fileDescriptor() const { return this->_FileDescriptor; };
     }; 
 };
 template<> struct gctools::GCInfo<core::IOFileStream_O> {
@@ -529,6 +530,7 @@ namespace core
     GCPRIVATE: // instance variables here
         StrWithFillPtr_sp       _Contents;
     public: // Functions here
+	void fill(const string& data);
     }; // StringStream class
 };
 template<> struct gctools::GCInfo<core::StringOutputStream_O> {

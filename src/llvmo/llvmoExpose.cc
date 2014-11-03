@@ -70,6 +70,7 @@ THE SOFTWARE.
 #include "core/environment.h"
 #include "core/sourceFileInfo.h"
 #include "core/loadTimeValues.h"
+#include "core/lispStream.h"
 #include "core/bignum.h"
 #include "core/pointer.h"
 #include "core/str.h"
@@ -323,18 +324,34 @@ namespace llvmo
 {
     EXPOSE_CLASS(llvmo,TargetMachine_O);
 
-    core::T_mv TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
-								     core::T_sp stream,
-								     llvm::TargetMachine::CodeGenFileType,
-								     Module_sp module )
+    void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+							       core::T_sp stream,
+							       llvm::TargetMachine::CodeGenFileType FileType,
+							       Module_sp module )
     {
 	if ( stream.nilp() ) {
 	    SIMPLE_ERROR(BF("You must pass a valid stream"));
 	}
-	
-	this->addPassesToEmitFile(*passManager->wrappedPtr(),
-				  
-
+	llvm::raw_ostream* ostreamP;
+	std::string stringOutput;
+	bool stringOutputStream = false;
+	if ( core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>() ) {
+	    ostreamP = new llvm::raw_string_ostream(stringOutput);
+	    stringOutputStream = true;
+	} else if ( core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>() ) {
+	    ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(),false,true);
+	} else {
+	    SIMPLE_ERROR(BF("Illegal file type for addPassesToEmitFileAndRunPassManager"));
+	}
+	llvm::formatted_raw_ostream FOS(*ostreamP,false);
+	if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(),FOS,FileType,true,nullptr,nullptr) ) {
+	    delete ostreamP;
+	    SIMPLE_ERROR(BF("Could not generate file type"));
+	}
+	passManager->wrappedPtr()->run(*module->wrappedPtr());
+	if ( core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>() ) {
+	    sos->fill(stringOutput.c_str());
+	}
     }
     
 
@@ -342,6 +359,7 @@ namespace llvmo
     {_G();
         core::externalClass_<TargetMachine_O>()
 	    .def("getSubtargetImpl",(const llvm::TargetSubtargetInfo*(llvm::TargetMachine::*)() const)&llvm::TargetMachine::getSubtargetImpl)
+	    .def("addPassesToEmitFileAndRunPassManager",&TargetMachine_O::addPassesToEmitFileAndRunPassManager)
             ;
 
 	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenFileType);

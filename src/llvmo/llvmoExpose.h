@@ -605,10 +605,10 @@ namespace llvmo
 	    this->_ptr = ptr;
 	}
 	/*! Return (values CodeGenFileType-symbol) */
-	core::T_mv addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
-							core::T_sp stream,
-							llvm::TargetMachine::CodeGenFileType,
-							Module_sp module );
+	void addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+						  core::T_sp stream,
+						  llvm::TargetMachine::CodeGenFileType,
+						  Module_sp module );
 						  
 	TargetMachine_O() : Base(), _ptr(NULL)  {};
 	~TargetMachine_O() {if (_ptr != NULL ) {/* delete _ptr;*/ _ptr = NULL;};}
