@@ -231,6 +231,7 @@ namespace llvmo
     void Target_O::exposeCando(core::Lisp_sp lisp)
     {_G();
         core::externalClass_<Target_O>()
+	    .def("createTargetMachine",&llvm::Target::createTargetMachine)
             ;
     };
 
@@ -309,6 +310,7 @@ namespace llvmo
     void TargetMachine_O::exposeCando(core::Lisp_sp lisp)
     {_G();
         core::externalClass_<TargetMachine_O>()
+	    .def("getSubtargetImpl",(const llvm::TargetSubtargetInfo*(llvm::TargetMachine::*)() const)&llvm::TargetMachine::getSubtargetImpl)
             ;
 	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt_None);
@@ -364,19 +366,7 @@ namespace llvmo
 {
     EXPOSE_CLASS(llvmo,Triple_O);
 
-    void Triple_O::exposeCando(core::Lisp_sp lisp)
-    {_G();
-        core::externalClass_<Triple_O>()
-            ;
-	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_UnknownArch);	
-	SYMBOL_EXPORT_SC_(LlvmoPkg,ArchType_arm);
-	core::enum_<llvm::Triple::ArchType>(_sym_ArchType,"ArchType")
-	    .value(_sym_ArchType_UnknownArch,llvm::Triple::UnknownArch)
-	    .value(_sym_ArchType_arm,llvm::Triple::arm)
-	    ;
-
-#define ARGS_Triple_O_make "(triple-str)"
+    #define ARGS_Triple_O_make "(triple-str)"
 #define DECL_Triple_O_make ""
 #define DOCS_Triple_O_make "Triple_O_make"
     Triple_sp Triple_O::make(const string& triple)
@@ -1238,48 +1228,49 @@ namespace llvmo
 
     void Module_O::exposeCando(core::Lisp_sp lisp)
     {_G();
-      using namespace llvm;
-      GlobalVariable* (llvm::Module::*getGlobalVariable_nc)(StringRef,bool) = &llvm::Module::getGlobalVariable;
-      GlobalVariable* (Module::*getNamedGlobal_nc)(StringRef) = &Module::getNamedGlobal;
-      void (Module::*addModuleFlag_nc)(MDNode *Node) = &Module::addModuleFlag;
-      core::externalClass_<Module_O>()
-	.def("dump",  &llvm::Module::dump)
-	.def("addModuleFlag",addModuleFlag_nc)
-	.def("getModuleIdentifier",&llvm::Module::getModuleIdentifier)
-	.def("getFunction", &llvmo::Module_O::getFunction)
-	.def("getGlobalVariable", getGlobalVariable_nc)
-	.def("getNamedGlobal", getNamedGlobal_nc)
-	.def("getOrInsertGlobal", &llvm::Module::getOrInsertGlobal)
-	.def("moduleValid",&Module_O::valid)
-	.def("getGlobalList",&Module_O::getGlobalList)
-	.def("getOrCreateUniquedStringGlobalVariable",&Module_O::getOrCreateUniquedStringGlobalVariable)
-	.def("dump_namedMDList",&Module_O::dump_namedMDList)
-	.def("moduleDelete",&Module_O::moduleDelete)
-	.def("setTargetTriple",&llvm::Module::setTargetTriple)
-	.def("getTargetTriple",&llvm::Module::getTargetTriple)
-	;
-      core::af_def(LlvmoPkg,"make-Module",&Module_O::make,ARGS_Module_O_make,DECL_Module_O_make,DOCS_Module_O_make);
-      SYMBOL_EXPORT_SC_(LlvmoPkg,verifyModule);
-      Defun(verifyModule);
+	using namespace llvm;
+	GlobalVariable* (llvm::Module::*getGlobalVariable_nc)(StringRef,bool) = &llvm::Module::getGlobalVariable;
+	GlobalVariable* (Module::*getNamedGlobal_nc)(StringRef) = &Module::getNamedGlobal;
+	void (Module::*addModuleFlag_nc)(MDNode *Node) = &Module::addModuleFlag;
+	core::externalClass_<Module_O>()
+	    .def("dump",  &llvm::Module::dump)
+	    .def("addModuleFlag",addModuleFlag_nc)
+	    .def("getModuleIdentifier",&llvm::Module::getModuleIdentifier)
+	    .def("getFunction", &llvmo::Module_O::getFunction)
+	    .def("getGlobalVariable", getGlobalVariable_nc)
+	    .def("getNamedGlobal", getNamedGlobal_nc)
+	    .def("getOrInsertGlobal", &llvm::Module::getOrInsertGlobal)
+	    .def("moduleValid",&Module_O::valid)
+	    .def("getGlobalList",&Module_O::getGlobalList)
+	    .def("getOrCreateUniquedStringGlobalVariable",&Module_O::getOrCreateUniquedStringGlobalVariable)
+	    .def("dump_namedMDList",&Module_O::dump_namedMDList)
+	    .def("moduleDelete",&Module_O::moduleDelete)
+	    .def("setTargetTriple",&llvm::Module::setTargetTriple)
+	    .def("getTargetTriple",&llvm::Module::getTargetTriple)
+	    .def("setDataLayout",(void (Module::*)(const DataLayout*))&llvm::Module::setDataLayout)
+	    ;
+	core::af_def(LlvmoPkg,"make-Module",&Module_O::make,ARGS_Module_O_make,DECL_Module_O_make,DOCS_Module_O_make);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,verifyModule);
+	Defun(verifyModule);
 
-      SYMBOL_EXPORT_SC_(LlvmoPkg,module_get_function_list);
-      Defun(module_get_function_list);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,module_get_function_list);
+	Defun(module_get_function_list);
 
-      SYMBOL_EXPORT_SC_(LlvmoPkg,STARmoduleModFlagBehaviorSTAR);
-      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagError);
-      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagWarning);
-      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagRequire);
-      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagOverride);
-      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppend);
-      SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppendUnique);
-      core::enum_<llvm::Module::ModFlagBehavior>(_sym_STARmoduleModFlagBehaviorSTAR,"llvm::Module::ModFlagBehavior")
-	.value(_sym_moduleFlagError,llvm::Module::Error)
-	.value(_sym_moduleFlagWarning,llvm::Module::Warning)
-	.value(_sym_moduleFlagRequire,llvm::Module::Require)
-	.value(_sym_moduleFlagOverride,llvm::Module::Override)
-	.value(_sym_moduleFlagAppend,llvm::Module::Append)
-	.value(_sym_moduleFlagAppendUnique,llvm::Module::AppendUnique)
-	;
+	SYMBOL_EXPORT_SC_(LlvmoPkg,STARmoduleModFlagBehaviorSTAR);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagError);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagWarning);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagRequire);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagOverride);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppend);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppendUnique);
+	core::enum_<llvm::Module::ModFlagBehavior>(_sym_STARmoduleModFlagBehaviorSTAR,"llvm::Module::ModFlagBehavior")
+	    .value(_sym_moduleFlagError,llvm::Module::Error)
+	    .value(_sym_moduleFlagWarning,llvm::Module::Warning)
+	    .value(_sym_moduleFlagRequire,llvm::Module::Require)
+	    .value(_sym_moduleFlagOverride,llvm::Module::Override)
+	    .value(_sym_moduleFlagAppend,llvm::Module::Append)
+	    .value(_sym_moduleFlagAppendUnique,llvm::Module::AppendUnique)
+	    ;
     };
 
     void Module_O::exposePython(core::Lisp_sp lisp)
@@ -1508,6 +1499,40 @@ namespace llvmo
 
 
 
+namespace llvmo
+{
+    EXPOSE_CLASS(llvmo,MCSubtargetInfo_O);
+
+    void MCSubtargetInfo_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<MCSubtargetInfo_O>()
+	    ;
+    };
+
+    void MCSubtargetInfo_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+}; // llvmo
+
+
+namespace llvmo
+{
+    EXPOSE_CLASS(llvmo,TargetSubtargetInfo_O);
+
+    void TargetSubtargetInfo_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<TargetSubtargetInfo_O>()
+	    .def("getDataLayout",&llvm::TargetSubtargetInfo::getDataLayout)
+	    ;
+    };
+
+    void TargetSubtargetInfo_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+}; // llvmo
+
 
 
 
@@ -1518,9 +1543,6 @@ namespace llvmo
 
 namespace llvmo
 {
-
-
-
     DataLayout_sp DataLayout_O::copy() const
     {_G();
         GC_ALLOCATE(DataLayout_O,cp );
@@ -1529,29 +1551,24 @@ namespace llvmo
     };
 
 
+    EXPOSE_CLASS(llvmo,DataLayout_O);
 
+    void DataLayout_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<DataLayout_O>()
+	    .def("DataLayoutCopy",&DataLayout_O::copy)
+	    .def("DataLayout-getTypeAllocSize",&DataLayout_O::ExternalType::getTypeAllocSize)
+	    ;
 
+    };
 
-
-EXPOSE_CLASS(llvmo,DataLayout_O);
-
-void DataLayout_O::exposeCando(core::Lisp_sp lisp)
-{_G();
-    core::externalClass_<DataLayout_O>()
-	.def("DataLayoutCopy",&DataLayout_O::copy)
-	.def("DataLayout-getTypeAllocSize",&DataLayout_O::ExternalType::getTypeAllocSize)
-	;
-
-};
-
-	   void DataLayout_O::exposePython(core::Lisp_sp lisp)
-	   {_G();
-	       IMPLEMENT_ME();
-           };
+    void DataLayout_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
 }; // llvmo
-namespace llvmo
-{
-}
+
+
 
 
 
@@ -1559,27 +1576,52 @@ namespace llvmo
 {
     EXPOSE_CLASS(llvmo,DataLayoutPass_O);
 
-
-#if 0
 #define ARGS_DataLayoutPass_O_make "(module)"
 #define DECL_DataLayoutPass_O_make ""
 #define DOCS_DataLayoutPass_O_make ""
-    DataLayoutPass_sp DataLayoutPass_O::make(llvm::DataLayout const & dl)
+    DataLayoutPass_sp DataLayoutPass_O::make()
     {_G();
         GC_ALLOCATE(DataLayoutPass_O,self );
-	self->_ptr = new llvm::DataLayoutPass(dl);
+	self->_ptr = new llvm::DataLayoutPass();
 	return self;
     };
-#endif
 
     void DataLayoutPass_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<DataLayoutPass_O>()
 	    ;
-//        core::af_def(LlvmoPkg,"makeDataLayoutPass",&DataLayoutPass_O::make,ARGS_DataLayoutPass_O_make,DECL_DataLayoutPass_O_make,DOCS_DataLayoutPass_O_make);
+        core::af_def(LlvmoPkg,"makeDataLayoutPass",&DataLayoutPass_O::make,ARGS_DataLayoutPass_O_make,DECL_DataLayoutPass_O_make,DOCS_DataLayoutPass_O_make);
     };
 
     void DataLayoutPass_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+}; // llvmo
+
+
+namespace llvmo
+{
+    EXPOSE_CLASS(llvmo,TargetLibraryInfo_O);
+
+#define ARGS_TargetLibraryInfo_O_make "(module)"
+#define DECL_TargetLibraryInfo_O_make ""
+#define DOCS_TargetLibraryInfo_O_make ""
+    TargetLibraryInfo_sp TargetLibraryInfo_O::make()
+    {_G();
+        GC_ALLOCATE(TargetLibraryInfo_O,self );
+	self->_ptr = new llvm::TargetLibraryInfo();
+	return self;
+    };
+
+    void TargetLibraryInfo_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<TargetLibraryInfo_O>()
+	    ;
+        core::af_def(LlvmoPkg,"makeTargetLibraryInfo",&TargetLibraryInfo_O::make,ARGS_TargetLibraryInfo_O_make,DECL_TargetLibraryInfo_O_make,DOCS_TargetLibraryInfo_O_make);
+    };
+
+    void TargetLibraryInfo_O::exposePython(core::Lisp_sp lisp)
     {_G();
 	IMPLEMENT_ME();
     };
