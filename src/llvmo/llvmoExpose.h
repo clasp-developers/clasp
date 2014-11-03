@@ -581,6 +581,7 @@ namespace translate
 namespace llvmo
 {
     FORWARD(TargetMachine);
+    FORWARD(PassManager);
     class TargetMachine_O : public core::ExternalObject_O
     {
 	LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::TargetMachine,TargetMachine_O,"TargetMachine",core::ExternalObject_O);
@@ -603,6 +604,12 @@ namespace llvmo
 /*        if (this->_ptr != NULL ) delete this->_ptr; */
 	    this->_ptr = ptr;
 	}
+	/*! Return (values CodeGenFileType-symbol) */
+	core::T_mv addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+							core::T_sp stream,
+							llvm::TargetMachine::CodeGenFileType,
+							Module_sp module );
+						  
 	TargetMachine_O() : Base(), _ptr(NULL)  {};
 	~TargetMachine_O() {if (_ptr != NULL ) {/* delete _ptr;*/ _ptr = NULL;};}
     }; // TargetMachine_O

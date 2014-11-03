@@ -296,6 +296,22 @@ namespace translate
 		SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
 	    }
 	}
+    };
+    template <>
+    struct from_object<llvm::TargetMachine::CodeGenFileType,std::true_type>
+    {
+	typedef llvm::TargetMachine::CodeGenFileType DeclareType;
+	DeclareType _v;
+	from_object(T_P object) : _v(llvm::TargetMachine::CGFT_ObjectFile) {
+	    if ( object.notnilp() ) {
+		if ( core::Symbol_sp so = object.asOrNull<core::Symbol_O>() ) {
+		    core::SymbolToEnumConverter_sp converter = llvmo::_sym_CodeGenFileType->symbolValue().as<core::SymbolToEnumConverter_O>();
+		    this->_v = converter->enumForSymbol<llvm::TargetMachine::CodeGenFileType>(so);
+		    return;
+		}
+	    }
+	    SIMPLE_ERROR(BF("You must pass a valid "));
+	}
 
     };
 
@@ -307,11 +323,37 @@ namespace llvmo
 {
     EXPOSE_CLASS(llvmo,TargetMachine_O);
 
+    core::T_mv TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+								     core::T_sp stream,
+								     llvm::TargetMachine::CodeGenFileType,
+								     Module_sp module )
+    {
+	if ( stream.nilp() ) {
+	    SIMPLE_ERROR(BF("You must pass a valid stream"));
+	}
+	
+	this->addPassesToEmitFile(*passManager->wrappedPtr(),
+				  
+
+    }
+    
+
     void TargetMachine_O::exposeCando(core::Lisp_sp lisp)
     {_G();
         core::externalClass_<TargetMachine_O>()
 	    .def("getSubtargetImpl",(const llvm::TargetSubtargetInfo*(llvm::TargetMachine::*)() const)&llvm::TargetMachine::getSubtargetImpl)
             ;
+
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenFileType);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenFileType_Null);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenFileType_AssemblyFile);
+	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenFileType_ObjectFile);
+	core::enum_<llvm::TargetMachine::CodeGenFileType>(_sym_CodeGenFileType,"CodeGenFileType")
+	    .value(_sym_CodeGenFileType_Null,llvm::TargetMachine::CGFT_Null)
+	    .value(_sym_CodeGenFileType_AssemblyFile,llvm::TargetMachine::CGFT_AssemblyFile)
+	    .value(_sym_CodeGenFileType_ObjectFile,llvm::TargetMachine::CGFT_ObjectFile)
+	    ;
+	
 	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt_None);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,CodeGenOpt_Less);
