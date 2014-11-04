@@ -163,12 +163,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.o"
   #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
 )
-(defconstant +image-pathname+ (pathname "image.bundle"))
-#||
-(defconstant +imagelto-pathname+ (pathname "imagelto.bundle"))
-(defconstant +min-image-pathname+ (pathname "min-image.bundle"))
-(defconstant +min-startup-image-pathname+ (pathname "min-startup-image.bundle"))
-||#
+(defconstant +image-pathname+ (make-pathname :directory '(:absolute) :name "image" :type "bundle"))
 (export '(+image-pathname+ +intrinsics-bitcode-pathname+))
 ;; +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
 
@@ -607,6 +602,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     cmp/lambdalistva
     cmp/cmpvars
     cmp/cmpquote
+    cmp/cmpobj
     cmp/compiler
     cmp/compilefile
     cmp/cmpbundle

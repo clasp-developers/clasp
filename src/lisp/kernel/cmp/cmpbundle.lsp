@@ -82,13 +82,19 @@
 
 ;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
-(defun generate-object-file (part-bitcode-pathname &key test)
+#+(or)(defun generate-object-file (part-bitcode-pathname &key test)
   (multiple-value-bind (compile-command object-filename)
       (generate-compile-command part-bitcode-pathname)
     (if test
         (bformat t "About to evaluate: %s\n" compile-command)
         (safe-system compile-command))
     object-filename))
+
+(defun generate-object-file (part-bitcode-pathname &key test)
+  (let ((output-pathname (compile-file-pathname part-bitcode-pathname :type :object)))
+    (bitcode-to-obj-file part-bitcode-pathname output-pathname)
+    output-pathname))
+
 
 
 
