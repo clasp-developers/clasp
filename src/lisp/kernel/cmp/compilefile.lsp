@@ -250,13 +250,14 @@
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file &key (output-file nil output-file-p)
-                                           (type :object)
+                                           (type :bitcode)
                                            &allow-other-keys)
   (let* ((pn (if output-file-p
                 (merge-pathnames output-file (cfp-output-file-default input-file))
                 (cfp-output-file-default input-file)))
          (ext (case type
-                (:object "bc")
+		(:bitcode "bc")
+                (:object "o")
                 (:fasl (if (member :target-os-darwin *features*)
                            "bundle"
                            "so")))))

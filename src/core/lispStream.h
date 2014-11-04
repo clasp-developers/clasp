@@ -482,6 +482,7 @@ namespace core {
                                              ,_Nil<T_O>());
         };
     public:
+	FILE* file() const { return this->_File; };
     }; 
 }; // core namespace
 template<> struct gctools::GCInfo<core::IOStreamStream_O> {

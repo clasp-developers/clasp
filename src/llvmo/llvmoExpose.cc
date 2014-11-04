@@ -340,8 +340,11 @@ namespace llvmo
 	    stringOutputStream = true;
 	} else if ( core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>() ) {
 	    ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(),false,true);
+	} else if ( core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>() ) {
+	    FILE* f = iostr->file();
+	    ostreamP = new llvm::raw_fd_ostream(fileno(f),false,true);
 	} else {
-	    SIMPLE_ERROR(BF("Illegal file type for addPassesToEmitFileAndRunPassManager"));
+	    SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(stream));
 	}
 	llvm::formatted_raw_ostream FOS(*ostreamP,false);
 	if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(),FOS,FileType,true,nullptr,nullptr) ) {
