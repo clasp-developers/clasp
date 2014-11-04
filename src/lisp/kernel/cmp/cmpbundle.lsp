@@ -91,8 +91,11 @@
     object-filename))
 
 (defun generate-object-file (part-bitcode-pathname &key test)
-  (let ((output-pathname (compile-file-pathname part-bitcode-pathname :type :object)))
-    (bitcode-to-obj-file part-bitcode-pathname output-pathname)
+  (let ((output-pathname (compile-file-pathname part-bitcode-pathname :type :object))
+        (reloc-model (cond
+                      ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
+                      (t 'llvm-sys:reloc-model-default))))
+    (bitcode-to-obj-file part-bitcode-pathname output-pathname :reloc-model reloc-model)
     output-pathname))
 
 

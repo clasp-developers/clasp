@@ -2,7 +2,7 @@
 (in-package :cmp)
 
 
-(defun generate-obj-asm (module output-stream file-type)
+(defun generate-obj-asm (module output-stream &key file-type (reloc-model 'llvm-sys:reloc-model-default))
   (let* ((triple-string (llvm-sys:get-target-triple module))
 	 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
 	 (triple (llvm-sys:make-triple normalized-triple-string))
@@ -16,7 +16,7 @@
 							     ""
 							     ""
 							     target-options
-							     'llvm-sys:reloc-model-default
+							     reloc-model
 							     'llvm-sys:code-model-default
 							     'llvm-sys:code-gen-opt-default ))
 	     (pm (llvm-sys:make-pass-manager))
@@ -33,12 +33,13 @@
 
 (export '(disassemble-asm bitcode-to-obj-file))
 
-(defun bitcode-to-obj-file (input-filename output-filename)
+(defun bitcode-to-obj-file (input-filename output-filename &key reloc-model)
   "Generate a .o file from a bitcode file"
-  (format t "Generating object file  ~a  -->  ~a~%" input-filename output-filename)
+  (assert reloc-model nil "You must provide reloc-model")
+  (format t "Generating object file  ~a  -->  ~a  reloc-model: ~a~%" input-filename output-filename reloc-model)
   (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename input-filename)) cmp:*llvm-context*)))
     (with-open-file (fout output-filename :direction :output)
-      (generate-obj-asm module fout 'llvm-sys:code-gen-file-type-object-file))))
+      (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
 
 
 (defun disassemble-asm (module)
