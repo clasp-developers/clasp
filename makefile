@@ -17,6 +17,7 @@ else
   export DEVEMACS = open -a emacs ./
 endif
 
+
 #
 # If the local.config doesn't define PYTHON2 then provide a default
 #
@@ -74,6 +75,10 @@ boehm-build-mps-interface:
 # constantly having to copy the lisp sources to the target directory.
 export DEV_CLASP_LISP_SOURCE_DIR := $(shell echo `pwd`/src/lisp)
 
+#
+# Tell ASDF where to find the SICL/Code/Cleavir systems - the final // means search subdirs
+#
+export CL_SOURCE_REGISTRY = $(HOME)/Development/SICL/Code/Cleavir//
 devemacs:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile
