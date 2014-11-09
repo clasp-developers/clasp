@@ -25,24 +25,26 @@ ifeq ($(PYTHON2),)
 	export PYTHON2 = /usr/bin/python
 endif
 
-ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
-	PATH := $(EXTERNALS_BUILD_TARGET_DIR)/release/bin:$(EXTERNALS_BUILD_TARGET_DIR)/common/bin:$(PATH)
-	export PATH
-endif
-
-export PATH := $(BOOST_BUILD_V2_INSTALL)/bin:$(PATH)
-
-
-ifneq ($(CXXFLAGS),)
-  export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
-endif
-
 ifeq ($(TARGET_OS),linux)
   export EXECUTABLE_DIR=bin
 endif
 ifeq ($(TARGET_OS),darwin)
   export EXECUTABLE_DIR=MacOS
 endif
+
+ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
+	PATH := $(EXTERNALS_BUILD_TARGET_DIR)/release/bin:$(EXTERNALS_BUILD_TARGET_DIR)/common/bin:$(PATH)
+	export PATH
+endif
+
+export PATH := $(BOOST_BUILD_V2_INSTALL)/bin:$(PATH)
+export PATH := $(CLASP_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR):$(PATH)
+
+
+ifneq ($(CXXFLAGS),)
+  export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
+endif
+
 
 ifeq ($(WHAT),)
 	WHAT = bundle debug release boehm mps
