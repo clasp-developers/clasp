@@ -7,19 +7,19 @@ export TARGET_OS = darwin
 #
 # This defines where clasp should put the built clasp application
 #
-export CLASP_BUILD_TARGET_DIR = $(HOME)/local/clasp
+export CLASP_BUILD_TARGET_DIR = $(HOME)/.local/clasp
 
 #
 # This defines where externals-clasp put the built libraries
 # that clasp needs
 #
-export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/local/externals-clasp
+export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/.local/externals-clasp
 
 #
 # This defines how many processors you have available to build with
 # More processors = faster build
 #
-export PJOBS = 2
+export PJOBS = 4
 
 #
 # Define the path to the python2 interpreter
@@ -30,6 +30,6 @@ export PYTHON2 = /usr/bin/python
 # --- Dont change the stuff below ---
 export LINK = static
 export ADDRESS-MODEL = 64
-export TOOLSET = darwin-clang
+#export TOOLSET = darwin-clang
 # Use the built in clang for OS X 10.9.5 XCode 6.0.1v
-export CLASP_CLANG_PATH = /usr/bin/clang
+#export CLASP_CLANG_PATH = /usr/bin/clang
