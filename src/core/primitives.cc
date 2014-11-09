@@ -118,7 +118,15 @@ namespace core
 #define DOCS_cl_lispImplementationVersion "lispImplementationVersion"
     T_sp cl_lispImplementationVersion()
     {_G();
-        return Str_O::create(CLASP_VERSION);
+        stringstream ss;
+#ifdef USE_MPS
+        ss << "mps";
+#endif
+#ifdef USE_BOEHM
+        ss << "boehm";
+#endif
+        ss << CLASP_VERSION;
+        return Str_O::create(ss.str());
     };
 
 
