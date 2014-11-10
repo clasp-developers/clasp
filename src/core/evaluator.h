@@ -91,36 +91,52 @@ namespace core
 	extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp af);
 
 
-	inline T_mv apply( T_sp fn, Cons_sp argsPLUS )
+	/*! I want a variadic template function that does APPLY.  C++ variadic template parameter packs
+	  must be the last arguments of a function.   APPLY has as its last arguments argsPLUS.
+	  So we move argsPLUS up to be the second argument (after the function designator) and list
+	  the variadic arguments following it */
+	template <class...Args>
+	inline T_mv applyLastArgsPLUSFirst( T_sp fn, Cons_sp argsPLUS, Args...args)
 	{
 	    Function_sp func = lookupFunction(fn,_Nil<T_O>());
             if ( func.nilp() ) {
                 ERROR_UNDEFINED_FUNCTION(fn);
             }
-	    int numArgsPassed = 0;
+	    int numArgsPassed = sizeof...(Args);
 	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
-#if 0
-            ALLOC_STACK_VALUE_FRAME(frameImpl,frob,nargs);
-	    Cons_sp cur = argsPLUS;
-            T_O** values = frame::ValuesArray(frob);
-	    for ( int i=numArgsPassed; i<nargs; ++i ) {
-		values[i] = oCar(cur).asTPtr();
-		cur=cCdr(cur);
-	    }
-#else
-	    ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>()));
+	    ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),args...));
 	    Cons_sp cur = argsPLUS;
 	    for ( int i=numArgsPassed; i<nargs; ++i ) {
 		frob->operator[](i) = oCar(cur);
 		cur=cCdr(cur);
 	    }
-#endif
             Closure* closureP = func->closure;
             ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToActivationFrame(closureP,frob);
 	}
 
+#if 0
+	inline T_mv apply( T_sp fn, T_sp arg1, Cons_sp argsPLUS )
+	{
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>());
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(fn);
+            }
+	    int numArgsPassed = 1;
+	    int numArgsPlus = cl_length(argsPLUS);
+	    int nargs = numArgsPassed + numArgsPlus;
+	    ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus,_Nil<ActivationFrame_O>(),arg1));
+	    Cons_sp cur = argsPLUS;
+	    for ( int i=numArgsPassed; i<nargs; ++i ) {
+		frob->operator[](i) = oCar(cur);
+		cur=cCdr(cur);
+	    }
+            Closure* closureP = func->closure;
+            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+	    return applyClosureToActivationFrame(closureP,frob);
+	}
+#endif
 
 
 #define USE_ARRAY0
