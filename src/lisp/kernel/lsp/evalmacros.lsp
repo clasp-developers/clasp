@@ -414,7 +414,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
       form))
 
 ;; CLOS needs this in the ext package and I can't find it anywhere but here - meister 2013
-#+brcl (progn
+#+clasp (progn
 	  (import 'maybe-quote :ext)
 	  (export 'maybe-quote :ext))
 

@@ -40,7 +40,7 @@
     ;; regular classes then it will get an Instance allocator
     ;; If one of them is a ClbindClass then this will inherit a
     ;; duplicate of its allocator
-    #+brcl(sys:inherit-default-allocator class direct-superclasses)
+    #+clasp(sys:inherit-default-allocator class direct-superclasses)
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))))
@@ -84,7 +84,7 @@
   (declare (ignore initargs))
   (error "The structure-class (~A) cannot be instantiated" class))
 
-#+brcl(export 'make-instance)
+#+clasp(export 'make-instance)
 
 (defmethod finalize-inheritance ((class structure-class))
   (call-next-method)

@@ -137,7 +137,7 @@
 ;;;
 (defun make-bundle (parts-pathnames &optional (bundle-name +image-pathname+)
 		    &aux (bundle-type (if (eq bundle-name '_image) 'kernel 'user)))
-  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
+  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/clasp and make-bundle.sh _image"
   (let* ((wrapper-pathname (make-bundle-wrapper parts bundle-name))
 	 (wrapper-and-parts-pathnames (cons wrapper-pathname parts-pathnames))
 	 (bundle-pathname (make-pathname :name (string-downcase (string bundle-name)) :defaults *image-directory*)))
@@ -161,7 +161,7 @@
 
 #||
 (defun link-system (pathname-destination &key lisp-bitcode-files (target-backend (default-target-backend)) test) ;; &optional (bundle-pathname +image-pathname+))
-  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
+  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/clasp and make-bundle.sh _image"
   (let* ((core:*target-backend* target-backend)
          (pathname-destination (target-backend-pathname pathname-destination :target-backend target-backend))
          (wrapper-fasl-pathname (make-bundle-wrapper lisp-bitcode-files pathname-destination))

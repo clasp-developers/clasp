@@ -14,7 +14,7 @@
 (in-package "SYSTEM")
 
 (defparameter *trace-level* 0)
-#+brcl (defparameter *trace-list* nil) ; In all_symbols.d !
+#+clasp (defparameter *trace-list* nil) ; In all_symbols.d !
 (defparameter *trace-max-indent* 20)
 
 (defmacro trace (&rest r)

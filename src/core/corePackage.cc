@@ -1054,7 +1054,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	features << address_model;
 
 	// Now add other standard features
-	features << kw::_sym_brcl;
+	// features << kw::_sym_brcl;
 
 	cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features.cons());
 

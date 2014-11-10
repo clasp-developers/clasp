@@ -21,7 +21,7 @@
 
 (in-package "CLOS")
 
-#+brcl(defvar *optimize-slot-access* t
+#+clasp(defvar *optimize-slot-access* t
 	 "In ECL this is in ecl/src/c/symbol_table.h")
 
 ;;; ----------------------------------------------------------------------
@@ -76,14 +76,14 @@
       (location-table :initform nil :accessor class-location-table)
       ))
 
-  #-brcl
+  #-clasp
   (defconstant +class-name-ndx+
     (position 'name +class-slots+ :key #'first))
-  #-brcl
+  #-clasp
   (defconstant +class-precedence-list-ndx+
     (position 'precedence-list +class-slots+ :key #'first)))
 
-#+brcl
+#+clasp
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (defconstant +class-name-ndx+
     #.(position 'name +class-slots+ :key #'first))
@@ -198,7 +198,7 @@
 	    (array)
 	      (vector array sequence)
 	        (string vector)
-                #+(or unicode brcl)
+                #+(or unicode clasp)
 	   (base-string string vector)
 	        (bit-vector vector)
 	    (stream)
@@ -216,8 +216,8 @@
 	      (real number)
 	        (rational real)
 		  (integer rational)
-;;#+brcl		    (fixnum integer)
-;;#+brcl		    (bignum integer)
+;;#+clasp		    (fixnum integer)
+;;#+clasp		    (bignum integer)
 		  (ratio rational)
 	        (float real)
 	      (complex number)
@@ -235,10 +235,10 @@
 	    (si::foreign-data)
 	    (si::frame)
 	    (si::weak-pointer)
-	   #+brcl(si::external-object)
-	   #+brcl(si::iterator)
-	     #+brcl(si::directory-iterator si::iterator)
-	     #+brcl(si::recursive-directory-iterator si::iterator)
+	   #+clasp(si::external-object)
+	   #+clasp(si::iterator)
+	     #+clasp(si::directory-iterator si::iterator)
+	     #+clasp(si::recursive-directory-iterator si::iterator)
 	    #+threads (mp::process)
 	    #+threads (mp::lock)
 	    #+threads (mp::rwlock)
@@ -279,14 +279,14 @@
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
   (defconstant +class-hierarchy+
     `((standard-class)
-#+brcl
+#+clasp
       (built-in-class)
       (standard-effective-slot-definition)
       (standard-direct-slot-definition)
       (standard-class
        :metaclass nil ; Special-cased in boot.lsp
        :direct-slots #.+standard-class-slots+)
-#+brcl
+#+clasp
       (built-in-class
        :metaclass nil ; Special-cased in boot.lsp
        :direct-slots #.+standard-class-slots+)

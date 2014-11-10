@@ -1,8 +1,8 @@
 
-#+brcl(select-package :core)
+#+clasp(select-package :core)
 
 
-#-brcl(load "backquote.lsp")
+#-clasp(load "backquote.lsp")
 
 
 (trace bq-simplify bq-simplify-args bq-attach-append bq-attach-conses bq-remove-tokens)

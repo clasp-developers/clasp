@@ -111,7 +111,7 @@
 				       llvm-sys:dw-lang-c  ;; llvm-sys:dw-lang-common-lisp
 				       ,file-name
 				       ,dir-name
-				       "brcl Common Lisp compiler" ; producer
+				       "clasp Common Lisp compiler" ; producer
 				       nil ; isOptimized
 				       "-v" ; compiler flags
 				       1    ; run-time version
