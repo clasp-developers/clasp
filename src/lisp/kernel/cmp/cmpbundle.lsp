@@ -292,5 +292,6 @@
 (defun build-fasl (out-file &key lisp-files)
   "Link the object files in lisp-files into a shared library in out-file.
 Return the truename of the output file"
+  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
   (execute-link out-file lisp-files))
 (export 'build-fasl)
