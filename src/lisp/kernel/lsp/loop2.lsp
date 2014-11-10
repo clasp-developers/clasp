@@ -468,7 +468,7 @@ code to be loaded.
   )
 
 
-#-ecl
+#-(or ecl clasp)
 (defun print-loop-universe (u stream level)
   (declare (ignore level))
   (let ((str (case (loop-universe-ansi u)

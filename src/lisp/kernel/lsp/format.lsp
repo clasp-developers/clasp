@@ -256,7 +256,7 @@
 
 (deftype format-directive () 'vector)
 
-#-ecl
+#-(or ecl clasp)
 (defun %print-format-directive (struct stream depth)
   (declare (ignore depth))
   (print-unreadable-object (struct stream)
@@ -1338,7 +1338,7 @@
   (declare (si::c-local))
   (cond
    ((or (not (or w d))
-	#-ecl
+	#-(or ecl clasp)
 	(and (floatp number)
 	     (or (float-infinity-p number)
 		 (float-nan-p number))))
@@ -1440,7 +1440,7 @@
 ;;; of causing an error.
 (defun format-exp-aux (stream number w d e k ovf pad marker atsign)
   (declare (si::c-local))
-  (if #-ecl
+  (if #-(or ecl clasp)
       (and (floatp number)
 	   (or (float-infinity-p number)
 	       (float-nan-p number)))
@@ -1529,7 +1529,7 @@
 ;;; toy@rtp.ericsson.se:  Same change as for format-exp-aux.
 (defun format-general-aux (stream number w d e k ovf pad marker atsign)
   (declare (si::c-local))
-  (if #-ecl
+  (if #-(or ecl clasp)
       (and (floatp number)
 	   (or (float-infinity-p number)
 	       (float-nan-p number)))
@@ -1978,7 +1978,7 @@
 	   (after (nthcdr (1+ posn) directives)))
       (values
        (expand-bind-defaults () params
-	 #-ecl
+	 #-(or ecl clasp)
 	 `(let ((stream (make-case-frob-stream stream
 					       ,(if colonp
 						    (if atsignp
@@ -2007,7 +2007,7 @@
       (error 'format-error
 	     :complaint "No corresponding close paren."))
     (interpret-bind-defaults () params
-      #-ecl
+      #-(or ecl clasp)
       (let* ((posn (position close directives))
 	     (before (subseq directives 0 posn))
 	     (after (nthcdr (1+ posn) directives))
