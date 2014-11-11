@@ -344,8 +344,8 @@ q (or Q):             quits the inspection.~%~
     '(compiler-macro function method-combination setf structure
       t type variable))
 
-#+brcl(fmakunbound 'documentation)
-#+brcl(fmakunbound '(setf documentation))
+#+clasp(fmakunbound 'documentation)
+#+clasp(fmakunbound '(setf documentation))
 
 (defgeneric documentation (object doc-type))
 (defgeneric (setf documentation) (new-value object doc-type))

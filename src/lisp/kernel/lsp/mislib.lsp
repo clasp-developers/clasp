@@ -48,21 +48,21 @@ successfully, T is returned, else error."
 	 run-end
 	 gc-end)
     ;; Garbage collection forces counters to be updated
-    #-brcl(si::gc t)
-    #-brcl(setf gc-start (si::gc-time))
+    #-clasp(si::gc t)
+    #-clasp(setf gc-start (si::gc-time))
     (multiple-value-prog1
 	(funcall closure)
       (setq run-end (get-internal-run-time)
 	    real-end (get-internal-real-time))
-      #-brcl(setq gc-end (si::gc-time))
-      #-brcl(format *trace-output*
+      #-clasp(setq gc-end (si::gc-time))
+      #-clasp(format *trace-output*
                     "real time : ~,3F secs~%~
               run time  : ~,3F secs~%~
               GC time   : ~,3F secs~%"
                     (/ (- real-end real-start) internal-time-units-per-second)
                     (/ (- run-end run-start) internal-time-units-per-second)
                     (/ (- gc-end gc-start) internal-time-units-per-second))
-      #+brcl(progn
+      #+clasp(progn
               (format *trace-output*
                     "real time : ~,3F secs~%run time  : ~,3F secs~%"
                     (/ (- real-end real-start) internal-time-units-per-second)

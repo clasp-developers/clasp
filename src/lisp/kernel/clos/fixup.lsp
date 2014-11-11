@@ -231,21 +231,21 @@ their lambda lists ~A and ~A are not congruent."
 
 #+compare (print "MLOG About to function-to-method add-method")
 
-;;#+brcl(defmacro fixup-log (&rest args) `(print (list "FIXUP-LOG" ,@args)))
-#+brcl(defmacro fixup-log (&rest args) nil)
+;;#+clasp(defmacro fixup-log (&rest args) `(print (list "FIXUP-LOG" ,@args)))
+#+clasp(defmacro fixup-log (&rest args) nil)
 
 ;;(setq cmp:*debug-compiler* t)
-#+brcl(eval-when (compile) (fixup-log "function-to-method add-method"))
+#+clasp(eval-when (compile) (fixup-log "function-to-method add-method"))
 (function-to-method 'add-method '((gf standard-generic-function)
                                   (method standard-method)))
 
 #+compare (print "MLOG About to function-to-method remove-method")
-#+brcl(eval-when (compile) (fixup-log "function-to-method remove-method"))
+#+clasp(eval-when (compile) (fixup-log "function-to-method remove-method"))
 (function-to-method 'remove-method '((gf standard-generic-function)
 				     (method standard-method)))
 
 #+compare (print "MLOG About to function-to-method find-method")
-#+brcl(eval-when (compile) (fixup-log "function-to-method find-method"))
+#+clasp(eval-when (compile) (fixup-log "function-to-method find-method"))
 (function-to-method 'find-method '((gf standard-generic-function)
 				   qualifiers specializers &optional error))
 
@@ -256,9 +256,9 @@ their lambda lists ~A and ~A are not congruent."
 ;;; Instead, we create an auxiliary function and move definitions from one to
 ;;; the other.
 
-#+brcl(eval-when (compile) (fixup-log "defgeneric aux-compute-applicable-methods"))
+#+clasp(eval-when (compile) (fixup-log "defgeneric aux-compute-applicable-methods"))
 #+compare (print "MLOG Now aux-compute-applicable-methods")
-#+brcl-test(eval-when (compile eval)
+#+clasp-test(eval-when (compile eval)
 	 (fixup-log "defmethod aux-compute-applicable-methods")
 ;;	 (setq *low-level-trace* :print)
 ;;	 (setq cmp:*debug-compiler* t)
@@ -282,14 +282,14 @@ their lambda lists ~A and ~A are not congruent."
 	  (fdefinition 'compute-applicable-methods) aux))
 )  
 
-  #+brcl(eval-when (compile) (fixup-log "defmethod compute-applicable-methods-using-classes"))
+  #+clasp(eval-when (compile) (fixup-log "defmethod compute-applicable-methods-using-classes"))
   (defmethod compute-applicable-methods-using-classes
       ((gf standard-generic-function) classes)
     ;;  (print (list "HUNT entering compute-applicable-methods-using-classes gf: " gf))
     (std-compute-applicable-methods-using-classes gf classes))
 
   #+compare (print "MLOG About to function-to-method compute-effective-method")
-  #+brcl(eval-when (compile) (fixup-log "function-to-method compute-effective-method"))
+  #+clasp(eval-when (compile) (fixup-log "function-to-method compute-effective-method"))
   (function-to-method 'compute-effective-method
 		      '((gf standard-generic-function) method-combination applicable-methods))
 
@@ -297,7 +297,7 @@ their lambda lists ~A and ~A are not congruent."
 ;;; Error messages
 
 #+compare (print "MLOG fixup line 266")
-#+brcl(eval-when (compile) (fixup-log "defmethod no-applicable-method"))
+#+clasp(eval-when (compile) (fixup-log "defmethod no-applicable-method"))
 (defmethod no-applicable-method (gf args)
   (error "No applicable method for ~S with arguments of types~{~& ~A~}" 
 	 (generic-function-name gf)
@@ -305,7 +305,7 @@ their lambda lists ~A and ~A are not congruent."
 
 #+compare (print "MLOG fixup line 272")
 
-#+brcl(eval-when (compile) (fixup-log "defmethod no-next-method"))
+#+clasp(eval-when (compile) (fixup-log "defmethod no-next-method"))
 (defmethod no-next-method (gf method &rest args)
   (declare (ignore gf))
   (error "In method ~A~%No next method given arguments ~A" method args))

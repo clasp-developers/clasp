@@ -52,12 +52,10 @@
 
 ;;;; LOOP Iteration Macro
 
-#+ecl (in-package "SI")
-#+brcl (in-package "SYSTEM")
+#+(or ecl clasp) (in-package "SYSTEM")
 
 
-#-ecl
-(provide :loop)
+#-(or ecl clasp)(provide :loop)
 
 #+Cloe-Runtime					;Don't ask.
 (car (push "%Z% %M% %I% %E% %U%" system::*module-identifications*))
@@ -302,7 +300,7 @@ constructed.
 
 
 (defstruct (loop-minimax
-	     #+ecl (:type vector)
+	     #+(or ecl clasp) (:type vector)
 	     (:constructor make-loop-minimax-internal)
 	     #+nil (:copier nil)
 	     #+nil (:predicate nil))
@@ -455,8 +453,8 @@ code to be loaded.
 
 
 (defstruct (loop-universe
-	     #+ecl (:type vector)
-	     #-ecl (:print-function print-loop-universe)
+	     #+(or ecl clasp) (:type vector)
+	     #-(or ecl clasp)(:print-function print-loop-universe)
 	     #+nil (:copier nil)
 	     #+nil (:predicate nil))
   keywords					;hash table, value = (fn-name . extra-data).
@@ -470,7 +468,7 @@ code to be loaded.
   )
 
 
-#-ecl
+#-(or ecl clasp)
 (defun print-loop-universe (u stream level)
   (declare (ignore level))
   (let ((str (case (loop-universe-ansi u)
@@ -497,7 +495,7 @@ code to be loaded.
 (defun make-standard-loop-universe (&key keywords for-keywords iteration-keywords path-keywords
 				    type-keywords type-symbols ansi)
   (declare (si::c-local))
-  #-(and CLOE Source-Bootstrap ecl) (check-type ansi (member nil t :extended))
+;;  #-(and CLOE Source-Bootstrap ecl) (check-type ansi (member nil t :extended))
   (flet ((maketable (entries)
 	   (let* ((size (length entries))
 		  (ht (make-hash-table :size (if (< size 10) 10 size) :test #'equal)))
@@ -968,9 +966,9 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 
 (defun loop-error (format-string &rest format-args)
   (declare (si::c-local))
-  #-brcl(si::simple-program-error "~?~%Current LOOP context:~{ ~S~}."
+  #-clasp(si::simple-program-error "~?~%Current LOOP context:~{ ~S~}."
 			format-string format-args (loop-context))
-  #+brcl(si::simple-program-error (bformat nil "%s\nCurrent LOOP context:\n%s"
+  #+clasp(si::simple-program-error (bformat nil "%s\nCurrent LOOP context:\n%s"
 					    (format nil format-string format-args)
 					    (loop-context)))
   )
@@ -1415,7 +1413,7 @@ collected result will be returned as the value of the LOOP."
 
 
 (defstruct (loop-collector
-	     #+ecl (:type vector)
+	     #+(or ecl clasp) (:type vector)
 	     #+nil (:copier nil)
 	     #+nil (:predicate nil))
   name
@@ -1818,7 +1816,7 @@ collected result will be returned as the value of the LOOP."
 
 
 (defstruct (loop-path
-	     #+ecl (:type vector)
+	     #+(or ecl clasp) (:type vector)
 	     #+nil (:copier nil)
 	     #+nil (:predicate nil))
   names
@@ -1832,7 +1830,7 @@ collected result will be returned as the value of the LOOP."
   (declare (si::c-local))
   (unless (listp names) (setq names (list names)))
   ;; Can't do this due to CLOS bootstrapping problems.
-  #-(or Genera (and CLOE Source-Bootstrap) ecl) (check-type universe loop-universe)
+  #-(or Genera (and CLOE Source-Bootstrap) ecl clasp) (check-type universe loop-universe)
   (let ((ht (loop-universe-path-keywords universe))
 	(lp (make-loop-path
 	      :names (mapcar #'symbol-name names)

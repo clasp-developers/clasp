@@ -627,7 +627,7 @@ memory limits before executing the program again."))
 
 (define-condition floating-point-invalid-operation (arithmetic-error) ())
 
-#+brcl (define-condition core:too-few-arguments-error (error)
+#+clasp (define-condition core:too-few-arguments-error (error)
          ((called-function :initarg :called-function :reader called-function)
           (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
           (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
@@ -637,7 +637,7 @@ memory limits before executing the program again."))
                             (given-number-of-arguments condition)
                             (required-number-of-arguments condition)))))
 
-#+brcl (define-condition core:too-many-arguments-error (error)
+#+clasp (define-condition core:too-many-arguments-error (error)
          ((called-function :initarg :called-function :reader called-function)
           (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
           (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
@@ -647,7 +647,7 @@ memory limits before executing the program again."))
                             (given-number-of-arguments condition)
                             (required-number-of-arguments condition)))))
 
-#+brcl (define-condition core:unrecognized-keyword-argument-error (error)
+#+clasp (define-condition core:unrecognized-keyword-argument-error (error)
          (
           (called-function :initarg :called-function :reader called-function)
           (unrecognized-keyword :initarg :unrecognized-keyword :reader unrecognized-keyword))
@@ -683,7 +683,7 @@ memory limits before executing the program again."))
    (print-banner :reader format-error-print-banner :initarg :print-banner
 		 :initform t))
   (:report (lambda (condition stream)
-	     (#-brcl cl:format #+brcl format
+	     (#-clasp cl:format #+clasp format
 		      stream
 			"~:[~;Error in format: ~]~
 			 ~?~@[~%  ~A~%  ~V@T^~]"
@@ -697,7 +697,7 @@ memory limits before executing the program again."))
   ()
   (:report "Console interrupt."))
 
-#+brcl(define-condition core:single-dispatch-missing-dispatch-argument-error (serious-condition)
+#+clasp(define-condition core:single-dispatch-missing-dispatch-argument-error (serious-condition)
         (lambda-list :initarg :arguments)
         (:REPORT (lambda (condition stream)
                    (format stream "You must specify which argument is to be single dispatched on - arguments: ~a" (arguments condition)"Cannot print object ~A readably."
@@ -707,7 +707,7 @@ memory limits before executing the program again."))
 
 (defun signal-simple-error (base-condition continue-message format-control format-args
 			    &rest args)
-  (bformat t "conditions.lsp>>signal-simple-error base-condition = %s  format-control = %s  args= %s\n" base-condition format-control format-args)
+  (bformat t "[[[conditions.lsp>>signal-simple-error base-condition = %s  format-control = <<%s>>  format-args = <<%s>>  args= <<%s>>]]]\n" base-condition format-control format-args args)
   (let ((simple-error-name (intern (concatenate 'string "SIMPLE-" (string base-condition))
 				   (find-package "SI"))))
     (unless (find-class simple-error-name nil)
@@ -876,6 +876,6 @@ bstrings."
 
 
 
-#+brcl
+#+clasp
 (defun invoke-debugger (condition)
   (invoke-internal-debugger condition))

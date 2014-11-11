@@ -10,18 +10,18 @@
 ;;;;
 ;;;;    See file '../Copyright' for full details.
 
-;;;; brcl - changes approved May1 2013
+;;;; clasp - changes approved May1 2013
 
-;;#-brcl
+;;#-clasp
 (defpackage "CLOS"
   (:use "CL" "EXT")
   (:import-from "SI" "UNBOUND" "GET-SYSPROP" "PUT-SYSPROP" "REM-SYSPROP"
 		"SIMPLE-PROGRAM-ERROR"))
 
 
-#+brcl (in-package "CLOS")
-#+brcl (use-package '(:CORE :ext) :clos)
-#+brcl (import '(unbound get-sysprop put-sysprop rem-sysprop simple-program-error
+#+clasp (in-package "CLOS")
+#+clasp (use-package '(:CORE :ext) :clos)
+#+clasp (import '(unbound get-sysprop put-sysprop rem-sysprop simple-program-error
 		 slot-descriptions
 		 SLOT-NAMES SLOT-NAME CLASS-PRECEDENCE-LIST PRINT-FUNCTION
 		 CONSTRUCTORS COUNT-FUNCTION-CONTAINER-ENVIRONMENTS
@@ -32,11 +32,11 @@
 
 
 #+compare (print "MLOG ********* Starting package.lsp **********")
-#+brcl
+#+clasp
 (defmacro clos-log (fmt &rest args)
   `(bformat t ,fmt ,@args))
 
-#+brcl
+#+clasp
 (export '(WITH-SLOTS WITH-ACCESSORS UPDATE-INSTANCE-FOR-REDEFINED-CLASS
 	  UPDATE-INSTANCE-FOR-DIFFERENT-CLASS STANDARD-METHOD
 	  STANDARD SLOT-UNBOUND SLOT-MISSING SLOT-MAKUNBOUND

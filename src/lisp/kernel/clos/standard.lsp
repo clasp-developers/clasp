@@ -53,15 +53,15 @@
   ;;
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
-    #+compare(print (list "MLOG standard.lsp shared-initialize 55 class-->" #+brcl class))
+    #+compare(print (list "MLOG standard.lsp shared-initialize 55 class-->" #+clasp class))
     (dolist (slotd (class-slots class))
       #+compare(print "")
-      #+compare(print (list "MLOG standard.lsp shared-initialize 57 -->" #+brcl slotd))
+      #+compare(print (list "MLOG standard.lsp shared-initialize 57 -->" #+clasp slotd))
       #+compare(print "")
       (let* ((slot-initargs (slot-definition-initargs slotd))
 	     (slot-name (slot-definition-name slotd)))
-	#+compare(print (list "MLOG standard.lsp shared-initialize 60 slot-initargs -->" #+brcl slot-initargs))
-	#+compare(print (list "MLOG standard.lsp shared-initialize 63 slot-name -->" #+brcl slot-name))
+	#+compare(print (list "MLOG standard.lsp shared-initialize 60 slot-initargs -->" #+clasp slot-initargs))
+	#+compare(print (list "MLOG standard.lsp shared-initialize 63 slot-name -->" #+clasp slot-name))
 	(or
 	 ;; Try to initialize the slot from one of the initargs.
 	 (do ((l initargs) initarg val)
@@ -69,7 +69,7 @@
 	      (progn
 		#+compare(print "MLOG standard.lsp shared-initialize-leaving do with nil")
 		nil))
-	   #+compare(print (list "MLOG standard.lsp shared-initialize 65 l-->" #+brcl l))
+	   #+compare(print (list "MLOG standard.lsp shared-initialize 65 l-->" #+clasp l))
 	   (setf initarg (pop l))
 	   (when (endp l)
 	     (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
@@ -84,20 +84,20 @@
 	   #+compare(print "")
 	   (when (member initarg slot-initargs :test #'eq)
 	     #+compare(print "MLOG standard.lsp shared-initialize about to return")
-	     #+compare(print (list "MLOG standard.lsp shared-initialize initarg" #+brcl initarg))
-	     #+compare(print (list "MLOG standard.lsp shared-initialize slot-initargs" #+brcl slot-initargs))
+	     #+compare(print (list "MLOG standard.lsp shared-initialize initarg" #+clasp initarg))
+	     #+compare(print (list "MLOG standard.lsp shared-initialize slot-initargs" #+clasp slot-initargs))
 	     (setf (slot-value instance slot-name) val)
 	     (return t)))
 
 	 #+compare
 	 (progn
 	   ;; Try to initialize the slot from its initform.
-	   (print (list "MLOG standard.lsp shared-initialize line[90] slot-names -->" #+brcl slot-names ))
-	   (print (list "MLOG standard.lsp shared-initialize line[91] slot-name -->" #+brcl slot-name ))
-	   (print (list "MLOG standard.lsp shared-initialize line[92] instance -->" #+brcl instance))
-	   (print (list "MLOG standard.lsp shared-initialize line[93] (slot-boundp instance slot-name) -->" #+brcl (slot-boundp instance slot-name)))
+	   (print (list "MLOG standard.lsp shared-initialize line[90] slot-names -->" #+clasp slot-names ))
+	   (print (list "MLOG standard.lsp shared-initialize line[91] slot-name -->" #+clasp slot-name ))
+	   (print (list "MLOG standard.lsp shared-initialize line[92] instance -->" #+clasp instance))
+	   (print (list "MLOG standard.lsp shared-initialize line[93] (slot-boundp instance slot-name) -->" #+clasp (slot-boundp instance slot-name)))
 	   (when (slot-boundp instance slot-name)
-	     (print (list "MLOG standard.lsp shared_initialize[98] (slot-value instance slot-name) -->" #+brcl (slot-value instance slot-name))))
+	     (print (list "MLOG standard.lsp shared_initialize[98] (slot-value instance slot-name) -->" #+clasp (slot-value instance slot-name))))
 	   (print "")
 	   nil
 	   )
@@ -157,10 +157,10 @@
   ;; FIXME! Inefficient! We should keep a list of dependent classes.
   (unless (class-finalized-p class)
     (finalize-inheritance class))
-  #+brcl(unless *the-class-class*
+  #+clasp(unless *the-class-class*
 	   (setq *the-class-class* (find-class 'class)))
-  (let ((x #-brcl(si::allocate-raw-instance nil class (class-size class))
-	   #+brcl(if (core:subclassp class *the-class-class*)
+  (let ((x #-clasp(si::allocate-raw-instance nil class (class-size class))
+	   #+clasp(if (core:subclassp class *the-class-class*)
 		      (ALLOCATE-RAW-CLASS nil class (class-size class))
 		      (si::allocate-raw-instance nil class (class-size class)))
 	   ))
@@ -360,9 +360,9 @@ because it contains a reference to the undefined class~%  ~A"
       (unless (or (null x) (eq x class))
 	(return-from finalize-inheritance
 	  (finalize-inheritance x))))
-    #+compare(print (list "finalize-inheritance setting cpl for class: " #+brcl class " cpl: " #+brcl cpl))
+    #+compare(print (list "finalize-inheritance setting cpl for class: " #+clasp class " cpl: " #+clasp cpl))
     (setf (class-precedence-list class) cpl)
-    #+compare(print (list "finalize-inheritance checking set cpl for class: " #+brcl class " cpl: " #+brcl (class-precedence-list class)))
+    #+compare(print (list "finalize-inheritance checking set cpl for class: " #+clasp class " cpl: " #+clasp (class-precedence-list class)))
     (let ((slots (compute-slots class)))
       (setf (class-slots class) slots
 	    (class-size class) (compute-instance-size slots)
@@ -434,7 +434,7 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod compute-class-precedence-list ((class class))
   (compute-clos-class-precedence-list class (class-direct-superclasses class)))
 
-(eval-when (:compile-toplevel :execute #+brcl-boot :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
   (defmacro mapappend (fun &rest args)
     `(reduce #'append (mapcar ,fun ,@args))))
 
@@ -547,7 +547,7 @@ because it contains a reference to the undefined class~%  ~A"
     ;; regular classes then it will get an Instance allocator
     ;; If one of them is a ClbindClass then this will inherit a
     ;; duplicate of its allocator
-    #+brcl(sys:inherit-default-allocator class direct-superclasses)
+    #+clasp(sys:inherit-default-allocator class direct-superclasses)
     (cond ((forward-referenced-class-p class)
 	   (change-class class metaclass))
 	  ((not (eq (class-of class) metaclass))
@@ -559,9 +559,9 @@ because it contains a reference to the undefined class~%  ~A"
     class))
 
 (defun coerce-to-class (class-or-symbol &optional (fail nil))
-  (cond #-brcl
+  (cond #-clasp
 	((si:instancep class-or-symbol) class-or-symbol)
-	#+brcl
+	#+clasp
 	((classp class-or-symbol) class-or-symbol)
 	((not (symbolp class-or-symbol))
 	 (error "~a is not a valid class specifier." class-or-symbol))

@@ -8,12 +8,12 @@
 ;;; The following are unique tokens used during processing. 
 ;;; They need not be symbols; they need not even be atoms.
 
-#+brcl(in-package :core)
-#+brcl(progn
+#+clasp(in-package :core)
+#+clasp(progn
 	 (defvar *comma* 'core::comma)
 	 (defvar *comma-atsign* 'core::comma-atsign)
 	 (defvar *comma-dot* 'core::comma-dot))
-#-brcl(progn
+#-clasp(progn
 	 (defvar *comma* 'comma)
 	 (defvar *comma-atsign* 'comma-atsign)
 	 (defvar *comma-dot* 'comma-dot))
@@ -55,11 +55,11 @@
 
 ;;(defparameter *bq-simplify* t)
 #|
-#+brcl(si::fset 'bq #'(lambda (whole env) 
+#+clasp(si::fset 'bq #'(lambda (whole env) 
 			 (let ((x (cadr whole)))
 			   (bq-completely-process x)))
 		 1)
-#-brcl(defmacro bq (x) (bq-completely-process x))
+#-clasp(defmacro bq (x) (bq-completely-process x))
 (export 'bq)
 |#
 

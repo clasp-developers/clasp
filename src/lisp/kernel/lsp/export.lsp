@@ -149,7 +149,7 @@
   (si::fset 'do* f t))
 
 
-#-brcl
+#-clasp
 (defun eval-feature (x &aux operator)
   (declare (si::c-local))
   (cond ((symbolp x)
@@ -165,7 +165,7 @@
 	 (not (eval-feature (second x))))
 	(t (error "~S is not a valid feature expression." x))))
 
-#-brcl
+#-clasp
 (defun do-read-feature (stream subchar arg test)
   (declare (si::c-local))
   (when arg
@@ -177,15 +177,15 @@
 	(read stream t nil t)
 	(let ((*read-suppress* t)) (read stream t nil t) (values)))))
 
-#-brcl
+#-clasp
 (defun sharp-+-reader (stream subchar arg)
   (do-read-feature stream subchar arg T))
 
-#-brcl
+#-clasp
 (defun sharp---reader (stream subchar arg)
   (do-read-feature stream subchar arg NIL))
 
-#-brcl
+#-clasp
 (progn
   (si::readtable-lock (si::standard-readtable) nil)
   (set-dispatch-macro-character #\# #\+ 'sharp-+-reader)

@@ -14,9 +14,7 @@
 (setq *load-print* nil)
 (setq *print-source-code-cons* nil)
 
-(setq *features* (cons :brcl *features*))
 ;;(setq *features* (cons :ecl-min *features*))
-(setq *features* (cons :ecl *features*))
 (setq *features* (cons :clasp *features*))
 ;;(setq *features* (cons :clos *features*))
 (setq *features* (cons :debug-compiler *features*))
@@ -32,14 +30,14 @@
 
 
 
-;;(setq *features* (cons :compare *features*)) ;; compare ecl to brcl
+;;(setq *features* (cons :compare *features*)) ;; compare ecl to clasp
 
 ;; When boostrapping in stages, set this feature,
 ;; it guarantees that everything that is declared at compile/eval time
 ;; gets declared at load-time
 ;; Turn this off and recompile everything once the system has
 ;; been bootstrapped
-(setq *features* (cons :brcl-boot *features*)) ;; When bootstrapping in stages
+(setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
 
 ;; Set up a few things for the CLOS package
 ;;(core::select-package :clos)

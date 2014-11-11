@@ -82,21 +82,13 @@
 
 ;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
-#+(or)(defun generate-object-file (part-bitcode-pathname &key test)
-  (multiple-value-bind (compile-command object-filename)
-      (generate-compile-command part-bitcode-pathname)
-    (if test
-        (bformat t "About to evaluate: %s\n" compile-command)
-        (safe-system compile-command))
-    object-filename))
-
 (defun generate-object-file (part-bitcode-pathname &key test)
   (let ((output-pathname (compile-file-pathname part-bitcode-pathname :type :object))
         (reloc-model (cond
                       ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
                       (t 'llvm-sys:reloc-model-default))))
     (bitcode-to-obj-file part-bitcode-pathname output-pathname :reloc-model reloc-model)
-    output-pathname))
+    (truename output-pathname)))
 
 
 
@@ -115,17 +107,19 @@
   )
 
 
-(defun execute-link (bundle-pathname all-part-pathnames &key test)
-  (let* ((part-files (mapcar #'(lambda (pn) (namestring (translate-logical-pathname (make-pathname :type "o" :defaults pn))))
-                             all-part-pathnames))
+(defun execute-link (bundle-pathname object-pathnames &key test)
+  "Link object files together to create a shared library/bundle"
+  (let* ((part-files object-pathnames
+	   #+(or)(mapcar #'(lambda (pn) (namestring (translate-logical-pathname (make-pathname :type "o" :defaults pn)))) all-part-pathnames)
+	   )
          (bundle-file (core:coerce-to-filename bundle-pathname))
          (all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
-    (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
+    (dolist (f part-files) (push-string all-names (bformat nil "%s " (namestring (truename f)))))
     (let ((link-command (generate-link-command all-names bundle-file)))
       (if test
           (bformat t "About to execute: %s\n" link-command)
-          (safe-system link-command))))
-)
+          (safe-system link-command)))
+    (truename bundle-pathname)))
 
 
 
@@ -137,7 +131,7 @@
 ;;;
 (defun make-bundle (parts-pathnames &optional (bundle-name +image-pathname+)
 		    &aux (bundle-type (if (eq bundle-name '_image) 'kernel 'user)))
-  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
+  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/clasp and make-bundle.sh _image"
   (let* ((wrapper-pathname (make-bundle-wrapper parts bundle-name))
 	 (wrapper-and-parts-pathnames (cons wrapper-pathname parts-pathnames))
 	 (bundle-pathname (make-pathname :name (string-downcase (string bundle-name)) :defaults *image-directory*)))
@@ -161,7 +155,7 @@
 
 #||
 (defun link-system (pathname-destination &key lisp-bitcode-files (target-backend (default-target-backend)) test) ;; &optional (bundle-pathname +image-pathname+))
-  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/brcl and make-bundle.sh _image"
+  "Use (link-system _last-file_) to create the files for a bundle - then go to src/lisp/clasp and make-bundle.sh _image"
   (let* ((core:*target-backend* target-backend)
          (pathname-destination (target-backend-pathname pathname-destination :target-backend target-backend))
          (wrapper-fasl-pathname (make-bundle-wrapper lisp-bitcode-files pathname-destination))
@@ -281,9 +275,9 @@
                                        :debug-ir debug-ir)))
     (ensure-directories-exist bundle-bitcode-pathname)
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
-    (generate-object-file bundle-bitcode-pathname)
-    (execute-link output-pathname (list bundle-bitcode-pathname))
-    (truename output-pathname)))
+    (let ((object-pathname (truename (generate-object-file bundle-bitcode-pathname))))
+      (execute-link output-pathname (list object-pathname)))
+    output-pathname))
 
 (export '(link-system-lto))
 
@@ -296,6 +290,9 @@
 
 
 (defun build-fasl (out-file &key lisp-files)
-  "Return the truename of the output file"
-  (link-system-lto out-file :lisp-bitcode-files lisp-files))
+  "Link the object files in lisp-files into a shared library in out-file.
+Return the truename of the output file"
+  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
+  (execute-link out-file lisp-files))
+
 (export 'build-fasl)

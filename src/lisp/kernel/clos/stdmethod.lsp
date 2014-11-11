@@ -51,14 +51,14 @@
 
 #+threads
 (defparameter *eql-specializer-lock* (mp:make-lock :name 'eql-specializer))
-#-brcl
+#-clasp
 (defparameter *eql-specializer-hash*
   (make-hash-table :size 128 :test #'eql))
-#+brcl ;; I don't want this hash-table erased when I reload during bootstrap
+#+clasp ;; I don't want this hash-table erased when I reload during bootstrap
 (defvar *eql-specializer-hash*
   (make-hash-table :size 128 :test #'eql))
 
-#-brcl
+#-clasp
 (defun intern-eql-specializer (object)
   (let ((table *eql-specializer-hash*))
     (mp:with-lock (*eql-specializer-lock*)
@@ -66,7 +66,7 @@
 	  (setf (gethash object table)
 		(make-instance 'eql-specializer :object object))))))
 
-#+brcl
+#+clasp
 (defun intern-eql-specializer (object)
   (let ((table *eql-specializer-hash*))
     (or (gethash object table nil)
@@ -92,7 +92,7 @@
 	    (delete gf (specializer-direct-generic-functions spec))))
     (values)))
 
-#-brcl
+#-clasp
 (defmethod remove-direct-method ((spec eql-specializer) (method method))
   (mp:with-lock (*eql-specializer-lock*)
     (call-next-method)
@@ -100,7 +100,7 @@
       (remhash spec *eql-specializer-hash*)))
   (values))
 
-#+brcl
+#+clasp
 (defmethod remove-direct-method ((spec eql-specializer) (method method))
     (call-next-method)
     (unless (specializer-direct-methods spec)

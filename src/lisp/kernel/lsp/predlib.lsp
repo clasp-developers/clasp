@@ -444,7 +444,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	((consp type)
 	 (setq tp (car type) i (cdr type)))
 	#+clos
-	(#-brcl(sys:instancep type) #+brcl(classp type)
+	(#-clasp(sys:instancep type) #+clasp(classp type)
 	 (return-from typep (si::subclassp (class-of object) type)))
 	(t
 	 (error-type-specifier type)))
@@ -559,7 +559,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	   (t
 	    (error-type-specifier type))))))
 
-#+(and clos (not brcl))
+#+(and clos (not clasp))
 (defun subclassp (low high)
   (or (eq low high)
       (member high (sys:instance-ref low clos::+class-precedence-list-ndx+)
@@ -577,14 +577,14 @@ Returns T if X belongs to TYPE; NIL otherwise."
       (if (eq x-class class)
 	  t
 	  (let ((x-cpl (class-precedence-list x-class)))
-	    (if #-brcl(instancep class) #+brcl(classp class)
+	    (if #-clasp(instancep class) #+clasp(classp class)
 		(member class x-cpl :test #'eq)
 		(dolist (c x-cpl)
 		  (declare (class c))
 		  (when (eq (class-name c) class)
 		    (return t)))))))))
 
-#+(and clos ecl-min (not brcl))
+#+(and clos ecl-min (not clasp))
 (defun clos::classp (foo)
   (declare (ignore foo))
   nil)
@@ -903,7 +903,7 @@ if not possible."
       (and (not (clos::class-finalized-p class))
            (throw '+canonical-type-failure+ nil))
       (register-type class
-		     #'(lambda (c) (or #-brcl(si::instancep c) #+brcl(classp c) (symbolp c)))
+		     #'(lambda (c) (or #-clasp(si::instancep c) #+clasp(classp c) (symbolp c)))
 		     #'(lambda (c1 c2)
 			 (when (symbolp c1)
 			   (setq c1 (find-class c1 nil)))
@@ -1416,9 +1416,9 @@ if not possible."
   (when (eq t1 t2)
     (return-from subtypep (values t t)))
   ;; Another easy case: types are classes.
-  (when #-brcl(and (instancep t1) (instancep t2)
+  (when #-clasp(and (instancep t1) (instancep t2)
 		    (clos::classp t1) (clos::classp t2))
-	#+brcl(and (classp t1) (classp t2))
+	#+clasp(and (classp t1) (classp t2))
     (return-from subtypep (values (subclassp t1 t2) t)))
   ;; Finally, cached results.
   (let* ((cache *subtypep-cache*)

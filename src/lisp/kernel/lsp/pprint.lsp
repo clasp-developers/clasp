@@ -12,7 +12,7 @@
 
 (in-package "SI")
 
-#-brcl(declaim #.+ecl-unsafe-declarations+)
+#-clasp(declaim #.+ecl-unsafe-declarations+)
 
 ;;;; Pretty streams
 

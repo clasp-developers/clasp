@@ -230,7 +230,7 @@
   ;; we find that symbol twice, it is quite likely that this form will
   ;; end up in a closure.
   ;;
-  #-brcl
+  #-clasp
   (let ((counter 0))
     (declare (fixnum counter))
     (dolist (item (car env))
@@ -241,7 +241,7 @@
   ;; ECL uses FUNCTION-BOUNDARY, I have linked lists of Environments
   ;; and I have FunctionContainerEnvironments to indicate the boundaries
   ;; of Functions within Lexical environments.
-  #+brcl
+  #+clasp
   (let ((num (core:count-function-container-environments env)))
     (when (> num 1)
       (return-from environment-contains-closure t)))
@@ -274,14 +274,14 @@
 		      (setf next-method-p-p 'FUNCTION
 			    in-closure-p t))))))
 	     form))
-      #-brcl
+      #-clasp
       (let ((si::*code-walker* #'code-walker))
 	;; Instead of (coerce method-lambda 'function) we use
 	;; explicitely the bytecodes compiler with an environment, no
 	;; stepping, compiler-env-p = t and execute = nil, so that the
 	;; form does not get executed.
 	(si::eval-with-env method-lambda env nil t t ))
-      #+brcl
+      #+clasp
       (progn
 	(cmp:code-walk-using-compiler method-lambda env
 				      :code-walker-function #'code-walker))
@@ -408,7 +408,7 @@ have disappeared."
   (with-early-make-instance
       ;; We choose the largest list of slots
       +standard-accessor-method-slots+
-    (method (if #-brcl(si::instancep method-class) #+brcl(classp method-class)
+    (method (if #-clasp(si::instancep method-class) #+clasp(classp method-class)
 		method-class
 		(find-class method-class))
 	    :generic-function nil

@@ -226,7 +226,7 @@
       (process-declarations body t)
     (when decls (push `(declare ,@decls) body))
     (values body doc)))
-#+brcl(export 'remove-documentation)
+#+clasp(export 'remove-documentation)
 
 (defun find-declarations (body &optional (doc t))
   (multiple-value-bind (decls body doc)
@@ -322,7 +322,7 @@
 ;;;
 ;;; MACROLET HELPER
 ;;;
-#-brcl
+#-clasp
 (defun cmp-env-for-bytecodes (old-env)
   "Produce an environment which is safe to pass to the bytecodes
 compiler. We remove all blocks and tags and ensure that
@@ -363,7 +363,7 @@ from the function in which it appears." name))))
 			(list (first i) 'SI:MACRO (local-fun-error-function (first i))))
 		      macros)))))))
 
-#-brcl
+#-clasp
 (defun macrolet-functions (definitions old-env)
   (declare (si::c-local))
   (let ((env (cmp-env-for-bytecodes old-env)))
@@ -377,7 +377,7 @@ from the function in which it appears." name))))
 		   definitions))
      env nil t)))
 
-#-brcl
+#-clasp
 (defun cmp-env-register-macrolet (definitions old-env)
   (let ((macros (cdr old-env)))
     (dolist (record (macrolet-functions definitions old-env))
