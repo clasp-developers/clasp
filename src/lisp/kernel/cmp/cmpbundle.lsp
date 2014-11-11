@@ -88,7 +88,7 @@
                       ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
                       (t 'llvm-sys:reloc-model-default))))
     (bitcode-to-obj-file part-bitcode-pathname output-pathname :reloc-model reloc-model)
-    output-pathname))
+    (truename output-pathname)))
 
 
 
@@ -108,18 +108,18 @@
 
 
 (defun execute-link (bundle-pathname object-pathnames &key test)
-"Link object files together to create a shared library/bundle"
+  "Link object files together to create a shared library/bundle"
   (let* ((part-files object-pathnames
 	   #+(or)(mapcar #'(lambda (pn) (namestring (translate-logical-pathname (make-pathname :type "o" :defaults pn)))) all-part-pathnames)
 	   )
          (bundle-file (core:coerce-to-filename bundle-pathname))
          (all-names (make-array 256 :element-type 'character :adjustable t :fill-pointer 0)))
-    (dolist (f part-files) (push-string all-names (bformat nil "%s " f)))
+    (dolist (f part-files) (push-string all-names (bformat nil "%s " (namestring (truename f)))))
     (let ((link-command (generate-link-command all-names bundle-file)))
       (if test
           (bformat t "About to execute: %s\n" link-command)
-          (safe-system link-command))))
-)
+          (safe-system link-command)))
+    (truename bundle-pathname)))
 
 
 
@@ -275,9 +275,9 @@
                                        :debug-ir debug-ir)))
     (ensure-directories-exist bundle-bitcode-pathname)
     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
-    (let ((object-pathname (generate-object-file bundle-bitcode-pathname)))
+    (let ((object-pathname (truename (generate-object-file bundle-bitcode-pathname))))
       (execute-link output-pathname (list object-pathname)))
-    (truename output-pathname)))
+    output-pathname))
 
 (export '(link-system-lto))
 
@@ -294,4 +294,5 @@
 Return the truename of the output file"
   (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
   (execute-link out-file lisp-files))
+
 (export 'build-fasl)

@@ -1988,7 +1988,7 @@
 							:capitalize-first
 							:downcase)))))
 	    ,@(expand-directive-list before))
-	 #+ecl
+	 #+(or ecl clasp)
 	 `(let ((string (make-array 10 :element-type 'character
 				       :fill-pointer 0 :adjustable t)))
 	    (unwind-protect
@@ -2023,7 +2023,7 @@
 	(setf args (interpret-directive-list stream before orig-args args))
 	(fmt-log "line 2014 args: " args)
 	after)
-      #+ecl
+      #+(or ecl clasp)
       (let* ((posn (position close directives))
 	     (before (subseq directives 0 posn))
 	     (jumped t)
