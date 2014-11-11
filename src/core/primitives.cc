@@ -120,10 +120,10 @@ namespace core
     {_G();
         stringstream ss;
 #ifdef USE_MPS
-        ss << "mps";
+        ss << "mps-";
 #endif
 #ifdef USE_BOEHM
-        ss << "boehm";
+        ss << "boehm-";
 #endif
         ss << CLASP_VERSION;
         return Str_O::create(ss.str());
