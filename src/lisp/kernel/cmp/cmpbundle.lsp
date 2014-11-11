@@ -94,17 +94,18 @@
 
 
 (defun generate-link-command (all-names bundle-file)
-  #+target-os-darwin
-  (return-from generate-link-command
-    (bformat nil "ld -v %s -macosx_version_min 10.7 -flat_namespace -undefined warning -bundle -o %s" all-names bundle-file))
-  #+target-os-linux
-  (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
-         (clang-executable (if clasp-clang-path
-                               clasp-clang-path
-                               "clang")))
-    (return-from generate-link-command (bformat nil "%s -v %s -shared -o %s" clang-executable all-names bundle-file)))
-  (error "Add support for this operating system to cmp:execute-link")
-  )
+  (let ((options "")) ;; "-v"
+    #+target-os-darwin
+    (return-from generate-link-command
+      (bformat nil "ld %s %s -macosx_version_min 10.7 -flat_namespace -undefined warning -bundle -o %s" options all-names bundle-file))
+    #+target-os-linux
+    (let* ((clasp-clang-path (core:getenv "CLASP_CLANG_PATH"))
+	   (clang-executable (if clasp-clang-path
+				 clasp-clang-path
+				 "clang")))
+      (return-from generate-link-command (bformat nil "%s %s %s -shared -o %s" clang-executable options all-names bundle-file)))
+    (error "Add support for this operating system to cmp:execute-link")
+    ))
 
 
 (defun execute-link (bundle-pathname object-pathnames &key test)
@@ -292,7 +293,7 @@
 (defun build-fasl (out-file &key lisp-files)
   "Link the object files in lisp-files into a shared library in out-file.
 Return the truename of the output file"
-  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
+;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s\n" out-file lisp-files)
   (execute-link out-file lisp-files))
 
 (export 'build-fasl)

@@ -928,7 +928,7 @@ namespace core
     EXPOSE_CLASS(core,ReadTable_O);
     SYMBOL_SC_(KeywordPkg,syntax);
     SYMBOL_SC_(KeywordPkg,whitespace_character);
-    HashTable_sp ReadTable_O::create_standard_syntax_table(Lisp_sp lisp)
+    HashTable_sp ReadTable_O::create_standard_syntax_table()
     {_G();
 	HashTableEql_sp syntax = HashTableEql_O::create_default();
 	Cons_sp whiteSpaceNames = (ql::list(_lisp)
@@ -961,10 +961,10 @@ namespace core
     }
 
 
-    ReadTable_sp ReadTable_O::create_standard_readtable(Lisp_sp lisp)
+    ReadTable_sp ReadTable_O::create_standard_readtable()
     {_G();
         GC_ALLOCATE(ReadTable_O,rt );
-	rt->_Syntax = ReadTable_O::create_standard_syntax_table(_lisp);
+	rt->_Syntax = ReadTable_O::create_standard_syntax_table();
 	ASSERTNOTNULL(_sym_reader_backquoted_expression->symbolFunction());
 	ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
 	rt->set_macro_character(StandardChar_O::create('`'),

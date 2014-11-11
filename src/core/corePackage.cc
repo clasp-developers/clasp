@@ -633,7 +633,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	    exposeCando_Numerics();
 	    exposeCore_lisp_reader();
 	    {
-		ReadTable_sp readtable = ReadTable_O::create_standard_readtable(_lisp);
+		ReadTable_sp readtable = ReadTable_O::create_standard_readtable();
 		cl::_sym_STARreadtableSTAR->defparameter(readtable);
 	    }
 	    break;

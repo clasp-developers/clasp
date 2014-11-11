@@ -60,13 +60,13 @@ enum clasp_readtable_case {
 	/*! _Syntax is a HashTable and each value is a plist */
 	HashTable_sp	_Syntax; 
     public: // static functions here
-	static ReadTable_sp create_standard_readtable(Lisp_sp lisp);
+	static ReadTable_sp create_standard_readtable();
 	/*! Create a basic syntax table that describes the syntax of
 	  the charactes: tab, newline, linefeed, page, return, space
 	  and '\\'(single-escape) and '|'(multiple-escape)
 	  macro characters need to be added to this to create a standard readtable
 	*/
-	static HashTable_sp create_standard_syntax_table(Lisp_sp lisp);
+	static HashTable_sp create_standard_syntax_table();
 
 
     public: // instance member functions here
