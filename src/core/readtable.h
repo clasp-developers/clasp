@@ -58,7 +58,10 @@ enum clasp_readtable_case {
     GCPRIVATE: // instance variables here
 	Symbol_sp	_Case;
 	/*! _Syntax is a HashTable and each value is a plist */
-	HashTable_sp	_Syntax; 
+	// HashTable_sp	_Syntax; 
+        HashTable_sp _SyntaxTypes;
+        HashTable_sp _MacroCharacters;
+        HashTable_sp _DispatchMacroCharacters;
     public: // static functions here
 	static ReadTable_sp create_standard_readtable();
 	/*! Create a basic syntax table that describes the syntax of
@@ -71,8 +74,11 @@ enum clasp_readtable_case {
 
     public: // instance member functions here
 
+	ReadTable_sp copyReadTable(ReadTable_sp dest);
+
 	string __repr__() const;
 
+	T_sp set_syntax_type(Character_sp ch, T_sp syntaxType );
 	Symbol_sp setf_readtable_case(Symbol_sp newCase);
         clasp_readtable_case getReadTableCaseAsEnum();
         Symbol_sp getReadTableCase() const { return this->_Case;};
