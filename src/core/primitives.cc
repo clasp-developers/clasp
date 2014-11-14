@@ -1942,7 +1942,7 @@ void initialize_primitives()
 	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
 	Defun(specialOperatorP);
 
-	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
+	SYMBOL_EXPORT_SC_(CorePkg,macroFunction);
 	Defun(macroFunction);
 
 	SYMBOL_SC_(CorePkg,separatePairList);

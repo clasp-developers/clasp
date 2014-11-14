@@ -118,7 +118,7 @@
     (dolist (f part-files) (push-string all-names (bformat nil "%s " (namestring (truename f)))))
     (let ((link-command (generate-link-command all-names bundle-file)))
       (if test
-;;          (bformat t "About to execute: %s\n" link-command)
+          (bformat t "About to execute: %s\n" link-command)
           (safe-system link-command)))
     (truename bundle-pathname)))
 

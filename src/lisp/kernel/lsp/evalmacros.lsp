@@ -35,7 +35,7 @@ last FORM.  If not, simply returns NIL."
 (defun si::register-global (name)
   "This should augment a global environment object that the compiler uses
 rather than modify the runtime environment"
-  (bformat t "si::register-global %s\n" name)
+;;  (bformat t "si::register-global %s\n" name)
   (si:*make-special name))
 #||
   (pushnew name cmp::*global-vars*)
