@@ -121,6 +121,9 @@ namespace core {
 	/*! Return the value slot of the symbol - throws if unbound */
 	T_sp symbolValue() const;
 
+	/*! Return the address of the value slot of the symbol */
+	T_sp& symbolValueRef() { return this->_Value; };
+
 	/*! Return the value slot of the symbol or UNBOUND if unbound */
 	T_sp symbolValueUnsafe() const;
 

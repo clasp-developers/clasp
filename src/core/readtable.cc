@@ -62,6 +62,36 @@ namespace core
 
 
 
+#define ARGS_cl_setSyntaxFromChar "(tochar fromchar &optional (toreadtable *readtable*) (fromreadtable nil fromreadtablep))"
+#define DECL_cl_setSyntaxFromChar ""
+#define DOCS_cl_setSyntaxFromChar "setSyntaxFromChar"
+    T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable, T_sp fromReadTableP )
+    {
+	if (fromReadTableP.nilp()) {
+	    if ( core::_sym__PLUS_standardReadtable_PLUS_->symbolValue().nilp() ) {
+		core::_sym__PLUS_standardReadtable_PLUS_->defconstant(ReadTable_O::create_standard_readtable());
+	    }
+	    fromReadTable = core::_sym__PLUS_standardReadtable_PLUS_->symbolValue();
+	}
+	T_sp syntax = fromReadTable->syntax_type(fromChar);
+	toReadTable->set_syntax_type(toChar,syntax);
+	T_mv macro = fromReadTable->get_macro_character(fromChar);
+	if ( macro.notnilp() ) {
+	    T_sp nonTerminating = macro.second();
+	    toReadTable->set_macro_character(toChar,macro,nonTerminating);
+	}
+	HashTable_sp fromTable = fromReadTable->_DispatchMacroCharacters->gethash(fromChar,_Nil<HashTable_O>()).as<HashTable_O>();
+	if ( fromTable.notnilp() ) {
+	    HashTableEql_sp toTable = HashTableEql_O::create_default();
+	    fromTable->maphash( [&toTable] (T_sp key, T_sp val) {
+		    toTable->setf_gethash(key,val);
+		} );
+	    toReadTable->_DispatchMacroCharacters->setf_gethash(toChar,toTable);
+	}
+	return _lisp->_true();
+    }
+
+
 
 #define ARGS_cl_makeDispatchMacroCharacter "(char &optional non-terminating-p (readtable *readtable*))"
 #define DECL_cl_makeDispatchMacroCharacter ""
@@ -79,7 +109,7 @@ namespace core
 #define ARGS_cl_getMacroCharacter "(char &optional readtable)"
 #define DECL_cl_getMacroCharacter ""
 #define DOCS_cl_getMacroCharacter "getMacroCharacter"
-    T_sp cl_getMacroCharacter(Character_sp chr, ReadTable_sp readtable)
+    T_mv cl_getMacroCharacter(Character_sp chr, ReadTable_sp readtable)
     {_G();
         if ( readtable.nilp() ) {
             readtable = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>();
@@ -1051,7 +1081,7 @@ namespace core
     void ReadTable_O::initialize()
     {_OF();
         this->Base::initialize();
-	printf("%s:%d Initializing readtable\n", __FILE__, __LINE__ );
+//	printf("%s:%d Initializing readtable\n", __FILE__, __LINE__ );
 	this->_Case = kw::_sym_upcase;
 	this->_SyntaxTypes = HashTableEql_O::create_default();
 	this->_MacroCharacters = HashTableEql_O::create_default();
@@ -1258,17 +1288,17 @@ namespace core
 
     ReadTable_sp ReadTable_O::copyReadTable(ReadTable_sp dest)
     {
-	printf("%s:%d copy-readtable\n", __FILE__, __LINE__ );
+//	printf("%s:%d copy-readtable\n", __FILE__, __LINE__ );
 	if ( dest.nilp() ) {
-	    printf("%s:%d allocating copy-readtable\n", __FILE__, __LINE__ );
+//	    printf("%s:%d allocating copy-readtable\n", __FILE__, __LINE__ );
 	    GC_ALLOCATE(ReadTable_O,temp);
 	    dest = temp;
 	}
-	printf("%s:%d dest.nilp() == %d\n", __FILE__, __LINE__, dest.nilp());
-	printf("%s:%d dest->_SyntaxTypes.nilp() == %d\n", __FILE__, __LINE__, dest->_SyntaxTypes.nilp());
-	printf("%s:%d about to _SyntaxTypes->clrhash() copy-readtable\n", __FILE__, __LINE__ );
+//	printf("%s:%d dest.nilp() == %d\n", __FILE__, __LINE__, dest.nilp());
+//	printf("%s:%d dest->_SyntaxTypes.nilp() == %d\n", __FILE__, __LINE__, dest->_SyntaxTypes.nilp());
+//	printf("%s:%d about to _SyntaxTypes->clrhash() copy-readtable\n", __FILE__, __LINE__ );
 	dest->_SyntaxTypes->clrhash();
-	printf("%s:%d about to _MacroCharacters->clrhash() copy-readtable\n", __FILE__, __LINE__ );
+//	printf("%s:%d about to _MacroCharacters->clrhash() copy-readtable\n", __FILE__, __LINE__ );
 	dest->_MacroCharacters->clrhash();
 	dest->_DispatchMacroCharacters->clrhash();
 	this->_SyntaxTypes->maphash( [&dest] (T_sp key, T_sp val) {
@@ -1288,6 +1318,11 @@ namespace core
 	dest->_Case = this->_Case;
 	return dest;
     }
+
+
+
+
+
 
 
 
@@ -1364,6 +1399,7 @@ namespace core
         ClDefun(getMacroCharacter);
         ClDefun(makeDispatchMacroCharacter);
 	ClDefun(copyReadtable);
+	ClDefun(setSyntaxFromChar);
     }
 
     void ReadTable_O::exposePython(::core::Lisp_sp lisp)

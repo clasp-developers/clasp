@@ -50,6 +50,7 @@ enum clasp_readtable_case {
 	LISP_CLASS(core,ClPkg,ReadTable_O,"readtable");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
+	friend T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable );
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(ReadTable_O);
     public:

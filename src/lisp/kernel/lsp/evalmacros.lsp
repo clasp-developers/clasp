@@ -32,6 +32,16 @@ last FORM.  If not, simply returns NIL."
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
 
+(defun si::register-global (name)
+  "This should augment a global environment object that the compiler uses
+rather than modify the runtime environment"
+  (bformat t "si::register-global %s\n" name)
+  (si:*make-special name))
+#||
+  (pushnew name cmp::*global-vars*)
+  (values))
+||#
+
 (defmacro defvar (&whole whole var &optional (form nil form-sp) doc-string)
   "Syntax: (defvar name [form [doc]])
 Declares the variable named by NAME as a special variable.  If the variable

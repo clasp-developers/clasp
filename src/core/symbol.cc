@@ -120,6 +120,14 @@ namespace core
 	}
 	return arg->symbolValue();
     };
+
+#define ARGS_af_symbolValueAddress "(arg)"
+#define DECL_af_symbolValueAddress ""
+#define DOCS_af_symbolValueAddress "symbolValueAddress"
+    T_sp af_symbolValueAddress(const Symbol_sp arg)
+    {_G();
+	return Pointer_O::create(&arg->symbolValueRef());
+    };
     
 
 #define DOCS_af_make_symbol "make_symbol"
@@ -322,15 +330,11 @@ namespace core
     T_sp Symbol_O::setf_symbolValue(T_sp val)
     {_OF();
 	ASSERT(!this->_IsConstant);
-#if 0 // I used this to test *print-pretty*
+#if 1 
 	// trap a change in a dynamic variable
-	if ( this->_Name.as<Str_O>()->get() == "*PRINT-PRETTY*")
+	if ( this->_Name.as<Str_O>()->get() == "*TABLE*")
 	{
-            if ( val.notnilp() && _sym_STARenablePrintPrettySTAR->symbolValue().nilp() ) {
-                // force *print-pretty* to nil if *enable-print-pretty* == nil 
-                val = _Nil<T_O>();
-                printf("forcing setf_symbolValue of *print-pretty* to nil because !core::*enable-print-pretty*\n" );
-            }
+	    printf("%s:%d Changing value of a symbol named *TABLE* to %s\n", __FILE__, __LINE__, _rep_(val).c_str());
 	}
 #endif
 	this->_Value = val;
@@ -584,6 +588,7 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,symbolName);
 	Defun(symbolName);
 	SYMBOL_EXPORT_SC_(ClPkg,symbolValue);
+	Defun(symbolValueAddress);
 	Defun(symbolValue);
 	SYMBOL_EXPORT_SC_(ClPkg,symbolPackage);
 	Defun(symbolPackage);
