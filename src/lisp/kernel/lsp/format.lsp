@@ -686,21 +686,37 @@
 	 (defun-name (intern (concatenate 'string name "-FORMAT-DIRECTIVE-EXPANDER")))
 	 (directive (gensym))
 	 (directives (if lambda-list (car (last lambda-list)) (gensym))))
-    `(%set-format-directive-expander ,char
-       (ext::lambda-block ,defun-name (,directive ,directives)
-	 ,@(if lambda-list
-	       `((let ,(mapcar #'(lambda (var)
-				   `(,var
-				     (,(intern (concatenate
-						'string
-						"FORMAT-DIRECTIVE-"
-						(symbol-name var))
-					       (symbol-package 'foo))
-				      ,directive)))
-			       (butlast lambda-list))
-		   ,@body))
-	       `((declare (ignore ,directive ,directives))
-		 ,@body))))))
+    `(%set-format-directive-expander 
+      ,char
+      #+ecl(ext::lambda-block ,defun-name (,directive ,directives)
+			      ,@(if lambda-list
+				    `((let ,(mapcar #'(lambda (var)
+							`(,var
+							  (,(intern (concatenate
+								     'string
+								     "FORMAT-DIRECTIVE-"
+								     (symbol-name var))
+								    (symbol-package 'foo))
+							    ,directive)))
+						    (butlast lambda-list))
+					,@body))
+				    `((declare (ignore ,directive ,directives))
+				      ,@body)))
+      #+clasp(lambda (,directive ,directives)
+	       ,@(if lambda-list
+		     `((let ,(mapcar #'(lambda (var)
+					 `(,var
+					   (,(intern (concatenate
+						      'string
+						      "FORMAT-DIRECTIVE-"
+						      (symbol-name var))
+						     (symbol-package 'foo))
+					     ,directive)))
+				     (butlast lambda-list))
+			 ,@body))
+		     `((declare (ignore ,directive ,directives))
+		       ,@body)))
+       )))
 
 (defmacro def-format-directive (char lambda-list &body body)
   #+formatter

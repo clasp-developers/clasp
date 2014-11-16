@@ -26,10 +26,18 @@
 
 
 
+#+(or)(si::fset 'defun
+		#'(lambda (def env)
+		    (let* ((name (second def))
+			   (func `(function (ext::lambda-block ,@(cdr def)))))
+		      (ext:register-with-pde def `(si::fset ',name ,func))))
+		t)
+
+;; Convert (defun XXX (args) body) 
 (si::fset 'defun
 	  #'(lambda (def env)
 	      (let* ((name (second def))
-		     (func `(function (ext::lambda-block ,@(cdr def)))))
+		     (func `(function (lambda ,(caddr def) (block ,(cadr def) ,@(cdddr def))))))
 		(ext:register-with-pde def `(si::fset ',name ,func))))
 	  t)
 (export '(defun))

@@ -32,7 +32,9 @@
 (si::fset 'defun
 	  #'(lambda (def env)
 	      (let* ((name (second def))
-		     (func `(function (ext::lambda-block ,@(cdr def)))))
+		     (func #+ecl`(function (ext::lambda-block ,@(cdr def)))
+			   #+clasp`(function (lambda ,(caddr def) (block ,(cadr def) ,@(cdddr def))))
+			   ))
 		(ext:register-with-pde def `(si::fset ',name ,func))))
 	  t)
 

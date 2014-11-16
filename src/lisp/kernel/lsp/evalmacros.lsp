@@ -32,6 +32,10 @@ last FORM.  If not, simply returns NIL."
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
 
+
+(defun cl:macro-function (symbol &optional environment)
+  (core:macro-function symbol environment))
+
 (defun si::register-global (name)
   "This should augment a global environment object that the compiler uses
 rather than modify the runtime environment"
@@ -113,10 +117,19 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 (defmacro defun (&whole whole name vl &body body &environment env &aux doc-string)
   ;; Documentation in help.lsp
   (multiple-value-setq (body doc-string) (remove-documentation body))
-  (let* ((function `#'(ext::lambda-block ,name ,vl ,@body))
-	 (global-function `#'(ext::lambda-block ,name ,vl
-                                                (declare (si::c-global))
-                                                ,@body)))
+  (let* ((function 
+	  #+ecl`#'(ext::lambda-block ,name ,vl ,@body)
+	  #+clasp`#'(lambda ,vl (block ,name ,@body))
+	   )
+	 (global-function 
+	  #+ecl`#'(ext::lambda-block ,name ,vl
+				     (declare (si::c-global))
+				     ,@body)
+	  #+clasp`#'(lambda ,vl
+		      (block ,name
+			(declare (si::c-global))
+			,@body))
+	  ))
     (when *dump-defun-definitions*
       (print function)
       (setq function `(si::bc-disassemble ,function)))
@@ -171,7 +184,7 @@ terminated by a non-local exit."
 (defmacro lambda (&rest body)
   `(function (lambda ,@body)))
 
-(defmacro lambda-block (name lambda-list &rest lambda-body)
+(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
   (multiple-value-bind (decl body doc)
       (si::process-declarations lambda-body)
     (when decl (setq decl (list (cons 'declare decl))))

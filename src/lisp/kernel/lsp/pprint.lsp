@@ -872,22 +872,39 @@
 		       ((t) '*terminal-io*)
 		       (t stream-symbol)))
 	 (function
-	  `(ext::lambda-block ,block-name (,object-var ,stream-var
-					   &aux (,count-name 0))
-            (declare (ignorable ,object-var ,stream-var ,count-name))
-	    (macrolet ((pprint-pop ()
-			 '(progn
-			   (unless (pprint-pop-helper ,object-var ,count-name
-						      ,stream-var)
-			     (return-from ,block-name nil))
-			   (incf ,count-name)
-			   ,(if object `(pop ,object-var) nil)))
-		       (pprint-exit-if-list-exhausted ()
-			 ,(if object
-			      `'(when (null ,object-var)
-				 (return-from ,block-name nil))
-			      `'(return-from ,block-name nil))))
-	      ,@body))))
+	  #+ecl`(ext::lambda-block ,block-name (,object-var ,stream-var
+						       &aux (,count-name 0))
+			      (declare (ignorable ,object-var ,stream-var ,count-name))
+			      (macrolet ((pprint-pop ()
+					   '(progn
+					     (unless (pprint-pop-helper ,object-var ,count-name
+									,stream-var)
+					       (return-from ,block-name nil))
+					     (incf ,count-name)
+					     ,(if object `(pop ,object-var) nil)))
+					 (pprint-exit-if-list-exhausted ()
+					   ,(if object
+						`'(when (null ,object-var)
+						   (return-from ,block-name nil))
+						`'(return-from ,block-name nil))))
+				,@body))
+	  #+clasp`(lambda (,object-var ,stream-var &aux (,count-name 0))
+	   (block ,block-name 
+	     (declare (ignorable ,object-var ,stream-var ,count-name))
+	     (macrolet ((pprint-pop ()
+			  '(progn
+			    (unless (pprint-pop-helper ,object-var ,count-name
+						       ,stream-var)
+			      (return-from ,block-name nil))
+			    (incf ,count-name)
+			    ,(if object `(pop ,object-var) nil)))
+			(pprint-exit-if-list-exhausted ()
+			  ,(if object
+			       `'(when (null ,object-var)
+				  (return-from ,block-name nil))
+			       `'(return-from ,block-name nil))))
+	       ,@body)))
+	   ))
       `(pprint-logical-block-helper #',function ,object ,stream-symbol
 				    ,prefix ,per-line-prefix-p ,suffix)))
 

@@ -340,9 +340,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (si::*fset 'defun
 	  #'(lambda (def env)
 	      (let* ((name (second def))
-		     (func `(function (ext::lambda-block ,@(cdr def)))))
+		     (func `(function (lambda ,(caddr def) (block ,(cadr def) ,@(cdddr def))))))
 		(ext:register-with-pde def `(si::*fset ',name ,func))))
 	  t)
+
 (export '(defun))
 
 
@@ -391,7 +392,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                    (bformat t "Loading image %s\n" image-path)
                    (load-bundle image-path llvm-sys:+clasp-main-function-name+)))))
 
-(*fset 'fset
+(si::*fset 'fset
        #'(lambda (whole env)
 	   `(*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole)))
        t)

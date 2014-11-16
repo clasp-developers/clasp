@@ -587,6 +587,14 @@ namespace core
 	return _Nil<T_O>();
     }
 
+#define ARGS_cl_macroFunction "(symbol &optional env)"
+#define DECL_cl_macroFunction ""
+#define DOCS_cl_macroFunction "See CLHS: macroFunction"
+    T_sp cl_macroFunction(Symbol_sp symbol, Environment_sp env)
+    {_G();
+	return af_macroFunction(symbol,env);
+    }
+
 
 #define ARGS_af_specialOperatorP "(symbol)"
 #define DECL_af_specialOperatorP ""
@@ -1944,6 +1952,9 @@ void initialize_primitives()
 
 	SYMBOL_EXPORT_SC_(CorePkg,macroFunction);
 	Defun(macroFunction);
+
+	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
+	ClDefun(macroFunction);
 
 	SYMBOL_SC_(CorePkg,separatePairList);
 	Defun(separatePairList);

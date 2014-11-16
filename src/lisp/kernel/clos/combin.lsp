@@ -276,11 +276,11 @@
 	   (error "~S is not a valid DEFINE-METHOD-COMBINATION form"
 		  form)))
     (destructuring-bind (name lambda-list method-groups &rest body &aux
-			 (group-names '())
-			 (group-checks '())
-			 (group-after '())
-			 (generic-function '.generic-function.)
-			 (method-arguments '()))
+			      (group-names '())
+			      (group-checks '())
+			      (group-after '())
+			      (generic-function '.generic-function.)
+			      (method-arguments '()))
 	form
       (unless (symbolp name) (syntax-error))
       (let ((x (first body)))
@@ -293,27 +293,27 @@
 	    (syntax-error))))
       (dolist (group method-groups)
 	(destructuring-bind (group-name predicate &key description
-				  (order :most-specific-first) (required nil))
+					(order :most-specific-first) (required nil))
 	    group
 	  (if (symbolp group-name)
 	      (push group-name group-names)
 	      (syntax-error))
 	  (let ((condition
-		(cond ((eql predicate '*) 'T)
-		      ((and predicate (symbolp predicate))
-                       `(,predicate .METHOD-QUALIFIERS.))
-		      ((and (listp predicate)
-			    (let* ((q (last predicate 0))
-				   (p (copy-list (butlast predicate 0))))
-			      (when (every #'symbolp p)
-				(if (eql q '*)
-				    `(every #'equal ',p .METHOD-QUALIFIERS.)
-				    `(equal ',p .METHOD-QUALIFIERS.))))))
-		      (t (syntax-error)))))
+		 (cond ((eql predicate '*) 'T)
+		       ((and predicate (symbolp predicate))
+			`(,predicate .METHOD-QUALIFIERS.))
+		       ((and (listp predicate)
+			     (let* ((q (last predicate 0))
+				    (p (copy-list (butlast predicate 0))))
+			       (when (every #'symbolp p)
+				 (if (eql q '*)
+				     `(every #'equal ',p .METHOD-QUALIFIERS.)
+				     `(equal ',p .METHOD-QUALIFIERS.))))))
+		       (t (syntax-error)))))
 	    (push `(,condition (push .METHOD. ,group-name)) group-checks))
 	  (when required
 	    (push `(unless ,group-name
-		    (error "Method combination: ~S. No methods ~
+		     (error "Method combination: ~S. No methods ~
 			    in required group ~S." ,name ,group-name))
 		  group-after))
 	  (case order
@@ -327,16 +327,28 @@
                                            (setf ,group-name (nreverse ,group-name)))
                                         group-after)))))))
       `(install-method-combination ',name
-	  (ext::lambda-block ,name (,generic-function .methods-list. ,@lambda-list)
-	    (let (,@group-names)
-	      (dolist (.method. .methods-list.)
-		(let ((.method-qualifiers. (method-qualifiers .method.)))
-		  (cond ,@(nreverse group-checks)
-			(t (invalid-method-error .method.
-			     "Method qualifiers ~S are not allowed in the method~
+				   #+ecl(ext::lambda-block ,name (,generic-function .methods-list. ,@lambda-list)
+							   (let (,@group-names)
+							     (dolist (.method. .methods-list.)
+							       (let ((.method-qualifiers. (method-qualifiers .method.)))
+								 (cond ,@(nreverse group-checks)
+								       (t (invalid-method-error .method.
+												"Method qualifiers ~S are not allowed in the method~
 			      combination ~S." .method-qualifiers. ,name)))))
-	      ,@group-after
-	      (effective-method-function (progn ,@body) t))))
+							     ,@group-after
+							     (effective-method-function (progn ,@body) t)))
+				   #+clasp(lambda (,generic-function .methods-list. ,@lambda-list)
+					    (block ,name 
+					      (let (,@group-names)
+						(dolist (.method. .methods-list.)
+						  (let ((.method-qualifiers. (method-qualifiers .method.)))
+						    (cond ,@(nreverse group-checks)
+							  (t (invalid-method-error .method.
+										   "Method qualifiers ~S are not allowed in the method~
+			      combination ~S." .method-qualifiers. ,name)))))
+						,@group-after
+						(effective-method-function (progn ,@body) t))))
+				   )
       )))
 
 #+compare(print "combin.lsp 345")
