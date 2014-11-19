@@ -130,7 +130,8 @@
 				((typep environment 'clasp-global-environment)
 				 (core:macroexpand-default macro-function macro-form nil))
 				(t
-				 (error "What do I do when a Cleavir environment is passed to *macroexpand-hook*?")))))
+				 (warn "What do I do when a Cleavir environment is passed to *macroexpand-hook*?")
+				 (core:macroexpand-default macro-function macro-form nil)))))
 
 
 (format t "Done macro-function definitions~%")
@@ -140,18 +141,19 @@
   `(lambda ,lambda-list (block ,(if (listp name) (second name) name) ,@body)))
 
 
-(defun build-and-draw-ast (code filename)
+(defun build-and-draw-ast (filename code)
   (let ((ast (cleavir-generate-ast:generate-ast code *clasp-env*)))
     (cleavir-ast-graphviz:draw-ast ast filename)))
 
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
-(defparameter *code3* '(defun cl:macro-function (symbol &optional (environment nil environment-p))
-			(cond
-			  ((typep environment 'core:environment)
-			   (core:macro-function symbol environment))
-			  (environment
-			   (cleavir-environment:macro-function symbol environment))
-			  (t (cleavir-environment:macro-function symbol *clasp-env*)))))
+(defparameter *code3* 
+  '(defun cl:macro-function (symbol &optional (environment nil environment-p))
+    (cond
+      ((typep environment 'core:environment)
+       (core:macro-function symbol environment))
+      (environment
+       (cleavir-environment:macro-function symbol environment))
+      (t (cleavir-environment:macro-function symbol *clasp-env*)))))
 
 

@@ -367,7 +367,6 @@ namespace core
     {
 	void extract_declares_docstring_code_specials(Cons_sp inputBody, Cons_sp& declares, bool expectDocString, Str_sp& documentation, Cons_sp& code, Cons_sp& specials )
 	{_G();
-#if 1
 	    Cons_sp body = inputBody;
 	    documentation = _Nil<Str_O>();
 	    declares = _Nil<Cons_O>();
@@ -414,37 +413,6 @@ namespace core
 	    }
 	    code = body;
 	    declares = cl_nreverse(declares).as_or_nil<Cons_O>();
-#else // This is my old code - it doesn't separate out specials
-	    Cons_sp cur = inputBody;
-	    documentation = _Nil<Str_O>();
-	    specials = _Nil<Cons_O>();
-	    ql::list ldeclares(_lisp);
-	    while (1)
-	    {
-		T_sp o = cur->ocar();
-		if (o->stringP())
-		{
-		    if ( !expectDocString )
-		    {
-			SIMPLE_ERROR(BF("Unexpected docstring in: %s") % inputBody->__repr__() );
-		    } else if (documentation.notnilp() )
-		    {
-			SIMPLE_ERROR(BF("Duplicate documentation in: %s") % inputBody->__repr__() );
-		    } else
-		    {
-			documentation = o.as<Str_O>();
-		    }
-		} else if ( o->consP() && o.as_or_nil<Cons_O>()->ocar() == cl::_sym_declare )
-		{
-		    ldeclares << o;
-		} else break;
-		cur = cCdr(cur);
-	    }
-	    declares = ldeclares.cons();
-	    code = cur;
-	    IMPLEMENT_MEF(BF("Extract specials from declares"));
-#endif
-
 	}
 
 
@@ -478,7 +446,7 @@ namespace core
 	}
 
 
-	void parse_lambda_body(Cons_sp body, Cons_sp& declares, Str_sp& docstring, Cons_sp& code, Lisp_sp lisp)
+	void parse_lambda_body(Cons_sp body, Cons_sp& declares, Str_sp& docstring, Cons_sp& code)
 	{_G();
 	    LOG(BF("Parsing lambda body: %s") % body->__repr__() );
 	    Cons_sp specials;
@@ -1190,7 +1158,7 @@ namespace core
 
 
 
-#define ARGS_af_processDeclarations "(body &optional (expectDocString t))"
+#define ARGS_af_processDeclarations "(body expectDocString)"
 #define DECL_af_processDeclarations ""
 #define DOCS_af_processDeclarations "Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials"
 	T_mv af_processDeclarations(Cons_sp inputBody, T_sp expectDocString)
@@ -1212,7 +1180,7 @@ namespace core
 	    Cons_sp declares;
 	    Str_sp docstring;
 	    Cons_sp form;
-	    parse_lambda_body(body,declares,docstring,form,_lisp);
+	    parse_lambda_body(body,declares,docstring,form);
 	    LOG(BF("lambda is closing over environment\n%s") % env->__repr__() );
 	    LambdaListHandler_sp llh;
 	    if ( lambda_list.nilp() )
@@ -1492,7 +1460,7 @@ namespace core
 	    {
 		Cons_sp oneDef = cCar(cur);
 		name = oCar(oneDef);
-		Function_sp func = lambda(name,true,oCadr(oneDef),cCddr(oneDef),newEnvironment);
+		Function_sp func = lambda(name,true,oCadr(oneDef)/*lambda-list*/,cCddr(oneDef)/*body with decls/docstring*/,newEnvironment);
 		LOG(BF("func = %s") % func->__repr__() );
 		newEnvironment->bind_function(name,func);
 		cur = cCdr(cur);
@@ -1534,7 +1502,7 @@ namespace core
 		Cons_sp declares;
 		Str_sp docstring;
 		Cons_sp code;
-		parse_lambda_body(outer_body,declares,docstring,code,_lisp);
+		parse_lambda_body(outer_body,declares,docstring,code);
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
                 printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
                 InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
@@ -1943,7 +1911,7 @@ namespace core
 		Cons_sp declares;
 		Str_sp docstring;
 		Cons_sp code;
-		parse_lambda_body(outer_body,declares,docstring,code,_lisp);
+		parse_lambda_body(outer_body,declares,docstring,code);
 		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
 //                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );

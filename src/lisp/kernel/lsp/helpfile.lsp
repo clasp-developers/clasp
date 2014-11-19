@@ -245,9 +245,9 @@ strings."
 				  (declare (ignore env #-ecl-min whole))
 				  #+ecl-min
 				  `(ext:annotate ,@(rest whole)))
-	   #+clasp(lambda (whole env) (block ext:optional-annotation
-					(declare (ignore env #-ecl-min whole))
-					#+ecl-min `(ext:annotate ,@(rest whole))))
+	   #+clasp(lambda (whole env) 
+	    (declare (ignore env #-ecl-min whole))
+	      #+ecl-min `(ext:annotate ,@(rest whole)))
 	   )
 	  t)
 

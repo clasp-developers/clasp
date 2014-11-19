@@ -122,14 +122,14 @@
 	(when (and (null (rest body))
 		   (listp (setf block (first body)))
 		   (eq (first block) 'block))
-	  (setf method-lambda 
-		#+ecl`(ext:lambda-block ,(second block) ,(second method-lambda)
+	  (setf method-lambda `
+		#+ecl(ext:lambda-block ,(second block) ,(second method-lambda)
 					,@declarations
 					,@(cddr block))
-		#+clasp`(lambda ,(second method-lambda)
-			  (block ,(second block)
+		#+clasp(lambda ,(second method-lambda)
 			    ,@declarations
-			    ,@(cdr block)))
+			  (block ,(second block)
+			    ,@(cddr block)))
 		)
 	  ))))
   method-lambda)

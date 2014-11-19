@@ -84,13 +84,18 @@ by (documentation 'SYMBOL 'setf)."
 	      documentation (cadr rest))
 	(let* ((store (second rest))
 	       (args (first rest))
-	       (body (cddr rest)))
-	  (setq documentation (find-documentation body)
-		function `(function #+ecl(ext::lambda-block ,access-fn (,@store ,@args) ,@body)
-				    #+clasp(lambda (,@store ,@args) (block ,access-fn ,@body))
-				    )
-		)
-	  (check-stores-number 'DEFSETF store 1)))
+	       (lambda-body (cddr rest)))
+	  (multiple-value-bind (decl body doc)
+	      (process-declarations lambda-body t)
+	    (when decl (setq decl (list (cons 'declare decl))))
+	    (setq documentation doc)
+	    (when doc (setq doc (list doc)))
+	    (setq function `(function 
+			     #+ecl(ext::lambda-block ,access-fn (,@store ,@args) ,@decl ,@doc ,@body)
+			     #+clasp(lambda (,@store ,@args) ,@decl ,@doc (block ,access-fn ,@body))
+			     )
+		  )
+	    (check-stores-number 'DEFSETF store 1))))
     `(eval-when (compile load eval)
        ,(ext:register-with-pde whole `(do-defsetf ',access-fn ,function))
        ,@(si::expand-set-documentation access-fn 'setf documentation)
@@ -100,7 +105,7 @@ by (documentation 'SYMBOL 'setf)."
 
 
 ;;; DEFINE-SETF-METHOD macro.
-(defmacro define-setf-expander (access-fn args &rest body)
+(defmacro define-setf-expander (access-fn args &rest lambda-body)
   "Syntax: (define-setf-expander symbol defmacro-lambda-list {decl | doc}*
           {form}*)
 Defines the SETF-method for generalized-variables (SYMBOL ...).
@@ -128,14 +133,22 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 	(progn
 	  (setq env (gensym "env-define-setf-expander"))
 	  (setq args (cons env args))
-	  (push `(declare (ignore ,env)) body))))
-  `(eval-when (compile load eval)
-     (do-define-setf-method ',access-fn (function #+ecl(ext::lambda-block ,access-fn ,args ,@body)
-						  #+clasp(lambda ,args (block ,access-fn ,@body))
-						  ))
-     ,@(si::expand-set-documentation access-fn 'setf
-				     (find-documentation body))
-     ',access-fn))
+	  (push `(declare (ignore ,env)) lambda-body)))
+    (multiple-value-bind (decl body doc)
+	(si::process-declarations lambda-body t)
+      (when decl (setq decl (list (cons 'declare decl))))
+      (let ((listdoc (when doc (list doc))))
+	`(eval-when (compile load eval)
+	   (do-define-setf-method ',access-fn 
+	     (function 
+	      #+ecl(ext::lambda-block ,access-fn ,args ,@listdoc ,@decl ,@body)
+	      #+clasp(lambda ,args ,@decl ,@listdoc (block ,access-fn ,@body))
+	      ))
+	   ,@(si::expand-set-documentation access-fn 'setf 
+					   #+ecl(find-documentation body)
+					   #+clasp doc
+					   )
+	   ',access-fn)))))
 
 
 ;;;; get-setf-expansion.

@@ -16,66 +16,74 @@
 
 #+ecl-min
 (si::fset 'push
-	  #+ecl#'(ext::lambda-block push (args env)
-				    (let* ((what (second args))
-					   (where (caddr args)))
-				      `(setq ,where (cons ,what ,where))))
-	  #+clasp#'(lambda (args env)
-		     (block push
-		       (let* ((what (second args))
-			      (where (caddr args)))
-			 `(setq ,where (cons ,what ,where)))))
+	  (function 
+	   #+ecl(ext::lambda-block push (args env)
+				   (let* ((what (second args))
+					  (where (caddr args)))
+				     `(setq ,where (cons ,what ,where))))
+	   #+clasp(lambda (args env)
+	    (block push
+	      (let* ((what (second args))
+		     (where (caddr args)))
+		`(setq ,where (cons ,what ,where)))))
+	   )
 	  t)
 
 #+ecl-min
 (si::fset 'pop
-	  #+ecl#'(ext::lambda-block pop (args env)
-				    (let ((where (cadr args)))
-				      `(let* ((l ,where)
-					      (v (car l)))
-					 (setq ,where (cdr l))
-					 v)))
-	  #+clasp#'(lambda (args env)
-		     (block pop
-		       (let ((where (cadr args)))
-			 `(let* ((l ,where)
-				 (v (car l)))
-			    (setq ,where (cdr l))
-			    v))))
+	  (function 
+	   #+ecl(ext::lambda-block pop (args env)
+				   (let ((where (cadr args)))
+				     `(let* ((l ,where)
+					     (v (car l)))
+					(setq ,where (cdr l))
+					v)))
+	   #+clasp(lambda (args env)
+	    (block pop
+	      (let ((where (cadr args)))
+		`(let* ((l ,where)
+			(v (car l)))
+		   (setq ,where (cdr l))
+		   v))))
+	   )
 	  t)
 
 #+ecl-min
 (si::fset 'incf
-	  #+ecl#'(ext::lambda-block incf (args env)
-				    (let* ((where (second args))
-					   (what (caddr args)))
-				      (if what
-					  `(setq ,where (+ ,where ,what))
-					  `(setq ,where (1+ ,where)))))
-	  #+clasp#'(lambda (args env)
-		     (block incf
-		       (let* ((where (second args))
-			      (what (caddr args)))
-			 (if what
-			     `(setq ,where (+ ,where ,what))
-			     `(setq ,where (1+ ,where))))))
+	  (function 
+	   #+ecl(ext::lambda-block incf (args env)
+				   (let* ((where (second args))
+					  (what (caddr args)))
+				     (if what
+					 `(setq ,where (+ ,where ,what))
+					 `(setq ,where (1+ ,where)))))
+	   #+clasp(lambda (args env)
+	    (block incf
+	      (let* ((where (second args))
+		     (what (caddr args)))
+		(if what
+		    `(setq ,where (+ ,where ,what))
+		    `(setq ,where (1+ ,where))))))
+	   )
 	  t)
 
 #+ecl-min
 (si::fset 'decf
-	  #+ecl#'(ext::lambda-block decf (args env)
-				    (let* ((where (second args))
-					   (what (caddr args)))
-				      (if what
-					  `(setq ,where (- ,where ,what))
-					  `(setq ,where (1- ,where)))))
-	  #+clasp#'(lambda (args env)
-		     (block decf
-		       (let* ((where (second args))
-			      (what (caddr args)))
-			 (if what
-			     `(setq ,where (- ,where ,what))
-			     `(setq ,where (1- ,where))))))
+	  (function 
+	   #+ecl(ext::lambda-block decf (args env)
+				   (let* ((where (second args))
+					  (what (caddr args)))
+				     (if what
+					 `(setq ,where (- ,where ,what))
+					 `(setq ,where (1- ,where)))))
+	   #+clasp(lambda (args env)
+	    (block decf
+	      (let* ((where (second args))
+		     (what (caddr args)))
+		(if what
+		    `(setq ,where (- ,where ,what))
+		    `(setq ,where (1- ,where))))))
+	   )
 	  t)
 
 (defun sys::search-keyword (list key)
@@ -254,15 +262,15 @@
     (values body doc)))
 #+clasp(export 'remove-documentation)
 
-(defun find-declarations (body &optional (doc t))
+(defun find-declarations (body &optional (docp t))
   (multiple-value-bind (decls body doc)
-      (process-declarations body doc)
+      (process-declarations body docp)
     (values (if decls `((declare ,@decls)) nil)
 	    body doc)))
 
 (defun sys::expand-defmacro (name vl body)
   (multiple-value-bind (decls body doc)
-    (find-declarations body)
+      (find-declarations body)
     ;; We turn (a . b) into (a &rest b)
     ;; This is required because MEMBER (used below) does not like improper lists
     (let ((cell (last vl)))
@@ -278,52 +286,58 @@
                 decls (list* `(declare (ignore ,env)) decls)))
       (multiple-value-bind (ppn whole dl arg-check ignorables)
           (destructure vl t)
-        (values 
-	 #+ecl`(ext::lambda-block ,name (,whole ,env &aux ,@dl)
+        #+ecl(values 
+	      `(ext::lambda-block ,name (,whole ,env &aux ,@dl)
 				  (declare (ignorable ,@ignorables))
 				  ,@decls 
 				  ,@arg-check
 				  ,@body)
-	 #+clasp`(lambda (,whole ,env &aux ,@dl)
+	      ppn
+	      doc)
+	#+clasp(values 
+		`(lambda (,whole ,env &aux ,@dl)
+		   (declare (ignorable ,@ignorables))
+		   ,@decls
 		   (block ,name
-		     (declare (ignorable ,@ignorables))
-		     ,@decls 
 		     ,@arg-check
 		     ,@body))
-                ppn
-                doc)))))
+		ppn
+		doc)
+	))))
 
 #+ecl-min
 (si::fset 'defmacro
-	  #+ecl#'(ext::lambda-block defmacro (def env)
-				    (declare (ignore env))
-				    (let* ((name (second def))
-					   (vl (third def))
-					   (body (cdddr def))
-					   (function))
-				      (multiple-value-bind (function pprint doc)
-					  (sys::expand-defmacro name vl body)
-					(declare (ignore doc))
-					(setq function `(function ,function))
-					(when *dump-defmacro-definitions*
-					  (print function)
-					  (setq function `(si::bc-disassemble ,function)))
-					(ext:register-with-pde def `(si::fset ',name ,function t ,pprint)))))
-	  #+clasp#'(lambda (def env)
-		     (block defmacro
-		       (declare (ignore env))
-		       (let* ((name (second def))
-			      (vl (third def))
-			      (body (cdddr def))
-			      (function))
-			 (multiple-value-bind (function pprint doc)
-			     (sys::expand-defmacro name vl body)
-			   (declare (ignore doc))
-			   (setq function `(function ,function))
-			   (when *dump-defmacro-definitions*
-			     (print function)
-			     (setq function `(si::bc-disassemble ,function)))
-			   (ext:register-with-pde def `(si::fset ',name ,function t ,pprint))))))
+	  (function 
+	   #+ecl(ext::lambda-block defmacro (def env)
+				   (declare (ignore env))
+				   (let* ((name (second def))
+					  (vl (third def))
+					  (body (cdddr def))
+					  (function))
+				     (multiple-value-bind (function pprint doc)
+					 (sys::expand-defmacro name vl body)
+				       (declare (ignore doc))
+				       (setq function `(function ,function))
+				       (when *dump-defmacro-definitions*
+					 (print function)
+					 (setq function `(si::bc-disassemble ,function)))
+				       (ext:register-with-pde def `(si::fset ',name ,function t ,pprint)))))
+	   #+clasp(lambda (def env)
+	    (declare (ignore env))
+	    (block defmacro
+	      (let* ((name (second def))
+		     (vl (third def))
+		     (body (cdddr def))
+		     (function))
+		(multiple-value-bind (function pprint doc)
+		    (sys::expand-defmacro name vl body)
+		  (declare (ignore doc))
+		  (setq function `(function ,function))
+		  (when *dump-defmacro-definitions*
+		    (print function)
+		    (setq function `(si::bc-disassemble ,function)))
+		  (ext:register-with-pde def `(si::fset ',name ,function t ,pprint))))))
+	   )
 	  t)
 
 ;;; valid lambda-list to DESTRUCTURING-BIND is:

@@ -25,54 +25,58 @@
 ;; This is needed only when bootstrapping ECL using ECL-MIN
 (eval-when (eval)
   (si::fset 'ext:register-with-pde
-	    #+ecl#'(ext::lambda-block ext:register-with-pde (whole env)
-				      (let* ((definition (second whole))
-					     (output-form (third whole)))
-					`(if ext:*register-with-pde-hook*
-					     (funcall ext:*register-with-pde-hook*
-						      (copy-tree *source-location*)
-						      ,definition
-						      ,output-form)
-					     ,output-form)))
-	    #+clasp#'(lambda (whole env)
-		       (block ext:register-with-pde
-			 (let* ((definition (second whole))
-				(output-form (third whole)))
-			   `(if ext:*register-with-pde-hook*
-				(funcall ext:*register-with-pde-hook*
-					 (copy-tree *source-location*)
-					 ,definition
-					 ,output-form)
-				,output-form))))
-	  t)
-  (si::fset 'defun
-	    #+ecl#'(ext::lambda-block defun (def env)
-				      (let* ((name (second def))
-					     (function 
-					      #+ecl`(function (ext::lambda-block ,@(cdr def)))
-					      #+clasp`(function (lambda ,(caddr def) (block ,(cadr def) ,@(cdddr def))))
-					      ))
-					(when *dump-defun-definitions*
-					  (print function)
-					  (setq function `(si::bc-disassemble ,function)))
-					(ext:register-with-pde def `(si::fset ',name ,function))))
-	    #+clasp#'(lambda (def env)
-		       (block defun
-			 (let* ((name (second def))
-				(function `#'(ext::lambda-block ,@(cdr def))))
-			   (when *dump-defun-definitions*
-			     (print function)
-			     (setq function `(si::bc-disassemble ,function)))
-			   (ext:register-with-pde def `(si::fset ',name ,function)))))
-	  t)
+	    (function 
+	     #+ecl(ext::lambda-block ext:register-with-pde (whole env)
+				     (let* ((definition (second whole))
+					    (output-form (third whole)))
+				       `(if ext:*register-with-pde-hook*
+					    (funcall ext:*register-with-pde-hook*
+						     (copy-tree *source-location*)
+						     ,definition
+						     ,output-form)
+					    ,output-form)))
+	     #+clasp(lambda (whole env)
+	      (let* ((definition (second whole))
+		     (output-form (third whole)))
+		`(if ext:*register-with-pde-hook*
+		     (funcall ext:*register-with-pde-hook*
+			      (copy-tree *source-location*)
+			      ,definition
+			      ,output-form)
+		     ,output-form)))
+	     )
+	    t)
+  #+(or)(si::fset 'defun
+		  (function 
+		   #+ecl(ext::lambda-block defun (def env)
+					   (let* ((name (second def))
+						  (function `#'(ext::lambda-block ,@(cdr def))))
+					     (when *dump-defun-definitions*
+					       (print function)
+					       (setq function `(si::bc-disassemble ,function)))
+					     (ext:register-with-pde def `(si::fset ',name ,function))))
+		   #+clasp(lambda (def env)
+		    (let ((name (second def))
+			  (lambda-list (third def))
+			  (lambda-body (cdddr def)))
+		      (multiple-value-bind (decl body doc)
+			  (si::process-declarations lambda-body t)
+			(when decl (setq decl (list (cons 'declare decl))))
+			(when doc (setq doc (list doc)))
+			(let ((function `(function (lambda ,lambda-list ,@decl ,@doc
+							   (block ,(si::function-block-name name) ,@body)))))
+			  (ext:register-with-pde def `(si::fset ',name ,function))))))
+		   )
+		  t)
   (si::fset 'in-package
-	    #+ecl#'(ext::lambda-block in-package (def env)
-				      `(eval-when (eval compile load)
-					 (si::select-package ,(string (second def)))))
-	    #+clasp#'(lambda (def env)
-		       (block in-package
-			 `(eval-when (eval compile load)
-			    (si::select-package ,(string (second def))))))
+	    (function 
+	     #+ecl(ext::lambda-block in-package (def env)
+				     `(eval-when (eval compile load)
+					(si::select-package ,(string (second def)))))
+	     #+clasp(lambda (def env)
+		`(eval-when (eval compile load)
+		   (si::select-package ,(string (second def)))))
+	     )
 	    t)
 )
 
@@ -81,31 +85,31 @@
 ;; defmacro.lsp.
 ;;
 #+ecl(let ((f #'(ext::lambda-block dolist (whole env)
-			      (declare (ignore env))
-			      (let (body pop finished control var expr exit)
-				(setq body (rest whole))
-				(when (endp body)
-				  (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
-				(setq control (first body) body (rest body))
-				(when (endp control)
-				  (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
-				(setq var (first control) control (rest control))
-				(if (<= 1 (length control) 2)
-				    (setq expr (first control) exit (rest control))
-				    (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
-				(multiple-value-bind (declarations body)
-				    (process-declarations body nil)
-				  `(block nil
-				     (let* ((%dolist-var ,expr)
-					    ,var)
-				       (declare ,@declarations)
-				       (si::while %dolist-var
-						  (setq ,var (first %dolist-var))
-						  ,@body
-						  (setq %dolist-var (cons-cdr %dolist-var)))
-				       ,(when exit `(setq ,var nil))
-				       ,@exit)))))))
-  (si::fset 'dolist f t))
+				   (declare (ignore env))
+				   (let (body pop finished control var expr exit)
+				     (setq body (rest whole))
+				     (when (endp body)
+				       (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+				     (setq control (first body) body (rest body))
+				     (when (endp control)
+				       (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+				     (setq var (first control) control (rest control))
+				     (if (<= 1 (length control) 2)
+					 (setq expr (first control) exit (rest control))
+					 (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+				     (multiple-value-bind (declarations body)
+					 (process-declarations body nil)
+				       `(block nil
+					  (let* ((%dolist-var ,expr)
+						 ,var)
+					    (declare ,@declarations)
+					    (si::while %dolist-var
+						       (setq ,var (first %dolist-var))
+						       ,@body
+						       (setq %dolist-var (cons-cdr %dolist-var)))
+					    ,(when exit `(setq ,var nil))
+					    ,@exit)))))))
+       (si::fset 'dolist f t))
 
 #+clasp(let ((f #'(lambda (whole env)
 		    (declare (ignore env))

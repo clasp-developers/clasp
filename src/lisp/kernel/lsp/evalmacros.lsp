@@ -114,21 +114,14 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (defparameter *defun-inline-hook* nil)
 
+#+ecl
 (defmacro defun (&whole whole name vl &body body &environment env &aux doc-string)
   ;; Documentation in help.lsp
   (multiple-value-setq (body doc-string) (remove-documentation body))
-  (let* ((function 
-	  #+ecl`#'(ext::lambda-block ,name ,vl ,@body)
-	  #+clasp`#'(lambda ,vl (block ,name ,@body))
-	   )
-	 (global-function 
-	  #+ecl`#'(ext::lambda-block ,name ,vl
-				     (declare (si::c-global))
-				     ,@body)
-	  #+clasp`#'(lambda ,vl
-		      (block ,name
-			(declare (si::c-global))
-			,@body))
+  (let* ((function `#'(ext::lambda-block ,name ,vl ,@body))
+	 (global-function `#'(ext::lambda-block ,name ,vl
+						(declare (si::c-global))
+						,@body)
 	  ))
     (when *dump-defun-definitions*
       (print function)
@@ -137,8 +130,24 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
        ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
        ,@(si::expand-set-documentation name 'function doc-string)
        ,(let ((hook *defun-inline-hook*))
-	  (and hook (funcall hook name global-function env)))
+	     (and hook (funcall hook name global-function env)))
        ',name)))
+
+#+clasp
+(defmacro defun (&whole whole name vl &body body &environment env)
+  ;; Documentation in help.lsp
+  (multiple-value-bind (decls body doc-string) 
+      (process-declarations body t)
+    (when decls (setq decls (list (cons 'declare decls))))
+    (let* ((doclist (when doc-string (list doc-string)))
+	   (global-function `#'(lambda ,vl ,@decls ,@doclist (block ,(si::function-block-name name) ,@body))))
+      ;;(bformat t "DEFUN global-function --> %s\n" global-function )
+      `(progn
+	 ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
+	 ,@(si::expand-set-documentation name 'function doc-string)
+	 ,(let ((hook *defun-inline-hook*))
+	       (and hook (funcall hook name global-function env)))
+	 ',name))))
 
 ;;;
 ;;; This is a no-op unless the compiler is installed
@@ -186,9 +195,9 @@ terminated by a non-local exit."
 
 (defmacro ext::lambda-block (name lambda-list &rest lambda-body)
   (multiple-value-bind (decl body doc)
-      (si::process-declarations lambda-body)
+      (si::process-declarations lambda-body t)
     (when decl (setq decl (list (cons 'declare decl))))
-    `(lambda ,lambda-list ,@doc ,@decl
+    `(lambda ,lambda-list ,@decl ,@doc
       (block ,(si::function-block-name name) ,@body))))
 
 ; assignment

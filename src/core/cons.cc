@@ -1171,7 +1171,7 @@ namespace core
 	    }
 	}
 	sout << " )";
-#if 1
+#if 0
         sout <<"@" << (void*)(this) << " ";
 #endif
 	return((sout.str()));

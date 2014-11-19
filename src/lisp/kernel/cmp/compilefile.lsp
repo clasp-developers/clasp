@@ -163,7 +163,7 @@
 		(add-macro macro-env name macro-fn)))
 	  macros )
     (multiple-value-bind (declares code docstring specials )
-	(process-declarations body)
+	(process-declarations body t)
       (augment-environment-with-declares macro-env declares)
       (t1progn code macro-env))))
 

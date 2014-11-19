@@ -115,8 +115,8 @@ bignums."
 (deftype ext::integer32 () '(INTEGER #x-80000000 #x7FFFFFFF))
 (deftype ext::byte64 () '(INTEGER 0 #xFFFFFFFFFFFFFFFF))
 (deftype ext::integer64 () '(INTEGER #x-8000000000000000 #x7FFFFFFFFFFFFFFF))
-(deftype ext::cl-fixnum () '(SIGNED-BYTE #.CL-FIXNUM-BITS))
-(deftype ext::cl-index () '(UNSIGNED-BYTE #.CL-FIXNUM-BITS))
+(deftype ext::cl-fixnum () '(SIGNED-BYTE #.core::CL-FIXNUM-BITS))
+(deftype ext::cl-index () '(UNSIGNED-BYTE #.core::CL-FIXNUM-BITS))
 
 (deftype real (&optional (start '* start-p) (end '*))
   (if start-p

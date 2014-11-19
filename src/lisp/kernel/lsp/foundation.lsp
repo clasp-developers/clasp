@@ -14,11 +14,6 @@
 				    &WHOLE) )
 
 
-(defun test-debug ()
-  (print "About to test debug")
-  (debug "testing debug")
-  (print "Done"))
-
 ;; Temporary check-type - everything is true
 (fset 'check-type
       #'(lambda (whole env) t)
@@ -27,16 +22,6 @@
 
 (fset '1- #'(lambda (num) (- num 1)))
 (fset '1+ #'(lambda (num) (+ num 1)))
-
-
-(si::fset 'defun
-	  #'(lambda (def env)
-	      (let* ((name (second def))
-		     (func #+ecl`(function (ext::lambda-block ,@(cdr def)))
-			   #+clasp`(function (lambda ,(caddr def) (block ,(cadr def) ,@(cdddr def))))
-			   ))
-		(ext:register-with-pde def `(si::fset ',name ,func))))
-	  t)
 
 
 

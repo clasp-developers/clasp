@@ -48,7 +48,23 @@ namespace core
 //    Symbol_sp 	_sym_t;		// equivalent to _lisp->_true()
 
 
+#define ARGS_cl_symbolPlist "(sym)"
+#define DECL_cl_symbolPlist ""
+#define DOCS_cl_symbolPlist "Return the symbol plist"
+    Cons_sp cl_symbolPlist(Symbol_sp sym)
+    {
+	if ( sym.nilp() ) { return _Nil<Cons_O>(); };
+	return sym->plist();
+    }
 
+#define ARGS_core_setfSymbolPlist "(sym plist)"
+#define DECL_core_setfSymbolPlist ""
+#define DOCS_core_setfSymbolPlist "Set the symbol plist"
+    void core_setfSymbolPlist(Symbol_sp sym, Cons_sp plist)
+    {
+	if ( sym.nilp() ) { SIMPLE_ERROR(BF("You cannot set the plist of nil"));};
+	sym->setf_plist(plist);
+    }
     
     
 #define ARGS_af_boundp "(arg)"
@@ -228,6 +244,14 @@ namespace core
 	this->_Value = _Unbound<T_O>();
     }
 
+    Cons_sp Symbol_O::plist() const {
+	return this->_PropertyList;
+    }
+
+    void Symbol_O::setf_plist(Cons_sp plist) {
+	this->_PropertyList = plist;
+    }
+    
 
 #if 0
     T_sp Symbol_O::evaluate(Cons_sp exp, Lisp_sp env)
@@ -596,6 +620,8 @@ namespace core
 	Defun(symbolFunction);
 	SYMBOL_EXPORT_SC_(ClPkg,boundp);
 	Defun(boundp);
+	ClDefun(symbolPlist);
+	CoreDefun(setfSymbolPlist);
     }
 
     void Symbol_O::exposePython(Lisp_sp lisp)

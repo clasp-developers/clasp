@@ -106,6 +106,9 @@ namespace core {
 	inline T_sp* valueReference() { return &(this->_Value);};
 
 
+	Cons_sp plist() const;
+	void setf_plist(Cons_sp plist);
+
 	void setReadOnly(bool b) { this->_IsConstant = true;};
 	bool getReadOnly() const { return this->_IsConstant;};
 

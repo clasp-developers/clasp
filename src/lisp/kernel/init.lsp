@@ -2,6 +2,7 @@
 ;; :clos to compile with CLOS
 ;;
 
+
 (SYS:*MAKE-SPECIAL 'core:*echo-repl-tpl-read*)
 (setq core:*echo-repl-tpl-read*
   #+emacs-inferior-lisp t
@@ -337,12 +338,36 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
 
-(si::*fset 'defun
+#+(or)(si::*fset 'defun
 	  #'(lambda (def env)
 	      (let* ((name (second def))
 		     (func `(function (lambda ,(caddr def) (block ,(cadr def) ,@(cdddr def))))))
 		(ext:register-with-pde def `(si::*fset ',name ,func))))
 	  t)
+
+(si::*fset 'defun
+	   #'(lambda (def env)
+	       (let ((name (second def))	;cadr
+		     (lambda-list (third def))	; caddr
+		     (lambda-body (cdddr def))) ; cdddr
+		 (multiple-value-call
+		     (function (lambda (&optional (decl) (body) (doc) &rest rest)
+		       (declare (ignore rest))
+		       (if decl (setq decl (list (cons 'declare decl))))
+		       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
+			 ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
+			 (ext::register-with-pde def `(si::*fset ',name ,func)))))
+		   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#)) 
+
+		 #|		 
+		 (multiple-value-bind (decl body doc)
+		 (si::process-declarations lambda-body)
+		 (when decl (setq decl (list (cons 'declare decl))))
+		 (let ((func `(function (lambda ,lambda-list ,@doc ,@decl (block ,@body)))))
+		 (ext:register-with-pde def `(si::*fset ',name ,func))))
+		 |#
+		 ))
+	   t)
 
 (export '(defun))
 
@@ -371,12 +396,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (si::*fset 'interpreter-iload
-           #'(lambda (module &aux (pathname (lisp-source-pathname module)))
-               (let ((name (namestring pathname)))
+           #'(lambda (module)
+               (let* ((pathname (lisp-source-pathname module))
+		      (name (namestring pathname)))
                  (if cmp:*implicit-compilation*
                      (bformat t "Loading/compiling source: %s\n" (namestring name))
-                     (bformat t "Loading/interpreting source: %s\n" (namestring name))))
-               (load pathname))
+                     (bformat t "Loading/interpreting source: %s\n" (namestring name)))
+		 (load pathname)))
            nil)
 
 (si::*fset 'ibundle
@@ -393,38 +419,38 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                    (load-bundle image-path llvm-sys:+clasp-main-function-name+)))))
 
 (si::*fset 'fset
-       #'(lambda (whole env)
-	   `(*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole)))
-       t)
+		 #'(lambda (whole env)
+		     `(si::*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole)))
+		 t)
 
 
 
 
-(fset 'and
-      #'(lambda (whole env)
-	  (let ((forms (cdr whole)))
-	    (if (null forms)
-		t
-		(if (null (cdr forms))
-		    (car forms)
-		    `(if ,(car forms)
-			 (and ,@(cdr forms)))))))
-      t)
+(si::*fset 'and
+	   #'(lambda (whole env)
+	       (let ((forms (cdr whole)))
+		 (if (null forms)
+		     t
+		     (if (null (cdr forms))
+			 (car forms)
+			 `(if ,(car forms)
+			      (and ,@(cdr forms)))))))
+	   t)
 
 
-(fset 'or
-      #'(lambda (whole env)
-	  (let ((forms (cdr whole)))
-	    (if (null forms)
-		nil
-		(if ( null (cdr forms))
-		    (car forms)
-		    (let ((tmp (gensym)))
-		      `(let ((,tmp ,(car forms)))
-			 (if ,tmp
-			     ,tmp
-			     (or ,@(cdr forms)))))))))
-      t )
+(si::*fset 'or
+	   #'(lambda (whole env)
+	       (let ((forms (cdr whole)))
+		 (if (null forms)
+		     nil
+		     (if ( null (cdr forms))
+			 (car forms)
+			 (let ((tmp (gensym)))
+			   `(let ((,tmp ,(car forms)))
+			      (if ,tmp
+				  ,tmp
+				  (or ,@(cdr forms)))))))))
+	   t )
 (export '(and or))
 
 
@@ -554,7 +580,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defvar *init-files*
   '(
-    :base
+    :init
     init
     cmp/jit-setup
     clsymbols
@@ -622,9 +648,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/defpackage
     lsp/format
     #|
-    arraylib
-    numlib
-    |#
+		 arraylib
+		 numlib
+		 |#
     :min
     clos/package
     clos/hierarchy
@@ -784,7 +810,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun compile-cmp (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend))
         (compile-system :start :cmp :reload t )
-        (compile-system :base :start :reload nil )
+        (compile-system :init :start :reload nil )
         ))
 
 (defconstant +minimal-epilogue-form+ '(progn
@@ -795,7 +821,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun compile-min-system (&key (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
          (bitcodes1 (compile-system :start :cmp :reload t ))
-         (bitcodes0 (compile-system :base :start :reload nil :recompile t ))
+         (bitcodes0 (compile-system :init :start :reload nil :recompile t ))
          (bitcodes2 (compile-system :cmp :min ))
          (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
     (cmp:link-system-lto
@@ -807,7 +833,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
   (let ((*target-backend* target-backend)
-        (bitcode-files0 (compile-system :base :start :recompile t))
+        (bitcode-files0 (compile-system :init :start :recompile t))
         (bitcode-files1 (compile-system :start :min :recompile t ))
         )
     (cmp:link-system-lto (target-backend-pathname +image-pathname+ )
@@ -826,7 +852,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (switch-to-full)
   (let ((*target-backend* (default-target-backend)))
     (load-system :start :all :interp t )
-    (let ((bitcode-files (compile-system :base :all :recompile t )))
+    (let ((bitcode-files (compile-system :init :all :recompile t )))
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                            :lisp-bitcode-files bitcode-files
                            :prologue-form '(progn
@@ -845,7 +871,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (load-system :start :clos :interp t )
 ;;    (switch-to-full)
     ;; Compile everything - ignore old bitcode
-    (let ((bitcode-files (compile-system :base :all :recompile t )))
+    (let ((bitcode-files (compile-system :init :all :recompile t )))
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                            :lisp-bitcode-files bitcode-files ))))
 
@@ -898,7 +924,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
              (float (/ (- run-end run-start) internal-time-units-per-second)))))
 
 (core:*make-special 'my-time)
-(fset 'my-time
+(si::*fset 'my-time
            #'(lambda (def env)
                (let ((form (cadr def)))
                  `(my-do-time #'(lambda () ,form))))
@@ -914,8 +940,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (if (probe-file clasprc)
 	(load clasprc))))
 
-
 (defun load-pos ()
+  (declare (special core:*load-current-source-file-info* core:*load-current-linenumber*))
   (bformat t "Load pos: %s %s\n" core:*load-current-source-file-info* core:*load-current-linenumber*))
 (export 'load-pos)
 

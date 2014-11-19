@@ -865,7 +865,7 @@ namespace core
     bool af_fboundp(T_sp functionName)
     {_G();
         if (functionName.nilp() ) {
-            TYPE_ERROR(functionName,cl::_sym_Symbol_O);
+	    return false;
         }
 	if ( af_symbolp(functionName) )
 	{

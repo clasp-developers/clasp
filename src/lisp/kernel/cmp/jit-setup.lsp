@@ -29,7 +29,7 @@
 ;;
 
 ;;(in-package :cmp)
-(eval-when (eval compile load)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (select-package :cmp))
 
 

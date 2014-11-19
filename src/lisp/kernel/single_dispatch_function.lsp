@@ -6,7 +6,7 @@
 (defmacro def-sd-method (sd-gf-name raw-lambda-list &body body)
   (multiple-value-bind (lambda-list dispatch-symbol dispatch-class-symbol)
       (process-single-dispatch-lambda-list raw-lambda-list)
-    (multiple-value-bind (declares code docs) (process-declarations body)
+    (multiple-value-bind (declares code doc) (process-declarations body t)
       (let* ((llh (make-lambda-list-handler lambda-list declares))
 	     (dispatch-on-required-index (single-dispatch-on-argument llh dispatch-symbol))
 	     (gf (let ((gf-find (find-single-dispatch-generic-function sd-gf-name)))
@@ -18,6 +18,6 @@
 	(ensure-single-dispatch-method sd-gf-name (find-class dispatch-class-symbol)
 				       :lambda-list-handler llh
 				       :declares declares
-				       :docstring docs
+				       :docstring doc
 				       :body code)))))
 
