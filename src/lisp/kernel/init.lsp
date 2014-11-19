@@ -422,7 +422,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 		 #'(lambda (whole env)
 		     `(si::*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole)))
 		 t)
-
+(export 'fset)
 
 
 

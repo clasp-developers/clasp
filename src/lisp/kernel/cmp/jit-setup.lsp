@@ -153,7 +153,7 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass))
-    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
+;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
     (llvm-sys:do-initialization fpm)
     fpm))
 
