@@ -54,9 +54,14 @@ all:
 	@echo Dumping local.config
 	cat local.config
 	git submodule update --init  # ensure that the src/mps submodule is updated
+	make asdf
 	make boostbuildv2-build
 	make clasp-boehm
 	make clasp-mps
+
+
+asdf:
+	(cd src/lisp/kernel/asdf; make)
 
 only-boehm:
 	git submodule update --init  # ensure that the src/mps submodule is updated
