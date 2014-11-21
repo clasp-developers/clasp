@@ -1,0 +1,15 @@
+Clasp version 0.11
+
+*  Added ASDF support.  
+   This is still alpha.  Compile the ASDF module using (core:compile-asdf).
+   After that you can load the module using (load "sys:kernel;asdf;build;asdf.bundle").
+   It takes between 15-30 seconds to load (this is why I'm integrating Cleavir).
+*  Added the :CLASP *feature* and removed the :ECL *feature*.
+   Clasp will continue to mimic the underlying ECL functionality so that
+   Common Lisp code that supports ECL can be made to support Clasp by converting
+   #+ecl to #+(or ecl clasp)   and #-ecl to #-(or ecl clasp)
+*  Added code to generate object files directly from Clasp.
+   The LLVM bitcode compiler "llc" no longer needs to be in the PATH
+   for Clasp to generate object files from Common Lisp source.
+   The "ld" linker does need to be accessible.
+
