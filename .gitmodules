@@ -5,3 +5,6 @@
 [submodule "updatedAsdf"]
 	path = src/lisp/kernel/asdf
 	url = https://github.com/drmeister/asdf.git
+[submodule "src/lisp/kernel/contrib/sicl"]
+	path = src/lisp/kernel/contrib/sicl
+	url = https://github.com/drmeister/SICL.git
