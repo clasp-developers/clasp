@@ -54,10 +54,19 @@ all:
 	@echo Dumping local.config
 	cat local.config
 	git submodule update --init  # ensure that the src/mps submodule is updated
+	make temporary-fix-for-sicl
 	make asdf
 	make boostbuildv2-build
 	make clasp-boehm
 	make clasp-mps
+
+# This is a temporary fix until beach fixes some dead links in SICL
+temporary-fix-for-sicl:
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-constructors.lisp
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-query.lisp
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase3/environment-classes.lisp
+
 
 
 asdf:
