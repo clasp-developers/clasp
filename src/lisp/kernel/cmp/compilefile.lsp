@@ -334,7 +334,9 @@ and the pathname of the source file - this will also be used as the module initi
                   (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
                   )
               (if found-errors
-                  (break "Verify module found errors"))))))
+		  (progn
+		    (format t "Module error: ~a~%" error-message)
+		    (break "Verify module found errors")))))))
       module))
 
 

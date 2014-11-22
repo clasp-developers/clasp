@@ -588,6 +588,9 @@ env is the parent environment of the (result-af) value frame"
   (let ((icond (car rest))
 	(ithen (cadr rest))
 	(ielse (caddr rest)))
+    (when (cdddr rest)
+      (format t "codegen-if (cdddr rest) = ~a ~%" (cdddr rest))
+      (compiler-error (cdddr rest) "too many arguments for if"))
     ;; codegen-if-cond generates code that returns true if cond evaluates to something other than nil
     (let ((condv (compile-if-cond icond env)))
 ;;      (unless condv (break "condv is nil") (return-from codegen-if nil)) ;; REALLY? return?????

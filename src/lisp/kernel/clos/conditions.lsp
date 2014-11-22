@@ -866,16 +866,17 @@ bstrings."
 	       (if used-restart continue-string rv)))
 	   (if used-restart t rv))))
       (t
-	(progn
-	  (signal condition)
-	  (invoke-debugger condition))))))
+       (progn
+	 (signal condition)
+	 (invoke-debugger condition))))))
 
 (defun sys::tpl-continue-command (&rest any)
   (apply #'invoke-restart 'continue any))
 
 
 
-
+#||
 #+clasp
 (defun invoke-debugger (condition)
   (invoke-internal-debugger condition))
+||#

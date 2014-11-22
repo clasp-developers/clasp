@@ -1504,7 +1504,6 @@ package."
   (locally
     (declare (notinline default-debugger))
     (if (<= 0 *tpl-level*) ;; Do we have a top-level REPL above us?
-	(format t "top.lsp:1507  About to invoke (default-debugger condition)~%")
         (default-debugger condition)
         (let* (;; We do not have a si::top-level invocation above us
                ;; so we have to provide the environment for interactive use.

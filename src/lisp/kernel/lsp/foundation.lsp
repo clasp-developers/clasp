@@ -271,8 +271,7 @@ the corresponding VAR.  Returns NIL."
                                  (advance-hash-table-iterator)))
                              (progn
                                (setq hash (1+ hash))
-                               (advance-hash-table-iterator)))))
-                   nil)))
+                               (advance-hash-table-iterator))))))))
       (function (lambda ()
 	(if (>= hash number-of-hashes)
 	    nil
