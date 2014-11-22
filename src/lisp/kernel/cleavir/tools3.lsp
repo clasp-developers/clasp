@@ -1,6 +1,7 @@
 (load "sys:kernel;asdf;build;asdf.bundle")
 
 (asdf:load-system :cleavir-generate-ast)
+(asdf:load-system :cleavir-ast-to-hir)
 
 (defclass clasp-global-environment () () )
 
@@ -143,7 +144,8 @@
 
 (defun build-and-draw-ast (filename code)
   (let ((ast (cleavir-generate-ast:generate-ast code *clasp-env*)))
-    (cleavir-ast-graphviz:draw-ast ast filename)))
+    (cleavir-ast-graphviz:draw-ast ast filename)
+    ast))
 
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))

@@ -65,6 +65,7 @@ temporary-fix-for-sicl:
 	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
 	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-constructors.lisp
 	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-query.lisp
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
 	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase3/environment-classes.lisp
 
 
