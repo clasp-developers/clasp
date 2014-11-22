@@ -147,6 +147,13 @@
     (cleavir-ast-graphviz:draw-ast ast filename)
     ast))
 
+(defun build-and-draw-hir (filename code)
+  (let* ((ast (cleavir-generate-ast:generate-ast code *clasp-env*))
+	 (hir (cleavir-ast-to-hir:compile-toplevel ast)))
+    (with-open-file (stream filename :direction :output)
+      (cleavir-ir-graphviz:draw-flowchart hir stream))))
+
+
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
 (defparameter *code3* 
