@@ -54,7 +54,7 @@ all:
 	@echo Dumping local.config
 	cat local.config
 	git submodule update --init  # ensure that the src/mps submodule is updated
-	make temporary-fix-for-sicl
+	-make temporary-fix-for-sicl
 	make asdf
 	make boostbuildv2-build
 	make clasp-boehm
