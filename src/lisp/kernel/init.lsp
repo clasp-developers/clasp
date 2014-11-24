@@ -951,15 +951,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;  Setup the build system for SICL
-;;
-;;
-(defun setup-sicl () (load "sys:kernel;sicl;sinit.lsp"))
-(export 'setup-sicl)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
 ;;  Setup the build system for ASDF
 ;;
 ;;
@@ -971,6 +962,19 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (cmp::link-system-lto "sys:kernel;asdf;build;asdf.bundle"
                        :lisp-bitcode-files (list #P"sys:kernel;asdf;build;asdf.bc"))
 )
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Setup the build system for SICL
+;;
+(defun setup-cleavir ()
+  (load "sys:kernel;asdf;build;asdf.bundle")
+  (load "sys:kernel;cleavir;ccmp-all.lsp")
+  )
+
+(export 'setup-sicl)
+
 
 
 
