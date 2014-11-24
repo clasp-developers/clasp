@@ -1,9 +1,12 @@
-(defpackage '#:cleavir-cmp 
-  :nicknames '(#:ccmp)
-  :use '(#:common-lisp #:core #:ext))
+(defpackage "CLEAVIR-CMP"
+  (:nicknames "CCMP")
+  (:use "COMMON-LISP" "CORE" "EXT")
+  (:export "*CLASP-ENV*"))
 
 (asdf:load-system :cleavir-generate-ast)
 (asdf:load-system :cleavir-ast-to-hir)
+
+(in-package "CLEAVIR-CMP")
 
 (defclass clasp-global-environment () () )
 
@@ -147,50 +150,3 @@
   (eval form))
 
 
-(defun build-and-draw-ast (filename code)
-  (let ((ast (cleavir-generate-ast:generate-ast code *clasp-env*)))
-    (cleavir-ast-graphviz:draw-ast ast filename)
-    ast))
-
-(defun build-and-draw-hir (filename code)
-  (let* ((ast (cleavir-generate-ast:generate-ast code *clasp-env*))
-	 (hir (cleavir-ast-to-hir:compile-toplevel ast)))
-    (with-open-file (stream filename :direction :output)
-      (cleavir-ir-graphviz:draw-flowchart hir stream))))
-
-
-(defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
-(defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
-(defparameter *code3* 
-  '(defun cl:macro-function (symbol &optional (environment nil environment-p))
-    (cond
-      ((typep environment 'core:environment)
-       (core:macro-function symbol environment))
-      (environment
-       (cleavir-environment:macro-function symbol environment))
-      (t (cleavir-environment:macro-function symbol *clasp-env*)))))
-
-
-(defun generate-asts-for-clasp-source (start end)
-  (let* ((parts (core:select-source-files end :first-file start :system core:*init-files*))
-	 (pathnames (mapcar (lambda (part) (core:lisp-source-pathname part)) parts))
-	 (eof (gensym)))
-    (loop for file in pathnames
-	 do (with-open-file (stream file :direction :input)
-	      (loop for form = (read stream nil eof)
-		 until (eq form eof)
-		 do (format t "FORM: ~a~%" form)
-		 do (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env*)))))))))
-
-
-(defun generate-hir-for-clasp-source (start end &key skip-errors)
-  (let* ((parts (core:select-source-files end :first-file start :system core:*init-files*))
-	 (pathnames (mapcar (lambda (part) (core:lisp-source-pathname part)) parts))
-	 (eof (gensym)))
-    (loop for file in pathnames
-	 do (with-open-file (stream file :direction :input)
-	      (loop for form = (read stream nil eof)
-		 until (eq form eof)
-		 do (format t "FORM: ~a~%" form)
-		 do (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
-			   (hir (cleavir-ast-to-hir:compile-toplevel ast)))))))))

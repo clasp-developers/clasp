@@ -1,4 +1,4 @@
-
+(in-package '#:cleavir-cmp)
 
 
 
@@ -36,7 +36,7 @@ The output-path is used to create the name of the main function."
                         ((eq form eof-value) nil)
                       (let ((*current-lineno* line-number)
                             (*current-column* column))
-                        (compile-file-t1expr form)))
+                        (codegen form)))
                     (let ((main-fn (compile-main-function output-path ltv-init-fn )))
                       (make-boot-function-global-variable *the-module* main-fn)
                       (add-main-function *the-module*))))))
