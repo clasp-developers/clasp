@@ -135,6 +135,16 @@
 				 (core:macroexpand-default macro-function macro-form nil)))))
 
 
+(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
+  "Evaluate the form in Clasp's top level environment"
+  (eval form))
+
+(defmethod cleavir-environment:eval (form env (dispatch-env NULL))
+  "Evaluate the form in Clasp's top level environment"
+  (warn "cleavir-environment:eval called with NIL as the dispatching environment")
+  (eval form))
+
+
 (format t "Done macro-function definitions~%")
 
 #+(or)
@@ -166,3 +176,28 @@
       (t (cleavir-environment:macro-function symbol *clasp-env*)))))
 
 
+(defun generate-asts-for-clasp-source (start end)
+  (let* ((parts (core:select-source-files end :first-file start :system core:*init-files*))
+	 (pathnames (mapcar (lambda (part) (core:lisp-source-pathname part)) parts))
+	 (eof (gensym)))
+    (loop for file in pathnames
+	 do (with-open-file (stream file :direction :input)
+	      (loop for form = (read stream nil eof)
+		 until (eq form eof)
+		 do (format t "FORM: ~a~%" form)
+		 do (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env*)))
+		      )
+	      )))))
+
+
+(defun generate-hir-for-clasp-source (start end &key skip-errors)
+  (let* ((parts (core:select-source-files end :first-file start :system core:*init-files*))
+	 (pathnames (mapcar (lambda (part) (core:lisp-source-pathname part)) parts))
+	 (eof (gensym)))
+    (loop for file in pathnames
+	 do (with-open-file (stream file :direction :input)
+	      (loop for form = (read stream nil eof)
+		 until (eq form eof)
+		 do (format t "FORM: ~a~%" form)
+		 do (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+			   (hir (cleavir-ast-to-hir:compile-toplevel ast)))))))))

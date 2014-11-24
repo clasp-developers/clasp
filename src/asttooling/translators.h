@@ -144,46 +144,33 @@ namespace translate {
 	}
     };
 
-#if 0 // You will need the following from_object and to_object to wrap ClangTool::buildASTs
-    // You will also need to make clbind::Wrappers do the right thing with std::unique_ptrs
-    //
+// You will need the following from_object and to_object to wrap ClangTool::buildASTs
+// You will also need to make clbind::Wrappers do the right thing with std::unique_ptrs
+//
     template <>
-    struct from_object<std::vector<std::unique_ptr<clang::ASTUnit>>&>
+	struct from_object<std::vector<std::unique_ptr<clang::ASTUnit>>&,std::false_type>
     {
-        typedef std::vector<std::unique_ptr<clang::ASTUnit>>&   DeclareType;
-        std::vector<std::unique_ptr<clang::ASTUnit>>    _Temp;
+        typedef std::vector<std::unique_ptr<clang::ASTUnit>>   DeclareType;
         DeclareType     _v;
-        from_object(core::T_sp o) : _v(_Temp)
+        from_object(core::T_sp o)
         {
-            if ( o.nilp() ) {
-                this->_v.clear();
-                return;
-            } else if ( core::VectorObjects_sp vo = o.asOrNull<core::VectorObjects_O>() ) {
-                this->_v.clear();
-                this->_v.resize(vo->length());
-                for ( int i(0), iEnd(vo->length()); i<iEnd; i++ ) {
-                    this->_v[i] = vo->elt(i).as<clbind::Wrapper<clang::ASTUnit,std::unique_ptr<clang::ASTUnit> > >();
-                }
-                return;
-            }
-            SIMPLE_ERROR(BF("Could not convert argument %s into std::vector<clang::ASTUnit*>") % _rep_(o));
-        }
+	    // Do nothing
+	}
     };
 
     template <>
     struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>>&>
     {
         typedef std::vector<std::unique_ptr<clang::ASTUnit>> GivenType;
-        static core::T_sp convert(GivenType vals)
+        static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit> >& vals )
         {
             core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(),_Nil<core::Cons_O>(),vals.size(),0,true);
             for ( int i(0),iEnd(vals.size()); i<iEnd; ++i ) {
-                vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit,std::unique_ptr<clang::ASTUnit> >::create(vals[i],reg::registered_class<clang::ASTUnit>::id));
+                vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit,std::unique_ptr<clang::ASTUnit> >::create(std::move(vals[i]),reg::registered_class<clang::ASTUnit>::id));
             }
             return vo;
         }
     };
-#endif
 
 
     template <>
