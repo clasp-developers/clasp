@@ -394,11 +394,44 @@ namespace core
         return _Nil<T_O>();
     }
 
-     __attribute__ ((noinline)) T_sp callByValue(T_sp v1, T_sp v2, T_sp v3, T_sp v4)
+};
+
+extern "C" {
+    __attribute__ ((noinline)) int callByValue(core::T_sp v1, core::T_sp v2, core::T_sp v3, core::T_sp v4)
     {
-        return v4;
+	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1.px_ref());
+	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2.px_ref());
+	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3.px_ref());
+	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4.px_ref());
+	int res = f1+f2+f3+f4;
+	return res;
     }
 
+
+    __attribute__ ((noinline)) int callByPointer( core::T_O* v1,  core::T_O* v2, core::T_O* v3, core::T_O* v4)
+    {
+	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1);
+	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2);
+	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3);
+	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4);
+	int res = f1+f2+f3+f4;
+	return res;
+    }
+
+
+    __attribute__ ((noinline)) int callByConstRef(const core::T_sp& v1, const core::T_sp& v2, const core::T_sp& v3, const core::T_sp& v4)
+    {
+	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1.px_ref());
+	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2.px_ref());
+	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3.px_ref());
+	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4.px_ref());
+	int res = f1+f2+f3+f4;
+	return res;
+    }
+
+};
+
+namespace core {
 
 #if 0
 #define ARGS_core_globalFuncallCyclesPerSecond "(stage fn &rest args)"
@@ -710,31 +743,33 @@ namespace core
     T_sp core_callsByValuePerSecond()
     {_G();
         LightTimer timer;
-        T_sp v1;
-        T_sp v2;
-        T_sp v3;
-        T_sp v4;
+        T_sp v1 = T_sp::createFixnum(1);
+        T_sp v2 = T_sp::createFixnum(2);
+        T_sp v3 = T_sp::createFixnum(3);
+        T_sp v4 = T_sp::createFixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
-        for ( int pow=0; pow<32; ++pow ) {
+	int pow;
+	int res;
+        for ( pow=0; pow<32; ++pow ) {
             size_t times = 1 << pow*2;
             timer.reset();
             timer.start();
+	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-                callByValue(v1,v2,v3,v4);
+		v1 = T_sp::createFixnum(i);
+                res += callByValue(v1,v2,v3,v4);
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
+		printf("%s:%d return %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
                 return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
             }
         }
+        printf("%s:%d Fell through %s pow = %d res= %d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
         return _Nil<T_O>();
     }
 
 
-     __attribute__ ((noinline)) T_sp callByConstRef(const T_sp& v1, const T_sp& v2, const T_sp& v3, const T_sp& v4)
-    {
-        return v4;
-    }
 
 
 #define ARGS_core_callsByConstantReferencePerSecond "()"
@@ -743,30 +778,32 @@ namespace core
     T_sp core_callsByConstantReferencePerSecond()
     {_G();
         LightTimer timer;
-        T_sp v1;
-        T_sp v2;
-        T_sp v3;
-        T_sp v4;
+        T_sp v1 = T_sp::createFixnum(1);
+        T_sp v2 = T_sp::createFixnum(2);
+        T_sp v3 = T_sp::createFixnum(3);
+        T_sp v4 = T_sp::createFixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
-        for ( int pow=0; pow<32; ++pow ) {
+	int pow;
+	int res;
+        for ( pow=0; pow<32; ++pow ) {
             size_t times = 1 << pow*2;
             timer.reset();
             timer.start();
+	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-                callByConstRef(v1,v2,v3,v4);
+		v1 = T_sp::createFixnum(i);
+                res += callByConstRef(v1,v2,v3,v4);
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
+		printf("%s:%d return %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
                 return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
             }
         }
+        printf("%s:%d Fell through %s pow = %d res = %d\n", __FILE__, __LINE__, __FUNCTION__, pow, res);
         return _Nil<T_O>();
     }
 
-    __attribute__ ((noinline)) T_sp callByPointer( T_O* v1,  T_O* v2, T_O* v3, T_O* v4)
-    {
-        return v4;
-    }
 
 
 #define ARGS_core_callsByPointerPerSecond "()"
@@ -775,23 +812,28 @@ namespace core
     T_sp core_callsByPointerPerSecond()
     {_G();
         LightTimer timer;
-        T_O* v1=NULL;
-        T_O* v2=NULL;
-        T_O* v3=NULL;
-        T_O* v4=NULL;
+        T_sp v1 = T_sp::createFixnum(1);
+        T_sp v2 = T_sp::createFixnum(2);
+        T_sp v3 = T_sp::createFixnum(3);
+        T_sp v4 = T_sp::createFixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
-        for ( int pow=0; pow<32; ++pow ) {
+	int pow, res;
+        for ( pow=0; pow<32; ++pow ) {
             size_t times = 1 << pow*2;
             timer.reset();
             timer.start();
+	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-                callByPointer(v1,v2,v3,v4);
+		v1 = T_sp::createFixnum(i);
+                res += callByPointer(v1.px_ref(),v2.px_ref(),v3.px_ref(),v4.px_ref());
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
+		printf("%s:%d return %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
                 return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
             }
         }
+        printf("%s:%d Fell through %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
         return _Nil<T_O>();
     }
 

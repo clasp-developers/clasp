@@ -99,7 +99,7 @@ namespace gctools
 	static const uintptr_t unbound = BaseType::tagged_unbound;
     public:
         static smart_ptr<T> createFixnum(int f) {
-            smart_ptr<T> ret(f);
+            smart_ptr<T> ret(gctools::tagged_ptr<T>::make_tagged_fixnum(f));
             return ret;
         }
     public:
