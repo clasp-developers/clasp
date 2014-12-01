@@ -70,8 +70,16 @@ namespace core
 	static bool clasp_findMacro(T_sp env, Symbol_sp sym, int& depth, int& index, Function_sp& func);
         static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
         static T_sp clasp_lookupValue(T_sp env, int depth, int index );
+        static T_sp& clasp_lookupValueReference(T_sp env, int depth, int index );
         static Function_sp clasp_lookupFunction(T_sp env, int depth, int index );
         static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index );
+	static T_mv clasp_lookupMetadata(T_sp env, Symbol_sp sym);
+	static T_sp clasp_find_current_code_environment(T_sp env);
+	static bool clasp_recognizesBlockSymbol(T_sp env,Symbol_sp sym);
+	static int clasp_getBlockSymbolFrame(T_sp env, Symbol_sp sym);
+	static T_sp clasp_find_unwindable_environment(T_sp env);
+	static T_sp clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag);
+	static T_sp clasp_find_block_named_environment(T_sp env, Symbol_sp blockName );
     protected:
 	static void clasp_environmentStackFill(T_sp env, int level, stringstream& sout);
 	static Cons_sp clasp_gather_metadata(T_sp env, Symbol_sp key);
@@ -83,9 +91,10 @@ namespace core
 	virtual bool functionContainerEnvironmentP() const { return false;};
 	virtual bool unwindProtectEnvironmentP() const { return false;};
 	virtual bool catchEnvironmentP() const { return false;};
+
 	
 	virtual void setupParent(Environment_sp environ);
-	virtual Environment_sp getParentEnvironment() const;
+	virtual T_sp getParentEnvironment() const;
     public:
 
 	virtual void setRuntimeEnvironment(T_sp renv);
@@ -113,6 +122,7 @@ namespace core
 	 MultipleValues(value,t/nil if found, environment) */
 	virtual T_mv lookupMetadata(Symbol_sp key) const;
 
+
     public:
 	/*! Return a summary of the contents of only this environment
 	 */
@@ -129,9 +139,10 @@ namespace core
 	  Otherwise return nil.  
 	*/
 	Cons_sp classifyValue(Symbol_sp sym) const;
-	virtual T_sp _lookupValue(int depth, int index) const;
+	virtual T_sp _lookupValue(int depth, int index);
 	virtual Function_sp _lookupFunction(int depth, int index) const;
         virtual T_sp _lookupTagbodyId(int depth, int index) const {SUBIMP();};
+	virtual T_sp& lookupValueReference(int depth, int index);
     public:
 	string environmentStackAsString();
 
@@ -198,23 +209,23 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_tagbody_tag_environment(Symbol_sp tag) const;
+	virtual T_sp find_tagbody_tag_environment(Symbol_sp tag) const;
 
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_block_named_environment(Symbol_sp tag) const;
+	virtual T_sp find_block_named_environment(Symbol_sp tag) const;
 
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_unwindable_environment() const;
+	virtual T_sp find_unwindable_environment() const;
 
 
 
 	/*! Find the current function environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_current_code_environment() const;
+	virtual T_sp find_current_code_environment() const;
 
 	virtual bool recognizesBlockSymbol(Symbol_sp sym) const;
 	virtual int getBlockSymbolFrame(Symbol_sp sym) const;
@@ -257,7 +268,7 @@ namespace core
 
 
 	virtual void setupParent(Environment_sp environ);
-	Environment_sp getParentEnvironment() const;
+	T_sp getParentEnvironment() const;
 
 	virtual string summaryOfContents() const;
 
@@ -368,7 +379,7 @@ namespace core
     private:
 	void setupForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent);
     public:
-	virtual T_sp _lookupValue(int depth, int index) const;
+	virtual T_sp _lookupValue(int depth, int index);
     public:
 	/*! Return a summary of the contents of only this environment
 	 */
@@ -570,7 +581,7 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_unwindable_environment() const;
+	virtual T_sp find_unwindable_environment() const;
 
 
     };
@@ -627,7 +638,7 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_block_named_environment(Symbol_sp tag) const;
+	virtual T_sp find_block_named_environment(Symbol_sp tag) const;
 
 
 	DEFAULT_CTOR_DTOR(BlockEnvironment_O);
@@ -694,7 +705,7 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_current_code_environment() const;
+	virtual T_sp find_current_code_environment() const;
 
 	virtual int countFunctionContainerEnvironments() const;
 
@@ -759,7 +770,7 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_tagbody_tag_environment(Symbol_sp tag) const;
+	virtual T_sp find_tagbody_tag_environment(Symbol_sp tag) const;
 
 	
     }; // TagbodyEnvironment class

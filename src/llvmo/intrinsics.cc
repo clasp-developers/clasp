@@ -259,24 +259,18 @@ extern "C" {
         return func->closure;
     }
 
-    void mv_FUNCALL( core::T_mv* resultP, core::Closure* closure, LISP_CALLING_CONVENTION_ARGS_BASE, ... )
+    void mv_FUNCALL( core::T_mv* resultP, core::Closure* closure, LCC_ARGS )
     {
         ASSERTF(resultP,BF("mv_FUNCALL resultP is NULL!!!"));
-        va_list lcc_arglist;
-        va_start( lcc_arglist, lcc_fixed_arg2 );
-        closure->invoke(resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
-        va_end(lcc_arglist);
+        closure->invoke(resultP,LCC_PASS_ARGS);
     }
 
-    void sp_FUNCALL( core::T_sp* resultP, core::Closure* closure, LISP_CALLING_CONVENTION_ARGS_BASE, ... )
+    void sp_FUNCALL( core::T_sp* resultP, core::Closure* closure, LCC_ARGS_BASE, ... )
     {
         ASSERTF(resultP,BF("sp_FUNCALL resultP is NULL!!!"));
-        va_list lcc_arglist;
-        va_start( lcc_arglist, lcc_fixed_arg2 );
         core::T_mv result_mv;
-        closure->invoke(&result_mv,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+        closure->invoke(&result_mv,LCC_PASS_ARGS);
         (*resultP) = result_mv;
-        va_end(lcc_arglist);
     }
 
 
@@ -564,11 +558,27 @@ extern "C"
 
 
 
-    int isBoundTsp(core::T_sp* valP)
+    core::T_sp* getMultipleValues(int offset) 
+    {
+	return &_lisp->multipleValues().callingArgsStart()[offset];
+    }
+
+    /*! Return i32 1 if (valP) is != unbound 0 if it is */
+    int isBound(core::T_sp* valP)
     {
 	ASSERT(valP!=NULL);
-	return ((*valP).unboundp()) ? 0 : 1;
+	return (*valP).unboundp() ? 0 : 1;
+	//return (gctools::tagged_ptr<core::T_O>::tagged_unboundp(valP)) ? 0 : 1;
     }
+
+    /*! Return i32 1 if (valP) is != nil 0 if it is */
+    int isTrue( core::T_sp* valP)
+    {_G();
+	ASSERT(valP!=NULL);
+	return (*valP).nilp() ? 0 : 1;
+//	return (gctools::tagged_ptr<core::T_O>::tagged_nilp(valP)) ? 0 : 1;
+    }
+
 
 
     /*! Return i32 1 if (*valP) is Nil or 0 if not */
@@ -578,13 +588,6 @@ extern "C"
 	return (*valP).nilp();
     }
 
-
-    /*! Return i32 1 if (*valP) is not Nil or 0 if it is */
-    int isTrueTsp( core::T_sp* valP)
-    {_G();
-	ASSERT(valP!=NULL);
-	return (*valP).isTrue();
-    }
 
 
     void internSymbol_tsp( core::T_sp* resultP, const char* symbolNameP, const char* packageNameP )
@@ -740,7 +743,7 @@ extern "C"
 	ActivationFrame_sp frame = (*frameP);
         core::InvocationHistoryFrame invFrame(*sourceFileInfoHandleP,lineno,column);
 	if ( frame.nilp() ) {
-	    fptr(resultP,&closedEnv,0,NULL,NULL,NULL,NULL);
+	    fptr(resultP,LCC_FROM_SMART_PTR(closedEnv),LCC_PASS_ARGS0());
 	} else {
             DEPRECIATED();
 	    //fptr(resultP,closedEnv,frame->length(),frame->argArray());
@@ -879,13 +882,26 @@ extern "C"
     }
 
 
-    extern void setParentOfActivationFrame( core::T_sp* resultP, core::T_sp* parentP)
+    extern void setParentOfActivationFrameTPtr( core::T_sp* resultP, core::T_O* parentP)
     {
         if ( resultP->framep() ) {
-            frame::SetParentFrame(*resultP,*parentP);
+            frame::SetParentFrame(*resultP,parentP);
             return;
         } else if (ActivationFrame_sp af = (*resultP).as<ActivationFrame_O>() ) {
-            af->setParentFrame(*parentP);
+            af->setParentFrame(parentP);
+            return;
+        }
+        SIMPLE_ERROR(BF("Destination was not ActivationFrame"));
+    }
+
+    extern void setParentOfActivationFrame( core::T_sp* resultP, core::T_sp* parentsp)
+    {
+	T_O* parentP = parentsp->px_ref();
+        if ( resultP->framep() ) {
+            frame::SetParentFrame(*resultP,parentP);
+            return;
+        } else if (ActivationFrame_sp af = (*resultP).as<ActivationFrame_O>() ) {
+            af->setParentFrame(parentP);
             return;
         }
         SIMPLE_ERROR(BF("Destination was not ActivationFrame"));
@@ -1174,22 +1190,21 @@ extern "C"
 	return (*activationFrameP)->length();
     }
 
-
+#if 0
 /*! Return a pointer to the shared_ptr of the activation frames parent */
-    extern core::ActivationFrame_sp* activationFrameParentRef(core::ActivationFrame_sp* frameP)
+    extern core::ActivationFrame_sp* activationFrameParentRef(core::T_sp* frameP)
     {_G();
 	ASSERT(frameP!=NULL);
 	if ( (*frameP).nilp() ) return &(*frameP); // _Nil<core::ActivationFrame_O>();
 	return &((*frameP)->parentFrameRef());
     }
 
-
 /*! Return a pointer to the shared_ptr of the activation frames parent */
     extern core::ActivationFrame_sp* activationFrameNil()
     {_G();
 	return &_lisp->activationFrameNil();
     }
-
+#endif
 
 
     void throwTooManyArgumentsException( const char* funcName, core::ActivationFrame_sp* afP, int givenNumberOfArguments, int requiredNumberOfArguments)

@@ -64,6 +64,7 @@ int startup(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize
     int exitCode = 0;
     try
     {
+	core::MultipleValues mainMultipleValues(true);
 	lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
 
 	clbind::ClbindExposer ClbindPkg(_lisp);

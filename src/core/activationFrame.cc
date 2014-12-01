@@ -133,18 +133,18 @@ namespace core
 
 
 
-    const T_sp& ActivationFrame_O::lookupValueReference(int depth, int index) const
+    T_sp& ActivationFrame_O::lookupValueReference(int depth, int index)
     {_G();
 	if ( depth == 0 )
 	{
 	    SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__() );
 	}
 	--depth;
-	return(this->parentFrame()->lookupValueReference(depth,index));
+	return Environment_O::clasp_lookupValueReference(this->parentFrame(),depth,index);
     }
 	
 
-    T_sp ActivationFrame_O::_lookupValue(int depth, int index) const
+    T_sp ActivationFrame_O::_lookupValue(int depth, int index)
     {_G();
 	return this->lookupValueReference(depth,index);
     }
@@ -252,7 +252,7 @@ namespace core
     }
 
 
-    const T_sp& ValueFrame_O::lookupValueReference(int depth, int index) const
+    T_sp& ValueFrame_O::lookupValueReference(int depth, int index)
     {_G();
 	if ( depth == 0 )
 	{
@@ -260,7 +260,7 @@ namespace core
 	    return((this->_Objects[index]));
 	}
 	--depth;
-	return(this->parentFrame()->lookupValueReference(depth,index));
+	return Environment_O::clasp_lookupValueReference(this->parentFrame(),depth,index);
     }
 
 
@@ -279,7 +279,7 @@ namespace core
 	}
     }
 	    
-    T_sp ValueFrame_O::_lookupValue(int depth, int index) const
+    T_sp ValueFrame_O::_lookupValue(int depth, int index)
     {_G();
 	return this->lookupValueReference(depth,index);
     }
@@ -288,14 +288,14 @@ namespace core
 
 
 
-    ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh,ActivationFrame_sp parent)
+    ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh,T_sp parent)
     {_G();
 	ValueFrame_sp vf(ValueFrame_O::create(llh->numberOfLexicalVariables(),parent));
 	return((vf));
     }
 
 
-    ValueFrame_sp ValueFrame_O::create(Cons_sp values,ActivationFrame_sp parent)
+    ValueFrame_sp ValueFrame_O::create(Cons_sp values,T_sp parent)
     {_G();
 	ValueFrame_sp vf = ValueFrame_O::create(cl_length(values),parent);
 //	vf->allocateStorage(cl_length(values));
@@ -309,7 +309,7 @@ namespace core
     }
 
 
-    ValueFrame_sp ValueFrame_O::createFromReversedCons(Cons_sp values,ActivationFrame_sp parent)
+    ValueFrame_sp ValueFrame_O::createFromReversedCons(Cons_sp values,T_sp parent)
     {_G();
 	ValueFrame_sp vf = ValueFrame_O::create(cl_length(values),parent);
 	int len = cl_length(values);
@@ -344,7 +344,7 @@ namespace core
 	    }
 	}
 	if ( this->parentFrame().nilp() ) return false;
-	return this->parentFrame()->_updateValue(sym,obj);
+	return af_updateValue(this->parentFrame(),sym,obj);
     }
 
 
@@ -376,7 +376,7 @@ namespace core
 	    return false;
 	}
 	++depth;
-	return this->parentFrame()->_findValue(sym,depth,index,special,value);
+	return Environment_O::clasp_findValue(this->parentFrame(),sym,depth,index,special,value);
     }
 	    
 
@@ -535,7 +535,7 @@ namespace core
 
 
 
-    TagbodyFrame_sp TagbodyFrame_O::create(ActivationFrame_sp parent)
+    TagbodyFrame_sp TagbodyFrame_O::create(T_sp parent)
     {_G();
 	GC_ALLOCATE(TagbodyFrame_O,vf );
         vf->_ParentFrame = parent;

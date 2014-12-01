@@ -38,6 +38,7 @@ THE SOFTWARE.
 //#i n c l u d e "setfExpander.h"
 #include "environment.h"
 #include "executables.h"
+#include "designators.h"
 #include "builtInClass.h"
 #include "lambdaListHandler.h"
 #include "vectorObjects.h"
@@ -1648,11 +1649,30 @@ namespace core
             size_t nargs = args->length();
             T_sp* a = args->argArray();
             switch (nargs) {
+#define APPLY_TO_ACTIVATION_FRAME
 #include "applyToActivationFrame.h"
+#undef APPLY_TO_ACTIVATION_FRAME
             default:
-                SIMPLE_ERROR(BF("Add support for applyToActivationFrame for %d arguments") % nargs);
+                SIMPLE_ERROR(BF("Add support for applyClosureToActivationFrame for %d arguments") % nargs);
             };
         }
+
+        T_mv applyClosureToTaggedFrame(Closure* func, T_sp args)
+        {
+            T_mv result;
+	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(args.px));
+            size_t nargs = frame::ValuesArraySize(frameImpl);
+            T_O** a = frame::ValuesArray(frameImpl);
+            switch (nargs) {
+#define APPLY_TO_TAGGED_FRAME
+#include "applyToActivationFrame.h"
+#undef APPLY_TO_TAGGED_FRAME
+            default:
+                SIMPLE_ERROR(BF("Add support for applyClosureToTaggedFrame for %d arguments") % nargs);
+            };
+        }
+
+
 
 	T_mv applyToActivationFrame(T_sp head,ActivationFrame_sp args )
 	{_G();
@@ -1671,6 +1691,74 @@ namespace core
             ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToActivationFrame(closureP,args);
 	}
+
+
+
+
+#define ARGS_cl_apply "(head &rest args)"
+#define DECL_cl_apply ""
+#define DOCS_cl_apply "apply"
+    T_mv cl_apply(T_sp head, T_sp args)
+    {_G();
+	/* Special case when apply is called with one arg and that arg is an ActivationFrame
+	   APPLY directly to that ActivationFrame */
+	int lenArgs = cl_length(args);
+	if ( lenArgs == 0 ) {
+	    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs );
+	}
+	if ( lenArgs == 1 && oCar(args).notnilp() )
+	{
+	    Function_sp func = coerce::functionDesignator(head);
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(head);
+            } else if ( func.framep() ) {
+	Function fn = lookupFunction(head,
+		return eval::applynFrame(func,gctools::smart_ptr<ActivationFrame_O>(
+	    } else if ( ActivationFrame_sp singleFrame = oCar(args).asOrNull<ActivationFrame_O>() )
+	    {
+		return eval::applyToActivationFrame(func,singleFrame);
+	    }
+	}
+	T_sp last = oCar(cl_last(args));
+	if ( !af_listp(last) ) {
+	    SIMPLE_ERROR(BF("Last argument is not a list"));
+	}
+	int lenFirst = lenArgs-1;
+	int lenRest = cl_length(last);
+	int nargs = lenFirst + lenRest;
+	ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	T_sp obj = args;
+	for ( int i(0); i<lenFirst; ++i ) {
+	    frame->operator[](i) = oCar(obj);
+	    obj = oCdr(obj);
+	}
+        T_sp cur = last;
+	for ( int i(lenFirst); i<nargs; ++i ) {
+	    frame->operator[](i) = oCar(cur);
+	    cur = oCdr(cur);
+	}
+	Function_sp func = coerce::functionDesignator(head);
+	return eval::applyToActivationFrame(func,frame);
+    }
+
+
+#define ARGS_cl_funcall "(function_desig &rest args)"
+#define DECL_cl_funcall ""
+#define DOCS_cl_funcall "See CLHS: funcall"
+    T_mv cl_funcall(T_sp function_desig, Cons_sp args)
+    {_G();
+	Function_sp func = coerce::functionDesignator(function_desig);
+        if ( func.nilp() ) {
+            ERROR_UNDEFINED_FUNCTION(function_desig);
+        }
+	Cons_sp passArgs = args;
+	ValueFrame_sp frame(ValueFrame_O::create(passArgs,_Nil<ActivationFrame_O>()));
+	return eval::applyToActivationFrame(func,frame); // func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
+    }
+
+
+
+
 
 
 
@@ -2323,6 +2411,10 @@ namespace core
 	    Defun(evaluateDepth);	
 	    SYMBOL_SC_(CorePkg,classifyLetVariablesAndDeclares);
 	    Defun(classifyLetVariablesAndDeclares);
+	    SYMBOL_EXPORT_SC_(ClPkg,apply);
+	    ClDefun(apply);
+	    SYMBOL_EXPORT_SC_(ClPkg,funcall);
+	    ClDefun(funcall);
 	};
 
     };

@@ -98,7 +98,7 @@ Return the new environment."
   ;; There should be information in new-env??? that can tell us what
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
+  (irc-intrinsic "setParentOfActivationFrameTPtr" (irc-renv new-env) closed-over-renv)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
   (compile-lambda-list-code lambda-list-handler
@@ -148,10 +148,7 @@ COMPILE-FILE just throws this away")
 		  (closed-over-renv (second arguments))
 		  (argument-holder (make-calling-convention
                                     :nargs (third arguments)
-                                    :register-arg0 (fourth arguments)
-                                    :register-arg1 (fifth arguments)
-                                    :register-arg2 (sixth arguments)
-                                    :valist (seventh arguments)))
+                                    :register-args (cdddr arguments)))
 		  traceid
 		  (new-env (progn
                              (cmp-log "Creating new-value-environment for arguments\n")
@@ -577,7 +574,7 @@ env is the parent environment of the (result-af) value frame"
   (let (test-result)
     (let ((test-temp-store (irc-alloca-tsp env :label "if-cond-tsp")))
       (codegen test-temp-store cond env)
-      (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrueTsp" test-temp-store) (jit-constant-i32 1) "ifcond")))
+      (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrue" test-temp-store) (jit-constant-i32 1) "ifcond")))
     test-result))
 
 

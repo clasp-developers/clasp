@@ -30,7 +30,7 @@ THE SOFTWARE.
 extern "C"
 {
 
-    typedef void (*fnLispCallingConvention)(LISP_CALLING_CONVENTION_RETURN, LISP_CALLING_CONVENTION_CLOSED_ENVIRONMENT, LISP_CALLING_CONVENTION_ARGS );
+    typedef void (*fnLispCallingConvention)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS );
     typedef void (*fnVoidType)();
 
 #if 0

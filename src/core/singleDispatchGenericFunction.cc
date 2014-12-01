@@ -173,7 +173,9 @@ namespace core
             e->_key = keys;
             e->_value = func;
         }
-        func->closure->invoke(lcc_resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2, lcc_arglist );
+	// WARNING: DO NOT alter contents of _lisp->callArgs() or _lisp->multipleValues() above.
+	// LISP_PASS ARGS relys on the extra arguments being passed transparently
+        func->closure->invoke(lcc_resultP,LCC_PASS_ARGS);
     }
 
 

@@ -44,39 +44,16 @@ namespace core
 {
 
 
-    void lambdaListHandler_createBindings(core::FunctionClosure* closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LISP_CALLING_CONVENTION_ARGS)
+    void lambdaListHandler_createBindings(core::FunctionClosure* closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LCC_ARGS)
     {
         // TODO: I should allocate this on the stack - but clang doesn't behave consistently
         // when I use variable stack arrays
 //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
-        T_O** args = (T_O**)alloca(sizeof(T_O*)*lcc_nargs);
-        switch (lcc_nargs)
-        {
-        case 0:
-            break;
-        case 1:
-            args[0] = lcc_fixed_arg0;
-            break;
-        case 2:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            break;
-        case 3:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            args[2] = lcc_fixed_arg2;
-            break;
-        default:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            args[2] = lcc_fixed_arg2;
-            for ( size_t it=3; it<lcc_nargs; ++it ) {
-                args[it] = va_arg(lcc_arglist,T_O*);
-            }
-            break;
-        }
+//        T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
+	MultipleValues* mvP = NULL;
+	LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(mvP);
         try {
-            llh->createBindingsInScope_argArray_TPtr(lcc_nargs,args,scope);
+            llh->createBindingsInScope_argArray(mvP->getSize(),mvP->callingArgsStart(),scope);
         } catch (...) {
             printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
             handleArgumentHandlingExceptions(closure);
@@ -480,6 +457,8 @@ namespace core
 #undef PASS_ARGS
 #undef PASS_ARGS_NUM
 #undef PASS_NEXT_ARG
+
+
 
 
 #define PASS_FUNCTION_REQUIRED 	bind_required_argArray_TPtr

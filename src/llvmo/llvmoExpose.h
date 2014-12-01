@@ -243,6 +243,69 @@ namespace translate
 
 
 
+
+namespace llvmo
+{
+    FORWARD(AttributeSet);
+    class AttributeSet_O : public core::T_O
+    {
+	LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::AttributeSet,AttributeSet_O,"AttributeSet",core::T_O);
+    protected:
+	llvm::AttributeSet val;
+    public:
+	llvm::AttributeSet getAttributeSet() { return this->val; };
+	AttributeSet_O() {};
+	AttributeSet_O(llvm::AttributeSet v) : val(v)  {};
+    }; // AttributeSet_O
+}; // llvmo
+TRANSLATE(llvmo::AttributeSet_O);
+/* from_object translators */
+
+/* to_object translators */
+
+namespace translate
+{
+    template <>
+    struct from_object<llvm::AttributeSet>
+    {
+        typedef llvm::AttributeSet DeclareType;
+	DeclareType _v;
+	from_object(core::T_sp object) : _v(object.as<llvmo::AttributeSet_O>()->getAttributeSet()) {};
+    };
+    template <>
+    struct to_object<llvm::AttributeSet>
+    {
+        static core::T_sp convert(llvm::AttributeSet val)
+        {_G(); GC_ALLOCATE_VARIADIC(llvmo::AttributeSet_O,obj,val); return obj; };
+    };
+};
+
+namespace translate {
+    template <>
+    struct from_object<llvm::ArrayRef<llvm::Attribute::AttrKind> > {
+        typedef std::vector<llvm::Attribute::AttrKind> DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+            if ( o.nilp() ) {
+                _v.clear();
+                return;
+            } else if ( core::Cons_sp cvals = o.asOrNull<core::Cons_O>() ) {
+		core::SymbolToEnumConverter_sp converter = llvmo::_sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+                for ( ; cvals.notnilp(); cvals=cCdr(cvals) ) {
+                    llvm::Attribute::AttrKind ak = converter->enumForSymbol<llvm::Attribute::AttrKind>(core::oCar(cvals).as<core::Symbol_O>());
+                    _v.push_back(ak);
+                }
+                return;
+            }
+            SIMPLE_ERROR(BF("Could not convert %s to llvm::ArrayRef<llvm::Attribute::AttrKind>") % core::_rep_(o));
+        }
+    };
+};
+
+
+
+
+
 namespace llvmo
 {
     FORWARD(Triple);
@@ -1201,7 +1264,7 @@ namespace llvmo
     class CompiledClosure : public core::FunctionClosure {
         friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
     public:
-        typedef void (*fptr_type) (LISP_CALLING_CONVENTION_RETURN, LISP_CALLING_CONVENTION_CLOSED_ENVIRONMENT, LISP_CALLING_CONVENTION_ARGS );
+        typedef void (*fptr_type) (LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS );
     public:
         Function_sp             llvmFunction;
 	fptr_type		fptr;
@@ -1223,7 +1286,7 @@ namespace llvmo
 	void LISP_CALLING_CONVENTION()
 	{_G();
             core::InvocationHistoryFrame _frame(this,this->closedEnvironment);
-            (*(this->fptr))(lcc_resultP,&(this->closedEnvironment),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+            (*(this->fptr))(lcc_resultP,LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment),LCC_PASS_ARGS);
 	};
 
     };

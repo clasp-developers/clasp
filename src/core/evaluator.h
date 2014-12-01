@@ -149,7 +149,8 @@ namespace core
             }
             Functoid* ft = func->closure;
             T_mv result;
-            (*ft)(&result,0,NULL,NULL,NULL);
+            (*ft)(&result, 0
+		  , LCC_UNUSED_rest0() );
             return result;
         }
 
@@ -161,7 +162,9 @@ namespace core
             }
             Functoid* ft = func->closure;
             T_mv result;
-            (*ft)(&result,1,arg0.asTPtr(),NULL,NULL);
+            (*ft)(&result, 1
+		  , LCC_FROM_SMART_PTR(arg0)
+		  , LCC_UNUSED_rest1() );
             return result;
         }
 
@@ -177,12 +180,67 @@ namespace core
             }
             Functoid* ft = func->closure;
             T_mv result;
-            (*ft)(&result,2,arg0.asTPtr(),arg1.asTPtr(),NULL);
+            (*ft)(&result,2
+		  , LCC_FROM_SMART_PTR(arg0)
+		  , LCC_FROM_SMART_PTR(arg1)
+		  , LCC_UNUSED_rest2());
             return result;
         }
 
-	template <class ARG0, class ARG1, class ARG2, class...ARGS>
-	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS...args) {
+	template <class ARG0, class ARG1, class ARG2>
+	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
+	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(fn);
+            }
+            Functoid* ft = func->closure;
+            T_mv result;
+            (*ft)(&result, 3
+		  , LCC_FROM_SMART_PTR(arg0)
+		  , LCC_FROM_SMART_PTR(arg1)
+		  , LCC_FROM_SMART_PTR(arg2)
+		  , LCC_UNUSED_rest3() );
+            return result;
+        }
+
+	template <class ARG0, class ARG1, class ARG2, class ARG3>
+	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
+	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(fn);
+            }
+            Functoid* ft = func->closure;
+            T_mv result;
+            (*ft)(&result, 4
+		  , LCC_FROM_SMART_PTR(arg0)
+		  , LCC_FROM_SMART_PTR(arg1)
+		  , LCC_FROM_SMART_PTR(arg2)
+		  , LCC_FROM_SMART_PTR(arg3)
+		  , LCC_UNUSED_rest4() );
+            return result;
+        }
+
+	template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4>
+	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
+	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(fn);
+            }
+            Functoid* ft = func->closure;
+            T_mv result;
+            (*ft)(&result, 5
+		  , LCC_FROM_SMART_PTR(arg0)
+		  , LCC_FROM_SMART_PTR(arg1)
+		  , LCC_FROM_SMART_PTR(arg2)
+		  , LCC_FROM_SMART_PTR(arg3)
+		  , LCC_FROM_SMART_PTR(arg4) );
+            return result;
+        }
+
+
+// Do I need a variadic funcall???
+	template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4, class...ARGS>
+	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARGS&&...args) {
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
             if ( func.nilp() ) {
                 ERROR_UNDEFINED_FUNCTION(fn);
@@ -190,7 +248,21 @@ namespace core
             Functoid* ft = func->closure;
             T_mv result;
             size_t vnargs = sizeof...(ARGS);
-            (*ft)(&result,3+vnargs,arg0.asTPtr(),arg1.asTPtr(),arg2.asTPtr(),args.asTPtr()...);
+	    size_t nargs = vnargs + LCC_FIXED_NUM;
+	    if ( nargs > core::MultipleValues::MultipleValuesLimit ) {
+		SIMPLE_ERROR(BF("Too many arguments %d only %d supported") % nargs % core::MultipleValues::MultipleValuesLimit );
+	    }
+	    MultipleValues* mv = _lisp->callArgs();
+	    T_sp* remainingArgumentsInMultipleValues = mv->callingArgsExtraArgStart();
+	    // Do a placement new of an array of T_sp in the remainingArgumentsInMultipleValues
+	    // and initialize it using the variadic arguments in the parameter pack ARGS...args
+	    T_sp* mvargs = new(remainingArgumentsInMultipleValues) T_sp[vnargs]{std::forward<ARGS>(args)...};
+            (*ft)(&result, nargs
+		  , LCC_FROM_SMART_PTR(arg0)
+		  , LCC_FROM_SMART_PTR(arg1)
+		  , LCC_FROM_SMART_PTR(arg2)
+		  , LCC_FROM_SMART_PTR(arg3)
+		  , LCC_FROM_SMART_PTR(arg4) );
             return result;
         }
     };

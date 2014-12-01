@@ -231,7 +231,7 @@ namespace core
 	    InvocationHistoryStack 	_InvocationHistoryStack;
             ExceptionStack              _ExceptionStack;
 	/*! Multiple values - this should be per thread */
-	    MultipleValues 		_MultipleValues;
+	    MultipleValues* 		_MultipleValuesCur;
             Stream_sp                   _TerminalIO;
 	    /*! Bignum registers should be one per thread */
 	    Bignum_sp 			_BignumRegister0;
@@ -401,7 +401,36 @@ namespace core
 	// ------------------------------------------------------------
     public:
 	InvocationHistoryStack&	invocationHistoryStack();
-	MultipleValues&		multipleValues();
+    public:
+	/*! callArgs() are where extra arguments are stored when passing them
+	  into a function that takes more arguments than can be passed in registers
+	  See lispCallingConvention.h for more details.
+	  I use the MultipleValues structure to pass arguments into functions.
+	  This must be thread local.
+	*/
+	MultipleValues*		callArgs() {
+	    ASSERT(this->_Roots._MultipleValuesCur!=NULL);
+	    return this->_Roots._MultipleValuesCur;
+	}
+	/*! This is where multiple values are returned in */
+	MultipleValues&		multipleValues() {return *this->_Roots._MultipleValuesCur;}
+	/*! MultipleValues are stored on the stack in a linked list.
+	  This ensures that the objects they contain are not garbage collected and
+	  allows us to occasionally create new MultipleValues structures for when we need to
+	  save the current one temporarily */
+	void pushMultipleValues(MultipleValues* mv)
+	{
+	    ASSERT(mv!=NULL);
+	    mv->setPrevious(this->_Roots._MultipleValuesCur);
+//	    printf("%s:%d _lisp->pushMultipleValues(%p)  current= %p\n", __FILE__, __LINE__, mv, this->_Roots._MultipleValuesCur );
+	    this->_Roots._MultipleValuesCur = mv;
+	};
+	void popMultipleValues() {
+	    MultipleValues* nextHead = this->_Roots._MultipleValuesCur->getPrevious();
+//	    printf("%s:%d _lisp->popMultipleValues()  current= %p after pop = %p\n", __FILE__, __LINE__, this->_Roots._MultipleValuesCur, nextHead );
+	    this->_Roots._MultipleValuesCur = this->_Roots._MultipleValuesCur->getPrevious();
+	    ASSERT(this->_Roots._MultipleValuesCur!=NULL);
+	};
     public:
 	DebugStream& debugLog() {HARD_ASSERT(this->_DebugStream!=NULL);return *(this->_DebugStream);};
 //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};

@@ -654,7 +654,8 @@ void lisp_errorIllegalDereference(void* v);
 
 namespace core {
     class MultipleValues;
-    MultipleValues* lisp_multipleValues();
+    MultipleValues* lisp_multipleValues();	
+    MultipleValues* lisp_callArgs();
 };
 
 
@@ -684,6 +685,12 @@ namespace core {
 #include "gctools/containers.h"
 
 
+namespace core {
+    /*! This pushes the newestMultipleValues onto the thread local MultipleValues stack.
+     The current top of the stack is returned. */
+    void lisp_pushMultipleValues(MultipleValues* newestMultipleValues);
+    void lisp_popMultipleValues();
+};
 
 #include "multipleValues.h"
 
@@ -888,7 +895,7 @@ namespace core {
     typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
-    typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf, int nargs, ArgArray argArray);
+    typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf); // , int nargs, ArgArray argArray);
 
     class Lisp_O;
     typedef Lisp_O* Lisp_sp;
@@ -1101,6 +1108,7 @@ namespace core
     /*! Write characters to the stream */
     void lisp_write(const boost::format& fmt, T_sp stream);
 
+
     Lisp_sp lisp_fromObject(T_sp obj);
     string lisp_currentPackageName();
     string lisp_classNameAsString(Class_sp c);
@@ -1266,11 +1274,9 @@ namespace core
         FRIEND_GC_SCANNER();
     public:
 	virtual string describe() const {return "Functoid - subclass must implement describe()";};
-        void operator()( core::T_mv* lcc_resultP, int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, ... ) {
-            va_list arglist;
-            va_start(arglist,lcc_fixed_arg2);
-            this->invoke(lcc_resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,arglist);
-            va_end(arglist);
+        void operator()( LCC_RETURN, LCC_ARGS )
+	{
+            this->invoke(lcc_resultP, LCC_PASS_ARGS );
         }
 
 //#define LISP_INVOKE() invoke( core::T_mv* lcc_resultP, int lcc_nargs, core::T_sp lcc_fixed_arg0, core::T_sp lcc_fixed_arg1, core::T_sp lcc_fixed_arg2, va_list lcc_arglist )

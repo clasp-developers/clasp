@@ -436,6 +436,11 @@ namespace core
 	return &(_lisp->multipleValues());
     }
 
+    MultipleValues* lisp_callArgs()
+    {
+	return (_lisp->callArgs());
+    }
+
 
 
 
@@ -620,6 +625,16 @@ namespace core
 	return lisp_static_class(o);
     }
 
+
+    void lisp_pushMultipleValues(MultipleValues* newTopMultipleValues)
+    {
+	_lisp->pushMultipleValues(newTopMultipleValues);
+    }
+
+    void lisp_popMultipleValues()
+    {
+	_lisp->popMultipleValues();
+    }
 
     Class_sp lisp_static_class(T_sp o)
     {

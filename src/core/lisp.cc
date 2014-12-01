@@ -199,7 +199,8 @@ namespace core
 //
 // Constructor
 //
-    Lisp_O::GCRoots::GCRoots() : _BignumRegister0(_Unbound<Bignum_O>())
+    Lisp_O::GCRoots::GCRoots() : _MultipleValuesCur(NULL)
+			       , _BignumRegister0(_Unbound<Bignum_O>())
                                , _BignumRegister1(_Unbound<Bignum_O>())
                                , _BignumRegister2(_Unbound<Bignum_O>())
 //                               , _TraceFunctions(_Unbound<HashTable_O>())
@@ -314,7 +315,7 @@ namespace core
 
     void	Lisp_O::initialize()
     {
-        this->_Roots._MultipleValues.initialize();
+//        this->_Roots._MultipleValues.initialize();
     }
 
 
@@ -405,7 +406,6 @@ namespace core
 
     void Lisp_O::startupLispEnvironment(Bundle* bundle)
     {
-
 	/*! There was a problem iterating over maps and sets when garbage collection
 	  they were going into infinite loops - so I was testing them here within
 	  the context of the entire package */
@@ -1730,8 +1730,6 @@ namespace core
 #define ARGS_af_member "(item list &key key test test-not)"
 #define	DECL_af_member	""
 #define	DOCS_af_member	"See CLHS member"
-#define	FILE_af_member	__FILE__
-#define	LINE_af_member	__LINE__
     Cons_sp af_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not)
     {_G();
 	if ( tlist.nilp() ) return _Nil<Cons_O>();
@@ -2304,22 +2302,6 @@ namespace core
 
 
 
-#define ARGS_af_funcall "(function_desig &rest args)"
-#define DECL_af_funcall ""
-#define DOCS_af_funcall "See CLHS: funcall"
-    T_mv af_funcall(T_sp function_desig, Cons_sp args)
-    {_G();
-	Function_sp func = coerce::functionDesignator(function_desig);
-        if ( func.nilp() ) {
-            ERROR_UNDEFINED_FUNCTION(function_desig);
-        }
-	Cons_sp passArgs = args;
-	ValueFrame_sp frame(ValueFrame_O::create(passArgs,_Nil<ActivationFrame_O>()));
-	return eval::applyToActivationFrame(func,frame); // func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
-    }
-
-
-
 
 
 /*
@@ -2329,53 +2311,6 @@ namespace core
   Evaluate the function with the argument list.
   __END_DOC
 */
-
-
-
-#define ARGS_af_apply "(head &rest args)"
-#define DECL_af_apply ""
-#define DOCS_af_apply "apply"
-    T_mv af_apply(T_sp head, T_sp args)
-    {_G();
-	/* Special case when apply is called with one arg and that arg is an ActivationFrame
-	   APPLY directly to that ActivationFrame */
-	int lenArgs = cl_length(args);
-	if ( lenArgs == 0 ) {
-	    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs );
-	}
-	if ( lenArgs == 1 && oCar(args).notnilp() )
-	{
-	    Function_sp func = coerce::functionDesignator(head);
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(head);
-            }
-	    if ( ActivationFrame_sp singleFrame = oCar(args).asOrNull<ActivationFrame_O>() )
-	    {
-		return eval::applyToActivationFrame(func,singleFrame); // return func->INVOKE(singleFrame->length(),singleFrame->argArray()); // return eval::applyFunctionToActivationFrame(func,singleFrame);
-	    }
-	}
-	T_sp last = oCar(cl_last(args));
-	if ( !af_listp(last) ) {
-	    SIMPLE_ERROR(BF("Last argument is not a list"));
-	}
-	int lenFirst = lenArgs-1;
-	int lenRest = cl_length(last);
-	int nargs = lenFirst + lenRest;
-	ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
-	T_sp obj = args;
-	for ( int i(0); i<lenFirst; ++i ) {
-	    frame->operator[](i) = oCar(obj);
-	    obj = oCdr(obj);
-	}
-        T_sp cur = last;
-	for ( int i(lenFirst); i<nargs; ++i ) {
-	    frame->operator[](i) = oCar(cur);
-	    cur = oCdr(cur);
-	}
-	Function_sp func = coerce::functionDesignator(head);
-	return eval::applyToActivationFrame(func,frame);
-    }
-
 
 
 
@@ -3423,11 +3358,6 @@ extern "C"
     }
 
 
-    MultipleValues& Lisp_O::multipleValues()
-    {
-	return this->_Roots._MultipleValues;
-    }
-
     void Lisp_O::dump_backtrace(int numcol)
     {_OF();
 	string bt = this->invocationHistoryStack().asString();
@@ -3526,10 +3456,6 @@ extern "C"
 
     void Lisp_O::run()
     {_G();
-//	this->inPackage("CORE-USER");
-	//
-	// Compile and evaluate the .rc code to extend the environment in lisp
-	//
 	if ( !this->_IgnoreInitImage )
 	{
             Pathname_sp initPathname = _sym_STARcommandLineImageSTAR->symbolValue().as<Pathname_O>();
@@ -3761,10 +3687,6 @@ extern "C"
 
 //	defNoWrapPackage(CorePkg,"parseConsOfStrings", &prim_parseConsOfStrings ,_LISP);
 
-	SYMBOL_EXPORT_SC_(ClPkg,funcall);
-	Defun(funcall);
-	SYMBOL_EXPORT_SC_(ClPkg,apply);
-	Defun(apply);
 //	defNoWrapPackage(CorePkg,"sub", &prim_sub ,_LISP);
 //	defNoWrapPackage(CorePkg,"-", &prim_sub ,_LISP);
 //	defNoWrapPackage(CorePkg,"div", &prim_div ,_LISP);
