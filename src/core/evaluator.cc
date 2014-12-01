@@ -1657,7 +1657,7 @@ namespace core
             };
         }
 
-        T_mv applyClosureToTaggedFrame(Closure* func, T_sp args)
+        T_mv applyFunctionDesignatorToStackFrame(Closure* func, T_sp args)
         {
             T_mv result;
 	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(args.px));
@@ -1672,6 +1672,15 @@ namespace core
             };
         }
 
+
+	T_mv applyToStackFrame(T_sp head,T_sp args )
+	{_G();
+	    Function_sp fn = lookupFunction(head,args);
+	    ASSERT(fn.framep());
+            Closure* closureP = fn->closure;
+            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+	    return applyClosureToStackFrame(closureP,args);
+	}
 
 
 	T_mv applyToActivationFrame(T_sp head,ActivationFrame_sp args )
@@ -1713,7 +1722,7 @@ namespace core
                 ERROR_UNDEFINED_FUNCTION(head);
             } else if ( func.framep() ) {
 	Function fn = lookupFunction(head,
-		return eval::applynFrame(func,gctools::smart_ptr<ActivationFrame_O>(
+		return eval::applyTnFrame(func,gctools::smart_ptr<ActivationFrame_O>(
 	    } else if ( ActivationFrame_sp singleFrame = oCar(args).asOrNull<ActivationFrame_O>() )
 	    {
 		return eval::applyToActivationFrame(func,singleFrame);
