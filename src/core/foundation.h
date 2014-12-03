@@ -1298,6 +1298,7 @@ namespace core
         T_sp name;
     public:
 	Functoid(T_sp n) : name(n) {};
+	string nameAsString();
 	virtual ~Functoid() {};
     };
 

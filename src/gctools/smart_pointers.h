@@ -151,15 +151,14 @@ namespace gctools
 	    if (this->pointerp()) {
                 smart_ptr<o_class> ret(gctools::DynamicCast<o_class*,T*>::castOrNULL(this->px));
 		return ret;
-	    }
-	    if ( this->BaseType::fixnump()) {
+	    } else if ( this->BaseType::fixnump()) {
 		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
-	    }
-	    if ( this->nilp()) {
+	    } else if ( this->BaseType::framep()) {
+		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
+	    } else if ( this->nilp()) {
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
 		return nil;
-	    }
-	    if ( this->unboundp() ) {
+	    } else if ( this->unboundp() ) {
 		smart_ptr<o_class> unbound(smart_ptr<o_class>::tagged_unbound);
 		return unbound;
 	    }
@@ -177,16 +176,14 @@ namespace gctools
                 smart_ptr<o_class> ret(const_cast<o_class*>(gctools::DynamicCast<const o_class*,T*>::castOrNULL(this->px)));
 //		smart_ptr</* TODO: const */ o_class> ret(const_cast<o_class*>(dynamic_cast<const o_class*>(this->px)));
 		return ret;
-	    }
-	    if ( this->BaseType::fixnump()) {
+	    } else if ( this->BaseType::fixnump()) {
 		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
-	    }
-
-	    if ( this->nilp()) {
+	    } else if ( this->BaseType::framep()) {
+		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
+	    } else if ( this->nilp()) {
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
 		return nil;
-	    }
-	    if ( this->unboundp() ) {
+	    } else if ( this->unboundp() ) {
 		smart_ptr<o_class> unbound(smart_ptr<o_class>::tagged_unbound);
 		return unbound;
 	    }
@@ -302,7 +299,7 @@ namespace gctools
 
 	bool notnilp() const { return (!this->nilp());};
 	bool isTrue() const { return !this->nilp(); };
-        bool base_fixnump() const { return this->BaseType::fixnump(); };
+        bool tagged_fixnump() const { return this->BaseType::fixnump(); };
 	bool fixnump() const {return lisp_fixnumP(*this);};
 	bool characterp() const {return lisp_characterP(*this);};
 

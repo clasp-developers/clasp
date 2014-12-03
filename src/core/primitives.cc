@@ -323,7 +323,7 @@ namespace core
 #define DOCS_af_fromTaggedFixnum "fromTaggedFixnum"
     int af_fromTaggedFixnum(T_sp val)
     {_G();
-	if ( val.BaseType::fixnump() )
+	if ( val.tagged_fixnump() )
 	{
 	    return val.fixnum();
 	}
@@ -335,7 +335,7 @@ namespace core
 #define DOCS_af_dumpTaggedFixnum "dumpTaggedFixnum"
     void af_dumpTaggedFixnum(T_sp val)
     {_G();
-	if ( val.BaseType::fixnump() ) {
+	if ( val.tagged_fixnump() ) {
 	    printf("%s:%d Raw TaggedFixnum %p   Untagged %d\n",
 		   __FILE__,__LINE__, val.pxget(), val.fixnum() );
 	} else

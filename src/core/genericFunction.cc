@@ -241,6 +241,7 @@ In ecl/src/c/interpreter.d  is the following code
 #if DEBUG_CLOS>=2
 		printf("MLOG fill_spec_vector argtype[%d] using args[%d]\n", spec_no, spec_position );
 #endif
+		// For immediate types we need to make sure that EQL will be true
 		argtype[spec_no] = args[spec_position];
 	    }
 #if DEBUG_CLOS>=2
@@ -265,11 +266,28 @@ In ecl/src/c/interpreter.d  is the following code
     // Arguments are passed in the multiple_values array
     T_mv standard_dispatch(T_sp gf)
     {
-        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
-            printf("%s:%d:%s Entered standard_dispatch  gf->%s\n",
-		   __FILE__, __LINE__, __FUNCTION__, gf.as<Function_O>()->functionName().as<Str_O>()->get().c_str() );
-        }
-	Function_sp func;
+	// Save the arguments in the ArgumentsReturnValues for completing the call
+#if 0
+	/* Allocate a ValueFrame on the heap and copy the generic function arguments into the
+	   top MultipleValues object on the stack.
+	   This saves them so that later they can have a function applied to them by cl_apply.
+	   This is slow because it requires allocation/garbage collection on the heap.
+	*/
+	ValueFrame_sp frame(ValueFrame_O::createForMultipleValues(_Nil<ActivationFrame_O>()));
+#else
+	/* Copy the arguments from the MultipleValues structure into the stack based tagged frame allocated below.
+	   See gctools/tagged_ptr.h frame_tag
+	   This saves them so that later they can have a function applied to them by cl_apply.
+	*/
+	MultipleValues* mv = _lisp->callArgs();
+	ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl,frame,mv->getSize(), mv->callingArgsStart());
+#endif
+
+	/* Lookup the generic-function/arguments invocation in a cache and if an effective-method
+	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
+
+	   Then call the effective method with the saved arguments.
+	*/
         Cache* cache(_lisp->methodCachePtr()); 
 	MultipleValues* callArgs = _lisp->callArgs();  // Get arguments
 	gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), callArgs->getSize(), callArgs->callingArgsStart() ); 
@@ -282,25 +300,15 @@ In ecl/src/c/interpreter.d  is the following code
             SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(gf));
         }
 	ASSERT(e!=NULL);
+	Function_sp func;
 	if (e->_key.notnilp()) {
 	    func = e->_value.as<Function_O>();
 	} else {
-	    /* We are about to call out to Common Lisp to compute the applicable method
-	       this means that arguments will be passed and multiple values will be returned
-	       but we must preserve the arguments that were set up to call the current generic function
-	       so we create a temporary MultipleValues (tempCallArgs) structure on the stack and it will
-	       push itself onto a stack of MultipleValues structures all on the threads stack and the
-	       topmost one will be used for the call to compute_applicable_method.
-	       When the current scope exits, this temporary MultipleValues structure will be popped
-	       restoring the previous MultipleValues structure to the top of the MultipleValues stack
-	       and ready to be used to execute the current generic function call.
-	    */
-	    MultipleValues tempCallArgs(*callArgs);
 	    /* The keys and the cache may change while we
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
-	    T_mv mv = compute_applicable_method(gf, tempCallArgs.getSize(), tempCallArgs.callingArgsStart() );
+	    T_mv mv = compute_applicable_method(gf, callArgs->getSize(), callArgs->callingArgsStart() );
 	    func = mv.as<Function_O>();
 	    if (mv.valueGet(1).notnilp() ) {
 	      T_sp keys = VectorObjects_O::create(vektor);
@@ -315,30 +323,26 @@ In ecl/src/c/interpreter.d  is the following code
 		e->_value = func;
 	    }
 	}
-        /* SPEEDUP TODO: Do something faster than allocating a ValueFrame on the heap
-	   and copying the arguments into it!!!!!
-	   Why do we pass arguments in (frame) as a first class object?????
-	   Where does this get unpacked and passed to method code as separate arguments????
-
-	   The code below depends on the modified cl_apply function defined in lisp.cc
-	   it is set up to accept either a ValueFrame as the second (and last) argument
-	   or a 
-	*/
-#if 1
-	/* Allocate a ValueFrame on the heap and copy the generic function arguments into the
-	   top MultipleValues object on the stack.
-	   This saves them so that later they can have a function applied to them by cl_apply.
-	   This is slow because it requires allocation/garbage collection on the heap.
-	*/
-	ValueFrame_sp frame(ValueFrame_O::createForMultipleValues(_Nil<ActivationFrame_O>()));
-#else
-	/* Copy the arguments from the MultipleValues structure into the stack based tagged frame allocated below.
-	   See gctools/tagged_ptr.h frame_tag
-	   This saves them so that later they can have a function applied to them by cl_apply.
-	*/
-	ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl,frame,_lisp->callArgs()->callingArgsStart());
+#if 0
+        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
+	    Function_sp gff = eval::lookupFunction(gf,frame);
+            printf("%s:%d:%s Entered standard_dispatch  gf->%s\n",
+		   __FILE__, __LINE__, __FUNCTION__, gff->closure->nameAsString().c_str());
+        }
 #endif
+	/* The call below depends on the modified cl_apply function defined in lisp.cc
+	   it is set up to accept either a ValueFrame as the second (and last) argument
+	   or a StackFrame and treat it like a list of arguments.
+	*/
 	return eval::funcall(func,frame,_Nil<T_O>());
+#if 0	
+        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
+	    Function_sp gff = eval::lookupFunction(gf,frame);
+            printf("%s:%d:%s Returning from standard_dispatch  gf->%s\n",
+		   __FILE__, __LINE__, __FUNCTION__, gff->closure->nameAsString().c_str());
+	}
+	return result;
+#endif	
     }
 
 

@@ -505,14 +505,8 @@ namespace core
 	    Cons_sp situations = oCar(args).as_or_nil<Cons_O>();
 	    Cons_sp body = cCdr(args);
 	    bool execute = false;
-	    if ( af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue() )
-	    {
-		execute = true;
-	    }
-	    if ( execute )
-	    {
-		return sp_progn(body,environment);
-	    }
+	    if ( af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue() ) {execute = true;}
+	    if ( execute ) {return sp_progn(body,environment);}
 	    return(Values(_Nil<T_O>()));
 	}
 
@@ -1657,10 +1651,10 @@ namespace core
             };
         }
 
-        T_mv applyFunctionDesignatorToStackFrame(Closure* func, T_sp args)
+        T_mv applyClosureToStackFrame(Closure* func, T_sp stackFrame)
         {
             T_mv result;
-	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(args.px));
+	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(stackFrame.px));
             size_t nargs = frame::ValuesArraySize(frameImpl);
             T_O** a = frame::ValuesArray(frameImpl);
             switch (nargs) {
@@ -1668,18 +1662,19 @@ namespace core
 #include "applyToActivationFrame.h"
 #undef APPLY_TO_TAGGED_FRAME
             default:
-                SIMPLE_ERROR(BF("Add support for applyClosureToTaggedFrame for %d arguments") % nargs);
+                SIMPLE_ERROR(BF("Add support for applyClosureToStackFrame for %d arguments") % nargs);
             };
         }
 
 
-	T_mv applyToStackFrame(T_sp head,T_sp args )
+	T_mv applyToStackFrame(T_sp head,T_sp stackFrame )
 	{_G();
-	    Function_sp fn = lookupFunction(head,args);
-	    ASSERT(fn.framep());
+	    ASSERT(stackFrame.framep());
+	    Function_sp fn = lookupFunction(head,stackFrame);
+	    ASSERT(fn.notnilp());
             Closure* closureP = fn->closure;
-            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-	    return applyClosureToStackFrame(closureP,args);
+            ASSERTF(closureP!=NULL,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+	    return applyClosureToStackFrame(closureP,stackFrame);
 	}
 
 
@@ -1717,14 +1712,13 @@ namespace core
 	}
 	if ( lenArgs == 1 && oCar(args).notnilp() )
 	{
+	    T_sp onlyArg = oCar(args);
 	    Function_sp func = coerce::functionDesignator(head);
             if ( func.nilp() ) {
                 ERROR_UNDEFINED_FUNCTION(head);
-            } else if ( func.framep() ) {
-	Function fn = lookupFunction(head,
-		return eval::applyTnFrame(func,gctools::smart_ptr<ActivationFrame_O>(
-	    } else if ( ActivationFrame_sp singleFrame = oCar(args).asOrNull<ActivationFrame_O>() )
-	    {
+            } else if ( onlyArg.framep() ) {
+		return eval::applyToStackFrame(func,onlyArg);
+	    } else if ( ActivationFrame_sp singleFrame = onlyArg.asOrNull<ActivationFrame_O>() ) {
 		return eval::applyToActivationFrame(func,singleFrame);
 	    }
 	}

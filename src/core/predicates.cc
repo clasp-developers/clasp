@@ -111,8 +111,14 @@ namespace core
     bool af_fixnumP(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
-	return obj.isA<Fixnum_O>();
-    };
+	if ( obj.pointerp() ) {
+	    if ( Fixnum_sp fn = obj.asOrNull<Fixnum_O>() ) {
+		return true;
+	    }
+	    return false;
+	}
+	return false;
+    }
 
 
 

@@ -533,7 +533,7 @@ namespace frame
         }
     };
 
-    inline void InitializeStackValueFrameValues(core::T_O** frameImpl, size_t sz, core::T_sp parent, core::T_sp* initialContents  )
+    inline void InitializeStackValueFrameWithValues(core::T_O** frameImpl, size_t sz, core::T_sp parent, core::T_sp* initialContents  )
     {
 #ifdef DEBUG_FRAME
         printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz );
@@ -702,7 +702,7 @@ namespace frame
 #define ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl,oframe,numValues,values) \
     frame::ElementType* frameImpl = (frame::ElementType*)(__builtin_alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues))); \
     gctools::smart_ptr<core::STACK_FRAME> oframe(frameImpl);    \
-    frame::InitializeStackValueFrameWithValues(frameImpl,numValues,_Nil<T_O>,values)
+    frame::InitializeStackValueFrameWithValues(frameImpl,numValues,_Nil<T_O>(),values)
 #endif
 
 

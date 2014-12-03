@@ -56,6 +56,9 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,arithmeticError);
 
 
+
+
+    
     void brcl_deliver_fpe(int status)
     {
 	int bits = status & _lisp->trapFpeBits();
@@ -71,6 +74,22 @@ namespace core
 	}
     }
 
+
+
+#define ARGS_cl_zerop "(num)"
+#define DECL_cl_zerop ""
+#define DOCS_cl_zerop "fixnum_number_of_bits"
+    bool cl_zerop(T_sp num)
+    {_G();
+	if ( num.nilp() ) {
+	    WRONG_TYPE_ARG(num,cl::_sym_Number_O);
+	} else if ( num.tagged_fixnump() ) {
+	    return ( num.fixnum() == 0 );
+	} else if ( Number_sp nnum = num.asOrNull<Number_O>() ) {
+	    return nnum->zerop();
+	}
+	return false;
+    }
 
 
 #define ARGS_af_fixnum_number_of_bits "()"
@@ -1451,7 +1470,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     void Number_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<Number_O>()
-	    .def("zerop",&Number_O::zerop)
+	    //	    .def("core:zerop",&Number_O::zerop)
 	    .def("signum",&Number_O::signum)
 	    .def("abs",&Number_O::abs)
 	    .def("core:onePlus",&Number_O::onePlus)
@@ -1462,6 +1481,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	ClDefun(max);
 	SYMBOL_EXPORT_SC_(ClPkg,min);
 	ClDefun(min);
+	SYMBOL_EXPORT_SC_(ClPkg,zerop);
+	ClDefun(zerop);
 
 	SYMBOL_SC_(CorePkg,fixnum_number_of_bits);
 	Defun(fixnum_number_of_bits);
