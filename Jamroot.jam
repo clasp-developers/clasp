@@ -32,6 +32,7 @@ project clasp : requirements
         <target-os>darwin:<cxxflags>"-resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
         <cxxflags>"-Wno-deprecated-register"
         <define>CLBIND_DYNAMIC_LINK
+        <define>NDEBUG     # turns off some weird tests in clbind (will I eat these words?)
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
 	<target-os>linux:<linkflags>"-lpthread -ldl"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
