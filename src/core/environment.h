@@ -259,7 +259,7 @@ namespace core
     	Environment_sp	_ParentEnvironment;
 	
 	//! Compiler information
-	HashTableEq_sp  _Metadata;
+	//	HashTableEq_sp  _Metadata;
     public:
 	void initialize();
     public:
@@ -339,22 +339,6 @@ TRANSLATE(core::RuntimeVisibleEnvironment_O);
 
 namespace core
 {
-
-#if 0 // depreciated
-    struct SavedSpecial
-    {
-	Symbol_sp 	_Symbol;
-	T_sp 		_SavedValue;
-    };
-#endif
-
-#if 0 // depreciated
-    struct VariableDeclarations
-    {
-	Symbol_sp 	_ScopeKind; // :lexical :special
-	Cons_sp 	_Declarations; // a-list see variable-information
-    };
-#endif
     class ValueEnvironment_O : public RuntimeVisibleEnvironment_O
     {
 	LISP_BASE1(RuntimeVisibleEnvironment_O);
@@ -880,6 +864,53 @@ template<> struct gctools::GCInfo<core::SymbolMacroletEnvironment_O> {
 
 TRANSLATE(core::SymbolMacroletEnvironment_O);
 
+
+
+
+
+namespace core
+{
+
+    FORWARD(StackValueEnvironment);
+    class StackValueEnvironment_O : public CompileTimeEnvironment_O
+    {
+	LISP_BASE1(CompileTimeEnvironment_O);
+	LISP_CLASS(core,CorePkg,StackValueEnvironment_O,"StackValueEnvironment");
+	DECLARE_INIT();
+//    DECLARE_ARCHIVE();
+    public: // Simple default ctor/dtor
+	DEFAULT_CTOR_DTOR(StackValueEnvironment_O);
+    public: // ctor/dtor for classes with shared virtual base
+//    explicit StackValueEnvironment_O(core::Class_sp const& mc) : T_O(mc), Environment(mc) {};
+//    virtual ~StackValueEnvironment_O() {};
+    public:
+	void initialize();
+    GCPRIVATE: // instance variables here
+	HashTableEq_sp          _Values;
+    public: // Codes here
+	static StackValueEnvironment_sp make(Environment_sp env);
+    public:
+	
+	void addSymbolMacro(Symbol_sp sym, Function_sp expansion);
+
+	bool _findSymbolMacro(Symbol_sp sym, int& depth, int& level, bool& shadowed, Function_sp& func) const;
+
+	void throwErrorIfSymbolMacrosDeclaredSpecial(Cons_sp specialDeclaredSymbols) const;
+
+	virtual string summaryOfContents() const;
+
+
+    }; // StackValueEnvironment class
+    
+}; // core namespace
+template<> struct gctools::GCInfo<core::StackValueEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
+TRANSLATE(core::StackValueEnvironment_O);
 
 
 

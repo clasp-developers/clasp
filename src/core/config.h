@@ -65,7 +65,7 @@ typedef int claspCharacter;
 
 
 // OS X 10.6   LINUX 4096???
-#define CLASP_MAXPATHLEN	250
+#define CLASP_MAXPATHLEN	1024
 
 /*! TODO: Tie this to the Fixnum tagged pointer implementation */
 #define FIXNUM_BITS 32

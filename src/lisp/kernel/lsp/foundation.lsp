@@ -153,10 +153,7 @@ the corresponding VAR.  Returns NIL."
 	  t)
 
 
-(*make-special '*bytecodes-compiler*)
-(setq *bytecodes-compiler* nil)
-
-
+(defvar *bytecodes-compiler* nil)
 
 
 

@@ -2301,6 +2301,82 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
+    StackValueEnvironment_sp StackValueEnvironment_O::make(Environment_sp parent)
+    {_G();
+	StackValueEnvironment_sp environ = StackValueEnvironment_O::create();
+	environ->setupParent(parent);
+	return environ;
+    }
+
+
+    bool StackValueEnvironment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const
+    {_G();
+	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
+	value = this->_Values->find(sym);
+	if ( value.nilp() )
+	{
+	    return this->Base::_findValue(sym,depth,index,special,value);
+	}
+	LOG(BF(" Found binding %s")% fi->second );
+	return true;
+    }
+
+
+    void StackValueEnvironment_O::addValue(Symbol_sp sym, T_sp value)
+    {_G();
+	this->_Values->hash_table_setf_gethash(sym,expansion);
+    }
+
+
+    EXPOSE_CLASS(core,StackValueEnvironment_O);
+
+    void StackValueEnvironment_O::exposeCando(Lisp_sp lisp)
+    {
+	class_<StackValueEnvironment_O>()
+	    .def("addValue",&StackValueEnvironment_O::addValue)
+	    ;
+	af_def(CorePkg,"makeStackValueEnvironment",&StackValueEnvironment_O::make);
+    }
+
+    void StackValueEnvironment_O::exposePython(Lisp_sp lisp)
+    {_G();
+#ifdef USEBOOSTPYTHON
+	PYTHON_CLASS(CorePkg,StackValueEnvironment,"","",_lisp)
+	    ;
+#endif
+    }
+
+
+    void StackValueEnvironment_O::initialize()
+    {_G();
+	this->Base::initialize();
+        this->_Values = HashTableEq_O::create_default();
+    }
+
+
+    string StackValueEnvironment_O::summaryOfContents() const
+    {_G();
+	int tab = _sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>()->get();
+	stringstream ss;
+	this->_Values->mapHash( [tab,&ss] (T_sp key, T_sp value ) {
+                ss << string(tab,' ') << _rep_(key);
+                ss << " --> " << _rep_(value);
+                ss << std::endl;
+            } );
+	ss << this->Base::summaryOfContents();
+	return ss.str();
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

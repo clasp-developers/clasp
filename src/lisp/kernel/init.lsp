@@ -4,6 +4,8 @@
 
 
 (SYS:*MAKE-SPECIAL 'core:*echo-repl-tpl-read*)
+:pause-hir
+
 (setq core:*echo-repl-tpl-read*
   #+emacs-inferior-lisp t
   #-emacs-inferior-lisp nil)
