@@ -25,131 +25,254 @@
 ;; This is needed only when bootstrapping ECL using ECL-MIN
 (eval-when (eval)
   (si::fset 'ext:register-with-pde
-	  #'(ext::lambda-block ext:register-with-pde (whole env)
-	       (let* ((definition (second whole))
-		      (output-form (third whole)))
-		 `(if ext:*register-with-pde-hook*
-		      (funcall ext:*register-with-pde-hook*
-			       (copy-tree *source-location*)
-			       ,definition
-			       ,output-form)
-		      ,output-form)))
-	  t)
-  (si::fset 'defun
-	  #'(ext::lambda-block defun (def env)
-	      (let* ((name (second def))
-		     (function `#'(ext::lambda-block ,@(cdr def))))
-		(when *dump-defun-definitions*
-		  (print function)
-		  (setq function `(si::bc-disassemble ,function)))
-		(ext:register-with-pde def `(si::fset ',name ,function))))
-	  t)
- (si::fset 'in-package
- 	  #'(ext::lambda-block in-package (def env)
-	      `(eval-when (eval compile load)
-		(si::select-package ,(string (second def)))))
- 	  t)
+	    (function 
+	     #+ecl(ext::lambda-block ext:register-with-pde (whole env)
+				     (let* ((definition (second whole))
+					    (output-form (third whole)))
+				       `(if ext:*register-with-pde-hook*
+					    (funcall ext:*register-with-pde-hook*
+						     (copy-tree *source-location*)
+						     ,definition
+						     ,output-form)
+					    ,output-form)))
+	     #+clasp(lambda (whole env)
+	      (let* ((definition (second whole))
+		     (output-form (third whole)))
+		`(if ext:*register-with-pde-hook*
+		     (funcall ext:*register-with-pde-hook*
+			      (copy-tree *source-location*)
+			      ,definition
+			      ,output-form)
+		     ,output-form)))
+	     )
+	    t)
+  #+(or)(si::fset 'defun
+		  (function 
+		   #+ecl(ext::lambda-block defun (def env)
+					   (let* ((name (second def))
+						  (function `#'(ext::lambda-block ,@(cdr def))))
+					     (when *dump-defun-definitions*
+					       (print function)
+					       (setq function `(si::bc-disassemble ,function)))
+					     (ext:register-with-pde def `(si::fset ',name ,function))))
+		   #+clasp(lambda (def env)
+		    (let ((name (second def))
+			  (lambda-list (third def))
+			  (lambda-body (cdddr def)))
+		      (multiple-value-bind (decl body doc)
+			  (si::process-declarations lambda-body t)
+			(when decl (setq decl (list (cons 'declare decl))))
+			(when doc (setq doc (list doc)))
+			(let ((function `(function (lambda ,lambda-list ,@decl ,@doc
+							   (block ,(si::function-block-name name) ,@body)))))
+			  (ext:register-with-pde def `(si::fset ',name ,function))))))
+		   )
+		  t)
+  (si::fset 'in-package
+	    (function 
+	     #+ecl(ext::lambda-block in-package (def env)
+				     `(eval-when (eval compile load)
+					(si::select-package ,(string (second def)))))
+	     #+clasp(lambda (def env)
+		`(eval-when (eval compile load)
+		   (si::select-package ,(string (second def)))))
+	     )
+	    t)
 )
 
 ;;
 ;; This is also needed for booting ECL. In particular it is required in
 ;; defmacro.lsp.
 ;;
-(let ((f #'(ext::lambda-block dolist (whole env)
-           (declare (ignore env))
-	   (let (body pop finished control var expr exit)
-	     (setq body (rest whole))
-	     (when (endp body)
-	       (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
-	     (setq control (first body) body (rest body))
-	     (when (endp control)
-	       (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
-	     (setq var (first control) control (rest control))
-	     (if (<= 1 (length control) 2)
-		 (setq expr (first control) exit (rest control))
-		 (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
-	     (multiple-value-bind (declarations body)
-		 (process-declarations body nil)
-	       `(block nil
-		 (let* ((%dolist-var ,expr)
-			,var)
-		   (declare ,@declarations)
-		   (si::while %dolist-var
-		      (setq ,var (first %dolist-var))
-		      ,@body
-		      (setq %dolist-var (cons-cdr %dolist-var)))
-		   ,(when exit `(setq ,var nil))
-		   ,@exit)))))))
-  (si::fset 'dolist f t))
+#+ecl(let ((f #'(ext::lambda-block dolist (whole env)
+				   (declare (ignore env))
+				   (let (body pop finished control var expr exit)
+				     (setq body (rest whole))
+				     (when (endp body)
+				       (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+				     (setq control (first body) body (rest body))
+				     (when (endp control)
+				       (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+				     (setq var (first control) control (rest control))
+				     (if (<= 1 (length control) 2)
+					 (setq expr (first control) exit (rest control))
+					 (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+				     (multiple-value-bind (declarations body)
+					 (process-declarations body nil)
+				       `(block nil
+					  (let* ((%dolist-var ,expr)
+						 ,var)
+					    (declare ,@declarations)
+					    (si::while %dolist-var
+						       (setq ,var (first %dolist-var))
+						       ,@body
+						       (setq %dolist-var (cons-cdr %dolist-var)))
+					    ,(when exit `(setq ,var nil))
+					    ,@exit)))))))
+       (si::fset 'dolist f t))
 
-(let ((f #'(ext::lambda-block dotimes (whole env)
-           (declare (ignore env))
-	   (let (body pop finished control var expr exit)
-	     (setq body (rest whole))
-	     (when (endp body)
-	       (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
-	     (setq control (first body) body (rest body))
-	     (when (endp control)
-	       (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
-	     (setq var (first control) control (rest control))
-	     (if (<= 1 (length control) 2)
-		 (setq expr (first control) exit (rest control))
-		 (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
-	     (multiple-value-bind (declarations body)
-		 (process-declarations body nil)
-               (when (integerp expr)
-                 (setq declarations
-                       (cons `(type (integer 0 ,expr) ,var) declarations)))
-	       `(block nil
-		 (let* ((%dotimes-var ,expr)
-			(,var 0))
-		   (declare ,@declarations)
-		   (si::while (< ,var %dotimes-var)
-		     ,@body
-		     (setq ,var (1+ ,var)))
-		   ,@exit)))))))
-  (si::fset 'dotimes f t))
-
-(let ((f #'(ext::lambda-block do/do*-expand (whole env)
-           (declare (ignore env))
-           (let (do/do* control test result vl step let psetq body)
-	     (setq do/do* (first whole) body (rest whole))
-	     (if (eq do/do* 'do)
-		 (setq let 'LET psetq 'PSETQ)
-		 (setq let 'LET* psetq 'SETQ))
-	     (when (endp body)
-	       (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
-	     (setq control (first body) body (rest body))
-	     (when (endp body)
-	       (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
-	     (setq test (first body) body (rest body))
-	     (when (endp test)
-	       (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
-	     (setq result (rest test) test (first test))
-	     (dolist (c control)
-	       (when (symbolp c) (setq c (list c)))
-	       (case (length c)
-		 ((1 2)
-		  (setq vl (cons c vl)))
-		 (3
-		  (setq vl (cons (butlast c) vl)
-			step (list* (third c) (first c) step)))
-		 (t
-		  (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))))
-	     (multiple-value-bind (declarations real-body)
-		 (process-declarations body nil)
-	       `(BLOCK NIL
-		 (,let ,(nreverse vl)
-		   (declare ,@declarations)
-		   (sys::until ,test
-		      ,@real-body
-		      ,@(when step (list (cons psetq (nreverse step)))))
-		   ,@(or result '(nil)))))))))
-  (si::fset 'do f t)
-  (si::fset 'do* f t))
+#+clasp(let ((f #'(lambda (whole env)
+		    (declare (ignore env))
+		    (let (body pop finished control var expr exit)
+		      (setq body (rest whole))
+		      (when (endp body)
+			(simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+		      (setq control (first body) body (rest body))
+		      (when (endp control)
+			(simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+		      (setq var (first control) control (rest control))
+		      (if (<= 1 (length control) 2)
+			  (setq expr (first control) exit (rest control))
+			  (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+		      (multiple-value-bind (declarations body)
+			  (process-declarations body nil)
+			`(block nil
+			   (let* ((%dolist-var ,expr)
+				  ,var)
+			     (declare ,@declarations)
+			     (si::while %dolist-var
+					(setq ,var (first %dolist-var))
+					,@body
+					(setq %dolist-var (cons-cdr %dolist-var)))
+			     ,(when exit `(setq ,var nil))
+			     ,@exit)))))))
+	 (si::fset 'dolist f t))
 
 
-#-brcl
+
+#+ecl(let ((f #'(ext::lambda-block dotimes (whole env)
+				   (declare (ignore env))
+				   (let (body pop finished control var expr exit)
+				     (setq body (rest whole))
+				     (when (endp body)
+				       (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+				     (setq control (first body) body (rest body))
+				     (when (endp control)
+				       (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+				     (setq var (first control) control (rest control))
+				     (if (<= 1 (length control) 2)
+					 (setq expr (first control) exit (rest control))
+					 (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+				     (multiple-value-bind (declarations body)
+					 (process-declarations body nil)
+				       (when (integerp expr)
+					 (setq declarations
+					       (cons `(type (integer 0 ,expr) ,var) declarations)))
+				       `(block nil
+					  (let* ((%dotimes-var ,expr)
+						 (,var 0))
+					    (declare ,@declarations)
+					    (si::while (< ,var %dotimes-var)
+						       ,@body
+						       (setq ,var (1+ ,var)))
+					    ,@exit)))))))
+       (si::fset 'dotimes f t))
+#+clasp(let ((f #'(lambda (whole env)
+		    (declare (ignore env))
+		    (let (body pop finished control var expr exit)
+		      (setq body (rest whole))
+		      (when (endp body)
+			(simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+		      (setq control (first body) body (rest body))
+		      (when (endp control)
+			(simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+		      (setq var (first control) control (rest control))
+		      (if (<= 1 (length control) 2)
+			  (setq expr (first control) exit (rest control))
+			  (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+		      (multiple-value-bind (declarations body)
+			  (process-declarations body nil)
+			(when (integerp expr)
+			  (setq declarations
+				(cons `(type (integer 0 ,expr) ,var) declarations)))
+			`(block nil
+			   (let* ((%dotimes-var ,expr)
+				  (,var 0))
+			     (declare ,@declarations)
+			     (si::while (< ,var %dotimes-var)
+					,@body
+					(setq ,var (1+ ,var)))
+			     ,@exit)))))))
+	 (si::fset 'dotimes f t))
+
+#+ecl(let ((f #'(ext::lambda-block do/do*-expand (whole env)
+				   (declare (ignore env))
+				   (let (do/do* control test result vl step let psetq body)
+				     (setq do/do* (first whole) body (rest whole))
+				     (if (eq do/do* 'do)
+					 (setq let 'LET psetq 'PSETQ)
+					 (setq let 'LET* psetq 'SETQ))
+				     (when (endp body)
+				       (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
+				     (setq control (first body) body (rest body))
+				     (when (endp body)
+				       (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
+				     (setq test (first body) body (rest body))
+				     (when (endp test)
+				       (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
+				     (setq result (rest test) test (first test))
+				     (dolist (c control)
+				       (when (symbolp c) (setq c (list c)))
+				       (case (length c)
+					 ((1 2)
+					  (setq vl (cons c vl)))
+					 (3
+					  (setq vl (cons (butlast c) vl)
+						step (list* (third c) (first c) step)))
+					 (t
+					  (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))))
+				     (multiple-value-bind (declarations real-body)
+					 (process-declarations body nil)
+				       `(BLOCK NIL
+					  (,let ,(nreverse vl)
+					    (declare ,@declarations)
+					    (sys::until ,test
+							,@real-body
+							,@(when step (list (cons psetq (nreverse step)))))
+					    ,@(or result '(nil)))))))))
+       (si::fset 'do f t)
+       (si::fset 'do* f t))
+
+#+clasp(let ((f #'(lambda (whole env)
+		    (declare (ignore env))
+		    (let (do/do* control test result vl step let psetq body)
+		      (setq do/do* (first whole) body (rest whole))
+		      (if (eq do/do* 'do)
+			  (setq let 'LET psetq 'PSETQ)
+			  (setq let 'LET* psetq 'SETQ))
+		      (when (endp body)
+			(simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
+		      (setq control (first body) body (rest body))
+		      (when (endp body)
+			(simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
+		      (setq test (first body) body (rest body))
+		      (when (endp test)
+			(simple-program-error "Syntax error in ~A:~%~A" do/do* whole))
+		      (setq result (rest test) test (first test))
+		      (dolist (c control)
+			(when (symbolp c) (setq c (list c)))
+			(case (length c)
+			  ((1 2)
+			   (setq vl (cons c vl)))
+			  (3
+			   (setq vl (cons (butlast c) vl)
+				 step (list* (third c) (first c) step)))
+			  (t
+			   (simple-program-error "Syntax error in ~A:~%~A" do/do* whole))))
+		      (multiple-value-bind (declarations real-body)
+			  (process-declarations body nil)
+			`(BLOCK NIL
+			   (,let ,(nreverse vl)
+			     (declare ,@declarations)
+			     (sys::until ,test
+					 ,@real-body
+					 ,@(when step (list (cons psetq (nreverse step)))))
+			     ,@(or result '(nil)))))))))
+	 (si::fset 'do f t)
+	 (si::fset 'do* f t))
+
+
+#-clasp
 (defun eval-feature (x &aux operator)
   (declare (si::c-local))
   (cond ((symbolp x)
@@ -165,7 +288,7 @@
 	 (not (eval-feature (second x))))
 	(t (error "~S is not a valid feature expression." x))))
 
-#-brcl
+#-clasp
 (defun do-read-feature (stream subchar arg test)
   (declare (si::c-local))
   (when arg
@@ -177,15 +300,15 @@
 	(read stream t nil t)
 	(let ((*read-suppress* t)) (read stream t nil t) (values)))))
 
-#-brcl
+#-clasp
 (defun sharp-+-reader (stream subchar arg)
   (do-read-feature stream subchar arg T))
 
-#-brcl
+#-clasp
 (defun sharp---reader (stream subchar arg)
   (do-read-feature stream subchar arg NIL))
 
-#-brcl
+#-clasp
 (progn
   (si::readtable-lock (si::standard-readtable) nil)
   (set-dispatch-macro-character #\# #\+ 'sharp-+-reader)

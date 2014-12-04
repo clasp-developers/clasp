@@ -9,7 +9,7 @@
         (core:process-single-dispatch-lambda-list lambda-list)
       ;;    (print (list "body" body))
       (multiple-value-bind (declares code docstring specials)
-          (core:process-declarations body)
+          (core:process-declarations body t)
         (let* ((fn (compile nil `(lambda ,simple-lambda-list
                                    (flet ((call-next-method (&rest args)
                                             (error "In defvirtual defined call-next-method ~ implement a proper one%")

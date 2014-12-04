@@ -16,40 +16,74 @@
 
 #+ecl-min
 (si::fset 'push
-	  #'(ext::lambda-block push (args env)
+	  (function 
+	   #+ecl(ext::lambda-block push (args env)
+				   (let* ((what (second args))
+					  (where (caddr args)))
+				     `(setq ,where (cons ,what ,where))))
+	   #+clasp(lambda (args env)
+	    (block push
 	      (let* ((what (second args))
 		     (where (caddr args)))
-		`(setq ,where (cons ,what ,where))))
+		`(setq ,where (cons ,what ,where)))))
+	   )
 	  t)
 
 #+ecl-min
 (si::fset 'pop
-	  #'(ext::lambda-block pop (args env)
+	  (function 
+	   #+ecl(ext::lambda-block pop (args env)
+				   (let ((where (cadr args)))
+				     `(let* ((l ,where)
+					     (v (car l)))
+					(setq ,where (cdr l))
+					v)))
+	   #+clasp(lambda (args env)
+	    (block pop
 	      (let ((where (cadr args)))
 		`(let* ((l ,where)
 			(v (car l)))
-		  (setq ,where (cdr l))
-		  v)))
+		   (setq ,where (cdr l))
+		   v))))
+	   )
 	  t)
 
 #+ecl-min
 (si::fset 'incf
-	  #'(ext::lambda-block incf (args env)
+	  (function 
+	   #+ecl(ext::lambda-block incf (args env)
+				   (let* ((where (second args))
+					  (what (caddr args)))
+				     (if what
+					 `(setq ,where (+ ,where ,what))
+					 `(setq ,where (1+ ,where)))))
+	   #+clasp(lambda (args env)
+	    (block incf
 	      (let* ((where (second args))
 		     (what (caddr args)))
 		(if what
-		  `(setq ,where (+ ,where ,what))
-		  `(setq ,where (1+ ,where)))))
+		    `(setq ,where (+ ,where ,what))
+		    `(setq ,where (1+ ,where))))))
+	   )
 	  t)
 
 #+ecl-min
 (si::fset 'decf
-	  #'(ext::lambda-block decf (args env)
+	  (function 
+	   #+ecl(ext::lambda-block decf (args env)
+				   (let* ((where (second args))
+					  (what (caddr args)))
+				     (if what
+					 `(setq ,where (- ,where ,what))
+					 `(setq ,where (1- ,where)))))
+	   #+clasp(lambda (args env)
+	    (block decf
 	      (let* ((where (second args))
 		     (what (caddr args)))
 		(if what
-		  `(setq ,where (- ,where ,what))
-		  `(setq ,where (1- ,where)))))
+		    `(setq ,where (- ,where ,what))
+		    `(setq ,where (1- ,where))))))
+	   )
 	  t)
 
 (defun sys::search-keyword (list key)
@@ -226,17 +260,17 @@
       (process-declarations body t)
     (when decls (push `(declare ,@decls) body))
     (values body doc)))
-#+brcl(export 'remove-documentation)
+#+clasp(export 'remove-documentation)
 
-(defun find-declarations (body &optional (doc t))
+(defun find-declarations (body &optional (docp t))
   (multiple-value-bind (decls body doc)
-      (process-declarations body doc)
+      (process-declarations body docp)
     (values (if decls `((declare ,@decls)) nil)
 	    body doc)))
 
 (defun sys::expand-defmacro (name vl body)
   (multiple-value-bind (decls body doc)
-    (find-declarations body)
+      (find-declarations body)
     ;; We turn (a . b) into (a &rest b)
     ;; This is required because MEMBER (used below) does not like improper lists
     (let ((cell (last vl)))
@@ -252,18 +286,45 @@
                 decls (list* `(declare (ignore ,env)) decls)))
       (multiple-value-bind (ppn whole dl arg-check ignorables)
           (destructure vl t)
-        (values `(ext::lambda-block ,name (,whole ,env &aux ,@dl)
-				    (declare (ignorable ,@ignorables))
-                                    ,@decls 
-                                    ,@arg-check
-                                    ,@body)
-                ppn
-                doc)))))
+        #+ecl(values 
+	      `(ext::lambda-block ,name (,whole ,env &aux ,@dl)
+				  (declare (ignorable ,@ignorables))
+				  ,@decls 
+				  ,@arg-check
+				  ,@body)
+	      ppn
+	      doc)
+	#+clasp(values 
+		`(lambda (,whole ,env &aux ,@dl)
+		   (declare (ignorable ,@ignorables))
+		   ,@decls
+		   (block ,name
+		     ,@arg-check
+		     ,@body))
+		ppn
+		doc)
+	))))
 
 #+ecl-min
 (si::fset 'defmacro
-	  #'(ext::lambda-block defmacro (def env)
-              (declare (ignore env))
+	  (function 
+	   #+ecl(ext::lambda-block defmacro (def env)
+				   (declare (ignore env))
+				   (let* ((name (second def))
+					  (vl (third def))
+					  (body (cdddr def))
+					  (function))
+				     (multiple-value-bind (function pprint doc)
+					 (sys::expand-defmacro name vl body)
+				       (declare (ignore doc))
+				       (setq function `(function ,function))
+				       (when *dump-defmacro-definitions*
+					 (print function)
+					 (setq function `(si::bc-disassemble ,function)))
+				       (ext:register-with-pde def `(si::fset ',name ,function t ,pprint)))))
+	   #+clasp(lambda (def env)
+	    (declare (ignore env))
+	    (block defmacro
 	      (let* ((name (second def))
 		     (vl (third def))
 		     (body (cdddr def))
@@ -275,7 +336,8 @@
 		  (when *dump-defmacro-definitions*
 		    (print function)
 		    (setq function `(si::bc-disassemble ,function)))
-		  (ext:register-with-pde def `(si::fset ',name ,function t ,pprint)))))
+		  (ext:register-with-pde def `(si::fset ',name ,function t ,pprint))))))
+	   )
 	  t)
 
 ;;; valid lambda-list to DESTRUCTURING-BIND is:
@@ -322,7 +384,7 @@
 ;;;
 ;;; MACROLET HELPER
 ;;;
-#-brcl
+#-clasp
 (defun cmp-env-for-bytecodes (old-env)
   "Produce an environment which is safe to pass to the bytecodes
 compiler. We remove all blocks and tags and ensure that
@@ -363,7 +425,7 @@ from the function in which it appears." name))))
 			(list (first i) 'SI:MACRO (local-fun-error-function (first i))))
 		      macros)))))))
 
-#-brcl
+#-clasp
 (defun macrolet-functions (definitions old-env)
   (declare (si::c-local))
   (let ((env (cmp-env-for-bytecodes old-env)))
@@ -377,7 +439,7 @@ from the function in which it appears." name))))
 		   definitions))
      env nil t)))
 
-#-brcl
+#-clasp
 (defun cmp-env-register-macrolet (definitions old-env)
   (let ((macros (cdr old-env)))
     (dolist (record (macrolet-functions definitions old-env))

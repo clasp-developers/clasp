@@ -142,7 +142,7 @@ namespace core
 
     SYMBOL_EXPORT_SC_(ClPkg,nil);
     SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
-
+    SYMBOL_EXPORT_SC_(CorePkg,_PLUS_standardReadtable_PLUS_);
     SYMBOL_EXPORT_SC_(KeywordPkg,load);
     SYMBOL_EXPORT_SC_(KeywordPkg,eval);
     SYMBOL_EXPORT_SC_(KeywordPkg,ecl_min);
@@ -633,7 +633,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	    exposeCando_Numerics();
 	    exposeCore_lisp_reader();
 	    {
-		ReadTable_sp readtable = ReadTable_O::create_standard_readtable(_lisp);
+		ReadTable_sp readtable = ReadTable_O::create_standard_readtable();
 		cl::_sym_STARreadtableSTAR->defparameter(readtable);
 	    }
 	    break;
@@ -934,6 +934,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         cl::_sym_lambdaParametersLimit->defconstant(Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
         cl::_sym_arrayDimensionLimit->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
         cl::_sym_arrayTotalSizeLimit->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
+	core::_sym__PLUS_standardReadtable_PLUS_->defparameter(_Nil<T_O>());
         core::_sym_STARpollTicksPerGcSTAR->defparameter(Fixnum_O::create(POLL_TICKS_PER_GC));
 	comp::_sym_STARlowLevelTraceSTAR->defparameter(_Nil<core::T_O>());
 	comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<core::T_O>());
@@ -1054,7 +1055,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	features << address_model;
 
 	// Now add other standard features
-	features << kw::_sym_brcl;
+	// features << kw::_sym_brcl;
 
 	cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features.cons());
 

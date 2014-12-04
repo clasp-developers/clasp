@@ -222,8 +222,8 @@
 	  (values (float 0.0l0 original-x) 1)
 	  (let* ((ex (round (* exponent (log 2l0 10))))
 		 (x (if (minusp ex)
-			(if #-ecl(float-denormalized-p x)
-			    #+ecl(< least-negative-normalized-long-float
+			(if #-(or ecl clasp)(float-denormalized-p x)
+			    #+(or ecl clasp)(< least-negative-normalized-long-float
 				    x
 				    least-positive-normalized-long-float)
 			    #-long-float
@@ -243,9 +243,9 @@
 		      (values (float z original-x) ex))))))))))
 
 (defstruct (format-directive
-	    #-ecl(:print-function %print-format-directive)
-	    #+ecl :named
-	    #+ecl(:type vector))
+	    #-(or ecl clasp)(:print-function %print-format-directive)
+	    #+(or ecl clasp) :named
+	    #+(or ecl clasp) (:type vector))
   (string t :type simple-string)
   (start 0 :type (and unsigned-byte fixnum))
   (end 0 :type (and unsigned-byte fixnum))
@@ -256,7 +256,7 @@
 
 (deftype format-directive () 'vector)
 
-#-ecl
+#-(or ecl clasp)
 (defun %print-format-directive (struct stream depth)
   (declare (ignore depth))
   (print-unreadable-object (struct stream)
@@ -511,7 +511,7 @@
 	   (fmt-log "line 510 args:" args)
 	   (interpret-directive-list stream (cdr directives) orig-args args)
 	   )
-	  (#-ecl format-directive #+ecl vector
+	  (#-(or ecl clasp) format-directive #+(or ecl clasp) vector
 		 (multiple-value-bind
 		       (new-directives new-args)
 		     (let ((function
@@ -531,7 +531,7 @@
 			     (funcall function stream directive
 				      (cdr directives) orig-args args))
 			 (fmt-log "------> line 533 new-directives: " new-directives " new-args: " new-args )
-;;			 #+brcl(core:ihs-backtrace "line534")
+;;			 #+clasp(core:ihs-backtrace "line534")
 			 (values new-directives new-args))
 		       )
 		   (progn
@@ -541,7 +541,7 @@
 					       orig-args new-args))))))
       (progn
 	(fmt-log "line 542 interpret-directive-list returning: " args)
-;;	#+brcl(core:ihs-backtrace "line 543 interpret-directive-list returning")
+;;	#+clasp(core:ihs-backtrace "line 543 interpret-directive-list returning")
 	args)))
 
 
@@ -686,21 +686,37 @@
 	 (defun-name (intern (concatenate 'string name "-FORMAT-DIRECTIVE-EXPANDER")))
 	 (directive (gensym))
 	 (directives (if lambda-list (car (last lambda-list)) (gensym))))
-    `(%set-format-directive-expander ,char
-       (ext::lambda-block ,defun-name (,directive ,directives)
-	 ,@(if lambda-list
-	       `((let ,(mapcar #'(lambda (var)
-				   `(,var
-				     (,(intern (concatenate
-						'string
-						"FORMAT-DIRECTIVE-"
-						(symbol-name var))
-					       (symbol-package 'foo))
-				      ,directive)))
-			       (butlast lambda-list))
-		   ,@body))
-	       `((declare (ignore ,directive ,directives))
-		 ,@body))))))
+    `(%set-format-directive-expander 
+      ,char
+      #+ecl(ext::lambda-block ,defun-name (,directive ,directives)
+			      ,@(if lambda-list
+				    `((let ,(mapcar #'(lambda (var)
+							`(,var
+							  (,(intern (concatenate
+								     'string
+								     "FORMAT-DIRECTIVE-"
+								     (symbol-name var))
+								    (symbol-package 'foo))
+							    ,directive)))
+						    (butlast lambda-list))
+					,@body))
+				    `((declare (ignore ,directive ,directives))
+				      ,@body)))
+      #+clasp(lambda (,directive ,directives)
+	       ,@(if lambda-list
+		     `((let ,(mapcar #'(lambda (var)
+					 `(,var
+					   (,(intern (concatenate
+						      'string
+						      "FORMAT-DIRECTIVE-"
+						      (symbol-name var))
+						     (symbol-package 'foo))
+					     ,directive)))
+				     (butlast lambda-list))
+			 ,@body))
+		     `((declare (ignore ,directive ,directives))
+		       ,@body)))
+       )))
 
 (defmacro def-format-directive (char lambda-list &body body)
   #+formatter
@@ -1338,7 +1354,7 @@
   (declare (si::c-local))
   (cond
    ((or (not (or w d))
-	#-ecl
+	#-(or ecl clasp)
 	(and (floatp number)
 	     (or (float-infinity-p number)
 		 (float-nan-p number))))
@@ -1440,11 +1456,11 @@
 ;;; of causing an error.
 (defun format-exp-aux (stream number w d e k ovf pad marker atsign)
   (declare (si::c-local))
-  (if #-ecl
+  (if #-(or ecl clasp)
       (and (floatp number)
 	   (or (float-infinity-p number)
 	       (float-nan-p number)))
-      #+ecl nil
+      #+(or ecl clasp) nil
       (prin1 number stream)
       (multiple-value-bind (num expt)
 			   (sys::scale-exponent (abs number))
@@ -1529,11 +1545,11 @@
 ;;; toy@rtp.ericsson.se:  Same change as for format-exp-aux.
 (defun format-general-aux (stream number w d e k ovf pad marker atsign)
   (declare (si::c-local))
-  (if #-ecl
+  (if #-(or ecl clasp)
       (and (floatp number)
 	   (or (float-infinity-p number)
 	       (float-nan-p number)))
-      #+ecl nil
+      #+(or ecl clasp) nil
       (prin1 number stream)
       (multiple-value-bind (ignore n) 
 	  (sys::scale-exponent (abs number))
@@ -1780,9 +1796,9 @@
 (defun format-relative-tab (stream colrel colinc)
   #-formatter
   (declare (si::c-local))
-  (if (#-ecl pp:pretty-stream-p #+ecl sys::pretty-stream-p stream)
+  (if (#-(or ecl clasp) pp:pretty-stream-p #+(or ecl clasp) sys::pretty-stream-p stream)
       (pprint-tab :line-relative colrel colinc stream)
-      (let* ((cur (#-ecl sys::charpos #+ecl sys::file-column stream))
+      (let* ((cur (#-(or ecl clasp) sys::charpos #+(or ecl clasp) sys::file-column stream))
 	     (spaces (if (and cur (plusp colinc))
 			 (- (* (ceiling (+ cur colrel) colinc) colinc) cur)
 			 colrel)))
@@ -1791,9 +1807,9 @@
 (defun format-absolute-tab (stream colnum colinc)
   #-formatter
   (declare (si::c-local))
-  (if (#-ecl pp:pretty-stream-p #+ecl sys::pretty-stream-p stream)
+  (if (#-(or ecl clasp) pp:pretty-stream-p #+(or ecl clasp) sys::pretty-stream-p stream)
       (pprint-tab :line colnum colinc stream)
-      (let ((cur (#-ecl sys::charpos #+ecl sys:file-column stream)))
+      (let ((cur (#-(or ecl clasp) sys::charpos #+(or ecl clasp) sys:file-column stream)))
 	(cond ((null cur)
 	       (write-string "  " stream))
 	      ((< cur colnum)
@@ -1978,7 +1994,7 @@
 	   (after (nthcdr (1+ posn) directives)))
       (values
        (expand-bind-defaults () params
-	 #-ecl
+	 #-(or ecl clasp)
 	 `(let ((stream (make-case-frob-stream stream
 					       ,(if colonp
 						    (if atsignp
@@ -1988,7 +2004,7 @@
 							:capitalize-first
 							:downcase)))))
 	    ,@(expand-directive-list before))
-	 #+ecl
+	 #+(or ecl clasp)
 	 `(let ((string (make-array 10 :element-type 'character
 				       :fill-pointer 0 :adjustable t)))
 	    (unwind-protect
@@ -2007,7 +2023,7 @@
       (error 'format-error
 	     :complaint "No corresponding close paren."))
     (interpret-bind-defaults () params
-      #-ecl
+      #-(or ecl clasp)
       (let* ((posn (position close directives))
 	     (before (subseq directives 0 posn))
 	     (after (nthcdr (1+ posn) directives))
@@ -2023,7 +2039,7 @@
 	(setf args (interpret-directive-list stream before orig-args args))
 	(fmt-log "line 2014 args: " args)
 	after)
-      #+ecl
+      #+(or ecl clasp)
       (let* ((posn (position close directives))
 	     (before (subseq directives 0 posn))
 	     (jumped t)
@@ -2581,7 +2597,7 @@
 			 ,@(expand-directive-list (pop segments))))
 		 ,(expand-bind-defaults
 		      ((extra 0)
-		       (line-len '(or #-ecl (sys::line-length stream) 72)))
+		       (line-len '(or #-(or ecl clasp) (sys::line-length stream) 72)))
 		      (format-directive-params first-semi)
 		    `(setf extra-space ,extra line-len ,line-len))))
 	   ,@(mapcar #'(lambda (segment)
@@ -2612,7 +2628,7 @@
 		(check-output-layout-mode 2)
 		(interpret-bind-defaults
 		    ((extra 0)
-		     (len (or #-ecl (sys::line-length stream) 72)))
+		     (len (or #-(or ecl clasp) (sys::line-length stream) 72)))
 		    (format-directive-params first-semi)
 		  (setf newline-string
 			(with-output-to-string (stream)
@@ -2650,7 +2666,7 @@
 		     mincol))
 	 (padding (- length chars)))
     (when (and newline-prefix
-	       (> (+ (or (#-ecl sys::charpos #+ecl sys:file-column stream) 0)
+	       (> (+ (or (#-(or ecl clasp) sys::charpos #+(or ecl clasp) sys:file-column stream) 0)
 		     length extra-space)
 		  line-len))
       (write-string newline-prefix stream))
@@ -2868,7 +2884,7 @@
 
 ;;;; Compile-time checking of format arguments and control string
 
-#-ecl(progn
+#-(or ecl clasp)(progn
 ;;;
 ;;; Return the min/max numbers of arguments required for a call to
 ;;; FORMAT with control string FORMAT-STRING, null if we can't tell,
@@ -2877,90 +2893,90 @@
 ;;;
 ;;; This is called from FORMAT deftransforms.
 ;;;
-(defun min/max-format-arguments-count (string)
-  #-formatter
-  (declare (si::c-local))
-  (handler-case
-      (catch 'give-up
-	;; For the side effect of validating the control string.
-	(%formatter string)
-	(%min/max-format-args (tokenize-control-string string)))
-    (format-error (e)
-      (format nil "~a" e))))
+		  (defun min/max-format-arguments-count (string)
+		    #-formatter
+		    (declare (si::c-local))
+		    (handler-case
+			(catch 'give-up
+			  ;; For the side effect of validating the control string.
+			  (%formatter string)
+			  (%min/max-format-args (tokenize-control-string string)))
+		      (format-error (e)
+			(format nil "~a" e))))
 
-(defun %min/max-format-args (directives)
-  #-formatter
-  (declare (si::c-local))
-  (let ((min-req 0) (max-req 0))
-    (flet ((incf-both (&optional (n 1))
-	     (incf min-req n)
-	     (incf max-req n)))
-      (loop
-	 (let ((dir (pop directives)))
-	   (when (null dir)
-	     (return (values min-req max-req)))
-	   (when (format-directive-p dir)
-	     (incf-both (count :arg (format-directive-params dir) :key #'cdr))
-	     (let ((c (format-directive-character dir)))
-	       (cond ((find c "ABCDEFGORSWX$/")
-		      (incf-both))
-		     ((char= c #\P)
-		      (unless (format-directive-colonp dir)
-			(incf-both)))
-		     ((or (find c "IT%&|_<>();") (char= c #\newline)))
-		     ((char= c #\[)
-		      (multiple-value-bind (min max remaining)
-			  (%min/max-conditional-args dir directives)
-			(setq directives remaining)
-			(incf min-req min)
-			(incf max-req max)))
-		     ((char= c #\{)
-		      (multiple-value-bind (min max remaining)
-			  (%min/max-iteration-args dir directives)
-			(setq directives remaining)
-			(incf min-req min)
-			(incf max-req max)))
-		     ((char= c #\?)
-		      (cond ((format-directive-atsignp dir)
-			     (incf min-req)
-			     (setq max-req most-positive-fixnum))
-			    (t (incf-both 2))))
-		     (t (throw 'give-up nil))))))))))
+		  (defun %min/max-format-args (directives)
+		    #-formatter
+		    (declare (si::c-local))
+		    (let ((min-req 0) (max-req 0))
+		      (flet ((incf-both (&optional (n 1))
+			       (incf min-req n)
+			       (incf max-req n)))
+			(loop
+			   (let ((dir (pop directives)))
+			     (when (null dir)
+			       (return (values min-req max-req)))
+			     (when (format-directive-p dir)
+			       (incf-both (count :arg (format-directive-params dir) :key #'cdr))
+			       (let ((c (format-directive-character dir)))
+				 (cond ((find c "ABCDEFGORSWX$/")
+					(incf-both))
+				       ((char= c #\P)
+					(unless (format-directive-colonp dir)
+					  (incf-both)))
+				       ((or (find c "IT%&|_<>();") (char= c #\newline)))
+				       ((char= c #\[)
+					(multiple-value-bind (min max remaining)
+					    (%min/max-conditional-args dir directives)
+					  (setq directives remaining)
+					  (incf min-req min)
+					  (incf max-req max)))
+				       ((char= c #\{)
+					(multiple-value-bind (min max remaining)
+					    (%min/max-iteration-args dir directives)
+					  (setq directives remaining)
+					  (incf min-req min)
+					  (incf max-req max)))
+				       ((char= c #\?)
+					(cond ((format-directive-atsignp dir)
+					       (incf min-req)
+					       (setq max-req most-positive-fixnum))
+					      (t (incf-both 2))))
+				       (t (throw 'give-up nil))))))))))
 
 ;;;
 ;;; ANSI: if arg is out of range, no clause is selected.  That means
 ;;; the minimum number of args required for the interior of ~[~] is
 ;;; always zero.
 ;;;
-(defun %min/max-conditional-args (conditional directives)
-  #-formatter
-  (declare (si::c-local))
-  (multiple-value-bind (sublists last-semi-with-colon-p remaining)
-      (parse-conditional-directive directives)
-    (declare (ignore last-semi-with-colon-p))
-    (let ((sub-max (loop for s in sublists maximize
-			   (nth-value 1 (%min/max-format-args s))))
-	  (min-req 1)
-	  max-req)
-      (cond ((format-directive-atsignp conditional)
-	     (setq max-req (max 1 sub-max)))
-	    ((loop for p in (format-directive-params conditional)
-		   thereis (or (integerp (cdr p))
-			       (memq (cdr p) '(:remaining :arg))))
-	     (setq min-req 0)
-	     (setq max-req sub-max))
-	    (t
-	     (setq max-req (1+ sub-max))))
-      (values min-req max-req remaining))))
+		  (defun %min/max-conditional-args (conditional directives)
+		    #-formatter
+		    (declare (si::c-local))
+		    (multiple-value-bind (sublists last-semi-with-colon-p remaining)
+			(parse-conditional-directive directives)
+		      (declare (ignore last-semi-with-colon-p))
+		      (let ((sub-max (loop for s in sublists maximize
+					  (nth-value 1 (%min/max-format-args s))))
+			    (min-req 1)
+			    max-req)
+			(cond ((format-directive-atsignp conditional)
+			       (setq max-req (max 1 sub-max)))
+			      ((loop for p in (format-directive-params conditional)
+				  thereis (or (integerp (cdr p))
+					      (memq (cdr p) '(:remaining :arg))))
+			       (setq min-req 0)
+			       (setq max-req sub-max))
+			      (t
+			       (setq max-req (1+ sub-max))))
+			(values min-req max-req remaining))))
 
-(defun %min/max-iteration-args (iteration directives)
-  #-formatter
-  (declare (si::c-local))
-  (let* ((close (find-directive directives #\} nil))
-	 (posn (position close directives))
-	 (remaining (nthcdr (1+ posn) directives)))
-    (if (format-directive-atsignp iteration)
-	(values (if (zerop posn) 1 0) most-positive-fixnum remaining)
-	(let ((nreq (if (zerop posn) 2 1)))
-	  (values nreq nreq remaining)))))
-)
+		  (defun %min/max-iteration-args (iteration directives)
+		    #-formatter
+		    (declare (si::c-local))
+		    (let* ((close (find-directive directives #\} nil))
+			   (posn (position close directives))
+			   (remaining (nthcdr (1+ posn) directives)))
+		      (if (format-directive-atsignp iteration)
+			  (values (if (zerop posn) 1 0) most-positive-fixnum remaining)
+			  (let ((nreq (if (zerop posn) 2 1)))
+			    (values nreq nreq remaining)))))
+		  )

@@ -79,8 +79,7 @@
                                     :lineno lineno
                                     :source-dir source-dir
                                     :source-filename source-file)))
-      (push err *compilation-messages*)
-      (throw 'compiler-error nil))))
+      (push err *compilation-messages*))))
 
 
 #||

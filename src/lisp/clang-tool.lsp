@@ -20,10 +20,11 @@ Relative paths will be converted to absolute ones using this pathname.")
   (setq *db* (ast-tooling:jsoncompilation-database-load-from-file
               (namestring (probe-file pathname))))
   (setq $* (map 'list #'identity (ast-tooling:get-all-files *db*)))
-  (setq *main-pathname* (pathname (find-if (lambda (x) (search main-source-filename x)) $*)))
-  (unless *main-pathname*
-    (error "Could not find the main file ~a in the list of all source files~% - pass the name of the file using the :main-source-filename keyword argument" main-source-filename))
-  (format t "Loaded database contains ~a source files~%" (length $*))
+  (let ((found-main-pathname (find-if (lambda (x) (search main-source-filename x)) $*)))
+    (unless found-main-pathname
+      (error "Could not find the main file ~a in the list of all source files~% - pass the name of the file using the :main-source-filename keyword argument" main-source-filename))
+    (setq *main-pathname* (pathname found-main-pathname)))
+    (format t "Loaded database contains ~a source files~%" (length $*))
   (format t "The main source file is ~a~%" (namestring *main-pathname*)))
 
 
@@ -496,7 +497,7 @@ This can only be run in the context set up by the code-match-callback::run metho
     (format t "Loading ASTs for the files: ~a~%" files)
     (time 
      (multiple-value-bind (num asts)
-         (ast-tooling:build-asts tool #())
+         (ast-tooling:build-asts tool)
        (setq *asts* asts)
        (format t "Built asts: ~a~%" asts)
        )

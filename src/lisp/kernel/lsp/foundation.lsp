@@ -14,11 +14,6 @@
 				    &WHOLE) )
 
 
-(defun test-debug ()
-  (print "About to test debug")
-  (debug "testing debug")
-  (print "Done"))
-
 ;; Temporary check-type - everything is true
 (fset 'check-type
       #'(lambda (whole env) t)
@@ -27,14 +22,6 @@
 
 (fset '1- #'(lambda (num) (- num 1)))
 (fset '1+ #'(lambda (num) (+ num 1)))
-
-
-(si::fset 'defun
-	  #'(lambda (def env)
-	      (let* ((name (second def))
-		     (func `(function (ext::lambda-block ,@(cdr def)))))
-		(ext:register-with-pde def `(si::fset ',name ,func))))
-	  t)
 
 
 
@@ -284,8 +271,7 @@ the corresponding VAR.  Returns NIL."
                                  (advance-hash-table-iterator)))
                              (progn
                                (setq hash (1+ hash))
-                               (advance-hash-table-iterator)))))
-                   nil)))
+                               (advance-hash-table-iterator))))))))
       (function (lambda ()
 	(if (>= hash number-of-hashes)
 	    nil

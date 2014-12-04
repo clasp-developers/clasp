@@ -32,6 +32,20 @@ last FORM.  If not, simply returns NIL."
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
 
+
+(defun cl:macro-function (symbol &optional environment)
+  (core:macro-function symbol environment))
+
+(defun si::register-global (name)
+  "This should augment a global environment object that the compiler uses
+rather than modify the runtime environment"
+;;  (bformat t "si::register-global %s\n" name)
+  (si:*make-special name))
+#||
+  (pushnew name cmp::*global-vars*)
+  (values))
+||#
+
 (defmacro defvar (&whole whole var &optional (form nil form-sp) doc-string)
   "Syntax: (defvar name [form [doc]])
 Declares the variable named by NAME as a special variable.  If the variable
@@ -100,13 +114,15 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (defparameter *defun-inline-hook* nil)
 
+#+ecl
 (defmacro defun (&whole whole name vl &body body &environment env &aux doc-string)
   ;; Documentation in help.lsp
   (multiple-value-setq (body doc-string) (remove-documentation body))
   (let* ((function `#'(ext::lambda-block ,name ,vl ,@body))
 	 (global-function `#'(ext::lambda-block ,name ,vl
-                                                (declare (si::c-global))
-                                                ,@body)))
+						(declare (si::c-global))
+						,@body)
+	  ))
     (when *dump-defun-definitions*
       (print function)
       (setq function `(si::bc-disassemble ,function)))
@@ -114,8 +130,24 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
        ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
        ,@(si::expand-set-documentation name 'function doc-string)
        ,(let ((hook *defun-inline-hook*))
-	  (and hook (funcall hook name global-function env)))
+	     (and hook (funcall hook name global-function env)))
        ',name)))
+
+#+clasp
+(defmacro defun (&whole whole name vl &body body &environment env)
+  ;; Documentation in help.lsp
+  (multiple-value-bind (decls body doc-string) 
+      (process-declarations body t)
+    (when decls (setq decls (list (cons 'declare decls))))
+    (let* ((doclist (when doc-string (list doc-string)))
+	   (global-function `#'(lambda ,vl ,@decls ,@doclist (block ,(si::function-block-name name) ,@body))))
+      ;;(bformat t "DEFUN global-function --> %s\n" global-function )
+      `(progn
+	 ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
+	 ,@(si::expand-set-documentation name 'function doc-string)
+	 ,(let ((hook *defun-inline-hook*))
+	       (and hook (funcall hook name global-function env)))
+	 ',name))))
 
 ;;;
 ;;; This is a no-op unless the compiler is installed
@@ -161,11 +193,11 @@ terminated by a non-local exit."
 (defmacro lambda (&rest body)
   `(function (lambda ,@body)))
 
-(defmacro lambda-block (name lambda-list &rest lambda-body)
+(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
   (multiple-value-bind (decl body doc)
-      (si::process-declarations lambda-body)
+      (si::process-declarations lambda-body t)
     (when decl (setq decl (list (cons 'declare decl))))
-    `(lambda ,lambda-list ,@doc ,@decl
+    `(lambda ,lambda-list ,@decl ,@doc
       (block ,(si::function-block-name name) ,@body))))
 
 ; assignment
@@ -414,7 +446,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
       form))
 
 ;; CLOS needs this in the ext package and I can't find it anywhere but here - meister 2013
-#+brcl (progn
+#+clasp (progn
 	  (import 'maybe-quote :ext)
 	  (export 'maybe-quote :ext))
 

@@ -106,6 +106,9 @@ namespace core {
 	inline T_sp* valueReference() { return &(this->_Value);};
 
 
+	Cons_sp plist() const;
+	void setf_plist(Cons_sp plist);
+
 	void setReadOnly(bool b) { this->_IsConstant = true;};
 	bool getReadOnly() const { return this->_IsConstant;};
 
@@ -120,6 +123,9 @@ namespace core {
 
 	/*! Return the value slot of the symbol - throws if unbound */
 	T_sp symbolValue() const;
+
+	/*! Return the address of the value slot of the symbol */
+	T_sp& symbolValueRef() { return this->_Value; };
 
 	/*! Return the value slot of the symbol or UNBOUND if unbound */
 	T_sp symbolValueUnsafe() const;

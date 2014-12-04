@@ -12,7 +12,7 @@
 
 (in-package "CLOS")
 
-#-brcl
+#-clasp
 (eval-when (:compile-toplevel :execute)
   (load "src:clos;hierarchy.lsp"))
 
@@ -58,7 +58,7 @@
 ;;; is used internally by ECL during bootstrap. Unlike WITH-SLOTS,
 ;;; the macros directly access the slots by index.
 ;;;
-(eval-when (:compile-toplevel :execute #+brcl-boot :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
   (defmacro with-early-accessors ((&rest slot-definitions) &rest body)
     `(macrolet
 	 ,(loop for slots in slot-definitions
@@ -75,7 +75,7 @@
 ;;; The following macro is also used at bootstap for instantiating
 ;;; a class based only on the s-form description.
 ;;;
-(eval-when (:compile-toplevel :execute #+brcl-boot :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
   (defmacro with-early-make-instance (slots (object class &rest key-value-pairs)
 				      &rest body)
     (when (symbolp slots)
@@ -139,7 +139,7 @@
 ;;;
 ;;; INSTANCE UPDATE PREVIOUS
 ;;;
-(eval-when (:compile-toplevel :execute #+brcl-boot :load-toplevel)
+(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
   (defmacro ensure-up-to-date-instance (instance)
     ;; The up-to-date status of a class is determined by
     ;; instance.sig. This slot of the C structure contains a list of

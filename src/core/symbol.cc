@@ -48,7 +48,23 @@ namespace core
 //    Symbol_sp 	_sym_t;		// equivalent to _lisp->_true()
 
 
+#define ARGS_cl_symbolPlist "(sym)"
+#define DECL_cl_symbolPlist ""
+#define DOCS_cl_symbolPlist "Return the symbol plist"
+    Cons_sp cl_symbolPlist(Symbol_sp sym)
+    {
+	if ( sym.nilp() ) { return _Nil<Cons_O>(); };
+	return sym->plist();
+    }
 
+#define ARGS_core_setfSymbolPlist "(sym plist)"
+#define DECL_core_setfSymbolPlist ""
+#define DOCS_core_setfSymbolPlist "Set the symbol plist"
+    void core_setfSymbolPlist(Symbol_sp sym, Cons_sp plist)
+    {
+	if ( sym.nilp() ) { SIMPLE_ERROR(BF("You cannot set the plist of nil"));};
+	sym->setf_plist(plist);
+    }
     
     
 #define ARGS_af_boundp "(arg)"
@@ -119,6 +135,14 @@ namespace core
 	    SIMPLE_ERROR(BF("Symbol %s is unbound") % _rep_(arg));
 	}
 	return arg->symbolValue();
+    };
+
+#define ARGS_af_symbolValueAddress "(arg)"
+#define DECL_af_symbolValueAddress ""
+#define DOCS_af_symbolValueAddress "symbolValueAddress"
+    T_sp af_symbolValueAddress(const Symbol_sp arg)
+    {_G();
+	return Pointer_O::create(&arg->symbolValueRef());
     };
     
 
@@ -220,6 +244,14 @@ namespace core
 	this->_Value = _Unbound<T_O>();
     }
 
+    Cons_sp Symbol_O::plist() const {
+	return this->_PropertyList;
+    }
+
+    void Symbol_O::setf_plist(Cons_sp plist) {
+	this->_PropertyList = plist;
+    }
+    
 
 #if 0
     T_sp Symbol_O::evaluate(Cons_sp exp, Lisp_sp env)
@@ -322,15 +354,11 @@ namespace core
     T_sp Symbol_O::setf_symbolValue(T_sp val)
     {_OF();
 	ASSERT(!this->_IsConstant);
-#if 0 // I used this to test *print-pretty*
+#if 1 
 	// trap a change in a dynamic variable
-	if ( this->_Name.as<Str_O>()->get() == "*PRINT-PRETTY*")
+	if ( this->_Name.as<Str_O>()->get() == "*TABLE*")
 	{
-            if ( val.notnilp() && _sym_STARenablePrintPrettySTAR->symbolValue().nilp() ) {
-                // force *print-pretty* to nil if *enable-print-pretty* == nil 
-                val = _Nil<T_O>();
-                printf("forcing setf_symbolValue of *print-pretty* to nil because !core::*enable-print-pretty*\n" );
-            }
+	    printf("%s:%d Changing value of a symbol named *TABLE* to %s\n", __FILE__, __LINE__, _rep_(val).c_str());
 	}
 #endif
 	this->_Value = val;
@@ -584,6 +612,7 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,symbolName);
 	Defun(symbolName);
 	SYMBOL_EXPORT_SC_(ClPkg,symbolValue);
+	Defun(symbolValueAddress);
 	Defun(symbolValue);
 	SYMBOL_EXPORT_SC_(ClPkg,symbolPackage);
 	Defun(symbolPackage);
@@ -591,6 +620,8 @@ namespace core
 	Defun(symbolFunction);
 	SYMBOL_EXPORT_SC_(ClPkg,boundp);
 	Defun(boundp);
+	ClDefun(symbolPlist);
+	CoreDefun(setfSymbolPlist);
     }
 
     void Symbol_O::exposePython(Lisp_sp lisp)

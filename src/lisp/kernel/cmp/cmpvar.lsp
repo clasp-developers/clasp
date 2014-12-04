@@ -26,6 +26,3 @@
 
 
 
-(defun si::register-global (name)
-  (pushnew name cmp::*global-vars*)
-  (values))

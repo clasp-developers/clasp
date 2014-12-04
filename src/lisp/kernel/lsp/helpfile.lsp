@@ -240,11 +240,16 @@ strings."
 
 ;; (EXT:OPTIONAL-ANNOTATION arguments for EXT:ANNOTATE)
 (si::fset 'ext:optional-annotation
-          #'(ext:lambda-block ext:optional-annotation (whole env)
-               (declare (ignore env #-ecl-min whole))
-               #+ecl-min
-               `(ext:annotate ,@(rest whole)))
-          t)
+          (function 
+	   #+ecl(ext:lambda-block ext:optional-annotation (whole env)
+				  (declare (ignore env #-ecl-min whole))
+				  #+ecl-min
+				  `(ext:annotate ,@(rest whole)))
+	   #+clasp(lambda (whole env) 
+	    (declare (ignore env #-ecl-min whole))
+	      #+ecl-min `(ext:annotate ,@(rest whole)))
+	   )
+	  t)
 
 (defun default-annotation-logic (source-location definition output-form
                                  &optional (dspec (make-dspec definition)))

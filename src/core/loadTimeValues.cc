@@ -212,11 +212,6 @@ namespace core
 
 
 
-    T_sp& LoadTimeValues_O::data_element(uint i)
-    {
-	return this->_Objects[i];
-    }
-
     /*! Ignore extension */
     int LoadTimeValues_O::data_vectorPushExtend(T_sp val, int extension)
     {
@@ -234,11 +229,6 @@ namespace core
 	this->_Symbols.resize(i);
     }
 
-
-    Symbol_sp& LoadTimeValues_O::symbols_element(uint i)
-    {
-	return this->_Symbols[i];
-    }
 
     int LoadTimeValues_O::symbols_vectorPushExtend(Symbol_sp val, int extension)
     {

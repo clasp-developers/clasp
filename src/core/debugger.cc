@@ -409,6 +409,15 @@ extern "C" {
             printf("dbg_describe: %s\n", ss.str().c_str());
         }
 
+	void dbg_describe_symbol(Symbol_sp obj)
+        {
+            DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
+            stringstream ss;
+            printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());
+            ss << _rep_(obj);
+            printf("dbg_describe: %s\n", ss.str().c_str());
+        }
+
         void dbg_describeActivationFrame(ActivationFrame_sp obj)
         {
             DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());

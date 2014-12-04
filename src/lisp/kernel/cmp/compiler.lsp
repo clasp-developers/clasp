@@ -206,7 +206,7 @@ COMPILE-FILE just throws this away")
 	(setq lambda-list (cadr lambda)
 	      body (cddr lambda)))
     (multiple-value-bind (declares code docstring specials )
-	(process-declarations body)
+	(process-declarations body t)
       (cmp-log "About to create lambda-list-handler\n")
       (dbg-set-current-debug-location-here)
       (let ((lambda-list-handler (make-lambda-list-handler lambda-list declares 'core::function)))
@@ -509,7 +509,7 @@ env is the parent environment of the (result-af) value frame"
       (multiple-value-bind (variables expressions)
 	  (separate-pair-list assignments)
 	(multiple-value-bind (declares code docstring specials )
-	    (process-declarations body)
+	    (process-declarations body t)
 	  (cmp-log "About to create lambda-list-handler\n")
 	  (dbg-set-current-debug-location-here)
 	  (let* ((lambda-list-handler (make-lambda-list-handler variables declares 'core::function))
@@ -588,6 +588,9 @@ env is the parent environment of the (result-af) value frame"
   (let ((icond (car rest))
 	(ithen (cadr rest))
 	(ielse (caddr rest)))
+    (when (cdddr rest)
+      (format t "codegen-if (cdddr rest) = ~a ~%" (cdddr rest))
+      (compiler-error (cdddr rest) "too many arguments for if"))
     ;; codegen-if-cond generates code that returns true if cond evaluates to something other than nil
     (let ((condv (compile-if-cond icond env)))
 ;;      (unless condv (break "condv is nil") (return-from codegen-if nil)) ;; REALLY? return?????
@@ -769,6 +772,14 @@ jump to blocks within this tagbody."
 	(error "Unrecognized block symbol ~a" block-symbol))))
 
 
+(defun generate-lambda-block (name lambda-list raw-body)
+  "Generate a (lambda ... (block name ...)) after extracting declares and docstring from raw-body"
+  (multiple-value-bind (decl body doc)
+      (process-declarations raw-body t)
+    (when decl (setq decl (list (cons 'declare decl))))
+    (when doc (setq doc (list doc)))
+    `(lambda ,lambda-list ,@doc ,@decl (block ,(si::function-block-name name) ,@body))))
+
 
 (defun codegen-fill-function-frame (operator-symbol function-env functions parent-env closure-env)
   "Create a closure for each of the function bodies in the flet/labels and put the closures into the activation frame in (result-af). (env) is the parent environment of the (result-af) value frame"
@@ -781,7 +792,10 @@ jump to blocks within this tagbody."
 	 ((endp cur) nil)
       (let* ((fn (car cur))
 	     (fn-name (car fn))
-	     (fn-lambda `(ext::lambda-block ,fn-name ,@(cdr fn)))
+	     #+(or)(fn-lambda `(ext::lambda-block ,fn-name ,@(cdr fn)))
+	     (fn-lambda-list (cadr fn))
+	     (fn-raw-body (cddr fn))
+	     (fn-lambda (generate-lambda-block fn-name fn-lambda-list fn-raw-body))
 	     (fn-classified (classify-function-lookup function-env fn-name))
 	     (fn-index (or (cadddr fn-classified) (error "Could not find lexical function ~a" fn-name)))
 	     (target (irc-intrinsic "functionFrameReference" result-af (jit-constant-i32 fn-index)
@@ -843,7 +857,7 @@ jump to blocks within this tagbody."
 		(add-macro macro-env name macro-fn)))
 	  macros )
     (multiple-value-bind (declares code docstring specials )
-	(process-declarations body)
+	(process-declarations body t)
       (augment-environment-with-declares macro-env declares)
       (codegen-progn result code macro-env))))
 

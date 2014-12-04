@@ -416,7 +416,6 @@ namespace asttooling {
 
 
 
-
 namespace asttooling {
     
 
@@ -497,7 +496,7 @@ namespace asttooling {
 //            .  def("addArgumentsAdjuster",&clang::tooling::ClangTool::addArgumentsAdjuster)
             .  def("appendArgumentsAdjuster",&clang::tooling::ClangTool::appendArgumentsAdjuster)
             .  def("clangToolRun",&clang::tooling::ClangTool::run)
-//            .  def("buildASTs",&clang::tooling::ClangTool::buildASTs,policies<outValue<1> >())
+	    .  def("buildASTs",&clang::tooling::ClangTool::buildASTs,policies<pureOutValue<1> >())
             ,class_<clang::tooling::Replacement>("Replacement",no_default_constructor)
             .  def_constructor("newReplacement",constructor<clang::SourceManager&,const clang::CharSourceRange&, StringRef>() )
             .  def("toString",&clang::tooling::Replacement::toString)

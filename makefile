@@ -25,24 +25,26 @@ ifeq ($(PYTHON2),)
 	export PYTHON2 = /usr/bin/python
 endif
 
-ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
-	PATH := $(EXTERNALS_BUILD_TARGET_DIR)/release/bin:$(EXTERNALS_BUILD_TARGET_DIR)/common/bin:$(PATH)
-	export PATH
-endif
-
-export PATH := $(BOOST_BUILD_V2_INSTALL)/bin:$(PATH)
-
-
-ifneq ($(CXXFLAGS),)
-  export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
-endif
-
 ifeq ($(TARGET_OS),linux)
   export EXECUTABLE_DIR=bin
 endif
 ifeq ($(TARGET_OS),darwin)
   export EXECUTABLE_DIR=MacOS
 endif
+
+ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
+	PATH := $(EXTERNALS_BUILD_TARGET_DIR)/release/bin:$(EXTERNALS_BUILD_TARGET_DIR)/common/bin:$(PATH)
+	export PATH
+endif
+
+export PATH := $(BOOST_BUILD_V2_INSTALL)/bin:$(PATH)
+export PATH := $(CLASP_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR):$(PATH)
+
+
+ifneq ($(CXXFLAGS),)
+  export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
+endif
+
 
 ifeq ($(WHAT),)
 	WHAT = bundle debug release boehm mps
@@ -52,9 +54,24 @@ all:
 	@echo Dumping local.config
 	cat local.config
 	git submodule update --init  # ensure that the src/mps submodule is updated
+	-make temporary-fix-for-sicl
+	make asdf
 	make boostbuildv2-build
 	make clasp-boehm
 	make clasp-mps
+
+# This is a temporary fix until beach fixes some dead links in SICL
+temporary-fix-for-sicl:
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-constructors.lisp
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-query.lisp
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
+	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase3/environment-classes.lisp
+
+
+
+asdf:
+	(cd src/lisp/kernel/asdf; make)
 
 only-boehm:
 	git submodule update --init  # ensure that the src/mps submodule is updated
@@ -69,16 +86,17 @@ boehm-build-mps-interface:
 
 
 #
+# Tell ASDF where to find the SICL/Code/Cleavir systems - the final // means search subdirs
+#
+export CL_SOURCE_REGISTRY = $(shell echo `pwd`/src/lisp/kernel/contrib/sicl/Code/Cleavir//)
+
+#
 # When developing, set the CLASP_LISP_SOURCE_DIR environment variable
 # to tell clasp to use the development source directly rather than the
 # stuff in the clasp build target directory.  This saves us the trouble of
 # constantly having to copy the lisp sources to the target directory.
 export DEV_CLASP_LISP_SOURCE_DIR := $(shell echo `pwd`/src/lisp)
 
-#
-# Tell ASDF where to find the SICL/Code/Cleavir systems - the final // means search subdirs
-#
-export CL_SOURCE_REGISTRY = $(HOME)/Development/SICL/Code/Cleavir//
 devemacs:
 	@echo This shell sets up environment variables like BJAM
 	@echo as they are defined when commands execute within the makefile

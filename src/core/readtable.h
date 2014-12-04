@@ -50,6 +50,7 @@ enum clasp_readtable_case {
 	LISP_CLASS(core,ClPkg,ReadTable_O,"readtable");
 	DECLARE_INIT();
 //    DECLARE_ARCHIVE();
+	friend T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable );
     public: // Simple default ctor/dtor
 	DEFAULT_CTOR_DTOR(ReadTable_O);
     public:
@@ -58,21 +59,27 @@ enum clasp_readtable_case {
     GCPRIVATE: // instance variables here
 	Symbol_sp	_Case;
 	/*! _Syntax is a HashTable and each value is a plist */
-	HashTable_sp	_Syntax; 
+	// HashTable_sp	_Syntax; 
+        HashTable_sp _SyntaxTypes;
+        HashTable_sp _MacroCharacters;
+        HashTable_sp _DispatchMacroCharacters;
     public: // static functions here
-	static ReadTable_sp create_standard_readtable(Lisp_sp lisp);
+	static ReadTable_sp create_standard_readtable();
 	/*! Create a basic syntax table that describes the syntax of
 	  the charactes: tab, newline, linefeed, page, return, space
 	  and '\\'(single-escape) and '|'(multiple-escape)
 	  macro characters need to be added to this to create a standard readtable
 	*/
-	static HashTable_sp create_standard_syntax_table(Lisp_sp lisp);
+	static HashTable_sp create_standard_syntax_table();
 
 
     public: // instance member functions here
 
+	ReadTable_sp copyReadTable(ReadTable_sp dest);
+
 	string __repr__() const;
 
+	T_sp set_syntax_type(Character_sp ch, T_sp syntaxType );
 	Symbol_sp setf_readtable_case(Symbol_sp newCase);
         clasp_readtable_case getReadTableCaseAsEnum();
         Symbol_sp getReadTableCase() const { return this->_Case;};

@@ -63,14 +63,14 @@ namespace core
 
 	// -------- Regular data storage
 
-	T_sp& data_element(uint i);
+	inline T_sp& data_element(uint i) { return this->_Objects[i]; };
 	int data_vectorPushExtend(T_sp val, int extension);
 
 
 	// -------- Symbols storage
 
 	void symbols_setFillPointer(uint i);
-	Symbol_sp& symbols_element(uint i);
+	inline Symbol_sp& symbols_element(uint i) { return this->_Symbols[i]; };
 	int symbols_vectorPushExtend(Symbol_sp val, int extension);
 
     }; // LoadTimeValues class

@@ -272,7 +272,7 @@ namespace core
 #define ARGS_af_shadowing_import "(symbol-names-desig &optional (package-desig *package*))"
 #define DECL_af_shadowing_import ""
 #define DOCS_af_shadowing_import "See CLHS: shadowing-import"
-    T_mv af_shadowing_import(Cons_sp symbol_names_desig, T_sp package_desig)
+    T_mv af_shadowing_import(T_sp symbol_names_desig, T_sp package_desig)
     {_G();
 	Cons_sp symbolNames = coerce::listOfSymbols(symbol_names_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
@@ -910,25 +910,18 @@ namespace core
 
 
     void Package_O::shadowingImport(Cons_sp symbols)
-    {_OF();
+    {
 	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
 	{
 	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
 	    Bignum_sp nameKey = symbolNameToKey(symbolToImport);
-	    Symbol_sp foundSymbol, status;
-	    {MULTIPLE_VALUES_CONTEXT();
-		Symbol_mv values = this->findSymbol(nameKey);
-		foundSymbol = values;
-		status = values.valueGet(1).as<Symbol_O>();
-	    }
-	    if ( foundSymbol != symbolToImport )
-	    {
-		if ( status != kw::_sym_inherited )
-		{
+	    Symbol_mv values = this->findSymbol(nameKey);
+	    Symbol_sp foundSymbol = values;
+	    Symbol_sp status = values.valueGet(1).as<Symbol_O>();
+	    if ( status == kw::_sym_internal || status == kw::_sym_external ) {
 		    this->unintern(foundSymbol);
-		}
-		this->_InternalSymbols->hash_table_setf_gethash(nameKey,symbolToImport);
 	    }
+	    this->_InternalSymbols->hash_table_setf_gethash(nameKey,symbolToImport);
 	    this->_ShadowingSymbols->setf_gethash(symbolToImport->symbolName(),symbolToImport);
 	}
     }

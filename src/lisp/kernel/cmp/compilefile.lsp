@@ -163,7 +163,7 @@
 		(add-macro macro-env name macro-fn)))
 	  macros )
     (multiple-value-bind (declares code docstring specials )
-	(process-declarations body)
+	(process-declarations body t)
       (augment-environment-with-declares macro-env declares)
       (t1progn code macro-env))))
 
@@ -250,18 +250,24 @@
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file &key (output-file nil output-file-p)
-                                           (type :object)
+                                           (type :bitcode)
                                            &allow-other-keys)
   (let* ((pn (if output-file-p
                 (merge-pathnames output-file (cfp-output-file-default input-file))
                 (cfp-output-file-default input-file)))
          (ext (case type
-                (:object "bc")
+		(:bitcode "bc")
+                (:object "o")
                 (:fasl (if (member :target-os-darwin *features*)
                            "bundle"
                            "so")))))
     (make-pathname :type ext :defaults pn)))
 
+
+(defun compile-file-type (&key system-p)
+  (cond
+    (system-p :object)
+    (t :bitcode)))
 
 (defun cf-module-name (type pathname)
   "Create a module name from the TYPE (either :user or :kernel)
@@ -282,28 +288,18 @@ and the pathname of the source file - this will also be used as the module initi
     (values output-file warnings-p failures-p)))
 
 
-(defun compile-file (given-input-pathname
-		     &key
-		       (output-file (cfp-output-file-default given-input-pathname))
-		       (verbose *compile-verbose*)
-		       (print *compile-print*)
-                       (system-p t)
-		       (external-format :default)
-;;; type can be either :kernel or :user
-		       (type :user)
-                     &aux conditions
-		       )
-  "See CLHS compile-file"
+
+
+(defun compile-file-to-module (given-input-pathname output-path &key type)
+  "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
-  (with-compiler-env (conditions)
     (let* ((input-pathname (probe-file given-input-pathname))
-           (sin (open input-pathname :direction :input))
-           (output-path (compile-file-pathname input-pathname :output-file output-file))
+	   (sin (open input-pathname :direction :input))
            (eof-value (gensym))
            (module (create-llvm-module-for-compile-file (namestring input-pathname)))
            (module-name (cf-module-name type input-pathname))
            warnings-p failure-p)
-      (when verbose
+      (when *compile-verbose*
         (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
       (with-one-source-database
           (cmp-log "About to start with-compilation-unit\n")
@@ -312,9 +308,7 @@ and the pathname of the source file - this will also be used as the module initi
           (let* ((*compile-file-pathname* given-input-pathname)
                  (*compile-file-truename* (truename *compile-file-pathname*))
                  (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
-                 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*))
-                 (*compile-print* print)
-                 (*compile-verbose* verbose))
+                 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*)))
             (with-dibuilder (*the-module*)
               (with-dbg-compile-unit (nil *compile-file-truename*)
                 (with-dbg-file-descriptor (nil *compile-file-truename*)
@@ -340,15 +334,46 @@ and the pathname of the source file - this will also be used as the module initi
                   (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
                   )
               (if found-errors
-                  (break "Verify module found errors")))
-            (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path))
-            (ensure-directories-exist output-path)
-            (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename output-path))
-            )))
-      (dolist (c conditions)
-        (bformat t "%s\n" c))
-      (compile-file-results output-path conditions))))
+		  (progn
+		    (format t "Module error: ~a~%" error-message)
+		    (break "Verify module found errors")))))))
+      module))
 
 
+(defun compile-file (given-input-pathname
+		     &key
+		       (output-file (cfp-output-file-default given-input-pathname))
+		       (verbose *compile-verbose*)
+		       (print *compile-print*)
+                       (system-p nil)
+		       (external-format :default)
+;;; type can be either :kernel or :user
+		       (type :user)
+                     &aux conditions
+		       )
+  "See CLHS compile-file"
+  (with-compiler-env (conditions)
+    (let ((*compile-print* print)
+	  (*compile-verbose* verbose))
+      ;; Do the different kind of compile-file here
+      (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :type (compile-file-type :system-p system-p)))
+	     (module (compile-file-to-module given-input-pathname output-path :type type))
+	     )
+	(cond
+	  (system-p
+	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
+	   (ensure-directories-exist output-path)
+	   (with-open-file (fout output-path :direction :output)
+	     (let ((reloc-model (cond
+				  ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
+				  (t 'llvm-sys:reloc-model-default))))
+	       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
+	  (t
+	   (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))
+	   (ensure-directories-exist output-path)
+	   (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename output-path))))
+	(dolist (c conditions)
+	  (bformat t "conditions: %s\n" c))
+	(compile-file-results output-path conditions)))))
 
 (export 'compile-file)

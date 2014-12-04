@@ -383,7 +383,7 @@ namespace core
             T_sp cur = args;
             // Fill frame here
             for ( int i(0); i<times; ++i ) {
-                eval::apply(fn,args);
+                eval::applyLastArgsPLUSFirst(fn,args);
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.1 ) {

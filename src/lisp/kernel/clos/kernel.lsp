@@ -26,7 +26,7 @@
 ;;; name to class.
 ;;; 
 ;;; This is only used during boot. The real one is in built-in.
-(eval-when (compile #+brcl-boot :load-toplevel)
+(eval-when (compile #+clasp-boot :load-toplevel)
   (defun setf-find-class (new-value class &optional errorp env)
     (warn "Ignoring class definition for ~S" class)))
 
@@ -49,8 +49,8 @@
 (defsetf find-class (&rest x) (v) `(setf-find-class ,v ,@x))
 
 
-;; In brcl classp is a builtin predicate
-#-brcl
+;; In clasp classp is a builtin predicate
+#-clasp
 (defun classp (obj)
   (and (si:instancep obj)
        (let ((topmost (find-class 'CLASS nil)))

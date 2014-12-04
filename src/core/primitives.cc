@@ -118,7 +118,15 @@ namespace core
 #define DOCS_cl_lispImplementationVersion "lispImplementationVersion"
     T_sp cl_lispImplementationVersion()
     {_G();
-        return Str_O::create(CLASP_VERSION);
+        stringstream ss;
+#ifdef USE_MPS
+        ss << "mps-";
+#endif
+#ifdef USE_BOEHM
+        ss << "boehm-";
+#endif
+        ss << CLASP_VERSION;
+        return Str_O::create(ss.str());
     };
 
 
@@ -579,6 +587,14 @@ namespace core
 	return _Nil<T_O>();
     }
 
+#define ARGS_cl_macroFunction "(symbol &optional env)"
+#define DECL_cl_macroFunction ""
+#define DOCS_cl_macroFunction "See CLHS: macroFunction"
+    T_sp cl_macroFunction(Symbol_sp symbol, Environment_sp env)
+    {_G();
+	return af_macroFunction(symbol,env);
+    }
+
 
 #define ARGS_af_specialOperatorP "(symbol)"
 #define DECL_af_specialOperatorP ""
@@ -849,7 +865,7 @@ namespace core
     bool af_fboundp(T_sp functionName)
     {_G();
         if (functionName.nilp() ) {
-            TYPE_ERROR(functionName,cl::_sym_Symbol_O);
+	    return false;
         }
 	if ( af_symbolp(functionName) )
 	{
@@ -1934,8 +1950,11 @@ void initialize_primitives()
 	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
 	Defun(specialOperatorP);
 
-	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
+	SYMBOL_EXPORT_SC_(CorePkg,macroFunction);
 	Defun(macroFunction);
+
+	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
+	ClDefun(macroFunction);
 
 	SYMBOL_SC_(CorePkg,separatePairList);
 	Defun(separatePairList);

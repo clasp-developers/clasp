@@ -45,13 +45,56 @@ namespace core
 
 
     template<typename Policies, typename OT, typename Method>
-    class IndirectVariadicMethoid : public Functoid {
-        typedef Functoid TemplatedBase;
+    class IndirectVariadicMethoid : public BuiltinClosure {
+        typedef BuiltinClosure TemplatedBase;
         virtual size_t templatedSizeof() const { return sizeof(*this); };
     };
 
 #include "external_wrappers_indirect_methoids.h"
 
+};
+
+
+namespace core 
+{
+    template <class D, class C>
+	class GetterMethoid : public BuiltinClosure {
+    public:
+	typedef BuiltinClosure TemplatedBase;
+    public:
+	//        typedef std::function<void (OT& ,)> Type;
+	typedef D (C::*MemPtr);
+	MemPtr mptr;
+    GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure(name), mptr(ptr) {};
+	DISABLE_NEW();
+	virtual size_t templatedSizeof() const { return sizeof(*this); };
+#if 0
+	void LISP_CALLING_CONVENTION()
+	{
+	    INVOCATION_HISTORY_FRAME();
+	    //int countPureOutValues = CountPureOutValues<Pols>::value;
+	    //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
+	    ALLOC_STACK_VALUE_FRAME(frameImpl,frame,1);
+	    core::StackFrameDynamicScopeManager scope(frame);
+	    lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,
+					     lcc_arglist);
+	    this->invoke(lcc_resultP, frame::Value(frameImpl,0)  );
+	}
+
+	void invoke(core::T_mv* lcc_resultP, core::T_sp arg0   )
+	{
+	    gctools::smart_ptr<OT> ot((arg0).template as<OT>());
+	    ((*(ot->wrappedPtr())).*(this->mptr))();
+	    core::MultipleValues& returnValues = _lisp->multipleValues();
+	    returnValues.setSize(0);
+	    int oidx = 0;
+	    ReturnValueWhen(returnValues,oidx,
+			    typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
+			    typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
+	    *lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+	}
+#endif
+    };
 };
 
 
@@ -201,6 +244,26 @@ namespace core {
                                             ,docstring
                                             ,autoExport
                                             ,sizeof...(ARGS)+1);
+            return *this;
+        }
+
+
+	template <class C, class D>
+	    externalClass_& def_readonly( string const& name, D C::*mem_ptr)
+	{
+            Symbol_sp symbol = lispify_intern(name,symbol_packageName(this->_ClassSymbol));
+            BuiltinClosure* m = gctools::ClassAllocator<GetterMethoid<D,C>>::allocateClass(symbol,mem_ptr);
+#if 0
+            lisp_defineSingleDispatchMethod(symbol
+                                            ,this->_ClassSymbol
+                                            ,m
+                                            ,0
+                                            ,lambda_list
+                                            ,declares
+                                            ,docstring
+                                            ,autoExport
+                                            ,sizeof...(ARGS)+1);
+#endif
             return *this;
         }
 

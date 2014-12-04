@@ -64,7 +64,7 @@
   (:export define-walker-template
 	   walk-form
 	   walk-form-expand-macros-p
-	   #-ecl nested-walk-form
+	   #-(or ecl clasp) nested-walk-form
 	   variable-lexical-p
 	   variable-special-p
 	   *variable-declarations*

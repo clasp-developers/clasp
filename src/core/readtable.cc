@@ -62,6 +62,36 @@ namespace core
 
 
 
+#define ARGS_cl_setSyntaxFromChar "(tochar fromchar &optional (toreadtable *readtable*) (fromreadtable nil fromreadtablep))"
+#define DECL_cl_setSyntaxFromChar ""
+#define DOCS_cl_setSyntaxFromChar "setSyntaxFromChar"
+    T_sp cl_setSyntaxFromChar(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable, T_sp fromReadTableP )
+    {
+	if (fromReadTableP.nilp()) {
+	    if ( core::_sym__PLUS_standardReadtable_PLUS_->symbolValue().nilp() ) {
+		core::_sym__PLUS_standardReadtable_PLUS_->defconstant(ReadTable_O::create_standard_readtable());
+	    }
+	    fromReadTable = core::_sym__PLUS_standardReadtable_PLUS_->symbolValue();
+	}
+	T_sp syntax = fromReadTable->syntax_type(fromChar);
+	toReadTable->set_syntax_type(toChar,syntax);
+	T_mv macro = fromReadTable->get_macro_character(fromChar);
+	if ( macro.notnilp() ) {
+	    T_sp nonTerminating = macro.second();
+	    toReadTable->set_macro_character(toChar,macro,nonTerminating);
+	}
+	HashTable_sp fromTable = fromReadTable->_DispatchMacroCharacters->gethash(fromChar,_Nil<HashTable_O>()).as<HashTable_O>();
+	if ( fromTable.notnilp() ) {
+	    HashTableEql_sp toTable = HashTableEql_O::create_default();
+	    fromTable->maphash( [&toTable] (T_sp key, T_sp val) {
+		    toTable->setf_gethash(key,val);
+		} );
+	    toReadTable->_DispatchMacroCharacters->setf_gethash(toChar,toTable);
+	}
+	return _lisp->_true();
+    }
+
+
 
 #define ARGS_cl_makeDispatchMacroCharacter "(char &optional non-terminating-p (readtable *readtable*))"
 #define DECL_cl_makeDispatchMacroCharacter ""
@@ -79,13 +109,24 @@ namespace core
 #define ARGS_cl_getMacroCharacter "(char &optional readtable)"
 #define DECL_cl_getMacroCharacter ""
 #define DOCS_cl_getMacroCharacter "getMacroCharacter"
-    T_sp cl_getMacroCharacter(Character_sp chr, ReadTable_sp readtable)
+    T_mv cl_getMacroCharacter(Character_sp chr, ReadTable_sp readtable)
     {_G();
         if ( readtable.nilp() ) {
             readtable = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>();
         }
         return readtable->get_macro_character(chr);
     };
+
+
+
+#define ARGS_cl_copyReadtable "(&optional (from-readtable cl:*readtable*) to-readtable)"
+#define DECL_cl_copyReadtable ""
+#define DOCS_cl_copyReadtable "clhs: copy-readtable"
+    T_sp cl_copyReadtable(ReadTable_sp fromReadTable, ReadTable_sp toReadTable)
+    {
+	return fromReadTable->copyReadTable(toReadTable);
+    }
+
 
 
 #define ARGS_af_setDispatchMacroCharacter "(dispChar subChar newFunction &optional (readtable *readtable*))"
@@ -928,43 +969,27 @@ namespace core
     EXPOSE_CLASS(core,ReadTable_O);
     SYMBOL_SC_(KeywordPkg,syntax);
     SYMBOL_SC_(KeywordPkg,whitespace_character);
-    HashTable_sp ReadTable_O::create_standard_syntax_table(Lisp_sp lisp)
+    HashTable_sp ReadTable_O::create_standard_syntax_table()
     {_G();
 	HashTableEql_sp syntax = HashTableEql_O::create_default();
-	Cons_sp whiteSpaceNames = (ql::list(_lisp)
-				   << StandardChar_O::create_from_name("TAB")
-				   << StandardChar_O::create_from_name("NEWLINE")
-				   << StandardChar_O::create_from_name("LINEFEED")
-				   << StandardChar_O::create_from_name("PAGE")
-				   << StandardChar_O::create_from_name("RETURN")
-				   << StandardChar_O::create_from_name("SPACE")
-				   << StandardChar_O::create_from_name("RETURN")
-	    ).cons();
-	for ( Cons_sp cur=whiteSpaceNames; cur.notnilp(); cur=cCdr(cur) )
-	{
-	    syntax->hash_table_setf_gethash(oCar(cur).as<StandardChar_O>(),
-				 (ql::list(_lisp)
-				  << kw::_sym_syntax
-				  << kw::_sym_whitespace_character).cons());
-	}
+        syntax->setf_gethash(StandardChar_O::create_from_name("TAB"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(StandardChar_O::create_from_name("NEWLINE"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(StandardChar_O::create_from_name("LINEFEED"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(StandardChar_O::create_from_name("PAGE"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(StandardChar_O::create_from_name("RETURN"),kw::_sym_whitespace_character);
+        syntax->setf_gethash(StandardChar_O::create_from_name("SPACE"),kw::_sym_whitespace_character);
 	SYMBOL_SC_(KeywordPkg,single_escape_character);
 	SYMBOL_SC_(KeywordPkg,multiple_escape_character);
-	syntax->hash_table_setf_gethash(StandardChar_O::create('\\'),
-			     (ql::list(_lisp)
-			      << kw::_sym_syntax
-			      << kw::_sym_single_escape_character).cons());
-	syntax->hash_table_setf_gethash(StandardChar_O::create('|'),
-			     (ql::list(_lisp)
-			      << kw::_sym_syntax
-			      << kw::_sym_multiple_escape_character).cons());
+	syntax->hash_table_setf_gethash(StandardChar_O::create('\\'),kw::_sym_single_escape_character);
+	syntax->hash_table_setf_gethash(StandardChar_O::create('|'), kw::_sym_multiple_escape_character);
 	return syntax;
     }
 
 
-    ReadTable_sp ReadTable_O::create_standard_readtable(Lisp_sp lisp)
+    ReadTable_sp ReadTable_O::create_standard_readtable()
     {_G();
         GC_ALLOCATE(ReadTable_O,rt );
-	rt->_Syntax = ReadTable_O::create_standard_syntax_table(_lisp);
+	rt->_SyntaxTypes = ReadTable_O::create_standard_syntax_table();
 	ASSERTNOTNULL(_sym_reader_backquoted_expression->symbolFunction());
 	ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
 	rt->set_macro_character(StandardChar_O::create('`'),
@@ -1056,8 +1081,11 @@ namespace core
     void ReadTable_O::initialize()
     {_OF();
         this->Base::initialize();
+//	printf("%s:%d Initializing readtable\n", __FILE__, __LINE__ );
 	this->_Case = kw::_sym_upcase;
-	this->_Syntax = HashTableEql_O::create_default();
+	this->_SyntaxTypes = HashTableEql_O::create_default();
+	this->_MacroCharacters = HashTableEql_O::create_default();
+	this->_DispatchMacroCharacters = HashTableEql_O::create_default();
     }
 
 
@@ -1091,6 +1119,12 @@ namespace core
 	}
     }
 
+    T_sp ReadTable_O::set_syntax_type(Character_sp ch, T_sp syntaxType )
+    {
+        this->_SyntaxTypes->setf_gethash(ch,syntaxType);
+	return _lisp->_true();
+    }
+
 
 #define DOCS_ReadTable_set_macro_character "set-macro-character as in CL"
 #define ARGS_ReadTable_set_macro_character "(ch func_desig &optional non-terminating-p)"
@@ -1099,18 +1133,14 @@ namespace core
     SYMBOL_SC_(KeywordPkg,terminating_macro_character);
     SYMBOL_SC_(KeywordPkg,macro_function);
     T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_terminating_p)
-    {_OF();
-	ql::list plist(_lisp);
-	if ( non_terminating_p.isTrue() )
-	{
-	    plist << kw::_sym_syntax << kw::_sym_non_terminating_macro_character;
-	} else
-	{
-	    plist << kw::_sym_syntax << kw::_sym_terminating_macro_character;
-	}
+    {
+	if ( non_terminating_p.isTrue() ) {
+            this->set_syntax_type(ch,kw::_sym_non_terminating_macro_character);
+        } else {
+            this->set_syntax_type(ch,kw::_sym_terminating_macro_character);
+        }
 	Function_sp func = coerce::functionDesignator(funcDesig);
-	plist << kw::_sym_macro_function << func;
-	this->_Syntax->hash_table_setf_gethash(ch,plist.cons());
+        this->_MacroCharacters->setf_gethash(ch,func);
 	return _lisp->_true();
     }
 
@@ -1119,7 +1149,8 @@ namespace core
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString();
 	ss << ":case " << _rep_(this->_Case) << std::endl;
-	ss << ":syntax " << this->_Syntax->hash_table_dump() << std::endl;
+	ss << ":syntax " << this->_SyntaxTypes->hash_table_dump() << std::endl;
+	ss << ":macroCharacters " << this->_MacroCharacters->hash_table_dump() << std::endl;
 	ss << "> ";
 	return ss.str();
     }
@@ -1128,23 +1159,15 @@ namespace core
 
     Symbol_sp ReadTable_O::syntax_type(Character_sp ch) const
     {_OF();
-	Cons_sp plist = this->_Syntax->gethash(ch,_Nil<Cons_O>()).as_or_nil<Cons_O>();
-	LOG(BF("character[%s] plist: %s") % _rep_(ch) % _rep_(plist) );
-	Symbol_sp result(kw::_sym_constituent_character); // should this be the default????
-	if ( plist.notnilp() ) result = plist->getf(kw::_sym_syntax,kw::_sym_constituent_character).as<Symbol_O>();
-	if ( result.nilp() )
-	{
-	    printf("%s:%d syntax_type for %s --> %s\n", __FILE__, __LINE__, _rep_(ch).c_str(), _rep_(result).c_str() );
-	}
-	LOG(BF("syntax_type: %s") % _rep_(result) );
+	Symbol_sp result = this->_SyntaxTypes->gethash(ch,kw::_sym_constituent_character).as_or_nil<Symbol_O>();
+	LOG(BF("character[%s] syntax_type: %s") % _rep_(ch) % _rep_(result) );
 	return result;
     }
 
 
     T_mv ReadTable_O::get_macro_character( Character_sp ch )
     {_OF();
-	Cons_sp plist = this->_Syntax->gethash(ch,_Nil<Cons_O>()).as_or_nil<Cons_O>();
-	T_sp dispatcher = plist->getf(kw::_sym_macro_function,_Nil<T_O>());
+	T_sp dispatcher = this->_MacroCharacters->gethash(ch,_Nil<T_O>());
 	Symbol_sp syntaxType = this->syntax_type(ch);
 	if ( syntaxType == kw::_sym_terminating_macro_character )
 	{
@@ -1159,6 +1182,9 @@ namespace core
     T_sp ReadTable_O::make_dispatch_macro_character(Character_sp ch, T_sp non_terminating_p )
     {_OF();
 	this->set_macro_character(ch,_sym_dispatch_macro_character, non_terminating_p);
+        this->_DispatchMacroCharacters->setf_gethash(ch,HashTableEql_O::create_default());
+        return _lisp->_true();
+#if 0
 	HashTable_sp syntax = this->_Syntax;
 	Cons_sp plist = syntax->gethash(ch,_Nil<Cons_O>()).as_or_nil<Cons_O>();
 	ql::list qplist(_lisp);
@@ -1173,13 +1199,26 @@ namespace core
 	syntax->hash_table_setf_gethash(ch,qplist.cons());
 	LOG(BF("After setf plist: %s") % _rep_(syntax->gethash(ch,_Nil<T_O>())) );
 	return _lisp->_true();
+#endif
     }
 
 
 
     T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char,
 						   T_sp new_func_desig )
-    {_OF();
+    {
+	if ( this->get_macro_character(disp_char)
+	     != _sym_dispatch_macro_character->symbolFunction() )
+	{
+	    SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char) );
+	}
+        HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char,_Nil<HashTable_O>()).as_or_nil<HashTable_O>();
+	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
+	Character_sp upcase_sub_char = sub_char->char_upcase();
+	Function_sp new_func = coerce::functionDesignator(new_func_desig);
+	dispatch_table->hash_table_setf_gethash(upcase_sub_char,new_func);
+	return _lisp->_true();
+#if 0
 	if ( this->get_macro_character(disp_char)
 	     != _sym_dispatch_macro_character->symbolFunction() )
 	{
@@ -1196,6 +1235,7 @@ namespace core
 	Function_sp new_func = coerce::functionDesignator(new_func_desig);
 	dispatch_table->hash_table_setf_gethash(upcase_sub_char,new_func);
 	return _lisp->_true();
+#endif
     }
 
 
@@ -1206,6 +1246,12 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char) );
 	}
+        HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char,_Nil<HashTable_O>()).as_or_nil<HashTable_O>();
+	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
+	Character_sp upcase_sub_char = sub_char->char_upcase();
+	Function_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<Function_O>()).as<Function_O>();
+        return func;
+#if 0
 	HashTable_sp syntax_table = this->_Syntax;
 	Cons_sp disp_char_plist = syntax_table->gethash(disp_char,_Nil<Cons_O>()).as_or_nil<Cons_O>();
 	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
@@ -1213,6 +1259,7 @@ namespace core
 	Character_sp upcase_sub_char = sub_char->char_upcase();
 	Function_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<T_O>()).as<Function_O>();
 	return func;
+#endif
     }
 
 
@@ -1237,6 +1284,43 @@ namespace core
 	}
 	SIMPLE_ERROR(BF("Bad readtable case[%s]") % _rep_(this->_Case) );
     }
+
+
+    ReadTable_sp ReadTable_O::copyReadTable(ReadTable_sp dest)
+    {
+//	printf("%s:%d copy-readtable\n", __FILE__, __LINE__ );
+	if ( dest.nilp() ) {
+//	    printf("%s:%d allocating copy-readtable\n", __FILE__, __LINE__ );
+	    GC_ALLOCATE(ReadTable_O,temp);
+	    dest = temp;
+	}
+//	printf("%s:%d dest.nilp() == %d\n", __FILE__, __LINE__, dest.nilp());
+//	printf("%s:%d dest->_SyntaxTypes.nilp() == %d\n", __FILE__, __LINE__, dest->_SyntaxTypes.nilp());
+//	printf("%s:%d about to _SyntaxTypes->clrhash() copy-readtable\n", __FILE__, __LINE__ );
+	dest->_SyntaxTypes->clrhash();
+//	printf("%s:%d about to _MacroCharacters->clrhash() copy-readtable\n", __FILE__, __LINE__ );
+	dest->_MacroCharacters->clrhash();
+	dest->_DispatchMacroCharacters->clrhash();
+	this->_SyntaxTypes->maphash( [&dest] (T_sp key, T_sp val) {
+		dest->_SyntaxTypes->setf_gethash(key,val);
+	    } );
+	this->_MacroCharacters->maphash( [&dest] (T_sp key, T_sp val) {
+		dest->_MacroCharacters->setf_gethash(key,val);
+	    } );
+	this->_DispatchMacroCharacters->maphash( [&dest] (T_sp key, T_sp val) {
+		HashTable_sp entry = val.as<HashTable_O>();
+		HashTable_sp table = HashTableEql_O::create_default();
+		entry->maphash( [&table] (T_sp subkey, T_sp func) {
+			table->setf_gethash(subkey,func);
+		    } );
+		dest->_DispatchMacroCharacters->setf_gethash(key,table);
+	    } );
+	dest->_Case = this->_Case;
+	return dest;
+    }
+
+
+
 
 
 
@@ -1314,6 +1398,8 @@ namespace core
 	Defun(getDispatchMacroCharacter);
         ClDefun(getMacroCharacter);
         ClDefun(makeDispatchMacroCharacter);
+	ClDefun(copyReadtable);
+	ClDefun(setSyntaxFromChar);
     }
 
     void ReadTable_O::exposePython(::core::Lisp_sp lisp)

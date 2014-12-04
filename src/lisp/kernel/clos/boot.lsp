@@ -29,12 +29,12 @@
 	 (class (or (let ((existing-class (gethash name si::*class-name-hash-table*)))
 		      (if existing-class
 			  (progn
-			    #+compare (print (list "MLOG make-empty-standard-class got existing class -->" #+brcl existing-class))
+			    #+compare (print (list "MLOG make-empty-standard-class got existing class -->" #+clasp existing-class))
 			    existing-class)
 			  nil))
-		    #+brcl
+		    #+clasp
 		    (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) name)
-		    #-brcl
+		    #-clasp
 		    (si:allocate-raw-instance nil the-metaclass
 					      #.(length +standard-class-slots+)))))
     (with-early-accessors (+standard-class-slots+)
@@ -64,17 +64,17 @@
 			     collect parent)))
 	#+compare(print "MLOG About to assign superclasses")
 	(setf (class-direct-superclasses class) superclasses)
-          ;; In brcl each class contains a default allocator functor
+          ;; In clasp each class contains a default allocator functor
           ;; that is used to allocate instances of this class
           ;; If a superclass is derived from a C++ adaptor class
           ;; then we must inherit its allocator
           ;; This means that only any class can only ever inherit from one C++ adaptor class
-          #+brcl(sys:inherit-default-allocator class superclasses)
+          #+clasp(sys:inherit-default-allocator class superclasses)
 	#+compare(print "MLOG About to compute-clos-class-precedence-list")
 	(let ((cpl (compute-clos-class-precedence-list class superclasses)))
-	  #+compare(print (list "MLOG Finished compute-clos-class-precedence-list - saving it" "computed for: " #+brcl class " cpl: " #+brcl cpl ))
+	  #+compare(print (list "MLOG Finished compute-clos-class-precedence-list - saving it" "computed for: " #+clasp class " cpl: " #+clasp cpl ))
 	  (setf (class-precedence-list class) cpl)
-	  #+compare(print (list "MLOG Checking set class-precedence-list class: " #+brcl class " cpl: " #+brcl (class-precedence-list class)))
+	  #+compare(print (list "MLOG Checking set class-precedence-list class: " #+clasp class " cpl: " #+clasp (class-precedence-list class)))
 	  )
 	)
       
@@ -163,7 +163,7 @@
     ;; 2) Class T had its metaclass wrong. Fix it.
     ;;
 #+compare    (print (list "MLOG STAGE 2 - BRCL skips this"))
-#-brcl
+#-clasp
     (si:instance-class-set (find-class 't) (find-class 'built-in-class))
     ;;
     ;; 3) Finalize

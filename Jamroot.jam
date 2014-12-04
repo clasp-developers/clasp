@@ -1,7 +1,7 @@
 import path ;
 import os ;
 
-CLASP_VERSION = "0.1" ;
+CLASP_VERSION = "0.2" ;
 
 
 
