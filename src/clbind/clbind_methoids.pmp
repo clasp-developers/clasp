@@ -35,6 +35,7 @@ $for isConst [[
               public:
                   typedef BuiltinClosure TemplatedBase;
               public:
+		    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
               typedef $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[std::unique_ptr<UPRT>]] $else [[RT]] (OT::*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
               Type mptr;
               public:

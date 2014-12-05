@@ -30,6 +30,7 @@ $for isConst [[
       public:
         typedef BuiltinClosure TemplatedBase;
       public:
+	virtual const char* describe() const {return "VariadicMethoid";};
         typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](OT::*Type)($for Args_ , [[ARG$Args_]]) $if isConst [[const]];
         Type mptr;
       public:

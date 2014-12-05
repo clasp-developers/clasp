@@ -29,6 +29,8 @@ $for template_ [[
         public:
             typedef BuiltinClosure TemplatedBase;
         public:
+	virtual const char* describe() const {return "VariadicFunctoid";};
+
         typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](*Type) ($for Args_ , [[ARG$Args_]]);
         Type fptr;
         public:

@@ -123,7 +123,7 @@ namespace core {
     public:
         DISABLE_NEW();
 
-        virtual string describe() const {return "FuncallableStandardClassInitializationFunctoid";};
+        virtual const char* describe() const {return "FuncallableStandardClassInitializationFunctoid";};
         FuncallableStandardClassInitializationFunctoid(T_sp name, FuncallableStandardClass_sp c) : Functoid(name)
         { this->_FuncallableStandardClass = c;};
         virtual ~FuncallableStandardClassInitializationFunctoid() {};

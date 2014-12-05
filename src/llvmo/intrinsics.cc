@@ -1535,6 +1535,13 @@ extern "C"
         core::Str_sp mname = core::Str_O::create(moduleName);
         SourceFileInfo_mv sfi_mv = core::af_sourceFileInfo(mname);
         int sfindex = sfi_mv.valueGet(1).as<core::Fixnum_O>()->get();
+	if ( sfindex == 0 ) {
+	    printf("%s:%d Could not get a SourceFileInfoHandle for %s\n", __FILE__, __LINE__, moduleName );
+	} else {
+	    printf("%s:%d Assigning SourceFileInfoHandle %d for %s  at sourceFileInfoHandleP@%p\n", __FILE__, __LINE__, sfindex, moduleName, sourceFileInfoHandleP );
+	}
+
+
         *sourceFileInfoHandleP = sfindex;
     }
 
@@ -1922,8 +1929,13 @@ extern "C"
 extern "C"
 {
 
-    void trace_setLineNumberColumnForIHSTop( int* sourceFileInfoHandleP, int ln, int col )
+    void trace_setLineNumberColumnForIHSTop( char* sourceFileName, int* sourceFileInfoHandleP, int ln, int col )
     {
+	if ( comp::_sym_STARlowLevelTracePrintSTAR->symbolValue().isTrue() ) {
+	    if ( *sourceFileInfoHandleP == 0 ) {
+		printf("%s:%d trace_setLineNumberColumnForIHSTop has *sourceFileInfoHandleP@%p == 0 soureFileName: %s\n", __FILE__, __LINE__, sourceFileInfoHandleP, sourceFileName );
+	    }
+	}
 	_lisp->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP,ln,col);
     }
 

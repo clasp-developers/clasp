@@ -75,25 +75,6 @@ public:
 };
 
 
-#if 0
-/*! A ChainableMethoid is a Methoid that is called with two arguments: (args next-emfun)
-  It's methoid is applied to args and next-emfun is ignored
- */
-class ChainableMethoid : public Closure
-{
-private:
-	Functoid* _methoid; // take ownership
-public:
-    ChainableMethoid( const string& name, Functoid* m) : AFFunctoid(name), _methoid(m) {};
-    DISABLE_NEW();
-    virtual ~ChainableMethoid() { if (this->_methoid!=NULL) { delete this->_methoid; this->_methoid = NULL;}};
-    virtual string describe() const {return "ChainableMethoid";};
-    T_mv activate( ActivationFrame_sp closedEnv,int nargs, ArgArray args)
-    {_G();
-	IMPLEMENT_MEF(BF("Handle new way of passing emfun in activation frames"));
-    }
-};
-#endif
 
 
 };

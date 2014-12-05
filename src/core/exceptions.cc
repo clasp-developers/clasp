@@ -351,7 +351,7 @@ DebugStream& DebugStream::beginNode(uint debugFlags,
 				    const string& message )
 {
     const char* shortSourceFile = trimSourceFilePathName(cPsourceFile);
-    if (shortSourceFile == NULL) shortSourceFile = "-no-file-";
+    if (shortSourceFile == NULL) shortSourceFile = "-begin-node-no-file-";
     if ( this->DebugLogAsXml )
     {
 	string stuff = (BF("<%s s=\"%s\" f=\"%s\" l=\"%d\">\n") % debugFlagsAsNodeName(debugFlags) % shortSourceFile % cPfunctionName % lineNumber ).str();

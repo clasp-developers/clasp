@@ -129,7 +129,7 @@ namespace core {
 	typedef	T_mv (*MacroPtr)(Cons_sp,T_sp);
 	MacroPtr	mptr;
     public:
-	virtual string describe() const {return "MacroClosure";};
+	virtual const char* describe() const {return "MacroClosure";};
 // constructor
 	MacroClosure(Symbol_sp name, SourcePosInfo_sp spi, MacroPtr ptr) : BuiltinClosure(name,spi,kw::_sym_macro),mptr(ptr) {}
         DISABLE_NEW();

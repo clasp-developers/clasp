@@ -88,7 +88,7 @@ namespace core
             , entryPoint(ep)
             , instance(inst){};
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-	virtual string describe() const {return "InstanceClosure";};
+	virtual const char* describe() const {return "InstanceClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
     };

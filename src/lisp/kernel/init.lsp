@@ -4,11 +4,15 @@
 
 
 (SYS:*MAKE-SPECIAL 'core:*echo-repl-tpl-read*)
+<<<<<<< Updated upstream
 :pause-hir
 
 (setq core:*echo-repl-tpl-read*
   #+emacs-inferior-lisp t
   #-emacs-inferior-lisp nil)
+=======
+(setq core:*echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
+>>>>>>> Stashed changes
 
 (sys:*make-special 'core::*boot-verbose*)
 (setq core::*boot-verbose* nil)

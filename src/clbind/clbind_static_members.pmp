@@ -32,6 +32,7 @@ $var ConstTypeCount = 1
                         < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
                         : public core::Functoid {
                         public:
+			    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
                         typedef $if ret==RetVoid [[void]] $else [[RT]] (*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
                         Type mptr;
                         public:

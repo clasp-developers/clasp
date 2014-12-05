@@ -1,3 +1,4 @@
+(print "Hello")
 (load "sys:kernel;asdf;build;asdf.bundle")
 
 (asdf:load-system :cleavir-generate-ast)

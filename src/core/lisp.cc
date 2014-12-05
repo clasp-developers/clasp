@@ -1338,11 +1338,13 @@ namespace core
         features = Cons_O::create(_lisp->internKeyword("BSD"),features);
         features = Cons_O::create(_lisp->internKeyword("OS-UNIX"),features);
         features = Cons_O::create(_lisp->internKeyword("UNIX"),features);
+	features = Cons_O::create(_lisp->internKeyword("X86-64"),features);
 #endif
 #ifdef _TARGET_OS_LINUX
         features = Cons_O::create(_lisp->internKeyword("UNIX"),features);
         features = Cons_O::create(_lisp->internKeyword("OS-UNIX"),features);
         features = Cons_O::create(_lisp->internKeyword("LINUX"),features);
+	features = Cons_O::create(_lisp->internKeyword("X86-64"),features);
 #endif
 #ifdef VARARGS
 	features = Cons_O::create(_lisp->internKeyword("VARARGS"),features);
@@ -3498,7 +3500,7 @@ extern "C"
         map<string,int>::iterator it = this->_SourceFileIndices.find(fileName);
         if ( it == this->_SourceFileIndices.end() ) {
             if ( this->_Roots._SourceFiles.size() == 0 ) {
-                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-no-file-",0);
+                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-",0);
                 this->_Roots._SourceFiles.push_back(unknown);
             }
             int idx = this->_Roots._SourceFiles.size();
@@ -3509,6 +3511,22 @@ extern "C"
         }
         return Values(this->_Roots._SourceFiles[it->second],Fixnum_O::create(it->second));
     }
+
+
+    
+#define ARGS_core_allSourceFiles "()"
+#define DECL_core_allSourceFiles ""
+#define DOCS_core_allSourceFiles "List all of the source files"
+    T_sp core_allSourceFiles()
+    {
+	Cons_sp list = _Nil<Cons_O>();
+	for ( auto it : _lisp->_SourceFileIndices ) {
+	    Str_sp sf = Str_O::create(it.first);
+	    list = Cons_O::create(sf,list);
+	};
+	return list;
+    }
+
 
 
 #define ARGS_af_sourceFileInfo "(name)"
@@ -3582,6 +3600,7 @@ extern "C"
 	LOG(BF("Lisp_O::initializeGlobals"));
 	SYMBOL_EXPORT_SC_(CorePkg,selectPackage);
 	Defun(selectPackage);
+	CoreDefun(allSourceFiles);
     }
 
     void Lisp_O::exposeCando()

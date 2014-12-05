@@ -510,7 +510,7 @@ Boehm and MPS use a single pointer"
 
 
   (primitive-does-not-throw module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i32*+ +i32+ +i32+))
+  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i32+ +i32+))
 
   (primitive-does-not-throw module "trace_exitFunctionScope" +void+ (list +i32+) )
   (primitive-does-not-throw module "trace_exitBlockScope" +void+ (list +i32+ ) )

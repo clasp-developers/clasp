@@ -31,6 +31,7 @@ $for isConst [[
       < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](OT::ExternalType::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
         : public BuiltinClosure {
       public:
+      	virtual const char* describe() const {return "IndirectVariadicMethoid";};
         typedef BuiltinClosure TemplatedBase;
                        public:
 //        typedef std::function<$if ret==RetVoid [[void]] $else [[RT]] (OT& $if numArgs [[,]] $for Args_ , [[ARG$Args_]])> Type;

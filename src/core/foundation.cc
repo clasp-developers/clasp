@@ -288,10 +288,19 @@ namespace llvm_interface
     }
 
 
+namespace core
+{
+    int Closure::sourceFileInfoHandle()
+    {
+	return 0;
+    }
+};
 
 namespace core
 {
 
+
+    
     int _global_signalTrap = 0;
     int _global_pollTicksGC = 0;
 

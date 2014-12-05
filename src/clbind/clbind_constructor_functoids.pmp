@@ -22,6 +22,7 @@ $var NumArgs = 8
                 public:
                     typedef Wrapper<T,Pointer>  WrapperType;
                 public:
+		    virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
                     enum { NumParams = $numArgs };
                     VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
                     DISABLE_NEW();

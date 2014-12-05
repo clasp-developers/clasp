@@ -1271,6 +1271,7 @@ namespace llvmo
         core::Cons_sp           associatedFunctions;
 // constructor
     public:
+	virtual const char* describe() const { return "CompiledClosure";};
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:
 	CompiledClosure( core::T_sp functionName, core::SourcePosInfo_sp spi, core::Symbol_sp type,

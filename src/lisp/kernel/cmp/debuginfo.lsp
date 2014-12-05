@@ -295,6 +295,7 @@
       (let ((ln lineno)
 	    (col column))
 	(irc-intrinsic "trace_setLineNumberColumnForIHSTop"
+		       *gv-source-path-name*
                        *gv-source-file-info-handle*
                        (jit-constant-i32 ln) (jit-constant-i32 col)))
       nil)))

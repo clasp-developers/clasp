@@ -26,6 +26,7 @@ $var NumArgs = 16
                     typedef $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[RT]](*Type)($for Args_ , [[ARG$Args_]]);
                     Type fptr;
                 public:
+		    virtual const char* describe() const { return "VariadicFunctoid"; };
                     enum { NumParams = $numArgs };
                     VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
                     DISABLE_NEW();

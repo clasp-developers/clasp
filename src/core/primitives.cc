@@ -138,7 +138,15 @@ namespace core
 #define DOCS_core_lispImplementationId "lispImplementationId - the git commit sha1 code"
     T_sp core_lispImplementationId()
     {_G();
-        return Str_O::create(CLASP_GIT_COMMIT);
+	string all = CLASP_GIT_COMMIT;
+#define RIGHT_CHARS 8
+	string rightChars;
+	if ( all.size() > RIGHT_CHARS) {
+	    rightChars = all.substr(all.size()-RIGHT_CHARS);
+	} else {
+	    rightChars = all;
+	}
+        return Str_O::create(rightChars);
     };
 
 

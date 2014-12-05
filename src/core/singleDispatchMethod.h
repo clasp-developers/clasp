@@ -109,7 +109,7 @@ namespace core {
 	SingleDispatchMethod_sp	_method;
 	Function_sp 		_temporary_function;
     public:
-	string describe() const { return "Lambda_method_function";};
+	const char* describe() const { return "Lambda_method_function";};
     public:
 	Lambda_method_function(T_sp name, SingleDispatchMethod_sp method)
 	    : BuiltinClosure(name)

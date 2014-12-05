@@ -75,7 +75,7 @@ namespace core {
 
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 
-	virtual string describe() const {return "SingleDispatchGenericFunctoid";};
+	virtual const char* describe() const {return "SingleDispatchGenericFunctoid";};
 	virtual void LISP_CALLING_CONVENTION() =0;
         void setKind(Symbol_sp k) { this->kind = k; };
         Symbol_sp getKind() const { return this->kind;};
@@ -169,7 +169,7 @@ namespace core
             }
         };
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-	virtual string describe() const {return "InterpretedClosure";};
+	virtual const char* describe() const {return "InterpretedClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         bool interpretedP() const { return true; };
         LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};
@@ -194,7 +194,7 @@ namespace core
             this->kind = k;
         }
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-	virtual string describe() const {return "BuiltinClosure";};
+	virtual const char* describe() const {return "BuiltinClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         bool builtinP() const { return true; };
         LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};

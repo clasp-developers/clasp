@@ -306,6 +306,7 @@ namespace core
 	friend class ConditionHandlerManager;	
 	friend class BootStrapCoreSymbolMap;
 	friend T_sp sp_eval_when( Cons_sp args, T_sp env );
+	friend T_sp core_allSourceFiles();
 	template <class oclass> friend void define_base_class(Class_sp co, Class_sp cob, uint& classesUpdated );
 	template <class oclass> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class );
 	friend T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value);
