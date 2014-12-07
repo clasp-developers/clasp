@@ -4,9 +4,7 @@
 
 
 (SYS:*MAKE-SPECIAL 'core:*echo-repl-tpl-read*)
-(setq core:*echo-repl-tpl-read*
-  #+emacs-inferior-lisp t
-  #-emacs-inferior-lisp nil)
+(setq core:*echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 
 (sys:*make-special 'core::*boot-verbose*)
 (setq core::*boot-verbose* nil)
@@ -18,7 +16,7 @@
 ;;(setq *features* (cons :ecl-min *features*))
 (setq *features* (cons :clasp *features*))
 ;;(setq *features* (cons :clos *features*))
-(setq *features* (cons :debug-compiler *features*))
+;;(setq *features* (cons :debug-compiler *features*))
 (setq *features* (cons :compile-mcjit *features*))
 
 
@@ -974,6 +972,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   )
 
 (export 'setup-sicl)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Setup the swank
+;;
+(defun swank ()
+  (require :swank)
+  (start-swank))
+
+(export 'swank)
 
 
 

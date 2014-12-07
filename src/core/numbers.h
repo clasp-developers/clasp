@@ -885,36 +885,46 @@ namespace core {
     Number_sp brcl_atan2(Number_sp x, Number_sp y);
 
     inline Number_sp brcl_sqrt(Number_sp z) {
+	ASSERTF(z.pointerp(),BF("Add support for immediate fixnums"));
 	return z->sqrt();
     }
 
     inline Number_sp brcl_log1(Number_sp x) {
+	ASSERTF(x.pointerp(),BF("Add support for immediate fixnums"));
 	return x->log1();
     }
 
     inline Number_sp brcl_log1p(Number_sp x)
     {
+	ASSERTF(x.pointerp(),BF("Add support for immediate fixnums"));
 	return x->log1p();
     };
 
 
     inline bool brcl_zerop(Number_sp n)
     {
+	if (n.tagged_fixnump()) {
+	    return n.fixnum() == 0;
+	}
+	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
 	return n->zerop();
     }
 
     inline Number_sp brcl_negate(Number_sp n)
     {
+	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
 	return n->negate();
     }
 
     inline Number_sp brcl_one_plus(Number_sp x)
     {
+	ASSERTF(x.pointerp(),BF("Add support for immediate fixnums"));
 	return x->onePlus();
     }
 
     inline Number_sp brcl_one_minus(Number_sp x)
     {
+	ASSERTF(x.pointerp(),BF("Add support for immediate fixnums"));
 	return x->oneMinus();
     }
 
@@ -930,11 +940,13 @@ namespace core {
 
     inline bool brcl_evenp(Integer_sp n)
     {
+	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
 	return n->evenp();
     }
 
     inline bool brcl_oddp(Integer_sp n)
     {
+	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
 	return n->oddp();
     };
 

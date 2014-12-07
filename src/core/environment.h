@@ -57,21 +57,30 @@ namespace core
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,Environment_O,"Environment");
     public:
+	typedef enum { undeterminedValue, specialValue, stackValue, heapValue } ValueKind;
     protected:
 	uint		_EnvId;
     public:
 	static T_sp clasp_currentVisibleEnvironment(T_sp env);
 	static ActivationFrame_sp clasp_getActivationFrame(T_sp env);
 	static int clasp_countFunctionContainerEnvironments(T_sp env);
-	static bool clasp_findValue(T_sp env, Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value);
+	static bool clasp_findValue(T_sp env, T_sp name, int& depth, int& index, ValueKind& valueKind,T_sp& value);
 	static bool clasp_findFunction(T_sp env, T_sp functionName, int& depth, int& index, Function_sp& func);
 	static bool clasp_findTag(T_sp env, Symbol_sp sym, int& depth, int& index);
 	static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int& depth, int& index, bool& shadowed, Function_sp& func);
 	static bool clasp_findMacro(T_sp env, Symbol_sp sym, int& depth, int& index, Function_sp& func);
         static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
         static T_sp clasp_lookupValue(T_sp env, int depth, int index );
+        static T_sp& clasp_lookupValueReference(T_sp env, int depth, int index );
         static Function_sp clasp_lookupFunction(T_sp env, int depth, int index );
         static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index );
+	static T_mv clasp_lookupMetadata(T_sp env, Symbol_sp sym);
+	static T_sp clasp_find_current_code_environment(T_sp env);
+	static bool clasp_recognizesBlockSymbol(T_sp env,Symbol_sp sym);
+	static int clasp_getBlockSymbolFrame(T_sp env, Symbol_sp sym);
+	static T_sp clasp_find_unwindable_environment(T_sp env);
+	static T_sp clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag);
+	static T_sp clasp_find_block_named_environment(T_sp env, Symbol_sp blockName );
     protected:
 	static void clasp_environmentStackFill(T_sp env, int level, stringstream& sout);
 	static Cons_sp clasp_gather_metadata(T_sp env, Symbol_sp key);
@@ -83,9 +92,10 @@ namespace core
 	virtual bool functionContainerEnvironmentP() const { return false;};
 	virtual bool unwindProtectEnvironmentP() const { return false;};
 	virtual bool catchEnvironmentP() const { return false;};
+
 	
 	virtual void setupParent(Environment_sp environ);
-	virtual Environment_sp getParentEnvironment() const;
+	virtual T_sp getParentEnvironment() const;
     public:
 
 	virtual void setRuntimeEnvironment(T_sp renv);
@@ -113,6 +123,7 @@ namespace core
 	 MultipleValues(value,t/nil if found, environment) */
 	virtual T_mv lookupMetadata(Symbol_sp key) const;
 
+
     public:
 	/*! Return a summary of the contents of only this environment
 	 */
@@ -128,18 +139,19 @@ namespace core
 	  If the variable is lexically special return (list special-var _symbol_).
 	  Otherwise return nil.  
 	*/
-	Cons_sp classifyValue(Symbol_sp sym) const;
-	virtual T_sp _lookupValue(int depth, int index) const;
+	Cons_sp classifyValue(T_sp sym) const;
+	virtual T_sp _lookupValue(int depth, int index);
 	virtual Function_sp _lookupFunction(int depth, int index) const;
         virtual T_sp _lookupTagbodyId(int depth, int index) const {SUBIMP();};
+	virtual T_sp& lookupValueReference(int depth, int index);
     public:
 	string environmentStackAsString();
 
 	/*! Search down the stack for the symbol
 	 * If not found return end()
 	 */
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
-	virtual bool findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
+	virtual bool findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 
 	/*! Return the most recent RuntimeVisibleEnvironment */
 	virtual Environment_sp currentVisibleEnvironment() const;
@@ -198,23 +210,23 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_tagbody_tag_environment(Symbol_sp tag) const;
+	virtual T_sp find_tagbody_tag_environment(Symbol_sp tag) const;
 
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_block_named_environment(Symbol_sp tag) const;
+	virtual T_sp find_block_named_environment(Symbol_sp tag) const;
 
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_unwindable_environment() const;
+	virtual T_sp find_unwindable_environment() const;
 
 
 
 	/*! Find the current function environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_current_code_environment() const;
+	virtual T_sp find_current_code_environment() const;
 
 	virtual bool recognizesBlockSymbol(Symbol_sp sym) const;
 	virtual int getBlockSymbolFrame(Symbol_sp sym) const;
@@ -257,7 +269,7 @@ namespace core
 
 
 	virtual void setupParent(Environment_sp environ);
-	Environment_sp getParentEnvironment() const;
+	T_sp getParentEnvironment() const;
 
 	virtual string summaryOfContents() const;
 
@@ -303,7 +315,7 @@ namespace core
 	void setRuntimeEnvironment(T_sp renv) { this->_RuntimeEnvironment = renv;};
 	T_sp runtimeEnvironment() const { return this->_RuntimeEnvironment;};
 
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 	virtual bool _findFunction(T_sp functionName, int& depth, int& index, Function_sp& value) const;
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
 
@@ -328,22 +340,6 @@ TRANSLATE(core::RuntimeVisibleEnvironment_O);
 
 namespace core
 {
-
-#if 0 // depreciated
-    struct SavedSpecial
-    {
-	Symbol_sp 	_Symbol;
-	T_sp 		_SavedValue;
-    };
-#endif
-
-#if 0 // depreciated
-    struct VariableDeclarations
-    {
-	Symbol_sp 	_ScopeKind; // :lexical :special
-	Cons_sp 	_Declarations; // a-list see variable-information
-    };
-#endif
     class ValueEnvironment_O : public RuntimeVisibleEnvironment_O
     {
 	LISP_BASE1(RuntimeVisibleEnvironment_O);
@@ -368,7 +364,7 @@ namespace core
     private:
 	void setupForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent);
     public:
-	virtual T_sp _lookupValue(int depth, int index) const;
+	virtual T_sp _lookupValue(int depth, int index);
     public:
 	/*! Return a summary of the contents of only this environment
 	 */
@@ -392,7 +388,7 @@ namespace core
 	/*! Search down the stack for the symbol
 	 * If not found return false.
 	 */
-	bool _findValue(Symbol_sp sym, int& depth, int& level, bool& special, T_sp& value) const;
+	bool _findValue(T_sp sym, int& depth, int& level, ValueKind& valueKind, T_sp& value) const;
 
 	/*! Lexical variable bindings shadow symbol macros so return false if the passed
 	  symbol is a lexical variable. */
@@ -529,7 +525,7 @@ namespace core
 
 	virtual Environment_sp currentVisibleEnvironment() const;
 
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 
 	CompileTimeEnvironment_O();
 	virtual ~CompileTimeEnvironment_O() {};
@@ -570,7 +566,7 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_unwindable_environment() const;
+	virtual T_sp find_unwindable_environment() const;
 
 
     };
@@ -627,7 +623,7 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_block_named_environment(Symbol_sp tag) const;
+	virtual T_sp find_block_named_environment(Symbol_sp tag) const;
 
 
 	DEFAULT_CTOR_DTOR(BlockEnvironment_O);
@@ -694,7 +690,7 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_current_code_environment() const;
+	virtual T_sp find_current_code_environment() const;
 
 	virtual int countFunctionContainerEnvironments() const;
 
@@ -759,7 +755,7 @@ namespace core
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/
-	virtual Environment_sp find_tagbody_tag_environment(Symbol_sp tag) const;
+	virtual T_sp find_tagbody_tag_environment(Symbol_sp tag) const;
 
 	
     }; // TagbodyEnvironment class
@@ -869,6 +865,53 @@ template<> struct gctools::GCInfo<core::SymbolMacroletEnvironment_O> {
 
 TRANSLATE(core::SymbolMacroletEnvironment_O);
 
+
+
+
+
+namespace core
+{
+
+    FORWARD(StackValueEnvironment);
+    class StackValueEnvironment_O : public CompileTimeEnvironment_O
+    {
+	LISP_BASE1(CompileTimeEnvironment_O);
+	LISP_CLASS(core,CorePkg,StackValueEnvironment_O,"StackValueEnvironment");
+	DECLARE_INIT();
+//    DECLARE_ARCHIVE();
+    public: // Simple default ctor/dtor
+	DEFAULT_CTOR_DTOR(StackValueEnvironment_O);
+    public: // ctor/dtor for classes with shared virtual base
+//    explicit StackValueEnvironment_O(core::Class_sp const& mc) : T_O(mc), Environment(mc) {};
+//    virtual ~StackValueEnvironment_O() {};
+    public:
+	void initialize();
+    GCPRIVATE: // instance variables here
+	HashTableEq_sp          _Values;
+    public: // Codes here
+	static StackValueEnvironment_sp make(Environment_sp env);
+    public:
+	
+	void addValue(T_sp sym, T_sp value);
+
+	bool _findValue(T_sp sym, int& depth, int& level, ValueKind& valueKind, T_sp& value) const;
+
+	void throwErrorIfSymbolMacrosDeclaredSpecial(Cons_sp specialDeclaredSymbols) const;
+
+	virtual string summaryOfContents() const;
+
+
+    }; // StackValueEnvironment class
+    
+}; // core namespace
+template<> struct gctools::GCInfo<core::StackValueEnvironment_O> {
+    static bool const NeedsInitialization = true;
+    static bool const NeedsFinalization = false;
+    static bool const Moveable = true;
+    static bool constexpr Atomic = false;
+};
+
+TRANSLATE(core::StackValueEnvironment_O);
 
 
 

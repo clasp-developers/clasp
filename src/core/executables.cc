@@ -93,7 +93,7 @@ namespace core
         ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler,this->closedEnvironment);
         ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
 //        printf("%s:%d About to invoke %s with llh: %s\n", __FILE__, __LINE__, _rep_(this->code).c_str(), _rep_(this->lambdaListHandler).c_str());
-        lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+        lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
         ValueFrame_sp newActivationFrame = newValueEnvironment->getActivationFrame().as<ValueFrame_O>();
         VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
         newActivationFrame->attachDebuggingInfo(debuggingInfo);
@@ -224,7 +224,9 @@ namespace core
 
     string Function_O::__repr__() const
     {_G();
-	ASSERTNOTNULL(this->_Name);
+	if ( this->closure==NULL ) {
+	    return "Function_O::__repr__ NULL closure";
+	}
 	T_sp name = this->closure->name;
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(name) << ">";

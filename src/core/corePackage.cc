@@ -191,7 +191,9 @@ namespace core
     SYMBOL_EXPORT_SC_(ExtPkg,STARdefault_external_formatSTAR);
     SYMBOL_EXPORT_SC_(ExtPkg,truly_the);
     SYMBOL_EXPORT_SC_(ExtPkg,specialVar);
-    SYMBOL_EXPORT_SC_(ExtPkg,lexicalVar);
+    SYMBOL_EXPORT_SC_(ExtPkg,heapVar);
+    SYMBOL_EXPORT_SC_(ExtPkg,stackVar);
+    SYMBOL_EXPORT_SC_(CorePkg,_PLUS_numberOfFixedArguments_PLUS_);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugLoadTimeValuesSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugGenericDispatchSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugEvalSTAR);
@@ -950,6 +952,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         _sym_STARdebugGenericDispatchSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
+	_sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(Fixnum_O::create(LCC_ARGS_IN_REGISTERS));
+
 	Cons_sp hooks = Cons_O::createList(
 	    Cons_O::create(Str_O::create("l"),_sym_loadSource),
 	    Cons_O::create(Str_O::create("L"),_sym_loadSource),

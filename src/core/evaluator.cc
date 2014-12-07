@@ -38,6 +38,7 @@ THE SOFTWARE.
 //#i n c l u d e "setfExpander.h"
 #include "environment.h"
 #include "executables.h"
+#include "designators.h"
 #include "builtInClass.h"
 #include "lambdaListHandler.h"
 #include "vectorObjects.h"
@@ -117,11 +118,22 @@ namespace core
 	if ( env.notnilp() )
 	{
             int depth, index;
-            bool special;
+	    Environment_O::ValueKind valueKind;
             T_sp value;
-            bool found = Environment_O::clasp_findValue(env,sym,depth,index,special,value);
-	    if (found) return value;
-            if (special) return sym->symbolValue();
+            bool found = Environment_O::clasp_findValue(env,sym,depth,index,valueKind,value);
+	    if (found) {
+		switch (valueKind) {
+		case Environment_O::heapValue:
+		    return value;
+		case Environment_O::specialValue:
+		    return sym->symbolValue();
+		case Environment_O::stackValue:
+		    SIMPLE_ERROR(BF("Interpreter should never return a stackValue for: %s") % _rep_(sym) );
+		default:
+		    // do nothing;
+		    break;
+		}
+	    }
 	}
 	if ( sym->specialP() || sym->boundP() )
 	{
@@ -504,14 +516,8 @@ namespace core
 	    Cons_sp situations = oCar(args).as_or_nil<Cons_O>();
 	    Cons_sp body = cCdr(args);
 	    bool execute = false;
-	    if ( af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue() )
-	    {
-		execute = true;
-	    }
-	    if ( execute )
-	    {
-		return sp_progn(body,environment);
-	    }
+	    if ( af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue() ) {execute = true;}
+	    if ( execute ) {return sp_progn(body,environment);}
 	    return(Values(_Nil<T_O>()));
 	}
 
@@ -535,7 +541,7 @@ namespace core
 	}
 
 
-	T_mv sp_lexicalVar(Cons_sp args, T_sp env)
+	T_mv sp_heapVar(Cons_sp args, T_sp env)
 	{_G();
 	    int depth = oCadr(args).as<Fixnum_O>()->get();
 	    int index = oCddr(args).as<Fixnum_O>()->get();
@@ -779,7 +785,7 @@ namespace core
 			indices->hash_table_setf_gethash(sym,Fixnum_O::create(idx));
 			++indicesSize;
 		    }
-		    classified << Cons_O::create(ext::_sym_lexicalVar,
+		    classified << Cons_O::create(ext::_sym_heapVar,
 						 Cons_O::create(sym,Fixnum_O::create(idx)));
 		}
 	    }
@@ -839,7 +845,7 @@ namespace core
 	    {
 		Cons_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
-		if ( shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar )
+		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
 		{
 		    T_sp expr = oCar(curExp);
 		    T_sp result = eval::evaluate(expr,evaluateEnvironment);
@@ -849,7 +855,7 @@ namespace core
 		{
 		    scope.new_special(classified);
 		}
-		if ( shead == ext::_sym_lexicalVar )
+		if ( shead == ext::_sym_heapVar )
 		{
 		    debuggingInfo->setf_elt(debugInfoIndex,oCadr(classified));
 		    debugInfoIndex++;
@@ -1648,11 +1654,40 @@ namespace core
             size_t nargs = args->length();
             T_sp* a = args->argArray();
             switch (nargs) {
+#define APPLY_TO_ACTIVATION_FRAME
 #include "applyToActivationFrame.h"
+#undef APPLY_TO_ACTIVATION_FRAME
             default:
-                SIMPLE_ERROR(BF("Add support for applyToActivationFrame for %d arguments") % nargs);
+                SIMPLE_ERROR(BF("Add support for applyClosureToActivationFrame for %d arguments") % nargs);
             };
         }
+
+        T_mv applyClosureToStackFrame(Closure* func, T_sp stackFrame)
+        {
+            T_mv result;
+	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(stackFrame.px));
+            size_t nargs = frame::ValuesArraySize(frameImpl);
+            T_O** a = frame::ValuesArray(frameImpl);
+            switch (nargs) {
+#define APPLY_TO_TAGGED_FRAME
+#include "applyToActivationFrame.h"
+#undef APPLY_TO_TAGGED_FRAME
+            default:
+                SIMPLE_ERROR(BF("Add support for applyClosureToStackFrame for %d arguments") % nargs);
+            };
+        }
+
+
+	T_mv applyToStackFrame(T_sp head,T_sp stackFrame )
+	{_G();
+	    ASSERT(stackFrame.framep());
+	    Function_sp fn = lookupFunction(head,stackFrame);
+	    ASSERT(fn.notnilp());
+            Closure* closureP = fn->closure;
+            ASSERTF(closureP!=NULL,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+	    return applyClosureToStackFrame(closureP,stackFrame);
+	}
+
 
 	T_mv applyToActivationFrame(T_sp head,ActivationFrame_sp args )
 	{_G();
@@ -1671,6 +1706,73 @@ namespace core
             ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToActivationFrame(closureP,args);
 	}
+
+
+
+
+#define ARGS_cl_apply "(head &rest args)"
+#define DECL_cl_apply ""
+#define DOCS_cl_apply "apply"
+    T_mv cl_apply(T_sp head, T_sp args)
+    {_G();
+	/* Special case when apply is called with one arg and that arg is an ActivationFrame
+	   APPLY directly to that ActivationFrame */
+	int lenArgs = cl_length(args);
+	if ( lenArgs == 0 ) {
+	    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs );
+	}
+	if ( lenArgs == 1 && oCar(args).notnilp() )
+	{
+	    T_sp onlyArg = oCar(args);
+	    Function_sp func = coerce::functionDesignator(head);
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(head);
+            } else if ( onlyArg.framep() ) {
+		return eval::applyToStackFrame(func,onlyArg);
+	    } else if ( ActivationFrame_sp singleFrame = onlyArg.asOrNull<ActivationFrame_O>() ) {
+		return eval::applyToActivationFrame(func,singleFrame);
+	    }
+	}
+	T_sp last = oCar(cl_last(args));
+	if ( !af_listp(last) ) {
+	    SIMPLE_ERROR(BF("Last argument is not a list"));
+	}
+	int lenFirst = lenArgs-1;
+	int lenRest = cl_length(last);
+	int nargs = lenFirst + lenRest;
+	ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	T_sp obj = args;
+	for ( int i(0); i<lenFirst; ++i ) {
+	    frame->operator[](i) = oCar(obj);
+	    obj = oCdr(obj);
+	}
+        T_sp cur = last;
+	for ( int i(lenFirst); i<nargs; ++i ) {
+	    frame->operator[](i) = oCar(cur);
+	    cur = oCdr(cur);
+	}
+	Function_sp func = coerce::functionDesignator(head);
+	return eval::applyToActivationFrame(func,frame);
+    }
+
+
+#define ARGS_cl_funcall "(function_desig &rest args)"
+#define DECL_cl_funcall ""
+#define DOCS_cl_funcall "See CLHS: funcall"
+    T_mv cl_funcall(T_sp function_desig, Cons_sp args)
+    {_G();
+	Function_sp func = coerce::functionDesignator(function_desig);
+        if ( func.nilp() ) {
+            ERROR_UNDEFINED_FUNCTION(function_desig);
+        }
+	Cons_sp passArgs = args;
+	ValueFrame_sp frame(ValueFrame_O::create(passArgs,_Nil<ActivationFrame_O>()));
+	return eval::applyToActivationFrame(func,frame); // func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
+    }
+
+
+
+
 
 
 
@@ -2270,7 +2372,7 @@ namespace core
 	    SYMBOL_EXPORT_SC_(ClPkg,progn);
 	    SYMBOL_EXPORT_SC_(ClPkg,throw);
 	    _lisp->defineSpecialOperator(ExtPkg,"special-var", &sp_specialVar);
-	    _lisp->defineSpecialOperator(ExtPkg,"lexical-var", &sp_lexicalVar);
+	    _lisp->defineSpecialOperator(ExtPkg,"heap-var", &sp_heapVar);
 	    _lisp->defineSpecialOperator(ClPkg,"block", &sp_block);
 	    _lisp->defineSpecialOperator(ClPkg,"catch",&sp_catch);
 	    _lisp->defineSpecialOperator(ClPkg,"eval-when",&sp_eval_when);
@@ -2323,6 +2425,10 @@ namespace core
 	    Defun(evaluateDepth);	
 	    SYMBOL_SC_(CorePkg,classifyLetVariablesAndDeclares);
 	    Defun(classifyLetVariablesAndDeclares);
+	    SYMBOL_EXPORT_SC_(ClPkg,apply);
+	    ClDefun(apply);
+	    SYMBOL_EXPORT_SC_(ClPkg,funcall);
+	    ClDefun(funcall);
 	};
 
     };

@@ -61,12 +61,12 @@ using features defined in corePackage.cc"
     m))
 
 
-(defun make-gv-source-file-info-handle-in-*the-module* ()
+(defun make-gv-source-file-info-handle-in-*the-module* (&optional (handle -1))
   (llvm-sys:make-global-variable *the-module*
                                  +i32+  ; type
                                  nil    ; constant
                                  'llvm-sys:internal-linkage
-                                 (jit-constant-i32 -1)
+                                 (jit-constant-i32 handle)
                                  "source-file-info-handle"))
 
 

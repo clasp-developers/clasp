@@ -231,8 +231,8 @@ namespace core
 	    InvocationHistoryStack 	_InvocationHistoryStack;
             ExceptionStack              _ExceptionStack;
 	/*! Multiple values - this should be per thread */
-	    MultipleValues 		_MultipleValues;
-            Stream_sp                   _TerminalIO;
+	    MultipleValues* 		_MultipleValuesCur;
+            T_sp                   _TerminalIO;
 	    /*! Bignum registers should be one per thread */
 	    Bignum_sp 			_BignumRegister0;
 	    Bignum_sp 			_BignumRegister1;
@@ -277,7 +277,7 @@ namespace core
 #endif
 	    DoubleFloat_sp 		_RehashSize;
 	    DoubleFloat_sp 		_RehashThreshold;
-	    Stream_sp 			_NullStream;
+	    T_sp 			_NullStream;
 	    Cons_sp 			_PathnameTranslations; /* alist */
 	    Complex_sp 			_ImaginaryUnit;
 	    Complex_sp 			_ImaginaryUnitNegative;
@@ -306,6 +306,7 @@ namespace core
 	friend class ConditionHandlerManager;	
 	friend class BootStrapCoreSymbolMap;
 	friend T_sp sp_eval_when( Cons_sp args, T_sp env );
+	friend T_sp core_allSourceFiles();
 	template <class oclass> friend void define_base_class(Class_sp co, Class_sp cob, uint& classesUpdated );
 	template <class oclass> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class );
 	friend T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value);
@@ -401,7 +402,36 @@ namespace core
 	// ------------------------------------------------------------
     public:
 	InvocationHistoryStack&	invocationHistoryStack();
-	MultipleValues&		multipleValues();
+    public:
+	/*! callArgs() are where extra arguments are stored when passing them
+	  into a function that takes more arguments than can be passed in registers
+	  See lispCallingConvention.h for more details.
+	  I use the MultipleValues structure to pass arguments into functions.
+	  This must be thread local.
+	*/
+	MultipleValues*		callArgs() {
+	    ASSERT(this->_Roots._MultipleValuesCur!=NULL);
+	    return this->_Roots._MultipleValuesCur;
+	}
+	/*! This is where multiple values are returned in */
+	MultipleValues&		multipleValues() {return *this->_Roots._MultipleValuesCur;}
+	/*! MultipleValues are stored on the stack in a linked list.
+	  This ensures that the objects they contain are not garbage collected and
+	  allows us to occasionally create new MultipleValues structures for when we need to
+	  save the current one temporarily */
+	void pushMultipleValues(MultipleValues* mv)
+	{
+	    ASSERT(mv!=NULL);
+	    mv->setPrevious(this->_Roots._MultipleValuesCur);
+//	    printf("%s:%d _lisp->pushMultipleValues(%p)  current= %p\n", __FILE__, __LINE__, mv, this->_Roots._MultipleValuesCur );
+	    this->_Roots._MultipleValuesCur = mv;
+	};
+	void popMultipleValues() {
+	    MultipleValues* nextHead = this->_Roots._MultipleValuesCur->getPrevious();
+//	    printf("%s:%d _lisp->popMultipleValues()  current= %p after pop = %p\n", __FILE__, __LINE__, this->_Roots._MultipleValuesCur, nextHead );
+	    this->_Roots._MultipleValuesCur = this->_Roots._MultipleValuesCur->getPrevious();
+	    ASSERT(this->_Roots._MultipleValuesCur!=NULL);
+	};
     public:
 	DebugStream& debugLog() {HARD_ASSERT(this->_DebugStream!=NULL);return *(this->_DebugStream);};
 //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
@@ -531,9 +561,9 @@ namespace core
     public:
 #if defined(XML_ARCHIVE)
 	/*! Like read but uses serialization code to deserialize objects from a stream */
-	T_sp sread(Stream_sp sin, bool eofErrorP, T_sp eofValue);
+	T_sp sread(T_sp sin, bool eofErrorP, T_sp eofValue);
 	/*! Like print but uses serialization to serialize objects to a stream */
-	void sprint(T_sp obj, Stream_sp sout );
+	void sprint(T_sp obj, T_sp sout );
 #endif // defined(XML_ARCHIVE)
     public:
 	void print(boost::format fmt);
@@ -563,7 +593,7 @@ namespace core
     public:
 	DoubleFloat_sp rehashSize() const {return this->_Roots._RehashSize;};
 	DoubleFloat_sp rehashThreshold() const { return this->_Roots._RehashThreshold;};
-	Stream_sp nullStream() const { return this->_Roots._NullStream;};
+	T_sp nullStream() const { return this->_Roots._NullStream;};
     public:
 	//	void load(T_sp filespec, bool verbose=false, bool print=false, bool ifDoesNotExist=true );
     public:	

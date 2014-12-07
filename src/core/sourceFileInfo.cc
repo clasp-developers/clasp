@@ -86,17 +86,15 @@ namespace core
 	SourceFileInfo_sp result = _Nil<SourceFileInfo_O>();
 	if ( obj.nilp() ) {
 	    // do nothing
-	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() )
-	{
+	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() ) {
             if ( _lisp->sourceDatabase().notnilp() ) {
                 return _lisp->sourceDatabase()->lookupSourceInfo(co);
             }
             return _Nil<SourceFileInfo_O>();
-	} else if ( Stream_sp so = obj.asOrNull<Stream_O>() )
-	{
+	} else if ( cl_streamp(obj) ) {
+	    T_sp so = obj;
 	    result = so->sourceFileInfo();
-	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
-	{
+	} else if ( Function_sp fo = obj.asOrNull<Function_O>() ) {
 	    result = af_sourceFileInfo(fo->closure->sourcePosInfo());
         } else if ( SourcePosInfo_sp spi = obj.asOrNull<SourcePosInfo_O>() ) {
             result = _lisp->sourceDatabase()->sourceFileInfoFromIndex(spi->_FileId);
@@ -118,15 +116,12 @@ namespace core
 #define DOCS_af_lineno "lineNumber"
     uint af_lineno(T_sp obj)
     {_G();
-	if ( obj.nilp() )
-	{
+	if ( obj.nilp() ) {
 	    return 0;
-	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() )
-	{
+	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() ) {
             IMPLEMENT_MEF(BF("Handle cons for af_lineno"));
-	} else if ( Stream_sp so = obj.asOrNull<Stream_O>() )
-	{
-	    return clasp_input_lineno(so);
+	} else if ( cl_streamp(obj) ) {
+	    return clasp_input_lineno(obj);
 	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
 	{
             return af_lineno(fo->closure->sourcePosInfo());
@@ -148,9 +143,8 @@ namespace core
 	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() )
 	{
             IMPLEMENT_MEF(BF("Handle cons for af_column"));
-	} else if ( Stream_sp so = obj.asOrNull<Stream_O>() )
-	{
-	    return clasp_input_column(so);
+	} else if ( cl_streamp(obj) ) {
+	    return clasp_input_column(obj);
 	} else if ( Function_sp fo = obj.asOrNull<Function_O>() )
 	{
             return af_column(fo->closure->sourcePosInfo());
@@ -449,7 +443,7 @@ namespace core
     }
 
 
-    SourcePosInfo_sp SourceManager_O::registerSourceInfoFromStream(T_sp obj, Stream_sp stream)
+    SourcePosInfo_sp SourceManager_O::registerSourceInfoFromStream(T_sp obj, T_sp stream)
     {_G();
 	SourceFileInfo_sp sfi  = clasp_input_source_file_info(stream);
 	uint lineNumber = clasp_input_lineno(stream);

@@ -1063,6 +1063,7 @@ namespace llvmo
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeStackProtect);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeStackProtectReq);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeAlignment);
+
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeNoCapture);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeNoRedZone);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeNoImplicitFloat);
@@ -1116,6 +1117,30 @@ namespace llvmo
     {_G();
 #ifdef USEBOOSTPYTHON
 	PYTHON_CLASS(packageName,Attribute,"","",_lisp)
+	    ;
+#endif
+    }
+
+
+
+
+
+
+    EXPOSE_CLASS(llvmo,AttributeSet_O);
+
+    void AttributeSet_O::exposeCando(core::Lisp_sp lisp)
+    {
+	core::class_<AttributeSet_O>()
+	    ;
+	// Jan 31, 2013 - the AttributeSet/Argument api is changing fast and I'm not using it right now
+	// and I don't want to mess with this code until it settles down
+	core::af_def(LlvmoPkg,"attributeSetGet",(llvm::AttributeSet(*)(llvm::LLVMContext &, unsigned, llvm::ArrayRef< llvm::Attribute::AttrKind > )) &llvm::AttributeSet::get);
+    }
+
+    void AttributeSet_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+#ifdef USEBOOSTPYTHON
+	PYTHON_CLASS(packageName,AttributeSet,"","",_lisp)
 	    ;
 #endif
     }
@@ -3505,7 +3530,7 @@ namespace llvmo
 	    ;
 
 	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateGEP,0,(llvm::Value*,llvm::Value*,const llvm::Twine&));
-//	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateGEP,Array,(llvm::Value*,llvm::ArrayRef<llvm::Value*>,const llvm::Twine&));
+	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateGEP,Array,(llvm::Value*,llvm::ArrayRef<llvm::Value*>,const llvm::Twine&));
 
 	// Problem instructions that will have to be handled with IRBuilder_O methods
 #if 0
@@ -3536,8 +3561,8 @@ namespace llvmo
     void Argument_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<Argument_O>()
-//	    .def("addAttr",&llvm::Argument::addAttr)
-//	    .def("removeAttr",&llvm::Argument::removeAttr)
+	    .def("addAttr",&llvm::Argument::addAttr)
+	    .def("removeAttr",&llvm::Argument::removeAttr)
 	    .def("hasStructRetAttr",&llvm::Argument::hasStructRetAttr)
 	    .def("hasNoAliasAttr",&llvm::Argument::hasNoAliasAttr)
 	    .def("hasNestAttr",&llvm::Argument::hasNestAttr)
@@ -3823,6 +3848,7 @@ namespace llvmo
     void Type_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<Type_O>()
+	    .def("dump",&llvm::Type::dump)
 	    .def("type-get-pointer-to",&Type_O::getPointerTo,ARGS_PointerType_O_getPointerTo,DECL_PointerType_O_getPointerTo,DOCS_PointerType_O_getPointerTo)
             .def("getArrayNumElements", &Type_O::getArrayNumElements)
             .def("getSequentialElementType",&llvm::Type::getSequentialElementType)

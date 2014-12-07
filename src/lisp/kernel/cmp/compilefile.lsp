@@ -289,6 +289,7 @@ and the pathname of the source file - this will also be used as the module initi
 
 
 
+(defvar *debug-compile-file* nil)
 
 (defun compile-file-to-module (given-input-pathname output-path &key type)
   "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
@@ -322,6 +323,8 @@ and the pathname of the source file - this will also be used as the module initi
                         ((eq form eof-value) nil)
                       (let ((*current-lineno* line-number)
                             (*current-column* column))
+			(if cmp:*debug-compile-file*
+			    (bformat t "compile-file: %s\n" form))
                         (compile-file-t1expr form)))
                     (let ((main-fn (compile-main-function output-path ltv-init-fn )))
                       (make-boot-function-global-variable *the-module* main-fn)

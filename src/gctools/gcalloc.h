@@ -94,7 +94,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
             // Different classes can have different Headers
-            size_t sz = sizeof_with_header<T>();
+              size_t sz = sizeof_with_header<T>();
             typedef typename GCHeader<T>::HeaderType HeadT;
             T* obj;
             mps_ap_t obj_ap = global_non_moving_ap;

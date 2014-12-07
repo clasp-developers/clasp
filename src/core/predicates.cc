@@ -72,6 +72,21 @@ namespace core
 	return true;
     };
 
+
+        
+    
+#define ARGS_core_baseCharP "(arg)"
+#define DECL_core_baseCharP ""
+#define DOCS_core_baseCharP "endp"
+    bool core_baseCharP(T_sp arg)
+    {_G();
+	if ( arg.nilp() ) return false;
+	if ( Character_sp c = arg.asOrNull<Character_O>() ) {
+	    return true;
+	}
+	return false;
+    };
+
     
     
 #define ARGS_af_endp "(arg)"
@@ -111,8 +126,14 @@ namespace core
     bool af_fixnumP(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
-	return obj.isA<Fixnum_O>();
-    };
+	if ( obj.pointerp() ) {
+	    if ( Fixnum_sp fn = obj.asOrNull<Fixnum_O>() ) {
+		return true;
+	    }
+	    return false;
+	}
+	return false;
+    }
 
 
 
@@ -195,10 +216,10 @@ namespace core
     };
 
 
-#define ARGS_af_packageP "(arg)"
-#define DECL_af_packageP ""
-#define DOCS_af_packageP "packageP"
-    bool af_packageP(T_sp obj)
+#define ARGS_cl_packagep "(arg)"
+#define DECL_cl_packagep ""
+#define DOCS_cl_packagep "See CLHS packagep"
+    bool cl_packagep(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
 	return obj.isA<Package_O>();
@@ -617,14 +638,14 @@ namespace core
 	newNameDefun(ClPkg,strP,simple_string_p);
 	newNameDefun(ClPkg,simple_bit_vector_p,simple_bit_vector_p);
 	newNameDefun(ClPkg,arrayP,arrayp);
-	newNameDefun(ClPkg,packageP,packagep);
+	ClDefun(packagep);
 	newNameDefun(ClPkg,functionP,functionp);
 	newNameDefun(ClPkg,compiled_function_p,compiled_function_p);
 	newNameDefun(CorePkg,genericFunctionP,genericFunctionP);
 	newNameDefun(ClPkg,keywordP,keywordp);
 	SYMBOL_EXPORT_SC_(ClPkg,atom);
 	Defun(atom);
-
+	CoreDefun(baseCharP);
 	newNameDefun(CorePkg,fixnumP,fixnump);
 	newNameDefun(CorePkg,bignumP,bignump);
 	Defun(strP);

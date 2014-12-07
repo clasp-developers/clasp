@@ -169,7 +169,7 @@ public: // ctors-dtors
     explicit Reader_O();
     virtual ~Reader_O();
 GCPRIVATE: // ---- instance variables ----
-    Stream_sp	_Input;
+    T_sp	_Input;
 private:
     void prepareToRead();
 //    static void lisp_initGlobals(Lisp_sp lisp);
@@ -177,7 +177,7 @@ public: // virtual functions inherited from Object
     void	initialize();
 public:
     /*! Create a reader to read from an object indicated by the inputStreamDesignator (see CLHS) */
-    static Reader_sp create( Stream_sp sin);
+    static Reader_sp create( T_sp sin);
 
     /*! Return true if c is in chrSet */
     bool inSet(char c, const char* chrSet);

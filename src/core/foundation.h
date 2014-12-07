@@ -654,7 +654,8 @@ void lisp_errorIllegalDereference(void* v);
 
 namespace core {
     class MultipleValues;
-    MultipleValues* lisp_multipleValues();
+    MultipleValues* lisp_multipleValues();	
+    MultipleValues* lisp_callArgs();
 };
 
 
@@ -684,6 +685,12 @@ namespace core {
 #include "gctools/containers.h"
 
 
+namespace core {
+    /*! This pushes the newestMultipleValues onto the thread local MultipleValues stack.
+     The current top of the stack is returned. */
+    void lisp_pushMultipleValues(MultipleValues* newestMultipleValues);
+    void lisp_popMultipleValues();
+};
 
 #include "multipleValues.h"
 
@@ -888,7 +895,7 @@ namespace core {
     typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
-    typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf, int nargs, ArgArray argArray);
+    typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf); // , int nargs, ArgArray argArray);
 
     class Lisp_O;
     typedef Lisp_O* Lisp_sp;
@@ -1101,6 +1108,7 @@ namespace core
     /*! Write characters to the stream */
     void lisp_write(const boost::format& fmt, T_sp stream);
 
+
     Lisp_sp lisp_fromObject(T_sp obj);
     string lisp_currentPackageName();
     string lisp_classNameAsString(Class_sp c);
@@ -1257,7 +1265,7 @@ namespace core
                                                    , int lineno
                                                    , int column );
     core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
-                                                             , Stream_sp stream);
+                                                             , T_sp stream);
 
 
     class Functoid
@@ -1265,12 +1273,10 @@ namespace core
         struct metadata_always_fix_pointers_to_derived_classes;
         FRIEND_GC_SCANNER();
     public:
-	virtual string describe() const {return "Functoid - subclass must implement describe()";};
-        void operator()( core::T_mv* lcc_resultP, int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, ... ) {
-            va_list arglist;
-            va_start(arglist,lcc_fixed_arg2);
-            this->invoke(lcc_resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,arglist);
-            va_end(arglist);
+	virtual const char* describe() const {return "Functoid - subclass must implement describe()";};
+        void operator()( LCC_RETURN, LCC_ARGS )
+	{
+            this->invoke(lcc_resultP, LCC_PASS_ARGS );
         }
 
 //#define LISP_INVOKE() invoke( core::T_mv* lcc_resultP, int lcc_nargs, core::T_sp lcc_fixed_arg0, core::T_sp lcc_fixed_arg1, core::T_sp lcc_fixed_arg2, va_list lcc_arglist )
@@ -1292,6 +1298,7 @@ namespace core
         T_sp name;
     public:
 	Functoid(T_sp n) : name(n) {};
+	string nameAsString();
 	virtual ~Functoid() {};
     };
 
@@ -1305,7 +1312,7 @@ namespace core
                                      , closedEnvironment(env) {};
 	virtual ~Closure() {};
     public:
-	virtual string describe() const {return "Closure";};
+	virtual const char* describe() const {return "Closure";};
 	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Closure must implement 'activate'\n"); exit(1);};
 
         virtual SourcePosInfo_sp sourcePosInfo() const {return _Nil<SourcePosInfo_O>();};
@@ -1315,7 +1322,7 @@ namespace core
         virtual bool compiledP() const { return false; };
         virtual bool interpretedP() const { return false; };
         virtual bool builtinP() const { return false;};
-        virtual int sourceFileInfoHandle() const = 0;
+        virtual int sourceFileInfoHandle();
         virtual int lineNumber() const { return 0;}
         virtual int column() const { return 0;};
         virtual LambdaListHandler_sp lambdaListHandler() const = 0;

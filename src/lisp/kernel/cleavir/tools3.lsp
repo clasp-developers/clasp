@@ -1,4 +1,5 @@
-(load "sys:kernel;asdf;build;asdf.bundle")
+(print "Hello")
+(require :asdf "sys:kernel;asdf;build;asdf.bundle")
 
 (asdf:load-system :cleavir-generate-ast)
 (asdf:load-system :cleavir-ast-to-hir)
@@ -164,6 +165,18 @@
       (cleavir-ir-graphviz:draw-flowchart hir stream))))
 
 
+(defun draw-hir (&optional (hir *hir*) (filename "/tmp/hir.dot"))
+  (with-open-file (stream filename :direction :output)
+    (cleavir-ir-graphviz:draw-flowchart hir stream))
+  (core:system (format nil "dot -Tpng -o/tmp/draw.png ~a" filename))
+  (core:system "open /tmp/draw.png"))
+
+(defun draw-ast (&optional (ast *ast*) (filename "/tmp/ast.dot"))
+  (with-open-file (stream filename :direction :output)
+    (cleavir-ast-graphviz:draw-ast ast filename))
+  (core:system (format nil "dot -Tpng -o/tmp/draw.png ~a" filename))
+  (core:system "open /tmp/draw.png"))
+
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
 (defparameter *code3* 
@@ -190,14 +203,59 @@
 	      )))))
 
 
-(defun generate-hir-for-clasp-source (start end &key skip-errors)
-  (let* ((parts (core:select-source-files end :first-file start :system core:*init-files*))
+
+(defvar *hir-single-step* nil)
+(defun hir-single-step (&optional (on t))
+  (setq *hir-single-step* on))
+
+
+(define-condition continue-hir (condition) ())
+
+(defun do-continue-hir ()
+  (format t "Continuing processing forms~%")
+  (signal 'continue-hir))
+
+
+(defconstant *hir-commands*
+  '(("HIR commands"
+     ((:c :continue) do-continue-hir nil
+      ":c(ontinue) Continue processing forms"
+      "Stuff"))))
+
+(defun hir-form (form)
+  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+	 (hir (cleavir-ast-to-hir:compile-toplevel ast)))
+    (setf *form* form
+	  *ast* ast
+	  *hir* hir)))
+
+  
+(defun hir-tpl ()
+  (format t "Starting tpl~%")
+  (handler-case (core:tpl :commands *hir-commands*)
+    (continue-hir (x) nil))
+  (format t "Done tpl~%"))
+
+(defvar *form* nil)
+(defvar *ast* nil)
+(defvar *hir* nil)
+(defun generate-hir-for-clasp-source (&optional (start :init) (end :all) skip-errors)
+  (declare (special cleavir-generate-ast:*compiler*))
+  (let* ((cleavir-generate-ast:*compiler* 'cl:compile-file)
+	 (parts (core:select-source-files end :first-file start :system core:*init-files*))
 	 (pathnames (mapcar (lambda (part) (core:lisp-source-pathname part)) parts))
 	 (eof (gensym)))
     (loop for file in pathnames
-	 do (with-open-file (stream file :direction :input)
-	      (loop for form = (read stream nil eof)
-		 until (eq form eof)
-		 do (format t "FORM: ~a~%" form)
-		 do (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
-			   (hir (cleavir-ast-to-hir:compile-toplevel ast)))))))))
+       do (with-open-file (stream file :direction :input)
+	    (loop for form = (read stream nil eof)
+	       until (eq form eof)
+	       do (format t "FORM: ~a~%" form)
+	       do (if (and (eq form :pause-hir) (not *hir-single-step*))
+		      (hir-tpl)
+		      (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+			     (hir (cleavir-ast-to-hir:compile-toplevel ast)))
+			(setf *form* form
+			      *ast* ast
+			      *hir* hir)
+			(if *hir-single-step*
+			    (hir-tpl)))))))))

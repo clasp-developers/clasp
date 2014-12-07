@@ -10,6 +10,13 @@
 ;;;;
 ;;;;    See file '../Copyright' for full details.
 
+;; Should be commented out
+#+(or)(eval-when (:execute)
+  (format t "!~%!~%!~%!~%!~%In fixup.lsp !~%  Turning on :compare *feature*  for ensure-generic-function~%!~%!~%!~%!~%")
+  (setq core:*echo-repl-read* t)
+  (setq cl:*features* (cons :compare cl:*features*)))
+
+
 (in-package "CLOS")
 
 ;;; ----------------------------------------------------------------------
@@ -56,7 +63,7 @@
     #+compare(print (list "MLOG standard.lsp shared-initialize 55 class-->" #+clasp class))
     (dolist (slotd (class-slots class))
       #+compare(print "")
-      #+compare(print (list "MLOG standard.lsp shared-initialize 57 -->" #+clasp slotd))
+      #+compare(print (list "MLOG standard.lsp shared-initialize 57 "))
       #+compare(print "")
       (let* ((slot-initargs (slot-definition-initargs slotd))
 	     (slot-name (slot-definition-name slotd)))
@@ -94,10 +101,10 @@
 	   ;; Try to initialize the slot from its initform.
 	   (print (list "MLOG standard.lsp shared-initialize line[90] slot-names -->" #+clasp slot-names ))
 	   (print (list "MLOG standard.lsp shared-initialize line[91] slot-name -->" #+clasp slot-name ))
-	   (print (list "MLOG standard.lsp shared-initialize line[92] instance -->" #+clasp instance))
+	   (print (list "MLOG standard.lsp shared-initialize line[92] instance"))
 	   (print (list "MLOG standard.lsp shared-initialize line[93] (slot-boundp instance slot-name) -->" #+clasp (slot-boundp instance slot-name)))
 	   (when (slot-boundp instance slot-name)
-	     (print (list "MLOG standard.lsp shared_initialize[98] (slot-value instance slot-name) -->" #+clasp (slot-value instance slot-name))))
+	     (print (list "MLOG standard.lsp shared_initialize[98] (slot-value instance slot-name) -->" )  #+(or) (slot-value instance slot-name)))
 	   (print "")
 	   nil
 	   )

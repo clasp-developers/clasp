@@ -351,7 +351,7 @@ DebugStream& DebugStream::beginNode(uint debugFlags,
 				    const string& message )
 {
     const char* shortSourceFile = trimSourceFilePathName(cPsourceFile);
-    if (shortSourceFile == NULL) shortSourceFile = "-no-file-";
+    if (shortSourceFile == NULL) shortSourceFile = "-begin-node-no-file-";
     if ( this->DebugLogAsXml )
     {
 	string stuff = (BF("<%s s=\"%s\" f=\"%s\" l=\"%d\">\n") % debugFlagsAsNodeName(debugFlags) % shortSourceFile % cPfunctionName % lineNumber ).str();
@@ -721,7 +721,7 @@ void af_wrongIndex(const string& sourceFile, int lineno, Symbol_sp function, T_s
 #define DECL_af_readerError ""
 #define DOCS_af_readerError "readerError"
 void af_readerError(const string& sourceFile, uint lineno, Symbol_sp function,
-		    Str_sp fmt, Cons_sp fmtargs, Stream_sp stream )
+		    Str_sp fmt, Cons_sp fmtargs, T_sp stream )
 {_G();
     if ( stream.nilp() ) {
 	eval::funcall(_sym_signalSimpleError,

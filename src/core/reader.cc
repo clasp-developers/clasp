@@ -66,7 +66,7 @@ namespace core
 
 
 
-    Reader_sp Reader_O::create(Stream_sp sin)
+    Reader_sp Reader_O::create(T_sp sin)
     {	
 	Reader_sp reader = Reader_O::create();
 	reader->_Input = sin;
@@ -79,7 +79,7 @@ namespace core
     void Reader_O::initialize()
     {_OF();
 	this->Base::initialize();
-	this->_Input = _Nil<Stream_O>();
+	this->_Input = _Nil<T_O>();
     }
 
     Reader_O::~Reader_O()

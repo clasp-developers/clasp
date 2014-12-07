@@ -104,6 +104,7 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
+  (defun is-debug-compiler-on () nil)
   )
 
 

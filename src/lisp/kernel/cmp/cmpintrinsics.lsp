@@ -134,6 +134,7 @@ Boehm and MPS use a single pointer"
 (defconstant +t-ptr+ (llvm-sys:type-get-pointer-to +t+))
 (defconstant +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t-ptr+) nil))  ;; "T_sp"
 (defconstant +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
+(defconstant +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
 (defconstant +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
 (defconstant +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
@@ -167,17 +168,33 @@ Boehm and MPS use a single pointer"
 
 (defconstant +va-list+ +i8*+)
 (defconstant +closure*+ +i8*+)
-(defconstant +fn-varargs-prototype-argument-names+ '("result-ptr" "closed-af-ptr" "num-varargs" "farg0" "farg1" "farg2" "va-list"))
-(defconstant +fn-varargs-prototype+ (llvm-sys:function-type-get +void+ (list +tmv*+ +afsp*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+ +va-list+ ) #|| NOT VARARGS - use va-list ||# )
-  "The new style function prototypes, pass:
-1) A pointer for where to put the result
+
+;;
+;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
+;; and names of the arguments passed in registers
+;;
+
+(defvar *register-arg-types* nil)
+(defvar *register-arg-names* nil)
+(let (arg-types arg-names)
+  (dotimes (i core:+number-of-fixed-arguments+)
+    (push +t-ptr+ arg-types)
+    (push (bformat nil "farg%d" i) arg-names))
+  (setf *register-arg-types* (nreverse arg-types)
+	*register-arg-names* (nreverse arg-names)))
+(defconstant +fn-registers-prototype-argument-names+ (list* "result-ptr" "closed-af-ptr" "nargs" *register-arg-names*))
+(defconstant +fn-registers-prototype+ (llvm-sys:function-type-get +void+ (list* +tmv*+ +t-ptr+ +i32+ *register-arg-types*))
+  "The general function prototypes pass the following pass:
+1) An sret pointer for where to put the result
 2) A closed over runtime environment (linked list of activation frames)
 3) The number of arguments +i32+
-4) A varargs list of T_O* pointers ")
+4) core::+number-of-fixed-arguments+ T_O* pointers, the first arguments passed in registers,
+      If no argument is passed then pass NULL.
+5) If additional arguments are needed then they must be put in the multiple-values array on the stack")
 
 (progn
-  (defconstant +fn-prototype+ +fn-varargs-prototype+)
-  (defconstant +fn-prototype-argument-names+ +fn-varargs-prototype-argument-names+))
+  (defconstant +fn-prototype+ +fn-registers-prototype+)
+  (defconstant +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+))
 
 
 (defconstant +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
@@ -291,7 +308,7 @@ Boehm and MPS use a single pointer"
 	 (i 1))
     (mapc #'(lambda (x y z)
 	      (unless (matching-arguments x y i)
-		(error "Calling ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
+		(error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
 	      (setq i (1+ i))
 	      ) required-args-ty passed-args-ty args)))
 
@@ -375,10 +392,11 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "copyAFsp" +void+ (list +afsp*+ +afsp*+))
   (primitive-does-not-throw module "destructAFsp" +void+ (list +afsp*+))
 
+  (primitive-does-not-throw module "getMultipleValues" +tsp[0]*+ (list +i32+))
 
   (primitive-does-not-throw module "isNilTsp" +i32+ (list +tsp*+))
-  (primitive-does-not-throw module "isTrueTsp" +i32+ (list +tsp*+))
-  (primitive-does-not-throw module "isBoundTsp" +i32+ (list +tsp*+))
+  (primitive-does-not-throw module "isTrue" +i32+ (list +tsp*+))
+  (primitive-does-not-throw module "isBound" +i32+ (list +tsp*+))
 
 
   (primitive-does-not-throw module "internSymbol_tsp" +void+ (list +tsp*+ +i8*+ +i8*+))
@@ -400,6 +418,7 @@ Boehm and MPS use a single pointer"
  #+long-float (primitive-does-not-throw module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
   (primitive-does-not-throw module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-does-not-throw module "makePathname" +void+ (list +tsp*+ +i8*+))
+  (primitive-does-not-throw module "findPackage" +void+ (list +tsp*+ +i8*+))
   (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+))
 
 
@@ -418,6 +437,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "makeTagbodyFrame" +void+ (list +afsp*+))
   (primitive-does-not-throw module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
   (primitive-does-not-throw module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
+  (primitive-does-not-throw module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t-ptr+))
   (primitive-does-not-throw module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
   (primitive-does-not-throw module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
@@ -443,9 +463,9 @@ Boehm and MPS use a single pointer"
 
   (primitive module "invokeFASLLlvmFunctionVoid" +void+ (list +fn-void-ptr+ +i8*+))
 
-  (primitive-does-not-throw module "activationFrameNil" +afsp*+ nil)
+;;  (primitive-does-not-throw module "activationFrameNil" +afsp*+ nil)
   (primitive-does-not-throw module "activationFrameSize" +i32+ (list +afsp*+))
-  (primitive-does-not-throw module "activationFrameParentRef" +afsp*+ (list +afsp*+))
+;;  (primitive-does-not-throw module "activationFrameParentRef" +tsp*+ (list +afsp*+))
 
   (primitive-does-not-throw module "copyArgs" +void+ (list +tsp*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+ +i8*+))
   (primitive module "throwTooManyArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
@@ -476,22 +496,22 @@ Boehm and MPS use a single pointer"
 ;;  (primitive-does-not-throw module "generateTspFromTAGGED_PTR" +void+ (list +tsp*+ +tagged-ptr+))
   (primitive module "va_throwTooManyArgumentsException" +void+ (list +i8*+ +i32+ +i32+))
   (primitive module "va_throwNotEnoughArgumentsException" +void+ (list +i8*+ +i32+ +i32+))
-  (primitive module "va_throwIfExcessKeywordArguments" +void+ (list +i8*+ +i32+ +tsp*+ +i32+))
+  (primitive module "va_throwIfExcessKeywordArguments" +void+ (list +i8*+ +i32+ +tsp[0]*+ +i32+))
   (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
   (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +closure*+ (list +symsp*+))  ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +afsp*+))
-  (primitive module "FUNCALL" +void+ (list +tsp*-or-tmv*+ +closure*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+) :varargs t) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
-  (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+) :varargs t) ;; void va_funcall(T_sp*,Function_sp,int,T_sp* args)
+  (primitive module "FUNCALL" +void+ (list* +tsp*-or-tmv*+ +closure*+ +i32+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t-ptr+))))
+  (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+))
 
 
-  (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +i32+ +tsp*+ +i32+ +i8*+))
-  (primitive-does-not-throw module "va_allowOtherKeywords" +i32+ (list +i32+ +i32+ +tsp*+ +i32+))
-  (primitive module "va_throwIfBadKeywordArgument" +void+ (list +i32+ +i32+ +i32+ +tsp*+))
+  (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +i32+ +tsp[0]*+ +i32+ +i8*+))
+  (primitive-does-not-throw module "va_allowOtherKeywords" +i32+ (list +i32+ +i32+ +tsp[0]*+ +i32+))
+  (primitive module "va_throwIfBadKeywordArgument" +void+ (list +i32+ +i32+ +i32+ +tsp[0]*+))
 
 
   (primitive-does-not-throw module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i32*+ +i32+ +i32+))
+  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i32+ +i32+))
 
   (primitive-does-not-throw module "trace_exitFunctionScope" +void+ (list +i32+) )
   (primitive-does-not-throw module "trace_exitBlockScope" +void+ (list +i32+ ) )

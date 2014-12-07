@@ -34,7 +34,9 @@
       (when (not end)
         (let* ((key (read file))
                (value (read file)))
-          (si::hash-set key h value))))))
+          #+ecl(si::hash-set core::hash-table-setf-gethash key h value)
+          #+clasp(core::hash-table-setf-gethash h key value)
+	  )))))
 
 #+(or)(defun dump-help-file (hash-table path &optional (merge nil))
          (let ((entries nil))
@@ -151,7 +153,8 @@
       (let ((record (rem-record-field (gethash object dict)
                                       key sub-key)))
 	(if record
-            (si::hash-set object dict record)
+            #+ecl(si::hash-set object dict record)
+            #+clasp(core::hash-table-setf-gethash dict object record)
             (remhash object dict))))))
 
 (defun get-annotation (object key &optional (sub-key :all))

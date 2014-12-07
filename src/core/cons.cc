@@ -54,18 +54,19 @@ namespace core
 #define ARGS_af_putF "(plist value indicator)"
 #define DECL_af_putF ""
 #define DOCS_af_putF "putF"
-    Cons_mv af_putF(Cons_sp place, T_sp value, T_sp indicator)
+    Cons_sp af_putF(Cons_sp place, T_sp value, T_sp indicator)
     {_G();
-	Cons_sp cur = _Nil<Cons_O>();
-	for ( cur=place; cur.notnilp(); cur=cCddr(cur) )
+	Cons_sp cur = place;
+	for ( ; CONSP(cur); cur=cCddr(cur) )
 	{
-	    if ( !af_consP(oCdr(cur))) break;
-	    Cons_sp cdr_l = cCdr(cur);
-	    if ( oCar(cur) == indicator )
+	    T_sp cdr_l = oCdr(cur);
+	    if ( !CONSP(cdr_l)) break;
+	    if ( CONS_CAR(cur) == indicator )
 	    {
-		cdr_l->rplaca(value);
-		return(Values(place));
+		cdr_l.as<Cons_O>()->rplaca(value);
+		return place;
 	    }
+	    cur = CONS_CDR(cdr_l);
 	}
 	if ( cur.notnilp() )
 	{
@@ -73,7 +74,7 @@ namespace core
 	}
 	place = Cons_O::create(value,place);
 	place = Cons_O::create(indicator,place);
-	return(Values(place));
+	return(place);
     };
 
 
@@ -81,13 +82,13 @@ namespace core
 
 
 
-#define ARGS_af_getf "(plist indicator &optional default-value)"
-#define DECL_af_getf ""
-#define DOCS_af_getf "getf"
-    T_mv af_getf(Cons_sp plist, T_sp indicator, T_sp default_value)
+#define ARGS_cl_getf "(plist indicator &optional default-value)"
+#define DECL_cl_getf ""
+#define DOCS_cl_getf "getf"
+    T_sp cl_getf(Cons_sp plist, T_sp indicator, T_sp default_value)
     {_G();
-	if ( plist.nilp() ) return(Values(default_value));
-	return(Values(plist->getf(indicator,default_value)));
+	if ( plist.nilp() ) return(default_value);
+	return plist->getf(indicator,default_value);
     };
 
 
@@ -1533,7 +1534,7 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,cons);
 	Defun(cons);
 	SYMBOL_EXPORT_SC_(ClPkg,getf);
-	Defun(getf);
+	ClDefun(getf);
 	SYMBOL_SC_(CorePkg,putF);
 	Defun(putF);
 	af_def(ClPkg,"rest",&oCdr);

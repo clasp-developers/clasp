@@ -605,19 +605,19 @@ Use special code 0 to cancel this operation.")
                                (top-level-eval-with-env - *break-env*))
                        /// // // / / values *** ** ** * * (car /))
                  (tpl-print values)))))
-	  (loop
-	   (setq +++ ++ ++ + + -)
-	   (when
-	       (catch *quit-tag*
-		 (if (zerop break-level)
+      (loop
+	 (setq +++ ++ ++ + + -)
+	 (when
+	     (catch *quit-tag*
+	       (if (zerop break-level)
 		   (with-simple-restart
-                    (restart-toplevel "Go back to Top-Level REPL.")
-                    (rep))
+		       (restart-toplevel "Go back to Top-Level REPL.")
+		     (rep))
 		   (with-simple-restart
-		    (restart-debugger "Go back to debugger level ~D." break-level)
-		    (rep)))
-		 nil)
-	     (setf quiet nil))))))
+		       (restart-debugger "Go back to debugger level ~D." break-level)
+		     (rep)))
+	       nil)
+	   (setf quiet nil))))))
 
 (defun tpl-prompt ()
   (typecase *tpl-prompt-hook*
@@ -1142,6 +1142,8 @@ Use special code 0 to cancel this operation.")
 ||#
 
 (defun tpl-frs-command (&optional n)
+  (format *debug-io* "tpl-frs-command   ignored~%"))
+#||
   (unless n (setq n *ihs-top*))
   (unless (integerp n)
     (error "Argument to command :frs must be an integer."))
@@ -1155,6 +1157,7 @@ Use special code 0 to cancel this operation.")
 	(do () ((or (> j *frs-top*) (> (frs-ihs j) i)))
 	    (print-frs j)
 	    (incf j)))))
+||#
 
 (defun print-frs (i)
   (format *debug-io* "    FRS[~d]: ---> IHS[~d],BDS[~d]~%"

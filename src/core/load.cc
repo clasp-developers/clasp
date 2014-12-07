@@ -52,9 +52,9 @@ namespace core {
 #define DOCS_af_loadSource "loadSource"
 T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 {_G();
-    Stream_sp strm;
+    T_sp strm;
     if ( cl_streamp(source) ) {
-	strm = source.as<Stream_O>();
+	strm = source;
 	if ( !clasp_input_stream_p(strm)) {
 	    SIMPLE_ERROR(BF("Stream must be an input stream"));
 	}
@@ -127,9 +127,9 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 //        printf("%s:%d af_load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
 
 	/* If source is a stream, read conventional lisp code from it */
-	if (Stream_sp strm = source.asOrNull<Stream_O>() ) {
+	if (cl_streamp(source) ) {
 	    /* INV: if "source" is not a valid stream, file.d will complain */
-	    filename = strm;
+	    filename = source;
 	    function = _Nil<T_O>();
 	    not_a_filename = true;
 	    goto NOT_A_FILENAME;

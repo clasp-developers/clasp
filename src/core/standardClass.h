@@ -95,7 +95,7 @@ namespace core {
     public:
         DISABLE_NEW();
 
-        virtual string describe() const {return "StandardClassInitializationFunctoid";};
+        virtual const char* describe() const {return "StandardClassInitializationFunctoid";};
         StandardClassInitializationFunctoid(T_sp name, StandardClass_sp c) : Functoid(name)
         { this->_StandardClass = c;};
         virtual ~StandardClassInitializationFunctoid() {};

@@ -138,7 +138,15 @@ namespace core
 #define DOCS_core_lispImplementationId "lispImplementationId - the git commit sha1 code"
     T_sp core_lispImplementationId()
     {_G();
-        return Str_O::create(CLASP_GIT_COMMIT);
+	string all = CLASP_GIT_COMMIT;
+#define RIGHT_CHARS 8
+	string rightChars;
+	if ( all.size() > RIGHT_CHARS) {
+	    rightChars = all.substr(all.size()-RIGHT_CHARS);
+	} else {
+	    rightChars = all;
+	}
+        return Str_O::create(rightChars);
     };
 
 
@@ -323,7 +331,7 @@ namespace core
 #define DOCS_af_fromTaggedFixnum "fromTaggedFixnum"
     int af_fromTaggedFixnum(T_sp val)
     {_G();
-	if ( val.BaseType::fixnump() )
+	if ( val.tagged_fixnump() )
 	{
 	    return val.fixnum();
 	}
@@ -335,7 +343,7 @@ namespace core
 #define DOCS_af_dumpTaggedFixnum "dumpTaggedFixnum"
     void af_dumpTaggedFixnum(T_sp val)
     {_G();
-	if ( val.BaseType::fixnump() ) {
+	if ( val.tagged_fixnump() ) {
 	    printf("%s:%d Raw TaggedFixnum %p   Untagged %d\n",
 		   __FILE__,__LINE__, val.pxget(), val.fixnum() );
 	} else
@@ -929,7 +937,7 @@ namespace core
 #define DECL_af_read_delimited_list ""
     T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p)
     {_G();
-	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
+	T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 #if 0
 	// I think it is safe to ignore recursive_p
 	if ( recursive_p.isTrue() )
@@ -955,7 +963,7 @@ namespace core
 #define DECL_af_read ""
     T_sp af_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
-	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
+	T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 	return(read_lisp_object(sin,eof_error_p.isTrue(),eof_value,recursive_p.notnilp()));
     }
 
@@ -966,7 +974,7 @@ namespace core
     T_sp af_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
 	DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR,_lisp->_true());
-	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
+	T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 	return(read_lisp_object(sin,eof_error_p.isTrue(),eof_value,recursive_p));
     }
 
@@ -1102,7 +1110,7 @@ namespace core
     }
 
 
-    bool test_every_some_notevery_notany(Function_sp predicate, Cons_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn )
+    bool test_every_some_notevery_notany(Function_sp predicate, Cons_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp& retVal )
     {_G();
 	ListOfSequenceSteppers steppers(sequences);
 	ValueFrame_sp frame(ValueFrame_O::create(steppers.size(),_Nil<ActivationFrame_O>()));
@@ -1111,7 +1119,8 @@ namespace core
 	{
 	    steppers.fillValueFrameUsingCurrentSteppers(frame);
 	    LOG(BF("Applying predicate to elements[%s]") % frame->asString());
-	    bool test = eval::applyToActivationFrame(predicate,frame).isTrue();
+	    retVal = eval::applyToActivationFrame(predicate,frame);
+	    bool test = retVal.isTrue();
 	    if (test==elementTest)
 	    {
 		LOG(BF("element test was %d - returning %d") % elementTest % elementReturn );
@@ -1128,11 +1137,12 @@ namespace core
 #define DOCS_af_every "See CLHS for every"
 #define ARGS_af_every "(predicate &rest sequences)"
 #define DECL_af_every ""
-    T_mv af_every(T_sp predicate, Cons_sp sequences)
+    T_sp af_every(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
-	bool result = test_every_some_notevery_notany(op,sequences,false,false,true);
-	return(Values(_lisp->_boolean(result)));
+	T_sp dummy;
+	bool result = test_every_some_notevery_notany(op,sequences,false,false,true,dummy);
+	return _lisp->_boolean(result);
     }
 
 
@@ -1140,11 +1150,13 @@ namespace core
 #define DOCS_af_some "See CLHS for some"
 #define ARGS_af_some "(predicate &rest sequences)"
 #define DECL_af_some ""
-    T_mv af_some(T_sp predicate, Cons_sp sequences)
+    T_sp af_some(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
-	bool result = test_every_some_notevery_notany(op,sequences,true,true,false);
-	return(Values(_lisp->_boolean(result)));
+	T_sp retVal;
+	bool result = test_every_some_notevery_notany(op,sequences,true,true,false,retVal);
+	if (result) return retVal;
+	return _Nil<T_O>();
     }
 
 
@@ -1154,11 +1166,12 @@ namespace core
 #define DOCS_af_notany "See CLHS for notany"
 #define ARGS_af_notany "(predicate &rest sequences)"
 #define DECL_af_notany ""
-    T_mv af_notany(T_sp predicate, Cons_sp sequences)
+    T_sp af_notany(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
-	bool result = test_every_some_notevery_notany(op,sequences,true,false,true);
-	return(Values(_lisp->_boolean(result)));
+	T_sp dummy;
+	bool result = test_every_some_notevery_notany(op,sequences,true,false,true,dummy);
+	return _lisp->_boolean(result);
     }
 
 
@@ -1167,11 +1180,12 @@ namespace core
 #define DOCS_af_notevery "See CLHS for notevery"
 #define ARGS_af_notevery "(predicate &rest sequences)"
 #define DECL_af_notevery ""
-    T_mv af_notevery(T_sp predicate, Cons_sp sequences)
+    T_sp af_notevery(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
-	bool result = test_every_some_notevery_notany(op,sequences,false,true,false);
-	return(Values(_lisp->_boolean(result)));
+	T_sp dummy;
+	bool result = test_every_some_notevery_notany(op,sequences,false,true,false,dummy);
+	return _lisp->_boolean(result);
     }
 
 
@@ -1618,7 +1632,7 @@ Symbol_mv af_type_to_symbol(T_sp x)
 #endif
     else if ( af_complexP(x) ) return(Values(cl::_sym_Complex_O));
     else if ( af_symbolp(x) ) return(Values(cl::_sym_Symbol_O));
-    else if ( af_packageP(x) ) return(Values(cl::_sym_Package_O));
+    else if ( cl_packagep(x) ) return(Values(cl::_sym_Package_O));
     else if ( af_listp(x) ) return(Values(cl::_sym_list));
     else if ( af_hashTableP(x) ) return(Values(cl::_sym_HashTable_O));
     else if ( af_vectorP(x) ) return(Values(cl::_sym_Vector_O));

@@ -35,32 +35,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defpackage "SERVE-EVENT"
-  (:use "CL" "FFI" #-brcl "UFFI" #+brcl "SERVE-EVENT-INTERNAL")
+  (:use "CL" "FFI" #-clasp "UFFI" #+clasp "SERVE-EVENT-INTERNAL")
   (:export "WITH-FD-HANDLER" "ADD-FD-HANDLER" "REMOVE-FD-HANDLER"
            "SERVE-EVENT" "SERVE-ALL-EVENTS"))
 (in-package "SERVE-EVENT")
 
-#+brcl
+#+clasp
 (defmacro c-inline (fn-name (&rest values) (&rest c-types) return-type C-code &key one-liner side-effects)
 	`(,fn-name ,@values))
 
 
-#-brcl
+#-clasp
 (clines
  "#include <errno.h>"
  "#include <sys/select.h>")
 
 (eval-when (:compile-toplevel :execute)
-  #-brcl(defmacro c-constant (c-name)
+  #-clasp(defmacro c-constant (c-name)
 	  `(c-inline () () :int ,c-name :one-liner t))
-  #+brcl(defmacro c-constant (c-name) `,c-name)
-  #-brcl(defmacro define-c-constants (&rest args)
+  #+clasp(defmacro c-constant (c-name) `,c-name)
+  #-clasp(defmacro define-c-constants (&rest args)
 	  `(let ()
 	     ,@(loop
 		  for (lisp-name c-name) on args by #'cddr
 		  collect `(defconstant ,lisp-name (c-constant ,c-name))))))
 
-#-brcl
+#-clasp
 (define-c-constants
     +eintr+ "EINTR")
 
@@ -135,28 +135,28 @@
 
 
 (defmacro fd-zero(fdset)
-  `(c-inline #+brcl ll-fd-zero
+  `(c-inline #+clasp ll-fd-zero
 	     (,fdset) (:object) :void 
              "FD_ZERO((fd_set*)#0->foreign.data)"
              :one-liner t
              :side-effects t))
 
 (defmacro fd-set (fd fdset)
-  `(c-inline #+brcl ll-fd-set
+  `(c-inline #+clasp ll-fd-set
 	     (,fd ,fdset) (:int :object) :void 
              "FD_SET(#0, (fd_set*)#1->foreign.data);"
              :one-liner t
              :side-effects t))
 
 (defmacro fd-isset (fd fdset)
-  `(c-inline #+brcl ll-fd-isset
+  `(c-inline #+clasp ll-fd-isset
 	     (,fd ,fdset) (:int :object) :int 
              "FD_ISSET(#0, (fd_set*)#1->foreign.data)"
              :one-liner t
              :side-effects t))
 
 (defun fdset-size ()
-  (c-inline #+brcl ll-fdset-size
+  (c-inline #+clasp ll-fdset-size
 	    () () :int "sizeof(fd_set)" :one-liner t :side-effects nil))
 
 
@@ -189,7 +189,7 @@
         (multiple-value-bind (retval errno)
 	    (if (null seconds)
 		;; No timeout
-		(c-inline #+brcl ll-serve-event-no-timeout
+		(c-inline #+clasp ll-serve-event-no-timeout
 			  (rfd      wfd    (1+ maxfd))
 			  (:object :object :int) (values :int :int)
 			  "{ @(return 0) = select(#2, (fd_set*)#0->foreign.data,
@@ -198,7 +198,7 @@
                              @(return 1) = errno; }"
 			  :one-liner nil
 			  :side-effects t)
-		(c-inline #+brcl ll-serve-event-with-timeout
+		(c-inline #+clasp ll-serve-event-with-timeout
 			  (rfd      wfd    (1+ maxfd) seconds) 
 			  (:object :object :int       :double) (values :int :int)
 			  "{ struct timeval tv;

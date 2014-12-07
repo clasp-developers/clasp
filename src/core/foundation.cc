@@ -288,10 +288,19 @@ namespace llvm_interface
     }
 
 
+namespace core
+{
+    int Closure::sourceFileInfoHandle()
+    {
+	return 0;
+    }
+};
 
 namespace core
 {
 
+
+    
     int _global_signalTrap = 0;
     int _global_pollTicksGC = 0;
 
@@ -332,6 +341,33 @@ namespace core
 
 
 
+
+    string Functoid::nameAsString()
+    {
+	if ( this->name.nilp() ) {
+	    return "Function-name(NIL)";
+	} else if ( Symbol_sp sname = this->name.asOrNull<Symbol_O>() ) {
+	    stringstream ss;
+	    ss << "Function-name(";
+	    ss << sname->symbolNameAsString();
+	    ss << ")";
+	    return ss.str();
+	} else if ( Cons_sp cname = this->name.asOrNull<Cons_O>() ) {
+	    stringstream ss;
+	    ss << "Function-name(setf ";
+	    ss << oCadr(cname).as<Symbol_O>()->symbolNameAsString();
+	    ss << ")";
+	    return ss.str();
+	} else if ( Str_sp strname = this->name.asOrNull<Str_O>() ) {
+	    stringstream ss;
+	    ss << "Function-name(string-";
+	    ss << strname->get();
+	    ss << ")";
+	    return ss.str();
+	}
+	THROW_HARD_ERROR(BF("Cannot get name as string of Functoid"));
+    }
+	
 
     char* clasp_alloc_atomic(size_t buffer)
     {
@@ -434,6 +470,11 @@ namespace core
     MultipleValues* lisp_multipleValues()
     {
 	return &(_lisp->multipleValues());
+    }
+
+    MultipleValues* lisp_callArgs()
+    {
+	return (_lisp->callArgs());
     }
 
 
@@ -589,37 +630,46 @@ namespace core
     */
     Class_sp lisp_instance_class(T_sp o)
     {
-	if (o.nilp())
-	{
+	if (o.nilp()) {
 	    return core::Null_O::___staticClass;
-	} else if (!o)
-	{
+	} else if (o.tagged_fixnump()) {
+	    return core::Fixnum_O::___staticClass;
+	} else if ( o.framep() ) {
+	    // What do I return for this?
+	    return core::T_O::___staticClass;
+	} else if (!o) {
 	    SIMPLE_ERROR(BF("There is no class of NULL"));
-	} else if (o.unboundp())
-	{
+	} else if (o.unboundp()) {
 	    SIMPLE_ERROR(BF("There is no class of UNBOUND"));
-	} else if (o._NULLp())
-	{
+	} else if (o._NULLp()) {
 	    SIMPLE_ERROR(BF("You cannot get the class of _NULL"));
-	} else if (Instance_sp iobj = o.asOrNull<Instance_O>() )
-	{
+	} else if (Instance_sp iobj = o.asOrNull<Instance_O>() ) {
 	    return iobj->_instanceClass();
-        } else if (WrappedPointer_sp exobj = o.asOrNull<WrappedPointer_O>() )
-        {
+        } else if (WrappedPointer_sp exobj = o.asOrNull<WrappedPointer_O>() ) {
             return exobj->_instanceClass();
 //#ifndef CLOS
-	} else if ( StructureObject_sp sobj = o.asOrNull<StructureObject_O>() )
-	{
+	} else if ( StructureObject_sp sobj = o.asOrNull<StructureObject_O>() ) {
 	    IMPLEMENT_MEF(BF("structureType returns a T_sp but I need a Class_sp - What do I return here????"));
 //	    return sobj->structureType();
 //#endif
-	} else if ( Class_sp cobj = o.asOrNull<Class_O>() )
-	{
+	} else if ( Class_sp cobj = o.asOrNull<Class_O>() ) {
 	    return cobj->_instanceClass();
+	} else if ( o.pointerp() ) {
+	    return lisp_static_class(o);
 	}
-	return lisp_static_class(o);
+	SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class"));
     }
 
+
+    void lisp_pushMultipleValues(MultipleValues* newTopMultipleValues)
+    {
+	_lisp->pushMultipleValues(newTopMultipleValues);
+    }
+
+    void lisp_popMultipleValues()
+    {
+	_lisp->popMultipleValues();
+    }
 
     Class_sp lisp_static_class(T_sp o)
     {
@@ -640,13 +690,13 @@ namespace core
 
     bool lisp_fixnumP(T_sp o)
     {
-        if (o.base_fixnump()) return true;
+        if (o.tagged_fixnump()) return true;
 	return af_fixnumP(o);
     }
 
     Fixnum lisp_asFixnum(T_sp o)
     {
-        if (o.base_fixnump()) return o.fixnum();
+        if (o.tagged_fixnump()) return o.fixnum();
         if (af_fixnumP(o)) return o.as<Fixnum_O>()->get();
         SIMPLE_ERROR(BF("Not fixnum %s") % _rep_(o));
     }
@@ -683,28 +733,24 @@ namespace core
 	write_object(obj,sout);
 	return cl_get_output_stream_string(sout).as<Str_O>()->get();
 #else
-	if ( obj.nilp() )
-	{
-	    return "nil";
-	} else if ( obj.unboundp() )
-	{
+	if ( obj.nilp() ) {
+	    return "NIL";
+	} else if ( obj.unboundp() ) {
 	    return "!UNBOUND!";
-	} else if ( obj._NULLp() )
-	{
+	} else if ( obj._NULLp() ) {
 	    return "!NULL!";
-        } else if ( Fixnum_sp fn = obj.asOrNull<Fixnum_O>() ) {
-            stringstream ss;
-            ss << fn->get();
-            return ss.str();
-        } else if ( obj.fixnump() ) {
+        } else if ( obj.tagged_fixnump() ) {
             stringstream ss;
             ss << obj.fixnum();
             return ss.str();
-	} else if ( !obj )
-	{
+        } else if ( obj.framep() ) {
+	    return "StackFrame";
+	} else if ( !obj ) {
 	    return "!!!UNDEFINED!!!";
+	} else if ( obj.pointerp() ) {
+	    return obj->__repr__();   // This is the only place where obj->__repr__() is allowed
 	}
-	return obj->__repr__();   // This is the only place where obj->__repr__() is allowed
+	return "WTF-object";
 #endif
     }
 
@@ -1156,7 +1202,7 @@ namespace core
     }
 
     core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
-                                                             , Stream_sp stream)
+                                                             , T_sp stream)
     {
         SourceManager_sp db = _lisp->sourceDatabase();
         if ( db.notnilp() ) {

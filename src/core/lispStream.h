@@ -246,7 +246,7 @@ namespace core
 #define	C_STREAM	1
 
 
-    typedef enum { brcl_stream_mode_input, brcl_stream_mode_output, brcl_stream_mode_io } BrclStreamModeEnum;
+    typedef enum { clasp_stream_mode_input, clasp_stream_mode_output, clasp_stream_mode_io } ClaspStreamModeEnum;
 
     class StreamCursor
     {

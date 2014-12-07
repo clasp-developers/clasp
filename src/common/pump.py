@@ -472,6 +472,8 @@ def ParseExpNode(token):
   python_exp = re.sub(r'(\!)',r' and ',python_exp)
   python_exp = re.sub(r'(\&\&)',r' and ',python_exp)
   python_exp = re.sub(r'(\|\|)',r' or ',python_exp)
+  python_exp = re.sub(r'(self\.GetValue\("min"\))',r'min',python_exp)
+  python_exp = re.sub(r'(self\.GetValue\("max"\))',r'max',python_exp)
   return ExpNode(token, python_exp)
 
 

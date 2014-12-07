@@ -358,7 +358,7 @@
 	(progn
 	  (cmp-log "Returning non-nil renv\n")
 	  renv)
-	(let ((nil-renv (irc-intrinsic "activationFrameNil")))
+	(let ((nil-renv (compile-reference-to-literal nil env))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s\n" nil-renv)
 	  nil-renv))))
 
@@ -368,7 +368,7 @@
 	(progn
 	  (cmp-log "Returning non-nil renv\n")
 	  renv)
-	(let ((nil-renv (irc-intrinsic "activationFrameNil")))
+	(let ((nil-renv (compile-reference-to-literal nil env))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s\n" nil-renv)
 	  nil-renv))))
 
@@ -678,12 +678,14 @@
 
 (defun irc-function-create (lisp-function-name body env
 			    &key (function-type +fn-prototype+ function-type-p)
+			      ;; If the first argument is NOT meant to be a returned structure then set this to nil
+			      (first-argument-struct-ret t)
 			      (argument-names '("result-ptr" "activation-frame-ptr") argument-names-p)
 			      (linkage 'llvm-sys:internal-linkage))
   "Returns the new function, the lexical environment for the function 
 and the block that cleans up the function and rethrows exceptions,
 followed by the traceid for this function and then the current insert block,
-and then the irbuilder-alloca, irbuilder-body"
+and then the irbuilder-alloca, irbuilder-body."
   (when (or function-type-p argument-names-p)
     (when (not (and function-type-p argument-names-p))
       (error "If you provide one of function-type or argument-names you must provide both")))
@@ -701,7 +703,10 @@ and then the irbuilder-alloca, irbuilder-body"
     (let ((args (llvm-sys:get-argument-list fn)))
       (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
 	      (llvm-sys:get-argument-list fn) argument-names)
-      )
+      ;; Set the first argument attribute to be sret
+      (if (and args first-argument-struct-ret)
+	  (let ((attribute-set (llvm-sys:attribute-set-get *llvm-context* 1 (list 'llvm-sys:attribute-struct-ret))))
+	    (llvm-sys:add-attr (first args) attribute-set))))
     (let ((bb (irc-basic-block-create "entry" fn)))
       (llvm-sys:set-insert-point-basic-block irbuilder-cur bb))
     ;; Setup exception handling and cleanup landing pad
@@ -982,35 +987,51 @@ Within the _irbuilder_ dynamic environment...
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get +t-ptr+))
 
-(defun null-afsp ()
-  (llvm-sys:constant-struct-get +afsp+ (list (llvm-sys:constant-pointer-null-get +af-ptr+))))
-
 ;----------------------------------------------------------------------
 
+(defun irc-store-multiple-values (offset values)
+  "When passing more arguments than can be passed in registers the extra arguments
+are written into the current multiple-valles array offset by the number of arguments
+that are passed in registers.
+Write T_O* pointers into the current multiple-values array starting at the (offset)"
+  (let ((multiple-values-array (irc-intrinsic "getMultipleValues" (jit-constant-i32 offset))))
+    (do* ((idx 0 (1+ idx))
+	  (values values (cdr values))
+	  (value (car values) (car values)))
+	 ((null values) nil)
+      (let ((ptr (llvm-sys:create-geparray *irbuilder* multiple-values-array (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 idx) (cmp:jit-constant-i32 0)) "idx")))
+	(irc-store value ptr)))
+    multiple-values-array))
+	
+	
 (defun irc-struct-gep (struct idx &optional (label ""))
   (llvm-sys:create-struct-gep *irbuilder* struct idx label ))
 
 (defun irc-insert-value (struct val idx-list &optional (label ""))
   (llvm-sys:create-insert-value *irbuilder* struct val idx-list label))
 
+(defun irc-set-smart-ptr (tsp-val t-ptr-val)
+  (irc-insert-value tsp-val t-ptr-val (list 0)))
+
 (defun irc-extract-value (struct idx-list &optional (label ""))
   (llvm-sys:create-extract-value *irbuilder* struct idx-list label))
 
 (defun irc-smart-ptr-extract (smart-ptr)
+  "Extract the t-ptr from the smart-ptr"
   (irc-extract-value smart-ptr (list 0)))
 
 (defun irc-funcall (result closure args &optional (label ""))
   (let* ((nargs (length args))
-         (temp-args (mapcar (lambda (x) (irc-extract-value x (list 0))) args)) ;; extract t-ptr from t-sp
-         ;; ensure that there are three fixed arguments
-         (real-args (case nargs
-                      (0 (list (null-t-ptr) (null-t-ptr) (null-t-ptr)))
-                      (1 (list (pop temp-args) (null-t-ptr) (null-t-ptr)))
-                      (2 (list (pop temp-args) (pop temp-args) (null-t-ptr)))
-                      (3 (list (pop temp-args) (pop temp-args) (pop temp-args)))
-                      (otherwise temp-args))))
-;;    (bformat t "About to create funcall with result: %s  args: %s\n" result real-args)
-    (irc-intrinsic-args "FUNCALL" (list* result closure (jit-constant-i32 nargs) real-args) :label label)))
+         (real-args (make-array core:+number-of-fixed-arguments+ :initial-element (null-t-ptr))))
+    (let ((extra-args (do* ((idx 0 (1+ idx))
+			    (arg-list args (cdr arg-list))
+			    (arg (car arg-list) (car arg-list)))
+			   ((or (null arg-list) (>= idx core:+number-of-fixed-arguments+)) arg-list)
+			(setf (aref real-args idx) arg))))
+      (when extra-args
+	(irc-store-multiple-values core:+number-of-fixed-arguments+ extra-args))
+      (let ((real-args-list (map 'list (lambda (x) x) real-args)))
+	(irc-intrinsic-args "FUNCALL" (list* result closure (jit-constant-i32 nargs) real-args-list) :label label)))))
   
 ;----------------------------------------------------------------------
 

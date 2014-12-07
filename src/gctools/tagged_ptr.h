@@ -75,7 +75,7 @@ namespace gctools {
         static const uintptr_t tag_mask 	  = BOOST_BINARY(0011);
         static const uintptr_t ptr_tag            = BOOST_BINARY(0000); // xxx00 means ptr
         static const uintptr_t special_tag        = BOOST_BINARY(0001); // xxx01 means special val
-        static const uintptr_t frame_tag          = BOOST_BINARY(0010); // xxx10 means ValueFrame entirely on the stack
+        static const uintptr_t frame_tag          = BOOST_BINARY(0010); // xxx10 means a ValueFrame stored entirely on the stack
         static const uintptr_t fixnum_tag         = BOOST_BINARY(0011); // xxx11 means fixnum
         static const uintptr_t ptr_mask = ~tag_mask;
     public:
@@ -112,6 +112,11 @@ namespace gctools {
         static int untagged_fixnum(T* ptr) {
             return (int)(reinterpret_cast<uintptr_t>(ptr)>>fixnum_shift);
         }
+
+	static bool tagged_pointerp(T* ptr) {
+            return ((uintptr_t)(ptr)&tag_mask)==ptr_tag    // Is ptr
+                && ((uintptr_t)(ptr)&ptr_mask);            // Is not NULL
+	}
 
         static bool tagged_nilp(T* ptr) {
             return (ptr == tagged_ptr<T>::make_tagged_nil());
@@ -159,7 +164,7 @@ namespace gctools {
             if ( LIKELY(rhs.pointerp()) ) {
                 px = DynamicCast<T*,U*>::castOrNULL(rhs.pxget());
                 if ( px==0 ) {
-                    THROW_HARD_ERROR(BF("DynamicCast<T*,U*> failed due to an illegal cast"));
+                    THROW_HARD_ERROR(BF("DynamicCast<T*,U*> failed due to an illegal cast T* = %s  U* = %s") % typeid(T*).name() % typeid(U*).name() );
                 }
             } else {
                 uintptr_t upx = reinterpret_cast<uintptr_t>(rhs.pxget());

@@ -98,7 +98,7 @@ Return the new environment."
   ;; There should be information in new-env??? that can tell us what
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
+  (irc-intrinsic "setParentOfActivationFrameTPtr" (irc-renv new-env) closed-over-renv)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
   (compile-lambda-list-code lambda-list-handler
@@ -148,10 +148,7 @@ COMPILE-FILE just throws this away")
 		  (closed-over-renv (second arguments))
 		  (argument-holder (make-calling-convention
                                     :nargs (third arguments)
-                                    :register-arg0 (fourth arguments)
-                                    :register-arg1 (fifth arguments)
-                                    :register-arg2 (sixth arguments)
-                                    :valist (seventh arguments)))
+                                    :register-args (cdddr arguments)))
 		  traceid
 		  (new-env (progn
                              (cmp-log "Creating new-value-environment for arguments\n")
@@ -452,7 +449,7 @@ COMPILE-FILE just throws this away")
 (defun gather-lexical-variable-names (classified-symbols)
   (error "This may now be redundant given LambdaListHandler_O::namesOfAllLexicalVariables")
   (let (result)
-    (mapc #'(lambda (x) (if (eq (car x) 'ext:lexical-var)
+    (mapc #'(lambda (x) (if (eq (car x) 'ext:heap-var)
 			    (setq result (cons (cadr x) result))))
 	  classified-symbols)
     (let ((rev-res (nreverse result)))
@@ -577,7 +574,7 @@ env is the parent environment of the (result-af) value frame"
   (let (test-result)
     (let ((test-temp-store (irc-alloca-tsp env :label "if-cond-tsp")))
       (codegen test-temp-store cond env)
-      (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrueTsp" test-temp-store) (jit-constant-i32 1) "ifcond")))
+      (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrue" test-temp-store) (jit-constant-i32 1) "ifcond")))
     test-result))
 
 
@@ -1152,7 +1149,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 	    ((characterp obj) (codegen-ltv/character result obj env))
 	    ((arrayp obj) (codegen-ltv/array result obj env))
 	    ((hash-table-p obj) (codegen-ltv/container result obj env))
-	    (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name obj) obj )))
+	    ((packagep obj) (codegen-ltv/package result obj env))
+	    (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
 	  ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
 	  ;; default module without coalescence.
 	  (codegen-rtv result obj env))))
@@ -1258,8 +1256,6 @@ be wrapped with to make a closure"
 	      name definition))))
 
 
-
-
 (defun compile-in-env (name &optional definition env &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
@@ -1276,17 +1272,15 @@ be wrapped with to make a closure"
                               :function-pass-manager (create-function-pass-manager-for-compile *the-module*))
           (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
             (let* ((truename (if *load-truename*
-                                 (namestring *load-truename*)
-                                 "compile-in-env"))
+				 (namestring *load-truename*)
+				 "repl-code"))
+		   (handle (multiple-value-bind (the-source-file-info the-handle)
+			       (core:source-file-info truename)
+			     the-handle))
                    (*gv-source-path-name* (jit-make-global-string-ptr
                                            truename
                                            "source-path-name"))
-                   (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
-                                                                                +i32+ ; type
-                                                                                nil ; constant
-                                                                                'llvm-sys:internal-linkage
-                                                                                (jit-constant-i32 0)
-                                                                                "source-file-info-handle"))
+                   (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module* handle))
                    (*all-funcs-for-one-compile* nil))
               (multiple-value-bind (fn function-kind wrapped-env warnp failp)
                   (with-dibuilder (*the-module*)
