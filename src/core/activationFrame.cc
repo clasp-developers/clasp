@@ -89,11 +89,11 @@ namespace core
 
 
 
-    bool ActivationFrame_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value) const
+    bool ActivationFrame_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind,T_sp& value) const
     {_G();
 	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	++depth;
-	return clasp_findValue(parent,sym,depth,index,special,value);
+	return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
 
 
@@ -351,11 +351,12 @@ namespace core
     /*! Find the value bound to a symbol based on the symbol name.
        This is only used by the interpreter and shouldn't be expected to be fast.
     */
-    bool ValueFrame_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value ) const
+    bool ValueFrame_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value ) const
     {_G();
+	//	printf("%s:%d ValueFrame_O::_findValue - switch to DWARF debugging to look up values\n", __FILE__, __LINE__ );
 	if ( this->_DebuggingInfo.nilp() )
 	{
-	    return((this->Base::_findValue(sym,depth,index,special,value)));
+	    return((this->Base::_findValue(sym,depth,index,valueKind,value)));
 	}
         if ( !this->_DebuggingInfo ) {
             THROW_HARD_ERROR(BF("The debugging info was NULL!!!!! Why is this happening?"));
@@ -368,15 +369,12 @@ namespace core
 	    {
 		index = i;
 		value = this->_Objects[i];
-		return((true));
+		valueKind = heapValue;
+		return true;
 	    }
 	}
-	if ( this->parentFrame().nilp() )
-	{
-	    return false;
-	}
 	++depth;
-	return Environment_O::clasp_findValue(this->parentFrame(),sym,depth,index,special,value);
+	return Environment_O::clasp_findValue(this->parentFrame(),sym,depth,index,valueKind,value);
     }
 	    
 

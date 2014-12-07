@@ -345,7 +345,7 @@ namespace core
 	} else
 	{
 	    target._ArgTargetFrameIndex = this->lexicalIndex;
-	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(target._ArgTarget,Fixnum_O::create(target._ArgTargetFrameIndex)));
+	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_heapVar,Cons_O::create(target._ArgTarget,Fixnum_O::create(target._ArgTargetFrameIndex)));
 	    this->advanceLexicalIndex();
 	}
     }
@@ -1296,7 +1296,7 @@ void bind_aux
 	Cons_sp namesRev = _Nil<Cons_O>();
 	for ( Cons_sp cur=this->_ClassifiedSymbolList; cur.notnilp(); cur=cCdr(cur) )
 	{
-	    if ( oCar(oCar(cur)) == ext::_sym_lexicalVar )
+	    if ( oCar(oCar(cur)) == ext::_sym_heapVar )
 	    {
 		namesRev = Cons_O::create(oCadr(oCar(cur)),namesRev);
 	    }

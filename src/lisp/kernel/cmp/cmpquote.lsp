@@ -435,13 +435,24 @@ and walk the car and cdr"
 
 (defvar *pathname-coalesce* nil)
 (defun codegen-ltv/pathname (result pathname env)
-  "Return IR code that generates a string"
+  "Return IR code that generates a pathname"
   (with-coalesce-load-time-value (ltv-ref result pathname env)
     :coalesce-hash-table *pathname-coalesce*
     :maker (let* ((constant (llvm-sys:make-string-global *the-module* (namestring pathname)))
 		  (ptr (llvm-sys:create-in-bounds-gep *irbuilder* constant
 						      (list (jit-constant-i32 0) (jit-constant-i32 0)) "ptr")))
 	     (irc-intrinsic "makePathname" ltv-ref ptr))))
+
+
+(defvar *package-coalesce* nil)
+(defun codegen-ltv/package (result package env)
+  "Return IR code that generates a package"
+  (with-coalesce-load-time-value (ltv-ref result package env)
+    :coalesce-hash-table *package-coalesce*
+    :maker (let* ((constant (llvm-sys:make-string-global *the-module* (package-name package)))
+		  (ptr (llvm-sys:create-in-bounds-gep *irbuilder* constant
+						      (list (jit-constant-i32 0) (jit-constant-i32 0)) "ptr")))
+	     (irc-intrinsic "findPackage" ltv-ref ptr))))
 
 
 
@@ -529,7 +540,7 @@ and walk the car and cdr"
     ((stringp obj) (error "Strings should not get here"))
     ((vectorp obj) (codegen-ltv/container result obj env))
     ((arrayp obj) (codegen-ltv/container result obj env))
-    (t (error "Add support to codegen array of type ~a" (class-name obj)))))
+    (t (error "Add support to codegen array of type ~a" (class-name (class-of obj))))))
 
 
 ;; ----------------------------------------------------------
@@ -757,6 +768,7 @@ marshaling of compiled quoted data"
 	     #+long-float(*long-float-coalesce* (make-hash-table :test #'eql))
 	     (*string-coalesce* (make-hash-table :test #'equal))
 	     (*pathname-coalesce* (make-hash-table :test #'equal))
+	     (*package-coalesce* (make-hash-table :test #'eq))
 	     (*character-coalesce* (make-hash-table :test #'eql))
 	     (*nil-coalesce* (make-hash-table :test #'eq))
 	     (*t-coalesce* (make-hash-table :test #'eq))
@@ -866,6 +878,7 @@ marshaling of compiled quoted data"
 	((integerp obj) (codegen-ltv/integer result obj env))
 	((stringp obj) (codegen-ltv/string result obj env))
 	((pathnamep obj) (codegen-ltv/pathname result obj env))
+	((packagep obj) (codegen-ltv/package result obj env))
 	((floatp obj) (codegen-ltv/float result obj env))
 	((complexp obj) (codegen-ltv/complex result obj env))
 	((symbolp obj) (codegen-ltv/symbol result obj env))

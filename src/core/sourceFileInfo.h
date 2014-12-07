@@ -146,7 +146,7 @@ namespace core {
 
 //        SourceFileInfo_sp sourceFileInfoFromIndex(int idx) const;
 
-	SourcePosInfo_sp registerSourceInfoFromStream(T_sp obj, Stream_sp stream);
+	SourcePosInfo_sp registerSourceInfoFromStream(T_sp obj, T_sp stream);
 
 	bool searchForSourceInfoAndDuplicateIt(T_sp orig, T_sp newObj);
 

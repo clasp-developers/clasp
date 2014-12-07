@@ -120,7 +120,7 @@
           ;; enrich the new-env with the local variables
           (dolist (classified-local (classified-symbols lambda-list-handler))
             (cond
-              ((eq (car classified-local) 'ext:lexical-var)
+              ((eq (car classified-local) 'ext:heap-var)
                (let ((local-sym (cadr classified-local))
                      (local-idx (cddr classified-local)))
                  (value-environment-define-lexical-binding new-env local-sym local-idx)))
@@ -209,13 +209,13 @@ you need to also bind the target in the compile-time environment "
 	     (car target)		; target-type --> 'special-var
 	     (cdr target)		; target-symbol
 	     ))
-    ((eq (car target) 'ext:lexical-var)
+    ((eq (car target) 'ext:heap-var)
      (cmp-log "compiling as a ext:lexical-var\n")
      (values (irc-intrinsic "lexicalValueReference"
 		       (jit-constant-i32 0)
 		       (jit-constant-i32 (cddr target))
 		       (irc-renv env))
-	     (car target)		; target-type --> 'ext:lexical-var
+	     (car target)		; target-type --> 'ext:heap-var
 	     (cadr target)		; target-symbol
 	     (cddr target)		; target-lexical-index
 	     ))
@@ -233,7 +233,7 @@ If the target is lexical then define-lexical-binding."
     ((eq (car target) 'ext:special-var)
      (let ((target-symbol (cdr target)))
        (value-environment-define-special-binding env target-symbol)))
-    ((eq (car target) 'ext:lexical-var)
+    ((eq (car target) 'ext:heap-var)
      (let ((target-symbol (cadr target))
 	   (target-lexical-index (cddr target)))
        (value-environment-define-lexical-binding env target-symbol target-lexical-index)))

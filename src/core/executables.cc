@@ -224,7 +224,9 @@ namespace core
 
     string Function_O::__repr__() const
     {_G();
-	ASSERTNOTNULL(this->_Name);
+	if ( this->closure==NULL ) {
+	    return "Function_O::__repr__ NULL closure";
+	}
 	T_sp name = this->closure->name;
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(name) << ">";

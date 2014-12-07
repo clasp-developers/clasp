@@ -232,7 +232,7 @@ namespace core
             ExceptionStack              _ExceptionStack;
 	/*! Multiple values - this should be per thread */
 	    MultipleValues* 		_MultipleValuesCur;
-            Stream_sp                   _TerminalIO;
+            T_sp                   _TerminalIO;
 	    /*! Bignum registers should be one per thread */
 	    Bignum_sp 			_BignumRegister0;
 	    Bignum_sp 			_BignumRegister1;
@@ -277,7 +277,7 @@ namespace core
 #endif
 	    DoubleFloat_sp 		_RehashSize;
 	    DoubleFloat_sp 		_RehashThreshold;
-	    Stream_sp 			_NullStream;
+	    T_sp 			_NullStream;
 	    Cons_sp 			_PathnameTranslations; /* alist */
 	    Complex_sp 			_ImaginaryUnit;
 	    Complex_sp 			_ImaginaryUnitNegative;
@@ -561,9 +561,9 @@ namespace core
     public:
 #if defined(XML_ARCHIVE)
 	/*! Like read but uses serialization code to deserialize objects from a stream */
-	T_sp sread(Stream_sp sin, bool eofErrorP, T_sp eofValue);
+	T_sp sread(T_sp sin, bool eofErrorP, T_sp eofValue);
 	/*! Like print but uses serialization to serialize objects to a stream */
-	void sprint(T_sp obj, Stream_sp sout );
+	void sprint(T_sp obj, T_sp sout );
 #endif // defined(XML_ARCHIVE)
     public:
 	void print(boost::format fmt);
@@ -593,7 +593,7 @@ namespace core
     public:
 	DoubleFloat_sp rehashSize() const {return this->_Roots._RehashSize;};
 	DoubleFloat_sp rehashThreshold() const { return this->_Roots._RehashThreshold;};
-	Stream_sp nullStream() const { return this->_Roots._NullStream;};
+	T_sp nullStream() const { return this->_Roots._NullStream;};
     public:
 	//	void load(T_sp filespec, bool verbose=false, bool print=false, bool ifDoesNotExist=true );
     public:	

@@ -701,14 +701,14 @@ namespace core
 
 
 #if defined(OLD_SERIALIZE)
-    T_sp Lisp_O::sread(Stream_sp sin, bool eofErrorP, T_sp eofValue )
+    T_sp Lisp_O::sread(T_sp sin, bool eofErrorP, T_sp eofValue )
     {_OF();
 	ReadSerializer_sp reader = _lisp->create<ReadSerializer_O>();
 	T_sp obj = reader->read(sin,eofErrorP,eofValue);
 	return obj;
     }
 
-    void Lisp_O::sprint(T_sp obj, Stream_sp sout )
+    void Lisp_O::sprint(T_sp obj, T_sp sout )
     {_OF();
 	WriteSerializer_sp writer = _lisp->create<WriteSerializer_O>();
 	writer->addObject(obj);
@@ -1445,7 +1445,7 @@ namespace core
     T_mv Lisp_O::readEvalPrint(T_sp inputStream, Environment_sp environ, bool printResults)
     {_OF();
 	T_mv result = Values(_Nil<T_O>());
-	Stream_sp sin = coerce::inputStreamDesignator(inputStream);
+	T_sp sin = coerce::inputStreamDesignator(inputStream);
 	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentSourceFileInfoSTAR,af_sourceFileInfo(sin));
 	while (1)
 	{
@@ -1910,12 +1910,12 @@ namespace core
     T_mv af_saveCando(T_sp obj, T_sp pathDesignator)
     {_G();
 	Path_sp path = coerce::pathDesignator(pathDesignator);
-	Stream_sp sout = cl_open(path,
-				 kw::_sym_output,
-				 cl::_sym_standard_char,
-				 _Nil<Symbol_O>(),
-				 _Nil<Symbol_O>(),
-				 kw::_sym_default);
+	T_sp sout = cl_open(path,
+			    kw::_sym_output,
+			    cl::_sym_standard_char,
+			    _Nil<Symbol_O>(),
+			    _Nil<Symbol_O>(),
+			    kw::_sym_default);
 	_lisp->sprint(obj,sout);
 	sout->close();
 	return(Values(_Nil<T_O>()));
@@ -1929,7 +1929,7 @@ namespace core
     T_mv af_loadCando(T_sp pathDesignator)
     {_G();
 	Path_sp path = coerce::pathDesignator(pathDesignator);
-	Stream_sp sin = cl_open(path,kw::_sym_input,cl::_sym_standard_char,_Nil<Symbol_O>(),_Nil<Symbol_O>(),kw::_sym_default);
+	T_sp sin = cl_open(path,kw::_sym_input,cl::_sym_standard_char,_Nil<Symbol_O>(),_Nil<Symbol_O>(),kw::_sym_default);
 	T_sp obj = _lisp->sread(sin.as<Stream_O>(),true,_Nil<T_O>());
 	sin->close();
 	return(Values(obj));
@@ -2045,7 +2045,7 @@ namespace core
 #define DOCS_af_find_package "See CLHS: find-package"
     Package_mv af_find_package(T_sp name_desig)
     {_G();
-	if ( af_packageP(name_desig) ) return(Values(name_desig.as<Package_O>()));
+	if ( cl_packagep(name_desig) ) return(Values(name_desig.as<Package_O>()));
 	Str_sp name = coerce::stringDesignator(name_desig);
 	Package_sp pkg = _lisp->findPackage(name->get());
 	return(Values(pkg));
@@ -3541,12 +3541,15 @@ extern "C"
         } else if ( Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>() ) {
             return _lisp->sourceFileInfo(af_namestring(pnSourceFile)->get());
         } else if ( Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
-            if ( fnSourceFile->get() >= _lisp->_Roots._SourceFiles.size() ) {
-                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
+	    size_t idx = fnSourceFile->get();
+            if ( idx >= _lisp->_Roots._SourceFiles.size() ) {
+		idx = 0;
+		//                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
             }
-            return Values(_lisp->_Roots._SourceFiles[fnSourceFile->get()],fnSourceFile);
-        } else if ( Stream_sp so = sourceFile.asOrNull<Stream_O>() ) {
-            T_sp sfi = clasp_input_source_file_info(so);
+            return Values(_lisp->_Roots._SourceFiles[idx],fnSourceFile);
+        } else if ( cl_streamp(sourceFile) ) {
+	    T_sp so = sourceFile;
+	    T_sp sfi = clasp_input_source_file_info(so);
             return af_sourceFileInfo(sfi);
         } else if ( SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>() ) {
             return _lisp->sourceFileInfo(sfi->namestring());

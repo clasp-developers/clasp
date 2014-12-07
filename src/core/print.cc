@@ -200,7 +200,7 @@ namespace core
 #define ARGS_af_writeAddr "(arg stream)"
 #define DECL_af_writeAddr ""
 #define DOCS_af_writeAddr "writeAddr"
-    void af_writeAddr(T_sp arg, Stream_sp stream)
+    void af_writeAddr(T_sp arg, T_sp stream)
     {_G();
 	cl_intptr_t i = arg.intptr();
 	for ( int j=sizeof(i)*8-4; j>= 0; j-=4 ) {

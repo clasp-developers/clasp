@@ -667,7 +667,7 @@ namespace core
 
 
         void af_readerError(const string& sourceFile, uint lineno, Symbol_sp function,
-                            Str_sp fmt, Cons_sp fmtargs, Stream_sp stream=_Nil<Stream_O>() );
+                            Str_sp fmt, Cons_sp fmtargs, T_sp stream=_Nil<T_O>() );
 
 
         void assert_type_integer(T_sp p,int idx);

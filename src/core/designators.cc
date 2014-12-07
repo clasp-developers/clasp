@@ -92,7 +92,7 @@ namespace core
 
 	string packageNameDesignator(T_sp obj)
 	{_G();
-            if (af_packageP(obj) )
+            if (cl_packagep(obj) )
 	    {
 		return obj.as<Package_O>()->getName();
 	    }

@@ -104,10 +104,11 @@ namespace core
     T_sp oNinth(T_sp o);
     T_sp oTenth(T_sp o);
 
-#define	CONS_CAR(x) oCar(x)
-#define	CONS_CDR(x) oCdr(x)
+#define	CONS_CAR(x) (x.as<Cons_O>()->_Car)
+#define	CONS_CDR(x) (x.as<Cons_O>()->_Cdr)
 #define	CAR(x) oCar(x)
 #define	CDR(x) oCdr(x)
+#define CONSP(x) ((!(x).nilp())&&(x.isA<Cons_O>()))
 };
 
 namespace core {
@@ -675,4 +676,11 @@ namespace core {
 
 };
 
+
+namespace core
+{
+
+    T_sp cl_getf(Cons_sp plist, T_sp indicator, T_sp default_value );
+    Cons_sp af_putF(Cons_sp plist, T_sp value, T_sp indicator );
+};
 #endif //]

@@ -526,48 +526,32 @@ namespace core
 
 
 
-    bool Environment_O::findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const
+    bool Environment_O::findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const
     {_G();
 	depth = 0;
 	index =-1;
-	special = false;
-	return this->_findValue(sym,depth,index,special,value);
+	valueKind = undeterminedValue;
+	return this->_findValue(sym,depth,index,valueKind,value);
     }
 
 
-    bool Environment_O::clasp_findValue(T_sp env, Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value)
+    bool Environment_O::clasp_findValue(T_sp env, T_sp sym, int& depth, int& index, ValueKind& valueKind,T_sp& value)
     {_G();
 	if ( env.nilp() )
 	{
 	    depth = -1;
 	    index = -1;
+	    valueKind = undeterminedValue;
 	    return false;
 	}
         if ( env.framep() ) {
-            return frame::findValue(env,sym,depth,index,special,value);
+            return frame::findValue(env,sym,depth,index,valueKind,value);
         } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
-            return eenv->_findValue(sym,depth,index,special,value);
+            return eenv->_findValue(sym,depth,index,valueKind,value);
         }
         NOT_ENVIRONMENT_ERROR(env);
     }
 
-#if 0
-    bool Environment_O::clasp_updateValue(T_sp env, Symbol_sp sym, T_sp& value)
-    {_G();
-	if ( env.nilp() )
-	{
-	    depth = -1;
-	    index = -1;
-	    return false;
-	}
-        if ( env.framep() ) {
-            return frame::findValue(env,sym,depth,index,special,value);
-        } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
-            return eenv->_findValue(sym,depth,index,special,value);
-        }
-        NOT_ENVIRONMENT_ERROR(env);
-    }
-#endif
 
     bool Environment_O::clasp_lexicalSpecialP(T_sp env, Symbol_sp sym)
     {_G();
@@ -581,10 +565,10 @@ namespace core
     }
 
 
-    bool Environment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value) const
+    bool Environment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind,T_sp& value) const
     {_G();
 	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
-	return clasp_findValue(parent,sym,depth,index,special,value);
+	return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
 
 
@@ -757,19 +741,25 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    Cons_sp Environment_O::classifyValue(Symbol_sp sym) const
+    Cons_sp Environment_O::classifyValue(T_sp sym) const
     {_G();
 	int depth;
 	int index;
-	bool special;
+	ValueKind valueKind;
 	T_sp value;
-	if ( this->findValue(sym,depth,index,special,value) )
+	if ( this->findValue(sym,depth,index,valueKind,value) )
 	{
-	    return Cons_O::createList(ext::_sym_lexicalVar,sym,Fixnum_O::create(depth),Fixnum_O::create(index));
-	}
-	if ( special )
-	{
-	    return Cons_O::create(ext::_sym_specialVar,sym);
+	    switch (valueKind) {
+	    case heapValue:
+		return Cons_O::createList(ext::_sym_heapVar,sym,Fixnum_O::create(depth),Fixnum_O::create(index));
+	    case stackValue:
+		return Cons_O::createList(ext::_sym_stackVar,sym,value);
+	    case specialValue:
+		return Cons_O::create(ext::_sym_specialVar,sym);
+	    default:
+		// Do nothing
+		break;
+	    }
 	}
 	// Lexical variable was not found - return nil
 	return _Nil<Cons_O>();
@@ -989,7 +979,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     void LexicalEnvironment_O::initialize()
     {
 	this->Base::initialize();
-        this->_Metadata = HashTableEq_O::create_default();
+	this->_Metadata = HashTableEq_O::create_default();
     }
 
     void LexicalEnvironment_O::exposeCando(core::Lisp_sp lisp)
@@ -1136,12 +1126,11 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    bool RuntimeVisibleEnvironment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value) const
+    bool RuntimeVisibleEnvironment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind,T_sp& value) const
     {_G();
 	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
-	if ( parent.nilp() ) return false;
 	++depth;
-	return clasp_findValue(parent,sym,depth,index,special,value);
+	return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
 
 
@@ -1246,21 +1235,21 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    bool ValueEnvironment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const
+    bool ValueEnvironment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const
     {_G();
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 //    LOG(BF("The frame stack is %d deep") % this->depth() );
 	Cons_sp fi = this->_SymbolIndex->find(sym);
-	if ( fi.nilp() )
-	{
-	    return this->Base::_findValue(sym,depth,index,special,value);
+	if ( fi.nilp() ) {
+	    return this->Base::_findValue(sym,depth,index,valueKind,value);
 	}
 	index = oCdr(fi).as<Fixnum_O>()->get();
 	if ( index < 0 )
 	{
-	    special = true;
-	    return false;
+	    valueKind = specialValue;
+	    return true;   // This was returning false for special values
 	}
+	valueKind = heapValue;
 	LOG(BF(" Found binding %s")% fi->second );
 	value = this->_ActivationFrame->entry(index);
 	return true;
@@ -1331,7 +1320,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	{
 	    Cons_sp classifiedSymbol = oCar(cur).as_or_nil<Cons_O>();
 	    Symbol_sp classification = oCar(classifiedSymbol).as<Symbol_O>();
-	    if ( classification == ext::_sym_lexicalVar )
+	    if ( classification == ext::_sym_heapVar )
 	    {
 		++numberOfLexicals;
 	    } else if ( classification == ext::_sym_specialVar )
@@ -1639,10 +1628,10 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
-     bool CompileTimeEnvironment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const
+     bool CompileTimeEnvironment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const
     {_G();
      Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
-     return clasp_findValue(parent,sym,depth,index,special,value);
+     return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
 
 
@@ -2308,32 +2297,29 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	return environ;
     }
 
-
-    bool StackValueEnvironment_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const
+    bool StackValueEnvironment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const
     {_G();
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 	value = this->_Values->find(sym);
-	if ( value.nilp() )
-	{
-	    return this->Base::_findValue(sym,depth,index,special,value);
+	if ( value.nilp() ) {
+	    return this->Base::_findValue(sym,depth,index,valueKind,value);
 	}
 	LOG(BF(" Found binding %s")% fi->second );
+	valueKind = stackValue;
 	return true;
     }
 
-
-    void StackValueEnvironment_O::addValue(Symbol_sp sym, T_sp value)
+    void StackValueEnvironment_O::addValue(T_sp sym, T_sp value)
     {_G();
-	this->_Values->hash_table_setf_gethash(sym,expansion);
+	this->_Values->hash_table_setf_gethash(sym,value);
     }
-
 
     EXPOSE_CLASS(core,StackValueEnvironment_O);
 
     void StackValueEnvironment_O::exposeCando(Lisp_sp lisp)
     {
 	class_<StackValueEnvironment_O>()
-	    .def("addValue",&StackValueEnvironment_O::addValue)
+	    //	    .def("addValue",&StackValueEnvironment_O::addValue)
 	    ;
 	af_def(CorePkg,"makeStackValueEnvironment",&StackValueEnvironment_O::make);
     }

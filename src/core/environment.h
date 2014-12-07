@@ -57,13 +57,14 @@ namespace core
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,Environment_O,"Environment");
     public:
+	typedef enum { undeterminedValue, specialValue, stackValue, heapValue } ValueKind;
     protected:
 	uint		_EnvId;
     public:
 	static T_sp clasp_currentVisibleEnvironment(T_sp env);
 	static ActivationFrame_sp clasp_getActivationFrame(T_sp env);
 	static int clasp_countFunctionContainerEnvironments(T_sp env);
-	static bool clasp_findValue(T_sp env, Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value);
+	static bool clasp_findValue(T_sp env, T_sp name, int& depth, int& index, ValueKind& valueKind,T_sp& value);
 	static bool clasp_findFunction(T_sp env, T_sp functionName, int& depth, int& index, Function_sp& func);
 	static bool clasp_findTag(T_sp env, Symbol_sp sym, int& depth, int& index);
 	static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int& depth, int& index, bool& shadowed, Function_sp& func);
@@ -138,7 +139,7 @@ namespace core
 	  If the variable is lexically special return (list special-var _symbol_).
 	  Otherwise return nil.  
 	*/
-	Cons_sp classifyValue(Symbol_sp sym) const;
+	Cons_sp classifyValue(T_sp sym) const;
 	virtual T_sp _lookupValue(int depth, int index);
 	virtual Function_sp _lookupFunction(int depth, int index) const;
         virtual T_sp _lookupTagbodyId(int depth, int index) const {SUBIMP();};
@@ -149,8 +150,8 @@ namespace core
 	/*! Search down the stack for the symbol
 	 * If not found return end()
 	 */
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
-	virtual bool findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
+	virtual bool findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 
 	/*! Return the most recent RuntimeVisibleEnvironment */
 	virtual Environment_sp currentVisibleEnvironment() const;
@@ -259,7 +260,7 @@ namespace core
     	Environment_sp	_ParentEnvironment;
 	
 	//! Compiler information
-	//	HashTableEq_sp  _Metadata;
+	HashTableEq_sp  _Metadata;
     public:
 	void initialize();
     public:
@@ -314,7 +315,7 @@ namespace core
 	void setRuntimeEnvironment(T_sp renv) { this->_RuntimeEnvironment = renv;};
 	T_sp runtimeEnvironment() const { return this->_RuntimeEnvironment;};
 
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 	virtual bool _findFunction(T_sp functionName, int& depth, int& index, Function_sp& value) const;
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
 
@@ -387,7 +388,7 @@ namespace core
 	/*! Search down the stack for the symbol
 	 * If not found return false.
 	 */
-	bool _findValue(Symbol_sp sym, int& depth, int& level, bool& special, T_sp& value) const;
+	bool _findValue(T_sp sym, int& depth, int& level, ValueKind& valueKind, T_sp& value) const;
 
 	/*! Lexical variable bindings shadow symbol macros so return false if the passed
 	  symbol is a lexical variable. */
@@ -524,7 +525,7 @@ namespace core
 
 	virtual Environment_sp currentVisibleEnvironment() const;
 
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 
 	CompileTimeEnvironment_O();
 	virtual ~CompileTimeEnvironment_O() {};
@@ -891,9 +892,9 @@ namespace core
 	static StackValueEnvironment_sp make(Environment_sp env);
     public:
 	
-	void addSymbolMacro(Symbol_sp sym, Function_sp expansion);
+	void addValue(T_sp sym, T_sp value);
 
-	bool _findSymbolMacro(Symbol_sp sym, int& depth, int& level, bool& shadowed, Function_sp& func) const;
+	bool _findValue(T_sp sym, int& depth, int& level, ValueKind& valueKind, T_sp& value) const;
 
 	void throwErrorIfSymbolMacrosDeclaredSpecial(Cons_sp specialDeclaredSymbols) const;
 

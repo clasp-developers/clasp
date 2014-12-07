@@ -61,8 +61,8 @@ namespace core
 #endif
 
     T_sp af_type_of(T_sp x);
-    T_mv af_notany(T_sp predicate, Cons_sp sequences);
-    T_mv af_every(T_sp predicate, Cons_sp sequences);
+    T_sp af_notany(T_sp predicate, Cons_sp sequences);
+    T_sp af_every(T_sp predicate, Cons_sp sequences);
 
     T_sp cl_mapcar(T_sp func_desig, Cons_sp lists);
 

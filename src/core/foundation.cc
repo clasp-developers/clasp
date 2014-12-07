@@ -1202,7 +1202,7 @@ namespace core
     }
 
     core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
-                                                             , Stream_sp stream)
+                                                             , T_sp stream)
     {
         SourceManager_sp db = _lisp->sourceDatabase();
         if ( db.notnilp() ) {

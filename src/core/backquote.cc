@@ -203,7 +203,7 @@ namespace core
 	    }
 
 	    // Advance
-	    T_sp next_p = cCdr(cp);
+	    T_sp next_p = oCdr(cp);
 	    T_sp bracketed = af_backquote_bracket(oCar(cp)); // eval::funcall(_sym_backquote_bracket,oCar(cp));
 	    Cons_sp next_q = Cons_O::create(bracketed,q);
 	    p = next_p;

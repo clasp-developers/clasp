@@ -76,7 +76,7 @@ namespace core
     bool af_stringP(T_sp obj);
     bool af_simpleStringP(T_sp obj);
     bool af_strP(T_sp obj);
-    bool af_packageP(T_sp obj);
+    bool cl_packagep(T_sp obj);
     bool af_booleanP(T_sp obj);
     bool af_specialFormP(T_sp obj);
     bool af_hashTableP(T_sp obj);

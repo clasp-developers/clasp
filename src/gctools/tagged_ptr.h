@@ -164,7 +164,7 @@ namespace gctools {
             if ( LIKELY(rhs.pointerp()) ) {
                 px = DynamicCast<T*,U*>::castOrNULL(rhs.pxget());
                 if ( px==0 ) {
-                    THROW_HARD_ERROR(BF("DynamicCast<T*,U*> failed due to an illegal cast"));
+                    THROW_HARD_ERROR(BF("DynamicCast<T*,U*> failed due to an illegal cast T* = %s  U* = %s") % typeid(T*).name() % typeid(U*).name() );
                 }
             } else {
                 uintptr_t upx = reinterpret_cast<uintptr_t>(rhs.pxget());

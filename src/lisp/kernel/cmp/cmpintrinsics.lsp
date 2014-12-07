@@ -418,6 +418,7 @@ Boehm and MPS use a single pointer"
  #+long-float (primitive-does-not-throw module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
   (primitive-does-not-throw module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-does-not-throw module "makePathname" +void+ (list +tsp*+ +i8*+))
+  (primitive-does-not-throw module "findPackage" +void+ (list +tsp*+ +i8*+))
   (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+))
 
 

@@ -666,6 +666,15 @@ extern "C"
 	(*fnP) = ns;
     }
 
+    void findPackage( core::T_sp* fnP, const char* cstr)
+    {_G();
+// placement new into memory passed into this function
+	ASSERT(fnP!=NULL);
+	string packageName = cstr;
+	core::Package_sp pkg = _lisp->findPackage(packageName);
+	(*fnP) = pkg;
+    }
+
 
     void makeShortFloat( core::T_sp* fnP, double s)
     {_G();
@@ -1535,13 +1544,13 @@ extern "C"
         core::Str_sp mname = core::Str_O::create(moduleName);
         SourceFileInfo_mv sfi_mv = core::af_sourceFileInfo(mname);
         int sfindex = sfi_mv.valueGet(1).as<core::Fixnum_O>()->get();
+#if 0
 	if ( sfindex == 0 ) {
 	    printf("%s:%d Could not get a SourceFileInfoHandle for %s\n", __FILE__, __LINE__, moduleName );
 	} else {
 	    printf("%s:%d Assigning SourceFileInfoHandle %d for %s  at sourceFileInfoHandleP@%p\n", __FILE__, __LINE__, sfindex, moduleName, sourceFileInfoHandleP );
 	}
-
-
+#endif
         *sourceFileInfoHandleP = sfindex;
     }
 

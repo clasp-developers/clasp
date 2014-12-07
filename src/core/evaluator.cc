@@ -118,11 +118,22 @@ namespace core
 	if ( env.notnilp() )
 	{
             int depth, index;
-            bool special;
+	    Environment_O::ValueKind valueKind;
             T_sp value;
-            bool found = Environment_O::clasp_findValue(env,sym,depth,index,special,value);
-	    if (found) return value;
-            if (special) return sym->symbolValue();
+            bool found = Environment_O::clasp_findValue(env,sym,depth,index,valueKind,value);
+	    if (found) {
+		switch (valueKind) {
+		case Environment_O::heapValue:
+		    return value;
+		case Environment_O::specialValue:
+		    return sym->symbolValue();
+		case Environment_O::stackValue:
+		    SIMPLE_ERROR(BF("Interpreter should never return a stackValue for: %s") % _rep_(sym) );
+		default:
+		    // do nothing;
+		    break;
+		}
+	    }
 	}
 	if ( sym->specialP() || sym->boundP() )
 	{
@@ -530,7 +541,7 @@ namespace core
 	}
 
 
-	T_mv sp_lexicalVar(Cons_sp args, T_sp env)
+	T_mv sp_heapVar(Cons_sp args, T_sp env)
 	{_G();
 	    int depth = oCadr(args).as<Fixnum_O>()->get();
 	    int index = oCddr(args).as<Fixnum_O>()->get();
@@ -774,7 +785,7 @@ namespace core
 			indices->hash_table_setf_gethash(sym,Fixnum_O::create(idx));
 			++indicesSize;
 		    }
-		    classified << Cons_O::create(ext::_sym_lexicalVar,
+		    classified << Cons_O::create(ext::_sym_heapVar,
 						 Cons_O::create(sym,Fixnum_O::create(idx)));
 		}
 	    }
@@ -834,7 +845,7 @@ namespace core
 	    {
 		Cons_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
-		if ( shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar )
+		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
 		{
 		    T_sp expr = oCar(curExp);
 		    T_sp result = eval::evaluate(expr,evaluateEnvironment);
@@ -844,7 +855,7 @@ namespace core
 		{
 		    scope.new_special(classified);
 		}
-		if ( shead == ext::_sym_lexicalVar )
+		if ( shead == ext::_sym_heapVar )
 		{
 		    debuggingInfo->setf_elt(debugInfoIndex,oCadr(classified));
 		    debugInfoIndex++;
@@ -2361,7 +2372,7 @@ namespace core
 	    SYMBOL_EXPORT_SC_(ClPkg,progn);
 	    SYMBOL_EXPORT_SC_(ClPkg,throw);
 	    _lisp->defineSpecialOperator(ExtPkg,"special-var", &sp_specialVar);
-	    _lisp->defineSpecialOperator(ExtPkg,"lexical-var", &sp_lexicalVar);
+	    _lisp->defineSpecialOperator(ExtPkg,"heap-var", &sp_heapVar);
 	    _lisp->defineSpecialOperator(ClPkg,"block", &sp_block);
 	    _lisp->defineSpecialOperator(ClPkg,"catch",&sp_catch);
 	    _lisp->defineSpecialOperator(ClPkg,"eval-when",&sp_eval_when);

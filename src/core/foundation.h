@@ -1265,7 +1265,7 @@ namespace core
                                                    , int lineno
                                                    , int column );
     core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
-                                                             , Stream_sp stream);
+                                                             , T_sp stream);
 
 
     class Functoid
@@ -1273,19 +1273,10 @@ namespace core
         struct metadata_always_fix_pointers_to_derived_classes;
         FRIEND_GC_SCANNER();
     public:
-<<<<<<< Updated upstream
-	virtual string describe() const {return "Functoid - subclass must implement describe()";};
+	virtual const char* describe() const {return "Functoid - subclass must implement describe()";};
         void operator()( LCC_RETURN, LCC_ARGS )
 	{
             this->invoke(lcc_resultP, LCC_PASS_ARGS );
-=======
-	virtual const char* describe() const {return "Functoid - subclass must implement describe()";};
-        void operator()( core::T_mv* lcc_resultP, int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, ... ) {
-            va_list arglist;
-            va_start(arglist,lcc_fixed_arg2);
-            this->invoke(lcc_resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,arglist);
-            va_end(arglist);
->>>>>>> Stashed changes
         }
 
 //#define LISP_INVOKE() invoke( core::T_mv* lcc_resultP, int lcc_nargs, core::T_sp lcc_fixed_arg0, core::T_sp lcc_fixed_arg1, core::T_sp lcc_fixed_arg2, va_list lcc_arglist )

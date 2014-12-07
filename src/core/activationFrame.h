@@ -82,7 +82,7 @@ namespace core
 
 
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 	virtual bool _findFunction(T_sp functionName, int& depth, int& index, Function_sp& value) const;
 
 
@@ -276,7 +276,7 @@ namespace core
 	T_sp& lookupValueReference(int depth, int index);
 
 	virtual bool _updateValue(Symbol_sp sym, T_sp obj );
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 
 
 
@@ -585,12 +585,12 @@ namespace frame
     }
 
 
-    inline bool findValue(core::T_sp f, core::Symbol_sp sym, int& depth, int& index, bool& special, core::T_sp& value )
+    inline bool findValue(core::T_sp f, core::T_sp sym, int& depth, int& index, core::Environment_O::ValueKind& valueKind, core::T_sp& value )
     {
         core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
 	if ( gctools::tagged_ptr<core::T_O>::tagged_nilp(frameImpl[IdxDebugInfo]) ) {
             ++depth;
-            return core::Environment_O::clasp_findValue(gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]),sym,depth,index,special,value);
+            return core::Environment_O::clasp_findValue(gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]),sym,depth,index,valueKind,value);
 	}
         core::T_sp debugInfo = gctools::smart_ptr<core::T_O>(frameImpl[IdxDebugInfo]);
         if ( lisp_search(debugInfo,sym,index) ) {
@@ -598,7 +598,7 @@ namespace frame
             return true;
         }
 	++depth;
-	return core::Environment_O::clasp_findValue(ParentFrame(frameImpl),sym,depth,index,special,value);
+	return core::Environment_O::clasp_findValue(ParentFrame(frameImpl),sym,depth,index,valueKind,value);
     }
 
 
