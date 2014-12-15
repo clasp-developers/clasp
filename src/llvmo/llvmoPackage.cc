@@ -255,7 +255,7 @@ namespace llvmo
         }
         llvmo::CompiledClosure* cc = dynamic_cast<llvmo::CompiledClosure*>(cb);
 	core::T_sp funcs = cc->associatedFunctions;
-	if ( af_consP(funcs) )
+	if ( cl_consp(funcs) )
 	{
 	    core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
 	    for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
@@ -297,7 +297,7 @@ namespace llvmo
     {_G();
         if ( CompiledClosure* cl = dynamic_cast<CompiledClosure*>(compiledFunction->closure) ) {
             core::T_sp funcs = cl->associatedFunctions;
-            if ( af_consP(funcs) )
+            if ( cl_consp(funcs) )
             {
                 core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
                 for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )

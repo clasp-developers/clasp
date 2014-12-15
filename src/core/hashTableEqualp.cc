@@ -83,7 +83,7 @@ namespace core
 
     bool HashTableEqualp_O::keyTest(T_sp entryKey, T_sp searchKey) const
     {_OF();
-	bool equalp = af_equalp(entryKey,searchKey);
+	bool equalp = cl_equalp(entryKey,searchKey);
 //        printf("%s:%d HashTableEqualp_O::keyTest testing if %s equalp %s -->%d\n",__FILE__,__LINE__,_rep_(entryKey).c_str(),_rep_(searchKey).c_str(),equalp);
         return equalp;
     }

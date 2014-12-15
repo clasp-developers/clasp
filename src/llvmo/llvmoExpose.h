@@ -408,6 +408,8 @@ namespace llvmo
 	    this->_ptr = ptr;
 	}
     public:
+	bool NoFramePointerElim();
+	void setfNoFramePointerElim(bool val);
 	bool JITEmitDebugInfo();
 	void setfJITEmitDebugInfo(bool val);
 	bool JITEmitDebugInfoToDisk();

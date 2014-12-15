@@ -61,7 +61,7 @@ namespace core
 	    write_object(x,stream);
 	    return;
 	}
-	if (af_consP(this->_Cdr) && oCdr(this->_Cdr).nilp() ) {
+	if (cl_consp(this->_Cdr) && oCdr(this->_Cdr).nilp() ) {
 	    if ( this->_Car == cl::_sym_quote ) {
 		clasp_write_char('\'',stream);
 		x = oCar(this->_Cdr);
@@ -139,6 +139,11 @@ namespace core
 		clasp_write_char(' ',stream);
 	}
 	clasp_write_char(')',stream);
+#if 0
+	stringstream ss;
+	ss << "@" << (void*)(this) << " ";
+	clasp_write_string(ss.str(),stream);
+#endif
     }
 
 

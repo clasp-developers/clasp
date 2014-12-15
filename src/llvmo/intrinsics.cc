@@ -712,27 +712,27 @@ extern "C"
 
 
 
-core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char* sourceName, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
 {_G();
     // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
     core::Str_sp sourceStr = core::Str_O::create(sourceName);
     core::SourceFileInfo_mv sfi = core::af_sourceFileInfo(sourceStr);
     int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();   // sfindex could be written into the Module global for debugging
-    core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,lineno,column);
+    core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,lineno,column);
     core::FunctionClosure* closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP,spi,kw::_sym_function,funcPtr,_Nil<llvmo::Function_O>(),*frameP,*compiledFuncsP);
     core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
     return compiledFunction;
 };
 extern "C"
 {
-    void sp_makeCompiledFunction( core::T_sp* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+    void sp_makeCompiledFunction( core::T_sp* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
     {
-	(*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr,sourceName,lineno,column,functionNameP,compiledFuncsP,frameP);
+	(*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr,sourceName,filePos,lineno,column,functionNameP,compiledFuncsP,frameP);
     }
 
-    void mv_makeCompiledFunction( core::T_mv* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+    void mv_makeCompiledFunction( core::T_mv* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
     {
-	(*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr,sourceName,lineno,column,functionNameP,compiledFuncsP,frameP));
+	(*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr,sourceName,filePos, lineno,column,functionNameP,compiledFuncsP,frameP));
     }
 
 };
@@ -741,16 +741,21 @@ extern "C"
 
 extern "C"
 {
-    void invokeLlvmFunction( core::T_mv* resultP,
+    void invokeTopLevelFunction( core::T_mv* resultP,
 			     fnLispCallingConvention fptr,
 			     core::ActivationFrame_sp* frameP,
+			     char* cpname,
                              int* sourceFileInfoHandleP,
+			     size_t filePos,
                              int lineno,
                              int column )
     {
-	core::T_sp closedEnv = _Nil<T_O>();
 	ActivationFrame_sp frame = (*frameP);
-        core::InvocationHistoryFrame invFrame(*sourceFileInfoHandleP,lineno,column);
+	SourcePosInfo_sp tempSourcePosInfo = SourcePosInfo_O::create(*sourceFileInfoHandleP,filePos,lineno,column);
+	core::Str_sp name = core::Str_O::create(cpname);
+	BuiltinClosure tempClosure(name,tempSourcePosInfo,kw::_sym_function);
+        core::InvocationHistoryFrame invFrame(&tempClosure,*frameP);
+	core::T_sp closedEnv = _Nil<T_O>();
 	if ( frame.nilp() ) {
 	    fptr(resultP,LCC_FROM_SMART_PTR(closedEnv),LCC_PASS_ARGS0());
 	} else {

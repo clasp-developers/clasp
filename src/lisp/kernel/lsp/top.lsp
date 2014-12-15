@@ -547,10 +547,10 @@ Use special code 0 to cancel this operation.")
   (single-threaded-terminal-interrupt))
 
 (defun tpl (&key ((:commands *tpl-commands*) tpl-commands)
-		 ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
-  		 (broken-at nil)
-		 (quiet nil))
-;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
+	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
+	      (broken-at nil)
+	      (quiet nil))
+  ;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
   (let* ((*ihs-base* *ihs-top*)
 	 (*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
 	 (*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
@@ -588,23 +588,25 @@ Use special code 0 to cancel this operation.")
 			    )
 			   )
 		     )))
-
                (with-grabbed-console
                    (unless quiet
                      (break-where)
                      (setf quiet t))
-                 (setq - (locally (declare (notinline tpl-read))
-                           (tpl-prompt)
-                           #-clasp(tpl-read)
-                           #+clasp(let ((expr (tpl-read)))
-                                   (when sys:*echo-repl-tpl-read*
-                                     (format t "#|REPL echo|# ~s~%" expr))
-                                   expr)
-                           )
-                       values (multiple-value-list
-                               (top-level-eval-with-env - *break-env*))
-                       /// // // / / values *** ** ** * * (car /))
-                 (tpl-print values)))))
+		 (let ((core:*current-source-pos-info* (core:input-stream-source-pos-info nil)))
+		   (setq - (locally (declare (notinline tpl-read))
+			     (tpl-prompt)
+			     #-clasp(tpl-read)
+			     #+clasp(let ((expr (tpl-read)))
+				      (when sys:*echo-repl-tpl-read*
+					(format t "#|REPL echo|# ~s~%" expr))
+				      expr)
+			     ))
+		   ;; update *current-source-pos-info* if we can extract it from the source
+		   (setq core:*current-source-pos-info* (core:walk-to-find-source-pos-info - core:*current-source-pos-info*))
+		   (setq values (multiple-value-list
+				 (top-level-eval-with-env - *break-env*))
+			 /// // // / / values *** ** ** * * (car /))
+		   (tpl-print values))))))
       (loop
 	 (setq +++ ++ ++ + + -)
 	 (when
@@ -840,8 +842,9 @@ Use special code 0 to cancel this operation.")
 
 (defun lambda-list-from-annotations (name)
   (declare (si::c-local))
-  (let ((args (ext:get-annotation name :lambda-list nil)))
+  (let ((args (core:get-annotation name :lambda-list nil)))
     (values args (and args t))))
+
 
 (defun function-lambda-list (function)
   (cond
@@ -875,6 +878,7 @@ Use special code 0 to cancel this operation.")
     ;; lambda-list from its documentation string.
     (t
      (lambda-list-from-annotations (compiled-function-name function)))))
+(export 'function-lambda-list)
 
 #-(or ecl-min clasp)
 (defun decode-env-elt (env ndx)

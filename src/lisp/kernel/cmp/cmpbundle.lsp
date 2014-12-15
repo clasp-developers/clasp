@@ -263,7 +263,7 @@
          (output-pathname (pathname output-pathname))
          (part-pathnames lisp-bitcode-files)
          ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
-	 (bundle-bitcode-pathname (make-pathname :type "bc" :defaults output-pathname))
+	 (bundle-bitcode-pathname (cfp-output-file-default output-pathname :linked-bitcode))
          (prologue-module (if prologue-form (compile-form-into-module prologue-form "prologueForm")))
          (epilogue-module (if epilogue-form (compile-form-into-module epilogue-form "epilogueForm")))
          (module (link-bitcode-modules part-pathnames

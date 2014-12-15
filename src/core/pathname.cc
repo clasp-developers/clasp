@@ -214,7 +214,7 @@ namespace core {
 	/* If the argument is really a list, translate all strings in it and
 	 * return this new list, else assume it is a string and translate it.
 	 */
-	if (!af_consP(list)) {
+	if (!cl_consp(list)) {
 	    return translate_component_case(list, fromcase, tocase);
 	} else {
 	    T_sp l;
@@ -224,7 +224,7 @@ namespace core {
 		 * because it will only transform strings, leaving other
 		 * object (such as symbols) unchanged.*/
 		T_sp name = CONS_CAR(l);
-		name = af_listp(name)?
+		name = cl_listp(name)?
 		    translate_list_case(name, fromcase, tocase) :
 		    translate_component_case(name, fromcase, tocase);
 		l.as_or_nil<Cons_O>()->rplaca(name);
@@ -248,7 +248,7 @@ namespace core {
 	T_sp ptr;
 	int i;
 
-	if (!af_listp(directory))
+	if (!cl_listp(directory))
 	    return kw::_sym_error;
 	if (directory.nilp())
 	    return directory;
@@ -256,7 +256,7 @@ namespace core {
 	    CONS_CAR(directory) != kw::_sym_relative)
 	    return kw::_sym_error;
     BEGIN:
-	for (i=0, ptr=directory; af_consP(ptr); ptr = CONS_CDR(ptr), i++) {
+	for (i=0, ptr=directory; cl_consp(ptr); ptr = CONS_CDR(ptr), i++) {
 	    T_sp item = CONS_CAR(ptr);
 	    if (item == kw::_sym_back) {
 		if (i == 0)
@@ -429,7 +429,7 @@ namespace core {
 	    return pathname;
 	}
 	directory = pathname->_Directory;
-	if (!af_consP(directory) || CONS_CAR(directory) != kw::_sym_relative
+	if (!cl_consp(directory) || CONS_CAR(directory) != kw::_sym_relative
 	    || CONS_CDR(directory).nilp()) {
 	    return pathname;
 	}
@@ -670,7 +670,7 @@ namespace core {
 	logical = true;
 	device = kw::_sym_unspecific;
 	path = parse_directories(s, WORD_LOGICAL, *ep, end, ep);
-	if (af_consP(path)) {
+	if (cl_consp(path)) {
 	    if (CONS_CAR(path) != kw::_sym_relative &&
 		CONS_CAR(path) != kw::_sym_absolute)
 		path = Cons_O::create(kw::_sym_absolute, path);
@@ -769,7 +769,7 @@ namespace core {
 	    device = _Nil<T_O>();
     done_device_and_host:
 	path = parse_directories(s, 0, *ep, end, ep);
-	if (af_consP(path)) {
+	if (cl_consp(path)) {
 	    if (CONS_CAR(path) != kw::_sym_relative &&
 		CONS_CAR(path) != kw::_sym_absolute)
 		path = Cons_O::create(kw::_sym_relative, path);
@@ -1498,7 +1498,7 @@ namespace core {
 
 
 //#define EN_MATCH(p1,p2,el) (brcl_equalp(p1->pathname.el, p2->pathname.el)? _Nil<T_O>() : p1->pathname.el)
-#define EN_MATCH(p1,p2,el) (af_equalp(p1->el,p2->el) ? _Nil<T_O>() : p1->el)
+#define EN_MATCH(p1,p2,el) (cl_equalp(p1->el,p2->el) ? _Nil<T_O>() : p1->el)
 
 
 
@@ -1763,7 +1763,7 @@ namespace core {
             return (pair.nilp()) ? _Nil<T_O>() : oCadr(pair);
         }
         /* Set the new translation list */
-        if (brcl_unlikely(!af_listp(set))) {
+        if (brcl_unlikely(!cl_listp(set))) {
             QERROR_WRONG_TYPE_NTH_ARG(2,set,cl::_sym_list);
         }
         if (pair.nilp()) {
@@ -1913,7 +1913,7 @@ namespace core {
 		    return kw::_sym_error;
 		else {
 		    T_sp dirlist = CAR(list);
-		    if (af_consP(dirlist))
+		    if (cl_consp(dirlist))
 			l = Cons_O::append(CAR(list).as_or_nil<Cons_O>(), l.as_or_nil<Cons_O>());
 		    else if (!Null(CAR(list)))
 			return kw::_sym_error;
@@ -1927,7 +1927,7 @@ namespace core {
 	    }
 	    to = CDR(to);
 	}
-	if (af_consP(l))
+	if (cl_consp(l))
 	    l = cl_nreverse(l.as_or_nil<Cons_O>());
 	return l;
     }

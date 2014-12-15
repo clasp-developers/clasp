@@ -61,7 +61,7 @@ namespace core
 #define ARGS_af_make_vector "(element-type dimension adjustable fill-pointer displaced-to displaced-index-offset &optional initial-element initial-contents)"
 #define DECL_af_make_vector ""    
     SYMBOL_EXPORT_SC_(ClPkg,subtypep);
-    Vector_sp af_make_vector(Symbol_sp element_type,
+    Vector_sp af_make_vector(T_sp element_type,
 			int dimension,
 			bool adjustable,
 			T_sp fill_pointer,

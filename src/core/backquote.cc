@@ -266,7 +266,7 @@ namespace core
 #define DOCS_af_backquote_splicing_frob "backquote_splicing_frob is true if a form that when read looked like ,@foo or ,.foo"
     bool af_backquote_splicing_frob(T_sp x)
     {_G();
-	if ( af_consP(x) )
+	if ( cl_consp(x) )
 	{
 	    Cons_sp cx = x.as_or_nil<Cons_O>();
 	    T_sp head = oCar(cx);
@@ -282,7 +282,7 @@ namespace core
 #define DOCS_af_backquote_frob "backquote_frob is true if a form that when read looked like ,foo or ,@foo or ,.foo"
     bool af_backquote_frob(T_sp x)
     {_G();
-	if ( af_consP(x) )
+	if ( cl_consp(x) )
 	{
 	    Cons_sp cx = x.as_or_nil<Cons_O>();
 	    T_sp head = oCar(cx);
@@ -311,7 +311,7 @@ namespace core
 	Cons_sp cx = x.as_or_nil<Cons_O>();
 	T_sp a = eval::funcall(op,oCar(cx));
 	T_sp d = af_backquote_maptree(op,oCdr(cx));
-	if ( af_eql(a,oCar(cx)) && af_eql(d,oCdr(cx)))
+	if ( cl_eql(a,oCar(cx)) && cl_eql(d,oCdr(cx)))
 	{
 	    return x;
 	}
@@ -330,7 +330,7 @@ namespace core
 	Cons_sp cx = x.as_or_nil<Cons_O>();
 	T_sp a = op(x);
 	T_sp d = backquote_maptree(op,cCdr(cx));
-	if ( af_eql(a,oCar(cx)) && af_eql(d,cCdr(cx)))
+	if ( cl_eql(a,oCar(cx)) && cl_eql(d,cCdr(cx)))
 	{
 	    return((x));
 	}
@@ -407,7 +407,7 @@ namespace core
 								      car_last_car_args,
 								      result));
 	    } else if ( (oCaar(args) == _sym_STARbq_quoteSTAR) &&
-			(af_consP(oCadar(args).as_or_nil<Cons_O>())) &&
+			(cl_consp(oCadar(args).as_or_nil<Cons_O>())) &&
 			(!af_backquote_frob(oCadar(args))) &&
 			(oCddar(args).nilp()))
 	    {
@@ -435,7 +435,7 @@ namespace core
     T_sp af_backquote_null_or_quoted(T_sp x)
     {_G();
 	if ( x.nilp() ) return(Values(_lisp->_true()));
-	if ( af_consP(x) )
+	if ( cl_consp(x) )
 	{
 	    Cons_sp cx = x.as_or_nil<Cons_O>();
 	    if ( oCar(cx) == _sym_STARbq_quoteSTAR ) return(_lisp->_true());
@@ -459,13 +459,13 @@ namespace core
 	    Cons_sp tl = Cons_O::createList(oCadr(item.as_or_nil<Cons_O>()),oCadr(result.as_or_nil<Cons_O>()));
 	    return Cons_O::createList(_sym_STARbq_quoteSTAR,
 				    af_backquote_append(tl));
-	} else if ( af_equal(result,_sym_STARbq_quote_nilSTAR->symbolValue()) )
+	} else if ( cl_equal(result,_sym_STARbq_quote_nilSTAR->symbolValue()) )
 	{
 	    if (af_backquote_splicing_frob(item))
 	    {
 		return Cons_O::createList(op,item);
 	    } else return item;
-	} else if ( af_consP(result) && oCar(result)==op )
+	} else if ( cl_consp(result) && oCar(result)==op )
 	{
 	    return Cons_O::create(oCar(result),Cons_O::create(item,oCdr(result)));
 	}
@@ -487,10 +487,10 @@ namespace core
 	    Cons_sp ti = Cons_O::create(items.as_or_nil<Cons_O>());
 	    Cons_sp tl = Cons_O::createList(cl_mapcar(cl::_sym_cadr,ti), oCadr(result));
 	    return Cons_O::createList(_sym_STARbq_quoteSTAR,af_backquote_append(tl));
-	} else if ( af_equal(result,_sym_STARbq_quote_nilSTAR->symbolValue()))
+	} else if ( cl_equal(result,_sym_STARbq_quote_nilSTAR->symbolValue()))
 	{
 	    return Cons_O::create(_sym_STARbq_listSTAR,items);
-	} else if ( af_consP(result)
+	} else if ( cl_consp(result)
 		    && ((oCar(result) == _sym_STARbq_listSTAR )
 			|| (oCar(result) == _sym_STARbq_listSTARSTAR )))
 	{
@@ -524,7 +524,7 @@ namespace core
 	    return((af_backquote_remove_tokens(oCadr(cx))));
 	}
 	if ( (oCar(cx) == _sym_STARbq_listSTARSTAR )
-	     && af_consP(cCddr(cx))
+	     && cl_consp(cCddr(cx))
 	     && cCdddr(cx).nilp() )
 	{
 	    return Cons_O::create(cl::_sym_cons,

@@ -87,6 +87,7 @@ namespace core
 
     SYMBOL_EXPORT_SC_(ClPkg,printNotReadableObject);
 
+    
     SYMBOL_EXPORT_SC_(ClPkg,provide);
     SYMBOL_EXPORT_SC_(ClPkg,condition);
     SYMBOL_EXPORT_SC_(ClPkg,seriousCondition);
@@ -130,9 +131,12 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,arrayDimensionLimit);
     SYMBOL_EXPORT_SC_(ClPkg,arrayTotalSizeLimit);
     SYMBOL_EXPORT_SC_(ClPkg,lambdaParametersLimit);
+    SYMBOL_EXPORT_SC_(ClPkg,schar);
+    SYMBOL_EXPORT_SC_(CorePkg,scharSet);
 
     SYMBOL_EXPORT_SC_(CorePkg,bitArrayOp);
-
+    SYMBOL_EXPORT_SC_(CorePkg,lambdaName);
+    SYMBOL_SC_(CorePkg,printf);
 
     SYMBOL_EXPORT_SC_(CorePkg,asin);
     SYMBOL_EXPORT_SC_(CorePkg,acos);
@@ -204,6 +208,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_SC_(CorePkg,STARdebugMonitorSTAR);
     SYMBOL_SC_(CorePkg,monitorReader);
     SYMBOL_EXPORT_SC_(CorePkg,STARsourceDatabaseSTAR);
+    SYMBOL_EXPORT_SC_(CorePkg,STARcurrentSourcePosInfoSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARstartRunTimeSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,internalTimeUnitsPerSecond);
     SYMBOL_EXPORT_SC_(ClPkg,getInternalRealTime);
@@ -292,7 +297,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_EXPORT_SC_(CorePkg,STARcircle_stackSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,dynamicGo);
     SYMBOL_EXPORT_SC_(CorePkg,localGo);
-    SYMBOL_EXPORT_SC_(CorePkg,functionName);
     SYMBOL_EXPORT_SC_(ClPkg,_DIVIDE_);
     SYMBOL_EXPORT_SC_(KeywordPkg,operation);
     SYMBOL_EXPORT_SC_(KeywordPkg,operands);
@@ -394,8 +398,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_SC_(CorePkg,_PLUS_executableName_PLUS_);
     SYMBOL_EXPORT_SC_(CorePkg,STARcodeWalkerSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARcurrentSourceFileInfoSTAR);
-    SYMBOL_EXPORT_SC_(CorePkg,STARcurrentLinenoSTAR);
-    SYMBOL_EXPORT_SC_(CorePkg,STARcurrentColumnSTAR);
+    SYMBOL_EXPORT_SC_(CorePkg,STARcurrentSourcePosInfoSTAR);
     SYMBOL_SC_(CorePkg,STARdebugMacroexpandSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,T);
     SYMBOL_EXPORT_SC_(ClPkg,method);
@@ -558,7 +561,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     SYMBOL_SC_(CorePkg,color);
     SYMBOL_SC_(CorePkg,foreach);
     SYMBOL_SC_(CorePkg,STARPATHSTAR);
-    SYMBOL_SC_(CorePkg,STARARGSSTAR);
+    SYMBOL_SC_(CorePkg,STARargsSTAR);
     SYMBOL_EXPORT_SC_(ClPkg,STARpackageSTAR);
     SYMBOL_SC_(CorePkg,STARcurrent_working_directorySTAR);
     SYMBOL_EXPORT_SC_(ClPkg,STARmodulesSTAR);
@@ -859,7 +862,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	SYMBOL_EXPORT_SC_(ClPkg,array_rank_limit);
 	cl::_sym_array_rank_limit->defconstant(Fixnum_O::create(8));
 	SYMBOL_EXPORT_SC_(ClPkg,char_code_limit);
-	cl::_sym_char_code_limit->defconstant(Fixnum_O::create(128));
+	cl::_sym_char_code_limit->defconstant(Fixnum_O::create(CHAR_CODE_LIMIT));
 	cl::_sym_STARgensym_counterSTAR->defparameter(Fixnum_O::create(0));
 	cl::_sym_STARdefaultPathnameDefaultsSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARprint_arraySTAR->defparameter(_Nil<T_O>());
@@ -888,6 +891,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);
         ext::_sym__PLUS_processErrorOutput_PLUS_->defparameter(stderr_stream);
         _sym_STARsourceDatabaseSTAR->defparameter(_Nil<T_O>());
+	_sym_STARcurrentSourcePosInfoSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARstandard_inputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardInput_PLUS_));
 	cl::_sym_STARstandard_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardOutput_PLUS_));
 	cl::_sym_STARerror_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
@@ -914,8 +918,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
 	_sym_STARclassNameHashTableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
 	_sym_STARcurrentSourceFileInfoSTAR->defparameter(_Nil<T_O>());
-	_sym_STARcurrentLinenoSTAR->defparameter(Fixnum_O::create(0));
-	_sym_STARcurrentColumnSTAR->defparameter(Fixnum_O::create(0));
+	_sym_STARcurrentSourcePosInfoSTAR->defparameter(_Nil<T_O>());
 	_sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());
 	_sym_STARsharpEqContextSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_SingleFloat_O);
@@ -954,16 +957,17 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
 	_sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(Fixnum_O::create(LCC_ARGS_IN_REGISTERS));
 
-	Cons_sp hooks = Cons_O::createList(
-	    Cons_O::create(Str_O::create("l"),_sym_loadSource),
-	    Cons_O::create(Str_O::create("L"),_sym_loadSource),
-	    Cons_O::create(Str_O::create("lsp"),_sym_loadSource),
-	    Cons_O::create(Str_O::create("LSP"),_sym_loadSource),
-	    Cons_O::create(Str_O::create("lisp"),_sym_loadSource),
-	    Cons_O::create(Str_O::create("LISP"),_sym_loadSource),
-	    Cons_O::create(Str_O::create("bc"),_sym_loadBitcode),
-	    Cons_O::create(Str_O::create("bundle"),_sym_loadBundle)
-	    );
+	Cons_sp hooks = _Nil<Cons_O>();
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("l"),_sym_loadSource),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("L"),_sym_loadSource),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("lsp"),_sym_loadSource),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("LSP"),_sym_loadSource),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("lisp"),_sym_loadSource),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("LISP"),_sym_loadSource),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("bc"),_sym_loadBitcode),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"),_sym_loadBundle),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("so"),_sym_loadBundle),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"),_sym_loadBundle),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("clasprc"),_sym_loadSource),hooks);
 	ext::_sym_STARloadHooksSTAR->defparameter(hooks);
 	ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());

@@ -98,12 +98,11 @@ namespace core
         WeakKeyHashTable_O() : _HashTable(16) {};
         WeakKeyHashTable_O(uint sz) : _HashTable(sz) {};
     public:
-//	static WeakKeyHashTable_sp make(uint sz ); // ,  Number_sp rehashSize, double rehashThreshold);
-        static WeakKeyHashTable_sp create_default();
-    public:
         virtual int tableSize() const;
+	int size() const { return this->tableSize();};
 
         void set( T_sp key, T_sp value );
+	void setf_gethash(T_sp key, T_sp value);
 
         bool fullp();
 
@@ -131,6 +130,10 @@ template<> struct gctools::GCInfo<core::WeakKeyHashTable_O> {
 TRANSLATE(core::WeakKeyHashTable_O);
 
 
+
+namespace core {
+    WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size);
+};
 
 
 

@@ -98,10 +98,10 @@ namespace core
     };
 
 
-#define ARGS_af_listp "(arg)"
-#define DECL_af_listp ""
-#define DOCS_af_listp "listp"
-    bool af_listp(T_sp arg)
+#define ARGS_cl_listp "(arg)"
+#define DECL_cl_listp ""
+#define DOCS_cl_listp "listp"
+    bool cl_listp(T_sp arg)
     {_G();
 	if ( arg.nilp() ) return true;
         return arg.isA<Cons_O>();
@@ -197,10 +197,10 @@ namespace core
     };
 
 
-#define ARGS_af_consP "(arg)"
-#define DECL_af_consP ""
-#define DOCS_af_consP "consP"
-    bool af_consP(T_sp obj)
+#define ARGS_cl_consp "(arg)"
+#define DECL_cl_consp ""
+#define DOCS_cl_consp "consp"
+    bool cl_consp(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
 	return obj.isA<Cons_O>();
@@ -246,10 +246,10 @@ namespace core
 
 
 
-#define ARGS_af_numberP "(arg)"
-#define DECL_af_numberP ""
-#define DOCS_af_numberP "numberP"
-    bool af_numberP(T_sp obj)
+#define ARGS_cl_numberp "(arg)"
+#define DECL_cl_numberp ""
+#define DOCS_cl_numberp "numberP"
+    bool cl_numberp(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
 	return obj.isA<Number_O>();
@@ -409,10 +409,10 @@ namespace core
     };
 
 
-#define ARGS_af_readtableP "(arg)"
-#define DECL_af_readtableP ""
-#define DOCS_af_readtableP "readtableP"
-    bool af_readtableP(T_sp obj)
+#define ARGS_cl_readtablep "(arg)"
+#define DECL_cl_readtablep ""
+#define DOCS_cl_readtablep "readtablep"
+    bool cl_readtablep(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
 	return obj.isA<ReadTable_O>();
@@ -572,7 +572,7 @@ namespace core
 	fast = slow = arg;
 	for ( int n=0; !fast.nilp(); n++, fast = oCdr(fast) )
 	{
-	    if ( !af_listp(fast) ) {
+	    if ( !cl_listp(fast) ) {
 		test = false;
 		break;
 	    }
@@ -622,9 +622,9 @@ namespace core
 	Defun(endp);
 #define newNameDefun(pkg,myname,lispname) af_def(pkg,#lispname,&af_##myname,ARGS_af_##myname,DECL_af_##myname,DOCS_af_##myname)
 	newNameDefun(ClPkg,symbolp,symbolp);
-	newNameDefun(ClPkg,consP,consp);
-	newNameDefun(ClPkg,listp,listp);
-	newNameDefun(ClPkg,numberP,numberp);
+	ClDefun(consp);
+	ClDefun(listp);
+	ClDefun(numberp);
 	newNameDefun(ClPkg,integerP,integerp);
 	newNameDefun(ClPkg,rationalP,rationalp);
 	newNameDefun(ClPkg,floatP,floatp);
@@ -661,7 +661,7 @@ namespace core
 	Defun(singleFloatP);
 	Defun(pathP);
 	Defun(hashTableP);
-	Defun(readtableP);
+	ClDefun(readtablep);
 	Defun(structureObjectP);
 	Defun(singleDispatchGenericFunctionP);
 	Defun(activation_frame_p);

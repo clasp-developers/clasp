@@ -120,7 +120,7 @@ namespace core
 
     bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const
     {_OF();
-	return af_eq(entryKey,searchKey);
+	return cl_eq(entryKey,searchKey);
     }
 
     int HashTableEq_O::sxhashKey(T_sp obj,int bound,bool willAddKey) const

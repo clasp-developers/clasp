@@ -20,8 +20,8 @@
       t)
 
 
-(fset '1- #'(lambda (num) (- num 1)))
-(fset '1+ #'(lambda (num) (+ num 1)))
+(fset '1- #'(lambda (num) (declare (function-name 1-)) (- num 1)))
+(fset '1+ #'(lambda (num) (declare (function-name 1+)) (+ num 1)))
 
 
 
@@ -340,7 +340,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun compiled-function-file (x)
   (core:function-source-pos x))
-
+(export '(compiled-function-name compiled-function-file))
 
 (defun warn-or-ignore (x &rest args)
   nil)

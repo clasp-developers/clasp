@@ -1546,7 +1546,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     bool Number_O::operator<(T_sp obj) const
     {
-	if ( af_numberP(obj) )
+	if ( cl_numberp(obj) )
 	{
 	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())<0;
 	}
@@ -1555,7 +1555,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     bool Number_O::operator<=(T_sp obj) const
     {
-	if ( af_numberP(obj) )
+	if ( cl_numberp(obj) )
 	{
 	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())<=0;
 	}
@@ -1564,7 +1564,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     bool Number_O::operator>(T_sp obj) const
     {
-	if ( af_numberP(obj) )
+	if ( cl_numberp(obj) )
 	{
 	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())>0;
 	}
@@ -1573,7 +1573,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     bool Number_O::operator>=(T_sp obj) const
     {
-	if ( af_numberP(obj) )
+	if ( cl_numberp(obj) )
 	{
 	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())>=0;
 	}
@@ -2106,7 +2106,7 @@ namespace core {
 	    return b;
 #endif
 	}
-	ASSERT(!af_numberP(obj) );
+	ASSERT(!cl_numberp(obj) );
 	return false;
     }
 
@@ -2274,7 +2274,7 @@ namespace core {
 	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!af_numberP(obj) );
+	ASSERT(!cl_numberp(obj) );
 	return false;
     }
 
@@ -2423,7 +2423,7 @@ namespace core {
 	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!af_numberP(obj) );
+	ASSERT(!cl_numberp(obj) );
 	return false;
     }
 
@@ -2608,7 +2608,7 @@ namespace core {
 	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!af_numberP(obj));
+	ASSERT(!cl_numberp(obj));
 	return false;
     }
 
@@ -2778,7 +2778,7 @@ namespace core {
 	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!af_numberP(obj));
+	ASSERT(!cl_numberp(obj));
 	return false;
     }
 
@@ -2878,7 +2878,7 @@ namespace core {
     bool Ratio_O::eql(T_sp obj) const
     {_G();
 	if ( this->eq(obj) ) return true;
-	if ( !af_numberP(obj) ) return false;
+	if ( !cl_numberp(obj) ) return false;
 	if ( basic_compare(this->const_sharedThis<Ratio_O>(),obj.as<Number_O>()) == 0 ) return true;
 	return false;
     }

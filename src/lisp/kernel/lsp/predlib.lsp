@@ -55,6 +55,7 @@ Builds a new function which accepts any number of arguments but always outputs N
 
 
 
+
 ;;; DEFTYPE macro.
 (defmacro deftype (name lambda-list &rest body &environment env)
   "Syntax: (deftype name lambda-list {decl | doc}* {form}*)
@@ -79,15 +80,24 @@ by (documentation 'NAME 'type)."
 	  (when (and (symbolp variable)
 		     (not (member variable lambda-list-keywords)))
 	    (cons-setf-car l `(,variable '*))))))
-    (let ((function `#'(LAMBDA-BLOCK ,name ,lambda-list ,@body)))
-      (when (and (null lambda-list) (consp body) (null (rest body)))
-        (let ((form (first body)))
-          (when (constantp form env)
-            (setq function form))))
-      `(eval-when (:compile-toplevel :load-toplevel :execute)
-         ,@(si::expand-set-documentation name 'type doc)
-         (do-deftype ',name '(DEFTYPE ,name ,lambda-list ,@body)
-                     ,function)))))
+    (multiple-value-bind (decls lambda-body doc)
+	(process-declarations body t)
+      (if doc (setq doc (list doc)))
+      (let ((function `(function 
+			#+ecl(LAMBDA-BLOCK ,name ,lambda-list ,@body)
+			#+clasp(lambda ,lambda-list 
+			 (declare (core:lambda-name ,name) ,@decls) 
+			 ,@doc 
+			 (block ,name ,@lambda-body))
+			)))
+	(when (and (null lambda-list) (consp body) (null (rest body)))
+	  (let ((form (first body)))
+	    (when (constantp form env)
+	      (setq function form))))
+	`(eval-when (:compile-toplevel :load-toplevel :execute)
+	   ,@(si::expand-set-documentation name 'type doc)
+	   (do-deftype ',name '(DEFTYPE ,name ,lambda-list ,@body)
+		       ,function))))))
 
 
 ;;; Some DEFTYPE definitions.

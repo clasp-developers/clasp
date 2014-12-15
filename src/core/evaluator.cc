@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include "builtInClass.h"
 #include "lambdaListHandler.h"
 #include "vectorObjects.h"
+#include "predicates.h"
 #include "standardClass.h"
 #include "standardObject.h"
 #include "predicates.h"
@@ -276,7 +277,7 @@ namespace core
 	    for ( Cons_sp cur = clauses; cur.notnilp(); cur = cCdr(cur) )
 	    {
 		T_sp oclause = oCar(cur);
-		if ( af_consP(oclause) )
+		if ( cl_consp(oclause) )
 		{
 		    Cons_sp clause = oclause.as_or_nil<Cons_O>();
 		    T_sp keys = oCar(clause);
@@ -291,15 +292,15 @@ namespace core
 			return eval::sp_progn(forms,environment);
 		    } else if ( af_atom(keys) )
 		    {
-			if ( af_eql(keys,test_key) )
+			if ( cl_eql(keys,test_key) )
 			{
 			    return eval::sp_progn(forms,environment);
 			}
-		    } else if ( af_consP(keys) )
+		    } else if ( cl_consp(keys) )
 		    {
 			for (Cons_sp kcur = keys.as_or_nil<Cons_O>(); kcur.notnilp(); kcur=cCdr(kcur) )
 			{
-			    if ( af_eql(oCar(kcur),test_key) )
+			    if ( cl_eql(oCar(kcur),test_key) )
 			    {
 				return eval::sp_progn(forms,environment);
 			    }
@@ -377,6 +378,13 @@ namespace core
 
     namespace eval
     {
+	/*! LAMBDA expression processing.
+	  Process ( [[declaration* | documentation]] form* ) and
+	  aggregate the declarations into a list ( (decl-1) (decl-2) ... )
+	  and identify the last documentation string seen.
+	  Return the list of declarations, the documentation string and the rest
+	  of the forms in CODE.  Identify the local special declarations and
+	return them in SPECIALS but leave them in the DECLARES list */
 	void extract_declares_docstring_code_specials(Cons_sp inputBody, Cons_sp& declares, bool expectDocString, Str_sp& documentation, Cons_sp& code, Cons_sp& specials )
 	{_G();
 	    Cons_sp body = inputBody;
@@ -385,16 +393,26 @@ namespace core
 	    specials = _Nil<Cons_O>();
 	    for (; body.notnilp(); body=cCdr(body) )
 	    {
-		if ( !af_listp(body) )
+		if ( !cl_listp(body) )
 		{
 		    SIMPLE_ERROR(BF("Bad input to processDeclares: %s") % _rep_(inputBody));
 		}
 		T_sp form = oCar(body);
-		if ( expectDocString && af_stringP(form) && cCdr(body).notnilp() )
+		// If we are expecting docstring and we hit a string, then we hit a possible docstring
+		if ( expectDocString && af_stringP(form))
 		{
-		    if ( documentation.notnilp() ) break;
-		    documentation = form.as<Str_O>();
-		    continue;
+		    // If there is something following the current element then treat it as a docstring
+		    if (oCdr(body).notnilp())
+		    {
+			// Here we are in undefined behavior CLHS 3.4.11
+			// we may be replacing previous docstrings
+			documentation = form.as<Str_O>();
+			continue;
+		    } else {
+			// Nothing follows so the current form is a form
+			// and stop looking for docstrings or declares
+			break;
+		    }
 		}
 		if ( af_atom(form) || oCar(form) != cl::_sym_declare )
 		{
@@ -696,7 +714,7 @@ namespace core
             while (ip.notnilp())
             {
                 T_sp tagOrForm = oCar(ip);
-                if ( af_consP(tagOrForm) )
+                if ( cl_consp(tagOrForm) )
                 {
                     try
                     {
@@ -1180,6 +1198,54 @@ namespace core
 	};
 
 
+
+#define ARGS_core_extractLambdaNameFromDeclares "(declare-list &optional default)"
+#define DECL_core_extractLambdaNameFromDeclares ""
+#define DOCS_core_extractLambdaNameFromDeclares "If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX"
+	T_sp core_extractLambdaNameFromDeclares(Cons_sp declares, T_sp defaultValue)
+	{
+		    // First check for a (declare (core:function-name XXX))
+	    for ( ; declares.notnilp(); declares = oCdr(declares) ) {
+		Cons_sp decl = oCar(declares);
+		if ( oCar(decl) == core::_sym_lambdaName ) {
+		    return oCadr(decl);
+		}
+	    }
+	    return defaultValue;
+	}
+
+
+
+#define ARGS_core_extractLambdaName "(form &optional default)"
+#define DECL_core_extractLambdaName ""
+#define DOCS_core_extractLambdaName "If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX"
+	T_sp core_extractLambdaName(Cons_sp lambdaExpression, T_sp defaultValue)
+	{
+	    Cons_sp body = cCddr(lambdaExpression);
+	    Cons_sp declares;
+	    Str_sp docstring;
+	    Cons_sp form;
+	    parse_lambda_body(body,declares,docstring,form);
+	    // First check for a (declare (core:function-name XXX))
+	    T_sp name = core_extractLambdaNameFromDeclares(declares,_Nil<T_O>());
+	    if ( name.notnilp() ) return name;
+	    // Next check if there is a (lambda (...) (block XXX ...))
+	    if ( cl_consp(form) && cl_length(form) == 1 ) {
+		T_sp first = oCar(form);
+		if ( cl_consp(first) ) {
+		    if ( oCar(first) == cl::_sym_block) {
+			Symbol_sp name = oCadr(first);
+			if ( name.notnilp() ) {
+			    // Only return block name if not nil
+			    return name;
+			}
+		    }
+		}
+	    }
+	    // Fallback return LAMBDA as the name
+	    return defaultValue;
+	}
+
 	/*! Parse a lambda expression of the form ([declare*] ["docstring"] body...) */
 	Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, Cons_sp body, T_sp env)
 	{_G();
@@ -1192,7 +1258,7 @@ namespace core
 	    if ( lambda_list.nilp() )
 	    {
 		llh = lisp_function_lambda_list_handler(_Nil<Cons_O>(),declares);
-	    } else if ( af_consP(lambda_list) )
+	    } else if ( cl_consp(lambda_list) )
 	    {
 		llh = lisp_function_lambda_list_handler(lambda_list.as_or_nil<Cons_O>(),declares);
 		LOG(BF("Passed lambdaList: %s" ) % lambda_list->__repr__() );
@@ -1204,23 +1270,30 @@ namespace core
 		SIMPLE_ERROR(BF("Illegal object for lambda-list you can "
 				      "only pass a Cons or LambdaListHandler"));
 	    }
+	    // If the name is NIL then check if the form has the form (BLOCK XXX ...)
+	    // if it does then use XXX as the name
+	    if ( name.nilp() ) {
+		name = core_extractLambdaName(form,cl::_sym_lambda);
+	    }
+		
 	    Cons_sp code(form);
 	    if ( wrap_block )
 	    {
 		code = Cons_O::create(Cons_O::create(cl::_sym_block,
 						     Cons_O::create(
-							 af_functionBlockName(name),
-							 code)));
+								    af_functionBlockName(name),
+								    code)));
                 if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->duplicateSourceInfo(body,code);
+                    _lisp->sourceDatabase()->duplicateSourcePosInfo(body,code);
                 }
 	    }
 //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
             SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(code);
             if ( spi.nilp() ) {
-                SourceFileInfo_mv sfi_mv = af_sourceFileInfo(_sym_STARcurrentSourceFileInfoSTAR->symbolValue());
-                int sfindex = sfi_mv.valueGet(1).as<Fixnum_O>()->get();
-                spi = SourcePosInfo_O::create(sfindex,_sym_STARcurrentLinenoSTAR->symbolValue().as<Fixnum_O>()->get());
+		spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue().as<SourcePosInfo_O>();
+		if ( spi.nilp() ) {
+		    printf("%s:%d   Could not find source info for lambda\n", __FILE__, __LINE__);
+		}
             }
             InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
                 name
@@ -1239,7 +1312,6 @@ namespace core
 
 
 
-
 /*
   __BEGIN_DOC(candoScript.specialForm.function,function)
   \scriptCmd{function}{object}
@@ -1253,9 +1325,10 @@ namespace core
 	{_G();
 	    ASSERTP(cCdr(args).nilp(),"You can provide only one argument - a symbol that has a function bound to it or a lambda");
 	    T_sp arg = oCar(args);
-	    if ( af_symbolp(arg) )
+	    if ( arg.nilp() ) {
+		WRONG_TYPE_ARG(arg,Cons_O::createList(cl::_sym_or,cl::_sym_Symbol_O,cl::_sym_Cons_O));
+	    } else if ( Symbol_sp fnSymbol = arg.asOrNull<Symbol_O>() )
 	    {
-		Symbol_sp fnSymbol = oCar(args).as<Symbol_O>();
 		LOG(BF("In sp_function - looking up for for[%s]")
 		    % fnSymbol->__repr__() );
 		T_sp fn = af_interpreter_lookup_function(fnSymbol,environment);
@@ -1265,9 +1338,8 @@ namespace core
 		}
 		LOG(BF("     Found form: %s") % fn->__repr__() );
 		return(Values(fn));
-	    } else if ( af_consP(arg) )
+	    } else if ( Cons_sp consArg = arg.asOrNull<Cons_O>() )
 	    {
-		Cons_sp consArg = arg.as_or_nil<Cons_O>();
 		T_sp head = oCar(consArg);
 		if ( head == cl::_sym_setf )
 		{
@@ -1285,7 +1357,7 @@ namespace core
 		    bool wrapBlock = false;
 		    if ( head == cl::_sym_lambda )
 		    {
-			name = _sym_anonymous;
+			name = core_extractLambdaName(consArg,cl::_sym_lambda);
 			lambdaList = oCadr(consArg).as_or_nil<Cons_O>();
 			body = cCddr(consArg);
 			wrapBlock = false;
@@ -1734,7 +1806,7 @@ namespace core
 	    }
 	}
 	T_sp last = oCar(cl_last(args));
-	if ( !af_listp(last) ) {
+	if ( !cl_listp(last) ) {
 	    SIMPLE_ERROR(BF("Last argument is not a list"));
 	}
 	int lenFirst = lenArgs-1;
@@ -2099,7 +2171,7 @@ namespace core
 
         T_mv t1Evaluate(T_sp exp, T_sp environment)
         {
-            if ( af_consP(exp) ) {
+            if ( cl_consp(exp) ) {
                 T_sp head = oCar(exp);
                 if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
                     printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str() );
@@ -2429,6 +2501,8 @@ namespace core
 	    ClDefun(apply);
 	    SYMBOL_EXPORT_SC_(ClPkg,funcall);
 	    ClDefun(funcall);
+	    CoreDefun(extractLambdaNameFromDeclares);
+	    CoreDefun(extractLambdaName);
 	};
 
     };

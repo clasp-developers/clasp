@@ -57,30 +57,9 @@ namespace core
         , runningLineNumber(c->lineNumber())
         , runningColumn(c->column())
     {
-	this->_Stack = &_lisp->invocationHistoryStack();
-	this->_Next = this->_Stack->top();
-	if (this->_Next == NULL)
-	{
-	    this->_Index = 0;
-	} else
-	{
-	    this->_Index = this->_Next->_Index+1;
+	if ( c->name.nilp() ) {
+	    SIMPLE_ERROR(BF("The InvocationHistoryFrame closure has nil name"));
 	}
-	this->_Stack->push(this);
-	this->_Bds = _lisp->bindings().size();
-    }
-
-
-
-    InvocationHistoryFrame::InvocationHistoryFrame(int sourceFileInfoHandle,
-                                                   int lineno,
-                                                   int column,
-                                                   ActivationFrame_sp env)
-        : closure(NULL), environment(env)
-        , runningSourceFileInfoHandle(sourceFileInfoHandle)
-        , runningLineNumber(lineno)
-        , runningColumn(column)
-    {
 	this->_Stack = &_lisp->invocationHistoryStack();
 	this->_Next = this->_Stack->top();
 	if (this->_Next == NULL)
@@ -107,15 +86,11 @@ namespace core
 
     void InvocationHistoryStack::setExpressionForTop(T_sp expression)
     {
-        uint ilineno(0), icolumn(0);
+        uint ifilepos(0), ilineno(0), icolumn(0);
         if ( _lisp->sourceDatabase().notnilp() ) {
-            SourceFileInfo_mv info = _lisp->sourceDatabase()->lookupSourceInfo(expression);
+            SourcePosInfo_sp info = _lisp->sourceDatabase()->lookupSourcePosInfo(expression);
             if ( info.notnilp() ) {
-                Fixnum_sp lineno = info.valueGet(1).as<Fixnum_O>();
-                Fixnum_sp column = info.valueGet(2).as<Fixnum_O>();
-                ilineno = lineno.nilp() ? 0 : lineno->get();
-                icolumn = column.nilp() ? 0 : column->get();
-                this->_Top->setSourcePos(info->fileHandle(),ilineno,icolumn);
+                this->_Top->setSourcePos(info);
             } else {
 //                this->_Top->setSourcePos(0,0,0);
             }
@@ -124,11 +99,16 @@ namespace core
 
 
     string InvocationHistoryFrame::asStringLowLevel(Closure* closure,
-                                                    const string& funcName,
-						    const string& sourceFileName,
 						    uint lineNumber,
 						    uint column) const
     {
+	if ( closure==NULL ) {return "InvocationHistoryFrame::asStringLowLevel NULL closure";};
+	T_sp funcNameObj = closure->name;
+	string funcName = _rep_(funcNameObj);
+	    
+	int sourceFileInfoHandle = this->runningSourceFileInfoHandle;
+	SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(sourceFileInfoHandle));
+	string sourceFileName = sfi->fileName();
 	stringstream ss;
         if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
         if ( column == UNDEF_UINT ) column = 0;
@@ -160,190 +140,11 @@ namespace core
     string InvocationHistoryFrame::asString()
     {
         string name;
-        SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(this->runningSourceFileInfoHandle));
-        if ( this->closure ) {
-            name = _rep_(this->closure->name);
-        } else {
-            name = "REPL";
-        }
 	return this->asStringLowLevel(this->closure,
-                                      name,
-				      sfi->fileName(),
 				      this->runningLineNumber,
                                       this->runningColumn);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#if 0
-    //! Define this to ensure that TopLevelIHF vtable is weak symbol
-    void TopLevelIHF::keyFunctionForVtable() {};
-
-
-
-
-    TopLevelIHF::TopLevelIHF(InvocationHistoryStack& stack, T_sp expression, FunctionClosure* fc )
-	: InvocationHistoryFrame(TopLevel,stack, fc),
-	  _SourceFileInfo(_Nil<SourceFileInfo_O>()),
-	  _LineNumber(0),
-	  _Column(0),
-	  _FilePos(0)
-    {
-	if ( expression.notnilp() ) {
-            if ( _lisp->sourceDatabase().notnilp() ) {
-                SourceFileInfo_mv sfi = _lisp->sourceDatabase()->lookupSourceInfo(expression);
-                this->_SourceFileInfo = sfi;
-                if ( sfi.number_of_values()>=3 ) {
-                    this->_LineNumber = sfi.valueGet(1).as<Fixnum_O>()->get();
-                    this->_Column = sfi.valueGet(2).as<Fixnum_O>()->get();
-                    this->_FilePos = sfi.valueGet(3).as<Fixnum_O>()->get();
-                }
-            }
-	}
-    }
-
-    string TopLevelIHF::asString() const
-    {
-	return this->asStringLowLevel(this->typeName(),"anon",
-				      this->_SourceFileInfo.nilp() ? "" : this->_SourceFileInfo->fileName(),
-				      this->_LineNumber,this->_Column);
-    }
-
-    string TopLevelIHF::sourcePathName() const
-    {
-	return this->_SourceFileInfo->namestring();
-    }
-
-
-
-
-    string DebuggerIHF::asString() const
-    {
-	return this->asStringLowLevel(this->typeName(),"anon", "", NoLine, NoColumn);
-    }
-
-
-    void DebuggerIHF::setLineNumberColumn(uint lineNumber, uint column)
-    {
-	printf("%s:%d Something is trying to setLineNumberColumn of a DebuggerIHF\n", __FILE__, __LINE__ );
-    }
-    void DebuggerIHF::setActivationFrame(ActivationFrame_sp af)
-    {
-	printf("%s:%d Something is trying to setActivationFrame of a DebuggerIHF\n", __FILE__, __LINE__ );
-    }
-
-
-    CxxFunctionIHF::~CxxFunctionIHF() {};
-
-
-    string CxxFunctionIHF::sourcePathName() const
-    {
-	return af_sourceFileInfo(this->_Function)->namestring();
-    }
-
-
-    string CxxFunctionIHF::asString() const
-    {
-	return this->asStringLowLevel(this->typeName(),_rep_(this->_Function->closure->name),af_sourceFileInfo(this->_Function)->fileName(),this->_LineNumber,0);
-    }
-
-
-    void CxxFunctionIHF::setActivationFrame(ActivationFrame_sp af)
-    {_G();
-	// Do nothing
-    }
-
-    ActivationFrame_sp CxxFunctionIHF::activationFrame() const {
-	return _Nil<ActivationFrame_O>();
-//	IMPLEMENT_MEF(BF("Switch to ArgArray"));
-    }
-
-    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, FunctionClosure* fc)
-	: InvocationHistoryFrame(kind,stack,fc),
-	  _LineNumber(0),
-	  _Column(0)
-    {};
-    LispFunctionIHF::LispFunctionIHF(IHFLeafKind kind, InvocationHistoryStack& stack, FunctionClosure* fc, ActivationFrame_sp af)
-	: InvocationHistoryFrame(kind,stack,fc),
-	  _ActivationFrame(af),
-	  _LineNumber(0),
-	  _Column(0)
-    {};
-
-
-    string LispFunctionIHF::sourcePathName() const
-    {
-	return this->closure->sourcePosInfo->sourceFileInfo->namestring();
-    }
-
-
-
-    ActivationFrame_sp LispFunctionIHF::activationFrame() const
-    {
-	return this->_ActivationFrame;
-    };
-
-
-    void LispFunctionIHF::setLineNumberColumn(uint lineNumber, uint column)
-    {
-	this->_LineNumber = lineNumber;
-	this->_Column = column;
-    };
-
-
-    void LispFunctionIHF::setActivationFrame(ActivationFrame_sp af)
-    {
-	this->_ActivationFrame = af;
-    };
-
-
-
-
-    string LispInterpretedFunctionIHF::asString() const
-    {
-	return this->asStringLowLevel(this->typeName(),_rep_(this->closure->name),
-                                      this->closure->sourceFileInfo->fileName(),
-				      this->_LineNumber,this->_Column);
-    }
-
-    string LispCompiledFunctionIHF::asString() const
-    {
-	return this->asStringLowLevel(this->typeName(),
-				      _rep_(this->closure->name),
-				      this->closure->sourceFileInfo->fileName(),
-				      this->_LineNumber,
-				      this->_Column);
-    }
-
-
-
-
-    string MacroExpansionIHF::asString() const
-    {
-	return this->asStringLowLevel(this->typeName(),
-				      _rep_(this->closure->name),
-				      this->closure->sourceFileInfo->fileName(),
-				      this->_LineNumber,this->_Column);
-    }
-
-
-#endif
 
     
 
@@ -498,6 +299,41 @@ namespace core
 #endif
     
 
+#define ARGS_core_lowLevelBacktrace "()"
+#define DECL_core_lowLevelBacktrace ""
+#define DOCS_core_lowLevelBacktrace "lowLevelBacktrace"
+void    core_lowLevelBacktrace()
+    {
+	InvocationHistoryStack& ihs = _lisp->invocationHistoryStack();
+	InvocationHistoryFrame* top = ihs.top();
+	if ( top == NULL ) {
+	    printf("Empty InvocationHistoryStack\n");
+	    return;
+	}
+	printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index+1);
+	for ( InvocationHistoryFrame* cur = top; cur != NULL; cur=cur->_Next ) {
+	    string name = "-no-name-";
+	    Closure* closure = cur->closure;
+	    if ( closure == NULL ) {
+		name = "-NO-CLOSURE-";
+	    } else {
+		if ( closure->name.notnilp() ) {
+		    try {
+			name = _rep_(closure->name);
+		    } catch (...) {
+			name = "-BAD-NAME-";
+		    }
+		}
+	    }
+	    SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(closure->sourceFileInfoHandle()));
+	    string sourceName = "cannot-determine";
+	    if ( sfi.notnilp() ) {
+		sourceName = sfi->fileName();
+	    }
+	    printf("_Index: %4d  Frame@%p(next=%p)  closure@%p  closure->name[%40s]  line: %d  file: %s\n", cur->_Index, cur, cur->_Next, closure, name.c_str(), closure->lineNumber(), sourceName.c_str() );
+	}
+	printf("----Done\n");
+    }
 
 
 
@@ -588,7 +424,7 @@ namespace core
     
 #define ARGS_af_ihsFun "(arg)"
 #define DECL_af_ihsFun ""
-#define DOCS_af_ihsFun "ihsFunc"
+#define DOCS_af_ihsFun "ihsFun: return the function in the invocation history stack at i"
     Function_sp af_ihsFun(int idx)
     {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
@@ -597,6 +433,7 @@ namespace core
             Function_sp func = Function_O::make(cur->closure); //QUESTION: Should I be returning a new function every time?  This will cause problems when comparing functions - but I don't think I do that anywhere.
             if ( func.pointerp() ) return func;
         }
+	printf("%s:%d   There is a problem - ihsFun is returning NIL as the function at idx: %d\n", __FILE__, __LINE__, idx );
 	return _Nil<Function_O>();
     };
 
@@ -619,6 +456,7 @@ namespace core
     };
 
 
+    
 #define ARGS_af_ihsBds "(cur)"
 #define DECL_af_ihsBds ""
 #define DOCS_af_ihsBds "ihsBds"

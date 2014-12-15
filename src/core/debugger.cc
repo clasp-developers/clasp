@@ -279,6 +279,7 @@ namespace core
     {_G();
 	// Play with Unix backtrace(3) 
 #define BACKTRACE_SIZE 1024
+	printf("Entered af_backtrace()\n");
 	void* buffer[BACKTRACE_SIZE];
 	int nptrs;
 	nptrs = backtrace(buffer,BACKTRACE_SIZE);
@@ -352,7 +353,20 @@ extern "C" {
             int ihsCur = af_ihsCurrentFrame();
             _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(af_ihsNext(ihsCur)));
         };
+
+
+#define ARGS_af_gotoIhsFrame "(frame-index)"
+#define DECL_af_gotoIhsFrame ""
+#define DOCS_af_gotoIhsFrame "gotoIhsFrame"
+        void af_gotoIhsFrame(int frame_index)
+        {_G();
+	    if ( frame_index < 0 ) frame_index = 0;
+	    if ( frame_index >= af_ihsTop() ) frame_index = af_ihsTop()-1;
+            int ihsCur = frame_index;
+            _sym_STARihsCurrentSTAR->setf_symbolValue(Fixnum_O::create(ihsCur));
+        };
 	
+
 
 	
 	
@@ -409,7 +423,17 @@ extern "C" {
             printf("dbg_describe: %s\n", ss.str().c_str());
         }
 
-	void dbg_describe_symbol(Symbol_sp obj)
+
+	void dbg_describe_cons(Cons_sp obj)
+        {
+            DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
+            stringstream ss;
+            printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());
+            ss << _rep_(obj);
+            printf("dbg_describe: %s\n", ss.str().c_str());
+        }
+
+void dbg_describe_symbol(Symbol_sp obj)
         {
             DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
             stringstream ss;

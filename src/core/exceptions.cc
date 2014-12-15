@@ -773,6 +773,7 @@ void FEerror(const string& fmt, int nargs, ... )
                   
 
 
+
 void FElibc_error(const char *msg, int nargs, ...)
 {
     T_sp error = Str_O::create(strerror(errno));

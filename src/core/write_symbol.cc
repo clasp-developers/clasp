@@ -51,6 +51,7 @@ THE SOFTWARE.
 #include "symbolTable.h"
 #include "readtable.h"
 #include "print.h"
+#include "write_symbol.h"
 
 namespace core {
 

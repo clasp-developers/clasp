@@ -373,11 +373,14 @@
 	  nil-renv))))
 
 
-(defun irc-i32-current-line-number ()
-  (jit-constant-i32 *current-lineno*))
+(defun irc-i64-*current-source-pos-info*-filepos ()
+  (jit-constant-i64 (core:source-pos-info-filepos *current-source-pos-info*)))
 
-(defun irc-i32-current-column ()
-  (jit-constant-i32 *current-column*))
+(defun irc-i32-*current-source-pos-info*-lineno ()
+  (jit-constant-i32 (core:source-pos-info-lineno *current-source-pos-info*)))
+
+(defun irc-i32-*current-source-pos-info*-column ()
+  (jit-constant-i32 (core:source-pos-info-column *current-source-pos-info*)))
 
 
 
@@ -388,7 +391,10 @@
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
-	(irc-intrinsic "clasp_terminate" *gv-source-path-name* (irc-i32-current-line-number) (irc-i32-current-column) *gv-current-function-name* )
+	(irc-intrinsic "clasp_terminate" *gv-source-path-name* 
+		       (irc-i32-*current-source-pos-info*-lineno) 
+		       (irc-i32-*current-source-pos-info*-column) 
+		       *gv-current-function-name* )
 	(irc-unreachable)
 	))
 

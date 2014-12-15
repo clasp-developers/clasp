@@ -173,6 +173,7 @@
                     (push (cons (cdr key-sub-key) (cdr i)) output))))
               (if (setq output (record-field record key sub-key))
                   (return output))))))))
+(export 'get-annotation)
 
 ;;  "Args: (filespec &optional (merge nil))
 ;;Saves the current hash table for documentation strings to the specificed file.
@@ -248,8 +249,9 @@ strings."
 				  (declare (ignore env #-ecl-min whole))
 				  #+ecl-min
 				  `(ext:annotate ,@(rest whole)))
-	   #+clasp(lambda (whole env) 
-	    (declare (ignore env #-ecl-min whole))
+	   #+clasp(lambda (whole env)
+	    (declare (ignore env #-ecl-min whole) 
+		     (core:lambda-name ext:optional-annotation))
 	      #+ecl-min `(ext:annotate ,@(rest whole)))
 	   )
 	  t)

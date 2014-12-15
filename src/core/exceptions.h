@@ -677,6 +677,7 @@ namespace core
 
 
     void FEerror(const string& fmt, int numArgs, ... );
+    void FEtype_error_list(T_sp thing);
     void FElibc_error( const char* fmt, int nargs, ... );
     void FEcannot_open( T_sp fn );
     T_sp CEerror(T_sp c, const char* fmt, int numArgs, ... );

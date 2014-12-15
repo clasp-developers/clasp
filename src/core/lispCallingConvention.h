@@ -44,7 +44,8 @@ THE SOFTWARE.
 
 #define LCC_PASS_ARGS0() 0, LCC_UNUSED_rest0()
 #define LCC_PASS_ARGS1(a0) 1, a0, LCC_UNUSED_rest1()
-#define LCC_PASS_ARGS2(a0,a1) 1, a0, a1, LCC_UNUSED_rest2()
+#define LCC_PASS_ARGS2(a0,a1) 2, a0, a1, LCC_UNUSED_rest2()
+#define LCC_PASS_ARGS3(a0,a1,a2) 3, a0, a1, a2, LCC_UNUSED_rest3()
 
 
 //#define LCC_ARGS_INTRINSICS size_t lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, core::T_O* lcc_fixed_arg3, core::T_O* lcc_fixed_arg4

@@ -129,6 +129,25 @@ namespace core
 
 
 
+
+#define ARGS_cl_readtable_case "(readtable)"
+#define DECL_cl_readtable_case ""
+#define DOCS_cl_readtable_case "clhs: readtable-case"
+    T_sp cl_readtable_case(ReadTable_sp readTable)
+    {
+	return readTable->getReadTableCase();
+    }
+
+#define ARGS_core_readtable_case_set "(readtable mode)"
+#define DECL_core_readtable_case_set ""
+#define DOCS_core_readtable_case_set "clhs: (setf readtable-case)"
+    void core_readtable_case_set(ReadTable_sp readTable, T_sp mode)
+    {
+	readTable->setf_readtable_case(mode.as<Symbol_O>());
+    }
+
+
+
 #define ARGS_af_setDispatchMacroCharacter "(dispChar subChar newFunction &optional (readtable *readtable*))"
 #define DECL_af_setDispatchMacroCharacter ""
 #define DOCS_af_setDispatchMacroCharacter "setDispatchMacroCharacter"
@@ -209,7 +228,7 @@ namespace core
 	Cons_sp result = Cons_O::createList(_sym_backquote,quoted_object);
 	//HERE_scCONS_CREATE_LIST2(_sym_backquote,quoted_object);
         if ( _lisp->sourceDatabase().notnilp() ) {
-            _lisp->sourceDatabase()->duplicateSourceInfo(quoted_object,result);
+            _lisp->sourceDatabase()->duplicateSourcePosInfo(quoted_object,result);
         }
 	return(Values(result));
     };
@@ -236,8 +255,10 @@ namespace core
 	    head = _sym_unquote_nsplice;
 	    cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
 	}
+	SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
 	T_sp comma_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
         list << head << comma_object;
+	lisp_registerSourcePosInfo(list.cons(),info);
 	return(Values(list.cons()));
     };
 
@@ -247,7 +268,9 @@ namespace core
 #define DECL_af_reader_list_allow_consing_dot ""
     T_mv af_reader_list_allow_consing_dot(T_sp sin, Character_sp ch)
     {_G();
+	SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
 	Cons_sp list = read_list(sin,')',true);
+	lisp_registerSourcePosInfo(list,info);
 	return(Values(list));
     };
 
@@ -268,13 +291,16 @@ namespace core
 #define DOCS_af_reader_quote "reader_quote"
 #define ARGS_af_reader_quote "(sin ch)"
 #define DECL_af_reader_quote ""
-    T_mv af_reader_quote(T_sp sin, Character_sp ch)
+    T_sp af_reader_quote(T_sp sin, Character_sp ch)
     {_G();
 //	ql::source_code_list result(sin->lineNumber(),sin->column(),af_sourceFileInfo(sin));
-	ql::list result;
+	ql::list acc;
+	SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
-	result << cl::_sym_quote << quoted_object;
-	return(Values(result.cons()));
+	acc << cl::_sym_quote << quoted_object;
+	T_sp result = acc.cons();
+	lisp_registerSourcePosInfo(result,spi);
+	return result;
     }
 
 
@@ -430,7 +456,7 @@ namespace core
 	while ( cur_char.notnilp() )
 	{
 	    T_sp obj = oCar(cur_char);
-	    if ( af_consP(obj) )
+	    if ( cl_consp(obj) )
 	    {
 		make_str(sout,obj.as_or_nil<Cons_O>(),preserveCase);
 	    } else if ( af_characterP(obj) )
@@ -482,8 +508,9 @@ namespace core
 #define DOCS_af_sharp_dot "sharp_dot"
 #define ARGS_af_sharp_dot "(stream ch num)"
 #define DECL_af_sharp_dot ""
-    T_mv af_sharp_dot(T_sp sin, Character_sp ch, T_sp num)
+    T_sp af_sharp_dot(T_sp sin, Character_sp ch, T_sp num)
     {_G();
+	SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
 	T_sp object = read_lisp_object(sin,true,_Nil<T_O>(),true);
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
@@ -494,7 +521,10 @@ namespace core
 			     sin);
 	    }
 	    T_sp result = eval::af_topLevelEvalWithEnv(object,_Nil<Environment_O>());
-	    return(Values(result));
+	    if ( cl_consp(result) ) {
+		lisp_registerSourcePosInfo(result,spi);
+	    }
+	    return result;
 	}
 	return( Values0<T_O>() );
     }
@@ -508,10 +538,12 @@ namespace core
 #define DECL_af_sharp_single_quote ""
     T_mv af_sharp_single_quote(T_sp sin, Character_sp ch, T_sp num)
     {_G();
+	SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
 //	ql::source_code_list result(sin->lineNumber(),sin->column(),af_sourceFileInfo(sin));
 	ql::list result;
 	result << cl::_sym_function << quoted_object;
+	lisp_registerSourcePosInfo(result.cons(),spi);
 	return(Values(result.cons()));
     };
 
@@ -837,7 +869,7 @@ namespace core
 						_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>())));
 	} else
 	{
-	    ASSERT(af_listp(feature_test));
+	    ASSERT(cl_listp(feature_test));
 	    Cons_sp features_cons = feature_test.as_or_nil<Cons_O>();
 	    T_sp features_head = oCar(features_cons);
 	    if ( features_head == kw::_sym_not)
@@ -1400,6 +1432,8 @@ namespace core
         ClDefun(makeDispatchMacroCharacter);
 	ClDefun(copyReadtable);
 	ClDefun(setSyntaxFromChar);
+	ClDefun(readtable_case);
+	CoreDefun(readtable_case_set);
     }
 
     void ReadTable_O::exposePython(::core::Lisp_sp lisp)

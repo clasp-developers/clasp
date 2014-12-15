@@ -68,10 +68,9 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
                        _Nil<T_O>());
 	if ( strm.nilp() ) return _Nil<T_O>();
     }
-    DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
     /* Define the source file */
     SourceFileInfo_sp sfi = af_sourceFileInfo(source);
-    scope.pushSpecialVariableAndSet(_sym_STARcurrentSourceFileInfoSTAR,sfi);
+    DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,sfi);
     Pathname_sp pathname = cl_pathname(source);
     ASSERTF(pathname.pointerp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));;
     Pathname_sp truename = af_truename(source);
@@ -81,10 +80,11 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 //        printf("%s:%d   Here set-up *load-pathname*, *load-truename* and *load-source-file-info* for source: %s\n", __FILE__, __LINE__, _rep_(source).c_str() );
     while (true) {
         bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
+	DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
+	innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR,core_inputStreamSourcePosInfo(strm));
         T_sp x = read_lisp_object(strm,false,_Unbound<T_O>(),false);
-        DynamicScopeManager innerScope(_sym_STARcurrentLinenoSTAR,Fixnum_O::create(clasp_input_lineno(strm)));
-        innerScope.pushSpecialVariableAndSet(_sym_STARcurrentColumnSTAR,Fixnum_O::create(clasp_input_column(strm)));
         if ( x.unboundp() ) break;
+	_sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(x,_sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
         if ( echoReplRead ) {
             _lisp->print(BF("Read: %s\n") % _rep_(x) );
         }
@@ -167,7 +167,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 		filename = _Nil<T_O>();
 	    } else {
 		function = _Nil<T_O>();
-		if ( af_consP(hooks) ) {
+		if ( cl_consp(hooks) ) {
 		    function = oCdr(hooks.as<Cons_O>()->assoc(pathname->_Type,
 							      _Nil<T_O>(),
 							      cl::_sym_string_EQ_,

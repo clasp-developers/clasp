@@ -81,7 +81,7 @@ namespace core {
         Symbol_sp getKind() const { return this->kind;};
         bool macroP() const;
         SourcePosInfo_sp sourcePosInfo() const { return this->_SourcePosInfo;};
-        SourcePosInfo_sp setSourcePosInfo(T_sp sourceFile, int lineno, int column);
+        SourcePosInfo_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
         virtual int sourceFileInfoHandle() const;
         virtual int lineNumber() const;
         virtual int column() const;
@@ -126,8 +126,11 @@ namespace core {
         virtual Symbol_sp functionKind() const;
         LambdaListHandler_sp functionLambdaListHandler() const;
         Environment_sp closedEnvironment() const;
+	Cons_sp functionDeclares() const;
         T_sp functionName() const;
         T_mv functionSourcePos() const;
+	Cons_sp declares() const;
+	Str_sp docstring() const;
 
     };
 };
@@ -150,28 +153,20 @@ namespace core
     {
     public:
         LambdaListHandler_sp    _lambdaListHandler;
-        Cons_sp                 declares;
-        Str_sp                  docstring;
-	Cons_sp                 code;
+        Cons_sp                 _declares;
+        Str_sp                  _docstring;
+	Cons_sp                 _code;
     public:
         DISABLE_NEW();
         InterpretedClosure(T_sp fn, SourcePosInfo_sp sp, Symbol_sp k
                            , LambdaListHandler_sp llh, Cons_sp dec, Str_sp doc
-                           , T_sp e, Cons_sp c)
-            : FunctionClosure(fn,sp,k,e)
-            , _lambdaListHandler(llh)
-            , declares(dec)
-            , docstring(doc)
-            , code(c)
-        {
-            if ( sp.nilp() ) {
-                printf("%s:%d Caught creation of InterpretedClosure %s with nil SourcePosInfo\n", __FILE__,__LINE__,_rep_(fn).c_str());
-            }
-        };
+                           , T_sp e, Cons_sp c);
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual const char* describe() const {return "InterpretedClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         bool interpretedP() const { return true; };
+	Str_sp docstring() const { return this->_docstring;};
+	Cons_sp declares() const { return this->_declares;};
         LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};
     };
 

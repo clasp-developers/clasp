@@ -1118,7 +1118,7 @@ namespace core
     bool lisp_fixnumP(core::T_sp obj);
     Fixnum lisp_asFixnum(core::T_sp obj);
     /*! Create a SourcePosInfo object for a C++ function */
-    SourcePosInfo_sp lisp_createSourcePosInfo(const string& sourceFile, int lineno);
+    SourcePosInfo_sp lisp_createSourcePosInfo(const string& sourceFile, size_t filePos, int lineno);
 
     bool lisp_characterP(core::T_sp obj);
     bool lisp_BuiltInClassesInitialized();
@@ -1262,12 +1262,15 @@ namespace core
     /*! Register source info for the object in the current source database */
     core::SourcePosInfo_sp lisp_registerSourceInfo(T_sp obj
                                                    , SourceFileInfo_sp sfo
+						   , size_t filePos
                                                    , int lineno
                                                    , int column );
+    core::SourcePosInfo_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi );
+#if 0    
     core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
                                                              , T_sp stream);
 
-
+#endif
     class Functoid
     {
         struct metadata_always_fix_pointers_to_derived_classes;
@@ -1297,7 +1300,7 @@ namespace core
     public:
         T_sp name;
     public:
-	Functoid(T_sp n) : name(n) {};
+	Functoid(T_sp n);
 	string nameAsString();
 	virtual ~Functoid() {};
     };
@@ -1322,10 +1325,12 @@ namespace core
         virtual bool compiledP() const { return false; };
         virtual bool interpretedP() const { return false; };
         virtual bool builtinP() const { return false;};
-        virtual int sourceFileInfoHandle();
+        virtual int sourceFileInfoHandle() const;
         virtual int lineNumber() const { return 0;}
         virtual int column() const { return 0;};
         virtual LambdaListHandler_sp lambdaListHandler() const = 0;
+	virtual Str_sp docstring() const;
+	virtual Cons_sp declares() const;
     };
 
 

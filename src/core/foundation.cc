@@ -290,9 +290,27 @@ namespace llvm_interface
 
 namespace core
 {
-    int Closure::sourceFileInfoHandle()
+
+    Functoid::Functoid(T_sp n) : name(n)
+    {
+	if ( n.nilp() ) {
+	    SIMPLE_ERROR(BF("Functoids must have a non-nil name"));
+	}
+    }
+    
+    int Closure::sourceFileInfoHandle() const
     {
 	return 0;
+    }
+
+    Str_sp Closure::docstring() const
+    {
+	SIMPLE_ERROR(BF("Closure does not support docstring"));
+    }
+
+    Cons_sp Closure::declares() const
+    {
+	SIMPLE_ERROR(BF("Closure does not support declares"));
     }
 };
 
@@ -1097,7 +1115,7 @@ namespace core
 	    llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>(), skipIndices);
 	}
         fc->finishSetup(llh,kw::_sym_function);
-        fc->setSourcePosInfo(Str_O::create(sourceFile),lineNumber,0);
+        fc->setSourcePosInfo(Str_O::create(sourceFile),0,lineNumber,0);
 	Function_sp func = Function_O::make(fc);
 	sym->setf_symbolFunction(func);
 	if ( autoExport ) sym->exportYourself();
@@ -1191,16 +1209,29 @@ namespace core
 
     core::SourcePosInfo_sp lisp_registerSourceInfo(T_sp obj
                                                    , SourceFileInfo_sp sfo
+						   , size_t filePos
                                                    , int lineno
                                                    , int column )
     {
         SourceManager_sp db = _lisp->sourceDatabase();
         if ( db.notnilp() ) {
-            return db->registerSourceInfo(obj,sfo,lineno,column);
+            return db->registerSourceInfo(obj,sfo,filePos,lineno,column);
         }
         return _Nil<SourcePosInfo_O>();
     }
 
+
+    core::SourcePosInfo_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi)
+    {
+        SourceManager_sp db = _lisp->sourceDatabase();
+        if ( db.notnilp() ) {
+            return db->registerSourcePosInfo(obj,spi);
+        }
+        return _Nil<SourcePosInfo_O>();
+    }
+
+
+#if 0
     core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
                                                              , T_sp stream)
     {
@@ -1210,7 +1241,7 @@ namespace core
         }
         return _Nil<SourcePosInfo_O>();
     }
-
+#endif
 
 
 
@@ -1582,12 +1613,12 @@ namespace core
 	return Fixnum_O::create(fn);
     }
 
-    SourcePosInfo_sp lisp_createSourcePosInfo(const string& fileName, int lineno )
+    SourcePosInfo_sp lisp_createSourcePosInfo(const string& fileName, size_t filePos, int lineno )
     {
         Str_sp fn = Str_O::create(fileName);
         SourceFileInfo_mv sfi_mv = af_sourceFileInfo(fn);
         int sfindex = sfi_mv.valueGet(1).as<Fixnum_O>()->get();
-        return SourcePosInfo_O::create(sfindex,lineno,0);
+        return SourcePosInfo_O::create(sfindex,filePos,lineno,0);
     }
 
     T_sp lisp_createList(T_sp a1) {return Cons_O::create(a1,_Nil<T_O>());}
@@ -1635,7 +1666,7 @@ namespace core
       ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl << _rep_(baseCondition) << " :initializers " << _rep_(initializers) << std::endl;
       if ( !_sym_signalSimpleError->fboundp() )
 	{
-	  ss << "Error " << _rep_(baseCondition) << " initializers: " << _rep_(initializers)<< std::endl;
+	  ss << "An error occured " << _rep_(baseCondition) << " initializers: " << _rep_(initializers)<< std::endl;
 	  printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str() );
 	  LispDebugger dbg;
 	  dbg.invoke();

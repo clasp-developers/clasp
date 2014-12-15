@@ -137,7 +137,7 @@ namespace core
 	    for ( Cons_sp cur = declareSpecifierList; cur.notnilp(); cur=cCdr(cur) )
 	    {
 		T_sp entry = oCar(cur);
-		if ( af_consP(entry) && oCar(entry) == cl::_sym_special )
+		if ( cl_consp(entry) && oCar(entry) == cl::_sym_special )
 		{
 		    for ( Cons_sp spcur = cCdr(entry.as_or_nil<Cons_O>()); spcur.notnilp(); spcur=cCdr(spcur) )
 		    {
@@ -184,7 +184,7 @@ namespace core
 		    saw_amp = true;
 		    break;
 		}
-	    } else if ( af_consP(arg) )
+	    } else if ( cl_consp(arg) )
 	    {
 		Cons_sp carg = arg.as_or_nil<Cons_O>();
 		if ( cl_length(carg) != 2 )
@@ -270,7 +270,7 @@ namespace core
 	sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol,new_lambda_list);
 	Cons_sp macro_ll = sclist.cons();
         if ( _lisp->sourceDatabase().notnilp() ) {
-            _lisp->sourceDatabase()->duplicateSourceInfo(lambda_list,macro_ll);
+            _lisp->sourceDatabase()->duplicateSourcePosInfo(lambda_list,macro_ll);
         }
 	return macro_ll;
     }
@@ -803,7 +803,7 @@ void bind_aux
 		{
 		    sarg = oarg.as<Symbol_O>();
 		    LOG(BF("Optional argument was a Symbol_O[%s]") % sarg->__repr__() );
-		} else if ( af_consP(oarg) )
+		} else if ( cl_consp(oarg) )
 		{
 		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
 		    LOG(BF("Optional argument is a Cons: %s") % carg->__repr__() );
@@ -863,7 +863,7 @@ void bind_aux
 		{
 		    localTarget = oarg;
 		    keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
-		} else if ( af_consP(oarg) )
+		} else if ( cl_consp(oarg) )
 		{
 		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
 		    T_sp head = oCar(carg);
@@ -872,7 +872,7 @@ void bind_aux
 			localTarget = head;
 			ASSERTP(!localTarget.as<Symbol_O>()->isKeywordSymbol(), "Do not use keyword symbols when specifying arguments");
 			keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
-		    } else if ( af_consP(head) )
+		    } else if ( cl_consp(head) )
 		    {
 			Cons_sp namePart = head.as_or_nil<Cons_O>();
 			keySymbol = oCar(namePart).as<Symbol_O>();			// This is the keyword name
@@ -910,7 +910,7 @@ void bind_aux
 		if ( af_symbolp(oarg) )
 		{
 		    localSymbol = oarg.as<Symbol_O>();
-		} else if ( af_consP(oarg) )
+		} else if ( cl_consp(oarg) )
 		{
 		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
 		    localSymbol = oCar(carg).as<Symbol_O>();
@@ -929,7 +929,7 @@ void bind_aux
 	    }
 	NEXT:
 	    T_sp ocur = oCdr(cur);
-	    if ( ocur.nilp() || af_consP(ocur) )
+	    if ( ocur.nilp() || cl_consp(ocur) )
 	    {
 		// Advance to next element of the list
 		cur = ocur.as_or_nil<Cons_O>();
@@ -1085,7 +1085,7 @@ void bind_aux
 	    classifier.classifyTarget(req);
 	}
 	this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-	ASSERTF(this->_ClassifiedSymbolList.nilp() || af_consP(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
+	ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
 	this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
     }
 
@@ -1110,7 +1110,7 @@ void bind_aux
 	{
 	    this->recursively_build_handlers_count_arguments(declareSpecifierList,context,classifier);
 	    this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-	    ASSERTF(this->_ClassifiedSymbolList.nilp() || af_consP(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
+	    ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
 	} else
 	{
 	    this->_ClassifiedSymbolList = _Nil<Cons_O>();

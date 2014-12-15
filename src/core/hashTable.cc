@@ -285,7 +285,7 @@ namespace core
 	{
 	    hg.addPart(0);
 	    return;
-	} else if ( af_numberP(obj) || af_characterP(obj) )
+	} else if ( cl_numberp(obj) || af_characterP(obj) )
 	{
 	    hg.hashObject(obj);
 	    return;
@@ -303,7 +303,7 @@ namespace core
 	{
 	    hg.addPart(0);
 	    return;
-	} else if ( af_symbolp(obj) || af_numberP(obj) || af_stringP(obj) || af_pathnamep(obj) || af_consP(obj) )
+	} else if ( af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) || af_pathnamep(obj) || cl_consp(obj) )
 	{
 	    hg.hashObject(obj);
 	    return;
@@ -324,10 +324,10 @@ namespace core
 	    hg.addPart(0);
 	    return;
 	} else if ( af_symbolp(obj)
-                    || af_numberP(obj)
+                    || cl_numberp(obj)
                     || af_stringP(obj)
                     || af_pathnamep(obj)
-                    || af_consP(obj)
+                    || cl_consp(obj)
                     || obj->instancep()
                     || af_arrayP(obj))
 	{

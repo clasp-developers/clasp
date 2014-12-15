@@ -702,7 +702,19 @@ namespace llvmo
 	return self;
     };
 
-    
+    bool TargetOptions_O::NoFramePointerElim()
+    {
+	return this->wrappedPtr()->NoFramePointerElim;
+    }
+
+
+    void TargetOptions_O::setfNoFramePointerElim(bool val)
+    {
+	// if val == true then turn OFF FramePointerElim
+	this->wrappedPtr()->NoFramePointerElim = val;
+    }
+
+
     bool TargetOptions_O::JITEmitDebugInfo()
     {
 	return this->wrappedPtr()->JITEmitDebugInfo;
@@ -713,6 +725,7 @@ namespace llvmo
 	this->wrappedPtr()->JITEmitDebugInfo = val;
     }
 
+    
         
     bool TargetOptions_O::JITEmitDebugInfoToDisk()
     {
@@ -729,6 +742,8 @@ namespace llvmo
     void TargetOptions_O::exposeCando(core::Lisp_sp lisp)
     {_G();
         core::externalClass_<TargetOptions_O>()
+ 	    .def("NoFramePointerElim",&TargetOptions_O::NoFramePointerElim)
+ 	    .def("setfNoFramePointerElim",&TargetOptions_O::setfNoFramePointerElim)
 	    .def("JITEmitDebugInfo",&TargetOptions_O::JITEmitDebugInfo)
 	    .def("setfJITEmitDebugInfo",&TargetOptions_O::setfJITEmitDebugInfo)
 	    .def("JITEmitDebugInfoToDisk",&TargetOptions_O::JITEmitDebugInfoToDisk)
@@ -984,6 +999,7 @@ namespace llvmo
 #define DOCS_af_parseBitcodeFile "parseBitcodeFile"
     Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context )
     {_G();
+	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
         llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
         if (std::error_code ec = eo_membuf.getError() )
 	{
@@ -2044,7 +2060,7 @@ namespace llvmo
 	Constant_sp ca = ConstantDataArray_O::create();
 	vector<uint32_t> vector_IdxList;
 	core::Vector_sp vvalues;
-	if ( af_consP(ovalues) )
+	if ( cl_consp(ovalues) )
 	{
 	    for ( core::Cons_sp cur=ovalues.as<core::Cons_O>(); cur.notnilp(); cur=cCdr(cur) )
 	    {
@@ -4255,7 +4271,7 @@ namespace llvmo
         _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::Fixnum_O::create(num));
     }
 
-    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName, core::T_sp fileName, int linenumber )
+    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName, core::T_sp fileName, size_t filePos, int linenumber )
     {_G();
 	// Stuff to support MCJIT
 	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
@@ -4269,7 +4285,7 @@ namespace llvmo
         core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::Cons_O>());
         core::SourceFileInfo_mv sfi = af_sourceFileInfo(fileName);
         int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();
-        core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,linenumber,0);
+        core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,linenumber,0);
         CompiledClosure* functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym,spi,kw::_sym_function,lisp_funcPtr,fn,activationFrameEnvironment,associatedFunctions);
 	core::CompiledFunction_sp func = core::CompiledFunction_O::make(functoid);
         ASSERT(func);
@@ -4280,7 +4296,7 @@ namespace llvmo
 
 
 
-    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, const string& mainFuncName, core::Str_sp fileName, int linenumber, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
+    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, const string& mainFuncName, core::Str_sp fileName, size_t filePos, int linenumber, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
     {_G();
 	vector<llvm::GenericValue> argValues;
 	ASSERTF(oengine->wrappedPtr()!=NULL,BF("You asked to runFunction but the pointer to the function is NULL"));

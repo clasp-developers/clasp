@@ -228,7 +228,7 @@ In ecl/src/c/interpreter.d  is the following code
 	    {
 		SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
 	    }
-	    if (!af_listp(spec_type) || 
+	    if (!cl_listp(spec_type) || 
 		spec_type.as_or_nil<Cons_O>()->memberEql(args[spec_position]).nilp() )
 	    {
 		Class_sp mc = lisp_instance_class(args[spec_position]);

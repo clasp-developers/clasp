@@ -98,7 +98,7 @@ namespace core
         if ( mps.notnilp() ) strGc = "mps";
         stringstream ss;
         ss << strStage << "-" << strGc;
-        ss << ":image.bundle";
+        ss << ":image.fasl";
         Str_sp spath = Str_O::create(ss.str());
         Pathname_sp pn = cl_pathname(spath);
         return pn;
@@ -111,17 +111,18 @@ namespace core
 #define DOCS_core_loadBundle "loadBundle"
     T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format )
     {_G();
-        DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
         /* Define the source file */
         SourceFileInfo_sp sfi = af_sourceFileInfo(pathDesig);
-        scope.pushSpecialVariableAndSet(_sym_STARcurrentSourceFileInfoSTAR,sfi);
-
-	DynamicScopeManager dynScopeManager1(cl::_sym_STARreadtableSTAR,cl::_sym_STARreadtableSTAR->symbolValue());
-	DynamicScopeManager dynScopeManager2(cl::_sym_STARpackageSTAR,cl::_sym_STARpackageSTAR->symbolValue());
-
+	DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,sfi);
+	scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
+	scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR,SourcePosInfo_O::create(0,0,0,0));
+	scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR,cl::_sym_STARreadtableSTAR->symbolValue());
+	scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR,cl::_sym_STARpackageSTAR->symbolValue());
 	Pathname_sp path = cl_pathname(pathDesig);
 	if ( af_probe_file(path).notnilp() ) goto LOAD;
 	path->_Type = Str_O::create("bundle");
+	if ( af_probe_file(path).notnilp() ) goto LOAD;
+	path->_Type = Str_O::create("fasl");
 	if ( af_probe_file(path).notnilp() ) goto LOAD;
 	path->_Type = Str_O::create("dylib");
 	if ( af_probe_file(path).notnilp() ) goto LOAD;
@@ -141,6 +142,7 @@ namespace core
 	else if ( (dsp = stem.find("_o")) != string::npos) stem = stem.substr(0,dsp);
 
 	int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
+	printf("%s:%d Loading bundle %s\n", __FILE__, __LINE__, name.c_str());
 	void* handle = dlopen(name.c_str(),mode);
 	if ( handle == NULL )
 	{
@@ -177,6 +179,7 @@ namespace core
 	Path_sp path = coerce::pathDesignator(pathDesig);
 	Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
 	string ts = pathWithProperExtension->asString();
+	printf("%s:%d Loading with af_dlload %s\n", __FILE__, __LINE__, ts.c_str());
 	void* handle = dlopen(ts.c_str(),mode);
 	if ( handle == NULL )
 	{
@@ -237,6 +240,7 @@ namespace core
 	if ( !handle ) {
 	  Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
 	  string ts = pathWithProperExtension->asString();
+	  printf("%s:%d Loading with af_dlopen %s\n", __FILE__, __LINE__, ts.c_str());
 	  handle = dlopen(ts.c_str(),mode);
 	  if ( !handle )
 	    {
@@ -341,23 +345,20 @@ namespace core
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
 	Cons_sp code = Cons_O::create(form,_Nil<Cons_O>());
         SourceManager_sp db = _lisp->sourceDatabase();
-        SourcePosInfo_sp sourcePosInfo = lisp_registerSourceInfo(
-            code
-            , core::_sym_STARcurrentSourceFileInfoSTAR->symbolValue().as<SourceFileInfo_O>()
-            , core::_sym_STARcurrentLinenoSTAR->symbolValue().as<Fixnum_O>()->get()
-            , core::_sym_STARcurrentColumnSTAR->symbolValue().as<Fixnum_O>()->get() );
+	SourcePosInfo_sp sourcePosInfo = db->duplicateSourcePosInfo(form,code);
         stringstream ss;
         ss << "repl"<<_lisp->nextReplCounter();
         Symbol_sp name = _lisp->intern(ss.str());
-        InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
-            name
-            , sourcePosInfo
-            , kw::_sym_function
-            , llh
-            , _Nil<Cons_O>()
-            , _Nil<Str_O>()
-            , env
-            , code );
+        InterpretedClosure* ic = 
+	    gctools::ClassAllocator<InterpretedClosure>::allocateClass(
+								       name
+								       , sourcePosInfo
+								       , kw::_sym_function
+								       , llh
+								       , _Nil<Cons_O>()
+								       , _Nil<Str_O>()
+								       , env
+								       , code );
         Function_sp thunk = Function_O::make(ic);
 	return(Values(thunk,_Nil<T_O>(),_Nil<T_O>()));
     };

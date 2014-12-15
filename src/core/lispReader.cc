@@ -79,7 +79,7 @@ namespace core
 #if 1
 #define TRAP_BAD_CONS(x)
 #else
-#define TRAP_BAD_CONS(x) {if (af_consP(x)) {LOG(BF("About to try trap bad cons"));string ssss=af_sourceFileInfo(x.as_or_nil<Cons_O>())->fileName();}}
+#define TRAP_BAD_CONS(x) {if (cl_consp(x)) {LOG(BF("About to try trap bad cons"));string ssss=af_sourceFileInfo(x.as_or_nil<Cons_O>())->fileName();}}
 #endif
 
     /*! Return a uint that combines the character x with its character TRAITs
@@ -471,10 +471,9 @@ namespace core
 	T_sp dotted_object = _Nil<T_O>();
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
 	Cons_sp cur = first;
-	start_lineNumber = clasp_input_lineno(sin);
-	start_column = clasp_input_column(sin);
 	while (1)
 	{
+	    SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
 	    Character_sp cp = cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
 	    LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp) );
 	    if ( cp->asChar() == end_char )
@@ -491,10 +490,7 @@ namespace core
 		Cons_sp otherResult = cCdr(first);
 		TRAP_BAD_CONS(otherResult);
 		if ( otherResult.nilp() ) return(Values(_Nil<Cons_O>()));
-                lisp_registerSourceInfo(otherResult,
-                                        clasp_input_source_file_info(sin),
-                                        start_lineNumber,
-                                        start_column );
+                lisp_registerSourcePosInfo(otherResult,info);
 		return(otherResult);
 	    }
 	    int ivalues;
@@ -528,8 +524,7 @@ namespace core
 			SIMPLE_ERROR(BF("More than one object after consing dot"));
 		    }
 		    Cons_sp one = Cons_O::create(obj,_Nil<Cons_O>());
-                    SourceFileInfo_sp sfi = af_sourceFileInfo(sin);
-                    lisp_registerSourceInfo(one,sfi,start_lineNumber,start_column);
+                    lisp_registerSourcePosInfo(one,info);
 		    LOG(BF("One = %s\n") % _rep_(one) );
 		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(af_sourceFileInfo(one)) );
 		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % af_sourceFileInfo(one)->fileName());

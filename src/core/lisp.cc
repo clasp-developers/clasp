@@ -284,7 +284,7 @@ namespace core
     {_G();
         for ( Cons_sp cur=this->_Roots._CatchInfo; cur.notnilp(); cur=cCdr(cur) )
         {
-            if ( af_eq(tag,oCar(cur)) ) return cur;
+            if ( cl_eq(tag,oCar(cur)) ) return cur;
         }
         return _Nil<Cons_O>();
     }
@@ -1446,32 +1446,31 @@ namespace core
     {_OF();
 	T_mv result = Values(_Nil<T_O>());
 	T_sp sin = coerce::inputStreamDesignator(inputStream);
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentSourceFileInfoSTAR,af_sourceFileInfo(sin));
-	while (1)
-	{
-	    TRY()
-	    {
-		_sym_STARcurrentLinenoSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_lineno(sin)));
-		_sym_STARcurrentColumnSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_column(sin)));
+	DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,af_sourceFileInfo(sin));
+	while (1) {
+	    TRY() {
+		DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
+		innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR,core_inputStreamSourcePosInfo(sin));
 		T_sp expression = read_lisp_object(sin,false,_Unbound<T_O>(),false);
 		if ( expression.unboundp() ) break;
-//		TopLevelIHF frame(_lisp->invocationHistoryStack(),expression);
-//		_lisp->invocationHistoryStack().setExpressionForTop(expression);
-//		_lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
-//		PushCodeStack codeStack(expression,_Nil<Environment_O>(),_lisp);
+		_sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(expression,_sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
+		//		TopLevelIHF frame(_lisp->invocationHistoryStack(),expression);
+		//		_lisp->invocationHistoryStack().setExpressionForTop(expression);
+		//		_lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
+		//		PushCodeStack codeStack(expression,_Nil<Environment_O>(),_lisp);
 		if ( _sym_STARechoReplReadSTAR->symbolValue().isTrue() )
-		{
-		    string suppress;
-		    if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 		    {
-			suppress = "SUPPRESSED";
-			if ( expression.notnilp() )
-			{
-			    SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression) );
-			}
+			string suppress;
+			if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
+			    {
+				suppress = "SUPPRESSED";
+				if ( expression.notnilp() )
+				    {
+					SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression) );
+				    }
+			    }
+			this->print(BF(";;--read-%s-------------\n#|\n%s\n|#----------\n") % suppress.c_str() % _rep_(expression) );
 		    }
-		    this->print(BF(";;--read-%s-------------\n#|\n%s\n|#----------\n") % suppress.c_str() % _rep_(expression) );
-		}
 		_BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__() );
 		if ( af_keywordP(expression) ) {
 		    ql::list tplCmd;
@@ -1486,49 +1485,49 @@ namespace core
 			af_bformat(_lisp->_true(),"Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
 		    }
 		} else if ( expression.notnilp() )
-		{
-		    result = eval::af_topLevelEvalWithEnv(expression,environ);
-                    gctools::Vec0<core::T_sp/*,gctools::RootedGCHolder*/> vresults;
-                    vresults.resize(result.number_of_values());
-                    if ( result.number_of_values() > 0 ) {
-                        vresults[0] = result;
-                        if ( result.number_of_values() > 1 ) {
-                            for ( int i(1); i<result.number_of_values(); ++i ) {
-                                vresults[i] = result.valueGet(i);
-                            }
-                        }
-                    }
-		    if ( printResults )
 		    {
-			for ( int i(0); i<vresults.size(); i++ )
-			{
-			    T_sp obj = vresults[i];
-//			    this->print(BF("; --> %s\n")% _rep_(obj));
-			    eval::funcall(cl::_sym_print,obj);
+			result = eval::af_topLevelEvalWithEnv(expression,environ);
+			gctools::Vec0<core::T_sp/*,gctools::RootedGCHolder*/> vresults;
+			vresults.resize(result.number_of_values());
+			if ( result.number_of_values() > 0 ) {
+			    vresults[0] = result;
+			    if ( result.number_of_values() > 1 ) {
+				for ( int i(1); i<result.number_of_values(); ++i ) {
+				    vresults[i] = result.valueGet(i);
+				}
+			    }
 			}
+			if ( printResults )
+			    {
+				for ( int i(0); i<vresults.size(); i++ )
+				    {
+					T_sp obj = vresults[i];
+					//			    this->print(BF("; --> %s\n")% _rep_(obj));
+					eval::funcall(cl::_sym_print,obj);
+				    }
+			    }
 		    }
-		}
 	    }
 	    catch (Condition& err)
-	    {
-		// Catch condition from reader means just ask for another s-exp if
-		// interactive and terminate if batch
-		this->print(BF("%s:%d Caught Condition from reader") % __FILE__ % __LINE__ );
-		exit(1);
-//		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
-	    }
+		{
+		    // Catch condition from reader means just ask for another s-exp if
+		    // interactive and terminate if batch
+		    this->print(BF("%s:%d Caught Condition from reader") % __FILE__ % __LINE__ );
+		    exit(1);
+		    //		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
+		}
 	    catch (DebuggerSaysAbortToRepl& abort)
-	    {
-		this->print(BF("%s:%d aborted to repl:") % __FILE__ % __LINE__ );
-		// Do nothing
-	    }
+		{
+		    this->print(BF("%s:%d aborted to repl:") % __FILE__ % __LINE__ );
+		    // Do nothing
+		}
 	    catch (HardError& err)
-	    {
-		this->print(BF("Should never happen - catch and convert to Condition below - HardError: %s")
-			    % err.message() );
-		IMPLEMENT_ME();
-//		this->enterDebugger();
-	    }
+		{
+		    this->print(BF("Should never happen - catch and convert to Condition below - HardError: %s")
+				% err.message() );
+		    IMPLEMENT_ME();
+		    //		this->enterDebugger();
+		}
 	}
 	return result;
     }
@@ -1538,8 +1537,6 @@ namespace core
     T_mv Lisp_O::readEvalPrintString(const string& code, Environment_sp environ, bool printResults )
     {_OF();
 	StringInputStream_sp sin = StringInputStream_O::make(code);
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLinenoSTAR,Fixnum_O::create(clasp_input_lineno(sin)));
-	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(clasp_input_column(sin)));
 	T_mv result = this->readEvalPrint(sin,environ,printResults);
 	cl_close(sin);
 	return result;
@@ -1564,8 +1561,6 @@ namespace core
     {_OF();
 	Cons_sp expression;
 //	TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<T_O>());
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLinenoSTAR,Fixnum_O::create(0));
-	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(0));
 	while(1) {
 	  string line;
 	  stringstream prompt;
@@ -2168,7 +2163,7 @@ namespace core
 	    InvocationHistoryFrame _frame(hookFunc->closure,macroHookArgs);
 	    T_sp expanded = eval::applyToActivationFrame(hookFunc,macroHookArgs); // eval::applyFunctionToActivationFrame(hookFunc,macroHookArgs);
             if ( _lisp->sourceDatabase().notnilp() ) {
-                _lisp->sourceDatabase()->duplicateSourceInfoForMacroExpansion(form,expansionFunction,expanded);
+                _lisp->sourceDatabase()->duplicateSourcePosInfo(form,expanded,expansionFunction);
             }
 	    return(Values(expanded,_lisp->_true()) );
 	}
@@ -2762,6 +2757,8 @@ extern "C"
 	    {
 		printf("               initializers: %s\n", _rep_(initializers).c_str() );
 	    }
+	    printf("Dumping backtrace\n");
+	    core_lowLevelBacktrace();
 	}
 	++nestedErrorDepth;
 	DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR,Fixnum_O::create(nestedErrorDepth));

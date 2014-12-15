@@ -223,7 +223,7 @@ namespace core
 	    /* (APPEND '(1 . 2) 3) */
 	    TYPE_ERROR_PROPER_LIST(head);
 	}
-	while (af_consP(l)) {
+	while (cl_consp(l)) {
 	    Cons_sp cons = Cons_O::create(CONS_CAR(l));
 	    *tailP = cons;
             tailP = &(cons->_Cdr);
@@ -242,7 +242,7 @@ namespace core
 	    /* (APPEND '(1 . 2) 3) */
 	    TYPE_ERROR_PROPER_LIST(head);
 	}
-	while (af_consP(l)) {
+	while (cl_consp(l)) {
 	    Cons_sp cons = Cons_O::create(CONS_CAR(l));
 	    tail.setPointee(cons);
 	    tail.setPointer(&(cons->_Cdr));// = &cons->_Cdr;
@@ -299,12 +299,12 @@ namespace core
     Cons_sp Cons_O::walkToFindParsePos() const
     {_G();
 //	if ( this->hasParsePos() ) return((this->sharedThis<Cons_O>()));
-	if ( this->_Cdr.notnilp() && af_consP(this->_Cdr) )
+	if ( this->_Cdr.notnilp() && cl_consp(this->_Cdr) )
 	{
 	    Cons_sp wcdr = this->_Cdr.as_or_nil<Cons_O>()->walkToFindParsePos();
 	    if ( wcdr.notnilp() ) return((wcdr));
 	}
-	if ( this->_Car.notnilp() && af_consP(this->_Car) )
+	if ( this->_Car.notnilp() && cl_consp(this->_Car) )
 	{
 	    Cons_sp wcar = this->_Car.as_or_nil<Cons_O>()->walkToFindParsePos();
 	    if ( wcar.notnilp() ) return((wcar));
@@ -409,7 +409,7 @@ namespace core
     {
 	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.notnilp(); cur=cCdr(cur) )
 	{
-	    if ( af_eql(oCar(cur),item) ) return cur;
+	    if ( cl_eql(oCar(cur),item) ) return cur;
 	}
 	return _Nil<Cons_O>();
     }
@@ -450,7 +450,7 @@ namespace core
 	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.notnilp(); cur = cCdr(cur).as_or_nil<Cons_O>() )
 	{
 	    LOG(BF("Testing for assoc with item=%s entry = %s") % item % oCar(cur) );
-	    if ( af_consP(oCar(cur)) )
+	    if ( cl_consp(oCar(cur)) )
 	    {
 		T_sp obj = oCar(oCar(cur).as_or_nil<Cons_O>());
 		if ( t.test(obj) ) return((oCar(cur).as_or_nil<Cons_O>()));
@@ -589,7 +589,7 @@ namespace core
             T_sp cur = this->asSmartPtr();
             // TODO: Fix this loop - it will go into an infinite loop
             for ( ; cur.notnilp(); cur=oCdr(cur) ) {
-                if ( af_consP(cur) ) {
+                if ( cl_consp(cur) ) {
                     T_sp obj = oCar(cur);
                     node->pushVector(obj); // A Cons - push the car
                 } else {
@@ -645,20 +645,20 @@ namespace core
     bool Cons_O::equal(T_sp obj) const
     {_OF();
 	if ( this->eq(obj) ) return((true));
-	if ( !af_consP(obj) )
+	if ( !cl_consp(obj) )
 	{
 	    LOG(BF("Arg not Cons"));
 	    return((false));
 	}
 	Cons_sp other = obj.as_or_nil<Cons_O>();
-	if ( !af_equal(this->_Car,oCar(other) ) )
+	if ( !cl_equal(this->_Car,oCar(other) ) )
 	{
 	    LOG(BF("First args dont match"));
 	    return((false));
 	}
 	T_sp this_cdr = this->_Cdr;
 	T_sp other_cdr = oCdr(other);
-	if ( !af_equal(this_cdr,other_cdr))
+	if ( !cl_equal(this_cdr,other_cdr))
 	{
 	    LOG(BF("Rest of args don't match"));
 	    return((false));
@@ -671,20 +671,20 @@ namespace core
     {
         if ( obj.nilp() ) return false;
 	if ( this->eq(obj) ) return((true));
-	if ( !af_consP(obj) )
+	if ( !cl_consp(obj) )
 	{
 	    LOG(BF("Arg not Cons"));
 	    return((false));
 	}
 	Cons_sp other = obj.as_or_nil<Cons_O>();
-	if ( !af_equalp(this->_Car,oCar(other) ) )
+	if ( !cl_equalp(this->_Car,oCar(other) ) )
 	{
 	    LOG(BF("First args dont match"));
 	    return((false));
 	}
 	T_sp this_cdr = this->_Cdr;
 	T_sp other_cdr = oCdr(other);
-	if ( !af_equalp(this_cdr,other_cdr))
+	if ( !cl_equalp(this_cdr,other_cdr))
 	{
 	    LOG(BF("Rest of args don't match"));
 	    return((false));
@@ -888,21 +888,21 @@ namespace core
 	}
 	Cons_sp l = this->const_sharedThis<Cons_O>();
 	T_sp r = l;
-	for ( r = l; n && af_consP(r); --n, r = oCdr(r.as_or_nil<Cons_O>()) );
+	for ( r = l; n && cl_consp(r); --n, r = oCdr(r.as_or_nil<Cons_O>()) );
 	if ( r == l )
 	{
-	    if ( !af_listp(r) )
+	    if ( !cl_listp(r) )
 	    {
 		SIMPLE_ERROR(BF("Type not list"));
 	    }
-	    while ( af_consP(r) )
+	    while ( cl_consp(r) )
 	    {
 		r = oCdr(r.as_or_nil<Cons_O>());
 	    }
 	    return((r));
 	} else if ( n == 0 )
 	{
-	    while (af_consP(r) )
+	    while (cl_consp(r) )
 	    {
 		r = oCdr(r.as_or_nil<Cons_O>());
 		l = cCdr(l);
@@ -927,7 +927,7 @@ namespace core
 	    cur = cCdr(cur);
 	    T_sp cdr = oCdr(p);
 	    if ( cdr.nilp() ) break;
-	    if ( !af_consP(cdr) ) {
+	    if ( !cl_consp(cdr) ) {
 		cur->setOCdr(cdr);
 		break;
 	    }
@@ -1072,7 +1072,7 @@ namespace core
     void	Cons_O::setOCdr(T_sp c)
     {_G();
 	this->_Cdr = c;
-	if ( af_consP(c) )
+	if ( cl_consp(c) )
 	{
 	    Cons_sp cc = c.as_or_nil<Cons_O>();
 //	    this->_CdrLength = cc->cdrLength()+1;
@@ -1134,7 +1134,7 @@ namespace core
 	stringstream	sout;
 	if ( oCar(start) == cl::_sym_quote )
 	{
-	    if ( af_consP(oCdr(start)))
+	    if ( cl_consp(oCdr(start)))
 	    {
 		sout << "'" << _rep_(oCadr(start)) << " ";
 	    } else
@@ -1146,7 +1146,7 @@ namespace core
 	sout << "(";
 	while (cdr.notnilp())
 	{
-	    if ( af_consP(cdr) )
+	    if ( cl_consp(cdr) )
 	    {
 		Cons_sp p = cdr.as<Cons_O>();
 		T_sp po = p->_Car;
@@ -1172,12 +1172,27 @@ namespace core
 	    }
 	}
 	sout << " )";
-#if 0
+#if 0   // also checkout Cons_O::
         sout <<"@" << (void*)(this) << " ";
 #endif
 	return((sout.str()));
     }
 
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
 #if 0
     SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, uint ln, uint col, SourceFileInfo_sp fileName)
     {
@@ -1304,8 +1319,8 @@ namespace core
 	if ( this->_FileName != other->_FileName ) return((false));
 	if ( this->_ParsePosLineNumber != other->_ParsePosLineNumber ) return((false));
 	if ( this->_ParsePosColumn != other->_ParsePosColumn ) return((false));
-	if ( !af_equal(this->ocar(),other->ocar() ) ) return((false));
-	if ( !af_equal(this->cdr(),other->cdr() ) ) return((false));
+	if ( !cl_equal(this->ocar(),other->ocar() ) ) return((false));
+	if ( !cl_equal(this->cdr(),other->cdr() ) ) return((false));
 	return((true));
     }
 #endif
@@ -1348,7 +1363,7 @@ namespace core
 		sout << ">>>>> UNBOUND CDR <<<<<<";
 		break;
 	    }
-	    if ( !af_consP(op) )
+	    if ( !cl_consp(op) )
 	    {
 		p = _Nil<Cons_O>();
 		if ( op.notnilp() )
@@ -1415,7 +1430,7 @@ namespace core
 	    list << obj;
 	    list.set_tail_source_info(p);
 	    T_sp ocdr = oCdr(p);
-	    if ( !af_consP(ocdr) )
+	    if ( !cl_consp(ocdr) )
 	    {
 		list.dot(ocdr);
 		break;
@@ -1441,7 +1456,7 @@ namespace core
     {_OF();
 	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<Cons_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
 	T_sp obj = this->_Car;
-	if ( af_consP(obj) )
+	if ( cl_consp(obj) )
 	{
 	    Cons_sp carTree = obj.as<Cons_O>()->copyTree().as<Cons_O>();
 	    rootCopy->setCar(carTree);

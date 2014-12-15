@@ -601,6 +601,40 @@ namespace core
 	};
 
 
+#define DOCS_cl_char_code "char_code"
+#define ARGS_cl_char_code "(och)"
+#define DECL_cl_char_code ""
+    Fixnum_sp cl_char_code(Character_sp och)
+	{_G();
+	    int ch = och->asChar();
+	    if ( ch < CHAR_CODE_LIMIT ) {
+		return Fixnum_O::create((int)ch);
+	    }
+	    SIMPLE_ERROR(BF("Character is beyon CHAR_CODE_LIMIT: %d") % CHAR_CODE_LIMIT);
+	};
+
+#define DOCS_cl_char_int "char_int"
+#define ARGS_cl_char_int "(och)"
+#define DECL_cl_char_int ""
+    Fixnum_sp cl_char_int(Character_sp och)
+	{_G();
+	    char ch = och->asChar();
+	    return Fixnum_O::create((int)ch);
+	};
+
+#define DOCS_cl_code_char "code_char"
+#define ARGS_cl_code_char "(och)"
+#define DECL_cl_code_char ""
+    Character_sp cl_code_char(Integer_sp ich)
+	{_G();
+	    int ii = ich->as_int();
+	    if ( ii >= 0 && ii < CHAR_CODE_LIMIT ) {
+		return Character_O::create(ii);
+	    }
+	    return _Nil<Character_O>();
+	};
+
+
     claspChar clasp_charCode(T_sp c)
     {
         Character_sp cc = c.as<Character_O>();
@@ -616,7 +650,6 @@ namespace core
     void Character_O::exposeCando(::core::Lisp_sp lisp)
     {_G();
 	::core::class_<Character_O>()
-	      .def("char-code",&Character_O::toInt)
 	      .def("lower_case_p",&Character_O::lower_case_p)
 	      .def("upper_case_p",&Character_O::upper_case_p)
 	      .def("both_case_p",&Character_O::both_case_p)
@@ -625,6 +658,13 @@ namespace core
 
 //	.initArgs("(self)")
 	      ;
+	SYMBOL_EXPORT_SC_(ClPkg,char_code);
+	ClDefun(char_code);
+	SYMBOL_EXPORT_SC_(ClPkg,code_char);
+	ClDefun(code_char);
+	SYMBOL_EXPORT_SC_(ClPkg,char_int);
+	ClDefun(char_int);
+	
 	SYMBOL_EXPORT_SC_(ClPkg,name_char);
 	Defun(name_char);
 	SYMBOL_EXPORT_SC_(ClPkg,char_name);

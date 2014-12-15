@@ -164,10 +164,10 @@ namespace core
 
 
 
-#define ARGS_af_write "(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*))"
-#define DECL_af_write ""
-#define DOCS_af_write "write"
-    T_sp af_write(T_sp x, T_sp strm, T_sp array, T_sp base,
+#define ARGS_cl_write "(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*))"
+#define DECL_cl_write ""
+#define DOCS_cl_write "write"
+    T_sp cl_write(T_sp x, T_sp strm, T_sp array, T_sp base,
 		  T_sp cas, T_sp escape, T_sp gensym, T_sp length,
 		  T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
 		  T_sp pretty, T_sp radix, T_sp readability, T_sp right_margin )
@@ -250,7 +250,7 @@ namespace core
 
     
     
-#define ARGS_cl_pprint "(obj &optional (stream ext::+process-standard-output+))"
+#define ARGS_cl_pprint "(obj &optional stream)"
 #define DECL_cl_pprint ""
 #define DOCS_cl_pprint "pprint"
     void cl_pprint(T_sp obj, T_sp stream)
@@ -265,7 +265,7 @@ namespace core
 
 
 
-#define ARGS_cl_princ "(obj &optional (output-stream-desig ext:+process-standard-output+))"
+#define ARGS_cl_princ "(obj &optional output-stream-desig)"
 #define DECL_cl_princ ""
 #define DOCS_cl_princ "See CLHS: princ"
     T_sp cl_princ(T_sp obj, T_sp output_stream_desig )
@@ -279,7 +279,7 @@ namespace core
 
 
 
-#define ARGS_cl_prin1 "(obj &optional (output-stream-desig ext::+process-standard-output+))"
+#define ARGS_cl_prin1 "(obj &optional output-stream-desig)"
 #define DECL_cl_prin1 ""
 #define DOCS_cl_prin1 "See CLHS: prin1"
     T_sp  cl_prin1(T_sp obj, T_sp output_stream_desig )
@@ -290,7 +290,7 @@ namespace core
         return obj;
     }
 
-#define ARGS_cl_print "(obj &optional (output-stream-desig ext::+process-standard-output+))"
+#define ARGS_cl_print "(obj &optional output-stream-desig)"
 #define DECL_cl_print ""
 #define DOCS_cl_print "See CLHS: print"
     T_sp cl_print(T_sp obj, T_sp output_stream_desig )
@@ -311,7 +311,7 @@ namespace core
 
     void initialize_print()
     {
-        Defun(write);
+        ClDefun(write);
 //        SYMBOL_EXPORT_SC_(CorePkg,writeAddr);
 //        Defun(writeAddr);
         SYMBOL_EXPORT_SC_(CorePkg,printUnreadableObjectFunction);

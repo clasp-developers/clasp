@@ -73,7 +73,7 @@
 
 
 (defun compiler-error (form message &rest args)
-  (multiple-value-bind (source-dir source-file lineno column)
+  (multiple-value-bind (source-dir source-file file-pos lineno column)
       (walk-form-for-source-info form)
     (let ((err (make-compiler-error :message (apply #'core:bformat nil message args)
                                     :lineno lineno

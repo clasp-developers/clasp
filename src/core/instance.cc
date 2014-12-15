@@ -311,7 +311,7 @@ namespace core
 		if ( obj )
 		{
 		    stringstream sslot;
-		    if ( af_consP(obj) )
+		    if ( cl_consp(obj) )
 		    {
 			sslot << "CONS...";
 			ss << sslot.str() << std::endl;
@@ -453,7 +453,7 @@ namespace core
         if ( Instance_sp iobj = obj.asOrNull<Instance_O>() ) {
             if ( this->_Class != iobj->_Class ) return false;
             for ( int i(0), iEnd(this->_Slots.size()); i<iEnd; ++i ) {
-                if ( !af_equalp(this->_Slots[i],iobj->_Slots[i]) ) {
+                if ( !cl_equalp(this->_Slots[i],iobj->_Slots[i]) ) {
                     return false;
                 }
             }

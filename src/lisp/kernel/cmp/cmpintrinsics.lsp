@@ -419,7 +419,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-does-not-throw module "makePathname" +void+ (list +tsp*+ +i8*+))
   (primitive-does-not-throw module "findPackage" +void+ (list +tsp*+ +i8*+))
-  (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+))
+  (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i64+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+))
 
 
   (primitive module "fillRestTarget" +void+ (list +tsp*+ +afsp*+ +i32+ +i8*+))
@@ -458,7 +458,7 @@ Boehm and MPS use a single pointer"
 ;;  (primitive module "invokePossibleMultipleValueLexicalFunction" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+ +afsp*+))
 
   (primitive module "invokeMainFunctions" +void+ (list +fn-void-ptr-pointer+ +i32*+))
-  (primitive module "invokeLlvmFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i32*+ +i32+ +i32+))
+  (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+))
   (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-void-ptr+))
 
   (primitive module "invokeFASLLlvmFunctionVoid" +void+ (list +fn-void-ptr+ +i8*+))
@@ -619,8 +619,6 @@ identifies the current source file.  Used for tracing and debugging")
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.
 It has appending linkage.")
-(defvar *current-lineno* 0 "Store the line number of the currently compiled form")
-(defvar *current-column* 0 "Store the column of the currently compiled form")
 (defvar *current-form* nil "The current form being compiled")
 (defvar *current-env* nil "Current environment")
 (defvar *current-function* nil "The current function")

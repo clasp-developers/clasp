@@ -160,7 +160,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   #+use-boehm "app-resources:lib;release;intrinsics_bitcode_boehm.o"
   #+use-mps "app-resources:lib;release;intrinsics_bitcode_mps.o"
 )
-(defconstant +image-pathname+ (make-pathname :directory '(:absolute) :name "image" :type "bundle"))
+(defconstant +image-pathname+ (make-pathname :directory '(:absolute) :name "image" :type "fasl"))
 (export '(+image-pathname+ +intrinsics-bitcode-pathname+))
 ;; +min-image-pathname+ +intrinsics-bitcode-pathname+ +imagelto-pathname+))
 
@@ -562,7 +562,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  (bformat t "\n")
 	  (bformat t "Compiling %s to %s - will reload: %s\n" (truename source-path) bitcode-path reload)
 	  (let ((cmp::*module-startup-prefix* "kernel"))
-            (compile-file source-path :output-file bitcode-path :print t :verbose t :type :kernel)
+            (compile-file source-path :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" (truename bitcode-path))
@@ -957,9 +957,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun compile-asdf ()
   (compile-file "sys:kernel;asdf;build;asdf.lisp")
-  (cmp::link-system-lto "sys:kernel;asdf;build;asdf.bundle"
-                       :lisp-bitcode-files (list #P"sys:kernel;asdf;build;asdf.bc"))
-)
+  #+(or)(cmp::link-system-lto "sys:kernel;asdf;build;asdf.fasl"
+			      :lisp-bitcode-files (list #P"sys:kernel;asdf;build;asdf.bc"))
+  )
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -967,7 +967,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;  Setup the build system for SICL
 ;;
 (defun setup-cleavir ()
-  (load "sys:kernel;asdf;build;asdf.bundle")
+  (load "sys:kernel;asdf;build;asdf.fasl")
   (load "sys:kernel;cleavir;ccmp-all.lsp")
   )
 
@@ -979,11 +979,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;
 ;;  Setup the swank
 ;;
-(defun swank ()
-  (require :swank)
-  (start-swank))
-
-(export 'swank)
+(defun load-swank ()
+  (load "sys:swank.lsp"))
+(export '(load-swank))
 
 
 

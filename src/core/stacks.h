@@ -61,7 +61,7 @@ namespace core
         int                     runningColumn;
     public:
 	InvocationHistoryFrame(Closure* fc, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
-	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
+	//	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
 	ATTR_WEAK virtual ~InvocationHistoryFrame();
 	InvocationHistoryFrame* next() { return this->_Next;};
 	uint index() { return this->_Index;};
@@ -73,11 +73,17 @@ namespace core
             this->runningLineNumber = lineNumber;
             this->runningColumn = column;
         };
+	virtual void setSourcePos(SourcePosInfo_sp info) {
+            this->runningSourceFileInfoHandle = clasp_sourcePosInfo_filepos(info);
+            this->runningLineNumber = clasp_sourcePosInfo_lineno(info);
+            this->runningColumn = clasp_sourcePosInfo_column(info);
+        };
+
 	virtual void setActivationFrame(ActivationFrame_sp af) { this->environment = af; };
 	virtual string asString();
 	string asStringLowLevel(Closure* closure,
-                                const string& functionName,
-				const string& sourceFileName,
+				// const string& functionName,
+				// const string& sourceFileName,
 				uint lineNumber, uint column ) const;
 
 	virtual ActivationFrame_sp activationFrame() const { return this->environment; };
@@ -135,6 +141,16 @@ namespace core
 		exit(1);
 	    }
 	    this->_Top->setSourcePos(sourceFileHandle,lineNumber,column);
+	}
+
+	void setSourcePosForTop(SourcePosInfo_sp info)
+	{
+	    if ( this->_Top==NULL )
+	    {
+		printf("%s:%d IHSTop must never be NULL!\n", __FILE__, __LINE__);
+		exit(1);
+	    }
+	    this->_Top->setSourcePos(info);
 	}
 
 	void setActivationFrameForTop(ActivationFrame_sp af)
@@ -266,6 +282,7 @@ namespace core {
 #define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this);
 
 namespace core{
+    void core_lowLevelBacktrace();
     void initialize_stacks();
 };
 
