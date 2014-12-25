@@ -54,13 +54,27 @@
   )
 
 
-(defmacro with-module ((&key module function-pass-manager) &rest body)
+(defmacro with-module ((env &key module 
+				 function-pass-manager 
+				 source-pathname
+				 source-file-info-handle
+				 source-debug-namestring
+				 (source-debug-offset 0)
+				 (source-debug-use-lineno t)) &rest body)
   `(let ((*the-module* ,module)
          (*the-function-pass-manager* ,function-pass-manager)
          (*all-functions-for-one-compile* nil)
-         (*generate-load-time-values* t))
+         (*generate-load-time-values* t)
+	 (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
+	 (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
+								     ,source-debug-namestring
+								     ,source-pathname) "source-debug-namestring"))
+	 (*source-debug-offset* ,source-debug-offset)
+	 (*source-debug-use-lineno* ,source-debug-use-lineno)
+	 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module* ,source-file-info-handle))
+	 )
      (declare (special *the-function-pass-manager*))
-     (with-irbuilder (nil (llvm-sys:make-irbuilder *llvm-context*))
+     (with-irbuilder (,env (llvm-sys:make-irbuilder *llvm-context*))
        ,@body)))
 
 
@@ -213,26 +227,30 @@
 
 
 (defun compile-form-into-module (form name)
+  "This is used to generate a module from a single form - specifically
+to compile prologue and epilogue code when linking modules"
   (let* ((module (create-llvm-module-for-compile-file name))
-         conditions)
+         conditions
+	 (*compile-file-pathname* nil)
+	 (*compile-file-truename* name)
+	 (*compile-print* nil)
+	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
-      (with-module (:module module
-                            :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
-        (let* ((*compile-file-pathname* nil)
-               (*compile-file-truename* name)
-               (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
-               (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*))
-               (*compile-print* nil)
-               (*compile-verbose* nil))
-          (with-dibuilder (*the-module*)
-            (with-dbg-compile-unit (nil *compile-file-truename*)
-              (with-dbg-file-descriptor (nil *compile-file-truename*)
-                (with-load-time-value-unit (ltv-init-fn)
-                  (compile-top-level form)
-                  (let ((main-fn (compile-main-function name ltv-init-fn )))
-                    (make-boot-function-global-variable *the-module* main-fn)
-                    (add-main-function *the-module*))))
-              *the-module*)))))))
+      (with-module (nil :module module
+			:function-pass-manager (if *use-function-pass-manager-for-compile-file* 
+						   (create-function-pass-manager-for-compile-file module))
+			:source-pathname (namestring name)
+			)
+        (let* ()
+	  (with-debug-info-generator (:module *the-module*
+					      :pathname *compile-file-truename*)
+	    (with-load-time-value-unit (ltv-init-fn)
+	      (compile-top-level form)
+	      (let ((main-fn (compile-main-function name ltv-init-fn )))
+		(make-boot-function-global-variable *the-module* main-fn)
+		(add-main-function *the-module*)))
+	    ))))
+    module))
 
 
 
@@ -293,7 +311,7 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname output-path &key type)
+(defun compile-file-to-module (given-input-pathname output-path &key type source-debug-namestring (source-debug-offset 0) )
   "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((input-pathname (probe-file given-input-pathname))
@@ -302,47 +320,55 @@ and the pathname of the source file - this will also be used as the module initi
 	 (module (create-llvm-module-for-compile-file (namestring input-pathname)))
 	 (module-name (cf-module-name type input-pathname))
 	 warnings-p failure-p)
+    ;; If a truename is provided then spoof the file-system to treat input-pathname
+    ;; as source-truename with the given offset
+    (when source-debug-namestring
+      (core:source-file-info (namestring input-pathname) source-debug-namestring source-debug-offset nil))
     (when *compile-verbose*
       (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
     (with-one-source-database
 	(cmp-log "About to start with-compilation-unit\n")
-      (with-module (:module module
-			    :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
-	(let* ((*compile-file-pathname* given-input-pathname)
-	       (*compile-file-truename* (truename *compile-file-pathname*))
-	       (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
-	       (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*)))
-	  (with-dibuilder (*the-module*)
-	    (with-dbg-compile-unit (nil *compile-file-truename*)
-	      (with-dbg-file-descriptor (nil *compile-file-truename*)
-		(with-load-time-value-unit (ltv-init-fn)
-		  (loop
-		     (let* ((core:*source-database* (core:make-source-manager))
-			    (top-source-pos-info (core:input-stream-source-pos-info sin))
-			    (form (read sin nil eof-value)))
-		       (if (eq form eof-value)
-			   (return nil)
-			   (progn
-			     (if cmp:*debug-compile-file* (bformat t "compile-file: %s\n" form))
-			     ;; If the form contains source-pos-info then use that
-			     ;; otherwise fall back to using *current-source-pos-info*
-			     (let ((core:*current-source-pos-info* 
-				   (core:walk-to-find-source-pos-info form top-source-pos-info)))
+      (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+	     (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+	(with-module (nil :module module
+			  :function-pass-manager (if *use-function-pass-manager-for-compile-file* 
+						     (create-function-pass-manager-for-compile-file module))
+			  :source-pathname (namestring *compile-file-pathname*)
+			  :source-debug-namestring source-debug-namestring
+			  :source-debug-offset source-debug-offset
+			  )
+	  (let* ()
+	    (with-debug-info-generator (:module *the-module*
+						:pathname *compile-file-truename*)
+	      (with-load-time-value-unit (ltv-init-fn)
+		(loop
+		   (let* ((core:*source-database* (core:make-source-manager))
+			  (top-source-pos-info (core:input-stream-source-pos-info sin))
+			  (form (read sin nil eof-value)))
+		     (if (eq form eof-value)
+			 (return nil)
+			 (progn
+			   (if cmp:*debug-compile-file* (bformat t "compile-file: %s\n" form))
+			   ;; If the form contains source-pos-info then use that
+			   ;; otherwise fall back to using *current-source-pos-info*
+			   (let ((core:*current-source-pos-info* 
+				  (core:walk-to-find-source-pos-info form top-source-pos-info)))
 			     (compile-file-t1expr form))))))
-		  (let ((main-fn (compile-main-function output-path ltv-init-fn )))
-		    (make-boot-function-global-variable *the-module* main-fn)
-		    (add-main-function *the-module*))))))
-	  (cmp-log "About to verify the module\n")
-	  (cmp-log-dump *the-module*)
-	  (multiple-value-bind (found-errors error-message)
-	      (progn
-		(cmp-log "About to verify module prior to writing bitcode\n")
-		(llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
-		)
-	    (if found-errors
+		(let ((main-fn (compile-main-function output-path ltv-init-fn )))
+		  (make-boot-function-global-variable *the-module* main-fn)
+		  (add-main-function *the-module*)))
+	      )
+	    (cmp-log "About to verify the module\n")
+	    (cmp-log-dump *the-module*)
+	    (multiple-value-bind (found-errors error-message)
 		(progn
-		  (format t "Module error: ~a~%" error-message)
-		  (break "Verify module found errors")))))))
+		  (cmp-log "About to verify module prior to writing bitcode\n")
+		  (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
+		  )
+	      (if found-errors
+		  (progn
+		    (format t "Module error: ~a~%" error-message)
+		    (break "Verify module found errors"))))))))
     module))
 
 
@@ -353,6 +379,12 @@ and the pathname of the source file - this will also be used as the module initi
 		       (print *compile-print*)
                        (system-p nil system-p-p)
 		       (external-format :default)
+		       ;; If we are spoofing the source-file system to treat given-input-name
+		       ;; as a part of another file then use source-truename to provide the
+		       ;; truename of the file we want to mimic
+		       source-debug-namestring
+		       ;; This is the offset we want to spoof
+		       (source-debug-offset 0)
 		       ;; output-type can be (or :fasl :bitcode :object)
 		       (output-type :fasl)
 ;;; type can be either :kernel or :user
@@ -367,7 +399,10 @@ and the pathname of the source file - this will also be used as the module initi
 	  (*compile-verbose* verbose))
       ;; Do the different kind of compile-file here
       (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :output-type output-type ))
-	     (module (compile-file-to-module given-input-pathname output-path :type type)))
+	     (module (compile-file-to-module given-input-pathname output-path 
+					     :type type 
+					     :source-debug-namestring source-debug-namestring 
+					     :source-debug-offset source-debug-offset )))
 	(cond
 	  ((eq output-type :object)
 	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))

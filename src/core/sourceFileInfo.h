@@ -43,8 +43,8 @@ namespace core
 	LISP_CLASS(core,CorePkg,SourceFileInfo_O,"SourceFileInfo");
 	DECLARE_INIT();
     public:
-	static SourceFileInfo_sp create(const string& fileNamePath, int handle);
-	static SourceFileInfo_sp create(Pathname_sp path, int handle);
+	static SourceFileInfo_sp create(Pathname_sp path, int handle, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
+	static SourceFileInfo_sp create(const string& fileNamePath, int handle, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
 
     public: // ctor/dtor for classes with shared virtual base
 	explicit SourceFileInfo_O();
@@ -56,8 +56,13 @@ namespace core
 	char* 	_PermanentPathName;
 	char*	_PermanentFileName;
         int     _FileHandle;
+	Str_sp _SourceDebugNamestring;
+	size_t  _SourceDebugOffset;
+	bool    _TrackLineno;
     public: // Functions here
         int fileHandle() const { return this->_FileHandle; };
+	/*! Return the value of _Truename unless nil then return fileName */
+	string sourceDebugNamestring() const;
 	string fileName() const;
 	string parentPathName() const;
 	string namestring() const;
@@ -65,6 +70,8 @@ namespace core
 	const char* permanentPathName();
 	const char* permanentFileName();
 
+	bool useLineno() const { return this->_TrackLineno;};
+	size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
 	string __repr__() const;
     }; // SourceFileInfo class
 
@@ -76,7 +83,8 @@ namespace core
     class SourcePosInfo_O : public T_O
     {
         friend class SourceManager_O;
-        friend SourceFileInfo_mv af_sourceFileInfo(T_sp obj);
+	friend SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename, size_t offset, bool useLineno);
+
 
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,SourcePosInfo_O,"SourcePosInfo");
@@ -101,8 +109,6 @@ namespace core
             return me;
         }
         string __repr__() const;
-        SourceFileInfo_sp sourceFileInfo(SourceManager_sp sm) const;
-
         int fileHandle() const { return this->_FileId; };
         size_t filepos() const { return this->_Filepos; };
         uint lineno() const { return this->_Lineno; };
@@ -157,9 +163,6 @@ namespace core {
 	SourcePosInfo_sp duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp macroExpansionFunction= _Nil<T_O>());
 
 
-	/*! Return (values SourceFileInfo_sp lineno column sourcePos macroObject? ) for obj
-          or (values) if nothing is found */
-	SourceFileInfo_mv multipleValuesSourceInfo(T_sp obj);
 
 	SourcePosInfo_sp lookupSourcePosInfo(T_sp obj);
 
@@ -170,6 +173,10 @@ namespace core {
     SourcePosInfo_sp core_walkToFindSourcePosInfo(T_sp obj, T_sp defaultSpi=_Nil<T_O>());
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
 
+
+
+
+    SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
 
 
 }; // core namespace

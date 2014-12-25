@@ -57,6 +57,7 @@ namespace core
 	Closure* 	        closure;
         ActivationFrame_sp      environment;
         int                     runningSourceFileInfoHandle;
+	size_t                  runningFilePos;
         int                     runningLineNumber;
         int                     runningColumn;
     public:
@@ -66,17 +67,22 @@ namespace core
 	InvocationHistoryFrame* next() { return this->_Next;};
 	uint index() { return this->_Index;};
 	virtual string sourcePathName() const;
-	virtual int lineNumber() const { return this->runningLineNumber; };
+	virtual size_t filepos() const { return this->runningFilePos; };
+	virtual int lineno() const { return this->runningLineNumber; };
 	virtual int column() const { return this->runningColumn; };
-	virtual void setSourcePos(int fileHandle, uint lineNumber, uint column) {
+	virtual void setSourcePos(int fileHandle, size_t filePos, uint lineNumber, uint column) {
             this->runningSourceFileInfoHandle = fileHandle;
+	    this->runningFilePos = filePos;
             this->runningLineNumber = lineNumber;
             this->runningColumn = column;
+	    //printf("%s:%d setSourcePos fileHandle=%d  lineno=%d\n", __FILE__, __LINE__, this->runningSourceFileInfoHandle, this->runningLineNumber );
         };
 	virtual void setSourcePos(SourcePosInfo_sp info) {
-            this->runningSourceFileInfoHandle = clasp_sourcePosInfo_filepos(info);
+            this->runningSourceFileInfoHandle = clasp_sourcePosInfo_fileHandle(info);
+	    this->runningFilePos = clasp_sourcePosInfo_filepos(info);
             this->runningLineNumber = clasp_sourcePosInfo_lineno(info);
             this->runningColumn = clasp_sourcePosInfo_column(info);
+	    //	    printf("%s:%d setSourcePos fileHandle=%d  lineno=%d\n", __FILE__, __LINE__, this->runningSourceFileInfoHandle, this->runningLineNumber );
         };
 
 	virtual void setActivationFrame(ActivationFrame_sp af) { this->environment = af; };
@@ -133,14 +139,14 @@ namespace core
 
 	void setExpressionForTop(T_sp expression);
 
-	void setSourcePosForTop(int sourceFileHandle, uint lineNumber, uint column)
+	void setSourcePosForTop(int sourceFileHandle, size_t filePos, uint lineNumber, uint column)
 	{
 	    if ( this->_Top==NULL )
 	    {
 		printf("%s:%d IHSTop must never be NULL!\n", __FILE__, __LINE__);
 		exit(1);
 	    }
-	    this->_Top->setSourcePos(sourceFileHandle,lineNumber,column);
+	    this->_Top->setSourcePos(sourceFileHandle,filePos,lineNumber,column);
 	}
 
 	void setSourcePosForTop(SourcePosInfo_sp info)
@@ -163,9 +169,9 @@ namespace core
 	    this->_Top->setActivationFrame(af);
 	}
 	    
-	void setSourcePosForTop(int sourceFileHandle, uint lineNumber)
+	void setSourcePosForTop(int sourceFileHandle, size_t filePos, uint lineNumber)
 	{
-	    this->_Top->setSourcePos(sourceFileHandle,lineNumber,0);
+	    this->_Top->setSourcePos(sourceFileHandle,filePos,lineNumber,0);
 	}
 
 	vector<InvocationHistoryFrame*> asVectorFrames();

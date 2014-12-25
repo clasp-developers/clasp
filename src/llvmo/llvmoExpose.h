@@ -1271,19 +1271,23 @@ namespace llvmo
         Function_sp             llvmFunction;
 	fptr_type		fptr;
         core::Cons_sp           associatedFunctions;
+	core::T_sp              _lambdaList;
 // constructor
     public:
 	virtual const char* describe() const { return "CompiledClosure";};
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:
 	CompiledClosure( core::T_sp functionName, core::SourcePosInfo_sp spi, core::Symbol_sp type,
-                         fptr_type ptr, Function_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs)
+                         fptr_type ptr, Function_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
+			 core::T_sp ll)
             : FunctionClosure(functionName,spi,type,renv)
             , fptr(ptr)
             , associatedFunctions(assocFuncs)
+	    , _lambdaList(ll)
         {};
         void setAssociatedFunctions(core::Cons_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
         bool compiledP() const { return true; };
+	core::T_sp lambdaList() const;
         core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
         DISABLE_NEW();
 	void LISP_CALLING_CONVENTION()
@@ -4656,13 +4660,14 @@ namespace translate
     {
 	typedef llvm::AtomicOrdering	DeclareType;
 	DeclareType _v;
-	from_object(T_P object)
+	from_object(core::T_sp object)
 	{_G();
-	    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
-	    {
-		core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARatomic_orderingSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
-		this->_v = converter->enumForSymbol<llvm::AtomicOrdering>(sym);
-		return;
+	    if ( object.notnilp() ) {
+		if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() ) {
+		    core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARatomic_orderingSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+		    this->_v = converter->enumForSymbol<llvm::AtomicOrdering>(sym);
+		    return;
+		}
 	    }
 	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::AtomicOrdering") % _rep_(object) );
 	}

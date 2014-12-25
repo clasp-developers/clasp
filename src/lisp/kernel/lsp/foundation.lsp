@@ -339,7 +339,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (core:function-name x))
 
 (defun compiled-function-file (x)
-  (core:function-source-pos x))
+  (multiple-value-bind (sfi pos)
+      (core:function-source-pos x)
+    (values (core:source-file-info-source-debug-namestring 
+	     (+ (core:source-file-info-source-debug-offset sfi) (core:function-source-pos x)) pos))))
+
 (export '(compiled-function-name compiled-function-file))
 
 (defun warn-or-ignore (x &rest args)

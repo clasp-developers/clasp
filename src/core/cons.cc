@@ -1267,7 +1267,7 @@ namespace core
     {
 	int lineNumber, col;
 	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = af_sourceFileInfo(parsed);
+	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
 	return((SourceCodeCons_O::create(car,cdr,lineNumber,col,fileName,env)));
     }
 
@@ -1275,7 +1275,7 @@ namespace core
     {
 	int lineNumber, col;
 	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = af_sourceFileInfo(parsed);
+	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
 	return((SourceCodeCons_O::create(car,_Nil<Cons_O>(),lineNumber,col,fileName,lisp)));
     }
 
@@ -1285,7 +1285,7 @@ namespace core
 	if ( parsed.nilp() ) return((_Nil<SourceCodeCons_O>()));
 	int lineNumber, col;
 	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = af_sourceFileInfo(parsed);
+	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
 	return((SourceCodeCons_O::create(lineNumber,col,fileName,env)));
     }
 
@@ -1305,7 +1305,7 @@ namespace core
 	int lineNumber, col;
 	string fileName;
 	c->getParsePos(lineNumber,col);
-	this->_SourceFileInfo = af_sourceFileInfo(c);
+	this->_SourceFileInfo = core_sourceFileInfo(c);
 	this->_ParsePosLineNumber = lineNumber;
 	this->_ParsePosColumn = col;
     }

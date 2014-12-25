@@ -42,7 +42,11 @@ namespace core
 
 
 
-
+    T_sp InstanceClosure::lambdaList() const
+    {
+	printf("%s:%d InstanceClosure::lambdaList returning NIL\n", __FILE__, __LINE__);
+	return _Nil<T_O>();
+    }
 
 
     void InstanceClosure::LISP_CALLING_CONVENTION()

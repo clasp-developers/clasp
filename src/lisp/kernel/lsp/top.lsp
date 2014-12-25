@@ -846,7 +846,7 @@ Use special code 0 to cancel this operation.")
     (values args (and args t))))
 
 
-(defun function-lambda-list (function)
+#+(or)(defun function-lambda-list (function)
   (cond
     ((symbolp function)
      (cond ((or (special-operator-p function)

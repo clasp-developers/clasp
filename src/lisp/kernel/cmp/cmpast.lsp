@@ -1202,7 +1202,7 @@ be wrapped with to make a closure"
                 (let* ((truename (if *load-truename*
                                      (namestring *load-truename*)
                                      "compile-in-env"))
-                       (*gv-source-path-name* (jit-make-global-string-ptr
+                       (*gv-source-pathname* (jit-make-global-string-ptr
                                                truename
                                                "source-path-name"))
                        (*all-funcs-for-one-compile* nil))

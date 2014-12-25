@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "arguments.h"
 #include "str.h"
 #include "lispStream.h"
+#include "lambdaListHandler.h"
 #include "primitives.h"
 #include "unixfsys.h"
 #include "pathname.h"
@@ -69,7 +70,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	if ( strm.nilp() ) return _Nil<T_O>();
     }
     /* Define the source file */
-    SourceFileInfo_sp sfi = af_sourceFileInfo(source);
+    SourceFileInfo_sp sfi = core_sourceFileInfo(source);
     DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,sfi);
     Pathname_sp pathname = cl_pathname(source);
     ASSERTF(pathname.pointerp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));;
@@ -77,6 +78,11 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
     ASSERTF(truename.pointerp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));;
     scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR,pathname);
     scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR,truename);
+    /* Create a temporary closure to load the source */
+    SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(),0,0,0);
+    InterpretedClosure loadSourceClosure(_sym_loadSource,spi,kw::_sym_function,LambdaListHandler_O::create(0),_Nil<Cons_O>(),_Nil<Str_O>(),_Nil<T_O>(),_Nil<T_O>());
+    InvocationHistoryFrame closure(&loadSourceClosure);
+    _lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
 //        printf("%s:%d   Here set-up *load-pathname*, *load-truename* and *load-source-file-info* for source: %s\n", __FILE__, __LINE__, _rep_(source).c_str() );
     while (true) {
         bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
@@ -89,7 +95,6 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
             _lisp->print(BF("Read: %s\n") % _rep_(x) );
         }
         _lisp->invocationHistoryStack().setExpressionForTop(x);
-        _lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
         if (x.number_of_values() > 0 ) {
 //                printf("%s:%d  ;; -- read- %s\n", __FILE__, __LINE__, _rep_(x).c_str() );
             if ( print ) {

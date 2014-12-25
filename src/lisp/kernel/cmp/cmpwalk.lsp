@@ -33,15 +33,11 @@
 	 (*code-walker* code-walker-function))
     (define-primitives-in-module module)
     (with-compilation-unit ()
-      (with-module (:module module :function-pass-manager fpm)
-        (let ((*gv-source-path-name* (jit-make-global-string-ptr "code-walk-using-compiler" "source-path-name"))
-              (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
-                                                                           +i32+ ; type
-                                                                           nil ; constant
-                                                                           'llvm-sys:internal-linkage
-                                                                           (jit-constant-i32 0)
-                                                                           "source-file-info-handle"))
-              )
+      (with-module (nil :module module :function-pass-manager fpm
+			:source-pathname "code-walk-using-compiler")
+        (let (
+;;	      (*gv-source-pathname* (jit-make-global-string-ptr "code-walk-using-compiler" "source-path-name"))
+	      )
           (with-load-time-value-unit (ltv-init-fn)
             (compile-in-env nil form env)))
         (llvm-sys::module-delete module)

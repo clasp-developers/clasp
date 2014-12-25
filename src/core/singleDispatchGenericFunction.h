@@ -62,6 +62,7 @@ namespace core
             this->_lambdaListHandler = llh;
             this->kind = k;
         }
+	T_sp lambdaList() const;
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual const char* describe() const {return "SingleDispatchGenericFunctionClosure";};
 	virtual void LISP_CALLING_CONVENTION();

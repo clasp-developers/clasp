@@ -54,6 +54,7 @@ namespace core
     InvocationHistoryFrame::InvocationHistoryFrame(Closure* c, ActivationFrame_sp env)
         :closure(c), environment(env)
         , runningSourceFileInfoHandle(c->sourceFileInfoHandle())
+	, runningFilePos(c->filePos())
         , runningLineNumber(c->lineNumber())
         , runningColumn(c->column())
     {
@@ -105,13 +106,10 @@ namespace core
 	if ( closure==NULL ) {return "InvocationHistoryFrame::asStringLowLevel NULL closure";};
 	T_sp funcNameObj = closure->name;
 	string funcName = _rep_(funcNameObj);
-	    
 	int sourceFileInfoHandle = this->runningSourceFileInfoHandle;
-	SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(sourceFileInfoHandle));
+	SourceFileInfo_sp sfi = core_sourceFileInfo(Fixnum_O::create(sourceFileInfoHandle));
 	string sourceFileName = sfi->fileName();
 	stringstream ss;
-        if ( lineNumber == UNDEF_UINT ) lineNumber = 0;
-        if ( column == UNDEF_UINT ) column = 0;
         string closureType = "/?";
         if (closure) {
         if ( closure->interpretedP() ) {
@@ -122,7 +120,7 @@ namespace core
             closureType = "/b";
         }
         } else closureType = "toplevel";
-	ss << (BF("#%3d%2s %20s %5d/%-3d %s") % this->_Index % closureType % sourceFileName % lineNumber % column  % funcName ).str();
+	ss << (BF("#%3d%2s@%p %20s %5d/%-3d %s") % this->_Index % closureType % (void*)closure % sourceFileName % lineNumber % column  % funcName ).str();
 //	ss << std::endl;
 //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
 	return ss.str();
@@ -132,7 +130,7 @@ namespace core
 
     string InvocationHistoryFrame::sourcePathName() const
     {
-        return af_sourceFileInfo(Fixnum_O::create(this->runningSourceFileInfoHandle))->namestring();
+        return core_sourceFileInfo(Fixnum_O::create(this->runningSourceFileInfoHandle))->namestring();
     }
 
 
@@ -325,12 +323,12 @@ void    core_lowLevelBacktrace()
 		    }
 		}
 	    }
-	    SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(closure->sourceFileInfoHandle()));
+	    SourceFileInfo_sp sfi = core_sourceFileInfo(Fixnum_O::create(closure->sourceFileInfoHandle()));
 	    string sourceName = "cannot-determine";
 	    if ( sfi.notnilp() ) {
 		sourceName = sfi->fileName();
 	    }
-	    printf("_Index: %4d  Frame@%p(next=%p)  closure@%p  closure->name[%40s]  line: %d  file: %s\n", cur->_Index, cur, cur->_Next, closure, name.c_str(), closure->lineNumber(), sourceName.c_str() );
+	    printf("_Index: %4d  Frame@%p(next=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Next, closure, name.c_str(), closure->lineNumber(), sourceName.c_str() );
 	}
 	printf("----Done\n");
     }
@@ -567,6 +565,7 @@ void    core_lowLevelBacktrace()
 	Defun(bdsVar);
 	SYMBOL_SC_(CorePkg,bdsVal);
 	Defun(bdsVal);
+	CoreDefun(lowLevelBacktrace);
     }
 
 

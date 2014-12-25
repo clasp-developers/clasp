@@ -113,7 +113,6 @@ namespace core
 	/*! If _CreatesBindings is true then no bindings will be set by this
 	  LambdaListHandler */
 	bool				_CreatesBindings;
-	Cons_sp 			_LambdaList;
 	Cons_sp 			_ClassifiedSymbolList;
 	SymbolSet_sp 			_SpecialSymbolSet;
 	Cons_sp 			_DeclareSpecifierList;
@@ -141,6 +140,8 @@ namespace core
 
 	static Cons_mv process_single_dispatch_lambda_list(Cons_sp lambda_list, bool allow_first_argument_default_dispatcher = false);
 	static Cons_sp process_macro_lambda_list(Cons_sp lambda_list );
+    public:
+	T_sp lambdaList(); // return a list representation of the LambdaListHandler
     public:
 	/*! Compile the argumentsInString into an argument handler and put the symbols into the
 	  given package */

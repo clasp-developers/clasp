@@ -785,14 +785,17 @@ marshaling of compiled quoted data"
 					 :postscript (with-irbuilder (,fn-env-gs *irbuilder-ltv-function-alloca*)
 						       (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
 						       (irc-intrinsic "getOrCreateLoadTimeValueArray"
-								 *load-time-value-holder-global-var*
-								 *gv-source-path-name*
-								 (jit-constant-i32 ltv-value-counter)
-								 (jit-constant-i32 ltv-symbol-counter))
+								      *load-time-value-holder-global-var*
+								      *gv-source-pathname*
+								      (jit-constant-i32 ltv-value-counter)
+								      (jit-constant-i32 ltv-symbol-counter))
                                                        (irc-intrinsic "assignSourceFileInfoHandle"
-                                                                      *gv-source-path-name*
-                                                                      *gv-source-file-info-handle*)
-                                                       ))
+                                                                      *gv-source-pathname*
+								      *gv-source-debug-namestring*
+								      (jit-constant-i64 *source-debug-offset*)
+								      (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+								      *gv-source-file-info-handle*)
+					 ))
 	   (initialize-special-load-time-values ,fn-env-gs)
 	   ,@body)
 	 (with-irbuilder (,fn-env-gs *irbuilder-ltv-function-body*)

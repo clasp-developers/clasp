@@ -52,6 +52,7 @@ namespace gray
     SYMBOL_EXPORT_SC_(GrayPkg,stream_read_byte);
     SYMBOL_EXPORT_SC_(GrayPkg,stream_write_byte);
     SYMBOL_EXPORT_SC_(GrayPkg,stream_read_char);
+    SYMBOL_EXPORT_SC_(GrayPkg,stream_read_char_no_hang);
     SYMBOL_EXPORT_SC_(GrayPkg,stream_write_char);
     SYMBOL_EXPORT_SC_(GrayPkg,stream_write_string);
     SYMBOL_EXPORT_SC_(GrayPkg,stream_terpri);

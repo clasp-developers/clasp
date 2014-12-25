@@ -115,10 +115,10 @@ namespace core
 
     
     
-#define ARGS_af_adjustVector "(array dimensions initial-element initial-contents)"
-#define DECL_af_adjustVector ""
-#define DOCS_af_adjustVector "adjustVector"
-    T_sp af_adjustVector(T_sp array, int new_dimensions, T_sp initial_element, Cons_sp initial_contents )
+#define ARGS_core_adjustVector "(array dimensions initial-element initial-contents)"
+#define DECL_core_adjustVector ""
+#define DOCS_core_adjustVector "adjustVector"
+    T_sp core_adjustVector(T_sp array, int new_dimensions, T_sp initial_element, Cons_sp initial_contents )
     {_G();
 	if ( VectorObjects_sp vo = array.asOrNull<VectorObjects_O>() )
 	{
@@ -231,7 +231,7 @@ namespace core
 	SYMBOL_SC_(CorePkg,make_vector);
 	Defun(make_vector);
 	SYMBOL_EXPORT_SC_(CorePkg,adjustVector);
-	Defun(adjustVector);
+	CoreDefun(adjustVector);
         SYMBOL_EXPORT_SC_(ClPkg,vectorPush);
         ClDefun(vectorPush);
         SYMBOL_EXPORT_SC_(ClPkg,vectorPushExtend);

@@ -25,6 +25,10 @@ THE SOFTWARE.
 */
 /* -^- */
 
+
+
+// #define EXPOSE_DLOPEN
+// #define EXPOSE_DLLOAD
 #define	DEBUG_LEVEL_FULL
 #include "dlfcn.h"
 #include "core/common.h"
@@ -83,6 +87,31 @@ namespace core
 
 
 
+    #define ARGS_core_mangleName "(object &optional is_function)"
+#define DECL_core_mangleName ""
+#define DOCS_core_mangleName "mangleName"
+    T_mv core_mangleName(Symbol_sp sym, bool is_function)
+    {
+	Str_sp name;
+	if ( !is_function ) {
+	    if ( sym.nilp() ) name = Str_O::create("CLASP_NIL");
+	    else if ( sym == _lisp->_true() ) name = Str_O::create("CLASP_T");
+	    else {
+		stringstream ss;
+		ss << "SYM(" << sym->symbolName()->get() << ")";
+		name = Str_O::create(ss.str());
+	    }
+	    return Values(_Nil<T_O>(),name,Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+	}
+	Function_sp fsym = coerce::functionDesignator(sym);
+	Closure* closure = fsym->closure;
+	if ( BuiltinClosure* bcc = dynamic_cast<BuiltinClosure*>(closure) ) {
+	    return Values(_lisp->_true(),Str_O::create("Provide-c-func-name"), Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+	}
+	return Values(_Nil<T_O>(),Str_O::create("Provide-func-name"),Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+    }
+    
+
 
 
 #define ARGS_core_startupImagePathname "()"
@@ -112,7 +141,7 @@ namespace core
     T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format )
     {_G();
         /* Define the source file */
-        SourceFileInfo_sp sfi = af_sourceFileInfo(pathDesig);
+        SourceFileInfo_sp sfi = core_sourceFileInfo(pathDesig);
 	DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,sfi);
 	scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
 	scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR,SourcePosInfo_O::create(0,0,0,0));
@@ -142,27 +171,35 @@ namespace core
 	else if ( (dsp = stem.find("_o")) != string::npos) stem = stem.substr(0,dsp);
 
 	int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
-	printf("%s:%d Loading bundle %s\n", __FILE__, __LINE__, name.c_str());
+	// Check if we already have this dynamic library loaded
+	map<string,void*>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
+	if (handleIt != _lisp->openDynamicLibraryHandles().end() ) {
+	    dlclose(handleIt->second);
+	    printf("%s:%d Closing the existing dynamic library %s\n", __FILE__, __LINE__, name.c_str());
+	    _lisp->openDynamicLibraryHandles().erase(handleIt);
+	}
+	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
 	void* handle = dlopen(name.c_str(),mode);
 	if ( handle == NULL )
 	{
 	    string error = dlerror();
 	    return(Values(_Nil<T_O>(),Str_O::create(error)));
 	}
+	_lisp->openDynamicLibraryHandles()[name] = handle;
 	string mainName = CLASP_MAIN_FUNCTION_NAME;
-	InitFnPtr fnP = (InitFnPtr)dlsym(handle,mainName.c_str());
-	if ( fnP == NULL )
+	InitFnPtr mainFunctionPointer = (InitFnPtr)dlsym(handle,mainName.c_str());
+	if ( mainFunctionPointer == NULL )
 	{
 	    SIMPLE_ERROR(BF("Could not find initialization function %s") % mainName );
 	}
-//	printf("Found function %s at address %p\n", mainName.c_str(), fnP);
-	(*fnP)();
+//	printf("Found function %s at address %p\n", mainName.c_str(), mainFunctionPointer);
+	(*mainFunctionPointer)();
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     };
 
 
 
-
+#ifdef EXPOSE_DLLOAD
 #define ARGS_af_dlload "(pathDesig)"
 #define DECL_af_dlload ""
 #define DOCS_af_dlload "dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error))"
@@ -197,28 +234,31 @@ namespace core
 	string initName;
 	string kernelInitName = ss.str();
 	initName = kernelInitName;
-	InitFnPtr fnP = (InitFnPtr)dlsym(handle,kernelInitName.c_str());
-	if ( fnP == NULL )
+	InitFnPtr mainFunctionPointer = (InitFnPtr)dlsym(handle,kernelInitName.c_str());
+	if ( mainFunctionPointer == NULL )
 	{
 	    ss.str("");
 	    ss << "___user_" << stem;
 	    string userInitName = ss.str();
 	    initName = userInitName;
-	    fnP = (InitFnPtr)dlsym(handle,userInitName.c_str());
-	    if ( fnP == NULL )
+	    mainFunctionPointer = (InitFnPtr)dlsym(handle,userInitName.c_str());
+	    if ( mainFunctionPointer == NULL )
 	    {
 		SIMPLE_ERROR(BF("Could not find initialization function %s or %s") % kernelInitName % userInitName );
 	    }
 	}
-//	printf("Found function %s at address %p\n", initName.c_str(), fnP);
+//	printf("Found function %s at address %p\n", initName.c_str(), mainFunctionPointer);
 	T_mv result;
 	ActivationFrame_sp frame = _Nil<ActivationFrame_O>();
-	(*fnP)();
+	(*mainFunctionPointer)();
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     }
+#endif
 
 
 
+
+#ifdef EXPOSE_DLOPEN
 
 
 #define ARGS_af_dlopen "(pathDesig)"
@@ -251,7 +291,7 @@ namespace core
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     }
 
-
+#endif
 
 
 
@@ -849,11 +889,16 @@ namespace core {
 	SYMBOL_EXPORT_SC_(CorePkg,implicit_compile_hook_default);
 	Defun(implicit_compile_hook_default);
 	_sym_STARimplicit_compile_hookSTAR->defparameter(_sym_implicit_compile_hook_default->symbolFunction());
+
+#ifdef EXPOSE_DLLOAD
 	SYMBOL_SC_(CorePkg,dlload);
 	Defun(dlload);
+#endif
 
+#ifdef EXPOSE_DLOPEN
 	SYMBOL_SC_(CorePkg,dlopen);
 	Defun(dlopen);
+#endif
 
 	SYMBOL_SC_(CorePkg,dlsym);
 	Defun(dlsym);
@@ -872,7 +917,7 @@ namespace core {
         CoreDefun(callsByConstantReferencePerSecond);
         CoreDefun(callsByPointerPerSecond);
         CoreDefun(startupImagePathname);
-
+	CoreDefun(mangleName);
     }
 
 

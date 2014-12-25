@@ -243,7 +243,7 @@ namespace core
 	Fixnum_sp new_backquote_level = Fixnum_O::create(backquote_level->get()-1);
 	DynamicScopeManager scope(_sym_STARbackquote_levelSTAR,new_backquote_level);
 	char nextc = clasp_peek_char(sin);
-//	ql::source_code_list list(sin->lineNumber(),sin->column(),af_sourceFileInfo(sin));
+//	ql::source_code_list list(sin->lineNumber(),sin->column(),core_sourceFileInfo(sin));
 	ql::list list;
 	Symbol_sp head = _sym_unquote;
 	if ( nextc == '@' )
@@ -280,7 +280,7 @@ namespace core
 #define DECL_af_reader_error_unmatched_close_parenthesis ""
     T_mv af_reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch)
     {_G();
-	SourceFileInfo_sp info = af_sourceFileInfo(sin);
+	SourceFileInfo_sp info = core_sourceFileInfo(sin);
 	SIMPLE_ERROR(BF("Unmatched close parenthesis in file: %s line: %s")
                      % info->fileName()
                      % clasp_input_lineno(sin) );
@@ -293,7 +293,7 @@ namespace core
 #define DECL_af_reader_quote ""
     T_sp af_reader_quote(T_sp sin, Character_sp ch)
     {_G();
-//	ql::source_code_list result(sin->lineNumber(),sin->column(),af_sourceFileInfo(sin));
+//	ql::source_code_list result(sin->lineNumber(),sin->column(),core_sourceFileInfo(sin));
 	ql::list acc;
 	SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
@@ -540,7 +540,7 @@ namespace core
     {_G();
 	SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
-//	ql::source_code_list result(sin->lineNumber(),sin->column(),af_sourceFileInfo(sin));
+//	ql::source_code_list result(sin->lineNumber(),sin->column(),core_sourceFileInfo(sin));
 	ql::list result;
 	result << cl::_sym_function << quoted_object;
 	lisp_registerSourcePosInfo(result.cons(),spi);

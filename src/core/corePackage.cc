@@ -133,6 +133,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,lambdaParametersLimit);
     SYMBOL_EXPORT_SC_(ClPkg,schar);
     SYMBOL_EXPORT_SC_(CorePkg,scharSet);
+    SYMBOL_EXPORT_SC_(CorePkg,STARdebugInterpretedClosureSTAR);
 
     SYMBOL_EXPORT_SC_(CorePkg,bitArrayOp);
     SYMBOL_EXPORT_SC_(CorePkg,lambdaName);
@@ -958,21 +959,22 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	_sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(Fixnum_O::create(LCC_ARGS_IN_REGISTERS));
 
 	Cons_sp hooks = _Nil<Cons_O>();
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"),_sym_loadBundle),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"),_sym_loadBundle),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("so"),_sym_loadBundle),hooks);
+	hooks = Cons_O::create(Cons_O::create(Str_O::create("bc"),_sym_loadBitcode),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("l"),_sym_loadSource),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("L"),_sym_loadSource),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("lsp"),_sym_loadSource),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("LSP"),_sym_loadSource),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("lisp"),_sym_loadSource),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("LISP"),_sym_loadSource),hooks);
-	hooks = Cons_O::create(Cons_O::create(Str_O::create("bc"),_sym_loadBitcode),hooks);
-	hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"),_sym_loadBundle),hooks);
-	hooks = Cons_O::create(Cons_O::create(Str_O::create("so"),_sym_loadBundle),hooks);
-	hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"),_sym_loadBundle),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("clasprc"),_sym_loadSource),hooks);
 	ext::_sym_STARloadHooksSTAR->defparameter(hooks);
 	ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
         ext::_sym_STARinspectorHookSTAR->defparameter(_Nil<T_O>());
 	_sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
+	_sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
 #if 0
 
 	_sym_STARbq_simplifySTAR->defparameter(_lisp->_true());

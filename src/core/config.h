@@ -91,6 +91,7 @@ typedef int claspCharacter;
 
 #define BRCL_ARRAY_DIMENSION_LIMIT (1024*1024)
 
+
 /*! Pass five arguments in registers, the rest in memory */
 #define LCC_ARGS_IN_REGISTERS	5
 

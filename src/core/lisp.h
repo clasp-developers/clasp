@@ -224,7 +224,7 @@ namespace core
 
     class Lisp_O
     {
-        friend SourceFileInfo_mv af_sourceFileInfo(T_sp);
+	friend SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename, size_t offset, bool useLineno);
 	struct GCRoots //: public gctools::HeapRoot
         {
 	/*! The invocation history stack this should be per thread */
@@ -318,7 +318,6 @@ namespace core
     public:
 	static void initializeGlobals(Lisp_sp lisp);
 
-//	friend T_sp prim_getForm(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp);
 	template <class oclass> friend BuiltInClass_sp hand_initialize_class(uint& classesHandInitialized, Lisp_sp prog,BuiltInClass_sp c);
     public:
 	static 	void lisp_initSymbols(Lisp_sp lisp);
@@ -336,6 +335,7 @@ namespace core
     public:
     public:
 	GCRoots 		_Roots;
+	map<string,void*>           _OpenDynamicLibraryHandles;
 	char*			_StackTop;
 	uint			_StackWarnSize;
 	uint			_StackSampleCount;
@@ -403,6 +403,8 @@ namespace core
     public:
 	InvocationHistoryStack&	invocationHistoryStack();
     public:
+	map<string,void*>& openDynamicLibraryHandles() { return this->_OpenDynamicLibraryHandles; };
+    public:
 	/*! callArgs() are where extra arguments are stored when passing them
 	  into a function that takes more arguments than can be passed in registers
 	  See lispCallingConvention.h for more details.
@@ -430,7 +432,6 @@ namespace core
 	    MultipleValues* nextHead = this->_Roots._MultipleValuesCur->getPrevious();
 //	    printf("%s:%d _lisp->popMultipleValues()  current= %p after pop = %p\n", __FILE__, __LINE__, this->_Roots._MultipleValuesCur, nextHead );
 	    this->_Roots._MultipleValuesCur = this->_Roots._MultipleValuesCur->getPrevious();
-	    ASSERT(this->_Roots._MultipleValuesCur!=NULL);
 	};
     public:
 	DebugStream& debugLog() {HARD_ASSERT(this->_DebugStream!=NULL);return *(this->_DebugStream);};
@@ -464,7 +465,7 @@ namespace core
     public:
         gctools::Vec0<core::Symbol_sp>&     classSymbolsHolder() { return this->_Roots._ClassSymbolsHolder;};
     public:
-        SourceFileInfo_mv sourceFileInfo(const string& fileName);
+        SourceFileInfo_mv getOrRegisterSourceFileInfo(const string& fileName, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true );
     public:
 	/*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
@@ -796,8 +797,8 @@ namespace core
 	  each eval result to be printed. Return false if (quit) or (exit) was evaluated.
 	  sin - an input stream designator
 	*/
-	T_mv readEvalPrint(T_sp sin, Environment_sp environ, bool printResults);
-	T_mv readEvalPrintString(const string& string, Environment_sp environ, bool printResults );
+	T_mv readEvalPrint(T_sp sin, T_sp environ, bool printResults, bool prompt);
+	T_mv readEvalPrintString(const string& string, T_sp environ, bool printResults );
 	void readEvalPrintInteractive();
 
 
@@ -1023,16 +1024,14 @@ public:
 namespace core
 {
 
-    T_mv af_macroexpand_1(T_sp form, Environment_sp env);
-    T_mv af_macroexpand(T_sp form, Environment_sp env);
+    T_mv af_macroexpand_1(T_sp form, T_sp env);
+    T_mv af_macroexpand(T_sp form, T_sp env);
 
     Cons_sp af_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
 
-    Class_mv af_findClass(Symbol_sp symbol, bool errorp=true, Environment_sp env=_Nil<Environment_O>());
-    Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, Environment_sp env );
+    Class_mv af_findClass(Symbol_sp symbol, bool errorp=true, T_sp env=_Nil<T_O>());
+    Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env );
 
-
-    SourceFileInfo_mv af_sourceFileInfo(T_sp obj);
 
     void af_stackMonitor();
 

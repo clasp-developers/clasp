@@ -271,15 +271,14 @@ namespace core
 
     
     
-    
-#define ARGS_af_backtrace "()"
-#define DECL_af_backtrace ""
-#define DOCS_af_backtrace "backtrace"
-    void af_backtrace()
+#define ARGS_af_clibBacktrace "()"
+#define DECL_af_clibBacktrace ""
+#define DOCS_af_clibBacktrace "backtrace"
+    void af_clibBacktrace()
     {_G();
 	// Play with Unix backtrace(3) 
 #define BACKTRACE_SIZE 1024
-	printf("Entered af_backtrace()\n");
+	printf("Entered af_clibBacktrace()\n");
 	void* buffer[BACKTRACE_SIZE];
 	int nptrs;
 	nptrs = backtrace(buffer,BACKTRACE_SIZE);
@@ -485,7 +484,7 @@ namespace core {
 
     void initialize_debugging()
     {
-	Defun(backtrace);
+	Defun(clibBacktrace);
 	Defun(framePointers);
 	SYMBOL_EXPORT_SC_(CorePkg,printCurrentIhsFrameEnvironment);
 	Defun(printCurrentIhsFrameEnvironment);

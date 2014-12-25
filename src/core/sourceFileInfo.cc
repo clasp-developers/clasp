@@ -48,15 +48,20 @@ extern "C" {
 	string repExp = _rep_(exp);
 	printf("Object: %s\n", repExp.c_str() );
         if ( _lisp->sourceDatabase().notnilp() ) {
-            core::SourceFileInfo_mv sfi = _lisp->sourceDatabase()->multipleValuesSourceInfo(exp);
-            if ( sfi.number_of_values() >= 4 ) {
-                core::SourceFileInfo_sp sf = sfi;
-                core::Fixnum_sp filepos = sfi.valueGet(1).as<core::Fixnum_O>();
-                core::Fixnum_sp lineno  = sfi.valueGet(2).as<core::Fixnum_O>();
-                core::Fixnum_sp column  = sfi.valueGet(3).as<core::Fixnum_O>();
-                printf("     Source file: %s   lineno: %d  column: %d   filepos %d\n",
-                       _rep_(sf).c_str(), lineno->get(), column->get(), filepos->get());
-            } else {
+            core::SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(exp);
+            if ( spi.notnilp() ) {
+                core::SourceFileInfo_sp sfi = core_sourceFileInfo(core::Fixnum_O::create(spi->fileHandle()));
+		string sf = sfi->sourceDebugNamestring();
+                size_t filepos = spi->_Filepos;
+		int lineno = spi->_Lineno;
+		int column = spi->_Column;
+		if ( lineno != 0 ) {
+		    printf("     Source file: %s   lineno: %d  column: %d   filepos %zu\n",
+			   sf.c_str(), lineno, column, filepos);
+		} else {
+		    printf("     Source file: %s   filepos %zu\n", sf.c_str(), filepos);
+		}
+	    } else {
                 printf("     No source file info found\n");
             }
             if ( core::cl_consp(exp) ) {
@@ -73,6 +78,44 @@ extern "C" {
     }
 };
 
+
+namespace core
+{
+
+
+#define ARGS_core_sourceFileInfo "(name &optional source-debug-namestring (source-debug-offset 0) (use-lineno t))"
+#define DECL_core_sourceFileInfo ""
+#define DOCS_core_sourceFileInfo "sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index"
+    SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno)
+    {
+        if ( sourceFile.nilp() ) {
+            return core_sourceFileInfo(Fixnum_O::create(0));
+        } else if ( Str_sp strSourceFile = sourceFile.asOrNull<Str_O>() ) {
+            return _lisp->getOrRegisterSourceFileInfo(strSourceFile->get(),sourceDebugNamestring,sourceDebugOffset,useLineno);
+        } else if ( Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>() ) {
+            return _lisp->getOrRegisterSourceFileInfo(af_namestring(pnSourceFile)->get(),sourceDebugNamestring,sourceDebugOffset,useLineno);
+        } else if ( Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
+	    size_t idx = fnSourceFile->get();
+            if ( idx >= _lisp->_Roots._SourceFiles.size() ) {
+		idx = 0;
+		//                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
+            }
+            return Values(_lisp->_Roots._SourceFiles[idx],fnSourceFile);
+        } else if ( cl_streamp(sourceFile) ) {
+	    T_sp so = sourceFile;
+	    T_sp sfi = clasp_input_source_file_info(so);
+            return core_sourceFileInfo(sfi);
+        } else if ( SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>() ) {
+            return _lisp->getOrRegisterSourceFileInfo(sfi->namestring(),sourceDebugNamestring,sourceDebugOffset,useLineno);
+        } else if ( SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>() ) {
+            return core_sourceFileInfo(Fixnum_O::create(spi->_FileId));
+        }
+        SIMPLE_ERROR(BF("Add support for source-file-info for %s") % _rep_(sourceFile));
+    };
+
+
+
+};
 
 
 namespace core
@@ -135,38 +178,6 @@ namespace core
 
 
 
-#if 0    
-#define ARGS_af_sourceFileInfo "(arg)"
-#define DECL_af_sourceFileInfo ""
-#define DOCS_af_sourceFileInfo "sourceFileInfo"
-    SourceFileInfo_ af_sourceFileInfo(T_sp obj)
-    {_G();
-	SourceFileInfo_sp result = _Nil<SourceFileInfo_O>();
-	if ( obj.nilp() ) {
-	    // do nothing
-	} else if ( Cons_sp co = obj.asOrNull<Cons_O>() ) {
-            if ( _lisp->sourceDatabase().notnilp() ) {
-                return _lisp->sourceDatabase()->lookupSourceInfo(co);
-            }
-            return _Nil<SourceFileInfo_O>();
-	} else if ( cl_streamp(obj) ) {
-	    T_sp so = obj;
-	    result = so->sourceFileInfo();
-	} else if ( Function_sp fo = obj.asOrNull<Function_O>() ) {
-	    result = af_sourceFileInfo(fo->closure->sourcePosInfo());
-        } else if ( SourcePosInfo_sp spi = obj.asOrNull<SourcePosInfo_O>() ) {
-            result = _lisp->sourceDatabase()->sourceFileInfoFromIndex(spi->_FileId);
-	} else
-	{
-	    SIMPLE_ERROR(BF("Implement sourceFileInfo for %s") % _rep_(obj));
-	}
-	if ( result.nilp() )
-	{
-	    return SourceFileInfo_O::getOrCreate("Anonymous");
-	}
-	return result;
-    };
-#endif
 
     
 #define ARGS_af_lineno "(arg)"
@@ -221,10 +232,14 @@ namespace core
     {_G();
         if ( _lisp->sourceDatabase().notnilp() ) {
             if ( cl_consp(obj) ) {
-                SourceFileInfo_mv sfi = _lisp->sourceDatabase()->multipleValuesSourceInfo(obj);
-                if ( sfi.notnilp() ) {
-                    return sfi;
-                }
+		SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(obj);
+		if ( spi.notnilp() ) {
+		    SourceFileInfo_sp sfi = core_sourceFileInfo(Fixnum_O::create(spi->fileHandle()));
+		    Fixnum_sp fnlineno = Fixnum_O::create(spi->_Lineno);
+		    Fixnum_sp fncolumn = Fixnum_O::create(spi->_Column);
+		    Integer_sp fnfilepos = Integer_O::create((size_t)spi->_Filepos);
+		    return Values(sfi,fnfilepos,fnlineno,fncolumn);
+		}
                 T_sp cur = obj;
                 for ( ; cur.notnilp(); cur=oCdr(cur) ) {
                     if ( cl_consp(cur) ) {
@@ -241,33 +256,6 @@ namespace core
 
 
     
-#if 0    
-#define ARGS_core_walkToFindSourceInfo "(arg)"
-#define DECL_core_walkToFindSourceInfo ""
-#define DOCS_core_walkToFindSourceInfo "Walk down the tree looking for the first source info you find and return as multiple values"
-    SourceFileInfo_mv core_walkToFindSourceInfo(T_sp obj)
-    {_G();
-        if ( _lisp->sourceDatabase().notnilp() ) {
-            if ( cl_consp(obj) ) {
-                SourceFileInfo_mv sfi = _lisp->sourceDatabase()->multipleValuesSourceInfo(obj);
-                if ( sfi.notnilp() ) {
-                    return sfi;
-                }
-                T_sp cur = obj;
-                for ( ; cur.notnilp(); cur=oCdr(cur) ) {
-                    if ( cl_consp(cur) ) {
-                        SourceFileInfo_mv sfisub = core_walkToFindSourceInfo(oCar(cur));
-                        if ( sfisub.notnilp() ) return sfisub;
-                    } else {
-                        return Values(_Nil<SourceFileInfo_O>());
-                    }
-                }
-            }
-        }
-	return Values(_Nil<SourceFileInfo_O>());
-    };
-#endif
-
 
     
 
@@ -356,29 +344,47 @@ namespace core
 	this->Base::initialize();
     }
 
-    SourceFileInfo_sp SourceFileInfo_O::create(const string& str, int handle)
+
+    SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, Str_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno )
     {_G();
-        GC_ALLOCATE(SourceFileInfo_O,spi );
-	spi->_pathname = cl_pathname(Str_O::create(str));
-        spi->_FileHandle = handle;
-	return spi;
+        GC_ALLOCATE(SourceFileInfo_O,sfi );
+	sfi->_pathname = path;
+        sfi->_FileHandle = handle;
+	sfi->_SourceDebugNamestring = sourceDebugNamestring;
+	sfi->_SourceDebugOffset = sourceDebugOffset;
+	sfi->_TrackLineno = useLineno;
+	return sfi;
     }
 
-
-    SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle )
+    SourceFileInfo_sp SourceFileInfo_O::create(const string& str, int handle, Str_sp truename, size_t offset, bool useLineno)
     {_G();
-	Str_sp s = af_namestring(path);
-        return SourceFileInfo_O::create(s->get(),handle);
+	Pathname_sp pn = cl_pathname(Str_O::create(str));
+	return SourceFileInfo_O::create(pn,handle,truename,offset,useLineno);
     }
+
 
 
     string SourceFileInfo_O::__repr__() const
     {_G();
 	stringstream ss;
-	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(this->_pathname) << ">";
+	ss << "#<" << this->_instanceClass()->classNameAsString();
+	ss << " " << _rep_(this->_pathname);
+	ss << " :file-handle " << this->_FileHandle;
+	ss << " :source-debug-namestring " << _rep_(this->_SourceDebugNamestring);
+	ss << " :source-debug-offset " << this->_SourceDebugOffset;
+	ss << " :trackLineno " << this->_TrackLineno;
+	ss << " >";
 	return ss.str();
     }
 
+
+    string SourceFileInfo_O::sourceDebugNamestring() const
+    {
+	if ( this->_SourceDebugNamestring.notnilp() ) {
+	    return this->_SourceDebugNamestring->get();
+	}
+	return this->fileName();
+    }
 
 
     string SourceFileInfo_O::fileName() const
@@ -431,7 +437,10 @@ namespace core
     void SourceFileInfo_O::exposeCando(core::Lisp_sp lisp)
     {
 	core::class_<SourceFileInfo_O>()
-	    .def("source-file-info-pathname",&SourceFileInfo_O::pathname)
+	    .def("SourceFileInfo-pathname",&SourceFileInfo_O::pathname)
+	    .def("SourceFileInfo-sourceDebugNamestring",&SourceFileInfo_O::sourceDebugNamestring)
+	    .def("SourceFileInfo-sourceDebugOffset",&SourceFileInfo_O::sourceDebugOffset)
+	    .def("SourceFileInfo-useLineno",&SourceFileInfo_O::useLineno)
 	    ;
 //	SYMBOL_SC_(CorePkg,SourceFileInfoGetOrCreate);
 //	Defun(SourceFileInfoGetOrCreate);
@@ -481,6 +490,7 @@ namespace core
     }
 
 
+
     void SourcePosInfo_O::exposePython(core::Lisp_sp lisp)
     {_G();
 #ifdef USEBOOSTPYTHON
@@ -492,19 +502,6 @@ namespace core
 
 
 
-
-
-    
-#define ARGS_af_lookupSourceFileInfo "(obj)"
-#define DECL_af_lookupSourceFileInfo ""
-#define DOCS_af_lookupSourceFileInfo "lookupSourceFileInfo"
-    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj)
-    {_G();
-        if ( _lisp->sourceDatabase().notnilp() ) {
-            return _lisp->sourceDatabase()->multipleValuesSourceInfo(obj);
-        }
-        return Values(_Nil<SourceFileInfo_O>());
-    };
 
 
 
@@ -547,9 +544,9 @@ namespace core
 	    ;
 
 	SYMBOL_EXPORT_SC_(CorePkg,lookupSourceFileInfo);
-	Defun(lookupSourceFileInfo);
 	Defun(dumpSourceManager);
         Defun(makeSourceManager);
+        CoreDefun(sourceFileInfo);
 
     }
 
@@ -586,9 +583,8 @@ namespace core
         }
         
         if ( this->availablep() ) {
-            SourceFileInfo_mv sfi = af_sourceFileInfo(sourceFile);
-            Fixnum_sp fileId = sfi.valueGet(1).as<Fixnum_O>();
-            SourcePosInfo_sp info = SourcePosInfo_O::create(fileId->get(),filepos,lineno,column);
+            SourceFileInfo_sp sfi = core_sourceFileInfo(sourceFile);
+            SourcePosInfo_sp info = SourcePosInfo_O::create(sfi->fileHandle(),filepos,lineno,column);
             this->_SourcePosInfo->setf_gethash(key,info);
             return info;
         }
@@ -652,23 +648,6 @@ namespace core
 	    } );
     }
 			      
-
-    SourceFileInfo_mv SourceManager_O::multipleValuesSourceInfo(T_sp key)
-    {
-        if ( this->availablep() ) {
-	    T_mv result = this->_SourcePosInfo->gethash(key,_Nil<SourcePosInfo_O>());
-	    SourcePosInfo_sp it = result.as<SourcePosInfo_O>();
-            if (it.notnilp()) {
-                SourceFileInfo_sp sfi = af_sourceFileInfo(Fixnum_O::create(it->_FileId));
-                return Values(sfi
-			      , Fixnum_O::create((int)it->_Filepos)
-			      , Fixnum_O::create(it->_Lineno)
-			      , Fixnum_O::create(it->_Column)
-			      );
-            }
-        }
-        return Values(_Nil<SourceFileInfo_O>());
-    }
 
     SourcePosInfo_sp SourceManager_O::lookupSourcePosInfo(T_sp key)
     {

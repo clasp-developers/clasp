@@ -72,7 +72,7 @@ namespace core
         virtual Fixnum_sp vectorPush(T_sp newElement) {SUBIMP();};
         virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension=1) {SUBIMP();};
 
-
+	virtual int fillPointer() const {SUBIMP();};
         virtual void setFillPointer(size_t idx) {SUBIMP();};
 
         virtual void* addressOfBuffer() const {SUBIMP();};

@@ -6269,8 +6269,9 @@ namespace core {
 	strm = coerce::inputStreamDesignator(strm);
 	SourceFileInfo_sp sfi = clasp_input_source_file_info(strm);
 	size_t filePos = clasp_input_filePos(strm);
-	uint lineno = clasp_input_lineno(strm);
-	uint column = clasp_input_column(strm);
+	uint lineno, column;
+	    lineno = clasp_input_lineno(strm);
+	    column = clasp_input_column(strm);
 	SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(),filePos,lineno,column);
 	return spi;
     }
@@ -6279,7 +6280,7 @@ namespace core {
     SourceFileInfo_sp clasp_input_source_file_info(T_sp strm)
     {
         T_sp filename = clasp_filename(strm);
-        SourceFileInfo_sp sfi = af_sourceFileInfo(filename);
+        SourceFileInfo_sp sfi = core_sourceFileInfo(filename);
         return sfi;
     }
 
@@ -6630,6 +6631,34 @@ namespace core {
     }
 
 
+#define ARGS_cl_readCharNoHang "(&optional strm (eof_error_p t) eof_value recursive_p)"
+#define DECL_cl_readCharNoHang ""
+#define DOCS_cl_readCharNoHang "readCharNoHang"
+    T_sp cl_readCharNoHang(T_sp strm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
+    {_G();
+        strm = coerce::inputStreamDesignator(strm);
+	if ( !AnsiStreamP(strm) ) {
+	    T_sp output = eval::funcall(gray::_sym_stream_read_char_no_hang,strm);
+	    if ( output == kw::_sym_eof ) {
+		goto END_OF_FILE;
+	    }
+	    return output;
+	}
+	{
+	    int f = clasp_listen_stream(strm);
+	    if ( f == CLASP_LISTEN_AVAILABLE ) {
+		int c = clasp_read_char(strm);
+		if ( c != EOF ) return StandardChar_O::create(c);
+	    } else if ( f == CLASP_LISTEN_NO_CHAR) {
+		return _Nil<T_O>();
+	    }
+	}
+    END_OF_FILE:
+	if ( eof_error_p.nilp() ) return eof_value;
+	ERROR_END_OF_FILE(strm);
+    }
+
+
 #define ARGS_cl_read_from_string "(content &optional (eof-error-p t) eof-value &key (start 0) end preserve-whitespace)"
 #define DECL_cl_read_from_string ""
 #define DOCS_cl_read_from_string "read_from_string"
@@ -6963,6 +6992,8 @@ namespace core {
 
 
 
+
+
     T_sp clasp_openRead(const string& name)
     {
         Str_sp filename = Str_O::create(name);
@@ -7020,6 +7051,8 @@ void initialize_lispStream()
 	ClDefun(peekChar);
 	SYMBOL_EXPORT_SC_(ClPkg,readChar);
 	ClDefun(readChar);
+	SYMBOL_EXPORT_SC_(ClPkg,readCharNoHang);
+	ClDefun(readCharNoHang);
 	SYMBOL_EXPORT_SC_(ClPkg,force_output);
 	ClDefun(force_output);
 	SYMBOL_EXPORT_SC_(ClPkg,finish_output);

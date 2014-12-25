@@ -2246,8 +2246,8 @@ namespace core
 	    if ( Symbol_sp headSym = head.asOrNull<Symbol_O>() )
 	    {
 //		LOG(BF("Head[%s] is a Symbol") % headSym->__repr__() );
-		_lisp->invocationHistoryStack().setExpressionForTop(form);
-		_lisp->invocationHistoryStack().setActivationFrameForTop(Environment_O::clasp_getActivationFrame(environment));
+//		_lisp->invocationHistoryStack().setExpressionForTop(form);
+//		_lisp->invocationHistoryStack().setActivationFrameForTop(Environment_O::clasp_getActivationFrame(environment));
 		if ( _lisp->isSingleStepOn() )
 		{
 		    IMPLEMENT_ME();

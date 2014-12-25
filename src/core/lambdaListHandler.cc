@@ -127,6 +127,63 @@ namespace core
 
 
 
+    T_sp LambdaListHandler_O::lambdaList()
+    {
+	ql::list ll(_lisp);
+	{ // required arguments  req = ( num req1 req2 ...)
+	    for ( gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
+		  it!=this->_RequiredArguments.end(); it++ )
+	    {
+		ll << it->_ArgTarget;
+	    }
+	}
+	if ( this->_OptionalArguments.size() > 0 ) {
+	    ll << cl::_sym_AMPoptional;
+	    for ( gctools::Vec0<OptionalArgument>::const_iterator it = this->_OptionalArguments.begin();
+		  it!=this->_OptionalArguments.end(); it++ )
+		{
+		    if (it->_Sensor._ArgTarget.notnilp() ) {
+			Cons_sp one = Cons_O::createList(it->_ArgTarget,it->_Default,it->_Sensor._ArgTarget);
+			ll << one;
+		    } else if (it->_Default.notnilp() ) {
+			Cons_sp one = Cons_O::createList(it->_ArgTarget,it->_Default);
+			ll << one;
+		    } else {
+			ll << it->_ArgTarget;
+		    }
+		}
+	}
+	if ( this->_RestArgument._ArgTarget.notnilp() ) {
+	    ll << cl::_sym_AMPrest;
+	    ll << this->_RestArgument._ArgTarget;
+	}
+	if ( this->_KeyFlag.notnilp() || this->_KeywordArguments.size()>0 ) {
+	    ll << cl::_sym_AMPkey;
+	    for ( gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();
+		  it!=this->_KeywordArguments.end(); it++ )
+	    {
+		T_sp keywordTarget = it->_ArgTarget;
+		if ( it->_Keyword.as<Symbol_O>()->symbolName()->get() != keywordTarget.as<Symbol_O>()->symbolName()->get() ) {
+		    keywordTarget = Cons_O::createList(it->_Keyword,keywordTarget);
+		}
+		if (it->_Sensor._ArgTarget.notnilp() ) {
+		    Cons_sp one = Cons_O::createList(keywordTarget,it->_Default,it->_Sensor._ArgTarget);
+		    ll << one;
+		} else if (it->_Default.notnilp() ) {
+			Cons_sp one = Cons_O::createList(keywordTarget,it->_Default);
+			ll << one;
+		} else {
+		    ll << keywordTarget;
+		}
+	    }
+	}
+	if (this->_AllowOtherKeys.notnilp()) {
+	    ll << cl::_sym_AMPallow_other_keys;
+	}
+	return ll.cons();
+    }
+    
+
     SymbolSet_sp LambdaListHandler_O::identifySpecialSymbols(Cons_sp declareSpecifierList)
     {_G();
 	SymbolSet_sp specials(SymbolSet_O::create());
@@ -266,7 +323,7 @@ namespace core
 
 	Symbol_sp name_symbol = af_gensym(Str_O::create("macro-name"));
 	//	SourceCodeCons_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
-	ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),af_sourceFileInfo(lambda_list));
+	ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core_sourceFileInfo(lambda_list));
 	sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol,new_lambda_list);
 	Cons_sp macro_ll = sclist.cons();
         if ( _lisp->sourceDatabase().notnilp() ) {
@@ -307,7 +364,6 @@ namespace core
     {_OF();
         this->Base::initialize();
 	this->_CreatesBindings = true;
-	this->_LambdaList = _Nil<Cons_O>();
 	this->_DeclareSpecifierList = _Nil<Cons_O>();
 	this->_RequiredArguments.clear();
 	this->_OptionalArguments.clear();
@@ -1095,7 +1151,6 @@ void bind_aux
     {_OF();
 	T_sp whole;
 	Symbol_sp environment;
-	this->_LambdaList = lambda_list;
 	this->_DeclareSpecifierList = declareSpecifierList;
 	this->_CreatesBindings = parse_lambda_list(lambda_list,
 						   context,
@@ -1345,6 +1400,7 @@ void bind_aux
 	    .def("numberOfLexicalVariables",&LambdaListHandler_O::numberOfLexicalVariables)
 	    .def("namesOfLexicalVariables",&LambdaListHandler_O::namesOfLexicalVariables)
 	    .def("namesOfLexicalVariablesForDebugging",&LambdaListHandler_O::namesOfLexicalVariablesForDebugging)
+	    .def("LambdaListHandler-lambdaList",&LambdaListHandler_O::lambdaList)
 	    ;
 	SYMBOL_SC_(CorePkg,process_macro_lambda_list);
 	Defun(process_macro_lambda_list);

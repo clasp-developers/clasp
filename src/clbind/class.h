@@ -1212,7 +1212,9 @@ namespace clbind
                 );
 
             add_wrapper_cast((WrappedType*)0);
-
+#if 0
+	    int*** i = bases_t();
+#endif
             generate_baseclass_list(detail::type_<Base>());
         }
 

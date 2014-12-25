@@ -189,6 +189,16 @@
 		
 
 
+(defmacro with-debug-info-generator ((&key module env pathname) &rest body)
+  "One macro that uses three other macros"
+  `(let ()
+     (with-dibuilder (,module)
+       (with-dbg-compile-unit (,env ,pathname)
+	 (with-dbg-file-descriptor (,env ,pathname)
+	   ,@body)))))
+	 
+    
+
 (defmacro with-dbg-lexical-block ((env block-form) &body body)
   (let ((source-dir (gensym))
         (source-name (gensym))
@@ -297,9 +307,11 @@
       (let ((ln lineno)
 	    (col column))
 	(irc-intrinsic "trace_setLineNumberColumnForIHSTop"
-		       *gv-source-path-name*
+		       *gv-source-pathname*
                        *gv-source-file-info-handle*
-                       (jit-constant-i32 ln) (jit-constant-i32 col)))
+		       (jit-constant-i64 filepos)
+                       (jit-constant-i32 ln) 
+		       (jit-constant-i32 col)))
       nil)))
 
 

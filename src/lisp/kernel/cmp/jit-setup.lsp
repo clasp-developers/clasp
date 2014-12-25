@@ -61,7 +61,8 @@ using features defined in corePackage.cc"
     m))
 
 
-(defun make-gv-source-file-info-handle-in-*the-module* (&optional (handle -1))
+(defun make-gv-source-file-info-handle-in-*the-module* (&optional handle)
+  (if (null handle) (setq handle -1))
   (llvm-sys:make-global-variable *the-module*
                                  +i32+  ; type
                                  nil    ; constant

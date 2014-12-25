@@ -51,6 +51,32 @@ THE SOFTWARE.
 namespace core
 {
 
+
+    
+#define ARGS_core_functionLambdaList "(function)"
+#define DECL_core_functionLambdaList ""
+#define DOCS_core_functionLambdaList "functionLambdaList"
+    T_mv core_functionLambdaList(T_sp obj)
+    {
+	if ( obj.nilp() ) {
+	    return Values(_Nil<T_O>(),_Nil<T_O>());
+	} else if ( Symbol_sp sym = obj.asOrNull<Symbol_O>() ) {
+	    if (!sym->fboundp()) {
+		return Values(_Nil<T_O>(),_Nil<T_O>());
+	    }
+	    Function_sp fn = sym->symbolFunction();
+	    if ( fn.nilp() ) {
+		return Values(_Nil<T_O>(),_Nil<T_O>());
+	    }
+	    return Values(sym->symbolFunction()->lambdaList(),_lisp->_true());
+	} else if ( Function_sp func = obj.asOrNull<Function_O>() ) {
+	    return Values(func->lambdaList(),_lisp->_true());
+	}
+	return Values(_Nil<T_O>(),_Nil<T_O>());
+    }
+
+
+    
 #define ARGS_core_functionSourcePosInfo "(function)"
 #define DECL_core_functionSourcePosInfo ""
 #define DOCS_core_functionSourcePosInfo "functionSourcePosInfo"
@@ -87,19 +113,27 @@ namespace core
 	    : 0; 
     };
 
+    size_t FunctionClosure::filePos() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->filepos() : 0; };
+
     int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->lineno() : 0; };
     int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->column() : 0; };
 
 
     SourcePosInfo_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column )
     {
-        SourceFileInfo_mv sfi = af_sourceFileInfo(sourceFile);
+        SourceFileInfo_mv sfi = core_sourceFileInfo(sourceFile);
         Fixnum_sp fileId = sfi.valueGet(1).as<Fixnum_O>();
         SourcePosInfo_sp spi = SourcePosInfo_O::create(fileId->get(),filePos,lineno,column);
         this->_SourcePosInfo = spi;
         return spi;
     }
 
+
+    T_sp BuiltinClosure::lambdaList() const
+    {
+	return this->_lambdaListHandler->lambdaList();
+    }
+    
     void BuiltinClosure::LISP_CALLING_CONVENTION()
     {
         IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
@@ -126,6 +160,11 @@ namespace core
     };
 
 
+    T_sp InterpretedClosure::lambdaList() const
+    {
+	return this->lambdaListHandler()->lambdaList();
+    }
+
     void InterpretedClosure::LISP_CALLING_CONVENTION()
     {
         ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler,this->closedEnvironment);
@@ -136,12 +175,21 @@ namespace core
         VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
         newActivationFrame->attachDebuggingInfo(debuggingInfo);
         InvocationHistoryFrame _frame(this,newActivationFrame);
+#if 1
+	if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
+	    printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
+	}
+#endif
         *lcc_resultP = eval::sp_progn(this->_code,newValueEnvironment);
     };
 
 
 
 
+    T_mv Function_O::lambdaList() {
+        ASSERTF(this->closure,BF("The Function closure is NULL"));
+        return Values(this->closure->lambdaList(),_lisp->_true());
+    }
 
     LambdaListHandler_sp Function_O::functionLambdaListHandler() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
@@ -179,8 +227,8 @@ Environment_sp Function_O::closedEnvironment() const{IMPLEMENT_ME();};
     T_mv Function_O::functionSourcePos() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         SourcePosInfo_sp spi = this->closure->sourcePosInfo();
-        SourceFileInfo_sp sfi = af_sourceFileInfo(spi);
-        return Values(sfi,Fixnum_O::create(spi->lineno()));
+        SourceFileInfo_sp sfi = core_sourceFileInfo(spi);
+        return Values(sfi,Integer_O::create((size_t)spi->filepos()), Fixnum_O::create(spi->lineno()));
     }
 
 
@@ -261,6 +309,7 @@ Environment_sp Function_O::closedEnvironment() const{IMPLEMENT_ME();};
 	ClDefun(functionLambdaExpression);
 	CoreDefun(functionSourcePosInfo);
         CoreDefun(setKind);
+	CoreDefun(functionLambdaList);
     }
 
     void Function_O::exposePython(Lisp_sp lisp)

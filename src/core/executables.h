@@ -83,6 +83,7 @@ namespace core {
         SourcePosInfo_sp sourcePosInfo() const { return this->_SourcePosInfo;};
         SourcePosInfo_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
         virtual int sourceFileInfoHandle() const;
+	virtual size_t filePos() const;
         virtual int lineNumber() const;
         virtual int column() const;
     };
@@ -125,6 +126,8 @@ namespace core {
         virtual void setKind(Symbol_sp k);
         virtual Symbol_sp functionKind() const;
         LambdaListHandler_sp functionLambdaListHandler() const;
+	/*! Return (values lambda-list foundp) */
+	T_mv lambdaList();
         Environment_sp closedEnvironment() const;
 	Cons_sp functionDeclares() const;
         T_sp functionName() const;
@@ -168,6 +171,7 @@ namespace core
 	Str_sp docstring() const { return this->_docstring;};
 	Cons_sp declares() const { return this->_declares;};
         LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};
+	T_sp lambdaList() const;
     };
 
 
@@ -188,6 +192,7 @@ namespace core
             this->_lambdaListHandler = llh;
             this->kind = k;
         }
+	virtual T_sp lambdaList() const;
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual const char* describe() const {return "BuiltinClosure";};
 	virtual void LISP_CALLING_CONVENTION();

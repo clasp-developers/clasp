@@ -544,10 +544,18 @@ namespace core
 
 	    // setup the SYS logical-pathname-translations
 	    Cons_sp pts = Cons_O::createList(
-		Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
+	       Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
 		/* ,  more here */
 		);
 	    af_pathnameTranslations(Str_O::create("sys"),_lisp->_true(),pts);
+
+	    // setup the TMP logical-pathname-translations
+	    Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"), 
+						  cl_pathname(Str_O::create("/tmp/**/*.*")));
+	    Cons_sp ptsTmp = Cons_O::createList(entryTmp
+		/* ,  more here */
+		);
+	    af_pathnameTranslations(Str_O::create("tmp"),_lisp->_true(),ptsTmp);
 
             // setup the APP-RESOURCES logical-pathname-translations
             Cons_sp app = Cons_O::createList(
@@ -652,21 +660,6 @@ namespace core
         {_BLOCK_TRACE("Start printing symbols properly");
             this->_PrintSymbolsProperly = true;
         }
-#if 0 // wtf is this???
-	if ( this->_dont_load_startup )
-	{_BLOCK_TRACE("Load startup code");
-//	    Pathname_sp initPathname = cl_pathname(Str_O::create("sys:brcl/init.lsp"));
-	    Path_sp corePath = Path_O::create(this->_Bundle->getLispDir());
-	    corePath->path_append("/init");
-	    corePath->path_append("/coreFile.lisp");
-	    {_BLOCK_TRACEF(BF("Loading core-file with path: %s") % corePath->asString() );
-		this->load(corePath);
-	    }
-	} else
-	{
-	    LOG(BF("Not loading startup code"));
-	}
-#endif
     }
 
 
@@ -878,6 +871,7 @@ namespace core
 	string formName = lispify_symbol_name(rawFormName);
 	Symbol_sp sym = _lisp->internWithPackageName(packageName,formName);
         sym->exportYourself();
+	sym->setf_symbolFunction(_Nil<Function_O>());
 	SpecialForm_sp special = SpecialForm_O::create(sym,cb);
         if ( this->_Roots._SpecialForms.unboundp() ) {
             this->_Roots._SpecialForms = HashTableEq_O::create_default();
@@ -985,7 +979,7 @@ namespace core
 	    cc = BuiltInClass_O::create(classSymbol);
 	}
 	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
-	af_setf_findClass(cc,classSymbol,true,_Nil<Environment_O>());
+	af_setf_findClass(cc,classSymbol,true,_Nil<T_O>());
 	if ( IS_SYMBOL_DEFINED(base1ClassSymbol))
 	{
 	    cc->addInstanceBaseClass(base1ClassSymbol);
@@ -1015,7 +1009,7 @@ namespace core
 //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
 	LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol) );
 //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
-	af_setf_findClass(theClass,classSymbol,true,_Nil<Environment_O>());
+	af_setf_findClass(theClass,classSymbol,true,_Nil<T_O>());
 //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
 	theClass->setCreator(allocator);
     }
@@ -1442,22 +1436,22 @@ namespace core
 
 
 
-    T_mv Lisp_O::readEvalPrint(T_sp inputStream, Environment_sp environ, bool printResults)
-    {_OF();
+    T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt)
+    {
 	T_mv result = Values(_Nil<T_O>());
-	T_sp sin = coerce::inputStreamDesignator(inputStream);
-	DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,af_sourceFileInfo(sin));
+	DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,core_sourceFileInfo(stream));
 	while (1) {
 	    TRY() {
+		if ( prompt ) {
+		    stringstream prompts;
+		    prompts << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << "> ";
+		    clasp_write_string(prompts.str(),stream);
+		}
 		DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
-		innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR,core_inputStreamSourcePosInfo(sin));
-		T_sp expression = read_lisp_object(sin,false,_Unbound<T_O>(),false);
+		innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR,core_inputStreamSourcePosInfo(stream));
+		T_sp expression = read_lisp_object(stream,false,_Unbound<T_O>(),false);
 		if ( expression.unboundp() ) break;
 		_sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(expression,_sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
-		//		TopLevelIHF frame(_lisp->invocationHistoryStack(),expression);
-		//		_lisp->invocationHistoryStack().setExpressionForTop(expression);
-		//		_lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
-		//		PushCodeStack codeStack(expression,_Nil<Environment_O>(),_lisp);
 		if ( _sym_STARechoReplReadSTAR->symbolValue().isTrue() )
 		    {
 			string suppress;
@@ -1475,7 +1469,7 @@ namespace core
 		if ( af_keywordP(expression) ) {
 		    ql::list tplCmd;
 		    tplCmd << expression;
-		    while ( T_sp exp = read_lisp_object(sin,false,_Unbound<T_O>(),false) ) {
+		    while ( T_sp exp = read_lisp_object(stream,false,_Unbound<T_O>(),false) ) {
 			if (exp.unboundp()) break;
 			tplCmd << exp;
 		    }
@@ -1507,37 +1501,31 @@ namespace core
 				    }
 			    }
 		    }
+	    } catch (Condition& err) {
+		// Catch condition from reader means just ask for another s-exp if
+		// interactive and terminate if batch
+		this->print(BF("%s:%d Caught Condition from reader\n") % __FILE__ % __LINE__ );
+		exit(1);
+		//		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
+	    } catch (DebuggerSaysAbortToRepl& abort) {
+		this->print(BF("%s:%d aborted to repl\n") % __FILE__ % __LINE__ );
+		// Do nothing
+	    } catch (HardError& err) {
+		this->print(BF("Should never happen - catch and convert to Condition below - HardError: %s")
+			    % err.message() );
+		IMPLEMENT_ME();
+		//		this->enterDebugger();
 	    }
-	    catch (Condition& err)
-		{
-		    // Catch condition from reader means just ask for another s-exp if
-		    // interactive and terminate if batch
-		    this->print(BF("%s:%d Caught Condition from reader") % __FILE__ % __LINE__ );
-		    exit(1);
-		    //		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
-		}
-	    catch (DebuggerSaysAbortToRepl& abort)
-		{
-		    this->print(BF("%s:%d aborted to repl:") % __FILE__ % __LINE__ );
-		    // Do nothing
-		}
-	    catch (HardError& err)
-		{
-		    this->print(BF("Should never happen - catch and convert to Condition below - HardError: %s")
-				% err.message() );
-		    IMPLEMENT_ME();
-		    //		this->enterDebugger();
-		}
 	}
 	return result;
     }
 
 
 
-    T_mv Lisp_O::readEvalPrintString(const string& code, Environment_sp environ, bool printResults )
+    T_mv Lisp_O::readEvalPrintString(const string& code, T_sp environ, bool printResults )
     {_OF();
 	StringInputStream_sp sin = StringInputStream_O::make(code);
-	T_mv result = this->readEvalPrint(sin,environ,printResults);
+	T_mv result = this->readEvalPrint(sin,environ,printResults,false);
 	cl_close(sin);
 	return result;
     }
@@ -1552,7 +1540,7 @@ namespace core
 #define DOCS_af_lowLevelRepl "lowLevelRepl - this is a built in repl for when the top-level repl isn't available"
     void af_lowLevelRepl()
     {_G();
-	_lisp->readEvalPrintInteractive();
+	_lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(),_Nil<T_O>(),true,true);
     };
 
 
@@ -1567,7 +1555,7 @@ namespace core
 	  prompt << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << ">>> ";
 	  line = myReadLine(prompt.str());
 	  StringInputStream_sp sin = StringInputStream_O::make(line);
-	  this->readEvalPrint(sin,_Nil<Environment_O>(),true);
+	  this->readEvalPrint(sin,_Nil<T_O>(),true,true);
 	}
     }
 
@@ -1940,7 +1928,7 @@ namespace core
 #define ARGS_af_findClass "(symbol &optional (errorp t) environment)"
 #define DECL_af_findClass ""
 #define DOCS_af_findClass "findClass"
-    Class_mv af_findClass(Symbol_sp symbol, bool errorp, Environment_sp env )
+    Class_mv af_findClass(Symbol_sp symbol, bool errorp, T_sp env )
     {_G();
 	if ( _lisp->bootClassTableIsValid() )
 	{
@@ -1974,7 +1962,7 @@ namespace core
 #define ARGS_af_setf_findClass "(new-value name)"
 #define DECL_af_setf_findClass ""
 #define DOCS_af_setf_findClass "setf_findClass"
-    Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, Environment_sp env)
+    Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env)
     {_G();
 	if ( !af_classp(newValue) )
 	{
@@ -2129,7 +2117,7 @@ namespace core
 #define ARGS_af_macroexpand_1 "(form &optional env)"
 #define DECL_af_macroexpand_1 ""
 #define DOCS_af_macroexpand_1 "macroexpand_1"
-    T_mv af_macroexpand_1(T_sp form, Environment_sp env)
+    T_mv af_macroexpand_1(T_sp form, T_sp env)
     {_G();
 	Function_sp expansionFunction = _Nil<Function_O>();
 	if ( Cons_sp cform = form.asOrNull<Cons_O>() )
@@ -2176,7 +2164,7 @@ namespace core
 #define ARGS_af_macroexpand "(form &optional env)"
 #define DECL_af_macroexpand ""
 #define DOCS_af_macroexpand "macroexpand"
-    T_mv af_macroexpand(T_sp form, Environment_sp env)
+    T_mv af_macroexpand(T_sp form, T_sp env)
     {_G();
 	bool sawAMacro = false;
 	bool expandedMacro = false;
@@ -2432,7 +2420,7 @@ namespace core
     T_mv af_sourceLineColumn()
     {_G();
 	InvocationHistoryFrame* frame = _lisp->invocationHistoryStack().top();
-	return Values(Fixnum_O::create(frame->lineNumber()),Fixnum_O::create(frame->column()));
+	return Values(Fixnum_O::create(frame->lineno()),Fixnum_O::create(frame->column()));
     }
 
 
@@ -3434,7 +3422,7 @@ extern "C"
 		Cons_sp entry = code.as_or_nil<Cons_O>();
 		if ( entry->hasParsePos() )
 		{
-		    sline << af_sourceFileInfo(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
+		    sline << core_sourceFileInfo(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
 		} else
 		{
 		    sline << "no-function: " << entry->__repr__();
@@ -3458,7 +3446,7 @@ extern "C"
 	if ( !this->_IgnoreInitImage )
 	{
             Pathname_sp initPathname = _sym_STARcommandLineImageSTAR->symbolValue().as<Pathname_O>();
-            T_mv result = core_loadBundle(initPathname);
+            T_mv result = eval::funcall(cl::_sym_load,initPathname); // core_loadBundle(initPathname);
             if ( result.nilp() ) {
                 T_sp err = result.second();
                 printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str() );
@@ -3469,7 +3457,7 @@ extern "C"
 	    //
 	    {_BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName );
 		Pathname_sp initPathname = cl_pathname(Str_O::create(this->_RCFileName));
-		T_mv result = af_load(initPathname);
+		T_mv result = eval::funcall(cl::_sym_load,initPathname);
                 if ( result.nilp() ) {
                     T_sp err = result.second();
                     printf("Could not load %s\n", _rep_(initPathname).c_str() );
@@ -3492,21 +3480,27 @@ extern "C"
 
 
 
-    SourceFileInfo_mv Lisp_O::sourceFileInfo(const string& fileName)
+    SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string& fileName, Str_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno)
     {
         map<string,int>::iterator it = this->_SourceFileIndices.find(fileName);
         if ( it == this->_SourceFileIndices.end() ) {
             if ( this->_Roots._SourceFiles.size() == 0 ) {
-                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-",0);
+                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-",0,sourceDebugNamestring,sourceDebugOffset);
                 this->_Roots._SourceFiles.push_back(unknown);
             }
             int idx = this->_Roots._SourceFiles.size();
             this->_SourceFileIndices[fileName] = idx;
-            SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName,idx);
+            SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName,idx,sourceDebugNamestring,sourceDebugOffset,useLineno);
             this->_Roots._SourceFiles.push_back(sfi);
             return Values(sfi,Fixnum_O::create(idx));
         }
-        return Values(this->_Roots._SourceFiles[it->second],Fixnum_O::create(it->second));
+	SourceFileInfo_sp sfi = this->_Roots._SourceFiles[it->second];
+	if ( sourceDebugNamestring.notnilp() ) {
+	    sfi->_SourceDebugNamestring = sourceDebugNamestring;
+	    sfi->_SourceDebugOffset = sourceDebugOffset;
+	    sfi->_TrackLineno = useLineno;
+	}
+        return Values(sfi,Fixnum_O::create(it->second));
     }
 
 
@@ -3523,38 +3517,6 @@ extern "C"
 	};
 	return list;
     }
-
-
-
-#define ARGS_af_sourceFileInfo "(name)"
-#define DECL_af_sourceFileInfo ""
-#define DOCS_af_sourceFileInfo "sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index"
-    SourceFileInfo_mv af_sourceFileInfo(T_sp sourceFile)
-    {
-        if ( sourceFile.nilp() ) {
-            return af_sourceFileInfo(Fixnum_O::create(0));
-        } else if ( Str_sp strSourceFile = sourceFile.asOrNull<Str_O>() ) {
-            return _lisp->sourceFileInfo(strSourceFile->get());
-        } else if ( Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>() ) {
-            return _lisp->sourceFileInfo(af_namestring(pnSourceFile)->get());
-        } else if ( Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
-	    size_t idx = fnSourceFile->get();
-            if ( idx >= _lisp->_Roots._SourceFiles.size() ) {
-		idx = 0;
-		//                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
-            }
-            return Values(_lisp->_Roots._SourceFiles[idx],fnSourceFile);
-        } else if ( cl_streamp(sourceFile) ) {
-	    T_sp so = sourceFile;
-	    T_sp sfi = clasp_input_source_file_info(so);
-            return af_sourceFileInfo(sfi);
-        } else if ( SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>() ) {
-            return _lisp->sourceFileInfo(sfi->namestring());
-        } else if ( SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>() ) {
-            return af_sourceFileInfo(Fixnum_O::create(spi->_FileId));
-        }
-        SIMPLE_ERROR(BF("Add support for source-file-info for ~a") % _rep_(sourceFile));
-    };
 
 
 
@@ -3787,7 +3749,6 @@ extern "C"
 	SYMBOL_EXPORT_SC_(ClPkg,find_package);
 	Defun(find_package);
 
-        Defun(sourceFileInfo);
 
     }
 

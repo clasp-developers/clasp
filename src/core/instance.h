@@ -91,6 +91,7 @@ namespace core
 	virtual const char* describe() const {return "InstanceClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
+	T_sp lambdaList() const;
     };
 
 

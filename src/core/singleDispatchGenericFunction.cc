@@ -116,6 +116,11 @@ namespace core
 // ----------------------------------------------------------------------
 //
 
+    T_sp SingleDispatchGenericFunctionClosure::lambdaList() const
+    {
+	return this->_lambdaListHandler->lambdaList();
+    }
+    
     void SingleDispatchGenericFunctionClosure::addMethod(SingleDispatchMethod_sp method)
     {_OF();
 	// Look to see if the method is already defined

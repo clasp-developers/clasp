@@ -712,27 +712,27 @@ extern "C"
 
 
 
-core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP, core::T_sp* lambdaListP )
 {_G();
     // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
     core::Str_sp sourceStr = core::Str_O::create(sourceName);
-    core::SourceFileInfo_mv sfi = core::af_sourceFileInfo(sourceStr);
+    core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
     int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();   // sfindex could be written into the Module global for debugging
     core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,lineno,column);
-    core::FunctionClosure* closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP,spi,kw::_sym_function,funcPtr,_Nil<llvmo::Function_O>(),*frameP,*compiledFuncsP);
+    core::FunctionClosure* closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP,spi,kw::_sym_function,funcPtr,_Nil<llvmo::Function_O>(),*frameP,*compiledFuncsP,*lambdaListP);
     core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
     return compiledFunction;
 };
 extern "C"
 {
-    void sp_makeCompiledFunction( core::T_sp* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+    void sp_makeCompiledFunction( core::T_sp* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP, core::T_sp* lambdaListP )
     {
-	(*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr,sourceName,filePos,lineno,column,functionNameP,compiledFuncsP,frameP);
+	(*resultCompiledFunctionP) = proto_makeCompiledFunction(funcPtr,sourceName,filePos,lineno,column,functionNameP,compiledFuncsP,frameP,lambdaListP);
     }
 
-    void mv_makeCompiledFunction( core::T_mv* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP )
+    void mv_makeCompiledFunction( core::T_mv* resultCompiledFunctionP, fnLispCallingConvention funcPtr, char* sourceName, size_t filePos, int lineno, int column, core::T_sp* functionNameP, core::T_sp* compiledFuncsP, core::ActivationFrame_sp* frameP, core::T_sp* lambdaListP )
     {
-	(*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr,sourceName,filePos, lineno,column,functionNameP,compiledFuncsP,frameP));
+	(*resultCompiledFunctionP) = Values(proto_makeCompiledFunction(funcPtr,sourceName,filePos, lineno,column,functionNameP,compiledFuncsP,frameP,lambdaListP));
     }
 
 };
@@ -1544,10 +1544,12 @@ extern "C"
     }
 
 
-    void assignSourceFileInfoHandle(const char* moduleName, int* sourceFileInfoHandleP)
+    void assignSourceFileInfoHandle(const char* moduleName, const char* sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int* sourceFileInfoHandleP)
     {
+	//	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
         core::Str_sp mname = core::Str_O::create(moduleName);
-        SourceFileInfo_mv sfi_mv = core::af_sourceFileInfo(mname);
+	core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
+        SourceFileInfo_mv sfi_mv = core::core_sourceFileInfo(mname,struename,sourceDebugOffset,useLineno ? true : false);
         int sfindex = sfi_mv.valueGet(1).as<core::Fixnum_O>()->get();
 #if 0
 	if ( sfindex == 0 ) {
@@ -1563,7 +1565,7 @@ extern "C"
     {
         int sfindex = *sourceFileInfoHandleP;
         core::Fixnum_sp fn = core::Fixnum_O::create(sfindex);
-        SourceFileInfo_sp sfi = core::af_sourceFileInfo(fn);
+        SourceFileInfo_sp sfi = core::core_sourceFileInfo(fn);
         printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
     }
 };
@@ -1943,14 +1945,14 @@ extern "C"
 extern "C"
 {
 
-    void trace_setLineNumberColumnForIHSTop( char* sourceFileName, int* sourceFileInfoHandleP, int ln, int col )
+    void trace_setLineNumberColumnForIHSTop( char* sourceFileName, int* sourceFileInfoHandleP, size_t fileOffset, int ln, int col )
     {
 	if ( comp::_sym_STARlowLevelTracePrintSTAR->symbolValue().isTrue() ) {
 	    if ( *sourceFileInfoHandleP == 0 ) {
 		printf("%s:%d trace_setLineNumberColumnForIHSTop has *sourceFileInfoHandleP@%p == 0 soureFileName: %s\n", __FILE__, __LINE__, sourceFileInfoHandleP, sourceFileName );
 	    }
 	}
-	_lisp->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP,ln,col);
+	_lisp->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP,fileOffset,ln,col);
     }
 
     void trace_setActivationFrameForIHSTop(core::ActivationFrame_sp* afP)

@@ -79,7 +79,7 @@ namespace core
 #if 1
 #define TRAP_BAD_CONS(x)
 #else
-#define TRAP_BAD_CONS(x) {if (cl_consp(x)) {LOG(BF("About to try trap bad cons"));string ssss=af_sourceFileInfo(x.as_or_nil<Cons_O>())->fileName();}}
+#define TRAP_BAD_CONS(x) {if (cl_consp(x)) {LOG(BF("About to try trap bad cons"));string ssss=core_sourceFileInfo(x.as_or_nil<Cons_O>())->fileName();}}
 #endif
 
     /*! Return a uint that combines the character x with its character TRAITs
@@ -526,9 +526,9 @@ namespace core
 		    Cons_sp one = Cons_O::create(obj,_Nil<Cons_O>());
                     lisp_registerSourcePosInfo(one,info);
 		    LOG(BF("One = %s\n") % _rep_(one) );
-		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(af_sourceFileInfo(one)) );
-		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % af_sourceFileInfo(one)->fileName());
-		    LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % af_sourceFileInfo(one)->fileName().c_str());
+		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(core_sourceFileInfo(one)) );
+		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % core_sourceFileInfo(one)->fileName());
+		    LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core_sourceFileInfo(one)->fileName().c_str());
 		    TRAP_BAD_CONS(one);
 		    cur->setCdr(one);
 		    cur = one;

@@ -123,7 +123,7 @@ Return the new environment."
 
 (defvar *all-funcs-for-one-compile* nil
   "All functions for one COMPILE are accumulated in this dynamic variable.
-COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name)")
+COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name lambda-list)")
 (defun generate-llvm-function-from-code (;; Symbol xxx or (setf xxx) name of the function that is assigned to this code by
 					 ;; lambda-block or COMPILE
 					 given-name
@@ -189,7 +189,7 @@ Could return more functions that provide lambda-list for swank for example"
     (push fn *all-funcs-for-one-compile*)
     ;; Return the llvm Function and the symbol/setf name
     (if (null name) (error "The lambda name is nil"))
-    (values fn name)
+    (values fn name (core:lambda-list-handler-lambda-list lambda-list-handler))
     ))
 
 
@@ -250,13 +250,14 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
   (let ((*all-funcs-for-one-compile* nil))
-    (multiple-value-bind (compiled-fn lambda-name)
+    (multiple-value-bind (compiled-fn lambda-name lambda-list)
 	(compile-lambda-function lambda-or-lambda-block env)
       (if (null lambda-name) (error "The lambda doesn't have a name"))
       (if result
 	  (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
 							 nil
-							 *all-funcs-for-one-compile*) env)))
+							 *all-funcs-for-one-compile*) env))
+		(lambda-list (compile-reference-to-literal lambda-list env)))
 	    ;; TODO:   Here walk the source code in lambda-or-lambda-block and
 	    ;; get the line-number/column for makeCompiledFunction
 	    (multiple-value-bind (source-dir source-filename file-pos lineno column)
@@ -266,13 +267,14 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	      (irc-intrinsic "makeCompiledFunction" 
 			     result 
 			     compiled-fn 
-			     *gv-source-path-name* 
+			     *gv-source-pathname* 
 			     (jit-constant-i64 file-pos)
 			     (jit-constant-i32 lineno)
 			     (jit-constant-i32 column)
 			     (compile-reference-to-literal lambda-name env)
 			     funcs 
-			     (irc-renv env)))
+			     (irc-renv env)
+			     lambda-list))
 	    *all-funcs-for-one-compile*)))))
 
 
@@ -1306,56 +1308,54 @@ be wrapped with to make a closure"
 					     nil
 					     'llvm-sys:external-linkage
 					     nil
-					     *run-time-literals-external-name*)))
-        (with-module (:module *the-module*
-                              :function-pass-manager (create-function-pass-manager-for-compile *the-module*))
-          (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
-            (let* ((truename (if *load-truename*
-				 (namestring *load-truename*)
-				 "repl-code"))
-		   (handle (multiple-value-bind (the-source-file-info the-handle)
-			       (core:source-file-info truename)
-			     the-handle))
-                   (*gv-source-path-name* (jit-make-global-string-ptr
-                                           truename
-                                           "source-path-name"))
-                   (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module* handle))
-                   (*all-funcs-for-one-compile* nil))
-              (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
-                  (with-dibuilder (*the-module*)
-                    (with-dbg-compile-unit (nil truename)
-                      (with-dbg-file-descriptor (nil truename)
-                        (multiple-value-bind (fn fn-kind wrenv lambda-name warnp failp)
-                            (compile* bind-to-name definition env)
-                          (values fn fn-kind wrenv lambda-name warnp failp)))))
-                (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
-                (cmp-log-dump *the-module*)
-                (if (not *run-time-execution-engine*)
-                    ;; SETUP THE *run-time-execution-engine* here for the first time
-                    ;; using the current module in *the-module*
-                    ;; At this point the *the-module* will become invalid because
-                    ;; the execution-engine will take ownership of it
-                    (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
-                    (llvm-sys:add-module *run-time-execution-engine* *the-module*))
-                ;; At this point the Module in *the-module* is invalid because the
-                ;; execution-engine owns it
-                (setq *the-module* nil)
-                (cmp-log "About to finalize-engine with fn %s\n" fn)
-                (let* ((fn-name (llvm-sys:get-name fn))  ;; this is the name of the function - a string
-                       (compiled-function
-                        (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-                         *run-time-execution-engine*
-                         lambda-name
-                         fn ;; This may not be valid anymore
-                         (irc-environment-activation-frame wrapped-env)
-                         function-kind
-                         *run-time-literals-external-name*
-                         core:*current-source-file-info*
-			 (core:source-pos-info-filepos *current-source-pos-info*)
-                         (core:source-pos-info-lineno *current-source-pos-info*))))
-                  (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
-                  (when bind-to-name (setf-symbol-function bind-to-name compiled-function))
-                  (values compiled-function warnp failp))))))))))
+					     *run-time-literals-external-name*))
+	     (pathname (if *load-pathname*
+			   (namestring *load-pathname*)
+			   "repl-code"))
+	     (handle (multiple-value-bind (the-source-file-info the-handle)
+			 (core:source-file-info pathname)
+		       the-handle)))
+	(with-module (env :module *the-module*
+			  :function-pass-manager (create-function-pass-manager-for-compile *the-module*)
+			  :source-pathname pathname
+			  :source-file-info-handle handle)
+	  (let ()
+	    (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+		(with-debug-info-generator (:module *the-module* 
+						    :pathname pathname)
+		  (multiple-value-bind (fn fn-kind wrenv lambda-name warnp failp)
+		      (compile* bind-to-name definition env)
+		    (values fn fn-kind wrenv lambda-name warnp failp)))
+	      (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
+	      (cmp-log-dump *the-module*)
+	      (if (not *run-time-execution-engine*)
+		  ;; SETUP THE *run-time-execution-engine* here for the first time
+		  ;; using the current module in *the-module*
+		  ;; At this point the *the-module* will become invalid because
+		  ;; the execution-engine will take ownership of it
+		  (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
+		  (llvm-sys:add-module *run-time-execution-engine* *the-module*))
+	      ;; At this point the Module in *the-module* is invalid because the
+	      ;; execution-engine owns it
+	      (setq *the-module* nil)
+	      (cmp-log "About to finalize-engine with fn %s\n" fn)
+	      (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
+		     (compiled-function
+		      (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+		       *run-time-execution-engine*
+		       lambda-name
+		       fn ;; This may not be valid anymore
+		       (irc-environment-activation-frame wrapped-env)
+		       function-kind
+		       *run-time-literals-external-name*
+		       core:*current-source-file-info*
+		       (core:source-pos-info-filepos *current-source-pos-info*)
+		       (core:source-pos-info-lineno *current-source-pos-info*)
+		       nil  ; lambda-list, NIL for now - but this should be extracted from definition
+		       )))
+		(set-associated-funcs compiled-function *all-funcs-for-one-compile*)
+		(when bind-to-name (setf-symbol-function bind-to-name compiled-function))
+		(values compiled-function warnp failp)))))))))
 
 
 
@@ -1402,6 +1402,7 @@ be wrapped with to make a closure"
 				  core:*current-source-file-info*
 				  (core:source-pos-info-filepos *current-source-pos-info*)
 				  (core:source-pos-info-lineno *current-source-pos-info*)
+				  nil ; lambda-list
 				  )))
 	    (llvm-sys:disassemble* compiled-function))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))

@@ -91,6 +91,11 @@ namespace llvmo
 {
 
 
+    core::T_sp CompiledClosure::lambdaList() const
+    {
+	return this->_lambdaList;
+    }
+
 
 
 #define ARGS_comp_setAssociatedFuncs "(func associated-funcs)"
@@ -4271,7 +4276,7 @@ namespace llvmo
         _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::Fixnum_O::create(num));
     }
 
-    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName, core::T_sp fileName, size_t filePos, int linenumber )
+    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName, core::T_sp fileName, size_t filePos, int linenumber, core::T_sp lambdaList )
     {_G();
 	// Stuff to support MCJIT
 	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
@@ -4283,10 +4288,10 @@ namespace llvmo
 	}
 	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
         core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::Cons_O>());
-        core::SourceFileInfo_mv sfi = af_sourceFileInfo(fileName);
+        core::SourceFileInfo_mv sfi = core_sourceFileInfo(fileName);
         int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();
         core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,linenumber,0);
-        CompiledClosure* functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym,spi,kw::_sym_function,lisp_funcPtr,fn,activationFrameEnvironment,associatedFunctions);
+        CompiledClosure* functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym,spi,kw::_sym_function,lisp_funcPtr,fn,activationFrameEnvironment,associatedFunctions,lambdaList);
 	core::CompiledFunction_sp func = core::CompiledFunction_O::make(functoid);
         ASSERT(func);
         return func;

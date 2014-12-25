@@ -1245,7 +1245,7 @@ namespace core
     T_sp lisp_ocaddr(Cons_sp args);
     Symbol_sp lisp_internKeyword(const string& name);
     Symbol_sp lisp_intern(const string& name);
-    Symbol_sp lisp_intern(const string& symName,const string& pkgName);
+    Symbol_sp lisp_intern(const string& symbolName, const string& packageName);
     T_sp lisp_VectorObjectsFromMultipleValues(T_mv values);
     /*! Search the sequence SEQ for the object OBJ and return its index and true if found - otherwise false and IDX is undef */
     bool lisp_search(T_sp seq, T_sp obj, int& idx);
@@ -1285,7 +1285,7 @@ namespace core
 //#define LISP_INVOKE() invoke( core::T_mv* lcc_resultP, int lcc_nargs, core::T_sp lcc_fixed_arg0, core::T_sp lcc_fixed_arg1, core::T_sp lcc_fixed_arg2, va_list lcc_arglist )
 
 	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
-        virtual size_t templatedSizeof() const = 0;
+        virtual size_t templatedSizeof() const {return sizeof(*this);};
 	void dump() const
 	{
 	    printf( "Functoid - %s\n", _rep_(this->name).c_str());
@@ -1326,9 +1326,11 @@ namespace core
         virtual bool interpretedP() const { return false; };
         virtual bool builtinP() const { return false;};
         virtual int sourceFileInfoHandle() const;
+	virtual size_t filePos() const { return 0;}
         virtual int lineNumber() const { return 0;}
         virtual int column() const { return 0;};
         virtual LambdaListHandler_sp lambdaListHandler() const = 0;
+	virtual T_sp lambdaList() const = 0;
 	virtual Str_sp docstring() const;
 	virtual Cons_sp declares() const;
     };

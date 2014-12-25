@@ -1187,7 +1187,7 @@ namespace core
 	return _lisp->intern(name);
     }
 
-    Symbol_sp lisp_intern(const string& pkg, const string& name)
+    Symbol_sp lisp_intern(const string& name, const string& pkg)
     {
 	if ( name == "" ) return _Nil<Symbol_O>();
 	return _lisp->internWithPackageName(pkg,name);
@@ -1616,8 +1616,10 @@ namespace core
     SourcePosInfo_sp lisp_createSourcePosInfo(const string& fileName, size_t filePos, int lineno )
     {
         Str_sp fn = Str_O::create(fileName);
-        SourceFileInfo_mv sfi_mv = af_sourceFileInfo(fn);
-        int sfindex = sfi_mv.valueGet(1).as<Fixnum_O>()->get();
+        SourceFileInfo_mv sfi_mv = core_sourceFileInfo(fn);
+	SourceFileInfo_sp sfi = sfi_mv;
+	Fixnum_sp handle = sfi_mv.valueGet(1).as<Fixnum_O>();
+        int sfindex = handle->get();
         return SourcePosInfo_O::create(sfindex,filePos,lineno,0);
     }
 

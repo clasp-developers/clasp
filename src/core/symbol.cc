@@ -246,7 +246,7 @@ namespace core {
 	this->_HomePackage = pkg;
 	pkg->add_symbol_to_package(this->symbolName()->get().c_str(),this->sharedThis<Symbol_O>(),exportp);
 	this->_PropertyList = _Nil<Cons_O>();
-	this->_Function = _Nil<Function_O>();
+	this->_Function = _Unbound<Function_O>();
     }
 
 
@@ -468,8 +468,9 @@ namespace core {
     }
 
     bool Symbol_O::fboundp() const
-    {_OF();
-	return this->_Function.pointerp();
+    {
+	if ( this->_Function.pointerp() ) return true;
+	return !this->_Function.unboundp();
     }
 
 

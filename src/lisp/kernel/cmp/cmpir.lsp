@@ -391,7 +391,7 @@
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
-	(irc-intrinsic "clasp_terminate" *gv-source-path-name* 
+	(irc-intrinsic "clasp_terminate" *gv-source-pathname* 
 		       (irc-i32-*current-source-pos-info*-lineno) 
 		       (irc-i32-*current-source-pos-info*-column) 
 		       *gv-current-function-name* )

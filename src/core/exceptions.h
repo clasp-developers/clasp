@@ -343,7 +343,7 @@ namespace core
 #define	NOT_SUPPORTED() SIMPLE_ERROR(BF("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)") % this->className() % __FUNCTION__ % __FILE__ % __LINE__ );
 
 #define	SUBCLASS_MUST_IMPLEMENT()                                       \
-        THROW_HARD_ERROR(                                               \
+        SIMPLE_ERROR(							\
             BF("File(%s) lineNumber(%d): Subclass[%s] must implement method[%s] ") \
             % __FILE__ % __LINE__					\
             % lisp_classNameAsString(this->_instanceClass())            \

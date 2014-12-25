@@ -419,7 +419,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-does-not-throw module "makePathname" +void+ (list +tsp*+ +i8*+))
   (primitive-does-not-throw module "findPackage" +void+ (list +tsp*+ +i8*+))
-  (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i64+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+))
+  (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i64+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
 
 
   (primitive module "fillRestTarget" +void+ (list +tsp*+ +afsp*+ +i32+ +i8*+))
@@ -511,7 +511,7 @@ Boehm and MPS use a single pointer"
 
 
   (primitive-does-not-throw module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i32+ +i32+))
+  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
 
   (primitive-does-not-throw module "trace_exitFunctionScope" +void+ (list +i32+) )
   (primitive-does-not-throw module "trace_exitBlockScope" +void+ (list +i32+ ) )
@@ -558,7 +558,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
   (primitive-does-not-throw module "dumpLoadTimeValues" +void+ (list +ltv**+))
 
-  (primitive-does-not-throw module "assignSourceFileInfoHandle" +void+ (list +i8*+ +i32*+))
+  (primitive-does-not-throw module "assignSourceFileInfoHandle" +void+ (list +i8*+ +i8*+ +i64+ +i32+ +i32*+))
   (primitive-does-not-throw module "debugSourceFileInfoHandle" +void+ (list +i32*+))
 
   (primitive-does-not-throw module "ltv_makeCons" +void+ (list +tsp*+))
@@ -610,8 +610,15 @@ Boehm and MPS use a single pointer"
 
 (defvar *compile-file-pathname* nil "Store the path-name of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
-(defvar *gv-source-path-name* nil
+(defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
+
+
+(defvar *gv-source-pathname* nil
   "Store a global value that defines the filename of the current compilation")
+(defvar *gv-source-debug-namestring* nil
+  "A global value that defines the spoofed name of the current compilation - used by SLIME")
+(defvar *source-debug-offset* 0)
+(defvar *source-debug-use-lineno* t)
 (defvar *gv-source-file-info-handle* nil
   "Store a global value that stores an integer handle assigned at load-time that uniquely
 identifies the current source file.  Used for tracing and debugging")
