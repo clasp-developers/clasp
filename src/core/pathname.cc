@@ -416,6 +416,33 @@ namespace core {
 	return(p);
     }
 
+    bool Pathname_O::equal(T_sp obj) const
+    {
+	if (obj.nilp()) return false;
+	if (Pathname_sp other = obj.asOrNull<Pathname_O>()) {
+	    if (!cl_equal(this->_Host,other->_Host)) return false;
+	    if (!cl_equal(this->_Device,other->_Device)) return false;
+	    if (!cl_equal(this->_Directory,other->_Directory)) return false;
+	    if (!cl_equal(this->_Name,other->_Name)) return false;
+	    if (!cl_equal(this->_Type,other->_Type)) return false;
+	    if (!cl_equal(this->_Version,other->_Version)) return false;
+	    return true;
+	}
+	return false;
+    }
+
+
+
+    void Pathname_O::sxhash(HashGenerator& hg) const
+    {
+	if ( hg.isFilling() ) hg.hashObject(this->_Host);
+	if ( hg.isFilling() ) hg.hashObject(this->_Device);
+	if ( hg.isFilling() ) hg.hashObject(this->_Directory);
+	if ( hg.isFilling() ) hg.hashObject(this->_Name);
+	if ( hg.isFilling() ) hg.hashObject(this->_Type);
+	if ( hg.isFilling() ) hg.hashObject(this->_Version);
+    }
+    
     Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname)
     {
 	/*

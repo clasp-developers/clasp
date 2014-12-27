@@ -341,8 +341,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun compiled-function-file (x)
   (multiple-value-bind (sfi pos)
       (core:function-source-pos x)
-    (values (core:source-file-info-source-debug-namestring 
-	     (+ (core:source-file-info-source-debug-offset sfi) (core:function-source-pos x)) pos))))
+    (values (core:source-file-info-source-debug-namestring sfi)
+	     (+ (core:source-file-info-source-debug-offset sfi) pos))))
 
 (export '(compiled-function-name compiled-function-file))
 

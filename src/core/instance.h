@@ -169,6 +169,7 @@ namespace core
         void setKind(Symbol_sp k);
 
         virtual bool equalp(T_sp obj) const;
+	virtual void sxhash(HashGenerator& hg) const;
 
 
 	/*! Return the value of a slot */

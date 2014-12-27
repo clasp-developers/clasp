@@ -457,13 +457,23 @@ namespace core
         if ( Instance_sp iobj = obj.asOrNull<Instance_O>() ) {
             if ( this->_Class != iobj->_Class ) return false;
             for ( int i(0), iEnd(this->_Slots.size()); i<iEnd; ++i ) {
-                if ( !cl_equalp(this->_Slots[i],iobj->_Slots[i]) ) {
+		if ( !cl_equalp(this->_Slots[i],iobj->_Slots[i]) ) {
                     return false;
                 }
             }
             return true;
         }
         return false;
+    }
+
+
+    void Instance_O::sxhash(HashGenerator& hg) const
+    {
+	if ( hg.isFilling() ) hg.hashObject(this->_Class);
+	for ( int i(0), iEnd(this->_Slots.size()); i<iEnd; ++i ) {
+	    if ( !this->_Slots[i].unboundp() && hg.isFilling() ) hg.hashObject(this->_Slots[i]);
+	    else break;
+	}
     }
 
 
