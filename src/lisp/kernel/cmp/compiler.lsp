@@ -1274,54 +1274,54 @@ be wrapped with to make a closure"
 					     *run-time-literals-external-name*)))
         (with-module (:module *the-module*
                               :function-pass-manager (create-function-pass-manager-for-compile *the-module*))
-          (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
-            (let* ((truename (if *load-truename*
-                                 (namestring *load-truename*)
-                                 "compile-in-env"))
-                   (*gv-source-path-name* (jit-make-global-string-ptr
-                                           truename
-                                           "source-path-name"))
-                   (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
-                                                                                +i32+ ; type
-                                                                                nil ; constant
-                                                                                'llvm-sys:internal-linkage
-                                                                                (jit-constant-i32 0)
-                                                                                "source-file-info-handle"))
-                   (*all-funcs-for-one-compile* nil))
-              (multiple-value-bind (fn function-kind wrapped-env warnp failp)
-                  (with-dibuilder (*the-module*)
-                    (with-dbg-compile-unit (nil truename)
-                      (with-dbg-file-descriptor (nil truename)
-                        (multiple-value-bind (fn fn-kind wrenv warnp failp)
-                            (compile* name definition env)
-                          (values fn fn-kind wrenv warnp failp)))))
-                (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
-                (cmp-log-dump *the-module*)
-                (if (not *run-time-execution-engine*)
-                    ;; SETUP THE *run-time-execution-engine* here for the first time
-                    ;; using the current module in *the-module*
-                    ;; At this point the *the-module* will become invalid because
-                    ;; the execution-engine will take ownership of it
-                    (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
-                    (llvm-sys:add-module *run-time-execution-engine* *the-module*))
-                ;; At this point the Module in *the-module* is invalid because the
-                ;; execution-engine owns it
-                (setq *the-module* nil)
-                (cmp-log "About to finalize-engine with fn %s\n" fn)
-                (let* ((fn-name (llvm-sys:get-name fn))
-                       (compiled-function
-                        (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-                         *run-time-execution-engine*
-                         name
-                         fn ;; This may not be valid anymore
-                         (irc-environment-activation-frame wrapped-env)
-                         function-kind
-                         *run-time-literals-external-name*
-                         core:*current-source-file-info*
-                         core:*current-lineno*)))
-                  (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
-                  (when name (setf-symbol-function name compiled-function))
-                  (values compiled-function warnp failp))))))))))
+           (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
+                           (let* ((truename (if *load-truename*
+                                                (namestring *load-truename*)
+                                              "compile-in-env"))
+                                  (*gv-source-path-name* (jit-make-global-string-ptr
+                                                          truename
+                                                          "source-path-name"))
+                                  (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
+                                                                                               +i32+ ; type
+                                                                                               nil ; constant
+                                                                                               'llvm-sys:internal-linkage
+                                                                                               (jit-constant-i32 0)
+                                                                                               "source-file-info-handle"))
+                                  (*all-funcs-for-one-compile* nil))
+                             (multiple-value-bind (fn function-kind wrapped-env warnp failp)
+                                 (with-dibuilder (*the-module*)
+                                                 (with-dbg-compile-unit (nil truename)
+                                                                        (with-dbg-file-descriptor (nil truename)
+                                                                                                  (multiple-value-bind (fn fn-kind wrenv warnp failp)
+                                                                                                      (compile* name definition env)
+                                                                                                    (values fn fn-kind wrenv warnp failp)))))
+                               (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
+                               (cmp-log-dump *the-module*)
+                               (if (not *run-time-execution-engine*)
+                                   ;; SETUP THE *run-time-execution-engine* here for the first time
+                                   ;; using the current module in *the-module*
+                                   ;; At this point the *the-module* will become invalid because
+                                   ;; the execution-engine will take ownership of it
+                                   (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
+                                 (llvm-sys:add-module *run-time-execution-engine* *the-module*))
+                               ;; At this point the Module in *the-module* is invalid because the
+                               ;; execution-engine owns it
+                               (setq *the-module* nil)
+                               (cmp-log "About to finalize-engine with fn %s\n" fn)
+                               (let* ((fn-name (llvm-sys:get-name fn))
+                                      (compiled-function
+                                       (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+                                        *run-time-execution-engine*
+                                        name
+                                        fn ;; This may not be valid anymore
+                                        (irc-environment-activation-frame wrapped-env)
+                                        function-kind
+                                        *run-time-literals-external-name*
+                                        core:*current-source-file-info*
+                                        core:*current-lineno*)))
+                                 (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
+                                 (when name (setf-symbol-function name compiled-function))
+                                 (values compiled-function warnp failp))))))))))
 
 
 

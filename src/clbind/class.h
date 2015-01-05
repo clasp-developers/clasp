@@ -243,8 +243,8 @@ namespace clbind
             : mpl::false_
         {};
 
-        template <typename... Bases>
-        struct is_bases<bases<Bases...> >
+        template <typename Base0, typename... Bases>
+        struct is_bases<bases<Base0,Bases...> >
             : mpl::true_
         {};
 
@@ -838,7 +838,7 @@ namespace clbind
 
     public:
 
-        typedef boost::mpl::vector4<X1, X2, X3, detail::unspecified> parameters_type;
+        typedef boost::mpl::vector4<X1, X2, X3, clbind::detail::unspecified> parameters_type;
 
         // WrappedType MUST inherit from T
         typedef typename detail::extract_parameter<
@@ -1212,7 +1212,13 @@ namespace clbind
                 );
 
             add_wrapper_cast((WrappedType*)0);
-
+#if 1
+            int*** a = HeldType();
+            int*** b = WrappedType();
+            int*** i = Base();
+            int*** j = parameters_type();
+            int*** k = bases_t();
+#endif
             generate_baseclass_list(detail::type_<Base>());
         }
 
