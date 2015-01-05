@@ -175,10 +175,10 @@ namespace core
 	map<string,void*>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
 	if (handleIt != _lisp->openDynamicLibraryHandles().end() ) {
 	    dlclose(handleIt->second);
-	    printf("%s:%d Closing the existing dynamic library %s\n", __FILE__, __LINE__, name.c_str());
+	    //	    printf("%s:%d Closing the existing dynamic library %s\n", __FILE__, __LINE__, name.c_str());
 	    _lisp->openDynamicLibraryHandles().erase(handleIt);
 	}
-	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
+	//	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
 	void* handle = dlopen(name.c_str(),mode);
 	if ( handle == NULL )
 	{

@@ -287,6 +287,18 @@ Environment_sp Function_O::closedEnvironment() const{IMPLEMENT_ME();};
     };
 
 
+    #define ARGS_core_functionSourceCode "(fn)"
+#define DECL_core_functionSourceCode ""
+#define DOCS_core_functionSourceCode "functionSourceCode"
+    T_sp core_functionSourceCode(Function_sp fn)
+    {
+	Closure* closure = fn->closure;
+	if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(closure) ) {
+	    return ic->code();
+	}
+	return _Nil<T_O>();
+    }
+
 
 
 
@@ -310,6 +322,7 @@ Environment_sp Function_O::closedEnvironment() const{IMPLEMENT_ME();};
 	CoreDefun(functionSourcePosInfo);
         CoreDefun(setKind);
 	CoreDefun(functionLambdaList);
+	CoreDefun(functionSourceCode);
     }
 
     void Function_O::exposePython(Lisp_sp lisp)

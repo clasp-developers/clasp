@@ -197,10 +197,10 @@ Could return more functions that provide lambda-list for swank for example"
 (defun generate-llvm-function-from-interpreted-function (fn)
   "Extract everything necessary to compile an interpreted function and
 then compile it and return (values compiled-llvm-function lambda-name)"
-  (let ((lambda-list-handler (get-lambda-list-handler fn))
+  (let ((lambda-list-handler (function-lambda-list-handler fn))
 	(declares (function-declares fn))
 	(docstring (function-docstring fn))
-	(code (get-code fn))
+	(code (function-source-code fn))
 	(env (closed-environment fn)))
     (multiple-value-bind (generated-fn lambda-name)
 	(generate-llvm-function-from-code nil lambda-list-handler declares docstring code env))))
@@ -1290,7 +1290,7 @@ be wrapped with to make a closure"
 	 ((interpreted-function-p func)
 	  (dbg-set-current-debug-location-here)
 	  (multiple-value-bind (fn lambda-name)
-	      (generate-llvm-function-from-interpreted-function name func)
+	      (generate-llvm-function-from-interpreted-function #||name||# func)
 	    (values fn (function-kind func) env lambda-name)))
 	 (t (error "Could not compile func")))))
     (t (error "Illegal combination of arguments for compile: ~a ~a"
@@ -1390,7 +1390,7 @@ be wrapped with to make a closure"
 	    (llvm-sys:disassemble* fn))
 	   ((interpreted-function-p fn)
 	    (multiple-value-bind (llvm-fn lambda-name)
-		(generate-llvm-function-from-interpreted-function name fn)
+		(generate-llvm-function-from-interpreted-function #||name||# fn)
 	      (or *run-time-execution-engine* (error "You must set up the *run-time-execution-engine* first before calling disassemble - the easiest way is to compile something first"))
 	      (compiled-function (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
 				  *run-time-execution-engine*

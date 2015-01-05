@@ -165,7 +165,6 @@ namespace core
 
 
 
-
     EXPOSE_CLASS(core,ActivationFrame_O);
 
     void ActivationFrame_O::exposeCando(core::Lisp_sp lisp)

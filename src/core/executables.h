@@ -170,6 +170,7 @@ namespace core
         bool interpretedP() const { return true; };
 	Str_sp docstring() const { return this->_docstring;};
 	Cons_sp declares() const { return this->_declares;};
+	Cons_sp code() const { return this->_code;};
         LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};
 	T_sp lambdaList() const;
     };

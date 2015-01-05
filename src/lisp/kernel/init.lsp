@@ -854,13 +854,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                            :lisp-bitcode-files bitcode-files
                            :prologue-form '(progn
-					     (if (member :interactive *features*) (bformat t "Starting Clasp 0.11 ... loading image... it takes a few seconds\n")))
+					     (if (member :interactive *features*) 
+						 (bformat t "Starting Clasp 0.11 ... loading image... it takes a few seconds\n")))
 			   :epilogue-form '(progn
 					     (cl:in-package :cl-user)
 					     (require 'system)
 					     (load-clasprc)
 					     (process-command-line-load-eval-sequence)
-					     (when (member :interactive *features*) (core:top-level)))))))
+					    (when (member :interactive *features*) (core:top-level)))))
+    (progn
+      (bformat t "Compiling asdf\n")
+      (compile-file "sys:kernel;asdf;build;asdf.lisp"))
+    ))
 
 
 (defun compile-clos () ;; &key (target-backend (default-target-backend)))

@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "standardObject.h"
 #include "multipleValues.h"
 #include "core/sequence.h"
+#include "core/vectorObjects.h"
 #include "core/primitives.h"
 #include "hashTableEqual.h"
 #include "hashTableEq.h"
@@ -48,6 +49,67 @@ THE SOFTWARE.
 namespace core
 {
 
+
+
+
+#define ARGS_core_environmentLength "(frame)"
+#define DECL_core_environmentLength ""
+#define DOCS_core_environmentLength "environmentLength - number of entries in this environment"
+    int core_environmentLength(T_sp frame)
+    {
+	if ( frame.nilp() ) return 0;
+	else if ( frame.framep() ) {
+	    core::T_O** frameImpl = frame.frame();
+	    return frame::ValuesArraySize(frameImpl);
+	} else if ( ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>() ) {
+	    return af->length();
+	}
+	SIMPLE_ERROR(BF("Trying to get environment-length of something not an activation-frame"));
+    }
+
+
+#define ARGS_core_environmentDebugNames "(frame)"
+#define DECL_core_environmentDebugNames ""
+#define DOCS_core_environmentDebugNames "environmentDebugNames - number of entries in this environment"
+    T_sp core_environmentDebugNames(T_sp frame)
+    {
+	if ( frame.nilp() ) return _Nil<T_O>();
+	else if ( frame.framep() ) {
+	    return frame::DebugInfo(frame);
+	} else if ( ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>() ) {
+	    return vf->debuggingInfo();
+	} else if ( ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>() ) {
+	    return _Nil<T_O>();
+	}
+	SIMPLE_ERROR(BF("Trying to get environment-debug-names of something not an activation-frame: %s") % _rep_(frame));
+    }
+
+#define ARGS_core_environmentDebugValues "(frame)"
+#define DECL_core_environmentDebugValues ""
+#define DOCS_core_environmentDebugValues "environmentDebugValues - number of entries in this environment"
+    Vector_sp core_environmentDebugValues(T_sp frame)
+    {
+	if ( frame.nilp() ) return _Nil<T_O>();
+	else if ( frame.framep() ) {
+	    core::T_O** frameImpl = frame.frame();
+	    int iEnd = frame::ValuesArraySize(frameImpl);
+	    VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(),iEnd,_Nil<T_O>());
+	    for ( int i(0); i<iEnd; ++i ) {
+		vo->setf_elt(i,frame::Value(frameImpl,i));
+	    }
+	    return vo;
+	} else if ( ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>() ) {
+	    int iEnd = vf->length();
+	    VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(),iEnd,_Nil<T_O>());
+	    for ( int i(0); i<iEnd; ++i ) {
+		vo->setf_elt(i,(*vf)[i]);
+	    }
+	    return vo;
+	} else if ( ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>() ) {
+	    return _Nil<Vector_O>();
+	}
+	SIMPLE_ERROR(BF("Trying to get environment-debug-values of something not an activation-frame: %s") % _rep_(frame));
+    }
 
 
     
@@ -269,6 +331,9 @@ namespace core
 	    .def("classifyTag",&Environment_O::classifyTag)
 	    .def("countFunctionContainerEnvironments",&Environment_O::countFunctionContainerEnvironments)
 	    ;
+	CoreDefun(environmentLength);
+	CoreDefun(environmentDebugNames);
+	CoreDefun(environmentDebugValues);
 	SYMBOL_SC_(CorePkg,environmentActivationFrame);
 	Defun(environmentActivationFrame);
 	SYMBOL_SC_(CorePkg,currentVisibleEnvironment);

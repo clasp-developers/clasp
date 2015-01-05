@@ -1004,7 +1004,7 @@ namespace llvmo
 #define DOCS_af_parseBitcodeFile "parseBitcodeFile"
     Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context )
     {_G();
-	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
+	//	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
         llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
         if (std::error_code ec = eo_membuf.getError() )
 	{
