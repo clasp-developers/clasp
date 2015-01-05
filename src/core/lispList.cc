@@ -31,26 +31,179 @@ THE SOFTWARE.
 #include "core/ql.h"
 #include "lispList.h"
 #include "symbolTable.h"
+#include "designators.h"
 #include "core/wrappers.h"
 namespace core
 {
 
-// ----------------------------------------------------------------------
-//
+    /*! Duplicated from ECL list.d
+     */
+    struct cl_test {
+	bool (*test_c_function)(struct cl_test *, T_sp);
+	T_sp (*key_c_function)(struct cl_test *, T_sp);
+	//cl_env_ptr env;
+	T_sp key_function;
+	Function_sp key_fn;
+	T_sp test_function;
+	Function_sp test_fn;
+	T_sp item_compared;
+    };
 
+    #if 0
+    static T_sp subst(struct cl_test *t, T_sp new_obj, T_sp tree);
+    static T_sp nsubst(struct cl_test *t, T_sp new_obj, T_sp tree);
+    static T_sp sublis(struct cl_test *t, T_sp alist, T_sp tree);
+    static T_sp nsublis(struct cl_test *t, T_sp alist, T_sp tree);
+    static T_sp do_assoc(struct cl_test *t, T_sp alist);
+#endif
+#define TEST(t,k) ((t)->test_c_function)((t),(k))
+#define KEY(t,x) ((t)->key_c_function)((t),(x))
+#define close_test(t) (void)0
+
+    static bool
+    test_compare(struct cl_test *t, T_sp x)
+    {
+	x = KEY(t,x);
+	//t->env->function = t->test_function;
+	T_mv result;
+	(*t->test_fn->closure)( &result, LCC_PASS_ARGS2(t->item_compared.asTPtr(), x.asTPtr()) );
+	return result.notnilp();
+    }
+
+    static bool
+    test_compare_not(struct cl_test *t, T_sp x)
+    {
+	x = KEY(t,x);
+	//t->env->function = t->test_function;
+	T_mv result;
+	(*t->test_fn->closure)( &result, LCC_PASS_ARGS2(t->item_compared.asTPtr(), x.asTPtr()));
+	return result.nilp();
+    }
+
+    static bool
+    test_eq(struct cl_test *t, T_sp x)
+    {
+	return (t->item_compared == KEY(t,x));
+    }
+
+    static bool
+    test_eql(struct cl_test *t, T_sp x)
+    {
+	return cl_eql(t->item_compared, KEY(t,x));
+    }
+
+    static bool
+    test_equal(struct cl_test *t, T_sp x)
+    {
+	return cl_equal(t->item_compared, KEY(t,x));
+    }
+
+    static bool
+    test_equalp(struct cl_test *t, T_sp x)
+    {
+	return cl_equalp(t->item_compared, KEY(t,x));
+    }
+
+    static T_sp
+    key_function(struct cl_test *t, T_sp x)
+    {
+	//t->env->function = t->key_function;
+	T_mv result;
+	(*t->key_fn->closure)(&result,LCC_PASS_ARGS1(x.asTPtr()));
+	return result;
+    }
+
+    static T_sp
+    key_identity(struct cl_test *t, T_sp x)
+    {
+	return x;
+    }
+
+    static void
+    setup_test(struct cl_test *t, T_sp item, T_sp test,
+	       T_sp test_not, T_sp key)
+    {
+	//cl_env_ptr env = t->env = ecl_process_env();
+	t->item_compared = item;
+	if (test.notnilp()) {
+	    if (test_not.notnilp())
+		FEerror("Both :TEST and :TEST-NOT are specified.", 0);
+	    t->test_function = test = coerce::functionDesignator(test);
+	    if (test == cl::_sym_eq) {
+		t->test_c_function = test_eq;
+	    } else if (test == cl::_sym_eql) {
+		t->test_c_function = test_eql;
+	    } else if (test == cl::_sym_equal) {
+		t->test_c_function = test_equal;
+	    } else if (test == cl::_sym_equalp) {
+		t->test_c_function = test_equalp;
+	    } else {
+		t->test_c_function = test_compare;
+		t->test_fn = test.as<Function_O>(); //ecl_function_dispatch(env, test);
+		t->test_function = t->test_fn; // env->function;
+	    }
+	} else if (test_not.notnilp()) {
+	    t->test_c_function = test_compare_not;
+	    test_not = coerce::functionDesignator(test_not);
+	    t->test_fn = test_not.as<Function_O>(); // ecl_function_dispatch(env, test_not);
+	    t->test_function = t->test_fn; // env->function;
+	} else {
+	    t->test_c_function = test_eql;
+	}
+	if (key.notnilp()) {
+	    key = coerce::functionDesignator(key);
+	    t->key_fn = key.as<Function_O>(); // ecl_function_dispatch(env, key);
+	    t->key_function = t->key_fn; // env->function;
+	    t->key_c_function = key_function;
+	} else {
+	    t->key_c_function = key_identity;
+	}
+    }
+
+    // ----------------------------------------------------------------------
+    //
+
+
+
+
+    /*! Duplicated from ECL rassoc */
+#define ARGS_cl_rassoc "(item a-list &key test test-not key)"
+#define DECL_cl_rassoc ""
+#define DOCS_cl_rassoc "See CLHS rassoc"
+    T_sp cl_rassoc (T_sp item, T_sp a_list, T_sp test, T_sp test_not, T_sp key)
+    {
+	struct cl_test t;
+	if ( test.notnilp() ) test = coerce::functionDesignator(test);
+	if ( test_not.notnilp() ) test_not = coerce::functionDesignator(test_not);
+	if ( key.notnilp() ) key = coerce::functionDesignator(key);
+	setup_test(&t, item, test, test_not, key);
+	for ( ; a_list.notnilp(); a_list = oCdr(a_list) ) { // loop_for_in(a_list) {
+	    T_sp pair = CONS_CAR(a_list.as<Cons_O>());
+	    if (pair.notnilp()) {
+		if (!cl_listp(pair))
+		    TYPE_ERROR_LIST(pair);
+		if (TEST(&t, CONS_CDR(pair))) {
+		    a_list = pair;
+		    break;
+		}
+	    }
+	} //end_loop_for_in;
+	close_test(&t);
+	return a_list;
+    }
 
 #define ARGS_cl_nth "(idx arg)"
 #define DECL_cl_nth ""
 #define DOCS_cl_nth "See CLHS nth"
     T_sp cl_nth(int idx, T_sp arg)
-    {_G();
-	if (arg.nilp()) return _Nil<T_O>();
-	if ( Cons_sp list = arg.asOrNull<Cons_O>() )
-	{
-	    return list->onth(idx);
-	}
-	TYPE_ERROR(arg,cl::_sym_list);
-    };
+	    {_G();
+		if (arg.nilp()) return _Nil<T_O>();
+		if ( Cons_sp list = arg.asOrNull<Cons_O>() )
+		    {
+			return list->onth(idx);
+		    }
+		TYPE_ERROR(arg,cl::_sym_list);
+	    };
 
 
 #define ARGS_cl_nthcdr "(idx arg)"
@@ -60,9 +213,9 @@ namespace core
     {_G();
 	if (arg.nilp()) return arg;
 	if ( Cons_sp list = arg.asOrNull<Cons_O>() )
-	{
-	    return list->onthcdr(idx);
-	}
+	    {
+		return list->onthcdr(idx);
+	    }
 	TYPE_ERROR(arg,cl::_sym_list);
     };
 
@@ -78,9 +231,9 @@ namespace core
     {_G();
 	if ( arg.nilp() ) return arg;
 	if ( Cons_sp l = arg.asOrNull<Cons_O>() )
-	{
-	    return l->copyList();
-	}
+	    {
+		return l->copyList();
+	    }
 	TYPE_ERROR(arg,cl::_sym_list);
     };
 
@@ -98,10 +251,10 @@ namespace core
 	ql::list res;
 	Cons_sp cur = list.as_or_nil<Cons_O>();
 	for ( int i=0; i<keepi; i++ )
-	{
-	    res << oCar(cur);
-	    cur = cCdr(cur);
-	}
+	    {
+		res << oCar(cur);
+		cur = cCdr(cur);
+	    }
 	return(Values(res.cons()));
     };
 
@@ -118,10 +271,10 @@ namespace core
 	Cons_sp cur = list.as<Cons_O>();
 	Cons_sp prev = _Nil<Cons_O>();;
 	for ( int i=0; i<keepi; i++ )
-	{
-	    prev = cur;
-	    cur = cCdr(cur);
-	}
+	    {
+		prev = cur;
+		cur = cCdr(cur);
+	    }
 	prev->setCdr(_Nil<Cons_O>());
 	return list;
     };
@@ -155,11 +308,11 @@ namespace core
 	Cons_sp cur;
 	ql::list result(_lisp);
 	for ( ; oCdr(objects).notnilp(); objects=oCdr(objects))
-	{
-//	    printf("Adding %s\n", _rep_(oCar(objects)).c_str());
-	    result << oCar(objects);
-	}
-//	printf("dotting %s\n", _rep_(objects).c_str());
+	    {
+		//	    printf("Adding %s\n", _rep_(oCar(objects)).c_str());
+		result << oCar(objects);
+	    }
+	//	printf("dotting %s\n", _rep_(objects).c_str());
 	result.dot(oCar(objects));
 	return result.cons();
     }
@@ -173,9 +326,9 @@ namespace core
     {_G();
 	if ( list.nilp() ) return list;
 	if ( n < 0 )
-	{
-	    CELL_ERROR(Fixnum_O::create(n));
-	}
+	    {
+		CELL_ERROR(Fixnum_O::create(n));
+	    }
         if ( Cons_sp clist = list.asOrNull<Cons_O>() ) {
             return clist->last(n);
         }
@@ -183,7 +336,7 @@ namespace core
     };
 
 
-/* Adapted from ECL list.d nconc function */
+    /* Adapted from ECL list.d nconc function */
 
     
     
@@ -294,6 +447,7 @@ namespace core
 	ClDefun(nbutlast);
 	SYMBOL_EXPORT_SC_(ClPkg,nth);
 	ClDefun(nth);
+	ClDefun(rassoc);
 	SYMBOL_EXPORT_SC_(ClPkg,nthcdr);
 	ClDefun(nthcdr);
 	SYMBOL_EXPORT_SC_(ClPkg,copyList);
@@ -301,7 +455,7 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,last);
 	ClDefun(last);
         ClDefun(nconc);
-   }
+    }
 
 #if 0
     void List_O::exposePython(::core::Lisp_sp lisp)

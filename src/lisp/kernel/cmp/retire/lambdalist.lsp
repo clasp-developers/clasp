@@ -271,7 +271,7 @@ will put a value into target-ref."
 	(unbound-cont-block-gs (gensym)))
     `(progn
        (with-target-reference-do (,target-ref ,target ,env)
-	 (let ((,i1-target-is-bound-gs (irc-trunc (irc-intrinsic "isBoundTsp" ,target-ref) +i1+))
+	 (let ((,i1-target-is-bound-gs (irc-trunc (irc-intrinsic "isBound" (irc-extract-smart-ptr ,target-ref)) +i1+))
 	       (,unbound-do-block-gs (irc-basic-block-create "unbound-do"))
 	       (,unbound-cont-block-gs (irc-basic-block-create "unbound-cont"))
 	       )

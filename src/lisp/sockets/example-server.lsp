@@ -1,10 +1,9 @@
 
 
-
-(load "sys:lisp;serve-event;serve-event.lisp")
+(require :sockets)
+(require :serve-event)
 (use-package :serve-event)
 
-(load "sys:lisp;sockets;sockets.lisp")
 
 
 ;;(require :sb-bsd-sockets)

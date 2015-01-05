@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "package.h"
 //#include "debugger.h"
 #include "iterator.h"
+#include "designators.h"
 #include "primitives.h"
 #include "vectorObjects.h"
 #include "sourceFileInfo.h"
@@ -49,6 +50,45 @@ THE SOFTWARE.
 
 namespace core
 {
+
+
+    
+#define ARGS_core_functionLambdaList "(function)"
+#define DECL_core_functionLambdaList ""
+#define DOCS_core_functionLambdaList "functionLambdaList"
+    T_mv core_functionLambdaList(T_sp obj)
+    {
+	if ( obj.nilp() ) {
+	    return Values(_Nil<T_O>(),_Nil<T_O>());
+	} else if ( Symbol_sp sym = obj.asOrNull<Symbol_O>() ) {
+	    if (!sym->fboundp()) {
+		return Values(_Nil<T_O>(),_Nil<T_O>());
+	    }
+	    Function_sp fn = sym->symbolFunction();
+	    if ( fn.nilp() ) {
+		return Values(_Nil<T_O>(),_Nil<T_O>());
+	    }
+	    return Values(sym->symbolFunction()->lambdaList(),_lisp->_true());
+	} else if ( Function_sp func = obj.asOrNull<Function_O>() ) {
+	    return Values(func->lambdaList(),_lisp->_true());
+	}
+	return Values(_Nil<T_O>(),_Nil<T_O>());
+    }
+
+
+    
+#define ARGS_core_functionSourcePosInfo "(function)"
+#define DECL_core_functionSourcePosInfo ""
+#define DOCS_core_functionSourcePosInfo "functionSourcePosInfo"
+    SourcePosInfo_sp core_functionSourcePosInfo(T_sp functionDesignator)
+    {
+	Function_sp func = coerce::functionDesignator(functionDesignator);
+	if (func.nilp() ) return _Nil<SourcePosInfo_O>();
+	Closure* closure = func->closure;
+	SourcePosInfo_sp sourcePosInfo = closure->sourcePosInfo();
+	return sourcePosInfo;
+    }
+
 
     
     
@@ -67,43 +107,89 @@ namespace core
     {
         return this->kind == kw::_sym_macro;
     }
-    int FunctionClosure::sourceFileInfoHandle() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->fileHandle() : 0; };
+    int FunctionClosure::sourceFileInfoHandle() const { 
+	return this->_SourcePosInfo.notnilp() 
+	    ? this->_SourcePosInfo->fileHandle() 
+	    : 0; 
+    };
+
+    size_t FunctionClosure::filePos() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->filepos() : 0; };
 
     int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->lineno() : 0; };
     int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->column() : 0; };
 
 
-    SourcePosInfo_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, int lineno, int column )
+    SourcePosInfo_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column )
     {
-        SourceFileInfo_mv sfi = af_sourceFileInfo(sourceFile);
+        SourceFileInfo_mv sfi = core_sourceFileInfo(sourceFile);
         Fixnum_sp fileId = sfi.valueGet(1).as<Fixnum_O>();
-        SourcePosInfo_sp spi = SourcePosInfo_O::create(fileId->get(),lineno,column);
+        SourcePosInfo_sp spi = SourcePosInfo_O::create(fileId->get(),filePos,lineno,column);
         this->_SourcePosInfo = spi;
         return spi;
     }
 
+
+    T_sp BuiltinClosure::lambdaList() const
+    {
+	return this->_lambdaListHandler->lambdaList();
+    }
+    
     void BuiltinClosure::LISP_CALLING_CONVENTION()
     {
         IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
     };
 
+    
+    InterpretedClosure::InterpretedClosure(T_sp fn, SourcePosInfo_sp sp, Symbol_sp k
+					   , LambdaListHandler_sp llh, Cons_sp dec, Str_sp doc
+					   , T_sp e, Cons_sp c)
+            : FunctionClosure(fn,sp,k,e)
+            , _lambdaListHandler(llh)
+            , _declares(dec)
+            , _docstring(doc)
+            , _code(c)
+    {
+	if ( sp.nilp() ) {
+	    sp = core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue().as<SourcePosInfo_O>();
+	    if ( sp.nilp() ) {
+		printf("%s:%d Caught creation of InterpretedClosure %s with nil SourcePosInfo\n", __FILE__,__LINE__,_rep_(fn).c_str());
+	    } else {
+		this->_SourcePosInfo = sp;
+	    }
+	}
+    };
+
+
+    T_sp InterpretedClosure::lambdaList() const
+    {
+	return this->lambdaListHandler()->lambdaList();
+    }
 
     void InterpretedClosure::LISP_CALLING_CONVENTION()
     {
         ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler,this->closedEnvironment);
         ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
 //        printf("%s:%d About to invoke %s with llh: %s\n", __FILE__, __LINE__, _rep_(this->code).c_str(), _rep_(this->lambdaListHandler).c_str());
-        lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+        lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
         ValueFrame_sp newActivationFrame = newValueEnvironment->getActivationFrame().as<ValueFrame_O>();
         VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
         newActivationFrame->attachDebuggingInfo(debuggingInfo);
         InvocationHistoryFrame _frame(this,newActivationFrame);
-        *lcc_resultP = eval::sp_progn(this->code,newValueEnvironment);
+#if 1
+	if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
+	    printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
+	}
+#endif
+        *lcc_resultP = eval::sp_progn(this->_code,newValueEnvironment);
     };
 
 
 
 
+    T_mv Function_O::lambdaList() {
+        ASSERTF(this->closure,BF("The Function closure is NULL"));
+        return Values(this->closure->lambdaList(),_lisp->_true());
+    }
 
     LambdaListHandler_sp Function_O::functionLambdaListHandler() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
@@ -122,7 +208,17 @@ namespace core
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         return this->closure->getKind();
     };
-    Environment_sp Function_O::closedEnvironment() const{IMPLEMENT_ME();};
+
+    Str_sp Function_O::docstring() const {
+        ASSERTF(this->closure,BF("The Function closure is NULL"));
+        return this->closure->docstring();
+    };
+	
+    Cons_sp Function_O::declares() const {
+        ASSERTF(this->closure,BF("The Function closure is NULL"));
+        return this->closure->declares();
+    };
+Environment_sp Function_O::closedEnvironment() const{IMPLEMENT_ME();};
     T_sp Function_O::functionName() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         return this->closure->name;
@@ -131,8 +227,8 @@ namespace core
     T_mv Function_O::functionSourcePos() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         SourcePosInfo_sp spi = this->closure->sourcePosInfo();
-        SourceFileInfo_sp sfi = af_sourceFileInfo(spi);
-        return Values(sfi,Fixnum_O::create(spi->lineno()));
+        SourceFileInfo_sp sfi = core_sourceFileInfo(spi);
+        return Values(sfi,Integer_O::create((size_t)spi->filepos()), Fixnum_O::create(spi->lineno()));
     }
 
 
@@ -183,13 +279,25 @@ namespace core
         
 	Cons_sp code = _Nil<Cons_O>();
 	if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(fn->closure) ) {
-	    code = ic->code;
+	    code = ic->_code;
 	}
 	bool closedp = true; // fn->closedEnvironment().notnilp();
 	T_sp name = fn->closure->name;
 	return Values(code,_lisp->_boolean(closedp),name);
     };
 
+
+    #define ARGS_core_functionSourceCode "(fn)"
+#define DECL_core_functionSourceCode ""
+#define DOCS_core_functionSourceCode "functionSourceCode"
+    T_sp core_functionSourceCode(Function_sp fn)
+    {
+	Closure* closure = fn->closure;
+	if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(closure) ) {
+	    return ic->code();
+	}
+	return _Nil<T_O>();
+    }
 
 
 
@@ -204,12 +312,17 @@ namespace core
 	    .def("core:setFunctionKind",&Function_O::setKind)
 	    .def("core:functionKind",&Function_O::functionKind)
 	    .def("core:closedEnvironment",&Function_O::closedEnvironment)
-	    .def("functionName",&Function_O::functionName)
+	    .def("core:functionName",&Function_O::functionName)
 	    .def("core:functionSourcePos",&Function_O::functionSourcePos)
             .def("core:functionLambdaListHandler",&Function_O::functionLambdaListHandler)
+            .def("core:function_declares",&Function_O::declares)
+            .def("core:function_docstring",&Function_O::docstring)
 	    ;
 	ClDefun(functionLambdaExpression);
+	CoreDefun(functionSourcePosInfo);
         CoreDefun(setKind);
+	CoreDefun(functionLambdaList);
+	CoreDefun(functionSourceCode);
     }
 
     void Function_O::exposePython(Lisp_sp lisp)
@@ -224,7 +337,9 @@ namespace core
 
     string Function_O::__repr__() const
     {_G();
-	ASSERTNOTNULL(this->_Name);
+	if ( this->closure==NULL ) {
+	    return "Function_O::__repr__ NULL closure";
+	}
 	T_sp name = this->closure->name;
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(name) << ">";

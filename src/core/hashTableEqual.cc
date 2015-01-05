@@ -93,7 +93,7 @@ namespace core
 
     bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const
     {_OF();
-	return af_equal(entryKey,searchKey);
+	return cl_equal(entryKey,searchKey);
     }
 
     int HashTableEqual_O::sxhashKey(T_sp obj,int bound, bool willAddKey ) const

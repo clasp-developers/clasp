@@ -135,7 +135,7 @@ namespace core {
     public:
         DISABLE_NEW();
 
-        virtual string describe() const {return "StructureClassInitializationFunctoid";};
+        virtual const char* describe() const {return "StructureClassInitializationFunctoid";};
         StructureClassInitializationFunctoid(T_sp name, StructureClass_sp c) : Functoid(name) { this->_StructureClass = c;};
         virtual ~StructureClassInitializationFunctoid() {};
     };

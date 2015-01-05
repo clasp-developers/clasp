@@ -285,7 +285,7 @@ namespace core
 	{
 	    hg.addPart(0);
 	    return;
-	} else if ( af_numberP(obj) || af_characterP(obj) )
+	} else if ( cl_numberp(obj) || af_characterP(obj) )
 	{
 	    hg.hashObject(obj);
 	    return;
@@ -303,7 +303,7 @@ namespace core
 	{
 	    hg.addPart(0);
 	    return;
-	} else if ( af_symbolp(obj) || af_numberP(obj) || af_stringP(obj) || af_pathnamep(obj) || af_consP(obj) )
+	} else if ( af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) || af_pathnamep(obj) || cl_consp(obj) )
 	{
 	    hg.hashObject(obj);
 	    return;
@@ -317,25 +317,24 @@ namespace core
 
     void HashTable_O::sxhash_equalp(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
-        IMPLEMENT_MEF(BF("Implement HashTable_O::sxhash_equalp"));
-#if 0
-	if ( obj.nilp() )
-	{
+	if ( obj.nilp() ) {
 	    hg.addPart(0);
 	    return;
 	} else if ( af_symbolp(obj)
-                    || af_numberP(obj)
+                    || cl_numberp(obj)
                     || af_stringP(obj)
                     || af_pathnamep(obj)
-                    || af_consP(obj)
+                    || cl_consp(obj)
                     || obj->instancep()
                     || af_arrayP(obj))
 	{
 	    hg.hashObject(obj);
 	    return;
 	}
-	obj->T_O::sxhash(hg);
+#ifdef USE_MPS
+        if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
+	obj->T_O::sxhash(hg);
     }
 
     bool HashTable_O::equalp(T_sp other) const

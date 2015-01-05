@@ -12,8 +12,10 @@
 
 (in-package "SB-BSD-SOCKETS")
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (format t "Loading sockets.lisp"))
 
-#+brcl
+#+clasp
 (export '(
 	  GET-HOST-BY-NAME GET-HOST-BY-ADDRESS
 	  SOCKET-BIND SOCKET-ACCEPT SOCKET-CONNECT
@@ -35,7 +37,7 @@
 
 
 ;; Include the neccessary headers
-#-brcl
+#-clasp
 (clines
  "#include <sys/types.h>"
  "#include <sys/socket.h>"
@@ -65,17 +67,17 @@
 
 
 (eval-when (:compile-toplevel :execute)
-  #-brcl(defmacro c-constant (c-name)
-	  `(c-inline () () :int ,c-name :one-liner t))
-  #+brcl(defmacro c-constant (c-name) `,c-name)
-  #-brcl(defmacro define-c-constants (&rest args)
+  #-clasp(defmacro c-constant (c-name)
+	  `(ffi:c-inline () () :int ,c-name :one-liner t))
+  #+clasp(defmacro c-constant (c-name) `,c-name)
+  #-clasp(defmacro define-c-constants (&rest args)
 	  `(let ()	  ; Prevents evaluation of constant value form
 	     ,@(loop
 		  for (lisp-name c-name) on args by #'cddr
 		  collect `(defconstant ,lisp-name (c-constant ,c-name))))))
 
 
-#-brcl(define-c-constants
+#-clasp(define-c-constants
 	  +af-inet+ "AF_INET"
 	+af-local+ #-sun4sol2 "AF_LOCAL" #+sun4sol2 "AF_UNIX"
 	+eagain+ "EAGAIN"
@@ -84,7 +86,7 @@
 
 ;; Foreign functions
 
-#-brcl (progn
+#-clasp (progn
 	 (defentry ff-socket (:int :int :int) (:int "socket") :no-interrupts t)
 	 (defentry ff-listen (:int :int) (:int "listen") :no-interrupts t)
 	 (defentry ff-close (:int) (:int "close") :no-interrupts t)
@@ -136,7 +138,7 @@ containing the whole rest of the given `string', if any."
 HOST-NAME may also be an IP address in dotted quad notation or some other
 weird stuff - see gethostbyname(3) for grisly details."
   (let ((host-ent (make-instance 'host-ent)))
-    (if (c-inline #+brcl ll-get-host-by-name
+    (if (ffi:c-inline #+clasp sockets-internal:ll-get-host-by-name
 		  (host-name host-ent
 			     #'(setf host-ent-name)
 			     #'(setf host-ent-aliases)
@@ -187,7 +189,7 @@ weird stuff - see gethostbyname(3) for grisly details."
 	       (= (length address) 4)))
   (let ((host-ent (make-instance 'host-ent)))
     (if
-     (c-inline #+brcl ll-get-host-by-address
+     (ffi:c-inline #+clasp sockets-internal:ll-get-host-by-address
 	       (address host-ent
 			#'(setf host-ent-name)
 			#'(setf host-ent-aliases)
@@ -406,7 +408,7 @@ SB-SYS:MAKE-FD-STREAM."))
 	     (socket-error "close")))
       (setf (slot-value socket 'file-descriptor) -1))))
 
-#-brcl
+#-clasp
 (ffi::clines "
 static void *
 safe_buffer_pointer(cl_object x, cl_index size)
@@ -441,7 +443,7 @@ safe_buffer_pointer(cl_object x, cl_index size)
 	(fd (socket-file-descriptor socket)))
 
     (multiple-value-bind (len-recv errno)
-	   (c-inline #+brcl ll-socket-receive
+	   (ffi:c-inline #+clasp ll-socket-receive
 		     (fd buffer length
 		      oob peek waitall)
 		     (:int :object :int :bool :bool :bool)
@@ -487,7 +489,7 @@ safe_buffer_pointer(cl_object x, cl_index size)
 (defun get-protocol-by-name (string-or-symbol)
   "Calls getprotobyname"
   (let ((string (string string-or-symbol)))
-    (c-inline #+brcl ll-get-protocol-by-name
+    (ffi:c-inline #+clasp sockets-internal:ll-get-protocol-by-name
 	      (string) (:cstring) :int
 	      "getprotobyname(#0)->p_proto"
 	      :one-liner t)))
@@ -514,7 +516,7 @@ Examples:
   "Make an INET socket.  Deprecated in favour of make-instance"
   (make-instance 'inet-socket :type type :protocol protocol))
 
-#-brcl(Clines
+#-clasp(Clines
        "
 static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
 			       int a1, int a2, int a3, int a4)
@@ -538,7 +540,7 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
   (let ((ip (first address))
 	(port (second address)))
     (if (= -1
-	   (c-inline #+brcl ll-socket-bind-inet-socket
+	   (ffi:c-inline #+clasp ll-socket-bind-inet-socket
 		     (port (aref ip 0) (aref ip 1) (aref ip 2) (aref ip 3)
 			   (socket-file-descriptor socket))
 		     (:int :int :int :int :int :int)
@@ -559,7 +561,7 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
 (defmethod socket-accept ((socket inet-socket))
   (let ((sfd (socket-file-descriptor socket)))
     (multiple-value-bind (fd vector port)
-      (c-inline #+brcl ll-socket-accept-inet-socket
+      (ffi:c-inline #+clasp ll-socket-accept-inet-socket
 		(sfd) (:int) (values :int :object :int)
 "{
         struct sockaddr_in sockaddr;
@@ -603,7 +605,7 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
   (let ((ip (first address))
 	(port (second address)))
     (if (= -1
-	   (c-inline #+brcl ll-socket-connect-inet-socket
+	   (ffi:c-inline #+clasp ll-socket-connect-inet-socket
 		     (port (aref ip 0) (aref ip 1) (aref ip 2) (aref ip 3)
 			   (socket-file-descriptor socket))
 		     (:int :int :int :int :int :int)
@@ -625,7 +627,7 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
 (defmethod socket-peername ((socket inet-socket))
   (let* ((vector (make-array 4))
 	 (fd (socket-file-descriptor socket))
-	 (port (c-inline #+brcl ll-socket-peername-inet-socket
+	 (port (ffi:c-inline #+clasp ll-socket-peername-inet-socket
 			 (fd vector) (:int t) :int
 "@01;{
         struct sockaddr_in name;
@@ -657,7 +659,7 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
 (defmethod socket-name ((socket inet-socket))
   (let* ((vector (make-array 4))
 	 (fd (socket-file-descriptor socket))
-	 (port (c-inline #+brcl ll-socket-name-inet-socket
+	 (port (ffi:c-inline #+clasp ll-socket-name
 			 (fd vector) (:int t) :int
 "@01;{
         struct sockaddr_in name;
@@ -701,7 +703,7 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
 	   (if address
 	       (progn
 		 (assert (= 2 (length address)))
-		 (c-inline #+brcl ll-socket-send-address
+		 (ffi:c-inline #+clasp ll-socket-send-address
 			   (fd buffer length 
 			       (second address)
 			       (aref (first address) 0)
@@ -746,7 +748,7 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
 }
 "
 		     :one-liner nil))
-	       (c-inline #+brcl ll-socket-send-no-address
+	       (ffi:c-inline #+clasp ll-socket-send-no-address
 			 (fd buffer length 
 			     oob eor dontroute dontwait nosignal confirm)
 		     (:int :object :int
@@ -803,7 +805,7 @@ also known as unix-domain sockets."))
 	(fd (socket-file-descriptor socket))
 	(family (socket-family socket)))
     (if (= -1
-	   (c-inline #+brcl ll-socket-bind-local-socket
+	   (ffi:c-inline #+clasp ll-socket-bind-local-socket
 		     (fd name family) (:int :cstring :int) :int
 		     "
 {
@@ -827,7 +829,7 @@ also known as unix-domain sockets."))
 
 (defmethod socket-accept ((socket local-socket))
   (multiple-value-bind (fd name)
-      (c-inline #+brcl ll-socket-accept-local-socket
+      (ffi:c-inline #+clasp ll-socket-accept-local-socket
 		((socket-file-descriptor socket)) (:int) (values :int :object)
 "{
         struct sockaddr_un sockaddr;
@@ -856,7 +858,7 @@ also known as unix-domain sockets."))
 	(fd (socket-file-descriptor socket))
 	(family (socket-family socket)))
     (if (= -1
-	   (c-inline #+brcl ll-socket-connect-local-socket
+	   (ffi:c-inline #+clasp ll-socket-connect-local-socket
 		     (fd family path) (:int :int :cstring) :int
 		     "
 {
@@ -879,7 +881,7 @@ also known as unix-domain sockets."))
 
 (defmethod socket-peername ((socket local-socket))
   (let* ((fd (socket-file-descriptor socket))
-	 (peer (c-inline #+brcl ll-socket-peername-local-socket
+	 (peer (ffi:c-inline #+clasp ll-socket-peername-local-socket
 			 (fd) (:int) t
 			 "
 {
@@ -918,14 +920,14 @@ also known as unix-domain sockets."))
 (defmethod non-blocking-mode ((socket socket))
   #-:wsock
   (let ((fd (socket-file-descriptor socket)))
-    (not (zerop (c-inline #+brcl ll-non-blocking-mode
+    (not (zerop (ffi:c-inline #+clasp ll-non-blocking-mode
 			  (fd) (:int) :int "fcntl(#0,F_GETFL,NULL)&O_NONBLOCK" :one-liner t))))
 )
 
 (defmethod (setf non-blocking-mode) (non-blocking-p (socket socket))
   (let ((fd (socket-file-descriptor socket))
 	(nblock (if non-blocking-p 1 0)))
-    (if (= -1 (c-inline #+brcl ll-setf-non-blocking-mode
+    (if (= -1 (ffi:c-inline #+clasp ll-setf-non-blocking-mode
 			(fd nblock) (:int :int) :int
 	      #-:wsock
 	      "
@@ -953,19 +955,19 @@ also known as unix-domain sockets."))
 ;;;
 
 (defun dup (fd)
-  (c-inline #+brcl ll-dup
+  (ffi:c-inline #+clasp ll-dup
 		(fd) (:int) :int "dup(#0)" :one-liner t))
 
 (defun make-stream-from-fd (fd mode &key buffering element-type (external-format :default)
                             (name "FD-STREAM"))
   (assert (stringp name) (name) "name must be a string.")
   (let* ((smm-mode (ecase mode
-		       (:input +brcl-stream-mode-input+ #|(c-constant "ecl_smm_input")|# )
-		       (:output +brcl-stream-mode-output+ #| (c-constant "ecl_smm_output") |#)
-		       (:input-output +brcl-stream-mode-io+ #|(c-constant "ecl_smm_io")|#)
+		       (:input +clasp-stream-mode-input+ #|(c-constant "ecl_smm_input")|# )
+		       (:output +clasp-stream-mode-output+ #| (c-constant "ecl_smm_output") |#)
+		       (:input-output +clasp-stream-mode-io+ #|(c-constant "ecl_smm_io")|#)
 		       ))
 	 (external-format (unless (subtypep element-type 'integer) external-format))
-         (stream (c-inline #+brcl ll-make-stream-from-fd
+         (stream (ffi:c-inline #+clasp ll-make-stream-from-fd
 			   (name fd smm-mode element-type external-format)
 			   (t :int :int t t)
 			   t
@@ -980,7 +982,7 @@ ecl_make_stream_from_fd(#0,#1,(enum ecl_smmode)#2,
 
 (defun auto-close-two-way-stream (stream)
   (declare (si::c-local))
-  (c-inline #+brcl ll-auto-close-two-way-stream
+  (ffi:c-inline #+clasp ll-auto-close-two-way-stream
 		(stream) (t) :void
                 "(#0)->stream.flags |= ECL_STREAM_CLOSE_COMPONENTS"
                 :one-liner t))
@@ -1066,7 +1068,7 @@ ecl_make_stream_from_fd(#0,#1,(enum ecl_smmode)#2,
                        (socket-error-syscall c)
                        (or (socket-error-symbol c) (socket-error-errno c))
 		       #-:wsock
-		       (c-inline #+brcl ll-strerror
+		       (ffi:c-inline #+clasp ll-strerror
 				 (num) (:int) :cstring
 				 "strerror(#0)" :one-liner t)))))
   (:documentation "Common base class of socket related conditions."))
@@ -1084,20 +1086,20 @@ ecl_make_stream_from_fd(#0,#1,(enum ecl_smmode)#2,
 ;;; need symbols to be added to constants.ccon
 ;;; I haven't yet thought of a non-kludgey way of keeping all this in
 ;;; the same place
-(define-socket-condition EADDRINUSE address-in-use-error)
-(define-socket-condition EAGAIN interrupted-error)
-(define-socket-condition EBADF bad-file-descriptor-error)
-(define-socket-condition ECONNREFUSED connection-refused-error)
-(define-socket-condition ETIMEDOUT operation-timeout-error)
-(define-socket-condition EINTR interrupted-error)
-(define-socket-condition EINVAL invalid-argument-error)
-(define-socket-condition ENOBUFS no-buffers-error)
-(define-socket-condition ENOMEM out-of-memory-error)
-(define-socket-condition EOPNOTSUPP operation-not-supported-error)
-(define-socket-condition EPERM operation-not-permitted-error)
-(define-socket-condition EPROTONOSUPPORT protocol-not-supported-error)
-(define-socket-condition ESOCKTNOSUPPORT socket-type-not-supported-error)
-(define-socket-condition ENETUNREACH network-unreachable-error)
+(define-socket-condition +EADDRINUSE+ address-in-use-error)
+(define-socket-condition +EAGAIN+ interrupted-error)
+(define-socket-condition +EBADF+ bad-file-descriptor-error)
+(define-socket-condition +ECONNREFUSED+ connection-refused-error)
+(define-socket-condition +ETIMEDOUT+ operation-timeout-error)
+(define-socket-condition +EINTR+ interrupted-error)
+(define-socket-condition +EINVAL+ invalid-argument-error)
+(define-socket-condition +ENOBUFS+ no-buffers-error)
+(define-socket-condition +ENOMEM+ out-of-memory-error)
+(define-socket-condition +EOPNOTSUPP+ operation-not-supported-error)
+(define-socket-condition +EPERM+ operation-not-permitted-error)
+(define-socket-condition +EPROTONOSUPPORT+ protocol-not-supported-error)
+(define-socket-condition +ESOCKTNOSUPPORT+ socket-type-not-supported-error)
+(define-socket-condition +ENETUNREACH+ network-unreachable-error)
 
 
 (defun condition-for-errno (err)
@@ -1120,7 +1122,7 @@ GET-NAME-SERVICE-ERRNO")
   (get-name-service-errno)
   ;; Comment next to NETDB-INTERNAL in netdb.h says "See errno.".
   ;; This special case treatment hasn't actually been tested yet.
-  (if (= *name-service-errno* (c-constant "NETDB-INTERNAL"))
+  (if (= *name-service-errno* (c-constant +NETDB-INTERNAL+))
       (socket-error where)
     (let ((condition
 	   (condition-for-name-service-errno *name-service-errno*)))
@@ -1150,24 +1152,24 @@ GET-NAME-SERVICE-ERRNO")
 
 (defparameter *conditions-for-name-service-errno* nil)
 
-(define-name-service-condition NETDB-INTERNAL netdb-internal-error)
-(define-name-service-condition NETDB-SUCCESS netdb-success-error)
-(define-name-service-condition HOST-NOT-FOUND host-not-found-error)
-(define-name-service-condition TRY-AGAIN try-again-error)
-(define-name-service-condition NO-RECOVERY no-recovery-error)
+(define-name-service-condition +NETDB-INTERNAL+ netdb-internal-error)
+(define-name-service-condition +NETDB-SUCCESS+ netdb-success-error)
+(define-name-service-condition +HOST-NOT-FOUND+ host-not-found-error)
+(define-name-service-condition +TRY-AGAIN+ try-again-error)
+(define-name-service-condition +NO-RECOVERY+ no-recovery-error)
 ;; this is the same as the next one
 ;;(define-name-service-condition NO_DATA no-data-error)
-(define-name-service-condition NO-ADDRESS no-address-error)
+(define-name-service-condition +NO-ADDRESS+ no-address-error)
 
 (defun condition-for-name-service-errno (err)
   (or (cdr (assoc err *conditions-for-name-service-errno* :test #'eql))
       'name-service))
 
 (defun get-name-service-errno ()
-  (setf *name-service-errno* (ll-get-name-service-h-errno)))
+  (setf *name-service-errno* (sockets-internal:ll-get-name-service-h-errno)))
 
 (defun get-name-service-error-message (num)
-  (c-inline #+brcl ll-strerror (num) (:int) :cstring "strerror(#0)" :one-liner t)
+  (ffi:c-inline #+clasp ll-strerror (num) (:int) :cstring "strerror(#0)" :one-liner t)
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1176,7 +1178,7 @@ GET-NAME-SERVICE-ERRNO")
 ;;;
 
 (defun get-sockopt-int (fd level const)
-  (let ((ret (c-inline #+brcl ll-get-sockopt-int
+  (let ((ret (ffi:c-inline #+clasp sockets-internal:ll-get-sockopt-int
 		       (fd level const) (:int :int :int) t
 "{
         int sockopt, ret;
@@ -1190,11 +1192,11 @@ GET-NAME-SERVICE-ERRNO")
 }")))
     (if ret
 	ret
-	(error "Sockopt error: ~A" (c-inline #+brcl ll-strerror-errno
+	(error "Sockopt error: ~A" (ffi:c-inline #+clasp ll-strerror-errno
 					     () () :cstring "strerror(errno)" :one-liner t)))))
 
 (defun get-sockopt-bool (fd level const)
-  (let ((ret (c-inline #+brcl ll-get-sockopt-bool
+  (let ((ret (ffi:c-inline #+clasp sockets-internal:ll-get-sockopt-bool
 		       (fd level const) (:int :int :int) t
 "{
         int sockopt, ret;
@@ -1208,13 +1210,13 @@ GET-NAME-SERVICE-ERRNO")
 }")))
     (if ret
 	(/= ret 0)
-	(error "Sockopt error: ~A" (c-inline #+brcl ll-strerror-errno
+	(error "Sockopt error: ~A" (ffi:c-inline #+clasp ll-strerror-errno
 					     () () :cstring "strerror(errno)" :one-liner t)))))
 
 
 #-wsock
 (defun get-sockopt-timeval (fd level const)
-  (let ((ret (c-inline #+brcl ll-get-sockopt-timeval
+  (let ((ret (ffi:c-inline #+clasp sockets-internal:ll-get-sockopt-timeval
 		       (fd level const) (:int :int :int) t
 "{
 	struct timeval tv;
@@ -1230,11 +1232,11 @@ GET-NAME-SERVICE-ERRNO")
 }")))
     (if ret
 	ret
-	(error "Sockopt error: ~A" (c-inline #+brcl ll-strerror-errno
+	(error "Sockopt error: ~A" (ffi:c-inline #+clasp ll-strerror-errno
 					     () () :cstring "strerror(errno)" :one-liner t)))))
 
 (defun get-sockopt-linger (fd level const)
-  (let ((ret (c-inline #+brcl ll-get-sockopt-linger
+  (let ((ret (ffi:c-inline #+clasp sockets-internal:ll-get-sockopt-linger
 		       (fd level const) (:int :int :int) t
 "{
 	struct linger sockopt;
@@ -1249,11 +1251,11 @@ GET-NAME-SERVICE-ERRNO")
 }")))
     (if ret
 	ret
-	(error "Sockopt error: ~A" (c-inline #+brcl ll-strerror-errno
+	(error "Sockopt error: ~A" (ffi:c-inline #+clasp ll-strerror-errno
 					     () () :cstring "strerror(errno)" :one-liner t)))))
 
 (defun set-sockopt-int (fd level const value)
-  (let ((ret (c-inline #+brcl ll-set-sockopt-int
+  (let ((ret (ffi:c-inline #+clasp ll-set-sockopt-int
 		       (fd level const value) (:int :int :int :int) t
 "{
         int sockopt = #3;
@@ -1267,11 +1269,11 @@ GET-NAME-SERVICE-ERRNO")
 }")))
     (if ret
 	value
-	(error "Sockopt error: ~A" (c-inline #+brcl ll-strerror-errno
+	(error "Sockopt error: ~A" (ffi:c-inline #+clasp ll-strerror-errno
 					     () () :cstring "strerror(errno)" :one-liner t)))))
 
 (defun set-sockopt-bool (fd level const value)
-  (let ((ret (c-inline #+brcl ll-set-sockopt-bool
+  (let ((ret (ffi:c-inline #+clasp ll-set-sockopt-bool
 		       (fd level const value) (:int :int :int :object) t
 "{
         int sockopt = (#3 == ECL_NIL) ? 0 : 1;
@@ -1285,12 +1287,12 @@ GET-NAME-SERVICE-ERRNO")
 }")))
     (if ret
 	value
-	(error "Sockopt error: ~A" (c-inline #+brcl ll-strerror-errno
+	(error "Sockopt error: ~A" (ffi:c-inline #+clasp ll-strerror-errno
 					     () () :cstring "strerror(errno)" :one-liner t)))))
 
 #-wsock
 (defun set-sockopt-timeval (fd level const value)
-  (let ((ret (c-inline #+brcl ll-set-sockopt-timeval
+  (let ((ret (ffi:c-inline #+clasp ll-set-sockopt-timeval
 		       (fd level const value) (:int :int :int :double) t
 "{
 	struct timeval tv;
@@ -1307,12 +1309,12 @@ GET-NAME-SERVICE-ERRNO")
 }")))
     (if ret
 	value
-	(error "Sockopt error: ~A" (c-inline #+brcl ll-strerror-errno
+	(error "Sockopt error: ~A" (ffi:c-inline #+clasp ll-strerror-errno
 					     () () :cstring "strerror(errno)" :one-liner t)))))
 
 
 (defun set-sockopt-linger (fd level const value)
-  (let ((ret (c-inline #+brcl ll-set-sockopt-linger
+  (let ((ret (ffi:c-inline #+clasp ll-set-sockopt-linger
 		       (fd level const value) (:int :int :int :int) t
 "{
 	struct linger sockopt = {0, 0};
@@ -1333,7 +1335,7 @@ GET-NAME-SERVICE-ERRNO")
 }")))
     (if ret
 	value
-	(error "Sockopt error: ~A" (c-inline #+brcl ll-strerror-errno
+	(error "Sockopt error: ~A" (ffi:c-inline #+clasp ll-strerror-errno
 					     () () :cstring "strerror(errno)" :one-liner t)))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -1343,30 +1345,30 @@ GET-NAME-SERVICE-ERRNO")
        (defun ,name (socket)
 	 (,(intern (format nil "GET-SOCKOPT-~A" type))
 	   (socket-file-descriptor socket)
-;;	   (c-constant ,c-level)
-;;	   (c-constant ,c-const)
+	   ,c-level
+	   ,c-const
 	   ))
        ,@(unless read-only
 	   `((defun (setf ,name) (value socket)
 	       (,(intern (format nil "SET-SOCKOPT-~A" type))
 		 (socket-file-descriptor socket)
-;;		 (c-constant ,c-level)
-;;		 (c-constant ,c-const)
+		 ,c-level
+		 ,c-const
 		 value)))))))
 
-(define-sockopt sockopt-type "SOL_SOCKET" "SO_TYPE" int t)
-(define-sockopt sockopt-receive-buffer "SOL_SOCKET" "SO_RCVBUF" int)
-(define-sockopt sockopt-receive-timeout "SOL_SOCKET" "SO_RCVTIMEO" timeval)
-(define-sockopt sockopt-send-timeout "SOL_SOCKET" "SO_SNDTIMEO" timeval)
-(define-sockopt sockopt-reuse-address "SOL_SOCKET" "SO_REUSEADDR" bool)
-(define-sockopt sockopt-keep-alive "SOL_SOCKET" "SO_KEEPALIVE" bool)
-(define-sockopt sockopt-dont-route "SOL_SOCKET" "SO_DONTROUTE" bool)
-(define-sockopt sockopt-linger "SOL_SOCKET" "SO_LINGER" linger)
+(define-sockopt sockopt-type sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-TYPE+ int t)
+(define-sockopt sockopt-receive-buffer sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-RCVBUF+ int)
+(define-sockopt sockopt-receive-timeout sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-RCVTIMEO+ timeval)
+(define-sockopt sockopt-send-timeout sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-SNDTIMEO+ timeval)
+(define-sockopt sockopt-reuse-address sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-REUSEADDR+ bool)
+(define-sockopt sockopt-keep-alive sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-KEEPALIVE+ bool)
+(define-sockopt sockopt-dont-route sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-DONTROUTE+ bool)
+(define-sockopt sockopt-linger sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-LINGER+ linger)
 
 #-(or :sun4sol2 :linux :wsock :cygwin)
-(define-sockopt sockopt-reuse-port "SOL_SOCKET" "SO_REUSEPORT" bool)
+(define-sockopt sockopt-reuse-port sockets-internal:+SOL-SOCKET+ sockets-internal:+SO-REUSEPORT+ bool)
 
-(define-sockopt sockopt-tcp-nodelay "IPPROTO_TCP" "TCP_NODELAY" bool)
+(define-sockopt sockopt-tcp-nodelay sockets-internal:+IPPROTO-TCP+ sockets-internal:+TCP-NODELAY+ bool)
 
 ;; Add sockopts here as you need them...
 

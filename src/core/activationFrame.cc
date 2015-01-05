@@ -89,11 +89,11 @@ namespace core
 
 
 
-    bool ActivationFrame_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special,T_sp& value) const
+    bool ActivationFrame_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind,T_sp& value) const
     {_G();
 	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	++depth;
-	return clasp_findValue(parent,sym,depth,index,special,value);
+	return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
 
 
@@ -133,18 +133,18 @@ namespace core
 
 
 
-    const T_sp& ActivationFrame_O::lookupValueReference(int depth, int index) const
+    T_sp& ActivationFrame_O::lookupValueReference(int depth, int index)
     {_G();
 	if ( depth == 0 )
 	{
 	    SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__() );
 	}
 	--depth;
-	return(this->parentFrame()->lookupValueReference(depth,index));
+	return Environment_O::clasp_lookupValueReference(this->parentFrame(),depth,index);
     }
 	
 
-    T_sp ActivationFrame_O::_lookupValue(int depth, int index) const
+    T_sp ActivationFrame_O::_lookupValue(int depth, int index)
     {_G();
 	return this->lookupValueReference(depth,index);
     }
@@ -159,7 +159,6 @@ namespace core
 	--depth;
         return Environment_O::clasp_lookupFunction(this->parentFrame(),depth,index);
     }
-
 
 
 
@@ -252,7 +251,7 @@ namespace core
     }
 
 
-    const T_sp& ValueFrame_O::lookupValueReference(int depth, int index) const
+    T_sp& ValueFrame_O::lookupValueReference(int depth, int index)
     {_G();
 	if ( depth == 0 )
 	{
@@ -260,7 +259,7 @@ namespace core
 	    return((this->_Objects[index]));
 	}
 	--depth;
-	return(this->parentFrame()->lookupValueReference(depth,index));
+	return Environment_O::clasp_lookupValueReference(this->parentFrame(),depth,index);
     }
 
 
@@ -279,7 +278,7 @@ namespace core
 	}
     }
 	    
-    T_sp ValueFrame_O::_lookupValue(int depth, int index) const
+    T_sp ValueFrame_O::_lookupValue(int depth, int index)
     {_G();
 	return this->lookupValueReference(depth,index);
     }
@@ -288,14 +287,14 @@ namespace core
 
 
 
-    ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh,ActivationFrame_sp parent)
+    ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh,T_sp parent)
     {_G();
 	ValueFrame_sp vf(ValueFrame_O::create(llh->numberOfLexicalVariables(),parent));
 	return((vf));
     }
 
 
-    ValueFrame_sp ValueFrame_O::create(Cons_sp values,ActivationFrame_sp parent)
+    ValueFrame_sp ValueFrame_O::create(Cons_sp values,T_sp parent)
     {_G();
 	ValueFrame_sp vf = ValueFrame_O::create(cl_length(values),parent);
 //	vf->allocateStorage(cl_length(values));
@@ -309,7 +308,7 @@ namespace core
     }
 
 
-    ValueFrame_sp ValueFrame_O::createFromReversedCons(Cons_sp values,ActivationFrame_sp parent)
+    ValueFrame_sp ValueFrame_O::createFromReversedCons(Cons_sp values,T_sp parent)
     {_G();
 	ValueFrame_sp vf = ValueFrame_O::create(cl_length(values),parent);
 	int len = cl_length(values);
@@ -344,18 +343,19 @@ namespace core
 	    }
 	}
 	if ( this->parentFrame().nilp() ) return false;
-	return this->parentFrame()->_updateValue(sym,obj);
+	return af_updateValue(this->parentFrame(),sym,obj);
     }
 
 
     /*! Find the value bound to a symbol based on the symbol name.
        This is only used by the interpreter and shouldn't be expected to be fast.
     */
-    bool ValueFrame_O::_findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value ) const
+    bool ValueFrame_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value ) const
     {_G();
+	//	printf("%s:%d ValueFrame_O::_findValue - switch to DWARF debugging to look up values\n", __FILE__, __LINE__ );
 	if ( this->_DebuggingInfo.nilp() )
 	{
-	    return((this->Base::_findValue(sym,depth,index,special,value)));
+	    return((this->Base::_findValue(sym,depth,index,valueKind,value)));
 	}
         if ( !this->_DebuggingInfo ) {
             THROW_HARD_ERROR(BF("The debugging info was NULL!!!!! Why is this happening?"));
@@ -368,15 +368,12 @@ namespace core
 	    {
 		index = i;
 		value = this->_Objects[i];
-		return((true));
+		valueKind = heapValue;
+		return true;
 	    }
 	}
-	if ( this->parentFrame().nilp() )
-	{
-	    return false;
-	}
 	++depth;
-	return this->parentFrame()->_findValue(sym,depth,index,special,value);
+	return Environment_O::clasp_findValue(this->parentFrame(),sym,depth,index,valueKind,value);
     }
 	    
 
@@ -535,7 +532,7 @@ namespace core
 
 
 
-    TagbodyFrame_sp TagbodyFrame_O::create(ActivationFrame_sp parent)
+    TagbodyFrame_sp TagbodyFrame_O::create(T_sp parent)
     {_G();
 	GC_ALLOCATE(TagbodyFrame_O,vf );
         vf->_ParentFrame = parent;

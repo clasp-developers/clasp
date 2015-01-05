@@ -224,15 +224,15 @@ namespace core
 
     class Lisp_O
     {
-        friend SourceFileInfo_mv af_sourceFileInfo(T_sp);
+	friend SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename, size_t offset, bool useLineno);
 	struct GCRoots //: public gctools::HeapRoot
         {
 	/*! The invocation history stack this should be per thread */
 	    InvocationHistoryStack 	_InvocationHistoryStack;
             ExceptionStack              _ExceptionStack;
 	/*! Multiple values - this should be per thread */
-	    MultipleValues 		_MultipleValues;
-            Stream_sp                   _TerminalIO;
+	    MultipleValues* 		_MultipleValuesCur;
+            T_sp                   _TerminalIO;
 	    /*! Bignum registers should be one per thread */
 	    Bignum_sp 			_BignumRegister0;
 	    Bignum_sp 			_BignumRegister1;
@@ -277,7 +277,7 @@ namespace core
 #endif
 	    DoubleFloat_sp 		_RehashSize;
 	    DoubleFloat_sp 		_RehashThreshold;
-	    Stream_sp 			_NullStream;
+	    T_sp 			_NullStream;
 	    Cons_sp 			_PathnameTranslations; /* alist */
 	    Complex_sp 			_ImaginaryUnit;
 	    Complex_sp 			_ImaginaryUnitNegative;
@@ -306,6 +306,7 @@ namespace core
 	friend class ConditionHandlerManager;	
 	friend class BootStrapCoreSymbolMap;
 	friend T_sp sp_eval_when( Cons_sp args, T_sp env );
+	friend T_sp core_allSourceFiles();
 	template <class oclass> friend void define_base_class(Class_sp co, Class_sp cob, uint& classesUpdated );
 	template <class oclass> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class );
 	friend T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value);
@@ -317,7 +318,6 @@ namespace core
     public:
 	static void initializeGlobals(Lisp_sp lisp);
 
-//	friend T_sp prim_getForm(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp);
 	template <class oclass> friend BuiltInClass_sp hand_initialize_class(uint& classesHandInitialized, Lisp_sp prog,BuiltInClass_sp c);
     public:
 	static 	void lisp_initSymbols(Lisp_sp lisp);
@@ -335,6 +335,7 @@ namespace core
     public:
     public:
 	GCRoots 		_Roots;
+	map<string,void*>           _OpenDynamicLibraryHandles;
 	char*			_StackTop;
 	uint			_StackWarnSize;
 	uint			_StackSampleCount;
@@ -401,7 +402,37 @@ namespace core
 	// ------------------------------------------------------------
     public:
 	InvocationHistoryStack&	invocationHistoryStack();
-	MultipleValues&		multipleValues();
+    public:
+	map<string,void*>& openDynamicLibraryHandles() { return this->_OpenDynamicLibraryHandles; };
+    public:
+	/*! callArgs() are where extra arguments are stored when passing them
+	  into a function that takes more arguments than can be passed in registers
+	  See lispCallingConvention.h for more details.
+	  I use the MultipleValues structure to pass arguments into functions.
+	  This must be thread local.
+	*/
+	MultipleValues*		callArgs() {
+	    ASSERT(this->_Roots._MultipleValuesCur!=NULL);
+	    return this->_Roots._MultipleValuesCur;
+	}
+	/*! This is where multiple values are returned in */
+	MultipleValues&		multipleValues() {return *this->_Roots._MultipleValuesCur;}
+	/*! MultipleValues are stored on the stack in a linked list.
+	  This ensures that the objects they contain are not garbage collected and
+	  allows us to occasionally create new MultipleValues structures for when we need to
+	  save the current one temporarily */
+	void pushMultipleValues(MultipleValues* mv)
+	{
+	    ASSERT(mv!=NULL);
+	    mv->setPrevious(this->_Roots._MultipleValuesCur);
+//	    printf("%s:%d _lisp->pushMultipleValues(%p)  current= %p\n", __FILE__, __LINE__, mv, this->_Roots._MultipleValuesCur );
+	    this->_Roots._MultipleValuesCur = mv;
+	};
+	void popMultipleValues() {
+	    MultipleValues* nextHead = this->_Roots._MultipleValuesCur->getPrevious();
+//	    printf("%s:%d _lisp->popMultipleValues()  current= %p after pop = %p\n", __FILE__, __LINE__, this->_Roots._MultipleValuesCur, nextHead );
+	    this->_Roots._MultipleValuesCur = this->_Roots._MultipleValuesCur->getPrevious();
+	};
     public:
 	DebugStream& debugLog() {HARD_ASSERT(this->_DebugStream!=NULL);return *(this->_DebugStream);};
 //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
@@ -434,7 +465,7 @@ namespace core
     public:
         gctools::Vec0<core::Symbol_sp>&     classSymbolsHolder() { return this->_Roots._ClassSymbolsHolder;};
     public:
-        SourceFileInfo_mv sourceFileInfo(const string& fileName);
+        SourceFileInfo_mv getOrRegisterSourceFileInfo(const string& fileName, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true );
     public:
 	/*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
@@ -531,9 +562,9 @@ namespace core
     public:
 #if defined(XML_ARCHIVE)
 	/*! Like read but uses serialization code to deserialize objects from a stream */
-	T_sp sread(Stream_sp sin, bool eofErrorP, T_sp eofValue);
+	T_sp sread(T_sp sin, bool eofErrorP, T_sp eofValue);
 	/*! Like print but uses serialization to serialize objects to a stream */
-	void sprint(T_sp obj, Stream_sp sout );
+	void sprint(T_sp obj, T_sp sout );
 #endif // defined(XML_ARCHIVE)
     public:
 	void print(boost::format fmt);
@@ -563,7 +594,7 @@ namespace core
     public:
 	DoubleFloat_sp rehashSize() const {return this->_Roots._RehashSize;};
 	DoubleFloat_sp rehashThreshold() const { return this->_Roots._RehashThreshold;};
-	Stream_sp nullStream() const { return this->_Roots._NullStream;};
+	T_sp nullStream() const { return this->_Roots._NullStream;};
     public:
 	//	void load(T_sp filespec, bool verbose=false, bool print=false, bool ifDoesNotExist=true );
     public:	
@@ -766,8 +797,8 @@ namespace core
 	  each eval result to be printed. Return false if (quit) or (exit) was evaluated.
 	  sin - an input stream designator
 	*/
-	T_mv readEvalPrint(T_sp sin, Environment_sp environ, bool printResults);
-	T_mv readEvalPrintString(const string& string, Environment_sp environ, bool printResults );
+	T_mv readEvalPrint(T_sp sin, T_sp environ, bool printResults, bool prompt);
+	T_mv readEvalPrintString(const string& string, T_sp environ, bool printResults );
 	void readEvalPrintInteractive();
 
 
@@ -993,16 +1024,14 @@ public:
 namespace core
 {
 
-    T_mv af_macroexpand_1(T_sp form, Environment_sp env);
-    T_mv af_macroexpand(T_sp form, Environment_sp env);
+    T_mv af_macroexpand_1(T_sp form, T_sp env);
+    T_mv af_macroexpand(T_sp form, T_sp env);
 
     Cons_sp af_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
 
-    Class_mv af_findClass(Symbol_sp symbol, bool errorp=true, Environment_sp env=_Nil<Environment_O>());
-    Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, Environment_sp env );
+    Class_mv af_findClass(Symbol_sp symbol, bool errorp=true, T_sp env=_Nil<T_O>());
+    Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env );
 
-
-    SourceFileInfo_mv af_sourceFileInfo(T_sp obj);
 
     void af_stackMonitor();
 

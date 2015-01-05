@@ -138,7 +138,15 @@ namespace core
 #define DOCS_core_lispImplementationId "lispImplementationId - the git commit sha1 code"
     T_sp core_lispImplementationId()
     {_G();
-        return Str_O::create(CLASP_GIT_COMMIT);
+	string all = CLASP_GIT_COMMIT;
+#define RIGHT_CHARS 8
+	string rightChars;
+	if ( all.size() > RIGHT_CHARS) {
+	    rightChars = all.substr(all.size()-RIGHT_CHARS);
+	} else {
+	    rightChars = all;
+	}
+        return Str_O::create(rightChars);
     };
 
 
@@ -323,7 +331,7 @@ namespace core
 #define DOCS_af_fromTaggedFixnum "fromTaggedFixnum"
     int af_fromTaggedFixnum(T_sp val)
     {_G();
-	if ( val.BaseType::fixnump() )
+	if ( val.tagged_fixnump() )
 	{
 	    return val.fixnum();
 	}
@@ -335,7 +343,7 @@ namespace core
 #define DOCS_af_dumpTaggedFixnum "dumpTaggedFixnum"
     void af_dumpTaggedFixnum(T_sp val)
     {_G();
-	if ( val.BaseType::fixnump() ) {
+	if ( val.tagged_fixnump() ) {
 	    printf("%s:%d Raw TaggedFixnum %p   Untagged %d\n",
 		   __FILE__,__LINE__, val.pxget(), val.fixnum() );
 	} else
@@ -452,7 +460,7 @@ namespace core
     Symbol_sp functionBlockName(T_sp functionName)
     {_G();
 	if ( af_symbolp(functionName) ) return functionName.as<Symbol_O>();
-	if ( af_consP(functionName) )
+	if ( cl_consp(functionName) )
 	{
 	    Cons_sp cfn = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cfn) == cl::_sym_setf && af_symbolp(oCadr(cfn))& oCadr(cfn).notnilp() )
@@ -542,7 +550,7 @@ namespace core
 	    {
 		firsts << element;
 		seconds << _Nil<T_O>();
-	    } else if ( af_consP(element) )
+	    } else if ( cl_consp(element) )
 	    {
 		Cons_sp pair = element.as_or_nil<Cons_O>();
 		size_t pairlen = cl_length(pair);
@@ -727,11 +735,11 @@ namespace core
     bool af_constantp(T_sp obj, T_sp env)
     {_G();
 	// ignore env
-	if ( af_numberP(obj) ) return true;
+	if ( cl_numberp(obj) ) return true;
 	if ( af_characterP(obj) ) return true;
 	if ( af_arrayP(obj) ) return true;
 	// TODO add various kinds of array
-	if ( af_consP(obj) && oCar(obj) == cl::_sym_quote) return true;
+	if ( cl_consp(obj) && oCar(obj) == cl::_sym_quote) return true;
 	if ( obj.nilp() ) return true;
 	if ( af_symbolp(obj) )
 	{
@@ -812,7 +820,7 @@ namespace core
 	    Symbol_sp symbol = functionName.as<Symbol_O>();
 	    symbol->setf_symbolFunction(functionObject);
 	    return functionObject;
-	} else if (af_consP(functionName))
+	} else if (cl_consp(functionName))
 	{
 	    SYMBOL_EXPORT_SC_(ClPkg,setf);
 	    Cons_sp cur = functionName.as_or_nil<Cons_O>();
@@ -841,7 +849,7 @@ namespace core
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
 	    return(Values(sym->symbolFunction()));
-	} else if ( af_consP(functionName) )
+	} else if ( cl_consp(functionName) )
 	{
 	    Cons_sp cname = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cname) == cl::_sym_setf )
@@ -871,7 +879,7 @@ namespace core
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
 	    return sym->symbolFunction().pointerp();
-	} else if ( af_consP(functionName) )
+	} else if ( cl_consp(functionName) )
 	{
 	    Cons_sp cname = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cname) == cl::_sym_setf )
@@ -900,7 +908,7 @@ namespace core
 	    Symbol_sp sym = functionName.as<Symbol_O>();
 	    sym->setf_symbolFunction(_Nil<Function_O>());
 	    return(Values(sym));
-	} else if ( af_consP(functionName) )
+	} else if ( cl_consp(functionName) )
 	{
 	    Cons_sp cname = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cname) == cl::_sym_setf )
@@ -929,7 +937,7 @@ namespace core
 #define DECL_af_read_delimited_list ""
     T_mv af_read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p)
     {_G();
-	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
+	T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 #if 0
 	// I think it is safe to ignore recursive_p
 	if ( recursive_p.isTrue() )
@@ -949,24 +957,24 @@ namespace core
 
 
 
-#define LOCK_af_read 1
-#define DOCS_af_read "read an object from a stream - see CLHS"
-#define ARGS_af_read "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
-#define DECL_af_read ""
-    T_sp af_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
+#define LOCK_cl_read 1
+#define DOCS_cl_read "read an object from a stream - see CLHS"
+#define ARGS_cl_read "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
+#define DECL_cl_read ""
+    T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
-	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
+	T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 	return(read_lisp_object(sin,eof_error_p.isTrue(),eof_value,recursive_p.notnilp()));
     }
 
 
-#define DOCS_af_read_preserving_whitespace "read an object from a stream while preserving whitespace - see CLHS"
-#define ARGS_af_read_preserving_whitespace "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
-#define DECL_af_read_preserving_whitespace ""
-    T_sp af_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
+#define DOCS_cl_read_preserving_whitespace "read an object from a stream while preserving whitespace - see CLHS"
+#define ARGS_cl_read_preserving_whitespace "(&optional input-stream-designator (eof-error-p t) eof-value recursive-p)"
+#define DECL_cl_read_preserving_whitespace ""
+    T_sp cl_read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p)
     {_G();
 	DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR,_lisp->_true());
-	Stream_sp sin = coerce::inputStreamDesignator(input_stream_designator);
+	T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 	return(read_lisp_object(sin,eof_error_p.isTrue(),eof_value,recursive_p));
     }
 
@@ -1017,7 +1025,7 @@ namespace core
 		if (cl_length(obj.as<Vector_O>()) == 0 ) goto EMPTY;
                 VectorStepper* vP(gctools::ClassAllocator<VectorStepper>::allocateClass(obj.as<Vector_O>()));
                 this->_Steppers.push_back(vP);
-	    } else if ( af_consP(obj) )
+	    } else if ( cl_consp(obj) )
 	    {
 		if (obj.as_or_nil<Cons_O>().nilp()) goto EMPTY;
                 ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(obj.as_or_nil<Cons_O>()));
@@ -1084,7 +1092,7 @@ namespace core
 	for ( Cons_sp cur = sequences; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    T_sp obj = oCar(cur);
-	    if ( af_consP(obj) )
+	    if ( cl_consp(obj) )
 	    {
 		if ( obj.as_or_nil<Cons_O>().nilp() ) goto EMPTY;
                 ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(obj.as_or_nil<Cons_O>()));
@@ -1102,7 +1110,7 @@ namespace core
     }
 
 
-    bool test_every_some_notevery_notany(Function_sp predicate, Cons_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn )
+    bool test_every_some_notevery_notany(Function_sp predicate, Cons_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp& retVal )
     {_G();
 	ListOfSequenceSteppers steppers(sequences);
 	ValueFrame_sp frame(ValueFrame_O::create(steppers.size(),_Nil<ActivationFrame_O>()));
@@ -1111,7 +1119,8 @@ namespace core
 	{
 	    steppers.fillValueFrameUsingCurrentSteppers(frame);
 	    LOG(BF("Applying predicate to elements[%s]") % frame->asString());
-	    bool test = eval::applyToActivationFrame(predicate,frame).isTrue();
+	    retVal = eval::applyToActivationFrame(predicate,frame);
+	    bool test = retVal.isTrue();
 	    if (test==elementTest)
 	    {
 		LOG(BF("element test was %d - returning %d") % elementTest % elementReturn );
@@ -1128,11 +1137,12 @@ namespace core
 #define DOCS_af_every "See CLHS for every"
 #define ARGS_af_every "(predicate &rest sequences)"
 #define DECL_af_every ""
-    T_mv af_every(T_sp predicate, Cons_sp sequences)
+    T_sp af_every(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
-	bool result = test_every_some_notevery_notany(op,sequences,false,false,true);
-	return(Values(_lisp->_boolean(result)));
+	T_sp dummy;
+	bool result = test_every_some_notevery_notany(op,sequences,false,false,true,dummy);
+	return _lisp->_boolean(result);
     }
 
 
@@ -1140,11 +1150,13 @@ namespace core
 #define DOCS_af_some "See CLHS for some"
 #define ARGS_af_some "(predicate &rest sequences)"
 #define DECL_af_some ""
-    T_mv af_some(T_sp predicate, Cons_sp sequences)
+    T_sp af_some(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
-	bool result = test_every_some_notevery_notany(op,sequences,true,true,false);
-	return(Values(_lisp->_boolean(result)));
+	T_sp retVal;
+	bool result = test_every_some_notevery_notany(op,sequences,true,true,false,retVal);
+	if (result) return retVal;
+	return _Nil<T_O>();
     }
 
 
@@ -1154,11 +1166,12 @@ namespace core
 #define DOCS_af_notany "See CLHS for notany"
 #define ARGS_af_notany "(predicate &rest sequences)"
 #define DECL_af_notany ""
-    T_mv af_notany(T_sp predicate, Cons_sp sequences)
+    T_sp af_notany(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
-	bool result = test_every_some_notevery_notany(op,sequences,true,false,true);
-	return(Values(_lisp->_boolean(result)));
+	T_sp dummy;
+	bool result = test_every_some_notevery_notany(op,sequences,true,false,true,dummy);
+	return _lisp->_boolean(result);
     }
 
 
@@ -1167,11 +1180,12 @@ namespace core
 #define DOCS_af_notevery "See CLHS for notevery"
 #define ARGS_af_notevery "(predicate &rest sequences)"
 #define DECL_af_notevery ""
-    T_mv af_notevery(T_sp predicate, Cons_sp sequences)
+    T_sp af_notevery(T_sp predicate, Cons_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
-	bool result = test_every_some_notevery_notany(op,sequences,false,true,false);
-	return(Values(_lisp->_boolean(result)));
+	T_sp dummy;
+	bool result = test_every_some_notevery_notany(op,sequences,false,true,false,dummy);
+	return _lisp->_boolean(result);
     }
 
 
@@ -1618,8 +1632,8 @@ Symbol_mv af_type_to_symbol(T_sp x)
 #endif
     else if ( af_complexP(x) ) return(Values(cl::_sym_Complex_O));
     else if ( af_symbolp(x) ) return(Values(cl::_sym_Symbol_O));
-    else if ( af_packageP(x) ) return(Values(cl::_sym_Package_O));
-    else if ( af_listp(x) ) return(Values(cl::_sym_list));
+    else if ( cl_packagep(x) ) return(Values(cl::_sym_Package_O));
+    else if ( cl_listp(x) ) return(Values(cl::_sym_list));
     else if ( af_hashTableP(x) ) return(Values(cl::_sym_HashTable_O));
     else if ( af_vectorP(x) ) return(Values(cl::_sym_Vector_O));
     else if ( af_bitVectorP(x) ) return(Values(cl::_sym_BitVector_O));
@@ -1627,7 +1641,7 @@ Symbol_mv af_type_to_symbol(T_sp x)
     else if ( af_stringP(x) ) return(Values(cl::_sym_String_O));
 //    else if ( x.isA<BaseString_O>() ) return(Values(_sym_BaseString_O));
     else if ( cl_streamp(x) ) return(Values(cl::_sym_Stream_O));
-    else if ( af_readtableP(x) ) return(Values(cl::_sym_ReadTable_O));
+    else if ( cl_readtablep(x) ) return(Values(cl::_sym_ReadTable_O));
     else if ( CandoException_sp ce = x.asOrNull<CandoException_O>() )
     {
 	return(Values(_sym_CandoException_O));
@@ -1741,7 +1755,7 @@ T_sp type_of(T_sp x)
 	else if (x.isA<StringOutputStream_O>() ) 	return _sym_StringOutputStream_O;
 	else if (x.isA<EchoStream_O>() ) 		return cl::_sym_EchoStream_O;
 	else return cl::_sym_FileStream_O;
-    } else if ( af_listp(x) )
+    } else if ( cl_listp(x) )
     {
 	return cl::_sym_cons;
     } else if ( af_pathnamep(x) )
@@ -1854,10 +1868,10 @@ void initialize_primitives()
 	Defun(unbound);
 
 	SYMBOL_EXPORT_SC_(ClPkg,read);
-	Defun(read);
+	ClDefun(read);
 
 	SYMBOL_EXPORT_SC_(ClPkg,read_preserving_whitespace);
-	Defun(read_preserving_whitespace);
+	ClDefun(read_preserving_whitespace);
 
 
 	SYMBOL_EXPORT_SC_(ClPkg,read_delimited_list);

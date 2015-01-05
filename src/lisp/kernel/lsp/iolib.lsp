@@ -289,6 +289,7 @@ the one used internally by ECL compiled files."
           (dolist (i (directory "sys:encodings;*"))
             (push (intern (pathname-name i) "KEYWORD") all-encodings))
           all-encodings))))
+(export 'ext:all-encodings)
 
 (defun ext:load-encoding (name)
   #-unicode

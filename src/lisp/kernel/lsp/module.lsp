@@ -70,12 +70,17 @@ module."
 
 
 (pushnew #'(lambda (module)
-	     (let* ((module (string module)))
-	       (or
-		(let ((path (make-pathname :name module :defaults "SYS:")))
-		  (load path :if-does-not-exist nil))
-		(let ((path (make-pathname :name (string-downcase module)
-                                           :defaults "SYS:")))
-		  (load path :if-does-not-exist nil)))))
+	     (let* ((module (string module))
+		    (dc-module (string-downcase module)))
+	       (block require-block
+		 (dolist (name (list module dc-module))
+		   (dolist (directory (list
+				       (list :absolute)
+				       (list :absolute name)
+				       (list :absolute "kernel" name)))
+		     (dolist (type (list "bundle" "lsp" "lisp" "LSP" "LISP"))
+		       (if (let ((path (make-pathname :name name :type type :directory directory :defaults "SYS:")))
+			     (load path :if-does-not-exist nil))
+			   (return-from require-block t))))))))
 	 *module-provider-functions*)
 

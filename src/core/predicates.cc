@@ -72,6 +72,21 @@ namespace core
 	return true;
     };
 
+
+        
+    
+#define ARGS_core_baseCharP "(arg)"
+#define DECL_core_baseCharP ""
+#define DOCS_core_baseCharP "endp"
+    bool core_baseCharP(T_sp arg)
+    {_G();
+	if ( arg.nilp() ) return false;
+	if ( Character_sp c = arg.asOrNull<Character_O>() ) {
+	    return true;
+	}
+	return false;
+    };
+
     
     
 #define ARGS_af_endp "(arg)"
@@ -83,10 +98,10 @@ namespace core
     };
 
 
-#define ARGS_af_listp "(arg)"
-#define DECL_af_listp ""
-#define DOCS_af_listp "listp"
-    bool af_listp(T_sp arg)
+#define ARGS_cl_listp "(arg)"
+#define DECL_cl_listp ""
+#define DOCS_cl_listp "listp"
+    bool cl_listp(T_sp arg)
     {_G();
 	if ( arg.nilp() ) return true;
         return arg.isA<Cons_O>();
@@ -111,8 +126,14 @@ namespace core
     bool af_fixnumP(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
-	return obj.isA<Fixnum_O>();
-    };
+	if ( obj.pointerp() ) {
+	    if ( Fixnum_sp fn = obj.asOrNull<Fixnum_O>() ) {
+		return true;
+	    }
+	    return false;
+	}
+	return false;
+    }
 
 
 
@@ -176,10 +197,10 @@ namespace core
     };
 
 
-#define ARGS_af_consP "(arg)"
-#define DECL_af_consP ""
-#define DOCS_af_consP "consP"
-    bool af_consP(T_sp obj)
+#define ARGS_cl_consp "(arg)"
+#define DECL_cl_consp ""
+#define DOCS_cl_consp "consp"
+    bool cl_consp(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
 	return obj.isA<Cons_O>();
@@ -195,10 +216,10 @@ namespace core
     };
 
 
-#define ARGS_af_packageP "(arg)"
-#define DECL_af_packageP ""
-#define DOCS_af_packageP "packageP"
-    bool af_packageP(T_sp obj)
+#define ARGS_cl_packagep "(arg)"
+#define DECL_cl_packagep ""
+#define DOCS_cl_packagep "See CLHS packagep"
+    bool cl_packagep(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
 	return obj.isA<Package_O>();
@@ -225,10 +246,10 @@ namespace core
 
 
 
-#define ARGS_af_numberP "(arg)"
-#define DECL_af_numberP ""
-#define DOCS_af_numberP "numberP"
-    bool af_numberP(T_sp obj)
+#define ARGS_cl_numberp "(arg)"
+#define DECL_cl_numberp ""
+#define DOCS_cl_numberp "numberP"
+    bool cl_numberp(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
 	return obj.isA<Number_O>();
@@ -388,10 +409,10 @@ namespace core
     };
 
 
-#define ARGS_af_readtableP "(arg)"
-#define DECL_af_readtableP ""
-#define DOCS_af_readtableP "readtableP"
-    bool af_readtableP(T_sp obj)
+#define ARGS_cl_readtablep "(arg)"
+#define DECL_cl_readtablep ""
+#define DOCS_cl_readtablep "readtablep"
+    bool cl_readtablep(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
 	return obj.isA<ReadTable_O>();
@@ -551,7 +572,7 @@ namespace core
 	fast = slow = arg;
 	for ( int n=0; !fast.nilp(); n++, fast = oCdr(fast) )
 	{
-	    if ( !af_listp(fast) ) {
+	    if ( !cl_listp(fast) ) {
 		test = false;
 		break;
 	    }
@@ -601,9 +622,9 @@ namespace core
 	Defun(endp);
 #define newNameDefun(pkg,myname,lispname) af_def(pkg,#lispname,&af_##myname,ARGS_af_##myname,DECL_af_##myname,DOCS_af_##myname)
 	newNameDefun(ClPkg,symbolp,symbolp);
-	newNameDefun(ClPkg,consP,consp);
-	newNameDefun(ClPkg,listp,listp);
-	newNameDefun(ClPkg,numberP,numberp);
+	ClDefun(consp);
+	ClDefun(listp);
+	ClDefun(numberp);
 	newNameDefun(ClPkg,integerP,integerp);
 	newNameDefun(ClPkg,rationalP,rationalp);
 	newNameDefun(ClPkg,floatP,floatp);
@@ -617,14 +638,14 @@ namespace core
 	newNameDefun(ClPkg,strP,simple_string_p);
 	newNameDefun(ClPkg,simple_bit_vector_p,simple_bit_vector_p);
 	newNameDefun(ClPkg,arrayP,arrayp);
-	newNameDefun(ClPkg,packageP,packagep);
+	ClDefun(packagep);
 	newNameDefun(ClPkg,functionP,functionp);
 	newNameDefun(ClPkg,compiled_function_p,compiled_function_p);
 	newNameDefun(CorePkg,genericFunctionP,genericFunctionP);
 	newNameDefun(ClPkg,keywordP,keywordp);
 	SYMBOL_EXPORT_SC_(ClPkg,atom);
 	Defun(atom);
-
+	CoreDefun(baseCharP);
 	newNameDefun(CorePkg,fixnumP,fixnump);
 	newNameDefun(CorePkg,bignumP,bignump);
 	Defun(strP);
@@ -640,7 +661,7 @@ namespace core
 	Defun(singleFloatP);
 	Defun(pathP);
 	Defun(hashTableP);
-	Defun(readtableP);
+	ClDefun(readtablep);
 	Defun(structureObjectP);
 	Defun(singleDispatchGenericFunctionP);
 	Defun(activation_frame_p);

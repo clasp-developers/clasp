@@ -127,6 +127,14 @@ namespace core
 
 
 
+#define ARGS_core_matched "(regex-match &optional (idx 0))"
+#define DECL_core_matched ""
+#define DOCS_core_matched "matched"
+    bool RegexMatch_O::matched(int idx) const
+    {_OF();
+	ASSERTF(idx<(int)this->_Match.size(),BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());
+	return this->_Match[idx].matched;
+    }
 
 
     EXPOSE_CLASS(core,RegexMatch_O);
@@ -138,7 +146,7 @@ namespace core
 	    .def("regex-match-prefix",&RegexMatch_O::prefix)
 	    .def("regex-match-suffix",&RegexMatch_O::suffix)
 	    .def("regex-match-part",&RegexMatch_O::part)
-	    .def("regex-match-matched",&RegexMatch_O::matched)
+	    .def("regex-match-matched",&RegexMatch_O::matched,ARGS_core_matched)
 	;
     }
 
@@ -179,10 +187,7 @@ namespace core
 	}
 	return result;
     }
-    bool RegexMatch_O::matched(int idx) const
-    {_OF();
-	ASSERTF(idx<(int)this->_Match.size(),BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());
-	return this->_Match[idx].matched;
-    }
+
+
 
 }; /* core */

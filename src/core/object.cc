@@ -123,10 +123,10 @@ namespace core
 
 
 
-#define ARGS_af_eq "(x y)"
-#define DECL_af_eq ""
-#define DOCS_af_eq "eq"
-    bool af_eq(T_sp x, T_sp y)
+#define ARGS_cl_eq "(x y)"
+#define DECL_cl_eq ""
+#define DOCS_cl_eq "eq"
+    bool cl_eq(T_sp x, T_sp y)
     {_G();
 	return ( x==y );
     };
@@ -134,10 +134,10 @@ namespace core
 
 
 
-#define ARGS_af_eql "(x y)"
-#define DECL_af_eql ""
-#define DOCS_af_eql "eql"
-    bool af_eql(T_sp x, T_sp y)
+#define ARGS_cl_eql "(x y)"
+#define DECL_cl_eql ""
+#define DOCS_cl_eql "eql"
+    bool cl_eql(T_sp x, T_sp y)
     {_G();
 	if ( x.nilp() )
 	{
@@ -149,10 +149,10 @@ namespace core
 
 
 
-#define ARGS_af_equal "(x y)"
-#define DECL_af_equal ""
-#define DOCS_af_equal "equal"
-    bool af_equal(T_sp x, T_sp y)
+#define ARGS_cl_equal "(x y)"
+#define DECL_cl_equal ""
+#define DOCS_cl_equal "equal"
+    bool cl_equal(T_sp x, T_sp y)
     {_G();
 	if ( x.nilp() )
 	{
@@ -162,10 +162,10 @@ namespace core
     };
 
 
-#define ARGS_af_equalp "(x y)"
-#define DECL_af_equalp ""
-#define DOCS_af_equalp "equalp"
-    bool af_equalp(T_sp x, T_sp y)
+#define ARGS_cl_equalp "(x y)"
+#define DECL_cl_equalp ""
+#define DOCS_cl_equalp "equalp"
+    bool cl_equalp(T_sp x, T_sp y)
     {_G();
 	if ( x.nilp() )
 	{
@@ -635,13 +635,13 @@ T_sp T_O::instanceSigSet()
     SYMBOL_SC_(CorePkg,instanceSig);
     Defun(instanceSig);
     SYMBOL_EXPORT_SC_(ClPkg,eq);
-    Defun(eq);
+    ClDefun(eq);
     SYMBOL_EXPORT_SC_(ClPkg,eql);
-    Defun(eql);
+    ClDefun(eql);
     SYMBOL_EXPORT_SC_(ClPkg,equal);
-    Defun(equal);
+    ClDefun(equal);
     SYMBOL_EXPORT_SC_(ClPkg,equalp);
-    Defun(equalp);
+    ClDefun(equalp);
     SYMBOL_EXPORT_SC_(CorePkg,instanceClass);
     Defun(instanceClass);
     SYMBOL_EXPORT_SC_(CorePkg,implementationClass);

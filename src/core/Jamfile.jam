@@ -41,17 +41,29 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      unixfsys.cc
+	    sourceFileInfo.cc
+      executables.cc
+	    lispList.cc
+    activationFrame.cc
+	    environment.cc
+      genericFunction.cc
+	    instance.cc
+		microHeap.cc
+	    binder.cc
+		multiStringBuffer.cc
+		candoOpenMp.cc
+	foundation.cc
+	    lambdaListHandler.cc
+	    lispStream.cc
       bits.cc
       smallMap.cc
       write_symbol.cc
       corePackage.cc
       lisp.cc
-	    lispStream.cc
       weakKeyMapping.cc
       weakHashTable.cc
       weakPointer.cc
-    activationFrame.cc
-	    environment.cc
 		objectSet.cc
 		profiler.cc
 		lispDefinitions.cc
@@ -90,14 +102,11 @@ local sources =
 	    hashTableEqual.cc
 	    hashTableEqualp.cc
       stacks.cc
-      executables.cc
       testing.cc
       predicates.cc
       write_list.cc
 	    str.cc
-      unixfsys.cc
 	    primitives.cc
-	    sourceFileInfo.cc
 	    symbolList.cc
 	    package.cc
       commonLispPackage.cc
@@ -107,7 +116,6 @@ local sources =
       print.cc
       vectorObjectsWithFillPtr.cc
       vectorObjects.cc
-	    lambdaListHandler.cc
       cons.cc
       write_object.cc
 	    array.cc
@@ -144,7 +152,6 @@ local sources =
 	    structureClass.cc
 	    null.cc
 	    forwardReferencedClass.cc
-	    lispList.cc
 	    character.cc
 	    lispString.cc
 	    designators.cc
@@ -168,14 +175,7 @@ local sources =
 		myReadLine.cc
 		specialForm.cc
 	    bignum.cc
-      genericFunction.cc
-	    instance.cc
-		microHeap.cc
-	    binder.cc
-		multiStringBuffer.cc
-		candoOpenMp.cc
 	     /externals//boostAndExpatLibs
-	foundation.cc
              		;
 
 #Declares virtual target af_function_templates dependent on the two

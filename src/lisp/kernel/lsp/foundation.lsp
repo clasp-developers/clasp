@@ -20,8 +20,8 @@
       t)
 
 
-(fset '1- #'(lambda (num) (- num 1)))
-(fset '1+ #'(lambda (num) (+ num 1)))
+(fset '1- #'(lambda (num) (declare (function-name 1-)) (- num 1)))
+(fset '1+ #'(lambda (num) (declare (function-name 1+)) (+ num 1)))
 
 
 
@@ -153,10 +153,7 @@ the corresponding VAR.  Returns NIL."
 	  t)
 
 
-(*make-special '*bytecodes-compiler*)
-(setq *bytecodes-compiler* nil)
-
-
+(defvar *bytecodes-compiler* nil)
 
 
 
@@ -342,8 +339,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (core:function-name x))
 
 (defun compiled-function-file (x)
-  (core:function-source-pos x))
+  (multiple-value-bind (sfi pos)
+      (core:function-source-pos x)
+    (values (core:source-file-info-source-debug-namestring sfi)
+	     (+ (core:source-file-info-source-debug-offset sfi) pos))))
 
+(export '(compiled-function-name compiled-function-file))
 
 (defun warn-or-ignore (x &rest args)
   nil)

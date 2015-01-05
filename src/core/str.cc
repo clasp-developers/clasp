@@ -171,6 +171,29 @@ namespace core
     };
 
 
+#define ARGS_cl_schar "(str index)"
+#define DECL_cl_schar ""
+#define DOCS_cl_schar "CLHS schar"
+    claspChar cl_schar(Str_sp str, int idx)
+    {
+	if ( idx >= 0  && idx < str->length() ) {
+	    return str->schar(idx);
+	}
+	SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
+    };
+
+#define ARGS_core_scharSet "(str index c)"
+#define DECL_core_scharSet ""
+#define DOCS_core_scharSet "CLHS schar"
+    claspChar core_scharSet(Str_sp str, int idx, claspChar c)
+    {
+	if ( idx >= 0  && idx < str->length() ) {
+	    str->scharSet(idx,c);
+	    return c;
+	}
+	SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
+    };
+
 
 
 
@@ -538,7 +561,9 @@ namespace core
 	    Defun(string_greaterp);
 	    Defun(string_not_greaterp);
 	    Defun(string_not_lessp);
-
+	    ClDefun(schar);
+	    CoreDefun(scharSet);
+	    
 
 	    SYMBOL_EXPORT_SC_(ClPkg,string_EQ_);
 	    SYMBOL_EXPORT_SC_(ClPkg,string_NE_);
@@ -1246,15 +1271,19 @@ namespace core
 
     claspChar Str_O::schar(int index) const
     {
-	ASSERTF(index >= 0 && index < this->size(),BF("schar index out of bounds[%d] - must be less than %d") % index % this->size() );
-	return this->_Contents[index];
+	if ( index >= 0 && index < this->size() ) {
+	    return this->_Contents[index];
+	}
+	SIMPLE_ERROR(BF("Illegal index for schar %d must be in (integer 0 %d)") % index % this->size());
     }
 
     claspChar Str_O::scharSet(int index, claspChar c)
     {
-	ASSERTF(index >= 0 && index < this->size(),BF("schar index out of bounds[%d] - must be less than %d") % index % this->size() );
-        this->_Contents[index] = c;
-	return this->_Contents[index];
+	if ( index >= 0 && index < this->size() ) {
+	    this->_Contents[index] = c;
+	    return c;
+	}
+	SIMPLE_ERROR(BF("Illegal index for schar %d must be in (integer 0 %d)") % index % this->size());
     }
 
     void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end )

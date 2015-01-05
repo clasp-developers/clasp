@@ -343,7 +343,7 @@ namespace core
 #define	NOT_SUPPORTED() SIMPLE_ERROR(BF("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)") % this->className() % __FUNCTION__ % __FILE__ % __LINE__ );
 
 #define	SUBCLASS_MUST_IMPLEMENT()                                       \
-        THROW_HARD_ERROR(                                               \
+        SIMPLE_ERROR(							\
             BF("File(%s) lineNumber(%d): Subclass[%s] must implement method[%s] ") \
             % __FILE__ % __LINE__					\
             % lisp_classNameAsString(this->_instanceClass())            \
@@ -667,7 +667,7 @@ namespace core
 
 
         void af_readerError(const string& sourceFile, uint lineno, Symbol_sp function,
-                            Str_sp fmt, Cons_sp fmtargs, Stream_sp stream=_Nil<Stream_O>() );
+                            Str_sp fmt, Cons_sp fmtargs, T_sp stream=_Nil<T_O>() );
 
 
         void assert_type_integer(T_sp p,int idx);
@@ -677,6 +677,7 @@ namespace core
 
 
     void FEerror(const string& fmt, int numArgs, ... );
+    void FEtype_error_list(T_sp thing);
     void FElibc_error( const char* fmt, int nargs, ... );
     void FEcannot_open( T_sp fn );
     T_sp CEerror(T_sp c, const char* fmt, int numArgs, ... );

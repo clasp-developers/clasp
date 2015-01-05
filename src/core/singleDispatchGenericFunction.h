@@ -62,8 +62,9 @@ namespace core
             this->_lambdaListHandler = llh;
             this->kind = k;
         }
+	T_sp lambdaList() const;
         virtual size_t templatedSizeof() const { return sizeof(*this); };
-	virtual string describe() const {return "SingleDispatchGenericFunctionClosure";};
+	virtual const char* describe() const {return "SingleDispatchGenericFunctionClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         bool singleDispatchGenericP() const { return true; };
 
@@ -122,7 +123,7 @@ namespace core
 	SingleDispatchGenericFunction_sp 	_sdgf;
     public:
         DISABLE_NEW();
-	virtual string describe() const {return "SingleDispatchGenericFunctoid";};
+	virtual const char* describe() const {return "SingleDispatchGenericFunctoid";};
 	virtual void LISP_CALLING_CONVENTION()
 	{
             IMPLEMENT_MEF(BF("Handle single dispatch"));
@@ -141,7 +142,7 @@ namespace core
 	  This function takes two arguments: (args next-emfun) */
 	Function_sp		_method_function;
     public:
-	string describe() const { return "Lambda_emf";};
+	virtual const char* describe() const { return "Lambda_emf";};
 	bool requires_activation_frame() const { return true;};
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:

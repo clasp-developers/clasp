@@ -449,7 +449,7 @@ WORKING HERE WORKING HERE
 (defun gather-lexical-variable-names (classified-symbols)
   (error "This may now be redundant given LambdaListHandler_O::namesOfAllLexicalVariables")
   (let (result)
-    (mapc #'(lambda (x) (if (eq (car x) 'ext:lexical-var)
+    (mapc #'(lambda (x) (if (eq (car x) 'ext:heap-var)
 			    (setq result (cons (cadr x) result))))
 	  classified-symbols)
     (let ((rev-res (nreverse result)))
@@ -1083,10 +1083,11 @@ jump to blocks within this tagbody."
 (defun codegen (result form env)
   (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
-  (multiple-value-bind (source-file lineno column)
+  (multiple-value-bind (source-file file-pos lineno column)
       (walk-to-find-source-info form)
     (let* ((*current-form* form)
 	   (*current-env* env)
+	   (*current-filepos* (if file-pos file-pos 0))
 	   (*current-lineno* (if lineno lineno 0))
 	   (*current-column* (if column column 0)))
       (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
@@ -1201,7 +1202,7 @@ be wrapped with to make a closure"
                 (let* ((truename (if *load-truename*
                                      (namestring *load-truename*)
                                      "compile-in-env"))
-                       (*gv-source-path-name* (jit-make-global-string-ptr
+                       (*gv-source-pathname* (jit-make-global-string-ptr
                                                truename
                                                "source-path-name"))
                        (*all-funcs-for-one-compile* nil))

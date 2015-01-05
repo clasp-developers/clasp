@@ -22,6 +22,7 @@
 					  (where (caddr args)))
 				     `(setq ,where (cons ,what ,where))))
 	   #+clasp(lambda (args env)
+	    (declare (core:lambda-name push))
 	    (block push
 	      (let* ((what (second args))
 		     (where (caddr args)))
@@ -39,6 +40,7 @@
 					(setq ,where (cdr l))
 					v)))
 	   #+clasp(lambda (args env)
+	    (declare (core:lambda-name pop))
 	    (block pop
 	      (let ((where (cadr args)))
 		`(let* ((l ,where)
@@ -58,6 +60,7 @@
 					 `(setq ,where (+ ,where ,what))
 					 `(setq ,where (1+ ,where)))))
 	   #+clasp(lambda (args env)
+	    (declare (core:lambda-name incf))
 	    (block incf
 	      (let* ((where (second args))
 		     (what (caddr args)))
@@ -77,6 +80,7 @@
 					 `(setq ,where (- ,where ,what))
 					 `(setq ,where (1- ,where)))))
 	   #+clasp(lambda (args env)
+	    (declare (core:lambda-name decf))
 	    (block decf
 	      (let* ((where (second args))
 		     (what (caddr args)))
@@ -282,8 +286,8 @@
       (if env
           (setq vl (nconc (ldiff vl env) (cddr env))
                 env (second env))
-          (setq env (gensym)
-                decls (list* `(declare (ignore ,env)) decls)))
+	  (setq env (gensym)
+		decls (list* `(declare (ignore ,env)) decls)))
       (multiple-value-bind (ppn whole dl arg-check ignorables)
           (destructure vl t)
         #+ecl(values 
@@ -296,7 +300,7 @@
 	      doc)
 	#+clasp(values 
 		`(lambda (,whole ,env &aux ,@dl)
-		   (declare (ignorable ,@ignorables))
+		   (declare (ignorable ,@ignorables) (core:lambda-name ,name))
 		   ,@decls
 		   (block ,name
 		     ,@arg-check
@@ -323,7 +327,7 @@
 					 (setq function `(si::bc-disassemble ,function)))
 				       (ext:register-with-pde def `(si::fset ',name ,function t ,pprint)))))
 	   #+clasp(lambda (def env)
-	    (declare (ignore env))
+	    (declare (ignore env) (core:lambda-name defmacro))
 	    (block defmacro
 	      (let* ((name (second def))
 		     (vl (third def))

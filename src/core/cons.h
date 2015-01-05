@@ -104,10 +104,11 @@ namespace core
     T_sp oNinth(T_sp o);
     T_sp oTenth(T_sp o);
 
-#define	CONS_CAR(x) oCar(x)
-#define	CONS_CDR(x) oCdr(x)
+#define	CONS_CAR(x) (x.as<Cons_O>()->_Car)
+#define	CONS_CDR(x) (x.as<Cons_O>()->_Cdr)
 #define	CAR(x) oCar(x)
 #define	CDR(x) oCdr(x)
+#define CONSP(x) ((!(x).nilp())&&(x.isA<Cons_O>()))
 };
 
 namespace core {
@@ -231,10 +232,6 @@ namespace core {
 	    }
 	    return cCdr(first);
 	}
-#if 0
-	static Cons_sp createFromCommandLineArguments(int argc, char**argv);
-	static Cons_sp createFromVectorStringsCommandLineArguments(const vector<string>& strings);
-#endif
     public:
 	static void appendInto(T_sp head, T_sp*& tailP, T_sp l);
 	static T_sp append(T_sp x, T_sp y);
@@ -675,4 +672,11 @@ namespace core {
 
 };
 
+
+namespace core
+{
+
+    T_sp cl_getf(Cons_sp plist, T_sp indicator, T_sp default_value );
+    Cons_sp af_putF(Cons_sp plist, T_sp value, T_sp indicator );
+};
 #endif //]

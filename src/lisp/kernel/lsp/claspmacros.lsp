@@ -3,7 +3,8 @@
 
 #+clasp
 (defmacro c-inline (fn-name (&rest values) (&rest c-types) return-type C-code &key one-liner side-effects)
-	`(,fn-name ,@values))
+  `(,fn-name ,@values))
+(export 'c-inline)
 
 
 (in-package :ext)

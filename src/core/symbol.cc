@@ -41,6 +41,7 @@ THE SOFTWARE.
 // Print more information about the symbol
 #define	VERBOSE_SYMBOLS	0
 
+
 namespace core 
 {
 
@@ -57,6 +58,18 @@ namespace core
 	return sym->plist();
     }
 
+
+#define ARGS_cl_get "(sym indicator &optional default)"
+#define DECL_cl_get ""
+#define DOCS_cl_get "Return the symbol plist"
+    T_sp cl_get(Symbol_sp sym, T_sp indicator, T_sp defval)
+    {
+	if ( sym.nilp() ) { 
+	    return cl_getf(cl::_sym_nil,indicator,defval);
+	}
+	return cl_getf(sym->_PropertyList,indicator,defval);
+    }
+
 #define ARGS_core_setfSymbolPlist "(sym plist)"
 #define DECL_core_setfSymbolPlist ""
 #define DOCS_core_setfSymbolPlist "Set the symbol plist"
@@ -65,6 +78,21 @@ namespace core
 	if ( sym.nilp() ) { SIMPLE_ERROR(BF("You cannot set the plist of nil"));};
 	sym->setf_plist(plist);
     }
+
+
+
+#define ARGS_core_putprop "(sym val indicator)"
+#define DECL_core_putprop ""
+#define DOCS_core_putprop "Set the symbol plist"
+    T_sp core_putprop(Symbol_sp sym, T_sp val, T_sp indicator)
+    {
+	if ( sym.nilp() ) { SIMPLE_ERROR(BF("You cannot set the plist of nil"));};
+	sym->_PropertyList = af_putF(sym->_PropertyList,val,indicator);
+	return val;
+    }
+
+
+
     
     
 #define ARGS_af_boundp "(arg)"
@@ -157,6 +185,10 @@ namespace core
     };
 
 
+};
+
+
+namespace core {
 
 
     
@@ -214,7 +246,7 @@ namespace core
 	this->_HomePackage = pkg;
 	pkg->add_symbol_to_package(this->symbolName()->get().c_str(),this->sharedThis<Symbol_O>(),exportp);
 	this->_PropertyList = _Nil<Cons_O>();
-	this->_Function = _Nil<Function_O>();
+	this->_Function = _Unbound<Function_O>();
     }
 
 
@@ -436,8 +468,9 @@ namespace core
     }
 
     bool Symbol_O::fboundp() const
-    {_OF();
-	return this->_Function.pointerp();
+    {
+	if ( this->_Function.pointerp() ) return true;
+	return !this->_Function.unboundp();
     }
 
 
@@ -621,7 +654,9 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,boundp);
 	Defun(boundp);
 	ClDefun(symbolPlist);
+	ClDefun(get);
 	CoreDefun(setfSymbolPlist);
+	CoreDefun(putprop);
     }
 
     void Symbol_O::exposePython(Lisp_sp lisp)

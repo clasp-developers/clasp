@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "core/object.h"
 #include "core/pathname.fwd.h"
 #include "core/fileSystem.fwd.h"
+#include "core/weakHashTable.h"
 #include "core/sourceFileInfo.fwd.h"
     
 namespace core
@@ -42,8 +43,8 @@ namespace core
 	LISP_CLASS(core,CorePkg,SourceFileInfo_O,"SourceFileInfo");
 	DECLARE_INIT();
     public:
-	static SourceFileInfo_sp create(const string& fileNamePath, int handle);
-	static SourceFileInfo_sp create(Pathname_sp path, int handle);
+	static SourceFileInfo_sp create(Pathname_sp path, int handle, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
+	static SourceFileInfo_sp create(const string& fileNamePath, int handle, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
 
     public: // ctor/dtor for classes with shared virtual base
 	explicit SourceFileInfo_O();
@@ -55,8 +56,13 @@ namespace core
 	char* 	_PermanentPathName;
 	char*	_PermanentFileName;
         int     _FileHandle;
+	Str_sp _SourceDebugNamestring;
+	size_t  _SourceDebugOffset;
+	bool    _TrackLineno;
     public: // Functions here
         int fileHandle() const { return this->_FileHandle; };
+	/*! Return the value of _Truename unless nil then return fileName */
+	string sourceDebugNamestring() const;
 	string fileName() const;
 	string parentPathName() const;
 	string namestring() const;
@@ -64,6 +70,8 @@ namespace core
 	const char* permanentPathName();
 	const char* permanentFileName();
 
+	bool useLineno() const { return this->_TrackLineno;};
+	size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
 	string __repr__() const;
     }; // SourceFileInfo class
 
@@ -75,41 +83,41 @@ namespace core
     class SourcePosInfo_O : public T_O
     {
         friend class SourceManager_O;
-        friend SourceFileInfo_mv af_sourceFileInfo(T_sp obj);
+	friend SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename, size_t offset, bool useLineno);
+
 
 	LISP_BASE1(T_O);
 	LISP_CLASS(core,CorePkg,SourcePosInfo_O,"SourcePosInfo");
     public:
     public: // ctor/dtor for classes with shared virtual base
-	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Lineno(0),_Column(0) {}; //, _FilePos(0) {};
+	explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0),_Column(0) {}; //, _Filepos(0) {};
     public: // instance variables here
-	SourcePosInfo_O(uint spf, uint spln, uint spc) // , Function_sp expander=_Nil<Function_O>())
-	    : _FileId(spf), _Lineno(spln), _Column(spc) //, _Expander(expander) {}
+    SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc ) // , Function_sp expander=_Nil<Function_O>())
+	: _FileId(spf), _Filepos(filepos), _Lineno(spln), _Column(spc) //, _Expander(expander) {}
         {};
 
     public:
 
-        static SourcePosInfo_sp create(uint spf, uint spln=0, uint spc=0 )
+        static SourcePosInfo_sp create(uint spf, size_t filepos, uint spln, uint spcol )
         {
 #if 0
-            if ( filePos==UNDEF_UINT ) {
-                printf("%s:%d Caught filePos=UNDEF_UINT\n", __FILE__, __LINE__ );
+            if ( filepos==UNDEF_UINT ) {
+                printf("%s:%d Caught filepos=UNDEF_UINT\n", __FILE__, __LINE__ );
             }
 #endif
-            GC_ALLOCATE_VARIADIC(SourcePosInfo_O,me,spf,spln,spc); // ,filePos,fn);
+            GC_ALLOCATE_VARIADIC(SourcePosInfo_O,me,spf,filepos,spln,spcol); // ,filepos,fn);
             return me;
         }
         string __repr__() const;
-        SourceFileInfo_sp sourceFileInfo(SourceManager_sp sm) const;
-
         int fileHandle() const { return this->_FileId; };
+        size_t filepos() const { return this->_Filepos; };
         uint lineno() const { return this->_Lineno; };
         int column() const { return this->_Column; };
     public:
 	uint	_FileId;
+	size_t	_Filepos;
 	uint	_Lineno;
 	uint	_Column;
-//	uint	_FilePos;
 //	Function_sp 	_Expander;
     };
 };
@@ -132,43 +140,43 @@ namespace core {
 	explicit SourceManager_O() {};
 	virtual ~SourceManager_O() {};
     public: // instance variables here
-        // TODO!!!!! Use a WeakKeyHashTable_sp here
-        // Must be implemented first!!!!
-        HashTableEq_sp                         _SourcePosInfo;
-	/*! All SourceFileInfo_sp source files are stored here indexed by integer FileId */
-//        gctools::Vec0<SourceFileInfo_sp>		_Files;
+	HashTableEq_sp _SourcePosInfo;
+	//        WeakKeyHashTable_sp               _SourcePosInfo;
+
     public: // Functions here
         /*! Return true if the SourceManager is available */
         bool availablep() const { return this->_SourcePosInfo.notnilp(); };
 
 	/*! Register the object with the source manager */
-	SourcePosInfo_sp registerSourceInfo(T_sp obj, T_sp sourceFile, uint lineno, uint column);
+	SourcePosInfo_sp registerSourceInfo(T_sp obj, T_sp sourceFile, size_t filepos, uint lineno, uint column);
+
+	void dump();
+	
+	SourcePosInfo_sp registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
 
 //        SourceFileInfo_sp sourceFileInfoFromIndex(int idx) const;
 
-	SourcePosInfo_sp registerSourceInfoFromStream(T_sp obj, Stream_sp stream);
+//	SourcePosInfo_sp registerSourceInfoFromStream(T_sp obj, T_sp stream);
 
-	bool searchForSourceInfoAndDuplicateIt(T_sp orig, T_sp newObj);
+	/*! Duplicate the source code information associated with orig_obj for new_obj 
+	 In the future I could do something more sophisticated with macroExpansionFunction*/
+	SourcePosInfo_sp duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp macroExpansionFunction= _Nil<T_O>());
 
-	/*! Duplicate the source code information associated with orig_obj for new_obj */
-	void duplicateSourceInfo(T_sp orig_obj, T_sp new_obj);
 
-	/*! Duplicate the source code information for a macro expansion associated 
-	  from orig_obj for new_obj */
-	void duplicateSourceInfoForMacroExpansion(T_sp orig_obj, Function_sp expansionFunction, T_sp new_obj);
-
-	/*! Return (values SourceFileInfo_sp lineno column sourcePos macroObject? ) for obj
-          or (values) if nothing is found */
-	SourceFileInfo_mv lookupSourceInfo(T_sp obj);
 
 	SourcePosInfo_sp lookupSourcePosInfo(T_sp obj);
 
     }; // SourceManager class
 
 
-    SourceFileInfo_mv af_walkToFindSourceInfo(T_sp obj);
+    SourceFileInfo_mv core_walkToFindSourceInfo(T_sp obj);
+    SourcePosInfo_sp core_walkToFindSourcePosInfo(T_sp obj, T_sp defaultSpi=_Nil<T_O>());
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
 
+
+
+
+    SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
 
 
 }; // core namespace

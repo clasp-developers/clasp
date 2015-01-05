@@ -143,8 +143,10 @@ namespace core
 
     void clasp_finish_output(T_sp strm);
     int clasp_file_column(T_sp strm);
+    size_t clasp_input_filePos(T_sp strm);
     int clasp_input_lineno(T_sp strm);
     int clasp_input_column(T_sp strm);
+    SourcePosInfo_sp core_inputStreamSourcePosInfo(T_sp strm);
     SourceFileInfo_sp clasp_input_source_file_info(T_sp strm);
     Pathname_sp clasp_input_pathname(T_sp strm);
     /*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
@@ -246,7 +248,7 @@ namespace core
 #define	C_STREAM	1
 
 
-    typedef enum { brcl_stream_mode_input, brcl_stream_mode_output, brcl_stream_mode_io } BrclStreamModeEnum;
+    typedef enum { clasp_stream_mode_input, clasp_stream_mode_output, clasp_stream_mode_io } ClaspStreamModeEnum;
 
     class StreamCursor
     {

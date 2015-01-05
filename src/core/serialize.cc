@@ -455,10 +455,10 @@ namespace core
     void LoadArchive_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<LoadArchive_O>()
-	    .def("keys",&LoadArchive_O::keys)
-	    .def("get",&LoadArchive_O::get)
-	    .def("contains",&LoadArchive_O::contains)
-	    .def("getContents",&LoadArchive_O::getContents)
+	    .def("loadArchive-keys",&LoadArchive_O::keys)
+	    .def("loadArchive-get",&LoadArchive_O::get)
+	    .def("loadArchive-contains",&LoadArchive_O::contains)
+	    .def("loadArchive-getContents",&LoadArchive_O::getContents)
 	    ;
     }
     void LoadArchive_O::exposePython(Lisp_sp lisp)

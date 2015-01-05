@@ -38,7 +38,7 @@
 
 
 (defun walk-form-for-source-info (form)
-  (multiple-value-bind (source-file-info line-number column file-pos)
+  (multiple-value-bind (source-file-info file-pos line-number column)
       (core:walk-to-find-source-info form)
     (when source-file-info
       (let* ((source-pathname (source-file-info-pathname source-file-info))
@@ -46,8 +46,8 @@
              (source-filename (file-namestring source-pathname))
              )
         (return-from walk-form-for-source-info
-          (values source-directory source-filename line-number column)))))
-  (values "no-dir" "no-file" 0 0))
+          (values source-directory source-filename file-pos line-number column)))))
+  (values "no-dir" "no-file" 0 0 0))
 
 
 
@@ -153,10 +153,11 @@
 (defmacro with-dbg-function ((env name &key linkage-name form function function-type) &rest body)
   (let ((source-dir (gensym))
         (source-name (gensym))
+	(filepos (gensym))
         (lineno (gensym))
         (column (gensym)))
     `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-	 (multiple-value-bind (,source-dir ,source-name ,lineno ,column)
+	 (multiple-value-bind (,source-dir ,source-name ,filepos ,lineno ,column)
              (walk-form-for-source-info ,form)
 	   (let* ((*dbg-current-function*
 		   (llvm-sys:create-function
@@ -188,13 +189,24 @@
 		
 
 
+(defmacro with-debug-info-generator ((&key module env pathname) &rest body)
+  "One macro that uses three other macros"
+  `(let ()
+     (with-dibuilder (,module)
+       (with-dbg-compile-unit (,env ,pathname)
+	 (with-dbg-file-descriptor (,env ,pathname)
+	   ,@body)))))
+	 
+    
+
 (defmacro with-dbg-lexical-block ((env block-form) &body body)
   (let ((source-dir (gensym))
         (source-name (gensym))
+	(filepos (gensym))
         (lineno (gensym))
         (column (gensym)))
     `  (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-           (multiple-value-bind (,source-dir ,source-name ,lineno ,column)
+           (multiple-value-bind (,source-dir ,source-name ,filepos ,lineno ,column)
                (walk-form-for-source-info ,block-form)
              (let* ((*dbg-current-scope*
                      (llvm-sys:create-lexical-block *the-module-dibuilder*
@@ -214,7 +226,7 @@
 (defun dbg-set-current-source-pos (env form)
   (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
   (when (consp form)
-    (multiple-value-bind (source-dir source-file line-number column)
+    (multiple-value-bind (source-dir source-file filepos line-number column)
         (walk-form-for-source-info form)
       (when (and *dbg-generate-dwarf* *the-module-dibuilder* *dbg-current-scope*)
         ;;	(cmp-log-dump *the-module*)
@@ -289,14 +301,17 @@
                           (print (list "Dumping backtrace and core:*source-database*" core:*source-database*))
                           (core:ihs-backtrace)
                           (core:dump-source-manager))
-  (multiple-value-bind (source-dir source-file lineno column)
+  (multiple-value-bind (source-dir source-file filepos lineno column)
       (walk-form-for-source-info form)
     (when source-file
       (let ((ln lineno)
 	    (col column))
 	(irc-intrinsic "trace_setLineNumberColumnForIHSTop"
+		       *gv-source-pathname*
                        *gv-source-file-info-handle*
-                       (jit-constant-i32 ln) (jit-constant-i32 col)))
+		       (jit-constant-i64 filepos)
+                       (jit-constant-i32 ln) 
+		       (jit-constant-i32 col)))
       nil)))
 
 

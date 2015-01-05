@@ -228,7 +228,7 @@ In ecl/src/c/interpreter.d  is the following code
 	    {
 		SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
 	    }
-	    if (!af_listp(spec_type) || 
+	    if (!cl_listp(spec_type) || 
 		spec_type.as_or_nil<Cons_O>()->memberEql(args[spec_position]).nilp() )
 	    {
 		Class_sp mc = lisp_instance_class(args[spec_position]);
@@ -241,6 +241,7 @@ In ecl/src/c/interpreter.d  is the following code
 #if DEBUG_CLOS>=2
 		printf("MLOG fill_spec_vector argtype[%d] using args[%d]\n", spec_no, spec_position );
 #endif
+		// For immediate types we need to make sure that EQL will be true
 		argtype[spec_no] = args[spec_position];
 	    }
 #if DEBUG_CLOS>=2
@@ -262,39 +263,56 @@ In ecl/src/c/interpreter.d  is the following code
 
 
 
-
-    T_mv standard_dispatch(T_sp gf, int nargs, ArgArray args)
+    // Arguments are passed in the multiple_values array
+    T_mv standard_dispatch(T_sp gf)
     {
-        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
-            printf("%s:%d:%s Entered standard_dispatch  gf->%s\n", __FILE__, __LINE__, __FUNCTION__, gf.as<Function_O>()->functionName().as<Str_O>()->get().c_str() );
-        }
-	Function_sp func;
-#if defined(CACHE_METHOD_LOOKUP)
-        Cache* cache(_lisp->methodCachePtr()); // gctools::StackRootedPointer<Cache> cache(_lisp->methodCachePtr());
-	gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), nargs, args); // Was ref
+	// Save the arguments in the ArgumentsReturnValues for completing the call
+#if 0
+	/* Allocate a ValueFrame on the heap and copy the generic function arguments into the
+	   top MultipleValues object on the stack.
+	   This saves them so that later they can have a function applied to them by cl_apply.
+	   This is slow because it requires allocation/garbage collection on the heap.
+	*/
+	ValueFrame_sp frame(ValueFrame_O::createForMultipleValues(_Nil<ActivationFrame_O>()));
+#else
+	/* Copy the arguments from the MultipleValues structure into the stack based tagged frame allocated below.
+	   See gctools/tagged_ptr.h frame_tag
+	   This saves them so that later they can have a function applied to them by cl_apply.
+	*/
+	MultipleValues* mv = _lisp->callArgs();
+	ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl,frame,mv->getSize(), mv->callingArgsStart());
+#endif
+
+	/* Lookup the generic-function/arguments invocation in a cache and if an effective-method
+	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
+
+	   Then call the effective method with the saved arguments.
+	*/
+        Cache* cache(_lisp->methodCachePtr()); 
+	MultipleValues* callArgs = _lisp->callArgs();  // Get arguments
+	gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), callArgs->getSize(), callArgs->callingArgsStart() ); 
         CacheRecord* e; //gctools::StackRootedPointer<CacheRecord> e;
         try {
             cache->search_cache(e); // e = ecl_search_cache(cache);
         } catch (CacheError& err) {
-            printf("%s:%d - There was an CacheError searching the GF cache for the keys  You should try and get into cache->search_cache to see where the error is\n", __FILE__, __LINE__);
+            printf("%s:%d - There was an CacheError searching the GF cache for the keys"
+		   "  You should try and get into cache->search_cache to see where the error is\n", __FILE__, __LINE__);
             SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(gf));
         }
-	ASSERT(e!=NULL); // ASSERT(!e.nullP());
+	ASSERT(e!=NULL);
+	Function_sp func;
 	if (e->_key.notnilp()) {
 	    func = e->_value.as<Function_O>();
-	} else
-	{
+	} else {
 	    /* The keys and the cache may change while we
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
-	    T_mv mv = compute_applicable_method(gf, nargs, args );
+	    T_mv mv = compute_applicable_method(gf, callArgs->getSize(), callArgs->callingArgsStart() );
 	    func = mv.as<Function_O>();
-	    if (mv.valueGet(1).notnilp() )
-	    {
+	    if (mv.valueGet(1).notnilp() ) {
 	      T_sp keys = VectorObjects_O::create(vektor);
-		if (e->_key.notnilp())
-		{
+		if (e->_key.notnilp()) {
                     try {
                         cache->search_cache(e); // e = ecl_search_cache(cache);
                     } catch (CacheError& err) {
@@ -305,14 +323,26 @@ In ecl/src/c/interpreter.d  is the following code
 		e->_value = func;
 	    }
 	}
-#else
-	T_mv applicable_method = compute_applicable_method(frame,gf);
-	// This is where it fails because applicable_method does not downcast to a Function
-	func = applicable_method.as<Function_O>();
+#if 0
+        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
+	    Function_sp gff = eval::lookupFunction(gf,frame);
+            printf("%s:%d:%s Entered standard_dispatch  gf->%s\n",
+		   __FILE__, __LINE__, __FUNCTION__, gff->closure->nameAsString().c_str());
+        }
 #endif
-        // SPEEDUP TODO: This is used for all generic function calls - do something better than copying the ValueFrame??????
-	ValueFrame_sp frame(ValueFrame_O::createForArgArray(nargs,args,_Nil<ActivationFrame_O>()));
+	/* The call below depends on the modified cl_apply function defined in lisp.cc
+	   it is set up to accept either a ValueFrame as the second (and last) argument
+	   or a StackFrame and treat it like a list of arguments.
+	*/
 	return eval::funcall(func,frame,_Nil<T_O>());
+#if 0	
+        if ( _sym_STARdebugGenericDispatchSTAR->symbolValue().notnilp() ) {
+	    Function_sp gff = eval::lookupFunction(gf,frame);
+            printf("%s:%d:%s Returning from standard_dispatch  gf->%s\n",
+		   __FILE__, __LINE__, __FUNCTION__, gff->closure->nameAsString().c_str());
+	}
+	return result;
+#endif	
     }
 
 
@@ -340,9 +370,9 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
         return output;
 }
  */
- T_mv generic_function_dispatch( Instance_sp gf, int nargs, ArgArray args)
+ T_mv generic_function_dispatch( Instance_sp gf)
     {
-	return standard_dispatch(gf,nargs,args);
+	return standard_dispatch(gf);
     }
 
 
@@ -368,7 +398,7 @@ T_mv userFunctionDispatch( Instance_sp gf, int nargs, ArgArray args )
     }
 
     /*! Reproduces functionality in FEnot_funcallable_vararg */
-T_mv notFuncallableDispatch( Instance_sp gf, int nargs, ArgArray args )
+T_mv notFuncallableDispatch( Instance_sp gf)
     {
 	IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
     }

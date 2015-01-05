@@ -141,7 +141,7 @@ namespace core
         // Don't track source code for archives
         scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR,_Nil<T_O>());
         scope.pushSpecialVariableAndSet(_sym_STARmonitorRegisterSourceInfoSTAR,_lisp->_true());
-	T_sp obj = af_read(streamDesignator,_lisp->_true(), _Unbound<T_O>());
+	T_sp obj = cl_read(streamDesignator,_lisp->_true(), _Unbound<T_O>());
 	if ( obj.unboundp() ) {
 	    SIMPLE_ERROR(BF("Nothing could be read from stream"));
 	}

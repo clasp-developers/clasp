@@ -135,8 +135,8 @@ namespace core
         }
 #endif /* ECL_CMU_FORMAT */
 	bool circle = brcl_print_circle();
-	if (circle && !x._NULLp() && !x.fixnump() && !x.framep() && !x.characterp() &&
-            !x.specialp() && (af_listp(x) || !af_symbolp(x) || !x.as<Symbol_O>()->homePackage().nilp() ))
+	if (circle && !x._NULLp() && !x.tagged_fixnump() && !x.framep() && !x.characterp() &&
+            !x.specialp() && (cl_listp(x) || !af_symbolp(x) || !x.as<Symbol_O>()->homePackage().nilp() ))
 	{
 	    Fixnum code;
 	    T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();

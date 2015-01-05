@@ -338,6 +338,7 @@
 							     ,@group-after
 							     (effective-method-function (progn ,@body) t)))
 				   #+clasp(lambda (,generic-function .methods-list. ,@lambda-list)
+					    (declare (core:lambda-name ,name))
 					    (block ,name 
 					      (let (,@group-names)
 						(dolist (.method. .methods-list.)

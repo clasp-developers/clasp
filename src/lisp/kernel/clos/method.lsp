@@ -127,9 +127,10 @@
 					,@declarations
 					,@(cddr block))
 		#+clasp(lambda ,(second method-lambda)
-			    ,@declarations
-			  (block ,(second block)
-			    ,@(cddr block)))
+			 (declare (core:lambda-name ,(second block)))
+			 ,@declarations
+			 (block ,(second block)
+			   ,@(cddr block)))
 		)
 	  ))))
   method-lambda)

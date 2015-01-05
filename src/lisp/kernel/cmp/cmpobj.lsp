@@ -8,6 +8,7 @@
 	 (triple (llvm-sys:make-triple normalized-triple-string))
 	 (target-options (llvm-sys:make-target-options))
 	 )
+    (llvm-sys:setf-no-frame-pointer-elim target-options t)
     (multiple-value-bind (target msg)
 	(llvm-sys:target-registry-lookup-target "" triple)
       (unless target (error msg))

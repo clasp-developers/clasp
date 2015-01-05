@@ -48,6 +48,7 @@ namespace core
     class IndirectVariadicMethoid : public BuiltinClosure {
         typedef BuiltinClosure TemplatedBase;
         virtual size_t templatedSizeof() const { return sizeof(*this); };
+	virtual const char* describe() const {return "IndirectVariadicMethoid";};
     };
 
 #include "external_wrappers_indirect_methoids.h"

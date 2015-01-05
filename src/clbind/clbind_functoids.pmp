@@ -26,6 +26,7 @@ $var NumArgs = 16
                     typedef $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[RT]](*Type)($for Args_ , [[ARG$Args_]]);
                     Type fptr;
                 public:
+		    virtual const char* describe() const { return "VariadicFunctoid"; };
                     enum { NumParams = $numArgs };
                     VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
                     DISABLE_NEW();
@@ -37,7 +38,7 @@ $var NumArgs = 16
                         $if numArgs>0 [[
                           ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
-                          lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+                          lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
                         this->invoke(lcc_resultP $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
                     };

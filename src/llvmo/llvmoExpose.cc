@@ -91,6 +91,11 @@ namespace llvmo
 {
 
 
+    core::T_sp CompiledClosure::lambdaList() const
+    {
+	return this->_lambdaList;
+    }
+
 
 
 #define ARGS_comp_setAssociatedFuncs "(func associated-funcs)"
@@ -702,7 +707,19 @@ namespace llvmo
 	return self;
     };
 
-    
+    bool TargetOptions_O::NoFramePointerElim()
+    {
+	return this->wrappedPtr()->NoFramePointerElim;
+    }
+
+
+    void TargetOptions_O::setfNoFramePointerElim(bool val)
+    {
+	// if val == true then turn OFF FramePointerElim
+	this->wrappedPtr()->NoFramePointerElim = val;
+    }
+
+
     bool TargetOptions_O::JITEmitDebugInfo()
     {
 	return this->wrappedPtr()->JITEmitDebugInfo;
@@ -713,6 +730,7 @@ namespace llvmo
 	this->wrappedPtr()->JITEmitDebugInfo = val;
     }
 
+    
         
     bool TargetOptions_O::JITEmitDebugInfoToDisk()
     {
@@ -729,6 +747,8 @@ namespace llvmo
     void TargetOptions_O::exposeCando(core::Lisp_sp lisp)
     {_G();
         core::externalClass_<TargetOptions_O>()
+ 	    .def("NoFramePointerElim",&TargetOptions_O::NoFramePointerElim)
+ 	    .def("setfNoFramePointerElim",&TargetOptions_O::setfNoFramePointerElim)
 	    .def("JITEmitDebugInfo",&TargetOptions_O::JITEmitDebugInfo)
 	    .def("setfJITEmitDebugInfo",&TargetOptions_O::setfJITEmitDebugInfo)
 	    .def("JITEmitDebugInfoToDisk",&TargetOptions_O::JITEmitDebugInfoToDisk)
@@ -984,6 +1004,7 @@ namespace llvmo
 #define DOCS_af_parseBitcodeFile "parseBitcodeFile"
     Module_sp af_parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context )
     {_G();
+	//	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
         llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
         if (std::error_code ec = eo_membuf.getError() )
 	{
@@ -1063,6 +1084,7 @@ namespace llvmo
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeStackProtect);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeStackProtectReq);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeAlignment);
+
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeNoCapture);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeNoRedZone);
 	SYMBOL_EXPORT_SC_(LlvmoPkg,AttributeNoImplicitFloat);
@@ -1116,6 +1138,30 @@ namespace llvmo
     {_G();
 #ifdef USEBOOSTPYTHON
 	PYTHON_CLASS(packageName,Attribute,"","",_lisp)
+	    ;
+#endif
+    }
+
+
+
+
+
+
+    EXPOSE_CLASS(llvmo,AttributeSet_O);
+
+    void AttributeSet_O::exposeCando(core::Lisp_sp lisp)
+    {
+	core::class_<AttributeSet_O>()
+	    ;
+	// Jan 31, 2013 - the AttributeSet/Argument api is changing fast and I'm not using it right now
+	// and I don't want to mess with this code until it settles down
+	core::af_def(LlvmoPkg,"attributeSetGet",(llvm::AttributeSet(*)(llvm::LLVMContext &, unsigned, llvm::ArrayRef< llvm::Attribute::AttrKind > )) &llvm::AttributeSet::get);
+    }
+
+    void AttributeSet_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+#ifdef USEBOOSTPYTHON
+	PYTHON_CLASS(packageName,AttributeSet,"","",_lisp)
 	    ;
 #endif
     }
@@ -2019,7 +2065,7 @@ namespace llvmo
 	Constant_sp ca = ConstantDataArray_O::create();
 	vector<uint32_t> vector_IdxList;
 	core::Vector_sp vvalues;
-	if ( af_consP(ovalues) )
+	if ( cl_consp(ovalues) )
 	{
 	    for ( core::Cons_sp cur=ovalues.as<core::Cons_O>(); cur.notnilp(); cur=cCdr(cur) )
 	    {
@@ -3505,7 +3551,7 @@ namespace llvmo
 	    ;
 
 	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateGEP,0,(llvm::Value*,llvm::Value*,const llvm::Twine&));
-//	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateGEP,Array,(llvm::Value*,llvm::ArrayRef<llvm::Value*>,const llvm::Twine&));
+	AVOID_OVERLOAD(irbuilder,llvm::Value*,CreateGEP,Array,(llvm::Value*,llvm::ArrayRef<llvm::Value*>,const llvm::Twine&));
 
 	// Problem instructions that will have to be handled with IRBuilder_O methods
 #if 0
@@ -3536,8 +3582,8 @@ namespace llvmo
     void Argument_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<Argument_O>()
-//	    .def("addAttr",&llvm::Argument::addAttr)
-//	    .def("removeAttr",&llvm::Argument::removeAttr)
+	    .def("addAttr",&llvm::Argument::addAttr)
+	    .def("removeAttr",&llvm::Argument::removeAttr)
 	    .def("hasStructRetAttr",&llvm::Argument::hasStructRetAttr)
 	    .def("hasNoAliasAttr",&llvm::Argument::hasNoAliasAttr)
 	    .def("hasNestAttr",&llvm::Argument::hasNestAttr)
@@ -3823,6 +3869,7 @@ namespace llvmo
     void Type_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<Type_O>()
+	    .def("dump",&llvm::Type::dump)
 	    .def("type-get-pointer-to",&Type_O::getPointerTo,ARGS_PointerType_O_getPointerTo,DECL_PointerType_O_getPointerTo,DOCS_PointerType_O_getPointerTo)
             .def("getArrayNumElements", &Type_O::getArrayNumElements)
             .def("getSequentialElementType",&llvm::Type::getSequentialElementType)
@@ -4229,7 +4276,7 @@ namespace llvmo
         _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::Fixnum_O::create(num));
     }
 
-    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName, core::T_sp fileName, int linenumber )
+    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName, core::T_sp fileName, size_t filePos, int linenumber, core::T_sp lambdaList )
     {_G();
 	// Stuff to support MCJIT
 	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
@@ -4241,10 +4288,10 @@ namespace llvmo
 	}
 	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
         core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::Cons_O>());
-        core::SourceFileInfo_mv sfi = af_sourceFileInfo(fileName);
+        core::SourceFileInfo_mv sfi = core_sourceFileInfo(fileName);
         int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();
-        core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,linenumber,0);
-        CompiledClosure* functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym,spi,kw::_sym_function,lisp_funcPtr,fn,activationFrameEnvironment,associatedFunctions);
+        core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,linenumber,0);
+        CompiledClosure* functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym,spi,kw::_sym_function,lisp_funcPtr,fn,activationFrameEnvironment,associatedFunctions,lambdaList);
 	core::CompiledFunction_sp func = core::CompiledFunction_O::make(functoid);
         ASSERT(func);
         return func;
@@ -4254,7 +4301,7 @@ namespace llvmo
 
 
 
-    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, const string& mainFuncName, core::Str_sp fileName, int linenumber, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
+    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, const string& mainFuncName, core::Str_sp fileName, size_t filePos, int linenumber, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
     {_G();
 	vector<llvm::GenericValue> argValues;
 	ASSERTF(oengine->wrappedPtr()!=NULL,BF("You asked to runFunction but the pointer to the function is NULL"));

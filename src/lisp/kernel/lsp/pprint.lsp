@@ -889,7 +889,8 @@
 						     `'(return-from ,block-name nil))))
 				     ,@body))
 	  #+clasp(lambda (,object-var ,stream-var &aux (,count-name 0))
-	   (declare (ignorable ,object-var ,stream-var ,count-name))
+	   (declare (ignorable ,object-var ,stream-var ,count-name) 
+		    (core:lambda-name ,block-name))
 	   (block ,block-name 
 	     (macrolet ((pprint-pop ()
 			  '(progn
