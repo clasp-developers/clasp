@@ -1724,7 +1724,7 @@ namespace core
 	String_sp string = StringOutputStreamOutputString(strm);
 	Fixnum disp;
 	if (pos.nilp()) {
-            disp = StringOutputStreamOutputString(strm)->dimension();
+            disp = StringOutputStreamOutputString(strm)->size();
 	} else {
             disp = clasp_toSize(pos);
 	}

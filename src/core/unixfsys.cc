@@ -281,7 +281,7 @@ Str_sp af_currentDir()
 	size += 256;
     } while (ok == NULL);
     size = strlen((char*)output->addressOfBuffer());
-    if ((size + 1 /* / */ + 1 /* 0 */) >= output->dimension()) {
+    if ((size + 1 /* / */ + 1 /* 0 */) >= output->size()) {
 	/* Too large to host the trailing '/' */
 	output->adjustSize(2);
     }

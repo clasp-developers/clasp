@@ -77,6 +77,8 @@ namespace core
 
         virtual void* addressOfBuffer() const {SUBIMP();};
 
+	virtual T_sp rowMajorAref(int idx) const { return this->elt(idx); };
+	virtual void rowMajorAset(int idx, T_sp value) { this->setf_elt(idx,value); };
 
         INHERIT_SEQUENCE virtual uint length() const { return this->dimension(); };              
         INHERIT_SEQUENCE virtual T_sp reverse();

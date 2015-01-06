@@ -182,6 +182,18 @@ namespace core
 	SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
     };
 
+#define ARGS_core_charSet "(str index c)"
+#define DECL_core_charSet ""
+#define DOCS_core_charSet "CLHS schar"
+    claspChar core_charSet(Str_sp str, int idx, claspChar c)
+    {
+	if ( idx >= 0  && idx < str->length() ) {
+	    str->scharSet(idx,c);
+	    return c;
+	}
+	SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
+    };
+
 #define ARGS_core_scharSet "(str index c)"
 #define DECL_core_scharSet ""
 #define DOCS_core_scharSet "CLHS schar"
@@ -1314,7 +1326,7 @@ namespace core
     {
 	if ( Cons_sp ls = seq.asOrNull<Cons_O>() )
 	{
-	    if ( cl_length(seq) != this->dimension() ) goto ERROR;
+	    if ( cl_length(seq) != this->size() ) goto ERROR;
 	    size_t i = 0;
 	    for (Cons_sp cur=ls; cur.notnilp(); cur=cCdr(cur))
 	    {
@@ -1322,13 +1334,13 @@ namespace core
 		++i;
 	    }
 	} else if ( Str_sp ss = seq.asOrNull<Str_O>() ) {
-	    if ( ss->length() != this->dimension() ) goto ERROR;
-	    for ( size_t i=0; i<this->dimension(); ++i ) {
+	    if ( ss->length() != this->size() ) goto ERROR;
+	    for ( size_t i=0; i<this->size(); ++i ) {
 		this->_Contents[i] = (*ss)[i];
 	    }
 	} else if ( Vector_sp vs = seq.asOrNull<Vector_O>() ) {
-	    if ( vs->length() != this->dimension() ) goto ERROR;
-	    for ( size_t i=0; i<this->dimension(); ++i ) {
+	    if ( vs->length() != this->size() ) goto ERROR;
+	    for ( size_t i=0; i<this->size(); ++i ) {
 		this->_Contents[i] = vs->elt(i).as<Character_O>()->asChar();
 	    }
 	} else {
@@ -1336,7 +1348,7 @@ namespace core
 	}
 	return;
     ERROR:
-	SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl_length(seq) % _rep_(seq->__class()->className()) % this->dimension() );
+	SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl_length(seq) % _rep_(seq->__class()->className()) % this->size() );
     }
 
 
