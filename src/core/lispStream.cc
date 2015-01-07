@@ -3849,8 +3849,10 @@ namespace core
 	clasp_disable_interrupts();
 	offset = clasp_ftello(f);
 	clasp_enable_interrupts();
-	if (offset < 0)
-            io_error(strm);
+	if (offset < 0) {
+            return Fixnum_O::create(0);
+            //io_error(strm);
+        }
 	if (sizeof(clasp_off_t) == sizeof(long)) {
             output = Integer_O::create((LongLongInt)offset);
 	} else {
@@ -6270,8 +6272,8 @@ namespace core {
 	SourceFileInfo_sp sfi = clasp_input_source_file_info(strm);
 	size_t filePos = clasp_input_filePos(strm);
 	uint lineno, column;
-	    lineno = clasp_input_lineno(strm);
-	    column = clasp_input_column(strm);
+        lineno = clasp_input_lineno(strm);
+        column = clasp_input_column(strm);
 	SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(),filePos,lineno,column);
 	return spi;
     }

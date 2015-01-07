@@ -83,7 +83,7 @@
 ;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
 (defun generate-object-file (part-bitcode-pathname &key test)
-  (let ((output-pathname (compile-file-pathname part-bitcode-pathname :type :object))
+  (let ((output-pathname (compile-file-pathname part-bitcode-pathname :output-type :object))
         (reloc-model (cond
                       ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
                       (t 'llvm-sys:reloc-model-default))))

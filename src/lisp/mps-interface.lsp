@@ -22,7 +22,7 @@
 
 (progn
   (provide 'gcb)
-  (load "sys:clang-tool.lsp") ; (require 'clang-tool)
+  (require :clang-tool)
   (use-package :ast-tooling)
   )
 
