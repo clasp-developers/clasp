@@ -6565,6 +6565,27 @@ namespace core {
 
 
 
+#define ARGS_cl_readByte "(&optional strm (eof_error_p t) eof_value)"
+#define DECL_cl_readByte ""
+#define DOCS_cl_readByte "readByte"
+    T_sp cl_readByte(T_sp strm, T_sp eof_error_p, T_sp eof_value)
+    {_G();
+        strm = coerce::inputStreamDesignator(strm);
+        T_sp c = clasp_read_byte(strm);
+	if ( c.nilp() )
+	{
+	    LOG(BF("Hit eof"));
+	    if ( !eof_error_p.isTrue() )
+	    {
+		LOG(BF("Returning eof_value[%s]") % _rep_(eof_value) );
+		return eof_value;
+	    }
+	    ERROR_END_OF_FILE(strm);
+	}
+	LOG(BF("Read and returning char[%s]") % c );
+	return c;
+    }
+
 
 
 #define ARGS_cl_peekChar "(&optional peek_type strm (eof_errorp t) eof_value recursivep)"
@@ -6630,6 +6651,9 @@ namespace core {
 	return StandardChar_O::create(c);
     }
 
+
+
+    
 
 #define ARGS_cl_readCharNoHang "(&optional strm (eof_error_p t) eof_value recursive_p)"
 #define DECL_cl_readCharNoHang ""
@@ -7047,6 +7071,8 @@ void initialize_lispStream()
 	ClDefun(clearInput);
 	SYMBOL_EXPORT_SC_(ClPkg,clearOutput);
 	ClDefun(clearOutput);
+	SYMBOL_EXPORT_SC_(ClPkg,readByte);
+	ClDefun(readByte);
 	SYMBOL_EXPORT_SC_(ClPkg,peekChar);
 	ClDefun(peekChar);
 	SYMBOL_EXPORT_SC_(ClPkg,readChar);

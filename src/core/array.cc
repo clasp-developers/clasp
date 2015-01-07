@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include "core/common.h"
 #include "core/corePackage.h"
+#include "core/symbolTable.h"
 #include "core/environment.h"
 #include "core/vectorObjects.h"
 #include "core/array.h"
@@ -45,6 +46,18 @@ namespace core
 
 
 
+#define ARGS_cl_arrayDisplacement "(array)"
+#define DECL_cl_arrayDisplacement ""
+#define DOCS_cl_arrayDisplacement "arrayDisplacement"
+    T_mv cl_arrayDisplacement(T_sp array)
+    {
+	if ( array.notnilp() ) {
+	    if ( Array_sp arr = array.asOrNull<Array_O>() ) {
+		return Values(_Nil<T_O>(),Fixnum_O::create(0));
+	    }
+	}
+	TYPE_ERROR(array,cl::_sym_array);
+    }
     
     
 #define ARGS_af_upgradedArrayElementType "(type &optional env)"
@@ -341,6 +354,7 @@ namespace core
 	Defun(copy_subarray);
 	SYMBOL_SC_(CorePkg,aset);
 	Defun(aset);
+	ClDefun(arrayDisplacement);
     }
 
     void Array_O::exposePython(Lisp_sp lisp)

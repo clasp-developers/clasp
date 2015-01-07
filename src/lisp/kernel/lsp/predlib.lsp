@@ -369,6 +369,7 @@ and is not adjustable."
              (when (< 64 cl-fixnum-bits) '(EXT::CL-INDEX FIXNUM))
              '(SINGLE-FLOAT DOUBLE-FLOAT T)))
 
+#-clasp
 (defun upgraded-array-element-type (element-type &optional env)
   (declare (ignore env))
   (let* ((hash (logand 127 (si:hash-eql element-type)))
@@ -385,6 +386,13 @@ and is not adjustable."
 	  (array-setf-aref *upgraded-array-element-type-cache* hash
 		(cons element-type answer))
 	  answer))))
+
+;;
+;; For now we don't have specialized arrays
+;;
+#+clasp
+(defun upgraded-array-element-type (x &optional env) t)
+  
 
 (defun upgraded-complex-part-type (real-type &optional env)
   (declare (ignore env))

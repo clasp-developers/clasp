@@ -862,9 +862,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 					     (load-clasprc)
 					     (process-command-line-load-eval-sequence)
 					    (when (member :interactive *features*) (core:top-level)))))
-    (progn
-      (bformat t "Compiling asdf\n")
-      (compile-file "sys:kernel;asdf;build;asdf.lisp"))
     ))
 
 

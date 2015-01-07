@@ -248,6 +248,25 @@ namespace gctools
 	    return ret;
 	}
 
+	
+	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
+	  If the ptr is nil, throw an error */
+	template <class o_class>
+            inline smart_ptr< o_class> asNotNil() const
+	{
+	    if ( this->nilp() ) {
+		class_id expected_typ = reg::registered_class<o_class>::id;
+		lisp_errorUnexpectedNil(expected_typ);
+	    }
+	    smart_ptr< o_class> ret = this->asOrNull<o_class>();
+	    if (!ret) {
+		class_id expected_typ = reg::registered_class<o_class>::id;
+		class_id this_typ = reg::registered_class<T>::id;
+		lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->px));
+	    }
+	    return ret;
+	}
+
 	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
 	  If the ptr is nil, return a nil ptr */
 	template <class o_class>

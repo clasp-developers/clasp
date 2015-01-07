@@ -575,6 +575,7 @@ namespace core
 	    Defun(string_not_lessp);
 	    ClDefun(schar);
 	    CoreDefun(scharSet);
+	    CoreDefun(charSet);
 	    
 
 	    SYMBOL_EXPORT_SC_(ClPkg,string_EQ_);
@@ -1303,10 +1304,10 @@ namespace core
 	char celement = element.as<Character_O>()->asChar();
 	uint istart = start->get();
 	uint last = this->size();
-	uint iend = last-1;
+	uint iend = last;
 	if ( end.notnilp() ) iend = end.as<Fixnum_O>()->get();
 	ASSERTF(iend>=istart,BF("Illegal fill range istart=%d iend=%d") % istart % iend );
-	ASSERTF(iend<last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );
+	ASSERTF(iend<=last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );
 	ASSERTF(istart>=0 <= iend,BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend );
 	for ( uint i = istart; i<iend; i++ )
 	{

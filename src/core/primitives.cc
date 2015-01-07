@@ -663,23 +663,21 @@ namespace core
 
 
 
-#define ARGS_af_ash "(integer count)"
-#define DECL_af_ash ""
-#define DOCS_af_ash "CLHS: ash"
-    int af_ash(Integer_sp integer, Integer_sp count)
-    {_G();
+#define ARGS_cl_ash "(integer count)"
+#define DECL_cl_ash ""
+#define DOCS_cl_ash "CLHS: ash"
+    Integer_sp cl_ash(Integer_sp integer, Integer_sp count)
+    {
 	int cnt = count->as_int();
-	int res;
-	if ( cnt > 0 )
-	{
-	    res = integer->as_int() << cnt;
-	} else
-	{
-	    res = integer->as_int() >> (-cnt);
-	}
-	return res;
-    };
-
+	if ( integer.notnilp() ) {
+	    if ( Bignum_sp bnint = integer.asOrNull<Bignum_O>() ) {
+		return bnint->shift(cnt);
+	    } else if ( Fixnum_sp fnint = integer.asOrNull<Fixnum_O>() ) {
+		return fnint->shift(cnt);
+	    }
+	};
+	TYPE_ERROR(integer,cl::_sym_Integer_O);
+    }
 
 
 
@@ -1939,7 +1937,7 @@ void initialize_primitives()
 //	Defun(open);
 
 	SYMBOL_EXPORT_SC_(ClPkg,ash);
-	Defun(ash);
+	ClDefun(ash);
 
 	SYMBOL_SC_(CorePkg,type_to_symbol);
 	Defun(type_to_symbol);

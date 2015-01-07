@@ -3,7 +3,11 @@
                                 initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset)
   (and displaced-to (error "Add support for displaced-to arrays"))
   (and displaced-index-offset (error "Add support for displaced-index-offset arrays"))
-;;  (when element-type (inform "Add support for element-type in make-array\n"))
+  ;;  (when element-type (inform "Add support for element-type in make-array\n"))
+  (if (and (consp element-type)
+	   (null initial-element)
+	   (eq (car element-type) 'cl:unsigned-byte))
+      (setq initial-element 0))
   (cond
     ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
      (let ((dim (if (fixnump dimensions)

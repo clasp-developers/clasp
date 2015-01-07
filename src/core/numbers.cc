@@ -132,6 +132,9 @@ namespace core
 	if (!nums.nilp()) {
 	    do {
 		Real_sp numi = oCar(nums).as<Real_O>();
+		if ( numi.nilp() ) {
+		    TYPE_ERROR(numi,cl::_sym_Real_O);
+		}
 		nums = cCdr(nums);
 		min = brcl_min2(min,numi);
 		if (brcl_number_compare(min, numi) > 0)
@@ -153,6 +156,9 @@ namespace core
 	if (!nums.nilp()) {
 	    do {
 		Real_sp numi = oCar(nums).as<Real_O>();
+		if ( numi.nilp() ) {
+		    TYPE_ERROR(numi,cl::_sym_Real_O);
+		}
 		nums = cCdr(nums);
 		max = brcl_max2(max,numi);
 	    } while (nums.notnilp());
@@ -167,10 +173,11 @@ namespace core
 #define DOCS_cl_logand "logand"
     Integer_sp cl_logand(Cons_sp integers)
     {_G();
-	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
+	if ( integers.nilp() ) return Integer_O::create(-1);
+	mpz_class acc = oCar(integers).asNotNil<Integer_O>()->as_mpz();
 	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
 	{
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
 	    mpz_class temp;
 	    mpz_and(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
@@ -184,10 +191,12 @@ namespace core
 #define DOCS_cl_logior "logior"
     Integer_sp cl_logior(Cons_sp integers)
     {_G();
-	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
+	if ( integers.nilp() ) return Integer_O::create(0);
+	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	mpz_class acc = ifirst->as_mpz();
 	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
 	{
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
 	    mpz_class temp;
 	    mpz_ior(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
@@ -198,17 +207,19 @@ namespace core
 #define ARGS_af_logxor "(&rest integers)"
 #define DECL_af_logxor ""
 #define DOCS_af_logxor "logxor"
-    Integer_mv af_logxor(Cons_sp integers)
+    Integer_sp af_logxor(Cons_sp integers)
     {_G();
-	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
+	if ( integers.nilp() ) return Integer_O::create(0);
+	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	mpz_class acc = ifirst->as_mpz();
 	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
 	{
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
 	    mpz_class temp;
 	    mpz_xor(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
 	}
-	return(Values(Integer_O::create(acc)));
+	return Integer_O::create(acc);
     };
 
 
@@ -218,10 +229,12 @@ namespace core
 #define DOCS_af_logeqv "logeqv"
     Integer_mv af_logeqv(Cons_sp integers)
     {_G();
-	mpz_class x = oCar(integers).as<Integer_O>()->as_mpz();
-	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
-	{
-	    mpz_class y = oCar(cur).as<Integer_O>()->as_mpz();
+	if (integers.nilp() ) return Integer_O::create(-1);
+	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	mpz_class x = ifirst->as_mpz();
+	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) ) {
+	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
+	    mpz_class y = icur->as_mpz();
 	    mpz_class x_and_y;
 	    mpz_and(x_and_y.get_mpz_t(),x.get_mpz_t(),y.get_mpz_t());
 	    mpz_class compx;
@@ -4269,12 +4282,14 @@ Integer_sp clasp_ash(Integer_sp x, int bits)
 
     unsigned char clasp_toUint8(T_sp n)
     {
-        if (Fixnum_sp fn = n.as<Fixnum_O>()) {
-            Fixnum fi = fn->get();
-            if ( fi>=0 && fi<=255 ) {
-                return fi;
-            }
-        }
+	if ( n.notnilp() ) {
+	    if (Fixnum_sp fn = n.as<Fixnum_O>()) {
+		Fixnum fi = fn->get();
+		if ( fi>=0 && fi<=255 ) {
+		    return fi;
+		}
+	    }
+	}
         TYPE_ERROR(n,Cons_O::create(cl::_sym_UnsignedByte,Fixnum_O::create(8)));
     }
 

@@ -95,8 +95,15 @@ namespace core
 		return StrWithFillPtr_O::create(c,dimension,ifp,adjustable,initialContents);
 	    }
 	    return(Str_O::create(' ',dimension,initialContents));
-	} else
-	{
+	} else {
+	    if ( cl_consp(element_type)) {
+		// For type = '(unsigned-byte XXX) set initial_element if it hasn't been set
+		Cons_sp cet = element_type.as<Cons_O>(); 
+		if ( oCar(cet) == cl::_sym_UnsignedByte
+		     && initial_element.nilp() ) {
+		    initial_element = Fixnum_O::create(0);
+		}
+	    }
 	    if ( fill_pointer.notnilp() )
 	    {
 		int ifp = 0;

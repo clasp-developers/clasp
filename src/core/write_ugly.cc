@@ -168,7 +168,7 @@ namespace core
     {
 	StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
         int print_base = clasp_print_base();
-        af_integerToString(buffer,this->const_sharedThis<Integer_O>(),
+        core_integerToString(buffer,this->const_sharedThis<Integer_O>(),
 			   Fixnum_O::create(print_base),
 			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
 			   true);

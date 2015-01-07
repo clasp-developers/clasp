@@ -164,6 +164,19 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
 }
 
 
+void lisp_errorUnexpectedNil(class_id expectedTyp)
+{
+    if ( expectedTyp >= _lisp->classSymbolsHolder().size() ) {
+        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("expected class_id %lu out of range max[%zu]") % expectedTyp % _lisp->classSymbolsHolder().size() );
+    }
+    core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expectedTyp];
+    if ( expectedSym.nilp() ) {
+        core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("expected class_id %lu symbol was not defined") % expectedTyp );
+    }
+    TYPE_ERROR(_Nil<core::T_O>(),expectedSym);
+}
+
+
 #if defined(USE_MPS)
 namespace gctools
 {

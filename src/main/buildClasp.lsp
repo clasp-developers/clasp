@@ -1,4 +1,6 @@
 (format t "Building clasp full version~%")
 (core:clean-system nil :no-prompt t :target-backend "full-boehm")
 (core:compile-full)
+(bformat t "Compiling asdf\n")
+(compile-file "sys:kernel;asdf;build;asdf.lisp")
 (core:quit)

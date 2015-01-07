@@ -647,6 +647,7 @@ extern int _global_signalTrap;
 
 
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
+void lisp_errorUnexpectedNil(class_id expectedTyp);
 void lisp_errorDereferencedNil();
 void lisp_errorDereferencedUnbound();
 void lisp_errorIllegalDereference(void* v);
