@@ -8,6 +8,3 @@
 [submodule "src/lisp/kernel/contrib/sicl"]
 	path = src/lisp/kernel/contrib/sicl
 	url = https://github.com/drmeister/SICL.git
-[submodule "src/lisp/kernel/contrib/slime"]
-	path = src/lisp/kernel/contrib/slime
-	url = https://github.com/drmeister/slime
