@@ -450,7 +450,11 @@ namespace gctools {
         tagged_ptr<typename GCHeader<void>::HeaderType>& base_ref() { return this->base;};
         const tagged_ptr<typename GCHeader<void>::HeaderType>& base_ref() const { return this->base;};
 
+	gctools::Header_s*& px_ref() { return this->base.px_ref();};
+
         void** splattableAddress() const { return reinterpret_cast<void**>(&this->base.px_ref()); };
+
+	
     public:
         tagged_ptr<typename GCHeader<void>::HeaderType> base;
     };

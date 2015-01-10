@@ -565,7 +565,11 @@ namespace core
         this->Base::initialize();
 	//        this->_SourcePosInfo = core_makeWeakKeyHashTable(Fixnum_O::create(1024));
 	//	printf("%s:%d>>%s  WARNING:   SourceManager uses a regular hash table - this will gobble memory\n", __FILE__, __LINE__, __FUNCTION__ );
+#ifdef USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO
+	this->_SourcePosInfo = WeakKeyHashTable_O::create();
+#else
 	this->_SourcePosInfo = HashTableEq_O::create_default();
+#endif
     }
 
 
@@ -640,7 +644,7 @@ namespace core
     void SourceManager_O::dump()
     {
 	T_sp stream = cl::_sym_STARstandard_outputSTAR->symbolValue();
-	this->_SourcePosInfo->mapHash( [this,&stream] (T_sp k, T_sp v) {
+	this->_SourcePosInfo->maphash( [this,&stream] (T_sp k, T_sp v) {
 		cl_print(k,stream);
 		clasp_write_string(" --> ",stream);
 		cl_print(v,stream);

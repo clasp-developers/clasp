@@ -311,7 +311,15 @@ namespace gctools {
         return NULL;
     }
 
-
+    // The defaults are
+    //     #define CHAIN_SIZE 6400 // 256 // 6400
+    //     size_t arenaSizeMb = 320;
+    //     size_t spareCommitLimitMb = 320;
+    //     size_t nurseryKb = CHAIN_SIZE;
+    //     size_t nurseryMortalityPercent = 80;
+    //     size_t generation1Kb = CHAIN_SIZE*4;
+    //     size_t generation1MortalityPercent = 50;
+    // Try something like   export CLASP_MPS_CONFIG="32 32 16 80 32 80"   to debug MPS
     bool parseClaspMpsConfig(size_t& arenaMb, size_t& spareCommitLimitMb, size_t& nurseryKb, size_t& nurseryMortalityPercent, size_t& generation1Kb, size_t& generation1MortalityPercent )
     {
         char* cur = getenv("CLASP_MPS_CONFIG");

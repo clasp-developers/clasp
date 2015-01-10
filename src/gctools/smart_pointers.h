@@ -321,7 +321,7 @@ namespace gctools
         bool tagged_fixnump() const { return this->BaseType::fixnump(); };
 	bool fixnump() const {return lisp_fixnumP(*this);};
 	bool characterp() const {return lisp_characterP(*this);};
-
+	bool NULLp() const { return this->px_ref() == NULL; };
         Fixnum asFixnum() const { return lisp_asFixnum(*this);};
 
 #ifdef POLYMORPHIC_SMART_PTR

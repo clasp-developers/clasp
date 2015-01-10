@@ -60,7 +60,7 @@ namespace core {
         KeyBucketsType& keys = *this->_HashTable._Keys;
         ValueBucketsType& values = *this->_HashTable._Values;
         printf("WeakKeyHashTable   size: %zu\n", this->_HashTable.length());
-        printf("   keys memory range:  %p  - %p \n", &keys[0].base_ref().px_ref(), &keys[this->_HashTable.length()].base_ref().px_ref());
+        printf("   keys memory range:  %p  - %p \n", &keys[0].px_ref(), &keys[this->_HashTable.length()].px_ref());
         printf("   _HashTable.length = %d\n", keys.length() );
         printf("   _HashTable.used = %d\n", keys.used() );
         printf("   _HashTable.deleted = %d\n", keys.deleted() );
@@ -68,24 +68,24 @@ namespace core {
             value_type& key = keys[i];
             stringstream sentry;
             sentry.width(3);
-            sentry << i << "  key.px@" << (void*)(&key.base_ref().px_ref()) << "  ";
-            if ( !key.base_ref() ) {
+            sentry << i << "  key.px@" << (void*)(&key.px_ref()) << "  ";
+            if ( !key ) {
                 sentry << "splatted";
-            } else if ( key.base_ref().unboundp() ) {
+            } else if ( key.unboundp() ) {
                 sentry << "unbound";
-            } else if ( key.base_ref().deletedp() ) {
+            } else if ( key.deletedp() ) {
                 sentry << "deleted";
             } else {
                 // key.base_ref().nilp() ) {
-                T_sp okey = key.backcast();
+                T_sp okey = key;
                 sentry << _rep_(okey);
-                sentry << "@" << (void*)(key.base_ref().px_ref());
+                sentry << "@" << (void*)(key.px_ref());
                 sentry << "   -->   ";
                 value_type val = values[i];
                 if ( val.sameAsKeyP() ) {
                     sentry << "sameAsKey!!!";
                 } else {
-                    sentry << _rep_(val.backcast());
+                    sentry << _rep_(val);
                 }
             }
             printf("   %s\n", sentry.str().c_str() );
@@ -207,12 +207,17 @@ namespace core {
 
 
 
-    void WeakKeyHashTable_O::set( T_sp key, T_sp value )
+    void WeakKeyHashTable_O::setf_gethash( T_sp key, T_sp value )
     {
         this->_HashTable.set(key,value);
     }
 
 
+
+    void WeakKeyHashTable_O::maphash(std::function<void(T_sp,T_sp)> const& fn)
+    {
+	this->_HashTable.maphash(fn);
+    }
 
 
 
@@ -259,7 +264,7 @@ namespace core {
 #define DOCS_core_weakSetfGethash "weakSetfGethash"
     void core_weakSetfGethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val)
     {_G();
-        ht->set(key,val);
+        ht->setf_gethash(key,val);
     };
 
     

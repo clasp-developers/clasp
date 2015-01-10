@@ -1244,6 +1244,8 @@ namespace core
     T_sp lisp_ocar(Cons_sp args);
     T_sp lisp_ocadr(Cons_sp args);
     T_sp lisp_ocaddr(Cons_sp args);
+    /*! Return a string representation of the object */
+    string lisp_rep(T_sp obj);
     Symbol_sp lisp_internKeyword(const string& name);
     Symbol_sp lisp_intern(const string& name);
     Symbol_sp lisp_intern(const string& symbolName, const string& packageName);

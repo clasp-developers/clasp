@@ -24,6 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
+#define USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO 1
+
 #ifndef _core_sourceFileInfo_H_
 #define _core_sourceFileInfo_H_
 
@@ -140,8 +143,11 @@ namespace core {
 	explicit SourceManager_O() {};
 	virtual ~SourceManager_O() {};
     public: // instance variables here
+#ifdef USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO
+	WeakKeyHashTable_sp               _SourcePosInfo;
+#else
 	HashTableEq_sp _SourcePosInfo;
-	//        WeakKeyHashTable_sp               _SourcePosInfo;
+#endif
 
     public: // Functions here
         /*! Return true if the SourceManager is available */

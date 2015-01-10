@@ -855,6 +855,10 @@ namespace core
 	return oCaddr(args);
     }
 
+    string lisp_rep(T_sp obj)
+    {
+	return _rep_(obj);
+    }
 
     bool lisp_CoreBuiltInClassesInitialized()
     {_G();
