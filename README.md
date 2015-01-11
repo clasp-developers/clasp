@@ -1,7 +1,7 @@
 Clasp
 ===============
 
-<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Oct 5, 2014 --  Please read regarding installing Clasp</a>
+<a href="http://drmeister.wordpress.com/2014/09/26/building-clasp-and-externals-clasp/">-- Update Nov 29, 2014 --  Please read regarding installing Clasp</a>
 
 **If you have questions come ask them on IRC at freenode #clasp**
 
@@ -47,7 +47,7 @@ To build Clasp from within the top level directory do the following.
 | Variable                                   |   Description                                                           |
 | ------------------------------------------ | ----------------------------------------------------------------------- |
 | **CLASP_BUILD_TARGET_DIR**                 | This defines where make will put the Clasp application. I use $HOME/local/clasp |
-| **EXTERNALS_BUILD_TARGET_DIR**             | This defines where Clasp build will find the externals-clasp libraries.  I use $HOME/local/externals-clasp |
+| **EXTERNALS_BUILD_TARGET_DIR**             | This defines where Clasp build will find the externals-clasp libraries.  I use $HOME/local/externals-clasp. This directory must be different from that of **CLASP_BUILD_TARGET_DIR**. |
 | **TARGET_OS**                              | Currently either _linux_ or _darwin_                                    |
 | **PJOBS**                                  | The number of processors you have available to build with.              |
 |                                            | Set PJOBS <= the number of cores you have.                              |

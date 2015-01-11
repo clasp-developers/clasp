@@ -53,8 +53,7 @@ endif
 all:
 	@echo Dumping local.config
 	cat local.config
-	git submodule update --init  # ensure that the src/mps submodule is updated
-	-make temporary-fix-for-sicl
+	make submodules
 	make asdf
 	make boostbuildv2-build
 	make clasp-boehm
@@ -68,18 +67,28 @@ temporary-fix-for-sicl:
 	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
 	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase3/environment-classes.lisp
 
+submodules:
+	make submodules-boehm
+	make submodules-mps
 
+submodules-boehm:
+	-git submodule update --init src/lisp/kernel/contrib/sicl
+	-git submodule update --init src/lisp/kernel/asdf
+	-(cd src/lisp/kernel/asdf; git checkout master; git pull origin master)
+
+submodules-mps:
+	-git submodule update --init src/mps
 
 asdf:
 	(cd src/lisp/kernel/asdf; make)
 
 only-boehm:
-	git submodule update --init  # ensure that the src/mps submodule is updated
+	make submodules-boehm
 	make boostbuildv2-build
 	make clasp-boehm
 
 boehm-build-mps-interface:
-	git submodule update --init  # ensure that the src/mps submodule is updated
+	make submodules
 	make boostbuildv2-build
 	make clasp-boehm
 	(cd src/main; make mps-interface)
