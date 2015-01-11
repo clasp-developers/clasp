@@ -204,7 +204,7 @@ namespace gctools {
 #ifdef USE_BOEHM
             for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
                 if (this->bucket[i].pointerp()) {
-                    int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[i].base_ref().px_ref()));
+                    int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[i].px_ref()));
                     if ( !result ) {
                         THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                     }
@@ -216,15 +216,15 @@ namespace gctools {
         void set(size_t idx, const value_type& val) {
 #ifdef USE_BOEHM
             if (this->bucket[idx].pointerp()) {
-                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].base_ref().px_ref()));
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].px_ref()));
                 if (!result) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                 }
             }
             if (val.pointerp()) {
                 this->bucket[idx] = val;
-                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].base_ref().px_ref())
-                                                      ,reinterpret_cast<void*>(this->bucket[idx].base_ref().px_ref()));
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].px_ref())
+                                                      ,reinterpret_cast<void*>(this->bucket[idx].px_ref()));
             } else {
                 this->bucket[idx] = val;
             }
@@ -389,8 +389,8 @@ namespace gctools {
 #ifdef USE_BOEHM
             if (this->bucket.pointerp()) {
                 printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
-                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref())
-                                                      ,reinterpret_cast<void*>(this->bucket.base_ref().px_ref()));
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.px_ref())
+                                                      ,reinterpret_cast<void*>(this->bucket.px_ref()));
             }
 #endif
         };
@@ -398,7 +398,7 @@ namespace gctools {
 #ifdef USE_BOEHM
             if (this->bucket.pointerp()) {
                 printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
-                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.base_ref().px_ref()));
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.px_ref()));
                 if ( !result ) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                 }
@@ -521,15 +521,15 @@ namespace gctools {
             this->pointer = AllocatorType::allocate(val);
 #ifdef USE_BOEHM
             if ( this->pointer->value.pointerp() ) {
-                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.base_ref().px_ref())
-                                                      , reinterpret_cast<void*>(this->pointer->value.base_ref().px_ref()));
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.px_ref())
+                                                      , reinterpret_cast<void*>(this->pointer->value.px_ref()));
             }
 #endif
         }
         virtual ~WeakPointerManager() {
 #ifdef USE_BOEHM
             if (this->pointer->value.pointerp()) {
-                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.base_ref().px_ref()));
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.px_ref()));
                 if ( !result ) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                 }

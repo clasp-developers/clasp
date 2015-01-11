@@ -129,7 +129,7 @@ namespace gctools {
                 }
 #ifdef USE_BOEHM
                 // Handle splatting
-                if (k.NULLp()) {
+                if (!k.px_ref()) {
                     keys->set(i,value_type(gctools::tagged_ptr<core::T_O>::tagged_deleted));
                     ValueBucketsType* values = dynamic_cast<ValueBucketsType*>(keys->dependent);
                     (*values)[i] = value_type(gctools::tagged_ptr<core::T_O>::tagged_unbound);
@@ -171,7 +171,7 @@ namespace gctools {
 #endif
 		for (i = 0; i < length; ++i) {
 		    value_type& old_key = (*this->_Keys)[i];
-		    if (!old_key.unboundp() && !old_key.deletedp()) {
+		    if (!old_key.unboundp() && !old_key.deletedp() && old_key.px_ref() ) {
 			int found;
 			size_t b;
 #ifdef USE_MPS
@@ -257,6 +257,8 @@ namespace gctools {
 		report << " ...  about to check if mps_ld_isstale" << std::endl;
 	    }
 #endif
+
+#if USE_MPS
 	    GCWEAK_LOG(BF("About to call mps_ld_isstale"));
 	    if ( mps_ld_isstale(&this->_LocationDependency,gctools::_global_arena,key.px_ref()) ) {
 		GCWEAK_LOG(BF("Key has gone stale"));
@@ -301,18 +303,21 @@ namespace gctools {
 		    report << "  despite the fact that key was NOT found even though it is at " << firstOtherIndex << std::endl;
 		    report << " some info...   result = " << result << "   _rep_(keys[b=" << b << "]) = " << core::lisp_rep((*this->_Keys)[b]) << std::endl;
 		}
-#endif
+#endif // DEBUG_TRYSET
 		GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void*)key.px_ref());
                 mps_ld_add(&this->_LocationDependency
                            ,gctools::_global_arena
                            ,key.px_ref() );
 	    }
+#endif
 	} else {
 	    GCWEAK_LOG(BF("else case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p") % result % b % (*this->_Keys)[b].px_ref() );
 	    GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void*)key.px_ref());
+#if USE_MPS
 	    mps_ld_add(&this->_LocationDependency
 		       ,gctools::_global_arena
 		       ,key.px_ref() );
+#endif
 	}
 	if ((*this->_Keys)[b].unboundp()) {
 	    GCWEAK_LOG(BF("Writing key over unbound entry"));
