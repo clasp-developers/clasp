@@ -254,8 +254,10 @@ to compile prologue and epilogue code when linking modules"
 
 
 
-(defun cfp-output-file-default (input-file output-type)
+(defun cfp-output-file-default (input-file output-type &key target-backend)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*)))
+    (when target-backend
+      (setq defaults (make-pathname :host target-backend :defaults defaults)))
     (make-pathname :type (cond
 			   ((eq output-type :bitcode) "bc")
 			   ((eq output-type :linked-bitcode) "lbc")
@@ -275,10 +277,11 @@ to compile prologue and epilogue code when linking modules"
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file &key (output-file nil output-file-p)
                                            (output-type :fasl)
+					   target-backend
                                            &allow-other-keys)
   (let* ((pn (if output-file-p
-		 (merge-pathnames output-file (cfp-output-file-default input-file output-type))
-		 (cfp-output-file-default input-file output-type)))
+		 (merge-pathnames output-file (cfp-output-file-default input-file output-type :target-backend target-backend))
+		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
          (ext (cond
 		((eq output-type :bitcode) "bc")
 		((eq output-type :linked-bitcode) "lbc")
