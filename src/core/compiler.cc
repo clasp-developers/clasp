@@ -192,7 +192,7 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("Could not find initialization function %s") % mainName );
 	}
-//	printf("Found function %s at address %p\n", mainName.c_str(), mainFunctionPointer);
+	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
 	(*mainFunctionPointer)();
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     };

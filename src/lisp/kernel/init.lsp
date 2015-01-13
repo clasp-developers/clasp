@@ -855,7 +855,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                            :lisp-bitcode-files bitcode-files
                            :prologue-form '(progn
 					     (if (member :interactive *features*) 
-						 (bformat t "Starting Clasp 0.11 ... loading image... it takes a few seconds\n")))
+						 (bformat t "Starting %s Clasp 0.11 ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ))))
 			   :epilogue-form '(progn
 					     (cl:in-package :cl-user)
 					     (require 'system)
@@ -958,7 +958,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export 'setup-asdf)
 
 (defun compile-asdf ()
-  (compile-file "sys:kernel;asdf;build;asdf.lisp")
+  (compile-file "sys:kernel;asdf;build;asdf.lisp" :output-file (compile-file-pathname "sys:modules;asdf;asdf.fasl"
+										      :target-backend (default-target-backend)))
   #+(or)(cmp::link-system-lto "sys:kernel;asdf;build;asdf.fasl"
 			      :lisp-bitcode-files (list #P"sys:kernel;asdf;build;asdf.bc"))
   )
