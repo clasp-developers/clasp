@@ -769,9 +769,9 @@ extern "C"
     void invokeMainFunctions( fnVoidType fptr[], int* numfunP)
     {
         int numfun = *numfunP;
-        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
+	//        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
         for ( int i=0; i<numfun; ++i ) {
-            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
+	    //            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
             (fptr[i])();
         }
     }
