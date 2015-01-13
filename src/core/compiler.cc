@@ -170,7 +170,7 @@ namespace core
 	else if ( (dsp = stem.find("_d")) != string::npos) stem = stem.substr(0,dsp);
 	else if ( (dsp = stem.find("_o")) != string::npos) stem = stem.substr(0,dsp);
 
-	int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
+	int mode = RTLD_NOW | RTLD_LOCAL; // | RTLD_FIRST;
 	// Check if we already have this dynamic library loaded
 	map<string,void*>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
 	if (handleIt != _lisp->openDynamicLibraryHandles().end() ) {
@@ -212,7 +212,7 @@ namespace core
 #ifdef	_TARGET_OS_LINUX
 	lib_extension = ".so";
 #endif
-	int mode = RTLD_NOW | RTLD_GLOBAL;
+	int mode = RTLD_NOW | RTLD_LOCAL;
 	Path_sp path = coerce::pathDesignator(pathDesig);
 	Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
 	string ts = pathWithProperExtension->asString();
@@ -258,40 +258,23 @@ namespace core
 
 
 
-#ifdef EXPOSE_DLOPEN
-
-
 #define ARGS_af_dlopen "(pathDesig)"
 #define DECL_af_dlopen ""
-#define DOCS_af_dlopen "dlopen - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error))"
+#define DOCS_af_dlopen "dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))"
     T_mv af_dlopen(T_sp pathDesig)
     {_G();
 	string lib_extension = ".dylib";
-#ifdef	_TARGET_OS_DARWIN
-	lib_extension = ".dylib";
-#endif
-#ifdef	_TARGET_OS_LINUX
-	lib_extension = ".so";
-#endif
-	int mode = RTLD_NOW | RTLD_GLOBAL;
+	int mode = RTLD_NOW | RTLD_LOCAL;
 	Path_sp path = coerce::pathDesignator(pathDesig);
 	string ts0 = path->asString();
 	void* handle = dlopen(ts0.c_str(),mode);
 	if ( !handle ) {
-	  Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
-	  string ts = pathWithProperExtension->asString();
-	  printf("%s:%d Loading with af_dlopen %s\n", __FILE__, __LINE__, ts.c_str());
-	  handle = dlopen(ts.c_str(),mode);
-	  if ( !handle )
-	    {
-	      string error = dlerror();
-	      return(Values(_Nil<T_O>(),Str_O::create(error)));
-	    }
+            printf("%s:%d Could not open %s  error: %s\n", __FILE__, __LINE__, ts0.c_str(), dlerror());
+            string error = dlerror();
+            return(Values(_Nil<T_O>(),Str_O::create(error)));
 	}
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     }
-
-#endif
 
 
 
@@ -342,6 +325,15 @@ namespace core
 	    return _Nil<T_O>();
 	}
 	return Pointer_O::create(ptr);
+    }
+
+#define ARGS_core_callDlMainFunction "(addr)"
+#define DECL_core_callDlMainFunction ""
+#define DOCS_core_callDlMainFunction "(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)"
+    void core_callDlMainFunction(Pointer_sp addr)
+    {
+	InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
+	(*mainFunctionPointer)();
     }
 
 
@@ -895,16 +887,15 @@ namespace core {
 	Defun(dlload);
 #endif
 
-#ifdef EXPOSE_DLOPEN
 	SYMBOL_SC_(CorePkg,dlopen);
 	Defun(dlopen);
-#endif
 
 	SYMBOL_SC_(CorePkg,dlsym);
 	Defun(dlsym);
 
 	SYMBOL_SC_(CorePkg,dladdr);
 	Defun(dladdr);
+        CoreDefun(callDlMainFunction);
 
 	SYMBOL_SC_(CorePkg,loadBundle);
 	CoreDefun(loadBundle);
