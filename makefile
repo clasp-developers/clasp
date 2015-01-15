@@ -97,7 +97,7 @@ boehm-build-mps-interface:
 #
 # Tell ASDF where to find the SICL/Code/Cleavir systems - the final // means search subdirs
 #
-export CL_SOURCE_REGISTRY = $(shell echo `pwd`/src/lisp/kernel/contrib/sicl/Code/Cleavir//):$(shell echo `pwd`/src/lisp/kernel/contrib/slime//)
+#export CL_SOURCE_REGISTRY = $(shell echo `pwd`/src/lisp/kernel/contrib/sicl/Code/Cleavir//):$(shell echo `pwd`/src/lisp/kernel/contrib/slime//)
 
 #
 # When developing, set the CLASP_LISP_SOURCE_DIR environment variable

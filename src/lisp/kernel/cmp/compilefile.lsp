@@ -277,8 +277,10 @@ to compile prologue and epilogue code when linking modules"
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file &key (output-file nil output-file-p)
                                            (output-type :fasl)
+					   type
 					   target-backend
                                            &allow-other-keys)
+  (when type (error "Clasp compile-file-pathname uses :output-type rather than :type"))
   (let* ((pn (if output-file-p
 		 (merge-pathnames output-file (cfp-output-file-default input-file output-type :target-backend target-backend))
 		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
