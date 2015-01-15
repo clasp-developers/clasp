@@ -640,7 +640,7 @@ void bind_aux
     bool switch_add_argument_mode(T_sp context, Symbol_sp symbol, ArgumentMode& mode, T_sp& key_flag )
     {_G();
 	LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % symbol->__repr__() % symbol.get() );
-	bool isAmpSymbol = ( symbol == _sym_DOT || symbol->amp_symbol_p() );
+	bool isAmpSymbol = ( symbol == _sym_DOT || (symbol.notnilp() && symbol->amp_symbol_p()) );
 	if ( isAmpSymbol )
 	{
 	    LOG(BF("It is an amp symbol"));
