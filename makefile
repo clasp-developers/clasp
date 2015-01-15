@@ -122,8 +122,11 @@ devshell:
 testing:
 	which clang++
 
-clasp-mps:
+clasp-mps-cpp:
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release mps)
+
+clasp-mps:
+	make clasp-mps-cpp
 	(cd src/main; make mps)
 
 # Compile the CL sources for min-mps: and full-mps
@@ -139,8 +142,11 @@ cl-full-mps:
 	(cd src/main; make full-mps)
 
 
-clasp-boehm:
+clasp-boehm-cpp:
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release boehm)
+
+clasp-boehm:
+	make clasp-boehm-cpp
 	(cd src/main; make boehm)
 
 # Compile the CL sources for min-boehm: and full-boehm
