@@ -163,7 +163,7 @@ namespace core
 	string name = nameStr->get();
 
 	/* Look up the initialization function. */
-	string stem = af_string_downcase(path->_Name.as<Str_O>())->get();
+	string stem = cl_string_downcase(path->_Name.as<Str_O>())->get();
 	size_t dsp = 0;
 	if ( (dsp = stem.find("_dbg")) != string::npos) stem = stem.substr(0,dsp);
 	else if ( (dsp = stem.find("_opt")) != string::npos) stem = stem.substr(0,dsp);

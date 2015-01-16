@@ -38,6 +38,8 @@ THE SOFTWARE.
 #include "hashTableEqual.h"
 #include "hashTableEqualp.h"
 #include "vectorObjects.h"
+#include "str.h"
+#include "lispString.h"
 #include "fileSystem.h"
 #include "serialize.h"
 #include "evaluator.h"
@@ -320,9 +322,12 @@ namespace core
 	if ( obj.nilp() ) {
 	    hg.addPart(0);
 	    return;
+	} else if ( Str_sp str = obj.asOrNull<Str_O>() ) {
+	    Str_sp upstr = cl_string_upcase(str);
+	    hg.hashObject(upstr);
+	    return;
 	} else if ( af_symbolp(obj)
                     || cl_numberp(obj)
-                    || af_stringP(obj)
                     || af_pathnamep(obj)
                     || cl_consp(obj)
                     || obj->instancep()
@@ -331,6 +336,7 @@ namespace core
 	    hg.hashObject(obj);
 	    return;
 	}
+	    
 #ifdef USE_MPS
         if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif

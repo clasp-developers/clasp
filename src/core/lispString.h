@@ -76,8 +76,8 @@ namespace core {
     Str_sp af_string(T_sp str);
 
 
-    Str_sp af_string_upcase(T_sp arg);
-    Str_sp af_string_downcase(T_sp arg);
+    Str_sp cl_string_upcase(T_sp arg);
+    Str_sp cl_string_downcase(T_sp arg);
 
 
     claspChar af_char(T_sp str, int idx);

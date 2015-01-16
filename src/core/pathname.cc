@@ -133,8 +133,8 @@ namespace core {
     to_local_case(T_sp str, T_sp cas)
     {
 	if (cas == kw::_sym_downcase)
-	    return af_string_downcase(str);
-        return af_string_upcase(str);
+	    return cl_string_downcase(str);
+        return cl_string_upcase(str);
     }
 
     static Symbol_sp
@@ -151,8 +151,8 @@ namespace core {
     to_antilocal_case(T_sp str, T_sp cas)
     {
 	if (cas == kw::_sym_downcase)
-	    return af_string_upcase( str);
-	return af_string_upcase( str);
+	    return cl_string_upcase( str);
+	return cl_string_upcase( str);
     }
 
     static T_sp
@@ -173,9 +173,9 @@ namespace core {
     translate_to_common(T_sp str, T_sp fromcase)
     {
 	if (in_local_case_p(str, fromcase)) {
-	    return af_string_upcase( str);
+	    return cl_string_upcase( str);
 	} else if (in_antilocal_case_p(str, fromcase)) {
-	    return af_string_downcase( str);
+	    return cl_string_downcase( str);
 	} else {
 	    return str;
 	}
@@ -1769,7 +1769,7 @@ namespace core {
         /* Check that host is a valid host name */
         if (brcl_unlikely(!af_stringP(host)))
             QERROR_WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
-        host = af_string_upcase( host);
+        host = cl_string_upcase( host);
         len = cl_length(host);
         parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
         if (UNLIKELY(parsed_len < len)) {

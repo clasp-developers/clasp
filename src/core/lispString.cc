@@ -106,11 +106,11 @@ namespace core
     };
 
 
-#define DOCS_af_string_upcase "string_upcase"
-#define LOCK_af_string_upcase 1
-#define ARGS_af_string_upcase "(arg)"
-#define DECL_af_string_upcase ""    
-    Str_sp af_string_upcase(T_sp arg)
+#define DOCS_cl_string_upcase "string_upcase"
+#define LOCK_cl_string_upcase 1
+#define ARGS_cl_string_upcase "(arg)"
+#define DECL_cl_string_upcase ""    
+    Str_sp cl_string_upcase(T_sp arg)
     {_G();
 	Str_sp str = coerce::stringDesignator(arg);
 	Str_sp result = Str_O::create(str->get());
@@ -148,11 +148,11 @@ namespace core
 
 
 
-#define DOCS_af_string_downcase "string_downcase"
-#define LOCK_af_string_downcase 1
-#define ARGS_af_string_downcase "(arg)"
-#define DECL_af_string_downcase ""    
-    Str_sp af_string_downcase(T_sp arg)
+#define DOCS_cl_string_downcase "string_downcase"
+#define LOCK_cl_string_downcase 1
+#define ARGS_cl_string_downcase "(arg)"
+#define DECL_cl_string_downcase ""    
+    Str_sp cl_string_downcase(T_sp arg)
     {_G();
 	Str_sp str = coerce::stringDesignator(arg);
 	Str_sp result = Str_O::create(str->get());
@@ -238,9 +238,9 @@ namespace core
 	SYMBOL_EXPORT_SC_(ClPkg,string);
 	Defun(string);
 	SYMBOL_EXPORT_SC_(ClPkg,string_upcase);
-	Defun(string_upcase);
+	ClDefun(string_upcase);
 	SYMBOL_EXPORT_SC_(ClPkg,string_downcase);
-	Defun(string_downcase);
+	ClDefun(string_downcase);
 	SYMBOL_EXPORT_SC_(ClPkg,nstring_upcase);
 	Defun(nstring_upcase);
 	SYMBOL_EXPORT_SC_(ClPkg,nstring_downcase);
