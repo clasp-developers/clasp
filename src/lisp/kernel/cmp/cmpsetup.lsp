@@ -39,6 +39,10 @@
 (export '*debug-compiler*)
 
 
+;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it
+;;
+(defvar *debug-generate-prepass-llvm-ir* nil)
+
 ;; Generate C++ destructors for reference-counting otherwise don't
 ;;
 
