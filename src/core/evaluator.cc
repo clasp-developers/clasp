@@ -749,7 +749,9 @@ namespace core
 	    Symbol_sp tag = oCar(args).as<Symbol_O>();
             int depth=0;
 	    int index=0;
-	    bool foundTag = Environment_O::clasp_findTag(env,tag,depth,index);
+	    bool interFunction;
+	    T_sp tagbodyEnv;
+	    bool foundTag = Environment_O::clasp_findTag(env,tag,depth,index,interFunction,tagbodyEnv);
 	    if ( !foundTag )
 	    {
 		SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") 

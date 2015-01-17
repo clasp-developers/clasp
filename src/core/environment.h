@@ -66,7 +66,7 @@ namespace core
 	static int clasp_countFunctionContainerEnvironments(T_sp env);
 	static bool clasp_findValue(T_sp env, T_sp name, int& depth, int& index, ValueKind& valueKind,T_sp& value);
 	static bool clasp_findFunction(T_sp env, T_sp functionName, int& depth, int& index, Function_sp& func);
-	static bool clasp_findTag(T_sp env, Symbol_sp sym, int& depth, int& index);
+	static bool clasp_findTag(T_sp env, Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv);
 	static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int& depth, int& index, bool& shadowed, Function_sp& func);
 	static bool clasp_findMacro(T_sp env, Symbol_sp sym, int& depth, int& index, Function_sp& func);
         static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
@@ -231,8 +231,8 @@ namespace core
 	virtual bool recognizesBlockSymbol(Symbol_sp sym) const;
 	virtual int getBlockSymbolFrame(Symbol_sp sym) const;
 
-	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
-	bool findTag(Symbol_sp tag, int& depth, int& index ) const;
+	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const;
+	bool findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv ) const;
 
 	virtual int countFunctionContainerEnvironments() const;
 
@@ -317,7 +317,7 @@ namespace core
 
 	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 	virtual bool _findFunction(T_sp functionName, int& depth, int& index, Function_sp& value) const;
-	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
+	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const;
 
 	virtual Environment_sp currentVisibleEnvironment() const;
 
@@ -694,6 +694,8 @@ namespace core
 
 	virtual int countFunctionContainerEnvironments() const;
 
+	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv ) const;
+
 	DEFAULT_CTOR_DTOR(FunctionContainerEnvironment_O);
     };
 };
@@ -739,7 +741,7 @@ namespace core
 	Cons_sp codePos(int index) const;
 
 	/*! Return true if the tag is found and return the depth and index of the tag */
-	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
+	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const;
 
 	virtual string summaryOfContents() const;
 

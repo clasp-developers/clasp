@@ -81,7 +81,7 @@ namespace core
 	virtual T_sp _lookupTagbodyId(int depth, int index) const;
 
 
-	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
+	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const;
 	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 	virtual bool _findFunction(T_sp functionName, int& depth, int& index, Function_sp& value) const;
 
@@ -612,12 +612,12 @@ namespace frame
     }
 
 
-    inline bool findTag(core::T_sp f, core::Symbol_sp sym, int& depth, int& index )
+    inline bool findTag(core::T_sp f, core::Symbol_sp sym, int& depth, int& index, bool& interFunction, core::T_sp& tagbodyEnv )
     {_G();
         core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
         core::T_sp parent = core::Environment_O::clasp_currentVisibleEnvironment(ParentFrame(frameImpl));
         ++depth;
-	return core::Environment_O::clasp_findTag(parent,sym,depth,index);
+	return core::Environment_O::clasp_findTag(parent,sym,depth,index,interFunction,tagbodyEnv);
     }
 
 

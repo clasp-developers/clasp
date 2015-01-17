@@ -336,12 +336,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
 
-#+(or)(si::*fset 'defun
-	  #'(lambda (def env)
-	      (let* ((name (second def))
-		     (func `(function (lambda ,(caddr def) (block ,(cadr def) ,@(cdddr def))))))
-		(ext:register-with-pde def `(si::*fset ',name ,func))))
-	  t)
 
 (si::*fset 'defun
 	   #'(lambda (def env)

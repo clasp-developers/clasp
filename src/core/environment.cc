@@ -835,9 +835,15 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	int depth;
 	int index;
-	if (this->findTag(tag,depth,index))
+	bool interFunction;
+	T_sp tagbodyEnv;
+	if (this->findTag(tag,depth,index,interFunction,tagbodyEnv))
 	{
-	    return Cons_O::create(_sym_dynamicGo,Cons_O::create(Fixnum_O::create(depth),Fixnum_O::create(index)));
+	    if ( interFunction ) {
+		return Cons_O::createList(_sym_dynamicGo,Fixnum_O::create(depth),Fixnum_O::create(index));
+	    } else {
+		return Cons_O::createList(_sym_localGo,Fixnum_O::create(depth),Fixnum_O::create(index),tagbodyEnv);
+	    }
 	}
 	SIMPLE_ERROR(BF("Could not find tag %s") % _rep_(tag) );
 
@@ -881,28 +887,30 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	return Environment_O::clasp_getBlockSymbolFrame(this->getParentEnvironment(),sym);
     }
 
-    bool Environment_O::clasp_findTag(T_sp env, Symbol_sp sym, int& depth, int& index)
+    bool Environment_O::clasp_findTag(T_sp env, Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv)
     {
 	if ( env.nilp() ) return false;
         if ( env.framep() ) {
-            return frame::findTag(env,sym,depth,index);
+            return frame::findTag(env,sym,depth,index,interFunction,tagbodyEnv);
         } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
-            return eenv->_findTag(sym,depth,index);
+            return eenv->_findTag(sym,depth,index,interFunction,tagbodyEnv);
         }
         NOT_ENVIRONMENT_ERROR(env);
     }
 
-    bool Environment_O::_findTag(Symbol_sp sym, int& depth, int& index) const
+    bool Environment_O::_findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const
     {_G();
-	return clasp_findTag(this->getParentEnvironment(),sym,depth,index);
+	return clasp_findTag(this->getParentEnvironment(),sym,depth,index,interFunction,tagbodyEnv);
     }
 
 
-    bool Environment_O::findTag(Symbol_sp sym, int& depth, int& index) const
+    bool Environment_O::findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const
     {_G();
 	depth = 0;
 	index = 0;
-	return this->_findTag(sym,depth,index);
+	interFunction = false;
+	tagbodyEnv = _Nil<T_O>();
+	return this->_findTag(sym,depth,index,interFunction,tagbodyEnv);
     }
 
     int Environment_O::countFunctionContainerEnvironments() const
@@ -1182,11 +1190,11 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
-    bool RuntimeVisibleEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index ) const
+    bool RuntimeVisibleEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv ) const
     {_G();
-	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	Environment_sp parent = this->getParentEnvironment(); // clasp_currentVisibleEnvironment(this->getParentEnvironment());
         ++depth;
-	return clasp_findTag(parent,sym,depth,index);
+	return clasp_findTag(parent,sym,depth,index,interFunction,tagbodyEnv);
     }
 
 
@@ -2033,6 +2041,14 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
+    bool FunctionContainerEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const
+    {_G();
+	// We are crossing a function boundary - set interFunction to true
+	//	printf("%s:%d searched through FunctionContainerEnvironment_O\n", __FILE__, __LINE__ );
+	interFunction = true;
+	if ( this->getParentEnvironment().nilp() ) {return false;}
+	return clasp_findTag(this->getParentEnvironment(),sym,depth,index,interFunction,tagbodyEnv);
+    }
 
 
 
@@ -2139,12 +2155,14 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    bool TagbodyEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index) const
+    bool TagbodyEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const
     {_G();
+	//	printf("%s:%d searched through TagbodyEnvironment_O\n", __FILE__, __LINE__ );
 	Cons_sp it = this->_Tags->find(sym);
 	if ( it.notnilp() )
 	{
 	    index = oCdr(it).as<Fixnum_O>()->get();
+	    tagbodyEnv = this->asSmartPtr();
 	    return true;
 	}
 	if ( this->getParentEnvironment().nilp() )
@@ -2152,7 +2170,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    return false;
 	}
         ++depth;
-	return clasp_findTag(this->getParentEnvironment(),sym,depth,index);
+	return clasp_findTag(this->getParentEnvironment(),sym,depth,index,interFunction,tagbodyEnv);
     }
 
 

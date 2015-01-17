@@ -457,14 +457,12 @@
 
 
 
-#||  ;; Depreciated
-(defun irc-unwind-to-environment (begin-env end-env)
+(defun irc-unwind-into-environment (begin-env end-env)
   "Unwind the environments from begin-env to end-env"
   (do* ((cur-env begin-env (get-parent-environment cur-env)))
        ((eq cur-env end-env) (irc-unwind-environment cur-env))
     (irc-unwind-environment cur-env))
   )
-||#
 
 
 

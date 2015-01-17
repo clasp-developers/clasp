@@ -80,11 +80,11 @@ namespace core
 
 
 
-    bool ActivationFrame_O::_findTag(Symbol_sp sym, int& depth, int& index ) const
+    bool ActivationFrame_O::_findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv ) const
     {_G();
 	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
         ++depth;
-	return clasp_findTag(parent,sym,depth,index);
+	return clasp_findTag(parent,sym,depth,index,interFunction,tagbodyEnv);
     }
 
 
