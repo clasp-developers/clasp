@@ -76,7 +76,7 @@ namespace core
         static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index );
 	static T_mv clasp_lookupMetadata(T_sp env, Symbol_sp sym);
 	static T_sp clasp_find_current_code_environment(T_sp env);
-	static bool clasp_recognizesBlockSymbol(T_sp env,Symbol_sp sym);
+	static T_mv clasp_recognizesBlockSymbol(T_sp env,Symbol_sp sym, bool& interFunction);
 	static int clasp_getBlockSymbolFrame(T_sp env, Symbol_sp sym);
 	static T_sp clasp_find_unwindable_environment(T_sp env);
 	static T_sp clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag);
@@ -228,7 +228,7 @@ namespace core
 	  that defines it return nil if you don't find it*/
 	virtual T_sp find_current_code_environment() const;
 
-	virtual bool recognizesBlockSymbol(Symbol_sp sym) const;
+	virtual T_mv recognizesBlockSymbol(Symbol_sp sym, bool& interFunction) const;
 	virtual int getBlockSymbolFrame(Symbol_sp sym) const;
 
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const;
@@ -618,7 +618,7 @@ namespace core
 	Symbol_sp getBlockSymbol() const { return this->_BlockSymbol;};
 	void setBlockSymbol(Symbol_sp sym ) { this->_BlockSymbol = sym;};
 
-	bool recognizesBlockSymbol(Symbol_sp sym) const;
+	T_mv recognizesBlockSymbol(Symbol_sp sym, bool& interFunction) const;
 //        int getBlockSymbolFrame(Symbol_sp sym) const;
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
@@ -695,7 +695,8 @@ namespace core
 	virtual int countFunctionContainerEnvironments() const;
 
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv ) const;
-
+	virtual T_mv recognizesBlockSymbol(Symbol_sp sym, bool& interFunction) const;
+	
 	DEFAULT_CTOR_DTOR(FunctionContainerEnvironment_O);
     };
 };

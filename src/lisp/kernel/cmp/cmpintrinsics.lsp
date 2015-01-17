@@ -449,23 +449,13 @@ Boehm and MPS use a single pointer"
 
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
-;;  (primitive module "symbolFunction" +void+ (list +Function_sp*+ +tsp*+))
-;;  (primitive module "lexicalFunction" +void+ (list +Function_sp*+ +i32+ +i32+ +afsp*+))
-
-
-;;  (primitive module "invokePossibleMultipleValueFunction" +void+ (list +tmv*+ +tsp*+ +afsp*+))
-;;  (primitive module "invokePossibleMultipleValueSymbolFunction" +void+ (list +tsp*-or-tmv*+ +symsp*+ +afsp*+))
-;;  (primitive module "invokePossibleMultipleValueLexicalFunction" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+ +afsp*+))
-
   (primitive module "invokeMainFunctions" +void+ (list +fn-void-ptr-pointer+ +i32*+))
   (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+))
   (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-void-ptr+))
 
   (primitive module "invokeFASLLlvmFunctionVoid" +void+ (list +fn-void-ptr+ +i8*+))
 
-;;  (primitive-does-not-throw module "activationFrameNil" +afsp*+ nil)
   (primitive-does-not-throw module "activationFrameSize" +i32+ (list +afsp*+))
-;;  (primitive-does-not-throw module "activationFrameParentRef" +tsp*+ (list +afsp*+))
 
   (primitive-does-not-throw module "copyArgs" +void+ (list +tsp*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+ +i8*+))
   (primitive module "throwTooManyArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
@@ -492,8 +482,6 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "singleStepCallback" +void+ nil)
 
 
-;;  (primitive-does-not-throw module "va_vararg" +tagged-ptr+ (list +va-list+))
-;;  (primitive-does-not-throw module "generateTspFromTAGGED_PTR" +void+ (list +tsp*+ +tagged-ptr+))
   (primitive module "va_throwTooManyArgumentsException" +void+ (list +i8*+ +i32+ +i32+))
   (primitive module "va_throwNotEnoughArgumentsException" +void+ (list +i8*+ +i32+ +i32+))
   (primitive module "va_throwIfExcessKeywordArguments" +void+ (list +i8*+ +i32+ +tsp[0]*+ +i32+))

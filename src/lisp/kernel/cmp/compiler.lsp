@@ -815,15 +815,16 @@ jump to blocks within this tagbody."
   (dbg-set-current-debug-location-here)
   (let* ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
 	 (block-symbol (car rest))
-	 (return-form (cadr rest))
-	 (recognizes-block-symbol (recognizes-block-symbol env block-symbol)))
-    (if recognizes-block-symbol
-        (progn
-          (codegen temp-mv-result return-form env)
-          (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-	  (irc-low-level-trace)
-	  (irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
-	(error "Unrecognized block symbol ~a" block-symbol))))
+	 (return-form (cadr rest)))
+    (multiple-value-bind (recognizes-block-symbol inter-function block-env)
+	(classify-return-from-symbol env block-symbol)
+      (if recognizes-block-symbol
+	  (progn
+	    (codegen temp-mv-result return-form env)
+	    (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+	    (irc-low-level-trace)
+	    (irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
+	  (error "Unrecognized block symbol ~a" block-symbol)))))
 
 
 (defun generate-lambda-block (name lambda-list raw-body)

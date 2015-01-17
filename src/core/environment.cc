@@ -326,7 +326,6 @@ namespace core
 	    .def("lexicalEnvironmentP",&Environment_O::lexicalEnvironmentP)
 	    .def("unwindProtectEnvironmentP",&Environment_O::unwindProtectEnvironmentP)
 	    .def("functionContainerEnvironmentP",&Environment_O::functionContainerEnvironmentP)
-	    .def("recognizesBlockSymbol",&Environment_O::recognizesBlockSymbol)
 	    .def("getBlockSymbolFrame",&Environment_O::getBlockSymbolFrame)
 	    .def("classifyTag",&Environment_O::classifyTag)
 	    .def("countFunctionContainerEnvironments",&Environment_O::countFunctionContainerEnvironments)
@@ -336,6 +335,7 @@ namespace core
 	CoreDefun(environmentDebugValues);
 	SYMBOL_SC_(CorePkg,environmentActivationFrame);
 	Defun(environmentActivationFrame);
+	CoreDefun(classifyReturnFromSymbol);
 	SYMBOL_SC_(CorePkg,currentVisibleEnvironment);
 	af_def(CorePkg,"currentVisibleEnvironment",&Environment_O::clasp_currentVisibleEnvironment);
 	SYMBOL_SC_(CorePkg,runtimeEnvironment);
@@ -703,15 +703,24 @@ namespace core
 	IMPLEMENT_ME();
     }
 
+#define ARGS_core_classifyReturnFromSymbol "(env sym)"
+#define DECL_core_classifyReturnFromSymbol ""
+#define DOCS_core_classifyReturnFromSymbol "classifyReturnFromSymbol"
+    T_mv core_classifyReturnFromSymbol(T_sp env, Symbol_sp sym)
+    {
+	bool interFunction = false;
+	return clasp_recognizesBlockSymbol(env,sym,interFunction);
+    }
 
-    bool Environment_O::clasp_recognizesBlockSymbol(T_sp env,Symbol_sp sym)
+
+    T_mv Environment_O::clasp_recognizesBlockSymbol(T_sp env,Symbol_sp sym, bool& interFunction)
     {
 	if (env.nilp()) {
-	    return false;
+	    return Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
 	} else if (env.framep()) {
-            return clasp_recognizesBlockSymbol(frame::ParentFrame(env),sym);
+            return clasp_recognizesBlockSymbol(frame::ParentFrame(env),sym,interFunction);
         } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
-            return eenv->recognizesBlockSymbol(sym);
+            return eenv->recognizesBlockSymbol(sym,interFunction);
         }
         NOT_ENVIRONMENT_ERROR(env);
     }
@@ -874,10 +883,10 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    bool Environment_O::recognizesBlockSymbol(Symbol_sp sym) const
+    T_mv Environment_O::recognizesBlockSymbol(Symbol_sp sym, bool& interFunction) const
     {_G();
-	if ( this->getParentEnvironment().nilp() ) return false;
-	return Environment_O::clasp_recognizesBlockSymbol(this->getParentEnvironment(),sym);
+	if ( this->getParentEnvironment().nilp() ) return Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
+	return Environment_O::clasp_recognizesBlockSymbol(this->getParentEnvironment(),sym,interFunction);
     }
 
 
@@ -1881,10 +1890,10 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
-    bool BlockEnvironment_O::recognizesBlockSymbol(Symbol_sp sym) const
+    T_mv BlockEnvironment_O::recognizesBlockSymbol(Symbol_sp sym,bool& interFunction) const
     {_G();
-	if ( this->_BlockSymbol == sym ) return true;
-	return clasp_recognizesBlockSymbol(this->getParentEnvironment(),sym);
+	if ( this->_BlockSymbol == sym ) return Values(_lisp->_true(),_lisp->_boolean(interFunction),this->asSmartPtr());
+	return clasp_recognizesBlockSymbol(this->getParentEnvironment(),sym,interFunction);
     }
 #if 0
     int BlockEnvironment_O::getBlockSymbol(Symbol_sp sym) const
@@ -2051,6 +2060,11 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
+    T_mv FunctionContainerEnvironment_O::recognizesBlockSymbol(Symbol_sp sym,bool& interFunction) const
+    {_G();
+	interFunction = true;
+	return clasp_recognizesBlockSymbol(this->getParentEnvironment(),sym,interFunction);
+    }
 
 
 
