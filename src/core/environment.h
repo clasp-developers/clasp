@@ -553,16 +553,20 @@ namespace core
 	LISP_CLASS(core,CorePkg,UnwindProtectEnvironment_O,"UnwindProtectEnvironment");
     public:
 	void	initialize();
+    private:
+	Cons_sp _CleanupForm;
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     public:
-	static UnwindProtectEnvironment_sp make( Environment_sp parent);
+	static UnwindProtectEnvironment_sp make(Cons_sp cleanupForm, Environment_sp parent);
     public:
 	virtual string summaryOfContents() const;
+	Cons_sp cleanupForm() const { return this->_CleanupForm;};
     public:
 	DEFAULT_CTOR_DTOR(UnwindProtectEnvironment_O);
 
+	virtual bool unwindProtectEnvironmentP() const { return true;};
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/

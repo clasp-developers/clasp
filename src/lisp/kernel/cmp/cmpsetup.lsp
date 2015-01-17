@@ -39,14 +39,10 @@
 (export '*debug-compiler*)
 
 
-<<<<<<< Updated upstream
-=======
-;; Turn this on if you want to generate a bitcode file
-;; for the llvm-ir prior to running optimization passes on it
+;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it
 ;;
 (defvar *debug-generate-prepass-llvm-ir* nil)
 
->>>>>>> Stashed changes
 ;; Generate C++ destructors for reference-counting otherwise don't
 ;;
 

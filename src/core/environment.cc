@@ -1729,9 +1729,10 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(Environment_sp parent)
+    UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(Cons_sp cleanupForm, Environment_sp parent)
     {_G();
 	UnwindProtectEnvironment_sp environ = UnwindProtectEnvironment_O::create();
+	environ->_CleanupForm = cleanupForm;
 	environ->setupParent(parent);
 	return environ;
     }
@@ -1746,6 +1747,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     void UnwindProtectEnvironment_O::exposeCando(Lisp_sp lisp)
     {
 	class_<UnwindProtectEnvironment_O>()
+	    .def("UnwindProtectEnvironment-cleanupForm",&UnwindProtectEnvironment_O::cleanupForm)
 	    ;
 	af_def(CorePkg,"makeUnwindProtectEnvironment",&UnwindProtectEnvironment_O::make);
     }
@@ -1772,6 +1774,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 //	int tab = _sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>()->get();
 	stringstream ss;
+	ss << "CleanupForm: " << _rep_(this->_CleanupForm) << std::endl;
 	ss << this->Base::summaryOfContents();
 	return ss.str();
     }

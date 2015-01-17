@@ -340,15 +340,6 @@
   (make-catch-environment old-env))
 
 
-(defun irc-new-unwind-protect-environment (old-env)
-  (make-unwind-protect-environment old-env))
-
-
-
-	
-
-	
-
 (defun irc-set-renv (env renv)
   (set-runtime-environment env renv))
 
@@ -421,15 +412,15 @@
 
 
 
-(defun irc-make-unwind-protect-environment (unwind-form parent-env)
-  (let ((new-env (make-unwind-protect-environment parent-env)))
-    (setf-metadata new-env :unwind-form unwind-form)
+(defun irc-make-unwind-protect-environment (cleanup-code parent-env)
+  (let ((new-env (make-unwind-protect-environment cleanup-code parent-env)))
     new-env))
 
 
 (defun irc-unwind-unwind-protect-environment (env)
-  (let ((unwind-form (local-metadata env :unwind-form))
+  (let ((unwind-form (unwind-protect-environment-cleanup-form env))
 	(unwind-result (irc-alloca-tsp env :label "unwind-result")))
+    (cmp-log "In irc-unwind-unwind-protect-environment with: %s\n" unwind-form)
     (codegen unwind-result unwind-form env)))
 
 
@@ -447,6 +438,7 @@
   )
 
 (defun irc-unwind-environment (env)
+  (cmp-log "in irc-unwind-environment with: %s u-p-e?: %s\n" (type-of env) (unwind-protect-environment-p env))
   (cond
     ((unwind-protect-environment-p env)
      (irc-unwind-unwind-protect-environment env))
