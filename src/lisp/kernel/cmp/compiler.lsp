@@ -985,9 +985,9 @@ jump to blocks within this tagbody."
 
 (defun codegen-unwind-protect (result rest env)
   (with-dbg-lexical-block (env rest)
-    (let* ((up-env (irc-new-unwind-protect-environment env))
-	   (protected-form (car rest))
-	   (unwind-form (cadr rest))
+    (let* ((protected-form (car rest))
+	   (unwind-form `(progn ,@(cdr rest)))
+	   (up-env (irc-make-unwind-protect-environment unwind-form env))
 	   (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
 	   (saved-values (irc-alloca-tsp env :label "unwind-protect-saved-values"))
 	   )
