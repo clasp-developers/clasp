@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #define LCC_UNUSED NULL
+#define LCC_FIXED_ARGS 5
 #define LCC_FROM_SMART_PTR(x) (x.asTPtr())
 // Pass ActivationFrames as T_O*
 #define LCC_FROM_ACTIVATION_FRAME_SMART_PTR(x) (x.asTPtr())

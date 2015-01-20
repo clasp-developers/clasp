@@ -41,7 +41,7 @@
 					     :linkage 'llvm-sys:internal-linkage ;; 'llvm-sys:external-linkage
 					     :function-type +fn-void+
 					     :argument-names nil)
-		   (irc-low-level-trace)
+		   (irc-low-level-trace :up)
 		   (let* ((given-name (llvm-sys:get-name main-fn)))
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeLlvmFunctionVoid for ltv-manager-fn\n")

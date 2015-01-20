@@ -150,10 +150,10 @@ INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::Lexer>);
 typedef clbind::Wrapper<clang::tooling::ArgumentsAdjuster> ArgumentsAdjuster_wrapper;
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ArgumentsAdjuster_wrapper);
 
-typedef clbind::Wrapper<clang::tooling::ClangSyntaxOnlyAdjuster> ClangSyntaxOnlyAdjuster_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangSyntaxOnlyAdjuster_wrapper);
-typedef clbind::Wrapper<clang::tooling::ClangStripOutputAdjuster> ClangStripOutputAdjuster_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangStripOutputAdjuster_wrapper);
+//typedef clbind::Wrapper<clang::tooling::ClangSyntaxOnlyAdjuster> ClangSyntaxOnlyAdjuster_wrapper;
+//INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangSyntaxOnlyAdjuster_wrapper);
+//typedef clbind::Wrapper<clang::tooling::ClangStripOutputAdjuster> ClangStripOutputAdjuster_wrapper;
+//INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangStripOutputAdjuster_wrapper);
 
 
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<asttooling::Diagnostics>);
@@ -520,16 +520,16 @@ namespace asttooling {
             ,derivable_class_<DerivableFrontendActionFactory,clang::tooling::FrontendActionFactory>("FrontendActionFactory")
             .  def("create",&DerivableFrontendActionFactory::default_create)
             ,class_<clang::tooling::ArgumentsAdjuster>("ClangArgumentsAdjuster",no_default_constructor)
-            ,class_<clang::tooling::ClangSyntaxOnlyAdjuster,clang::tooling::ArgumentsAdjuster>("ClangSyntaxOnlyAdjuster")
-            .  def_constructor("makeClangSyntaxOnlyAdjuster",constructor<>())
-            ,class_<clang::tooling::ClangStripOutputAdjuster,clang::tooling::ArgumentsAdjuster>("ClangStripOutputAdjuster")
-            .  def_constructor("makeClangStripOutputAdjuster",constructor<>())
+	    //            ,class_<clang::tooling::ClangSyntaxOnlyAdjuster,clang::tooling::ArgumentsAdjuster>("ClangSyntaxOnlyAdjuster")
+	    //            .  def_constructor("makeClangSyntaxOnlyAdjuster",constructor<>())
+	    //            ,class_<clang::tooling::ClangStripOutputAdjuster,clang::tooling::ArgumentsAdjuster>("ClangStripOutputAdjuster")
+	    //            .  def_constructor("makeClangStripOutputAdjuster",constructor<>())
 
 
 
             // Don't need derivable_class_ ???????
-            ,derivable_class_<DerivableArgumentsAdjuster,clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster")
-            .    def("ArgumentsAdjuster-adjust",&DerivableArgumentsAdjuster::Adjust)
+	    //            ,derivable_class_<DerivableArgumentsAdjuster,clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster")
+	    //            .    def("ArgumentsAdjuster-adjust",&DerivableArgumentsAdjuster::Adjust)
 
 
 

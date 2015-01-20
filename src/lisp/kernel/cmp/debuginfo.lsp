@@ -77,15 +77,15 @@
 	     (llvm-sys:add-module-flag *the-module*
 				       (llvm-sys:mdnode-get cmp:*llvm-context*
 							    (list
-							     (jit-constant-i32 2)
+							     (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
 							     (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
-							     (jit-constant-i32 +debug-dwarf-version+))))
+							     (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
 	     (llvm-sys:add-module-flag *the-module*
 				       (llvm-sys:mdnode-get cmp:*llvm-context*
 							    (list
-							     (jit-constant-i32 2)
+							     (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
 							     (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
-							     (jit-constant-i32 llvm-sys:+debug-metadata-version+)))) ;; Debug Info Version
+							     (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))) ;; Debug Info Version
 	     "This should not be the return value - it should be what is returned in the unwind-protect body"
 	     )))
        (let ((*the-module-dibuilder* nil))

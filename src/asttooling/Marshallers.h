@@ -405,10 +405,10 @@ namespace asttooling {
         class VariadicOperatorMatcherDescriptor : public MatcherDescriptor {
             FRIEND_GC_SCANNER();
         public:
-            typedef clang::ast_matchers::internal::VariadicOperatorFunction VarFunc;
+            typedef clang::ast_matchers::internal::DynTypedMatcher::VariadicOperator VarOp;
             VariadicOperatorMatcherDescriptor(unsigned MinCount, unsigned MaxCount,
-                                              VarFunc Func, core::Symbol_sp MatcherName)
-                : MinCount(MinCount), MaxCount(MaxCount), Func(Func),
+                                              VarOp op, core::Symbol_sp MatcherName)
+                : MinCount(MinCount), MaxCount(MaxCount), Op(op),
                   MatcherName(MatcherName) {}
 
             virtual VariantMatcher create(core::Cons_sp NameRange,
@@ -433,13 +433,13 @@ namespace asttooling {
                     }
                     InnerArgs.push_back(Value.getMatcher());
                 }
-                return VariantMatcher::VariadicOperatorMatcher(Func, InnerArgs);
+                return VariantMatcher::VariadicOperatorMatcher(Op, InnerArgs);
             }
 
         GCPRIVATE:
             const unsigned MinCount;
             const unsigned MaxCount;
-            const VarFunc Func;
+            const VarOp Op;
             const core::Symbol_sp MatcherName;
         };
 
@@ -541,7 +541,7 @@ namespace asttooling {
         makeMatcherAutoMarshall(clang::ast_matchers::internal::VariadicOperatorMatcherFunc<MinCount, MaxCount> Func,
                                 core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
-            return gctools::ClassAllocator<VariadicOperatorMatcherDescriptor>::allocateClass(MinCount,MaxCount, Func.Func,
+            return gctools::ClassAllocator<VariadicOperatorMatcherDescriptor>::allocateClass(MinCount,MaxCount, Func.Op,
                                                                                              MatcherName);
 #else
             return new VariadicOperatorMatcherDescriptor(MinCount,MaxCount, Func.Func,

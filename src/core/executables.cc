@@ -218,7 +218,14 @@ namespace core
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         return this->closure->declares();
     };
-Environment_sp Function_O::closedEnvironment() const{IMPLEMENT_ME();};
+    T_sp Function_O::closedEnvironment() const
+    {
+        ASSERTF(this->closure,BF("The Function closure is NULL"));
+        return this->closure->closedEnvironment;
+    };
+    
+
+    
     T_sp Function_O::functionName() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         return this->closure->name;

@@ -473,6 +473,7 @@ This can only be run in the context set up by the code-match-callback::run metho
      (lsize ,list-name)))
 
 
+#||
 (defclass simple-arguments-adjuster (ast-tooling:arguments-adjuster)
   ((code :accessor simple-arguments-adjuster-code :initarg :code)))
 
@@ -480,7 +481,7 @@ This can only be run in the context set up by the code-match-callback::run metho
   (format t "In arguments-adjuster-adjust self: ~a    args: ~a~%" self args)
   (let ((res (funcall (simple-arguments-adjuster-code self) args)))
     res))
-
+||#
 
 (defun load-asts (list-name &key arguments-adjuster-code )
   (let* ((files list-name)
@@ -491,9 +492,10 @@ This can only be run in the context set up by the code-match-callback::run metho
     (ast-tooling:clear-arguments-adjusters tool)
     (ast-tooling:append-arguments-adjuster tool syntax-only-adjuster)
     (ast-tooling:append-arguments-adjuster tool strip-output-adjuster)
+    (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
     (when arguments-adjuster-code
-      (ast-tooling:append-arguments-adjuster tool (make-instance 'simple-arguments-adjuster :code arguments-adjuster-code)))
-    ;;    (ast-tooling:run tool factory)
+      (ast-tooling:append-arguments-adjuster tool arguments-adjuster-code))
+        ;;    (ast-tooling:run tool factory)
     (format t "Loading ASTs for the files: ~a~%" files)
     (time 
      (multiple-value-bind (num asts)
@@ -514,8 +516,9 @@ This can only be run in the context set up by the code-match-callback::run metho
                  (ast-tooling:clear-arguments-adjusters temp)
                  (ast-tooling:append-arguments-adjuster temp syntax-only-adjuster)
                  (ast-tooling:append-arguments-adjuster temp strip-output-adjuster)
+		 (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
                  (when arguments-adjuster-code
-                   (ast-tooling:append-arguments-adjuster temp (make-instance 'simple-arguments-adjuster :code arguments-adjuster-code)))
+                   (ast-tooling:append-arguments-adjuster temp arguments-adjuster-code))
                  temp))
          (matcher (compile-matcher `(:bind :whole ,match-sexp)))
          (match-finder (let ((mf (new-match-finder)))
@@ -586,8 +589,9 @@ This can only be run in the context set up by the code-match-callback::run metho
                        (ast-tooling:clear-arguments-adjusters temp)
                        (ast-tooling:append-arguments-adjuster temp syntax-only-adjuster)
                        (ast-tooling:append-arguments-adjuster temp strip-output-adjuster)
+		       (warn "The following line may error out - append-arguments-adjuster now takes an llvm::ArgumentsAdjuster which is just a function that takes a vector<string> and returns a vector<string>")
                        (when (multitool-arguments-adjuster mtool)
-                         (ast-tooling:append-arguments-adjuster temp (make-instance 'simple-arguments-adjuster :code (multitool-arguments-adjuster mtool))))
+                         (ast-tooling:append-arguments-adjuster temp (multitool-arguments-adjuster mtool)))
                        temp))
          (tools (multitool-active-tools mtool))
          (match-finder (let ((mf (new-match-finder)))
