@@ -190,10 +190,6 @@
                                               debug-ir
                              &aux conditions)
   "Link a bunch of modules together, return the linked module"
-  (bformat t "link-bitcode-modules      part-pathnames: %s\n" part-pathnames)
-  (bformat t "            additional-bitcode-pathnames: %s\n" additional-bitcode-pathnames)
-  (bformat t "                         prologue-module: %s\n" prologue-module)
-  (bformat t "                         epilogue-module: %s\n" epilogue-module)
   (with-compiler-env (conditions)
     (multiple-value-bind (module function-pass-manager)
         (cmp:create-llvm-module-for-compile-file (pathname-name output-pathname))
@@ -239,8 +235,7 @@
 		  (llvm-sys:link-in-module linker epilogue-module)))
 	    (reset-global-boot-functions-name-size *the-module*)
 	    (add-main-function *the-module*) ;; Here add the main function
-	    (when *debug-generate-prepass-llvm-ir*
-	      (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc"))))
+	      (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc")))
 	    (let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
 	      (format t "Running link time optimization module pass manager~%")
 	      (llvm-sys:pass-manager-run mpm *the-module*))
