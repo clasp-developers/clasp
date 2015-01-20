@@ -563,6 +563,8 @@ namespace core
     public:
 	DEFAULT_CTOR_DTOR(UnwindProtectEnvironment_O);
 
+	virtual bool unwindProtectEnvironmentP() const { return true;};
+
 
 	/*! Lookup a tagbody tag in the lexical environment and return the environment
 	  that defines it return nil if you don't find it*/

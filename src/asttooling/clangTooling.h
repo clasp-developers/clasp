@@ -82,7 +82,7 @@ namespace asttooling
     };
 #endif
 
-
+#if 0
     class DerivableArgumentsAdjuster : public clbind::Derivable<clang::tooling::ArgumentsAdjuster> {
         typedef clang::tooling::ArgumentsAdjuster  Base;
     public:
@@ -97,7 +97,10 @@ namespace asttooling
             return this->Base::Adjust(args);
         }
     };
+#endif
 
+
+    
 
     class DerivableASTFrontendAction : public clbind::Derivable<clang::ASTFrontendAction> {
         typedef clang::ASTFrontendAction      Base;
@@ -247,7 +250,7 @@ namespace asttooling {
 
 
 };
-DERIVABLE_TRANSLATE(asttooling::DerivableArgumentsAdjuster);
+//DERIVABLE_TRANSLATE(asttooling::DerivableArgumentsAdjuster);
 DERIVABLE_TRANSLATE(asttooling::DerivableMatchCallback);
 DERIVABLE_TRANSLATE(asttooling::DerivableASTFrontendAction);
 DERIVABLE_TRANSLATE(asttooling::DerivableSyntaxOnlyAction);

@@ -186,8 +186,8 @@ namespace llvmo
         if (module.nilp() ) {
             SIMPLE_ERROR(BF("Module must be something other than nil"));
         }
-        std::string errorMsg;
-        bool res = linker->wrappedPtr()->linkInModule(module->wrappedPtr(),&errorMsg);
+        std::string errorMsg = "llvm::Linker::linkInModule reported an error";
+        bool res = linker->wrappedPtr()->linkInModule(module->wrappedPtr());
         return Values(_lisp->_boolean(res),core::Str_O::create(errorMsg));
     };
 
@@ -900,6 +900,29 @@ namespace llvmo
 namespace llvmo
 {
 }
+
+
+
+
+
+
+
+namespace llvmo
+{
+    EXPOSE_CLASS(llvmo,Metadata_O);
+
+    void Metadata_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<Metadata_O>()
+	    .def("dump", &llvm::Metadata::dump)
+	    ;
+    };
+
+    void Metadata_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+}; // llvmo
 
 
 namespace llvmo
@@ -1711,26 +1734,26 @@ namespace llvmo
 
 namespace llvmo
 {
-    EXPOSE_CLASS(llvmo,TargetLibraryInfo_O);
+    EXPOSE_CLASS(llvmo,TargetLibraryInfoWrapperPass_O);
 
-#define ARGS_TargetLibraryInfo_O_make "(module)"
-#define DECL_TargetLibraryInfo_O_make ""
-#define DOCS_TargetLibraryInfo_O_make ""
-    TargetLibraryInfo_sp TargetLibraryInfo_O::make()
+#define ARGS_TargetLibraryInfoWrapperPass_O_make "(triple)"
+#define DECL_TargetLibraryInfoWrapperPass_O_make ""
+#define DOCS_TargetLibraryInfoWrapperPass_O_make ""
+    TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(llvm::Triple* tripleP)
     {_G();
-        GC_ALLOCATE(TargetLibraryInfo_O,self );
-	self->_ptr = new llvm::TargetLibraryInfo();
+        GC_ALLOCATE(TargetLibraryInfoWrapperPass_O,self );
+	self->_ptr = new llvm::TargetLibraryInfoWrapperPass(*tripleP);
 	return self;
     };
 
-    void TargetLibraryInfo_O::exposeCando(core::Lisp_sp lisp)
+    void TargetLibraryInfoWrapperPass_O::exposeCando(core::Lisp_sp lisp)
     {_G();
-	core::externalClass_<TargetLibraryInfo_O>()
+	core::externalClass_<TargetLibraryInfoWrapperPass_O>()
 	    ;
-        core::af_def(LlvmoPkg,"makeTargetLibraryInfo",&TargetLibraryInfo_O::make,ARGS_TargetLibraryInfo_O_make,DECL_TargetLibraryInfo_O_make,DOCS_TargetLibraryInfo_O_make);
+        core::af_def(LlvmoPkg,"makeTargetLibraryInfoWrapperPass",&TargetLibraryInfoWrapperPass_O::make,ARGS_TargetLibraryInfoWrapperPass_O_make,DECL_TargetLibraryInfoWrapperPass_O_make,DOCS_TargetLibraryInfoWrapperPass_O_make);
     };
 
-    void TargetLibraryInfo_O::exposePython(core::Lisp_sp lisp)
+    void TargetLibraryInfoWrapperPass_O::exposePython(core::Lisp_sp lisp)
     {_G();
 	IMPLEMENT_ME();
     };
@@ -3607,10 +3630,10 @@ namespace llvmo
 
     MDNode_sp MDNode_O::get(LLVMContext_sp context, core::Cons_sp values)
     {_G();
-	vector<llvm::Value*> valvec;
+	vector<llvm::Metadata*> valvec;
 	for ( core::Cons_sp cur=values;cur.notnilp(); cur=cCdr(cur) )
 	{
-	    llvm::Value* val = oCar(cur).as<Value_O>()->wrappedPtr();
+	    llvm::Metadata* val = oCar(cur).as<Metadata_O>()->wrappedPtr();
 	    valvec.push_back(val);
 	}
 	llvm::MDNode* mdnode = llvm::MDNode::get(*context->wrappedPtr(),valvec);
@@ -3665,6 +3688,40 @@ namespace llvmo
     };
 
     void MDString_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+}; // llvmo
+namespace llvmo
+{
+}
+
+
+
+
+namespace llvmo
+{
+
+    ValueAsMetadata_sp ValueAsMetadata_O::get(Value_sp val)
+    {_G();
+	llvm::ValueAsMetadata* mdstr = llvm::ValueAsMetadata::get(val->wrappedPtr());
+	ValueAsMetadata_sp omd = core::RP_Create_wrapped<llvmo::ValueAsMetadata_O,llvm::ValueAsMetadata*>(mdstr);
+	return omd;
+    }
+
+
+
+    EXPOSE_CLASS(llvmo,ValueAsMetadata_O);
+
+    void ValueAsMetadata_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<ValueAsMetadata_O>()
+	    ;
+	SYMBOL_EXPORT_SC_(LlvmoPkg,ValueAsMetadataGet);
+	core::af_def(LlvmoPkg,"ValueAsMetadataGet",&ValueAsMetadata_O::get);
+    };
+
+    void ValueAsMetadata_O::exposePython(core::Lisp_sp lisp)
     {_G();
 	IMPLEMENT_ME();
     };

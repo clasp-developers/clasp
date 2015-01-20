@@ -443,14 +443,16 @@ namespace llvmo
     {_G();
 //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
 //		printf("     cons --> %s\n", cur->__repr__().c_str() );
-	vector<llvm::Value*> vector_values;
+	vector<llvm::Metadata*> vector_values;
 	for ( core::Cons_sp cur = elements; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    if ( Value_sp val = oCar(cur).asOrNull<Value_O>() )
 	    {
-//			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
-		vector_values.push_back(val->wrappedPtr());
-	    } else if ( DebugInfo_sp di = oCar(cur).asOrNull<DebugInfo_O>() )
+		//			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
+		llvm::ValueAsMetadata* vd = llvm::ValueAsMetadata::get(val->wrappedPtr());
+		vector_values.push_back(vd); // val->wrappedPtr());
+	    } else
+		if ( DebugInfo_sp di = oCar(cur).asOrNull<DebugInfo_O>() )
 	    {
 //			printf("      getting DIDescriptor*\n");
 		llvm::DIDescriptor* didescriptor = di->operator llvm::DIDescriptor*();
@@ -463,7 +465,7 @@ namespace llvmo
 		SIMPLE_ERROR(BF("Handle conversion of %s to llvm::Value*") % _rep_(oCar(cur)) );
 	    }
 	}
-	llvm::ArrayRef<llvm::Value*> array(vector_values);
+	llvm::ArrayRef<llvm::Metadata*> array(vector_values);
 	llvm::DIArray diarray = this->wrappedPtr()->getOrCreateArray(array);
         GC_ALLOCATE_VARIADIC(llvmo::DIArray_O,obj,diarray);
 	return obj;
@@ -475,13 +477,15 @@ namespace llvmo
     {_G();
 //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
 //		printf("     cons --> %s\n", cur->__repr__().c_str() );
-	vector<llvm::Value*> vector_values;
+	vector<llvm::Metadata*> vector_values;
 	for ( core::Cons_sp cur = elements; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    if ( Value_sp val = oCar(cur).asOrNull<Value_O>() )
 	    {
 //			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
-		vector_values.push_back(val->wrappedPtr());
+		llvm::ValueAsMetadata* vd = llvm::ValueAsMetadata::get(val->wrappedPtr());
+		vector_values.push_back(vd); // val->wrappedPtr());
+		//vector_values.push_back(val->wrappedPtr());
 	    } else if ( DebugInfo_sp di = oCar(cur).asOrNull<DebugInfo_O>() )
 	    {
 //			printf("      getting DIDescriptor*\n");
@@ -495,7 +499,7 @@ namespace llvmo
 		SIMPLE_ERROR(BF("Handle conversion of %s to llvm::Value*") % _rep_(oCar(cur)) );
 	    }
 	}
-	llvm::ArrayRef<llvm::Value*> array(vector_values);
+	llvm::ArrayRef<llvm::Metadata*> array(vector_values);
 	llvm::DITypeArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
         GC_ALLOCATE_VARIADIC(llvmo::DITypeArray_O,obj,diarray);
 	return obj;

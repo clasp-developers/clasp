@@ -1732,7 +1732,12 @@ namespace core
 #include "applyToActivationFrame.h"
 #undef APPLY_TO_ACTIVATION_FRAME
             default:
-                SIMPLE_ERROR(BF("Add support for applyClosureToActivationFrame for %d arguments") % nargs);
+		MultipleValues* _mvP = _lisp->callArgs();
+		for ( size_t i(LCC_FIXED_ARGS); i<nargs; ++i ) {
+		    (*_mvP)[i] = a[i];
+		}
+		(*func)(&result,nargs , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) , LCC_FROM_SMART_PTR(a[3]) , LCC_FROM_SMART_PTR(a[4])    );
+		return result;
             };
         }
 
@@ -1747,7 +1752,12 @@ namespace core
 #include "applyToActivationFrame.h"
 #undef APPLY_TO_TAGGED_FRAME
             default:
-                SIMPLE_ERROR(BF("Add support for applyClosureToStackFrame for %d arguments") % nargs);
+		MultipleValues* _mvP = _lisp->callArgs();
+		for ( size_t i(LCC_FIXED_ARGS); i<nargs; ++i ) {
+		    (*_mvP)[i] = a[i];
+		}
+		(*func)(&result,nargs,a[0],a[1],a[2],a[3],a[4]);
+		return result;
             };
         }
 
@@ -1962,11 +1972,7 @@ namespace core
 
 	T_mv evaluate_specialForm( SpecialForm_sp specialForm, Cons_sp form, T_sp environment )
 	{
-//		    LOG(BF("Evaluating specialForm non-atom: %s")% specialForm->__repr__() );
-	    T_mv result;
-            result = specialForm->evaluate(cCdr(form),environment);
-	    ASSERTNOTNULL(result);
-	    return(result);
+	    return specialForm->evaluate(cCdr(form),environment);
 	}
 
 
@@ -2227,8 +2233,7 @@ namespace core
 	    EvaluateDepthUpdater evaluateDepthUpdater;
 	    if ( _evaluateVerbosity>0 )
 	    {
-		string ts = _rep_(exp);
-		printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, ts.c_str());
+		printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
 	    }
 	    if ( exp.nilp() ) 
 	    {

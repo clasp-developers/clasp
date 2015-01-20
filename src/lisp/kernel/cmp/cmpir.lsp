@@ -430,7 +430,8 @@
 (defun irc-unwind-unwind-protect-environment (env)
   (let ((unwind-form (local-metadata env :unwind-form))
 	(unwind-result (irc-alloca-tsp env :label "unwind-result")))
-    (codegen unwind-result unwind-form env)))
+    (codegen unwind-result unwind-form env)
+    ))
 
 
 (defun irc-do-unwind-environment (env)

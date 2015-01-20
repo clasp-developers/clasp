@@ -1,4 +1,4 @@
-$var MaxArgs = 64
+$var MaxArgs = 5
 $var FixedArgs = 5
 $range Case_ 0..MaxArgs-1
 #ifdef APPLY_TO_ACTIVATION_FRAME

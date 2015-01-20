@@ -128,7 +128,7 @@ namespace core {
         LambdaListHandler_sp functionLambdaListHandler() const;
 	/*! Return (values lambda-list foundp) */
 	T_mv lambdaList();
-        Environment_sp closedEnvironment() const;
+        T_sp closedEnvironment() const;
 	Cons_sp functionDeclares() const;
         T_sp functionName() const;
         T_mv functionSourcePos() const;
