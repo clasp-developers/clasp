@@ -420,13 +420,8 @@
 (defun irc-unwind-unwind-protect-environment (env)
   (let ((unwind-form (unwind-protect-environment-cleanup-form env))
 	(unwind-result (irc-alloca-tsp env :label "unwind-result")))
-<<<<<<< HEAD
-    (cmp-log "In irc-unwind-unwind-protect-environment with: %s\n" unwind-form)
-    (codegen unwind-result unwind-form env)))
-=======
     (codegen unwind-result unwind-form env)
     ))
->>>>>>> testing
 
 
 (defun irc-do-unwind-environment (env)

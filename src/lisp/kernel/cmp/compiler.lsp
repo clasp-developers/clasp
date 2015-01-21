@@ -789,7 +789,11 @@ jump to blocks within this tagbody."
       (let* ((block-env (irc-new-block-environment env :name block-symbol))
              traceid)
 	(let ((block-start (irc-basic-block-create
-			    (bformat nil "block-%s-start" (symbol-name block-symbol)))))
+			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
+	      (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
+	      (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol))))
+	      )
+	  (setf-metadata block-env :local-return-block local-return-block)
 	  (irc-br block-start)
 	  (irc-begin-block block-start)
           (let* ((frame (irc-intrinsic "pushBlockFrame" (irc-global-symbol block-symbol block-env))))
@@ -801,9 +805,14 @@ jump to blocks within this tagbody."
                (trace-exit-block-scope block-env traceid)
                (irc-unwind-environment block-env))
               ((typeid-core-return-from exception-ptr)
-               (irc-intrinsic "blockHandleReturnFrom" result exception-ptr frame))
-              )
-            (irc-intrinsic "exceptionStackUnwind" frame)))))))
+               (irc-intrinsic "blockHandleReturnFrom" result exception-ptr frame)))
+	    (irc-br after-return-block)
+	    (irc-begin-block local-return-block)
+	    (irc-intrinsic "restoreFromMultipleValue0" result)
+	    (irc-br after-return-block)
+	    (irc-begin-block after-return-block)
+            (irc-intrinsic "exceptionStackUnwind" frame)
+	    ))))))
 
 
 
@@ -817,11 +826,23 @@ jump to blocks within this tagbody."
     (multiple-value-bind (recognizes-block-symbol inter-function block-env)
 	(classify-return-from-symbol env block-symbol)
       (if recognizes-block-symbol
-	  (progn
-	    (codegen temp-mv-result return-form env)
-	    (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-	    (irc-low-level-trace)
-	    (irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
+	  (if inter-function
+	      (progn
+		(codegen temp-mv-result return-form env)
+		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+		(irc-low-level-trace)
+		(irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
+	      (let* ((local-return-block (lookup-metadata block-env :local-return-block))
+		     (saved-values (irc-alloca-tsp env :label "return-from-unwind-saved-values")))
+		(warn "codegen-return-from - local-return-from to local-return-block")
+		(codegen temp-mv-result return-form env)
+		(irc-intrinsic "saveValues" saved-values temp-mv-result) ;; moved saveValues here
+		(irc-unwind-into-environment env block-env)
+		(irc-intrinsic "loadValues" temp-mv-result saved-values)
+		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+		(irc-br local-return-block)
+		(irc-begin-block (irc-basic-block-create "after-return-from"))
+		))
 	  (error "Unrecognized block symbol ~a" block-symbol)))))
 
 
@@ -1001,12 +1022,9 @@ jump to blocks within this tagbody."
 	((cleanup)
          (irc-intrinsic "saveValues" saved-values temp-mv-result) ;; moved saveValues here
 	 (irc-unwind-environment up-env)
-	 #+(or)(let ((temp-val (irc-alloca-tsp up-env :label "temp")))
-		 (codegen temp-val unwind-form up-env))
 	 (irc-intrinsic "loadValues" temp-mv-result saved-values)
 	 (irc-intrinsic "copyTmvOrSlice" result temp-mv-result)
-	 #+(or)(irc-unwind-environment up-env))
-	)
+	 ))
       )))
 
 

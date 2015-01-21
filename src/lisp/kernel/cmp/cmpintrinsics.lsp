@@ -559,6 +559,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
 
   (primitive-does-not-throw module "saveToMultipleValue0" +void+ (list +tmv*+))
+  (primitive-does-not-throw module "restoreFromMultipleValue0" +void+ (list +tsp*-or-tmv*+ ))
   (primitive-does-not-throw module "saveValues" +void+ (list +tsp*+ +tmv*+))
   (primitive-does-not-throw module "loadValues" +void+ (list +tmv*+ +tsp*+))
 

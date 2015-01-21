@@ -50,6 +50,16 @@ namespace core
 {
 
 
+#define ARGS_core_classifyReturnFromSymbol "(env sym)"
+#define DECL_core_classifyReturnFromSymbol ""
+#define DOCS_core_classifyReturnFromSymbol "classifyReturnFromSymbol"
+    T_mv core_classifyReturnFromSymbol(T_sp env, Symbol_sp sym)
+    {
+	bool interFunction = false;
+	return Environment_O::clasp_recognizesBlockSymbol(env,sym,interFunction);
+    }
+
+
 
 
 #define ARGS_core_environmentLength "(frame)"
@@ -702,16 +712,6 @@ namespace core
     T_sp Environment_O::clasp_find_current_code_environment(T_sp env) {
 	IMPLEMENT_ME();
     }
-
-#define ARGS_core_classifyReturnFromSymbol "(env sym)"
-#define DECL_core_classifyReturnFromSymbol ""
-#define DOCS_core_classifyReturnFromSymbol "classifyReturnFromSymbol"
-    T_mv core_classifyReturnFromSymbol(T_sp env, Symbol_sp sym)
-    {
-	bool interFunction = false;
-	return clasp_recognizesBlockSymbol(env,sym,interFunction);
-    }
-
 
     T_mv Environment_O::clasp_recognizesBlockSymbol(T_sp env,Symbol_sp sym, bool& interFunction)
     {

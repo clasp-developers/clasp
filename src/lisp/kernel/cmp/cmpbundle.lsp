@@ -235,7 +235,8 @@
 		  (llvm-sys:link-in-module linker epilogue-module)))
 	    (reset-global-boot-functions-name-size *the-module*)
 	    (add-main-function *the-module*) ;; Here add the main function
-	      (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc")))
+	    (when *debug-generate-prepass-llvm-ir*
+	      (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc"))))
 	    (let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
 	      (format t "Running link time optimization module pass manager~%")
 	      (llvm-sys:pass-manager-run mpm *the-module*))

@@ -1752,6 +1752,19 @@ extern "C"
     }
 
 
+    void sp_restoreFromMultipleValue0( core::T_sp* resultP )
+    {
+	MultipleValues* mv = lisp_multipleValues();
+	(*resultP) = (*mv)[0];
+    }
+
+    void mv_restoreFromMultipleValue0( core::T_mv* resultP)
+    {
+	MultipleValues* mv = lisp_multipleValues();
+	(*resultP) = core::T_mv((*mv)[0],mv->getSize());
+    }
+
+
 /*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
     extern void saveValues(core::T_sp* resultP, core::T_mv* mvP)
     {_G();

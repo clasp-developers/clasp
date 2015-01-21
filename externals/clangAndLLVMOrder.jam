@@ -1,4 +1,4 @@
-# clangOrder = ['clangBasic', 'clangLex', 'clangAST', 'clangEdit', 'clangAnalysis', 'clangRewriteCore', 'clangRewriteFrontend', 'clangARCMigrate', 'clangStaticAnalyzerCore', 'clangStaticAnalyzerCheckers', 'clangStaticAnalyzerFrontend', 'clangSema', 'clangParse', 'clangCodeGen', 'clangSerialization', 'clangDriver', 'clangFrontend', 'clangFrontendTool', 'clangToolingCore', 'clangTooling', 'clangDynamicASTMatchers', 'clangASTMatchers']
+# clangOrder = ['clangBasic', 'clangLex', 'clangAST', 'clangEdit', 'clangAnalysis', 'clangRewriteCore', 'clangRewriteFrontend', 'clangARCMigrate', 'clangStaticAnalyzerCore', 'clangStaticAnalyzerCheckers', 'clangStaticAnalyzerFrontend', 'clangSema', 'clangParse', 'clangCodeGen', 'clangSerialization', 'clangDriver', 'clangFrontend', 'clangFrontendTool', 'clangToolingCore', 'clangTooling', 'clangDynamicASTMatchers']
 lib libclangBasic : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangBasic <variant>release <link>static ;
 lib libclangBasic : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangBasic <variant>debug <link>static ;
 lib libclangLex : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangLex <variant>release <link>static ;
