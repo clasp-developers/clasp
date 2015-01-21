@@ -420,7 +420,8 @@
 (defun irc-unwind-unwind-protect-environment (env)
   (let ((unwind-form (unwind-protect-environment-cleanup-form env))
 	(unwind-result (irc-alloca-tsp env :label "unwind-result")))
-    (codegen unwind-result unwind-form env)
+    ;; Generate the unwind-form code in the parent environment of the unwind-protect form
+    (codegen unwind-result unwind-form (get-parent-environment env))
     ))
 
 

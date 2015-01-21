@@ -834,7 +834,6 @@ jump to blocks within this tagbody."
 		(irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
 	      (let* ((local-return-block (lookup-metadata block-env :local-return-block))
 		     (saved-values (irc-alloca-tsp env :label "return-from-unwind-saved-values")))
-		(warn "codegen-return-from - local-return-from to local-return-block")
 		(codegen temp-mv-result return-form env)
 		(irc-intrinsic "saveValues" saved-values temp-mv-result) ;; moved saveValues here
 		(irc-unwind-into-environment env block-env)
