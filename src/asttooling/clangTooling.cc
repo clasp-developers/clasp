@@ -94,7 +94,13 @@ namespace translate {
 			_v.push_back(s->get());
 		    }
 		    return;
-		}
+		} else if ( core::Vector_sp vargs = o.asOrNull<core::Vector_O>() ) {
+                    _v.clear();
+                    for ( int i(0), iEnd(vargs->length()); i<iEnd; ++i ) {
+                        core::Str_sp s = (*vargs)[i].as<core::Str_O>();
+                        _v.push_back(s);
+                    }
+                    return;
 	    }
 	    SIMPLE_ERROR(BF("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") % _rep_(o) );
 	}
