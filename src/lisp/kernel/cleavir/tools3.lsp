@@ -1,5 +1,5 @@
 (print "Hello")
-(require :asdf "sys:kernel;asdf;build;asdf.bundle")
+(require :asdf)
 
 (asdf:load-system :cleavir-generate-ast)
 (asdf:load-system :cleavir-ast-to-hir)

@@ -59,6 +59,7 @@ THE SOFTWARE.
 #include <core/arguments.h>
 #include "clbind/clbind.h"
 #include "llvmo/translators.h"
+#include "llvmo/llvmoExpose.h"
 #include <asttooling/astExpose.h>
 #include <asttooling/asttoolingPackage.h>
 #include <asttooling/translators.h>
@@ -78,6 +79,71 @@ THE SOFTWARE.
 
 
 
+namespace translate {
+
+    template <>
+    struct from_object<clang::tooling::CommandLineArguments> {
+        typedef clang::tooling::CommandLineArguments DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+	    if ( o.notnilp() ) {
+		if ( core::Cons_sp args = o.asOrNull<core::Cons_O>() ) {
+		    _v.clear();
+		    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) ) {
+			core::Str_sp s = oCar(cur).as<core::Str_O>();
+			_v.push_back(s->get());
+		    }
+		    return;
+		}
+	    }
+	    SIMPLE_ERROR(BF("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") % _rep_(o) );
+	}
+    };
+#if 0
+    template <>
+    struct to_object<clang::tooling::ArgumentsAdjuster> {
+	typedef clang::tooling::ArgumentsAdjuster GivenType;
+	static core::T_sp convert(const GivenType& aa)
+	{
+	    IMPLEMENT_MEF(BF("implement to_object for clang::tooling::ArgumentsAdjuster"));
+	}
+    };
+#endif
+    template <>
+    struct from_object<clang::tooling::ArgumentsAdjuster> {
+        typedef clang::tooling::ArgumentsAdjuster DeclareType;
+	//	clang::tooling::CommandLineArguments(const clang::tooling::CommandLineArguments&)> DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+	    printf("%s:%d Entered from_object<clang::tooling::ArgumentsAdjuster>\n", __FILE__, __LINE__ );
+	    if ( o.nilp() ) {
+		SIMPLE_ERROR(BF("You cannot pass nil as a function"));
+	    } else if ( core::Function_sp func = o.asOrNull<core::Function_O>() ) {
+		core::Closure* closure = func->closure;
+		if ( llvmo::CompiledClosure* compiledClosure = dynamic_cast<llvmo::CompiledClosure*>(closure) ) {
+		    llvmo::CompiledClosure::fptr_type fptr = compiledClosure->fptr;
+		    this->_v = [fptr] (const clang::tooling::CommandLineArguments& args)->clang::tooling::CommandLineArguments {
+			core::T_sp targs = translate::to_object<const clang::tooling::CommandLineArguments&>::convert(args);
+			core::T_mv result;
+			// Call the fptr
+			fptr(&result,_Nil<core::T_O>().asTPtr(),1,targs.asTPtr(),NULL,NULL,NULL,NULL);
+			translate::from_object<clang::tooling::CommandLineArguments> cresult(result);
+			return cresult._v;
+			// Convert args to CL object
+			// Call fptr
+			// Convert result to CommandLineArguments and return them
+		    };
+		    return;
+		}
+	    } else if ( clang::tooling::ArgumentsAdjuster* argAdj = o.as<core::WrappedPointer_O>()->cast<clang::tooling::ArgumentsAdjuster>() ) {
+		this->_v = *argAdj;
+		return;
+	    }
+	    SIMPLE_ERROR(BF("Cannot convert %s into a clang::tooling::ArgumentsAdjuster") % _rep_(o) );
+	}
+    };
+
+};
 
 namespace asttooling {
 
@@ -519,13 +585,9 @@ namespace asttooling {
             ,def("newFrontendActionFactory",&af_newFrontendActionFactory)
             ,derivable_class_<DerivableFrontendActionFactory,clang::tooling::FrontendActionFactory>("FrontendActionFactory")
             .  def("create",&DerivableFrontendActionFactory::default_create)
-            ,class_<clang::tooling::ArgumentsAdjuster>("ClangArgumentsAdjuster",no_default_constructor)
-	    //            ,class_<clang::tooling::ClangSyntaxOnlyAdjuster,clang::tooling::ArgumentsAdjuster>("ClangSyntaxOnlyAdjuster")
-	    //            .  def_constructor("makeClangSyntaxOnlyAdjuster",constructor<>())
-	    //            ,class_<clang::tooling::ClangStripOutputAdjuster,clang::tooling::ArgumentsAdjuster>("ClangStripOutputAdjuster")
-	    //            .  def_constructor("makeClangStripOutputAdjuster",constructor<>())
-
-
+	    ,class_<clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster",no_default_constructor)
+	    ,def("getClangSyntaxOnlyAdjuster",&clang::tooling::getClangSyntaxOnlyAdjuster)
+	    ,def("getClangStripOutputAdjuster",&clang::tooling::getClangStripOutputAdjuster)
 
             // Don't need derivable_class_ ???????
 	    //            ,derivable_class_<DerivableArgumentsAdjuster,clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster")

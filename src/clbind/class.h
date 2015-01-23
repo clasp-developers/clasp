@@ -1069,15 +1069,15 @@ namespace clbind
                 new registration_type(name, g, get_policies, s, set_policies));
             return *this;
         }
-
+#endif // meister disabled
         template <class C, class D>
         class_& def_readonly(const char* name, D C::*mem_ptr)
         {
-            typedef detail::property_registration<T, D C::*, null_type>
+            typedef detail::property_registration<T, D C::*, detail::null_type>
                 registration_type;
 
             this->add_member(
-                new registration_type(name, mem_ptr, null_type()));
+			     new registration_type(name, mem_ptr, detail::null_type()));
             return *this;
         }
 
@@ -1096,12 +1096,12 @@ namespace clbind
         class_& def_readwrite(const char* name, D C::*mem_ptr)
         {
             typedef detail::property_registration<
-                T, D C::*, null_type, D C::*
+                T, D C::*, detail::null_type, D C::*
                 > registration_type;
 
             this->add_member(
                 new registration_type(
-                    name, mem_ptr, null_type(), mem_ptr));
+				      name, mem_ptr, detail::null_type(), mem_ptr));
             return *this;
         }
 
@@ -1152,11 +1152,11 @@ namespace clbind
         {
             return this->def(
                 Derived::name()
-                , &Derived::template apply<T, null_type>::execute
+                , &Derived::template apply<T, detail::null_type>::execute
                 );
         }
 
-#endif // end_meister_disabled		
+	//#endif // end_meister_disabled		
 
 
         template <typename EnumType>
