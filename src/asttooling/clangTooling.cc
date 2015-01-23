@@ -98,23 +98,46 @@ namespace translate {
                     _v.clear();
                     for ( int i(0), iEnd(vargs->length()); i<iEnd; ++i ) {
                         core::Str_sp s = (*vargs)[i].as<core::Str_O>();
-                        _v.push_back(s);
+                        _v.push_back(s->get());
                     }
                     return;
+		}
 	    }
 	    SIMPLE_ERROR(BF("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") % _rep_(o) );
 	}
     };
+
+
 #if 0
-    template <>
-    struct to_object<clang::tooling::ArgumentsAdjuster> {
-	typedef clang::tooling::ArgumentsAdjuster GivenType;
-	static core::T_sp convert(const GivenType& aa)
-	{
-	    IMPLEMENT_MEF(BF("implement to_object for clang::tooling::ArgumentsAdjuster"));
+    // This is not necessary because CommandLineArguments are just vector<string>
+        template <>
+    struct from_object<const clang::tooling::CommandLineArguments&> {
+        typedef clang::tooling::CommandLineArguments DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+	    if ( o.notnilp() ) {
+		if ( core::Cons_sp args = o.asOrNull<core::Cons_O>() ) {
+		    _v.clear();
+		    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) ) {
+			core::Str_sp s = oCar(cur).as<core::Str_O>();
+			_v.push_back(s->get());
+		    }
+		    return;
+		} else if ( core::Vector_sp vargs = o.asOrNull<core::Vector_O>() ) {
+                    _v.clear();
+                    for ( int i(0), iEnd(vargs->length()); i<iEnd; ++i ) {
+                        core::Str_sp s = (*vargs)[i].as<core::Str_O>();
+                        _v.push_back(s->get());
+                    }
+                    return;
+		}
+	    }
+	    SIMPLE_ERROR(BF("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") % _rep_(o) );
 	}
     };
 #endif
+
+
     template <>
     struct from_object<clang::tooling::ArgumentsAdjuster> {
         typedef clang::tooling::ArgumentsAdjuster DeclareType;
@@ -129,11 +152,13 @@ namespace translate {
 		if ( llvmo::CompiledClosure* compiledClosure = dynamic_cast<llvmo::CompiledClosure*>(closure) ) {
 		    llvmo::CompiledClosure::fptr_type fptr = compiledClosure->fptr;
 		    this->_v = [fptr] (const clang::tooling::CommandLineArguments& args)->clang::tooling::CommandLineArguments {
-			core::T_sp targs = translate::to_object<const clang::tooling::CommandLineArguments&>::convert(args);
+			// Should resolve to vector<string>
+			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
 			core::T_mv result;
 			// Call the fptr
 			fptr(&result,_Nil<core::T_O>().asTPtr(),1,targs.asTPtr(),NULL,NULL,NULL,NULL);
-			translate::from_object<clang::tooling::CommandLineArguments> cresult(result);
+			// Should resolve to const vector<string>& 
+			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
 			return cresult._v;
 			// Convert args to CL object
 			// Call fptr
