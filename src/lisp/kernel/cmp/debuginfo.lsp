@@ -235,8 +235,10 @@
             (progn
               (cmp-log "dbg-set-current-source-pos IGNORING\n")
               nil)
-            (let ((debugloc (llvm-sys:debug-loc-get line-number column *dbg-current-scope*)))
-              (llvm-sys:set-current-debug-location *irbuilder* debugloc))))
+            #+(or)(let ((debugloc (llvm-sys:debug-loc-get line-number column *dbg-current-scope*)))
+		    (llvm-sys:set-current-debug-location *irbuilder* debugloc))
+	    (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
+	    ))
       (values source-dir source-file line-number column))))
 
     
@@ -253,8 +255,10 @@
     (unless scope
       (setq scope (mdnode-file-descriptor filename pathname))
       (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
-    (let ((debugloc (llvm-sys:debug-loc-get lineno column scope)))
-      (llvm-sys:set-current-debug-location *irbuilder* debugloc))))
+    #+(or)(let ((debugloc (llvm-sys:debug-loc-get lineno column scope)))
+	    (llvm-sys:set-current-debug-location *irbuilder* debugloc))
+    (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)
+    ))
 
 
 (defvar *current-file-metadata-node* nil

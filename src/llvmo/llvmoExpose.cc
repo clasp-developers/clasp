@@ -76,6 +76,7 @@ THE SOFTWARE.
 #include "core/str.h"
 #include "core/vectorObjectsWithFillPtr.h"
 #include "main/gc_interface.fwd.h"
+#include "llvmo/debugInfoExpose.h"
 #include "llvmoExpose.h"
 #include "core/lightProfiler.h"
 #include "insertPoint.h"
@@ -3242,6 +3243,7 @@ namespace llvmo
 	    .def("restoreIP",&IRBuilderBase_O::restoreIP)
 	    .def("saveIP",&IRBuilderBase_O::saveIP)
 	    .def("SetCurrentDebugLocation",&IRBuilderBase_O::SetCurrentDebugLocation)
+	    .def("SetCurrentDebugLocationToLineColumnScope",&IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope)
 	    ;
     };
 
@@ -3274,6 +3276,14 @@ namespace llvmo
 	this->wrappedPtr()->SetCurrentDebugLocation(dl);
 //	llvm::DebugLoc dlnew = this->wrappedPtr()->getCurrentDebugLocation();
 //	printf("                       new DebugLocation: %d\n", dlnew.getLine() );
+    }
+
+    void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope)
+    {_G();
+	llvm::DIDescriptor* didescriptor = scope->operator llvm::DIDescriptor* ();
+	llvm::MDNode* mdnode = didescriptor->operator llvm::MDNode* ();
+	llvm::DebugLoc dl = llvm::DebugLoc::get(line,col,mdnode);
+	this->wrappedPtr()->SetCurrentDebugLocation(dl);
     }
 
 }; // llvmo

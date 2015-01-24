@@ -68,6 +68,7 @@ THE SOFTWARE.
 #include "core/lispVector.h"
 #include "llvmoExpose.fwd.h"
 #include "llvmo/symbolTable.h"
+#include "llvmo/debugInfoExpose.fwd.h"
 #include "core/loadTimeValues.fwd.h"
 #include "core/vectorObjectsWithFillPtr.fwd.h"
 #include "translators.h"
@@ -2508,6 +2509,9 @@ namespace llvmo
 
 	/*! Set the current debug location for generated code */
 	void SetCurrentDebugLocation(DebugLoc_sp loc);
+	/*! Set the current debug location by building a DebugLoc on the fly */
+	void SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope);
+
 
     }; // IRBuilderBase_O
 }; // llvmo
