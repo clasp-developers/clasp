@@ -4,7 +4,7 @@
 
 (defconstant +resource-dir+ 
   #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0"
-  #+target-os-linux "/home/meister/local/externals-clasp/release/bin/../lib/clang/3.6.0"
+  #+target-os-linux "/home/meister/local/externals-clasp/release/bin/../lib/clang/3.7.0"
   "Define the -resource-dir command line option for Clang compiler runs"
 )
 (defconstant +additional-arguments+
