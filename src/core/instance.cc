@@ -42,7 +42,11 @@ namespace core
 
 
 
-
+    T_sp InstanceClosure::lambdaList() const
+    {
+	printf("%s:%d InstanceClosure::lambdaList returning NIL\n", __FILE__, __LINE__);
+	return _Nil<T_O>();
+    }
 
 
     void InstanceClosure::LISP_CALLING_CONVENTION()
@@ -55,34 +59,13 @@ namespace core
         T_sp* args = &fargs[0];
 #else
 //        core::T_O* args = (T_O*)alloca(sizeof(T_O)*lcc_nargs);
-        core::T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
+//        core::T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
 #endif
-        switch (lcc_nargs)
-        {
-        case 0:
-            break;
-        case 1:
-            args[0] = lcc_fixed_arg0;
-            break;
-        case 2:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            break;
-        case 3:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            args[2] = lcc_fixed_arg2;
-            break;
-        default:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            args[2] = lcc_fixed_arg2;
-            for ( size_t it=3; it<lcc_nargs; ++it ) {
-                args[it] = va_arg(lcc_arglist,T_O*);
-            }
-            break;
-        }
-        (*lcc_resultP) = (this->entryPoint)(this->instance,lcc_nargs,args);
+	// Copy the arguments passed in registers into the multiple_values array and those
+	// will be processed by the generic function
+	MultipleValues* mv;
+	LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(mv);
+        (*lcc_resultP) = (this->entryPoint)(this->instance);
     }
 
 
@@ -332,7 +315,7 @@ namespace core
 		if ( obj )
 		{
 		    stringstream sslot;
-		    if ( af_consP(obj) )
+		    if ( cl_consp(obj) )
 		    {
 			sslot << "CONS...";
 			ss << sslot.str() << std::endl;
@@ -474,13 +457,23 @@ namespace core
         if ( Instance_sp iobj = obj.asOrNull<Instance_O>() ) {
             if ( this->_Class != iobj->_Class ) return false;
             for ( int i(0), iEnd(this->_Slots.size()); i<iEnd; ++i ) {
-                if ( !af_equalp(this->_Slots[i],iobj->_Slots[i]) ) {
+		if ( !cl_equalp(this->_Slots[i],iobj->_Slots[i]) ) {
                     return false;
                 }
             }
             return true;
         }
         return false;
+    }
+
+
+    void Instance_O::sxhash(HashGenerator& hg) const
+    {
+	if ( hg.isFilling() ) hg.hashObject(this->_Class);
+	for ( int i(0), iEnd(this->_Slots.size()); i<iEnd; ++i ) {
+	    if ( !this->_Slots[i].unboundp() && hg.isFilling() ) hg.hashObject(this->_Slots[i]);
+	    else break;
+	}
     }
 
 

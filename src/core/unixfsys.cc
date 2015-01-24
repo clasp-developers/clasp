@@ -281,7 +281,7 @@ Str_sp af_currentDir()
 	size += 256;
     } while (ok == NULL);
     size = strlen((char*)output->addressOfBuffer());
-    if ((size + 1 /* / */ + 1 /* 0 */) >= output->dimension()) {
+    if ((size + 1 /* / */ + 1 /* 0 */) >= output->size()) {
 	/* Too large to host the trailing '/' */
 	output->adjustSize(2);
     }
@@ -930,23 +930,23 @@ static T_sp
 list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
                int flags)
 {
-	T_sp out = _Nil<T_O>();
-	T_sp prefix = brcl_namestring(base_dir, BRCL_NAMESTRING_FORCE_BASE_STRING);
-	T_sp component, component_path, kind;
-	char *text;
+    T_sp out = _Nil<T_O>();
+    T_sp prefix = brcl_namestring(base_dir, BRCL_NAMESTRING_FORCE_BASE_STRING);
+    T_sp component, component_path, kind;
+    char *text;
 #if defined(HAVE_DIRENT_H)
-	DIR *dir;
-	struct dirent *entry;
+    DIR *dir;
+    struct dirent *entry;
 
-	brcl_disable_interrupts();
-	dir = opendir((char*)prefix.as<Str_O>()->c_str());
-	if (dir == NULL) {
-		out = _Nil<T_O>();
-		goto OUTPUT;
-	}
+    brcl_disable_interrupts();
+    dir = opendir((char*)prefix.as<Str_O>()->c_str());
+    if (dir == NULL) {
+	out = _Nil<T_O>();
+	goto OUTPUT;
+    }
 
-	while ((entry = readdir(dir))) {
-		text = entry->d_name;
+    while ((entry = readdir(dir))) {
+	text = entry->d_name;
 #else
 # ifdef ECL_MS_WINDOWS_HOST
 	WIN32_FIND_DATA fd;
@@ -955,72 +955,150 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
 
 	brcl_disable_interrupts();
 	for (;;) {
-		if (hFind == NULL) {
-			T_sp aux = make_constant_base_string(".\\*");
-			T_sp mask = af_base_string_concatenate(Cons_O::createList(prefix, aux));
-			hFind = FindFirstFile((char*)mask->c_str(), &fd);
-			if (hFind == INVALID_HANDLE_VALUE) {
-				out = _Nil<T_O>();
-				goto OUTPUT;
-			}
-			found = true;
-		} else {
-			found = FindNextFile(hFind, &fd);
+	    if (hFind == NULL) {
+		T_sp aux = make_constant_base_string(".\\*");
+		T_sp mask = af_base_string_concatenate(Cons_O::createList(prefix, aux));
+		hFind = FindFirstFile((char*)mask->c_str(), &fd);
+		if (hFind == INVALID_HANDLE_VALUE) {
+		    out = _Nil<T_O>();
+		    goto OUTPUT;
 		}
-		if (!found)
-			break;
-		text = fd.cFileName;
+		found = true;
+	    } else {
+		found = FindNextFile(hFind, &fd);
+	    }
+	    if (!found)
+		break;
+	    text = fd.cFileName;
 # else /* sys/dir.h as in SYSV */
-	FILE *fp;
-	char iobuffer[BUFSIZ];
-	DIRECTORY dir;
+	    FILE *fp;
+	    char iobuffer[BUFSIZ];
+	    DIRECTORY dir;
 
-	brcl_disable_interrupts();
-	fp = fopen((char*)prefix->c_str(), OPEN_R);
-	if (fp == NULL) {
+	    brcl_disable_interrupts();
+	    fp = fopen((char*)prefix->c_str(), OPEN_R);
+	    if (fp == NULL) {
 		out = _Nil<T_O>();
 		goto OUTPUT;
-	}
-	setbuf(fp, iobuffer);
-	for (;;) {
+	    }
+	    setbuf(fp, iobuffer);
+	    for (;;) {
 		if (fread(&dir, sizeof(DIRECTORY), 1, fp) <= 0)
-			break;
+		    break;
 		if (dir.d_ino == 0)
-			continue;
+		    continue;
 		text = dir.d_name;
 # endif /* !ECL_MS_WINDOWS_HOST */
 #endif /* !HAVE_DIRENT_H */
 		if (text[0] == '.' &&
 		    (text[1] == '\0' ||
 		     (text[1] == '.' && text[2] == '\0')))
-			continue;
+		    continue;
 		if (!string_match(text, text_mask))
-			continue;
+		    continue;
 		component = Str_O::create(text);
 		component = af_base_string_concatenate(Cons_O::createList(prefix,component));
                 component_path = cl_pathname(component);
                 if (!pathname_mask.nilp() ) {
                     if (!af_pathnameMatchP(component, pathname_mask)) // should this not be inverted?
-                                continue;
+			continue;
                 }
                 T_mv component_path_mv = file_truename(component_path, component, flags);
                 component_path = component_path_mv;
                 kind = component_path_mv.valueGet(1);
 		out = Cons_O::create(Cons_O::create(component_path, kind), out);
-	}
+	    }
 #ifdef HAVE_DIRENT_H
-	closedir(dir);
+	    closedir(dir);
 #else
 # ifdef ECL_MS_WINDOWS_HOST
-        FindClose(hFind);
+	    FindClose(hFind);
 # else
-	fclose(fp);
+	    fclose(fp);
 # endif /* !ECL_MS_WINDOWS_HOST */
 #endif /* !HAVE_DIRENT_H */
-	brcl_enable_interrupts();
-OUTPUT:
-	return cl_nreverse(out);
+	    brcl_enable_interrupts();
+	OUTPUT:
+	    return cl_nreverse(out);
+	}
+
+
+
+#define ARGS_core_mkstemp "(template)"
+#define DECL_core_mkstemp ""
+#define DOCS_core_mkstemp "mkstemp"
+	T_sp core_mkstemp(Str_sp thetemplate)
+	{ 
+	    cl_index l;
+	    int fd;
+
+#if defined(ECL_MS_WINDOWS_HOST)
+	    T_sp phys, dir, file;
+	    char strTempDir[MAX_PATH];
+	    char strTempFileName[MAX_PATH];
+	    char *s;
+	    int ok;
+
+	    phys = cl_translate_logical_pathname(1, thetemplate);
+	    dir = cl_make_pathname(8,
+				   kw::_sym_type, _Nil<T_O>(),
+				   kw::_sym_name, _Nil<T_O>(),
+				   kw::_sym_version, _Nil<T_O>(),
+				   kw::_sym_defaults, phys);
+	    dir = af_coerceToFilename(dir);
+	    file = cl_file_namestring(phys);
+
+	    l = dir->base_string.fillp;
+	    memcpy(strTempDir, dir->c_str(), l);
+	    strTempDir[l] = 0;
+	    for (s = strTempDir; *s; s++)
+		if (*s == '/')
+		    *s = '\\';
+
+	    brcl_disable_interrupts();
+	    ok = GetTempFileName(strTempDir, (char*)file->c_str(), 0,
+				 strTempFileName);
+	    brcl_enable_interrupts();
+	    if (!ok) {
+		output = _Nil<T_O>();
+	    } else {
+		l = strlen(strTempFileName);
+		output = ecl_alloc_simple_base_string(l);
+		memcpy(output->c_str(), strTempFileName, l);
+	    }
+#else
+	    thetemplate = af_coerceToFilename(thetemplate);
+	    stringstream outss;
+	    outss << thetemplate->get();
+	    outss << "XXXXXX";
+	    string outname = outss.str();
+	    std::vector<char> dst_path(outname.begin(),outname.end());
+	    dst_path.push_back('\0');
+	    clasp_disable_interrupts();
+# ifdef HAVE_MKSTEMP
+	    fd = mkstemp(&dst_path[0]);
+	    outname.assign(dst_path.begin(),dst_path.end()-1);
+# else
+	    if (mktemp(&dst_path[0])) {
+		outname.assign(dst_path.begin(),dst_path.end()-1);
+		fd = open(outname.c_str(), O_CREAT|O_TRUNC, 0666);
+	    } else {
+		fd = -1;
+	    }
+# endif
+	    clasp_enable_interrupts();
+	    T_sp output;
+	    if (fd < 0) {
+		output = _Nil<T_O>();
+	    } else {
+		close(fd);
+		output = af_truename(Str_O::create(outname));
+	    }
+#endif
+	    return output;
 }
+
+	
 
 
 
@@ -1124,74 +1202,73 @@ si_get_library_pathname(void)
 @)
 
 
-T_sp
-si_mkstemp(T_sp template)
+T_sp core_mkstemp(T_sp template)
 {
-	T_sp output;
-	cl_index l;
-	int fd;
+    T_sp output;
+    cl_index l;
+    int fd;
 
 #if defined(ECL_MS_WINDOWS_HOST)
-	T_sp phys, dir, file;
-	char strTempDir[MAX_PATH];
-	char strTempFileName[MAX_PATH];
-	char *s;
-	int ok;
+    T_sp phys, dir, file;
+    char strTempDir[MAX_PATH];
+    char strTempFileName[MAX_PATH];
+    char *s;
+    int ok;
 
-	phys = cl_translate_logical_pathname(1, template);
-	dir = cl_make_pathname(8,
-			       kw::_sym_type, _Nil<T_O>(),
-	                       kw::_sym_name, _Nil<T_O>(),
-	                       kw::_sym_version, _Nil<T_O>(),
-	                       kw::_sym_defaults, phys);
-	dir = af_coerceToFilename(dir);
-	file = cl_file_namestring(phys);
+    phys = cl_translate_logical_pathname(1, template);
+    dir = cl_make_pathname(8,
+			   kw::_sym_type, _Nil<T_O>(),
+			   kw::_sym_name, _Nil<T_O>(),
+			   kw::_sym_version, _Nil<T_O>(),
+			   kw::_sym_defaults, phys);
+    dir = af_coerceToFilename(dir);
+    file = cl_file_namestring(phys);
 
-	l = dir->base_string.fillp;
-	memcpy(strTempDir, dir->c_str(), l);
-	strTempDir[l] = 0;
-	for (s = strTempDir; *s; s++)
-		if (*s == '/')
-			*s = '\\';
+    l = dir->base_string.fillp;
+    memcpy(strTempDir, dir->c_str(), l);
+    strTempDir[l] = 0;
+    for (s = strTempDir; *s; s++)
+	if (*s == '/')
+	    *s = '\\';
 
-	brcl_disable_interrupts();
-	ok = GetTempFileName(strTempDir, (char*)file->c_str(), 0,
-			     strTempFileName);
-	brcl_enable_interrupts();
-	if (!ok) {
-		output = _Nil<T_O>();
-	} else {
-		l = strlen(strTempFileName);
-		output = ecl_alloc_simple_base_string(l);
-		memcpy(output->c_str(), strTempFileName, l);
-	}
+    brcl_disable_interrupts();
+    ok = GetTempFileName(strTempDir, (char*)file->c_str(), 0,
+			 strTempFileName);
+    brcl_enable_interrupts();
+    if (!ok) {
+	output = _Nil<T_O>();
+    } else {
+	l = strlen(strTempFileName);
+	output = ecl_alloc_simple_base_string(l);
+	memcpy(output->c_str(), strTempFileName, l);
+    }
 #else
-	template = af_coerceToFilename(template);
-	l = template->base_string.fillp;
-	output = ecl_alloc_simple_base_string(l + 6);
-	memcpy(output->c_str(), template->c_str(), l);
-	memcpy(output->c_str() + l, "XXXXXX", 6);
+    template = af_coerceToFilename(template);
+    l = template->base_string.fillp;
+    output = ecl_alloc_simple_base_string(l + 6);
+    memcpy(output->c_str(), template->c_str(), l);
+    memcpy(output->c_str() + l, "XXXXXX", 6);
 
-	brcl_disable_interrupts();
+    brcl_disable_interrupts();
 # ifdef HAVE_MKSTEMP
-	fd = mkstemp((char*)output->c_str());
+    fd = mkstemp((char*)output->c_str());
 # else
-	if (mktemp((char*)output->c_str())) {
-		fd = open((char*)output->c_str(), O_CREAT|O_TRUNC, 0666);
-	} else {
-		fd = -1;
-	}
+    if (mktemp((char*)output->c_str())) {
+	fd = open((char*)output->c_str(), O_CREAT|O_TRUNC, 0666);
+    } else {
+	fd = -1;
+    }
 # endif
-	brcl_enable_interrupts();
+    brcl_enable_interrupts();
 
-	if (fd < 0) {
-		output = _Nil<T_O>();
-	} else {
-		close(fd);
-	}
+    if (fd < 0) {
+	output = _Nil<T_O>();
+    } else {
+	close(fd);
+    }
 #endif
-	@(return (Null(output)? output : cl_truename(output)))
-}
+    @(return (Null(output)? output : cl_truename(output)))
+	}
 
 T_sp
 si_rmdir(T_sp directory)
@@ -1523,6 +1600,7 @@ void initialize_unixfsys()
     CoreDefun(mkdir);
     ClDefun(directory);
     ClDefun(renameFile);
+    CoreDefun(mkstemp);
 };
 
 

@@ -1,12 +1,42 @@
-$var MaxArgs = 64
-$range Args_ 0..MaxArgs
-$range Case_ 0..MaxArgs
+$var MaxArgs = 5
+$var FixedArgs = 5
+$range Case_ 0..MaxArgs-1
+#ifdef APPLY_TO_ACTIVATION_FRAME
 $for Case_ [[
-  $range Args_ 0..Case_-1
-  $range Fixed_ 0..2-Case_
+  $var Reg = min(FixedArgs-1,Case_-1)
+  // Reg = $Reg
+  $range FixedArgs_ 0..Reg
+  $range Null_ 1..FixedArgs-Reg-1 # max((FixedArgs-1)-Case_,0)
+  $range Extra_ FixedArgs..Case_-1
   case $Case_:
-    (*func)(&result,$Case_ $for Args_ [[, a[$Args_].asTPtr() ]] $for Fixed_ [[, NULL ]]  );
+    $if Case_>FixedArgs [[
+    {
+        MultipleValues* _mvP = _lisp->callArgs();
+	$for Extra_ [[(*_mvP)[$Extra_] = a[$Extra_];
+	]]
+    }
+    ]]
+    (*func)(&result,$Case_ $for FixedArgs_ [[, LCC_FROM_SMART_PTR(a[$FixedArgs_]) ]] $for Null_ [[, LCC_UNUSED ]]  );
     return result;
   ]]
-
+#endif
+#ifdef APPLY_TO_TAGGED_FRAME
+$for Case_ [[
+  $var Reg = min(FixedArgs-1,Case_-1)
+  // Reg = $Reg
+  $range FixedArgs_ 0..Reg
+  $range Null_ 1..FixedArgs-Reg-1 # max((FixedArgs-1)-Case_,0)
+  $range Extra_ FixedArgs..Case_-1
+  case $Case_:
+    $if Case_>FixedArgs [[
+    {
+        MultipleValues* _mvP = _lisp->callArgs();
+	$for Extra_ [[(*_mvP)[$Extra_] = gctools::smart_ptr<T_O>(a[$Extra_]);
+	]]
+    }
+    ]]
+    (*func)(&result,$Case_ $for FixedArgs_ [[, a[$FixedArgs_] ]] $for Null_ [[, LCC_UNUSED ]]  );
+    return result;
+  ]]
+#endif
          

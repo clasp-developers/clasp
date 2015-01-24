@@ -66,7 +66,7 @@ namespace core
 
 
 
-    Reader_sp Reader_O::create(Stream_sp sin)
+    Reader_sp Reader_O::create(T_sp sin)
     {	
 	Reader_sp reader = Reader_O::create();
 	reader->_Input = sin;
@@ -79,7 +79,7 @@ namespace core
     void Reader_O::initialize()
     {_OF();
 	this->Base::initialize();
-	this->_Input = _Nil<Stream_O>();
+	this->_Input = _Nil<T_O>();
     }
 
     Reader_O::~Reader_O()
@@ -88,7 +88,7 @@ namespace core
 
     string Reader_O::fileName()
     {
-	return af_sourceFileInfo(this->_Input)->fileName();
+	return core_sourceFileInfo(this->_Input)->fileName();
     }
 
     SYMBOL_EXPORT_SC_(ClPkg,STARread_suppressSTAR);
@@ -287,6 +287,10 @@ namespace core
 	    }
 	    case singleQuote:
 	    {
+		SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+		size_t filepos = clasp_input_filePos(this->_Input);
+		uint lineno = clasp_input_lineno(this->_Input);
+		uint column = clasp_input_column(this->_Input);
 		T_sp quotedObject = this->primitive_read(true,_Nil<T_O>(),true);
 		if (this->suppressRead())
 		{
@@ -295,7 +299,7 @@ namespace core
 		}
 //		SourceLocation sourceLoc = this->_Input->sourceLocation();
 		result = Cons_O::createList(cl::_sym_quote, quotedObject );
-                lisp_registerSourceInfoFromStream(result,this->_Input);
+		lisp_registerSourcePosInfo(result,spi);
 	    goto RETURN;
 	    }
 	    case quotedString:
@@ -311,6 +315,7 @@ namespace core
 	    }
 	    case sharpQuote:
 	    {
+		SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
 		T_sp quotedObject = this->primitive_read(true,_Nil<T_O>(),true);
 		if (this->suppressRead())
 		{
@@ -319,10 +324,7 @@ namespace core
 		}
 //		SourceLocation sl = this->_Input->sourceLocation();
 		result = Cons_O::createList(cl::_sym_function, quotedObject);
-                lisp_registerSourceInfo(result,
-                                        clasp_input_source_file_info(this->_Input),
-                                        clasp_input_lineno(this->_Input),
-                                        clasp_input_column(this->_Input));
+                lisp_registerSourcePosInfo(result,spi);
 		goto RETURN;
 	    }
 	    case sharpMinus:
@@ -391,6 +393,7 @@ namespace core
 
 	    case backQuote:
 	    {
+		SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
 		T_sp quotedObject = this->primitive_read(true,_Nil<T_O>(),true);
 		if (this->suppressRead())
 		{
@@ -398,7 +401,7 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_backquote, quotedObject);
-                lisp_registerSourceInfoFromStream(result,this->_Input);
+                lisp_registerSourcePosInfo(result,spi);
 		goto RETURN;
 	    }
 // This is like a backQuote but two arguments must follow.
@@ -417,6 +420,7 @@ namespace core
 
 	    case doubleBackQuote:
 	    {
+		SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
 		T_sp templateObject = this->primitive_read(true,_Nil<T_O>(),true);
 		T_sp quotedObject = this->primitive_read(true,_Nil<T_O>(),true);
 		if (this->suppressRead())
@@ -425,11 +429,12 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_double_backquote, templateObject);
-                lisp_registerSourceInfoFromStream(result,this->_Input);
+                lisp_registerSourcePosInfo(result,spi);
 		goto RETURN;
 	    }
 	    case comma:
 	    {
+		SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
 		T_sp quotedObject = this->primitive_read(true,_Nil<T_O>(),true);
 		if (this->suppressRead())
 		{
@@ -437,11 +442,12 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_unquote,quotedObject);
-                lisp_registerSourceInfoFromStream(result,this->_Input);
+                lisp_registerSourcePosInfo(result,spi);
 		goto RETURN;
 	    }
 	    case commaAt:
 	    {
+		SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
 		T_sp quotedObject = this->primitive_read(true,_Nil<T_O>(),true);
 		if (this->suppressRead())
 		{
@@ -449,7 +455,7 @@ namespace core
 		    goto RETURN;
 		}
 		result = Cons_O::createList(_sym_unquote_splice,quotedObject);
-                lisp_registerSourceInfoFromStream(result,this->_Input);
+                lisp_registerSourcePosInfo(result,spi);
 		goto RETURN;
 	    }
 	    case symbol:
@@ -611,7 +617,7 @@ namespace core
 		    c = c - 'a' +1;
 		}
 	    }
-	    acc << c;
+	    acc << (char)c;
 	}
 	LOG(BF("Read double quoted string[%s]") % acc.str());
 	return acc.str();
@@ -620,7 +626,7 @@ namespace core
     string Reader_O::posAsString()
     {
 	stringstream ss;
-	ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << af_sourceFileInfo(this->_Input)->fileName();
+	ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << core_sourceFileInfo(this->_Input)->fileName();
 	return ss.str();
     }
 
@@ -720,6 +726,7 @@ namespace core
 	while (1)
 	{
 	    this->skipWhiteSpace();
+	    SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
 	    char c = this->peekChar();
 	    if ( c == endChar )
 	    {
@@ -736,8 +743,7 @@ namespace core
 		ERROR_END_OF_FILE(this->_Input);
 	    }
 	    Cons_sp one = Cons_O::create(element, _Nil<Cons_O>());
-            lisp_registerSourceInfo(one,af_sourceFileInfo(this->_Input),
-				      lineNumber,column);
+            lisp_registerSourcePosInfo(one,spi);
 	    cur->setCdr(one);
 	    cur = one;
 	}

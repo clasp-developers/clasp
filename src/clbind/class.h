@@ -243,8 +243,8 @@ namespace clbind
             : mpl::false_
         {};
 
-        template <typename... Bases>
-        struct is_bases<bases<Bases...> >
+        template <typename Base0, typename... Bases>
+        struct is_bases<bases<Base0,Bases...> >
             : mpl::true_
         {};
 
@@ -838,7 +838,7 @@ namespace clbind
 
     public:
 
-        typedef boost::mpl::vector4<X1, X2, X3, detail::unspecified> parameters_type;
+        typedef boost::mpl::vector4<X1, X2, X3, clbind::detail::unspecified> parameters_type;
 
         // WrappedType MUST inherit from T
         typedef typename detail::extract_parameter<
@@ -1069,15 +1069,15 @@ namespace clbind
                 new registration_type(name, g, get_policies, s, set_policies));
             return *this;
         }
-
+#endif // meister disabled
         template <class C, class D>
         class_& def_readonly(const char* name, D C::*mem_ptr)
         {
-            typedef detail::property_registration<T, D C::*, null_type>
+            typedef detail::property_registration<T, D C::*, detail::null_type>
                 registration_type;
 
             this->add_member(
-                new registration_type(name, mem_ptr, null_type()));
+			     new registration_type(name, mem_ptr, detail::null_type()));
             return *this;
         }
 
@@ -1096,12 +1096,12 @@ namespace clbind
         class_& def_readwrite(const char* name, D C::*mem_ptr)
         {
             typedef detail::property_registration<
-                T, D C::*, null_type, D C::*
+                T, D C::*, detail::null_type, D C::*
                 > registration_type;
 
             this->add_member(
                 new registration_type(
-                    name, mem_ptr, null_type(), mem_ptr));
+				      name, mem_ptr, detail::null_type(), mem_ptr));
             return *this;
         }
 
@@ -1152,11 +1152,11 @@ namespace clbind
         {
             return this->def(
                 Derived::name()
-                , &Derived::template apply<T, null_type>::execute
+                , &Derived::template apply<T, detail::null_type>::execute
                 );
         }
 
-#endif // end_meister_disabled		
+	//#endif // end_meister_disabled		
 
 
         template <typename EnumType>
@@ -1212,7 +1212,13 @@ namespace clbind
                 );
 
             add_wrapper_cast((WrappedType*)0);
-
+#if 0
+            int*** a = HeldType();
+            int*** b = WrappedType();
+            int*** i = Base();
+            int*** j = parameters_type();
+            int*** k = bases_t();
+#endif
             generate_baseclass_list(detail::type_<Base>());
         }
 

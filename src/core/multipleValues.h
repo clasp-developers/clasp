@@ -37,29 +37,85 @@ namespace core
     class MultipleValues
     {
     public: // ctor
-	MultipleValues() {};
-	static const int MultipleValuesLimit = 32;
+	MultipleValues(bool topLevel) : _Previous(NULL), _Size(0) {
+	    lisp_pushMultipleValues(this);
+#ifdef DEBUG_ASSERTS
+	    if ( !topLevel && this->_Previous == NULL ) {
+		THROW_HARD_ERROR(BF("Setting up MultipleValues, _Previous is NULL!!!"));
+	    }
+#endif
+	};
+	/*! Create a MultipleValues and copy the contents of other into it */
+	MultipleValues(const MultipleValues& other) : _Previous(NULL), _Size(0) {
+	    core::lisp_pushMultipleValues(this);
+	    this->_Size = other._Size;
+	    for ( size_t it = 0; it<this->_Size; ++it ) {
+		this->_Values[it] = other._Values[it];
+	    }
+	    // Automatically push this MultipleValues onto the global stack
+#ifdef DEBUG_ASSERTS
+	    if ( this->_Previous == NULL ) {
+		THROW_HARD_ERROR(BF("Setting up MultipleValues, _Previous is NULL!!!"));
+	    }
+#endif
+	};
+
+	~MultipleValues() {
+	    // pop this MultipleValues from the global stack
+	    core::lisp_popMultipleValues();
+	}
+	static const int MultipleValuesLimit = CALL_ARGUMENTS_LIMIT;
     public: // instance variables here
-        /*! Allocate the GCVector in the NonMoveable memory */
+	MultipleValues*	_Previous;
+#ifdef USE_MULTIPLE_VALUES_ARRAY
+	size_t 		_Size;
+	T_sp 		_Values[MultipleValuesLimit];
+        /*! Allocate the GCVector in the NonMoveable memory.
+	 This needs to stay pinned or things will go very bad if functions are called with arguments in
+	this array (those beyond the arguments that can be passed in registers) or multiple values are returned
+	and this array moved in memory */
+#else
         gctools::Vec0_impl<gctools::GCVector<T_sp,gctools::GCContainerNonMoveableAllocator<gctools::GCVector_moveable<T_sp>>>>     _Values;
+#endif
     public:
         void initialize();
     public: // Functions here
+
+	void setPrevious(MultipleValues* ptr) { this->_Previous = ptr; };
+	MultipleValues* getPrevious() const { return this->_Previous; };
 
 	/*! Return the indexed multiple value or nil */
 	ATTR_WEAK T_sp valueGet(int idx,int number_of_arguments) const;
 
 //        GC_RESULT scanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
 
+	/*! When calling functions with more arguments than can be passed in registers 
+	  the remaining arguments are written into and read out of a MultipleValues array.
+	callingArgs returns a pointer to the first value for when the values passed in registers
+	need to be written into the array for easier parsing*/
+	T_sp* callingArgsStart() { return &this->_Values[0]; }
+	/*! Return the address of the first array entry where extra arguments beyond the 
+	  number that can be passed in registers would be written */
+	T_sp* callingArgsExtraArgStart() { return &this->_Values[LCC_ARGS_IN_REGISTERS]; }
+
+
 	T_sp setFromConsSkipFirst(Cons_sp values);
 
 //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
-        void setSize(int sz) { this->_Values.resize(sz); };
-        int getSize() const { return this->_Values.size(); };
-	/*! Set the value */
-
+#ifdef USE_MULTIPLE_VALUES_ARRAY
+	void setSize(size_t sz) { this->_Size = sz; };
+	size_t getSize() const { return this->_Size; };
+        template <typename T>
+        void emplace_back(T&& a) { this->_Values[this->_Size] = std::forward<T>(a); ++this->_Size;};
+#else
+        void setSize(size_t sz) { this->_Values.resize(sz); };
+        size_t getSize() const { return this->_Values.size(); };
         template <typename T>
         void emplace_back(T&& a) { this->_Values.emplace_back(std::forward<T>(a));};
+#endif
+	/*! Set the value */
+
+	T_sp& operator[](size_t i) { return this->_Values[i]; };
 
 	void valueSet(int i, const T_sp& val)
         {

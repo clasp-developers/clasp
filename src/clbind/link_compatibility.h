@@ -53,7 +53,7 @@ THE SOFTWARE.
 
 namespace clbind { namespace detail
 {
-
+#if 0
 #ifdef CLBIND_NOT_THREADSAFE
 	CLBIND_API void not_threadsafe_defined_conflict();
 #else
@@ -65,7 +65,8 @@ namespace clbind { namespace detail
 #else
 	CLBIND_API void no_error_checking_not_defined_conflict();
 #endif
-
+#endif
+#if 0
 	inline void check_link_compatibility()
 	{
 	#ifdef CLBIND_NOT_THREADSAFE
@@ -80,7 +81,7 @@ namespace clbind { namespace detail
 		no_error_checking_not_defined_conflict();
 	#endif
 	}
-
+#endif
 }}
 
 #endif

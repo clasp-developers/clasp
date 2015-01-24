@@ -41,7 +41,7 @@
 					     :linkage 'llvm-sys:internal-linkage ;; 'llvm-sys:external-linkage
 					     :function-type +fn-void+
 					     :argument-names nil)
-		   (irc-low-level-trace)
+		   (irc-low-level-trace :up)
 		   (let* ((given-name (llvm-sys:get-name main-fn)))
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeLlvmFunctionVoid for ltv-manager-fn\n")
@@ -54,13 +54,27 @@
   )
 
 
-(defmacro with-module ((&key module function-pass-manager) &rest body)
+(defmacro with-module ((env &key module 
+				 function-pass-manager 
+				 source-pathname
+				 source-file-info-handle
+				 source-debug-namestring
+				 (source-debug-offset 0)
+				 (source-debug-use-lineno t)) &rest body)
   `(let ((*the-module* ,module)
          (*the-function-pass-manager* ,function-pass-manager)
          (*all-functions-for-one-compile* nil)
-         (*generate-load-time-values* t))
+         (*generate-load-time-values* t)
+	 (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
+	 (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
+								     ,source-debug-namestring
+								     ,source-pathname) "source-debug-namestring"))
+	 (*source-debug-offset* ,source-debug-offset)
+	 (*source-debug-use-lineno* ,source-debug-use-lineno)
+	 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module* ,source-file-info-handle))
+	 )
      (declare (special *the-function-pass-manager*))
-     (with-irbuilder (nil (llvm-sys:make-irbuilder *llvm-context*))
+     (with-irbuilder (,env (llvm-sys:make-irbuilder *llvm-context*))
        ,@body)))
 
 
@@ -113,10 +127,15 @@
     (describe-form form))
   (let ((fn (compile-thunk "repl" form nil)))
     (with-ltv-function-codegen (result ltv-env)
-      (irc-intrinsic "invokeLlvmFunction" result fn (irc-renv ltv-env)
+      (irc-intrinsic "invokeTopLevelFunction" 
+		     result 
+		     fn 
+		     (irc-renv ltv-env)
+		     (jit-constant-unique-string-ptr "top-level")
                      *gv-source-file-info-handle*
-                     (jit-constant-i32 *current-lineno*)
-                     (jit-constant-i32 *current-column*)
+		     (irc-i64-*current-source-pos-info*-filepos)
+		     (irc-i32-*current-source-pos-info*-lineno)
+		     (irc-i32-*current-source-pos-info*-column)
                      ))))
 
 
@@ -204,42 +223,49 @@
 
 
 
-(defun print-source-pos ()
-  (bformat t "%s:%d:%d\n" *compile-file-pathname* *current-lineno* *current-column*))
-
-
-
 
 
 
 (defun compile-form-into-module (form name)
+  "This is used to generate a module from a single form - specifically
+to compile prologue and epilogue code when linking modules"
   (let* ((module (create-llvm-module-for-compile-file name))
-         conditions)
+         conditions
+	 (*compile-file-pathname* nil)
+	 (*compile-file-truename* name)
+	 (*compile-print* nil)
+	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
-      (with-module (:module module
-                            :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
-        (let* ((*compile-file-pathname* nil)
-               (*compile-file-truename* name)
-               (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
-               (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*))
-               (*compile-print* nil)
-               (*compile-verbose* nil))
-          (with-dibuilder (*the-module*)
-            (with-dbg-compile-unit (nil *compile-file-truename*)
-              (with-dbg-file-descriptor (nil *compile-file-truename*)
-                (with-load-time-value-unit (ltv-init-fn)
-                  (compile-top-level form)
-                  (let ((main-fn (compile-main-function name ltv-init-fn )))
-                    (make-boot-function-global-variable *the-module* main-fn)
-                    (add-main-function *the-module*))))
-              *the-module*)))))))
+      (with-module (nil :module module
+			:function-pass-manager (if *use-function-pass-manager-for-compile-file* 
+						   (create-function-pass-manager-for-compile-file module))
+			:source-pathname (namestring name)
+			)
+        (let* ()
+	  (with-debug-info-generator (:module *the-module*
+					      :pathname *compile-file-truename*)
+	    (with-load-time-value-unit (ltv-init-fn)
+	      (compile-top-level form)
+	      (let ((main-fn (compile-main-function name ltv-init-fn )))
+		(make-boot-function-global-variable *the-module* main-fn)
+		(add-main-function *the-module*)))
+	    ))))
+    module))
 
 
 
-(defun cfp-output-file-default (input-file)
-  (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*))
-	 (retyped (make-pathname :type "bc" :defaults defaults)))
-    retyped))
+(defun cfp-output-file-default (input-file output-type &key target-backend)
+  (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*)))
+    (when target-backend
+      (setq defaults (make-pathname :host target-backend :defaults defaults)))
+    (make-pathname :type (cond
+			   ((eq output-type :bitcode) "bc")
+			   ((eq output-type :linked-bitcode) "lbc")
+			   ((eq output-type :object) "o")
+			   ((eq output-type :fasl) "fasl")
+			   (t (error "unsupported output-type ~a" output-type)))
+		   :defaults defaults)))
+
 
 ;;; Copied from sbcl sb!xc:compile-file-pathname
 ;;;   If INPUT-FILE is a logical pathname and OUTPUT-FILE is unsupplied,
@@ -250,24 +276,23 @@
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file &key (output-file nil output-file-p)
-                                           (type :bitcode)
+                                           (output-type :fasl)
+					   type
+					   target-backend
                                            &allow-other-keys)
+  (when type (error "Clasp compile-file-pathname uses :output-type rather than :type"))
   (let* ((pn (if output-file-p
-                (merge-pathnames output-file (cfp-output-file-default input-file))
-                (cfp-output-file-default input-file)))
-         (ext (case type
-		(:bitcode "bc")
-                (:object "o")
-                (:fasl (if (member :target-os-darwin *features*)
-                           "bundle"
-                           "so")))))
+		 (merge-pathnames output-file (cfp-output-file-default input-file output-type :target-backend target-backend))
+		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
+         (ext (cond
+		((eq output-type :bitcode) "bc")
+		((eq output-type :linked-bitcode) "lbc")
+		((eq output-type :object) "o")
+		((eq output-type :fasl) "fasl")
+		(t (error "unsupported output-type ~a" output-type)))))
     (make-pathname :type ext :defaults pn)))
 
 
-(defun compile-file-type (&key system-p)
-  (cond
-    (system-p :object)
-    (t :bitcode)))
 
 (defun cf-module-name (type pathname)
   "Create a module name from the TYPE (either :user or :kernel)
@@ -289,78 +314,102 @@ and the pathname of the source file - this will also be used as the module initi
 
 
 
+(defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname output-path &key type)
+(defun compile-file-to-module (given-input-pathname output-path &key type source-debug-namestring (source-debug-offset 0) )
   "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
-    (let* ((input-pathname (probe-file given-input-pathname))
-	   (sin (open input-pathname :direction :input))
-           (eof-value (gensym))
-           (module (create-llvm-module-for-compile-file (namestring input-pathname)))
-           (module-name (cf-module-name type input-pathname))
-           warnings-p failure-p)
-      (when *compile-verbose*
-        (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
-      (with-one-source-database
-          (cmp-log "About to start with-compilation-unit\n")
-        (with-module (:module module
-                              :function-pass-manager (if *use-function-pass-manager-for-compile-file* (create-function-pass-manager-for-compile-file module)))
-          (let* ((*compile-file-pathname* given-input-pathname)
-                 (*compile-file-truename* (truename *compile-file-pathname*))
-                 (*gv-source-path-name* (jit-make-global-string-ptr (namestring *compile-file-truename*) "source-pathname"))
-                 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module*)))
-            (with-dibuilder (*the-module*)
-              (with-dbg-compile-unit (nil *compile-file-truename*)
-                (with-dbg-file-descriptor (nil *compile-file-truename*)
-                  (with-load-time-value-unit (ltv-init-fn)
-                    (do ((line-number (stream-linenumber sin)
-                                      (stream-linenumber sin))
-                         (column (stream-column sin)
-                                 (stream-column sin))
-                         (form (progn (let ((rd (read sin nil eof-value))) rd))
-                               (progn (let ((rd (read sin nil eof-value))) rd))))
-                        ((eq form eof-value) nil)
-                      (let ((*current-lineno* line-number)
-                            (*current-column* column))
-                        (compile-file-t1expr form)))
-                    (let ((main-fn (compile-main-function output-path ltv-init-fn )))
-                      (make-boot-function-global-variable *the-module* main-fn)
-                      (add-main-function *the-module*))))))
-            (cmp-log "About to verify the module\n")
-            (cmp-log-dump *the-module*)
-            (multiple-value-bind (found-errors error-message)
-                (progn
-                  (cmp-log "About to verify module prior to writing bitcode\n")
-                  (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
-                  )
-              (if found-errors
+  (let* ((input-pathname (probe-file given-input-pathname))
+	 (sin (open input-pathname :direction :input))
+	 (eof-value (gensym))
+	 (module (create-llvm-module-for-compile-file (namestring input-pathname)))
+	 (module-name (cf-module-name type input-pathname))
+	 warnings-p failure-p)
+    ;; If a truename is provided then spoof the file-system to treat input-pathname
+    ;; as source-truename with the given offset
+    (when source-debug-namestring
+      (core:source-file-info (namestring input-pathname) source-debug-namestring source-debug-offset nil))
+    (when *compile-verbose*
+      (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
+    (with-one-source-database
+	(cmp-log "About to start with-compilation-unit\n")
+      (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+	     (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+	(with-module (nil :module module
+			  :function-pass-manager (if *use-function-pass-manager-for-compile-file* 
+						     (create-function-pass-manager-for-compile-file module))
+			  :source-pathname (namestring *compile-file-pathname*)
+			  :source-debug-namestring source-debug-namestring
+			  :source-debug-offset source-debug-offset
+			  )
+	  (let* ()
+	    (with-debug-info-generator (:module *the-module*
+						:pathname *compile-file-truename*)
+	      (with-load-time-value-unit (ltv-init-fn)
+		(loop
+		   (let* ((core:*source-database* (core:make-source-manager))
+			  (top-source-pos-info (core:input-stream-source-pos-info sin))
+			  (form (read sin nil eof-value)))
+		     (if (eq form eof-value)
+			 (return nil)
+			 (progn
+			   (if cmp:*debug-compile-file* (bformat t "compile-file: %s\n" form))
+			   ;; If the form contains source-pos-info then use that
+			   ;; otherwise fall back to using *current-source-pos-info*
+			   (let ((core:*current-source-pos-info* 
+				  (core:walk-to-find-source-pos-info form top-source-pos-info)))
+			     (compile-file-t1expr form))))))
+		(let ((main-fn (compile-main-function output-path ltv-init-fn )))
+		  (make-boot-function-global-variable *the-module* main-fn)
+		  (add-main-function *the-module*)))
+	      )
+	    (cmp-log "About to verify the module\n")
+	    (cmp-log-dump *the-module*)
+	    (multiple-value-bind (found-errors error-message)
+		(progn
+		  (cmp-log "About to verify module prior to writing bitcode\n")
+		  (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
+		  )
+	      (if found-errors
 		  (progn
 		    (format t "Module error: ~a~%" error-message)
-		    (break "Verify module found errors")))))))
-      module))
+		    (break "Verify module found errors"))))))))
+    module))
 
 
 (defun compile-file (given-input-pathname
 		     &key
-		       (output-file (cfp-output-file-default given-input-pathname))
+		       (output-file nil output-file-p)
 		       (verbose *compile-verbose*)
 		       (print *compile-print*)
-                       (system-p nil)
+                       (system-p nil system-p-p)
 		       (external-format :default)
+		       ;; If we are spoofing the source-file system to treat given-input-name
+		       ;; as a part of another file then use source-truename to provide the
+		       ;; truename of the file we want to mimic
+		       source-debug-namestring
+		       ;; This is the offset we want to spoof
+		       (source-debug-offset 0)
+		       ;; output-type can be (or :fasl :bitcode :object)
+		       (output-type :fasl)
 ;;; type can be either :kernel or :user
 		       (type :user)
                      &aux conditions
 		       )
   "See CLHS compile-file"
+  (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
+  (if (not output-file-p) (setq output-file (cfp-output-file-default given-input-pathname output-type)))
   (with-compiler-env (conditions)
     (let ((*compile-print* print)
 	  (*compile-verbose* verbose))
       ;; Do the different kind of compile-file here
-      (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :type (compile-file-type :system-p system-p)))
-	     (module (compile-file-to-module given-input-pathname output-path :type type))
-	     )
+      (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :output-type output-type ))
+	     (module (compile-file-to-module given-input-pathname output-path 
+					     :type type 
+					     :source-debug-namestring source-debug-namestring 
+					     :source-debug-offset source-debug-offset )))
 	(cond
-	  (system-p
+	  ((eq output-type :object)
 	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
 	   (ensure-directories-exist output-path)
 	   (with-open-file (fout output-path :direction :output)
@@ -368,10 +417,19 @@ and the pathname of the source file - this will also be used as the module initi
 				  ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
 				  (t 'llvm-sys:reloc-model-default))))
 	       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
-	  (t
+	  ((eq output-type :bitcode)
 	   (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))
 	   (ensure-directories-exist output-path)
-	   (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename output-path))))
+	   (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename output-path)))
+	  ((eq output-type :fasl)
+	   (ensure-directories-exist output-path)
+	   (let ((temp-bitcode-file (compile-file-pathname given-input-pathname :output-file output-file :output-type :bitcode)))
+	     (bformat t "Writing fasl file to: %s\n" output-file)
+	     (ensure-directories-exist temp-bitcode-file)
+	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
+	     (cmp::link-system-lto output-file :lisp-bitcode-files (list temp-bitcode-file))))
+	  (t ;; fasl
+	   (error "Add support to file of type: ~a" output-type)))
 	(dolist (c conditions)
 	  (bformat t "conditions: %s\n" c))
 	(compile-file-results output-path conditions)))))

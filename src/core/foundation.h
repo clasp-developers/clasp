@@ -647,6 +647,7 @@ extern int _global_signalTrap;
 
 
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
+void lisp_errorUnexpectedNil(class_id expectedTyp);
 void lisp_errorDereferencedNil();
 void lisp_errorDereferencedUnbound();
 void lisp_errorIllegalDereference(void* v);
@@ -654,7 +655,8 @@ void lisp_errorIllegalDereference(void* v);
 
 namespace core {
     class MultipleValues;
-    MultipleValues* lisp_multipleValues();
+    MultipleValues* lisp_multipleValues();	
+    MultipleValues* lisp_callArgs();
 };
 
 
@@ -684,6 +686,12 @@ namespace core {
 #include "gctools/containers.h"
 
 
+namespace core {
+    /*! This pushes the newestMultipleValues onto the thread local MultipleValues stack.
+     The current top of the stack is returned. */
+    void lisp_pushMultipleValues(MultipleValues* newestMultipleValues);
+    void lisp_popMultipleValues();
+};
 
 #include "multipleValues.h"
 
@@ -888,7 +896,7 @@ namespace core {
     typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 //    typedef T_mv (*ActivationFrameFunctionPtr)(ActivationFrame_sp);
-    typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf, int nargs, ArgArray argArray);
+    typedef T_mv (*ArgArrayGenericFunctionPtr)(Instance_sp gf); // , int nargs, ArgArray argArray);
 
     class Lisp_O;
     typedef Lisp_O* Lisp_sp;
@@ -1101,6 +1109,7 @@ namespace core
     /*! Write characters to the stream */
     void lisp_write(const boost::format& fmt, T_sp stream);
 
+
     Lisp_sp lisp_fromObject(T_sp obj);
     string lisp_currentPackageName();
     string lisp_classNameAsString(Class_sp c);
@@ -1110,7 +1119,7 @@ namespace core
     bool lisp_fixnumP(core::T_sp obj);
     Fixnum lisp_asFixnum(core::T_sp obj);
     /*! Create a SourcePosInfo object for a C++ function */
-    SourcePosInfo_sp lisp_createSourcePosInfo(const string& sourceFile, int lineno);
+    SourcePosInfo_sp lisp_createSourcePosInfo(const string& sourceFile, size_t filePos, int lineno);
 
     bool lisp_characterP(core::T_sp obj);
     bool lisp_BuiltInClassesInitialized();
@@ -1235,9 +1244,11 @@ namespace core
     T_sp lisp_ocar(Cons_sp args);
     T_sp lisp_ocadr(Cons_sp args);
     T_sp lisp_ocaddr(Cons_sp args);
+    /*! Return a string representation of the object */
+    string lisp_rep(T_sp obj);
     Symbol_sp lisp_internKeyword(const string& name);
     Symbol_sp lisp_intern(const string& name);
-    Symbol_sp lisp_intern(const string& symName,const string& pkgName);
+    Symbol_sp lisp_intern(const string& symbolName, const string& packageName);
     T_sp lisp_VectorObjectsFromMultipleValues(T_mv values);
     /*! Search the sequence SEQ for the object OBJ and return its index and true if found - otherwise false and IDX is undef */
     bool lisp_search(T_sp seq, T_sp obj, int& idx);
@@ -1254,29 +1265,30 @@ namespace core
     /*! Register source info for the object in the current source database */
     core::SourcePosInfo_sp lisp_registerSourceInfo(T_sp obj
                                                    , SourceFileInfo_sp sfo
+						   , size_t filePos
                                                    , int lineno
                                                    , int column );
+    core::SourcePosInfo_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi );
+#if 0    
     core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
-                                                             , Stream_sp stream);
+                                                             , T_sp stream);
 
-
+#endif
     class Functoid
     {
         struct metadata_always_fix_pointers_to_derived_classes;
         FRIEND_GC_SCANNER();
     public:
-	virtual string describe() const {return "Functoid - subclass must implement describe()";};
-        void operator()( core::T_mv* lcc_resultP, int lcc_nargs, core::T_O* lcc_fixed_arg0, core::T_O* lcc_fixed_arg1, core::T_O* lcc_fixed_arg2, ... ) {
-            va_list arglist;
-            va_start(arglist,lcc_fixed_arg2);
-            this->invoke(lcc_resultP,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,arglist);
-            va_end(arglist);
+	virtual const char* describe() const {return "Functoid - subclass must implement describe()";};
+        void operator()( LCC_RETURN, LCC_ARGS )
+	{
+            this->invoke(lcc_resultP, LCC_PASS_ARGS );
         }
 
 //#define LISP_INVOKE() invoke( core::T_mv* lcc_resultP, int lcc_nargs, core::T_sp lcc_fixed_arg0, core::T_sp lcc_fixed_arg1, core::T_sp lcc_fixed_arg2, va_list lcc_arglist )
 
 	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Functoid must implement 'activate'\n"); exit(1);};
-        virtual size_t templatedSizeof() const = 0;
+        virtual size_t templatedSizeof() const {return sizeof(*this);};
 	void dump() const
 	{
 	    printf( "Functoid - %s\n", _rep_(this->name).c_str());
@@ -1291,7 +1303,8 @@ namespace core
     public:
         T_sp name;
     public:
-	Functoid(T_sp n) : name(n) {};
+	Functoid(T_sp n);
+	string nameAsString();
 	virtual ~Functoid() {};
     };
 
@@ -1305,7 +1318,7 @@ namespace core
                                      , closedEnvironment(env) {};
 	virtual ~Closure() {};
     public:
-	virtual string describe() const {return "Closure";};
+	virtual const char* describe() const {return "Closure";};
 	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Closure must implement 'activate'\n"); exit(1);};
 
         virtual SourcePosInfo_sp sourcePosInfo() const {return _Nil<SourcePosInfo_O>();};
@@ -1315,10 +1328,14 @@ namespace core
         virtual bool compiledP() const { return false; };
         virtual bool interpretedP() const { return false; };
         virtual bool builtinP() const { return false;};
-        virtual int sourceFileInfoHandle() const = 0;
+        virtual int sourceFileInfoHandle() const;
+	virtual size_t filePos() const { return 0;}
         virtual int lineNumber() const { return 0;}
         virtual int column() const { return 0;};
         virtual LambdaListHandler_sp lambdaListHandler() const = 0;
+	virtual T_sp lambdaList() const = 0;
+	virtual Str_sp docstring() const;
+	virtual Cons_sp declares() const;
     };
 
 

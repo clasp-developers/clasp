@@ -54,8 +54,10 @@ namespace core
     {_G();
 	T_sp output;
         if ( destination.nilp() ) {
-            output = clasp_make_string_output_stream();
-        } else {
+             output = clasp_make_string_output_stream();
+        } else if (destination == _sym_printf) {
+	    output = destination;
+	} else {
             output = coerce::outputStreamDesignator(destination);
         }
 	boost::format fmter(control);
@@ -108,7 +110,11 @@ namespace core
 		  {
 		      SIMPLE_ERROR(BF("Unknown bformat command error"));
 		  }
-        clasp_write_string(fmter_str,output);
+	if ( output == _sym_printf ) {
+	    printf("%s", fmter_str.c_str() );
+	} else {
+	    clasp_write_string(fmter_str,output);
+	}
         if ( destination.nilp() ) {
             return cl_get_output_stream_string(output);
         }

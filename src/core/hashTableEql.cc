@@ -96,7 +96,7 @@ namespace core
 
     bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const
     {_OF();
-	return af_eql(entryKey,searchKey);
+	return cl_eql(entryKey,searchKey);
     }
 
     int HashTableEql_O::sxhashKey(T_sp obj ,int bound, bool willAddKey) const

@@ -138,6 +138,9 @@
 	    (ext:warn-or-ignore "Unknown declaration specifier ~s" decl-name))))))
 
 (defun proclaim-var (type vl)
+  ;;; Currently I don't handle types
+  )
+#||
   (dolist (var vl)
     (if (symbolp var)
 	(let ((type1 (get-sysprop var 'CMP-TYPE)))
@@ -149,3 +152,4 @@
 	    (setq type1 T))
 	  (put-sysprop var 'CMP-TYPE type1))
 	(warn "The variable name ~s is not a symbol." var))))
+||#

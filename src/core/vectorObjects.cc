@@ -180,16 +180,21 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
 
 
 
+    T_sp VectorObjects_O::asetUnsafe(int idx, T_sp value)
+    {_G();
+	this->_Values[idx] = value;
+	return value;
+    }
 
 
     void VectorObjects_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end)
     {_OF();
 	uint istart = start->get();
 	uint last = this->_Values.size();
-	uint iend = last-1;
+	uint iend = last;
 	if ( end.notnilp() ) iend = end.as<Fixnum_O>()->get();
 	ASSERTF(iend>=istart,BF("Illegal fill range istart=%d iend=%d") % istart % iend );
-	ASSERTF(iend<last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );
+	ASSERTF(iend<=last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );
 	ASSERTF(istart>=0 <= iend,BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend );
 	for ( uint i = istart; i<iend; i++ )
 	{

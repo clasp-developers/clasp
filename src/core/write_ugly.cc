@@ -65,6 +65,7 @@ THE SOFTWARE.
 #include "core/evaluator.h"
 #include "core/arguments.h"
 #include "core/print.h"
+#include "core/write_symbol.h"
 #include "core/write_ugly.h"
 
 #include "core/character.h"
@@ -167,7 +168,7 @@ namespace core
     {
 	StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
         int print_base = clasp_print_base();
-        af_integerToString(buffer,this->const_sharedThis<Integer_O>(),
+        core_integerToString(buffer,this->const_sharedThis<Integer_O>(),
 			   Fixnum_O::create(print_base),
 			   cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
 			   true);
@@ -474,7 +475,7 @@ namespace core
 	    break;
 	case gctools::smart_ptr<T_O>::special_tag:
 	    if ( x.nilp() ) { // ECL appears to shunt this off to write_list
-                clasp_write_string("NIL",stream);
+                clasp_write_symbol(x,stream);
 //                Str_sp nilstr = Str_O::create("NIL");
 //		nilstr->__write__(stream);      
 	    } else if ( x.unboundp() ) {

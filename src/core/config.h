@@ -65,7 +65,7 @@ typedef int claspCharacter;
 
 
 // OS X 10.6   LINUX 4096???
-#define CLASP_MAXPATHLEN	250
+#define CLASP_MAXPATHLEN	1024
 
 /*! TODO: Tie this to the Fixnum tagged pointer implementation */
 #define FIXNUM_BITS 32
@@ -86,11 +86,21 @@ typedef int claspCharacter;
 /*! Don't use LongFloat - they are doubles */
 //#define CLASP_LONG_FLOAT 1
 
+// Use an array on the stack to store multiple_values
+#define USE_MULTIPLE_VALUES_ARRAY
 
 #define BRCL_ARRAY_DIMENSION_LIMIT (1024*1024)
 
+
+/*! Pass five arguments in registers, the rest in memory */
+#define LCC_ARGS_IN_REGISTERS	5
+
+
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT	64
+
+#define CHAR_CODE_LIMIT 256
+
 
 #define BRCL_INTERNAL_TIME_UNITS_PER_SECOND 1000
 #endif
@@ -107,7 +117,7 @@ typedef int claspCharacter;
 #define HAVE_FSEEKO 1
 
 #ifndef HAVE_FSEEKO
-#define clasp_off_t int
+#define clasp_off_t size_t
 #define clasp_fseeko fseek
 #define clasp_ftello ftell
 #else
@@ -115,3 +125,5 @@ typedef int claspCharacter;
 #define clasp_fseeko fseeko
 #define clasp_ftello ftello
 #endif
+
+#define MKSTEMP

@@ -431,7 +431,7 @@ namespace clbind
         derivable_class_(const char* name): derivable_class_base(name), scope(*this)
         {
 #ifndef NDEBUG
-            detail::check_link_compatibility();
+//            detail::check_link_compatibility();
 #endif
             init(true /* has constructor */); 
             // I have a constructor and I can test isDerivableCxxClass<T>(0)
@@ -444,7 +444,7 @@ namespace clbind
         derivable_class_(const char* name, no_default_constructor_type  ): derivable_class_base(name), scope(*this)
         {
 #ifndef NDEBUG
-            detail::check_link_compatibility();
+//            detail::check_link_compatibility();
 #endif
             init(false /* Does not have constructor */); 
         }

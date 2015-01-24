@@ -99,7 +99,7 @@ namespace gctools
 	static const uintptr_t unbound = BaseType::tagged_unbound;
     public:
         static smart_ptr<T> createFixnum(int f) {
-            smart_ptr<T> ret(f);
+            smart_ptr<T> ret(gctools::tagged_ptr<T>::make_tagged_fixnum(f));
             return ret;
         }
     public:
@@ -151,15 +151,14 @@ namespace gctools
 	    if (this->pointerp()) {
                 smart_ptr<o_class> ret(gctools::DynamicCast<o_class*,T*>::castOrNULL(this->px));
 		return ret;
-	    }
-	    if ( this->BaseType::fixnump()) {
+	    } else if ( this->BaseType::fixnump()) {
 		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
-	    }
-	    if ( this->nilp()) {
+	    } else if ( this->BaseType::framep()) {
+		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
+	    } else if ( this->nilp()) {
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
 		return nil;
-	    }
-	    if ( this->unboundp() ) {
+	    } else if ( this->unboundp() ) {
 		smart_ptr<o_class> unbound(smart_ptr<o_class>::tagged_unbound);
 		return unbound;
 	    }
@@ -177,16 +176,14 @@ namespace gctools
                 smart_ptr<o_class> ret(const_cast<o_class*>(gctools::DynamicCast<const o_class*,T*>::castOrNULL(this->px)));
 //		smart_ptr</* TODO: const */ o_class> ret(const_cast<o_class*>(dynamic_cast<const o_class*>(this->px)));
 		return ret;
-	    }
-	    if ( this->BaseType::fixnump()) {
+	    } else if ( this->BaseType::fixnump()) {
 		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
-	    }
-
-	    if ( this->nilp()) {
+	    } else if ( this->BaseType::framep()) {
+		return smart_ptr<o_class>(reinterpret_cast<uintptr_t>(this->px));
+	    } else if ( this->nilp()) {
 		smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
 		return nil;
-	    }
-	    if ( this->unboundp() ) {
+	    } else if ( this->unboundp() ) {
 		smart_ptr<o_class> unbound(smart_ptr<o_class>::tagged_unbound);
 		return unbound;
 	    }
@@ -251,6 +248,25 @@ namespace gctools
 	    return ret;
 	}
 
+	
+	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
+	  If the ptr is nil, throw an error */
+	template <class o_class>
+            inline smart_ptr< o_class> asNotNil() const
+	{
+	    if ( this->nilp() ) {
+		class_id expected_typ = reg::registered_class<o_class>::id;
+		lisp_errorUnexpectedNil(expected_typ);
+	    }
+	    smart_ptr< o_class> ret = this->asOrNull<o_class>();
+	    if (!ret) {
+		class_id expected_typ = reg::registered_class<o_class>::id;
+		class_id this_typ = reg::registered_class<T>::id;
+		lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->px));
+	    }
+	    return ret;
+	}
+
 	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
 	  If the ptr is nil, return a nil ptr */
 	template <class o_class>
@@ -302,10 +318,10 @@ namespace gctools
 
 	bool notnilp() const { return (!this->nilp());};
 	bool isTrue() const { return !this->nilp(); };
-        bool base_fixnump() const { return this->BaseType::fixnump(); };
+        bool tagged_fixnump() const { return this->BaseType::fixnump(); };
 	bool fixnump() const {return lisp_fixnumP(*this);};
 	bool characterp() const {return lisp_characterP(*this);};
-
+	bool NULLp() const { return this->px_ref() == NULL; };
         Fixnum asFixnum() const { return lisp_asFixnum(*this);};
 
 #ifdef POLYMORPHIC_SMART_PTR

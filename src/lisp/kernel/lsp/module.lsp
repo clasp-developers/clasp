@@ -70,12 +70,26 @@ module."
 
 
 (pushnew #'(lambda (module)
-	     (let* ((module (string module)))
-	       (or
-		(let ((path (make-pathname :name module :defaults "SYS:")))
-		  (load path :if-does-not-exist nil))
-		(let ((path (make-pathname :name (string-downcase module)
-                                           :defaults "SYS:")))
-		  (load path :if-does-not-exist nil)))))
+	     (let* ((module (string module))
+		    (dc-module (string-downcase module))
+		    (target-backend-pathname (make-pathname :host (default-target-backend))))
+	       (block require-block
+		 (dolist (name (list module dc-module))
+		   (dolist (type (list "fasl" "FASL" "bundle" "lsp" "lisp" "LSP" "LISP"))
+		     (dolist (directory (list
+					 (list :absolute)
+					 (list :absolute name)
+					 (list :absolute "kernel" name)
+					 (list :absolute "modules" name)
+					 ))
+		       (if (let ((path (make-pathname :name name :type type :directory directory :defaults "SYS:")))
+			     #+(or)(format t "Require searching for ~a~%" path)
+			     (load path :if-does-not-exist nil))
+			   (return-from require-block t)
+			   (if (let ((path (make-pathname :name name :type type :directory directory :defaults target-backend-pathname)))
+				 #+(or)(format t "Require searching for ~a~%" path)
+				 (load path :if-does-not-exist nil))
+			       (return-from require-block t))
+			   )))))))
 	 *module-provider-functions*)
 

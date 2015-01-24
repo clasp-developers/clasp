@@ -22,6 +22,7 @@ $var NumArgs = 8
                 public:
                     enum { NumParams = $numArgs };
                     VariadicConstructorFunctoid(const string& name) : Functoid(name) {};
+		    virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
                     
                     core::T_mv activate( ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
                     {

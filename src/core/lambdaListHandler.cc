@@ -44,39 +44,16 @@ namespace core
 {
 
 
-    void lambdaListHandler_createBindings(core::FunctionClosure* closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LISP_CALLING_CONVENTION_ARGS)
+    void lambdaListHandler_createBindings(core::FunctionClosure* closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager& scope, LCC_ARGS)
     {
         // TODO: I should allocate this on the stack - but clang doesn't behave consistently
         // when I use variable stack arrays
 //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
-        T_O** args = (T_O**)alloca(sizeof(T_O*)*lcc_nargs);
-        switch (lcc_nargs)
-        {
-        case 0:
-            break;
-        case 1:
-            args[0] = lcc_fixed_arg0;
-            break;
-        case 2:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            break;
-        case 3:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            args[2] = lcc_fixed_arg2;
-            break;
-        default:
-            args[0] = lcc_fixed_arg0;
-            args[1] = lcc_fixed_arg1;
-            args[2] = lcc_fixed_arg2;
-            for ( size_t it=3; it<lcc_nargs; ++it ) {
-                args[it] = va_arg(lcc_arglist,T_O*);
-            }
-            break;
-        }
+//        T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
+	MultipleValues* mvP = NULL;
+	LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(mvP);
         try {
-            llh->createBindingsInScope_argArray_TPtr(lcc_nargs,args,scope);
+            llh->createBindingsInScope_argArray(mvP->getSize(),mvP->callingArgsStart(),scope);
         } catch (...) {
             printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
             handleArgumentHandlingExceptions(closure);
@@ -150,6 +127,63 @@ namespace core
 
 
 
+    T_sp LambdaListHandler_O::lambdaList()
+    {
+	ql::list ll(_lisp);
+	{ // required arguments  req = ( num req1 req2 ...)
+	    for ( gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
+		  it!=this->_RequiredArguments.end(); it++ )
+	    {
+		ll << it->_ArgTarget;
+	    }
+	}
+	if ( this->_OptionalArguments.size() > 0 ) {
+	    ll << cl::_sym_AMPoptional;
+	    for ( gctools::Vec0<OptionalArgument>::const_iterator it = this->_OptionalArguments.begin();
+		  it!=this->_OptionalArguments.end(); it++ )
+		{
+		    if (it->_Sensor._ArgTarget.notnilp() ) {
+			Cons_sp one = Cons_O::createList(it->_ArgTarget,it->_Default,it->_Sensor._ArgTarget);
+			ll << one;
+		    } else if (it->_Default.notnilp() ) {
+			Cons_sp one = Cons_O::createList(it->_ArgTarget,it->_Default);
+			ll << one;
+		    } else {
+			ll << it->_ArgTarget;
+		    }
+		}
+	}
+	if ( this->_RestArgument._ArgTarget.notnilp() ) {
+	    ll << cl::_sym_AMPrest;
+	    ll << this->_RestArgument._ArgTarget;
+	}
+	if ( this->_KeyFlag.notnilp() || this->_KeywordArguments.size()>0 ) {
+	    ll << cl::_sym_AMPkey;
+	    for ( gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();
+		  it!=this->_KeywordArguments.end(); it++ )
+	    {
+		T_sp keywordTarget = it->_ArgTarget;
+		if ( it->_Keyword.as<Symbol_O>()->symbolName()->get() != keywordTarget.as<Symbol_O>()->symbolName()->get() ) {
+		    keywordTarget = Cons_O::createList(it->_Keyword,keywordTarget);
+		}
+		if (it->_Sensor._ArgTarget.notnilp() ) {
+		    Cons_sp one = Cons_O::createList(keywordTarget,it->_Default,it->_Sensor._ArgTarget);
+		    ll << one;
+		} else if (it->_Default.notnilp() ) {
+			Cons_sp one = Cons_O::createList(keywordTarget,it->_Default);
+			ll << one;
+		} else {
+		    ll << keywordTarget;
+		}
+	    }
+	}
+	if (this->_AllowOtherKeys.notnilp()) {
+	    ll << cl::_sym_AMPallow_other_keys;
+	}
+	return ll.cons();
+    }
+    
+
     SymbolSet_sp LambdaListHandler_O::identifySpecialSymbols(Cons_sp declareSpecifierList)
     {_G();
 	SymbolSet_sp specials(SymbolSet_O::create());
@@ -160,7 +194,7 @@ namespace core
 	    for ( Cons_sp cur = declareSpecifierList; cur.notnilp(); cur=cCdr(cur) )
 	    {
 		T_sp entry = oCar(cur);
-		if ( af_consP(entry) && oCar(entry) == cl::_sym_special )
+		if ( cl_consp(entry) && oCar(entry) == cl::_sym_special )
 		{
 		    for ( Cons_sp spcur = cCdr(entry.as_or_nil<Cons_O>()); spcur.notnilp(); spcur=cCdr(spcur) )
 		    {
@@ -207,7 +241,7 @@ namespace core
 		    saw_amp = true;
 		    break;
 		}
-	    } else if ( af_consP(arg) )
+	    } else if ( cl_consp(arg) )
 	    {
 		Cons_sp carg = arg.as_or_nil<Cons_O>();
 		if ( cl_length(carg) != 2 )
@@ -289,11 +323,11 @@ namespace core
 
 	Symbol_sp name_symbol = af_gensym(Str_O::create("macro-name"));
 	//	SourceCodeCons_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
-	ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),af_sourceFileInfo(lambda_list));
+	ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core_sourceFileInfo(lambda_list));
 	sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol,new_lambda_list);
 	Cons_sp macro_ll = sclist.cons();
         if ( _lisp->sourceDatabase().notnilp() ) {
-            _lisp->sourceDatabase()->duplicateSourceInfo(lambda_list,macro_ll);
+            _lisp->sourceDatabase()->duplicateSourcePosInfo(lambda_list,macro_ll);
         }
 	return macro_ll;
     }
@@ -330,7 +364,6 @@ namespace core
     {_OF();
         this->Base::initialize();
 	this->_CreatesBindings = true;
-	this->_LambdaList = _Nil<Cons_O>();
 	this->_DeclareSpecifierList = _Nil<Cons_O>();
 	this->_RequiredArguments.clear();
 	this->_OptionalArguments.clear();
@@ -368,7 +401,7 @@ namespace core
 	} else
 	{
 	    target._ArgTargetFrameIndex = this->lexicalIndex;
-	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_lexicalVar,Cons_O::create(target._ArgTarget,Fixnum_O::create(target._ArgTargetFrameIndex)));
+	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_heapVar,Cons_O::create(target._ArgTarget,Fixnum_O::create(target._ArgTargetFrameIndex)));
 	    this->advanceLexicalIndex();
 	}
     }
@@ -480,6 +513,8 @@ namespace core
 #undef PASS_ARGS
 #undef PASS_ARGS_NUM
 #undef PASS_NEXT_ARG
+
+
 
 
 #define PASS_FUNCTION_REQUIRED 	bind_required_argArray_TPtr
@@ -605,7 +640,7 @@ void bind_aux
     bool switch_add_argument_mode(T_sp context, Symbol_sp symbol, ArgumentMode& mode, T_sp& key_flag )
     {_G();
 	LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % symbol->__repr__() % symbol.get() );
-	bool isAmpSymbol = ( symbol == _sym_DOT || symbol->amp_symbol_p() );
+	bool isAmpSymbol = ( symbol == _sym_DOT || (symbol.notnilp() && symbol->amp_symbol_p()) );
 	if ( isAmpSymbol )
 	{
 	    LOG(BF("It is an amp symbol"));
@@ -824,7 +859,7 @@ void bind_aux
 		{
 		    sarg = oarg.as<Symbol_O>();
 		    LOG(BF("Optional argument was a Symbol_O[%s]") % sarg->__repr__() );
-		} else if ( af_consP(oarg) )
+		} else if ( cl_consp(oarg) )
 		{
 		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
 		    LOG(BF("Optional argument is a Cons: %s") % carg->__repr__() );
@@ -884,7 +919,7 @@ void bind_aux
 		{
 		    localTarget = oarg;
 		    keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
-		} else if ( af_consP(oarg) )
+		} else if ( cl_consp(oarg) )
 		{
 		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
 		    T_sp head = oCar(carg);
@@ -893,7 +928,7 @@ void bind_aux
 			localTarget = head;
 			ASSERTP(!localTarget.as<Symbol_O>()->isKeywordSymbol(), "Do not use keyword symbols when specifying arguments");
 			keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
-		    } else if ( af_consP(head) )
+		    } else if ( cl_consp(head) )
 		    {
 			Cons_sp namePart = head.as_or_nil<Cons_O>();
 			keySymbol = oCar(namePart).as<Symbol_O>();			// This is the keyword name
@@ -931,7 +966,7 @@ void bind_aux
 		if ( af_symbolp(oarg) )
 		{
 		    localSymbol = oarg.as<Symbol_O>();
-		} else if ( af_consP(oarg) )
+		} else if ( cl_consp(oarg) )
 		{
 		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
 		    localSymbol = oCar(carg).as<Symbol_O>();
@@ -950,7 +985,7 @@ void bind_aux
 	    }
 	NEXT:
 	    T_sp ocur = oCdr(cur);
-	    if ( ocur.nilp() || af_consP(ocur) )
+	    if ( ocur.nilp() || cl_consp(ocur) )
 	    {
 		// Advance to next element of the list
 		cur = ocur.as_or_nil<Cons_O>();
@@ -1106,7 +1141,7 @@ void bind_aux
 	    classifier.classifyTarget(req);
 	}
 	this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-	ASSERTF(this->_ClassifiedSymbolList.nilp() || af_consP(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
+	ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
 	this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
     }
 
@@ -1116,7 +1151,6 @@ void bind_aux
     {_OF();
 	T_sp whole;
 	Symbol_sp environment;
-	this->_LambdaList = lambda_list;
 	this->_DeclareSpecifierList = declareSpecifierList;
 	this->_CreatesBindings = parse_lambda_list(lambda_list,
 						   context,
@@ -1131,7 +1165,7 @@ void bind_aux
 	{
 	    this->recursively_build_handlers_count_arguments(declareSpecifierList,context,classifier);
 	    this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-	    ASSERTF(this->_ClassifiedSymbolList.nilp() || af_consP(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
+	    ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
 	} else
 	{
 	    this->_ClassifiedSymbolList = _Nil<Cons_O>();
@@ -1317,7 +1351,7 @@ void bind_aux
 	Cons_sp namesRev = _Nil<Cons_O>();
 	for ( Cons_sp cur=this->_ClassifiedSymbolList; cur.notnilp(); cur=cCdr(cur) )
 	{
-	    if ( oCar(oCar(cur)) == ext::_sym_lexicalVar )
+	    if ( oCar(oCar(cur)) == ext::_sym_heapVar )
 	    {
 		namesRev = Cons_O::create(oCadr(oCar(cur)),namesRev);
 	    }
@@ -1366,6 +1400,7 @@ void bind_aux
 	    .def("numberOfLexicalVariables",&LambdaListHandler_O::numberOfLexicalVariables)
 	    .def("namesOfLexicalVariables",&LambdaListHandler_O::namesOfLexicalVariables)
 	    .def("namesOfLexicalVariablesForDebugging",&LambdaListHandler_O::namesOfLexicalVariablesForDebugging)
+	    .def("LambdaListHandler-lambdaList",&LambdaListHandler_O::lambdaList)
 	    ;
 	SYMBOL_SC_(CorePkg,process_macro_lambda_list);
 	Defun(process_macro_lambda_list);

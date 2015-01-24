@@ -59,6 +59,7 @@ THE SOFTWARE.
 #include <core/arguments.h>
 #include "clbind/clbind.h"
 #include "llvmo/translators.h"
+#include "llvmo/llvmoExpose.h"
 #include <asttooling/astExpose.h>
 #include <asttooling/asttoolingPackage.h>
 #include <asttooling/translators.h>
@@ -78,6 +79,102 @@ THE SOFTWARE.
 
 
 
+namespace translate {
+
+    template <>
+    struct from_object<clang::tooling::CommandLineArguments> {
+        typedef clang::tooling::CommandLineArguments DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+	    if ( o.notnilp() ) {
+		if ( core::Cons_sp args = o.asOrNull<core::Cons_O>() ) {
+		    _v.clear();
+		    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) ) {
+			core::Str_sp s = oCar(cur).as<core::Str_O>();
+			_v.push_back(s->get());
+		    }
+		    return;
+		} else if ( core::Vector_sp vargs = o.asOrNull<core::Vector_O>() ) {
+                    _v.clear();
+                    for ( int i(0), iEnd(vargs->length()); i<iEnd; ++i ) {
+                        core::Str_sp s = (*vargs)[i].as<core::Str_O>();
+                        _v.push_back(s->get());
+                    }
+                    return;
+		}
+	    }
+	    SIMPLE_ERROR(BF("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") % _rep_(o) );
+	}
+    };
+
+
+#if 0
+    // This is not necessary because CommandLineArguments are just vector<string>
+        template <>
+    struct from_object<const clang::tooling::CommandLineArguments&> {
+        typedef clang::tooling::CommandLineArguments DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+	    if ( o.notnilp() ) {
+		if ( core::Cons_sp args = o.asOrNull<core::Cons_O>() ) {
+		    _v.clear();
+		    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) ) {
+			core::Str_sp s = oCar(cur).as<core::Str_O>();
+			_v.push_back(s->get());
+		    }
+		    return;
+		} else if ( core::Vector_sp vargs = o.asOrNull<core::Vector_O>() ) {
+                    _v.clear();
+                    for ( int i(0), iEnd(vargs->length()); i<iEnd; ++i ) {
+                        core::Str_sp s = (*vargs)[i].as<core::Str_O>();
+                        _v.push_back(s->get());
+                    }
+                    return;
+		}
+	    }
+	    SIMPLE_ERROR(BF("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") % _rep_(o) );
+	}
+    };
+#endif
+
+
+    template <>
+    struct from_object<clang::tooling::ArgumentsAdjuster> {
+        typedef clang::tooling::ArgumentsAdjuster DeclareType;
+	//	clang::tooling::CommandLineArguments(const clang::tooling::CommandLineArguments&)> DeclareType;
+        DeclareType _v;
+        from_object(core::T_sp o) {
+	    printf("%s:%d Entered from_object<clang::tooling::ArgumentsAdjuster>\n", __FILE__, __LINE__ );
+	    if ( o.nilp() ) {
+		SIMPLE_ERROR(BF("You cannot pass nil as a function"));
+	    } else if ( core::Function_sp func = o.asOrNull<core::Function_O>() ) {
+		core::Closure* closure = func->closure;
+		if ( llvmo::CompiledClosure* compiledClosure = dynamic_cast<llvmo::CompiledClosure*>(closure) ) {
+		    llvmo::CompiledClosure::fptr_type fptr = compiledClosure->fptr;
+		    this->_v = [fptr] (const clang::tooling::CommandLineArguments& args)->clang::tooling::CommandLineArguments {
+			// Should resolve to vector<string>
+			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
+			core::T_mv result;
+			// Call the fptr
+			fptr(&result,_Nil<core::T_O>().asTPtr(),1,targs.asTPtr(),NULL,NULL,NULL,NULL);
+			// Should resolve to const vector<string>& 
+			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
+			return cresult._v;
+			// Convert args to CL object
+			// Call fptr
+			// Convert result to CommandLineArguments and return them
+		    };
+		    return;
+		}
+	    } else if ( clang::tooling::ArgumentsAdjuster* argAdj = o.as<core::WrappedPointer_O>()->cast<clang::tooling::ArgumentsAdjuster>() ) {
+		this->_v = *argAdj;
+		return;
+	    }
+	    SIMPLE_ERROR(BF("Cannot convert %s into a clang::tooling::ArgumentsAdjuster") % _rep_(o) );
+	}
+    };
+
+};
 
 namespace asttooling {
 
@@ -150,10 +247,10 @@ INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::Lexer>);
 typedef clbind::Wrapper<clang::tooling::ArgumentsAdjuster> ArgumentsAdjuster_wrapper;
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ArgumentsAdjuster_wrapper);
 
-typedef clbind::Wrapper<clang::tooling::ClangSyntaxOnlyAdjuster> ClangSyntaxOnlyAdjuster_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangSyntaxOnlyAdjuster_wrapper);
-typedef clbind::Wrapper<clang::tooling::ClangStripOutputAdjuster> ClangStripOutputAdjuster_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangStripOutputAdjuster_wrapper);
+//typedef clbind::Wrapper<clang::tooling::ClangSyntaxOnlyAdjuster> ClangSyntaxOnlyAdjuster_wrapper;
+//INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangSyntaxOnlyAdjuster_wrapper);
+//typedef clbind::Wrapper<clang::tooling::ClangStripOutputAdjuster> ClangStripOutputAdjuster_wrapper;
+//INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangStripOutputAdjuster_wrapper);
 
 
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<asttooling::Diagnostics>);
@@ -519,17 +616,13 @@ namespace asttooling {
             ,def("newFrontendActionFactory",&af_newFrontendActionFactory)
             ,derivable_class_<DerivableFrontendActionFactory,clang::tooling::FrontendActionFactory>("FrontendActionFactory")
             .  def("create",&DerivableFrontendActionFactory::default_create)
-            ,class_<clang::tooling::ArgumentsAdjuster>("ClangArgumentsAdjuster",no_default_constructor)
-            ,class_<clang::tooling::ClangSyntaxOnlyAdjuster,clang::tooling::ArgumentsAdjuster>("ClangSyntaxOnlyAdjuster")
-            .  def_constructor("makeClangSyntaxOnlyAdjuster",constructor<>())
-            ,class_<clang::tooling::ClangStripOutputAdjuster,clang::tooling::ArgumentsAdjuster>("ClangStripOutputAdjuster")
-            .  def_constructor("makeClangStripOutputAdjuster",constructor<>())
-
-
+	    ,class_<clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster",no_default_constructor)
+	    ,def("getClangSyntaxOnlyAdjuster",&clang::tooling::getClangSyntaxOnlyAdjuster)
+	    ,def("getClangStripOutputAdjuster",&clang::tooling::getClangStripOutputAdjuster)
 
             // Don't need derivable_class_ ???????
-            ,derivable_class_<DerivableArgumentsAdjuster,clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster")
-            .    def("ArgumentsAdjuster-adjust",&DerivableArgumentsAdjuster::Adjust)
+	    //            ,derivable_class_<DerivableArgumentsAdjuster,clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster")
+	    //            .    def("ArgumentsAdjuster-adjust",&DerivableArgumentsAdjuster::Adjust)
 
 
 

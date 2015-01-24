@@ -38,9 +38,11 @@ THE SOFTWARE.
 //#i n c l u d e "setfExpander.h"
 #include "environment.h"
 #include "executables.h"
+#include "designators.h"
 #include "builtInClass.h"
 #include "lambdaListHandler.h"
 #include "vectorObjects.h"
+#include "predicates.h"
 #include "standardClass.h"
 #include "standardObject.h"
 #include "predicates.h"
@@ -117,11 +119,22 @@ namespace core
 	if ( env.notnilp() )
 	{
             int depth, index;
-            bool special;
+	    Environment_O::ValueKind valueKind;
             T_sp value;
-            bool found = Environment_O::clasp_findValue(env,sym,depth,index,special,value);
-	    if (found) return value;
-            if (special) return sym->symbolValue();
+            bool found = Environment_O::clasp_findValue(env,sym,depth,index,valueKind,value);
+	    if (found) {
+		switch (valueKind) {
+		case Environment_O::heapValue:
+		    return value;
+		case Environment_O::specialValue:
+		    return sym->symbolValue();
+		case Environment_O::stackValue:
+		    SIMPLE_ERROR(BF("Interpreter should never return a stackValue for: %s") % _rep_(sym) );
+		default:
+		    // do nothing;
+		    break;
+		}
+	    }
 	}
 	if ( sym->specialP() || sym->boundP() )
 	{
@@ -264,7 +277,7 @@ namespace core
 	    for ( Cons_sp cur = clauses; cur.notnilp(); cur = cCdr(cur) )
 	    {
 		T_sp oclause = oCar(cur);
-		if ( af_consP(oclause) )
+		if ( cl_consp(oclause) )
 		{
 		    Cons_sp clause = oclause.as_or_nil<Cons_O>();
 		    T_sp keys = oCar(clause);
@@ -279,15 +292,15 @@ namespace core
 			return eval::sp_progn(forms,environment);
 		    } else if ( af_atom(keys) )
 		    {
-			if ( af_eql(keys,test_key) )
+			if ( cl_eql(keys,test_key) )
 			{
 			    return eval::sp_progn(forms,environment);
 			}
-		    } else if ( af_consP(keys) )
+		    } else if ( cl_consp(keys) )
 		    {
 			for (Cons_sp kcur = keys.as_or_nil<Cons_O>(); kcur.notnilp(); kcur=cCdr(kcur) )
 			{
-			    if ( af_eql(oCar(kcur),test_key) )
+			    if ( cl_eql(oCar(kcur),test_key) )
 			    {
 				return eval::sp_progn(forms,environment);
 			    }
@@ -365,6 +378,13 @@ namespace core
 
     namespace eval
     {
+	/*! LAMBDA expression processing.
+	  Process ( [[declaration* | documentation]] form* ) and
+	  aggregate the declarations into a list ( (decl-1) (decl-2) ... )
+	  and identify the last documentation string seen.
+	  Return the list of declarations, the documentation string and the rest
+	  of the forms in CODE.  Identify the local special declarations and
+	return them in SPECIALS but leave them in the DECLARES list */
 	void extract_declares_docstring_code_specials(Cons_sp inputBody, Cons_sp& declares, bool expectDocString, Str_sp& documentation, Cons_sp& code, Cons_sp& specials )
 	{_G();
 	    Cons_sp body = inputBody;
@@ -373,16 +393,26 @@ namespace core
 	    specials = _Nil<Cons_O>();
 	    for (; body.notnilp(); body=cCdr(body) )
 	    {
-		if ( !af_listp(body) )
+		if ( !cl_listp(body) )
 		{
 		    SIMPLE_ERROR(BF("Bad input to processDeclares: %s") % _rep_(inputBody));
 		}
 		T_sp form = oCar(body);
-		if ( expectDocString && af_stringP(form) && cCdr(body).notnilp() )
+		// If we are expecting docstring and we hit a string, then we hit a possible docstring
+		if ( expectDocString && af_stringP(form))
 		{
-		    if ( documentation.notnilp() ) break;
-		    documentation = form.as<Str_O>();
-		    continue;
+		    // If there is something following the current element then treat it as a docstring
+		    if (oCdr(body).notnilp())
+		    {
+			// Here we are in undefined behavior CLHS 3.4.11
+			// we may be replacing previous docstrings
+			documentation = form.as<Str_O>();
+			continue;
+		    } else {
+			// Nothing follows so the current form is a form
+			// and stop looking for docstrings or declares
+			break;
+		    }
 		}
 		if ( af_atom(form) || oCar(form) != cl::_sym_declare )
 		{
@@ -504,14 +534,8 @@ namespace core
 	    Cons_sp situations = oCar(args).as_or_nil<Cons_O>();
 	    Cons_sp body = cCdr(args);
 	    bool execute = false;
-	    if ( af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue() )
-	    {
-		execute = true;
-	    }
-	    if ( execute )
-	    {
-		return sp_progn(body,environment);
-	    }
+	    if ( af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue() ) {execute = true;}
+	    if ( execute ) {return sp_progn(body,environment);}
 	    return(Values(_Nil<T_O>()));
 	}
 
@@ -535,7 +559,7 @@ namespace core
 	}
 
 
-	T_mv sp_lexicalVar(Cons_sp args, T_sp env)
+	T_mv sp_heapVar(Cons_sp args, T_sp env)
 	{_G();
 	    int depth = oCadr(args).as<Fixnum_O>()->get();
 	    int index = oCddr(args).as<Fixnum_O>()->get();
@@ -690,7 +714,7 @@ namespace core
             while (ip.notnilp())
             {
                 T_sp tagOrForm = oCar(ip);
-                if ( af_consP(tagOrForm) )
+                if ( cl_consp(tagOrForm) )
                 {
                     try
                     {
@@ -725,7 +749,9 @@ namespace core
 	    Symbol_sp tag = oCar(args).as<Symbol_O>();
             int depth=0;
 	    int index=0;
-	    bool foundTag = Environment_O::clasp_findTag(env,tag,depth,index);
+	    bool interFunction;
+	    T_sp tagbodyEnv;
+	    bool foundTag = Environment_O::clasp_findTag(env,tag,depth,index,interFunction,tagbodyEnv);
 	    if ( !foundTag )
 	    {
 		SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") 
@@ -779,7 +805,7 @@ namespace core
 			indices->hash_table_setf_gethash(sym,Fixnum_O::create(idx));
 			++indicesSize;
 		    }
-		    classified << Cons_O::create(ext::_sym_lexicalVar,
+		    classified << Cons_O::create(ext::_sym_heapVar,
 						 Cons_O::create(sym,Fixnum_O::create(idx)));
 		}
 	    }
@@ -839,7 +865,7 @@ namespace core
 	    {
 		Cons_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
-		if ( shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar )
+		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
 		{
 		    T_sp expr = oCar(curExp);
 		    T_sp result = eval::evaluate(expr,evaluateEnvironment);
@@ -849,7 +875,7 @@ namespace core
 		{
 		    scope.new_special(classified);
 		}
-		if ( shead == ext::_sym_lexicalVar )
+		if ( shead == ext::_sym_heapVar )
 		{
 		    debuggingInfo->setf_elt(debugInfoIndex,oCadr(classified));
 		    debugInfoIndex++;
@@ -1174,6 +1200,54 @@ namespace core
 	};
 
 
+
+#define ARGS_core_extractLambdaNameFromDeclares "(declare-list &optional default)"
+#define DECL_core_extractLambdaNameFromDeclares ""
+#define DOCS_core_extractLambdaNameFromDeclares "If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX"
+	T_sp core_extractLambdaNameFromDeclares(Cons_sp declares, T_sp defaultValue)
+	{
+		    // First check for a (declare (core:function-name XXX))
+	    for ( ; declares.notnilp(); declares = oCdr(declares) ) {
+		Cons_sp decl = oCar(declares);
+		if ( oCar(decl) == core::_sym_lambdaName ) {
+		    return oCadr(decl);
+		}
+	    }
+	    return defaultValue;
+	}
+
+
+
+#define ARGS_core_extractLambdaName "(form &optional default)"
+#define DECL_core_extractLambdaName ""
+#define DOCS_core_extractLambdaName "If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX"
+	T_sp core_extractLambdaName(Cons_sp lambdaExpression, T_sp defaultValue)
+	{
+	    Cons_sp body = cCddr(lambdaExpression);
+	    Cons_sp declares;
+	    Str_sp docstring;
+	    Cons_sp form;
+	    parse_lambda_body(body,declares,docstring,form);
+	    // First check for a (declare (core:function-name XXX))
+	    T_sp name = core_extractLambdaNameFromDeclares(declares,_Nil<T_O>());
+	    if ( name.notnilp() ) return name;
+	    // Next check if there is a (lambda (...) (block XXX ...))
+	    if ( cl_consp(form) && cl_length(form) == 1 ) {
+		T_sp first = oCar(form);
+		if ( cl_consp(first) ) {
+		    if ( oCar(first) == cl::_sym_block) {
+			Symbol_sp name = oCadr(first);
+			if ( name.notnilp() ) {
+			    // Only return block name if not nil
+			    return name;
+			}
+		    }
+		}
+	    }
+	    // Fallback return LAMBDA as the name
+	    return defaultValue;
+	}
+
 	/*! Parse a lambda expression of the form ([declare*] ["docstring"] body...) */
 	Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, Cons_sp body, T_sp env)
 	{_G();
@@ -1186,7 +1260,7 @@ namespace core
 	    if ( lambda_list.nilp() )
 	    {
 		llh = lisp_function_lambda_list_handler(_Nil<Cons_O>(),declares);
-	    } else if ( af_consP(lambda_list) )
+	    } else if ( cl_consp(lambda_list) )
 	    {
 		llh = lisp_function_lambda_list_handler(lambda_list.as_or_nil<Cons_O>(),declares);
 		LOG(BF("Passed lambdaList: %s" ) % lambda_list->__repr__() );
@@ -1198,23 +1272,30 @@ namespace core
 		SIMPLE_ERROR(BF("Illegal object for lambda-list you can "
 				      "only pass a Cons or LambdaListHandler"));
 	    }
+	    // If the name is NIL then check if the form has the form (BLOCK XXX ...)
+	    // if it does then use XXX as the name
+	    if ( name.nilp() ) {
+		name = core_extractLambdaName(form,cl::_sym_lambda);
+	    }
+		
 	    Cons_sp code(form);
 	    if ( wrap_block )
 	    {
 		code = Cons_O::create(Cons_O::create(cl::_sym_block,
 						     Cons_O::create(
-							 af_functionBlockName(name),
-							 code)));
+								    af_functionBlockName(name),
+								    code)));
                 if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->duplicateSourceInfo(body,code);
+                    _lisp->sourceDatabase()->duplicateSourcePosInfo(body,code);
                 }
 	    }
 //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
             SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(code);
             if ( spi.nilp() ) {
-                SourceFileInfo_mv sfi_mv = af_sourceFileInfo(_sym_STARcurrentSourceFileInfoSTAR->symbolValue());
-                int sfindex = sfi_mv.valueGet(1).as<Fixnum_O>()->get();
-                spi = SourcePosInfo_O::create(sfindex,_sym_STARcurrentLinenoSTAR->symbolValue().as<Fixnum_O>()->get());
+		spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue().as<SourcePosInfo_O>();
+		if ( spi.nilp() ) {
+		    printf("%s:%d   Could not find source info for lambda\n", __FILE__, __LINE__);
+		}
             }
             InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
                 name
@@ -1233,7 +1314,6 @@ namespace core
 
 
 
-
 /*
   __BEGIN_DOC(candoScript.specialForm.function,function)
   \scriptCmd{function}{object}
@@ -1247,9 +1327,10 @@ namespace core
 	{_G();
 	    ASSERTP(cCdr(args).nilp(),"You can provide only one argument - a symbol that has a function bound to it or a lambda");
 	    T_sp arg = oCar(args);
-	    if ( af_symbolp(arg) )
+	    if ( arg.nilp() ) {
+		WRONG_TYPE_ARG(arg,Cons_O::createList(cl::_sym_or,cl::_sym_Symbol_O,cl::_sym_Cons_O));
+	    } else if ( Symbol_sp fnSymbol = arg.asOrNull<Symbol_O>() )
 	    {
-		Symbol_sp fnSymbol = oCar(args).as<Symbol_O>();
 		LOG(BF("In sp_function - looking up for for[%s]")
 		    % fnSymbol->__repr__() );
 		T_sp fn = af_interpreter_lookup_function(fnSymbol,environment);
@@ -1259,9 +1340,8 @@ namespace core
 		}
 		LOG(BF("     Found form: %s") % fn->__repr__() );
 		return(Values(fn));
-	    } else if ( af_consP(arg) )
+	    } else if ( Cons_sp consArg = arg.asOrNull<Cons_O>() )
 	    {
-		Cons_sp consArg = arg.as_or_nil<Cons_O>();
 		T_sp head = oCar(consArg);
 		if ( head == cl::_sym_setf )
 		{
@@ -1279,7 +1359,7 @@ namespace core
 		    bool wrapBlock = false;
 		    if ( head == cl::_sym_lambda )
 		    {
-			name = _sym_anonymous;
+			name = core_extractLambdaName(consArg,cl::_sym_lambda);
 			lambdaList = oCadr(consArg).as_or_nil<Cons_O>();
 			body = cCddr(consArg);
 			wrapBlock = false;
@@ -1648,11 +1728,50 @@ namespace core
             size_t nargs = args->length();
             T_sp* a = args->argArray();
             switch (nargs) {
+#define APPLY_TO_ACTIVATION_FRAME
 #include "applyToActivationFrame.h"
+#undef APPLY_TO_ACTIVATION_FRAME
             default:
-                SIMPLE_ERROR(BF("Add support for applyToActivationFrame for %d arguments") % nargs);
+		MultipleValues* _mvP = _lisp->callArgs();
+		for ( size_t i(LCC_FIXED_ARGS); i<nargs; ++i ) {
+		    (*_mvP)[i] = a[i];
+		}
+		(*func)(&result,nargs , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) , LCC_FROM_SMART_PTR(a[3]) , LCC_FROM_SMART_PTR(a[4])    );
+		return result;
             };
         }
+
+        T_mv applyClosureToStackFrame(Closure* func, T_sp stackFrame)
+        {
+            T_mv result;
+	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(stackFrame.px));
+            size_t nargs = frame::ValuesArraySize(frameImpl);
+            T_O** a = frame::ValuesArray(frameImpl);
+            switch (nargs) {
+#define APPLY_TO_TAGGED_FRAME
+#include "applyToActivationFrame.h"
+#undef APPLY_TO_TAGGED_FRAME
+            default:
+		MultipleValues* _mvP = _lisp->callArgs();
+		for ( size_t i(LCC_FIXED_ARGS); i<nargs; ++i ) {
+		    (*_mvP)[i] = a[i];
+		}
+		(*func)(&result,nargs,a[0],a[1],a[2],a[3],a[4]);
+		return result;
+            };
+        }
+
+
+	T_mv applyToStackFrame(T_sp head,T_sp stackFrame )
+	{_G();
+	    ASSERT(stackFrame.framep());
+	    Function_sp fn = lookupFunction(head,stackFrame);
+	    ASSERT(fn.notnilp());
+            Closure* closureP = fn->closure;
+            ASSERTF(closureP!=NULL,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+	    return applyClosureToStackFrame(closureP,stackFrame);
+	}
+
 
 	T_mv applyToActivationFrame(T_sp head,ActivationFrame_sp args )
 	{_G();
@@ -1671,6 +1790,73 @@ namespace core
             ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToActivationFrame(closureP,args);
 	}
+
+
+
+
+#define ARGS_cl_apply "(head &rest args)"
+#define DECL_cl_apply ""
+#define DOCS_cl_apply "apply"
+    T_mv cl_apply(T_sp head, T_sp args)
+    {_G();
+	/* Special case when apply is called with one arg and that arg is an ActivationFrame
+	   APPLY directly to that ActivationFrame */
+	int lenArgs = cl_length(args);
+	if ( lenArgs == 0 ) {
+	    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs );
+	}
+	if ( lenArgs == 1 && oCar(args).notnilp() )
+	{
+	    T_sp onlyArg = oCar(args);
+	    Function_sp func = coerce::functionDesignator(head);
+            if ( func.nilp() ) {
+                ERROR_UNDEFINED_FUNCTION(head);
+            } else if ( onlyArg.framep() ) {
+		return eval::applyToStackFrame(func,onlyArg);
+	    } else if ( ActivationFrame_sp singleFrame = onlyArg.asOrNull<ActivationFrame_O>() ) {
+		return eval::applyToActivationFrame(func,singleFrame);
+	    }
+	}
+	T_sp last = oCar(cl_last(args));
+	if ( !cl_listp(last) ) {
+	    SIMPLE_ERROR(BF("Last argument is not a list"));
+	}
+	int lenFirst = lenArgs-1;
+	int lenRest = cl_length(last);
+	int nargs = lenFirst + lenRest;
+	ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	T_sp obj = args;
+	for ( int i(0); i<lenFirst; ++i ) {
+	    frame->operator[](i) = oCar(obj);
+	    obj = oCdr(obj);
+	}
+        T_sp cur = last;
+	for ( int i(lenFirst); i<nargs; ++i ) {
+	    frame->operator[](i) = oCar(cur);
+	    cur = oCdr(cur);
+	}
+	Function_sp func = coerce::functionDesignator(head);
+	return eval::applyToActivationFrame(func,frame);
+    }
+
+
+#define ARGS_cl_funcall "(function_desig &rest args)"
+#define DECL_cl_funcall ""
+#define DOCS_cl_funcall "See CLHS: funcall"
+    T_mv cl_funcall(T_sp function_desig, Cons_sp args)
+    {_G();
+	Function_sp func = coerce::functionDesignator(function_desig);
+        if ( func.nilp() ) {
+            ERROR_UNDEFINED_FUNCTION(function_desig);
+        }
+	Cons_sp passArgs = args;
+	ValueFrame_sp frame(ValueFrame_O::create(passArgs,_Nil<ActivationFrame_O>()));
+	return eval::applyToActivationFrame(func,frame); // func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
+    }
+
+
+
+
 
 
 
@@ -1786,11 +1972,7 @@ namespace core
 
 	T_mv evaluate_specialForm( SpecialForm_sp specialForm, Cons_sp form, T_sp environment )
 	{
-//		    LOG(BF("Evaluating specialForm non-atom: %s")% specialForm->__repr__() );
-	    T_mv result;
-            result = specialForm->evaluate(cCdr(form),environment);
-	    ASSERTNOTNULL(result);
-	    return(result);
+	    return specialForm->evaluate(cCdr(form),environment);
 	}
 
 
@@ -1997,7 +2179,7 @@ namespace core
 
         T_mv t1Evaluate(T_sp exp, T_sp environment)
         {
-            if ( af_consP(exp) ) {
+            if ( cl_consp(exp) ) {
                 T_sp head = oCar(exp);
                 if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
                     printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str() );
@@ -2051,8 +2233,7 @@ namespace core
 	    EvaluateDepthUpdater evaluateDepthUpdater;
 	    if ( _evaluateVerbosity>0 )
 	    {
-		string ts = _rep_(exp);
-		printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, ts.c_str());
+		printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
 	    }
 	    if ( exp.nilp() ) 
 	    {
@@ -2072,8 +2253,8 @@ namespace core
 	    if ( Symbol_sp headSym = head.asOrNull<Symbol_O>() )
 	    {
 //		LOG(BF("Head[%s] is a Symbol") % headSym->__repr__() );
-		_lisp->invocationHistoryStack().setExpressionForTop(form);
-		_lisp->invocationHistoryStack().setActivationFrameForTop(Environment_O::clasp_getActivationFrame(environment));
+//		_lisp->invocationHistoryStack().setExpressionForTop(form);
+//		_lisp->invocationHistoryStack().setActivationFrameForTop(Environment_O::clasp_getActivationFrame(environment));
 		if ( _lisp->isSingleStepOn() )
 		{
 		    IMPLEMENT_ME();
@@ -2270,7 +2451,7 @@ namespace core
 	    SYMBOL_EXPORT_SC_(ClPkg,progn);
 	    SYMBOL_EXPORT_SC_(ClPkg,throw);
 	    _lisp->defineSpecialOperator(ExtPkg,"special-var", &sp_specialVar);
-	    _lisp->defineSpecialOperator(ExtPkg,"lexical-var", &sp_lexicalVar);
+	    _lisp->defineSpecialOperator(ExtPkg,"heap-var", &sp_heapVar);
 	    _lisp->defineSpecialOperator(ClPkg,"block", &sp_block);
 	    _lisp->defineSpecialOperator(ClPkg,"catch",&sp_catch);
 	    _lisp->defineSpecialOperator(ClPkg,"eval-when",&sp_eval_when);
@@ -2323,6 +2504,12 @@ namespace core
 	    Defun(evaluateDepth);	
 	    SYMBOL_SC_(CorePkg,classifyLetVariablesAndDeclares);
 	    Defun(classifyLetVariablesAndDeclares);
+	    SYMBOL_EXPORT_SC_(ClPkg,apply);
+	    ClDefun(apply);
+	    SYMBOL_EXPORT_SC_(ClPkg,funcall);
+	    ClDefun(funcall);
+	    CoreDefun(extractLambdaNameFromDeclares);
+	    CoreDefun(extractLambdaName);
 	};
 
     };

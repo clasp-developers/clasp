@@ -75,26 +75,29 @@ namespace core
 	virtual ActivationFrame_sp getActivationFrame() const;
 
 
-	virtual T_sp _lookupValue(int depth, int index) const;
-	virtual const T_sp& lookupValueReference(int depth, int index) const;
+	virtual T_sp _lookupValue(int depth, int index);
+	virtual T_sp& lookupValueReference(int depth, int index);
 	virtual Function_sp _lookupFunction(int depth, int index) const;
 	virtual T_sp _lookupTagbodyId(int depth, int index) const;
 
 
-	virtual bool _findTag(Symbol_sp tag, int& depth, int& index) const;
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 	virtual bool _findFunction(T_sp functionName, int& depth, int& index, Function_sp& value) const;
 
 
-	virtual ActivationFrame_sp& parentFrameRef() { SUBIMP(); };
-	virtual ActivationFrame_sp parentFrame() const { SUBIMP(); };
+	virtual T_sp& parentFrameRef() { SUBIMP(); };
+	virtual T_sp parentFrame() const { SUBIMP(); };
 
 	/*! Methods for interogating ActivationFrames as Environments */
-	Environment_sp getParentEnvironment() const { return this->parentFrame(); };
+	T_sp getParentEnvironment() const { return this->parentFrame(); };
 	/*! Method for interogating ActivationFrames as Environments */
 	virtual string summaryOfContents() const;
 
-	void setParentFrame(ActivationFrame_sp parent) { this->parentFrameRef() = parent;};
+	void setParentFrame(T_O* parent) {
+	    this->parentFrameRef().px_ref() = parent;
+	}
+	void setParentFrame(T_sp parent) { this->parentFrameRef() = parent;};
 	/*! Return the number of arguments */
 	virtual uint length() const {SUBIMP();};
 
@@ -149,19 +152,20 @@ namespace core
 	LISP_BASE1(ActivationFrame_O);
 	LISP_CLASS(core,CorePkg,ValueFrame_O,"ValueFrame");
     GCPROTECTED:
-	ActivationFrame_sp	        _ParentFrame;
+	T_sp	        _ParentFrame;
         gctools::Frame0<T_sp>                 _Objects;
 //IndirectObjectArray             _Objects;
 	core::T_sp 			_DebuggingInfo;
     public:
 
-	static ValueFrame_sp createForArgArray(size_t nargs, T_sp* argArray, const ActivationFrame_sp& parent)
+	static ValueFrame_sp createForMultipleValues(const T_sp& parent)
 	{_G();
             GC_ALLOCATE(ValueFrame_O,vf);
-            vf->allocate(nargs);
+	    MultipleValues* mv = core::lisp_callArgs();
+            vf->allocate(mv->getSize());
             // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
-            for ( int i(0); i<nargs; ++i ) {
-                vf->_Objects[i] = argArray[i];
+            for ( int i(0); i<mv->getSize(); ++i ) {
+                vf->_Objects[i] = (*mv)[i];
             }
             vf->_ParentFrame = parent;
 #if 0
@@ -171,14 +175,14 @@ namespace core
 #endif
 	    return vf;
 	}
-	static ValueFrame_sp create(const ActivationFrame_sp& parent)
+	static ValueFrame_sp create(const T_sp& parent)
 	{_G();
 	    GC_ALLOCATE(ValueFrame_O,vf);
             vf->_ParentFrame = parent;
 	    return vf;
 	}
 
-	static ValueFrame_sp create(int numArgs,const ActivationFrame_sp& parent)
+	static ValueFrame_sp create(int numArgs,const T_sp& parent)
 	{_G();
             GC_ALLOCATE(ValueFrame_O,vf);
             vf->_ParentFrame = parent;
@@ -189,14 +193,14 @@ namespace core
 
 
 
-	static ValueFrame_sp create(Cons_sp values,ActivationFrame_sp parent);
+	static ValueFrame_sp create(Cons_sp values,T_sp parent);
 
-	static ValueFrame_sp createFromReversedCons(Cons_sp values,ActivationFrame_sp parent);
+	static ValueFrame_sp createFromReversedCons(Cons_sp values,T_sp parent);
 
-	static ValueFrame_sp createForLambdaListHandler(LambdaListHandler_sp llh,ActivationFrame_sp parent);
+	static ValueFrame_sp createForLambdaListHandler(LambdaListHandler_sp llh,T_sp parent);
 
 	template <class ... ARGS>
-	static ValueFrame_sp create_fill_args(ActivationFrame_sp parent, ARGS&&... args)
+	static ValueFrame_sp create_fill_args(T_sp parent, ARGS&&... args)
 	{_G();
             GC_ALLOCATE(ValueFrame_O,vf);
             vf->_ParentFrame = parent;
@@ -206,7 +210,7 @@ namespace core
 
 
 	template <class ... ARGS>
-	static ValueFrame_sp create_fill_numExtraArgs(int numExtraArgs, ActivationFrame_sp parent, ARGS&&... args)
+	static ValueFrame_sp create_fill_numExtraArgs(int numExtraArgs, T_sp parent, ARGS&&... args)
 	{_G();
             GC_ALLOCATE(ValueFrame_O,vf);
             vf->_ParentFrame = parent;
@@ -243,8 +247,8 @@ namespace core
 
     public:
 
-	virtual ActivationFrame_sp& parentFrameRef() { return this->_ParentFrame; };
-	virtual ActivationFrame_sp parentFrame() const { return this->_ParentFrame; };
+	virtual T_sp& parentFrameRef() { return this->_ParentFrame; };
+	virtual T_sp parentFrame() const { return this->_ParentFrame; };
 
 	void attachDebuggingInfo(core::T_sp debuggingInfo)
 	{_G();
@@ -268,11 +272,11 @@ namespace core
 
 
 
-	T_sp _lookupValue(int depth, int index) const;
-	const T_sp& lookupValueReference(int depth, int index) const;
+	T_sp _lookupValue(int depth, int index) ;
+	T_sp& lookupValueReference(int depth, int index);
 
 	virtual bool _updateValue(Symbol_sp sym, T_sp obj );
-	virtual bool _findValue(Symbol_sp sym, int& depth, int& index, bool& special, T_sp& value) const;
+	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 
 
 
@@ -328,7 +332,7 @@ namespace core {
 	LISP_BASE1(ActivationFrame_O);
 	LISP_CLASS(core,CorePkg,FunctionFrame_O,"FunctionFrame");
     GCPRIVATE:
-	ActivationFrame_sp	_ParentFrame;
+	T_sp	_ParentFrame;
         gctools::Frame0<T_sp>                 _Objects;
 //        IndirectObjectArray     _Objects;
     public:
@@ -345,14 +349,14 @@ namespace core {
             this->_Objects.allocate(numExtraArgs,_Unbound<T_O>(),std::forward<ARGS>(args)...);
         };
     public:
-	static FunctionFrame_sp create(ActivationFrame_sp parent)
+	static FunctionFrame_sp create(T_sp parent)
 	{_G();
 	    GC_ALLOCATE(FunctionFrame_O,vf);
             vf->_ParentFrame = parent;
 	    return vf;
 	}
 
-	static FunctionFrame_sp create(int numArgs,ActivationFrame_sp parent)
+	static FunctionFrame_sp create(int numArgs,T_sp parent)
 	{_G();
 	    GC_ALLOCATE(FunctionFrame_O,vf);
             vf->_ParentFrame = parent;
@@ -360,7 +364,7 @@ namespace core {
 	    return vf;
 	}
 
-	static FunctionFrame_sp create(Cons_sp args,ActivationFrame_sp parent)
+	static FunctionFrame_sp create(Cons_sp args,T_sp parent)
 	{_G();
 	    FunctionFrame_sp vf(FunctionFrame_O::create(cl_length(args),parent));
 //	    vf->allocateStorage(args->length());
@@ -375,7 +379,7 @@ namespace core {
 
 
 	template <class ... ARGS>
-	static FunctionFrame_sp create_fill(ActivationFrame_sp parent, ARGS&&... args)
+	static FunctionFrame_sp create_fill(T_sp parent, ARGS&&... args)
 	{_G();
 	    GC_ALLOCATE(FunctionFrame_O,vf);
             vf->_ParentFrame = parent;
@@ -395,8 +399,8 @@ namespace core {
 	virtual ~FunctionFrame_O() {}
 
     public:
-	virtual ActivationFrame_sp& parentFrameRef() { return this->_ParentFrame; };
-	virtual ActivationFrame_sp parentFrame() const { return this->_ParentFrame; };
+	virtual T_sp& parentFrameRef() { return this->_ParentFrame; };
+	virtual T_sp parentFrame() const { return this->_ParentFrame; };
 
 	/*! Return the number of arguments */
 	virtual uint length() const { return this->_Objects.capacity(); };
@@ -442,12 +446,12 @@ namespace core
 	LISP_BASE1(ActivationFrame_O);
 	LISP_CLASS(core,CorePkg,TagbodyFrame_O,"TagbodyFrame");
     GCPRIVATE:
-	ActivationFrame_sp	_ParentFrame;
+	T_sp	_ParentFrame;
     public:
-	static TagbodyFrame_sp create(ActivationFrame_sp parent);
+	static TagbodyFrame_sp create(T_sp parent);
 
-	virtual ActivationFrame_sp& parentFrameRef() { return this->_ParentFrame; };
-	virtual ActivationFrame_sp parentFrame() const { return this->_ParentFrame; };
+	virtual T_sp& parentFrameRef() { return this->_ParentFrame; };
+	virtual T_sp parentFrame() const { return this->_ParentFrame; };
 	virtual string summaryOfContents() const;
 
         T_sp _lookupTagbodyId(int depth, int index) const;
@@ -486,9 +490,10 @@ namespace frame
     }
 
     /*! Return the start of the values array */
+    inline ElementType* ValuesArray(core::T_O** frameImpl) { return &frameImpl[IdxValuesArray]; };
     inline ElementType* ValuesArray(FrameType f) {
         core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
-        return &frameImpl[IdxValuesArray];
+	return ValuesArray(frameImpl);
     }
 
     inline size_t ValuesArraySize(core::T_O** frameImpl) { return gctools::tagged_ptr<core::T_O>::untagged_fixnum(frameImpl[IdxNumElements]);};
@@ -504,7 +509,7 @@ namespace frame
         frameImpl[IdxDebugInfo] = debugInfo.as<core::T_O>().asTPtr();
     };
 
-    inline void InitializeStackValueFrame(core::T_O** frameImpl, size_t sz, core::T_sp parent=_Nil<core::T_O>())
+    inline void InitializeStackValueFrameBase(core::T_O** frameImpl, size_t sz, core::T_sp parent=_Nil<core::T_O>())
     {
 #ifdef DEBUG_FRAME
         printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz );
@@ -514,6 +519,28 @@ namespace frame
         frameImpl[IdxDebugInfo] = gctools::tagged_ptr<core::T_O>::make_tagged_nil();
         for ( size_t i(IdxValuesArray), iEnd(IdxValuesArray+sz); i<iEnd; ++i ) {
             frameImpl[i] = gctools::tagged_ptr<core::T_O>::make_tagged_unbound();
+        }
+    };
+
+    inline void InitializeStackValueFrame(core::T_O** frameImpl, size_t sz, core::T_sp parent=_Nil<core::T_O>() )
+    {
+#ifdef DEBUG_FRAME
+        printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz );
+#endif
+	InitializeStackValueFrameBase(frameImpl,sz,parent);
+        for ( size_t i(IdxValuesArray), iEnd(IdxValuesArray+sz); i<iEnd; ++i ) {
+            frameImpl[i] = gctools::tagged_ptr<core::T_O>::make_tagged_unbound();
+        }
+    };
+
+    inline void InitializeStackValueFrameWithValues(core::T_O** frameImpl, size_t sz, core::T_sp parent, core::T_sp* initialContents  )
+    {
+#ifdef DEBUG_FRAME
+        printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz );
+#endif
+	InitializeStackValueFrameBase(frameImpl,sz,parent);
+        for ( size_t i(IdxValuesArray), j(0), iEnd(IdxValuesArray+sz); i<iEnd; ++i,++j ) {
+            frameImpl[i] = initialContents[j].asTPtr();
         }
     };
 
@@ -558,12 +585,12 @@ namespace frame
     }
 
 
-    inline bool findValue(core::T_sp f, core::Symbol_sp sym, int& depth, int& index, bool& special, core::T_sp& value )
+    inline bool findValue(core::T_sp f, core::T_sp sym, int& depth, int& index, core::Environment_O::ValueKind& valueKind, core::T_sp& value )
     {
         core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
 	if ( gctools::tagged_ptr<core::T_O>::tagged_nilp(frameImpl[IdxDebugInfo]) ) {
             ++depth;
-            return core::Environment_O::clasp_findValue(gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]),sym,depth,index,special,value);
+            return core::Environment_O::clasp_findValue(gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]),sym,depth,index,valueKind,value);
 	}
         core::T_sp debugInfo = gctools::smart_ptr<core::T_O>(frameImpl[IdxDebugInfo]);
         if ( lisp_search(debugInfo,sym,index) ) {
@@ -571,7 +598,7 @@ namespace frame
             return true;
         }
 	++depth;
-	return core::Environment_O::clasp_findValue(ParentFrame(frameImpl),sym,depth,index,special,value);
+	return core::Environment_O::clasp_findValue(ParentFrame(frameImpl),sym,depth,index,valueKind,value);
     }
 
 
@@ -585,12 +612,12 @@ namespace frame
     }
 
 
-    inline bool findTag(core::T_sp f, core::Symbol_sp sym, int& depth, int& index )
+    inline bool findTag(core::T_sp f, core::Symbol_sp sym, int& depth, int& index, bool& interFunction, core::T_sp& tagbodyEnv )
     {_G();
         core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(f.px));
         core::T_sp parent = core::Environment_O::clasp_currentVisibleEnvironment(ParentFrame(frameImpl));
         ++depth;
-	return core::Environment_O::clasp_findTag(parent,sym,depth,index);
+	return core::Environment_O::clasp_findTag(parent,sym,depth,index,interFunction,tagbodyEnv);
     }
 
 
@@ -671,6 +698,11 @@ namespace frame
     frame::ElementType* frameImpl = (frame::ElementType*)(__builtin_alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues))); \
     gctools::smart_ptr<core::STACK_FRAME> oframe(frameImpl);    \
     frame::InitializeStackValueFrame(frameImpl,numValues)
+
+#define ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl,oframe,numValues,values) \
+    frame::ElementType* frameImpl = (frame::ElementType*)(__builtin_alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues))); \
+    gctools::smart_ptr<core::STACK_FRAME> oframe(frameImpl);    \
+    frame::InitializeStackValueFrameWithValues(frameImpl,numValues,_Nil<T_O>(),values)
 #endif
 
 

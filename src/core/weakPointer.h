@@ -43,8 +43,8 @@ class WeakPointer_O : public T_O
 #if defined(XML_ARCHIVE)
     DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
-    WeakPointer_O() : _WeakObject(gctools::tagged_backcastable_base_ptr<T_O>(_Nil<T_O>())) {};
-    WeakPointer_O(T_sp ptr) : _WeakObject(gctools::tagged_backcastable_base_ptr<T_O>(ptr)) {};
+    WeakPointer_O() : _WeakObject(_Nil<T_O>()) {};
+    WeakPointer_O(T_sp ptr) : _WeakObject(ptr) {};
 public:
     static WeakPointer_sp make(T_sp obj);
 public:

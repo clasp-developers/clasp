@@ -36,6 +36,7 @@ namespace clbind {
     namespace detail {
 
 
+	struct null_type {};
 
         template <int>
         struct Int2Type {};

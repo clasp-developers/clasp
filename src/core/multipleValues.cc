@@ -41,7 +41,9 @@ namespace core
 
     void MultipleValues::initialize()
     {
+#ifndef USE_MULTIPLE_VALUES_ARRAY
         this->_Values.reserve(MultipleValuesLimit);
+#endif
     };
 
 

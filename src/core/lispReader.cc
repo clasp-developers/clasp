@@ -79,7 +79,7 @@ namespace core
 #if 1
 #define TRAP_BAD_CONS(x)
 #else
-#define TRAP_BAD_CONS(x) {if (af_consP(x)) {LOG(BF("About to try trap bad cons"));string ssss=af_sourceFileInfo(x.as_or_nil<Cons_O>())->fileName();}}
+#define TRAP_BAD_CONS(x) {if (cl_consp(x)) {LOG(BF("About to try trap bad cons"));string ssss=core_sourceFileInfo(x.as_or_nil<Cons_O>())->fileName();}}
 #endif
 
     /*! Return a uint that combines the character x with its character TRAITs
@@ -137,7 +137,7 @@ namespace core
 #define LOCK_af_nread 1
 #define ARGS_af_nread "(sin &optional (eof-error-p t) eof-value)"
 #define DECL_af_nread ""
-    T_mv af_nread(Stream_sp sin, T_sp eof_error_p, T_sp eof_value )
+    T_mv af_nread(T_sp sin, T_sp eof_error_p, T_sp eof_value )
     {_G();
 	T_sp result = read_lisp_object(sin,eof_error_p.isTrue(),eof_value,false);
 	return(Values(result));
@@ -207,7 +207,7 @@ namespace core
 
 
 
-    T_sp interpret_token_or_throw_reader_error(Stream_sp sin, const vector<uint>& token )
+    T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint>& token )
     {_G();
 	ASSERTF(token.size()>0,BF("The token is empty!"));
 	const uint* start = token.data();
@@ -462,7 +462,7 @@ namespace core
 
 
 
-    Cons_sp read_list(Stream_sp sin, char end_char, bool allow_consing_dot)
+    Cons_sp read_list(T_sp sin, char end_char, bool allow_consing_dot)
     {_G();
         af_stackMonitor();
 	uint start_lineNumber=0;
@@ -471,10 +471,9 @@ namespace core
 	T_sp dotted_object = _Nil<T_O>();
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
 	Cons_sp cur = first;
-	start_lineNumber = clasp_input_lineno(sin);
-	start_column = clasp_input_column(sin);
 	while (1)
 	{
+	    SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
 	    Character_sp cp = cl_peekChar(_lisp->_true(),sin,_lisp->_true(),_Nil<Character_O>(),_lisp->_true()).as<Character_O>();
 	    LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp) );
 	    if ( cp->asChar() == end_char )
@@ -491,10 +490,7 @@ namespace core
 		Cons_sp otherResult = cCdr(first);
 		TRAP_BAD_CONS(otherResult);
 		if ( otherResult.nilp() ) return(Values(_Nil<Cons_O>()));
-                lisp_registerSourceInfo(otherResult,
-                                        clasp_input_source_file_info(sin),
-                                        start_lineNumber,
-                                        start_column );
+                lisp_registerSourcePosInfo(otherResult,info);
 		return(otherResult);
 	    }
 	    int ivalues;
@@ -528,12 +524,11 @@ namespace core
 			SIMPLE_ERROR(BF("More than one object after consing dot"));
 		    }
 		    Cons_sp one = Cons_O::create(obj,_Nil<Cons_O>());
-                    SourceFileInfo_sp sfi = af_sourceFileInfo(sin);
-                    lisp_registerSourceInfo(one,sfi,start_lineNumber,start_column);
+                    lisp_registerSourcePosInfo(one,info);
 		    LOG(BF("One = %s\n") % _rep_(one) );
-		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(af_sourceFileInfo(one)) );
-		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % af_sourceFileInfo(one)->fileName());
-		    LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % af_sourceFileInfo(one)->fileName().c_str());
+		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(core_sourceFileInfo(one)) );
+		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % core_sourceFileInfo(one)->fileName());
+		    LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core_sourceFileInfo(one)->fileName().c_str());
 		    TRAP_BAD_CONS(one);
 		    cur->setCdr(one);
 		    cur = one;
@@ -570,7 +565,7 @@ namespace core
             return 256;
         }
     };
-    T_sp read_lisp_object(Stream_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
+    T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
     {_G();
 	T_sp result = _Nil<T_O>();
 	if ( recursiveP )
@@ -623,7 +618,7 @@ namespace core
       Read a character from the stream and based on what it is continue to process the
       stream until a complete symbol/number of macro is processed.
       Return the result in a MultipleValues object - if it is empty then nothing was read */
-    T_mv lisp_object_query(Stream_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
+    T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
     {_G();
 #if 1
 	static int monitorReaderStep = 0;

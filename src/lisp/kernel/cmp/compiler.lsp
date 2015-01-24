@@ -98,7 +98,7 @@ Return the new environment."
   ;; There should be information in new-env??? that can tell us what
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-  (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) closed-over-renv)
+  (irc-intrinsic "setParentOfActivationFrameTPtr" (irc-renv new-env) closed-over-renv)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
   (compile-lambda-list-code lambda-list-handler
@@ -123,66 +123,88 @@ Return the new environment."
 
 (defvar *all-funcs-for-one-compile* nil
   "All functions for one COMPILE are accumulated in this dynamic variable.
-COMPILE-FILE just throws this away")
-(defun compile-lambda/lambda-block (name ; Name of function that will result from this lambda
-				    lambda-list-handler
-				    declares  ; lambda declares
-				    docstring ; lambda docstring
-				    code      ; code for lambda
-				    env-around-lambda ; environment of the lambda
-				    &key wrap-block ; wrap code in a block
-				      block-name)   ; name of block
+COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name lambda-list)")
+(defun generate-llvm-function-from-code (;; Symbol xxx or (setf xxx) name of the function that is assigned to this code by
+					 ;; lambda-block or COMPILE
+					 given-name
+					 ; generated from lambda-list
+					 lambda-list-handler
+					 ; lambda declares as a list of conses 
+					 declares
+					 ; lambda docstring
+					 docstring
+					 ; lambda code
+					 code
+					 ; environment of the lambda
+					 env-around-lambda
+					 ; key argument: T if code should be wrapped in a block with block-name
+					 &key wrap-block ; wrap code in a block
+					   ; Name of the block to wrap in
+					   block-name )
+  "This is where llvm::Function are generated from code, declares, 
+lambda-list-handler, environment.
+All code generation comes through here.   Return (llvm:function lambda-name)
+Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
-  (cmp-log "About to compile-lambda/lambda-block for lambda-list-handler: %s\n" lambda-list-handler)
-  (cmp-log "         compile-lambda/lambda-block code: %s\n" code)
-  (cmp-log "      compile-lambda/lambda-block env-around-lambda: %s\n" env-around-lambda)
-  (or (stringp name) (error "name must be a string"))
-  (let ((fn
-	 (with-new-function (fn fn-env
-				:function-name name
-				:parent-env env-around-lambda
-				:function-form code)
-           (cmp-log "Starting new function name: %s\n" name)
-	   (let* ((arguments (llvm-sys:get-argument-list fn))
-		  (result (first arguments))
-		  (closed-over-renv (second arguments))
-		  (argument-holder (make-calling-convention
-                                    :nargs (third arguments)
-                                    :register-arg0 (fourth arguments)
-                                    :register-arg1 (fifth arguments)
-                                    :register-arg2 (sixth arguments)
-                                    :valist (seventh arguments)))
-		  traceid
-		  (new-env (progn
-                             (cmp-log "Creating new-value-environment for arguments\n")
-                             (irc-new-value-environment
-                              fn-env
-                              :lambda-list-handler lambda-list-handler
-                              :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
-                              :fill-runtime-form (lambda (lambda-args-env)
-                                                   (compile-arguments name
-                                                                      lambda-list-handler
-                                                                      fn-env
-                                                                      closed-over-renv
-                                                                      argument-holder
-                                                                      lambda-args-env
-                                                                      ))))))
-	     (dbg-set-current-debug-location-here)
+  (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
+	 (fn (with-new-function (fn fn-env
+				    :function-name (bformat nil "%s" name)
+				    :parent-env env-around-lambda
+				    :function-form code)
+	       (cmp-log "Starting new function name: %s\n" name)
+	       (let* ((arguments (llvm-sys:get-argument-list fn))
+		      (result (first arguments))
+		      (closed-over-renv (second arguments))
+		      (argument-holder (make-calling-convention
+					:nargs (third arguments)
+					:register-args (cdddr arguments)))
+		      traceid
+		      (new-env (progn
+				 (cmp-log "Creating new-value-environment for arguments\n")
+				 (irc-new-value-environment
+				  fn-env
+				  :lambda-list-handler lambda-list-handler
+				  :label (bformat nil "lambda-args-%s-" *lambda-args-num*)
+				  :fill-runtime-form (lambda (lambda-args-env)
+						       (compile-arguments name
+									  lambda-list-handler
+									  fn-env
+									  closed-over-renv
+									  argument-holder
+									  lambda-args-env
+									  ))))))
+		 (dbg-set-current-debug-location-here)
 ;;;		(irc-attach-debugging-info-to-value-frame (irc-renv new-env) lambda-list-handler new-env)
-	     (with-try new-env
-	       (if wrap-block
-		   (codegen-block result (list* block-name code) new-env)
-		   (codegen-progn result code new-env))
-	       ((cleanup)
-		(irc-unwind-environment new-env)))
-	     )
-	   )))
-    (cmp-log "About to dump the function at the end of compile-lambda/lambda-block\n")
+		 (with-try new-env
+		   (if wrap-block
+		       (codegen-block result (list* block-name code) new-env)
+		       (codegen-progn result code new-env))
+		   ((cleanup)
+		    (irc-unwind-environment new-env)))
+		 )
+	       )))
+    (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
     (cmp-log-dump fn)
     (irc-verify-function fn)
     (push fn *all-funcs-for-one-compile*)
-    fn
+    ;; Return the llvm Function and the symbol/setf name
+    (if (null name) (error "The lambda name is nil"))
+    (values fn name (core:lambda-list-handler-lambda-list lambda-list-handler))
     ))
+
+
+
+(defun generate-llvm-function-from-interpreted-function (fn)
+  "Extract everything necessary to compile an interpreted function and
+then compile it and return (values compiled-llvm-function lambda-name)"
+  (let ((lambda-list-handler (function-lambda-list-handler fn))
+	(declares (function-declares fn))
+	(docstring (function-docstring fn))
+	(code (function-source-code fn))
+	(env (closed-environment fn)))
+    (multiple-value-bind (generated-fn lambda-name)
+	(generate-llvm-function-from-code nil lambda-list-handler declares docstring code env))))
+
 
 
 (defun function-name-from-lambda (name)
@@ -194,60 +216,66 @@ COMPILE-FILE just throws this away")
 
 
 
-(defun compile-lambda-function (lambda env &key (function-name-as-string "lambda"))
+(defun compile-lambda-function (lambda-or-lambda-block env )
+  "Return the same things that generate-llvm-function-from-code returns"
   (dbg-set-current-debug-location-here)
-  (let* (block-name lambda-list body)
-    (if (eq (car lambda) 'ext::lambda-block)
-	(setq block-name (function-block-name (cadr lambda))
-	      ;; function-name-as-string could be (setf xxx) or xxx - should I use (function-block-name (cadr lambda))?
-	      function-name-as-string (function-name-from-lambda (cadr lambda)) ;; bformat nil "%s" (cadr lambda))
-	      lambda-list (caddr lambda)
-	      body (cdddr lambda))
-	(setq lambda-list (cadr lambda)
-	      body (cddr lambda)))
+  (let* (wrap-block block-name lambda-list body lambda-block-name)
+    (if (eq (car lambda-or-lambda-block) 'ext::lambda-block)
+	(setq wrap-block t
+	      block-name (function-block-name (cadr lambda-or-lambda-block))
+	      lambda-block-name (cadr lambda-or-lambda-block) ;; bformat nil "%s" (cadr lambda))
+	      lambda-list (caddr lambda-or-lambda-block)
+	      body (cdddr lambda-or-lambda-block))
+	(setq lambda-list (cadr lambda-or-lambda-block)
+	      body (cddr lambda-or-lambda-block)))
     (multiple-value-bind (declares code docstring specials )
 	(process-declarations body t)
       (cmp-log "About to create lambda-list-handler\n")
       (dbg-set-current-debug-location-here)
       (let ((lambda-list-handler (make-lambda-list-handler lambda-list declares 'core::function)))
-	(let ((lambda-function (compile-lambda/lambda-block function-name-as-string
-							    lambda-list-handler
-							    declares
-							    docstring
-							    code
-							    env
-							    :wrap-block (eq (car lambda) 'ext::lambda-block)
-							    :block-name block-name
-							    )))
-	  ;; Now I have the lambda-function which is a llvm::Function* and the environment (env)
-	  ;; I want to generate code that takes these and returns a Closure object
-	  ;;
-	  lambda-function)))))
+	(generate-llvm-function-from-code nil
+					  lambda-list-handler
+					  declares
+					  docstring
+					  code
+					  env
+					  :wrap-block wrap-block
+					  :block-name block-name
+					  )))))
 
 
 
-(defun codegen-closure (result lambda-or-lambda-block env &key (func-name-str "lambda"))
+(defun codegen-closure (result lambda-or-lambda-block env #|&key (func-name-str "lambda")|#)
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
-  (let* ((*all-funcs-for-one-compile* nil)
-	 (function-name (cond ;; function-name can be a symbol or a cons of the form (SETF _name_)
-			  ((eq (car lambda-or-lambda-block) 'lambda) 'lambda)
-			  ((eq (car lambda-or-lambda-block) 'ext::lambda-block) (cadr lambda-or-lambda-block))
-			  (t 'unknown-func-name-str-in-codegen-closure)))
-	 (compiled-fn (compile-lambda-function lambda-or-lambda-block env :function-name-as-string func-name-str)))
-    (if result
-	(let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
-						       nil
-						       *all-funcs-for-one-compile*) env)))
-          ;; TODO:   Here walk the source code in lambda-or-lambda-block and
-          ;; get the line-number/column for makeCompiledFunction
-          (multiple-value-bind (source-dir source-filename lineno column)
-              (cmp:walk-form-for-source-info lambda-or-lambda-block)
-            (unless lineno (setq lineno 0))
-            (unless column (setq column 0))
-            (irc-intrinsic "makeCompiledFunction" result compiled-fn *gv-source-path-name* (jit-constant-i32 lineno) (jit-constant-i32 column) (compile-reference-to-literal function-name env) funcs (irc-renv env)))
-          *all-funcs-for-one-compile*))))
+  (let ((*all-funcs-for-one-compile* nil))
+    (multiple-value-bind (compiled-fn lambda-name lambda-list)
+	(compile-lambda-function lambda-or-lambda-block env)
+      (if (null lambda-name) (error "The lambda doesn't have a name"))
+      (if result
+	  (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
+							 nil
+							 *all-funcs-for-one-compile*) env))
+		(lambda-list (compile-reference-to-literal lambda-list env)))
+	    ;; TODO:   Here walk the source code in lambda-or-lambda-block and
+	    ;; get the line-number/column for makeCompiledFunction
+	    (multiple-value-bind (source-dir source-filename file-pos lineno column)
+		(cmp:walk-form-for-source-info lambda-or-lambda-block)
+	      (unless lineno (setq lineno 0))
+	      (unless column (setq column 0))
+	      (irc-intrinsic "makeCompiledFunction" 
+			     result 
+			     compiled-fn 
+			     *gv-source-pathname* 
+			     (jit-constant-i64 file-pos)
+			     (jit-constant-i32 lineno)
+			     (jit-constant-i32 column)
+			     (compile-reference-to-literal lambda-name env)
+			     funcs 
+			     (irc-renv env)
+			     lambda-list))
+	    *all-funcs-for-one-compile*)))))
 
 
 
@@ -452,7 +480,7 @@ COMPILE-FILE just throws this away")
 (defun gather-lexical-variable-names (classified-symbols)
   (error "This may now be redundant given LambdaListHandler_O::namesOfAllLexicalVariables")
   (let (result)
-    (mapc #'(lambda (x) (if (eq (car x) 'ext:lexical-var)
+    (mapc #'(lambda (x) (if (eq (car x) 'ext:heap-var)
 			    (setq result (cons (cadr x) result))))
 	  classified-symbols)
     (let ((rev-res (nreverse result)))
@@ -577,7 +605,7 @@ env is the parent environment of the (result-af) value frame"
   (let (test-result)
     (let ((test-temp-store (irc-alloca-tsp env :label "if-cond-tsp")))
       (codegen test-temp-store cond env)
-      (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrueTsp" test-temp-store) (jit-constant-i32 1) "ifcond")))
+      (setq test-result (llvm-sys:create-icmp-eq *irbuilder* (irc-intrinsic "isTrue" test-temp-store) (jit-constant-i32 1) "ifcond")))
     test-result))
 
 
@@ -681,20 +709,31 @@ jump to blocks within this tagbody."
     (irc-intrinsic "setParentOfActivationFrame" (irc-renv tagbody-env) (irc-renv env))
     (irc-low-level-trace :tagbody)
     (setf-metadata tagbody-env 'tagbody-function *current-function*)
+    (cmp-log "codegen-tagbody tagbody environment: %s\n" tagbody-env)
     (let ((frame (irc-intrinsic "pushTagbodyFrame" (irc-renv tagbody-env))))
       (with-try tagbody-env
-        (mapl #'(lambda (cur)
-                  (let* ((tag-begin (car cur))
-                         (tag-end (cadr cur))
-                         (section-block (cadr tag-begin))
-                         (section-next-block (cadr tag-end))
-                         (section (extract-section (caddr tag-begin) (caddr tag-end))))
-                    (irc-branch-if-no-terminator-inst section-block)
-                    (irc-begin-block section-block)
-                    (codegen-progn result section tagbody-env)
-                    (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))
-                    ))
-              enumerated-tag-blocks)
+	(progn
+	  (let ((go-blocks nil))
+	    (mapl #'(lambda (cur)
+		      (let* ((tag-begin (car cur))
+			     (tag-end (cadr cur))
+			     (section-block (cadr tag-begin)))
+			(push section-block go-blocks)))
+		  enumerated-tag-blocks)
+	    (let ((go-vec (make-array (length go-blocks) :initial-contents (nreverse go-blocks))))
+	      (setf-metadata tagbody-env 'tagbody-blocks go-vec)))
+	  (mapl #'(lambda (cur)
+		    (let* ((tag-begin (car cur))
+			   (tag-end (cadr cur))
+			   (section-block (cadr tag-begin))
+			   (section-next-block (cadr tag-end))
+			   (section (extract-section (caddr tag-begin) (caddr tag-end))))
+		      (irc-branch-if-no-terminator-inst section-block)
+		      (irc-begin-block section-block)
+		      (codegen-progn result section tagbody-env)
+		      (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))
+		      ))
+		enumerated-tag-blocks))
         ;;        ((cleanup) (codegen-literal result nil env))
         ((typeid-core-dynamic-go exception-ptr)
          (let* ((go-index (irc-intrinsic "tagbodyDynamicGoIndexElseRethrow" exception-ptr frame))
@@ -715,12 +754,25 @@ jump to blocks within this tagbody."
   (dbg-set-current-debug-location-here)
   (let* ((tag (car rest))
 	 (classified-tag (classify-tag env tag)))
-    (if (and classified-tag (eq (car classified-tag) 'dynamic-go))
-	(let ((depth (cadr classified-tag))
-	      (index (cddr classified-tag)))
-	  (irc-low-level-trace :go)
-	  (irc-intrinsic "throwDynamicGo" (jit-constant-i32 depth) (jit-constant-i32 index) (irc-renv env)))
-	(error "go to unknown classified tag ~a ~a" tag classified-tag))))
+    (cond
+      ((and classified-tag (eq (car classified-tag) 'dynamic-go))
+       (let ((depth (cadr classified-tag))
+	     (index (caddr classified-tag)))
+	 (irc-low-level-trace :go)
+	 (irc-intrinsic "throwDynamicGo" (jit-constant-i32 depth) (jit-constant-i32 index) (irc-renv env))))
+      ((and classified-tag (eq (car classified-tag) 'local-go))
+       (let ((depth (cadr classified-tag))
+	     (index (caddr classified-tag))
+	     (tagbody-env (cadddr classified-tag)))
+	 (cmp-log "Target tagbody environment: %s  tag: %s\n" tagbody-env tag)
+	 (let* ((go-vec (lookup-metadata tagbody-env 'tagbody-blocks))
+		(go-block (elt go-vec index)))
+	   (irc-unwind-into-environment env tagbody-env)
+	   (irc-br go-block)
+	   (irc-begin-block (irc-basic-block-create "after-go"))
+	   )
+	 ))
+      (error "go to unknown classified tag ~a ~a" tag classified-tag))))
 
 
 
@@ -737,7 +789,11 @@ jump to blocks within this tagbody."
       (let* ((block-env (irc-new-block-environment env :name block-symbol))
              traceid)
 	(let ((block-start (irc-basic-block-create
-			    (bformat nil "block-%s-start" (symbol-name block-symbol)))))
+			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
+	      (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
+	      (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol))))
+	      )
+	  (setf-metadata block-env :local-return-block local-return-block)
 	  (irc-br block-start)
 	  (irc-begin-block block-start)
           (let* ((frame (irc-intrinsic "pushBlockFrame" (irc-global-symbol block-symbol block-env))))
@@ -749,9 +805,14 @@ jump to blocks within this tagbody."
                (trace-exit-block-scope block-env traceid)
                (irc-unwind-environment block-env))
               ((typeid-core-return-from exception-ptr)
-               (irc-intrinsic "blockHandleReturnFrom" result exception-ptr frame))
-              )
-            (irc-intrinsic "exceptionStackUnwind" frame)))))))
+               (irc-intrinsic "blockHandleReturnFrom" result exception-ptr frame)))
+	    (irc-br after-return-block)
+	    (irc-begin-block local-return-block)
+	    (irc-intrinsic "restoreFromMultipleValue0" result)
+	    (irc-br after-return-block)
+	    (irc-begin-block after-return-block)
+            (irc-intrinsic "exceptionStackUnwind" frame)
+	    ))))))
 
 
 
@@ -761,15 +822,27 @@ jump to blocks within this tagbody."
   (dbg-set-current-debug-location-here)
   (let* ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
 	 (block-symbol (car rest))
-	 (return-form (cadr rest))
-	 (recognizes-block-symbol (recognizes-block-symbol env block-symbol)))
-    (if recognizes-block-symbol
-        (progn
-          (codegen temp-mv-result return-form env)
-          (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-	  (irc-low-level-trace)
-	  (irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
-	(error "Unrecognized block symbol ~a" block-symbol))))
+	 (return-form (cadr rest)))
+    (multiple-value-bind (recognizes-block-symbol inter-function block-env)
+	(classify-return-from-symbol env block-symbol)
+      (if recognizes-block-symbol
+	  (if inter-function
+	      (progn
+		(codegen temp-mv-result return-form env)
+		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+		(irc-low-level-trace)
+		(irc-intrinsic "throwReturnFrom" (irc-global-symbol block-symbol env)))
+	      (let* ((local-return-block (lookup-metadata block-env :local-return-block))
+		     (saved-values (irc-alloca-tsp env :label "return-from-unwind-saved-values")))
+		(codegen temp-mv-result return-form env)
+		(irc-intrinsic "saveValues" saved-values temp-mv-result) ;; moved saveValues here
+		(irc-unwind-into-environment env block-env)
+		(irc-intrinsic "loadValues" temp-mv-result saved-values)
+		(irc-intrinsic "saveToMultipleValue0" temp-mv-result)
+		(irc-br local-return-block)
+		(irc-begin-block (irc-basic-block-create "after-return-from"))
+		))
+	  (error "Unrecognized block symbol ~a" block-symbol)))))
 
 
 (defun generate-lambda-block (name lambda-list raw-body)
@@ -778,7 +851,11 @@ jump to blocks within this tagbody."
       (process-declarations raw-body t)
     (when decl (setq decl (list (cons 'declare decl))))
     (when doc (setq doc (list doc)))
-    `(lambda ,lambda-list ,@doc ,@decl (block ,(si::function-block-name name) ,@body))))
+    `(lambda ,lambda-list 
+       ,@doc 
+       (declare (core:lambda-name ,name)) 
+       ,@decl (block ,(si::function-block-name name) 
+		,@body))))
 
 
 (defun codegen-fill-function-frame (operator-symbol function-env functions parent-env closure-env)
@@ -927,9 +1004,9 @@ jump to blocks within this tagbody."
 
 (defun codegen-unwind-protect (result rest env)
   (with-dbg-lexical-block (env rest)
-    (let* ((up-env (irc-new-unwind-protect-environment env))
-	   (protected-form (car rest))
-	   (unwind-form (cadr rest))
+    (let* ((protected-form (car rest))
+	   (unwind-form `(progn ,@(cdr rest)))
+	   (up-env (irc-make-unwind-protect-environment unwind-form env))
 	   (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
 	   (saved-values (irc-alloca-tsp env :label "unwind-protect-saved-values"))
 	   )
@@ -943,12 +1020,10 @@ jump to blocks within this tagbody."
 	  )
 	((cleanup)
          (irc-intrinsic "saveValues" saved-values temp-mv-result) ;; moved saveValues here
-	 (let ((temp-val (irc-alloca-tsp up-env :label "temp")))
-	   (codegen temp-val unwind-form up-env))
+	 (irc-unwind-environment up-env)
 	 (irc-intrinsic "loadValues" temp-mv-result saved-values)
 	 (irc-intrinsic "copyTmvOrSlice" result temp-mv-result)
-	 (irc-unwind-environment up-env))
-	)
+	 ))
       )))
 
 
@@ -1010,12 +1085,16 @@ jump to blocks within this tagbody."
 	(multiple-value-bind (index fn)
 	    (compile-ltv-thunk "load-time-value-func" form nil)
 	  ;; Invoke the repl function here
-          (multiple-value-bind (source-dir source-file lineno column)
+          (multiple-value-bind (source-dir source-file file-pos lineno column)
               (walk-form-for-source-info form)
             (with-ltv-function-codegen (result ltv-env)
-              (irc-intrinsic "invokeLlvmFunction" result fn
+              (irc-intrinsic "invokeTopLevelFunction" 
+			     result 
+			     fn
                              (irc-renv ltv-env)
+			     (jit-constant-unique-string-ptr "load-time-value")
                              *gv-source-file-info-handle*
+			     (jit-constant-i64 file-pos)
                              (jit-constant-i32 lineno)
                              (jit-constant-i32 column)
                              )))
@@ -1152,7 +1231,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 	    ((characterp obj) (codegen-ltv/character result obj env))
 	    ((arrayp obj) (codegen-ltv/array result obj env))
 	    ((hash-table-p obj) (codegen-ltv/container result obj env))
-	    (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name obj) obj )))
+	    ((packagep obj) (codegen-ltv/package result obj env))
+	    (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
 	  ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
 	  ;; default module without coalescence.
 	  (codegen-rtv result obj env))))
@@ -1164,9 +1244,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos env form)
     (let* ((*current-form* form)
-           (*current-env* env)
-           (*current-lineno* (if lineno lineno *current-lineno*))
-           (*current-column* (if column column *current-column*)))
+           (*current-env* env))
       (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
       (cmp-log "codegen evaluate-depth[%d]  %s\n" (evaluate-depth) form)
       ;;
@@ -1222,7 +1300,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
     fn))
 
 
-
+#||
 (defun compile-interpreted-function (name func)
   "Compile an interpreted function, return the LLVM function and the environment that it should
 be wrapped with to make a closure"
@@ -1231,36 +1309,38 @@ be wrapped with to make a closure"
 	(fn-kind (function-kind func))
 	(lambda-list-handler (get-lambda-list-handler func)))
     (dbg-set-current-debug-location-here)
-    (let ((fn (compile-lambda/lambda-block (symbol-name name) lambda-list-handler nil "" code env)))
+    (let ((fn (generate-llvm-function-from-code (symbol-name name) lambda-list-handler nil "" code env)))
       (values fn fn-kind env))))
+||#
+
 
 
 
 (defun compile* (name &optional definition env)
-  "Returns an LLVM Function and the environment to wrap with the function"
+  "Returns (values llvm-function-from-lambda function-kind environment lambda-name)"
   (cond
     ((functionp definition)
      (error "Handle compile with definition = function"))
     ((consp definition)
      (cmp-log "compile* form: %s\n" definition)
-     (let* ((fn (compile-lambda-function definition
-					 env
-					 :function-name-as-string (if name
-								      (symbol-name name)
-								      "lambda"))))
-       (values fn :function env)))
+     (multiple-value-bind (llvm-function-from-lambda lambda-name)
+	 (compile-lambda-function definition env)
+       (values llvm-function-from-lambda :function env lambda-name))
+     )
     ((null definition)
      (let ((func (symbol-function name)))
        (cond
 	 ((interpreted-function-p func)
-	  (compile-interpreted-function name func)))))
+	  (dbg-set-current-debug-location-here)
+	  (multiple-value-bind (fn lambda-name)
+	      (generate-llvm-function-from-interpreted-function #||name||# func)
+	    (values fn (function-kind func) env lambda-name)))
+	 (t (error "Could not compile func")))))
     (t (error "Illegal combination of arguments for compile: ~a ~a"
 	      name definition))))
 
 
-
-
-(defun compile-in-env (name &optional definition env &aux conditions)
+(defun compile-in-env (bind-to-name &optional definition env &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
@@ -1271,57 +1351,54 @@ be wrapped with to make a closure"
 					     nil
 					     'llvm-sys:external-linkage
 					     nil
-					     *run-time-literals-external-name*)))
-        (with-module (:module *the-module*
-                              :function-pass-manager (create-function-pass-manager-for-compile *the-module*))
-          (with-irbuilder (env (llvm-sys:make-irbuilder *llvm-context*))
-            (let* ((truename (if *load-truename*
-                                 (namestring *load-truename*)
-                                 "compile-in-env"))
-                   (*gv-source-path-name* (jit-make-global-string-ptr
-                                           truename
-                                           "source-path-name"))
-                   (*gv-source-file-info-handle* (llvm-sys:make-global-variable *the-module*
-                                                                                +i32+ ; type
-                                                                                nil ; constant
-                                                                                'llvm-sys:internal-linkage
-                                                                                (jit-constant-i32 0)
-                                                                                "source-file-info-handle"))
-                   (*all-funcs-for-one-compile* nil))
-              (multiple-value-bind (fn function-kind wrapped-env warnp failp)
-                  (with-dibuilder (*the-module*)
-                    (with-dbg-compile-unit (nil truename)
-                      (with-dbg-file-descriptor (nil truename)
-                        (multiple-value-bind (fn fn-kind wrenv warnp failp)
-                            (compile* name definition env)
-                          (values fn fn-kind wrenv warnp failp)))))
-                (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
-                (cmp-log-dump *the-module*)
-                (if (not *run-time-execution-engine*)
-                    ;; SETUP THE *run-time-execution-engine* here for the first time
-                    ;; using the current module in *the-module*
-                    ;; At this point the *the-module* will become invalid because
-                    ;; the execution-engine will take ownership of it
-                    (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
-                    (llvm-sys:add-module *run-time-execution-engine* *the-module*))
-                ;; At this point the Module in *the-module* is invalid because the
-                ;; execution-engine owns it
-                (setq *the-module* nil)
-                (cmp-log "About to finalize-engine with fn %s\n" fn)
-                (let* ((fn-name (llvm-sys:get-name fn))
-                       (compiled-function
-                        (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-                         *run-time-execution-engine*
-                         name
-                         fn ;; This may not be valid anymore
-                         (irc-environment-activation-frame wrapped-env)
-                         function-kind
-                         *run-time-literals-external-name*
-                         core:*current-source-file-info*
-                         core:*current-lineno*)))
-                  (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
-                  (when name (setf-symbol-function name compiled-function))
-                  (values compiled-function warnp failp))))))))))
+					     *run-time-literals-external-name*))
+	     (pathname (if *load-pathname*
+			   (namestring *load-pathname*)
+			   "repl-code"))
+	     (handle (multiple-value-bind (the-source-file-info the-handle)
+			 (core:source-file-info pathname)
+		       the-handle)))
+	(with-module (env :module *the-module*
+			  :function-pass-manager (create-function-pass-manager-for-compile *the-module*)
+			  :source-pathname pathname
+			  :source-file-info-handle handle)
+	  (let ()
+	    (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+		(with-debug-info-generator (:module *the-module* 
+						    :pathname pathname)
+		  (multiple-value-bind (fn fn-kind wrenv lambda-name warnp failp)
+		      (compile* bind-to-name definition env)
+		    (values fn fn-kind wrenv lambda-name warnp failp)))
+	      (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
+	      (cmp-log-dump *the-module*)
+	      (if (not *run-time-execution-engine*)
+		  ;; SETUP THE *run-time-execution-engine* here for the first time
+		  ;; using the current module in *the-module*
+		  ;; At this point the *the-module* will become invalid because
+		  ;; the execution-engine will take ownership of it
+		  (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
+		  (llvm-sys:add-module *run-time-execution-engine* *the-module*))
+	      ;; At this point the Module in *the-module* is invalid because the
+	      ;; execution-engine owns it
+	      (setq *the-module* nil)
+	      (cmp-log "About to finalize-engine with fn %s\n" fn)
+	      (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
+		     (compiled-function
+		      (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+		       *run-time-execution-engine*
+		       lambda-name
+		       fn ;; This may not be valid anymore
+		       (irc-environment-activation-frame wrapped-env)
+		       function-kind
+		       *run-time-literals-external-name*
+		       core:*current-source-file-info*
+		       (core:source-pos-info-filepos *current-source-pos-info*)
+		       (core:source-pos-info-lineno *current-source-pos-info*)
+		       nil  ; lambda-list, NIL for now - but this should be extracted from definition
+		       )))
+		(set-associated-funcs compiled-function *all-funcs-for-one-compile*)
+		(when bind-to-name (setf-symbol-function bind-to-name compiled-function))
+		(values compiled-function warnp failp)))))))))
 
 
 
@@ -1355,23 +1432,22 @@ be wrapped with to make a closure"
 	   ((compiled-function-p fn)
 	    (llvm-sys:disassemble* fn))
 	   ((interpreted-function-p fn)
-	    (let ((code (get-code fn))
-		  (env (closed-environment fn))
-		  (lambda-list-handler (get-lambda-list-handler fn)))
-	      (let* ((fn (compile-lambda/lambda-block name
-						      lambda-list-handler nil "" code env)))
-                (or *run-time-execution-engine* (error "You must set up the *run-time-execution-engine* first before calling disassemble - the easiest way is to compile something first"))
-                (compiled-function (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-                                    *run-time-execution-engine*
-                                    name
-                                    fn
-                                    (irc-environment-activation-frame env)
-                                    (function-kind fn)
-                                    *run-time-literals-external-name*
-                                    core:*current-source-file-info*
-                                    core:*current-lineno*
-                                    )))
-              (llvm-sys:disassemble* compiled-function)))
+	    (multiple-value-bind (llvm-fn lambda-name)
+		(generate-llvm-function-from-interpreted-function #||name||# fn)
+	      (or *run-time-execution-engine* (error "You must set up the *run-time-execution-engine* first before calling disassemble - the easiest way is to compile something first"))
+	      (compiled-function (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+				  *run-time-execution-engine*
+				  name
+				  llvm-fn
+				  (irc-environment-activation-frame (closed-environment fn))
+				  (function-kind fn)
+				  *run-time-literals-external-name*
+				  core:*current-source-file-info*
+				  (core:source-pos-info-filepos *current-source-pos-info*)
+				  (core:source-pos-info-lineno *current-source-pos-info*)
+				  nil ; lambda-list
+				  )))
+	    (llvm-sys:disassemble* compiled-function))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))
       ((and (consp desig) (or (eq (car desig) 'lambda) (eq (car desig) 'ext::lambda-block)))
        (let ((funcs (codegen-closure nil desig nil)))

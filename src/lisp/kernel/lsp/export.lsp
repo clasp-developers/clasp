@@ -36,6 +36,7 @@
 						     ,output-form)
 					    ,output-form)))
 	     #+clasp(lambda (whole env)
+	      (declare (core:lambda-name ext:register-with-pde))
 	      (let* ((definition (second whole))
 		     (output-form (third whole)))
 		`(if ext:*register-with-pde-hook*
@@ -56,15 +57,16 @@
 					       (setq function `(si::bc-disassemble ,function)))
 					     (ext:register-with-pde def `(si::fset ',name ,function))))
 		   #+clasp(lambda (def env)
+		    (declare (core:lambda-name defun))
 		    (let ((name (second def))
 			  (lambda-list (third def))
 			  (lambda-body (cdddr def)))
-		      (multiple-value-bind (decl body doc)
+		      (multiple-value-bind (decls body doc)
 			  (si::process-declarations lambda-body t)
-			(when decl (setq decl (list (cons 'declare decl))))
 			(when doc (setq doc (list doc)))
-			(let ((function `(function (lambda ,lambda-list ,@decl ,@doc
-							   (block ,(si::function-block-name name) ,@body)))))
+			(let ((function `(function (lambda ,lambda-list 
+					   (declare (core:lambda-name ,name) ,@decls) ,@doc
+					   (block ,(si::function-block-name name) ,@body)))))
 			  (ext:register-with-pde def `(si::fset ',name ,function))))))
 		   )
 		  t)
@@ -74,6 +76,7 @@
 				     `(eval-when (eval compile load)
 					(si::select-package ,(string (second def)))))
 	     #+clasp(lambda (def env)
+	      (declare (core:lambda-name in-package))
 		`(eval-when (eval compile load)
 		   (si::select-package ,(string (second def)))))
 	     )
@@ -112,7 +115,7 @@
        (si::fset 'dolist f t))
 
 #+clasp(let ((f #'(lambda (whole env)
-		    (declare (ignore env))
+		    (declare (ignore env) (core:lambda-name dolist))
 		    (let (body pop finished control var expr exit)
 		      (setq body (rest whole))
 		      (when (endp body)
@@ -168,7 +171,7 @@
 					    ,@exit)))))))
        (si::fset 'dotimes f t))
 #+clasp(let ((f #'(lambda (whole env)
-		    (declare (ignore env))
+		    (declare (ignore env) (core:lambda-name dotimes))
 		    (let (body pop finished control var expr exit)
 		      (setq body (rest whole))
 		      (when (endp body)
@@ -234,7 +237,7 @@
        (si::fset 'do* f t))
 
 #+clasp(let ((f #'(lambda (whole env)
-		    (declare (ignore env))
+		    (declare (ignore env) (core:lambda-name do/do*-expand))
 		    (let (do/do* control test result vl step let psetq body)
 		      (setq do/do* (first whole) body (rest whole))
 		      (if (eq do/do* 'do)

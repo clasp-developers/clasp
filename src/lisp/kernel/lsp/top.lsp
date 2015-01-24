@@ -20,10 +20,13 @@
 ;;;;  Reworked for CLOS November 1988, by Giuseppe Attardi.
 ;;;;  Updated May 2009, by Jean-Claude Beaudoin
 
+
 (in-package "SYSTEM")
 
 (export '(*break-readtable* *break-on-warnings*
 	  *tpl-evalhook* *tpl-prompt-hook*))
+
+
 
 #+clasp(defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
 (defparameter *quit-tag* (cons nil nil))
@@ -547,10 +550,10 @@ Use special code 0 to cancel this operation.")
   (single-threaded-terminal-interrupt))
 
 (defun tpl (&key ((:commands *tpl-commands*) tpl-commands)
-		 ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
-  		 (broken-at nil)
-		 (quiet nil))
-;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
+	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
+	      (broken-at nil)
+	      (quiet nil))
+  ;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
   (let* ((*ihs-base* *ihs-top*)
 	 (*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
 	 (*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
@@ -588,36 +591,38 @@ Use special code 0 to cancel this operation.")
 			    )
 			   )
 		     )))
-
                (with-grabbed-console
                    (unless quiet
                      (break-where)
                      (setf quiet t))
-                 (setq - (locally (declare (notinline tpl-read))
-                           (tpl-prompt)
-                           #-clasp(tpl-read)
-                           #+clasp(let ((expr (tpl-read)))
-                                   (when sys:*echo-repl-tpl-read*
-                                     (format t "#|REPL echo|# ~s~%" expr))
-                                   expr)
-                           )
-                       values (multiple-value-list
-                               (top-level-eval-with-env - *break-env*))
-                       /// // // / / values *** ** ** * * (car /))
-                 (tpl-print values)))))
-	  (loop
-	   (setq +++ ++ ++ + + -)
-	   (when
-	       (catch *quit-tag*
-		 (if (zerop break-level)
+		 (let ((core:*current-source-pos-info* (core:input-stream-source-pos-info nil)))
+		   (setq - (locally (declare (notinline tpl-read))
+			     (tpl-prompt)
+			     #-clasp(tpl-read)
+			     #+clasp(let ((expr (tpl-read)))
+				      (when sys:*echo-repl-tpl-read*
+					(format t "#|REPL echo|# ~s~%" expr))
+				      expr)
+			     ))
+		   ;; update *current-source-pos-info* if we can extract it from the source
+		   (setq core:*current-source-pos-info* (core:walk-to-find-source-pos-info - core:*current-source-pos-info*))
+		   (setq values (multiple-value-list
+				 (top-level-eval-with-env - *break-env*))
+			 /// // // / / values *** ** ** * * (car /))
+		   (tpl-print values))))))
+      (loop
+	 (setq +++ ++ ++ + + -)
+	 (when
+	     (catch *quit-tag*
+	       (if (zerop break-level)
 		   (with-simple-restart
-                    (restart-toplevel "Go back to Top-Level REPL.")
-                    (rep))
+		       (restart-toplevel "Go back to Top-Level REPL.")
+		     (rep))
 		   (with-simple-restart
-		    (restart-debugger "Go back to debugger level ~D." break-level)
-		    (rep)))
-		 nil)
-	     (setf quiet nil))))))
+		       (restart-debugger "Go back to debugger level ~D." break-level)
+		     (rep)))
+	       nil)
+	   (setf quiet nil))))))
 
 (defun tpl-prompt ()
   (typecase *tpl-prompt-hook*
@@ -840,10 +845,11 @@ Use special code 0 to cancel this operation.")
 
 (defun lambda-list-from-annotations (name)
   (declare (si::c-local))
-  (let ((args (ext:get-annotation name :lambda-list nil)))
+  (let ((args (core:get-annotation name :lambda-list nil)))
     (values args (and args t))))
 
-(defun function-lambda-list (function)
+
+#+(or)(defun function-lambda-list (function)
   (cond
     ((symbolp function)
      (cond ((or (special-operator-p function)
@@ -875,6 +881,7 @@ Use special code 0 to cancel this operation.")
     ;; lambda-list from its documentation string.
     (t
      (lambda-list-from-annotations (compiled-function-name function)))))
+(export 'function-lambda-list)
 
 #-(or ecl-min clasp)
 (defun decode-env-elt (env ndx)
@@ -1142,6 +1149,8 @@ Use special code 0 to cancel this operation.")
 ||#
 
 (defun tpl-frs-command (&optional n)
+  (format *debug-io* "tpl-frs-command   ignored~%"))
+#||
   (unless n (setq n *ihs-top*))
   (unless (integerp n)
     (error "Argument to command :frs must be an integer."))
@@ -1155,6 +1164,7 @@ Use special code 0 to cancel this operation.")
 	(do () ((or (> j *frs-top*) (> (frs-ihs j) i)))
 	    (print-frs j)
 	    (incf j)))))
+||#
 
 (defun print-frs (i)
   (format *debug-io* "    FRS[~d]: ---> IHS[~d],BDS[~d]~%"
@@ -1516,6 +1526,7 @@ package."
           (default-debugger condition))))
   (finish-output))
 
+
 (defun safe-eval (form env &optional (err-value nil err-value-p))
   "Args: (FORM ENV &optional ERR-VALUE)
 Evaluates FORM in the given environment, which may be NIL. If the form
@@ -1534,3 +1545,4 @@ value."
            (setf output (si::top-level-eval-with-env form env)
                  ok t))
       (return-from safe-eval (if ok output err-value)))))
+

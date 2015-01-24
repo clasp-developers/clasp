@@ -171,6 +171,41 @@ namespace core
     };
 
 
+#define ARGS_cl_schar "(str index)"
+#define DECL_cl_schar ""
+#define DOCS_cl_schar "CLHS schar"
+    claspChar cl_schar(Str_sp str, int idx)
+    {
+	if ( idx >= 0  && idx < str->length() ) {
+	    return str->schar(idx);
+	}
+	SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
+    };
+
+#define ARGS_core_charSet "(str index c)"
+#define DECL_core_charSet ""
+#define DOCS_core_charSet "CLHS schar"
+    claspChar core_charSet(Str_sp str, int idx, claspChar c)
+    {
+	if ( idx >= 0  && idx < str->length() ) {
+	    str->scharSet(idx,c);
+	    return c;
+	}
+	SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
+    };
+
+#define ARGS_core_scharSet "(str index c)"
+#define DECL_core_scharSet ""
+#define DOCS_core_scharSet "CLHS schar"
+    claspChar core_scharSet(Str_sp str, int idx, claspChar c)
+    {
+	if ( idx >= 0  && idx < str->length() ) {
+	    str->scharSet(idx,c);
+	    return c;
+	}
+	SIMPLE_ERROR(BF("index %d out of range (0,%d)") % idx % str->length());
+    };
+
 
 
 
@@ -538,7 +573,10 @@ namespace core
 	    Defun(string_greaterp);
 	    Defun(string_not_greaterp);
 	    Defun(string_not_lessp);
-
+	    ClDefun(schar);
+	    CoreDefun(scharSet);
+	    CoreDefun(charSet);
+	    
 
 	    SYMBOL_EXPORT_SC_(ClPkg,string_EQ_);
 	    SYMBOL_EXPORT_SC_(ClPkg,string_NE_);
@@ -1246,15 +1284,19 @@ namespace core
 
     claspChar Str_O::schar(int index) const
     {
-	ASSERTF(index >= 0 && index < this->size(),BF("schar index out of bounds[%d] - must be less than %d") % index % this->size() );
-	return this->_Contents[index];
+	if ( index >= 0 && index < this->size() ) {
+	    return this->_Contents[index];
+	}
+	SIMPLE_ERROR(BF("Illegal index for schar %d must be in (integer 0 %d)") % index % this->size());
     }
 
     claspChar Str_O::scharSet(int index, claspChar c)
     {
-	ASSERTF(index >= 0 && index < this->size(),BF("schar index out of bounds[%d] - must be less than %d") % index % this->size() );
-        this->_Contents[index] = c;
-	return this->_Contents[index];
+	if ( index >= 0 && index < this->size() ) {
+	    this->_Contents[index] = c;
+	    return c;
+	}
+	SIMPLE_ERROR(BF("Illegal index for schar %d must be in (integer 0 %d)") % index % this->size());
     }
 
     void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end )
@@ -1262,10 +1304,10 @@ namespace core
 	char celement = element.as<Character_O>()->asChar();
 	uint istart = start->get();
 	uint last = this->size();
-	uint iend = last-1;
+	uint iend = last;
 	if ( end.notnilp() ) iend = end.as<Fixnum_O>()->get();
 	ASSERTF(iend>=istart,BF("Illegal fill range istart=%d iend=%d") % istart % iend );
-	ASSERTF(iend<last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );
+	ASSERTF(iend<=last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );
 	ASSERTF(istart>=0 <= iend,BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend );
 	for ( uint i = istart; i<iend; i++ )
 	{
@@ -1285,7 +1327,7 @@ namespace core
     {
 	if ( Cons_sp ls = seq.asOrNull<Cons_O>() )
 	{
-	    if ( cl_length(seq) != this->dimension() ) goto ERROR;
+	    if ( cl_length(seq) != this->size() ) goto ERROR;
 	    size_t i = 0;
 	    for (Cons_sp cur=ls; cur.notnilp(); cur=cCdr(cur))
 	    {
@@ -1293,13 +1335,13 @@ namespace core
 		++i;
 	    }
 	} else if ( Str_sp ss = seq.asOrNull<Str_O>() ) {
-	    if ( ss->length() != this->dimension() ) goto ERROR;
-	    for ( size_t i=0; i<this->dimension(); ++i ) {
+	    if ( ss->length() != this->size() ) goto ERROR;
+	    for ( size_t i=0; i<this->size(); ++i ) {
 		this->_Contents[i] = (*ss)[i];
 	    }
 	} else if ( Vector_sp vs = seq.asOrNull<Vector_O>() ) {
-	    if ( vs->length() != this->dimension() ) goto ERROR;
-	    for ( size_t i=0; i<this->dimension(); ++i ) {
+	    if ( vs->length() != this->size() ) goto ERROR;
+	    for ( size_t i=0; i<this->size(); ++i ) {
 		this->_Contents[i] = vs->elt(i).as<Character_O>()->asChar();
 	    }
 	} else {
@@ -1307,7 +1349,7 @@ namespace core
 	}
 	return;
     ERROR:
-	SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl_length(seq) % _rep_(seq->__class()->className()) % this->dimension() );
+	SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl_length(seq) % _rep_(seq->__class()->className()) % this->size() );
     }
 
 

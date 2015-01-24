@@ -94,7 +94,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
             // Different classes can have different Headers
-            size_t sz = sizeof_with_header<T>();
+              size_t sz = sizeof_with_header<T>();
             typedef typename GCHeader<T>::HeaderType HeadT;
             T* obj;
             mps_ap_t obj_ap = global_non_moving_ap;
@@ -749,12 +749,16 @@ namespace gctools {
         // allocate but don't initialize num elements of type value_type
         static container_pointer allocate (size_type num, const void* = 0) {
 #ifdef USE_BOEHM
+#ifdef DEBUG_GCWEAK
             printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__ );
+#endif
             size_t newBytes = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
             container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(newBytes);
             if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
             new (myAddress) container_type(num);
+#ifdef DEBUG_GCWEAK
             printf("%s:%d Check if Buckets has been initialized to unbound\n", __FILE__, __LINE__ );
+#endif
             return myAddress;
 #endif
 #ifdef USE_MPS
@@ -764,10 +768,12 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&addr,_global_weak_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
-                container_pointer myAddress = reinterpret_cast<container_pointer>(addr);
-                new (myAddress) container_type(num);
-            }
-            while (!mps_commit(_global_weak_link_allocation_point,addr,size));
+		GC_LOG(("allocated @%p %zu bytes\n", addr, newBytes ));
+                myAddress = reinterpret_cast<container_pointer>(addr);
+		if (!myAddress) THROW_HARD_ERROR(BF("NULL address in allocate!"));
+		new (myAddress) container_type(num);
+            } while (!mps_commit(_global_weak_link_allocation_point,addr,size));
+	    if ( !myAddress ) THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));
             GC_LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));
             return myAddress;
 #endif
@@ -825,7 +831,9 @@ namespace gctools {
         // allocate but don't initialize num elements of type value_type
         static container_pointer allocate (size_type num, const void* = 0) {
 #ifdef USE_BOEHM
+#ifdef DEBUG_GCWEAK
             printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__ );
+#endif
             size_t newBytes = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
             container_pointer myAddress = (container_pointer)GC_MALLOC(newBytes);
             if (!myAddress) THROW_HARD_ERROR(BF("Out of memory in allocate"));
@@ -839,10 +847,12 @@ namespace gctools {
             do {
                 mps_res_t res = mps_reserve(&addr,_global_strong_link_allocation_point,size);
                 if ( res != MPS_RES_OK ) THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
-                container_pointer myAddress = reinterpret_cast<container_pointer>(addr);
+		GC_LOG(("allocated @%p %zu bytes\n", addr, newBytes ));
+                myAddress = reinterpret_cast<container_pointer>(addr);
+		if (!myAddress) THROW_HARD_ERROR(BF("NULL address in allocate!"));
                 new (myAddress) container_type(num);
-            }
-            while (!mps_commit(_global_strong_link_allocation_point,addr,size));
+            } while (!mps_commit(_global_strong_link_allocation_point,addr,size));
+	    if ( !myAddress ) THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,StrongLinks>>"));
             GC_LOG(("malloc@%p %zu bytes\n",myAddress,newBytes));
             return myAddress;
 #endif

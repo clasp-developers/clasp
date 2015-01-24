@@ -29,37 +29,18 @@
 
 (defstruct (calling-convention (:type vector))
   nargs
-  register-arg0
-  register-arg1
-  register-arg2
-  valist
+  register-args
   args ;; This is where the args are copied into
   )
-
-
-(defun calling-convention-copy-args (cc env)
-  (let* ((irbuilder *irbuilder-function-alloca*)
-         (args (with-alloca-insert-point
-                   env irbuilder
-                   :alloca (llvm-sys:create-alloca irbuilder +tsp+ (calling-convention-nargs cc) "rawargs")
-                   :init (lambda (alloca-obj)
-                           (irc-intrinsic "copyArgs"
-                                          alloca-obj
-                                          (calling-convention-nargs cc)
-                                          (calling-convention-register-arg0 cc)
-                                          (calling-convention-register-arg1 cc)
-                                          (calling-convention-register-arg2 cc)
-                                          (calling-convention-valist cc)))
-                   :cleanup (lambda (alloca-obj) nil)
-                   )))
-    (setf (calling-convention-args cc) args)))
-
+(defun calling-convention-copy-args (cc)
+  (let ((mv-start (irc-store-multiple-values 0 (calling-convention-register-args cc))))
+    (setf (calling-convention-args cc) mv-start)))
 
 (defun calling-convention-args.gep (cc idx &optional target-idx)
   (let ((label (if (and target-idx core::*enable-print-pretty*)
                    (bformat nil "arg-%d" target-idx)
                    "rawarg")))
-    (irc-gep (calling-convention-args cc) (list idx) label)))
+    (llvm-sys:create-geparray *irbuilder* (calling-convention-args cc) (list (jit-constant-i32 0) idx) label)))
 
 
 
@@ -88,30 +69,8 @@
 
 
 
-#+(or)
 (defun codegen-call (result form evaluate-env)
-  "Make and fill a value frame with the evaluated arguments and invoke the function with the value frame"
-  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
-  (assert-result-isa-llvm-value result)
-  (let* ((sym (car form))
-	 (nargs (length (cdr form)))
-	 (arg-array (irc-alloca-tsp-array evaluate-env :num nargs )))
-    (dbg-set-invocation-history-stack-top-source-pos form)
-    ;; evaluate the arguments into the array
-    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-    (do* ((cur-exp (cdr form) (cdr cur-exp))
-	  (exp (car cur-exp) (car cur-exp))
-	  (i 0 (+ 1 i)))
-	 ((endp cur-exp) nil)
-      (let ((target (irc-gep arg-array (list (jit-constant-i32 i)) (bformat nil "arg-%d"  i) )))
-	(codegen target exp evaluate-env)))
-    (let* ((fn (irc-alloca-Function_sp evaluate-env :label "func")))
-      (cmp-lookup-function fn sym evaluate-env)
-      (irc-intrinsic "FUNCALL" result fn (jit-constant-i32 nargs) arg-array))))
-
-
-(defun codegen-call (result form evaluate-env)
-  "Make and fill a value frame with the evaluated arguments and invoke the function with the value frame"
+  "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
   (let* ((head (car form)))
@@ -128,7 +87,7 @@
                (i 0 (+ 1 i)))
               ((endp cur-exp) nil)
            (codegen temp-result exp evaluate-env)
-           (push (irc-load temp-result) args))
+           (push (irc-smart-ptr-extract (irc-load temp-result)) args))
          (let ((closure (cmp-lookup-function head evaluate-env)))
            (irc-funcall result closure (reverse args)))
          ))
@@ -161,7 +120,7 @@
           ;; enrich the new-env with the local variables
           (dolist (classified-local (classified-symbols lambda-list-handler))
             (cond
-              ((eq (car classified-local) 'ext:lexical-var)
+              ((eq (car classified-local) 'ext:heap-var)
                (let ((local-sym (cadr classified-local))
                      (local-idx (cddr classified-local)))
                  (value-environment-define-lexical-binding new-env local-sym local-idx)))
@@ -250,13 +209,13 @@ you need to also bind the target in the compile-time environment "
 	     (car target)		; target-type --> 'special-var
 	     (cdr target)		; target-symbol
 	     ))
-    ((eq (car target) 'ext:lexical-var)
+    ((eq (car target) 'ext:heap-var)
      (cmp-log "compiling as a ext:lexical-var\n")
      (values (irc-intrinsic "lexicalValueReference"
 		       (jit-constant-i32 0)
 		       (jit-constant-i32 (cddr target))
 		       (irc-renv env))
-	     (car target)		; target-type --> 'ext:lexical-var
+	     (car target)		; target-type --> 'ext:heap-var
 	     (cadr target)		; target-symbol
 	     (cddr target)		; target-lexical-index
 	     ))
@@ -274,7 +233,7 @@ If the target is lexical then define-lexical-binding."
     ((eq (car target) 'ext:special-var)
      (let ((target-symbol (cdr target)))
        (value-environment-define-special-binding env target-symbol)))
-    ((eq (car target) 'ext:lexical-var)
+    ((eq (car target) 'ext:heap-var)
      (let ((target-symbol (cadr target))
 	   (target-lexical-index (cddr target)))
        (value-environment-define-lexical-binding env target-symbol target-lexical-index)))
@@ -313,7 +272,7 @@ will put a value into target-ref."
 	(unbound-cont-block-gs (gensym)))
     `(progn
        (with-target-reference-do (,target-ref ,target ,env)
-	 (let ((,i1-target-is-bound-gs (irc-trunc (irc-intrinsic "isBoundTsp" ,target-ref) +i1+))
+	 (let ((,i1-target-is-bound-gs (irc-trunc (irc-intrinsic "isBound" ,target-ref) +i1+))
 	       (,unbound-do-block-gs (irc-basic-block-create "unbound-do"))
 	       (,unbound-cont-block-gs (irc-basic-block-create "unbound-cont"))
 	       )
@@ -655,7 +614,9 @@ will put a value into target-ref."
 ;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
   "Fill the dest-activation-frame with values using the
 lambda-list-handler/env/argument-activation-frame"
-  (calling-convention-copy-args args new-env)
+  ;;(calling-convention-copy-args args new-env)
+  (irc-store-multiple-values 0 (calling-convention-register-args args))
+  (setf (calling-convention-args args) (irc-intrinsic "getMultipleValues" (jit-constant-i32 0)))
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
@@ -710,9 +671,7 @@ lambda-list-handler/env/argument-activation-frame"
     (compile-save-if-special new-env target))
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
-  (let ((fixed-args (list (calling-convention-register-arg0 args)
-                          (calling-convention-register-arg1 args)
-                          (calling-convention-register-arg2 args))))
+  (let ((fixed-args (calling-convention-register-args args)))
     (do* ((cur-target (cdr reqargs) (cdr cur-target))
           (cur-fixed-args fixed-args (cdr cur-fixed-args))
           (target (car cur-target) (car cur-target))

@@ -61,12 +61,13 @@ using features defined in corePackage.cc"
     m))
 
 
-(defun make-gv-source-file-info-handle-in-*the-module* ()
+(defun make-gv-source-file-info-handle-in-*the-module* (&optional handle)
+  (if (null handle) (setq handle -1))
   (llvm-sys:make-global-variable *the-module*
                                  +i32+  ; type
                                  nil    ; constant
                                  'llvm-sys:internal-linkage
-                                 (jit-constant-i32 -1)
+                                 (jit-constant-i32 handle)
                                  "source-file-info-handle"))
 
 
@@ -152,7 +153,7 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1))
 ;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
     (llvm-sys:do-initialization fpm)
     fpm))
@@ -168,7 +169,7 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1))
     (llvm-sys:do-initialization fpm)
     fpm
     )
@@ -192,6 +193,7 @@ Return the module and the global variable that represents the load-time-value-ho
 (defun create-run-time-execution-engine (module)
   (let ((engine-builder (llvm-sys:make-engine-builder module))
 	(target-options (llvm-sys:make-target-options)))
+    (llvm-sys:setf-no-frame-pointer-elim target-options t)
     (llvm-sys:setf-jitemit-debug-info target-options t)
     (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
     (llvm-sys:set-target-options engine-builder target-options)
@@ -321,6 +323,7 @@ No DIBuilder is defined for the default module")
 	      (engine-builder (llvm-sys:make-engine-builder module))
 	 ;; After make-engine-builder MODULE becomes invalid!!!!!
 	      (target-options (llvm-sys:make-target-options)))
+	 (llvm-sys:setf-no-frame-pointer-elim target-options t)
 	 (llvm-sys:setf-jitemit-debug-info target-options t)
 	 (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
 	 (llvm-sys:set-target-options engine-builder target-options)
@@ -329,7 +332,7 @@ No DIBuilder is defined for the default module")
 	       (stem (string-downcase (pathname-name filename)))
                (main-fn-name llvm-sys:+clasp-main-function-name+)
 	       (time-jit-start (clock-gettime-nanoseconds)))
-	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn-name (namestring (truename filename)) 0 *load-time-value-holder-name* )
+	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn-name (namestring (truename filename)) 0 0 *load-time-value-holder-name* )
 	   )))
      t)
  nil)

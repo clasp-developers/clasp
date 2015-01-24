@@ -22,6 +22,7 @@ $var NumArgs = 8
                 public:
                     typedef Wrapper<T,Pointer>  WrapperType;
                 public:
+		    virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
                     enum { NumParams = $numArgs };
                     VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
                     DISABLE_NEW();
@@ -32,7 +33,7 @@ $var NumArgs = 8
                         $if numArgs>0 [[
                           ALLOC_STACK_VALUE_FRAME(frameImpl,frame,$numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
-                          lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_arglist);
+                          lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
                         this->invoke(lcc_resultP $for Args_ [[, frame::Value(frameImpl,$Args_) ]] );
                     }

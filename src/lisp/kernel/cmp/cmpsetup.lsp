@@ -39,6 +39,10 @@
 (export '*debug-compiler*)
 
 
+;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it
+;;
+(defvar *debug-generate-prepass-llvm-ir* nil)
+
 ;; Generate C++ destructors for reference-counting otherwise don't
 ;;
 
@@ -89,6 +93,7 @@ Options are :tagbody :go :all :eh-landing-pads
 (let* ((module (llvm-create-module (next-run-time-module-name)))
        (engine-builder (llvm-sys:make-engine-builder module))
        (target-options (llvm-sys:make-target-options)))
+  (llvm-sys:setf-no-frame-pointer-elim target-options t)
   (llvm-sys:setf-jitemit-debug-info target-options t)
   (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
        ;; module is invalid after make-engine-builder call
@@ -104,6 +109,7 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
+  (defun is-debug-compiler-on () nil)
   )
 
 

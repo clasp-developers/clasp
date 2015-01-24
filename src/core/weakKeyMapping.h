@@ -43,10 +43,9 @@ namespace core
 #if defined(XML_ARCHIVE)
         DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
-        WeakKeyMapping_O() : _WeakObject(gctools::tagged_backcastable_base_ptr<T_O>(_Nil<T_O>())
-                                         , gctools::tagged_backcastable_base_ptr<T_O>(_Nil<T_O>())) {};
-        WeakKeyMapping_O(T_sp key, T_sp val) : _WeakObject(gctools::tagged_backcastable_base_ptr<T_O>(key)
-                                                           , gctools::tagged_backcastable_base_ptr<T_O>(val)) {};
+        WeakKeyMapping_O() : _WeakObject(_Nil<T_O>()
+                                         , _Nil<T_O>()) {};
+        WeakKeyMapping_O(T_sp key, T_sp val) : _WeakObject(key , val) {};
     public:
         static WeakKeyMapping_sp make(T_sp key, T_sp val);
     public:

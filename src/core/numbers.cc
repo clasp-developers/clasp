@@ -56,6 +56,9 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,arithmeticError);
 
 
+
+
+    
     void brcl_deliver_fpe(int status)
     {
 	int bits = status & _lisp->trapFpeBits();
@@ -71,6 +74,22 @@ namespace core
 	}
     }
 
+
+
+#define ARGS_cl_zerop "(num)"
+#define DECL_cl_zerop ""
+#define DOCS_cl_zerop "fixnum_number_of_bits"
+    bool cl_zerop(T_sp num)
+    {_G();
+	if ( num.nilp() ) {
+	    WRONG_TYPE_ARG(num,cl::_sym_Number_O);
+	} else if ( num.tagged_fixnump() ) {
+	    return ( num.fixnum() == 0 );
+	} else if ( Number_sp nnum = num.asOrNull<Number_O>() ) {
+	    return nnum->zerop();
+	}
+	return false;
+    }
 
 
 #define ARGS_af_fixnum_number_of_bits "()"
@@ -113,6 +132,9 @@ namespace core
 	if (!nums.nilp()) {
 	    do {
 		Real_sp numi = oCar(nums).as<Real_O>();
+		if ( numi.nilp() ) {
+		    TYPE_ERROR(numi,cl::_sym_Real_O);
+		}
 		nums = cCdr(nums);
 		min = brcl_min2(min,numi);
 		if (brcl_number_compare(min, numi) > 0)
@@ -134,6 +156,9 @@ namespace core
 	if (!nums.nilp()) {
 	    do {
 		Real_sp numi = oCar(nums).as<Real_O>();
+		if ( numi.nilp() ) {
+		    TYPE_ERROR(numi,cl::_sym_Real_O);
+		}
 		nums = cCdr(nums);
 		max = brcl_max2(max,numi);
 	    } while (nums.notnilp());
@@ -148,10 +173,11 @@ namespace core
 #define DOCS_cl_logand "logand"
     Integer_sp cl_logand(Cons_sp integers)
     {_G();
-	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
+	if ( integers.nilp() ) return Integer_O::create(-1);
+	mpz_class acc = oCar(integers).asNotNil<Integer_O>()->as_mpz();
 	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
 	{
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
 	    mpz_class temp;
 	    mpz_and(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
@@ -165,10 +191,12 @@ namespace core
 #define DOCS_cl_logior "logior"
     Integer_sp cl_logior(Cons_sp integers)
     {_G();
-	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
+	if ( integers.nilp() ) return Integer_O::create(0);
+	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	mpz_class acc = ifirst->as_mpz();
 	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
 	{
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
 	    mpz_class temp;
 	    mpz_ior(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
@@ -179,17 +207,19 @@ namespace core
 #define ARGS_af_logxor "(&rest integers)"
 #define DECL_af_logxor ""
 #define DOCS_af_logxor "logxor"
-    Integer_mv af_logxor(Cons_sp integers)
+    Integer_sp af_logxor(Cons_sp integers)
     {_G();
-	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
+	if ( integers.nilp() ) return Integer_O::create(0);
+	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	mpz_class acc = ifirst->as_mpz();
 	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
 	{
-	    Integer_sp icur = oCar(cur).as<Integer_O>();
+	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
 	    mpz_class temp;
 	    mpz_xor(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
 	}
-	return(Values(Integer_O::create(acc)));
+	return Integer_O::create(acc);
     };
 
 
@@ -199,10 +229,12 @@ namespace core
 #define DOCS_af_logeqv "logeqv"
     Integer_mv af_logeqv(Cons_sp integers)
     {_G();
-	mpz_class x = oCar(integers).as<Integer_O>()->as_mpz();
-	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
-	{
-	    mpz_class y = oCar(cur).as<Integer_O>()->as_mpz();
+	if (integers.nilp() ) return Integer_O::create(-1);
+	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	mpz_class x = ifirst->as_mpz();
+	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) ) {
+	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
+	    mpz_class y = icur->as_mpz();
 	    mpz_class x_and_y;
 	    mpz_and(x_and_y.get_mpz_t(),x.get_mpz_t(),y.get_mpz_t());
 	    mpz_class compx;
@@ -1451,7 +1483,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     void Number_O::exposeCando(Lisp_sp lisp)
     {_G();
 	class_<Number_O>()
-	    .def("zerop",&Number_O::zerop)
+	    //	    .def("core:zerop",&Number_O::zerop)
 	    .def("signum",&Number_O::signum)
 	    .def("abs",&Number_O::abs)
 	    .def("core:onePlus",&Number_O::onePlus)
@@ -1462,6 +1494,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	ClDefun(max);
 	SYMBOL_EXPORT_SC_(ClPkg,min);
 	ClDefun(min);
+	SYMBOL_EXPORT_SC_(ClPkg,zerop);
+	ClDefun(zerop);
 
 	SYMBOL_SC_(CorePkg,fixnum_number_of_bits);
 	Defun(fixnum_number_of_bits);
@@ -1525,7 +1559,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     bool Number_O::operator<(T_sp obj) const
     {
-	if ( af_numberP(obj) )
+	if ( cl_numberp(obj) )
 	{
 	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())<0;
 	}
@@ -1534,7 +1568,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     bool Number_O::operator<=(T_sp obj) const
     {
-	if ( af_numberP(obj) )
+	if ( cl_numberp(obj) )
 	{
 	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())<=0;
 	}
@@ -1543,7 +1577,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     bool Number_O::operator>(T_sp obj) const
     {
-	if ( af_numberP(obj) )
+	if ( cl_numberp(obj) )
 	{
 	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())>0;
 	}
@@ -1552,7 +1586,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 
     bool Number_O::operator>=(T_sp obj) const
     {
-	if ( af_numberP(obj) )
+	if ( cl_numberp(obj) )
 	{
 	    return basic_compare(this->asSmartPtr(),obj.as<Number_O>())>=0;
 	}
@@ -2085,7 +2119,7 @@ namespace core {
 	    return b;
 #endif
 	}
-	ASSERT(!af_numberP(obj) );
+	ASSERT(!cl_numberp(obj) );
 	return false;
     }
 
@@ -2253,7 +2287,7 @@ namespace core {
 	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!af_numberP(obj) );
+	ASSERT(!cl_numberp(obj) );
 	return false;
     }
 
@@ -2402,7 +2436,7 @@ namespace core {
 	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!af_numberP(obj) );
+	ASSERT(!cl_numberp(obj) );
 	return false;
     }
 
@@ -2587,7 +2621,7 @@ namespace core {
 	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!af_numberP(obj));
+	ASSERT(!cl_numberp(obj));
 	return false;
     }
 
@@ -2757,7 +2791,7 @@ namespace core {
 	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
 	    return this->get() == t->get();
 	}
-	ASSERT(!af_numberP(obj));
+	ASSERT(!cl_numberp(obj));
 	return false;
     }
 
@@ -2857,7 +2891,7 @@ namespace core {
     bool Ratio_O::eql(T_sp obj) const
     {_G();
 	if ( this->eq(obj) ) return true;
-	if ( !af_numberP(obj) ) return false;
+	if ( !cl_numberp(obj) ) return false;
 	if ( basic_compare(this->const_sharedThis<Ratio_O>(),obj.as<Number_O>()) == 0 ) return true;
 	return false;
     }
@@ -4248,12 +4282,14 @@ Integer_sp clasp_ash(Integer_sp x, int bits)
 
     unsigned char clasp_toUint8(T_sp n)
     {
-        if (Fixnum_sp fn = n.as<Fixnum_O>()) {
-            Fixnum fi = fn->get();
-            if ( fi>=0 && fi<=255 ) {
-                return fi;
-            }
-        }
+	if ( n.notnilp() ) {
+	    if (Fixnum_sp fn = n.as<Fixnum_O>()) {
+		Fixnum fi = fn->get();
+		if ( fi>=0 && fi<=255 ) {
+		    return fi;
+		}
+	    }
+	}
         TYPE_ERROR(n,Cons_O::create(cl::_sym_UnsignedByte,Fixnum_O::create(8)));
     }
 

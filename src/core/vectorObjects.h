@@ -81,6 +81,9 @@ namespace core
     public: // Functions here
 	bool adjustableArrayP() const { return this->_Adjustable; };
 
+
+	virtual T_sp asetUnsafe(int j, T_sp val);
+
 	virtual uint dimension() const { return this->_Values.size(); };
 	virtual void rowMajorAset( int idx, T_sp value);
 	virtual T_sp rowMajorAref(int idx) const;

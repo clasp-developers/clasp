@@ -33,9 +33,11 @@ THE SOFTWARE.
 namespace core
 {
 
-    T_mv notFuncallableDispatch( Instance_sp gf, int nargs, ArgArray args);
+// Arguments are passed in the multiple_values structure
+
+    T_mv notFuncallableDispatch( Instance_sp gf);
     
-    T_mv generic_function_dispatch( Instance_sp gf, int nargs, ArgArray args);
+    T_mv generic_function_dispatch( Instance_sp gf);
 
     T_mv slotReaderDispatch( Instance_sp gf, int nargs, ArgArray args);
 

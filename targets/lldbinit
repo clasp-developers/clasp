@@ -1,3 +1,6 @@
+break set dbg_hook
+break set core::lisp_error_simple
+
 # set the arguments for running the executable
 #
 command regex set-args 's/(.+)/settings set target.run-args %1/'
@@ -13,3 +16,16 @@ command alias lreload command source ~/.lldbinit
 
 # set breakpoints
 break set -n dbg_hook
+
+command alias lbt expr (void)af_ihsBacktraceNoArgs()
+
+#
+# When we continue invoke the debugger as if control-c was hit
+command alias ldbg expr (void)dbg_controlC()
+
+command alias llbt expr core::core_lowLevelBacktrace()
+command alias lfn expr af_gotoIhsNext()
+command alias lpn expr af_gotoIhsPrev()
+command alias lpf expr af_printCurrentIhsFrame()
+command alias lpfe expr af_printCurrentIhsFrameEnvironment()
+command regex lfr 's/(.+)/expr af_gotoFrame(%1)/'

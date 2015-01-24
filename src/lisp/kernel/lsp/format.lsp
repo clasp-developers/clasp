@@ -705,6 +705,7 @@
       #+clasp(lambda (,directive ,directives)
 	       ,@(if lambda-list
 		     `((let ,(mapcar #'(lambda (var)
+					 (declare (core:lambda-name ,defun-name))
 					 `(,var
 					   (,(intern (concatenate
 						      'string

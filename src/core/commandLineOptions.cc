@@ -147,6 +147,8 @@ namespace core
 		//
 		// Get the script from the command line or the input-file
 		//
+		_sym_STARargsSTAR->setf_symbolValue(_Nil<T_O>());
+
 		if ( vm.count("exec") != 0 )
 		{
 		    string script = vm["exec"].as<string>();
@@ -155,9 +157,7 @@ namespace core
 		} else 
 		{
 		    LOG(BF("Evaluating first argument as the script name") );
-		    Symbol_sp sym = _sym_STARARGSSTAR;
-		    LOG(BF("Binding symbol(%s) to: %s") % sym->fullName() % _rep_(this->_CommandLineArguments) );
-		    sym->setf_symbolValue(this->_Roots._CommandLineArguments);
+		    _sym_STARargsSTAR->setf_symbolValue(this->_Roots._CommandLineArguments);
 //        this->globalEnvironment()->extend(sym,this->_CommandLineArguments);
 		    this->_ScriptInFile = true;
 		    T_sp cla = oCar(this->_Roots._CommandLineArguments);

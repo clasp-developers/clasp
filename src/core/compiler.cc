@@ -25,6 +25,10 @@ THE SOFTWARE.
 */
 /* -^- */
 
+
+
+// #define EXPOSE_DLOPEN
+// #define EXPOSE_DLLOAD
 #define	DEBUG_LEVEL_FULL
 #include "dlfcn.h"
 #include "core/common.h"
@@ -83,6 +87,31 @@ namespace core
 
 
 
+    #define ARGS_core_mangleName "(object &optional is_function)"
+#define DECL_core_mangleName ""
+#define DOCS_core_mangleName "mangleName"
+    T_mv core_mangleName(Symbol_sp sym, bool is_function)
+    {
+	Str_sp name;
+	if ( !is_function ) {
+	    if ( sym.nilp() ) name = Str_O::create("CLASP_NIL");
+	    else if ( sym == _lisp->_true() ) name = Str_O::create("CLASP_T");
+	    else {
+		stringstream ss;
+		ss << "SYM(" << sym->symbolName()->get() << ")";
+		name = Str_O::create(ss.str());
+	    }
+	    return Values(_Nil<T_O>(),name,Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+	}
+	Function_sp fsym = coerce::functionDesignator(sym);
+	Closure* closure = fsym->closure;
+	if ( BuiltinClosure* bcc = dynamic_cast<BuiltinClosure*>(closure) ) {
+	    return Values(_lisp->_true(),Str_O::create("Provide-c-func-name"), Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+	}
+	return Values(_Nil<T_O>(),Str_O::create("Provide-func-name"),Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
+    }
+    
+
 
 
 #define ARGS_core_startupImagePathname "()"
@@ -98,7 +127,7 @@ namespace core
         if ( mps.notnilp() ) strGc = "mps";
         stringstream ss;
         ss << strStage << "-" << strGc;
-        ss << ":image.bundle";
+        ss << ":image.fasl";
         Str_sp spath = Str_O::create(ss.str());
         Pathname_sp pn = cl_pathname(spath);
         return pn;
@@ -111,17 +140,18 @@ namespace core
 #define DOCS_core_loadBundle "loadBundle"
     T_mv core_loadBundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format )
     {_G();
-        DynamicScopeManager scope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
         /* Define the source file */
-        SourceFileInfo_sp sfi = af_sourceFileInfo(pathDesig);
-        scope.pushSpecialVariableAndSet(_sym_STARcurrentSourceFileInfoSTAR,sfi);
-
-	DynamicScopeManager dynScopeManager1(cl::_sym_STARreadtableSTAR,cl::_sym_STARreadtableSTAR->symbolValue());
-	DynamicScopeManager dynScopeManager2(cl::_sym_STARpackageSTAR,cl::_sym_STARpackageSTAR->symbolValue());
-
+        SourceFileInfo_sp sfi = core_sourceFileInfo(pathDesig);
+	DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,sfi);
+	scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
+	scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR,SourcePosInfo_O::create(0,0,0,0));
+	scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR,cl::_sym_STARreadtableSTAR->symbolValue());
+	scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR,cl::_sym_STARpackageSTAR->symbolValue());
 	Pathname_sp path = cl_pathname(pathDesig);
 	if ( af_probe_file(path).notnilp() ) goto LOAD;
 	path->_Type = Str_O::create("bundle");
+	if ( af_probe_file(path).notnilp() ) goto LOAD;
+	path->_Type = Str_O::create("fasl");
 	if ( af_probe_file(path).notnilp() ) goto LOAD;
 	path->_Type = Str_O::create("dylib");
 	if ( af_probe_file(path).notnilp() ) goto LOAD;
@@ -133,34 +163,43 @@ namespace core
 	string name = nameStr->get();
 
 	/* Look up the initialization function. */
-	string stem = af_string_downcase(path->_Name.as<Str_O>())->get();
+	string stem = cl_string_downcase(path->_Name.as<Str_O>())->get();
 	size_t dsp = 0;
 	if ( (dsp = stem.find("_dbg")) != string::npos) stem = stem.substr(0,dsp);
 	else if ( (dsp = stem.find("_opt")) != string::npos) stem = stem.substr(0,dsp);
 	else if ( (dsp = stem.find("_d")) != string::npos) stem = stem.substr(0,dsp);
 	else if ( (dsp = stem.find("_o")) != string::npos) stem = stem.substr(0,dsp);
 
-	int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
+	int mode = RTLD_NOW | RTLD_LOCAL; // | RTLD_FIRST;
+	// Check if we already have this dynamic library loaded
+	map<string,void*>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
+	if (handleIt != _lisp->openDynamicLibraryHandles().end() ) {
+	    dlclose(handleIt->second);
+	    //	    printf("%s:%d Closing the existing dynamic library %s\n", __FILE__, __LINE__, name.c_str());
+	    _lisp->openDynamicLibraryHandles().erase(handleIt);
+	}
+	//	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
 	void* handle = dlopen(name.c_str(),mode);
 	if ( handle == NULL )
 	{
 	    string error = dlerror();
 	    return(Values(_Nil<T_O>(),Str_O::create(error)));
 	}
+	_lisp->openDynamicLibraryHandles()[name] = handle;
 	string mainName = CLASP_MAIN_FUNCTION_NAME;
-	InitFnPtr fnP = (InitFnPtr)dlsym(handle,mainName.c_str());
-	if ( fnP == NULL )
+	InitFnPtr mainFunctionPointer = (InitFnPtr)dlsym(handle,mainName.c_str());
+	if ( mainFunctionPointer == NULL )
 	{
 	    SIMPLE_ERROR(BF("Could not find initialization function %s") % mainName );
 	}
-//	printf("Found function %s at address %p\n", mainName.c_str(), fnP);
-	(*fnP)();
+	//	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
+	(*mainFunctionPointer)();
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     };
 
 
 
-
+#ifdef EXPOSE_DLLOAD
 #define ARGS_af_dlload "(pathDesig)"
 #define DECL_af_dlload ""
 #define DOCS_af_dlload "dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error))"
@@ -173,10 +212,11 @@ namespace core
 #ifdef	_TARGET_OS_LINUX
 	lib_extension = ".so";
 #endif
-	int mode = RTLD_NOW | RTLD_GLOBAL;
+	int mode = RTLD_NOW | RTLD_LOCAL;
 	Path_sp path = coerce::pathDesignator(pathDesig);
 	Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
 	string ts = pathWithProperExtension->asString();
+	printf("%s:%d Loading with af_dlload %s\n", __FILE__, __LINE__, ts.c_str());
 	void* handle = dlopen(ts.c_str(),mode);
 	if ( handle == NULL )
 	{
@@ -194,60 +234,47 @@ namespace core
 	string initName;
 	string kernelInitName = ss.str();
 	initName = kernelInitName;
-	InitFnPtr fnP = (InitFnPtr)dlsym(handle,kernelInitName.c_str());
-	if ( fnP == NULL )
+	InitFnPtr mainFunctionPointer = (InitFnPtr)dlsym(handle,kernelInitName.c_str());
+	if ( mainFunctionPointer == NULL )
 	{
 	    ss.str("");
 	    ss << "___user_" << stem;
 	    string userInitName = ss.str();
 	    initName = userInitName;
-	    fnP = (InitFnPtr)dlsym(handle,userInitName.c_str());
-	    if ( fnP == NULL )
+	    mainFunctionPointer = (InitFnPtr)dlsym(handle,userInitName.c_str());
+	    if ( mainFunctionPointer == NULL )
 	    {
 		SIMPLE_ERROR(BF("Could not find initialization function %s or %s") % kernelInitName % userInitName );
 	    }
 	}
-//	printf("Found function %s at address %p\n", initName.c_str(), fnP);
+//	printf("Found function %s at address %p\n", initName.c_str(), mainFunctionPointer);
 	T_mv result;
 	ActivationFrame_sp frame = _Nil<ActivationFrame_O>();
-	(*fnP)();
+	(*mainFunctionPointer)();
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     }
-
+#endif
 
 
 
 
 #define ARGS_af_dlopen "(pathDesig)"
 #define DECL_af_dlopen ""
-#define DOCS_af_dlopen "dlopen - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error))"
+#define DOCS_af_dlopen "dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))"
     T_mv af_dlopen(T_sp pathDesig)
     {_G();
 	string lib_extension = ".dylib";
-#ifdef	_TARGET_OS_DARWIN
-	lib_extension = ".dylib";
-#endif
-#ifdef	_TARGET_OS_LINUX
-	lib_extension = ".so";
-#endif
-	int mode = RTLD_NOW | RTLD_GLOBAL;
+	int mode = RTLD_NOW | RTLD_LOCAL;
 	Path_sp path = coerce::pathDesignator(pathDesig);
 	string ts0 = path->asString();
 	void* handle = dlopen(ts0.c_str(),mode);
 	if ( !handle ) {
-	  Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
-	  string ts = pathWithProperExtension->asString();
-	  handle = dlopen(ts.c_str(),mode);
-	  if ( !handle )
-	    {
-	      string error = dlerror();
-	      return(Values(_Nil<T_O>(),Str_O::create(error)));
-	    }
+            printf("%s:%d Could not open %s  error: %s\n", __FILE__, __LINE__, ts0.c_str(), dlerror());
+            string error = dlerror();
+            return(Values(_Nil<T_O>(),Str_O::create(error)));
 	}
 	return(Values(Pointer_O::create(handle),_Nil<T_O>()));
     }
-
-
 
 
 
@@ -300,6 +327,15 @@ namespace core
 	return Pointer_O::create(ptr);
     }
 
+#define ARGS_core_callDlMainFunction "(addr)"
+#define DECL_core_callDlMainFunction ""
+#define DOCS_core_callDlMainFunction "(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)"
+    void core_callDlMainFunction(Pointer_sp addr)
+    {
+	InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
+	(*mainFunctionPointer)();
+    }
+
 
 
 
@@ -341,23 +377,20 @@ namespace core
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
 	Cons_sp code = Cons_O::create(form,_Nil<Cons_O>());
         SourceManager_sp db = _lisp->sourceDatabase();
-        SourcePosInfo_sp sourcePosInfo = lisp_registerSourceInfo(
-            code
-            , core::_sym_STARcurrentSourceFileInfoSTAR->symbolValue().as<SourceFileInfo_O>()
-            , core::_sym_STARcurrentLinenoSTAR->symbolValue().as<Fixnum_O>()->get()
-            , core::_sym_STARcurrentColumnSTAR->symbolValue().as<Fixnum_O>()->get() );
+	SourcePosInfo_sp sourcePosInfo = db->duplicateSourcePosInfo(form,code);
         stringstream ss;
         ss << "repl"<<_lisp->nextReplCounter();
         Symbol_sp name = _lisp->intern(ss.str());
-        InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(
-            name
-            , sourcePosInfo
-            , kw::_sym_function
-            , llh
-            , _Nil<Cons_O>()
-            , _Nil<Str_O>()
-            , env
-            , code );
+        InterpretedClosure* ic = 
+	    gctools::ClassAllocator<InterpretedClosure>::allocateClass(
+								       name
+								       , sourcePosInfo
+								       , kw::_sym_function
+								       , llh
+								       , _Nil<Cons_O>()
+								       , _Nil<Str_O>()
+								       , env
+								       , code );
         Function_sp thunk = Function_O::make(ic);
 	return(Values(thunk,_Nil<T_O>(),_Nil<T_O>()));
     };
@@ -394,11 +427,44 @@ namespace core
         return _Nil<T_O>();
     }
 
-     __attribute__ ((noinline)) T_sp callByValue(T_sp v1, T_sp v2, T_sp v3, T_sp v4)
+};
+
+extern "C" {
+    __attribute__ ((noinline)) int callByValue(core::T_sp v1, core::T_sp v2, core::T_sp v3, core::T_sp v4)
     {
-        return v4;
+	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1.px_ref());
+	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2.px_ref());
+	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3.px_ref());
+	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4.px_ref());
+	int res = f1+f2+f3+f4;
+	return res;
     }
 
+
+    __attribute__ ((noinline)) int callByPointer( core::T_O* v1,  core::T_O* v2, core::T_O* v3, core::T_O* v4)
+    {
+	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1);
+	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2);
+	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3);
+	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4);
+	int res = f1+f2+f3+f4;
+	return res;
+    }
+
+
+    __attribute__ ((noinline)) int callByConstRef(const core::T_sp& v1, const core::T_sp& v2, const core::T_sp& v3, const core::T_sp& v4)
+    {
+	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1.px_ref());
+	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2.px_ref());
+	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3.px_ref());
+	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4.px_ref());
+	int res = f1+f2+f3+f4;
+	return res;
+    }
+
+};
+
+namespace core {
 
 #if 0
 #define ARGS_core_globalFuncallCyclesPerSecond "(stage fn &rest args)"
@@ -710,31 +776,33 @@ namespace core
     T_sp core_callsByValuePerSecond()
     {_G();
         LightTimer timer;
-        T_sp v1;
-        T_sp v2;
-        T_sp v3;
-        T_sp v4;
+        T_sp v1 = T_sp::createFixnum(1);
+        T_sp v2 = T_sp::createFixnum(2);
+        T_sp v3 = T_sp::createFixnum(3);
+        T_sp v4 = T_sp::createFixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
-        for ( int pow=0; pow<32; ++pow ) {
+	int pow;
+	int res;
+        for ( pow=0; pow<32; ++pow ) {
             size_t times = 1 << pow*2;
             timer.reset();
             timer.start();
+	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-                callByValue(v1,v2,v3,v4);
+		v1 = T_sp::createFixnum(i);
+                res += callByValue(v1,v2,v3,v4);
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
+		printf("%s:%d return %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
                 return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
             }
         }
+        printf("%s:%d Fell through %s pow = %d res= %d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
         return _Nil<T_O>();
     }
 
 
-     __attribute__ ((noinline)) T_sp callByConstRef(const T_sp& v1, const T_sp& v2, const T_sp& v3, const T_sp& v4)
-    {
-        return v4;
-    }
 
 
 #define ARGS_core_callsByConstantReferencePerSecond "()"
@@ -743,30 +811,32 @@ namespace core
     T_sp core_callsByConstantReferencePerSecond()
     {_G();
         LightTimer timer;
-        T_sp v1;
-        T_sp v2;
-        T_sp v3;
-        T_sp v4;
+        T_sp v1 = T_sp::createFixnum(1);
+        T_sp v2 = T_sp::createFixnum(2);
+        T_sp v3 = T_sp::createFixnum(3);
+        T_sp v4 = T_sp::createFixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
-        for ( int pow=0; pow<32; ++pow ) {
+	int pow;
+	int res;
+        for ( pow=0; pow<32; ++pow ) {
             size_t times = 1 << pow*2;
             timer.reset();
             timer.start();
+	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-                callByConstRef(v1,v2,v3,v4);
+		v1 = T_sp::createFixnum(i);
+                res += callByConstRef(v1,v2,v3,v4);
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
+		printf("%s:%d return %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
                 return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
             }
         }
+        printf("%s:%d Fell through %s pow = %d res = %d\n", __FILE__, __LINE__, __FUNCTION__, pow, res);
         return _Nil<T_O>();
     }
 
-    __attribute__ ((noinline)) T_sp callByPointer( T_O* v1,  T_O* v2, T_O* v3, T_O* v4)
-    {
-        return v4;
-    }
 
 
 #define ARGS_core_callsByPointerPerSecond "()"
@@ -775,23 +845,28 @@ namespace core
     T_sp core_callsByPointerPerSecond()
     {_G();
         LightTimer timer;
-        T_O* v1=NULL;
-        T_O* v2=NULL;
-        T_O* v3=NULL;
-        T_O* v4=NULL;
+        T_sp v1 = T_sp::createFixnum(1);
+        T_sp v2 = T_sp::createFixnum(2);
+        T_sp v3 = T_sp::createFixnum(3);
+        T_sp v4 = T_sp::createFixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
-        for ( int pow=0; pow<32; ++pow ) {
+	int pow, res;
+        for ( pow=0; pow<32; ++pow ) {
             size_t times = 1 << pow*2;
             timer.reset();
             timer.start();
+	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-                callByPointer(v1,v2,v3,v4);
+		v1 = T_sp::createFixnum(i);
+                res += callByPointer(v1.px_ref(),v2.px_ref(),v3.px_ref(),v4.px_ref());
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
+		printf("%s:%d return %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
                 return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
             }
         }
+        printf("%s:%d Fell through %s pow = %d res=%d \n", __FILE__, __LINE__, __FUNCTION__, pow, res);
         return _Nil<T_O>();
     }
 
@@ -806,8 +881,11 @@ namespace core
 	SYMBOL_EXPORT_SC_(CorePkg,implicit_compile_hook_default);
 	Defun(implicit_compile_hook_default);
 	_sym_STARimplicit_compile_hookSTAR->defparameter(_sym_implicit_compile_hook_default->symbolFunction());
+
+#ifdef EXPOSE_DLLOAD
 	SYMBOL_SC_(CorePkg,dlload);
 	Defun(dlload);
+#endif
 
 	SYMBOL_SC_(CorePkg,dlopen);
 	Defun(dlopen);
@@ -817,6 +895,7 @@ namespace core
 
 	SYMBOL_SC_(CorePkg,dladdr);
 	Defun(dladdr);
+        CoreDefun(callDlMainFunction);
 
 	SYMBOL_SC_(CorePkg,loadBundle);
 	CoreDefun(loadBundle);
@@ -829,7 +908,7 @@ namespace core
         CoreDefun(callsByConstantReferencePerSecond);
         CoreDefun(callsByPointerPerSecond);
         CoreDefun(startupImagePathname);
-
+	CoreDefun(mangleName);
     }
 
 

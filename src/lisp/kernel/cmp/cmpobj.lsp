@@ -8,6 +8,7 @@
 	 (triple (llvm-sys:make-triple normalized-triple-string))
 	 (target-options (llvm-sys:make-target-options))
 	 )
+    (llvm-sys:setf-no-frame-pointer-elim target-options t)
     (multiple-value-bind (target msg)
 	(llvm-sys:target-registry-lookup-target "" triple)
       (unless target (error msg))
@@ -20,7 +21,7 @@
 							     'llvm-sys:code-model-default
 							     'llvm-sys:code-gen-opt-default ))
 	     (pm (llvm-sys:make-pass-manager))
-	     (tli (llvm-sys:make-target-library-info triple))
+	     (tli (llvm-sys:make-target-library-info-wrapper-pass triple))
 	     (data-layout-pass (llvm-sys:make-data-layout-pass))
 	     (target-subtarget-info (llvm-sys:get-subtarget-impl target-machine))
 	     (data-layout (llvm-sys:get-data-layout target-subtarget-info))

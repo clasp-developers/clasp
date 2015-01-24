@@ -62,7 +62,7 @@ namespace core
 	Symbol_sp symbol() const;
 	inline bool _lambdaListHandlerP() const { return af_lambda_list_handler_p(this->_ArgTarget); };
 	LambdaListHandler_sp lambdaListHandler() const;
-	inline bool _lambdaListP() const { return af_consP(this->_ArgTarget); };
+	inline bool _lambdaListP() const { return cl_consp(this->_ArgTarget); };
 	Cons_sp lambdaList() const;
 	inline bool targetIsLexical() const { return this->_ArgTargetFrameIndex!=SPECIAL_TARGET;}
 	virtual string asString() const;

@@ -1,4 +1,4 @@
-# clangOrder = ['clangBasic', 'clangLex', 'clangAST', 'clangEdit', 'clangAnalysis', 'clangRewriteCore', 'clangRewriteFrontend', 'clangARCMigrate', 'clangStaticAnalyzerCore', 'clangStaticAnalyzerCheckers', 'clangStaticAnalyzerFrontend', 'clangSema', 'clangParse', 'clangCodeGen', 'clangSerialization', 'clangDriver', 'clangFrontend', 'clangFrontendTool', 'clangTooling', 'clangDynamicASTMatchers', 'clangASTMatchers']
+# clangOrder = ['clangBasic', 'clangLex', 'clangAST', 'clangEdit', 'clangAnalysis', 'clangRewriteCore', 'clangRewriteFrontend', 'clangARCMigrate', 'clangStaticAnalyzerCore', 'clangStaticAnalyzerCheckers', 'clangStaticAnalyzerFrontend', 'clangSema', 'clangParse', 'clangCodeGen', 'clangSerialization', 'clangDriver', 'clangFrontend', 'clangFrontendTool', 'clangToolingCore', 'clangTooling', 'clangDynamicASTMatchers']
 lib libclangBasic : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangBasic <variant>release <link>static ;
 lib libclangBasic : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangBasic <variant>debug <link>static ;
 lib libclangLex : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangLex <variant>release <link>static ;
@@ -35,6 +35,8 @@ lib libclangFrontend : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangFron
 lib libclangFrontend : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangFrontend <variant>debug <link>static ;
 lib libclangFrontendTool : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangFrontendTool <variant>release <link>static ;
 lib libclangFrontendTool : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangFrontendTool <variant>debug <link>static ;
+lib libclangToolingCore : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangToolingCore <variant>release <link>static ;
+lib libclangToolingCore : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangToolingCore <variant>debug <link>static ;
 lib libclangTooling : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangTooling <variant>release <link>static ;
 lib libclangTooling : : <search>$(APPRES-EXTERNALS-DEBUG-LIB) <name>clangTooling <variant>debug <link>static ;
 lib libclangDynamicASTMatchers : : <search>$(APPRES-EXTERNALS-RELEASE-LIB) <name>clangDynamicASTMatchers <variant>release <link>static ;
@@ -60,6 +62,7 @@ alias clang_lib :
     libclangDriver
     libclangFrontend
     libclangFrontendTool
+    libclangToolingCore
     libclangTooling
     libclangDynamicASTMatchers
     libclangASTMatchers

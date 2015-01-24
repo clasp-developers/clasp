@@ -32,7 +32,7 @@
       (let ((core:*source-database* nil)) ;; don't treat fin as source code
         (let ((object (read fin)))
           (core:parse-from-object archive object))
-        (core:get archive :only)))))
+        (core:load-archive-get archive :only)))))
 
 
 

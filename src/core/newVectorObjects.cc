@@ -183,7 +183,7 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
         ANN(this->_Values);
 	uint istart = start->get();
 	uint last = (*this->_Values).size();
-	uint iend = last-1;
+	uint iend = last;
 	if ( end.notnilp() ) iend = end.as<Fixnum_O>()->get();
 	ASSERTF(iend>=istart,BF("Illegal fill range istart=%d iend=%d") % istart % iend );
 	ASSERTF(iend<last,BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last );

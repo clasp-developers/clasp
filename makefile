@@ -53,8 +53,7 @@ endif
 all:
 	@echo Dumping local.config
 	cat local.config
-	git submodule update --init  # ensure that the src/mps submodule is updated
-	-make temporary-fix-for-sicl
+	make submodules
 	make asdf
 	make boostbuildv2-build
 	make clasp-boehm
@@ -68,18 +67,28 @@ temporary-fix-for-sicl:
 	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
 	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase3/environment-classes.lisp
 
+submodules:
+	make submodules-boehm
+	make submodules-mps
 
+submodules-boehm:
+	-git submodule update --init src/lisp/kernel/contrib/sicl
+	-git submodule update --init src/lisp/kernel/asdf
+	-(cd src/lisp/kernel/asdf; git checkout master; git pull origin master)
+
+submodules-mps:
+	-git submodule update --init src/mps
 
 asdf:
 	(cd src/lisp/kernel/asdf; make)
 
 only-boehm:
-	git submodule update --init  # ensure that the src/mps submodule is updated
+	make submodules-boehm
 	make boostbuildv2-build
 	make clasp-boehm
 
 boehm-build-mps-interface:
-	git submodule update --init  # ensure that the src/mps submodule is updated
+	make submodules
 	make boostbuildv2-build
 	make clasp-boehm
 	(cd src/main; make mps-interface)
@@ -88,7 +97,7 @@ boehm-build-mps-interface:
 #
 # Tell ASDF where to find the SICL/Code/Cleavir systems - the final // means search subdirs
 #
-export CL_SOURCE_REGISTRY = $(shell echo `pwd`/src/lisp/kernel/contrib/sicl/Code/Cleavir//)
+#export CL_SOURCE_REGISTRY = $(shell echo `pwd`/src/lisp/kernel/contrib/sicl/Code/Cleavir//):$(shell echo `pwd`/src/lisp/kernel/contrib/slime//)
 
 #
 # When developing, set the CLASP_LISP_SOURCE_DIR environment variable
@@ -113,8 +122,11 @@ devshell:
 testing:
 	which clang++
 
-clasp-mps:
+clasp-mps-cpp:
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release mps)
+
+clasp-mps:
+	make clasp-mps-cpp
 	(cd src/main; make mps)
 
 # Compile the CL sources for min-mps: and full-mps
@@ -130,8 +142,11 @@ cl-full-mps:
 	(cd src/main; make full-mps)
 
 
-clasp-boehm:
+clasp-boehm-cpp:
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release boehm)
+
+clasp-boehm:
+	make clasp-boehm-cpp
 	(cd src/main; make boehm)
 
 # Compile the CL sources for min-boehm: and full-boehm

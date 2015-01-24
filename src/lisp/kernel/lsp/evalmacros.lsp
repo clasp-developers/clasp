@@ -138,9 +138,10 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   ;; Documentation in help.lsp
   (multiple-value-bind (decls body doc-string) 
       (process-declarations body t)
-    (when decls (setq decls (list (cons 'declare decls))))
     (let* ((doclist (when doc-string (list doc-string)))
-	   (global-function `#'(lambda ,vl ,@decls ,@doclist (block ,(si::function-block-name name) ,@body))))
+	   (global-function `#'(lambda ,vl 
+				 (declare (core:lambda-name ,name) ,@decls) 
+				 ,@doclist (block ,(si::function-block-name name) ,@body))))
       ;;(bformat t "DEFUN global-function --> %s\n" global-function )
       `(progn
 	 ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
@@ -193,12 +194,13 @@ terminated by a non-local exit."
 (defmacro lambda (&rest body)
   `(function (lambda ,@body)))
 
-(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
-  (multiple-value-bind (decl body doc)
-      (si::process-declarations lambda-body t)
-    (when decl (setq decl (list (cons 'declare decl))))
-    `(lambda ,lambda-list ,@decl ,@doc
-      (block ,(si::function-block-name name) ,@body))))
+#+ecl(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
+       (multiple-value-bind (decls body doc)
+	   (si::process-declarations lambda-body t)
+	 `(lambda ,lambda-list (declare (core:lambda-block ,name) ,@decls) ,@doc
+		  (block ,(si::function-block-name name) ,@body))))
+
+
 
 ; assignment
 

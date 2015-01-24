@@ -199,7 +199,8 @@ namespace core
 //
 // Constructor
 //
-    Lisp_O::GCRoots::GCRoots() : _BignumRegister0(_Unbound<Bignum_O>())
+    Lisp_O::GCRoots::GCRoots() : _MultipleValuesCur(NULL)
+			       , _BignumRegister0(_Unbound<Bignum_O>())
                                , _BignumRegister1(_Unbound<Bignum_O>())
                                , _BignumRegister2(_Unbound<Bignum_O>())
 //                               , _TraceFunctions(_Unbound<HashTable_O>())
@@ -283,7 +284,7 @@ namespace core
     {_G();
         for ( Cons_sp cur=this->_Roots._CatchInfo; cur.notnilp(); cur=cCdr(cur) )
         {
-            if ( af_eq(tag,oCar(cur)) ) return cur;
+            if ( cl_eq(tag,oCar(cur)) ) return cur;
         }
         return _Nil<Cons_O>();
     }
@@ -314,7 +315,7 @@ namespace core
 
     void	Lisp_O::initialize()
     {
-        this->_Roots._MultipleValues.initialize();
+//        this->_Roots._MultipleValues.initialize();
     }
 
 
@@ -405,7 +406,6 @@ namespace core
 
     void Lisp_O::startupLispEnvironment(Bundle* bundle)
     {
-
 	/*! There was a problem iterating over maps and sets when garbage collection
 	  they were going into infinite loops - so I was testing them here within
 	  the context of the entire package */
@@ -544,10 +544,18 @@ namespace core
 
 	    // setup the SYS logical-pathname-translations
 	    Cons_sp pts = Cons_O::createList(
-		Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
+	       Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
 		/* ,  more here */
 		);
 	    af_pathnameTranslations(Str_O::create("sys"),_lisp->_true(),pts);
+
+	    // setup the TMP logical-pathname-translations
+	    Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"), 
+						  cl_pathname(Str_O::create("/tmp/**/*.*")));
+	    Cons_sp ptsTmp = Cons_O::createList(entryTmp
+		/* ,  more here */
+		);
+	    af_pathnameTranslations(Str_O::create("tmp"),_lisp->_true(),ptsTmp);
 
             // setup the APP-RESOURCES logical-pathname-translations
             Cons_sp app = Cons_O::createList(
@@ -652,21 +660,6 @@ namespace core
         {_BLOCK_TRACE("Start printing symbols properly");
             this->_PrintSymbolsProperly = true;
         }
-#if 0 // wtf is this???
-	if ( this->_dont_load_startup )
-	{_BLOCK_TRACE("Load startup code");
-//	    Pathname_sp initPathname = cl_pathname(Str_O::create("sys:brcl/init.lsp"));
-	    Path_sp corePath = Path_O::create(this->_Bundle->getLispDir());
-	    corePath->path_append("/init");
-	    corePath->path_append("/coreFile.lisp");
-	    {_BLOCK_TRACEF(BF("Loading core-file with path: %s") % corePath->asString() );
-		this->load(corePath);
-	    }
-	} else
-	{
-	    LOG(BF("Not loading startup code"));
-	}
-#endif
     }
 
 
@@ -701,14 +694,14 @@ namespace core
 
 
 #if defined(OLD_SERIALIZE)
-    T_sp Lisp_O::sread(Stream_sp sin, bool eofErrorP, T_sp eofValue )
+    T_sp Lisp_O::sread(T_sp sin, bool eofErrorP, T_sp eofValue )
     {_OF();
 	ReadSerializer_sp reader = _lisp->create<ReadSerializer_O>();
 	T_sp obj = reader->read(sin,eofErrorP,eofValue);
 	return obj;
     }
 
-    void Lisp_O::sprint(T_sp obj, Stream_sp sout )
+    void Lisp_O::sprint(T_sp obj, T_sp sout )
     {_OF();
 	WriteSerializer_sp writer = _lisp->create<WriteSerializer_O>();
 	writer->addObject(obj);
@@ -878,6 +871,7 @@ namespace core
 	string formName = lispify_symbol_name(rawFormName);
 	Symbol_sp sym = _lisp->internWithPackageName(packageName,formName);
         sym->exportYourself();
+	sym->setf_symbolFunction(_Nil<Function_O>());
 	SpecialForm_sp special = SpecialForm_O::create(sym,cb);
         if ( this->_Roots._SpecialForms.unboundp() ) {
             this->_Roots._SpecialForms = HashTableEq_O::create_default();
@@ -985,7 +979,7 @@ namespace core
 	    cc = BuiltInClass_O::create(classSymbol);
 	}
 	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
-	af_setf_findClass(cc,classSymbol,true,_Nil<Environment_O>());
+	af_setf_findClass(cc,classSymbol,true,_Nil<T_O>());
 	if ( IS_SYMBOL_DEFINED(base1ClassSymbol))
 	{
 	    cc->addInstanceBaseClass(base1ClassSymbol);
@@ -1015,7 +1009,7 @@ namespace core
 //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
 	LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol) );
 //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
-	af_setf_findClass(theClass,classSymbol,true,_Nil<Environment_O>());
+	af_setf_findClass(theClass,classSymbol,true,_Nil<T_O>());
 //        IMPLEMENT_MEF(BF("Pass an AllocateInstanceFunctor"));
 	theClass->setCreator(allocator);
     }
@@ -1338,11 +1332,13 @@ namespace core
         features = Cons_O::create(_lisp->internKeyword("BSD"),features);
         features = Cons_O::create(_lisp->internKeyword("OS-UNIX"),features);
         features = Cons_O::create(_lisp->internKeyword("UNIX"),features);
+	features = Cons_O::create(_lisp->internKeyword("X86-64"),features);
 #endif
 #ifdef _TARGET_OS_LINUX
         features = Cons_O::create(_lisp->internKeyword("UNIX"),features);
         features = Cons_O::create(_lisp->internKeyword("OS-UNIX"),features);
         features = Cons_O::create(_lisp->internKeyword("LINUX"),features);
+	features = Cons_O::create(_lisp->internKeyword("X86-64"),features);
 #endif
 #ifdef VARARGS
 	features = Cons_O::create(_lisp->internKeyword("VARARGS"),features);
@@ -1440,41 +1436,40 @@ namespace core
 
 
 
-    T_mv Lisp_O::readEvalPrint(T_sp inputStream, Environment_sp environ, bool printResults)
-    {_OF();
+    T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt)
+    {
 	T_mv result = Values(_Nil<T_O>());
-	Stream_sp sin = coerce::inputStreamDesignator(inputStream);
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentSourceFileInfoSTAR,af_sourceFileInfo(sin));
-	while (1)
-	{
-	    TRY()
-	    {
-		_sym_STARcurrentLinenoSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_lineno(sin)));
-		_sym_STARcurrentColumnSTAR->setf_symbolValue(Fixnum_O::create(clasp_input_column(sin)));
-		T_sp expression = read_lisp_object(sin,false,_Unbound<T_O>(),false);
-		if ( expression.unboundp() ) break;
-//		TopLevelIHF frame(_lisp->invocationHistoryStack(),expression);
-//		_lisp->invocationHistoryStack().setExpressionForTop(expression);
-//		_lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
-//		PushCodeStack codeStack(expression,_Nil<Environment_O>(),_lisp);
-		if ( _sym_STARechoReplReadSTAR->symbolValue().isTrue() )
-		{
-		    string suppress;
-		    if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
-		    {
-			suppress = "SUPPRESSED";
-			if ( expression.notnilp() )
-			{
-			    SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression) );
-			}
-		    }
-		    this->print(BF(";;--read-%s-------------\n#|\n%s\n|#----------\n") % suppress.c_str() % _rep_(expression) );
+	DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,core_sourceFileInfo(stream));
+	while (1) {
+	    TRY() {
+		if ( prompt ) {
+		    stringstream prompts;
+		    prompts << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << "> ";
+		    clasp_write_string(prompts.str(),stream);
 		}
+		DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
+		innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR,core_inputStreamSourcePosInfo(stream));
+		T_sp expression = read_lisp_object(stream,false,_Unbound<T_O>(),false);
+		if ( expression.unboundp() ) break;
+		_sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core_walkToFindSourcePosInfo(expression,_sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
+		if ( _sym_STARechoReplReadSTAR->symbolValue().isTrue() )
+		    {
+			string suppress;
+			if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
+			    {
+				suppress = "SUPPRESSED";
+				if ( expression.notnilp() )
+				    {
+					SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression) );
+				    }
+			    }
+			this->print(BF(";;--read-%s-------------\n#|\n%s\n|#----------\n") % suppress.c_str() % _rep_(expression) );
+		    }
 		_BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__() );
 		if ( af_keywordP(expression) ) {
 		    ql::list tplCmd;
 		    tplCmd << expression;
-		    while ( T_sp exp = read_lisp_object(sin,false,_Unbound<T_O>(),false) ) {
+		    while ( T_sp exp = read_lisp_object(stream,false,_Unbound<T_O>(),false) ) {
 			if (exp.unboundp()) break;
 			tplCmd << exp;
 		    }
@@ -1484,48 +1479,42 @@ namespace core
 			af_bformat(_lisp->_true(),"Cannot interpret %s - define core::*top-level-command-hook*", Cons_O::createList(tplCmd.cons()));
 		    }
 		} else if ( expression.notnilp() )
-		{
-		    result = eval::af_topLevelEvalWithEnv(expression,environ);
-                    gctools::Vec0<core::T_sp/*,gctools::RootedGCHolder*/> vresults;
-                    vresults.resize(result.number_of_values());
-                    if ( result.number_of_values() > 0 ) {
-                        vresults[0] = result;
-                        if ( result.number_of_values() > 1 ) {
-                            for ( int i(1); i<result.number_of_values(); ++i ) {
-                                vresults[i] = result.valueGet(i);
-                            }
-                        }
-                    }
-		    if ( printResults )
 		    {
-			for ( int i(0); i<vresults.size(); i++ )
-			{
-			    T_sp obj = vresults[i];
-//			    this->print(BF("; --> %s\n")% _rep_(obj));
-			    eval::funcall(cl::_sym_print,obj);
+			result = eval::af_topLevelEvalWithEnv(expression,environ);
+			gctools::Vec0<core::T_sp/*,gctools::RootedGCHolder*/> vresults;
+			vresults.resize(result.number_of_values());
+			if ( result.number_of_values() > 0 ) {
+			    vresults[0] = result;
+			    if ( result.number_of_values() > 1 ) {
+				for ( int i(1); i<result.number_of_values(); ++i ) {
+				    vresults[i] = result.valueGet(i);
+				}
+			    }
 			}
+			if ( printResults )
+			    {
+				for ( int i(0); i<vresults.size(); i++ )
+				    {
+					T_sp obj = vresults[i];
+					//			    this->print(BF("; --> %s\n")% _rep_(obj));
+					eval::funcall(cl::_sym_print,obj);
+				    }
+			    }
 		    }
-		}
-	    }
-	    catch (Condition& err)
-	    {
+	    } catch (Condition& err) {
 		// Catch condition from reader means just ask for another s-exp if
 		// interactive and terminate if batch
-		this->print(BF("%s:%d Caught Condition from reader") % __FILE__ % __LINE__ );
+		this->print(BF("%s:%d Caught Condition from reader\n") % __FILE__ % __LINE__ );
 		exit(1);
-//		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
-	    }
-	    catch (DebuggerSaysAbortToRepl& abort)
-	    {
-		this->print(BF("%s:%d aborted to repl:") % __FILE__ % __LINE__ );
+		//		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
+	    } catch (DebuggerSaysAbortToRepl& abort) {
+		this->print(BF("%s:%d aborted to repl\n") % __FILE__ % __LINE__ );
 		// Do nothing
-	    }
-	    catch (HardError& err)
-	    {
+	    } catch (HardError& err) {
 		this->print(BF("Should never happen - catch and convert to Condition below - HardError: %s")
 			    % err.message() );
 		IMPLEMENT_ME();
-//		this->enterDebugger();
+		//		this->enterDebugger();
 	    }
 	}
 	return result;
@@ -1533,12 +1522,10 @@ namespace core
 
 
 
-    T_mv Lisp_O::readEvalPrintString(const string& code, Environment_sp environ, bool printResults )
+    T_mv Lisp_O::readEvalPrintString(const string& code, T_sp environ, bool printResults )
     {_OF();
 	StringInputStream_sp sin = StringInputStream_O::make(code);
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLinenoSTAR,Fixnum_O::create(clasp_input_lineno(sin)));
-	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(clasp_input_column(sin)));
-	T_mv result = this->readEvalPrint(sin,environ,printResults);
+	T_mv result = this->readEvalPrint(sin,environ,printResults,false);
 	cl_close(sin);
 	return result;
     }
@@ -1553,7 +1540,7 @@ namespace core
 #define DOCS_af_lowLevelRepl "lowLevelRepl - this is a built in repl for when the top-level repl isn't available"
     void af_lowLevelRepl()
     {_G();
-	_lisp->readEvalPrintInteractive();
+	_lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(),_Nil<T_O>(),true,true);
     };
 
 
@@ -1562,15 +1549,13 @@ namespace core
     {_OF();
 	Cons_sp expression;
 //	TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<T_O>());
-	DynamicScopeManager scopeCurrentLineNumber(_sym_STARcurrentLinenoSTAR,Fixnum_O::create(0));
-	DynamicScopeManager scopeCurrentColumn(_sym_STARcurrentColumnSTAR,Fixnum_O::create(0));
 	while(1) {
 	  string line;
 	  stringstream prompt;
 	  prompt << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << ">>> ";
 	  line = myReadLine(prompt.str());
 	  StringInputStream_sp sin = StringInputStream_O::make(line);
-	  this->readEvalPrint(sin,_Nil<Environment_O>(),true);
+	  this->readEvalPrint(sin,_Nil<T_O>(),true,true);
 	}
     }
 
@@ -1730,8 +1715,6 @@ namespace core
 #define ARGS_af_member "(item list &key key test test-not)"
 #define	DECL_af_member	""
 #define	DOCS_af_member	"See CLHS member"
-#define	FILE_af_member	__FILE__
-#define	LINE_af_member	__LINE__
     Cons_sp af_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not)
     {_G();
 	if ( tlist.nilp() ) return _Nil<Cons_O>();
@@ -1910,12 +1893,12 @@ namespace core
     T_mv af_saveCando(T_sp obj, T_sp pathDesignator)
     {_G();
 	Path_sp path = coerce::pathDesignator(pathDesignator);
-	Stream_sp sout = cl_open(path,
-				 kw::_sym_output,
-				 cl::_sym_standard_char,
-				 _Nil<Symbol_O>(),
-				 _Nil<Symbol_O>(),
-				 kw::_sym_default);
+	T_sp sout = cl_open(path,
+			    kw::_sym_output,
+			    cl::_sym_standard_char,
+			    _Nil<Symbol_O>(),
+			    _Nil<Symbol_O>(),
+			    kw::_sym_default);
 	_lisp->sprint(obj,sout);
 	sout->close();
 	return(Values(_Nil<T_O>()));
@@ -1929,7 +1912,7 @@ namespace core
     T_mv af_loadCando(T_sp pathDesignator)
     {_G();
 	Path_sp path = coerce::pathDesignator(pathDesignator);
-	Stream_sp sin = cl_open(path,kw::_sym_input,cl::_sym_standard_char,_Nil<Symbol_O>(),_Nil<Symbol_O>(),kw::_sym_default);
+	T_sp sin = cl_open(path,kw::_sym_input,cl::_sym_standard_char,_Nil<Symbol_O>(),_Nil<Symbol_O>(),kw::_sym_default);
 	T_sp obj = _lisp->sread(sin.as<Stream_O>(),true,_Nil<T_O>());
 	sin->close();
 	return(Values(obj));
@@ -1945,7 +1928,7 @@ namespace core
 #define ARGS_af_findClass "(symbol &optional (errorp t) environment)"
 #define DECL_af_findClass ""
 #define DOCS_af_findClass "findClass"
-    Class_mv af_findClass(Symbol_sp symbol, bool errorp, Environment_sp env )
+    Class_mv af_findClass(Symbol_sp symbol, bool errorp, T_sp env )
     {_G();
 	if ( _lisp->bootClassTableIsValid() )
 	{
@@ -1979,7 +1962,7 @@ namespace core
 #define ARGS_af_setf_findClass "(new-value name)"
 #define DECL_af_setf_findClass ""
 #define DOCS_af_setf_findClass "setf_findClass"
-    Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, Environment_sp env)
+    Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env)
     {_G();
 	if ( !af_classp(newValue) )
 	{
@@ -2045,7 +2028,7 @@ namespace core
 #define DOCS_af_find_package "See CLHS: find-package"
     Package_mv af_find_package(T_sp name_desig)
     {_G();
-	if ( af_packageP(name_desig) ) return(Values(name_desig.as<Package_O>()));
+	if ( cl_packagep(name_desig) ) return(Values(name_desig.as<Package_O>()));
 	Str_sp name = coerce::stringDesignator(name_desig);
 	Package_sp pkg = _lisp->findPackage(name->get());
 	return(Values(pkg));
@@ -2134,7 +2117,7 @@ namespace core
 #define ARGS_af_macroexpand_1 "(form &optional env)"
 #define DECL_af_macroexpand_1 ""
 #define DOCS_af_macroexpand_1 "macroexpand_1"
-    T_mv af_macroexpand_1(T_sp form, Environment_sp env)
+    T_mv af_macroexpand_1(T_sp form, T_sp env)
     {_G();
 	Function_sp expansionFunction = _Nil<Function_O>();
 	if ( Cons_sp cform = form.asOrNull<Cons_O>() )
@@ -2168,7 +2151,7 @@ namespace core
 	    InvocationHistoryFrame _frame(hookFunc->closure,macroHookArgs);
 	    T_sp expanded = eval::applyToActivationFrame(hookFunc,macroHookArgs); // eval::applyFunctionToActivationFrame(hookFunc,macroHookArgs);
             if ( _lisp->sourceDatabase().notnilp() ) {
-                _lisp->sourceDatabase()->duplicateSourceInfoForMacroExpansion(form,expansionFunction,expanded);
+                _lisp->sourceDatabase()->duplicateSourcePosInfo(form,expanded,expansionFunction);
             }
 	    return(Values(expanded,_lisp->_true()) );
 	}
@@ -2181,7 +2164,7 @@ namespace core
 #define ARGS_af_macroexpand "(form &optional env)"
 #define DECL_af_macroexpand ""
 #define DOCS_af_macroexpand "macroexpand"
-    T_mv af_macroexpand(T_sp form, Environment_sp env)
+    T_mv af_macroexpand(T_sp form, T_sp env)
     {_G();
 	bool sawAMacro = false;
 	bool expandedMacro = false;
@@ -2304,22 +2287,6 @@ namespace core
 
 
 
-#define ARGS_af_funcall "(function_desig &rest args)"
-#define DECL_af_funcall ""
-#define DOCS_af_funcall "See CLHS: funcall"
-    T_mv af_funcall(T_sp function_desig, Cons_sp args)
-    {_G();
-	Function_sp func = coerce::functionDesignator(function_desig);
-        if ( func.nilp() ) {
-            ERROR_UNDEFINED_FUNCTION(function_desig);
-        }
-	Cons_sp passArgs = args;
-	ValueFrame_sp frame(ValueFrame_O::create(passArgs,_Nil<ActivationFrame_O>()));
-	return eval::applyToActivationFrame(func,frame); // func->INVOKE(frame->length(),frame->argArray());//return eval::applyFunctionToActivationFrame(func,frame);
-    }
-
-
-
 
 
 /*
@@ -2329,53 +2296,6 @@ namespace core
   Evaluate the function with the argument list.
   __END_DOC
 */
-
-
-
-#define ARGS_af_apply "(head &rest args)"
-#define DECL_af_apply ""
-#define DOCS_af_apply "apply"
-    T_mv af_apply(T_sp head, T_sp args)
-    {_G();
-	/* Special case when apply is called with one arg and that arg is an ActivationFrame
-	   APPLY directly to that ActivationFrame */
-	int lenArgs = cl_length(args);
-	if ( lenArgs == 0 ) {
-	    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs );
-	}
-	if ( lenArgs == 1 && oCar(args).notnilp() )
-	{
-	    Function_sp func = coerce::functionDesignator(head);
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(head);
-            }
-	    if ( ActivationFrame_sp singleFrame = oCar(args).asOrNull<ActivationFrame_O>() )
-	    {
-		return eval::applyToActivationFrame(func,singleFrame); // return func->INVOKE(singleFrame->length(),singleFrame->argArray()); // return eval::applyFunctionToActivationFrame(func,singleFrame);
-	    }
-	}
-	T_sp last = oCar(cl_last(args));
-	if ( !af_listp(last) ) {
-	    SIMPLE_ERROR(BF("Last argument is not a list"));
-	}
-	int lenFirst = lenArgs-1;
-	int lenRest = cl_length(last);
-	int nargs = lenFirst + lenRest;
-	ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
-	T_sp obj = args;
-	for ( int i(0); i<lenFirst; ++i ) {
-	    frame->operator[](i) = oCar(obj);
-	    obj = oCdr(obj);
-	}
-        T_sp cur = last;
-	for ( int i(lenFirst); i<nargs; ++i ) {
-	    frame->operator[](i) = oCar(cur);
-	    cur = oCdr(cur);
-	}
-	Function_sp func = coerce::functionDesignator(head);
-	return eval::applyToActivationFrame(func,frame);
-    }
-
 
 
 
@@ -2500,7 +2420,7 @@ namespace core
     T_mv af_sourceLineColumn()
     {_G();
 	InvocationHistoryFrame* frame = _lisp->invocationHistoryStack().top();
-	return Values(Fixnum_O::create(frame->lineNumber()),Fixnum_O::create(frame->column()));
+	return Values(Fixnum_O::create(frame->lineno()),Fixnum_O::create(frame->column()));
     }
 
 
@@ -2825,6 +2745,8 @@ extern "C"
 	    {
 		printf("               initializers: %s\n", _rep_(initializers).c_str() );
 	    }
+	    printf("Dumping backtrace\n");
+	    core_lowLevelBacktrace();
 	}
 	++nestedErrorDepth;
 	DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR,Fixnum_O::create(nestedErrorDepth));
@@ -3423,11 +3345,6 @@ extern "C"
     }
 
 
-    MultipleValues& Lisp_O::multipleValues()
-    {
-	return this->_Roots._MultipleValues;
-    }
-
     void Lisp_O::dump_backtrace(int numcol)
     {_OF();
 	string bt = this->invocationHistoryStack().asString();
@@ -3505,7 +3422,7 @@ extern "C"
 		Cons_sp entry = code.as_or_nil<Cons_O>();
 		if ( entry->hasParsePos() )
 		{
-		    sline << af_sourceFileInfo(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
+		    sline << core_sourceFileInfo(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
 		} else
 		{
 		    sline << "no-function: " << entry->__repr__();
@@ -3526,14 +3443,10 @@ extern "C"
 
     void Lisp_O::run()
     {_G();
-//	this->inPackage("CORE-USER");
-	//
-	// Compile and evaluate the .rc code to extend the environment in lisp
-	//
 	if ( !this->_IgnoreInitImage )
 	{
             Pathname_sp initPathname = _sym_STARcommandLineImageSTAR->symbolValue().as<Pathname_O>();
-            T_mv result = core_loadBundle(initPathname);
+            T_mv result = eval::funcall(cl::_sym_load,initPathname); // core_loadBundle(initPathname);
             if ( result.nilp() ) {
                 T_sp err = result.second();
                 printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str() );
@@ -3544,7 +3457,7 @@ extern "C"
 	    //
 	    {_BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName );
 		Pathname_sp initPathname = cl_pathname(Str_O::create(this->_RCFileName));
-		T_mv result = af_load(initPathname);
+		T_mv result = eval::funcall(cl::_sym_load,initPathname);
                 if ( result.nilp() ) {
                     T_sp err = result.second();
                     printf("Could not load %s\n", _rep_(initPathname).c_str() );
@@ -3567,50 +3480,43 @@ extern "C"
 
 
 
-    SourceFileInfo_mv Lisp_O::sourceFileInfo(const string& fileName)
+    SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string& fileName, Str_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno)
     {
         map<string,int>::iterator it = this->_SourceFileIndices.find(fileName);
         if ( it == this->_SourceFileIndices.end() ) {
             if ( this->_Roots._SourceFiles.size() == 0 ) {
-                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-no-file-",0);
+                SourceFileInfo_sp unknown = SourceFileInfo_O::create("-unknown-file-",0,sourceDebugNamestring,sourceDebugOffset);
                 this->_Roots._SourceFiles.push_back(unknown);
             }
             int idx = this->_Roots._SourceFiles.size();
             this->_SourceFileIndices[fileName] = idx;
-            SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName,idx);
+            SourceFileInfo_sp sfi = SourceFileInfo_O::create(fileName,idx,sourceDebugNamestring,sourceDebugOffset,useLineno);
             this->_Roots._SourceFiles.push_back(sfi);
             return Values(sfi,Fixnum_O::create(idx));
         }
-        return Values(this->_Roots._SourceFiles[it->second],Fixnum_O::create(it->second));
+	SourceFileInfo_sp sfi = this->_Roots._SourceFiles[it->second];
+	if ( sourceDebugNamestring.notnilp() ) {
+	    sfi->_SourceDebugNamestring = sourceDebugNamestring;
+	    sfi->_SourceDebugOffset = sourceDebugOffset;
+	    sfi->_TrackLineno = useLineno;
+	}
+        return Values(sfi,Fixnum_O::create(it->second));
     }
 
 
-#define ARGS_af_sourceFileInfo "(name)"
-#define DECL_af_sourceFileInfo ""
-#define DOCS_af_sourceFileInfo "sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index"
-    SourceFileInfo_mv af_sourceFileInfo(T_sp sourceFile)
+    
+#define ARGS_core_allSourceFiles "()"
+#define DECL_core_allSourceFiles ""
+#define DOCS_core_allSourceFiles "List all of the source files"
+    T_sp core_allSourceFiles()
     {
-        if ( sourceFile.nilp() ) {
-            return af_sourceFileInfo(Fixnum_O::create(0));
-        } else if ( Str_sp strSourceFile = sourceFile.asOrNull<Str_O>() ) {
-            return _lisp->sourceFileInfo(strSourceFile->get());
-        } else if ( Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>() ) {
-            return _lisp->sourceFileInfo(af_namestring(pnSourceFile)->get());
-        } else if ( Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
-            if ( fnSourceFile->get() >= _lisp->_Roots._SourceFiles.size() ) {
-                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
-            }
-            return Values(_lisp->_Roots._SourceFiles[fnSourceFile->get()],fnSourceFile);
-        } else if ( Stream_sp so = sourceFile.asOrNull<Stream_O>() ) {
-            T_sp sfi = clasp_input_source_file_info(so);
-            return af_sourceFileInfo(sfi);
-        } else if ( SourceFileInfo_sp sfi = sourceFile.asOrNull<SourceFileInfo_O>() ) {
-            return _lisp->sourceFileInfo(sfi->namestring());
-        } else if ( SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>() ) {
-            return af_sourceFileInfo(Fixnum_O::create(spi->_FileId));
-        }
-        SIMPLE_ERROR(BF("Add support for source-file-info for ~a") % _rep_(sourceFile));
-    };
+	Cons_sp list = _Nil<Cons_O>();
+	for ( auto it : _lisp->_SourceFileIndices ) {
+	    Str_sp sf = Str_O::create(it.first);
+	    list = Cons_O::create(sf,list);
+	};
+	return list;
+    }
 
 
 
@@ -3656,6 +3562,7 @@ extern "C"
 	LOG(BF("Lisp_O::initializeGlobals"));
 	SYMBOL_EXPORT_SC_(CorePkg,selectPackage);
 	Defun(selectPackage);
+	CoreDefun(allSourceFiles);
     }
 
     void Lisp_O::exposeCando()
@@ -3761,10 +3668,6 @@ extern "C"
 
 //	defNoWrapPackage(CorePkg,"parseConsOfStrings", &prim_parseConsOfStrings ,_LISP);
 
-	SYMBOL_EXPORT_SC_(ClPkg,funcall);
-	Defun(funcall);
-	SYMBOL_EXPORT_SC_(ClPkg,apply);
-	Defun(apply);
 //	defNoWrapPackage(CorePkg,"sub", &prim_sub ,_LISP);
 //	defNoWrapPackage(CorePkg,"-", &prim_sub ,_LISP);
 //	defNoWrapPackage(CorePkg,"div", &prim_div ,_LISP);
@@ -3846,7 +3749,6 @@ extern "C"
 	SYMBOL_EXPORT_SC_(ClPkg,find_package);
 	Defun(find_package);
 
-        Defun(sourceFileInfo);
 
     }
 

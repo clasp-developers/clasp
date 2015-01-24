@@ -92,7 +92,7 @@ namespace core
 
 	string packageNameDesignator(T_sp obj)
 	{_G();
-            if (af_packageP(obj) )
+            if (cl_packagep(obj) )
 	    {
 		return obj.as<Package_O>()->getName();
 	    }
@@ -104,7 +104,7 @@ namespace core
 	Cons_sp listOfPackageDesignators(T_sp obj)
 	{_G();
 	    if ( obj.nilp() ) return _Nil<Cons_O>();
-	    if ( af_consP(obj) )
+	    if ( cl_consp(obj) )
 	    {
 		ql::list res(_lisp);
 		for ( Cons_sp cur = obj.as_or_nil<Cons_O>(); cur.notnilp(); cur = cCdr(cur) )
@@ -153,7 +153,7 @@ namespace core
 	Cons_sp listOfStringDesignators(T_sp obj)
 	{_G();
 	    if ( obj.nilp() ) return _Nil<Cons_O>();
-	    if ( af_consP(obj) )
+	    if ( cl_consp(obj) )
 	    {
 		Cons_sp first = Cons_O::create(_Nil<T_O>());
 		Cons_sp cur = first;

@@ -66,6 +66,9 @@ namespace core
     public:
 	virtual bool adjustableArrayP() const { return false;}
     public:
+	//! dimension() ignores the fill pointer
+	virtual uint dimension() const { return this->_Contents.size(); };
+	//! size is subclassed by StrWithFillPtr_O and uses the fill-pointer
         virtual uint size() const { return this->_Contents.size(); };
 	const char* c_str() const { return this->_Contents.c_str(); };
         string __str__() { return this->_Contents.asStdString(); };
@@ -136,8 +139,6 @@ namespace core
 	virtual	bool	operator<=(T_sp obj) const;
 	virtual	bool	operator>(T_sp obj) const;
 	virtual	bool	operator>=(T_sp obj) const;
-
-        virtual uint dimension() const { return this->size(); };
 
 	virtual T_sp string_EQ_(Str_sp string2, int start1, int end1, int start2, int end2 ) const;
 	virtual T_sp string_NE_(Str_sp string2, int start1, int end1, int start2, int end2 ) const;

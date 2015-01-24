@@ -1,8 +1,8 @@
+;; Should be commented out
 #+(or)(eval-when (:execute)
-  (format t "!~%!~%!~%!~%!~%In fixup.lsp !~%  Turning on :compare *feature*  for ensure-generic-function~%!~%!~%!~%!~%")
-  (setq core:*echo-repl-read* t)
-  (setq cl:*features* (cons :compare cl:*features*))
-  (setq cl:*features* (cons :force-lots-of-gcs cl:*features*)))
+	(format t "!~%!~%!~%!~%!~%In fixup.lsp !~%  Turning on :compare *feature*  for ensure-generic-function~%!~%!~%!~%!~%")
+	(setq core:*echo-repl-read* t)
+	(setq cl:*features* (cons :compare cl:*features*)))
 
 ;;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: CLOS -*-
 ;;;;

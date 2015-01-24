@@ -72,11 +72,13 @@ namespace core
         virtual Fixnum_sp vectorPush(T_sp newElement) {SUBIMP();};
         virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension=1) {SUBIMP();};
 
-
+	virtual int fillPointer() const {SUBIMP();};
         virtual void setFillPointer(size_t idx) {SUBIMP();};
 
         virtual void* addressOfBuffer() const {SUBIMP();};
 
+	virtual T_sp rowMajorAref(int idx) const { return this->elt(idx); };
+	virtual void rowMajorAset(int idx, T_sp value) { this->setf_elt(idx,value); };
 
         INHERIT_SEQUENCE virtual uint length() const { return this->dimension(); };              
         INHERIT_SEQUENCE virtual T_sp reverse();
@@ -96,7 +98,7 @@ namespace core {
     // Like ecl_vector_start_end
     T_mv brcl_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end); 
 
-    Vector_sp af_make_vector(Symbol_sp element_type,
+    Vector_sp af_make_vector(T_sp element_type,
 			int dimension,
 			bool adjustable,
 			T_sp fill_pointer=Fixnum_O::create(0),

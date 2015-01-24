@@ -1132,10 +1132,10 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 namespace core
 {
 Class_sp af_classOf(T_sp obj);
-    bool af_eq(T_sp x, T_sp y);
-    bool af_eql(T_sp x, T_sp y);
-    bool af_equal(T_sp x, T_sp y);
-    bool af_equalp(T_sp x, T_sp y);
+ bool cl_eq(T_sp x, T_sp y);
+ bool cl_eql(T_sp x, T_sp y);
+ bool cl_equal(T_sp x, T_sp y);
+ bool cl_equalp(T_sp x, T_sp y);
 };
 
 

@@ -52,10 +52,10 @@ namespace core {
 
 
 
-#define ARGS_af_bignumToString "(buffer x base)"
-#define DECL_af_bignumToString ""
-#define DOCS_af_bignumToString "bignumToString"
-    StrWithFillPtr_sp af_bignumToString(StrWithFillPtr_sp buffer, const Bignum& bn, Fixnum_sp base)
+#define ARGS_core_bignumToString "(buffer x base)"
+#define DECL_core_bignumToString ""
+#define DOCS_core_bignumToString "bignumToString"
+    StrWithFillPtr_sp core_bignumToString(StrWithFillPtr_sp buffer, const Bignum& bn, Fixnum_sp base)
     {_G();
 	if ( base->get()<2 || base->get()>36) {
 	    QERROR_WRONG_TYPE_NTH_ARG(3,base,Cons_O::createList(cl::_sym_integer,Fixnum_O::create(2),Fixnum_O::create(360)));
@@ -63,8 +63,14 @@ namespace core {
 	size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), base->ref());
 	if ( bn<0 ) str_size++;
 	buffer->ensureSpaceAfterFillPointer(str_size+1);
-	mpz_get_str(static_cast<char*>(buffer->addressOfFillPtr()),base->get(),bn.get_mpz_t());
-	buffer->incrementFillPointer(str_size);
+	char* bufferStart = static_cast<char*>(buffer->addressOfFillPtr());
+	mpz_get_str(bufferStart,-base->get(),bn.get_mpz_t());
+	//	printf("%s:%d str_size = %zu\n    bufferStart[str_size-1] = %d  bufferStart[str_size] = %d bufferStart=[%s]\n", __FILE__, __LINE__, str_size, bufferStart[str_size-1], bufferStart[str_size], bufferStart);
+	if ( bufferStart[str_size-1] == '\0' ) {
+	    buffer->incrementFillPointer(str_size-1);
+	} else {
+	    buffer->incrementFillPointer(str_size);
+	}
 	return buffer;
     }
 
@@ -97,10 +103,10 @@ namespace core {
 
     
     
-#define ARGS_af_integerToString "(buffer integer base radix decimalp)"
-#define DECL_af_integerToString ""
-#define DOCS_af_integerToString "integerToString"
-    StrWithFillPtr_sp af_integerToString(StrWithFillPtr_sp buffer, Integer_sp integer,
+#define ARGS_core_integerToString "(buffer integer base radix decimalp)"
+#define DECL_core_integerToString ""
+#define DOCS_core_integerToString "integerToString"
+    StrWithFillPtr_sp core_integerToString(StrWithFillPtr_sp buffer, Integer_sp integer,
 					 Fixnum_sp base, bool radix, bool decimalp)
     {	
 	if (radix) {
@@ -108,7 +114,7 @@ namespace core {
 		buffer->ensureSpaceAfterFillPointer(10);
 		write_base_prefix(buffer,base->get());
 	    }
-	    buffer = af_integerToString(buffer, integer, base, false, false );
+	    buffer = core_integerToString(buffer, integer, base, false, false );
 	    if (decimalp && base->get() == 10) {
 		buffer->pushCharExtend('.');
 	    }
@@ -127,17 +133,17 @@ namespace core {
 		buffer->pushString(txt);
 		break;
 	    case 16:
-		sprintf(txt,"%x",fn);
+		sprintf(txt,"%X",fn);
 		buffer->pushString(txt);
 		break;
 	    default:
 		Bignum bn(fn);
-		af_bignumToString(buffer,bn,base);
+		core_bignumToString(buffer,bn,base);
 		break;
 	    }
 	    return buffer;
 	} else if ( integer.isA<Bignum_O>() ) {
-	    af_bignumToString(buffer,integer.as<Bignum_O>()->get(),base);
+	    core_bignumToString(buffer,integer.as<Bignum_O>()->get(),base);
 	} else {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,base,cl::_sym_integer);
 	}
@@ -149,7 +155,7 @@ namespace core {
     void initialize_numberToString()
     {
 	SYMBOL_EXPORT_SC_(CorePkg,integerToString);
-	Defun(integerToString);
+	CoreDefun(integerToString);
     }
 
 
