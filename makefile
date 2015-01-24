@@ -196,4 +196,5 @@ asdf-submodule:
 
 git-push-master:
 	git rev-parse HEAD > minor-version-id.txt
+	git commit -am "updated minor-version-id.txt"
 	git push origin master
