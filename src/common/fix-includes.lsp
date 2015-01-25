@@ -127,8 +127,12 @@
 (defparameter *source-files* nil)
 (defparameter *rewrites* nil)
 
-(multiple-value-setq (*source-files* *rewrites*)
-  (search-and-generate-rewrites))
+(defun do-all (&key testing)
+  (multiple-value-setq (*source-files* *rewrites*)
+    (search-and-generate-rewrites))
+  (rewrite-all *source-files* *rewrites* :testing t))
 
-(rewrite-all *source-files* *rewrites* :testing t)
+(print "Hello")
+
+(do-all)
 
