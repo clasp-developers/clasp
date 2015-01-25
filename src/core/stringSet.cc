@@ -32,18 +32,18 @@ THE SOFTWARE.
 //
 
 
-#include "common.h"
-#include "object.h"
-#include "lisp.h"
-#include "stringSet.h"
-#include "symbolTable.h"
-#include "multipleValues.h"
-#include "stringList.h"
-#include "str.h"
-#include "serialize.h"
-#include "cons.h"
-#include "numbers.h"
-#include "wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/stringSet.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/stringList.h>
+#include <clasp/core/str.h>
+#include <clasp/core/serialize.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/wrappers.h>
 
 
 

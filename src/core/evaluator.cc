@@ -26,35 +26,35 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 //#include "core/foundation.h"
-#include "core/common.h"
-#include "core/corePackage.h"
-#include "evaluator.h"
-#include "iterator.h"
-#include "metaClass.h"
-#include "core/array.h"
-#include "symbolTable.h"
-#include "hashTable.h"
-#include "specialForm.h"
+#include <clasp/core/common.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/iterator.h>
+#include <clasp/core/metaClass.h>
+#include <clasp/core/array.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/specialForm.h>
 //#i n c l u d e "setfExpander.h"
-#include "environment.h"
-#include "executables.h"
-#include "designators.h"
-#include "builtInClass.h"
-#include "lambdaListHandler.h"
-#include "vectorObjects.h"
-#include "predicates.h"
-#include "standardClass.h"
-#include "standardObject.h"
-#include "predicates.h"
-#include "lisp.h"
-#include "backquote.h"
-#include "sysprop.h"
-#include "conditions.h"
-#include "multipleValues.h"
-#include "primitives.h"
+#include <clasp/core/environment.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/backquote.h>
+#include <clasp/core/sysprop.h>
+#include <clasp/core/conditions.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/primitives.h>
 //#include "debugger.h"
-#include "str.h"
-#include "wrappers.h"
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {
@@ -1729,7 +1729,7 @@ namespace core
             T_sp* a = args->argArray();
             switch (nargs) {
 #define APPLY_TO_ACTIVATION_FRAME
-#include "applyToActivationFrame.h"
+#include <applyToActivationFrame.h>
 #undef APPLY_TO_ACTIVATION_FRAME
             default:
 		MultipleValues* _mvP = _lisp->callArgs();
@@ -1749,7 +1749,7 @@ namespace core
             T_O** a = frame::ValuesArray(frameImpl);
             switch (nargs) {
 #define APPLY_TO_TAGGED_FRAME
-#include "applyToActivationFrame.h"
+#include <applyToActivationFrame.h>
 #undef APPLY_TO_TAGGED_FRAME
             default:
 		MultipleValues* _mvP = _lisp->callArgs();

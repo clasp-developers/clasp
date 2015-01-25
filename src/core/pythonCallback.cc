@@ -31,9 +31,9 @@ THE SOFTWARE.
 
 
 
-#include "foundation.h"
+#include <clasp/core/foundation.h>
 
-#include "pythonCallback.h"
+#include <clasp/core/pythonCallback.h>
 
 using namespace core;
 

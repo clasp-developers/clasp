@@ -27,14 +27,14 @@ THE SOFTWARE.
 
 #define	DEBUG_LEVEL_FULL
 
-#include "foundation.h"
-#include "lisp.h"
-#include "externalObject.h"
-#include "symbolTable.h"
-#include "lisp.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/externalObject.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lisp.h>
 
 // last include is wrappers.h
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

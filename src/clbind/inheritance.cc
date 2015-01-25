@@ -41,8 +41,8 @@ THE SOFTWARE.
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #pragma clang diagnostic pop
-#include <core/foundation.h>
-#include <clbind/inheritance.h>
+#include <clasp/core/foundation.h>
+#include <clasp/clbind/inheritance.h>
 
 namespace clbind { namespace detail {
 

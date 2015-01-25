@@ -26,8 +26,8 @@ THE SOFTWARE.
 /* -^- */
 
 
-#include "foundation.h"
-#include "lisp.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
 
 
 
@@ -43,7 +43,7 @@ void initializePackagesAndClasses(Lisp_sp lisp)
 #define Use_CorePkg
 #define Use_MbbPackage
 // #define Use_WxPackage
-#include "core_initClasses_inc.h"
+#include <core_initClasses_inc.h>
 
 };
 

@@ -28,11 +28,11 @@ THE SOFTWARE.
 
 
 #include <vector>
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "microHeap.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/microHeap.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core 

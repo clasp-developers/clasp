@@ -24,23 +24,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "foundation.h"
-#include "object.h"
-#include "load.h"
-#include "lispStream.h"
-#include "symbolTable.h"
-#include "arguments.h"
-#include "str.h"
-#include "lispStream.h"
-#include "lambdaListHandler.h"
-#include "primitives.h"
-#include "unixfsys.h"
-#include "pathname.h"
-#include "lispReader.h"
-#include "evaluator.h"
-#include "gctools/gctoolsPackage.h"
-#include "predicates.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/load.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/str.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/unixfsys.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/lispReader.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

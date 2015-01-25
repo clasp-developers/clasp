@@ -27,9 +27,9 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_FULL
 
 
-#include "fileSystem.h"
-#include "lisp.h"
-#include "lispDefinitions.h"
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/lispDefinitions.h>
 
 
 namespace bf = boost_filesystem;

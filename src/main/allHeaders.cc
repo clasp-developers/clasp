@@ -24,6 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "core/allHeaders.h"
-#include "cffi/allHeaders.h"
-#include "llvmo/allHeaders.h"
+#include <clasp/core/allHeaders.h>
+#include <cffi/allHeaders.h>
+#include <llvmo/allHeaders.h>

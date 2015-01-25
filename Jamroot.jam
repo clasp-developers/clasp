@@ -21,6 +21,7 @@ GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 
 
 project clasp : requirements
+	<include>include
 	<define>INHERITED_FROM_SRC
         <warnings>on
         <cxxflags>"-ferror-limit=999"

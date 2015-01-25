@@ -38,18 +38,18 @@ THE SOFTWARE.
 ///
 //===------------------------------------------------------------===//
 
-#include <core/common.h>
-#include <core/str.h>
-#include <asttooling/Registry.h>
+#include <clasp/core/common.h>
+#include <clasp/core/str.h>
+#include <clasp/asttooling/Registry.h>
 
 #include <utility>
-#include <core/common.h>
-#include <core/wrappedPointer.h>
-#include <asttooling/asttoolingPackage.h>
-#include <asttooling/Marshallers.h>
-#include "clang/ASTMatchers/ASTMatchers.h"
-#include "llvm/ADT/StringMap.h"
-#include "llvm/ADT/StringRef.h"
+#include <clasp/core/common.h>
+#include <clasp/core/wrappedPointer.h>
+#include <clasp/asttooling/asttoolingPackage.h>
+#include <clasp/asttooling/Marshallers.h>
+#include <clang/ASTMatchers/ASTMatchers.h>
+#include <llvm/ADT/StringMap.h>
+#include <llvm/ADT/StringRef.h>
 
 namespace asttooling {
     namespace RegMap {

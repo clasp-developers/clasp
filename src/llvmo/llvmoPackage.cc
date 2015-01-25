@@ -27,24 +27,24 @@ THE SOFTWARE.
 
 #include <stdint.h>
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/builtInClass.h"
-#include "core/fileSystem.h"
-#include "llvmo/llvmoPackage.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/llvmo/llvmoPackage.h>
 //#include "llvmoExpose.generated.h"
-#include "llvmoExpose.h"
-#include "insertPoint.h"
-#include "debugLoc.h"
-#include "llvmoDwarf.h"
-#include "clbindLlvmExpose.h"
-#include "debugInfoExpose.h"
-#include "intrinsics.h"
-#include "claspLinkPass.h"
-#include "core/environment.h"
-#include "core/str.h"
-#include "core/wrappers.h"
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/insertPoint.h>
+#include <clasp/llvmo/debugLoc.h>
+#include <clasp/llvmo/llvmoDwarf.h>
+#include <clasp/llvmo/clbindLlvmExpose.h>
+#include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/claspLinkPass.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 
 
@@ -56,7 +56,7 @@ namespace kw {
 #pragma GCC visibility push(default)
 #define KeywordPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/llvmo/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -68,7 +68,7 @@ namespace llvmo {
 #pragma GCC visibility push(default)
 #define LlvmoPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/llvmo/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -81,7 +81,7 @@ namespace llvmo
 #define EXPOSE_TO_CANDO
 #define Use_LlvmoPkg
 #define EXTERN_REGISTER
-#include "llvmo_initClasses_inc.h"
+#include <llvmo_initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_LlvmoPkg
 #undef EXPOSE_TO_CANDO
@@ -93,7 +93,7 @@ namespace llvmo
 // Load the gctools::GcInfo<core-classes>::Kind specializers
 //
 #define NAMESPACE_llvmo
-#include "main/gc_interface.h"
+#include <clasp/main/gc_interface.h>
 #undef NAMESPACE_llvmo
 
 
@@ -335,7 +335,7 @@ namespace llvmo
 	{
 #define LlvmoPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
-#include "llvmo/symbols_scraped_inc.h"
+#include <clasp/llvmo/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
 
@@ -343,7 +343,7 @@ namespace llvmo
 #define Use_LlvmoPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(pkg,name) _lisp->internUniqueWithPackageName(pkg,name)
-#include "llvmo_initClasses_inc.h"
+#include <llvmo_initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_LlvmoPkg
@@ -429,7 +429,7 @@ namespace llvmo
     STATIC_CLASS_INFO(_U_);			\
     INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
 #endif
-#include "llvmo_initClasses_inc.h"
+#include <llvmo_initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

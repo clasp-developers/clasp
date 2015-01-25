@@ -27,14 +27,14 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 
-#include "foundation.h"
-#include "lisp.h"
-#include "object.h"
-#include "symbolTable.h"
-#include "lispMath.h"
-#include "bignum.h"
-#include "multipleValues.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/object.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lispMath.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 

@@ -1,9 +1,9 @@
-#include "foundation.h"
-#include "corePackage.h"
-#include "symbolTable.h"
-#include "bitVector.h"
-#include "bits.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/bitVector.h>
+#include <clasp/core/bits.h>
+#include <clasp/core/wrappers.h>
 
 /* -*- mode: c; c-basic-offset: 8 -*- */
 /*

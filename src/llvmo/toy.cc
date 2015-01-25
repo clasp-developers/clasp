@@ -24,25 +24,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "llvm/DerivedTypes.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
-#include "llvm/IR/Verifier.h"
-#include "llvm/Analysis/Passes.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Support/IRBuilder.h"
-#include "llvm/Support/TargetSelect.h"
+#include <llvm/DerivedTypes.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/JIT.h>
+#include <llvm/LLVMContext.h>
+#include <llvm/Module.h>
+#include <llvm/PassManager.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/Analysis/Passes.h>
+#include <llvm/Target/TargetData.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Support/IRBuilder.h>
+#include <llvm/Support/TargetSelect.h>
 #include <cstdio>
 #include <string>
 #include <map>
 #include <vector>
 
 
-#include "core/common.h"
+#include <clasp/core/common.h>
 
 
 using namespace llvm;

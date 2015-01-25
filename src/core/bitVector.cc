@@ -27,10 +27,10 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_NONE
 
 
-#include "core/common.h"
-#include "bitVector.h"
-#include "hashTable.h"
-#include "wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/bitVector.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

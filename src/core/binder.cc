@@ -27,19 +27,19 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_FULL
 
 #include <string.h>
-#include "core/foundation.h"
-#include "core/common.h"
-#include "stringSet.h"
-#include "symbolTable.h"
-#include "serialize.h"
-#include "binder.h"
-#include "lambdaListHandler.h"
-#include "standardObject.h"
-#include "multipleValues.h"
-#include "activationFrame.h"
-#include "evaluator.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/common.h>
+#include <clasp/core/stringSet.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/serialize.h>
+#include <clasp/core/binder.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/evaluator.h>
 //#i n c l u d e "render.h"
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 #define	MAX_CONS_CHARS	1024

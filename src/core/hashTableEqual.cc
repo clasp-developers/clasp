@@ -26,11 +26,11 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "core/common.h"
-#include "core/environment.h"
-#include "symbolTable.h"
-#include "hashTableEqual.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 

@@ -26,9 +26,9 @@ THE SOFTWARE.
 /* -^- */
        
 #define	TURN_DEBUG_OFF
-#include "foundation.h"
-#include "object.h"
-#include "lightProfiler.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lightProfiler.h>
 #include <sstream>
 
 

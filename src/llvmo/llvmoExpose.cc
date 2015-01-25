@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/ReaderWriter.h>
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/ADT/Triple.h>
@@ -56,34 +56,34 @@ THE SOFTWARE.
 #include "llvm/IR/AssemblyAnnotationWriter.h" // will be llvm/IR
 //#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
 
-#include "core/common.h"
-#include "core/cons.h"
-#include "core/evaluator.h"
-#include "core/symbolTable.h"
-#include "core/package.h"
-#include "core/stringList.h"
-#include "core/environment.h"
-#include "core/hashTableEqual.h"
-#include "core/builtInClass.h"
-#include "core/lambdaListHandler.h"
-#include "core/multipleValues.h"
-#include "core/environment.h"
-#include "core/sourceFileInfo.h"
-#include "core/loadTimeValues.h"
-#include "core/lispStream.h"
-#include "core/bignum.h"
-#include "core/pointer.h"
-#include "core/str.h"
-#include "core/vectorObjectsWithFillPtr.h"
-#include "main/gc_interface.fwd.h"
-#include "llvmo/debugInfoExpose.h"
-#include "llvmoExpose.h"
-#include "core/lightProfiler.h"
-#include "insertPoint.h"
-#include "debugLoc.h"
-#include "core/external_wrappers.h"
-#include "core/wrappers.h"
-#include "symbolTable.h"
+#include <clasp/core/common.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/package.h>
+#include <clasp/core/stringList.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/loadTimeValues.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/str.h>
+#include <clasp/core/vectorObjectsWithFillPtr.h>
+#include <clasp/main/gc_interface.fwd.h>
+#include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/core/lightProfiler.h>
+#include <clasp/llvmo/insertPoint.h>
+#include <clasp/llvmo/debugLoc.h>
+#include <clasp/core/external_wrappers.h>
+#include <clasp/core/wrappers.h>
+#include <clasp/llvmo/symbolTable.h>
 
 
 

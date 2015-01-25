@@ -26,11 +26,11 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "core/foundation.h"
-#include "core/lisp.h"
-#include "core/environment.h"
-#include "null.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/null.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 

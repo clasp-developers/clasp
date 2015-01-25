@@ -28,25 +28,25 @@ THE SOFTWARE.
 
 #ifdef USE_MPS
 extern "C" {
-#include "mps/code/mpscamc.h"
+#include <clasp/mps/code/mpscamc.h>
 };
 #endif
 
 #include <stdint.h>
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/builtInClass.h"
-#include "core/fileSystem.h"
-#include "core/environment.h"
-#include "core/standardClass.h"
-#include "core/activationFrame.h"
-#include "core/structureClass.h"
-#include "core/str.h"
-#include "symbolTable.h"
-#include "gctoolsPackage.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/core/str.h>
+#include <clasp/gctools/symbolTable.h>
+#include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/core/wrappers.h>
 
 
 
@@ -774,7 +774,7 @@ namespace gctools {
 #pragma GCC visibility push(default)
 #define GcToolsPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/gctools/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -791,7 +791,7 @@ namespace gctools {
 
 #define GcToolsPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {gctools::cname = _lisp->internUniqueWithPackageName(pkg,lispname); gctools::cname->exportYourself(exportp);}
-#include "gctools/symbols_scraped_inc.h"
+#include <clasp/gctools/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS
 
@@ -869,7 +869,7 @@ namespace gctools {
 #define _CLASS_MACRO(_U_)				\
     STATIC_CLASS_INFO(_U_);			\
     INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
-#include "gctools_initClasses_inc.h"
+#include <gctools_initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

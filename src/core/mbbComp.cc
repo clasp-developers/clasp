@@ -35,17 +35,17 @@ THE SOFTWARE.
 #include <iostream>
 
 #include <stdio.h>
-#include "foundation.h"
-#include "vector3.h"
-#include "matrix.h"
-#include "fragments.h"
-#include "trimerDatabase.h"
-#include "residue.h"
-#include "loop.h"
-#include "polymer.h"
-#include "parmSet.h"
-#include "amber.h"
-#include "moe.h"
+#include <clasp/core/foundation.h>
+#include <vector3.h>
+#include <matrix.h>
+#include <fragments.h>
+#include <trimerDatabase.h>
+#include <residue.h>
+#include <loop.h>
+#include <polymer.h>
+#include <parmSet.h>
+#include <amber.h>
+#include <moe.h>
 
 using namespace core;
 extern	int	yyparse();

@@ -26,12 +26,12 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "lisp.h"
-#include "specialForm.h"
-#include "lisp.h"
+#include <clasp/core/lisp.h>
+#include <clasp/core/specialForm.h>
+#include <clasp/core/lisp.h>
 //#include "debugger.h"
 // last include is wrappers.h
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

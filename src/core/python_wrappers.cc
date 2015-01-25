@@ -27,12 +27,12 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 #include <Python.h>
-#include "core/common.h"
-#include "core/lisp.h"
-#include "core/str.h"
-#include "core/bignum.h"
-#include "core/cons.h"
-#include "wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/str.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/wrappers.h>
 
 #ifdef USEBOOSTPYTHON
 namespace core

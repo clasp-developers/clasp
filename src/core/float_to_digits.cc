@@ -37,15 +37,15 @@ THE SOFTWARE.
     See file '../../Copyright' for full details.
 */
 
-#include "foundation.h"
-#include "object.h"
-#include "numbers.h"
-#include "num_co.h"
-#include "character.h"
-#include "symbolTable.h"
-#include "strWithFillPtr.h"
-#include "bignum.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/num_co.h>
+#include <clasp/core/character.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/wrappers.h>
 
 namespace core {
 

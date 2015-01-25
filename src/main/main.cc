@@ -34,26 +34,26 @@ THE SOFTWARE.
 #include <boost/mpi.hpp>
 #endif
 #include <string>
-#include "core/foundation.h"
-#include "core/bundle.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/evaluator.h"
-#include "core/str.h"
-#include "core/symbolTable.h"
-#include "core/candoOpenMp.h"
-#include "core/cons.h"
-#include "core/commandLineOptions.h"
-#include "cffi/cffiPackage.h"
-#include "llvmo/llvmoPackage.h"
-#include "gctools/gctoolsPackage.h"
-#include "clbind/clbindPackage.h"
-#include "sockets/socketsPackage.h"
-#include "serveEvent/serveEventPackage.h"
-#include "asttooling/asttoolingPackage.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/bundle.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/str.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/candoOpenMp.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/commandLineOptions.h>
+#include <clasp/cffi/cffiPackage.h>
+#include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/clbind/clbindPackage.h>
+#include <clasp/sockets/socketsPackage.h>
+#include <clasp/serveEvent/serveEventPackage.h>
+#include <clasp/asttooling/asttoolingPackage.h>
 #ifdef USE_MPI
-#include "mpip/mpiPackage.h"
-#include "mpip/claspMpi.h"
+#include <clasp/mpip/mpiPackage.h>
+#include <clasp/mpip/claspMpi.h>
 #endif
 
 

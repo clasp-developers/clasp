@@ -28,24 +28,24 @@ THE SOFTWARE.
 
 
 #define	DEBUG_LEVEL_FULL
-#include "core/foundation.h"
-#include "core/common.h"
-#include "core/environment.h"
-#include "symbolTable.h"
-#include "core/hashTable.h"
-#include "core/hashTableEql.h"
-#include "core/primitives.h"
-#include <core/vectorObjectsWithFillPtr.h>
-#include "core/package.h"
-#include <core/str.h>
-#include "core/executables.h"
-#include "core/multipleValues.h"
-#include "core/lambdaListHandler.h"
-#include "core/singleDispatchEffectiveMethodFunction.h"
-#include "core/singleDispatchGenericFunction.h"
-#include "core/singleDispatchMethod.h"
-#include "core/wrappers.h"
-#include "core/sort.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/vectorObjectsWithFillPtr.h>
+#include <clasp/core/package.h>
+#include <clasp/core/str.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
+#include <clasp/core/singleDispatchGenericFunction.h>
+#include <clasp/core/singleDispatchMethod.h>
+#include <clasp/core/wrappers.h>
+#include <clasp/core/sort.h>
 
 namespace core
 {

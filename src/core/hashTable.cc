@@ -27,24 +27,24 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_FULL
 
 #include <limits>
-#include "core/common.h"
-#include "core/corePackage.h"
-#include "core/environment.h"
-#include "multipleValues.h"
-#include "symbolTable.h"
-#include "hashTable.h"
-#include "hashTableEq.h"
-#include "hashTableEql.h"
-#include "hashTableEqual.h"
-#include "hashTableEqualp.h"
-#include "vectorObjects.h"
-#include "str.h"
-#include "lispString.h"
-#include "fileSystem.h"
-#include "serialize.h"
-#include "evaluator.h"
-#include "designators.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/hashTableEqualp.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/str.h>
+#include <clasp/core/lispString.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/serialize.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 

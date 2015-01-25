@@ -26,29 +26,29 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "useBoostPython.h"
+#include <clasp/core/useBoostPython.h>
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "conditions.h"
-#include "builtInClass.h"
-#include "evaluator.h"
-#include "lispStream.h"
-#include "symbolTable.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/conditions.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/symbolTable.h>
 #if defined(XML_ARCHIVE)
-#include "xmlSaveAorchive.h"
-#include "xmlLoadArchive.h"
+#include <xmlSaveAorchive.h>
+#include <xmlLoadArchive.h>
 #endif // defined(XML_ARCHIVE)
 //#i n c l u d e "hierarchy.h"
 //#i n c l u d e "render.h"
 
-#include "externalObject.h"
-#include "null.h"
-#include "environment.h"
-#include "lambdaListHandler.h"
-#include "lispDefinitions.h"
-#include "wrappers.h"
+#include <clasp/core/externalObject.h>
+#include <clasp/core/null.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/lispDefinitions.h>
+#include <clasp/core/wrappers.h>
 
 
 
@@ -754,7 +754,7 @@ namespace core
 
 
 
-#include "multipleValues.h"
+#include <clasp/core/multipleValues.h>
 
 
 };

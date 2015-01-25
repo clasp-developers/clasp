@@ -33,41 +33,41 @@ THE SOFTWARE.
 #include <csignal>
 
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "symbolToEnumConverter.h"
-#include "symbolTable.h"
-#include "builtInClass.h"
-#include "stdClass.h"
-#include "standardClass.h"
-#include "structureClass.h"
-#include "core/corePackage.h"
-#include "ql.h"
-#include "lispStream.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/symbolToEnumConverter.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/stdClass.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/ql.h>
+#include <clasp/core/lispStream.h>
 //#i n c l u d e "genericFunction.h"
-#include "gctools/gctoolsPackage.h"
-#include "core/multipleValues.h"
-#include "core/lambdaListHandler.h"
-#include "core/reader.h"
-#include "core/pointer.h"
-#include "singleDispatchGenericFunction.h"
-#include "singleDispatchMethod.h"
-#include "evaluator.h"
-#include "write_object.h"
-#include "designators.h"
-#include "instance.h"
-#include "structureClass.h"
-#include "structureObject.h"
-#include "str.h"
-#include "binder.h"
-#include "pointer.h"
-#include "wrappedPointer.h"
-#include "debugger.h"
+#include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/reader.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/singleDispatchGenericFunction.h>
+#include <clasp/core/singleDispatchMethod.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/write_object.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/core/structureObject.h>
+#include <clasp/core/str.h>
+#include <clasp/core/binder.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/wrappedPointer.h>
+#include <clasp/core/debugger.h>
 //#i n c l u d e "setfExpander.h"
-#include "environment.h"
-#include "primitives.h"
-#include "conditions.h"
+#include <clasp/core/environment.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/conditions.h>
 
 #ifdef	darwin
 #include <stdint.h>
@@ -76,10 +76,10 @@ THE SOFTWARE.
 #include <time.h>
 #endif
 
-#include "object.h"
-#include "package.h"
-#include "null.h"
-#include "wrappers.h"
+#include <clasp/core/object.h>
+#include <clasp/core/package.h>
+#include <clasp/core/null.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace reg {
@@ -1930,19 +1930,19 @@ namespace core
 #if 0
     void old_initializeCandoAndPython(Lisp_sp env)
     {_errorF();
-#include "core_initScripting_inc.h"
+#include <core_initScripting_inc.h>
     }
 #ifdef	USEBOOSTPYTHON
 #undef	USEBOOSTPYTHON
     void old_initializeCandoNoPython(Lisp_sp env)
     {_errorF();
-#include "core_initScripting_inc.h"
+#include <core_initScripting_inc.h>
     }
 #define USEBOOSTPYTHON
 #else
     void old_initializeCandoNoPython(Lisp_sp env)
     {_errorF();
-#include "core_initScripting_inc.h"
+#include <core_initScripting_inc.h>
     }
 #endif
 #endif

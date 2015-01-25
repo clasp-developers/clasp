@@ -24,12 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "foundation.h"
-#include "object.h"
-#include "symbolTable.h"
-#include "lambdaListHandler.h"
-#include "activationFrame.h"
-#include "arguments.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/arguments.h>
 
 namespace core
 {

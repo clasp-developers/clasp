@@ -90,17 +90,17 @@ typedef int mode_t;
 
 
 
-#include "foundation.h"
-#include "pathname.h"
-#include "str.h"
-#include "fileSystem.h"
-#include "strWithFillPtr.h"
-#include "symbolTable.h"
-#include "designators.h"
-#include "numbers.h"
-#include "evaluator.h"
-#include "unixfsys.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/str.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/unixfsys.h>
+#include <clasp/core/wrappers.h>
 
 
 SYMBOL_EXPORT_SC_(KeywordPkg,absolute);

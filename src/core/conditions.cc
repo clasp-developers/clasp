@@ -40,16 +40,16 @@ THE SOFTWARE.
 #include <string>
 #include <set>
 #include <vector>
-#include "common.h"
-#include "exceptions.h"
-#include "symbolTable.h"
-#include "lispStream.h"
-#include "bformat.h"
-#include "evaluator.h"
-#include "str.h"
-#include "object.h"
-#include "lisp.h"
-#include "wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/exceptions.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/bformat.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/str.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/wrappers.h>
 
 
 #ifdef	WIN32

@@ -41,13 +41,13 @@ THE SOFTWARE.
     See file '../Copyright' for full details.
 */
 
-#include "foundation.h"
-#include "object.h"
-#include "symbolTable.h"
-#include "numbers.h"
-#include "bignum.h"
-#include "num_arith.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/num_arith.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

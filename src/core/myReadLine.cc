@@ -24,10 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "myReadLine.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/myReadLine.h>
 
 #ifdef	READLINE
 extern "C" char *readline( const char* prompt);

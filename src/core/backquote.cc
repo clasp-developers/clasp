@@ -41,18 +41,18 @@ THE SOFTWARE.
 
 #define TRACK_CONS 0
 
-#include "core/common.h"
-#include "core/environment.h"
-#include "core/ql.h"
-#include "symbolTable.h"
-#include "multipleValues.h"
-#include "environment.h"
-#include "backquote.h"
-#include "evaluator.h"
-#include "lispList.h"
-#include "primitives.h"
-#include "sequence.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/ql.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/backquote.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/sequence.h>
+#include <clasp/core/wrappers.h>
 
 
 

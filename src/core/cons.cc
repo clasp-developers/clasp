@@ -26,23 +26,23 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "core/foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "core/corePackage.h"
-#include "core/ql.h"
-#include "sourceFileInfo.h"
-#include "cons.h"
-#include "core/predicates.h"
-#include "symbolTable.h"
-#include "serialize.h"
-#include "evaluator.h"
-#include "environment.h"
-#include "designators.h"
-#include "executables.h"
-#include "numbers.h"
-#include "str.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/ql.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/serialize.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core

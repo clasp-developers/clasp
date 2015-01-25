@@ -27,18 +27,18 @@ THE SOFTWARE.
 
 
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/numbers.h"
-#include "core/str.h"
-#include "core/builtInClass.h"
-#include "core/loadTimeValues.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/str.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/loadTimeValues.h>
 #include "core/posixTime.h" // was core/posixTime.cc???
-#include "core/symbolTable.h"
-#include "core/standardClass.h"
-#include "core/structureClass.h"
-#include "core/wrappers.h"
-#include "main/gc_interface.fwd.h"
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/core/wrappers.h>
+#include <clasp/main/gc_interface.fwd.h>
 
 
 extern "C" {
@@ -48,7 +48,7 @@ extern "C" {
 };
 
 
-#include "gctoolsPackage.h"
+#include <clasp/gctools/gctoolsPackage.h>
 
 
 

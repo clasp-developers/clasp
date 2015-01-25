@@ -27,4 +27,4 @@ THE SOFTWARE.
 
 
 #undef	USE_MPI
-#include "candoMpi.cc"
+#include <candoMpi.cc>

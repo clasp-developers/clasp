@@ -25,9 +25,9 @@ THE SOFTWARE.
 */
 /* -^- */
 #include <stdio.h>
-#include <core/foundation.h>
-#include <core/object.h>
-#include <core/holder.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/holder.h>
 
 
 namespace asttooling {

@@ -26,21 +26,21 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "core/foundation.h"
+#include <clasp/core/foundation.h>
 #ifdef	USE_MPI
 #include <boost/mpi.hpp>
 #endif
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/cons.h"
-#include "core/lispStream.h"
-#include "core/serialize.h"
-#include "core/sexpSaveArchive.h"
-#include "core/sexpLoadArchive.h"
-#include "core/environment.h"
-#include "claspMpi.h"
-#include "symbolTable.h"
-#include "core/wrappers.h"
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/serialize.h>
+#include <clasp/core/sexpSaveArchive.h>
+#include <clasp/core/sexpLoadArchive.h>
+#include <clasp/core/environment.h>
+#include <clasp/mpip/claspMpi.h>
+#include <clasp/mpip/symbolTable.h>
+#include <clasp/core/wrappers.h>
 
 
 

@@ -31,22 +31,22 @@ THE SOFTWARE.
 
 
 
-#include "mainBoostPython.h"
+#include <clasp/core/mainBoostPython.h>
 
 
-#include "vector3.h"
-#include "matrix.h"
-#include "virtualSphere.h"
+#include <vector3.h>
+#include <matrix.h>
+#include <virtualSphere.h>
 
-#include "exceptions.h"
+#include <clasp/core/exceptions.h>
 //#i n c l u d e "execContext.h"
-#include "pythonCallback.h"
+#include <clasp/core/pythonCallback.h>
 
 
 
-#include "mySaxInterface.h"
+#include <mySaxInterface.h>
 
-#include "xmlAggregate.h"
+#include <xmlAggregate.h>
 
 
-#include "quickDom.h"
+#include <quickDom.h>

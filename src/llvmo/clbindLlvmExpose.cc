@@ -24,18 +24,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "core/foundation.h"
+#include <clasp/core/foundation.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/ADT/APSInt.h>
 
 
 
-#include <clbind/clbind.h>
+#include <clasp/clbind/clbind.h>
 
 
 #ifdef USE_MPS
 #define NAMESPACE_clbind_llvm
-#include "main/gc_interface.h"
+#include <clasp/main/gc_interface.h>
 #undef NAMESPACE_clbind_clang
 #endif
 

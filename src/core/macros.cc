@@ -25,10 +25,10 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "setfExpander.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <setfExpander.h>
 
 namespace core
 {

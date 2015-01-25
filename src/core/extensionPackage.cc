@@ -25,15 +25,15 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "symbol.h"
-#include "symbolTable.h"
-#include "extensionPackage.h"
-#include "predicates.h"
-#include "multipleValues.h"
-#include "package.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/extensionPackage.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/package.h>
 
 namespace ext
 {
@@ -42,7 +42,7 @@ namespace ext
 #pragma GCC visibility push(default)
 #define ExtPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/core/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ExtPkg_SYMBOLS
 #pragma GCC visibility pop

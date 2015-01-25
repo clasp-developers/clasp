@@ -26,17 +26,17 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "lisp.h"
-#include "lambdaListHandler.h"
-#include "environment.h"
-#include "symbol.h"
-#include "reader.h"
-#include "package.h"
-#include "evaluator.h"
-#include "keyedObject.h"
+#include <clasp/core/lisp.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/reader.h>
+#include <clasp/core/package.h>
+#include <clasp/core/evaluator.h>
+#include <keyedObject.h>
 
 // last include is wrappers.h
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

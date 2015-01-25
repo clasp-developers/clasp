@@ -28,9 +28,9 @@ THE SOFTWARE.
 
 #define	DEBUG_LEVEL_NONE
 
-#include "lisp.h"
-#include "intArray.h"
-#include "wrappers.h"
+#include <clasp/core/lisp.h>
+#include <clasp/core/intArray.h>
+#include <clasp/core/wrappers.h>
 
 
 

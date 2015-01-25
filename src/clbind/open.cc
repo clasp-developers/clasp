@@ -48,15 +48,15 @@ THE SOFTWARE.
 
 #define CLBIND_BUILDING
 
-#include <core/foundation.h>
-#include <core/object.h>
-#include <clbind/cl_include.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/clbind/cl_include.h>
 
-#include <clbind/clbind.h>
-#include <clbind/class_registry.h>
-#include <clbind/symbolTable.h>
-//#include <clbind/function.h>
-//#include <clbind/get_main_thread.h>
+#include <clasp/clbind/clbind.h>
+#include <clasp/clbind/class_registry.h>
+#include <clasp/clbind/symbolTable.h>
+//#include <clasp/clbind/function.h>
+//#include <clasp/clbind/get_main_thread.h>
 
 namespace clbind {
 

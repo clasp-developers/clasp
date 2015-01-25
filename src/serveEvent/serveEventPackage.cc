@@ -27,14 +27,14 @@ THE SOFTWARE.
 #include <boost/mpl/list.hpp>
 
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/builtInClass.h"
-#include "serveEvent/serveEventPackage.h"
-#include "serveEvent/serveEvent.h"
-#include "core/str.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/serveEvent/serveEventPackage.h>
+#include <clasp/serveEvent/serveEvent.h>
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace serveEvent
@@ -43,7 +43,7 @@ namespace serveEvent
 #define EXPOSE_TO_CANDO
 #define Use_ServeEventPkg
 #define EXTERN_REGISTER
-#include "serveEvent_initClasses_inc.h"
+#include <serveEvent_initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_ServeEventPkg
 #undef EXPOSE_TO_CANDO
@@ -63,7 +63,7 @@ namespace serveEvent
 #pragma GCC visibility push(default)
 #define ServeEventPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/serveEvent/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ServeEventPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -77,7 +77,7 @@ namespace serveEvent
 	{
 #define ServeEventPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
-#include "serveEvent/symbols_scraped_inc.h"
+#include <clasp/serveEvent/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ServeEventPkg_SYMBOLS
 
@@ -85,7 +85,7 @@ namespace serveEvent
 #define ALL_STAGES
 #define Use_ServeEventPkg
 #define INVOKE_REGISTER
-#include "serveEvent_initClasses_inc.h"
+#include <serveEvent_initClasses_inc.h>
 #undef INVOKE_REGISTER
 #undef Use_ServeEventPkg
 #undef ALL_STAGES
@@ -128,7 +128,7 @@ namespace serveEvent
     INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include "serveEvent_initClasses_inc.h"
+#include <serveEvent_initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

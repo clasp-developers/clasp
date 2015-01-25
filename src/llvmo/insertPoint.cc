@@ -26,13 +26,13 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/builtInClass.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/builtInClass.h>
 
-#include "insertPoint.h"
-#include "core/wrappers.h"
+#include <clasp/llvmo/insertPoint.h>
+#include <clasp/core/wrappers.h>
 
 
 

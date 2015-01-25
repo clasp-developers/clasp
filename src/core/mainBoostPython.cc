@@ -31,10 +31,10 @@ THE SOFTWARE.
 
 
 
-#include "foundation.h"
+#include <clasp/core/foundation.h>
 #include <iostream>
-#include "object.h"
-#include "lisp.h"
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
 
 
 #ifdef	USEBOOSTPYTHON

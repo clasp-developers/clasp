@@ -28,18 +28,18 @@ THE SOFTWARE.
 
 
 #include <string.h>
-#include "core/config.h"
-#include "core/common.h"
-#include "core/environment.h"
-#include "symbolTable.h"
-#include "core/lambdaListHandler.h"
-#include "core/lispList.h"
-#include "core/primitives.h"
-#include "core/str.h"
-#include "core/vectorObjects.h"
-#include "core/multipleValues.h"
-#include "core/evaluator.h"
-#include "core/wrappers.h"
+#include <clasp/core/config.h>
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/str.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 

@@ -27,18 +27,18 @@ THE SOFTWARE.
 #include <boost/mpl/list.hpp>
 
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include <core/standardClass.h>
-#include "core/builtInClass.h"
-#include "core/str.h"
-#include "clbind/clbindPackage.h"
-#include "clbind/clbind.h"
-#include <clbind/adapter.h>
-#include <clbind/class_registry.h>
-#include <clbind/class_rep.h>
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/str.h>
+#include <clasp/clbind/clbindPackage.h>
+#include <clasp/clbind/clbind.h>
+#include <clasp/clbind/adapter.h>
+#include <clasp/clbind/class_registry.h>
+#include <clasp/clbind/class_rep.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace clbind
@@ -47,7 +47,7 @@ namespace clbind
 #define EXPOSE_TO_CANDO
 #define Use_ClbindPkg
 #define EXTERN_REGISTER
-#include "clbind_initClasses_inc.h"
+#include <clbind_initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_ClbindPkg
 #undef EXPOSE_TO_CANDO
@@ -60,7 +60,7 @@ namespace clbind
 // Load the gctools::GcInfo<core-classes>::Kind specializers
 //
 #define NAMESPACE_clbind
-#include "main/gc_interface.h"
+#include <clasp/main/gc_interface.h>
 #undef NAMESPACE_clbind
 
 
@@ -75,7 +75,7 @@ namespace clbind
 #pragma GCC visibility push(default)
 #define ClbindPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/clbind/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ClbindPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -89,7 +89,7 @@ namespace clbind
 	{
 #define ClbindPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
-#include "clbind/symbols_scraped_inc.h"
+#include <clasp/clbind/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ClbindPkg_SYMBOLS
 
@@ -98,7 +98,7 @@ namespace clbind
 #define Use_ClbindPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s,p) DEFAULT_LOOKUP_SYMBOL(s,p)
-#include "clbind_initClasses_inc.h"
+#include <clbind_initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_ClbindPkg
@@ -145,7 +145,7 @@ namespace clbind
     STATIC_CLASS_INFO(_T_);
 #endif
 
-#include "clbind_initClasses_inc.h"
+#include <clbind_initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

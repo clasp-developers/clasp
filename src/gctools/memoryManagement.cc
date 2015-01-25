@@ -27,10 +27,10 @@ THE SOFTWARE.
 //
 
 #include <llvm/Support/ErrorHandling.h>
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/numbers.h"
-#include "memoryManagement.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/numbers.h>
+#include <clasp/gctools/memoryManagement.h>
 //#include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
@@ -50,10 +50,6 @@ namespace gctools {
 
 
 };
-
-#ifdef USE_REFCOUNT
-#include "intrusiveRefCountGarbageCollection.cc"
-#endif
 
 #ifdef USE_BOEHM
 #include "boehmGarbageCollection.cc"

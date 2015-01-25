@@ -39,14 +39,14 @@ THE SOFTWARE.
 
 #include <stdlib.h>
 #include <limits.h>
-#include "foundation.h"
-#include "object.h"
-#include "bundle.h"
-#include "sourceFileInfo.h"
-#include "str.h"
-#include "pathname.h"
-#include "lisp.h"
-#include "boost/filesystem.hpp"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/bundle.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/str.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/lisp.h>
+#include <boost/filesystem.hpp>
 
 namespace bf = boost_filesystem;
 

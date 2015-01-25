@@ -27,13 +27,13 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_FULL
 
 #include <string>
-#include "core/foundation.h"
-#include "core/bundle.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/archiveNode.h"
-#include "core/candoOpenMp.h"
-#include "core/cons.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/bundle.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <core/archiveNode.h>
+#include <clasp/core/candoOpenMp.h>
+#include <clasp/core/cons.h>
 
 
 

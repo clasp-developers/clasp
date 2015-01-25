@@ -26,14 +26,14 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "core/common.h"
-#include "core/corePackage.h"
-#include "core/symbolTable.h"
-#include "core/environment.h"
-#include "core/vectorObjects.h"
-#include "core/array.h"
-#include "arrayObjects.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
+#include <clasp/core/arrayObjects.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 

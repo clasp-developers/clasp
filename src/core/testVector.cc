@@ -26,5 +26,5 @@ THE SOFTWARE.
 /* -^- */
 
 
-#include "core/foundation.h"
-#include "mutableVector.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/mutableVector.h>

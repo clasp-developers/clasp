@@ -28,18 +28,18 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 
-#include "core/common.h"
-#include "core/cons.h"
-#include "core/evaluator.h"
-#include "core/package.h"
-#include "core/stringList.h"
-#include "core/environment.h"
-#include "core/builtInClass.h"
-#include "core/str.h"
-#include "llvmoExpose.h"
+#include <clasp/core/common.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/package.h>
+#include <clasp/core/stringList.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/str.h>
+#include <clasp/llvmo/llvmoExpose.h>
 //#include "llvmoExpose.generated.h"
-#include "core/wrappers.h"
-#include "core/external_wrappers.h"
+#include <clasp/core/wrappers.h>
+#include <clasp/core/external_wrappers.h>
 
 namespace llvmo
 {

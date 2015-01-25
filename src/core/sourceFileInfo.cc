@@ -27,18 +27,18 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 #include <string.h>
-#include "core/foundation.h"
-#include "core/fileSystem.h"
-#include "core/str.h"
-#include "core/lispStream.h"
-#include "core/hashTableEq.h"
-#include "core/pathname.h"
-#include "core/print.h"
-#include "lispStream.h"
-#include "sourceFileInfo.h"
-#include "bundle.h"
-#include "write_ugly.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/str.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/print.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/bundle.h>
+#include <clasp/core/write_ugly.h>
+#include <clasp/core/wrappers.h>
 
 #define REQUIRE_SOURCE_INFO 0
 extern "C" {

@@ -26,11 +26,11 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "core/common.h"
-#include "core/environment.h"
-#include "core/str.h"
-#include "loadTimeValues.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/str.h>
+#include <clasp/core/loadTimeValues.h>
+#include <clasp/core/wrappers.h>
 
 #pragma GCC visibility push(default)
 

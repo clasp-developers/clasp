@@ -38,11 +38,11 @@ THE SOFTWARE.
 
 //#include "clasp_gmpxx.h"
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/bignum.h"
-#include "core/profile.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/profile.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 

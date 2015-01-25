@@ -41,17 +41,17 @@ THE SOFTWARE.
     See file '../Copyright' for full details.
 */
 
-#include "foundation.h"
-#include "object.h"
-#include "symbol.h"
-#include "lispStream.h"
-#include "character.h"
-#include "strWithFillPtr.h"
-#include "package.h"
-#include "symbolTable.h"
-#include "readtable.h"
-#include "print.h"
-#include "write_symbol.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/character.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/package.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/readtable.h>
+#include <clasp/core/print.h>
+#include <clasp/core/write_symbol.h>
 
 namespace core {
 

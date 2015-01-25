@@ -28,18 +28,18 @@ THE SOFTWARE.
 
 #include <csignal>
 #include <execinfo.h>
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "conditions.h"
-#include "arguments.h"
-#include "myReadLine.h"
-#include "symbolTable.h"
-#include "sourceFileInfo.h"
-#include "evaluator.h"
-#include "environment.h"
-#include "debugger.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/conditions.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/myReadLine.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/debugger.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {
