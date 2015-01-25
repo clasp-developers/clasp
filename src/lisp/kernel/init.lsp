@@ -849,7 +849,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                            :lisp-bitcode-files bitcode-files
                            :prologue-form '(progn
 					     (if (member :interactive *features*) 
-						 (bformat t "Starting %s Clasp 0.11 ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ))))
+						 (bformat t "Starting %s Clasp 0.2 ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ))))
 			   :epilogue-form '(progn
 					     (cl:in-package :cl-user)
 					     (require 'system)
