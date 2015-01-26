@@ -975,6 +975,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export 'setup-asdf)
 
 (defun compile-asdf ()
+  ;; Run make on asdf wherever it is installed
+;  (core:system (bformat nil "(cd %s; make)" (namestring (translate-logical-pathname "sys:kernel;asdf;"))))
   (compile-file "sys:kernel;asdf;build;asdf.lisp" :output-file (compile-file-pathname "sys:modules;asdf;asdf.fasl"
 										      :target-backend (default-target-backend)))
   #+(or)(cmp::link-system-lto "sys:kernel;asdf;build;asdf.fasl"
