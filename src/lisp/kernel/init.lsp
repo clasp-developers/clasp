@@ -517,8 +517,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
           (recursive-find item (cdr seq)))))
 
 ;; I need to search the list rather than using features because *features* may change at runtime
-(defun default-target-backend ()
-  (let* ((stage (if (recursive-find :ecl-min *features*) "min" "full"))
+(defun default-target-backend (&optional given-stage)
+  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" "full")))
          (garbage-collector (if (recursive-find :use-mps *features*) "mps" "boehm"))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
@@ -734,7 +734,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
-(defun load-system ( first-file last-file &key interp load-bitcode (target-backend (default-target-backend)) (system *init-files*))
+(defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) (system *init-files*))
   (let* ((*target-backend* target-backend)
          (files (select-source-files last-file :first-file first-file :system system))
 	 (cur files))
@@ -771,10 +771,30 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (reverse bitcode-files)))
 
 
+(defun copy-system (first-file last-file &key (from-target-backend nil) (to-target-backend nil) (system *init-files*))
+  ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
+  (or from-target-backend (error "from-target-backend must be defined"))
+  (or to-target-backend (error "to-target-backend must be defined"))
+  (bformat t "copy-system  from: %s  to: %s  from-target-backend: %s  to-target-backend: %s\n" first-file last-file from-target-backend to-target-backend)
+  (let* ((files (select-source-files last-file :first-file first-file :system system))
+	 (cur files))
+    (tagbody
+     top
+       (if (endp cur) (go done))
+       (let* ((bitcode-raw (get-pathname-with-type (car cur) "bc"))
+	      (bitcode-from (target-backend-pathname bitcode-raw :target-backend from-target-backend))
+	      (bitcode-to (target-backend-pathname bitcode-raw :target-backend to-target-backend)))
+	 (core:copy-file bitcode-from bitcode-to))
+       (setq cur (cdr cur))
+       (go top)
+     done
+       )
+))
+
 
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
-(defun clean-system ( &optional after-file &key no-prompt (target-backend (default-target-backend))
+(defun clean-system ( &optional after-file &key no-prompt (target-backend *target-backend*)
                                            (system *init-files*))
   (let* ((*target-backend* target-backend)
          (files (select-trailing-source-files after-file :system system))
@@ -810,17 +830,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                                         (bformat t "Starting clasp-min low-level-repl\n")
                                         (core::low-level-repl)))
 
-(defun compile-min-system (&key (target-backend (default-target-backend)))
-  (let* ((*target-backend* target-backend)
+(defun compile-min-system (&key (source-backend (default-target-backend))(target-backend (default-target-backend)))
+  (let* ((*target-backend* source-backend)
          (bitcodes1 (compile-system :start :cmp :reload t ))
          (bitcodes0 (compile-system :init :start :reload nil :recompile t ))
          (bitcodes2 (compile-system :cmp :min ))
          (all-bitcodes (nconc bitcodes0 bitcodes1 bitcodes2)))
+    (let ((*target-backend* target-backend))
     (cmp:link-system-lto
            (target-backend-pathname +image-pathname+ )
            :lisp-bitcode-files all-bitcodes
            :epilogue-form +minimal-epilogue-form+
-           )))
+           ))))
 
 
 (defun compile-min-recompile (&key (target-backend (default-target-backend)))
@@ -840,23 +861,23 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*)
 )
 
-(defun compile-full () ;; &key (target-backend (default-target-backend)))
-  (switch-to-full)
+(defun compile-full ()
+  (if (member :ecl-min *features*) (switch-to-full))
   (let ((*target-backend* (default-target-backend)))
     (load-system :start :all :interp t )
     (let ((bitcode-files (compile-system :init :all :recompile t )))
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
-                           :lisp-bitcode-files bitcode-files
-                           :prologue-form '(progn
-					     (if (member :interactive *features*) 
-						 (bformat t "Starting %s Clasp 0.2 ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ))))
+			   :lisp-bitcode-files bitcode-files
+			   :prologue-form '(progn
+					    (if (member :interactive *features*) 
+						(bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
 			   :epilogue-form '(progn
-					     (cl:in-package :cl-user)
-					     (require 'system)
-					     (load-clasprc)
-					     (process-command-line-load-eval-sequence)
-					    (when (member :interactive *features*) (core:top-level)))))
-    ))
+					    (cl:in-package :cl-user)
+					    (require 'system)
+					    (load-clasprc)
+					    (process-command-line-load-eval-sequence)
+					    (when (member :interactive *features*) (core:top-level))))
+      )))
 
 
 (defun compile-clos () ;; &key (target-backend (default-target-backend)))

@@ -166,7 +166,8 @@ namespace core
 #define DOCS_cl_softwareVersion "softwareVersion"
     T_sp cl_softwareVersion()
     {_G();
-        return _Nil<T_O>();
+	string all = CLASP_VERSION;
+        return Str_O::create(all);
     };
 
 

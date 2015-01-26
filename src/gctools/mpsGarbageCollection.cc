@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/loadTimeValues.h>
-#include "core/posixTime.h" // was core/posixTime.cc???
+#include <clasp/core/posixTime.h> // was core/posixTime.cc???
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/structureClass.h>

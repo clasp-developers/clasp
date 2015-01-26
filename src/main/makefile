@@ -49,7 +49,7 @@ mps-recompile:
 	make full-mps
 
 min-mps:
-	$(CLASP_MPS) -I -f ecl-min -l "buildClaspMinBoot.lsp"
+	$(CLASP_MPS) -I -f ecl-min -l "buildClaspMinMps.lsp"
 
 min-mps-recompile:
 	$(CLASP_MPS) -f ecl-min -l "buildClaspMinRecompile.lsp"
