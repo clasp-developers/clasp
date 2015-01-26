@@ -786,7 +786,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        (let* ((bitcode-raw (get-pathname-with-type (car cur) "bc"))
 	      (bitcode-from (target-backend-pathname bitcode-raw :target-backend from-target-backend))
 	      (bitcode-to (target-backend-pathname bitcode-raw :target-backend to-target-backend)))
-	 (ensure-directories-exist bitcode-to)
 	 (core:copy-file bitcode-from bitcode-to))
        (setq cur (cdr cur))
        (go top)
