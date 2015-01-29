@@ -283,14 +283,17 @@ namespace core
 
     void HashTable_O::sxhash_eql(HashGenerator& hg, T_sp obj, LocationDependencyPtrT ld )
     {_G();
-	if ( obj.nilp() )
-	{
+	if ( obj.nilp() ) {
 	    hg.addPart(0);
 	    return;
-	} else if ( cl_numberp(obj) || af_characterP(obj) )
-	{
-	    hg.hashObject(obj);
-	    return;
+	} else if ( obj.pointerp() ) {
+	    if ( cl_numberp(obj) || af_characterP(obj) )
+		{
+		    hg.hashObject(obj);
+		    return;
+		}
+	} else {
+	    SIMPLE_ERROR(BF("Add support to hash %s") % _rep_(obj));
 	}
 #ifdef USE_MPS
         if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
@@ -305,10 +308,14 @@ namespace core
 	{
 	    hg.addPart(0);
 	    return;
-	} else if ( af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) || af_pathnamep(obj) || cl_consp(obj) )
-	{
-	    hg.hashObject(obj);
-	    return;
+	} else if ( obj.pointerp() ) {
+	    if ( af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) || af_pathnamep(obj) || cl_consp(obj) )
+		{
+		    hg.hashObject(obj);
+		    return;
+		}
+	} else {
+	    SIMPLE_ERROR(BF("Add support to hash %s") % _rep_(obj));
 	}
 #ifdef USE_MPS
         if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
@@ -322,19 +329,23 @@ namespace core
 	if ( obj.nilp() ) {
 	    hg.addPart(0);
 	    return;
-	} else if ( Str_sp str = obj.asOrNull<Str_O>() ) {
-	    Str_sp upstr = cl_string_upcase(str);
-	    hg.hashObject(upstr);
-	    return;
-	} else if ( af_symbolp(obj)
-                    || cl_numberp(obj)
-                    || af_pathnamep(obj)
-                    || cl_consp(obj)
-                    || obj->instancep()
-                    || af_arrayP(obj))
-	{
-	    hg.hashObject(obj);
-	    return;
+	} else if ( obj.pointerp() ) {
+	    if ( Str_sp str = obj.asOrNull<Str_O>() ) {
+		Str_sp upstr = cl_string_upcase(str);
+		hg.hashObject(upstr);
+		return;
+	    } else if ( af_symbolp(obj)
+			|| cl_numberp(obj)
+			|| af_pathnamep(obj)
+			|| cl_consp(obj)
+			|| obj->instancep()
+			|| af_arrayP(obj))
+		{
+		    hg.hashObject(obj);
+		    return;
+		}
+	} else {
+	    SIMPLE_ERROR(BF("Add support to sxhash_equalp for %s") % _rep_(obj));
 	}
 	    
 #ifdef USE_MPS

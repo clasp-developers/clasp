@@ -59,13 +59,6 @@ all:
 	make clasp-boehm
 	make clasp-mps
 
-# This is a temporary fix until beach fixes some dead links in SICL
-temporary-fix-for-sicl:
-	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
-	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-constructors.lisp
-	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-query.lisp
-	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase2/environment-classes.lisp
-	-rm src/lisp/kernel/contrib/sicl/Code/Boot/Phase3/environment-classes.lisp
 
 submodules:
 	make submodules-boehm
@@ -179,6 +172,7 @@ clean:
 	(cd src/clbind; rm -rf bin bundle)
 	(cd src/sockets; rm -rf bin bundle)
 	(cd src/serveEvent; rm -rf bin bundle)
+	-rm src/lisp/kernel/asdf/build/asdf.lisp
 ifneq ($(CLASP_BUILD_TARGET_DIR),)
 	install -d $(CLASP_BUILD_TARGET_DIR)
 	-(find $(CLASP_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)

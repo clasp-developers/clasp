@@ -716,47 +716,6 @@ TRANSLATE(core::FunctionContainerEnvironment_O);
 
 
 
-namespace core
-{
-
-    SMART(AllocaEnvironment);
-    class AllocaEnvironment_O : public CompileTimeEnvironment_O
-    {
-	LISP_BASE1(CompileTimeEnvironment_O);
-	LISP_CLASS(core,CorePkg,AllocaEnvironment_O,"AllocaEnvironment");
-    public:
-	void	initialize();
-    private:
-	Cons_sp _Values;
-    public:
-	static AllocaEnvironment_sp create(Environment_sp parent);
-	static AllocaEnvironment_sp make( Environment_sp parent);
-    public:
-	virtual string summaryOfContents() const;
-    public:
-
-	/*! Lookup a tagbody tag in the lexical environment and return the environment
-	  that defines it return nil if you don't find it*/
-	virtual T_sp find_current_code_environment() const;
-
-	virtual int countAllocaEnvironments() const;
-
-	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv ) const;
-	virtual T_mv recognizesBlockSymbol(Symbol_sp sym, bool& interFunction) const;
-	
-	DEFAULT_CTOR_DTOR(AllocaEnvironment_O);
-    };
-};
-template<> struct gctools::GCInfo<core::AllocaEnvironment_O> {
-    static bool const NeedsInitialization = true;
-    static bool const NeedsFinalization = false;
-    static bool const Moveable = true;
-    static bool constexpr Atomic = false;
-};
-TRANSLATE(core::AllocaEnvironment_O);
-
-
-
 
 namespace core
 {

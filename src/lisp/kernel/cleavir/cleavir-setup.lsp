@@ -4,6 +4,7 @@
 (asdf:load-system :cleavir-generate-ast)
 (asdf:load-system :cleavir-ast-to-hir)
 (asdf:load-system :cleavir-hir-transformations)
+(asdf:load-system :cleavir-hir-to-mir)
 
 (defclass clasp-global-environment () () )
 
@@ -232,7 +233,7 @@
 	 (hir (cleavir-ast-to-hir:compile-toplevel ast))
 	 (clasp-inst (make-instance 'clasp)))
     (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
-;;    (cleavir-ir:hir-to-mir hir)
+    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (setf *form* form
 	  *ast* ast
 	  *hir* hir)))

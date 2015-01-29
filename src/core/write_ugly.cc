@@ -488,7 +488,7 @@ namespace core
 	    write_fixnum(stream,x);
 	    break;
         case gctools::smart_ptr<T_O>::frame_tag:
-            clasp_write_string("write_ugly_object(frame)",stream);
+            clasp_write_string("#<stack-based-frame>",stream);
             break;
 	default:
 	    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());

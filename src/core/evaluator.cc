@@ -1799,44 +1799,79 @@ namespace core
 #define DOCS_cl_apply "apply"
     T_mv cl_apply(T_sp head, T_sp args)
     {_G();
-	/* Special case when apply is called with one arg and that arg is an ActivationFrame
-	   APPLY directly to that ActivationFrame */
 	int lenArgs = cl_length(args);
 	if ( lenArgs == 0 ) {
 	    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs );
 	}
-	if ( lenArgs == 1 && oCar(args).notnilp() )
-	{
-	    T_sp onlyArg = oCar(args);
-	    Function_sp func = coerce::functionDesignator(head);
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(head);
-            } else if ( onlyArg.framep() ) {
-		return eval::applyToStackFrame(func,onlyArg);
-	    } else if ( ActivationFrame_sp singleFrame = onlyArg.asOrNull<ActivationFrame_O>() ) {
-		return eval::applyToActivationFrame(func,singleFrame);
-	    }
-	}
 	T_sp last = oCar(cl_last(args));
-	if ( !cl_listp(last) ) {
-	    SIMPLE_ERROR(BF("Last argument is not a list"));
+	if ( last.nilp() ) {
+	    // Nil as last argument
+	    int nargs = lenArgs-1;
+	    ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	    T_sp obj = args;
+	    for ( int i(0); i<nargs; ++i ) {
+		frame->operator[](i) = oCar(obj);
+		obj = oCdr(obj);
+	    }
+	    Function_sp func = coerce::functionDesignator(head);
+	    return eval::applyToActivationFrame(func,frame);
+	} else if ( last.framep() ) {
+	    // Frame as last argument
+	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(last.px));
+	    int lenFirst = lenArgs-1;
+	    int lenRest = frame::ValuesArraySize(frameImpl);
+	    int nargs = lenFirst + lenRest;
+	    ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	    T_sp obj = args;
+	    for ( int i(0); i<lenFirst; ++i ) {
+		frame->operator[](i) = oCar(obj);
+		obj = oCdr(obj);
+	    }
+	    frame::ElementType* tailValues(frame::ValuesArray(frameImpl));
+	    int idx=0;
+	    for ( int i(lenFirst); i<nargs; ++i ) {
+		frame->operator[](i) = tailValues[idx];
+		++idx;
+	    }
+	    Function_sp func = coerce::functionDesignator(head);
+	    return eval::applyToActivationFrame(func,frame);
+	} else if ( Cons_sp cargs = last.as<Cons_O>() ) {
+	    // Cons as last argument
+	    int lenFirst = lenArgs-1;
+	    int lenRest = cl_length(last);
+	    int nargs = lenFirst + lenRest;
+	    ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	    T_sp obj = args;
+	    for ( int i(0); i<lenFirst; ++i ) {
+		frame->operator[](i) = oCar(obj);
+		obj = oCdr(obj);
+	    }
+	    for ( int i(lenFirst); i<nargs; ++i ) {
+		frame->operator[](i) = oCar(cargs);
+		cargs = oCdr(cargs);
+	    }
+	    Function_sp func = coerce::functionDesignator(head);
+	    return eval::applyToActivationFrame(func,frame);
+	} else if ( ActivationFrame_sp af_args = last.as<ActivationFrame_O>() ) {
+	    // ActivationFrame as last argument
+	    int lenFirst = lenArgs-1;
+	    int lenRest = af_args->length();
+	    int nargs = lenFirst + lenRest;
+	    ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	    T_sp obj = args;
+	    for ( int i(0); i<lenFirst; ++i ) {
+		frame->operator[](i) = oCar(obj);
+		obj = oCdr(obj);
+	    }
+	    int idx=0;
+	    for ( int i(lenFirst); i<nargs; ++i ) {
+		frame->operator[](i) = (*af_args)[idx];
+		++idx;
+	    }
+	    Function_sp func = coerce::functionDesignator(head);
+	    return eval::applyToActivationFrame(func,frame);
 	}
-	int lenFirst = lenArgs-1;
-	int lenRest = cl_length(last);
-	int nargs = lenFirst + lenRest;
-	ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
-	T_sp obj = args;
-	for ( int i(0); i<lenFirst; ++i ) {
-	    frame->operator[](i) = oCar(obj);
-	    obj = oCdr(obj);
-	}
-        T_sp cur = last;
-	for ( int i(lenFirst); i<nargs; ++i ) {
-	    frame->operator[](i) = oCar(cur);
-	    cur = oCdr(cur);
-	}
-	Function_sp func = coerce::functionDesignator(head);
-	return eval::applyToActivationFrame(func,frame);
+	SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
     }
 
 

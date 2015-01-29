@@ -108,28 +108,6 @@
 ;;--------------------------------------------------
 
 
-#+(or)(defun compile-copy-only-required-arguments (new-env ; The environment that will be enriched by the copied arguments
-                                                   lambda-list-handler ; Names of the copied arguments
-                                                   dest-activation-frame ; where the arguments will be copied to
-                                                   argument-holder) ; (contains narg and va-list )
-        (let ((number-of-required-arguments (number-of-required-arguments lambda-list-handler))
-              (nargs (first argument-holder))
-              (va-list (second argument-holder))
-              )
-          (compile-error-if-wrong-number-of-arguments nargs number-of-required-arguments )
-          ;; enrich the new-env with the local variables
-          (dolist (classified-local (classified-symbols lambda-list-handler))
-            (cond
-              ((eq (car classified-local) 'ext:heap-var)
-               (let ((local-sym (cadr classified-local))
-                     (local-idx (cddr classified-local)))
-                 (value-environment-define-lexical-binding new-env local-sym local-idx)))
-              ((eq (car classified-local) 'ext:special-var)
-               (value-environment-define-special-binding new-env (cdr classified-local)))
-              (t (error "Illegal variable classification: ~a" classified-local))))
-          (irc-intrinsic "va_fillActivationFrameWithRequiredVarargs" dest-activation-frame nargs va-list)
-          ))
-
 
 
 (defun compile-error-if-not-enough-arguments (nargs lv-required-number-of-arguments)
@@ -162,21 +140,6 @@
 
 
 
-
-#||
-(defun compile-save-if-special (env target &key make-unbound)
-  (when (eq (car target) 'ext:special-var)
-    (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it\n" target)
-    (let* ((target-symbol (cdr target))
-	   (saved-special-val (irc-alloca-tsp env :label (bformat nil "saved->%s" (symbol-name target-symbol)))))
-      (irc-intrinsic "symbolValueReadOrUnbound" saved-special-val (irc-global-symbol target-symbol env))
-      (when make-unbound
-	(irc-intrinsic "makeUnboundTsp" (irc-intrinsic "symbolValueReference" (irc-global-symbol target-symbol env))))
-;;;      (irc-intrinsic "copyTsp" (codegen-special-var-reference target-symbol env) val)
-      (irc-push-unwind env `(symbolValueRestore ,saved-special-val ,target-symbol))
-      ;; Make the variable locally special
-      (value-environment-define-special-binding env target-symbol))))
-||#
 
 
 (defun compile-save-if-special (env target &key make-unbound)
@@ -300,9 +263,9 @@ will put a value into target-ref."
     (do* ((cur-req (cdr reqargs) (cdr cur-req))
 	  (arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-i32 1) "arg-idx")))
 	 ((endp cur-req) (values arg-idx (nreverse registers)))
-      (let* ((register (irc-alloca-tsp new-env)))
+      (let* ((register (calling-convention.get new-env)))
 	(calling-convention-args.store args arg-idx register)
-	(push register registers)))))
+	(create-binding register registers)))))
   
   
 
