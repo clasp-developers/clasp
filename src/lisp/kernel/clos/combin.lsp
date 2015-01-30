@@ -159,7 +159,6 @@
       (when (null primary)
 	(return-from standard-compute-effective-method
 	  #'(lambda (&rest args)
-	      (break "trapped before no-primary-method error called - Check args")
 	      (apply 'no-primary-method gf args))))
       ;; PRIMARY, BEFORE and AROUND are reversed because they have to
       ;; be on most-specific-first order (ANSI 7.6.6.2), while AFTER

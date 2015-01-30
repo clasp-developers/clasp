@@ -180,6 +180,7 @@ project clasp : requirements
 
 
 path-constant TOP : . ;
+path-constant INCLUDE : $(TOP)/include/clasp ;
 path-constant COMMON : src/common ;
 path-constant APPTOP : [ os.environ CLASP_BUILD_TARGET_DIR ] ;
 path-constant APPCONT : $(APPTOP)/Contents ;

@@ -6,6 +6,8 @@
 (asdf:load-system :cleavir-hir-transformations)
 (asdf:load-system :cleavir-hir-to-mir)
 
+(in-package :cleavir-llvm-ir)
+
 (defclass clasp-global-environment () () )
 
 (defvar *clasp-env* (make-instance 'clasp-global-environment))
@@ -174,8 +176,14 @@
 (defun draw-hir (&optional (hir *hir*) (filename "/tmp/hir.dot"))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart hir stream))
-  (core:system (format nil "dot -Tpng -o/tmp/draw.png ~a" filename))
-  (core:system "open /tmp/draw.png"))
+  (core:system (format nil "dot -Tpng -o/tmp/hir.png ~a" filename))
+  (core:system "open /tmp/hir.png"))
+
+(defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
+  (with-open-file (stream filename :direction :output)
+    (cleavir-ir-graphviz:draw-flowchart mir stream))
+  (core:system (format nil "dot -Tpng -o/tmp/mir.png ~a" filename))
+  (core:system "open /tmp/mir.png"))
 
 (defun draw-ast (&optional (ast *ast*) (filename "/tmp/ast.dot"))
   (with-open-file (stream filename :direction :output)
@@ -233,11 +241,19 @@
 	 (hir (cleavir-ast-to-hir:compile-toplevel ast))
 	 (clasp-inst (make-instance 'clasp)))
     (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
-    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
+;;    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (setf *form* form
 	  *ast* ast
-	  *hir* hir)))
+	  *hir* hir)
+    (draw-hir hir)
+    hir))
 
+(defun mir-form (form)
+  (let ((hir (hir-form form))
+	(clasp-inst (make-instance 'clasp)))
+    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
+    (draw-mir hir)
+    (setq *mir* hir)))
   
 (defun hir-tpl ()
   (format t "Starting tpl~%")
@@ -248,6 +264,7 @@
 (defvar *form* nil)
 (defvar *ast* nil)
 (defvar *hir* nil)
+(defvar *mir* nil)
 (defun generate-hir-for-clasp-source (&optional (start :init) (end :all) skip-errors)
   (declare (special cleavir-generate-ast:*compiler*))
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile-file)
@@ -268,5 +285,9 @@
 			      *hir* hir)
 			(if *hir-single-step*
 			    (hir-tpl)))))))))
+
+
+
+
 (print "Done - loading cleavir-setup")
 

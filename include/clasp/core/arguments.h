@@ -123,7 +123,7 @@ namespace core
 	T_sp 		_Keyword;
 	Argument	_Sensor;
         KeywordArgument() : ArgumentWithDefault(), _Keyword(_Nil<T_O>()), _Sensor() {};
-	KeywordArgument(T_sp keyword, T_sp target, T_sp def, Symbol_sp sensor) : ArgumentWithDefault(target,def),_Keyword(keyword),_Sensor(sensor) {};
+	KeywordArgument(T_sp keyword, T_sp target, T_sp def, T_sp sensor) : ArgumentWithDefault(target,def),_Keyword(keyword),_Sensor(sensor) {};
         DECLARE_onHeapScanGCRoots();
 	string asString() const;
     };
@@ -138,7 +138,7 @@ namespace core
 	typedef Argument Base;
 	T_sp 		_Expression;
         AuxArgument() : Argument(_Nil<T_O>()), _Expression(_Nil<T_O>()) {};
-	AuxArgument(Symbol_sp target,T_sp exp) : Argument(target), _Expression(exp) {};
+	AuxArgument(T_sp target,T_sp exp) : Argument(target), _Expression(exp) {};
         DECLARE_onHeapScanGCRoots();
 	string asString() const;
     };

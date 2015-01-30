@@ -1,11 +1,21 @@
+(load "sys:kernel;cleavir;cleavir-llvm-ir.lsp")
 
+(in-package #:cleavir-llvm-ir)
 
 (generate-hir-for-clasp-source)
 *hir-single-step*
 
+(hir-form 1)
+(mir-form '(lambda (x &optional y) 1))
+
 (draw-hir)
-(getpid)
-(hir-form '(lambda (x x) (+ x x)))
+
+(draw-mir)
+
+*mir*
+
+
+(core:getpid)
 
 (hir-form '(let ((y 100) (z 200) ) #'(lambda (x) (list x y z))))
 

@@ -222,6 +222,8 @@ namespace core
 	T_sp stream = coerce::outputStreamDesignator(ostream);
 	if ( clasp_print_readably() ) {
 	    PRINT_NOT_READABLE_ERROR(o);
+	} else if (o.unboundp()) {
+	    SIMPLE_ERROR(BF("Error! printUnreadableObjectFunction object is Unbound"));
 	} else {
             stringstream ss;
             ss << "#<";

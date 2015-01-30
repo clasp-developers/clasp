@@ -56,8 +56,23 @@ namespace clbind {
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     };
 
-#include <clbind_functoids.h>
-
+    // What was...
+    // #include <clbind_functoids.h>
+    // now becomes...
+#ifdef _DEBUG_BUILD
+#  ifdef USE_BOEHM
+#include <clasp/clbind/generated/debug/boehm/clbind_functoids.h>
+#  else
+#include <clasp/clbind/generated/debug/mps/clbind_functoids.h>
+#  endif
+#else
+#  ifdef USE_BOEHM
+#include <clasp/clbind/generated/release/boehm/clbind_functoids.h>
+#  else
+#include <clasp/clbind/generated/release/mps/clbind_functoids.h>
+#  endif
+#endif
+    
 };
 
 

@@ -178,6 +178,31 @@ In ecl/src/c/interpreter.d  is the following code
     }
 
 
+#define ARGS_core_maybeExpandGenericFunctionArguments "(args)"
+#define DECL_core_maybeExpandGenericFunctionArguments ""
+#define DOCS_core_maybeExpandGenericFunctionArguments "maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame"
+    T_sp core_maybeExpandGenericFunctionArguments(T_sp args)
+    {
+	if ( cl_consp(args) ) {
+	    T_sp first = oCar(args);
+	    if ( first.nilp() ) {
+		return args;
+	    } else if ( first.framep() ) {
+		Cons_sp expanded = _Nil<Cons_O>();
+		core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(first.px));
+		frame::ElementType* values(frame::ValuesArray(frameImpl));
+		for ( int i(0), iEnd(frame::ValuesArraySize(frameImpl)); i<iEnd; ++i ) {
+		    expanded = Cons_O::create(gctools::smart_ptr<T_O>(values[i]),expanded);
+		}
+		return cl_nreverse(expanded);
+	    } else {
+		SIMPLE_ERROR(BF("Handle %s") % _rep_(first));
+	    }
+	}
+	return args;
+    }
+
+
 
 
 
@@ -425,6 +450,7 @@ T_mv notFuncallableDispatch( Instance_sp gf)
     {
 	SYMBOL_SC_(ClosPkg,clearGfunHash);
 	Defun(clearGfunHash);
+	CoreDefun(maybeExpandGenericFunctionArguments);
     }
 
 

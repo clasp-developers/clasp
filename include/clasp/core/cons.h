@@ -494,6 +494,9 @@ namespace core {
 
 inline T_sp oCar(T_sp obj) {
 	if (obj.nilp()) return _Nil<T_O>();
+	if (obj.unboundp()) {
+	    SIMPLE_ERROR(BF("Tried to take CAR of unbound"));
+	}
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
 	    return cobj->_Car;
 	}
@@ -501,6 +504,9 @@ inline T_sp oCar(T_sp obj) {
     }
     inline T_sp oCdr(T_sp obj) {
 	if (obj.nilp()) return _Nil<T_O>();
+	if (obj.unboundp()) {
+	    SIMPLE_ERROR(BF("Tried to take CDR of unbound"));
+	}
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
 	    return cobj->_Cdr;
 	}
@@ -508,6 +514,9 @@ inline T_sp oCar(T_sp obj) {
     }
     inline Cons_sp cCar(T_sp obj) {
 	if (obj.nilp()) return _Nil<Cons_O>();
+	if (obj.unboundp()) {
+	    SIMPLE_ERROR(BF("Tried to take CAR of unbound"));
+	}
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
 	    return cobj->_Car.as_or_nil<Cons_O>();
 	}
@@ -515,6 +524,9 @@ inline T_sp oCar(T_sp obj) {
     }
     inline Cons_sp cCdr(T_sp obj) {
 	if (obj.nilp()) return _Nil<Cons_O>();
+	if (obj.unboundp()) {
+	    SIMPLE_ERROR(BF("Tried to take CDR of unbound"));
+	}
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
 	    return cobj->_Cdr.as_or_nil<Cons_O>();
 	}
