@@ -3,11 +3,14 @@ include local.config
 
 export GIT_COMMIT := $(shell cat 'minor-version-id.txt')
 
+export CLASP_INTERNAL_BUILD_TARGET_DIR = $(shell pwd)/build/clasp
+export EXTERNALS_BUILD_TARGET_DIR = $(EXTERNALS_SOURCE_DIR)/build
+
 
 export BOOST_BUILD_V2_SOURCE_DIR = boost_build_v2
-export BOOST_BUILD_V2_INSTALL = $(CLASP_BUILD_TARGET_DIR)/Contents/boost_build_v2
+export BOOST_BUILD_V2_INSTALL = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/boost_build_v2
 export BJAM = $(BOOST_BUILD_V2_INSTALL)/bin/bjam --ignore-site-config --user-config= -q
-export CLASP_APP_RESOURCES_DIR = $(CLASP_BUILD_TARGET_DIR)/Contents/Resources
+export CLASP_APP_RESOURCES_DIR = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 
 export PS1 := $(shell printf 'CLASP-ENV>>[\\u@\\h \\W]$ ')
 
@@ -38,7 +41,7 @@ ifneq ($(EXTERNALS_BUILD_TARGET_DIR),)
 endif
 
 export PATH := $(BOOST_BUILD_V2_INSTALL)/bin:$(PATH)
-export PATH := $(CLASP_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR):$(PATH)
+export PATH := $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR):$(PATH)
 
 
 ifneq ($(CXXFLAGS),)
@@ -172,10 +175,9 @@ clean:
 	(cd src/clbind; rm -rf bin bundle)
 	(cd src/sockets; rm -rf bin bundle)
 	(cd src/serveEvent; rm -rf bin bundle)
-	-rm src/lisp/kernel/asdf/build/asdf.lisp
-ifneq ($(CLASP_BUILD_TARGET_DIR),)
-	install -d $(CLASP_BUILD_TARGET_DIR)
-	-(find $(CLASP_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)
+ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
+	install -d $(CLASP_INTERNAL_BUILD_TARGET_DIR)
+	-(find $(CLASP_INTERNAL_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)
 endif
 
 

@@ -4,16 +4,11 @@
 #
 export TARGET_OS = linux
 
-#
-# This defines where clasp should put the built clasp application
-#
-export CLASP_BUILD_TARGET_DIR = $(HOME)/local/clasp
 
 #
-# This defines where externals-clasp put the built libraries
-# that clasp needs
+# This defines where externals-clasp source code is
 #
-export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/local/externals-clasp
+export EXTERNALS_SOURCE_DIR = $(HOME)/Development/externals-clasp
 
 #
 # This defines how many processors you have available to build with
