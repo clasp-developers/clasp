@@ -45,8 +45,41 @@ namespace clbind {
 
 
 
-#include <clbind_methoids.h>
-#include <clbind_static_members.h>
+#ifdef BUILDING_CLASP
+#  include <clbind_methoids.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/clbind/generated/debug/boehm/clbind_methoids.h>
+#    else
+#      include <clasp/clbind/generated/debug/mps/clbind_methoids.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/clbind/generated/release/boehm/clbind_methoids.h>
+#    else
+#      include <clasp/clbind/generated/release/mps/clbind_methoids.h>
+#    endif
+#  endif
+#endif
+
+#ifdef BUILDING_CLASP
+#  include <clbind_static_members.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/clbind/generated/debug/boehm/clbind_static_members.h>
+#    else
+#      include <clasp/clbind/generated/debug/mps/clbind_static_members.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/clbind/generated/release/boehm/clbind_static_members.h>
+#    else
+#      include <clasp/clbind/generated/release/mps/clbind_static_members.h>
+#    endif
+#  endif
+#endif
 
 };
 

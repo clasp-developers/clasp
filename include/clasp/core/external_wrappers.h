@@ -51,7 +51,24 @@ namespace core
 	virtual const char* describe() const {return "IndirectVariadicMethoid";};
     };
 
-#include <external_wrappers_indirect_methoids.h>
+#ifdef BUILDING_CLASP
+#  include <external_wrappers_indirect_methoids.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/debug/boehm/external_wrappers_indirect_methoids.h>
+#    else
+#      include <clasp/core/generated/debug/mps/external_wrappers_indirect_methoids.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/release/boehm/external_wrappers_indirect_methoids.h>
+#    else
+#      include <clasp/core/generated/release/mps/external_wrappers_indirect_methoids.h>
+#    endif
+#  endif
+#endif
+
 
 };
 

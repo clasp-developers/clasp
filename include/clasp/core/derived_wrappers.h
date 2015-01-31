@@ -42,7 +42,24 @@ namespace core
     template <int DispatchOn, typename FN>
     class VariadicMethoid : public Functoid {};
 
-#include <wrappers_methoids.h>
+#ifdef BUILDING_CLASP
+#  include <wrappers_methoids.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/debug/boehm/wrappers_methoids.h>
+#    else
+#      include <clasp/core/generated/debug/mps/wrappers_methoids.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/release/boehm/wrappers_methoids.h>
+#    else
+#      include <clasp/core/generated/release/mps/wrappers_methoids.h>
+#    endif
+#  endif
+#endif
+
 
 
 };

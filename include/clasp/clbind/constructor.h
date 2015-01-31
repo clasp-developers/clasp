@@ -249,7 +249,24 @@ namespace clbind {
     };
 
 
-#include <clbind_constructor_functoids.h>
+#ifdef BUILDING_CLASP
+#  include <clbind_constructor_functoids.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/clbind/generated/debug/boehm/clbind_constructor_functoids.h>
+#    else
+#      include <clasp/clbind/generated/debug/mps/clbind_constructor_functoids.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/clbind/generated/release/boehm/clbind_constructor_functoids.h>
+#    else
+#      include <clasp/clbind/generated/release/mps/clbind_constructor_functoids.h>
+#    endif
+#  endif
+#endif
+
 
 };
 

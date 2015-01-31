@@ -1729,7 +1729,25 @@ namespace core
             T_sp* a = args->argArray();
             switch (nargs) {
 #define APPLY_TO_ACTIVATION_FRAME
-#include <applyToActivationFrame.h>
+		
+#ifdef BUILDING_CLASP
+#  include <applyToActivationFrame.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/debug/boehm/applyToActivationFrame.h>
+#    else
+#      include <clasp/core/generated/debug/mps/applyToActivationFrame.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/release/boehm/applyToActivationFrame.h>
+#    else
+#      include <clasp/core/generated/release/mps/applyToActivationFrame.h>
+#    endif
+#  endif
+#endif
+
 #undef APPLY_TO_ACTIVATION_FRAME
             default:
 		MultipleValues* _mvP = _lisp->callArgs();
@@ -1749,7 +1767,23 @@ namespace core
             T_O** a = frame::ValuesArray(frameImpl);
             switch (nargs) {
 #define APPLY_TO_TAGGED_FRAME
-#include <applyToActivationFrame.h>
+#ifdef BUILDING_CLASP
+#  include <applyToActivationFrame.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/debug/boehm/applyToActivationFrame.h>
+#    else
+#      include <clasp/core/generated/debug/mps/applyToActivationFrame.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/release/boehm/applyToActivationFrame.h>
+#    else
+#      include <clasp/core/generated/release/mps/applyToActivationFrame.h>
+#    endif
+#  endif
+#endif
 #undef APPLY_TO_TAGGED_FRAME
             default:
 		MultipleValues* _mvP = _lisp->callArgs();

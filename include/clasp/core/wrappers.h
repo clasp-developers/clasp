@@ -55,7 +55,24 @@ public:
 #include <clasp/core/arguments.h>
 #include <clasp/core/lambdaListHandler.fwd.h>
 namespace core {
-#include <wrappers_functoids.h>
+#ifdef BUILDING_CLASP
+#  include <wrappers_functoids.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/debug/boehm/wrappers_functoids.h>
+#    else
+#      include <clasp/core/generated/debug/mps/wrappers_functoids.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/release/boehm/wrappers_functoids.h>
+#    else
+#      include <clasp/core/generated/release/mps/wrappers_functoids.h>
+#    endif
+#  endif
+#endif
+
 };
 
 
@@ -69,7 +86,24 @@ namespace core {
         size_t templatedSizeof() const { return sizeof(VariadicMethoid<DispatchOn,FN>);};
     };
 
-#include <wrappers_methoids.h>
+#ifdef BUILDING_CLASP
+#  include <wrappers_methoids.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/debug/boehm/wrappers_methoids.h>
+#    else
+#      include <clasp/core/generated/debug/mps/wrappers_methoids.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/release/boehm/wrappers_methoids.h>
+#    else
+#      include <clasp/core/generated/release/mps/wrappers_methoids.h>
+#    endif
+#  endif
+#endif
+
 
 };
 
