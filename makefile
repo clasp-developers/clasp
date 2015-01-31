@@ -65,6 +65,19 @@ all:
 fix-scraping:
 	for d in src/*/; do cd "$$d"; export PYTHONPATH="$$PWD:$$PYTHONPATH"; python ../../src/common/symbolScraper.py symbols_scraped.inc *.h *.cc *.scrape.inc; cd ../..; done
 
+fix-scraping2:
+	-(cd src/asttooling; bjam meta)
+	-(cd src/cffi; bjam meta)
+	-(cd src/clbind; bjam meta)
+	-(cd src/core; bjam meta)
+	-(cd src/gctools; bjam meta)
+	-(cd src/llvmo; bjam meta)
+	-(cd src/main; bjam meta)
+	-(cd src/mpip; bjam meta)
+	-(cd src/mps; bjam meta)
+	-(cd src/serveEvent; bjam meta)
+	-(cd src/sockets; bjam meta)
+
 
 submodules:
 	make submodules-boehm
