@@ -63,17 +63,7 @@ all:
 	make clasp-mps
 
 fix-scraping:
-	touch src/asttooling/symbols_scraped_inc.h
-	touch src/cffi/symbols_scraped_inc.h
-	touch src/clbind/symbols_scraped_inc.h
-	touch src/core/symbols_scraped_inc.h
-	touch src/gctools/symbols_scraped_inc.h
-	touch src/llvmo/symbols_scraped_inc.h
-	touch src/main/symbols_scraped_inc.h
-	touch src/mpip/symbols_scraped_inc.h
-	touch src/serveEvent/symbols_scraped_inc.h
-	touch src/sockets/symbols_scraped_inc.h
-
+	for d in src/*/; do cd "$$d"; export PYTHONPATH="$$PWD:$$PYTHONPATH"; python ../../src/common/symbolScraper.py symbols_scraped.inc *.h *.cc *.scrape.inc; cd ../..; done
 
 
 submodules:
