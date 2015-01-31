@@ -63,13 +63,13 @@ namespace clbind {
 #  include <clbind_functoids.h>
 #else
 #  ifdef USE_CLASP_DEBUG
-#    ifdef USE_BOEHM
+#    ifdef USE_CLASP_BOEHM
 #      include <clasp/clbind/generated/debug/boehm/clbind_functoids.h>
 #    else
 #      include <clasp/clbind/generated/debug/mps/clbind_functoids.h>
 #    endif
 #  else
-#    ifdef USE_BOEHM
+#    ifdef USE_CLASP_BOEHM
 #      include <clasp/clbind/generated/release/boehm/clbind_functoids.h>
 #    else
 #      include <clasp/clbind/generated/release/mps/clbind_functoids.h>
