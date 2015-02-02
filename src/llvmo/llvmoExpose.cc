@@ -1733,6 +1733,38 @@ namespace llvmo
 }; // llvmo
 
 
+#if 1
+// LLVM 3.6
+namespace llvmo
+{
+    EXPOSE_CLASS(llvmo,TargetLibraryInfo_O);
+
+#define ARGS_TargetLibraryInfo_O_make "(triple)"
+#define DECL_TargetLibraryInfo_O_make ""
+#define DOCS_TargetLibraryInfo_O_make ""
+    TargetLibraryInfo_sp TargetLibraryInfo_O::make(llvm::Triple* tripleP)
+    {_G();
+        GC_ALLOCATE(TargetLibraryInfo_O,self );
+	self->_ptr = new llvm::TargetLibraryInfo(*tripleP);
+	return self;
+    };
+
+    void TargetLibraryInfo_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<TargetLibraryInfo_O>()
+	    ;
+        core::af_def(LlvmoPkg,"makeTargetLibraryInfo",&TargetLibraryInfo_O::make,ARGS_TargetLibraryInfo_O_make,DECL_TargetLibraryInfo_O_make,DOCS_TargetLibraryInfo_O_make);
+    };
+
+    void TargetLibraryInfo_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
+}; // llvmo
+
+#else
+// This is needed for llvm3.7
+//
 namespace llvmo
 {
     EXPOSE_CLASS(llvmo,TargetLibraryInfoWrapperPass_O);
@@ -1759,7 +1791,7 @@ namespace llvmo
 	IMPLEMENT_ME();
     };
 }; // llvmo
-
+#endif //
 
 
 

@@ -602,7 +602,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     :tiny
     :pre-cmp
     ;; Compiler code
-    cmp/cmppkg
+    cmp/packages
     cmp/cmpsetup
     cmp/cmpenv-fun
     cmp/cmpenv-proclaim
