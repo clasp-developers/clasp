@@ -21,7 +21,8 @@
 							     'llvm-sys:code-model-default
 							     'llvm-sys:code-gen-opt-default ))
 	     (pm (llvm-sys:make-pass-manager))
-	     (tli (llvm-sys:make-target-library-info-wrapper-pass triple))
+	     (tli #+(or)(llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#)
+		  (llvm-sys:make-target-library-info triple #|| LLVM3.6||#))
 	     (data-layout-pass (llvm-sys:make-data-layout-pass))
 	     (target-subtarget-info (llvm-sys:get-subtarget-impl target-machine))
 	     (data-layout (llvm-sys:get-data-layout target-subtarget-info))
