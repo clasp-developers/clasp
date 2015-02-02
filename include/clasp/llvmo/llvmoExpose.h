@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/ADT/Triple.h>
 #include <llvm/Support/TargetSelect.h>
-#include <llvm/Analysis/TargetLibraryInfo.h>
+//#include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IRBuilder.h>
@@ -1999,13 +1999,16 @@ namespace translate
 
 
 
-
+#if 0
+//
+// This is needed for llvm3.7     What did I do before this?????
+//
 namespace llvmo
 {
     FORWARD(TargetLibraryInfoWrapperPass);
-    class TargetLibraryInfoWrapperPass_O : public ImmutablePass_O
+    c l a s s TargetLibraryInfoWrapperPass_O : public ImmutablePass_O
     {
-        LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::TargetLibraryInfoWrapperPass,TargetLibraryInfoWrapperPass_O,"TargetLibraryInfoWrapperPass",ImmutablePass_O);
+        L I S P _EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::TargetLibraryInfoWrapperPass,TargetLibraryInfoWrapperPass_O,"TargetLibraryInfoWrapperPass",ImmutablePass_O);
         typedef llvm::TargetLibraryInfoWrapperPass ExternalType;
         typedef llvm::TargetLibraryInfoWrapperPass* PointerToExternalType;
     public:
@@ -2054,7 +2057,7 @@ namespace translate
     };
 };
 ;
-
+#endif
 
 
 

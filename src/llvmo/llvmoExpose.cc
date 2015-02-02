@@ -1733,6 +1733,9 @@ namespace llvmo
 }; // llvmo
 
 
+#if 0
+// This is needed for llvm3.7
+//
 namespace llvmo
 {
     EXPOSE_CLASS(llvmo,TargetLibraryInfoWrapperPass_O);
@@ -1759,7 +1762,7 @@ namespace llvmo
 	IMPLEMENT_ME();
     };
 }; // llvmo
-
+#endif //
 
 
 
