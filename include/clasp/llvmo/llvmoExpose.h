@@ -50,7 +50,11 @@ THE SOFTWARE.
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/ADT/Triple.h>
 #include <llvm/Support/TargetSelect.h>
+#if 1 // LLVM3.6
+#include <llvm/Target/TargetLibraryInfo.h>
+#else // LLVM3.7
 //#include <llvm/Analysis/TargetLibraryInfo.h>
+#endif
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IRBuilder.h>
@@ -1999,7 +2003,64 @@ namespace translate
 
 
 
-#if 0
+#if 1
+// LLVM3.6
+namespace llvmo
+{
+    FORWARD(TargetLibraryInfo);
+    class TargetLibraryInfo_O : public ImmutablePass_O
+    {
+        LISP_EXTERNAL_CLASS(llvmo,LlvmoPkg,llvm::TargetLibraryInfo,TargetLibraryInfo_O,"TargetLibraryInfo",ImmutablePass_O);
+        typedef llvm::TargetLibraryInfo ExternalType;
+        typedef llvm::TargetLibraryInfo* PointerToExternalType;
+    public:
+        static TargetLibraryInfo_sp make(llvm::Triple* triple);
+    public:
+        PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr);};
+        void set_wrapped(PointerToExternalType ptr)
+        {
+	    //	    if (this->_ptr != NULL ) delete this->_ptr;
+            this->_ptr = ptr;
+        }
+        TargetLibraryInfo_O() : Base() {};
+        ~TargetLibraryInfo_O() {/*if (this->_ptr) delete this->_ptr;*/}
+    }; // TargetLibraryInfo_O
+}; // llvmo
+TRANSLATE(llvmo::TargetLibraryInfo_O);
+/* from_object translators */
+
+namespace translate
+{
+    template <>
+    struct from_object<llvm::TargetLibraryInfo*,std::true_type>
+    {
+        typedef llvm::TargetLibraryInfo* DeclareType;
+        DeclareType _v;
+	from_object(T_P object) : _v(object.as<llvmo::TargetLibraryInfo_O>()->wrappedPtr()) {};
+    };
+    template <>
+    struct from_object<llvm::TargetLibraryInfo const&,std::true_type>
+    {
+        typedef llvm::TargetLibraryInfo const& DeclareType;
+        DeclareType _v;
+	from_object(T_P object) : _v(*(object.as<llvmo::TargetLibraryInfo_O>()->wrappedPtr())) {};
+    };
+    template <>
+    struct to_object<llvm::TargetLibraryInfo*>
+    {
+        static core::T_sp convert(llvm::TargetLibraryInfo* ptr)
+        {_G(); return(( core::RP_Create_wrapped<llvmo::TargetLibraryInfo_O,llvm::TargetLibraryInfo*>(ptr)));}
+    };
+    template <>
+    struct to_object<const llvm::TargetLibraryInfo*>
+    {
+        static core::T_sp convert(const llvm::TargetLibraryInfo* ptr)
+        {_G(); return(( core::RP_Create_wrapped<llvmo::TargetLibraryInfo_O,llvm::TargetLibraryInfo*>(const_cast<llvm::TargetLibraryInfo*>(ptr))));}
+    };
+};
+;
+
+#else
 //
 // This is needed for llvm3.7     What did I do before this?????
 //
@@ -2057,6 +2118,7 @@ namespace translate
     };
 };
 ;
+
 #endif
 
 

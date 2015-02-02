@@ -203,9 +203,6 @@ alias meta :     wrappers_functoids
                  applyToActivationFrame
                  ;
 
-#                 mi symbol_apply_inc  ;   # removed af
-
-
 
 # preprocessed corePackage : corePackage.cc : <variant>debug <define>SOURCE_DEBUG ;
 
