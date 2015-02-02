@@ -74,7 +74,7 @@
 	 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module* ,source-file-info-handle))
 	 )
      (declare (special *the-function-pass-manager*))
-     (with-irbuilder (,env (llvm-sys:make-irbuilder *llvm-context*))
+     (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
        ,@body)))
 
 
@@ -219,10 +219,12 @@
 
 
 (defun compile-file-t1expr (form)
-  (catch 'compiler-error
-    (t1expr form)))
-
-
+  ;; If the Cleavir compiler hook is set up then use that
+  ;; to generate code 
+  (if *cleavir-compile-file-hook*
+      (unless (funcall *cleavir-compile-file-hook* form)
+	(t1expr form))
+      (t1expr form)))
 
 
 

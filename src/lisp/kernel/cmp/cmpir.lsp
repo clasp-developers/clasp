@@ -651,7 +651,7 @@
 	      (*current-function-name* (llvm-sys:get-name ,fn))
 	      (*irbuilder-function-alloca* ,irbuilder-alloca)
 	      (*irbuilder-function-body* ,irbuilder-body))
-	 (with-irbuilder (,fn-env *irbuilder-function-body*)
+	 (with-irbuilder (*irbuilder-function-body*)
 	   (with-dbg-function (,fn-env ,function-name
 				       :linkage-name *current-function-name*
 				       :function ,fn
@@ -708,7 +708,7 @@ and then the irbuilder-alloca, irbuilder-body."
       (llvm-sys:set-insert-point-basic-block irbuilder-cur bb))
     ;; Setup exception handling and cleanup landing pad
     (irc-set-function-for-environment func-env fn)
-    (with-irbuilder (func-env irbuilder-cur)
+    (with-irbuilder (irbuilder-cur)
       (let* ((body-block (irc-basic-block-create "body" fn))
 	     (entry-branch (irc-br body-block)))
 	(llvm-sys:set-insert-point-instruction irbuilder-alloca entry-branch)
@@ -829,7 +829,7 @@ Within the _irbuilder_ dynamic environment...
 	(cleanup-gs (gensym))
 	(found-gs (gensym))
 	(metadata-env-gs (gensym)))
-    `(with-irbuilder (,env ,irbuilder)
+    `(with-irbuilder (,irbuilder)
        (let ((,alloca-sym ,alloca))
 	 (when ,init (funcall ,init ,alloca-sym))
 	 (when ,cleanup
@@ -840,7 +840,7 @@ Within the _irbuilder_ dynamic environment...
     ))
 
 
-(defmacro with-irbuilder ((env irbuilder) &rest code)
+(defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   (let ((irbuilder-desc (gensym)))
   `(let ((*irbuilder* ,irbuilder)

@@ -88,7 +88,7 @@ Return the ltv index of the value."
   (let ((index-gs (gensym "index")))
     ;; Always create a new load-time-value
     `(let ((,index-gs (get-next-available-ltv-entry)))
-       (with-irbuilder (*load-time-initializer-environment* *irbuilder-ltv-function-body*)
+       (with-irbuilder (*irbuilder-ltv-function-body*)
 	 ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	 (irc-low-level-trace)
 	 (let ((,ltv-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var* (jit-constant-i32 ,index-gs))))
@@ -121,7 +121,7 @@ Return the ltv index of the value."
        ;; If there is no index then create one
        (cmp-log "with-coalesce-load-time-value index within coalesce-hash-table: %s\n" ,index-gs)
        (if (null ,index-gs)
-	   (with-irbuilder (*load-time-initializer-environment* *irbuilder-ltv-function-body*)
+	   (with-irbuilder (*irbuilder-ltv-function-body*)
 	     (setq ,index-gs (,get-next-available-entry-index-fn-name))
 	     (cmp-log "new index: %s\n" ,index-gs)
 	     (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
@@ -142,7 +142,7 @@ Return the ltv index of the value."
 
 
 (defmacro with-initialize-load-time-value ((ltv-ref ltv-idx env) &rest initializer)
-  `(with-irbuilder (*load-time-initializer-environment* *irbuilder-ltv-function-body*)
+  `(with-irbuilder (*irbuilder-ltv-function-body*)
      ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
      (let ((,ltv-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var* (jit-constant-i32 ,ltv-idx))))
        (with-landing-pad (irc-get-cleanup-landing-pad-block ,env)
@@ -239,7 +239,7 @@ and walk the car and cdr"
   (let ((array-element-type (irc-alloca-tsp *load-time-initializer-environment*
 					    :irbuilder *irbuilder-ltv-function-alloca*
 					    :label "array-element-type")))
-    (with-irbuilder (*load-time-initializer-environment* *irbuilder-ltv-function-body*)
+    (with-irbuilder (*irbuilder-ltv-function-body*)
       (codegen-literal array-element-type (array-element-type val) *load-time-initializer-environment*))
     (with-next-load-time-value (ltv-ref val env)
       (irc-intrinsic "ltv_makeArrayObjects" ltv-ref
@@ -276,7 +276,7 @@ and walk the car and cdr"
   (let ((ht-test (irc-alloca-tsp *load-time-initializer-environment*
 				 :irbuilder *irbuilder-ltv-function-alloca*
 				 :label "hash-table-test")))
-    (with-irbuilder (*load-time-initializer-environment* *irbuilder-ltv-function-body*)
+    (with-irbuilder (*irbuilder-ltv-function-body*)
       (codegen-literal ht-test (hash-table-test val) *load-time-initializer-environment*))
     (with-next-load-time-value (ltv-ref val env)
       (irc-intrinsic "ltv_makeHashTable" ltv-ref ht-test))))
@@ -782,7 +782,7 @@ marshaling of compiled quoted data"
 
 	 (with-load-time-value-counters (ltv-value-counter
 					 ltv-symbol-counter
-					 :postscript (with-irbuilder (,fn-env-gs *irbuilder-ltv-function-alloca*)
+					 :postscript (with-irbuilder (*irbuilder-ltv-function-alloca*)
 						       (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
 						       (irc-intrinsic "getOrCreateLoadTimeValueArray"
 								      *load-time-value-holder-global-var*
@@ -798,7 +798,7 @@ marshaling of compiled quoted data"
 					 ))
 	   (initialize-special-load-time-values ,fn-env-gs)
 	   ,@body)
-	 (with-irbuilder (,fn-env-gs *irbuilder-ltv-function-body*)
+	 (with-irbuilder (*irbuilder-ltv-function-body*)
 	   (let ((*gv-current-function-name* (jit-make-global-string-ptr
 					      (llvm-sys:get-name ,ltv-init-fn) "fn-name")))
 	     (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
@@ -816,7 +816,7 @@ marshaling of compiled quoted data"
 	 (,env *load-time-initializer-environment*)
 #||	 (*current-invocation-history-frame* *load-time-value-invocation-history-frame*)||#
 	 )
-     (with-irbuilder (*load-time-initializer-environment* *irbuilder-ltv-function-body*)
+     (with-irbuilder (*irbuilder-ltv-function-body*)
        (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
        ,@form))))
 

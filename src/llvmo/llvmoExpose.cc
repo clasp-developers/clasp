@@ -3780,7 +3780,9 @@ namespace llvmo
 #define DECL_af_FunctionCreate ""
 #define DOCS_af_FunctionCreate "FunctionCreate - wrapps llvm::Function::Create"
     Function_sp af_FunctionCreate(FunctionType_sp tysp, llvm::GlobalValue::LinkageTypes linkage, core::Str_sp nsp, Module_sp modulesp )
-    {_G();
+    {
+	if (modulesp.nilp() ) {SIMPLE_ERROR(BF("Module is NIL"));}
+	if (tysp.nilp() ) {SIMPLE_ERROR(BF("FunctionType is NIL"));}
 	translate::from_object<llvm::FunctionType*> ty(tysp);
 	translate::from_object<llvm::Module*> m(modulesp);
 //        printf("%s:%d FunctionCreate %s with linkage %d\n", __FILE__, __LINE__, nsp->get().c_str(), linkage);

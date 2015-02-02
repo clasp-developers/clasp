@@ -1,12 +1,4 @@
-(format t "Setting up Cleavir~%")
-(require :asdf)
-
-(asdf:load-system :cleavir-generate-ast)
-(asdf:load-system :cleavir-ast-to-hir)
-(asdf:load-system :cleavir-hir-transformations)
-(asdf:load-system :cleavir-hir-to-mir)
-
-(in-package :cleavir-llvm-ir)
+(in-package :clasp-cleavir)
 
 (defclass clasp-global-environment () () )
 
@@ -110,15 +102,11 @@
   (make-instance 'cleavir-env:optimize-info))
 
 
-(format t "About to defmacro cleavir-environment:macro-function~%")
-
 (defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))
   (core:macro-function symbol))
 
 #+(or)(defmethod cleavir-environment:macro-function (symbol (environment core:environment))
 	(core:macro-function symbol environment))
-
-(format t "About to redefine macro-function~%")
 
 (defun cl:macro-function (symbol &optional (environment nil environment-p))
   (cond
@@ -154,8 +142,6 @@
 (defmethod cleavir-hir-transformations:introduce-immediate (constant (implementation clasp) processor os)
   constant)
 
-(format t "Done macro-function definitions~%")
-
 #+(or)
 (defmacro ext::lambda-block (name (&rest lambda-list) &body body &environment env)
   `(lambda ,lambda-list (block ,(if (listp name) (second name) name) ,@body)))
@@ -177,19 +163,19 @@
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart hir stream))
   (core:system (format nil "dot -Tpng -o/tmp/hir.png ~a" filename))
-  (core:system "open /tmp/hir.png"))
+  (core:system "open -n /tmp/hir.png"))
 
 (defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart mir stream))
   (core:system (format nil "dot -Tpng -o/tmp/mir.png ~a" filename))
-  (core:system "open /tmp/mir.png"))
+  (core:system "open -n /tmp/mir.png"))
 
 (defun draw-ast (&optional (ast *ast*) (filename "/tmp/ast.dot"))
   (with-open-file (stream filename :direction :output)
     (cleavir-ast-graphviz:draw-ast ast filename))
-  (core:system (format nil "dot -Tpng -o/tmp/draw.png ~a" filename))
-  (core:system "open /tmp/draw.png"))
+  (core:system (format nil "dot -Tpng -o/tmp/ast.png ~a" filename))
+  (core:system "open -n /tmp/ast.png"))
 
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
@@ -288,6 +274,17 @@
 
 
 
+(defmacro with-ir-function ((lisp-function-name
+			     &key (function-type cmp:+fn-prototype+ function-type-p)
+			     (linkage 'llvm-sys:internal-linkage))
+			       &rest body)
+  (let ((fn-gs (gensym "FUNCTION-")))
+    `(let ((,fn-gs (llvm-sys:function-create 
+		   ,function-type
+		   ',linkage
+		    (cmp:jit-function-name ,lisp-function-name)
+		    cmp:*the-module*)))
+       ,@body
+       ,fn-gs)))
 
-(print "Done - loading cleavir-setup")
 

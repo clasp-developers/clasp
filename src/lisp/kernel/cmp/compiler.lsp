@@ -1316,7 +1316,7 @@ be wrapped with to make a closure"
 
 
 
-(defun compile* (name &optional definition env)
+(defun clasp-compile* (name &optional definition env)
   "Returns (values llvm-function-from-lambda function-kind environment lambda-name)"
   (cond
     ((functionp definition)
@@ -1338,6 +1338,11 @@ be wrapped with to make a closure"
 	 (t (error "Could not compile func")))))
     (t (error "Illegal combination of arguments for compile: ~a ~a"
 	      name definition))))
+
+(defun compile* (name &optional definition env)
+  (if *cleavir-compile-hook*
+      (funcall *cleavir-compile-hook* name definition env)
+      (clasp-compile* name definition env)))
 
 
 (defun compile-in-env (bind-to-name &optional definition env &aux conditions)

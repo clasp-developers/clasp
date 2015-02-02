@@ -105,14 +105,22 @@ namespace core
 	    int iEnd = frame::ValuesArraySize(frameImpl);
 	    VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(),iEnd,_Nil<T_O>());
 	    for ( int i(0); i<iEnd; ++i ) {
-		vo->setf_elt(i,frame::Value(frameImpl,i));
+		T_sp val = frame::Value(frameImpl,i);
+		if ( val.unboundp() ) {
+		    val = _sym__BANG_unbound_BANG_;
+		}
+		vo->setf_elt(i,val);
 	    }
 	    return vo;
 	} else if ( ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>() ) {
 	    int iEnd = vf->length();
 	    VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(),iEnd,_Nil<T_O>());
 	    for ( int i(0); i<iEnd; ++i ) {
-		vo->setf_elt(i,(*vf)[i]);
+		T_sp val = (*vf)[i];
+		if ( val.unboundp() ) {
+		    val = _sym__BANG_unbound_BANG_;
+		}
+		vo->setf_elt(i,val);
 	    }
 	    return vo;
 	} else if ( ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>() ) {

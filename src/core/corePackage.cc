@@ -135,6 +135,7 @@ namespace core
     SYMBOL_EXPORT_SC_(CorePkg,scharSet);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugInterpretedClosureSTAR);
 
+    SYMBOL_EXPORT_SC_(CorePkg,_BANG_unbound_BANG_);
     SYMBOL_EXPORT_SC_(CorePkg,bitArrayOp);
     SYMBOL_EXPORT_SC_(CorePkg,lambdaName);
     SYMBOL_SC_(CorePkg,printf);

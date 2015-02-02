@@ -587,26 +587,22 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/evalmacros
     lsp/claspmacros
     lsp/testing
-    lsp/profiling    ;; Do micro-profiling of the GC
-    lsp/logging
     lsp/makearray
     lsp/arraylib
     lsp/setf
     lsp/listlib
     lsp/mislib
-    #-defstruct-test lsp/defstruct
-    #+defstruct-test lsp/defstruct-test
-    :defstruct-test
+    lsp/defstruct
     lsp/predlib
-    lsp/iolib
     lsp/seq
     lsp/cmuutil
     lsp/seqmacros
-    lsp/seqlib
-    lsp/trace
+    lsp/iolib
+    lsp/profiling    ;; Do micro-profiling of the GC
     :tiny
     :pre-cmp
     ;; Compiler code
+    cmp/cmppkg
     cmp/cmpsetup
     cmp/cmpenv-fun
     cmp/cmpenv-proclaim
@@ -630,6 +626,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     :stage1
     cmp/cmprepl
     :cmprepl
+    lsp/logging
+    lsp/seqlib
+    lsp/trace
+    :was-pre-cmp
     lsp/sharpmacros
     lsp/assert
     lsp/numlib

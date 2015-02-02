@@ -298,6 +298,12 @@ local rule load-config ( module-name : filename : path + : must-find ? )
 # Test configurations have been added primarily for use by Boost Build's
 # internal unit testing system but may be used freely in other places as well.
 #
+
+# Set to nothing by Christian Schafmeister to ignore built in boost build
+
+BOOST_BUILD_PATH = ;
+
+
 local rule load-configuration-files
 {
     # Flag indicating that site configuration should not be loaded.

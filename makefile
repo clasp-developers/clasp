@@ -175,7 +175,7 @@ cl-full-boehm:
 
 
 boostbuildv2-build:
-	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL) --ignore-site-config)
+	(cd $(BOOST_BUILD_V2_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL) --ignore-site-config)
 
 compile-commands:
 	(cd src/main; make compile-commands)
