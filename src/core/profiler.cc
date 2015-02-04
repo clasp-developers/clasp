@@ -26,12 +26,12 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL       
 
-#include "foundation.h"
-#include "executables.fwd.h"
-#include "lisp.h"
-#include "lightProfiler.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/executables.fwd.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/lightProfiler.h>
 
-#include "profiler.h"
+#include <clasp/core/profiler.h>
 
 namespace core {
 

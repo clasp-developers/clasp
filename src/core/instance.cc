@@ -26,16 +26,16 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "symbolTable.h"
-#include "serialize.h"
-#include "evaluator.h"
-#include "standardClass.h"
-#include "genericFunction.h"
-#include "instance.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/serialize.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/genericFunction.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {

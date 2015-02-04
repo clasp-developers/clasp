@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "wrappedPointer.h"
-#include "wrappers.h"
+#include <clasp/core/wrappedPointer.h>
+#include <clasp/core/wrappers.h>
 
 namespace core {
 

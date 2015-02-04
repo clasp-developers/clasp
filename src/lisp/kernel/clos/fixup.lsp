@@ -312,7 +312,7 @@ their lambda lists ~A and ~A are not congruent."
 
 (defun no-primary-method (gf &rest args)
   (error "Generic function: ~A. No primary method given arguments: ~S"
-	 (generic-function-name gf) args))
+	 (generic-function-name gf) (core:maybe-expand-generic-function-arguments args)))
 
 #+compare (print "MLOG About to protect classes from redefinition")
 #+compare (print "MLOG fixup line 283")

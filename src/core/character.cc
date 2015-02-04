@@ -30,13 +30,13 @@ THE SOFTWARE.
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/algorithm/string.hpp>
 #pragma clang diagnostic pop
-#include "core/common.h"
-#include "core/str.h"
-#include "symbolTable.h"
-#include "core/environment.h"
-#include "core/designators.h"
-#include "character.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/str.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/character.h>
+#include <clasp/core/wrappers.h>
 
 
 

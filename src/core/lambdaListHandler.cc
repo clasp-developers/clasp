@@ -28,18 +28,18 @@ THE SOFTWARE.
 
 
 #include <string.h>
-#include "core/config.h"
-#include "core/common.h"
-#include "core/environment.h"
-#include "symbolTable.h"
-#include "core/lambdaListHandler.h"
-#include "core/lispList.h"
-#include "core/primitives.h"
-#include "core/str.h"
-#include "core/vectorObjects.h"
-#include "core/multipleValues.h"
-#include "core/evaluator.h"
-#include "core/wrappers.h"
+#include <clasp/core/config.h>
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/str.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 
@@ -637,10 +637,18 @@ void bind_aux
     }
 
 
-    bool switch_add_argument_mode(T_sp context, Symbol_sp symbol, ArgumentMode& mode, T_sp& key_flag )
+    bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode& mode, T_sp& key_flag )
     {_G();
-	LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % symbol->__repr__() % symbol.get() );
-	bool isAmpSymbol = ( symbol == _sym_DOT || (symbol.notnilp() && symbol->amp_symbol_p()) );
+	LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % _rep_(symbol) % symbol.get() );
+	bool isAmpSymbol = false;
+	if (symbol.notnilp()) {
+	    if ( symbol.pointerp() ) {
+		if ( Symbol_sp sym = symbol.asOrNull<Symbol_O>() ) {
+		    isAmpSymbol = (sym == _sym_DOT || sym->amp_symbol_p());
+		}
+	    }
+	}
+	//	bool isAmpSymbol = ( symbol == _sym_DOT || (symbol.notnilp() && symbol->amp_symbol_p()) );
 	if ( isAmpSymbol )
 	{
 	    LOG(BF("It is an amp symbol"));
@@ -699,7 +707,7 @@ void bind_aux
 	}
 	return false;
     BADMODE:
-	SIMPLE_ERROR(BF("While in lambda-list mode %s encountered illegal symbol[%s]") % argument_mode_as_string(mode) % symbol->fullName() );
+	SIMPLE_ERROR(BF("While in lambda-list mode %s encountered illegal symbol[%s]") % argument_mode_as_string(mode) % _rep_(symbol));
     NEWMODE:
 	LOG(BF("Switched to mode: %s") % argument_mode_as_string(mode) );
 	{_BLOCK_TRACEF(BF("Checking if mode[%s] is valid for context[%s]") % argument_mode_as_string(mode) % context->__repr__() );
@@ -829,7 +837,7 @@ void bind_aux
 	    T_sp oarg = oCar(cur);
 	    if ( af_symbolp(oarg) )
 	    {
-		Symbol_sp sym = oarg.as<Symbol_O>();
+		T_sp sym = oarg;
 		if ( switch_add_argument_mode(context,sym,add_argument_mode,key_flag) )
 		{
 		    if ( add_argument_mode == allowOtherKeys )
@@ -851,138 +859,126 @@ void bind_aux
 		break;
 	    }
 	    case optional:
-	    {
-		Symbol_sp sarg = _Nil<Symbol_O>();
-		T_sp defaultValue = _Nil<T_O>();
-		Symbol_sp supplied = _Nil<Symbol_O>();
-		if ( af_symbolp(oarg) )
 		{
-		    sarg = oarg.as<Symbol_O>();
-		    LOG(BF("Optional argument was a Symbol_O[%s]") % sarg->__repr__() );
-		} else if ( cl_consp(oarg) )
-		{
-		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
-		    LOG(BF("Optional argument is a Cons: %s") % carg->__repr__() );
-		    sarg = oCar(carg).as<Symbol_O>();
-		    if ( cCdr(carg).notnilp() )
-		    {
-			defaultValue = oCadr(carg);
-			if ( cCddr(carg).notnilp() )
-			{
-			    supplied = oCaddr(carg).as<Symbol_O>();
-			}
+		    T_sp sarg = _Nil<T_O>();
+		    T_sp defaultValue = _Nil<T_O>();
+		    T_sp supplied = _Nil<T_O>();
+		    if ( cl_consp(oarg) ) {
+			Cons_sp carg = oarg.as_or_nil<Cons_O>();
+			LOG(BF("Optional argument is a Cons: %s") % carg->__repr__() );
+			sarg = oCar(carg);
+			if ( cCdr(carg).notnilp() )
+			    {
+				defaultValue = oCadr(carg);
+				if ( cCddr(carg).notnilp() )
+				    {
+					supplied = oCaddr(carg);
+				    }
+			    }
+			LOG(BF("Optional argument was a Cons_O[%s] with parts - symbol[%s] default[%s] supplied[%s]")
+			    % carg->__repr__() % sarg->__repr__() % defaultValue->__repr__() % supplied->__repr__() );
+		    } else {
+			sarg = oarg;
+			LOG(BF("Optional argument was a Symbol_O[%s]") % sarg->__repr__() );
 		    }
-		    LOG(BF("Optional argument was a Cons_O[%s] with parts - symbol[%s] default[%s] supplied[%s]")
-			% carg->__repr__() % sarg->__repr__() % defaultValue->__repr__() % supplied->__repr__() );
+
+		    LOG(BF("Saving _OptionalArgument(%s) default(%s) supplied(%s)")
+			% sarg->__repr__() % defaultValue->__repr__() % supplied->__repr__() );
+		    OptionalArgument optional(sarg,defaultValue,supplied);
+		    optionals.push_back(optional);
+		    break;
 		}
-		LOG(BF("Saving _OptionalArgument(%s) default(%s) supplied(%s)")
-		    % sarg->__repr__() % defaultValue->__repr__() % supplied->__repr__() );
-		OptionalArgument optional(sarg,defaultValue,supplied);
-		optionals.push_back(optional);
-		break;
-	    }
-	    case rest:
-	    {
-                if ( restarg.isDefined() )
-                {
-                    SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString() );
-                }
-                if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
-                    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
-                    restarg.setTarget(sarg);
-                } else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
-                    restarg.setTarget(carg);
-                }
-		break;
-	    }
-	    case dot_rest:
-	    {
-		if ( cCdr(cur).notnilp() )
-		{
-		    SIMPLE_ERROR(BF("Lambda list dot followed by more than one argument"));
-		}
-                if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
-                    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
-                    restarg.setTarget(sarg);
-                } else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
-                    restarg.setTarget(carg);
-                }
-		goto DONE;
-	    }
-	    case keyword:
-	    {
-		Symbol_sp keySymbol = _Nil<Symbol_O>();
-		T_sp localTarget = _Nil<T_O>();
-		T_sp defaultValue = _Nil<T_O>();
-		Symbol_sp sensorSymbol = _Nil<Symbol_O>();
-		if ( af_symbolp(oarg) )
-		{
-		    localTarget = oarg;
-		    keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
-		} else if ( cl_consp(oarg) )
-		{
-		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
-		    T_sp head = oCar(carg);
-		    if ( af_symbolp(head) )
+		case rest:
 		    {
-			localTarget = head;
-			ASSERTP(!localTarget.as<Symbol_O>()->isKeywordSymbol(), "Do not use keyword symbols when specifying arguments");
+			if ( restarg.isDefined() )
+			    {
+				SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString() );
+			    }
+			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
+			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
+			    restarg.setTarget(sarg);
+			} else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
+			    restarg.setTarget(carg);
+			}
+			break;
+		    }
+		case dot_rest:
+		    {
+			if ( cCdr(cur).notnilp() )
+			    {
+				SIMPLE_ERROR(BF("Lambda list dot followed by more than one argument"));
+			    }
+			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
+			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
+			    restarg.setTarget(sarg);
+			} else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
+			    restarg.setTarget(carg);
+			}
+			goto DONE;
+		    }
+		case keyword: {
+		    Symbol_sp keySymbol = _Nil<Symbol_O>();
+		    T_sp localTarget = _Nil<T_O>();
+		    T_sp defaultValue = _Nil<T_O>();
+		    T_sp sensorSymbol = _Nil<T_O>();
+		    if ( af_symbolp(oarg) ) {
+			localTarget = oarg;
 			keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
-		    } else if ( cl_consp(head) )
-		    {
-			Cons_sp namePart = head.as_or_nil<Cons_O>();
-			keySymbol = oCar(namePart).as<Symbol_O>();			// This is the keyword name
-			ASSERTP(keySymbol->isKeywordSymbol(),"with key arguments of the form ((:x y) ...) the first argument must be a symbol");
-			localTarget = oCadr(namePart);		 // this is the symbol to rename it to
-		    }
-		    //
-		    // Is there a default value?
-		    //
-		    if (cCdr(carg).notnilp() )
-		    {
-			defaultValue = oCadr(carg);
-			if ( cCddr(carg).notnilp() )
-			{
-			    sensorSymbol = oCaddr(carg).as<Symbol_O>();
-			    ASSERTP(!sensorSymbol->isKeywordSymbol(), "Do not use keyword symbols when specifying local argument names");
+		    } else if ( cl_consp(oarg) ) {
+			Cons_sp carg = oarg.as_or_nil<Cons_O>();
+			T_sp head = oCar(carg);
+			if ( cl_consp(head) ) {
+			    Cons_sp namePart = head.as_or_nil<Cons_O>();
+			    keySymbol = oCar(namePart).as<Symbol_O>();			// This is the keyword name
+			    if (!keySymbol->isKeywordSymbol()) {
+				SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: ") % _rep_(keySymbol));
+			    }
+			    localTarget = oCadr(namePart);		 // this is the symbol to rename it to
+			} else {
+			    localTarget = head;
+			    keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
 			}
+
+			//
+			// Is there a default value?
+			//
+			if (cCdr(carg).notnilp() ) {
+			    defaultValue = oCadr(carg);
+			    if ( cCddr(carg).notnilp() ) {
+				sensorSymbol = oCaddr(carg);
+			    }
+			}
+		    } else {
+			SIMPLE_ERROR(BF("key arguments must be symbol or cons"));
 		    }
-		} else
-		{
-		    SIMPLE_ERROR(BF("key arguments must be symbol or cons"));
+		    LOG(BF("Saving keyword(%s) local(%s) default(%s) sensor(%s)")% keySymbol->__repr__()% localTarget->__repr__()% defaultValue->__repr__()% sensorSymbol->__repr__() );
+		    KeywordArgument keyed(keySymbol,localTarget,defaultValue,sensorSymbol);
+		    keys.push_back(keyed);
+		    break;
 		}
-		LOG(BF("Saving keyword(%s) local(%s) default(%s) sensor(%s)")% keySymbol->__repr__()% localTarget->__repr__()% defaultValue->__repr__()% sensorSymbol->__repr__() );
-		KeywordArgument keyed(keySymbol,localTarget,defaultValue,sensorSymbol);
-		keys.push_back(keyed);
-		break;
-	    }
-	    case allowOtherKeys:
-		SIMPLE_ERROR(BF("&allow-other-keys must be processed just after switch_add_argument_mode"));
-		break;
-	    case aux:
-	    {
-		Symbol_sp localSymbol = _Nil<Symbol_O>();
-		T_sp expression = _Nil<T_O>();
-		if ( af_symbolp(oarg) )
-		{
-		    localSymbol = oarg.as<Symbol_O>();
-		} else if ( cl_consp(oarg) )
-		{
-		    Cons_sp carg = oarg.as_or_nil<Cons_O>();
-		    localSymbol = oCar(carg).as<Symbol_O>();
-		    //
-		    // Is there an expression
-		    //
-		    if (cCdr(carg).notnilp() ) expression = oCadr(carg);
-		} else
-		{
-		    SIMPLE_ERROR(BF("&aux variables must be specified by a symbol or a cons of a symbol and an expression"));
+		case allowOtherKeys:
+		    SIMPLE_ERROR(BF("&allow-other-keys must be processed just after switch_add_argument_mode"));
+		    break;
+		case aux:
+		    {
+			T_sp localSymbol = _Nil<T_O>();
+			T_sp expression = _Nil<T_O>();
+			if ( cl_consp(oarg) )
+			    {
+				Cons_sp carg = oarg.as_or_nil<Cons_O>();
+				localSymbol = oCar(carg).as<Symbol_O>();
+				//
+				// Is there an expression
+				//
+				if (cCdr(carg).notnilp() ) expression = oCadr(carg);
+			    } else {
+			    localSymbol = oarg;
+			}
+			AuxArgument aux(localSymbol,expression);
+			auxs.push_back(aux);
+			break;
+		    }
 		}
-		AuxArgument aux(localSymbol,expression);
-		auxs.push_back(aux);
-		break;
-	    }
-	    }
 	NEXT:
 	    T_sp ocur = oCdr(cur);
 	    if ( ocur.nilp() || cl_consp(ocur) )
@@ -993,7 +989,7 @@ void bind_aux
 	    }
 	    // This is a dotted list. The cdr must be a symbol and
 	    // treat it like &rest
-	    Symbol_sp sarg = ocur.as<Symbol_O>();
+	    T_sp sarg = ocur;
 	    restarg.setTarget(sarg);
 	    break;
 	}

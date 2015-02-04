@@ -20,7 +20,11 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
 
 
+
+
 project clasp : requirements
+	<include>include
+	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
         <warnings>on
         <cxxflags>"-ferror-limit=999"
@@ -179,8 +183,9 @@ project clasp : requirements
 
 
 path-constant TOP : . ;
+path-constant INCLUDE : $(TOP)/include/clasp ;
 path-constant COMMON : src/common ;
-path-constant APPTOP : [ os.environ CLASP_BUILD_TARGET_DIR ] ;
+path-constant APPTOP : [ os.environ CLASP_INTERNAL_BUILD_TARGET_DIR ] ;
 path-constant APPCONT : $(APPTOP)/Contents ;
 path-constant APPRES : $(APPCONT)/Resources ;
 path-constant APPRES-EXTERNALS : [ os.environ EXTERNALS_BUILD_TARGET_DIR ] ;

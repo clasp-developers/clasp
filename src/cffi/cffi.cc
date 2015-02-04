@@ -26,17 +26,17 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 #include <dlfcn.h>
-#include "boost/type_traits.hpp"
+#include <boost/type_traits.hpp>
 #include <stdint.h>
-#include "core/common.h"
-#include "core/character.h"
-#include "core/str.h"
-#include "core/corePackage.h"
-#include "core/symbolTable.h"
-#include "core/environment.h"
-#include "cffiPackage.h"
-#include "cffi.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/character.h>
+#include <clasp/core/str.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/environment.h>
+#include <clasp/cffi/cffiPackage.h>
+#include <clasp/cffi/cffi.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace cffi

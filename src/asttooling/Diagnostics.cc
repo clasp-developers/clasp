@@ -33,9 +33,9 @@ THE SOFTWARE.
 //
 //===----------------------------------------------------------------------===//
 
-#include <core/common.h>
-#include <core/str.h>
-#include <asttooling/Diagnostics.h>
+#include <clasp/core/common.h>
+#include <clasp/core/str.h>
+#include <clasp/asttooling/Diagnostics.h>
 
 namespace asttooling {
 

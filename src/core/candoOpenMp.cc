@@ -25,9 +25,9 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "foundation.h"
-#include "object.h"
-#include "candoOpenMp.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/candoOpenMp.h>
 
 
 namespace core

@@ -28,7 +28,7 @@ THE SOFTWARE.
 
 
 #ifdef USEBOOSTPYTHON
-#include "useBoostPython.h"
+#include <clasp/core/useBoostPython.h>
 #endif
 
 #include <stdlib.h>
@@ -37,110 +37,110 @@ THE SOFTWARE.
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
 //#pragma GCC diagnostic ignored "-Wunused-local-typedef"
-#include "boost/filesystem.hpp"
-#include "boost/algorithm/string.hpp"
-#include "boost/program_options.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/program_options.hpp>
 #pragma GCC diagnostic pop
 //#i n c l u d e	"boost/fstream.hpp"
-#include "foundation.h"
-#include "object.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
 #ifdef DEBUG_CL_SYMBOLS
-#include "allClSymbols.h"
+#include <clasp/core/allClSymbols.h>
 #endif
-#include "candoOpenMp.h"
-#include "exceptions.h"
-#include "commandLineOptions.h"
-#include "symbolTable.h"
-#include "compiler.h"
-#include "lisp.h"
-#include "lispList.h"
-#include "loadTimeValues.h"
-#include "profiler.h"
-#include "bundle.h"
-#include "bformat.h"
-#include "stringSet.h"
-#include "hashTableEq.h"
-#include "hashTableEqual.h"
-#include "pointer.h"
-#include "cons.h"
-#include "specialForm.h"
-#include "documentation.h"
-#include "backquote.h"
-#include "testing.h"
-#include "bformat.h"
-#include "cache.h"
-#include "environment.h"
-#include "extensionPackage.h"
-#include "binder.h"
-#include "numbers.h"
-#include "bits.h"
-#include "load.h"
-#include "bignum.h"
+#include <clasp/core/candoOpenMp.h>
+#include <clasp/core/exceptions.h>
+#include <clasp/core/commandLineOptions.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/compiler.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/loadTimeValues.h>
+#include <clasp/core/profiler.h>
+#include <clasp/core/bundle.h>
+#include <clasp/core/bformat.h>
+#include <clasp/core/stringSet.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/specialForm.h>
+#include <clasp/core/documentation.h>
+#include <clasp/core/backquote.h>
+#include <clasp/core/testing.h>
+#include <clasp/core/bformat.h>
+#include <clasp/core/cache.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/extensionPackage.h>
+#include <clasp/core/binder.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/bits.h>
+#include <clasp/core/load.h>
+#include <clasp/core/bignum.h>
 //#i n c l u d e "setfExpander.h"
-#include "standardObject.h"
-#include "ql.h"
-#include "str.h"
-#include "commonLispPackage.h"
-#include "keywordPackage.h"
-#include "fileSystem.h"
-#include "sysprop.h"
-#include "hashTableEql.h"
-#include "debugger.h"
-#include "builtInClass.h"
-#include "standardClass.h"
-#include "numberToString.h"
-#include "executables.h"
-#include "myReadLine.h"
-#include "sourceFileInfo.h"
-#include "lispStream.h"
-#include "lispReader.h"
-#include "write_object.h"
-#include "write_ugly.h"
-#include "lispMath.h"
-#include "pathname.h"
-#include "print.h"
-#include "core/genericFunction.h"
-#include "multipleValues.h"
+#include <clasp/core/standardObject.h>
+#include <clasp/core/ql.h>
+#include <clasp/core/str.h>
+#include <clasp/core/commonLispPackage.h>
+#include <clasp/core/keywordPackage.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/sysprop.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/debugger.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/numberToString.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/myReadLine.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/lispReader.h>
+#include <clasp/core/write_object.h>
+#include <clasp/core/write_ugly.h>
+#include <clasp/core/lispMath.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/print.h>
+#include <clasp/core/genericFunction.h>
+#include <clasp/core/multipleValues.h>
 #if defined(XML_ARCHIVE)
-#include "xmlLoadArchive.h"
-#include "xmlSaveArchive.h"
+#include <xmlLoadArchive.h>
+#include <xmlSaveArchive.h>
 #endif // defined(XML_ARCHIVE)
 #if defined(OLD_SERIALIZE)
-#include "serialize.h"
+#include <clasp/core/serialize.h>
 #endif // defined(OLD_SERIALIZE)
-#include "bootStrapCoreSymbolMap.h"
-#include "numerics.h"
-#include "reader.h"
+#include <clasp/core/bootStrapCoreSymbolMap.h>
+#include <clasp/core/numerics.h>
+#include <clasp/core/reader.h>
 //#i n c l u d e "genericFunction.h"
-#include "singleDispatchGenericFunction.h"
-#include "executables.h"
-#include "designators.h"
-#include "unixfsys.h"
-#include "sort.h"
-#include "bitVector.h"
-#include "character.h"
-#include "predicates.h"
-#include "primitives.h"
-#include "package.h"
-#include "symbol.h"
-#include "lambdaListHandler.h"
-#include "sequence.h"
-#include "evaluator.h"
-#include "float_to_digits.h"
-#include "num_arith.h"
-#include "num_co.h"
-#include "lispDefinitions.h"
-#include "myReadLine.h"
-#include "externalObject.h"
-#include "initializeClasses.h"
-#include "holder.h"
-#include "core/corePackage.h"
-#include "core/stacks.h"
-#include "primitives.h"
-#include "readtable.h"
+#include <clasp/core/singleDispatchGenericFunction.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/unixfsys.h>
+#include <clasp/core/sort.h>
+#include <clasp/core/bitVector.h>
+#include <clasp/core/character.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/package.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/sequence.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/float_to_digits.h>
+#include <clasp/core/num_arith.h>
+#include <clasp/core/num_co.h>
+#include <clasp/core/lispDefinitions.h>
+#include <clasp/core/myReadLine.h>
+#include <clasp/core/externalObject.h>
+#include <clasp/core/initializeClasses.h>
+#include <clasp/core/holder.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/stacks.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/readtable.h>
 //#i n c l u d e "clos.h"
-#include "wrappers.h"
-#include "python_wrappers.h"
+#include <clasp/core/wrappers.h>
+#include <clasp/core/python_wrappers.h>
 
 #ifdef	READLINE
 extern "C" char *readline( const char* prompt);
@@ -477,7 +477,7 @@ namespace core
 	this->_Roots._CommandLineArguments = _Nil<Cons_O>();
 #if 0
 	{_BLOCK_TRACE("Initialize scripting stuff");
-#include "core_initScripting_inc.h"
+#include <core_initScripting_inc.h>
 	}
 #endif
 	{_BLOCK_TRACE("Initialize other code"); // needs _TrueObject

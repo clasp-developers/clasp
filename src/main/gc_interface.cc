@@ -32,7 +32,7 @@ typedef bool _Bool;
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/ReaderWriter.h>
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -81,93 +81,93 @@ typedef bool _Bool;
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 
 
-#include <gctools/symbolTable.h>
-#include <sockets/symbolTable.h>
-#include <serveEvent/symbolTable.h>
-#include <clbind/symbolTable.h>
+#include <clasp/gctools/symbolTable.h>
+#include <clasp/sockets/symbolTable.h>
+#include <clasp/serveEvent/symbolTable.h>
+#include <clasp/clbind/symbolTable.h>
 
-#include "gctools/gctoolsPackage.h"
+#include <clasp/gctools/gctoolsPackage.h>
 
 
 
-#include <core/foundation.h>
-#include "core/weakPointer.h"
-#include "core/weakKeyMapping.h"
-#include "core/weakHashTable.h"
-#include "core/bitVector.h"
-#include "core/funcallableStandardClass.h"
-#include "core/structureClass.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/weakPointer.h>
+#include <clasp/core/weakKeyMapping.h>
+#include <clasp/core/weakHashTable.h>
+#include <clasp/core/bitVector.h>
+#include <clasp/core/funcallableStandardClass.h>
+#include <clasp/core/structureClass.h>
 //#include "core/symbolVector.h"
-#include "core/hashTable.h"
-#include "core/hashTableEq.h"
-#include "core/hashTableEql.h"
-#include "core/hashTableEqual.h"
-#include "core/hashTableEqualp.h"
-#include "core/userData.h"
-#include "core/sexpLoadArchive.h"
-#include "core/sexpSaveArchive.h"
-#include "core/loadTimeValues.h"
-#include "core/specialForm.h"
-#include "core/singleDispatchGenericFunction.h"
-#include "core/arguments.h"
-#include "core/bootStrapCoreSymbolMap.h"
-#include "core/corePackage.h"
-#include "core/lambdaListHandler.h"
-#include "core/package.h"
-#include "core/character.h"
-#include "core/reader.h"
-#include "core/singleDispatchEffectiveMethodFunction.h"
-#include "core/microHeap.h"
-#include "core/regex.h"
-#include "core/structureObject.h"
-#include "core/forwardReferencedClass.h"
-#include "core/standardClass.h"
-#include "core/stringSet.h"
-#include "core/symbolSet.h"
-#include "core/readtable.h"
-#include "core/arrayObjects.h"
-#include "core/intArray.h"
-#include "core/lispStream.h"
-#include "core/primitives.h"
-#include "core/singleDispatchMethod.h"
-#include "core/binder.h"
-#include "core/fileSystem.h"
-#include "core/objectSet.h"
-#include "core/symbolList.h"
-#include "core/stringList.h"
-#include "core/null.h"
-#include "core/multiStringBuffer.h"
-#include "core/posixTime.h"
-#include "core/pointer.h"
-#include "core/objRef.h"
-#include "core/smallMap.h"
-#include "core/pathname.h"
-#include "core/strWithFillPtr.h"
-#include "core/weakHashTable.h"
+#include <clasp/core/hashTable.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/hashTableEqualp.h>
+#include <clasp/core/userData.h>
+#include <clasp/core/sexpLoadArchive.h>
+#include <clasp/core/sexpSaveArchive.h>
+#include <clasp/core/loadTimeValues.h>
+#include <clasp/core/specialForm.h>
+#include <clasp/core/singleDispatchGenericFunction.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/bootStrapCoreSymbolMap.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/package.h>
+#include <clasp/core/character.h>
+#include <clasp/core/reader.h>
+#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
+#include <clasp/core/microHeap.h>
+#include <clasp/core/regex.h>
+#include <clasp/core/structureObject.h>
+#include <clasp/core/forwardReferencedClass.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/stringSet.h>
+#include <clasp/core/symbolSet.h>
+#include <clasp/core/readtable.h>
+#include <clasp/core/arrayObjects.h>
+#include <clasp/core/intArray.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/singleDispatchMethod.h>
+#include <clasp/core/binder.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/objectSet.h>
+#include <clasp/core/symbolList.h>
+#include <clasp/core/stringList.h>
+#include <clasp/core/null.h>
+#include <clasp/core/multiStringBuffer.h>
+#include <clasp/core/posixTime.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/objRef.h>
+#include <clasp/core/smallMap.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/weakHashTable.h>
 
-#include "clbind/clbind.h"
+#include <clasp/clbind/clbind.h>
 
-#include "cffi/cffi.h"
+#include <clasp/cffi/cffi.h>
 
-#include "llvmo/intrinsics.h"
-#include "llvmo/llvmoExpose.h"
-#include "llvmo/debugLoc.h"
-#include "llvmo/insertPoint.h"
-#include "llvmo/debugInfoExpose.h"
+#include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/debugLoc.h>
+#include <clasp/llvmo/insertPoint.h>
+#include <clasp/llvmo/debugInfoExpose.h>
 
-#include "asttooling/astExpose.h"
-#include "asttooling/clangTooling.h"
-#include "asttooling/astVisitor.h"
-#include "asttooling/example.h"
-#include "asttooling/Registry.h"
-#include "asttooling/Diagnostics.h"
-#include "asttooling/Marshallers.h"
-#include "asttooling/testAST.h"
+#include <clasp/asttooling/astExpose.h>
+#include <clasp/asttooling/clangTooling.h>
+#include <clasp/asttooling/astVisitor.h>
+#include <clasp/asttooling/example.h>
+#include <clasp/asttooling/Registry.h>
+#include <clasp/asttooling/Diagnostics.h>
+#include <clasp/asttooling/Marshallers.h>
+#include <clasp/asttooling/testAST.h>
 
 
 #define NAMESPACE_gctools
 #define NAMESPACE_core
-#include "gc_interface.h"
+#include <clasp/main/gc_interface.h>
 #undef NAMESPACE_gctools
 #undef NAMESPACE_core
 
@@ -191,11 +191,11 @@ extern "C"  {
     {
 #ifndef RUNNING_GC_BUILDER
 #define GC_KIND_NAME_MAP_TABLE
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_KIND_NAME_MAP_TABLE
         goto *(KIND_NAME_MAP_table[kind]);
 #define GC_KIND_NAME_MAP
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_KIND_NAME_MAP
 #endif
       return "NONE";
@@ -217,7 +217,7 @@ extern "C" {
     {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SKIP_TABLE
 #endif
         gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
@@ -227,7 +227,7 @@ extern "C" {
 #ifndef RUNNING_GC_BUILDER
 	    goto *(OBJ_SKIP_table[kind]);
 #define GC_OBJ_SKIP
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SKIP
 #else
             return NULL;
@@ -255,7 +255,7 @@ extern "C" {
     {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_DUMP_MAP_TABLE
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_DUMP_MAP_TABLE
 #endif
 
@@ -273,7 +273,7 @@ extern "C" {
 #ifndef RUNNING_GC_BUILDER
 	    goto *(OBJ_DUMP_MAP_table[kind]);
 #define GC_OBJ_DUMP_MAP
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_DUMP_MAP
 #else
             // do nothing
@@ -314,7 +314,7 @@ extern "C" {
     {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SCAN_TABLE
 #endif
 
@@ -329,7 +329,7 @@ extern "C" {
 #ifndef RUNNING_GC_BUILDER
 		    goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_SCAN
 #endif
                 } else if (header->fwdP()) {
@@ -355,7 +355,7 @@ extern "C" {
             {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_FINALIZE_TABLE
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_FINALIZE_TABLE
 #endif
 
@@ -366,7 +366,7 @@ extern "C" {
 #ifndef RUNNING_GC_BUILDER
 	      goto *(OBJ_FINALIZE_table[kind]);
 #define GC_OBJ_FINALIZE
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_OBJ_FINALIZE
 #else
               // do nothing
@@ -403,7 +403,7 @@ extern "C" {
 //            printf("---------Done\n");
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_GLOBALS
 #endif
 
@@ -458,16 +458,16 @@ extern "C" {
 
 
 #define DO_SYMBOL(sym,id,pkg,name,exprt) SMART_PTR_FIX(pkg::sym)
-#include "core/symbols_scraped_inc.h"
-#include "asttooling/symbols_scraped_inc.h"
-#include "cffi/symbols_scraped_inc.h"
-#include "clbind/symbols_scraped_inc.h"
-#include "core/symbols_scraped_inc.h"
-#include "gctools/symbols_scraped_inc.h"
-#include "llvmo/symbols_scraped_inc.h"
-#include "mpip/symbols_scraped_inc.h"
-#include "serveEvent/symbols_scraped_inc.h"
-#include "sockets/symbols_scraped_inc.h"
+#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/asttooling/symbols_scraped_inc.h>
+#include <clasp/cffi/symbols_scraped_inc.h>
+#include <clasp/clbind/symbols_scraped_inc.h>
+#include <clasp/core/symbols_scraped_inc.h>
+#include <clasp/gctools/symbols_scraped_inc.h>
+#include <clasp/llvmo/symbols_scraped_inc.h>
+#include <clasp/mpip/symbols_scraped_inc.h>
+#include <clasp/serveEvent/symbols_scraped_inc.h>
+#include <clasp/sockets/symbols_scraped_inc.h>
 
 #undef AstToolingPkg
 #undef CffiPkg
@@ -532,7 +532,7 @@ namespace gctools {
 //
 #ifndef RUNNING_GC_BUILDER
 #define HOUSEKEEPING_SCANNERS
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef HOUSEKEEPING_SCANNERS
 #endif
 
@@ -544,7 +544,7 @@ namespace gctools {
 #if 0 
 #ifndef RUNNING_GC_BUILDER
 #define GC_LOCAL_VARIABLES_DANGEROUS_UNROOTED
-#include "main/clasp_gc.cc"
+#include <clasp/main/clasp_gc.cc>
 #undef GC_LOCAL_VARIABLES_DANGEROUS_UNROOTED
 #endif
 #endif

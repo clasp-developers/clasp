@@ -26,19 +26,19 @@ THE SOFTWARE.
 /* -^- */
 
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include <core/package.h>
-#include "core/builtInClass.h"
-#include "asttoolingPackage.h"
-#include "astExpose.h"
-#include <asttooling/astVisitor.h>
-#include "clangTooling.h"
-#include "tools.h"
-#include "core/str.h"
-#include "core/wrappers.h"
-#include "Registry.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/package.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/asttooling/asttoolingPackage.h>
+#include <clasp/asttooling/astExpose.h>
+#include <clasp/asttooling/astVisitor.h>
+#include <clasp/asttooling/clangTooling.h>
+#include <clasp/asttooling/tools.h>
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
+#include <clasp/asttooling/Registry.h>
 
 namespace asttooling
 {
@@ -46,7 +46,7 @@ namespace asttooling
 #define EXPOSE_TO_CANDO
 #define Use_AstToolingPkg
 #define EXTERN_REGISTER
-#include "asttooling_initClasses_inc.h"
+#include <asttooling_initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_AstToolingPkg
 #undef EXPOSE_TO_CANDO
@@ -66,7 +66,7 @@ namespace asttooling
 #pragma GCC visibility push(default)
 #define AstToolingPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/asttooling/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef AstToolingPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -80,7 +80,7 @@ namespace asttooling
 	{
 #define AstToolingPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
-#include "asttooling/symbols_scraped_inc.h"
+#include <clasp/asttooling/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef AstToolingPkg_SYMBOLS
 
@@ -89,7 +89,7 @@ namespace asttooling
 #define Use_AstToolingPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s,p) DEFAULT_LOOKUP_SYMBOL(s,p)
-#include "asttooling_initClasses_inc.h"
+#include <asttooling_initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_AstToolingPkg
@@ -135,7 +135,7 @@ namespace asttooling
     INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include "asttooling_initClasses_inc.h"
+#include <asttooling_initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

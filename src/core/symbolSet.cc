@@ -32,18 +32,18 @@ THE SOFTWARE.
 //
 
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "symbolSet.h"
-#include "multipleValues.h"
-#include "stringList.h"
-#include "objectSet.h"
-#include "environment.h"
-#include "cons.h"
-#include "symbolList.h"
-#include "numbers.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/symbolSet.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/stringList.h>
+#include <clasp/core/objectSet.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/symbolList.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/wrappers.h>
 
 
 

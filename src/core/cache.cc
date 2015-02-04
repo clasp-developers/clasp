@@ -25,13 +25,13 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "vectorObjectsWithFillPtr.h"
-#include "newhash.h"
-#include "cache.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/vectorObjectsWithFillPtr.h>
+#include <clasp/core/newhash.h>
+#include <clasp/core/cache.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {

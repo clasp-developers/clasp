@@ -49,31 +49,31 @@ THE SOFTWARE.
 #include <clang/ASTMatchers/Dynamic/VariantValue.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include <core/hashTable.h>
-#include <core/evaluator.h>
-#include <core/symbolTable.h>
-#include <core/translators.h>
-#include "core/str.h"
-#include <core/arguments.h>
-#include "clbind/clbind.h"
-#include "llvmo/translators.h"
-#include "llvmo/llvmoExpose.h"
-#include <asttooling/astExpose.h>
-#include <asttooling/asttoolingPackage.h>
-#include <asttooling/translators.h>
-#include <asttooling/symbolTable.h>
-#include <core/wrappers.h>
-#include <asttooling/Diagnostics.h>
-#include <asttooling/Registry.h>
-#include "clangTooling.h"
-#include <core/translators.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/translators.h>
+#include <clasp/core/str.h>
+#include <clasp/core/arguments.h>
+#include <clasp/clbind/clbind.h>
+#include <clasp/llvmo/translators.h>
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/asttooling/astExpose.h>
+#include <clasp/asttooling/asttoolingPackage.h>
+#include <clasp/asttooling/translators.h>
+#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/wrappers.h>
+#include <clasp/asttooling/Diagnostics.h>
+#include <clasp/asttooling/Registry.h>
+#include <clasp/asttooling/clangTooling.h>
+#include <clasp/core/translators.h>
 
 
 #ifdef USE_MPS
 #define NAMESPACE_clbind_clang
-#include "main/gc_interface.h"
+#include <clasp/main/gc_interface.h>
 #undef NAMESPACE_clbind_clang
 #endif
 

@@ -32,8 +32,8 @@ THE SOFTWARE.
 
 
 #include <stdio.h>
-#include "foundation.h"
-#include "holder.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/holder.h>
 
 namespace core
 {

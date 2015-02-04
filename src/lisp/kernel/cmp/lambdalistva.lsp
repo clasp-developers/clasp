@@ -289,6 +289,23 @@ will put a value into target-ref."
 
 
 
+(defun required-arguments-to-registers (reqargs env
+					args
+					new-env
+					entry-arg-idx)
+  (irc-branch-to-and-begin-block (irc-basic-block-create "process-required-arguments"))
+  (compile-error-if-not-enough-arguments (calling-convention-nargs args)
+					 (jit-constant-i32 (car reqargs)))
+  (let (registers)
+    (do* ((cur-req (cdr reqargs) (cdr cur-req))
+	  (arg-idx entry-arg-idx (irc-add arg-idx (jit-constant-i32 1) "arg-idx")))
+	 ((endp cur-req) (values arg-idx (nreverse registers)))
+      (let* ((register (irc-alloca-tsp new-env)))
+	(calling-convention-args.store args arg-idx register)
+	(push register registers)))))
+  
+  
+
 
 
 (defun compile-required-arguments (reqargs env

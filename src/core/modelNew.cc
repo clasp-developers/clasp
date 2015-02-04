@@ -26,18 +26,18 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_NONE
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "model.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <model.h>
 #ifdef	USEBOOSTPYTHON
 #include <Python.h>
 #endif
 //#include	"boost/python/module.hpp"
 //#include	"boost/python/class.hpp"
-#include "boost/utility.hpp"
-#include "objectList.h"
-#include "wrappers.h"
+#include <boost/utility.hpp>
+#include <objectList.h>
+#include <clasp/core/wrappers.h>
 
 namespace core {
 
@@ -48,7 +48,7 @@ namespace core {
 
 
 #define	SIGNAL_EXPOSE_CONVERSION_FUNCTIONS
-#include "initSignals.inc"
+#include <initSignals.inc>
 #undef	SIGNAL_EXPOSE_CONVERSION_FUNCTIONS
 
 
@@ -434,7 +434,7 @@ class	Model_Expose : public Exposer
     { // Don't mess with this include
         boost::python::enum_<uint>("Signal")
 #define	SIGNAL_EXPOSE_TO_BOOST_PYTHON
-#include "initSignals.inc"
+#include <initSignals.inc>
 #undef	SIGNAL_EXPOSE_TO_BOOST_PYTHON
 	;
     }

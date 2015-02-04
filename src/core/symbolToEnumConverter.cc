@@ -27,17 +27,17 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_FULL
 
 
-#include "foundation.h"
-#include "lisp.h"
-#include "symbolToEnumConverter.h"
-#include "hashTableEq.h"
-#include "environment.h"
-#include "hashTableEql.h"
-#include "binder.h"
-#include "lisp.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/symbolToEnumConverter.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/binder.h>
+#include <clasp/core/lisp.h>
 
 // last include is wrappers.h
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

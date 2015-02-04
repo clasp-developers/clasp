@@ -27,14 +27,14 @@ THE SOFTWARE.
 #include <boost/mpl/list.hpp>
 
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/builtInClass.h"
-#include "sockets/socketsPackage.h"
-#include "sockets/sockets.h"
-#include "core/str.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/sockets/socketsPackage.h>
+#include <clasp/sockets/sockets.h>
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace sockets
@@ -43,7 +43,7 @@ namespace sockets
 #define EXPOSE_TO_CANDO
 #define Use_SocketsPkg
 #define EXTERN_REGISTER
-#include "sockets_initClasses_inc.h"
+#include <sockets_initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_SocketsPkg
 #undef EXPOSE_TO_CANDO
@@ -63,7 +63,7 @@ namespace sockets
 #pragma GCC visibility push(default)
 #define SocketsPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/sockets/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -77,7 +77,7 @@ namespace sockets
 	{
 #define SocketsPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
-#include "sockets/symbols_scraped_inc.h"
+#include <clasp/sockets/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS
 
@@ -85,7 +85,7 @@ namespace sockets
 #define ALL_STAGES
 #define Use_SocketsPkg
 #define INVOKE_REGISTER
-#include "sockets_initClasses_inc.h"
+#include <sockets_initClasses_inc.h>
 #undef INVOKE_REGISTER
 #undef Use_SocketsPkg
 #undef ALL_STAGES
@@ -131,7 +131,7 @@ namespace sockets
     INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include "sockets_initClasses_inc.h"
+#include <sockets_initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

@@ -41,26 +41,26 @@ THE SOFTWARE.
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Frontend/FrontendActions.h>
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/str.h"
-#include "core/lispStream.h"
-#include <core/package.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/str.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/package.h>
 
-#include "llvmo/translators.h"
-#include "translators.h"
-#include "symbolTable.h"
+#include <clasp/llvmo/translators.h>
+#include <clasp/asttooling/translators.h>
+#include <clasp/asttooling/symbolTable.h>
 
 //
 // This needs to be before clbind is included
 //
 #ifdef USE_MPS
 #define NAMESPACE_clbind_clang
-#include "main/gc_interface.h"
+#include <clasp/main/gc_interface.h>
 #undef NAMESPACE_clbind_clang
 #endif
 
-#include "clbind/clbind.h"
+#include <clasp/clbind/clbind.h>
 
 
 

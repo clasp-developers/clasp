@@ -26,10 +26,10 @@ THE SOFTWARE.
 /* -^- */
 #include <string>
 #include <map>
-#include "foundation.h"
-#include "package.h"
-#include "str.h"
-#include "allClSymbols.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/package.h>
+#include <clasp/core/str.h>
+#include <clasp/core/allClSymbols.h>
 
 #ifdef DEBUG_CL_SYMBOLS
 

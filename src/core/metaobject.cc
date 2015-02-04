@@ -26,12 +26,12 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "lisp.h"
-#include "standardObject.h"
-#include "symbolTable.h"
-#include "evaluator.h"
-#include "metaobject.h"
-#include "wrappers.h"
+#include <clasp/core/lisp.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/metaobject.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core

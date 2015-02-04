@@ -25,11 +25,11 @@ THE SOFTWARE.
 */
 /* -^- */
 #include <stdio.h>
-#include <core/foundation.h>
-#include <core/object.h>
-#include <core/holder.h>
-#include <core/str.h>
-#include <asttooling/testAST.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/holder.h>
+#include <clasp/core/str.h>
+#include <clasp/asttooling/testAST.h>
 
 
 #if 0

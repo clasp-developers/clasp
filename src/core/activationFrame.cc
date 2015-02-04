@@ -25,12 +25,12 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "foundation.h"
-#include "object.h"
-#include "activationFrame.h"
-#include "core/lispVector.h"
-#include "lambdaListHandler.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/lispVector.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/wrappers.h>
 
 
 

@@ -20,13 +20,14 @@
 
 (defun rewrite-file-with-includes (old-path rewrites &key testing)
   "Return the name of the new file"
+  (format t "rewrite-file-with-includes: ~a~%" old-path)
   (let* ((source-dir (make-pathname :directory (pathname-directory old-path)))
 	 (old-type (pathname-type old-path))
 	 (new-path (make-pathname :type (concatenate 'string old-type "-new") :defaults old-path)))
     (with-open-file (sout new-path :direction :output)
       (with-open-file (sin old-path)
-	(loop for line = (read-line sin nil 'foo)
-	   until (eq line 'foo)
+	(loop for line = (read-line sin nil 'all-done)
+	   until (eq line 'all-done)
 	   do (let ((match (regex-match *include-regex* line)))
 		(if (regex-match-matched match 0)
 		    (let* ((rel-path (regex-match-part match 1))
@@ -90,12 +91,13 @@
 		      (merge-pathnames include-path base-path))
 		     (t (warn "Do something")))))
     (if (probe-file new-path)
-	(enough-namestring new-path relative-to)
+	(let ((inc (enough-namestring new-path relative-to)))
+	  (make-pathname :directory (remove-if (lambda (x) (string-equal "src" x)) (pathname-directory inc)) :defaults inc))
 	(namestring include-path))))
 
 (defun generate-rewrites (includes-table)
   (let ((includes-rewrites (make-hash-table :test #'equalp)))
-    (maphash (lambda (orig v) 
+    (maphash (lambda (orig v)
 	       (let ((fix (fix-include orig 
 				       #P"/Users/meister/Development/clasp/src/"
 				       #P"/Users/meister/Development/")))
@@ -114,7 +116,7 @@
 
 (defun rewrite-all (source-files rewrites &key testing)
   (dolist (file source-files)
-    (format t "Rewriting ~a~%" file)
+    ;;(format t "Rewriting ~a~%" file)
     (rewrite-file-with-includes file rewrites :testing testing)))
 
 
@@ -125,10 +127,12 @@
 (defparameter *source-files* nil)
 (defparameter *rewrites* nil)
 
-(multiple-value-setq (*source-files* *rewrites*)
-  (search-and-generate-rewrites))
+(defun do-all (&key testing)
+  (multiple-value-setq (*source-files* *rewrites*)
+    (search-and-generate-rewrites))
+  (rewrite-all *source-files* *rewrites* :testing t))
 
-(rewrite-all *source-files* *rewrites* :testing t)
+(print "Hello")
 
-;;(rewrite-file-with-includes #P"/Users/meister/Development/clasp/src/main/main.cc" rewrites)
+(do-all)
 

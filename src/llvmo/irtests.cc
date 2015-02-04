@@ -25,9 +25,9 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "core/common.h"
-#include "llvmo/llvmoPackage.h"
-#include "intrinsics.h"
+#include <clasp/core/common.h>
+#include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/llvmo/intrinsics.h>
 
 
 namespace llvmo

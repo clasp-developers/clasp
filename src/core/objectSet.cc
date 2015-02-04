@@ -25,13 +25,13 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "objectSet.h"
-#include "environment.h"
-#include "multipleValues.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/objectSet.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/wrappers.h>
 
 
 

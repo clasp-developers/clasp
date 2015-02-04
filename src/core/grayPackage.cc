@@ -25,13 +25,13 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "foundation.h"
-#include "object.h"
-#include "lisp.h"
-#include "symbol.h"
-#include "grayPackage.h"
-#include "multipleValues.h"
-#include "package.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/grayPackage.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/package.h>
 
 namespace gray
 {
@@ -39,7 +39,7 @@ namespace gray
 #pragma GCC visibility push(default)
 #define GrayPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/core/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GrayPkg_SYMBOLS
 #pragma GCC visibility pop

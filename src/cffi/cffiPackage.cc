@@ -27,14 +27,14 @@ THE SOFTWARE.
 #include <boost/mpl/list.hpp>
 
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/builtInClass.h"
-#include "cffi/cffiPackage.h"
-#include "cffi.h"
-#include "core/str.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/cffi/cffiPackage.h>
+#include <clasp/cffi/cffi.h>
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace cffi
@@ -43,7 +43,7 @@ namespace cffi
 #define EXPOSE_TO_CANDO
 #define Use_CffiPkg
 #define EXTERN_REGISTER
-#include "cffi_initClasses_inc.h"
+#include <cffi_initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_CffiPkg
 #undef EXPOSE_TO_CANDO
@@ -63,7 +63,7 @@ namespace cffi
 #pragma GCC visibility push(default)
 #define CffiPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/cffi/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CffiPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -77,7 +77,7 @@ namespace cffi
 	{
 #define CffiPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
-#include "cffi/symbols_scraped_inc.h"
+#include <clasp/cffi/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CffiPkg_SYMBOLS
 
@@ -86,7 +86,7 @@ namespace cffi
 #define Use_CffiPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(s,p) DEFAULT_LOOKUP_SYMBOL(s,p)
-#include "cffi_initClasses_inc.h"
+#include <cffi_initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_CffiPkg
@@ -144,7 +144,7 @@ namespace cffi
     INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include "cffi_initClasses_inc.h"
+#include <cffi_initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif

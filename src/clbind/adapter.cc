@@ -24,11 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include <core/foundation.h>
-#include <core/package.h>
-#include <clbind/cl_include.h>
-#include <clbind/adapter.h>
-#include <core/wrappers.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/package.h>
+#include <clasp/clbind/cl_include.h>
+#include <clasp/clbind/adapter.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace clbind

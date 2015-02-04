@@ -27,12 +27,12 @@ THE SOFTWARE.
 
 #include <errno.h>
 #include <sys/select.h>
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/externalObject.h"
-#include "symbolTable.h"
-#include "serveEventPackage.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/externalObject.h>
+#include <clasp/serveEvent/symbolTable.h>
+#include <clasp/serveEvent/serveEventPackage.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace serveEvent {

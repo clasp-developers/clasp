@@ -49,16 +49,16 @@ THE SOFTWARE.
 #ifndef MSG_EOR
 #define MSG_EOR 0
 #endif
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/str.h"
-#include "core/symbolTable.h"
-#include "core/lispStream.h"
-#include "core/evaluator.h"
-#include "core/lispVector.h"
-#include "socketsPackage.h"
-#include "symbolTable.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/str.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/lispVector.h>
+#include <clasp/sockets/socketsPackage.h>
+#include <clasp/sockets/symbolTable.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace sockets {

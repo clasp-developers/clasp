@@ -24,11 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "core/foundation.h"
-#include "gcweak.h"
-#include "core/object.h"
+#include <clasp/core/foundation.h>
+#include <clasp/gctools/gcweak.h>
+#include <clasp/core/object.h>
 #ifdef USE_MPS
-#include "mps/code/mps.h"
+#include <clasp/mps/code/mps.h>
 #endif
 
 namespace gctools {

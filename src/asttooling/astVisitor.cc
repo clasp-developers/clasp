@@ -29,16 +29,16 @@ THE SOFTWARE.
 #include <clang/Tooling/Refactoring.h>
 
 
-#include <core/foundation.h>
-#include <core/object.h>
-#include <core/evaluator.h>
-#include <core/translators.h>
-#include <core/wrappers.h>
-#include <clbind/clbind_wrappers.h>
-#include <llvmo/translators.h>
-#include <asttooling/symbolTable.h>
-#include <asttooling/translators.h>
-#include <asttooling/astVisitor.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/translators.h>
+#include <clasp/core/wrappers.h>
+#include <clasp/clbind/clbind_wrappers.h>
+#include <clasp/llvmo/translators.h>
+#include <clasp/asttooling/symbolTable.h>
+#include <clasp/asttooling/translators.h>
+#include <clasp/asttooling/astVisitor.h>
 
 
 namespace asttooling {

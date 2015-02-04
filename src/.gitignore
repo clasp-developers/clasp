@@ -10,7 +10,6 @@
 *.o-min-rc
 *.ll-min-rc
 *.pyc
-symbols_scraped_inc.h
 _symbolTableAfterBuild.txt
 symbols_scraped.txt
 symbols_scraped_sorted.txt

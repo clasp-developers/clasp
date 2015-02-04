@@ -31,27 +31,27 @@ THE SOFTWARE.
 #include <boost/algorithm/string.hpp>
 #pragma clang diagnostic pop
 #include <string>
-#include "core/common.h"
-#include "core/corePackage.h"
-#include "core/pathname.h"
-#include "character.h"
-#include "symbolTable.h"
-#include "numbers.h"
-#include "arguments.h"
-#include "package.h"
-#include "lispDefinitions.h"
-#include "hashTableEql.h"
-#include "hashTableEq.h"
-#include "multipleValues.h"
-#include "evaluator.h"
-#include "lispStream.h"
-#include "str.h"
-#include "specialForm.h"
-#include "cons.h"
+#include <clasp/core/common.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/character.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/package.h>
+#include <clasp/core/lispDefinitions.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/str.h>
+#include <clasp/core/specialForm.h>
+#include <clasp/core/cons.h>
 //#include "lisp_ParserExtern.h"
-#include "lispReader.h"
-#include "readtable.h"
-#include "wrappers.h"
+#include <clasp/core/lispReader.h>
+#include <clasp/core/readtable.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {

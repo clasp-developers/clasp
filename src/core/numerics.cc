@@ -29,18 +29,18 @@ THE SOFTWARE.
 #include <float.h>
 #include <math.h>
 
-#include "lisp.h"
-#include "numerics.h"
+#include <clasp/core/lisp.h>
+#include <clasp/core/numerics.h>
 #ifdef	darwin
 #include <stdint.h>
 #include <mach/mach_time.h>
 #else
 #include <time.h>
 #endif
-#include "core/bignum.h"
+#include <clasp/core/bignum.h>
 #include <boost/random.hpp>
-#include "symbolTable.h"
-#include "wrappers.h"
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

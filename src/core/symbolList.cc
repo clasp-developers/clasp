@@ -31,14 +31,14 @@ THE SOFTWARE.
 // (C) 2004 Christian E. Schafmeister
 //
 
-#include "common.h"
-#include "lisp.h"
-#include "object.h"
-#include "metaClass.h"
-#include "str.h"
-#include "symbolList.h"
-#include "symbolSet.h"
-#include "wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/object.h>
+#include <clasp/core/metaClass.h>
+#include <clasp/core/str.h>
+#include <clasp/core/symbolList.h>
+#include <clasp/core/symbolSet.h>
+#include <clasp/core/wrappers.h>
 
 #define GCINFO_KIND_GCVECTOR_gctools__GCVector_moveable_class_mem__smart_ptr_class_core__Symbol_O__
 #include GC_INTERFACE_HEADER

@@ -26,14 +26,14 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "boost/format.hpp"
-#include "common.h"
-#include "numbers.h"
-#include "symbol.h"
-#include "conditions.h"
-#include "hashTable.h"
-#include "bignum.h"
-#include "wrappers.h"
+#include <boost/format.hpp>
+#include <clasp/core/common.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/conditions.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/wrappers.h>
 
 
 

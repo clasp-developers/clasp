@@ -48,18 +48,18 @@ THE SOFTWARE.
 
 #define CLBIND_BUILDING
 
-#include <core/foundation.h>
-#include <core/object.h>
-#include "core/hashTableEql.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/hashTableEql.h>
 
-#include <clbind/cl_include.h>
+#include <clasp/clbind/cl_include.h>
 
-#include <clbind/clbind.h>
-#include <clbind/symbolTable.h>
-#include <clbind/class_registry.h>
-#include <clbind/class_rep.h>
-//#include <clbind/detail/operator_id.h>
-#include <core/wrappers.h>
+#include <clasp/clbind/clbind.h>
+#include <clasp/clbind/symbolTable.h>
+#include <clasp/clbind/class_registry.h>
+#include <clasp/clbind/class_rep.h>
+//#include <clasp/clbind/detail/operator_id.h>
+#include <clasp/core/wrappers.h>
 namespace clbind {
 
     CLBIND_API void push_instance_metatable();

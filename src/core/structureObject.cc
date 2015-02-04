@@ -26,18 +26,18 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "lisp.h"
-#include "structureObject.h"
-#include "symbolTable.h"
-#include "numbers.h"
-#include "evaluator.h"
-#include "str.h"
-#include "builtInClass.h"
-#include "sysprop.h"
-#include "instance.h"
-#include "structureClass.h"
-#include "primitives.h"
-#include "wrappers.h"
+#include <clasp/core/lisp.h>
+#include <clasp/core/structureObject.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/str.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/sysprop.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core

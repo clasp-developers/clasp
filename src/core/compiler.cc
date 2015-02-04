@@ -30,25 +30,25 @@ THE SOFTWARE.
 // #define EXPOSE_DLOPEN
 // #define EXPOSE_DLLOAD
 #define	DEBUG_LEVEL_FULL
-#include "dlfcn.h"
-#include "core/common.h"
-#include "core/environment.h"
-#include "fileSystem.h"
-#include "lightProfiler.h"
-#include "designators.h"
-#include "evaluator.h"
-#include "symbolTable.h"
-#include "core/str.h"
-#include "compiler.h"
-#include "sequence.h"
-#include "pathname.h"
-#include "unixfsys.h"
-#include "lambdaListHandler.h"
-#include "multipleValues.h"
-#include "activationFrame.h"
-#include "pointer.h"
-#include "environment.h"
-#include "core/wrappers.h"
+#include <dlfcn.h>
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/lightProfiler.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/str.h>
+#include <clasp/core/compiler.h>
+#include <clasp/core/sequence.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/unixfsys.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/wrappers.h>
 
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>

@@ -1,9 +1,9 @@
 
 
 
-ifneq ($(CLASP_BUILD_TARGET_DIR),)
-  CLASP_BOEHM = $(CLASP_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o
-  CLASP_MPS = $(CLASP_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_mps_o
+ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
+  CLASP_BOEHM = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_boehm_o
+  CLASP_MPS = $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)/clasp_mps_o
 else
   CLASP_BOEHM = clasp_boehm_o
   CLASP_MPS = clasp_mps_o
@@ -49,7 +49,7 @@ mps-recompile:
 	make full-mps
 
 min-mps:
-	$(CLASP_MPS) -I -f ecl-min -l "buildClaspMinBoot.lsp"
+	$(CLASP_MPS) -I -f ecl-min -l "buildClaspMinMps.lsp"
 
 min-mps-recompile:
 	$(CLASP_MPS) -f ecl-min -l "buildClaspMinRecompile.lsp"

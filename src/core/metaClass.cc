@@ -35,24 +35,24 @@ THE SOFTWARE.
 #include <boost/graph/vector_as_graph.hpp>
 #include <boost/graph/topological_sort.hpp>
 #pragma clang diagnostic pop
-#include "foundation.h"
-#include "lisp.h"
-#include "metaClass.h"
-#include "package.h"
-#include "pointer.h"
-#include "symbolTable.h"
-#include "cons.h"
-#include "lambdaListHandler.h"
-#include "core/lispList.h"
-#include "core/vectorObjectsWithFillPtr.h"
-#include "instance.h"
-#include "evaluator.h"
-#include "hashTable.h"
-#include "builtInClass.h"
-#include "standardClass.h"
-#include "funcallableStandardClass.h"
-#include "structureClass.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/metaClass.h>
+#include <clasp/core/package.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/vectorObjectsWithFillPtr.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/funcallableStandardClass.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/core/wrappers.h>
 
 
 #define NAMESPACE_gctools_mem

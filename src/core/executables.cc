@@ -25,26 +25,26 @@ THE SOFTWARE.
 */
 /* -^- */
 #define	DEBUG_LEVEL_FULL
-#include "foundation.h"
-#include "executables.h"
-#include "lisp.h"
-#include "str.h"
-#include "symbolTable.h"
-#include "standardObject.h"
-#include "package.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/str.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/package.h>
 //#include "debugger.h"
-#include "iterator.h"
-#include "designators.h"
-#include "primitives.h"
-#include "vectorObjects.h"
-#include "sourceFileInfo.h"
-#include "activationFrame.h"
-#include "lambdaListHandler.h"
+#include <clasp/core/iterator.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/lambdaListHandler.h>
 //#i n c l u d e "environmentDependent.h"
-#include "environment.h"
-#include "evaluator.h"
+#include <clasp/core/environment.h>
+#include <clasp/core/evaluator.h>
 // to avoid Generic to_object include headers here
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 

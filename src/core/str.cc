@@ -28,18 +28,18 @@ THE SOFTWARE.
 
 //#include "clasp_gmpxx.h"
 #include <ctype.h>
-#include "core/common.h"
-#include "core/environment.h"
-#include "symbolTable.h"
-#include "core/designators.h"
-#include "core/character.h"
-#include "bignum.h"
-#include "multipleValues.h"
-#include "str.h"
-#include "print.h"
-#include "lispStream.h"
-#include "hashTable.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/character.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/str.h>
+#include <clasp/core/print.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {

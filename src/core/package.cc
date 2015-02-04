@@ -26,25 +26,25 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "core/foundation.h"
+#include <clasp/core/foundation.h>
 #ifdef DEBUG_CL_SYMBOLS
-#include "allClSymbols.h"
+#include <clasp/core/allClSymbols.h>
 #endif
-#include "core/symbol.h"
-#include "core/common.h"
-#include "core/corePackage.h"
-#include "package.h"
-#include "symbolTable.h"
-#include "designators.h"
-#include "symbolSet.h"
-#include "hashTableEql.h"
-#include "hashTableEqual.h"
-#include "bignum.h"
-#include "str.h"
-#include "multipleValues.h"
+#include <clasp/core/symbol.h>
+#include <clasp/core/common.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/package.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/symbolSet.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/str.h>
+#include <clasp/core/multipleValues.h>
 
 // last include is wrappers.h
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 namespace core

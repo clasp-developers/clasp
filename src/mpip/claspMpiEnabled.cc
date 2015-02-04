@@ -27,4 +27,4 @@ THE SOFTWARE.
 
 
 #define	USE_MPI
-#include "claspMpi.cc"
+#include <clasp/mpip/claspMpi.cc>

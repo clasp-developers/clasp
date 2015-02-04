@@ -48,7 +48,7 @@ THE SOFTWARE.
 
 #define CLBIND_BUILDING
 
-#include <clbind/link_compatibility.h>
+#include <clasp/clbind/link_compatibility.h>
 
 namespace clbind { namespace detail
 {

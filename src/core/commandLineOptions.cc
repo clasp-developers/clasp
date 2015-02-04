@@ -26,10 +26,10 @@ THE SOFTWARE.
 /* -^- */
 
 #include <iostream>
-#include "foundation.h"
-#include "object.h"
-#include "boost/program_options.hpp"
-#include "commandLineOptions.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <boost/program_options.hpp>
+#include <clasp/core/commandLineOptions.h>
 
 namespace core
 {

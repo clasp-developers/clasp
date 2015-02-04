@@ -26,20 +26,20 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/instance.h"
-#include "core/primitives.h"
-#include "core/evaluator.h"
-#include "core/multipleValues.h"
-#include "core/str.h"
-#include "core/predicates.h"
-#include "core/vectorObjectsWithFillPtr.h"
-#include "core/cache.h"
-#include "symbolTable.h"
-#include "genericFunction.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/str.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/vectorObjectsWithFillPtr.h>
+#include <clasp/core/cache.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/genericFunction.h>
+#include <clasp/core/wrappers.h>
 
 #define CACHE_METHOD_LOOKUP
 
@@ -175,6 +175,31 @@ In ecl/src/c/interpreter.d  is the following code
 	}
 	methods = eval::funcall(clos::_sym_std_compute_effective_method,igf,gf->GFUN_COMB(),methods);
 	return(Values(methods,_lisp->_true()));
+    }
+
+
+#define ARGS_core_maybeExpandGenericFunctionArguments "(args)"
+#define DECL_core_maybeExpandGenericFunctionArguments ""
+#define DOCS_core_maybeExpandGenericFunctionArguments "maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame"
+    T_sp core_maybeExpandGenericFunctionArguments(T_sp args)
+    {
+	if ( cl_consp(args) ) {
+	    T_sp first = oCar(args);
+	    if ( first.nilp() ) {
+		return args;
+	    } else if ( first.framep() ) {
+		Cons_sp expanded = _Nil<Cons_O>();
+		core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(first.px));
+		frame::ElementType* values(frame::ValuesArray(frameImpl));
+		for ( int i(0), iEnd(frame::ValuesArraySize(frameImpl)); i<iEnd; ++i ) {
+		    expanded = Cons_O::create(gctools::smart_ptr<T_O>(values[i]),expanded);
+		}
+		return cl_nreverse(expanded);
+	    } else {
+		SIMPLE_ERROR(BF("Handle %s") % _rep_(first));
+	    }
+	}
+	return args;
     }
 
 
@@ -425,6 +450,7 @@ T_mv notFuncallableDispatch( Instance_sp gf)
     {
 	SYMBOL_SC_(ClosPkg,clearGfunHash);
 	Defun(clearGfunHash);
+	CoreDefun(maybeExpandGenericFunctionArguments);
     }
 
 

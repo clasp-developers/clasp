@@ -24,18 +24,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "foundation.h"
-#include "stacks.h"
-#include "object.h"
-#include "cons.h"
-#include "symbolTable.h"
-#include "lispStream.h"
-#include "evaluator.h"
-#include "designators.h"
-#include "str.h"
-#include "sourceFileInfo.h"
-#include "symbol.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/stacks.h>
+#include <clasp/core/object.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/str.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {

@@ -26,26 +26,26 @@ THE SOFTWARE.
 /* -^- */
 
 #define	DEBUG_LEVEL_FULL
-#include "core/common.h"
-#include "core/environment.h"
-#include "symbolTable.h"
-#include "core/hashTableEql.h"
-#include "core/evaluator.h"
-#include "core/character.h"
-#include "core/str.h"
-#include "core/bitVector.h"
-#include "core/package.h"
-#include "core/predicates.h"
-#include "core/multipleValues.h"
-#include "core/designators.h"
-#include "core/lispStream.h"
-#include "core/vectorObjects.h"
-#include "core/lispReader.h"
-#include "core/pathname.h"
-#include "core/primitives.h"
-#include "core/arguments.h"
-#include "readtable.h"
-#include "core/wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/character.h>
+#include <clasp/core/str.h>
+#include <clasp/core/bitVector.h>
+#include <clasp/core/package.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/lispReader.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/readtable.h>
+#include <clasp/core/wrappers.h>
 namespace core
 {
 

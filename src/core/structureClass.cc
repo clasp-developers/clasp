@@ -26,15 +26,15 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "foundation.h"
-#include "structureClass.h"
-#include "lisp.h"
-#include "evaluator.h"
-#include "builtInClass.h"
-#include "standardObject.h"
-#include "package.h"
-#include "lambdaListHandler.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/package.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {

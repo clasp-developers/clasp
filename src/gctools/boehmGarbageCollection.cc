@@ -26,11 +26,11 @@ THE SOFTWARE.
 /* -^- */
 
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/numbers.h"
-#include "gctoolsPackage.h"
-#include "boehmGarbageCollection.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/numbers.h>
+#include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/gctools/boehmGarbageCollection.h>
 
 
 

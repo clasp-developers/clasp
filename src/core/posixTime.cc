@@ -32,14 +32,14 @@ THE SOFTWARE.
 # include <sys/resource.h>
 #endif
 
-#include "common.h"
-#include "posixTime.h"
-#include "symbolTable.h"
-#include "multipleValues.h"
-#include "lisp.h"
+#include <clasp/core/common.h>
+#include <clasp/core/posixTime.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/lisp.h>
 #
 // last include is wrappers.h
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

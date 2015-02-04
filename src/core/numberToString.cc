@@ -38,14 +38,14 @@ THE SOFTWARE.
 */
 
 #include <float.h>
-#include "foundation.h"
-#include "object.h"
-#include "strWithFillPtr.h"
-#include "numbers.h"
-#include "symbolTable.h"
-#include "bignum.h"
-#include "numberToString.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/numberToString.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

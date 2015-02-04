@@ -26,17 +26,17 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "useBoostPython.h"
-#include "common.h"
-#include "symbol.h"
-#include "str.h"
-#include "symbolTable.h"
-#include "hashTable.h"
-#include "numbers.h"
-#include "lispList.h"
-#include "package.h"
-#include "lisp.h"
-#include "wrappers.h"
+#include <clasp/core/useBoostPython.h>
+#include <clasp/core/common.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/str.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/package.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/wrappers.h>
 
 // Print more information about the symbol
 #define	VERBOSE_SYMBOLS	0

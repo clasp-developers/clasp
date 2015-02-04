@@ -201,14 +201,14 @@ THE SOFTWARE.
 #include<vector>
 #include <istream>
 
-#include "foundation.h"
-#include "object.h"
-#include "aggregate.h"
-#include "molecule.h"
-#include "residue.h"
-#include "atom.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <aggregate.h>
+#include <molecule.h>
+#include <residue.h>
+#include <atom.h>
 
-#include "chemInfo.h"
+#include <chemInfo.h>
 
 using namespace std;
 using namespace core;
@@ -220,7 +220,7 @@ stringstream	chemInfoErrorStream;
 istream*	lexStream;		
 // This defines the stream that we are reading from
 
-#include "hold.h"
+#include <hold.h>
 
 #define	LEXDEBUG	1
 

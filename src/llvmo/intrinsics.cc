@@ -27,32 +27,32 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
 extern "C" {
-#include "mps/code/mps.h"
+#include <clasp/mps/code/mps.h>
 };
 #endif
-#include "core/foundation.h"
-#include "core/common.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/common.h>
 //#include "core/debugger.h"
-#include "core/bignum.h"
-#include "core/character.h"
-#include "core/symbolTable.h"
-#include "core/arrayObjects.h"
-#include "core/vectorObjects.h"
-#include "core/arguments.h"
-#include "core/designators.h"
-#include "core/compPackage.h"
-#include "core/package.h"
-#include "core/hashTable.h"
-#include "core/evaluator.h"
-#include "core/sourceFileInfo.h"
-#include "core/loadTimeValues.h"
-#include "core/multipleValues.h"
-#include "core/activationFrame.h"
-#include "core/vectorObjectsWithFillPtr.h"
-#include "core/str.h"
-#include "symbolTable.h"
-#include "llvmoExpose.h"
-#include "intrinsics.h"
+#include <clasp/core/bignum.h>
+#include <clasp/core/character.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/arrayObjects.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/compPackage.h>
+#include <clasp/core/package.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/loadTimeValues.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/vectorObjectsWithFillPtr.h>
+#include <clasp/core/str.h>
+#include <clasp/llvmo/symbolTable.h>
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/intrinsics.h>
 
 //#define	DEBUG_FLOW_CONTROL	1
 

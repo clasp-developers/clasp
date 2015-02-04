@@ -26,17 +26,17 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
-#include "llvm/IR/Metadata.h"
-#include "llvm/Support/Dwarf.h"
+#include <llvm/IR/Metadata.h>
+#include <llvm/Support/Dwarf.h>
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lisp.h"
-#include "core/symbolToEnumConverter.h"
-#include "llvmo/llvmoPackage.h"
-#include "llvmoDwarf.h"
-#include "llvmo/symbolTable.h"
-#include "core/wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/symbolToEnumConverter.h>
+#include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/llvmo/llvmoDwarf.h>
+#include <clasp/llvmo/symbolTable.h>
+#include <clasp/core/wrappers.h>
 namespace llvmo
 {
 

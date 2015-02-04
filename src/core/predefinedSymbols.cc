@@ -27,8 +27,8 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_FULL
 
 
-#include "foundation.h"
-#include "lisp.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
 
 
 namespace core
@@ -37,14 +37,14 @@ namespace core
 
 
 #define	PredefinedSymbol_storage
-#include "predefinedSymbols_inc.h"
+#include <clasp/core/predefinedSymbols_inc.h>
 
 
 
 void initializeAllPredefinedSymbols(Lisp_sp lisp)
 {_G();
 #define	PredefinedSymbol_code
-#include "predefinedSymbols_inc.h"
+#include <clasp/core/predefinedSymbols_inc.h>
 }
 
 

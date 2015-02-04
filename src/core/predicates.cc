@@ -26,31 +26,31 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/lispList.h"
-#include "core/metaClass.h"
-#include "core/package.h"
-#include "core/bignum.h"
-#include "core/closPackage.h"
-#include "core/bitVector.h"
-#include "core/pathname.h"
-#include "core/hashTable.h"
-#include "core/vectorObjects.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/metaClass.h>
+#include <clasp/core/package.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/closPackage.h>
+#include <clasp/core/bitVector.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/vectorObjects.h>
 //#ifndef CLOS
-#include "core/structureObject.h"
+#include <clasp/core/structureObject.h>
 //#else
-#include "core/instance.h"
+#include <clasp/core/instance.h>
 //#endif
-#include "core/readtable.h"
-#include "core/lambdaListHandler.h"
-#include "core/singleDispatchGenericFunction.h"
-#include "core/numbers.h"
-#include "core/externalObject.h"
-#include "core/lispStream.h"
-#include "core/fileSystem.h"
-#include "core/str.h"
-#include "core/wrappers.h"
+#include <clasp/core/readtable.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/singleDispatchGenericFunction.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/externalObject.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 
 namespace core

@@ -26,12 +26,12 @@ THE SOFTWARE.
 /* -^- */
 
 
-#include "foundation.h"
-#include "hashTableEql.h"
-#include "multipleValues.h"
-#include "symbol.h"
-#include "sysprop.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/sysprop.h>
+#include <clasp/core/wrappers.h>
 
 
 

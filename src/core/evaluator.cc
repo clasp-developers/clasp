@@ -26,35 +26,35 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 //#include "core/foundation.h"
-#include "core/common.h"
-#include "core/corePackage.h"
-#include "evaluator.h"
-#include "iterator.h"
-#include "metaClass.h"
-#include "core/array.h"
-#include "symbolTable.h"
-#include "hashTable.h"
-#include "specialForm.h"
+#include <clasp/core/common.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/iterator.h>
+#include <clasp/core/metaClass.h>
+#include <clasp/core/array.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/specialForm.h>
 //#i n c l u d e "setfExpander.h"
-#include "environment.h"
-#include "executables.h"
-#include "designators.h"
-#include "builtInClass.h"
-#include "lambdaListHandler.h"
-#include "vectorObjects.h"
-#include "predicates.h"
-#include "standardClass.h"
-#include "standardObject.h"
-#include "predicates.h"
-#include "lisp.h"
-#include "backquote.h"
-#include "sysprop.h"
-#include "conditions.h"
-#include "multipleValues.h"
-#include "primitives.h"
+#include <clasp/core/environment.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/standardClass.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/backquote.h>
+#include <clasp/core/sysprop.h>
+#include <clasp/core/conditions.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/primitives.h>
 //#include "debugger.h"
-#include "str.h"
-#include "wrappers.h"
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {
@@ -1729,7 +1729,25 @@ namespace core
             T_sp* a = args->argArray();
             switch (nargs) {
 #define APPLY_TO_ACTIVATION_FRAME
-#include "applyToActivationFrame.h"
+		
+#ifdef BUILDING_CLASP
+#  include <applyToActivationFrame.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/debug/boehm/applyToActivationFrame.h>
+#    else
+#      include <clasp/core/generated/debug/mps/applyToActivationFrame.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/release/boehm/applyToActivationFrame.h>
+#    else
+#      include <clasp/core/generated/release/mps/applyToActivationFrame.h>
+#    endif
+#  endif
+#endif
+
 #undef APPLY_TO_ACTIVATION_FRAME
             default:
 		MultipleValues* _mvP = _lisp->callArgs();
@@ -1749,7 +1767,23 @@ namespace core
             T_O** a = frame::ValuesArray(frameImpl);
             switch (nargs) {
 #define APPLY_TO_TAGGED_FRAME
-#include "applyToActivationFrame.h"
+#ifdef BUILDING_CLASP
+#  include <applyToActivationFrame.h>
+#else
+#  ifdef USE_CLASP_DEBUG
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/debug/boehm/applyToActivationFrame.h>
+#    else
+#      include <clasp/core/generated/debug/mps/applyToActivationFrame.h>
+#    endif
+#  else
+#    ifdef USE_CLASP_BOEHM
+#      include <clasp/core/generated/release/boehm/applyToActivationFrame.h>
+#    else
+#      include <clasp/core/generated/release/mps/applyToActivationFrame.h>
+#    endif
+#  endif
+#endif
 #undef APPLY_TO_TAGGED_FRAME
             default:
 		MultipleValues* _mvP = _lisp->callArgs();
@@ -1799,44 +1833,79 @@ namespace core
 #define DOCS_cl_apply "apply"
     T_mv cl_apply(T_sp head, T_sp args)
     {_G();
-	/* Special case when apply is called with one arg and that arg is an ActivationFrame
-	   APPLY directly to that ActivationFrame */
 	int lenArgs = cl_length(args);
 	if ( lenArgs == 0 ) {
 	    SIMPLE_ERROR(BF("Illegal number of arguments %d") % lenArgs );
 	}
-	if ( lenArgs == 1 && oCar(args).notnilp() )
-	{
-	    T_sp onlyArg = oCar(args);
-	    Function_sp func = coerce::functionDesignator(head);
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(head);
-            } else if ( onlyArg.framep() ) {
-		return eval::applyToStackFrame(func,onlyArg);
-	    } else if ( ActivationFrame_sp singleFrame = onlyArg.asOrNull<ActivationFrame_O>() ) {
-		return eval::applyToActivationFrame(func,singleFrame);
-	    }
-	}
 	T_sp last = oCar(cl_last(args));
-	if ( !cl_listp(last) ) {
-	    SIMPLE_ERROR(BF("Last argument is not a list"));
+	if ( last.nilp() ) {
+	    // Nil as last argument
+	    int nargs = lenArgs-1;
+	    ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	    T_sp obj = args;
+	    for ( int i(0); i<nargs; ++i ) {
+		frame->operator[](i) = oCar(obj);
+		obj = oCdr(obj);
+	    }
+	    Function_sp func = coerce::functionDesignator(head);
+	    return eval::applyToActivationFrame(func,frame);
+	} else if ( last.framep() ) {
+	    // Frame as last argument
+	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(last.px));
+	    int lenFirst = lenArgs-1;
+	    int lenRest = frame::ValuesArraySize(frameImpl);
+	    int nargs = lenFirst + lenRest;
+	    ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	    T_sp obj = args;
+	    for ( int i(0); i<lenFirst; ++i ) {
+		frame->operator[](i) = oCar(obj);
+		obj = oCdr(obj);
+	    }
+	    frame::ElementType* tailValues(frame::ValuesArray(frameImpl));
+	    int idx=0;
+	    for ( int i(lenFirst); i<nargs; ++i ) {
+		frame->operator[](i) = tailValues[idx];
+		++idx;
+	    }
+	    Function_sp func = coerce::functionDesignator(head);
+	    return eval::applyToActivationFrame(func,frame);
+	} else if ( Cons_sp cargs = last.as<Cons_O>() ) {
+	    // Cons as last argument
+	    int lenFirst = lenArgs-1;
+	    int lenRest = cl_length(last);
+	    int nargs = lenFirst + lenRest;
+	    ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	    T_sp obj = args;
+	    for ( int i(0); i<lenFirst; ++i ) {
+		frame->operator[](i) = oCar(obj);
+		obj = oCdr(obj);
+	    }
+	    for ( int i(lenFirst); i<nargs; ++i ) {
+		frame->operator[](i) = oCar(cargs);
+		cargs = oCdr(cargs);
+	    }
+	    Function_sp func = coerce::functionDesignator(head);
+	    return eval::applyToActivationFrame(func,frame);
+	} else if ( ActivationFrame_sp af_args = last.as<ActivationFrame_O>() ) {
+	    // ActivationFrame as last argument
+	    int lenFirst = lenArgs-1;
+	    int lenRest = af_args->length();
+	    int nargs = lenFirst + lenRest;
+	    ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
+	    T_sp obj = args;
+	    for ( int i(0); i<lenFirst; ++i ) {
+		frame->operator[](i) = oCar(obj);
+		obj = oCdr(obj);
+	    }
+	    int idx=0;
+	    for ( int i(lenFirst); i<nargs; ++i ) {
+		frame->operator[](i) = (*af_args)[idx];
+		++idx;
+	    }
+	    Function_sp func = coerce::functionDesignator(head);
+	    return eval::applyToActivationFrame(func,frame);
 	}
-	int lenFirst = lenArgs-1;
-	int lenRest = cl_length(last);
-	int nargs = lenFirst + lenRest;
-	ValueFrame_sp frame(ValueFrame_O::create(nargs,_Nil<ActivationFrame_O>()));
-	T_sp obj = args;
-	for ( int i(0); i<lenFirst; ++i ) {
-	    frame->operator[](i) = oCar(obj);
-	    obj = oCdr(obj);
-	}
-        T_sp cur = last;
-	for ( int i(lenFirst); i<nargs; ++i ) {
-	    frame->operator[](i) = oCar(cur);
-	    cur = oCdr(cur);
-	}
-	Function_sp func = coerce::functionDesignator(head);
-	return eval::applyToActivationFrame(func,frame);
+	SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
     }
 
 

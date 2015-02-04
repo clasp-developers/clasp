@@ -26,14 +26,14 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "oclass.h"
-#include "lisp.h"
-#include "evaluator.h"
-#include "standardObject.h"
-#include "package.h"
-#include "lambdaListHandler.h"
-#include "keyedArguments.h"
-#include "wrappers.h"
+#include <oclass.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/package.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <keyedArguments.h>
+#include <clasp/core/wrappers.h>
 
 namespace core
 {

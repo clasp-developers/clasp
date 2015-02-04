@@ -90,17 +90,17 @@ typedef int mode_t;
 
 
 
-#include "foundation.h"
-#include "pathname.h"
-#include "str.h"
-#include "fileSystem.h"
-#include "strWithFillPtr.h"
-#include "symbolTable.h"
-#include "designators.h"
-#include "numbers.h"
-#include "evaluator.h"
-#include "unixfsys.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/str.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/unixfsys.h>
+#include <clasp/core/wrappers.h>
 
 
 SYMBOL_EXPORT_SC_(KeywordPkg,absolute);
@@ -1278,32 +1278,6 @@ si_rmdir(T_sp directory)
 					   kw::_sym_defaults, directory));
 }
 
-T_sp
-si_copy_file(T_sp orig, T_sp dest)
-{
-	FILE *in, *out;
-	int ok = 0;
-	orig = af_coerceToFilename(orig);
-	dest = af_coerceToFilename(dest);
-	brcl_disable_interrupts();
-	in = fopen((char*)orig->c_str(), OPEN_R);
-	if (in) {
-		out = fopen((char*)dest->c_str(), OPEN_W);
-		if (out) {
-			unsigned char *buffer = ecl_alloc_atomic(1024);
-			cl_index size;
-			do {
-				size = fread(buffer, 1, 1024, in);
-				fwrite(buffer, 1, size, out);
-			} while (size == 1024);
-			ok = 1;
-			fclose(out);
-		}
-		fclose(in);
-	}
-	brcl_enable_interrupts();
-	@(return (ok? ECL_T : _Nil<T_O>()))
-}
 
 T_sp
 si_chmod(T_sp file, T_sp mode)
@@ -1328,7 +1302,36 @@ si_chmod(T_sp file, T_sp mode)
 #endif  // working
 
 
-
+#define ARGS_core_copy_file "(orig dest)"
+#define DECL_core_copy_file ""
+#define DOCS_core_copy_file "copy_file"
+ T_sp core_copy_file(T_sp orig, T_sp dest)
+ {
+     FILE *in, *out;
+     int ok = 0;
+     Str_sp sorig = af_coerceToFilename(orig);
+     Str_sp sdest = af_coerceToFilename(dest);
+     brcl_disable_interrupts();
+     in = fopen(sorig->c_str(), "r");
+     if (in) {
+	 out = fopen(sdest->c_str(), "w");
+	 if (out) {
+	     unsigned char *buffer = (unsigned char*)malloc(1024);
+	     cl_index size;
+	     do {
+		 size = fread(buffer, 1, 1024, in);
+		 fwrite(buffer, 1, size, out);
+	     } while (size == 1024);
+	     ok = 1;
+	     fclose(out);
+	     free(buffer);
+	 }
+	 fclose(in);
+     }
+     brcl_enable_interrupts();
+     if ( ok ) return _lisp->_true();
+     return _Nil<T_O>();
+ }
 
 /*
  * dir_files() lists all files which are contained in the current directory and
@@ -1601,6 +1604,7 @@ void initialize_unixfsys()
     ClDefun(directory);
     ClDefun(renameFile);
     CoreDefun(mkstemp);
+    CoreDefun(copy_file);
 };
 
 

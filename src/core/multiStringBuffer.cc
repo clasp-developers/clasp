@@ -27,13 +27,13 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_NONE
 
 #include <string.h>
-#include "common.h"
-#include "multiStringBuffer.h"
-#include "lisp.h"
-#include "environment.h"
+#include <clasp/core/common.h>
+#include <clasp/core/multiStringBuffer.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/environment.h>
 #
 // last include is wrappers.h
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 namespace core {

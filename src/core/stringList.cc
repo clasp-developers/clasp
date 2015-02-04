@@ -31,13 +31,13 @@ THE SOFTWARE.
 // (C) 2004 Christian E. Schafmeister
 //
 
-#include "common.h"
-#include "lisp.h"
-#include "object.h"
-#include "stringList.h"
-#include "stringSet.h"
-#include "str.h"
-#include "wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/object.h>
+#include <clasp/core/stringList.h>
+#include <clasp/core/stringSet.h>
+#include <clasp/core/str.h>
+#include <clasp/core/wrappers.h>
 
 
 

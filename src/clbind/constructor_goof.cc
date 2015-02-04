@@ -28,19 +28,19 @@ THE SOFTWARE.
 
 #include <boost/foreach.hpp>
 
-#include <core/foundation.h>
-#include <core/package.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/package.h>
 
-//#include <clbind/lua_include.hpp>
-#include "clbind/config.h"
-#include "clbind/scope.h"
-#include <clbind/clbind_wrappers.h>
-#include "clbind/class.h"
-#include "clbind/primitives.h"
-#include <clbind/class_registry.h>
-#include <clbind/class_rep.h>
-#include "clbind/nil.h"
+//#include <clasp/clbind/lua_include.hpp>
+#include <clasp/clbind/config.h>
+#include <clasp/clbind/scope.h>
+#include <clasp/clbind/clbind_wrappers.h>
+#include <clasp/clbind/class.h>
+#include <clasp/clbind/primitives.h>
+#include <clasp/clbind/class_registry.h>
+#include <clasp/clbind/class_rep.h>
+#include <clasp/clbind/nil.h>
 
 #include <cstring>
 #include <iostream>
-#include <clbind/constructor.h>
+#include <clasp/clbind/constructor.h>

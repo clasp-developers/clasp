@@ -26,10 +26,10 @@ THE SOFTWARE.
 /* -^- */
 #define	DEBUG_LEVEL_FULL
 
-#include "common.h"
-#include "iterator.h"
-#include "lisp.h"
-#include "wrappers.h"
+#include <clasp/core/common.h>
+#include <clasp/core/iterator.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/wrappers.h>
 
 
 

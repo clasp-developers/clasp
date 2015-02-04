@@ -28,9 +28,9 @@ THE SOFTWARE.
 
 #include <stdio.h>
 
-#include "core/foundation.h"
-#include "core/common.h"
-#include "core/symbolTable.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/common.h>
+#include <clasp/core/symbolTable.h>
 
 typedef void (*afFunctionPtrType)(core::T_sp* resultP, core::ActivationFrame_sp* afP);
 

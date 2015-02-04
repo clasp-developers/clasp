@@ -48,18 +48,18 @@ THE SOFTWARE.
 
 #define CLBIND_BUILDING
 
-#include <core/foundation.h>
-#include <core/package.h>
-#include <clbind/cl_include.h>
+#include <clasp/core/foundation.h>
+#include <clasp/core/package.h>
+#include <clasp/clbind/cl_include.h>
 
-//#include <clbind/detail/stack_utils.hpp>
-//#include <clbind/detail/conversion_storage.hpp>
-#include <clbind/clbind.h>
-//#include <clbind/exception_handler.hpp>
-//#include <clbind/get_main_thread.hpp>
+//#include <clasp/clbind/detail/stack_utils.hpp>
+//#include <clasp/clbind/detail/conversion_storage.hpp>
+#include <clasp/clbind/clbind.h>
+//#include <clasp/clbind/exception_handler.hpp>
+//#include <clasp/clbind/get_main_thread.hpp>
 //#include <utility>
-#include <clbind/class_rep.h>
-#include <core/wrappers.h>
+#include <clasp/clbind/class_rep.h>
+#include <clasp/core/wrappers.h>
 
 
 using namespace clbind::detail;

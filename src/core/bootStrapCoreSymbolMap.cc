@@ -25,12 +25,12 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include "foundation.h"
-#include "lisp.h"
-#include "extensionPackage.fwd.h"
-#include "package.h"
-#include "symbolTable.h"
-#include "bootStrapCoreSymbolMap.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/extensionPackage.fwd.h>
+#include <clasp/core/package.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/bootStrapCoreSymbolMap.h>
 
 namespace core
 {

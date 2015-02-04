@@ -113,14 +113,15 @@
 
 
 (defun describe-form (form)
-  (case (car form)
-    (core:*fset (let* ((name (cadr (cadr form)))
-		       (is-macro (cadddr form))
-		       (header (if is-macro
-				   "defmacro"
-				   "defun")))
-		  (bformat t ";    %s %s\n" header name)))
-    (otherwise ()))) ;; describe more forms here
+  (cond
+    ((and (consp form) (eq 'core:*fset (car form)))
+     (let* ((name (cadr (cadr form)))
+	    (is-macro (cadddr form))
+	    (header (if is-macro
+			"defmacro"
+			"defun")))
+       (bformat t ";    %s %s\n" header name)))
+    (t ()))) ;; describe more forms here
 
 (defun compile-top-level (form)
   (when *compile-print*

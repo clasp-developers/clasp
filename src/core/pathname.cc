@@ -53,21 +53,21 @@ THE SOFTWARE.
 	This file contains those functions that interpret namestrings.
 */
 
-#include "foundation.h"
-#include "object.h"
-#include "symbolTable.h"
-#include "lispString.h"
-#include "fileSystem.h"
-#include "str.h"
-#include "evaluator.h"
-#include "sequence.h"
-#include "strWithFillPtr.h"
-#include "primitives.h"
-#include "lispStream.h"
-#include "arguments.h"
-#include "character.h"
-#include "pathname.h"
-#include "wrappers.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lispString.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/str.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/sequence.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/character.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/wrappers.h>
 
 SYMBOL_EXPORT_SC_(KeywordPkg,case);
 SYMBOL_EXPORT_SC_(KeywordPkg,file);

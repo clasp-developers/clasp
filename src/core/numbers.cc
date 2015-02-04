@@ -27,22 +27,22 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_FULL
 
 //#include "clasp_gmpxx.h"
-#include "boost/format.hpp"
-#include "common.h"
-#include "numbers.h"
-#include "multipleValues.h"
-#include "symbolTable.h"
-#include "symbol.h"
-#include "bignum.h"
-#include "evaluator.h"
-#include "conditions.h"
-#include "hashTable.h"
-#include "mathDispatch.h"
-#include "num_arith.h"
-#include "math_fenv.h"
+#include <boost/format.hpp>
+#include <clasp/core/common.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/conditions.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/mathDispatch.h>
+#include <clasp/core/num_arith.h>
+#include <clasp/core/math_fenv.h>
 
 
-#include "wrappers.h"
+#include <clasp/core/wrappers.h>
 
 
 namespace core

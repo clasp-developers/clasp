@@ -27,20 +27,20 @@ THE SOFTWARE.
 #define	DEBUG_LEVEL_FULL
 
 #include <string>
-#include "core/common.h"
-#include "core/corePackage.h"
-#include "core/sourceFileInfo.h"
-#include "character.h"
-#include "numbers.h"
-#include "symbolTable.h"
-#include "lispDefinitions.h"
-#include "lispStream.h"
-#include "str.h"
-#include "specialForm.h"
-#include "cons.h"
+#include <clasp/core/common.h>
+#include <clasp/core/corePackage.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/character.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/lispDefinitions.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/str.h>
+#include <clasp/core/specialForm.h>
+#include <clasp/core/cons.h>
 //#include "lisp_ParserExtern.h"
-#include "reader.h"
-#include "wrappers.h"
+#include <clasp/core/reader.h>
+#include <clasp/core/wrappers.h>
 
 namespace core 
 {

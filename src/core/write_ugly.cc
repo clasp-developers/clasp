@@ -49,29 +49,29 @@ THE SOFTWARE.
 
 #define	DEBUG_LEVEL_FULL
 
-#include "core/foundation.h"
-#include "core/object.h"
-#include "core/cons.h"
-#include "core/symbolTable.h"
-#include "core/designators.h"
-#include "core/str.h"
-#include "core/pathname.h"
-#include "core/lispStream.h"
-#include "core/instance.h"
-#include "core/strWithFillPtr.h"
-#include "core/structureObject.h"
-#include "core/sysprop.h"
-#include "core/numberToString.h"
-#include "core/evaluator.h"
-#include "core/arguments.h"
-#include "core/print.h"
-#include "core/write_symbol.h"
-#include "core/write_ugly.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/str.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/structureObject.h>
+#include <clasp/core/sysprop.h>
+#include <clasp/core/numberToString.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/print.h>
+#include <clasp/core/write_symbol.h>
+#include <clasp/core/write_ugly.h>
 
-#include "core/character.h"
+#include <clasp/core/character.h>
 
 
-#include "core/wrappers.h"
+#include <clasp/core/wrappers.h>
 
 namespace core
 {
@@ -488,7 +488,7 @@ namespace core
 	    write_fixnum(stream,x);
 	    break;
         case gctools::smart_ptr<T_O>::frame_tag:
-            clasp_write_string("write_ugly_object(frame)",stream);
+            clasp_write_string("#<stack-based-frame>",stream);
             break;
 	default:
 	    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());

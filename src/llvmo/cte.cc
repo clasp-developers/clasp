@@ -28,7 +28,7 @@ THE SOFTWARE.
 
 #include <stdio.h>
 
-#include "core/common.h"
+#include <clasp/core/common.h>
 
 typedef void (afFunctionPtrType*)(core::T_sp* resultP, core::ActivationFrame_sp* afP);
 

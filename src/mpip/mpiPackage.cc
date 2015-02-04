@@ -24,13 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#include "core/foundation.h"
-#include "core/lisp.h"
-#include "core/object.h"
-#include "core/builtInClass.h"
-#include "core/package.h"
-#include "claspMpi.h"
-#include "mpiPackage.h"
+#include <clasp/core/foundation.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/object.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/package.h>
+#include <clasp/mpip/claspMpi.h>
+#include <clasp/mpip/mpiPackage.h>
 
 namespace mpip
 {
@@ -39,7 +39,7 @@ namespace mpip
 #define EXPOSE_TO_CANDO
 #define Use_MpiPkg
 #define EXTERN_REGISTER
-#include "mpip_initClasses_inc.h"
+#include <mpip_initClasses_inc.h>
 #undef EXTERN_REGISTER
 #undef Use_MpiPkg
 #undef EXPOSE_TO_CANDO
@@ -57,7 +57,7 @@ namespace mpip {
 #pragma GCC visibility push(default)
 #define MpiPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
-#include "symbols_scraped_inc.h"
+#include <clasp/mpip/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef MpiPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -84,7 +84,7 @@ namespace mpip {
 
 #define MpiPkg_SYMBOLS
 #define DO_SYMBOL(cname,idx,pkg,lispname,exportp) {cname = _lisp->internUniqueWithPackageName(pkg,lispname); cname->exportYourself(exportp);}
-#include "mpip/symbols_scraped_inc.h"
+#include <clasp/mpip/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef MpiPkg_SYMBOLS
 
@@ -93,7 +93,7 @@ namespace mpip {
 #define Use_MpiPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(p,s) DEFAULT_LOOKUP_SYMBOL(p,s)
-#include "mpip_initClasses_inc.h"
+#include <mpip_initClasses_inc.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_MpiPkg
@@ -153,7 +153,7 @@ namespace mpip {
     INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_T_);
 #endif
 
-#include "mpip_initClasses_inc.h"
+#include <mpip_initClasses_inc.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS
 #endif
