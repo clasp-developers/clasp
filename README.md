@@ -3,6 +3,8 @@ Clasp
 
 <a href="https://drmeister.wordpress.com/2015/01/25/release-0-2-of-clasp-is-available/">-- Update Jan 25, 2014 --  Please read regarding installing Clasp</a>
 
+Note: **EXTERNALS_BUILD_TARGET_DIR** and **CLASP_BUILD_TARGET_DIR** are not required any more in locals.config.  There is a new variable **EXTERNALS_SOURCE_DIR** that you set to the path of the exterals-clang source directory.
+
 **If you have questions come ask them on IRC at freenode #clasp**
 
 Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.
@@ -47,7 +49,7 @@ To build Clasp from within the top level directory do the following.
 | Variable                                   |   Description                                                           |
 | ------------------------------------------ | ----------------------------------------------------------------------- |
 | **CLASP_BUILD_TARGET_DIR**                 | This defines where make will put the Clasp application. I use $HOME/local/clasp |
-| **EXTERNALS_BUILD_TARGET_DIR**             | This defines where Clasp build will find the externals-clasp libraries.  I use $HOME/local/externals-clasp. This directory must be different from that of **CLASP_BUILD_TARGET_DIR**. |
+| **EXTERNALS_SOURCE_DIR**             | This defines where Clasp build will find the externals-clasp libraries.  I use $HOME/local/externals-clasp. This is the directory that contains the externals-clasp source. |
 | **TARGET_OS**                              | Currently either _linux_ or _darwin_                                    |
 | **PJOBS**                                  | The number of processors you have available to build with.              |
 |                                            | Set PJOBS <= the number of cores you have.                              |
