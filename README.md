@@ -48,7 +48,6 @@ To build Clasp from within the top level directory do the following.
 
 | Variable                                   |   Description                                                           |
 | ------------------------------------------ | ----------------------------------------------------------------------- |
-| **CLASP_BUILD_TARGET_DIR**                 | This defines where make will put the Clasp application. I use $HOME/local/clasp |
 | **EXTERNALS_SOURCE_DIR**             | This defines where Clasp build will find the externals-clasp libraries.  I use $HOME/local/externals-clasp. This is the directory that contains the externals-clasp source. |
 | **TARGET_OS**                              | Currently either _linux_ or _darwin_                                    |
 | **PJOBS**                                  | The number of processors you have available to build with.              |
