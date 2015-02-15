@@ -37,39 +37,11 @@ namespace core
     class MultipleValues
     {
     public: // ctor
-	MultipleValues(bool topLevel) : _Previous(NULL), _Size(0) {
-	    lisp_pushMultipleValues(this);
-#ifdef DEBUG_ASSERTS
-	    if ( !topLevel && this->_Previous == NULL ) {
-		THROW_HARD_ERROR(BF("Setting up MultipleValues, _Previous is NULL!!!"));
-	    }
-#endif
-	};
-	/*! Create a MultipleValues and copy the contents of other into it */
-	MultipleValues(const MultipleValues& other) : _Previous(NULL), _Size(0) {
-	    core::lisp_pushMultipleValues(this);
-	    this->_Size = other._Size;
-	    for ( size_t it = 0; it<this->_Size; ++it ) {
-		this->_Values[it] = other._Values[it];
-	    }
-	    // Automatically push this MultipleValues onto the global stack
-#ifdef DEBUG_ASSERTS
-	    if ( this->_Previous == NULL ) {
-		THROW_HARD_ERROR(BF("Setting up MultipleValues, _Previous is NULL!!!"));
-	    }
-#endif
-	};
-
-	~MultipleValues() {
-	    // pop this MultipleValues from the global stack
-	    core::lisp_popMultipleValues();
-	}
 	static const int MultipleValuesLimit = CALL_ARGUMENTS_LIMIT;
     public: // instance variables here
-	MultipleValues*	_Previous;
 #ifdef USE_MULTIPLE_VALUES_ARRAY
 	size_t 		_Size;
-	T_sp 		_Values[MultipleValuesLimit];
+	T_O* 		_Values[MultipleValuesLimit];
         /*! Allocate the GCVector in the NonMoveable memory.
 	 This needs to stay pinned or things will go very bad if functions are called with arguments in
 	this array (those beyond the arguments that can be passed in registers) or multiple values are returned
@@ -81,9 +53,6 @@ namespace core
         void initialize();
     public: // Functions here
 
-	void setPrevious(MultipleValues* ptr) { this->_Previous = ptr; };
-	MultipleValues* getPrevious() const { return this->_Previous; };
-
 	/*! Return the indexed multiple value or nil */
 	ATTR_WEAK T_sp valueGet(int idx,int number_of_arguments) const;
 
@@ -93,10 +62,10 @@ namespace core
 	  the remaining arguments are written into and read out of a MultipleValues array.
 	callingArgs returns a pointer to the first value for when the values passed in registers
 	need to be written into the array for easier parsing*/
-	T_sp* callingArgsStart() { return &this->_Values[0]; }
+	T_O** callingArgsStart() { return &this->_Values[0]; }
 	/*! Return the address of the first array entry where extra arguments beyond the 
 	  number that can be passed in registers would be written */
-	T_sp* callingArgsExtraArgStart() { return &this->_Values[LCC_ARGS_IN_REGISTERS]; }
+	T_O** callingArgsExtraArgStart() { return &this->_Values[LCC_ARGS_IN_REGISTERS]; }
 
 
 	T_sp setFromConsSkipFirst(Cons_sp values);
@@ -105,8 +74,7 @@ namespace core
 #ifdef USE_MULTIPLE_VALUES_ARRAY
 	void setSize(size_t sz) { this->_Size = sz; };
 	size_t getSize() const { return this->_Size; };
-        template <typename T>
-        void emplace_back(T&& a) { this->_Values[this->_Size] = std::forward<T>(a); ++this->_Size;};
+	void emplace_back(T_sp a) { this->_Values[this->_Size] = a.px /*std::forward<T>(a)*/; ++this->_Size;};
 #else
         void setSize(size_t sz) { this->_Values.resize(sz); };
         size_t getSize() const { return this->_Values.size(); };
@@ -115,11 +83,11 @@ namespace core
 #endif
 	/*! Set the value */
 
-	T_sp& operator[](size_t i) { return this->_Values[i]; };
+	T_O*& operator[](size_t i) { return this->_Values[i]; };
 
-	void valueSet(int i, const T_sp& val)
+	void valueSet(int i, T_sp val)
         {
-            this->_Values[i] = val;
+            this->_Values[i] = val.px;
         }
 
 	/*! Return a Cons of elements 1 up to but not including iend */
@@ -129,14 +97,14 @@ namespace core
         {
             vec.resize(this->getSize());
             for ( int i(0), iEnd(this->getSize()); i<iEnd; ++i ) {
-                vec[i] = this->_Values[i];
+                vec[i] = T_sp(this->_Values[i]);
             }
         }
         void loadFromVec0(const gctools::Vec0<core::T_sp>& vec)
         {
             this->setSize(vec.size());
             for ( int i(0), iEnd(vec.size()); i<iEnd; ++i ) {
-                this->_Values[i] = vec[i];
+                this->_Values[i] = vec[i].px;
             };
         };
 
@@ -180,7 +148,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
                                                const gctools::smart_ptr<T8>& v8,
                                                const gctools::smart_ptr<T9>& v9)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -208,7 +176,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
                                                const gctools::smart_ptr<T8>& v8
 	)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -234,7 +202,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
                                                const gctools::smart_ptr<T7>& v7
 	)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -258,7 +226,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
                                                const gctools::smart_ptr<T6>& v6
 	)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -280,7 +248,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
                                                const gctools::smart_ptr<T5>& v5
 	)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -300,7 +268,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
                                                const gctools::smart_ptr<T4>& v4
 	)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -319,7 +287,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
                                                const gctools::smart_ptr<T3>& v3
 	)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -336,7 +304,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
                                                const gctools::smart_ptr<T2>& v2
 	)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -350,7 +318,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
     static gctools::multiple_values<T0> Values(const gctools::smart_ptr<T0>& v0,
                                                const gctools::smart_ptr<T1>& v1)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
         me.emplace_back(v1);
@@ -363,7 +331,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
     template <class T0>
     static gctools::multiple_values<T0> Values(const gctools::smart_ptr<T0>& v0)
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
         me.emplace_back(v0);
 	return gctools::multiple_values<T0>(v0,1);
@@ -374,7 +342,7 @@ extern core::T_mv ValuesFromCons(core::Cons_sp vals);
     template <class T0>
     static gctools::multiple_values<T0> Values0()
     {
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
         me.setSize(0);
 	return gctools::multiple_values<T0>(_Nil<T0>(),0);
     }

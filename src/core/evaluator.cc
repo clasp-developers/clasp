@@ -1029,7 +1029,7 @@ namespace core
 #if 1 // new way using RAII
 	T_mv sp_unwindProtect( Cons_sp args, T_sp environment)
 	{_G();
-            MultipleValues* mv = lisp_multipleValues();
+            MultipleValues& mv = lisp_multipleValues();
             gctools::Vec0<T_sp>  save;
             struct UnwindProtectDone {};
 	    try {
@@ -1039,13 +1039,13 @@ namespace core
                 throw(UnwindProtectDone());
             } catch (UnwindProtectDone& dummy) {
                 // Save the return values
-                mv->saveToVec0(save);
+                mv.saveToVec0(save);
                 // Evaluate the unwind forms -- This is wrong - it shouldn't be protected here
 		eval::sp_progn(cCdr(args),environment);
             } catch (...) {
-                mv->saveToVec0(save);
+                mv.saveToVec0(save);
                 eval::sp_progn(cCdr(args),environment);
-                mv->loadFromVec0(save);
+                mv.loadFromVec0(save);
                 throw;
             }
 	    return gctools::multiple_values<T_O>::createFromVec0(save);
@@ -1750,9 +1750,9 @@ namespace core
 
 #undef APPLY_TO_ACTIVATION_FRAME
             default:
-		MultipleValues* _mvP = _lisp->callArgs();
+		MultipleValues& mv = lisp_callArgs();
 		for ( size_t i(LCC_FIXED_ARGS); i<nargs; ++i ) {
-		    (*_mvP)[i] = a[i];
+		    mv[i] = a[i].px;
 		}
 		(*func)(&result,nargs , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) , LCC_FROM_SMART_PTR(a[3]) , LCC_FROM_SMART_PTR(a[4])    );
 		return result;
@@ -1786,9 +1786,9 @@ namespace core
 #endif
 #undef APPLY_TO_TAGGED_FRAME
             default:
-		MultipleValues* _mvP = _lisp->callArgs();
+		MultipleValues& mv = lisp_callArgs();
 		for ( size_t i(LCC_FIXED_ARGS); i<nargs; ++i ) {
-		    (*_mvP)[i] = a[i];
+		    mv[i] = a[i];
 		}
 		(*func)(&result,nargs,a[0],a[1],a[2],a[3],a[4]);
 		return result;

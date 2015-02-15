@@ -161,7 +161,7 @@ int PASS_FUNCTION_KEYWORD
     T_sp first_illegal_keyword(_Nil<T_O>());
     {_BLOCK_TRACEF(BF("Copy passed keyword values to environment"));
 	for ( int i(arg_idx),iEnd(num_args); i<iEnd; i+=2 ) {
-	    Symbol_sp keyword = PASS_NEXT_ARG().as<Symbol_O>();
+	    Symbol_sp keyword = T_sp(PASS_NEXT_ARG()).as<Symbol_O>();
 	    arg_idx++;
 	    T_sp value = PASS_NEXT_ARG();
 	    arg_idx++;

@@ -322,7 +322,7 @@ namespace core
 	    return "#<built-in-class t>";
 	}
 	stringstream ss;
-	ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << " " << (void*)(this) << ">";
+	ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << " @" << (void*)(this) << ">";
 
 	return ss.str();
     }

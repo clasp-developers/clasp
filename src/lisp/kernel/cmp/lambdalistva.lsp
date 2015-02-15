@@ -330,7 +330,7 @@ will put a value into target-ref."
     (let* ((target-idx (cdr target))
 	   (val-ref (calling-convention-args.gep args arg-idx target-idx)))
       (with-target-reference-do (tref target new-env) ; run-time binding
-	(irc-intrinsic "copyTsp" tref val-ref)))))
+	(irc-intrinsic "copyTspTptr" tref val-ref)))))
 
 
 
@@ -366,7 +366,7 @@ will put a value into target-ref."
       (irc-begin-block arg-block)
       (let ((val-ref (calling-convention-args.gep args arg-idx)))
 	(with-target-reference-do (target-ref target new-env) ; run-time af binding
-	  (irc-intrinsic "copyTsp" target-ref val-ref))
+	  (irc-intrinsic "copyTspTptr" target-ref val-ref))
 	(when flag
 	  (with-target-reference-do (flag-ref flag new-env) ; run-time AF binding
 	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
@@ -423,7 +423,7 @@ will put a value into target-ref."
 	(irc-low-level-trace)
 	(let* ((arg-ref (calling-convention-args.gep args phi-arg-idx))) ;; (irc-gep va-list (list phi-arg-idx))))
 	  (irc-intrinsic "kw_throwIfNotKeyword" arg-ref)
-	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTsp" aok-ref arg-ref) +i1+)) ; compare arg-ref to a-o-k
+	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTspTptr" aok-ref arg-ref) +i1+)) ; compare arg-ref to a-o-k
 		 (aok-block (irc-basic-block-create "aok-block"))
 		 (possible-kw-block (irc-basic-block-create "possible-kw-block"))
 		 (advance-arg-idx-block (irc-basic-block-create "advance-arg-idx-block"))
@@ -466,7 +466,7 @@ will put a value into target-ref."
                     (irc-begin-block not-seen-before-kw-block)
                     (let ((kw-arg-ref (calling-convention-args.gep args arg-idx+1)))
                       (with-target-reference-do (target-ref target new-env) ; run-time binding
-                                                (irc-intrinsic "copyTsp" target-ref kw-arg-ref))
+                                                (irc-intrinsic "copyTspTptr" target-ref kw-arg-ref))
                       ;; Set the boolean flag to indicate that we saw this key
                       (irc-store (jit-constant-i8 1) (elt sawkeys idx))
                       (when flag

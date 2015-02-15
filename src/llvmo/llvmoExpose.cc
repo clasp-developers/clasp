@@ -2338,10 +2338,10 @@ namespace llvmo
 {
 
 
-#define ARGS_GlobalVariable_O_make "(module type is-constant linkage initializer name)"
+#define ARGS_GlobalVariable_O_make "(module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local))"
 #define DECL_GlobalVariable_O_make ""
 #define DOCS_GlobalVariable_O_make "make GlobalVariable args: module type is-constant linkage initializer name"
-    GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, Constant_sp initializer, core::Str_sp name)
+    GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, Constant_sp initializer, core::Str_sp name, GlobalVariable_sp insertBefore, core::Symbol_sp threadLocalMode )
     {_G();
         GC_ALLOCATE(GlobalVariable_O,me );
 	translate::from_object<llvm::GlobalValue::LinkageTypes> llinkage(linkage);
@@ -2349,7 +2349,12 @@ namespace llvmo
 	if ( initializer.notnilp() ) {
 	    llvm_initializer = initializer->wrappedPtr();
 	}
-	llvm::GlobalVariable* gv = new llvm::GlobalVariable(*(mod->wrappedPtr()),type->wrappedPtr(),isConstant,llinkage._v,llvm_initializer,name->get());
+	llvm::GlobalVariable* lInsertBefore = NULL;
+	if ( insertBefore.notnilp() ) {
+	    lInsertBefore = insertBefore->wrappedPtr();
+	}
+	translate::from_object<llvm::GlobalValue::ThreadLocalMode> lThreadLocalMode(threadLocalMode);
+	llvm::GlobalVariable* gv = new llvm::GlobalVariable(*(mod->wrappedPtr()),type->wrappedPtr(),isConstant,llinkage._v,llvm_initializer,name->get(),lInsertBefore,lThreadLocalMode._v);
 	me->set_wrapped(gv);
 //	me->set_ptrIsOwned(true); // GlobalVariables made this way are responsible for freeing their pointers - I hope this isn't a disaster
 	return me;
@@ -4485,6 +4490,23 @@ namespace llvmo
             .value(_sym_ExternalWeakLinkage,llvm::GlobalValue::ExternalWeakLinkage)
             .value(_sym_CommonLinkage,llvm::GlobalValue::CommonLinkage)
             ;
+
+
+
+	SYMBOL_SC_(LlvmoPkg,STARglobal_ThreadLocalModesSTAR);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,NotThreadLocal);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,GeneralDynamicTLSModel);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,LocalDynamicTLSModel);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,InitialExecTLSModel);
+        SYMBOL_EXPORT_SC_(LlvmoPkg,LocalExecTLSModel);
+        core::enum_<llvm::GlobalValue::ThreadLocalMode>(_sym_STARglobal_ThreadLocalModesSTAR,"llvm::GlobalValue::ThreadLocalMode")
+            .value(_sym_NotThreadLocal,llvm::GlobalValue::NotThreadLocal)
+            .value(_sym_GeneralDynamicTLSModel,llvm::GlobalValue::GeneralDynamicTLSModel)
+            .value(_sym_LocalDynamicTLSModel,llvm::GlobalValue::LocalDynamicTLSModel)
+            .value(_sym_InitialExecTLSModel,llvm::GlobalValue::InitialExecTLSModel)
+            .value(_sym_LocalExecTLSModel,llvm::GlobalValue::LocalExecTLSModel)
+            ;
+
         SYMBOL_EXPORT_SC_(LlvmoPkg,verifyFunction);
         Defun(verifyFunction);
 

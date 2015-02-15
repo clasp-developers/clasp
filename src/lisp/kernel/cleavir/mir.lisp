@@ -5,15 +5,30 @@
   new)
 
 
-(defclass llvm-instruction (cleavir-ir:instruction) ())
+(defclass llvm-instruction () ())
 (defmethod cleavir-ir:specialize ((instr cleavir-ir:instruction)
 				  (impl clasp) proc os)
   ;; By default just return the current instruction
   instr)
 
+(defclass enter-instruction (llvm-instruction cleavir-ir:enter-instruction)
+  ((%debug-label :initform (gensym "ENTER-") :reader debug-label)))
+
+(defmethod cleavir-ir:specialize ((instr cleavir-ir:enter-instruction)
+				  (impl clasp) proc os)
+  (change-class instr 'enter-instruction))
+
+(defmethod cleavir-ir-graphviz:label ((instr enter-instruction))
+  (with-output-to-string (stream)
+    (format stream "~a ~a" (debug-label instr) (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr)))))
+
+(defmethod cl:print-object ((instr enter-instruction) stream)
+  (format stream "#<~a ~a>" (class-name (class-of instr)) (debug-label instr)))
+
+
+
 
 #+(or)(progn
-	(defclass enter-instruction (llvm-instruction cleavir-ir:one-successor-mixin) ())
 	(defclass check-min-arguments (llvm-instruction cleavir-ir:one-successor-mixin)
 	  ((%fixed-arg-num :initarg :fixed-arg-num :accessor fixed-arg-num)))
 

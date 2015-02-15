@@ -802,9 +802,10 @@ memory limits before executing the program again."))
             (progv (list name) (list value) (read-it))
             (read-it)))
       value))
-
+(defvar *assert-failure-test-form* nil)
 (defun assert-failure (test-form &optional place-names values
                        &rest arguments)
+  (setq *assert-failure-test-form* test-form)
   (unless arguments
     (setf arguments (list 'SIMPLE-TYPE-ERROR
 			  :DATUM test-form

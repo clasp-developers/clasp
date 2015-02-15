@@ -47,22 +47,22 @@ namespace gctools
 
 
         static multiple_values<T> createFromValues() {
-	    core::MultipleValues* mv = core::lisp_multipleValues();
-            multiple_values<T> result( mv->getSize()==0 ? _Nil<core::T_O>() : mv->valueGet(0,mv->getSize()), mv->getSize());
+	    core::MultipleValues& mv = core::lisp_multipleValues();
+            multiple_values<T> result( mv.getSize()==0 ? _Nil<core::T_O>() : mv.valueGet(0,mv.getSize()), mv.getSize());
             return result;
         }
 
 
         static multiple_values<T> createFromVec0(const Vec0<core::T_sp>& vec) {
-	    core::MultipleValues* mv = core::lisp_multipleValues();
-            mv->loadFromVec0(vec);
+	    core::MultipleValues& mv = core::lisp_multipleValues();
+            mv.loadFromVec0(vec);
             return multiple_values<T>::createFromValues();
         }
 
 
         void saveToMultipleValue0() const {
-	    core::MultipleValues* mv = core::lisp_multipleValues();
-            mv->valueSet(0,*this);
+	    core::MultipleValues& mv = core::lisp_multipleValues();
+            mv.valueSet(0,*this);
         };
 
         void saveToVec0(::gctools::Vec0<core::T_sp>& values) {
@@ -79,17 +79,16 @@ namespace gctools
 #endif
 	int number_of_values() const { return this->_number_of_values;};
 
-	void valueSet(int idx, smart_ptr<core::T_O> val)
+	void valueSet(int idx, core::T_sp val)
 	{
-	    core::MultipleValues* mv = core::lisp_multipleValues();
-	    mv->valueSet(idx,val);
+	    core::MultipleValues& mv = core::lisp_multipleValues();
+	    mv.valueSet(idx,val);
 	}
 	    
 	core::T_sp valueGet(int idx) const
 	{
-	    core::MultipleValues* mv = core::lisp_multipleValues();
-	    core::T_sp val = mv->valueGet(idx,this->_number_of_values);
-	    return val;
+	    core::MultipleValues& mv = core::lisp_multipleValues();
+	    return mv.valueGet(idx,this->_number_of_values);
 	};
 
 

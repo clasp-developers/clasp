@@ -97,7 +97,7 @@
 (defun dbg-filename* (pn)
   (bformat nil "%s.%s" (pathname-name pn) (pathname-type pn)))
 
-(defmacro with-dbg-compile-unit ((env source-pathname) &rest body)
+(defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
 	(file-name (gensym))
 	(dir-name (gensym)))
@@ -129,7 +129,7 @@
 	   (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*")
 	   ,@body))))
 
-(defmacro with-dbg-file-descriptor ((env source-pathname) &rest body)
+(defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
   (let ((path (gensym))
 	(file-name (gensym))
 	(dir-name (gensym)))
@@ -150,7 +150,7 @@
     ))
 
 
-(defmacro with-dbg-function ((env name &key linkage-name form function function-type) &rest body)
+(defmacro with-dbg-function ((name &key linkage-name form function function-type) &rest body)
   (let ((source-dir (gensym))
         (source-name (gensym))
 	(filepos (gensym))
@@ -189,17 +189,17 @@
 		
 
 
-(defmacro with-debug-info-generator ((&key module env pathname) &rest body)
+(defmacro with-debug-info-generator ((&key module pathname) &rest body)
   "One macro that uses three other macros"
   `(let ()
      (with-dibuilder (,module)
-       (with-dbg-compile-unit (,env ,pathname)
-	 (with-dbg-file-descriptor (,env ,pathname)
+       (with-dbg-compile-unit (,pathname)
+	 (with-dbg-file-descriptor (,pathname)
 	   ,@body)))))
 	 
     
 
-(defmacro with-dbg-lexical-block ((env block-form) &body body)
+(defmacro with-dbg-lexical-block ((block-form) &body body)
   (let ((source-dir (gensym))
         (source-name (gensym))
 	(filepos (gensym))
@@ -223,7 +223,7 @@
 
 
 
-(defun dbg-set-current-source-pos (env form)
+(defun dbg-set-current-source-pos (form)
   (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
   (when (consp form)
     (multiple-value-bind (source-dir source-file filepos line-number column)

@@ -222,6 +222,14 @@ namespace core
 
 
 
+    struct ThreadInfo {
+	MultipleValues  multipleValues;
+    };
+
+
+    extern __thread ThreadInfo* threadLocalInfoPtr;
+
+    
     class Lisp_O
     {
 	friend SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename, size_t offset, bool useLineno);
@@ -405,6 +413,7 @@ namespace core
     public:
 	map<string,void*>& openDynamicLibraryHandles() { return this->_OpenDynamicLibraryHandles; };
     public:
+#if 0
 	/*! callArgs() are where extra arguments are stored when passing them
 	  into a function that takes more arguments than can be passed in registers
 	  See lispCallingConvention.h for more details.
@@ -421,18 +430,13 @@ namespace core
 	  This ensures that the objects they contain are not garbage collected and
 	  allows us to occasionally create new MultipleValues structures for when we need to
 	  save the current one temporarily */
-	void pushMultipleValues(MultipleValues* mv)
+	void setMultipleValues(MultipleValues* mv)
 	{
 	    ASSERT(mv!=NULL);
-	    mv->setPrevious(this->_Roots._MultipleValuesCur);
 //	    printf("%s:%d _lisp->pushMultipleValues(%p)  current= %p\n", __FILE__, __LINE__, mv, this->_Roots._MultipleValuesCur );
 	    this->_Roots._MultipleValuesCur = mv;
 	};
-	void popMultipleValues() {
-	    MultipleValues* nextHead = this->_Roots._MultipleValuesCur->getPrevious();
-//	    printf("%s:%d _lisp->popMultipleValues()  current= %p after pop = %p\n", __FILE__, __LINE__, this->_Roots._MultipleValuesCur, nextHead );
-	    this->_Roots._MultipleValuesCur = this->_Roots._MultipleValuesCur->getPrevious();
-	};
+#endif
     public:
 	DebugStream& debugLog() {HARD_ASSERT(this->_DebugStream!=NULL);return *(this->_DebugStream);};
 //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
@@ -1027,7 +1031,7 @@ namespace core
     T_mv af_macroexpand_1(T_sp form, T_sp env);
     T_mv af_macroexpand(T_sp form, T_sp env);
 
-    Cons_sp af_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
+    Cons_sp cl_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
 
     Class_mv af_findClass(Symbol_sp symbol, bool errorp=true, T_sp env=_Nil<T_O>());
     Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env );

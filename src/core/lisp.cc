@@ -151,6 +151,9 @@ extern "C" void add_history(char* line);
 namespace core
 {
 
+    __thread ThreadInfo* threadLocalInfoPtr;
+    
+
     const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
     const int Lisp_O::MaxClosSlots = 3; //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
     const int Lisp_O::ClosCacheSize = 65536;
@@ -1702,10 +1705,10 @@ namespace core
 
 
 
-#define ARGS_af_assoc "(item alist &key key test test-not)"
-#define DECL_af_assoc ""
-#define DOCS_af_assoc "assoc"
-    Cons_sp af_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test, T_sp test_not)
+#define ARGS_cl_assoc "(item alist &key key test test-not)"
+#define DECL_cl_assoc ""
+#define DOCS_cl_assoc "assoc"
+    Cons_sp cl_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test, T_sp test_not)
     {_G();
 	if ( alist.nilp() ) return alist;
 	return alist->assoc(item,key,test,test_not);
@@ -3735,7 +3738,7 @@ extern "C"
 	SYMBOL_EXPORT_SC_(ClPkg,acons);
 	Defun(acons);
 	SYMBOL_EXPORT_SC_(ClPkg,assoc);
-	Defun(assoc);
+	ClDefun(assoc);
 	SYMBOL_EXPORT_SC_(ClPkg,member);
 	Defun(member);
 	Defun(memberTest);

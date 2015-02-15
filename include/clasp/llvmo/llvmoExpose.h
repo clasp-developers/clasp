@@ -1679,7 +1679,7 @@ namespace llvmo
 	typedef llvm::GlobalVariable* PointerToExternalType;
 
     public:
-	static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, core::Symbol_sp linkage, Constant_sp initializer, core::Str_sp name );
+	static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, core::Symbol_sp linkage, Constant_sp initializer, core::Str_sp name, GlobalVariable_sp insertBefore, core::Symbol_sp threadLocalMode  );
 
     public:    PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr);};
 	void set_wrapped(PointerToExternalType ptr)
@@ -4853,6 +4853,26 @@ namespace translate
 		return;
 	    }
 	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::GlobalValue::LinkageType") % _rep_(object) );
+	}
+    };
+
+
+    template <>
+    struct from_object<llvm::GlobalValue::ThreadLocalMode,std::true_type>
+    {
+	typedef llvm::GlobalValue::ThreadLocalMode	DeclareType;
+	DeclareType _v;
+	from_object(T_P object)
+	{_G();
+	    if ( object.notnilp() ) {
+		if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() )
+		    {
+			core::SymbolToEnumConverter_sp converter = llvmo::_sym_STARglobal_ThreadLocalModesSTAR->symbolValue().as<core::SymbolToEnumConverter_O>();
+			this->_v = converter->enumForSymbol<llvm::GlobalValue::ThreadLocalMode>(sym);
+			return;
+		    }
+	    }
+	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::GlobalValue::ThreadLocalMode") % _rep_(object) );
 	}
     };
 

@@ -1,4 +1,10 @@
 
+testReturnMultipleValues.bc: testReturnMultipleValues.cc
+	/usr/bin/clang++ -O0 -S -emit-llvm testReturnMultipleValues.cc
+
+testReturnMultipleValues: testReturnMultipleValues.cc
+	/usr/bin/clang++ -o testReturnMultipleValues testReturnMultipleValues.cc
+
 computedGoto: computedGoto.cc
 	/usr/bin/clang++ -o computedGoto computedGoto.cc
 

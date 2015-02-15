@@ -8,7 +8,13 @@
 	  *cleavir-compile-hook*
 	  *cleavir-compile-file-hook*
 	  *llvm-context*
-	  with-irbuilder
 	  *irbuilder*
 	  irc-basic-block-create
+	  with-irbuilder
+	  with-dbg-function
+	  with-dbg-lexical-block
+	  +t*+
+	  jit-constant-i32
+	  +fn-prototype+
+	  +fn-prototype-argument-names+
 	  ))

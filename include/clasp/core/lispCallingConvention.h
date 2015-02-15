@@ -96,23 +96,23 @@ THE SOFTWARE.
 
 /* This is a switch statement that copies passed arguments in registers into the MultipleValues array */
 #define LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(_mv)		 \
-    _mv = _lisp->callArgs();				\
-    _mv->setSize(lcc_nargs);					 \
-    switch (lcc_nargs)						 \
-    {								 \
-    default:							 \
-    case 5:							 \
-	(*_mv)[4].px_ref() = lcc_fixed_arg4;			 \
-    case 4:							 \
-	(*_mv)[3].px_ref() = lcc_fixed_arg3;			 \
-    case 3:							 \
-	(*_mv)[2].px_ref() = lcc_fixed_arg2;			 \
-    case 2:							 \
-	(*_mv)[1].px_ref() = lcc_fixed_arg1;			 \
-    case 1:							 \
-	(*_mv)[0].px_ref() = lcc_fixed_arg0;			 \
-    case 0:							 \
-	break;							 \
-    }
+    MultipleValues& _mv = lisp_callArgs();						\
+    _mv.setSize(lcc_nargs);						\
+    switch (lcc_nargs)							\
+	{								\
+	default:							\
+	case 5:								\
+	    _mv[4] = lcc_fixed_arg4;					\
+	case 4:								\
+	    _mv[3] = lcc_fixed_arg3;					\
+	case 3:								\
+	    _mv[2] = lcc_fixed_arg2;					\
+	case 2:								\
+	    _mv[1] = lcc_fixed_arg1;					\
+	case 1:								\
+	    _mv[0] = lcc_fixed_arg0;					\
+	case 0:								\
+	    break;							\
+	}
 
 

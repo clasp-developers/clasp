@@ -198,13 +198,13 @@ namespace core
 
     inline Integer_sp _brcl_big_floor(Bignum_sp a, Bignum_sp b, Real_sp* rP){
 	Integer_mv res_mv = big_floor(a,b);
-	*rP = res_mv.valueGet(1).as<Real_O>();
+	*rP = Real_sp(res_mv.valueGet(1));
 	return res_mv;
     };
 
     inline Integer_sp _brcl_big_ceiling(Bignum_sp a, Bignum_sp b, Real_sp* rP) {
 	Integer_mv res_mv = big_ceiling(a,b);
-	*rP = res_mv.valueGet(1).as<Real_O>();
+	*rP = Real_sp(res_mv.valueGet(1));
 	return res_mv;
     }
 

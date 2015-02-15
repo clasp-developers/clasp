@@ -1461,10 +1461,16 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     {_G();
 	if ( args.nilp() ) return(Values(_lisp->_true()));
 	Number_sp a = oCar(args).as<Number_O>();
+	if ( a.nilp() ) {
+	    TYPE_ERROR(a,cl::_sym_Number_O);
+	}
 	args = cCdr(args);
 	while ( args.notnilp() )
 	{
 	    Number_sp b = oCar(args).as<Number_O>();
+	    if ( b.nilp() ) {
+		TYPE_ERROR(b,cl::_sym_Number_O);
+	    }
 	    if ( !basic_equalp(a,b) ) return(Values(_lisp->_false()));
 	    args = cCdr(args);
 	}

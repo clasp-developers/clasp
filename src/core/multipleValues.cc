@@ -50,7 +50,7 @@ namespace core
     T_sp MultipleValues::valueGet(int idx,int number_of_values) const
     {
 	ASSERTF(idx>=0,BF("multiple-value.valueGet index[%d] must be larger than 0") % idx );
-	if ( idx < number_of_values ) return this->_Values[idx];
+	if ( idx < number_of_values ) return T_sp(this->_Values[idx]);
 //	printf("%s:%d - WARNING: You asked for multiple-value[%d] and there are only %d values - turn this off once everything is working\n", __FILE__, __LINE__, idx, number_of_values);
 	return _Nil<T_O>();
     }
@@ -110,7 +110,7 @@ namespace core
 
     void multipleValuesSaveToVector(T_mv values, VectorObjects_sp save)
     {
-	core::MultipleValues* mv = core::lisp_multipleValues();
+	core::MultipleValues& mv = core::lisp_multipleValues();
 	save->adjust(_Nil<T_O>(),_Nil<Cons_O>(),values.number_of_values());
 	if ( values.number_of_values() > 0 )
 	{
@@ -118,7 +118,7 @@ namespace core
 	}
 	for ( int i(1); i<values.number_of_values(); ++i)
 	{
-	    save->operator[](i) = mv->valueGet(i,values.number_of_values());
+	    save->operator[](i) = mv.valueGet(i,values.number_of_values());
 	}
     }
 
@@ -128,12 +128,12 @@ namespace core
 	if ( cl_length(load) > 0 )
 	{
 	    T_mv mvn(load->operator[](0),cl_length(load));
-	    core::MultipleValues* mv = lisp_multipleValues();
+	    core::MultipleValues& mv = lisp_multipleValues();
             SUPPRESS_GC();
             int i(0);
             int iEnd(cl_length(load));
-            mv->setSize(iEnd);
-	    for (; i<iEnd; ++i ) {mv->valueSet(i,load->operator[](i));}
+            mv.setSize(iEnd);
+	    for (; i<iEnd; ++i ) {mv.valueSet(i,load->operator[](i));}
             ENABLE_GC();
 	    return mvn;
 	}
@@ -158,7 +158,7 @@ namespace core
 	{
 	    return core::T_mv(_Nil<core::T_O>(),0);
 	}
-	core::MultipleValues& me = *(core::lisp_multipleValues());
+	core::MultipleValues& me = (core::lisp_multipleValues());
 	core::T_sp first = me.setFromConsSkipFirst(vals);
 	core::T_mv mv;
 	mv = gctools::multiple_values<core::T_O>(first,len);

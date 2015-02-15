@@ -50,10 +50,9 @@ namespace core
         // when I use variable stack arrays
 //        printf("%s:%d About to alloca with lcc_nargs = %zu\n", __FILE__, __LINE__, lcc_nargs);
 //        T_sp* args = (T_sp*)alloca(sizeof(T_sp)*lcc_nargs);
-	MultipleValues* mvP = NULL;
-	LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(mvP);
+	LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(mv);
         try {
-            llh->createBindingsInScope_argArray(mvP->getSize(),mvP->callingArgsStart(),scope);
+            llh->createBindingsInScope_argArray(mv.getSize(),mv.callingArgsStart(),scope);
         } catch (...) {
             printf("%s:%d Caught an exception while in createBindingsInScope_argArray_TPtr\n", __FILE__, __LINE__);
             handleArgumentHandlingExceptions(closure);

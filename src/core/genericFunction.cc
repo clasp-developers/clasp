@@ -147,7 +147,7 @@ In ecl/src/c/interpreter.d  is the following code
 		SYMBOL_EXPORT_SC_(ClPkg,no_applicable_method);
 		T_sp func = eval::funcall(cl::_sym_no_applicable_method,
 					  gf,arglist);
-		args[0] = _Nil<T_O>();
+		args[0] = (T_O*)(gctools::tagged_ptr<T_O>::tagged_nil);
 		return(Values(func,_Nil<T_O>()));
 	    }
 	}
@@ -170,7 +170,7 @@ In ecl/src/c/interpreter.d  is the following code
 	{
 	    Function_sp func = eval::funcall(cl::_sym_no_applicable_method,
 					     igf,arglist).as<Function_O>();
-	    args[0] = _Nil<T_O>();
+	    args[0] = (T_O*)(gctools::tagged_ptr<T_O>::tagged_nil);
 	    return(Values(func,_Nil<T_O>()));
 	}
 	methods = eval::funcall(clos::_sym_std_compute_effective_method,igf,gf->GFUN_COMB(),methods);
@@ -304,8 +304,8 @@ In ecl/src/c/interpreter.d  is the following code
 	   See gctools/tagged_ptr.h frame_tag
 	   This saves them so that later they can have a function applied to them by cl_apply.
 	*/
-	MultipleValues* mv = _lisp->callArgs();
-	ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl,frame,mv->getSize(), mv->callingArgsStart());
+	MultipleValues& mv = lisp_callArgs();
+	ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl,frame,mv.getSize(), mv.callingArgsStart());
 #endif
 
 	/* Lookup the generic-function/arguments invocation in a cache and if an effective-method
@@ -314,8 +314,8 @@ In ecl/src/c/interpreter.d  is the following code
 	   Then call the effective method with the saved arguments.
 	*/
         Cache* cache(_lisp->methodCachePtr()); 
-	MultipleValues* callArgs = _lisp->callArgs();  // Get arguments
-	gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), callArgs->getSize(), callArgs->callingArgsStart() ); 
+	MultipleValues& callArgs = lisp_callArgs();
+	gctools::Vec0<T_sp>& vektor = fill_spec_vector(gf, cache->keys(), callArgs.getSize(), callArgs.callingArgsStart() ); 
         CacheRecord* e; //gctools::StackRootedPointer<CacheRecord> e;
         try {
             cache->search_cache(e); // e = ecl_search_cache(cache);
@@ -333,7 +333,7 @@ In ecl/src/c/interpreter.d  is the following code
 	     * compute the applicable methods. We must save
 	     * the keys and recompute the cache location if
 	     * it was filled. */
-	    T_mv mv = compute_applicable_method(gf, callArgs->getSize(), callArgs->callingArgsStart() );
+	    T_mv mv = compute_applicable_method(gf, callArgs.getSize(), callArgs.callingArgsStart() );
 	    func = mv.as<Function_O>();
 	    if (mv.valueGet(1).notnilp() ) {
 	      T_sp keys = VectorObjects_O::create(vektor);

@@ -63,7 +63,6 @@ namespace core
 #endif
 	// Copy the arguments passed in registers into the multiple_values array and those
 	// will be processed by the generic function
-	MultipleValues* mv;
 	LCC_SWITCH_TO_COPY_PASSED_ARGS_INTO_MULTIPLE_VALUES_ARRAY(mv);
         (*lcc_resultP) = (this->entryPoint)(this->instance);
     }

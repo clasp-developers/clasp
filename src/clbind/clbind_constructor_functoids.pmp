@@ -45,7 +45,7 @@ $var NumArgs = 8
                       T* naked_ptr(new T($for Args_ ,[[a$Args_._v]]));
                       gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
                       $if numArgs>0 [[
-                        core::MultipleValues& returnValues = _lisp->multipleValues();
+                        core::MultipleValues& returnValues = core::lisp_multipleValues();
                         returnValues.setSize(0);
                       ]]
                       int oidx = 1;

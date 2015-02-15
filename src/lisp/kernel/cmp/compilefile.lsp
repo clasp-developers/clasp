@@ -247,7 +247,7 @@ to compile prologue and epilogue code when linking modules"
         (let* ()
 	  (with-debug-info-generator (:module *the-module*
 					      :pathname *compile-file-truename*)
-	    (with-load-time-value-unit (ltv-init-fn)
+	    (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
 	      (compile-top-level form)
 	      (let ((main-fn (compile-main-function name ltv-init-fn )))
 		(make-boot-function-global-variable *the-module* main-fn)
@@ -348,7 +348,7 @@ and the pathname of the source file - this will also be used as the module initi
 	  (let* ()
 	    (with-debug-info-generator (:module *the-module*
 						:pathname *compile-file-truename*)
-	      (with-load-time-value-unit (ltv-init-fn)
+	      (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
 		(loop
 		   (let* ((core:*source-database* (core:make-source-manager))
 			  (top-source-pos-info (core:input-stream-source-pos-info sin))
@@ -368,6 +368,8 @@ and the pathname of the source file - this will also be used as the module initi
 	      )
 	    (cmp-log "About to verify the module\n")
 	    (cmp-log-dump *the-module*)
+	    (if *dump-module-on-completion*
+		(llvm-sys:dump *the-module*))
 	    (multiple-value-bind (found-errors error-message)
 		(progn
 		  (cmp-log "About to verify module prior to writing bitcode\n")

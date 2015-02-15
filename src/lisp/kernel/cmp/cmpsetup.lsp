@@ -38,6 +38,8 @@
 (defvar *debug-compiler* nil)
 (export '*debug-compiler*)
 
+(defvar *dump-module-on-completion* nil)
+
 
 ;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it
 ;;
@@ -143,3 +145,5 @@ Options are :tagbody :go :all :eh-landing-pads
 ;; and nil otherwise
 (defvar *cleavir-compile-hook* nil)
 (defvar *cleavir-compile-file-hook* nil)
+
+

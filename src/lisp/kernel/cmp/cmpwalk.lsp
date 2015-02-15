@@ -38,7 +38,7 @@
         (let (
 ;;	      (*gv-source-pathname* (jit-make-global-string-ptr "code-walk-using-compiler" "source-path-name"))
 	      )
-          (with-load-time-value-unit (ltv-init-fn)
+          (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-in-env nil form env)))
         (llvm-sys::module-delete module)
         ))))

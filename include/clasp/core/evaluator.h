@@ -252,8 +252,8 @@ namespace core
 	    if ( nargs > core::MultipleValues::MultipleValuesLimit ) {
 		SIMPLE_ERROR(BF("Too many arguments %d only %d supported") % nargs % core::MultipleValues::MultipleValuesLimit );
 	    }
-	    MultipleValues* mv = _lisp->callArgs();
-	    T_sp* remainingArgumentsInMultipleValues = mv->callingArgsExtraArgStart();
+	    MultipleValues& mv = lisp_callArgs();
+	    T_O** remainingArgumentsInMultipleValues = mv.callingArgsExtraArgStart();
 	    // Do a placement new of an array of T_sp in the remainingArgumentsInMultipleValues
 	    // and initialize it using the variadic arguments in the parameter pack ARGS...args
 	    T_sp* mvargs = new(remainingArgumentsInMultipleValues) T_sp[vnargs]{std::forward<ARGS>(args)...};

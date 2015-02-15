@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/vectorObjects.h>
 #include <clasp/core/str.h>
 #include <clasp/core/lispString.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/evaluator.h>
@@ -47,6 +48,17 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core
 {
+
+#define DEBUG_HASH_TABLE
+    bool DebugHashTable = false;
+
+    #define ARGS_core_DebugHashTable "(on)"
+#define DECL_core_DebugHashTable ""
+#define DOCS_core_DebugHashTable "DebugHashTable"
+void    core_DebugHashTable(bool don)
+    {
+	DebugHashTable = don;
+    }
 
 
 
@@ -309,11 +321,22 @@ namespace core
 	    hg.addPart(0);
 	    return;
 	} else if ( obj.pointerp() ) {
-	    if ( af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) || af_pathnamep(obj) || cl_consp(obj) )
-		{
-		    hg.hashObject(obj);
-		    return;
-		}
+	    if ( af_fixnumP(obj) || af_characterP(obj) || af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) ) {
+		if ( hg.isFilling() ) obj->sxhash(hg);
+		return;
+	    } else if ( Pathname_sp pobj = obj.asOrNull<Pathname_O>() ) {
+		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,pobj->_Host,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,pobj->_Device,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,pobj->_Directory,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,pobj->_Name,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,pobj->_Type,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,pobj->_Version,ld);
+		return;
+	    } else if ( Cons_sp cobj = obj.asOrNull<Cons_O>() ) {
+		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,oCar(cobj),ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equal(hg,oCdr(cobj),ld);
+		return;
+	    }
 	} else {
 	    SIMPLE_ERROR(BF("Add support to hash %s") % _rep_(obj));
 	}
@@ -334,20 +357,36 @@ namespace core
 		Str_sp upstr = cl_string_upcase(str);
 		hg.hashObject(upstr);
 		return;
-	    } else if ( af_symbolp(obj)
-			|| cl_numberp(obj)
-			|| af_pathnamep(obj)
-			|| cl_consp(obj)
-			|| obj->instancep()
-			|| af_arrayP(obj))
-		{
-		    hg.hashObject(obj);
-		    return;
+	    } else if ( af_fixnumP(obj) || af_characterP(obj) || af_symbolp(obj) || cl_numberp(obj) ) {
+		if ( hg.isFilling() ) obj->sxhash(hg);
+		return;
+	    } else if ( Pathname_sp pobj = obj.asOrNull<Pathname_O>() ) {
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,pobj->_Host,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,pobj->_Device,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,pobj->_Directory,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,pobj->_Name,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,pobj->_Type,ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,pobj->_Version,ld);
+		return;
+	    } else if ( Cons_sp cobj = obj.asOrNull<Cons_O>() ) {
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,oCar(cobj),ld);
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,oCdr(cobj),ld);
+		return;
+	    } else if ( obj->instancep() ) {
+		Instance_sp iobj = obj.as<Instance_O>();
+		if ( hg.isFilling() ) HashTable_O::sxhash_equalp(hg,iobj->_Class->className(),ld);
+		for ( int i(0), iEnd(iobj->_Slots.size()); i<iEnd; ++i ) {
+		    if ( !iobj->_Slots[i].unboundp() && hg.isFilling() ) HashTable_O::sxhash_equalp(hg,iobj->_Slots[i],ld);
 		}
+		return;
+	    } else if ( Array_sp aobj = obj.asOrNull<Array_O>() ) {
+		IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for Arrays"));
+	    } else if ( HashTable_sp hobj = obj.asOrNull<HashTable_O>() ) {
+		IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));
+	    }
 	} else {
 	    SIMPLE_ERROR(BF("Add support to sxhash_equalp for %s") % _rep_(obj));
 	}
-	    
 #ifdef USE_MPS
         if (ld) mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
 #endif
@@ -474,6 +513,17 @@ namespace core
 #define DOCS_cl_gethash "gethash"
     T_mv cl_gethash(T_sp key, T_sp hashTable, T_sp default_value)
     {_G();
+#ifdef DEBUG_HASH_TABLE
+	if (DebugHashTable) {
+	    string className = "NULL";
+	    if ( key.pointerp() ) {
+		className = key->_instanceClass()->classNameAsString();
+	    }
+	    printf("%s:%d DebugHashTable hashTable = %s  className(key) = %s   key = %s\n", __FILE__, __LINE__, _rep_(hashTable).c_str(), className.c_str(), _rep_(key).c_str());
+	    
+	}
+#endif
+
         HashTable_sp ht = hashTable.as<HashTable_O>();
         if ( ht.nilp() ) {
             SIMPLE_ERROR(BF("You tried to call gethash on nil hashtable"));
@@ -487,6 +537,11 @@ namespace core
     {
         ASSERT(this->_HashTable);
         uint index = this->sxhashKey(key,cl_length(this->_HashTable), false );
+#ifdef DEBUG_HASH_TABLE
+	if (DebugHashTable) {
+	    printf("%s:%d  bucketsFind index = %d\n", __FILE__, __LINE__, index);
+	}
+#endif
         Cons_sp keyValueCons = this->findAssoc(index,key);
         return keyValueCons;
     }
@@ -516,6 +571,14 @@ namespace core
 	LOG(BF("gethash looking for key[%s]") % _rep_(key) );
         Cons_sp keyValuePair = this->tableRef(key);
 	LOG(BF("Found keyValueCons"));// % keyValueCons->__repr__() ); INFINITE-LOOP
+#ifdef DEBUG_HASH_TABLE
+	if (DebugHashTable) {
+	    DebugHashTable = false; // Turn it off to print
+	    printf("%s:%d DebugHashTable after tableRef() keyValuePair=%s\n", __FILE__, __LINE__, _rep_(keyValuePair).c_str());
+	    DebugHashTable = true;
+	}
+#endif
+	    
 	if ( keyValuePair.nilp() ) {
 	    LOG(BF("valueOrUnbound is unbound - returning default"));
 	    return(Values(default_value,_Nil<T_O>()));
@@ -527,6 +590,14 @@ namespace core
 	}
 	LOG(BF("Found assoc - returning")); // : %s") % res->__repr__() );  INFINITE-LOOP
 	return(Values(value,_lisp->_true()));
+    }
+
+
+
+    int HashTable_O::hashIndex(T_sp key ) const
+    {
+	int idx = this->sxhashKey(key,cl_length(this->_HashTable), false);
+	return idx;
     }
 
 
@@ -565,6 +636,11 @@ namespace core
     T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value)
     {_OF();
 //        printf("%s:%d key@%p value@%p\n", __FILE__, __LINE__, key.px_ref(), value.px_ref() );
+#ifdef DEBUG_HASH_TABLE
+	if (DebugHashTable) {
+	    printf("%s:%d hash_table_setf_gethash hashTable=%s  key=%s\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str(), _rep_(key).c_str());
+	}
+#endif
         Cons_sp keyValuePair = this->tableRef(key);
         if ( keyValuePair.nilp() ) {
             uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /*Will add key*/);
@@ -690,7 +766,14 @@ namespace core
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);
 #ifdef DUMP_LOW_LEVEL
-                ss << "     (" << key.px_ref() << ", " << value.px_ref() << ")@" << pair.px_ref() << " "<< std::endl;
+                ss << "     ( idx=" << this->hashIndex(key) << " ";
+		if ( cl_consp(key) ) {
+		    Cons_sp ckey = key.as<Cons_O>();
+		    ss << "(cons " << ckey->ocar().px << " . " << oCdr(ckey).px  << ")";
+		} else {
+		    ss << key.px_ref();
+		}
+		ss << ", " << value.px_ref() << ")@" << pair.px_ref() << " "<< std::endl;
 #else
 		ss << "     " << _rep_(pair) << std::endl;
 #endif
@@ -793,6 +876,7 @@ namespace core
             .def("hash-table-rehash-size",&HashTable_O::hashTableRehashSize)
             .def("hash-table-rehash-threshold",&HashTable_O::hashTableRehashThreshold)
 	    .def("hash-table-test",&HashTable_O::hashTableTest)
+	    .def("core:hashIndex",&HashTable_O::hashIndex)
 	    .def("core:hashTableNumberOfHashes",&HashTable_O::hashTableNumberOfHashes)
 	    .def("core:hashTableAlistAtHash",&HashTable_O::hashTableAlistAtHash)
             ;
@@ -818,6 +902,7 @@ namespace core
 	Defun(remhash);
         SYMBOL_EXPORT_SC_(ClPkg,gethash);
         ClDefun(gethash);
+	CoreDefun(DebugHashTable);
 
         Defun(hashTableEntryDeletedP);
 

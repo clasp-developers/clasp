@@ -535,7 +535,6 @@
   (llvm-sys:create-icmp-slt *irbuilder* lhs rhs name))
 
 
-
 (defun irc-icmp-ne (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-ne *irbuilder* lhs rhs name))
 
@@ -545,6 +544,9 @@
 
 (defun irc-cond-br (icond true false &optional branchWeights)
   (llvm-sys:create-cond-br *irbuilder* icond true false branchWeights))
+
+(defun irc-ret-void ()
+  (llvm-sys:create-ret-void *irbuilder*))
 
 (defun irc-prev-inst-terminator-inst-p ()
   (let ((cur-block (irc-get-insert-block)))
@@ -652,12 +654,12 @@
 	      (*irbuilder-function-alloca* ,irbuilder-alloca)
 	      (*irbuilder-function-body* ,irbuilder-body))
 	 (with-irbuilder (*irbuilder-function-body*)
-	   (with-dbg-function (,fn-env ,function-name
-				       :linkage-name *current-function-name*
-				       :function ,fn
-				       :function-type ,function-type
-				       :form ,function-form )
-	     (with-dbg-lexical-block (,fn-env ,function-form)
+	   (with-dbg-function (,function-name
+			       :linkage-name *current-function-name*
+			       :function ,fn
+			       :function-type ,function-type
+			       :form ,function-form )
+	     (with-dbg-lexical-block (,function-form)
 	       (let* ((*gv-current-function-name* (jit-make-global-string-ptr *current-function-name* "fn-name"))
 		      (*exception-handler-cleanup-block* (irc-get-exception-handler-cleanup-block ,fn-env))
 		      (*exception-clause-types-to-handle* nil))
@@ -884,35 +886,44 @@ Within the _irbuilder_ dynamic environment...
 		   (irc-dtor "destructTsp" (irc-gep a (list (jit-constant-i32 i))))))))
 
 
+(defun irc-alloca-t* (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
+  "Allocate a T_O* on the stack"
+  (with-alloca-insert-point
+      env irbuilder
+      :alloca (llvm-sys:create-alloca *irbuilder* +t*+ (jit-constant-i32 1) label)
+      :init (lambda (a))
+      :cleanup (lambda (a))))
+
+
 (defun irc-alloca-tsp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-tsp label: %s for %s\n" label irbuilder)
   (with-alloca-insert-point
       env irbuilder
       :alloca (llvm-sys::create-alloca *irbuilder* +tsp+ (jit-constant-i32 1) label)
-      :init (lambda (a) (irc-intrinsic "newTsp" a))
-      :cleanup (lambda (a) (irc-dtor "destructTsp" a))))
+      :init (lambda (a)) ;; (irc-intrinsic "newTsp" a))
+      :cleanup (lambda (a) )))  ;;irc-dtor "destructTsp" a))))
 
 (defun irc-alloca-Function_sp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-Function_sp label: %s for %s\n" label irbuilder)
   (with-alloca-insert-point
       env irbuilder
       :alloca (llvm-sys::create-alloca *irbuilder* +Function_sp+ (jit-constant-i32 1) label)
-      :init (lambda (a) (irc-intrinsic "newFunction_sp" a))
-      :cleanup (lambda (a) (irc-dtor "destructFunction_sp" a))))
+      :init (lambda (a) );;(irc-intrinsic "newFunction_sp" a))
+      :cleanup (lambda (a))));; (irc-dtor "destructFunction_sp" a))))
 
 (defun irc-alloca-afsp (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-afsp label: %s for %s\n" label irbuilder)
   (with-alloca-insert-point env irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* +afsp+ (jit-constant-i32 1) label)
-    :init (lambda (a) (irc-intrinsic "newAFsp" a))
-    :cleanup (lambda (a) (irc-dtor "destructAFsp" a))))
+    :init (lambda (a) );;(irc-intrinsic "newAFsp" a))
+    :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
 
 (defun irc-alloca-afsp-value-frame-of-size (env size &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-afsp-value-frame-of-size label: %s for %s\n" label irbuilder)
   (with-alloca-insert-point env irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* +afsp+ (jit-constant-i32 1) label)
-    :init (lambda (a) (irc-intrinsic "newAFsp" a))
-    :cleanup (lambda (a) (irc-dtor "destructAFsp" a))))
+    :init (lambda (a) ); (irc-intrinsic "newAFsp" a))
+    :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
 
 (defun irc-make-value-frame (result-af size)
   (irc-intrinsic "makeValueFrame" result-af (jit-constant-i32 size) (jit-constant-i32 (irc-next-environment-id))))
@@ -953,36 +964,14 @@ Within the _irbuilder_ dynamic environment...
 			    :alloca (llvm-sys:create-alloca *irbuilder* +LispCompiledFunctionIHF+ (jit-constant-i32 1) label)))
 
 
-(defun irc-alloca-setjmp.buf (env &key (irbuilder *irbuilder-function-alloca*) (label "setjmp.buf"))
-  "Allocate space for a setjmp.buf structure (5 words)"
-  (with-alloca-insert-point env irbuilder
-      :alloca (llvm-sys::create-alloca *irbuilder* +setjmp.buf+ (jit-constant-i32 1) label)))
-
-(defun irc-setjmp.buf-set-jump-address ( env setjmp.buf address)
-  (irc-intrinsic "setjmp_set_jump_address" setjmp.buf address))
-
-(defun irc-setjmp.buf-user0-set-i32 ( env setjmp.buf val)
-  (irc-intrinsic "setjmp_user0_set_i32" setjmp.buf (jit-constant-i32 val)))
-
-(defun irc-setjmp.buf-user0-get-i32 ( env setjmp.buf)
-  (irc-intrinsic "setjmp_user0_get_i32" setjmp.buf))
-
-(defun irc-setjmp.buf-user0-allocate-set-tmv ( env setjmp.buf tmv-val)
-  (irc-intrinsic "setjmp_user0_allocate_set_tmv" setjmp.buf tmv-val))
-
-(defun irc-setjmp.buf-user0-get-tmv ( env result setjmp.buf)
-  (irc-intrinsic "setjmp_user0_get_tmv" result setjmp.buf))
-
-(defun irc-setjmp.buf-user0-delete-tmv ( env setjmp.buf)
-  (irc-intrinsic "setjmp_user0_delete_tmv" setjmp.buf))
 
 
 ; ----------------------------------------------------------------------
 (defun null-tsp ()
-  (llvm-sys:constant-struct-get +tsp+ (list (llvm-sys:constant-pointer-null-get +t-ptr+))))
+  (llvm-sys:constant-struct-get +tsp+ (list (llvm-sys:constant-pointer-null-get +t*+))))
 
 (defun null-t-ptr ()
-  (llvm-sys:constant-pointer-null-get +t-ptr+))
+  (llvm-sys:constant-pointer-null-get +t*+))
 
 ;----------------------------------------------------------------------
 
@@ -996,7 +985,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 	  (values values (cdr values))
 	  (value (car values) (car values)))
 	 ((null values) nil)
-      (let ((ptr (llvm-sys:create-geparray *irbuilder* multiple-values-array (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 idx) (cmp:jit-constant-i32 0)) "idx")))
+      (let ((ptr (llvm-sys:create-geparray *irbuilder* multiple-values-array (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 idx) #||(cmp:jit-constant-i32 0)||# ) "idx")))
 	(irc-store value ptr)))
     multiple-values-array))
 	

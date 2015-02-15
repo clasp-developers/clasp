@@ -379,7 +379,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 
 (defun codegen-multiple-value-call (result rest env)
-  (with-dbg-lexical-block (env rest)
+  (with-dbg-lexical-block (rest)
     (let ((accumulate-results (irc-alloca-tsp env :label "acc-multiple-value-results"))
 	  (temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
 	  (funcDesignator (irc-alloca-tsp env :label "funcDesignator"))
@@ -403,7 +403,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 
 (defun codegen-multiple-value-prog1 (result rest env)
-  (with-dbg-lexical-block (env rest)
+  (with-dbg-lexical-block (rest)
     (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
 	  (saved-values (irc-alloca-tsp env :label "multiple-value-prog1-saved-values"))
 	  (temp-val (irc-alloca-tsp env :label "temp-val")))
@@ -523,7 +523,7 @@ env is the parent environment of the (result-af) value frame"
 	       (target-idx (cdr classified-target)))
 	  (dbg-set-current-debug-location-here)
 	  (with-target-reference-do (target-ref classified-target new-env)
-	    (dbg-set-current-source-pos evaluate-env exp)
+	    (dbg-set-current-source-pos exp)
 	    (codegen target-ref exp evaluate-env)))))))
 
 
@@ -531,7 +531,7 @@ env is the parent environment of the (result-af) value frame"
 
 
 (defun codegen-let/let* (operator-symbol result parts env)
-  (with-dbg-lexical-block (env parts)
+  (with-dbg-lexical-block (parts)
     (let ((assignments (car parts))
 	  (body (cdr parts)))
       (multiple-value-bind (variables expressions)
@@ -637,7 +637,7 @@ env is the parent environment of the (result-af) value frame"
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
 	(let ((thenv (progn
-                       (dbg-set-current-source-pos env ithen)
+                       (dbg-set-current-source-pos ithen)
                        (codegen result #|REALLY? put result in result?|# ithen env))))
 	  ;;	  (unless thenv (break "thenv is nil") (return-from codegen-if nil))  ;; REALLY? return?????
 	  (irc-branch-if-no-terminator-inst mergebb)
@@ -648,7 +648,7 @@ env is the parent environment of the (result-af) value frame"
 	  (irc-begin-block elsebb)
 	  ;; REALLY? Again- do I use result here?
 	  (let ((elsev (progn
-                         (dbg-set-current-source-pos env ielse)
+                         (dbg-set-current-source-pos ielse)
                          (codegen result ielse env))))
 	    ;;	    (unless elsev (break "elsev is nil") (return-from codegen-if nil)) ;; REALLY? return???
 	    (irc-branch-if-no-terminator-inst mergebb)
@@ -785,7 +785,7 @@ jump to blocks within this tagbody."
   "codegen-block using the try macro"
   (let* ((block-symbol (car rest))
          (body (cdr rest)))
-    (with-dbg-lexical-block (env body)
+    (with-dbg-lexical-block (body)
       (let* ((block-env (irc-new-block-environment env :name block-symbol))
              traceid)
 	(let ((block-start (irc-basic-block-create
@@ -884,7 +884,7 @@ jump to blocks within this tagbody."
 
 
 (defun codegen-flet/labels (operator-symbol result rest env)
-  (with-dbg-lexical-block (env rest)
+  (with-dbg-lexical-block (rest)
     (let* ((functions (car rest))
 	   (body (cdr rest))
 	   (function-env (irc-new-function-value-environment env :functions functions)))
@@ -981,7 +981,7 @@ jump to blocks within this tagbody."
 
 
 (defun codegen-locally (result rest env)
-  (with-dbg-lexical-block (env rest)
+  (with-dbg-lexical-block (rest)
     (multiple-value-bind (declarations code doc-string specials)
 	(process-declarations rest nil)
       (let ((new-env (irc-new-unbound-value-environment-of-size
@@ -1003,7 +1003,7 @@ jump to blocks within this tagbody."
 
 
 (defun codegen-unwind-protect (result rest env)
-  (with-dbg-lexical-block (env rest)
+  (with-dbg-lexical-block (rest)
     (let* ((protected-form (car rest))
 	   (unwind-form `(progn ,@(cdr rest)))
 	   (up-env (irc-make-unwind-protect-environment unwind-form env))
@@ -1032,7 +1032,7 @@ jump to blocks within this tagbody."
 
 
 (defun codegen-catch (result rest env)
-  (with-dbg-lexical-block (env rest)
+  (with-dbg-lexical-block (rest)
     (let* ((catch-env (irc-new-catch-environment env))
 	   (tag (car rest))
 	   (body (cdr rest))
@@ -1159,7 +1159,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (cmp-log "entered codegen-special-operator head: %s rest: %s\n" head rest)
   (assert-result-isa-llvm-value result)
   (cmp-log "About to set source pos\n")
-  (dbg-set-current-source-pos env rest)
+  (dbg-set-current-source-pos rest)
   (cmp-log "About to do case on head: %s\n" head)
   (let ((function (gethash head *special-operator-dispatch* 'nil)))
     (if function
@@ -1179,7 +1179,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   "A macro function or a regular function"
   ;;  (break "codegen-application")
   (assert-result-isa-llvm-value result)
-  (dbg-set-current-source-pos env form)
+  (dbg-set-current-source-pos form)
   (cond
     ((and (symbolp (car form))
           (not (core:lexical-function (car form) env))
@@ -1242,7 +1242,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
-      (dbg-set-current-source-pos env form)
+      (dbg-set-current-source-pos form)
     (let* ((*current-form* form)
            (*current-env* env))
       (cmp-log "codegen stack-used[%d bytes]\n" (stack-used))
@@ -1357,6 +1357,12 @@ be wrapped with to make a closure"
 					     'llvm-sys:external-linkage
 					     nil
 					     *run-time-literals-external-name*))
+	     #+(or)(*thread-local-data* (llvm-sys:make-global-variable *the-module*
+								       +thread-info-struct+
+								       nil
+								       'llvm-sys:external-linkage
+								       nil
+								       *run-time-literals-external-name*))
 	     (pathname (if *load-pathname*
 			   (namestring *load-pathname*)
 			   "repl-code"))
@@ -1376,6 +1382,8 @@ be wrapped with to make a closure"
 		    (values fn fn-kind wrenv lambda-name warnp failp)))
 	      (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
 	      (cmp-log-dump *the-module*)
+	      (if *dump-module-on-completion*
+		  (llvm-sys:dump *the-module*))
 	      (if (not *run-time-execution-engine*)
 		  ;; SETUP THE *run-time-execution-engine* here for the first time
 		  ;; using the current module in *the-module*

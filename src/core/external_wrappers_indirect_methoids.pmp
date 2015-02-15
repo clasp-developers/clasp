@@ -71,7 +71,7 @@ $$          ]]
 
 $$ BEGIN(ArgsToRet) -- Convert arguments to multiple values according to outValue_ and pureOutValue_ template arguments
           $if numArgs>0 [[
-            core::MultipleValues& returnValues = _lisp->multipleValues();
+            core::MultipleValues& returnValues = core::lisp_multipleValues();
             returnValues.setSize(0);
           ]]
           $if ret==RetVoid [[

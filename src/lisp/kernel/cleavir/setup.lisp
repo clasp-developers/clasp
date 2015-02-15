@@ -172,10 +172,12 @@
   (core:system "open -n /tmp/mir.png"))
 
 (defun draw-ast (&optional (ast *ast*) (filename "/tmp/ast.dot"))
-  (with-open-file (stream filename :direction :output)
-    (cleavir-ast-graphviz:draw-ast ast filename))
-  (core:system (format nil "dot -Tpng -o/tmp/ast.png ~a" filename))
-  (core:system "open -n /tmp/ast.png"))
+  (let* ((dot-pathname (pathname filename))
+	 (png-pathname (make-pathname :type "png" :defaults dot-pathname)))
+    (with-open-file (stream filename :direction :output)
+      (cleavir-ast-graphviz:draw-ast ast filename))
+    (core:system (format nil "dot -Tpng -o~a ~a" (namestring png-pathname) (namestring dot-pathname)))
+    (core:system (format nil "open -n ~a" (namestring png-pathname)))))
 
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
@@ -222,6 +224,20 @@
       ":c(ontinue) Continue processing forms"
       "Stuff"))))
 
+(defun ast-form (form)
+  (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env*)))
+    (setf *form* form
+	  *ast* ast)
+    (draw-ast ast)
+    ast))
+
+(defun hoisted-ast-form (form)
+  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+	 (hoisted (clasp-cleavir-ast:hoist-load-time-value ast)))
+    (setf *form* form
+	  *ast* hoisted)
+    (draw-ast hoisted "/tmp/hoisted.dot")))
+
 (defun hir-form (form)
   (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
 	 (hir (cleavir-ast-to-hir:compile-toplevel ast))
@@ -234,13 +250,40 @@
     (draw-hir hir)
     hir))
 
+(defun hoisted-hir-form (form)
+  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+	 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
+	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
+	 (clasp-inst (make-instance 'clasp)))
+    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
+;;    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
+    (setf *form* form
+	  *ast* hoisted-ast
+	  *hir* hir)
+    (draw-hir hir)
+    hir))
+
 (defun mir-form (form)
   (let ((hir (hir-form form))
 	(clasp-inst (make-instance 'clasp)))
     (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
     (draw-mir hir)
     (setq *mir* hir)))
-  
+
+
+(defun hoisted-mir-form (form)
+  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+	 (hoisted-ast (cleavir-ast-transformations:hoist-load-time-value ast))
+	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
+	 (clasp-inst (make-instance 'clasp)))
+    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
+    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
+    (setf *form* form
+	  *ast* hoisted-ast
+	  *hir* hir)
+    (draw-hir hir)
+    hir))
+
 (defun hir-tpl ()
   (format t "Starting tpl~%")
   (handler-case (core:tpl :commands *hir-commands*)

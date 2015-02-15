@@ -36,6 +36,7 @@ THE SOFTWARE.
 namespace core
 {
 
+    extern bool DebugHashTable;
 
     HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold);
 
@@ -123,6 +124,7 @@ namespace core
         Cons_sp find(T_sp key);
 
 	T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>() ) ;
+	int hashIndex(T_sp key) const;
 
 	T_sp hash_table_setf_gethash(T_sp key, T_sp value);
         void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key,val);};

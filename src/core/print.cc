@@ -237,14 +237,16 @@ namespace core
                 ss << typesym->symbolNameAsString();
                 ss << " ";
             }
+	    clasp_write_string(ss.str(),ostream);
             if ( function.notnilp() )
             {
                 eval::funcall(function);
             }
-            ss << o.px_ref();
-            ss << ">";
-            Str_sp str = Str_O::create(ss.str());
-            clasp_writeString(str,stream);
+	    stringstream stail;
+	    stail << " @";
+            stail << o.px_ref();
+            stail << ">";
+	    clasp_write_string(stail.str(),ostream);
         }
     };
 

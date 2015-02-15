@@ -109,7 +109,7 @@ namespace core
 	    ReturnValueWhen(returnValues,oidx,
 			    typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
 			    typename Contains_<Pols,    outValue_<0> >::type >::type(),arg0);
-	    *lcc_resultP = gctools::multiple_values<T_O>(returnValues.valueGet(0,oidx),oidx);
+	    *lcc_resultP = gctools::multiple_values<T_O>(T_sp(returnValues.valueGet(0,oidx)),oidx);
 	}
 #endif
     };

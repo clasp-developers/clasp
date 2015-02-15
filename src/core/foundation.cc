@@ -498,14 +498,21 @@ namespace core
     };
 
 
-    MultipleValues* lisp_multipleValues()
+    void lisp_setThreadLocalInfoPtr(ThreadInfo* address)
     {
-	return &(_lisp->multipleValues());
+	threadLocalInfoPtr = address;
     }
 
-    MultipleValues* lisp_callArgs()
+    MultipleValues& lisp_multipleValues()
     {
-	return (_lisp->callArgs());
+	//	return &(_lisp->multipleValues());
+	return threadLocalInfoPtr->multipleValues;
+    }
+
+    MultipleValues& lisp_callArgs()
+    {
+	//	return (_lisp->callArgs());
+	return threadLocalInfoPtr->multipleValues;
     }
 
 
@@ -691,16 +698,6 @@ namespace core
 	SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class"));
     }
 
-
-    void lisp_pushMultipleValues(MultipleValues* newTopMultipleValues)
-    {
-	_lisp->pushMultipleValues(newTopMultipleValues);
-    }
-
-    void lisp_popMultipleValues()
-    {
-	_lisp->popMultipleValues();
-    }
 
     Class_sp lisp_static_class(T_sp o)
     {

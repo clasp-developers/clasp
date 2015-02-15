@@ -161,11 +161,11 @@ namespace core
 	static ValueFrame_sp createForMultipleValues(const T_sp& parent)
 	{_G();
             GC_ALLOCATE(ValueFrame_O,vf);
-	    MultipleValues* mv = core::lisp_callArgs();
-            vf->allocate(mv->getSize());
+	    MultipleValues& mv = core::lisp_callArgs();
+            vf->allocate(mv.getSize());
             // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
-            for ( int i(0); i<mv->getSize(); ++i ) {
-                vf->_Objects[i] = (*mv)[i];
+            for ( int i(0); i<mv.getSize(); ++i ) {
+                vf->_Objects[i] = mv[i];
             }
             vf->_ParentFrame = parent;
 #if 0
@@ -533,14 +533,14 @@ namespace frame
         }
     };
 
-    inline void InitializeStackValueFrameWithValues(core::T_O** frameImpl, size_t sz, core::T_sp parent, core::T_sp* initialContents  )
+    inline void InitializeStackValueFrameWithValues(core::T_O** frameImpl, size_t sz, core::T_sp parent, core::T_O** initialContents  )
     {
 #ifdef DEBUG_FRAME
         printf("%s:%d InitializeStackValueFrame @%p sz=%zu\n", __FILE__, __LINE__, frameImpl, sz );
 #endif
 	InitializeStackValueFrameBase(frameImpl,sz,parent);
         for ( size_t i(IdxValuesArray), j(0), iEnd(IdxValuesArray+sz); i<iEnd; ++i,++j ) {
-            frameImpl[i] = initialContents[j].asTPtr();
+            frameImpl[i] = initialContents[j];
         }
     };
 

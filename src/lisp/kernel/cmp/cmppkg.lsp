@@ -11,4 +11,6 @@
 	  with-irbuilder
 	  *irbuilder*
 	  irc-basic-block-create
+	  jit-constant-i32
+	  irc-ret-void
 	  ))

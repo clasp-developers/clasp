@@ -40,7 +40,7 @@ $var NumArgs = 8
                         Pointer ptr(instance.release());
                         HolderType retval = HolderType::create(ptr,naked_ptr,register_class<T>::id);
                         $if numArgs>0 [[
-                                core::MultipleValues& returnValues = _lisp->multipleValues();
+                                core::MultipleValues& returnValues = core::lisp_multipleValues();
                                 ]]
                             $if ret==RetVoid [[
                                 $if numArgs==0 [[]] $else [[ int oidx = 0; ]]

@@ -189,25 +189,15 @@ extern "C" {
 //	SIMPLE_ERROR(BF("In %s not enough arguments passed - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments );
     }
 
-    extern void va_throwIfExcessKeywordArguments( char* fnName, int nargs, core::T_sp* argArray, int argIdx)
+    extern void va_throwIfExcessKeywordArguments( char* fnName, int nargs, core::T_O** argArray, int argIdx)
     {_G();
 	if ( argIdx >= nargs ) return;
         stringstream ss;
         for ( int i(0); i<nargs; ++i ) {
-            ss << _rep_(argArray[i]) << " ";
+            ss << _rep_(core::T_sp(argArray[i])) << " ";
         }
         SIMPLE_ERROR(BF("va_throwIfExcessKeywordArguments>> Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str() );
 //        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
-#if 0
-	stringstream ss;
-	for ( int ii = argIdx; ii < nargs; ii+=2 )
-	{
-	    core::T_sp& keyRef = argArray[ii];
-	    if ( keyRef == kw::_sym_allow_other_keys ) continue;
-	    ss << _rep_(keyRef) << " ";
-	}
-	SIMPLE_ERROR(BF("In %s extraneous keyword arguments: %s") % fnName % ss.str() );
-#endif
     }
 
 
@@ -286,32 +276,32 @@ extern "C" {
 
 
 
-    __attribute__((visibility("default")))  void va_fillRestTarget( core::T_sp* restP, int nargs, core::T_sp* argArray, int startRest, char* fnName)
+    __attribute__((visibility("default")))  void va_fillRestTarget( core::T_sp* restP, int nargs, core::T_O** argArray, int startRest, char* fnName)
     {_G();
 	core::Cons_sp result = _Nil<core::Cons_O>();
 	for ( int i=nargs-1; i>=startRest; i-- )
 	{
-	    result = core::Cons_O::create(argArray[i],result);
+	    result = core::Cons_O::create(core::T_sp(argArray[i]),result);
 	}
 	(*restP) = result;
 	ASSERTNOTNULL(*restP);
     }
 
 
-    extern int va_allowOtherKeywords(int saw_aok, int nargs, core::T_sp* argArray, int argIdx)
+    extern int va_allowOtherKeywords(int saw_aok, int nargs, core::T_O** argArray, int argIdx)
     {
 	if (saw_aok) return saw_aok;
-	bool aokTrue = argArray[argIdx+1].isTrue();
+	bool aokTrue = (uintptr_t)(argArray[argIdx+1]) != gctools::tagged_ptr<core::T_O>::tagged_nil;// .isTrue();
 	return aokTrue ? 2 : 1;
     }
 
 
-    void va_throwIfBadKeywordArgument(int allowOtherKeys, int badKwIdx, int nargs,  core::T_sp* argArray )
+    void va_throwIfBadKeywordArgument(int allowOtherKeys, int badKwIdx, int nargs,  core::T_O** argArray )
     {
 	if ( allowOtherKeys == 2 ) return;
 	if ( badKwIdx >= 0 )
 	{
-	    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(argArray[badKwIdx]) );
+	    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(core::T_sp(argArray[badKwIdx])) );
 	}
     }
 };
@@ -387,6 +377,13 @@ extern "C" {
 	return ((*xP)==(*yP)) ? 1 : 0;
     }
 
+        extern int compareTspTptr(core::T_sp* xP, core::T_O** yP)
+    {
+//	ASSERT(xP!=NULL);
+//	ASSERT(yP!=NULL);
+	return ((*xP).px==(*yP)) ? 1 : 0;
+    }
+
 
 
     extern void copyArgs(core::T_sp* destP, int nargs, core::T_O* arg0, core::T_O* arg1, core::T_O* arg2, va_list args )
@@ -433,6 +430,20 @@ extern "C" {
 	ASSERT(sourceP!=NULL);
 	ASSERT(destP!=NULL);
 	*destP = Values(*sourceP);
+    }
+
+
+        extern void sp_copyTspTptr(core::T_sp* destP, core::T_O** sourceP)
+    {_G();
+	*destP = core::T_sp(*sourceP);
+    }
+
+
+    extern void mv_copyTspTptr(core::T_mv* destP, core::T_O** sourceP)
+    {_G();
+	ASSERT(sourceP!=NULL);
+	ASSERT(destP!=NULL);
+	*destP = Values(core::T_sp(*sourceP));
     }
 
 
@@ -558,9 +569,9 @@ extern "C"
 
 
 
-    core::T_sp* getMultipleValues(int offset) 
+    core::T_O** getMultipleValues(int offset) 
     {
-	return &_lisp->multipleValues().callingArgsStart()[offset];
+	return &lisp_multipleValues().callingArgsStart()[offset];
     }
 
     /*! Return i32 1 if (valP) is != unbound 0 if it is */
@@ -1538,7 +1549,6 @@ extern "C"
 	*ltvPP = reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
     }
 
-
     void dumpLoadTimeValues(core::LoadTimeValues_O* ltvP)
     {
 	ltvP->dump();
@@ -1747,21 +1757,21 @@ extern "C"
 
     void saveToMultipleValue0(core::T_mv* mvP)
     {
-        MultipleValues* mv = lisp_multipleValues();
-        mv->valueSet(0,*mvP);
+        MultipleValues& mv = lisp_multipleValues();
+        mv.valueSet(0,*mvP);
     }
 
 
     void sp_restoreFromMultipleValue0( core::T_sp* resultP )
     {
-	MultipleValues* mv = lisp_multipleValues();
-	(*resultP) = (*mv)[0];
+	MultipleValues& mv = lisp_multipleValues();
+	(*resultP) = mv[0];
     }
 
     void mv_restoreFromMultipleValue0( core::T_mv* resultP)
     {
-	MultipleValues* mv = lisp_multipleValues();
-	(*resultP) = core::T_mv((*mv)[0],mv->getSize());
+	MultipleValues& mv = lisp_multipleValues();
+	(*resultP) = core::T_mv(mv[0],mv.getSize());
     }
 
 
@@ -1824,10 +1834,10 @@ extern "C"
 	return aokTrue ? 2 : 1;
     }
 
-    void kw_throwIfNotKeyword(core::T_sp* objP)
+    void kw_throwIfNotKeyword(core::T_O** objP)
     {
 	ASSERT(objP!=NULL);
-	if ( !af_keywordP((*objP)) )
+	if ( !af_keywordP((core::T_sp(*objP))) )
 	{
             SIMPLE_ERROR(BF("Not keyword %s")% _rep_(*objP));
 //            core::throwUnrecognizedKeywordArgumentError(*objP);
@@ -1978,9 +1988,9 @@ extern "C"
 
 
 
-    extern int matchKeywordOnce(core::T_sp* xP, core::T_sp* yP, unsigned char* sawKeyAlreadyP)
+    extern int matchKeywordOnce(core::T_sp* xP, core::T_O** yP, unsigned char* sawKeyAlreadyP)
     {
-        if ( (*xP)!=(*yP) ) return 0;
+        if ( (*xP).px!=(*yP) ) return 0;
         if (*sawKeyAlreadyP) return 2;
         return 1;
     }

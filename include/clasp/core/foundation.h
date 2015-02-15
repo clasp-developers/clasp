@@ -654,9 +654,11 @@ void lisp_errorIllegalDereference(void* v);
 
 
 namespace core {
+    class ThreadInfo;
     class MultipleValues;
-    MultipleValues* lisp_multipleValues();	
-    MultipleValues* lisp_callArgs();
+    void lisp_setThreadLocalInfoPtr(ThreadInfo* address);
+    MultipleValues& lisp_multipleValues();	
+    MultipleValues& lisp_callArgs();
 };
 
 
@@ -685,13 +687,6 @@ namespace core {
 
 #include <clasp/gctools/containers.h>
 
-
-namespace core {
-    /*! This pushes the newestMultipleValues onto the thread local MultipleValues stack.
-     The current top of the stack is returned. */
-    void lisp_pushMultipleValues(MultipleValues* newestMultipleValues);
-    void lisp_popMultipleValues();
-};
 
 #include <clasp/core/multipleValues.h>
 
@@ -887,7 +882,7 @@ namespace core {
 };
 
 /*! A type for an array of arguments */
-    typedef	core::T_sp* 	ArgArray;
+    typedef	core::T_O** 	ArgArray;
 
 
 

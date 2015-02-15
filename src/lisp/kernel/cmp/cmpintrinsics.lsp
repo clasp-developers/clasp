@@ -75,6 +75,16 @@ Set this to other IRBuilders to make code go where you want")
 ;;(defconstant +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
 (defconstant +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
 
+(defconstant +size_t+
+  (let ((sizeof-size_t (cdr (assoc 'core:size-t (cxx-data-structures-info)))))
+    (cond
+      ((= 8 sizeof-size_t) +i64+)
+      ((= 4 sizeof-size_t) +i32+)
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+(defconstant +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
+(defconstant +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
+
+
 (defconstant +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
 (defconstant +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
 (defconstant +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
@@ -131,15 +141,18 @@ Boehm and MPS use a single pointer"
 
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
 (defconstant +t+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
-(defconstant +t-ptr+ (llvm-sys:type-get-pointer-to +t+))
-(defconstant +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t-ptr+) nil))  ;; "T_sp"
+(defconstant +t*+ (llvm-sys:type-get-pointer-to +t+))
+(defconstant +t**+ (llvm-sys:type-get-pointer-to +t*+))
+(defconstant +t*[0]+ (llvm-sys:array-type-get +t*+ 0))
+(defconstant +t*[0]*+ (llvm-sys:type-get-pointer-to +t*[0]+))
+(defconstant +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
 (defconstant +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
 (defconstant +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
 (defconstant +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
 (defconstant +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
 
-(defconstant +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t-ptr+ +i32+) nil))  ;; "T_mv"
+(defconstant +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +i32+) nil))  ;; "T_mv"
 (defconstant +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
 (defconstant +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
 
@@ -151,6 +164,12 @@ Boehm and MPS use a single pointer"
 (defconstant +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
 (defconstant +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
 (defconstant +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
+
+
+(defconstant +mv-limit+ (cdr (assoc :multiple-values-limit (core:cxx-data-structures-info))))
+(defconstant +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
+(defconstant +mv-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
+(defconstant +thread-info-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +mv-struct+) nil))
 
 
 #+(or)(progn
@@ -178,12 +197,12 @@ Boehm and MPS use a single pointer"
 (defvar *register-arg-names* nil)
 (let (arg-types arg-names)
   (dotimes (i core:+number-of-fixed-arguments+)
-    (push +t-ptr+ arg-types)
+    (push +t*+ arg-types)
     (push (bformat nil "farg%d" i) arg-names))
   (setf *register-arg-types* (nreverse arg-types)
 	*register-arg-names* (nreverse arg-names)))
 (defconstant +fn-registers-prototype-argument-names+ (list* "result-ptr" "closed-af-ptr" "nargs" *register-arg-names*))
-(defconstant +fn-registers-prototype+ (llvm-sys:function-type-get +void+ (list* +tmv*+ +t-ptr+ +i32+ *register-arg-types*))
+(defconstant +fn-registers-prototype+ (llvm-sys:function-type-get +void+ (list* +tmv*+ +t*+ +i32+ *register-arg-types*))
   "The general function prototypes pass the following pass:
 1) An sret pointer for where to put the result
 2) A closed over runtime environment (linked list of activation frames)
@@ -377,8 +396,10 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "resetTsp" +void+ (list +tsp*+))
   (primitive-does-not-throw module "makeUnboundTsp" +void+ (list +tsp*+))
   (primitive-does-not-throw module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
+  (primitive-does-not-throw module "copyTspTptr" +void+ (list +tsp*-or-tmv*+ +t**+))
   (primitive-does-not-throw module "destructTsp" +void+ (list +tsp*+))
   (primitive-does-not-throw module "compareTsp" +i32+ (list +tsp*+ +tsp*+))
+  (primitive-does-not-throw module "compareTspTptr" +i32+ (list +tsp*+ +t**+))
 
   (primitive-does-not-throw module "newTmv" +void+ (list +tmv*+))
   (primitive-does-not-throw module "resetTmv" +void+ (list +tmv*+))
@@ -392,7 +413,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "copyAFsp" +void+ (list +afsp*+ +afsp*+))
   (primitive-does-not-throw module "destructAFsp" +void+ (list +afsp*+))
 
-  (primitive-does-not-throw module "getMultipleValues" +tsp[0]*+ (list +i32+))
+  (primitive-does-not-throw module "getMultipleValues" +t*[0]*+ (list +i32+))
 
   (primitive-does-not-throw module "isNilTsp" +i32+ (list +tsp*+))
   (primitive-does-not-throw module "isTrue" +i32+ (list +tsp*+))
@@ -437,7 +458,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "makeTagbodyFrame" +void+ (list +afsp*+))
   (primitive-does-not-throw module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
   (primitive-does-not-throw module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
-  (primitive-does-not-throw module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t-ptr+))
+  (primitive-does-not-throw module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t*+))
   (primitive-does-not-throw module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
   (primitive-does-not-throw module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
@@ -457,20 +478,20 @@ Boehm and MPS use a single pointer"
 
   (primitive-does-not-throw module "activationFrameSize" +i32+ (list +afsp*+))
 
-  (primitive-does-not-throw module "copyArgs" +void+ (list +tsp*+ +i32+ +t-ptr+ +t-ptr+ +t-ptr+ +i8*+))
+  (primitive-does-not-throw module "copyArgs" +void+ (list +tsp*+ +i32+ +t*+ +t*+ +t*+ +i8*+))
   (primitive module "throwTooManyArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive module "throwNotEnoughArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive module "throwIfExcessKeywordArguments" +void+ (list +i8*+ +afsp*+ +i32+))
   (primitive-does-not-throw module "kw_allowOtherKeywords" +i32+ (list +i32+ +afsp*+ +i32+))
   (primitive-does-not-throw module "kw_trackFirstUnexpectedKeyword" +i32+ (list +i32+ +i32+))
   (primitive module "kw_throwIfBadKeywordArgument" +void+ (list +i32+ +i32+ +afsp*+))
-  (primitive module "kw_throwIfNotKeyword" +void+ (list +tsp*+))
+  (primitive module "kw_throwIfNotKeyword" +void+ (list +t**+))
 
   (primitive-does-not-throw module "gdb" +void+ nil)
   (primitive-does-not-throw module "debugInvoke" +void+ nil)
   (primitive-does-not-throw module "debugInspectActivationFrame" +void+ (list +afsp*+))
   (primitive-does-not-throw module "debugInspectT_sp" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "debugInspectTPtr" +void+ (list +t-ptr+))
+  (primitive-does-not-throw module "debugInspectTPtr" +void+ (list +t*+))
   (primitive-does-not-throw module "debugInspectT_mv" +void+ (list +tmv*+))
 
   (primitive-does-not-throw module "debugPointer" +void+ (list +i8*+))
@@ -484,18 +505,18 @@ Boehm and MPS use a single pointer"
 
   (primitive module "va_throwTooManyArgumentsException" +void+ (list +i8*+ +i32+ +i32+))
   (primitive module "va_throwNotEnoughArgumentsException" +void+ (list +i8*+ +i32+ +i32+))
-  (primitive module "va_throwIfExcessKeywordArguments" +void+ (list +i8*+ +i32+ +tsp[0]*+ +i32+))
+  (primitive module "va_throwIfExcessKeywordArguments" +void+ (list +i8*+ +i32+ +t*[0]*+ +i32+))
   (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
   (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +closure*+ (list +symsp*+))  ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +afsp*+))
-  (primitive module "FUNCALL" +void+ (list* +tsp*-or-tmv*+ +closure*+ +i32+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t-ptr+))))
+  (primitive module "FUNCALL" +void+ (list* +tsp*-or-tmv*+ +closure*+ +i32+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
   (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+))
 
 
-  (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +i32+ +tsp[0]*+ +i32+ +i8*+))
-  (primitive-does-not-throw module "va_allowOtherKeywords" +i32+ (list +i32+ +i32+ +tsp[0]*+ +i32+))
-  (primitive module "va_throwIfBadKeywordArgument" +void+ (list +i32+ +i32+ +i32+ +tsp[0]*+))
+  (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +i32+ +t*[0]*+ +i32+ +i8*+))
+  (primitive-does-not-throw module "va_allowOtherKeywords" +i32+ (list +i32+ +i32+ +t*[0]*+ +i32+))
+  (primitive module "va_throwIfBadKeywordArgument" +void+ (list +i32+ +i32+ +i32+ +t*[0]*+))
 
 
   (primitive-does-not-throw module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
@@ -581,7 +602,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "pushDynamicBinding" +void+ (list +symsp*+))
   (primitive-does-not-throw module "popDynamicBinding" +void+ (list +symsp*+))
 
-  (primitive-does-not-throw module "matchKeywordOnce" +i32+ (list +tsp*+ +tsp*+ +i8*+))
+  (primitive-does-not-throw module "matchKeywordOnce" +i32+ (list +tsp*+ +t**+ +i8*+))
 
 
   )

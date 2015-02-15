@@ -72,6 +72,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 
 
 
+
 (defun get-next-available-ltv-entry (&optional value)
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
@@ -725,7 +726,7 @@ evaluate POSTSCRIPT with their final values in ltv-value-counter and ltv-symbol-
 
 
 
-(defmacro with-load-time-value-unit ((ltv-init-fn) &rest body)
+(defmacro with-compile-file-dynamic-variables-and-load-time-value-unit ((ltv-init-fn) &rest body)
   "Wraps generation of load-time-values. This is only invoked from COMPILE-FILE and it creates
 the 'runAll' function and sets up everything for the coalescence and
 marshaling of compiled quoted data"
@@ -794,8 +795,7 @@ marshaling of compiled quoted data"
 								      *gv-source-debug-namestring*
 								      (jit-constant-i64 *source-debug-offset*)
 								      (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-								      *gv-source-file-info-handle*)
-					 ))
+								      *gv-source-file-info-handle*)))
 	   (initialize-special-load-time-values ,fn-env-gs)
 	   ,@body)
 	 (with-irbuilder (*irbuilder-ltv-function-body*)

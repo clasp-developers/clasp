@@ -209,6 +209,12 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 
     SYMBOL_SC_(CorePkg,STARdebugMonitorSTAR);
     SYMBOL_SC_(CorePkg,monitorReader);
+    SYMBOL_EXPORT_SC_(CorePkg,tsp);
+    SYMBOL_EXPORT_SC_(CorePkg,tmv);
+    SYMBOL_EXPORT_SC_(CorePkg,invocationHistoryFrame);
+    SYMBOL_EXPORT_SC_(CorePkg,size_t);
+    SYMBOL_EXPORT_SC_(CorePkg,threadInfo);
+
     SYMBOL_EXPORT_SC_(CorePkg,STARsourceDatabaseSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARcurrentSourcePosInfoSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,STARstartRunTimeSTAR);
