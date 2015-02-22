@@ -179,6 +179,14 @@ namespace core
 	if (this->_AllowOtherKeys.notnilp()) {
 	    ll << cl::_sym_AMPallow_other_keys;
 	}
+	if ( this->_AuxArguments.size() > 0 ) {
+	    ll << cl::_sym_AMPaux;
+	    for ( gctools::Vec0<AuxArgument>::const_iterator it = this->_AuxArguments.begin();
+		  it!=this->_AuxArguments.end(); it++ ) {
+		Cons_sp one = Cons_O::createList(it->_ArgTarget,it->_Expression);
+		ll << one;
+	    }
+	}
 	return ll.cons();
     }
     

@@ -1,7 +1,6 @@
 (in-package :cmp)
 
-(export '(+fn-void+
-	  +fn-prototype+
+(export '(+fn-prototype+
 	  +fn-prototype-argument-names+
 	  jit-function-name
 	  *the-module*
@@ -13,4 +12,28 @@
 	  irc-basic-block-create
 	  jit-constant-i32
 	  irc-ret-void
+	  codegen-literal
+	  irc-intrinsic
+	  compile-error-if-wrong-number-of-arguments
+	  *current-function*
+	  *gv-current-function-name*
+	  *current-function-name*
+	  jit-make-global-string-ptr
+	  *run-time-literal-holder*
+	  cmp-log
+	  cmp-log-dump
+	  *run-time-execution-engine*
+	  create-run-time-execution-engine
+	  irc-environment-activation-frame
+	  *run-time-literals-external-name*
+	  *all-funcs-for-one-compile*
+	  *dump-module-on-completion*
+	  irc-intrinsic-args
+	  set-associated-funcs
+	  *block-name-prefix*
+	  irc-switch
+	  +t*+
+	  codegen-rts/symbol
+	  irc-begin-block
+	  irc-basic-block-create
 	  ))

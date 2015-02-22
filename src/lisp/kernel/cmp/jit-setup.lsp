@@ -73,10 +73,10 @@ using features defined in corePackage.cc"
 
 (defun make-boot-function-global-variable (module func-ptr)
   (llvm-sys:make-global-variable module
-                                 +fn-void-ptr-array1+ ; type
+                                 +fn-prototype*[1]+ ; type
                                  t ; is constant
                                  'llvm-sys:appending-linkage
-                                 (llvm-sys:constant-array-get +fn-void-ptr-array1+ (list func-ptr))
+                                 (llvm-sys:constant-array-get +fn-prototype*[1]+ (list func-ptr))
                                  llvm-sys:+global-boot-functions-name+)
   (llvm-sys:make-global-variable module
                                  +i32+ ; type
@@ -117,11 +117,11 @@ using features defined in corePackage.cc"
                              :function-name llvm-sys:+clasp-main-function-name+
                              :parent-env nil
                              :linkage 'llvm-sys:external-linkage
-                             :function-type +fn-void+
-                             :argument-names nil)
+                             :function-type +fn-prototype+
+                             :argument-names +fn-prototype-argument-names+)
                 (let* ((boot-functions (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name+ t))
                        (boot-functions-size (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t))
-                       (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-void-ptr-pointer+ "fnptr-pointer"))
+                       (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-prototype**+ "fnptr-pointer"))
                        )
                   (irc-intrinsic "invokeMainFunctions" bc-bf boot-functions-size)))))
       fn)))
@@ -263,6 +263,13 @@ No DIBuilder is defined for the default module")
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
 
 
+(defun jit-constant-size_t (val)
+  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+    (cond
+      ((= 8 sizeof-size_t) (jit-constant-i64 val))
+      ((= 4 sizeof_size_t) (jit-constant-i32 val))
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+
 (defun jit-constant-unique-string-ptr (sn &optional (label "unique-str"))
   "Get or create a unique string within the module and return a GEP i8* pointer to it"
   (let* ((sn-gv (llvm-sys:get-or-create-uniqued-string-global-variable
@@ -318,22 +325,33 @@ No DIBuilder is defined for the default module")
      "Load a bitcode file, link it and execute it"
      (let ((*package* *package*)
 	   (time-load-start (clock-gettime-nanoseconds)))
-;;       (bformat t "Loading module from file: %s\n" filename)
+       ;;       (bformat t "Loading module from file: %s\n" filename)
        (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
 	      (engine-builder (llvm-sys:make-engine-builder module))
-	 ;; After make-engine-builder MODULE becomes invalid!!!!!
+	      ;; After make-engine-builder MODULE becomes invalid!!!!!
 	      (target-options (llvm-sys:make-target-options)))
 	 (llvm-sys:setf-no-frame-pointer-elim target-options t)
 	 (llvm-sys:setf-jitemit-debug-info target-options t)
 	 (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
 	 (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
-	 (let*((execution-engine (llvm-sys:create engine-builder))
-	       (stem (string-downcase (pathname-name filename)))
-               (main-fn-name llvm-sys:+clasp-main-function-name+)
-	       (time-jit-start (clock-gettime-nanoseconds)))
-	   (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn-name (namestring (truename filename)) 0 0 *load-time-value-holder-name* )
-	   )))
+	 (let* ((execution-engine (llvm-sys:create engine-builder))
+		(stem (string-downcase (pathname-name filename)))
+		(main-fn-name llvm-sys:+clasp-main-function-name+)
+		(time-jit-start (clock-gettime-nanoseconds))
+		(main-llvm-function (llvm-sys:find-function-named execution-engine llvm-sys:+clasp-main-function-name+)))
+	   (let ((main-fn (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+			   execution-engine 
+			   (intern llvm-sys:+clasp-main-function-name+)	      ; main fn name as symbol
+			   main-llvm-function ; llvm-fn
+			   nil		      ; environment
+			   *load-time-value-holder-name*
+			   (namestring (truename filename)) ; file name
+			   0 
+			   0 
+			   nil)))
+	     (funcall main-fn)
+	     ))))
      t)
  nil)
 (export 'load-bitcode)

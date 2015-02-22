@@ -140,10 +140,10 @@ namespace llvmo
     };
 
 
-#define ARGS_core_cxxDataStructuresInfo "()"
-#define DECL_core_cxxDataStructuresInfo ""
-#define DOCS_core_cxxDataStructuresInfo "cxxDataStructuresInfo: Return an alist of C++ data structure sizes ((name . size-of-in-bytes))"
-    T_sp core_cxxDataStructuresInfo()
+#define ARGS_af_cxxDataStructuresInfo "()"
+#define DECL_af_cxxDataStructuresInfo ""
+#define DOCS_af_cxxDataStructuresInfo "cxxDataStructuresInfo: Return an alist of C++ data structure sizes ((name . size-of-in-bytes))"
+    T_sp af_cxxDataStructuresInfo()
     {
 	Cons_sp list = Cons_O::create(Cons_O::create(_sym_tsp,Fixnum_O::create((int)sizeof(T_sp))),_Nil<Cons_O>());
 	list = Cons_O::create(Cons_O::create(_sym_tmv,Fixnum_O::create((int)sizeof(T_mv))),list);
@@ -151,6 +151,7 @@ namespace llvmo
 	list = Cons_O::create(Cons_O::create(_sym_size_t,Fixnum_O::create((int)sizeof(size_t))),list);
 	list = Cons_O::create(Cons_O::create(_sym_threadInfo,Fixnum_O::create((int)sizeof(ThreadInfo))),list);
 	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"),Fixnum_O::create((int)MultipleValues::MultipleValuesLimit)),list);
+	list = Cons_O::create(Cons_O::create(lisp_internKeyword("NIL-VALUE"),Fixnum_O::create((int)gctools::tagged_ptr<core::T_O>::tagged_nil)),list);
 	return list;
     }
 
@@ -371,7 +372,7 @@ namespace llvmo
 	    Defun(disassembleSTAR);
 	    SYMBOL_EXPORT_SC_(LlvmoPkg,throwIfMismatchedStructureSizes);
 	    Defun(throwIfMismatchedStructureSizes);
-	    CoreDefun(cxxDataStructuresInfo);
+	    Defun(cxxDataStructuresInfo);
 	    Defun(mangleSymbolName);
             Defun(viewCFG);
 	    //nothing

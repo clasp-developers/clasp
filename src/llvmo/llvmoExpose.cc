@@ -60,6 +60,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/lispCallingConvention.h>
 #include <clasp/core/package.h>
 #include <clasp/core/stringList.h>
 #include <clasp/core/environment.h>
@@ -1599,6 +1600,10 @@ namespace llvmo
 
 
 
+    Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name)
+    {
+	return translate::to_object<llvm::Function*>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
+    }
 
 
 
@@ -1619,6 +1624,7 @@ namespace llvmo
 	    .def("getDataLayout", &llvm::ExecutionEngine::getDataLayout)
 	    .def("hasNamedModule", &ExecutionEngine_O::hasNamedModule)
 	    .def("dependentModuleNames", &ExecutionEngine_O::dependentModuleNames)
+	    .def("FindFunctionNamed",&ExecutionEngine_O::FindFunctionNamed)
 //	    .def("runFunction",&ExecutionEngine_O::runFunction)
 //	    .def("getPointerToFunction", &llvm::ExecutionEngine::getPointerToFunction)
 	    ;
@@ -3838,6 +3844,9 @@ namespace llvmo
 
     void Function_O::appendBasicBlock(BasicBlock_sp basicBlock)
     {
+	if (basicBlock.nilp()) {
+	    SIMPLE_ERROR(BF("You cannot appendBasicBlock a basic-block that is nil"));
+	}
 	this->wrappedPtr()->getBasicBlockList().push_back(basicBlock->wrappedPtr());
     }
 
@@ -4382,11 +4391,27 @@ namespace llvmo
         _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::Fixnum_O::create(num));
     }
 
-    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp activationFrameEnvironment, core::Symbol_sp functionKind, core::Str_sp globalRunTimeValueName, core::T_sp fileName, size_t filePos, int linenumber, core::T_sp lambdaList )
+
+    core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine
+									    , core::Symbol_sp sym
+									    , Function_sp fn
+									    , core::T_sp activationFrameEnvironment
+									    , core::Str_sp globalRunTimeValueName
+									    , core::T_sp fileName
+									    , size_t filePos
+									    , int linenumber
+									    , core::T_sp lambdaList )
     {_G();
 	// Stuff to support MCJIT
 	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
         finalizeEngineAndTime(engine);
+#ifdef USE_MPS
+	IMPLEMENT_MEF(BF("globaLoadTimeValueName will be nil - do something about it"));
+        void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalLoadTimeValueName->get()));
+//        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalLoadTimeValueName->get().c_str(), globalPtr );
+        ASSERT(globalPtr!=NULL);
+        registerLoadTimeValuesRoot(reinterpret_cast<core::LoadTimeValues_O**>(globalPtr));
+#endif
 	ASSERTF(fn.notnilp(),BF("The Function must never be nil"));
 	void* p = engine->getPointerToFunction(fn->wrappedPtr());
 	if (!p) {
@@ -4397,38 +4422,83 @@ namespace llvmo
         core::SourceFileInfo_mv sfi = core_sourceFileInfo(fileName);
         int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();
         core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,linenumber,0);
-        CompiledClosure* functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym,spi,kw::_sym_function,lisp_funcPtr,fn,activationFrameEnvironment,associatedFunctions,lambdaList);
+	//	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
+        CompiledClosure* functoid 
+	    = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym
+								      ,spi
+								      ,kw::_sym_function
+								      ,lisp_funcPtr
+								      ,fn
+								      ,activationFrameEnvironment
+								      ,associatedFunctions
+								      ,lambdaList);
 	core::CompiledFunction_sp func = core::CompiledFunction_O::make(functoid);
         ASSERT(func);
         return func;
     }
 
 
+    void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func)
+    {
+	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
+	llvmo::CompiledClosure* closure = dynamic_cast<llvmo::CompiledClosure*>(func->closure);
+	llvmo::Function_sp llvm_func = closure->llvmFunction;
+	void* p = engine->getPointerToFunction(llvm_func->wrappedPtr());
+	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
+	closure->fptr = lisp_funcPtr;
+    }
 
 
 
-    void finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine, const string& mainFuncName, core::Str_sp fileName, size_t filePos, int linenumber, core::Str_sp globalLoadTimeValueName ) //, core::Cons_sp args )
+
+#if 0
+    core::T_mv finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine
+							     , const string& mainFuncName
+							     , core::Str_sp fileName
+							     , size_t filePos
+							     , int linenumber
+							     , core::Str_sp globalLoadTimeValueName
+							     , core::Cons_sp args )
     {_G();
-	vector<llvm::GenericValue> argValues;
+	//	vector<llvm::GenericValue> argValues;
 	ASSERTF(oengine->wrappedPtr()!=NULL,BF("You asked to runFunction but the pointer to the function is NULL"));
 	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
         finalizeEngineAndTime(engine);
-	/* Make sure a pointer for the function is available */
-        llvm::Function* fn = engine->FindFunctionNamed(mainFuncName.c_str());
-	if ( !fn ) {SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % mainFuncName );}
         /* Run the function */
 //	printf( "%s:%d - Calling startup function in: %s - Figure out what to do here - I need to start using the unix backtrace and dwarf debugging information rather than setting up my own backtrace info in the IHF", __FILE__, __LINE__, fileName->c_str() );
 #ifdef USE_MPS
+	IMPLEMENT_MEF(BF("globaLoadTimeValueName will be nil - do something about it"));
         void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalLoadTimeValueName->get()));
 //        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalLoadTimeValueName->get().c_str(), globalPtr );
         ASSERT(globalPtr!=NULL);
         registerLoadTimeValuesRoot(reinterpret_cast<core::LoadTimeValues_O**>(globalPtr));
 #endif
-	engine->runFunction(fn,argValues);
-//	return result;
+
+	/* Make sure a pointer for the function is available */
+        llvm::Function* fn = engine->FindFunctionNamed(mainFuncName.c_str());
+	if ( !fn ) {SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % mainFuncName );}
+	auto fnPtr = (void (*)(LCC_RETURN,LCC_CLOSED_ENVIRONMENT,LCC_ARGS)) engine->getPointerToFunction(fn);
+	//engine->runFunction(fn,argValues);
+	core::T_mv result;
+	int numArgs = cl_length(args);
+	switch (numArgs) {
+	case 0:
+	    fnPtr(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS0());
+	    break;
+	case 1:
+	    fnPtr(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS1(oCar(args).px));
+	    break;
+	case 2:
+	    fnPtr(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS2(oCar(args).px,oCadr(args).px));
+	    break;
+	default:
+	    SIMPLE_ERROR(BF("Add support for %d arguments to finalizeEngineAndRegisterWithGcAndRunFunction") % numArgs);
+	    break;
+	}
+	return result;
     }
 
-
+#endif
 
     /*! Return (values target nil) if successful or (values nil error-message) if not */
     Target_mv TargetRegistryLookupTarget(const std::string& ArchName, Triple_sp triple )
@@ -4784,7 +4854,10 @@ namespace llvmo
         CompDefun(setAssociatedFuncs);
 
         core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndGetCompiledFunction",&finalizeEngineAndRegisterWithGcAndGetCompiledFunction);
-        core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndRunFunction",&finalizeEngineAndRegisterWithGcAndRunFunction);
+	//        core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndRunFunction",&finalizeEngineAndRegisterWithGcAndRunFunction);
+
+	core::af_def(LlvmoPkg,"finalizeClosure",&finalizeClosure);
+
 
         SYMBOL_EXPORT_SC_(LlvmoPkg,STARmostRecentLlvmFinalizationTimeSTAR);
         SYMBOL_EXPORT_SC_(LlvmoPkg,STARaccumulatedLlvmFinalizationTimeSTAR);

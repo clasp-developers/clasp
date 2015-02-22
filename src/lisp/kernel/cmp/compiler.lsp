@@ -202,9 +202,24 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(docstring (function-docstring fn))
 	(code (function-source-code fn))
 	(env (closed-environment fn)))
-    (multiple-value-bind (generated-fn lambda-name)
-	(generate-llvm-function-from-code nil lambda-list-handler declares docstring code env))))
+    (generate-llvm-function-from-code nil lambda-list-handler declares docstring code env)))
 
+
+(defun generate-lambda-expression-from-interpreted-function (fn)
+  (let* ((lambda-list-handler (function-lambda-list-handler fn))
+	 (lambda-list (lambda-list-handler-lambda-list lambda-list-handler))
+	 (declares (function-declares fn))
+	 (docstring (function-docstring fn))
+	 (code (function-source-code fn))
+	 (env (closed-environment fn)))
+    (when docstring (setq docstring (list docstring)))
+    #+(or)(progn
+	    (bformat t "lambda-list = %s\n" lambda-list)
+	    (bformat t "declares    = %s\n" declares)
+	    (bformat t "docstring   = %s\n" docstring)
+	    (bformat t "code        = %s\n" code)
+	    (bformat t "env         = %s\n" env))
+    (values `(lambda ,lambda-list ,@docstring (declare ,@declares) ,@code) env)))
 
 
 (defun function-name-from-lambda (name)
@@ -1087,9 +1102,9 @@ jump to blocks within this tagbody."
 	  ;; Invoke the repl function here
           (multiple-value-bind (source-dir source-file file-pos lineno column)
               (walk-form-for-source-info form)
-            (with-ltv-function-codegen (result ltv-env)
+            (with-ltv-function-codegen (ltv-result ltv-env)
               (irc-intrinsic "invokeTopLevelFunction" 
-			     result 
+			     ltv-result 
 			     fn
                              (irc-renv ltv-env)
 			     (jit-constant-unique-string-ptr "load-time-value")
@@ -1316,36 +1331,60 @@ be wrapped with to make a closure"
 
 
 
-(defun clasp-compile* (name &optional definition env)
-  "Returns (values llvm-function-from-lambda function-kind environment lambda-name)"
-  (cond
-    ((functionp definition)
-     (error "Handle compile with definition = function"))
-    ((consp definition)
-     (cmp-log "compile* form: %s\n" definition)
-     (multiple-value-bind (llvm-function-from-lambda lambda-name)
-	 (compile-lambda-function definition env)
-       (values llvm-function-from-lambda :function env lambda-name))
-     )
-    ((null definition)
-     (let ((func (symbol-function name)))
-       (cond
-	 ((interpreted-function-p func)
-	  (dbg-set-current-debug-location-here)
-	  (multiple-value-bind (fn lambda-name)
-	      (generate-llvm-function-from-interpreted-function #||name||# func)
-	    (values fn (function-kind func) env lambda-name)))
-	 (t (error "Could not compile func")))))
-    (t (error "Illegal combination of arguments for compile: ~a ~a"
-	      name definition))))
 
-(defun compile* (name &optional definition env)
+(defun clasp-compile* (bind-to-name &optional definition env pathname)
+  "Compile the definition"
+  (cmp-log "--- Entered clasp-compile*")
+  (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+      (with-debug-info-generator (:module *the-module* 
+					  :pathname pathname)
+	(multiple-value-bind (llvm-function-from-lambda lambda-name)
+	    (compile-lambda-function definition env)
+	  (values llvm-function-from-lambda :function env lambda-name)))
+    (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
+    (or fn (error "There was no function returned by compile-lambda-function"))
+    (cmp-log "fn --> %s\n" fn)
+    (cmp-log-dump *the-module*)
+    (when *dump-module-on-completion*
+      (llvm-sys:dump *the-module*))
+    (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
+    (if (not *run-time-execution-engine*)
+	;; SETUP THE *run-time-execution-engine* here for the first time
+	;; using the current module in *the-module*
+	;; At this point the *the-module* will become invalid because
+	;; the execution-engine will take ownership of it
+	(setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
+	(llvm-sys:add-module *run-time-execution-engine* *the-module*))
+    ;; At this point the Module in *the-module* is invalid because the
+    ;; execution-engine owns it
+    (cmp-log "The execution-engine now owns the module\n")
+    (setq *the-module* nil)
+    (cmp-log "About to finalize-engine with fn %s\n" fn)
+    (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
+	   (compiled-function
+	    (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+	     *run-time-execution-engine*
+	     lambda-name
+	     fn ;; This may not be valid anymore
+	     (irc-environment-activation-frame wrapped-env)
+	     *run-time-literals-external-name*
+	     core:*current-source-file-info*
+	     (core:source-pos-info-filepos *current-source-pos-info*)
+	     (core:source-pos-info-lineno *current-source-pos-info*)
+	     nil ; lambda-list, NIL for now - but this should be extracted from definition
+	     )))
+      (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
+      (values compiled-function warnp failp))))
+
+(defun compile* (name &optional definition env pathname)
+  "Dispatch to clasp compiler or cleavir-clasp compiler if available.
+We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
   (if *cleavir-compile-hook*
-      (funcall *cleavir-compile-hook* name definition env)
-      (clasp-compile* name definition env)))
+      (funcall *cleavir-compile-hook* name definition env pathname)
+      (clasp-compile* name definition env pathname)))
 
 
-(defun compile-in-env (bind-to-name &optional definition env &aux conditions)
+(defun compile-in-env* (bind-to-name &optional definition env &aux conditions)
   "Compile in the given environment"
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
@@ -1357,12 +1396,6 @@ be wrapped with to make a closure"
 					     'llvm-sys:external-linkage
 					     nil
 					     *run-time-literals-external-name*))
-	     #+(or)(*thread-local-data* (llvm-sys:make-global-variable *the-module*
-								       +thread-info-struct+
-								       nil
-								       'llvm-sys:external-linkage
-								       nil
-								       *run-time-literals-external-name*))
 	     (pathname (if *load-pathname*
 			   (namestring *load-pathname*)
 			   "repl-code"))
@@ -1373,50 +1406,37 @@ be wrapped with to make a closure"
 			  :function-pass-manager (create-function-pass-manager-for-compile *the-module*)
 			  :source-pathname pathname
 			  :source-file-info-handle handle)
-	  (let ()
-	    (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
-		(with-debug-info-generator (:module *the-module* 
-						    :pathname pathname)
-		  (multiple-value-bind (fn fn-kind wrenv lambda-name warnp failp)
-		      (compile* bind-to-name definition env)
-		    (values fn fn-kind wrenv lambda-name warnp failp)))
-	      (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
-	      (cmp-log-dump *the-module*)
-	      (if *dump-module-on-completion*
-		  (llvm-sys:dump *the-module*))
-	      (if (not *run-time-execution-engine*)
-		  ;; SETUP THE *run-time-execution-engine* here for the first time
-		  ;; using the current module in *the-module*
-		  ;; At this point the *the-module* will become invalid because
-		  ;; the execution-engine will take ownership of it
-		  (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
-		  (llvm-sys:add-module *run-time-execution-engine* *the-module*))
-	      ;; At this point the Module in *the-module* is invalid because the
-	      ;; execution-engine owns it
-	      (setq *the-module* nil)
-	      (cmp-log "About to finalize-engine with fn %s\n" fn)
-	      (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
-		     (compiled-function
-		      (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-		       *run-time-execution-engine*
-		       lambda-name
-		       fn ;; This may not be valid anymore
-		       (irc-environment-activation-frame wrapped-env)
-		       function-kind
-		       *run-time-literals-external-name*
-		       core:*current-source-file-info*
-		       (core:source-pos-info-filepos *current-source-pos-info*)
-		       (core:source-pos-info-lineno *current-source-pos-info*)
-		       nil  ; lambda-list, NIL for now - but this should be extracted from definition
-		       )))
-		(set-associated-funcs compiled-function *all-funcs-for-one-compile*)
-		(when bind-to-name (setf-symbol-function bind-to-name compiled-function))
-		(values compiled-function warnp failp)))))))))
+	  (multiple-value-bind (compiled-function warnp failp)
+	      (compile* bind-to-name definition env pathname)
+	    (when bind-to-name (setf-symbol-function bind-to-name compiled-function))
+	    (values compiled-function warnp failp)))))))
 
+(defun compile-in-env (name &optional definition env)
+  (compile-in-env* name definition env)
+)
 
 
 (defun compile (name &optional definition)
-  (compile-in-env name definition nil))
+  (cond
+    ((functionp definition)
+     (error "Handle compile with definition = function"))
+    ((consp definition)
+     (cmp-log "compile* form: %s\n" definition)
+     (compile-in-env name definition nil))
+    ((null definition)
+     (let ((func (symbol-function name)))
+       (cond
+	 ((interpreted-function-p func)
+	  (dbg-set-current-debug-location-here)
+	  ;; Recover the lambda-expression from the interpreted-function
+	  (multiple-value-bind (lambda-expression wrapped-env)
+	      (generate-lambda-expression-from-interpreted-function func)
+	    (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
+	    (compile-in-env name lambda-expression wrapped-env)))
+	 (t (error "Could not compile func")))))
+    (t (error "Illegal combination of arguments for compile: ~a ~a"
+	      name definition))))
+
 
 
 (defun test-debug ()
@@ -1453,7 +1473,6 @@ be wrapped with to make a closure"
 				  name
 				  llvm-fn
 				  (irc-environment-activation-frame (closed-environment fn))
-				  (function-kind fn)
 				  *run-time-literals-external-name*
 				  core:*current-source-file-info*
 				  (core:source-pos-info-filepos *current-source-pos-info*)

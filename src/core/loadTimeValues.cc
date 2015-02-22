@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/str.h>
+#include <clasp/core/predicates.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/wrappers.h>
 
@@ -48,16 +49,21 @@ extern "C"
 namespace core
 {
 
+
+
+    
+
+    
 // ----------------------------------------------------------------------
 //
 
 
     
     
-#define ARGS_cl_setRunTimeValuesVector "(name)"
-#define DECL_cl_setRunTimeValuesVector ""
-#define DOCS_cl_setRunTimeValuesVector "setRunTimeValuesVector - return true if its set and false if it was already set"
-    bool cl_setRunTimeValuesVector(const string& name)
+#define ARGS_core_setRunTimeValuesVector "(name)"
+#define DECL_core_setRunTimeValuesVector ""
+#define DOCS_core_setRunTimeValuesVector "setRunTimeValuesVector - return true if its set and false if it was already set"
+    bool core_setRunTimeValuesVector(const string& name)
     {_G();
 	if ( globalRunTimeValues != NULL )
 	{
@@ -88,9 +94,13 @@ namespace core
 #define DOCS_af_lookupLoadTimeValue "Return the load-time-value associated with array NAME and IDX"
     T_sp af_lookupLoadTimeValue(const string& name, int idx)
     {_G();
-	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name);
+	int count=0;
+	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name,count);
 	if ( ltva.nilp() ) {
 	    SIMPLE_ERROR(BF("Could not find load-time-values %s") % name);
+	}
+	if ( count != 1 ) {
+	    SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % name );
 	}
 	if ( idx < 0 || idx >= ltva->numberOfValues() ) {
 	    SIMPLE_ERROR(BF("Illegal index %d for load-time-value") % idx );
@@ -105,9 +115,13 @@ namespace core
 #define DOCS_af_lookupLoadTimeSymbol "Return the load-time-value associated with array NAME and IDX"
     Symbol_sp af_lookupLoadTimeSymbol(const string& name, int idx)
     {_G();
-	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name);
+	int count = 0;
+	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name,count);
 	if ( ltva.nilp() ) {
 	    SIMPLE_ERROR(BF("Could not find load-time-values %s") % name);
+	}
+	if ( count != 1 ) {
+	    SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % name );
 	}
 	if ( idx < 0 || idx >= ltva->numberOfValues() ) {
 	    SIMPLE_ERROR(BF("Illegal index %d for load-time-symbol") % idx );
@@ -132,18 +146,74 @@ namespace core
         }
     };
 
+
+
+    void parseIndices(vector<int>& vec_indices, T_sp indices)
+    {
+	if ( indices.nilp() ) {
+	    vec_indices.clear();
+	} else if ( indices.tagged_fixnump() ) {
+	    vec_indices.push_back(indices.fixnum());
+	} else if ( Fixnum_sp fn = indices.asOrNull<Fixnum_O>() ) {
+	    vec_indices.push_back(fn->get());
+	} else if ( Cons_sp cur = indices.asOrNull<Cons_O>() ) {
+	    for ( ; cur.notnilp(); cur=cCdr(cur) ) {
+		T_sp val = oCar(cur);
+		if ( val.notnilp() ) {
+		    if ( val.tagged_fixnump() ) {
+			vec_indices.push_back(val.fixnum());
+		    } else if (Fixnum_sp fnval = val.asOrNull<Fixnum_O>() ) {
+			vec_indices.push_back(fnval->get());
+		    } else {
+			SIMPLE_ERROR(BF("Illegal index"));
+		    }
+		} else SIMPLE_ERROR(BF("Illegal nil index"));
+	    }
+	}
+    }
     
-    
-#define ARGS_af_loadTimeValuesDump "(name)"
-#define DECL_af_loadTimeValuesDump ""
-#define DOCS_af_loadTimeValuesDump "Dump the load-time-values for the id _name_(string)."
-    void af_loadTimeValuesDump(Str_sp name)
+#define ARGS_core_loadTimeValuesDumpValues "(name-or-ltv &optional indices)"
+#define DECL_core_loadTimeValuesDumpValues ""
+#define DOCS_core_loadTimeValuesDumpValues "Dump the load-time-values for the id _name_(string)."
+    void core_loadTimeValuesDumpValues(T_sp nameOrLtv, T_sp indices)
     {_G();
-	LoadTimeValues_sp ltv = _lisp->findLoadTimeValuesWithNameContaining(name->get());
-	ltv->dump();
+	LoadTimeValues_sp ltv;
+	if ( af_stringP(nameOrLtv) ) {
+	    int count = 0;
+	    ltv = _lisp->findLoadTimeValuesWithNameContaining(nameOrLtv.as<Str_O>()->get(),count);
+	    if ( count != 1 ) {
+		SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % nameOrLtv.as<Str_O>()->get() );
+	    }
+	} else {
+	    ltv = nameOrLtv.as<LoadTimeValues_O>();
+	}
+	vector<int> vi;
+	parseIndices(vi,indices);
+	ltv->dumpValues(vi);
+    };
+
+#define ARGS_core_loadTimeValuesDumpSymbols "(name-or-ltv &optional indices)"
+#define DECL_core_loadTimeValuesDumpSymbols ""
+#define DOCS_core_loadTimeValuesDumpSymbols "Dump the load-time-values for the id _name_(string)."
+    void core_loadTimeValuesDumpSymbols(T_sp nameOrLtv, T_sp indices)
+    {_G();
+	LoadTimeValues_sp ltv;
+	if ( af_stringP(nameOrLtv) ) {
+	    int count = 0;
+	    ltv = _lisp->findLoadTimeValuesWithNameContaining(nameOrLtv.as<Str_O>()->get(),count);
+	    if ( count != 1 ) {
+		SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % nameOrLtv.as<Str_O>()->get() );
+	    }
+	} else {
+	    ltv = nameOrLtv.as<LoadTimeValues_O>();
+	}
+	vector<int> vi;
+	parseIndices(vi,indices);
+	ltv->dumpSymbols(vi);
     };
 
 
+    
 
 
     EXPOSE_CLASS(core,LoadTimeValues_O);
@@ -168,8 +238,8 @@ namespace core
 	    .def("symbols_vectorPushExtend",&LoadTimeValues_O::symbols_vectorPushExtend)
 	    ;
 	Defun_maker(CorePkg,LoadTimeValues);
-	SYMBOL_SC_(CorePkg,loadTimeValuesDump);
-	Defun(loadTimeValuesDump);
+	CoreDefun(loadTimeValuesDumpValues);
+	CoreDefun(loadTimeValuesDumpSymbols);
 	SYMBOL_SC_(CorePkg,loadTimeValuesIds);
 	Defun(loadTimeValuesIds);
 	SYMBOL_SC_(CorePkg,loadTimeValueArray);
@@ -180,7 +250,7 @@ namespace core
 	SYMBOL_SC_(CorePkg,lookupLoadTimeSymbol);
 	Defun(lookupLoadTimeSymbol);
 	SYMBOL_EXPORT_SC_(CorePkg,setRunTimeValuesVector);
-	ClDefun(setRunTimeValuesVector);
+	CoreDefun(setRunTimeValuesVector);
     }
 
     void LoadTimeValues_O::exposePython(::core::Lisp_sp lisp)
@@ -193,22 +263,65 @@ namespace core
     }
 
 
-
-    void LoadTimeValues_O::dump()
-    {_G();
-	printf("%s:%d  LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size() );
-	for (int i=0,iEnd(this->_Objects.size()); i<iEnd; i++ )
-	{
-            T_sp& obj = this->_Objects[i];
-	    printf("LTV[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Objects[i]), _rep_(obj).c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
-	}
-	int ic=0;
-	for ( auto it=this->_Symbols.begin();
-	      it!=this->_Symbols.end(); it++, ic++ )
-	{
-	    printf("LTV-symbol[%4d] --> %s@%p\n", ic, _rep_((*it)).c_str(), (*it).px_ref() );
+    void dumpOneValue(stringstream& ss, T_sp val)
+    {
+	if (val.nilp()) {
+	    ss << "NIL";
+	} else if ( val.fixnump() ) {
+	    ss << val.fixnum();
+	} else if ( val.pointerp() ) {
+	    ss << _rep_(val);
+	} else {
+	    ss << "Unknown object!!!!";
 	}
     }
+
+    void LoadTimeValues_O::dumpValues(vector<int>& indices)
+    {_G();
+	printf("%s:%d Dumping Values LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size() );
+	if ( indices.size() == 0 ) {
+	    for (int i=0,iEnd(this->_Objects.size()); i<iEnd; i++ )
+		{
+		    T_sp& obj = this->_Objects[i];
+		    stringstream ss;
+		    dumpOneValue(ss,obj);
+		    printf("LTV[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Objects[i]), ss.str().c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+		}
+	} else {
+	    for (int i=0,iEnd(indices.size()); i<iEnd; ++i ) {
+		int idx = indices[i];
+		T_sp& obj = this->_Objects[idx];
+		stringstream ss;
+		dumpOneValue(ss,obj);
+		printf("LTV[%4d]@%p --> %s(base@%p)\n", idx, (void*)(&this->_Objects[idx]), ss.str().c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+	    }
+	}
+    }
+
+
+
+    void LoadTimeValues_O::dumpSymbols(vector<int>& indices)
+    {_G();
+	printf("%s:%d  Dumping Symbols  LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size() );
+	if ( indices.size() == 0 ) {
+	    for (int i=0,iEnd(this->_Symbols.size()); i<iEnd; i++ )
+		{
+		    Symbol_sp& obj = this->_Symbols[i];
+		    stringstream ss;
+		    dumpOneValue(ss,obj);
+		    printf("LTS[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Symbols[i]), ss.str().c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+		}
+	} else {
+	    for (int i=0,iEnd(indices.size()); i<iEnd; ++i ) {
+		int idx = indices[i];
+		Symbol_sp& obj = this->_Symbols[idx];
+		stringstream ss;
+		dumpOneValue(ss,obj);
+		printf("LTS[%4d]@%p --> %s(base@%p)\n", idx, (void*)(&this->_Symbols[idx]), ss.str().c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+	    }
+	}
+    }
+
 
 
 

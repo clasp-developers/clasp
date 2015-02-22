@@ -158,13 +158,13 @@ namespace gctools {
 
 
 
-        template<class U>
-            tagged_ptr( tagged_ptr<U> const & rhs )
+        template<class From>
+            tagged_ptr( tagged_ptr<From> const & rhs )
         {
             if ( LIKELY(rhs.pointerp()) ) {
-                px = DynamicCast<T*,U*>::castOrNULL(rhs.pxget());
+                px = DynamicCast<T*,From*>::castOrNULL(rhs.pxget());
                 if ( px==0 ) {
-                    THROW_HARD_ERROR(BF("DynamicCast<T*,U*> failed due to an illegal cast T* = %s  U* = %s") % typeid(T*).name() % typeid(U*).name() );
+                    THROW_HARD_ERROR(BF("DynamicCast<T*,From*> failed due to an illegal cast T* = %s  From* = %s") % typeid(T*).name() % typeid(From*).name() );
                 }
             } else {
                 uintptr_t upx = reinterpret_cast<uintptr_t>(rhs.pxget());

@@ -789,15 +789,15 @@ namespace core
 	if ( it.nilp() ) return _Nil<LoadTimeValues_O>();
         return it.as<LoadTimeValues_O>();
     }
-    LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string& name)
+    LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string& name, int& count)
     {
         LoadTimeValues_sp result = _Nil<LoadTimeValues_O>();
-        this->_Roots._LoadTimeValueArrays->terminatingMapHash( [&result,&name] (T_sp key, T_sp val) -> bool {
+	count = 0;
+        this->_Roots._LoadTimeValueArrays->mapHash( [&count,&result,&name] (T_sp key, T_sp val) -> void {
                 if ( key.as<Str_O>()->find(name,0).notnilp() ) {
                     result = val.as<LoadTimeValues_O>();
-                    return false;
+		    ++count;
                 }
-                return true;
             });
         return result;
     }

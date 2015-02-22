@@ -209,16 +209,7 @@
 		  (bformat t "Linking prologue-form\n")
 		  (remove-main-function-if-exists prologue-module)
 		  (llvm-sys:link-in-module linker prologue-module)))
-	    (dolist (part-pn additional-bitcode-pathnames)
-	      (let* ((bc-file part-pn))
-		(bformat t "Linking %s\n" bc-file)
-		(let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-		  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
-		  (multiple-value-bind (failure error-msg)
-		      (llvm-sys:link-in-module linker part-module)
-		    (when failure
-		      (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
-		    ))))
+	    ;; This is where I used to link the additional-bitcode-pathnames
 	    (dolist (part-pn part-pathnames)
 	      (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
 		(bformat t "Linking %s\n" bc-file)
@@ -235,6 +226,17 @@
 		  (llvm-sys:link-in-module linker epilogue-module)))
 	    (reset-global-boot-functions-name-size *the-module*)
 	    (add-main-function *the-module*) ;; Here add the main function
+	    ;; The following links in additional-bitcode-pathnames
+	    (dolist (part-pn additional-bitcode-pathnames)
+	      (let* ((bc-file part-pn))
+		(bformat t "Linking %s\n" bc-file)
+		(let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+		  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+		  (multiple-value-bind (failure error-msg)
+		      (llvm-sys:link-in-module linker part-module)
+		    (when failure
+		      (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
+		    ))))
 	    (when *debug-generate-prepass-llvm-ir*
 	      (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc"))))
 	    (let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))

@@ -39,8 +39,8 @@
 					     :function-name name
 					     :parent-env nil
 					     :linkage 'llvm-sys:internal-linkage ;; 'llvm-sys:external-linkage
-					     :function-type +fn-void+
-					     :argument-names nil)
+					     :function-type +fn-prototype+
+					     :argument-names +fn-prototype-argument-names+)
 		   (irc-low-level-trace :up)
 		   (let* ((given-name (llvm-sys:get-name main-fn)))
 		     (irc-low-level-trace)
@@ -222,8 +222,7 @@
   ;; If the Cleavir compiler hook is set up then use that
   ;; to generate code 
   (if *cleavir-compile-file-hook*
-      (unless (funcall *cleavir-compile-file-hook* form)
-	(t1expr form))
+      (funcall *cleavir-compile-file-hook* form)
       (t1expr form)))
 
 

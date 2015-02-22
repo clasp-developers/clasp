@@ -1,22 +1,14 @@
-(in-package #:clasp-cleavir)
+(in-package #:cc-mir)
 
 (defun insert-after (new old)
   (cleavir-ir:insert-instruction-after new old)
   new)
 
 
-(defclass llvm-instruction () ())
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:instruction)
-				  (impl clasp) proc os)
-  ;; By default just return the current instruction
-  instr)
 
-(defclass enter-instruction (llvm-instruction cleavir-ir:enter-instruction)
+(defclass enter-instruction (cleavir-ir:enter-instruction)
   ((%debug-label :initform (gensym "ENTER-") :reader debug-label)))
 
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:enter-instruction)
-				  (impl clasp) proc os)
-  (change-class instr 'enter-instruction))
 
 (defmethod cleavir-ir-graphviz:label ((instr enter-instruction))
   (with-output-to-string (stream)
@@ -24,6 +16,25 @@
 
 (defmethod cl:print-object ((instr enter-instruction) stream)
   (format stream "#<~a ~a>" (class-name (class-of instr)) (debug-label instr)))
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; CLOSURE-POINTER-DYNAMIC-LEXICAL-LOCATION
+;;;
+;;; Stores a core::Closure* pointer
+;;;
+(defclass closure-pointer-dynamic-lexical-location (cleavir-ir:dynamic-lexical-location) ())
+
+
+(defmethod cleavir-ir-graphviz:draw-datum ((datum closure-pointer-dynamic-lexical-location) stream)
+  (format stream "  ~a [shape = octagon, style = filled];~%"
+	  (cleavir-ir-graphviz:datum-id datum))
+  (format stream "   ~a [fillcolor = cyan, label = \"~a\"]~%"
+	  (cleavir-ir-graphviz:datum-id datum) (cleavir-ir-graphviz:name datum)))
 
 
 

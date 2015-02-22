@@ -31,9 +31,6 @@ extern "C"
 {
 
     typedef void (*fnLispCallingConvention)(LCC_RETURN, LCC_CLOSED_ENVIRONMENT, LCC_ARGS );
-    typedef void (*fnVoidType)();
-
-
 
 };
 

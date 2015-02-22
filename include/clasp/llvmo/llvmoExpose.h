@@ -1376,8 +1376,13 @@ namespace llvmo
 	virtual const char* describe() const { return "CompiledClosure";};
         virtual size_t templatedSizeof() const { return sizeof(*this);};
     public:
-	CompiledClosure( core::T_sp functionName, core::SourcePosInfo_sp spi, core::Symbol_sp type,
-                         fptr_type ptr, Function_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
+	CompiledClosure( core::T_sp functionName
+			 , core::SourcePosInfo_sp spi
+			 , core::Symbol_sp type
+			 , fptr_type ptr
+			 , Function_sp llvmFunc
+			 , core::T_sp renv
+			 , core::T_sp assocFuncs,
 			 core::T_sp ll)
             : FunctionClosure(functionName,spi,type,renv)
             , fptr(ptr)
@@ -1765,7 +1770,7 @@ namespace llvmo
 
         void addModule(Module_sp module);
 
-	core::Function_sp getCompiledFunction(core::Symbol_sp sym, Function_sp fn, core::ActivationFrame_sp env, core::Symbol_sp functionKind);
+	Function_sp FindFunctionNamed(core::Str_sp name);
 
 	void addNamedModule(const string& name, Module_sp module);
 	bool hasNamedModule(const string& name);

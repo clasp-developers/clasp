@@ -1,22 +1,77 @@
 (require :asdf)
-
-(print "Hello")
-
-
 (asdf:load-system :clasp-cleavir)
+
+(apropos "enter-instruction")
+
+(list-all-packages)
+(core:getpid)
 
 (in-package :clasp-cleavir)
 
+(trace cmp::codegen-rtv/all)
+(cleavir-compile 't2 '(lambda (x) (* x 2)))
+(core:load-time-values-dump-symbols "<compile>" 523)
+(t2 16) -> 32
+
+(cleavir-compile 'hyp '(lambda (x y) (sqrt (+ (* x x) (* y y)))))
+(hyp 2 3) --> 3.60555
+
+(cleavir-compile 'cmp '(lambda (x y) (if (eq x y) "same" "different")))
+(cmp 'a 'a) 
+
+(cleavir-compile 'cloop '(lambda (x) (dotimes (i x) (print i))))
+(cloop 10)
+
+(cleavir-compile 'uwpr '(lambda (x) (unwind-protect (print "A") (print "B"))))
+
+(defvar *a* 1)
+
+(ast-form '(lambda (x) (let ((*a* 2)) (format t "inner *a* = ~a~%" *a*)) (format t "outer *a*=~a~%" *a*)))
+
+(trace cleavir-generate-ast:convert-special-binding)
+
+(cleavir-compile 'spectest '(lambda (x) (let ((*a* 2)) (format t "inner *a* = ~a~%" *a*)) (format t "outer *a*=~a~%" *a*)))
+(llvm-sys:cxx-data-structures-info)
+
+(core:low-level-backtrace)
+
+(a 1)
+
+
+(cleavir-compile 'a '(lambda (x y) (let ((res (+ x y))) res)))
+(cleavir-compile 'a '(lambda () (multiple-value-bind () nil)))
+
+(a) -->  42324823482938492834982343234234
+
+(core:load-time-values-dump-values "<default>" 1853)
+(print cmp::*run-time-literal-holder*)
+(apropos "run-time")
+(core:load-time-values-ids)
 
 (ast-form '(lambda (x) (+ 1 x)))
 (hoisted-ast-form '(lambda (x) (+ 1 (- 123123434182312310 x))))
-(hoisted-hir-form '(lambda (x) (+ 1 x)))
-
-(hoisted-hir-form '(lambda (x) #'(lambda (y) (+ x y))))
-
+(hoisted-mir-form '(lambda (x) (+ 1 x)))
+(hoisted-hir-form '(lambda (x) #'(lambda (y) (+ x y 1))))
 (trace (setf cleavir-ir:predecessors))
 
-(cleavir-compile 'a '(function (lambda (x) #'(lambda (y) (+ x y 1)))))
+
+
+(compile 'a '1)
+
+(apropos "run-time-literal")
+cmp::*run-time-literals-external-name*
+(core:load-time-values-dump "globalRunTime")
+
+
+(trace cleavir-ast-graphviz:label)
+
+(print "Hello")
+
+(with-output-to-string (s) (loop for c across "\"abcdef\"" do (if (eql c #\") (princ "\"" s) (princ c s))))
+(with-output-to-string (s) (loop for c across "\"abcdef\"" do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s)))
+
+(constantp "this is")
+
 
 *debug-basic-blocks*
 
@@ -25,7 +80,7 @@
 
 (print *hir*)
 (typep *hir* 'cleavir-ir:enter-instruction)
-*hir*q
+*hir*
 
 (apropos "enter-instruction")
 

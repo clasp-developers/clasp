@@ -63,6 +63,7 @@
     (irc-intrinsic scope-exit-fn scope-level scope-msg)))
 
 
+
 (defun irc-personality-function ()
   (get-function-or-error *the-module* "__gxx_personality_v0"))
 
@@ -581,7 +582,7 @@
 (defun irc-load (ptr &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* ptr label))
 
-(Defun irc-store (val result &optional (label ""))
+(defun irc-store (val result &optional (label ""))
   (llvm-sys:create-store *irbuilder* val result nil))
 
 
@@ -1058,6 +1059,8 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                  (4 (llvm-sys:create-call4 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) label))
                  (5 (llvm-sys:create-call5 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) (pop ra) label))
                  (6 (llvm-sys:create-call-array-ref *irbuilder* func ra ""))
+                 (7 (llvm-sys:create-call-array-ref *irbuilder* func ra ""))
+                 (8 (llvm-sys:create-call-array-ref *irbuilder* func ra ""))
                  (otherwise 
                   (error "illegal irc-intrinsic to ~a - add support for ~a arguments" func (length ra) )))))
     (unless code (error "irc-create-call returning nil"))
@@ -1120,7 +1123,6 @@ Otherwise just create a function call"
 
 (defun irc-verify-function (fn &optional (continue t))
   (cmp-log "At top of irc-verify-function  ---- about to verify-function - if there is a problem it will not return\n")
-  (cmp-log-dump *the-module*)
   (multiple-value-bind (failed-verify error-msg)
       (llvm-sys:verify-function fn)
     (if failed-verify

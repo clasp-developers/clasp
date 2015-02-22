@@ -3,7 +3,7 @@
 (defpackage #:clasp-cleavir
   (:use #:common-lisp)
   (:export
-   #:cleavir-compile
+   #:cleavir-compile-eval
 ))
 
 
@@ -21,3 +21,14 @@
 (defpackage #:clasp-cleavir-ast-to-hir
   (:use #:common-lisp)
 )
+
+
+(defpackage #:cc-hir-to-mir
+  (:use #:common-lisp)
+)
+
+(defpackage #:cc-mir
+  (:use #:common-lisp)
+  (:export 
+   #:enter-instruction
+   #:closure-pointer-dynamic-lexical-location))

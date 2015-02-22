@@ -37,7 +37,7 @@ namespace gctools
     class multiple_values : public smart_ptr<T>
     {
     private:
-	int 	_number_of_values;
+	size_t 	_number_of_values;
     public:
 	multiple_values() : smart_ptr<T>(_Nil<T>()), _number_of_values(0) {};
 	multiple_values(const smart_ptr<T>& v,int num) : smart_ptr<T>(v), _number_of_values(num) {};

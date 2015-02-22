@@ -91,13 +91,13 @@ namespace core {
     TooManyArgumentsError::TooManyArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required) {};
 
 
-    void throwTooFewArgumentsError(int given, int required)
+    void throwTooFewArgumentsError(size_t given, size_t required)
     {
         SIMPLE_ERROR(BF("Too few arguments given %d required %d") % given % required );
 //        throw(TooFewArgumentsError(given,required));
     }
 
-    void throwTooManyArgumentsError(int given, int required)
+    void throwTooManyArgumentsError(size_t given, size_t required)
     {
         SIMPLE_ERROR(BF("Too many arguments error given: %d required: %d") % given % required );
 //        throw(TooManyArgumentsError(given,required));
@@ -109,7 +109,7 @@ namespace core {
 //        throw(UnrecognizedKeywordArgumentError(kw));
     }
 
-    void wrongNumberOfArguments(int givenNumberOfArguments, int requiredNumberOfArguments)
+    void wrongNumberOfArguments(std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments)
     {
         if ( givenNumberOfArguments<requiredNumberOfArguments)
             throwTooFewArgumentsError(givenNumberOfArguments,requiredNumberOfArguments);

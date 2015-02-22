@@ -37,10 +37,10 @@
 (defvar *load-time-initializer-environment* nil)
 
 
-(defvar *run-time-literal-holder-name* "<default>")
+(defvar *run-time-literal-holder-name* "<compile>")
 (defvar *run-time-literal-holder* (load-time-value-array *run-time-literal-holder-name* 0)
   "Stores the literal values for the default module that COMPILE compiles functions into")
-(core::set-run-time-values-vector *run-time-literal-holder-name*)
+(core:set-run-time-values-vector *run-time-literal-holder-name*)
 
 
 (defvar *run-time-value-nil-index* (data-vector-push-extend *run-time-literal-holder* nil 16))
@@ -112,7 +112,7 @@ Return the ltv index of the value."
 - if not found one is created and the maker is codegen'd into the load-time-value function.
 Finally, if _result_ is not nil then the load-time-value index and *load-time-value-holder-global-var* will be used to
 codegen a lookup for the value at runtime.
-The objument _result_ can be passed as nil - this is for setting up special load-time-values like nil and t.
+The argument _result_ can be passed as nil - this is for setting up special load-time-values like nil and t.
 Return the ltv index of the value."
   (let ((index-gs (gensym "index"))
 	(key-gs (gensym "key")))
@@ -740,8 +740,8 @@ marshaling of compiled quoted data"
 					,irbuilder-alloca ,
 					irbuilder-body #||,ltv-invocation-history-frame||#)
 	 (irc-function-create "runAll" nil nil
-			      :function-type +fn-void+
-			      :argument-names nil)
+			      :function-type +fn-prototype+
+			      :argument-names +fn-prototype-argument-names+)
        (let ((*load-time-value-initialization-function* ,ltv-init-fn)
 	     (*current-function* ,ltv-init-fn)
 	     (*generate-compile-file-load-time-values* t)

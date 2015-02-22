@@ -59,7 +59,8 @@ namespace core
 	int numberOfValues() const { return this->_Objects.size(); };
 	int numberOfSymbols() const { return this->_Symbols.size(); };
 
-	void dump();
+	void dumpValues(vector<int>& indices);
+	void dumpSymbols(vector<int>& indices);
 
 	// -------- Regular data storage
 

@@ -940,8 +940,6 @@ typedef void (*LispCallingConventionPtr)(T_mv* result, int nargs, T_sp arg1, T_s
 #include <clasp/core/lispCallingConvention.h>
 
 
-//typedef void (*GenericFunctionCallingConventionPtr)(T_mv* result, ActivationFrame_sp env, Instance_sp genericFunction, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, ...);
-
 }
 
 

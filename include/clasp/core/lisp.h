@@ -478,7 +478,7 @@ namespace core
 	T_sp loadTimeValue(const string& name, int idx);
 	Symbol_sp loadTimeSymbol(const string& name, int idx);
 	LoadTimeValues_sp findLoadTimeValues(const string& name);
-	LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string& name);
+	LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string& name, int& count);
     public:
     /*! Keep track of every source file that is read by the system */
 //	SourceFileInfo_sp getSourceFileInfo(const string& fileName);

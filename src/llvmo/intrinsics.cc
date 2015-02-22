@@ -72,17 +72,6 @@ extern "C"
     }
 
 
-#if 0
-    void varargs_lexicalFunction( core::Function_sp* resultP, int depth, int index, core::ActivationFrame_sp* evaluateFrameP )
-    {_G();
-	LOG(BF("About to invoke lexicalFunction depth[%d] index[%d]") % depth % index );
-	(*resultP) = (*evaluateFrameP)->lookupFunction(depth,index).as<core::Function_O>();
-	ASSERTF((*resultP).pointerp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
-		% depth % index % _rep_(*evaluateFrameP) );
-    }
-
-#endif
-
 
 
     int testVarargs(int numargs, ...)
@@ -177,19 +166,17 @@ extern "C" {
 #endif
 
 
-    void va_throwTooManyArgumentsException( const char* funcName, int givenNumberOfArguments, int requiredNumberOfArguments)
+    void va_throwTooManyArgumentsException( const char* funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments)
     {_G();
-        core::throwTooManyArgumentsError(givenNumberOfArguments,requiredNumberOfArguments);
-//	SIMPLE_ERROR(BF("In %s too many arguments passed - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments  );
+	SIMPLE_ERROR(BF("Too many arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
     }
 
-    void va_throwNotEnoughArgumentsException( const char* funcName,  int givenNumberOfArguments, int requiredNumberOfArguments)
+    void va_throwNotEnoughArgumentsException( const char* funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments)
     {_G();
-        core::throwTooFewArgumentsError(givenNumberOfArguments,requiredNumberOfArguments);
-//	SIMPLE_ERROR(BF("In %s not enough arguments passed - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments );
+	SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
     }
 
-    extern void va_throwIfExcessKeywordArguments( char* fnName, int nargs, core::T_O** argArray, int argIdx)
+    extern void va_throwIfExcessKeywordArguments( char* fnName, std::size_t nargs, core::T_O** argArray, size_t argIdx)
     {_G();
 	if ( argIdx >= nargs ) return;
         stringstream ss;
@@ -276,10 +263,12 @@ extern "C" {
 
 
 
-    __attribute__((visibility("default")))  void va_fillRestTarget( core::T_sp* restP, int nargs, core::T_O** argArray, int startRest, char* fnName)
+    __attribute__((visibility("default")))  void va_fillRestTarget( core::T_sp* restP, std::size_t nargs, core::T_O** argArray, std::size_t startRest, char* fnName)
     {_G();
 	core::Cons_sp result = _Nil<core::Cons_O>();
-	for ( int i=nargs-1; i>=startRest; i-- )
+	int inargs = nargs;
+	int istartRest = startRest;
+	for ( int i=inargs-1; i>=istartRest; i-- )
 	{
 	    result = core::Cons_O::create(core::T_sp(argArray[i]),result);
 	}
@@ -288,7 +277,7 @@ extern "C" {
     }
 
 
-    extern int va_allowOtherKeywords(int saw_aok, int nargs, core::T_O** argArray, int argIdx)
+    extern int va_allowOtherKeywords(int saw_aok, std::size_t nargs, core::T_O** argArray, std::size_t argIdx)
     {
 	if (saw_aok) return saw_aok;
 	bool aokTrue = (uintptr_t)(argArray[argIdx+1]) != gctools::tagged_ptr<core::T_O>::tagged_nil;// .isTrue();
@@ -296,10 +285,10 @@ extern "C" {
     }
 
 
-    void va_throwIfBadKeywordArgument(int allowOtherKeys, int badKwIdx, int nargs,  core::T_O** argArray )
+    void va_throwIfBadKeywordArgument(int allowOtherKeys, std::size_t badKwIdx, std::size_t nargs,  core::T_O** argArray )
     {
 	if ( allowOtherKeys == 2 ) return;
-	if ( badKwIdx >= 0 )
+	if ( badKwIdx != 65536 )
 	{
 	    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(core::T_sp(argArray[badKwIdx])) );
 	}
@@ -777,30 +766,25 @@ extern "C"
     };
 
 
-    void invokeMainFunctions( fnVoidType fptr[], int* numfunP)
+    void invokeMainFunctions( fnLispCallingConvention fptr[], int* numfunP)
     {
         int numfun = *numfunP;
 	//        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
+	core::T_mv result;
         for ( int i=0; i<numfun; ++i ) {
 	    //            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-            (fptr[i])();
+	    
+            (fptr[i])(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS0());
         }
     }
 
 
-    void invokeLlvmFunctionVoid( fnVoidType fptr)
+    void invokeLlvmFunctionVoid( fnLispCallingConvention fptr)
     {
-	fptr();
+	core::T_mv result;
+	core::T_sp env = _Nil<core::T_O>();
+	fptr(&result,env.px,LCC_PASS_ARGS0());
     };
-
-
-    __attribute__((visibility("default"))) void invokeFASLLlvmFunctionVoid( fnVoidType fptr, char* fileName )
-    {_G();
-//	IMPLEMENT_MEF(BF("Figure out what to do in this case"));
-//	core::TopLevelIHF frame(_lisp->invocationHistoryStack(),_Nil<T_O>());
-	fptr();
-    };
-
 
 
     extern void sp_symbolValueReadOrUnbound(core::T_sp* resultP, const core::Symbol_sp* symP)
@@ -1005,7 +989,7 @@ extern "C"
 
 
 
-
+#if 0
     extern void fillRestTarget( core::T_sp* restP, core::ActivationFrame_sp* frameP, int startRest, char* fnName)
     {_G();
 	ASSERT(frameP!=NULL);
@@ -1019,7 +1003,7 @@ extern "C"
 	(*restP) = result;
 	ASSERTNOTNULL(*restP);
     }
-
+#endif
 
     /*! Look for the :allow-other-keywords XX keyword argument and
       calculate (or (*ampAllowOtherKeywordsP) XX) return 1 if result is true otherwise 0 */
@@ -1845,23 +1829,25 @@ extern "C"
     }
 
 
-    int kw_trackFirstUnexpectedKeyword(int badKwIdx, int newBadKwIdx)
+    size_t kw_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
     {
-	if ( badKwIdx>0 ) return badKwIdx;
+	// 65536 is the magic number for badKwIdx has not been assigned yet
+	if ( badKwIdx!=65536 ) return badKwIdx;
 	return newBadKwIdx;
     }
 
-    void kw_throwIfBadKeywordArgument(int allowOtherKeys, int badKwIdx, core::ActivationFrame_sp* afP )
+#if 0
+    void kw_throwIfBadKeywordArgument(size_t allowOtherKeys, size_t badKwIdx, core::ActivationFrame_sp* afP )
     {
 	if ( allowOtherKeys == 2 ) return;
 	ASSERTNOTNULL(*afP);
-	if ( badKwIdx >= 0 )
+	if ( badKwIdx != 65536 )
 	{
 	    core::ValueFrame_sp valueFrame = (*afP).as<core::ValueFrame_O>();
 	    SIMPLE_ERROR(BF("Bad keyword argument %s in args: %s") % _rep_(valueFrame->entry(badKwIdx)) % _rep_(valueFrame) );
 	}
     }
-
+#endif
 };
 
 
@@ -1997,6 +1983,118 @@ extern "C"
 
 
 };
+
+
+
+// -----------------------------------------------------------
+// -----------------------------------------------------------
+// -----------------------------------------------------------
+// -----------------------------------------------------------
+// -----------------------------------------------------------
+//
+//  Intrinsics for Cleavir
+
+extern "C" {
+    
+    T_O* cc_precalcSymbol(T_O* tarray, size_t idx)
+    {
+	LoadTimeValues_O* array = reinterpret_cast<LoadTimeValues_O*>(tarray);
+	return (*array).symbols_element(idx).px;
+    }
+
+    T_O* cc_precalcValue(T_O* tarray, size_t idx)
+    {
+	LoadTimeValues_O* array = reinterpret_cast<LoadTimeValues_O*>(tarray);
+	//	printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
+	return (*array).data_element(idx).px;
+    }
+
+
+    core::T_O* cc_makeCell()
+    {_G();
+	core::Cons_sp res = core::Cons_O::create();
+	//	printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
+	return res.px;
+    }
+
+    void cc_writeCell(core::T_O* cell, core::T_O* val)
+    {
+	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
+	//	printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
+	c->setCar(gctools::smart_ptr<core::T_O>(val));
+    }
+
+    core::T_O* cc_readCell(core::T_O* cell)
+    {
+	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
+	core::T_sp val = c->ocar();
+	//	printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px );
+	return val.px;
+    }
+
+    core::T_O* cc_fetch(core::T_O* array, std::size_t idx)
+    {
+	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
+	//	printf("%s:%d fetch idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, idx, (*a)[idx].px);
+	return (*a)[idx].px;
+    }
+
+    void* cc_fdefinition(core::T_O* sym)
+    {
+	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	core::Function_sp fn = core::af_symbolFunction(s);
+	return fn->closure;
+    }
+
+
+    void* cc_apply(core::T_mv* result, core::Closure* closure, LCC_ARGS_BASE)
+    {
+	closure->invoke(result,LCC_PASS_ARGS);
+    }
+	
+
+    
+
+
+    core::T_O* cc_enclose(fnLispCallingConvention llvm_func, std::size_t numCells, ... )
+    {
+	core::ValueFrame_sp vo = core::ValueFrame_O::create(numCells,_Nil<core::T_O>());
+	core::T_O* p;
+        va_list argp;
+        va_start(argp,numCells);
+	int idx = 0;
+        for ( ; numCells; --numCells ) {
+            p = va_arg(argp,core::T_O*);
+	    //	    printf("%s:%d enclose@%d p[%p]\n", __FILE__, __LINE__, idx, p);
+	    (*vo)[idx] = gctools::smart_ptr<core::T_O>(p);
+	    ++idx;
+        }
+        va_end(argp);
+	//
+	// Holy hell - I have to spoof stuff to allocate a CompiledClosure - I need to make all this info
+	// available to the enclose instruction
+	//
+	llvmo::CompiledClosure* functoid 
+	    = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass( core::_sym_lambdaName // functionName - make this something useful!
+									      , _Nil<core::SourcePosInfo_O>() // SourcePosInfo
+									      , kw::_sym_function   // fn-type
+									      , llvm_func //(llvmo::CompiledClosure::fptr_type)NULL   // ptr - will be set when Module is compiled
+									      , _Nil<llvmo::Function_O>() // llvm-func
+									      , vo  // renv
+									      , _Nil<Cons_O>()  // assocFuncs
+									      , _Nil<T_O>() // lambdaList
+									    );
+	core::CompiledFunction_sp cf = core::CompiledFunction_O::make(functoid);
+	core::T_sp res = cf;
+	return res.px;
+    }
+
+};
+
+
+
+
+
 
 
 #pragma GCC visibility pop

@@ -1,9 +1,6 @@
 (in-package :cmp)
 
-(export '(+fn-void+
-	  +fn-prototype+
-	  +fn-prototype-argument-names+
-	  jit-function-name
+(export '(jit-function-name
 	  *the-module*
 	  *cleavir-compile-hook*
 	  *cleavir-compile-file-hook*

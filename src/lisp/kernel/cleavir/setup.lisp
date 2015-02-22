@@ -4,6 +4,13 @@
 
 (defvar *clasp-env* (make-instance 'clasp-global-environment))
 
+;;
+;; Define the ABI for x86-64
+(defclass abi-x86-64 () ())
+
+
+(defvar *current-function-entry-basic-block*)
+
 
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
   (cond (;; We can check whether this symbol names a constant variable

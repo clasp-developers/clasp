@@ -289,13 +289,13 @@ namespace core
 
 #pragma GCC visibility pop
 
-    void throwTooFewArgumentsError(int given, int required);
+    void throwTooFewArgumentsError(size_t given, size_t required);
 
-    void throwTooManyArgumentsError(int given, int required);
+    void throwTooManyArgumentsError(size_t given, size_t required);
 
     void throwUnrecognizedKeywordArgumentError(T_sp kw);
 
-    void wrongNumberOfArguments(int givenNumberOfArguments, int requiredNumberOfArguments);
+    void wrongNumberOfArguments(size_t givenNumberOfArguments, size_t requiredNumberOfArguments);
 
 
 
