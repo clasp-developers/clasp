@@ -873,7 +873,7 @@ marshaling of compiled quoted data"
 ;; 3) You will then need to implement a makeXXX function in intrinsics.cc
 ;; 4) You will need to expose the makeXXX function in cmpintrinsics.lsp
 ;;
-(defun codegen-literal (result obj env)
+(defun codegen-literal (result obj &optional (env *load-time-initializer-environment*))
   "Generate a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
   (if *generate-compile-file-load-time-values*
       (cond
@@ -926,7 +926,7 @@ marshaling of compiled quoted data"
 
 
 
-(defun codegen-symbol (result obj env)
+(defun codegen-symbol (result obj &optional (env *load-time-initializer-environment*))
   "Generate a load-time-symbol or run-time-symbol depending if called from COMPILE-FILE or COMPILE respectively"
   (or (symbolp obj) (error "obj must be a symbol - instead it is: ~A" obj))
   (if *generate-compile-file-load-time-values*

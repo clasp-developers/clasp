@@ -5,10 +5,45 @@
 
 (let ((clasp-cleavir:*debug-cleavir* t))
   (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;tiny1.lsp"))
+(draw-ast *ast*)
 
 (load "sys:..;tests;lisp;tiny1.bc")
 
-(a 1 2)
+(defun clasp-test (x mult) 
+  (let ((total 0) 
+	(count 0))
+    (tagbody 
+     top
+       (setq total (+ total x))
+       (setq count (1+ count))
+       (if (< count mult)
+	   (go top))
+       )
+    total))
+
+(let ((times 1000000))
+  (format t "cleavir-clasp-test~%")
+  (time (format t "cleavir-clasp result: ~a~%" (a 1 times)))
+  (format t "clasp-test~%")
+  (time (format t "        clasp result: ~a~%" (b 1 times))))
+
+
+(defun b (x mult) 
+  (let ((total 0) 
+	(count 0))
+    (tagbody 
+     top
+       (setq total (+ total x))
+       (setq count (1+ count))
+       (if (< count mult)
+	   (go top))
+       )
+    total))
+
+
+
+
+
 
 (probe-file "sys:..;tests;lisp;tiny1.lsp")
 (defun cleavir-primop:call-with-variable-bound (&rest args)
@@ -18,7 +53,7 @@
 
 (defparameter *a* 1)
 (defun foo () (print (list "*a*" *a*)))
-(cleavir-compile 'tspec '(lambda (*a*) (print *a*) (foo) (values 1 2 3)))
+(cleavir-compile 'tspec '(lambda (*a*) (print *a*)#|| (foo) (values 1 2 3)||#))
 (tspec 10)
 
 

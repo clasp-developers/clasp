@@ -620,6 +620,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "cc_makeCell" +t*+ nil)
   (primitive-does-not-throw module "cc_writeCell" +void+ (list +t*+ +t*+))
   (primitive-does-not-throw module "cc_readCell" +t*+ (list +t*+))
+  (primitive-does-not-throw module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
   (primitive-does-not-throw module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-does-not-throw module "cc_throwDynamicGo" +void+ (list +size_t+ +size_t+))
   (primitive-does-not-throw module "cc_enclose" +t*+ (list +fn-prototype*+ +size_t+ ) :varargs t)

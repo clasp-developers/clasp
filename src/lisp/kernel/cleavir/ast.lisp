@@ -31,7 +31,7 @@
 		 :forms forms))
 
 (cleavir-io:define-save-info precalc-vector-function-ast
-    (:precalc-value-asts precalc-value-asts))
+    (:precalc-asts precalc-asts))
 
 
 #||(defmethod clavir-ast-graphviz:label ((ast precalc-vector-function-ast))
@@ -52,6 +52,12 @@
    (%ref-index :initarg :index :accessor precalc-symbol-reference-index)
    (%original-object :initarg :original-object :accessor precalc-symbol-reference-ast-original-object)))
 
+(cleavir-io:define-save-info precalc-symbol-reference-ast
+    (:precalc-vector-ast precalc-symbol-reference-vector-ast)
+  (:index precalc-symbol-reference-index)
+  (:original-object precalc-symbol-reference-ast-original-object))
+
+  
 (defmethod cleavir-ast:children ((ast precalc-symbol-reference-ast))
   (list (precalc-symbol-reference-vector-ast ast)))
 
@@ -82,6 +88,12 @@
    (%ref-index :initarg :index :accessor precalc-value-reference-index)
    (%original-object :initarg :original-object :accessor precalc-value-reference-ast-original-object)))
 
+
+(cleavir-io:define-save-info precalc-symbol-reference-ast
+    (:precalc-vector-ast precalc-value-reference-vector-ast)
+  (:index precalc-value-reference-index)
+  (:original-object precalc-value-reference-ast-original-object))
+
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
   (list (precalc-value-reference-vector-ast ast)))
 
@@ -99,18 +111,6 @@
 
 
 
-(defun find-load-time-value-asts (ast)
-  (let ((table (make-hash-table :test #'eq)))
-    (labels ((traverse (ast parent)
-	       (unless (gethash ast table)
-		 (setf (gethash ast table) t)
-		 (if (typep ast 'cleavir-ast:load-time-value-ast)
-		     (list (list ast parent))
-		     (let ((children (cleavir-ast:children ast)))
-		       (reduce #'append
-			       (mapcar (lambda (child) (funcall #'traverse child ast)) children)
-			       :from-end t))))))
-      (traverse ast nil))))
 
 
 (defun generate-new-precalculated-symbol-index (ast)
@@ -119,7 +119,7 @@ If this form has already been precalculated then just return the precalculated-v
   (let* ((form (cleavir-ast:form ast))
 	 (read-only-p (cleavir-ast:read-only-p ast))
 	 (symbol (second form))
-	 (symbol-index (cmp:codegen-symbol nil symbol nil)))
+	 (symbol-index (cmp:codegen-symbol nil symbol)))
     (format t "    generate-new-precalculated-symbol-index for: ~s  index: ~a~%" symbol symbol-index)
     (when (< symbol-index 0)
       (error "There is a problem with the symbol index: ~a" symbol-index))
@@ -133,15 +133,29 @@ If this form has already been precalculated then just return the precalculated-v
     (cond
       ((and (consp form) (eq (first form) 'QUOTE))
        (let* ((constant (cadr form))
-	      (constant-index (cmp:codegen-literal nil constant nil)))
+	      (constant-index (cmp:codegen-literal nil constant)))
 	 constant-index))
       ((symbolp form)
-       (cmp:codegen-literal nil form nil))
+       (cmp:codegen-literal nil form))
       ((constantp form)
-       (cmp:codegen-literal nil form nil))
+       (cmp:codegen-literal nil form))
       (t (error "Finish implementing generate-new-precalculated-value-index - form: ~s read-only-p: ~a" form read-only-p)
 	 -1))
     ))
+
+
+(defun find-load-time-value-asts (ast)
+  (let ((table (make-hash-table :test #'eq)))
+    (labels ((traverse (ast parent)
+	       (unless (gethash ast table)
+		 (setf (gethash ast table) t)
+		 (if (typep ast 'cleavir-ast:load-time-value-ast)
+		     (list (list ast parent))
+		     (let ((children (cleavir-ast:children ast)))
+		       (reduce #'append
+			       (mapcar (lambda (child) (funcall #'traverse child ast)) children)
+			       :from-end t))))))
+      (traverse ast nil))))
 
 (defun hoist-load-time-value (ast)
   (let* ((load-time-value-asts (find-load-time-value-asts ast))
@@ -161,53 +175,4 @@ If this form has already been precalculated then just return the precalculated-v
      ast precalc-lexical-ast (mapcar #'first load-time-value-asts) forms)))
 
 
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; UNWIND-PROTECT-AST
-;;;
-;;;
-
-(defclass unwind-protect-ast (cleavir-ast:ast)
-  ((%protected-ast :initarg :protected-ast :accessor protected-ast)
-   (%cleanup-ast :initarg :cleanup-ast :accessor cleanup-ast)))
-
-(defun make-unwind-protect-ast (protected-ast cleanup-ast)
-  (make-instance 'unwind-protect-ast
-		 :protected-ast protected-ast
-		 :cleanup-ast cleanup-ast))
-
-(defmethod cleavir-ast:children ((ast unwind-protect-ast))
-  (list (protected-ast ast) (cleanup-ast ast)))
-
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class INVOKE-AST. 
-;;;
-;;; A INVOKE-AST represents a function call.  
-
-(defclass invoke-ast (cleavir-ast:call-ast)
-  ((%unwind-ast :initarg :unwind-ast :reader unwind-ast)))
-
-(defun make-invoke-ast (callee-ast argument-asts unwind-ast)
-  (make-instance 'invoke-ast
-    :callee-ast callee-ast
-    :argument-asts argument-asts
-    :unwind-ast unwind-ast))
-
-(cleavir-io:define-save-info invoke-ast
-  (:unwind-ast unwind-ast))
-
-(defmethod cleavir-ast:children ((ast invoke-ast))
-  (append (list (cleavir-ast:callee-ast ast))
-	  (cleavir-ast:argument-asts ast)
-	  (list (unwind-ast ast))))
 

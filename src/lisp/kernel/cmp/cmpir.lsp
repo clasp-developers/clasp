@@ -162,6 +162,7 @@
     (setf-metadata env :cleanup-return-block bblock)))
 
 (defun irc-get-cleanup-return-block (env)
+  (or env (error "env must be supplied"))
   (lookup-metadata env :cleanup-return-block))
 
 

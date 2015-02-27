@@ -27,11 +27,15 @@
 (defvar *debug-tags*)
 (defvar *debug-vars*)
 
+
+(setf (fdefinition 'cleavir-primop:call-with-variable-bound) 
+      (fdefinition 'core:call-with-variable-bound))
+
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum))
-	     (ltv-index (cmp:codegen-literal nil value nil))
-	     (ltv-ref (cmp:irc-intrinsic "cc_lookupLoadTimeReference" cmp:*load-time-value-holder-global-var* (%size_t ltv-index))))
+	     (ltv-index (cmp:codegen-literal nil value))
+	     (ltv-ref (cmp:irc-intrinsic "cc_loadTimeValueReference" cmp:*load-time-value-holder-global-var* (%size_t ltv-index))))
 	ltv-ref)
       (let ((var (gethash datum *vars*)))
 	(when (null var)
@@ -634,8 +638,7 @@
   (let* ((clasp-system (make-instance 'clasp))
 	 (ast (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system))
 	 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-	 )
+	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
     (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
     (cleavir-ir:hir-to-mir hir clasp-system nil nil)
     (when *debug-cleavir* (draw-mir hir)) ;; comment out

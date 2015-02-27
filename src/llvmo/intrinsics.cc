@@ -2112,13 +2112,13 @@ extern "C" {
 
 
 
-    core::T_O* cc_loadTimeValueReference(core::LoadTimeValues_O** ltvPP, int index)
+    core::T_O** cc_loadTimeValueReference(core::LoadTimeValues_O** ltvPP, size_t index)
     {
 	ASSERT(ltvPP!=NULL);
 	ASSERT(*ltvPP!=NULL);
 	core::LoadTimeValues_O& ltv = **ltvPP;
 	core::T_sp& result = ltv.data_element(index);
-	return result.px;
+	return &result.px;
     }
 
 
