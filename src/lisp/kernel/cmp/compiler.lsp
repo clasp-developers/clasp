@@ -1017,7 +1017,7 @@ jump to blocks within this tagbody."
 
 
 
-(defun codegen-unwind-protect (result rest env)
+#+(or)(defun codegen-unwind-protect (result rest env)
   (with-dbg-lexical-block (rest)
     (let* ((protected-form (car rest))
 	   (unwind-form `(progn ,@(cdr rest)))
@@ -1112,6 +1112,7 @@ jump to blocks within this tagbody."
 			     (jit-constant-i64 file-pos)
                              (jit-constant-i32 lineno)
                              (jit-constant-i32 column)
+			     *load-time-value-holder-global-var*
                              )))
 	  (irc-intrinsic "getLoadTimeValue" result *load-time-value-holder-global-var* (jit-constant-i32 index)))
 	(progn
@@ -1273,13 +1274,14 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
               (rest (cdr form)))
           (cmp-log "About to codegen special-operator or application for: %s\n" form)
           ;;	(trace-linenumber-column (walk-to-find-parse-pos form) env)
-          (if (and head (symbolp head) (augmented-special-operator-p head))
+          (if (and head (symbolp head) (or (macro-function head) (not (augmented-special-operator-p head))))
+              (progn
+                (cmp-log "About to codegen-application: %s\n" form)
+                (codegen-application result form env))
               (progn
                 (cmp-log "About to codegen-special-operator: %s %s\n" head rest)
                 (codegen-special-operator result head rest env))
-              (progn
-                (cmp-log "About to codegen-application: %s\n" form)
-                (codegen-application result form env))))))))
+	      ))))))
 
 
 

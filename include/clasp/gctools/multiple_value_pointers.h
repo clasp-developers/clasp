@@ -52,13 +52,13 @@ namespace gctools
             return result;
         }
 
-
+#if 0
         static multiple_values<T> createFromVec0(const Vec0<core::T_sp>& vec) {
 	    core::MultipleValues& mv = core::lisp_multipleValues();
             mv.loadFromVec0(vec);
             return multiple_values<T>::createFromValues();
         }
-
+#endif
 
         void saveToMultipleValue0() const {
 	    core::MultipleValues& mv = core::lisp_multipleValues();
@@ -72,6 +72,15 @@ namespace gctools
                 values[i] = this->valueGet(i);
             }
         }
+
+	void loadFromVec0(const ::gctools::Vec0<core::T_sp>& values) {
+            for ( int i(1); i<this->_number_of_values; ++i ) {
+                this->valueSet(i,values[i]);
+            }
+	}
+	    
+
+
 
 
 #ifdef POLYMORPHIC_SMART_PTR

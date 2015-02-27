@@ -63,8 +63,8 @@
 				 (source-debug-use-lineno t)) &rest body)
   `(let ((*the-module* ,module)
          (*the-function-pass-manager* ,function-pass-manager)
-         (*all-functions-for-one-compile* nil)
-         (*generate-load-time-values* t)
+         #+(or)(*all-functions-for-one-compile* nil)
+         #+(or)(*generate-load-time-values* t)
 	 (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
 	 (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
 								     ,source-debug-namestring
@@ -137,6 +137,7 @@
 		     (irc-i64-*current-source-pos-info*-filepos)
 		     (irc-i32-*current-source-pos-info*-lineno)
 		     (irc-i32-*current-source-pos-info*-column)
+		     *load-time-value-holder-global-var*
                      ))))
 
 

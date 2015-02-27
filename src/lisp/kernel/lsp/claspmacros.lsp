@@ -45,3 +45,10 @@
 
 (export '(do-c++-iterator map-c++-iterator))
 
+
+(in-package :cl)
+
+(defmacro unwind-protect (protected-form &rest cleanup-forms)
+  `(core:funwind-protect (lambda () ,protected-form) (lambda () ,@cleanup-forms)))
+
+

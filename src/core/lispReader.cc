@@ -364,7 +364,7 @@ namespace core
 	case tsyme: case tsymp:	case tsymk: case tsymbad:
 	    if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() ) return _Nil<T_O>();
 	    // interpret failed symbols
-	    SIMPLE_ERROR(BF("ReaderError_O::create(sin,_lisp))"));
+	    SIMPLE_ERROR(BF("Could not interpret symbol - perhaps ::?"));
 	    break;
 	case tintt: case tintp:
 	    // interpret ints

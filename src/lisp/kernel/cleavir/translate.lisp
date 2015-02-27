@@ -1,6 +1,7 @@
 (cl:in-package #:clasp-cleavir)
 
 
+(defvar *debug-cleavir* nil)
 
 ;;; The first argument to this function is an instruction that has a
 ;;; single successor.  Whether a GO is required at the end of this
@@ -28,7 +29,10 @@
 
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
-      (break "Get datum into the load-time-values array") ;;`(quote ,(cleavir-ir:value datum))
+      (let* ((value (cleavir-ir:value datum))
+	     (ltv-index (cmp:codegen-literal nil value nil))
+	     (ltv-ref (cmp:irc-intrinsic "cc_lookupLoadTimeReference" cmp:*load-time-value-holder-global-var* (%size_t ltv-index))))
+	ltv-ref)
       (let ((var (gethash datum *vars*)))
 	(when (null var)
 	  (cond
@@ -89,14 +93,17 @@
 	      (if (= (length successors) 1)
 		  (list (translate-simple-instruction
 			 last input-vars output-vars abi)
-			(cmp:irc-br (gethash (first successors) *tags*)))
+			(if (typep (second basic-block) 'cleavir-ir:unwind-instruction)
+			    (cmp:irc-unreachable)
+			    (cmp:irc-br (gethash (first successors) *tags*))))
 		  (list (translate-branch-instruction
 			 last input-vars output-vars successor-tags abi)))))))
 
 (defun layout-procedure (initial-instruction abi)
   ;; I think this removes every basic-block that
   ;; isn't owned by this initial-instruction
-  (let* ((basic-blocks (remove initial-instruction
+  (let* ((clasp-cleavir-ast-to-hir:*landing-pad* nil)
+	 (basic-blocks (remove initial-instruction
 			       *basic-blocks*
 			       :test-not #'eq :key #'third))
 	 ;; Hypothesis: This finds the first basic block
@@ -183,7 +190,7 @@
 
 
 (defmethod translate-simple-instruction
-    ((instr cleavir-ir:enter-instruction) inputs outputs (abi abi-x86-64))
+    ((instr cc-mir:enter-instruction) inputs outputs (abi abi-x86-64))
   (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
 	 (closed-env-arg (second fn-args))
 	 (closed-env-dest (first outputs))
@@ -194,7 +201,12 @@
     #+(or)(format t " fn-args: ~a~%" fn-args)
     (let* ((lambda-list (cleavir-ir:lambda-list instr))
 	   (static-environment-output (first (cleavir-ir:outputs instr)))
-	   (args (cdr (cleavir-ir:outputs instr))))
+	   (args (cdr (cleavir-ir:outputs instr)))
+	   (landing-pad (cc-mir:landing-pad instr)))
+      (when landing-pad
+	(let ((exn.slot (llvm-sys:create-alloca cmp:*irbuilder* cmp:+i8*+ (%i32 1) "exn.slot"))
+	      (ehselector.slot (llvm-sys:create-alloca cmp:*irbuilder* cmp:+i32+ (%i32 1) "ehselector.slot")))
+	  (setf (clasp-cleavir:basic-block landing-pad) (clasp-cleavir:create-landing-pad exn.slot ehselector.slot landing-pad *tags*))))
       #+(or)(progn
 	      (format t "    outputs: ~s~%" args)
 	      (format t "translated outputs: ~s~%" (mapcar (lambda (x) (translate-datum x)) args))
@@ -203,7 +215,7 @@
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:instruction) inputs outputs abi)
-  (warn "Implement instruction: ~a for abi: ~a~%" instruction abi)
+  (error "Implement instruction: ~a for abi: ~a~%" instruction abi)
   (format t "--------------- translate-simple-instruction ~a~%" instruction)
   (format t "    inputs: ~a~%" inputs)
   (format t "    outputs: ~a~%" outputs))
@@ -268,7 +280,32 @@
     (format t "--------------- translate-simple-instruction funcall-instruction~%")
     (format t "    inputs: ~a~%" inputs)
     (format t "    outputs: ~a~%" outputs))
-  (apply-closure (first inputs) (cdr inputs) abi))
+  (apply-closure "cc_call" (first inputs) (cdr inputs) abi))
+
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir:invoke-instruction) inputs outputs (abi abi-x86-64))
+  #+(or)(progn
+	  (format t "--------------- translate-simple-instruction funcall-instruction~%")
+	  (format t "    inputs: ~a~%" inputs)
+	  (format t "    outputs: ~a~%" outputs))
+  (let* ((lpad (clasp-cleavir:landing-pad instruction)))
+    (cmp:with-landing-pad (clasp-cleavir:basic-block lpad)
+      (apply-closure "cc_invoke" (first inputs) (cdr inputs) abi))))
+
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:nop-instruction) inputs outputs abi)
+  (llvm-sys:create-int-to-ptr cmp:*irbuilder* (cmp:jit-constant-size_t cmp:+nil-value+) cmp:+t*+ "nil"))
+
+
+
+(defmethod translate-simple-instruction
+    ((instruction cc-mir:indexed-unwind-instruction) inputs outputs abi)
+  (cmp:irc-intrinsic "cc_throwDynamicGo" 
+		     (%size_t (cc-mir:landing-pad-id instruction))
+		     (%size_t (cc-mir:jump-id instruction))))
+
 
 
 (defmethod translate-simple-instruction
@@ -302,6 +339,12 @@
     (let ((result (cmp:irc-intrinsic "cc_fdefinition" cell)))
       (cmp:irc-store result (first outputs)))))
 
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:symbol-value-instruction) inputs outputs abi)
+  (let ((sym (cmp:irc-load (first inputs) "sym-name")))
+    (let ((result (cmp:irc-intrinsic "cc_symbolValue" sym)))
+      (cmp:irc-store result (first outputs)))))
+
 
 
 (defmethod translate-simple-instruction
@@ -309,7 +352,7 @@
   (declare (ignore inputs))
   (let* ((enter-instruction (cleavir-ir:code instruction))
 	 (enclosed-function (layout-procedure enter-instruction abi)))
-    (push enclosed-function *functions-to-finalize*)
+    #+(or)(push enclosed-function *functions-to-finalize*)
     #+(or)(progn
 	    (warn "------- Implement enclose-instruction: ~a~%" instruction)
 	    (format t "   enter-instruction: ~a~%" enter-instruction)
@@ -585,70 +628,88 @@
 ;; All enclosed functions need to be finalized
 (defvar *functions-to-finalize*)
 
+
+
+(defun do-compile (form)
+  (let* ((clasp-system (make-instance 'clasp))
+	 (ast (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system))
+	 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
+	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
+	 )
+    (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
+    (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+    (when *debug-cleavir* (draw-mir hir)) ;; comment out
+    (clasp-cleavir:convert-funcalls hir)
+    (setf *ast* hoisted-ast
+	  *hir* hir)
+    (let ((*form* form)
+	  (abi (make-instance 'abi-x86-64)))
+      (translate hir abi))))
+  
 (defun cleavir-compile-t1expr (name form env pathname)
   (and env (error "I don't support anything but top level environment compiles using cleavir"))
-  (let ((*functions-to-finalize* nil))
-    (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
-	(cmp:with-debug-info-generator (:module cmp:*the-module*
-						:pathname pathname)
-	  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
-		 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-		 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-		 (clasp-inst (make-instance 'clasp)))
-	    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
-	    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
-	    (setf *ast* hoisted-ast
-		  *hir* hir)
-	    (let ((*form* form)
-		  (abi (make-instance 'abi-x86-64)))
-	      (translate hir abi))))
-      (cmp:cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
-      (or fn (error "There was no function returned by compile-lambda-function"))
-      (cmp:cmp-log "fn --> %s\n" fn)
-      (cmp:cmp-log-dump cmp:*the-module*)
-      (when cmp:*dump-module-on-completion*
-	(llvm-sys:dump cmp:*the-module*))
-      (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
-      (if (not cmp:*run-time-execution-engine*)
-	  ;; SETUP THE *run-time-execution-engine* here for the first time
-	  ;; using the current module in *the-module*
-	  ;; At this point the *the-module* will become invalid because
-	  ;; the execution-engine will take ownership of it
-	  (setq cmp:*run-time-execution-engine* (cmp:create-run-time-execution-engine cmp:*the-module*))
-	  (llvm-sys:add-module cmp:*run-time-execution-engine* cmp:*the-module*))
-      ;; At this point the Module in *the-module* is invalid because the
-      ;; execution-engine owns it
-      (cmp:cmp-log "The execution-engine now owns the module\n")
-      (setq cmp:*the-module* nil)
-      (cmp:cmp-log "About to finalize-engine with fn %s\n" fn)
-      (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
-	     (setup-function
-	      (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-	       cmp:*run-time-execution-engine*
-	       'REPL	; main fn name
-	       fn			; llvm-fn
-	       nil			; environment
-	       cmp:*run-time-literals-external-name*
-	       "repl-fn.txt"
-	       0
-	       0
-	       nil)))
-	(unless (compiled-function-p setup-function)
-	  (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
-	  (return-from cleavir-compile-t1expr (values nil t)))
-	(let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
-	  (cmp:set-associated-funcs enclosed-function cmp:*all-funcs-for-one-compile*)
-	  (values enclosed-function warnp failp))))))
+  (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+      (cmp:with-debug-info-generator (:module cmp:*the-module*
+					      :pathname pathname)
+	(let* ((clasp-system (make-instance 'clasp))
+	       (ast (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system))
+	       (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
+	       (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
+	       )
+	  (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
+	  (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+	  (when *debug-cleavir* (draw-mir hir)) ;; comment out
+	  (clasp-cleavir:convert-funcalls hir)
+	  (setf *ast* hoisted-ast
+		*hir* hir)
+	  (let ((*form* form)
+		(abi (make-instance 'abi-x86-64)))
+	    (translate hir abi))))
+    (cmp:cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
+    (or fn (error "There was no function returned by compile-lambda-function"))
+    (cmp:cmp-log "fn --> %s\n" fn)
+    (cmp:cmp-log-dump cmp:*the-module*)
+    (when cmp:*dump-module-on-completion*
+      (llvm-sys:dump cmp:*the-module*))
+    (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
+    (if (not cmp:*run-time-execution-engine*)
+	;; SETUP THE *run-time-execution-engine* here for the first time
+	;; using the current module in *the-module*
+	;; At this point the *the-module* will become invalid because
+	;; the execution-engine will take ownership of it
+	(setq cmp:*run-time-execution-engine* (cmp:create-run-time-execution-engine cmp:*the-module*))
+	(llvm-sys:add-module cmp:*run-time-execution-engine* cmp:*the-module*))
+    ;; At this point the Module in *the-module* is invalid because the
+    ;; execution-engine owns it
+    (cmp:cmp-log "The execution-engine now owns the module\n")
+    (setq cmp:*the-module* nil)
+    (cmp:cmp-log "About to finalize-engine with fn %s\n" fn)
+    (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
+	   (setup-function
+	    (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+	     cmp:*run-time-execution-engine*
+	     'REPL			; main fn name
+	     fn				; llvm-fn
+	     nil			; environment
+	     cmp:*run-time-literals-external-name*
+	     "repl-fn.txt"
+	     0
+	     0
+	     nil)))
+      (unless (compiled-function-p setup-function)
+	(format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
+	(return-from cleavir-compile-t1expr (values nil t)))
+      (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
+	(cmp:set-associated-funcs enclosed-function cmp:*all-funcs-for-one-compile*)
+	(values enclosed-function warnp failp)))))
 
 
-(defun cleavir-compile (name form)
+(defun cleavir-compile (name form &key debug)
   (let ((cmp:*cleavir-compile-hook* #'cleavir-compile-t1expr)
 	(cmp:*dump-module-on-completion* t)
-	(cleavir-generate-ast:*compiler* 'cl:compile))
-    (compile name form)
-    (draw-ast *ast*)
-    (draw-mir *hir*)
-    ))
+	(cleavir-generate-ast:*compiler* 'cl:compile)
+	(*debug-cleavir* debug))
+    (compile name form)))
 
 
 
@@ -656,15 +717,32 @@
 
 
 (defun cleavir-compile-file-form (form)
-  (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+  (multiple-value-bind (fn kind #|| more ||#)
+      (do-compile form)
+    (cmp:with-ltv-function-codegen (result ltv-env)
+      (cmp:irc-intrinsic "invokeTopLevelFunction" 
+			 result 
+			 fn 
+			 (cmp:irc-renv ltv-env)
+			 (cmp:jit-constant-unique-string-ptr "top-level")
+			 cmp:*gv-source-file-info-handle*
+			 (cmp:irc-i64-*current-source-pos-info*-filepos)
+			 (cmp:irc-i32-*current-source-pos-info*-lineno)
+			 (cmp:irc-i32-*current-source-pos-info*-column)
+			 cmp:*load-time-value-holder-global-var*
+			 ))))
+
+
+#+(or)  (let* ((clasp-system (make-instance 'clasp))
+	 (ast (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system))
 	 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
 	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-	 (clasp-inst (make-instance 'clasp)))
-    (cleavir-hir-transformations:hir-transformations hir clasp-inst nil nil)
-    (cleavir-ir:hir-to-mir hir clasp-inst nil nil)
+	 )
+    (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
+    (cleavir-ir:hir-to-mir hir clasp-system nil nil)
     (let ((*form* form)
 	  (abi (make-instance 'abi-x86-64)))
-      (translate hir abi))))
+      (translate hir abi)))
 
 
 (defun cleavir-compile-file (given-input-pathname &rest args)

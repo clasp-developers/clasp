@@ -50,6 +50,7 @@ namespace core
     T_sp MultipleValues::valueGet(int idx,int number_of_values) const
     {
 	ASSERTF(idx>=0,BF("multiple-value.valueGet index[%d] must be larger than 0") % idx );
+	ASSERTF(number_of_values<MultipleValues::MultipleValuesLimit,BF("number_of_values %d must be <= MultipleValuesLimit %d") % number_of_values % MultipleValues::MultipleValuesLimit);
 	if ( idx < number_of_values ) return T_sp(this->_Values[idx]);
 //	printf("%s:%d - WARNING: You asked for multiple-value[%d] and there are only %d values - turn this off once everything is working\n", __FILE__, __LINE__, idx, number_of_values);
 	return _Nil<T_O>();

@@ -1,2 +1,6 @@
-(print "Setting up a")
-(defun a (x y) (+ x y))
+(print "Hello there")
+
+(defun a (x y) (dotimes (i 1000) ))
+
+
+

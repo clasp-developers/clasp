@@ -119,8 +119,10 @@ If this form has already been precalculated then just return the precalculated-v
   (let* ((form (cleavir-ast:form ast))
 	 (read-only-p (cleavir-ast:read-only-p ast))
 	 (symbol (second form))
-	 (symbol-index (cmp:codegen-rts/symbol nil symbol nil)))
+	 (symbol-index (cmp:codegen-symbol nil symbol nil)))
     (format t "    generate-new-precalculated-symbol-index for: ~s  index: ~a~%" symbol symbol-index)
+    (when (< symbol-index 0)
+      (error "There is a problem with the symbol index: ~a" symbol-index))
     symbol-index))
 
 (defun generate-new-precalculated-value-index (ast)
@@ -133,9 +135,11 @@ If this form has already been precalculated then just return the precalculated-v
        (let* ((constant (cadr form))
 	      (constant-index (cmp:codegen-literal nil constant nil)))
 	 constant-index))
+      ((symbolp form)
+       (cmp:codegen-literal nil form nil))
       ((constantp form)
        (cmp:codegen-literal nil form nil))
-      (t (warn "Finish implementing generate-new-precalculated-value-index - form: ~s read-only-p: ~a" form read-only-p)
+      (t (error "Finish implementing generate-new-precalculated-value-index - form: ~s read-only-p: ~a" form read-only-p)
 	 -1))
     ))
 
@@ -168,14 +172,14 @@ If this form has already been precalculated then just return the precalculated-v
 
 (defclass unwind-protect-ast (cleavir-ast:ast)
   ((%protected-ast :initarg :protected-ast :accessor protected-ast)
-   (%cleanup-ast ::initarg :cleanup-ast :accessor cleanup-ast)))
+   (%cleanup-ast :initarg :cleanup-ast :accessor cleanup-ast)))
 
 (defun make-unwind-protect-ast (protected-ast cleanup-ast)
   (make-instance 'unwind-protect-ast
 		 :protected-ast protected-ast
 		 :cleanup-ast cleanup-ast))
 
-(defmethod children ((ast unwind-protect-ast))
+(defmethod cleavir-ast:children ((ast unwind-protect-ast))
   (list (protected-ast ast) (cleanup-ast ast)))
 
 
@@ -183,4 +187,27 @@ If this form has already been precalculated then just return the precalculated-v
 
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class INVOKE-AST. 
+;;;
+;;; A INVOKE-AST represents a function call.  
+
+(defclass invoke-ast (cleavir-ast:call-ast)
+  ((%unwind-ast :initarg :unwind-ast :reader unwind-ast)))
+
+(defun make-invoke-ast (callee-ast argument-asts unwind-ast)
+  (make-instance 'invoke-ast
+    :callee-ast callee-ast
+    :argument-asts argument-asts
+    :unwind-ast unwind-ast))
+
+(cleavir-io:define-save-info invoke-ast
+  (:unwind-ast unwind-ast))
+
+(defmethod cleavir-ast:children ((ast invoke-ast))
+  (append (list (cleavir-ast:callee-ast ast))
+	  (cleavir-ast:argument-asts ast)
+	  (list (unwind-ast ast))))
 

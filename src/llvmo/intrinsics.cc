@@ -742,13 +742,15 @@ extern "C"
 extern "C"
 {
     void invokeTopLevelFunction( core::T_mv* resultP,
-			     fnLispCallingConvention fptr,
-			     core::ActivationFrame_sp* frameP,
-			     char* cpname,
-                             int* sourceFileInfoHandleP,
-			     size_t filePos,
-                             int lineno,
-                             int column )
+				 fnLispCallingConvention fptr,
+				 core::ActivationFrame_sp* frameP,
+				 char* cpname,
+				 int* sourceFileInfoHandleP,
+				 size_t filePos,
+				 int lineno,
+				 int column,
+				 core::LoadTimeValues_O** ltvPP
+				 )
     {
 	ActivationFrame_sp frame = (*frameP);
 	SourcePosInfo_sp tempSourcePosInfo = SourcePosInfo_O::create(*sourceFileInfoHandleP,filePos,lineno,column);
@@ -756,12 +758,10 @@ extern "C"
 	BuiltinClosure tempClosure(name,tempSourcePosInfo,kw::_sym_function);
         core::InvocationHistoryFrame invFrame(&tempClosure,*frameP);
 	core::T_sp closedEnv = _Nil<T_O>();
-	if ( frame.nilp() ) {
-	    fptr(resultP,LCC_FROM_SMART_PTR(closedEnv),LCC_PASS_ARGS0());
-	} else {
-            DEPRECIATED();
-	    //fptr(resultP,closedEnv,frame->length(),frame->argArray());
-	}
+	ASSERT(ltvPP!=NULL);
+	core::LoadTimeValues_O* ltvP = *ltvPP;
+	ASSERT(ltvP!=NULL);
+	fptr(resultP,LCC_FROM_SMART_PTR(closedEnv),LCC_PASS_ARGS1(ltvP));
 	ASSERTNOTNULL(*resultP);
     };
 
@@ -2046,12 +2046,24 @@ extern "C" {
 	return fn->closure;
     }
 
+    void* cc_symbolValue(core::T_O* sym)
+    {
+	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	core::T_sp v = core::af_symbolValue(s);
+	return v.px;
+    }
 
-    void* cc_apply(core::T_mv* result, core::Closure* closure, LCC_ARGS_BASE)
+
+    void cc_call(core::T_mv* result, core::Closure* closure, LCC_ARGS_BASE)
     {
 	closure->invoke(result,LCC_PASS_ARGS);
     }
-	
+
+    void cc_invoke(core::T_mv* result, core::Closure* closure, LCC_ARGS_BASE)
+    {
+	closure->invoke(result,LCC_PASS_ARGS);
+    }
+
 
     
 
@@ -2087,6 +2099,33 @@ extern "C" {
 	core::CompiledFunction_sp cf = core::CompiledFunction_O::make(functoid);
 	core::T_sp res = cf;
 	return res.px;
+    }
+
+
+
+
+    void cc_throwDynamicGo(size_t frame, size_t index)
+    {_G();
+	core::DynamicGo dgo(frame,index);
+	throw dgo;
+    }
+
+
+
+    core::T_O* cc_loadTimeValueReference(core::LoadTimeValues_O** ltvPP, int index)
+    {
+	ASSERT(ltvPP!=NULL);
+	ASSERT(*ltvPP!=NULL);
+	core::LoadTimeValues_O& ltv = **ltvPP;
+	core::T_sp& result = ltv.data_element(index);
+	return result.px;
+    }
+
+
+    void clasp_terminate(const char* file, int line, int column, const char* func)
+    {
+	printf("Terminating file: %s  func: %s\n", file, func );
+	exit(1);
     }
 
 };

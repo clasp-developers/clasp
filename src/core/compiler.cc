@@ -873,6 +873,18 @@ namespace core {
 
 
 
+    #define ARGS_core_callWithVariableBound "(sym val thunk)"
+#define DECL_core_callWithVariableBound ""
+#define DOCS_core_callWithVariableBound "callWithVariableBound"
+    T_mv core_callWithVariableBound(Symbol_sp sym, T_sp val, T_sp thunk)
+    {
+	DynamicScopeManager scope(sym,val);
+	//	printf("%s:%d callWithVariableBound binding %s with %s\n", __FILE__, __LINE__, _rep_(sym).c_str(), _rep_(val).c_str());
+	T_mv result = eval::funcall(thunk);
+    }
+
+
+
     void initialize_compiler_primitives(Lisp_sp lisp)
     {_G();
 //	SYMBOL_SC_(CorePkg,processDeclarations);
@@ -909,6 +921,7 @@ namespace core {
         CoreDefun(callsByPointerPerSecond);
         CoreDefun(startupImagePathname);
 	CoreDefun(mangleName);
+	CoreDefun(callWithVariableBound);
     }
 
 

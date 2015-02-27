@@ -377,7 +377,7 @@
 
 
 
-(defun irc-generate-terminate-code (env)
+(defun irc-generate-terminate-code ()
       (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
 	     (landpad (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ personality-function 1 "")))
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
@@ -759,7 +759,7 @@ and then the irbuilder-alloca, irbuilder-body."
 	  (irc-branch-to-and-begin-block (irc-get-exception-handler-resume-block env))
 	  (irc-generate-resume-code exn.slot ehselector.slot env))
 	(irc-begin-landing-pad-block (irc-get-terminate-landing-pad-block env))
-	(irc-generate-terminate-code env)
+	(irc-generate-terminate-code)
 	;; put the return-block at the end of the function to see if that fixes exception handling problem
 	(progn
 	  (irc-begin-block return-block)
@@ -1074,13 +1074,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
      (cmp-log "Setting *current-unwind-landing-pad-!dest* to %s\n" (llvm-sys:get-name ,unwind-landing-pad-dest))
      (let ((*current-unwind-landing-pad-dest* ,unwind-landing-pad-dest))
        ,@body
-       )
-     (cmp-log "<<<<< Restored *current-unwind-landing-pad-dest* to %s\n"
-	      (if *current-unwind-landing-pad-dest*
-		  (llvm-sys:get-name *current-unwind-landing-pad-dest*)
-		  "NIL"))
-     )
-  )
+       )))
 
 
                     

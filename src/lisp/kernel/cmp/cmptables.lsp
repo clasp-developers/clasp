@@ -48,16 +48,17 @@
     (core:truly-the .  codegen-truly-the)
     (locally .  codegen-locally)
     (quote .  codegen-quote)
-    (throw .  codegen-throw)
-    (unwind-protect .  codegen-unwind-protect)
-    (catch .  codegen-catch)
     (macrolet .  codegen-macrolet)
     (dbg-i32 .  codegen-dbg-i32)
     (load-time-value .  codegen-load-time-value)
     (symbol-macrolet .  codegen-symbol-macrolet)
-    (progv .  codegen-progv)
     (cmp:llvm-inline . codegen-llvm-inline)
     (cmp::gc-profiling . codegen-gc-profiling)
+    ;; Handled with macros and funcalls
+    #+(or)(unwind-protect .  codegen-unwind-protect)
+    (catch .  codegen-catch)
+    (throw .  codegen-throw)
+    (progv .  codegen-progv)
     ))
 
 

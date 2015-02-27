@@ -6,12 +6,25 @@
    #:cleavir-compile-eval
 ))
 
+(defpackage #:clasp-cleavir-generate-ast
+  (:nicknames #:cc-generate-ast))
+
+(defpackage #:clasp-cleavir-env
+  (:nicknames #:cc-env)
+  (:use #:common-lisp)
+  (:export
+   #:unwind-protect
+   #:add-unwind-protect
+   ))
 
 (defpackage #:clasp-cleavir-ast
+  (:nicknames #:cc-ast)
   (:use #:common-lisp)
   (:export 
    #:hoist-load-time-value
-   #:precalculated-value-ast))
+   #:precalculated-value-ast
+   #:unwind-protect-ast
+   #:cleanup-ast))
 
 (defpackage #:clasp-cleavir-hir
   (:use #:common-lisp)
@@ -20,8 +33,13 @@
 
 (defpackage #:clasp-cleavir-ast-to-hir
   (:use #:common-lisp)
+  (:export
+   #:*landing-pad*)
 )
 
+(defpackage #:cc-generate-ast
+  (:use #:common-lisp)
+  )
 
 (defpackage #:cc-hir-to-mir
   (:use #:common-lisp)

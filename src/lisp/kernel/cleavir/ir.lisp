@@ -113,7 +113,7 @@
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun apply-closure (closure arguments abi)
+(defun apply-closure (intrinsic-name closure arguments abi)
   ;; Write excess arguments into the multiple-value array
   (unless (<= (length arguments) 5)
     (let ((mv-args (nthcdr 5 arguments)))
@@ -123,7 +123,7 @@
 	  ((null cur-arg) nil)
 	(cmp:irc-store (cmp:irc-load arg) (multiple-value-elt idx)))))
   (with-return-values (return-vals abi)
-    (cmp:irc-intrinsic "cc_apply"
+    (cmp:irc-intrinsic intrinsic-name
 		       (sret-arg return-vals)
 		       (cmp:irc-load closure)
 		       (%size_t (length arguments))

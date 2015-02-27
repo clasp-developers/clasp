@@ -1,8 +1,84 @@
 (require :asdf)
 (asdf:load-system :clasp-cleavir)
+(core:getpid)
+(print "Hello")
 
+(let ((clasp-cleavir:*debug-cleavir* t))
+  (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;tiny1.lsp"))
+
+(load "sys:..;tests;lisp;tiny1.bc")
+
+(a 1 2)
+
+(probe-file "sys:..;tests;lisp;tiny1.lsp")
+(defun cleavir-primop:call-with-variable-bound (&rest args)
+  (error "What do I do now???"))
+
+(setf (fdefinition 'cleavir-primop:call-with-variable-bound) (fdefinition 'core:call-with-variable-bound))
+
+(defparameter *a* 1)
+(defun foo () (print (list "*a*" *a*)))
+(cleavir-compile 'tspec '(lambda (*a*) (print *a*) (foo) (values 1 2 3)))
+(tspec 10)
+
+
+(cleavir-compile 'tspec2 '(lambda () (print 1) (foo)))
+(tspec2 1)
+*a*
+
+
+
+(cleavir-compile 'tup '(lambda () (unwind-protect (progn (print "protected") (values 1 2 3)) (print "cleanup") (values 4 5 6))))
+
+(progn
+  (defun foo (fn) (funcall fn))
+  (cleavir-compile 'tgo '(lambda () (tagbody a (foo (lambda () (go b))) (print "a") b (print "b")))))
+(tgo)
+
+(progn
+  (defun diddly (fn) (funcall fn))
+  (cleavir-compile 'tret '(lambda () (print (block foo (diddly (lambda () (return-from foo 'bar))) 2)))))
+(tret)
+
+
+(tret)
+(progn
+  (defun foo (x) (funcall x))
+  (cleavir-compile 'tret2 '(lambda () (print (foo (lambda () (return-from (print "a"))))))
+(tret)
+
+
+clasp-cleavir:*tags*
+clasp-cleavir:*basic-blocks*
+
+(loop with x = nil
+     do (print "Hello"))
+
+(trace clasp-cleavir:compute-landing-pads)
+(core:getpid)581
+(tup)
+
+
+clasp-cleavir-ast-to-hir:*landing-pad*
+
+(tagbody (ff (lambda () (go a)) a))
+
+
+(tagbody (print "t-a") (core:funwind-protect (lambda () (print "p-a") (go foo) (print "p-b")) (lambda () (print "c-a"))) (print "t-b") foo (print "t-c"))
+"t-a" 
+"p-a" 
+"c-a" 
+"t-c"
+
+
+(hoisted-hir-form '(lambda () (tagbody a (print "a") b (print "b") c (function (lambda () (go a))))))
+
+(hoisted-hir-form '(lambda () (progn (print "Hello") (block a #'(lambda () (print "inner")(return-from a))))))
+(apropos "cleanup-ast")
 (apropos "enter-instruction")
 
+(defparameter *a* (clasp-cleavir-ast:make-unwind-protect-ast 'a 'b))
+(clasp-cleavir-ast:cleanup-ast *a*)
 (list-all-packages)
 (core:getpid)
 
@@ -48,7 +124,7 @@
 (apropos "run-time")
 (core:load-time-values-ids)
 
-(ast-form '(lambda (x) (+ 1 x)))
+(ast-form '(lambda () (unwind-protect (print "protected") (print "cleanup1"))))
 (hoisted-ast-form '(lambda (x) (+ 1 (- 123123434182312310 x))))
 (hoisted-mir-form '(lambda (x) (+ 1 x)))
 (hoisted-hir-form '(lambda (x) #'(lambda (y) (+ x y 1))))
@@ -235,3 +311,11 @@ cmp::*dbg-generate-dwarf*
 (defun foo (x x) x)
 
 (foo 1 2)
+
+
+
+
+
+(cleavir-compile 'tcl '(lambda (max) (let ((x 0)) (dotimes (i max) (setq x (+ i x ))) (print x))))
+
+(tcl 10)

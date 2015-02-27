@@ -84,3 +84,130 @@
       (if (> (length original-object) 10)
 	  (format s "~a..." (subseq original-object 0 10))
 	  (princ original-object s)))))
+
+
+
+#+(or)(progn
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; save-multiple-values-return-instruction
+;;;
+	(defclass save-multiple-values-return-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+	  (()))
+
+	(defun make-save-multiple-values-return-instruction
+	    (values-temp save-mv &optional successor )
+	  (make-instance 'save-multiple-values-return-instruction
+			 :inputs (list values-temp)
+			 :outputs (list save-mv)
+			 :successors (if (null successor) nil (list successor))))
+
+	(defmethod cleavir-ir-graphviz:label ((instr save-multiple-values-return-instruction))
+	  (with-output-to-string (s)
+	    (format s "save-mv")))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; restore-multiple-values-return-instruction
+;;;
+
+	(defclass restore-multiple-values-return-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+	  (()))
+
+	(defun make-restore-multiple-values-return-instruction
+	    (saved-mv result &optional successor )
+	  (make-instance 'restore-multiple-values-return-instruction
+			 :inputs (list saved-mv)
+			 :outputs (list result)
+			 :successors (if (null successor) nil (list successor))))
+
+	(defmethod cleavir-ir-graphviz:label ((instr restore-multiple-values-return-instruction))
+	  (with-output-to-string (s)
+	    (format s "restore-mv")))
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; try-instruction
+;;;
+
+	(defclass try-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+	  ((%try-id :initarg :try-id :accessor try-id)))
+
+	(defun make-try-instruction
+	    ( id &optional successor )
+	  (make-instance 'try-instruction
+			 :inputs nil
+			 :outputs nil
+			 :try-id id
+			 :successors (if (null successor) nil (list successor))))
+
+	(defmethod cleavir-ir-graphviz:label ((instr try-instruction))
+	  (with-output-to-string (s)
+	    (format s "try(~a)" (try-id instr))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; landing-pad-instruction
+;;;
+
+	(defclass landing-pad-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+	  (()))
+
+	(defun make-landing-pad-instruction
+	    ( &optional successor )
+	  (make-instance 'landing-pad-instruction
+			 :inputs nil
+			 :outputs nil
+			 :successors (if (null successor) nil (list successor))))
+
+	(defmethod cleavir-ir-graphviz:label ((instr landing-pad-instruction))
+	  (with-output-to-string (s)
+	    (format s "landing-pad")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; cleanup-instruction
+;;;
+
+	(defclass cleanup-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+	  (()))
+
+	(defun make-cleanup-instruction
+	    ( &optional successor )
+	  (make-instance 'cleanup-instruction
+			 :inputs nil
+			 :outputs nil
+			 :successors (if (null successor) nil (list successor))))
+
+	(defmethod cleavir-ir-graphviz:label ((instr cleanup-instruction))
+	  (with-output-to-string (s)
+	    (format s "cleanup")))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; invoke-instruction
+;;;
+
+	(defclass invoke-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+	  ())
+
+
+	(defun make-invoke-instruction
+	    (inputs outputs &optional (successors nil successors-p))
+	  (make-instance 'invoke-instruction
+			 :inputs inputs
+			 :outputs outputs
+			 :successors (if successors-p successors '())))
+
+
+	(defmethod cleavir-ir-graphviz:label ((instr invoke-instruction))
+	  (with-output-to-string (s)
+	    (format s "invoke")))
+	)

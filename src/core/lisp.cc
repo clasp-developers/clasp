@@ -2123,20 +2123,20 @@ namespace core
     T_mv af_macroexpand_1(T_sp form, T_sp env)
     {_G();
 	Function_sp expansionFunction = _Nil<Function_O>();
-	if ( Cons_sp cform = form.asOrNull<Cons_O>() )
+	if ( form.nilp() ) {
+	    return form;
+	} else if ( Cons_sp cform = form.asOrNull<Cons_O>() )
 	{
 	    T_sp head = oCar(cform);
 	    if ( af_symbolp(head) )
 	    {
+		//		Symbol_sp headSymbol = head.as<Symbol_O>();
+		//		if ( _lisp->specialFormOrNil(headSymbol).nilp() )
+		//		{
 		Symbol_sp headSymbol = head.as<Symbol_O>();
-		if ( _lisp->specialFormOrNil(headSymbol).nilp() )
-		{
-		    Function_sp func = af_interpreter_lookup_macro(headSymbol,env);
-		    if ( func.notnilp() && func->closure->macroP() )
-		    {
-			expansionFunction = func;
-		    }
-		}
+		Function_sp func = af_interpreter_lookup_macro(headSymbol,env);
+		if ( func.notnilp() && func->closure->macroP() ) expansionFunction = func;
+		//		}
 	    }
 	} else if ( Symbol_sp sform = form.asOrNull<Symbol_O>() )
 	{
@@ -2150,15 +2150,13 @@ namespace core
 	{
 	    T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
 	    Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
-            ValueFrame_sp macroHookArgs = ValueFrame_O::create_fill_args(_Nil<ActivationFrame_O>(),expansionFunction,form,env);
-	    InvocationHistoryFrame _frame(hookFunc->closure,macroHookArgs);
-	    T_sp expanded = eval::applyToActivationFrame(hookFunc,macroHookArgs); // eval::applyFunctionToActivationFrame(hookFunc,macroHookArgs);
+	    T_sp expanded = eval::funcall(hookFunc,expansionFunction,form,env);
             if ( _lisp->sourceDatabase().notnilp() ) {
                 _lisp->sourceDatabase()->duplicateSourcePosInfo(form,expanded,expansionFunction);
             }
 	    return(Values(expanded,_lisp->_true()) );
 	}
-	return(Values(form,_lisp->_false()) );
+	return(Values(form,_Nil<T_O>()));
     }
 
 

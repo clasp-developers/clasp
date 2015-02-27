@@ -1,6 +1,8 @@
 (in-package :cmp)
 
 (export '(+fn-prototype+
+	  *load-time-value-holder-global-var*
+	  with-ltv-function-codegen
 	  +fn-prototype-argument-names+
 	  jit-function-name
 	  *the-module*
@@ -36,4 +38,5 @@
 	  codegen-rts/symbol
 	  irc-begin-block
 	  irc-basic-block-create
+	  typeid-core-dynamic-go
 	  ))

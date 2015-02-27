@@ -483,7 +483,7 @@ Boehm and MPS use a single pointer"
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
   (primitive module "invokeMainFunctions" +void+ (list +fn-prototype**+ +i32*+))
-  (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+))
+  (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+ +ltv**+))
   (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-prototype*+))
 
   (primitive-does-not-throw module "activationFrameSize" +i32+ (list +afsp*+))
@@ -562,7 +562,7 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "clasp_terminate" +void+ (list +i8*+ +i32+ +i32+ +i8*+) )
   (primitive-does-not-throw module "__gxx_personality_v0" +i32+ nil :varargs t) ;; varargs
   (primitive-does-not-throw module "__cxa_begin_catch" +i8*+ (list +i8*+) )
-  (primitive module "__cxa_end_catch" +void+ nil)
+  (primitive-does-not-throw module "__cxa_end_catch" +void+ nil)  ;; This was a PRIMITIVE
   (primitive module "__cxa_rethrow" +void+ nil)
   (primitive-does-not-throw module "llvm.eh.typeid.for" +i32+ (list +i8*+))
 ;;  (primitive-does-not-throw module "_Unwind_Resume" +void+ (list +i8*+))
@@ -621,9 +621,12 @@ Boehm and MPS use a single pointer"
   (primitive-does-not-throw module "cc_writeCell" +void+ (list +t*+ +t*+))
   (primitive-does-not-throw module "cc_readCell" +t*+ (list +t*+))
   (primitive-does-not-throw module "cc_fetch" +t*+ (list +t*+ +size_t+))
+  (primitive-does-not-throw module "cc_throwDynamicGo" +void+ (list +size_t+ +size_t+))
   (primitive-does-not-throw module "cc_enclose" +t*+ (list +fn-prototype*+ +size_t+ ) :varargs t)
   (primitive-does-not-throw module "cc_fdefinition" +i8*+ (list +t*+))
-  (primitive-does-not-throw module "cc_apply" +void+ (list* +tmv*+ +i8*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
+  (primitive-does-not-throw module "cc_symbolValue" +t*+ (list +t*+))
+  (primitive-does-not-throw module "cc_call" +void+ (list* +tmv*+ +i8*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
+  (primitive module "cc_invoke" +void+ (list* +tmv*+ +i8*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
 
   )
 

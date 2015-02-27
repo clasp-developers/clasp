@@ -634,7 +634,6 @@ namespace core
 	     ( sym == cl::_sym_let) ||
 	     ( sym == cl::_sym_letSTAR) ||
 	     ( sym == cl::_sym_return_from) ||
-	     ( sym == cl::_sym_catch) ||
 	     ( sym == cl::_sym_load_time_value) ||
 	     ( sym == cl::_sym_setq) ||
 	     ( sym == cl::_sym_eval_when) ||
@@ -648,11 +647,12 @@ namespace core
 	     ( sym == cl::_sym_the) ||
 	     ( sym == cl::_sym_go) ||
 	     ( sym == cl::_sym_multiple_value_prog1) ||
-	     ( sym == cl::_sym_throw) ||
 	     ( sym == cl::_sym_if) ||
 	     ( sym == cl::_sym_progn) ||
-	     ( sym == cl::_sym_unwind_protect) ||
 	     ( sym == cl::_sym_labels) ||
+	     ( sym == cl::_sym_unwind_protect) ||
+	     ( sym == cl::_sym_catch) ||
+	     ( sym == cl::_sym_throw) ||
 	     ( sym == cl::_sym_progv) ||
 	     ( sym == cl::_sym_quote ) )
 	{
@@ -1827,6 +1827,27 @@ Integer_sp cl_sxhash(T_sp obj)
 
 
 
+#define ARGS_core_funwind_protect "(protected-fn cleanup-fn)"
+#define DECL_core_funwind_protect ""
+#define DOCS_core_funwind_protect "funwind_protect"
+    T_mv core_funwind_protect(T_sp protected_fn, T_sp cleanup_fn)
+    {
+	T_mv result;
+	try {
+	    result = eval::funcall(protected_fn);
+	} catch (...) {
+	    eval::funcall(cleanup_fn);
+	    throw;
+	}
+	gctools::Vec0<T_sp> savemv;
+	result.saveToVec0(savemv);
+	eval::funcall(cleanup_fn);
+	result.loadFromVec0(savemv);
+DONE:
+	return result;
+    }
+
+
 
 
 
@@ -2068,6 +2089,7 @@ void initialize_primitives()
         ClDefun(lispImplementationVersion);
         ClDefun(lispImplementationType);
         CoreDefun(lispImplementationId);
+	CoreDefun(funwind_protect);
         ClDefun(softwareVersion);
         ClDefun(softwareType);
         ClDefun(machineVersion);

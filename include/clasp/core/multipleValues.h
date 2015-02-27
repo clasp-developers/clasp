@@ -93,6 +93,22 @@ namespace core
 	/*! Return a Cons of elements 1 up to but not including iend */
 	Cons_sp asCons(int iend) const;
 
+#if 0
+	void saveToVec0(T_mv& result, gctools::Vec0<core::T_sp>& vec)
+        {
+            vec.resize(result.this->getSize());
+            for ( int i(0), iEnd(this->getSize()); i<iEnd; ++i ) {
+                vec[i] = T_sp(this->_Values[i]);
+            }
+        }
+        void loadFromVec0(const gctools::Vec0<core::T_sp>& vec)
+        {
+            this->setSize(vec.size());
+            for ( int i(0), iEnd(vec.size()); i<iEnd; ++i ) {
+                this->_Values[i] = vec[i].px;
+            };
+        };
+
         void saveToVec0(gctools::Vec0<core::T_sp>& vec)
         {
             vec.resize(this->getSize());
@@ -107,7 +123,7 @@ namespace core
                 this->_Values[i] = vec[i].px;
             };
         };
-
+#endif
     };
 #pragma GCC visibility pop
 

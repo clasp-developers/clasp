@@ -1026,7 +1026,7 @@ namespace core
             throw returnFrom;
 	}
 
-#if 1 // new way using RAII
+#if 0 // new way using RAII
 	T_mv sp_unwindProtect( Cons_sp args, T_sp environment)
 	{_G();
             MultipleValues& mv = lisp_multipleValues();
