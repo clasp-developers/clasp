@@ -60,35 +60,35 @@ Set this to other IRBuilders to make code go where you want")
 ;; Create types
 ;;
 
-(defconstant +float+ (llvm-sys:type-get-float-ty *llvm-context*))
-(defconstant +double+ (llvm-sys:type-get-double-ty *llvm-context*))
-#+long-float(defconstant +long-float+ (llvm-sys:type-get-long-float-ty *llvm-context*))
-(defconstant +void+ (llvm-sys:type-get-void-ty *llvm-context*))
-(defconstant +i1+ (llvm-sys:type-get-int1-ty *llvm-context*))
-(defconstant +i8+ (llvm-sys:type-get-int8-ty *llvm-context*))
-(defconstant +i8*+ (llvm-sys:type-get-pointer-to +i8+))
-(defconstant +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
-(defconstant +i32+ (llvm-sys:type-get-int32-ty *llvm-context*))
-(defconstant +i32*+ (llvm-sys:type-get-pointer-to +i32+))
-(defconstant +i32**+ (llvm-sys:type-get-pointer-to +i32*+))
-(defconstant +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
-;;(defconstant +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
-(defconstant +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
+(defvar +float+ (llvm-sys:type-get-float-ty *llvm-context*))
+(defvar +double+ (llvm-sys:type-get-double-ty *llvm-context*))
+#+long-float(defvar +long-float+ (llvm-sys:type-get-long-float-ty *llvm-context*))
+(defvar +void+ (llvm-sys:type-get-void-ty *llvm-context*))
+(defvar +i1+ (llvm-sys:type-get-int1-ty *llvm-context*))
+(defvar +i32+ (llvm-sys:type-get-int32-ty *llvm-context*))
+(defvar +i32*+ (llvm-sys:type-get-pointer-to +i32+))
+(defvar +i32**+ (llvm-sys:type-get-pointer-to +i32*+))
+(defvar +i8+ (llvm-sys:type-get-int8-ty *llvm-context*))
+(defvar +i8*+ (llvm-sys:type-get-pointer-to +i8+))
+(defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
+(defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
+;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
+(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
 
-(defconstant +size_t+
+(defvar +size_t+
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
       ((= 8 sizeof-size_t) +i64+)
       ((= 4 sizeof-size_t) +i32+)
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
-(defconstant +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
-(defconstant +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
+(defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
+(defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
 
-(defconstant +nil-value+ (cdr (assoc :nil-value (llvm-sys:cxx-data-structures-info))))
+(defvar +nil-value+ (cdr (assoc :nil-value (llvm-sys:cxx-data-structures-info))))
 
-(defconstant +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
-(defconstant +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
-(defconstant +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
+(defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
+(defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
+(defvar +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
 
 ;;
 ;; Setup setjmp_buf type
@@ -101,17 +101,17 @@ Set this to other IRBuilders to make code go where you want")
 ;; For TAGBODY/GO Word2 will contain an i32 and the rest is padding
 ;; For BLOCK/RETURN-FROM Word2..4 will contain a T_mv pointer - it should fit
 
-(defconstant +setjmp.buf+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +i8*+ +i8*+ +i8*+) nil))
-(defconstant +setjmp.buf*+ (llvm-sys:type-get-pointer-to +setjmp.buf+))
+(defvar +setjmp.buf+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +i8*+ +i8*+ +i8*+) nil))
+(defvar +setjmp.buf*+ (llvm-sys:type-get-pointer-to +setjmp.buf+))
 
 ;;
 ;; Setup smart-ptr constants
 ;;
 (multiple-value-bind (pointer-type pointer-px-offset pointer-px-size)
     (smart-pointer-details)
-  (defconstant +using-intrusive-reference-count+
+  (defvar +using-intrusive-reference-count+
     (eq pointer-type 'core::intrusive-reference-counted-pointer))
-  (defconstant +smart-ptr-px-offset+ pointer-px-offset))
+  (defvar +smart-ptr-px-offset+ pointer-px-offset))
 
 
 (defun smart-pointer-fields (data-ptr-type &rest additional-fields)
@@ -123,71 +123,72 @@ Boehm and MPS use a single pointer"
 ;;
 ;; If I use an opaque type then the symbol type gets duplicated and that causes
 ;; problems - try just using an int
-;;(defconstant +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
-(defconstant +sym+ (llvm-sys:type-get-int32-ty *llvm-context*))
-(defconstant +sym-ptr+ (llvm-sys:type-get-pointer-to +sym+))
-(defconstant +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp"
-(defconstant +symsp*+ (llvm-sys:type-get-pointer-to +symsp+))
+;;(defvar +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
+(defvar +sym+ (llvm-sys:type-get-int32-ty *llvm-context*))
+(defvar +sym-ptr+ (llvm-sys:type-get-pointer-to +sym+))
+(defvar +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp"
+(defvar +symsp*+ (llvm-sys:type-get-pointer-to +symsp+))
 
 
 ;;
 ;; Store a core::Function_sp pointer
 ;;
-(defconstant +Function+ (llvm-sys:type-get-int32-ty *llvm-context*))
-(defconstant +Function-ptr+ (llvm-sys:type-get-pointer-to +Function+))
-(defconstant +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp"
-(defconstant +Function_sp*+ (llvm-sys:type-get-pointer-to +Function_sp+))
+(defvar +Function+ (llvm-sys:type-get-int32-ty *llvm-context*))
+(defvar +Function-ptr+ (llvm-sys:type-get-pointer-to +Function+))
+(defvar +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp"
+(defvar +Function_sp*+ (llvm-sys:type-get-pointer-to +Function_sp+))
 
 
 
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
-(defconstant +t+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
-(defconstant +t*+ (llvm-sys:type-get-pointer-to +t+))
-(defconstant +t**+ (llvm-sys:type-get-pointer-to +t*+))
-(defconstant +t*[0]+ (llvm-sys:array-type-get +t*+ 0))
-(defconstant +t*[0]*+ (llvm-sys:type-get-pointer-to +t*[0]+))
-(defconstant +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
-(defconstant +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
-(defconstant +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
-(defconstant +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
-(defconstant +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
+(defvar +t+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
+(defvar +t*+ (llvm-sys:type-get-pointer-to +t+))
+(defvar +t**+ (llvm-sys:type-get-pointer-to +t*+))
+(defvar +t*[0]+ (llvm-sys:array-type-get +t*+ 0))
+(defvar +t*[0]*+ (llvm-sys:type-get-pointer-to +t*[0]+))
+(defvar +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
+(defvar +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
+(defvar +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
+(defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
+(defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
 
-(defconstant +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
-(defconstant +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
-(defconstant +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
+(defvar +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
+(defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
+(defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
 
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
-(defconstant +ltv+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "LoadTimeValue_O"
-(defconstant +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
-(defconstant +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
-(defconstant +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
-(defconstant +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
-(defconstant +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
+(defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "LoadTimeValue_O"
+(defvar +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
+(defvar +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
+(defvar +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
+(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
+(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
-(defconstant +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
-(defconstant +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
-(defconstant +mv-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
-(defconstant +thread-info-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +mv-struct+) nil))
+(defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
+(defvar +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
+(defvar +mv-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
+(defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
+(defvar +thread-info-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +mv-struct+) nil))
 
 
 #+(or)(progn
-        (defconstant +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
-        (defconstant +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
-        (defconstant +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
-        (defconstant +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
+        (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
+        (defvar +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
+        (defvar +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
+        (defvar +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
         )
 
 ;; Substitute afsp* with tsp
-(defconstant +afsp+ +tsp+)
-(defconstant +afsp*+ +tsp*+)
+(defvar +afsp+ +tsp+)
+(defvar +afsp*+ +tsp*+)
 
 
 
-(defconstant +va-list+ +i8*+)
-(defconstant +closure*+ +i8*+)
+(defvar +va-list+ +i8*+)
+(defvar +closure*+ +i8*+)
 
 ;;
 ;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
@@ -202,8 +203,8 @@ Boehm and MPS use a single pointer"
     (push (bformat nil "farg%d" i) arg-names))
   (setf *register-arg-types* (nreverse arg-types)
 	*register-arg-names* (nreverse arg-names)))
-(defconstant +fn-registers-prototype-argument-names+ (list* "result-ptr" "closed-af-ptr" "nargs" *register-arg-names*))
-(defconstant +fn-registers-prototype+ (llvm-sys:function-type-get +void+ (list* +tmv*+ +t*+ +size_t+ *register-arg-types*))
+(defvar +fn-registers-prototype-argument-names+ (list* "result-ptr" "closed-af-ptr" "nargs" *register-arg-names*))
+(defvar +fn-registers-prototype+ (llvm-sys:function-type-get +void+ (list* +tmv*+ +t*+ +size_t+ *register-arg-types*))
   "The general function prototypes pass the following pass:
 1) An sret pointer for where to put the result
 2) A closed over runtime environment (linked list of activation frames)
@@ -213,45 +214,118 @@ Boehm and MPS use a single pointer"
 5) If additional arguments are needed then they must be put in the multiple-values array on the stack")
 
 (progn
-  (defconstant +fn-prototype+ +fn-registers-prototype+)
-  (defconstant +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+))
+  (defvar +fn-prototype+ +fn-registers-prototype+)
+  (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+))
 
 
-(defconstant +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
+(defvar +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
   "A pointer to the function prototype")
 
-(defconstant +fn-prototype**+ (llvm-sys:type-get-pointer-to +fn-prototype*+)
+(defvar +fn-prototype**+ (llvm-sys:type-get-pointer-to +fn-prototype*+)
   "A pointer to a pointer to the function prototype")
 
-(defconstant +fn-prototype*[0]+ (llvm-sys:array-type-get +fn-prototype*+ 0)
+(defvar +fn-prototype*[0]+ (llvm-sys:array-type-get +fn-prototype*+ 0)
   "An array of pointers to the function prototype")
 
-(defconstant +fn-prototype*[1]+ (llvm-sys:array-type-get +fn-prototype*+ 1)
+(defvar +fn-prototype*[1]+ (llvm-sys:array-type-get +fn-prototype*+ 1)
   "An array of pointers to the function prototype")
 
 #+(or)(progn
-	(defconstant +fn-void+ (llvm-sys:function-type-get +void+ nil))
-	(defconstant +fn-void-ptr+ (llvm-sys:type-get-pointer-to +fn-void+))
-	(defconstant +fn-void-ptr-array0+ (llvm-sys:array-type-get +fn-void-ptr+ 0))
-	(defconstant +fn-void-ptr-array0*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-array0+))
-	(defconstant +fn-void-ptr-array1+ (llvm-sys:array-type-get +fn-void-ptr+ 1))
-	(defconstant +fn-void-ptr-array1*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-array1+))
-	(defconstant +fn-void-ptr-pointer+ (llvm-sys:pointer-type-get +fn-void-ptr+ 0))
-	(defconstant +fn-void-ptr-pointer*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-pointer+))
+	(defvar +fn-void+ (llvm-sys:function-type-get +void+ nil))
+	(defvar +fn-void-ptr+ (llvm-sys:type-get-pointer-to +fn-void+))
+	(defvar +fn-void-ptr-array0+ (llvm-sys:array-type-get +fn-void-ptr+ 0))
+	(defvar +fn-void-ptr-array0*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-array0+))
+	(defvar +fn-void-ptr-array1+ (llvm-sys:array-type-get +fn-void-ptr+ 1))
+	(defvar +fn-void-ptr-array1*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-array1+))
+	(defvar +fn-void-ptr-pointer+ (llvm-sys:pointer-type-get +fn-void-ptr+ 0))
+	(defvar +fn-void-ptr-pointer*+ (llvm-sys:type-get-pointer-to +fn-void-ptr-pointer+))
 	)
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
 ;;
 ;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
-(defconstant +InvocationHistoryStack*+ +i8*+ "Make this a generic pointer")
-(defconstant +InvocationHistoryFrame+ (llvm-sys:struct-type-create *llvm-context* :name "InvocationHistoryFrame"))
-(defconstant +InvocationHistoryFrame*+ (llvm-sys:type-get-pointer-to +InvocationHistoryFrame+))
+(defvar +InvocationHistoryStack*+ +i8*+ "Make this a generic pointer")
+(defparameter +InvocationHistoryFrame+ (llvm-sys:struct-type-create *llvm-context* :name "InvocationHistoryFrame"))
+(defparameter +InvocationHistoryFrame*+ (llvm-sys:type-get-pointer-to +InvocationHistoryFrame+))
 (llvm-sys:set-body +InvocationHistoryFrame+ (list +i32**+ +i32+ +InvocationHistoryStack*+ +InvocationHistoryFrame*+ +i8+ +i32+) nil)
-;; %"class.core::LispFunctionIHF" = type { %"class.core::InvocationHistoryFrame", %"class.mem::smart_ptr.51", %"class.mem::smart_ptr.51", %"class.mem::smart_ptr.51", i32, i32 }
-(defconstant +LispFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +InvocationHistoryFrame+ +tsp+ +tsp+ +tsp+ +i32+ +i32+) :name "LispFunctionIHF"))
+(defvar +LispFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +InvocationHistoryFrame+ +tsp+ +tsp+ +tsp+ +i32+ +i32+) :name "LispFunctionIHF"))
 ;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
-(defconstant +LispCompiledFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +LispFunctionIHF+) :name "LispCompiledFunctionIHF"))
+(defvar +LispCompiledFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +LispFunctionIHF+) :name "LispCompiledFunctionIHF"))
+
+
+(defun make-gv-source-file-info-handle-in-*the-module* (&optional handle)
+  (if (null handle) (setq handle -1))
+  (llvm-sys:make-global-variable *the-module*
+                                 +i32+  ; type
+                                 nil    ; constant
+                                 'llvm-sys:internal-linkage
+                                 (jit-constant-i32 handle)
+                                 "source-file-info-handle"))
+
+
+(defun make-boot-function-global-variable (module func-ptr)
+  (llvm-sys:make-global-variable module
+                                 +fn-prototype*[1]+ ; type
+                                 t ; is constant
+                                 'llvm-sys:appending-linkage
+                                 (llvm-sys:constant-array-get +fn-prototype*[1]+ (list func-ptr))
+                                 llvm-sys:+global-boot-functions-name+)
+  (llvm-sys:make-global-variable module
+                                 +i32+ ; type
+                                 t ; is constant
+                                 'llvm-sys:internal-linkage
+                                 (jit-constant-i32 1)
+                                 llvm-sys:+global-boot-functions-name-size+)
+  )
+
+
+
+(defun reset-global-boot-functions-name-size (module)
+  (remove-main-function-if-exists module)
+  (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
+         (ptype (llvm-sys:get-type funcs))
+         (atype (llvm-sys:get-sequential-element-type ptype))
+         (num-elements (llvm-sys:get-array-num-elements atype))
+         (var (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t)))
+    (if var (llvm-sys:erase-from-parent var))
+    (llvm-sys:make-global-variable module
+                                   +i32+ ; type
+                                   t     ; is constant
+                                   'llvm-sys:internal-linkage
+                                   (jit-constant-i32 num-elements)
+                                   llvm-sys:+global-boot-functions-name-size+)))
+
+
+(defun remove-main-function-if-exists (module)
+  (let ((fn (llvm-sys:get-function module llvm-sys:+clasp-main-function-name+)))
+    (if fn
+      (llvm-sys:erase-from-parent fn))))
+
+
+(defun add-main-function (module)
+  (let ((*the-module* module))
+    (remove-main-function-if-exists module)
+    (let ((fn (with-new-function
+                  (main-func func-env
+                             :function-name llvm-sys:+clasp-main-function-name+
+                             :parent-env nil
+                             :linkage 'llvm-sys:external-linkage
+                             :function-type +fn-prototype+
+                             :argument-names +fn-prototype-argument-names+)
+                (let* ((boot-functions (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name+ t))
+                       (boot-functions-size (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t))
+                       (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-prototype**+ "fnptr-pointer"))
+                       )
+                  (irc-intrinsic "invokeMainFunctions" bc-bf boot-functions-size)))))
+      fn)))
+
+
+
+
+
+
+
 
 
 
@@ -361,16 +435,16 @@ Boehm and MPS use a single pointer"
 
 
 
-(defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
+(defun create-primitive-function (module name return-ty args-ty varargs do-not-catch does-not-return)
   (let ((fn (llvm-sys:function-create (llvm-sys:function-type-get return-ty args-ty varargs)
 				      'llvm-sys::External-linkage
 				      name
 				      module)))
-    (when does-not-throw (llvm-sys:set-does-not-throw fn))
+    (when do-not-catch (llvm-sys:set-does-not-throw fn))
     (when does-not-return (llvm-sys:set-does-not-return fn))))
 
 
-(defun primitive (module name return-ty args-ty &key varargs does-not-throw does-not-return )
+(defun primitive (module name return-ty args-ty &key varargs do-not-catch does-not-return )
   (mapc #'(lambda (x)
 	    (when (equal +tsp*-or-tmv*+ x)
 	      (error "When defining primitive ~a --> :tsp*-or-tmv* is only allowed in the first argument position" name ))) (cdr args-ty))
@@ -380,102 +454,99 @@ Boehm and MPS use a single pointer"
 				   (dispatch-function-name name +tsp*+)
 				   return-ty
 				   (cons +tsp*+ (cdr args-ty))
-				   varargs does-not-throw does-not-return)
+				   varargs do-not-catch does-not-return)
 	(create-primitive-function module
 				   (dispatch-function-name name +tmv*+)
 				   return-ty
 				   (cons +tmv*+ (cdr args-ty))
-				   varargs does-not-throw does-not-return))
+				   varargs do-not-catch does-not-return))
       (create-primitive-function module
-				 name return-ty args-ty varargs does-not-throw does-not-return))
+				 name return-ty args-ty varargs do-not-catch does-not-return))
   (core::hash-table-setf-gethash *primitives* name
 				 (list return-ty args-ty '( (:varargs . varargs)
-							   (:does-not-throw . does-not-throw)
+							   (:do-not-catch . do-not-catch)
 							   ( :does-not-return . does-not-return) ))))
 
 
-(defun primitive-does-not-throw (module name return-ty args-ty &key varargs does-not-return)
-  (primitive module name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return))
+(defun primitive-do-not-catch (module name return-ty args-ty &key varargs does-not-return)
+  (primitive module name return-ty args-ty :varargs varargs :do-not-catch t :does-not-return does-not-return))
 
 (defun define-primitives-in-module (module)
+;;;  (primitive module "lccGlobalFunction" +lisp-calling-convention-ptr+ (list +symsp+))
+  (primitive-do-not-catch module "newFunction_sp" +void+ (list +Function_sp*+))
+  (primitive-do-not-catch module "destructFunction_sp" +void+ (list +Function_sp*+))
+  (primitive-do-not-catch module "newTsp" +void+ (list +tsp*+))
+  (primitive-do-not-catch module "resetTsp" +void+ (list +tsp*+))
+  (primitive-do-not-catch module "makeUnboundTsp" +void+ (list +tsp*+))
+  (primitive-do-not-catch module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
+  (primitive-do-not-catch module "copyTspTptr" +void+ (list +tsp*-or-tmv*+ +t**+))
+  (primitive-do-not-catch module "destructTsp" +void+ (list +tsp*+))
+  (primitive-do-not-catch module "compareTsp" +i32+ (list +tsp*+ +tsp*+))
+  (primitive-do-not-catch module "compareTspTptr" +i32+ (list +tsp*+ +t**+))
+
+  (primitive-do-not-catch module "newTmv" +void+ (list +tmv*+))
+  (primitive-do-not-catch module "resetTmv" +void+ (list +tmv*+))
+  (primitive-do-not-catch module "copyTmv" +void+ (list +tmv*+ +tmv*+))
+  (primitive-do-not-catch module "copyTmvOrSlice" +void+ (list +tsp*-or-tmv*+ +tmv*+))
+  (primitive-do-not-catch module "destructTmv" +void+ (list +tmv*+))
+
+  (primitive-do-not-catch module "newAFsp" +void+ (list +afsp*+))
+  (primitive-do-not-catch module "newAFsp_ValueFrameOfSize" +void+ (list +afsp*+ +i32+))
+  (primitive-do-not-catch module "resetAFsp" +void+ (list +afsp*+))
+  (primitive-do-not-catch module "copyAFsp" +void+ (list +afsp*+ +afsp*+))
+  (primitive-do-not-catch module "destructAFsp" +void+ (list +afsp*+))
+
+  (primitive-do-not-catch module "getMultipleValues" +t*[0]*+ (list +i32+))
+
+  (primitive-do-not-catch module "isNilTsp" +i32+ (list +tsp*+))
+  (primitive-do-not-catch module "isTrue" +i32+ (list +tsp*+))
+  (primitive-do-not-catch module "isBound" +i32+ (list +tsp*+))
 
 
-;  (primitive module "lccGlobalFunction" +lisp-calling-convention-ptr+ (list +symsp+))
+  (primitive-do-not-catch module "internSymbol_tsp" +void+ (list +tsp*+ +i8*+ +i8*+))
+  (primitive-do-not-catch module "makeSymbol_tsp" +void+ (list +tsp*+ +i8*+))
 
-  (primitive-does-not-throw module "newFunction_sp" +void+ (list +Function_sp*+))
-  (primitive-does-not-throw module "destructFunction_sp" +void+ (list +Function_sp*+))
-  (primitive-does-not-throw module "newTsp" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "resetTsp" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "makeUnboundTsp" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
-  (primitive-does-not-throw module "copyTspTptr" +void+ (list +tsp*-or-tmv*+ +t**+))
-  (primitive-does-not-throw module "destructTsp" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "compareTsp" +i32+ (list +tsp*+ +tsp*+))
-  (primitive-does-not-throw module "compareTspTptr" +i32+ (list +tsp*+ +t**+))
+  (primitive-do-not-catch module "internSymbol_symsp" +void+ (list +symsp*+ +i8*+ +i8*+))
+  (primitive-do-not-catch module "makeSymbol_symsp" +void+ (list +symsp*+ +i8*+))
 
-  (primitive-does-not-throw module "newTmv" +void+ (list +tmv*+))
-  (primitive-does-not-throw module "resetTmv" +void+ (list +tmv*+))
-  (primitive-does-not-throw module "copyTmv" +void+ (list +tmv*+ +tmv*+))
-  (primitive-does-not-throw module "copyTmvOrSlice" +void+ (list +tsp*-or-tmv*+ +tmv*+))
-  (primitive-does-not-throw module "destructTmv" +void+ (list +tmv*+))
-
-  (primitive-does-not-throw module "newAFsp" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "newAFsp_ValueFrameOfSize" +void+ (list +afsp*+ +i32+))
-  (primitive-does-not-throw module "resetAFsp" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "copyAFsp" +void+ (list +afsp*+ +afsp*+))
-  (primitive-does-not-throw module "destructAFsp" +void+ (list +afsp*+))
-
-  (primitive-does-not-throw module "getMultipleValues" +t*[0]*+ (list +i32+))
-
-  (primitive-does-not-throw module "isNilTsp" +i32+ (list +tsp*+))
-  (primitive-does-not-throw module "isTrue" +i32+ (list +tsp*+))
-  (primitive-does-not-throw module "isBound" +i32+ (list +tsp*+))
-
-
-  (primitive-does-not-throw module "internSymbol_tsp" +void+ (list +tsp*+ +i8*+ +i8*+))
-  (primitive-does-not-throw module "makeSymbol_tsp" +void+ (list +tsp*+ +i8*+))
-
-  (primitive-does-not-throw module "internSymbol_symsp" +void+ (list +symsp*+ +i8*+ +i8*+))
-  (primitive-does-not-throw module "makeSymbol_symsp" +void+ (list +symsp*+ +i8*+))
-
-  (primitive-does-not-throw module "makeNil" +void+ (list +tsp*-or-tmv*+))
-  (primitive-does-not-throw module "makeT" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "makeCons" +void+ (list +tsp*+ +tsp*+ +tsp*+))
-  (primitive-does-not-throw module "makeFixnum" +void+ (list +tsp*+ +i32+))
-  (primitive-does-not-throw module "makeCharacter" +void+ (list +tsp*+ +i32+))
-  (primitive-does-not-throw module "makeBignum" +void+ (list +tsp*+ +i8*+))
-  #+short-float (primitive-does-not-throw module "makeShortFloat" +void+ (list +tsp*+ +double+))
-  (primitive-does-not-throw module "makeSingleFloat" +void+ (list +tsp*+ +float+))
-  (primitive-does-not-throw module "makeDoubleFloat" +void+ (list +tsp*+ +double+))
-  (primitive-does-not-throw module "makeComplex" +void+ (list +tsp*+ +double+ +double+))
- #+long-float (primitive-does-not-throw module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
-  (primitive-does-not-throw module "makeString" +void+ (list +tsp*+ +i8*+))
-  (primitive-does-not-throw module "makePathname" +void+ (list +tsp*+ +i8*+))
-  (primitive-does-not-throw module "findPackage" +void+ (list +tsp*+ +i8*+))
+  (primitive-do-not-catch module "makeNil" +void+ (list +tsp*-or-tmv*+))
+  (primitive-do-not-catch module "makeT" +void+ (list +tsp*+))
+  (primitive-do-not-catch module "makeCons" +void+ (list +tsp*+ +tsp*+ +tsp*+))
+  (primitive-do-not-catch module "makeFixnum" +void+ (list +tsp*+ +i32+))
+  (primitive-do-not-catch module "makeCharacter" +void+ (list +tsp*+ +i32+))
+  (primitive-do-not-catch module "makeBignum" +void+ (list +tsp*+ +i8*+))
+  #+short-float (primitive-do-not-catch module "makeShortFloat" +void+ (list +tsp*+ +double+))
+  (primitive-do-not-catch module "makeSingleFloat" +void+ (list +tsp*+ +float+))
+  (primitive-do-not-catch module "makeDoubleFloat" +void+ (list +tsp*+ +double+))
+  (primitive-do-not-catch module "makeComplex" +void+ (list +tsp*+ +double+ +double+))
+  #+long-float (primitive-do-not-catch module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
+  (primitive-do-not-catch module "makeString" +void+ (list +tsp*+ +i8*+))
+  (primitive-do-not-catch module "makePathname" +void+ (list +tsp*+ +i8*+))
+  (primitive-do-not-catch module "findPackage" +void+ (list +tsp*+ +i8*+))
   (primitive module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i64+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
 
 
   (primitive module "fillRestTarget" +void+ (list +tsp*+ +afsp*+ +i32+ +i8*+))
 
-  (primitive-does-not-throw module "symbolValueRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
-  (primitive-does-not-throw module "symbolValueReadOrUnbound" +void+ (list +tsp*-or-tmv*+ +symsp*+))
-  (primitive-does-not-throw module "symbolValueReference" +tsp*+ (list +symsp*+))
-  (primitive-does-not-throw module "lexicalValueReference" +tsp*+ (list +i32+ +i32+ +afsp*+))
-  (primitive-does-not-throw module "lexicalValueRead" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+))
-  (primitive-does-not-throw module "symbolFunctionRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
-  (primitive-does-not-throw module "setfSymbolFunctionRead" +void+ (list +tsp*+ +symsp*+))
-  (primitive-does-not-throw module "lexicalFunctionRead" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+))
+  (primitive-do-not-catch module "symbolValueRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
+  (primitive-do-not-catch module "symbolValueReadOrUnbound" +void+ (list +tsp*-or-tmv*+ +symsp*+))
+  (primitive-do-not-catch module "symbolValueReference" +tsp*+ (list +symsp*+))
+  (primitive-do-not-catch module "lexicalValueReference" +tsp*+ (list +i32+ +i32+ +afsp*+))
+  (primitive-do-not-catch module "lexicalValueRead" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+))
+  (primitive-do-not-catch module "symbolFunctionRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
+  (primitive-do-not-catch module "setfSymbolFunctionRead" +void+ (list +tsp*+ +symsp*+))
+  (primitive-do-not-catch module "lexicalFunctionRead" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+))
 
 
-  (primitive-does-not-throw module "makeTagbodyFrame" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
-  (primitive-does-not-throw module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
-  (primitive-does-not-throw module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t*+))
-  (primitive-does-not-throw module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
+  (primitive-do-not-catch module "makeTagbodyFrame" +void+ (list +afsp*+))
+  (primitive-do-not-catch module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
+  (primitive-do-not-catch module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
+  (primitive-do-not-catch module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t*+))
+  (primitive-do-not-catch module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
-  (primitive-does-not-throw module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
+  (primitive-do-not-catch module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
 
-  (primitive-does-not-throw module "valueFrameReference" +tsp*+ (list +afsp*+ +i32+))
+  (primitive-do-not-catch module "valueFrameReference" +tsp*+ (list +afsp*+ +i32+))
 
   (primitive module "makeFunctionFrame" +void+ (list +afsp*+ +i32+ +afsp*+))
   (primitive module "functionFrameReference" +tsp*+ (list +afsp*+ +i32+))
@@ -486,71 +557,72 @@ Boehm and MPS use a single pointer"
   (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+ +ltv**+))
   (primitive module "invokeLlvmFunctionVoid" +void+ (list +fn-prototype*+))
 
-  (primitive-does-not-throw module "activationFrameSize" +i32+ (list +afsp*+))
+  (primitive-do-not-catch module "activationFrameSize" +i32+ (list +afsp*+))
 
-  (primitive-does-not-throw module "copyArgs" +void+ (list +tsp*+ +i32+ +t*+ +t*+ +t*+ +i8*+))
+  (primitive-do-not-catch module "copyArgs" +void+ (list +tsp*+ +i32+ +t*+ +t*+ +t*+ +i8*+))
   (primitive module "throwTooManyArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive module "throwNotEnoughArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive module "throwIfExcessKeywordArguments" +void+ (list +i8*+ +afsp*+ +i32+))
-  (primitive-does-not-throw module "kw_allowOtherKeywords" +i32+ (list +i32+ +afsp*+ +i32+))
-  (primitive-does-not-throw module "kw_trackFirstUnexpectedKeyword" +size_t+ (list +size_t+ +size_t+))
-  (primitive module "kw_throwIfNotKeyword" +void+ (list +t**+))
+  (primitive-do-not-catch module "kw_allowOtherKeywords" +i32+ (list +i32+ +afsp*+ +i32+))
+  (primitive-do-not-catch module "kw_trackFirstUnexpectedKeyword" +size_t+ (list +size_t+ +size_t+))
+  (primitive-do-not-catch module "kw_ifNotKeywordException" +void+ (list +t**+))
 
-  (primitive-does-not-throw module "gdb" +void+ nil)
-  (primitive-does-not-throw module "debugInvoke" +void+ nil)
-  (primitive-does-not-throw module "debugInspectActivationFrame" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "debugInspectT_sp" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "debugInspectTPtr" +void+ (list +t*+))
-  (primitive-does-not-throw module "debugInspectT_mv" +void+ (list +tmv*+))
+  (primitive-do-not-catch module "gdb" +void+ nil)
+  (primitive-do-not-catch module "debugInvoke" +void+ nil)
+  (primitive-do-not-catch module "debugInspectActivationFrame" +void+ (list +afsp*+))
+  (primitive-do-not-catch module "debugInspectT_sp" +void+ (list +tsp*+))
+  (primitive-do-not-catch module "debugInspectTPtr" +void+ (list +t*+))
+  (primitive-do-not-catch module "debugInspectT_mv" +void+ (list +tmv*+))
 
-  (primitive-does-not-throw module "debugPointer" +void+ (list +i8*+))
-  (primitive-does-not-throw module "debugPrintObject" +void+ (list +i8*+ +tsp*+))
-  (primitive-does-not-throw module "debugPrintI32" +void+ (list +i32+))
-  (primitive-does-not-throw module "lowLevelTrace" +void+ (list +i32+))
-  (primitive-does-not-throw module "unreachableError" +void+ nil)
+  (primitive-do-not-catch module "debugPointer" +void+ (list +i8*+))
+  (primitive-do-not-catch module "debugPrintObject" +void+ (list +i8*+ +tsp*+))
+  (primitive-do-not-catch module "debugPrintI32" +void+ (list +i32+))
+  (primitive-do-not-catch module "debugPrint_size_t" +void+ (list +size_t+))
+  (primitive-do-not-catch module "lowLevelTrace" +void+ (list +i32+))
+  (primitive-do-not-catch module "unreachableError" +void+ nil)
 
-  (primitive-does-not-throw module "singleStepCallback" +void+ nil)
+  (primitive-do-not-catch module "singleStepCallback" +void+ nil)
 
 
-  (primitive module "va_throwTooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_throwNotEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_throwIfExcessKeywordArguments" +void+ (list +i8*+ +size_t+ +t*[0]*+ +size_t+))
+  (primitive-do-not-catch module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
+  (primitive-do-not-catch module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
+  (primitive-do-not-catch module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +t*[0]*+ +size_t+))
   (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
   (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
-  (primitive module "va_symbolFunction" +closure*+ (list +symsp*+))  ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
+  (primitive module "va_symbolFunction" +closure*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +closure*+ (list +i32+ +i32+ +afsp*+))
   (primitive module "FUNCALL" +void+ (list* +tsp*-or-tmv*+ +closure*+ +i32+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
   (primitive module "FUNCALL_activationFrame" +void+ (list +tsp*-or-tmv*+ +closure*+ +afsp*+))
 
 
   (primitive module "va_fillRestTarget" +void+ (list +tsp*+ +size_t+ +t*[0]*+ +size_t+ +i8*+))
-  (primitive-does-not-throw module "va_allowOtherKeywords" +i32+ (list +i32+ +size_t+ +t*[0]*+ +size_t+))
-  (primitive module "va_throwIfBadKeywordArgument" +void+ (list +i32+ +size_t+ +size_t+ +t*[0]*+))
+  (primitive-do-not-catch module "va_allowOtherKeywords" +i32+ (list +i32+ +size_t+ +t*[0]*+ +size_t+))
+  (primitive module "va_ifBadKeywordArgumentException" +void+ (list +i32+ +size_t+ +size_t+ +t*[0]*+))
 
 
-  (primitive-does-not-throw module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
-  (primitive-does-not-throw module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
+  (primitive-do-not-catch module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
+  (primitive-do-not-catch module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
 
-  (primitive-does-not-throw module "trace_exitFunctionScope" +void+ (list +i32+) )
-  (primitive-does-not-throw module "trace_exitBlockScope" +void+ (list +i32+ ) )
-  (primitive-does-not-throw module "trace_exitLetScope" +void+ (list +i32+ ) )
-  (primitive-does-not-throw module "trace_exitLetSTARScope" +void+ (list +i32+ ) )
-  (primitive-does-not-throw module "trace_exitFletScope" +void+ (list +i32+ ) )
-  (primitive-does-not-throw module "trace_exitLabelsScope" +void+ (list +i32+ ) )
-  (primitive-does-not-throw module "trace_exitCallScope" +void+ (list +i32+ ) )
-  (primitive-does-not-throw module "trace_exitCatchScope" +void+ (list +i32+ ) )
-  (primitive-does-not-throw module "trace_exitUnwindProtectScope" +void+ (list +i32+ ) )
+  (primitive-do-not-catch module "trace_exitFunctionScope" +void+ (list +i32+) )
+  (primitive-do-not-catch module "trace_exitBlockScope" +void+ (list +i32+ ) )
+  (primitive-do-not-catch module "trace_exitLetScope" +void+ (list +i32+ ) )
+  (primitive-do-not-catch module "trace_exitLetSTARScope" +void+ (list +i32+ ) )
+  (primitive-do-not-catch module "trace_exitFletScope" +void+ (list +i32+ ) )
+  (primitive-do-not-catch module "trace_exitLabelsScope" +void+ (list +i32+ ) )
+  (primitive-do-not-catch module "trace_exitCallScope" +void+ (list +i32+ ) )
+  (primitive-do-not-catch module "trace_exitCatchScope" +void+ (list +i32+ ) )
+  (primitive-do-not-catch module "trace_exitUnwindProtectScope" +void+ (list +i32+ ) )
 
-  (primitive-does-not-throw module "pushCatchFrame" +i32+ (list +tsp*+))
-  (primitive-does-not-throw module "pushBlockFrame" +i32+ (list +symsp*+))
-  (primitive-does-not-throw module "pushTagbodyFrame" +i32+ (list +tsp*+))
+  (primitive-do-not-catch module "pushCatchFrame" +i32+ (list +tsp*+))
+  (primitive-do-not-catch module "pushBlockFrame" +i32+ (list +symsp*+))
+  (primitive-do-not-catch module "pushTagbodyFrame" +i32+ (list +tsp*+))
 
   (primitive module "throwCatchThrow" +void+ (list +tsp*+ #| +tmv*+ |#) :does-not-return t)
   (primitive module "throwReturnFrom" +void+ (list +symsp*+) :does-not-return t)
   (primitive module "throwDynamicGo" +void+ (list +i32+ +i32+ +afsp*+) :does-not-return t)
 
   (primitive module "ifCatchFrameMatchesStoreResultElseRethrow" +void+ (list +tsp*-or-tmv*+ +i32+ +i8*+))
-  (primitive-does-not-throw module "exceptionStackUnwind" +void+ (list +i32+))
+  (primitive-do-not-catch module "exceptionStackUnwind" +void+ (list +i32+))
 
 
   (primitive module "blockHandleReturnFrom" +void+ (list +tsp*-or-tmv*+ +i8*+ +i32+))
@@ -559,76 +631,85 @@ Boehm and MPS use a single pointer"
 
   (primitive module "throwIllegalSwitchValue" +void+ (list +i32+ +i32+) :does-not-return t)
 
-  (primitive-does-not-throw module "clasp_terminate" +void+ (list +i8*+ +i32+ +i32+ +i8*+) )
-  (primitive-does-not-throw module "__gxx_personality_v0" +i32+ nil :varargs t) ;; varargs
-  (primitive-does-not-throw module "__cxa_begin_catch" +i8*+ (list +i8*+) )
-  (primitive-does-not-throw module "__cxa_end_catch" +void+ nil)  ;; This was a PRIMITIVE
+  (primitive-do-not-catch module "clasp_terminate" +void+ (list +i8*+ +i32+ +i32+ +i8*+) )
+  (primitive-do-not-catch module "__gxx_personality_v0" +i32+ nil :varargs t) ;; varargs
+  (primitive-do-not-catch module "__cxa_begin_catch" +i8*+ (list +i8*+) )
+  (primitive-do-not-catch module "__cxa_end_catch" +void+ nil) ;; This was a PRIMITIVE
   (primitive module "__cxa_rethrow" +void+ nil)
-  (primitive-does-not-throw module "llvm.eh.typeid.for" +i32+ (list +i8*+))
-;;  (primitive-does-not-throw module "_Unwind_Resume" +void+ (list +i8*+))
+  (primitive-do-not-catch module "llvm.eh.typeid.for" +i32+ (list +i8*+))
+  ;;  (primitive-do-not-catch module "_Unwind_Resume" +void+ (list +i8*+))
 
-  (primitive-does-not-throw module "getOrCreateLoadTimeValueArray" +void+ (list +ltv**+ +i8*+ +i32+ +i32+))
+  (primitive-do-not-catch module "getOrCreateLoadTimeValueArray" +void+ (list +ltv**+ +i8*+ +i32+ +i32+))
 
-  (primitive-does-not-throw module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
+  (primitive-do-not-catch module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
 
-  (primitive-does-not-throw module "loadTimeValueReference" +tsp*+ (list +ltv**+ +i32+))
-  (primitive-does-not-throw module "loadTimeSymbolReference" +symsp*+ (list +ltv**+ +i32+))
-  (primitive-does-not-throw module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
-  (primitive-does-not-throw module "dumpLoadTimeValues" +void+ (list +ltv**+))
+  (primitive-do-not-catch module "loadTimeValueReference" +tsp*+ (list +ltv**+ +i32+))
+  (primitive-do-not-catch module "loadTimeSymbolReference" +symsp*+ (list +ltv**+ +i32+))
+  (primitive-do-not-catch module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
+  (primitive-do-not-catch module "dumpLoadTimeValues" +void+ (list +ltv**+))
 
-  (primitive-does-not-throw module "assignSourceFileInfoHandle" +void+ (list +i8*+ +i8*+ +i64+ +i32+ +i32*+))
-  (primitive-does-not-throw module "debugSourceFileInfoHandle" +void+ (list +i32*+))
+  (primitive-do-not-catch module "assignSourceFileInfoHandle" +void+ (list +i8*+ +i8*+ +i64+ +i32+ +i32*+))
+  (primitive-do-not-catch module "debugSourceFileInfoHandle" +void+ (list +i32*+))
 
-  (primitive-does-not-throw module "ltv_makeCons" +void+ (list +tsp*+))
-  (primitive-does-not-throw module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
-  (primitive-does-not-throw module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))
-  (primitive-does-not-throw module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
-  (primitive-does-not-throw module "rplaca" +void+ (list +tsp*+ +tsp*+))
-  (primitive-does-not-throw module "rplacd" +void+ (list +tsp*+ +tsp*+))
-  (primitive-does-not-throw module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
-  (primitive-does-not-throw module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
+  (primitive-do-not-catch module "ltv_makeCons" +void+ (list +tsp*+))
+  (primitive-do-not-catch module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
+  (primitive-do-not-catch module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))
+  (primitive-do-not-catch module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
+  (primitive-do-not-catch module "rplaca" +void+ (list +tsp*+ +tsp*+))
+  (primitive-do-not-catch module "rplacd" +void+ (list +tsp*+ +tsp*+))
+  (primitive-do-not-catch module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
+  (primitive-do-not-catch module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
 
-  (primitive-does-not-throw module "saveToMultipleValue0" +void+ (list +tmv*+))
-  (primitive-does-not-throw module "restoreFromMultipleValue0" +void+ (list +tsp*-or-tmv*+ ))
-  (primitive-does-not-throw module "saveValues" +void+ (list +tsp*+ +tmv*+))
-  (primitive-does-not-throw module "loadValues" +void+ (list +tmv*+ +tsp*+))
+  (primitive-do-not-catch module "saveToMultipleValue0" +void+ (list +tmv*+))
+  (primitive-do-not-catch module "restoreFromMultipleValue0" +void+ (list +tsp*-or-tmv*+ ))
+  (primitive-do-not-catch module "saveValues" +void+ (list +tsp*+ +tmv*+))
+  (primitive-do-not-catch module "loadValues" +void+ (list +tmv*+ +tsp*+))
 
-  (primitive-does-not-throw module "setjmp_set_jump_address" +void+ (list +setjmp.buf*+ +i8*+) )
+  (primitive-do-not-catch module "setjmp_set_jump_address" +void+ (list +setjmp.buf*+ +i8*+) )
 
-  (primitive-does-not-throw module "setjmp_user0_set_i32" +void+ (list +setjmp.buf*+ +i32+) )
-  (primitive-does-not-throw module "setjmp_user0_get_i32" +i32+ (list +setjmp.buf*+) )
+  (primitive-do-not-catch module "setjmp_user0_set_i32" +void+ (list +setjmp.buf*+ +i32+) )
+  (primitive-do-not-catch module "setjmp_user0_get_i32" +i32+ (list +setjmp.buf*+) )
 
-  (primitive-does-not-throw module "setjmp_user0_allocate_set_tmv" +void+ (list +setjmp.buf*+ +tmv*+) )
-  (primitive-does-not-throw module "setjmp_user0_get_tmv" +void+ (list +tmv*+ +setjmp.buf*+) )
-  (primitive-does-not-throw module "setjmp_user0_delete_tmv" +void+ (list +setjmp.buf*+) )
+  (primitive-do-not-catch module "setjmp_user0_allocate_set_tmv" +void+ (list +setjmp.buf*+ +tmv*+) )
+  (primitive-do-not-catch module "setjmp_user0_get_tmv" +void+ (list +tmv*+ +setjmp.buf*+) )
+  (primitive-do-not-catch module "setjmp_user0_delete_tmv" +void+ (list +setjmp.buf*+) )
 
-  (primitive-does-not-throw module "llvm.eh.sjlj.setjmp" +i32+ (list +i8*+) )
-  (primitive-does-not-throw module "llvm.eh.sjlj.longjmp" +void+ (list +i8*+) )
+  (primitive-do-not-catch module "llvm.eh.sjlj.setjmp" +i32+ (list +i8*+) )
+  (primitive-do-not-catch module "llvm.eh.sjlj.longjmp" +void+ (list +i8*+) )
 
-  (primitive-does-not-throw module "progvSaveSpecials" +void+ (list +i8**+ +tsp*+ +tsp*+))
-  (primitive-does-not-throw module "progvRestoreSpecials" +void+ (list +i8**+))
+  (primitive-do-not-catch module "progvSaveSpecials" +void+ (list +i8**+ +tsp*+ +tsp*+))
+  (primitive-do-not-catch module "progvRestoreSpecials" +void+ (list +i8**+))
 
-  (primitive-does-not-throw module "pushDynamicBinding" +void+ (list +symsp*+))
-  (primitive-does-not-throw module "popDynamicBinding" +void+ (list +symsp*+))
+  (primitive-do-not-catch module "pushDynamicBinding" +void+ (list +symsp*+))
+  (primitive-do-not-catch module "popDynamicBinding" +void+ (list +symsp*+))
 
-  (primitive-does-not-throw module "matchKeywordOnce" +i32+ (list +tsp*+ +t**+ +i8*+))
+  (primitive-do-not-catch module "matchKeywordOnce" +i32+ (list +tsp*+ +t**+ +i8*+))
 
   ;; Primitives for Cleavir code
 
-  (primitive-does-not-throw module "cc_precalcSymbol" +t*+ (list +t*+ +size_t+))
-  (primitive-does-not-throw module "cc_precalcValue" +t*+ (list +t*+ +size_t+))
-  (primitive-does-not-throw module "cc_makeCell" +t*+ nil)
-  (primitive-does-not-throw module "cc_writeCell" +void+ (list +t*+ +t*+))
-  (primitive-does-not-throw module "cc_readCell" +t*+ (list +t*+))
-  (primitive-does-not-throw module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
-  (primitive-does-not-throw module "cc_fetch" +t*+ (list +t*+ +size_t+))
-  (primitive-does-not-throw module "cc_throwDynamicGo" +void+ (list +size_t+ +size_t+))
-  (primitive-does-not-throw module "cc_enclose" +t*+ (list +fn-prototype*+ +size_t+ ) :varargs t)
-  (primitive-does-not-throw module "cc_fdefinition" +i8*+ (list +t*+))
-  (primitive-does-not-throw module "cc_symbolValue" +t*+ (list +t*+))
-  (primitive-does-not-throw module "cc_call" +void+ (list* +tmv*+ +i8*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
-  (primitive module "cc_invoke" +void+ (list* +tmv*+ +i8*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
-
+  (primitive-do-not-catch module "cc_precalcSymbol" +t*+ (list +t*+ +size_t+))
+  (primitive-do-not-catch module "cc_precalcValue" +t*+ (list +t*+ +size_t+))
+  (primitive-do-not-catch module "cc_makeCell" +t*+ nil)
+  (primitive-do-not-catch module "cc_writeCell" +void+ (list +t*+ +t*+))
+  (primitive-do-not-catch module "cc_readCell" +t*+ (list +t*+))
+  (primitive-do-not-catch module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
+  (primitive-do-not-catch module "cc_fetch" +t*+ (list +t*+ +size_t+))
+  (primitive-do-not-catch module "cc_throwDynamicGo" +void+ (list +size_t+ +size_t+))
+  (primitive-do-not-catch module "cc_enclose" +t*+ (list +fn-prototype*+ +size_t+ ) :varargs t)
+  (primitive-do-not-catch module "cc_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
+  (primitive-do-not-catch module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
+  (primitive-do-not-catch module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
+  (primitive-do-not-catch module "cc_fdefinition" +t*+ (list +t*+))
+  (primitive-do-not-catch module "cc_symbolValue" +t*+ (list +t*+))
+  (primitive-do-not-catch module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
+  (primitive-do-not-catch module "cc_call" +void+ (list* +tmv*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
+  (primitive module "cc_invoke" +void+ (list* +tmv*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))
+  (primitive-do-not-catch module "cc_gatherRestArguments" +t*+ (list +size_t+ +t**+ +size_t+ +i8*+))
+  (primitive-do-not-catch module "cc_allowOtherKeywords" +size_t+ (list +size_t+ +size_t+ +t*[0]*+ +size_t+))
+  (primitive-do-not-catch module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
+  (primitive-do-not-catch module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
+  (primitive-do-not-catch module "cc_ifNotKeywordException" +void+ (list +t*+))
+  (primitive-do-not-catch module "cc_multipleValuesArrayAddress" +t*[0]*+ nil)
   )
 
 

@@ -518,7 +518,7 @@ inline T_sp oCar(T_sp obj) {
 	    SIMPLE_ERROR(BF("Tried to take CAR of unbound"));
 	}
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cobj->_Car.as_or_nil<Cons_O>();
+	    return cobj->_Car.as<Cons_O>();
 	}
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
@@ -528,7 +528,7 @@ inline T_sp oCar(T_sp obj) {
 	    SIMPLE_ERROR(BF("Tried to take CDR of unbound"));
 	}
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cobj->_Cdr.as_or_nil<Cons_O>();
+	    return cobj->_Cdr.as<Cons_O>();
 	}
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
@@ -536,7 +536,7 @@ inline T_sp oCar(T_sp obj) {
     inline Cons_sp cCddr(T_sp obj) {
 	if (obj.nilp()) return _Nil<Cons_O>();
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cCdr(cobj->_Cdr).as_or_nil<Cons_O>();
+	    return cCdr(cobj->_Cdr).as<Cons_O>();
 	}
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
@@ -544,7 +544,7 @@ inline T_sp oCar(T_sp obj) {
     inline Cons_sp cCdddr(T_sp obj) {
 	if (obj.nilp()) return _Nil<Cons_O>();
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cCddr(cobj->_Cdr).as_or_nil<Cons_O>();
+	    return cCddr(cobj->_Cdr).as<Cons_O>();
 	}
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
@@ -552,7 +552,7 @@ inline T_sp oCar(T_sp obj) {
     inline Cons_sp cCddddr(T_sp obj) {
 	if (obj.nilp()) return _Nil<Cons_O>();
 	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cCdddr(cobj->_Cdr).as_or_nil<Cons_O>();
+	    return cCdddr(cobj->_Cdr).as<Cons_O>();
 	}
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }

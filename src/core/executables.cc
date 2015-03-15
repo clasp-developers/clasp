@@ -169,13 +169,14 @@ namespace core
     {
         ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler,this->closedEnvironment);
         ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-//        printf("%s:%d About to invoke %s with llh: %s\n", __FILE__, __LINE__, _rep_(this->code).c_str(), _rep_(this->lambdaListHandler).c_str());
+	InvocationHistoryFrame _frame(this);
         lambdaListHandler_createBindings(this,this->_lambdaListHandler,scope,LCC_PASS_ARGS);
         ValueFrame_sp newActivationFrame = newValueEnvironment->getActivationFrame().as<ValueFrame_O>();
         VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
         newActivationFrame->attachDebuggingInfo(debuggingInfo);
-        InvocationHistoryFrame _frame(this,newActivationFrame);
-#if 1
+	//        InvocationHistoryFrame _frame(this,newActivationFrame);
+	_frame.setActivationFrame(newActivationFrame);
+#if 0
 	if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
 	    printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
 	}

@@ -140,7 +140,11 @@ namespace gctools {
         tagged_ptr( const T * p )
         {
             typedef typename std::remove_const<T>::type *no_const_T_ptr;
-            this->px = const_cast<no_const_T_ptr>(p);
+	    if ( p!=NULL ) {
+		this->px = const_cast<no_const_T_ptr>((T*)(((uintptr_t)p)+ptr_tag));
+	    } else {
+		this->px = NULL;
+	    }
         }
 
         tagged_ptr(core::T_O** p) : px(make_tagged_frame(p)) {};
@@ -293,11 +297,6 @@ namespace gctools {
 
 
 
-        T * pxget() const
-        {
-            return px;
-        }
-
 
         T * get() const
         {
@@ -314,7 +313,8 @@ namespace gctools {
 #ifdef RUN_SAFE
             return *(this->get());
 #else
-            return *this->px;
+	    //            return *this->px;
+            return *(T*)(((uintptr_t)this->px)-ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
 #endif
         }
 
@@ -323,9 +323,22 @@ namespace gctools {
 #ifdef RUN_SAFE
             return this->get();
 #else
-            return this->px;
+            return (T*)(((uintptr_t)this->px)-ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
 #endif
         }
+
+	
+	inline T * pxget() const
+        {
+            return (T*)(((uintptr_t)this->px)-ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
+        }
+
+	/*! Use pointer rather than pxget */
+	inline T * pointer() const
+        {
+            return (T*)(((uintptr_t)this->px)-ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
+        }
+
 
 // implicit conversion to "bool"
 #include <clasp/gctools/tagged_operator_bool.h>
@@ -392,12 +405,8 @@ namespace gctools {
 #endif
         }
 
-
     public:
         mutable PointerType px;
-#ifdef USE_TAGGED_PTR_P0
-        mutable void*  p0;
-#endif
     };
 
 

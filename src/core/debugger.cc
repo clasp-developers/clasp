@@ -412,7 +412,7 @@ extern "C" {
         };
 
 
-
+	extern void dbg_describe(T_sp obj);
         void dbg_describe(T_sp obj)
         {
             DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
@@ -451,13 +451,14 @@ void dbg_describe_symbol(Symbol_sp obj)
         }
 
 
-        void dbg_describeTPtr(T_O* raw)
+        void dbg_describeTPtr(uintptr_t raw)
         {
-            if ( raw == NULL ) {
+            if ( raw == 0) {
                 printf("dbg_describe: NULL\n");
                 return;
             }
             T_sp obj = gctools::smart_ptr<T_O>(raw);
+	    printf("dbg_describeTPtr Raw pointer value: %p\n", obj.px);
             DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
             stringstream ss;
             printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());

@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/debugger.h>
 #include <clasp/gctools/memoryManagement.h>
 //#include "main/allHeaders.cc"
 
@@ -70,6 +71,11 @@ void handle_signals(int signo) {
     // Indicate that a signal was caught and handle it at a safe-point
 //
     SET_SIGNAL(signo);
+    if ( signo == SIGABRT ) {
+	printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__ );
+	core::LispDebugger debugger(_Nil<core::T_O>());
+	debugger.invoke();
+    }
 }
 
 

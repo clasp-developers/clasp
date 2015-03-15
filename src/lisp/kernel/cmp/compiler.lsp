@@ -405,8 +405,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	    (form (car cur) (car cur)))
 	   ((endp cur) nil)
 	(codegen temp-mv-result form env)
-	(irc-intrinsic "prependMultipleValues" accumulate-results temp-mv-result)
-	)
+	(irc-intrinsic "prependMultipleValues" accumulate-results temp-mv-result))
       (irc-intrinsic "makeValueFrameFromReversedCons" accumulated-af accumulate-results (jit-constant-i32 (irc-next-environment-id)))
       (irc-intrinsic "setParentOfActivationFrame" accumulated-af (irc-renv env))
       (codegen funcDesignator (car rest) env)
@@ -536,7 +535,6 @@ env is the parent environment of the (result-af) value frame"
 	   ((endp cur-req) nil)
 	(let* ((target-head (car classified-target))
 	       (target-idx (cdr classified-target)))
-	  (dbg-set-current-debug-location-here)
 	  (with-target-reference-do (target-ref classified-target new-env)
 	    (dbg-set-current-source-pos exp)
 	    (codegen target-ref exp evaluate-env)))))))
@@ -1330,6 +1328,29 @@ be wrapped with to make a closure"
       (values fn fn-kind env))))
 ||#
 
+
+(defmacro with-module ((env &key module 
+				 function-pass-manager 
+				 source-pathname
+				 source-file-info-handle
+				 source-debug-namestring
+				 (source-debug-offset 0)
+				 (source-debug-use-lineno t)) &rest body)
+  `(let ((*the-module* ,module)
+         (*the-function-pass-manager* ,function-pass-manager)
+         #+(or)(*all-functions-for-one-compile* nil)
+         #+(or)(*generate-load-time-values* t)
+	 (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
+	 (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
+								     ,source-debug-namestring
+								     ,source-pathname) "source-debug-namestring"))
+	 (*source-debug-offset* ,source-debug-offset)
+	 (*source-debug-use-lineno* ,source-debug-use-lineno)
+	 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module* ,source-file-info-handle))
+	 )
+     (declare (special *the-function-pass-manager*))
+     (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+       ,@body)))
 
 
 

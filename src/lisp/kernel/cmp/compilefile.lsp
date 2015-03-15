@@ -27,8 +27,8 @@
 
 (in-package :cmp)
 
-(defparameter *compile-verbose* nil )
-(defparameter *compile-print* nil )
+(defvar *compile-verbose* nil )
+(defvar *compile-print* nil )
 
 
 
@@ -53,29 +53,6 @@
     )
   )
 
-
-(defmacro with-module ((env &key module 
-				 function-pass-manager 
-				 source-pathname
-				 source-file-info-handle
-				 source-debug-namestring
-				 (source-debug-offset 0)
-				 (source-debug-use-lineno t)) &rest body)
-  `(let ((*the-module* ,module)
-         (*the-function-pass-manager* ,function-pass-manager)
-         #+(or)(*all-functions-for-one-compile* nil)
-         #+(or)(*generate-load-time-values* t)
-	 (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
-	 (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
-								     ,source-debug-namestring
-								     ,source-pathname) "source-debug-namestring"))
-	 (*source-debug-offset* ,source-debug-offset)
-	 (*source-debug-use-lineno* ,source-debug-use-lineno)
-	 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module* ,source-file-info-handle))
-	 )
-     (declare (special *the-function-pass-manager*))
-     (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
-       ,@body)))
 
 
 (defun do-compilation-unit (closure &key override)

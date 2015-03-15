@@ -1,6 +1,31 @@
 
 (in-package :clasp-cleavir-hir)
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction NAMED-ENTER-INSTRUCTION
+;;;
+;;; This instruction is an ENTER-INSTRUCTION that keeps
+;;; track of the lambda-name
+
+
+(defclass named-enter-instruction (cleavir-ir:enter-instruction)
+  ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)))
+
+(defun make-named-enter-instruction
+    (lambda-list lambda-name &optional (successor nil successor-p))
+  (let ((oe (if successor-p
+		(cleavir-ir:make-enter-instruction lambda-list successor)
+		(cleavir-ir:make-enter-instruction lambda-list))))
+    (change-class oe 'named-enter-instruction :lambda-name lambda-name)))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
+  (with-output-to-string (s)
+    (format s "named-enter(~a)" (lambda-name instr))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction PRECALC-SYMBOL-INSTRUCTION.
@@ -87,127 +112,23 @@
 
 
 
-#+(or)(progn
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; save-multiple-values-return-instruction
+;;; Instruction MULTIPLE-VALUE-ONE-FORM-CALL-INSTRUCTION.
 ;;;
-	(defclass save-multiple-values-return-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-	  (()))
+;;; The first input of this instruction is an ordinary lexical
+;;; location.  The remaining inputs are of type VALUES-LOCATION, and
+;;; each represents multiple values returned form the evaluation of
+;;; some form.  This instruction has a single output, also of the type
+;;; VALUES-LOCATION.
 
-	(defun make-save-multiple-values-return-instruction
-	    (values-temp save-mv &optional successor )
-	  (make-instance 'save-multiple-values-return-instruction
-			 :inputs (list values-temp)
-			 :outputs (list save-mv)
-			 :successors (if (null successor) nil (list successor))))
+(defclass multiple-value-one-form-call-instruction (cleavir-ir:multiple-value-call-instruction)
+  ())
 
-	(defmethod cleavir-ir-graphviz:label ((instr save-multiple-values-return-instruction))
-	  (with-output-to-string (s)
-	    (format s "save-mv")))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; restore-multiple-values-return-instruction
-;;;
-
-	(defclass restore-multiple-values-return-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-	  (()))
-
-	(defun make-restore-multiple-values-return-instruction
-	    (saved-mv result &optional successor )
-	  (make-instance 'restore-multiple-values-return-instruction
-			 :inputs (list saved-mv)
-			 :outputs (list result)
-			 :successors (if (null successor) nil (list successor))))
-
-	(defmethod cleavir-ir-graphviz:label ((instr restore-multiple-values-return-instruction))
-	  (with-output-to-string (s)
-	    (format s "restore-mv")))
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; try-instruction
-;;;
-
-	(defclass try-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-	  ((%try-id :initarg :try-id :accessor try-id)))
-
-	(defun make-try-instruction
-	    ( id &optional successor )
-	  (make-instance 'try-instruction
-			 :inputs nil
-			 :outputs nil
-			 :try-id id
-			 :successors (if (null successor) nil (list successor))))
-
-	(defmethod cleavir-ir-graphviz:label ((instr try-instruction))
-	  (with-output-to-string (s)
-	    (format s "try(~a)" (try-id instr))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; landing-pad-instruction
-;;;
-
-	(defclass landing-pad-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-	  (()))
-
-	(defun make-landing-pad-instruction
-	    ( &optional successor )
-	  (make-instance 'landing-pad-instruction
-			 :inputs nil
-			 :outputs nil
-			 :successors (if (null successor) nil (list successor))))
-
-	(defmethod cleavir-ir-graphviz:label ((instr landing-pad-instruction))
-	  (with-output-to-string (s)
-	    (format s "landing-pad")))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; cleanup-instruction
-;;;
-
-	(defclass cleanup-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-	  (()))
-
-	(defun make-cleanup-instruction
-	    ( &optional successor )
-	  (make-instance 'cleanup-instruction
-			 :inputs nil
-			 :outputs nil
-			 :successors (if (null successor) nil (list successor))))
-
-	(defmethod cleavir-ir-graphviz:label ((instr cleanup-instruction))
-	  (with-output-to-string (s)
-	    (format s "cleanup")))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; invoke-instruction
-;;;
-
-	(defclass invoke-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-	  ())
-
-
-	(defun make-invoke-instruction
-	    (inputs outputs &optional (successors nil successors-p))
-	  (make-instance 'invoke-instruction
-			 :inputs inputs
-			 :outputs outputs
-			 :successors (if successors-p successors '())))
-
-
-	(defmethod cleavir-ir-graphviz:label ((instr invoke-instruction))
-	  (with-output-to-string (s)
-	    (format s "invoke")))
-	)
+(defun make-multiple-value-one-form-call-instruction
+    (inputs output &optional (successor nil successor-p))
+  (make-instance 'multiple-value-one-form-call-instruction
+    :inputs inputs
+    :outputs (list output)
+    :successors (if successor-p (list successor) '())))

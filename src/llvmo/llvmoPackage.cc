@@ -151,6 +151,7 @@ namespace llvmo
 	list = Cons_O::create(Cons_O::create(_sym_size_t,Fixnum_O::create((int)sizeof(size_t))),list);
 	list = Cons_O::create(Cons_O::create(_sym_threadInfo,Fixnum_O::create((int)sizeof(ThreadInfo))),list);
 	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"),Fixnum_O::create((int)MultipleValues::MultipleValuesLimit)),list);
+	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-SIZEOF"), Fixnum_O::create((int)sizeof(MultipleValues))),list);
 	list = Cons_O::create(Cons_O::create(lisp_internKeyword("NIL-VALUE"),Fixnum_O::create((int)gctools::tagged_ptr<core::T_O>::tagged_nil)),list);
 	return list;
     }

@@ -76,9 +76,9 @@ private:
 
 protected:
     static const uintptr_t tag_mask 	  = BOOST_BINARY(0011);
-    static const uintptr_t ptr_tag        = BOOST_BINARY(0000); // xxx00 means ptr
+    static const uintptr_t fixnum_tag        = BOOST_BINARY(0000); // xxx00 means ptr
     static const uintptr_t special_tag    = BOOST_BINARY(0001); // xxx01 means special val
-    static const uintptr_t fixnum_tag     = BOOST_BINARY(0011); // xxx11 means fixnum
+    static const uintptr_t ptr_tag     = BOOST_BINARY(0011); // xxx11 means fixnum
     static const uintptr_t ptr_mask = ~tag_mask;
 public:
     static const uintptr_t tagged_NULL 	  = BOOST_BINARY(0000)|special_tag;

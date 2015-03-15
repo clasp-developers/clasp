@@ -28,7 +28,8 @@
 	       (jump-id 0))
 	  (mapc #'(lambda (one)
 		    (let ((tag-block (gethash one tags)))
-		      (llvm-sys:add-case sw (%i32 jump-id) tag-block)))
+		      (llvm-sys:add-case sw (%i32 jump-id) tag-block))
+		    (incf jump-id))
 		targets)
 	  (cmp:irc-begin-block default-block)
 	  (cmp:irc-intrinsic "throwIllegalSwitchValue"

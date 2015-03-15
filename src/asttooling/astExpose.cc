@@ -959,6 +959,8 @@ namespace asttooling {
             CASE_STMT(SwitchStmt);
             CASE_STMT(WhileStmt);
 // firstStmtConstant= GCCAsmStmtClass, lastStmtConstant= WhileStmtClass
+	default:
+	    SIMPLE_ERROR(BF("Add a case for missing LLVM classes"));
         }
         SIMPLE_ERROR(BF("Could not cast Stmt"));
     };

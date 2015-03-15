@@ -104,7 +104,7 @@ namespace core
     bool cl_listp(T_sp arg)
     {_G();
 	if ( arg.nilp() ) return true;
-        return arg.isA<Cons_O>();
+	return arg.isA<Cons_O>();
     };
 
 

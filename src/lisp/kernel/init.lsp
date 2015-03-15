@@ -344,7 +344,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	       (let ((name (second def))	;cadr
 		     (lambda-list (third def))	; caddr
 		     (lambda-body (cdddr def))) ; cdddr
-		 (multiple-value-call
+		 (core::multiple-value-call
 		     (function (lambda (&optional (decl) (body) (doc) &rest rest)
 		       (declare (ignore rest))
 		       (if decl (setq decl (list (cons 'declare decl))))
@@ -401,7 +401,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (si::*fset 'ibundle
 	   #'(lambda (path)
-	       (multiple-value-call #'(lambda (loaded &optional error-msg)
+	       (core::multiple-value-call #'(lambda (loaded &optional error-msg)
 					(if loaded
 					    loaded
 					    (bformat t "Could not load bundle %s - error: %s\n" (truename path) error-msg)))
@@ -520,7 +520,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" "full")))
+  (let* ((stage (if given-stage given-stage (if (recursive-find :ecl-min *features*) "min" (if (recursive-find :cleavir *features*) "cleavir" "full"))))
          (garbage-collector (if (recursive-find :use-mps *features*) "mps" "boehm"))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
@@ -586,6 +586,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     lsp/helpfile
     lsp/evalmacros
     lsp/claspmacros
+    :macros
     lsp/testing
     lsp/makearray
     lsp/arraylib
@@ -860,8 +861,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun switch-to-full ()
   (setq *features* (remove :ecl-min *features*))
   (push :clos *features*)
-  (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*)
-)
+  (bformat t "Removed :ecl-min from and added :clos to *features* --> %s\n" *features*))
+
 
 (defun compile-full ()
   (if (member :ecl-min *features*) (switch-to-full))
@@ -882,6 +883,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
       )))
 
 
+
+
+
+
 (defun compile-clos () ;; &key (target-backend (default-target-backend)))
   (switch-to-full)
   (let ((*target-backend* (default-target-backend)))
@@ -891,6 +896,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (let ((bitcode-files (compile-system :init :all :recompile t )))
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
                            :lisp-bitcode-files bitcode-files ))))
+
+
+
+
 
 
 (defun help-build ()

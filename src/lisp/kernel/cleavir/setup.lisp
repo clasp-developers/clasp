@@ -131,7 +131,7 @@
 				((typep environment 'clasp-global-environment)
 				 (core:macroexpand-default macro-function macro-form nil))
 				(t
-				 (warn "What do I do when a Cleavir environment is passed to *macroexpand-hook*?")
+;;				 (warn "What do I do when a Cleavir environment is passed to *macroexpand-hook*?")
 				 (core:macroexpand-default macro-function macro-form nil)))))
 
 
@@ -143,8 +143,6 @@
   "Evaluate the form in Clasp's top level environment"
   (warn "cleavir-environment:eval called with NIL as the dispatching environment")
   (eval form))
-
-(defclass clasp () ())
 
 (defmethod cleavir-hir-transformations:introduce-immediate (constant (implementation clasp) processor os)
   constant)

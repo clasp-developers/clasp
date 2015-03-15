@@ -123,6 +123,7 @@ local sources =
 	    lispMath.cc
       grayPackage.cc
       closPackage.cc
+      cleavirPrimopsPackage.cc
       compPackage.cc
 	    bootStrapCoreSymbolMap.cc
 	    symbol.cc

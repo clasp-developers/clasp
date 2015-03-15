@@ -40,6 +40,7 @@ namespace gctools
 	size_t 	_number_of_values;
     public:
 	multiple_values() : smart_ptr<T>(_Nil<T>()), _number_of_values(0) {};
+    multiple_values(void* p, size_t num) : smart_ptr<T>((T*)p), _number_of_values(num) {};
 	multiple_values(const smart_ptr<T>& v,int num) : smart_ptr<T>(v), _number_of_values(num) {};
 	multiple_values(const smart_ptr<T>& v) : smart_ptr<T>(v), _number_of_values(1) {};
 	template <class Y> multiple_values(const multiple_values<Y>& yy) : smart_ptr<T>(yy), _number_of_values(yy.number_of_values()) {};

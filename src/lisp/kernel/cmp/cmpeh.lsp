@@ -84,7 +84,7 @@ eg: '(block ((exception var) code...))"
 
 
 
-(defparameter *try.clause-stack* nil
+(defvar *try.clause-stack* nil
   "Keep track of the nested try clauses")
 
 (defun try.flatten (structure)

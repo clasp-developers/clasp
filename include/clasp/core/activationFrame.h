@@ -691,7 +691,7 @@ namespace frame
 #if 0 // VLA version
 #define ALLOC_STACK_VALUE_FRAME(frameImpl,oframe,numValues)     \
     frame::ElementType frameImpl[frame::FrameSize(numValues)]; \
-    gctools::smart_ptr<core::STACK_FRAME> oframe(frameImpl);    \
+    gctools::smart_ptr<core::STACK_FRAME> oframe = gctools::smart_ptr<core::STACK_FRAME>::makeFrame(frameImpl); \
     frame::InitializeStackValueFrame(frameImpl,numValues)
 #else // alloca version
 #define ALLOC_STACK_VALUE_FRAME(frameImpl,oframe,numValues)     \

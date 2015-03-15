@@ -62,6 +62,12 @@
 	(scope-msg (cadddr scope-info)))
     (irc-intrinsic scope-exit-fn scope-level scope-msg)))
 
+(defun irc-t ()
+  (compile-reference-to-literal t nil))
+
+(defun irc-nil ()
+  "A nil in a T*"
+  (llvm-sys:create-int-to-ptr *irbuilder* (jit-constant-size_t +nil-value+) +t*+ "nil"))
 
 
 (defun irc-personality-function ()
@@ -580,11 +586,11 @@
 
 
 
-(defun irc-load (ptr &optional (label ""))
-  (llvm-sys:create-load-value-twine *irbuilder* ptr label))
+(defun irc-load (source &optional (label ""))
+  (llvm-sys:create-load-value-twine *irbuilder* source label))
 
-(defun irc-store (val result &optional (label ""))
-  (llvm-sys:create-store *irbuilder* val result nil))
+(defun irc-store (val destination &optional (label ""))
+  (llvm-sys:create-store *irbuilder* val destination nil))
 
 
 
@@ -953,6 +959,12 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* +i32+ (jit-constant-i32 1) label)
     :init (lambda (a) (irc-store (jit-constant-i32 init-val) a))))
 
+(defun irc-alloca-size_t (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "size_t-"))
+  "Allocate space for an size_t"
+  (with-alloca-insert-point env irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* +size_t+ (jit-constant-size_t 1) label)
+    :init (lambda (a) (irc-store (jit-constant-size_t init-val) a))))
+
 
 (defun irc-alloca-i8* (env &key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
   "Allocate space for an i8*"
@@ -1053,17 +1065,14 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 (defun irc-create-call (func args label)
   (let* ((ra args)
          (code (case (length args)
-                 (0 (llvm-sys:create-call0 *irbuilder* func label ))
+                 (0 (llvm-sys:create-call-array-ref *irbuilder* func nil label ))
                  (1 (llvm-sys:create-call1 *irbuilder* func (pop ra) label))
                  (2 (llvm-sys:create-call2 *irbuilder* func (pop ra) (pop ra) label))
                  (3 (llvm-sys:create-call3 *irbuilder* func (pop ra) (pop ra) (pop ra) label))
                  (4 (llvm-sys:create-call4 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) label))
                  (5 (llvm-sys:create-call5 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) (pop ra) label))
-                 (6 (llvm-sys:create-call-array-ref *irbuilder* func ra ""))
-                 (7 (llvm-sys:create-call-array-ref *irbuilder* func ra ""))
-                 (8 (llvm-sys:create-call-array-ref *irbuilder* func ra ""))
-                 (otherwise 
-                  (error "illegal irc-intrinsic to ~a - add support for ~a arguments" func (length ra) )))))
+                 (otherwise
+		  (llvm-sys:create-call-array-ref *irbuilder* func ra label)))))
     (unless code (error "irc-create-call returning nil"))
     code))
 

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/extensionPackage.fwd.h>
+#include <clasp/core/cleavirPrimopsPackage.fwd.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>
@@ -73,6 +74,12 @@ namespace core
 	#include "symbols_scraped_inc.h"
 #undef DO_SYMBOL
 #undef ClosPkg_SYMBOLS
+
+#define CleavirPrimopsPkg_SYMBOLS
+#define DO_SYMBOL(cname,rsid,pkgName,symName,exportp) cleavirPrimops::cname = this->allocate_unique_symbol(pkgName,symName,exportp);
+	#include "symbols_scraped_inc.h"
+#undef DO_SYMBOL
+#undef CleavirPrimopsPkg_SYMBOLS
 
 #define GrayPkg_SYMBOLS
 #define DO_SYMBOL(cname,rsid,pkgName,symName,exportp) gray::cname = this->allocate_unique_symbol(pkgName,symName,exportp);
@@ -125,9 +132,10 @@ namespace core
 	      it!=this->_SymbolNamesToIndex.end(); it++ )
 	{
 //            printf("%s:%d  Adding symbol to package: %s\n", __FILE__, __LINE__, this->_IndexToSymbol[it->second]._PackageName.c_str()  );
-	    Package_sp pkg = _lisp->findPackage(this->_IndexToSymbol[it->second]._PackageName);
+	    string packageName = this->_IndexToSymbol[it->second]._PackageName;
+	    Package_sp pkg = _lisp->findPackage(packageName);
             if ( pkg.nilp() ) {
-                SIMPLE_ERROR(BF("The package %s has not been defined yet") % this->_IndexToSymbol[it->second]._PackageName);
+                SIMPLE_ERROR(BF("The package %s has not been defined yet") % packageName);
             }
 //            printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.pbase());
             int idx = it->second;

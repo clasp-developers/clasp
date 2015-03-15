@@ -22,11 +22,14 @@
 (defvar *tags*)
 (defvar *vars*)
 
+(defvar *debug-log* nil)
+(defvar *debug-log-index* 0)
 (defvar *debug-basic-blocks*)
 (defvar *debug-ownerships*)
 (defvar *debug-tags*)
 (defvar *debug-vars*)
 
+(defvar *entry-irbuilder*)
 
 (setf (fdefinition 'cleavir-primop:call-with-variable-bound) 
       (fdefinition 'core:call-with-variable-bound))
@@ -35,21 +38,26 @@
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum))
 	     (ltv-index (cmp:codegen-literal nil value))
-	     (ltv-ref (cmp:irc-intrinsic "cc_loadTimeValueReference" cmp:*load-time-value-holder-global-var* (%size_t ltv-index))))
+	     (ltv-ref (cmp:irc-intrinsic "cc_loadTimeValueReference"
+					 (if cmp:*generate-compile-file-load-time-values*
+					     cmp:*load-time-value-holder-global-var*
+					     cmp:*run-time-value-holder-global-var*)
+					 (%size_t ltv-index))))
 	ltv-ref)
       (let ((var (gethash datum *vars*)))
 	(when (null var)
 	  (cond
+	    ;; Do nothing for values-location - there is only one
 	    ((typep datum 'cleavir-ir:values-location)
-	     (warn "What do we do in translate-datum with cleavir-ir:values-location??????"))
+	     #+(or)(setf var (alloca-mv-struct (string (gensym "V")))) )
 	    ((typep datum 'cleavir-ir:immediate-input)
-	     (setf var (cmp:jit-constant-size_t (cleavir-ir:value datum))))
-	    ((typep datum 'cc-mir:closure-pointer-dynamic-lexical-location)
-	     (setf var (llvm-sys:create-alloca cmp:*irbuilder* cmp:+i8*+ (cmp:jit-constant-i32 1) (string (cleavir-ir:name datum)))))
+	     (setf var (%size_t (cleavir-ir:value datum))))
+	    #+(or)((typep datum 'cc-mir:closure-pointer-dynamic-lexical-location)
+		   (setf var (alloca-i8* (string (cleavir-ir:name datum)))))
 	    ((typep datum 'cleavir-ir:dynamic-lexical-location)
-	     (setf var (llvm-sys:create-alloca cmp:*irbuilder* cmp:+t*+ (cmp:jit-constant-i32 1) (string (cleavir-ir:name datum)))))
+	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
 	    ((typep datum 'cleavir-ir:static-lexical-location)
-	     (setf var (llvm-sys:create-alloca cmp:*irbuilder* cmp:+t*+ (cmp:jit-constant-i32 1) (string (cleavir-ir:name datum)))))
+	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
 	    #+(or)((typep datum 'cleavir-ir:load-time-value-input)
 		   (format t "load-time-value-input - what does the datum look like: ~a~%" datum)
 		   (warn "Get the load-time-value-input and setf var"))
@@ -103,6 +111,11 @@
 		  (list (translate-branch-instruction
 			 last input-vars output-vars successor-tags abi)))))))
 
+(defun get-or-create-lambda-name (instr)
+  (if (typep instr 'cc-mir:enter-instruction)
+      (clasp-cleavir-hir:lambda-name instr)
+      "TOP-LEVEL"))
+
 (defun layout-procedure (initial-instruction abi)
   ;; I think this removes every basic-block that
   ;; isn't owned by this initial-instruction
@@ -114,10 +127,11 @@
 	 (first (find initial-instruction basic-blocks
 		      :test #'eq :key #'first))
 	 ;; This gathers the rest of the basic blocks
-	 (rest (remove first basic-blocks :test #'eq)))
-    ;; HYPOTHESIS: This builds a function with no arguments
+	 (rest (remove first basic-blocks :test #'eq))
+	 (name (get-or-create-lambda-name initial-instruction)))
+   ;; HYPOTHESIS: This builds a function with no arguments
     ;; that will enclose and set up other functions with arguments
-    (let* ((main-fn-name "REPL")
+    (let* ((main-fn-name (string name))
 	   (cmp:*current-function-name* main-fn-name)
 	   (cmp:*gv-current-function-name* (cmp:jit-make-global-string-ptr cmp:*current-function-name* "fn-name"))
 	   (fn (llvm-sys:function-create
@@ -129,7 +143,11 @@
 	   (block (cmp:irc-basic-block-create "entry" fn))
 	   (*current-function-entry-basic-block* block)
 	   (*function-current-multiple-value-array-address* nil)
-	   (irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*)))
+	   (*entry-irbuilder* (llvm-sys:make-irbuilder cmp:*llvm-context*))
+	   (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
+	   (body-block (cmp:irc-basic-block-create "body")))
+      (when *debug-log*
+	(format *debug-log* "LLVM-function:   ~a~%" (llvm-sys:get-name fn)))
       (let ((args (llvm-sys:get-argument-list fn)))
 	(mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
 		(llvm-sys:get-argument-list fn) cmp:+fn-prototype-argument-names+)
@@ -141,14 +159,15 @@
       (loop for block in rest
 	 for instruction = (first block)
 	 do (progn
-	      (format t "Creating basic block for rest instruction: ~a~%" instruction)
+	      #+(or)(format t "Creating basic block for rest instruction: ~a~%" instruction)
 	      (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag"))))
-      (llvm-sys:set-insert-point-basic-block irbuilder block)
+      (llvm-sys:set-insert-point-basic-block *entry-irbuilder* block)
       ;; HYPOTHESIS: bind variables for every var owned by this
       ;; initial instruction and that are NOT outputs of the initial
       ;; instruction (passed arguments)  I think I should use passed arguments
       ;; to create allocas for them.
-      (cmp:with-irbuilder (irbuilder)
+      (cmp:with-irbuilder (*entry-irbuilder*)
+	(cmp:irc-low-level-trace :arguments)
 	(cmp:with-dbg-function ("repl-FIX"
 				:linkage-name "repl-FIX-LINKAGE-NAME"
 				:function fn
@@ -164,15 +183,20 @@
 			 #+(or)(not (member var (cleavir-ir:outputs
 						 initial-instruction))))
 	       collect (translate-datum var))
-	    (layout-basic-block first abi)
-	    (loop for block in rest
-	       for instruction = (first block)
-	       do (progn
-		    (format t "Laying out basic block: ~a~%" block)
-		    (format t "Inserting basic block for instruction: ~a~%" instruction)
-		    (cmp:irc-begin-block (gethash instruction *tags*))
-		    (layout-basic-block block abi)))
-	    )))
+	    (llvm-sys:set-insert-point-basic-block body-irbuilder body-block)
+	    (cmp:with-irbuilder (body-irbuilder)
+	      (cmp:irc-begin-block body-block)
+	      (layout-basic-block first abi)
+	      (loop for block in rest
+		 for instruction = (first block)
+		 do (progn
+		      #+(or)(format t "Laying out basic block: ~a~%" block)
+		      #+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
+		      (cmp:irc-begin-block (gethash instruction *tags*))
+		      (layout-basic-block block abi)))))))
+      ;; Finish up by jumping from the entry block to the body block
+      (cmp:with-irbuilder (*entry-irbuilder*)
+	(cmp:irc-br body-block))
       (values fn :function-kind nil main-fn-name))))
 
 (defun translate (initial-instruction abi)
@@ -198,9 +222,9 @@
   (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
 	 (closed-env-arg (second fn-args))
 	 (closed-env-dest (first outputs))
-	 (calling-convention (make-instance 'calling-convention
-					    :nargs (third fn-args)
-					    :register-args (nthcdr 3 fn-args))))
+	 (calling-convention (cmp:make-calling-convention
+			      :nargs (third fn-args)
+			      :register-args (nthcdr 3 fn-args))))
     (llvm-sys:create-store cmp:*irbuilder* closed-env-arg closed-env-dest nil)
     #+(or)(format t " fn-args: ~a~%" fn-args)
     (let* ((lambda-list (cleavir-ir:lambda-list instr))
@@ -208,8 +232,8 @@
 	   (args (cdr (cleavir-ir:outputs instr)))
 	   (landing-pad (cc-mir:landing-pad instr)))
       (when landing-pad
-	(let ((exn.slot (llvm-sys:create-alloca cmp:*irbuilder* cmp:+i8*+ (%i32 1) "exn.slot"))
-	      (ehselector.slot (llvm-sys:create-alloca cmp:*irbuilder* cmp:+i32+ (%i32 1) "ehselector.slot")))
+	(let ((exn.slot (alloca-i8* "exn.slot"))
+	      (ehselector.slot (alloca-i32 "ehselector.slot")))
 	  (setf (clasp-cleavir:basic-block landing-pad) (clasp-cleavir:create-landing-pad exn.slot ehselector.slot landing-pad *tags*))))
       #+(or)(progn
 	      (format t "    outputs: ~s~%" args)
@@ -251,18 +275,18 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fixed-to-multiple-instruction) inputs outputs (abi abi-x86-64))
   ;; Write the first return value into the result
-  (format t "About to with-return-values~%")
   (with-return-values (return-values abi)
-    (format t "About to store length~%")
     (cmp:irc-store (%size_t (length inputs)) (number-of-return-values return-values))
-    (format t "About to copy inputs into mv~%")
     (dotimes (i (length inputs))
-      (cmp:irc-store (cmp:irc-load (elt inputs i)) (return-value-elt return-values i)))))
+      (cmp:irc-store (cmp:irc-load (elt inputs i)) (return-value-elt return-values i)))
+    #+(or)(cmp:irc-intrinsic "cc_saveThreadLocalMultipleValues" (sret-arg return-values) (first outputs))
+))
       
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:multiple-to-fixed-instruction) inputs outputs (abi abi-x86-64))
   ;; Create a basic block for each output
   (with-return-values (return-vals abi)
+    #+(or)(cmp:irc-intrinsic "cc_loadThreadLocalMultipleValues" (sret-arg return-vals) (first inputs))
     (let* ((blocks (let (b) (dotimes (i (1+ (length outputs))) (push (cmp:irc-basic-block-create (format nil "mvn~a-" i) nil) b)) (nreverse b)))
 	   (final-block (cmp:irc-basic-block-create "mvn-final" nil))
 	   (switch (cmp:irc-switch (cmp:irc-load (number-of-return-values return-vals)) (car (last blocks)) (length blocks))))
@@ -284,7 +308,9 @@
     (format t "--------------- translate-simple-instruction funcall-instruction~%")
     (format t "    inputs: ~a~%" inputs)
     (format t "    outputs: ~a~%" outputs))
-  (apply-closure "cc_call" (first inputs) (cdr inputs) abi))
+  (apply-closure "cc_call" (first inputs) (cdr inputs) abi)
+  #+(or)(with-return-values (return-vals abi)
+    (cmp:irc-intrinsic "cc_saveThreadLocalMultipleValues" (sret-arg return-vals) (first outputs))))
 
 
 (defmethod translate-simple-instruction
@@ -295,7 +321,9 @@
 	  (format t "    outputs: ~a~%" outputs))
   (let* ((lpad (clasp-cleavir:landing-pad instruction)))
     (cmp:with-landing-pad (clasp-cleavir:basic-block lpad)
-      (apply-closure "cc_invoke" (first inputs) (cdr inputs) abi))))
+      (apply-closure "cc_invoke" (first inputs) (cdr inputs) abi)))
+  #+(or)(with-return-values (return-vals abi)
+    (cmp:irc-intrinsic "cc_saveThreadLocalMultipleValues" (sret-arg return-vals) (first outputs))))
 
 
 (defmethod translate-simple-instruction
@@ -349,6 +377,12 @@
     (let ((result (cmp:irc-intrinsic "cc_symbolValue" sym)))
       (cmp:irc-store result (first outputs)))))
 
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:set-symbol-value-instruction) inputs outputs abi)
+  (let ((sym (cmp:irc-load (first inputs) "sym-name"))
+	(val (cmp:irc-load (second inputs) "value")))
+    (cmp:irc-intrinsic "cc_setSymbolValue" sym val)))
+
 
 
 (defmethod translate-simple-instruction
@@ -365,19 +399,33 @@
 	    (format t "    outputs: ~a~%" outputs))
     (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
 	   (result (cmp:irc-intrinsic-args "cc_enclose" (list* enclosed-function (%size_t (length inputs)) loaded-inputs))))
+      (when *debug-log*
+	(format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
+	(format *debug-log* "    inputs: ~a~%" inputs))
       (cmp:irc-store result (first outputs) nil))))
+
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:multiple-value-call-instruction) inputs outputs abi)
+  (with-return-values (return-vals abi)
+    (cmp:irc-intrinsic "cc_multipleValueOneFormCall" (sret-arg return-vals) (cmp:irc-load (first inputs)))))
+
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:the-instruction) inputs outputs abi)
+  (declare (ignore outputs))
+  #+(or) (warn "What should I do with the-instruction")
+  )
+#||  `(unless (typep ,(first inputs) ',(cleavir-ir:value-type instruction))
+     (error 'type-error
+	    :expected-type ',(cleavir-ir:value-type instruction)
+	    :datum ,(first inputs))))
+||#
+
 
 
 
 #+(or)(progn
-
-	(defmethod translate-simple-instruction
-	    ((instruction cleavir-ir:multiple-value-call-instruction) inputs outputs)
-	  `(setf ,(first outputs)
-		 (multiple-value-list
-		  (funcall ,(first inputs)
-			   (append ,@(rest inputs))))))
-
 	(defmethod translate-simple-instruction
 	    ((instruction cleavir-ir:tailcall-instruction) inputs outputs)
 	  (declare (ignore outputs))
@@ -512,6 +560,8 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) inputs outputs successors abi)
   (declare (ignore successors))
+  #+(or)(with-return-values (return-vals abi)
+    (cmp:irc-intrinsic "cc_loadThreadLocalMultipleValues" (sret-arg return-vals) (first inputs)))
   (cmp:irc-ret-void))
 
 #+(or)(progn
@@ -633,24 +683,76 @@
 (defvar *functions-to-finalize*)
 
 
+(defun describe-form (form)
+  (when (consp form)
+    (cond
+      ((eq 'core:*fset (car form))
+       (let* ((name (cadr (cadr form)))
+	      (is-macro (cadddr form))
+	      (header (if is-macro
+			  "defmacro"
+			  "defun")))
+	 (format t ";    ~a ~a~%" header name)))
+      ((eq 'core:*make-constant (car form))
+       (let* ((name (cadr (cadr form))))
+	 (format t ";    *make-constant ~a~%" name)))
+      ((eq 'cl:defun (car form))
+       (format t ";    defun ~a~%" (cadr form)))
+      ((eq 'cl:defmacro (car form))
+       (format t ";    defun ~a~%" (cadr form)))
+      ((eq 'cl:defconstant (car form))
+       (format t ";    defconstant ~a~%" (cadr form)))
+      ((eq 'cl:defvar (car form))
+       (format t ";    defvar ~a~%" (cadr form)))
+      ((eq 'cl:defparameter (car form))
+       (format t ";    defparameter ~a~%" (cadr form)))
+      (t ()))))
+
+
+
 
 (defun do-compile (form)
-  (let* ((clasp-system (make-instance 'clasp))
-	 (ast (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system))
-	 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-    (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
-    (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-    (when *debug-cleavir* (draw-mir hir)) ;; comment out
-    (clasp-cleavir:convert-funcalls hir)
-    (setf *ast* hoisted-ast
-	  *hir* hir)
-    (let ((*form* form)
-	  (abi (make-instance 'abi-x86-64)))
-      (translate hir abi))))
+  (when *debug-log*
+    (format *debug-log* "==== Form: ~a~%" form))
+  (handler-bind
+      ((cleavir-env:no-variable-info
+	(lambda (condition)
+;;;	  (declare (ignore condition))
+	  (warn "Condition: ~a" condition)
+	  (invoke-restart 'cleavir-generate-ast:consider-special)))
+       (cleavir-env:no-function-info
+	(lambda (condition)
+;;;	  (declare (ignore condition))
+	  (warn "Condition: ~a" condition)
+	  (invoke-restart 'cleavir-generate-ast:consider-global))))
+    (when *compile-print* (describe-form form))
+    (let* ((clasp-system (make-instance 'clasp))
+	   (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
+		  (when *debug-cleavir* (draw-ast a))
+		  a))
+	   (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
+	   (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
+      (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
+      (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+      (when *debug-cleavir* (draw-mir hir)) ;; comment out
+      (clasp-cleavir:convert-funcalls hir)
+      (when *debug-log*
+	(incf *debug-log-index*)
+	(let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) :type "dot" :defaults (pathname *debug-log*))))
+	  (cleavir-ast-graphviz:draw-ast hoisted-ast (namestring ast-pathname))
+	  (format *debug-log* "Wrote ast to: ~a~%" (namestring ast-pathname)))
+	(let ((mir-pathname (make-pathname :name (format nil "mir~a" *debug-log-index*) :type "dot" :defaults (pathname *debug-log*))))
+	  (cleavir-ir-graphviz:draw-flowchart hir (namestring mir-pathname))
+	  (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
+      (setf *ast* hoisted-ast
+	    *hir* hir)
+      (let ((*form* form)
+	    (abi (make-instance 'abi-x86-64)))
+	(translate hir abi)))))
   
 (defun cleavir-compile-t1expr (name form env pathname)
   (and env (error "I don't support anything but top level environment compiles using cleavir"))
+  (format t "Compiling: ~a~%" form)
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
       (cmp:with-debug-info-generator (:module cmp:*the-module*
 					      :pathname pathname)
@@ -659,7 +761,10 @@
 	       (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
 	       (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
 	       )
+	  (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
 	  (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
+	  (format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
+	  (when *debug-cleavir* (draw-hir hir)) ;; comment out
 	  (cleavir-ir:hir-to-mir hir clasp-system nil nil)
 	  (when *debug-cleavir* (draw-mir hir)) ;; comment out
 	  (clasp-cleavir:convert-funcalls hir)
@@ -750,7 +855,8 @@
 
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((cmp:*cleavir-compile-file-hook* #'cleavir-compile-file-form)
-	(cmp:*dump-module-on-completion* t)
+	(*debug-log-index* 0)
+;;	(cmp:*dump-module-on-completion* t)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file))
     (apply #'compile-file given-input-pathname args)))
 

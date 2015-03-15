@@ -248,7 +248,7 @@ In ecl/src/c/interpreter.d  is the following code
 	    int spec_position = oCdr(spec_how).as<Fixnum_O>()->get();
 	    if ( spec_position >= narg )
 	    {
-		SIMPLE_ERROR(BF("Insufficient arguments - expected specializer argument at position %d of specializer-type %s but only %d arguments were passed") % spec_position % _rep_(spec_type) % narg );
+		SIMPLE_ERROR(BF("Insufficient arguments for %s - expected specializer argument at position %d of specializer-type %s but only %d arguments were passed") % _rep_(gf) % (spec_position+1) % _rep_(spec_type) % narg );
 	    } else if ( spec_no >= vektor.capacity() )
 	    {
 		SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));

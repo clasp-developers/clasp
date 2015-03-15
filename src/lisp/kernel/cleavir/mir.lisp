@@ -6,17 +6,19 @@
 
 
 
-(defclass enter-instruction (cleavir-ir:enter-instruction)
+(defclass enter-instruction (clasp-cleavir-hir:named-enter-instruction)
   ((%debug-label :initform (gensym "ENTER-") :reader debug-label)
    (%landing-pad :initform nil :initarg :landing-pad :accessor landing-pad)))
 
 
 (defmethod cleavir-ir-graphviz:label ((instr enter-instruction))
   (with-output-to-string (stream)
-    (format stream "~a ~a" (debug-label instr) (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr)))))
+    (format stream "~a ~a ~a" (debug-label instr) 
+	    (clasp-cleavir-hir:lambda-name instr)
+	    (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr)))))
 
 (defmethod cl:print-object ((instr enter-instruction) stream)
-  (format stream "#<~a ~a>" (class-name (class-of instr)) (debug-label instr)))
+  (format stream "#<~a ~a ~a>" (class-name (class-of instr)) (clasp-cleavir-hir:lambda-name instr) (debug-label instr)))
 
 
 

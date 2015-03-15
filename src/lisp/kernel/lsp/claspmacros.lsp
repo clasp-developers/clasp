@@ -52,3 +52,8 @@
   `(core:funwind-protect (lambda () ,protected-form) (lambda () ,@cleanup-forms)))
 
 
+(defmacro catch (tag &rest forms)
+  `(core:catch-function ,tag (lambda () ,@forms)))
+
+(defmacro throw (tag result-form)
+  `(core:throw-function ,tag ,result-form))

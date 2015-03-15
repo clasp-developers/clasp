@@ -44,9 +44,9 @@
         (terpri)
         ))))
 
-(defun test-b ()
-  (format t "test-b~%")
-  (prof-apply *parts* #'ns-per-partial-apply #'b (list 1 2 3)))
+#+(or)(defun test-b ()
+	(format t "test-b~%")
+	(prof-apply *parts* #'ns-per-partial-apply #'b (list 1 2 3)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

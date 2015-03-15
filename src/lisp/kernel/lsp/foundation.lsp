@@ -332,6 +332,33 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 )
 
 
+
+(in-package :cl)
+
+;; We do not use this macroexpanso, and thus we do not care whether
+;; it is efficiently compiled by ECL or not.
+(core:fset 'multiple-value-bind
+      #'(lambda (whole env)
+	  (let ((vars (cadr whole))
+		(form (caddr whole))
+		(body (cdddr whole)))
+	  `(core::multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
+      t)
+
+(defun warn (x &rest args)
+  (bformat t "WARN: %s %s\n" x args))
+
+
+(defun class-name (x)
+  (name-of-class x))
+
+(defun invoke-debugger (cond)
+  (core:invoke-internal-debugger cond))
+
+
+(export 'class-name)
+
+
 (in-package :ext)
 (defun compiled-function-name (x)
   (core:function-name x))
@@ -348,24 +375,3 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   nil)
 (export 'warn-or-ignore)
 
-
-(in-package :cl)
-
-;; We do not use this macroexpanso, and thus we do not care whether
-;; it is efficiently compiled by ECL or not.
-(core:fset 'multiple-value-bind
-      #'(lambda (whole env)
-	  (let ((vars (cadr whole))
-		(form (caddr whole))
-		(body (cdddr whole)))
-	  `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
-      t)
-
-(defun warn (x &rest args)
-  (bformat t "WARN: %s %s\n" x args))
-
-
-(defun class-name (x)
-  (name-of-class x))
-
-(export 'class-name)

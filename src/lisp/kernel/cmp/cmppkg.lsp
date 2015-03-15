@@ -2,6 +2,9 @@
 
 (export '(+fn-prototype+
 	  *load-time-value-holder-global-var*
+	  irc-store-multiple-values
+	  irc-intrinsic
+	  irc-branch-to-and-begin-block
 	  with-ltv-function-codegen
 	  +fn-prototype-argument-names+
 	  jit-function-name
@@ -35,8 +38,21 @@
 	  *block-name-prefix*
 	  irc-switch
 	  +t*+
+	  +i1+
+	  +size_t+
+	  +i32+
 	  codegen-rts/symbol
 	  irc-begin-block
 	  irc-basic-block-create
 	  typeid-core-dynamic-go
+	  make-calling-convention
+	  calling-convention-nargs
+	  calling-convention-register-args
+	  calling-convention-args
+	  calling-convention-copy-args
+	  calling-convention-args.gep
+	  compile-error-if-not-enough-arguments
+	  dbg-set-current-debug-location-here
+	  irc-t
+	  irc-nil
 	  ))

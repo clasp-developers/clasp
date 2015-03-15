@@ -901,12 +901,15 @@ void bind_aux
 			    {
 				SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: ") % restarg.asString() );
 			    }
+			restarg.setTarget(oarg);
+#if 0			
 			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
 			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
 			    restarg.setTarget(sarg);
 			} else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
 			    restarg.setTarget(carg);
 			}
+#endif
 			break;
 		    }
 		case dot_rest:
@@ -915,12 +918,15 @@ void bind_aux
 			    {
 				SIMPLE_ERROR(BF("Lambda list dot followed by more than one argument"));
 			    }
+			restarg.setTarget(oarg);
+#if 0			
 			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
 			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
 			    restarg.setTarget(sarg);
 			} else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
 			    restarg.setTarget(carg);
 			}
+#endif
 			goto DONE;
 		    }
 		case keyword: {

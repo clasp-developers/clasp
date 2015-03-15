@@ -137,7 +137,7 @@ namespace core
 	    }
 	}
 
-
+#if 0
 	template <class T>
 	void attributeWeakPointer(Symbol_sp name, gctools::weak_smart_ptr<T>& val)
 	{
@@ -155,7 +155,7 @@ namespace core
 		}
 	    }
 	}
-
+#endif
 	template <class T>
 	void attribute(Symbol_sp name, T& val)
 	{

@@ -9,13 +9,6 @@
 (defpackage #:clasp-cleavir-generate-ast
   (:nicknames #:cc-generate-ast))
 
-(defpackage #:clasp-cleavir-env
-  (:nicknames #:cc-env)
-  (:use #:common-lisp)
-  (:export
-   #:unwind-protect
-   #:add-unwind-protect
-   ))
 
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)
@@ -23,7 +16,6 @@
   (:export 
    #:hoist-load-time-value
    #:precalculated-value-ast
-   #:unwind-protect-ast
    #:cleanup-ast))
 
 (defpackage #:clasp-cleavir-hir

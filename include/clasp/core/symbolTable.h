@@ -87,6 +87,15 @@ namespace clos
 #undef ClosPkg_SYMBOLS
 }; /* clos package */
 
+namespace cleavirPrimops
+{
+#define CleavirPrimopsPkg_SYMBOLS
+#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
+#include <clasp/core/symbols_scraped_inc.h>
+#undef DO_SYMBOL
+#undef CleavirPrimopsPkg_SYMBOLS
+}; /* cleavirPrimops package */
+
 namespace gray
 {
 #define GrayPkg_SYMBOLS

@@ -588,6 +588,16 @@ namespace core
                     Cons_O::createList(Str_O::create("**;*.*"),cl_pathname(Str_O::create("SYS:build;system;full-mps;**;*.*"))));
                 af_pathnameTranslations(Str_O::create("full-mps"),_lisp->_true(),p);
             }
+            {
+                Cons_sp p = Cons_O::createList(
+                    Cons_O::createList(Str_O::create("**;*.*"),cl_pathname(Str_O::create("SYS:build;system;cleavir-boehm;**;*.*"))));
+                af_pathnameTranslations(Str_O::create("cleavir-boehm"),_lisp->_true(),p);
+            }
+            {
+                Cons_sp p = Cons_O::createList(
+                    Cons_O::createList(Str_O::create("**;*.*"),cl_pathname(Str_O::create("SYS:build;system;cleavir-mps;**;*.*"))));
+                af_pathnameTranslations(Str_O::create("cleavir-mps"),_lisp->_true(),p);
+            }
 
 	}
 #if 0  // I shouldn't be using PATH - I should be using PATHNAMEs
@@ -2219,7 +2229,8 @@ namespace core
                     {
                         ss << " ";
                         ss << af_classOf(af_symbolFunction((sym)))->classNameAsString();
-                        if ( af_symbolFunction(sym)->closure->macroP() )
+			Function_sp fn = af_symbolFunction(sym);
+                        if ( fn.notnilp() && fn->closure && af_symbolFunction(sym)->closure->macroP() )
                         {
                             ss << "(MACRO)";
                         }
@@ -3276,6 +3287,9 @@ extern "C"
     Symbol_sp Lisp_O::internWithPackageName(string const& packageName, string const& symbolName)
     {_G();
 	Package_sp package = this->findPackage(packageName);
+	if ( package.nilp() ) {
+	    SIMPLE_ERROR(BF("The package %s does not exist when trying to intern symbol %s") % packageName % symbolName );
+	}
 	return this->intern(symbolName,package);
     }
 

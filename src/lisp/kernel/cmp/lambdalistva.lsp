@@ -32,9 +32,13 @@
   register-args
   args ;; This is where the args are copied into
   )
-(defun calling-convention-copy-args (cc)
+(defun calling-convention-write-registers-to-multiple-values (cc)
   (let ((mv-start (irc-store-multiple-values 0 (calling-convention-register-args cc))))
     (setf (calling-convention-args cc) mv-start)))
+#|| Was this code
+  (irc-store-multiple-values 0 (calling-convention-register-args args))
+  (setf (calling-convention-args args) (irc-intrinsic "getMultipleValues" (jit-constant-i32 0)))
+||#
 
 (defun calling-convention-args.gep (cc idx &optional target-idx)
   (let ((label (if (and target-idx core::*enable-print-pretty*)
@@ -139,7 +143,7 @@
     (let ((cmp (irc-icmp-slt nargs lv-required-number-of-arguments "enough-args")))
       (irc-cond-br cmp error-block cont-block)
       (irc-begin-block error-block)
-      (irc-intrinsic "va_throwNotEnoughArgumentsException" *gv-current-function-name* nargs lv-required-number-of-arguments )
+      (irc-intrinsic "va_notEnoughArgumentsException" *gv-current-function-name* nargs lv-required-number-of-arguments )
       (irc-unreachable)
       (irc-begin-block cont-block)
       )))
@@ -155,7 +159,7 @@
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block error-block)
     (compile-error-if-not-enough-arguments given-number-of-arguments required-number-of-arguments)
-    (irc-intrinsic "va_throwTooManyArgumentsException" *gv-current-function-name* given-number-of-arguments required-number-of-arguments)
+    (irc-intrinsic "va_tooManyArgumentsException" *gv-current-function-name* given-number-of-arguments required-number-of-arguments)
     (irc-unreachable)
     (irc-begin-block cont-block)
     ))
@@ -333,7 +337,6 @@ will put a value into target-ref."
 	(irc-intrinsic "copyTspTptr" tref val-ref)))))
 
 
-
 (defun compile-optional-arguments (optargs old-env
 				   args ;; nargs va-list
 				   new-env
@@ -382,6 +385,8 @@ will put a value into target-ref."
 	(irc-begin-block cont-block)))))
 
 
+
+
 (defun compile-rest-arguments (rest-var old-env
 			       args ; nargs va-list
 			       new-env entry-arg-idx)
@@ -422,7 +427,7 @@ will put a value into target-ref."
 	(irc-phi-add-incoming phi-bad-kw-idx entry-bad-kw-idx kw-start-block)
 	(irc-low-level-trace)
 	(let* ((arg-ref (calling-convention-args.gep args phi-arg-idx))) ;; (irc-gep va-list (list phi-arg-idx))))
-	  (irc-intrinsic "kw_throwIfNotKeyword" arg-ref)
+	  (irc-intrinsic "kw_ifNotKeywordException" arg-ref)
 	  (let* ((eq-aok-ref-and-arg-ref (irc-trunc (irc-intrinsic "compareTspTptr" aok-ref arg-ref) +i1+)) ; compare arg-ref to a-o-k
 		 (aok-block (irc-basic-block-create "aok-block"))
 		 (possible-kw-block (irc-basic-block-create "possible-kw-block"))
@@ -507,7 +512,7 @@ will put a value into target-ref."
 		  (irc-phi-add-incoming phi-arg-idx loop-arg-idx advance-arg-idx-block)
 		  (irc-cond-br loop-arg-idx_lt_nargs loop-kw-args-block loop-cont-block)
 		  (irc-begin-block loop-cont-block)
-		  (irc-intrinsic "va_throwIfBadKeywordArgument" phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx (calling-convention-nargs args) (calling-convention-args args))
+		  (irc-intrinsic "va_ifBadKeywordArgumentException" phi-arg-bad-good-aok phi.aok-bad-good.bad-kw-idx (calling-convention-nargs args) (calling-convention-args args))
 		  (let ((kw-done-block (irc-basic-block-create "kw-done-block")))
 		    (irc-branch-to-and-begin-block kw-done-block)
 		    (irc-branch-to-and-begin-block kw-exit-block)
@@ -591,7 +596,7 @@ will put a value into target-ref."
 (defun compile-throw-if-excess-keyword-arguments (env
                                                   args ;; nargs va-list
                                                   arg-idx)
-  (irc-intrinsic "va_throwIfExcessKeywordArguments" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-args args) arg-idx))
+  (irc-intrinsic "va_ifExcessKeywordArgumentsException" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-args args) arg-idx))
 
 
 
@@ -631,9 +636,7 @@ will put a value into target-ref."
 ;;;				 &aux (nargs (first argument-holder)) (va-list (second argument-holder)))
   "Fill the dest-activation-frame with values using the
 lambda-list-handler/env/argument-activation-frame"
-  ;;(calling-convention-copy-args args new-env)
-  (irc-store-multiple-values 0 (calling-convention-register-args args))
-  (setf (calling-convention-args args) (irc-intrinsic "getMultipleValues" (jit-constant-i32 0)))
+  (calling-convention-write-registers-to-multiple-values args)
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)

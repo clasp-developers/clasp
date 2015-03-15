@@ -113,16 +113,11 @@
     ;; associate each landing pad with a landing-pad-id
     ;; and associate each landing pad with its enter instruction
     (let ((landing-pad-id 0))
-      (format t "a0~%")
       (dolist (lp landing-pads)
-	(format t "aa~%")
 	(let ((enter (car lp))
 	      (landing-pad (cdr lp)))
-	  (format t "a~%")
 	  (setf (landing-pad-id landing-pad) landing-pad-id)
-	  (format t "b~%")
 	  (setf (cc-mir:landing-pad enter) landing-pad)
-	  (format t "c~%")
 	  (incf landing-pad-id))))
     ;;
     ;; Now change all of the unwind-instructions to indexed-unwind-instructions

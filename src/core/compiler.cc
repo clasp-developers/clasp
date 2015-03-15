@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
+#include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/activationFrame.h>
@@ -116,13 +117,21 @@ namespace core
 
 #define ARGS_core_startupImagePathname "()"
 #define DECL_core_startupImagePathname ""
-#define DOCS_core_startupImagePathname "startupImagePathname"
+#define DOCS_core_startupImagePathname "startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cleavir-boehm, cleavir-mps based on *features* :ECL-MIN, :USE-MPS, :CLEAVIR"
     T_sp core_startupImagePathname()
     {_G();
-        Cons_sp min = cl::_sym_STARfeaturesSTAR->symbolValue().as<Cons_O>()->memberEq(kw::_sym_ecl_min);
-        Cons_sp mps = cl::_sym_STARfeaturesSTAR->symbolValue().as<Cons_O>()->memberEq(kw::_sym_use_mps);
+	Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<Cons_O>();
+        Cons_sp min = features->memberEq(kw::_sym_ecl_min);
+        Cons_sp mps = features->memberEq(kw::_sym_use_mps);
+	Cons_sp cleavir = features->memberEq(kw::_sym_cleavir);
         string strStage = "min";
-        if ( min.nilp() ) strStage = "full";
+        if ( min.nilp() ) {
+	    if ( cleavir.nilp() ) {
+		strStage = "full";
+	    } else {
+		strStage = "cleavir";
+	    }
+	}
         string strGc = "boehm";
         if ( mps.notnilp() ) strGc = "mps";
         stringstream ss;
@@ -873,17 +882,111 @@ namespace core {
 
 
 
-    #define ARGS_core_callWithVariableBound "(sym val thunk)"
+#define ARGS_core_callWithVariableBound "(sym val thunk)"
 #define DECL_core_callWithVariableBound ""
 #define DOCS_core_callWithVariableBound "callWithVariableBound"
     T_mv core_callWithVariableBound(Symbol_sp sym, T_sp val, T_sp thunk)
     {
 	DynamicScopeManager scope(sym,val);
 	//	printf("%s:%d callWithVariableBound binding %s with %s\n", __FILE__, __LINE__, _rep_(sym).c_str(), _rep_(val).c_str());
-	T_mv result = eval::funcall(thunk);
+	return eval::funcall(thunk);
     }
 
 
+#define ARGS_core_multipleValueFuncall "(function-designator &rest functions)"
+#define DECL_core_multipleValueFuncall ""
+#define DOCS_core_multipleValueFuncall "multipleValueFuncall"
+    T_mv core_multipleValueFuncall(T_sp funcDesignator, Cons_sp functions)
+    {
+	MultipleValues mvAccumulate;
+	mvAccumulate._Size = 0;
+	size_t idx = 0;
+	for ( Cons_sp cur = functions; cur.notnilp(); cur = cCdr(cur) ) {
+	    Function_sp func = oCar(cur).as<Function_O>();
+	    T_mv result = eval::funcall(func);
+	    mvAccumulate[idx] = result.px;
+	    ++idx;
+	    for ( size_t i=1,iEnd(result.number_of_values()); i<iEnd; ++i ) {
+		mvAccumulate[idx] = result.valueGet(i).asTPtr();
+		++idx;
+	    }
+	}
+	ASSERT(idx<MultipleValues::MultipleValuesLimit);
+	mvAccumulate._Size = idx;
+	Function_sp fmv = coerce::functionDesignator(funcDesignator);
+	MultipleValues& mvThreadLocal = lisp_multipleValues();
+	for ( size_t i=LCC_FIXED_ARGS, iEnd(mvAccumulate._Size); i<iEnd; ++i ) {
+	    mvThreadLocal[i] = mvAccumulate[i];
+	}
+	T_mv result;
+	fmv->closure->invoke(&result,mvAccumulate._Size
+			     ,mvAccumulate[0]
+			     ,mvAccumulate[1]
+			     ,mvAccumulate[2]
+			     ,mvAccumulate[3]
+			     ,mvAccumulate[4]);
+	return result;
+    }
+
+
+
+#define ARGS_core_multipleValueProg1_Function "(func1 func2)"
+#define DECL_core_multipleValueProg1_Function ""
+#define DOCS_core_multipleValueProg1_Function "multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values"
+    T_mv core_multipleValueProg1_Function(Function_sp func1, Function_sp func2)
+    {
+	MultipleValues mvFunc1;
+	T_mv result;
+	ASSERT(func1.notnilp()&&func1->closure);
+	result = eval::funcall(func1);
+	mvFunc1._Size = result.number_of_values();
+	mvFunc1[0] = result.asTPtr();
+	MultipleValues& mvThreadLocal = lisp_multipleValues();
+	for ( size_t i(1),iEnd(mvFunc1._Size); i<iEnd; ++i ) {
+	    mvFunc1[i] = mvThreadLocal[i];
+	}
+	T_mv resultTemp;
+	eval::funcall(func2);
+	for ( size_t i(1),iEnd(mvFunc1._Size); i<iEnd; ++i ) {
+	    mvThreadLocal[i] = mvFunc1[i];
+	}
+	return result;
+    }
+
+
+    #define ARGS_core_catchFunction "(tag func)"
+#define DECL_core_catchFunction ""
+#define DOCS_core_catchFunction "catchFunction"
+    T_mv core_catchFunction(T_sp tag, Function_sp func)
+	{
+            int frame = _lisp->exceptionStack().push(CatchFrame,tag);
+	    T_mv result;
+	    try {
+		result = eval::funcall(func);
+	    } catch (CatchThrow& catchThrow) {
+		if (catchThrow.getFrame() != frame) {
+		    throw catchThrow;
+		}
+		result = gctools::multiple_values<T_O>::createFromValues();
+	    }
+	    _lisp->exceptionStack().unwind(frame);
+	    return result;
+	}
+    
+
+    #define ARGS_core_throwFunction "(tag result)"
+#define DECL_core_throwFunction ""
+#define DOCS_core_throwFunction "throwFunction"
+    void core_throwFunction(T_sp tag, T_sp res)
+    {
+	int frame = _lisp->exceptionStack().findKey(CatchFrame,tag);
+	if (frame < 0 ) {
+	    CONTROL_ERROR();
+	}
+	T_mv result(res,1);
+	result.saveToMultipleValue0();
+	throw CatchThrow(frame);
+    }
 
     void initialize_compiler_primitives(Lisp_sp lisp)
     {_G();
@@ -921,7 +1024,14 @@ namespace core {
         CoreDefun(callsByPointerPerSecond);
         CoreDefun(startupImagePathname);
 	CoreDefun(mangleName);
+	SYMBOL_EXPORT_SC_(CorePkg,callWithVariableBound);
 	CoreDefun(callWithVariableBound);
+	cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
+	
+	CoreDefun(multipleValueFuncall);
+	CoreDefun(multipleValueProg1_Function);
+	CoreDefun(catchFunction);
+	CoreDefun(throwFunction);
     }
 
 

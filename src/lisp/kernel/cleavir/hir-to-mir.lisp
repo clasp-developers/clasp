@@ -13,11 +13,11 @@
 
 
 
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:fdefinition-instruction)
+#+(or)(defmethod cleavir-ir:specialize ((instr cleavir-ir:fdefinition-instruction)
 				  (impl clasp-cleavir:clasp) proc os)
   (let ((output (first (cleavir-ir:outputs instr))))
     (change-class output 'cc-mir:closure-pointer-dynamic-lexical-location)
-    (format t "specializing the fdefinition-instruction new output: ~a~%" output)
+    ;;(format t "specializing the fdefinition-instruction new output: ~a~%" output)
     ;; By default just return the current instruction
     instr))
 

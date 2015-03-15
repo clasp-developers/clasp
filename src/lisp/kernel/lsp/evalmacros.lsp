@@ -133,22 +133,29 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 	     (and hook (funcall hook name global-function env)))
        ',name)))
 
-#+clasp
-(defmacro defun (&whole whole name vl &body body &environment env)
-  ;; Documentation in help.lsp
-  (multiple-value-bind (decls body doc-string) 
-      (process-declarations body t)
-    (let* ((doclist (when doc-string (list doc-string)))
-	   (global-function `#'(lambda ,vl 
-				 (declare (core:lambda-name ,name) ,@decls) 
-				 ,@doclist (block ,(si::function-block-name name) ,@body))))
-      ;;(bformat t "DEFUN global-function --> %s\n" global-function )
-      `(progn
-	 ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
-	 ,@(si::expand-set-documentation name 'function doc-string)
-	 ,(let ((hook *defun-inline-hook*))
-	       (and hook (funcall hook name global-function env)))
-	 ',name))))
+;;; DEFUN that generates interpreted functions
+(si::fset 'defun
+	  #'(lambda (def env)
+	      (let ((whole def)
+		    (name (cadr def))
+		    (vl (caddr def))
+		    (body (cdddr def)))
+		;; Documentation in help.lsp
+		(multiple-value-bind (decls body doc-string) 
+		    (process-declarations body t)
+		  (let* ((doclist (when doc-string (list doc-string)))
+			 (global-function `#'(lambda ,vl 
+					       (declare (core:lambda-name ,name) ,@decls) 
+					       ,@doclist (block ,(si::function-block-name name) ,@body))))
+		    ;;(bformat t "DEFUN global-function --> %s\n" global-function )
+		    `(progn
+		       ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
+		       ,@(si::expand-set-documentation name 'function doc-string)
+		       ,(let ((hook *defun-inline-hook*))
+			     (and hook (funcall hook name global-function env)))
+		       ',name)))))
+	  t)
+
 
 ;;;
 ;;; This is a no-op unless the compiler is installed
@@ -234,14 +241,6 @@ the corresponding VAR.  Returns NIL."
   )
 
 
-(macroexpand '   (do ((l args (cddr l))
-        (forms nil)
-        (bindings nil))
-       ((endp l) (list* 'LET* (nreverse bindings) (nreverse (cons nil forms))))
-       (let ((sym (gensym)))
-            (push (list sym (cadr l)) bindings)
-            (push (list 'setq (car l) sym) forms)))
-)
 ; conditionals
 
 (defmacro cond (&rest clauses &aux (form nil))
@@ -339,7 +338,12 @@ Evaluates INIT and binds the N-th VAR to the N-th value of INIT or, if INIT
 returns less than N values, to NIL.  Then evaluates FORMs, and returns all
 values of the last FORM.  If no FORM is given, returns NIL."
   (declare (notinline mapcar))
-  `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form))
+  `(core::multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form))
+
+
+
+
+
 
 (defun while-until (test body jmp-op)
   (declare (si::c-local))
@@ -351,6 +355,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
         ,@body
       ,exit
 	(,jmp-op ,test (GO ,label)))))
+
+
 
 #|
 (evaluate-verbosity 1)

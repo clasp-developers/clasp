@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/compPackage.h>
 #include <clasp/core/grayPackage.h>
 #include <clasp/core/closPackage.h>
+#include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/ql.h>
@@ -134,7 +135,6 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,schar);
     SYMBOL_EXPORT_SC_(CorePkg,scharSet);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugInterpretedClosureSTAR);
-
     SYMBOL_EXPORT_SC_(CorePkg,_BANG_unbound_BANG_);
     SYMBOL_EXPORT_SC_(CorePkg,bitArrayOp);
     SYMBOL_EXPORT_SC_(CorePkg,lambdaName);
@@ -149,6 +149,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,nil);
     SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,_PLUS_standardReadtable_PLUS_);
+    SYMBOL_EXPORT_SC_(KeywordPkg,cleavir);
     SYMBOL_EXPORT_SC_(KeywordPkg,load);
     SYMBOL_EXPORT_SC_(KeywordPkg,eval);
     SYMBOL_EXPORT_SC_(KeywordPkg,ecl_min);
@@ -753,6 +754,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	ext::initialize_extensionPackage();
 	comp::initialize_compPackage();
 	clos::initialize_closPackage();
+	cleavirPrimops::initialize_cleavirPrimopsPackage();
 	gray::initialize_grayPackage();
 	cluser::initialize_commonLispUserPackage();
 	{_BLOCK_TRACEF(BF("Setup instance base classes for T_O"));

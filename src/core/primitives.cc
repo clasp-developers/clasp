@@ -764,8 +764,11 @@ namespace core
 #define LOCK_af_macroexpand_default 1
 #define ARGS_af_macroexpand_default "(macro_function form macro_env)"
 #define DECL_af_macroexpand_default ""
-    T_mv af_macroexpand_default(Function_sp macro_function, T_sp form, Environment_sp macro_env)
+    T_mv af_macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env)
     {_G();
+	Function_sp debugMacroFunction = macro_function;
+	T_sp debugForm = form;
+	T_sp debugEnvironment = macro_env;
 	T_sp result = eval::funcall(macro_function,form,macro_env);
 	return(Values(result));
     };

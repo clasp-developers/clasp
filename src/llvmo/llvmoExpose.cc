@@ -979,13 +979,13 @@ namespace llvmo
 #define ARGS_af_verifyModule "(module action)"
 #define DECL_af_verifyModule ""
 #define DOCS_af_verifyModule "verifyModule returns (values result errorinfo)"
-    core::T_sp af_verifyModule(Module_sp module, core::Symbol_sp action)
+    core::T_mv af_verifyModule(Module_sp module, core::Symbol_sp action)
     {_G();
 	string errorInfo;
         llvm::raw_string_ostream ei(errorInfo);
 	llvm::Module* m = module->wrappedPtr();
 	bool result = llvm::verifyModule(*m,&ei);
-	return( Values(_lisp->_boolean(result),core::Str_O::create(errorInfo)) );
+	return Values(_lisp->_boolean(result),core::Str_O::create(errorInfo));
     };
 
 
@@ -4393,7 +4393,7 @@ namespace llvmo
 
 
     core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine
-									    , core::Symbol_sp sym
+									    , core::T_sp functionName
 									    , Function_sp fn
 									    , core::T_sp activationFrameEnvironment
 									    , core::Str_sp globalRunTimeValueName
@@ -4415,7 +4415,7 @@ namespace llvmo
 	ASSERTF(fn.notnilp(),BF("The Function must never be nil"));
 	void* p = engine->getPointerToFunction(fn->wrappedPtr());
 	if (!p) {
-	    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(sym));
+	    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(functionName));
 	}
 	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
         core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::Cons_O>());
@@ -4424,7 +4424,7 @@ namespace llvmo
         core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,linenumber,0);
 	//	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
         CompiledClosure* functoid 
-	    = gctools::ClassAllocator<CompiledClosure>::allocateClass(sym
+	    = gctools::ClassAllocator<CompiledClosure>::allocateClass(functionName
 								      ,spi
 								      ,kw::_sym_function
 								      ,lisp_funcPtr

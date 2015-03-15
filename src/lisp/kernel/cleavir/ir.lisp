@@ -1,5 +1,6 @@
 (in-package :clasp-cleavir)
 
+
 (defun %i32 (num)
   (cmp:jit-constant-i32 num))
 
@@ -12,6 +13,26 @@
 (defun %nil ()
   "A nil in a T*"
   (llvm-sys:create-int-to-ptr cmp:*irbuilder* (cmp:jit-constant-size_t cmp:+nil-value+) cmp:+t*+ "nil"))
+
+
+(defun %literal (lit &optional (label "literal"))
+  (llvm-sys:create-extract-value cmp:*irbuilder* (cmp:irc-load (cmp:compile-reference-to-literal lit nil)) (list 0) label))
+
+(defun alloca-size_t (&optional (label "var"))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:+size_t+ (%i32 1) label))
+
+(defun alloca-i32 (&optional (label "var"))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:+i32+ (%i32 1) label))
+
+(defun alloca-i8* (&optional (label "var"))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8*+ (%i32 1) label))
+
+(defun alloca-t* (&optional (label "var"))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:+t*+ (%i32 1) label))
+
+(defun alloca-mv-struct (&optional (label "V"))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:+mv-struct+ (%i32 1) label))
+
 
 (defun %load-or-null (obj)
   (if obj
@@ -26,8 +47,8 @@
 ;;; All contained LLVM-IR gets written into the clasp-cleavir:*current-function-entry-basic-block*
 ;;;
 
-(defmacro with-entry-basic-block (&rest body)
-  `(let ((cmp:*irbuilder* clasp-cleavir:*current-function-entry-basic-block*))
+(defmacro with-entry-ir-builder (&rest body)
+  `(let ((cmp:*irbuilder* *entry-irbuilder*))
      ,@body))
 
 
@@ -46,9 +67,9 @@
 (defvar *function-current-multiple-value-array-address*)
 (defun multiple-value-array-address ()
   (unless *function-current-multiple-value-array-address*
-    (with-entry-basic-block
+    (with-entry-ir-builder
 	(setq *function-current-multiple-value-array-address* 
-	      (irc-intrinsic "cc_multipleValuesArrayAddress" "mvpArray"))))
+	      (cmp:irc-intrinsic "cc_multipleValuesArrayAddress"))))
   *function-current-multiple-value-array-address*)
 
 
@@ -117,11 +138,13 @@
   ;; Write excess arguments into the multiple-value array
   (unless (<= (length arguments) 5)
     (let ((mv-args (nthcdr 5 arguments)))
-      (do ((idx 5 (1+ idx))
-	   (cur-arg (nthcdr 5 arguments) (cdr cur-arg))
-	   (arg (car cur-arg) (car cur-arg)))
-	  ((null cur-arg) nil)
-	(cmp:irc-store (cmp:irc-load arg) (multiple-value-elt idx)))))
+      (do* ((idx 5 (1+ idx))
+	    (cur-arg (nthcdr 5 arguments) (cdr cur-arg))
+	    (arg (car cur-arg) (car cur-arg)))
+	   ((null cur-arg) nil)
+	(let* ((mvarray (multiple-value-array-address))
+	       (mv-elt-ref (llvm-sys:create-geparray cmp:*irbuilder* mvarray (list (%size_t 0) (%size_t idx)) "element")))
+	  (cmp:irc-store (cmp:irc-load arg) mv-elt-ref)))))
   (with-return-values (return-vals abi)
     (cmp:irc-intrinsic intrinsic-name
 		       (sret-arg return-vals)

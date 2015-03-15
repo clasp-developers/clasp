@@ -14,8 +14,8 @@
 		 :cleavir-basic-blocks)
     :serial t
     :components ((:file "packages")
+		 (:file "system")
 		 (:file "ast")
-		 (:file "env")
 		 (:file "convert-form")
 		 (:file "convert-special")
 		 (:file "hir")

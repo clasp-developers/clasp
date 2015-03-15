@@ -386,7 +386,7 @@ namespace core {
     T_sp Symbol_O::setf_symbolValue(T_sp val)
     {_OF();
 	ASSERT(!this->_IsConstant);
-#if 1 
+#if 0
 	// trap a change in a dynamic variable
 	if ( this->_Name.as<Str_O>()->get() == "*TABLE*")
 	{

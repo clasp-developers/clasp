@@ -1,5 +1,28 @@
-
 (in-package :clasp-cleavir-ast)
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class NAMED-FUNCTION-AST
+;;;
+;;; This AST is a subclass of FUNCTION-AST. It is used to pass the LAMBDA-NAME declaration
+;;; down to the HIR->MIR.
+
+(defclass named-function-ast (cleavir-ast:function-ast)
+  ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)))
+
+(cleavir-io:define-save-info named-function-ast
+    (:lambda-name lambda-name))
+
+
+
+
+(defmethod cleavir-ast-graphviz:label ((ast named-function-ast))
+  (with-output-to-string (s)
+    (format s "named-function (~a)" (lambda-name ast))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -120,7 +143,7 @@ If this form has already been precalculated then just return the precalculated-v
 	 (read-only-p (cleavir-ast:read-only-p ast))
 	 (symbol (second form))
 	 (symbol-index (cmp:codegen-symbol nil symbol)))
-    (format t "    generate-new-precalculated-symbol-index for: ~s  index: ~a~%" symbol symbol-index)
+;;    (format t "    generate-new-precalculated-symbol-index for: ~s  index: ~a~%" symbol symbol-index)
     (when (< symbol-index 0)
       (error "There is a problem with the symbol index: ~a" symbol-index))
     symbol-index))
@@ -139,9 +162,11 @@ If this form has already been precalculated then just return the precalculated-v
        (cmp:codegen-literal nil form))
       ((constantp form)
        (cmp:codegen-literal nil form))
-      (t (error "Finish implementing generate-new-precalculated-value-index - form: ~s read-only-p: ~a" form read-only-p)
-	 -1))
-    ))
+      (t
+       (multiple-value-bind (index fn)
+	   (cmp:compile-ltv-thunk "ltv-literal" form nil)
+	 index))
+      )))
 
 
 (defun find-load-time-value-asts (ast)
@@ -173,6 +198,8 @@ If this form has already been precalculated then just return the precalculated-v
 			    :original-object (cleavir-ast:form ast))))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
      ast precalc-lexical-ast (mapcar #'first load-time-value-asts) forms)))
+
+
 
 
 

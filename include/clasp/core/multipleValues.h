@@ -39,16 +39,12 @@ namespace core
     public: // ctor
 	static const int MultipleValuesLimit = CALL_ARGUMENTS_LIMIT;
     public: // instance variables here
-#ifdef USE_MULTIPLE_VALUES_ARRAY
 	size_t 		_Size;
 	T_O* 		_Values[MultipleValuesLimit];
         /*! Allocate the GCVector in the NonMoveable memory.
 	 This needs to stay pinned or things will go very bad if functions are called with arguments in
 	this array (those beyond the arguments that can be passed in registers) or multiple values are returned
 	and this array moved in memory */
-#else
-        gctools::Vec0_impl<gctools::GCVector<T_sp,gctools::GCContainerNonMoveableAllocator<gctools::GCVector_moveable<T_sp>>>>     _Values;
-#endif
     public:
         void initialize();
     public: // Functions here
@@ -71,16 +67,9 @@ namespace core
 	T_sp setFromConsSkipFirst(Cons_sp values);
 
 //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
-#ifdef USE_MULTIPLE_VALUES_ARRAY
 	void setSize(size_t sz) { this->_Size = sz; };
 	size_t getSize() const { return this->_Size; };
 	void emplace_back(T_sp a) { this->_Values[this->_Size] = a.px /*std::forward<T>(a)*/; ++this->_Size;};
-#else
-        void setSize(size_t sz) { this->_Values.resize(sz); };
-        size_t getSize() const { return this->_Values.size(); };
-        template <typename T>
-        void emplace_back(T&& a) { this->_Values.emplace_back(std::forward<T>(a));};
-#endif
 	/*! Set the value */
 
 	T_O*& operator[](size_t i) { return this->_Values[i]; };

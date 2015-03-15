@@ -464,7 +464,6 @@ namespace core
     /*    static gctools::smart_ptr<oClass> nil(core::Lisp_sp lisp);	*/ \
     typedef oClass ThisClass;						\
     typedef gctools::smart_ptr<oClass>	smart_ptr;			\
-    typedef gctools::weak_smart_ptr<oClass>	weak_smart_ptr;         \
     public:								\
     static core::Symbol_sp ___staticClassSymbol;			\
     static core::Class_sp ___staticClass;				\

@@ -2538,7 +2538,7 @@ namespace core
 	    _lisp->defineSpecialOperator(ClPkg,"locally",&sp_locally);
 	    _lisp->defineSpecialOperator(ClPkg,"macrolet", &sp_macrolet);
 	    _lisp->defineSpecialOperator(ClPkg,"multipleValueProg1",&sp_multipleValueProg1);
-	    _lisp->defineSpecialOperator(ClPkg,"multipleValueCall",&sp_multipleValueCall);
+	    _lisp->defineSpecialOperator(CorePkg,"multipleValueCall",&sp_multipleValueCall);
 	    _lisp->defineSpecialOperator(ClPkg,"progn",&sp_progn);
 	    _lisp->defineSpecialOperator(ClPkg,"progv",&sp_progv);
 	    _lisp->defineSpecialOperator(ClPkg,"quote",&sp_quote);

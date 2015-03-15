@@ -72,6 +72,18 @@ extern "C"
     }
 
 
+    struct twoVals {
+	twoVals() {};
+	twoVals(void* o, size_t t) : px(o), num(t) {};
+	void* px;
+	size_t num;
+    };
+
+    T_mv testTwoReturns()
+    {
+	T_mv foo((void*)&testTwoReturns,1);
+	return foo;
+    }
 
 
     int testVarargs(int numargs, ...)
@@ -166,24 +178,24 @@ extern "C" {
 #endif
 
 
-    void va_throwTooManyArgumentsException( const char* funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments)
+    void va_tooManyArgumentsException( const char* funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments)
     {_G();
 	SIMPLE_ERROR(BF("Too many arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
     }
 
-    void va_throwNotEnoughArgumentsException( const char* funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments)
+    void va_notEnoughArgumentsException( const char* funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments)
     {_G();
 	SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
     }
 
-    extern void va_throwIfExcessKeywordArguments( char* fnName, std::size_t nargs, core::T_O** argArray, size_t argIdx)
+    extern void va_ifExcessKeywordArgumentsException( char* fnName, std::size_t nargs, core::T_O** argArray, size_t argIdx)
     {_G();
 	if ( argIdx >= nargs ) return;
         stringstream ss;
         for ( int i(0); i<nargs; ++i ) {
             ss << _rep_(core::T_sp(argArray[i])) << " ";
         }
-        SIMPLE_ERROR(BF("va_throwIfExcessKeywordArguments>> Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str() );
+        SIMPLE_ERROR(BF("va_ifExcessKeywordArgumentsException>> Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str() );
 //        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
     }
 
@@ -285,7 +297,7 @@ extern "C" {
     }
 
 
-    void va_throwIfBadKeywordArgument(int allowOtherKeys, std::size_t badKwIdx, std::size_t nargs,  core::T_O** argArray )
+    void va_ifBadKeywordArgumentException(int allowOtherKeys, std::size_t badKwIdx, std::size_t nargs,  core::T_O** argArray )
     {
 	if ( allowOtherKeys == 2 ) return;
 	if ( badKwIdx != 65536 )
@@ -1312,6 +1324,11 @@ extern "C"
 	printf( "+++DBG-I32[%d]\n", i32);
     }
 
+    void debugPrint_size_t( size_t v )
+    {_G();
+	printf( "+++DBG-size_t[%lu]\n", v);
+    }
+
 
     void singleStepCallback()
     {
@@ -1613,9 +1630,6 @@ extern "C"
 	ASSERT(*ltvPP!=NULL);
 	core::LoadTimeValues_O& ltv = **ltvPP;
 	core::T_sp& result = ltv.data_element(index);
-#ifdef DEBUG_LOAD_TIME_VALUES
-//        printf("%s:%d loadTimeValueReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, *ltvPP, index, result.pbase(), _rep_(result).c_str());
-#endif
 	return &result;
     }
 
@@ -1818,7 +1832,7 @@ extern "C"
 	return aokTrue ? 2 : 1;
     }
 
-    void kw_throwIfNotKeyword(core::T_O** objP)
+    void kw_ifNotKeywordException(core::T_O** objP)
     {
 	ASSERT(objP!=NULL);
 	if ( !af_keywordP((core::T_sp(*objP))) )
@@ -1836,18 +1850,6 @@ extern "C"
 	return newBadKwIdx;
     }
 
-#if 0
-    void kw_throwIfBadKeywordArgument(size_t allowOtherKeys, size_t badKwIdx, core::ActivationFrame_sp* afP )
-    {
-	if ( allowOtherKeys == 2 ) return;
-	ASSERTNOTNULL(*afP);
-	if ( badKwIdx != 65536 )
-	{
-	    core::ValueFrame_sp valueFrame = (*afP).as<core::ValueFrame_O>();
-	    SIMPLE_ERROR(BF("Bad keyword argument %s in args: %s") % _rep_(valueFrame->entry(badKwIdx)) % _rep_(valueFrame) );
-	}
-    }
-#endif
 };
 
 
@@ -1995,17 +1997,24 @@ extern "C"
 //  Intrinsics for Cleavir
 
 extern "C" {
+
+    //#define DEBUG_CC
     
     T_O* cc_precalcSymbol(T_O* tarray, size_t idx)
     {
 	LoadTimeValues_O* array = reinterpret_cast<LoadTimeValues_O*>(tarray);
+#ifdef DEBUG_CC
+	printf("%s:%d precalcSymbol idx[%zu] symbol = %p\n", __FILE__, __LINE__, idx, (*array).symbols_element(idx).px);
+#endif
 	return (*array).symbols_element(idx).px;
     }
 
     T_O* cc_precalcValue(T_O* tarray, size_t idx)
     {
 	LoadTimeValues_O* array = reinterpret_cast<LoadTimeValues_O*>(tarray);
-	//	printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
+#ifdef DEBUG_CC
+	printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
+#endif
 	return (*array).data_element(idx).px;
     }
 
@@ -2013,14 +2022,18 @@ extern "C" {
     core::T_O* cc_makeCell()
     {_G();
 	core::Cons_sp res = core::Cons_O::create();
-	//	printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
+#ifdef DEBUG_CC
+	printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
+#endif
 	return res.px;
     }
 
     void cc_writeCell(core::T_O* cell, core::T_O* val)
     {
 	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
-	//	printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
+#ifdef DEBUG_CC
+	printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
+#endif
 	c->setCar(gctools::smart_ptr<core::T_O>(val));
     }
 
@@ -2028,39 +2041,60 @@ extern "C" {
     {
 	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
 	core::T_sp val = c->ocar();
-	//	printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px );
+#ifdef DEBUG_CC
+	printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px );
+#endif
 	return val.px;
     }
 
     core::T_O* cc_fetch(core::T_O* array, std::size_t idx)
     {
 	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
-	//	printf("%s:%d fetch idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, idx, (*a)[idx].px);
+#ifdef DEBUG_CC
+	printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*a)[idx].px);
+#endif
 	return (*a)[idx].px;
     }
 
-    void* cc_fdefinition(core::T_O* sym)
+    T_O* cc_fdefinition(core::T_O* sym)
     {
 	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
 	core::Function_sp fn = core::af_symbolFunction(s);
-	return fn->closure;
+	if (fn.nilp()) {
+	    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
+	}
+	return fn.pointer();
     }
 
-    void* cc_symbolValue(core::T_O* sym)
+    T_O* cc_symbolValue(core::T_O* sym)
     {
 	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
 	core::T_sp v = core::af_symbolValue(s);
-	return v.px;
+	return v.pointer();
+    }
+
+#define PROTO_cc_setSymbolValue "void (t* t*)"
+#define CATCH_cc_setSymbolValue false
+    void cc_setSymbolValue(core::T_O* sym, core::T_O* val)
+    {
+	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	s->setf_symbolValue(gctools::smart_ptr<core::T_O>(val));
     }
 
 
-    void cc_call(core::T_mv* result, core::Closure* closure, LCC_ARGS_BASE)
+    void cc_call(core::T_mv* result, core::T_O* tfunc, LCC_ARGS_BASE)
     {
+	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	ASSERT(func!=NULL);
+	core::Closure* closure = func->closure;
 	closure->invoke(result,LCC_PASS_ARGS);
     }
 
-    void cc_invoke(core::T_mv* result, core::Closure* closure, LCC_ARGS_BASE)
+    void cc_invoke(core::T_mv* result, core::T_O* tfunc, LCC_ARGS_BASE)
     {
+	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	ASSERT(func!=NULL);
+	core::Closure* closure = func->closure;
 	closure->invoke(result,LCC_PASS_ARGS);
     }
 
@@ -2075,9 +2109,14 @@ extern "C" {
         va_list argp;
         va_start(argp,numCells);
 	int idx = 0;
+#ifdef DEBUG_CC
+	printf("%s:%d Starting enclose\n", __FILE__, __LINE__ );
+#endif
         for ( ; numCells; --numCells ) {
             p = va_arg(argp,core::T_O*);
-	    //	    printf("%s:%d enclose@%d p[%p]\n", __FILE__, __LINE__, idx, p);
+#ifdef DEBUG_CC
+	    printf("%s:%d enclose environment@%p[%d] p[%p]\n", __FILE__, __LINE__, vo.px, idx, p);
+#endif
 	    (*vo)[idx] = gctools::smart_ptr<core::T_O>(p);
 	    ++idx;
         }
@@ -2102,6 +2141,35 @@ extern "C" {
     }
 
 
+    /*! Take the multiple-value inputs from the thread local MultipleValues and evaluate it */
+    void cc_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
+    {
+	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
+	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	ASSERT(func!=NULL);
+	core::Closure* closure = func->closure;
+	closure->invoke(result,mvThreadLocal._Size,result->asTPtr(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
+    }
+
+
+    void cc_saveThreadLocalMultipleValues(core::T_mv* result, core::MultipleValues* mv)
+    {
+	core::MultipleValues& mvThread = core::lisp_multipleValues();
+	(*mv)._Size = result->number_of_values();
+	(*mv)[0] = (*result).px;
+	for ( size_t i=1; i<(*mv)._Size; ++i ) {
+	    (*mv)[i] = mvThread[i];
+	}
+    }
+
+    void cc_loadThreadLocalMultipleValues(core::T_mv* result, core::MultipleValues* mv)
+    {
+	core::MultipleValues& mvThread = core::lisp_multipleValues();
+	*result = gctools::multiple_values<core::T_O>(gctools::smart_ptr<core::T_O>((*mv)[0]),(*mv)._Size);
+	for ( size_t i=1; i<(*mv)._Size; ++i ) {
+	    mvThread[i] = (*mv)[i];
+	}
+    }
 
 
     void cc_throwDynamicGo(size_t frame, size_t index)
@@ -2122,6 +2190,58 @@ extern "C" {
     }
 
 
+    __attribute__((visibility("default")))  core::T_O* cc_gatherRestArguments(std::size_t nargs, core::T_O** argArray, std::size_t startRest, char* fnName)
+    {_G();
+	core::Cons_sp result = _Nil<core::Cons_O>();
+	int inargs = nargs;
+	int istartRest = startRest;
+	for ( int i=inargs-1; i>=istartRest; i-- )
+	{
+	    result = core::Cons_O::create(core::T_sp(argArray[i]),result);
+	}
+	return result.pointer();
+    }
+
+
+    std::size_t cc_allowOtherKeywords(std::size_t saw_aok, std::size_t nargs, core::T_O** argArray, std::size_t argIdx)
+    {
+	if (saw_aok) return saw_aok;
+	bool aokTrue = (uintptr_t)(argArray[argIdx+1]) != gctools::tagged_ptr<core::T_O>::tagged_nil;// .isTrue();
+	return aokTrue ? 2 : 1;
+    }
+
+    void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, std::size_t nargs,  core::T_O** argArray )
+    {
+	if ( allowOtherKeys == 2 ) return;
+	if ( badKwIdx != 65536 )
+	{
+	    SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(core::T_sp(argArray[badKwIdx])) );
+	}
+    }
+
+    size_t cc_matchKeywordOnce(core::T_O* xP, core::T_O* yP, core::T_O* sawKeyAlreadyP)
+    {
+        if ( xP!=yP ) return 0;
+        if (!gctools::tagged_ptr<core::T_O>::tagged_nilp(sawKeyAlreadyP)) return 2;
+        return 1;
+    }
+
+    void cc_ifNotKeywordException(core::T_O* obj)
+    {
+	ASSERT(obj!=NULL);
+	if ( !af_keywordP((core::T_sp(obj))) )
+	{
+	    T_sp vobj(obj);
+            SIMPLE_ERROR(BF("Not keyword %s")% _rep_(vobj));
+	}
+    }
+
+    T_O** cc_multipleValuesArrayAddress()
+    {
+	return &lisp_multipleValues().callingArgsStart()[0];
+    }
+	
+
     void clasp_terminate(const char* file, int line, int column, const char* func)
     {
 	printf("Terminating file: %s  func: %s\n", file, func );
@@ -2141,8 +2261,15 @@ extern "C" {
 
 namespace llvmo {
     // We must link one symbol to the executable or none of this file will be inserted
+
+#define PRIMITIVE(name,prototype) primitive(##name,PROTOTYPE_#name,CATCH_#name)
+
     void initialize_intrinsics()
     {
+	//	PRIMITIVE(cc_setSymbolValue);
+	printf("%s:%d  Initializing intrinsics.cc\n", __FILE__, __LINE__ );
+	T_mv foo = testTwoReturns();
+	printf("Called testTwoReturns  foo.px = %p   foo.two = %d\n", foo.px, foo.number_of_values() );
     }
 
 };
