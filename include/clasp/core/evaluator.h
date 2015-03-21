@@ -174,7 +174,7 @@ namespace core
             if ( !func.pointerp() ) {
                 // While booting, cl::_sym_findClass will apply'd before it is bound to a symbol
                 if ( fn == cl::_sym_findClass ) {
-                    return(af_findClass(arg0.template as<Symbol_O>(),true,_Nil<Environment_O>()));
+                    return(cl_findClass(arg0.template as<Symbol_O>(),true,_Nil<Environment_O>()));
                 }
                 ERROR_UNDEFINED_FUNCTION(fn);
             }
@@ -190,7 +190,7 @@ namespace core
 	template <class ARG0, class ARG1, class ARG2>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
 	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( func.nilp() ) {
+            if ( func.nilp() || func.unboundp() ) {
                 ERROR_UNDEFINED_FUNCTION(fn);
             }
             Functoid* ft = func->closure;

@@ -33,35 +33,22 @@
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:precalc-symbol-reference-ast) context)
   (cleavir-ast-to-hir:check-context-for-one-value-ast context)
-  (let ((temp (cleavir-ast-to-hir:make-temp)))
-    (cleavir-ast-to-hir:compile-ast
-     (clasp-cleavir-ast:precalc-symbol-reference-vector-ast ast)
-     (cleavir-ast-to-hir:context (list temp)
-				 (list (clasp-cleavir-hir:make-precalc-symbol-instruction
-					temp
-					(cleavir-ir:make-immediate-input (clasp-cleavir-ast:precalc-symbol-reference-index ast))
-					(first (cleavir-ast-to-hir:results context))
-					:successor (first (cleavir-ast-to-hir:successors context))
-					:original-object (clasp-cleavir-ast:precalc-symbol-reference-ast-original-object ast)
-					))
-				 (cleavir-ast-to-hir:invocation context)))))
-
+  (clasp-cleavir-hir:make-precalc-symbol-instruction
+   (cleavir-ir:make-immediate-input (clasp-cleavir-ast:precalc-symbol-reference-index ast))
+   (first (cleavir-ast-to-hir:results context))
+   :successor (first (cleavir-ast-to-hir:successors context))
+   :original-object (clasp-cleavir-ast:precalc-symbol-reference-ast-original-object ast)
+   ))
 
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
   (cleavir-ast-to-hir:check-context-for-one-value-ast context)
-  (let ((temp (cleavir-ast-to-hir:make-temp)))
-    (cleavir-ast-to-hir:compile-ast
-     (clasp-cleavir-ast:precalc-value-reference-vector-ast ast)
-     (cleavir-ast-to-hir:context (list temp)
-				 (list (clasp-cleavir-hir:make-precalc-value-instruction
-					temp
-					(cleavir-ir:make-immediate-input (clasp-cleavir-ast:precalc-value-reference-index ast))
-					(first (cleavir-ast-to-hir:results context))
-					:successor (first (cleavir-ast-to-hir:successors context))
-					:original-object (clasp-cleavir-ast:precalc-value-reference-ast-original-object ast)
-					))
-				 (cleavir-ast-to-hir:invocation context)))))
+  (clasp-cleavir-hir:make-precalc-value-instruction
+   (cleavir-ir:make-immediate-input (clasp-cleavir-ast:precalc-value-reference-index ast))
+   (first (cleavir-ast-to-hir:results context))
+   :successor (first (cleavir-ast-to-hir:successors context))
+   :original-object (clasp-cleavir-ast:precalc-value-reference-ast-original-object ast)
+   ))
 
 
 
@@ -102,12 +89,14 @@
 
 
 
-(defun make-call/invoke (&key inputs outputs successors)
-  (if *landing-pad*
-      (make-instance 'clasp-cleavir-hir:invoke-instruction
-		     :inputs inputs
-		     :outputs outputs
-		     :successors (list (first successors) *landing-pad*))
+(defun make-call/invoke (&key inputs outputs successors (landing-pad *landing-pad*))
+  (if landing-pad
+      (prog1
+	(make-instance 'clasp-cleavir-hir:invoke-instruction
+		       :inputs inputs
+		       :outputs outputs
+		       :successors (list (first successors) landing-pad))
+	(error "We should not add invoke-instruction here - we should do it at the MIR stage - otherwise it will screw up optimizations"))
       (make-instance 'cleavir-ir:funcall-instruction
 		     :inputs inputs
 		     :outputs outputs
@@ -156,6 +145,27 @@
 		       :successors (reverse successors))))))))
        (cleavir-ast-to-hir:invocation context)))))
 
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Compile a SETF-FDEFINITION-AST.
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:setf-fdefinition-ast) context)
+  (cleavir-ast-to-hir:check-context-for-one-value-ast context)
+  (let ((temp (cleavir-ast-to-hir:make-temp)))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:name-ast ast)
+     (cleavir-ast-to-hir:context
+      (list temp)
+      (list
+       (clasp-cleavir-hir:make-setf-fdefinition-instruction
+	temp
+	(first (cleavir-ast-to-hir:results context))
+	(first (cleavir-ast-to-hir:successors context))))
+      (cleavir-ast-to-hir:invocation context)))))
 
 #||	 
 	 (

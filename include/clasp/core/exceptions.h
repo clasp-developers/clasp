@@ -258,13 +258,13 @@ namespace core
         {
             virtual void keyFunctionForVtable() ATTR_WEAK;
         private:
-            int _Frame;
-            int	_Index;
+            size_t _Frame;
+            size_t _Index;
         public:
-            ATTR_WEAK DynamicGo(int frame, int index) : _Frame(frame), _Index(index) {};
+            ATTR_WEAK DynamicGo(size_t frame, size_t index) : _Frame(frame), _Index(index) {};
             ATTR_WEAK virtual ~DynamicGo() {};
-            int getFrame() const { return this->_Frame;};
-            int index() const { return this->_Index;};
+            size_t getFrame() const { return this->_Frame;};
+            size_t index() const { return this->_Index;};
         };
 
     struct TooManyArgumentsError {

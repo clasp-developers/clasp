@@ -70,7 +70,7 @@ namespace core {
 
     void WrappedPointer_O::setInstanceClassUsingSymbol(Symbol_sp classSymbol)
     {
-        Class_sp cl = af_findClass(classSymbol).as<Class_O>();
+        Class_sp cl = cl_findClass(classSymbol).as<Class_O>();
         this->instanceClassSet(cl);
     }
 

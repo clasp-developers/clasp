@@ -13,9 +13,10 @@
 
 (defmethod cleavir-ir-graphviz:label ((instr enter-instruction))
   (with-output-to-string (stream)
-    (format stream "~a ~a ~a" (debug-label instr) 
+    (format stream "~a ~a ~a ~a" (debug-label instr) 
 	    (clasp-cleavir-hir:lambda-name instr)
-	    (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr)))))
+	    (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr))
+	    (if (landing-pad instr) "LANDING-PAD" ""))))
 
 (defmethod cl:print-object ((instr enter-instruction) stream)
   (format stream "#<~a ~a ~a>" (class-name (class-of instr)) (clasp-cleavir-hir:lambda-name instr) (debug-label instr)))
@@ -33,7 +34,8 @@
 
 (defmethod cleavir-ir-graphviz:label ((instr indexed-unwind-instruction))
   (with-output-to-string (stream)
-    (format stream "~a ~a" (debug-label instr) (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr)))))
+    (format stream "~a lp:~a jmp:~a" (class-name (class-of instr)) (landing-pad-id instr) (jump-id instr))))
+
 
 (defmethod cl:print-object ((instr indexed-unwind-instruction) stream)
   (format stream "#<~a lp:~a jmp:~a>" (class-name (class-of instr)) (landing-pad-id instr) (jump-id instr)))
@@ -109,3 +111,87 @@
 
 
   
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Assign a unique integer index to every instruction
+;;; using the stealth mixin - see system.lisp
+;;;
+
+(defun assign-mir-instruction-datum-ids (top)
+  (let ((id 1)
+	(datums (make-hash-table)))
+    (cleavir-ir:map-instructions 
+     (lambda (instr)
+       (setf (clasp-cleavir:instruction-gid instr) (incf id))
+       (loop for datum in (append (cleavir-ir:inputs instr) (cleavir-ir:outputs instr))
+	    do (unless (gethash datum datums)
+		 (setf (gethash datum datums) t)
+		 (setf (clasp-cleavir:datum-gid datum) (incf id)))))
+     top)))
+
+
+(defgeneric label-datum (datum))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Drawing datum CONSTANT-INPUT.
+
+(defmethod label-datum ((datum cleavir-ir:constant-input))
+  (cleavir-ir:value datum))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Drawing datum LEXICAL-LOCATION.
+
+(defmethod label-datum ((datum cleavir-ir:lexical-location))
+  (cleavir-ir:name datum))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Drawing datum DYNAMIC-LEXICAL-LOCATION.
+
+(defmethod label-datum ((datum cleavir-ir:dynamic-lexical-location))
+  (cleavir-ir:name datum))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Drawing datum STATIC-LEXICAL-LOCATION.
+
+(defmethod label-datum ((datum cleavir-ir:static-lexical-location))
+  (cleavir-ir:name datum))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Drawing datum VALUES-LOCATION.
+
+(defmethod label-datum ((datum cleavir-ir:values-location)) "V")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Drawing datum IMMEDIATE-INPUT.
+
+(defmethod label-datum ((datum cleavir-ir:immediate-input)) (cleavir-ir:value datum))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Drawing datum LOAD-TIME-VALUE-INPUT.
+
+(defmethod label-datum ((datum cleavir-ir:load-time-value-input))
+  "LTV")
+
+
+(defun describe-mir (instr )
+  (with-output-to-string (stream)
+    (format stream "~a " (cleavir-ir-graphviz:label instr))
+    (when (cleavir-ir:inputs instr)
+      (format stream "(")
+      (loop for datum in (cleavir-ir:inputs instr)
+	 do (format stream "~a " (label-datum datum)))
+      (format stream ")"))
+    (when (or (cleavir-ir:inputs instr) (cleavir-ir:outputs instr))
+      (format stream " -> "))
+    (when (cleavir-ir:outputs instr)
+      (format stream "(")
+      (loop for datum in (cleavir-ir:outputs instr)
+	 do (format stream "~a " (label-datum datum)))
+      (format stream ")"))))

@@ -2406,6 +2406,7 @@ namespace llvmo
     void Instruction_O::exposeCando(core::Lisp_sp lisp)
     {_G();
 	core::externalClass_<Instruction_O>()
+	    .def("getParent",(llvm::BasicBlock*(llvm::Instruction::*)()) &llvm::Instruction::getParent)
 	    .def("setMetadata",&Instruction_O::setMetadata)
 	    .def("terminatorInstP",&Instruction_O::terminatorInstP)
 	    ;

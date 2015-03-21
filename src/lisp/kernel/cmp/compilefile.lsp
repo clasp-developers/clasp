@@ -155,7 +155,7 @@
     (mapc #'(lambda (macro-def &aux (name (car macro-def))
 				 (vl (cadr macro-def))
 				 (macro-body (cddr macro-def)))
-	      (let* ((lambdablock (parse-macro name vl macro-body))
+	      (let* ((lambdablock (core:parse-macro name vl macro-body))
 		     (macro-fn (eval (list 'function lambdablock))))
 		(set-kind macro-fn :macro)
 		(add-macro macro-env name macro-fn)))

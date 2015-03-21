@@ -661,6 +661,9 @@ Increments the value of PLACE by the value of FORM.  FORM defaults to 1.")
   "Syntax: (decf place [form])
 Decrements the value of PLACE by the value of FORM.  FORM defaults to 1.")
 
+#+(or)(eval-when (:compile-toplevel)
+	(setq clasp-cleavir:*debug-log-on* t))
+
 (defmacro push (&environment env item place)
   "Syntax: (push form place)
 Evaluates FORM, conses the value of FORM to the value stored in PLACE, and
@@ -680,6 +683,9 @@ makes it the new value of PLACE.  Returns the new value of PLACE."
 		    (append vals (list (list 'cons item access-form))))
        (declare (:read-only ,@vars)) ; Beppe
        ,store-form)))
+
+#+(or)(eval-when (:compile-toplevel)
+	(setq clasp-cleavir:*debug-log-on* nil))
 
 (defmacro pushnew (&environment env item place &rest rest)
   "Syntax: (pushnew form place {keyword-form value-form}*)

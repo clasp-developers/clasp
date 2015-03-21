@@ -1165,7 +1165,7 @@ extern "C"
     {_G();
 	ASSERT(resultP!=NULL);
 	ASSERTF(symP!=NULL,BF("passed symbol is NULL"));
-	core::Function_sp setfFunc = _lisp->get_setfDefinition(*symP);
+	core::Function_sp setfFunc = (*symP)->getSetfFdefinition();//_lisp->get_setfDefinition(*symP);
 	ASSERTF(setfFunc,BF("There is no setf function bound to symbol[%s]") % _rep_((*symP)));
 	(*resultP) = setfFunc;
 	ASSERTNOTNULL(*resultP);
@@ -1340,11 +1340,9 @@ extern "C"
 	ASSERT(tagP!=NULL);
 	core::T_sp tag = *tagP;
 	int frame = _lisp->exceptionStack().findKey(CatchFrame,tag);
-	if ( frame < 0 )
-	{
-	    CONTROL_ERROR();
-	} else
-	{
+	if ( frame < 0 ) {
+	    CONTROL_ERROR(); 
+	} else {
 	    core::CatchThrow catchThrow(frame);
 #ifdef DEBUG_FLOW_CONTROL
 	    printf("Throwing core::CatchThrow exception tag[%s]\n", (*tagP)->__repr__().c_str());
@@ -1372,7 +1370,7 @@ extern "C"
 };
 
 
-core::T_mv  proto_blockHandleReturnFrom( unsigned char* exceptionP, int frame)
+core::T_mv  proto_blockHandleReturnFrom( unsigned char* exceptionP, size_t frame)
 {
     core::ReturnFrom& returnFrom = (core::ReturnFrom&)*((core::ReturnFrom*)(exceptionP));
     if ( returnFrom.getFrame() == frame )
@@ -1388,12 +1386,12 @@ core::T_mv  proto_blockHandleReturnFrom( unsigned char* exceptionP, int frame)
 extern "C"
 {
 
-    void sp_blockHandleReturnFrom( core::T_sp* resultP, unsigned char* exceptionP, int frame)
+    void sp_blockHandleReturnFrom( core::T_sp* resultP, unsigned char* exceptionP, size_t frame)
     {
 	(*resultP) = proto_blockHandleReturnFrom(exceptionP,frame);
 	ASSERTNOTNULL(*resultP);
     }
-    void mv_blockHandleReturnFrom( core::T_mv* resultP, unsigned char* exceptionP, int frame)
+    void mv_blockHandleReturnFrom( core::T_mv* resultP, unsigned char* exceptionP, size_t frame)
     {
 	(*resultP) = proto_blockHandleReturnFrom(exceptionP,frame);
 	ASSERTNOTNULL(*resultP);
@@ -1420,20 +1418,20 @@ extern "C"
 
 
 
-    int pushCatchFrame(core::T_sp* tagP)
+    size_t pushCatchFrame(core::T_sp* tagP)
     {_G();
 	ASSERT(tagP!=NULL);
         return _lisp->exceptionStack().push(CatchFrame, *tagP);
     }
 
-    int pushBlockFrame(core::Symbol_sp* tagP)
+    size_t pushBlockFrame(core::Symbol_sp* tagP)
     {_G();
 	ASSERT(tagP!=NULL);
         core::T_sp osym = *tagP;
         return _lisp->exceptionStack().push(BlockFrame, osym);
     }
 
-    int pushTagbodyFrame(core::ActivationFrame_sp* afP)
+    size_t pushTagbodyFrame(core::ActivationFrame_sp* afP)
     {_G();
 	ASSERT(afP!=NULL);
         core::T_sp tagbodyId = (*afP);
@@ -1479,15 +1477,15 @@ extern "C"
 
 extern "C"
 {
-    void exceptionStackUnwind(int frame)
+    void exceptionStackUnwind(size_t frame)
     {_G();
 	_lisp->exceptionStack().unwind(frame);
     }
 
 
-    void throwIllegalSwitchValue(int val, int max)
+    void throwIllegalSwitchValue(size_t val, size_t max)
     {_G();
-	SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max );
+	SIMPLE_ERROR(BF("Illegal switch value %lu - max value is %lu") % val % max );
     }
 
 
@@ -1500,11 +1498,12 @@ extern "C"
 	throw lgo;
     }
 
-    void throwDynamicGo(int depth, int index, core::ActivationFrame_sp* afP)
+    void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp* afP)
     {_G();
 	T_sp tagbodyId = core::Environment_O::clasp_lookupTagbodyId((*afP),depth,index);
         int frame = _lisp->exceptionStack().findKey(TagbodyFrame,tagbodyId);
-	core::DynamicGo dgo(frame,index);
+	if ( frame < 0 ) {CONTROL_ERROR();}
+	core::DynamicGo dgo((size_t)frame,index);
 #ifdef DEBUG_FLOW_CONTROL
 	printf("Throwing core::DynamicGo tagbodyIdP[%p] index[%d]\n", (void*)((*tagbodyIdP).get()), index);
 #endif
@@ -1530,9 +1529,12 @@ extern "C"
     }
 
 
-    int tagbodyDynamicGoIndexElseRethrow(char* exceptionP, int frame)
+    size_t tagbodyDynamicGoIndexElseRethrow(char* exceptionP, size_t frame)
     {
+	//	printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
         core::DynamicGo* goExceptionP = reinterpret_cast<core::DynamicGo*>(exceptionP);
+	//	printf("%s:%d DynamicGo  frame: %lu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
+	
 	if ( goExceptionP->getFrame() == frame )
 	{
 	    return goExceptionP->index();
@@ -1548,6 +1550,7 @@ extern "C"
     {
 	core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName,numberOfLoadTimeValues, numberOfLoadTimeSymbols);
 	*ltvPP = reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
+	//	printf("%s:%d  getOrCreateLoadTimeValueArray ltvPP=%p  *ltvPP=%p\n", __FILE__, __LINE__, ltvPP, *ltvPP );
     }
 
     void dumpLoadTimeValues(core::LoadTimeValues_O* ltvP)
@@ -1671,6 +1674,13 @@ extern "C"
 
 extern "C"
 {
+
+    void ltv_findBuiltInClass(core::T_sp* resultP, core::T_sp* symbolP)
+    {
+	ASSERT(resultP!=NULL);
+	*resultP = core::cl_findClass(*symbolP,true,_Nil<core::T_O>());
+	ASSERTNOTNULL(*resultP);
+    }
 
     void ltv_makeCons(core::T_sp* resultP)
     {
@@ -2000,22 +2010,26 @@ extern "C" {
 
     //#define DEBUG_CC
     
-    T_O* cc_precalcSymbol(T_O* tarray, size_t idx)
+    T_O* cc_precalcSymbol(core::LoadTimeValues_O** tarray, size_t idx)
     {
-	LoadTimeValues_O* array = reinterpret_cast<LoadTimeValues_O*>(tarray);
+	LoadTimeValues_O* array = *tarray;
 #ifdef DEBUG_CC
 	printf("%s:%d precalcSymbol idx[%zu] symbol = %p\n", __FILE__, __LINE__, idx, (*array).symbols_element(idx).px);
 #endif
-	return (*array).symbols_element(idx).px;
+	T_O* res = (*array).symbols_element(idx).px;
+	ASSERT(res!=NULL);
+	return res;
     }
 
-    T_O* cc_precalcValue(T_O* tarray, size_t idx)
+    T_O* cc_precalcValue(core::LoadTimeValues_O** tarray, size_t idx)
     {
-	LoadTimeValues_O* array = reinterpret_cast<LoadTimeValues_O*>(tarray);
+	LoadTimeValues_O* array = *tarray;
 #ifdef DEBUG_CC
 	printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
 #endif
-	return (*array).data_element(idx).px;
+	T_O* res = (*array).data_element(idx).px;
+	ASSERT(res!=NULL);
+	return res;
     }
 
 
@@ -2060,12 +2074,24 @@ extern "C" {
     {
 	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
 	core::Function_sp fn = core::af_symbolFunction(s);
-	if (fn.nilp()) {
+	if (fn.nilp() || fn.unboundp()) {
 	    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
 	}
 	return fn.pointer();
     }
 
+    T_O* cc_getSetfFdefinition(core::T_O* sym)
+    {
+	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	core::Function_sp fn = s->getSetfFdefinition();//_lisp->get_setfDefinition(s);
+	if (fn.nilp() || fn.unboundp()) {
+	    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
+	}
+	return fn.pointer();
+    }
+
+
+    
     T_O* cc_symbolValue(core::T_O* sym)
     {
 	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
@@ -2141,14 +2167,29 @@ extern "C" {
     }
 
 
-    /*! Take the multiple-value inputs from the thread local MultipleValues and evaluate it */
-    void cc_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
+    /*! Take the multiple-value inputs from the thread local MultipleValues and call tfunc with them.
+     This function looks exactly like the cc_invoke_multipleValueOneFormCall intrinsic but
+    in cmpintrinsics.lsp it is set not to require a landing pad */
+    void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
     {
 	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
 	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
 	ASSERT(func!=NULL);
 	core::Closure* closure = func->closure;
-	closure->invoke(result,mvThreadLocal._Size,result->asTPtr(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
+	closure->invoke(result,result->number_of_values(),result->asTPtr(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
+    }
+
+
+        /*! Take the multiple-value inputs from the thread local MultipleValues and invoke tfunc with them
+	  This function looks exactly like the cc_call_multipleValueOneFormCall intrinsic but
+	  in cmpintrinsics.lsp it is set to require a landing pad */
+    void cc_invoke_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
+    {
+	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
+	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
+	ASSERT(func!=NULL);
+	core::Closure* closure = func->closure;
+	closure->invoke(result,result->number_of_values(),result->asTPtr(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
     }
 
 
@@ -2174,6 +2215,7 @@ extern "C" {
 
     void cc_throwDynamicGo(size_t frame, size_t index)
     {_G();
+	//	printf("%s:%d In cc_throwDynamicGo frame: %lu  index: %lu\n", __FILE__, __LINE__, frame, index );
 	core::DynamicGo dgo(frame,index);
 	throw dgo;
     }

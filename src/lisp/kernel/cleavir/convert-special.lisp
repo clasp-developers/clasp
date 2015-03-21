@@ -1,5 +1,17 @@
 (in-package :clasp-cleavir-generate-ast)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; During bootstrapping of CLOS some functions
+;;; use the macro WITH-EARLY-ACCESSORS - it creates
+;;; macrolet macros that substitute for functions - this confuses cleavir
+;;; Treat LOCAL-MACRO-INFO function names as globals
+(defmethod cleavir-generate-ast:convert-function
+    ((info cleavir-env:local-macro-info) env (system clasp-cleavir:clasp))
+  (cleavir-generate-ast:convert-global-function info (cleavir-env:global-environment env) system))
+
+
+
 #+(or)(defmethod cleavir-generate-ast:convert-special
 	  ((symbol (eql 'unwind-protect)) form env)
 	(let* ((ast (cc-ast:make-unwind-protect-ast nil nil))
@@ -10,3 +22,58 @@
 	  (let ((protected-form (cleavir-generate-ast:convert (cadr form) new-env)))
 	    (setf (cc-ast:protected-ast ast) protected-form)
 	    ast)))
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting MULTIPLE-VALUE-CALL.
+;;;
+;;; In the case where there is one multiple-value form this gets converted
+;;; into a multiple-value-call-ast.  In the general case with multiple forms
+;;; it gets converted into a function call to CORE:MULTIPLE-VALUE-FUNCALL.
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core:multiple-value-call)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (function-form . forms) 
+      (rest form)
+    (if (eql (length forms) 1)
+	(cleavir-ast:make-multiple-value-call-ast
+	 (cleavir-generate-ast:convert function-form environment system)
+	 (cleavir-generate-ast:convert-sequence forms environment system))
+	(cleavir-generate-ast:convert `(core:multiple-value-funcall ,function-form ,@(mapcar (lambda (x) #'x) ,forms))
+				      environment system))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting MULTIPLE-VALUE-PROG1
+;;;
+;;; This is converted into a call to core:multiple-value-prog1-function func1 func2
+;;; Func1 is evaluated and the multiple values are saved and then func2 is evaluated
+;;; and the multiple values returned from func1 are restored
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core:multiple-value-prog1)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (first-form . forms) 
+      (rest form)
+    (cleavir-generate-ast:convert `(core:multiple-value-prog1-function #'(lambda () ,first-form) (lambda () ,@forms)) environment system)))
+
+
+
+
+(defmethod cleavir-generate-ast:convert-global-function (info global-env (system clasp-cleavir:clasp))
+  (declare (ignore global-env))
+  (let ((name (cleavir-env:name info)))
+    (cond 
+      ((and (consp name) (eq (car name) 'cl:setf))
+       (clasp-cleavir-ast:make-setf-fdefinition-ast
+	(cleavir-ast:make-load-time-value-ast `',(cadr name) t)
+	info))
+      ((consp name)
+       (error "Illegal name for function - must be (setf xxx)"))
+      (t
+       (cleavir-ast:make-fdefinition-ast
+	(cleavir-ast:make-load-time-value-ast `',name t)
+	info)))))

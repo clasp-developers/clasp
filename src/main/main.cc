@@ -104,6 +104,8 @@ int startup(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize
 	}
 #endif	
 	_lisp->run();
+    } catch (core::DynamicGo& failedGo) {
+	printf("%s:%d A DynamicGo was thrown but not caught frame[%lu] tag[%lu]\n", __FILE__, __LINE__, failedGo.getFrame(), failedGo.index());
     } catch (...) { exitCode = gctools::handleFatalCondition(); }
     return exitCode;
 }

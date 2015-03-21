@@ -265,8 +265,8 @@ namespace core {
         ExceptionEntry& operator[](int i) { return this->_Stack[i];};
         size_t size() const { return this->_Stack.size();};
 
-        int push(FrameKind kind, T_sp key) {
-            int frame = this->_Stack.size();
+        size_t push(FrameKind kind, T_sp key) {
+            size_t frame = this->_Stack.size();
             this->_Stack.emplace_back(kind,key);
             return frame;
         }

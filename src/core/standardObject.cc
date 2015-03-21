@@ -57,7 +57,7 @@ namespace core
     {_G();
 	LOG(BF("Initializing StandardObject"));
 	this->Base::initialize();
-//	Class_mv sc = af_findClass(cl::_sym_StandardClass_O,true,_Nil<Environment_O>());
+//	Class_mv sc = cl_findClass(cl::_sym_StandardClass_O,true,_Nil<Environment_O>());
 //	this->_InstanceClass = sc.as<StandardClass_O>();
     }
 

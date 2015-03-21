@@ -57,3 +57,18 @@
 
 (defmacro throw (tag result-form)
   `(core:throw-function ,tag ,result-form))
+
+
+(in-package :core)
+#+clasp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; PARSE-MACRO is needed by sp_macrolet and the compiler
+;;;
+(defun parse-macro (name vl body &optional env)
+  (multiple-value-bind (lblock ppn doc)
+      (si::expand-defmacro name vl body)
+    lblock))
+
+(export 'parse-macro)
+

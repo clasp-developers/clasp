@@ -432,13 +432,25 @@ namespace core
 
 
 
-#define ARGS_af_values "(&rest args)"
-#define DECL_af_values ""
-#define DOCS_af_values "values"
-    T_mv af_values(Cons_sp args)
+#define ARGS_cl_values "(&rest args)"
+#define DECL_cl_values ""
+#define DOCS_cl_values "values"
+    T_mv cl_values(Cons_sp args)
     {_G();
 	// returns multiple values
 	T_mv result = ValuesFromCons(args);
+	return result;
+    }
+
+
+#define ARGS_core_valuesTesting "(&rest args)"
+#define DECL_core_valuesTesting ""
+#define DOCS_core_valuesTesting "values"
+    T_mv core_valuesTesting(Cons_sp args)
+    {_G();
+	// returns multiple values
+	T_mv result = ValuesFromCons(args);
+	printf("%s:%d core_valuesTesting: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
 	return result;
     }
 
@@ -769,6 +781,22 @@ namespace core
 	Function_sp debugMacroFunction = macro_function;
 	T_sp debugForm = form;
 	T_sp debugEnvironment = macro_env;
+	LambdaListHandler_sp llh = macro_function->functionLambdaListHandler();
+	if ( llh.notnilp() && llh->numberOfRequiredArguments() != 2 ) {
+	    stringstream err;
+	    err << __FILE__ << ":"<< __LINE__ << " Caught a problem in af_macroexpand_default - the macro_function requires " << llh->numberOfRequiredArguments() << " arguments but I'm only going to pass 2!!!" << std::endl;
+	    err << "lambda_list: " << _rep_(llh) << std::endl;
+	    err << "Passing argument 1: " << _rep_(form) << std::endl;
+	    err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
+	    Closure* closure = macro_function->closure;
+	    err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
+	    if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(closure) ) {
+		err << "code: " << _rep_(ic->code());
+	    } else {
+		err << "macro_function is not an interpreted function";
+	    }
+	    SIMPLE_ERROR(BF("Wrong number of arguments %d within macroexpand_default when trying to invoke macro %s\nMore detail: %s") % llh->numberOfRequiredArguments() % _rep_(macro_function->functionName()) % err.str());
+	}
 	T_sp result = eval::funcall(macro_function,form,macro_env);
 	return(Values(result));
     };
@@ -829,7 +857,7 @@ namespace core
 	    if ( oCar(cur) == cl::_sym_setf )
 	    {
 		Symbol_sp symbol = oCadr(cur).as<Symbol_O>();
-		_lisp->set_setfDefinition(symbol,functionObject);
+		symbol->setSetfFdefinition(functionObject);
 		return functionObject;
 	    }
 	}
@@ -859,7 +887,7 @@ namespace core
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
 		if ( name.notnilp() )
 		{
-		    return(Values(_lisp->get_setfDefinition(name)));
+		    return(Values(name->getSetfFdefinition()));
 		}
 	    }
 	}
@@ -889,7 +917,7 @@ namespace core
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
 		if ( name.notnilp() )
 		{
-		    return _lisp->get_setfDefinition(name).notnilp();
+		    return name->getSetfFdefinition().pointerp();
 		}
 	    }
 	}
@@ -918,7 +946,7 @@ namespace core
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
 		if ( name.notnilp() )
 		{
-		    _lisp->remove_setfDefinition(name);
+		    name->resetSetfFdefinition();//_lisp->remove_setfDefinition(name);
 		    return(Values(functionName));
 		}
 	    }
@@ -1846,6 +1874,7 @@ Integer_sp cl_sxhash(T_sp obj)
 	result.saveToVec0(savemv);
 	eval::funcall(cleanup_fn);
 	result.loadFromVec0(savemv);
+	//	printf("%s:%d Restored multiple-values result = %p, %d\n", __FILE__, __LINE__, result.px, result.number_of_values());
 DONE:
 	return result;
     }
@@ -2065,7 +2094,9 @@ void initialize_primitives()
 	Defun(fmakunbound);
 
 	SYMBOL_EXPORT_SC_(ClPkg,values);
-	Defun(values);
+	ClDefun(values);
+	CoreDefun(valuesTesting);
+	
 	SYMBOL_EXPORT_SC_(ClPkg,values_list);
 	Defun(values_list);
 

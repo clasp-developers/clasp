@@ -75,9 +75,16 @@ namespace gctools
         }
 
 	void loadFromVec0(const ::gctools::Vec0<core::T_sp>& values) {
-            for ( int i(1); i<this->_number_of_values; ++i ) {
+            for ( size_t i(1),iEnd(values.size()); i<iEnd; ++i ) {
                 this->valueSet(i,values[i]);
             }
+	    this->_number_of_values = values.size();
+	    if ( this->_number_of_values > 0 ) {
+		this->px = gctools::DynamicCast<T*,core::T_O*>::castOrNULL(values[0].px);
+		GCTOOLS_ASSERT(this->px!=NULL);
+	    } else {
+		this->px = _Nil<T>().px;
+	    }
 	}
 	    
 

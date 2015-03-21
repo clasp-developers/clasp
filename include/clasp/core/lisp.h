@@ -575,11 +575,11 @@ namespace core
 	void prin1(boost::format fmt);
     public:
 	/*! Create a setfDefinition */
-	void set_setfDefinition(Symbol_sp fnName, Function_sp fnDef);
+	//	void set_setfDefinition(Symbol_sp fnName, Function_sp fnDef);
 	/*! Return the function or nil if not found */
-	Function_sp get_setfDefinition(Symbol_sp fnName) const;
+	//	Function_sp get_setfDefinition(Symbol_sp fnName) const;
 	/*! Return true if the definition was found */
-	bool remove_setfDefinition(Symbol_sp fnName);
+	//	bool remove_setfDefinition(Symbol_sp fnName);
 	
     public:
 	void incrementDebuggerLevel() { this->_DebuggerLevel++;};
@@ -1033,7 +1033,7 @@ namespace core
 
     Cons_sp cl_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
 
-    Class_mv af_findClass(Symbol_sp symbol, bool errorp=true, T_sp env=_Nil<T_O>());
+    Class_mv cl_findClass(Symbol_sp symbol, bool errorp=true, T_sp env=_Nil<T_O>());
     Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env );
 
 

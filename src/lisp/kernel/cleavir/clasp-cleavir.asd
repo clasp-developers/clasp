@@ -27,4 +27,6 @@
 		 (:file "landing-pad")
 		 (:file "ir")
 		 (:file "arguments")
-		 (:file "translate")))
+		 (:file "gml-drawing")
+		 (:file "translate")
+		 (:file "cmpclasp")))

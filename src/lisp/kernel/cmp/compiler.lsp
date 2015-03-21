@@ -29,12 +29,6 @@
 
 
 
-(defun parse-macro (name vl body &optional env)
-  (multiple-value-bind (lblock ppn doc)
-      (si::expand-defmacro name vl body)
-    lblock))
-
-(export 'parse-macro)
 
 
 
@@ -752,11 +746,11 @@ jump to blocks within this tagbody."
          (let* ((go-index (irc-intrinsic "tagbodyDynamicGoIndexElseRethrow" exception-ptr frame))
                 (default-block (irc-basic-block-create "switch-default"))
                 (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
-           (mapc #'(lambda (one) (llvm-sys:add-case sw (jit-constant-i32 (car one))
+           (mapc #'(lambda (one) (llvm-sys:add-case sw (jit-constant-size_t (car one))
                                                     (cadr one))) enumerated-tag-blocks)
            (irc-begin-block default-block)
            (irc-intrinsic "throwIllegalSwitchValue"
-                          go-index (jit-constant-i32 (length enumerated-tag-blocks))))))
+                          go-index (jit-constant-size_t (length enumerated-tag-blocks))))))
       (irc-intrinsic "exceptionStackUnwind" frame)
       (codegen-literal result nil env)
       )))
@@ -772,7 +766,7 @@ jump to blocks within this tagbody."
        (let ((depth (cadr classified-tag))
 	     (index (caddr classified-tag)))
 	 (irc-low-level-trace :go)
-	 (irc-intrinsic "throwDynamicGo" (jit-constant-i32 depth) (jit-constant-i32 index) (irc-renv env))))
+	 (irc-intrinsic "throwDynamicGo" (jit-constant-size_t depth) (jit-constant-size_t index) (irc-renv env))))
       ((and classified-tag (eq (car classified-tag) 'local-go))
        (let ((depth (cadr classified-tag))
 	     (index (caddr classified-tag))
@@ -941,7 +935,7 @@ jump to blocks within this tagbody."
     (mapc #'(lambda (macro-def &aux (name (car macro-def))
 				 (vl (cadr macro-def))
 				 (macro-body (cddr macro-def)))
-	      (let* ((lambdablock (parse-macro name vl macro-body))
+	      (let* ((lambdablock (core:parse-macro name vl macro-body))
 		     (macro-fn (eval (list 'function lambdablock))))
 		(set-kind macro-fn :macro)
 		(add-macro macro-env name macro-fn)))
@@ -1230,6 +1224,8 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
   (or (special-operator-p x) (assoc x cmp:+special-operator-dispatch+)))
 
 
+;;
+;; Why does this duplicate so much functionality from codegen-literal
 (defun codegen-atom (result obj env)
   "Generate code to generate the load-time-value of the atom "
   (if (symbolp obj)
@@ -1240,6 +1236,7 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 	    ((integerp obj) (codegen-ltv/integer result obj env))
 	    ((stringp obj) (codegen-ltv/string result obj env))
             ((pathnamep obj) (codegen-ltv/pathname result obj env))
+	    ((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
 	    ((floatp obj) (codegen-ltv/float result obj env))
             ((complexp obj) (codegen-ltv/complex result obj env))
 	    ((characterp obj) (codegen-ltv/character result obj env))
@@ -1363,9 +1360,11 @@ be wrapped with to make a closure"
 					  :pathname pathname)
 	(multiple-value-bind (llvm-function-from-lambda lambda-name)
 	    (compile-lambda-function definition env)
+	  (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
+	  ;;(bformat t "Got function from compile-lambda-function: %s\n" llvm-function-from-lambda)
 	  (values llvm-function-from-lambda :function env lambda-name)))
     (cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
-    (or fn (error "There was no function returned by compile-lambda-function"))
+    (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
     (when *dump-module-on-completion*

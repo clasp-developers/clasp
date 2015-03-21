@@ -43,13 +43,12 @@
 ;;; location.
 
 (defclass precalc-symbol-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%vector :initarg :vector :accessor precalc-symbol-instruction-vector)
-   (%original-object :initarg :original-object :accessor precalc-symbol-instruction-original-object)))
+  ((%original-object :initarg :original-object :accessor precalc-symbol-instruction-original-object)))
 
 (defun make-precalc-symbol-instruction
-    (vector-input index-input output &key successor vector original-object)
+    (index-input output &key successor vector original-object)
   (make-instance 'precalc-symbol-instruction
-    :inputs (list vector-input index-input)
+    :inputs (list index-input)
     :outputs (list output)
     :successors (if (null successor) nil (list successor))
     :vector vector
@@ -64,8 +63,8 @@
     (format s "precalc-symbol-ref ; ")
     (let ((original-object (escaped-string
 			 (format nil "~s" (precalc-symbol-instruction-original-object instr)))))
-      (if (> (length original-object) 10)
-	  (format s "~a..." (subseq original-object 0 10))
+      (if (> (length original-object) 30)
+	  (format s "~a..." (subseq original-object 0 30))
 	  (princ original-object s)))))
 
 
@@ -90,9 +89,9 @@
   ((%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
 
 (defun make-precalc-value-instruction
-    (vector-input index-input output &key successor vector original-object)
+    (index-input output &key successor vector original-object)
   (make-instance 'precalc-value-instruction
-    :inputs (list vector-input index-input)
+    :inputs (list index-input)
     :outputs (list output)
     :successors (if (null successor) nil (list successor))
     :original-object original-object))
@@ -106,8 +105,8 @@
     (format s "precalc-value-ref ; ")
     (let ((original-object (escaped-string
 			 (format nil "~s" (precalc-value-instruction-original-object instr)))))
-      (if (> (length original-object) 10)
-	  (format s "~a..." (subseq original-object 0 10))
+      (if (> (length original-object) 30)
+	  (format s "~a..." (subseq original-object 0 30))
 	  (princ original-object s)))))
 
 
@@ -132,3 +131,23 @@
     :inputs inputs
     :outputs (list output)
     :successors (if successor-p (list successor) '())))
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction FDEFINITION-INSTRUCTION.
+
+(defclass setf-fdefinition-instruction (cleavir-ir:fdefinition-instruction)
+  ())
+
+(defun make-setf-fdefinition-instruction
+    (input output &optional (successor nil successor-p))
+  (make-instance 'setf-fdefinition-instruction
+    :inputs (list input)
+    :outputs (list output)
+    :successors (if successor-p (list successor) '())))
+
+
+(defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")

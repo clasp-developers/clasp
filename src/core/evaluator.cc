@@ -178,7 +178,7 @@ namespace core
             // TODO: This may not work properly - it looks like it will find regular functions
             if ( Environment_O::clasp_findFunction( env, name, depth, index, fn ) ) return fn;
 	}
-	Function_sp fn = _lisp->get_setfDefinition(name);
+	Function_sp fn = name->getSetfFdefinition();
 	if ( fn.notnilp() )
 	{
 	    return fn;
@@ -719,15 +719,11 @@ namespace core
                     try
                     {
                         eval::evaluate(tagOrForm,tagbodyEnv);
-                    }
-                    catch (LexicalGo& go)
-                    {
+                    } catch (LexicalGo& go) {
                         if ( go.getFrame() != frame ) {throw go;}
                         int index = go.index();
                         ip = tagbodyEnv->codePos(index);
-                    }
-                    catch (DynamicGo& dgo)
-                    {
+                    } catch (DynamicGo& dgo) {
                         if ( dgo.getFrame() != frame ) {throw dgo;}
                         int index = dgo.index();
                         ip = tagbodyEnv->codePos(index);
@@ -1353,7 +1349,7 @@ namespace core
 		    return(Values(fn));
 		} else if ( head == cl::_sym_lambda || head == ext::_sym_lambda_block)
 		{
-		    Symbol_sp name;
+		    T_sp name;
 		    Cons_sp lambdaList;
 		    Cons_sp body;
 		    bool wrapBlock = false;
@@ -1554,16 +1550,12 @@ namespace core
 	}
 
 
-/*
-  __BEGIN_DOC(candoScript.macros.macroLet,macroLet)
-  \scriptCmd{macroLet}{(function bindings) code...}
+	T_mv t1Progn(T_sp args, T_sp environment);
 
-  Define macros recursively in new lexical environments.
-  __END_DOC
-*/
-	T_mv sp_macrolet(Cons_sp args, T_sp env)
-	{_G();
-	    // TODO: handle trace
+
+	T_mv doMacrolet(Cons_sp args, T_sp env, bool toplevel)
+	{
+	    	    // TODO: handle trace
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
 	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
@@ -1573,27 +1565,51 @@ namespace core
 	    while ( cur.notnilp() )
 	    {
 		Cons_sp oneDef = oCar(cur).as_or_nil<Cons_O>();
+		//		printf( "%s:%d  oneDef = %s\n", __FILE__, __LINE__, _rep_(oneDef).c_str());
 		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
 		T_sp olambdaList = oCadr(oneDef);
 		Cons_sp inner_body = cCdr(cCdr(oneDef)).as_or_nil<Cons_O>();
-		Cons_sp outer_func_cons = eval::funcall(comp::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
-		Cons_sp outer_ll = oCaddr(outer_func_cons).as_or_nil<Cons_O>();
-		Cons_sp outer_body = cCdddr(outer_func_cons);
-		Cons_sp declares;
-		Str_sp docstring;
-		Cons_sp code;
-		parse_lambda_body(outer_body,declares,docstring,code);
-		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
-                printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
-                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
-                                                                                                    , _Nil<SourcePosInfo_O>()
-                                                                                                    , kw::_sym_macro
-                                                                                                    , outer_llh
-                                                                                                    , declares
-                                                                                                    , docstring
-                                                                                                    , newEnv
-                                                                                                    , code );
-                Function_sp outer_func = Function_O::make(ic);
+		Cons_sp inner_declares;
+		Str_sp inner_docstring;
+		Cons_sp inner_code;
+		parse_lambda_body(inner_body,inner_declares,inner_docstring,inner_code);
+		// printf("   name = %s\n", _rep_(name).c_str());
+		// printf("   olambdaList = %s\n", _rep_(olambdaList).c_str());
+		// printf("   inner_body = %s\n", _rep_(inner_body).c_str());
+		// printf("   inner_declares = %s\n", _rep_(inner_declares).c_str());
+		// printf("   inner_docstring = %s\n", _rep_(inner_docstring).c_str());
+		// printf("   inner_code = %s\n", _rep_(inner_code).c_str());
+		Cons_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
+		//		printf("%s:%d sp_macrolet outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
+		Function_sp outer_func;
+		if ( comp::_sym_compileInEnv->fboundp() ) {
+		    // If the compiler is set up then compile the outer func
+		    outer_func = eval::funcall(comp::_sym_compileInEnv
+						       , _Nil<T_O>()
+						       , outer_func_cons
+						       , newEnv ).as<Function_O>();
+		    outer_func->setKind(kw::_sym_macro);
+		} else {
+		    Cons_sp outer_ll = oCadr(outer_func_cons).as_or_nil<Cons_O>();
+		    //		printf("%s:%d sp_macrolet outer_ll = %s\n", __FILE__, __LINE__, _rep_(outer_ll).c_str());
+		    Cons_sp outer_body = cCddr(outer_func_cons);
+		    //		printf("%s:%d sp_macrolet outer_body = %s\n", __FILE__, __LINE__, _rep_(outer_body).c_str());
+		    Cons_sp declares;
+		    Str_sp docstring;
+		    Cons_sp code;
+		    parse_lambda_body(outer_body,declares,docstring,code);
+		    LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,declares,cl::_sym_function);
+		    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
+		    InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(name
+			, _Nil<SourcePosInfo_O>()
+			, kw::_sym_macro
+			, outer_llh
+			, declares
+			, docstring
+			, newEnv
+			, code );
+		    outer_func = Function_O::make(ic);
+		}
 		LOG(BF("func = %s") % outer_func_cons->__repr__() );
 		newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
@@ -1604,13 +1620,34 @@ namespace core
 	    Str_sp docstring;
 	    Cons_sp specials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
-	    return eval::sp_progn(code,newEnv);
+	    if (toplevel) {
+		return t1Progn(code,newEnv);
+	    } else {
+		return eval::sp_progn(code,newEnv);
+	    }
+	}
+
+
+/*
+  __BEGIN_DOC(candoScript.macros.macroLet,macroLet)
+  \scriptCmd{macroLet}{(function bindings) code...}
+
+  Define macros recursively in new lexical environments.
+  __END_DOC
+*/
+	T_mv sp_macrolet(Cons_sp args, T_sp env)
+	{_G();
+	    return doMacrolet(args,env,false /* toplevel */);
 	}
 
 
 
+	extern T_mv t1Locally(Cons_sp args, T_sp env);
 
-	T_mv sp_symbolMacrolet(Cons_sp args, T_sp env)
+
+
+
+	T_mv do_symbolMacrolet(Cons_sp args, T_sp env, bool topLevelForm)
 	{_G();
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
@@ -1632,7 +1669,52 @@ namespace core
 									     oCadr(declares).as_or_nil<Cons_O>(),
 									     cl::_sym_function);
                 printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__ );
-                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass( _Nil<T_O>()
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass( _sym_symbolMacroletLambda
+                                                                                                    , _Nil<SourcePosInfo_O>()
+                                                                                                    , kw::_sym_macro
+                                                                                                    , outer_llh
+                                                                                                    , declares
+                                                                                                    , _Nil<Str_O>()
+                                                                                                    , newEnv
+                                                                                                    , expansion );
+                Function_sp outer_func = Function_O::make(ic);
+		newEnv->addSymbolMacro(name,outer_func);
+		cur = cCdr(cur);
+	    }
+	    if ( topLevelForm ) {
+		return t1Locally(body,newEnv);
+	    } else {
+		return eval::sp_locally(body,newEnv);
+	    }
+	}
+
+
+
+	T_mv sp_symbolMacrolet(Cons_sp args, T_sp env)
+	{_G();
+	    return do_symbolMacrolet(args,env,false);
+#if 0
+	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
+	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
+	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
+	    Cons_sp cur = macros;
+	    LOG(BF("macros part=%s") % macros->__repr__() );
+	    Str_sp docString = _Nil<Str_O>();
+	    SYMBOL_SC_(CorePkg,whole);
+	    SYMBOL_SC_(CorePkg,env);
+	    Cons_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
+	    SYMBOL_EXPORT_SC_(ClPkg,ignore);
+	    Cons_sp declares = Cons_O::createList(cl::_sym_declare,Cons_O::createList(cl::_sym_ignore,_sym_whole,_sym_env));
+	    while ( cur.notnilp() )
+	    {
+		Cons_sp oneDef = oCar(cur).as_or_nil<Cons_O>();
+		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
+		Cons_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<Cons_O>());
+		LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
+									     oCadr(declares).as_or_nil<Cons_O>(),
+									     cl::_sym_function);
+                printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__ );
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass( _sym_symbolMacroletLambda
                                                                                                     , _Nil<SourcePosInfo_O>()
                                                                                                     , kw::_sym_macro
                                                                                                     , outer_llh
@@ -1645,6 +1727,7 @@ namespace core
 		cur = cCdr(cur);
 	    }
 	    return eval::sp_locally(body,newEnv);
+#endif
 	}
 
 
@@ -1816,7 +1899,7 @@ namespace core
 		{
 		    // When booting, cl::_sym_findClass may be apply'd but not
 		    // defined yet
-		    return(af_findClass(args->entry(0).as<Symbol_O>(),true,_Nil<Environment_O>()));
+		    return(cl_findClass(args->entry(0).as<Symbol_O>(),true,_Nil<Environment_O>()));
 		}
 		SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
 	    }
@@ -2132,6 +2215,8 @@ namespace core
 
 	T_mv t1Macrolet(Cons_sp args, T_sp env)
 	{_G();
+	    return doMacrolet(args,env,true /*toplevel*/ );
+#if 0
             if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
                 printf("%s:%d t1Macrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
             }
@@ -2148,7 +2233,7 @@ namespace core
 		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
 		T_sp olambdaList = oCadr(oneDef);
 		Cons_sp inner_body = cCdr(cCdr(oneDef)).as_or_nil<Cons_O>();
-		Cons_sp outer_func_cons = eval::funcall(comp::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
+		Cons_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
 #if 1
 //                printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
                 Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
@@ -2189,13 +2274,13 @@ namespace core
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,specials);
 //            printf("%s:%d macrolet evaluating code: %s  in env: %s\n", __FILE__, __LINE__, _rep_(code).c_str(), _rep_(newEnv).c_str());
 	    return t1Progn(code,newEnv);
+#endif
 	}
 
 	T_mv t1SymbolMacrolet(Cons_sp args, T_sp env)
 	{_G();
-            if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
-                printf("%s:%d t1SymbolMacrolet args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
-            }
+	    return do_symbolMacrolet(args,env,true);
+#if 0
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
 	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
@@ -2213,13 +2298,14 @@ namespace core
 		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
 		Cons_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<Cons_O>());
 //                printf("%s:%d  symbolmacrolet name=%s expansion=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(expansion).c_str() );
+		Function_sp outer_func;
 #if 0
 		T_sp olambdaList = _Nil<T_O>();
 		Cons_sp inner_body = oCadr(oneDef).as_or_nil<Cons_O>();
-		Cons_sp outer_func_cons = eval::funcall(comp::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
+		Cons_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
                 printf("%s:%d  symbolmacrolet name=%s expansion I can compile=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(outer_func_cons).c_str() );
                 printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-                Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
+                outer_func = eval::funcall(comp::_sym_compileInEnv
                                                        , _Nil<T_O>()
                                                        , outer_func_cons
                                                        ,newEnv ).as<Function_O>();
@@ -2229,8 +2315,8 @@ namespace core
 									     oCadr(declares).as_or_nil<Cons_O>(),
 									     cl::_sym_function);
                 // TODO: Change these to compiled functions when the compiler is available
-//                printf("%s:%d Creating InterpretedClosure with no source info\n", __FILE__, __LINE__ );
-                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_Nil<T_O>()
+                printf("%s:%d Creating InterpretedClosure for expansion: %s\n", __FILE__, __LINE__, _rep_(expansion).c_str());
+                InterpretedClosure* ic = gctools::ClassAllocator<InterpretedClosure>::allocateClass(_sym_symbolMacroletLambda
                                                                                                     , _Nil<SourcePosInfo_O>()
                                                                                                     , kw::_sym_macro
                                                                                                     , outer_llh
@@ -2238,12 +2324,13 @@ namespace core
                                                                                                     , docstring
                                                                                                     , newEnv
                                                                                                     , expansion );
-                Function_sp outer_func = Function_O::make(ic);
+                outer_func = Function_O::make(ic);
 #endif
 		newEnv->addSymbolMacro(name,outer_func);
 		cur = cCdr(cur);
 	    }
 	    return t1Locally(body,newEnv);
+#endif
 	}
 
         T_mv t1Evaluate(T_sp exp, T_sp environment)

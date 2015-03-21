@@ -42,3 +42,8 @@
   (:export 
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location))
+
+(defpackage #:cleavir-ir-gml
+  (:use #:common-lisp #:cleavir-ir)
+  (:export
+   #:draw-flowchart))

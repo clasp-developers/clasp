@@ -613,23 +613,23 @@ Boehm and MPS use a single pointer"
   (primitive-do-not-catch module "trace_exitCatchScope" +void+ (list +i32+ ) )
   (primitive-do-not-catch module "trace_exitUnwindProtectScope" +void+ (list +i32+ ) )
 
-  (primitive-do-not-catch module "pushCatchFrame" +i32+ (list +tsp*+))
-  (primitive-do-not-catch module "pushBlockFrame" +i32+ (list +symsp*+))
-  (primitive-do-not-catch module "pushTagbodyFrame" +i32+ (list +tsp*+))
+  (primitive-do-not-catch module "pushCatchFrame" +size_t+ (list +tsp*+))
+  (primitive-do-not-catch module "pushBlockFrame" +size_t+ (list +symsp*+))
+  (primitive-do-not-catch module "pushTagbodyFrame" +size_t+ (list +tsp*+))
 
   (primitive module "throwCatchThrow" +void+ (list +tsp*+ #| +tmv*+ |#) :does-not-return t)
   (primitive module "throwReturnFrom" +void+ (list +symsp*+) :does-not-return t)
-  (primitive module "throwDynamicGo" +void+ (list +i32+ +i32+ +afsp*+) :does-not-return t)
+  (primitive module "throwDynamicGo" +void+ (list +size_t+ +size_t+ +afsp*+) :does-not-return t)
 
   (primitive module "ifCatchFrameMatchesStoreResultElseRethrow" +void+ (list +tsp*-or-tmv*+ +i32+ +i8*+))
-  (primitive-do-not-catch module "exceptionStackUnwind" +void+ (list +i32+))
+  (primitive-do-not-catch module "exceptionStackUnwind" +void+ (list +size_t+))
 
 
-  (primitive module "blockHandleReturnFrom" +void+ (list +tsp*-or-tmv*+ +i8*+ +i32+))
+  (primitive module "blockHandleReturnFrom" +void+ (list +tsp*-or-tmv*+ +i8*+ +size_t+))
 
-  (primitive module "tagbodyDynamicGoIndexElseRethrow" +i32+ (list +i8*+ +i32+))
+  (primitive module "tagbodyDynamicGoIndexElseRethrow" +size_t+ (list +i8*+ +size_t+))
 
-  (primitive module "throwIllegalSwitchValue" +void+ (list +i32+ +i32+) :does-not-return t)
+  (primitive module "throwIllegalSwitchValue" +void+ (list +size_t+ +size_t+) :does-not-return t)
 
   (primitive-do-not-catch module "clasp_terminate" +void+ (list +i8*+ +i32+ +i32+ +i8*+) )
   (primitive-do-not-catch module "__gxx_personality_v0" +i32+ nil :varargs t) ;; varargs
@@ -655,6 +655,7 @@ Boehm and MPS use a single pointer"
   (primitive-do-not-catch module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
   (primitive-do-not-catch module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))
   (primitive-do-not-catch module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
+  (primitive-do-not-catch module "ltv_findBuiltInClass" +void+ (list +tsp*+ +tsp*+))
   (primitive-do-not-catch module "rplaca" +void+ (list +tsp*+ +tsp*+))
   (primitive-do-not-catch module "rplacd" +void+ (list +tsp*+ +tsp*+))
   (primitive-do-not-catch module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
@@ -687,8 +688,8 @@ Boehm and MPS use a single pointer"
 
   ;; Primitives for Cleavir code
 
-  (primitive-do-not-catch module "cc_precalcSymbol" +t*+ (list +t*+ +size_t+))
-  (primitive-do-not-catch module "cc_precalcValue" +t*+ (list +t*+ +size_t+))
+  (primitive-do-not-catch module "cc_precalcSymbol" +t*+ (list +ltv**+ +size_t+))
+  (primitive-do-not-catch module "cc_precalcValue" +t*+ (list +ltv**+ +size_t+))
   (primitive-do-not-catch module "cc_makeCell" +t*+ nil)
   (primitive-do-not-catch module "cc_writeCell" +void+ (list +t*+ +t*+))
   (primitive-do-not-catch module "cc_readCell" +t*+ (list +t*+))
@@ -696,10 +697,12 @@ Boehm and MPS use a single pointer"
   (primitive-do-not-catch module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-do-not-catch module "cc_throwDynamicGo" +void+ (list +size_t+ +size_t+))
   (primitive-do-not-catch module "cc_enclose" +t*+ (list +fn-prototype*+ +size_t+ ) :varargs t)
-  (primitive-do-not-catch module "cc_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
+  (primitive-do-not-catch module "cc_call_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
+  (primitive              module "cc_invoke_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
   (primitive-do-not-catch module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-do-not-catch module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-do-not-catch module "cc_fdefinition" +t*+ (list +t*+))
+  (primitive-do-not-catch module "cc_getSetfFdefinition" +t*+ (list +t*+))
   (primitive-do-not-catch module "cc_symbolValue" +t*+ (list +t*+))
   (primitive-do-not-catch module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
   (primitive-do-not-catch module "cc_call" +void+ (list* +tmv*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))))

@@ -450,3 +450,5 @@ from the function in which it appears." name))))
       (push (list (first record) 'si::macro (second record))
 	    macros))
     (rplacd (truly-the cons old-env) macros)))
+
+

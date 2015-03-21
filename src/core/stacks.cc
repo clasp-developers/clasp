@@ -45,7 +45,7 @@ namespace core
     /*! Return the index of the stack entry with the matching key.
       If return -1 then the key wasn't found */
     int ExceptionStack::findKey(FrameKind kind, T_sp key) {
-        for ( int i(this->_Stack.size()-1); i>=0; --i ) {
+        for (  int i(this->_Stack.size()-1); i>=0; --i ) {
             if (this->_Stack[i]._FrameKind == kind && this->_Stack[i]._Key == key) return i;
         }
         return -1;

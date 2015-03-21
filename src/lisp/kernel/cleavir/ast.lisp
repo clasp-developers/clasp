@@ -1,6 +1,25 @@
 (in-package :clasp-cleavir-ast)
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class SETF-FDEFINITION-AST.
+;;;
+;;; This AST is generated from a reference to a global SETF function.
+
+(defclass setf-fdefinition-ast (cleavir-ast:fdefinition-ast)
+  ())
+
+(defun make-setf-fdefinition-ast (name-ast info)
+  (make-instance 'setf-fdefinition-ast :name-ast name-ast :info info))
+
+(cleavir-io:define-save-info setf-fdefinition-ast
+  (:name-ast name-ast))
+
+(defmethod cleavir-ast:children ((ast setf-fdefinition-ast))
+  (list (cleavir-ast:name-ast ast)))
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,10 +65,10 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-value-name precalc-asts forms)
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms)
   (make-instance 'precalc-vector-function-ast
 		 :body-ast body-ast
-		 :lambda-list (list precalc-value-name) ;; symbol, value vectors are args
+		 :lambda-list nil
 		 :precalc-asts precalc-asts
 		 :forms forms))
 
@@ -71,18 +90,16 @@
 ;;;
 
 (defclass precalc-symbol-reference-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin) 
-  ((%precalc-vector-ast :initarg :precalc-vector-ast :accessor precalc-symbol-reference-vector-ast)
-   (%ref-index :initarg :index :accessor precalc-symbol-reference-index)
+  ((%ref-index :initarg :index :accessor precalc-symbol-reference-index)
    (%original-object :initarg :original-object :accessor precalc-symbol-reference-ast-original-object)))
 
 (cleavir-io:define-save-info precalc-symbol-reference-ast
-    (:precalc-vector-ast precalc-symbol-reference-vector-ast)
   (:index precalc-symbol-reference-index)
   (:original-object precalc-symbol-reference-ast-original-object))
 
   
 (defmethod cleavir-ast:children ((ast precalc-symbol-reference-ast))
-  (list (precalc-symbol-reference-vector-ast ast)))
+  nil)
 
 
 (defun escaped-string (str)
@@ -107,18 +124,16 @@
 ;;;
 
 (defclass precalc-value-reference-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin) 
-  ((%precalc-vector-ast :initarg :precalc-vector-ast :accessor precalc-value-reference-vector-ast)
-   (%ref-index :initarg :index :accessor precalc-value-reference-index)
+  ((%ref-index :initarg :index :accessor precalc-value-reference-index)
    (%original-object :initarg :original-object :accessor precalc-value-reference-ast-original-object)))
 
 
 (cleavir-io:define-save-info precalc-symbol-reference-ast
-    (:precalc-vector-ast precalc-value-reference-vector-ast)
   (:index precalc-value-reference-index)
   (:original-object precalc-value-reference-ast-original-object))
 
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
-  (list (precalc-value-reference-vector-ast ast)))
+  nil)
 
 
 (defun escaped-string (str)
@@ -184,21 +199,18 @@ If this form has already been precalculated then just return the precalculated-v
 
 (defun hoist-load-time-value (ast)
   (let* ((load-time-value-asts (find-load-time-value-asts ast))
-	 (forms (mapcar (lambda (ast-parent) (cleavir-ast:form (first ast-parent))) load-time-value-asts))
-	 (precalc-lexical-ast (cleavir-ast:make-lexical-ast (gensym "precalc"))))
+	 (forms (mapcar (lambda (ast-parent) (cleavir-ast:form (first ast-parent))) load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
-       do (if (typep parent '(or cleavir-ast:fdefinition-ast cleavir-ast:symbol-value-ast))
-	      (change-class ast 'precalc-symbol-reference-ast ; 'cleavir-ast:t-aref-ast
-			    :precalc-vector-ast precalc-lexical-ast
-			    :index (generate-new-precalculated-symbol-index ast)
-			    :original-object (cleavir-ast:form ast))
-	      (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
-			    :precalc-vector-ast precalc-lexical-ast
-			    :index (generate-new-precalculated-value-index ast)
-			    :original-object (cleavir-ast:form ast))))
+       do (cond
+	    ((typep parent '(or cleavir-ast:fdefinition-ast setf-fdefinition-ast cleavir-ast:symbol-value-ast))
+	     (change-class ast 'precalc-symbol-reference-ast ; 'cleavir-ast:t-aref-ast
+			   :index (generate-new-precalculated-symbol-index ast)
+			   :original-object (cleavir-ast:form ast)))
+	    (t (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
+			     :index (generate-new-precalculated-value-index ast)
+			     :original-object (cleavir-ast:form ast)))))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast precalc-lexical-ast (mapcar #'first load-time-value-asts) forms)))
-
+     ast (mapcar #'first load-time-value-asts) forms)))
 
 
 

@@ -234,6 +234,30 @@ namespace core
 	return obj.isA<Class_O>();
     };
 
+#define ARGS_core_builtInClassP "(arg)"
+#define DECL_core_builtInClassP ""
+#define DOCS_core_builtInClassP "classp"
+    bool core_builtInClassP(T_sp obj)
+    {_G();
+	if (!af_classp(obj)) return false;
+	Class_sp c = obj.as<Class_O>();
+	return c->builtInClassP();
+    };
+
+
+#define ARGS_core_cxxInstanceP "(arg)"
+#define DECL_core_cxxInstanceP ""
+#define DOCS_core_cxxInstanceP "classp"
+    bool core_cxxInstanceP(T_sp obj)
+    {_G();
+	if ( obj.nilp() ) return false;
+	if (!obj.pointerp() ) return false;
+	if ( Instance_sp ip = obj.asOrNull<Instance_O>() ) {
+	    return true;
+	}
+	return false;
+    };
+
 
 #define ARGS_af_lambda_list_handler_p "(arg)"
 #define DECL_af_lambda_list_handler_p ""
@@ -652,6 +676,8 @@ namespace core
 	Defun(doubleFloatP);
 	SYMBOL_EXPORT_SC_(ClosPkg,classp);
 	af_def(ClosPkg,"classp",&af_classp,ARGS_af_classp,DECL_af_classp,DOCS_af_classp);
+	af_def(CorePkg,"builtInClassP",&core_builtInClassP,ARGS_core_builtInClassP,DECL_core_builtInClassP,DOCS_core_builtInClassP);
+	CoreDefun(cxxInstanceP);
 	Defun(lambda_list_handler_p);
 	Defun(ratioP);
 #ifdef CLASP_LONG_FLOAT

@@ -33,12 +33,12 @@
 ;;; represented as a flowchart.
 (defun find-unwinds (initial-instruction)
   (let ((result '()))
-    (cleavir-hir-transformations:traverse
-     initial-instruction
+    (cleavir-ir:map-instructions-with-owner
      (lambda (instruction owner)
        (declare (ignore owner))
        (when (typep instruction 'cleavir-ir:unwind-instruction)
-	 (push instruction result))))
+	 (push instruction result)))
+     initial-instruction)
     result))
 
 ;;; This class represents the landing pad for an entire function F.
@@ -76,18 +76,18 @@
 
 ;; From before
 #+(or)(defun compute-landing-pads (unwinds)
-  (when unwinds
-    (loop with remaining = unwinds
-       until (null remaining)
-       for enter = (cleavir-ir:invocation (first remaining))
-       for current-unwinds = (remove enter remaining
-				     :key #'cleavir-ir:invocation
-				     :test-not #'eq)
-       for targets = (loop for cu in current-unwinds
-			collect (first (cleavir-ir:successors cu)))
-       collect (cons enter (make-instance 'landing-pad :targets targets))
-       do (setf remaining
-		(set-difference remaining current-unwinds)))))
+	(when unwinds
+	  (loop with remaining = unwinds
+	     until (null remaining)
+	     for enter = (cleavir-ir:invocation (first remaining))
+	     for current-unwinds = (remove enter remaining
+					   :key #'cleavir-ir:invocation
+					   :test-not #'eq)
+	     for targets = (loop for cu in current-unwinds
+			      collect (first (cleavir-ir:successors cu)))
+	     collect (cons enter (make-instance 'landing-pad :targets targets))
+	     do (setf remaining
+		      (set-difference remaining current-unwinds)))))
 
 ;;; Given a function F that is the invocation of at least one
 ;;; UNWIND-INSTRUCTION.  We convert every FUNCALL-INSTRUCTION in F to
@@ -99,26 +99,57 @@
 (defclass invoke-instruction (cleavir-ir:funcall-instruction)
   ((%landing-pad :initarg :landing-pad :reader landing-pad)))
 
+(defmethod cleavir-ir-graphviz:label ((instr clasp-cleavir:invoke-instruction))
+  "invoke")
+
+
+(defclass invoke-multiple-value-call-instruction (cleavir-ir:multiple-value-call-instruction)
+  ((%landing-pad :initarg :landing-pad :reader landing-pad)))
+
+(defmethod cleavir-ir-graphviz:label ((instr clasp-cleavir:invoke-multiple-value-call-instruction))
+  "invoke-MVC")
+
+
+
+(defvar *landing-pad-id* 98000000)
 (defun convert-funcalls (initial-instruction)
   (let* ((unwinds (find-unwinds initial-instruction))
 	 (landing-pads (compute-landing-pads unwinds)))
-    (cleavir-hir-transformations:traverse
-     initial-instruction
+    (cc-dbg-when clasp-cleavir:*debug-log*
+		 (format clasp-cleavir:*debug-log* "Landing-pads: ~a~%" (length landing-pads))
+		 (dolist (elp landing-pads)
+		   (format clasp-cleavir:*debug-log* "Landing-pad in ~a~%" (cc-mir:describe-mir (car elp)))))
+    (cleavir-ir:map-instructions-with-owner
      (lambda (instruction owner)
-       (when (typep instruction 'cleavir-ir:funcall-instruction)
-	 (let ((landing-pad (cdr (assoc owner landing-pads))))
-	   (unless (null landing-pad)
-	     (change-class instruction 'invoke-instruction
-			   :landing-pad landing-pad))))))
+       (cond
+	 ((typep instruction 'cleavir-ir:funcall-instruction)
+	  (let ((landing-pad (cdr (assoc owner landing-pads))))
+	    (unless (null landing-pad)
+	      (cc-dbg-when *debug-log*
+			   (format *debug-log* "Translating call to invoke: ~a~%" 
+				   (cc-mir:describe-mir instruction)))
+	      (change-class instruction 'invoke-instruction
+			    :landing-pad landing-pad))))
+	 ((typep instruction 'cleavir-ir:multiple-value-call-instruction)
+	  (let ((landing-pad (cdr (assoc owner landing-pads))))
+	    (unless (null landing-pad)
+	      (cc-dbg-when *debug-log*
+			   (format *debug-log* "Translating multiple-value-call to invoke-multiple-value-call: ~a~%" 
+				   (cc-mir:describe-mir instruction)))
+	      (change-class instruction 'invoke-multiple-value-call-instruction
+			    :landing-pad landing-pad))))
+	 (t nil)))
+     initial-instruction)
     ;; associate each landing pad with a landing-pad-id
     ;; and associate each landing pad with its enter instruction
-    (let ((landing-pad-id 0))
+    (let ((landing-pad-id *landing-pad-id*))
       (dolist (lp landing-pads)
 	(let ((enter (car lp))
 	      (landing-pad (cdr lp)))
 	  (setf (landing-pad-id landing-pad) landing-pad-id)
 	  (setf (cc-mir:landing-pad enter) landing-pad)
-	  (incf landing-pad-id))))
+	  (incf landing-pad-id)))
+      (setq *landing-pad-id* landing-pad-id))
     ;;
     ;; Now change all of the unwind-instructions to indexed-unwind-instructions
     ;;

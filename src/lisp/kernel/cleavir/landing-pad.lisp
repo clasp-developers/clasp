@@ -21,20 +21,20 @@
       (cmp:with-landing-pad terminate-block
 	(let* ((go-index (cmp:irc-intrinsic "tagbodyDynamicGoIndexElseRethrow" 
 					    exception-ptr 
-					    (%i32 landing-pad-id)))
+					    (%size_t landing-pad-id)))
 	       (default-block (cmp:irc-basic-block-create "switch-default"))
 	       (targets (clasp-cleavir:targets landing-pad-info))
 	       (sw (cmp:irc-switch go-index default-block (length targets)))
 	       (jump-id 0))
 	  (mapc #'(lambda (one)
 		    (let ((tag-block (gethash one tags)))
-		      (llvm-sys:add-case sw (%i32 jump-id) tag-block))
+		      (llvm-sys:add-case sw (%size_t jump-id) tag-block))
 		    (incf jump-id))
 		targets)
 	  (cmp:irc-begin-block default-block)
 	  (cmp:irc-intrinsic "throwIllegalSwitchValue"
-			     go-index (%i32 (length targets))))))
-    (cmp:irc-intrinsic "exceptionStackUnwind" (%i32 landing-pad-id))
+			     go-index (%size_t (length targets))))))
+    (cmp:irc-intrinsic "exceptionStackUnwind" (%size_t landing-pad-id))
     (cmp:irc-unreachable)
     (cmp:irc-begin-block terminate-block)
     (cmp:irc-generate-terminate-code)

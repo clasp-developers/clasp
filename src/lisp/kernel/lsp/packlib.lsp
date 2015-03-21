@@ -191,7 +191,7 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
 (defun find-relative-package (name)
   ;; Given a package name, a string, do a relative package name lookup.
   ;;
-  (declare (optimize speed))
+  (declare (optimize (speed 3)))
   (flet ((relative-to (package name)
 	   (if (zerop (length name))
 	       package
@@ -224,7 +224,7 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
   ;;
   ;; Because this function is called via the reader, we want it to be as
   ;; fast as possible.
-  (declare (optimize speed))
+  (declare (optimize (speed 3)))
   (flet ((find-last-dot (name)
 	   (do* ((len (1- (length name)))
 		 (i len (1- i)))
@@ -253,7 +253,7 @@ If PACKAGE is non-NIL, then only the specified PACKAGE is searched."
   ;;
   ;; While this function is not called via the reader, we do want it to be
   ;; fast.
-  (declare (optimize speed))
+  (declare (optimize (speed 3)))
   (let* ((res ())
          (parent (cond ((packagep package-specifier)
                         (package-name package-specifier))

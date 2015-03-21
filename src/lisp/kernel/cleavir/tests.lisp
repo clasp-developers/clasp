@@ -1,22 +1,227 @@
 (progn
   (time (require :asdf))
-  (time (funcall (find-symbol "LOAD-SYSTEM" "ASDF") :clasp-cleavir)))
+  (time (require :clasp-cleavir))
+  (core:getpid)
+  )
+
+
+(defun (setf bar) () (print "In setf bar"))
+(clasp-cleavir:cleavir-compile 'foo '(lambda () (funcall #'(setf bar))) :debug t)
+(foo)
+
+(constantp 'clos::+the-standard-class+)
+
+(cleavir-env:variable-info clasp-cleavir:*clasp-env* 'clos::+the-standard-class+)
+
+
+(core:getpid)51886
+(load "sys:kernel;cleavir;cmpclasp.lisp")
+
+(compile-clasp-with-cleavir 'core:clos/builtin :all)
+
+(apropos "builtin")
+
+(clos:classp (find-class 'fixnum))
+(apropos "classp")
+
+
+(trace cleavir-env:function-info)
+(untrace)
+(fdefinition 'clos:slot-definition-name)
+
+(apropos "slot-definition-slots")
+
+
+(symbol-macrolet ((x 'foo)) (list x (let ((x 'bar)) x)))
+(let () (symbol-macrolet ((x 'foo)) (list x (let ((x 'baz)) x))))
+
+(apropos "compile-clasp")
+
+(apropos "image-pathname")
+
+
+(print "Hi there")
+(trace sys::get-sysprop)
+
+
+(constantp 'clos::+the-standard-class+)
+
+*features*
+
+
+
+
+
+(clasp-cleavir:cleavir-compile 'foo 
+			       '(lambda ()
+				 (MULTIPLE-VALUE-CALL
+				     #'(LAMBDA (&OPTIONAL (X) (Y) (Z) &REST #:G14358)
+					 (PRINT (LIST X Y Z))
+					 (VALUES X Y Z))
+				   (core:FUNWIND-PROTECT
+				    (LAMBDA () (MULTIPLE-VALUE-CALL
+						   #'(LAMBDA (&OPTIONAL (A) (B) (C) &REST #:G14359) (print (list a b c))(VALUES A B C))
+						 (VALUES 1 2 3)))
+				    (LAMBDA () (PRINT "unwind-block"))))) :debug nil)
+
+
+
+(clasp-cleavir:cleavir-compile 'foo 
+			       '(lambda ()
+				 (MULTIPLE-VALUE-CALL
+				     #'(LAMBDA (&OPTIONAL (X) (Y) (Z) &REST #:G14358)
+					 (PRINT (LIST X Y Z))
+					 (VALUES X Y Z))
+				   (core:FUNWIND-PROTECT
+				    #'(lambda () (print "protected") (values 1 2 3))
+				    #'(lambda () (print "unwind"))))) :debug t)
+
+
+
+
+(foo)
+
+(with-open-file (clasp-cleavir:*debug-log* "/tmp/values/tvalues.log" :direction :output)
+  (let ((*compile-print* t))
+    (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tvalues.lsp")
+;;    (common-lisp-user:compile-clasp-with-cleavir 'core:clos/hierarchy 'core:clos/hierarchy :recompile t)
+    ))
+
+
+
+(macroexpand '(multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+      (with-debug-info-generator (:module *the-module* 
+					  :pathname pathname)
+	(multiple-value-bind (llvm-function-from-lambda lambda-name)
+	    (compile-lambda-function definition env)
+	  (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
+	  (core:bformat t "Got function from compile-lambda-function: %s\n" llvm-function-from-lambda)
+	  (core:values-testing llvm-function-from-lambda :function env lambda-name)))
+	       fn))
+
+
+
+
+
+
+(foo)
+
+(load "sys:..;tests;lisp;tpush.bc")
+(defvar *a* nil)
+(push 'a *a*)
+
+
+(apropos "*primitives*")
+cmp::*primitives*2
+
+
+
+(cleavir-compile 'foo 
+		 '(lambda () 
+		   (let ((z (multiple-value-bind (x y)
+				(multiple-value-bind (a b)
+				    (values 9 10)
+				  (values 1 2)
+				  (values 3 4)
+				  (values a b))
+			      (values 10 20)
+			      (values x y))))
+		     (or z (warn "z is nil")))))
+(foo)
+
+(cleavir-ir:map-instructions (lambda (i) (format t "~a~%" (cc-mir:describe-mir i))) *hir*)
+
+(cc-mir:describe-mir *hir* t)
+
+
+(setf (clasp-cleavir:instruction-gid *hir*) 10)
+(clasp-cleavir:instruction-gid *hir*)
+
+(defvar *a*)
+(defvar *b*)
+(asdf:operate 'asdf:monolithic-concatenate-source-op :clasp-cleavir :build-pathname "cleavir-all")
+(print "Hello")
+*b*
+(asdf:output-files *a*)
+
+
+
+(with-open-file (clasp-cleavir:*debug-log* "/tmp/ttest.log" :direction :output)
+  (let ((*compile-print* t))
+    (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;ttest.lsp")
+    ))
+
+
+(with-open-file (clasp-cleavir:*debug-log* "/tmp/tblock/tblock.log" :direction :output)
+  (let ((*compile-print* t))
+    (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;tblock.lsp")
+    ))
+
+(cleavir-compile 'foo '(lambda () (labels ((bar (x) (print "in bar") (return-from bar) )) (bar 1))) :debug t)
+
+(foo)
+(print "Hello")
+
+
+(in-package :clasp-cleavir)
+(cleavir-compile 'foo '(lambda (x y) (+ x y 1)) :debug t)
+
+
+(foo 1 2)
+
+(trace cleavir-ir-graphviz:draw-datum)
+(load "sys:kernel;cleavir;gml-drawing.lisp")
+
+(cleavir-ir-gml:draw-flowchart *hir* "/tmp/!mir.gml")
+(print "Hello")
+
+
+(fdefinition 'cleavir-ir-graphviz:draw-datum)
+
+(with-open-file (clasp-cleavir:*debug-log* "/tmp/tc/tc.log" :direction :output)
+  (let ((*compile-print* t))
+    (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;tc.lsp")
+    ))
+(print "Hello")
+
+clasp-cleavir:*entry-irbuilder*
+
+(llvm-sys:dump cmp:*the-module*)
+
+clasp-cleavir:*vars*
+
+
+
+(with-open-file (clasp-cleavir:*debug-log* "/tmp/tl.log" :direction :output)
+  (let ((*compile-print* t))
+    (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;tl.lsp")
+    ))
+
+(load "sys:..;tests;lisp;tl.fasl")
+(foo 1 2)
+(core:getpid)58962
+
+(defparameter *a* 1)
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x)
+				      (let ((*a* 2))
+					(format t "inner *a* = ~a~%" *a*))
+				      (format t "outer *a*=~a~%" *a*)) :debug t)
 
 (with-open-file (clasp-cleavir:*debug-log* "/tmp/tsp/tsp.log" :direction :output)
   (let ((*compile-print* t))
     (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;tsp.lsp")
     ))
 
+(load "sys:..;tests;lisp;tsp.fasl")
+(foo)
+
 (let ((*compile-print* t))
   (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;tsp.lsp")
   )
 
-(in-package :core)
-(with-open-file (clasp-cleavir:*debug-log* "/tmp/tc.log" :direction :output)
-  (let ((*compile-print* t))
-    (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;tc.lsp")
-  ))
-(print "Hello")
+
+
+
 
 
 (let ((*debug-log* t))
@@ -24,10 +229,12 @@
 (load "sys:..;tests;lisp;dm.bc")
 (test)
 
-(core:getpid)13886
+(core:getpid)58962
 
-(cleavir-compile 'mtest '(core:fset 'test #'(lambda (def env) (print "Hello") ) t) )
-(mtest)
+(clasp-cleavir:cleavir-compile 'mtest '(core:fset 'test #'(lambda (x y) (+ x y 1) )) )
+
+
+(mtest 1 2)
 (test)
 (cleavir
 
@@ -61,7 +268,6 @@
 (let ((*debug-cleavir* t))
   (clasp-cleavir::cleavir-compile-file "sys:..;tests;lisp;testltv.lsp"))
 
-(clasp-cleavir::cleavir-compile-file "sys:kernel;asdf;build;asdf.lisp")
 (core:getpid)
 
 

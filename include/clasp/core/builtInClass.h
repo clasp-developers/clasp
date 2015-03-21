@@ -63,6 +63,8 @@ namespace core {
 
         virtual void describe();
 
+	virtual bool builtInClassP() const { return true;}
+	
         /*! Allocate and initialize an instance of this class
          */
         T_sp allocateAndInitialize();

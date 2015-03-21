@@ -62,6 +62,7 @@ namespace core {
 	Package_sp		_HomePackage;
 	T_sp 			_Value;
 	Function_sp 		_Function;
+	Function_sp             _SetfFunction;
 	bool			_IsSpecial;
 	bool			_IsConstant;
 	bool			_ReadOnlyFunction;
@@ -149,6 +150,11 @@ namespace core {
 
 	void setf_symbolValueReadOnlyOverRide(T_sp obj);
 
+
+	void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn;};
+	Function_sp getSetfFdefinition() {return this->_SetfFunction;};
+	void resetSetfFdefinition() {this->_SetfFunction = _Unbound<Function_O>();};
+	
 	bool isConstant() const { return this->_IsConstant;};
 
 	/*! Set the global fnction value of this symbol */

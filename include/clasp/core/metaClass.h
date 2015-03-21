@@ -258,6 +258,9 @@ namespace core
 
 //    virtual T_sp new_Instance(Function_sp e, Cons_sp args,  Environment_sp environ, Lisp_sp lisp);
 	virtual void describe();
+	
+	/*! predicate if this is a BuiltInClass class */
+        virtual bool builtInClassP() const {return false;};
 
 
         /*! predicate if this is a raw C++ class that is wrapped with clbind

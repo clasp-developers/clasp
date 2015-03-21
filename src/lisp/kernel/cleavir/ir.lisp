@@ -28,7 +28,11 @@
   (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8*+ (%i32 1) label))
 
 (defun alloca-t* (&optional (label "var"))
-  (llvm-sys:create-alloca *entry-irbuilder* cmp:+t*+ (%i32 1) label))
+  (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:+t*+ (%i32 1) label)))
+    (cc-dbg-when *debug-log*
+      (format *debug-log* "          alloca-t*   *entry-irbuilder* = ~a~%" *entry-irbuilder*)
+      (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
+    instr))
 
 (defun alloca-mv-struct (&optional (label "V"))
   (llvm-sys:create-alloca *entry-irbuilder* cmp:+mv-struct+ (%i32 1) label))
@@ -39,6 +43,17 @@
       (cmp:irc-load obj)
       (llvm-sys:constant-pointer-null-get cmp:+t*+)))
 
+
+(defun instruction-llvm-function (instr)
+  (llvm-sys:get-parent (llvm-sys:get-parent instr)))
+
+(defun %store (val target &optional label)
+  (let* ((instr (cmp:irc-store val target)))
+    (when (typep target 'llvm-sys:instruction)
+      (let ((store-fn (llvm-sys:get-name (instruction-llvm-function instr)))
+	    (target-fn (llvm-sys:get-name (instruction-llvm-function target))))
+	(unless (string= store-fn target-fn)
+	  (error "Mismatch in store function vs target function"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -144,7 +159,7 @@
 	   ((null cur-arg) nil)
 	(let* ((mvarray (multiple-value-array-address))
 	       (mv-elt-ref (llvm-sys:create-geparray cmp:*irbuilder* mvarray (list (%size_t 0) (%size_t idx)) "element")))
-	  (cmp:irc-store (cmp:irc-load arg) mv-elt-ref)))))
+	  (%store (cmp:irc-load arg) mv-elt-ref)))))
   (with-return-values (return-vals abi)
     (cmp:irc-intrinsic intrinsic-name
 		       (sret-arg return-vals)

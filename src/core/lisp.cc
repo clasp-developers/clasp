@@ -722,7 +722,7 @@ namespace core
     }
 #endif // defined(OLD_SERIALIZER)
 
-
+#if 0
     void Lisp_O::set_setfDefinition(Symbol_sp fnName, Function_sp fnDef)
     {_G();
 	this->_Roots._SetfDefinitions->setf_gethash(fnName,fnDef);
@@ -732,7 +732,6 @@ namespace core
     {_G();
         return this->_Roots._SetfDefinitions->gethash(fnName,_Nil<T_O>()).as<Function_O>();
     }
-
     bool Lisp_O::remove_setfDefinition(Symbol_sp fnName)
     {_G();
         if (this->_Roots._SetfDefinitions->contains(fnName) ) {
@@ -743,6 +742,7 @@ namespace core
     }
 
 
+#endif
 
 
 
@@ -1938,10 +1938,10 @@ namespace core
 
 
 
-#define ARGS_af_findClass "(symbol &optional (errorp t) environment)"
-#define DECL_af_findClass ""
-#define DOCS_af_findClass "findClass"
-    Class_mv af_findClass(Symbol_sp symbol, bool errorp, T_sp env )
+#define ARGS_cl_findClass "(symbol &optional (errorp t) environment)"
+#define DECL_cl_findClass ""
+#define DOCS_cl_findClass "findClass"
+    Class_mv cl_findClass(Symbol_sp symbol, bool errorp, T_sp env )
     {_G();
 	if ( _lisp->bootClassTableIsValid() )
 	{
@@ -3667,7 +3667,7 @@ extern "C"
 	Defun(findFileInLispPath);
 
 	SYMBOL_EXPORT_SC_(ClPkg,findClass);
-	Defun(findClass);
+	ClDefun(findClass);
 	SYMBOL_SC_(CorePkg,setf_findClass);
 	Defun(setf_findClass);
 

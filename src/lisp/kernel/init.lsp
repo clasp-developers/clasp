@@ -556,7 +556,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  )
 	(progn
 	  (bformat t "\n")
-	  (bformat t "Compiling %s to %s - will reload: %s\n" (truename source-path) bitcode-path reload)
+	  (bformat t "Compiling %s\n   to %s - will reload: %s\n" (truename source-path) bitcode-path reload)
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             (compile-file source-path :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
 	    (if reload
@@ -682,7 +682,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     :all
 
 ;;    lsp/pprint
-))
+    ))
+(export '*init-files*)
 
 
 (defun select-source-files (last-file &key first-file system)

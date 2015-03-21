@@ -456,6 +456,19 @@ and walk the car and cdr"
 	     (irc-intrinsic "findPackage" ltv-ref ptr))))
 
 
+(defvar *built-in-class-coalesce* nil)
+(defun codegen-ltv/built-in-class (result built-in-class env)
+  "Return IR code that generates a built-in-class for bootstrapping CLOS"
+  (with-coalesce-load-time-value (ltv-ref result (class-name built-in-class) env)
+    :coalesce-hash-table *built-in-class-coalesce*
+    :maker (let ((class-name (irc-alloca-tsp *load-time-initializer-environment*
+					     :irbuilder *irbuilder-ltv-function-alloca*
+					     :label "class-name")))
+	     (with-irbuilder (*irbuilder-ltv-function-body*)
+	       (codegen-literal class-name (class-name built-in-class) *load-time-initializer-environment*))
+	     (with-next-load-time-value (ltv-ref val env)
+	       (irc-intrinsic "ltv_findBuiltInClass" ltv-ref class-name)))))
+
 
 
 
@@ -770,6 +783,7 @@ marshaling of compiled quoted data"
 	     (*string-coalesce* (make-hash-table :test #'equal))
 	     (*pathname-coalesce* (make-hash-table :test #'equal))
 	     (*package-coalesce* (make-hash-table :test #'eq))
+	     (*built-in-class-coalesce* (make-hash-table :test #'eq))
 	     (*character-coalesce* (make-hash-table :test #'eql))
 	     (*nil-coalesce* (make-hash-table :test #'eq))
 	     (*t-coalesce* (make-hash-table :test #'eq))
@@ -882,6 +896,7 @@ marshaling of compiled quoted data"
 	((stringp obj) (codegen-ltv/string result obj env))
 	((pathnamep obj) (codegen-ltv/pathname result obj env))
 	((packagep obj) (codegen-ltv/package result obj env))
+	((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
 	((floatp obj) (codegen-ltv/float result obj env))
 	((complexp obj) (codegen-ltv/complex result obj env))
 	((symbolp obj) (codegen-ltv/symbol result obj env))
@@ -890,7 +905,7 @@ marshaling of compiled quoted data"
 ;;	((source-code-cons-p obj) (codegen-ltv-source-code-cons result obj env))
 	((consp obj) (codegen-ltv/container result obj env))
 	((hash-table-p obj) (codegen-ltv/container result obj env))
-	(t (error "In codegen-literal add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
+	(t (error "In codegen-literal add support to codegen the object type ~a - value: ~a" (class-name (class-of obj)) obj )))
       ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
       ;; default module without coalescence.
       (codegen-rtv result obj env)))
