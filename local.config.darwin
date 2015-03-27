@@ -8,7 +8,7 @@ export TARGET_OS = darwin
 #
 # This defines where externals-clasp source is
 #
-export EXTERNALS_BUILD_TARGET_DIR = $(HOME)/Development/externals-clasp
+export EXTERNALS_SOURCE_DIR = $(HOME)/Development/externals-clasp
 
 #
 # This defines how many processors you have available to build with
