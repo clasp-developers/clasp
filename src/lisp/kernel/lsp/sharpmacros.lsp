@@ -1,5 +1,8 @@
 ;;;; reading circular data: the #= and ## readmacros
 
+(in-package :core)
+
+
 ;;; objects already seen by CIRCLE-SUBST
 (defvar *sharp-equal-circle-table*)
 ;;(declaim (type hash-table *sharp-equal-circle-table*))

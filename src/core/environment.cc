@@ -570,7 +570,7 @@ namespace core
     {_G();
 	stringstream ss;
         ss << "#<" << lisp_classNameAsString(af_classOf(this->asSmartPtr())) << ">";
-#if 1
+#if 0
 	int tab = _sym_STARenvironmentPrintingTabSTAR->symbolValue().as<Fixnum_O>()->get();
 	{
 	    ss << (BF("--------------------------- %20s :id %5d -----") % this->_instanceClass()->classNameAsString() % this->_EnvId ).str() << std::endl;
@@ -1322,7 +1322,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-
+    
 
 
     bool ValueEnvironment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const

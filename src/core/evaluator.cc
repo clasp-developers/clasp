@@ -188,10 +188,10 @@ namespace core
 
 
 
-#define ARGS_af_interpreter_lookup_symbol_macro "(symbol env)"
-#define DECL_af_interpreter_lookup_symbol_macro ""
-#define DOCS_af_interpreter_lookup_symbol_macro "environment_lookup_symbol_macro_definition"
-    Function_sp af_interpreter_lookup_symbol_macro(Symbol_sp sym, T_sp env)
+#define ARGS_core_lookup_symbol_macro "(symbol &optional env)"
+#define DECL_core_lookup_symbol_macro ""
+#define DOCS_core_lookup_symbol_macro "environment_lookup_symbol_macro_definition"
+    Function_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env)
     {_G();
 	if ( sym.nilp() ) return _Nil<Function_O>();
 	if ( env.notnilp() )
@@ -520,10 +520,10 @@ namespace core
 	    return sp_progn(forms,environment);
 	}
 
-	T_mv sp_dbg_i32(Cons_sp args, T_sp env)
+	T_mv sp_debug_message(Cons_sp args, T_sp env)
 	{_G();
-	    Fixnum_sp num = oCar(args).as<Fixnum_O>();
-	    printf( "+++DBG-I32[%d]\n", num->get());
+	    Str_sp msg = oCar(args).as<Str_O>();
+	    printf( "+++DEBUG-MESSAGE[%s]\n", msg->c_str());
 	    return(Values(_Nil<T_O>()));
 	}
 
@@ -814,16 +814,113 @@ namespace core
 	}
 
 
-	/*! If evaluateInNewEnvironment is false then it behaves like let and if true it should behave like let* */
-	T_mv let_letSTAR( Cons_sp args, T_sp parentEnvironment, bool evaluateInNewEnvironment=false)
-	{_G();
+
+	
+/*
+  __BEGIN_DOC(candoScript.specialForm.let,let)
+  \scriptCmd{let}{assignments code}
+
+  Assign lexical variables and then evaluate code in that context.
+  __END_DOC
+*/
+
+
+/*
+  __BEGIN_DOC(candoScript.specialForm.let,let)
+  \scriptCmd{let\*}{assignments code}
+
+  Assign lexical variables and then evaluate code in that context.
+  __END_DOC
+*/
+	T_mv sp_let( Cons_sp args, T_sp parentEnvironment)
+	{
 	    Cons_sp assignments = oCar(args).as_or_nil<Cons_O>();
 	    Cons_mv pairOfLists = af_separatePairList(assignments);
 	    Cons_sp variables = pairOfLists;
 	    Cons_sp expressions = pairOfLists.valueGet(1).as_or_nil<Cons_O>();
 	    Cons_sp body = cCdr(args);
-//    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
-//    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
+	    //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
+	    //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
+	    Cons_sp declares;
+	    Str_sp docstring;
+	    Cons_sp code;
+	    Cons_sp declaredSpecials;
+	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,declaredSpecials);
+	    LOG(BF("Assignment part=%s") % assignments->__repr__() );
+	    Cons_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
+	    Cons_sp classified = classifiedAndCount;
+	    int numberOfLexicalVariables = classifiedAndCount.valueGet(1).as<Fixnum_O>()->get();
+	    ValueEnvironment_sp newEnvironment =
+		ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables,parentEnvironment);
+	    ValueEnvironmentDynamicScopeManager scope(newEnvironment);
+	    // Set up the debugging info - it's empty to begin with
+	    ValueFrame_sp valueFrame = newEnvironment->getActivationFrame().as<ValueFrame_O>();
+	    VectorObjects_sp debuggingInfo = VectorObjects_O::create(_Nil<T_O>(),
+								     cl_length(valueFrame),_Nil<T_O>());
+	    valueFrame->attachDebuggingInfo(debuggingInfo);
+
+
+	    // Figure out which environment to evaluate in
+	    Cons_sp curExp = expressions;
+	    Environment_sp evaluateEnvironment;
+	    // SPECIFIC TO LET FROM HERE ON DOWN
+	    evaluateEnvironment = parentEnvironment;
+	    int debugInfoIndex = 0;
+	    //		printf("%s:%d In LET\n", __FILE__, __LINE__);
+
+	    size_t numTemps = cl_length(classified);
+	    core::T_O**tempValues = (core::T_O**)__builtin_alloca(sizeof(core::T_O*)*numTemps);
+	    size_t valueIndex = 0;
+	    for ( Cons_sp curClassified = classified; curClassified.notnilp(); curClassified=cCdr(curClassified) ) {
+		Cons_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
+		Symbol_sp shead = oCar(classified).as<Symbol_O>();
+		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar ) {
+		    T_sp expr = oCar(curExp);
+		    T_sp result = eval::evaluate(expr,evaluateEnvironment);
+		    //			printf("%s:%d Evaluated %s --> %s\n", __FILE__, __LINE__, _rep_(expr).c_str(), _rep_(result).c_str());
+		    if ( valueIndex >= numTemps ) {
+			SIMPLE_ERROR(BF("Overflow in LET temporary variables only %d available") % numTemps );
+		    }
+		    tempValues[valueIndex] = result.asTPtr();
+		    ++valueIndex;
+		    curExp = cCdr(curExp);
+		}
+	    }
+	    valueIndex = 0;
+	    for ( Cons_sp curClassified = classified; curClassified.notnilp(); curClassified=cCdr(curClassified) ) {
+		Cons_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
+		Symbol_sp shead = oCar(classified).as<Symbol_O>();
+		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
+		    {
+			if ( valueIndex >= numTemps ) {
+			    SIMPLE_ERROR(BF("Overflow in LET temporary variables only %d available") % numTemps );
+			}
+			T_sp result = gctools::smart_ptr<T_O>(tempValues[valueIndex]);
+			++valueIndex;
+			scope.new_variable(classified,result);
+		    } else if ( shead == _sym_declaredSpecial )
+		    {
+			scope.new_special(classified);
+		    }
+		if ( shead == ext::_sym_heapVar )
+		    {
+			debuggingInfo->setf_elt(debugInfoIndex,oCadr(classified));
+			debugInfoIndex++;
+		    }
+	    }
+	    return eval::sp_progn(code,newEnvironment);
+	}
+
+
+	T_mv sp_letSTAR( Cons_sp args, T_sp parentEnvironment)
+	{
+	    Cons_sp assignments = oCar(args).as_or_nil<Cons_O>();
+	    Cons_mv pairOfLists = af_separatePairList(assignments);
+	    Cons_sp variables = pairOfLists;
+	    Cons_sp expressions = pairOfLists.valueGet(1).as_or_nil<Cons_O>();
+	    Cons_sp body = cCdr(args);
+	    //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
+	    //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
 	    Cons_sp declares;
 	    Str_sp docstring;
 	    Cons_sp code;
@@ -848,63 +945,30 @@ namespace core
 	    // Figure out which environment to evaluate in
 	    Cons_sp curExp = expressions;
 	    Environment_sp evaluateEnvironment;
-	    if ( evaluateInNewEnvironment )
-	    {
-		evaluateEnvironment = newEnvironment;
-	    } else
-	    {
-		evaluateEnvironment = parentEnvironment;
-	    }
 
+	    // SPECIFIC TO LET* FROM HERE ON DOWN
+	    evaluateEnvironment = newEnvironment;      // SPECIFIC TO LET*
 	    int debugInfoIndex = 0;
-	    for ( Cons_sp curClassified = classified; curClassified.notnilp(); curClassified=cCdr(curClassified) )
-	    {
+	    for ( Cons_sp curClassified = classified; curClassified.notnilp(); curClassified=cCdr(curClassified) ) {
 		Cons_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
 		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
-		{
-		    T_sp expr = oCar(curExp);
-		    T_sp result = eval::evaluate(expr,evaluateEnvironment);
-		    scope.new_variable(classified,result);
-		    curExp = cCdr(curExp);
-		} else if ( shead == _sym_declaredSpecial )
-		{
-		    scope.new_special(classified);
-		}
+		    {
+			T_sp expr = oCar(curExp);
+			T_sp result = eval::evaluate(expr,evaluateEnvironment);
+			scope.new_variable(classified,result);
+			curExp = cCdr(curExp);
+		    } else if ( shead == _sym_declaredSpecial )
+		    {
+			scope.new_special(classified);
+		    }
 		if ( shead == ext::_sym_heapVar )
-		{
-		    debuggingInfo->setf_elt(debugInfoIndex,oCadr(classified));
-		    debugInfoIndex++;
-		}
+		    {
+			debuggingInfo->setf_elt(debugInfoIndex,oCadr(classified));
+			debugInfoIndex++;
+		    }
 	    }
 	    return eval::sp_progn(code,newEnvironment);
-	}
-
-/*
-  __BEGIN_DOC(candoScript.specialForm.let,let)
-  \scriptCmd{let}{assignments code}
-
-  Assign lexical variables and then evaluate code in that context.
-  __END_DOC
-*/
-
-
-/*
-  __BEGIN_DOC(candoScript.specialForm.let,let)
-  \scriptCmd{let\*}{assignments code}
-
-  Assign lexical variables and then evaluate code in that context.
-  __END_DOC
-*/
-	T_mv sp_let( Cons_sp args, T_sp parentEnvironment)
-	{_G();
-	    return let_letSTAR(args,parentEnvironment,false);
-	}
-
-
-	T_mv sp_letSTAR( Cons_sp args, T_sp parentEnvironment)
-	{_G();
-	    return let_letSTAR(args,parentEnvironment,true);
 	}
 
 
@@ -1458,7 +1522,7 @@ namespace core
 					   % _rep_(target) % _rep_(args) );
 		    }
 		    T_sp expr = oCadr(pairs);
-		    T_sp texpr = af_macroexpand(symbol,environment);
+		    T_sp texpr = cl_macroexpand(symbol,environment);
 		    if ( texpr != symbol )
 		    {
 			// The target symbol was a symbol-macro so we
@@ -2070,11 +2134,11 @@ namespace core
             else if ( Symbol_sp sym = exp.asOrNull<Symbol_O>() )
 	    {_BLOCK_TRACEF(BF("Evaluating symbol: %s")% exp->__repr__() );
 		if ( sym->isKeywordSymbol() ) return Values(sym);
-		if ( af_interpreter_lookup_symbol_macro(sym,environment).notnilp() )
+		if ( core_lookup_symbol_macro(sym,environment).notnilp() )
 		{
 		    T_sp texpr;
 		    {MULTIPLE_VALUES_CONTEXT();
-			texpr = af_macroexpand(sym,environment);
+			texpr = cl_macroexpand(sym,environment);
 		    }
 		    try {result = eval::evaluate(texpr,environment);}
 		    catch (...) {result = handleConditionInEvaluate(environment);};
@@ -2434,7 +2498,7 @@ namespace core
 		    */
 		    T_sp expanded = _Nil<T_O>();
 		    try {
-			expanded = af_macroexpand(form,environment);
+			expanded = cl_macroexpand(form,environment);
 			if ( _evaluateVerbosity>0 )
 			{
 			    string es = _rep_(expanded);
@@ -2611,7 +2675,7 @@ namespace core
 	    _lisp->defineSpecialOperator(ClPkg,"block", &sp_block);
 	    _lisp->defineSpecialOperator(ClPkg,"catch",&sp_catch);
 	    _lisp->defineSpecialOperator(ClPkg,"eval-when",&sp_eval_when);
-//	    _lisp->defineSpecialOperator(ExtPkg,"dbg-i32",&sp_dbg_i32);
+	    _lisp->defineSpecialOperator(ExtPkg,"debug-message",&sp_debug_message);
 	    _lisp->defineSpecialOperator(ClPkg,"flet", &sp_flet);
 	    _lisp->defineSpecialOperator(ClPkg,"function",&sp_function);
 	    _lisp->defineSpecialOperator(ClPkg,"the",&sp_the);
@@ -2666,6 +2730,7 @@ namespace core
 	    ClDefun(funcall);
 	    CoreDefun(extractLambdaNameFromDeclares);
 	    CoreDefun(extractLambdaName);
+	    CoreDefun(lookup_symbol_macro);
 	};
 
     };

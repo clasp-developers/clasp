@@ -35,13 +35,27 @@
 (cleavir-io:define-save-info named-function-ast
     (:lambda-name lambda-name))
 
-
-
-
 (defmethod cleavir-ast-graphviz:label ((ast named-function-ast))
   (with-output-to-string (s)
     (format s "named-function (~a)" (lambda-name ast))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DEBUG-MESSAGE-AST
+;;;
+;;; This AST is used to represent a debugging message inserted into the generated code.
+
+(defclass debug-message-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%debug-message :initarg :debug-message  :accessor debug-message)))
+
+(cleavir-io:define-save-info debug-message-ast
+    (:debug-message debug-message))
+
+(defmethod cleavir-ast-graphviz:label ((ast debug-message-ast))
+  (with-output-to-string (s)
+    (format s "debug-message (~a)" (debug-message ast))))
+
+(defmethod cleavir-ast:children ((ast debug-message-ast)) nil)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -180,6 +194,18 @@ If this form has already been precalculated then just return the precalculated-v
       (t
        (multiple-value-bind (index fn)
 	   (cmp:compile-ltv-thunk "ltv-literal" form nil)
+	 (cmp:with-ltv-function-codegen (result ltv-env)
+	   (cmp:irc-intrinsic "invokeTopLevelFunction" 
+			      result 
+			      fn 
+			      (cmp:irc-renv ltv-env)
+			      (cmp:jit-constant-unique-string-ptr "top-level")
+			      cmp:*gv-source-file-info-handle*
+			      (cmp:irc-i64-*current-source-pos-info*-filepos)
+			      (cmp:irc-i32-*current-source-pos-info*-lineno)
+			      (cmp:irc-i32-*current-source-pos-info*-column)
+			      cmp:*load-time-value-holder-global-var*
+			      ))
 	 index))
       )))
 

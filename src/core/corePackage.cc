@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/grayPackage.h>
 #include <clasp/core/closPackage.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
+#include <clasp/core/cleavirEnvPackage.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/ql.h>
@@ -756,6 +757,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	comp::initialize_compPackage();
 	clos::initialize_closPackage();
 	cleavirPrimops::initialize_cleavirPrimopsPackage();
+	cleavirEnv::initialize_cleavirEnvPackage();
 	gray::initialize_grayPackage();
 	cluser::initialize_commonLispUserPackage();
 	{_BLOCK_TRACEF(BF("Setup instance base classes for T_O"));

@@ -1,5 +1,6 @@
 ;;(make-package "CLSYMBOLS" :use '(:core :clos))
-(select-package :cl)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package :cl))
 
 (export '(WRITE-BYTE WITH-SLOTS WITH-ACCESSORS
 	  UPDATE-INSTANCE-FOR-REDEFINED-CLASS

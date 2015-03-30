@@ -254,9 +254,9 @@ Boehm and MPS use a single pointer"
 (defvar +LispCompiledFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +LispFunctionIHF+) :name "LispCompiledFunctionIHF"))
 
 
-(defun make-gv-source-file-info-handle-in-*the-module* (&optional handle)
+(defun make-gv-source-file-info-handle (module &optional handle)
   (if (null handle) (setq handle -1))
-  (llvm-sys:make-global-variable *the-module*
+  (llvm-sys:make-global-variable module
                                  +i32+  ; type
                                  nil    ; constant
                                  'llvm-sys:internal-linkage
@@ -576,6 +576,7 @@ Boehm and MPS use a single pointer"
 
   (primitive-do-not-catch module "debugPointer" +void+ (list +i8*+))
   (primitive-do-not-catch module "debugPrintObject" +void+ (list +i8*+ +tsp*+))
+  (primitive-do-not-catch module "debugMessage" +void+ (list +i8*+))
   (primitive-do-not-catch module "debugPrintI32" +void+ (list +i32+))
   (primitive-do-not-catch module "debugPrint_size_t" +void+ (list +size_t+))
   (primitive-do-not-catch module "lowLevelTrace" +void+ (list +i32+))
@@ -696,7 +697,7 @@ Boehm and MPS use a single pointer"
   (primitive-do-not-catch module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
   (primitive-do-not-catch module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-do-not-catch module "cc_throwDynamicGo" +void+ (list +size_t+ +size_t+))
-  (primitive-do-not-catch module "cc_enclose" +t*+ (list +fn-prototype*+ +size_t+ ) :varargs t)
+  (primitive-do-not-catch module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +size_t+ ) :varargs t)
   (primitive-do-not-catch module "cc_call_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
   (primitive              module "cc_invoke_multipleValueOneFormCall" +void+ (list +tmv*+ +t*+))
   (primitive-do-not-catch module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))

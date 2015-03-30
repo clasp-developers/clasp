@@ -390,9 +390,12 @@ namespace core {
 	ASSERT(!this->_IsConstant);
 #if 0
 	// trap a change in a dynamic variable
-	if ( this->_Name.as<Str_O>()->get() == "*TABLE*")
+	if ( this->_Name.as<Str_O>()->get() == "*THE-MODULE*")
 	{
-	    printf("%s:%d Changing value of a symbol named *TABLE* to %s\n", __FILE__, __LINE__, _rep_(val).c_str());
+	    printf("%s:%d Changing value of a symbol named *THE-MODULE* to %s\n", __FILE__, __LINE__, _rep_(val).c_str());
+	    if ( val.nilp() ) {
+		printf("%s:%d Trap here - it changed to nil\n", __FILE__, __LINE__ );
+	    }
 	}
 #endif
 	this->_Value = val;

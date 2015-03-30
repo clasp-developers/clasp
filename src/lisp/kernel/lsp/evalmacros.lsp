@@ -33,8 +33,6 @@ last FORM.  If not, simply returns NIL."
        ',name)))
 
 
-(defun cl:macro-function (symbol &optional environment)
-  (core:macro-function symbol environment))
 
 (defun si::register-global (name)
   "This should augment a global environment object that the compiler uses

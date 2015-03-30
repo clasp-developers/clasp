@@ -887,9 +887,10 @@ namespace core {
 #define DOCS_core_callWithVariableBound "callWithVariableBound"
     T_mv core_callWithVariableBound(Symbol_sp sym, T_sp val, T_sp thunk)
     {
+	T_sp oldVal = sym->symbolValueUnsafe();
 	DynamicScopeManager scope(sym,val);
-	//	printf("%s:%d callWithVariableBound binding %s with %s\n", __FILE__, __LINE__, _rep_(sym).c_str(), _rep_(val).c_str());
 	return eval::funcall(thunk);
+	// Don't put anything in here - don't mess up the MV return
     }
 
 
@@ -988,6 +989,26 @@ namespace core {
 	throw CatchThrow(frame);
     }
 
+#define ARGS_core_progvFunction "(symbols values func)"
+#define DECL_core_progvFunction ""
+#define DOCS_core_progvFunction "progvFunction"
+    T_mv core_progvFunction(Cons_sp symbols, Cons_sp values, Function_sp func)
+    {
+	DynamicScopeManager manager;
+	for ( ; symbols.notnilp(); symbols = cCdr(symbols), values = cCdr(values) ) {
+	    Symbol_sp symbol = oCar(symbols).as<Symbol_O>();
+	    T_sp value = oCar(values);
+	    manager.pushSpecialVariableAndSet(symbol,value);
+	}
+	T_mv result = eval::funcall(func);
+	return result;
+    }
+
+
+
+
+
+    
     void initialize_compiler_primitives(Lisp_sp lisp)
     {_G();
 //	SYMBOL_SC_(CorePkg,processDeclarations);
@@ -1032,6 +1053,7 @@ namespace core {
 	CoreDefun(multipleValueProg1_Function);
 	CoreDefun(catchFunction);
 	CoreDefun(throwFunction);
+	CoreDefun(progvFunction);
     }
 
 

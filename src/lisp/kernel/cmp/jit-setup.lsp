@@ -30,7 +30,7 @@
 
 ;;(in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (select-package :cmp))
+  (core:select-package :cmp))
 
 
 (defconstant +debug-dwarf-version+ 4)
@@ -210,9 +210,10 @@ No DIBuilder is defined for the default module")
 
 (defun jit-constant-unique-string-ptr (sn &optional (label "unique-str"))
   "Get or create a unique string within the module and return a GEP i8* pointer to it"
+  (or *the-module* (error "jit-constant-unique-string-ptr *the-module* is NIL"))
   (let* ((sn-gv (llvm-sys:get-or-create-uniqued-string-global-variable
 		 *the-module* sn
-		 (bformat nil ":::symbol-name-%s" sn)))
+		 (bformat nil "str-%s" sn)))
 	 (sn-value-ptr (llvm-sys:create-in-bounds-gep
 			*irbuilder* sn-gv (list (jit-constant-i32 0) (jit-constant-i32 0)) "sn")))
     sn-value-ptr))
@@ -220,6 +221,7 @@ No DIBuilder is defined for the default module")
 
 (defun jit-make-global-string-ptr (str &optional (label "global-str"))
   "A function for creating unique strings within the module - return an LLVM pointer to the string"
+  (or *the-module* (error "jit-make-global-string-ptr *the-module* is NIL"))
   (let ((unique-string-global-variable (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* str (bformat nil ":::global-str-%s" str))))
 ;;    (llvm-sys:create-in-bounds-gep *irbuilder* unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)) label )
     (llvm-sys:constant-expr-get-in-bounds-get-element-ptr unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)))

@@ -65,12 +65,23 @@
       (restart-report restart stream))
   restart)
 
+
+
+(eval-when (:compile-toplevel)
+  (core:debug-message "About to defstruct restart")
+  (setq clasp-cleavir::*debug-log-on* t))
+
 (defstruct (restart (:PRINT-FUNCTION restart-print))
   name
   function
   report-function
   interactive-function
   (test-function (constantly t)))
+
+(eval-when (:compile-toplevel)
+  (core:debug-message "Done defstruct restart")
+  (setq clasp-cleavir::*debug-log-on* nil))
+
 
 (defun restart-report (restart stream)
   (declare (si::c-local))
@@ -802,6 +813,7 @@ memory limits before executing the program again."))
             (progv (list name) (list value) (read-it))
             (read-it)))
       value))
+
 (defvar *assert-failure-test-form* nil)
 (defun assert-failure (test-form &optional place-names values
                        &rest arguments)

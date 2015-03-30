@@ -1280,9 +1280,9 @@ extern "C"
     }
 
 
-    void debugMsg( const char* msg)
+    void debugMessage( const char* msg)
     {_G();
-	printf("++++++ JIT-TRACE: %s \n", msg );
+	printf("++++++ DEBUG-MESSAGE: %s \n", msg );
     }
 
     void debugPointer( const unsigned char* ptr)
@@ -2128,8 +2128,9 @@ extern "C" {
     
 
 
-    core::T_O* cc_enclose(fnLispCallingConvention llvm_func, std::size_t numCells, ... )
+    core::T_O* cc_enclose(core::T_O* lambdaName, fnLispCallingConvention llvm_func, std::size_t numCells, ... )
     {
+	core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>(lambdaName);
 	core::ValueFrame_sp vo = core::ValueFrame_O::create(numCells,_Nil<core::T_O>());
 	core::T_O* p;
         va_list argp;
@@ -2152,7 +2153,7 @@ extern "C" {
 	// available to the enclose instruction
 	//
 	llvmo::CompiledClosure* functoid 
-	    = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass( core::_sym_lambdaName // functionName - make this something useful!
+	    = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass( tlambdaName // functionName - make this something useful!
 									      , _Nil<core::SourcePosInfo_O>() // SourcePosInfo
 									      , kw::_sym_function   // fn-type
 									      , llvm_func //(llvmo::CompiledClosure::fptr_type)NULL   // ptr - will be set when Module is compiled

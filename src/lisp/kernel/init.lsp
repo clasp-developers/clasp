@@ -2,6 +2,8 @@
 ;; :clos to compile with CLOS
 ;;
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package "CORE"))
 
 (SYS:*MAKE-SPECIAL 'core:*echo-repl-tpl-read*)
 :pause-hir
@@ -69,8 +71,15 @@
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :core))
-(if (find-package "C") nil
+(if (find-package "C")
+    nil
     (make-package "C" :use '(:cl :core)))
+
+;; Compiling with Cleavir injects some symbols that
+;; need to be interned in this package
+(if (find-package "CLASP-CLEAVIR-GENERATE-AST")
+    nil
+    (make-package "CLASP-CLEAVIR-GENERATE-AST"))
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :core))
@@ -378,7 +387,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 (defun get-pathname-with-type (module &optional (type "lsp"))
   (merge-pathnames (pathname (string module))
-		   (make-pathname :host "sys" :directory '(:absolute "kernel") :type type)))
+		   (make-pathname :host "sys" :directory '(:absolute) :type type)))
 
 (defun lisp-source-pathname (module)
   (or (probe-file (get-pathname-with-type module "lsp"))
@@ -450,8 +459,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 (eval-when (:execute)
-  (load (lisp-source-pathname 'cmp/jit-setup))
-  (load (lisp-source-pathname 'clsymbols)))
+  (load (lisp-source-pathname 'kernel/cmp/jit-setup))
+  (load (lisp-source-pathname 'kernel/clsymbols)))
 
 
 
@@ -575,110 +584,110 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defvar *init-files*
   '(
     :init
-    init
-    cmp/jit-setup
-    clsymbols
+    kernel/init
+    kernel/cmp/jit-setup
+    kernel/clsymbols
     :start
-    lsp/foundation
-    lsp/export
-    lsp/defmacro
+    kernel/lsp/foundation
+    kernel/lsp/export
+    kernel/lsp/defmacro
     :defmacro
-    lsp/helpfile
-    lsp/evalmacros
-    lsp/claspmacros
+    kernel/lsp/helpfile
+    kernel/lsp/evalmacros
+    kernel/lsp/claspmacros
     :macros
-    lsp/testing
-    lsp/makearray
-    lsp/arraylib
-    lsp/setf
-    lsp/listlib
-    lsp/mislib
-    lsp/defstruct
-    lsp/predlib
-    lsp/seq
-    lsp/cmuutil
-    lsp/seqmacros
-    lsp/iolib
-    lsp/profiling    ;; Do micro-profiling of the GC
+    kernel/lsp/testing
+    kernel/lsp/makearray
+    kernel/lsp/arraylib
+    kernel/lsp/setf
+    kernel/lsp/listlib
+    kernel/lsp/mislib
+    kernel/lsp/defstruct
+    kernel/lsp/predlib
+    kernel/lsp/seq
+    kernel/lsp/cmuutil
+    kernel/lsp/seqmacros
+    kernel/lsp/iolib
+    kernel/lsp/profiling    ;; Do micro-profiling of the GC
     :tiny
     :pre-cmp
     ;; Compiler code
-    cmp/packages
-    cmp/cmpsetup
-    cmp/cmpenv-fun
-    cmp/cmpenv-proclaim
-    cmp/cmpglobals
-    cmp/cmptables
-    cmp/cmpvar
-    cmp/cmputil
-    cmp/cmpintrinsics
-    cmp/cmpir
-    cmp/cmpeh
-    cmp/debuginfo
-    cmp/lambdalistva
-    cmp/cmpvars
-    cmp/cmpquote
-    cmp/cmpobj
-    cmp/compiler
-    cmp/compilefile
-    cmp/cmpbundle
-    cmp/cmpwalk
+    kernel/cmp/packages
+    kernel/cmp/cmpsetup
+    kernel/cmp/cmpenv-fun
+    kernel/cmp/cmpenv-proclaim
+    kernel/cmp/cmpglobals
+    kernel/cmp/cmptables
+    kernel/cmp/cmpvar
+    kernel/cmp/cmputil
+    kernel/cmp/cmpintrinsics
+    kernel/cmp/cmpir
+    kernel/cmp/cmpeh
+    kernel/cmp/debuginfo
+    kernel/cmp/lambdalistva
+    kernel/cmp/cmpvars
+    kernel/cmp/cmpquote
+    kernel/cmp/cmpobj
+    kernel/cmp/compiler
+    kernel/cmp/compilefile
+    kernel/cmp/cmpbundle
+    kernel/cmp/cmpwalk
     :cmp
     :stage1
-    cmp/cmprepl
+    kernel/cmp/cmprepl
     :cmprepl
-    lsp/logging
-    lsp/seqlib
-    lsp/trace
+    kernel/lsp/logging
+    kernel/lsp/seqlib
+    kernel/lsp/trace
     :was-pre-cmp
-    lsp/sharpmacros
-    lsp/assert
-    lsp/numlib
-    lsp/describe
-    lsp/module
-    lsp/loop2
-    lsp/assorted
-    lsp/packlib
+    kernel/lsp/sharpmacros
+    kernel/lsp/assert
+    kernel/lsp/numlib
+    kernel/lsp/describe
+    kernel/lsp/module
+    kernel/lsp/loop2
+    kernel/lsp/assorted
+    kernel/lsp/packlib
 ;;    cmp/cmpinterpreted
-    lsp/defpackage
-    lsp/format
+    kernel/lsp/defpackage
+    kernel/lsp/format
     #|
 		 arraylib
 		 numlib
 		 |#
     :min
-    clos/package
-    clos/hierarchy
-    clos/cpl
-    clos/std-slot-value
-    clos/slot
-    clos/boot
-    clos/kernel
-    clos/method
-    clos/combin
-    clos/std-accessors
-    clos/defclass
-    clos/slotvalue
-    clos/standard
-    clos/builtin
-    clos/change
-    clos/stdmethod
-    clos/generic
+    kernel/clos/package
+    kernel/clos/hierarchy
+    kernel/clos/cpl
+    kernel/clos/std-slot-value
+    kernel/clos/slot
+    kernel/clos/boot
+    kernel/clos/kernel
+    kernel/clos/method
+    kernel/clos/combin
+    kernel/clos/std-accessors
+    kernel/clos/defclass
+    kernel/clos/slotvalue
+    kernel/clos/standard
+    kernel/clos/builtin
+    kernel/clos/change
+    kernel/clos/stdmethod
+    kernel/clos/generic
     :generic
-    clos/fixup
-    clos/extraclasses
-    lsp/defvirtual
+    kernel/clos/fixup
+    kernel/clos/extraclasses
+    kernel/lsp/defvirtual
     :stage3
-    clos/conditions
-    clos/print
-    clos/streams
-    lsp/pprint
-    clos/inspect
+    kernel/clos/conditions
+    kernel/clos/print
+    kernel/clos/streams
+    kernel/lsp/pprint
+    kernel/clos/inspect
     :clos
-    lsp/ffi
+    kernel/lsp/ffi
 ;;    asdf/build/asdf
     :front
-    lsp/top
+    kernel/lsp/top
     :all
 
 ;;    lsp/pprint
@@ -873,14 +882,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
       (cmp:link-system-lto (target-backend-pathname +image-pathname+)
 			   :lisp-bitcode-files bitcode-files
 			   :prologue-form '(progn
+					    (push :clos *features*)
 					    (if (member :interactive *features*) 
 						(bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
 			   :epilogue-form '(progn
 					    (cl:in-package :cl-user)
-					    (require 'system)
-					    (load-clasprc)
 					    (process-command-line-load-eval-sequence)
-					    (when (member :interactive *features*) (core:top-level))))
+					    (when (member :interactive *features*) (core:run-repl))))
       )))
 
 
@@ -966,6 +974,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 			       :defaults (user-homedir-pathname))))
     (if (probe-file clasprc)
 	(load clasprc))))
+(export 'load-clasprc)
 
 (defun load-pos ()
   (declare (special core:*load-current-source-file-info* core:*load-current-linenumber*))
@@ -1016,6 +1025,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export '(load-swank))
 
 
+(defun load-cleavir-system ()
+  (let* ((fin (open "sys:kernel;cleavir-system.lsp")))
+    (read fin)))
 
 
 
@@ -1032,6 +1044,14 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                 (eval (read-from-string (cdr entry)))))
           core::*command-line-load-eval-sequence*)
   )
+
+(defun run-repl ()
+  (if (fboundp 'core:top-level)
+      (progn
+	(require 'system)
+	(load-clasprc)
+	(core:top-level))
+      (core:low-level-repl)))
 
 
 (eval-when (:execute)

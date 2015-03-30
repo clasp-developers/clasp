@@ -68,45 +68,62 @@
 	 t
 	 ;; Return NIL as the protocol stipulates.
 	 nil)))
-	 
+
+(defmethod cleavir-env:variable-info ((environment null) symbol)
+  (cleavir-env:variable-info *clasp-env* symbol))
+
 (defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
-  (cond (;; If the function name is the name of a macro, then
-	 ;; MACRO-FUNCTION returns something other than NIL.
-	 (and (symbolp function-name) (not (null (macro-function function-name))))
-	 ;; If so, we know it is a global macro.  It is also safe to
-	 ;; call COMPILER-MACRO-FUNCTION, because it returns NIL if
-	 ;; there is no compiler macro associated with this function
-	 ;; name.
-	 (make-instance 'cleavir-env:global-macro-info
-	   :name function-name
-	   :expander (macro-function function-name)
-	   :compiler-macro (compiler-macro-function function-name)))
-	(;; If it is not the name of a macro, it might be the name of
-	 ;; a special operator.  This can be checked by calling
-	 ;; special-operator-p.
-	 (and (symbolp function-name) (special-operator-p function-name))
-	 (make-instance 'cleavir-env:special-operator-info
-	   :name function-name))
-	(;; If it is neither the name of a macro nor the name of a
-	 ;; special operator, it might be the name of a global
-	 ;; function.  We can check this by calling FBOUNDP.  Now,
-	 ;; FBOUNDP returns true if it is the name of a macro or a
-	 ;; special operator as well, but we have already checked for
-	 ;; those cases.
-	 (fboundp function-name)
-	 ;; In that case, we return the relevant info
-	 (make-instance 'cleavir-env:global-function-info
-	   :name function-name
-	   :compiler-macro (compiler-macro-function function-name)))
-	(;; If it is neither of the cases above, then this name does
-	 ;; not have any function-info associated with it.
-	 t
-	 ;; Return NIL as the protocol stipulates.
-	 nil)))
+  (cond
+    ( ;; If it is not the name of a macro, it might be the name of
+     ;; a special operator.  This can be checked by calling
+     ;; special-operator-p.
+     (and (symbolp function-name) (core:treat-as-special-operator-p function-name))
+     (make-instance 'cleavir-env:special-operator-info
+		    :name function-name))
+    ( ;; If the function name is the name of a macro, then
+     ;; MACRO-FUNCTION returns something other than NIL.
+     (and (symbolp function-name) (not (null (macro-function function-name))))
+     ;; If so, we know it is a global macro.  It is also safe to
+     ;; call COMPILER-MACRO-FUNCTION, because it returns NIL if
+     ;; there is no compiler macro associated with this function
+     ;; name.
+     (make-instance 'cleavir-env:global-macro-info
+		    :name function-name
+		    :expander (macro-function function-name)
+		    :compiler-macro (compiler-macro-function function-name)))
+    ( ;; If it is neither the name of a macro nor the name of a
+     ;; special operator, it might be the name of a global
+     ;; function.  We can check this by calling FBOUNDP.  Now,
+     ;; FBOUNDP returns true if it is the name of a macro or a
+     ;; special operator as well, but we have already checked for
+     ;; those cases.
+     (fboundp function-name)
+     ;; In that case, we return the relevant info
+     (make-instance 'cleavir-env:global-function-info
+		    :name function-name
+		    :compiler-macro (compiler-macro-function function-name)))
+    ( ;; If it is neither of the cases above, then this name does
+     ;; not have any function-info associated with it.
+     t
+     ;; Return NIL as the protocol stipulates.
+     nil)))
+
+(defmethod cleavir-env:function-info ((environment null) symbol)
+  (cleavir-env:function-info *clasp-env* symbol))
+
+(defmethod cleavir-env:function-info ((environment core:value-frame) symbol)
+  (cleavir-env:function-info (core:get-parent-environment environment) symbol))
+
+(defmethod cleavir-env:value-info ((environment core:value-frame) symbol)
+  (cleavir-env:function-info (core:get-parent-environment environment) symbol))
 
 (defmethod cleavir-env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
   (make-instance 'cleavir-env:optimize-info))
+
+(defmethod cleavir-env:optimize-info ((environment NULL))
+  ;; The default values are all 3.
+  (cleavir-env:optimize-info *clasp-env*))
 
 
 (defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))
@@ -115,24 +132,28 @@
 #+(or)(defmethod cleavir-environment:macro-function (symbol (environment core:environment))
 	(core:macro-function symbol environment))
 
-(defun cl:macro-function (symbol &optional (environment nil environment-p))
-  (cond
-    ((typep environment 'core:environment)
-     (core:macro-function symbol environment))
-    (environment
-     (cleavir-environment:macro-function symbol environment))
-    (t (cleavir-environment:macro-function symbol *clasp-env*))))
+#+(or)(defun cl:macro-function (symbol &optional (environment nil environment-p))
+	(cond
+	  ((typep environment 'core:environment)
+	   (core:macro-function symbol environment))
+	  (environment
+	   (cleavir-environment:macro-function symbol environment))
+	  (t (cleavir-environment:macro-function symbol *clasp-env*))))
+
+
+(defmethod cleavir-environment:symbol-macro-expansion (symbol (environment clasp-global-environment))
+  (macroexpand symbol nil))
 
 
 (setq cl:*macroexpand-hook* (lambda (macro-function macro-form environment)
 			      (cond
 				((typep environment 'core:environment)
 				 (core:macroexpand-default macro-function macro-form environment))
-				((typep environment 'clasp-global-environment)
+				((or (null environment) (typep environment 'clasp-global-environment))
 				 (core:macroexpand-default macro-function macro-form nil))
 				(t
-;;				 (warn "What do I do when a Cleavir environment is passed to *macroexpand-hook*?")
-				 (core:macroexpand-default macro-function macro-form nil)))))
+;;				 (warn "What do I do when a Cleavir environment is passed to *macroexpand-hook*? environment: ~a  macro-form: ~a" environment macro-form)
+				 (core:macroexpand-default macro-function macro-form environment)))))
 
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))

@@ -31,7 +31,11 @@
 
 (in-package :cmp)
 
-  
+
+;;;
+;;; Don't install the bootstrapping compiler as the implicit compiler when compiling cleavir
+;;;
+#-cleavir  
 (setq *implicit-compile-hook*
       (compile nil '(lambda (form &optional environment) 
 		     (declare (core:lambda-name cmp-repl-implicit-compile))
@@ -44,32 +48,4 @@
                        (values compiled-function warn fail)))))
 
 ;; From now on every S-exp is compiled before evaluation
-(setq *implicit-compilation* t)
-
-
-
-;;; Redefine defun to compile its code when (eval-when (:execute) ...)
-
-#+(or)
-(si::fset 'defun
-	  (lambda (def env)
-	    (let ((whole def)
-		  (name (cadr def))
-		  (vl (caddr def))
-		  (body (cdddr def)))
-	      ;; Documentation in help.lsp
-	      (multiple-value-bind (decls body doc-string) 
-		  (core:process-declarations body t)
-		(let* ((doclist (when doc-string (list doc-string)))
-		       (global-function `(lambda ,vl 
-					   (declare (core:lambda-name ,name) ,@decls) 
-					   ,@doclist (block ,(si::function-block-name name) ,@body))))
-		  ;;(bformat t "DEFUN global-function --> %s\n" global-function )
-		  `(progn
-		     (eval-when (:compile-toplevel :load-toplevel)
-		       (si::fset ',name (function ,global-function)))
-		     (eval-when (:execute)
-		       (si::fset ',name (compile nil ',global-function)))
-		     ,@(si::expand-set-documentation name 'function doc-string)
-		     ',name)))))
-	  t )
+;;;(setq *implicit-compilation* t)

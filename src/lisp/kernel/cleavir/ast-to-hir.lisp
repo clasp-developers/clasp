@@ -29,6 +29,13 @@
 
 
 
+(defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:debug-message-ast) context)
+  (cleavir-ast-to-hir:check-context-for-one-value-ast context)
+  (format t "cleavir-ast-to-hir:compile-ast on debug-message-ast successors: ~a~%" (cleavir-ast-to-hir:successors context))
+  (make-instance 'clasp-cleavir-hir:debug-message-instruction 
+		 :debug-message (clasp-cleavir-ast:debug-message ast)
+		 :successors (cleavir-ast-to-hir:successors context)))
+
 
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:precalc-symbol-reference-ast) context)

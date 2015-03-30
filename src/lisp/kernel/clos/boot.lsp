@@ -22,6 +22,45 @@
 ;;; DIRECT-SLOTS, etc are empty and therefore SLOT-VALUE does not work.
 #+clasp(defvar +the-standard-class+)
 
+
+#+(or)(eval-when (:compile-toplevel)
+  (format t "Macro expansion: ~a~%" 
+	  (macroexpand '(with-early-accessors (+standard-class-slots+)
+			 (when (eq name 'standard-class)
+			   #+ecl(defconstant +the-standard-class+ class)
+			   #+clasp(setq +the-standard-class+ class)
+			   (si:instance-class-set class class))
+			 (setf (class-id                  class) name
+			  (class-direct-subclasses   class) nil
+			  (class-direct-default-initargs class) nil
+			  (class-default-initargs    class) nil
+			  (class-finalized-p         class) t
+			  (eql-specializer-flag      class) nil
+			  (specializer-direct-methods class) nil
+			  (specializer-direct-generic-functions class) nil
+			  (gethash name si::*class-name-hash-table*) class
+			  (class-sealedp             class) nil
+			  (class-dependents          class) nil
+			  (class-valid-initargs      class) nil)
+			 (add-slots class direct-slots)
+			 (let ((superclasses (loop for name in direct-superclasses
+						for parent = (find-class name)
+						do (push class (class-direct-subclasses parent))
+						collect parent)))
+			   (setf (class-direct-superclasses class) superclasses)
+			   ;; In clasp each class contains a default allocator functor
+			   ;; that is used to allocate instances of this class
+			   ;; If a superclass is derived from a C++ adaptor class
+			   ;; then we must inherit its allocator
+			   ;; This means that only any class can only ever inherit from one C++ adaptor class
+			   #+clasp(sys:inherit-default-allocator class superclasses)
+			   (let ((cpl (compute-clos-class-precedence-list class superclasses)))
+			     (setf (class-precedence-list class) cpl)))
+			 (when index
+			   (setf (aref +builtin-classes-pre-array+ index) class))
+			 class))))
+
+
 (defun make-empty-standard-class (name &key (metaclass 'standard-class)
 					 direct-superclasses direct-slots index)
   (declare (optimize speed (safety 0)))

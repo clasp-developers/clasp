@@ -172,8 +172,8 @@ namespace core {
 	void LISP_CALLING_CONVENTION()
 	{_G();
 	    Cons_sp form = LCC_ARG0().as_or_nil<Cons_O>();
-	    Environment_sp env = LCC_ARG1().as_or_nil<Environment_O>();
-            InvocationHistoryFrame _frame(this,Environment_O::clasp_getActivationFrame(env));
+	    T_sp env = LCC_ARG1().as_or_nil<T_O>();
+            InvocationHistoryFrame _frame(this); // The environment could be a Non-Clasp Environment (Cleavir)
 	    *lcc_resultP = (this->mptr)(form,env);
 	};
     };

@@ -59,6 +59,11 @@
   `(core:throw-function ,tag ,result-form))
 
 
+(defmacro progv (symbols values &rest forms)
+  `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
+
+
+
 (in-package :core)
 #+clasp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,4 +76,11 @@
     lblock))
 
 (export 'parse-macro)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; core:debug-message is a macro to mimic the core:debug-message special operator
+;;;
+(defmacro debug-message (msg) nil)
+(export 'debug-message)
 

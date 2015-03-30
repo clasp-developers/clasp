@@ -17,14 +17,13 @@ all:
 	make boehm
 	make mps
 
+boehm-cleavir:
+	make boehm
+	make cleavir
+
 cleavir:
-	clasp_boehm_o -l "sys:kernel;cleavir;cmpclasp.lisp" -e "(compile-cleavir)"
+	clasp_boehm_o  -l "buildCleavirClasp.lsp"
 
-cleavir-setf:
-	clasp_boehm_o -l "sys:kernel;cleavir;cmpclasp.lisp" -e "(compile-cleavir-setf)"
-
-cleavir-cont:
-	clasp_boehm_o -l "sys:kernel;cleavir;cmpclasp.lisp" -e "(compile-cleavir :recompile nil)"
 
 #	make clasp-gc-interface
 

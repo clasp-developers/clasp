@@ -1,5 +1,8 @@
 (cl:in-package #:clasp-cleavir)
 
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (push :passed-env *features*))
+
 
 (defvar *debug-cleavir* nil)
 
@@ -118,7 +121,7 @@
 (defun get-or-create-lambda-name (instr)
   (if (typep instr 'cc-mir:enter-instruction)
       (clasp-cleavir-hir:lambda-name instr)
-      "TOP-LEVEL"))
+      'TOP-LEVEL))
 
 (defun layout-procedure (initial-instruction abi)
   ;; I think this removes every basic-block that
@@ -132,10 +135,10 @@
 		      :test #'eq :key #'first))
 	 ;; This gathers the rest of the basic blocks
 	 (rest (remove first basic-blocks :test #'eq))
-	 (name (get-or-create-lambda-name initial-instruction)))
+	 (lambda-name (get-or-create-lambda-name initial-instruction)))
     ;; HYPOTHESIS: This builds a function with no arguments
     ;; that will enclose and set up other functions with arguments
-    (let* ((main-fn-name (format nil "cl->~a" name))
+    (let* ((main-fn-name (format nil "cl->~a" lambda-name))
 	   (cmp:*current-function-name* main-fn-name)
 	   (cmp:*gv-current-function-name* (cmp:jit-make-global-string-ptr cmp:*current-function-name* "fn-name"))
 	   (fn (llvm-sys:function-create
@@ -212,7 +215,7 @@
 	(cmp:irc-br body-block))
       (cc-dbg-when *debug-log*
 		   (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
-      (values fn :function-kind nil main-fn-name))))
+      (values fn :function-kind nil lambda-name))))
 
 (defun translate (initial-instruction abi)
   (let* (#+use-ownerships(ownerships
@@ -299,7 +302,8 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-symbol-instruction) inputs outputs abi)
   (let ((idx (first inputs)))
-    (let ((result (cmp:irc-intrinsic "cc_precalcSymbol" (ltv-global) idx)))
+;;    (format t "translate-simple-instruction (first inputs) --> ~a~%" (first inputs))
+    (let ((result (cmp:irc-intrinsic-args "cc_precalcSymbol" (list (ltv-global) idx))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -412,8 +416,15 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fdefinition-instruction) inputs outputs abi)
   (let ((cell (cmp:irc-load (first inputs) "func-name")))
-    (let ((result (cmp:irc-intrinsic "cc_fdefinition" cell)))
+;;    (format t "translate-simple-instruction (first inputs) = ~a ~%" (first inputs))
+    (let ((result (cmp:irc-intrinsic-args "cc_fdefinition" (list cell) :label "func")))
       (%store result (first outputs)))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:debug-message-instruction) inputs outputs abi)
+  (let ((msg (cmp:jit-constant-unique-string-ptr (clasp-cleavir-hir:debug-message instruction))))
+    (cmp:irc-intrinsic "debugMessage" msg)))
+	
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) inputs outputs abi)
@@ -438,21 +449,24 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) inputs outputs abi)
   (declare (ignore inputs))
-  (let* ((enter-instruction (cleavir-ir:code instruction))
-	 (enclosed-function (layout-procedure enter-instruction abi)))
-    #+(or)(push enclosed-function *functions-to-finalize*)
-    #+(or)(progn
-	    (warn "------- Implement enclose-instruction: ~a~%" instruction)
-	    (format t "   enter-instruction: ~a~%" enter-instruction)
-	    (format t "   enclosed-function: ~a~%" enclosed-function)
-	    (format t "    inputs: ~a~%" inputs)
-	    (format t "    outputs: ~a~%" outputs))
-    (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
-	   (result (cmp:irc-intrinsic-args "cc_enclose" (list* enclosed-function (%size_t (length inputs)) loaded-inputs))))
-      (cc-dbg-when *debug-log*
-		   (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
-		   (format *debug-log* "    inputs: ~a~%" inputs))
-      (%store result (first outputs) nil))))
+  (let* ((enter-instruction (cleavir-ir:code instruction)))
+    (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
+	(layout-procedure enter-instruction abi)
+      #+(or)(push enclosed-function *functions-to-finalize*)
+      #+(or)(progn
+	      (warn "------- Implement enclose-instruction: ~a~%" instruction)
+	      (format t "   enter-instruction: ~a~%" enter-instruction)
+	      (format t "   enclosed-function: ~a~%" enclosed-function)
+	      (format t "    inputs: ~a~%" inputs)
+	      (format t "    outputs: ~a~%" outputs))
+      (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
+	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
+	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+	     (result (cmp:irc-intrinsic-args "cc_enclose" (list* ltv-lambda-name enclosed-function (%size_t (length inputs)) loaded-inputs) :label (format nil "closure->~a" lambda-name))))
+	(cc-dbg-when *debug-log*
+		     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
+		     (format *debug-log* "    inputs: ~a~%" inputs))
+	(%store result (first outputs) nil)))))
 
 
 (defmethod translate-simple-instruction
@@ -766,6 +780,10 @@ nil)
        (format t ";    defun ~a~%" (cadr form)))
       ((eq 'cl:defgeneric (car form))
        (format t ";    defgeneric ~a~%" (cadr form)))
+      ((eq 'cl:defstruct (car form))
+       (format t ";    defstruct ~a~%" (cadr form)))
+      ((eq 'cl:defclass (car form))
+       (format t ";    defclass ~a~%" (cadr form)))
       ((eq 'cl:defmethod (car form))
        (format t ";    defmethod ~a~%" (cadr form)))
       ((eq 'cl:defmacro (car form))
@@ -796,15 +814,25 @@ nil)
 	  (warn "Condition: ~a" condition)
 	  (invoke-restart 'cleavir-generate-ast:consider-global))))
     (when *compile-print* (describe-form form))
+    (cc-dbg-when *debug-log*
+		 (format *debug-log* "cleavir-generate-ast:*compiler* --> ~a~%" cleavir-generate-ast:*compiler*)
+		 (format *debug-log* "cleavir-generate-ast::*current-form-is-top-level-p* --> ~a~%" 
+			 (if (boundp 'cleavir-generate-ast::*current-form-is-top-level-p*) 
+			     cleavir-generate-ast::*current-form-is-top-level-p* 
+			     "UNBOUND" ))
+		 (format *debug-log* "cleavir-generate-ast::*subforms-are-top-level-p* --> ~a~%" 
+			 cleavir-generate-ast::*subforms-are-top-level-p*))
     (let* ((clasp-system (make-instance 'clasp))
-	   (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
+	   (ast (let ((a (cleavir-generate-ast:generate-ast form #+passed-env env #-passed-env *clasp-env* clasp-system)))
 		  (when *debug-cleavir* (draw-ast a))
 		  a))
 	   (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
 	   (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
       (cc-dbg-when *debug-log*
 		   (incf *debug-log-index*)
-		   (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) :type "dot" :defaults (pathname *debug-log*))))
+		   (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
+						      :type "dot" 
+						      :defaults (pathname *debug-log*))))
 		     (cleavir-ast-graphviz:draw-ast hoisted-ast (namestring ast-pathname))
 		     (format *debug-log* "Wrote ast to: ~a~%" (namestring ast-pathname))))
       (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
@@ -819,19 +847,17 @@ nil)
 	(translate hir abi)))))
 
 (defun cleavir-compile-t1expr (name form env pathname)
-  (and env (error "I don't support anything but top level environment compiles using cleavir"))
-  (format t "Compiling: ~a~%" form)
+  #+(or)(and env (error "I don't support anything but top level environment compiles using cleavir env: ~a" env ))
+  #+(or)(format t "Compiling: ~a~%" form)
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
-      (cmp:with-debug-info-generator (:module cmp:*the-module*
-					      :pathname pathname)
+      (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
 	(let* ((clasp-system (make-instance 'clasp))
-	       (ast (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system))
+	       (ast (cleavir-generate-ast:generate-ast form #+passed-env env #-passed-env *clasp-env* clasp-system))
 	       (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-	       (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast))
-	       )
+	       (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
 	  (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
 	  (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
-	  (format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
+	  #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
 	  (when *debug-cleavir* (draw-hir hir)) ;; comment out
 	  (cleavir-ir:hir-to-mir hir clasp-system nil nil)
 	  (when *debug-cleavir* (draw-mir hir)) ;; comment out
@@ -881,15 +907,6 @@ nil)
 	(values enclosed-function warnp failp)))))
 
 
-(defun cleavir-compile (name form &key debug)
-  (let ((cmp:*cleavir-compile-hook* #'cleavir-compile-t1expr)
-	(cmp:*dump-module-on-completion* t)
-	(cleavir-generate-ast:*compiler* 'cl:compile)
-	(*debug-cleavir* debug))
-    (compile name form)))
-
-
-
 
 
 
@@ -910,23 +927,22 @@ nil)
 			 ))))
 
 
-#+(or)  (let* ((clasp-system (make-instance 'clasp))
-	       (ast (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system))
-	       (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-	       (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-	  (cleavir-hir-transformations:hir-transformations hir clasp-system nil nil)
-	  (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-	  (let ((*form* form)
-		(abi (make-instance 'abi-x86-64)))
-	    (translate hir abi)))
+(defun cleavir-compile (name form &key debug)
+  (let ((cmp:*cleavir-compile-hook* #'cleavir-compile-t1expr)
+	(cmp:*dump-module-on-completion* t)
+	(cleavir-generate-ast:*compiler* 'cl:compile)
+	(*debug-cleavir* debug))
+    (compile name form)))
+
+
+
 
 
 (defun cleavir-compile-file (given-input-pathname &rest args)
-  (let ((cmp:*cleavir-compile-file-hook* #'cleavir-compile-file-form)
-	(*debug-log-index* 0)
-	;;	(cmp:*dump-module-on-completion* t)
+  (let ((*debug-log-index* 0)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file))
-    (apply #'compile-file given-input-pathname args)))
+    (let ((cmp:*cleavir-compile-file-hook* #'cleavir-compile-file-form))
+      (apply #'compile-file given-input-pathname args))))
 
 
 

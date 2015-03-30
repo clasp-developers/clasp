@@ -1,7 +1,8 @@
 (cl:in-package #:common-lisp-user)
 
 (defpackage #:clasp-cleavir
-  (:use #:common-lisp)
+  (:use #:common-lisp #:core)
+  (:nicknames #:cc)
   (:export
    #:cleavir-compile-eval
 ))
@@ -47,3 +48,6 @@
   (:use #:common-lisp #:cleavir-ir)
   (:export
    #:draw-flowchart))
+
+(defpackage #:lisp-executable.creation
+  (:use #:common-lisp))

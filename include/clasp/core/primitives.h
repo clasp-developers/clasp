@@ -37,6 +37,7 @@ THE SOFTWARE.
 namespace core
 {
 
+    extern T_sp cl_macroFunction(Symbol_sp symbol, T_sp env);
     extern Cons_mv af_separatePairList(Cons_sp listOfPairs);
 
     extern Symbol_mv af_functionBlockName(T_sp functionName);

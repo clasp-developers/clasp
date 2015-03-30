@@ -2,12 +2,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; During bootstrapping of CLOS some functions
+;;; Expand local-macro-info definitions
 ;;; use the macro WITH-EARLY-ACCESSORS - it creates
 ;;; macrolet macros that substitute for functions - this confuses cleavir
 ;;; Treat LOCAL-MACRO-INFO function names as globals
 (defmethod cleavir-generate-ast:convert-function
     ((info cleavir-env:local-macro-info) env (system clasp-cleavir:clasp))
+  (format t "In kernel/cleavir/convert-special.lisp -- cleavir-generate-ast:convert-function for: ~a~%" info)
   (cleavir-generate-ast:convert-global-function info (cleavir-env:global-environment env) system))
 
 
@@ -55,10 +56,39 @@
 ;;; and the multiple values returned from func1 are restored
 ;;;
 (defmethod cleavir-generate-ast:convert-special
-    ((symbol (eql 'core:multiple-value-prog1)) form environment (system clasp-cleavir:clasp))
+    ((symbol (eql 'cl:multiple-value-prog1)) form environment (system clasp-cleavir:clasp))
   (destructuring-bind (first-form . forms) 
       (rest form)
     (cleavir-generate-ast:convert `(core:multiple-value-prog1-function #'(lambda () ,first-form) (lambda () ,@forms)) environment system)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:DEBUG-MESSAGE
+;;;
+;;; This is converted into a call to print a message
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core:debug-message)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:debug-message-ast :debug-message (cadr form)))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core:debug-message)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 1))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CL:PROGV
+;;;
+;;; Convert this into a function call
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'cl:progv)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (symbols values . forms) 
+      (rest form)
+    (cleavir-generate-ast:convert `(core:progv-function symbols values #'(lambda () ,@forms)) environment system)))
+
 
 
 

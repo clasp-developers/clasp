@@ -29,4 +29,4 @@
 		 (:file "arguments")
 		 (:file "gml-drawing")
 		 (:file "translate")
-		 (:file "cmpclasp")))
+		 ))

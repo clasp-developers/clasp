@@ -367,6 +367,15 @@ namespace core
     };
 
 
+#define ARGS_core_setenv "(name arg overwrite)"
+#define DECL_core_setenv ""
+#define DOCS_core_setenv "getEnv"
+    void core_setenv(Str_sp name, Str_sp arg, bool overwrite)
+    {
+	setenv(name->c_str(),arg->c_str(), overwrite);
+    };
+
+
 
 
 #define ARGS_af_pointer "(arg)"
@@ -597,30 +606,32 @@ namespace core
 #endif
 
 
-#define ARGS_af_macroFunction "(symbol &optional env)"
-#define DECL_af_macroFunction ""
-#define DOCS_af_macroFunction "See CLHS: macroFunction"
-    T_sp af_macroFunction(Symbol_sp symbol, Environment_sp env)
-    {_G();
-	Function_sp func = af_interpreter_lookup_macro(symbol,env);
-	if ( func.nilp() ) return _Nil<T_O>();
-	if ( func->closure->macroP() ) return func;
-	return _Nil<T_O>();
-    }
-
 #define ARGS_cl_macroFunction "(symbol &optional env)"
 #define DECL_cl_macroFunction ""
 #define DOCS_cl_macroFunction "See CLHS: macroFunction"
-    T_sp cl_macroFunction(Symbol_sp symbol, Environment_sp env)
+    T_sp cl_macroFunction(Symbol_sp symbol, T_sp env)
     {_G();
-	return af_macroFunction(symbol,env);
+	Function_sp func = _Nil<Function_O>();
+	if ( env.nilp() || env.framep() ) {
+	    func = af_interpreter_lookup_macro(symbol,env);
+	} else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+	    func = af_interpreter_lookup_macro(symbol,env);
+	} else {
+	    if (cleavirEnv::_sym_macroFunction->fboundp()) {
+		func = eval::funcall(cleavirEnv::_sym_macroFunction,symbol,env);
+	    } else {
+		printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__, __LINE__ );
+		func = af_interpreter_lookup_macro(symbol,_Nil<T_O>());
+	    }
+	}
+	return func;
     }
 
 
-#define ARGS_af_specialOperatorP "(symbol)"
-#define DECL_af_specialOperatorP ""
-#define DOCS_af_specialOperatorP "See CLHS: special-operator-p"
-    T_mv af_specialOperatorP(T_sp sym)
+#define ARGS_cl_specialOperatorP "(symbol)"
+#define DECL_cl_specialOperatorP ""
+#define DOCS_cl_specialOperatorP "See CLHS: special-operator-p"
+    T_mv cl_specialOperatorP(T_sp sym)
     {_G();
 	SYMBOL_EXPORT_SC_(ClPkg,let);
 	SYMBOL_EXPORT_SC_(ClPkg,letSTAR);
@@ -666,11 +677,27 @@ namespace core
 	     ( sym == cl::_sym_catch) ||
 	     ( sym == cl::_sym_throw) ||
 	     ( sym == cl::_sym_progv) ||
-	     ( sym == cl::_sym_quote ) )
+	     ( sym == cl::_sym_quote ))
 	{
 	    return(Values(_lisp->_true()));
 	}
 	return(Values(_Nil<T_O>()));
+    };
+
+
+
+#define ARGS_core_treatAsSpecialOperatorP "(symbol)"
+#define DECL_core_treatAsSpecialOperatorP ""
+#define DOCS_core_treatAsSpecialOperatorP "See CLHS: special-operator-p"
+    T_sp core_treatAsSpecialOperatorP(T_sp sym)
+    {_G();
+	SYMBOL_EXPORT_SC_(CorePkg,debug_message);
+	if ( sym == cl::_sym_unwind_protect ||
+	     sym == cl::_sym_progv ||
+	     sym == cl::_sym_catch ||
+	     sym == cl::_sym_throw ) return _Nil<T_O>(); // All handled in macros
+	if ( sym == core::_sym_debug_message ) return _lisp->_true();
+	return cl_specialOperatorP(sym);
     };
 
 
@@ -2014,10 +2041,7 @@ void initialize_primitives()
 	Defun(rem_f);
 
 	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
-	Defun(specialOperatorP);
-
-	SYMBOL_EXPORT_SC_(CorePkg,macroFunction);
-	Defun(macroFunction);
+	ClDefun(specialOperatorP);
 
 	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
 	ClDefun(macroFunction);
@@ -2040,12 +2064,6 @@ void initialize_primitives()
 	SYMBOL_SC_(CorePkg,rem_f);
 	Defun(rem_f);
 
-	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
-	Defun(specialOperatorP);
-
-	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
-	Defun(macroFunction);
-
 	SYMBOL_SC_(CorePkg,separatePairList);
 	Defun(separatePairList);
 
@@ -2061,11 +2079,7 @@ void initialize_primitives()
 	SYMBOL_SC_(CorePkg,rem_f);
 	Defun(rem_f);
 
-	SYMBOL_EXPORT_SC_(ClPkg,specialOperatorP);
-	Defun(specialOperatorP);
-
-	SYMBOL_EXPORT_SC_(ClPkg,macroFunction);
-	Defun(macroFunction);
+	CoreDefun(treatAsSpecialOperatorP);
 
 	SYMBOL_SC_(CorePkg,separatePairList);
 	Defun(separatePairList);
@@ -2107,6 +2121,7 @@ void initialize_primitives()
 
 	SYMBOL_EXPORT_SC_(ExtPkg,getEnv);
 	Defun(getEnv);
+	CoreDefun(setenv);
 
         Defun(exceptionStackDump);
 	SYMBOL_EXPORT_SC_(CorePkg,toTaggedFixnum);

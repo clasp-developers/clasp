@@ -236,6 +236,9 @@ namespace core
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         SourcePosInfo_sp spi = this->closure->sourcePosInfo();
         SourceFileInfo_sp sfi = core_sourceFileInfo(spi);
+	if ( sfi.nilp() || spi.nilp() ) {
+	    return Values(sfi,Integer_O::create(0),Fixnum_O::create(0));
+	}
         return Values(sfi,Integer_O::create((size_t)spi->filepos()), Fixnum_O::create(spi->lineno()));
     }
 

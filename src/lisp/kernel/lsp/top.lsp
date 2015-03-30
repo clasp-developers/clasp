@@ -1472,7 +1472,8 @@ package."
 				    (type-of condition) condition))
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)
-           (*break-env* nil))
+           (*break-env* nil)
+	   #+clasp(cmp:*implicit-compile-hook* #'core:implicit-compile-hook-default))
       (check-default-debugger-runaway)
       #+threads
       ;; We give our process priority for grabbing the console.

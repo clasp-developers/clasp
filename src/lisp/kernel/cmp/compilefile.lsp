@@ -300,63 +300,66 @@ and the pathname of the source file - this will also be used as the module initi
   "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((input-pathname (probe-file given-input-pathname))
-	 (sin (open input-pathname :direction :input))
+	 (source-sin (open input-pathname :direction :input))
 	 (eof-value (gensym))
 	 (module (create-llvm-module-for-compile-file (namestring input-pathname)))
 	 (module-name (cf-module-name type input-pathname))
 	 warnings-p failure-p)
-    ;; If a truename is provided then spoof the file-system to treat input-pathname
-    ;; as source-truename with the given offset
-    (when source-debug-namestring
-      (core:source-file-info (namestring input-pathname) source-debug-namestring source-debug-offset nil))
-    (when *compile-verbose*
-      (bformat t "; Compiling file: %s\n" (namestring input-pathname)))
-    (with-one-source-database
-	(cmp-log "About to start with-compilation-unit\n")
-      (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-	     (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
-	(with-module (nil :module module
-			  :function-pass-manager (if *use-function-pass-manager-for-compile-file* 
-						     (create-function-pass-manager-for-compile-file module))
-			  :source-pathname (namestring *compile-file-pathname*)
-			  :source-debug-namestring source-debug-namestring
-			  :source-debug-offset source-debug-offset
-			  )
-	  (let* ()
-	    (with-debug-info-generator (:module *the-module*
-						:pathname *compile-file-truename*)
-	      (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
-		(loop
-		   (let* ((core:*source-database* (core:make-source-manager))
-			  (top-source-pos-info (core:input-stream-source-pos-info sin))
-			  (form (read sin nil eof-value)))
-		     (if (eq form eof-value)
-			 (return nil)
-			 (progn
-			   (if cmp:*debug-compile-file* (bformat t "compile-file: %s\n" form))
-			   ;; If the form contains source-pos-info then use that
-			   ;; otherwise fall back to using *current-source-pos-info*
-			   (let ((core:*current-source-pos-info* 
-				  (core:walk-to-find-source-pos-info form top-source-pos-info)))
-			     (compile-file-t1expr form))))))
-		(let ((main-fn (compile-main-function output-path ltv-init-fn )))
-		  (make-boot-function-global-variable *the-module* main-fn)
-		  (add-main-function *the-module*)))
-	      )
-	    (cmp-log "About to verify the module\n")
-	    (cmp-log-dump *the-module*)
-	    (if *dump-module-on-completion*
-		(llvm-sys:dump *the-module*))
-	    (multiple-value-bind (found-errors error-message)
-		(progn
-		  (cmp-log "About to verify module prior to writing bitcode\n")
-		  (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
-		  )
-	      (if found-errors
+    (or module (error "module is NIL"))
+    (with-open-stream (sin source-sin)
+      ;; If a truename is provided then spoof the file-system to treat input-pathname
+      ;; as source-truename with the given offset
+      (when source-debug-namestring
+	(core:source-file-info (namestring input-pathname) source-debug-namestring source-debug-offset nil))
+      (when *compile-verbose*
+	(bformat t "; Compiling file: %s\n" (namestring input-pathname)))
+      (with-one-source-database
+	  (cmp-log "About to start with-compilation-unit\n")
+	(let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+	       (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+	  (with-module (nil :module module
+			    :function-pass-manager (if *use-function-pass-manager-for-compile-file* 
+						       (create-function-pass-manager-for-compile-file module))
+			    :source-pathname (namestring *compile-file-pathname*)
+			    :source-debug-namestring source-debug-namestring
+			    :source-debug-offset source-debug-offset
+			    )
+	    (let* ()
+	      (with-debug-info-generator (:module *the-module*
+						  :pathname *compile-file-truename*)
+		(or *the-module* (error "*the-module* is NIL"))
+		(with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
+		  (loop
+		     (let* ((core:*source-database* (core:make-source-manager))
+			    (top-source-pos-info (core:input-stream-source-pos-info source-sin))
+			    (form (read source-sin nil eof-value)))
+		       (if (eq form eof-value)
+			   (return nil)
+			   (progn
+			     (if cmp:*debug-compile-file* (bformat t "compile-file: %s\n" form))
+			     ;; If the form contains source-pos-info then use that
+			     ;; otherwise fall back to using *current-source-pos-info*
+			     (let ((core:*current-source-pos-info* 
+				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
+			       (compile-file-t1expr form))))))
+		  (let ((main-fn (compile-main-function output-path ltv-init-fn )))
+		    (make-boot-function-global-variable *the-module* main-fn)
+		    (add-main-function *the-module*)))
+		)
+	      (cmp-log "About to verify the module\n")
+	      (cmp-log-dump *the-module*)
+	      (if *dump-module-on-completion*
+		  (llvm-sys:dump *the-module*))
+	      (multiple-value-bind (found-errors error-message)
 		  (progn
-		    (format t "Module error: ~a~%" error-message)
-		    (break "Verify module found errors"))))))))
-    module))
+		    (cmp-log "About to verify module prior to writing bitcode\n")
+		    (llvm-sys:verify-module *the-module* 'llvm-sys:return-status-action)
+		    )
+		(if found-errors
+		    (progn
+		      (format t "Module error: ~a~%" error-message)
+		      (break "Verify module found errors"))))))))
+      module)))
 
 
 (defun compile-file (given-input-pathname

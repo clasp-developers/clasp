@@ -49,7 +49,7 @@ namespace core
     T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env);
     Function_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);
     Function_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env);
-    Function_sp af_interpreter_lookup_symbol_macro(Symbol_sp sym, T_sp env);
+    Function_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env);
 
 
 

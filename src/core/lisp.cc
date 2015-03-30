@@ -1457,7 +1457,7 @@ namespace core
 	    TRY() {
 		if ( prompt ) {
 		    stringstream prompts;
-		    prompts << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << "> ";
+		    prompts << std::endl << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << "> ";
 		    clasp_write_string(prompts.str(),stream);
 		}
 		DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR,SourceManager_O::create());
@@ -1562,14 +1562,7 @@ namespace core
     {_OF();
 	Cons_sp expression;
 //	TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<T_O>());
-	while(1) {
-	  string line;
-	  stringstream prompt;
-	  prompt << cl::_sym_STARpackageSTAR->symbolValue().as<Package_O>()->getName() << ">>> ";
-	  line = myReadLine(prompt.str());
-	  StringInputStream_sp sin = StringInputStream_O::make(line);
-	  this->readEvalPrint(sin,_Nil<T_O>(),true,true);
-	}
+	this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(),_Nil<T_O>(),true,true);
     }
 
 
@@ -2127,55 +2120,70 @@ namespace core
 
 
 
-#define ARGS_af_macroexpand_1 "(form &optional env)"
-#define DECL_af_macroexpand_1 ""
-#define DOCS_af_macroexpand_1 "macroexpand_1"
-    T_mv af_macroexpand_1(T_sp form, T_sp env)
+#define ARGS_cl_macroexpand_1 "(form &optional env)"
+#define DECL_cl_macroexpand_1 ""
+#define DOCS_cl_macroexpand_1 "macroexpand_1"
+    T_mv cl_macroexpand_1(T_sp form, T_sp env)
     {_G();
 	Function_sp expansionFunction = _Nil<Function_O>();
 	if ( form.nilp() ) {
 	    return form;
-	} else if ( Cons_sp cform = form.asOrNull<Cons_O>() )
-	{
+	} else if ( Cons_sp cform = form.asOrNull<Cons_O>() ) {
 	    T_sp head = oCar(cform);
-	    if ( af_symbolp(head) )
-	    {
-		//		Symbol_sp headSymbol = head.as<Symbol_O>();
-		//		if ( _lisp->specialFormOrNil(headSymbol).nilp() )
-		//		{
+	    if ( af_symbolp(head) ) {
 		Symbol_sp headSymbol = head.as<Symbol_O>();
-		Function_sp func = af_interpreter_lookup_macro(headSymbol,env);
-		if ( func.notnilp() && func->closure->macroP() ) expansionFunction = func;
-		//		}
-	    }
-	} else if ( Symbol_sp sform = form.asOrNull<Symbol_O>() )
-	{
-	    Function_sp func = af_interpreter_lookup_symbol_macro(sform,env);
-	    if ( func.notnilp() )
-	    {
+		Function_sp func = eval::funcall(cl::_sym_macroFunction,headSymbol,env).as<Function_O>();
 		expansionFunction = func;
 	    }
+	    if ( expansionFunction.notnilp() ) {
+		T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
+		Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
+		T_sp expanded = eval::funcall(hookFunc,expansionFunction,form,env);
+		if ( _lisp->sourceDatabase().notnilp() ) {
+		    _lisp->sourceDatabase()->duplicateSourcePosInfo(form,expanded,expansionFunction);
+		}
+		return(Values(expanded,_lisp->_true()) );
+	    }
+	    return(Values(form,_Nil<T_O>()));
+	} else if ( Symbol_sp sform = form.asOrNull<Symbol_O>() ) {
+	    if ( env.nilp() || env.framep() ) {
+		expansionFunction = core_lookup_symbol_macro(sform,env);
+	    } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
+		expansionFunction = core_lookup_symbol_macro(sform,eenv);
+	    } else {
+		if ( cleavirEnv::_sym_symbolMacroExpansion->fboundp() ) {
+		    T_sp expanded = eval::funcall(cleavirEnv::_sym_symbolMacroExpansion,sform,env);
+		    if ( expanded == sform ) {
+			return Values(sform,_Nil<T_O>());
+		    }
+		    return Values(expanded,_lisp->_true());
+		} else {
+		    SIMPLE_ERROR(BF("Illegal environment for MACROEXPAND-1 of symbol-macro %s") % _rep_(sform));
+		}
+	    }
+	    if ( expansionFunction.notnilp() ) {
+		T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
+		Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
+		T_sp expanded = eval::funcall(hookFunc,expansionFunction,form,env);
+		if ( _lisp->sourceDatabase().notnilp() ) {
+		    _lisp->sourceDatabase()->duplicateSourcePosInfo(form,expanded,expansionFunction);
+		}
+		if ( expanded != form ) {
+		    return(Values(expanded,_lisp->_true()) );
+		}
+	    }
+	    return Values(form,_Nil<T_O>());
 	}
-	if ( expansionFunction.notnilp() )
-	{
-	    T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-	    Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
-	    T_sp expanded = eval::funcall(hookFunc,expansionFunction,form,env);
-            if ( _lisp->sourceDatabase().notnilp() ) {
-                _lisp->sourceDatabase()->duplicateSourcePosInfo(form,expanded,expansionFunction);
-            }
-	    return(Values(expanded,_lisp->_true()) );
-	}
-	return(Values(form,_Nil<T_O>()));
+	return Values(form,_Nil<T_O>());
     }
 
 
 
 
-#define ARGS_af_macroexpand "(form &optional env)"
-#define DECL_af_macroexpand ""
-#define DOCS_af_macroexpand "macroexpand"
-    T_mv af_macroexpand(T_sp form, T_sp env)
+#define ARGS_cl_macroexpand "(form &optional env)"
+#define DECL_cl_macroexpand ""
+#define DOCS_cl_macroexpand "macroexpand"
+    T_mv cl_macroexpand(T_sp form, T_sp env)
     {_G();
 	bool sawAMacro = false;
 	bool expandedMacro = false;
@@ -2186,7 +2194,7 @@ namespace core
 	}
 	T_sp cur = form;
 	do {
-	    T_mv mv = af_macroexpand_1(cur,env);
+	    T_mv mv = cl_macroexpand_1(cur,env);
 	    cur = mv;
 	    sawAMacro = mv.valueGet(1).as<T_O>().isTrue();
 	    expandedMacro |= sawAMacro;
@@ -3729,9 +3737,9 @@ extern "C"
 	SYMBOL_EXPORT_SC_(ClPkg,sort);
 	Defun(sort);
 	SYMBOL_EXPORT_SC_(ClPkg,macroexpand_1);
-	Defun(macroexpand_1);
+	ClDefun(macroexpand_1);
 	SYMBOL_EXPORT_SC_(ClPkg,macroexpand);
-	Defun(macroexpand);
+	ClDefun(macroexpand);
 
 	// information functions
 	SYMBOL_SC_(CorePkg,database_dir);

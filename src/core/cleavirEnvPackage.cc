@@ -1,5 +1,5 @@
 /*
-    File: stdClass.h
+    File: cleavirEnvPackage.cc
 */
 
 /*
@@ -24,45 +24,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	core_StdClass_H //[
-#define core_StdClass_H
 
-
-
-#include <stdio.h>
-#include <string>
-#include <vector>
-#include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/metaClass.h>
-#include <clasp/core/environment.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/cleavirEnvPackage.h>
+#include <clasp/core/multipleValues.h>
+#include <clasp/core/package.h>
 
-namespace core {
+namespace cleavirEnv
+{
 
-// Set up this class differently
+#pragma GCC visibility push(default)
+#define CleavirEnvPkg_SYMBOLS
+#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
+#include <clasp/core/symbols_scraped_inc.h>
+#undef DO_SYMBOL
+#undef CleavirEnvPkg_SYMBOLS
+#pragma GCC visibility pop
 
-    SMART(StdClass);
-    class StdClass_O : public Class_O
+
+    SYMBOL_EXPORT_SC_(CleavirEnvPkg, macroFunction);
+    SYMBOL_EXPORT_SC_(CleavirEnvPkg, symbolMacroExpansion);
+
+    void initialize_cleavirEnvPackage()
     {
-        LISP_META_CLASS(StandardClass);
-        LISP_BASE1(Class_O);
-        LISP_CLASS(core,ClosPkg,StdClass_O,"STD-CLASS");
-    public:
+	list<string> lnicknames;
+	list<string> luse = {"COMMON-LISP"};
+	_lisp->makePackage(CleavirEnvPkg,lnicknames,luse);
+	// We don't have to create the CLEAVIR-PRIMOPS symbols here - it's done in bootStrapCoreSymbolMap
+    }
 
-	StdClass_O( const StdClass_O& ss ); //!< Copy constructor
 
-	explicit StdClass_O();
-	virtual ~StdClass_O();
-    };
 };
-
-template<> struct gctools::GCInfo<core::StdClass_O> {
-    static bool constexpr NeedsInitialization = true;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true; // old=false
-    static bool constexpr Atomic = false;
-};
-
-TRANSLATE(core::StdClass_O);
-#endif //]

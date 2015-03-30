@@ -668,6 +668,7 @@
 			       :function-type ,function-type
 			       :form ,function-form )
 	     (with-dbg-lexical-block (,function-form)
+	       (or *the-module* (error "with-new-function *the-module* is NIL"))
 	       (let* ((*gv-current-function-name* (jit-make-global-string-ptr *current-function-name* "fn-name"))
 		      (*exception-handler-cleanup-block* (irc-get-exception-handler-cleanup-block ,fn-env))
 		      (*exception-clause-types-to-handle* nil))
@@ -733,11 +734,10 @@ and then the irbuilder-alloca, irbuilder-body."
 	  (exn.slot (irc-alloca-i8* func-env :irbuilder irbuilder-alloca :label "exn.slot"))
 	  (ehselector.slot (irc-alloca-i32 func-env 0
 					   :irbuilder irbuilder-alloca
-					   :label "ehselector.slot"))
-	  )
+					   :label "ehselector.slot")))
       (setf-metadata func-env :exn.slot exn.slot)
       (setf-metadata func-env :ehselector.slot ehselector.slot)
-      (values fn func-env cleanup-block #| traceid |# irbuilder-alloca irbuilder-body))))
+      (values fn func-env cleanup-block irbuilder-alloca irbuilder-body))))
 
 
 

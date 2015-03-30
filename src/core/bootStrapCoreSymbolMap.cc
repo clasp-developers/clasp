@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/extensionPackage.fwd.h>
 #include <clasp/core/cleavirPrimopsPackage.fwd.h>
+#include <clasp/core/cleavirEnvPackage.fwd.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>
@@ -80,6 +81,12 @@ namespace core
 	#include "symbols_scraped_inc.h"
 #undef DO_SYMBOL
 #undef CleavirPrimopsPkg_SYMBOLS
+
+#define CleavirEnvPkg_SYMBOLS
+#define DO_SYMBOL(cname,rsid,pkgName,symName,exportp) cleavirEnv::cname = this->allocate_unique_symbol(pkgName,symName,exportp);
+	#include "symbols_scraped_inc.h"
+#undef DO_SYMBOL
+#undef CleavirEnvPkg_SYMBOLS
 
 #define GrayPkg_SYMBOLS
 #define DO_SYMBOL(cname,rsid,pkgName,symName,exportp) gray::cname = this->allocate_unique_symbol(pkgName,symName,exportp);

@@ -124,6 +124,7 @@ local sources =
       grayPackage.cc
       closPackage.cc
       cleavirPrimopsPackage.cc
+      cleavirEnvPackage.cc
       compPackage.cc
 	    bootStrapCoreSymbolMap.cc
 	    symbol.cc

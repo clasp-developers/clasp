@@ -1028,8 +1028,8 @@ public:
 namespace core
 {
 
-    T_mv af_macroexpand_1(T_sp form, T_sp env);
-    T_mv af_macroexpand(T_sp form, T_sp env);
+    T_mv cl_macroexpand_1(T_sp form, T_sp env);
+    T_mv cl_macroexpand(T_sp form, T_sp env);
 
     Cons_sp cl_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
 

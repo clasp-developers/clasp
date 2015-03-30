@@ -17,7 +17,7 @@
   (format *query-io* "~&Type a form to be evaluated:~%")
   (list (eval (read *query-io*))))
 
-#-scicl-min
+#-ecl-min
 (defun wrong-type-argument (object type &optional place function)
   #-ecl-min
   (declare (policy-debug-ihs-frame))
@@ -55,7 +55,7 @@ value is used to indicate the expected type in the error message."
 	 (setf ,place (do-check-type ,aux ',type ',type-string ',place)))
        nil)))
 
-#-scicl-min
+#-ecl-min
 (defun do-check-type (value type type-string place)
   (tagbody again
      (unless (typep value type)
@@ -118,7 +118,7 @@ signals an error."
        (case ,key ,@clauses
 	 (t (si::ecase-error ,key ',(accumulate-cases clauses nil)))))))
 
-#-scicl-min
+#-ecl-min
 (defun ccase-error (keyform key values)
   (restart-case (error 'CASE-FAILURE
 		       :name 'CCASE
@@ -200,7 +200,7 @@ the last FORM.  If not, signals an error."
        )
    )
 
-#-scicl-min
+#-ecl-min
 (defun ctypecase-error (keyplace value types)
   (restart-case (error 'CASE-FAILURE
 		       :name 'CTYPECASE

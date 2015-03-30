@@ -496,10 +496,56 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 
 
+(defun codegen-fill-let-environment (new-env lambda-list-handler
+				     exps parent-env evaluate-env)
+  "Evaluate each of the exps in the evaluate-env environment
+and put the values into the activation frame for new-env.
+env is the parent environment of the (result-af) value frame"
+  (multiple-value-bind (reqvars)
+      (process-lambda-list-handler lambda-list-handler)
+    (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
+	  (result-af (irc-renv new-env)))
+      (dbg-set-current-debug-location-here)
+      (irc-make-value-frame result-af number-of-lexical-vars)
+      (irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv new-env))
+      (irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
+      (dbg-set-current-debug-location-here)
+      (irc-attach-debugging-info-to-value-frame (irc-renv new-env)
+						lambda-list-handler
+						new-env)
+      ;; Save all special variables
+      (do* ((cur-req (cdr reqvars) (cdr cur-req))
+	    (classified-target (car cur-req) (car cur-req)))
+	   ((endp cur-req) nil)
+	(compile-save-if-special new-env classified-target))
+      ;;
+      ;; Generate allocas for all of the temporary values
+      ;;
+      (let ((temps (make-array (length reqvars) :adjustable t :fill-pointer 0)))
+	(do* ((cur-req (cdr reqvars) (cdr cur-req))
+	      (cur-exp exps (cdr cur-exp))
+	      (exp (car cur-exp) (car cur-exp))
+	      (temp (irc-alloca-tsp evaluate-env :label "let") 
+		    (irc-alloca-tsp evaluate-env :label "let")))
+	     ((endp cur-req) nil)
+	  (vector-push-extend temp temps)
+	  (dbg-set-current-source-pos exp)
+	  (codegen temp exp evaluate-env))
+	;; Now generate code for let
+	(cmp-log "About to generate code for exps: %s\n" exps)
+	(do* ((cur-req (cdr reqvars) (cdr cur-req))
+	      (classified-target (car cur-req) (car cur-req))
+	      (tempidx 0 (1+ tempidx)))
+	     ((endp cur-req) nil)
+	  (let* ((target-head (car classified-target))
+		 (target-idx (cdr classified-target)))
+	    (with-target-reference-do (target-ref classified-target new-env)
+	      (irc-store (irc-load (elt temps tempidx)) target-ref))))))))
 
-(defun codegen-fill-let/let*-environment (operator-symbol
-					  new-env lambda-list-handler
-					  exps parent-env evaluate-env)
+
+
+(defun codegen-fill-let*-environment (new-env lambda-list-handler
+				     exps parent-env evaluate-env)
   "Evaluate each of the exps in the evaluate-env environment
 and put the values into the activation frame for new-env.
 env is the parent environment of the (result-af) value frame"
@@ -565,16 +611,14 @@ env is the parent environment of the (result-af) value frame"
 	    (with-try new-env
 	      (progn
 		(irc-branch-to-and-begin-block (irc-basic-block-create
-						(bformat nil "%s-start"
-							 (symbol-name operator-symbol))))
+						(bformat nil "%s-start" (symbol-name operator-symbol))))
 		(if (eq operator-symbol 'let)
-		    (trace-enter-let-scope new-env code)
-		    (trace-enter-let*-scope new-env code))
-;;		(irc-intrinsic "trace_setActivationFrameForIHSTop" (irc-renv new-env))
-		(codegen-fill-let/let*-environment operator-symbol
-						   new-env
-						   lambda-list-handler
-						   expressions env evaluate-env)
+		    (progn
+		      (trace-enter-let-scope new-env code)
+		      (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env))
+		    (progn
+		      (trace-enter-let*-scope new-env code)
+		      (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env)))
 		(irc-single-step-callback new-env)
 		(cmp-log "About to evaluate codegen-progn\n")
 		(codegen-progn result code new-env))
@@ -1145,6 +1189,9 @@ jump to blocks within this tagbody."
 	  (setq *nexti* (+ 1 *nexti*))))
     (irc-intrinsic "debugPrintI32" (jit-constant-i32 giveni))))
 
+(defun codegen-debug-message (result rest env)
+  (let ((message (jit-constant-unique-string-ptr (car rest))))
+    (irc-intrinsic "debugMessage" message)))
 
 
 (defun codegen-llvm-inline (result result-env-body compiler-env)
@@ -1220,33 +1267,32 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
 
 
 
-(defun augmented-special-operator-p (x)
-  (or (special-operator-p x) (assoc x cmp:+special-operator-dispatch+)))
-
 
 ;;
 ;; Why does this duplicate so much functionality from codegen-literal
 (defun codegen-atom (result obj env)
   "Generate code to generate the load-time-value of the atom "
-  (if (symbolp obj)
-      (codegen-symbol-value result obj env)
-      (if *generate-compile-file-load-time-values*
-	  (cond
-	    ((null obj) (codegen-ltv/nil result env))
-	    ((integerp obj) (codegen-ltv/integer result obj env))
-	    ((stringp obj) (codegen-ltv/string result obj env))
-            ((pathnamep obj) (codegen-ltv/pathname result obj env))
-	    ((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
-	    ((floatp obj) (codegen-ltv/float result obj env))
-            ((complexp obj) (codegen-ltv/complex result obj env))
-	    ((characterp obj) (codegen-ltv/character result obj env))
-	    ((arrayp obj) (codegen-ltv/array result obj env))
-	    ((hash-table-p obj) (codegen-ltv/container result obj env))
-	    ((packagep obj) (codegen-ltv/package result obj env))
-	    (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
-	  ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
-	  ;; default module without coalescence.
-	  (codegen-rtv result obj env))))
+  (if *generate-compile-file-load-time-values*
+      (cond
+	((null obj) (codegen-ltv/nil result env))
+	((integerp obj) (codegen-ltv/integer result obj env))
+	((stringp obj) (codegen-ltv/string result obj env))
+	((pathnamep obj) (codegen-ltv/pathname result obj env))
+	((packagep obj) (codegen-ltv/package result obj env))
+	((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
+	((floatp obj) (codegen-ltv/float result obj env))
+	((complexp obj) (codegen-ltv/complex result obj env))
+	;; symbol would be here
+	((characterp obj) (codegen-ltv/character result obj env))
+	((arrayp obj) (codegen-ltv/array result obj env))
+	;; cons would be here
+	((hash-table-p obj) (codegen-ltv/container result obj env))
+	(t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
+      ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
+      ;; default module without coalescence.
+      (codegen-rtv result obj env)))
+
+
 
 
 (defun codegen (result form env)
@@ -1264,19 +1310,20 @@ To use this do something like (compile 'a '(lambda () (let ((x 1)) (cmp::gc-prof
       (when *code-walker*
         (setq form (funcall *code-walker* form env)))
       (if (atom form)
-          (codegen-atom result form env)
-        (let ((head (car form))
-              (rest (cdr form)))
-          (cmp-log "About to codegen special-operator or application for: %s\n" form)
-          ;;	(trace-linenumber-column (walk-to-find-parse-pos form) env)
-          (if (and head (symbolp head) (or (macro-function head) (not (augmented-special-operator-p head))))
-              (progn
-                (cmp-log "About to codegen-application: %s\n" form)
-                (codegen-application result form env))
-              (progn
-                (cmp-log "About to codegen-special-operator: %s %s\n" head rest)
-                (codegen-special-operator result head rest env))
-	      ))))))
+	  (if (symbolp form)
+	      (codegen-symbol-value result form env)
+	      (codegen-atom result form env))
+	  (let ((head (car form))
+		(rest (cdr form)))
+	    (cmp-log "About to codegen special-operator or application for: %s\n" form)
+	    ;;	(trace-linenumber-column (walk-to-find-parse-pos form) env)
+	    (cond
+	      ((treat-as-special-operator-p head)
+	       (codegen-special-operator result head rest env))
+	      ((and head (symbolp head))
+	       (codegen-application result form env))
+	      (t
+	       (error "Handle codegen of cons: ~a" form))))))))
 
 
 
@@ -1333,19 +1380,19 @@ be wrapped with to make a closure"
 				 source-debug-namestring
 				 (source-debug-offset 0)
 				 (source-debug-use-lineno t)) &rest body)
-  `(let ((*the-module* ,module)
-         (*the-function-pass-manager* ,function-pass-manager)
-         #+(or)(*all-functions-for-one-compile* nil)
-         #+(or)(*generate-load-time-values* t)
-	 (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
-	 (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
-								     ,source-debug-namestring
-								     ,source-pathname) "source-debug-namestring"))
-	 (*source-debug-offset* ,source-debug-offset)
-	 (*source-debug-use-lineno* ,source-debug-use-lineno)
-	 (*gv-source-file-info-handle* (make-gv-source-file-info-handle-in-*the-module* ,source-file-info-handle))
-	 )
+  `(let* ((*the-module* ,module)
+	  (*the-function-pass-manager* ,function-pass-manager)
+	  #+(or)(*all-functions-for-one-compile* nil)
+	  #+(or)(*generate-load-time-values* t)
+	  (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
+	  (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
+									,source-debug-namestring
+									,source-pathname) "source-debug-namestring"))
+	  (*source-debug-offset* ,source-debug-offset)
+	  (*source-debug-use-lineno* ,source-debug-use-lineno)
+	  (*gv-source-file-info-handle* (make-gv-source-file-info-handle ,module ,source-file-info-handle)))
      (declare (special *the-function-pass-manager*))
+     (or *the-module* (error "with-module *the-module* is NIL"))
      (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
        ,@body)))
 

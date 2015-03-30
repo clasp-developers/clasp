@@ -367,6 +367,7 @@ and walk the car and cdr"
 
 (defvar *symbol-coalesce* nil)
 (defun codegen-ltv/symbol (result symbol env)
+  (or *the-module* (error "codegen-ltv/symbol *the-module* is NIL"))
   (with-coalesce-load-time-value (ltv-temp result symbol env)
     :coalesce-hash-table *symbol-coalesce*
     :maker (let* ((sn (symbol-name symbol))
@@ -671,6 +672,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 (defvar *symbol-type-symbol-coalesce* nil)
 (defun codegen-lts/symbol (result symbol env)
+  (or *the-module* (error "codegen-lts/symbol *the-module* is NIL"))
   (with-coalesce-load-time-value (lts-temp result symbol env)
     :coalesce-hash-table *symbol-type-symbol-coalesce*
     :maker (let* ((sn (symbol-name symbol))
@@ -750,8 +752,7 @@ marshaling of compiled quoted data"
 	(fn-env-gs (gensym "ltv-fn-env")))
     #||	(ltv-invocation-history-frame (gensym "ltv-ihf")))||#
     `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs
-					,irbuilder-alloca ,
-					irbuilder-body #||,ltv-invocation-history-frame||#)
+					,irbuilder-alloca ,irbuilder-body )
 	 (irc-function-create "runAll" nil nil
 			      :function-type +fn-prototype+
 			      :argument-names +fn-prototype-argument-names+)
@@ -759,65 +760,65 @@ marshaling of compiled quoted data"
 	     (*current-function* ,ltv-init-fn)
 	     (*generate-compile-file-load-time-values* t)
 	     (*load-time-initializer-environment* ,fn-env-gs)
-	     (*irbuilder-ltv-function-alloca* ,irbuilder-alloca)
-	     (*irbuilder-ltv-function-body* ,irbuilder-body)
-	     (*load-time-value-holder-global-var*
-	      (llvm-sys:make-global-variable *the-module*
-					     +run-and-load-time-value-holder-global-var-type+
-					     nil
-					     'llvm-sys:internal-linkage
-					     (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+)
-					     *load-time-value-holder-name*))
-	     (*next-load-time-value-index* 0)
-	     (*next-load-time-symbol-index* 0)
-	     (*fixnum-coalesce* (make-hash-table :test #'eql))
-	     (*bignum-coalesce* (make-hash-table :test #'eql))
-	     (*symbol-coalesce* (make-hash-table :test #'eq))
-	     (*load-time-value-coalesce* (make-hash-table :test #'eq))
-	     (*symbol-type-symbol-coalesce* (make-hash-table :test #'eq))
-	     #+short-float(*short-float-coalesce* (make-hash-table :test #'eql))
-	     (*single-float-coalesce* (make-hash-table :test #'eql))
-	     (*double-float-coalesce* (make-hash-table :test #'eql))
-	     (*complex-coalesce* (make-hash-table :test #'eql))
-	     #+long-float(*long-float-coalesce* (make-hash-table :test #'eql))
-	     (*string-coalesce* (make-hash-table :test #'equal))
-	     (*pathname-coalesce* (make-hash-table :test #'equal))
-	     (*package-coalesce* (make-hash-table :test #'eq))
-	     (*built-in-class-coalesce* (make-hash-table :test #'eq))
-	     (*character-coalesce* (make-hash-table :test #'eql))
-	     (*nil-coalesce* (make-hash-table :test #'eq))
-	     (*t-coalesce* (make-hash-table :test #'eq))
-	     (*load-time-value-result* (irc-alloca-tmv *load-time-initializer-environment*
-						       :irbuilder *irbuilder-ltv-function-alloca*))
-	     )
-	 ;; Evaluate the body into here - this will generate code in new functions
-	 ;; and generate code to invoke those new functions within the *irbuilder-ltv-function-body* irbuilder
-	 ;; it will also setup all of the literals, load-time-values and symbols
-	 ;;
+	     (*irbuilder-ltv-function-alloca* ,irbuilder-alloca))
+	 (let ((*irbuilder-ltv-function-body* ,irbuilder-body)
+	       (*load-time-value-holder-global-var*
+		(llvm-sys:make-global-variable *the-module*
+					       +run-and-load-time-value-holder-global-var-type+
+					       nil
+					       'llvm-sys:internal-linkage
+					       (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+)
+					       *load-time-value-holder-name*))
+	       (*next-load-time-value-index* 0)
+	       (*next-load-time-symbol-index* 0)
+	       (*fixnum-coalesce* (make-hash-table :test #'eql))
+	       (*bignum-coalesce* (make-hash-table :test #'eql))
+	       (*symbol-coalesce* (make-hash-table :test #'eq))
+	       (*load-time-value-coalesce* (make-hash-table :test #'eq))
+	       (*symbol-type-symbol-coalesce* (make-hash-table :test #'eq))
+	       #+short-float(*short-float-coalesce* (make-hash-table :test #'eql))
+	       (*single-float-coalesce* (make-hash-table :test #'eql))
+	       (*double-float-coalesce* (make-hash-table :test #'eql))
+	       (*complex-coalesce* (make-hash-table :test #'eql))
+	       #+long-float(*long-float-coalesce* (make-hash-table :test #'eql))
+	       (*string-coalesce* (make-hash-table :test #'equal))
+	       (*pathname-coalesce* (make-hash-table :test #'equal))
+	       (*package-coalesce* (make-hash-table :test #'eq))
+	       (*built-in-class-coalesce* (make-hash-table :test #'eq))
+	       (*character-coalesce* (make-hash-table :test #'eql))
+	       (*nil-coalesce* (make-hash-table :test #'eq))
+	       (*t-coalesce* (make-hash-table :test #'eq))
+	       (*load-time-value-result* (irc-alloca-tmv *load-time-initializer-environment*
+							 :irbuilder *irbuilder-ltv-function-alloca*))
+	       )
+	   ;; Evaluate the body into here - this will generate code in new functions
+	   ;; and generate code to invoke those new functions within the *irbuilder-ltv-function-body* irbuilder
+	   ;; it will also setup all of the literals, load-time-values and symbols
+	   ;;
 
-	 (with-load-time-value-counters (ltv-value-counter
-					 ltv-symbol-counter
-					 :postscript (with-irbuilder (*irbuilder-ltv-function-alloca*)
-						       (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
-						       (irc-intrinsic "getOrCreateLoadTimeValueArray"
-								      *load-time-value-holder-global-var*
-								      *gv-source-pathname*
-								      (jit-constant-i32 ltv-value-counter)
-								      (jit-constant-i32 ltv-symbol-counter))
-                                                       (irc-intrinsic "assignSourceFileInfoHandle"
-                                                                      *gv-source-pathname*
-								      *gv-source-debug-namestring*
-								      (jit-constant-i64 *source-debug-offset*)
-								      (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-								      *gv-source-file-info-handle*)))
-	   (initialize-special-load-time-values ,fn-env-gs)
-	   ,@body)
-	 (with-irbuilder (*irbuilder-ltv-function-body*)
-	   (let ((*gv-current-function-name* (jit-make-global-string-ptr
-					      (llvm-sys:get-name ,ltv-init-fn) "fn-name")))
-	     (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
-	       (irc-function-cleanup-and-return ,fn-env-gs ))
-	     ))))))
+	   (with-load-time-value-counters (ltv-value-counter
+					   ltv-symbol-counter
+					   :postscript (with-irbuilder (*irbuilder-ltv-function-alloca*)
+							 (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
+							 (irc-intrinsic "getOrCreateLoadTimeValueArray"
+									*load-time-value-holder-global-var*
+									*gv-source-pathname*
+									(jit-constant-i32 ltv-value-counter)
+									(jit-constant-i32 ltv-symbol-counter))
+							 (irc-intrinsic "assignSourceFileInfoHandle"
+									*gv-source-pathname*
+									*gv-source-debug-namestring*
+									(jit-constant-i64 *source-debug-offset*)
+									(jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+									*gv-source-file-info-handle*)))
+	     (initialize-special-load-time-values ,fn-env-gs)
+	     ,@body)
+	   (with-irbuilder (*irbuilder-ltv-function-body*)
+	     (let ((*gv-current-function-name* (jit-make-global-string-ptr
+						(llvm-sys:get-name ,ltv-init-fn) "fn-name")))
+	       (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
+		 (irc-function-cleanup-and-return ,fn-env-gs ))
+	       )))))))
 
 
 
@@ -902,9 +903,18 @@ marshaling of compiled quoted data"
 	((symbolp obj) (codegen-ltv/symbol result obj env))
 	((characterp obj) (codegen-ltv/character result obj env))
 	((arrayp obj) (codegen-ltv/array result obj env))
-;;	((source-code-cons-p obj) (codegen-ltv-source-code-cons result obj env))
 	((consp obj) (codegen-ltv/container result obj env))
 	((hash-table-p obj) (codegen-ltv/container result obj env))
+	((typep obj '(or standard-object structure-object condition class))
+	 (error "Finish dealing with make-load-form")
+	 #||	 ;; Deal with coallescence of obj
+	 (multiple-value-bind (create-form init-form)
+	 (make-load-form obj env)
+	 (if (null init-form)
+	 (codegen-load-time-value result create-form env)
+	 (codegen-load-time-value result `(funcall init-form create-form)))))
+	 ||#
+	 )
 	(t (error "In codegen-literal add support to codegen the object type ~a - value: ~a" (class-name (class-of obj)) obj )))
       ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
       ;; default module without coalescence.

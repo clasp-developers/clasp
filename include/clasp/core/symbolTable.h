@@ -96,6 +96,15 @@ namespace cleavirPrimops
 #undef CleavirPrimopsPkg_SYMBOLS
 }; /* cleavirPrimops package */
 
+namespace cleavirEnv
+{
+#define CleavirEnvPkg_SYMBOLS
+#define DO_SYMBOL(cname,idx,pkg,lispname,export) extern core::Symbol_sp cname;
+#include <clasp/core/symbols_scraped_inc.h>
+#undef DO_SYMBOL
+#undef CleavirEnvPkg_SYMBOLS
+}; /* cleavirEnv package */
+
 namespace gray
 {
 #define GrayPkg_SYMBOLS

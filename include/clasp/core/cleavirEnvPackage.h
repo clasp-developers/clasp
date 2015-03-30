@@ -1,5 +1,5 @@
 /*
-    File: stdClass.h
+    File: cleavirEnvPackage.h
 */
 
 /*
@@ -24,45 +24,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef	core_StdClass_H //[
-#define core_StdClass_H
+#ifndef _cleavirEnv_H
+#define _cleavirEnv_H
 
-
-
-#include <stdio.h>
-#include <string>
-#include <vector>
-#include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/metaClass.h>
-#include <clasp/core/environment.h>
+#include <clasp/core/cleavirEnvPackage.fwd.h>
 
-namespace core {
+namespace cleavirEnv
+{
 
-// Set up this class differently
 
-    SMART(StdClass);
-    class StdClass_O : public Class_O
-    {
-        LISP_META_CLASS(StandardClass);
-        LISP_BASE1(Class_O);
-        LISP_CLASS(core,ClosPkg,StdClass_O,"STD-CLASS");
-    public:
+    void initialize_cleavirEnvPackage();
 
-	StdClass_O( const StdClass_O& ss ); //!< Copy constructor
 
-	explicit StdClass_O();
-	virtual ~StdClass_O();
-    };
 };
 
-template<> struct gctools::GCInfo<core::StdClass_O> {
-    static bool constexpr NeedsInitialization = true;
-    static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = true; // old=false
-    static bool constexpr Atomic = false;
-};
 
-TRANSLATE(core::StdClass_O);
-#endif //]
+#endif

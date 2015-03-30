@@ -4,6 +4,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction DEBUG-MESSAGE-INSTRUCTION
+;;;
+;;; This instruction is an DEBUG-MESSAGE-INSTRUCTION that prints a message
+
+
+(defclass debug-message-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%debug-message :initarg :debug-message :accessor debug-message)))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr debug-message-instruction))
+  (with-output-to-string (s)
+    (format s "debug-message(~a)" (debug-message instr))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction NAMED-ENTER-INSTRUCTION
 ;;;
 ;;; This instruction is an ENTER-INSTRUCTION that keeps
@@ -46,12 +63,11 @@
   ((%original-object :initarg :original-object :accessor precalc-symbol-instruction-original-object)))
 
 (defun make-precalc-symbol-instruction
-    (index-input output &key successor vector original-object)
+    (index-input output &key successor original-object)
   (make-instance 'precalc-symbol-instruction
     :inputs (list index-input)
     :outputs (list output)
     :successors (if (null successor) nil (list successor))
-    :vector vector
     :original-object original-object))
 
 

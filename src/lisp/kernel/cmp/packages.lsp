@@ -14,4 +14,5 @@
 	  jit-constant-i32
 	  +fn-prototype+
 	  +fn-prototype-argument-names+
+	  *implicit-compile-hook*
 	  ))

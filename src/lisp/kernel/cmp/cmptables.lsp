@@ -54,6 +54,7 @@
     (symbol-macrolet .  codegen-symbol-macrolet)
     (cmp:llvm-inline . codegen-llvm-inline)
     (cmp::gc-profiling . codegen-gc-profiling)
+    (core::debug-message . codegen-debug-message )
     ;; Handled with macros and funcalls
     #+(or)(unwind-protect .  codegen-unwind-protect)
     (catch .  codegen-catch)

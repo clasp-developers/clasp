@@ -21,7 +21,7 @@
 	  (t
            (unless supers-names
              (error "The class ~a does not have direct-superclases!!!   Every class needs at least CL:T" class-symbol))
-;;           (format t "clos;extraclasses.lsp -> Adding class-symbol: ~A  class: ~A  direct-superclasses: ~A~%" class-symbol class supers-names )
+           (format t "clos;extraclasses.lsp -> Initializing class --> class-symbol: ~A  class: ~A  direct-superclasses: ~A~%" class-symbol class supers-names )
            (clos::make-empty-standard-class class-symbol :metaclass 'builtin-class
                                             :direct-superclasses supers-names)
            (clos::finalize-inheritance class)))))))

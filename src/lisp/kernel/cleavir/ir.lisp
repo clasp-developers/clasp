@@ -29,9 +29,9 @@
 
 (defun alloca-t* (&optional (label "var"))
   (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:+t*+ (%i32 1) label)))
-    (cc-dbg-when *debug-log*
-      (format *debug-log* "          alloca-t*   *entry-irbuilder* = ~a~%" *entry-irbuilder*)
-      (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
+    #+(or)(cc-dbg-when *debug-log*
+		       (format *debug-log* "          alloca-t*   *entry-irbuilder* = ~a~%" *entry-irbuilder*)
+		       (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
     instr))
 
 (defun alloca-mv-struct (&optional (label "V"))
