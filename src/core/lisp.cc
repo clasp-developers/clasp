@@ -1671,20 +1671,21 @@ namespace core
 
 
 
-#define ARGS_af_exit "(&optional (exit-value 0))"
-#define DECL_af_exit ""
-#define DOCS_af_exit "exit"
-    void af_exit(int exitValue)
+#define ARGS_core_exit "(&optional (exit-value 0))"
+#define DECL_core_exit ""
+#define DOCS_core_exit "exit"
+    void core_exit(int exitValue)
     {_G();
+	_global_debuggerOnSIGABRT = false;
 	throw(ExitProgram(exitValue));
     };
 
-#define ARGS_af_quit "(&optional (exit-value 0))"
-#define DECL_af_quit ""
-#define DOCS_af_quit "quit"
-    void af_quit(int exitValue)
+#define ARGS_core_quit "(&optional (exit-value 0))"
+#define DECL_core_quit ""
+#define DOCS_core_quit "quit"
+    void core_quit(int exitValue)
     {_G();
-	throw(ExitProgram(exitValue));
+	core_exit(exitValue);
     };
 
 
@@ -3466,6 +3467,15 @@ extern "C"
 
     void Lisp_O::run()
     {_G();
+	// If the user adds "-f debug-startup" to the command line
+	// then set core::*debug-startup* to true
+	// This will print timings of top-level forms as they load at startup
+	// See llvmo::intrinsics.cc
+	if ( af_member(kw::_sym_debugStartup,cl::_sym_STARfeaturesSTAR->symbolValue()).notnilp() ) {
+	    printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
+	    core::_sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
+	}
+	//	printf("%s:%d core:*debug-startup* is: %s\n", __FILE__, __LINE__, _rep_(core::_sym_STARdebugStartupSTAR->symbolValue()).c_str());
 	if ( !this->_IgnoreInitImage )
 	{
             Pathname_sp initPathname = _sym_STARcommandLineImageSTAR->symbolValue().as<Pathname_O>();
@@ -3628,9 +3638,9 @@ extern "C"
 
 
 	SYMBOL_SC_(CorePkg,exit);
-	Defun(exit);
+	CoreDefun(exit);
 	SYMBOL_SC_(CorePkg,quit);
-	Defun(quit);
+	CoreDefun(quit);
 #if defined(XML_ARCHIVE)
 	SYMBOL_SC_(CorePkg,serialize_xml);
 	Defun(serialize_xml);

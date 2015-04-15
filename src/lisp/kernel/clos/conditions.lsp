@@ -67,9 +67,6 @@
 
 
 
-(eval-when (:compile-toplevel)
-  (core:debug-message "About to defstruct restart")
-  (setq clasp-cleavir::*debug-log-on* t))
 
 (defstruct (restart (:PRINT-FUNCTION restart-print))
   name
@@ -77,10 +74,6 @@
   report-function
   interactive-function
   (test-function (constantly t)))
-
-(eval-when (:compile-toplevel)
-  (core:debug-message "Done defstruct restart")
-  (setq clasp-cleavir::*debug-log-on* nil))
 
 
 (defun restart-report (restart stream)

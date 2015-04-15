@@ -215,7 +215,7 @@
 
 (defun irc-classify-variable (env var)
   "Lookup the variable in the lexical environment - if not found then check if it is a special"
-  (let* ((classified (classify-value env var)))
+  (let* ((classified (classify-variable env var)))
     (if classified
 	classified
 	(cons 'ext:special-var var))))
@@ -1038,9 +1038,10 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 
-(defun irc-create-invoke (func args unwind-dest label)
+(defun irc-create-invoke (function-name args unwind-dest &optional (label ""))
   (unless unwind-dest (error "unwind-dest should not be nil"))
-  (let ((normal-dest (irc-basic-block-create "normal-dest")))
+  (let ((func (get-function-or-error *the-module* function-name (car args)))
+	(normal-dest (irc-basic-block-create "normal-dest")))
     (unless normal-dest (error "normal-dest should not be nil"))
     (cmp-log "--------------- About to create-invoke -----------\n")
     (cmp-log "    Current basic-block: %s\n" (llvm-sys:get-name (llvm-sys:get-insert-block *irbuilder*)))
@@ -1062,8 +1063,9 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
       code)))
 
 
-(defun irc-create-call (func args label)
-  (let* ((ra args)
+(defun irc-create-call (function-name args &optional (label ""))
+  (let* ((func (get-function-or-error *the-module* function-name (car args)))
+	 (ra args)
          (code (case (length args)
                  (0 (llvm-sys:create-call-array-ref *irbuilder* func nil label ))
                  (1 (llvm-sys:create-call1 *irbuilder* func (pop ra) label))
@@ -1088,20 +1090,18 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
                     
-(defun irc-invoke-or-call (func args label)
+(defun irc-invoke-or-call (function-name args label)
   "If env is within a lexical unwindable environment (unwind-protect or catch) 
 then create a function invocation that unwinds to the unwindable environments unwind-dest.
 Otherwise just create a function call"
-  (if (llvm-sys:does-not-throw func)
-      (irc-create-call func args label)
-      (progn
-	(unless *current-unwind-landing-pad-dest* (error "*current-unwind-landing-pad-dest* is nil"))
-	(irc-create-invoke func args *current-unwind-landing-pad-dest* label))))
+  (let ((func (get-function-or-error *the-module* function-name (car args))))
+    (if (or (llvm-sys:does-not-throw func) (null *current-unwind-landing-pad-dest*))
+	(irc-create-call function-name args label)
+	(irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))))
 
 
 (defun irc-intrinsic-args (function-name args &key (label "") suppress-arg-type-checking)
-  (let* ((func (get-function-or-error *the-module* function-name (car args)))
-	 (last-arg (car (last args)))
+  (let* ((last-arg (car (last args)))
 	 (real-args args))
     (when (stringp last-arg)
       (setq real-args (nbutlast args))
@@ -1110,7 +1110,7 @@ Otherwise just create a function call"
         (throw-if-mismatched-arguments function-name real-args))
 ;;    (mapc #'(lambda (x) (unless (or #|(not x)|# (llvm-sys:valuep x)) (error "All arguments for ~a must be llvm:Value types or nil but ~a isn't - you passed: ~a" function-name x real-args))) real-args)
     (let* ((args real-args)
-	   (code (irc-invoke-or-call func args label)))
+	   (code (irc-invoke-or-call function-name args label)))
       code)))
 
 (defun irc-intrinsic (function-name &rest args &aux (label ""))

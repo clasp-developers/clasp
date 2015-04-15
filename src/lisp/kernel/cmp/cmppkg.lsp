@@ -31,7 +31,7 @@
 	  create-run-time-execution-engine
 	  irc-environment-activation-frame
 	  *run-time-literals-external-name*
-	  *all-funcs-for-one-compile*
+	  *all-functions-for-one-compile*
 	  *dump-module-on-completion*
 	  irc-intrinsic-args
 	  set-associated-funcs

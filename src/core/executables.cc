@@ -353,7 +353,13 @@ namespace core
 	}
 	T_sp name = this->closure->name;
 	stringstream ss;
-	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(name) << ">";
+	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(name);
+	Closure* closure = this->closure;
+	void* fptr = closure->functionAddress();
+	if ( fptr!=NULL ) {
+	    ss << " :address " << fptr;
+	}
+	ss << ">";
 	return ss.str();
     }
 

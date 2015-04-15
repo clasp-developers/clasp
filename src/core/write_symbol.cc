@@ -254,18 +254,22 @@ namespace core {
                 write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
                                     print_case, stream,
                                     needs_to_be_escaped(name, readtable, print_case));
-                Symbol_mv sym2_mv = cl_findSymbol(x->symbolName()->get(),package);
-                Symbol_sp sym2 = sym2_mv;
-                Symbol_sp intern_flag2 = sym2_mv.valueGet(1).as<Symbol_O>();
-                if (sym2 != x)
-                    SIMPLE_ERROR(BF("Cannot print symbol[%s]") % _rep_(x) );
-                if (intern_flag2 == kw::_sym_internal || forced_package) {
-                    clasp_write_string("::", stream);
-                } else if (intern_flag2 == kw::_sym_external) {
-                    clasp_write_char(':', stream);
-                } else {
-                    SIMPLE_ERROR(BF("Pathological symbol --- cannot print"));
-                }
+		if ( !Null(x) ) {
+		    Symbol_mv sym2_mv = cl_findSymbol(x->symbolName()->get(),package);
+		    Symbol_sp sym2 = sym2_mv;
+		    Symbol_sp intern_flag2 = sym2_mv.valueGet(1).as<Symbol_O>();
+		    if (sym2 != x)
+			SIMPLE_ERROR(BF("Cannot print symbol[%s]") % _rep_(x) );
+		    if (intern_flag2 == kw::_sym_internal || forced_package) {
+			clasp_write_string("::", stream);
+		    } else if (intern_flag2 == kw::_sym_external) {
+			clasp_write_char(':', stream);
+		    } else {
+			SIMPLE_ERROR(BF("Pathological symbol --- cannot print"));
+		    }
+		} else {
+		    clasp_write_char(':',stream);
+		}
             }
         }
 	write_symbol_string(name, readtable->getReadTableCaseAsEnum(), print_case, stream,

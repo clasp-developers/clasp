@@ -109,9 +109,7 @@ using features defined in corePackage.cc"
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1))
     (llvm-sys:do-initialization fpm)
-    fpm
-    )
-  )
+    fpm))
 
 
 (defvar *run-time-module-counter* 1)

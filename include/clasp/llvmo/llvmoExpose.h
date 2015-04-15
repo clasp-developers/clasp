@@ -1248,12 +1248,31 @@ TRANSLATE(llvmo::Attribute_O);
 namespace translate
 {
     template <>
-    struct from_object<llvm::Attribute,std::true_type>
-    {
-        typedef llvm::Attribute DeclareType;
-        DeclareType _v;
+	struct from_object<llvm::Attribute::AttrKind,std::true_type> 
+	{
+	    typedef llvm::Attribute::AttrKind	DeclareType;
+	    DeclareType _v;
+	    from_object(core::T_sp object)
+		{_G();
+		    if ( core::Symbol_sp sym = object.asOrNull<core::Symbol_O>() ) {
+			core::SymbolToEnumConverter_sp converter = llvmo::_sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+			this->_v = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
+			return;
+		    }
+		    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::Attribute::AttrKind") % _rep_(object) );
+		}
+	};
+
+
+
+
+    template <>
+	struct from_object<llvm::Attribute,std::true_type>
+	{
+	    typedef llvm::Attribute DeclareType;
+	    DeclareType _v;
 	from_object(T_P object) : _v(object.as<llvmo::Attribute_O>()->attributes()) {};
-    };
+	};
 };
 ;
 /* to_object translators */
@@ -1375,6 +1394,7 @@ namespace llvmo
     public:
 	virtual const char* describe() const { return "CompiledClosure";};
         virtual size_t templatedSizeof() const { return sizeof(*this);};
+	virtual void* functionAddress() const { return (void*)this->fptr;}
     public:
 	CompiledClosure( core::T_sp functionName
 			 , core::SourcePosInfo_sp spi

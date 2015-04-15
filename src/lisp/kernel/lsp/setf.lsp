@@ -475,6 +475,7 @@ the corresponding PLACE.  Returns NIL."
 
 
 ;;; SHIFTF macro.
+#+ecl
 (defmacro shiftf (&environment env &rest rest)
   "Syntax: (shiftf {place}+ form)
 Saves the values of PLACE and FORM, and then assigns the value of each PLACE
@@ -505,7 +506,9 @@ Returns the original value of the leftmost PLACE."
       (setq access-forms (cons access-form access-forms)))))
 
 
+
 ;;; ROTATEF macro.
+#+ecl
 (defmacro rotatef (&environment env &rest rest)
   "Syntax: (rotatef {place}*)
 Saves the values of PLACEs, and then assigns to each PLACE the saved value of

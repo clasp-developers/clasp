@@ -71,7 +71,7 @@ void handle_signals(int signo) {
     // Indicate that a signal was caught and handle it at a safe-point
 //
     SET_SIGNAL(signo);
-    if ( signo == SIGABRT ) {
+    if ( signo == SIGABRT && core::_global_debuggerOnSIGABRT ) {
 	printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__ );
 	core::LispDebugger debugger(_Nil<core::T_O>());
 	debugger.invoke();
@@ -139,6 +139,10 @@ void clasp_warn_proc(char *msg, GC_word arg)
         catch (core::CatchThrow& ee)
         {
             _lisp->print(BF("%s:%d Uncaught THROW frame[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW") % __FILE__ % __LINE__ % ee.getFrame() );
+        }
+        catch (core::Unwind& ee)
+        {
+            _lisp->print(BF("At %s:%d - Unwind caught frame: %d index: %d") % __FILE__ % __LINE__ % ee.getFrame() % ee.index() );
         }
         catch (core::HardError& ee)
         {

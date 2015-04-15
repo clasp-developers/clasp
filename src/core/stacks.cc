@@ -51,6 +51,45 @@ namespace core
         return -1;
     }
 
+    Vector_sp ExceptionStack::backtrace() {
+	if ( this->_Stack.size() == 0 ) {
+	    return _Nil<Vector_O>();
+	}
+	printf("%s:%d ExceptionStack::backtrace stack size = %lu\n", __FILE__, __LINE__, this->_Stack.size());
+	Vector_sp result = af_make_vector(_Nil<T_O>()
+					  ,this->_Stack.size()
+					  ,false
+					  ,Fixnum_O::create((int)(this->_Stack.size()))
+					 );
+	for ( int i(0), iEnd(this->_Stack.size()); i<iEnd; ++i ) {
+	    Symbol_sp kind;
+	    SYMBOL_EXPORT_SC_(KeywordPkg,catchFrame);
+	    SYMBOL_EXPORT_SC_(KeywordPkg,blockFrame);
+	    SYMBOL_EXPORT_SC_(KeywordPkg,tagbodyFrame);
+	    SYMBOL_EXPORT_SC_(KeywordPkg,landingPadFrame);
+	    switch (this->_Stack[i]._FrameKind) {
+	    case NullFrame:
+		kind = _Nil<Symbol_O>();
+		break;
+	    case CatchFrame:
+		kind = kw::_sym_catchFrame;
+		break;
+	    case BlockFrame:
+		kind = kw::_sym_blockFrame;
+		break;
+	    case TagbodyFrame:
+		kind = kw::_sym_tagbodyFrame;
+		break;
+	    case LandingPadFrame:
+		kind = kw::_sym_landingPadFrame;
+		break;
+	    };
+	    result->setf_elt(i,Cons_O::create(kind,this->_Stack[i]._Key));
+	}
+	return result;
+    }
+	    
+
     InvocationHistoryFrame::InvocationHistoryFrame(Closure* c, ActivationFrame_sp env)
         :closure(c), environment(env)
         , runningSourceFileInfoHandle(c->sourceFileInfoHandle())
@@ -541,32 +580,42 @@ void    core_lowLevelBacktrace()
 
 
 
+#define ARGS_core_exceptionStack "()"
+#define DECL_core_exceptionStack ""
+#define DOCS_core_exceptionStack "exceptionStack"
+    Vector_sp core_exceptionStack()
+    {
+	return _lisp->exceptionStack().backtrace();
+    }
+
+
 
 
 
 
     void initialize_stacks()
     {
-	SYMBOL_SC_(CorePkg,ihsBacktrace);
-	Defun(ihsBacktrace);
-	SYMBOL_SC_(CorePkg,ihsTop);
-	Defun(ihsTop);
-	SYMBOL_SC_(CorePkg,ihsPrev);
-	Defun(ihsPrev);
-	SYMBOL_SC_(CorePkg,ihsNext);
-	Defun(ihsNext);
-	SYMBOL_SC_(CorePkg,ihsFun);
-	Defun(ihsFun);
-	SYMBOL_SC_(CorePkg,ihsEnv);
-	Defun(ihsEnv);
-	SYMBOL_SC_(CorePkg,bdsTop);
-	Defun(bdsTop);
-	SYMBOL_SC_(CorePkg,bdsVar);
-	Defun(bdsVar);
-	SYMBOL_SC_(CorePkg,bdsVal);
-	Defun(bdsVal);
-	CoreDefun(lowLevelBacktrace);
-    }
+    SYMBOL_SC_(CorePkg,ihsBacktrace);
+    Defun(ihsBacktrace);
+    SYMBOL_SC_(CorePkg,ihsTop);
+    Defun(ihsTop);
+    SYMBOL_SC_(CorePkg,ihsPrev);
+    Defun(ihsPrev);
+    SYMBOL_SC_(CorePkg,ihsNext);
+    Defun(ihsNext);
+    SYMBOL_SC_(CorePkg,ihsFun);
+    Defun(ihsFun);
+    SYMBOL_SC_(CorePkg,ihsEnv);
+    Defun(ihsEnv);
+    SYMBOL_SC_(CorePkg,bdsTop);
+    Defun(bdsTop);
+    SYMBOL_SC_(CorePkg,bdsVar);
+    Defun(bdsVar);
+    SYMBOL_SC_(CorePkg,bdsVal);
+    Defun(bdsVal);
+    CoreDefun(lowLevelBacktrace);
+    CoreDefun(exceptionStack);
+}
 
 
 

@@ -329,8 +329,9 @@ namespace core
     void Environment_O::exposeCando(Lisp_sp lisp)
     {
 	class_<Environment_O>()
+	    .def("environmentStackAsString",&Environment_O::environmentStackAsString)
 	    .def("setRuntimeEnvironment",&Environment_O::setRuntimeEnvironment)
-	    .def("classifyValue",&Environment_O::classifyValue)
+	    .def("classifyVariable",&Environment_O::classifyVariable)
 	    .def("classifyFunctionLookup",&Environment_O::classifyFunctionLookup)
 	    .def("getParentEnvironment",&Environment_O::getParentEnvironment)
 	    .def("setf_metadata",&Environment_O::setf_metadata)
@@ -823,7 +824,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    Cons_sp Environment_O::classifyValue(T_sp sym) const
+    Cons_sp Environment_O::classifyVariable(T_sp sym) const
     {_G();
 	int depth;
 	int index;

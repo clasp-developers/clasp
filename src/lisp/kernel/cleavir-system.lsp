@@ -144,5 +144,7 @@
     |kernel/cleavir/setup| |kernel/cleavir/ast-to-hir| |kernel/cleavir/mir|
     |kernel/cleavir/hir-to-mir| |kernel/cleavir/landing-pad|
     |kernel/cleavir/ir| |kernel/cleavir/arguments| |kernel/cleavir/gml-drawing|
-    |kernel/cleavir/translate| CORE::KERNEL/CLEAVIR/AUTO-COMPILE
+    |kernel/cleavir/translate|
+    :pre-auto-compile
+    CORE::KERNEL/CLEAVIR/AUTO-COMPILE
     :CLEAVIR-CLASP)) 

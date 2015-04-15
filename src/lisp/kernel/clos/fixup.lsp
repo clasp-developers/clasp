@@ -231,8 +231,8 @@ their lambda lists ~A and ~A are not congruent."
 
 #+compare (print "MLOG About to function-to-method add-method")
 
-#+clasp(defmacro fixup-log (&rest args) `(print (list "FIXUP-LOG" ,@args)))
-;;#+clasp(defmacro fixup-log (&rest args) nil)
+;;#+clasp(defmacro fixup-log (&rest args) `(print (list "FIXUP-LOG" ,@args)))
+#+clasp(defmacro fixup-log (&rest args) nil)
 
 ;;(setq cmp:*debug-compiler* t)
 #+clasp(eval-when (compile) (fixup-log "function-to-method add-method"))

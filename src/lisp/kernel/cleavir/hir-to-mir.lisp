@@ -7,7 +7,7 @@
   instr)
 
 
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:enter-instruction)
+#+(or)(defmethod cleavir-ir:specialize ((instr cleavir-ir:enter-instruction)
 				  (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cc-mir:enter-instruction))
 

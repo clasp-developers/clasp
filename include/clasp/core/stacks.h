@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 #include <clasp/core/stacks.fwd.h>
+#include <clasp/core/lispVector.fwd.h>
+
 
 namespace core
 {
@@ -242,7 +244,7 @@ namespace core {
 
     /*! Exception stack information */
 
-    typedef enum { NullFrame, CatchFrame, BlockFrame, TagbodyFrame } FrameKind;
+    typedef enum { NullFrame, CatchFrame, BlockFrame, TagbodyFrame, LandingPadFrame } FrameKind;
     /*! Store the information for the exception 
       For CatchThrow:   _Obj1
     */
@@ -278,6 +280,7 @@ namespace core {
         int findKey(FrameKind kind, T_sp key);
         T_sp backKey() const {return this->_Stack.back()._Key; };
         void unwind(size_t newTop) { this->_Stack.resize(newTop); };
+	Vector_sp backtrace();
     };
 
 

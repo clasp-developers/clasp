@@ -692,10 +692,7 @@ namespace core
     T_sp core_treatAsSpecialOperatorP(T_sp sym)
     {_G();
 	SYMBOL_EXPORT_SC_(CorePkg,debug_message);
-	if ( sym == cl::_sym_unwind_protect ||
-	     sym == cl::_sym_progv ||
-	     sym == cl::_sym_catch ||
-	     sym == cl::_sym_throw ) return _Nil<T_O>(); // All handled in macros
+	if ( sym == cl::_sym_unwind_protect  ) return _Nil<T_O>(); // All handled in macros
 	if ( sym == core::_sym_debug_message ) return _lisp->_true();
 	return cl_specialOperatorP(sym);
     };

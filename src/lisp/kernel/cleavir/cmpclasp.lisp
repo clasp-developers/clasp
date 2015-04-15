@@ -8,9 +8,9 @@
 
 (defparameter *cleavir-clasp-all* (append (remove 'core:kernel/cmp/cmprepl core:*init-files*)
 				    *cleavir-clasp-only*
-				    (list :cleavir-clasp
+				    (list :cleavir-clasp)
 				    (list 'core:kernel/cleavir/auto-compile)
-				    (list :auto-cleavir))))
+				    (list :auto-cleavir)))
 
 (defun save-all-files ()
   (with-open-file (fout "sys:kernel;cleavir-system.lsp" :direction :output)
@@ -40,7 +40,7 @@
 
 
 
-(defun compile-clasp (from-mod to-mod &key (recompile t) reload (system *cleavir-clasp-all*) dry-run)
+(defun compile-clasp (from-mod to-mod &key (recompile t) reload (system *cleavir-clasp-all*) dry-run dont-link)
   (pushnew :clos *features*)
   (pushnew :cleavir *features*)
   (core:pathname-translations "cleavir-boehm" '(("**;*.*" #P"SYS:build;system;cleavir-boehm;**;*.*")))
@@ -53,18 +53,19 @@
 	(format t "Compiling files: ~a~%" (core::select-source-files to-mod :first-file from-mod :system system))
 	(let* ((cmp:*cleavir-compile-file-hook* (fdefinition (find-symbol "CLEAVIR-COMPILE-FILE-FORM" "CLASP-CLEAVIR")))
 	       (bitcode-files (core:compile-system from-mod to-mod :recompile recompile :reload reload :system system)))
-	  (cmp:link-system-lto (core:target-backend-pathname core:+image-pathname+)
-			       :lisp-bitcode-files bitcode-files
-			       :prologue-form '(progn
-						(if (member :interactive *features*) 
-						    (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-			       :epilogue-form '(progn
-						(cl:in-package :cl-user)
-						(require 'system)
-						(core:load-clasprc)
-						(core:process-command-line-load-eval-sequence)
-						(when (member :interactive *features*) (core:top-level))))
-	  ))))
+	  (unless dont-link 
+	    (cmp:link-system-lto (core:target-backend-pathname core:+image-pathname+)
+				 :lisp-bitcode-files bitcode-files
+				 :prologue-form '(progn
+						  (if (member :interactive *features*) 
+						      (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
+								    (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+				 :epilogue-form '(progn
+						  (cl:in-package :cl-user)
+						  (require 'system)
+						  (core:load-clasprc)
+						  (core:process-command-line-load-eval-sequence)
+						  (when (member :interactive *features*) (core:top-level)))))))))
 
 
 
@@ -74,10 +75,10 @@
 				:system *cleavir-clasp-all*)))
 
 
-(defun compile-full-cleavir (&key (recompile t))
+(defun compile-full-cleavir (&key (recompile t) (system *cleavir-clasp-all*))
   (let ((cmp:*compile-print* t))
-    (compile-clasp :init :cleavir-clasp :recompile recompile :reload nil
-				:system *cleavir-clasp-all*)))
+    (compile-clasp :init :auto-cleavir :recompile recompile :reload nil
+				:system system)))
 
 
 
@@ -103,8 +104,9 @@
        collect (bitcode-pathname mod :target-backend target-backend))))
 
 
-(defun link (start end &key (target-backend "CLEAVIR-BOEHM"))
-  (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend)))
+(defun link (start end &key (target-backend "CLEAVIR-BOEHM") (system *cleavir-clasp-all*))
+  (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend
+					     :system system)))
     (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
 							:target-backend target-backend)
 			 :lisp-bitcode-files bitcode-files

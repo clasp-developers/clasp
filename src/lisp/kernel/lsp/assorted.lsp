@@ -117,3 +117,40 @@
   (if (>= weight radix)
       nil
       (code-char (+ weight (if (< weight 10) 48 55)))))
+
+
+;; Donated by Shinmera in #clasp on April 2015 "free of charge"
+(in-package :cl)
+(defun string-capitalize (string)
+  (with-output-to-string (stream)
+    (loop with capitalize = T
+          for char across (string string)
+          do (cond ((alphanumericp char)
+                    (cond (capitalize
+                           (setf capitalize NIL)
+                           (write-char (char-upcase char) stream))
+                          (T
+                           (write-char (char-downcase char) stream))))
+                   (T
+                    (setf capitalize T)
+                    (write-char char stream))))))
+
+
+(defun float-radix (arg)
+  ;; Unless you are internally representing
+  ;; floats in anything but base-2 this will do
+  (etypecase arg
+    (float 2)))
+
+(defun remprop (symbol indicator)
+  (remf (symbol-plist symbol) indicator))
+
+(defun logcount (integer)
+  ;; There's probably some C++ way to make this
+  ;; much more efficient, but this should suffice.
+  (let ((counting (if (plusp integer) 1 0)))
+    (loop for i from 0 below (integer-length integer)
+          count (= counting (ldb (byte 1 i) integer)))))
+
+(defun logbitp (index integer)
+  (ldb-test (byte 1 index) integer))

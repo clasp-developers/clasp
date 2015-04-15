@@ -646,6 +646,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     kernel/lsp/describe
     kernel/lsp/module
     kernel/lsp/loop2
+    kernel/lsp/shiftf-rotatef
     kernel/lsp/assorted
     kernel/lsp/packlib
 ;;    cmp/cmpinterpreted
@@ -1045,6 +1046,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
           core::*command-line-load-eval-sequence*)
   )
 
+(export 'core:top-level)
 (defun run-repl ()
   (if (fboundp 'core:top-level)
       (progn

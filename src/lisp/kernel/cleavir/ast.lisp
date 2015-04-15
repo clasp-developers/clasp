@@ -39,6 +39,31 @@
   (with-output-to-string (s)
     (format s "named-function (~a)" (lambda-name ast))))
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class THROW-AST
+;;;
+;;; This AST is used to represent a THROW
+
+(defclass throw-ast (cleavir-ast:ast)
+  ((%tag-ast :initarg :tag-ast :reader tag-ast)
+   (%result-ast :initarg :result-ast :reader result-ast)))
+
+(defun make-throw-ast (tag-ast result-ast)
+  (make-instance 'throw-ast
+    :tag-ast tag-ast
+    :result-ast result-ast))
+
+(cleavir-io:define-save-info throw-ast
+  (:tag-ast tag-ast)
+  (:result-ast result-ast))
+
+(defmethod cleavir-ast:children ((ast throw-ast))
+  (list (tag-ast ast) (result-ast ast)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class DEBUG-MESSAGE-AST

@@ -115,9 +115,11 @@ Return the new environment."
 
 (defparameter *lambda-args-num* 0)
 
-(defvar *all-funcs-for-one-compile* nil
+(defvar *all-functions-for-one-compile* nil
   "All functions for one COMPILE are accumulated in this dynamic variable.
 COMPILE-FILE just throws this away.   Return (values llvm-function lambda-name lambda-list)")
+
+
 (defun generate-llvm-function-from-code (;; Symbol xxx or (setf xxx) name of the function that is assigned to this code by
 					 ;; lambda-block or COMPILE
 					 given-name
@@ -180,7 +182,7 @@ Could return more functions that provide lambda-list for swank for example"
     (cmp-log "About to dump the function constructed by generate-llvm-function-from-code\n")
     (cmp-log-dump fn)
     (irc-verify-function fn)
-    (push fn *all-funcs-for-one-compile*)
+    (push fn *all-functions-for-one-compile*)
     ;; Return the llvm Function and the symbol/setf name
     (if (null name) (error "The lambda name is nil"))
     (values fn name (core:lambda-list-handler-lambda-list lambda-list-handler))
@@ -258,14 +260,14 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
-  (let ((*all-funcs-for-one-compile* nil))
+  (let ((*all-functions-for-one-compile* nil))
     (multiple-value-bind (compiled-fn lambda-name lambda-list)
 	(compile-lambda-function lambda-or-lambda-block env)
       (if (null lambda-name) (error "The lambda doesn't have a name"))
       (if result
 	  (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
 							 nil
-							 *all-funcs-for-one-compile*) env))
+							 *all-functions-for-one-compile*) env))
 		(lambda-list (compile-reference-to-literal lambda-list env)))
 	    ;; TODO:   Here walk the source code in lambda-or-lambda-block and
 	    ;; get the line-number/column for makeCompiledFunction
@@ -284,7 +286,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 			     funcs 
 			     (irc-renv env)
 			     lambda-list))
-	    *all-funcs-for-one-compile*)))))
+	    *all-functions-for-one-compile*)))))
 
 
 
@@ -1382,7 +1384,7 @@ be wrapped with to make a closure"
 				 (source-debug-use-lineno t)) &rest body)
   `(let* ((*the-module* ,module)
 	  (*the-function-pass-manager* ,function-pass-manager)
-	  #+(or)(*all-functions-for-one-compile* nil)
+	  (*all-functions-for-one-compile* nil)
 	  #+(or)(*generate-load-time-values* t)
 	  (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
 	  (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
@@ -1442,7 +1444,7 @@ be wrapped with to make a closure"
 	     (core:source-pos-info-lineno *current-source-pos-info*)
 	     nil ; lambda-list, NIL for now - but this should be extracted from definition
 	     )))
-      (set-associated-funcs compiled-function *all-funcs-for-one-compile*)
+      (set-associated-funcs compiled-function *all-functions-for-one-compile*)
       (values compiled-function warnp failp))))
 
 (defun compile* (name &optional definition env pathname)

@@ -6,40 +6,6 @@
 
 
 
-(defclass enter-instruction (clasp-cleavir-hir:named-enter-instruction)
-  ((%debug-label :initform (gensym "ENTER-") :reader debug-label)
-   (%landing-pad :initform nil :initarg :landing-pad :accessor landing-pad)))
-
-
-(defmethod cleavir-ir-graphviz:label ((instr enter-instruction))
-  (with-output-to-string (stream)
-    (format stream "~a ~a ~a ~a" (debug-label instr) 
-	    (clasp-cleavir-hir:lambda-name instr)
-	    (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr))
-	    (if (landing-pad instr) "LANDING-PAD" ""))))
-
-(defmethod cl:print-object ((instr enter-instruction) stream)
-  (format stream "#<~a ~a ~a>" (class-name (class-of instr)) (clasp-cleavir-hir:lambda-name instr) (debug-label instr)))
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; INDEXED-UNWIND-INSTRUCTION
-(defclass indexed-unwind-instruction (cleavir-ir:unwind-instruction)
-  ((%landing-pad-id :initarg :landing-pad-id :accessor landing-pad-id)
-   (%jump-id :initarg :jump-id :accessor jump-id)))
-
-
-(defmethod cleavir-ir-graphviz:label ((instr indexed-unwind-instruction))
-  (with-output-to-string (stream)
-    (format stream "~a lp:~a jmp:~a" (class-name (class-of instr)) (landing-pad-id instr) (jump-id instr))))
-
-
-(defmethod cl:print-object ((instr indexed-unwind-instruction) stream)
-  (format stream "#<~a lp:~a jmp:~a>" (class-name (class-of instr)) (landing-pad-id instr) (jump-id instr)))
-
 
 
 

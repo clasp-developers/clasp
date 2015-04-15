@@ -134,8 +134,10 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,arrayTotalSizeLimit);
     SYMBOL_EXPORT_SC_(ClPkg,lambdaParametersLimit);
     SYMBOL_EXPORT_SC_(ClPkg,schar);
+    SYMBOL_EXPORT_SC_(CorePkg,topLevel);
     SYMBOL_EXPORT_SC_(CorePkg,scharSet);
     SYMBOL_EXPORT_SC_(CorePkg,STARdebugInterpretedClosureSTAR);
+    SYMBOL_EXPORT_SC_(CorePkg,STARdebugStartupSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,_BANG_unbound_BANG_);
     SYMBOL_EXPORT_SC_(CorePkg,bitArrayOp);
     SYMBOL_EXPORT_SC_(CorePkg,lambdaName);
@@ -150,6 +152,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,nil);
     SYMBOL_EXPORT_SC_(CorePkg,STARpollTicksPerGcSTAR);
     SYMBOL_EXPORT_SC_(CorePkg,_PLUS_standardReadtable_PLUS_);
+    SYMBOL_EXPORT_SC_(KeywordPkg,debugStartup);
     SYMBOL_EXPORT_SC_(KeywordPkg,cleavir);
     SYMBOL_EXPORT_SC_(KeywordPkg,load);
     SYMBOL_EXPORT_SC_(KeywordPkg,eval);
@@ -967,6 +970,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         _sym_STARdebugLoadTimeValuesSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugGenericDispatchSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
+	_sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
         _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
 	_sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(Fixnum_O::create(LCC_ARGS_IN_REGISTERS));
 

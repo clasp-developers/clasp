@@ -4,6 +4,14 @@
 
 (defvar *clasp-env* (make-instance 'clasp-global-environment))
 
+(defvar *cclasp-eval-depth* 0)
+(defun cclasp-eval (form &optional env)
+  (let ((*cclasp-eval-depth* (1+ *cclasp-eval-depth*)))
+    (when (> *cclasp-eval-depth* 20)
+      (warn "*cclasp-eval-depth is ~a on form: ~a" *cclasp-eval-depth* form))
+    (or (null env) (error "Handle non-toplevel environments"))
+    (funcall (compile nil `(lambda () ,form)))))
+
 ;;
 ;; Define the ABI for x86-64
 (defclass abi-x86-64 () ())
@@ -43,8 +51,8 @@
 	 ;; in the worst case, we will just fail to recognize it as a
 	 ;; special variable.
 	 (null (ignore-errors
-		(eval `(let ((,symbol (make-instance 'clasp-global-environment)))
-			 t))))
+		 (eval `(let ((,symbol (make-instance 'clasp-global-environment)))
+			  t))))
 	 ;; It is a special variable.  However, we don't know its
 	 ;; type, so we assume it is T, which is the default.
 	 (make-instance 'cleavir-env:special-variable-info
@@ -111,11 +119,17 @@
 (defmethod cleavir-env:function-info ((environment null) symbol)
   (cleavir-env:function-info *clasp-env* symbol))
 
+(defmethod cleavir-env:function-info ((environment core:value-environment) symbol)
+  (cleavir-env:function-info (core:get-parent-environment environment) symbol))
+
 (defmethod cleavir-env:function-info ((environment core:value-frame) symbol)
   (cleavir-env:function-info (core:get-parent-environment environment) symbol))
 
-(defmethod cleavir-env:value-info ((environment core:value-frame) symbol)
-  (cleavir-env:function-info (core:get-parent-environment environment) symbol))
+(defmethod cleavir-env:variable-info ((environment core:value-frame) symbol)
+  (cleavir-env:variable-info (core:get-parent-environment environment) symbol))
+
+(defmethod cleavir-env:variable-info ((environment core:value-environment) symbol)
+  (cleavir-env:variable-info (core:get-parent-environment environment) symbol))
 
 (defmethod cleavir-env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
@@ -158,12 +172,12 @@
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
   "Evaluate the form in Clasp's top level environment"
-  (eval form))
+  (cclasp-eval form))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (warn "cleavir-environment:eval called with NIL as the dispatching environment")
-  (eval form))
+  (cclasp-eval form))
 
 (defmethod cleavir-hir-transformations:introduce-immediate (constant (implementation clasp) processor os)
   constant)
@@ -357,3 +371,27 @@
        ,fn-gs)))
 
 
+
+(defun dump-hir (initial-instruction &optional (stream t))
+  (let ((all-basic-blocks (cleavir-basic-blocks:basic-blocks initial-instruction))
+	initials)
+    (cleavir-ir:map-instructions
+     (lambda (instr)
+       (when (typep instr 'cleavir-ir:enter-instruction)
+	 (push instr initials))) initial-instruction)
+    (dolist (procedure-initial initials)
+      (format stream "====== Procedure: ~a~%" (cc-mir:describe-mir procedure-initial))
+      (let ((basic-blocks (remove procedure-initial
+				  all-basic-blocks
+				  :test-not #'eq :key #'third)))
+	(dolist (bb basic-blocks)
+	  (destructuring-bind (first last owner) bb
+	    (format stream "-------------------basic-block owner: ~a~%" 
+		    (cc-mir:describe-mir owner))
+	    (loop for instruction = first
+	       then (first (cleavir-ir:successors instruction))
+	       until (eq instruction last)
+	       do (format stream "~a~%" (cc-mir:describe-mir instruction)))
+	    (format stream "~a~%" (cc-mir:describe-mir last))))))))
+
+  

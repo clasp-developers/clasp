@@ -638,7 +638,8 @@ namespace reg {
 
 
 namespace core {
-extern int _global_signalTrap;
+    extern int _global_signalTrap;
+    extern bool _global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core_exit!
     void lisp_pollSignals();
 
 };
@@ -1314,6 +1315,7 @@ namespace core
 	virtual const char* describe() const {return "Closure";};
 	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Closure must implement 'activate'\n"); exit(1);};
 
+	virtual void* functionAddress() const { return NULL; };
         virtual SourcePosInfo_sp sourcePosInfo() const {return _Nil<SourcePosInfo_O>();};
         virtual bool macroP() const = 0;
         virtual void setKind(Symbol_sp k)=0;

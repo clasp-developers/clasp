@@ -2713,6 +2713,12 @@ namespace llvmo
 
     void SwitchInst_O::addCase(ConstantInt_sp onVal, BasicBlock_sp dest)
     {
+	if ( dest.nilp() ) {
+	    SIMPLE_ERROR(BF("addCase basic-block is nil"));
+	}
+	if ( onVal.nilp() ) {
+	    SIMPLE_ERROR(BF("onVal is nil"));
+	}
 	this->wrappedPtr()->addCase(onVal->wrappedPtr(),dest->wrappedPtr());
     }
 
@@ -3869,6 +3875,7 @@ namespace llvmo
 	    .def("appendBasicBlock",&Function_O::appendBasicBlock)
 	    .def("setLiterals",&Function_O::setLiterals)
 	    .def("literals",&Function_O::literals)
+	    .def("addFnAttr",(void(llvm::Function::*)(llvm::Attribute::AttrKind))&llvm::Function::addFnAttr)
 	    ;
 //	core::af_def(LlvmoPkg,"functionCreate",&llvm::Function::Create);
 	core::af_def(LlvmoPkg,"functionCreate",&af_FunctionCreate);

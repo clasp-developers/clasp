@@ -45,9 +45,10 @@
 ;;; TARGETS is a list of instructions.  The elements of that list are
 ;;; the successors of each UNWIND-INSTRUCTION that has F as its
 ;;; invocation.
+;;
+;; I use HIR:landing-pad-instruction
 (defclass landing-pad ()
-  ((%targets :initarg :targets :reader targets)
-   (%id :initarg :id :accessor landing-pad-id)
+  ((%unwinds :initarg :unwinds :initform nil :accessor unwinds)
    (%basic-block :initarg :basic-block :accessor basic-block)))
 
 ;;; Given a list of all the UNWIND-INSTRUCTIONs in a program, create a
@@ -64,30 +65,13 @@
 			     (remove enter remaining
 				     :key #'cleavir-ir:invocation
 				     :test-not #'eq))
-     for targets = (when remaining
-		     (loop for cu in current-unwinds
-			collect (first (cleavir-ir:successors cu))))
      until (null remaining)
-     collect (cons enter (make-instance 'landing-pad :targets targets))
+     collect (let ((frame-holder (cleavir-ast-to-hir:make-temp)))
+	       (list enter (make-instance 'landing-pad) frame-holder))
      do (setf remaining
 	      (set-difference remaining current-unwinds))))
 
 
-
-;; From before
-#+(or)(defun compute-landing-pads (unwinds)
-	(when unwinds
-	  (loop with remaining = unwinds
-	     until (null remaining)
-	     for enter = (cleavir-ir:invocation (first remaining))
-	     for current-unwinds = (remove enter remaining
-					   :key #'cleavir-ir:invocation
-					   :test-not #'eq)
-	     for targets = (loop for cu in current-unwinds
-			      collect (first (cleavir-ir:successors cu)))
-	     collect (cons enter (make-instance 'landing-pad :targets targets))
-	     do (setf remaining
-		      (set-difference remaining current-unwinds)))))
 
 ;;; Given a function F that is the invocation of at least one
 ;;; UNWIND-INSTRUCTION.  We convert every FUNCALL-INSTRUCTION in F to
@@ -111,7 +95,6 @@
 
 
 
-(defvar *landing-pad-id* 98000000)
 (defun convert-funcalls (initial-instruction)
   (let* ((unwinds (find-unwinds initial-instruction))
 	 (landing-pads (compute-landing-pads unwinds)))
@@ -123,7 +106,7 @@
      (lambda (instruction owner)
        (cond
 	 ((typep instruction 'cleavir-ir:funcall-instruction)
-	  (let ((landing-pad (cdr (assoc owner landing-pads))))
+	  (let ((landing-pad (second (assoc owner landing-pads))))
 	    (unless (null landing-pad)
 	      (cc-dbg-when *debug-log*
 			   (format *debug-log* "Translating call to invoke: ~a~%" 
@@ -131,7 +114,7 @@
 	      (change-class instruction 'invoke-instruction
 			    :landing-pad landing-pad))))
 	 ((typep instruction 'cleavir-ir:multiple-value-call-instruction)
-	  (let ((landing-pad (cdr (assoc owner landing-pads))))
+	  (let ((landing-pad (second (assoc owner landing-pads))))
 	    (unless (null landing-pad)
 	      (cc-dbg-when *debug-log*
 			   (format *debug-log* "Translating multiple-value-call to invoke-multiple-value-call: ~a~%" 
@@ -140,25 +123,54 @@
 			    :landing-pad landing-pad))))
 	 (t nil)))
      initial-instruction)
-    ;; associate each landing pad with a landing-pad-id
-    ;; and associate each landing pad with its enter instruction
-    (let ((landing-pad-id *landing-pad-id*))
-      (dolist (lp landing-pads)
-	(let ((enter (car lp))
-	      (landing-pad (cdr lp)))
-	  (setf (landing-pad-id landing-pad) landing-pad-id)
-	  (setf (cc-mir:landing-pad enter) landing-pad)
-	  (incf landing-pad-id)))
-      (setq *landing-pad-id* landing-pad-id))
+    ;; insert landing pad after its enter instruction
+    (dolist (lp landing-pads)
+      (let ((enter (car lp))
+	    (landing-pad (second lp))
+	    (frame-holder (third lp)))
+	(change-class enter 'clasp-cleavir-hir:landing-pad-named-enter-instruction
+		      :landing-pad landing-pad)
+	(setf (clasp-cleavir-hir:frame-holder enter) frame-holder)))
     ;;
     ;; Now change all of the unwind-instructions to indexed-unwind-instructions
     ;;
     (dolist (unwind unwinds)
-      (let* ((unwind-enter (cleavir-ir:invocation unwind))
-	     (landing-pad (cdr (assoc unwind-enter landing-pads)))
-	     (landing-pad-id (landing-pad-id landing-pad))
-	     (jump-id (position (first (cleavir-ir:successors unwind)) (clasp-cleavir:targets landing-pad))))
-	(change-class unwind 'cc-mir:indexed-unwind-instruction
-		      :landing-pad-id landing-pad-id
-		      :jump-id jump-id)))
-    ))
+      (let* ((enter (cleavir-ir:invocation unwind))
+	     (landing-pad (second (assoc enter landing-pads))))
+	(change-class unwind 'clasp-cleavir-hir:indexed-unwind-instruction
+		      :inputs (list (clasp-cleavir-hir:frame-holder enter)))))))
+
+
+
+(defun finalize-unwind-and-landing-pad-instructions (initial-instruction)
+  ;; Identify all UNWIND-INSTRUCTIONs and LANDING-PAD-INSTRUCTIONs
+  ;; under the initial-instruction
+  ;; change all return-instruction(s) that are owned by
+  ;; landing-pad-named-enter-instruction(s)
+  ;; to landing-pad-return-instruction(s)
+  (let (unwinds landing-pad-enters landing-pad-returns)
+    (cleavir-ir:map-instructions-with-owner
+     (lambda (instruction owner)
+       (cond
+	 ((typep instruction 'cleavir-ir:unwind-instruction)
+	  (push instruction unwinds))
+	 ((typep instruction 'clasp-cleavir-hir:landing-pad-named-enter-instruction)
+	  (push instruction landing-pad-enters))
+     	 ((and (typep instruction 'cleavir-ir:return-instruction)
+	       (typep owner 'clasp-cleavir-hir:landing-pad-named-enter-instruction))
+	  (change-class instruction
+			'clasp-cleavir-hir:landing-pad-return-instruction
+			:inputs (append (cleavir-ir:inputs instruction) (list (clasp-cleavir-hir:frame-holder owner)))
+			:landing-pad (clasp-cleavir-hir:landing-pad owner)))))
+     initial-instruction)
+    ;; add each unwind to its corresponding landing-pad
+    (dolist (unwind unwinds)
+      (let* ((enter (cleavir-ir:invocation unwind))
+	     (landing-pad (clasp-cleavir-hir:landing-pad enter)))
+	(push unwind (unwinds landing-pad))))
+    ;; Set the jump-id of each unwind according to where it is in its landing-pad unwind list
+    (dolist (unwind unwinds)
+      (let* ((enter (cleavir-ir:invocation unwind))
+	     (landing-pad (clasp-cleavir-hir:landing-pad enter))
+	     (jump-id (position unwind (unwinds landing-pad))))
+	(setf (clasp-cleavir-hir:jump-id unwind) jump-id)))))

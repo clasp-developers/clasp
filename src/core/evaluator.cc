@@ -1202,7 +1202,9 @@ namespace core
             result.saveToMultipleValue0();
             // I should search for the Catch frame for throwTag and
             // invoke an error if it doesn't exist
-	    throw CatchThrow(frame);
+	    CatchThrow catchThrow(frame);
+	    printf("%s:%d Throwing core::CatchThrow exception@%p tag[%s] frame: %d\n", __FILE__, __LINE__, &catchThrow, (throwTag)->__repr__().c_str(), frame);
+	    throw catchThrow;
 	}
 
 

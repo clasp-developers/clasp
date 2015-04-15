@@ -1,4 +1,3 @@
-
 (in-package :clasp-cleavir-hir)
 
 
@@ -41,6 +40,59 @@
 (defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
     (format s "named-enter(~a)" (lambda-name instr))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction LANDING-PAD-NAMED-ENTER-INSTRUCTION
+;;;
+;;; This instruction is an ENTER-INSTRUCTION that keeps
+;;; track of the lambda-name
+
+
+(defclass landing-pad-named-enter-instruction (clasp-cleavir-hir:named-enter-instruction)
+  ((%landing-pad :initarg :landing-pad :accessor landing-pad)))
+
+(defun make-landing-pad-named-enter-instruction
+    (lambda-list lambda-name landing-pad &optional (successor nil successor-p))
+  (let ((oe (if successor-p
+		(cleavir-ir:make-enter-instruction lambda-list successor)
+		(cleavir-ir:make-enter-instruction lambda-list))))
+    (change-class oe 'landing-pad-named-enter-instruction :lambda-name lambda-name
+		  :landing-pad landing-pad)))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr landing-pad-named-enter-instruction))
+  (with-output-to-string (s)
+    (format s "landing-pad-named-enter(~a)" (lambda-name instr))))
+
+
+
+(defun frame-holder (enter)
+  (or (typep enter 'landing-pad-named-enter-instruction) (error "~a does not have a frame holder"))
+  ;; The frame holder is the last output
+  (car (last (cleavir-ir:outputs enter))))
+
+(defun (setf frame-holder) (frame-holder enter)
+  (or (typep enter 'landing-pad-named-enter-instruction) (error "~a does not have a frame holder"))
+  (setf (cleavir-ir:outputs enter) (append (cleavir-ir:outputs enter) (list frame-holder))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction LANDING-PAD-RETURN-INSTRUCTION
+;;;
+;;; This instruction is an RETURN-INSTRUCTION that keeps
+;;; track of the landing-pad
+
+
+(defclass landing-pad-return-instruction (cleavir-ir:return-instruction)
+  ((%landing-pad :initarg :landing-pad :accessor landing-pad)))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr landing-pad-return-instruction))
+  (with-output-to-string (s)
+    (format s "landing-pad-return")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -167,3 +219,83 @@
 
 
 (defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction LANDING-PAD-INSTRUCTION.
+;;;
+#||
+(defclass landing-pad-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%unwinds :initform nil :initarg :unwinds :accessor unwinds)
+   (%basic-block :initarg :basic-block :accessor basic-block)
+   (%frame :initarg :frame :accessor :frame)))
+
+(defun make-landing-pad-instruction
+    (output &key successor unwinds)
+  (make-instance 'landing-pad-instruction
+    :inputs nil
+    :outputs (list output)
+    :successors (if (null successor) nil (list successor))
+    :unwinds unwinds))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr landing-pad-instruction))
+  (with-output-to-string (str)
+    (format str "landing-pad[")
+    (dolist (unwind (unwinds instr))
+      (format str "{~a-->~a};" (cc-mir:describe-mir unwind) (cc-mir:describe-mir (first (cleavir-ir:successors unwind)))))
+    (format str "]")))
+||#
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; INDEXED-UNWIND-INSTRUCTION
+;;;
+;;; UWIND instruction that takes an enclosed lexical variable as input
+;;; and stores an integer jump-id to represent where to jump to in the
+;;; landing-pad
+(defclass indexed-unwind-instruction (cleavir-ir:unwind-instruction)
+  ((%jump-id :initform nil :initarg :jump-id :accessor jump-id)))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr indexed-unwind-instruction))
+  (with-output-to-string (stream)
+    (format stream "indexed-unwind[~a]" (jump-id instr))))
+
+
+(defmethod cl:print-object ((instr indexed-unwind-instruction) stream)
+  (format stream "#<indexed-unwind[~a]>" (jump-id instr)))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; throw-instruction
+;;;
+
+(defclass throw-instruction (cleavir-ir:instruction cleavir-ir:no-successors-mixin)
+  ((%throw-tag :initform nil :initarg :throw-tag :accessor throw-tag)))
+
+
+(defun make-throw-instruction
+    (throw-tag &key successor)
+  (make-instance 'throw-instruction
+    :inputs (list throw-tag)
+    :outputs ()
+    :successors (if (null successor) nil (list successor))))
+
+(defmethod cleavir-ir-graphviz:label ((instr throw-instruction))
+  (with-output-to-string (stream)
+    (format stream "throw")))
+
+
+(defmethod cl:print-object ((instr throw-instruction) stream)
+  (format stream "#<throw>"))
+
+

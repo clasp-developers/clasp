@@ -330,6 +330,9 @@ namespace core
 namespace core
 {
 
+    // _global_debuggerOnSIGABRT
+    // false == SIGABRT invokes debugger, true == terminate (used in core_exit)
+    bool _global_debuggerOnSIGABRT = true;
 
     
     int _global_signalTrap = 0;

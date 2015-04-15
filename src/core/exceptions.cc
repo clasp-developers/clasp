@@ -68,6 +68,7 @@ namespace core {
     void ReturnFrom::keyFunctionForVtable() {};
     void LexicalGo::keyFunctionForVtable() {};
     void DynamicGo::keyFunctionForVtable() {};
+    void Unwind::keyFunctionForVtable() {};
 
 #if 0
     GC_RESULT ReturnFrom::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)

@@ -68,31 +68,32 @@
 ;;;
 (defvar *landing-pad* nil)
 
-#+(or)(defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:unwind-protect-ast) context)
-	  (with-accessors ((results cleavir-ast-to-hir:results)
-			   (successors cleavir-ast-to-hir:successors)
-			   (invocation cleavir-ast-to-hir:invocation))
-	      context
-	    ;;  (cleavir-ast-to-hir:check-context-for-one-value-ast context)
-	    (let* ((save-temp (cleavir-ast-to-hir:make-temp))
-		   (restore-mv (clasp-cleavir-hir:make-restore-multiple-values-return-instruction save-temp results (first successors)))
-		   (cleanup-form (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:cleanup-ast ast) 
-								 (cleavir-ast-to-hir:context nil
-											     (list restore-mv)
-											     (cleavir-ast-to-hir:invocation context))))
-		   (values-temp (make-instance 'cleavir-ir:values-location))
-		   (save-mv (clasp-cleavir-hir:make-save-multiple-values-return-instruction values-temp save-temp cleanup-form))
-		   (cleanup-instr (clasp-cleavir-hir:make-cleanup-instruction save-mv))
-		   (landing-pad (clasp-cleavir-hir:make-landing-pad-instruction cleanup-instr))
-		   (*landing-pad* landing-pad)
-		   ;; Compile the protected form but use invokes rather than calls
-		   (protected-form (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:protected-ast ast)
-								   (cleavir-ast-to-hir:context values-temp
-											       (list save-mv)
-											       (cleavir-ast-to-hir:invocation context))))
-		   (try-instr (clasp-cleavir-hir:make-try-instruction 123456789 protected-form))
-		   )
-	      try-instr)))
+#+(or)
+(defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:unwind-protect-ast) context)
+  (with-accessors ((results cleavir-ast-to-hir:results)
+		   (successors cleavir-ast-to-hir:successors)
+		   (invocation cleavir-ast-to-hir:invocation))
+      context
+    ;;  (cleavir-ast-to-hir:check-context-for-one-value-ast context)
+    (let* ((save-temp (cleavir-ast-to-hir:make-temp))
+	   (restore-mv (clasp-cleavir-hir:make-restore-multiple-values-return-instruction save-temp results (first successors)))
+	   (cleanup-form (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:cleanup-ast ast) 
+							 (cleavir-ast-to-hir:context nil
+										     (list restore-mv)
+										     (cleavir-ast-to-hir:invocation context))))
+	   (values-temp (make-instance 'cleavir-ir:values-location))
+	   (save-mv (clasp-cleavir-hir:make-save-multiple-values-return-instruction values-temp save-temp cleanup-form))
+	   (cleanup-instr (clasp-cleavir-hir:make-cleanup-instruction save-mv))
+	   (landing-pad (clasp-cleavir-hir:make-landing-pad-instruction cleanup-instr))
+	   (*landing-pad* landing-pad)
+	   ;; Compile the protected form but use invokes rather than calls
+	   (protected-form (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:protected-ast ast)
+							   (cleavir-ast-to-hir:context values-temp
+										       (list save-mv)
+										       (cleavir-ast-to-hir:invocation context))))
+	   (try-instr (clasp-cleavir-hir:make-try-instruction 123456789 protected-form))
+	   )
+      try-instr)))
 
 
 
@@ -174,18 +175,25 @@
 	(first (cleavir-ast-to-hir:successors context))))
       (cleavir-ast-to-hir:invocation context)))))
 
-#||	 
-	 (
-	 )
-    
-  (let* ((restore-mv) (restore-mv (cleanup-branch) (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:cleanup-ast ast) context)
-	 (protected-branch (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:protected-ast ast) (context '()
-													  ()))
-  (error "Convert the unwind-protect into a HIR try/cleanup/catch")
-  (cleavir-ast-to-hir:compile-ast (cleavir-ast:protected-ast ast) context)
-  (error "Save the multiple-values return")
-  (cleavir-ast-to-hir:compile-ast (cleavir-ast:cleanup-ast ast) context)
-  (error "restore the multiple-values return"))
 
-
-||#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Generate a THROW-INSTRUCTION
+;;;
+(defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:throw-ast) context)
+  (with-accessors ((results cleavir-ast-to-hir:results)
+		   (successors cleavir-ast-to-hir:successors)
+		   (invocation cleavir-ast-to-hir:invocation))
+      context
+    (let* ((tag-temp (cleavir-ast-to-hir:make-temp))
+	   (result-successor 
+	    (let* ((new-successor (clasp-cleavir-hir:make-throw-instruction tag-temp))
+		   (new-context (cleavir-ast-to-hir:context 
+				 results
+				 (list new-successor)
+				 (cleavir-ast-to-hir:invocation context))))
+	      (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:result-ast ast) new-context))))
+      (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:tag-ast ast)
+				      (cleavir-ast-to-hir:context (list tag-temp)
+					       (list result-successor)
+					       (cleavir-ast-to-hir:invocation context))))))

@@ -955,36 +955,41 @@ namespace core {
     }
 
 
-    #define ARGS_core_catchFunction "(tag func)"
+#define ARGS_core_catchFunction "(tag func)"
 #define DECL_core_catchFunction ""
 #define DOCS_core_catchFunction "catchFunction"
     T_mv core_catchFunction(T_sp tag, Function_sp func)
-	{
-            int frame = _lisp->exceptionStack().push(CatchFrame,tag);
-	    T_mv result;
-	    try {
-		result = eval::funcall(func);
-	    } catch (CatchThrow& catchThrow) {
-		if (catchThrow.getFrame() != frame) {
-		    throw catchThrow;
-		}
-		result = gctools::multiple_values<T_O>::createFromValues();
+    {
+	int frame = _lisp->exceptionStack().push(CatchFrame,tag);
+	//	printf("%s:%d Entered catchFunction my-frame: %d CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow) );
+	T_mv result;
+	try {
+	    //		printf("%s:%d In catchFunction - evaluating function\n", __FILE__, __LINE__ );
+	    result = eval::funcall(func);
+	    //		printf("%s:%d In catchFunction - returned from function\n", __FILE__, __LINE__ );
+	} catch (CatchThrow& catchThrow) {
+	    //		printf("%s:%d Caught CatchThrow exception frame: %d  my frame: %d\n", __FILE__, __LINE__, catchThrow.getFrame(), frame );
+	    if (catchThrow.getFrame() != frame) {
+		throw catchThrow;
 	    }
-	    _lisp->exceptionStack().unwind(frame);
-	    return result;
+	    result = gctools::multiple_values<T_O>::createFromValues();
 	}
-    
+	_lisp->exceptionStack().unwind(frame);
+	//	printf("%s:%d Leaving catchFunction my-frame: %d CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow) );
+	return result;
+    }
 
-    #define ARGS_core_throwFunction "(tag result)"
+#define ARGS_core_throwFunction "(tag result)"
 #define DECL_core_throwFunction ""
-#define DOCS_core_throwFunction "throwFunction"
+#define DOCS_core_throwFunction "throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!"
     void core_throwFunction(T_sp tag, T_sp res)
     {
 	int frame = _lisp->exceptionStack().findKey(CatchFrame,tag);
 	if (frame < 0 ) {
 	    CONTROL_ERROR();
 	}
-	T_mv result(res,1);
+	//	printf("%s:%d throwFunction throwing to frame: %d  core::CatchThrow type_info@%p\n", __FILE__, __LINE__, frame, (void*)&typeid(core::CatchThrow));
+	T_mv result(res,1);  // THIS IS WRONG!!!! WE MUST HANDLE MULTIPLE VALUES!!!
 	result.saveToMultipleValue0();
 	throw CatchThrow(frame);
     }

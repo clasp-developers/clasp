@@ -305,7 +305,7 @@
 	  (arg (car cur-fixed-args) (car cur-fixed-args)))
 	 ((null cur-target))
       (let ((dest (translate-datum target)))
-	(format t "compile-<=3-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
+	#+(or)(format t "compile-<=3-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
 	(llvm-sys:create-store cmp:*irbuilder* arg dest nil)))))
 
 
@@ -333,8 +333,8 @@
 	(format t "allow-other-keys: ~a~%" allow-other-keys))
       (cond
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-	#+(or)        ((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
-		       (compile-<=3-required-arguments reqargs outputs calling-conv))
+	((and req-opt-only (<= num-req 3) (eql 0 num-opt) )
+	 (compile-<=3-required-arguments reqargs outputs calling-conv))
         ;; Test for
         ;; (x &optional y)
         ;; (x y &optional z)

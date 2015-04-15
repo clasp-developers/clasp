@@ -51,14 +51,14 @@
 (defmacro unwind-protect (protected-form &rest cleanup-forms)
   `(core:funwind-protect (lambda () ,protected-form) (lambda () ,@cleanup-forms)))
 
-
+#+(or)
 (defmacro catch (tag &rest forms)
-  `(core:catch-function ,tag (lambda () ,@forms)))
+  `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) ,@forms)))
 
-(defmacro throw (tag result-form)
-  `(core:throw-function ,tag ,result-form))
+#+(or)
+(defmacro throw (tag result-form) `(core:throw-function ,tag ,result-form))
 
-
+#+(or)
 (defmacro progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
 

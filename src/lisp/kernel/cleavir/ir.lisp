@@ -53,7 +53,7 @@
       (let ((store-fn (llvm-sys:get-name (instruction-llvm-function instr)))
 	    (target-fn (llvm-sys:get-name (instruction-llvm-function target))))
 	(unless (string= store-fn target-fn)
-	  (error "Mismatch in store function vs target function"))))))
+	  (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -149,7 +149,7 @@
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun apply-closure (intrinsic-name closure arguments abi)
+(defun closure-call (call-or-invoke intrinsic-name closure arguments abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (unless (<= (length arguments) 5)
     (let ((mv-args (nthcdr 5 arguments)))
@@ -161,13 +161,15 @@
 	       (mv-elt-ref (llvm-sys:create-geparray cmp:*irbuilder* mvarray (list (%size_t 0) (%size_t idx)) "element")))
 	  (%store (cmp:irc-load arg) mv-elt-ref)))))
   (with-return-values (return-vals abi)
-    (cmp:irc-intrinsic intrinsic-name
-		       (sret-arg return-vals)
-		       (cmp:irc-load closure)
-		       (%size_t (length arguments))
-		       (%load-or-null (first arguments))
-		       (%load-or-null (second arguments))
-		       (%load-or-null (third arguments))
-		       (%load-or-null (fourth arguments))
-		       (%load-or-null (fifth arguments)))))
-
+    (let ((args (list 
+		 (sret-arg return-vals)
+		 (cmp:irc-load closure)
+		 (%size_t (length arguments))
+		 (%load-or-null (first arguments))
+		 (%load-or-null (second arguments))
+		 (%load-or-null (third arguments))
+		 (%load-or-null (fourth arguments))
+		 (%load-or-null (fifth arguments)))))
+      (if (eq call-or-invoke :call)
+	  (cmp:irc-create-call intrinsic-name args label)
+	  (cmp:irc-create-invoke intrinsic-name args landing-pad label)))))

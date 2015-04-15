@@ -78,6 +78,8 @@ namespace core
 #define DOCS_af_copy_subarray "copy_subarray"
     void af_copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp inStart, Fixnum_sp len)
     {_G();
+	// TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
+	//       Currently this is very inefficient
 	int iLen = len->get();
 	if (iLen == 0 ) return;
 	ASSERTF(out->rank() == 1,BF("out array must be rank 1 - instead it is %d") % out->rank());
@@ -86,13 +88,24 @@ namespace core
 	int iInStart = inStart->get();
 	if ( (iLen+iOutStart) >= out->arrayDimension(0) ) iLen = out->arrayDimension(0)-iOutStart;
 	if ( (iLen+iInStart) >= in->arrayDimension(0) ) iLen = in->arrayDimension(0)-iInStart;
-	for ( int i=0; i<iLen; ++i)
-	{
-	    out->setf_svref(iOutStart,in->svref(iInStart));
-	    ++iOutStart;
-	    ++iInStart;
+	if ( iOutStart < iInStart ) {
+	    for ( int i=0; i<iLen; ++i)
+		{
+		    out->setf_svref(iOutStart,in->svref(iInStart));
+		    ++iOutStart;
+		    ++iInStart;
+		}
+	} else {
+	    iOutStart += iLen;
+	    iInStart += iLen;
+	    for ( int i=0; i<iLen; ++i)
+		{
+		    --iOutStart;
+		    --iInStart;
+		    out->setf_svref(iOutStart,in->svref(iInStart));
+		}
 	}
-    };
+    }
 
 
 

@@ -36,7 +36,7 @@
 ;;; it gets converted into a function call to CORE:MULTIPLE-VALUE-FUNCALL.
 ;;;
 (defmethod cleavir-generate-ast:convert-special
-    ((symbol (eql 'core:multiple-value-call)) form environment (system clasp-cleavir:clasp))
+    ((symbol (eql 'multiple-value-call)) form environment (system clasp-cleavir:clasp))
   (destructuring-bind (function-form . forms) 
       (rest form)
     (if (eql (length forms) 1)
@@ -80,6 +80,36 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting CATCH
+;;;
+;;; Convert catch into a call
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'cl:catch)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (tag . forms) 
+      (rest form)
+    (cleavir-generate-ast:convert `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) ,@forms)) environment system)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting THROW
+;;;
+;;; Convert throw into a call
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'cl:throw)) form environment (system clasp-cleavir:clasp))
+  (destructuring-bind (tag result-form) 
+      (rest form)
+    ;; If I don't use a throw-ast node use the following
+    (cleavir-generate-ast:convert `(core:throw-function ,tag ,result-form) environment system)
+    ;; If I decide to go with a throw-ast node use the following
+    #+(or)
+    (clasp-cleavir-ast:make-throw-ast
+     (cleavir-generate-ast:convert tag environment system)
+     (cleavir-generate-ast:convert result-form environment system))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CL:PROGV
 ;;;
 ;;; Convert this into a function call
@@ -87,7 +117,7 @@
     ((symbol (eql 'cl:progv)) form environment (system clasp-cleavir:clasp))
   (destructuring-bind (symbols values . forms) 
       (rest form)
-    (cleavir-generate-ast:convert `(core:progv-function symbols values #'(lambda () ,@forms)) environment system)))
+    (cleavir-generate-ast:convert `(core:progv-function ,symbols ,values #'(lambda () ,@forms)) environment system)))
 
 
 

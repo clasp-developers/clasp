@@ -38,6 +38,7 @@ $for template_ [[
         VariadicFunctoid(T_sp name, SourcePosInfo_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
+	virtual void* functionAddress() const { return (void*)this->fptr; };
         void LISP_CALLING_CONVENTION()
         {
             INVOCATION_HISTORY_FRAME();

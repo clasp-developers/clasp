@@ -37,7 +37,7 @@ namespace gctools
     class multiple_values : public smart_ptr<T>
     {
     private:
-	size_t 	_number_of_values;
+	mutable size_t 	_number_of_values;
     public:
 	multiple_values() : smart_ptr<T>(_Nil<T>()), _number_of_values(0) {};
     multiple_values(void* p, size_t num) : smart_ptr<T>((T*)p), _number_of_values(num) {};
@@ -64,6 +64,13 @@ namespace gctools
         void saveToMultipleValue0() const {
 	    core::MultipleValues& mv = core::lisp_multipleValues();
             mv.valueSet(0,*this);
+	    mv.setSize(this->number_of_values());
+        };
+
+	void readFromMultipleValue0() const {
+	    core::MultipleValues& mv = core::lisp_multipleValues();
+	    this->px_ref() = mv[0];
+	    this->_number_of_values = mv.getSize();
         };
 
         void saveToVec0(::gctools::Vec0<core::T_sp>& values) {

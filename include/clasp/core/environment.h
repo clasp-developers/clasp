@@ -140,7 +140,7 @@ namespace core
 	  If the variable is lexically special return (list special-var _symbol_).
 	  Otherwise return nil.  
 	*/
-	Cons_sp classifyValue(T_sp sym) const;
+	Cons_sp classifyVariable(T_sp sym) const;
 	virtual T_sp _lookupValue(int depth, int index);
 	virtual Function_sp _lookupFunction(int depth, int index) const;
         virtual T_sp _lookupTagbodyId(int depth, int index) const {SUBIMP();};
