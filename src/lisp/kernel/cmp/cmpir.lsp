@@ -1135,9 +1135,8 @@ Otherwise just create a function call"
           (bformat t "---------------- dumping function to assist in debugging\n")
           (llvm-sys:dump fn)
           (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!\n")
-          (bformat t "error: %s\n" error-msg)
+          (bformat t "llvm::verifyFunction error[%s]\n" error-msg)
           (if continue
-              (break "Failed function verify - type c to keep going")
               (error "Failed function verify")))
         (cmp-log "--------------  Function verified OK!!!!!!!\n"))))
 

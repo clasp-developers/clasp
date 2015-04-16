@@ -143,6 +143,9 @@
 (defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))
   (core:macro-function symbol))
 
+(defmethod cleavir-environment:macro-function (symbol (environment null))
+  (core:macro-function symbol))
+
 #+(or)(defmethod cleavir-environment:macro-function (symbol (environment core:environment))
 	(core:macro-function symbol environment))
 
@@ -156,6 +159,10 @@
 
 
 (defmethod cleavir-environment:symbol-macro-expansion (symbol (environment clasp-global-environment))
+  (macroexpand symbol nil))
+
+
+(defmethod cleavir-environment:symbol-macro-expansion (symbol (environment NULL))
   (macroexpand symbol nil))
 
 

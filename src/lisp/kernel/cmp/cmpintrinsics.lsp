@@ -581,7 +581,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "debugPrintI32" +void+ (list +i32+))
   (primitive-nounwind module "debugPrint_size_t" +void+ (list +size_t+))
   (primitive-nounwind module "lowLevelTrace" +void+ (list +i32+))
-  (primitive          module "unreachableError" +void+ nil)
+  (primitive-nounwind module "unreachableError" +void+ nil)
 
   (primitive          module "singleStepCallback" +void+ nil)
 
