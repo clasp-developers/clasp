@@ -7,10 +7,11 @@
 (defvar *cleavir-clasp-only* (lisp-executable.creation:determine-complete-set-of-asdf-source-files (list :clasp-cleavir)))
 
 (defparameter *cleavir-clasp-all* (append (remove 'core:kernel/cmp/cmprepl core:*init-files*)
-				    *cleavir-clasp-only*
-				    (list :cleavir-clasp)
-				    (list 'core:kernel/cleavir/auto-compile)
-				    (list :auto-cleavir)))
+					  (list :bclasp)
+					  *cleavir-clasp-only*
+					  (list :cleavir-clasp)
+					  (list 'core:kernel/cleavir/auto-compile)
+					  (list :auto-compile :cclasp)))
 
 (defun save-all-files ()
   (with-open-file (fout "sys:kernel;cleavir-system.lsp" :direction :output)

@@ -686,6 +686,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     kernel/clos/inspect
     :clos
     kernel/lsp/ffi
+    sockets/sockets
 ;;    asdf/build/asdf
     :front
     kernel/lsp/top

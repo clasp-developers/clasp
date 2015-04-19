@@ -42,6 +42,10 @@ namespace core
     FORWARD(IOStreamStream);
     FORWARD(ConcatenatedStream);
 
+    void clasp_write_string(const string& str, T_sp strm);
+
+#define STDOUT_BFORMAT(x) core::clasp_write_string((x).str(),cl::_sym_STARstandard_outputSTAR->symbolValue())
+
 
 
 }

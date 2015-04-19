@@ -77,9 +77,11 @@ namespace gctools {
         static const uintptr_t special_tag        = BOOST_BINARY(0001); // xxx01 means special val
         static const uintptr_t frame_tag          = BOOST_BINARY(0010); // xxx10 means a ValueFrame stored entirely on the stack
         static const uintptr_t fixnum_tag         = BOOST_BINARY(0011); // xxx11 means fixnum
+        static const uintptr_t fixnum_shift = 2;
+
         static const uintptr_t ptr_mask = ~tag_mask;
     public:
-        /*! Special taged values */
+        /*! Special tagged values */
         static const uintptr_t _NULL              = BOOST_BINARY(000000);
         static const uintptr_t tagged_NULL 	  = BOOST_BINARY(000000)|special_tag; // Should I have this????
         static const uintptr_t tagged_unbound     = BOOST_BINARY(000100)|special_tag; // 0x05
@@ -88,8 +90,6 @@ namespace gctools {
         static const uintptr_t tagged_sameAsKey   = BOOST_BINARY(010000)|special_tag;
         static const uintptr_t tagged_character   = BOOST_BINARY(010100)|special_tag;
         static const uintptr_t character_shift = 8;
-        static const uintptr_t fixnum_shift = 2;
-
     public:
         static T* make_tagged_nil() {
             return reinterpret_cast<T*>(tagged_nil);
@@ -130,9 +130,6 @@ namespace gctools {
 
         tagged_ptr():
             px( 0 )
-#ifdef USE_TAGGED_PTR_P0
-            , pbase(0)
-#endif
         {
         }
 
@@ -200,9 +197,6 @@ namespace gctools {
         tagged_ptr(tagged_ptr && rhs): px( rhs.px )
         {
             rhs.px = 0;
-#ifdef USE_TAGGED_PTR_P0
-            rhs.pbase = 0;
-#endif
         }
 
 
@@ -349,11 +343,6 @@ namespace gctools {
             T * tmp = this->px;
             this->px = rhs.px;
             rhs.px = tmp;
-#ifdef USE_TAGGED_PTR_P0
-            void* tmp0 = pbase;
-            pbase = rhs.pbase;
-            rhs.pbase = tmp0;
-#endif
         }
 
 	PointerType& px_ref() const { return this->px;};
@@ -384,25 +373,14 @@ namespace gctools {
         }
 
 
-#ifdef USE_TAGGED_PTR_P0
-        void*& pbase_ref() const
-        {
-            return this->pbase;
-        }
-#endif
-
         void* pbase() const
         {
-#ifdef USE_TAGGED_PTR_P0
-            return this->pbase;
-#else   
             if (this->pointerp()) {
                 return reinterpret_cast<void*>(this->px);
                 // Shouldn't this point to the mps base?
 //                return dynamic_cast<void*>(this->px);
             }
             return NULL;
-#endif
         }
 
     public:

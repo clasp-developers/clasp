@@ -682,7 +682,7 @@ extern "C"
 	(*fnP) = ns;
     }
 
-    void findPackage( core::T_sp* fnP, const char* cstr)
+    void ltv_findPackage( core::T_sp* fnP, const char* cstr)
     {_G();
 // placement new into memory passed into this function
 	ASSERT(fnP!=NULL);
@@ -2324,7 +2324,7 @@ extern "C" {
 	    CONTROL_ERROR();
 	}
 	core::CatchThrow catchThrow(frame);
-	printf("%s:%d in cc_throw throwing CatchThrow to reach frame: %d   core::CatchThrow typeinfo@%p\n", __FILE__, __LINE__, frame, &typeid(core::CatchThrow));
+	//	printf("%s:%d in cc_throw throwing CatchThrow to reach frame: %d   core::CatchThrow typeinfo@%p\n", __FILE__, __LINE__, frame, &typeid(core::CatchThrow));
 	throw catchThrow;
     }
 

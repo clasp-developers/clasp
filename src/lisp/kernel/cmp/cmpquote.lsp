@@ -81,8 +81,6 @@ the value is put into *default-load-time-value-vector* and its index is returned
     ltv-idx))
 
 
-
-
 (defmacro with-next-load-time-value ((ltv-ref obj env) &rest creator)
   "An ltv-index for _obj_ will be created and the maker is codegen'd into the load-time-value function.
 Return the ltv index of the value."
@@ -90,7 +88,7 @@ Return the ltv index of the value."
     ;; Always create a new load-time-value
     `(let ((,index-gs (get-next-available-ltv-entry)))
        (with-irbuilder (*irbuilder-ltv-function-body*)
-	 ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
+	   ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	 (irc-low-level-trace)
 	 (let ((,ltv-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var* (jit-constant-i32 ,index-gs))))
 	   (with-landing-pad (irc-get-cleanup-landing-pad-block ,env)
@@ -454,7 +452,7 @@ and walk the car and cdr"
     :maker (let* ((constant (llvm-sys:make-string-global *the-module* (package-name package)))
 		  (ptr (llvm-sys:create-in-bounds-gep *irbuilder* constant
 						      (list (jit-constant-i32 0) (jit-constant-i32 0)) "ptr")))
-	     (irc-intrinsic "findPackage" ltv-ref ptr))))
+	     (irc-create-call "ltv_findPackage" (list ltv-ref ptr)))))
 
 
 (defvar *built-in-class-coalesce* nil)
@@ -497,7 +495,7 @@ and walk the car and cdr"
     :coalesce-hash-table *double-float-coalesce*
     :maker (let* ((constant (llvm-sys:make-apfloat-double dbl))
 		  (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
-	     (irc-intrinsic "makeDoubleFloat" ltv-ref constant-ap-arg))))
+	     (irc-create-call "makeDoubleFloat" (list ltv-ref constant-ap-arg)))))
 
 (defvar *complex-coalesce* nil)
 (defun codegen-ltv-complex (result complex env)
@@ -508,7 +506,7 @@ and walk the car and cdr"
                   (constant-i (llvm-sys:make-apfloat-double (imagpart complex)))
 		  (constant-ap-arg-r (llvm-sys:constant-fp-get *llvm-context* constant-r))
 		  (constant-ap-arg-i (llvm-sys:constant-fp-get *llvm-context* constant-i)))
-	     (irc-intrinsic "makeComplex" ltv-ref constant-ap-arg-r constant-ap-arg-i))))
+	     (irc-create-call "makeComplex" (list ltv-ref constant-ap-arg-r constant-ap-arg-i)))))
 
 
 #+long-float(defvar *long-float-coalesce* nil)
@@ -750,7 +748,6 @@ marshaling of compiled quoted data"
 	(irbuilder-body (gensym "ltv-irbuilder-body"))
 	(traceid-gs (gensym "traceid"))
 	(fn-env-gs (gensym "ltv-fn-env")))
-    #||	(ltv-invocation-history-frame (gensym "ltv-ihf")))||#
     `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs
 					,irbuilder-alloca ,irbuilder-body )
 	 (irc-function-create "runAll" nil nil
@@ -762,13 +759,16 @@ marshaling of compiled quoted data"
 	     (*load-time-initializer-environment* ,fn-env-gs)
 	     (*irbuilder-ltv-function-alloca* ,irbuilder-alloca))
 	 (let ((*irbuilder-ltv-function-body* ,irbuilder-body)
+	       (*ltv-function-landing-pad-block* nil)
 	       (*load-time-value-holder-global-var*
-		(llvm-sys:make-global-variable *the-module*
-					       +run-and-load-time-value-holder-global-var-type+
-					       nil
-					       'llvm-sys:internal-linkage
-					       (llvm-sys:constant-pointer-null-get +run-and-load-time-value-holder-global-var-type+)
-					       *load-time-value-holder-name*))
+		#|| spacer ||#(llvm-sys:make-global-variable 
+			       *the-module*
+			       +run-and-load-time-value-holder-global-var-type+
+			       nil
+			       'llvm-sys:internal-linkage
+			       (llvm-sys:constant-pointer-null-get 
+				+run-and-load-time-value-holder-global-var-type+)
+			       *load-time-value-holder-name*))
 	       (*next-load-time-value-index* 0)
 	       (*next-load-time-symbol-index* 0)
 	       (*fixnum-coalesce* (make-hash-table :test #'eql))
@@ -796,21 +796,22 @@ marshaling of compiled quoted data"
 	   ;; it will also setup all of the literals, load-time-values and symbols
 	   ;;
 
-	   (with-load-time-value-counters (ltv-value-counter
-					   ltv-symbol-counter
-					   :postscript (with-irbuilder (*irbuilder-ltv-function-alloca*)
-							 (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
-							 (irc-intrinsic "getOrCreateLoadTimeValueArray"
-									*load-time-value-holder-global-var*
-									*gv-source-pathname*
-									(jit-constant-i32 ltv-value-counter)
-									(jit-constant-i32 ltv-symbol-counter))
-							 (irc-intrinsic "assignSourceFileInfoHandle"
-									*gv-source-pathname*
-									*gv-source-debug-namestring*
-									(jit-constant-i64 *source-debug-offset*)
-									(jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-									*gv-source-file-info-handle*)))
+	   (with-load-time-value-counters 
+	       (ltv-value-counter
+		ltv-symbol-counter
+		:postscript (with-irbuilder (*irbuilder-ltv-function-alloca*)
+			      (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
+			      (irc-intrinsic "getOrCreateLoadTimeValueArray"
+					     *load-time-value-holder-global-var*
+					     *gv-source-pathname*
+					     (jit-constant-i32 ltv-value-counter)
+					     (jit-constant-i32 ltv-symbol-counter))
+			      (irc-intrinsic "assignSourceFileInfoHandle"
+					     *gv-source-pathname*
+					     *gv-source-debug-namestring*
+					     (jit-constant-i64 *source-debug-offset*)
+					     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+					     *gv-source-file-info-handle*)))
 	     (initialize-special-load-time-values ,fn-env-gs)
 	     ,@body)
 	   (with-irbuilder (*irbuilder-ltv-function-body*)

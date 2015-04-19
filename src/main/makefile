@@ -9,7 +9,7 @@ else
   CLASP_MPS = clasp_mps_o
 endif
 
-export CLASP_APP_RESOURCES_DIR=$(HOME)/local/clasp/Contents/Resources
+export CLASP_APP_RESOURCES_DIR=$(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
 
 
 
@@ -17,12 +17,19 @@ all:
 	make boehm
 	make mps
 
+application:
+	cp -R $(CLASP_LISP_SOURCE_DIR)/build $(CLASP_APP_RESOURCES_DIR)/lisp/
+	cp -R $(CLASP_INTERNAL_BUILD_TARGET_DIR)/* $(CLASP_APP_DIR)
+
 boehm-cleavir:
 	make boehm
 	make cleavir
 
-cleavir:
+cclasp:
 	clasp_boehm_o  -l "buildCleavirClasp.lsp"
+
+bclasp-to-cclasp:
+	clasp_boehm_o  -l "buildBclaspToCclasp.lsp"
 
 
 #	make clasp-gc-interface

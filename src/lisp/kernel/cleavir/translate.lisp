@@ -153,6 +153,7 @@
 	   (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-block (cmp:irc-basic-block-create "body")))
       (llvm-sys:add-fn-attr fn 'llvm-sys:attribute-uwtable)
+      (push fn cmp:*all-functions-for-one-compile*)
       (cc-dbg-when *debug-log*
 		   (format *debug-log* "------------ BEGIN layout-procedure ~a~%" (llvm-sys:get-name fn))
 		   (format *debug-log* "   basic-blocks for procedure~%")
@@ -1005,7 +1006,8 @@ nil)
   (let ((cmp:*cleavir-compile-hook* #'cleavir-compile-t1expr)
 	(cmp:*dump-module-on-completion* t)
 	(cleavir-generate-ast:*compiler* 'cl:compile)
-	(*debug-cleavir* debug))
+	(*debug-cleavir* debug)
+	(cmp:*all-functions-for-one-compile* nil))
     (compile name form)))
 
 

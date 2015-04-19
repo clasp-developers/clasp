@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/fileSystem.h>
+#include <clasp/core/lispStream.fwd.h>
 #include <clasp/llvmo/llvmoPackage.h>
 //#include "llvmoExpose.generated.h"
 #include <clasp/llvmo/llvmoExpose.h>
@@ -252,26 +253,18 @@ namespace llvmo
 	return gv;
     }
 
-
-
-
-
-
-
-
-
-
-
     void dump_funcs(core::Function_sp compiledFunction)
     {
+	STDOUT_BFORMAT(BF("Dumping disassembly"));
         core::Closure* cb = compiledFunction->closure;
         if ( !cb->compiledP() ) {
             SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
         }
         llvmo::CompiledClosure* cc = dynamic_cast<llvmo::CompiledClosure*>(cb);
 	core::T_sp funcs = cc->associatedFunctions;
-	if ( cl_consp(funcs) )
-	{
+	if (funcs.nilp()) {
+	    STDOUT_BFORMAT(BF("There is no list of associated functions\n"));
+	} else if ( cl_consp(funcs) ) {
 	    core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
 	    for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
 	    {
@@ -286,7 +279,7 @@ namespace llvmo
 	    }
 	    return;
 	}
-	printf("af_disassemble -> %s\n", _rep_(funcs).c_str() );
+	SIMPLE_ERROR(BF("Illegal value for associatedFunctions: %s") % _rep_(funcs));
     }
 
 

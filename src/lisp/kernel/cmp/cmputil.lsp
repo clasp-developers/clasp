@@ -155,6 +155,7 @@
   `(let ((*the-module* nil)
 	 (*irbuilder-ltv-function-alloca* nil)
 	 (*irbuilder-ltv-function-body* nil)
+	 (*ltv-function-landing-pad-block* nil)
 	 (*irbuilder-function-alloca* nil)
 	 (*irbuilder-function-body* nil)
 	 (*generate-compile-file-load-time-values* nil)

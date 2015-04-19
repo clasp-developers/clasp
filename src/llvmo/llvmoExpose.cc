@@ -985,7 +985,7 @@ namespace llvmo
         llvm::raw_string_ostream ei(errorInfo);
 	llvm::Module* m = module->wrappedPtr();
 	bool result = llvm::verifyModule(*m,&ei);
-	return Values(_lisp->_boolean(result),core::Str_O::create(errorInfo));
+	return Values(_lisp->_boolean(result),core::Str_O::create(ei.str()));
     };
 
 
@@ -1001,7 +1001,7 @@ namespace llvmo
 	string errorInfo;
         llvm::raw_string_ostream ei(errorInfo);
 	bool result = llvm::verifyFunction(*f,&ei);
-	return Values( _lisp->_boolean(result), core::Str_O::create(errorInfo));
+	return Values( _lisp->_boolean(result), core::Str_O::create(ei.str()));
     };
 
 
@@ -3848,6 +3848,13 @@ namespace llvmo
 	return translate::to_object<llvm::Function::ArgumentListType&>::convert(args);
     }
 
+
+    string Function_O::__repr__() const
+    {_G();
+	stringstream ss;
+	ss << "#<" << this->_instanceClass()->classNameAsString() << ">";
+	return ss.str();
+    }
 
     void Function_O::appendBasicBlock(BasicBlock_sp basicBlock)
     {

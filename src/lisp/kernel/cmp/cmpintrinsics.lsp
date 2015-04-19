@@ -523,7 +523,6 @@ Boehm and MPS use a single pointer"
   #+long-float (primitive-nounwind module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
   (primitive-nounwind module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "makePathname" +void+ (list +tsp*+ +i8*+))
-  (primitive          module "findPackage" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i64+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
 
 
@@ -653,6 +652,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "assignSourceFileInfoHandle" +void+ (list +i8*+ +i8*+ +i64+ +i32+ +i32*+))
   (primitive-nounwind module "debugSourceFileInfoHandle" +void+ (list +i32*+))
 
+  (primitive          module "ltv_findPackage" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "ltv_makeCons" +void+ (list +tsp*+))
   (primitive-nounwind module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
   (primitive-nounwind module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))

@@ -99,9 +99,9 @@
   (destructuring-bind (tag result-form) 
       (rest form)
     ;; If I don't use a throw-ast node use the following
+    #+(or)
     (cleavir-generate-ast:convert `(core:throw-function ,tag ,result-form) environment system)
     ;; If I decide to go with a throw-ast node use the following
-    #+(or)
     (clasp-cleavir-ast:make-throw-ast
      (cleavir-generate-ast:convert tag environment system)
      (cleavir-generate-ast:convert result-form environment system))))

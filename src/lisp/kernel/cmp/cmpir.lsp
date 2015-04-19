@@ -1137,6 +1137,7 @@ Otherwise just create a function call"
           (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!\n")
           (bformat t "llvm::verifyFunction error[%s]\n" error-msg)
           (if continue
+	      (break "Error when trying to verify-function")
               (error "Failed function verify")))
         (cmp-log "--------------  Function verified OK!!!!!!!\n"))))
 

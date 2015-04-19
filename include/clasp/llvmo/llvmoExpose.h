@@ -4112,6 +4112,7 @@ namespace llvmo
 /*        if (this->_ptr != NULL ) delete this->_ptr; */
 	    this->_ptr = ptr;
 	}
+	string __repr__() const;
 	Function_O() : Base() {};
 	~Function_O() {}
 

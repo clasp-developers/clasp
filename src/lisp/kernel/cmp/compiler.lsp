@@ -1536,21 +1536,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	   ((compiled-function-p fn)
 	    (llvm-sys:disassemble* fn))
 	   ((interpreted-function-p fn)
-	    (multiple-value-bind (llvm-fn lambda-name)
-		(generate-llvm-function-from-interpreted-function #||name||# fn)
-	      (or *run-time-execution-engine* (error "You must set up the *run-time-execution-engine* first before calling disassemble - the easiest way is to compile something first"))
-	      (compiled-function (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-				  *run-time-execution-engine*
-				  name
-				  llvm-fn
-				  (irc-environment-activation-frame (closed-environment fn))
-				  *run-time-literals-external-name*
-				  core:*current-source-file-info*
-				  (core:source-pos-info-filepos *current-source-pos-info*)
-				  (core:source-pos-info-lineno *current-source-pos-info*)
-				  nil ; lambda-list
-				  )))
-	    (llvm-sys:disassemble* compiled-function))
+	    (format t "This is a interpreted function - compile it first~%"))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))
       ((and (consp desig) (or (eq (car desig) 'lambda) (eq (car desig) 'ext::lambda-block)))
        (let ((funcs (codegen-closure nil desig nil)))
