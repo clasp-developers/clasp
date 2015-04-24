@@ -131,18 +131,18 @@ namespace gctools {
 
     struct WeakObject {
         struct metadata_always_fix_pointers_to_derived_classes;
-        typedef gctools::tagged_ptr<gctools::Fixnum_ty> KindType;
-        WeakObject(WeakKinds k) : Kind(gctools::tagged_ptr<gctools::Fixnum_ty>(k)) {};
+        typedef gctools::smart_ptr<gctools::Fixnum_ty> KindType;
+    WeakObject(WeakKinds k) : Kind(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(k)) {};
         KindType Kind;
-        int kind() const { return this->Kind.fixnum(); };
-        void setKind(WeakKinds k) { this->Kind = gctools::tagged_ptr<gctools::Fixnum_ty>(k); };
+        int kind() const { return this->Kind.asFixnum(); };
+        void setKind(WeakKinds k) { this->Kind = gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(k); };
         virtual void* dependentPtr() const { return NULL; };
         
     };
 
     struct weak_fwd_s : public WeakObject {
         WeakObject* fwd;                    /* forwarded object */
-        gctools::tagged_ptr<gctools::Fixnum_ty> size; /* total size of this object */
+        gctools::smart_ptr<gctools::Fixnum_ty> size; /* total size of this object */
     };
 
     struct weak_fwd2_s : public WeakObject {
@@ -152,7 +152,7 @@ namespace gctools {
 
     struct weak_pad_s : public WeakObject {
         WeakObject* fwd;                    /* forwarded object */
-        gctools::tagged_ptr<gctools::Fixnum_ty> size; /* total size of this object */
+        gctools::smart_ptr<gctools::Fixnum_ty> size; /* total size of this object */
     };
 
     struct weak_pad1_s : public WeakObject {
@@ -164,9 +164,9 @@ namespace gctools {
     struct BucketsBase : public WeakObject {
     BucketsBase(WeakKinds k,int l) : WeakObject(k)
 	    , dependent(NULL)
-	    , _length(gctools::tagged_ptr<gctools::Fixnum_ty>(l))
-	    , _used(gctools::tagged_ptr<gctools::Fixnum_ty>(0))
-	    , _deleted(gctools::tagged_ptr<gctools::Fixnum_ty>(0))
+	    , _length(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(l))
+	    , _used(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(0))
+	    , _deleted(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(0))
 	    {
 		GCWEAK_LOG(BF("Created BucketsBase with length: %d") % this->length() );
 		for (size_t i(0); i<l; ++i ) this->bucket[i] = T(T::unbound);
@@ -179,17 +179,17 @@ namespace gctools {
         T& operator[](size_t idx) { return this->bucket[idx];};
         typedef T   value_type;
         BucketsBase<U,T>* dependent;  /* the dependent object */
-        gctools::tagged_ptr<gctools::Fixnum_ty> _length;                /* number of buckets (tagged) */
-        gctools::tagged_ptr<gctools::Fixnum_ty> _used;                  /* number of buckets in use (tagged) */
-        gctools::tagged_ptr<gctools::Fixnum_ty> _deleted;               /* number of deleted buckets (tagged) */
+        gctools::smart_ptr<gctools::Fixnum_ty> _length;                /* number of buckets (tagged) */
+        gctools::smart_ptr<gctools::Fixnum_ty> _used;                  /* number of buckets in use (tagged) */
+        gctools::smart_ptr<gctools::Fixnum_ty> _deleted;               /* number of deleted buckets (tagged) */
         T bucket[0];              /* hash buckets */
 
-        int length() const { return this->_length.fixnum(); };
-	void setLength(int l) { this->_length = gctools::tagged_ptr<gctools::Fixnum_ty>(l); };
-        int used() const { return this->_used.fixnum(); };
-        void setUsed(int val) { this->_used = gctools::tagged_ptr<gctools::Fixnum_ty>(val); };
-        int deleted() const { return this->_deleted.fixnum(); };
-        void setDeleted(int val) { this->_deleted = gctools::tagged_ptr<gctools::Fixnum_ty>(val); };
+        int length() const { return this->_length.asFixnum(); };
+	void setLength(int l) { this->_length = gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(l); };
+        int used() const { return this->_used.asFixnum(); };
+        void setUsed(int val) { this->_used = gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(val); };
+        int deleted() const { return this->_deleted.asFixnum(); };
+        void setDeleted(int val) { this->_deleted = gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(val); };
     };
 
 
@@ -387,18 +387,18 @@ namespace gctools {
         typedef typename MappingBase<T,U>::value_type value_type;
         Mapping(const T& val) : MappingBase<T,U>(val) {
 #ifdef USE_BOEHM
-            if (this->bucket.pointerp()) {
+            if (this->bucket.objectp()) {
                 printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
-                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.px_ref())
-                                                      ,reinterpret_cast<void*>(this->bucket.px_ref()));
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_())
+                                                      ,reinterpret_cast<void*>(this->bucket.rawRef_()));
             }
 #endif
         };
         virtual ~Mapping() {
 #ifdef USE_BOEHM
-            if (this->bucket.pointerp()) {
+            if (this->bucket.objectp()) {
                 printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
-                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.px_ref()));
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_()));
                 if ( !result ) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                 }
@@ -458,7 +458,8 @@ namespace gctools {
         }
 
         bool unsafeValid() const {
-            return !this->Key->bucket.NULLp() && !this->Key->bucket.unboundp();
+	    //Was return !this->Key->bucket.NULLp() && !this->Key->bucket.unboundp();
+	    return this->Key->bucket && !this->Key->bucket.unboundp();
         }
         bool valid() const
         {
@@ -520,16 +521,18 @@ namespace gctools {
         WeakPointerManager(const value_type& val) {
             this->pointer = AllocatorType::allocate(val);
 #ifdef USE_BOEHM
-            if ( this->pointer->value.pointerp() ) {
-                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.px_ref())
-                                                      , reinterpret_cast<void*>(this->pointer->value.px_ref()));
-            }
+            if ( this->pointer->value.objectp() ) {
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.rawRef_())
+                                                      , reinterpret_cast<void*>(this->pointer->value.rawRef_()));
+            } else {
+		GCTOOLS_ASSERT(false); // ERROR("value can never contain anything but a pointer - if it does then when it gets set to NULL by the BoehmGC it will be interpreted as a Fixnum 0!!!!!");
+	    }
 #endif
         }
         virtual ~WeakPointerManager() {
 #ifdef USE_BOEHM
-            if (this->pointer->value.pointerp()) {
-                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.px_ref()));
+            if (this->pointer->value.objectp()) {
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.rawRef_()));
                 if ( !result ) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                 }
@@ -543,7 +546,7 @@ namespace gctools {
             core::T_mv result_mv;
             safeRun<void()>( [&result_mv,this] ()->void
                 {
-                    if (!this->pointer->value.NULLp()) {
+                    if ((bool)this->pointer->value) {
                         result_mv = Values(gctools::smart_ptr<core::T_O>(this->pointer->value),core::lisp_true());
                         return;
                     }
@@ -557,7 +560,7 @@ namespace gctools {
             bool result;
             safeRun<void()>( [&result,this] ()->void
                 {
-                    result = !this->pointer->value.NULLp();
+                    result = (bool)this->pointer->value;
                 } );
             return result;
         }

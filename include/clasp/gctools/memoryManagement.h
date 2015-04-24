@@ -118,6 +118,12 @@ namespace gctools {
 };
 
 
+/*!
+  Template struct:   DynamicCast
+
+  Specialized in clasp_gc.cc
+
+*/
 
 namespace gctools {
     template <typename TOPTR, typename FROMPTR>

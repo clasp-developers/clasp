@@ -486,15 +486,21 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss
 #endif
     ) {
     DEBUG_MPS_MESSAGE(boost::format("SMART_PTR_FIX of %s@%p px: %p") % sptr_name % (sptrP)  % (sptrP)->px_ref()); 
-    if ( sptrP->pointerp() ) {                                    
-	if ( MPS_FIX1(_ss,(sptrP)->px_ref()) ) {          
-	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&sptrP->px_ref())); 
+    if ( sptrP->objectp() ) {
+	void* tagged_obj = (sptrP)->raw_();
+	if ( MPS_FIX1(_ss,obj) ) {
+	    void* obj = gctools::smart_ptr<T>::untag_object(tagged_obj);
+	    void* tag = gctools::smart_ptr<T>::tag_of_object(tagged_obj);
+	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&obj));
             if (res != MPS_RES_OK) return res;              
+	    obj |= tag;
+	    sptrP->setRaw_(obj);
         }								
     };
     return MPS_RES_OK;
 };
 #else
+#error "I thought I wasn't using the sheild remove code anymore - if I am then replicate the structure above into the code below"
 template <typename T>
 inline mps_res_t smartPtrFix(mps_ss_t _ss
                         , mps_word_t _mps_zs

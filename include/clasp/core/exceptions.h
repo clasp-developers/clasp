@@ -78,6 +78,7 @@ struct _TRACE {
 #define	DBG_HOOK(fmt) dbg_hook((fmt).str().c_str())
 
 #define INTERNAL_ERROR(_msg_) THROW_HARD_ERROR(_msg_)
+#define TESTING() printf("%s:%d:%s Testing\n", __FILE__, __LINE__, __FUNCTION__);
 
 #define NO_INITIALIZERS_ERROR(_type_) {lisp_error_condition(__FUNCTION__,__FILE__,__LINE__,_type_,_Nil<core::Cons_O>()); THROW_NEVER_REACH(); }
 #define ERROR(_type_,_initializers_) {lisp_error_condition(__FUNCTION__,__FILE__,__LINE__,_type_,_initializers_); THROW_NEVER_REACH();}

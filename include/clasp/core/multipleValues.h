@@ -69,14 +69,14 @@ namespace core
 //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
 	void setSize(size_t sz) { this->_Size = sz; };
 	size_t getSize() const { return this->_Size; };
-	void emplace_back(T_sp a) { this->_Values[this->_Size] = a.px /*std::forward<T>(a)*/; ++this->_Size;};
+	void emplace_back(T_sp a) { this->_Values[this->_Size] = a.raw_() /*std::forward<T>(a)*/; ++this->_Size;};
 	/*! Set the value */
 
 	T_O*& operator[](size_t i) { return this->_Values[i]; };
 
 	void valueSet(int i, T_sp val)
         {
-            this->_Values[i] = val.px;
+            this->_Values[i] = val.raw_();
         }
 
 	/*! Return a Cons of elements 1 up to but not including iend */

@@ -171,14 +171,14 @@ namespace core
     T_sp clasp_make_stream_from_FILE(T_sp fname
                                      , FILE* f
                                      , enum StreamMode smm
-                                     , cl_fixnum byte_size=8
+                                     , gctools::Fixnum byte_size=8
                                      , int flags= CLASP_STREAM_DEFAULT_FORMAT
                                      , T_sp external_format=_Nil<T_O>() );
 
     T_sp clasp_make_stream_from_fd(T_sp fname
                                    , int fd
                                    , enum StreamMode smm
-                                   , cl_fixnum byte_size=8
+                                   , gctools::Fixnum byte_size=8
                                    , int flags= CLASP_STREAM_DEFAULT_FORMAT
                                    , T_sp external_format=_Nil<T_O>() );
 
@@ -546,8 +546,8 @@ template<> struct gctools::GCInfo<core::StringOutputStream_O> {
 namespace core {
     class StringInputStream_O : public StringStream_O
     {
-        friend cl_fixnum& StringInputStreamInputPosition(T_sp strm);
-        friend cl_fixnum& StringInputStreamInputLimit(T_sp strm);
+        friend gctools::Fixnum& StringInputStreamInputPosition(T_sp strm);
+        friend gctools::Fixnum& StringInputStreamInputLimit(T_sp strm);
         friend Str_sp& StringInputStreamInputString(T_sp strm);
 	LISP_BASE1(StringStream_O);
 	LISP_CLASS(core,CorePkg,StringInputStream_O,"string-input-stream");
@@ -560,8 +560,8 @@ namespace core {
 //    virtual ~StringStream_O() {};
     GCPRIVATE: // instance variables here
         Str_sp       _Contents;
-        cl_fixnum       _InputPosition;
-        cl_fixnum       _InputLimit;
+	gctools::Fixnum       _InputPosition;
+	gctools::Fixnum       _InputLimit;
     public: // Functions here
         static T_sp make(const string& str);
     }; // StringStream class

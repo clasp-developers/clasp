@@ -122,9 +122,9 @@ static inline void myfeclearexcept(int flags)
     : "=m"(aux) : "a"(f));
 }
 #define fetestexcept myfetestexcept
-static inline int myfetestexcept(cl_fixnum flags)
+ static inline int myfetestexcept(gctools::Fixnum flags)
 {
-    cl_fixnum output = (flags & 0x3d);
+    gctools::Fixnum output = (flags & 0x3d);
     int sw;
     __asm__ (
     "fnstsw  %0\n\t"

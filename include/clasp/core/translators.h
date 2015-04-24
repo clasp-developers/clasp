@@ -137,7 +137,7 @@ namespace translate
         {
             if ( core::Fixnum_sp fn = o.asOrNull<core::Fixnum_O>() )
 	    {
-                Fixnum f = fn->get();
+		core::Fixnum f = fn->get();
                 ASSERTF(f>=0,BF("Cannot convert %s to unsigned long long") % _rep_(o));
 		this->_v = f;
 		return;

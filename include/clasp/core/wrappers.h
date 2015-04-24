@@ -171,8 +171,8 @@ namespace core {
         virtual Symbol_sp getKind() const { return kw::_sym_macro; };
 	void LISP_CALLING_CONVENTION()
 	{_G();
-	    Cons_sp form = LCC_ARG0().as_or_nil<Cons_O>();
-	    T_sp env = LCC_ARG1().as_or_nil<T_O>();
+	    Cons_sp form = LCC_ARG0().as<Cons_O>();
+	    T_sp env = LCC_ARG1().as<T_O>();
             InvocationHistoryFrame _frame(this); // The environment could be a Non-Clasp Environment (Cleavir)
 	    *lcc_resultP = (this->mptr)(form,env);
 	};

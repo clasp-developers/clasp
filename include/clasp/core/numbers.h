@@ -277,18 +277,17 @@ namespace core {
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     private:
-	typedef	int	Fixnum_type;
-	Fixnum_type	_Value;
+	gctools::Fixnum	_Value;
     public:
 	static Fixnum_sp create(int nm);
-	static Fixnum_sp create(LongLongInt nm);
+	static Fixnum_sp create(gctools::Fixnum nm);
 	static Fixnum_sp create(uint nm);
     public:
 	static int number_of_bits();
     public:
 	NumberType number_type() const { return number_Fixnum;};
 
-	int& ref() { return this->_Value;};
+	//	int& ref() { return this->_Value;};
 	virtual Number_sp copy() const;
 	string __repr__() const;
 	void set(int val) { this->_Value = val; };
@@ -315,7 +314,7 @@ namespace core {
 
 	virtual Number_sp onePlus() const
 	{
-	    if ( this->_Value == MOST_POSITIVE_FIXNUM ) {
+	    if ( this->_Value == gctools::mostPositiveFixnum) {
 		Bignum bn(this->_Value);
 		bn = bn + 1;
 		return Integer_O::create(bn);
@@ -326,7 +325,7 @@ namespace core {
 
 	virtual Number_sp oneMinus() const
 	{
-	    if ( this->_Value == MOST_NEGATIVE_FIXNUM ) {
+	    if ( this->_Value == gctools::mostNegativeFixnum ) {
 		Bignum bn(this->_Value);
 		bn = bn - 1;
 		return Integer_O::create(bn);
@@ -903,8 +902,8 @@ namespace core {
 
     inline bool brcl_zerop(Number_sp n)
     {
-	if (n.tagged_fixnump()) {
-	    return n.fixnum() == 0;
+	if (n.fixnump()) {
+	    return n.asFixnum() == 0;
 	}
 	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
 	return n->zerop();
@@ -968,7 +967,7 @@ namespace core {
     inline LongFloat brcl_to_long_float(Number_sp x) { return x->as_long_float(); };
     inline LongFloat brcl_to_long_double(Number_sp x) { return x->as_long_float(); };
 
-    inline Fixnum brcl_fixnum(Number_sp x) {
+    inline gctools::Fixnum brcl_fixnum(Number_sp x) {
 	return x.as<Fixnum_O>()->get();
     }
 
@@ -1073,7 +1072,7 @@ namespace core {
     Integer_sp cl_logand(Cons_sp integers);
 
 
-    cl_fixnum fixint(T_sp x);
+    gctools::Fixnum fixint(T_sp x);
 
     /*! Initialize all math functions here */
     void initialize_numbers();

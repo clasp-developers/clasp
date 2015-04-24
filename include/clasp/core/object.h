@@ -451,12 +451,12 @@ namespace core
     gctools::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const \
     {									\
 	oClass* not_const_this_gc_safe = const_cast<oClass*>(this); /* Should be GC-safe because this should be a root */ \
-	return gctools::smart_ptr<DestClass>(not_const_this_gc_safe);   \
+	return gctools::smart_ptr<DestClass>(gctools::tag_object(not_const_this_gc_safe)); \
     };									\
     template <class DestClass>						\
     gctools::smart_ptr<DestClass> sharedThis() 				\
     {									\
-	return gctools::smart_ptr<DestClass>(this);                     \
+	return gctools::smart_ptr<DestClass>(gctools::tag_object(this)); \
     };									\
     gctools::smart_ptr<oClass> asSmartPtr() const {return this->const_sharedThis<oClass>();}; \
     gctools::smart_ptr<oClass> asSmartPtr()  {return this->sharedThis<oClass>();}; \
@@ -664,7 +664,8 @@ namespace core
 
 	bool sameAs(T_sp obj)
 	{_OF();
-	    return ( this == obj.get() );
+	    SIMPLE_ERROR(BF("Seriously???? Am I still using this?"));
+	    //	    return ( this == obj.get() );
 	};
 
 	virtual string asXmlString() const;

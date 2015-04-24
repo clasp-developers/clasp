@@ -813,15 +813,21 @@ namespace core
 
     Cons_sp	Str_O::split(const string& chars)
     {
+	TESTING();
 	vector<string> parts = core::split(this->get(),chars);
+	Cons_sp result(_Nil<T_O>());
+	for ( vector<string>::reverse_iterator it = parts.rend(); it != parts.rbegin(); ++it ) {
+	    result = Cons_O::create(translate::to_object<string>(*it),result);
+	}
+	return result;
+#if 0
 	return Cons_O::createFromRangeObjectify< vector<string>::iterator, string >(parts.begin(),parts.end());
+#endif
     }
 
     bool	Str_O::eql(T_sp obj) const
     {
-	if ( af_strP(obj) )
-	{
-	    Str_sp t = safe_downcast<Str_O>(obj);
+	if ( Str_sp t = obj.asOrNull<Str_O>() ) {
 	    return this->get() == t->get();
 	}
 	return this->Base::eql(obj);

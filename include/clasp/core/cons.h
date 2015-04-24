@@ -62,6 +62,7 @@ namespace core
     T_sp oCdr(T_sp obj);
     Cons_sp cCar(T_sp obj);
     Cons_sp cCdr(T_sp obj);
+    Cons_sp cCdr(Cons_sp obj);
     Cons_sp cCddr(T_sp obj);
     Cons_sp cCdddr(T_sp obj);
     Cons_sp cCddddr(T_sp obj);
@@ -135,7 +136,7 @@ namespace core {
 	friend T_sp oCar(T_sp o);
 	friend T_sp oCdr(T_sp o);
 	friend Cons_sp cCar(T_sp o);
-	friend Cons_sp cCdr(T_sp o);
+	friend Cons_sp cCdr(Cons_sp o);
 	friend Cons_sp cCddr(T_sp o);
 	friend Cons_sp cCdddr(T_sp o);
 	friend Cons_sp cCddddr(T_sp o);
@@ -157,22 +158,23 @@ namespace core {
 //	uint		_CdrLength;	// Keep track of the length of the cons
     public:
         template <class T>
-        static Cons_sp createFromVec0(const gctools::Vec0<T>& vec) {
+	    static Cons_sp createFromVec0(const gctools::Vec0<T>& vec) {
             Cons_sp res = _Nil<Cons_O>();
             for ( int i(vec.size()-1);i>=0;--i) {
                 res = Cons_O::create(vec[i],res);
             }
             return res;
         }
-
+	
         template <class T>
-        void fillVec0(gctools::Vec0<T>& vec) {
+	    void fillVec0(gctools::Vec0<T>& vec) {
+	    TESTING();
             vec.clear();
-            for ( Cons_sp me=this->asSmartPtr(); me.notnilp(); me=cCdr(me) ) {
-                vec.push_back(oCar(me).as<typename T::Type>());
+            for ( Cons_sp me=this->asSmartPtr(); me.consp(); me=cCdr(me) ) {
+                vec.emplace_back(me->_Car.as<typename T::Type>());
             }
         }
-
+	
 	static Cons_sp createFrom_va_list(va_list& va_args);
 	static Cons_sp createList(T_sp o1);
 	static Cons_sp createList(T_sp o1, T_sp o2);
@@ -184,28 +186,19 @@ namespace core {
 	static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8 );
 	static Cons_sp create(T_sp car, T_sp cdr)
 	{
-            Cons_sp ll = gctools::GCObjectAllocator<Cons_O>::allocate();
-//            GC_ALLOCATE(Cons_O,ll);
-            ll->setCar(car);
-            ll->setOCdr(cdr);
+	    TESTING();
+            Cons_sp ll = gctools::GCObjectAllocator<Cons_O>::allocate(car,cdr);
+//            ll.unsafe_cons()->setCar(car);
+//            ll->setOCdr(cdr);
 	    return ll;
 	};
-#if 0
-	static Cons_sp create(T_sp car, T_sp cdr, Lisp_sp lisp)
-	{
-	    return Cons_O::create(car,cdr);
-	}
-
-	static Cons_sp create(T_sp obj, Lisp_sp lisp)
-	{
-	    return Cons_O::create(obj,_Nil<T_O>(),lisp);
-	}
-#endif
 	static Cons_sp create(T_sp obj)
 	{
-	    return Cons_O::create(obj,_Nil<T_O>());
+	    Cons_sp ret = gctools::GCObjectAllocator<Cons_O>::allocate(obj,_Nil<T_O>());
+	    return ret;
 	}
 
+#if 0 // removed for tagged ptr
 	template <typename iter>
 	    static Cons_sp createFromRange(iter begin, iter end)
 	{
@@ -213,7 +206,7 @@ namespace core {
 	    Cons_sp cur = first;
 	    for ( iter it=begin; it!=end; it++ )
 	    {
-		Cons_sp one = Cons_O::create(*it,_Nil<T_O>(),_lisp);
+		Cons_sp one = Cons_O::create(*it,_Nil<T_O>());
 		cur->setCdr(one);
 		cur = one;
 	    }
@@ -232,6 +225,7 @@ namespace core {
 	    }
 	    return cCdr(first);
 	}
+#endif
     public:
 	static void appendInto(T_sp head, T_sp*& tailP, T_sp l);
 	static T_sp append(T_sp x, T_sp y);
@@ -243,9 +237,8 @@ namespace core {
 	virtual Cons_sp walkToFindParsePos() const;
 
 
-
-	inline Cons_sp rplaca(T_sp o) { this->_Car = o; return this->sharedThis<Cons_O>();};
-	inline Cons_sp rplacd(T_sp o) { this->_Cdr = o; return this->sharedThis<Cons_O>();};
+	inline Cons_sp rplaca(T_sp o) { this->_Car = o; return this->asSmartPtr();};
+	inline Cons_sp rplacd(T_sp o) { this->_Cdr = o; return this->asSmartPtr();};
 
 	virtual T_sp onth(int idx) const;
 	virtual T_sp onthcdr(int idx) const;
@@ -261,59 +254,27 @@ namespace core {
 	   Remove the following member functions and replace them
 	   with the real functions  oCar, oCdr, cCdr etc */
 	   
-	T_sp ocar() const    { return this->_Car;};
-	T_sp ocadr() const { return this->cdr()->ocar(); };
-	T_sp ocaddr() const { return this->cdr()->cdr()->ocar(); };
+	inline T_sp ocar() const { return this->_Car;};
+	inline T_sp ocadr() const {
+	    TESTING();
+	    T_sp cdr = this->_Cdr;
+	    if (UNLIKELY(!this->_Cdr.consp())) return _Nil<T_O>();
+	    return this->_Cdr.unsafe_cons()->ocar();
+	    // return this->cdr()->ocar(); };
+	}
+	T_sp ocaddr() const {
+	    TESTING();
+	    if (UNLIKELY(!this->_Cdr.consp())) return _Nil<T_O>();
+	    return this->_Cdr.unsafe_cons()->ocadr();
+	    //return this->cdr()->cdr()->ocar();
+	}
+
+#if 0
 	Cons_sp cdr() const 	{ return this->_Cdr.as<Cons_O>();};
 	Cons_sp cddr() const 	{ return oCdr(this->_Cdr).as<Cons_O>();};
 	Cons_sp cdddr() const 	{ return oCddr(this->_Cdr).as<Cons_O>();};
 	Cons_sp cddddr() const 	{ return oCdddr(this->_Cdr).as<Cons_O>();};
-#if 0
-	Cons_sp ccar() const { return cCar(this->const_sharedThis<Cons_O>());};
-	T_sp ocar() const { return oCar(this->const_sharedThis<Cons_O>());};
-	T_sp ocdr() const { return oCdr(this->const_sharedThis<Cons_O>());};
-	T_sp ocaar() const {return oCaar(this->const_sharedThis<Cons_O>());};
-	T_sp ocadr() const {return oCadr(this->const_sharedThis<Cons_O>());};
-	T_sp ocdar() const {return oCdar(this->const_sharedThis<Cons_O>());};
-	T_sp ocddr() const {return oCddr(this->const_sharedThis<Cons_O>());};
-	T_sp ocaaar() const {return oCaaar(this->const_sharedThis<Cons_O>());};
-	T_sp ocaadr() const {return oCaadr(this->const_sharedThis<Cons_O>());};
-	T_sp ocadar() const {return oCadar(this->const_sharedThis<Cons_O>());};
-	T_sp ocaddr() const {return oCaddr(this->const_sharedThis<Cons_O>());};
-	T_sp ocdaar() const {return oCdaar(this->const_sharedThis<Cons_O>());};
-	T_sp ocdadr() const {return oCdadr(this->const_sharedThis<Cons_O>());};
-	T_sp ocddar() const {return oCddar(this->const_sharedThis<Cons_O>());};
-	T_sp ocdddr() const {return oCdddr(this->const_sharedThis<Cons_O>());};
-	T_sp ocaaaar() const {return oCaaaar(this->const_sharedThis<Cons_O>());};
-	T_sp ocaadar() const {return oCaadar(this->const_sharedThis<Cons_O>());};
-	T_sp ocadaar() const {return oCadaar(this->const_sharedThis<Cons_O>());};
-	T_sp ocaddar() const {return oCaddar(this->const_sharedThis<Cons_O>());};
-	T_sp ocdaaar() const {return oCdaaar(this->const_sharedThis<Cons_O>());};
-	T_sp ocdadar() const {return oCdadar(this->const_sharedThis<Cons_O>());};
-	T_sp ocddaar() const {return oCddaar(this->const_sharedThis<Cons_O>());};
-	T_sp ocdddar() const {return oCdddar(this->const_sharedThis<Cons_O>());};
-	T_sp ocaaadr() const {return oCaaadr(this->const_sharedThis<Cons_O>());};
-	T_sp ocaaddr() const {return oCaaddr(this->const_sharedThis<Cons_O>());};
-	T_sp ocadadr() const {return oCadadr(this->const_sharedThis<Cons_O>());};
-	T_sp ocadddr() const {return oCadddr(this->const_sharedThis<Cons_O>());};
-	T_sp ocdaadr() const {return oCdaadr(this->const_sharedThis<Cons_O>());};
-	T_sp ocdaddr() const {return oCdaddr(this->const_sharedThis<Cons_O>());};
-	T_sp ocddadr() const {return oCddadr(this->const_sharedThis<Cons_O>());};
-	T_sp ocddddr() const {return oCddddr(this->const_sharedThis<Cons_O>());};
-
-
-	T_sp ofirst() const {return oFirst(this->const_sharedThis<Cons_O>());};
-	T_sp osecond() const {return oSecond(this->const_sharedThis<Cons_O>());};
-	T_sp othird() const {return oThird(this->const_sharedThis<Cons_O>());};
-	T_sp ofourth() const {return oFourth(this->const_sharedThis<Cons_O>());};
-	T_sp ofifth() const {return oFifth(this->const_sharedThis<Cons_O>());};
-	T_sp osixth() const {return oSixth(this->const_sharedThis<Cons_O>());};
-	T_sp oseventh() const {return oSeventh(this->const_sharedThis<Cons_O>());};
-	T_sp oeighth() const {return oEighth(this->const_sharedThis<Cons_O>());};
-	T_sp oninth() const {return oNinth(this->const_sharedThis<Cons_O>());};
-	T_sp otenth() const {return oTenth(this->const_sharedThis<Cons_O>());};
 #endif
-
 	/*! Set the data for this element */
 	void	setCar(T_sp o ) { ANN(o);this->_Car = o; };
 
@@ -387,6 +348,15 @@ namespace core {
         /*! Calculate the length the fastest way I can think of */
         inline uint fastUnsafeLength() const
         {
+	    TESTING();
+	    uint sz=1;
+	    T_sp cur = this->_Cdr;
+	    while (cur.consp()) {
+		++sz;
+		cur = cur.unsafe_cons()->_Cdr;
+	    }
+	    return sz;
+#if 0
             uint sz=1;
             Cons_O* cur = reinterpret_cast<Cons_O*>(this->_Cdr.px_ref());
             while (!gctools::tagged_ptr<Cons_O>::tagged_nilp(cur)) {
@@ -394,13 +364,15 @@ namespace core {
                 cur = reinterpret_cast<Cons_O*>(reinterpret_cast<Cons_O*>(cur)->_Cdr.px_ref());
             }
             return sz;
+#endif
         }
             
 
-
+#if 0
 	/*! Return an arbitrary member of the list or an empty member*/
 	template <class o_class>
 	gctools::smart_ptr<o_class> listref(int i) { return this->olistref(i).as<o_class>();};
+#endif
 
 	/*! Return an arbitrary member of the list or an empty member*/
 	T_sp olistref(int index);
@@ -490,73 +462,50 @@ namespace core {
 	int last_line;
 	int last_column;
     } LispParserPos;
-
-
-inline T_sp oCar(T_sp obj) {
-	if (obj.nilp()) return _Nil<T_O>();
-	if (obj.unboundp()) {
-	    SIMPLE_ERROR(BF("Tried to take CAR of unbound"));
+    
+    
+    inline T_sp oCar(T_sp obj) {
+	if (obj.consp()) {
+	    return obj.unsafe_cons()->_Car;
 	}
-	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cobj->_Car;
-	}
+	if (obj.nilp()) return obj;
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    }
+    };
     inline T_sp oCdr(T_sp obj) {
-	if (obj.nilp()) return _Nil<T_O>();
-	if (obj.unboundp()) {
-	    SIMPLE_ERROR(BF("Tried to take CDR of unbound"));
+	if (obj.consp()) {
+	    return obj.unsafe_cons()->_Cdr;
 	}
-	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cobj->_Cdr;
-	}
+	if (obj.nilp()) return obj;
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    }
-    inline Cons_sp cCar(T_sp obj) {
-	if (obj.nilp()) return _Nil<Cons_O>();
-	if (obj.unboundp()) {
-	    SIMPLE_ERROR(BF("Tried to take CAR of unbound"));
-	}
-	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cobj->_Car.as<Cons_O>();
-	}
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    }
+    };
     inline Cons_sp cCdr(T_sp obj) {
+	if (obj.consp()) {
+	    return obj.unsafe_cons()->_Cdr.as<Cons_O>();
+	}
 	if (obj.nilp()) return _Nil<Cons_O>();
-	if (obj.unboundp()) {
-	    SIMPLE_ERROR(BF("Tried to take CDR of unbound"));
-	}
-	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cobj->_Cdr.as<Cons_O>();
-	}
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    }
-
+    };
     inline Cons_sp cCddr(T_sp obj) {
-	if (obj.nilp()) return _Nil<Cons_O>();
-	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cCdr(cobj->_Cdr).as<Cons_O>();
+	if (obj.consp()) {
+	    return cCdr(obj.unsafe_cons()->_Cdr);
 	}
+	if (obj.nilp()) return _Nil<Cons_O>();
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
-
     inline Cons_sp cCdddr(T_sp obj) {
-	if (obj.nilp()) return _Nil<Cons_O>();
-	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cCddr(cobj->_Cdr).as<Cons_O>();
+	if (obj.consp()) {
+	    return cCddr(obj.unsafe_cons()->_Cdr);
 	}
+	if (obj.nilp()) return _Nil<Cons_O>();
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
-
     inline Cons_sp cCddddr(T_sp obj) {
-	if (obj.nilp()) return _Nil<Cons_O>();
-	if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-	    return cCdddr(cobj->_Cdr).as<Cons_O>();
+	if (obj.consp()) {
+	    return cCdddr(obj.unsafe_cons()->_Cdr);
 	}
+	if (obj.nilp()) return _Nil<Cons_O>();
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
-
 
 inline T_sp oCaar(T_sp o) { return oCar(cCar(o));};
 inline T_sp oCadr(T_sp o) { return oCar(cCdr(o));};

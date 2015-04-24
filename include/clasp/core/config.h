@@ -68,10 +68,10 @@ typedef int claspCharacter;
 #define CLASP_MAXPATHLEN	1024
 
 /*! TODO: Tie this to the Fixnum tagged pointer implementation */
-#define FIXNUM_BITS 32
+//#define FIXNUM_BITS 63
 
-#define MOST_POSITIVE_FIXNUM std::numeric_limits<int>::max()
-#define MOST_NEGATIVE_FIXNUM std::numeric_limits<int>::min()
+//#define MOST_POSITIVE_FIXNUM std::numeric_limits<int>::max()
+//#define MOST_NEGATIVE_FIXNUM std::numeric_limits<int>::min()
 
 /*! Used to allocate a large string buffer */
 #define BUFFER_STRING_SIZE	4192

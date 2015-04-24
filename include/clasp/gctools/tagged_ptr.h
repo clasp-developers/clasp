@@ -59,7 +59,7 @@ THE SOFTWARE.
 
 namespace gctools {
 
-    // Dummy class to store tagged fixnums as tagged_ptr<Fixnum_ty>
+    // Dummy class to store tagged fixnums as smart_ptr<Fixnum_ty>
     class Fixnum_ty {};
 
 
@@ -469,9 +469,9 @@ namespace gctools {
                 const char* base_addr = reinterpret_cast<const char*>(this->base.px_ref());
                 const char* obj_addr = reinterpret_cast<const char*>(objPtr.px_ref());
                 int diff = obj_addr - base_addr; 
-                this->offset = tagged_ptr<Fixnum_ty>(diff);
+                this->offset = smart_ptr<Fixnum_ty>(diff);
             } else {
-                this->offset = tagged_ptr<Fixnum_ty>(gctools::tagged_ptr<Fixnum_ty>::tagged_nil);
+                this->offset = smart_ptr<Fixnum_ty>(gctools::tagged_ptr<Fixnum_ty>::tagged_nil);
             }
         }
 
@@ -485,7 +485,7 @@ namespace gctools {
             return tagged_ptr<T>(reinterpret_cast<uintptr_t>(this->base.px_ref()));
         }
     public:
-        tagged_ptr<Fixnum_ty> offset; // tagged fixnum to offset base
+        smart_ptr<Fixnum_ty> offset; // tagged fixnum to offset base
     };
 
 };

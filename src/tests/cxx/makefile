@@ -1,4 +1,10 @@
 
+testalign.bc: testalign.cc
+	/usr/bin/clang++ -O3 testalign.cc -o testalign
+
+testfixnum.bc: testfixnum.cc
+	/usr/bin/clang++ -O0 testfixnum.cc -o testfixnum
+
 testReturnMultipleValues.bc: testReturnMultipleValues.cc
 	/usr/bin/clang++ -O0 -S -emit-llvm testReturnMultipleValues.cc
 

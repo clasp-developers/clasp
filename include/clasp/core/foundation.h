@@ -336,8 +336,6 @@ typedef std::size_t class_id;
 
 typedef	unsigned int uint;
 typedef unsigned char byte;
-typedef int Fixnum; // a fixnum that can be represented within a tagged pointer
-typedef Fixnum cl_fixnum;
 typedef size_t _Index; //
 typedef int cl_index;
 
@@ -1111,7 +1109,7 @@ namespace core
     core::T_sp lisp_false();
     T_sp lisp_ArgArrayToCons(int nargs, ArgArray args);
     bool lisp_fixnumP(core::T_sp obj);
-    Fixnum lisp_asFixnum(core::T_sp obj);
+    gctools::Fixnum lisp_asFixnum(core::T_sp obj);
     /*! Create a SourcePosInfo object for a C++ function */
     SourcePosInfo_sp lisp_createSourcePosInfo(const string& sourceFile, size_t filePos, int lineno);
 

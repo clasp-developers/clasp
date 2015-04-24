@@ -99,7 +99,7 @@ namespace core
 	virtual Number_sp copy() const;
 	string description() const { stringstream ss; ss << this->_value;return ss.str();};
 	void set(int val) { this->_value = val; };
-	void setFixnum(cl_fixnum val) { this->_value = val; };
+	void setFixnum(gctools::Fixnum val) { this->_value = val; };
 	Bignum get() const;
 	Bignum get_or_if_nil_default(Bignum default_value) const;
 	Number_sp abs() const;
@@ -167,7 +167,7 @@ namespace translate
     {
 	typedef	Bignum DeclareType;
 	DeclareType _v;
-	from_object(T_P o)
+	from_object(core::T_sp o)
 	{_G();
 	    if ( core::Bignum_sp bn = o.asOrNull<core::Bignum_O>() )
 	    {
