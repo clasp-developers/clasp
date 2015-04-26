@@ -483,7 +483,17 @@ This can only be run in the context set up by the code-match-callback::run metho
     res))
 ||#
 
-(defun load-asts (list-name &key arguments-adjuster-code )
+(define-condition ast-load-error (simple-error)
+  ((num :initarg :num)
+   (asts :initarg :asts))
+  (:report (lambda (e stream)
+             (with-slots (num asts) e
+                 (format stream "unknown error loading ASTs; check your compilation database?
+
+AST-TOOLING:BUILD-ASTS returned (values ~S ~S)" num asts)))))
+
+(defun load-asts (&optional (list-name $*) &key arguments-adjuster-code )
+  (assert *db* nil "*db* should both be non-nil, did LOAD-COMPILATION-DATABASE succeed?")
   (let* ((files list-name)
          (tool (ast-tooling:new-refactoring-tool *db* files))
          (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
@@ -500,6 +510,8 @@ This can only be run in the context set up by the code-match-callback::run metho
     (time 
      (multiple-value-bind (num asts)
          (ast-tooling:build-asts tool)
+       (unless (typep asts 'vector)
+         (error 'ast-load-error :num num :asts asts))
        (setq *asts* asts)
        (format t "Built asts: ~a~%" asts)
        )
