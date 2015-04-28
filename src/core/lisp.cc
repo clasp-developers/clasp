@@ -782,7 +782,7 @@ namespace core
 
 
 
-    Cons_sp Lisp_O::loadTimeValuesIds() const
+    List_sp Lisp_O::loadTimeValuesIds() const
     {_G();
 	Cons_sp names = _Nil<Cons_O>();
         this->_Roots._LoadTimeValueArrays->mapHash( [&names] (T_sp key, T_sp val) {
@@ -1081,7 +1081,7 @@ namespace core
 
 
 
-    StandardClass_sp Lisp_O::defineStandardClass(Symbol_sp name, T_sp baseClassesDesignator, Cons_sp slotSpecifiers )
+    StandardClass_sp Lisp_O::defineStandardClass(Symbol_sp name, T_sp baseClassesDesignator, List_sp slotSpecifiers )
     {_OF();
 	IMPLEMENT_MEF(BF("Implement defineStandardClass"));
     }
@@ -1732,17 +1732,17 @@ namespace core
 #define ARGS_cl_assoc "(item alist &key key test test-not)"
 #define DECL_cl_assoc ""
 #define DOCS_cl_assoc "assoc"
-    Cons_sp cl_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test, T_sp test_not)
+    List_sp cl_assoc(T_sp item, List_sp alist, T_sp key, T_sp test, T_sp test_not)
     {_G();
 	if ( alist.nilp() ) return alist;
-	return alist->assoc(item,key,test,test_not);
+	return alist.asCons()->assoc(item,key,test,test_not);
     }
 
 
 #define ARGS_af_member "(item list &key key test test-not)"
 #define	DECL_af_member	""
 #define	DOCS_af_member	"See CLHS member"
-    Cons_sp af_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not)
+    List_sp af_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not)
     {_G();
 	if ( tlist.nilp() ) return _Nil<Cons_O>();
 	if ( Cons_sp list = tlist.asOrNull<Cons_O>() ) {
@@ -2237,12 +2237,12 @@ namespace core
 
 
 
-    void searchForApropos(Cons_sp packages,const string& raw_substring, bool print_values)
+    void searchForApropos(List_sp packages,const string& raw_substring, bool print_values)
     {_G();
 	string substring = lispify_symbol_name(raw_substring);
 	FindApropos apropos(substring);
 	LOG(BF("Searching for symbols apropos to(%s)") % substring);
-	for ( Cons_sp cur = packages; cur.notnilp(); cur=cCdr(cur) )
+	for ( List_sp cur = packages; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    Package_sp pkg = oCar(cur).as<Package_O>();
 	    pkg->mapExternals(&apropos);
@@ -2296,17 +2296,17 @@ namespace core
 #define ARGS_af_apropos "(string_desig &optional package_desig)"
 #define DECL_af_apropos ""
 #define DOCS_af_apropos "apropos"
-    T_mv af_apropos(Str_sp string_desig, T_sp package_desig)
+    T_sp af_apropos(Str_sp string_desig, T_sp package_desig)
     {_G();
 	string substring = coerce::stringDesignator(string_desig)->get();
-	Cons_sp packages(_Nil<Cons_O>());
+	List_sp packages(_Nil<List_V>());
 	if ( package_desig.nilp() )
 	{
 	    packages = _lisp->allPackagesAsCons();
 	} else
 	{
 	    Package_sp pkg = coerce::packageDesignator(package_desig);
-	    packages = Cons_O::create(pkg,_Nil<Cons_O>());
+	    packages = Cons_O::create(pkg,_Nil<T_O>());
 	}
 	searchForApropos(packages,substring,false);
 	return(Values(_Nil<T_O>()));
@@ -2772,7 +2772,7 @@ extern "C"
 #define ARGS_cl_error "(datum &rest arguments)"
 #define DECL_cl_error ""
 #define DOCS_cl_error "See CLHS error"
-    void cl_error(T_sp datum, Cons_sp initializers)
+    void cl_error(T_sp datum, List_sp initializers)
     {_G();
 	int nestedErrorDepth = _sym_STARnestedErrorDepthSTAR->symbolValue().as<Fixnum_O>()->get();
 	if ( nestedErrorDepth > 10 )
@@ -3372,12 +3372,12 @@ extern "C"
     void Lisp_O::dump_apropos(const char* part) const
     {_OF();
 	string substring = part;
-	Cons_sp packages = _lisp->allPackagesAsCons();
+	List_sp packages = _lisp->allPackagesAsCons();
 	searchForApropos(packages,substring,true);
     }
 
 
-    Cons_sp Lisp_O::allPackagesAsCons() const
+    List_sp Lisp_O::allPackagesAsCons() const
     {
 	return asCons(this->_Roots._Packages);
     }

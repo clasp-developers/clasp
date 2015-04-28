@@ -101,7 +101,7 @@ namespace core
 
     /*! Any Special symbols that haven't been seen in the lambda list need to be added to the
       AccumulatedClassifiedSymbols */
-    Cons_sp TargetClassifier::finalClassifiedSymbols()
+    List_sp TargetClassifier::finalClassifiedSymbols()
     {
 	if ( this->_SpecialSymbols.notnilp() ) {
             this->_SpecialSymbols->map( [this] (Symbol_sp s) {
@@ -191,19 +191,19 @@ namespace core
     }
     
 
-    SymbolSet_sp LambdaListHandler_O::identifySpecialSymbols(Cons_sp declareSpecifierList)
+    SymbolSet_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecifierList)
     {_G();
 	SymbolSet_sp specials(SymbolSet_O::create());
 	LOG(BF("Processing declareSpecifierList: %s") % declareSpecifierList->__repr__() );
 	if ( declareSpecifierList.notnilp() )
 	{
 	    ASSERTF(oCar(declareSpecifierList)!=cl::_sym_declare,BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList) );
-	    for ( Cons_sp cur = declareSpecifierList; cur.notnilp(); cur=cCdr(cur) )
+	    for ( List_sp cur = declareSpecifierList; cur.notnilp(); cur=cCdr(cur) )
 	    {
 		T_sp entry = oCar(cur);
 		if ( cl_consp(entry) && oCar(entry) == cl::_sym_special )
 		{
-		    for ( Cons_sp spcur = cCdr(entry.as_or_nil<Cons_O>()); spcur.notnilp(); spcur=cCdr(spcur) )
+		    for ( List_sp spcur = cCdr(entry.as_or_nil<Cons_O>()); spcur.notnilp(); spcur=cCdr(spcur) )
 		    {
 			specials->insert(oCar(spcur).as<Symbol_O>());
 		    }
@@ -230,16 +230,15 @@ namespace core
     DISPATCH-INDEX is the index of the argument that is being dispatched on - it should never be anything
     other than zero but I'll let the caller decide.*/
 
-    Cons_mv LambdaListHandler_O::process_single_dispatch_lambda_list(Cons_sp llraw, bool allow_first_argument_default_dispatcher)
+    Cons_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher)
     {_G();
-	Cons_sp llprocessed = cl_copyList(llraw).as_or_nil<Cons_O>();
+	List_sp llprocessed = cl_copyList(llraw).as_or_nil<Cons_O>();
 	Symbol_sp sd_symbol = _Nil<Symbol_O>();
 	Symbol_sp sd_class = _Nil<Symbol_O>();
 	bool saw_amp = false;
         int dispatchIndex = 0;
         int idx = 0;
-	for ( Cons_sp cur=llprocessed; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : llprocessed ) {
 	    T_sp arg = oCar(cur);
 	    if ( af_symbolp(arg) )
 	    {
@@ -250,7 +249,7 @@ namespace core
 		}
 	    } else if ( cl_consp(arg) )
 	    {
-		Cons_sp carg = arg.as_or_nil<Cons_O>();
+		List_sp carg = arg.as_or_nil<Cons_O>();
 		if ( cl_length(carg) != 2 )
 		{
 		    SYMBOL_SC_(CorePkg,singleDispatchWrongNumberArgumentsError);
@@ -296,9 +295,9 @@ namespace core
     /*! Pull the &whole and &environment variables out of the lambda_list and
       prefix them as required arguments.  If they weren't present then use gensym to
       generate temporary symbols */
-    Cons_sp LambdaListHandler_O::process_macro_lambda_list(Cons_sp lambda_list )
+    List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list )
     {_G();
-	Cons_sp new_lambda_list = cl_copyList(lambda_list).as_or_nil<Cons_O>();
+	List_sp new_lambda_list = cl_copyList(lambda_list).as_or_nil<Cons_O>();
 	Symbol_sp whole_symbol = _Nil<Symbol_O>();
 	Symbol_sp environment_symbol = _Nil<Symbol_O>();
 	if ( oCar(new_lambda_list) == cl::_sym_AMPwhole )
@@ -312,9 +311,9 @@ namespace core
 	    new_lambda_list = cCddr(new_lambda_list);
 	} else
 	{
-	    Cons_sp cur = cCdr(new_lambda_list);
-	    Cons_sp prev = new_lambda_list;
-	    for ( ; cur.notnilp(); prev=cur, cur=cCdr(cur) )
+	    List_sp cur = cCdr(new_lambda_list);
+	    Cons_sp prev = new_lambda_list.asCons();
+	    for ( ; cur.notnilp(); prev=cur.asCons(), cur=cCdr(cur) )
 	    {
 		if ( oCar(cur) == cl::_sym_AMPenvironment )
 		{
@@ -329,10 +328,10 @@ namespace core
 	if ( environment_symbol.nilp() ) environment_symbol = af_gensym(Str_O::create("environment"));
 
 	Symbol_sp name_symbol = af_gensym(Str_O::create("macro-name"));
-	//	SourceCodeCons_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
+	//	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
 	ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core_sourceFileInfo(lambda_list));
 	sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol,new_lambda_list);
-	Cons_sp macro_ll = sclist.cons();
+	List_sp macro_ll = sclist.cons();
         if ( _lisp->sourceDatabase().notnilp() ) {
             _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(lambda_list,macro_ll);
         }
@@ -347,9 +346,9 @@ namespace core
 #define LOCK_af_process_macro_lambda_list 1
 #define ARGS_af_process_macro_lambda_list "(lambda-list)"
 #define DECL_af_process_macro_lambda_list ""
-    Cons_mv af_process_macro_lambda_list(Cons_sp lambda_list)
+    Cons_mv af_process_macro_lambda_list(List_sp lambda_list)
     {_G();
-	Cons_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
+	List_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
 	return(Values(new_ll));
     }
 
@@ -358,7 +357,7 @@ namespace core
 #define LOCK_af_process_single_dispatch_lambda_list 1
 #define ARGS_af_process_single_dispatch_lambda_list "(lambda-list)"
 #define DECL_af_process_single_dispatch_lambda_list ""
-    Cons_mv af_process_single_dispatch_lambda_list(Cons_sp lambda_list)
+    Cons_mv af_process_single_dispatch_lambda_list(List_sp lambda_list)
     {_G();
 	return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);
     }
@@ -416,7 +415,7 @@ namespace core
 
 
 
-    void LambdaListHandler_O::recursively_build_handlers_count_arguments(Cons_sp declares, T_sp context, TargetClassifier& classifier )
+    void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp declares, T_sp context, TargetClassifier& classifier )
     {_G();
 	{ // required arguments
 	    for ( gctools::Vec0<RequiredArgument>::iterator it = this->_RequiredArguments.begin();
@@ -424,7 +423,7 @@ namespace core
 	    {
 		if ( it->_lambdaListP() )
 		{
-		    Cons_sp sub_lambda_list = it->lambdaList();
+		    List_sp sub_lambda_list = it->lambdaList();
 //		    throw_if_not_destructuring_context(context);
 		    LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list,declares,context,classifier);
 		    classifier.targetIsSubLambdaList(*it,sub_handler);
@@ -441,7 +440,7 @@ namespace core
 		if ( it->_lambdaListP() )
 		{
 //		    throw_if_not_destructuring_context(context);
-		    Cons_sp sub_lambda_list = it->lambdaList();
+		    List_sp sub_lambda_list = it->lambdaList();
 		    LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list,declares,context,classifier);
 		    classifier.targetIsSubLambdaList(*it,sub_handler);
 		} else
@@ -462,7 +461,7 @@ namespace core
 		if ( it->_lambdaListP() )
 		{
 //		    throw_if_not_destructuring_context(context);
-		    Cons_sp sub_lambda_list = it->lambdaList();
+		    List_sp sub_lambda_list = it->lambdaList();
 		    LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive(sub_lambda_list,declares,context,classifier);
 		    classifier.targetIsSubLambdaList(*it,sub_handler);
 		} else
@@ -815,7 +814,7 @@ void bind_aux
  *
  * Return true if bindings will be defined and false if not.
  */
-    bool parse_lambda_list(Cons_sp original_lambda_list,
+    bool parse_lambda_list(List_sp original_lambda_list,
 			   T_sp context,
 			   gctools::Vec0<RequiredArgument>& reqs,
 			   gctools::Vec0<OptionalArgument>& optionals,
@@ -833,11 +832,11 @@ void bind_aux
 	allow_other_keys = _lisp->_false();
 	if ( original_lambda_list.nilp() ) return false;
 	throw_if_invalid_context(context);
-	Cons_sp arguments = cl_copyList(original_lambda_list).as_or_nil<Cons_O>();
+	List_sp arguments = cl_copyList(original_lambda_list).as_or_nil<Cons_O>();
 	LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % arguments->__repr__() );
 	ArgumentMode add_argument_mode = required;
 	restarg.clear();
-	Cons_sp cur = arguments;
+	List_sp cur = arguments;
 	while (cur.notnilp())
 	{
 	    LOG(BF("Handing argument: %s")%_rep_(oCar(cur)));
@@ -871,16 +870,13 @@ void bind_aux
 		    T_sp defaultValue = _Nil<T_O>();
 		    T_sp supplied = _Nil<T_O>();
 		    if ( cl_consp(oarg) ) {
-			Cons_sp carg = oarg.as_or_nil<Cons_O>();
+			List_sp carg = oarg.as_or_nil<Cons_O>();
 			LOG(BF("Optional argument is a Cons: %s") % carg->__repr__() );
 			sarg = oCar(carg);
-			if ( cCdr(carg).notnilp() )
+			if ( oCdr(carg).notnilp() )
 			    {
 				defaultValue = oCadr(carg);
-				if ( cCddr(carg).notnilp() )
-				    {
-					supplied = oCaddr(carg);
-				    }
+				if ( oCddr(carg).notnilp() ) supplied = oCaddr(carg);
 			    }
 			LOG(BF("Optional argument was a Cons_O[%s] with parts - symbol[%s] default[%s] supplied[%s]")
 			    % carg->__repr__() % sarg->__repr__() % defaultValue->__repr__() % supplied->__repr__() );
@@ -906,7 +902,7 @@ void bind_aux
 			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
 			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
 			    restarg.setTarget(sarg);
-			} else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
+			} else if ( List_sp carg = oarg.asOrNull<Cons_O>() ) {
 			    restarg.setTarget(carg);
 			}
 #endif
@@ -914,7 +910,7 @@ void bind_aux
 		    }
 		case dot_rest:
 		    {
-			if ( cCdr(cur).notnilp() )
+			if ( oCdr(cur).notnilp() )
 			    {
 				SIMPLE_ERROR(BF("Lambda list dot followed by more than one argument"));
 			    }
@@ -923,7 +919,7 @@ void bind_aux
 			if ( Symbol_sp sarg = oarg.asOrNull<Symbol_O>() ) {
 			    LOG(BF("Saving _Rest argument: %s")% sarg->__repr__() );
 			    restarg.setTarget(sarg);
-			} else if ( Cons_sp carg = oarg.asOrNull<Cons_O>() ) {
+			} else if ( List_sp carg = oarg.asOrNull<Cons_O>() ) {
 			    restarg.setTarget(carg);
 			}
 #endif
@@ -938,10 +934,10 @@ void bind_aux
 			localTarget = oarg;
 			keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
 		    } else if ( cl_consp(oarg) ) {
-			Cons_sp carg = oarg.as_or_nil<Cons_O>();
+			List_sp carg = oarg.as_or_nil<Cons_O>();
 			T_sp head = oCar(carg);
 			if ( cl_consp(head) ) {
-			    Cons_sp namePart = head.as_or_nil<Cons_O>();
+			    List_sp namePart = head.as_or_nil<Cons_O>();
 			    keySymbol = oCar(namePart).as<Symbol_O>();			// This is the keyword name
 			    if (!keySymbol->isKeywordSymbol()) {
 				SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: ") % _rep_(keySymbol));
@@ -955,7 +951,7 @@ void bind_aux
 			//
 			// Is there a default value?
 			//
-			if (cCdr(carg).notnilp() ) {
+			if (oCdr(carg).notnilp() ) {
 			    defaultValue = oCadr(carg);
 			    if ( oCddr(carg).notnilp() ) {
 				sensorSymbol = oCaddr(carg);
@@ -978,12 +974,12 @@ void bind_aux
 			T_sp expression = _Nil<T_O>();
 			if ( cl_consp(oarg) )
 			    {
-				Cons_sp carg = oarg.as_or_nil<Cons_O>();
+				List_sp carg = oarg.as_or_nil<Cons_O>();
 				localSymbol = oCar(carg).as<Symbol_O>();
 				//
 				// Is there an expression
 				//
-				if (cCdr(carg).notnilp() ) expression = oCadr(carg);
+				if (oCdr(carg).notnilp() ) expression = oCadr(carg);
 			    } else {
 			    localSymbol = oarg;
 			}
@@ -1020,7 +1016,7 @@ void bind_aux
 #define ARGS_af_processLambdaList "(vl context)"
 #define DECL_af_processLambdaList ""
 #define DOCS_af_processLambdaList "processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!"
-    Cons_mv af_processLambdaList(Cons_sp lambdaList, T_sp context)
+    Cons_mv af_processLambdaList(List_sp lambdaList, T_sp context)
     {_G();
         gctools::Vec0<RequiredArgument> reqs;
         gctools::Vec0<OptionalArgument> optionals;
@@ -1100,7 +1096,7 @@ void bind_aux
 
 
 
-    LambdaListHandler_sp LambdaListHandler_O::createRecursive(Cons_sp lambda_list, Cons_sp declares, T_sp context, TargetClassifier& classifier)
+    LambdaListHandler_sp LambdaListHandler_O::createRecursive(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier& classifier)
     {_G();
         GC_ALLOCATE(LambdaListHandler_O,llh );
 	llh->parse_lambda_list_declares(lambda_list,declares,context,classifier);
@@ -1109,7 +1105,7 @@ void bind_aux
 
 
 
-    LambdaListHandler_sp LambdaListHandler_O::create(Cons_sp lambda_list, Cons_sp declares, T_sp context, const std::set<int>& skipFrameIndices )
+    LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp declares, T_sp context, const std::set<int>& skipFrameIndices )
     {_G();
 	ql::list all_arguments_list;
 	SymbolSet_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
@@ -1131,7 +1127,7 @@ void bind_aux
 #define ARGS_LambdaListHandler_O_makeLambdaListHandler "(lambda-list &optional declares (context 'ordinary))"
 #define DECL_LambdaListHandler_O_makeLambdaListHandler ""
 #define DOCS_LambdaListHandler_O_makeLambdaListHandler "makeLambdaListHandler"
-    LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(Cons_sp lambda_list, Cons_sp declares, T_sp context)
+    LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context)
     {_G();
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list,declares,context);
 	return llh;
@@ -1156,7 +1152,7 @@ void bind_aux
 
 
 
-    void LambdaListHandler_O::parse_lambda_list_declares(Cons_sp lambda_list, Cons_sp declareSpecifierList, T_sp context, TargetClassifier& classifier )
+    void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_sp declareSpecifierList, T_sp context, TargetClassifier& classifier )
     {_OF();
 	T_sp whole;
 	Symbol_sp environment;
@@ -1355,10 +1351,10 @@ void bind_aux
     }
 
 
-    Cons_sp LambdaListHandler_O::namesOfLexicalVariables() const
+    List_sp LambdaListHandler_O::namesOfLexicalVariables() const
     {_G();
-	Cons_sp namesRev = _Nil<Cons_O>();
-	for ( Cons_sp cur=this->_ClassifiedSymbolList; cur.notnilp(); cur=cCdr(cur) )
+	List_sp namesRev = _Nil<Cons_O>();
+	for ( List_sp cur=this->_ClassifiedSymbolList; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    if ( oCar(oCar(cur)) == ext::_sym_heapVar )
 	    {
@@ -1370,7 +1366,7 @@ void bind_aux
 
     void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging()
     {
-	Cons_sp names = this->namesOfLexicalVariables();
+	List_sp names = this->namesOfLexicalVariables();
 	this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(),names,cl_length(names),false);
     }
 

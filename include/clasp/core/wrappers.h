@@ -160,7 +160,7 @@ namespace core {
 // Wrapper for ActivationFrameMacroPtr
     class MacroClosure : public BuiltinClosure {
     private:
-	typedef	T_mv (*MacroPtr)(Cons_sp,T_sp);
+	typedef	T_mv (*MacroPtr)(List_sp,T_sp);
 	MacroPtr	mptr;
     public:
 	virtual const char* describe() const {return "MacroClosure";};
@@ -171,14 +171,14 @@ namespace core {
         virtual Symbol_sp getKind() const { return kw::_sym_macro; };
 	void LISP_CALLING_CONVENTION()
 	{_G();
-	    Cons_sp form = LCC_ARG0().as<Cons_O>();
+	    List_sp form = LCC_ARG0().as<Cons_O>();
 	    T_sp env = LCC_ARG1().as<T_O>();
             InvocationHistoryFrame _frame(this); // The environment could be a Non-Clasp Environment (Cleavir)
 	    *lcc_resultP = (this->mptr)(form,env);
 	};
     };
 
-    inline void defmacro(const string& packageName, const string& name, T_mv (*mp)(Cons_sp,T_sp env),const string& arguments, const string& declares, const string& docstring, const string& sourceFileName, int lineno, bool autoExport=true)
+    inline void defmacro(const string& packageName, const string& name, T_mv (*mp)(List_sp,T_sp env),const string& arguments, const string& declares, const string& docstring, const string& sourceFileName, int lineno, bool autoExport=true)
     {_G();
         Symbol_sp symbol = lispify_intern(name,packageName);
         SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName,0,lineno);

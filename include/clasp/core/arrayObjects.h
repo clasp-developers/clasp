@@ -70,14 +70,14 @@ public:
 
     virtual int arrayDimension(int axisNumber) const;
 
-	LongLongInt setDimensions(Cons_sp dims,T_sp initialElement);
+	LongLongInt setDimensions(List_sp dims,T_sp initialElement);
 
     void setElementType(T_sp et) { this->_ElementType = et;};
 	/*! Return the value at the indices */
-    virtual T_sp aref(Cons_sp indices) const;
+    virtual T_sp aref(List_sp indices) const;
 
 	/*! Return the value at the indices */
-	virtual T_sp setf_aref(Cons_sp indices_val);
+	virtual T_sp setf_aref(List_sp indices_val);
 
 
 	/*! Return a shallow copy of this object */

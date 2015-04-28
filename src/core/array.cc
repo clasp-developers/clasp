@@ -197,7 +197,7 @@ namespace core
 #define	ARGS_Array_O_aref "((self array) &rest indices)"
 #define	DECL_Array_O_aref ""
 #define	DOCS_Array_O_aref "See CLHS aref"
-    T_sp Array_O::aref(Cons_sp indices) const
+    T_sp Array_O::aref(List_sp indices) const
     {_OF();
 	SUBCLASS_MUST_IMPLEMENT();
     }
@@ -218,7 +218,7 @@ namespace core
 	return((offset));
     }
 
-    int Array_O::index_val(Cons_sp indices,bool last_value_is_val, Cons_sp& val_cons) const
+    int Array_O::index_val(List_sp indices,bool last_value_is_val, List_sp& val_cons) const
     {_OF();
 #ifdef DEBUG_ON
 	int indices_passed = cl_length(indices) - (last_value_is_val ? 1 : 0 );
@@ -228,7 +228,7 @@ namespace core
 #endif
 	int offset = 0;
 	int idx = -1;
-	Cons_sp cur;
+	List_sp cur;
 	for ( cur = indices; cur.notnilp(); cur = cCdr(cur) )
 	{
 	    int curDimension = this->arrayDimension(idx);
@@ -247,14 +247,14 @@ namespace core
     }
 
 
-    int Array_O::index(Cons_sp indices) const
+    int Array_O::index(List_sp indices) const
     {
-	Cons_sp dummy;
+	List_sp dummy;
 	return((this->index_val(indices,false,dummy)));
     }
 
 
-    int Array_O::arrayRowMajorIndex(Cons_sp indices) const
+    int Array_O::arrayRowMajorIndex(List_sp indices) const
     {
 	return((this->index(indices)));
     }
@@ -264,7 +264,7 @@ namespace core
 
 
 
-    Cons_sp Array_O::arrayDimensions() const
+    List_sp Array_O::arrayDimensions() const
     {_OF();
 	Cons_sp indices = _Nil<Cons_O>();
 	for ( int i=this->rank()-1; i>=0; i-- )
@@ -279,7 +279,7 @@ namespace core
 #define ARGS_Array_O_setf_aref "((self array) &rest indices-val)"
 #define DECL_Array_O_setf_aref ""
 #define DOCS_Array_O_setf_aref "CLHS: setter for aref"
-    T_sp Array_O::setf_aref(Cons_sp indices_val)
+    T_sp Array_O::setf_aref(List_sp indices_val)
     {_G();
 	SUBCLASS_MUST_IMPLEMENT();
     };

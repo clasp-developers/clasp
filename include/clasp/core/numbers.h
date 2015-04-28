@@ -1071,8 +1071,8 @@ namespace core {
 
 
 
-    Integer_sp cl_logior(Cons_sp integers);
-    Integer_sp cl_logand(Cons_sp integers);
+    Integer_sp cl_logior(List_sp integers);
+    Integer_sp cl_logand(List_sp integers);
 
 
     gctools::Fixnum fixint(T_sp x);

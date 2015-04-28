@@ -546,7 +546,7 @@ namespace core
 
 
     public:
-//	void invoke__init__(core::Function_sp e, core::Cons_sp args, core::Environment_sp environment, core::Lisp_sp lisp);
+//	void invoke__init__(core::Function_sp e, core::List_sp args, core::Environment_sp environment, core::Lisp_sp lisp);
 
 
     public:
@@ -625,7 +625,7 @@ namespace core
 	/*! If this object can render itself into a graphics object then
 	 * return the graphics
 	 */
-//	virtual core::Render_sp rendered(core::Cons_sp options) {_G(); THROW_HARD_ERROR(BF("Sub-class(%s) must implement") % this->className() ); };
+//	virtual core::Render_sp rendered(core::List_sp options) {_G(); THROW_HARD_ERROR(BF("Sub-class(%s) must implement") % this->className() ); };
 	/*! Return the center of geometry of the object.
 	 * If it doesn't have one then return nil
 	 */
@@ -679,7 +679,7 @@ namespace core
 	/*! Objects can catch signals from Models
 	 * but only Model's and subclasses can send them
 	 */
-	virtual void catchSignal( core::Symbol_sp signal, core::Model_sp sender, core::Cons_sp data ) {_G();/*Do nothing*/};
+	virtual void catchSignal( core::Symbol_sp signal, core::Model_sp sender, core::List_sp data ) {_G();/*Do nothing*/};
 	virtual void propagateSignal( core::Symbol_sp signal ) {};	// Objects don't propagate signals
 
     public: // Description stuff

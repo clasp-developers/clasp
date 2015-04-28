@@ -60,17 +60,16 @@ namespace core {
   Create a SymbolSet containing the strings in \sa{listOfStrings}.
   __END_DOC
 */
-    SymbolSet_sp SymbolSet_O::make(Cons_sp entries)
+    SymbolSet_sp SymbolSet_O::make(List_sp entries)
     {_G();
         SymbolSet_sp me = SymbolSet_O::create();
 	me->insertConsSymbols(entries);
 	return me;
     }
 
-    SymbolSet_sp SymbolSet_O::insertConsSymbols(Cons_sp vals)
+    SymbolSet_sp SymbolSet_O::insertConsSymbols(List_sp vals)
     {
-        for ( Cons_sp p=vals; p.notnilp(); p=cCdr(p))
-        {
+        for ( auto p : vals ) {
             Symbol_sp t = oCar(p).as<Symbol_O>();
             this->insert(t);
         }
@@ -327,9 +326,9 @@ namespace core {
     }
 
         
-    Cons_sp	SymbolSet_O::asCons()
+    List_sp	SymbolSet_O::asCons()
     {_G();
-        Cons_sp cur = _Nil<Cons_O>();
+        List_sp cur = _Nil<List_V>();
         this->map( [&cur] (Symbol_sp si) {
                 cur = Cons_O::create(si,cur);
             });

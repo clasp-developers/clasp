@@ -65,7 +65,7 @@ public:	// initialize
 	virtual bool isSpecialForm() { return true;};
 
 	string __repr__() const;
-	T_mv evaluate( Cons_sp args, T_sp environment);
+	T_mv evaluate( List_sp args, T_sp environment);
 
 
 	SpecialForm_O( const SpecialForm_O& ss ); //!< Copy constructor

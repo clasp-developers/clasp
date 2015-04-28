@@ -237,7 +237,7 @@ namespace core
 #define DOCS_af_reader_comma_form "reader_comma_form"
 #define ARGS_af_reader_comma_form "(sin ch)"
 #define DECL_af_reader_comma_form ""
-    T_mv af_reader_comma_form(T_sp sin, Character_sp ch)
+    T_sp af_reader_comma_form(T_sp sin, Character_sp ch)
     {_G();
 	Fixnum_sp backquote_level = _sym_STARbackquote_levelSTAR->symbolValue().as<Fixnum_O>();
 	Fixnum_sp new_backquote_level = Fixnum_O::create(backquote_level->get()-1);
@@ -259,19 +259,19 @@ namespace core
 	T_sp comma_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
         list << head << comma_object;
 	lisp_registerSourcePosInfo(list.cons(),info);
-	return(Values(list.cons()));
+	return(list.cons());
     };
 
 #define LOCK_af_reader_list_allow_consing_dot 1
 #define DOCS_af_reader_list_allow_consing_dot "reader_list_allow_consing_dot"
 #define ARGS_af_reader_list_allow_consing_dot "(sin ch)"
 #define DECL_af_reader_list_allow_consing_dot ""
-    T_mv af_reader_list_allow_consing_dot(T_sp sin, Character_sp ch)
+    T_sp af_reader_list_allow_consing_dot(T_sp sin, Character_sp ch)
     {_G();
 	SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
-	Cons_sp list = read_list(sin,')',true);
+	List_sp list = read_list(sin,')',true);
 	lisp_registerSourcePosInfo(list,info);
-	return(Values(list));
+	return list;
     };
 
 #define LOCK_af_reader_error_unmatched_close_parenthesis 1
@@ -536,7 +536,7 @@ namespace core
 #define DOCS_af_sharp_single_quote "sharp_single_quote"
 #define ARGS_af_sharp_single_quote "(stream ch num)"
 #define DECL_af_sharp_single_quote ""
-    T_mv af_sharp_single_quote(T_sp sin, Character_sp ch, T_sp num)
+    T_sp af_sharp_single_quote(T_sp sin, Character_sp ch, T_sp num)
     {_G();
 	SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(sin);
 	T_sp quoted_object = read_lisp_object(sin,true,_Nil<T_O>(),true);
@@ -544,7 +544,8 @@ namespace core
 	ql::list result;
 	result << cl::_sym_function << quoted_object;
 	lisp_registerSourcePosInfo(result.cons(),spi);
-	return(Values(result.cons()));
+	T_sp tresult = result.cons();
+	return tresult;
     };
 
 #define LOCK_af_sharp_left_parenthesis 1
@@ -1072,7 +1073,7 @@ namespace core
 		    << StandardChar_O::create('+') << _sym_sharp_plus
 		    << StandardChar_O::create('-') << _sym_sharp_minus
 		    << StandardChar_O::create('|') << _sym_sharp_vertical_bar;
-	for ( Cons_sp cur=dispatchers.cons(); cur.notnilp(); cur = cCdr(cCdr(cur)) )
+	for ( List_sp cur=dispatchers.cons(); cur.notnilp(); cur = cCdr(cCdr(cur)) )
 	{
 	    Character_sp ch = oCar(cur).as<Character_O>();
 	    Symbol_sp sym = oCadr(cur).as<Symbol_O>();

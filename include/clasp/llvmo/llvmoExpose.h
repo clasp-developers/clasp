@@ -1795,7 +1795,7 @@ namespace llvmo
 	void addNamedModule(const string& name, Module_sp module);
 	bool hasNamedModule(const string& name);
 	void removeNamedModule(const string& name);
-	core::Cons_sp dependentModuleNames() const;
+	core::List_sp dependentModuleNames() const;
 
 	void addGlobalMapping(GlobalValue_sp value, core::Pointer_sp ptr);
 	/*! Add a global mapping for an object, give it a new name and return the GlobalVariable_sp */
@@ -1859,7 +1859,7 @@ namespace llvmo {
 	/*! Return true if the wrapped Module is defined */
 	bool valid() const;
 	/*! Return a Cons of all the globals for this module */
-	core::Cons_sp getGlobalList() const;
+	core::List_sp getGlobalList() const;
     public:
 	/*! Return a list of all functions as a cons */
 	core::Cons_sp getFunctionList() const;
@@ -4116,7 +4116,7 @@ namespace llvmo
 	Function_O() : Base() {};
 	~Function_O() {}
 
-	core::Cons_sp getArgumentList();
+	core::List_sp getArgumentList();
 	void appendBasicBlock(BasicBlock_sp basicBlock);
 
     }; // Function_O
@@ -4307,14 +4307,14 @@ namespace translate
     template <>
     struct to_object<llvm::Function::ArgumentListType&>
     {
-	static core::Cons_sp convert(llvm::Function::ArgumentListType& al)
+	static core::List_sp convert(llvm::Function::ArgumentListType& al)
 	{_G();
 	    ql::list l(_lisp);
 	    for ( llvm::Function::ArgumentListType::iterator it=al.begin(); it!=al.end(); it++ )
 	    {
 		l<< to_object<llvm::Argument>::convert(*it);
 	    }
-	    return(Values(l.cons()));
+	    return(l.cons());
 	}
     };
 };

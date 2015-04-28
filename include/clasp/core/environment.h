@@ -84,7 +84,7 @@ namespace core
 	static T_sp clasp_find_block_named_environment(T_sp env, Symbol_sp blockName );
     protected:
 	static void clasp_environmentStackFill(T_sp env, int level, stringstream& sout);
-	static Cons_sp clasp_gather_metadata(T_sp env, Symbol_sp key);
+	static List_sp clasp_gather_metadata(T_sp env, Symbol_sp key);
 	static string clasp_summaryOfContents(T_sp env);
     public:
 	uint environmentId() const { return this->_EnvId;};
@@ -111,10 +111,10 @@ namespace core
 
 	/*! Gather a list of all metadata with the key ordered from outermost environment
 	  to the innermost one */
-	virtual Cons_sp gather_metadata(Symbol_sp key) const;
+	virtual List_sp gather_metadata(Symbol_sp key) const;
 
 	/*! Push metadata into a Cons associated with the symbol */
-	virtual Cons_sp push_metadata(Symbol_sp key, T_sp val) {SUBIMP();};
+	virtual List_sp push_metadata(Symbol_sp key, T_sp val) {SUBIMP();};
 
 	/*! Lookup metadata - return two values
 	  The first is the value found or nil and the second is t if a value is found or nil if not */
@@ -140,7 +140,7 @@ namespace core
 	  If the variable is lexically special return (list special-var _symbol_).
 	  Otherwise return nil.  
 	*/
-	Cons_sp classifyVariable(T_sp sym) const;
+	List_sp classifyVariable(T_sp sym) const;
 	virtual T_sp _lookupValue(int depth, int index);
 	virtual Function_sp _lookupFunction(int depth, int index) const;
         virtual T_sp _lookupTagbodyId(int depth, int index) const {SUBIMP();};
@@ -178,7 +178,7 @@ namespace core
 	 If it is lexical return `(lexical-var ,symbol ,depth . ,index)
 	 If it is a dynamic variable return `(special-var . ,symbol)
 	*/
-	Cons_sp classifyLookup(Symbol_sp sym) const;
+	List_sp classifyLookup(Symbol_sp sym) const;
 
 //	virtual T_mv variable_lookup(Symbol_sp sym) const;
 //	virtual T_mv variable_lookup(const string& package,const string& symStr) const;
@@ -197,10 +197,10 @@ namespace core
 	  If the function is not lexical return `(global-function . ,symbol )
 	  The function name is either a symbol or a cons of the form (setf XXXX).
 	*/
-	virtual Cons_sp classifyFunctionLookup(T_sp functionName) const;
+	virtual List_sp classifyFunctionLookup(T_sp functionName) const;
 
 	/*! Return ('lexical-tag depth . index ) or ('dynamic-tag depth . index) */
-	virtual Cons_sp classifyTag(Symbol_sp tag);
+	virtual List_sp classifyTag(Symbol_sp tag);
 
 
 	/*! Lookup the SymbolMacro, if it doesn't exist return nil */
@@ -281,10 +281,10 @@ namespace core
 	  of all metadata with the key ordered from outermost environment
 	  to the innermost one. If the metadata isn't present in an environment
 	then nothing is put into the list for that environment*/
-	virtual Cons_sp gather_metadata(Symbol_sp key) const;
+	virtual List_sp gather_metadata(Symbol_sp key) const;
 
 	/*! Push metadata into a Cons associated with the symbol */
-	Cons_sp push_metadata(Symbol_sp key, T_sp val);
+	List_sp push_metadata(Symbol_sp key, T_sp val);
 
 	T_mv localMetadata(core::Symbol_sp key) const;
 
@@ -361,7 +361,7 @@ namespace core
 	 This is used to maintain runtime-environment information. */
 	static ValueEnvironment_sp createForNumberOfEntries(int numberOfArguments, T_sp parent);
 
-	static ValueEnvironment_sp createForLocallySpecialEntries(Cons_sp specials, T_sp parent);
+	static ValueEnvironment_sp createForLocallySpecialEntries(List_sp specials, T_sp parent);
     private:
 	void setupForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent);
     public:
@@ -377,7 +377,7 @@ namespace core
 	string environmentStackAsString();
 #endif
 	string allLocalNames() const;
-	Cons_sp allLocalNamesAsCons() const;
+	List_sp allLocalNamesAsCons() const;
 
 
 	/*! Attach the lexical variable symbol to an index */
@@ -555,15 +555,15 @@ namespace core
     public:
 	void	initialize();
     private:
-	Cons_sp _CleanupForm;
+	List_sp _CleanupForm;
 #if defined(XML_ARCHIVE)
 	void	archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     public:
-	static UnwindProtectEnvironment_sp make(Cons_sp cleanupForm, Environment_sp parent);
+	static UnwindProtectEnvironment_sp make(List_sp cleanupForm, Environment_sp parent);
     public:
 	virtual string summaryOfContents() const;
-	Cons_sp cleanupForm() const { return this->_CleanupForm;};
+	List_sp cleanupForm() const { return this->_CleanupForm;};
     public:
 	DEFAULT_CTOR_DTOR(UnwindProtectEnvironment_O);
 
@@ -736,7 +736,7 @@ namespace core
 	void initialize();
     GCPRIVATE: // instance variables here
 	HashTableEq_sp                  _Tags;
-        gctools::Vec0<Cons_sp>	_TagCode;
+        gctools::Vec0<List_sp>	_TagCode;
 	ActivationFrame_sp 	        _ActivationFrame;
     public: // Codes here
 	static TagbodyEnvironment_sp make(Environment_sp env);
@@ -745,7 +745,7 @@ namespace core
 	virtual ActivationFrame_sp getActivationFrame() const;
 
 	/*! Return the code that corresponds to the tag index */
-	Cons_sp codePos(int index) const;
+	List_sp codePos(int index) const;
 
 	/*! Return true if the tag is found and return the depth and index of the tag */
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const;
@@ -753,10 +753,10 @@ namespace core
 	virtual string summaryOfContents() const;
 
 	/*! Associate a tag(Symbol) with the position in the tagbody (tag|form)* list */
-	int addTag(Symbol_sp tag, Cons_sp tagbodyPos);
+	int addTag(Symbol_sp tag, List_sp tagbodyPos);
 
 	/*! Look for the tag in the environment */
-	Cons_sp find(Symbol_sp tag) const;
+	List_sp find(Symbol_sp tag) const;
 
 	/*! Return all of the allowed tags as a string */
 	string tagsAsString() const;
@@ -857,7 +857,7 @@ namespace core
 
 	bool _findSymbolMacro(Symbol_sp sym, int& depth, int& level, bool& shadowed, Function_sp& func) const;
 
-	void throwErrorIfSymbolMacrosDeclaredSpecial(Cons_sp specialDeclaredSymbols) const;
+	void throwErrorIfSymbolMacrosDeclaredSpecial(List_sp specialDeclaredSymbols) const;
 
 	virtual string summaryOfContents() const;
 
@@ -905,7 +905,7 @@ namespace core
 
 	bool _findValue(T_sp sym, int& depth, int& level, ValueKind& valueKind, T_sp& value) const;
 
-	void throwErrorIfSymbolMacrosDeclaredSpecial(Cons_sp specialDeclaredSymbols) const;
+	void throwErrorIfSymbolMacrosDeclaredSpecial(List_sp specialDeclaredSymbols) const;
 
 	virtual string summaryOfContents() const;
 
@@ -945,15 +945,15 @@ namespace core
     GCPROTECTED:
 	/*! Maps symbols to their index within the activation frame or if the index is -1 then the symbol is locally special */
 	HashTableEq_sp          _Map;
-	Cons_sp 		_Args;
+	List_sp 		_Args;
     public:
 	/*! Create an environment that extends a parent environment,
 	 Pass a Cons of 2-element conses that contain either `(lexical ,symbol-name) or `(special ,symbol-name) 
 	that distinguish if the symbol-name is a lexical one or a special one */
-	static GlueEnvironment_sp create(Cons_sp parts);
+	static GlueEnvironment_sp create(List_sp parts);
 
 	/*! Return the arguments as a list */
-	Cons_sp args() const { return this->_Args;};
+	List_sp args() const { return this->_Args;};
 
 //	T_mv variable_lookup(Symbol_sp val) const;
 

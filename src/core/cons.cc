@@ -126,7 +126,7 @@ namespace core
 #define LOCK_af_make_list 1
 #define ARGS_af_make_list "(osize &key initial_element)"
 #define DECL_af_make_list ""
-    T_mv af_make_list(Integer_sp osize, T_sp initial_element)
+    List_sp af_make_list(Integer_sp osize, T_sp initial_element)
     {_G();
 	int size = osize->as_int();
 	if ( size < 0 )
@@ -138,7 +138,7 @@ namespace core
 	{
 	    result << initial_element;
 	}
-	return(Values(result.cons()));
+	return (result.cons());
     };
 
 

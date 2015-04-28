@@ -53,7 +53,7 @@ void	ObjectSet_O::addObjects(ObjectSet_sp other)
 
 
 
-    Cons_sp ObjectSet_O::asCons()
+    List_sp ObjectSet_O::asCons()
     {
 	Cons_sp res = _Nil<Cons_O>();
         this->map( [&res] (T_sp o) {
@@ -176,7 +176,7 @@ stringstream		sstr;
 
 
 
-void ObjectSet_O::addObjectsInCons(Cons_sp c)
+void ObjectSet_O::addObjectsInCons(List_sp c)
 {
     while ( c.notnilp() )
     {

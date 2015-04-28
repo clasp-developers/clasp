@@ -186,7 +186,7 @@ namespace core
     public:
 
 
-        void inheritDefaultAllocator(Cons_sp directSuperclasses);
+        void inheritDefaultAllocator(List_sp directSuperclasses);
 	void setCreator(Creator* cb) { this->_creator = cb;};
 	Creator* getCreator() const { return this->_creator;};
         bool hasCreator() const { return this->_creator!=NULL;};
@@ -233,7 +233,7 @@ namespace core
 
 //	virtual bool isOfClass(Class_sp mc) const;
 
-	void	setInstanceBaseClasses(Cons_sp classes);
+	void	setInstanceBaseClasses(List_sp classes);
 	void	addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
 	void	addInstanceBaseClass(Symbol_sp cl);
 	string __repr__() const;
@@ -256,7 +256,7 @@ namespace core
 	  if it hasn't been defined yet */
 //	T_sp unboundValue();
 
-//    virtual T_sp new_Instance(Function_sp e, Cons_sp args,  Environment_sp environ, Lisp_sp lisp);
+//    virtual T_sp new_Instance(Function_sp e, List_sp args,  Environment_sp environ, Lisp_sp lisp);
 	virtual void describe();
 	
 	/*! predicate if this is a BuiltInClass class */

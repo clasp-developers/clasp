@@ -265,11 +265,12 @@ namespace core
 
 
 
-    void ValueFrame_O::fillRestOfEntries(int istart, Cons_sp values)
+    void ValueFrame_O::fillRestOfEntries(int istart, List_sp values)
     {_G();
 	ASSERTF((istart+cl_length(values))==this->length(),BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart+cl_length(values)) );
 	int iend = this->length();
-	Cons_sp cur = values;
+	ASSERT(values.consp());
+	Cons_sp cur = values.asCons();;
 	for (int i=istart; i<iend; ++i)
 	{
 	    ASSERT(oCar(cur));
@@ -294,13 +295,12 @@ namespace core
     }
 
 
-    ValueFrame_sp ValueFrame_O::create(Cons_sp values,T_sp parent)
+    ValueFrame_sp ValueFrame_O::create(List_sp values,T_sp parent)
     {_G();
 	ValueFrame_sp vf = ValueFrame_O::create(cl_length(values),parent);
 //	vf->allocateStorage(cl_length(values));
 	int idx = 0;
-	for ( core::Cons_sp cur = values; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : values ) {
 	    vf->_Objects[idx] = oCar(cur);
 	    ++idx;
 	}
@@ -308,14 +308,13 @@ namespace core
     }
 
 
-    ValueFrame_sp ValueFrame_O::createFromReversedCons(Cons_sp values,T_sp parent)
+    ValueFrame_sp ValueFrame_O::createFromReversedCons(List_sp values,T_sp parent)
     {_G();
 	ValueFrame_sp vf = ValueFrame_O::create(cl_length(values),parent);
 	int len = cl_length(values);
 //	vf->allocateStorage(len);
 	int idx = len-1;
-	for ( core::Cons_sp cur = values; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : values ) {
 	    T_sp val = oCar(cur);
 	    ASSERTNOTNULL(val);
 	    vf->_Objects[idx] = val;

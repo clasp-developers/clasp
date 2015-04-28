@@ -444,7 +444,7 @@ namespace core
     }
 
 
-    Cons_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key)
+    List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key)
     {
 	if ( env.nilp() ) return _Nil<Cons_O>();
         else if ( env.framep() ) {
@@ -455,7 +455,7 @@ namespace core
         NOT_ENVIRONMENT_ERROR(env);
     }
 
-    Cons_sp Environment_O::gather_metadata(Symbol_sp key) const
+    List_sp Environment_O::gather_metadata(Symbol_sp key) const
     {_G();
 	if ( this->getParentEnvironment().nilp() ) return _Nil<Cons_O>();
 	return clasp_gather_metadata(this->getParentEnvironment(),key);
@@ -824,7 +824,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    Cons_sp Environment_O::classifyVariable(T_sp sym) const
+    List_sp Environment_O::classifyVariable(T_sp sym) const
     {_G();
 	int depth;
 	int index;
@@ -849,7 +849,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
-    Cons_sp Environment_O::classifyTag(Symbol_sp tag)
+    List_sp Environment_O::classifyTag(Symbol_sp tag)
     {_G();
 	int depth;
 	int index;
@@ -868,7 +868,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
-    Cons_sp Environment_O::classifyFunctionLookup(T_sp functionName) const
+    List_sp Environment_O::classifyFunctionLookup(T_sp functionName) const
     {_G();
 	int depth;
 	int index;
@@ -1126,14 +1126,14 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    Cons_sp LexicalEnvironment_O::gather_metadata(Symbol_sp key) const
+    List_sp LexicalEnvironment_O::gather_metadata(Symbol_sp key) const
     {_G();
-	Cons_sp parentGathered = _Nil<Cons_O>();
+	List_sp parentGathered = _Nil<List_V>();
 	if ( this->getParentEnvironment().notnilp() )
 	{
 	    parentGathered = clasp_gather_metadata(this->getParentEnvironment(),key);
 	}
-	Cons_sp keyValue = this->_Metadata->find(key);
+	List_sp keyValue = this->_Metadata->find(key);
 	if ( keyValue.notnilp() )
 	{
 	    return Cons_O::create(oCdr(keyValue),parentGathered);
@@ -1143,7 +1143,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    Cons_sp LexicalEnvironment_O::push_metadata(Symbol_sp key, T_sp val)
+    List_sp LexicalEnvironment_O::push_metadata(Symbol_sp key, T_sp val)
     {
 	Cons_sp one = Cons_O::create(val,this->localMetadata(key));
 	this->_Metadata->hash_table_setf_gethash(key,one);
@@ -1152,7 +1152,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     T_mv LexicalEnvironment_O::localMetadata(Symbol_sp key) const
     {_G();
-	Cons_sp it = this->_Metadata->find(key);
+	List_sp it = this->_Metadata->find(key);
 	if ( it.nilp() )
 	{
 	    return(Values(_Nil<T_O>(),_Nil<T_O>()));
@@ -1162,7 +1162,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const
     {_G();
-	Cons_sp it = this->_Metadata->find(key);
+	List_sp it = this->_Metadata->find(key);
 	if ( it.nilp() )
 	{
 	    if ( this->_ParentEnvironment.nilp())
@@ -1248,7 +1248,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     bool ValueEnvironment_O::lexicalSpecialP(Symbol_sp sym) const
     {_G();
 	// Lookup the symbol in our list Symbol map
-	Cons_sp fi = this->_SymbolIndex->find(sym);
+	List_sp fi = this->_SymbolIndex->find(sym);
 	if ( fi.nilp() )
 	{
 	    // if we don't find it then invoke Environment_O::lexicalSpecialP
@@ -1293,7 +1293,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, int idx)
     {_G();
-	Cons_sp it = this->_SymbolIndex->find(sym);
+	List_sp it = this->_SymbolIndex->find(sym);
 	if ( it.notnilp() )
 	{
 #if 0
@@ -1309,7 +1309,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     void ValueEnvironment_O::defineSpecialBinding(Symbol_sp sym)
     {_G();
-	Cons_sp it= this->_SymbolIndex->find(sym);
+        List_sp it= this->_SymbolIndex->find(sym);
 	if ( it.notnilp() )
 	{
 	    if ( SPECIAL_TARGET != oCdr(it).as<Fixnum_O>()->get() )
@@ -1330,7 +1330,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 //    LOG(BF("The frame stack is %d deep") % this->depth() );
-	Cons_sp fi = this->_SymbolIndex->find(sym);
+	List_sp fi = this->_SymbolIndex->find(sym);
 	if ( fi.nilp() ) {
 	    return this->Base::_findValue(sym,depth,index,valueKind,value);
 	}
@@ -1351,7 +1351,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 //    LOG(BF("The frame stack is %d deep") % this->depth() );
-	Cons_sp fi = this->_SymbolIndex->find(sym);
+	List_sp fi = this->_SymbolIndex->find(sym);
 	if ( fi.nilp() )
 	{
 	    return this->Base::_findSymbolMacro(sym,depth,index,shadowed,fn);
@@ -1388,13 +1388,12 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
-    ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(Cons_sp specials, T_sp parent)
+    ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(List_sp specials, T_sp parent)
     {_G();
 	ValueEnvironment_sp env(ValueEnvironment_O::create());
 	env->setupParent(parent);
 	env->_ActivationFrame = ValueFrame_O::create(0,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
-	for ( Cons_sp cur=specials; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : specials ) {
 	    env->defineSpecialBinding(oCar(cur).as<Symbol_O>());
 	}
 	return env;
@@ -1404,12 +1403,11 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     void ValueEnvironment_O::setupForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent)
     {_G();
-	Cons_sp classifiedSymbols = llh->classifiedSymbols();
+	List_sp classifiedSymbols = llh->classifiedSymbols();
 	this->setupParent(parent);
 	int numberOfLexicals = 0;
-	for ( Cons_sp cur = classifiedSymbols; cur.notnilp(); cur=cCdr(cur) )
-	{
-	    Cons_sp classifiedSymbol = oCar(cur).as_or_nil<Cons_O>();
+	for ( auto cur : classifiedSymbols ) {
+	    List_sp classifiedSymbol = coerce_to_list(oCar(cur));
 	    Symbol_sp classification = oCar(classifiedSymbol).as<Symbol_O>();
 	    if ( classification == ext::_sym_heapVar )
 	    {
@@ -1461,7 +1459,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     */
     bool ValueEnvironment_O::_updateValue(Symbol_sp sym, T_sp obj)
     {_G();
-	Cons_sp it = this->_SymbolIndex->find(sym);
+	List_sp it = this->_SymbolIndex->find(sym);
 	if ( it.nilp() )
 	{
 	    Environment_sp parent = this->getParentEnvironment();
@@ -1738,7 +1736,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(Cons_sp cleanupForm, Environment_sp parent)
+    UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, Environment_sp parent)
     {_G();
 	UnwindProtectEnvironment_sp environ = UnwindProtectEnvironment_O::create();
 	environ->_CleanupForm = cleanupForm;
@@ -2147,7 +2145,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
         this->_Tags = HashTableEq_O::create_default();
     }
 
-    int TagbodyEnvironment_O::addTag(Symbol_sp tag, Cons_sp ip)
+    int TagbodyEnvironment_O::addTag(Symbol_sp tag, List_sp ip)
     {_OF();
 	ASSERTF(this->_Tags->find(tag).nilp(),BF("The tag[%s] has already been defined in this tagbody"));
 	int index = this->_TagCode.size();
@@ -2156,7 +2154,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	return index;
     };
 
-    Cons_sp TagbodyEnvironment_O::find(Symbol_sp tag) const
+    List_sp TagbodyEnvironment_O::find(Symbol_sp tag) const
     {_OF();
         DEPRECIATED();
 	return this->_Tags->find(tag);
@@ -2184,7 +2182,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     bool TagbodyEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const
     {_G();
 	//	printf("%s:%d searched through TagbodyEnvironment_O\n", __FILE__, __LINE__ );
-	Cons_sp it = this->_Tags->find(sym);
+	List_sp it = this->_Tags->find(sym);
 	if ( it.notnilp() )
 	{
 	    index = oCdr(it).as<Fixnum_O>()->get();
@@ -2200,7 +2198,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     }
 
 
-    Cons_sp TagbodyEnvironment_O::codePos(int index) const
+    List_sp TagbodyEnvironment_O::codePos(int index) const
     {_G();
 	ASSERT(index >=0 && index < this->_TagCode.size() );
 	return this->_TagCode[index];
@@ -2210,7 +2208,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     T_sp TagbodyEnvironment_O::find_tagbody_tag_environment(Symbol_sp tag) const
     {_OF();
-	Cons_sp it = this->_Tags->find(tag);
+	List_sp it = this->_Tags->find(tag);
 	if ( it.notnilp() ) {return this->const_sharedThis<TagbodyEnvironment_O>();}
 	return clasp_find_tagbody_tag_environment(this->getParentEnvironment(),tag);
     }
@@ -2218,11 +2216,11 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    GlueEnvironment_sp GlueEnvironment_O::create(Cons_sp parts)
+    GlueEnvironment_sp GlueEnvironment_O::create(List_sp parts)
     {_G();
 	GlueEnvironment_sp env(GlueEnvironment_O::create());
 	ql::list args(_lisp);
-	for ( Cons_sp cur=parts; cur.notnilp(); cur=cCdr(cCdr(cur)))
+	for ( List_sp cur=parts; cur.notnilp(); cur=cCdr(cCdr(cur)))
 	{
 	    Symbol_sp sym = oCar(cur).as<Symbol_O>();
 	    T_sp val = oCadr(cur);
@@ -2300,7 +2298,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 //    LOG(BF("The frame stack is %d deep") % this->depth() );
-	Cons_sp fi = this->_Macros->find(sym);
+	List_sp fi = this->_Macros->find(sym);
 	if ( fi.nilp() )
 	{
 	    return this->Base::_findMacro(sym,depth,index,value);
@@ -2332,7 +2330,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym) );
 //    LOG(BF("The frame stack is %d deep") % this->depth() );
-	Cons_sp fi = this->_Macros->find(sym);
+	List_sp fi = this->_Macros->find(sym);
 	if ( fi.nilp() )
 	{
 	    return this->Base::_findSymbolMacro(sym,depth,index,shadowed,value);

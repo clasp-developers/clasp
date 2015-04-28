@@ -90,7 +90,7 @@ namespace core
 	explicit TargetClassifier(const std::set<int>& skipLexicalIndices);
 	explicit TargetClassifier(SymbolSet_sp specialSymbols, const std::set<int>& skipLexicalIndices);
 	void classifyTarget(Argument& target);
-	Cons_sp finalClassifiedSymbols();
+	List_sp finalClassifiedSymbols();
 	void targetIsSubLambdaList(Argument& target,LambdaListHandler_sp subHandler);
 	int totalLexicalVariables() const { return this->lexicalIndex;};
         void advanceLexicalIndex();
@@ -113,9 +113,9 @@ namespace core
 	/*! If _CreatesBindings is true then no bindings will be set by this
 	  LambdaListHandler */
 	bool				_CreatesBindings;
-	Cons_sp 			_ClassifiedSymbolList;
+	List_sp 			_ClassifiedSymbolList;
 	SymbolSet_sp 			_SpecialSymbolSet;
-	Cons_sp 			_DeclareSpecifierList;
+	List_sp 			_DeclareSpecifierList;
         gctools::Vec0<RequiredArgument>	_RequiredArguments;
         gctools::Vec0<OptionalArgument>	_OptionalArguments;
 	RestArgument			_RestArgument;
@@ -136,19 +136,19 @@ namespace core
 	const_requiredArgumentIterator endRequiredArguments() const { return this->_RequiredArguments.end();};
     public:
 	/*! The context can be 'ORDINARY, 'MACRO and other values - see throw_if_invalid_context */
-	static LambdaListHandler_sp makeLambdaListHandler(Cons_sp lambda_list, Cons_sp declares, T_sp context);
+	static LambdaListHandler_sp makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context);
 
-	static Cons_mv process_single_dispatch_lambda_list(Cons_sp lambda_list, bool allow_first_argument_default_dispatcher = false);
-	static Cons_sp process_macro_lambda_list(Cons_sp lambda_list );
+	static Cons_mv process_single_dispatch_lambda_list(List_sp lambda_list, bool allow_first_argument_default_dispatcher = false);
+	static List_sp process_macro_lambda_list(List_sp lambda_list );
     public:
 	T_sp lambdaList(); // return a list representation of the LambdaListHandler
     public:
 	/*! Compile the argumentsInString into an argument handler and put the symbols into the
 	  given package */
-	static LambdaListHandler_sp createRecursive(Cons_sp lambda_list, Cons_sp declares, T_sp context, TargetClassifier& classifier);
+	static LambdaListHandler_sp createRecursive(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier& classifier);
 
 	/*! Compile the lambda-list into an LambdaListHandler */
-	static LambdaListHandler_sp create(Cons_sp lambda_list, Cons_sp declares, T_sp context, const std::set<int>& pureOutValues = std::set<int>() );
+	static LambdaListHandler_sp create(List_sp lambda_list, List_sp declares, T_sp context, const std::set<int>& pureOutValues = std::set<int>() );
 
 	/*! Create a simple LambdaListHandler that takes a fixed number of required arguments */
 	static LambdaListHandler_sp create(int numArgs, const std::set<int>& pureOutValues = std::set<int>() );
@@ -161,18 +161,18 @@ namespace core
 	void setComment(const string& s) { this->_Comment = s;};
 	string getComment() const { return this->_Comment.asStdString();};
 
-	void process_declares(Cons_sp declares) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
+	void process_declares(List_sp declares) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 
     public:
-	static Cons_sp classifyOneSymbol(Symbol_sp sym);
-	static Cons_sp classifySymbols(Cons_sp symbols);
+	static List_sp classifyOneSymbol(Symbol_sp sym);
+	static List_sp classifySymbols(List_sp symbols);
 
     protected:
-	static SymbolSet_sp identifySpecialSymbols(Cons_sp declares);
+	static SymbolSet_sp identifySpecialSymbols(List_sp declares);
 	void classifyTarget(Argument& target, int& lexicalIndex, const SymbolSet_sp& specialSymbols );
-	void recursively_build_handlers_count_arguments(Cons_sp declares, T_sp context, TargetClassifier& classifier );
+	void recursively_build_handlers_count_arguments(List_sp declares, T_sp context, TargetClassifier& classifier );
     public:
-//	void process_declares(Cons_sp declares);
+//	void process_declares(List_sp declares);
 	void create_required_arguments(int numArgs, const std::set<int>& skipIndices );
     public:
 
@@ -187,7 +187,7 @@ namespace core
 
 	/*! Parse a lambda-list and a list of declares that apply to the lambda-list
 	  context can be one of 'FUNCTION, 'MACRO and other values */
-	virtual void parse_lambda_list_declares(Cons_sp lambda_list, Cons_sp declares, T_sp context, TargetClassifier& classifier);
+	virtual void parse_lambda_list_declares(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier& classifier);
 
 	void createBindingsInScope_af(ActivationFrame_sp args,
 				   DynamicScopeManager& scope );
@@ -199,7 +199,7 @@ namespace core
 
 	/*! Return a list of expressions that can be evaluated in (env) to generate a list of values that would
 	  be put into the classifiedSymbols */
-	Cons_sp lambdaListParts(T_sp env);
+	List_sp lambdaListParts(T_sp env);
 
 	// ---------
 	// Following are the methods that deal with preparing Lexical ActivationFrames for arguments
@@ -222,13 +222,13 @@ namespace core
 
 
 	/*! Return all of the symbols that this LambdaListHandler will fill classified as to whether they are special-var or lexical-var's */
-	Cons_sp classifiedSymbols() const { return this->_ClassifiedSymbolList;};
+	List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList;};
 
 
 	/*! Return a Cons of all lexical variable names extracted from this->_ClassifiedSymbolList
 	  in the order that they appear in _ClassifiedSymbolList - this is used for
 	  debugging - you can attach this symbols list (as a Vector of symbols) to runtime ActivationFrames */
-	Cons_sp namesOfLexicalVariables() const;
+	List_sp namesOfLexicalVariables() const;
 
 	/*! Return a VectorObjects of the symbols of all of the lexical variables for attaching to ActivationFrames */
 	VectorObjects_sp namesOfLexicalVariablesForDebugging();

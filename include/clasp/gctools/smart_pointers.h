@@ -934,7 +934,10 @@ namespace gctools {
     public:
 	List_sp_iterator begin() { return List_sp_iterator(*this); }
 	List_sp_iterator end() { return List_sp_iterator_nil(); }
- 
+
+	List_sp_iterator const begin() const { return List_sp_iterator(*this); }
+	List_sp_iterator const end() const { return List_sp_iterator_nil(); }
+
 
     };
 

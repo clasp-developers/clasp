@@ -72,7 +72,7 @@ namespace core
 	void	prepend(const string& s);
 	void	append(const string& s);
 	void	appendStringList(StringList_sp strings);
-	void	appendConsOfStrings(Cons_sp strings);
+	void	appendConsOfStrings(List_sp strings);
 
 	bool	contains(const string& nm);
 	int	indexOf(const string& nm);

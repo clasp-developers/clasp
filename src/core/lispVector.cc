@@ -159,7 +159,7 @@ namespace core
 	return this->dimension();
     }
 
-    Cons_sp Vector_O::arrayDimensions() const
+    List_sp Vector_O::arrayDimensions() const
     {
 	return Cons_O::create(Fixnum_O::create(this->dimension()),_Nil<Cons_O>());
     }

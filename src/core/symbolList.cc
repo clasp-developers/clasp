@@ -131,10 +131,10 @@ namespace core
             });
     }
 
-    void	SymbolList_O::appendConsOfStrings(Cons_sp s)
+    void	SymbolList_O::appendConsOfStrings(List_sp s)
     {_G();
         
-	for ( Cons_sp cur=s; cur.notnilp(); cur=cCdr(cur) )
+	for ( List_sp cur=s; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    Symbol_sp sym = _lisp->intern(oCar(cur).as<Str_O>()->get());
 	    this->_Contents.push_back(sym);

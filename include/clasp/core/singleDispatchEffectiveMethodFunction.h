@@ -48,12 +48,12 @@ namespace core
 //    explicit SingleDispatchEffectiveMethodFunction_O(core::Class_sp const& mc) : T_O(mc), T(mc) {};
 //    virtual ~SingleDispatchEffectiveMethodFunction_O() {};
     public:
-	static SingleDispatchEffectiveMethodFunction_sp create(Cons_sp methods,Lisp_sp lisp);
+	static SingleDispatchEffectiveMethodFunction_sp create(List_sp methods);
     public:
 	void initialize();
 	
     GCPRIVATE: // instance variables here
-	Cons_sp	_Methods;
+	List_sp	_Methods;
 
     private:
 	void LISP_INVOKE();

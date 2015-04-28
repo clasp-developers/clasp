@@ -87,7 +87,7 @@ namespace core
 	virtual uint dimension() const { return this->_Values.size(); };
 	virtual void rowMajorAset( int idx, T_sp value);
 	virtual T_sp rowMajorAref(int idx) const;
-	virtual int arrayRowMajorIndex(Cons_sp indices) const;
+	virtual int arrayRowMajorIndex(List_sp indices) const;
 
 	T_sp& operator[](uint index) {return this->_Values[index];}
 
@@ -101,8 +101,8 @@ namespace core
 	/*! Swap the contents of the VectorObjects */
 	void swap(VectorObjects_sp vec);
 	
-	virtual T_sp aref(Cons_sp indices) const;
-	virtual T_sp setf_aref(Cons_sp indices_val);
+	virtual T_sp aref(List_sp indices) const;
+	virtual T_sp setf_aref(List_sp indices_val);
 	
 	virtual T_sp elt(int index) const;
 	virtual T_sp setf_elt(int index, T_sp value);

@@ -75,7 +75,7 @@ namespace core {
 
 	/*! ensure-class-using-class - see AOMOP-183 */
 	static T_sp create_ensureClassUsingClass( Function_sp exec,
-						  Cons_sp args,
+						  List_sp args,
 						  Environment_sp env,
 						  Lisp_sp lisp);
 
@@ -86,7 +86,7 @@ namespace core {
           A single class - Convert to a Cons containing that Class.
           A cons of classes - return it.
         */
-//    static Cons_sp classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp);
+//    static List_sp classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp);
 
 
     public:
@@ -102,7 +102,7 @@ namespace core {
 //	void resetSlots();
 
 	void appendInstanceVariablesFromStructureClass(StructureClass_sp cc);
-	void appendInstanceVariablesFromListOfSymbols(Cons_sp variableNames);
+	void appendInstanceVariablesFromListOfSymbols(List_sp variableNames);
 
         virtual void describe();
         virtual string dumpInfo();

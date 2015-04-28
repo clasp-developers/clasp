@@ -230,7 +230,7 @@ namespace core
     void DynamicBindingStack::push(Symbol_sp var)
     {
         if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
-            Cons_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue().as<Cons_O>(),_Nil<T_O>());
+            List_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue().as<Cons_O>(),_Nil<T_O>());
             if ( assoc.notnilp() ) {
                 T_sp funcDesig = oCdr(assoc);
                 if ( funcDesig.notnilp() ) {
@@ -250,7 +250,7 @@ namespace core
     {
 	DynamicBinding& bind = this->_Bindings.back();
         if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-            Cons_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue().as<Cons_O>(),_Nil<T_O>());
+            List_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue().as<Cons_O>(),_Nil<T_O>());
             if ( assoc.notnilp() ) {
                 T_sp funcDesig = oCdr(assoc);
                 if ( funcDesig.notnilp() ) {

@@ -231,7 +231,7 @@ typedef std::size_t class_id;
 #define SYMBOL_SC_(p,x)
 
     /*! Use this here in the header to declare an extern function if you want */
-//#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
+//#define	EXTERN_FN(x) extern T_sp fn_##x(Function_sp exec, List_sp args, Environment_sp env, Lisp_sp lisp);
 
 /*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
 #define DEFUN(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp);
@@ -267,7 +267,7 @@ typedef std::size_t class_id;
     _lisp->add_accessor_pair(_sym_##x,_sym_setf_##x);
 #endif
 
-//#define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, Cons_sp args, Environment_sp env, Lisp_sp lisp);
+//#define EXTERN_GENERIC(x) extern T_sp gf_##x(Function_sp exec, List_sp args, Environment_sp env, Lisp_sp lisp);
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
 #define DEFGENERIC(pkg,x) defgeneric(pkg,#x,&gf_##x,ARGS_gf_##x,DOCS_gf_##x,_lisp);
@@ -909,7 +909,7 @@ namespace core {
     typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
     typedef void (*ExposeCandoFunction)(Lisp_sp);
     typedef void (*ExposePythonFunction)(Lisp_sp);
-    typedef T_mv (*SpecialFormCallback)(Cons_sp,T_sp);
+    typedef T_mv (*SpecialFormCallback)(List_sp,T_sp);
     typedef void (*MakePackageCallback)(string const& packageName,Lisp_sp);
     typedef void (*ExportSymbolCallback)(Symbol_sp symbol,Lisp_sp);
 
@@ -1151,9 +1151,9 @@ namespace core
     Symbol_sp lisp_getClassSymbolForClassName(const string& n);
     string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash=true);
     T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp args );
-    Cons_sp lisp_parse_arguments(const string& packageName, const string& args);
-    Cons_sp lisp_parse_declares(const string& packageName, const string& declarestring);
-    LambdaListHandler_sp lisp_function_lambda_list_handler(Cons_sp lambda_list, Cons_sp declares, std::set<int> pureOutValues = std::set<int>() );
+    List_sp lisp_parse_arguments(const string& packageName, const string& args);
+    List_sp lisp_parse_declares(const string& packageName, const string& declarestring);
+    LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>() );
 #if 0
     void lisp_defun_lispify_name(const string& packageName, const string& name,
 				 Functoid*, const string& arguments="", const string& declarestring="",
@@ -1233,9 +1233,9 @@ namespace core
 
 
     DebugStream* lisp_debugLog();
-    T_sp lisp_ocar(Cons_sp args);
-    T_sp lisp_ocadr(Cons_sp args);
-    T_sp lisp_ocaddr(Cons_sp args);
+    T_sp lisp_ocar(List_sp args);
+    T_sp lisp_ocadr(List_sp args);
+    T_sp lisp_ocaddr(List_sp args);
     /*! Return a string representation of the object */
     string lisp_rep(T_sp obj);
     Symbol_sp lisp_internKeyword(const string& name);
@@ -1328,7 +1328,7 @@ namespace core
         virtual LambdaListHandler_sp lambdaListHandler() const = 0;
 	virtual T_sp lambdaList() const = 0;
 	virtual Str_sp docstring() const;
-	virtual Cons_sp declares() const;
+	virtual List_sp declares() const;
     };
 
 
@@ -1526,7 +1526,7 @@ namespace core {
 namespace core {
     typedef va_list clasp_va_list;
 #define clasp_va_start va_start
-    Cons_sp clasp_grab_rest_args(va_list args, int nargs);
+    List_sp clasp_grab_rest_args(va_list args, int nargs);
 #define clasp_va_end va_end
 };
 

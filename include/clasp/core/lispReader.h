@@ -35,7 +35,7 @@ THE SOFTWARE.
 namespace core
 {
 
-    extern Cons_sp read_list(T_sp sin, char end_char, bool allow_consing_dot);
+    extern List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot);
 
     extern T_mv lisp_object_query(T_sp, bool eofErrorP, T_sp eofValue, bool recursiveP);
     

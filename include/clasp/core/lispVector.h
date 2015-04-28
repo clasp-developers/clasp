@@ -66,7 +66,7 @@ namespace core
         virtual T_sp elementType() const {SUBIMP();}
         virtual int rank() const { return 1;};
         virtual int arrayDimension(int axisNumber) const;
-        virtual Cons_sp arrayDimensions() const;
+        virtual List_sp arrayDimensions() const;
         virtual int arrayTotalSize() const { return this->length();};
 
         virtual Fixnum_sp vectorPush(T_sp newElement) {SUBIMP();};

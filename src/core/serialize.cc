@@ -123,7 +123,7 @@ namespace core
     }
 
 
-    BranchSNode_sp BranchSNode_O::create(Symbol_sp kind, Cons_sp plist, Vector_sp data)
+    BranchSNode_sp BranchSNode_O::create(Symbol_sp kind, List_sp plist, Vector_sp data)
     {_G();
 	GC_ALLOCATE(BranchSNode_O,v);
 	v->_Kind = kind;
@@ -175,10 +175,10 @@ namespace core
 	this->pushVectorSNode(snode);
     }
 	
-    Cons_sp BranchSNode_O::keys() const
+    List_sp BranchSNode_O::keys() const
     {
 	Cons_sp keys = _Nil<Cons_O>();
-	for ( Cons_sp cur = this->_SNodePList;cur.notnilp();cur=cCddr(cur))
+	for ( List_sp cur = this->_SNodePList;cur.notnilp();cur=cCddr(cur))
 	{
 	    keys = Cons_O::create(oCar(cur),keys);
 	}
@@ -204,11 +204,13 @@ namespace core
 
     SNode_sp BranchSNode_O::getAttributeSNode(Symbol_sp name, SNode_sp defaultValue) const
     {
-	SNode_sp result = this->_SNodePList->getf(name,_Unbound<T_O>()).as<SNode_O>();
-	if ( result.unboundp() ) {
-	    return defaultValue;
+	if (this->_SNodePList.notnilp()) {
+	    SNode_sp result = this->_SNodePList.asCons()->getf(name,_Unbound<T_O>()).as<SNode_O>();
+	    if ( !result.unboundp() ) {
+		return result;
+	    }
 	}
-	return result;
+	return defaultValue;
     }
 
     SNode_sp BranchSNode_O::getAttributeSNodeOrError(Symbol_sp name) const
@@ -222,11 +224,13 @@ namespace core
 
     T_sp BranchSNode_O::getAttribute(Symbol_sp name, T_sp defaultValue) const
     {
-	SNode_sp result = this->_SNodePList->getf(name,_Unbound<T_O>()).as<SNode_O>();
-	if ( result.unboundp() ) {
-	    return defaultValue;
+	if ( this->_SNodePList.notnilp() ) {
+	    SNode_sp result = this->_SNodePList.asCons()->getf(name,_Unbound<T_O>()).as<SNode_O>();
+	    if ( !result.unboundp() ) {
+		return result->object();
+	    }
 	}
-	return result->object();
+	return defaultValue;
     }
 
     void BranchSNode_O::loadVector(gctools::Vec0<T_sp>& vec)
@@ -306,7 +310,7 @@ namespace core
 
     T_sp BranchSNode_O::getUniqueId() const
     {
-	for (Cons_sp cur=this->_SNodePList; cur.notnilp(); cur=cCddr(cur) )
+	for (List_sp cur=this->_SNodePList; cur.notnilp(); cur=cCddr(cur) )
 	{
 	    Symbol_sp propertyName = oCar(cur).as<Symbol_O>();
 	    if ( propertyName == kw::_sym__uid ) {
@@ -486,7 +490,7 @@ namespace core
 	BranchSNode_sp branchSNode = node.as<BranchSNode_O>();
 	if ( node == this->_TopNode ) {
 	    // Don't create an object for the top node - just for it's children
-	    for ( Cons_sp cur = branchSNode->_SNodePList; cur.notnilp(); cur=cCddr(cur) ) {
+	    for ( List_sp cur = branchSNode->_SNodePList; cur.notnilp(); cur=cCddr(cur) ) {
 		this->loadObjectDirectly(oCadr(cur).as<SNode_O>());
 	    }
 	    if ( branchSNode->_VectorSNodes.notnilp()) {
@@ -536,7 +540,7 @@ namespace core
     {_G();
 	if ( this->_TopNode.nilp() ) SIMPLE_ERROR(BF("No archive is loaded"));
 	if ( BranchSNode_sp bnode = this->_TopNode.asOrNull<BranchSNode_O>()) {
-	    T_sp property = bnode->_SNodePList->getf(sym,_Unbound<T_O>());
+	    T_sp property = bnode->_SNodePList.asCons()->getf(sym,_Unbound<T_O>());
 	    if (property.unboundp()) {
 		return false;
 	    }
@@ -550,7 +554,7 @@ namespace core
 	if ( this->_TopNode.nilp() ) SIMPLE_ERROR(BF("No archive is loaded"));
 	DynamicScopeManager scope(_sym_STARserializerArchiveSTAR,this->asSmartPtr());
 	if ( BranchSNode_sp bnode = this->_TopNode.asOrNull<BranchSNode_O>()) {
-	    SNode_sp property = bnode->_SNodePList->getf(sym,_Unbound<T_O>()).as<SNode_O>();
+	    SNode_sp property = bnode->_SNodePList.asCons()->getf(sym,_Unbound<T_O>()).as<SNode_O>();
 	    if (property.unboundp()) {
 		SIMPLE_ERROR(BF("Could not find property for key: %s") % _rep_(sym));
 	    }
@@ -559,7 +563,7 @@ namespace core
 	SIMPLE_ERROR(BF("Could not find property for key: %s") % _rep_(sym));
     }
 
-    Cons_sp LoadArchive_O::getContents()
+    List_sp LoadArchive_O::getContents()
     {_G();
 	if ( this->_TopNode.nilp() ) SIMPLE_ERROR(BF("No archive is loaded"));
 	if ( BranchSNode_sp bnode = this->_TopNode.asOrNull<BranchSNode_O>()) {
@@ -568,7 +572,7 @@ namespace core
 	return _Nil<Cons_O>();
     }
 
-    Cons_sp LoadArchive_O::keys() const
+    List_sp LoadArchive_O::keys() const
     {
 	if ( this->_TopNode.nilp() ) {
 	    SIMPLE_ERROR(BF("There is no archive loaded"));

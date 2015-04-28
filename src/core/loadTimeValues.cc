@@ -139,8 +139,8 @@ namespace core
 #define DOCS_af_loadTimeValuesIds "Return a cons of the load-time-values ids"
     void af_loadTimeValuesIds()
     {_G();
-        Cons_sp names = _lisp->loadTimeValuesIds();
-        for ( Cons_sp cur=names; cur.notnilp(); cur=cCdr(cur) ) {
+        List_sp names = _lisp->loadTimeValuesIds();
+        for ( auto cur : names ) {
             Str_sp nm = oCar(cur).as<Str_O>();
             T_sp ltv = _lisp->findLoadTimeValues(nm->get());
             printf("%s:%d LTV[%s]@%p = %s\n", __FILE__, __LINE__, nm->get().c_str(), ltv.raw_(), _rep_(ltv).c_str() );

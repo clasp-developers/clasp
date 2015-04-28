@@ -141,8 +141,8 @@ namespace core
 
     
     InterpretedClosure::InterpretedClosure(T_sp fn, SourcePosInfo_sp sp, Symbol_sp k
-					   , LambdaListHandler_sp llh, Cons_sp dec, Str_sp doc
-					   , T_sp e, Cons_sp c)
+					   , LambdaListHandler_sp llh, List_sp dec, Str_sp doc
+					   , T_sp e, List_sp c)
             : FunctionClosure(fn,sp,k,e)
             , _lambdaListHandler(llh)
             , _declares(dec)
@@ -215,7 +215,7 @@ namespace core
         return this->closure->docstring();
     };
 	
-    Cons_sp Function_O::declares() const {
+    List_sp Function_O::declares() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         return this->closure->declares();
     };
@@ -287,14 +287,14 @@ namespace core
 	if ( fn.nilp() ) {
 	    WRONG_TYPE_ARG(fn,cl::_sym_Function_O);
 	}
-        
-	Cons_sp code = _Nil<Cons_O>();
+	List_sp code = _Nil<List_V>();
 	if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(fn->closure) ) {
 	    code = ic->_code;
 	}
 	bool closedp = true; // fn->closedEnvironment().notnilp();
 	T_sp name = fn->closure->name;
-	return Values(code,_lisp->_boolean(closedp),name);
+	T_sp tcode = code;
+	return Values(tcode,_lisp->_boolean(closedp),name);
     };
 
 

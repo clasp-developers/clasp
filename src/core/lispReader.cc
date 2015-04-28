@@ -462,7 +462,7 @@ namespace core
 
 
 
-    Cons_sp read_list(T_sp sin, char end_char, bool allow_consing_dot)
+    List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot)
     {_G();
         af_stackMonitor();
 	uint start_lineNumber=0;

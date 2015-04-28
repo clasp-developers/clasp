@@ -119,7 +119,7 @@ namespace core
 	/*! Access a function */
 	virtual Function_sp function(int idx) const {THROW_HARD_ERROR(BF("Subclass must implement function(idx)"));};
 
-	Cons_sp asCons(int start=0) const
+	List_sp asCons(int start=0) const
 	{_G();
 	    Cons_sp dummy = Cons_O::create(_Nil<T_O>());
 	    Cons_sp cur = dummy;
@@ -129,7 +129,7 @@ namespace core
 		cur->setCdr(one);
 		cur = one;
 	    }
-	    return cCdr(dummy);
+	    return coerce_to_list(oCdr(dummy));
 	}
 
     }; // ActivationFrame class
@@ -194,9 +194,9 @@ namespace core
 
 
 
-	static ValueFrame_sp create(Cons_sp values,T_sp parent);
+	static ValueFrame_sp create(List_sp values,T_sp parent);
 
-	static ValueFrame_sp createFromReversedCons(Cons_sp values,T_sp parent);
+	static ValueFrame_sp createFromReversedCons(List_sp values,T_sp parent);
 
 	static ValueFrame_sp createForLambdaListHandler(LambdaListHandler_sp llh,T_sp parent);
 
@@ -305,7 +305,7 @@ namespace core
 #endif
 	/*! Fill the activation frame starting at entry istart with values.
 	  DO NOT OVERFLOW THE ValueFrame!!!! */
-	void fillRestOfEntries(int istart, Cons_sp values);
+	void fillRestOfEntries(int istart, List_sp values);
 
 	/*! Method for interogating ActivationFrames as Environments */
 	virtual string summaryOfContents() const;

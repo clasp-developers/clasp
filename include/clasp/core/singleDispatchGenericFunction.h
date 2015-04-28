@@ -44,7 +44,7 @@ namespace core
     {
     public:
 	/*! Store the methods here */
-	Cons_sp		_Methods;
+	List_sp		_Methods;
         LambdaListHandler_sp _lambdaListHandler;
 	/*! Store the method functions hashed on the receiver class */
 //	HashTable_sp	classesToClosures;
@@ -103,7 +103,7 @@ namespace core
     public: // Functions here
 
 	/*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
-	Cons_sp methods() const {
+	List_sp methods() const {
             SingleDispatchGenericFunctionClosure* cl = dynamic_cast<SingleDispatchGenericFunctionClosure*>(this->closure);
             return cl->_Methods;
         };

@@ -56,14 +56,14 @@ namespace core
 	    this->_ArgTarget = _Nil<T_O>();
 	    this->_ArgTargetFrameIndex = UNDEFINED_TARGET;
 	}
-	Cons_sp classified() const;
+	List_sp classified() const;
 	inline bool isDefined() const { return (this->_ArgTarget)&&(this->_ArgTarget.notnilp());};
 	inline bool _symbolP() const { return af_symbolp(this->_ArgTarget); };
 	Symbol_sp symbol() const;
 	inline bool _lambdaListHandlerP() const { return af_lambda_list_handler_p(this->_ArgTarget); };
 	LambdaListHandler_sp lambdaListHandler() const;
 	inline bool _lambdaListP() const { return cl_consp(this->_ArgTarget); };
-	Cons_sp lambdaList() const;
+	List_sp lambdaList() const;
 	inline bool targetIsLexical() const { return this->_ArgTargetFrameIndex!=SPECIAL_TARGET;}
 	virtual string asString() const;
     };
@@ -180,8 +180,8 @@ namespace core
     public:
 	/*! This is used for creating binds for lambda lists */
 	virtual void new_binding(const Argument& argument, T_sp val);
-	void new_variable(Cons_sp classifiedVariable, T_sp val);
-	void new_special(Cons_sp classifiedVariable);
+	void new_variable(List_sp classifiedVariable, T_sp val);
+	void new_special(List_sp classifiedVariable);
 	virtual bool lexicalElementBoundP(const Argument& argument);
 	virtual T_sp lexenv() const { return this->_Environment; };
     };

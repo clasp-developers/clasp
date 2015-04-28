@@ -81,7 +81,7 @@ namespace core
 #define LOCK_af_ensureSingleDispatchMethod 0
 #define ARGS_af_ensureSingleDispatchMethod "(gfname receiver-class &key lambda-list-handler declares (docstring \"\") body )"
 #define DECL_af_ensureSingleDispatchMethod ""    
-    void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstring, Function_sp body )
+    void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, Str_sp docstring, Function_sp body )
     {_G();
 //	string docstr = docstring->get();
 	SingleDispatchGenericFunction_sp gf = gfname->symbolFunction().as<SingleDispatchGenericFunction_O>();//Lisp_O::find_single_dispatch_generic_function(gfname,true);
@@ -128,8 +128,7 @@ namespace core
 	    % _rep_(this->name) % _rep_(method->receiver_class()) );
 	bool replacedMethod = false;
 	{_BLOCK_TRACEF(BF("Checking if the receiver class already has a method"));
-	    for ( Cons_sp cur = this->_Methods; cur.notnilp(); cur=cCdr(cur) )
-	    {
+	    for ( auto cur : this->_Methods ) {
 		SingleDispatchMethod_sp existing = oCar(cur).as<SingleDispatchMethod_O>();
 		LOG(BF("An existing method has receiverClass[%s]") % _rep_(existing->receiver_class()) );
 		if ( existing->receiver_class() == method->receiver_class() )
@@ -200,8 +199,7 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc)
     {_OF();
 	LOG(BF("Looking for applicable methods for receivers of class[%s]") % _rep_(mc) );
         gctools::Vec0<SingleDispatchMethod_sp> applicableMethods;
-	for ( Cons_sp cur = this->_Methods; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : this->_Methods ) {
 	    SingleDispatchMethod_sp sdm = oCar(cur).as<SingleDispatchMethod_O>();
 	    Class_sp ac = sdm->receiver_class();
 	    if ( mc->isSubClassOf(ac) )

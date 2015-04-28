@@ -56,7 +56,7 @@ namespace core
 
   
 
-    T_sp MultipleValues::setFromConsSkipFirst(Cons_sp args)
+    T_sp MultipleValues::setFromConsSkipFirst(List_sp args)
     {_G();
 	// Skip the first value - that is in multiple_values<XXX>
 	int i=1;
@@ -152,7 +152,7 @@ namespace core
 
 
 
-    core::T_mv ValuesFromCons(core::Cons_sp vals)
+    core::T_mv ValuesFromCons(core::List_sp vals)
     {
 	size_t len = cl_length(vals);
 	if ( len == 0 )

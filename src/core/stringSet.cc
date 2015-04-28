@@ -59,10 +59,9 @@ namespace core {
 */
 
 
-    StringSet_sp StringSet_O::insertConsStrings(Cons_sp vals)
+    StringSet_sp StringSet_O::insertConsStrings(List_sp vals)
     {
-	for ( Cons_sp p=vals; p.notnilp(); p=cCdr(p))
-	{
+	for ( auto p : vals ) {
 	    Str_sp t = oCar(p).as<Str_O>();
 	    this->insert(t->get());
 	}
@@ -317,7 +316,7 @@ namespace core {
 	return nset;
     }
 
-    Cons_sp	StringSet_O::asCons() const
+    List_sp	StringSet_O::asCons() const
     {_G();
 	Cons_sp cur = _Nil<Cons_O>();
 	set<string>::iterator	si;

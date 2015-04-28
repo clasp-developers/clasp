@@ -71,9 +71,9 @@ public:
     void	remove( T_sp obj) { this->_Set->remhash(obj); };
     int	size() { return this->_Set->hashTableSize();};
 
-	Cons_sp asCons();
+	List_sp asCons();
 
-	void	addObjectsInCons(Cons_sp objs);
+	void	addObjectsInCons(List_sp objs);
 
 	void addObjects(ObjectSet_sp b);
 

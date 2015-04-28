@@ -30,8 +30,8 @@ THE SOFTWARE.
 namespace core
 {
 
-    T_sp af_makeCondition(T_sp datum, Cons_sp initializers);
-    void af_error(T_sp datum, Cons_sp args );
+    T_sp af_makeCondition(T_sp datum, List_sp initializers);
+    void af_error(T_sp datum, List_sp args );
 
 
 };

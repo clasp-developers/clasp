@@ -89,8 +89,8 @@ namespace core
         gctools::gcstring& contents() { return this->_Contents; };
 	string __repr__() const;
 	uint countOccurances(const string& chars);
-	Cons_sp splitAtWhiteSpace();
-	Cons_sp split(const string& splitChars);
+	List_sp splitAtWhiteSpace();
+	List_sp split(const string& splitChars);
         char& operator[](int i) { return this->_Contents[i];};
         const char& operator[](int i) const { return this->_Contents[i];};
 	Fixnum_sp asInt() const;
@@ -129,8 +129,8 @@ namespace core
     public:
 	//! dim ignore fill pointers - don't overload
 	uint length() const { return this->size(); };
-//	T_sp prim_format(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp );
-//	T_sp prim_formatCons(Function_sp e, Cons_sp args, Environment_sp environ, Lisp_sp lisp );
+//	T_sp prim_format(Function_sp e, List_sp args, Environment_sp environ, Lisp_sp lisp );
+//	T_sp prim_formatCons(Function_sp e, List_sp args, Environment_sp environ, Lisp_sp lisp );
 	virtual T_sp elementType() const;
 	virtual bool	equal(T_sp obj) const;
         virtual bool    equalp(T_sp obj) const;
@@ -157,9 +157,9 @@ namespace core
 
 
 	/*! Return the value at the indices */
-	virtual T_sp aref(Cons_sp indices) const;
+	virtual T_sp aref(List_sp indices) const;
 	/*! Return the value at the indices */
-	virtual T_sp setf_aref(Cons_sp indices_val);
+	virtual T_sp setf_aref(List_sp indices_val);
 
 	virtual void __write__(T_sp strm) const;
 
@@ -210,7 +210,7 @@ namespace core {
     T_mv af_parseInteger(Str_sp str, uint start=0, T_sp end=_Nil<T_O>(), uint radix=10, T_sp junkAllowed=_Nil<T_O>());
     T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1=Fixnum_O::create(0), Fixnum_sp end1=_Nil<Fixnum_O>(), Fixnum_sp start2=Fixnum_O::create(0), Fixnum_sp end2=_Nil<Fixnum_O>() );
 
-    T_sp af_base_string_concatenate(Cons_sp args);
+    T_sp af_base_string_concatenate(List_sp args);
 
 
     inline claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos);};

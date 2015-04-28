@@ -64,7 +64,7 @@ namespace core
 	T_O** callingArgsExtraArgStart() { return &this->_Values[LCC_ARGS_IN_REGISTERS]; }
 
 
-	T_sp setFromConsSkipFirst(Cons_sp values);
+	T_sp setFromConsSkipFirst(List_sp values);
 
 //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
 	void setSize(size_t sz) { this->_Size = sz; };
@@ -80,7 +80,7 @@ namespace core
         }
 
 	/*! Return a Cons of elements 1 up to but not including iend */
-	Cons_sp asCons(int iend) const;
+	List_sp asCons(int iend) const;
 
 #if 0
 	void saveToVec0(T_mv& result, gctools::Vec0<core::T_sp>& vec)
@@ -139,7 +139,7 @@ namespace core
 };
 
 
-extern core::T_mv ValuesFromCons(core::Cons_sp vals);
+extern core::T_mv ValuesFromCons(core::List_sp vals);
 
     template <class T0,class T1,class T2,class T3, class T4, class T5,class T6,class T7,class T8,class T9>
     static gctools::multiple_values<T0> Values(const gctools::smart_ptr<T0>& v0,

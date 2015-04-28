@@ -61,7 +61,7 @@ namespace core
     private:
 	int	_RefCount;
     public:
-	static SNode_sp create(T_sp kind, Cons_sp plist, Vector_sp data );
+	static SNode_sp create(T_sp kind, List_sp plist, Vector_sp data );
 	static SNode_sp createBranchSNode(Symbol_sp kind);
 	static SNode_sp makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap);
     public:
@@ -74,7 +74,7 @@ namespace core
 	bool saving() const { return !this->loading(); };
 	bool loading() const;
 	virtual T_sp object() const {SUBIMP();};
-	virtual Cons_sp keys() const {SUBIMP();};
+	virtual List_sp keys() const {SUBIMP();};
 	/*! Make the appropriate kind of SNode for the type of value */
     public:
 	void incRefCount() { this->_RefCount++;};
@@ -93,7 +93,7 @@ namespace core
 	}
 	virtual Symbol_sp getKind() const {SUBIMP();};
 	virtual void loadVectorSNodes(gctools::Vec0<T_sp>& vec) const {SUBIMP();};
-	virtual Cons_sp getAttributes() const {SUBIMP();};
+	virtual List_sp getAttributes() const {SUBIMP();};
 	virtual void addAttributeSNode(Symbol_sp name, SNode_sp node) {SUBIMP();};
 	virtual void addAttribute(Symbol_sp name, T_sp val) {SUBIMP();};
 	virtual T_sp getUniqueId() const { return _Nil<T_O>();};
@@ -111,7 +111,7 @@ namespace core
     public: // saving
 	virtual void setKind(Symbol_sp kind) {SUBIMP();};
 	virtual void setVectorSNodesUnsafe(Vector_sp vec) {SUBIMP();};
-	virtual void setAttributesUnsafe(Cons_sp plist) {SUBIMP();};
+	virtual void setAttributesUnsafe(List_sp plist) {SUBIMP();};
 
 	virtual void saveVector(gctools::Vec0<T_sp> const& vec) {SUBIMP();};
 	virtual void pushVectorSNode(SNode_sp obj) {SUBIMP();};
@@ -436,7 +436,7 @@ namespace core
 		typename map<string,pType>::iterator oi;
 		for ( oi=v.begin(); oi!=v.end(); oi++ ) 
 		{
-		    Cons_sp pair = Cons_O::create(str_create(oi->first),Integer_O::create(oi->second));
+		    List_sp pair = Cons_O::create(str_create(oi->first),Integer_O::create(oi->second));
 		    this->pushVector(pair);
 		}
 	    } else { _BLOCK_TRACE("Loading");
@@ -498,14 +498,14 @@ namespace core
 	virtual bool leafSNodeP() { return true;};
 	Symbol_sp getKind() const { this->noAttributes(__FUNCTION__);UNREACHABLE();};
 	virtual void addAttribute(Symbol_sp name, T_sp val) {this->noAttributes(__FUNCTION__);};
-	Cons_sp getAttributes() const { this->noAttributes(__FUNCTION__); UNREACHABLE();};
+	List_sp getAttributes() const { this->noAttributes(__FUNCTION__); UNREACHABLE();};
 	virtual T_sp getAttribute(Symbol_sp name,T_sp defaultValue) const {this->noAttributes(__FUNCTION__);UNREACHABLE();};
 	T_sp object() const { return this->_Object;};
-	Cons_sp keys() const {return _Nil<Cons_O>();};
+	List_sp keys() const {return _Nil<Cons_O>();};
 
 	string __repr__() const;
 	void setKind(Symbol_sp kind) { SIMPLE_ERROR(BF("leaf-snode does not have kind"));};
-	void setAttributesUnsafe(Cons_sp plist) { SIMPLE_ERROR(BF("leaf-snode does not have attributes"));};
+	void setAttributesUnsafe(List_sp plist) { SIMPLE_ERROR(BF("leaf-snode does not have attributes"));};
 	explicit LeafSNode_O() : _Object(_Nil<T_O>()) {};
 	virtual ~LeafSNode_O() {};
 
@@ -522,18 +522,18 @@ namespace core
     GCPRIVATE:
 	Symbol_sp 			_Kind;
 	/*! PLIST of keyword symbols to SNode_sp */
-	Cons_sp 			_SNodePList;
+	List_sp 			_SNodePList;
 	/*! Vector of SNode_sp(s) */
 	Vector_sp			_VectorSNodes;
     public: // Simple default ctor/dtor
 	BranchSNode_O() : _Kind(_Nil<Symbol_O>()), _SNodePList(_Nil<Cons_O>()), _VectorSNodes(_Nil<Vector_O>()) {};
 	virtual ~BranchSNode_O() {};
     public:
-	static BranchSNode_sp create(Symbol_sp kind, Cons_sp plist, Vector_sp data );
+	static BranchSNode_sp create(Symbol_sp kind, List_sp plist, Vector_sp data );
 	static BranchSNode_sp create();
     public: // ctor/dtor for classes with shared virtual base
 	virtual Symbol_sp getKind() const { return this->_Kind;};
-	virtual Cons_sp getAttributes() const {return this->_SNodePList;};
+	virtual List_sp getAttributes() const {return this->_SNodePList;};
 	SNode_sp getAttributeSNodeOrError(Symbol_sp name) const;
 	SNode_sp getAttributeSNode(Symbol_sp name, SNode_sp defValue) const;
 	virtual T_sp getAttribute(Symbol_sp name,T_sp defaultValue) const;
@@ -541,7 +541,7 @@ namespace core
 	virtual void setVectorSNodesUnsafe(Vector_sp vec) {this->_VectorSNodes = vec;};
 	virtual Vector_sp getVectorSNodes() const { return this->_VectorSNodes;};
 	virtual T_sp object() const;
-	Cons_sp keys() const;
+	List_sp keys() const;
 
 	virtual T_sp getUniqueId() const;
 	virtual SNode_sp childWithUniqueId(Symbol_sp uid) const;
@@ -551,7 +551,7 @@ namespace core
 
     public:
 	virtual void setKind(Symbol_sp kind) { this->_Kind = kind;};
-	virtual void setAttributesUnsafe(Cons_sp plist) {this->_SNodePList = plist;};
+	virtual void setAttributesUnsafe(List_sp plist) {this->_SNodePList = plist;};
 	virtual void saveVector(gctools::Vec0<T_sp> const& vec);
 	virtual void pushVectorSNode(SNode_sp node);
 	virtual void pushVector(T_sp obj);
@@ -631,9 +631,9 @@ namespace core
 
 	virtual bool contains(Symbol_sp sym);
 	virtual T_sp get(Symbol_sp sym);
-	virtual Cons_sp getContents();
+	virtual List_sp getContents();
 
-	Cons_sp keys() const;
+	List_sp keys() const;
 
         LoadArchive_O() : _ObjectForSNode(_Nil<HashTable_O>()), _NodesToFinalize(_Nil<HashTable_O>()) {};
     };

@@ -339,7 +339,7 @@ namespace core
 #define ARGS_Path_O_parts "(self)"
 #define DECL_Path_O_parts ""
 #define DOCS_Path_O_parts "Returns a list of path parts as strings"
-    Cons_sp Path_O::parts() const
+    List_sp Path_O::parts() const
     {_G();
 	bf::path::iterator it;
 	ql::list l(_lisp);

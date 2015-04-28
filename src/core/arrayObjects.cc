@@ -135,16 +135,16 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
 
 
 
-    T_sp ArrayObjects_O::aref(Cons_sp indices) const
+    T_sp ArrayObjects_O::aref(List_sp indices) const
     {_OF();
 	LOG(BF("indices[%s]")%_rep_(indices) );
 	int index = this->index(indices);
 	return((this->_Values[index]));
     }
 
-    T_sp ArrayObjects_O::setf_aref(Cons_sp indices_val)
+    T_sp ArrayObjects_O::setf_aref(List_sp indices_val)
     {_OF();
-	Cons_sp val_cons;
+	List_sp val_cons;
 	LongLongInt index = this->index_val(indices_val,true,val_cons);
 	this->_Values[index] = oCar(val_cons);
 	return((oCar(val_cons)));
@@ -206,7 +206,7 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
     }
 
 
-    LongLongInt ArrayObjects_O::setDimensions(Cons_sp dim,T_sp initialElement)
+    LongLongInt ArrayObjects_O::setDimensions(List_sp dim,T_sp initialElement)
     {_OF();
 	LongLongInt elements = 1;
 	this->_Dimensions.resize(cl_length(dim));

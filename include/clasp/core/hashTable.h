@@ -90,7 +90,7 @@ namespace core
 	uint resizeEmptyTable(uint sz);
 	uint calculateHashTableCount() const;
         /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
-	Cons_sp rehash(bool expandTable, T_sp findKey );
+	List_sp rehash(bool expandTable, T_sp findKey );
 	
     public: // Functions here
         virtual bool equalp(T_sp other) const;
@@ -112,16 +112,16 @@ namespace core
 	virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
         /*! I'm not sure I need this and tableRef */
-        Cons_sp bucketsFind(T_sp key) const;
+        List_sp bucketsFind(T_sp key) const;
         /*! I'm not sure I need this and bucketsFind */
-        Cons_sp tableRef(T_sp key);
-	Cons_sp findAssoc(uint index, T_sp searchKey) const;
+        List_sp tableRef(T_sp key);
+	List_sp findAssoc(uint index, T_sp searchKey) const;
 
         /*! Return true if the key is within the hash table */
         bool contains(T_sp key);
 
         /*! Return the key/value pair in a CONS if found or NIL if not */
-        Cons_sp find(T_sp key);
+        List_sp find(T_sp key);
 
 	T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>() ) ;
 	int hashIndex(T_sp key) const;
@@ -148,7 +148,7 @@ namespace core
 	/*! Return the number of entries in the HashTable Vector0 */
 	int hashTableNumberOfHashes() const;
 	/*! Return the start of the alist in the HashTable Vector0 at hash value */
-	Cons_sp hashTableAlistAtHash(int hash) const;
+	List_sp hashTableAlistAtHash(int hash) const;
 
         string keysAsString();
     };

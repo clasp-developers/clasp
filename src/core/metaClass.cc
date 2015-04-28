@@ -200,14 +200,14 @@ namespace core
 
 
 
-    void Class_O::inheritDefaultAllocator(Cons_sp superclasses)
+    void Class_O::inheritDefaultAllocator(List_sp superclasses)
     {
         if ( this->hasCreator() ) {
             // If this class already has an allocator then leave it alone
             return;
         }
         Class_sp aCxxDerivableAncestorClass(_Nil<Class_O>());
-        for ( Cons_sp cur=superclasses; cur.notnilp(); cur=cCdr(cur) ) {
+        for ( List_sp cur=superclasses; cur.notnilp(); cur=cCdr(cur) ) {
             Class_sp aSuperClass = oCar(cur).as<Class_O>();
             if ( aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP() ) {
                 SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
@@ -541,7 +541,7 @@ namespace core {
     }
 
 
-    void Class_O::setInstanceBaseClasses(Cons_sp classes)
+    void Class_O::setInstanceBaseClasses(List_sp classes)
     {_OF();
 	this->instanceSet(REF_DIRECT_SUPERCLASSES,cl_copyList(classes));
 	this->lowLevel_calculateClassPrecedenceList();

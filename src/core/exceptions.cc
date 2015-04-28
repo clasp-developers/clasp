@@ -781,7 +781,7 @@ void FElibc_error(const char *msg, int nargs, ...)
     Str_sp smsg = Str_O::create(msg);
     va_list args;
     va_start(args,nargs);
-    Cons_sp l = clasp_grab_rest_args(args,nargs);
+    List_sp l = clasp_grab_rest_args(args,nargs);
     FEerror("~?~%C library explanation: ~A.", 3,
             smsg.raw_(), l.raw_(),
             error.raw_());

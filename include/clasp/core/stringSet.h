@@ -88,10 +88,10 @@ public:
 	void	insertVectorStrings(VectorStrings s);
 	void	insertStringSet(StringSet_sp ss);
 	void	insertStringList(StringList_sp ss);
-	StringSet_sp insertConsStrings(Cons_sp list);
+	StringSet_sp insertConsStrings(List_sp list);
 	void	clear();
 
-	Cons_sp	asCons() const;
+	List_sp	asCons() const;
     Vector_sp asVector() const;
 
 	bool	equal(T_sp ss) const;

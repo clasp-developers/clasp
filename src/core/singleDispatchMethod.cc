@@ -159,7 +159,7 @@ namespace core
     SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
 							   Class_sp receiverClass,
 							   LambdaListHandler_sp llh,
-							   Cons_sp declares,
+							   List_sp declares,
 							   Str_sp docstr,
 							   Function_sp body )
     {_G();

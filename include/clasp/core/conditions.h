@@ -108,7 +108,7 @@ namespace core
 namespace core
 {
 
-    T_sp af_makeCondition(T_sp datum, Cons_sp initializers);
+    T_sp af_makeCondition(T_sp datum, List_sp initializers);
 
     string af_conditionMessage(T_sp condition);
 

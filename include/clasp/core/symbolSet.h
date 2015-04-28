@@ -76,7 +76,7 @@ public:
     GCPRIVATE:
 	HashTableEq_sp          _Symbols;
     public:
-	static SymbolSet_sp make(Cons_sp vals);
+	static SymbolSet_sp make(List_sp vals);
         template <class T>
         static SymbolSet_sp createFromKeysOfSymbolMap(const core::SymbolMap<T>& m)
         {
@@ -98,12 +98,12 @@ public:
 	void	insert(Symbol_sp s) { this->_Symbols->setf_gethash(s,s);};
 	void	insertSymbolSet(SymbolSet_sp ss);
 	void	insertSymbolList(SymbolList_sp ss);
-	SymbolSet_sp insertConsSymbols(Cons_sp list);
+	SymbolSet_sp insertConsSymbols(List_sp list);
 	void	insertVectorStrings(const VectorStrings& symbolsAsStrings);
 	void	insertVector(Vector_sp objs);
 	void	clear();
 
-	Cons_sp	asCons();
+	List_sp	asCons();
 
 	bool	equal(T_sp ss) const;
 

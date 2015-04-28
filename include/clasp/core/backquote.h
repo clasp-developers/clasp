@@ -39,7 +39,7 @@ namespace core
     extern T_sp af_backquote_bracket(T_sp ox);
     extern T_sp af_backquote_simplify_args(T_sp x);
     extern T_sp af_backquote_attach_append(T_sp op, T_sp item, T_sp result );
-    extern Cons_sp af_backquote_attach_conses(T_sp items, T_sp result );
+    extern List_sp af_backquote_attach_conses(T_sp items, T_sp result );
 
 
     extern T_sp af_backquote_simplify(T_sp x);

@@ -51,7 +51,7 @@ namespace core
 #define ARGS_af_makeStructure "(type &rest slot_values)"
 #define DECL_af_makeStructure ""
 #define DOCS_af_makeStructure "makeStructure"
-    T_sp af_makeStructure(T_sp type, Cons_sp slot_values)  
+    T_sp af_makeStructure(T_sp type, List_sp slot_values)  
     {_G();
 	if ( type.nilp() )
 	{
@@ -64,8 +64,7 @@ namespace core
 //	       __FILE__, __LINE__, _rep_(type).c_str(), _rep_(slot_values).c_str());
 	    Instance_sp so = Instance_O::allocateInstance(ctype,cl_length(slot_values)).as<Instance_O>();
 	    int idx = 0;
-	    for ( Cons_sp slot=slot_values; !slot.nilp(); slot=cCdr(slot) )
-	    {
+	    for ( auto slot : slot_values ) {
 		so->instanceSet(idx,oCar(slot));
 		++idx;
 	    }
@@ -241,14 +240,13 @@ namespace core
 
     StructureObject_O::~StructureObject_O() {};
 
-    StructureObject_sp StructureObject_O::create(T_sp type, Cons_sp slot_values)
+    StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values)
     {_G();
 	StructureObject_sp co = StructureObject_O::create();
 	co->_Type = type;
 	co->_Slots.resize(cl_length(slot_values));
 	int i=0;
-	for ( Cons_sp cur=slot_values; cur.notnilp(); cur = cCdr(cur), i++ )
-	{
+	for ( auto cur : slot_values ) {
 	    T_sp val = oCar(cur);
 	    co->_Slots[i] = val;
 	}

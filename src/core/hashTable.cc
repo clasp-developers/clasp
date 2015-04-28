@@ -489,7 +489,7 @@ void    core_DebugHashTable(bool don)
 	SUBCLASS_MUST_IMPLEMENT();
     }
 
-    Cons_sp HashTable_O::findAssoc(uint index, T_sp key) const
+    List_sp HashTable_O::findAssoc(uint index, T_sp key) const
     {_OF();
 	List_sp rib = coerce_to_list((*this->_HashTable)[index]);
 	for ( auto cur : rib ) {
@@ -533,7 +533,7 @@ void    core_DebugHashTable(bool don)
 
 
 
-    Cons_sp HashTable_O::bucketsFind(T_sp key) const
+    List_sp HashTable_O::bucketsFind(T_sp key) const
     {
         ASSERT(this->_HashTable);
         uint index = this->sxhashKey(key,cl_length(this->_HashTable), false );
@@ -542,14 +542,14 @@ void    core_DebugHashTable(bool don)
 	    printf("%s:%d  bucketsFind index = %d\n", __FILE__, __LINE__, index);
 	}
 #endif
-        Cons_sp keyValueCons = this->findAssoc(index,key);
+        List_sp keyValueCons = this->findAssoc(index,key);
         return keyValueCons;
     }
 
 
-    Cons_sp HashTable_O::tableRef(T_sp key)
+    List_sp HashTable_O::tableRef(T_sp key)
     {
-        Cons_sp keyValueCons = this->bucketsFind(key);
+	List_sp keyValueCons = this->bucketsFind(key);
         if ( keyValueCons.notnilp() ) return keyValueCons;
 #ifdef USE_MPS
         // Location dependency test if key is stale
@@ -569,7 +569,7 @@ void    core_DebugHashTable(bool don)
     T_mv HashTable_O::gethash(T_sp key,T_sp default_value )
     {_OF();
 	LOG(BF("gethash looking for key[%s]") % _rep_(key) );
-        Cons_sp keyValuePair = this->tableRef(key);
+        List_sp keyValuePair = this->tableRef(key);
 	LOG(BF("Found keyValueCons"));// % keyValueCons->__repr__() ); INFINITE-LOOP
 #ifdef DEBUG_HASH_TABLE
 	if (DebugHashTable) {
@@ -601,9 +601,9 @@ void    core_DebugHashTable(bool don)
     }
 
 
-    Cons_sp HashTable_O::find(T_sp key)
+    List_sp HashTable_O::find(T_sp key)
     {
-        Cons_sp keyValue = this->tableRef(key);
+        List_sp keyValue = this->tableRef(key);
         if ( keyValue.nilp() ) return keyValue;
         if ( oCdr(keyValue).unboundp() ) return _Nil<Cons_O>();
         return keyValue;
@@ -611,7 +611,7 @@ void    core_DebugHashTable(bool don)
 
     bool HashTable_O::contains(T_sp key)
     {
-        Cons_sp keyValue = this->find(key);
+        List_sp keyValue = this->find(key);
         if ( keyValue.nilp() ) return false;
         return true;
     }
@@ -621,9 +621,9 @@ void    core_DebugHashTable(bool don)
 #define DOCS_HashTable_O_remhash "setf into the hash-table"
     bool HashTable_O::remhash(T_sp key)
     {_OF();
-        Cons_sp keyValuePair = this->tableRef(key);
+        List_sp keyValuePair = this->tableRef(key);
         if ( keyValuePair.nilp() || oCdr(keyValuePair).unboundp() ) return false;
-        keyValuePair->setOCdr(_Unbound<T_O>());
+        keyValuePair.asCons()->setOCdr(_Unbound<T_O>());
         return true;
     }
 
@@ -641,7 +641,7 @@ void    core_DebugHashTable(bool don)
 	    printf("%s:%d hash_table_setf_gethash hashTable=%s  key=%s\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str(), _rep_(key).c_str());
 	}
 #endif
-        Cons_sp keyValuePair = this->tableRef(key);
+        List_sp keyValuePair = this->tableRef(key);
         if ( keyValuePair.nilp() ) {
             uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /*Will add key*/);
             Cons_sp newKeyValue = Cons_O::create(key,value);
@@ -652,10 +652,10 @@ void    core_DebugHashTable(bool don)
             ++(this->_HashTableCount);
         } else if ( oCdr(keyValuePair).unboundp() )
         {
-            keyValuePair->setOCdr(value);
+            keyValuePair.asCons()->setOCdr(value);
             ++(this->_HashTableCount);
         } else {
-            keyValuePair->setOCdr(value);
+            keyValuePair.asCons()->setOCdr(value);
         }
         if ( this->_HashTableCount > this->_RehashThreshold*cl_length(this->_HashTable) )
         {
@@ -665,7 +665,7 @@ void    core_DebugHashTable(bool don)
         return value;
     }
 
-    Cons_sp HashTable_O::rehash(bool expandTable, T_sp findKey )
+    List_sp HashTable_O::rehash(bool expandTable, T_sp findKey )
     {_OF();
 //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
 	ASSERTF(!this->_RehashSize->zerop(),BF("RehashSize is zero - it shouldn't be"));
@@ -883,7 +883,7 @@ void    core_DebugHashTable(bool don)
 	return cl_length(this->_HashTable);
     }
 
-    Cons_sp HashTable_O::hashTableAlistAtHash(int hash) const
+    List_sp HashTable_O::hashTableAlistAtHash(int hash) const
     {
 	ASSERTF(hash >=0 && hash < cl_length(this->_HashTable),BF("Illegal hash value[%d] must between [0,%d)") % hash % cl_length(this->_HashTable));
 	return this->_HashTable->operator[](hash).as_or_nil<Cons_O>();

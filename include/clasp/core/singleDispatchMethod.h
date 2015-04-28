@@ -59,7 +59,7 @@ namespace core
 //	BuiltIn_sp	_method_builtin;
 	/*! This is the LambdaListHandler for the Builtin method */
 	LambdaListHandler_sp	_argument_handler;
-	Cons_sp 	_declares;
+	List_sp 	_declares;
 	/*! Store the docstring */
 	Str_sp		_docstring;
     public: // creation function
@@ -67,7 +67,7 @@ namespace core
 	static SingleDispatchMethod_sp create(Symbol_sp name,
 					      Class_sp receiver,
 					      LambdaListHandler_sp lambda_list_handler,
-					      Cons_sp declares, Str_sp docstr,
+					      List_sp declares, Str_sp docstr,
 					      Function_sp body );
     public: // Functions here
 
@@ -79,7 +79,7 @@ namespace core
         Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class;};
         Function_sp singleDispatchMethodCode() const { return this->code;};
         LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler;};
-        Cons_sp singleDispatchMethodDeclares() const { return this->_declares;};
+        List_sp singleDispatchMethodDeclares() const { return this->_declares;};
         Str_sp singleDispatchMethodDocstring() const { return this->_docstring;};
 
     }; // SingleDispatchMethod class

@@ -49,7 +49,7 @@ THE SOFTWARE.
 namespace core
 {
 
-    extern Cons_sp python_convertArgumentsToCons(PyObject* args, PyObject* keywords, Lisp_sp lisp);
+    extern List_sp python_convertArgumentsToCons(PyObject* args, PyObject* keywords, Lisp_sp lisp);
     extern PyObject* python_convertObject(core::T_sp obj,Lisp_sp lisp);
 };
 
@@ -73,7 +73,7 @@ namespace boost
 		    PyObject* operator()(PyObject* args, PyObject* keywords)
 		    {
 			{_G();
-			    core::Cons_sp cargs = core::python_convertArgumentsToCons(args,keywords,_lisp);
+			    core::List_sp cargs = core::python_convertArgumentsToCons(args,keywords,_lisp);
 			    IMPLEMENT_MEF(BF("Handle new ActivationFrame/Environment stuff"));
 #if 0
 			    LOG(BF("dispatching function with arguments: %s") % cargs->__repr__() );
@@ -98,7 +98,7 @@ namespace boost
 	{_G()
 	    core::Symbol_sp funcSymbol = lisp->internWithPackageName(packageName,functionName);
 	    core::FunctionPtr* func = new core::FunctionPtr(f);
-	    core::Cons_sp ll = lisp_parse_arguments(lisp,packageName,args);
+	    core::List_sp ll = lisp_parse_arguments(lisp,packageName,args);
 	    core::LambdaListHandler_sp llh = lisp_function_lambda_list_handler(_lisp,ll,_Nil<Cons_O>(), _Nil<Environment_O>());
 #if 0
 	    core::FunctionPrimitive_sp fp = core::FunctionPrimitive_O::create(funcSymbol,func,

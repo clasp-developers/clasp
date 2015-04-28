@@ -66,7 +66,7 @@ namespace core {
 	T_sp 		_Type;
         gctools::Vec0<T_sp>	_Slots;
     public:
-	static StructureObject_sp create(T_sp type, Cons_sp slotNames);
+	static StructureObject_sp create(T_sp type, List_sp slotNames);
     public:
 
 	T_sp structureRef(int index) const;
@@ -101,7 +101,7 @@ namespace core {
     };
 
 
-    T_sp af_makeStructure(T_sp type, Cons_sp slot_values);
+    T_sp af_makeStructure(T_sp type, List_sp slot_values);
     T_sp af_copyStructure(T_sp arg);
     T_sp af_structureRef(T_sp obj, Symbol_sp type, int idx);
     T_sp af_structureSet(T_sp obj, Symbol_sp type, int idx, T_sp val);

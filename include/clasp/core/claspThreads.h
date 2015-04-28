@@ -33,7 +33,7 @@ struct BrclThread {
 	DynamicBindingStack	_Bindings;
 
 	/*! Store Catch info */
-	Cons_sp 	_CatchInfo;
+	List_sp 	_CatchInfo;
  
 	/*! Generic functions method cache */
 	Cache* 			_MethodCachePtr;

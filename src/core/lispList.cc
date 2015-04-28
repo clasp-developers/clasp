@@ -245,7 +245,7 @@ namespace core
 #define ARGS_af_butlast "(list &optional (n 1))"
 #define DECL_af_butlast ""
 #define DOCS_af_butlast "butlast"
-    T_mv af_butlast(T_sp list, Integer_sp n)
+    T_sp af_butlast(T_sp list, Integer_sp n)
     {_G();
 	int ni = n->as_int();
 	int keepi = cl_length(list)-ni;
@@ -256,7 +256,7 @@ namespace core
 	    res << oCar(cur);
 	    cur = cCdr(cur);
 	}
-	return(Values(res.cons()));
+	return (res.cons());
     };
 
 
@@ -344,11 +344,11 @@ namespace core
 #define ARGS_cl_nconc "(&rest lists)"
 #define DECL_cl_nconc ""
 #define DOCS_cl_nconc "tnconc"
-    T_sp cl_nconc(Cons_sp lists)
+    T_sp cl_nconc(List_sp lists)
     {_G();
         T_sp head = _Nil<T_O>();
         T_sp tail = _Nil<T_O>();
-        for ( Cons_sp cur = lists; cur.notnilp(); cur=cCdr(cur) ) {
+        for ( auto cur : lists ) {
             T_sp new_tail;
             T_sp other = oCar(cur);
             if (other.nilp()) {

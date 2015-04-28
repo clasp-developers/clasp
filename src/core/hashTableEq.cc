@@ -70,7 +70,7 @@ namespace core
     }
 
 
-    HashTableEq_sp HashTableEq_O::createFromPList(Cons_sp plist, Symbol_sp nilTerminatedValidKeywords[] )
+    HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTerminatedValidKeywords[] )
     {
         HashTableEq_sp ht = HashTableEq_O::create_default();
         while ( plist.notnilp() ) {

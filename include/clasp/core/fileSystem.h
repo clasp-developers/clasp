@@ -114,9 +114,9 @@ public:
 	Path_sp path_append(string const& pp);
 
 	/*! Break the path up into parts. */
-	Cons_sp parts() const;
+	List_sp parts() const;
 
-	Cons_sp	glob(const string& globTemplate);
+	List_sp	glob(const string& globTemplate);
 
 		/*! Return true if the file pointed to by this path exists */
 	bool	exists();

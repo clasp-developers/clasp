@@ -98,7 +98,7 @@ namespace core
 	    clasp_write_char('(',stream);
 	    write_ugly_object(bsnode->_Kind,stream);
 	    clasp_write_string(" (",stream);
-	    for ( Cons_sp cur=bsnode->_SNodePList; cur.notnilp(); cur=cCddr(cur) )
+	    for ( List_sp cur=bsnode->_SNodePList; cur.notnilp(); cur=cCddr(cur) )
 	    {
 		write_ugly_object(oCar(cur),stream);
 		clasp_write_char(' ',stream);

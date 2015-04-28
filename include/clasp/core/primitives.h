@@ -38,7 +38,7 @@ namespace core
 {
 
     extern T_sp cl_macroFunction(Symbol_sp symbol, T_sp env);
-    extern Cons_mv af_separatePairList(Cons_sp listOfPairs);
+    extern Cons_mv af_separatePairList(List_sp listOfPairs);
 
     extern Symbol_mv af_functionBlockName(T_sp functionName);
 
@@ -48,7 +48,7 @@ namespace core
 
     T_sp cl_read(T_sp input_stream_designator, T_sp eof_error_p=_Nil<T_O>(), T_sp eof_value=_Nil<T_O>(), T_sp recursive_p=_Nil<T_O>());
 
-    extern void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, Cons_sp declares, Str_sp docstring, Function_sp body );
+    extern void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, Str_sp docstring, Function_sp body );
 
 
 #if 0
@@ -62,12 +62,12 @@ namespace core
 #endif
 
     T_sp af_type_of(T_sp x);
-    T_sp af_notany(T_sp predicate, Cons_sp sequences);
-    T_sp af_every(T_sp predicate, Cons_sp sequences);
+    T_sp af_notany(T_sp predicate, List_sp sequences);
+    T_sp af_every(T_sp predicate, List_sp sequences);
 
-    T_sp cl_mapcar(T_sp func_desig, Cons_sp lists);
+    T_sp cl_mapcar(T_sp func_desig, List_sp lists);
 
-    T_sp af_append(Cons_sp lists);
+    T_sp af_append(List_sp lists);
 
     
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
@@ -120,9 +120,9 @@ namespace core
     {
         FRIEND_GC_SCANNER();
     public://private
-	Cons_sp	_Cur;
+	List_sp	_Cur;
     public:
-	ConsStepper(Cons_sp first) : _Cur(first) {};
+	ConsStepper(List_sp first) : _Cur(first) {};
 	virtual bool advance() { this->_Cur = cCdr(this->_Cur); return this->_Cur.nilp(); };
 	virtual T_sp element() const { return oCar(this->_Cur);};
     };
@@ -144,10 +144,10 @@ namespace core
 	bool				_AtEnd;
     public:
 	ListOfSequenceSteppers() {};
-	ListOfSequenceSteppers(Cons_sp sequences);
+	ListOfSequenceSteppers(List_sp sequences);
 	virtual ~ListOfSequenceSteppers();
 	bool atEnd() const { return this->_AtEnd;};
-//	Cons_sp makeListFromCurrentSteppers() const;
+//	List_sp makeListFromCurrentSteppers() const;
 	void fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const;
 	/* Advance all of the steppers - return false if the end is hit otherwise true */
 	bool advanceSteppers();
@@ -158,8 +158,8 @@ namespace core
 
 
 namespace core {
-    T_sp cl_mapc(T_sp op, Cons_sp lists);
-    T_sp cl_mapcar(T_sp op, Cons_sp lists);
+    T_sp cl_mapc(T_sp op, List_sp lists);
+    T_sp cl_mapcar(T_sp op, List_sp lists);
 
 };
 

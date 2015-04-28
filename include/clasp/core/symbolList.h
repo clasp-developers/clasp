@@ -76,7 +76,7 @@ public:
 	void	prepend(Symbol_sp s);
 	void	append(Symbol_sp s);
 	void	appendSymbolList(SymbolList_sp strings);
-	void	appendConsOfStrings(Cons_sp strings);
+	void	appendConsOfStrings(List_sp strings);
 
 	bool	contains(Symbol_sp nm);
 	int	indexOf(Symbol_sp nm);

@@ -24,7 +24,7 @@ namespace translate
 	    } else if ( core::Cons_sp lo = o.asOrNull<core::Cons_O>() ) {
 		_v.resize(lo->length());
 		int i=0;
-		for ( core::Cons_sp cur = lo; cur.notnilp(); cur=cCdr(cur) ) {
+		for ( auto cur : lo ) {
 		    core::Integer_sp io = oCar(cur).as<core::Integer_O>();
 		    _v[i] = io->as_int();
 		    ++i;

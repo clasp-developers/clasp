@@ -82,7 +82,7 @@ namespace core
 #define ARGS_af_quasiquote "(whole env)"
 #define DECL_af_quasiquote ""
 #define DOCS_af_quasiquote "quasiquote"
-    T_mv af_quasiquote(Cons_sp whole, T_sp env)
+    T_mv af_quasiquote(List_sp whole, T_sp env)
     {_G();
 	ASSERT(cl_length(whole)==2);
 	T_sp form = oCadr(whole);
@@ -117,7 +117,7 @@ namespace core
 	}
 	/* Now append the last argument by setting the new lists last element cdr
 	   to the last argument of append */
-	Cons_sp result = list.dot(oCar(appendArg)).cons();
+	List_sp result = list.dot(oCar(appendArg)).cons();
 	return result;
     }
 
@@ -479,7 +479,7 @@ namespace core
 #define ARGS_af_backquote_attach_conses "(items result)"
 #define DECL_af_backquote_attach_conses ""
 #define DOCS_af_backquote_attach_conses "backquote_attach_conses"
-    Cons_sp af_backquote_attach_conses(T_sp items, T_sp result)
+    List_sp af_backquote_attach_conses(T_sp items, T_sp result)
     {_G();
 	if ( af_every(_sym_backquote_null_or_quoted,Cons_O::create(items)).isTrue()
 	     && af_backquote_null_or_quoted(result).isTrue() )

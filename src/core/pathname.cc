@@ -633,7 +633,7 @@ namespace core {
 	} else {
 	    if ( _lisp->pathnameTranslations().notnilp() )
 	    {
-		return _lisp->pathnameTranslations()->assoc(host,_Nil<T_O>(),cl::_sym_string_equal,_Nil<T_O>()).notnilp();
+		return _lisp->pathnameTranslations().asCons()->assoc(host,_Nil<T_O>(),cl::_sym_string_equal,_Nil<T_O>()).notnilp();
 	    }
 	}
 	return false;
@@ -1781,7 +1781,7 @@ namespace core {
         } else {
             // If called before _sym_assoc is setup then invoke assoc directly */
             if (_lisp->pathnameTranslations().notnilp() ) {
-                pair = _lisp->pathnameTranslations()->assoc(host,_Nil<T_O>(),cl::_sym_string_equal,_Nil<T_O>() );
+                pair = _lisp->pathnameTranslations().asCons()->assoc(host,_Nil<T_O>(),cl::_sym_string_equal,_Nil<T_O>() );
             } else {
                 pair = _Nil<Cons_O>();
             }

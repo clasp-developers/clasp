@@ -87,7 +87,7 @@ namespace core
     SMART(Hierarchy);
     SMART(Environment);
 
-    Cons_sp af_member(T_sp item, T_sp list, T_sp key=_Nil<T_O>(), T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
+    List_sp af_member(T_sp item, T_sp list, T_sp key=_Nil<T_O>(), T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
     void af_invokeInternalDebugger(T_sp condition);
 
 
@@ -200,7 +200,7 @@ namespace core
 #define	FLAG_Exit	8
 
 
-    typedef	T_sp(*PrimFuncPtr)(Cons_sp ,Lisp_sp);
+    typedef	T_sp(*PrimFuncPtr)(List_sp ,Lisp_sp);
 
 
 
@@ -251,7 +251,7 @@ namespace core
 	    DynamicBindingStack 	_Bindings;
             gctools::Vec0<SourceFileInfo_sp>    _SourceFiles;
 	    /*! Store CATCH info */
-	    Cons_sp 			_CatchInfo;
+	    List_sp 			_CatchInfo;
 	    /* The global class table that maps class symbols to classes */
             gctools::Vec0<SymbolClassPair> bootClassTable;
 //	    SymbolDict<Class_O>		_BootClassTable;
@@ -259,7 +259,7 @@ namespace core
 	      LOAD-TIME-VALUEs and QUOTEd objects using C++ calls at runtime.
 	      Those objects are stored here as a map on the compiled file name. */
 	    HashTableEqual_sp           _LoadTimeValueArrays; // map<string,LoadTimeValues_sp> _LoadTimeValueArrays;
-	    Cons_sp 			_CommandLineArguments;
+	    List_sp 			_CommandLineArguments;
             gctools::Vec0<Package_sp>	_Packages;
 	    /*SymbolMap<Function_O>	        _SetfDefinitions; */
 	    HashTableEq_sp	        _SetfDefinitions;
@@ -286,7 +286,7 @@ namespace core
 	    DoubleFloat_sp 		_RehashSize;
 	    DoubleFloat_sp 		_RehashThreshold;
 	    T_sp 			_NullStream;
-	    Cons_sp 			_PathnameTranslations; /* alist */
+	    List_sp 			_PathnameTranslations; /* alist */
 	    Complex_sp 			_ImaginaryUnit;
 	    Complex_sp 			_ImaginaryUnitNegative;
 	    Ratio_sp 			_PlusHalf;
@@ -313,7 +313,7 @@ namespace core
 	friend class CoreExposer;
 	friend class ConditionHandlerManager;	
 	friend class BootStrapCoreSymbolMap;
-	friend T_sp sp_eval_when( Cons_sp args, T_sp env );
+	friend T_sp sp_eval_when( List_sp args, T_sp env );
 	friend T_sp core_allSourceFiles();
 	template <class oclass> friend void define_base_class(Class_sp co, Class_sp cob, uint& classesUpdated );
 	template <class oclass> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class );
@@ -454,12 +454,12 @@ namespace core
     public:
 	void mapClassNamesAndClasses(KeyValueMapper* mapper);
     public:
-//	Cons_sp catchPushTag(T_sp tag);
-//	void catchUnwindTag(Cons_sp catchStore);
-//	Cons_sp catchFindTag(T_sp tag);
+//	List_sp catchPushTag(T_sp tag);
+//	void catchUnwindTag(List_sp catchStore);
+//	List_sp catchFindTag(T_sp tag);
     public:
-	Cons_sp pathnameTranslations() const { return this->_Roots._PathnameTranslations; };
-	void setPathnameTranslations(Cons_sp pnt) { this->_Roots._PathnameTranslations = pnt;};
+	List_sp pathnameTranslations() const { return this->_Roots._PathnameTranslations; };
+	void setPathnameTranslations(List_sp pnt) { this->_Roots._PathnameTranslations = pnt;};
 	/*! Return the maximum path length for the system */
 	int pathMax() const { return this->_PathMax; };
     public:
@@ -474,7 +474,7 @@ namespace core
 	/*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
 	LoadTimeValues_sp getOrCreateLoadTimeValues(const string& name, int numberOfLoadTimeValues=0, int numberOfLoadTimeSymbols=0);
-	Cons_sp loadTimeValuesIds() const;
+	List_sp loadTimeValuesIds() const;
 	T_sp loadTimeValue(const string& name, int idx);
 	Symbol_sp loadTimeSymbol(const string& name, int idx);
 	LoadTimeValues_sp findLoadTimeValues(const string& name);
@@ -530,7 +530,7 @@ namespace core
 	uint getSingleStepLevel() const { return this->_SingleStepLevel;};
 
     public:
-	Cons_sp allPackagesAsCons() const;
+	List_sp allPackagesAsCons() const;
 
     public:
 	/*! Add a function to trace */
@@ -539,7 +539,7 @@ namespace core
 	void remove_trace(Function_sp func);
 
 	/*! Return a list of functions being traced */
-	Cons_sp trace_functions() const;
+	List_sp trace_functions() const;
 
     public:
 	DynamicBindingStack& bindings() { return this->_Roots._Bindings;};
@@ -552,10 +552,10 @@ namespace core
 	/*! Lookup the SetfExpander by symbol - if not found return nil */
 //	SetfExpander_sp lookupSetfExpander(Symbol_sp symbol) const;
     protected:
-	Cons_sp getConditionHandlers();
-	void setConditionHandlers(Cons_sp handlers);
-	Cons_sp getRestartHandlers();
-	void setRestartHandlers(Cons_sp handlers);
+	List_sp getConditionHandlers();
+	void setConditionHandlers(List_sp handlers);
+	List_sp getRestartHandlers();
+	void setRestartHandlers(List_sp handlers);
     public:
 	Bignum_sp bigRegister0() { return this->_Roots._BignumRegister0;};
 	Bignum_sp bigRegister1() { return this->_Roots._BignumRegister1;};
@@ -767,7 +767,7 @@ namespace core
 	void	pushRequireLevel() { this->_RequireLevel++; };
 	void	popRequireLevel() { this->_RequireLevel--; };
 #if 0 // moved condition handlers into the environment
-	void 	pushConditionHandlers(Cons_sp handlers);
+	void 	pushConditionHandlers(List_sp handlers);
 	void	popConditionHandlers();
 #endif
 	/*! Install a package using the newer Exposer idiom */
@@ -798,7 +798,7 @@ namespace core
 	// Environment stuff
 
 	string allLocalNames();
-	Cons_sp allLocalNamesAsCons();
+	List_sp allLocalNamesAsCons();
 
 	/*! The core REPL loop.  Set printResults to true if you want
 	  each eval result to be printed. Return false if (quit) or (exit) was evaluated.
@@ -885,7 +885,7 @@ namespace core
 	Package_sp makePackage(const string& packageName, list<string> const& nicknames, list<string> const& usePackages);
 	bool usePackage(const string& packageName);
 
-	Cons_sp	getBackTrace() const;
+	List_sp	getBackTrace() const;
 	string backTraceAsString(int numcol=50) const;
 
 	Path_sp translateLogicalPathname(T_sp logicalPathName);
@@ -901,12 +901,12 @@ namespace core
 	 */
 	void parseCommandLineArguments(int argc, char * argv[], bool compile);
 
-	Cons_sp getCommandLineArguments() { return this->_Roots._CommandLineArguments; };
+	List_sp getCommandLineArguments() { return this->_Roots._CommandLineArguments; };
 
 	/*! Create a StandardClass and leave the baseClass and instance variable
 	 * definition for later
 	 */
-	StandardClass_sp defineStandardClass(Symbol_sp name, T_sp baseClassesDesignator, Cons_sp slotSpecifier );
+	StandardClass_sp defineStandardClass(Symbol_sp name, T_sp baseClassesDesignator, List_sp slotSpecifier );
 
 	T_sp	createObjectOfClass(T_sp cl);
 	Intrinsic_sp	getIntrinsic(const string& name);
@@ -941,7 +941,7 @@ namespace core
 
 	string errorMessage();
 
-//	void setProgram(Cons_sp p) { this->_Program = p; };
+//	void setProgram(List_sp p) { this->_Program = p; };
 	//!Wipes out namespace and fills it with new values
 	void initializeEnvironment();
 
@@ -1034,7 +1034,7 @@ namespace core
     T_mv cl_macroexpand_1(T_sp form, T_sp env);
     T_mv cl_macroexpand(T_sp form, T_sp env);
 
-    Cons_sp cl_assoc(T_sp item, Cons_sp alist, T_sp key, T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
+    List_sp cl_assoc(T_sp item, List_sp alist, T_sp key, T_sp test=cl::_sym_eq, T_sp test_not=_Nil<T_O>());
 
     Class_mv cl_findClass(Symbol_sp symbol, bool errorp=true, T_sp env=_Nil<T_O>());
     Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env );
@@ -1042,7 +1042,7 @@ namespace core
 
     void af_stackMonitor();
 
-    void cl_error(T_sp err, Cons_sp initializers);
+    void cl_error(T_sp err, List_sp initializers);
 };
 
 

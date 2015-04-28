@@ -341,10 +341,10 @@ namespace core
 #define ARGS_af_base_string_concatenate "(&rest args)"
 #define DECL_af_base_string_concatenate ""
 #define DOCS_af_base_string_concatenate "base_string_concatenate"
-    T_sp af_base_string_concatenate(Cons_sp args)
+    T_sp af_base_string_concatenate(List_sp args)
     {_G();
 	stringstream ss;
-	for ( Cons_sp cur = args; cur.notnilp(); cur = cCdr(cur) )
+	for ( List_sp cur = args; cur.notnilp(); cur = cCdr(cur) )
 	{
 	    Str_sp str = coerce::stringDesignator(oCar(cur));
 	    ss << str->get();
@@ -704,14 +704,14 @@ namespace core
 
 
 
-    T_sp Str_O::aref(Cons_sp indices) const
+    T_sp Str_O::aref(List_sp indices) const
     {_OF();
 	ASSERTF(cl_length(indices)==1,BF("Illegal index for string: %s") % _rep_(indices) );
 	int index = oCar(indices).as<Fixnum_O>()->get();
 	return this->elt(index);
     }
 
-    T_sp Str_O::setf_aref(Cons_sp indices_val)
+    T_sp Str_O::setf_aref(List_sp indices_val)
     {_OF();
 	ASSERTF(cl_length(indices_val)==2,BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val) );
 	int index = oCar(indices_val).as<Fixnum_O>()->get();
@@ -797,7 +797,7 @@ namespace core
 	return this->Base::operator<=(obj);
     }
 
-    Cons_sp	Str_O::splitAtWhiteSpace()
+    List_sp	Str_O::splitAtWhiteSpace()
     {
 	vector<string> parts = core::split(this->get()," \n\t");
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
@@ -811,7 +811,7 @@ namespace core
 	return cCdr(first);
     }
 
-    Cons_sp	Str_O::split(const string& chars)
+    List_sp	Str_O::split(const string& chars)
     {
 	TESTING();
 	vector<string> parts = core::split(this->get(),chars);

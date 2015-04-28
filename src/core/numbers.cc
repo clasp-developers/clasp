@@ -127,7 +127,7 @@ namespace core
 #define ARGS_cl_min "(min &rest nums)"
 #define DECL_cl_min ""
 #define DOCS_cl_min "min"
-    Real_sp cl_min(Real_sp min, Cons_sp nums)
+    Real_sp cl_min(Real_sp min, List_sp nums)
     {_G();
 	/* INV: type check occurs in brcl_number_compare() for the rest of
 	   numbers, but for the first argument it happens in brcl_zerop(). */
@@ -173,7 +173,7 @@ namespace core
 #define ARGS_cl_logand "(&rest integers)"
 #define DECL_cl_logand ""
 #define DOCS_cl_logand "logand"
-    Integer_sp cl_logand(Cons_sp integers)
+    Integer_sp cl_logand(List_sp integers)
     {_G();
 	if ( integers.nilp() ) return Integer_O::create(-1);
 	mpz_class acc = oCar(integers).asNotNil<Integer_O>()->as_mpz();
@@ -191,13 +191,13 @@ namespace core
 #define ARGS_cl_logior "(&rest integers)"
 #define DECL_cl_logior ""
 #define DOCS_cl_logior "logior"
-    Integer_sp cl_logior(Cons_sp integers)
+    Integer_sp cl_logior(List_sp integers)
     {_G();
 	if ( integers.nilp() ) return Integer_O::create(0);
 	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
 	mpz_class acc = ifirst->as_mpz();
-	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
-	{
+	List_sp rints = cCdr(integers);
+	for ( auto cur : rints ) {
 	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
 	    mpz_class temp;
 	    mpz_ior(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());

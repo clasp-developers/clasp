@@ -1338,7 +1338,7 @@ namespace llvmo
 #define ARGS_af_module_get_function_list "(module)"
 #define DECL_af_module_get_function_list ""
 #define DOCS_af_module_get_function_list "module_get_function_list"
-    core::Cons_sp af_module_get_function_list(Module_sp module)
+    core::List_sp af_module_get_function_list(Module_sp module)
     {_G();
 	ql::list fl(_lisp);
 	llvm::Module::FunctionListType& functionList = module->wrappedPtr()->getFunctionList();
@@ -1487,7 +1487,7 @@ namespace llvmo
 
 
 
-    core::Cons_sp Module_O::getGlobalList() const
+    core::List_sp Module_O::getGlobalList() const
     {_G();
 	ql::list globals(_lisp);
 	llvm::Module* m = this->wrappedPtr();
@@ -1516,7 +1516,7 @@ namespace llvmo
     }
 
 
-    core::Cons_sp ExecutionEngine_O::dependentModuleNames() const
+    core::List_sp ExecutionEngine_O::dependentModuleNames() const
     {_G();
 	ql::list l;
         this->_DependentModules->mapHash( [&l] (core::T_sp key, core::T_sp val) {
@@ -3841,7 +3841,7 @@ namespace llvmo
 	return funcsp;
     };
 
-    core::Cons_sp Function_O::getArgumentList()
+    core::List_sp Function_O::getArgumentList()
     {_G();
 	ql::list l(_lisp);
 	llvm::Function::ArgumentListType& args = this->wrappedPtr()->getArgumentList();

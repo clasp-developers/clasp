@@ -107,7 +107,7 @@ namespace core
 	};
 
 #if 0
-	Cons_sp asCons(Lisp_sp e)
+	List_sp asCons(Lisp_sp e)
 	{
 	    Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
 	    Cons_sp cur = first;

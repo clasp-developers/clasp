@@ -322,7 +322,7 @@ namespace core
 	SIMPLE_ERROR(BF("Closure does not support docstring"));
     }
 
-    Cons_sp Closure::declares() const
+    List_sp Closure::declares() const
     {
 	SIMPLE_ERROR(BF("Closure does not support declares"));
     }
@@ -419,7 +419,7 @@ namespace core
 
 
 
-    Cons_sp clasp_grab_rest_args( va_list args, int nargs)
+    List_sp clasp_grab_rest_args( va_list args, int nargs)
     {
         ql::list l;
         while (nargs) {
@@ -944,7 +944,7 @@ namespace core
 	_lisp->addClass(classSymbol,cb,base1ClassSymbol,base2ClassSymbol);
     }
 
-    Cons_sp lisp_parse_arguments(const string& packageName, const string& args)
+    List_sp lisp_parse_arguments(const string& packageName, const string& args)
     {_G();
 	if ( args == "" ) return _Nil<Cons_O>();
 	Package_sp pkg = _lisp->findPackage(packageName);
@@ -958,7 +958,7 @@ namespace core
     }
 
 
-    Cons_sp lisp_parse_declares(const string& packageName, const string& declarestring)
+    List_sp lisp_parse_declares(const string& packageName, const string& declarestring)
     {_G();
 	if ( declarestring == "" ) return _Nil<Cons_O>();
 	Package_sp pkg = _lisp->findPackage(packageName);
@@ -998,7 +998,7 @@ namespace core
             printf("%s:%d - Caught lisp_defineSingleDispatchMethod for %s\n", __FILE__, __LINE__, sym->symbolName()->get().c_str() );
 	}
 #endif
-	Cons_sp ldeclares = lisp_parse_declares(className->getPackage()->getName(),declares);
+	List_sp ldeclares = lisp_parse_declares(className->getPackage()->getName(),declares);
 	// NOTE: We are compiling the llhandler in the package of the class - not the package of the
 	// method name  -- sometimes the method name will belong to another class (ie: core:--init--)
 	LambdaListHandler_sp llhandler;
@@ -1009,7 +1009,7 @@ namespace core
 	    llhandler = LambdaListHandler_O::create(number_of_required_arguments,pureOutIndices);
 	} else if ( arguments != "" )
 	{
-	    Cons_sp llraw = lisp_parse_arguments(className->getPackage()->getName(),arguments);
+	    List_sp llraw = lisp_parse_arguments(className->getPackage()->getName(),arguments);
 	    Cons_sp llproc;
 	    /*-----*/
 	    MULTIPLE_VALUES_CONTEXT();
@@ -1116,7 +1116,7 @@ namespace core
 	    printf( "%s:%d - The symbol[%s] has already been assigned a function and will not be redefined\n", __FILE__, __LINE__, _rep_(sym).c_str() );
 	    return;
 	}
-	Cons_sp ldeclares = lisp_parse_declares(packageName,declarestring);
+	List_sp ldeclares = lisp_parse_declares(packageName,declarestring);
 	LambdaListHandler_sp llh;
 	if ( (arguments == "" || arguments=="()") && number_of_required_arguments >= 0)
 	{
@@ -1131,7 +1131,7 @@ namespace core
 #endif
 	} else
 	{
-	    Cons_sp ll = lisp_parse_arguments(packageName,arguments);
+	    List_sp ll = lisp_parse_arguments(packageName,arguments);
 	    llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>(), skipIndices);
 	}
         fc->finishSetup(llh,kw::_sym_function);
@@ -1158,8 +1158,8 @@ namespace core
 	    printf( "%s:%d - The symbol[%s] has already been assigned a function and will not be redefined\n", __FILE__, __LINE__, _rep_(sym).c_str() );
 	    return;
 	}
-	Cons_sp ll = lisp_parse_arguments(packageName,arguments);
-	Cons_sp ldeclares = lisp_parse_declares(packageName,declarestring);
+	List_sp ll = lisp_parse_arguments(packageName,arguments);
+	List_sp ldeclares = lisp_parse_declares(packageName,declarestring);
 	LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>());
         f->finishSetup(llh,kw::_sym_macro);
 	Function_sp func = Function_O::make(f);

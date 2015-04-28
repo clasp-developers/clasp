@@ -55,7 +55,7 @@ struct lisp_SourceParam
     Lisp_sp _lisp;
 
     // The resulting s-expression code is stored here
-    Cons_sp		expression;
+    List_sp		expression;
 
     // name of the file that we are compiling
     string			fileName;
@@ -219,7 +219,7 @@ public:
     T_sp parseString(const string& chars, bool sawEscape );
 
 
-    Cons_sp readDelimitedList( char c, bool recursiveP = false);
+    List_sp readDelimitedList( char c, bool recursiveP = false);
     T_sp primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP=false);
 
 };

@@ -78,7 +78,7 @@ namespace core
 #endif
     
 
-    SingleDispatchEffectiveMethodFunction_sp SingleDispatchEffectiveMethodFunction_O::create(Cons_sp methods, Lisp_sp lisp)
+    SingleDispatchEffectiveMethodFunction_sp SingleDispatchEffectiveMethodFunction_O::create(List_sp methods)
     {_G();
         GC_ALLOCATE(SingleDispatchEffectiveMethodFunction_O,emf );
 	    emf->_Methods = methods;
@@ -95,8 +95,7 @@ namespace core
     string SingleDispatchEffectiveMethodFunction_O::__repr__() const
     {_OF();
 	stringstream ss;
-	for (Cons_sp cur=this->_Methods; cur.notnilp(); cur=cCdr(cur))
-	{
+	for ( auto cur : this->_Methods ) {
 	    ss << "method has Receiver class[" << _rep_(oCar(cur).as<SingleDispatchMethod_O>()->receiver_class()) << "]" << std::endl;
 	}
 	return ss.str();

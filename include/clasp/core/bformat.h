@@ -33,8 +33,8 @@ THE SOFTWARE.
 namespace core
 {
 
-    T_sp af_format(T_sp dest, T_sp control, Cons_sp args );
-    T_sp af_bformat(T_sp dest, const string& control, Cons_sp args );
+    T_sp af_format(T_sp dest, T_sp control, List_sp args );
+    T_sp af_bformat(T_sp dest, const string& control, List_sp args );
 
 
 

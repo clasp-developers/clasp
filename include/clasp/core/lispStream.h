@@ -314,7 +314,7 @@ namespace core
         T_sp       _Format;
         int             _ByteSize;
         int             _Flags; // bitmap of flags
-        Cons_sp         _ByteStack; // For unget in input streams
+        List_sp         _ByteStack; // For unget in input streams
         cl_eformat_encoder _Encoder;
         cl_eformat_decoder _Decoder;
         Fixnum          _LastCode[2];

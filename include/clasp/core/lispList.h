@@ -54,7 +54,7 @@ namespace core
         virtual T_sp revappend(T_sp tail) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
         virtual T_sp nreconc(T_sp tail) {_OF(); SUBCLASS_MUST_IMPLEMENT();};
 
-        virtual Cons_sp copyList() const {_G(); SUBCLASS_MUST_IMPLEMENT();};
+        virtual List_sp copyList() const {_G(); SUBCLASS_MUST_IMPLEMENT();};
         virtual T_sp onth(int idx) const {_G(); SUBCLASS_MUST_IMPLEMENT();};
         virtual T_sp onthcdr(int idx) const { _G(); SUBCLASS_MUST_IMPLEMENT();};
 
@@ -75,7 +75,7 @@ namespace core {
 
     T_sp cl_copyList(T_sp arg);
 
-    T_sp cl_nconc(Cons_sp rest);
+    T_sp cl_nconc(List_sp rest);
 
     /*! Replace the last CONS of l with y and return l,  if l was nil return y */
     T_sp clasp_nconc(T_sp l, T_sp y);

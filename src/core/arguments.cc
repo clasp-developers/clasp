@@ -34,7 +34,7 @@ THE SOFTWARE.
 namespace core
 {
 
-    Cons_sp Argument::lambdaList() const
+    List_sp Argument::lambdaList() const
     {
 	return((this->_ArgTarget.as_or_nil<Cons_O>()));
     };
@@ -44,17 +44,17 @@ namespace core
 	return((this->_ArgTarget.as<Symbol_O>()));
     };
 
-    Cons_sp Argument::classified() const
+    List_sp Argument::classified() const
     {_G();
 	if ( this->_ArgTargetFrameIndex == SPECIAL_TARGET )
 	{
-	    return((Cons_O::create(ext::_sym_specialVar,this->_ArgTarget)));
+	    return coerce_to_list(Cons_O::create(ext::_sym_specialVar,this->_ArgTarget));
 	} else if ( this->_ArgTargetFrameIndex >= 0 )
 	{
-	    return((Cons_O::create(ext::_sym_heapVar,Cons_O::create(this->_ArgTarget,Fixnum_O::create(this->_ArgTargetFrameIndex)))));
+	    return coerce_to_list(Cons_O::create(ext::_sym_heapVar,Cons_O::create(this->_ArgTarget,Fixnum_O::create(this->_ArgTargetFrameIndex))));
 	} else if ( this->_ArgTargetFrameIndex == UNDEFINED_TARGET )
 	{
-	    return((_Nil<Cons_O>()));
+	    return((_Nil<List_V>()));
 	}
 	SIMPLE_ERROR(BF("Illegal target"));
     }
@@ -264,7 +264,7 @@ namespace core
 
 
 
-    void ValueEnvironmentDynamicScopeManager::new_variable(Cons_sp classified, T_sp val)
+    void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp val)
     {
 	Symbol_sp type = oCar(classified).as<Symbol_O>();
 	if ( type == ext::_sym_specialVar )
@@ -284,7 +284,7 @@ namespace core
     }
 
 
-    void ValueEnvironmentDynamicScopeManager::new_special(Cons_sp classified)
+    void ValueEnvironmentDynamicScopeManager::new_special(List_sp classified)
     {
 	ASSERT(oCar(classified)==_sym_declaredSpecial);
 	Symbol_sp sym = oCdr(classified).as<Symbol_O>();

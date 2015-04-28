@@ -50,7 +50,7 @@ namespace core
 #define ARGS_af_bformat "(destination control &rest args)"
 #define DECL_af_bformat ""
 #define DOCS_af_bformat "Like CL format but uses C/boost format strings"    
-    T_sp af_bformat(T_sp destination, const string& control, Cons_sp args )
+    T_sp af_bformat(T_sp destination, const string& control, List_sp args )
     {_G();
 	T_sp output;
         if ( destination.nilp() ) {
@@ -64,8 +64,7 @@ namespace core
 	string fmter_str;
 	TRY()
 	{
-	    for( Cons_sp farg=args; farg.notnilp(); farg = cCdr(farg) )
-	    {
+	    for( auto farg : args ) {
 		T_sp fobj = oCar(farg);
 		if ( !fobj )
 		{
@@ -132,7 +131,7 @@ namespace core
 #define ARGS_af_format "(destination control &rest args)"
 #define DECL_af_format ""
 #define DOCS_af_format "Subset of CL format - this does the job until the real format is installed"
-    T_sp af_format(T_sp destination, T_sp control, Cons_sp args)
+    T_sp af_format(T_sp destination, T_sp control, List_sp args)
     {_G();
 	stringstream tf;
 	if ( af_functionP(control) )

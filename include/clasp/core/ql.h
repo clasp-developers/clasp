@@ -130,15 +130,15 @@ namespace ql
 	    return *this;
 	}
 	
-	inline core::Cons_sp cons() const
+	inline core::List_sp cons() const
 	{
-	    return cCdr(this->_First);
+	    return coerce_to_list(oCdr(this->_First));
 	}
 
 	/*! Return all of the list including the (usually) dummy first element */
-	inline core::Cons_sp all() const
+	inline core::List_sp all() const
 	{
-	    return this->_First;
+	    return coerce_to_list(this->_First);
 	}
 
 

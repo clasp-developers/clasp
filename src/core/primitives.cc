@@ -429,7 +429,7 @@ namespace core
 #define ARGS_cl_values "(&rest args)"
 #define DECL_cl_values ""
 #define DOCS_cl_values "values"
-    T_mv cl_values(Cons_sp args)
+    T_mv cl_values(List_sp args)
     {_G();
 	// returns multiple values
 	T_mv result = ValuesFromCons(args);
@@ -440,7 +440,7 @@ namespace core
 #define ARGS_core_valuesTesting "(&rest args)"
 #define DECL_core_valuesTesting ""
 #define DOCS_core_valuesTesting "values"
-    T_mv core_valuesTesting(Cons_sp args)
+    T_mv core_valuesTesting(List_sp args)
     {_G();
 	// returns multiple values
 	T_mv result = ValuesFromCons(args);
@@ -456,7 +456,7 @@ namespace core
 #define ARGS_af_values_list "(list)"
 #define DECL_af_values_list ""
 #define DOCS_af_values_list "values_list"
-    T_mv af_values_list(Cons_sp list)
+    T_mv af_values_list(List_sp list)
     {_G();
 	return ValuesFromCons(list);
     }
@@ -469,7 +469,7 @@ namespace core
 	if ( af_symbolp(functionName) ) return functionName.as<Symbol_O>();
 	if ( cl_consp(functionName) )
 	{
-	    Cons_sp cfn = functionName.as_or_nil<Cons_O>();
+	    List_sp cfn = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cfn) == cl::_sym_setf && af_symbolp(oCadr(cfn))& oCadr(cfn).notnilp() )
 	    {
 		return oCadr(cfn).as<Symbol_O>();
@@ -546,11 +546,11 @@ namespace core
 #define ARGS_af_separatePairList "(listOfPairs)"
 #define DECL_af_separatePairList ""
 #define DOCS_af_separatePairList "Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element"
-    Cons_mv af_separatePairList(Cons_sp listOfPairs)
+    Cons_mv af_separatePairList(List_sp listOfPairs)
     {_G();
 	ql::list firsts(_lisp);
 	ql::list seconds(_lisp);
-	for ( Cons_sp cur = listOfPairs; cur.notnilp(); cur=cCdr(cur) )
+	for ( List_sp cur = listOfPairs; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    T_sp element = oCar(cur);
 	    if ( af_atom(element) )
@@ -559,7 +559,7 @@ namespace core
 		seconds << _Nil<T_O>();
 	    } else if ( cl_consp(element) )
 	    {
-		Cons_sp pair = element.as_or_nil<Cons_O>();
+		List_sp pair = element.as_or_nil<Cons_O>();
 		size_t pairlen = cl_length(pair);
 		if ( pairlen == 2 || pairlen == 1 )
 		{
@@ -707,7 +707,7 @@ namespace core
 #define ARGS_af_break "(&optional fmt-control &rest args)"
 #define DECL_af_break ""
 #define DOCS_af_break "Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version"
-    void af_break(Str_sp fmt, Cons_sp args)
+    void af_break(Str_sp fmt, List_sp args)
     {_G();
 	if ( fmt.notnilp() ) {
 	    af_format(_lisp->_true(),fmt,args);
@@ -862,7 +862,7 @@ namespace core
 	} else if (cl_consp(functionName))
 	{
 	    SYMBOL_EXPORT_SC_(ClPkg,setf);
-	    Cons_sp cur = functionName.as_or_nil<Cons_O>();
+	    List_sp cur = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cur) == cl::_sym_setf )
 	    {
 		Symbol_sp symbol = oCadr(cur).as<Symbol_O>();
@@ -890,7 +890,7 @@ namespace core
 	    return(Values(sym->symbolFunction()));
 	} else if ( cl_consp(functionName) )
 	{
-	    Cons_sp cname = functionName.as_or_nil<Cons_O>();
+	    List_sp cname = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
@@ -920,7 +920,7 @@ namespace core
 	    return sym->symbolFunction().objectp();
 	} else if ( cl_consp(functionName) )
 	{
-	    Cons_sp cname = functionName.as_or_nil<Cons_O>();
+	    List_sp cname = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
@@ -949,7 +949,7 @@ namespace core
 	    return(Values(sym));
 	} else if ( cl_consp(functionName) )
 	{
-	    Cons_sp cname = functionName.as_or_nil<Cons_O>();
+	    List_sp cname = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
@@ -1053,10 +1053,10 @@ namespace core
 
 
 
-    ListOfSequenceSteppers::ListOfSequenceSteppers(Cons_sp sequences)
+    ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences)
     {_G();
 	this->_AtEnd = false;
-	for ( Cons_sp cur = sequences; cur.notnilp(); cur=cCdr(cur) )
+	for ( List_sp cur = sequences; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    T_sp obj = oCar(cur);
 	    if ( af_vectorP(obj) )
@@ -1097,7 +1097,7 @@ namespace core
     void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const
     {_G();
 	if ( this->_AtEnd) SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
-	Cons_sp res = _Nil<Cons_O>();
+	List_sp res = _Nil<Cons_O>();
 	int idx=0;
 	for (auto rit=this->_Steppers.begin(); rit!=this->_Steppers.end(); rit++ )
 	{
@@ -1122,13 +1122,13 @@ namespace core
     class ListOfListSteppers : public ListOfSequenceSteppers
     {
     public:
-	ListOfListSteppers(Cons_sp lists);
+	ListOfListSteppers(List_sp lists);
 	virtual ~ListOfListSteppers() {};
     };
 
-    ListOfListSteppers::ListOfListSteppers(Cons_sp sequences)
+    ListOfListSteppers::ListOfListSteppers(List_sp sequences)
     {_G();
-	for ( Cons_sp cur = sequences; cur.notnilp(); cur=cCdr(cur) )
+	for ( List_sp cur = sequences; cur.notnilp(); cur=cCdr(cur) )
 	{
 	    T_sp obj = oCar(cur);
 	    if ( cl_consp(obj) )
@@ -1149,7 +1149,7 @@ namespace core
     }
 
 
-    bool test_every_some_notevery_notany(Function_sp predicate, Cons_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp& retVal )
+    bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp& retVal )
     {_G();
 	ListOfSequenceSteppers steppers(sequences);
 	ValueFrame_sp frame(ValueFrame_O::create(steppers.size(),_Nil<ActivationFrame_O>()));
@@ -1176,7 +1176,7 @@ namespace core
 #define DOCS_af_every "See CLHS for every"
 #define ARGS_af_every "(predicate &rest sequences)"
 #define DECL_af_every ""
-    T_sp af_every(T_sp predicate, Cons_sp sequences)
+    T_sp af_every(T_sp predicate, List_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
 	T_sp dummy;
@@ -1189,7 +1189,7 @@ namespace core
 #define DOCS_af_some "See CLHS for some"
 #define ARGS_af_some "(predicate &rest sequences)"
 #define DECL_af_some ""
-    T_sp af_some(T_sp predicate, Cons_sp sequences)
+    T_sp af_some(T_sp predicate, List_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
 	T_sp retVal;
@@ -1205,7 +1205,7 @@ namespace core
 #define DOCS_af_notany "See CLHS for notany"
 #define ARGS_af_notany "(predicate &rest sequences)"
 #define DECL_af_notany ""
-    T_sp af_notany(T_sp predicate, Cons_sp sequences)
+    T_sp af_notany(T_sp predicate, List_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
 	T_sp dummy;
@@ -1219,7 +1219,7 @@ namespace core
 #define DOCS_af_notevery "See CLHS for notevery"
 #define ARGS_af_notevery "(predicate &rest sequences)"
 #define DECL_af_notevery ""
-    T_sp af_notevery(T_sp predicate, Cons_sp sequences)
+    T_sp af_notevery(T_sp predicate, List_sp sequences)
     {_G();
 	Function_sp op = coerce::functionDesignator(predicate);
 	T_sp dummy;
@@ -1240,7 +1240,7 @@ namespace core
 #define ARGS_cl_mapcar "(func_desig &rest lists)"
 #define DECL_cl_mapcar ""
     SYMBOL_EXPORT_SC_(ClPkg,mapcar);
-    T_sp cl_mapcar(T_sp func_desig, Cons_sp lists)
+    T_sp cl_mapcar(T_sp func_desig, List_sp lists)
     {_G();
 	Function_sp func = coerce::functionDesignator(func_desig);
 	ListOfListSteppers steppers(lists);
@@ -1266,16 +1266,16 @@ namespace core
 #define	DOCS_cl_mapc "See CLHS mapc"
 #define	ARGS_cl_mapc "(op &rest lists)"
 #define DECL_cl_mapc ""
-    T_sp cl_mapc(T_sp top, Cons_sp lists)
+    T_sp cl_mapc(T_sp top, List_sp lists)
     {_G();
         Function_sp op = coerce::functionDesignator(top);
 	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),8,0,true));
 	// Copy the arguments into argumentLists
-	for ( Cons_sp carg = lists; carg.notnilp(); carg = cCdr(carg))
+	for ( List_sp carg = lists; carg.notnilp(); carg = cCdr(carg))
 	{
 	    argumentLists->vectorPushExtend(oCar(carg),8);
 	}
-	Cons_sp result, curResult;
+	List_sp result, curResult;
 	ValueFrame_sp frame(ValueFrame_O::create(cl_length(argumentLists),_Nil<ActivationFrame_O>()));
 	while (1)
 	{
@@ -1304,20 +1304,20 @@ namespace core
 #define	DOCS_cl_maplist "See CLHS maplist"
 #define ARGS_cl_maplist "(func_desig &rest lists)"
 #define DECL_cl_maplist ""
-    T_sp cl_maplist(T_sp func_desig, Cons_sp lists)
+    T_sp cl_maplist(T_sp func_desig, List_sp lists)
     {_G();
 //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
 	Function_sp op = coerce::functionDesignator(func_desig);
 	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<Cons_O>(),_Nil<Cons_O>(),16,0,true));
-//	vector<Cons_sp> argumentLists;
+//	vector<List_sp> argumentLists;
 	// Copy the arguments into argumentLists
-	for ( Cons_sp carg = lists; carg.notnilp(); carg = cCdr(carg))
+	for ( List_sp carg = lists; carg.notnilp(); carg = cCdr(carg))
 	{
 	    argumentLists->vectorPushExtend(oCar(carg),8);
 //	    argumentLists.push_back(oCar(carg).as_or_nil<Cons_O>());
 	}
 //        printf("%s:%d  argumentLists = %s\n", __FILE__, __LINE__, _rep_(argumentLists).c_str() );
-	Cons_sp result, curResult;
+	List_sp result, curResult;
 	result = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
 	ValueFrame_sp frame(ValueFrame_O::create(cl_length(argumentLists),_Nil<ActivationFrame_O>()));
 	curResult = result;
@@ -1337,7 +1337,7 @@ namespace core
 		% _rep_(op) % _rep_(frame) );
             T_sp res = eval::applyToActivationFrame(op,frame);
 	    Cons_sp one = Cons_O::create(res);
-	    curResult->setCdr(one);
+	    curResult.asCons()->setCdr(one);
 	    curResult = one;
 	    // Advance to the next element
 	    for ( int it(0), itEnd(cl_length(argumentLists)); it<itEnd; ++it )
@@ -1355,7 +1355,7 @@ namespace core
 #define	DOCS_cl_mapl "See CLHS maplist"
 #define ARGS_cl_mapl "(op &rest lists)"
 #define DECL_cl_mapl ""
-    T_sp cl_mapl(T_sp top, Cons_sp lists)
+    T_sp cl_mapl(T_sp top, List_sp lists)
     {_G();
         Function_sp op = coerce::functionDesignator(top);
 	cl_maplist(op,lists);
@@ -1370,7 +1370,7 @@ namespace core
 #define DOCS_af_mapappend "mapappend is like mapcar except that the results are appended together - see AMOP 280"
 #define ARGS_af_mapappend "(fun &rest cargs)"
 #define DECL_af_mapappend ""
-    T_mv af_mapappend(Function_sp fun, Cons_sp cargs)
+    T_mv af_mapappend(Function_sp fun, List_sp cargs)
     {_G();
 	IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
 	T_sp testNull = eval::funcall(cl::_sym_some,cl::_sym_null->symbolFunction(),cargs);
@@ -1388,9 +1388,9 @@ namespace core
 #define ARGS_cl_mapcon "(op &rest lists)"
 #define DECL_cl_mapcon ""
 #define DOCS_cl_mapcon "mapcon"
-    T_mv cl_mapcon(T_sp op, Cons_sp lists)
+    T_mv cl_mapcon(T_sp op, List_sp lists)
     {_G();
-	Cons_sp parts = cl_maplist(op,lists).as_or_nil<Cons_O>();
+	List_sp parts = cl_maplist(op,lists).as_or_nil<Cons_O>();
         T_sp result = cl_nconc(parts);
 	return(Values(result));
     };
@@ -1399,9 +1399,9 @@ namespace core
 #define ARGS_cl_mapcan "(op &rest lists)"
 #define DECL_cl_mapcan ""
 #define DOCS_cl_mapcan "mapcan"
-    T_mv cl_mapcan(T_sp op, Cons_sp lists)
+    T_mv cl_mapcan(T_sp op, List_sp lists)
     {_G();
-	Cons_sp parts = cl_mapcar(op,lists).as_or_nil<Cons_O>();
+	List_sp parts = cl_mapcar(op,lists).as_or_nil<Cons_O>();
         T_sp result = cl_nconc(parts);
 #if 0
 	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));
@@ -1420,7 +1420,7 @@ namespace core
 #define ARGS_macro_backquote "(form env)"
 #define DECL_macro_backquote ""
 #define DOCS_macro_backquote "backquote"
-    T_mv macro_backquote(Cons_sp form, T_sp env)
+    T_mv macro_backquote(List_sp form, T_sp env)
     {_G();
 	T_sp arg = oCadr(form);
 	LOG(BF("Expanding backquote going in: %s") % _rep_(arg) );
@@ -1442,15 +1442,15 @@ namespace core
 #define	ARGS_af_append "(&rest lists)"
 #define	DECL_af_append ""
 #define DOCS_af_append "append as in clhs"
-T_sp af_append(Cons_sp lists)
+T_sp af_append(List_sp lists)
 {_G();
     ql::list list;
     LOG(BF("Carrying out append with arguments: %s") % _rep_(lists) );
-    Cons_sp appendArg = lists;
+    List_sp appendArg = lists;
     for ( ; cCdr(appendArg).notnilp(); appendArg = cCdr(appendArg) )
     {
-	Cons_sp oneList = oCar(appendArg).as_or_nil<Cons_O>();
-	for ( Cons_sp element=oneList; element.notnilp(); element = cCdr(element) )
+	List_sp oneList = oCar(appendArg).as_or_nil<Cons_O>();
+	for ( List_sp element=oneList; element.notnilp(); element = cCdr(element) )
 	{
 	    list << oCar(element);
 	}
@@ -1830,23 +1830,26 @@ T_sp af_type_of(T_sp x)
 #define ARGS_af_rem_f "(plist indicator)"
 #define DECL_af_rem_f ""
 #define DOCS_af_rem_f "Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found"
-T_mv af_rem_f(Cons_sp plist, Symbol_sp indicator)
+T_mv af_rem_f(List_sp plist, Symbol_sp indicator)
 {_G();
     if ( oCar(plist) == indicator )
     {
 	plist = cCddr(plist);
-	return(Values(plist,_lisp->_true()));
+	T_sp tplist = plist;
+	return(Values(tplist,_lisp->_true()));
     }
-    for ( Cons_sp cur = plist; cCddr(cur).notnilp(); cur = cCddr(cur) )
+    for ( List_sp cur = plist; cCddr(cur).notnilp(); cur = cCddr(cur) )
     {
 	T_sp k = oCaddr(cur);
 	if ( k == indicator )
 	{
 	    cCdr(cur)->setCdr(cCddr(cCddr(cur)));
-	    return(Values(plist,_lisp->_true()));
+	    T_sp tplist = plist;
+	    return(Values(tplist,_lisp->_true()));
 	}
     }
-    return(Values(plist,_lisp->_false()));
+    T_sp tplist = plist;
+    return(Values(tplist,_lisp->_false()));
 };
 
 

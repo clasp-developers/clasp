@@ -87,7 +87,7 @@ namespace core
 
 #if 0
 	bool	canRender() { return true; };
-	Render_sp rendered(Cons_sp options);
+	Render_sp rendered(List_sp options);
 #endif
 	/*! Return true if this binder contains the symbol
 	 * that you get when you search for the kw
