@@ -1,3 +1,7 @@
+// Disable this once we have List_sp working
+#define ALLOW_CONS_NIL 1
+
+
 /*
     File: smart_pointers.h
 */
@@ -643,8 +647,6 @@ namespace core {
 };
 
 
-// Disable this once we have List_sp working
-//#define ALLOW_CONS_NIL 1
 
 namespace gctools {
     
@@ -819,6 +821,7 @@ namespace gctools {
 	inline bool isTrue() const { return !this->nilp(); };
 	inline bool unboundp() const { return tagged_unboundp(this->theObject); };
 
+	//	inline operator smart_ptr<core::Cons_O>() const { GCTOOLS_ASSERT(this->consp());return smart_ptr<core::Cons_O>((Tagged)this->theObject); };
 	inline smart_ptr<core::Cons_O> asCons() const { GCTOOLS_ASSERT(this->consp());return smart_ptr<core::Cons_O>((Tagged)this->theObject); };
 
 	inline bool valid() const { return this->consp() || this->nilp(); };
@@ -883,12 +886,12 @@ namespace gctools {
 		this->ptr = cons_cdr(untag_cons<core::Cons_O>(reinterpret_cast<core::Cons_O*>(this->ptr))).theObject;
 		return *this;
 	    }
-#if 0
 	    List_sp_iterator &operator++(int) { // postfix
 		auto clone = new List_sp_iterator(*this);
 		++*this;
 		return *clone;
 	    }
+#if 0
 	    bool operator==(const List_sp_iterator &b) const {
 		if (b.ptr->consp())
 		    return ptr == (b.ptr);

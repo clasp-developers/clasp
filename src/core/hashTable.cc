@@ -820,9 +820,8 @@ void    core_DebugHashTable(bool don)
         VectorObjects_sp table = this->_HashTable;
 	for ( size_t it(0),itEnd(cl_length(table)); it<itEnd; ++it )
 	{
-	    Cons_sp first = (*table)[it].as<Cons_O>();
-	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
-	    {
+	    List_sp first = coerce_to_list((*table)[it]);
+	    for ( auto cur : first ) {
                 Cons_sp pair = cCar(cur);
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);

@@ -334,7 +334,7 @@ namespace core
 	sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol,new_lambda_list);
 	Cons_sp macro_ll = sclist.cons();
         if ( _lisp->sourceDatabase().notnilp() ) {
-            _lisp->sourceDatabase()->duplicateSourcePosInfo(lambda_list,macro_ll);
+            _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(lambda_list,macro_ll);
         }
 	return macro_ll;
     }
@@ -957,7 +957,7 @@ void bind_aux
 			//
 			if (cCdr(carg).notnilp() ) {
 			    defaultValue = oCadr(carg);
-			    if ( cCddr(carg).notnilp() ) {
+			    if ( oCddr(carg).notnilp() ) {
 				sensorSymbol = oCaddr(carg);
 			    }
 			}

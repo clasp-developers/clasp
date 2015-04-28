@@ -413,7 +413,9 @@ extern "C" {
 
         void dbg_lowLevelDescribe(T_sp obj)
         {
-	    if ( obj.fixnump() ) {
+	    if ( obj.nilp() ) {
+		printf("NIL\n");
+	    } else if ( obj.fixnump() ) {
 		printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
 	    } else if ( obj.otherp() ) {
 		printf("other_tag: %p  typeid: %s\n", &(*obj), typeid(*obj).name() );

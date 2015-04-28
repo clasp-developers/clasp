@@ -296,6 +296,7 @@ namespace llvm_interface
 	// set a break point here to catch every error
 	//
 	printf("\n\n%s\n%s:%d dbg_hook(...) was called\n",error,__FILE__,__LINE__);
+	asm("int $3");
 
 	//	af_invokeInternalDebugger(_Nil<core::T_O>());
     }
@@ -949,7 +950,7 @@ namespace core
 	Package_sp pkg = _lisp->findPackage(packageName);
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(args);
-	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<T_O>());
+	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<Fixnum_O>());
 	Reader_sp reader = Reader_O::create(str);
 	T_sp osscons = reader->primitive_read(true,_Nil<T_O>(),false);
 	Cons_sp sscons = osscons.as_or_nil<Cons_O>();
@@ -1226,27 +1227,27 @@ namespace core
 
 
 
-    core::SourcePosInfo_sp lisp_registerSourceInfo(T_sp obj
-                                                   , SourceFileInfo_sp sfo
-						   , size_t filePos
-                                                   , int lineno
-                                                   , int column )
+    core::T_sp lisp_registerSourceInfo(T_sp obj
+				       , SourceFileInfo_sp sfo
+				       , size_t filePos
+				       , int lineno
+				       , int column )
     {
-        SourceManager_sp db = _lisp->sourceDatabase();
-        if ( db.notnilp() ) {
+        T_sp tdb = _lisp->sourceDatabase();
+        if ( SourceManager_sp db = tdb.asOrNull<SourceManager_O>() ) {
             return db->registerSourceInfo(obj,sfo,filePos,lineno,column);
         }
-        return _Nil<SourcePosInfo_O>();
+        return _Nil<T_O>();
     }
 
 
-    core::SourcePosInfo_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi)
+    core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi)
     {
-        SourceManager_sp db = _lisp->sourceDatabase();
-        if ( db.notnilp() ) {
+        T_sp tdb = _lisp->sourceDatabase();
+        if ( SourceManager_sp db = tdb.asOrNull<SourceManager_O>() ) {
             return db->registerSourcePosInfo(obj,spi);
         }
-        return _Nil<SourcePosInfo_O>();
+        return _Nil<T_O>();
     }
 
 

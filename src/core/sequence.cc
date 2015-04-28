@@ -330,7 +330,7 @@ namespace core
 
     size_t_pair sequenceStartEnd(const char* file, uint line, const char* functionName,
 				 const string& packageName,
-				 T_sp sequence, Fixnum_sp start, Fixnum_sp end)
+				 T_sp sequence, Fixnum_sp start, T_sp end)
     {
         size_t_pair p;
 	size_t  l;
@@ -343,12 +343,12 @@ namespace core
 	if ( end.nilp() ) {
 	    p.end = l;
 	} else {
-	    unlikely_if (!af_fixnumP(end) || end->minusp()) {
+	    unlikely_if (!af_fixnumP(end) || end.as<Fixnum_O>()->minusp()) {
 		af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),
 				   kw::_sym_end,end,
 				   Cons_O::createList(cl::_sym_or,cl::_sym_null,cl::_sym_UnsignedByte));
 	    }
-	    p.end = end->get();
+	    p.end = end.as<Fixnum_O>()->get();
 	    unlikely_if (p.end > l) {
 		T_sp fillp = Fixnum_O::create(static_cast<uint>(l));
 		af_wrongTypeKeyArg(file,line,_lisp->internWithPackageName(functionName,packageName.c_str()),

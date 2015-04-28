@@ -228,7 +228,7 @@ namespace core
 	Cons_sp result = Cons_O::createList(_sym_backquote,quoted_object);
 	//HERE_scCONS_CREATE_LIST2(_sym_backquote,quoted_object);
         if ( _lisp->sourceDatabase().notnilp() ) {
-            _lisp->sourceDatabase()->duplicateSourcePosInfo(quoted_object,result);
+            _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(quoted_object,result);
         }
 	return(Values(result));
     };

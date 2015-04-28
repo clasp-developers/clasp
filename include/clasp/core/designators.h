@@ -58,20 +58,20 @@ namespace core
 	/*! Return the name of a Package by interpreting a package or a string as a name */
 	extern string packageNameDesignator(T_sp obj );
 
-	/*! Return a Cons of packages by interpreting as a list of package designators */
-	extern Cons_sp listOfPackageDesignators(T_sp obj);
+	/*! Return a List of packages by interpreting as a list of package designators */
+	extern List_sp listOfPackageDesignators(T_sp obj);
 
 	/*! Return a String object by interpreting the object
 	  as a string designator */
 	extern	Str_sp stringDesignator(T_sp obj);
 
-	/*! Return a Cons of strings by interpreting the
+	/*! Return a List of strings by interpreting the
 	  object as a list of string designators */
-	extern Cons_sp listOfStringDesignators(T_sp obj);
+	extern List_sp listOfStringDesignators(T_sp obj);
 
 
-	/*! Return a Cons of symbols by interpreting a designator for a list of symbols */
-	extern Cons_sp listOfSymbols(T_sp obj);
+	/*! Return a List of symbols by interpreting a designator for a list of symbols */
+	extern List_sp listOfSymbols(T_sp obj);
 
 
 /*! Convert an Object input stream designator (as described by CLHS) into a Stream */

@@ -2022,7 +2022,7 @@ namespace core
 #define ARGS_cl_make_string_input_stream "(strng &optional (istart 0) iend)"
 #define DECL_cl_make_string_input_stream ""
 #define DOCS_cl_make_string_input_stream "make_string_input_stream"
-    T_sp cl_make_string_input_stream(Str_sp strng, Fixnum_sp istart, Fixnum_sp iend)
+    T_sp cl_make_string_input_stream(Str_sp strng, Fixnum_sp istart, T_sp iend)
     {_G();
         size_t_pair p = sequenceStartEnd(__FILE__, __LINE__, "make-string-input-stream",
                                          "CL", strng, istart, iend );

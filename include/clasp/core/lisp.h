@@ -523,7 +523,7 @@ namespace core
 	uint mode() const { return this->_Mode;};
     public:
 	/*! Get access to the SourceManager of the Common Lisp environment */
-	SourceManager_sp sourceDatabase() const;
+	T_sp sourceDatabase() const;
     public:
 	bool isSingleStepOn() { return this->_SingleStepLevel!= UndefinedUnsignedInt;};
 	void setSingleStepLevel(uint level) { this->_SingleStepLevel = level;};

@@ -651,8 +651,8 @@ namespace core {
 namespace core
 {
 
-    T_sp cl_getf(T_sp plist, T_sp indicator, T_sp default_value );
-    Cons_sp af_putF(T_sp plist, T_sp value, T_sp indicator );
+    T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value );
+    List_sp af_putF(List_sp plist, T_sp value, T_sp indicator );
 
     List_sp coerce_to_list(T_sp o);
 };

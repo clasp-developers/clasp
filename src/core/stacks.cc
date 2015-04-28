@@ -128,7 +128,7 @@ namespace core
     {
         uint ifilepos(0), ilineno(0), icolumn(0);
         if ( _lisp->sourceDatabase().notnilp() ) {
-            SourcePosInfo_sp info = _lisp->sourceDatabase()->lookupSourcePosInfo(expression);
+            SourcePosInfo_sp info = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(expression);
             if ( info.notnilp() ) {
                 this->_Top->setSourcePos(info);
             } else {

@@ -370,6 +370,7 @@ namespace core
 	gctools::global_Symbol_OP_unbound   = reinterpret_cast<Symbol_O*>(symbol_unbound.raw_());
 	gctools::global_Symbol_OP_deleted   = reinterpret_cast<Symbol_O*>(symbol_deleted.raw_());
 	gctools::global_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O*>(symbol_sameAsKey.raw_());
+	printf("%s:%d Remember to finalizeSpecialSymbols\n", __FILE__, __LINE__ );
     }
 
     void Lisp_O::finalizeSpecialSymbols() {
@@ -1194,7 +1195,7 @@ namespace core
     }
 
 
-    SourceManager_sp Lisp_O::sourceDatabase() const
+    T_sp Lisp_O::sourceDatabase() const
     {_OF();
 	// At startup the *package* symbol may not yet
 	// be defined or bound to a package - in that case just say we are in the core package
@@ -1202,11 +1203,11 @@ namespace core
 	T_sp cur;
 	if ( IS_SYMBOL_UNDEFINED(_sym_STARsourceDatabaseSTAR) )
 	{
-	    return _Nil<SourceManager_O>();
+	    return _Nil<T_O>();
 	}
 	if ( !_sym_STARsourceDatabaseSTAR->specialP() )
 	{
-	    return _Nil<SourceManager_O>();
+	    return _Nil<T_O>();
 	}
 	cur = _sym_STARsourceDatabaseSTAR->symbolValue();
         if ( cur.nilp() ) return cur;
@@ -2160,7 +2161,7 @@ namespace core
 		Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
 		T_sp expanded = eval::funcall(hookFunc,expansionFunction,form,env);
 		if ( _lisp->sourceDatabase().notnilp() ) {
-		    _lisp->sourceDatabase()->duplicateSourcePosInfo(form,expanded,expansionFunction);
+		    _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(form,expanded,expansionFunction);
 		}
 		return(Values(expanded,_lisp->_true()) );
 	    }
@@ -2186,7 +2187,7 @@ namespace core
 		Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
 		T_sp expanded = eval::funcall(hookFunc,expansionFunction,form,env);
 		if ( _lisp->sourceDatabase().notnilp() ) {
-		    _lisp->sourceDatabase()->duplicateSourcePosInfo(form,expanded,expansionFunction);
+		    _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(form,expanded,expansionFunction);
 		}
 		if ( expanded != form ) {
 		    return(Values(expanded,_lisp->_true()) );
@@ -2658,7 +2659,7 @@ namespace core
 #define DOCS_af_export "CLHS: export"
     void af_export(T_sp symDes,T_sp packageDes)
     {_G();
-	Cons_sp symbols = coerce::listOfSymbols(symDes);
+	List_sp symbols = coerce::listOfSymbols(symDes);
 	Package_sp package = coerce::packageDesignator(packageDes);
 	package->_export(symbols);
     }
@@ -2673,9 +2674,8 @@ namespace core
 #define DOCS_af_exportToPython "exportToPython"
     void af_exportToPython(T_sp symbolsDesig)
     {_G();
-	Cons_sp symbols = coerce::listOfSymbols(symbolsDesig);
-	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
-	{
+	List_sp symbols = coerce::listOfSymbols(symbolsDesig);
+	for ( Cons_sp cur : symbols ) {
 	    Symbol_sp one = oCar(cur).as<Symbol_O>();
 	    LOG(BF("Exporting symbol[%s] to python") % _rep_(one) );
 	    _lisp->exportToPython(one);

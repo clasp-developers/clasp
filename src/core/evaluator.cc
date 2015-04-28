@@ -1348,12 +1348,15 @@ namespace core
 								    af_functionBlockName(name),
 								    code)));
                 if ( _lisp->sourceDatabase().notnilp() ) {
-                    _lisp->sourceDatabase()->duplicateSourcePosInfo(body,code);
+                    _lisp->sourceDatabase().as<SourceManager_O>()->duplicateSourcePosInfo(body,code);
                 }
 	    }
 //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
-            SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(code);
-            if ( spi.nilp() ) {
+	    SourcePosInfo_sp spi;
+	    if ( _lisp->sourceDatabase().notnilp() ) {
+		spi = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(code);
+	    }
+            if ( !spi || spi.nilp() ) {
 		spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue().as<SourcePosInfo_O>();
 		if ( spi.nilp() ) {
 		    printf("%s:%d   Could not find source info for lambda\n", __FILE__, __LINE__);

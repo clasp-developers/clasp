@@ -365,13 +365,12 @@ namespace core {
 	    return vf;
 	}
 
-	static FunctionFrame_sp create(Cons_sp args,T_sp parent)
+	static FunctionFrame_sp create(List_sp args,T_sp parent)
 	{_G();
 	    FunctionFrame_sp vf(FunctionFrame_O::create(cl_length(args),parent));
 //	    vf->allocateStorage(args->length());
 	    int idx = 0;
-	    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) )
-	    {
+	    for ( auto cur : args ) {
 		vf->operator[](idx) = oCar(cur);// n e w (&(vf->_Args[idx])) T_sp(oCar(cur));
 		++idx;
 	    }

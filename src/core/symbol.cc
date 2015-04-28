@@ -52,9 +52,9 @@ namespace core
 #define ARGS_cl_symbolPlist "(sym)"
 #define DECL_cl_symbolPlist ""
 #define DOCS_cl_symbolPlist "Return the symbol plist"
-    Cons_sp cl_symbolPlist(Symbol_sp sym)
+    List_sp cl_symbolPlist(Symbol_sp sym)
     {
-	if ( sym.nilp() ) { return _Nil<Cons_O>(); };
+	if ( sym.nilp() ) { return _Nil<List_V>(); };
 	return sym->plist();
     }
 
@@ -65,7 +65,7 @@ namespace core
     T_sp cl_get(Symbol_sp sym, T_sp indicator, T_sp defval)
     {
 	if ( sym.nilp() ) { 
-	    return cl_getf(cl::_sym_nil,indicator,defval);
+	    return cl_getf(coerce_to_list(cl::_sym_nil),indicator,defval);
 	}
 	return cl_getf(sym->_PropertyList,indicator,defval);
     }
@@ -73,7 +73,7 @@ namespace core
 #define ARGS_core_setfSymbolPlist "(sym plist)"
 #define DECL_core_setfSymbolPlist ""
 #define DOCS_core_setfSymbolPlist "Set the symbol plist"
-    void core_setfSymbolPlist(Symbol_sp sym, Cons_sp plist)
+    void core_setfSymbolPlist(Symbol_sp sym, List_sp plist)
     {
 	if ( sym.nilp() ) { SIMPLE_ERROR(BF("You cannot set the plist of nil"));};
 	sym->setf_plist(plist);
@@ -218,8 +218,8 @@ namespace core {
 			   _SetfFunction(gctools::smart_ptr<Function_O>()),
 			   _IsSpecial(false),
 			   _IsConstant(false),
-			   _ReadOnlyFunction(false),
-			   _PropertyList(gctools::smart_ptr<Cons_O>())
+			   _ReadOnlyFunction(false)
+			   // ,_PropertyList(gctools::smart_ptr<Cons_O>())
     {
 	// nothing
     };
@@ -269,11 +269,11 @@ namespace core {
 	this->_Value = _Unbound<T_O>();
     }
 
-    Cons_sp Symbol_O::plist() const {
+    List_sp Symbol_O::plist() const {
 	return this->_PropertyList;
     }
 
-    void Symbol_O::setf_plist(Cons_sp plist) {
+    void Symbol_O::setf_plist(List_sp plist) {
 	this->_PropertyList = plist;
     }
     

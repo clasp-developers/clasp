@@ -90,7 +90,7 @@ namespace core {
     /* Return a valid start/end/length of a sequence or throw an error if invalid values are provided */
     size_t_pair sequenceStartEnd(const char* sourcefile, uint lineno, const char* functionName,
 				 const string& packageName,
-				 T_sp seq, Fixnum_sp start, Fixnum_sp end);
+				 T_sp seq, Fixnum_sp start, T_sp end);
 
 
     void initialize_sequence();

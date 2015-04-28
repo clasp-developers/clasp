@@ -121,9 +121,9 @@ namespace core
     T_sp core_startupImagePathname()
     {_G();
 	Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<Cons_O>();
-        Cons_sp min = features->memberEq(kw::_sym_ecl_min);
-        Cons_sp mps = features->memberEq(kw::_sym_use_mps);
-	Cons_sp cleavir = features->memberEq(kw::_sym_cleavir);
+        List_sp min = features->memberEq(kw::_sym_ecl_min);
+        List_sp mps = features->memberEq(kw::_sym_use_mps);
+	List_sp cleavir = features->memberEq(kw::_sym_cleavir);
         string strStage = "min";
         if ( min.nilp() ) {
 	    if ( cleavir.nilp() ) {
@@ -909,12 +909,12 @@ namespace core {
 #define ARGS_core_multipleValueFuncall "(function-designator &rest functions)"
 #define DECL_core_multipleValueFuncall ""
 #define DOCS_core_multipleValueFuncall "multipleValueFuncall"
-    T_mv core_multipleValueFuncall(T_sp funcDesignator, Cons_sp functions)
+    T_mv core_multipleValueFuncall(T_sp funcDesignator, List_sp functions)
     {
 	MultipleValues mvAccumulate;
 	mvAccumulate._Size = 0;
 	size_t idx = 0;
-	for ( Cons_sp cur = functions; cur.notnilp(); cur = cCdr(cur) ) {
+	for ( auto cur : functions ) {
 	    Function_sp func = oCar(cur).as<Function_O>();
 	    T_mv result = eval::funcall(func);
 	    mvAccumulate[idx] = result.raw_();
@@ -1009,13 +1009,14 @@ namespace core {
 #define ARGS_core_progvFunction "(symbols values func)"
 #define DECL_core_progvFunction ""
 #define DOCS_core_progvFunction "progvFunction"
-    T_mv core_progvFunction(Cons_sp symbols, Cons_sp values, Function_sp func)
+    T_mv core_progvFunction(List_sp symbols, List_sp values, Function_sp func)
     {
 	DynamicScopeManager manager;
-	for ( ; symbols.notnilp(); symbols = cCdr(symbols), values = cCdr(values) ) {
-	    Symbol_sp symbol = oCar(symbols).as<Symbol_O>();
+	for ( auto curSym : symbols ) {
+	    Symbol_sp symbol = oCar(curSym).as<Symbol_O>();
 	    T_sp value = oCar(values);
 	    manager.pushSpecialVariableAndSet(symbol,value);
+	    values = cCdr(values);
 	}
 	T_mv result = eval::funcall(func);
 	return result;

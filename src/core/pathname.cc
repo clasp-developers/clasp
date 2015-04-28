@@ -400,7 +400,7 @@ namespace core {
 		translate_component_case(device, fromcase, tocase);
 	    directory =
 		translate_list_case(directory, fromcase, tocase); // .as<List_O>()
-	    p->_Directory = directory.as<Cons_O>();
+	    p->_Directory = directory;
 	    p->_Name =
 		translate_component_case(name, fromcase, tocase);
 	    p->_Type =
@@ -412,7 +412,7 @@ namespace core {
 	    eval::funcall(cl::_sym_error,cl::_sym_fileError, kw::_sym_pathname,p);
 	    //cl_error(3, @'file-error', kw::_sym_pathname, p);
 	}
-	p->_Directory = directory.as<Cons_O>();
+	p->_Directory = directory;
 	return(p);
     }
 

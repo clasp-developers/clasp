@@ -72,16 +72,17 @@ namespace core
 #define ARGS_af_putF "(plist value indicator)"
 #define DECL_af_putF ""
 #define DOCS_af_putF "putF"
-    Cons_sp af_putF(T_sp place, T_sp value, T_sp indicator)
+    List_sp af_putF(List_sp place, T_sp value, T_sp indicator)
     {_G();
-	Cons_sp cur = place.as<Cons_O>();
-	for ( ; cur.consp(); cur=cCddr(cur) )
-	{
+	auto it = place.begin();
+	Cons_sp cur;
+	while ( it != place.end() ) {
+	    cur = *it;
 	    T_sp cdr_l = oCdr(cur);
 	    if ( !cdr_l.consp()) break;
 	    if ( oCar(cur) == indicator ) {
 		cdr_l.as<Cons_O>()->rplaca(value);
-		return place.as<Cons_O>();
+		return place;
 	    }
 	    cur = cCdr(cdr_l); //CONS_CDR(cdr_l);
 	}
@@ -91,7 +92,7 @@ namespace core
 	}
 	place = Cons_O::create(value,place);
 	place = Cons_O::create(indicator,place);
-	return(place.as<Cons_O>());
+	return place;
     };
 
 
@@ -102,10 +103,10 @@ namespace core
 #define ARGS_cl_getf "(plist indicator &optional default-value)"
 #define DECL_cl_getf ""
 #define DOCS_cl_getf "getf"
-    T_sp cl_getf(T_sp plist, T_sp indicator, T_sp default_value)
+    T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value)
     {_G();
 	if ( plist.nilp() ) return(default_value);
-	return plist.as<Cons_O>()->getf(indicator,default_value);
+	return plist.asCons()->getf(indicator,default_value);
     };
 
 
@@ -775,13 +776,14 @@ namespace core
 
     T_sp Cons_O::nreverse()
     {_OF();
-	Cons_sp reversed = _Nil<Cons_O>();
-	Cons_sp cur = this->sharedThis<Cons_O>();
-	Cons_sp hold = _Nil<Cons_O>();
-	while (cur.notnilp())
-	{
-	    hold = cCdr(cur);
-	    cur->setCdr(reversed);
+	List_sp reversed = _Nil<List_V>();
+	List_sp cur = this->asSmartPtr();
+	List_sp hold = _Nil<List_V>();
+	while (cur.consp()) {
+	    T_sp next(oCdr(cur));
+	    if ( next.nilp() ) break;
+	    hold = next.as<Cons_O>();
+	    cur.asCons()->setCdr(reversed.asCons());
 	    reversed = cur;
 	    cur = hold;
 	}

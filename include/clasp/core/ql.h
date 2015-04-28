@@ -76,11 +76,10 @@ namespace ql
 	    this->_Tail = this->_First;
 	}
 
-	void create_from_cons(core::Cons_sp other)
+	void create_from_cons(core::List_sp other)
 	{_G();
 	    this->clear();
-	    for ( core::Cons_sp cur = other; cur.notnilp(); cur=cCdr(cur) )
-	    {
+	    for ( auto cur : other ) {
 		this->operator<<(oCar(cur));
 	    }
 	}
@@ -105,11 +104,10 @@ namespace ql
 	}
 
 	/*! Insert list into list - should I copy or append (which will modify the argument)? */
-	inline list& operator&(core::Cons_sp const& l)
+	inline list& operator&(core::List_sp l)
 	{
 	    this->throwIfClosed();
-	    for ( core::Cons_sp cur=l; cur.notnilp(); cur=cCdr(cur) )
-	    {
+	    for ( auto cur : l ) {
 		(*this) << oCar(cur);
 	    }
 	    return *this;

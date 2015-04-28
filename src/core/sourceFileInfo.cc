@@ -48,7 +48,7 @@ extern "C" {
 	string repExp = _rep_(exp);
 	printf("Object: %s\n", repExp.c_str() );
         if ( _lisp->sourceDatabase().notnilp() ) {
-            core::SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(exp);
+            core::SourcePosInfo_sp spi = _lisp->sourceDatabase().as<core::SourceManager_O>()->lookupSourcePosInfo(exp);
             if ( spi.notnilp() ) {
                 core::SourceFileInfo_sp sfi = core_sourceFileInfo(core::Fixnum_O::create(spi->fileHandle()));
 		string sf = sfi->sourceDebugNamestring();
@@ -232,7 +232,7 @@ namespace core
     {_G();
         if ( _lisp->sourceDatabase().notnilp() ) {
             if ( cl_consp(obj) ) {
-		SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(obj);
+		SourcePosInfo_sp spi = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(obj);
 		if ( spi.notnilp() ) {
 		    SourceFileInfo_sp sfi = core_sourceFileInfo(Fixnum_O::create(spi->fileHandle()));
 		    Fixnum_sp fnlineno = Fixnum_O::create(spi->_Lineno);
@@ -266,7 +266,7 @@ namespace core
     {
 	if ( _lisp->sourceDatabase().notnilp() ) {
 	    if ( cl_consp(obj) ) {
-		SourcePosInfo_sp curInfo = _lisp->sourceDatabase()->lookupSourcePosInfo(obj);
+		SourcePosInfo_sp curInfo = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(obj);
 		if ( curInfo.nilp() ) {
 		    curInfo = topInfo;
 		    lisp_registerSourcePosInfo(obj,curInfo);
@@ -298,7 +298,7 @@ namespace core
     {_G();
         if ( _lisp->sourceDatabase().notnilp() ) {
             if ( cl_consp(obj) ) {
-                SourcePosInfo_sp spi = _lisp->sourceDatabase()->lookupSourcePosInfo(obj);
+                SourcePosInfo_sp spi = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(obj);
                 if ( spi.notnilp() ) {
                     return spi;
                 }
@@ -513,10 +513,10 @@ namespace core
     void af_dumpSourceManager(T_sp dumpAll)
     {_G();
         if ( _lisp->sourceDatabase().notnilp() ) {
-            _lisp->print(BF("Source Manager entries: %d\n") % _lisp->sourceDatabase()->_SourcePosInfo->size());
+            _lisp->print(BF("Source Manager entries: %d\n") % _lisp->sourceDatabase().as<SourceManager_O>()->_SourcePosInfo->size());
 	    if ( dumpAll.isTrue() ) {
 		printf("Dumping contents\n");
-		_lisp->sourceDatabase()->dump();
+		_lisp->sourceDatabase().as<SourceManager_O>()->dump();
 	    }
         } else {
             _lisp->print(BF("No source manager available"));
@@ -618,7 +618,7 @@ namespace core
     SourcePosInfo_sp SourceManager_O::duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp macroExpansion)
     {
         if ( _lisp->sourceDatabase().notnilp()  ) {
-            SourcePosInfo_sp info = _lisp->sourceDatabase()->lookupSourcePosInfo(orig_obj);
+            SourcePosInfo_sp info = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(orig_obj);
             if ( info.notnilp() ) {
 		this->registerSourcePosInfo(new_obj,info);
 		return info;

@@ -1255,12 +1255,12 @@ namespace core
     core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
 
     /*! Register source info for the object in the current source database */
-    core::SourcePosInfo_sp lisp_registerSourceInfo(T_sp obj
-                                                   , SourceFileInfo_sp sfo
-						   , size_t filePos
-                                                   , int lineno
-                                                   , int column );
-    core::SourcePosInfo_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi );
+    core::T_sp lisp_registerSourceInfo(T_sp obj
+				       , SourceFileInfo_sp sfo
+				       , size_t filePos
+				       , int lineno
+				       , int column );
+    core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi );
 #if 0    
     core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
                                                              , T_sp stream);

@@ -66,7 +66,7 @@ namespace core {
 	bool			_IsSpecial;
 	bool			_IsConstant;
 	bool			_ReadOnlyFunction;
-	Cons_sp			_PropertyList;
+	List_sp			_PropertyList;
     private:
 	friend class Class_O;
 	friend class Package_O;
@@ -107,8 +107,8 @@ namespace core {
 	inline T_sp* valueReference() { return &(this->_Value);};
 
 
-	Cons_sp plist() const;
-	void setf_plist(Cons_sp plist);
+	List_sp plist() const;
+	void setf_plist(List_sp plist);
 
 	void setReadOnly(bool b) { this->_IsConstant = true;};
 	bool getReadOnly() const { return this->_IsConstant;};

@@ -829,7 +829,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 #undef CorePkg_EXPORT
 	};
 	/* Set the values of some essential global symbols */
-	cl::_sym_nil->initialize();
+	cl::_sym_nil = gctools::smart_ptr<core::Symbol_O>((gctools::Tagged)gctools::global_Symbol_OP_nil);//->initialize();
+#if 0
 	cl::_sym_nil->_Name = Str_O::create("NIL");
 #if 1
 //        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );
@@ -843,6 +844,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	cl::_sym_nil->makeSpecial();
 	cl::_sym_nil->exportYourself();
         _lisp->commonLispPackage()->add_symbol_to_package("NIL",_Nil<Symbol_O>(),true);
+#endif
 	_lisp->_Roots._TrueObject = cl::_sym_T_O;
 	cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
 	cl::_sym_STARload_printSTAR->exportYourself()->defparameter(_lisp->_false());

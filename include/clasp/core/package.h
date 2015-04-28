@@ -65,7 +65,7 @@ GCPRIVATE: // instance variables
         gctools::Vec0<Package_sp>       _PackagesUsedBy;
 	bool		_KeywordPackage;
 	bool		_AmpPackage;
-	Cons_sp		_Nicknames;
+	List_sp		_Nicknames;
 public:	// Creation class functions
     static Package_sp create(const string& p);
     public:
@@ -79,8 +79,8 @@ public:
 
 	T_mv packageHashTables() const;
 
-	void setNicknames(Cons_sp nicknames) { this->_Nicknames = nicknames;};
-	Cons_sp getNicknames() const { return this->_Nicknames;};
+	void setNicknames(List_sp nicknames) { this->_Nicknames = nicknames;};
+	List_sp getNicknames() const { return this->_Nicknames;};
 #if 0
 	symbolIterator beginExternals() { return this->_ExternalSymbols.begin();};
 	symbolIterator endExternals() { return this->_ExternalSymbols.end();};
@@ -102,7 +102,7 @@ public:
 	string allSymbols();
 
 	/*! support for CLHS::shadow */
-	bool shadow(Cons_sp listOfSymbolNames);
+	bool shadow(List_sp listOfSymbolNames);
 
 	/*! support for CLHS::shadow */
 	bool shadow(Str_sp sym);
@@ -115,7 +115,7 @@ public:
 	bool isExported(Symbol_sp sym);
 
 	/*! See CLHS:export function */
-	void _export(Cons_sp listOfSymbols);
+	void _export(List_sp listOfSymbols);
 
 	/*! Return the symbol if we contain it directly */
 	Symbol_mv findSymbolDirectlyContained(Bignum_sp nameKey) const;
@@ -137,17 +137,17 @@ public:
 	/*! Remove the symbol from the package */
 	bool unintern(Symbol_sp sym );
 
-	Cons_sp packageUseList();
-        Cons_sp packageUsedByList();
+	List_sp packageUseList();
+        List_sp packageUsedByList();
 
 	/*! Import the symbols into this package - see CLHS */
-	void import( Cons_sp symbols );
+	void import( List_sp symbols );
 
 	/*! Shadow import the symbols into this package - see CLHS */
-	void shadowingImport( Cons_sp listOfSymbols );
+	void shadowingImport( List_sp listOfSymbols );
 
 	/*! Return a list of all shadowing symbols */
-	Cons_sp shadowingSymbols() const;
+	List_sp shadowingSymbols() const;
 
 
 		/*! Use the package, if there are any overlapping symbols

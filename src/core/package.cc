@@ -63,16 +63,16 @@ namespace core
     {_G();
         Package_sp package = coerce::packageDesignator(pkg);
         string newName = coerce::packageNameDesignator(newNameDesig);
-        Cons_sp nickNames = coerce::listOfStringDesignators(nickNameDesigs);
+        List_sp nickNames = coerce::listOfStringDesignators(nickNameDesigs);
         // Remove the old names from the Lisp system
         _lisp->unmapNameToPackage(package->getName());
-        for ( Cons_sp cur = package->getNicknames(); cur.notnilp(); cur=cCdr(cur) ) {
+        for ( auto cur : package->getNicknames() ) {
             _lisp->unmapNameToPackage(oCar(cur).as<Str_O>()->get());
         }
         // Set up the new names
         package->setName(newName);
         _lisp->mapNameToPackage(newName,package);
-        for ( Cons_sp cur = nickNames; cur.notnilp(); cur=cCdr(cur) ) {
+        for ( auto cur : nickNames ) {
             _lisp->mapNameToPackage(oCar(cur).as<Str_O>()->get(),package);
         };
         package->setNicknames(nickNames);
@@ -139,18 +139,17 @@ namespace core
 #define ARGS_af_makePackage "(package-name &key nicknames use)"
 #define DECL_af_makePackage ""
 #define DOCS_af_makePackage "make_package"
-    T_mv af_makePackage(T_sp package_name_desig, Cons_sp nick_names, T_sp use_desig)
+    T_mv af_makePackage(T_sp package_name_desig, List_sp nick_names, T_sp use_desig)
     {_G();
 	Str_sp package_name = coerce::stringDesignator(package_name_desig);
-	Cons_sp use_packages = coerce::listOfPackageDesignators(use_desig);
+	List_sp use_packages = coerce::listOfPackageDesignators(use_desig);
 	list<string> lnn;
-	for ( Cons_sp nc = nick_names; nc.notnilp(); nc=cCdr(nc) )
-	{
+	for ( auto nc : nick_names ) {
 	    Str_sp nickstr = coerce::stringDesignator(oCar(nc));
 	    lnn.push_front(nickstr->get());
 	}
 	list<string> lup;
-	for ( Cons_sp uc = use_packages; uc.notnilp(); uc=cCdr(uc) ) {
+	for ( auto uc : use_packages ) {
 	    lup.push_front(oCar(uc).as<Package_O>()->packageName());
 	}
 	return(Values(_lisp->makePackage(package_name->get(),lnn,lup)));
@@ -175,7 +174,7 @@ namespace core
 #define DOCS_cl_listAllPackages "listAllPackages"
     T_sp cl_listAllPackages()
     {_G();
-	Cons_sp packages = _Nil<Cons_O>();
+	List_sp packages = _Nil<List_V>();
 	for ( auto mi = _lisp->packages().begin(); mi!= _lisp->packages().end(); mi++ )
 	{
 	    packages = Cons_O::create(*mi,packages);
@@ -201,10 +200,9 @@ namespace core
 #define DOCS_af_use_package "SeeCLHS use-package"
     T_sp af_use_package(T_sp packages_to_use_desig, T_sp package_desig)
     {_G();
-	Cons_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
+	List_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
-	for ( Cons_sp cur = packages_to_use; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : packages_to_use ) {
 	    Package_sp package_to_use = oCar(cur).as<Package_O>();
 	    package->usePackage(package_to_use);
 	}
@@ -216,10 +214,9 @@ namespace core
 #define DOCS_af_unuse_package "SeeCLHS unuse-package"
     T_sp af_unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig)
     {_G();
-	Cons_sp packages_to_unuse = coerce::listOfPackageDesignators(packages_to_unuse_desig);
+	List_sp packages_to_unuse = coerce::listOfPackageDesignators(packages_to_unuse_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
-	for ( Cons_sp cur = packages_to_unuse; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : packages_to_unuse ) {
 	    Package_sp package_to_unuse = oCar(cur).as<Package_O>();
 	    package->unusePackage(package_to_unuse);
 	}
@@ -230,10 +227,10 @@ namespace core
 #define ARGS_af_package_shadowing_symbols "(package_desig)"
 #define DECL_af_package_shadowing_symbols ""
 #define DOCS_af_package_shadowing_symbols "See CLHS package_shadowing_symbols"
-    T_mv af_package_shadowing_symbols(T_sp package_desig)
+    T_sp af_package_shadowing_symbols(T_sp package_desig)
     {_G();
 	Package_sp package = coerce::packageDesignator(package_desig);
-	return(Values(package->shadowingSymbols()));
+	return package->shadowingSymbols();
     }
 
 /*
@@ -248,7 +245,7 @@ namespace core
 #define DOCS_af_import "See CLHS: import"
     T_mv af_import(T_sp symbols_desig, T_sp package_desig)
     {_G();
-	Cons_sp symbols = coerce::listOfSymbols(symbols_desig);
+	List_sp symbols = coerce::listOfSymbols(symbols_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
 	package->import(symbols);
 	return(Values(_lisp->_true()));
@@ -259,9 +256,9 @@ namespace core
 #define ARGS_af_shadow "(symbol-names-desig &optional (package_desig *package*))"
 #define DECL_af_shadow ""
 #define DOCS_af_shadow "See CLHS: shadow"
-    T_mv af_shadow(Cons_sp symbol_names_desig, T_sp package_desig)
+    T_mv af_shadow(List_sp symbol_names_desig, T_sp package_desig)
     {_G();
-	Cons_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
+	List_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
 	package->shadow(symbolNames);
 	return(Values(_lisp->_true()));
@@ -274,7 +271,7 @@ namespace core
 #define DOCS_af_shadowing_import "See CLHS: shadowing-import"
     T_mv af_shadowing_import(T_sp symbol_names_desig, T_sp package_desig)
     {_G();
-	Cons_sp symbolNames = coerce::listOfSymbols(symbol_names_desig);
+	List_sp symbolNames = coerce::listOfSymbols(symbol_names_desig);
 	Package_sp package = coerce::packageDesignator(package_desig);
 	package->shadowingImport(symbolNames);
 	return(Values(_lisp->_true()));
@@ -336,10 +333,10 @@ namespace core
 #define LOCK_af_package_use_list 0
 #define ARGS_af_package_use_list "(package-designator)"
 #define DECL_af_package_use_list ""    
-    T_mv af_package_use_list(T_sp package_designator)
+    T_sp af_package_use_list(T_sp package_designator)
     {_G();
 	Package_sp pkg = coerce::packageDesignator(package_designator);
-	return(Values(pkg->packageUseList()));
+	return pkg->packageUseList();
     };
 
 
@@ -350,7 +347,7 @@ namespace core
 #define ARGS_cl_packageUsedByList "(pkg)"
 #define DECL_cl_packageUsedByList ""
 #define DOCS_cl_packageUsedByList "packageUsedByList"
-    Cons_sp cl_packageUsedByList(T_sp pkgDesig)
+    List_sp cl_packageUsedByList(T_sp pkgDesig)
     {_G();
         Package_sp pkg = coerce::packageDesignator(pkgDesig);
         return pkg->packageUsedByList();
@@ -425,7 +422,7 @@ namespace core
 
     T_mv Package_O::hashTables() const
     {
-	Cons_sp useList = _Nil<Cons_O>();
+	List_sp useList = _Nil<List_V>();
 	for ( auto ci=this->_UsingPackages.begin();
 	      ci!=this->_UsingPackages.end(); ci++ )
 	{
@@ -561,9 +558,9 @@ namespace core
 
     
 
-    Cons_sp Package_O::packageUseList()
+    List_sp Package_O::packageUseList()
     {_OF();
-	Cons_sp res = _Nil<Cons_O>();
+	List_sp res = _Nil<List_V>();
 	for ( auto si=this->_UsingPackages.begin();
 	      si!=this->_UsingPackages.end(); si++ )
 	{
@@ -572,9 +569,9 @@ namespace core
 	return res;
     }
 
-    Cons_sp Package_O::packageUsedByList()
+    List_sp Package_O::packageUsedByList()
     {_OF();
-	Cons_sp res = _Nil<Cons_O>();
+	List_sp res = _Nil<List_V>();
 	for ( auto si=this->_PackagesUsedBy.begin();
 	      si!=this->_PackagesUsedBy.end(); si++ )
 	{
@@ -589,7 +586,7 @@ namespace core
 
     T_mv Package_O::packageHashTables() const
     {_G();
-	Cons_sp usingPackages = _Nil<Cons_O>();
+	List_sp usingPackages = _Nil<List_V>();
 	for ( auto si=this->_UsingPackages.begin();
 	      si!=this->_UsingPackages.end(); si++ )
 	{
@@ -669,10 +666,9 @@ namespace core
 
 
 
-    void Package_O::_export(Cons_sp symbols)
+    void Package_O::_export(List_sp symbols)
     {_OF();
-	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : symbols ) {
 	    Symbol_sp sym = oCar(cur).as<Symbol_O>();
 	    if ( sym.notnilp() && sym->symbolNameAsString() == "" )
 	    {
@@ -733,10 +729,9 @@ namespace core
 
 
 
-    bool Package_O::shadow(Cons_sp symbolNames)
+    bool Package_O::shadow(List_sp symbolNames)
     {_OF();
-	for ( Cons_sp cur = symbolNames; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : symbolNames ) {
 	    Str_sp name = oCar(cur).as<Str_O>();
             this->shadow(name);
         }
@@ -886,10 +881,9 @@ namespace core
 
 
 
-    void Package_O::import(Cons_sp symbols)
+    void Package_O::import(List_sp symbols)
     {_OF();
-	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : symbols ) {
 	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
             Bignum_sp nameKey = symbolNameToKey(symbolToImport);
             Symbol_mv values = this->findSymbol(nameKey);
@@ -909,10 +903,9 @@ namespace core
     }
 
 
-    void Package_O::shadowingImport(Cons_sp symbols)
+    void Package_O::shadowingImport(List_sp symbols)
     {
-	for ( Cons_sp cur = symbols; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : symbols ) {
 	    Symbol_sp symbolToImport = oCar(cur).as<Symbol_O>();
 	    Bignum_sp nameKey = symbolNameToKey(symbolToImport);
 	    Symbol_mv values = this->findSymbol(nameKey);
@@ -927,9 +920,9 @@ namespace core
     }
 
 
-    Cons_sp Package_O::shadowingSymbols() const
+    List_sp Package_O::shadowingSymbols() const
     {_OF();
-	Cons_sp cur = _Nil<Cons_O>();
+	List_sp cur = _Nil<List_V>();
         this->_ShadowingSymbols->mapHash( [&cur] (T_sp name, T_sp symbol) {
 	    cur = Cons_O::create(symbol,cur);
             } );
