@@ -150,7 +150,7 @@ namespace core
 	SYMBOL_EXPORT_SC_(CorePkg,structure_print_function);
 	SYMBOL_EXPORT_SC_(CorePkg,STARprint_structureSTAR);
         T_sp print_function = af_get_sysprop(this->_Type,_sym_structure_print_function);
-        if (Null(print_function) || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
+        if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
 	    clasp_write_string("#S",stream);
 	    /* structure_to_list conses slot names and values into
 	     * a list to be printed.  print shouldn't allocate
@@ -179,7 +179,7 @@ namespace core
 #if 0 // working
 
     void
-    _ecl_write_fixnum(cl_fixnum i, T_sp stream)
+    _ecl_write_fixnum(gctools::Fixnum i, T_sp stream)
     {
         T_sp s = si_get_buffer_string();
         si_integer_to_string(s, ecl_make_fixnum(i), ecl_make_fixnum(10), ECL_NIL, ECL_NIL);
@@ -439,14 +439,21 @@ namespace core
 
     void write_fixnum(T_sp strm, T_sp i)
     {
-	Fixnum_sp fn = Fixnum_O::create(i.fixnum());
+	ASSERT(i.fixnump());
+	Fixnum_sp fn = Fixnum_O::create(i.unsafe_fixnum());
 	fn->__write__(strm);
+    }
+
+    void write_single_float(T_sp strm, T_sp i)
+    {
+	IMPLEMENT_MEF(BF("Implement write_single_float"));
     }
 
 
     void write_character(T_sp strm, T_sp chr)
     {
-        claspChar i = chr.character();
+	ASSERT(chr.characterp());
+        claspChar i = chr.unsafe_character();
 	if (!clasp_print_escape() && !clasp_print_readably()) {
 	    clasp_write_char(i,strm);
 	} else {
@@ -468,31 +475,28 @@ namespace core
 		PRINT_NOT_READABLE_ERROR(x);
 	    clasp_write_string("#<OBJNULL>",stream);
 	    goto DONE;
-	}	
-	switch (x.tag()) {
-	case gctools::smart_ptr<T_O>::BaseType::ptr_tag:
-	    x->__write__(stream);
-	    break;
-	case gctools::smart_ptr<T_O>::special_tag:
-	    if ( x.nilp() ) { // ECL appears to shunt this off to write_list
-                clasp_write_symbol(x,stream);
-//                Str_sp nilstr = Str_O::create("NIL");
-//		nilstr->__write__(stream);      
-	    } else if ( x.unboundp() ) {
-		clasp_write_string("unbound",stream);
-	    } else if ( x.characterp() ) {
-                write_character(stream,x);
-            }
-	    break;
-	case gctools::smart_ptr<T_O>::fixnum_tag:
+	}
+	if ( x.fixnump() ) {
 	    write_fixnum(stream,x);
-	    break;
-        case gctools::smart_ptr<T_O>::frame_tag:
-            clasp_write_string("#<stack-based-frame>",stream);
-            break;
-	default:
-	    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
-	    break;
+	} else {
+	    switch (x.tag()) {
+	    case gctools::other_tag:
+	    case gctools::cons_tag:
+		x->__write__(stream);
+		break;
+	    case gctools::frame_tag:
+		clasp_write_string("#<stack-based-frame>",stream);
+		break;
+	    case gctools::character_tag:
+		write_character(stream,x);
+		break;
+	    case gctools::single_float_tag:
+		write_single_float(stream,x);
+		break;
+	    default:
+		SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
+		break;
+	    }
 	}
     DONE:
 	return x;
@@ -503,7 +507,7 @@ namespace core
 #define ARGS_af_writeUglyObject "(obj &optional strm)"
 #define DECL_af_writeUglyObject ""
 #define DOCS_af_writeUglyObject "writeUglyObject"
-    T_sp af_writeUglyObject(T_sp obj, T_sp ostrm)
+	T_sp af_writeUglyObject(T_sp obj, T_sp ostrm)
     {_G();
         T_sp strm = coerce::outputStreamDesignator(ostrm);
         return write_ugly_object(obj,strm);

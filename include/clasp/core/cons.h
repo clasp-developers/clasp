@@ -60,9 +60,9 @@ namespace core
 
     T_sp oCar(T_sp obj);
     T_sp oCdr(T_sp obj);
-    Cons_sp cCar(T_sp obj);
-    Cons_sp cCdr(T_sp obj);
+    Cons_sp cCar(Cons_sp obj);
     Cons_sp cCdr(Cons_sp obj);
+    Cons_sp cCdr(T_sp obj);
     Cons_sp cCddr(T_sp obj);
     Cons_sp cCdddr(T_sp obj);
     Cons_sp cCddddr(T_sp obj);
@@ -133,9 +133,12 @@ namespace core {
 #if defined(OLD_SERIALIZE)
 	DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
+	friend T_sp cons_car(core::Cons_O* cur);
+	friend T_sp cons_cdr(core::Cons_O* cur);
+
 	friend T_sp oCar(T_sp o);
 	friend T_sp oCdr(T_sp o);
-	friend Cons_sp cCar(T_sp o);
+	friend Cons_sp cCar(Cons_sp o);
 	friend Cons_sp cCdr(Cons_sp o);
 	friend Cons_sp cCddr(T_sp o);
 	friend Cons_sp cCdddr(T_sp o);
@@ -186,7 +189,6 @@ namespace core {
 	static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8 );
 	static Cons_sp create(T_sp car, T_sp cdr)
 	{
-	    TESTING();
             Cons_sp ll = gctools::GCObjectAllocator<Cons_O>::allocate(car,cdr);
 //            ll.unsafe_cons()->setCar(car);
 //            ll->setOCdr(cdr);
@@ -446,6 +448,7 @@ namespace core {
 	T_sp getf(T_sp key, T_sp defValue) const;
 
 	explicit Cons_O();
+	explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr) {};
 	virtual ~Cons_O();
 
     };
@@ -463,7 +466,25 @@ namespace core {
 	int last_column;
     } LispParserPos;
     
-    
+
+    inline Cons_sp cCar(Cons_sp obj) { return obj->_Car.as<Cons_O>();};
+    inline Cons_sp cCdr(Cons_sp obj) { return obj->_Cdr.as<Cons_O>();};
+
+    inline Cons_sp cCar(T_sp obj) {
+	if (obj.consp()) {
+	    return obj.unsafe_cons()->_Car.as<Cons_O>();
+	}
+	if (obj.nilp()) return _Nil<Cons_O>();
+	TYPE_ERROR(obj,cl::_sym_Cons_O);
+    };
+    inline Cons_sp cCdr(T_sp obj) {
+	if (obj.consp()) {
+	    return obj.unsafe_cons()->_Cdr.as<Cons_O>();
+	}
+	if (obj.nilp()) return _Nil<Cons_O>();
+	TYPE_ERROR(obj,cl::_sym_Cons_O);
+    };
+
     inline T_sp oCar(T_sp obj) {
 	if (obj.consp()) {
 	    return obj.unsafe_cons()->_Car;
@@ -476,13 +497,6 @@ namespace core {
 	    return obj.unsafe_cons()->_Cdr;
 	}
 	if (obj.nilp()) return obj;
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    };
-    inline Cons_sp cCdr(T_sp obj) {
-	if (obj.consp()) {
-	    return obj.unsafe_cons()->_Cdr.as<Cons_O>();
-	}
-	if (obj.nilp()) return _Nil<Cons_O>();
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     };
     inline Cons_sp cCddr(T_sp obj) {
@@ -604,10 +618,10 @@ namespace core
 
 
     template <typename T>
-    void fillVec0FromCons(gctools::Vec0<T>& vec, Cons_sp list)
+    void fillVec0FromCons(gctools::Vec0<T>& vec, List_sp list)
     {
         vec.clear();
-        for ( Cons_sp cur=list; cur.notnilp(); cur=cCdr(cur) ) {
+        for ( auto cur : list ) {
             vec.push_back(oCar(cur));
         }
     }
@@ -637,7 +651,9 @@ namespace core {
 namespace core
 {
 
-    T_sp cl_getf(Cons_sp plist, T_sp indicator, T_sp default_value );
-    Cons_sp af_putF(Cons_sp plist, T_sp value, T_sp indicator );
+    T_sp cl_getf(T_sp plist, T_sp indicator, T_sp default_value );
+    Cons_sp af_putF(T_sp plist, T_sp value, T_sp indicator );
+
+    List_sp coerce_to_list(T_sp o);
 };
 #endif //]

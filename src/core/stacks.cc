@@ -230,7 +230,7 @@ namespace core
     void DynamicBindingStack::push(Symbol_sp var)
     {
         if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
-            Cons_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
+            Cons_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue().as<Cons_O>(),_Nil<T_O>());
             if ( assoc.notnilp() ) {
                 T_sp funcDesig = oCdr(assoc);
                 if ( funcDesig.notnilp() ) {
@@ -250,7 +250,7 @@ namespace core
     {
 	DynamicBinding& bind = this->_Bindings.back();
         if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-            Cons_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
+            Cons_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue().as<Cons_O>(),_Nil<T_O>());
             if ( assoc.notnilp() ) {
                 T_sp funcDesig = oCdr(assoc);
                 if ( funcDesig.notnilp() ) {
@@ -468,7 +468,7 @@ void    core_lowLevelBacktrace()
 	if (cur)
 	{
             Function_sp func = Function_O::make(cur->closure); //QUESTION: Should I be returning a new function every time?  This will cause problems when comparing functions - but I don't think I do that anywhere.
-            if ( func.pointerp() ) return func;
+            if ( func.objectp() ) return func;
         }
 	printf("%s:%d   There is a problem - ihsFun is returning NIL as the function at idx: %d\n", __FILE__, __LINE__, idx );
 	return _Nil<Function_O>();
@@ -487,7 +487,7 @@ void    core_lowLevelBacktrace()
 	if (cur)
 	{
             Environment_sp env = cur->activationFrame();
-            if ( env.pointerp() ) return env;
+            if ( env.objectp() ) return env;
         }
 	return _Nil<Environment_O>();
     };

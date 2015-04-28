@@ -271,7 +271,7 @@ namespace core
     Str_sp Str_O::create(const string& nm)
     {
         GC_ALLOCATE(Str_O,v );
-//	printf("%s:%d Str_O::create(const string& nm) @ %p nm = %s\n", __FILE__, __LINE__, v.px_ref(), nm.c_str() );
+//	printf("%s:%d Str_O::create(const string& nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm.c_str() );
 	v->set(nm);
 	return v;
     };
@@ -280,7 +280,7 @@ namespace core
     Str_sp Str_O::create(const char* nm)
     {
         GC_ALLOCATE(Str_O,v );
-//	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.px_ref(), nm );
+//	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm );
 	v->setFromChars(nm);
 	return v;
     };
@@ -288,7 +288,7 @@ namespace core
     Str_sp Str_O::create(const char* nm, int numChars)
     {
         GC_ALLOCATE(Str_O,v );
-//	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.px_ref(), nm );
+//	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm );
 	v->setFromChars(nm,numChars);
 	return v;
     };
@@ -781,7 +781,7 @@ namespace core
     {
 	if ( af_strP(obj) )
 	{
-	    Str_sp t = safe_downcast<Str_O>(obj);
+	    Str_sp t = obj.as<Str_O>();
 	    return this->get() < t->get();
 	}
 	return this->Base::operator<(obj);
@@ -791,7 +791,7 @@ namespace core
     {
 	if ( af_strP(obj) )
 	{
-	    Str_sp t = safe_downcast<Str_O>(obj);
+	    Str_sp t = obj.as<Str_O>();
 	    return this->get() <= t->get();
 	}
 	return this->Base::operator<=(obj);
@@ -815,9 +815,10 @@ namespace core
     {
 	TESTING();
 	vector<string> parts = core::split(this->get(),chars);
-	Cons_sp result(_Nil<T_O>());
+	Cons_sp result(_Nil<Cons_O>());
 	for ( vector<string>::reverse_iterator it = parts.rend(); it != parts.rbegin(); ++it ) {
-	    result = Cons_O::create(translate::to_object<string>(*it),result);
+	    Str_sp sone = translate::to_object<const string&>::convert(*it);
+	    result = Cons_O::create(sone,result);
 	}
 	return result;
 #if 0
@@ -848,7 +849,7 @@ namespace core
         if ( obj.nilp() ) return false;
         else if (Str_sp s2 = obj.asOrNull<Str_O>() ) {
             if ( this->length() != s2->length() ) return false;
-	    return this->string_equal(s2,0,this->length(),0,this->length());
+	    return this->string_equal(s2,0,this->length(),0,this->length()).isTrue();
 	}
 	return false;
     }
@@ -860,7 +861,7 @@ namespace core
 #if 0
 	if ( obj->strP() )
 	{
-	    Str_sp t = safe_downcast<Str_O>(obj);
+	    Str_sp t = obj.as<Str_O>();
 	    return this->get() > t->get();
 	}
 	return this->Base::operator>(obj);

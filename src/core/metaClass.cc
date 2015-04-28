@@ -189,8 +189,7 @@ namespace core
                 return aClass;
             }
         }
-        Cons_sp supers = aClass->directSuperclasses();
-        for ( ; supers.notnilp(); supers=cCdr(supers) ) {
+        for ( auto supers : aClass->directSuperclasses() ) {
             Class_sp aSuperClass = oCar(supers).as<Class_O>();
             Class_sp aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
             if ( aPossibleCxxDerivableAncestorClass.notnilp() ) 
@@ -346,8 +345,7 @@ namespace core
 	ss << (boost::format("this.instanceClassName: %s @ %X") % this->instanceClassName() % this) << std::endl;
 	ss << "_FullName[" << this->name()->fullName() << "]" <<std::endl;
 	ss << boost::format("    _Class = %X  this._Class.instanceClassName()=%s\n") % this->__class().get() % this->__class()->instanceClassName();
-	for ( Cons_sp cc = this->directSuperclasses(); cc.notnilp(); cc=cCdr(cc) )
-	{
+	for ( auto cc : this->directSuperclasses() ) {
 	    ss << "Base class: " << oCar(cc).as<Class_O>()->instanceClassName() << std::endl;
 	}
 	ss << boost::format("this.instanceCreator* = %p") % (void*)(this->getCreator()) << std::endl;
@@ -363,12 +361,18 @@ namespace core
     void Class_O::accumulateSuperClasses(HashTableEq_sp supers,VectorObjectsWithFillPtr_sp arrayedSupers ,Class_sp mc)
     {_G();
 	if ( IS_SYMBOL_UNDEFINED(mc->className()) ) return;
+	//	printf("%s:%d accumulateSuperClasses of: %s\n", __FILE__, __LINE__, _rep_(mc->className()).c_str() );
 	if ( supers->contains(mc) ) return;
-        supers->setf_gethash(mc,Fixnum_O::create(arrayedSupers->length()));
+	Fixnum_sp arraySuperLength = Fixnum_O::create(arrayedSupers->length());
+        supers->setf_gethash(mc,arraySuperLength);
 	arrayedSupers->vectorPushExtend(mc);
-	for ( Cons_sp cur=mc->directSuperclasses(); cur.notnilp(); cur=cCdr(cur) )
+	List_sp directSuperclasses = mc->directSuperclasses();
+	//	printf("%s:%d accumulateSuperClasses arraySuperLength = %d\n", __FILE__, __LINE__, arraySuperLength->get());
+	for ( auto cur : directSuperclasses ) // ; cur.notnilp(); cur=cCdr(cur) )
 	{
-	    accumulateSuperClasses(supers,arrayedSupers,oCar(cur).as<Class_O>());
+	    T_sp one = oCar(cur);
+	    Class_sp oneClass = one.as<Class_O>();
+	    accumulateSuperClasses(supers,arrayedSupers,oneClass);
 	}
     }
 
@@ -407,7 +411,7 @@ namespace core {
 	    virtual bool mapKeyValue(T_sp key, T_sp value) {
 		int mcIndex = value.as<Fixnum_O>()->get();
 		Class_sp mc = key.as<Class_O>();
-		for ( Cons_sp mit=mc->directSuperclasses(); mit.notnilp(); mit=cCdr(mit) )
+		for ( auto mit : (List_sp)(mc->directSuperclasses()) )
 		{
 		    int aSuperIndex = this->supers->gethash(oCar(mit),_Unbound<T_O>()).as<Fixnum_O>()->get();
 		    (*this->graphP)[mcIndex].push_front(aSuperIndex);
@@ -521,7 +525,7 @@ namespace core {
 	Class_sp cl = eval::funcall(cl::_sym_findClass,className,_lisp->_true()).as<Class_O>();
 	// When booting _DirectSuperClasses may be undefined
 	ASSERT(this->directSuperclasses());
-	Cons_sp dsc = _Nil<Cons_O>();
+	List_sp dsc = _Nil<List_V>();
 	if ( !this->directSuperclasses().unboundp() )
 	{
 	    dsc = this->directSuperclasses();
@@ -546,14 +550,14 @@ namespace core {
 
 
 
-    Cons_sp Class_O::directSuperclasses() const
+    List_sp Class_O::directSuperclasses() const
     {_OF();
-	return this->instanceRef(REF_DIRECT_SUPERCLASSES).as_or_nil<Cons_O>();
+	return coerce_to_list(this->instanceRef(REF_DIRECT_SUPERCLASSES));
     }
 
     void Class_O::appendDirectSuperclassAndResetClassPrecedenceList(Class_sp superClass)
     {_G();
-	Cons_sp directSuperclasses = this->directSuperclasses();
+	List_sp directSuperclasses = this->directSuperclasses();
 	directSuperclasses = Cons_O::create(superClass,directSuperclasses);
 	this->instanceSet(REF_DIRECT_SUPERCLASSES,directSuperclasses);
 	this->instanceSet(REF_CLASS_PRECEDENCE_LIST,_Nil<Cons_O>());
@@ -573,8 +577,7 @@ namespace core {
 	if ( this->directSuperclasses().nilp() ) {
 	    printf("There are no super-classes!!!!!!\n");
 	} else {
-	    for ( Cons_sp cc = this->directSuperclasses(); cc.notnilp(); cc=cCdr(cc) )
-	    {
+	    for ( Cons_sp cc : this->directSuperclasses() ) {
 		printf("directSuperclasses: %s\n", oCar(cc).as<Class_O>()->instanceClassName().c_str() );
 	    }
 	}

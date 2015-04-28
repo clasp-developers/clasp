@@ -95,7 +95,7 @@ In ecl/src/c/interpreter.d  is the following code
 	Cons_sp arglist = _Nil<Cons_O>();
 	for ( int p=nargs-1; p>=0; --p)
 	{
-	    T_sp co = af_classOf(args[p]);
+	    T_sp co = af_classOf(gctools::smart_ptr<T_O>(args[p]));
 #if DEBUG_CLOS>=2
 	    printf("MLOG frame_to_classes class[%d] --> %lX  --> %s\n",
 		   p, co.intptr(), co->__repr__().c_str() );
@@ -147,7 +147,7 @@ In ecl/src/c/interpreter.d  is the following code
 		SYMBOL_EXPORT_SC_(ClPkg,no_applicable_method);
 		T_sp func = eval::funcall(cl::_sym_no_applicable_method,
 					  gf,arglist);
-		args[0] = (T_O*)(gctools::tagged_ptr<T_O>::tagged_nil);
+		args[0] = (T_O*)(gctools::tag_nil<T_O>());
 		return(Values(func,_Nil<T_O>()));
 	    }
 	}
@@ -170,7 +170,7 @@ In ecl/src/c/interpreter.d  is the following code
 	{
 	    Function_sp func = eval::funcall(cl::_sym_no_applicable_method,
 					     igf,arglist).as<Function_O>();
-	    args[0] = (T_O*)(gctools::tagged_ptr<T_O>::tagged_nil);
+	    args[0] = (T_O*)(gctools::tag_nil<T_O>());
 	    return(Values(func,_Nil<T_O>()));
 	}
 	methods = eval::funcall(clos::_sym_std_compute_effective_method,igf,gf->GFUN_COMB(),methods);
@@ -189,7 +189,8 @@ In ecl/src/c/interpreter.d  is the following code
 		return args;
 	    } else if ( first.framep() ) {
 		Cons_sp expanded = _Nil<Cons_O>();
-		core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(first.px));
+		ASSERT(first.framep());
+		core::T_O** frameImpl(first.unsafe_frame());
 		frame::ElementType* values(frame::ValuesArray(frameImpl));
 		for ( int i(0), iEnd(frame::ValuesArraySize(frameImpl)); i<iEnd; ++i ) {
 		    expanded = Cons_O::create(gctools::smart_ptr<T_O>(values[i]),expanded);
@@ -254,9 +255,10 @@ In ecl/src/c/interpreter.d  is the following code
 		SIMPLE_ERROR(BF("Too many arguments to fill_spec_vector()"));
 	    }
 	    if (!cl_listp(spec_type) || 
-		spec_type.as_or_nil<Cons_O>()->memberEql(args[spec_position]).nilp() )
+		spec_type.as<Cons_O>()->memberEql(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position]))).nilp() ) // Was as_or_nil
 	    {
-		Class_sp mc = lisp_instance_class(args[spec_position]);
+		TESTINGF(BF("Handle tagged pointers"));
+		Class_sp mc = lisp_instance_class(gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position])));
 #if DEBUG_CLOS>=2
 		printf("MLOG fill_spec_vector argtype[%d] using class_of(args[%d]): %s\n", spec_no, spec_position, mc->__repr__().c_str() );
 #endif
@@ -267,7 +269,7 @@ In ecl/src/c/interpreter.d  is the following code
 		printf("MLOG fill_spec_vector argtype[%d] using args[%d]\n", spec_no, spec_position );
 #endif
 		// For immediate types we need to make sure that EQL will be true
-		argtype[spec_no] = args[spec_position];
+		argtype[spec_no] = gctools::smart_ptr<T_O>((gctools::Tagged)(args[spec_position]));
 	    }
 #if DEBUG_CLOS>=2
 	    printf("MLOG fill_spec_vector - from arg[%d] val=%lX writing to argtype[%d] at %p wrote: %lX --> argtype/%s",

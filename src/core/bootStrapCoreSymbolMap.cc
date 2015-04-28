@@ -43,10 +43,15 @@ namespace core
 	return((fullName));
     }
 
+
+
     BootStrapCoreSymbolMap::BootStrapCoreSymbolMap()
     {
 //	this->attachToGCRoot();
 //#define LOOKUP_SYMBOL(pkgName,symName) bootStrapSymbolMap.lookupSymbol(pkgName,symName)
+
+	printf("%s:%d BootStrapCoreSymbolMap\n", __FILE__, __LINE__ );
+	
 #define ClPkg_SYMBOLS
 #define DO_SYMBOL(cname,rsid,pkgName,symName,exportp) cl::cname = this->allocate_unique_symbol(pkgName,symName,exportp);
 	#include "symbols_scraped_inc.h"
@@ -135,10 +140,11 @@ namespace core
 
     void BootStrapCoreSymbolMap::finish_setup_of_symbols()
     {_G();
+	printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
 	for ( map<string,int>::const_iterator it=this->_SymbolNamesToIndex.begin();
 	      it!=this->_SymbolNamesToIndex.end(); it++ )
 	{
-//            printf("%s:%d  Adding symbol to package: %s\n", __FILE__, __LINE__, this->_IndexToSymbol[it->second]._PackageName.c_str()  );
+	    //	    printf("%s:%d  Adding symbol to package: %s\n", __FILE__, __LINE__, this->_IndexToSymbol[it->second]._PackageName.c_str()  );
 	    string packageName = this->_IndexToSymbol[it->second]._PackageName;
 	    Package_sp pkg = _lisp->findPackage(packageName);
             if ( pkg.nilp() ) {

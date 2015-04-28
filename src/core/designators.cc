@@ -68,7 +68,7 @@ namespace core
 	    {
 		return obj.as<Path_O>();
 	    }
-	    SIMPLE_ERROR(BF("Illegal path designator[%s]") % obj);
+	    SIMPLE_ERROR(BF("Illegal path designator[%s]") % _rep_(obj));
 	}
 	
 

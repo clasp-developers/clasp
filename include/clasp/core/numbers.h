@@ -214,12 +214,15 @@ namespace core
 	/*! Return a Cons (integer low high) */
 	static T_sp makeIntegerType(int low, int high);
 	static Integer_sp create(const mpz_class& v);
-	static Integer_sp create(LongLongInt v);
-	static Integer_sp create(int v);
+	static Integer_sp create(gctools::Fixnum v);
+	static inline Integer_sp create(size_t v) { return Integer_O::create((gctools::Fixnum)v);};
+	static inline Integer_sp create(int v) { return Integer_O::create((gctools::Fixnum)v);};
+	static inline Integer_sp create(uint v) { return Integer_O::create((gctools::Fixnum)v);};
+	//	static Integer_sp create(int v);
 	static Integer_sp create(const string& v) {mpz_class zv(v); return create(zv);};
 	static Integer_sp create(const char* v) {mpz_class zv(v); return create(zv);};
-	static Integer_sp create(size_t v); // unsigned
-	static Integer_sp create(uint v);
+	//	static Integer_sp create(size_t v); // unsigned
+	//	static Integer_sp create(uint v);
 #ifndef _TARGET_OS_LINUX
 	static Integer_sp create(uint64_t v);
 #endif
@@ -279,9 +282,9 @@ namespace core {
     private:
 	gctools::Fixnum	_Value;
     public:
-	static Fixnum_sp create(int nm);
 	static Fixnum_sp create(gctools::Fixnum nm);
-	static Fixnum_sp create(uint nm);
+	static Fixnum_sp create(int nm) {return Fixnum_O::create((gctools::Fixnum)nm); };
+	static Fixnum_sp create(uint nm) {return Fixnum_O::create((gctools::Fixnum)nm); };
     public:
 	static int number_of_bits();
     public:
@@ -884,18 +887,18 @@ namespace core {
     Number_sp brcl_atan2(Number_sp x, Number_sp y);
 
     inline Number_sp brcl_sqrt(Number_sp z) {
-	ASSERTF(z.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(z.objectp(),BF("Add support for immediate fixnums"));
 	return z->sqrt();
     }
 
     inline Number_sp brcl_log1(Number_sp x) {
-	ASSERTF(x.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(x.objectp(),BF("Add support for immediate fixnums"));
 	return x->log1();
     }
 
     inline Number_sp brcl_log1p(Number_sp x)
     {
-	ASSERTF(x.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(x.objectp(),BF("Add support for immediate fixnums"));
 	return x->log1p();
     };
 
@@ -905,25 +908,25 @@ namespace core {
 	if (n.fixnump()) {
 	    return n.asFixnum() == 0;
 	}
-	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(n.objectp(),BF("Add support for immediate fixnums"));
 	return n->zerop();
     }
 
     inline Number_sp brcl_negate(Number_sp n)
     {
-	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(n.objectp(),BF("Add support for immediate fixnums"));
 	return n->negate();
     }
 
     inline Number_sp brcl_one_plus(Number_sp x)
     {
-	ASSERTF(x.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(x.objectp(),BF("Add support for immediate fixnums"));
 	return x->onePlus();
     }
 
     inline Number_sp brcl_one_minus(Number_sp x)
     {
-	ASSERTF(x.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(x.objectp(),BF("Add support for immediate fixnums"));
 	return x->oneMinus();
     }
 
@@ -939,13 +942,13 @@ namespace core {
 
     inline bool brcl_evenp(Integer_sp n)
     {
-	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(n.objectp(),BF("Add support for immediate fixnums"));
 	return n->evenp();
     }
 
     inline bool brcl_oddp(Integer_sp n)
     {
-	ASSERTF(n.pointerp(),BF("Add support for immediate fixnums"));
+	ASSERTF(n.objectp(),BF("Add support for immediate fixnums"));
 	return n->oddp();
     };
 
@@ -967,7 +970,7 @@ namespace core {
     inline LongFloat brcl_to_long_float(Number_sp x) { return x->as_long_float(); };
     inline LongFloat brcl_to_long_double(Number_sp x) { return x->as_long_float(); };
 
-    inline gctools::Fixnum brcl_fixnum(Number_sp x) {
+    inline gctools::Fixnum clasp_fixnum(Number_sp x) {
 	return x.as<Fixnum_O>()->get();
     }
 

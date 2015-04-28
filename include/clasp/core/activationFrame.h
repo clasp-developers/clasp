@@ -694,7 +694,11 @@ namespace frame
 // Allocate memory on the stack on a 16 byte boundary for tagged pointers
 // We can't specify the alignment of __builtin_alloca so allocate an additional 15 bytes
 // add 15 bytes and then align down to 16 byte boundary
-#define DO_ALLOCA(numValues) (frame::ElementType*)(((uintptr_t)(__builtin_alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues)+15))+15)&(~0xf)); \
+#if ALIGNMENT==16
+#define DO_ALLOCA(numValues) (frame::ElementType*)(((uintptr_t)(__builtin_alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues)+15))+15)&(~0xf)); 
+#else
+#define DO_ALLOCA(numValues) (frame::ElementType*)((uintptr_t)(__builtin_alloca(sizeof(frame::ElementType)*frame::FrameSize(numValues))));
+#endif
 
 #define ALLOC_STACK_VALUE_FRAME(frameImpl,oframe,numValues)     \
     frame::ElementType* frameImpl = DO_ALLOCA(numValues);	\

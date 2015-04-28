@@ -60,7 +60,7 @@ namespace core {
         KeyBucketsType& keys = *this->_HashTable._Keys;
         ValueBucketsType& values = *this->_HashTable._Values;
         printf("WeakKeyHashTable   size: %zu\n", this->_HashTable.length());
-        printf("   keys memory range:  %p  - %p \n", &keys[0].px_ref(), &keys[this->_HashTable.length()].px_ref());
+        printf("   keys memory range:  %p  - %p \n", &keys[0].rawRef_(), &keys[this->_HashTable.length()].rawRef_());
         printf("   _HashTable.length = %d\n", keys.length() );
         printf("   _HashTable.used = %d\n", keys.used() );
         printf("   _HashTable.deleted = %d\n", keys.deleted() );
@@ -68,7 +68,7 @@ namespace core {
             value_type& key = keys[i];
             stringstream sentry;
             sentry.width(3);
-            sentry << i << "  key.px@" << (void*)(&key.px_ref()) << "  ";
+            sentry << i << "  key.px@" << (void*)(&key.rawRef_()) << "  ";
             if ( !key ) {
                 sentry << "splatted";
             } else if ( key.unboundp() ) {
@@ -79,7 +79,7 @@ namespace core {
                 // key.base_ref().nilp() ) {
                 T_sp okey = key;
                 sentry << _rep_(okey);
-                sentry << "@" << (void*)(key.px_ref());
+                sentry << "@" << (void*)(key.raw_());
                 sentry << "   -->   ";
                 value_type val = values[i];
                 if ( val.sameAsKeyP() ) {
@@ -118,7 +118,7 @@ namespace core {
         if ( val.sameAsKeyP() ) {
             val = key;
         }
-        if ( key.pointerp() ) {
+        if ( key.objectp() ) {
             return Values(key,val,_Nil<T_O>());
         }
         T_sp keyInfo(_Nil<T_O>());
@@ -291,7 +291,10 @@ namespace core {
 #define DOCS_core_weakSplat "weakSplat"
     void core_weakSplat(WeakKeyHashTable_sp ht, Fixnum_sp idx)
     {_G();
-        (*ht->_HashTable._Keys).set(idx->get(),WeakKeyHashTable_O::value_type(gctools::tagged_ptr<T_O>::_NULL));
+	T_sp splatted; // This will be NULL
+	splatted.reset_(); // This will force it to be NULL
+	TESTING(); // Test the NULL value
+        (*ht->_HashTable._Keys).set(idx->get(),WeakKeyHashTable_O::value_type(splatted));
     };
     
 

@@ -35,7 +35,7 @@ inline gctools::smart_ptr<to_class> safe_downcast(const gctools::smart_ptr<from_
 {
     if ( c.nilp() ) return _Nil<to_class>();
     gctools::smart_ptr<to_class> dc = gctools::dynamic_pointer_cast<to_class>(c);
-    if ( dc.pointerp() ) return dc;
+    if ( dc.objectp() ) return dc;
     lisp_throwUnexpectedType(c,to_class::static_classSymbol());
     return _Nil<to_class>();
 }

@@ -1714,14 +1714,14 @@ namespace core {
 	    goto OUTPUT;
 #endif
 	/* Missing components default to :WILD */
-	if (!Null(mask->_Directory) &&
+	if (!mask->_Directory.nilp() &&
 	    !path_list_match(path->_Directory, mask->_Directory))
 	    goto OUTPUT;
 	if (!path_item_match(path->_Name, mask->_Name))
 	    goto OUTPUT;
 	if (!path_item_match(path->_Type, mask->_Type))
 	    goto OUTPUT;
-	if (Null(mask->_Version) ||
+	if (mask->_Version.nilp() ||
 	    path_item_match(path->_Version, mask->_Version))
 	    output = true;
     OUTPUT:
@@ -1871,7 +1871,7 @@ namespace core {
 		l2 = find_wilds(l, CAR(a), item_mask);
 		if (l == kw::_sym_error)
 		    return kw::_sym_error;
-		if (!Null(l2))
+		if (!l2.nilp())
 		    l = Cons_O::create(l2, l);
 		a = CDR(a);
 	    }
@@ -1942,7 +1942,7 @@ namespace core {
 		    T_sp dirlist = CAR(list);
 		    if (cl_consp(dirlist))
 			l = Cons_O::append(CAR(list).as_or_nil<Cons_O>(), l.as_or_nil<Cons_O>());
-		    else if (!Null(CAR(list)))
+		    else if (!(oCar(list).nilp()))
 			return kw::_sym_error;
 		}
 		*wilds = CDR(list);
@@ -1995,7 +1995,7 @@ namespace core {
 	wilds = find_list_wilds(source->_Directory,
 				from->_Directory);
 	if (wilds == kw::_sym_error)	goto error;
-	if (Null(to->_Directory)) {
+	if ((to->_Directory).nilp()) {
 	    /* Missing components are replaced */
 	    d = translate_list_case(from->_Directory, fromcase, tocase);
 	} else {
@@ -2009,7 +2009,7 @@ namespace core {
 	/* Match name */
 	wilds = find_wilds(_Nil<T_O>(), source->_Name, from->_Name);
 	if (wilds == kw::_sym_error) goto error2;
-	if (Null(to->_Name)) {
+	if ((to->_Name.nilp())) {
 	    d = translate_component_case(from->_Name, fromcase, tocase);
 	} else {
 	    wilds = translate_list_case(wilds, fromcase, tocase);
@@ -2022,7 +2022,7 @@ namespace core {
 	/* Match type */
 	wilds = find_wilds(_Nil<T_O>(), source->_Type, from->_Type);
 	if (wilds == kw::_sym_error) goto error2;
-	if (Null(to->_Type)) {
+	if ((to->_Type).nilp()) {
 	    d = translate_component_case(from->_Type, fromcase, tocase);
 	} else {
 	    wilds = translate_list_case(wilds, fromcase, tocase);

@@ -252,11 +252,11 @@ namespace core
 	{
 	    this->_DebugStream->beginNode(DEBUG_TOPLEVEL);
 	}
-	this->_Roots._CommandLineArguments.reset();
+	this->_Roots._CommandLineArguments.reset_();
 	this->_Roots._Packages.clear();
 //	this->_Roots._HiddenBinder.reset();
 //	this->_Roots._SpecialForms.clear();
-	this->_Roots._TrueObject.reset();
+	this->_Roots._TrueObject.reset_();
 
 //    this->_ClassesByClassSymbol.clear();
 	if ( this->_Bundle != NULL )
@@ -360,11 +360,31 @@ namespace core
 
 
 
+    void Lisp_O::setupSpecialSymbols() {
+    	Symbol_sp symbol_nil = Symbol_O::create("NIL");
+	Symbol_sp symbol_unbound = Symbol_O::create("UNBOUND");
+	Symbol_sp symbol_deleted = Symbol_O::create("DELETED");
+	Symbol_sp symbol_sameAsKey = Symbol_O::create("SAME-AS-KEY");
+	//TODO: Ensure that these globals are updated by the garbage collector
+	gctools::global_Symbol_OP_nil       = reinterpret_cast<Symbol_O*>(symbol_nil.raw_());
+	gctools::global_Symbol_OP_unbound   = reinterpret_cast<Symbol_O*>(symbol_unbound.raw_());
+	gctools::global_Symbol_OP_deleted   = reinterpret_cast<Symbol_O*>(symbol_deleted.raw_());
+	gctools::global_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O*>(symbol_sameAsKey.raw_());
+    }
+
+    void Lisp_O::finalizeSpecialSymbols() {
+    	Symbol_sp symbol_nil = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_nil);
+    	Symbol_sp symbol_unbound = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_unbound);
+    	Symbol_sp symbol_deleted = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_deleted);
+    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
+    }
+
 
 
     Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize )
     {
-        ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
+	Lisp_O::setupSpecialSymbols();
+	::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
 	_lisp->initialize();
         _lisp->setupMpi(mpiEnabled,mpiRank,mpiSize);
 //	lisp->__setWeakThis(lisp);
@@ -388,15 +408,15 @@ namespace core
     void testContainers()
     {
         Fixnum_sp fn = Fixnum_O::create(1);
-        printf("%s:%d  fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.px_ref(), fn->referenceCount() );
+        printf("%s:%d  fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount() );
         gctools::Vec0<T_sp> container;
         container.push_back(fn);
-        printf("%s:%d  after push_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.px_ref(), fn->referenceCount() );
+        printf("%s:%d  after push_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount() );
         Fixnum_sp fn2 = container.back().as<Fixnum_O>();
-        printf("%s:%d  after back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.px_ref(), fn->referenceCount() );
+        printf("%s:%d  after back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount() );
         container.pop_back();
-        printf("%s:%d  after pop_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.px_ref(), fn->referenceCount() );
-        printf("%s:%d  fn2@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn2.px_ref(), fn2->referenceCount() );
+        printf("%s:%d  after pop_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount() );
+        printf("%s:%d  fn2@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn2.raw_(), fn2->referenceCount() );
     };
 #endif
 
@@ -413,9 +433,6 @@ namespace core
 	  they were going into infinite loops - so I was testing them here within
 	  the context of the entire package */
 //	testIterators();
-#ifdef USE_REFCOUNT
-        testContainers();
-#endif
 
 	this->_Mode = FLAG_EXECUTE;
 
@@ -430,7 +447,7 @@ namespace core
 	this->_NilsCreated = false;
 	this->_EnvironmentInitialized = false;
 	this->_EnvironmentId = 0;
-	this->_Roots._CommandLineArguments.reset();
+	this->_Roots._CommandLineArguments.reset_();
 
 	this->_Bundle = bundle;
 
@@ -785,10 +802,12 @@ namespace core
 	{
 	    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues, numberOfLoadTimeSymbols);
 	    this->_Roots._LoadTimeValueArrays->setf_gethash(key,vo);
-            return gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(vo.pbase()));
+	    TESTING();
+            return vo; // gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(vo.pbase()));
 	}
         LoadTimeValues_sp ltv = it.as<LoadTimeValues_O>();
-        return gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(ltv.pbase()));
+	TESTING();
+	return ltv; // return gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(ltv.pbase()));
     }
 
 
@@ -1120,7 +1139,7 @@ namespace core
 	Package_sp newPackage = Package_O::create(name);
 	int packageIndex = this->_Roots._Packages.size();
 	{
-//            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.px_ref());
+//            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.raw_());
 
 	    this->_PackageNameIndexMap[name] = packageIndex;
 	    this->_Roots._Packages.push_back(newPackage);
@@ -1170,7 +1189,7 @@ namespace core
 	}
 //        printf("%s:%d Lisp_O::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
 	Package_sp getPackage = this->_Roots._Packages[fi->second];
-//        printf("%s:%d Lisp_O::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.px_ref());
+//        printf("%s:%d Lisp_O::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.raw_());
 	return getPackage;
     }
 
@@ -2342,7 +2361,7 @@ namespace core
 #define ARGS_af_sorted "(unsorted)"
 #define DECL_af_sorted ""
 #define DOCS_af_sorted "Sort the list in ascending order using operator< and return the sorted list"
-    Cons_sp af_sorted(Cons_sp unsorted)
+    Cons_sp af_sorted(List_sp unsorted)
     {_G();
         gctools::Vec0<T_sp/*,gctools::RootedGCHolder*/>     sorted;
 	if ( cl_length(unsorted) == 0 ) return _Nil<Cons_O>();
@@ -2392,7 +2411,7 @@ namespace core
 #define ARGS_af_sort "(sequence predicate)"
 #define DECL_af_sort ""
 #define DOCS_af_sort "Like CLHS: sort but does not support key"
-    T_sp af_sort(Cons_sp sequence, T_sp predicate )
+    T_sp af_sort(List_sp sequence, T_sp predicate )
     {_G();
         gctools::Vec0<T_sp/*,gctools::RootedGCHolder*/> sorted;
 	Function_sp sortProc = coerce::functionDesignator(predicate);

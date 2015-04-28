@@ -216,7 +216,7 @@ namespace core {
 	bool print_readably = clasp_print_readably();
 	bool forced_package = 0;
 
-	if (Null(x)) {
+	if (x.nilp()) {
             package = cl::_sym_nil->homePackage();
             name = cl::_sym_nil->symbolName();
 	} else {
@@ -234,7 +234,7 @@ namespace core {
 	 * be possible to recover the same symbol by reading it with
 	 * the standard readtable (which has readtable-case = :UPCASE)
 	 */
-	if (Null(package)) {
+	if (package.nilp()) {
             if (print_readably || clasp_print_gensym())
                 clasp_write_string("#:", stream);
 	} else if (package == _lisp->keywordPackage()) {
@@ -254,7 +254,7 @@ namespace core {
                 write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
                                     print_case, stream,
                                     needs_to_be_escaped(name, readtable, print_case));
-		if ( !Null(x) ) {
+		if ( !x.nilp() ) {
 		    Symbol_mv sym2_mv = cl_findSymbol(x->symbolName()->get(),package);
 		    Symbol_sp sym2 = sym2_mv;
 		    Symbol_sp intern_flag2 = sym2_mv.valueGet(1).as<Symbol_O>();

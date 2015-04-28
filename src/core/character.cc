@@ -716,13 +716,7 @@ namespace core
     }
 
 
-    Character_sp Character_O::create(char c)
-    {_G();
-	StandardChar_sp sc = StandardChar_O::create(c);
-	return sc;
-    }
-
-    Character_sp Character_O::create(int c)
+    Character_sp Character_O::create(gctools::Fixnum c)
     {_G();
 	StandardChar_sp sc = StandardChar_O::create(BRCL_CHAR(c));
 	return sc;
@@ -902,7 +896,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 	    ss << this->_Value;
 	} else
 	{
-	    ss << cl_char_name(this->const_sharedThis<StandardChar_O>());
+	    ss << _rep_(cl_char_name(this->const_sharedThis<StandardChar_O>()));
 	}
 	return ss.str();
     }

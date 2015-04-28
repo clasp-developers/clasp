@@ -71,7 +71,8 @@ namespace core
 	}
         /*! LoadTimeValues_O are allocated in non-moving pool so we can
           set a global pointer to one of them without working about it moving */
-	globalRunTimeValues = reinterpret_cast<LoadTimeValues_O*>(_lisp->getOrCreateLoadTimeValues(name).pbase());
+	LoadTimeValues_sp ltv = _lisp->getOrCreateLoadTimeValues(name);
+	globalRunTimeValues = &(*(ltv));
 	return true;
     };
 
@@ -142,26 +143,26 @@ namespace core
         for ( Cons_sp cur=names; cur.notnilp(); cur=cCdr(cur) ) {
             Str_sp nm = oCar(cur).as<Str_O>();
             T_sp ltv = _lisp->findLoadTimeValues(nm->get());
-            printf("%s:%d LTV[%s]@%p = %s\n", __FILE__, __LINE__, nm->get().c_str(), ltv.pbase(), _rep_(ltv).c_str() );
+            printf("%s:%d LTV[%s]@%p = %s\n", __FILE__, __LINE__, nm->get().c_str(), ltv.raw_(), _rep_(ltv).c_str() );
         }
     };
 
 
 
-    void parseIndices(vector<int>& vec_indices, T_sp indices)
+    void parseIndices(vector<gctools::Fixnum>& vec_indices, T_sp indices)
     {
 	if ( indices.nilp() ) {
 	    vec_indices.clear();
-	} else if ( indices.tagged_fixnump() ) {
-	    vec_indices.push_back(indices.fixnum());
+	} else if ( indices.fixnump() ) {
+	    vec_indices.push_back(indices.unsafe_fixnum());
 	} else if ( Fixnum_sp fn = indices.asOrNull<Fixnum_O>() ) {
 	    vec_indices.push_back(fn->get());
 	} else if ( Cons_sp cur = indices.asOrNull<Cons_O>() ) {
 	    for ( ; cur.notnilp(); cur=cCdr(cur) ) {
 		T_sp val = oCar(cur);
 		if ( val.notnilp() ) {
-		    if ( val.tagged_fixnump() ) {
-			vec_indices.push_back(val.fixnum());
+		    if ( val.fixnump() ) {
+			vec_indices.push_back(val.unsafe_fixnum());
 		    } else if (Fixnum_sp fnval = val.asOrNull<Fixnum_O>() ) {
 			vec_indices.push_back(fnval->get());
 		    } else {
@@ -187,7 +188,7 @@ namespace core
 	} else {
 	    ltv = nameOrLtv.as<LoadTimeValues_O>();
 	}
-	vector<int> vi;
+	vector<gctools::Fixnum> vi;
 	parseIndices(vi,indices);
 	ltv->dumpValues(vi);
     };
@@ -207,7 +208,7 @@ namespace core
 	} else {
 	    ltv = nameOrLtv.as<LoadTimeValues_O>();
 	}
-	vector<int> vi;
+	vector<gctools::Fixnum> vi;
 	parseIndices(vi,indices);
 	ltv->dumpSymbols(vi);
     };
@@ -268,15 +269,15 @@ namespace core
 	if (val.nilp()) {
 	    ss << "NIL";
 	} else if ( val.fixnump() ) {
-	    ss << val.fixnum();
-	} else if ( val.pointerp() ) {
+	    ss << val.unsafe_fixnum();
+	} else if ( val.objectp() ) {
 	    ss << _rep_(val);
 	} else {
 	    ss << "Unknown object!!!!";
 	}
     }
 
-    void LoadTimeValues_O::dumpValues(vector<int>& indices)
+    void LoadTimeValues_O::dumpValues(vector<gctools::Fixnum>& indices)
     {_G();
 	printf("%s:%d Dumping Values LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size() );
 	if ( indices.size() == 0 ) {
@@ -285,7 +286,7 @@ namespace core
 		    T_sp& obj = this->_Objects[i];
 		    stringstream ss;
 		    dumpOneValue(ss,obj);
-		    printf("LTV[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Objects[i]), ss.str().c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+		    printf("LTV[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Objects[i]), ss.str().c_str(), obj.objectp() ? obj.raw_() : NULL );
 		}
 	} else {
 	    for (int i=0,iEnd(indices.size()); i<iEnd; ++i ) {
@@ -293,14 +294,14 @@ namespace core
 		T_sp& obj = this->_Objects[idx];
 		stringstream ss;
 		dumpOneValue(ss,obj);
-		printf("LTV[%4d]@%p --> %s(base@%p)\n", idx, (void*)(&this->_Objects[idx]), ss.str().c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+		printf("LTV[%4d]@%p --> %s(base@%p)\n", idx, (void*)(&this->_Objects[idx]), ss.str().c_str(), obj.objectp() ? obj.raw_() : NULL );
 	    }
 	}
     }
 
 
 
-    void LoadTimeValues_O::dumpSymbols(vector<int>& indices)
+    void LoadTimeValues_O::dumpSymbols(vector<gctools::Fixnum>& indices)
     {_G();
 	printf("%s:%d  Dumping Symbols  LTV@%p  size %lu  LTS size %lu\n", __FILE__, __LINE__, this, this->_Objects.size(), this->_Symbols.size() );
 	if ( indices.size() == 0 ) {
@@ -309,7 +310,7 @@ namespace core
 		    Symbol_sp& obj = this->_Symbols[i];
 		    stringstream ss;
 		    dumpOneValue(ss,obj);
-		    printf("LTS[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Symbols[i]), ss.str().c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+		    printf("LTS[%4d]@%p --> %s(base@%p)\n", i, (void*)(&this->_Symbols[i]), ss.str().c_str(), obj.objectp() ? obj.raw_() : NULL );
 		}
 	} else {
 	    for (int i=0,iEnd(indices.size()); i<iEnd; ++i ) {
@@ -317,7 +318,7 @@ namespace core
 		Symbol_sp& obj = this->_Symbols[idx];
 		stringstream ss;
 		dumpOneValue(ss,obj);
-		printf("LTS[%4d]@%p --> %s(base@%p)\n", idx, (void*)(&this->_Symbols[idx]), ss.str().c_str(), obj.pointerp() ? gctools::tagged_base_ptr::toBasePtr(obj.px_ref()) : NULL );
+		printf("LTS[%4d]@%p --> %s(base@%p)\n", idx, (void*)(&this->_Symbols[idx]), ss.str().c_str(), obj.objectp() ? obj.raw_() : NULL );
 	    }
 	}
     }

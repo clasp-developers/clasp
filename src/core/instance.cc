@@ -129,12 +129,12 @@ namespace core
 
     T_sp Instance_O::oinstancep() const
     {
-	return Fixnum_O::create((LongLongInt)(this->_Slots.size()));
+	return Fixnum_O::create((gctools::Fixnum)(this->_Slots.size()));
     }
 
     T_sp Instance_O::oinstancepSTAR() const
     {
-	return Fixnum_O::create((LongLongInt)(this->_Slots.size()));
+	return Fixnum_O::create((gctools::Fixnum)(this->_Slots.size()));
     }
 
 

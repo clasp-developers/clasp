@@ -100,7 +100,7 @@ namespace core
 #define DOCS_af_boundp "boundp"
     bool af_boundp(Symbol_sp arg)
     {_G();
-	if ( arg.nilp() ) return _lisp->_true();
+	if ( arg.nilp() ) return true;
 	return arg->boundP();
     };
 
@@ -194,18 +194,6 @@ namespace core {
     
     
 
-#if 0
-    Symbol_sp Symbol_O::create_classless_packageless(string const& name)
-    {// no guard
-	DEPRECIATED();
-	ASSERTF(name[0] != '(',BF("Symbol names cannot start with paren[%s]") % name);
-        GC_ALLOCATE(Symbol_O,sym);
-	sym->_Name = Str_O::create(name);
-	printf("%s:%d  Allocating packageless symbol @ %p name: %s\n", __FILE__, __LINE__, sym.px_ref(),name.c_str());
-//	Symbol_sp sym = gctools::smart_ptr<Symbol_O>(new Symbol_O(name));
-	return sym;
-    }
-#endif
 
     /*! Construct a symbol that is incomplete, it has no Class or Package */
     Symbol_O::Symbol_O(string const& name) : T_O() ,
@@ -223,15 +211,15 @@ namespace core {
 
 
     Symbol_O::Symbol_O() : Base(),
-			   _Name(_Nil<Str_O>()),
-			   _HomePackage(_Nil<Package_O>()),
-			   _Value(_Unbound<T_O>()),
-			   _Function(_Unbound<Function_O>()),
-			   _SetfFunction(_Unbound<Function_O>()),
+			   _Name(gctools::smart_ptr<Str_O>()),
+			   _HomePackage(gctools::smart_ptr<Package_O>()),
+			   _Value(gctools::smart_ptr<T_O>()),
+			   _Function(gctools::smart_ptr<Function_O>()),
+			   _SetfFunction(gctools::smart_ptr<Function_O>()),
 			   _IsSpecial(false),
 			   _IsConstant(false),
 			   _ReadOnlyFunction(false),
-			   _PropertyList(_Nil<Cons_O>())
+			   _PropertyList(gctools::smart_ptr<Cons_O>())
     {
 	// nothing
     };
@@ -245,10 +233,13 @@ namespace core {
     void Symbol_O::finish_setup(Package_sp pkg,bool exportp)
     {
 	ASSERTF(pkg,BF("The package is UNDEFINED"));
+	//	printf("%s:%d finish_setup of symbol: %s:%s\n", __FILE__, __LINE__, pkg->getName().c_str(), this->_Name->get().c_str());
 	this->_HomePackage = pkg;
+	this->_Value = _Nil<T_O>();
+	this->_Function = _Unbound<Function_O>();
+	this->_SetfFunction = _Unbound<Function_O>();
 	pkg->add_symbol_to_package(this->symbolName()->get().c_str(),this->sharedThis<Symbol_O>(),exportp);
 	this->_PropertyList = _Nil<Cons_O>();
-	this->_Function = _Unbound<Function_O>();
     }
 
 
@@ -329,7 +320,7 @@ namespace core {
 
     bool Symbol_O::isKeywordSymbol()
     { 
-	if ( !this->_HomePackage.pointerp() ) return false;
+	if ( !this->_HomePackage.objectp() ) return false;
 	return this->_HomePackage->isKeywordPackage();
     };
 
@@ -474,7 +465,7 @@ namespace core {
 
     bool Symbol_O::fboundp() const
     {
-	if ( this->_Function.pointerp() ) return true;
+	if ( this->_Function.objectp() ) return true;
 	return !this->_Function.unboundp();
     }
 
@@ -491,7 +482,7 @@ namespace core {
 	if ( this->_HomePackage.nilp() )
 	{
 	    ss << "#:";
-	    if ( this->_Name.pointerp() ) {
+	    if ( this->_Name.objectp() ) {
 		ss << this->_Name->get();
 	    } else
 	    {
@@ -501,7 +492,9 @@ namespace core {
 	else
 	{
 	    Package_sp myPackage = this->_HomePackage;
-	    if ( myPackage->isKeywordPackage() )
+	    if ( !myPackage ) {
+		ss << "<PKG-NULL>:" << this->_Name->get();
+	    } else if ( myPackage->isKeywordPackage() )
 	    {
 		ss << ":" << this->_Name->get();
 	    } else

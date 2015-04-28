@@ -141,7 +141,7 @@ void    core_DebugHashTable(bool don)
 #define LINE_af_maphash __LINE__
     T_mv af_maphash(T_sp function_desig, HashTable_sp hash_table)
     {_G();
-//        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.px_ref());
+//        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
 	Function_sp func = coerce::functionDesignator(function_desig);
         if ( hash_table.nilp() ) {
             SIMPLE_ERROR(BF("maphash called with nil hash-table"));
@@ -156,12 +156,12 @@ void    core_DebugHashTable(bool don)
 		Cons_sp entry = oCar(cur).as<Cons_O>();
                 T_sp key = oCar(entry);
                 T_sp value = oCdr(entry);
-                if ( value.notunboundp() ) {
+                if ( !value.unboundp() ) {
                     eval::funcall(func,key,value);
                 }
 	    }
 	}
-//        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.px_ref());
+//        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
 	return(Values(_Nil<T_O>()));
     }
 
@@ -298,7 +298,7 @@ void    core_DebugHashTable(bool don)
 	if ( obj.nilp() ) {
 	    hg.addPart(0);
 	    return;
-	} else if ( obj.pointerp() ) {
+	} else if ( obj.objectp() ) {
 	    if ( cl_numberp(obj) || af_characterP(obj) )
 		{
 		    hg.hashObject(obj);
@@ -320,7 +320,7 @@ void    core_DebugHashTable(bool don)
 	{
 	    hg.addPart(0);
 	    return;
-	} else if ( obj.pointerp() ) {
+	} else if ( obj.objectp() ) {
 	    if ( af_fixnumP(obj) || af_characterP(obj) || af_symbolp(obj) || cl_numberp(obj) || af_stringP(obj) ) {
 		if ( hg.isFilling() ) obj->sxhash(hg);
 		return;
@@ -352,7 +352,7 @@ void    core_DebugHashTable(bool don)
 	if ( obj.nilp() ) {
 	    hg.addPart(0);
 	    return;
-	} else if ( obj.pointerp() ) {
+	} else if ( obj.objectp() ) {
 	    if ( Str_sp str = obj.asOrNull<Str_O>() ) {
 		Str_sp upstr = cl_string_upcase(str);
 		hg.hashObject(upstr);
@@ -491,9 +491,9 @@ void    core_DebugHashTable(bool don)
 
     Cons_sp HashTable_O::findAssoc(uint index, T_sp key) const
     {_OF();
-	for ( Cons_sp cur = this->_HashTable->operator[](index).as_or_nil<Cons_O>();
-	      cur.notnilp(); cur = cCdr(cur) )
-	{
+	List_sp rib = coerce_to_list((*this->_HashTable)[index]);
+	for ( auto cur : rib ) {
+	    //	for ( Cons_sp cur = this->_HashTable->operator[](index).as_or_nil<Cons_O>(); cur.notnilp(); cur = cCdr(cur) ) {
             Cons_sp pair = cCar(cur);
 	    if ( this->keyTest(oCar(pair),key) )
 	    {
@@ -516,7 +516,7 @@ void    core_DebugHashTable(bool don)
 #ifdef DEBUG_HASH_TABLE
 	if (DebugHashTable) {
 	    string className = "NULL";
-	    if ( key.pointerp() ) {
+	    if ( key.objectp() ) {
 		className = key->_instanceClass()->classNameAsString();
 	    }
 	    printf("%s:%d DebugHashTable hashTable = %s  className(key) = %s   key = %s\n", __FILE__, __LINE__, _rep_(hashTable).c_str(), className.c_str(), _rep_(key).c_str());
@@ -553,7 +553,7 @@ void    core_DebugHashTable(bool don)
         if ( keyValueCons.notnilp() ) return keyValueCons;
 #ifdef USE_MPS
         // Location dependency test if key is stale
-        if (key.pointerp()) {
+        if (key.objectp()) {
             void* blockAddr = SmartPtrToBasePtr(key);
             if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)),gctools::_global_arena,blockAddr)) {
                 keyValueCons = this->rehash(false,key);
@@ -635,7 +635,7 @@ void    core_DebugHashTable(bool don)
 #define DOCS_HashTable_O_hash_table_setf_gethash "setf into the hash-table"
     T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value)
     {_OF();
-//        printf("%s:%d key@%p value@%p\n", __FILE__, __LINE__, key.px_ref(), value.px_ref() );
+//        printf("%s:%d key@%p value@%p\n", __FILE__, __LINE__, key.raw_(), value.raw_() );
 #ifdef DEBUG_HASH_TABLE
 	if (DebugHashTable) {
 	    printf("%s:%d hash_table_setf_gethash hashTable=%s  key=%s\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str(), _rep_(key).c_str());
@@ -645,7 +645,7 @@ void    core_DebugHashTable(bool don)
         if ( keyValuePair.nilp() ) {
             uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /*Will add key*/);
             Cons_sp newKeyValue = Cons_O::create(key,value);
-//            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.px_ref());
+//            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
             Cons_sp newEntry = Cons_O::create(newKeyValue,this->_HashTable->operator[](index));
             this->_HashTable->operator[](index) = newEntry;
 //            this->_HashTableEntryCount++;
@@ -697,14 +697,11 @@ void    core_DebugHashTable(bool don)
 		}
 		LOG(BF("About to re-index hash table row index[%d] keys: %s") % (it-oldTable.begin()) % sk.str());
 #endif
-		Cons_sp next;
-		for ( Cons_sp cur = oldTable->operator[](it).as_or_nil<Cons_O>(); cur.notnilp(); cur = next )
-		{
-		    next = cCdr(cur);
+		for ( auto cur : coerce_to_list((*oldTable)[it]) ) {
                     Cons_sp pair = cCar(cur);
 		    T_sp key = oCar(pair);
                     T_sp value = oCdr(pair);
-                    if ( value.notunboundp() ) {
+                    if ( !value.unboundp() ) {
                         // key/value represent a valid entry in the hash table
                         //
                         // If findKey is not unbound and we haven't already found
@@ -725,6 +722,37 @@ void    core_DebugHashTable(bool don)
                         this->_HashTable->operator[](index) = newCur;
                     }
 		}
+#if 0
+		List_sp next;
+		for ( Cons_sp cur = oldTable->operator[](it).as_or_nil<Cons_O>(); cur.notnilp(); cur = next )
+		{
+		    T_sp tnext = oCdr(cur);
+		    next = coerce_to_list(tnext);//;cCdr(cur);
+                    Cons_sp pair = cCar(cur);
+		    T_sp key = oCar(pair);
+                    T_sp value = oCdr(pair);
+                    if ( !value.unboundp() ) {
+                        // key/value represent a valid entry in the hash table
+                        //
+                        // If findKey is not unbound and we haven't already found
+                        // the value that it points to.
+                        // then while we are rehashing the hash table we are also looking
+                        // for the key it points to.
+                        // Check if the current key matches findKey and if it does
+                        // set foundKeyValuePair so that it will be returned when
+                        // the rehash is complete.
+                        if ( foundKeyValuePair.nilp() && !findKey.unboundp() ) {
+                            if ( this->keyTest(key,findKey) ) {
+                                foundKeyValuePair = pair;
+                            }
+                        }
+                        uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /* Will add key */);
+                        LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
+                        Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index).as_or_nil<Cons_O>());
+                        this->_HashTable->operator[](index) = newCur;
+                    }
+		}
+#endif
 	    }
 	}
         uint endCount = this->hashTableCount();
@@ -769,11 +797,11 @@ void    core_DebugHashTable(bool don)
                 ss << "     ( idx=" << this->hashIndex(key) << " ";
 		if ( cl_consp(key) ) {
 		    Cons_sp ckey = key.as<Cons_O>();
-		    ss << "(cons " << ckey->ocar().px << " . " << oCdr(ckey).px  << ")";
+		    ss << "(cons " << ckey->ocar().raw_() << " . " << oCdr(ckey).raw_()  << ")";
 		} else {
-		    ss << key.px_ref();
+		    ss << key.raw_();
 		}
-		ss << ", " << value.px_ref() << ")@" << pair.px_ref() << " "<< std::endl;
+		ss << ", " << value.raw_() << ")@" << pair.raw_() << " "<< std::endl;
 #else
 		ss << "     " << _rep_(pair) << std::endl;
 #endif
@@ -798,7 +826,7 @@ void    core_DebugHashTable(bool don)
                 Cons_sp pair = cCar(cur);
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);
-                if ( value.notunboundp()) fn(key,value);
+                if ( !value.unboundp()) fn(key,value);
 	    }
 	}
     }
@@ -815,7 +843,7 @@ void    core_DebugHashTable(bool don)
                 Cons_sp pair = cCar(cur);
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);
-                if ( value.notunboundp()) {
+                if ( !value.unboundp()) {
                     bool cont = fn(key,value);
                     if (!cont) return;
                 }
@@ -823,20 +851,27 @@ void    core_DebugHashTable(bool don)
 	}
     }
 
+
     void HashTable_O::lowLevelMapHash(KeyValueMapper* mapper) const
     {_OF();
 //        HASH_TABLE_LOCK();
         VectorObjects_sp table = this->_HashTable;
 	for ( size_t it(0),itEnd(cl_length(table)); it<itEnd; ++it )
 	{
-	    Cons_sp first = (*table)[it].as<Cons_O>();
-	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
-	    {
-                Cons_sp pair = cCar(cur);
+	    T_sp first = (*table)[it];
+	    List_sp l = coerce_to_list(first);
+	    for (auto cur : l ) {
+		//Cons_sp cur(*it); //it.asCons());
+		//		Cons_sp cur(reinterpret_cast<core::Cons_O*>(it));
+
+	    //	    for ( auto it = l.begin(); it != l.end(); ++it ) {
+		//Cons_sp cur(reinterpret_cast<core::Cons_O*>(&**it));
+	    //	    	for ( Cons_sp cur=first.as<List_V>(); cur.consp(); cur = cCdr(cur) )
+                Cons_sp pair = oCar(cur).as<Cons_O>();
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);
-                if ( value.notunboundp() ) {
-                    if (!mapper->mapKeyValue(oCar(pair),oCdr(pair))) goto DONE;
+                if ( !value.unboundp() ) {
+                    if (!mapper->mapKeyValue(key,value)) goto DONE;
                 }
 	    }
 	}

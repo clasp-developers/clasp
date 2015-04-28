@@ -67,9 +67,9 @@ namespace gctools
 	    mv.setSize(this->number_of_values());
         };
 
-	void readFromMultipleValue0() const {
+	void readFromMultipleValue0() {
 	    core::MultipleValues& mv = core::lisp_multipleValues();
-	    this->px_ref() = mv[0];
+	    this->setRaw_(mv[0]);
 	    this->_number_of_values = mv.getSize();
         };
 
@@ -99,6 +99,14 @@ namespace gctools
 		this->px = _Nil<T>().px;
 	    }
 #endif
+	}
+
+
+	operator bool() const {
+	    if (this->_number_of_values == 0 ) {
+		return false;
+	    }
+	    return !this->nilp();
 	}
 	    
 

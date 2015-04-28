@@ -468,7 +468,7 @@ void T_O::__write__(T_sp strm) const
 
 bool	T_O::eq(T_sp obj) const
 {
-    if ( !obj.pointerp() ) return false;
+    if ( !obj.objectp() ) return false;
     return this == obj.get();
 }
 
@@ -585,12 +585,12 @@ T_sp T_O::instanceRef(int idx) const
 
 T_sp T_O::instanceClassSet(Class_sp val)
 {_G();
-    SIMPLE_ERROR(BF("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement") % _rep_(val) % this->_instanceClass()->classNameAsString() % _rep_(this) );
+    SIMPLE_ERROR(BF("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement") % _rep_(val) % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()) );
 }
 
 T_sp T_O::instanceSet(int idx,T_sp val)
 {_G();
-    SIMPLE_ERROR(BF("T_O::instanceSet(%d,%s) invoked on object class[%s] val-->%s") % idx % _rep_(val) % this->_instanceClass()->classNameAsString() % _rep_(this) );
+    SIMPLE_ERROR(BF("T_O::instanceSet(%d,%s) invoked on object class[%s] val-->%s") % idx % _rep_(val) % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()) );
 }
 
 
@@ -602,7 +602,7 @@ T_sp T_O::instanceSig() const
 
 T_sp T_O::instanceSigSet()
 {_G();
-    SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->classNameAsString() % _rep_(this) );
+    SIMPLE_ERROR(BF("T_O::instanceSigSet() invoked on object class[%s] val-->%s") % this->_instanceClass()->classNameAsString() % _rep_(this->asSmartPtr()) );
 }
 
 

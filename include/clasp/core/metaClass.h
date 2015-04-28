@@ -247,7 +247,7 @@ namespace core
 
 
 	/*! Return the direct superclasses */
-	Cons_sp directSuperclasses() const;
+	List_sp directSuperclasses() const;
 
 	void appendDirectSuperclassAndResetClassPrecedenceList(Class_sp superClass);
 

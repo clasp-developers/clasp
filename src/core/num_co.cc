@@ -242,7 +242,7 @@ namespace core {
 	case number_Fixnum:
 	    switch(ty) {
 	    case number_Fixnum: {	/* FIX / FIX */
-		Fixnum a = brcl_fixnum(x), b = brcl_fixnum(y);
+		Fixnum a = clasp_fixnum(x), b = clasp_fixnum(y);
 		Fixnum q = a / b,  r = a % b;
 		if ((r^b) < 0 && r) {	/* opposite sign and some remainder*/
 		    v0 = brcl_make_fixnum(q-1);
@@ -259,9 +259,9 @@ namespace core {
  *	x = MOST_NEGATIVE_FIXNUM
  *    y = - MOST_NEGATIVE_FIXNUM
  */
-		Bignum_sp bx(Bignum_O::create(brcl_fixnum(x)));
+		Bignum_sp bx(Bignum_O::create(clasp_fixnum(x)));
 //		BRCL_WITH_TEMP_BIGNUM(bx,4);
-//		_brcl_big_set_fixnum(bx, brcl_fixnum(x));
+//		_brcl_big_set_fixnum(bx, clasp_fixnum(x));
 		Bignum_sp by = y.as<Bignum_O>();
 		v0 = _brcl_big_floor(bx, by, &v1);
 		break;
@@ -279,7 +279,7 @@ namespace core {
 	    case number_SingleFloat: 	/* FIX / SF */
 	    {
 		float n = brcl_single_float(y);
-		float p = brcl_fixnum(x) / n;
+		float p = clasp_fixnum(x) / n;
 		float q = floorf(p);
 		v0 = _brcl_float_to_integer(q);
 		v1 = brcl_make_single_float((p - q)*n);
@@ -287,7 +287,7 @@ namespace core {
 	    }
 	    case number_DoubleFloat: {	/* FIX / DF */
 		double n = brcl_double_float(y);
-		double p = brcl_fixnum(x) / n;
+		double p = clasp_fixnum(x) / n;
 		double q = floor(p);
 		v0 = _brcl_double_to_integer(q);
 		v1 = brcl_make_double_float((p - q)*n);
@@ -296,7 +296,7 @@ namespace core {
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* FIX / LF */
 		LongFloat n = brcl_long_float(y);
-		LongFloat p = brcl_fixnum(x) / n;
+		LongFloat p = clasp_fixnum(x) / n;
 		LongFloat q = floorl(p);
 		v0 = _brcl_long_double_to_integer(q);
 		v1 = brcl_make_long_float((p - q)*n);
@@ -311,9 +311,9 @@ namespace core {
 	    switch(ty) {
 	    case number_Fixnum: {	/* BIG / FIX */
 //		INCOMPLETE(BF("Ensure that this produces the intended result"));
-		Bignum_sp by(Bignum_O::create(brcl_fixnum(y)));
+		Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
 //		BRCL_WITH_TEMP_BIGNUM(by,4);
-//		_brcl_big_set_fixnum(by, brcl_fixnum(y));
+//		_brcl_big_set_fixnum(by, clasp_fixnum(y));
 		v0 = _brcl_big_floor(x.as<Bignum_O>(), by, &v1);
 		break;
 	    }
@@ -496,8 +496,8 @@ namespace core {
 	case number_Fixnum: {
 	    switch(ty) {
 	    case number_Fixnum: {	/* FIX / FIX */
-		Fixnum a = brcl_fixnum(x); 
-		Fixnum b = brcl_fixnum(y);
+		Fixnum a = clasp_fixnum(x); 
+		Fixnum b = clasp_fixnum(y);
 		Fixnum q = a / b;
 		Fixnum r = a % b;
 		if ((r^b) > 0 && r) {	/* same signs and some remainder */
@@ -516,8 +516,8 @@ namespace core {
 		 *    y = - MOST_NEGATIVE_FIXNUM
 		 */
 //		BRCL_WITH_TEMP_BIGNUM(bx,4);
-		Bignum_sp bx(Bignum_O::create(brcl_fixnum(x)));
-//		_brcl_big_set_fixnum(bx, brcl_fixnum(x));
+		Bignum_sp bx(Bignum_O::create(clasp_fixnum(x)));
+//		_brcl_big_set_fixnum(bx, clasp_fixnum(x));
 		v0 = _brcl_big_ceiling(bx, y.as<Bignum_O>(), &v1);
 		break;
 	    }
@@ -532,7 +532,7 @@ namespace core {
 	    }
 	    case number_SingleFloat: {	/* FIX / SF */
 		float n = brcl_single_float(y);
-		float p = brcl_fixnum(x)/n;
+		float p = clasp_fixnum(x)/n;
 		float q = ceilf(p);
 		v0 = _brcl_float_to_integer(q);
 		v1 = brcl_make_single_float(p*n - q*n);
@@ -540,7 +540,7 @@ namespace core {
 	    }
 	    case number_DoubleFloat: {	/* FIX / DF */
 		double n = brcl_double_float(y);
-		double p = brcl_fixnum(x)/n;
+		double p = clasp_fixnum(x)/n;
 		double q = ceil(p);
 		v0 = _brcl_double_to_integer(q);
 		v1 = brcl_make_double_float(p*n - q*n);
@@ -549,7 +549,7 @@ namespace core {
 #ifdef CLASP_LONG_FLOAT
 	    case number_LongFloat: {	/* FIX / LF */
 		LongFloat n = brcl_long_float(y);
-		LongFloat p = brcl_fixnum(x)/n;
+		LongFloat p = clasp_fixnum(x)/n;
 		LongFloat q = ceill(p);
 		v0 = _brcl_long_double_to_integer(q);
 		v1 = brcl_make_long_float(p*n - q*n);
@@ -565,8 +565,8 @@ namespace core {
 	    switch(brcl_t_of(y)) {
 	    case number_Fixnum: {	/* BIG / FIX */
 //		BRCL_WITH_TEMP_BIGNUM(by,4);
-		Bignum_sp by(Bignum_O::create(brcl_fixnum(y)));
-//		_brcl_big_set_fixnum(by, brcl_fixnum(y));
+		Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
+//		_brcl_big_set_fixnum(by, clasp_fixnum(y));
 		v0 = _brcl_big_ceiling(x.as<Bignum_O>(), by, &v1);
 		break;
 	    }
@@ -991,7 +991,7 @@ namespace core {
 	Fixnum k;
 
 	if (BRCL_FIXNUMP(y)) {
-	    k = brcl_fixnum(y);
+	    k = clasp_fixnum(y);
 	} else {
 	    QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Fixnum_O);
 	}

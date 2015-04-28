@@ -27,9 +27,9 @@ THE SOFTWARE.
 
 #define LCC_UNUSED NULL
 #define LCC_FIXED_ARGS 5
-#define LCC_FROM_SMART_PTR(x) (x.asTPtr())
+#define LCC_FROM_SMART_PTR(x) (x.raw_())
 // Pass ActivationFrames as T_O*
-#define LCC_FROM_ACTIVATION_FRAME_SMART_PTR(x) (x.asTPtr())
+#define LCC_FROM_ACTIVATION_FRAME_SMART_PTR(x) (x.raw_())
 #define LCC_TO_SMART_PTR(x) (gctools::smart_ptr<core::T_O>(x))
 
 #define LCC_UNUSED_1() LCC_UNUSED

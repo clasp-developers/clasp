@@ -132,7 +132,7 @@ namespace core
 
 	Pathname_O() : _Host(kw::_sym_unspecific),
 		       _Device(kw::_sym_unspecific),
-		       _Directory(_Nil<Cons_O>()),
+		       _Directory(_Nil<T_O>()),
 		       _Name(_Nil<T_O>()),
 		       _Type(_Nil<T_O>()),
 		       _Version(kw::_sym_unspecific) {};

@@ -276,7 +276,7 @@ namespace core
 	{
 	    Symbol_sp sym = oCadr(classified).as<Symbol_O>();
 	    int idx = oCddr(classified).as<Fixnum_O>()->get();
-	    ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % sym );
+	    ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % _rep_(sym) );
 	    this->_Environment->new_binding(sym,idx,val);
 	    return;
 	}
@@ -344,14 +344,14 @@ namespace core
 	}
 	ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget) );
         core::T_O** array(frame::ValuesArray(this->frame));
-        array[argument._ArgTargetFrameIndex] = val.asTPtr();
+        array[argument._ArgTargetFrameIndex] = val.raw_();
     }
 
 
     bool StackFrameDynamicScopeManager::lexicalElementBoundP(const Argument& argument)
     {
         core::T_O** array(frame::ValuesArray(this->frame));
-	return !gctools::tagged_ptr<T_O>::tagged_unboundp(array[argument._ArgTargetFrameIndex]);
+	return !gctools::tagged_unboundp(array[argument._ArgTargetFrameIndex]);
     }
 
 

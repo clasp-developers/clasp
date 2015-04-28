@@ -238,7 +238,8 @@ namespace core
 #define DOCS_af_dumpAddressOf "dumpAddressOf"
     void af_dumpAddressOf(T_sp arg)
     {_G();
-        void* ptr = arg.pbase();
+	ASSERT(arg.objectp());
+        void* ptr = &(*arg);
         printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr );
     };
 
@@ -252,21 +253,6 @@ namespace core
         return 1<< ((sizeof(f)*8) - __builtin_clz(f));
     };
 
-
-
-#define ARGS_af_testBasePointerConversion "(arg)"
-#define DECL_af_testBasePointerConversion ""
-#define DOCS_af_testBasePointerConversion "testBasePointerConversion"
-    void af_testBasePointerConversion(T_sp p)
-    {_G();
-        printf("original px_ref = %p\n", p.px_ref());
-        gctools::tagged_base_ptr base(p);
-        printf("base = %p\n", base.base.px_ref());
-        gctools::tagged_backcastable_base_ptr<T_O> backcastable(p);
-        printf("Backcastable base = %p  offset(Fixnum) = %d\n", backcastable.base.px_ref(), backcastable.offset.fixnum());
-        T_sp back = backcastable.backcast();
-        printf("After backcasting back.px_ref() = %p\n", back.px_ref() );
-    };
 
 
 
@@ -294,7 +280,7 @@ namespace core
                 kind = "unknown";
                 break;
             };
-            printf("Exception stack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.px_ref());
+            printf("Exception stack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
         }
         printf("----Done----\n");
     };
@@ -330,11 +316,10 @@ namespace core
 #define ARGS_af_fromTaggedFixnum "(val)"
 #define DECL_af_fromTaggedFixnum ""
 #define DOCS_af_fromTaggedFixnum "fromTaggedFixnum"
-    int af_fromTaggedFixnum(T_sp val)
+    gctools::Fixnum af_fromTaggedFixnum(T_sp val)
     {_G();
-	if ( val.tagged_fixnump() )
-	{
-	    return val.fixnum();
+	if ( val.fixnump() ) {
+	    return val.unsafe_fixnum();
 	}
 	SIMPLE_ERROR(BF("Not a fixnum"));
     };
@@ -344,9 +329,9 @@ namespace core
 #define DOCS_af_dumpTaggedFixnum "dumpTaggedFixnum"
     void af_dumpTaggedFixnum(T_sp val)
     {_G();
-	if ( val.tagged_fixnump() ) {
-	    printf("%s:%d Raw TaggedFixnum %p   Untagged %d\n",
-		   __FILE__,__LINE__, val.pxget(), val.fixnum() );
+	if ( val.fixnump() ) {
+	    printf("%s:%d Raw TaggedFixnum %p   Untagged %ld\n",
+		   __FILE__,__LINE__, val.raw_(), val.unsafe_fixnum() );
 	} else
 	    printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__ );
     }
@@ -434,8 +419,8 @@ namespace core
 	Symbol_sp ptrType = _sym_intrusiveReferenceCountedPointer;
 #endif
 	T_sp dummy;
-	Fixnum_sp pxOffset = Fixnum_O::create(dummy.offset_of_px_from_this());
-	Fixnum_sp pxSize = Fixnum_O::create(dummy.size_of_px());
+	Fixnum_sp pxOffset = Fixnum_O::create(0);
+	Fixnum_sp pxSize = Fixnum_O::create((gctools::Fixnum)gctools::pointer_size);
 	return Values(ptrType,pxOffset,pxSize);
     }
 
@@ -932,7 +917,7 @@ namespace core
 	if ( af_symbolp(functionName) )
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
-	    return sym->symbolFunction().pointerp();
+	    return sym->symbolFunction().objectp();
 	} else if ( cl_consp(functionName) )
 	{
 	    Cons_sp cname = functionName.as_or_nil<Cons_O>();
@@ -941,7 +926,7 @@ namespace core
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
 		if ( name.notnilp() )
 		{
-		    return name->getSetfFdefinition().pointerp();
+		    return name->getSetfFdefinition().objectp();
 		}
 	    }
 	}
@@ -1029,7 +1014,7 @@ namespace core
     {_G();
 	DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR,_lisp->_true());
 	T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
-	return(read_lisp_object(sin,eof_error_p.isTrue(),eof_value,recursive_p));
+	return(read_lisp_object(sin,eof_error_p.isTrue(),eof_value,recursive_p.isTrue()));
     }
 
 
@@ -2127,7 +2112,6 @@ void initialize_primitives()
 	Defun(toTaggedFixnum);
 	Defun(fromTaggedFixnum);
 	Defun(dumpTaggedFixnum);
-        Defun(testBasePointerConversion);
         Defun(dumpAddressOf);
         Defun(incompleteNextHigherPowerOf_2);
         Defun(argc);

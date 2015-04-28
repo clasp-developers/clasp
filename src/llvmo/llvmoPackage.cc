@@ -56,7 +56,7 @@ using namespace core;
 namespace kw {
 #pragma GCC visibility push(default)
 #define KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
+#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname;
 #include <clasp/llvmo/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef KeywordPkg_SYMBOLS
@@ -68,7 +68,7 @@ namespace llvmo {
 
 #pragma GCC visibility push(default)
 #define LlvmoPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
+#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname;
 #include <clasp/llvmo/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef LlvmoPkg_SYMBOLS
@@ -153,7 +153,7 @@ namespace llvmo
 	list = Cons_O::create(Cons_O::create(_sym_threadInfo,Fixnum_O::create((int)sizeof(ThreadInfo))),list);
 	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"),Fixnum_O::create((int)MultipleValues::MultipleValuesLimit)),list);
 	list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-SIZEOF"), Fixnum_O::create((int)sizeof(MultipleValues))),list);
-	list = Cons_O::create(Cons_O::create(lisp_internKeyword("NIL-VALUE"),Fixnum_O::create((int)gctools::tagged_ptr<core::T_O>::tagged_nil)),list);
+	//	list = Cons_O::create(Cons_O::create(lisp_internKeyword("NIL-VALUE"),Fixnum_O::create((int)gctools::tagged_ptr<core::T_O>::tagged_nil)),list); // don't use this
 	return list;
     }
 
@@ -182,7 +182,7 @@ namespace llvmo
 	    {
 		SIMPLE_ERROR(BF("Mismatch between IR lisp-compiled-function-ihf size[%d]"
 				" and sizeof(LispCompiledFunctionIHF)=[%d]")
-			     % givenIhfSize % InvocationHistoryFrame_size );
+			     % _rep_(givenIhfSize) % InvocationHistoryFrame_size );
 	    }
 	}
     };
@@ -288,7 +288,7 @@ namespace llvmo
 #define DOCS_af_disassembleSTAR "disassembleSTAR"
     void af_disassembleSTAR(core::Function_sp cf)
     {_G();
-	if (cf.pointerp()) {
+	if (cf.notnilp()) {
 	    dump_funcs(cf);
 	} else {
 	    SIMPLE_ERROR(BF("Could not disassemble %s") % _rep_(cf));

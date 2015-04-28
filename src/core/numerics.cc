@@ -297,8 +297,8 @@ namespace core {
 	case number_Fixnum:
             switch(ty) {
             case number_Fixnum: {	/* FIX / FIX */
-                cl_fixnum a = ecl_fixnum(x); cl_fixnum b = ecl_fixnum(y);
-                cl_fixnum q = a / b;  cl_fixnum r = a % b;
+                gctools::Fixnum a = ecl_fixnum(x); cl_fixnum b = ecl_fixnum(y);
+                gctools::Fixnum q = a / b;  cl_fixnum r = a % b;
                 if ((r^b) > 0 && r) {	/* same signs and some remainder */
 		    v0 = Fixnum_O::create(q+1);
 		    v1 = Fixnum_O::create(r-b);
@@ -604,8 +604,8 @@ namespace core {
 	case number_Fixnum:
             switch(ty) {
             case number_Fixnum: {	/* FIX / FIX */
-                cl_fixnum a = ecl_fixnum(x), b = ecl_fixnum(y);
-                cl_fixnum q = a / b,  r = a % b;
+                gctools::Fixnum a = ecl_fixnum(x), b = ecl_fixnum(y);
+                gctools::Fixnum q = a / b,  r = a % b;
                 if ((r^b) < 0 && r) {	/* opposite sign and some remainder*/
 		    v0 = Fixnum_O::create(q-1);
 		    v1 = Fixnum_O::create(r+b);
@@ -1025,7 +1025,7 @@ namespace core {
     cl_scale_float(cl_object x, cl_object y)
     {
 	const cl_env_ptr the_env = ecl_process_env();
-	cl_fixnum k;
+	gctools::Fixnum k;
 
 	if (ECL_FIXNUMP(y)) {
             k = ecl_fixnum(y);

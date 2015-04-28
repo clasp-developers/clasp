@@ -241,7 +241,7 @@ namespace clbind
 	// Please note that if you don't need to have access to the base class or the
 	// conversion from the derived class to the base class, you don't need
 	// to tell clbind that it derives.
-	ASSERTF(base.pointerp(),BF("You cannot derive from an unregistered type"));
+	ASSERTF(base.objectp(),BF("You cannot derive from an unregistered type"));
 
 	ClassRep_sp bcrep = base;
 #if 0

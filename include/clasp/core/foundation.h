@@ -1530,4 +1530,5 @@ namespace core {
 #define clasp_va_end va_end
 };
 
+
 #endif //]

@@ -59,7 +59,7 @@ namespace core {
     T_sp af_calculateMissingCommonLispSymbols()
     {
         Package_sp commonLispPackage = _lisp->commonLispPackage();
-        Cons_sp missing = _Nil<T_O>();
+        Cons_sp missing = _Nil<Cons_O>();
         for ( auto it : globalAllClSymbols ) {
             T_mv sym = commonLispPackage->findSymbol(it.first);
             T_sp found = sym.valueGet(1);

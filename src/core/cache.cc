@@ -187,7 +187,7 @@ namespace core
       gen = 0.5*gen;
       this->_generation = gen; // cache->generation -= gen;
       for ( int i=table.size(); --i; ++e ) { // for (i = table->vector.dim; i; i-= 3, e += 3) {
-	int g = e->_generation - gen; // cl_fixnum g = RECORD_GEN(e) - gen;
+	int g = e->_generation - gen; // gctools::Fixnum g = RECORD_GEN(e) - gen;
 	if (g <= 0) {
 	  e->_key = _Nil<T_O>(); // RECORD_KEY(e) = OBJNULL;
 	  e->_value = _Nil<T_O>(); // RECORD_VALUE(e) = ECL_NIL;

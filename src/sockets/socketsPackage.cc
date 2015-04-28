@@ -62,7 +62,7 @@ namespace sockets
 
 #pragma GCC visibility push(default)
 #define SocketsPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
+#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname;
 #include <clasp/sockets/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef SocketsPkg_SYMBOLS

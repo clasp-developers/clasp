@@ -78,7 +78,7 @@ namespace core
 #define DOCS_af_get_sysprop "get_sysprop - returns (values val foundp)"
     T_mv af_get_sysprop(T_sp key, T_sp area)
     {_G();
-	if ( _lisp->_Roots._SystemProperties.pointerp() ) 
+	if ( _lisp->_Roots._SystemProperties.objectp() ) 
 	{
 	    T_mv values = _lisp->_Roots._SystemProperties->gethash(area,_Nil<T_O>());
 	    HashTable_sp hashTable = values.as<HashTable_O>();

@@ -58,10 +58,10 @@ namespace core
     SingleDispatchGenericFunction_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler )
     {_G();
         SingleDispatchGenericFunction_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname,false);
-//        printf("%s:%d find_single_dispatch_generic_function(%s) --> %p\n", __FILE__, __LINE__, _rep_(gfname).c_str(), gfn.px_ref() );
+//        printf("%s:%d find_single_dispatch_generic_function(%s) --> %p\n", __FILE__, __LINE__, _rep_(gfname).c_str(), gfn.raw_() );
         if ( gfn.nilp() ) {
-            if ( gfname->symbolFunction().pointerp() ) {
-//                printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().px_ref());
+            if ( gfname->symbolFunction().objectp() ) {
+//                printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().raw_());
                 if ( SingleDispatchGenericFunction_sp existingGf = gfname->symbolFunction().asOrNull<SingleDispatchGenericFunction_O>() ) {
                     // a 
                     SIMPLE_ERROR(BF("The symbol %s has a SingleDispatchGenericFunction bound to its function slot but no SingleDispatchGenericFunction with that name was found") % _rep_(gfname));
@@ -87,7 +87,7 @@ namespace core
 	SingleDispatchGenericFunction_sp gf = gfname->symbolFunction().as<SingleDispatchGenericFunction_O>();//Lisp_O::find_single_dispatch_generic_function(gfname,true);
 	SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(gfname,receiver_class,lambda_list_handler,declares,docstring,body);
         ASSERT(lambda_list_handler.notnilp());
-        if ( !gf.pointerp() )
+        if ( !gf.objectp() )
         {
             SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
         }

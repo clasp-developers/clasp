@@ -56,10 +56,10 @@ namespace core
     {
 	T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
 	HashTable_sp circle_stack = _sym_STARcircle_stackSTAR->symbolValue().as<HashTable_O>();
-	T_sp code = circle_stack->gethash(x,_NULL<T_O>());
+	T_sp code = circle_stack->gethash(x,_Unbound<T_O>());
 	if ( circle_counter.fixnump() ) {
-	    return !(code._NULLp() || code.nilp());
-	} else if (code._NULLp()) {
+	    return !(code.unboundp() || code.nilp());
+	} else if (code.unboundp()) {
 	    /* Was not found before */
 	    circle_stack->hash_table_setf_gethash(x,_Nil<T_O>());
 	    return 0;
@@ -78,13 +78,13 @@ namespace core
 
     Fixnum search_print_circle(T_sp x)
     {
-//        printf("%s:%d Entered search_print_circle with x.px=%p\n", __FILE__, __LINE__, x.px_ref());
+//        printf("%s:%d Entered search_print_circle with x.px=%p\n", __FILE__, __LINE__, x.raw_());
 	T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
 	HashTable_sp circle_stack = _sym_STARcircle_stackSTAR->symbolValue().as<HashTable_O>();
 	T_sp code;
     	if (!circle_counter.fixnump()) {
-	    code = circle_stack->gethash(x,_NULL<T_O>());
-	    if (code._NULLp()) {
+	    code = circle_stack->gethash(x,_Unbound<T_O>());
+	    if (code.unboundp()) {
 		/* Was not found before */
 		circle_stack->hash_table_setf_gethash(x,_Nil<T_O>());
 		return 0;
@@ -96,8 +96,8 @@ namespace core
 		return 2;
 	    }
 	} else {
-	    code = circle_stack->gethash(x,_NULL<T_O>());
-	    if (code._NULLp() || code.nilp()) {
+	    code = circle_stack->gethash(x,_Unbound<T_O>());
+	    if (code.unboundp() || code.nilp()) {
 		/* Is not referenced or was not found before */
 		/* _ecl_sethash(x, circle_stack, ECL_NIL); */
 		return 0;
@@ -135,8 +135,7 @@ namespace core
         }
 #endif /* ECL_CMU_FORMAT */
 	bool circle = brcl_print_circle();
-	if (circle && !x._NULLp() && !x.tagged_fixnump() && !x.framep() && !x.characterp() &&
-            !x.specialp() && (cl_listp(x) || !af_symbolp(x) || !x.as<Symbol_O>()->homePackage().nilp() ))
+	if (circle && (x) && !x.fixnump() && !x.framep() && !x.characterp() && !x.single_floatp() && (cl_listp(x) || !af_symbolp(x) || !x.as<Symbol_O>()->homePackage().nilp() ))
 	{
 	    Fixnum code;
 	    T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();

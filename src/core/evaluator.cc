@@ -228,7 +228,7 @@ namespace core
         bool found = Environment_O::clasp_findMacro(env,sym,depth,level,macro);
         if ( found ) return macro;
 	Function_sp fn = sym->symbolFunction();
-	if ( fn.pointerp() && fn->macroP() ) return fn;
+	if ( fn.objectp() && fn->macroP() ) return fn;
 	return _Nil<Function_O>();
     };
 
@@ -434,7 +434,7 @@ namespace core
 			    sentence = cCdr(sentence);
 			    if ( !af_symbolp(v) )
 			    {
-				SIMPLE_ERROR(BF("Illegal object[%s] in declare special") % v);
+				SIMPLE_ERROR(BF("Illegal object[%s] in declare special") % _rep_(v));
 			    }
 			    specials = Cons_O::create(v,specials);
 			}
@@ -459,7 +459,7 @@ namespace core
 	    Str_sp docstr;
 	    Cons_sp code;
 	    Cons_sp specials;
-	    extract_declares_docstring_code_specials(body,declares,expectDocStr,docstr,code,specials);
+	    extract_declares_docstring_code_specials(body,declares,expectDocStr.isTrue(),docstr,code,specials);
 	    return(Values(declares,docstr,code,specials));
 	};
 
@@ -881,7 +881,7 @@ namespace core
 		    if ( valueIndex >= numTemps ) {
 			SIMPLE_ERROR(BF("Overflow in LET temporary variables only %d available") % numTemps );
 		    }
-		    tempValues[valueIndex] = result.asTPtr();
+		    tempValues[valueIndex] = result.raw_();
 		    ++valueIndex;
 		    curExp = cCdr(curExp);
 		}
@@ -1269,8 +1269,8 @@ namespace core
 	T_sp core_extractLambdaNameFromDeclares(Cons_sp declares, T_sp defaultValue)
 	{
 		    // First check for a (declare (core:function-name XXX))
-	    for ( ; declares.notnilp(); declares = oCdr(declares) ) {
-		Cons_sp decl = oCar(declares);
+	    for ( ; declares.consp(); declares = cCdr(declares) ) {
+		Cons_sp decl = cCar(declares);
 		if ( oCar(decl) == core::_sym_lambdaName ) {
 		    return oCadr(decl);
 		}
@@ -1396,7 +1396,7 @@ namespace core
 		LOG(BF("In sp_function - looking up for for[%s]")
 		    % fnSymbol->__repr__() );
 		T_sp fn = af_interpreter_lookup_function(fnSymbol,environment);
-		if (!fn.pointerp())
+		if (!fn.objectp())
 		{
 		    SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(fnSymbol) % _rep_(args) );
 		}
@@ -1624,7 +1624,7 @@ namespace core
 	    	    // TODO: handle trace
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
-	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
+	    Cons_sp body = cCdr(args);
 	    Cons_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
@@ -1634,7 +1634,7 @@ namespace core
 		//		printf( "%s:%d  oneDef = %s\n", __FILE__, __LINE__, _rep_(oneDef).c_str());
 		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
 		T_sp olambdaList = oCadr(oneDef);
-		Cons_sp inner_body = cCdr(cCdr(oneDef)).as_or_nil<Cons_O>();
+		Cons_sp inner_body = cCdr(cCdr(oneDef));
 		Cons_sp inner_declares;
 		Str_sp inner_docstring;
 		Cons_sp inner_code;
@@ -1717,7 +1717,7 @@ namespace core
 	{_G();
 	    Cons_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
-	    Cons_sp body = cCdr(args).as_or_nil<Cons_O>();
+	    Cons_sp body = cCdr(args);
 	    Cons_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
@@ -1901,7 +1901,7 @@ namespace core
             default:
 		MultipleValues& mv = lisp_callArgs();
 		for ( size_t i(LCC_FIXED_ARGS); i<nargs; ++i ) {
-		    mv[i] = a[i].px;
+		    mv[i] = a[i].raw_();
 		}
 		(*func)(&result,nargs , LCC_FROM_SMART_PTR(a[0]) , LCC_FROM_SMART_PTR(a[1]) , LCC_FROM_SMART_PTR(a[2]) , LCC_FROM_SMART_PTR(a[3]) , LCC_FROM_SMART_PTR(a[4])    );
 		return result;
@@ -1911,7 +1911,8 @@ namespace core
         T_mv applyClosureToStackFrame(Closure* func, T_sp stackFrame)
         {
             T_mv result;
-	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(stackFrame.px));
+	    ASSERT(stackFrame.framep());
+	    core::T_O** frameImpl(stackFrame.unsafe_frame());
             size_t nargs = frame::ValuesArraySize(frameImpl);
             T_O** a = frame::ValuesArray(frameImpl);
             switch (nargs) {
@@ -1959,7 +1960,7 @@ namespace core
 	T_mv applyToActivationFrame(T_sp head,ActivationFrame_sp args )
 	{_G();
 	    Function_sp fn = lookupFunction(head,args);
-	    if ( !fn.pointerp() )
+	    if ( !fn.objectp() )
 	    {
 		if ( head == cl::_sym_findClass )
 		{
@@ -2000,7 +2001,8 @@ namespace core
 	    return eval::applyToActivationFrame(func,frame);
 	} else if ( last.framep() ) {
 	    // Frame as last argument
-	    core::T_O** frameImpl(gctools::tagged_ptr<core::STACK_FRAME>::untagged_frame(last.px));
+	    ASSERT(last.framep());
+	    core::T_O** frameImpl(last.unsafe_frame());
 	    int lenFirst = lenArgs-1;
 	    int lenRest = frame::ValuesArraySize(frameImpl);
 	    int nargs = lenFirst + lenRest;
@@ -2013,7 +2015,7 @@ namespace core
 	    frame::ElementType* tailValues(frame::ValuesArray(frameImpl));
 	    int idx=0;
 	    for ( int i(lenFirst); i<nargs; ++i ) {
-		frame->operator[](i) = tailValues[idx];
+		frame->operator[](i) = gctools::smart_ptr<T_O>(tailValues[idx]);
 		++idx;
 	    }
 	    Function_sp func = coerce::functionDesignator(head);
@@ -2031,7 +2033,7 @@ namespace core
 	    }
 	    for ( int i(lenFirst); i<nargs; ++i ) {
 		frame->operator[](i) = oCar(cargs);
-		cargs = oCdr(cargs);
+		cargs = cCdr(cargs);
 	    }
 	    Function_sp func = coerce::functionDesignator(head);
 	    return eval::applyToActivationFrame(func,frame);
@@ -2245,7 +2247,7 @@ namespace core
             }
             T_mv result(_Nil<T_O>());
 	    Environment_sp localEnv(environment);
-            for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) ) {
+            for ( Cons_sp cur=args.as<Cons_O>(); cur.consp(); cur=cCdr(cur) ) {
                 result = t1Evaluate(oCar(cur),localEnv);
             }
             return result;
@@ -2419,11 +2421,11 @@ namespace core
 //                        printf("%s:%d   head is eval-when\n", __FILE__, __LINE__ );
                         return t1EvalWhen(oCdr(exp),environment);
                     } else if ( head == cl::_sym_locally ) {
-                        return t1Locally(oCdr(exp),environment);
+                        return t1Locally(cCdr(exp),environment);
                     } else if ( head == cl::_sym_macrolet ) {
-                        return t1Macrolet(oCdr(exp),environment);
+                        return t1Macrolet(cCdr(exp),environment);
                     } else if ( head == cl::_sym_symbol_macrolet ) {
-                        return t1SymbolMacrolet(oCdr(exp),environment);
+                        return t1SymbolMacrolet(cCdr(exp),environment);
                     }
                 }
             }
@@ -2448,7 +2450,7 @@ namespace core
 	T_mv evaluate(T_sp exp, T_sp environment)
 	{_G();
 //	    Environment_sp localEnvironment = environment;
-//            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.px_ref());
+//            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
 //            printf("    environment: %s\n", _rep_(environment).c_str() );
 	    T_mv result;
 	    af_stackMonitor();
@@ -2520,7 +2522,7 @@ namespace core
 		}
 //		Environment_sp localEnv(environment);
 		headFunc = af_interpreter_lookup_function(headSym,environment);
-		if ( !headFunc.pointerp() )
+		if ( !headFunc.objectp() )
 		{
 		    SIMPLE_ERROR(BF("Could not find form(%s) in the lexical/dynamic environment")
 				       % _rep_(headSym) );

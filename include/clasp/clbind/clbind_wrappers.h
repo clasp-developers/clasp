@@ -526,7 +526,7 @@ namespace translate {
             } else if ( core::Pointer_sp pp = o.asOrNull<core::Pointer_O>() ) {
                 this->_v = std::unique_ptr<T>(static_cast<T*>(pp->ptr()));
                 return;
-            } else if ( clbind::Derivable<T>* dp = dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) ) {
+            } else if ( clbind::Derivable<T>* dp = dynamic_cast<clbind::Derivable<T>*>(&(*o)) ) {
                 this->_v = std::unique_ptr<T>(dp->pointerToAlienWithin());
                 return;
             }
@@ -536,14 +536,14 @@ namespace translate {
                    __FILE__, __LINE__, _rep_(o).c_str());
 //            clbind::Derivable<T>* dtptr = dynamic_cast<clbind::Derivable<T>*>(o.px_ref());
             printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__ );
-            printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(o.px_ref()));
-            printf("o.px_ref() = %p\n", o.px_ref());
+            printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(o.raw_()));
+            printf("o.px_ref() = %p\n", o.raw_());
             printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T*),typeid(T*).name());
-            printf("typeid(o.px_ref())@%p  typeid(o.px_ref()).name=%s\n", &typeid(o.px_ref()),typeid(o.px_ref()).name());
+            printf("typeid(o.px_ref())@%p  typeid(o.px_ref()).name=%s\n", &typeid(*o),typeid(*o).name());
             printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T>*), typeid(clbind::Derivable<T>*).name());
-            printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void*>(o.px_ref()));
+            printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void*>(&(*o)));
             printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");
-            o.px_ref()->describe();
+            (*o).describe();
 #endif
             SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(o) % typeid(o).name() % typeid(T*).name() );
         }
@@ -564,7 +564,7 @@ namespace translate {
             } else if ( core::Pointer_sp pp = o.asOrNull<core::Pointer_O>() ) {
                 this->_v = static_cast<T*>(pp->ptr());
                 return;
-            } else if ( clbind::Derivable<T>* dp = dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) ) {
+            } else if ( clbind::Derivable<T>* dp = dynamic_cast<clbind::Derivable<T>*>(&(*o)) ) {
                 this->_v = dp->pointerToAlienWithin();
                 return;
             }
@@ -574,14 +574,14 @@ namespace translate {
                    __FILE__, __LINE__, _rep_(o).c_str());
 //            clbind::Derivable<T>* dtptr = dynamic_cast<clbind::Derivable<T>*>(o.px_ref());
             printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__ );
-            printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(o.px_ref()));
-            printf("o.px_ref() = %p\n", o.px_ref());
+            printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(&(*o)));
+            printf("o.px_ref() = %p\n", o.raw_());
             printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T*),typeid(T*).name());
-            printf("typeid(o.px_ref())@%p  typeid(o.px_ref()).name=%s\n", &typeid(o.px_ref()),typeid(o.px_ref()).name());
+            printf("typeid(o.px_ref())@%p  typeid(o.px_ref()).name=%s\n", &typeid(*o),typeid(*o).name());
             printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T>*), typeid(clbind::Derivable<T>*).name());
-            printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void*>(o.px_ref()));
+            printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void*>(&(*o)));
             printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");
-            o.px_ref()->describe();
+            (*o).describe();
 #endif
             SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(o) % typeid(o).name() % typeid(T*).name() );
         }

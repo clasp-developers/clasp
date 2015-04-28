@@ -53,6 +53,17 @@ extern "C" {
 
 using namespace core;
 
+namespace gctools
+{
+    /*! Point to the global nil */
+    core::Symbol_O* global_Symbol_OP_nil;
+    /*! Point to the global UNBOUND */
+    core::Symbol_O* global_Symbol_OP_unbound;
+    /*! Point to the global DELETED - used in weak hash tables */
+    core::Symbol_O* global_Symbol_OP_deleted;
+    /*! Point to the global SAME-AS-KEY - used in weak hash tables */
+    core::Symbol_O* global_Symbol_OP_sameAsKey;
+};    
 
 namespace gctools
 {
@@ -773,7 +784,7 @@ namespace gctools {
 
 #pragma GCC visibility push(default)
 #define GcToolsPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
+#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname;
 #include <clasp/gctools/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef GcToolsPkg_SYMBOLS

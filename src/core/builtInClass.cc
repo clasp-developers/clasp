@@ -86,9 +86,8 @@ namespace core
     {_G();
 	_lisp->print(BF("-------------  Class name: %s")
 		     % _rep_(this->name()) ); //InstanceClassSymbol );
-	for ( Cons_sp cur = this->directSuperclasses(); cur.notnilp(); cur=cCdr(cur) )
-	{
-	    _lisp->print(BF("Base class: %s") % (oCar(cur).as<Class_O>())->className() );
+	for ( auto cur : this->directSuperclasses() ) {
+	    _lisp->print(BF("Base class: %s") % _rep_((oCar(cur).as<Class_O>())->className()) );
 	}
 	_lisp->print(BF("%s") % this->dumpInfo() );
         if ( this->_creator == NULL ) {

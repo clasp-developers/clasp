@@ -441,10 +441,14 @@ namespace core
 extern "C" {
     __attribute__ ((noinline)) int callByValue(core::T_sp v1, core::T_sp v2, core::T_sp v3, core::T_sp v4)
     {
-	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1.px_ref());
-	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2.px_ref());
-	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3.px_ref());
-	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4.px_ref());
+	ASSERT(v1.fixnump());
+	ASSERT(v2.fixnump());
+	ASSERT(v3.fixnump());
+	ASSERT(v4.fixnump());
+	int f1 = v1.unsafe_fixnum();
+	int f2 = v2.unsafe_fixnum();
+	int f3 = v3.unsafe_fixnum();
+	int f4 = v4.unsafe_fixnum();
 	int res = f1+f2+f3+f4;
 	return res;
     }
@@ -452,10 +456,14 @@ extern "C" {
 
     __attribute__ ((noinline)) int callByPointer( core::T_O* v1,  core::T_O* v2, core::T_O* v3, core::T_O* v4)
     {
-	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1);
-	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2);
-	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3);
-	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4);
+	ASSERT(gctools::tagged_fixnump(v1));
+	ASSERT(gctools::tagged_fixnump(v2));
+	ASSERT(gctools::tagged_fixnump(v3));
+	ASSERT(gctools::tagged_fixnump(v4));
+	int f1 = gctools::untag_fixnum(v1);
+	int f2 = gctools::untag_fixnum(v2);
+	int f3 = gctools::untag_fixnum(v3);
+	int f4 = gctools::untag_fixnum(v4);
 	int res = f1+f2+f3+f4;
 	return res;
     }
@@ -463,10 +471,14 @@ extern "C" {
 
     __attribute__ ((noinline)) int callByConstRef(const core::T_sp& v1, const core::T_sp& v2, const core::T_sp& v3, const core::T_sp& v4)
     {
-	int f1 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v1.px_ref());
-	int f2 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v2.px_ref());
-	int f3 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v3.px_ref());
-	int f4 = gctools::tagged_ptr<core::T_O>::untagged_fixnum(v4.px_ref());
+	ASSERT(v1.fixnump());
+	ASSERT(v2.fixnump());
+	ASSERT(v3.fixnump());
+	ASSERT(v4.fixnump());
+	int f1 = v1.unsafe_fixnum();
+	int f2 = v2.unsafe_fixnum();
+	int f3 = v3.unsafe_fixnum();
+	int f4 = v4.unsafe_fixnum();
 	int res = f1+f2+f3+f4;
 	return res;
     }
@@ -488,7 +500,7 @@ namespace core {
         int nargs = af_length(args);
         Cons_sp cur = args;
         for ( int i=0; i<nargs; ++i ) {
-            rawArgs[i] = oCar(cur).asTPtr();
+            rawArgs[i] = oCar(cur).raw_();
             cur=cCdr(cur);
         }
         ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
@@ -603,7 +615,7 @@ namespace core {
                             //     Cons_sp cur = args;
                             //     T_O** values = frame::ValuesArray(frob);
                             //     for ( int i=0; i<nargs; ++i ) {
-                            //         values[i] = oCar(cur).asTPtr();
+                            //         values[i] = oCar(cur).raw_();
                             //         cur = cCdr(cur);
                             //     }
 #endif
@@ -685,15 +697,15 @@ namespace core {
         frame::SetParentFrame(frame1,_Nil<T_O>());
         T_O** values1 = frame::ValuesArray(frame1);
         int val=0;
-        for (int i=0; i<5; ++i ) values1[i] = Fixnum_O::create(++val).asTPtr();
+        for (int i=0; i<5; ++i ) values1[i] = Fixnum_O::create(++val).raw_();
         ALLOC_STACK_VALUE_FRAME(frameImpl2,frame2,5);
         frame::SetParentFrame(frame2,frame1);
         T_O** values2 = frame::ValuesArray(frame1);
-        for (int i=0; i<5; ++i ) values2[i] = Fixnum_O::create(++val).asTPtr();
+        for (int i=0; i<5; ++i ) values2[i] = Fixnum_O::create(++val).raw_();
         ALLOC_STACK_VALUE_FRAME(frameImpl3,frame3,5);
         frame::SetParentFrame(frame3,frame2);
         T_O** values3 = frame::ValuesArray(frame1);
-        for (int i=0; i<5; ++i ) values3[i] = Fixnum_O::create(++val).asTPtr();
+        for (int i=0; i<5; ++i ) values3[i] = Fixnum_O::create(++val).raw_();
         LightTimer timer;
         T_sp v1, v2, v3, v4;
         T_sp ocons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
@@ -785,10 +797,10 @@ namespace core {
     T_sp core_callsByValuePerSecond()
     {_G();
         LightTimer timer;
-        T_sp v1 = T_sp::createFixnum(1);
-        T_sp v2 = T_sp::createFixnum(2);
-        T_sp v3 = T_sp::createFixnum(3);
-        T_sp v4 = T_sp::createFixnum(4);
+        T_sp v1 = T_sp::make_tagged_fixnum(1);
+        T_sp v2 = T_sp::make_tagged_fixnum(2);
+        T_sp v3 = T_sp::make_tagged_fixnum(3);
+        T_sp v4 = T_sp::make_tagged_fixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
 	int pow;
 	int res;
@@ -798,7 +810,7 @@ namespace core {
             timer.start();
 	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-		v1 = T_sp::createFixnum(i);
+		v1 = T_sp::make_tagged_fixnum(i);
                 res += callByValue(v1,v2,v3,v4);
             }
             timer.stop();
@@ -820,10 +832,10 @@ namespace core {
     T_sp core_callsByConstantReferencePerSecond()
     {_G();
         LightTimer timer;
-        T_sp v1 = T_sp::createFixnum(1);
-        T_sp v2 = T_sp::createFixnum(2);
-        T_sp v3 = T_sp::createFixnum(3);
-        T_sp v4 = T_sp::createFixnum(4);
+        T_sp v1 = T_sp::make_tagged_fixnum(1);
+        T_sp v2 = T_sp::make_tagged_fixnum(2);
+        T_sp v3 = T_sp::make_tagged_fixnum(3);
+        T_sp v4 = T_sp::make_tagged_fixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
 	int pow;
 	int res;
@@ -833,7 +845,7 @@ namespace core {
             timer.start();
 	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-		v1 = T_sp::createFixnum(i);
+		v1 = T_sp::make_tagged_fixnum(i);
                 res += callByConstRef(v1,v2,v3,v4);
             }
             timer.stop();
@@ -854,10 +866,10 @@ namespace core {
     T_sp core_callsByPointerPerSecond()
     {_G();
         LightTimer timer;
-        T_sp v1 = T_sp::createFixnum(1);
-        T_sp v2 = T_sp::createFixnum(2);
-        T_sp v3 = T_sp::createFixnum(3);
-        T_sp v4 = T_sp::createFixnum(4);
+        T_sp v1 = T_sp::make_tagged_fixnum(1);
+        T_sp v2 = T_sp::make_tagged_fixnum(2);
+        T_sp v3 = T_sp::make_tagged_fixnum(3);
+        T_sp v4 = T_sp::make_tagged_fixnum(4);
         printf("%s:%d Starting %s\n", __FILE__, __LINE__, __FUNCTION__);
 	int pow, res;
         for ( pow=0; pow<32; ++pow ) {
@@ -866,8 +878,8 @@ namespace core {
             timer.start();
 	    res = 0;
             for ( size_t i=0; i<times; ++i ) {
-		v1 = T_sp::createFixnum(i);
-                res += callByPointer(v1.px_ref(),v2.px_ref(),v3.px_ref(),v4.px_ref());
+		v1 = T_sp::make_tagged_fixnum(i);
+                res += callByPointer(v1.raw_(),v2.raw_(),v3.raw_(),v4.raw_());
             }
             timer.stop();
             if ( timer.getAccumulatedTime() > 0.5 ) {
@@ -905,10 +917,10 @@ namespace core {
 	for ( Cons_sp cur = functions; cur.notnilp(); cur = cCdr(cur) ) {
 	    Function_sp func = oCar(cur).as<Function_O>();
 	    T_mv result = eval::funcall(func);
-	    mvAccumulate[idx] = result.px;
+	    mvAccumulate[idx] = result.raw_();
 	    ++idx;
 	    for ( size_t i=1,iEnd(result.number_of_values()); i<iEnd; ++i ) {
-		mvAccumulate[idx] = result.valueGet(i).asTPtr();
+		mvAccumulate[idx] = result.valueGet(i).raw_();
 		++idx;
 	    }
 	}
@@ -941,7 +953,7 @@ namespace core {
 	ASSERT(func1.notnilp()&&func1->closure);
 	result = eval::funcall(func1);
 	mvFunc1._Size = result.number_of_values();
-	mvFunc1[0] = result.asTPtr();
+	mvFunc1[0] = result.raw_();
 	MultipleValues& mvThreadLocal = lisp_multipleValues();
 	for ( size_t i(1),iEnd(mvFunc1._Size); i<iEnd; ++i ) {
 	    mvFunc1[i] = mvThreadLocal[i];

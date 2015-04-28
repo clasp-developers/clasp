@@ -700,6 +700,9 @@ namespace core
 	/*! Clear all generic functions */
 	static void forget_all_single_dispatch_generic_functions();
         HashTableEq_sp singleDispatchGenericFunctionTable() const { return this->_Roots._SingleDispatchGenericFunctionTable; };
+    private:
+	static void setupSpecialSymbols();
+	static void finalizeSpecialSymbols();
     public:
 
 

@@ -62,7 +62,7 @@ namespace cffi
 
 #pragma GCC visibility push(default)
 #define CffiPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
+#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname;
 #include <clasp/cffi/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CffiPkg_SYMBOLS

@@ -156,7 +156,7 @@ namespace translate {
 			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
 			core::T_mv result;
 			// Call the fptr
-			fptr(&result,_Nil<core::T_O>().asTPtr(),1,targs.asTPtr(),NULL,NULL,NULL,NULL);
+			fptr(&result,_Nil<core::T_O>().raw_(),1,targs.raw_(),NULL,NULL,NULL,NULL);
 			// Should resolve to const vector<string>& 
 			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
 			return cresult._v;
@@ -433,7 +433,7 @@ namespace asttooling {
 #endif
             return sp;
         } 
-	SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % consumerFactory );
+	SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % _rep_(consumerFactory) );
     };
 
 

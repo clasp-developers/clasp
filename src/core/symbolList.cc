@@ -177,7 +177,7 @@ namespace core
                 return it - this->_Contents.begin();
 	    }
 	}
-	SIMPLE_ERROR(BF("SymbolList does not contain: %s")%nm);
+	SIMPLE_ERROR(BF("SymbolList does not contain: %s")% _rep_(nm));
     }
 
 

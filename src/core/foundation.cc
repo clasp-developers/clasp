@@ -673,8 +673,15 @@ namespace core
     {
 	if (o.nilp()) {
 	    return core::Null_O::___staticClass;
-	} else if (o.tagged_fixnump()) {
-	    return core::Fixnum_O::___staticClass;
+	} else if (o.fixnump()) {
+	    IMPLEMENT_MEF(BF("Handle returning the class for fixnum"));
+	    //	    return core::Fixnum_O::___staticClass;
+	} else if (o.characterp()) {
+	    IMPLEMENT_MEF(BF("Handle returning the class for character"));
+	    //	    return core::Fixnum_O::___staticClass;
+	} else if (o.single_floatp()) {
+	    IMPLEMENT_MEF(BF("Handle returning the class for single-float"));
+	    //	    return core::Fixnum_O::___staticClass;
 	} else if ( o.framep() ) {
 	    // What do I return for this?
 	    return core::T_O::___staticClass;
@@ -682,8 +689,6 @@ namespace core
 	    SIMPLE_ERROR(BF("There is no class of NULL"));
 	} else if (o.unboundp()) {
 	    SIMPLE_ERROR(BF("There is no class of UNBOUND"));
-	} else if (o._NULLp()) {
-	    SIMPLE_ERROR(BF("You cannot get the class of _NULL"));
 	} else if (Instance_sp iobj = o.asOrNull<Instance_O>() ) {
 	    return iobj->_instanceClass();
         } else if (WrappedPointer_sp exobj = o.asOrNull<WrappedPointer_O>() ) {
@@ -695,7 +700,7 @@ namespace core
 //#endif
 	} else if ( Class_sp cobj = o.asOrNull<Class_O>() ) {
 	    return cobj->_instanceClass();
-	} else if ( o.pointerp() ) {
+	} else if ( o.objectp() ) {
 	    return lisp_static_class(o);
 	}
 	SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class"));
@@ -708,12 +713,9 @@ namespace core
 	if (o.unboundp())
 	{
 	    SIMPLE_ERROR(BF("You cannot get the class of UNBOUND"));
-	} else if (o._NULLp())
-	{
-	    SIMPLE_ERROR(BF("You cannot get the class of _NULL"));
 	} else if (!o)
 	{
-	    SIMPLE_ERROR(BF("You cannot get the class of (0)"));
+	    SIMPLE_ERROR(BF("You cannot get the class of _NULL"));
 	}
 	return o->__class();
     }
@@ -721,13 +723,13 @@ namespace core
 
     bool lisp_fixnumP(T_sp o)
     {
-        if (o.tagged_fixnump()) return true;
+        if (o.fixnump()) return true;
 	return af_fixnumP(o);
     }
 
     Fixnum lisp_asFixnum(T_sp o)
     {
-        if (o.tagged_fixnump()) return o.fixnum();
+        if (o.fixnump()) return o.unsafe_fixnum();
         if (af_fixnumP(o)) return o.as<Fixnum_O>()->get();
         SIMPLE_ERROR(BF("Not fixnum %s") % _rep_(o));
     }
@@ -768,17 +770,17 @@ namespace core
 	    return "NIL";
 	} else if ( obj.unboundp() ) {
 	    return "!UNBOUND!";
-	} else if ( obj._NULLp() ) {
+	} else if ( !obj ) {
 	    return "!NULL!";
-        } else if ( obj.tagged_fixnump() ) {
+        } else if ( obj.fixnump() ) {
             stringstream ss;
-            ss << obj.fixnum();
+            ss << obj.unsafe_fixnum();
             return ss.str();
         } else if ( obj.framep() ) {
 	    return "StackFrame";
 	} else if ( !obj ) {
 	    return "!!!UNDEFINED!!!";
-	} else if ( obj.pointerp() ) {
+	} else if ( obj.objectp() ) {
 	    return obj->__repr__();   // This is the only place where obj->__repr__() is allowed
 	}
 	return "WTF-object";
@@ -1750,9 +1752,9 @@ namespace core
       Cons_O::CdrType_sp* curP = &first;
       //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
       for ( int i(0); i<nargs; ++i ) {
-	Cons_sp one = Cons_O::create(args[i]);
-	*curP = one; // cur.setPointee(one); //*cur = one;
-	curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
+	  Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])));
+	  *curP = one; // cur.setPointee(one); //*cur = one;
+	  curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
       }
       return first;
     }

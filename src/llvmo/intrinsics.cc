@@ -217,7 +217,7 @@ extern "C" {
 
     core::Closure* va_coerceToClosure( core::T_sp* argP )
     {_G();
-	if ( !(*argP).pointerp() ) {
+	if ( !(*argP).objectp() ) {
 	    SIMPLE_ERROR(BF(" symbol %s") % _rep_((*argP)));
 	}
         core::Function_sp func = core::coerce::functionDesignator((*argP));
@@ -230,12 +230,12 @@ extern "C" {
     core::Closure* va_symbolFunction( core::Symbol_sp* symP )
     {_G();
 #ifdef RUN_SAFE
-	if ( !(*symP) || !(*symP).pointerp() ) {
+	if ( !(*symP) || !(*symP).objectp() ) {
 	    SIMPLE_ERROR(BF("The head of the form %s is not a function designator") % _rep_((*symP)));
 	}
 #endif
         core::Function_sp func = (*symP)->_Function;
-	if ( !func.pointerp() ) {
+	if ( !func.objectp() ) {
 	    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
 	}
         return func->closure;
@@ -247,7 +247,7 @@ extern "C" {
     {_G();
 	LOG(BF("About to invoke lexicalFunction depth[%d] index[%d]") % depth % index );
         core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP,depth,index);
-	ASSERTF(func.pointerp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
+	ASSERTF(func.objectp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
 		% depth % index % _rep_(*evaluateFrameP) );
         return func->closure;
     }
@@ -296,7 +296,7 @@ extern "C" {
     extern int va_allowOtherKeywords(int saw_aok, std::size_t nargs, core::T_O** argArray, std::size_t argIdx)
     {
 	if (saw_aok) return saw_aok;
-	bool aokTrue = (uintptr_t)(argArray[argIdx+1]) != gctools::tagged_ptr<core::T_O>::tagged_nil;// .isTrue();
+	bool aokTrue = !(gctools::tagged_nilp(argArray[argIdx+1]));
 	return aokTrue ? 2 : 1;
     }
 
@@ -324,7 +324,7 @@ extern "C" {
     void destructFunction_sp(core::Function_sp* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
-	if ( (*sharedP).pointerp() ) {
+	if ( (*sharedP).objectp() ) {
 	  typedef core::Function_sp dummy;
 	  (*sharedP).~dummy();
 	}
@@ -332,7 +332,7 @@ extern "C" {
     void destructTsp(core::T_sp* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
-	if ( (*sharedP).pointerp() ) {
+	if ( (*sharedP).objectp() ) {
 	  typedef core::T_sp dummy;
 	  (*sharedP).~dummy();
 	}
@@ -340,7 +340,7 @@ extern "C" {
     void destructTmv(core::T_mv* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
-	if ( (*sharedP).pointerp() ) {
+	if ( (*sharedP).objectp() ) {
 	  typedef core::T_mv dummy;
 	  (*sharedP).~dummy();
 	}
@@ -348,7 +348,7 @@ extern "C" {
     void destructAFsp(core::ActivationFrame_sp* frameP)
     {_G();
 	ASSERT(frameP!=NULL);
-	if ( (*frameP).pointerp() ) {
+	if ( (*frameP).objectp() ) {
 	    typedef core::ActivationFrame_sp dummy;
 	    (*frameP).~dummy();
 	}
@@ -366,7 +366,7 @@ extern "C" {
     void resetTsp(core::T_sp* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
-	(*sharedP).reset();
+	(*sharedP).reset_();
     }
 
     void makeUnboundTsp(core::T_sp* sharedP)
@@ -386,7 +386,8 @@ extern "C" {
     {
 //	ASSERT(xP!=NULL);
 //	ASSERT(yP!=NULL);
-	return ((*xP).px==(*yP)) ? 1 : 0;
+//	return ((*xP).px==(*yP)) ? 1 : 0;
+	return ((*xP).raw_()==(*yP)) ? 1 : 0;
     }
 
 
@@ -467,7 +468,7 @@ extern "C" {
     void resetTmv(core::T_mv* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
-	(*sharedP).reset();
+	(*sharedP).reset_();
     }
 
     extern void mv_copyTmv(core::T_mv* destP, core::T_mv* sourceP)
@@ -537,7 +538,7 @@ extern "C"
     void resetAFsp(core::ActivationFrame_sp* frameP)
     {_G();
 	ASSERT(frameP!=NULL);
-	(*frameP).reset();
+	(*frameP).reset_();
     }
 
     extern void copyAFsp( core::ActivationFrame_sp* destP, core::ActivationFrame_sp* sourceP)
@@ -808,7 +809,7 @@ extern "C"
         for ( int i=0; i<numfun; ++i ) {
 	    //            printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
 	    
-            (fptr[i])(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS0());
+            (fptr[i])(&result,_Nil<core::T_O>().raw_(),LCC_PASS_ARGS0());
         }
     }
 
@@ -817,7 +818,7 @@ extern "C"
     {
 	core::T_mv result;
 	core::T_sp env = _Nil<core::T_O>();
-	fptr(&result,env.px,LCC_PASS_ARGS0());
+	fptr(&result,env.raw_(),LCC_PASS_ARGS0());
     };
 
 
@@ -929,7 +930,7 @@ extern "C"
     extern void setParentOfActivationFrameTPtr( core::T_sp* resultP, core::T_O* parentP)
     {
         if ( resultP->framep() ) {
-            frame::SetParentFrame(*resultP,parentP);
+            frame::SetParentFrame(*resultP,gctools::smart_ptr<core::T_O>(parentP));
             return;
         } else if (ActivationFrame_sp af = (*resultP).as<ActivationFrame_O>() ) {
             af->setParentFrame(parentP);
@@ -940,9 +941,9 @@ extern "C"
 
     extern void setParentOfActivationFrame( core::T_sp* resultP, core::T_sp* parentsp)
     {
-	T_O* parentP = parentsp->px_ref();
+	T_O* parentP = parentsp->raw_();
         if ( resultP->framep() ) {
-            frame::SetParentFrame(*resultP,parentP);
+            frame::SetParentFrame(*resultP,gctools::smart_ptr<core::T_O>(parentP));
             return;
         } else if (ActivationFrame_sp af = (*resultP).as<ActivationFrame_O>() ) {
             af->setParentFrame(parentP);
@@ -975,7 +976,7 @@ extern "C"
 	ASSERT(frameP!=NULL);
 	ASSERT((*frameP));
 	ASSERTF(idx>=0 && idx<((*frameP)->length()),BF("Illegal value of idx[%d] must be in range [0<=idx<%d]") % idx % (*frameP)->length());
-	core::ValueFrame_sp frame = (*frameP).pointerAsUnsafe<core::ValueFrame_O>();
+	core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
         core::T_sp* pos_gc_safe = const_cast<core::T_sp*>(&frame->entryReference(idx));
 	return pos_gc_safe;
     }
@@ -988,7 +989,7 @@ extern "C"
 	ASSERT(frameP!=NULL);
 	ASSERT(*frameP);
 	ASSERT(ridx>=0 && ridx<(*frameP)->length());
-	core::ValueFrame_sp frame = (*frameP).pointerAsUnsafe<core::ValueFrame_O>();
+	core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
 	core::T_sp* pos_gc_safe = const_cast<core::T_sp*>(&frame->entryReference(ridx));
 	return pos_gc_safe;
     }
@@ -1007,7 +1008,7 @@ extern "C"
     extern core::T_sp* functionFrameReference(core::ActivationFrame_sp* frameP, int idx)
     {_G();
 	ASSERT(frameP!=NULL);
-	ASSERT(frameP->pointerp());
+	ASSERT(frameP->objectp());
 	core::FunctionFrame_sp frame = (*frameP).as<core::FunctionFrame_O>();
 	if ( idx < 0 || idx >= frame->length())
 	{
@@ -1027,7 +1028,7 @@ extern "C"
     extern void fillRestTarget( core::T_sp* restP, core::ActivationFrame_sp* frameP, int startRest, char* fnName)
     {_G();
 	ASSERT(frameP!=NULL);
-	ASSERT(frameP->pointerp());
+	ASSERT(frameP->objectp());
 	core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
 	core::Cons_sp result = _Nil<core::Cons_O>();
 	for ( int i=frame->length()-1; i>=startRest; i-- )
@@ -1044,7 +1045,7 @@ extern "C"
     extern int checkForAllowOtherKeywords(int ampAllowOtherKeywords, core::ActivationFrame_sp* frameP, int argIdx)
     {_G();
 	ASSERT(frameP!=NULL);
-	ASSERT(frameP->pointerp());
+	ASSERT(frameP->objectp());
 	ASSERT(argIdx>=0);
 	core::ValueFrame_sp vf = (*frameP).as<core::ValueFrame_O>();
 	if ( argIdx >= vf->length() ) return 0;
@@ -1082,7 +1083,7 @@ extern "C"
     extern void throwIfExcessKeywordArguments( char* fnName, core::ActivationFrame_sp* frameP, int argIdx)
     {_G();
 	ASSERT(frameP!=NULL);
-	ASSERT(frameP->pointerp());
+	ASSERT(frameP->objectp());
 	ASSERT(argIdx>=0);
 	if ( argIdx >= (*frameP)->length() ) return;
         stringstream ss;
@@ -1109,7 +1110,7 @@ extern "C"
     extern void throwIfExcessArguments( core::T_sp* frameP, int argIdx)
     {_G();
 	ASSERT(frameP!=NULL);
-	ASSERT(frameP->pointerp());
+	ASSERT(frameP->objectp());
 	ASSERT(argIdx>=0);
 	ASSERT(argIdx<(*frameP).as<core::Cons_O>()->length());
 	core::ActivationFrame_sp frame = (*frameP).as<core::ActivationFrame_O>();
@@ -1203,7 +1204,7 @@ core::T_sp proto_lexicalFunctionRead(int depth, int index, core::ActivationFrame
     LOG(BF("About to lexicalFunction depth[%d] index[%d]") % depth % index );
     LOG(BF("(*renvP) --> %s") % (*renvP)->__repr__() );
     core::Function_sp res = core::Environment_O::clasp_lookupFunction((*renvP),depth,index);
-    if ( !res.pointerp() )
+    if ( !res.objectp() )
     {
 	SIMPLE_ERROR(BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
 			   % depth % index % _rep_((*renvP)) );
@@ -1283,14 +1284,14 @@ extern "C"
     void debugInspectT_sp(core::T_sp* objP)
     {_G();
 	core::T_sp obj = (*objP);
-	printf("debugInspectObject@%p  obj.px_ref()=%p: %s\n", (void*)objP, (*objP).px_ref(), _rep_(obj).c_str() );
+	printf("debugInspectObject@%p  obj.px_ref()=%p: %s\n", (void*)objP, (*objP).raw_(), _rep_(obj).c_str() );
 	printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__,__LINE__);
     }
 
     void debugInspectTPtr(core::T_O* tP)
     {
         core::T_sp obj = gctools::smart_ptr<core::T_O>(tP);
-	printf("debugInspectTPtr@%p  obj.px_ref()=%p: %s\n", (void*)tP, obj.px_ref(), _rep_(obj).c_str() );
+	printf("debugInspectTPtr@%p  obj.px_ref()=%p: %s\n", (void*)tP, obj.raw_(), _rep_(obj).c_str() );
 	printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__,__LINE__);
     }
 
@@ -1330,7 +1331,7 @@ extern "C"
 	if ( objP==NULL )
 	{
 	    std::cout << "objP is UNDEFINED";
-	} else if ( !(*objP).pointerp() )
+	} else if ( !(*objP).objectp() )
 	{
 	    std::cout << "(*objP) is UNDEFINED";
 	} else
@@ -1564,7 +1565,7 @@ extern "C"
     void getOrCreateLoadTimeValueArray(core::LoadTimeValues_O** ltvPP, const char* moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols )
     {
 	core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName,numberOfLoadTimeValues, numberOfLoadTimeSymbols);
-	*ltvPP = reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
+	*ltvPP = &(*loadTimeValues); //reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
 	//	printf("%s:%d  getOrCreateLoadTimeValueArray ltvPP=%p  *ltvPP=%p\n", __FILE__, __LINE__, ltvPP, *ltvPP );
     }
 
@@ -1788,7 +1789,7 @@ extern "C"
     void sp_restoreFromMultipleValue0( core::T_sp* resultP )
     {
 	MultipleValues& mv = lisp_multipleValues();
-	(*resultP) = mv[0];
+	(*resultP).setRaw_(mv[0]);
     }
 
     void mv_restoreFromMultipleValue0( core::T_mv* resultP)
@@ -1862,7 +1863,7 @@ extern "C"
 	ASSERT(objP!=NULL);
 	if ( !af_keywordP((core::T_sp(*objP))) )
 	{
-            SIMPLE_ERROR(BF("Not keyword %s")% _rep_(*objP));
+            SIMPLE_ERROR(BF("Not keyword %s")% _rep_(gctools::smart_ptr<core::T_O>(*objP)));
 //            core::throwUnrecognizedKeywordArgumentError(*objP);
 	}
     }
@@ -1878,56 +1879,6 @@ extern "C"
 };
 
 
-extern "C"
-{
-    union SetjmpUserTy
-    {
-	T_mv* 	tmvP;
-	int	ival;
-    };
-
-    struct SetjmpBufTy
-    {
-	void*	lowLevelFrame;
-	void*	lowLevelLongJumpAddress;
-	SetjmpUserTy	user0;
-	SetjmpUserTy	user1;
-	SetjmpUserTy 	user2;
-    };
-
-    void setjmp_set_jump_address( SetjmpBufTy* bufP, void* jumpAddress)
-    {
-	bufP->lowLevelLongJumpAddress = jumpAddress;
-    }
-
-    void setjmp_user0_set_i32( SetjmpBufTy* bufP, int val)
-    {
-	bufP->user0.ival = val;
-    }
-
-    int setjmp_user0_get_i32( SetjmpBufTy* bufP )
-    {
-	return bufP->user0.ival;
-    }
-
-    void setjmp_user0_allocate_set_tmv( SetjmpBufTy* bufP, T_mv* valP )
-    {
-	bufP->user0.tmvP = new T_mv(*valP);
-    }
-
-    void setjmp_user0_get_tmv( T_mv* resultP, SetjmpBufTy* bufP )
-    {
-	*resultP = *(bufP->user0.tmvP);
-    }
-
-    void setjmp_user0_delete_tmv( SetjmpBufTy* bufP )
-    {
-	bufP->user0.tmvP->reset();
-	delete bufP->user0.tmvP;
-    }
-
-
-};
 
 
 extern "C"
@@ -2003,7 +1954,7 @@ extern "C"
 
     extern int matchKeywordOnce(core::T_sp* xP, core::T_O** yP, unsigned char* sawKeyAlreadyP)
     {
-        if ( (*xP).px!=(*yP) ) return 0;
+        if ( (*xP).raw_()!=(*yP) ) return 0;
         if (*sawKeyAlreadyP) return 2;
         return 1;
     }
@@ -2031,7 +1982,7 @@ extern "C" {
 #ifdef DEBUG_CC
 	printf("%s:%d precalcSymbol idx[%zu] symbol = %p\n", __FILE__, __LINE__, idx, (*array).symbols_element(idx).px);
 #endif
-	T_O* res = (*array).symbols_element(idx).px;
+	T_O* res = (*array).symbols_element(idx).raw_();
 	ASSERT(res!=NULL);
 	return res;
     }
@@ -2042,7 +1993,7 @@ extern "C" {
 #ifdef DEBUG_CC
 	printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
 #endif
-	T_O* res = (*array).data_element(idx).px;
+	T_O* res = (*array).data_element(idx).raw_();
 	ASSERT(res!=NULL);
 	return res;
     }
@@ -2054,7 +2005,7 @@ extern "C" {
 #ifdef DEBUG_CC
 	printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
 #endif
-	return res.px;
+	return res.raw_();
     }
 
     void cc_writeCell(core::T_O* cell, core::T_O* val)
@@ -2073,16 +2024,16 @@ extern "C" {
 #ifdef DEBUG_CC
 	printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px );
 #endif
-	return val.px;
+	return val.raw_();
     }
 
     core::T_O* cc_fetch(core::T_O* array, std::size_t idx)
     {
 	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
 #ifdef DEBUG_CC
-	printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*a)[idx].px);
+	printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*a)[idx].raw_());
 #endif
-	return (*a)[idx].px;
+	return (*a)[idx].raw_();
     }
 
     T_O* cc_fdefinition(core::T_O* sym)
@@ -2092,7 +2043,7 @@ extern "C" {
 	if (fn.nilp() || fn.unboundp()) {
 	    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
 	}
-	return fn.pointer();
+	return &(*fn);
     }
 
     T_O* cc_getSetfFdefinition(core::T_O* sym)
@@ -2102,7 +2053,7 @@ extern "C" {
 	if (fn.nilp() || fn.unboundp()) {
 	    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
 	}
-	return fn.pointer();
+	return &(*fn);
     }
 
 
@@ -2111,7 +2062,7 @@ extern "C" {
     {
 	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
 	core::T_sp v = core::af_symbolValue(s);
-	return v.pointer();
+	return &(*v);
     }
 
 #define PROTO_cc_setSymbolValue "void (t* t*)"
@@ -2157,7 +2108,7 @@ extern "C" {
         for ( ; numCells; --numCells ) {
             p = va_arg(argp,core::T_O*);
 #ifdef DEBUG_CC
-	    printf("%s:%d enclose environment@%p[%d] p[%p]\n", __FILE__, __LINE__, vo.px, idx, p);
+	    printf("%s:%d enclose environment@%p[%d] p[%p]\n", __FILE__, __LINE__, vo.raw_(), idx, p);
 #endif
 	    (*vo)[idx] = gctools::smart_ptr<core::T_O>(p);
 	    ++idx;
@@ -2179,7 +2130,7 @@ extern "C" {
 									    );
 	core::CompiledFunction_sp cf = core::CompiledFunction_O::make(functoid);
 	core::T_sp res = cf;
-	return res.px;
+	return res.raw_();
     }
 
 
@@ -2192,7 +2143,7 @@ extern "C" {
 	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
 	ASSERT(func!=NULL);
 	core::Closure* closure = func->closure;
-	closure->invoke(result,result->number_of_values(),result->asTPtr(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
+	closure->invoke(result,result->number_of_values(),result->raw_(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
     }
 
 
@@ -2205,7 +2156,7 @@ extern "C" {
 	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
 	ASSERT(func!=NULL);
 	core::Closure* closure = func->closure;
-	closure->invoke(result,result->number_of_values(),result->asTPtr(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
+	closure->invoke(result,result->number_of_values(),result->raw_(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
     }
 
 
@@ -2213,7 +2164,7 @@ extern "C" {
     {
 	core::MultipleValues& mvThread = core::lisp_multipleValues();
 	(*mv)._Size = result->number_of_values();
-	(*mv)[0] = (*result).px;
+	(*mv)[0] = (*result).raw_();
 	for ( size_t i=1; i<(*mv)._Size; ++i ) {
 	    (*mv)[i] = mvThread[i];
 	}
@@ -2237,7 +2188,7 @@ extern "C" {
 	ASSERT(*ltvPP!=NULL);
 	core::LoadTimeValues_O& ltv = **ltvPP;
 	core::T_sp& result = ltv.data_element(index);
-	return &result.px;
+	return &result.rawRef_();
     }
 
 
@@ -2250,14 +2201,14 @@ extern "C" {
 	{
 	    result = core::Cons_O::create(core::T_sp(argArray[i]),result);
 	}
-	return result.pointer();
+	return (core::T_O*)(&(*result));
     }
 
 
     std::size_t cc_allowOtherKeywords(std::size_t saw_aok, std::size_t nargs, core::T_O** argArray, std::size_t argIdx)
     {
 	if (saw_aok) return saw_aok;
-	bool aokTrue = (uintptr_t)(argArray[argIdx+1]) != gctools::tagged_ptr<core::T_O>::tagged_nil;// .isTrue();
+	bool aokTrue = !gctools::tagged_nilp(argArray[argIdx+1]); 
 	return aokTrue ? 2 : 1;
     }
 
@@ -2273,7 +2224,7 @@ extern "C" {
     size_t cc_matchKeywordOnce(core::T_O* xP, core::T_O* yP, core::T_O* sawKeyAlreadyP)
     {
         if ( xP!=yP ) return 0;
-        if (!gctools::tagged_ptr<core::T_O>::tagged_nilp(sawKeyAlreadyP)) return 2;
+        if (!gctools::tagged_nilp(sawKeyAlreadyP)) return 2;
         return 1;
     }
 
@@ -2351,12 +2302,13 @@ extern "C" {
 #endif
 	size_t index = _lisp->exceptionStack().push(LandingPadFrame,ptr);
 	//	printf("%s:%d pushLandingPadFrame frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void*)&typeid(core::Unwind));
-        return gctools::tagged_ptr<core::T_O>::make_tagged_fixnum(index);
+        return gctools::tag_fixnum<core::T_O>(index);
     }
 
     void cc_popLandingPadFrame(T_O* frameFixnum)
     {_G();
-	size_t frameIndex = gctools::tagged_ptr<core::T_O>::untagged_fixnum(frameFixnum);
+	ASSERT(gctools::tagged_fixnump(frameFixnum));
+	size_t frameIndex = gctools::untag_fixnum(frameFixnum);
 	//	printf("%s:%d  Unwinding exceptionStack to: %lu\n", __FILE__, __LINE__, frameIndex );
 	_lisp->exceptionStack().unwind(frameIndex);
     }
@@ -2364,7 +2316,8 @@ extern "C" {
 
     size_t cc_landingpadUnwindMatchFrameElseRethrow(char* exceptionP, core::T_O* frame)
     {
-	size_t frameIndex = gctools::tagged_ptr<core::T_O>::untagged_fixnum(frame);
+	ASSERT(gctools::tagged_fixnump(frame));
+	size_t frameIndex = gctools::untag_fixnum(frame);
 	//	printf("%s:%d landingpadUnwindMatchFrameElseRethrow  frame: %lu\n", __FILE__, __LINE__, frameIndex);
         core::Unwind* unwindP = reinterpret_cast<core::Unwind*>(exceptionP);
 	if ( unwindP->getFrame() == frame )
@@ -2404,7 +2357,7 @@ namespace llvmo {
 	//	PRIMITIVE(cc_setSymbolValue);
 	printf("%s:%d  Initializing intrinsics.cc\n", __FILE__, __LINE__ );
 	T_mv foo = testTwoReturns();
-	printf("Called testTwoReturns  foo.px = %p   foo.two = %d\n", foo.px, foo.number_of_values() );
+	printf("Called testTwoReturns  foo.raw_() = %p   foo.two = %d\n", foo.raw_(), foo.number_of_values() );
     }
 
 };

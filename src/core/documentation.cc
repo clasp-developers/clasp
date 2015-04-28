@@ -104,9 +104,8 @@ namespace core
 	    Cons_sp output = _Nil<Cons_O>();
 	    for ( Cons_sp cur = record; cur.notnilp(); cur = cCdr(cur) )
 	    {
-		Cons_sp i = oCar(cur).as_or_nil<Cons_O>();
-		if ( i != x )
-		{
+		Cons_sp i = cCar(cur);
+		if ( i != x ) {
 		    output = Cons_O::create(i,output);
 		}
 	    }

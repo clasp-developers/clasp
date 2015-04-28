@@ -54,7 +54,7 @@ $for isConst [[
           gctools::smart_ptr<OT> ot((arg0).template as<OT>());
           $for Args_ [[translate::from_object<ARG$Args_> a$Args_(arg$Args_);
           ]]
-          $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] ((*ot.get()).*mptr)($for Args_ ,[[a$Args_._v]]);
+          $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] ((*ot.untag_object()).*mptr)($for Args_ ,[[a$Args_._v]]);
           $if ret==RetVoid [[
             *lcc_resultP = Values0<core::T_O>();
           ]] $elif ret==RetMV [[

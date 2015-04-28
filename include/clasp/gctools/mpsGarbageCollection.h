@@ -489,8 +489,8 @@ inline mps_res_t smartPtrFix(mps_ss_t _ss
     if ( sptrP->objectp() ) {
 	void* tagged_obj = (sptrP)->raw_();
 	if ( MPS_FIX1(_ss,obj) ) {
-	    void* obj = gctools::smart_ptr<T>::untag_object(tagged_obj);
-	    void* tag = gctools::smart_ptr<T>::tag_of_object(tagged_obj);
+	    void* obj = gctools::untag_object(tagged_obj);
+	    void* tag = gctools::tag_of_object(tagged_obj);
 	    mps_res_t res = MPS_FIX2(_ss,reinterpret_cast<mps_addr_t*>(&obj));
             if (res != MPS_RES_OK) return res;              
 	    obj |= tag;

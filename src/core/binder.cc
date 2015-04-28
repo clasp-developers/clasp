@@ -186,7 +186,8 @@ void	Binder_O::archiveBase(ArchiveP node)
 
     bool Binder_O::contains(Symbol_sp sym) const
     {_G();
-        return _lisp->_boolean(this->_Bindings->gethash(sym,_Nil<T_O>()));
+	TESTING();
+        return this->_Bindings->gethash(sym,_Nil<T_O>()).notnilp();
     }
 
 

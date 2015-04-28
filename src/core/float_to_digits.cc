@@ -72,7 +72,7 @@ namespace core {
 	Real_mv mv_f = cl_integerDecodeFloat(number);
 	Integer_sp f = mv_f.as<Integer_O>();
 	Fixnum_sp fne = mv_f.valueGet(1).as<Fixnum_O>();
-	Fixnum e = brcl_fixnum(fne), min_e;
+	Fixnum e = clasp_fixnum(fne), min_e;
 	bool limit_f = 0;
 	switch (brcl_t_of(number)) {
 	case number_SingleFloat:
@@ -163,7 +163,7 @@ namespace core {
     generate(StrWithFillPtr_sp digits, float_approx *approx)
     {
         Real_sp d, x;
-        cl_fixnum digit;
+	gctools::Fixnum digit;
         bool tc1, tc2;
         do {
 	    Real_mv mv_d = brcl_truncate2(brcl_times(approx->r, PRINT_BASE).as<Real_O>(), approx->s);
@@ -181,16 +181,16 @@ namespace core {
 	    if (tc1 || tc2) {
 		break;
 	    }
-	    brcl_string_push_extend(digits, brcl_digit_char(brcl_fixnum(d), 10));
+	    brcl_string_push_extend(digits, brcl_digit_char(clasp_fixnum(d), 10));
         } while (1);
         if (tc2 && !tc1) {
-	    digit = brcl_fixnum(d) + 1;
+	    digit = clasp_fixnum(d) + 1;
         } else if (tc1 && !tc2) {
-	    digit = brcl_fixnum(d);
+	    digit = clasp_fixnum(d);
         } else if (brcl_lower(times2(approx->r), approx->s)) {
-	    digit = brcl_fixnum(d);
+	    digit = clasp_fixnum(d);
         } else {
-	    digit = brcl_fixnum(d) + 1;
+	    digit = clasp_fixnum(d) + 1;
         }
         brcl_string_push_extend(digits, brcl_digit_char(digit, 10));
         return digits;
@@ -199,11 +199,11 @@ namespace core {
     static void
     change_precision(float_approx *approx, Real_sp position, T_sp relativep)
     {
-        cl_fixnum pos;
-        if (Null(position))
+	gctools::Fixnum pos;
+        if (position.nilp())
 	    return;
-        pos = brcl_fixnum(position);
-        if (!Null(relativep)) {
+        pos = clasp_fixnum(position);
+        if (!relativep.nilp()) {
 	    Real_sp k = brcl_make_fixnum(0);
 	    Real_sp l = brcl_make_fixnum(1);
 	    while (brcl_lower(brcl_times(approx->s, l),
@@ -248,12 +248,12 @@ namespace core {
     T_mv core_float_to_digits(StrWithFillPtr_sp digits, Float_sp number, Real_sp position,
 			      T_sp relativep)
     {
-        cl_fixnum k;
+	gctools::Fixnum k;
         float_approx approx[1];
         setup(number, approx);
         change_precision(approx, position, relativep);
         k = scale(approx);
-        if (Null(digits))
+        if (digits.nilp())
 	    digits = af_make_vector(cl::_sym_BaseChar_O,
 				    10,
 				    true /* adjustable */,

@@ -679,7 +679,7 @@ namespace core
 		SIMPLE_ERROR(BF("Problem exporting symbol - it has no name"));
 	    }
 #ifdef DEBUG_CL_SYMBOLS
-            if ( sym.notnilp() && this == _lisp->commonLispPackage().px_ref() ) {
+            if ( sym.notnilp() && this == &(*(_lisp->commonLispPackage())) ) {
                 throwIfNotValidClSymbol(sym->symbolName()->get());
             }
 #endif
@@ -748,13 +748,13 @@ namespace core
     {
 #if 0
         // Dump every symbol
-        printf("INTERNING symbol[%s]@%p\n", name.c_str(), sym.px_ref() );
+        printf("INTERNING symbol[%s]@%p\n", name.c_str(), sym.raw_() );
 #endif
 #if 0
 	if ( name == "COERCE-NAME") // == "+HASH-TABLE-ENTRY-VALUE-HAS-BEEN-DELETED+")
 	{
 	    printf("%s:%d - Package_O::intern of %s@%p in package %s\n",
-		   __FILE__, __LINE__, name.c_str(), sym.px_ref(), pkg->getName().c_str() );
+		   __FILE__, __LINE__, name.c_str(), sym.raw_(), pkg->getName().c_str() );
 	}
 #endif
     }
@@ -763,12 +763,12 @@ namespace core
 
     void Package_O::add_symbol_to_package(const char* symName,  Symbol_sp sym, bool exportp)
     {
-	if (sym.pointerp()) trapSymbol(this,sym,symName);
+	if (sym.objectp()) trapSymbol(this,sym,symName);
 	Bignum_sp nameKey = nameToKey(symName);
 	if ( this->isKeywordPackage() || exportp )
 	{
 #ifdef DEBUG_CL_SYMBOLS
-            if ( sym.notnilp() && this == _lisp->commonLispPackage().px_ref() ) {
+            if ( sym.notnilp() && this == &(*(_lisp->commonLispPackage())) ) {
                 
                 throwIfNotValidClSymbol(sym->symbolName()->get());
             }

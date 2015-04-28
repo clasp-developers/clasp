@@ -39,7 +39,7 @@ namespace core
 	bool 		_Export;
 	SymbolStorage() : _PackageName(""), _SymbolName(""), _Export(false)
 	{
-	    this->_Symbol.reset();
+	    this->_Symbol.reset_();
 	}
 
 	SymbolStorage(string const& pkgName, string const& symbolName,Symbol_sp sym, bool exportp)

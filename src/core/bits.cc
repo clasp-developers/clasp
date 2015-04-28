@@ -28,103 +28,103 @@ namespace core {
  * BIT OPERATIONS FOR FIXNUMS
  */
 
-    static cl_fixnum
-    ior_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    ior_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(i | j);
     }
 
-    static cl_fixnum
-    xor_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    xor_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(i ^ j);
     }
 
-    static cl_fixnum
-    and_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    and_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(i & j);
     }
 
-    static cl_fixnum
-    eqv_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    eqv_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(~(i ^ j));
     }
 
-    static cl_fixnum
-    nand_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    nand_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(~(i & j));
     }
 
-    static cl_fixnum
-    nor_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    nor_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(~(i | j));
     }
 
-    static cl_fixnum
-    andc1_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    andc1_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return((~i) & j);
     }
 
-    static cl_fixnum
-    andc2_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    andc2_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(i & (~j));
     }
 
-    static cl_fixnum
-    orc1_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    orc1_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return((~i) | j);
     }
 
-    static cl_fixnum
-    orc2_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    orc2_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(i | (~j));
     }
 
-    static cl_fixnum
-    b_clr_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    b_clr_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(0);
     }
 
-    static cl_fixnum
-    b_set_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    b_set_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(-1);
     }
 
-    static cl_fixnum
-    b_1_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    b_1_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(i);
     }
 
-    static cl_fixnum
-    b_2_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    b_2_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(j);
     }
 
-    static cl_fixnum
-    b_c1_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    b_c1_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(~i);
     }
 
-    static cl_fixnum
-    b_c2_op(cl_fixnum i, cl_fixnum j)
+    static gctools::Fixnum
+    b_c2_op(gctools::Fixnum i, gctools::Fixnum j)
     {
 	return(~j);
     }
 
-    typedef cl_fixnum (*bit_operator)(cl_fixnum, cl_fixnum);
+    typedef gctools::Fixnum (*bit_operator)(gctools::Fixnum, gctools::Fixnum);
 
     static bit_operator fixnum_operations[16] = {
 	b_clr_op,
@@ -323,7 +323,7 @@ namespace core {
         }
         if ( Fixnum_sp fnx = x.asOrNull<Fixnum_O>() ) {
             if ( Fixnum_sp fny = y.asOrNull<Fixnum_O>() ) {
-                cl_fixnum z = fixnum_operations[op](fnx->get(), fny->get());
+		gctools::Fixnum z = fixnum_operations[op](fnx->get(), fny->get());
                 return Fixnum_O::create(z);
             } else if ( Bignum_sp bny = y.asOrNull<Bignum_O>() ) {
                 Bignum_sp x_copy = _lisp->bigRegister0();
@@ -372,7 +372,7 @@ namespace core {
             ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp,3,ty,cl::_sym_BitVector_O);
         }
         int opval = o.as<Fixnum_O>()->get();
-	cl_fixnum i, j, n, d;
+	gctools::Fixnum i, j, n, d;
 	SimpleBitVector_sp r0;
 	bit_operator op;
 	bool replace = false;
@@ -482,15 +482,15 @@ namespace core {
 	return @logxor(2,x,clasp_make_fixnum(-1));
     }
 
-    static cl_fixnum
+    static gctools::Fixnum
     count_bits(T_sp x)
     {
-	cl_fixnum count;
+	gctools::Fixnum count;
 
 	switch (clasp_t_of(x)) {
 	case t_fixnum: {
-            cl_fixnum i = clasp_fixnum(x);
-            cl_fixnum j = (i < 0) ? ~i : i;
+            gctools::Fixnum i = clasp_fixnum(x);
+            gctools::Fixnum j = (i < 0) ? ~i : i;
             for (count=0 ; j ; j >>= 1)
                 if (j & 1) count++;
             break;
@@ -515,7 +515,7 @@ namespace core {
   Left shift if w > 0, right shift if w < 0.
 */
     T_sp
-    clasp_ash(T_sp x, cl_fixnum w)
+    clasp_ash(T_sp x, gctools::Fixnum w)
     {
 	T_sp y;
 
@@ -532,7 +532,7 @@ namespace core {
                  * Furthermore, in general, shifting negative numbers leads
                  * to implementation-specific results :-/
                  */
-                cl_fixnum y = clasp_fixnum(x);
+		gctools::Fixnum y = clasp_fixnum(x);
                 if (bits >= FIXNUM_BITS) {
                     y = (y < 0)? -1 : 0;
                 } else {
@@ -552,7 +552,7 @@ namespace core {
     }
 
     int
-    clasp_fixnum_bit_length(cl_fixnum i)
+    clasp_fixnum_bit_length(gctools::Fixnum i)
     {
 	int count;
 	if (i < 0)
@@ -633,7 +633,7 @@ namespace core {
     static int
     coerce_to_logical_operator(T_sp o)
     {
-	cl_fixnum op;
+	gctools::Fixnum op;
 	op = clasp_to_fix(o);
 	if (op < 0 || op > CLASP_BOOLSET)
             FEerror("~S is an invalid logical operator.", 1, o);
@@ -656,7 +656,7 @@ namespace core {
 	if (CLASP_FIXNUMP(p)) {
             cl_index n = clasp_to_size(p);
             if (CLASP_FIXNUMP(x)) {
-                cl_fixnum y = clasp_fixnum(x);
+		gctools::Fixnum y = clasp_fixnum(x);
                 if (n >= FIXNUM_BITS) {
                     i = (y < 0);
                 } else {
@@ -723,7 +723,7 @@ namespace core {
     clasp_integer_length(T_sp x)
     {
 	int count;
-	cl_fixnum i;
+	gctools::Fixnum i;
 
 	switch (clasp_t_of(x)) {
 	case t_fixnum:

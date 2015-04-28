@@ -614,7 +614,7 @@ namespace core
 	    }
 	    pattern << ch->asChar();
 	}
-	if (Null(num)) {
+	if (num.nilp()) {
 	    dim = dimcount;
 	} else if (num.isA<Fixnum_O>()) {
 	    dim = num.as<Fixnum_O>()->get();

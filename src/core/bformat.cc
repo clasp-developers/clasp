@@ -72,21 +72,21 @@ namespace core
 		    fmter % "!!!!UNDEFINED-BFORMAT-ARGUMENT!!!!!";
 		} else if ( af_fixnumP(fobj) )
 		{
-		    Fixnum_sp fint = safe_downcast<Fixnum_O>(fobj);
+		    Fixnum_sp fint = fobj.as<Fixnum_O>();
 		    fmter % fint->get();
 		} else if ( af_bignumP(fobj) )
 		{
-		    Bignum_sp flli = safe_downcast<Bignum_O>(fobj);
+		    Bignum_sp flli = fobj.as<Bignum_O>();
 		    stringstream ss;
 		    ss << flli->as_mpz();
 		    fmter % ss.str();
 		} else if ( af_strP(fobj) )
 		{
-		    Str_sp ftext = safe_downcast<Str_O>(fobj);
+		    Str_sp ftext = fobj.as<Str_O>();
 		    fmter % ftext->get();
 		} else if ( af_doubleFloatP(fobj) )
 		{
-		    DoubleFloat_sp freal= safe_downcast<DoubleFloat_O>(fobj);
+		    DoubleFloat_sp freal= fobj.as<DoubleFloat_O>();
 		    fmter % freal->get();
 		} else
 		{

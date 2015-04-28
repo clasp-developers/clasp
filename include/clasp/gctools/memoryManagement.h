@@ -193,16 +193,16 @@ namespace gctools {
 #include <clasp/gctools/smart_pointers.h>
 
 
-
 namespace gctools {
     template <typename T>
     void* SmartPtrToBasePtr(smart_ptr<T> obj)
     {
         void* ptr;
-        if ( obj.pointerp() ) {
-            ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.pbase()) - sizeof(Header_s));
+        if ( obj.objectp() ) {
+            ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.untag_object()) - sizeof(Header_s));
         } else {
-            ptr = reinterpret_cast<void*>(obj.px_ref());
+	    THROW_HARD_ERROR(BF("Bad pointer for SmartPtrToBasePtr"));
+	    //            ptr = reinterpret_cast<void*>(obj.px_ref());
         }
         return ptr;
     }
@@ -270,10 +270,10 @@ namespace gctools {
     /* Start up the garbage collector and the main function.
        The main function is wrapped within this function */
     int startupGarbageCollectorAndSystem( MainFunctionType startupFn
-                                              , int argc
-                                              , char* argv[]
-                                              , bool mpiEnabled
-                                              , int mpiRank
+					  , int argc
+					  , char* argv[]
+					  , bool mpiEnabled
+					  , int mpiRank
                                           , int mpiSize );
 
 

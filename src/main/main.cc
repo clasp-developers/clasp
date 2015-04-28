@@ -107,7 +107,8 @@ int startup(int argc, char* argv[], bool& mpiEnabled, int& mpiRank, int& mpiSize
 	} catch (core::DynamicGo& failedGo) {
 	printf("%s:%d A DynamicGo was thrown but not caught frame[%lu] tag[%lu]\n", __FILE__, __LINE__, failedGo.getFrame(), failedGo.index());
     } catch (core::Unwind& failedUnwind) {
-	printf("%s:%d A Unwind was thrown but not caught frame[%d] tag[%lu]\n", __FILE__, __LINE__, gctools::tagged_ptr<core::T_O>::untagged_fixnum(failedUnwind.getFrame()), failedUnwind.index());
+	ASSERT(gctools::tagged_fixnump(failedUnwind.getFrame()));
+	printf("%s:%d A Unwind was thrown but not caught frame[%ld] tag[%lu]\n", __FILE__, __LINE__, gctools::untag_fixnum(failedUnwind.getFrame()), failedUnwind.index());
     } catch (...) { exitCode = gctools::handleFatalCondition(); }
     return exitCode;
 }

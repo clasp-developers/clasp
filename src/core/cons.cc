@@ -48,25 +48,42 @@ THE SOFTWARE.
 namespace core
 {
 
+    List_sp coerce_to_list(T_sp o)
+    {
+	if ( o.consp() ) {
+	    return gctools::smart_ptr<List_V>((gctools::Tagged)(o.raw_()));
+	} else if (o.nilp()) {
+	    return gctools::smart_ptr<List_V>((gctools::Tagged)(o.raw_()));
+	}
+	TYPE_ERROR(o,cl::_sym_list);
+    }
 
+    T_sp cons_car(core::Cons_O* cur)
+    {
+	return cur->_Car;
+    }
+    T_sp cons_cdr(core::Cons_O* cur)
+    {
+	return cur->_Cdr;
+    }
+    
 
 
 #define ARGS_af_putF "(plist value indicator)"
 #define DECL_af_putF ""
 #define DOCS_af_putF "putF"
-    Cons_sp af_putF(Cons_sp place, T_sp value, T_sp indicator)
+    Cons_sp af_putF(T_sp place, T_sp value, T_sp indicator)
     {_G();
-	Cons_sp cur = place;
-	for ( ; CONSP(cur); cur=cCddr(cur) )
+	Cons_sp cur = place.as<Cons_O>();
+	for ( ; cur.consp(); cur=cCddr(cur) )
 	{
 	    T_sp cdr_l = oCdr(cur);
-	    if ( !CONSP(cdr_l)) break;
-	    if ( CONS_CAR(cur) == indicator )
-	    {
+	    if ( !cdr_l.consp()) break;
+	    if ( oCar(cur) == indicator ) {
 		cdr_l.as<Cons_O>()->rplaca(value);
-		return place;
+		return place.as<Cons_O>();
 	    }
-	    cur = CONS_CDR(cdr_l);
+	    cur = cCdr(cdr_l); //CONS_CDR(cdr_l);
 	}
 	if ( cur.notnilp() )
 	{
@@ -74,7 +91,7 @@ namespace core
 	}
 	place = Cons_O::create(value,place);
 	place = Cons_O::create(indicator,place);
-	return(place);
+	return(place.as<Cons_O>());
     };
 
 
@@ -85,10 +102,10 @@ namespace core
 #define ARGS_cl_getf "(plist indicator &optional default-value)"
 #define DECL_cl_getf ""
 #define DOCS_cl_getf "getf"
-    T_sp cl_getf(Cons_sp plist, T_sp indicator, T_sp default_value)
+    T_sp cl_getf(T_sp plist, T_sp indicator, T_sp default_value)
     {_G();
 	if ( plist.nilp() ) return(default_value);
-	return plist->getf(indicator,default_value);
+	return plist.as<Cons_O>()->getf(indicator,default_value);
     };
 
 
@@ -418,7 +435,7 @@ namespace core
     Cons_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const
     {_OF();
 	Tester t(item,key,test,testNot,false);
-	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.notnilp(); cur = cCdr(cur).as_or_nil<Cons_O>() )
+	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.consp(); cur = cCdr(cur) )
 	{
 	    LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur) );
 	    T_sp obj = oCar(cur);
@@ -433,7 +450,7 @@ namespace core
     Cons_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const
     {_OF();
 	Tester t(item,key,test,testNot,true);
-	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.notnilp(); cur = cCdr(cur).as_or_nil<Cons_O>() )
+	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.consp(); cur = cCdr(cur) )
 	{
 	    LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur) );
 	    T_sp obj = oCar(cur);
@@ -447,13 +464,13 @@ namespace core
     Cons_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const
     {_OF();
 	Tester t(item,key,test,testNot,false);
-	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.notnilp(); cur = cCdr(cur).as_or_nil<Cons_O>() )
+	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.consp(); cur = cCdr(cur) )
 	{
 	    LOG(BF("Testing for assoc with item=%s entry = %s") % item % oCar(cur) );
-	    if ( cl_consp(oCar(cur)) )
+	    if ( oCar(cur).consp() )
 	    {
-		T_sp obj = oCar(oCar(cur).as_or_nil<Cons_O>());
-		if ( t.test(obj) ) return((oCar(cur).as_or_nil<Cons_O>()));
+		T_sp obj = oCar(cCar(cur));
+		if ( t.test(obj) ) return(cCar(cur));
 	    }
 	}
 	return((_Nil<Cons_O>()));
@@ -740,7 +757,7 @@ namespace core
 	Cons_sp reversed = _Nil<Cons_O>();
 	Cons_sp cur = this->sharedThis<Cons_O>();
 	Cons_sp first_reversed;
-	first_reversed.reset();
+	first_reversed.reset_();
 	while ( cur.notnilp() )
 	{
 	    reversed = Cons_O::create(oCar(cur),reversed);

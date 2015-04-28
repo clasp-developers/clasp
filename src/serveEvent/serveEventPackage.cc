@@ -62,7 +62,7 @@ namespace serveEvent
 
 #pragma GCC visibility push(default)
 #define ServeEventPkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname = UNDEFINED_SYMBOL;
+#define DO_SYMBOL(cname,idx,pkgName,lispName,export) core::Symbol_sp cname;
 #include <clasp/serveEvent/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef ServeEventPkg_SYMBOLS

@@ -511,7 +511,7 @@ namespace core
 #define PASS_FUNCTION_KEYWORD 	bind_keyword_argArray
 #define PASS_ARGS	     	int n_args, ArgArray ap
 #define PASS_ARGS_NUM		n_args
-#define PASS_NEXT_ARG()		ap[arg_idx]
+#define PASS_NEXT_ARG()		gctools::smart_ptr<core::T_O>(ap[arg_idx])
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -649,7 +649,7 @@ void bind_aux
 	LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % _rep_(symbol) % symbol.get() );
 	bool isAmpSymbol = false;
 	if (symbol.notnilp()) {
-	    if ( symbol.pointerp() ) {
+	    if ( symbol.objectp() ) {
 		if ( Symbol_sp sym = symbol.asOrNull<Symbol_O>() ) {
 		    isAmpSymbol = (sym == _sym_DOT || sym->amp_symbol_p());
 		}
@@ -754,8 +754,8 @@ void bind_aux
 	    || context == cl::_sym_method
 	    || context == cl::_sym_destructuring_bind
 	     || context == _lisp->_true() ) return;
-        printf("%s:%d context.px_ref= %p     cl::_sym_destructuring_bind.px_ref=%p\n",
-               __FILE__, __LINE__, context.px_ref(), cl::_sym_destructuring_bind.px_ref());
+        printf("%s:%d context.raw_= %p     cl::_sym_destructuring_bind.raw_=%p\n",
+               __FILE__, __LINE__, context.raw_(), cl::_sym_destructuring_bind.raw_());
 	SIMPLE_ERROR(BF("Illegal parse_lambda_list context[%s]") % _rep_(context) );
     }
 
@@ -1222,7 +1222,7 @@ void bind_aux
     string LambdaListHandler_O::partsAsString() const
     {_OF();
 	stringstream ss;
-	if ( !this->_ClassifiedSymbolList.pointerp() )
+	if ( !this->_ClassifiedSymbolList.objectp() )
 	{
 	    ss << " :ClassifiedSymbols UNDEFINED ";
 	} else

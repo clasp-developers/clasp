@@ -69,7 +69,7 @@ namespace core
     {
 	if ( frame.nilp() ) return 0;
 	else if ( frame.framep() ) {
-	    core::T_O** frameImpl = frame.frame();
+	    core::T_O** frameImpl = frame.unsafe_frame();
 	    return frame::ValuesArraySize(frameImpl);
 	} else if ( ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>() ) {
 	    return af->length();
@@ -101,7 +101,7 @@ namespace core
     {
 	if ( frame.nilp() ) return _Nil<T_O>();
 	else if ( frame.framep() ) {
-	    core::T_O** frameImpl = frame.frame();
+	    core::T_O** frameImpl = frame.unsafe_frame();
 	    int iEnd = frame::ValuesArraySize(frameImpl);
 	    VectorObjects_sp vo = VectorObjects_O::create(_Nil<T_O>(),iEnd,_Nil<T_O>());
 	    for ( int i(0); i<iEnd; ++i ) {
@@ -1314,7 +1314,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	{
 	    if ( SPECIAL_TARGET != oCdr(it).as<Fixnum_O>()->get() )
 	    {
-		SIMPLE_ERROR(BF("The lexical variable[%s] is already defined idx[%s]  - we tried to set it to special") % _rep_(sym) % oCdr(it) );
+		SIMPLE_ERROR(BF("The lexical variable[%s] is already defined idx[%s]  - we tried to set it to special") % _rep_(sym) % _rep_(oCdr(it)) );
 	    }
 	    return;
 	}

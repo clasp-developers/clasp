@@ -63,8 +63,8 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	strm = cl_open(source,
 		       kw::_sym_input,
 		       cl::_sym_Character_O,
-		       _Nil<T_O>(), _Nil<T_O>(),
-		       _Nil<T_O>(), _Nil<T_O>(),
+		       _Nil<T_O>(), false,
+		       _Nil<T_O>(), false,
 		       kw::_sym_default,
                        _Nil<T_O>());
 	if ( strm.nilp() ) return _Nil<T_O>();
@@ -73,14 +73,21 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
     SourceFileInfo_sp sfi = core_sourceFileInfo(source);
     DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR,sfi);
     Pathname_sp pathname = cl_pathname(source);
-    ASSERTF(pathname.pointerp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));;
+    ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));;
     Pathname_sp truename = af_truename(source);
-    ASSERTF(truename.pointerp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));;
+    ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));;
     scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR,pathname);
     scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR,truename);
     /* Create a temporary closure to load the source */
     SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(),0,0,0);
-    InterpretedClosure loadSourceClosure(_sym_loadSource,spi,kw::_sym_function,LambdaListHandler_O::create(0),_Nil<Cons_O>(),_Nil<Str_O>(),_Nil<T_O>(),_Nil<T_O>());
+    InterpretedClosure loadSourceClosure(_sym_loadSource
+					 ,spi
+					 ,kw::_sym_function
+					 ,LambdaListHandler_O::create(0)
+					 ,_Nil<Cons_O>()
+					 ,_Nil<Str_O>()
+					 ,_Nil<T_O>()
+					 ,_Nil<Cons_O>());
     InvocationHistoryFrame closure(&loadSourceClosure);
     _lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
 //        printf("%s:%d   Here set-up *load-pathname*, *load-truename* and *load-source-file-info* for source: %s\n", __FILE__, __LINE__, _rep_(source).c_str() );
@@ -148,26 +155,26 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 
 	filename = _Nil<T_O>();
 	hooks = af_symbolValue(ext::_sym_STARloadHooksSTAR);
-	if (Null(pathname->_Directory) &&
-	    Null(pathname->_Host) &&
-	    Null(pathname->_Device) &&
-	    !Null(search_list))
+	if (pathname->_Directory.nilp() &&
+	    pathname->_Host.nilp() &&
+	    pathname->_Device.nilp() &&
+	    !search_list.nilp())
 	{
 	    for ( ; search_list.notnilp(); search_list = oCdr(search_list) ) {
 		T_sp d = oCar(search_list);
 		T_sp f = af_mergePathnames(pathname,d);
 		T_sp ok = af_load( f, verbose, print, _Nil<T_O>(), external_format, _Nil<T_O>());
-		if (!Null(ok)) {
+		if (!ok.nilp()) {
 		    return ok;
 		}
 	    }
 	}
-	if (!Null(pntype) && (pntype != kw::_sym_wild )) {
+	if (!pntype.nilp() && (pntype != kw::_sym_wild )) {
 	    /* If filename already has an extension, make sure
 	       that the file exists */
 	    T_sp kind;
 	    filename = af_coerceToFilePathname(pathname);
-	    kind = af_file_kind(filename.as<Pathname_O>(), _lisp->_true());
+	    kind = af_file_kind(filename.as<Pathname_O>(), true);
 	    if (kind != kw::_sym_file && kind != kw::_sym_special) {
 		filename = _Nil<T_O>();
 	    } else {
@@ -187,15 +194,15 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 		filename = pathname;
 		pathname->_Type = oCaar(hooks);
 		function = oCdar(hooks);
-		kind = af_file_kind(pathname, _lisp->_true());
+		kind = af_file_kind(pathname, true);
 		if (kind == kw::_sym_file || kind == kw::_sym_special)
 		    break;
 		else
 		    filename = _Nil<T_O>();
 	    }
 	};
-	if (Null(filename)) {
-	    if (Null(if_does_not_exist))
+	if (filename.nilp()) {
+	    if (if_does_not_exist.nilp())
 		return _Nil<T_O>();
 	    else {
 		CANNOT_OPEN_FILE_ERROR(source);
@@ -213,7 +220,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	T_sp truename = af_truename(filename);
 	scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, not_a_filename ? _Nil<T_O>() : truename );
 	if ( !not_a_filename ) filename = truename;
-	if (!Null(function)) {
+	if (!function.nilp()) {
 	    ok = eval::funcall( function, filename, verbose, print, external_format);
 	} else {
 #if 0 /* defined(ENABLE_DLOPEN) && !defined(ECL_MS_WINDOWS_HOST)*/
@@ -232,7 +239,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 	    }
 	    if (!Null(ok))
 #endif
-		ok = af_loadSource(filename, verbose, print, external_format);
+		ok = af_loadSource(filename, verbose.isTrue(), print.isTrue(), external_format);
 	}
 	if (ok.nilp()) {
 	    SIMPLE_ERROR(BF("LOAD: Could not load file %s (Error: %s") % _rep_(filename) % _rep_(ok));

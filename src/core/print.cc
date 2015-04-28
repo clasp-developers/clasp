@@ -59,7 +59,7 @@ namespace core
     int brcl_print_level(void)
     {
 	T_sp object = cl::_sym_STARprint_levelSTAR->symbolValue();
-	int level;
+	gctools::Fixnum level;
 	if ( object.nilp() )
 	{
 	    level = MOST_POSITIVE_FIXNUM;
@@ -87,26 +87,23 @@ namespace core
     int brcl_print_length(void)
     {
 	T_sp object = cl::_sym_STARprint_lengthSTAR->symbolValue();
-	int length;
+	gctools::Fixnum length;
 	if ( object.nilp() )
 	{
 	    length = MOST_POSITIVE_FIXNUM;
 	} else if ( af_fixnumP(object) )
 	{
 	    length = object.as<Fixnum_O>()->get();
-	    if ( length < 0 )
-	    {
+	    if ( length < 0 ) {
 	    ERROR:
 		cl::_sym_STARprint_lengthSTAR->setf_symbolValue(_Nil<T_O>());
 		SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
 				"is not of the expected type (or NULL (INTEGER 0 *))")
 			     % _rep_(object) );
 	    }
-	} else if ( af_bignumP(object) )
-	{
+	} else if ( af_bignumP(object) ) {
 	    goto ERROR;
-	} else
-	{
+	} else {
 	    length = MOST_POSITIVE_FIXNUM;
 	}
 	return length;
@@ -244,7 +241,7 @@ namespace core
             }
 	    stringstream stail;
 	    stail << " @";
-            stail << o.px_ref();
+            stail << o.raw_();
             stail << ">";
 	    clasp_write_string(stail.str(),ostream);
         }

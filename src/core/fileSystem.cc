@@ -927,7 +927,7 @@ namespace core
 	    namestring = Str_O::create("/");
 	}
 	if ((*namestring)[0] == '~') {
-	    SIMPLE_ERROR(BF("Not a valid home pathname %s") % namestring);
+	    SIMPLE_ERROR(BF("Not a valid home pathname %s") % _rep_(namestring));
 	}
 	i = namestring->length();
 	if (!IS_DIR_SEPARATOR(namestring->schar(i-1)))

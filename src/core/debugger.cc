@@ -83,7 +83,7 @@ namespace core
     {_G();
 	InvocationHistoryFrame* ptr = get_ihs_ptr(af_ihsCurrentFrame());
 	if ( ptr != NULL ) return *ptr;
-	THROW_HARD_ERROR(BF("Could not get frame"));
+	THROW_HARD_ERROR(BF("%s:%d Could not get frame") % __FILE__ % __LINE__);
     }
 
 
@@ -189,7 +189,7 @@ namespace core
 	    case 'v':
 	    {
 		Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
-		_lisp->print(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.pxget() % env.nilp() % env.nilp() );
+		_lisp->print(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp() );
 		if ( env.notnilp() )
 		{
 		    _lisp->print(BF("%s") % env->environmentStackAsString());
@@ -411,6 +411,26 @@ extern "C" {
             _lisp->readEvalPrintString(expr,env,true);
         };
 
+        void dbg_lowLevelDescribe(T_sp obj)
+        {
+	    if ( obj.fixnump() ) {
+		printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
+	    } else if ( obj.otherp() ) {
+		printf("other_tag: %p  typeid: %s\n", &(*obj), typeid(*obj).name() );
+	    } else if ( obj.consp() ) {
+		printf("cons_tag: %p  typeid: %s\n", &(*obj), typeid(*obj).name() );
+	    } else {
+		printf("lowLevelDescribe handle: %p\n", obj.raw_());
+	    }
+	}
+
+	void dbg_describe_tagged_T_Optr(T_O* p)
+	{
+	    T_sp obj((gctools::Tagged)reinterpret_cast<T_O*>(p));
+	    dbg_lowLevelDescribe(obj);
+	}
+	
+
 
 	extern void dbg_describe(T_sp obj);
         void dbg_describe(T_sp obj)
@@ -458,7 +478,7 @@ void dbg_describe_symbol(Symbol_sp obj)
                 return;
             }
             T_sp obj = gctools::smart_ptr<T_O>(raw);
-	    printf("dbg_describeTPtr Raw pointer value: %p\n", obj.px);
+	    printf("dbg_describeTPtr Raw pointer value: %p\n", obj.raw_());
             DynamicScopeManager(_sym_STARenablePrintPrettySTAR,_Nil<T_O>());
             stringstream ss;
             printf("dbg_describe object class--> %s\n",_rep_(obj->__class()->className()).c_str());

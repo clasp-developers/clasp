@@ -83,8 +83,10 @@ namespace core
     {_G();
 	if ( num.nilp() ) {
 	    WRONG_TYPE_ARG(num,cl::_sym_Number_O);
-	} else if ( num.tagged_fixnump() ) {
-	    return ( num.fixnum() == 0 );
+	} else if ( num.fixnump() ) {
+	    return ( num.unsafe_fixnum() == 0 );
+	} else if ( num.single_floatp() ) {
+	    return ( num.unsafe_single_float() == 0.0 );
 	} else if ( Number_sp nnum = num.asOrNull<Number_O>() ) {
 	    return nnum->zerop();
 	}
@@ -374,14 +376,14 @@ namespace core
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		mpz_class za(na.as<Fixnum_O>()->ref());
-		mpz_class zb(nb.as<Fixnum_O>()->ref());
+		mpz_class za(na.as<Fixnum_O>()->get());
+		mpz_class zb(nb.as<Fixnum_O>()->get());
 		mpz_class zc = za+zb;
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Bignum:
 	    {
-		mpz_class za(na.as<Fixnum_O>()->ref());
+		mpz_class za(na.as<Fixnum_O>()->get());
 		mpz_class zc = za+nb.as<Bignum_O>()->ref();
 		return Integer_O::create(zc);
 	    }
@@ -405,7 +407,7 @@ namespace core
 	    }
         case_Bignum_v_Fixnum:
 	    {
-		mpz_class zb(nb.as<Fixnum_O>()->ref());
+		mpz_class zb(nb.as<Fixnum_O>()->get());
 		mpz_class zc = na.as<Bignum_O>()->ref() + zb;
 		return Integer_O::create(zc);
 	    }
@@ -516,14 +518,14 @@ namespace core
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		mpz_class za(na.as<Fixnum_O>()->ref());
-		mpz_class zb(nb.as<Fixnum_O>()->ref());
+		mpz_class za(na.as<Fixnum_O>()->get());
+		mpz_class zb(nb.as<Fixnum_O>()->get());
 		mpz_class zc = za-zb;
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Bignum:
 	    {
-		mpz_class za(na.as<Fixnum_O>()->ref());
+		mpz_class za(na.as<Fixnum_O>()->get());
 		mpz_class zc = za-nb.as<Bignum_O>()->ref();
 		return Integer_O::create(zc);
 	    }
@@ -547,7 +549,7 @@ namespace core
 	    }
         case_Bignum_v_Fixnum:
 	    {
-		mpz_class zb(nb.as<Fixnum_O>()->ref());
+		mpz_class zb(nb.as<Fixnum_O>()->get());
 		mpz_class zc = na.as<Bignum_O>()->ref() - zb;
 		return Integer_O::create(zc);
 	    }
@@ -655,14 +657,14 @@ namespace core
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		mpz_class za(na.as<Fixnum_O>()->ref());
-		mpz_class zb(nb.as<Fixnum_O>()->ref());
+		mpz_class za(na.as<Fixnum_O>()->get());
+		mpz_class zb(nb.as<Fixnum_O>()->get());
 		mpz_class zc = za * zb;
 		return Integer_O::create(zc);
 	    }
         case_Fixnum_v_Bignum:
 	    {
-		mpz_class za(na.as<Fixnum_O>()->ref());
+		mpz_class za(na.as<Fixnum_O>()->get());
 		mpz_class zc = za * nb.as<Bignum_O>()->ref();
 		return Integer_O::create(zc);
 	    }
@@ -684,7 +686,7 @@ namespace core
 	    }
         case_Bignum_v_Fixnum:
 	    {
-		mpz_class zb(nb.as<Fixnum_O>()->ref());
+		mpz_class zb(nb.as<Fixnum_O>()->get());
 		mpz_class zc = na.as<Bignum_O>()->ref() * zb;
 		return Integer_O::create(zc);
 	    }
@@ -1077,8 +1079,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		int& fa = na.as<Fixnum_O>()->ref();
-		int& fb = nb.as<Fixnum_O>()->ref();
+		gctools::Fixnum fa = na.as<Fixnum_O>()->get();
+		gctools::Fixnum fb = nb.as<Fixnum_O>()->get();
 		if ( fa < fb ) return -1;
 		if ( fa == fb ) return 0;
 		return 1;
@@ -1126,7 +1128,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Bignum_v_Fixnum:
 	    {
 		mpz_class& za(na.as<Bignum_O>()->ref());
-		mpz_class zb = nb.as<Fixnum_O>()->ref();
+		mpz_class zb = nb.as<Fixnum_O>()->get();
 		if (za < zb ) return -1;
 		if ( za==zb ) return 0;
 		return 1;
@@ -1312,8 +1314,8 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	{
         case_Fixnum_v_Fixnum:
 	    {
-		int& fa = na.as<Fixnum_O>()->ref();
-		int& fb = nb.as<Fixnum_O>()->ref();
+		gctools::Fixnum fa = na.as<Fixnum_O>()->get();
+		gctools::Fixnum fb = nb.as<Fixnum_O>()->get();
 		return fa == fb;
 	    }
         case_Fixnum_v_Bignum:
@@ -1347,7 +1349,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
         case_Bignum_v_Fixnum:
 	    {
 		mpz_class& za(na.as<Bignum_O>()->ref());
-		mpz_class zb = nb.as<Fixnum_O>()->ref();
+		mpz_class zb = nb.as<Fixnum_O>()->get();
 		return za==zb;
 	    }
         case_Bignum_v_Bignum:
@@ -1788,7 +1790,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	return Bignum_O::create(v);
     }
 
-    Integer_sp Integer_O::create(int v)
+    Integer_sp Integer_O::create(gctools::Fixnum v)
     {_G();
 	if ( v>=MOST_NEGATIVE_FIXNUM && v <= MOST_POSITIVE_FIXNUM) {
 	    return Fixnum_O::create(v);
@@ -1797,15 +1799,20 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	return Bignum_O::create(z);
     }
 
-
+#if 0 
     Integer_sp Integer_O::create(uint v)
     {_G();
+	ASSERTF(sizeof(uint)<sizeof(gctools::Fixnum),BF("It is assumed that every uint is an element of Fixnum"));
+#if 1 // when every uint is a Fixnum...
+	return Fixnum_O::create((gctools::Fixnum)v);
+#else
 	if ( v <= MOST_POSITIVE_FIXNUM )
 	{
-	    return Fixnum_O::create((int)v);
+	    return Fixnum_O::create((gctools::Fixnum)v);
 	}
 	Bignum z(v);
 	return Bignum_O::create(z);
+#endif
     }
 
     Integer_sp Integer_O::create(size_t v)
@@ -1817,7 +1824,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	Bignum z(v);
 	return Bignum_O::create(z);
     }
-
+#endif
 
 
 #ifndef _TARGET_OS_LINUX
@@ -1834,6 +1841,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 	return Bignum_O::create(z);
     }
 #endif
+#if 0
     Integer_sp Integer_O::create(LongLongInt v)
     {_G();
 	if ( v >= MOST_NEGATIVE_FIXNUM && v <= MOST_POSITIVE_FIXNUM )
@@ -1846,6 +1854,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 		   _lisp->integer_ordering()._mpz_import_endian, 0, &v);
 	return Bignum_O::create(z);
     }
+#endif
 };
 
 namespace core {
@@ -1956,7 +1965,7 @@ namespace core {
 
     int Fixnum_O::number_of_bits()
     {
-	int num = sizeof(Fixnum_type)*sizeof(unsigned char)*8;
+	int num = sizeof(gctools::Fixnum)*sizeof(unsigned char)*8;
 	return num;
     }
 
@@ -2034,23 +2043,20 @@ namespace core {
 
 
 
+
+    Fixnum_sp Fixnum_O::create(gctools::Fixnum nm)
+    {_G();
+	GC_ALLOCATE(Fixnum_O,v );
+	v->set(nm);
+	return v;
+    }
+#if 0
     Fixnum_sp Fixnum_O::create(int nm)
     {_G();
 	GC_ALLOCATE(Fixnum_O,v );
 	v->set(nm);
 	return v;
     }
-
-    Fixnum_sp Fixnum_O::create(LongLongInt nm)
-    {_G();
-	if ( nm > MOST_POSITIVE_FIXNUM || nm < MOST_NEGATIVE_FIXNUM )
-	{
-	    SIMPLE_ERROR(BF("LongLongInt value(%d) was too large/small to cast to int") % nm );
-	}
-	int inm = nm;
-	return Fixnum_O::create(inm);
-    }
-
     Fixnum_sp Fixnum_O::create(uint nm)
     {_G();
 	if ( nm > MOST_POSITIVE_FIXNUM )
@@ -2060,7 +2066,7 @@ namespace core {
 	int inm = nm;
 	return Fixnum_O::create(inm);
     }
-
+#endif
     uint64_t Fixnum_O::as_uint64() const
     {
 	return this->_Value;
@@ -2107,11 +2113,11 @@ namespace core {
 	if ( this->eq(obj) ) return true;
 	if ( af_doubleFloatP(obj) )
 	{
-	    DoubleFloat_sp t = safe_downcast<DoubleFloat_O>(obj);
+	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
+	    Fixnum_sp t = obj.as<Fixnum_O>();
 	    bool b = (this->get() == t->get());
 	    LOG(BF("Compared if %d == %d -> %d") % this->get() % t->get() % b  );
 	    return b;
@@ -2119,7 +2125,7 @@ namespace core {
 	{
 	    IMPLEMENT_ME();
 #if 0
-	    LongLongInt_sp t = safe_downcast<LongLongInt_O>(obj);
+	    LongLongInt_sp t = obj.as<LongLongInt_O>();
 	    bool b = (this->get() == t->get());
 	    LOG(BF("Compared if %d == %d -> %d") % this->get() % t->get() % b  );
 	    return b;
@@ -2286,11 +2292,11 @@ namespace core {
     {_OF();
 	if ( af_shortFloatP(obj) )
 	{
-	    ShortFloat_sp t = safe_downcast<ShortFloat_O>(obj);
+	    ShortFloat_sp t = obj.as<ShortFloat_O>();
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
+	    Fixnum_sp t = obj.as<Fixnum_O>();
 	    return this->get() == t->get();
 	}
 	ASSERT(!cl_numberp(obj) );
@@ -2435,11 +2441,11 @@ namespace core {
     {_OF();
 	if ( af_singleFloatP(obj) )
 	{
-	    SingleFloat_sp t = safe_downcast<SingleFloat_O>(obj);
+	    SingleFloat_sp t = obj.as<SingleFloat_O>();
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
+	    Fixnum_sp t = obj.as<Fixnum_O>();
 	    return this->get() == t->get();
 	}
 	ASSERT(!cl_numberp(obj) );
@@ -2531,13 +2537,14 @@ namespace core {
 
     Integer_sp DoubleFloat_O::castToInteger() const
     {
+	TESTING();
 	if (this->_Value < 0) {
 	    double f = -this->_Value;
 	    long long int cf = *(long long int*)&f;
-	    return Integer_O::create(cf)->negate().as<Integer_O>();
+	    return Integer_O::create((gctools::Fixnum)cf)->negate().as<Integer_O>();
 	}
 	long long int cf = *(long long int*)&this->_Value;
-	return Integer_O::create(cf);
+	return Integer_O::create((gctools::Fixnum)cf);
     }
 
 
@@ -2620,11 +2627,11 @@ namespace core {
     {_OF();
 	if ( af_doubleFloatP(obj) )
 	{
-	    DoubleFloat_sp t = safe_downcast<DoubleFloat_O>(obj);
+	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
+	    Fixnum_sp t = obj.as<Fixnum_O>();
 	    return this->get() == t->get();
 	}
 	ASSERT(!cl_numberp(obj));
@@ -2790,11 +2797,11 @@ namespace core {
     {_OF();
 	if ( af_longFloatP(obj) )
 	{
-	    LongFloat_sp t = safe_downcast<LongFloat_O>(obj);
+	    LongFloat_sp t = obj.as<LongFloat_O>();
 	    return this->get() == t->get();
 	} else if ( af_fixnumP(obj) )
 	{
-	    Fixnum_sp t = safe_downcast<Fixnum_O>(obj);
+	    Fixnum_sp t = obj.as<Fixnum_O>();
 	    return this->get() == t->get();
 	}
 	ASSERT(!cl_numberp(obj));
@@ -3778,7 +3785,7 @@ Number_sp cl_exp(Number_sp x)
 
 
 Fixnum
-brcl_fixnum_expt(Fixnum x, Fixnum y)
+clasp_fixnum_expt(Fixnum x, Fixnum y)
 {
     Fixnum z = 1;
     while (y > 0)
@@ -4323,7 +4330,7 @@ cl_index clasp_toSize(T_sp f)
 }
 
 
-cl_fixnum
+    gctools::Fixnum
 fixint(T_sp x)
 {
     if (af_fixnumP(x))

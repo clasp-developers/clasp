@@ -1388,7 +1388,7 @@ namespace llvmo
     public:
         Function_sp             llvmFunction;
 	fptr_type		fptr;
-        core::Cons_sp           associatedFunctions;
+        core::T_sp           associatedFunctions;
 	core::T_sp              _lambdaList;
 // constructor
     public:

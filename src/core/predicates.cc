@@ -126,7 +126,7 @@ namespace core
     bool af_fixnumP(T_sp obj)
     {_G();
 	if (obj.nilp()) return false;
-	if ( obj.pointerp() ) {
+	if ( obj.objectp() ) {
 	    if ( Fixnum_sp fn = obj.asOrNull<Fixnum_O>() ) {
 		return true;
 	    }
@@ -251,7 +251,7 @@ namespace core
     bool core_cxxInstanceP(T_sp obj)
     {_G();
 	if ( obj.nilp() ) return false;
-	if (!obj.pointerp() ) return false;
+	if (!obj.objectp() ) return false;
 	if ( Instance_sp ip = obj.asOrNull<Instance_O>() ) {
 	    return true;
 	}

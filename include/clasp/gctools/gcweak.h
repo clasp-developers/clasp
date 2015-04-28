@@ -169,7 +169,9 @@ namespace gctools {
 	    , _deleted(gctools::smart_ptr<gctools::Fixnum_ty>::make_tagged_fixnum(0))
 	    {
 		GCWEAK_LOG(BF("Created BucketsBase with length: %d") % this->length() );
-		for (size_t i(0); i<l; ++i ) this->bucket[i] = T(T::unbound);
+		for (size_t i(0); i<l; ++i ) {
+		    this->bucket[i] = T(gctools::tag_unbound<typename T::Type>());
+		}
 	    }
 
         virtual ~BucketsBase() {};
@@ -203,8 +205,8 @@ namespace gctools {
         virtual ~Buckets() {
 #ifdef USE_BOEHM
             for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-                if (this->bucket[i].pointerp()) {
-                    int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[i].px_ref()));
+                if (this->bucket[i].objectp()) {
+                    int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[i].rawRef_()));
                     if ( !result ) {
                         THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                     }
@@ -215,16 +217,16 @@ namespace gctools {
 
         void set(size_t idx, const value_type& val) {
 #ifdef USE_BOEHM
-            if (this->bucket[idx].pointerp()) {
-                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].px_ref()));
+            if (this->bucket[idx].objectp()) {
+                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].rawRef_()));
                 if (!result) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                 }
             }
-            if (val.pointerp()) {
+            if (val.objectp()) {
                 this->bucket[idx] = val;
-                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].px_ref())
-                                                      ,reinterpret_cast<void*>(this->bucket[idx].px_ref()));
+                GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].rawRef_())
+                                                      ,reinterpret_cast<void*>(this->bucket[idx].rawRef_()));
             } else {
                 this->bucket[idx] = val;
             }

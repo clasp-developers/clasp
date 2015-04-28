@@ -58,8 +58,10 @@ namespace core
     public:
 	void initialize();
     public:
-        static Character_sp create(claspChar c);
-	static Character_sp create(int c);
+        static Character_sp create(gctools::Fixnum c);
+	static Character_sp create(claspChar c) { return create((gctools::Fixnum)c);};
+	static Character_sp create(uint c) { return create((gctools::Fixnum)c);};
+	static Character_sp create(int c) { return create((gctools::Fixnum)c);};
 	/*! Create a character from a name like TAB, NEWLINE, LINEFEED, PAGE, RETURN, SPACE */
 	static Character_sp create_from_name(string const& name);
 

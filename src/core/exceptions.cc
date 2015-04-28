@@ -783,8 +783,8 @@ void FElibc_error(const char *msg, int nargs, ...)
     va_start(args,nargs);
     Cons_sp l = clasp_grab_rest_args(args,nargs);
     FEerror("~?~%C library explanation: ~A.", 3,
-            smsg.asTPtr(), l.asTPtr(),
-            error.asTPtr());
+            smsg.raw_(), l.raw_(),
+            error.raw_());
 }
 
 

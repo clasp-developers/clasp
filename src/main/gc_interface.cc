@@ -401,12 +401,22 @@ extern "C" {
                 POINTER_FIX(*it);
             }
 //            printf("---------Done\n");
+
+
+	    // Do I need to fix these pointers explicitly???
+	    //gctools::global_Symbol_OP_nil       = symbol_nil.raw_();
+	    //gctools::global_Symbol_OP_unbound   = symbol_unbound.raw_();
+	    //gctools::global_Symbol_OP_deleted   = symbol_deleted.raw_();
+	    //gctools::global_Symbol_OP_sameAsKey = symbol_sameAsKey.raw_();
+
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
 #include <clasp/main/clasp_gc.cc>
 #undef GC_GLOBALS
 #endif
 
+
+	    
 #ifndef RUNNING_GC_BUILDER
 #if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
  #define GC_GLOBAL_SYMBOLS
@@ -505,12 +515,8 @@ extern "C" {
 #undef ServeEventPkg_SYMBOLS
 #undef SocketsPkg_SYMBOLS
 
-
 #endif
 #endif // RUNNING_GC_BUILDER
-
-
-
 
             MPS_LOG(BF("Done roots_scan"));
         } MPS_SCAN_END(GC_SCAN_STATE);

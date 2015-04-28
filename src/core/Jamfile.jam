@@ -41,6 +41,58 @@ local unity_sources =
       all.cc ;
 
 local sources =
+      cons.cc
+	    symbol.cc
+	    evaluator.cc
+	    builtInClass.cc
+	    standardClass.cc
+	    compiler.cc
+	conditions.cc
+      cache.cc
+      arrayDisplaced.cc
+		object.cc
+      stdClass.cc
+      metaobject.cc
+	    arguments.cc
+	    pointer.cc
+	    funcallableStandardClass.cc
+	    standardObject.cc
+	iterator.cc
+	    sysprop.cc
+	    bformat.cc
+	    backquote.cc
+	    documentation.cc
+	    lispReader.cc
+	    singleDispatchEffectiveMethodFunction.cc
+	    singleDispatchGenericFunction.cc
+	    singleDispatchMethod.cc
+	    structureObject.cc
+	    structureClass.cc
+	    null.cc
+	    forwardReferencedClass.cc
+	    character.cc
+	    lispString.cc
+	    designators.cc
+	    sequence.cc
+	    lispVector.cc
+	    loadTimeValues.cc
+#	    python_wrappers.cc
+	    arrayObjects.cc
+#	    model.cc
+#	    symbolVector.cc
+	    symbolSet.cc
+	    reader.cc
+	        lightProfiler.cc
+		fileSystem.cc
+		intArray.cc
+		bitVector.cc
+		posixTime.cc
+		symbolToEnumConverter.cc
+		globals.cc
+		externalObject.cc
+		myReadLine.cc
+		specialForm.cc
+	    bignum.cc
       unixfsys.cc
 	    sourceFileInfo.cc
       executables.cc
@@ -116,7 +168,6 @@ local sources =
       print.cc
       vectorObjectsWithFillPtr.cc
       vectorObjects.cc
-      cons.cc
       write_object.cc
 	    array.cc
       strWithFillPtr.cc
@@ -127,56 +178,6 @@ local sources =
       cleavirEnvPackage.cc
       compPackage.cc
 	    bootStrapCoreSymbolMap.cc
-	    symbol.cc
-	    evaluator.cc
-	    builtInClass.cc
-	    standardClass.cc
-	    compiler.cc
-	conditions.cc
-      cache.cc
-		object.cc
-      stdClass.cc
-      metaobject.cc
-	    arguments.cc
-	    pointer.cc
-	    funcallableStandardClass.cc
-	    standardObject.cc
-	iterator.cc
-	    sysprop.cc
-	    bformat.cc
-	    backquote.cc
-	    documentation.cc
-	    lispReader.cc
-	    singleDispatchEffectiveMethodFunction.cc
-	    singleDispatchGenericFunction.cc
-	    singleDispatchMethod.cc
-	    structureObject.cc
-	    structureClass.cc
-	    null.cc
-	    forwardReferencedClass.cc
-	    character.cc
-	    lispString.cc
-	    designators.cc
-	    sequence.cc
-	    lispVector.cc
-	    loadTimeValues.cc
-#	    python_wrappers.cc
-	    arrayObjects.cc
-#	    model.cc
-#	    symbolVector.cc
-	    symbolSet.cc
-	    reader.cc
-	        lightProfiler.cc
-		fileSystem.cc
-		intArray.cc
-		bitVector.cc
-		posixTime.cc
-		symbolToEnumConverter.cc
-		globals.cc
-		externalObject.cc
-		myReadLine.cc
-		specialForm.cc
-	    bignum.cc
 	     /externals//boostAndExpatLibs
              		;
 

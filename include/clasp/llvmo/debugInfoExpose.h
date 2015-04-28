@@ -374,7 +374,7 @@ namespace translate
 	typedef llvm::DISubprogram& DeclareType;
 	static DeclareType convert(core::T_sp object)
 	{
-	    ASSERT(object.pointerp());
+	    ASSERT(object.objectp());
 	    llvm::DIDescriptor* didescriptor = object.as<llvmo::DebugInfo_O>()->operator llvm::DIDescriptor* ();
 	    if ( didescriptor->isSubprogram() )
 	    {
@@ -479,7 +479,7 @@ namespace translate
 	typedef llvm::DIDerivedType& DeclareType;
 	static DeclareType convert(core::T_sp object)
 	{
-	    ASSERT(object.pointerp());
+	    ASSERT(object.objectp());
 	    return *(object.as<llvmo::DIDerivedType_O>());
 	}
     };
@@ -529,7 +529,7 @@ namespace translate
 	typedef llvm::DIBasicType& DeclareType;
 	static DeclareType convert(core::T_sp object)
 	{
-	    ASSERT(object.pointerp());
+	    ASSERT(object.objectp());
 	    return *(object.as<llvmo::DIBasicType_O>());
 	}
     };
@@ -684,7 +684,7 @@ namespace translate
 	typedef llvm::DILexicalBlock& DeclareType;
 	static DeclareType convert(core::T_sp object)
 	{
-	    ASSERT(object.pointerp());
+	    ASSERT(object.objectp());
 	    return *(object.as<llvmo::DILexicalBlock_O>());
 	}
     };
@@ -733,7 +733,7 @@ namespace translate
 	typedef llvm::DICompileUnit& DeclareType;
 	static DeclareType convert(core::T_sp object)
 	{
-	    ASSERT(object.pointerp());
+	    ASSERT(object.objectp());
 	    return *(object.as<llvmo::DICompileUnit_O>());
 	}
     };

@@ -66,7 +66,7 @@ namespace core
 	x = KEY(t,x);
 	//t->env->function = t->test_function;
 	T_mv result;
-	(*t->test_fn->closure)( &result, LCC_PASS_ARGS2(t->item_compared.asTPtr(), x.asTPtr()) );
+	(*t->test_fn->closure)( &result, LCC_PASS_ARGS2(t->item_compared.raw_(), x.raw_()) );
 	return result.notnilp();
     }
 
@@ -76,7 +76,7 @@ namespace core
 	x = KEY(t,x);
 	//t->env->function = t->test_function;
 	T_mv result;
-	(*t->test_fn->closure)( &result, LCC_PASS_ARGS2(t->item_compared.asTPtr(), x.asTPtr()));
+	(*t->test_fn->closure)( &result, LCC_PASS_ARGS2(t->item_compared.raw_(), x.raw_()));
 	return result.nilp();
     }
 
@@ -109,7 +109,7 @@ namespace core
     {
 	//t->env->function = t->key_function;
 	T_mv result;
-	(*t->key_fn->closure)(&result,LCC_PASS_ARGS1(x.asTPtr()));
+	(*t->key_fn->closure)(&result,LCC_PASS_ARGS1(x.raw_()));
 	return result;
     }
 
@@ -172,17 +172,19 @@ namespace core
 #define DOCS_cl_rassoc "See CLHS rassoc"
     T_sp cl_rassoc (T_sp item, T_sp a_list, T_sp test, T_sp test_not, T_sp key)
     {
+	TESTING();
 	struct cl_test t;
 	if ( test.notnilp() ) test = coerce::functionDesignator(test);
 	if ( test_not.notnilp() ) test_not = coerce::functionDesignator(test_not);
 	if ( key.notnilp() ) key = coerce::functionDesignator(key);
 	setup_test(&t, item, test, test_not, key);
-	for ( ; a_list.notnilp(); a_list = oCdr(a_list) ) { // loop_for_in(a_list) {
-	    T_sp pair = CONS_CAR(a_list.as<Cons_O>());
+	Cons_sp calist = a_list.as<Cons_O>();
+	for ( Cons_sp calist = a_list.as<Cons_O>(); calist.consp(); calist = cCdr(calist) ) { // loop_for_in(a_list) {
+	    T_sp pair = oCar(calist);
 	    if (pair.notnilp()) {
-		if (!cl_listp(pair))
+		if (!pair.consp())
 		    TYPE_ERROR_LIST(pair);
-		if (TEST(&t, CONS_CDR(pair))) {
+		if (TEST(&t, cCdr(pair))) {
 		    a_list = pair;
 		    break;
 		}
@@ -249,12 +251,11 @@ namespace core
 	int keepi = cl_length(list)-ni;
 	if ( keepi <= 0 ) return(Values(_Nil<Cons_O>()));
 	ql::list res;
-	Cons_sp cur = list.as_or_nil<Cons_O>();
-	for ( int i=0; i<keepi; i++ )
-	    {
-		res << oCar(cur);
-		cur = cCdr(cur);
-	    }
+	Cons_sp cur = list.as<Cons_O>();
+	for ( int i=0; i<keepi; i++ ) {
+	    res << oCar(cur);
+	    cur = cCdr(cur);
+	}
 	return(Values(res.cons()));
     };
 
@@ -355,7 +356,7 @@ namespace core
             } else if (Cons_sp cother = other.asOrNull<Cons_O>()) {
                 new_tail = cl_last(other,1);
             } else {
-                if (cur->cdr().notnilp()) {
+                if (cCdr(cur).notnilp()) {
                     TYPE_ERROR_LIST(other);
                 }
                 new_tail = tail;

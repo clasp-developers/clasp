@@ -613,7 +613,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 
 #pragma GCC visibility push(default)
 #define CorePkg_SYMBOLS
-#define DO_SYMBOL(cname,idx,pkgName,lispName,export) Symbol_sp cname = UNDEFINED_SYMBOL;
+#define DO_SYMBOL(cname,idx,pkgName,lispName,export) Symbol_sp cname; // = UNDEFINED_SYMBOL;
 #include <clasp/core/symbols_scraped_inc.h>
 #undef DO_SYMBOL
 #undef CorePkg_SYMBOLS
@@ -625,8 +625,25 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 #pragma GCC visibility pop
 
 
+    void testConses()
+    {
+        printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__ );
+        Cons_sp cur = Cons_O::create(Fixnum_O::create(1));
+        cur = Cons_O::create(Fixnum_O::create(2),cur);
+        cur = Cons_O::create(Fixnum_O::create(3),cur);
+        cur = Cons_O::create(Fixnum_O::create(4),cur);
+        cur = Cons_O::create(Fixnum_O::create(5),cur);
+        cur = Cons_O::create(Fixnum_O::create(6),cur);
+        List_sp l = coerce_to_list(cur);
+        for ( auto c : l ) {
+            printf("%s:%d  List contents: %d\n", __FILE__, __LINE__,
+                   oCar(c).as<Fixnum_O>()->get());
+        }
+    };
+
     CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp,CorePkg,CorePkg_nicknames)
     {
+	testConses();
 	this->package()->usePackage(_lisp->findPackage("CL"));
     };
 
@@ -786,7 +803,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         printf("after add ht = \n");
         printf("%s\n", ht->hash_table_dump().c_str() );
         T_sp find = ht->gethash(cl::_sym_first,_Nil<T_O>());
-        printf(" find = @%p\n", find.px_ref());
+        printf(" find = @%p\n", find.raw_());
         printf("Testing done\n");
         __builtin_trap();
 #endif

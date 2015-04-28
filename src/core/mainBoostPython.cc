@@ -204,7 +204,7 @@ string nodeName="PythonAssign";
 Lisp_sp	environment()
 {_errorF();
     static Lisp_sp _BoostPythonLispObject;
-    if ( _BoostPythonLispObject.pointerp() )
+    if ( _BoostPythonLispObject.objectp() )
     {
 	LOG(BF("Defining Lisp environment@%X") % &_BoostPythonLispObject );
 	_BoostPythonLispObject = Lisp_O::create();

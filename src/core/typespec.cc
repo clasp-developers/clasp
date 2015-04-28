@@ -88,7 +88,7 @@ FEcircular_list(cl_object x)
 }
 
 void
-FEtype_error_index(cl_object seq, cl_fixnum ndx)
+FEtype_error_index(cl_object seq, gctools::Fixnum ndx)
 {
         cl_object n = ecl_make_fixnum(ndx);
 	cl_index l = ECL_INSTANCEP(seq)? seq->instance.length : ecl_length(seq);

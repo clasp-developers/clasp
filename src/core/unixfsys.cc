@@ -428,7 +428,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure)
     if (subdir == kw::_sym_up) {
 	T_sp newdir= output->_Directory;
 	newdir = cl_nbutlast(newdir,Fixnum_O::create(2));
-	if (Null(newdir)) {
+	if (newdir.nilp()) {
 	    if (ignore_if_failure) return _Nil<Pathname_O>();
 	    SIMPLE_ERROR(BF("Pathname contained an :UP component  "
 			    "that goes above the base directory:"
@@ -459,22 +459,22 @@ make_base_pathname(Pathname_sp pathname)
 				    _Nil<T_O>(), // version
 				    kw::_sym_local );
 }
-
+    
 #define FOLLOW_SYMLINKS 1
 
 static Pathname_mv
 file_truename(Pathname_sp pathname, Str_sp filename, int flags)
 {
     Symbol_sp kind;
-    if (Null(pathname)) {
-	if (Null(filename)) {
+    if (pathname.nilp()) {
+	if (filename.nilp()) {
 	    INTERNAL_ERROR(BF("file_truename:"
 			      " both FILENAME and PATHNAME are null!"));
 	}
 	pathname = cl_pathname(filename);
-    } else if (Null(filename)) {
+    } else if (filename.nilp()) {
 	filename = brcl_namestring(pathname, BRCL_NAMESTRING_FORCE_BASE_STRING);
-	if (Null(filename)) {
+	if (filename.nilp()) {
 	    SIMPLE_ERROR(BF("Unprintable pathname %s found in TRUENAME") % _rep_(pathname));
 	}
     }
@@ -575,8 +575,8 @@ clasp_backup_open(const char *filename, int option, int mode)
     if (rename(filename, backupfilename.c_str())) {
 	brcl_enable_interrupts();
 	SIMPLE_ERROR(BF("Cannot rename the file %s to %s.")
-		     % Str_O::create(filename)
-		     % Str_O::create(backupfilename));
+		     % _rep_(Str_O::create(filename))
+		     % _rep_(Str_O::create(backupfilename)));
     }
     brcl_enable_interrupts();
     return open(filename, option, mode);
@@ -640,7 +640,7 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists)
     }
     if (UNLIKELY(if_exists != kw::_sym_supersede && if_exists != _lisp->_true())) {
 	/* invalid key */
-	SIMPLE_ERROR(BF("%s is an illegal IF-EXISTS option for RENAME-FILE.") % if_exists)
+	SIMPLE_ERROR(BF("%s is an illegal IF-EXISTS option for RENAME-FILE.") % _rep_(if_exists))
     }
     {
 	brcl_disable_interrupts();
@@ -845,7 +845,7 @@ Pathname_sp brcl_homedir_pathname(Str_sp user)
 #if defined(ECL_MS_WINDOWS_HOST)
     const char *d;
 #endif
-    if (!Null(user)) {
+    if (!user.nilp()) {
 #ifdef HAVE_PWD_H
 	struct passwd *pwent = NULL;
 #endif
@@ -1359,7 +1359,7 @@ dir_files(T_sp base_dir, T_sp tpathname, int flags)
                                pathname->_Version, true,
                                kw::_sym_local);
 	for (all_files = list_directory(base_dir, _Nil<T_O>(), mask, flags);
-	     !Null(all_files);
+	     !all_files.nilp();
 	     all_files = oCdr(all_files))
 	{
 		T_sp record = oCar(all_files);
@@ -1406,7 +1406,7 @@ AGAIN:
          * enter & scan all subdirectories in our curent directory.
          */
         T_sp next_dir = list_directory(base_dir, item, _Nil<T_O>(), flags);
-        for (; !Null(next_dir); next_dir = oCdr(next_dir)) {
+        for (; !next_dir.nilp(); next_dir = oCdr(next_dir)) {
             T_sp record = oCar(next_dir);
             T_sp component = oCar(record);
             T_sp kind = oCdr(record);
@@ -1424,7 +1424,7 @@ AGAIN:
          * tree that matches the remaining part of DIRECTORY.
          */
         T_sp next_dir = list_directory(base_dir, _Nil<T_O>(), _Nil<T_O>(), flags);
-        for (; !Null(next_dir); next_dir = oCdr(next_dir)) {
+        for (; !next_dir.nilp(); next_dir = oCdr(next_dir)) {
             T_sp record = oCar(next_dir);
             T_sp component = oCar(record);
             T_sp kind = oCdr(record);
@@ -1447,7 +1447,7 @@ AGAIN:
          * what other implementations do and is consistent with the behavior
          * for the file part.
          */
-        if (Null(base_dir))
+        if (base_dir.nilp())
             return _Nil<T_O>();
         directory = oCdr(directory);
         goto AGAIN;
@@ -1498,7 +1498,7 @@ bool af_unixDaylightSavingTime(Integer_sp unix_time)
 #define DOCS_af_unixGetLocalTimeZone "unixGetLocalTimeZone"
 Ratio_sp af_unixGetLocalTimeZone()
 {_G();
-  cl_fixnum mw;
+    gctools::Fixnum mw;
 #if 0 && defined(HAVE_TZSET)
   tzset();
   mw = timezone/60;

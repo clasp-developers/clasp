@@ -97,7 +97,7 @@ namespace core
 		    }
 		}
 		snode->setKind(head);
-		snode->setAttributesUnsafe(dummyCons->cdr());
+		snode->setAttributesUnsafe(cCdr(dummyCons));
 		snode->setVectorSNodesUnsafe(vresult);
 #if 0 // moved BranchSNode_O::create up to top to deal with circular data structures
 		snode = BranchSNode_O::create(head,dummyCons->cdr(),vresult);

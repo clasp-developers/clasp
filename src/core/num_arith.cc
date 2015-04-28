@@ -63,9 +63,9 @@ namespace core {
 	    if (ty == number_Fixnum) {
 		if (y == brcl_make_fixnum(0))
 		    ERROR_DIVISION_BY_ZERO(x,y);
-		return brcl_make_fixnum(brcl_fixnum(x) / brcl_fixnum(y));
+		return brcl_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y));
 	    } else if (ty == number_Bignum) {
-		return _brcl_fix_divided_by_big(brcl_fixnum(x), y.as<Bignum_O>()->get());
+		return _brcl_fix_divided_by_big(clasp_fixnum(x), y.as<Bignum_O>()->get());
 	    } else {
 		ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide,2,y,cl::_sym_Integer_O);
 	    }
@@ -74,7 +74,7 @@ namespace core {
 	    if (ty == number_Bignum) {
 		return _brcl_big_divided_by_big(x.as<Bignum_O>()->get(), y.as<Bignum_O>()->get());
 	    } else if (ty == number_Fixnum) {
-		return _brcl_big_divided_by_fix(x.as<Bignum_O>()->get(), brcl_fixnum(y));
+		return _brcl_big_divided_by_fix(x.as<Bignum_O>()->get(), clasp_fixnum(y));
 	    } else {
 		QERROR_WRONG_TYPE_NTH_ARG(2,y,cl::_sym_Integer_O);
 	    }
@@ -111,7 +111,7 @@ namespace core {
     {
 	switch (brcl_t_of(x)) {
 	case number_Fixnum: {
-	    Bignum_sp big(Bignum_O::create(brcl_fixnum(x)));
+	    Bignum_sp big(Bignum_O::create(clasp_fixnum(x)));
 	    x = big;
 	}
 	case number_Bignum:
@@ -121,7 +121,7 @@ namespace core {
 	}
 	switch (brcl_t_of(y)) {
 	case number_Fixnum: {
-	    Bignum_sp big(Bignum_O::create(brcl_fixnum(y)));
+	    Bignum_sp big(Bignum_O::create(clasp_fixnum(y)));
 	    y = big;
 	}
 	case number_Bignum:

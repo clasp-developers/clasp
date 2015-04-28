@@ -58,9 +58,10 @@ namespace core {
     StrWithFillPtr_sp core_bignumToString(StrWithFillPtr_sp buffer, const Bignum& bn, Fixnum_sp base)
     {_G();
 	if ( base->get()<2 || base->get()>36) {
-	    QERROR_WRONG_TYPE_NTH_ARG(3,base,Cons_O::createList(cl::_sym_integer,Fixnum_O::create(2),Fixnum_O::create(360)));
+	    QERROR_WRONG_TYPE_NTH_ARG(3,base,Cons_O::createList(cl::_sym_integer,Fixnum_O::create(2),Fixnum_O::create(36)));
 	}
-	size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), base->ref());
+	int ibase = base->get();
+	size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), ibase);
 	if ( bn<0 ) str_size++;
 	buffer->ensureSpaceAfterFillPointer(str_size+1);
 	char* bufferStart = static_cast<char*>(buffer->addressOfFillPtr());

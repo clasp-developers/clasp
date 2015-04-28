@@ -213,9 +213,7 @@ namespace core
 	    if (cx->className() == y) {
 		return true;
 	    } else {
-		Cons_sp superiors = cx->directSuperclasses();
-		for ( Cons_sp sup = superiors; !sup.nilp(); sup=cCdr(sup))
-		{
+		for ( auto sup : cx->directSuperclasses() ) {
 		    if (af_structureSubtypep(oCar(sup).as<Class_O>(),y) ) return true;
 		}
 		return false;
