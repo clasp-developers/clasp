@@ -722,7 +722,7 @@ void af_wrongIndex(const string& sourceFile, int lineno, Symbol_sp function, T_s
 #define DECL_af_readerError ""
 #define DOCS_af_readerError "readerError"
 void af_readerError(const string& sourceFile, uint lineno, Symbol_sp function,
-		    Str_sp fmt, Cons_sp fmtargs, T_sp stream )
+		    Str_sp fmt, List_sp fmtargs, T_sp stream )
 {_G();
     if ( stream.nilp() ) {
 	eval::funcall(_sym_signalSimpleError,
