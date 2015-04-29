@@ -163,6 +163,22 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
     TYPE_ERROR(obj,expectedSym);
 }
 
+void lisp_badCast(class_id toType, class_id fromType, core::T_O* objP)
+{
+    lisp_errorUnexpectedType(toType,fromType,objP);
+}
+
+void lisp_badCastFromT_O(class_id toType, core::T_O* objP)
+{
+    class_id from_typ = reg::registered_class<core::T_O>::id;
+    lisp_errorUnexpectedType(toType,from_typ,objP);
+}
+void lisp_badCastFromSymbol_O(class_id toType, core::T_O* objP)
+{
+    class_id from_typ = reg::registered_class<core::Symbol_O>::id;
+    lisp_errorUnexpectedType(toType,from_typ,objP);
+}
+
 
 void lisp_errorUnexpectedNil(class_id expectedTyp)
 {

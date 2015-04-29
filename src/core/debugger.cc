@@ -418,11 +418,11 @@ extern "C" {
 	    } else if ( obj.fixnump() ) {
 		printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
 	    } else if ( obj.otherp() ) {
-		printf("other_tag: %p  typeid: %s\n", &(*obj), typeid(*obj).name() );
+		printf("other_tag: %p  typeid: %s\n", &(*obj), typeid(obj).name() );
 		printf("More info:\n");
 		printf("%s\n", _rep_(obj).c_str());
 	    } else if ( obj.consp() ) {
-		printf("cons_tag: %p  typeid: %s\n", &(*obj), typeid(*obj).name() );
+		printf("cons_tag: %p  typeid: %s\n", &(*obj), typeid(obj).name() );
 		printf("List:  \n");
 		for ( auto c : coerce_to_list(obj) ) {
 		    printf("car@%p  cdr@%p\n", oCar(c).raw_(), oCdr(c).raw_() );
