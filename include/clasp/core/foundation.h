@@ -574,10 +574,7 @@ namespace gctools {
 namespace reg {
 
     struct null_type : public gctools::GCIgnoreClass {};
-
-
     class_id const unknown_class = (std::numeric_limits<class_id>::max)();
-
     class type_id
         : public boost::less_than_comparable<type_id>
         , public gctools::GCIgnoreClass
@@ -644,7 +641,9 @@ namespace core {
 #define SET_SIGNAL(s) {core::_global_signalTrap = s;}
 #define POLL_SIGNALS() core::lisp_pollSignals();
 
-
+void lisp_errorBadCast(type_info const& toType, type_info const& fromType, core::T_O* objP );
+void lisp_errorBadCastFromT_O(type_info const& toType, core::T_O* objP );
+void lisp_errorBadCastFromSymbol_O(type_info const& toType, core::T_O* objP );
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
 void lisp_errorUnexpectedNil(class_id expectedTyp);
 void lisp_errorDereferencedNil();

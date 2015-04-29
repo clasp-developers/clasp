@@ -1,4 +1,5 @@
 // Disable this once we have List_sp working
+#define USE_BAD_CAST_ERROR 1
 #define ALLOW_NIL_OTHER 1
 #define ALLOW_CONS_NIL 1
 
@@ -42,6 +43,7 @@ THE SOFTWARE.
 #include <boost/utility/binary.hpp>
 
 #include <iostream>
+#include <cstring>
 //#include "tagged_ptr.h"
 #define TAGGED_PTR_BASE tagged_ptr
 
@@ -70,6 +72,10 @@ namespace gctools
     extern core::Symbol_O* global_Symbol_OP_sameAsKey;
 };    
 
+
+extern void lisp_errorBadCast(type_info const& toType, type_info const& fromType, core::T_O* objP );
+extern void lisp_errorBadCastFromT_O(type_info const& toType,core::T_O* objP );
+extern void lisp_errorBadCastFromSymbol_O(type_info const& toType,core::Symbol_O* objP );
 
 namespace gctools
 {
@@ -335,21 +341,6 @@ namespace gctools {
 	    temp = this->theObject;
 	    this->theObject = other.theObject;
 	    other.theObject = temp;
-	}
-#if 0   /// Figure out what to do with this
-	template <class o_class>
-	    inline smart_ptr<o_class> pointerAsUnsafe() const
-	    {
-		o_class* new_px = dynamic_cast<o_class*>(this->px);
-		return smart_ptr<o_class>(new_px);
-	    }
-#endif
-
-	template <class o_class>
-	    void errorExpectedType() const {
-	    class_id expected_typ = reg::registered_class<o_class>::id;
-	    class_id this_typ = reg::registered_class<Type>::id;
-	    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
 	};
 
 	template <class o_class>
@@ -365,7 +356,7 @@ namespace gctools {
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
 	    }
-	    this->errorExpectedType<o_class>();
+	    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
 	    // unreachable
 	    smart_ptr<o_class> fail;
 	    return fail;
@@ -384,7 +375,7 @@ namespace gctools {
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
 	    }
-	    this->errorExpectedType<o_class>();
+	    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
 	    // unreachable
 	    smart_ptr<o_class> fail;
 	    return fail;
@@ -395,9 +386,13 @@ namespace gctools {
 	    {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -407,9 +402,13 @@ namespace gctools {
 	    {
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -426,9 +425,13 @@ namespace gctools {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret)
 		    {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -442,9 +445,13 @@ namespace gctools {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret)
 		    {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -460,9 +467,13 @@ namespace gctools {
 		}
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
-		    class_id expected_typ = reg::registered_class<o_class>::id;
-		    class_id this_typ = reg::registered_class<Type>::id;
-		    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
+#else
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		}
 		return ret;
 	    }
@@ -480,9 +491,13 @@ namespace gctools {
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret)
 		    {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
-			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->px));
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -557,7 +572,7 @@ namespace gctools {
 	    } else if ( this->nilp() ) {
 		return smart_ptr<core::Cons_O>(tag_nil<core::Cons_O>());
 	    }
-	    this->errorExpectedType<core::Cons_O>();
+	    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
 	}
 #endif
 	    
@@ -738,13 +753,6 @@ namespace gctools {
 #endif
 
 	template <class o_class>
-	    void errorExpectedType() const {
-	    class_id expected_typ = reg::registered_class<o_class>::id;
-	    class_id this_typ = reg::registered_class<Type>::id;
-	    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
-	};
-
-	template <class o_class>
 	    inline smart_ptr<o_class> asOrNull() {
 	    if (this->otherp()) {
 		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_other<Type>(this->theObject));
@@ -757,7 +765,7 @@ namespace gctools {
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
 	    }
-	    this->errorExpectedType<o_class>();
+	    lisp_errorBadCastFromT_O(typeid(o_class),this->theObject);
 	    // unreachable
 	    smart_ptr<o_class> fail;
 	    return fail;
@@ -776,7 +784,7 @@ namespace gctools {
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
 	    }
-	    this->errorExpectedType<o_class>();
+	    lisp_errorBadCastFromT_O(typeid(o_class),this->theObject);
 	    // unreachable
 	    smart_ptr<o_class> fail;
 	    return fail;
@@ -811,9 +819,13 @@ namespace gctools {
 	    {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromT_O(typeid(o_class),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -823,9 +835,13 @@ namespace gctools {
 	    {
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromT_O(typeid(o_class),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -842,9 +858,13 @@ namespace gctools {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret)
 		    {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromT_O(typeid(o_class),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -858,9 +878,13 @@ namespace gctools {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret)
 		    {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromT_O(typeid(o_class),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -876,9 +900,13 @@ namespace gctools {
 		}
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
-		    class_id expected_typ = reg::registered_class<o_class>::id;
-		    class_id this_typ = reg::registered_class<Type>::id;
-		    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromT_O(typeid(o_class),this->theObject);
+#else
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		}
 		return ret;
 	    }
@@ -973,7 +1001,7 @@ namespace gctools {
 	    } else if ( this->nilp() ) {
 		return smart_ptr<core::Cons_O>(tag_nil<core::Cons_O>());
 	    }
-	    this->errorExpectedType<core::Cons_O>();
+	    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
 	}
 #endif
 	    
@@ -1148,12 +1176,6 @@ namespace gctools {
 	    }
 #endif
 
-	template <class o_class>
-	    void errorExpectedType() const {
-	    class_id expected_typ = reg::registered_class<o_class>::id;
-	    class_id this_typ = reg::registered_class<Type>::id;
-	    lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
-	};
 
 	template <class o_class>
 	    inline smart_ptr<o_class> asOrNull() {
@@ -1168,7 +1190,7 @@ namespace gctools {
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
 	    }
-	    this->errorExpectedType<o_class>();
+	    lisp_errorBadCastFromSymbol_O(typeid(o_class),this->theObject);
 	    // unreachable
 	    smart_ptr<o_class> fail;
 	    return fail;
@@ -1187,7 +1209,7 @@ namespace gctools {
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
 	    }
-	    this->errorExpectedType<o_class>();
+	    lisp_errorBadCastFromSymbol_O(typeid(o_class),this->theObject);
 	    // unreachable
 	    smart_ptr<o_class> fail;
 	    return fail;
@@ -1198,9 +1220,13 @@ namespace gctools {
 	    {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromSymbol_O(typeid(o_class),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
-			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -1210,9 +1236,13 @@ namespace gctools {
 	    {
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromSymbol_O(typeid(o_class),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
-			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -1229,9 +1259,13 @@ namespace gctools {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret)
 		    {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromSymbol_O(typeid(o_class),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
-			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -1245,9 +1279,13 @@ namespace gctools {
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret)
 		    {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromSymbol_O(typeid(o_class),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
-			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -1263,9 +1301,13 @@ namespace gctools {
 		}
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
-		    class_id expected_typ = reg::registered_class<o_class>::id;
-		    class_id this_typ = reg::registered_class<Type>::id;
-		    lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCastFromSymbol_O(typeid(o_class),this->theObject);
+#else
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		}
 		return ret;
 	    }
@@ -1283,9 +1325,13 @@ namespace gctools {
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret)
 		    {
+#ifdef USE_BAD_CAST_ERROR
+                    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
+#else
 			class_id expected_typ = reg::registered_class<o_class>::id;
 			class_id this_typ = reg::registered_class<Type>::id;
-			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->px));
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+#endif
 		    }
 		return ret;
 	    }
@@ -1360,7 +1406,7 @@ namespace gctools {
 	    } else if ( this->nilp() ) {
 		return smart_ptr<core::Cons_O>(tag_nil<core::Cons_O>());
 	    }
-	    this->errorExpectedType<core::Cons_O>();
+	    lisp_errorBadCast(typeid(o_class),typeid(Type),this->theObject);
 	}
 #endif
 	    
