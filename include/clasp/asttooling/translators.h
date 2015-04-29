@@ -131,10 +131,10 @@ namespace translate {
                     _v[i] = vo->elt(i).as<core::Str_O>()->get();
                 }
                 return;
-            } else if ( core::Cons_sp lo = o.asOrNull<core::Cons_O>() ) {
+            } else if ( core::List_sp lo = o.asOrNull<core::Cons_O>() ) {
                 _v.resize(lo->length());
                 int i=0;
-                for ( core::Cons_sp cur = lo; cur.notnilp(); cur=cCdr(cur) ) {
+                for ( auto cur : lo ) {
                     _v[i] = oCar(cur).as<core::Str_O>()->get();
                     ++i;
                 }

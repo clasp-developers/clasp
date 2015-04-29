@@ -1498,7 +1498,7 @@ namespace core
 */
 	T_mv sp_setq(List_sp args, T_sp environment)
 	{_G();
-	    ASSERTP(cCdr(args).notnilp(),"You must provide at least 2 arguments");
+	    ASSERTP(oCdr(args).notnilp(),"You must provide at least 2 arguments");
 	    List_sp pairs = args;
 	    T_sp result = _Nil<T_O>();
 	    while (pairs.notnilp())
@@ -1506,7 +1506,7 @@ namespace core
 		T_sp target = oCar(pairs);
 		if ( Symbol_sp symbol = target.asOrNull<Symbol_O>() )
 		{
-		    if ( cCdr(pairs).nilp() )
+		    if ( oCdr(pairs).nilp() )
 		    {
 			SIMPLE_ERROR(BF("Missing value for setq of target[%s] - body of setq: %s")
 					   % _rep_(target) % _rep_(args) );
@@ -1523,7 +1523,7 @@ namespace core
 			result = eval::evaluate(expr,environment);
 			interpret::setq_symbol_value(symbol,result,environment);
 		    }
-		    pairs = cCddr(pairs);
+		    pairs = oCddr(pairs);
 		} else
 		{
 		    SIMPLE_ERROR(BF("Illegal target[%s] for setq - body of setq: %s") % _rep_(target) % _rep_(args) );
@@ -1548,17 +1548,17 @@ namespace core
 	    T_sp functionName;
 	    List_sp functions = oCar(args).as_or_nil<Cons_O>();
 	    FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(cl_length(functions),environment);
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    List_sp cur = functions;
 	    LOG(BF("functions part=%s") % functions->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
 	    while ( cur.notnilp() )
 	    {
-		List_sp oneDef = cCar(cur);
+		List_sp oneDef = oCar(cur);
 		functionName = oCar(oneDef);
-		Function_sp func = lambda(functionName,true,oCadr(oneDef),cCddr(oneDef),environment);
+		Function_sp func = lambda(functionName,true,oCadr(oneDef),oCddr(oneDef),environment);
 		newEnvironment->bind_function(functionName,func);
-		cur = cCdr(cur);
+		cur = oCdr(cur);
 	    }
 	    List_sp declares;
 	    List_sp code;
@@ -1581,19 +1581,19 @@ namespace core
 	    // TODO: handle trace
 	    T_sp name;
 	    List_sp functions = oCar(args).as_or_nil<Cons_O>();
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    List_sp cur = functions;
 	    LOG(BF("functions part=%s") % functions->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
 	    FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(cl_length(functions),environment);
 	    while ( cur.notnilp() )
 	    {
-		List_sp oneDef = cCar(cur);
+		List_sp oneDef = oCar(cur);
 		name = oCar(oneDef);
-		Function_sp func = lambda(name,true,oCadr(oneDef)/*lambda-list*/,cCddr(oneDef)/*body with decls/docstring*/,newEnvironment);
+		Function_sp func = lambda(name,true,oCadr(oneDef)/*lambda-list*/,oCddr(oneDef)/*body with decls/docstring*/,newEnvironment);
 		LOG(BF("func = %s") % func->__repr__() );
 		newEnvironment->bind_function(name,func);
-		cur = cCdr(cur);
+		cur = oCdr(cur);
 	    }
 	    List_sp declares;
 	    List_sp code;
@@ -1612,7 +1612,7 @@ namespace core
 	    	    // TODO: handle trace
 	    List_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    List_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
@@ -1622,7 +1622,7 @@ namespace core
 		//		printf( "%s:%d  oneDef = %s\n", __FILE__, __LINE__, _rep_(oneDef).c_str());
 		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
 		T_sp olambdaList = oCadr(oneDef);
-		List_sp inner_body = cCdr(cCdr(oneDef));
+		List_sp inner_body = oCdr(oCdr(oneDef));
 		List_sp inner_declares;
 		Str_sp inner_docstring;
 		List_sp inner_code;
@@ -1646,7 +1646,7 @@ namespace core
 		} else {
 		    List_sp outer_ll = oCadr(outer_func_cons).as_or_nil<Cons_O>();
 		    //		printf("%s:%d sp_macrolet outer_ll = %s\n", __FILE__, __LINE__, _rep_(outer_ll).c_str());
-		    List_sp outer_body = cCddr(outer_func_cons);
+		    List_sp outer_body = oCddr(outer_func_cons);
 		    //		printf("%s:%d sp_macrolet outer_body = %s\n", __FILE__, __LINE__, _rep_(outer_body).c_str());
 		    List_sp declares;
 		    Str_sp docstring;
@@ -1667,7 +1667,7 @@ namespace core
 		LOG(BF("func = %s") % outer_func_cons->__repr__() );
 		newEnv->addMacro(name,outer_func);
 //		newEnv->bind_function(name,outer_func);
-		cur = cCdr(cur);
+		cur = oCdr(cur);
 	    }
 	    List_sp declares;
 	    List_sp code;
@@ -1705,7 +1705,7 @@ namespace core
 	{_G();
 	    List_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    List_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
@@ -1733,7 +1733,7 @@ namespace core
                                                                                                     , expansion );
                 Function_sp outer_func = Function_O::make(ic);
 		newEnv->addSymbolMacro(name,outer_func);
-		cur = cCdr(cur);
+		cur = oCdr(cur);
 	    }
 	    if ( topLevelForm ) {
 		return t1Locally(body,newEnv);
@@ -1750,7 +1750,7 @@ namespace core
 #if 0
 	    List_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
-	    List_sp body = cCdr(args).as_or_nil<Cons_O>();
+	    List_sp body = oCdr(args);
 	    List_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
@@ -1778,7 +1778,7 @@ namespace core
                                                                                                     , expansion );
                 Function_sp outer_func = Function_O::make(ic);
 		newEnv->addSymbolMacro(name,outer_func);
-		cur = cCdr(cur);
+		cur = oCdr(cur);
 	    }
 	    return eval::sp_locally(body,newEnv);
 #endif
@@ -2021,7 +2021,7 @@ namespace core
 	    }
 	    for ( int i(lenFirst); i<nargs; ++i ) {
 		frame->operator[](i) = oCar(cargs);
-		cargs = cCdr(cargs);
+		cargs = oCdr(cargs);
 	    }
 	    Function_sp func = coerce::functionDesignator(head);
 	    return eval::applyToActivationFrame(func,frame);
@@ -2164,8 +2164,8 @@ namespace core
 			LispDebugger::step();
 #endif
 		    }
-		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(cCdr(form)),_Nil<ActivationFrame_O>()));
-		    evaluateIntoActivationFrame(evaluatedArgs,cCdr(form),environment);
+		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(oCdr(form)),_Nil<ActivationFrame_O>()));
+		    evaluateIntoActivationFrame(evaluatedArgs,oCdr(form),environment);
 		    try { result = eval::applyToActivationFrame(headCons,evaluatedArgs);}
 		    catch (...) { result = handleConditionInEvaluate(environment);};
 		}
@@ -2180,14 +2180,14 @@ namespace core
 
 	T_mv evaluate_specialForm( SpecialForm_sp specialForm, List_sp form, T_sp environment )
 	{
-	    return specialForm->evaluate(cCdr(form),environment);
+	    return specialForm->evaluate(oCdr(form),environment);
 	}
 
 
 	T_mv evaluate_cond(List_sp form, T_sp environment )
 	{_G();
 	    T_mv result;
-	    try { result = interpret::interpreter_cond(cCdr(form),environment);}
+	    try { result = interpret::interpreter_cond(oCdr(form),environment);}
 	    catch (...) { result = handleConditionInEvaluate(environment); }
 	    ASSERTNOTNULL(result);
 	    return(result);
@@ -2196,7 +2196,7 @@ namespace core
 	T_mv evaluate_case(List_sp form, T_sp environment )
 	{_G();	
 	    T_mv result;
-	    try { result = interpret::interpreter_case(cCdr(form),environment);}
+	    try { result = interpret::interpreter_case(oCdr(form),environment);}
 	    catch (...) { result = handleConditionInEvaluate(environment); }
 	    ASSERTNOTNULL(result);
 	    return(result);
@@ -2207,7 +2207,7 @@ namespace core
 	{_G();
 	    T_mv result;
 	    SYMBOL_EXPORT_SC_(ClPkg,multipleValueSetq);
-	    try { result = interpret::interpreter_multipleValueSetq(cCdr(form),environment);}
+	    try { result = interpret::interpreter_multipleValueSetq(oCdr(form),environment);}
 	    catch (...) { result = handleConditionInEvaluate(environment); }
 	    ASSERTNOTNULL(result);
 	    return(result);
@@ -2218,7 +2218,7 @@ namespace core
 	{_G();
 	    T_mv result;
 	    SYMBOL_EXPORT_SC_(ClPkg,prog1);
-	    try { result = interpret::interpreter_prog1(cCdr(form),environment);}
+	    try { result = interpret::interpreter_prog1(oCdr(form),environment);}
 	    catch (...) { result = handleConditionInEvaluate(environment); }
 	    ASSERTNOTNULL(result);
 	    return(result);
@@ -2228,14 +2228,14 @@ namespace core
         SYMBOL_EXPORT_SC_(CompPkg,compileInEnv);
         T_mv t1Evaluate(T_sp exp, T_sp environment);
 
-	T_mv t1Progn(T_sp args, T_sp environment)
+	T_mv t1Progn(List_sp args, T_sp environment)
 	{_G();
             if ( _sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp() ) {
                 printf("%s:%d t1Progn args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
             }
             T_mv result(_Nil<T_O>());
 	    Environment_sp localEnv(environment);
-            for ( List_sp cur=args.as<Cons_O>(); cur.consp(); cur=cCdr(cur) ) {
+            for ( auto cur : args ) {
                 result = t1Evaluate(oCar(cur),localEnv);
             }
             return result;
@@ -2247,7 +2247,7 @@ namespace core
                 printf("%s:%d t1EvalWhen args: %s\n", __FILE__, __LINE__, _rep_(args).c_str() );
             }
 	    List_sp situations = oCar(args).as_or_nil<Cons_O>();
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    bool execute = af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue();
             execute |= af_member(cl::_sym_eval,situations,_Nil<T_O>(),_Nil<T_O>(), _Nil<T_O>()).isTrue();
 	    if ( execute ) return t1Progn(body,environment);
@@ -2279,7 +2279,7 @@ namespace core
 	    // TODO: handle trace
 	    List_sp macros = oCar(args).as_or_nil<Cons_O>();
 	    MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
-	    List_sp body = cCdr(args).as_or_nil<Cons_O>();
+	    List_sp body = oCdr(args);
 	    List_sp cur = macros;
 	    LOG(BF("macros part=%s") % macros->__repr__() );
 	    Str_sp docString = _Nil<Str_O>();
@@ -2288,7 +2288,7 @@ namespace core
 		List_sp oneDef = oCar(cur).as_or_nil<Cons_O>();
 		Symbol_sp name = oCar(oneDef).as<Symbol_O>();
 		T_sp olambdaList = oCadr(oneDef);
-		List_sp inner_body = cCdr(cCdr(oneDef)).as_or_nil<Cons_O>();
+		List_sp inner_body = oCdr(oCdr(oneDef));
 		List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body).as_or_nil<Cons_O>();
 #if 1
 //                printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
@@ -2409,11 +2409,11 @@ namespace core
 //                        printf("%s:%d   head is eval-when\n", __FILE__, __LINE__ );
                         return t1EvalWhen(oCdr(exp),environment);
                     } else if ( head == cl::_sym_locally ) {
-                        return t1Locally(cCdr(exp),environment);
+                        return t1Locally(oCdr(exp),environment);
                     } else if ( head == cl::_sym_macrolet ) {
-                        return t1Macrolet(cCdr(exp),environment);
+                        return t1Macrolet(oCdr(exp),environment);
                     } else if ( head == cl::_sym_symbol_macrolet ) {
-                        return t1SymbolMacrolet(cCdr(exp),environment);
+                        return t1SymbolMacrolet(oCdr(exp),environment);
                     }
                 }
             }
@@ -2523,9 +2523,9 @@ namespace core
 //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
 		if ( af_functionP(headFunc) )
 		{
-		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(cCdr(form)),
-								     _Nil<ActivationFrame_O>()));
-		    evaluateIntoActivationFrame(evaluatedArgs,cCdr(form),environment);
+		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(oCdr(form)),
+								     _Nil<T_O>()));
+		    evaluateIntoActivationFrame(evaluatedArgs,oCdr(form),environment);
                     result = eval::applyToActivationFrame(headFunc,evaluatedArgs);
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);
@@ -2560,8 +2560,7 @@ namespace core
 		// Iterate through each car in exp and
 		// evaluate it (handling Nil objects and results)
 		// and string the results into a linked list
-		for ( List_sp p=args; p.notnilp(); p=cCdr(p) )
-		{
+		for ( auto p : args ) {
 		    T_sp inObj = oCar(p);
 		    T_sp result = eval::evaluate(inObj,environment);
 		    ASSERTNOTNULL(result);
@@ -2590,8 +2589,7 @@ namespace core
 		// Iterate through each car in exp and
 		// evaluate it (handling Nil objects and results)
 		// and string the results into a linked list
-		for ( List_sp p=args; p.notnilp(); p=cCdr(p) )
-		{
+		for ( auto p : args ) {
 		    T_sp inObj = oCar(p);
 		    T_sp result = eval::evaluate(inObj,environment);
 		    ASSERTNOTNULL(result);
@@ -2611,7 +2609,7 @@ namespace core
 	    }
 #endif
 	    LOG(BF("Arguments after evaluateList: %s")%_rep_(oCdr(firstCons)));
-	    return cCdr(firstCons);
+	    return oCdr(firstCons);
 	}
 
 	T_mv evaluateListReturnLast(List_sp args, T_sp environment)
@@ -2625,8 +2623,7 @@ namespace core
 		// and string the results into a linked list
 		//
 		//
-		for ( List_sp p=args; p.notnilp(); p=cCdr(p) )
-		{
+		for ( auto p : args ) {
 		    inObj = oCar(p);
 		    LOG(BF("Pushing code onto the backTrace: <%s>")%p->__repr__() );
 		    { 

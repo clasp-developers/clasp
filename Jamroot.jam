@@ -145,7 +145,7 @@ project clasp : requirements
 
 # for now
         <target-os>darwin:<define>_ADDRESS_MODEL_64
-        <target-os>linux:<define>_ADDRESS_MODEL_32
+        <target-os>linux:<define>_ADDRESS_MODEL_64
 	<address-model>32:<define>_ADDRESS_MODEL_32
 	<address-model>64:<define>_ADDRESS_MODEL_64
 #	<cxxflags>-D_ADDRESS_MODEL_[<address-model>]
