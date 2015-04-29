@@ -539,7 +539,6 @@ namespace translate {
             printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(o.raw_()));
             printf("o.px_ref() = %p\n", o.raw_());
             printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T*),typeid(T*).name());
-            printf("typeid(o.px_ref())@%p  typeid(o.px_ref()).name=%s\n", &typeid(*o),typeid(*o).name());
             printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T>*), typeid(clbind::Derivable<T>*).name());
             printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void*>(&(*o)));
             printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");
@@ -577,7 +576,6 @@ namespace translate {
             printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T>*>(&(*o)));
             printf("o.px_ref() = %p\n", o.raw_());
             printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T*),typeid(T*).name());
-            printf("typeid(o.px_ref())@%p  typeid(o.px_ref()).name=%s\n", &typeid(*o),typeid(*o).name());
             printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T>*), typeid(clbind::Derivable<T>*).name());
             printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void*>(&(*o)));
             printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");

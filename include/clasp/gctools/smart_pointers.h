@@ -1062,6 +1062,7 @@ namespace gctools {
 	  The most common case is this is an object.*/
 	bool valid() const {
 	    GCTOOLS_ASSERT(false); // BF("Implement me"));
+            return true;
 	}
 
 
@@ -1467,6 +1468,7 @@ namespace gctools {
 	  The most common case is this is an object.*/
 	bool valid() const {
 	    GCTOOLS_ASSERT(false); // BF("Implement me"));
+            return true;
 	}
 
 
