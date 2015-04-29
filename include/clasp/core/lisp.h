@@ -247,7 +247,7 @@ namespace core
 	    Bignum_sp 			_BignumRegister2;
             CharacterInfo               charInfo;
             gctools::Vec0<core::Symbol_sp>      _ClassSymbolsHolder;
-	    HashTable_sp 		_SystemProperties;
+	    T_sp 		_SystemProperties;
 	    DynamicBindingStack 	_Bindings;
             gctools::Vec0<SourceFileInfo_sp>    _SourceFiles;
 	    /*! Store CATCH info */

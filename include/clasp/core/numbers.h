@@ -887,7 +887,7 @@ namespace core {
     Number_sp brcl_atan2(Number_sp x, Number_sp y);
 
     inline Number_sp brcl_sqrt(Number_sp z) {
-	ASSERTF(z.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!z.fixnump(),BF("Add support for immediate fixnums"));
 	return z->sqrt();
     }
 

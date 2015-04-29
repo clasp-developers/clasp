@@ -207,7 +207,7 @@ namespace core
                                , _BignumRegister1(_Unbound<Bignum_O>())
                                , _BignumRegister2(_Unbound<Bignum_O>())
 //                               , _TraceFunctions(_Unbound<HashTable_O>())
-                               , _SystemProperties(_Unbound<HashTable_O>())
+                               , _SystemProperties(_Nil<T_O>())
                                , _CatchInfo(_Nil<Cons_O>())
                                ,  _SpecialForms(_Unbound<HashTableEq_O>())
                                , _ActivationFrameNil(_Nil<ActivationFrame_O>())

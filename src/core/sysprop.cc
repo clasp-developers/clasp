@@ -47,7 +47,7 @@ namespace core
     T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value)
     {_G();
 	ASSERT(_lisp->_Roots._SystemProperties);
-	if ( _lisp->_Roots._SystemProperties.unboundp() )
+	if ( _lisp->_Roots._SystemProperties.nilp() )
 	{
 	    _lisp->_Roots._SystemProperties = HashTableEql_O::create_default();
 	}
