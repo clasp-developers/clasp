@@ -1237,7 +1237,7 @@ namespace llvmo
 	llvm::Attribute		_Attribute;
 
     public: // Functions here
-	static Attribute_sp get(LLVMContext_sp context,core::Cons_sp attribute_symbols);
+	static Attribute_sp get(LLVMContext_sp context,core::List_sp attribute_symbols);
 
 	llvm::Attribute attributes() { return this->_Attribute;};
 	void setAttribute(llvm::Attribute attr) { this->_Attribute = attr;};
@@ -1409,7 +1409,7 @@ namespace llvmo
             , associatedFunctions(assocFuncs)
 	    , _lambdaList(ll)
         {};
-        void setAssociatedFunctions(core::Cons_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
+        void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
         bool compiledP() const { return true; };
 	core::T_sp lambdaList() const;
         core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
@@ -1521,7 +1521,7 @@ namespace llvmo
 	ConstantArray_O() : Base() {};
 	virtual ~ConstantArray_O() {};
     public:
-	static Constant_sp get(ArrayType_sp type, core::Cons_sp values);
+	static Constant_sp get(ArrayType_sp type, core::List_sp values);
     }; // ConstantArray_O
 }; // llvmo
 TRANSLATE(llvmo::ConstantArray_O);
@@ -1648,7 +1648,7 @@ namespace llvmo
 	virtual ~ConstantExpr_O() {};
     public:
 
-	static Constant_sp getInBoundsGetElementPtr(Constant_sp constant, core::Cons_sp idxList );
+	static Constant_sp getInBoundsGetElementPtr(Constant_sp constant, core::List_sp idxList );
 
 
     }; // ConstantExpr_O
@@ -1862,7 +1862,7 @@ namespace llvmo {
 	core::List_sp getGlobalList() const;
     public:
 	/*! Return a list of all functions as a cons */
-	core::Cons_sp getFunctionList() const;
+	core::List_sp getFunctionList() const;
 
 	/*! Wrap the Module::getFunction function */
 	llvm::Function* getFunction(core::Str_sp dispatchName);
@@ -2659,12 +2659,12 @@ namespace llvmo
 	~IRBuilder_O() {}
 	static IRBuilder_sp make(LLVMContext_sp context);
     public:
-	llvm::InvokeInst* CreateInvoke(llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::Cons_sp Args, const llvm::Twine &Name="");
-	llvm::Value* CreateInBoundsGEP(llvm::Value* Ptr, core::Cons_sp IdxList, const llvm::Twine&Name="");
+	llvm::InvokeInst* CreateInvoke(llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name="");
+	llvm::Value* CreateInBoundsGEP(llvm::Value* Ptr, core::List_sp IdxList, const llvm::Twine&Name="");
 
-	llvm::Value* CreateExtractValue(llvm::Value* Ptr, core::Cons_sp IdxList, const llvm::Twine& Name="");
+	llvm::Value* CreateExtractValue(llvm::Value* Ptr, core::List_sp IdxList, const llvm::Twine& Name="");
 
-	llvm::Value* CreateInsertValue(llvm::Value* Agg, llvm::Value* Val, core::Cons_sp IdxList, const llvm::Twine& Name="");
+	llvm::Value* CreateInsertValue(llvm::Value* Agg, llvm::Value* Val, core::List_sp IdxList, const llvm::Twine& Name="");
 
 	string __repr__() const;
     }; // IRBuilder_O
@@ -3876,7 +3876,7 @@ namespace llvmo
 	~MDNode_O() {}
 
     public:
-	static MDNode_sp get(LLVMContext_sp context, core::Cons_sp values);
+	static MDNode_sp get(LLVMContext_sp context, core::List_sp values);
 
     }; // MDNode_O
 }; // llvmo

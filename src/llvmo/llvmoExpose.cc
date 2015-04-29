@@ -105,7 +105,7 @@ namespace llvmo
 #define DOCS_comp_setAssociatedFuncs "setAssociatedFuncs"
 #define FILE_comp_setAssociatedFuncs __FILE__
 #define LINE_comp_setAssociatedFuncs __LINE__
-    void comp_setAssociatedFuncs(core::CompiledFunction_sp cf, core::Cons_sp associatedFuncs)
+    void comp_setAssociatedFuncs(core::CompiledFunction_sp cf, core::List_sp associatedFuncs)
     {
         auto closure = cf->closure.as<CompiledClosure>();
 	closure->setAssociatedFunctions(associatedFuncs);
@@ -1295,9 +1295,8 @@ namespace llvmo
 	core::T_sp save_elements = elements;
         if ( elements.nilp() ) {
             return;
-        } else if ( core::Cons_sp celements = elements.asOrNull<core::Cons_O>() ) {
-	    for ( core::Cons_sp cur = celements; cur.notnilp(); cur = cCdr(cur) )
-	    {
+        } else if ( core::List_sp celements = elements.asOrNull<core::Cons_O>() ) {
+	    for ( auto cur : celements ) {
 		velements.push_back(oCar(cur).as<Type_O>()->wrappedPtr());
 	    }
             return;
@@ -2126,14 +2125,11 @@ namespace llvmo
     {_G();
 	Constant_sp ca = ConstantDataArray_O::create();
 	vector<uint32_t> vector_IdxList;
-	core::Vector_sp vvalues;
-	if ( cl_consp(ovalues) )
-	{
-	    for ( core::Cons_sp cur=ovalues.as<core::Cons_O>(); cur.notnilp(); cur=cCdr(cur) )
-	    {
+	if ( core::List_sp lvalues = ovalues.asOrNull<core::Cons_O>() ) {
+	    for ( auto cur : lvalues ) {
 		vector_IdxList.push_back(oCar(cur).as<core::Fixnum_O>()->get());
 	    }
-	} else if ( (vvalues = ovalues.asOrNull<core::Vector_O>()) )
+	} else if ( core::Vector_sp vvalues = ovalues.asOrNull<core::Vector_O>()) 
 	{
 	    for ( int i=0; i<vvalues->length(); i++ )
 	    {
@@ -2184,12 +2180,11 @@ namespace llvmo
 #define ARGS_ConstantArray_O_get "(type values)"
 #define DECL_ConstantArray_O_get ""
 #define DOCS_ConstantArray_O_get "Docs for ConstantArray get"
-    Constant_sp ConstantArray_O::get(ArrayType_sp type, core::Cons_sp values)
+    Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp values)
     {_G();
 	Constant_sp ca = ConstantArray_O::create();
 	vector<llvm::Constant*> vector_IdxList;
-	for ( core::Cons_sp cur=values; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : values ) {
 	    vector_IdxList.push_back(oCar(cur).as<Constant_O>()->wrappedPtr());
 	}
 	llvm::ArrayRef<llvm::Constant*> array_ref_vector_IdxList(vector_IdxList);
@@ -2272,12 +2267,11 @@ namespace llvmo
 {
 
 
-    Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(Constant_sp constant, core::Cons_sp idxList )
+    Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(Constant_sp constant, core::List_sp idxList )
     {_G();
         GC_ALLOCATE(Constant_O,res );
 	vector<llvm::Constant*> vector_IdxList;
-	for ( core::Cons_sp cur=idxList; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : idxList ) {
 	    vector_IdxList.push_back(oCar(cur).as<Constant_O>()->wrappedPtr());
 	}
 	llvm::ArrayRef<llvm::Constant*> array_ref_vector_IdxList(vector_IdxList);
@@ -3357,11 +3351,10 @@ namespace llvmo
 
 
 
-    llvm::InvokeInst* IRBuilder_O::CreateInvoke(llvm::Value* Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::Cons_sp Args, const llvm::Twine &Name)
+    llvm::InvokeInst* IRBuilder_O::CreateInvoke(llvm::Value* Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name)
     {
 	vector<llvm::Value*> vector_Args;
-	for ( core::Cons_sp cur=Args; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : Args ) {
 	    Value_sp val = oCar(cur).as<Value_O>();
 	    if ( val.nilp() )
 	    {
@@ -3377,11 +3370,10 @@ namespace llvmo
 
 
 
-    llvm::Value* IRBuilder_O::CreateInBoundsGEP(llvm::Value* Ptr, core::Cons_sp IdxList, const llvm::Twine &Name)
+    llvm::Value* IRBuilder_O::CreateInBoundsGEP(llvm::Value* Ptr, core::List_sp IdxList, const llvm::Twine &Name)
     {
 	vector<llvm::Value*> vector_IdxList;
-	for ( core::Cons_sp cur=IdxList; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : IdxList ) {
 	    vector_IdxList.push_back(oCar(cur).as<Value_O>()->wrappedPtr());
 	}
 	llvm::ArrayRef<llvm::Value*> array_ref_vector_IdxList(vector_IdxList);
@@ -3390,22 +3382,20 @@ namespace llvmo
 
 
 
-    llvm::Value* IRBuilder_O::CreateExtractValue(llvm::Value* Ptr, core::Cons_sp IdxList, const llvm::Twine& Name)
+    llvm::Value* IRBuilder_O::CreateExtractValue(llvm::Value* Ptr, core::List_sp IdxList, const llvm::Twine& Name)
     {
 	vector<unsigned int> vector_IdxList;
-	for ( core::Cons_sp cur=IdxList; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : IdxList ) {
 	    vector_IdxList.push_back(oCar(cur).as<core::Fixnum_O>()->get());
 	}
 	llvm::ArrayRef<unsigned int> array_ref_vector_IdxList(vector_IdxList);
 	return this->wrappedPtr()->CreateExtractValue(Ptr,array_ref_vector_IdxList,Name);
     }
 
-    llvm::Value* IRBuilder_O::CreateInsertValue(llvm::Value* Agg, llvm::Value* Val, core::Cons_sp IdxList, const llvm::Twine& Name)
+    llvm::Value* IRBuilder_O::CreateInsertValue(llvm::Value* Agg, llvm::Value* Val, core::List_sp IdxList, const llvm::Twine& Name)
     {
 	vector<unsigned int> vector_IdxList;
-	for ( core::Cons_sp cur=IdxList; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : IdxList ) {
 	    vector_IdxList.push_back(oCar(cur).as<core::Fixnum_O>()->get());
 	}
 	llvm::ArrayRef<unsigned int> array_ref_vector_IdxList(vector_IdxList);
@@ -3688,11 +3678,10 @@ namespace llvmo
 namespace llvmo
 {
 
-    MDNode_sp MDNode_O::get(LLVMContext_sp context, core::Cons_sp values)
+    MDNode_sp MDNode_O::get(LLVMContext_sp context, core::List_sp values)
     {_G();
 	vector<llvm::Metadata*> valvec;
-	for ( core::Cons_sp cur=values;cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : values ) {
 	    llvm::Metadata* val = oCar(cur).as<Metadata_O>()->wrappedPtr();
 	    valvec.push_back(val);
 	}

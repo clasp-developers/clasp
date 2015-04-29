@@ -1604,7 +1604,7 @@ namespace core
 	}
 
 
-	T_mv t1Progn(T_sp args, T_sp environment);
+	T_mv t1Progn(List_sp args, T_sp environment);
 
 
 	T_mv doMacrolet(List_sp args, T_sp env, bool toplevel)

@@ -87,9 +87,9 @@ namespace translate {
         DeclareType _v;
         from_object(core::T_sp o) {
 	    if ( o.notnilp() ) {
-		if ( core::Cons_sp args = o.asOrNull<core::Cons_O>() ) {
+		if ( core::List_sp args = o.asOrNull<core::Cons_O>() ) {
 		    _v.clear();
-		    for ( core::Cons_sp cur = args; cur.notnilp(); cur=cCdr(cur) ) {
+		    for ( auto cur : args ) {
 			core::Str_sp s = oCar(cur).as<core::Str_O>();
 			_v.push_back(s->get());
 		    }
@@ -458,11 +458,11 @@ namespace asttooling {
 #define ARGS_af_deduplicate "(replacements)"
 #define DECL_af_deduplicate ""
 #define DOCS_af_deduplicate "deduplicate wraps and lispifys clang::tooling::deduplicate - it takes a Cons of replacements and returns (values replacements overlapping-ranges)"
-    core::T_mv af_deduplicate(core::T_sp replacements)
+    core::T_mv af_deduplicate(core::List_sp replacements)
     {_G();
-        core::Cons_sp creps = replacements.as<core::Cons_O>();
+        core::List_sp creps = replacements;
         vector<clang::tooling::Replacement> vreps;
-        for ( ; creps.notnilp(); creps = cCdr(creps) ) {
+        for ( ; creps.notnilp(); creps = oCdr(creps) ) {
             core::T_sp one = oCar(creps);
             clang::tooling::Replacement oneRep = *(one.as<core::WrappedPointer_O>()->cast<clang::tooling::Replacement>());
             vreps.push_back(oneRep);
@@ -490,7 +490,7 @@ namespace asttooling {
             curRang->setCdr(oneRangCons);
             curRang = oneRangCons;
         }
-        return Values(cCdr(firstRep),cCdr(firstRang));
+        return Values(oCdr(firstRep),oCdr(firstRang));
     }
 
 

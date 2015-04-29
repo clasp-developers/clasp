@@ -132,7 +132,7 @@ namespace translate {
                 }
                 return;
             } else if ( core::List_sp lo = o.asOrNull<core::Cons_O>() ) {
-                _v.resize(lo->length());
+                _v.resize(lo.asCons()->length());
                 int i=0;
                 for ( auto cur : lo ) {
                     _v[i] = oCar(cur).as<core::Str_O>()->get();
