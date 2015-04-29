@@ -892,13 +892,13 @@ namespace core {
     }
 
     inline Number_sp brcl_log1(Number_sp x) {
-	ASSERTF(x.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!x.fixnump(),BF("Add support for immediate fixnums"));
 	return x->log1();
     }
 
     inline Number_sp brcl_log1p(Number_sp x)
     {
-	ASSERTF(x.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!x.fixnump(),BF("Add support for immediate fixnums"));
 	return x->log1p();
     };
 
@@ -908,25 +908,25 @@ namespace core {
 	if (n.fixnump()) {
 	    return n.asFixnum() == 0;
 	}
-	ASSERTF(n.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!n.fixnump(),BF("Add support for immediate fixnums"));
 	return n->zerop();
     }
 
     inline Number_sp brcl_negate(Number_sp n)
     {
-	ASSERTF(n.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!n.fixnump(),BF("Add support for immediate fixnums"));
 	return n->negate();
     }
 
     inline Number_sp brcl_one_plus(Number_sp x)
     {
-	ASSERTF(x.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!x.fixnump(),BF("Add support for immediate fixnums"));
 	return x->onePlus();
     }
 
     inline Number_sp brcl_one_minus(Number_sp x)
     {
-	ASSERTF(x.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!x.fixnump(),BF("Add support for immediate fixnums"));
 	return x->oneMinus();
     }
 
@@ -942,13 +942,13 @@ namespace core {
 
     inline bool brcl_evenp(Integer_sp n)
     {
-	ASSERTF(n.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!n.fixnump(),BF("Add support for immediate fixnums"));
 	return n->evenp();
     }
 
     inline bool brcl_oddp(Integer_sp n)
     {
-	ASSERTF(n.objectp(),BF("Add support for immediate fixnums"));
+	ASSERTF(!n.fixnump(),BF("Add support for immediate fixnums"));
 	return n->oddp();
     };
 

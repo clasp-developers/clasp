@@ -2402,7 +2402,7 @@ namespace core
 #define DOCS_af_sort "Like CLHS: sort but does not support key"
     T_sp af_sort(List_sp sequence, T_sp predicate )
     {_G();
-        gctools::Vec0<T_sp/*,gctools::RootedGCHolder*/> sorted;
+        gctools::Vec0<T_sp> sorted;
 	Function_sp sortProc = coerce::functionDesignator(predicate);
 	LOG(BF("Unsorted data: %s") % _rep_(sequence) );
 	if ( cl_length(sequence) == 0 ) return _Nil<Cons_O>();
@@ -2410,7 +2410,7 @@ namespace core
 	LOG(BF("Sort function: %s") % _rep_(sortProc) );
 	OrderBySortFunction orderer(sortProc);
 	sort::quickSort(sorted.begin(),sorted.end(),orderer);
-	Cons_sp result = asCons(sorted);
+        List_sp result = asCons(sorted);
 	return result;
     }
 

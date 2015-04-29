@@ -501,7 +501,7 @@ namespace core
 	List_sp getAttributes() const { this->noAttributes(__FUNCTION__); UNREACHABLE();};
 	virtual T_sp getAttribute(Symbol_sp name,T_sp defaultValue) const {this->noAttributes(__FUNCTION__);UNREACHABLE();};
 	T_sp object() const { return this->_Object;};
-	List_sp keys() const {return _Nil<Cons_O>();};
+	List_sp keys() const {return _Nil<T_O>();};
 
 	string __repr__() const;
 	void setKind(Symbol_sp kind) { SIMPLE_ERROR(BF("leaf-snode does not have kind"));};
@@ -526,7 +526,7 @@ namespace core
 	/*! Vector of SNode_sp(s) */
 	Vector_sp			_VectorSNodes;
     public: // Simple default ctor/dtor
-	BranchSNode_O() : _Kind(_Nil<Symbol_O>()), _SNodePList(_Nil<Cons_O>()), _VectorSNodes(_Nil<Vector_O>()) {};
+	BranchSNode_O() : _Kind(_Nil<Symbol_O>()), _SNodePList(_Nil<T_O>()), _VectorSNodes(_Nil<Vector_O>()) {};
 	virtual ~BranchSNode_O() {};
     public:
 	static BranchSNode_sp create(Symbol_sp kind, List_sp plist, Vector_sp data );

@@ -106,21 +106,6 @@ namespace core
 	    return (*this)[name];
 	};
 
-#if 0
-	List_sp asCons(Lisp_sp e)
-	{
-	    Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
-	    Cons_sp cur = first;
-	    iterator it;
-	    for ( it=this->begin(); it!=this->end(); it++ )
-	    {
-		Cons_sp one = Cons_O::create(it->second,_Nil<Cons_O>(),e);
-		cur->rplacd(one);
-		cur = one;
-	    }
-	    return cCdr(first);
-	}
-#endif
     };
 
 

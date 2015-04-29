@@ -330,7 +330,7 @@ namespace core
                    , _Format(_Nil<Symbol_O>())
                    , _ByteSize(8)
                    , _Flags(0)
-                   , _ByteStack(_Nil<Cons_O>())
+                   , _ByteStack(_Nil<T_O>())
                    , _Encoder(NULL)
                    , _Decoder(NULL)
                    , _LastCode{EOF,EOF}
