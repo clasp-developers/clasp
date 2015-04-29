@@ -215,7 +215,7 @@ extern "C" {
     }
 
 
-    core::Closure* va_coerceToClosure( core::T_sp* argP )
+    Closure* va_coerceToClosure( core::T_sp* argP )
     {_G();
 	if ( !(*argP).objectp() ) {
 	    SIMPLE_ERROR(BF(" symbol %s") % _rep_((*argP)));
@@ -224,7 +224,7 @@ extern "C" {
 	if ( func.nilp() ) {
 	    SIMPLE_ERROR(BF("Could not coerce %s to function") % _rep_((*argP)));
 	}
-        return func->closure;
+        return &(*func->closure);
     }
 
     core::Closure* va_symbolFunction( core::Symbol_sp* symP )
@@ -238,7 +238,7 @@ extern "C" {
 	if ( !func.objectp() ) {
 	    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
 	}
-        return func->closure;
+        return &(*func->closure);
     }
 
 
@@ -249,7 +249,7 @@ extern "C" {
         core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP,depth,index);
 	ASSERTF(func.objectp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
 		% depth % index % _rep_(*evaluateFrameP) );
-        return func->closure;
+        return &(*func->closure);
     }
 
     void mv_FUNCALL( core::T_mv* resultP, core::Closure* closure, LCC_ARGS )
@@ -1748,7 +1748,7 @@ extern "C"
     void rplacd(core::T_sp* resultP, core::T_sp* carP)
     {
 	ASSERT(resultP!=NULL);
-	(*resultP).as<core::Cons_O>()->setOCdr(*carP);
+	(*resultP).as<core::Cons_O>()->setCdr(*carP);
     }
 
 
@@ -1888,9 +1888,9 @@ extern "C"
     {_G();
 	core::DynamicScopeManager* managerP = new core::DynamicScopeManager();
 	(*saveSpecialsP) = (void*)managerP;
-	core::Cons_sp symbols = (*symbolsP).as<Cons_O>();
-	core::Cons_sp values = (*valuesP).as<Cons_O>();
-	for ( ; symbols.notnilp(); symbols=cCdr(symbols), values=cCdr(values) )
+	core::List_sp symbols = (*symbolsP);
+	core::List_sp values = (*valuesP);
+	for ( ; symbols.notnilp(); symbols=oCdr(symbols), values=oCdr(values) )
 	{
 	    core::Symbol_sp symbol = oCar(symbols).as<Symbol_O>();
 	    core::T_sp value = oCar(values);
@@ -2078,7 +2078,7 @@ extern "C" {
     {
 	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
 	ASSERT(func!=NULL);
-	core::Closure* closure = func->closure;
+	auto closure = func->closure.as<core::Closure>();
 	closure->invoke(result,LCC_PASS_ARGS);
     }
 
@@ -2086,7 +2086,7 @@ extern "C" {
     {
 	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
 	ASSERT(func!=NULL);
-	core::Closure* closure = func->closure;
+	auto closure = func->closure;
 	closure->invoke(result,LCC_PASS_ARGS);
     }
 
@@ -2142,7 +2142,7 @@ extern "C" {
 	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
 	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
 	ASSERT(func!=NULL);
-	core::Closure* closure = func->closure;
+	auto closure = func->closure;
 	closure->invoke(result,result->number_of_values(),result->raw_(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
     }
 
@@ -2155,7 +2155,7 @@ extern "C" {
 	core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
 	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
 	ASSERT(func!=NULL);
-	core::Closure* closure = func->closure;
+	auto closure = func->closure;
 	closure->invoke(result,result->number_of_values(),result->raw_(),mvThreadLocal[1],mvThreadLocal[2],mvThreadLocal[3],mvThreadLocal[4]);
     }
 

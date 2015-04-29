@@ -777,8 +777,8 @@ namespace llvmo
 	    this->_ptr = ptr;
 	};
 
-	DIArray_sp getOrCreateArray(core::Cons_sp elements);
-	DITypeArray_sp getOrCreateTypeArray(core::Cons_sp elements);
+	DIArray_sp getOrCreateArray(core::List_sp elements);
+	DITypeArray_sp getOrCreateTypeArray(core::List_sp elements);
 
 	DIBuilder_O() : Base(), _ptr(NULL)  {};
 	virtual ~DIBuilder_O() {if (_ptr != NULL ) { delete _ptr; _ptr = NULL;};}
@@ -800,48 +800,6 @@ namespace translate
 };
 ;
 /* to_object translators */
-
-#if 0
-namespace translate
-{
-    template <>
-    struct from_object<llvm::ArrayRef<llvm::Value*,std::true_type> >
-    {
-        typedef llvm::ArrayRef<llvm::Value*> DeclareType;
-        static DeclareType convert(core::T_sp object)
-	{_G();
-	    if ( core::Cons_sp cur = object.asOrNull<core::Cons_O>() )
-	    {
-//		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
-//		printf("     cons --> %s\n", cur->__repr__().c_str() );
-		vector<llvm::Value*> vector_values;
-		for ( ; cur->notNil(); cur=cur->cdr() )
-		{
-		    if ( llvmo::Value_sp val = cur->ocar().asOrNull<llvmo::Value_O>() )
-		    {
-//			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
-			vector_values.push_back(val->wrappedPtr());
-		    } else if ( llvmo::DebugInfo_sp di = cur->ocar().asOrNull<llvmo::DebugInfo_O>() )
-		    {
-//			printf("      getting DIDescriptor*\n");
-			llvm::DIDescriptor* didescriptor = di->operator llvm::DIDescriptor*();
-//			printf("      convert DIDescrptor* to MDNode* --> %p\n", didescriptor );
-			llvm::MDNode* mdnode_didescriptor = *didescriptor;
-//			printf("      push_back mdnode_didescriptor --> %p\n", mdnode_didescriptor );
-			vector_values.push_back(mdnode_didescriptor);
-		    } else
-		    {
-			SIMPLE_ERROR(BF("Handle conversion of %s to llvm::Value*") % cur->ocar()->__repr__() );
-		    }
-		}
-		llvm::ArrayRef<llvm::Value*> array(vector_values);
-		return array;
-	    }
-	    SIMPLE_ERROR(BF("Cannot convert object %s to llvm::ArrayRef<llvm::Value*>") % object->__repr__() );
-	}
-    };
-};
-#endif
 
 ;
 

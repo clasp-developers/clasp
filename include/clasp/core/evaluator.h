@@ -47,9 +47,9 @@ namespace core
 
 
     T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env);
-    Function_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);
-    Function_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env);
-    Function_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env);
+    T_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);
+    T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env);
+    T_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env);
 
 
 
@@ -74,7 +74,7 @@ namespace core
 
 
 
-	Function_sp lookupFunction(T_sp functionDesignator, T_sp env);
+	T_sp lookupFunction(T_sp functionDesignator, T_sp env);
 
 
 	/*! Evaluate a list of expressions (args) into an ActivationFrame that has
@@ -86,7 +86,7 @@ namespace core
   (functionDesignator) can be a Symbol or an Function
 */
 
-	extern T_mv applyClosureToActivationFrame(Closure* closureP, ActivationFrame_sp af);
+	extern T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> closureP, ActivationFrame_sp af);
 
 	extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp af);
 
@@ -98,10 +98,7 @@ namespace core
 	template <class...Args>
 	inline T_mv applyLastArgsPLUSFirst( T_sp fn, List_sp argsPLUS, Args...args)
 	{
-	    Function_sp func = lookupFunction(fn,_Nil<T_O>());
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(fn);
-            }
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
 	    int numArgsPassed = sizeof...(Args);
 	    int numArgsPlus = cl_length(argsPLUS);
 	    int nargs = numArgsPassed + numArgsPlus;
@@ -109,9 +106,9 @@ namespace core
 	    List_sp cur = argsPLUS;
 	    for ( int i=numArgsPassed; i<nargs; ++i ) {
 		frob->operator[](i) = oCar(cur);
-		cur=cCdr(cur);
+		cur=oCdr(cur);
 	    }
-            Closure* closureP = func->closure;
+	    gctools::tagged_functor<Closure> closureP = func->closure;
             ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToActivationFrame(closureP,frob);
 	}
@@ -143,11 +140,8 @@ namespace core
 
 
 	inline T_mv funcall(T_sp fn) {
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(fn);
-            }
-            Functoid* ft = func->closure;
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 0
 		  , LCC_UNUSED_rest0() );
@@ -156,11 +150,8 @@ namespace core
 
 	template <class ARG0>
 	inline T_mv funcall(T_sp fn, ARG0 arg0) {
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(fn);
-            }
-            Functoid* ft = func->closure;
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 1
 		  , LCC_FROM_SMART_PTR(arg0)
@@ -170,15 +161,18 @@ namespace core
 
 	template <class ARG0, class ARG1>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( func.raw_() == NULL ) {
-                // While booting, cl::_sym_findClass will apply'd before it is bound to a symbol
+	    T_sp tfunc = lookupFunction(fn,_Nil<T_O>());
+            if ( tfunc.raw_() == NULL || tfunc.nilp() ) {
+                // While booting, cl::_sym_findClass will apply'd before
+		// it is bound to a symbol
                 if ( fn == cl::_sym_findClass ) {
-                    return(cl_findClass(arg0.template as<Symbol_O>(),true,_Nil<Environment_O>()));
+                    return(cl_findClass(arg0.template as<Symbol_O>(),true,_Nil<T_O>()));
                 }
                 ERROR_UNDEFINED_FUNCTION(fn);
             }
-            Functoid* ft = func->closure;
+	    Function_sp func = tfunc.asOrNull<Function_O>();
+	    ASSERT(func);
+	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result,2
 		  , LCC_FROM_SMART_PTR(arg0)
@@ -189,11 +183,8 @@ namespace core
 
 	template <class ARG0, class ARG1, class ARG2>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( func.nilp() || func.unboundp() ) {
-                ERROR_UNDEFINED_FUNCTION(fn);
-            }
-            Functoid* ft = func->closure;
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 3
 		  , LCC_FROM_SMART_PTR(arg0)
@@ -205,11 +196,8 @@ namespace core
 
 	template <class ARG0, class ARG1, class ARG2, class ARG3>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(fn);
-            }
-            Functoid* ft = func->closure;
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 4
 		  , LCC_FROM_SMART_PTR(arg0)
@@ -220,20 +208,17 @@ namespace core
             return result;
         }
 
-	template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4>
-	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(fn);
-            }
-            Functoid* ft = func->closure;
+        template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4>
+        inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+            gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             (*ft)(&result, 5
-		  , LCC_FROM_SMART_PTR(arg0)
-		  , LCC_FROM_SMART_PTR(arg1)
-		  , LCC_FROM_SMART_PTR(arg2)
-		  , LCC_FROM_SMART_PTR(arg3)
-		  , LCC_FROM_SMART_PTR(arg4) );
+                  , LCC_FROM_SMART_PTR(arg0)
+                  , LCC_FROM_SMART_PTR(arg1)
+                  , LCC_FROM_SMART_PTR(arg2)
+                  , LCC_FROM_SMART_PTR(arg3)
+                  , LCC_FROM_SMART_PTR(arg4) );
             return result;
         }
 
@@ -241,11 +226,8 @@ namespace core
 // Do I need a variadic funcall???
 	template <class ARG0, class ARG1, class ARG2, class ARG3, class ARG4, class...ARGS>
 	inline T_mv funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARGS&&...args) {
-	    Function_sp func = lookupFunction(fn,_Nil<Environment_O>());
-            if ( func.nilp() ) {
-                ERROR_UNDEFINED_FUNCTION(fn);
-            }
-            Functoid* ft = func->closure;
+	    Function_sp func = lookupFunction(fn,_Nil<T_O>()).as_or_error<Function_O>( [&fn] () { ERROR_UNDEFINED_FUNCTION(fn); });
+	    gctools::tagged_functor<Closure> ft = func->closure;
             T_mv result;
             size_t vnargs = sizeof...(ARGS);
 	    size_t nargs = vnargs + LCC_FIXED_NUM;

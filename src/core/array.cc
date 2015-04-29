@@ -116,7 +116,7 @@ namespace core
 #define ARGS_af_aset "(array &rest indices-value)"
 #define DECL_af_aset ""
 #define DOCS_af_aset "aset"
-    T_sp af_aset(Array_sp array, Cons_sp indices_value)
+    T_sp af_aset(Array_sp array, List_sp indices_value)
     {_G();
 	int r = cl_length(indices_value)-1;
 	int j;
@@ -127,7 +127,7 @@ namespace core
 		SIMPLE_ERROR(BF("Wrong number of indices"));
 	    }
 	    T_sp ind0 = oCar(indices_value);
-	    indices_value = cCdr(indices_value);
+	    indices_value = oCdr(indices_value);
 	    j = Array_O::checkedIndex(__FILE__,__LINE__,__FUNCTION__,array,0,ind0,cl_length(vec));
 	    return vec->asetUnsafe(j,oCar(indices_value));
 	} else
@@ -140,7 +140,7 @@ namespace core
 	    for ( i = j = 0; i < r; i++ )
 	    {
 		T_sp index = oCar(indices_value);
-		indices_value = cCdr(indices_value);
+		indices_value = oCdr(indices_value);
 		int s = Array_O::checkedIndex(__FILE__,__LINE__,__FUNCTION__,array,i,index,array->arrayDimension(i));
 		j = j*(array->arrayDimension(i))+s;
 	    }
@@ -228,11 +228,9 @@ namespace core
 #endif
 	int offset = 0;
 	int idx = -1;
-	List_sp cur;
-	for ( cur = indices; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : indices ) {
 	    int curDimension = this->arrayDimension(idx);
-	    if ( cCdr(cur).nilp() && last_value_is_val ) break;
+	    if ( oCdr(cur).nilp() && last_value_is_val ) break;
 	    if ( idx >= 0 ) offset *= curDimension;
 	    idx++;
 	    int oneIndex = oCar(cur).as<Rational_O>()->as_int();
@@ -241,8 +239,8 @@ namespace core
 		SIMPLE_ERROR(BF("Bad index"));
 	    }
 	    offset += oneIndex;
+	    val_cons = cur;
 	}
-	val_cons = cur;
 	return((offset));
     }
 

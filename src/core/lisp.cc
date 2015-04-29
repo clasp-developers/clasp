@@ -361,16 +361,17 @@ namespace core
 
 
     void Lisp_O::setupSpecialSymbols() {
-    	Symbol_sp symbol_nil = Symbol_O::create("NIL");
-	Symbol_sp symbol_unbound = Symbol_O::create("UNBOUND");
-	Symbol_sp symbol_deleted = Symbol_O::create("DELETED");
-	Symbol_sp symbol_sameAsKey = Symbol_O::create("SAME-AS-KEY");
+    	Symbol_sp symbol_nil = Symbol_O::create_at_boot("NIL");
+	Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
+	Symbol_sp symbol_deleted = Symbol_O::create_at_boot("DELETED");
+	Symbol_sp symbol_sameAsKey = Symbol_O::create_at_boot("SAME-AS-KEY");
 	//TODO: Ensure that these globals are updated by the garbage collector
 	gctools::global_Symbol_OP_nil       = reinterpret_cast<Symbol_O*>(symbol_nil.raw_());
 	gctools::global_Symbol_OP_unbound   = reinterpret_cast<Symbol_O*>(symbol_unbound.raw_());
 	gctools::global_Symbol_OP_deleted   = reinterpret_cast<Symbol_O*>(symbol_deleted.raw_());
 	gctools::global_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O*>(symbol_sameAsKey.raw_());
-	printf("%s:%d Remember to finalizeSpecialSymbols\n", __FILE__, __LINE__ );
+	printf("%s:%d Remember to finalizeSpecialSymbols - set their pointer values\n", __FILE__, __LINE__ );
+	
     }
 
     void Lisp_O::finalizeSpecialSymbols() {
@@ -1301,7 +1302,7 @@ namespace core
 		return Path_O::create(onePath.string());
 	    }
 	    Symbol_sp pathSym = _sym_STARPATHSTAR;
-	    Cons_sp pathList = pathSym->symbolValue().as_or_nil<Cons_O>();
+	    List_sp pathList = pathSym->symbolValue();
 	    LOG(BF("PATH variable = %s") % _rep_(pathList).c_str()  );
 	    while ( pathList.notnilp() )
 	    {
@@ -1312,7 +1313,7 @@ namespace core
 		{
 		    return Path_O::create(onePath.string());
 		}
-		pathList = cCdr(pathList);
+		pathList = oCdr(pathList);
 	    }
 	    SIMPLE_ERROR(BF("include "+fileName+" error, file does not exist"));
 	} else
@@ -1757,10 +1758,10 @@ namespace core
 #define	DOCS_af_memberTest	"See CLHS memberTest"
 #define	FILE_af_memberTest	__FILE__
 #define	LINE_af_memberTest	__LINE__
-    Cons_sp af_memberTest(T_sp item, Cons_sp list, T_sp key, T_sp test, T_sp test_not)
+    List_sp af_memberTest(T_sp item, List_sp list, T_sp key, T_sp test, T_sp test_not)
     {_G();
 	if ( list.nilp() ) return list;
-	return(list->member(item,key,test,test_not));
+	return(list.asCons()->member(item,key,test,test_not));
     }
 
 
@@ -1769,10 +1770,10 @@ namespace core
 #define	DOCS_af_member1	"Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1"
 #define	FILE_af_member1	__FILE__
 #define	LINE_af_member1	__LINE__
-    Cons_sp af_member1(T_sp item, Cons_sp list, T_sp test, T_sp test_not, T_sp key)
+    List_sp af_member1(T_sp item, List_sp list, T_sp test, T_sp test_not, T_sp key)
     {_G();
 	if ( list.nilp() ) return list;
-	return list->member1(item,key,test,test_not);
+	return list.asCons()->member1(item,key,test,test_not);
     }
 
 
@@ -2242,8 +2243,7 @@ namespace core
 	string substring = lispify_symbol_name(raw_substring);
 	FindApropos apropos(substring);
 	LOG(BF("Searching for symbols apropos to(%s)") % substring);
-	for ( List_sp cur = packages; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : packages ) {
 	    Package_sp pkg = oCar(cur).as<Package_O>();
 	    pkg->mapExternals(&apropos);
 	    pkg->mapInternals(&apropos);
@@ -2259,7 +2259,7 @@ namespace core
                         ss << " ";
                         ss << af_classOf(af_symbolFunction((sym)))->classNameAsString();
 			Function_sp fn = af_symbolFunction(sym);
-                        if ( fn.notnilp() && fn->closure && af_symbolFunction(sym)->closure->macroP() )
+                        if ( !fn.unboundp() && fn->closure && af_symbolFunction(sym).as<Function_O>()->closure->macroP() )
                         {
                             ss << "(MACRO)";
                         }
@@ -2375,18 +2375,6 @@ namespace core
     }
 
 
-#if 0 // refactored
-    Cons_mv af_sorted(Cons_sp unsorted)
-    {_G();
-	VectorObjects_sp sorted(VectorObjects_O::create());
-	if ( cl_length(unsorted) == 0 ) return(Values(_Nil<Cons_O>()));
-	sorted->fillFromCons(unsorted);
-	OrderByLessThan orderer;
-	sort::quickSort(sorted->begin(),sorted->end(),orderer,_lisp);
-	Cons_sp result = sorted->asCons();
-	return(Values(result));
-    }
-#endif
 
     class	OrderBySortFunction
     {
@@ -3075,17 +3063,14 @@ extern "C"
 #define DOCS_Lisp_O_find_single_dispatch_generic_function "Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception"
     SingleDispatchGenericFunction_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp)
     {_G();
-        SingleDispatchGenericFunction_sp fn = _lisp->_Roots._SingleDispatchGenericFunctionTable->gethash(gfSym,_Nil<T_O>()).as<SingleDispatchGenericFunction_O>();
-
-	if ( fn.nilp() )
-	{
-	    if ( errorp )
-	    {
-		SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfSym) );
-	    }
-	    return _Nil<SingleDispatchGenericFunction_O>();
-	}
-	return fn;
+        T_sp fn = _lisp->_Roots._SingleDispatchGenericFunctionTable->gethash(gfSym,_Nil<T_O>());
+        if ( fn.nilp() ) {
+            if ( errorp ) {
+                SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfSym) );
+            }
+            return _Nil<SingleDispatchGenericFunction_O>();
+        }
+        return fn.as<SingleDispatchGenericFunction_O>();
     }
 
 
@@ -3619,6 +3604,7 @@ extern "C"
 
     void Lisp_O::exposeCando()
     {_G();
+	printf("%s:%d in core::Lisp_O::exposeCando\n", __FILE__, __LINE__ );
 	SYMBOL_SC_(CorePkg,find_single_dispatch_generic_function);
 	af_def(CorePkg,"find-single-dispatch-generic-function",
 	       &Lisp_O::find_single_dispatch_generic_function,

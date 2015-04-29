@@ -107,7 +107,7 @@ namespace llvmo
 #define LINE_comp_setAssociatedFuncs __LINE__
     void comp_setAssociatedFuncs(core::CompiledFunction_sp cf, core::Cons_sp associatedFuncs)
     {
-        CompiledClosure* closure = dynamic_cast<CompiledClosure*>(cf->closure);
+        auto closure = cf->closure.as<CompiledClosure>();
 	closure->setAssociatedFunctions(associatedFuncs);
     };
 
@@ -4456,7 +4456,7 @@ namespace llvmo
     void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func)
     {
 	llvm::ExecutionEngine* engine = oengine->wrappedPtr();
-	llvmo::CompiledClosure* closure = dynamic_cast<llvmo::CompiledClosure*>(func->closure);
+	auto closure = func->closure.as<llvmo::CompiledClosure>();
 	llvmo::Function_sp llvm_func = closure->llvmFunction;
 	void* p = engine->getPointerToFunction(llvm_func->wrappedPtr());
 	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);

@@ -242,7 +242,7 @@ In ecl/src/c/interpreter.d  is the following code
 	printf("MLOG fill_spec_vector - writing to argtype[%d] at %p wrote: %lX\n",
 	       0, argtype[0].px_address(), argtype[0].intptr());
 #endif
-	for ( ; spec_how_list.notnilp(); spec_how_list=cCdr(spec_how_list.as_or_nil<Cons_O>()) )
+	for ( ; spec_how_list.notnilp(); spec_how_list=oCdr(spec_how_list) )
 	{
 	    Cons_sp spec_how = oCar(spec_how_list).as_or_nil<Cons_O>();
 	    T_sp spec_type = oCar(spec_how);

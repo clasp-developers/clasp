@@ -270,12 +270,12 @@ namespace core
 	ASSERTF((istart+cl_length(values))==this->length(),BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart+cl_length(values)) );
 	int iend = this->length();
 	ASSERT(values.consp());
-	Cons_sp cur = values.asCons();;
+	List_sp cur = values;
 	for (int i=istart; i<iend; ++i)
 	{
 	    ASSERT(oCar(cur));
 	    this->set_entry(i,oCar(cur));
-	    cur=cCdr(cur);
+	    cur=oCdr(cur);
 	}
     }
 	    

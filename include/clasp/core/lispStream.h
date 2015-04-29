@@ -740,14 +740,14 @@ namespace core {
 
 
 
-    Str_sp cl_writeString(Str_sp str, T_sp stream, int start, Fixnum_sp end);
+    Str_sp cl_writeString(Str_sp str, T_sp stream, int start, T_sp end);
 
-    T_sp cl_writeSequence(T_sp seq, T_sp stream, Fixnum_sp start, Fixnum_sp end);
+    T_sp cl_writeSequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
 
 
     bool cl_streamp(T_sp strm);
 
-    Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart=0, Fixnum_sp end=_Nil<Fixnum_O>());
+    Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart=0, T_sp end=_Nil<T_O>());
 
 //    int af_streamLinenumber(T_sp strm);
 //    int af_streamColumn(T_sp strm);

@@ -81,10 +81,11 @@ namespace core
 
 /*! Return a list of Path objects representing the contents of the directory
   that match the fileNameRegex */
-    Cons_sp	directory(Path_sp rpath, const string& fileNameRegex)
+    List_sp directory(Path_sp rpath, const string& fileNameRegex)
     {_G();
 	bf::path p(rpath->getPath());
-	Cons_sp first, tail;
+	Cons_sp first;
+	List_sp tail;
 	Str_sp fileName;
 	boost::regex ex(fileNameRegex);
 	first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
@@ -98,15 +99,15 @@ namespace core
 	    if ( regex_match(testName,ex) )
 	    {
 		LOG(BF("It matches") );
-		tail->setCdr(Cons_O::create(Path_O::create(itr->path()),
-					    _Nil<Cons_O>()));
-		tail = cCdr(tail);
+		tail.asCons()->setCdr(Cons_O::create(Path_O::create(itr->path()),
+					    _Nil<T_O>()));
+		tail = oCdr(tail);
 	    } else
 	    {
 		LOG(BF("It doesnt match") );
 	    }
 	}
-	return cCdr(first);
+	return oCdr(first);
     }
 
 
@@ -223,13 +224,12 @@ namespace core
 #define ARGS_af_makePath "(&rest parts)"
 #define DECL_af_makePath ""
 #define DOCS_af_makePath "make Path args: path"
-    Path_mv af_makePath(Cons_sp args)
+    Path_mv af_makePath(List_sp args)
     {_G();
 	Path_sp me(Path_O::create());
-        while (args.notnilp())
-        {
+        while (args.notnilp()) {
             me->path_append(oCar(args).as<Str_O>()->get());
-            args = cCdr(args);
+            args = oCdr(args);
         }
         return(Values(me));
     }

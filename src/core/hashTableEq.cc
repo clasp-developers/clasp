@@ -76,7 +76,7 @@ namespace core
         while ( plist.notnilp() ) {
             Symbol_sp key = oCar(plist).as<Symbol_O>();
             T_sp val = oCadr(plist);
-            plist = cCddr(plist);
+            plist = oCddr(plist);
             bool hit = false;
             for ( int i(0); nilTerminatedValidKeywords[i].notnilp(); ++i ) {
                 if ( key == nilTerminatedValidKeywords[i] ) {

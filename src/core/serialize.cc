@@ -178,8 +178,7 @@ namespace core
     List_sp BranchSNode_O::keys() const
     {
 	Cons_sp keys = _Nil<Cons_O>();
-	for ( List_sp cur = this->_SNodePList;cur.notnilp();cur=cCddr(cur))
-	{
+	for ( List_sp cur = this->_SNodePList;cur.consp();cur=oCddr(cur)) {
 	    keys = Cons_O::create(oCar(cur),keys);
 	}
 	return keys;
@@ -310,8 +309,7 @@ namespace core
 
     T_sp BranchSNode_O::getUniqueId() const
     {
-	for (List_sp cur=this->_SNodePList; cur.notnilp(); cur=cCddr(cur) )
-	{
+	for (List_sp cur=this->_SNodePList; cur.consp(); cur=oCddr(cur) ) {
 	    Symbol_sp propertyName = oCar(cur).as<Symbol_O>();
 	    if ( propertyName == kw::_sym__uid ) {
 		T_sp property = oCadr(cur);
@@ -490,7 +488,7 @@ namespace core
 	BranchSNode_sp branchSNode = node.as<BranchSNode_O>();
 	if ( node == this->_TopNode ) {
 	    // Don't create an object for the top node - just for it's children
-	    for ( List_sp cur = branchSNode->_SNodePList; cur.notnilp(); cur=cCddr(cur) ) {
+	    for ( List_sp cur = branchSNode->_SNodePList; cur.consp(); cur=oCddr(cur) ) {
 		this->loadObjectDirectly(oCadr(cur).as<SNode_O>());
 	    }
 	    if ( branchSNode->_VectorSNodes.notnilp()) {

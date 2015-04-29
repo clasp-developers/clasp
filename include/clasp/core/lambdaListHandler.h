@@ -138,7 +138,7 @@ namespace core
 	/*! The context can be 'ORDINARY, 'MACRO and other values - see throw_if_invalid_context */
 	static LambdaListHandler_sp makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context);
 
-	static Cons_mv process_single_dispatch_lambda_list(List_sp lambda_list, bool allow_first_argument_default_dispatcher = false);
+	static T_mv process_single_dispatch_lambda_list(List_sp lambda_list, bool allow_first_argument_default_dispatcher = false);
 	static List_sp process_macro_lambda_list(List_sp lambda_list );
     public:
 	T_sp lambdaList(); // return a list representation of the LambdaListHandler
@@ -270,7 +270,7 @@ namespace core
 	  *      (lexical-var _symbol_ . _activationFrameIndex_) where _activationFrameIndex_ is the index where
 	  *                        to write the value in the dest-activation-frame
 	  */
-	Cons_mv processLambdaListHandler() const;
+	T_mv processLambdaListHandler() const;
 
 	string __repr__() const;
 	string partsAsString() const;

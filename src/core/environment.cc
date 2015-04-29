@@ -2220,8 +2220,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     {_G();
 	GlueEnvironment_sp env(GlueEnvironment_O::create());
 	ql::list args(_lisp);
-	for ( List_sp cur=parts; cur.notnilp(); cur=cCdr(cCdr(cur)))
-	{
+	for ( List_sp cur=parts; cur.notnilp(); cur=oCdr(oCdr(cur))) {
 	    Symbol_sp sym = oCar(cur).as<Symbol_O>();
 	    T_sp val = oCadr(cur);
 	    env->_Map->hash_table_setf_gethash(sym,val);

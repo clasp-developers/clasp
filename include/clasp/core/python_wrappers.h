@@ -99,7 +99,7 @@ namespace boost
 	    core::Symbol_sp funcSymbol = lisp->internWithPackageName(packageName,functionName);
 	    core::FunctionPtr* func = new core::FunctionPtr(f);
 	    core::List_sp ll = lisp_parse_arguments(lisp,packageName,args);
-	    core::LambdaListHandler_sp llh = lisp_function_lambda_list_handler(_lisp,ll,_Nil<Cons_O>(), _Nil<Environment_O>());
+	    core::LambdaListHandler_sp llh = lisp_function_lambda_list_handler(_lisp,ll,_Nil<Cons_O>(), _Nil<T_O>());
 #if 0
 	    core::FunctionPrimitive_sp fp = core::FunctionPrimitive_O::create(funcSymbol,func,
 									      llh,
@@ -113,7 +113,7 @@ namespace boost
 							    _lisp->cnil(),
 							    core::lisp_create_str(docs),
 							    cbfunc,
-							    _Nil<Environment_O>(),
+							    _Nil<T_O>(),
 							    kw::_sym_function,
 							    _lisp);
 #endif

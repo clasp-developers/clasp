@@ -55,15 +55,15 @@ namespace core
 #define DOCS_af_ensureSingleDispatchGenericFunction "ensureSingleDispatchGenericFunction"
 #define ARGS_af_ensureSingleDispatchGenericFunction "(gfname llhandler)"
 #define DECL_af_ensureSingleDispatchGenericFunction ""    
-    SingleDispatchGenericFunction_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler )
+    T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler )
     {_G();
-        SingleDispatchGenericFunction_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname,false);
+        T_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname,false);
 //        printf("%s:%d find_single_dispatch_generic_function(%s) --> %p\n", __FILE__, __LINE__, _rep_(gfname).c_str(), gfn.raw_() );
         if ( gfn.nilp() ) {
-            if ( gfname->symbolFunction().objectp() ) {
+	    T_sp symFunc = gfname->symbolFunction();
+            if ( !symFunc.unboundp() ) {
 //                printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().raw_());
-                if ( SingleDispatchGenericFunction_sp existingGf = gfname->symbolFunction().asOrNull<SingleDispatchGenericFunction_O>() ) {
-                    // a 
+                if ( SingleDispatchGenericFunction_sp existingGf = symFunc.asOrNull<SingleDispatchGenericFunction_O>() ) {
                     SIMPLE_ERROR(BF("The symbol %s has a SingleDispatchGenericFunction bound to its function slot but no SingleDispatchGenericFunction with that name was found") % _rep_(gfname));
                 } else {
                     SIMPLE_ERROR(BF("The symbol %s already has a function bound to it and it is not a SingleDispatchGenericFunction - it cannot become a SingleDispatchGenericFunction") % _rep_(gfname));
@@ -91,7 +91,7 @@ namespace core
         {
             SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
         }
-        SingleDispatchGenericFunctionClosure* gfc = dynamic_cast<SingleDispatchGenericFunctionClosure*>(gf->closure);
+	gctools::tagged_functor<SingleDispatchGenericFunctionClosure> gfc = gf->closure.as<SingleDispatchGenericFunctionClosure>();
         LambdaListHandler_sp gf_llh = gfc->_lambdaListHandler;
         if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments() )
         {

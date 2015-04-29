@@ -126,7 +126,7 @@ namespace ql
 	inline list& dot(core::T_sp arg)
 	{
 	    this->throwIfClosed();
-	    this->_Tail->setOCdr(arg);
+	    this->_Tail->setCdr(arg);
 	    return *this;
 	}
 	
@@ -214,7 +214,7 @@ namespace ql
 	inline source_code_list& dot(core::T_sp arg)
 	{
 	    this->throwIfClosed();
-	    this->_Tail->setOCdr(arg);
+	    this->_Tail->setCdr(arg);
 	    return *this;
 	}
 

@@ -150,10 +150,9 @@ void    core_DebugHashTable(bool don)
         VectorObjects_sp table = hash_table->_HashTable;
 	for ( size_t it=0, itEnd = cl_length(table); it<itEnd; ++it )
 	{
-	    Cons_sp first = (*table)[it].as<Cons_O>();
-	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
-	    {
-		Cons_sp entry = oCar(cur).as<Cons_O>();
+	    List_sp first = (*table)[it];
+	    for ( auto cur : first ) {
+		List_sp entry = oCar(cur);
                 T_sp key = oCar(entry);
                 T_sp value = oCdr(entry);
                 if ( !value.unboundp() ) {
@@ -196,11 +195,10 @@ void    core_DebugHashTable(bool don)
 #define ARGS_af_hash_eql "(&rest args)"
 #define DECL_af_hash_eql ""
 #define DOCS_af_hash_eql "hash_eql generates an eql hash for a list of objects"
-    int af_hash_eql(Cons_sp args)
+    int af_hash_eql(List_sp args)
     {_G();
 	HashGenerator hg;
-	for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : args ) {
 	    HashTable_O::sxhash_eql(hg,oCar(cur),NULL);
 	    if ( hg.isFull() ) break;
 	}
@@ -211,11 +209,10 @@ void    core_DebugHashTable(bool don)
 #define ARGS_af_hash_equal "(&rest args)"
 #define DECL_af_hash_equal ""
 #define DOCS_af_hash_equal "hash_equal generates an equal hash for a list of objects"
-    int af_hash_equal(Cons_sp args)
+    int af_hash_equal(List_sp args)
     {_G();
 	HashGenerator hg;
-	for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : args ) {
 	    HashTable_O::sxhash_equal(hg,oCar(cur),NULL);
 	    if ( hg.isFull() ) break;
 	}
@@ -226,11 +223,10 @@ void    core_DebugHashTable(bool don)
 #define ARGS_af_hash_equalp "(&rest args)"
 #define DECL_af_hash_equalp ""
 #define DOCS_af_hash_equalp "hash_equalp generates an equalp hash for a list of objects"
-    int af_hash_equalp(Cons_sp args)
+    int af_hash_equalp(List_sp args)
     {_G();
 	HashGenerator hg;
-	for ( Cons_sp cur=args; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : args ) {
 	    HashTable_O::sxhash_equalp(hg,oCar(cur),NULL);
 	    if ( hg.isFull() ) break;
 	}
@@ -494,14 +490,14 @@ void    core_DebugHashTable(bool don)
 	List_sp rib = coerce_to_list((*this->_HashTable)[index]);
 	for ( auto cur : rib ) {
 	    //	for ( Cons_sp cur = this->_HashTable->operator[](index).as_or_nil<Cons_O>(); cur.notnilp(); cur = cCdr(cur) ) {
-            Cons_sp pair = cCar(cur);
+            List_sp pair = oCar(cur);
 	    if ( this->keyTest(oCar(pair),key) )
 	    {
 //		LOG(BF("Found match: %s") % cur->__repr__());
 		return pair;
 	    }
 	}
-	return _Nil<Cons_O>();
+	return _Nil<T_O>();
     }
 
 
@@ -623,7 +619,7 @@ void    core_DebugHashTable(bool don)
     {_OF();
         List_sp keyValuePair = this->tableRef(key);
         if ( keyValuePair.nilp() || oCdr(keyValuePair).unboundp() ) return false;
-        keyValuePair.asCons()->setOCdr(_Unbound<T_O>());
+        keyValuePair.asCons()->setCdr(_Unbound<T_O>());
         return true;
     }
 
@@ -652,10 +648,10 @@ void    core_DebugHashTable(bool don)
             ++(this->_HashTableCount);
         } else if ( oCdr(keyValuePair).unboundp() )
         {
-            keyValuePair.asCons()->setOCdr(value);
+            keyValuePair.asCons()->setCdr(value);
             ++(this->_HashTableCount);
         } else {
-            keyValuePair.asCons()->setOCdr(value);
+            keyValuePair.asCons()->setCdr(value);
         }
         if ( this->_HashTableCount > this->_RehashThreshold*cl_length(this->_HashTable) )
         {
@@ -670,7 +666,7 @@ void    core_DebugHashTable(bool don)
 //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
 	ASSERTF(!this->_RehashSize->zerop(),BF("RehashSize is zero - it shouldn't be"));
 	ASSERTF(cl_length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
-        Cons_sp foundKeyValuePair(_Nil<Cons_O>());
+        List_sp foundKeyValuePair(_Nil<T_O>());
         uint startCount = this->hashTableCount();
 	LOG(BF("At start of expandHashTable current hash table size: %d") % startSize );
         uint newSize = 0;
@@ -698,7 +694,7 @@ void    core_DebugHashTable(bool don)
 		LOG(BF("About to re-index hash table row index[%d] keys: %s") % (it-oldTable.begin()) % sk.str());
 #endif
 		for ( auto cur : coerce_to_list((*oldTable)[it]) ) {
-                    Cons_sp pair = cCar(cur);
+                    List_sp pair = oCar(cur);
 		    T_sp key = oCar(pair);
                     T_sp value = oCdr(pair);
                     if ( !value.unboundp() ) {
@@ -786,18 +782,17 @@ void    core_DebugHashTable(bool don)
 #endif
 	for ( size_t it(0),itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
-	    Cons_sp first = this->_HashTable->operator[](it).as_or_nil<Cons_O>();
+	    List_sp first = this->_HashTable->operator[](it);
 	    ss << "HashTable["<<it<<"]: " << std::endl;
-	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
-	    {
-                Cons_sp pair = oCar(cur).as<Cons_O>();
+	    for ( auto cur : first ) {
+                List_sp pair = oCar(cur);
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);
 #ifdef DUMP_LOW_LEVEL
                 ss << "     ( idx=" << this->hashIndex(key) << " ";
 		if ( cl_consp(key) ) {
-		    Cons_sp ckey = key.as<Cons_O>();
-		    ss << "(cons " << ckey->ocar().raw_() << " . " << oCdr(ckey).raw_()  << ")";
+		    List_sp ckey = key;
+		    ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_()  << ")";
 		} else {
 		    ss << key.raw_();
 		}
@@ -822,7 +817,7 @@ void    core_DebugHashTable(bool don)
 	{
 	    List_sp first = coerce_to_list((*table)[it]);
 	    for ( auto cur : first ) {
-                Cons_sp pair = cCar(cur);
+                List_sp pair = oCar(cur);
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);
                 if ( !value.unboundp()) fn(key,value);
@@ -836,10 +831,9 @@ void    core_DebugHashTable(bool don)
         VectorObjects_sp table = this->_HashTable;
 	for ( size_t it(0),itEnd(cl_length(table)); it<itEnd; ++it )
 	{
-	    Cons_sp first = (*table)[it].as<Cons_O>();
-	    for ( Cons_sp cur=first; cur.notnilp(); cur = cCdr(cur) )
-	    {
-                Cons_sp pair = cCar(cur);
+	    List_sp first = (*table)[it];
+	    for ( auto cur : first ) {
+                List_sp pair = oCar(cur);
                 T_sp key = oCar(pair);
                 T_sp value = oCdr(pair);
                 if ( !value.unboundp()) {

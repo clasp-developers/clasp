@@ -134,8 +134,7 @@ namespace core
     void	SymbolList_O::appendConsOfStrings(List_sp s)
     {_G();
         
-	for ( List_sp cur=s; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : s ) {
 	    Symbol_sp sym = _lisp->intern(oCar(cur).as<Str_O>()->get());
 	    this->_Contents.push_back(sym);
 	}

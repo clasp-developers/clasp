@@ -44,16 +44,15 @@ namespace core
 #define LOCK_af_record_cons 1
 #define ARGS_af_record_cons "(record key sub-key)"
 #define DECL_af_record_cons ""
-    Cons_mv af_record_cons(Cons_sp record, T_sp key, T_sp sub_key)
+    T_sp af_record_cons(List_sp record, T_sp key, T_sp sub_key)
     {_G();
 	Cons_sp cons = Cons_O::create(key,sub_key);
-	for ( Cons_sp cur = record; cur.notnilp(); cur = cCdr(cur) )
-	{
-	    Cons_sp i = oCar(cur).as_or_nil<Cons_O>();
+	for ( auto cur : coerce_to_list(record) ) {
+	    List_sp i = oCar(cur);
 	    T_sp obj = oCar(i);
-	    if ( eval::funcall(cl::_sym_equalp,obj,cons).isTrue() ) return(Values(i));
+	    if ( eval::funcall(cl::_sym_equalp,obj,cons).isTrue() ) return(i);
 	}
-	return(Values(_Nil<Cons_O>()));
+	return (_Nil<T_O>());
     }
 
 
@@ -63,9 +62,9 @@ namespace core
 #define LOCK_af_record_field 1
 #define ARGS_af_record_field "(record key sub-key)"
 #define DECL_af_record_field ""
-    T_sp af_record_field(Cons_sp record, T_sp key, T_sp sub_key)
+    T_sp af_record_field(List_sp record, T_sp key, T_sp sub_key)
     {_G();
-	Cons_sp cons = eval::funcall(_sym_record_cons,record,key,sub_key).as_or_nil<Cons_O>();;
+	List_sp cons = eval::funcall(_sym_record_cons,record,key,sub_key).as_or_nil<Cons_O>();;
 	return oCdr(cons);
     }
 
@@ -75,19 +74,19 @@ namespace core
 #define LOCK_af_set_record_field 1
 #define ARGS_af_set_record_field "(record key sub-key value)"
 #define DECL_af_set_record_field ""
-    Cons_mv af_set_record_field(Cons_sp record, T_sp key, T_sp sub_key, Str_sp value)
+    T_sp af_set_record_field(List_sp record, T_sp key, T_sp sub_key, Str_sp value)
     {_G();
-	Cons_sp field = eval::funcall(_sym_record_cons,record,key,sub_key).as_or_nil<Cons_O>();
+	List_sp field = eval::funcall(_sym_record_cons,record,key,sub_key).as<List_V>();
 	if ( field.notnilp() )
 	{
-	    field->setOCdr(value);
+	    field.asCons()->setCdr(value);
 	} else
 	{
 	    Cons_sp total_key = Cons_O::create(key,sub_key);
 	    Cons_sp new_field = Cons_O::create(total_key,value);
 	    record = Cons_O::create(new_field,record);
 	}
-	return(Values(record));
+	return record;
     };
 
 
@@ -96,22 +95,21 @@ namespace core
 #define LOCK_af_rem_record_field 1
 #define ARGS_af_rem_record_field "(record key sub-key)"
 #define DECL_af_rem_record_field ""
-    T_mv af_rem_record_field(Cons_sp record, T_sp key, T_sp sub_key )
+    T_sp af_rem_record_field(List_sp record, T_sp key, T_sp sub_key )
     {_G();
-	Cons_sp x = af_record_cons(record,key,sub_key);
+	List_sp x = af_record_cons(record,key,sub_key);
 	if ( x.notnilp() )
 	{
-	    Cons_sp output = _Nil<Cons_O>();
-	    for ( Cons_sp cur = record; cur.notnilp(); cur = cCdr(cur) )
-	    {
-		Cons_sp i = cCar(cur);
+	    List_sp output = _Nil<T_O>();
+	    for ( auto cur : record ) {
+		List_sp i = oCar(cur);
 		if ( i != x ) {
 		    output = Cons_O::create(i,output);
 		}
 	    }
-	    return(Values(output));
+	    return output;
 	}
-	return(Values(record));
+	return record;
     }
 
 
@@ -125,8 +123,8 @@ namespace core
     T_mv af_annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value )
     {_G();
 	HashTable_sp dict = oCar(_sym_STARdocumentation_poolSTAR->symbolValue().as_or_nil<Cons_O>()).as<HashTable_O>();
-	Cons_sp record = dict->gethash(object,_Nil<T_O>()).as_or_nil<Cons_O>();
-	record = af_set_record_field(record,key,sub_key,value);
+	List_sp record = coerce_to_list(dict->gethash(object,_Nil<T_O>()));
+	record = coerce_to_list(af_set_record_field(record,key,sub_key,value));
         T_sp result = dict->hash_table_setf_gethash(object,record);
 	return(Values(result));
     };

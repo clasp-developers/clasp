@@ -119,8 +119,8 @@ namespace translate {
             if ( o.nilp() ) {
                 _v.clear();
                 return;
-            } else if ( core::Cons_sp cstrs = o.asOrNull<core::Cons_O>() ) {
-                for ( ; cstrs.notnilp(); cstrs=cCdr(cstrs) ) {
+            } else if ( core::List_sp lcstrs = o.asOrNull<core::Cons_O>() ) {
+                for ( auto cstrs : lcstrs ) {
                     core::Str_sp s = core::oCar(cstrs).as<core::Str_O>();
                     _v.push_back(std::string(s->get()));
                 }

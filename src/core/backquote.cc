@@ -100,18 +100,16 @@ namespace core
 #define	ARGS_af_backquote_append "(&rest lists)"
 #define	DECL_af_backquote_append ""
 #define DOCS_af_backquote_append "append as in clhs"
-    T_sp af_backquote_append(Cons_sp lists)
+    T_sp af_backquote_append(List_sp lists)
     {_G();
 	ql::list list; // (lists);
 	LOG(BF("Carrying out append with arguments: %s") % _rep_(lists) );
-        Cons_sp savedArgs = lists;
-	Cons_sp appendArg = lists;
-	for ( ; cCdr(appendArg).notnilp(); appendArg = cCdr(appendArg) )
-	{
+        List_sp savedArgs = lists;
+	List_sp appendArg = lists;
+	for ( ; oCdr(appendArg).notnilp(); appendArg = oCdr(appendArg) ) {
             T_sp head = oCar(appendArg);
-	    Cons_sp oneList = head.as_or_nil<Cons_O>();
-	    for ( Cons_sp element=oneList; element.notnilp(); element = cCdr(element) )
-	    {
+	    List_sp oneList = head;
+	    for ( auto element : oneList ) {
 		list << oCar(element);
 	    }
 	}
@@ -185,7 +183,7 @@ namespace core
 	    cp = p.as_or_nil<Cons_O>();
 	    if ( oCar(cp) == _sym_unquote )
 	    {
-		if ( !cCddr(cp).nilp() )
+		if ( !oCddr(cp).nilp() )
 		{
 		    SIMPLE_ERROR(BF("Malformed ,%s") % _rep_(p) );
 		}
@@ -377,13 +375,13 @@ namespace core
 #define DOCS_af_backquote_simplify_args "backquote_simplify_args"
     T_sp af_backquote_simplify_args(T_sp x)
     {_G();
-	Cons_sp cx = x.as_or_nil<Cons_O>();
-	Cons_sp args = cCdr(cx)->reverse().as_or_nil<Cons_O>();
+	List_sp cx = x;
+	List_sp args = oCdr(cx).as<Cons_O>()->reverse();
 	T_sp result = _Nil<T_O>();
 	while (args.notnilp())
 	{
 	    // Advance args
-	    args = cCdr(args);
+	    args = oCdr(args);
 	    // Advance result
 	    if ( af_atom(oCar(args)) )
 	    {
@@ -399,9 +397,9 @@ namespace core
 				 Cons_O::create(oCdar(args))
 						).isTrue() )
 	    {
-		Cons_sp rev1 = cl_reverse(oCdar(args).as_or_nil<Cons_O>()).as_or_nil<Cons_O>();
-		Cons_sp rev2 = cl_reverse(cCdr(rev1)).as_or_nil<Cons_O>();
-		Cons_sp car_last_car_args = oCar(cl_last(oCar(args).as_or_nil<Cons_O>())).as_or_nil<Cons_O>();
+		List_sp rev1 = cl_reverse(oCdar(args));
+		List_sp rev2 = cl_reverse(oCdr(rev1));
+		List_sp car_last_car_args = oCar(cl_last(oCar(args)));
 		result = af_backquote_attach_conses(rev2,
 					   af_backquote_attach_append(_sym_STARbq_appendSTAR,
 								      car_last_car_args,
@@ -524,11 +522,11 @@ namespace core
 	    return((af_backquote_remove_tokens(oCadr(cx))));
 	}
 	if ( (oCar(cx) == _sym_STARbq_listSTARSTAR )
-	     && cl_consp(cCddr(cx))
-	     && cCdddr(cx).nilp() )
+	     && cl_consp(oCddr(cx))
+	     && oCdddr(cx).nilp() )
 	{
 	    return Cons_O::create(cl::_sym_cons,
-				  af_backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(),cCdr(cx)));
+				  af_backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(),oCdr(cx)));
 	}
 	T_sp mapped = af_backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(),x);
 	return mapped;

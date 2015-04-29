@@ -60,7 +60,7 @@ namespace core {
 				   T_sp host=_Nil<T_O>(),
 				   T_sp defaultPathname=_Nil<T_O>(),
 				   Fixnum_sp start=Fixnum_O::create(0),
-				   Fixnum_sp end=_Nil<Fixnum_O>(),
+				   T_sp end=_Nil<T_O>(),
 				   bool junkAllowed=false);
 
     T_sp af_pathnameHost(T_sp pathname, Symbol_sp acase);

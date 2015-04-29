@@ -144,14 +144,14 @@ namespace core {
 	virtual ~SourceManager_O() {};
     public: // instance variables here
 #ifdef USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO
-	WeakKeyHashTable_sp               _SourcePosInfo;
+	typedef WeakKeyHashTable_sp       HashTableType;
 #else
-	HashTableEq_sp _SourcePosInfo;
+	typedef HashTableEq_sp HashTableType;
 #endif
-
+	HashTableType               _SourcePosInfo;
     public: // Functions here
         /*! Return true if the SourceManager is available */
-        bool availablep() const { return this->_SourcePosInfo.notnilp(); };
+        bool availablep() const { return true; };
 
 	/*! Register the object with the source manager */
 	SourcePosInfo_sp registerSourceInfo(T_sp obj, T_sp sourceFile, size_t filepos, uint lineno, uint column);

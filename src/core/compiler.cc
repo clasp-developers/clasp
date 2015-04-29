@@ -105,8 +105,8 @@ namespace core
 	    return Values(_Nil<T_O>(),name,Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
 	}
 	Function_sp fsym = coerce::functionDesignator(sym);
-	Closure* closure = fsym->closure;
-	if ( BuiltinClosure* bcc = dynamic_cast<BuiltinClosure*>(closure) ) {
+	gctools::tagged_functor<Closure> closure = fsym->closure;
+	if ( gctools::tagged_functor<BuiltinClosure> bcc = closure.asOrNull<BuiltinClosure>() ) {
 	    return Values(_lisp->_true(),Str_O::create("Provide-c-func-name"), Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
 	}
 	return Values(_Nil<T_O>(),Str_O::create("Provide-func-name"),Fixnum_O::create(0),Fixnum_O::create(CALL_ARGUMENTS_LIMIT));
@@ -390,8 +390,8 @@ namespace core
         stringstream ss;
         ss << "repl"<<_lisp->nextReplCounter();
         Symbol_sp name = _lisp->intern(ss.str());
-        InterpretedClosure* ic = 
-	    gctools::ClassAllocator<InterpretedClosure>::allocateClass(
+	gctools::tagged_functor<InterpretedClosure> ic = 
+	    gctools::tagged_functor<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocateClass(
 								       name
 								       , sourcePosInfo
 								       , kw::_sym_function
@@ -399,7 +399,7 @@ namespace core
 								       , _Nil<Cons_O>()
 								       , _Nil<Str_O>()
 								       , env
-								       , code );
+								       , code ));
         Function_sp thunk = Function_O::make(ic);
 	return(Values(thunk,_Nil<T_O>(),_Nil<T_O>()));
     };
@@ -565,7 +565,7 @@ namespace core {
 #define ARGS_core_partialApplysPerSecond "(stage fn args)"
 #define DECL_core_partialApplysPerSecond ""
 #define DOCS_core_partialApplysPerSecond "partialApplysPerSecond"
-    T_sp core_partialApplysPerSecond(int stage, T_sp fn, Cons_sp args)
+    T_sp core_partialApplysPerSecond(int stage, T_sp fn, List_sp args)
     {_G();
         LightTimer timer;
         int nargs = cl_length(args);
@@ -603,10 +603,10 @@ namespace core {
 #if 1 // heap based frame
                             ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
                             if ( stage>=4 ) {
-                                Cons_sp cur = args;
+                                List_sp cur = args;
                                 for ( int i=0; i<nargs; ++i ) {
                                     frame->operator[](i) = oCar(cur);
-                                    cur=cCdr(cur);
+                                    cur=oCdr(cur);
                                 }
 #else
                             // ALLOC_STACK_VALUE_FRAME(frameImpl,frob,nargs);   // I cant do this in a loop!!!
@@ -620,7 +620,7 @@ namespace core {
                             //     }
 #endif
                                 if ( stage >= 5) {
-                                    Closure* closureP = func->closure;
+				    gctools::tagged_functor<Closure> closureP = func->closure;
                                     ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
                                     eval::applyClosureToActivationFrame(closureP,frame);
                                 }
@@ -1016,7 +1016,7 @@ namespace core {
 	    Symbol_sp symbol = oCar(curSym).as<Symbol_O>();
 	    T_sp value = oCar(values);
 	    manager.pushSpecialVariableAndSet(symbol,value);
-	    values = cCdr(values);
+	    values = oCdr(values);
 	}
 	T_mv result = eval::funcall(func);
 	return result;

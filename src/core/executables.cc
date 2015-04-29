@@ -68,7 +68,7 @@ namespace core
 	    if ( fn.nilp() ) {
 		return Values(_Nil<T_O>(),_Nil<T_O>());
 	    }
-	    return Values(sym->symbolFunction()->lambdaList(),_lisp->_true());
+	    return Values(sym->symbolFunction().as<Function_O>()->lambdaList(),_lisp->_true());
 	} else if ( Function_sp func = obj.asOrNull<Function_O>() ) {
 	    return Values(func->lambdaList(),_lisp->_true());
 	}
@@ -84,7 +84,7 @@ namespace core
     {
 	Function_sp func = coerce::functionDesignator(functionDesignator);
 	if (func.nilp() ) return _Nil<SourcePosInfo_O>();
-	Closure* closure = func->closure;
+	gctools::tagged_functor<Closure> closure = func->closure;
 	SourcePosInfo_sp sourcePosInfo = closure->sourcePosInfo();
 	return sourcePosInfo;
     }
@@ -252,7 +252,7 @@ namespace core
     SYMBOL_EXPORT_SC_(KeywordPkg,unrecognizedKeyword);
 
 
-    void handleArgumentHandlingExceptions(FunctionClosure* closure)
+    void handleArgumentHandlingExceptions(gctools::tagged_functor<FunctionClosure> closure)
     {
         Function_sp func = Function_O::make(closure);
         try {
@@ -288,7 +288,7 @@ namespace core
 	    WRONG_TYPE_ARG(fn,cl::_sym_Function_O);
 	}
 	List_sp code = _Nil<List_V>();
-	if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(fn->closure) ) {
+	if ( gctools::tagged_functor<InterpretedClosure> ic = fn->closure.as<InterpretedClosure>() ) {
 	    code = ic->_code;
 	}
 	bool closedp = true; // fn->closedEnvironment().notnilp();
@@ -303,8 +303,8 @@ namespace core
 #define DOCS_core_functionSourceCode "functionSourceCode"
     T_sp core_functionSourceCode(Function_sp fn)
     {
-	Closure* closure = fn->closure;
-	if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(closure) ) {
+	gctools::tagged_functor<Closure> closure = fn->closure;
+	if ( auto ic = closure.as<InterpretedClosure>() ) {
 	    return ic->code();
 	}
 	return _Nil<T_O>();
@@ -348,13 +348,13 @@ namespace core
 
     string Function_O::__repr__() const
     {_G();
-	if ( this->closure==NULL ) {
+	if ( !(this->closure) ) {
 	    return "Function_O::__repr__ NULL closure";
 	}
 	T_sp name = this->closure->name;
 	stringstream ss;
 	ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(name);
-	Closure* closure = this->closure;
+	auto closure = this->closure;
 	void* fptr = closure->functionAddress();
 	if ( fptr!=NULL ) {
 	    ss << " :address " << fptr;

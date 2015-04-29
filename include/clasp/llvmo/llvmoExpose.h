@@ -294,9 +294,9 @@ namespace translate {
             if ( o.nilp() ) {
                 _v.clear();
                 return;
-            } else if ( core::Cons_sp cvals = o.asOrNull<core::Cons_O>() ) {
+            } else if ( core::List_sp lcvals = o.asOrNull<core::Cons_O>() ) {
 		core::SymbolToEnumConverter_sp converter = llvmo::_sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
-                for ( ; cvals.notnilp(); cvals=cCdr(cvals) ) {
+                for ( auto cvals : lcvals ) {
                     llvm::Attribute::AttrKind ak = converter->enumForSymbol<llvm::Attribute::AttrKind>(core::oCar(cvals).as<core::Symbol_O>());
                     _v.push_back(ak);
                 }
@@ -1058,8 +1058,8 @@ namespace translate
             if ( o.nilp() ) {
                 _v.clear();
                 return;
-            } else if ( core::Cons_sp cvals = o.asOrNull<core::Cons_O>() ) {
-                for ( ; cvals.notnilp(); cvals=cCdr(cvals) ) {
+            } else if ( core::List_sp lcvals = o.asOrNull<core::Cons_O>() ) {
+                for ( auto cvals : lcvals ) {
                     llvm::Value* vP = core::oCar(cvals).as<llvmo::Value_O>()->wrappedPtr();
                     _v.push_back(vP);
                 }
@@ -1152,8 +1152,8 @@ namespace translate
             if ( o.nilp() ) {
                 _v.clear();
                 return;
-            } else if ( core::Cons_sp cvals = o.asOrNull<core::Cons_O>() ) {
-                for ( ; cvals.notnilp(); cvals=cCdr(cvals) ) {
+            } else if ( core::List_sp lcvals = o.asOrNull<core::Cons_O>() ) {
+                for ( auto cvals : lcvals ) {
                     llvm::Metadata* vP = core::oCar(cvals).as<llvmo::Metadata_O>()->wrappedPtr();
                     _v.push_back(vP);
                 }
@@ -1479,8 +1479,8 @@ namespace translate
             if ( o.nilp() ) {
                 _v.clear();
                 return;
-            } else if ( core::Cons_sp cvals = o.asOrNull<core::Cons_O>() ) {
-                for ( ; cvals.notnilp(); cvals=cCdr(cvals) ) {
+            } else if ( core::List_sp lcvals = o.asOrNull<core::Cons_O>() ) {
+                for ( auto cvals : lcvals ) {
                     llvm::Constant* vP = core::oCar(cvals).as<llvmo::Constant_O>()->wrappedPtr();
                     _v.push_back(vP);
                 }

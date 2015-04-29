@@ -111,9 +111,8 @@ namespace core
 #define ARGS_af_symbolPackage "(arg)"
 #define DECL_af_symbolPackage ""
 #define DOCS_af_symbolPackage "symbolPackage"
-    Package_sp af_symbolPackage(Symbol_sp arg)
+    T_sp af_symbolPackage(Symbol_sp arg)
     {_G();
-	if ( arg.nilp() ) return _lisp->commonLispPackage();
 	return arg->homePackage();
     };
 
@@ -124,7 +123,7 @@ namespace core
 #define ARGS_af_symbolFunction "(arg)"
 #define DECL_af_symbolFunction ""
 #define DOCS_af_symbolFunction "symbolFunction"
-    Function_sp af_symbolFunction(Symbol_sp sym)
+    T_sp af_symbolFunction(Symbol_sp sym)
     {_G();
 	if ( sym.nilp() ) return _Nil<Function_O>();
 	return sym->symbolFunction();
@@ -197,14 +196,14 @@ namespace core {
 
     /*! Construct a symbol that is incomplete, it has no Class or Package */
     Symbol_O::Symbol_O(string const& name) : T_O() ,
-					     _HomePackage(_Nil<Package_O>()),
+					     _HomePackage(_Nil<T_O>()),
 					     _Value(_Unbound<T_O>()),
-					     _Function(_Unbound<Function_O>()),
-					     _SetfFunction(_Unbound<Function_O>()),
+					     _Function(_Unbound<T_O>()),
+					     _SetfFunction(_Unbound<T_O>()),
 					     _IsSpecial(false),
 					     _IsConstant(false),
 					     _ReadOnlyFunction(false),
-					     _PropertyList(_Nil<Cons_O>())
+					     _PropertyList(_Nil<List_V>())
     {//no guard
 	this->_Name = Str_O::create(name);
     }
@@ -243,7 +242,7 @@ namespace core {
     }
 
 
-    Symbol_sp	Symbol_O::create(const string& nm)
+    Symbol_sp	Symbol_O::create_at_boot(const string& nm)
     {_G();
         // This is used to allocate roots that are pointed
         // to by global variable _sym_XXX  and will never be collected
@@ -256,6 +255,24 @@ namespace core {
 	}
 #endif
 	n->_Name = Str_O::create(nm);
+	return n;
+    };
+
+    Symbol_sp	Symbol_O::create(const string& nm)
+    {_G();
+        // This is used to allocate roots that are pointed
+        // to by global variable _sym_XXX  and will never be collected
+        Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::rootAllocate(nm);
+	ASSERTF(nm!="",BF("You cannot create a symbol without a name"));
+#if VERBOSE_SYMBOLS
+	if ( nm.find("/dyn") != string::npos)
+	{
+	    THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm );
+	}
+#endif
+#if 0
+	n->_Name = Str_O::create(nm);
+#endif
 	return n;
     };
 
@@ -320,8 +337,9 @@ namespace core {
 
     bool Symbol_O::isKeywordSymbol()
     { 
-	if ( !this->_HomePackage.objectp() ) return false;
-	return this->_HomePackage->isKeywordPackage();
+	if ( this->_HomePackage.nilp() ) return false;
+	Package_sp pkg = this->_HomePackage.as_or_error<Package_O>([this] () {TYPE_ERROR(this->_HomePackage,cl::_sym_package);});
+	return pkg->isKeywordPackage();
     };
 
 
@@ -366,7 +384,7 @@ namespace core {
 	}
 	if ( !this->_HomePackage.nilp() )
 	{
-	    if ( this->_HomePackage->isKeywordPackage() ) return this->sharedThis<Symbol_O>();
+	    if ( this->_HomePackage.as_or_error<Package_O>([this](){TYPE_ERROR(this->_HomePackage,cl::_sym_package);})->isKeywordPackage() ) return this->sharedThis<Symbol_O>();
 	}
 	Symbol_sp kwSymbol = _lisp->internKeyword(this->symbolNameAsString());
 	return kwSymbol;
@@ -453,20 +471,9 @@ namespace core {
 
 
 
-    Function_sp Symbol_O::symbolFunction()
-    {_OF();
-	return this->_Function;
-    }
-
     void Symbol_O::setf_symbolFunction(Function_sp exec)
     {_OF();
 	this->_Function = exec;
-    }
-
-    bool Symbol_O::fboundp() const
-    {
-	if ( this->_Function.objectp() ) return true;
-	return !this->_Function.unboundp();
     }
 
 
@@ -482,7 +489,7 @@ namespace core {
 	if ( this->_HomePackage.nilp() )
 	{
 	    ss << "#:";
-	    if ( this->_Name.objectp() ) {
+	    if ( this->_Name.notnilp() ) {
 		ss << this->_Name->get();
 	    } else
 	    {
@@ -535,7 +542,7 @@ namespace core {
     };
 
     bool Symbol_O::isExported()
-    {
+    { 
 	Package_sp myPackage = this->getPackage();
 	if ( myPackage.nilp() ) return false;
 	return myPackage->isExported(this->sharedThis<Symbol_O>());
@@ -545,31 +552,17 @@ namespace core {
 
     Symbol_sp Symbol_O::exportYourself(bool doit)
     {_G();
-	if ( doit )
-	{
-	    if ( !this->isExported() )
-	    {
+	if ( doit ) {
+	    if ( !this->isExported() ) {
 		if ( this->_HomePackage.nilp() )
-		{
 		    SIMPLE_ERROR(BF("Cannot export - no package"));
-		}
-		Package_sp pkg = this->getPackage();
-		if ( !pkg->isKeywordPackage())
-		{   
-		    if ( this->_Name->get() == "NIL" )
-		    {
-			// Debugging nil symbol - we could take this out now
-			Symbol_sp nil_sym = this->sharedThis<Symbol_O>();
-			Cons_sp list = Cons_O::create(nil_sym);
-			pkg->_export(list);
-		    } else
-		    {
-			pkg->_export(Cons_O::create(this->sharedThis<Symbol_O>()));
-		    }
+		Package_sp pkg = this->getPackage().as<Package_O>();
+		if ( !pkg->isKeywordPackage()) {   
+		    pkg->_export(Cons_O::create(this->asSmartPtr()));
 		}
 	    }
 	}
-	return this->sharedThis<Symbol_O>();
+	return this->asSmartPtr();
     }
 
 
@@ -609,15 +602,16 @@ namespace core {
 
 
 
-    Package_sp Symbol_O::getPackage() const
+    T_sp Symbol_O::getPackage() const
     {_G();
-	if ( !this->_HomePackage ) return _Nil<Package_O>();
+	if ( !this->_HomePackage ) return _Nil<T_O>();
 	return this->_HomePackage;
     } 
 
-    void Symbol_O::setPackage(Package_sp p)
+    void Symbol_O::setPackage(T_sp p)
     {_G();
 	ASSERTF(p,BF("The package is UNDEFINED"));
+	ASSERT(p.nilp() || p.asOrNull<Package_O>());
 	this->_HomePackage = p;
     }
 

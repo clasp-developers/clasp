@@ -76,7 +76,7 @@ namespace core
 		Symbol_sp head = oFirst(consObj).as<Symbol_O>();
 		Cons_sp dummyCons = Cons_O::create(_Nil<T_O>());
 		Cons_sp result = dummyCons;
-		for ( Cons_sp cur = oSecond(consObj).as<Cons_O>(); cur.notnilp(); cur=cCddr(cur) ) {
+		for ( List_sp cur = oSecond(consObj); cur.consp(); cur=oCddr(cur) ) {
 		    Symbol_sp propertyName = oCar(cur).as<Symbol_O>();
 		    T_sp rawData = oCadr(cur);
 		    SNode_sp propertyData = parseNode(objToNode,rawData);
@@ -88,7 +88,7 @@ namespace core
 		    result = one;
 		}
 		VectorObjects_sp vresult(_Nil<VectorObjects_O>());
-		if ( cCddr(consObj).notnilp()) {
+		if ( oCddr(consObj).notnilp()) {
 		    Vector_sp vdata = oThird(consObj).as<Vector_O>();
 		    vresult = VectorObjects_O::make(_Nil<T_O>(),_Nil<Cons_O>(), vdata->length(), true);
 		    for ( int i=0,iEnd(vdata->length());i<iEnd;++i) {
@@ -97,7 +97,7 @@ namespace core
 		    }
 		}
 		snode->setKind(head);
-		snode->setAttributesUnsafe(cCdr(dummyCons));
+		snode->setAttributesUnsafe(oCdr(dummyCons));
 		snode->setVectorSNodesUnsafe(vresult);
 #if 0 // moved BranchSNode_O::create up to top to deal with circular data structures
 		snode = BranchSNode_O::create(head,dummyCons->cdr(),vresult);

@@ -104,7 +104,7 @@ namespace core
 
 	/*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
 	List_sp methods() const {
-            SingleDispatchGenericFunctionClosure* cl = dynamic_cast<SingleDispatchGenericFunctionClosure*>(this->closure);
+	    gctools::tagged_functor<SingleDispatchGenericFunctionClosure> cl = this->closure.as<SingleDispatchGenericFunctionClosure>();
             return cl->_Methods;
         };
 
@@ -163,7 +163,7 @@ namespace core
     };
 
 
-    SingleDispatchGenericFunction_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler );
+    T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler );
 
 };
 

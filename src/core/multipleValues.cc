@@ -62,8 +62,7 @@ namespace core
 	int i=1;
         SUPPRESS_GC();
         this->setSize(MultipleValuesLimit);
-	for ( Cons_sp cur = cCdr(args); cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)oCdr(args) ) {
 	    if ( i>= MultipleValues::MultipleValuesLimit )
 	    {
 		SIMPLE_ERROR(BF("Overflow when returning multiple values - only %d are supported and you tried to return %d values") % MultipleValuesLimit % cl_length(args) );

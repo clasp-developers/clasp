@@ -148,8 +148,8 @@ namespace translate {
 	    if ( o.nilp() ) {
 		SIMPLE_ERROR(BF("You cannot pass nil as a function"));
 	    } else if ( core::Function_sp func = o.asOrNull<core::Function_O>() ) {
-		core::Closure* closure = func->closure;
-		if ( llvmo::CompiledClosure* compiledClosure = dynamic_cast<llvmo::CompiledClosure*>(closure) ) {
+		gctools::tagged_functor<core::Closure> closure = func->closure;
+		if ( auto compiledClosure = closure.as<llvmo::CompiledClosure>() ) {
 		    llvmo::CompiledClosure::fptr_type fptr = compiledClosure->fptr;
 		    this->_v = [fptr] (const clang::tooling::CommandLineArguments& args)->clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>

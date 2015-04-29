@@ -75,16 +75,16 @@ namespace core
     List_sp af_putF(List_sp place, T_sp value, T_sp indicator)
     {_G();
 	auto it = place.begin();
-	Cons_sp cur;
+	List_sp cur;
 	while ( it != place.end() ) {
 	    cur = *it;
-	    T_sp cdr_l = oCdr(cur);
+	    List_sp cdr_l = oCdr(cur);
 	    if ( !cdr_l.consp()) break;
 	    if ( oCar(cur) == indicator ) {
-		cdr_l.as<Cons_O>()->rplaca(value);
+		cdr_l.asCons()->rplaca(value);
 		return place;
 	    }
-	    cur = cCdr(cdr_l); //CONS_CDR(cdr_l);
+	    cur = oCdr(cdr_l); //CONS_CDR(cdr_l);
 	}
 	if ( cur.notnilp() )
 	{
@@ -146,7 +146,7 @@ namespace core
 
     Cons_sp Cons_O::createList(T_sp o1)
     {
-	return(Cons_O::create(o1,_Nil<Cons_O>()));
+	return(Cons_O::create(o1,_Nil<T_O>()));
     }
 
 
@@ -189,11 +189,11 @@ namespace core
 #if 0
     Cons_sp	Cons_O::createFromCommandLineArguments(int argc, char* argv[] )
     {
-	Cons_sp args = _Nil<Cons_O>();
-	Cons_sp curArg = _Nil<Cons_O>();
+	Cons_sp args = _Nil<T_O>();
+	Cons_sp curArg = _Nil<T_O>();
 	for ( int i=0;i!=argc; i++ )
 	{
-	    Cons_sp carg = Cons_O::create(Str_O::create(argv[i]),_Nil<Cons_O>());
+	    Cons_sp carg = Cons_O::create(Str_O::create(argv[i]),_Nil<T_O>());
 	    if ( curArg.nilp() )
 	    {
 		args = carg;
@@ -314,20 +314,20 @@ namespace core
     }
 #endif
 
-    Cons_sp Cons_O::walkToFindParsePos() const
+    List_sp Cons_O::walkToFindParsePos() const
     {_G();
-//	if ( this->hasParsePos() ) return((this->sharedThis<Cons_O>()));
+//	if ( this->hasParsePos() ) return((this->asSmartPtr()));
 	if ( this->_Cdr.notnilp() && cl_consp(this->_Cdr) )
 	{
-	    Cons_sp wcdr = this->_Cdr.as_or_nil<Cons_O>()->walkToFindParsePos();
+	    List_sp wcdr = this->_Cdr.as<Cons_O>()->walkToFindParsePos();
 	    if ( wcdr.notnilp() ) return((wcdr));
 	}
 	if ( this->_Car.notnilp() && cl_consp(this->_Car) )
 	{
-	    Cons_sp wcar = this->_Car.as_or_nil<Cons_O>()->walkToFindParsePos();
+	    List_sp wcar = this->_Car.as<Cons_O>()->walkToFindParsePos();
 	    if ( wcar.notnilp() ) return((wcar));
 	}
-	return((_Nil<Cons_O>()));
+	return((_Nil<T_O>()));
     }
 
 
@@ -401,85 +401,79 @@ namespace core
 
 
 
-    bool Cons_O::exactlyMatches(Cons_sp other) const
+    bool Cons_O::exactlyMatches(List_sp other) const
     {_G();
-        Cons_sp me = this->const_sharedThis<Cons_O>();
+        List_sp me = this->asSmartPtr();
 	while (me.notnilp())
 	{
 	    if ( oCar(other) != oCar(me) ) return false;
-	    other = cCdr(other);
-	    me = cCdr(me);
+	    other = oCdr(other);
+	    me = oCdr(me);
 	}
 	return true;
     }
 
 
-    Cons_sp Cons_O::memberEq(T_sp item) const
+    List_sp Cons_O::memberEq(T_sp item) const
     {
-	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)this->asSmartPtr() ) {
 	    if ( oCar(cur) == item ) return cur;
 	}
-	return _Nil<Cons_O>();
+	return _Nil<T_O>();
     }
 
-    Cons_sp Cons_O::memberEql(T_sp item) const
+    List_sp Cons_O::memberEql(T_sp item) const
     {
-	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.notnilp(); cur=cCdr(cur) )
-	{
-	    if ( cl_eql(oCar(cur),item) ) return cur;
-	}
-	return _Nil<Cons_O>();
+        for ( auto cur : (List_sp)this->asSmartPtr() ) {
+            if ( cl_eql(oCar(cur),item) ) return cur;
+        }
+        return _Nil<T_O>();
     }
 
 
-    Cons_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const
+    List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const
     {_OF();
 	Tester t(item,key,test,testNot,false);
-	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.consp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)this->asSmartPtr() ) {
 	    LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur) );
 	    T_sp obj = oCar(cur);
 	    if ( t.test(obj) ) return((cur));
 	}
-	return((_Nil<Cons_O>()));
+	return((_Nil<T_O>()));
     }
 
 
 /*! Just like member except if there is a key function then apply it to the item
   before you start the test (see ecl:list.d:member1 function) */
-    Cons_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const
+    List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const
     {_OF();
 	Tester t(item,key,test,testNot,true);
-	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.consp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)this->asSmartPtr() ) {
 	    LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur) );
 	    T_sp obj = oCar(cur);
 	    if ( t.test(obj) ) return((cur));
 	}
-	return((_Nil<Cons_O>()));
+	return((_Nil<T_O>()));
     }
 
 
 
-    Cons_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const
+    List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const
     {_OF();
 	Tester t(item,key,test,testNot,false);
-	for ( Cons_sp cur = this->const_sharedThis<Cons_O>(); cur.consp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)this->asSmartPtr() ) {
 	    LOG(BF("Testing for assoc with item=%s entry = %s") % item % oCar(cur) );
-	    if ( oCar(cur).consp() )
-	    {
-		T_sp obj = oCar(cCar(cur));
-		if ( t.test(obj) ) return(cCar(cur));
+	    if ( oCar(cur).consp() ) {
+		T_sp obj = oCar(oCar(cur));
+		if ( t.test(obj) ) return(coerce_to_list(oCar(cur)));
 	    }
 	}
-	return((_Nil<Cons_O>()));
+	return coerce_to_list(_Nil<T_O>());
     }
 
 
 
-    T_sp Cons_O::subseq(int start, T_sp end) const
+    List_sp Cons_O::subseq(int start, T_sp end) const
     {_G();
 	ql::list l(_lisp);
 	int iend;
@@ -493,12 +487,10 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("Illegal end for subseq[%s]") % _rep_(end) );
 	}
-
-	Cons_sp cur = this->onthcdr(start).as_or_nil<Cons_O>();
-	for ( ; start < iend; start++ )
-	{
+	List_sp cur = this->onthcdr(start);
+	for ( ; start < iend; start++ ) {
 	    l << oCar(cur);
-	    cur = cCdr(cur);
+	    cur = oCdr(cur);
 	}
 	return((l.cons()));
     }
@@ -523,7 +515,7 @@ namespace core
     Vector_sp	Cons_O::createFromVectorStringsCommandLineArguments(const vector<string>& strings )
     {_G();
 	vector<string>::const_iterator it;
-	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	Cons_sp args = first;
 	it = strings.begin();
 	while ( it != strings.end() )
@@ -536,7 +528,7 @@ namespace core
 		LOG(BF( "Hit keyed list argument(%s)") % (*it).c_str() );
 		string keyStr = (*it).substr(3,999999);
 		obj = lisp->internKeyword(keyStr);
-		Cons_sp entry = Cons_O::create(obj,_Nil<Cons_O>());
+		Cons_sp entry = Cons_O::create(obj,_Nil<T_O>());
 		args->setCdr(entry);
 		args = entry;
 		Cons_sp afirst = Cons_O::create(_Nil<T_O>());
@@ -567,7 +559,7 @@ namespace core
 		it++;
 	    }
 	    LOG( BF("Accumulating entry(%s) in main argument list") %_rep_( obj) );
-	    Cons_sp entry = Cons_O::create(obj,_Nil<Cons_O>());
+	    Cons_sp entry = Cons_O::create(obj,_Nil<T_O>());
 	    args->setCdr(entry);
 	    args = entry;
 	}
@@ -638,7 +630,7 @@ namespace core
     SYMBOL_EXPORT_SC_(ClPkg,getf);
     T_sp Cons_O::getf(T_sp key, T_sp defVal) const
     {_OF();
-	for ( Cons_sp cur=this->const_sharedThis<Cons_O>(); cur.notnilp(); cur = cCddr(cur) )
+	for ( List_sp cur=this->asSmartPtr(); cur.notnilp(); cur = oCddr(cur) )
 	{
 	    if ( key == oCar(cur) )
 	    {
@@ -712,69 +704,63 @@ namespace core
 
 
 
-    Cons_sp	Cons_O::extend(Cons_sp rest)
+    List_sp Cons_O::extend(List_sp rest)
     {
-	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	Cons_sp nc = first;
 	Cons_sp next, newCur;
-	Cons_sp cur = this->sharedThis<Cons_O>();
-	while ( cur.notnilp() )
-	{
-	    newCur = Cons_O::create(oCar(cur),_Nil<Cons_O>());
+	List_sp cur = this->asSmartPtr();
+	while ( cur.notnilp() ) {
+	    newCur = Cons_O::create(oCar(cur),_Nil<T_O>());
 	    nc->setCdr(newCur);
 	    nc = newCur;
-	    cur = cCdr(cur);
+	    cur = oCdr(cur);
 	}
 	// Now attach the rest
 	cur = rest;
-	while ( cur.notnilp() )
-	{
-	    newCur = Cons_O::create(oCar(cur),_Nil<Cons_O>());
+	while ( cur.consp() ) {
+	    newCur = Cons_O::create(oCar(cur),_Nil<T_O>());
 	    nc->setCdr(newCur);
 	    nc = newCur;
-	    cur = cCdr(cur);
+	    cur = oCdr(cur);
 	}
-	return((cCdr(first)));
+	return((oCdr(first)));
     }
 
 
 
 
-    T_sp Cons_O::reverse()
+    List_sp Cons_O::reverse()
     {_G();
-	Cons_sp reversed = _Nil<Cons_O>();
-	Cons_sp cur = this->sharedThis<Cons_O>();
-	while ( cur.notnilp() )
-	{
+	List_sp reversed = _Nil<T_O>();
+	List_sp cur = this->asSmartPtr();
+	while ( cur.notnilp() ) {
 	    reversed = Cons_O::create(oCar(cur),reversed);
-	    cur = cCdr(cur);
+	    cur = oCdr(cur);
 	}
 	return((reversed));
     }
 
 
-    T_sp Cons_O::revappend(T_sp tail)
+    List_sp Cons_O::revappend(T_sp tail)
     {_G();
-	Cons_sp reversed = _Nil<Cons_O>();
-	Cons_sp cur = this->sharedThis<Cons_O>();
-	Cons_sp first_reversed;
-	first_reversed.reset_();
-	while ( cur.notnilp() )
-	{
+	List_sp reversed = _Nil<T_O>();
+	List_sp cur = this->asSmartPtr();
+	List_sp first_reversed;
+	while ( cur.notnilp() ) {
 	    reversed = Cons_O::create(oCar(cur),reversed);
-	    if ( !first_reversed )
-	    {
+	    if ( !first_reversed ) {
 		first_reversed = reversed;
 	    }
-	    cur = cCdr(cur);
+	    cur = oCdr(cur);
 	}
-	first_reversed->setCdr(tail.as_or_nil<Cons_O>());
+	first_reversed.asCons()->setCdr(tail);
 	return((reversed));
     }
 
 
 
-    T_sp Cons_O::nreverse()
+    List_sp Cons_O::nreverse()
     {_OF();
 	List_sp reversed = _Nil<List_V>();
 	List_sp cur = this->asSmartPtr();
@@ -792,16 +778,16 @@ namespace core
 
 
 
-    T_sp Cons_O::nreconc(T_sp tail)
+    List_sp Cons_O::nreconc(T_sp tail)
     {_OF();
-	Cons_sp reversed = _Nil<Cons_O>();
-	Cons_sp original_first = this->sharedThis<Cons_O>();
-	Cons_sp cur = original_first;
-	Cons_sp hold = _Nil<Cons_O>();
+	List_sp reversed = _Nil<T_O>();
+	Cons_sp original_first = this->asSmartPtr();
+	List_sp cur = original_first;
+	List_sp hold = _Nil<T_O>();
 	while (cur.notnilp())
 	{
-	    hold = cCdr(cur);
-	    cur->setCdr(reversed);
+	    hold = oCdr(cur);
+	    cur.asCons()->setCdr(reversed);
 	    reversed = cur;
 	    cur = hold;
 	}
@@ -817,9 +803,9 @@ namespace core
 	{
 	    SIMPLE_ERROR(BF("Index[%d] is beyond the length[%d] of the cons") % index % this->length() );
 	}
-	Cons_sp cur = this->sharedThis<Cons_O>();
-	for ( int i=0; i<index; i++ ) cur = cCdr(cur);
-	cur->setCar(val);
+	List_sp cur = this->asSmartPtr();
+	for ( int i=0; i<index; i++ ) cur = oCdr(cur);
+	cur.asCons()->setCar(val);
 	return((val));
     }
 
@@ -844,27 +830,26 @@ namespace core
 
 
 
-    Cons_sp Cons_O::filterOutNil()
+    List_sp Cons_O::filterOutNil()
     {_G();
-	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
-	Cons_sp newCur = first;
-	for ( Cons_sp cur=this->sharedThis<Cons_O>();cur.notnilp();cur=cCdr(cur) )
-	{
+	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+	List_sp newCur = first;
+	for ( auto cur : (List_sp)this->asSmartPtr() ) {
 	    if ( oCar(cur).notnilp() )
 	    {
-		Cons_sp one = Cons_O::create(oCar(cur),_Nil<Cons_O>());
-		newCur->setCdr(one);
-		newCur = cCdr(newCur);
+		Cons_sp one = Cons_O::create(oCar(cur),_Nil<T_O>());
+		newCur.asCons()->setCdr(one);
+		newCur = oCdr(newCur);
 	    }
 	}
-	return((cCdr(first)));
+	return((oCdr(first)));
     }
 
 #if 0
     void	Cons_O::setOwnerOfAllEntries(T_sp obj)
     {_G();
 	Cons_sp cur;
-	for ( cur=this->sharedThis<Cons_O>(); cur.notnilp(); cur = cCdr(cur) )
+	for ( cur=this->asSmartPtr(); cur.notnilp(); cur = cCdr(cur) )
 	{
 	    cur->ocar()->setOwner(obj);
 	}
@@ -877,10 +862,9 @@ namespace core
 
     T_sp Cons_O::onth(int idx) const
     {_OF();
-	Cons_sp cur = this->const_sharedThis<Cons_O>();
-	for ( int i=0; i<idx; i++ )
-	{
-	    cur = cCdr(cur);
+	List_sp cur = this->asSmartPtr();
+	for ( int i=0; i<idx; i++ ) {
+	    cur = oCdr(cur);
 	}
 	return((oCar(cur)));
     }
@@ -888,43 +872,36 @@ namespace core
 
 
 
-    T_sp Cons_O::onthcdr(int idx) const
-    {_OF();
-	Cons_sp cur = this->const_sharedThis<Cons_O>();
-	for ( int i=0; i<idx; i++ )
-	{
-	    cur = cCdr(cur);
+    List_sp Cons_O::onthcdr(int idx) const
+    {
+	List_sp cur = this->asSmartPtr();
+	for ( int i=0; i<idx; i++ ) {
+	    cur = oCdr(cur);
 	}
 	return((cur));
     }
 
 
-    T_sp Cons_O::last(int n) const
+    List_sp Cons_O::last(int n) const
     {_OF();
-	if ( n < 0 )
-	{
+	if ( n < 0 ) {
 	    SIMPLE_ERROR(BF("Illegal last index"));
 	}
-	Cons_sp l = this->const_sharedThis<Cons_O>();
-	T_sp r = l;
-	for ( r = l; n && cl_consp(r); --n, r = oCdr(r.as_or_nil<Cons_O>()) );
-	if ( r == l )
-	{
-	    if ( !cl_listp(r) )
-	    {
+	List_sp l = this->asSmartPtr();
+	List_sp r = l;
+	for ( r = l; n && cl_consp(r); --n, r = oCdr(r) );
+	if ( r == l ) {
+	    if ( !cl_listp(r) ) {
 		SIMPLE_ERROR(BF("Type not list"));
 	    }
-	    while ( cl_consp(r) )
-	    {
-		r = oCdr(r.as_or_nil<Cons_O>());
+	    while ( cl_consp(r) ) {
+		r = oCdr(r);
 	    }
 	    return((r));
-	} else if ( n == 0 )
-	{
-	    while (cl_consp(r) )
-	    {
-		r = oCdr(r.as_or_nil<Cons_O>());
-		l = cCdr(l);
+	} else if ( n == 0 ) {
+	    while (cl_consp(r) ) {
+		r = oCdr(r);
+		l = oCdr(l);
 	    }
 	    return((l));
 	}
@@ -933,26 +910,25 @@ namespace core
 
 
 
-    Cons_sp Cons_O::copyList() const
+    List_sp Cons_O::copyList() const
     {_OF();
-	Cons_sp	first, cur;
-	first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	List_sp	first, cur;
+	first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	cur = first;
-	Cons_sp p = this->const_sharedThis<Cons_O>();
-	while ( p.notnilp() )
-	{
-	    Cons_sp carNode = p->copyListCar();
-	    cur->setCdr(carNode);
-	    cur = cCdr(cur);
-	    T_sp cdr = oCdr(p);
+	List_sp p = this->asSmartPtr();
+	while ( p.consp() ) {
+	    List_sp carNode = p.asCons()->copyListCar();
+	    cur.asCons()->setCdr(carNode);
+	    cur = oCdr(cur);
+	    List_sp cdr = oCdr(p);
 	    if ( cdr.nilp() ) break;
 	    if ( !cl_consp(cdr) ) {
-		cur->setOCdr(cdr);
+		cur.asCons()->setCdr(cdr);
 		break;
 	    }
-	    p = cdr.as<Cons_O>();
+	    p = cdr;
 	}
-	return((cCdr(first)));
+	return((oCdr(first)));
     };
 
 
@@ -962,47 +938,44 @@ namespace core
     {_OF();
 	T_sp obj = this->_Car;
 	ASSERTNOTNULL(obj);
-	Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	rootCopy->setCar(obj);
 	return((rootCopy));
     }
 
 
 
-    T_sp Cons_O::copyTree() const
+    List_sp Cons_O::copyTree() const
     {_OF();
-	Cons_sp	first, cur;
-	first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	List_sp	first, cur;
+	first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	cur = first;
-	Cons_sp p = this->const_sharedThis<Cons_O>();
+	List_sp p = this->asSmartPtr();
 	T_sp op;
-	while ( p.notnilp() )
-	{
-	    Cons_sp carCopy = p.nilp() ? p : p->copyTreeCar();
-	    cur->setCdr(carCopy);
+	while ( p.notnilp() ) {
+	    List_sp carCopy = p.nilp() ? p : p.asCons()->copyTreeCar();
+	    cur.asCons()->setCdr(carCopy);
 	    cur = carCopy;
 	    op = oCdr(p);
 	    if ( !(p = op.asOrNull<Cons_O>()) )
 	    {
-		cur->setOCdr(op);
+		cur.asCons()->setCdr(op);
 		break;
 	    }
 	}
-	return((cCdr(first)));
+	return((oCdr(first)));
     }
 
-    Cons_sp Cons_O::copyTreeCar() const
+    List_sp Cons_O::copyTreeCar() const
     {_OF();
 	T_sp obj = this->_Car;
 	ASSERTNOTNULL(obj);
-	Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
-	Cons_sp cobj;
-	if ( (cobj = obj.asOrNull<Cons_O>()) )
-	{
-	    Cons_sp carTree = cobj.nilp() ? cobj : cobj->copyTree().as_or_nil<Cons_O>();;
+	Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+	List_sp cobj;
+	if ( List_sp cobj = obj.asOrNull<Cons_O>() ) {
+	    List_sp carTree = cobj.nilp() ? cobj : cobj.asCons()->copyTree();
 	    rootCopy->setCar(carTree);
-	} else
-	{
+	} else {
 	    rootCopy->setCar(obj);
 	}
 	return((rootCopy));
@@ -1013,14 +986,8 @@ namespace core
 
     uint Cons_O::length() const
     {_G();
-	int sz = 0;
-	Cons_sp	p;
-	p = this->const_sharedThis<Cons_O>();
-	while ( p.notnilp() )
-	{
-	    sz++;
-	    p = cCdr(p);
-	};
+	int sz = 1;
+	for ( auto p : coerce_to_list(this->_Cdr) ) ++sz;
 	return((sz));
     };
 
@@ -1029,15 +996,14 @@ namespace core
     T_sp	Cons_O::olistref(int idx)
     {_G();
 	int i = 0;
-	Cons_sp	p;
+	List_sp	p;
 	LOG(BF("Evaluating the length of list: %s") % this->__repr__() );
-	p = this->sharedThis<Cons_O>();
-	while ( p.notnilp() )
-	{
+	p = this->asSmartPtr();
+	while ( p.consp() ) {
 	    if ( i == idx ) break;
 	    i++;
 	    LOG(BF("in loop i = %d looking for %d") % i % idx  );
-	    p = cCdr(p);
+	    p = oCdr(p);
 	};
 	if ( p.nilp() )
 	{
@@ -1052,14 +1018,13 @@ namespace core
     T_sp	Cons_O::olistrefArgument(int idx)
     {_G();
 	int i = 0;
-	Cons_sp	p;
-	p = this->sharedThis<Cons_O>();
-	while ( p.notnilp() )
-	{
+	List_sp	p;
+	p = this->asSmartPtr();
+	while ( p.notnilp() ) {
 	    if ( i == idx ) break;
 	    i++;
 	    LOG(BF("in loop i = %d looking for %d") % i % idx  );
-	    p = cCdr(p);
+	    p = oCdr(p);
 	};
 	if ( p.nilp() )
 	{
@@ -1072,7 +1037,7 @@ namespace core
 
 
 #define	WARN_CONS_LENGTH	1000000
-    void	Cons_O::setCdr(Cons_sp c)
+    void	Cons_O::setCdr(T_sp c)
     {_G();
 	this->_Cdr = c;
 //	this->_CdrLength = c->cdrLength()+1;
@@ -1087,7 +1052,7 @@ namespace core
 #endif
     }
 
-
+#if 0
     void	Cons_O::setOCdr(T_sp c)
     {_G();
 	this->_Cdr = c;
@@ -1110,18 +1075,16 @@ namespace core
 	}
 #endif
     }
-
+#endif
 
 
     T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft)
     {_OF();
-	Cons_sp p;
 	ASSERTP(keyword->isKeywordSymbol(), "You can only search for keyword symbols");
 	LOG(BF("lookup %s in %s")% _rep_(keyword) % this->__repr__() );
-	p = this->sharedThis<Cons_O>();
-	LOG(BF("Got start of list to search: %s") % _rep_(p)  );
-	for ( ; p.notnilp(); p = cCdr(p) )
-	{
+	List_sp lp = this->asSmartPtr();
+	LOG(BF("Got start of list to search: %s") % _rep_(lp)  );
+	for ( auto p : lp ) {
 	    if ( af_symbolp(oCar(p)))
 	    {
 		Symbol_sp ps = oCar(p).as<Symbol_O>();
@@ -1148,7 +1111,7 @@ namespace core
 
     string	Cons_O::__repr__() const
     {_G();
-	Cons_sp start = this->const_sharedThis<Cons_O>();
+	Cons_sp start = this->asSmartPtr();
 	T_sp cdr = start;
 	stringstream	sout;
 	if ( oCar(start) == cl::_sym_quote )
@@ -1295,7 +1258,7 @@ namespace core
 	int lineNumber, col;
 	parsed->getParsePos(lineNumber,col);
 	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
-	return((SourceCodeCons_O::create(car,_Nil<Cons_O>(),lineNumber,col,fileName,lisp)));
+	return((SourceCodeCons_O::create(car,_Nil<T_O>(),lineNumber,col,fileName,lisp)));
     }
 
 
@@ -1357,7 +1320,7 @@ namespace core
 	stringstream	sout;
 //#define	DOT_NOTATION
 	sout << "( ";
-	p = this->const_sharedThis<Cons_O>();
+	p = this->asSmartPtr();
 	while ( p.notnilp() )
 	{
 	    T_sp obj = oCar(p);
@@ -1384,7 +1347,7 @@ namespace core
 	    }
 	    if ( !cl_consp(op) )
 	    {
-		p = _Nil<Cons_O>();
+		p = _Nil<T_O>();
 		if ( op.notnilp() )
 		{
 		    sout << " . " << _rep_(op);
@@ -1415,7 +1378,7 @@ namespace core
 
     Cons_sp SourceCodeCons_O::walkToFindParsePos() const
     {_G();
-	if ( this->hasParsePos() ) return((this->const_sharedThis<Cons_O>()));
+	if ( this->hasParsePos() ) return((this->asSmartPtr()));
 	return((this->Base::walkToFindParsePos()));
     }
 
@@ -1441,7 +1404,7 @@ namespace core
 
     Cons_sp SourceCodeCons_O::copyList() const
     {_OF();
-	Cons_sp p = this->const_sharedThis<Cons_O>();
+	Cons_sp p = this->asSmartPtr();
 	ql::source_code_list list;
 	while ( p.notnilp() )
 	{
@@ -1464,16 +1427,16 @@ namespace core
     Cons_sp SourceCodeCons_O::copyListCar() const
     {_OF();
 	T_sp obj = this->_Car;
-	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<Cons_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
+	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<T_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
 	rootCopy->setCar(obj);
 	return((rootCopy));
     }
 
 
-
-    Cons_sp SourceCodeCons_O::copyTreeCar() const
+WORKING
+    List_sp SourceCodeCons_O::copyTreeCar() const
     {_OF();
-	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<Cons_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
+	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<T_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
 	T_sp obj = this->_Car;
 	if ( cl_consp(obj) )
 	{
@@ -1490,51 +1453,49 @@ namespace core
 
 
 
-    Cons_sp alist_erase(Cons_sp alist, T_sp key )
+    List_sp alist_erase(List_sp alist, T_sp key )
     {
         if ( alist.nilp() ) return alist;
-        if ( oCar(oCar(alist)) == key ) {
-            return cCdr(alist);
-        }
-        Cons_sp prev_alist = alist;
-        Cons_sp cur = cCdr(alist);
+        if ( oCar(oCar(alist)) == key ) return oCdr(alist);
+        List_sp prev_alist = alist;
+        List_sp cur = oCdr(alist);
         while ( alist.notnilp() ) {
             if ( oCar(oCar(alist)) == key ) {
-                prev_alist->rplacd(cCdr(alist));
+                prev_alist.asCons()->rplacd(oCdr(alist.asCons()));
                 return alist;
             }
             prev_alist = cur;
-            cur = cCdr(cur);
+            cur = oCdr(cur);
         }
         return alist;
     }
 
-    Cons_sp alist_push(Cons_sp alist, T_sp key, T_sp val)
+    List_sp alist_push(List_sp alist, T_sp key, T_sp val)
     {
         Cons_sp one = Cons_O::create(key,val);
         alist = Cons_O::create(one,alist);
         return alist;
     }
 
-    Cons_sp alist_get(Cons_sp alist, T_sp key)
+    List_sp alist_get(List_sp alist, T_sp key)
     {
         while (alist.notnilp()) {
             if (oCar(oCar(alist))==key) {
                 return alist;
             }
-            alist = cCdr(alist);
+            alist = oCdr(alist);
         }
-        return _Nil<Cons_O>();
+        return _Nil<T_O>();
     }
 
 
 
-    string alist_asString(Cons_sp alist)
+    string alist_asString(List_sp alist)
     {
         stringstream ss;
         while (alist.notnilp()) {
             ss << _rep_(oCar(oCar(alist))) << " ";
-            alist = cCdr(alist);
+            alist = oCdr(alist);
         }
         return ss.str();
     }

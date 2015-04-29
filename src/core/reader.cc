@@ -748,7 +748,7 @@ namespace core
 	    cur = one;
 	}
 	LOG(BF("readList: %s") % _rep_(oCdr(first)));
-	return cCdr(first);
+	return oCdr(first);
     }
 
 

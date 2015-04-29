@@ -1,4 +1,5 @@
 // Disable this once we have List_sp working
+#define ALLOW_NIL_OTHER 1
 #define ALLOW_CONS_NIL 1
 
 
@@ -152,7 +153,7 @@ namespace gctools
 	return tag_cons<core::Cons_O>(ptr);
     }
 
-        template <class T> inline bool tagged_nilp(T* ptr) {
+    template <class T> inline bool tagged_nilp(T* ptr) {
 	return (reinterpret_cast<void*>(ptr) == global_Symbol_OP_nil);
     }
     template <class T> inline bool tagged_unboundp(T* ptr) {
@@ -242,50 +243,50 @@ namespace gctools
     template <class T> inline bool tagged_framep(T* ptr) {
 	return ((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==frame_tag);
     };
-
+};
 
 
 
 
     
-
+namespace gctools {
     template <class T>
 	class smart_ptr /*: public tagged_ptr<T>*/ {
     public:
 	typedef T Type;
-	T* theObject;
+	Type* theObject;
     public:
 	//Default constructor, set theObject to NULL
     smart_ptr() : theObject(NULL) {};
 	//    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
 	//! Construct a FRAME object - I need to get rid of these
 	//smart_ptr( core::T_O** p ) : theObject(tag_frame(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
-	//smart_ptr( T* objP) : theObject(tag_object(objP)) {};
-	// explicit smart_ptr( void* objP) : theObject(reinterpret_cast<T*>(objP)) {};
+	//smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
+	// explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
 
 	/*! Create a smart pointer from an existing tagged pointer */
-	explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<T*>(ptr)) {
+	explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type*>(ptr)) {
 	    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)!=0);
 	};
 
-	explicit inline smart_ptr(T* ptr) : theObject(tag_other<T>(ptr)) {
+	explicit inline smart_ptr(Type* ptr) : theObject(tag_other<Type>(ptr)) {
 	    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==0);
 	};
 	
-	inline smart_ptr(const smart_ptr<T>& obj) : theObject(obj.theObject) {};
+	inline smart_ptr(const smart_ptr<Type>& obj) : theObject(obj.theObject) {};
 
 
 	template<class From>
         inline smart_ptr( smart_ptr<From> const & rhs )
         {
             if ( LIKELY(rhs.objectp()) ) {
-		T* px = DynamicCast<T*,From*>::castOrNULL(untag_other<From>(rhs.theObject));
+		Type* px = DynamicCast<Type*,From*>::castOrNULL(untag_other<From>(rhs.theObject));
                 if ( px==0 ) {
-                    THROW_HARD_ERROR(BF("DynamicCast<T*,From*> failed due to an illegal cast T* = %s  From* = %s") % typeid(T*).name() % typeid(From*).name() );
+                    THROW_HARD_ERROR(BF("DynamicCast<Type*,From*> failed due to an illegal cast Type* = %s  From* = %s") % typeid(Type*).name() % typeid(From*).name() );
                 }
-		this->theObject = tag_other<T>(px);
+		this->theObject = tag_other<Type>(px);
             } else {
-                this->theObject = reinterpret_cast<T*>(rhs.theObject);
+                this->theObject = reinterpret_cast<Type*>(rhs.theObject);
             }
         }
 
@@ -295,7 +296,7 @@ namespace gctools
 	// Convert one type of smart_ptr to another
 	// TODO: Implement this but check for type conversions!!!!!
 #if 0
-	template <class Y> smart_ptr(const smart_ptr<T>& yy) : theObject(yy.theObject) {
+	template <class Y> smart_ptr(const smart_ptr<Type>& yy) : theObject(yy.theObject) {
 	    GCTOOLS_ASSERT(false);
 	};
 #endif
@@ -308,28 +309,29 @@ namespace gctools
 	//
 	//
 	// Make a tagged fixnum
-	inline static smart_ptr<T> make_tagged_fixnum(Fixnum val) {return smart_ptr<T>(tag_fixnum<T>(val));}
-	inline static smart_ptr<T> make_tagged_other(T* p) {return smart_ptr<T>(p);}
-	inline static smart_ptr<T> make_tagged_nil() {return smart_ptr<T>(reinterpret_cast<T*>(global_Symbol_OP_nil));};
-	inline static smart_ptr<T> make_tagged_unbound() {return smart_ptr<T>(reinterpret_cast<T*>(global_Symbol_OP_unbound));};
-	inline static smart_ptr<T> make_tagged_deleted() {return smart_ptr<T>(reinterpret_cast<T*>(global_Symbol_OP_deleted));};
-	inline static smart_ptr<T> make_tagged_sameAsKey() {return smart_ptr<T>(reinterpret_cast<T*>(global_Symbol_OP_sameAsKey));};
+	inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>(tag_fixnum<Type>(val));}
+	inline static smart_ptr<Type> make_tagged_other(Type* p) {return smart_ptr<Type>(p);}
+	inline static smart_ptr<Type> make_tagged_nil() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_nil));};
+	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_unbound));};
+	inline static smart_ptr<Type> make_tagged_deleted() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_deleted));};
+	inline static smart_ptr<Type> make_tagged_sameAsKey() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_sameAsKey));};
 
 	/*! Get the pointer typcast to an integer quantity for hashing */
 	cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject));};
 
 	void reset_() { this->theObject = NULL; };
 
+#if 0
 	template <class o_class>
 	    inline smart_ptr<o_class> pointerAsUnsafe()
 	    {
 		o_class* new_px = dynamic_cast<o_class*>(this->px);
 		return smart_ptr<o_class>(new_px);
 	    }
-
-	inline void swap(smart_ptr<T>& other)
+#endif
+	inline void swap(smart_ptr<Type>& other)
 	{
-	    T* temp;
+	    Type* temp;
 	    temp = this->theObject;
 	    this->theObject = other.theObject;
 	    other.theObject = temp;
@@ -346,19 +348,19 @@ namespace gctools
 	template <class o_class>
 	    void errorExpectedType() const {
 	    class_id expected_typ = reg::registered_class<o_class>::id;
-	    class_id this_typ = reg::registered_class<T>::id;
+	    class_id this_typ = reg::registered_class<Type>::id;
 	    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
 	};
 
 	template <class o_class>
 	    inline smart_ptr<o_class> asOrNull() {
 	    if (this->otherp()) {
-		o_class* cast = gctools::DynamicCast<o_class*,T*>::castOrNULL(untag_other<T>(this->theObject));
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_other<Type>(this->theObject));
 		if ( cast == NULL ) return smart_ptr<o_class>();
 		smart_ptr<o_class> ret((Tagged)tag_other<o_class>(cast));
 		return ret;
 	    } else if (this->consp()) {
-		o_class* cast = gctools::DynamicCast<o_class*,T*>::castOrNULL(untag_cons<T>(this->theObject));
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_cons<Type>(this->theObject));
 		if ( cast == NULL ) return smart_ptr<o_class>();
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
@@ -372,12 +374,12 @@ namespace gctools
 	template <class o_class>
 	    inline smart_ptr<o_class> asOrNull() const {
 	    if (this->otherp()) {
-		o_class* cast = gctools::DynamicCast<o_class*,T*>::castOrNULL(untag_other<T>(this->theObject));
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_other<Type>(this->theObject));
 		if ( cast == NULL ) return smart_ptr<o_class>();
 		smart_ptr<o_class> ret((Tagged)tag_other<o_class>(cast));
 		return ret;
 	    } else if (this->consp()) {
-		o_class* cast = gctools::DynamicCast<o_class*,T*>::castOrNULL(untag_cons<T>(this->theObject));
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_cons<Type>(this->theObject));
 		if ( cast == NULL ) return smart_ptr<o_class>();
 		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
 		return ret;
@@ -394,7 +396,7 @@ namespace gctools
 		smart_ptr<o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
 			class_id expected_typ = reg::registered_class<o_class>::id;
-			class_id this_typ = reg::registered_class<T>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
 		    }
 		return ret;
@@ -406,7 +408,7 @@ namespace gctools
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
 			class_id expected_typ = reg::registered_class<o_class>::id;
-			class_id this_typ = reg::registered_class<T>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
 		    }
 		return ret;
@@ -425,7 +427,7 @@ namespace gctools
 		if (!ret)
 		    {
 			class_id expected_typ = reg::registered_class<o_class>::id;
-			class_id this_typ = reg::registered_class<T>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
 		    }
 		return ret;
@@ -441,7 +443,7 @@ namespace gctools
 		if (!ret)
 		    {
 			class_id expected_typ = reg::registered_class<o_class>::id;
-			class_id this_typ = reg::registered_class<T>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
 		    }
 		return ret;
@@ -459,7 +461,7 @@ namespace gctools
 		smart_ptr< o_class> ret = this->asOrNull<o_class>();
 		if (!ret) {
 		    class_id expected_typ = reg::registered_class<o_class>::id;
-		    class_id this_typ = reg::registered_class<T>::id;
+		    class_id this_typ = reg::registered_class<Type>::id;
 		    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
 		}
 		return ret;
@@ -479,7 +481,7 @@ namespace gctools
 		if (!ret)
 		    {
 			class_id expected_typ = reg::registered_class<o_class>::id;
-			class_id this_typ = reg::registered_class<T>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
 			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->px));
 		    }
 		return ret;
@@ -520,37 +522,37 @@ namespace gctools
 	int number_of_values() const { return this->theObject == NULL ? 0 : 1;};
 
 	/*! Dereferencing operator - remove the other tag */
-	T* operator->() {
+	Type* operator->() {
 	    GCTOOLS_ASSERT(this->otherp());
 	    return untag_other(this->theObject);
 	};
 
-	T* operator->() const {
+	Type* operator->() const {
 	    GCTOOLS_ASSERT(this->otherp());
 	    return untag_other(this->theObject);
 	};
 
-	T& operator*() const {
+	Type& operator*() const {
 	    GCTOOLS_ASSERT(this->objectp());
 	    return *(this->untag_object());
 	};
 	
-	T* untag_object() const {
+	Type* untag_object() const {
 	    GCTOOLS_ASSERT(this->otherp()||this->consp());
 	    if ( this->otherp() ) {
-		return untag_other<T>(this->theObject);
+		return untag_other<Type>(this->theObject);
 	    } else if ( this->consp() ) {
-		return untag_cons<T>(this->theObject);
+		return untag_cons<Type>(this->theObject);
 	    } 		
 	    THROW_HARD_ERROR(BF("This should never happen"));
 	}
 
-	T* get() const { return this->untag_object(); };
+	Type* get() const { return this->untag_object(); };
 	bool _NULLp() const { return this->theObject==NULL; };
 #if 0
 	operator smart_ptr<core::Cons_O> () {
 	    if ( this->consp() ) {
-		smart_ptr<core::Cons_O> ret(tag_cons<core::Cons_O>(gctools::DynamicCast<core::Cons_O*,T*>::castOrNULL(untag_cons<T>(this->theObject))));
+		smart_ptr<core::Cons_O> ret(tag_cons<core::Cons_O>(gctools::DynamicCast<core::Cons_O*,Type*>::castOrNULL(untag_cons<Type>(this->theObject))));
 		return ret;
 	    } else if ( this->nilp() ) {
 		return smart_ptr<core::Cons_O>(tag_nil<core::Cons_O>());
@@ -562,32 +564,37 @@ namespace gctools
 	/*! If theObject!=NULL then return true */
 	explicit operator bool() const { return this->theObject != NULL; };
 
-	operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged)this->theObject);};
+	//operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged)this->theObject);};
 
-								    
+#if ALLOW_NIL_OTHER
 	bool nilp() const { return tagged_nilp(this->theObject); }
 	bool notnilp() const { return (!this->nilp());};
 	bool isTrue() const { return !this->nilp(); };
+	bool objectp() const { return this->otherp() || this->consp(); };
+	bool otherp() const { return tagged_otherp<Type>(this->theObject);};
+	bool consp() const { return tagged_consp<Type>(this->theObject);};
+	core::Cons_O* unsafe_cons() const {
+	    GCTOOLS_ASSERT(this->consp());
+	    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject)-cons_tag); };
+#else
+	//bool nilp() const { return tagged_nilp(this->theObject); }
+	//bool notnilp() const { return (!this->nilp());};
+	bool isTrue() const { return true; };
+#endif
 	bool fixnump() const {return tagged_fixnump(this->theObject);};
 	Fixnum unsafe_fixnum() const {return untag_fixnum(this->theObject);};
 	bool unboundp() const { return tagged_unboundp(this->theObject);};
 	bool deletedp() const { return tagged_deletedp(this->theObject);};
 	bool sameAsKeyp() const { return tagged_sameAsKeyp(this->theObject);};
-	bool characterp() const {return tagged_characterp<T>(this->theObject);};
+	bool characterp() const {return tagged_characterp<Type>(this->theObject);};
 	int unsafe_character() const {return untag_character(this->theObject);};
-	bool single_floatp() const {return tagged_single_floatp<T>(this->theObject);};
-	float unsafe_single_float() const {return untag_single_float<T>(this->theObject);};
+	bool single_floatp() const {return tagged_single_floatp<Type>(this->theObject);};
+	float unsafe_single_float() const {return untag_single_float<Type>(this->theObject);};
 	// This replaces pointerp()
-	bool objectp() const { return this->otherp() || this->consp(); };
-	bool otherp() const { return tagged_otherp<T>(this->theObject);};
-	bool consp() const { return tagged_consp<T>(this->theObject);};
-	core::Cons_O* unsafe_cons() const {
-	    GCTOOLS_ASSERT(this->consp());
-	    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject)-cons_tag); };
 
 	Fixnum asFixnum() const {
 	    GCTOOLS_ASSERT(this->fixnump());
-	    return untag_fixnum<T>(this->theObject);
+	    return untag_fixnum<Type>(this->theObject);
 	};
 
 	bool framep() const { return tagged_framep(this->theObject);};
@@ -608,11 +615,11 @@ namespace gctools
 	  List actual uses here:
 	  gcweak.h>>WeakPointerManager
 	  gcweak.h>>~WeakPointerManager
-	  gcweak.h>>Mapping(const T& val)
+	  gcweak.h>>Mapping(const Type& val)
 	  gcweak.h>>Buckets::set
 	  intrinsics.cc>>cc_loadTimeValueReference
 	*/
-	T*& rawRef_() { return this->theObject; };
+	Type*& rawRef_() { return this->theObject; };
 
 	
 	/*! Check if this tagged theObject matches the templated type.
@@ -633,6 +640,819 @@ namespace gctools
     };
 
 };
+
+namespace gctools {
+    template <>
+	class smart_ptr<core::T_O> /*: public tagged_ptr<Type>*/ {
+    public:
+	typedef core::T_O Type;
+	Type* theObject;
+    public:
+	//Default constructor, set theObject to NULL
+    smart_ptr() : theObject(NULL) {};
+	//    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
+	//! Construct a FRAME object - I need to get rid of these
+	//smart_ptr( core::T_O** p ) : theObject(tag_frame(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
+	//smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
+	// explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
+
+	/*! Create a smart pointer from an existing tagged pointer */
+	explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type*>(ptr)) {
+	    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)!=0);
+	};
+
+	explicit inline smart_ptr(Type* ptr) : theObject(tag_other<Type>(ptr)) {
+	    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==0);
+	};
+	
+	inline smart_ptr(const smart_ptr<Type>& obj) : theObject(obj.theObject) {};
+
+
+	template<class From>
+        inline smart_ptr( smart_ptr<From> const & rhs )
+        {
+            if ( LIKELY(rhs.objectp()) ) {
+		Type* px = DynamicCast<Type*,From*>::castOrNULL(untag_other<From>(rhs.theObject));
+                if ( px==0 ) {
+                    THROW_HARD_ERROR(BF("DynamicCast<Type*,From*> failed due to an illegal cast Type* = %s  From* = %s") % typeid(Type*).name() % typeid(From*).name() );
+                }
+		this->theObject = tag_other<Type>(px);
+            } else {
+                this->theObject = reinterpret_cast<Type*>(rhs.theObject);
+            }
+        }
+
+
+	uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject)&tag_mask; };
+	
+	// Convert one type of smart_ptr to another
+	// TODO: Implement this but check for type conversions!!!!!
+#if 0
+	template <class Y> smart_ptr(const smart_ptr<Type>& yy) : theObject(yy.theObject) {
+	    GCTOOLS_ASSERT(false);
+	};
+#endif
+
+
+    public:
+	//----------------------------------------------------------------------
+	//
+	// Constructors
+	//
+	//
+	// Make a tagged fixnum
+	inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>(tag_fixnum<Type>(val));}
+	inline static smart_ptr<Type> make_tagged_other(Type* p) {return smart_ptr<Type>(p);}
+	inline static smart_ptr<Type> make_tagged_nil() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_nil));};
+	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_unbound));};
+	inline static smart_ptr<Type> make_tagged_deleted() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_deleted));};
+	inline static smart_ptr<Type> make_tagged_sameAsKey() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_sameAsKey));};
+
+	/*! Get the pointer typcast to an integer quantity for hashing */
+	cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject));};
+
+	void reset_() { this->theObject = NULL; };
+
+#if 0
+	template <class o_class>
+	    inline smart_ptr<o_class> pointerAsUnsafe()
+	    {
+		o_class* new_px = dynamic_cast<o_class*>(this->px);
+		return smart_ptr<o_class>(new_px);
+	    }
+#endif
+	inline void swap(smart_ptr<Type>& other)
+	{
+	    Type* temp;
+	    temp = this->theObject;
+	    this->theObject = other.theObject;
+	    other.theObject = temp;
+	}
+#if 0   /// Figure out what to do with this
+	template <class o_class>
+	    inline smart_ptr<o_class> pointerAsUnsafe() const
+	    {
+		o_class* new_px = dynamic_cast<o_class*>(this->px);
+		return smart_ptr<o_class>(new_px);
+	    }
+#endif
+
+	template <class o_class>
+	    void errorExpectedType() const {
+	    class_id expected_typ = reg::registered_class<o_class>::id;
+	    class_id this_typ = reg::registered_class<Type>::id;
+	    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+	};
+
+	template <class o_class>
+	    inline smart_ptr<o_class> asOrNull() {
+	    if (this->otherp()) {
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_other<Type>(this->theObject));
+		if ( cast == NULL ) return smart_ptr<o_class>();
+		smart_ptr<o_class> ret((Tagged)tag_other<o_class>(cast));
+		return ret;
+	    } else if (this->consp()) {
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_cons<Type>(this->theObject));
+		if ( cast == NULL ) return smart_ptr<o_class>();
+		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
+		return ret;
+	    }
+	    this->errorExpectedType<o_class>();
+	    // unreachable
+	    smart_ptr<o_class> fail;
+	    return fail;
+	}
+
+	template <class o_class>
+	    inline smart_ptr<o_class> asOrNull() const {
+	    if (this->otherp()) {
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_other<Type>(this->theObject));
+		if ( cast == NULL ) return smart_ptr<o_class>();
+		smart_ptr<o_class> ret((Tagged)tag_other<o_class>(cast));
+		return ret;
+	    } else if (this->consp()) {
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_cons<Type>(this->theObject));
+		if ( cast == NULL ) return smart_ptr<o_class>();
+		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
+		return ret;
+	    }
+	    this->errorExpectedType<o_class>();
+	    // unreachable
+	    smart_ptr<o_class> fail;
+	    return fail;
+	}
+
+	template <class To, typename Functor>
+	    inline smart_ptr<To> as_or_error(Functor error_func)
+	{
+	    smart_ptr<To> ret = this->asOrNull<To>();
+	    if (!ret) {
+		error_func();
+		THROW_HARD_ERROR(BF("An as_or_error cast failed and the error function fell through - this is like a failed assertion"));
+	    }
+	    return ret;
+	}
+
+	template <class To, typename Functor>
+	    inline smart_ptr<To> as_or_error(Functor error_func) const
+	{
+	    smart_ptr<To> ret = this->asOrNull<To>();
+	    if (!ret) {
+		error_func();
+		THROW_HARD_ERROR(BF("An as_or_error cast failed and the error function fell through - this is like a failed assertion"));
+	    }
+	    return ret;
+	}
+
+
+	
+	template <class o_class>
+	    inline smart_ptr<o_class> as()
+	    {
+		smart_ptr<o_class> ret = this->asOrNull<o_class>();
+		if (!ret) {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+		    }
+		return ret;
+	    }
+
+	template <class o_class>
+	    inline smart_ptr< o_class> as() const
+	    {
+		smart_ptr< o_class> ret = this->asOrNull<o_class>();
+		if (!ret) {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+		    }
+		return ret;
+	    }
+	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
+	  If the ptr is nil, return a nil ptr.
+	TODO:  replace this with as<Cons_O>()*/
+	template <class o_class>
+	    inline smart_ptr<o_class> as_or_nil()
+	    {
+		if ( this->nilp() ) {
+		    smart_ptr<o_class> nil((Tagged)tag_nil<o_class>());
+		    return nil;
+		}
+		smart_ptr<o_class> ret = this->asOrNull<o_class>();
+		if (!ret)
+		    {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+		    }
+		return ret;
+	    }
+	template <class o_class>
+	    inline smart_ptr<o_class> as_or_nil() const
+	    {
+		if ( this->nilp() ) {
+		    smart_ptr<o_class> nil((Tagged)tag_nil<o_class>());
+		    return nil;
+		}
+		smart_ptr<o_class> ret = this->asOrNull<o_class>();
+		if (!ret)
+		    {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+		    }
+		return ret;
+	    }
+
+	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
+	  If the ptr is nil, throw an error */
+	template <class o_class>
+	    inline smart_ptr< o_class> asNotNil() const
+	    {
+		if ( this->nilp() ) {
+		    class_id expected_typ = reg::registered_class<o_class>::id;
+		    lisp_errorUnexpectedNil(expected_typ);
+		}
+		smart_ptr< o_class> ret = this->asOrNull<o_class>();
+		if (!ret) {
+		    class_id expected_typ = reg::registered_class<o_class>::id;
+		    class_id this_typ = reg::registered_class<Type>::id;
+		    lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->untag_object()));
+		}
+		return ret;
+	    }
+
+#if 0
+	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
+	  If the ptr is nil, return a nil ptr */
+	template <class o_class>
+	    inline smart_ptr< o_class> as_or_nil() const
+	    {
+		if ( this->nilp() ) {
+		    smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
+		    return nil;
+		}
+		smart_ptr< o_class> ret = this->asOrNull<o_class>();
+		if (!ret)
+		    {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,static_cast<core::T_O*>(this->px));
+		    }
+		return ret;
+	    }
+#endif
+
+	template <class o_class>
+	    inline bool isA() const
+	    {
+		if ( this->objectp() ) {
+		    if ( smart_ptr<const o_class> ret = this->asOrNull<const o_class>() ) {
+			return true;
+		    }
+		}
+		return false;
+	    }
+
+
+	template <class o_class>
+	    inline bool isA()
+	    {
+		if ( this->objectp() ) {
+		    if ( smart_ptr<o_class> ret = this->asOrNull<o_class>() ) {
+			return true;
+		    }
+		}
+		return false;
+	    }
+
+
+	/*! Return the offset in bytes between this.px and this - you need to modify the base
+	  class of smart_ptr to make px protected */
+	//	int offset_of_px_from_this() const { return ((char*)(&this->px)) - ((char*)(this));}
+	/*! Return the size in bytes of px - you need to modify the base class
+	  of smart_ptr to make px protected */
+	//	int size_of_px() const { return sizeof(this->px); };
+
+	int number_of_values() const { return this->theObject == NULL ? 0 : 1;};
+
+	/*! Dereferencing operator - remove the other tag */
+	Type* operator->() {
+	    GCTOOLS_ASSERT(this->otherp());
+	    return untag_other(this->theObject);
+	};
+
+	Type* operator->() const {
+	    GCTOOLS_ASSERT(this->otherp());
+	    return untag_other(this->theObject);
+	};
+
+	Type& operator*() const {
+	    GCTOOLS_ASSERT(this->objectp());
+	    return *(this->untag_object());
+	};
+	
+	Type* untag_object() const {
+	    GCTOOLS_ASSERT(this->otherp()||this->consp());
+	    if ( this->otherp() ) {
+		return untag_other<Type>(this->theObject);
+	    } else if ( this->consp() ) {
+		return untag_cons<Type>(this->theObject);
+	    } 		
+	    THROW_HARD_ERROR(BF("This should never happen"));
+	}
+
+	Type* get() const { return this->untag_object(); };
+	bool _NULLp() const { return this->theObject==NULL; };
+#if 0
+	operator smart_ptr<core::Cons_O> () {
+	    if ( this->consp() ) {
+		smart_ptr<core::Cons_O> ret(tag_cons<core::Cons_O>(gctools::DynamicCast<core::Cons_O*,Type*>::castOrNULL(untag_cons<Type>(this->theObject))));
+		return ret;
+	    } else if ( this->nilp() ) {
+		return smart_ptr<core::Cons_O>(tag_nil<core::Cons_O>());
+	    }
+	    this->errorExpectedType<core::Cons_O>();
+	}
+#endif
+	    
+	/*! If theObject!=NULL then return true */
+	explicit operator bool() const { return this->theObject != NULL; };
+
+	bool nilp() const { return tagged_nilp(this->theObject); }
+	bool notnilp() const { return (!this->nilp());};
+	bool isTrue() const { return !this->nilp(); };
+	bool fixnump() const {return tagged_fixnump(this->theObject);};
+	Fixnum unsafe_fixnum() const {return untag_fixnum(this->theObject);};
+	bool unboundp() const { return tagged_unboundp(this->theObject);};
+	bool deletedp() const { return tagged_deletedp(this->theObject);};
+	bool sameAsKeyp() const { return tagged_sameAsKeyp(this->theObject);};
+	bool characterp() const {return tagged_characterp<Type>(this->theObject);};
+	int unsafe_character() const {return untag_character(this->theObject);};
+	bool single_floatp() const {return tagged_single_floatp<Type>(this->theObject);};
+	float unsafe_single_float() const {return untag_single_float<Type>(this->theObject);};
+	// This replaces pointerp()
+	bool objectp() const { return this->otherp() || this->consp(); };
+	bool otherp() const { return tagged_otherp<Type>(this->theObject);};
+	bool consp() const { return tagged_consp<Type>(this->theObject);};
+	core::Cons_O* unsafe_cons() const {
+	    GCTOOLS_ASSERT(this->consp());
+	    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject)-cons_tag); };
+
+	Fixnum asFixnum() const {
+	    GCTOOLS_ASSERT(this->fixnump());
+	    return untag_fixnum<Type>(this->theObject);
+	};
+
+	bool framep() const { return tagged_framep(this->theObject);};
+	core::T_O** unsafe_frame() const { return untag_frame(this->theObject); };
+	core::T_O** safe_frame() const { GCTOOLS_ASSERT(this->framep()); return this->unsafe_frame(); };
+
+	bool sameAsKeyP() const { return tagged_sameAsKeyp(this->theObject); }
+	
+	/*! Return the raw smart_ptr value interpreted as a T_O* */
+	core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject);}
+
+	void setRaw_(core::T_O* p) {this->theObject = reinterpret_cast<core::T_O*>(p);}
+
+	/*! This should almost NEVER be used!!!!!!   
+	  The only reason to ever use this is when theObject will be set to NULL
+	  and you are sure that it will not be interpreted as a Fixnum!!!
+
+	  List actual uses here:
+	  gcweak.h>>WeakPointerManager
+	  gcweak.h>>~WeakPointerManager
+	  gcweak.h>>Mapping(const Type& val)
+	  gcweak.h>>Buckets::set
+	  intrinsics.cc>>cc_loadTimeValueReference
+	*/
+	Type*& rawRef_() { return this->theObject; };
+
+	
+	/*! Check if this tagged theObject matches the templated type.
+	  The most common case is this is an object.*/
+	bool valid() const {
+	    GCTOOLS_ASSERT(false); // BF("Implement me"));
+	}
+
+
+	template <class U> inline bool operator==(smart_ptr<U> const other) const {
+	    return this->theObject == other.theObject;
+	}
+
+	template <class U> inline bool operator!=(smart_ptr<U> const other) const {
+	    return this->theObject != other.theObject;
+	}
+
+    };
+
+};
+
+
+
+
+namespace gctools {
+    template <>
+	class smart_ptr<core::Symbol_O> /*: public tagged_ptr<Type>*/ {
+    public:
+	typedef core::Symbol_O Type;
+	Type* theObject;
+    public:
+	//Default constructor, set theObject to NULL
+    smart_ptr() : theObject(NULL) {};
+	//    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
+	//! Construct a FRAME object - I need to get rid of these
+	//smart_ptr( core::T_O** p ) : theObject(tag_frame(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
+	//smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
+	// explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
+
+	/*! Create a smart pointer from an existing tagged pointer */
+	explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type*>(ptr)) {
+	    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)!=0);
+	};
+
+	explicit inline smart_ptr(Type* ptr) : theObject(tag_other<Type>(ptr)) {
+	    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr)&tag_mask)==0);
+	};
+	
+	inline smart_ptr(const smart_ptr<Type>& obj) : theObject(obj.theObject) {};
+
+
+	template<class From>
+        inline smart_ptr( smart_ptr<From> const & rhs )
+        {
+            if ( LIKELY(rhs.objectp()) ) {
+		Type* px = DynamicCast<Type*,From*>::castOrNULL(untag_other<From>(rhs.theObject));
+                if ( px==0 ) {
+                    THROW_HARD_ERROR(BF("DynamicCast<Type*,From*> failed due to an illegal cast Type* = %s  From* = %s") % typeid(Type*).name() % typeid(From*).name() );
+                }
+		this->theObject = tag_other<Type>(px);
+            } else {
+                this->theObject = reinterpret_cast<Type*>(rhs.theObject);
+            }
+        }
+
+
+	uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject)&tag_mask; };
+	
+	// Convert one type of smart_ptr to another
+	// TODO: Implement this but check for type conversions!!!!!
+#if 0
+	template <class Y> smart_ptr(const smart_ptr<Type>& yy) : theObject(yy.theObject) {
+	    GCTOOLS_ASSERT(false);
+	};
+#endif
+
+
+    public:
+	//----------------------------------------------------------------------
+	//
+	// Constructors
+	//
+	//
+	// Make a tagged fixnum
+	inline static smart_ptr<Type> make_tagged_fixnum(Fixnum val) {return smart_ptr<Type>(tag_fixnum<Type>(val));}
+	inline static smart_ptr<Type> make_tagged_other(Type* p) {return smart_ptr<Type>(p);}
+	inline static smart_ptr<Type> make_tagged_nil() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_nil));};
+	inline static smart_ptr<Type> make_tagged_unbound() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_unbound));};
+	inline static smart_ptr<Type> make_tagged_deleted() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_deleted));};
+	inline static smart_ptr<Type> make_tagged_sameAsKey() {return smart_ptr<Type>(reinterpret_cast<Type*>(global_Symbol_OP_sameAsKey));};
+
+	/*! Get the pointer typcast to an integer quantity for hashing */
+	cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject));};
+
+	void reset_() { this->theObject = NULL; };
+
+#if 0
+	template <class o_class>
+	    inline smart_ptr<o_class> pointerAsUnsafe()
+	    {
+		o_class* new_px = dynamic_cast<o_class*>(this->px);
+		return smart_ptr<o_class>(new_px);
+	    }
+#endif
+	inline void swap(smart_ptr<Type>& other)
+	{
+	    Type* temp;
+	    temp = this->theObject;
+	    this->theObject = other.theObject;
+	    other.theObject = temp;
+	}
+#if 0   /// Figure out what to do with this
+	template <class o_class>
+	    inline smart_ptr<o_class> pointerAsUnsafe() const
+	    {
+		o_class* new_px = dynamic_cast<o_class*>(this->px);
+		return smart_ptr<o_class>(new_px);
+	    }
+#endif
+
+	template <class o_class>
+	    void errorExpectedType() const {
+	    class_id expected_typ = reg::registered_class<o_class>::id;
+	    class_id this_typ = reg::registered_class<Type>::id;
+	    lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+	};
+
+	template <class o_class>
+	    inline smart_ptr<o_class> asOrNull() {
+	    if (this->otherp()) {
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_other<Type>(this->theObject));
+		if ( cast == NULL ) return smart_ptr<o_class>();
+		smart_ptr<o_class> ret((Tagged)tag_other<o_class>(cast));
+		return ret;
+	    } else if (this->consp()) {
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_cons<Type>(this->theObject));
+		if ( cast == NULL ) return smart_ptr<o_class>();
+		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
+		return ret;
+	    }
+	    this->errorExpectedType<o_class>();
+	    // unreachable
+	    smart_ptr<o_class> fail;
+	    return fail;
+	}
+
+	template <class o_class>
+	    inline smart_ptr<o_class> asOrNull() const {
+	    if (this->otherp()) {
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_other<Type>(this->theObject));
+		if ( cast == NULL ) return smart_ptr<o_class>();
+		smart_ptr<o_class> ret((Tagged)tag_other<o_class>(cast));
+		return ret;
+	    } else if (this->consp()) {
+		o_class* cast = gctools::DynamicCast<o_class*,Type*>::castOrNULL(untag_cons<Type>(this->theObject));
+		if ( cast == NULL ) return smart_ptr<o_class>();
+		smart_ptr<o_class> ret((Tagged)tag_cons<o_class>(cast));
+		return ret;
+	    }
+	    this->errorExpectedType<o_class>();
+	    // unreachable
+	    smart_ptr<o_class> fail;
+	    return fail;
+	}
+
+	template <class o_class>
+	    inline smart_ptr<o_class> as()
+	    {
+		smart_ptr<o_class> ret = this->asOrNull<o_class>();
+		if (!ret) {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+		    }
+		return ret;
+	    }
+
+	template <class o_class>
+	    inline smart_ptr< o_class> as() const
+	    {
+		smart_ptr< o_class> ret = this->asOrNull<o_class>();
+		if (!ret) {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+		    }
+		return ret;
+	    }
+	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
+	  If the ptr is nil, return a nil ptr.
+	TODO:  replace this with as<Cons_O>()*/
+	template <class o_class>
+	    inline smart_ptr<o_class> as_or_nil()
+	    {
+		if ( this->nilp() ) {
+		    smart_ptr<o_class> nil((Tagged)tag_nil<o_class>());
+		    return nil;
+		}
+		smart_ptr<o_class> ret = this->asOrNull<o_class>();
+		if (!ret)
+		    {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+		    }
+		return ret;
+	    }
+	template <class o_class>
+	    inline smart_ptr<o_class> as_or_nil() const
+	    {
+		if ( this->nilp() ) {
+		    smart_ptr<o_class> nil((Tagged)tag_nil<o_class>());
+		    return nil;
+		}
+		smart_ptr<o_class> ret = this->asOrNull<o_class>();
+		if (!ret)
+		    {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+		    }
+		return ret;
+	    }
+
+	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
+	  If the ptr is nil, throw an error */
+	template <class o_class>
+	    inline smart_ptr< o_class> asNotNil() const
+	    {
+		if ( this->nilp() ) {
+		    class_id expected_typ = reg::registered_class<o_class>::id;
+		    lisp_errorUnexpectedNil(expected_typ);
+		}
+		smart_ptr< o_class> ret = this->asOrNull<o_class>();
+		if (!ret) {
+		    class_id expected_typ = reg::registered_class<o_class>::id;
+		    class_id this_typ = reg::registered_class<Type>::id;
+		    lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->untag_object()));
+		}
+		return ret;
+	    }
+
+#if 0
+	/*! Downcast to o_class - if ptr cannot be downcast throw exception.
+	  If the ptr is nil, return a nil ptr */
+	template <class o_class>
+	    inline smart_ptr< o_class> as_or_nil() const
+	    {
+		if ( this->nilp() ) {
+		    smart_ptr<o_class> nil(smart_ptr<o_class>::tagged_nil);
+		    return nil;
+		}
+		smart_ptr< o_class> ret = this->asOrNull<o_class>();
+		if (!ret)
+		    {
+			class_id expected_typ = reg::registered_class<o_class>::id;
+			class_id this_typ = reg::registered_class<Type>::id;
+			lisp_errorUnexpectedType(expected_typ,this_typ,(core::T_O*)(this->px));
+		    }
+		return ret;
+	    }
+#endif
+
+	template <class o_class>
+	    inline bool isA() const
+	    {
+		if ( this->objectp() ) {
+		    if ( smart_ptr<const o_class> ret = this->asOrNull<const o_class>() ) {
+			return true;
+		    }
+		}
+		return false;
+	    }
+
+
+	template <class o_class>
+	    inline bool isA()
+	    {
+		if ( this->objectp() ) {
+		    if ( smart_ptr<o_class> ret = this->asOrNull<o_class>() ) {
+			return true;
+		    }
+		}
+		return false;
+	    }
+
+
+	/*! Return the offset in bytes between this.px and this - you need to modify the base
+	  class of smart_ptr to make px protected */
+	//	int offset_of_px_from_this() const { return ((char*)(&this->px)) - ((char*)(this));}
+	/*! Return the size in bytes of px - you need to modify the base class
+	  of smart_ptr to make px protected */
+	//	int size_of_px() const { return sizeof(this->px); };
+
+	int number_of_values() const { return this->theObject == NULL ? 0 : 1;};
+
+	/*! Dereferencing operator - remove the other tag */
+	Type* operator->() {
+	    GCTOOLS_ASSERT(this->otherp());
+	    return untag_other(this->theObject);
+	};
+
+	Type* operator->() const {
+	    GCTOOLS_ASSERT(this->otherp());
+	    return untag_other(this->theObject);
+	};
+
+	Type& operator*() const {
+	    GCTOOLS_ASSERT(this->objectp());
+	    return *(this->untag_object());
+	};
+	
+	Type* untag_object() const {
+	    GCTOOLS_ASSERT(this->otherp()||this->consp());
+	    if ( this->otherp() ) {
+		return untag_other<Type>(this->theObject);
+	    } else if ( this->consp() ) {
+		return untag_cons<Type>(this->theObject);
+	    } 		
+	    THROW_HARD_ERROR(BF("This should never happen"));
+	}
+
+	Type* get() const { return this->untag_object(); };
+	bool _NULLp() const { return this->theObject==NULL; };
+#if 0
+	operator smart_ptr<core::Cons_O> () {
+	    if ( this->consp() ) {
+		smart_ptr<core::Cons_O> ret(tag_cons<core::Cons_O>(gctools::DynamicCast<core::Cons_O*,Type*>::castOrNULL(untag_cons<Type>(this->theObject))));
+		return ret;
+	    } else if ( this->nilp() ) {
+		return smart_ptr<core::Cons_O>(tag_nil<core::Cons_O>());
+	    }
+	    this->errorExpectedType<core::Cons_O>();
+	}
+#endif
+	    
+	/*! If theObject!=NULL then return true */
+	explicit operator bool() const { return this->theObject != NULL; };
+
+	bool nilp() const { return tagged_nilp(this->theObject); }
+	bool notnilp() const { return (!this->nilp());};
+	bool isTrue() const { return !this->nilp(); };
+	bool fixnump() const {return tagged_fixnump(this->theObject);};
+	Fixnum unsafe_fixnum() const {return untag_fixnum(this->theObject);};
+	bool unboundp() const { return tagged_unboundp(this->theObject);};
+	bool deletedp() const { return tagged_deletedp(this->theObject);};
+	bool sameAsKeyp() const { return tagged_sameAsKeyp(this->theObject);};
+	bool characterp() const {return tagged_characterp<Type>(this->theObject);};
+	int unsafe_character() const {return untag_character(this->theObject);};
+	bool single_floatp() const {return tagged_single_floatp<Type>(this->theObject);};
+	float unsafe_single_float() const {return untag_single_float<Type>(this->theObject);};
+	// This replaces pointerp()
+	bool objectp() const { return this->otherp() || this->consp(); };
+	bool otherp() const { return tagged_otherp<Type>(this->theObject);};
+	bool consp() const { return tagged_consp<Type>(this->theObject);};
+	core::Cons_O* unsafe_cons() const {
+	    GCTOOLS_ASSERT(this->consp());
+	    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject)-cons_tag); };
+
+	Fixnum asFixnum() const {
+	    GCTOOLS_ASSERT(this->fixnump());
+	    return untag_fixnum<Type>(this->theObject);
+	};
+
+	bool framep() const { return tagged_framep(this->theObject);};
+	core::T_O** unsafe_frame() const { return untag_frame(this->theObject); };
+	core::T_O** safe_frame() const { GCTOOLS_ASSERT(this->framep()); return this->unsafe_frame(); };
+
+	bool sameAsKeyP() const { return tagged_sameAsKeyp(this->theObject); }
+	
+	/*! Return the raw smart_ptr value interpreted as a T_O* */
+	core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject);}
+
+	void setRaw_(Type* p) {this->theObject = reinterpret_cast<Type*>(p);}
+
+	/*! This should almost NEVER be used!!!!!!   
+	  The only reason to ever use this is when theObject will be set to NULL
+	  and you are sure that it will not be interpreted as a Fixnum!!!
+
+	  List actual uses here:
+	  gcweak.h>>WeakPointerManager
+	  gcweak.h>>~WeakPointerManager
+	  gcweak.h>>Mapping(const Type& val)
+	  gcweak.h>>Buckets::set
+	  intrinsics.cc>>cc_loadTimeValueReference
+	*/
+	Type*& rawRef_() { return this->theObject; };
+
+	
+	/*! Check if this tagged theObject matches the templated type.
+	  The most common case is this is an object.*/
+	bool valid() const {
+	    GCTOOLS_ASSERT(false); // BF("Implement me"));
+	}
+
+
+	template <class U> inline bool operator==(smart_ptr<U> const other) const {
+	    return this->theObject == other.theObject;
+	}
+
+	template <class U> inline bool operator!=(smart_ptr<U> const other) const {
+	    return this->theObject != other.theObject;
+	}
+
+    };
+
+};
+
+
+
+namespace cl {
+    extern gctools::smart_ptr<core::Symbol_O> _sym_list;
+    extern gctools::smart_ptr<core::Symbol_O> _sym_typeError;
+}
+
+namespace kw {
+    extern gctools::smart_ptr<core::Symbol_O> _sym_datum;
+    extern gctools::smart_ptr<core::Symbol_O> _sym_expectedType;
+}
+namespace core {
+    extern gctools::smart_ptr<core::T_O> lisp_createList(gctools::smart_ptr<core::T_O> a1, gctools::smart_ptr<core::T_O> a2, gctools::smart_ptr<core::T_O> a3, gctools::smart_ptr<core::T_O> a4);
+    extern void lisp_error_condition(const char* functionName, const char* fileName, int lineNumber, gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
+}
+
+
 
 namespace core {
     class Fixnum_I;
@@ -784,6 +1604,15 @@ namespace gctools {
     public:
 	//! The default constructor returns an invalid smart_ptr
     smart_ptr() : theObject(NULL){};
+	inline smart_ptr(const smart_ptr<core::T_O>& other) {
+	    if (other.consp()) {
+		this->theObject = other.theObject;
+	    } else if (other.nilp()) {
+		this->theObject = other.theObject;
+	    } else {
+		lisp_error_condition(__FUNCTION__,__FILE__,__LINE__,cl::_sym_typeError,core::lisp_createList(kw::_sym_datum,other,kw::_sym_expectedType,cl::_sym_list));
+	    }
+	}
 	inline smart_ptr(const smart_ptr<core::Cons_O>& other)
 	    : theObject(other.raw_()) {
 	    GCTOOLS_ASSERT(other.consp());
@@ -815,9 +1644,13 @@ namespace gctools {
 	inline bool consp() const {
 	    return tagged_consp(this->theObject) || tagged_nilp(this->theObject);
 	};
+	inline core::Cons_O* unsafe_cons() const {
+	    GCTOOLS_ASSERT(this->consp());
+	    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject)-cons_tag); 
+	};
 	inline bool objectp() const { return this->otherp() || this->consp(); };
 	inline bool nilp() const { return tagged_nilp(this->theObject); };
-	inline bool notnilp() const { return this->nilp(); };
+	inline bool notnilp() const { return !this->nilp(); };
 	inline bool isTrue() const { return !this->nilp(); };
 	inline bool unboundp() const { return tagged_unboundp(this->theObject); };
 
@@ -938,7 +1771,24 @@ namespace gctools {
 	List_sp_iterator const begin() const { return List_sp_iterator(*this); }
 	List_sp_iterator const end() const { return List_sp_iterator_nil(); }
 
+	smart_ptr<core::List_V>& operator=(const smart_ptr<core::List_V>& other ) {
+	    if (this==&other) return *this;
+	    this->theObject = other.theObject;
+	    return *this;
+	};
 
+	template <typename From>
+	    smart_ptr<core::List_V>& operator=(const smart_ptr<From>& other ) {
+	    if (this==reinterpret_cast<smart_ptr<core::List_V>*>(const_cast<smart_ptr<From>*>(&other))) return *this;
+	    if ( tagged_consp<From>(other.theObject) ) {
+		this->theObject = other.theObject;
+	    } else if ( tagged_nilp<From>(other.theObject) ) {
+		this->theObject = other.theObject;
+	    } else {
+		lisp_error_condition(__FUNCTION__,__FILE__,__LINE__,cl::_sym_typeError,core::lisp_createList(kw::_sym_datum,other,kw::_sym_expectedType,cl::_sym_list));
+	    }
+	    return *this;
+	};
     };
 
 
@@ -1066,5 +1916,98 @@ namespace core {
     using gctools::Fixnum;
 };
 
+
+ namespace gctools {
+     /*! Maintain tagged pointers to Functoids and their derived classes
+       It would be better to have a separate tag for these.  
+       Maybe if I can figure out 16-byte alignment with Boehm
+     */
+     template <typename T>
+	 class tagged_functor {
+     public:
+	 typedef T Type;
+	 Type* thePointer;
+     public:
+     tagged_functor() : thePointer(NULL) {};
+	 template <typename From>
+	     inline tagged_functor(tagged_functor<From> const& rhs)
+	     {
+		 if ( LIKELY(rhs.otherp()) ) {
+		     Type* px = dynamic_cast<Type*>(untag_other<From>(rhs.thePointer));
+		     if ( px ) {
+			 this->thePointer = tag_other<Type>(px);
+			 return;
+		     }
+		     THROW_HARD_ERROR(BF("Cannot cast tagged_functor in constructor"));
+		 }
+		 THROW_HARD_ERROR(BF("Bad tag on tagged_functor in constructor"));
+	     };
+	 
+     tagged_functor(Type* f) : thePointer(reinterpret_cast<Type*>(reinterpret_cast<char*>(f)+other_tag)) {};
+	 Type* operator->() {
+	     GCTOOLS_ASSERT(this->otherp());
+	     return untag_other(this->thePointer);
+	 };
+	 Type* operator->() const {
+	     GCTOOLS_ASSERT(this->otherp());
+	     return untag_other(this->thePointer);
+	 };
+	 Type& operator*() const {
+	     GCTOOLS_ASSERT(this->otherp());
+	     return *untag_other(this->thePointer);
+	 };
+	 bool otherp() const {
+	     return tagged_otherp(this->thePointer);
+	 }
+	 void reset_() {
+	     this->thePointer = NULL;
+	 }
+	 explicit operator bool() const {
+	     return this->thePointer != NULL;
+	 }
+
+	 template <class o_class>
+	     inline tagged_functor<o_class> asOrNull() {
+	     if (this->otherp()) {
+		 o_class* cast = dynamic_cast<o_class*>(untag_other<T>(this->thePointer));
+		 if ( cast == NULL ) return tagged_functor<o_class>();
+		 tagged_functor<o_class> ret(cast);
+		 return ret;
+	     } 
+	     THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_functor"));
+	     // unreachable
+	     tagged_functor<o_class> fail;
+	     return fail;
+	 }
+
+	 template <class o_class>
+	     inline tagged_functor<o_class> asOrNull() const {
+	     if (this->otherp()) {
+		 o_class* cast = dynamic_cast<o_class*>(untag_other<T>(this->thePointer));
+		 if ( cast == NULL ) return tagged_functor<o_class>();
+		 tagged_functor<o_class> ret(cast);
+		 return ret;
+	     } 
+	     THROW_HARD_ERROR(BF("Illegal tagged pointer for tagged_functor"));
+	     // unreachable
+	     tagged_functor<o_class> fail;
+	     return fail;
+	 }
+
+	 template <class o_class>
+	     inline tagged_functor<o_class> as() {
+	     tagged_functor<o_class> ret = this->asOrNull<o_class>();
+	     if ( ret ) return ret;
+	     THROW_HARD_ERROR(BF("Illegal cast of tagged_functor"));
+	 }
+
+     	 template <class o_class>
+	     inline tagged_functor<o_class> as() const {
+	     tagged_functor<o_class> ret = this->asOrNull<o_class>();
+	     if ( ret ) return ret;
+	     THROW_HARD_ERROR(BF("Illegal cast of tagged_functor"));
+	 }
+     };
+ };	
 
 #endif

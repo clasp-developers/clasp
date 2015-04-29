@@ -979,6 +979,9 @@ namespace core
 
 
 
+    SYMBOL_SC_(KeywordPkg,body);
+    SYMBOL_SC_(KeywordPkg,lambda_list_handler);
+    SYMBOL_SC_(KeywordPkg,docstring);
     void lisp_defineSingleDispatchMethod(Symbol_sp sym,
 					 Symbol_sp classSymbol,
 					 BuiltinClosure* methoid,
@@ -992,13 +995,13 @@ namespace core
     {_G();
 	Class_sp receiver_class = eval::funcall(cl::_sym_findClass,classSymbol,_lisp->_true()).as<Class_O>();
 	Symbol_sp className = receiver_class->name();
-#if 1
+#if 0
 	if ( sym->symbolName()->get().find("JSONDATABASE-LOAD-FROM-FILE") != string::npos )
 	{
             printf("%s:%d - Caught lisp_defineSingleDispatchMethod for %s\n", __FILE__, __LINE__, sym->symbolName()->get().c_str() );
 	}
 #endif
-	List_sp ldeclares = lisp_parse_declares(className->getPackage()->getName(),declares);
+	List_sp ldeclares = lisp_parse_declares(className->getPackage().as<Package_O>()->getName(),declares);
 	// NOTE: We are compiling the llhandler in the package of the class - not the package of the
 	// method name  -- sometimes the method name will belong to another class (ie: core:--init--)
 	LambdaListHandler_sp llhandler;
@@ -1009,14 +1012,14 @@ namespace core
 	    llhandler = LambdaListHandler_O::create(number_of_required_arguments,pureOutIndices);
 	} else if ( arguments != "" )
 	{
-	    List_sp llraw = lisp_parse_arguments(className->getPackage()->getName(),arguments);
-	    Cons_sp llproc;
+	    List_sp llraw = lisp_parse_arguments(className->getPackage().as<Package_O>()->getName(),arguments);
 	    /*-----*/
 	    MULTIPLE_VALUES_CONTEXT();
-	    Cons_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw,true);
-	    llproc = mv_llprocessed; // slice
+	    T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw,true);
+	    T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
 	    Symbol_sp sd_symbol = mv_llprocessed.valueGet(1).as<Symbol_O>();
 	    Symbol_sp sd_class_symbol = mv_llprocessed.valueGet(2).as<Symbol_O>();
+	    List_sp llproc = coerce_to_list(tllproc);
 	    /*-----*/
 
 	    if ( sd_class_symbol.notnilp() && sd_class_symbol != classSymbol )
@@ -1047,10 +1050,7 @@ namespace core
 	LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]")
 	    % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport );
 	Str_sp docStr = Str_O::create(docstring);
-	SingleDispatchGenericFunction_sp gfn = af_ensureSingleDispatchGenericFunction(sym,llhandler);
-	SYMBOL_SC_(KeywordPkg,body);
-	SYMBOL_SC_(KeywordPkg,lambda_list_handler);
-	SYMBOL_SC_(KeywordPkg,docstring);
+	T_sp gfn = af_ensureSingleDispatchGenericFunction(sym,llhandler);
 	LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p")
 	    % _rep_(sym) % _rep_(receiver_class) %  ((void*)(methoid)) );
         methoid->finishSetup(llhandler,kw::_sym_function);
@@ -1060,12 +1060,12 @@ namespace core
 
 
 
-    void	lisp_throwIfBuiltInClassesNotInitialized()
+    void lisp_throwIfBuiltInClassesNotInitialized()
     {
 	_lisp->throwIfBuiltInClassesNotInitialized();
     }
 
-    string	lisp_classNameFromClassSymbol( Symbol_sp classSymbol )
+    string lisp_classNameFromClassSymbol( Symbol_sp classSymbol )
     {_G();
 	return _lisp->classNameFromClassSymbol(classSymbol);
     }

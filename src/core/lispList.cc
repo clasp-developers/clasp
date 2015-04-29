@@ -170,7 +170,7 @@ namespace core
 #define ARGS_cl_rassoc "(item a-list &key test test-not key)"
 #define DECL_cl_rassoc ""
 #define DOCS_cl_rassoc "See CLHS rassoc"
-    T_sp cl_rassoc (T_sp item, T_sp a_list, T_sp test, T_sp test_not, T_sp key)
+    T_sp cl_rassoc (T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key)
     {
 	TESTING();
 	struct cl_test t;
@@ -178,13 +178,13 @@ namespace core
 	if ( test_not.notnilp() ) test_not = coerce::functionDesignator(test_not);
 	if ( key.notnilp() ) key = coerce::functionDesignator(key);
 	setup_test(&t, item, test, test_not, key);
-	Cons_sp calist = a_list.as<Cons_O>();
-	for ( Cons_sp calist = a_list.as<Cons_O>(); calist.consp(); calist = cCdr(calist) ) { // loop_for_in(a_list) {
+	List_sp calist = a_list;
+	for ( auto calist : a_list ) {
 	    T_sp pair = oCar(calist);
 	    if (pair.notnilp()) {
 		if (!pair.consp())
 		    TYPE_ERROR_LIST(pair);
-		if (TEST(&t, cCdr(pair))) {
+		if (TEST(&t, oCdr(pair))) {
 		    a_list = pair;
 		    break;
 		}
@@ -245,16 +245,16 @@ namespace core
 #define ARGS_af_butlast "(list &optional (n 1))"
 #define DECL_af_butlast ""
 #define DOCS_af_butlast "butlast"
-    T_sp af_butlast(T_sp list, Integer_sp n)
+    List_sp af_butlast(List_sp list, Integer_sp n)
     {_G();
 	int ni = n->as_int();
 	int keepi = cl_length(list)-ni;
 	if ( keepi <= 0 ) return(Values(_Nil<Cons_O>()));
 	ql::list res;
-	Cons_sp cur = list.as<Cons_O>();
+	List_sp cur = list;
 	for ( int i=0; i<keepi; i++ ) {
 	    res << oCar(cur);
-	    cur = cCdr(cur);
+	    cur = oCdr(cur);
 	}
 	return (res.cons());
     };
@@ -264,19 +264,18 @@ namespace core
 #define ARGS_cl_nbutlast "(list &optional (n 1))"
 #define DECL_cl_nbutlast ""
 #define DOCS_cl_nbutlast "butlast"
-    T_sp cl_nbutlast(T_sp list, Integer_sp n)
+    List_sp cl_nbutlast(List_sp list, Integer_sp n)
     {_G();
 	int ni = n->as_int();
 	int keepi = cl_length(list)-ni;
 	if ( keepi <= 0 ) return (_Nil<T_O>());
-	Cons_sp cur = list.as<Cons_O>();
-	Cons_sp prev = _Nil<Cons_O>();;
-	for ( int i=0; i<keepi; i++ )
-	    {
+	List_sp cur = list;
+	List_sp prev = _Nil<T_O>();;
+	for ( int i=0; i<keepi; i++ ) {
 		prev = cur;
-		cur = cCdr(cur);
-	    }
-	prev->setCdr(_Nil<Cons_O>());
+		cur = oCdr(cur);
+	}
+	prev.asCons()->setCdr(_Nil<T_O>());
 	return list;
     };
 
@@ -305,7 +304,7 @@ namespace core
     {_G();
 	T_sp objects = tobjects;
 	if ( objects.nilp() ) return(Values(_Nil<Cons_O>()));
-	if (cCdr(objects).nilp() ) return(oCar(objects));
+	if (oCdr(objects).nilp() ) return(oCar(objects));
 	Cons_sp cur;
 	ql::list result(_lisp);
 	for ( ; oCdr(objects).notnilp(); objects=oCdr(objects))
@@ -356,7 +355,7 @@ namespace core
             } else if (Cons_sp cother = other.asOrNull<Cons_O>()) {
                 new_tail = cl_last(other,1);
             } else {
-                if (cCdr(cur).notnilp()) {
+                if (oCdr(cur).notnilp()) {
                     TYPE_ERROR_LIST(other);
                 }
                 new_tail = tail;

@@ -189,7 +189,7 @@ namespace core
     {_G();
 	if ( arg.nilp() ) return false;
         if ( arg.isA<Function_O>() ) {
-            if ( dynamic_cast<InterpretedClosure*>(arg.as<Function_O>()->closure) ) {
+            if ( auto intfunc = arg.as<Function_O>()->closure.asOrNull<InterpretedClosure>()) {
                 return true;
             }
         }

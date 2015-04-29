@@ -124,10 +124,9 @@ void VectorObjects_O::fillInitialContents(T_sp ic)
 {
     if ( cl_length(ic) != this->dimension() )
 	SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl_length(ic) % this->dimension() );
-    if ( Cons_sp cInitialContents = ic.asOrNull<Cons_O>() ) {
+    if ( List_sp cInitialContents = ic.asOrNull<Cons_O>() ) {
 	size_t i = 0;
-	for ( Cons_sp cur=cInitialContents; cur.notnilp(); cur=cCdr(cur))
-	{
+	for ( auto cur : cInitialContents ) {
 	    T_sp obj = oCar(cur);
 	    this->setf_elt(i,obj);
 	    ++i;

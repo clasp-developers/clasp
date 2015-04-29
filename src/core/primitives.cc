@@ -546,12 +546,11 @@ namespace core
 #define ARGS_af_separatePairList "(listOfPairs)"
 #define DECL_af_separatePairList ""
 #define DOCS_af_separatePairList "Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element"
-    Cons_mv af_separatePairList(List_sp listOfPairs)
+    T_mv af_separatePairList(List_sp listOfPairs)
     {_G();
 	ql::list firsts(_lisp);
 	ql::list seconds(_lisp);
-	for ( List_sp cur = listOfPairs; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : listOfPairs ) {
 	    T_sp element = oCar(cur);
 	    if ( af_atom(element) )
 	    {
@@ -574,7 +573,8 @@ namespace core
 		SIMPLE_ERROR(BF("Expected single object or 2-element list - got: %s") % _rep_(element) );
 	    }
 	}
-	return(Values(firsts.cons(),seconds.cons()));
+	T_sp tfirsts = firsts.cons();
+	return(Values(tfirsts,seconds.cons()));
     }
 
 
@@ -797,9 +797,9 @@ namespace core
 	    err << "lambda_list: " << _rep_(llh) << std::endl;
 	    err << "Passing argument 1: " << _rep_(form) << std::endl;
 	    err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
-	    Closure* closure = macro_function->closure;
+	    gctools::tagged_functor<Closure> closure = macro_function->closure;
 	    err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
-	    if ( InterpretedClosure* ic = dynamic_cast<InterpretedClosure*>(closure) ) {
+	    if ( auto ic = closure.as<InterpretedClosure>() ) {
 		err << "code: " << _rep_(ic->code());
 	    } else {
 		err << "macro_function is not an interpreted function";
@@ -1056,8 +1056,7 @@ namespace core
     ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences)
     {_G();
 	this->_AtEnd = false;
-	for ( List_sp cur = sequences; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : sequences ) {
 	    T_sp obj = oCar(cur);
 	    if ( af_vectorP(obj) )
 	    {
@@ -1128,8 +1127,7 @@ namespace core
 
     ListOfListSteppers::ListOfListSteppers(List_sp sequences)
     {_G();
-	for ( List_sp cur = sequences; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : sequences ) {
 	    T_sp obj = oCar(cur);
 	    if ( cl_consp(obj) )
 	    {
@@ -1271,8 +1269,7 @@ namespace core
         Function_sp op = coerce::functionDesignator(top);
 	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),8,0,true));
 	// Copy the arguments into argumentLists
-	for ( List_sp carg = lists; carg.notnilp(); carg = cCdr(carg))
-	{
+	for ( auto carg : lists ) {
 	    argumentLists->vectorPushExtend(oCar(carg),8);
 	}
 	List_sp result, curResult;
@@ -1288,7 +1285,7 @@ namespace core
 		    goto RETURN;
 		}
 		frame->set_entry(idx,oCar(argumentLists->operator[](it)));
-		argumentLists->operator[](it) = cCdr(argumentLists->operator[](it));
+		argumentLists->operator[](it) = oCdr(argumentLists->operator[](it));
 		++idx;
 	    }
 	    LOG(BF("About to evaluate map op[%s] on arguments[%s]") % _rep_(op) % _rep_(frame) );
@@ -1311,8 +1308,7 @@ namespace core
 	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<Cons_O>(),_Nil<Cons_O>(),16,0,true));
 //	vector<List_sp> argumentLists;
 	// Copy the arguments into argumentLists
-	for ( List_sp carg = lists; carg.notnilp(); carg = cCdr(carg))
-	{
+	for ( auto carg : lists ) {
 	    argumentLists->vectorPushExtend(oCar(carg),8);
 //	    argumentLists.push_back(oCar(carg).as_or_nil<Cons_O>());
 	}
@@ -1342,12 +1338,12 @@ namespace core
 	    // Advance to the next element
 	    for ( int it(0), itEnd(cl_length(argumentLists)); it<itEnd; ++it )
 	    {
-		argumentLists->operator[](it) = cCdr(argumentLists->operator[](it));
+		argumentLists->operator[](it) = oCdr(argumentLists->operator[](it));
 //		*it = cCdr((*it));
 	    }
 	}
     RETURN:
-	return cCdr(result);
+	return oCdr(result);
     }
 
 
@@ -1442,16 +1438,14 @@ namespace core
 #define	ARGS_af_append "(&rest lists)"
 #define	DECL_af_append ""
 #define DOCS_af_append "append as in clhs"
-T_sp af_append(List_sp lists)
+List_sp af_append(List_sp lists)
 {_G();
     ql::list list;
     LOG(BF("Carrying out append with arguments: %s") % _rep_(lists) );
     List_sp appendArg = lists;
-    for ( ; cCdr(appendArg).notnilp(); appendArg = cCdr(appendArg) )
-    {
-	List_sp oneList = oCar(appendArg).as_or_nil<Cons_O>();
-	for ( List_sp element=oneList; element.notnilp(); element = cCdr(element) )
-	{
+    for ( auto appendArg : lists ) {
+	List_sp oneList = oCar(appendArg);
+	for ( auto element : oneList ) {
 	    list << oCar(element);
 	}
     }
@@ -1834,16 +1828,16 @@ T_mv af_rem_f(List_sp plist, Symbol_sp indicator)
 {_G();
     if ( oCar(plist) == indicator )
     {
-	plist = cCddr(plist);
+	plist = oCddr(plist);
 	T_sp tplist = plist;
 	return(Values(tplist,_lisp->_true()));
     }
-    for ( List_sp cur = plist; cCddr(cur).notnilp(); cur = cCddr(cur) )
+    for ( List_sp cur = plist; oCddr(cur).notnilp(); cur = oCddr(cur) )
     {
 	T_sp k = oCaddr(cur);
-	if ( k == indicator )
-	{
-	    cCdr(cur)->setCdr(cCddr(cCddr(cur)));
+	if ( k == indicator ) {
+	    List_sp curcdr = oCdr(cur);
+	    curcdr.asCons()->setCdr(oCddr(oCddr(cur)));
 	    T_sp tplist = plist;
 	    return(Values(tplist,_lisp->_true()));
 	}

@@ -89,7 +89,7 @@ namespace core {
     };
 
 
-    extern void handleArgumentHandlingExceptions(FunctionClosure*);
+    extern void handleArgumentHandlingExceptions(gctools::tagged_functor<FunctionClosure>);
 
 };
 
@@ -106,14 +106,14 @@ namespace core {
         void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
     public:  // was protected:
-        Closure*        closure;
+	gctools::tagged_functor<Closure>  closure;
     public:
         Function_O() : Base()
-                     , closure(NULL)
+	    , closure()
         {};
         virtual ~Function_O() {};
     public:
-        static Function_sp make(Closure* c) {
+        static Function_sp make(gctools::tagged_functor<Closure> c) {
             GC_ALLOCATE(Function_O,f);
             f->closure = c;
             return f;
@@ -223,7 +223,7 @@ namespace core {
         CompiledFunction_O() : Base() {};
         virtual ~CompiledFunction_O() {};
     public:
-        static CompiledFunction_sp make(Closure* c) {
+        static CompiledFunction_sp make(gctools::tagged_functor<Closure> c) {
             GC_ALLOCATE(CompiledFunction_O,f);
             f->closure = c;
 //            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);

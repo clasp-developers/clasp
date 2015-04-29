@@ -439,13 +439,12 @@ namespace llvmo
 
 
 
-    DIArray_sp DIBuilder_O::getOrCreateArray(core::Cons_sp elements)
+    DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements)
     {_G();
 //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
 //		printf("     cons --> %s\n", cur->__repr__().c_str() );
 	vector<llvm::Metadata*> vector_values;
-	for ( core::Cons_sp cur = elements; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : elements ) {
 	    if ( Value_sp val = oCar(cur).asOrNull<Value_O>() )
 	    {
 		//			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
@@ -473,13 +472,12 @@ namespace llvmo
 
 
 
-    DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::Cons_sp elements)
+    DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp elements)
     {_G();
 //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
 //		printf("     cons --> %s\n", cur->__repr__().c_str() );
 	vector<llvm::Metadata*> vector_values;
-	for ( core::Cons_sp cur = elements; cur.notnilp(); cur=cCdr(cur) )
-	{
+	for ( auto cur : elements ) {
 	    if ( Value_sp val = oCar(cur).asOrNull<Value_O>() )
 	    {
 //			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());

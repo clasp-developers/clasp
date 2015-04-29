@@ -102,13 +102,13 @@ int clasp_string_case(Str_sp s)
 	return 1;
     }
 
-    T_sp monotonic(int s, int t, Cons_sp args, bool preserve_case=true)
+    T_sp monotonic(int s, int t, List_sp args, bool preserve_case=true)
     {_G();
 	char c = oCar(args).as<Character_O>()->get();
 	if ( !preserve_case ) c = toupper(c);
 	char d;
 	int dir;
-	args = cCdr(args);
+	args = oCdr(args);
 	while ( args.notnilp() )
 	{
 	    d = oCar(args).as<Character_O>()->get();
@@ -116,7 +116,7 @@ int clasp_string_case(Str_sp s)
 	    dir = s*char_basic_compare(c,d);
 	    if ( dir < t) return _Nil<T_O>();
 	    c = d;
-	    args = cCdr(args);
+	    args = oCdr(args);
 	}
 	return _lisp->_true();
     };
@@ -153,9 +153,9 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_char_LT_ 1
 #define ARGS_af_char_LT_ "(&rest args)"
 #define DECL_af_char_LT_ ""
-    T_mv af_char_LT_(Cons_sp args)
+    T_sp af_char_LT_(List_sp args)
     {_G();
-	return(Values(monotonic(-1,1,args)));
+	return((monotonic(-1,1,args)));
     };
 
 
@@ -164,9 +164,9 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_char_GT_ 1
 #define ARGS_af_char_GT_ "(&rest args)"
 #define DECL_af_char_GT_ ""
-    T_mv af_char_GT_(Cons_sp args)
+    T_sp af_char_GT_(List_sp args)
     {_G();
-	return(Values(monotonic(1,1,args)));
+	return((monotonic(1,1,args)));
     };
 
 
@@ -176,7 +176,7 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_char_LE_ 1
 #define ARGS_af_char_LE_ "(&rest args)"
 #define DECL_af_char_LE_ ""
-    T_mv af_char_LE_(Cons_sp args)
+    T_sp af_char_LE_(List_sp args)
     {_G();
 	return(Values(monotonic(-1,0,args)));
     };
@@ -187,7 +187,7 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_char_GE_ 1
 #define ARGS_af_char_GE_ "(&rest args)"
 #define DECL_af_char_GE_ ""
-    T_mv af_char_GE_(Cons_sp args)
+    T_mv af_char_GE_(List_sp args)
     {_G();
 	return(Values(monotonic(1,0,args)));
     };
@@ -198,7 +198,7 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_charLessp 1
 #define ARGS_af_charLessp "(&rest args)"
 #define DECL_af_charLessp ""
-    T_mv af_charLessp(Cons_sp args)
+    T_mv af_charLessp(List_sp args)
     {_G();
 	return(Values(monotonic(-1,1,args,false)));
     };
@@ -209,7 +209,7 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_charGreaterp 1
 #define ARGS_af_charGreaterp "(&rest args)"
 #define DECL_af_charGreaterp ""
-    T_mv af_charGreaterp(Cons_sp args)
+    T_mv af_charGreaterp(List_sp args)
     {_G();
 	return(Values(monotonic(1,1,args,false)));
     };
@@ -224,7 +224,7 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_charNotGreaterp 1
 #define ARGS_af_charNotGreaterp "(&rest args)"
 #define DECL_af_charNotGreaterp ""
-    T_mv af_charNotGreaterp(Cons_sp args)
+    T_mv af_charNotGreaterp(List_sp args)
     {_G();
 	return(Values(monotonic(-1,0,args,false)));
     };
@@ -235,9 +235,9 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_charNotLessp 1
 #define ARGS_af_charNotLessp "(&rest args)"
 #define DECL_af_charNotLessp ""
-    T_mv af_charNotLessp(Cons_sp args)
+    T_sp af_charNotLessp(List_sp args)
     {_G();
-	return(Values(monotonic(1,0,args,false)));
+	return((monotonic(1,0,args,false)));
     };
 
 
@@ -248,19 +248,19 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_char_NE_ 1
 #define ARGS_af_char_NE_ "(&rest args)"
 #define DECL_af_char_NE_ ""
-    T_mv af_char_NE_(Cons_sp args)
+    T_sp af_char_NE_(List_sp args)
     {_G();
 	while ( args.notnilp() )
 	{
 	    int a = oCar(args).as<Character_O>()->get();
-	    for ( Cons_sp cur = cCdr(args); cur.notnilp(); cur=cCdr(cur) )
+	    for ( List_sp cur = oCdr(args); cur.notnilp(); cur=oCdr(cur) )
 	    {
 		int b = oCar(cur).as<Character_O>()->get();
-		if ( a==b ) return(Values(_Nil<T_O>()));
+		if ( a==b ) return((_Nil<T_O>()));
 	    }
-	    args = cCdr(args);
+	    args = oCdr(args);
 	}
-	return(Values(_lisp->_true()));
+	return((_lisp->_true()));
     }
 
 
@@ -268,18 +268,18 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_char_EQ_ 1
 #define ARGS_af_char_EQ_ "(&rest args)"
 #define DECL_af_char_EQ_ ""
-    T_mv af_char_EQ_(Cons_sp args)
+    T_sp af_char_EQ_(List_sp args)
     {_G();
-	if ( args.nilp() ) return(Values(_lisp->_true()));
+	if ( args.nilp() ) return((_lisp->_true()));
 	int a = oCar(args).as<Character_O>()->get();
-	args = cCdr(args);
+	args = oCdr(args);
 	while ( args.notnilp() )
 	{
 	    int b = oCar(args).as<Character_O>()->get();
-	    if ( a!=b ) return(Values(_Nil<T_O>()));
-	    args = cCdr(args);
+	    if ( a!=b ) return((_Nil<T_O>()));
+	    args = oCdr(args);
 	}
-	return(Values(_lisp->_true()));
+	return((_lisp->_true()));
     };
 
 
@@ -287,19 +287,19 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_charNotEqual 1
 #define ARGS_af_charNotEqual "(&rest args)"
 #define DECL_af_charNotEqual ""
-    T_mv af_charNotEqual(Cons_sp args)
+    T_mv af_charNotEqual(List_sp args)
     {_G();
 	while ( args.notnilp() )
 	{
 	    int a = oCar(args).as<Character_O>()->get();
 	    a = toupper(a);
-	    for ( Cons_sp cur = cCdr(args); cur.notnilp(); cur=cCdr(cur) )
+	    for ( List_sp cur = oCdr(args); cur.notnilp(); cur=oCdr(cur) )
 	    {
 		int b = oCar(cur).as<Character_O>()->get();
 		b = toupper(b);
 		if ( a==b ) return(Values(_Nil<T_O>()));
 	    }
-	    args = cCdr(args);
+	    args = oCdr(args);
 	}
 	return(Values(_lisp->_true()));
     }
@@ -309,18 +309,18 @@ int clasp_string_case(Str_sp s)
 #define LOCK_af_charEqual 1
 #define ARGS_af_charEqual "(&rest args)"
 #define DECL_af_charEqual ""
-    bool af_charEqual(Cons_sp args)
+    bool af_charEqual(List_sp args)
     {_G();
 	if ( args.nilp() ) return true;
 	int a = oCar(args).as<Character_O>()->get();
 	a = toupper(a);
-	args = cCdr(args);
+	args = oCdr(args);
 	while ( args.notnilp() )
 	{
 	    int b = oCar(args).as<Character_O>()->get();
 	    b = toupper(b);
 	    if ( a!=b ) return false;
-	    args = cCdr(args);
+	    args = oCdr(args);
 	}
 	return true;
     };

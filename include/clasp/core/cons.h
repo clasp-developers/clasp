@@ -58,14 +58,16 @@ namespace core
 
 
 
-    T_sp oCar(T_sp obj);
-    T_sp oCdr(T_sp obj);
+    T_sp oCar(List_sp obj);
+    T_sp oCdr(List_sp obj);
+#if 0
     Cons_sp cCar(Cons_sp obj);
     Cons_sp cCdr(Cons_sp obj);
     Cons_sp cCdr(T_sp obj);
     Cons_sp cCddr(T_sp obj);
     Cons_sp cCdddr(T_sp obj);
     Cons_sp cCddddr(T_sp obj);
+#endif
     T_sp oCaar(T_sp o);
     T_sp oCadr(T_sp o);
     T_sp oCdar(T_sp o);
@@ -136,13 +138,15 @@ namespace core {
 	friend T_sp cons_car(core::Cons_O* cur);
 	friend T_sp cons_cdr(core::Cons_O* cur);
 
-	friend T_sp oCar(T_sp o);
-	friend T_sp oCdr(T_sp o);
+	friend T_sp oCar(List_sp o);
+	friend T_sp oCdr(List_sp o);
+#if 0
 	friend Cons_sp cCar(Cons_sp o);
 	friend Cons_sp cCdr(Cons_sp o);
 	friend Cons_sp cCddr(T_sp o);
 	friend Cons_sp cCdddr(T_sp o);
 	friend Cons_sp cCddddr(T_sp o);
+#endif
     public:
 	void	archiveBase(ArchiveP node);
     public:
@@ -173,7 +177,7 @@ namespace core {
 	    void fillVec0(gctools::Vec0<T>& vec) {
 	    TESTING();
             vec.clear();
-            for ( Cons_sp me=this->asSmartPtr(); me.consp(); me=cCdr(me) ) {
+            for ( auto me : (List_sp)(this->asSmartPtr()) ) { //Cons_sp me=this->asSmartPtr(); me.consp(); me=cCdr(me) ) {
                 vec.emplace_back(me->_Car.as<typename T::Type>());
             }
         }
@@ -236,14 +240,14 @@ namespace core {
 	void sxhash(HashGenerator& hg) const;
 
 	/*! Depth first search to find a Cons with ParsePos information */
-	virtual Cons_sp walkToFindParsePos() const;
+	virtual List_sp walkToFindParsePos() const;
 
 
 	inline Cons_sp rplaca(T_sp o) { this->_Car = o; return this->asSmartPtr();};
 	inline Cons_sp rplacd(T_sp o) { this->_Cdr = o; return this->asSmartPtr();};
 
 	virtual T_sp onth(int idx) const;
-	virtual T_sp onthcdr(int idx) const;
+	virtual List_sp onthcdr(int idx) const;
 
 
 	T_sp elt(int index) const;
@@ -299,28 +303,26 @@ namespace core {
 	/*! Return a Cons that has all the same elements
 	 * in the same order but with nil objects removed.
 	 */
-	Cons_sp filterOutNil();
+	List_sp filterOutNil();
 
 	/*! Return a new list by combinding the given list of elements to our list
 	 */
-	Cons_sp extend(Cons_sp rest);
+	List_sp extend(List_sp rest);
 
 	/*! Return the reversed list */
-	T_sp reverse();
+	List_sp reverse();
 
 	/*! Return the reversed list */
-	T_sp nreverse();
+	List_sp nreverse();
 
-	virtual T_sp revappend(T_sp tail);
-	virtual T_sp nreconc(T_sp tail);
+	virtual List_sp revappend(T_sp tail);
+	virtual List_sp nreconc(T_sp tail);
 
 	/*! Set the next pointer for this element */
-	void	setCdr(Cons_sp o);
+	void	setCdr(T_sp o);
 
-	/*! Set the cdr for this cons */
-	void	setOCdr(T_sp o);
 
-	T_sp setf_cdr(T_sp o) { this->setOCdr(o); return o;};
+	T_sp setf_cdr(T_sp o) { this->setCdr(o); return o;};
 #if 0
 	uint	cdrLength() const
 	{
@@ -329,20 +331,20 @@ namespace core {
 #endif
 	/*! Return the last cons (not the last element) of list.
 	  If we are nil then return nil */	
-	virtual T_sp last(int idx=1) const;
+	virtual List_sp last(int idx=1) const;
 
 
 	/*! Like Common Lisp copy-list */
-	virtual Cons_sp copyList() const;
+	virtual List_sp copyList() const;
 
 	/*! Like Common Lisp copy-list */
 	virtual Cons_sp copyListCar() const;
 
 	/*! Like Common Lisp copy-tree */
-	virtual T_sp copyTree() const;
+	virtual List_sp copyTree() const;
 
 	/*! Return a new Cons with a tree copy of the current car*/
-	virtual Cons_sp copyTreeCar() const;
+	virtual List_sp copyTreeCar() const;
 
 	/*! Return the number of elements in the list*/
 	uint	length() const;
@@ -389,16 +391,16 @@ namespace core {
 
 	T_sp olookupKeyObjectDefault(Symbol_sp key, T_sp dflt);
 
-	Cons_sp memberEq(T_sp item) const;
-	Cons_sp memberEql(T_sp item) const;
+	List_sp memberEq(T_sp item) const;
+	List_sp memberEql(T_sp item) const;
 
-	Cons_sp member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const;
-	Cons_sp member(T_sp item, T_sp key, T_sp test, T_sp testNot) const;
-	Cons_sp assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const;
+	List_sp member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const;
+	List_sp member(T_sp item, T_sp key, T_sp test, T_sp testNot) const;
+	List_sp assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const;
 
 
 	/*! Return true if every CAR of other matches the cooresponding CAR of this pointer */
-	bool exactlyMatches(Cons_sp other) const;
+	bool exactlyMatches(List_sp other) const;
 
 	/*!If the Cons doesn't contained KeyedObjects
 	 * return nil.
@@ -440,7 +442,7 @@ namespace core {
 //	void setOwnerOfAllEntries(T_sp obj);
 
 
-	virtual T_sp subseq(int start, T_sp end) const;
+	virtual List_sp subseq(int start, T_sp end) const;
 	virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq) {_G(); IMPLEMENT_ME();};
 
 
@@ -465,11 +467,24 @@ namespace core {
 	int last_line;
 	int last_column;
     } LispParserPos;
-    
 
-    inline Cons_sp cCar(Cons_sp obj) { return obj->_Car.as<Cons_O>();};
-    inline Cons_sp cCdr(Cons_sp obj) { return obj->_Cdr.as<Cons_O>();};
 
+    inline T_sp oCar(List_sp obj) {
+	if (obj.consp()) return obj.unsafe_cons()->_Car;
+	if (obj.nilp()) return obj;
+	TYPE_ERROR(obj,cl::_sym_Cons_O);
+    };
+    inline T_sp oCdr(List_sp obj) {
+	if (obj.consp()) return obj.unsafe_cons()->_Cdr;
+	if (obj.nilp()) return obj;
+	TYPE_ERROR(obj,cl::_sym_Cons_O);
+    };
+
+
+    // inline Cons_sp cCar(Cons_sp obj) { return obj->_Car.as<Cons_O>();};
+    // inline Cons_sp cCdr(Cons_sp obj) { return obj->_Cdr.as<Cons_O>();};
+
+#if 0
     inline Cons_sp cCar(T_sp obj) {
 	if (obj.consp()) {
 	    return obj.unsafe_cons()->_Car.as<Cons_O>();
@@ -482,21 +497,6 @@ namespace core {
 	    return obj.unsafe_cons()->_Cdr.as<Cons_O>();
 	}
 	if (obj.nilp()) return _Nil<Cons_O>();
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    };
-
-    inline T_sp oCar(T_sp obj) {
-	if (obj.consp()) {
-	    return obj.unsafe_cons()->_Car;
-	}
-	if (obj.nilp()) return obj;
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    };
-    inline T_sp oCdr(T_sp obj) {
-	if (obj.consp()) {
-	    return obj.unsafe_cons()->_Cdr;
-	}
-	if (obj.nilp()) return obj;
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     };
     inline Cons_sp cCddr(T_sp obj) {
@@ -520,45 +520,46 @@ namespace core {
 	if (obj.nilp()) return _Nil<Cons_O>();
 	TYPE_ERROR(obj,cl::_sym_Cons_O);
     }
+#endif
 
-inline T_sp oCaar(T_sp o) { return oCar(cCar(o));};
-inline T_sp oCadr(T_sp o) { return oCar(cCdr(o));};
-inline T_sp oCdar(T_sp o) { return oCdr(cCar(o));};
-inline T_sp oCddr(T_sp o) { return oCdr(cCdr(o));};
-inline T_sp oCaaar(T_sp o)  { return oCar(cCar(cCar(o)));};
-inline T_sp oCaadr(T_sp o)  { return oCar(cCar(cCdr(o)));};
-inline T_sp oCadar(T_sp o)  { return oCar(cCdr(cCar(o)));};
-inline T_sp oCaddr(T_sp o)  { return oCar(cCdr(cCdr(o)));};
-inline T_sp oCdaar(T_sp o)  { return oCdr(cCar(cCar(o)));};
-inline T_sp oCdadr(T_sp o)  { return oCdr(cCar(cCdr(o)));};
-inline T_sp oCddar(T_sp o)  { return oCdr(cCdr(cCar(o)));};
-inline T_sp oCdddr(T_sp o)  { return oCdr(cCdr(cCdr(o)));};
-inline T_sp oCaaaar(T_sp o) { return oCar(cCar(cCar(o)));};
-inline T_sp oCaadar(T_sp o) { return oCar(cCar(cCdr(cCar(o))));};
-inline T_sp oCadaar(T_sp o) { return oCar(cCdr(cCar(cCar(o))));};
-inline T_sp oCaddar(T_sp o) { return oCar(cCdr(cCdr(cCar(o))));};
-inline T_sp oCdaaar(T_sp o) { return oCdr(cCar(cCar(cCar(o))));};
-inline T_sp oCdadar(T_sp o) { return oCdr(cCar(cCdr(cCar(o))));};
-inline T_sp oCddaar(T_sp o) { return oCdr(cCdr(cCar(cCar(o))));};
-inline T_sp oCdddar(T_sp o) { return oCdr(cCdr(cCdr(cCar(o))));};
-inline T_sp oCaaadr(T_sp o) { return oCar(cCar(cCar(cCar(o))));};
-inline T_sp oCaaddr(T_sp o) { return oCar(cCar(cCdr(cCdr(o))));};
-inline T_sp oCadadr(T_sp o) { return oCar(cCdr(cCar(cCdr(o))));};
-inline T_sp oCadddr(T_sp o) { return oCar(cCdr(cCdr(cCdr(o))));};
-inline T_sp oCdaadr(T_sp o) { return oCdr(cCar(cCar(cCdr(o))));};
-inline T_sp oCdaddr(T_sp o) { return oCdr(cCar(cCdr(cCdr(o))));};
-inline T_sp oCddadr(T_sp o) { return oCdr(cCdr(cCar(cCdr(o))));};
-inline T_sp oCddddr(T_sp o) { return oCdr(cCdr(cCdr(cCdr(o))));};
+inline T_sp oCaar(T_sp o) { return oCar(oCar(o));};
+inline T_sp oCadr(T_sp o) { return oCar(oCdr(o));};
+inline T_sp oCdar(T_sp o) { return oCdr(oCar(o));};
+inline T_sp oCddr(T_sp o) { return oCdr(oCdr(o));};
+inline T_sp oCaaar(T_sp o)  { return oCar(oCar(oCar(o)));};
+inline T_sp oCaadr(T_sp o)  { return oCar(oCar(oCdr(o)));};
+inline T_sp oCadar(T_sp o)  { return oCar(oCdr(oCar(o)));};
+inline T_sp oCaddr(T_sp o)  { return oCar(oCdr(oCdr(o)));};
+inline T_sp oCdaar(T_sp o)  { return oCdr(oCar(oCar(o)));};
+inline T_sp oCdadr(T_sp o)  { return oCdr(oCar(oCdr(o)));};
+inline T_sp oCddar(T_sp o)  { return oCdr(oCdr(oCar(o)));};
+inline T_sp oCdddr(T_sp o)  { return oCdr(oCdr(oCdr(o)));};
+inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(o)));};
+inline T_sp oCaadar(T_sp o) { return oCar(oCar(oCdr(oCar(o))));};
+inline T_sp oCadaar(T_sp o) { return oCar(oCdr(oCar(oCar(o))));};
+inline T_sp oCaddar(T_sp o) { return oCar(oCdr(oCdr(oCar(o))));};
+inline T_sp oCdaaar(T_sp o) { return oCdr(oCar(oCar(oCar(o))));};
+inline T_sp oCdadar(T_sp o) { return oCdr(oCar(oCdr(oCar(o))));};
+inline T_sp oCddaar(T_sp o) { return oCdr(oCdr(oCar(oCar(o))));};
+inline T_sp oCdddar(T_sp o) { return oCdr(oCdr(oCdr(oCar(o))));};
+inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCar(o))));};
+inline T_sp oCaaddr(T_sp o) { return oCar(oCar(oCdr(oCdr(o))));};
+inline T_sp oCadadr(T_sp o) { return oCar(oCdr(oCar(oCdr(o))));};
+inline T_sp oCadddr(T_sp o) { return oCar(oCdr(oCdr(oCdr(o))));};
+inline T_sp oCdaadr(T_sp o) { return oCdr(oCar(oCar(oCdr(o))));};
+inline T_sp oCdaddr(T_sp o) { return oCdr(oCar(oCdr(oCdr(o))));};
+inline T_sp oCddadr(T_sp o) { return oCdr(oCdr(oCar(oCdr(o))));};
+inline T_sp oCddddr(T_sp o) { return oCdr(oCdr(oCdr(oCdr(o))));};
 inline T_sp oFirst(T_sp o)  { return oCar(o); };
-inline T_sp oSecond(T_sp o) { return oCar(cCdr(o));};
-inline T_sp oThird(T_sp o)  { return oCar(cCdr(cCdr(o)));};
-inline T_sp oFourth(T_sp o) { return oCar(cCdr(cCdr(cCdr(o))));};
-inline T_sp oFifth(T_sp o)  { return oCar(cCdr(cCdr(cCdr(cCdr(o)))));};
-inline T_sp oSixth(T_sp o)  { return oCar(cCdr(cCdr(cCdr(cCdr(cCdr(o))))));};
-inline T_sp oSeventh(T_sp o){ return oCar(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(o)))))));};
-inline T_sp oEighth(T_sp o) { return oCar(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(o))))))));};
-inline T_sp oNinth(T_sp o)  { return oCar(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(o)))))))));};
-inline T_sp oTenth(T_sp o)  { return oCar(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(cCdr(o))))))))));};
+inline T_sp oSecond(T_sp o) { return oCar(oCdr(o));};
+inline T_sp oThird(T_sp o)  { return oCar(oCdr(oCdr(o)));};
+inline T_sp oFourth(T_sp o) { return oCar(oCdr(oCdr(oCdr(o))));};
+inline T_sp oFifth(T_sp o)  { return oCar(oCdr(oCdr(oCdr(oCdr(o)))));};
+inline T_sp oSixth(T_sp o)  { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(o))))));};
+inline T_sp oSeventh(T_sp o){ return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))));};
+inline T_sp oEighth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))));};
+inline T_sp oNinth(T_sp o)  { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))));};
+inline T_sp oTenth(T_sp o)  { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))))));};
 
 
 };
@@ -585,7 +586,7 @@ namespace core
 
 namespace core
 {
-    /*! Create a Cons or a SourceCodeCons that that copies the source code location of locCons */
+    /*! Create a Cons or a SourceCodeCons that that copies the source code location of looCons */
     Cons_sp Cons_create(T_sp car,Cons_sp locCons);
 
     /*! Create a Cons or a SourceCodeCons that that copies the source code location of locCons */
@@ -595,11 +596,13 @@ namespace core
 
     Cons_sp Cons_create_loc(T_sp car, T_sp cdr, const char* fileName, int line);
 
+#if 0
 #define HERE_scCONS_CREATE(car) Cons_O::create(car,_Nil<Cons_O>())
 #define HERE_scCONS_CREATE2(car,cdr) Cons_O::create(car,cdr)
 #define HERE_scCONS_CREATE_LIST2(c1,c2) Cons_O::createList(c1,c2)
 #define HERE_scCONS_CREATE_LIST3(c1,c2,c3) Cons_O::createList(c1,c2,c3)
 #define HERE_scCONS_CREATE_LIST4(c1,c2,c3,c4) Cons_O::createList(c1,c2,c3,c4)
+#endif
 };
 
 
@@ -635,25 +638,25 @@ namespace core {
     /* Erase the entry with _key_ from the list. Return the new list. 
      In cases where the key was in the first entry the first entry is unhooked and the CDR is returned.
     In other cases the entry is unhooked from the inside of the alist*/
-    Cons_sp alist_erase(Cons_sp alist, T_sp key);
+    List_sp alist_erase(List_sp alist, T_sp key);
 
     /*! Push the key/val onto the alist.  This will shadow other entries with the same val */
-    Cons_sp alist_push(Cons_sp alist, T_sp key, T_sp val );
+    List_sp alist_push(List_sp alist, T_sp key, T_sp val );
 
     /*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
-    Cons_sp alist_get(Cons_sp alist, T_sp key);
+    List_sp alist_get(List_sp alist, T_sp key);
 
-    string alist_asString(Cons_sp alist);
+    string alist_asString(List_sp alist);
 
 };
 
 
 namespace core
 {
+    List_sp coerce_to_list(T_sp o);
 
     T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value );
     List_sp af_putF(List_sp plist, T_sp value, T_sp indicator );
 
-    List_sp coerce_to_list(T_sp o);
 };
 #endif //]

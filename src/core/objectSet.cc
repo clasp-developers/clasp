@@ -178,10 +178,9 @@ stringstream		sstr;
 
 void ObjectSet_O::addObjectsInCons(List_sp c)
 {
-    while ( c.notnilp() )
-    {
+    while ( c.consp() ) {
 	this->insert(oCar(c));
-	c = cCdr(c);
+	c = oCdr(c);
     }
 }
 

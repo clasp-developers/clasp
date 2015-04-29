@@ -58,15 +58,15 @@ namespace core {
         struct metadata_bootstrap_class {};
         struct metadata_gc_do_not_move {};
     public:
-	Str_sp			_Name;
-	Package_sp		_HomePackage;
-	T_sp 			_Value;
-	Function_sp 		_Function;
-	Function_sp             _SetfFunction;
-	bool			_IsSpecial;
-	bool			_IsConstant;
-	bool			_ReadOnlyFunction;
-	List_sp			_PropertyList;
+	Str_sp		_Name;
+	T_sp		_HomePackage; // NIL or Package
+	T_sp 		_Value;
+	T_sp            _Function;
+	T_sp            _SetfFunction;
+	bool		_IsSpecial;
+	bool		_IsConstant;
+	bool		_ReadOnlyFunction;
+	List_sp		_PropertyList;
     private:
 	friend class Class_O;
 	friend class Package_O;
@@ -84,6 +84,9 @@ namespace core {
 	/*! Create a Symbol that doesn't have a package or Metaclass defined */
 //	static Symbol_sp create_classless_packageless(string const& name);
 
+	/*! Only used when creating special symbols at boot time.
+	  Before NIL, UNBOUND etc are defined */
+	static Symbol_sp create_at_boot(const string& nm);
 	static Symbol_sp create(const string& nm);
     public:
 	string formattedName(bool prefixAlways) const;
@@ -152,7 +155,8 @@ namespace core {
 
 
 	void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn;};
-	Function_sp getSetfFdefinition() {return this->_SetfFunction;};
+	inline T_sp getSetfFdefinition() {return this->_SetfFunction;};
+	inline bool setf_fboundp() const {return !this->_SetfFunction.unboundp(); };
 	void resetSetfFdefinition() {this->_SetfFunction = _Unbound<Function_O>();};
 	
 	bool isConstant() const { return this->_IsConstant;};
@@ -161,11 +165,11 @@ namespace core {
 	void setf_symbolFunction(Function_sp exec);
 
 	/*! Return the global bound function */
-	Function_sp symbolFunction();
+	inline T_sp symbolFunction() { return this->_Function;};
 
 
 	/*! Return true if the symbol has a function bound*/
-	bool fboundp() const;
+	bool fboundp() const { return !this->_Function.unboundp(); };
 
 	const char* permanentName() const;
 
@@ -175,9 +179,9 @@ namespace core {
 	Str_sp identifierName() const { return this->symbolName();};
 
 
-	Package_sp getPackage() const;
-	Package_sp homePackage() const { return this->getPackage();};
-	void setPackage(Package_sp p);
+	T_sp getPackage() const;
+	T_sp homePackage() const { return this->getPackage();};
+	void setPackage(T_sp p);
 
 	/*! Return the name of the symbol with the package prefix
 	 * unless this symbol is in the current package
@@ -215,8 +219,8 @@ namespace core {
 
     T_sp af_symbolValue(const Symbol_sp sym);
     Str_sp af_symbolName(Symbol_sp sym);
-    Package_sp af_symbolPackage(Symbol_sp sym);
-    Function_sp af_symbolFunction(Symbol_sp sym);
+    T_sp af_symbolPackage(Symbol_sp sym);
+    T_sp af_symbolFunction(Symbol_sp sym);
     bool af_boundp(Symbol_sp sym);
 
 

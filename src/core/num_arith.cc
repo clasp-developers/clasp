@@ -90,19 +90,19 @@ namespace core {
 #define ARGS_cl_gcd "(&rest nums)"
 #define DECL_cl_gcd ""
 #define DOCS_cl_gcd "gcd"
-    Integer_sp cl_gcd(Cons_sp nums)
+    Integer_sp cl_gcd(List_sp nums)
     {_G();
 	if (nums.nilp())
 	    return brcl_make_fixnum(0);
 	/* INV: brcl_gcd() checks types */
 	Integer_sp gcd = oCar(nums).as<Integer_O>();
-	nums = cCdr(nums);
+	nums = oCdr(nums);
 	if (nums.nilp()) {
 	    return (brcl_minusp(gcd) ? brcl_negate(gcd).as<Integer_O>() : gcd);
 	}
-	while (nums.notnilp()) {
+	while (nums.consp()) {
 	    gcd = brcl_gcd(gcd, oCar(nums).as<Integer_O>());
-	    nums = cCdr(nums);
+	    nums = oCdr(nums);
 	}
 	return gcd;
     }
@@ -140,7 +140,7 @@ namespace core {
 #define ARGS_cl_lcm "(&rest args)"
 #define DECL_cl_lcm ""
 #define DOCS_cl_lcm "lcm"
-    Integer_sp cl_lcm(Cons_sp nums)
+    Integer_sp cl_lcm(List_sp nums)
     {_G();
 	if (nums.nilp())
 	    return brcl_make_fixnum(1);
@@ -148,10 +148,10 @@ namespace core {
 	   this call, we make sure that errors point to `numi' */
 	Integer_sp lcm = oCar(nums).as<Integer_O>();
 	int yidx=1;
-	nums = cCdr(nums);
-	while (nums.notnilp()) {
+	nums = oCdr(nums);
+	while (nums.consp()) {
 	    Integer_sp numi = oCar(nums).as<Integer_O>();
-	    nums = cCdr(nums);
+	    nums = oCdr(nums);
 	    yidx++;
 	    Number_sp t = brcl_times(lcm, numi);
 	    Number_sp g = brcl_gcd(numi, lcm);

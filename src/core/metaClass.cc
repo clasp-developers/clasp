@@ -207,7 +207,7 @@ namespace core
             return;
         }
         Class_sp aCxxDerivableAncestorClass(_Nil<Class_O>());
-        for ( List_sp cur=superclasses; cur.notnilp(); cur=cCdr(cur) ) {
+        for ( auto cur : superclasses ) {
             Class_sp aSuperClass = oCar(cur).as<Class_O>();
             if ( aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP() ) {
                 SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
@@ -288,10 +288,9 @@ namespace core
 	if ( this == ancestor.get() ) return true;
 	// TODO: I need to memoize this somehow so that I'm not constantly searching a list in
 	// linear time
-	Cons_sp cpl = this->instanceRef(Class_O::REF_CLASS_PRECEDENCE_LIST).as_or_nil<Cons_O>();
+	List_sp cpl = this->instanceRef(Class_O::REF_CLASS_PRECEDENCE_LIST);
 	ASSERTF(!cpl.unboundp(),BF("You tried to use isSubClassOf when the ClassPrecedenceList had not been initialized"))
-	    for ( Cons_sp cur=cpl; cur.notnilp(); cur=cCdr(cur) )
-	    {
+	    for ( auto cur : cpl ) {
 		if ( oCar(cur) == ancestor ) return true;
 	    }
 	return false;
@@ -328,7 +327,7 @@ namespace core
 
     string Class_O::getPackageName() const
     {
-	return this->name()->getPackage()->getName();
+	return this->name()->getPackage().as<Package_O>()->getName();
     }
 
 
@@ -610,17 +609,17 @@ namespace core {
 
 
 /*! Return true if every member of subset is in superset */
-    bool subsetp(Cons_sp subset, Cons_sp superset)
+    bool subsetp(List_sp subset, List_sp superset)
     {
 	ASSERT(subset);
 	ASSERT(superset);
 	if ( subset.nilp() && superset.nilp()) return true;
 	if ( superset.nilp() ) return false;
 	if ( subset.nilp() ) return true;
-	for ( ; subset.notnilp(); subset=cCdr(subset) )
+	for ( ; subset.notnilp(); subset=oCdr(subset) )
 	{
 	    T_sp o = oCar(subset);
-	    if (!superset->memberEq(o)) return false;
+	    if (!superset.asCons()->memberEq(o)) return false;
 	}
 	return true;
     }

@@ -213,14 +213,14 @@ namespace core
 #define ARGS_af_searchString "(str1 start1 end1 str2 start2 end2)"
 #define DECL_af_searchString ""
 #define DOCS_af_searchString "searchString"
-    Fixnum_sp af_searchString(Str_sp str1, Fixnum_sp start1, Fixnum_sp end1, Str_sp str2, Fixnum_sp start2, Fixnum_sp end2)
+    T_sp af_searchString(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2)
     {_G();
-        string s1 = str1->get().substr(start1->get(),end1.nilp()?str1->get().size() : end1->get());
-        string s2 = str2->get().substr(start2->get(),end2.nilp()?str2->get().size() : end2->get());
+        string s1 = str1->get().substr(start1->get(),end1.nilp()?str1->get().size() : end1.as<Fixnum_O>()->get());
+        string s2 = str2->get().substr(start2->get(),end2.nilp()?str2->get().size() : end2.as<Fixnum_O>()->get());
 //        printf("%s:%d Searching for \"%s\" in \"%s\"\n", __FILE__, __LINE__, s1.c_str(), s2.c_str());
         size_t pos = s2.find(s1);
         if ( pos == string::npos ) {
-            return _Nil<Fixnum_O>();
+            return _Nil<T_O>();
         }
         return Fixnum_O::create(static_cast<int>(pos+start2->get()));
     };
@@ -344,8 +344,7 @@ namespace core
     T_sp af_base_string_concatenate(List_sp args)
     {_G();
 	stringstream ss;
-	for ( List_sp cur = args; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : args ) {
 	    Str_sp str = coerce::stringDesignator(oCar(cur));
 	    ss << str->get();
 	}
@@ -358,16 +357,16 @@ namespace core
 
     inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
 					  Str_sp& string1, Str_sp& string2,
-					  Fixnum_sp start1, Fixnum_sp end1,
-					  Fixnum_sp start2, Fixnum_sp end2,
+					  Fixnum_sp start1, T_sp end1,
+					  Fixnum_sp start2, T_sp end2,
 					  int& istart1, int& iend1, int& istart2, int& iend2 )
     {_G();
 	string1 = coerce::stringDesignator(string1_desig);
 	string2 = coerce::stringDesignator(string2_desig);
 	istart1 = MAX(start1->get(),0);
-	iend1 = MIN(end1.nilp() ? cl_length(string1) : end1->get(),cl_length(string1));
+	iend1 = MIN(end1.nilp() ? cl_length(string1) : end1.as<Fixnum_O>()->get(),cl_length(string1));
 	istart2 = MAX(start2->get(),0);
-	iend2 = MIN(end2.nilp() ? cl_length(string2) : end2->get(),cl_length(string2));
+	iend2 = MIN(end2.nilp() ? cl_length(string2) : end2.as<Fixnum_O>()->get(),cl_length(string2));
     }
 
 
@@ -375,7 +374,7 @@ namespace core
 #define LOCK_af_string_EQ_ 1
 #define ARGS_af_string_EQ_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_EQ_ ""
-    T_mv af_string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -388,7 +387,7 @@ namespace core
 #define LOCK_af_string_NE_ 1
 #define ARGS_af_string_NE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_NE_ ""
-    T_mv af_string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -401,7 +400,7 @@ namespace core
 #define LOCK_af_string_LT_ 1
 #define ARGS_af_string_LT_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_LT_ ""
-    T_mv af_string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -414,7 +413,7 @@ namespace core
 #define LOCK_af_string_GT_ 1
 #define ARGS_af_string_GT_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_GT_ ""
-    T_mv af_string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -427,7 +426,7 @@ namespace core
 #define LOCK_af_string_LE_ 1
 #define ARGS_af_string_LE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_LE_ ""
-    T_mv af_string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -440,7 +439,7 @@ namespace core
 #define LOCK_af_string_GE_ 1
 #define ARGS_af_string_GE_ "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_GE_ ""
-    T_mv af_string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -456,7 +455,7 @@ namespace core
 #define LOCK_af_string_equal 1
 #define ARGS_af_string_equal "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_equal ""
-    T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_sp af_string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -469,7 +468,7 @@ namespace core
 #define LOCK_af_string_not_equal 1
 #define ARGS_af_string_not_equal "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_not_equal ""
-    T_mv af_string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -481,7 +480,7 @@ namespace core
 #define LOCK_af_string_lessp 1
 #define ARGS_af_string_lessp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_lessp ""
-    T_mv af_string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -493,7 +492,7 @@ namespace core
 #define LOCK_af_string_greaterp 1
 #define ARGS_af_string_greaterp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_greaterp ""
-    T_mv af_string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -505,7 +504,7 @@ namespace core
 #define LOCK_af_string_not_greaterp 1
 #define ARGS_af_string_not_greaterp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_not_greaterp ""
-    T_mv af_string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -517,7 +516,7 @@ namespace core
 #define LOCK_af_string_not_lessp 1
 #define ARGS_af_string_not_lessp "(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2)"
 #define DECL_af_string_not_lessp ""
-    T_mv af_string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, Fixnum_sp end1, Fixnum_sp start2, Fixnum_sp end2 )
+    T_mv af_string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2 )
     {_G();
 	int istart1, iend1, istart2, iend2;
 	Str_sp string1;
@@ -800,7 +799,7 @@ namespace core
     List_sp	Str_O::splitAtWhiteSpace()
     {
 	vector<string> parts = core::split(this->get()," \n\t");
-	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	Cons_sp cur = first;
 	for ( vector<string>::iterator it=parts.begin(); it!=parts.end(); it++ )
 	{
@@ -808,7 +807,7 @@ namespace core
 	    cur->setCdr(one);
 	    cur=one;
 	}
-	return cCdr(first);
+	return oCdr(first);
     }
 
     List_sp	Str_O::split(const string& chars)
@@ -1332,12 +1331,10 @@ namespace core
 
     void Str_O::fillInitialContents(T_sp seq)
     {
-	if ( Cons_sp ls = seq.asOrNull<Cons_O>() )
-	{
+	if ( List_sp ls = seq.asOrNull<Cons_O>() ) {
 	    if ( cl_length(seq) != this->size() ) goto ERROR;
 	    size_t i = 0;
-	    for (Cons_sp cur=ls; cur.notnilp(); cur=cCdr(cur))
-	    {
+	    for ( auto cur : ls ) {
 		this->_Contents[i] = oCar(cur).as<Character_O>()->asChar();
 		++i;
 	    }

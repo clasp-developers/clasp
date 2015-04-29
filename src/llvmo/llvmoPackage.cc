@@ -256,18 +256,17 @@ namespace llvmo
     void dump_funcs(core::Function_sp compiledFunction)
     {
 	STDOUT_BFORMAT(BF("Dumping disassembly"));
-        core::Closure* cb = compiledFunction->closure;
+        auto cb = compiledFunction->closure;
         if ( !cb->compiledP() ) {
             SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
         }
-        llvmo::CompiledClosure* cc = dynamic_cast<llvmo::CompiledClosure*>(cb);
+        auto cc = cb.as<llvmo::CompiledClosure>();
 	core::T_sp funcs = cc->associatedFunctions;
 	if (funcs.nilp()) {
 	    STDOUT_BFORMAT(BF("There is no list of associated functions\n"));
 	} else if ( cl_consp(funcs) ) {
-	    core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
-	    for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
-	    {
+	    core::List_sp cfuncs = funcs;
+	    for ( auto cur : cfuncs ) {
 		core::T_sp func = oCar(cur);
 		if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
 		{
@@ -303,13 +302,12 @@ namespace llvmo
 #define DOCS_af_viewCFG "viewCFG (view-cfg fn &optional only)"
     void af_viewCFG(core::Function_sp compiledFunction, core::T_sp only)
     {_G();
-        if ( CompiledClosure* cl = dynamic_cast<CompiledClosure*>(compiledFunction->closure) ) {
+        if ( auto cl = compiledFunction->closure.as<CompiledClosure>() ) {
             core::T_sp funcs = cl->associatedFunctions;
             if ( cl_consp(funcs) )
             {
-                core::Cons_sp cfuncs = funcs.as<core::Cons_O>();
-                for ( core::Cons_sp cur = cfuncs; cur.notnilp(); cur=cCdr(cur) )
-                {
+                core::List_sp cfuncs = funcs;
+                for ( auto cur : cfuncs ) {
                     core::T_sp func = oCar(cur);
                     if ( llvmo::Function_sp f = func.as<llvmo::Function_O>() )
                     {

@@ -38,7 +38,7 @@ namespace core
 {
 
     extern T_sp cl_macroFunction(Symbol_sp symbol, T_sp env);
-    extern Cons_mv af_separatePairList(List_sp listOfPairs);
+    extern T_mv af_separatePairList(List_sp listOfPairs);
 
     extern Symbol_mv af_functionBlockName(T_sp functionName);
 
@@ -67,7 +67,7 @@ namespace core
 
     T_sp cl_mapcar(T_sp func_desig, List_sp lists);
 
-    T_sp af_append(List_sp lists);
+    List_sp af_append(List_sp lists);
 
     
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
@@ -123,7 +123,7 @@ namespace core
 	List_sp	_Cur;
     public:
 	ConsStepper(List_sp first) : _Cur(first) {};
-	virtual bool advance() { this->_Cur = cCdr(this->_Cur); return this->_Cur.nilp(); };
+	virtual bool advance() { this->_Cur = oCdr(this->_Cur); return this->_Cur.nilp(); };
 	virtual T_sp element() const { return oCar(this->_Cur);};
     };
 

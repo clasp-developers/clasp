@@ -352,11 +352,11 @@ namespace core
 	Instance_sp iobj = Instance_O::allocateInstance(this->_Class).as<Instance_O>();
 	iobj->_isgf = this->_isgf;
 	iobj->_Slots = this->_Slots;
-        if ( this->closure != NULL ) {
-            InstanceClosure* ic = dynamic_cast<InstanceClosure*>(const_cast<Closure*>(this->closure));
-            iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(*ic);
+        if ( (bool)(this->closure)) {
+	    auto ic = this->closure.as<InstanceClosure>();
+	    iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(*ic);
         } else {
-            iobj->closure = NULL;
+            iobj->closure.reset_();
         }
 	iobj->_Sig = this->_Sig;
 	return iobj;
@@ -382,10 +382,10 @@ namespace core
 
     void Instance_O::ensureClosure(ArgArrayGenericFunctionPtr entryPoint)
     {
-        if ( this->closure == NULL ) {
+        if ( !(bool)(this->closure)) {
             this->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(this->GFUN_NAME(),entryPoint,this->asSmartPtr());
         } else {
-            InstanceClosure* ic = dynamic_cast<InstanceClosure*>(this->closure);
+            auto ic = this->closure.as<InstanceClosure>();
             ic->entryPoint = entryPoint;
         }
     };

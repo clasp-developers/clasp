@@ -157,8 +157,8 @@ namespace core
 	    vec_indices.push_back(indices.unsafe_fixnum());
 	} else if ( Fixnum_sp fn = indices.asOrNull<Fixnum_O>() ) {
 	    vec_indices.push_back(fn->get());
-	} else if ( Cons_sp cur = indices.asOrNull<Cons_O>() ) {
-	    for ( ; cur.notnilp(); cur=cCdr(cur) ) {
+	} else if ( List_sp cur = indices.asOrNull<Cons_O>() ) {
+	    for ( ; cur.notnilp(); cur=oCdr(cur) ) {
 		T_sp val = oCar(cur);
 		if ( val.notnilp() ) {
 		    if ( val.fixnump() ) {

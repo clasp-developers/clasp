@@ -1,5 +1,5 @@
 /*
-    File: arrayObjects.cc
+    File: arrayDisplaced.cc
 */
 
 /*
@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/arrayObjects.h>
+#include <clasp/core/arrayDisplaced.h>
 #include <clasp/core/wrappers.h>
 namespace core
 {
@@ -39,16 +39,23 @@ namespace core
 
 
 
-    EXPOSE_CLASS(core,ArrayObjects_O);
+    EXPOSE_CLASS(core,ArrayDisplaced_O);
+
+    T_mv ArrayDisplaced_O::arrayDisplacement() const
+    {
+	    return Values(this->_Array,Fixnum_O::create(this->_DisplacedIndexOffset));
+    };
 
 
-#define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element)"
-#define DECL_ArrayObjects_O_make ""
-#define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
-    ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement)
+#define ARGS_ArrayDisplaced_O_make "(dimensions element-type displaced-to displaced-index-offset)"
+#define DECL_ArrayDisplaced_O_make ""
+#define DOCS_ArrayDisplaced_O_make "make ArrayDisplaced args: dimensions element-type displaced-to displaced-index-offset"
+    ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp displacedTo, int displacedIndexOffset)
     {_G();
-        GC_ALLOCATE(ArrayObjects_O,array );
+        GC_ALLOCATE(ArrayDisplaced_O,array );
 	array->_ElementType = elementType;
+	array->_Array = displacedTo;
+	array->_DisplacedIndexOffset = displacedIndexOffset;
 	Cons_sp dim;
 	if ( af_atom(dim_desig) )
 	{
@@ -58,29 +65,29 @@ namespace core
 	{
 	    dim = dim_desig.as_or_nil<Cons_O>();
 	}
-	/* LongLongInt elements = */ array->setDimensions(dim,initialElement);
-	return((array));
+	/* LongLongInt elements = */ array->setDimensions(dim,displacedTo);
+	return array;
     }
 
 
 
-    void ArrayObjects_O::exposeCando(::core::Lisp_sp lisp)
+    void ArrayDisplaced_O::exposeCando(::core::Lisp_sp lisp)
     {
-	::core::class_<ArrayObjects_O>()
+	::core::class_<ArrayDisplaced_O>()
 	;
-	Defun_maker(CorePkg,ArrayObjects);
+	Defun_maker(CorePkg,ArrayDisplaced);
     }
 
-    void ArrayObjects_O::exposePython(Lisp_sp lisp)
+    void ArrayDisplaced_O::exposePython(Lisp_sp lisp)
     {_G();
 #ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,ArrayObjects,"","",_lisp)
+	PYTHON_CLASS(CorePkg,ArrayDisplaced,"","",_lisp)
 	;
 #endif
     }
 
 #if defined(XML_ARCHIVE)
-void ArrayObjects_O::archiveBase(::core::ArchiveP node)
+void ArrayDisplaced_O::archiveBase(::core::ArchiveP node)
     {
         this->Base::archiveBase(node);
 	IMPLEMENT_ME();
@@ -92,7 +99,7 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
     }
 #endif // defined(XML_ARCHIVE)
 #if defined(OLD_SERIALIZE)
-    void ArrayObjects_O::serialize(serialize::SNode node)
+    void ArrayDisplaced_O::serialize(serialize::SNode node)
     {
         this->Base::serialize(node);
 	node->namedObject("elementType",this->_ElementType);
@@ -101,7 +108,7 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
 #endif
 
 
-    void ArrayObjects_O::initialize()
+    void ArrayDisplaced_O::initialize()
     {_OF();
         this->Base::initialize();
 	this->_ElementType = cl::_sym_T_O;
@@ -111,22 +118,20 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
 
 
 
-    void ArrayObjects_O::rowMajorAset(int idx, T_sp value)
+    void ArrayDisplaced_O::rowMajorAset(int idx, T_sp value)
     {_G();
-	ASSERTF(idx<this->_Values.size(),BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size() );
-	this->_Values[idx] = value;
+	this->_Array->rowMajorAset(this->_DisplacedIndexOffset+idx,value);
     }
 
-    T_sp ArrayObjects_O::asetUnsafe(int idx, T_sp value)
+    T_sp ArrayDisplaced_O::asetUnsafe(int idx, T_sp value)
     {_G();
-	this->_Values[idx] = value;
+	this->_Array->asetUnsafe(this->_DisplacedIndexOffset+idx,value);
 	return value;
     }
 
-    T_sp ArrayObjects_O::rowMajorAref(int idx) const
+    T_sp ArrayDisplaced_O::rowMajorAref(int idx) const
     {_G();
-	ASSERTF(idx<this->_Values.size(),BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size() );
-	return((this->_Values[idx]));
+	return((this->_Array->rowMajorAref(idx+this->_DisplacedIndexOffset)));
     };
 
 
@@ -135,95 +140,87 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
 
 
 
-    T_sp ArrayObjects_O::aref(List_sp indices) const
+    T_sp ArrayDisplaced_O::aref(List_sp indices) const
     {_OF();
 	LOG(BF("indices[%s]")%_rep_(indices) );
 	int index = this->index(indices);
-	return((this->_Values[index]));
+	return((this->rowMajorAref(index)));
     }
 
-    T_sp ArrayObjects_O::setf_aref(List_sp indices_val)
+    T_sp ArrayDisplaced_O::setf_aref(List_sp indices_val)
     {_OF();
 	List_sp val_cons;
 	LongLongInt index = this->index_val(indices_val,true,val_cons);
-	this->_Values[index] = oCar(val_cons);
+	this->asetUnsafe(index,oCar(val_cons));
 	return((oCar(val_cons)));
     }
 
-    T_sp ArrayObjects_O::shallowCopy() const
+    T_sp ArrayDisplaced_O::shallowCopy() const
     {_OF();
-        GC_ALLOCATE(ArrayObjects_O,array );
+        GC_ALLOCATE(ArrayDisplaced_O,array );
 	array->_Dimensions = this->_Dimensions;
 	array->_ElementType = this->_ElementType;
-	array->_Values = this->_Values;
+	array->_Array = this->_Array;
 	return((array));
     }
 
-    void ArrayObjects_O::arrayFill(T_sp val)
-    {_OF();
-	for ( int i=0; i<(int)this->_Values.size(); i++ )
-	{
-	    this->_Values[i] = val;
+    void ArrayDisplaced_O::arrayFill(T_sp val)
+    {
+	for ( int i=0,iEnd(this->arrayTotalSize()); i<iEnd; i++ ) {
+	    this->asetUnsafe(i,val);
 	}
     }
 
 
-    T_sp ArrayObjects_O::deepCopy() const
+    T_sp ArrayDisplaced_O::deepCopy() const
     {_OF();
-        GC_ALLOCATE(ArrayObjects_O,narray );
-        narray->_Dimensions = this->_Dimensions;
-	narray->_ElementType = this->_ElementType; // Don't copy ElementType - it's an immutable Symbol representing a Class
-	narray->_Values.resize(this->_Values.size());
-	for ( uint i=0; i<this->_Values.size(); i++ )
-	{
-	    narray->_Values[i] = this->_Values[i]->deepCopy();
-	}
-	return((narray));
+	SIMPLE_ERROR(BF("deepCopy not supported for ArrayDisplaced_O"));
     }
 
 
-    T_sp ArrayObjects_O::svref(int index) const
+    T_sp ArrayDisplaced_O::svref(int index) const
     {_G();
 	if ( this->_Dimensions.size() == 1 )
 	{
 	    ASSERT(index>=0 && index < this->_Dimensions[0]);
-	    return((this->_Values[index]));
+	    return((this->rowMajorAref(index)));
 	}
-	SIMPLE_ERROR(BF("ArrayObjects has more than one dimension - cannot use svref"));
+	SIMPLE_ERROR(BF("ArrayDisplaced has more than one dimension - cannot use svref"));
     }
 
 
 
-    T_sp ArrayObjects_O::setf_svref(int index, T_sp value)
+    T_sp ArrayDisplaced_O::setf_svref(int index, T_sp value)
     {_G();
 	if ( this->_Dimensions.size() == 1 )
 	{
 	    ASSERT(index>=0 && index < this->_Dimensions[0]);
-	    this->_Values[index] = value;
+	    this->rowMajorAset(index,value);
 	    return((value));
 	}
-	SIMPLE_ERROR(BF("ArrayObjects has more than one dimension - cannot use setf-svref"));
+	SIMPLE_ERROR(BF("ArrayDisplaced has more than one dimension - cannot use setf-svref"));
     }
 
 
-    LongLongInt ArrayObjects_O::setDimensions(List_sp dim,T_sp initialElement)
+    LongLongInt ArrayDisplaced_O::setDimensions(List_sp ldim,T_sp displacedTo)
     {_OF();
 	LongLongInt elements = 1;
-	this->_Dimensions.resize(cl_length(dim));
+	this->_Dimensions.resize(cl_length(ldim));
 	int idx = 0;
-	for ( ; dim.notnilp(); dim = oCdr(dim) )
-	{
+	for ( auto dim : ldim ) {
 	    int oneDim = oCar(dim).as<Rational_O>()->as_int();
 	    this->_Dimensions[idx] = oneDim;
 	    elements *= oneDim;
 	    idx++;
 	}
-	this->_Values.resize(elements,initialElement);
+	if ( this->arrayTotalSize() < elements ) {
+	    SIMPLE_ERROR(BF("The displaced to array is not large enough for this displaced array"));
+	}
 	return((elements));
     }
 
 
-    int ArrayObjects_O::arrayDimension(int axisNumber) const
+    int ArrayDisplaced_O::arrayDimension(int axisNumber) const
     {_OF();
 	ASSERTF(axisNumber>=0,BF("Axis number must be >= 0"));
 	ASSERTF(axisNumber<(int)this->_Dimensions.size(),BF("There is no axis with number %d - must be less than %d")
@@ -234,7 +231,7 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
 
 
 #if defined(XML_ARCHIVE)
-void ArrayObjects_O::archiveBase(::core::ArchiveP node)
+void ArrayDisplaced_O::archiveBase(::core::ArchiveP node)
     {
         this->Base::archiveBase(node);
 	node->archiveVectorInt("dims",this->_Dimensions);
@@ -242,7 +239,7 @@ void ArrayObjects_O::archiveBase(::core::ArchiveP node)
     }
 #endif // defined(XML_ARCHIVE)
 #if defined(OLD_SERIALIZE)
-    void ArrayObjects_O::serialize(serialize::SNode node)
+    void ArrayDisplaced_O::serialize(serialize::SNode node)
     {
 	node->namedPOD("dims",this->_Dimensions);
     }

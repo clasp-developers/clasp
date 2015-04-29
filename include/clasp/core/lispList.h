@@ -81,7 +81,7 @@ namespace core {
     T_sp clasp_nconc(T_sp l, T_sp y);
 
     T_sp cl_last(T_sp list, int n=1);
-    T_sp cl_nbutlast(T_sp list, Integer_sp n);
+    List_sp cl_nbutlast(List_sp list, Integer_sp n);
 
 
     void initialize_list();

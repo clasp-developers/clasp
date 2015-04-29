@@ -65,7 +65,7 @@ namespace core
     {
         if ( Cons_sp cpf = possibleForms.asOrNull<Cons_O>() ) {
             if ( oCar(cpf).as<Symbol_O>() == cl::_sym_progn ) {
-                for ( Cons_sp cur = cCdr(cpf); cur.notnilp(); cur=cCdr(cur) ) {
+                for ( auto cur : (List_sp)oCdr(cpf) ) {
                     accumulated = separateTopLevelForms(accumulated,oCar(cur));
                 }
                 return accumulated;
@@ -147,7 +147,7 @@ namespace core
 #define ARGS_af_interpreter_lookup_function "(symbol env)"
 #define DECL_af_interpreter_lookup_function ""
 #define DOCS_af_interpreter_lookup_function "environment_lookup_function return the function or UNBOUND"
-    Function_sp af_interpreter_lookup_function(Symbol_sp name, T_sp env)
+    T_sp af_interpreter_lookup_function(Symbol_sp name, T_sp env)
     {_G();
 	if ( env.notnilp() )
 	{
@@ -158,8 +158,8 @@ namespace core
                 return fn;
             }
 	}
-        Function_sp fn = name->symbolFunction();
-        return fn;
+	if (name->fboundp()) return name->symbolFunction();
+	return _Nil<T_O>(); // never let unbound propagate
     };
 
 
@@ -167,7 +167,7 @@ namespace core
 #define ARGS_af_interpreter_lookup_setf_function "(symbol env)"
 #define DECL_af_interpreter_lookup_setf_function ""
 #define DOCS_af_interpreter_lookup_setf_function "environment_lookup_setf_function"
-    Function_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env)
+    T_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env)
     {_G();
 	Symbol_sp name = oCadr(setf_name).as<Symbol_O>();
 	if ( env.notnilp() )
@@ -178,12 +178,8 @@ namespace core
             // TODO: This may not work properly - it looks like it will find regular functions
             if ( Environment_O::clasp_findFunction( env, name, depth, index, fn ) ) return fn;
 	}
-	Function_sp fn = name->getSetfFdefinition();
-	if ( fn.notnilp() )
-	{
-	    return fn;
-	}
-	return _Nil<Function_O>();
+	if (name->setf_fboundp()) return name->getSetfFdefinition();
+	return _Nil<T_O>();
     };
 
 
@@ -191,9 +187,9 @@ namespace core
 #define ARGS_core_lookup_symbol_macro "(symbol &optional env)"
 #define DECL_core_lookup_symbol_macro ""
 #define DOCS_core_lookup_symbol_macro "environment_lookup_symbol_macro_definition"
-    Function_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env)
+    T_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env)
     {_G();
-	if ( sym.nilp() ) return _Nil<Function_O>();
+	if ( sym.nilp() ) return _Nil<T_O>();
 	if ( env.notnilp() )
 	{
 	    int depth=0;
@@ -204,7 +200,7 @@ namespace core
 	    if ( found ) return macro;
 	}
 	SYMBOL_SC_(CorePkg,symbolMacro);
-	Function_sp fn = _Nil<Function_O>();
+	T_sp fn = _Nil<T_O>();
 	T_mv result = af_get_sysprop(sym,core::_sym_symbolMacro);
 	if ( result.valueGet(1).as<T_O>().notnilp() )
 	{
@@ -218,18 +214,20 @@ namespace core
 #define ARGS_af_interpreter_lookup_macro "(symbol env)"
 #define DECL_af_interpreter_lookup_macro ""
 #define DOCS_af_interpreter_lookup_macro "environment_lookup_macro_definition"
-    Function_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env)
+    T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env)
     {_G();
-	if ( sym.nilp() ) return _Nil<Function_O>();
-        if ( core_lexicalFunction(sym,env).notnilp()) return _Nil<Function_O>();
+	if ( sym.nilp() ) return _Nil<T_O>();
+        if ( core_lexicalFunction(sym,env).notnilp()) return _Nil<T_O>();
         int depth=0;
         int level=0;
         Function_sp macro;
         bool found = Environment_O::clasp_findMacro(env,sym,depth,level,macro);
         if ( found ) return macro;
-	Function_sp fn = sym->symbolFunction();
-	if ( fn.objectp() && fn->macroP() ) return fn;
-	return _Nil<Function_O>();
+	if ( sym->fboundp() ) {
+	    T_sp fn = sym->symbolFunction();
+	    if (fn.as<Function_O>()->macroP() ) return fn;
+	}
+	return _Nil<T_O>();
     };
 
 
@@ -246,16 +244,11 @@ namespace core
 	{_G();
 	    for ( auto cur : args ) {
 		T_sp cond;
-		List_sp condProgn;
-		{
-		    condProgn = oCar(cur).as_or_nil<Cons_O>();
-		    cond = eval::evaluate(oCar(condProgn),environment);
-		}
-		if ( cond.isTrue() )
-		{
-		    List_sp code = cCdr(condProgn);
-		    if ( code.notnilp() )
-		    {
+		List_sp condProgn = oCar(cur);
+		cond = eval::evaluate(oCar(condProgn),environment);
+		if ( cond.isTrue() ) {
+		    List_sp code = oCdr(condProgn);
+		    if ( code.notnilp() ) {
 			return eval::sp_progn(code,environment);
 		    }
 		    return(Values(cond));
@@ -268,7 +261,7 @@ namespace core
 	T_mv interpreter_case(List_sp args, T_sp environment)
 	{_G();
 	    T_sp keyform = oCar(args);
-	    List_sp clauses = cCdr(args);
+	    List_sp clauses = oCdr(args);
 	    T_sp test_key = eval::evaluate(keyform,environment);
 	    LOG(BF("Evaluated test_key = %s\n") % _rep_(test_key) );
 	    for ( auto cur : clauses ) {
@@ -276,12 +269,12 @@ namespace core
 		if ( cl_consp(oclause) )
 		{
 		    List_sp clause = oclause.as_or_nil<Cons_O>();
-		    T_sp keys = oCar(clause);
-		    List_sp forms = cCdr(clause);
+		    List_sp keys = oCar(clause);
+		    List_sp forms = oCdr(clause);
 		    SYMBOL_EXPORT_SC_(ClPkg,otherwise);
 		    if ( keys == cl::_sym_otherwise || keys == _lisp->_true() )
 		    {
-			if ( cCdr(cur).notnilp() )
+			if ( oCdr(cur).notnilp() )
 			{
 			    SIMPLE_ERROR(BF("otherwise-clause must be the last clause of case - it is not"));
 			}
@@ -294,8 +287,7 @@ namespace core
 			}
 		    } else if ( cl_consp(keys) )
 		    {
-			for (Cons_sp kcur = keys.as_or_nil<Cons_O>(); kcur.notnilp(); kcur=cCdr(kcur) )
-			{
+			for (auto kcur : keys ) {
 			    if ( cl_eql(oCar(kcur),test_key) )
 			    {
 				return eval::sp_progn(forms,environment);
@@ -352,7 +344,7 @@ namespace core
 		add = two;
 		++i;
 	    }
-	    eval::sp_setq(cCdr(skipFirst),environment);
+	    eval::sp_setq(oCdr(skipFirst),environment);
 	    return (values->operator[](0));
 	}
 
@@ -362,7 +354,7 @@ namespace core
 	T_mv interpreter_prog1(List_sp args, T_sp environment)
 	{_G();
 	    T_sp firstForm = oCar(args);
-	    List_sp forms = cCdr(args);
+	    List_sp forms = oCdr(args);
 	    T_sp result = eval::evaluate(firstForm,environment);
 	    eval::sp_progn(forms,environment);
 	    return(Values(result));
@@ -386,9 +378,9 @@ namespace core
 	{_G();
 	    List_sp body = inputBody;
 	    documentation = _Nil<Str_O>();
-	    declares = _Nil<Cons_O>();
-	    specials = _Nil<Cons_O>();
-	    for (; body.notnilp(); body=cCdr(body) )
+	    declares = _Nil<T_O>();
+	    specials = _Nil<T_O>();
+	    for (; body.notnilp(); body=oCdr(body) )
 	    {
 		if ( !cl_listp(body) )
 		{
@@ -415,20 +407,20 @@ namespace core
 		{
 		    break;
 		}
-		List_sp cform = form.as_or_nil<Cons_O>();
-		for ( cform = cCdr(form.as_or_nil<Cons_O>()); cform.notnilp(); )
+		List_sp cform = form;
+		for ( cform = oCdr(form); cform.notnilp(); )
 		{
-		    List_sp sentence = oCar(cform).as_or_nil<Cons_O>();
-		    cform = cCdr(cform);
+		    List_sp sentence = oCar(cform);
+		    cform = oCdr(cform);
 		    declares = Cons_O::create(sentence,declares);
 		    T_sp sentenceHead = oCar(sentence);
-		    sentence = cCdr(sentence);
+		    sentence = oCdr(sentence);
 		    if ( sentenceHead == cl::_sym_special )
 		    {
 			while (sentence.notnilp())
 			{
 			    T_sp v = oCar(sentence);
-			    sentence = cCdr(sentence);
+			    sentence = oCdr(sentence);
 			    if ( !af_symbolp(v) )
 			    {
 				SIMPLE_ERROR(BF("Illegal object[%s] in declare special") % _rep_(v));
@@ -507,13 +499,13 @@ namespace core
 	    List_sp symbols = eval::evaluate(oCar(args),environment).as_or_nil<Cons_O>();
 	    List_sp values = eval::evaluate(oCadr(args),environment).as_or_nil<Cons_O>();
 	    DynamicScopeManager manager;
-	    for( ; symbols.notnilp(); symbols=cCdr(symbols), values=cCdr(values) )
+	    for( ; symbols.notnilp(); symbols=oCdr(symbols), values=oCdr(values) )
 	    {
 		Symbol_sp symbol = oCar(symbols).as<Symbol_O>();
 		T_sp value = oCar(values);
 		manager.pushSpecialVariableAndSet(symbol,value);
 	    }
-	    List_sp forms = cCddr(args);
+	    List_sp forms = oCddr(args);
 	    return sp_progn(forms,environment);
 	}
 
@@ -529,7 +521,7 @@ namespace core
 	    SYMBOL_SC_(KeywordPkg,execute);
 	    SYMBOL_SC_(KeywordPkg,load_toplevel);
 	    List_sp situations = oCar(args).as_or_nil<Cons_O>();
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    bool execute = false;
 	    if ( af_member(kw::_sym_execute,situations,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).isTrue() ) {execute = true;}
 	    if ( execute ) {return sp_progn(body,environment);}
@@ -603,11 +595,9 @@ namespace core
 	T_mv sp_eval_when( List_sp args, T_sp env)
 	{_G();
 	    List_sp situation_list = oCar(args).as_or_nil<Cons_O>();
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    uint situation = 0;
-	    for ( List_sp cursit = situation_list; cursit.notnilp(); cursit=cCdr(cursit) )
-	    {
-		
+	    for ( auto cursit : situation_list ) {
 		Symbol_sp s = oCar(cursit).as<Symbol_O>();
 		if ( s == kw::_sym_compile_toplevel ) situation |= FLAG_COMPILE;
 		else if ( s == cl::_sym_compile ) situation |= FLAG_COMPILE;
@@ -693,8 +683,7 @@ namespace core
 	    //
 	    // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
 	    //
-	    for ( List_sp cur = args; cur.notnilp(); cur = cCdr(cur) )
-	    {
+	    for ( auto cur : args ) {
 	        T_sp tagOrForm = oCar(cur);
 		if ( af_symbolp(tagOrForm) )
 		{
@@ -726,7 +715,7 @@ namespace core
                         ip = tagbodyEnv->codePos(index);
                     }
                 }
-                ip = cCdr(ip);
+                ip = oCdr(ip);
             }
             LOG(BF("Leaving sp_tagbody"));
             _lisp->exceptionStack().unwind(frame);
@@ -767,7 +756,7 @@ namespace core
 #define DECL_af_classifyLetVariablesAndDeclares ""
 #define DOCS_af_classifyLetVariablesAndDeclares "classifyLetVariablesAndDeclares - return (values classified-variables num-lexicals) - For each variable name in variables and declared-specials classify each as special-var, lexical-var or declared-special using the declared-specials list"
 
-	Cons_mv af_classifyLetVariablesAndDeclares(List_sp variables, List_sp declaredSpecials)
+	T_mv af_classifyLetVariablesAndDeclares(List_sp variables, List_sp declaredSpecials)
 	{_G();
 	    SymbolSet_sp specialsSet = SymbolSet_O::make(declaredSpecials);
 	    SymbolSet_sp specialInVariables(SymbolSet_O::create());
@@ -776,8 +765,7 @@ namespace core
                                                       DoubleFloat_O::create(1.0));
 	    ql::list classified(_lisp);
 	    size_t indicesSize = 0;
-	    for ( List_sp cur = variables; cur.notnilp(); cur=cCdr(cur) )
-	    {
+	    for ( auto cur : variables ) {
 		Symbol_sp sym = oCar(cur).as<Symbol_O>();
 		if ( specialsSet->contains(sym) )
 		{
@@ -807,7 +795,8 @@ namespace core
                         classified << Cons_O::create(core::_sym_declaredSpecial,s);
                     }
                 } );
-	    return Values(classified.cons(),Fixnum_O::create((int)indicesSize));
+	    T_sp tclassified = classified.cons();
+	    return Values(tclassified,Fixnum_O::create((int)indicesSize));
 	}
 
 
@@ -832,10 +821,10 @@ namespace core
 	T_mv sp_let( List_sp args, T_sp parentEnvironment)
 	{
 	    List_sp assignments = oCar(args).as_or_nil<Cons_O>();
-	    Cons_mv pairOfLists = af_separatePairList(assignments);
-	    List_sp variables = pairOfLists;
+	    T_mv pairOfLists = af_separatePairList(assignments);
+	    List_sp variables = coerce_to_list(pairOfLists);
 	    List_sp expressions = pairOfLists.valueGet(1).as_or_nil<Cons_O>();
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
 	    //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
 	    List_sp declares;
@@ -844,8 +833,8 @@ namespace core
 	    List_sp declaredSpecials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,declaredSpecials);
 	    LOG(BF("Assignment part=%s") % assignments->__repr__() );
-	    Cons_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
-	    List_sp classified = classifiedAndCount;
+	    T_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
+	    List_sp classified = coerce_to_list(classifiedAndCount);
 	    int numberOfLexicalVariables = classifiedAndCount.valueGet(1).as<Fixnum_O>()->get();
 	    ValueEnvironment_sp newEnvironment =
 		ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables,parentEnvironment);
@@ -868,7 +857,7 @@ namespace core
 	    size_t numTemps = cl_length(classified);
 	    core::T_O**tempValues = (core::T_O**)__builtin_alloca(sizeof(core::T_O*)*numTemps);
 	    size_t valueIndex = 0;
-	    for ( List_sp curClassified = classified; curClassified.notnilp(); curClassified=cCdr(curClassified) ) {
+	    for ( auto curClassified : classified ) {
 		List_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
 		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar ) {
@@ -880,11 +869,11 @@ namespace core
 		    }
 		    tempValues[valueIndex] = result.raw_();
 		    ++valueIndex;
-		    curExp = cCdr(curExp);
+		    curExp = oCdr(curExp);
 		}
 	    }
 	    valueIndex = 0;
-	    for ( List_sp curClassified = classified; curClassified.notnilp(); curClassified=cCdr(curClassified) ) {
+	    for ( auto curClassified : classified ) {
 		List_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
 		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
@@ -912,10 +901,10 @@ namespace core
 	T_mv sp_letSTAR( List_sp args, T_sp parentEnvironment)
 	{
 	    List_sp assignments = oCar(args).as_or_nil<Cons_O>();
-	    Cons_mv pairOfLists = af_separatePairList(assignments);
-	    List_sp variables = pairOfLists;
+	    T_mv pairOfLists = af_separatePairList(assignments);
+	    List_sp variables = coerce_to_list(pairOfLists);
 	    List_sp expressions = pairOfLists.valueGet(1).as_or_nil<Cons_O>();
-	    List_sp body = cCdr(args);
+	    List_sp body = oCdr(args);
 	    //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
 	    //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
 	    List_sp declares;
@@ -924,8 +913,8 @@ namespace core
 	    List_sp declaredSpecials;
 	    extract_declares_docstring_code_specials(body,declares,false,docstring,code,declaredSpecials);
 	    LOG(BF("Assignment part=%s") % assignments->__repr__() );
-	    Cons_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
-	    List_sp classified = classifiedAndCount;
+	    T_mv classifiedAndCount = af_classifyLetVariablesAndDeclares(variables,declaredSpecials);
+	    List_sp classified = coerce_to_list(classifiedAndCount);
 	    int numberOfLexicalVariables = classifiedAndCount.valueGet(1).as<Fixnum_O>()->get();
 	    ValueEnvironment_sp newEnvironment =
 		ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables,parentEnvironment);
@@ -946,7 +935,7 @@ namespace core
 	    // SPECIFIC TO LET* FROM HERE ON DOWN
 	    evaluateEnvironment = newEnvironment;      // SPECIFIC TO LET*
 	    int debugInfoIndex = 0;
-	    for ( List_sp curClassified = classified; curClassified.notnilp(); curClassified=cCdr(curClassified) ) {
+	    for ( auto curClassified : classified ) {
 		List_sp classified = oCar(curClassified).as_or_nil<Cons_O>();
 		Symbol_sp shead = oCar(classified).as<Symbol_O>();
 		if ( shead == ext::_sym_specialVar || shead == ext::_sym_heapVar )
@@ -954,7 +943,7 @@ namespace core
 			T_sp expr = oCar(curExp);
 			T_sp result = eval::evaluate(expr,evaluateEnvironment);
 			scope.new_variable(classified,result);
-			curExp = cCdr(curExp);
+			curExp = oCdr(curExp);
 		    } else if ( shead == _sym_declaredSpecial )
 		    {
 			scope.new_special(classified);
@@ -987,7 +976,7 @@ namespace core
 	    {
 		res = eval::evaluate(oCar(args),environment);
 	    }
-	    if ( cCdddr(args).notnilp() )
+	    if ( oCdddr(args).notnilp() )
 	    {
 		SIMPLE_ERROR(BF("Illegal if has too many expressions: %s") % _rep_(args) );
 	    }
@@ -995,7 +984,7 @@ namespace core
 	    {
 		return eval::evaluate(oCadr(args),environment);
 	    } else
-	    { if ( cCdr(cCdr(args)).notnilp() )
+	    { if ( oCdr(oCdr(args)).notnilp() )
 		{
 		    return eval::evaluate(oCaddr(args),environment);
 		}
@@ -1019,8 +1008,7 @@ namespace core
 #if 1
 	T_mv sp_cond(List_sp args, T_sp environment)
 	{_G();
-	    for ( List_sp cur = args; cur.notnilp(); cur = cCdr(cur) )
-	    {
+	    for ( auto cur : args ) {
 		T_sp cond;
 		List_sp condProgn;
 		{
@@ -1029,7 +1017,7 @@ namespace core
 		}
 		if ( cond.isTrue() )
 		{
-		    List_sp code = cCdr(condProgn);
+		    List_sp code = oCdr(condProgn);
 		    if ( code.notnilp() )
 		    {
 			return eval::sp_progn(code,environment);
@@ -1051,7 +1039,7 @@ namespace core
 	    LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__() );
 	    T_mv result;
 	    try {
-		result = eval::sp_progn(cCdr(args),newEnvironment);
+		result = eval::sp_progn(oCdr(args),newEnvironment);
 	    } catch (ReturnFrom& returnFrom) {
 		LOG(BF("Caught ReturnFrom with returnFrom.getBlockDepth() ==> %d") % returnFrom.getBlockDepth() );
 		if ( returnFrom.getFrame() != frame ) // Symbol() != newEnvironment->getBlockSymbol() )
@@ -1074,7 +1062,7 @@ namespace core
 		SIMPLE_ERROR(BF("Could not find block named %s in lexical environment: %s") % _rep_(blockSymbol) % _rep_(environment) );
 	    }
 	    T_mv result = Values(_Nil<T_O>());
-	    if ( cCdr(args).notnilp() )
+	    if ( oCdr(args).notnilp() )
 	    {
 		result = eval::evaluate(oCadr(args),environment);
 	    }
@@ -1147,10 +1135,10 @@ namespace core
 		multipleValuesSaveToVector(result,save);
                 // Evaluate the unwind forms --
                 // THIS IS REALLY, REALLY WRONG - it shouldn't be protected here
-		eval::sp_progn(cCdr(args),environment);
+		eval::sp_progn(oCdr(args),environment);
 	    } catch (...)
 	      {
-		  eval::sp_progn(cCdr(args),environment);
+		  eval::sp_progn(oCdr(args),environment);
 		  throw;
 	      }
 	    return multipleValuesLoadFromVector(save);
@@ -1166,7 +1154,7 @@ namespace core
             int frame = _lisp->exceptionStack().push(CatchFrame,mytag);
 	    T_mv result;
 	    try {
-		result = eval::sp_progn(cCdr(args),environment);
+		result = eval::sp_progn(oCdr(args),environment);
 	    } catch (CatchThrow& catchThrow) {
                 if ( catchThrow.getFrame() != frame )
                 {
@@ -1191,7 +1179,7 @@ namespace core
             if ( frame < 0 ) {
                 CONTROL_ERROR();
             }
-	    if ( cCdr(args).notnilp() )
+	    if ( oCdr(args).notnilp() )
 	    {
 		result = eval::evaluate(oCadr(args),environment);
 	    }
@@ -1211,7 +1199,7 @@ namespace core
 	    VectorObjects_sp save(VectorObjects_O::create());
 	    T_mv val0 = eval::evaluate(oCar(args), environment);
 	    multipleValuesSaveToVector(val0,save);
-	    eval::evaluateListReturnLast(cCdr(args),environment);
+	    eval::evaluateListReturnLast(oCdr(args),environment);
 	    return multipleValuesLoadFromVector(save);
 	}
 
@@ -1223,11 +1211,10 @@ namespace core
 	{_G();
 	    Function_sp func;
 	    func = eval::evaluate(oCar(args),env).as<Function_O>();
-	    List_sp forms = cCdr(args);
+	    List_sp forms = oCdr(args);
 	    ql::list resultList(_lisp);
 	    List_sp results = _Nil<Cons_O>();
-	    for ( List_sp forms=cCdr(args); forms.notnilp(); forms=cCdr(forms) )
-	    {
+	    for ( auto forms : (List_sp)oCdr(args) ) {
 		T_sp oneForm = oCar(forms);
 		T_mv retval = eval::evaluate(oneForm,env);
 		resultList << retval;
@@ -1267,8 +1254,8 @@ namespace core
 	T_sp core_extractLambdaNameFromDeclares(List_sp declares, T_sp defaultValue)
 	{
 		    // First check for a (declare (core:function-name XXX))
-	    for ( ; declares.consp(); declares = cCdr(declares) ) {
-		List_sp decl = cCar(declares);
+	    for ( ; declares.consp(); declares = oCdr(declares) ) {
+		List_sp decl = oCar(declares);
 		if ( oCar(decl) == core::_sym_lambdaName ) {
 		    return oCadr(decl);
 		}
@@ -1283,7 +1270,7 @@ namespace core
 #define DOCS_core_extractLambdaName "If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX"
 	T_sp core_extractLambdaName(List_sp lambdaExpression, T_sp defaultValue)
 	{
-	    List_sp body = cCddr(lambdaExpression);
+	    List_sp body = oCddr(lambdaExpression);
 	    List_sp declares;
 	    Str_sp docstring;
 	    List_sp form;
@@ -1388,7 +1375,7 @@ namespace core
 */
 	T_mv sp_function(List_sp args, T_sp environment)
 	{_G();
-	    ASSERTP(cCdr(args).nilp(),"You can provide only one argument - a symbol that has a function bound to it or a lambda");
+	    ASSERTP(oCdr(args).nilp(),"You can provide only one argument - a symbol that has a function bound to it or a lambda");
 	    T_sp arg = oCar(args);
 	    if ( arg.nilp() ) {
 		WRONG_TYPE_ARG(arg,Cons_O::createList(cl::_sym_or,cl::_sym_Symbol_O,cl::_sym_Cons_O));
@@ -1424,13 +1411,13 @@ namespace core
 		    {
 			name = core_extractLambdaName(consArg,cl::_sym_lambda);
 			lambdaList = oCadr(consArg).as_or_nil<Cons_O>();
-			body = cCddr(consArg);
+			body = oCddr(consArg);
 			wrapBlock = false;
 		    } else // head==cl::_sym_lambda_block
 		    {
 			name = af_functionBlockName(oCadr(consArg));
 			lambdaList = oCaddr(consArg).as_or_nil<Cons_O>();
-			body = cCdddr(consArg);
+			body = oCdddr(consArg);
 			wrapBlock = true;
 		    }
 //		    HALT(BF("Check name/lambdaList/body and if ok remove me"));
@@ -1861,18 +1848,18 @@ namespace core
 
 
 
-
-	Function_sp lookupFunction(T_sp functionDesignator, T_sp env)
+	/*! Returns NIL if no function is found */
+	T_sp lookupFunction(T_sp functionDesignator, T_sp env)
 	{_G();
 	    ASSERTF(functionDesignator,BF("In apply, the head function designator is UNDEFINED"));
 	    if ( Function_sp exec = functionDesignator.asOrNull<Function_O>() ) return exec;
 	    Symbol_sp shead = functionDesignator.as<Symbol_O>();
-	    Function_sp exec = af_interpreter_lookup_function(shead,env);
+	    T_sp exec = af_interpreter_lookup_function(shead,env);
 	    return exec;
 	}
 
 
-        T_mv applyClosureToActivationFrame(Closure* func, ActivationFrame_sp args)
+        T_mv applyClosureToActivationFrame(gctools::tagged_functor<Closure> func, ActivationFrame_sp args)
         {
             T_mv result;
             size_t nargs = args->length();
@@ -1909,7 +1896,7 @@ namespace core
             };
         }
 
-        T_mv applyClosureToStackFrame(Closure* func, T_sp stackFrame)
+        T_mv applyClosureToStackFrame(gctools::tagged_functor<Closure> func, T_sp stackFrame)
         {
             T_mv result;
 	    ASSERT(stackFrame.framep());
@@ -1952,8 +1939,8 @@ namespace core
 	    ASSERT(stackFrame.framep());
 	    Function_sp fn = lookupFunction(head,stackFrame);
 	    ASSERT(fn.notnilp());
-            Closure* closureP = fn->closure;
-            ASSERTF(closureP!=NULL,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+	    gctools::tagged_functor<Closure> closureP = fn->closure;
+            ASSERTF((closureP),BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToStackFrame(closureP,stackFrame);
 	}
 
@@ -1971,7 +1958,7 @@ namespace core
 		}
 		SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
 	    }
-            Closure* closureP = fn->closure;
+	    gctools::tagged_functor<Closure> closureP = fn->closure;
             ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToActivationFrame(closureP,args);
 	}

@@ -295,9 +295,9 @@ namespace core
 	*curP = head; // cur.setPointee(head); // *cur = head;
 	curP = head->cdrPtr(); // cur.setPointer(head->cdrPtr()); // cur = head->cdrPtr();
 	SYMBOL_EXPORT_SC_(CorePkg,structure_slot_descriptions);
-	Cons_sp slots = af_get_sysprop(this->_Type,_sym_structure_slot_descriptions).as<Cons_O>();
-	for ( ; slots.notnilp(); slots = cCdr(slots) ) {
-	    Cons_sp slotDesc = oCar(slots).as<Cons_O>();
+	List_sp slots = af_get_sysprop(this->_Type,_sym_structure_slot_descriptions);
+	for ( ; slots.notnilp(); slots = oCdr(slots) ) {
+	    List_sp slotDesc = oCar(slots);
 	    Cons_sp slotNameCons = Cons_O::create(_lisp->internKeyword(oCar(slotDesc).as<Symbol_O>()->symbolName()->get()));
 	    *curP = slotNameCons; // cur.setPointee(slotNameCons); // *cur = slotNameCons;
 	    curP = slotNameCons->cdrPtr(); // cur.setPointer(slotNameCons->cdrPtr()); // cur = slotNameCons->cdrPtr();

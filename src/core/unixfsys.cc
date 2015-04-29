@@ -463,7 +463,7 @@ make_base_pathname(Pathname_sp pathname)
 #define FOLLOW_SYMLINKS 1
 
 static Pathname_mv
-file_truename(Pathname_sp pathname, Str_sp filename, int flags)
+file_truename(Pathname_sp pathname, T_sp filename, int flags)
 {
     Symbol_sp kind;
     if (pathname.nilp()) {
@@ -478,7 +478,7 @@ file_truename(Pathname_sp pathname, Str_sp filename, int flags)
 	    SIMPLE_ERROR(BF("Unprintable pathname %s found in TRUENAME") % _rep_(pathname));
 	}
     }
-    kind = file_kind((char*)filename->c_str(), false);
+    kind = file_kind((char*)filename.as<Str_O>()->c_str(), false);
     if (kind.nilp()) {
 	CANNOT_OPEN_FILE_ERROR(filename);
 #ifdef HAVE_LSTAT
@@ -493,7 +493,7 @@ file_truename(Pathname_sp pathname, Str_sp filename, int flags)
 					    _Nil<T_O>(),
 					    _Nil<T_O>(),
 					    kw::_sym_local);
-	pathname = brcl_mergePathnames(tfilename, pathname, kw::_sym_default);
+	pathname = brcl_mergePathnames(filename, pathname, kw::_sym_default);
 	return Values(af_truename(pathname),kind);
 #endif
     } else if (kind == kw::_sym_directory){
@@ -502,7 +502,7 @@ file_truename(Pathname_sp pathname, Str_sp filename, int flags)
 	   separator and re-parsing again the namestring */
 	if (pathname->_Name.notnilp() ||
 	    pathname->_Type.notnilp()) {
-	    Str_sp spathname = (*filename) + DIR_SEPARATOR;
+	    Str_sp spathname = (*(filename.as<Str_O>())) + DIR_SEPARATOR;
 	    pathname = af_truename(spathname);
 	}
     }
@@ -546,12 +546,11 @@ Pathname_sp af_truename(T_sp orig_pathname)
      * then we resolve the value of the symlink and continue traversing
      * the filesystem.
      */
-    for (dir = pathname->_Directory.as<Cons_O>(); dir.notnilp(); dir = cCdr(dir))
-    {
+    for ( auto dir : coerce_to_list(pathname->_Directory) ) {
 	base_dir = enter_directory(base_dir, oCar(dir), false);
     }
     pathname = brcl_mergePathnames(base_dir, pathname, kw::_sym_default);
-    return file_truename(pathname, _Nil<Str_O>(), FOLLOW_SYMLINKS);
+    return file_truename(pathname, _Nil<T_O>(), FOLLOW_SYMLINKS);
 }
 
 

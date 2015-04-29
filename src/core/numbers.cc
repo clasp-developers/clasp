@@ -137,7 +137,7 @@ namespace core
 		if ( numi.nilp() ) {
 		    TYPE_ERROR(numi,cl::_sym_Real_O);
 		}
-		nums = cCdr(nums);
+		nums = oCdr(nums);
 		min = brcl_min2(min,numi);
 		if (brcl_number_compare(min, numi) > 0)
 		    min = numi;
@@ -151,7 +151,7 @@ namespace core
 #define ARGS_cl_max "(max &rest nums)"
 #define DECL_cl_max ""
 #define DOCS_cl_max "max"
-    Real_sp cl_max(Real_sp max, Cons_sp nums)
+    Real_sp cl_max(Real_sp max, List_sp nums)
     {_G();
 	/* INV: type check occurs in brcl_number_compare() for the rest of
 	   numbers, but for the first argument it happens in brcl_zerop(). */
@@ -161,7 +161,7 @@ namespace core
 		if ( numi.nilp() ) {
 		    TYPE_ERROR(numi,cl::_sym_Real_O);
 		}
-		nums = cCdr(nums);
+		nums = oCdr(nums);
 		max = brcl_max2(max,numi);
 	    } while (nums.notnilp());
 	}
@@ -176,10 +176,9 @@ namespace core
     Integer_sp cl_logand(List_sp integers)
     {_G();
 	if ( integers.nilp() ) return Integer_O::create(-1);
-	mpz_class acc = oCar(integers).asNotNil<Integer_O>()->as_mpz();
-	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
-	{
-	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
+	mpz_class acc = oCar(integers).as<Integer_O>()->as_mpz();
+	for ( auto cur : (List_sp)oCdr(integers) ) {
+	    Integer_sp icur = oCar(cur).as<Integer_O>();
 	    mpz_class temp;
 	    mpz_and(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
@@ -194,11 +193,11 @@ namespace core
     Integer_sp cl_logior(List_sp integers)
     {_G();
 	if ( integers.nilp() ) return Integer_O::create(0);
-	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	Integer_sp ifirst = oCar(integers).as<Integer_O>();
 	mpz_class acc = ifirst->as_mpz();
-	List_sp rints = cCdr(integers);
+	List_sp rints = oCdr(integers);
 	for ( auto cur : rints ) {
-	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
+	    Integer_sp icur = oCar(cur).as<Integer_O>();
 	    mpz_class temp;
 	    mpz_ior(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
@@ -209,14 +208,13 @@ namespace core
 #define ARGS_af_logxor "(&rest integers)"
 #define DECL_af_logxor ""
 #define DOCS_af_logxor "logxor"
-    Integer_sp af_logxor(Cons_sp integers)
+    Integer_sp af_logxor(List_sp integers)
     {_G();
 	if ( integers.nilp() ) return Integer_O::create(0);
-	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	Integer_sp ifirst = oCar(integers).as<Integer_O>();
 	mpz_class acc = ifirst->as_mpz();
-	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) )
-	{
-	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
+	for ( auto cur : (List_sp)oCdr(integers) ) {
+	    Integer_sp icur = oCar(cur).as<Integer_O>();
 	    mpz_class temp;
 	    mpz_xor(temp.get_mpz_t(),acc.get_mpz_t(),icur->as_mpz().get_mpz_t());
 	    acc = temp;
@@ -229,13 +227,13 @@ namespace core
 #define ARGS_af_logeqv "(&rest integers)"
 #define DECL_af_logeqv ""
 #define DOCS_af_logeqv "logeqv"
-    Integer_mv af_logeqv(Cons_sp integers)
+    Integer_mv af_logeqv(List_sp integers)
     {_G();
 	if (integers.nilp() ) return Integer_O::create(-1);
-	Integer_sp ifirst = oCar(integers).asNotNil<Integer_O>();
+	Integer_sp ifirst = oCar(integers).as<Integer_O>();
 	mpz_class x = ifirst->as_mpz();
-	for ( Cons_sp cur = cCdr(integers); cur.notnilp(); cur=cCdr(cur) ) {
-	    Integer_sp icur = oCar(cur).asNotNil<Integer_O>();
+	for ( auto cur : (List_sp)oCdr(integers) ) {
+	    Integer_sp icur = oCar(cur).as<Integer_O>();
 	    mpz_class y = icur->as_mpz();
 	    mpz_class x_and_y;
 	    mpz_and(x_and_y.get_mpz_t(),x.get_mpz_t(),y.get_mpz_t());
@@ -912,12 +910,11 @@ namespace core
 #define ARGS_af__PLUS_ "(&rest numbers)"
 #define DECL_af__PLUS_ ""
 #define DOCS_af__PLUS_ "See CLHS: +"
-    T_mv af__PLUS_(Cons_sp numbers)
+    T_mv af__PLUS_(List_sp numbers)
     {_G();
 	if ( numbers.nilp() ) return(Values(Fixnum_O::create(0)));
 	Number_sp result = oCar(numbers).as<Number_O>();
-	for ( Cons_sp cur=cCdr(numbers); cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)oCdr(numbers) ) {
 	    result = contagen_add(result, oCar(cur).as<Number_O>());
 	}
 	return(Values(result));
@@ -928,12 +925,11 @@ namespace core
 #define ARGS_af__TIMES_ "(&rest numbers)"
 #define DECL_af__TIMES_ ""
 #define DOCS_af__TIMES_ "See CLHS: +"
-    T_mv af__TIMES_(Cons_sp numbers)
+    T_mv af__TIMES_(List_sp numbers)
     {_G();
 	if ( numbers.nilp() ) return(Values(Fixnum_O::create(1)));
 	Number_sp result = oCar(numbers).as<Number_O>();
-	for ( Cons_sp cur=cCdr(numbers); cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)oCdr(numbers) ) {
 	    result = contagen_mul(result, oCar(cur).as<Number_O>());
 	}
 	return(Values(result));
@@ -944,15 +940,14 @@ namespace core
 #define ARGS_af__MINUS_ "(num &rest numbers)"
 #define DECL_af__MINUS_ ""
 #define DOCS_af__MINUS_ "See CLHS: +"
-    T_mv af__MINUS_(Number_sp num, Cons_sp numbers)
+    T_mv af__MINUS_(Number_sp num, List_sp numbers)
     {_G();
 	if ( numbers.nilp() )
 	{
 	    return(Values(num->negate()));
 	}
 	Number_sp result = num;
-	for ( Cons_sp cur=numbers; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)oCdr(numbers) ) {
 	    result = contagen_sub(result, oCar(cur).as<Number_O>());
 	}
 	return(Values(result));
@@ -962,18 +957,16 @@ namespace core
 #define ARGS_af__DIVIDE_ "(num &rest numbers)"
 #define DECL_af__DIVIDE_ ""
 #define DOCS_af__DIVIDE_ "See CLHS: /"
-    T_mv af__DIVIDE_(Number_sp num, Cons_sp numbers)
+    T_sp af__DIVIDE_(Number_sp num, List_sp numbers)
     {_G();
-	if ( numbers.nilp() )
-	{
-	    return(Values(num->reciprocal()));
+	if ( numbers.nilp() ) {
+	    return((num->reciprocal()));
 	}
 	Number_sp result = num;
-	for ( Cons_sp cur=numbers; cur.notnilp(); cur = cCdr(cur) )
-	{
+	for ( auto cur : (List_sp)oCdr(numbers) ) {
 	    result = contagen_div(result, oCar(cur).as<Number_O>());
 	}
-	return(Values(result));
+	return((result));
     }
 
 
@@ -1237,19 +1230,19 @@ long_double_fix_compare(Fixnum n, LongFloat d)
     }
 
 
-    T_sp numbers_monotonic(int s, int t, Cons_sp args)
+    T_sp numbers_monotonic(int s, int t, List_sp args)
     {_G();
 	Number_sp c = oCar(args).as<Number_O>();
 	Number_sp d;
 	int dir;
-	args = cCdr(args);
+	args = oCdr(args);
 	while ( args.notnilp() )
 	{
 	    d = oCar(args).as<Number_O>();
 	    dir = s*basic_compare(c,d);
 	    if ( dir < t) return _lisp->_false();
 	    c = d;
-	    args = cCdr(args);
+	    args = oCdr(args);
 	}
 	return _lisp->_true();
     };
@@ -1266,7 +1259,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 #define LOCK_af__LT_ 1
 #define ARGS_af__LT_ "(&rest args)"
 #define DECL_af__LT_ ""
-    T_mv af__LT_(Cons_sp args)
+    T_mv af__LT_(List_sp args)
     {_G();
 	return(Values(numbers_monotonic(-1,1,args)));
     };
@@ -1277,7 +1270,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 #define LOCK_af__GT_ 1
 #define ARGS_af__GT_ "(&rest args)"
 #define DECL_af__GT_ ""
-    T_mv af__GT_(Cons_sp args)
+    T_mv af__GT_(List_sp args)
     {_G();
 	return(Values(numbers_monotonic(1,1,args)));
     };
@@ -1289,7 +1282,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 #define LOCK_af__LE_ 1
 #define ARGS_af__LE_ "(&rest args)"
 #define DECL_af__LE_ ""
-    T_mv af__LE_(Cons_sp args)
+    T_mv af__LE_(List_sp args)
     {_G();
 	return(Values(numbers_monotonic(-1,0,args)));
     };
@@ -1300,7 +1293,7 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 #define LOCK_af__GE_ 1
 #define ARGS_af__GE_ "(&rest args)"
 #define DECL_af__GE_ ""
-    T_mv af__GE_(Cons_sp args)
+    T_mv af__GE_(List_sp args)
     {_G();
 	return(Values(numbers_monotonic(1,0,args)));
     };
@@ -1439,17 +1432,16 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 #define LOCK_af__NE_ 1
 #define ARGS_af__NE_ "(&rest args)"
 #define DECL_af__NE_ ""
-    T_mv af__NE_(Cons_sp args)
+    T_mv af__NE_(List_sp args)
     {_G();
 	while ( args.notnilp() )
 	{
 	    Number_sp a = oCar(args).as<Number_O>();
-	    for ( Cons_sp cur = cCdr(args); cur.notnilp(); cur=cCdr(cur) )
-	    {
+	    for ( auto cur : (List_sp)oCdr(args) ) {
 		Number_sp b = oCar(cur).as<Number_O>();
 		if ( basic_equalp(a,b) ) return(Values(_Nil<T_O>()));
 	    }
-	    args = cCdr(args);
+	    args = oCdr(args);
 	}
 	return(Values(_lisp->_true()));
     }
@@ -1459,22 +1451,21 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 #define LOCK_af__EQ_ 1
 #define ARGS_af__EQ_ "(&rest args)"
 #define DECL_af__EQ_ ""
-    T_mv af__EQ_(Cons_sp args)
+    T_mv af__EQ_(List_sp args)
     {_G();
 	if ( args.nilp() ) return(Values(_lisp->_true()));
 	Number_sp a = oCar(args).as<Number_O>();
 	if ( a.nilp() ) {
 	    TYPE_ERROR(a,cl::_sym_Number_O);
 	}
-	args = cCdr(args);
-	while ( args.notnilp() )
-	{
+	args = oCdr(args);
+	while ( args.notnilp() ) {
 	    Number_sp b = oCar(args).as<Number_O>();
 	    if ( b.nilp() ) {
 		TYPE_ERROR(b,cl::_sym_Number_O);
 	    }
 	    if ( !basic_equalp(a,b) ) return(Values(_lisp->_false()));
-	    args = cCdr(args);
+	    args = oCdr(args);
 	}
 	return(Values(_lisp->_true()));
     };

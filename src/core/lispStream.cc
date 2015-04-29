@@ -6823,7 +6823,7 @@ namespace core {
     };
 
 
-    Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart, Fixnum_sp end)
+    Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart, T_sp end)
     {
         stream = coerce::outputStreamDesignator(stream);
         if ( !AnsiStreamP(stream) ) {
@@ -6849,7 +6849,7 @@ namespace core {
 #define ARGS_cl_writeString "(string &optional output-stream &key (start 0) end)"
 #define DECL_cl_writeString ""
 #define DOCS_cl_writeString "writeString"
-    Str_sp cl_writeString(Str_sp str, T_sp stream, int start, Fixnum_sp end)
+    Str_sp cl_writeString(Str_sp str, T_sp stream, int start, T_sp end)
     {_G();
 	// outputStreamDesignator in clasp_writeString
         return clasp_writeString(str,stream,start,end);
@@ -6970,7 +6970,7 @@ namespace core {
 #define ARGS_cl_writeSequence "(seq stream &key (start 0) end)"
 #define DECL_cl_writeSequence ""
 #define DOCS_cl_writeSequence "writeSequence"
-    T_sp cl_writeSequence(T_sp seq, T_sp stream, Fixnum_sp fstart, Fixnum_sp tend)
+    T_sp cl_writeSequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp tend)
     {_G();
 	stream = coerce::outputStreamDesignator(stream);
 	if ( !AnsiStreamP(stream) ) {
@@ -6992,7 +6992,7 @@ namespace core {
 		ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence,kw::_sym_end,tend,
 				   Integer_O::makeIntegerType(0,limit-1));
 	    }
-	    end = tend->get();
+	    end = tend.as<Fixnum_O>()->get();
 	}
 	if ( end <= start ) {
             return seq;

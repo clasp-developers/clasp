@@ -916,8 +916,8 @@ namespace core {
 	} else if (CONS_CAR(path->_Directory) == kw::_sym_absolute) {
 	    directory = path->_Directory;
 	} else if (defaults->_Directory.notnilp()) {
-	    directory = Cons_O::append(af_pathnameDirectory( defaults, tocase).as_or_nil<Cons_O>(),
-				    cCdr(path->_Directory));
+	    directory = Cons_O::append(af_pathnameDirectory( defaults, tocase),
+				       oCdr(path->_Directory));
 	    /* Eliminate redundant :back */
 	    directory = destructively_check_directory(directory, true, true);
 	} else {
@@ -1316,7 +1316,7 @@ namespace core {
 #define ARGS_af_parseNamestring "(thing &optional host defaults &key (start 0) end junk-allowed)"
 #define DECL_af_parseNamestring ""
 #define DOCS_af_parseNamestring "parseNamestring"
-    Pathname_mv af_parseNamestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, Fixnum_sp end, bool junkAllowed)
+    Pathname_mv af_parseNamestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, T_sp end, bool junkAllowed)
     {_G();
 	Pathname_sp defaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue().as_or_nil<Pathname_O>() : cl_pathname(tdefaults);
 	Pathname_sp output;

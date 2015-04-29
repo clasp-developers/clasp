@@ -111,12 +111,11 @@ namespace core
 	int					_isgf;
 	Class_sp 				_Class;
         gctools::Vec0<T_sp>			_Slots;
-	/*! TODO: I don't know what this is for
-	  - mimicking ECL instance->sig generation signature
+	/*! Mimicking ECL instance->sig generation signature
         Jul 2014 - I think it is pointed to the class slots in case they change - then the instances can be updated*/
 	T_sp 		_Sig;
     public:
-        bool    isCallable() const { return this->closure!=NULL; };
+        bool    isCallable() const { return (bool)(this->closure); };
 #if 0
     public: // Functions that mimic ECL_XXXX_XXXX macros (eg: ECL_CLASS_SLOTS(x))
 	// Instances that represent CL classes have slots that are hard-coded to represent

@@ -504,7 +504,7 @@ namespace frame
     inline core::T_sp DebugInfo(FrameType f)
     {
         core::T_O** frameImpl(f.safe_frame());
-        return gctools::smart_ptr<core::T_O>(frameImpl[IdxDebugInfo]);
+        return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxDebugInfo]);
     }
 
     inline void SetDebugInfo(FrameType f, core::T_sp debugInfo) {
@@ -555,7 +555,7 @@ namespace frame
         
     inline gctools::smart_ptr<core::T_O> ParentFrame(core::T_O** frameImpl)
     {
-        return gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]);
+        return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxParent]);
     }
     inline gctools::smart_ptr<core::T_O> ParentFrame(core::T_sp f)
     {
@@ -566,7 +566,7 @@ namespace frame
     inline gctools::smart_ptr<core::T_O> Lookup(core::T_sp f, int idx)
     {
         core::T_O** frameImpl(f.safe_frame());
-        return gctools::smart_ptr<core::T_O>(frameImpl[idx+IdxValuesArray]);
+        return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[idx+IdxValuesArray]);
     }
 
     inline core::T_sp LookupTagbodyId(core::T_sp f, int idx)
@@ -574,17 +574,17 @@ namespace frame
         IMPLEMENT_MEF(BF("I don't currently support LookupTagbodyId for tagged_frame"));
 #if 0   // If I supported this it might look like this
         core::T_O** frameImpl(f.safe_frame());
-        return gctools::smart_ptr<core::T_O>(frameImpl[idx+IdxValuesArray]);
+        return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[idx+IdxValuesArray]);
 #endif
     }
 
     inline gctools::smart_ptr<core::T_O> Value(core::T_O** frameImpl, int idx) {
-        return gctools::smart_ptr<core::T_O>(frameImpl[idx+IdxValuesArray]);
+        return gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[idx+IdxValuesArray]);
     }
 
     inline int countFunctionContainerEnvironments(core::T_sp f) {
         core::T_O** frameImpl(f.safe_frame());
-        return core::Environment_O::clasp_countFunctionContainerEnvironments(gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]));
+        return core::Environment_O::clasp_countFunctionContainerEnvironments(gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxParent]));
     }
 
 
@@ -593,9 +593,9 @@ namespace frame
         core::T_O** frameImpl(f.safe_frame());
 	if ( gctools::tagged_nilp<core::T_O>(frameImpl[IdxDebugInfo]) ) {
             ++depth;
-            return core::Environment_O::clasp_findValue(gctools::smart_ptr<core::T_O>(frameImpl[IdxParent]),sym,depth,index,valueKind,value);
+            return core::Environment_O::clasp_findValue(gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxParent]),sym,depth,index,valueKind,value);
 	}
-        core::T_sp debugInfo = gctools::smart_ptr<core::T_O>(frameImpl[IdxDebugInfo]);
+        core::T_sp debugInfo = gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxDebugInfo]);
         if ( lisp_search(debugInfo,sym,index) ) {
             value.setRaw_(frameImpl[index+IdxValuesArray]);
             return true;
@@ -679,7 +679,7 @@ namespace frame
         if ( gctools::tagged_nilp<core::T_O>(frameImpl[IdxDebugInfo]) ) {
 	    return core::af_updateValue(ParentFrame(frameImpl),sym,obj);
 	}
-        core::T_sp debugInfo = gctools::smart_ptr<core::T_O>(frameImpl[IdxDebugInfo]);
+        core::T_sp debugInfo = gctools::smart_ptr<core::T_O>((gctools::Tagged)frameImpl[IdxDebugInfo]);
         int index;
         if ( lisp_search(debugInfo,sym,index) ) {
             frameImpl[IdxValuesArray+index] = obj.raw_();
@@ -701,12 +701,12 @@ namespace frame
 
 #define ALLOC_STACK_VALUE_FRAME(frameImpl,oframe,numValues)     \
     frame::ElementType* frameImpl = DO_ALLOCA(numValues);	\
-    gctools::smart_ptr<core::STACK_FRAME> oframe(gctools::tag_frame<core::STACK_FRAME>(frameImpl)); \
+    gctools::smart_ptr<core::STACK_FRAME> oframe((gctools::Tagged)gctools::tag_frame<core::STACK_FRAME>(frameImpl)); \
     frame::InitializeStackValueFrame(frameImpl,numValues)
 
 #define ALLOC_STACK_VALUE_FRAME_WITH_VALUES(frameImpl,oframe,numValues,values) \
     frame::ElementType* frameImpl = DO_ALLOCA(numValues);		\
-    gctools::smart_ptr<core::STACK_FRAME> oframe(gctools::tag_frame<core::STACK_FRAME>(frameImpl)); \
+    gctools::smart_ptr<core::STACK_FRAME> oframe((gctools::Tagged)gctools::tag_frame<core::STACK_FRAME>(frameImpl)); \
     frame::InitializeStackValueFrameWithValues(frameImpl,numValues,_Nil<T_O>(),values)
 
 

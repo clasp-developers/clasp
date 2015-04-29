@@ -451,7 +451,7 @@ namespace core
 
     /*! Works like SACLA readtable::make-str but accumulates the characters
       into a stringstream */
-    void make_str(stringstream& sout, Cons_sp cur_char, bool preserveCase=false)
+    void make_str(stringstream& sout, List_sp cur_char, bool preserveCase=false)
     {_G();
 	while ( cur_char.notnilp() )
 	{
@@ -467,7 +467,7 @@ namespace core
 	    {
 		SIMPLE_ERROR(BF("Illegal entry for make_str[%s]") % _rep_(obj) );
 	    }
-	    cur_char = cCdr(cur_char);
+	    cur_char = oCdr(cur_char);
 	}
     }
 
@@ -860,28 +860,28 @@ namespace core
 #define LOCK_af_reader_feature_p 1
 #define ARGS_af_reader_feature_p "(feature-test)"
 #define DECL_af_reader_feature_p ""
-    T_mv af_reader_feature_p(T_sp feature_test)
+    T_sp af_reader_feature_p(T_sp feature_test)
     {_G();
-	if ( feature_test.nilp() ) return(Values(_Nil<T_O>()));
+	if ( feature_test.nilp() ) return _Nil<T_O>();
 	else if ( af_atom(feature_test) )
 	{
-	    Cons_sp features_list = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
-	    return(Values(features_list->member(feature_test.as<Symbol_O>(),
-						_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>())));
-	} else
-	{
+	    List_sp features_list = cl::_sym_STARfeaturesSTAR->symbolValue();
+	    if (features_list.nilp()) return _Nil<T_O>();
+	    return features_list.asCons()->member(feature_test.as<Symbol_O>(),
+							 _Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
+	} else {
 	    ASSERT(cl_listp(feature_test));
-	    Cons_sp features_cons = feature_test.as_or_nil<Cons_O>();
+	    List_sp features_cons = feature_test;
 	    T_sp features_head = oCar(features_cons);
 	    if ( features_head == kw::_sym_not)
 	    {
-		return(Values(_lisp->_not(eval::funcall(_sym_reader_feature_p,oSecond(features_cons)))));
+		return _lisp->_not(eval::funcall(_sym_reader_feature_p,oSecond(features_cons)));
 	    } else if ( features_head == kw::_sym_and )
 	    {
-		return(Values(eval::funcall(cl::_sym_every,_sym_reader_feature_p,cCdr(features_cons))));
+		return (eval::funcall(cl::_sym_every,_sym_reader_feature_p,oCdr(features_cons)));
 	    } else if ( features_head == kw::_sym_or )
 	    {
-		return(Values(eval::funcall(cl::_sym_some,_sym_reader_feature_p,cCdr(features_cons))));
+		return(eval::funcall(cl::_sym_some,_sym_reader_feature_p,oCdr(features_cons)));
 	    }
 	    SIMPLE_ERROR(BF("Illegal feature test: %s") % _rep_(features_cons) );
 	}
@@ -1073,7 +1073,7 @@ namespace core
 		    << StandardChar_O::create('+') << _sym_sharp_plus
 		    << StandardChar_O::create('-') << _sym_sharp_minus
 		    << StandardChar_O::create('|') << _sym_sharp_vertical_bar;
-	for ( List_sp cur=dispatchers.cons(); cur.notnilp(); cur = cCdr(cCdr(cur)) )
+	for ( List_sp cur=dispatchers.cons(); cur.notnilp(); cur = oCdr(oCdr(cur)) )
 	{
 	    Character_sp ch = oCar(cur).as<Character_O>();
 	    Symbol_sp sym = oCadr(cur).as<Symbol_O>();

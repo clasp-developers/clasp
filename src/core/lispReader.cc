@@ -470,7 +470,7 @@ namespace core
 	bool got_dotted = false;
 	T_sp dotted_object = _Nil<T_O>();
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
-	Cons_sp cur = first;
+	List_sp cur = first;
 	while (1)
 	{
 	    SourcePosInfo_sp info = core_inputStreamSourcePosInfo(sin);
@@ -481,15 +481,15 @@ namespace core
 		cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true());
 		if ( dotted_object.notnilp() )
 		{
-		    cur->setOCdr(dotted_object);
-		    Cons_sp result = cCdr(first);
+		    cur.asCons()->setCdr(dotted_object);
+		    List_sp result = oCdr(first);
 		    TRAP_BAD_CONS(result);
-		    if ( result.nilp() ) return(Values(_Nil<Cons_O>()));
+		    if ( result.nilp() ) return(Values(_Nil<T_O>()));
 		    return(Values(result));
 		}
-		Cons_sp otherResult = cCdr(first);
+		List_sp otherResult = oCdr(first);
 		TRAP_BAD_CONS(otherResult);
-		if ( otherResult.nilp() ) return(Values(_Nil<Cons_O>()));
+		if ( otherResult.nilp() ) return(Values(_Nil<T_O>()));
                 lisp_registerSourcePosInfo(otherResult,info);
 		return(otherResult);
 	    }
@@ -530,7 +530,7 @@ namespace core
 		    LOG(BF("one->sourceFileInfo()->fileName()=%s") % core_sourceFileInfo(one)->fileName());
 		    LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core_sourceFileInfo(one)->fileName().c_str());
 		    TRAP_BAD_CONS(one);
-		    cur->setCdr(one);
+		    cur.asCons()->setCdr(one);
 		    cur = one;
 		}
 	    }
