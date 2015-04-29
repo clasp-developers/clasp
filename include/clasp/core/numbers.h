@@ -295,7 +295,7 @@ namespace core {
 	string __repr__() const;
 	void set(int val) { this->_Value = val; };
 	int get() const { return this->_Value; };
-	Number_sp abs() const { return Fixnum_O::create(::abs(this->_Value)); };
+	Number_sp abs() const { return Fixnum_O::create(std::abs(this->_Value)); };
 	Number_sp signum() const;
 
 
