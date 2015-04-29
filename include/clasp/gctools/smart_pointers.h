@@ -1,7 +1,7 @@
 // Disable this once we have List_sp working
 #define USE_BAD_CAST_ERROR 1
-#define ALLOW_NIL_OTHER 1
-#define ALLOW_CONS_NIL 1
+//#define ALLOW_NIL_OTHER 1
+//#define ALLOW_CONS_NIL 1
 
 
 /*

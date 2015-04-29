@@ -180,7 +180,7 @@ public:
 
 
 public:
-	Package_O() : _Nicknames(_Nil<Cons_O>()) {};
+	Package_O() : _Nicknames(_Nil<T_O>()) {};
 	virtual ~Package_O() {};
     };
 

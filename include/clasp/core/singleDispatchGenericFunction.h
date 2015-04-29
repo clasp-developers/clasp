@@ -52,11 +52,11 @@ namespace core
         DISABLE_NEW();
         SingleDispatchGenericFunctionClosure(T_sp name, SourcePosInfo_sp sp, Symbol_sp k)
             : FunctionClosure(name,sp,k,_Nil<T_O>()/*Env*/)
-            , _Methods(_Nil<Cons_O>())
+            , _Methods(_Nil<T_O>())
             , _lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         SingleDispatchGenericFunctionClosure(T_sp name)
             : FunctionClosure(name)
-            , _Methods(_Nil<Cons_O>())
+            , _Methods(_Nil<T_O>())
             , _lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
         void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
             this->_lambdaListHandler = llh;

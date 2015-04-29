@@ -165,8 +165,8 @@ namespace core {
 //	uint		_CdrLength;	// Keep track of the length of the cons
     public:
         template <class T>
-	    static Cons_sp createFromVec0(const gctools::Vec0<T>& vec) {
-            Cons_sp res = _Nil<Cons_O>();
+	    static List_sp createFromVec0(const gctools::Vec0<T>& vec) {
+            List_sp res = _Nil<T_O>();
             for ( int i(vec.size()-1);i>=0;--i) {
                 res = Cons_O::create(vec[i],res);
             }
@@ -225,7 +225,7 @@ namespace core {
 	    Cons_sp cur = first;
 	    for ( iter it=begin; it!=end; it++ )
 	    {
-		Cons_sp one = Cons_O::create(translate::to_object<baseType>::convert(*it),_Nil<Cons_O>());
+		Cons_sp one = Cons_O::create(translate::to_object<baseType>::convert(*it),_Nil<T_O>());
 		cur->setCdr(one);
 		cur = one;
 	    }
@@ -484,43 +484,6 @@ namespace core {
     // inline Cons_sp cCar(Cons_sp obj) { return obj->_Car.as<Cons_O>();};
     // inline Cons_sp cCdr(Cons_sp obj) { return obj->_Cdr.as<Cons_O>();};
 
-#if 0
-    inline Cons_sp cCar(T_sp obj) {
-	if (obj.consp()) {
-	    return obj.unsafe_cons()->_Car.as<Cons_O>();
-	}
-	if (obj.nilp()) return _Nil<Cons_O>();
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    };
-    inline Cons_sp cCdr(T_sp obj) {
-	if (obj.consp()) {
-	    return obj.unsafe_cons()->_Cdr.as<Cons_O>();
-	}
-	if (obj.nilp()) return _Nil<Cons_O>();
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    };
-    inline Cons_sp cCddr(T_sp obj) {
-	if (obj.consp()) {
-	    return cCdr(obj.unsafe_cons()->_Cdr);
-	}
-	if (obj.nilp()) return _Nil<Cons_O>();
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    }
-    inline Cons_sp cCdddr(T_sp obj) {
-	if (obj.consp()) {
-	    return cCddr(obj.unsafe_cons()->_Cdr);
-	}
-	if (obj.nilp()) return _Nil<Cons_O>();
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    }
-    inline Cons_sp cCddddr(T_sp obj) {
-	if (obj.consp()) {
-	    return cCdddr(obj.unsafe_cons()->_Cdr);
-	}
-	if (obj.nilp()) return _Nil<Cons_O>();
-	TYPE_ERROR(obj,cl::_sym_Cons_O);
-    }
-#endif
 
 inline T_sp oCaar(T_sp o) { return oCar(oCar(o));};
 inline T_sp oCadr(T_sp o) { return oCar(oCdr(o));};
@@ -596,13 +559,6 @@ namespace core
 
     Cons_sp Cons_create_loc(T_sp car, T_sp cdr, const char* fileName, int line);
 
-#if 0
-#define HERE_scCONS_CREATE(car) Cons_O::create(car,_Nil<Cons_O>())
-#define HERE_scCONS_CREATE2(car,cdr) Cons_O::create(car,cdr)
-#define HERE_scCONS_CREATE_LIST2(c1,c2) Cons_O::createList(c1,c2)
-#define HERE_scCONS_CREATE_LIST3(c1,c2,c3) Cons_O::createList(c1,c2,c3)
-#define HERE_scCONS_CREATE_LIST4(c1,c2,c3,c4) Cons_O::createList(c1,c2,c3,c4)
-#endif
 };
 
 
@@ -611,8 +567,8 @@ namespace core
 
 
     template <typename T>
-    Cons_sp asCons(const gctools::Vec0<T>& vec) {
-        Cons_sp res(_Nil<Cons_O>());
+    List_sp asCons(const gctools::Vec0<T>& vec) {
+        List_sp res(_Nil<T_O>());
         for ( int i(vec.size()-1); i>=0; --i ) {
             res = Cons_O::create(vec[i],res);
         }
