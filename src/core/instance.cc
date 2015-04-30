@@ -294,10 +294,7 @@ namespace core
     {
 	stringstream ss;
 	ss << "#S(";
-	if ( this->_Class.nilp() )
-	{
-	    ss << "<CLASS-IS_NIL> ";
-	} else if ( Class_sp mc = this->_Class.asOrNull<Class_O>() )
+	if ( Class_sp mc = this->_Class.asOrNull<Class_O>() )
 	{
 	    ss << _rep_(mc) << " ";
 	} else

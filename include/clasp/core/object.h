@@ -724,7 +724,7 @@ namespace core
 	/*! Return true iff the two objects are the same object.
 	 * Meaning their memory addresses are identical
 	 */
-	virtual bool eq(T_sp obj) const;
+	bool eq(T_sp obj) const { return this == obj.get(); };
 	/*! Return true if the two objects are the same object.
 	 * If they aren't the same object for numbers and values
 	 * the values are compared.
@@ -1152,6 +1152,6 @@ TRANSLATE(core::T_O);
 
 
 #include <clasp/core/metaClass.h>
-
+#include <clasp/core/sourceFileInfo.h>
 
 #endif //]

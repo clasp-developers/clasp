@@ -88,7 +88,7 @@ namespace core
 
     string Reader_O::fileName()
     {
-	return core_sourceFileInfo(this->_Input)->fileName();
+	return core_sourceFileInfo(this->_Input).as<SourceFileInfo_O>()->fileName();
     }
 
     SYMBOL_EXPORT_SC_(ClPkg,STARread_suppressSTAR);
@@ -626,7 +626,7 @@ namespace core
     string Reader_O::posAsString()
     {
 	stringstream ss;
-	ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << core_sourceFileInfo(this->_Input)->fileName();
+	ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << core_sourceFileInfo(this->_Input).as<SourceFileInfo_O>()->fileName();
 	return ss.str();
     }
 

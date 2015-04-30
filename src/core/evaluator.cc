@@ -1337,7 +1337,7 @@ namespace core
                 }
 	    }
 //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
-	    SourcePosInfo_sp spi;
+	    T_sp spi(_Nil<T_O>());
 	    if ( _lisp->sourceDatabase().notnilp() ) {
 		spi = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(code);
 	    }
@@ -1384,7 +1384,7 @@ namespace core
 		LOG(BF("In sp_function - looking up for for[%s]")
 		    % fnSymbol->__repr__() );
 		T_sp fn = af_interpreter_lookup_function(fnSymbol,environment);
-		if (!fn.objectp())
+		if (fn.nilp())
 		{
 		    SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(fnSymbol) % _rep_(args) );
 		}
@@ -1947,8 +1947,8 @@ namespace core
 
 	T_mv applyToActivationFrame(T_sp head,ActivationFrame_sp args )
 	{_G();
-	    Function_sp fn = lookupFunction(head,args);
-	    if ( !fn.objectp() )
+	    T_sp tfn = lookupFunction(head,args);
+	    if ( tfn.nilp() )
 	    {
 		if ( head == cl::_sym_findClass )
 		{
@@ -1958,7 +1958,7 @@ namespace core
 		}
 		SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
 	    }
-	    gctools::tagged_functor<Closure> closureP = fn->closure;
+	    gctools::tagged_functor<Closure> closureP = tfn.as<Function_O>()->closure;
             ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
 	    return applyClosureToActivationFrame(closureP,args);
 	}
@@ -2053,7 +2053,7 @@ namespace core
 #define DOCS_cl_funcall "See CLHS: funcall"
     T_mv cl_funcall(T_sp function_desig, List_sp args)
     {_G();
-	Function_sp func = coerce::functionDesignator(function_desig);
+	T_sp func = coerce::functionDesignator(function_desig);
         if ( func.nilp() ) {
             ERROR_UNDEFINED_FUNCTION(function_desig);
         }
@@ -2397,7 +2397,7 @@ namespace core
                     printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str() );
                 }
                 // TODO: Deal with Compiler macros here
-                Function_sp macroFunction = _Nil<Function_O>();
+                T_sp macroFunction(_Nil<T_O>());
                 if ( af_symbolp(head) ) {
                     macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment).as<Function_O>();
                     if ( macroFunction.notnilp() ) {
@@ -2462,8 +2462,7 @@ namespace core
 	    List_sp form = exp.asOrNull<Cons_O>();
 	    ASSERTNOTNULL(form);
 	    T_sp head = oCar(form);
-	    if ( Symbol_sp headSym = head.asOrNull<Symbol_O>() )
-	    {
+	    if ( Symbol_sp headSym = head.asOrNull<Symbol_O>() ) {
 //		LOG(BF("Head[%s] is a Symbol") % headSym->__repr__() );
 //		_lisp->invocationHistoryStack().setExpressionForTop(form);
 //		_lisp->invocationHistoryStack().setActivationFrameForTop(Environment_O::clasp_getActivationFrame(environment));
@@ -2474,7 +2473,7 @@ namespace core
 		    LispDebugger::step();
 #endif
 		}
-		SpecialForm_sp specialForm = _lisp->specialFormOrNil(headSym);
+		T_sp specialForm = _lisp->specialFormOrNil(headSym);
 		if ( !specialForm.nilp() ) return evaluate_specialForm( specialForm, form, environment );
 
 		if ( headSym == cl::_sym_cond ) return evaluate_cond( form, environment );
@@ -2482,8 +2481,8 @@ namespace core
 		else if (headSym == cl::_sym_multipleValueSetq ) return evaluate_multipleValueSetq( form, environment );
 		else if (headSym == cl::_sym_prog1 ) return evaluate_prog1( form, environment );
 
-		Function_sp headFunc = af_interpreter_lookup_macro(headSym,environment);
-		if ( headFunc.notnilp() )
+		T_sp theadFunc = af_interpreter_lookup_macro(headSym,environment);
+		if ( theadFunc.notnilp() )
 		{
 		    /* Macro expansion should be done immediately after the reader - 
 		       - done here the macros are expanded again and again and again
@@ -2502,15 +2501,12 @@ namespace core
 			THROW_HARD_ERROR(BF("Figure out what to do from here"));
 //			_lisp->error(cond.conditionObject()/*,environment*/);
 		    };// catch (...) {throw;};
-//		    LOG(BF("Expanded macro to: %s") % expanded->__repr__() );
-//		    LOG(BF("Evaluating macro in environment: %s") % environment->__repr__() );
                     result = eval::evaluate(expanded,environment);
 		    if ( !result ) goto NULL_RESULT;
 		    return(result);
 		}
-//		Environment_sp localEnv(environment);
-		headFunc = af_interpreter_lookup_function(headSym,environment);
-		if ( !headFunc.objectp() )
+		theadFunc = af_interpreter_lookup_function(headSym,environment);
+		if ( theadFunc.nilp() )
 		{
 		    SIMPLE_ERROR(BF("Could not find form(%s) in the lexical/dynamic environment")
 				       % _rep_(headSym) );
@@ -2521,22 +2517,16 @@ namespace core
 		// evaluate the arguments and apply the function bound to the head to them
 		//
 //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
-		if ( af_functionP(headFunc) )
-		{
-		    ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(oCdr(form)),
-								     _Nil<T_O>()));
-		    evaluateIntoActivationFrame(evaluatedArgs,oCdr(form),environment);
-                    result = eval::applyToActivationFrame(headFunc,evaluatedArgs);
-		    if ( !result ) goto NULL_RESULT;
-		    return(result);
-		}else
-		{
-		    SIMPLE_ERROR(BF("Could not find form(%s) in the lexical/dynamic environment")
-				       % _rep_(headSym) );
-		}
+		Function_sp headFunc = theadFunc.as<Function_O>();
+		ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl_length(oCdr(form)),
+								 _Nil<T_O>()));
+		evaluateIntoActivationFrame(evaluatedArgs,oCdr(form),environment);
+		result = eval::applyToActivationFrame(headFunc,evaluatedArgs);
+		if ( !result ) goto NULL_RESULT;
+		return(result);
 	    }
 	    {
-		List_sp headCons = head.asOrNull<Cons_O>();
+		List_sp headCons = head;
 		ASSERTF(headCons,BF("Illegal head %s - must be a LAMBDA expression") % _rep_(head) );
 		return evaluate_lambdaHead( headCons, form, environment );
 	    }

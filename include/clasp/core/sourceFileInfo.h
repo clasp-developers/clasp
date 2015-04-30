@@ -59,7 +59,7 @@ namespace core
 	char* 	_PermanentPathName;
 	char*	_PermanentFileName;
         int     _FileHandle;
-	Str_sp _SourceDebugNamestring;
+	T_sp _SourceDebugNamestring;
 	size_t  _SourceDebugOffset;
 	bool    _TrackLineno;
     public: // Functions here
@@ -86,7 +86,7 @@ namespace core
     class SourcePosInfo_O : public T_O
     {
         friend class SourceManager_O;
-	friend SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename, size_t offset, bool useLineno);
+	friend T_mv core_sourceFileInfo(T_sp sourceFile,T_sp truename, size_t offset, bool useLineno);
 
 
 	LISP_BASE1(T_O);
@@ -170,19 +170,19 @@ namespace core {
 
 
 
-	SourcePosInfo_sp lookupSourcePosInfo(T_sp obj);
+	T_sp lookupSourcePosInfo(T_sp obj);
 
     }; // SourceManager class
 
 
-    SourceFileInfo_mv core_walkToFindSourceInfo(T_sp obj);
-    SourcePosInfo_sp core_walkToFindSourcePosInfo(T_sp obj, T_sp defaultSpi=_Nil<T_O>());
+    T_mv core_walkToFindSourceInfo(T_sp obj);
+    T_sp core_walkToFindSourcePosInfo(T_sp obj, T_sp defaultSpi=_Nil<T_O>());
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
 
 
 
 
-    SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
+    T_mv core_sourceFileInfo(T_sp sourceFile,T_sp truename = _Nil<T_O>(), size_t offset=0, bool useLineno=true);
 
 
 }; // core namespace

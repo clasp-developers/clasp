@@ -65,10 +65,7 @@ namespace core
 		return Values(_Nil<T_O>(),_Nil<T_O>());
 	    }
 	    Function_sp fn = sym->symbolFunction();
-	    if ( fn.nilp() ) {
-		return Values(_Nil<T_O>(),_Nil<T_O>());
-	    }
-	    return Values(sym->symbolFunction().as<Function_O>()->lambdaList(),_lisp->_true());
+	    return Values(fn->lambdaList(),_lisp->_true());
 	} else if ( Function_sp func = obj.asOrNull<Function_O>() ) {
 	    return Values(func->lambdaList(),_lisp->_true());
 	}
@@ -83,7 +80,6 @@ namespace core
     SourcePosInfo_sp core_functionSourcePosInfo(T_sp functionDesignator)
     {
 	Function_sp func = coerce::functionDesignator(functionDesignator);
-	if (func.nilp() ) return _Nil<SourcePosInfo_O>();
 	gctools::tagged_functor<Closure> closure = func->closure;
 	SourcePosInfo_sp sourcePosInfo = closure->sourcePosInfo();
 	return sourcePosInfo;
@@ -107,19 +103,20 @@ namespace core
     {
         return this->kind == kw::_sym_macro;
     }
-    int FunctionClosure::sourceFileInfoHandle() const { 
-	return this->_SourcePosInfo.notnilp() 
-	    ? this->_SourcePosInfo->fileHandle() 
-	    : 0; 
+    int FunctionClosure::sourceFileInfoHandle() const {
+	if ( this->_SourcePosInfo.notnilp() ) {
+	    return this->_SourcePosInfo.as<SourcePosInfo_O>()->fileHandle();
+	}
+	return 0;
     };
 
-    size_t FunctionClosure::filePos() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->filepos() : 0; };
+    size_t FunctionClosure::filePos() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo.as<SourcePosInfo_O>()->filepos() : 0; };
 
-    int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->lineno() : 0; };
-    int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo->column() : 0; };
+    int FunctionClosure::lineNumber() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo.as<SourcePosInfo_O>()->lineno() : 0; };
+    int FunctionClosure::column() const { return this->_SourcePosInfo.notnilp() ? this->_SourcePosInfo.as<SourcePosInfo_O>()->column() : 0; };
 
 
-    SourcePosInfo_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column )
+T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column )
     {
         SourceFileInfo_mv sfi = core_sourceFileInfo(sourceFile);
         Fixnum_sp fileId = sfi.valueGet(1).as<Fixnum_O>();
@@ -140,7 +137,7 @@ namespace core
     };
 
     
-    InterpretedClosure::InterpretedClosure(T_sp fn, SourcePosInfo_sp sp, Symbol_sp k
+    InterpretedClosure::InterpretedClosure(T_sp fn, T_sp sp, Symbol_sp k
 					   , LambdaListHandler_sp llh, List_sp dec, Str_sp doc
 					   , T_sp e, List_sp c)
             : FunctionClosure(fn,sp,k,e)
@@ -192,7 +189,7 @@ namespace core
         return Values(this->closure->lambdaList(),_lisp->_true());
     }
 
-    LambdaListHandler_sp Function_O::functionLambdaListHandler() const {
+    T_sp Function_O::functionLambdaListHandler() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         return this->closure->lambdaListHandler();
     };
@@ -234,12 +231,12 @@ namespace core
 
     T_mv Function_O::functionSourcePos() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
-        SourcePosInfo_sp spi = this->closure->sourcePosInfo();
-        SourceFileInfo_sp sfi = core_sourceFileInfo(spi);
+        T_sp spi = this->closure->sourcePosInfo();
+        T_sp sfi = core_sourceFileInfo(spi);
 	if ( sfi.nilp() || spi.nilp() ) {
 	    return Values(sfi,Integer_O::create(0),Fixnum_O::create(0));
 	}
-        return Values(sfi,Integer_O::create((size_t)spi->filepos()), Fixnum_O::create(spi->lineno()));
+        return Values(sfi,Integer_O::create((size_t)spi.as<SourcePosInfo_O>()->filepos()), Fixnum_O::create(spi.as<SourcePosInfo_O>()->lineno()));
     }
 
 
@@ -284,9 +281,6 @@ namespace core
 #define DOCS_cl_functionLambdaExpression "functionLambdaExpression"
     T_mv cl_functionLambdaExpression(Function_sp fn)
     {_G();
-	if ( fn.nilp() ) {
-	    WRONG_TYPE_ARG(fn,cl::_sym_Function_O);
-	}
 	List_sp code = _Nil<List_V>();
 	if ( gctools::tagged_functor<InterpretedClosure> ic = fn->closure.as<InterpretedClosure>() ) {
 	    code = ic->_code;

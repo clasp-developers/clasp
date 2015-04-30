@@ -1313,7 +1313,7 @@ namespace core
 	virtual void LISP_CALLING_CONVENTION() {printf("Subclass of Closure must implement 'activate'\n"); exit(1);};
 
 	virtual void* functionAddress() const { return NULL; };
-        virtual SourcePosInfo_sp sourcePosInfo() const {return _Nil<SourcePosInfo_O>();};
+        virtual T_sp sourcePosInfo() const {return _Nil<T_O>();};
         virtual bool macroP() const = 0;
         virtual void setKind(Symbol_sp k)=0;
         virtual Symbol_sp getKind() const = 0;

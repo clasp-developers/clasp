@@ -56,11 +56,11 @@ namespace core {
     class FunctionClosure : public Closure
     {
     public:
-        SourcePosInfo_sp        _SourcePosInfo;
+        T_sp        _SourcePosInfo;
         Symbol_sp               kind;
     public:
         DISABLE_NEW();
-        FunctionClosure(T_sp name, SourcePosInfo_sp spo, Symbol_sp k, T_sp env )
+        FunctionClosure(T_sp name, T_sp spo, Symbol_sp k, T_sp env )
             : Closure(name,env)
             , _SourcePosInfo(spo)
             , kind(k)
@@ -68,7 +68,7 @@ namespace core {
         };
         FunctionClosure(T_sp name)
             : Closure(name, _Nil<T_O>())
-            , _SourcePosInfo(_Nil<SourcePosInfo_O>())
+            , _SourcePosInfo(_Nil<T_O>())
             , kind(kw::_sym_function)
         {
         };
@@ -80,8 +80,8 @@ namespace core {
         void setKind(Symbol_sp k) { this->kind = k; };
         Symbol_sp getKind() const { return this->kind;};
         bool macroP() const;
-        SourcePosInfo_sp sourcePosInfo() const { return this->_SourcePosInfo;};
-        SourcePosInfo_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
+        T_sp sourcePosInfo() const { return this->_SourcePosInfo;};
+        T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
         virtual int sourceFileInfoHandle() const;
 	virtual size_t filePos() const;
         virtual int lineNumber() const;
@@ -125,7 +125,7 @@ namespace core {
         virtual bool macroP() const;
         virtual void setKind(Symbol_sp k);
         virtual Symbol_sp functionKind() const;
-        LambdaListHandler_sp functionLambdaListHandler() const;
+        T_sp functionLambdaListHandler() const;
 	/*! Return (values lambda-list foundp) */
 	T_mv lambdaList();
         T_sp closedEnvironment() const;
@@ -161,7 +161,7 @@ namespace core
 	List_sp                 _code;
     public:
         DISABLE_NEW();
-        InterpretedClosure(T_sp fn, SourcePosInfo_sp sp, Symbol_sp k
+        InterpretedClosure(T_sp fn, T_sp sp, Symbol_sp k
                            , LambdaListHandler_sp llh, List_sp dec, Str_sp doc
                            , T_sp e, List_sp c);
         virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -183,12 +183,10 @@ namespace core
         LambdaListHandler_sp    _lambdaListHandler;
     public:
         DISABLE_NEW();
-        BuiltinClosure(T_sp name, SourcePosInfo_sp sp, Symbol_sp k)
-            : FunctionClosure(name,sp,k,_Nil<T_O>())
-            , _lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
-        BuiltinClosure(T_sp name)
-            : FunctionClosure(name)
-            , _lambdaListHandler(_Nil<LambdaListHandler_O>()) {};
+	BuiltinClosure(T_sp name, T_sp sp, Symbol_sp k)
+	: FunctionClosure(name,sp,k,_Nil<T_O>()) {};
+    BuiltinClosure(T_sp name)
+	: FunctionClosure(name) {}
         void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
             this->_lambdaListHandler = llh;
             this->kind = k;

@@ -301,13 +301,13 @@ namespace core {
 #define ARGS_core_weakRehash "(ht &optional sz)"
 #define DECL_core_weakRehash ""
 #define DOCS_core_weakRehash "weakRehash"
-    void core_weakRehash(WeakKeyHashTable_sp ht, Fixnum_sp sz)
+    void core_weakRehash(WeakKeyHashTable_sp ht, T_sp sz)
     {_G();
         size_t newLength;
         if ( sz.nilp() ) {
             newLength = ht->_HashTable._Keys->length()*2;
         } else {
-            newLength = sz->get();
+            newLength = sz.as<Fixnum_O>()->get();
         }
         WeakKeyHashTable_O::value_type dummyKey;
         size_t dummyPos;

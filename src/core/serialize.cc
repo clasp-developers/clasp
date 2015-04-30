@@ -157,7 +157,7 @@ namespace core
     void BranchSNode_O::pushVectorSNode(SNode_sp snode)
     {
 	SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
-	if ( this->_VectorSNodes.nilp() ) {
+	if ( this->_VectorSNodes.unboundp() ) {
 	    this->_VectorSNodes = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),0,0,true);
 	}
 	this->_VectorSNodes->vectorPushExtend(snode);
@@ -169,7 +169,7 @@ namespace core
     {
 	SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
 	SNode_sp snode = saveArchive->getOrCreateSNodeForObjectIncRefCount(obj);
-	if ( this->_VectorSNodes.nilp() ) {
+	if ( this->_VectorSNodes.unboundp() ) {
 	    this->_VectorSNodes = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),0,0,true);
 	}
 	this->pushVectorSNode(snode);
@@ -236,10 +236,13 @@ namespace core
     {
 	LoadArchive_sp loadArchive = Archive_O::currentLoadArchive();
 	vec.clear();
-	for (int i(0), iEnd(this->_VectorSNodes->length()); i<iEnd; ++i ) {
-	    SNode_sp snode = this->_VectorSNodes->elt(i).as<SNode_O>();
-	    vec.push_back(snode->object());
-	};
+	if ( Vector_sp vectorSNodes = this->_VectorSNodes.asOrNull<Vector_O>() ) {
+	    for (int i(0), iEnd(vectorSNodes->length()); i<iEnd; ++i ) {
+		SNode_sp snode = vectorSNodes->elt(i).as<SNode_O>();
+		vec.push_back(snode->object());
+	    };
+	}
+	SIMPLE_ERROR(BF("loadVector called when _VectorSNodes was nil"));
     }
 
     /*! For each element in the _VectorSNodes, convert it to an object and
@@ -248,8 +251,9 @@ namespace core
     {
         if ( this->_VectorSNodes.notnilp() )
         {
-            for (int i(0), iEnd(this->_VectorSNodes->length()); i<iEnd; ++i ) {
-                SNode_sp snode = this->_VectorSNodes->elt(i).as<SNode_O>();
+	    Vector_sp vectorSNodes = this->_VectorSNodes.as<Vector_O>();
+            for (int i(0), iEnd(vectorSNodes->length()); i<iEnd; ++i ) {
+                SNode_sp snode = vectorSNodes->elt(i).as<SNode_O>();
                 T_sp obj = snode->object();
                 fn(obj);
             };
@@ -361,7 +365,7 @@ namespace core
 
 
 
-    Archive_O::Archive_O() : _Version(0), _TopNode(_Nil<BranchSNode_O>()), _NextUniqueId(0) {};
+    Archive_O::Archive_O() : _Version(0), _TopNode(_Unbound<BranchSNode_O>()), _NextUniqueId(0) {};
     Archive_O::~Archive_O() {};
 
     EXPOSE_CLASS(core,Archive_O);
@@ -400,11 +404,11 @@ namespace core
     Archive_sp Archive_O::currentArchive()
     {
 	SYMBOL_EXPORT_SC_(CorePkg,STARserializerArchiveSTAR);
-	Archive_sp archive = _sym_STARserializerArchiveSTAR->symbolValue().as<Archive_O>();
+	T_sp archive = _sym_STARserializerArchiveSTAR->symbolValue().as<Archive_O>();
 	if ( archive.nilp() ) {
 	    SIMPLE_ERROR(BF("You must define core:*serializer-archive*"));
 	}
-	return archive;
+	return archive.as<Archive_O>();
     }
 
     LoadArchive_sp Archive_O::currentLoadArchive()
@@ -492,8 +496,9 @@ namespace core
 		this->loadObjectDirectly(oCadr(cur).as<SNode_O>());
 	    }
 	    if ( branchSNode->_VectorSNodes.notnilp()) {
-		for ( int i(0),iEnd(branchSNode->_VectorSNodes->length());i<iEnd;++i) {
-		    this->loadObjectDirectly(branchSNode->_VectorSNodes->elt(i).as<SNode_O>());
+		Vector_sp branchSNodeVectorSNodes = branchSNode->_VectorSNodes.as<Vector_O>();
+		for ( int i(0),iEnd(branchSNodeVectorSNodes->length());i<iEnd;++i) {
+		    this->loadObjectDirectly(branchSNodeVectorSNodes->elt(i).as<SNode_O>());
 		}
 	    }
 	    return _Nil<T_O>();
@@ -536,45 +541,37 @@ namespace core
 
     bool LoadArchive_O::contains(Symbol_sp sym)
     {_G();
-	if ( this->_TopNode.nilp() ) SIMPLE_ERROR(BF("No archive is loaded"));
-	if ( BranchSNode_sp bnode = this->_TopNode.asOrNull<BranchSNode_O>()) {
-	    T_sp property = bnode->_SNodePList.asCons()->getf(sym,_Unbound<T_O>());
-	    if (property.unboundp()) {
-		return false;
-	    }
-	    return true;
+	if ( this->_TopNode.unboundp() ) SIMPLE_ERROR(BF("No archive is loaded"));
+	BranchSNode_sp bnode = this->_TopNode;
+	T_sp property = bnode->_SNodePList.asCons()->getf(sym,_Unbound<T_O>());
+	if (property.unboundp()) {
+	    return false;
 	}
-	return false;
+	return true;
     }
 
     T_sp LoadArchive_O::get(Symbol_sp sym)
     {_G();
-	if ( this->_TopNode.nilp() ) SIMPLE_ERROR(BF("No archive is loaded"));
+	if ( this->_TopNode.unboundp() ) SIMPLE_ERROR(BF("No archive is loaded"));
 	DynamicScopeManager scope(_sym_STARserializerArchiveSTAR,this->asSmartPtr());
-	if ( BranchSNode_sp bnode = this->_TopNode.asOrNull<BranchSNode_O>()) {
-	    SNode_sp property = bnode->_SNodePList.asCons()->getf(sym,_Unbound<T_O>()).as<SNode_O>();
-	    if (property.unboundp()) {
-		SIMPLE_ERROR(BF("Could not find property for key: %s") % _rep_(sym));
-	    }
-	    return property->object();
+	BranchSNode_sp bnode = this->_TopNode;
+	SNode_sp property = bnode->_SNodePList.asCons()->getf(sym,_Unbound<T_O>()).as<SNode_O>();
+	if (property.unboundp()) {
+	    SIMPLE_ERROR(BF("Could not find property for key: %s") % _rep_(sym));
 	}
-	SIMPLE_ERROR(BF("Could not find property for key: %s") % _rep_(sym));
+	return property->object();
     }
 
     List_sp LoadArchive_O::getContents()
     {_G();
 	if ( this->_TopNode.nilp() ) SIMPLE_ERROR(BF("No archive is loaded"));
-	if ( BranchSNode_sp bnode = this->_TopNode.asOrNull<BranchSNode_O>()) {
-	    return bnode->_SNodePList;
-	}
-	return _Nil<Cons_O>();
+	BranchSNode_sp bnode = this->_TopNode;
+	return bnode->_SNodePList;
     }
 
     List_sp LoadArchive_O::keys() const
     {
-	if ( this->_TopNode.nilp() ) {
-	    SIMPLE_ERROR(BF("There is no archive loaded"));
-	}
+	if ( this->_TopNode.unboundp() ) SIMPLE_ERROR(BF("There is no archive loaded"));
 	return this->_TopNode->keys();
     }
 

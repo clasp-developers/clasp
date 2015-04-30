@@ -50,7 +50,7 @@ namespace core
     }
 
 
-    Environment_sp ActivationFrame_O::currentVisibleEnvironment() const
+    T_sp ActivationFrame_O::currentVisibleEnvironment() const
     {_G();
 	return this->const_sharedThis<ActivationFrame_O>();
     }
@@ -61,7 +61,7 @@ namespace core
     }
 
 
-    string ActivationFrame_O::clasp_asString(ActivationFrame_sp af)
+    string ActivationFrame_O::clasp_asString(T_sp af)
     {
 	if ( af.nilp() ) 
 	{
@@ -69,7 +69,7 @@ namespace core
 	    ss << "#<"<<af->_instanceClass()->classNameAsString()<<" NIL>";
 	    return((ss.str()));
 	}
-	return af->asString();
+	return af.as<ActivationFrame_O>()->asString();
     }
 
     string ActivationFrame_O::asString() const
@@ -195,16 +195,16 @@ namespace core
     {
 	stringstream ss;
 	ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId() << " :len " << this->length() << std::endl;
-	Vector_sp debuggingInfo = _Nil<Vector_O>();
+	T_sp debuggingInfo = _Nil<T_O>();
 	if ( this->_DebuggingInfo.notnilp() )
 	{
 	    debuggingInfo = this->_DebuggingInfo.as<Vector_O>();
 	}
 	for ( int i=0; i<this->_Objects.capacity(); ++i )
 	{
-	    if ( debuggingInfo.notnilp() && (i < cl_length(debuggingInfo)) )
+	    if ( debuggingInfo.notnilp() && (i < cl_length(debuggingInfo.as<Vector_O>())) )
 	    {
-		ss << _rep_(debuggingInfo->elt(i)) << " ";
+		ss << _rep_(debuggingInfo.as<Vector_O>()->elt(i)) << " ";
 	    } else
 	    {
 		ss << ":arg"<<i<<"@" << (void*)(&(this->operator[](i))) << " ";

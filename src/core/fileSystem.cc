@@ -889,12 +889,12 @@ namespace core
 
 
     /*! Translated from ecl>homedir_pathname */
-    Pathname_sp homedirPathname(Str_sp user)
+    Pathname_sp homedirPathname(T_sp tuser)
     {
 	int i;
 	Str_sp namestring;
 	const char *h;
-	if (user.notnilp()) {
+	if ( Str_sp user = tuser.asOrNull<Str_O>() ) {
 #ifdef HAVE_PWD_H
 	    struct passwd *pwent = NULL;
 #endif

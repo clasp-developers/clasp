@@ -466,13 +466,6 @@ void T_O::__write__(T_sp strm) const
 }
 
 
-bool	T_O::eq(T_sp obj) const
-{
-    if ( !obj.objectp() ) return false;
-    return this == obj.get();
-}
-
-
 
 
 

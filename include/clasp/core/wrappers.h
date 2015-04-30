@@ -165,7 +165,7 @@ namespace core {
     public:
 	virtual const char* describe() const {return "MacroClosure";};
 // constructor
-	MacroClosure(Symbol_sp name, SourcePosInfo_sp spi, MacroPtr ptr) : BuiltinClosure(name,spi,kw::_sym_macro),mptr(ptr) {}
+	MacroClosure(Symbol_sp name, T_sp spi, MacroPtr ptr) : BuiltinClosure(name,spi,kw::_sym_macro),mptr(ptr) {}
         DISABLE_NEW();
         size_t templatedSizeof() const { return sizeof(MacroClosure);};
         virtual Symbol_sp getKind() const { return kw::_sym_macro; };

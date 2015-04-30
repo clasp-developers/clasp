@@ -165,7 +165,7 @@ namespace core {
 	void setf_symbolFunction(Function_sp exec);
 
 	/*! Return the global bound function */
-	inline T_sp symbolFunction() { return this->_Function;};
+	inline Function_sp symbolFunction() { return this->_Function;};
 
 
 	/*! Return true if the symbol has a function bound*/
@@ -220,7 +220,7 @@ namespace core {
     T_sp af_symbolValue(const Symbol_sp sym);
     Str_sp af_symbolName(Symbol_sp sym);
     T_sp af_symbolPackage(Symbol_sp sym);
-    T_sp af_symbolFunction(Symbol_sp sym);
+    Function_sp af_symbolFunction(Symbol_sp sym);
     bool af_boundp(Symbol_sp sym);
 
 

@@ -82,12 +82,13 @@ extern "C"
 	size_t num;
     };
 
+#if 0
     T_mv testTwoReturns()
     {
 	T_mv foo((void*)&testTwoReturns,1);
 	return foo;
     }
-
+#endif
 
     int testVarargs(int numargs, ...)
     {
@@ -221,23 +222,20 @@ extern "C" {
 	    SIMPLE_ERROR(BF(" symbol %s") % _rep_((*argP)));
 	}
         core::Function_sp func = core::coerce::functionDesignator((*argP));
-	if ( func.nilp() ) {
-	    SIMPLE_ERROR(BF("Could not coerce %s to function") % _rep_((*argP)));
-	}
         return &(*func->closure);
     }
 
     core::Closure* va_symbolFunction( core::Symbol_sp* symP )
     {_G();
 #ifdef RUN_SAFE
-	if ( !(*symP) || !(*symP).objectp() ) {
+	if ( !(*symP) ) {
 	    SIMPLE_ERROR(BF("The head of the form %s is not a function designator") % _rep_((*symP)));
 	}
 #endif
-        core::Function_sp func = (*symP)->_Function;
-	if ( !func.objectp() ) {
+	if ( !(*symP)->fboundp() ) {
 	    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_((*symP)));
 	}
+        core::Function_sp func = (*symP)->_Function.as<Function_O>();
         return &(*func->closure);
     }
 
@@ -324,6 +322,7 @@ extern "C" {
     void destructFunction_sp(core::Function_sp* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
+	DEPRECIATED(); // April 2015
 	if ( (*sharedP).objectp() ) {
 	  typedef core::Function_sp dummy;
 	  (*sharedP).~dummy();
@@ -332,6 +331,7 @@ extern "C" {
     void destructTsp(core::T_sp* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
+	DEPRECIATED(); // April 2015
 	if ( (*sharedP).objectp() ) {
 	  typedef core::T_sp dummy;
 	  (*sharedP).~dummy();
@@ -340,6 +340,7 @@ extern "C" {
     void destructTmv(core::T_mv* sharedP)
     {_G();
 	ASSERT(sharedP!=NULL);
+	DEPRECIATED(); // April 2015
 	if ( (*sharedP).objectp() ) {
 	  typedef core::T_mv dummy;
 	  (*sharedP).~dummy();
@@ -347,6 +348,7 @@ extern "C" {
     }
     void destructAFsp(core::ActivationFrame_sp* frameP)
     {_G();
+	DEPRECIATED(); // April 2015
 	ASSERT(frameP!=NULL);
 	if ( (*frameP).objectp() ) {
 	    typedef core::ActivationFrame_sp dummy;
@@ -1204,11 +1206,6 @@ core::T_sp proto_lexicalFunctionRead(int depth, int index, core::ActivationFrame
     LOG(BF("About to lexicalFunction depth[%d] index[%d]") % depth % index );
     LOG(BF("(*renvP) --> %s") % (*renvP)->__repr__() );
     core::Function_sp res = core::Environment_O::clasp_lookupFunction((*renvP),depth,index);
-    if ( !res.objectp() )
-    {
-	SIMPLE_ERROR(BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s")
-			   % depth % index % _rep_((*renvP)) );
-    }
     return res;
 }
 
@@ -2356,8 +2353,10 @@ namespace llvmo {
     {
 	//	PRIMITIVE(cc_setSymbolValue);
 	printf("%s:%d  Initializing intrinsics.cc\n", __FILE__, __LINE__ );
+#if 0
 	T_mv foo = testTwoReturns();
 	printf("Called testTwoReturns  foo.raw_() = %p   foo.two = %d\n", foo.raw_(), foo.number_of_values() );
+#endif
     }
 
 };

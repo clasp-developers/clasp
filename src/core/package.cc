@@ -299,12 +299,12 @@ namespace core
 #define ARGS_af_gentemp "(&optional prefix (package *package*))"
 #define DECL_af_gentemp ""
 #define DOCS_af_gentemp "See CLHS gentemp"
-    T_mv af_gentemp(Str_sp prefix, T_sp package_designator)
+    T_mv af_gentemp(T_sp prefix, T_sp package_designator)
     {_G();
 	stringstream ss;
 	string spref = "T";
 	Package_sp pkg = coerce::packageDesignator(package_designator);
-	if ( prefix.notnilp() ) spref = prefix->get();
+	if ( prefix.notnilp() ) spref = prefix.as<Str_O>()->get();
 	T_sp retval;
 	for ( int i=0; i<1000; i++ )
 	{
@@ -758,7 +758,7 @@ namespace core
 
     void Package_O::add_symbol_to_package(const char* symName,  Symbol_sp sym, bool exportp)
     {
-	if (sym.objectp()) trapSymbol(this,sym,symName);
+	//trapSymbol(this,sym,symName);
 	Bignum_sp nameKey = nameToKey(symName);
 	if ( this->isKeywordPackage() || exportp )
 	{

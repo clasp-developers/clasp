@@ -644,7 +644,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp,CorePkg,CorePkg_nicknames)
     {
 	testConses();
-	this->package()->usePackage(_lisp->findPackage("CL"));
+	this->package()->usePackage(_lisp->findPackage("CL",true).as<Package_O>());
     };
 
 

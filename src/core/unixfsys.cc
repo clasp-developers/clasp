@@ -146,9 +146,9 @@ coerce_to_posix_filename(T_sp pathname)
 }
 
 static int
-safe_chdir(const char *path, Str_sp prefix)
+safe_chdir(const char *path, T_sp tprefix)
 {
-    if (prefix.notnilp()) {
+    if ( Str_sp prefix = tprefix.asOrNull<Str_O>() ) {
 	stringstream ss;
 	ss << prefix.as<Str_O>()->get() << path;
 	return safe_chdir(ss.str().c_str(), _Nil<Str_O>());
@@ -463,7 +463,7 @@ make_base_pathname(Pathname_sp pathname)
 #define FOLLOW_SYMLINKS 1
 
 static Pathname_mv
-file_truename(Pathname_sp pathname, T_sp filename, int flags)
+file_truename(T_sp pathname, T_sp filename, int flags)
 {
     Symbol_sp kind;
     if (pathname.nilp()) {
@@ -485,10 +485,11 @@ file_truename(Pathname_sp pathname, T_sp filename, int flags)
     } else if (kind == kw::_sym_link && (flags & FOLLOW_SYMLINKS)) {
 	/* The link might be a relative pathname. In that case we have
 	 * to merge with the original pathname */
-	T_sp tfilename = si_readlink(filename);
-	pathname = Pathname_O::makePathname(pathname->_Host,
-					    pathname->_Device,
-					    pathname->_Directory,
+	filename = si_readlink(filename);
+	Pathname_sp pn = pathname.as<Pathname_O>();
+	pathname = Pathname_O::makePathname(pn->_Host,
+					    pn->_Device,
+					    pn->_Directory,
 					    _Nil<T_O>(),
 					    _Nil<T_O>(),
 					    _Nil<T_O>(),
@@ -500,26 +501,26 @@ file_truename(Pathname_sp pathname, T_sp filename, int flags)
 	/* If the pathname is a directory but we have supplied
 	   a file name, correct the type by appending a directory
 	   separator and re-parsing again the namestring */
-	if (pathname->_Name.notnilp() ||
-	    pathname->_Type.notnilp()) {
+	if (pathname.as<Pathname_O>()->_Name.notnilp() ||
+	    pathname.as<Pathname_O>()->_Type.notnilp()) {
 	    Str_sp spathname = (*(filename.as<Str_O>())) + DIR_SEPARATOR;
 	    pathname = af_truename(spathname);
 	}
     }
     /* ECL does not contemplate version numbers
        in directory pathnames */
-    if (pathname->_Name.nilp() &&
-	pathname->_Type.nilp()) {
+    if (pathname.as<Pathname_O>()->_Name.nilp() &&
+	pathname.as<Pathname_O>()->_Type.nilp()) {
 	/* We have to destructively change the
 	 * pathname version here. Otherwise
 	 * merge_pathnames will not do it. It is
 	 * safe because coerce_to_file_pathname
 	 * created a copy. */
-	pathname->_Version = _Nil<T_O>();
+	pathname.as<Pathname_O>()->_Version = _Nil<T_O>();
     } else {
-	pathname->_Version = kw::_sym_newest;
+	pathname.as<Pathname_O>()->_Version = kw::_sym_newest;
     }
-    return Values(pathname,kind);
+    return Values(pathname.as<Pathname_O>(),kind);
 }
 
 
@@ -764,7 +765,7 @@ T_sp af_deleteFile(T_sp file)
 #define ARGS_af_probe_file "(filespec)"
 #define DECL_af_probe_file ""
 #define DOCS_af_probe_file "probe_file"
-Pathname_sp af_probe_file(T_sp filespec)
+T_sp af_probe_file(T_sp filespec)
 {_G();
     Pathname_sp pfile = cl_pathname(filespec);
 	/* INV: Both SI:FILE-KIND and TRUENAME complain if "file" has wildcards */
@@ -836,7 +837,7 @@ T_sp cl_fileAuthor(T_sp file)
 }
 
 
-Pathname_sp brcl_homedir_pathname(Str_sp user)
+Pathname_sp brcl_homedir_pathname(T_sp tuser)
 {
     size_t i;
     Str_sp namestring;
@@ -844,7 +845,7 @@ Pathname_sp brcl_homedir_pathname(Str_sp user)
 #if defined(ECL_MS_WINDOWS_HOST)
     const char *d;
 #endif
-    if (!user.nilp()) {
+    if (Str_sp user = tuser.as<Str_O>() ) {
 #ifdef HAVE_PWD_H
 	struct passwd *pwent = NULL;
 #endif
@@ -859,7 +860,7 @@ Pathname_sp brcl_homedir_pathname(Str_sp user)
 	    i--;
 	}
 	if (i == 0)
-	    return brcl_homedir_pathname(_Nil<Str_O>());
+	    return brcl_homedir_pathname(_Nil<T_O>());
 #ifdef HAVE_PWD_H
 	pwent = getpwnam(p);
 	if (pwent == NULL) {
@@ -899,7 +900,7 @@ Pathname_sp brcl_homedir_pathname(Str_sp user)
 Pathname_sp af_userHomedirPathname(T_sp host)
 {_G();
     /* Ignore optional host argument. */
-    return brcl_homedir_pathname(_Nil<Str_O>());
+    return brcl_homedir_pathname(_Nil<T_O>());
 }
 
 

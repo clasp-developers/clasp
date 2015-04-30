@@ -85,7 +85,7 @@ namespace core
 	    char c = ' ';
 	    if ( Character_sp cc = initial_element.asOrNull<Character_O>() )
 	    {
-		if ( cc.notnilp() ) c = cc->asChar();
+		c = cc->asChar();
 	    }
 	    if ( fill_pointer.notnilp() )
 	    {

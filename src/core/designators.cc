@@ -45,17 +45,14 @@ namespace core
 	
 	Function_sp functionDesignator(T_sp obj)
 	{_G();
-	    if ( obj.nilp() ) {
-		SIMPLE_ERROR(BF("You tried to treat nil as a function designator"));
-	    }
-	    if ( af_symbolp(obj) )
-	    {
-		Symbol_sp sym = obj.as<Symbol_O>();
+	    if (Function_sp fnobj = obj.asOrNull<Function_O>() ) {
+		return fnobj;
+	    } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>() ) {
 		if (!sym->fboundp()) 
 		    SIMPLE_ERROR(BF("Function value for %s is unbound") % _rep_(sym));
 		return sym->symbolFunction();
 	    }
-	    return obj.as<Function_O>();
+	    SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(obj));
 	}
 
 
@@ -83,10 +80,7 @@ namespace core
                 return apkg;
 	    }
 	    Str_sp packageName = stringDesignator(obj);
-	    Package_sp pkg = _lisp->findPackage(packageName->get());
-	    if ( pkg.nilp() ) {
-		SIMPLE_ERROR(BF("Could not find package %s") % packageName->get() );
-	    }
+	    Package_sp pkg = _lisp->findPackage(packageName->get(),true).as<Package_O>();
 	    return pkg;
 	}
 

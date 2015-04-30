@@ -95,7 +95,7 @@ namespace core
 	virtual bool catchEnvironmentP() const { return false;};
 
 	
-	virtual void setupParent(Environment_sp environ);
+	virtual void setupParent(T_sp environ);
 	virtual T_sp getParentEnvironment() const;
     public:
 
@@ -155,7 +155,7 @@ namespace core
 	virtual bool findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 
 	/*! Return the most recent RuntimeVisibleEnvironment */
-	virtual Environment_sp currentVisibleEnvironment() const;
+	virtual T_sp currentVisibleEnvironment() const;
 
 
 	/*! Search down the stack for the symbol
@@ -258,7 +258,7 @@ namespace core
 	LISP_CLASS(core,CorePkg,LexicalEnvironment_O,"LexicalEnvironment");
     GCPROTECTED:
 	//! Use setupParent to update this
-    	Environment_sp	_ParentEnvironment;
+    	T_sp	_ParentEnvironment;
 	
 	//! Compiler information
 	HashTableEq_sp  _Metadata;
@@ -269,7 +269,7 @@ namespace core
 	virtual ~LexicalEnvironment_O() {};
 
 
-	virtual void setupParent(Environment_sp environ);
+	virtual void setupParent(T_sp environ);
 	T_sp getParentEnvironment() const;
 
 	virtual string summaryOfContents() const;
@@ -320,7 +320,7 @@ namespace core
 	virtual bool _findFunction(T_sp functionName, int& depth, int& index, Function_sp& value) const;
 	virtual bool _findTag(Symbol_sp tag, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv) const;
 
-	virtual Environment_sp currentVisibleEnvironment() const;
+	virtual T_sp currentVisibleEnvironment() const;
 
 	RuntimeVisibleEnvironment_O();
 	virtual ~RuntimeVisibleEnvironment_O() {};
@@ -363,7 +363,7 @@ namespace core
 
 	static ValueEnvironment_sp createForLocallySpecialEntries(List_sp specials, T_sp parent);
     private:
-	void setupForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent);
+	void setupForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent);
     public:
 	virtual T_sp _lookupValue(int depth, int index);
     public:
@@ -524,7 +524,7 @@ namespace core
 
 	virtual ActivationFrame_sp getActivationFrame() const;
 
-	virtual Environment_sp currentVisibleEnvironment() const;
+	virtual T_sp currentVisibleEnvironment() const;
 
 	virtual bool _findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const;
 

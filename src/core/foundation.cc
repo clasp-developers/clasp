@@ -512,7 +512,7 @@ namespace core
 #define DOCS_af_lispifyName "lispifyName"
     Str_sp af_lispifyName(Str_sp name)
     {_G();
-        if ( name.nilp() ) return _Nil<Str_O>();
+	ASSERT(name.notnilp());
         string lispified = lispify_symbol_name(name->get());
         return Str_O::create(lispified);
     };
@@ -670,11 +670,11 @@ namespace core
 
     string symbol_packageName(Symbol_sp sym)
     {
-        Package_sp p = sym->homePackage();
+        T_sp p = sym->homePackage();
         if ( p.nilp() ) {
             return "";
         }
-        return p->packageName();
+        return p.as<Package_O>()->packageName();
     }
 
     string symbol_repr(Symbol_sp sym)
@@ -963,7 +963,7 @@ namespace core
     List_sp lisp_parse_arguments(const string& packageName, const string& args)
     {_G();
 	if ( args == "" ) return _Nil<Cons_O>();
-	Package_sp pkg = _lisp->findPackage(packageName);
+	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(args);
 	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<Fixnum_O>());
@@ -977,7 +977,7 @@ namespace core
     List_sp lisp_parse_declares(const string& packageName, const string& declarestring)
     {_G();
 	if ( declarestring == "" ) return _Nil<Cons_O>();
-	Package_sp pkg = _lisp->findPackage(packageName);
+	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(declarestring);
 	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<T_O>());
@@ -1071,6 +1071,7 @@ namespace core
 	    % _rep_(sym) % _rep_(receiver_class) %  ((void*)(methoid)) );
         methoid->finishSetup(llhandler,kw::_sym_function);
         Function_sp fn = Function_O::make(methoid);
+	ASSERT(llhandler || llhandler.notnilp())
 	af_ensureSingleDispatchMethod(sym,receiver_class,llhandler,ldeclares,docStr,fn);
     }
 

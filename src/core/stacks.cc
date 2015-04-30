@@ -169,7 +169,7 @@ namespace core
 
     string InvocationHistoryFrame::sourcePathName() const
     {
-        return core_sourceFileInfo(Fixnum_O::create(this->runningSourceFileInfoHandle))->namestring();
+        return core_sourceFileInfo(Fixnum_O::create(this->runningSourceFileInfoHandle)).as<SourceFileInfo_O>()->namestring();
     }
 
 
@@ -462,7 +462,7 @@ void    core_lowLevelBacktrace()
 #define ARGS_af_ihsFun "(arg)"
 #define DECL_af_ihsFun ""
 #define DOCS_af_ihsFun "ihsFun: return the function in the invocation history stack at i"
-    Function_sp af_ihsFun(int idx)
+    T_sp af_ihsFun(int idx)
     {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
 	if (cur)
@@ -471,7 +471,7 @@ void    core_lowLevelBacktrace()
             if ( func.objectp() ) return func;
         }
 	printf("%s:%d   There is a problem - ihsFun is returning NIL as the function at idx: %d\n", __FILE__, __LINE__, idx );
-	return _Nil<Function_O>();
+	return _Nil<T_O>();
     };
 
 
@@ -481,15 +481,15 @@ void    core_lowLevelBacktrace()
 #define ARGS_af_ihsEnv "(cur)"
 #define DECL_af_ihsEnv ""
 #define DOCS_af_ihsEnv "ihsEnv"
-    Environment_sp af_ihsEnv(int idx)
+    T_sp af_ihsEnv(int idx)
     {_G();
 	InvocationHistoryFrame* cur = get_ihs_ptr(idx);
 	if (cur)
 	{
-            Environment_sp env = cur->activationFrame();
-            if ( env.objectp() ) return env;
+            T_sp env = cur->activationFrame();
+            return env;
         }
-	return _Nil<Environment_O>();
+	return _Nil<T_O>();
     };
 
 

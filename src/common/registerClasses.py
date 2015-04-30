@@ -574,7 +574,7 @@ class	ClassGroup:
         fout.write("#undef DEFINE_BASE_CLASSES\n")
 
         fout.write("#if defined(DEFINE_CLASS_NAMES) || defined(ALL_STAGES) // {\n")
-        fout.write(" core::Package_sp _curPkg = _lisp->findPackage(CurrentPkg);\n")
+        fout.write(" core::T_sp _curPkg = _lisp->findPackage(CurrentPkg,true);\n")
         fout.write("// Depends on nothing\n")
         for x in allSorted:
             try:

@@ -211,11 +211,11 @@ namespace core {
     {
 	ReadTable_sp readtable = _lisp->getCurrentReadTable();
 	T_sp print_case = clasp_print_case();
-	Package_sp package;
-	Str_sp name;
 	bool print_readably = clasp_print_readably();
 	bool forced_package = 0;
 
+	T_sp package;
+	Str_sp name;
 	if (x.nilp()) {
             package = cl::_sym_nil->homePackage();
             name = cl::_sym_nil->symbolName();
@@ -250,7 +250,7 @@ namespace core {
             }
             if (print_package)
             {
-                T_sp name = Str_O::create(package->packageName());
+                T_sp name = Str_O::create(package.as<Package_O>()->packageName());
                 write_symbol_string(name, readtable->getReadTableCaseAsEnum(),
                                     print_case, stream,
                                     needs_to_be_escaped(name, readtable, print_case));

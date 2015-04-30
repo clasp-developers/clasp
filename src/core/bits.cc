@@ -381,7 +381,7 @@ namespace core {
 	int xo, yo, ro;
         SimpleBitVector_sp x = tx.asOrNull<SimpleBitVector_O>();
         SimpleBitVector_sp y = ty.asOrNull<SimpleBitVector_O>();
-        SimpleBitVector_sp r = _Nil<SimpleBitVector_O>();
+        SimpleBitVector_sp r;
         d = x->dimension();
         xp = x->bytes();
         xo = x->offset();
@@ -411,9 +411,7 @@ namespace core {
             }
         }
     L1:
-        if (r.nilp()) {
-            r = SimpleBitVector_O::create(d);
-        }
+        if (!r) r = SimpleBitVector_O::create(d);
         rp = r->bytes();
         ro = r->offset();
         op = fixnum_operations[opval];

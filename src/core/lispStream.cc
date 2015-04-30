@@ -6693,13 +6693,13 @@ namespace core {
 #define ARGS_cl_read_from_string "(content &optional (eof-error-p t) eof-value &key (start 0) end preserve-whitespace)"
 #define DECL_cl_read_from_string ""
 #define DOCS_cl_read_from_string "read_from_string"
-    T_mv cl_read_from_string(Str_sp content, T_sp eof_error_p, T_sp eof_value, Fixnum_sp start, Fixnum_sp end, T_sp preserve_whitespace )
+    T_mv cl_read_from_string(Str_sp content, T_sp eof_error_p, T_sp eof_value, Fixnum_sp start, T_sp end, T_sp preserve_whitespace )
     {_G();
 	bool eofErrorP = eof_error_p.isTrue();
 	int istart = start->as_int();
 	int iend;
 	if ( end.nilp() ) iend = content->get().size();
-	else iend = end->as_int();
+	else iend = end.as<Fixnum_O>()->as_int();
 	bool preserveWhitespace = preserve_whitespace.isTrue();
 	if ( preserveWhitespace )
 	{
@@ -6751,15 +6751,15 @@ namespace core {
 	stringstream sbuf;
 	while (1)
 	{
-	    Character_sp ch = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),recursive_p).as<Character_O>();
-	    if ( ch.nilp() ) {
+	    T_sp tch = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),recursive_p);
+	    if ( tch.nilp() ) {
 		if ( eofErrorP ) {
 		    ERROR_END_OF_FILE(sin);
 		} else {
 		    return(Values(eof_value/*Str_O::create(sbuf.str())*/,_lisp->_true()));
 		}
 	    } else {
-		char cc = ch->get();
+		char cc = tch.as<Character_O>()->get();
 		if ( cc == '\n') {
 		    break;
 		} else if ( cc == '\r' ) {

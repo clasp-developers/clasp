@@ -49,7 +49,7 @@ namespace core {
             return v;
         }
     public:
-	virtual bool eq(core::T_sp obj) const
+	virtual bool eql(core::T_sp obj) const
         {
             if (LightUserData_sp lud = obj.asOrNull<LightUserData_O>() )
             {

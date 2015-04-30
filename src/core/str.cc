@@ -747,11 +747,11 @@ namespace core
 
 
 
-    Rational_sp Str_O::find(const string& substring, int start)
+    T_sp Str_O::find(const string& substring, int start)
     {
 	size_t res = this->get().find(substring,start);
 	if ( res != string::npos ) return Integer_O::create((uint)res);
-	return _Nil<Fixnum_O>();
+	return _Nil<T_O>();
     }
 
     string Str_O::substr(int start, int num) const

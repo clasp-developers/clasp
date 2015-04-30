@@ -125,7 +125,7 @@ namespace core
 	/*! Return the index of where substring is found 
 	  or nil
 	*/
-	Rational_sp find(const string& substring, int start);
+	T_sp find(const string& substring, int start);
     public:
 	//! dim ignore fill pointers - don't overload
 	uint length() const { return this->size(); };

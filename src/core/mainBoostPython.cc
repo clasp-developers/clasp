@@ -200,7 +200,7 @@ string nodeName="PythonAssign";
     debugLog().write("\n");
 }
 
-
+#if 0
 Lisp_sp	environment()
 {_errorF();
     static Lisp_sp _BoostPythonLispObject;
@@ -215,7 +215,7 @@ Lisp_sp	environment()
     LOG(BF("Looking up Lisp environment@%X") % &_BoostPythonLispObject );
     return _BoostPythonLispObject;
 }
-
+#endif
 };
 
 

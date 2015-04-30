@@ -123,9 +123,11 @@ namespace core
 #define ARGS_af_symbolFunction "(arg)"
 #define DECL_af_symbolFunction ""
 #define DOCS_af_symbolFunction "symbolFunction"
-    T_sp af_symbolFunction(Symbol_sp sym)
+    Function_sp af_symbolFunction(Symbol_sp sym)
     {_G();
-	if ( sym.nilp() ) return _Nil<Function_O>();
+	if (!sym->fboundp()) {
+	    SIMPLE_ERROR(BF("No function bound to %s") % _rep_(sym));
+	}
 	return sym->symbolFunction();
     };
 
@@ -486,18 +488,10 @@ namespace core {
     string Symbol_O::formattedName(bool prefixAlways) const
     {//no guard
 	stringstream ss;
-	if ( this->_HomePackage.nilp() )
-	{
+	if ( this->_HomePackage.nilp() ) {
 	    ss << "#:";
-	    if ( this->_Name.notnilp() ) {
-		ss << this->_Name->get();
-	    } else
-	    {
-		ss << "---no-name---";
-	    }
-	}
-	else
-	{
+	    ss << this->_Name->get();
+	} else {
 	    Package_sp myPackage = this->_HomePackage;
 	    if ( !myPackage ) {
 		ss << "<PKG-NULL>:" << this->_Name->get();
@@ -543,9 +537,10 @@ namespace core {
 
     bool Symbol_O::isExported()
     { 
-	Package_sp myPackage = this->getPackage();
+	//#error "Why is this assignment possible?  Translating constructor?????"
+	T_sp myPackage = this->getPackage();
 	if ( myPackage.nilp() ) return false;
-	return myPackage->isExported(this->sharedThis<Symbol_O>());
+	return myPackage.as<Package_O>()->isExported(this->sharedThis<Symbol_O>());
     }
 
 

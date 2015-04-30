@@ -209,10 +209,10 @@ namespace core
 #define ARGS_af_environmentList "(env)"
 #define DECL_af_environmentList ""
 #define DOCS_af_environmentList "Return a list of environment parents"
-    T_sp af_environmentList(Environment_sp env)
+    T_sp af_environmentList(T_sp env)
     {_G();
 	Cons_sp result = _Nil<Cons_O>();
-	for ( Environment_sp ecur=env; ecur.notnilp(); ecur=ecur->getParentEnvironment() )
+	for ( T_sp ecur=env; ecur.notnilp(); ecur=ecur.as<Environment_O>()->getParentEnvironment() )
 	{
 	    result = Cons_O::create(ecur,result);
 	}
@@ -224,10 +224,10 @@ namespace core
 #define ARGS_af_environmentTypeList "(env)"
 #define DECL_af_environmentTypeList ""
 #define DOCS_af_environmentTypeList "Return a list of environment parents"
-    T_sp af_environmentTypeList(Environment_sp env)
+    T_sp af_environmentTypeList(T_sp env)
     {_G();
 	Cons_sp result = _Nil<Cons_O>();
-	for ( Environment_sp ecur=env; ecur.notnilp(); ecur=ecur->getParentEnvironment() )
+	for ( T_sp ecur=env; ecur.notnilp(); ecur=ecur.as<Environment_O>()->getParentEnvironment() )
 	{
 	    result = Cons_O::create(lisp_static_class(ecur),result);
 	}
@@ -271,7 +271,7 @@ namespace core
 #define ARGS_af_environmentId "(env)"
 #define DECL_af_environmentId ""
 #define DOCS_af_environmentId "environmentId"
-    int af_environmentId(Environment_sp tenv)
+    int af_environmentId(T_sp tenv)
     {_G();
 	if ( tenv.nilp() )
 	{
@@ -397,7 +397,7 @@ namespace core
         NOT_ENVIRONMENT_ERROR(env);
     };
 
-    Environment_sp Environment_O::currentVisibleEnvironment() const
+    T_sp Environment_O::currentVisibleEnvironment() const
     {
 	SUBIMP();
     };
@@ -406,7 +406,7 @@ namespace core
 
 
 
-    void Environment_O::setupParent(Environment_sp environ)
+    void Environment_O::setupParent(T_sp environ)
     {_G();
     }
 
@@ -651,7 +651,7 @@ namespace core
 
     bool Environment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind,T_sp& value) const
     {_G();
-	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
 
@@ -940,12 +940,12 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     T_sp Environment_O::find_block_named_environment(Symbol_sp blockName) const
     {_OF();
-	Environment_sp parent = this->getParentEnvironment();
+	T_sp parent = this->getParentEnvironment();
 	if ( parent.nilp() )
 	{
 	    SIMPLE_ERROR(BF("Could not find block with name[%s]") % _rep_(blockName) );
 	}
-	return parent->find_block_named_environment(blockName);
+	return parent.as<Environment_O>()->find_block_named_environment(blockName);
     }
 
 
@@ -1094,7 +1094,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     };
 
 
-    void LexicalEnvironment_O::setupParent(Environment_sp environ)
+    void LexicalEnvironment_O::setupParent(T_sp environ)
     {_G();
 	this->_ParentEnvironment = environ;
 	this->Base::setupParent(environ);
@@ -1163,13 +1163,12 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const
     {_G();
 	List_sp it = this->_Metadata->find(key);
-	if ( it.nilp() )
-	{
+	if ( it.nilp() ) {
 	    if ( this->_ParentEnvironment.nilp())
 	    {
 		return(Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<Environment_O>()));
 	    }
-	    return this->_ParentEnvironment->lookupMetadata(key);
+	    return this->_ParentEnvironment.as<Environment_O>()->lookupMetadata(key);
 	}
 	return(Values(oCdr(it),_lisp->_true(),this->const_sharedThis<Environment_O>()));
     }
@@ -1201,7 +1200,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     RuntimeVisibleEnvironment_O::RuntimeVisibleEnvironment_O() : Base() {};
 
 
-    Environment_sp RuntimeVisibleEnvironment_O::currentVisibleEnvironment() const
+    T_sp RuntimeVisibleEnvironment_O::currentVisibleEnvironment() const
     {_G();
 //	if ( this -> isNil() ) return _Nil<Environment_O>();
 	return this->const_sharedThis<Environment_O>();
@@ -1210,7 +1209,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     bool RuntimeVisibleEnvironment_O::_findTag(Symbol_sp sym, int& depth, int& index, bool& interFunction, T_sp& tagbodyEnv ) const
     {_G();
-	Environment_sp parent = this->getParentEnvironment(); // clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	T_sp parent = this->getParentEnvironment(); // clasp_currentVisibleEnvironment(this->getParentEnvironment());
         ++depth;
 	return clasp_findTag(parent,sym,depth,index,interFunction,tagbodyEnv);
     }
@@ -1219,7 +1218,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     bool RuntimeVisibleEnvironment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind,T_sp& value) const
     {_G();
-	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	++depth;
 	return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
@@ -1228,7 +1227,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     bool RuntimeVisibleEnvironment_O::_findFunction(T_sp functionName, int& depth, int& index, Function_sp& func) const
     {
 //	if (this -> isNil()) return false;
-	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	LOG(BF("Moving down a level"));
 	++depth;
 	return clasp_findFunction(parent,functionName,depth,index,func);
@@ -1272,7 +1271,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	{
 	    return this->_ActivationFrame->entry(index);
 	}
-	Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
 	if ( parent.nilp() ) 
 	{
 	    SIMPLE_ERROR(BF("Ran out of parent environments - could not find value"));
@@ -1401,7 +1400,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
 
 
-    void ValueEnvironment_O::setupForLambdaListHandler(LambdaListHandler_sp llh, Environment_sp parent)
+    void ValueEnvironment_O::setupForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent)
     {_G();
 	List_sp classifiedSymbols = llh->classifiedSymbols();
 	this->setupParent(parent);
@@ -1462,7 +1461,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	List_sp it = this->_SymbolIndex->find(sym);
 	if ( it.nilp() )
 	{
-	    Environment_sp parent = this->getParentEnvironment();
+	    T_sp parent = this->getParentEnvironment();
 	    if ( parent.nilp() )
 	    {
 		SIMPLE_ERROR(BF("Could not update local symbol(%s) because it was not defined") % _rep_(sym) );
@@ -1709,9 +1708,9 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     };
 
 
-    Environment_sp CompileTimeEnvironment_O::currentVisibleEnvironment() const
+    T_sp CompileTimeEnvironment_O::currentVisibleEnvironment() const
     {_G();
-	Environment_sp parent = this->getParentEnvironment();
+	T_sp parent = this->getParentEnvironment();
 	if ( parent.nilp() ) return _Nil<Environment_O>();
 	return clasp_currentVisibleEnvironment(parent);
     }
@@ -1719,8 +1718,8 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
      bool CompileTimeEnvironment_O::_findValue(T_sp sym, int& depth, int& index, ValueKind& valueKind, T_sp& value) const
     {_G();
-     Environment_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
-     return clasp_findValue(parent,sym,depth,index,valueKind,value);
+	T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
+	return clasp_findValue(parent,sym,depth,index,valueKind,value);
     }
 
 

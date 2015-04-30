@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/objRef.h>
+#include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
 
 
@@ -61,7 +62,7 @@ namespace core
 	T_sp obj = o->oGetReference(this->sharedThis<ObjRef_O>());
 	if ( this->_SubRef.notnilp() )
 	{
-	    obj = this->_SubRef->relativeTo(obj);
+	    obj = this->_SubRef.as<ObjRef_O>()->relativeTo(obj);
 	}
 	return obj;
     }
@@ -80,7 +81,7 @@ namespace core
 	}
 	if ( this->_SubRef.notnilp() )
 	{
-	    ss << "/" << this->_SubRef->asString();
+	    ss << "/" << this->_SubRef.as<ObjRef_O>()->asString();
 	}
 	return ss.str();
     }

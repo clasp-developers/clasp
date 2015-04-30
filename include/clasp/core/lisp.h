@@ -232,7 +232,7 @@ namespace core
     
     class Lisp_O
     {
-	friend SourceFileInfo_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename, size_t offset, bool useLineno);
+	friend T_mv core_sourceFileInfo(T_sp sourceFile,Str_sp truename, size_t offset, bool useLineno);
 	struct GCRoots //: public gctools::HeapRoot
         {
 	/*! The invocation history stack this should be per thread */
@@ -469,7 +469,7 @@ namespace core
     public:
         gctools::Vec0<core::Symbol_sp>&     classSymbolsHolder() { return this->_Roots._ClassSymbolsHolder;};
     public:
-        SourceFileInfo_mv getOrRegisterSourceFileInfo(const string& fileName, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true );
+        SourceFileInfo_mv getOrRegisterSourceFileInfo(const string& fileName, T_sp truename = _Nil<T_O>(), size_t offset=0, bool useLineno=true );
     public:
 	/*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
@@ -876,7 +876,7 @@ namespace core
 //	bool subClassOrder(Symbol_sp baseClassSymbol,Symbol_sp classSymbol);
 
 	bool recognizesPackage(const string& packageName) const;
-	Package_sp findPackage(const string& packageName) const;
+	T_sp findPackage(const string& packageName,bool errorp=false) const;
 	void inPackage(const string& packageName);
 	void selectPackage(Package_sp pack);
 	Package_sp getCurrentPackage() const;

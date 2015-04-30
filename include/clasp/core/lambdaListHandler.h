@@ -81,7 +81,7 @@ namespace core
 
     struct TargetClassifier
     {
-	SymbolSet_sp 	_SpecialSymbols;
+	T_sp 	_SpecialSymbols;
 	/*! symbols that are seen in the lambda-list and are special are accumulated here */
 	SymbolSet_sp    _LambdaListSpecials;
 	int		lexicalIndex;
@@ -126,7 +126,7 @@ namespace core
         gctools::gcstring	        _Comment;
 	// -- calculated info --
 	int				_NumberOfLexicalVariables;
-	VectorObjects_sp 		_LexicalVariableNamesForDebugging;
+	T_sp 		_LexicalVariableNamesForDebugging;
     public:
 	typedef gctools::Vec0<RequiredArgument>::iterator	requiredArgumentIterator;
 	typedef gctools::Vec0<RequiredArgument>::const_iterator	const_requiredArgumentIterator;

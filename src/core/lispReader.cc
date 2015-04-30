@@ -343,11 +343,7 @@ namespace core
 	    LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]")
 		% packageSin.str() % symbolName );
 	    string packageName = packageSin.str();
-	    Package_sp pkg = _lisp->findPackage(packageName);
-	    if ( pkg.nilp() )
-	    {
-		PACKAGE_ERROR(Str_O::create(packageName));
-	    }
+	    Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
             Symbol_sp sym = pkg->intern(symbolName);
 	    return sym;
 	}
@@ -698,12 +694,12 @@ namespace core
     step8:
 	LOG(BF("step8"));
 	{
-	    y = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
-	    if ( y.nilp() )
-	    {
+	    T_sp ty = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true());
+	    if ( ty.nilp() ) {
 		LOG(BF("Hit eof"));
 		goto step10;
 	    }
+	    Character_sp y(ty);
 	    LOG(BF("Step8: Read y[%s]") % y->asChar() );
 	    Symbol_sp y8_syntax_type = readTable->syntax_type(y);
 	    LOG(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type) );

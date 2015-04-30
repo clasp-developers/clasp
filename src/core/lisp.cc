@@ -984,7 +984,7 @@ namespace core
 
     void Lisp_O::addClassNameToPackageAsDynamic(const string& package, const string& name, Class_sp mc)
     {_G();
-	Symbol_sp classSymbol = _lisp->intern(name,_lisp->findPackage(package));
+	Symbol_sp classSymbol = _lisp->intern(name,_lisp->findPackage(package,true).as<Package_O>());
 	classSymbol->exportYourself();
 	classSymbol->setf_symbolValue(mc);
 //    this->globalEnvironment()->extend(classSymbol,mc);
@@ -1162,10 +1162,7 @@ namespace core
 
 	for ( list<string>::const_iterator jit=usePackages.begin(); jit!=usePackages.end(); jit++ )
 	{
-	    Package_sp usePkg = this->findPackage(*jit);
-	    if ( usePkg.nilp() ) {
-		SIMPLE_ERROR(BF("Could not find package %s to use") % (*jit) );
-	    }
+	    Package_sp usePkg = this->findPackage(*jit,true).as<Package_O>();
 	    LOG(BF("Using package[%s]") % usePkg->getName() );
 	    newPackage->usePackage(usePkg);
 	}
@@ -1181,12 +1178,15 @@ namespace core
     }
 
 
-    Package_sp Lisp_O::findPackage(const string& name) const
+    T_sp Lisp_O::findPackage(const string& name, bool errorp) const
     {_G();
 //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
 	map<string,int>::const_iterator fi = this->_PackageNameIndexMap.find(name);
 	if ( fi == this->_PackageNameIndexMap.end() )
 	{
+	    if ( errorp ) {
+		PACKAGE_ERROR(Str_O::create(name));
+	    }
 	    return _Nil<Package_O>(); // return nil if no package found
 	}
 //        printf("%s:%d Lisp_O::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
@@ -1670,15 +1670,15 @@ namespace core
 #define ARGS_af_setupStackMonitor "(&key warn-size sample-size)"
 #define DECL_af_setupStackMonitor ""
 #define DOCS_af_setupStackMonitor "setupStackMonitor"
-    void af_setupStackMonitor(Fixnum_sp warnSize, Fixnum_sp sampleSize )
+    void af_setupStackMonitor(T_sp warnSize, T_sp sampleSize )
     {_G();
 	if ( !warnSize.nilp() )
 	{
-	    _lisp->_StackWarnSize = warnSize->get();
+	    _lisp->_StackWarnSize = warnSize.as<Fixnum_O>()->get();
 	}
 	if ( !sampleSize.nilp() )
 	{
-	    _lisp->_StackSampleSize = sampleSize->get();
+	    _lisp->_StackSampleSize = sampleSize.as<Fixnum_O>()->get();
 	    _lisp->_StackSampleCount = 0;
 	    _lisp->_StackSampleMax = 0;
 	}
@@ -2054,12 +2054,11 @@ namespace core
 #define ARGS_af_find_package "(name_desig)"
 #define DECL_af_find_package ""
 #define DOCS_af_find_package "See CLHS: find-package"
-    Package_mv af_find_package(T_sp name_desig)
+    T_sp af_find_package(T_sp name_desig)
     {_G();
-	if ( cl_packagep(name_desig) ) return(Values(name_desig.as<Package_O>()));
+	if ( Package_sp pkg = name_desig.asOrNull<Package_O>() ) return pkg;
 	Str_sp name = coerce::stringDesignator(name_desig);
-	Package_sp pkg = _lisp->findPackage(name->get());
-	return(Values(pkg));
+	return _lisp->findPackage(name->get());
     }
 
 
@@ -2147,14 +2146,14 @@ namespace core
 #define DOCS_cl_macroexpand_1 "macroexpand_1"
     T_mv cl_macroexpand_1(T_sp form, T_sp env)
     {_G();
-	Function_sp expansionFunction = _Nil<Function_O>();
+	T_sp expansionFunction = _Nil<T_O>();
 	if ( form.nilp() ) {
 	    return form;
-	} else if ( Cons_sp cform = form.asOrNull<Cons_O>() ) {
+	} else if ( List_sp cform = form ) {
 	    T_sp head = oCar(cform);
 	    if ( af_symbolp(head) ) {
 		Symbol_sp headSymbol = head.as<Symbol_O>();
-		Function_sp func = eval::funcall(cl::_sym_macroFunction,headSymbol,env).as<Function_O>();
+		T_sp func = eval::funcall(cl::_sym_macroFunction,headSymbol,env).as<Function_O>();
 		expansionFunction = func;
 	    }
 	    if ( expansionFunction.notnilp() ) {
@@ -2362,16 +2361,14 @@ namespace core
 #define ARGS_af_sorted "(unsorted)"
 #define DECL_af_sorted ""
 #define DOCS_af_sorted "Sort the list in ascending order using operator< and return the sorted list"
-    Cons_sp af_sorted(List_sp unsorted)
+    List_sp af_sorted(List_sp unsorted)
     {_G();
         gctools::Vec0<T_sp/*,gctools::RootedGCHolder*/>     sorted;
 	if ( cl_length(unsorted) == 0 ) return _Nil<Cons_O>();
 	fillVec0FromCons(sorted,unsorted);
 	OrderByLessThan orderer;
 	sort::quickSort(sorted.begin(),sorted.end(),orderer);
-        Cons_sp result;
-	result = asCons(sorted);
-	return result;
+        return asCons(sorted);
     }
 
 
@@ -3209,7 +3206,7 @@ extern "C"
 		SIMPLE_ERROR(BF("There can only be one ':' or '::' in a symbol name"));
 	    }
 	}
-	package = this->findPackage(name.substr(0,colonPos));
+	package = this->findPackage(name.substr(0,colonPos),true).as<Package_O>();
 	symbolName = name.substr(secondPart,99999);
 	LOG(BF("It's a packaged symbol (%s :: %s)") % package->getName()% symbolName );
 	return;
@@ -3232,9 +3229,7 @@ extern "C"
 	    package = coerce::packageDesignator(optionalPackageDesignator);
 	}
 	ASSERTNOTNULL(package);
-        if ( package.nilp() ) {
-            SIMPLE_ERROR(BF("The package %s has not been found") % _rep_(optionalPackageDesignator).c_str());
-        }
+	ASSERT(package.notnilp());
         T_mv symStatus = package->intern(symbolName);
         Symbol_sp sym = symStatus;
         T_sp status = symStatus.second();
@@ -3277,32 +3272,23 @@ extern "C"
 
     Symbol_sp Lisp_O::intern(string const& symbolName,string const& packageName)
     {_G();
-	Package_sp package = this->findPackage(packageName);
+	T_sp package = this->findPackage(packageName);
 	return this->intern(symbolName,package);
     }
 
 
     Symbol_sp Lisp_O::internUniqueWithPackageName(string const& packageName, string const& symbolName)
     {_G();
-	Package_sp package = this->findPackage(packageName);
+	T_sp package = this->findPackage(packageName);
         Symbol_mv symStatus = this->intern(symbolName,package);
         T_sp status = symStatus.second();
-#if 0
-        if ( status.notnilp() ) {
-            printf("%s:%d WARNING! Lisp_O::internUniqueWithPackageName found existing symbol: %s\n",
-                   __FILE__, __LINE__, symbolName.c_str());
-        }
-#endif
 	return symStatus;
     }
 
 
     Symbol_sp Lisp_O::internWithPackageName(string const& packageName, string const& symbolName)
     {_G();
-	Package_sp package = this->findPackage(packageName);
-	if ( package.nilp() ) {
-	    SIMPLE_ERROR(BF("The package %s does not exist when trying to intern symbol %s") % packageName % symbolName );
-	}
+	Package_sp package = this->findPackage(packageName,true).as<Package_O>();
 	return this->intern(symbolName,package);
     }
 
@@ -3517,7 +3503,7 @@ extern "C"
 
 
 
-    SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string& fileName, Str_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno)
+    SourceFileInfo_mv Lisp_O::getOrRegisterSourceFileInfo(const string& fileName, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno)
     {
         map<string,int>::iterator it = this->_SourceFileIndices.find(fileName);
         if ( it == this->_SourceFileIndices.end() ) {
@@ -3533,7 +3519,7 @@ extern "C"
         }
 	SourceFileInfo_sp sfi = this->_Roots._SourceFiles[it->second];
 	if ( sourceDebugNamestring.notnilp() ) {
-	    sfi->_SourceDebugNamestring = sourceDebugNamestring;
+	    sfi->_SourceDebugNamestring = sourceDebugNamestring.as<Str_O>();
 	    sfi->_SourceDebugOffset = sourceDebugOffset;
 	    sfi->_TrackLineno = useLineno;
 	}
@@ -3959,7 +3945,7 @@ extern "C"
 	    this->_Package = lisp->makePackage(packageName,lnnames,lp);
 	} else
 	{
-	    this->_Package = lisp->findPackage(packageName);
+	    this->_Package = lisp->findPackage(packageName,true).as<Package_O>();
 	}
 	this->_PackageName = packageName;
     }
@@ -3974,7 +3960,7 @@ extern "C"
 	    this->_Package = lisp->makePackage(packageName,lnnames,lpkgs);
 	} else
 	{
-	    this->_Package = lisp->findPackage(packageName);
+	    this->_Package = lisp->findPackage(packageName,true).as<Package_O>();
 	}
 	this->_PackageName = packageName;
     }

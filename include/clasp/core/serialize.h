@@ -526,7 +526,7 @@ namespace core
 	/*! Vector of SNode_sp(s) */
 	Vector_sp			_VectorSNodes;
     public: // Simple default ctor/dtor
-	BranchSNode_O() : _Kind(_Nil<Symbol_O>()), _SNodePList(_Nil<T_O>()), _VectorSNodes(_Nil<Vector_O>()) {};
+    BranchSNode_O() : _Kind(_Nil<Symbol_O>()), _SNodePList(_Nil<T_O>()), _VectorSNodes(_Unbound<Vector_O>()) {};
 	virtual ~BranchSNode_O() {};
     public:
 	static BranchSNode_sp create(Symbol_sp kind, List_sp plist, Vector_sp data );
@@ -593,7 +593,7 @@ namespace core
 
 	virtual void addNodeToFinalize(SNode_sp node) {};
 
-	SNode_sp	getTopNode() const { return this->_TopNode;};
+	//	T_sp getTopNode() const { return this->_TopBranchSNode;};
 
 	string __repr__() const;
 

@@ -1,7 +1,7 @@
 // Disable this once we have List_sp working
 #define USE_BAD_CAST_ERROR 1
-//#define ALLOW_NIL_OTHER 1
-//#define ALLOW_CONS_NIL 1
+#define ALLOW_NIL_OTHER 1
+#define ALLOW_CONS_NIL 1
 
 
 /*
@@ -602,20 +602,20 @@ namespace gctools {
 	bool nilp() const { return tagged_nilp(this->theObject); }
 	bool notnilp() const { return (!this->nilp());};
 	bool isTrue() const { return !this->nilp(); };
-	bool objectp() const { return this->otherp() || this->consp(); };
-	bool otherp() const { return tagged_otherp<Type>(this->theObject);};
-	bool consp() const { return tagged_consp<Type>(this->theObject);};
 	core::Cons_O* unsafe_cons() const {
 	    GCTOOLS_ASSERT(this->consp());
 	    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject)-cons_tag); };
-	bool unboundp() const { return tagged_unboundp(this->theObject);};
-	bool deletedp() const { return tagged_deletedp(this->theObject);};
-	bool sameAsKeyp() const { return tagged_sameAsKeyp(this->theObject);};
 #else
 	//bool nilp() const { return tagged_nilp(this->theObject); }
 	//bool notnilp() const { return (!this->nilp());};
 	bool isTrue() const { return true; };
 #endif
+	bool objectp() const { return this->otherp() || this->consp(); };
+	bool otherp() const { return tagged_otherp<Type>(this->theObject);};
+	bool consp() const { return tagged_consp<Type>(this->theObject);};
+	bool unboundp() const { return tagged_unboundp(this->theObject);};
+	bool deletedp() const { return tagged_deletedp(this->theObject);};
+	bool sameAsKeyp() const { return tagged_sameAsKeyp(this->theObject);};
 	bool fixnump() const {return tagged_fixnump(this->theObject);};
 	Fixnum unsafe_fixnum() const {return untag_fixnum(this->theObject);};
 	bool characterp() const {return tagged_characterp<Type>(this->theObject);};
@@ -1404,16 +1404,19 @@ namespace gctools {
 	/*! Dereferencing operator - remove the other tag */
 	Type* operator->() {
 	    GCTOOLS_ASSERT(this->otherp());
+	    GCTOOLS_ASSERT(!this->unboundp());
 	    return untag_other(this->theObject);
 	};
 
 	Type* operator->() const {
 	    GCTOOLS_ASSERT(this->otherp());
+	    GCTOOLS_ASSERT(!this->unboundp());
 	    return untag_other(this->theObject);
 	};
 
 	Type& operator*() const {
 	    GCTOOLS_ASSERT(this->objectp());
+	    GCTOOLS_ASSERT(!this->unboundp());
 	    return *(this->untag_object());
 	};
 	

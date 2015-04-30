@@ -53,7 +53,7 @@ namespace core
 	}
 	bool foundHashTable = false;
 	HashTable_sp area_hash_table;
-	const T_mv& values = _lisp->_Roots._SystemProperties->gethash(area,_Nil<T_O>());
+	const T_mv& values = _lisp->_Roots._SystemProperties.as<HashTable_O>()->gethash(area,_Nil<T_O>());
 	area_hash_table = values.as<HashTable_O>();
 	foundHashTable = values.valueGet(1).as<T_O>().isTrue();
 	T_sp retval;
@@ -64,7 +64,7 @@ namespace core
 	{
 	    HashTable_sp new_hash_table = HashTableEql_O::create_default();
 	    new_hash_table->hash_table_setf_gethash(key,value);
-	    retval = _lisp->_Roots._SystemProperties->hash_table_setf_gethash(area,new_hash_table);
+	    retval = _lisp->_Roots._SystemProperties.as<HashTable_O>()->hash_table_setf_gethash(area,new_hash_table);
 	}
 	return(Values(retval));
     }
@@ -78,13 +78,12 @@ namespace core
 #define DOCS_af_get_sysprop "get_sysprop - returns (values val foundp)"
     T_mv af_get_sysprop(T_sp key, T_sp area)
     {_G();
-	if ( _lisp->_Roots._SystemProperties.objectp() ) 
+	if ( _lisp->_Roots._SystemProperties.notnilp() ) 
 	{
-	    T_mv values = _lisp->_Roots._SystemProperties->gethash(area,_Nil<T_O>());
+	    T_mv values = _lisp->_Roots._SystemProperties.as<HashTable_O>()->gethash(area,_Nil<T_O>());
 	    HashTable_sp hashTable = values.as<HashTable_O>();
 	    bool foundHashTable = values.valueGet(1).as<T_O>().isTrue();
-	    if ( foundHashTable )
-	    {
+	    if ( foundHashTable ) {
 		return hashTable->gethash(key,_Nil<T_O>());
 	    }
 	}
@@ -100,7 +99,7 @@ namespace core
 #define DOCS_af_rem_sysprop "rem_sysprop"
     T_sp af_rem_sysprop(T_sp key, T_sp area)
     {_G();
-	T_mv mv_values = _lisp->_Roots._SystemProperties->gethash(area,_Nil<T_O>());
+	T_mv mv_values = _lisp->_Roots._SystemProperties.as<HashTable_O>()->gethash(area,_Nil<T_O>());
 	HashTable_sp hashTable = mv_values.as<HashTable_O>();
 	bool foundHashTable = mv_values.valueGet(1).as<T_O>().isTrue();
 	if (foundHashTable) {

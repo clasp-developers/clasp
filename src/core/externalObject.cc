@@ -118,7 +118,7 @@ namespace core {
 #endif // defined(XML_ARCHIVE)
 
 
-    bool ExternalObject_O::eq(T_sp obj) const
+    bool ExternalObject_O::eql(T_sp obj) const
     {_G();
 	if ( af_externalObjectP(obj) )
 	{

@@ -428,10 +428,10 @@ namespace gctools {
 #define ARGS_af_room "(&optional x (marker 0) msg)"
 #define DECL_af_room ""
 #define DOCS_af_room "room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)"
-    T_mv af_room(T_sp x, Fixnum_sp marker, Str_sp msg)
+    T_mv af_room(T_sp x, Fixnum_sp marker, T_sp tmsg)
     {_G();
         string smsg = "Total";
-        if ( msg.notnilp() ) {
+        if ( Str_sp msg = tmsg.asOrNull<Str_O>() ) {
             smsg = msg->get();
         }
 #ifdef USE_MPS

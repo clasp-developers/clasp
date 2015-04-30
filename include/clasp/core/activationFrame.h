@@ -60,7 +60,7 @@ namespace core
 	LISP_VIRTUAL_CLASS(core,CorePkg,ActivationFrame_O,"ActivationFrame");
     protected:
     public:
-	static string clasp_asString(ActivationFrame_sp af);
+	static string clasp_asString(T_sp af);
     public:
 	ActivationFrame_O() : Base() {};
 	virtual ~ActivationFrame_O() {};
@@ -71,7 +71,7 @@ namespace core
 	virtual T_sp& operator[](int idx) {SUBIMP();};
 	virtual const T_sp& operator[](int idx) const{SUBIMP();};
 
-	virtual Environment_sp currentVisibleEnvironment() const;
+	virtual T_sp currentVisibleEnvironment() const;
 	virtual ActivationFrame_sp getActivationFrame() const;
 
 

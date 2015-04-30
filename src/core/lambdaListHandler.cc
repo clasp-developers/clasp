@@ -77,7 +77,7 @@ namespace core
 
     TargetClassifier::TargetClassifier(const std::set<int>& skip) : lexicalIndex(-1), skipLexicalIndices(skip)
     {_G();
-	this->_SpecialSymbols = _Nil<SymbolSet_O>();
+	this->_SpecialSymbols = _Nil<T_O>();
 	this->_LambdaListSpecials = SymbolSet_O::create();
         this->advanceLexicalIndex();
     };
@@ -104,7 +104,7 @@ namespace core
     List_sp TargetClassifier::finalClassifiedSymbols()
     {
 	if ( this->_SpecialSymbols.notnilp() ) {
-            this->_SpecialSymbols->map( [this] (Symbol_sp s) {
+            this->_SpecialSymbols.as<SymbolSet_O>()->map( [this] (Symbol_sp s) {
                     if ( !this->_LambdaListSpecials->contains(s) )
                     {
                         this->_AccumulatedClassifiedSymbols
@@ -392,7 +392,7 @@ namespace core
     void TargetClassifier::classifyTarget(Argument& target)
     {
 	Symbol_sp sym = target._ArgTarget.as<Symbol_O>();
-	if ( sym->specialP() || (this->_SpecialSymbols.notnilp() && this->_SpecialSymbols->contains(sym) ))
+	if ( sym->specialP() || (this->_SpecialSymbols.notnilp() && this->_SpecialSymbols.as<SymbolSet_O>()->contains(sym) ))
 	{
 	    target._ArgTargetFrameIndex = SPECIAL_TARGET;
 	    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_specialVar,target._ArgTarget);
@@ -641,10 +641,8 @@ void bind_aux
 	LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % _rep_(symbol) % symbol.get() );
 	bool isAmpSymbol = false;
 	if (symbol.notnilp()) {
-	    if ( symbol.objectp() ) {
-		if ( Symbol_sp sym = symbol.asOrNull<Symbol_O>() ) {
-		    isAmpSymbol = (sym == _sym_DOT || sym->amp_symbol_p());
-		}
+	    if ( Symbol_sp sym = symbol.asOrNull<Symbol_O>() ) {
+		isAmpSymbol = (sym == _sym_DOT || sym->amp_symbol_p());
 	    }
 	}
 	//	bool isAmpSymbol = ( symbol == _sym_DOT || (symbol.notnilp() && symbol->amp_symbol_p()) );
@@ -1369,7 +1367,7 @@ void bind_aux
 	{
 	    this->calculateNamesOfLexicalVariablesForDebugging();
 	}
-	return this->_LexicalVariableNamesForDebugging;
+	return this->_LexicalVariableNamesForDebugging.as<VectorObjects_O>();
     }
 
 

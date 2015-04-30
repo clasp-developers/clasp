@@ -84,13 +84,12 @@ namespace core
     void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, Str_sp docstring, Function_sp body )
     {_G();
 //	string docstr = docstring->get();
-	SingleDispatchGenericFunction_sp gf = gfname->symbolFunction().as<SingleDispatchGenericFunction_O>();//Lisp_O::find_single_dispatch_generic_function(gfname,true);
-	SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(gfname,receiver_class,lambda_list_handler,declares,docstring,body);
-        ASSERT(lambda_list_handler.notnilp());
-        if ( !gf.objectp() )
-        {
+        if ( !gfname->fboundp() ) {
             SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
         }
+	SingleDispatchGenericFunction_sp gf = gfname->symbolFunction().as<SingleDispatchGenericFunction_O>();
+	SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(gfname,receiver_class,lambda_list_handler,declares,docstring,body);
+        ASSERT(lambda_list_handler.notnilp());
 	gctools::tagged_functor<SingleDispatchGenericFunctionClosure> gfc = gf->closure.as<SingleDispatchGenericFunctionClosure>();
         LambdaListHandler_sp gf_llh = gfc->_lambdaListHandler;
         if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments() )

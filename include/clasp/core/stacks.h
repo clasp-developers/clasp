@@ -227,8 +227,8 @@ namespace core
     void af_ihsTopSetLineColumn(int lineno, int column);
     int af_ihsPrev(int idx);
     int af_ihsNext(int idx);
-    Function_sp af_ihsFun(int idx);
-    Environment_sp af_ihsEnv(int idx);
+    T_sp af_ihsFun(int idx);
+    T_sp af_ihsEnv(int idx);
     /*! Return the current frame index stored in core:*ihs-current*
       Update core:*ihs-current* to a valid value */
     int af_ihsCurrentFrame();

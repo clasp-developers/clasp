@@ -96,10 +96,7 @@ namespace core
     T_sp af_lookupLoadTimeValue(const string& name, int idx)
     {_G();
 	int count=0;
-	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name,count);
-	if ( ltva.nilp() ) {
-	    SIMPLE_ERROR(BF("Could not find load-time-values %s") % name);
-	}
+	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name,count).as<LoadTimeValues_O>();
 	if ( count != 1 ) {
 	    SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % name );
 	}
@@ -117,10 +114,11 @@ namespace core
     Symbol_sp af_lookupLoadTimeSymbol(const string& name, int idx)
     {_G();
 	int count = 0;
-	LoadTimeValues_sp ltva = _lisp->findLoadTimeValuesWithNameContaining(name,count);
-	if ( ltva.nilp() ) {
+	T_sp tltva = _lisp->findLoadTimeValuesWithNameContaining(name,count);
+	if ( tltva.nilp() ) {
 	    SIMPLE_ERROR(BF("Could not find load-time-values %s") % name);
 	}
+	LoadTimeValues_sp ltva = tltva.as<LoadTimeValues_O>();
 	if ( count != 1 ) {
 	    SIMPLE_ERROR(BF("There is more than one load-time-values object with a name that contains: %s") % name );
 	}

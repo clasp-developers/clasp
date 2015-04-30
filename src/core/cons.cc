@@ -347,10 +347,10 @@ namespace core
     struct Tester
     {
 	T_sp 		_item;
-	Function_sp 	_test_func;
+	Function_sp 	        _test_func;
 	bool		_test_pass;
 	bool		_use_key_func;
-	Function_sp 	_key_func;
+	Function_sp 	        _key_func;
 	Tester( T_sp item, T_sp key, T_sp test, T_sp testNot, bool applyKey )
 	{
 	    this->setup(item,key,test,testNot,applyKey);
@@ -379,9 +379,9 @@ namespace core
 	    {
 		this->_use_key_func = true;
 		this->_key_func = coerce::functionDesignator(key);
-	    } else this->_key_func = _Nil<Function_O>();
+	    }
 	    this->_item = item;
-	    if ( apply_key_to_item && this->_key_func.notnilp() )
+	    if ( apply_key_to_item && this->_use_key_func )
 	    {
 		this->_item = eval::funcall(this->_key_func,item);
 	    }

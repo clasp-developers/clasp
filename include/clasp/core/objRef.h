@@ -52,7 +52,7 @@ public:
 GCPRIVATE:
 	string		_Selector;
 	string		_Name;
-	ObjRef_sp	_SubRef;
+	T_sp	_SubRef;
 public:
     static ObjRef_sp create(Lisp_sp e,const string& asString );
     static ObjRef_sp create2(Lisp_sp e,const string& asString ) { return ObjRef_O::create(e,asString);};

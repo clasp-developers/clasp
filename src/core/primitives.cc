@@ -88,7 +88,7 @@ namespace core
 #define ARGS_cl_sleep "(seconds)"
 #define DECL_cl_sleep ""
 #define DOCS_cl_sleep "sleep"
-    void cl_sleep(Real_sp seconds)
+    void cl_sleep(T_sp seconds)
     {_G();
         SYMBOL_EXPORT_SC_(ClPkg,sleep);
         if ( seconds.nilp() ) {
@@ -688,7 +688,7 @@ namespace core
 #define ARGS_cl_ash "(integer count)"
 #define DECL_cl_ash ""
 #define DOCS_cl_ash "CLHS: ash"
-    Integer_sp cl_ash(Integer_sp integer, Integer_sp count)
+    Integer_sp cl_ash(T_sp integer, Integer_sp count)
     {
 	int cnt = count->as_int();
 	if ( integer.notnilp() ) {
@@ -707,10 +707,10 @@ namespace core
 #define ARGS_af_break "(&optional fmt-control &rest args)"
 #define DECL_af_break ""
 #define DOCS_af_break "Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version"
-    void af_break(Str_sp fmt, List_sp args)
+    void af_break(T_sp fmt, List_sp args)
     {_G();
 	if ( fmt.notnilp() ) {
-	    af_format(_lisp->_true(),fmt,args);
+	    af_format(_lisp->_true(),fmt.as<Str_O>(),args);
 	}
 	dbg_hook("built in break");
 	af_invokeInternalDebugger(_Nil<core::T_O>());
@@ -790,21 +790,23 @@ namespace core
 	Function_sp debugMacroFunction = macro_function;
 	T_sp debugForm = form;
 	T_sp debugEnvironment = macro_env;
-	LambdaListHandler_sp llh = macro_function->functionLambdaListHandler();
-	if ( llh.notnilp() && llh->numberOfRequiredArguments() != 2 ) {
-	    stringstream err;
-	    err << __FILE__ << ":"<< __LINE__ << " Caught a problem in af_macroexpand_default - the macro_function requires " << llh->numberOfRequiredArguments() << " arguments but I'm only going to pass 2!!!" << std::endl;
-	    err << "lambda_list: " << _rep_(llh) << std::endl;
-	    err << "Passing argument 1: " << _rep_(form) << std::endl;
-	    err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
-	    gctools::tagged_functor<Closure> closure = macro_function->closure;
-	    err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
-	    if ( auto ic = closure.as<InterpretedClosure>() ) {
-		err << "code: " << _rep_(ic->code());
-	    } else {
-		err << "macro_function is not an interpreted function";
+	T_sp tllh = macro_function->functionLambdaListHandler();
+	if ( LambdaListHandler_sp llh = tllh.asOrNull<LambdaListHandler_O>() ) {
+	    if ( llh->numberOfRequiredArguments() != 2 ) {
+		stringstream err;
+		err << __FILE__ << ":"<< __LINE__ << " Caught a problem in af_macroexpand_default - the macro_function requires " << llh->numberOfRequiredArguments() << " arguments but I'm only going to pass 2!!!" << std::endl;
+		err << "lambda_list: " << _rep_(llh) << std::endl;
+		err << "Passing argument 1: " << _rep_(form) << std::endl;
+		err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
+		gctools::tagged_functor<Closure> closure = macro_function->closure;
+		err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
+		if ( auto ic = closure.as<InterpretedClosure>() ) {
+		    err << "code: " << _rep_(ic->code());
+		} else {
+		    err << "macro_function is not an interpreted function";
+		}
+		SIMPLE_ERROR(BF("Wrong number of arguments %d within macroexpand_default when trying to invoke macro %s\nMore detail: %s") % llh->numberOfRequiredArguments() % _rep_(macro_function->functionName()) % err.str());
 	    }
-	    SIMPLE_ERROR(BF("Wrong number of arguments %d within macroexpand_default when trying to invoke macro %s\nMore detail: %s") % llh->numberOfRequiredArguments() % _rep_(macro_function->functionName()) % err.str());
 	}
 	T_sp result = eval::funcall(macro_function,form,macro_env);
 	return(Values(result));
@@ -917,17 +919,14 @@ namespace core
 	if ( af_symbolp(functionName) )
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
-	    return sym->symbolFunction().objectp();
+	    return sym->fboundp();
 	} else if ( cl_consp(functionName) )
 	{
 	    List_sp cname = functionName.as_or_nil<Cons_O>();
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
-		if ( name.notnilp() )
-		{
-		    return name->getSetfFdefinition().objectp();
-		}
+		if ( name.notnilp() ) return name->setf_fboundp();
 	    }
 	}
 	SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName) );

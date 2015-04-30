@@ -267,7 +267,7 @@ TRANSLATE(core::FileStatus_O);
 
 
 namespace core {
-    Pathname_sp homedirPathname(Str_sp head); // See ecl_homedir_pathname
+    Pathname_sp homedirPathname(T_sp head); // See ecl_homedir_pathname
 
     /*! Return the current working directory as a string, if bool change_d_p_d then
      Change *default-pathname-defaults* to cwd */
