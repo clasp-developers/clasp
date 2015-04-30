@@ -1475,24 +1475,25 @@ List_sp af_append(List_sp lists)
 #define DECL_af_sequence_start_end ""
 #define DOCS_af_sequence_start_end "Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence."\
     " I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length)."
-    T_mv af_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, Fixnum_sp end)
+    T_mv af_sequence_start_end(T_sp func, T_sp sequence, Fixnum_sp start, T_sp end)
     {_G();
 	uint len = cl_length(sequence);
 	if ( end.nilp() ) end = Fixnum_O::create(len);
+	Fixnum_sp fnend = end.as<Fixnum_O>();
 	if ( start->get() < 0 )
 	{
 	    SIMPLE_ERROR(BF("start[%d] must be greater than zero") % _rep_(start));
 	}
-	if ( end->get() > len )
+	if ( fnend->get() > len )
 	{
 	    SIMPLE_ERROR(BF("end[%d] must be <= length of sequence[%d]") % _rep_(end) % len );
 	}
 	Fixnum_sp length = Fixnum_O::create(len);
-	if ( end->get() < start->get() )
+	if ( fnend->get() < start->get() )
 	{
 	    SIMPLE_ERROR(BF("end[%d] is less than start[%d]") % _rep_(end) % _rep_(start) );
 	}
-	return(Values(start,end,length));
+	return(Values(start,fnend,length));
     };
 
 

@@ -1959,7 +1959,7 @@ namespace core
 		SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
 	    }
 	    gctools::tagged_functor<Closure> closureP = tfn.as<Function_O>()->closure;
-            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
+            ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(tfn));
 	    return applyClosureToActivationFrame(closureP,args);
 	}
 
