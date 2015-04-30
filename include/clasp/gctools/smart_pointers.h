@@ -1012,19 +1012,13 @@ namespace gctools {
 
 	Type* get() const { return this->untag_object(); };
 	bool _NULLp() const { return this->theObject==NULL; };
-#if 0
+
 	operator smart_ptr<core::Cons_O> () {
-	    if ( this->consp() ) {
-		smart_ptr<core::Cons_O> ret(tag_cons<core::Cons_O>(gctools::DynamicCast<core::Cons_O*,Type*>::castOrNULL(untag_cons<Type>(this->theObject))));
-		return ret;
-	    } else if ( this->nilp() ) {
-		return smart_ptr<core::Cons_O>(tag_nil<core::Cons_O>());
-	    }
-            class_id expected_typ = reg::registered_class<o_class>::id;
-            class_id this_typ = reg::registered_class<Type>::id;
-	    lisp_errorBadCast(expected_typ,this_typ,this->theObject);
-	}
-#endif
+            if ( this->consp() ) return smart_ptr<core::Cons_O>((Tagged)this->theObject);
+            class_id expected_typ = reg::registered_class<core::Cons_O>::id;
+            lisp_errorBadCastFromT_O(expected_typ,this->theObject);
+        }
+
 	    
 	/*! If theObject!=NULL then return true */
 	explicit operator bool() const { return this->theObject != NULL; };
@@ -1667,16 +1661,14 @@ namespace gctools {
  
 namespace gctools {
     typedef smart_ptr<core::List_V> List_sp;
-    class List_sp_iterator_nil;
     class List_sp_iterator;
+    
     template <> class smart_ptr<core::List_V> {
-	friend class List_sp_iterator_nil;
-	friend class List_sp_iterator;
     public:
 	typedef core::T_O
 	    Type; // The best common type for both Cons_O and Symbol_O is T_O
 	Type *theObject;
- 
+	
     public:
 	//! The default constructor returns an invalid smart_ptr
     smart_ptr() : theObject(NULL){};
@@ -1773,6 +1765,10 @@ namespace gctools {
 	    GCTOOLS_ASSERT(this->objectp());
 	    return *(this->untag_object());
 	};
+	inline const Type &operator*() const {
+	    GCTOOLS_ASSERT(this->objectp());
+	    return *(this->untag_object());
+	};
  
 	core::T_O *raw_() const { return reinterpret_cast<Type *>(this->theObject); }
 	bool _NULLp() const { return this->theObject == NULL; };
@@ -1786,66 +1782,76 @@ namespace gctools {
 	}
 
     public:
-	class List_sp_iterator {
-	    friend class List_sp_iterator_nil;
-	public:
-	List_sp_iterator(const List_sp& ptr) : ptr(ptr.theObject) {};
-	    List_sp_iterator &operator++() {
-		GCTOOLS_ASSERT(tagged_consp<Type>(this->ptr));
-		this->ptr = cons_cdr(untag_cons<core::Cons_O>(reinterpret_cast<core::Cons_O*>(this->ptr))).theObject;
-		return *this;
-	    }
-	    List_sp_iterator &operator++(int) { // postfix
-		auto clone = new List_sp_iterator(*this);
-		++*this;
-		return *clone;
-	    }
-#if 0
-	    bool operator==(const List_sp_iterator &b) const {
-		if (b.ptr->consp())
-		    return ptr == (b.ptr);
-		else
-		    return !ptr->consp();
-	    }
-	    bool operator==(const List_sp_iterator_nil &b) const { return !ptr->consp(); }
-	    bool operator!=(const List_sp_iterator_nil &b) const { return ptr->consp(); }
-#endif
-	    bool operator!=(const List_sp_iterator &b) const {
-		return this->ptr != b.ptr;
-		//!(*this == b); }
-	    };
-#if 0
-	    List_sp &operator->() { return *ptr; }
-	    List_sp &operator->() const { return *ptr; }
-#endif
-	    // Unsafe but fast cast of T_O* to Cons_O* - should only be done within a loop
-	    smart_ptr<core::Cons_O> operator*() { return smart_ptr<core::Cons_O>((Tagged)(ptr)); }
-	public:
-	    Type* ptr;
-	    //	friend class List_sp;
-	};
-
 	
-	class List_sp_iterator_nil : public List_sp_iterator {
+
+
+	private:
+	template <class List_sp, bool fast>
+	class List_sp_iterator {
 	public:
-	List_sp_iterator_nil() : List_sp_iterator(smart_ptr<core::List_V>((Tagged)global_Symbol_OP_nil)) {}; // nullptr){};
-#if 0
-	    bool operator==(const List_sp_iterator &b) const { return !b.ptr->consp(); }
-	    bool operator!=(const List_sp_iterator &b) const { return b.ptr->consp(); }
-#endif
-	    List_sp &operator->() = delete;
-	    List_sp &operator->() const = delete;
-	    List_sp operator*() = delete;
-	    List_sp &operator++() = delete;
-	    List_sp &operator++(int) = delete;
+	List_sp_iterator() {}	// XXX: What happens if someone tries to increment end() ?
+	List_sp_iterator(const List_sp& ptr) : ptr(ptr.asCons()) {};
+		List_sp_iterator &operator++() {
+			GCTOOLS_ASSERT(ptr.consp());
+			ptr = smart_ptr<core::T_O>(cons_cdr(&*ptr)).as<core::Cons_O>();
+			// GCTOOLS_ASSERT(tagged_consp<Type>(ptr));
+			// this->ptr = cons_cdr(untag_cons<core::Cons_O>(reinterpret_cast<core::Cons_O*>(ptr)));
+			return *this;
+		}
+		List_sp_iterator &operator++(int) { // postfix
+			auto clone = new List_sp_iterator(*this);
+			++*this;
+			return *clone;
+		}
+		smart_ptr<core::Cons_O> *operator->() { return &ptr; }
+		const smart_ptr<core::Cons_O> *operator->() const { return &ptr; }
+		const smart_ptr<core::Cons_O> &operator*() const { return reinterpret_cast<smart_ptr<core::Cons_O>>(ptr); }
+		smart_ptr<core::T_O> &operator*() { return ptr; }
+		// Unsafe but fast cast of T_O* to Cons_O* - should only be done within a loop
+		/* smart_ptr<core::Cons_O> operator*() { return smart_ptr<core::Cons_O>((Tagged)(ptr)); } */
+	public:
+		smart_ptr<core::T_O> ptr;
 	};
+    public:
+	    typedef List_sp_iterator<List_sp, false> iterator;
+	    typedef List_sp_iterator<List_sp, true> fast_iterator;
 
     public:
-	List_sp_iterator begin() { return List_sp_iterator(*this); }
-	List_sp_iterator end() { return List_sp_iterator_nil(); }
+	iterator begin() {
+		if (consp())
+			return iterator(*this);
+		else
+			return iterator();}
+	iterator end() { return iterator(); }
 
-	List_sp_iterator const begin() const { return List_sp_iterator(*this); }
-	List_sp_iterator const end() const { return List_sp_iterator_nil(); }
+	iterator const begin() const {
+		if (consp())
+			return iterator(*this);
+		else
+			return iterator();}
+	iterator const end() const { return iterator(); }
+    private:
+	    class fast_iterator_proxy {
+	    public:
+		    fast_iterator_proxy(const List_sp& ptr) : ptr(ptr) {}
+		    fast_iterator begin() {
+			    if (ptr.consp())
+				    return fast_iterator(ptr);
+			    else
+				    return fast_iterator();}
+		    fast_iterator end() { return fast_iterator(); }
+
+		    fast_iterator const begin() const {
+			    if (ptr.consp())
+				    return fast_iterator(ptr);
+			    else
+				    return fast_iterator();}
+		    fast_iterator const end() const { return fast_iterator(); }
+	    private:
+		    const List_sp& ptr;
+	    };
+    public:
+	    fast_iterator_proxy full() {return fast_iterator_proxy(*this);}
 
 	smart_ptr<core::List_V>& operator=(const smart_ptr<core::List_V>& other ) {
 	    if (this==&other) return *this;
@@ -1866,6 +1872,15 @@ namespace gctools {
 	    return *this;
 	};
     };
+
+    bool operator==(const List_sp::iterator &a, const List_sp::iterator &b) {return *a == *b;}
+    bool operator!=(const List_sp::iterator &a, const List_sp::iterator &b) {return !(a == b);}
+	// XXX: BAD VOODOO!
+	// Justification:
+	// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2243.html#the-range-based-for-statement
+	// Range-for will, supposedly, use != as current != end, always.
+    bool operator==(const List_sp::fast_iterator &a, const List_sp::fast_iterator &b) {return !a->consp();}
+    bool operator!=(const List_sp::fast_iterator &a, const List_sp::fast_iterator &b) {return a->consp();}
 
 
 
