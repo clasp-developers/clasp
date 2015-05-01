@@ -2073,6 +2073,14 @@ namespace gctools {
 };
 
 namespace gctools {
+    // An idea suggested by Georgiy Tugai.
+    // Nilable<Foo_sp> is a variable that has the type (OR NULL FOO)
+    // It inherits from Foo_sp and stores an extra value that
+    // indicates if Nilable<Foo_sp> is NIL or not.
+    // I need to store an extra value because some smart_ptr values like
+    // smart_ptr<Fixnum_V> cannot themselves be set to NIL.
+
+    
     template <typename T> class Nilable {};
     
     template <typename T>
