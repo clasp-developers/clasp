@@ -318,7 +318,7 @@ namespace core {
 
     List_sp	StringSet_O::asCons() const
     {_G();
-	Cons_sp cur = _Nil<Cons_O>();
+	List_sp cur = _Nil<T_O>();
 	set<string>::iterator	si;
 	for (si=this->strs.begin();si!=this->strs.end();si++){
 	    Str_sp s = Str_O::create(*si);

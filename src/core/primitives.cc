@@ -293,7 +293,7 @@ namespace core
 #define DOCS_af_allRegisteredClassNames "allRegisteredClassNames"
     Vector_sp af_allRegisteredClassNames()
     {_G();
-        VectorObjects_sp vo=VectorObjects_O::make(_Nil<T_O>(),_Nil<Cons_O>(),_lisp->classSymbolsHolder().size(),false);
+        VectorObjects_sp vo=VectorObjects_O::make(_Nil<T_O>(),_Nil<T_O>(),_lisp->classSymbolsHolder().size(),false);
         for ( int i(0),iEnd(_lisp->classSymbolsHolder().size());i<iEnd;++i) {
             vo->setf_elt(i,_lisp->classSymbolsHolder()[i]);
         }
@@ -342,11 +342,11 @@ namespace core
 #define ARGS_af_getEnv "(arg)"
 #define DECL_af_getEnv ""
 #define DOCS_af_getEnv "getEnv"
-    Str_sp af_getEnv(Str_sp arg)
+    T_sp af_getEnv(Str_sp arg)
     {_G();
 	char* sres = getenv(arg->c_str());
 	if ( sres == NULL ) {
-	    return _Nil<Str_O>();
+	    return _Nil<T_O>();
 	}
 	return Str_O::create(sres);
     };
@@ -469,7 +469,7 @@ namespace core
 	if ( af_symbolp(functionName) ) return functionName.as<Symbol_O>();
 	if ( cl_consp(functionName) )
 	{
-	    List_sp cfn = functionName.as_or_nil<Cons_O>();
+	    List_sp cfn = functionName;
 	    if ( oCar(cfn) == cl::_sym_setf && af_symbolp(oCadr(cfn))& oCadr(cfn).notnilp() )
 	    {
 		return oCadr(cfn).as<Symbol_O>();
@@ -558,7 +558,7 @@ namespace core
 		seconds << _Nil<T_O>();
 	    } else if ( cl_consp(element) )
 	    {
-		List_sp pair = element.as_or_nil<Cons_O>();
+		List_sp pair = element;
 		size_t pairlen = cl_length(pair);
 		if ( pairlen == 2 || pairlen == 1 )
 		{
@@ -596,7 +596,7 @@ namespace core
 #define DOCS_cl_macroFunction "See CLHS: macroFunction"
     T_sp cl_macroFunction(Symbol_sp symbol, T_sp env)
     {_G();
-	Function_sp func = _Nil<Function_O>();
+	T_sp func = _Nil<T_O>();
 	if ( env.nilp() || env.framep() ) {
 	    func = af_interpreter_lookup_macro(symbol,env);
 	} else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
@@ -864,7 +864,7 @@ namespace core
 	} else if (cl_consp(functionName))
 	{
 	    SYMBOL_EXPORT_SC_(ClPkg,setf);
-	    List_sp cur = functionName.as_or_nil<Cons_O>();
+	    List_sp cur = functionName;
 	    if ( oCar(cur) == cl::_sym_setf )
 	    {
 		Symbol_sp symbol = oCadr(cur).as<Symbol_O>();
@@ -892,7 +892,7 @@ namespace core
 	    return(Values(sym->symbolFunction()));
 	} else if ( cl_consp(functionName) )
 	{
-	    List_sp cname = functionName.as_or_nil<Cons_O>();
+	    List_sp cname = functionName;
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
@@ -922,7 +922,7 @@ namespace core
 	    return sym->fboundp();
 	} else if ( cl_consp(functionName) )
 	{
-	    List_sp cname = functionName.as_or_nil<Cons_O>();
+	    List_sp cname = functionName;
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
@@ -944,11 +944,11 @@ namespace core
 	if ( af_symbolp(functionName) )
 	{
 	    Symbol_sp sym = functionName.as<Symbol_O>();
-	    sym->setf_symbolFunction(_Nil<Function_O>());
+	    sym->setf_symbolFunction(_Unbound<Function_O>());
 	    return(Values(sym));
 	} else if ( cl_consp(functionName) )
 	{
-	    List_sp cname = functionName.as_or_nil<Cons_O>();
+	    List_sp cname = functionName;
 	    if ( oCar(cname) == cl::_sym_setf )
 	    {
 		Symbol_sp name = oCadr(cname).as<Symbol_O>();
@@ -1057,21 +1057,16 @@ namespace core
 	this->_AtEnd = false;
 	for ( auto cur : sequences ) {
 	    T_sp obj = oCar(cur);
-	    if ( af_vectorP(obj) )
-	    {
-		if (cl_length(obj.as<Vector_O>()) == 0 ) goto EMPTY;
-                VectorStepper* vP(gctools::ClassAllocator<VectorStepper>::allocateClass(obj.as<Vector_O>()));
+	    if ( Vector_sp vobj = obj.asOrNull<Vector_O>() ) {
+		if (cl_length(vobj) == 0 ) goto EMPTY;
+                VectorStepper* vP(gctools::ClassAllocator<VectorStepper>::allocateClass(vobj));
                 this->_Steppers.push_back(vP);
-	    } else if ( cl_consp(obj) )
-	    {
-		if (obj.as_or_nil<Cons_O>().nilp()) goto EMPTY;
-                ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(obj.as_or_nil<Cons_O>()));
+	    } else if ( Cons_sp cobj = obj.asOrNull<Cons_O>() ) {
+                ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(cobj));
                 this->_Steppers.push_back(cP);
-	    } else if ( obj.nilp() )
-	    {
+	    } else if ( obj.nilp() ) {
 		goto EMPTY;
-	    } else
-	    {
+	    } else {
 		SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(obj) % obj->_instanceClass()->classNameAsString() );
 	    }
 	}
@@ -1095,7 +1090,7 @@ namespace core
     void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const
     {_G();
 	if ( this->_AtEnd) SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
-	List_sp res = _Nil<Cons_O>();
+	List_sp res = _Nil<T_O>();
 	int idx=0;
 	for (auto rit=this->_Steppers.begin(); rit!=this->_Steppers.end(); rit++ )
 	{
@@ -1128,13 +1123,10 @@ namespace core
     {_G();
 	for ( auto cur : sequences ) {
 	    T_sp obj = oCar(cur);
-	    if ( cl_consp(obj) )
-	    {
-		if ( obj.as_or_nil<Cons_O>().nilp() ) goto EMPTY;
-                ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(obj.as_or_nil<Cons_O>()));
+	    if ( Cons_sp cobj = obj.asOrNull<Cons_O>() ) {
+                ConsStepper* cP(gctools::ClassAllocator<ConsStepper>::allocateClass(cobj));
                 this->_Steppers.push_back(cP);
-	    } else
-	    {
+	    } else {
 		goto EMPTY;
 	    }
 	}
@@ -1266,7 +1258,7 @@ namespace core
     T_sp cl_mapc(T_sp top, List_sp lists)
     {_G();
         Function_sp op = coerce::functionDesignator(top);
-	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),8,0,true));
+	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),8,0,true));
 	// Copy the arguments into argumentLists
 	for ( auto carg : lists ) {
 	    argumentLists->vectorPushExtend(oCar(carg),8);
@@ -1304,16 +1296,16 @@ namespace core
     {_G();
 //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
 	Function_sp op = coerce::functionDesignator(func_desig);
-	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<Cons_O>(),_Nil<Cons_O>(),16,0,true));
+	VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),16,0,true));
 //	vector<List_sp> argumentLists;
 	// Copy the arguments into argumentLists
 	for ( auto carg : lists ) {
 	    argumentLists->vectorPushExtend(oCar(carg),8);
-//	    argumentLists.push_back(oCar(carg).as_or_nil<Cons_O>());
+//	    argumentLists.push_back(oCar(carg));
 	}
 //        printf("%s:%d  argumentLists = %s\n", __FILE__, __LINE__, _rep_(argumentLists).c_str() );
 	List_sp result, curResult;
-	result = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	result = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	ValueFrame_sp frame(ValueFrame_O::create(cl_length(argumentLists),_Nil<ActivationFrame_O>()));
 	curResult = result;
 	while (1)
@@ -1370,8 +1362,8 @@ namespace core
 	IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
 	T_sp testNull = eval::funcall(cl::_sym_some,cl::_sym_null->symbolFunction(),cargs);
 	if ( testNull.nilp() ) return(Values(_Nil<T_O>()));
-	T_sp appendHead = eval::funcall(fun,eval::funcall(cl::_sym_mapcar,cl::_sym_car->symbolFunction(),cargs).as_or_nil<Cons_O>());
-	T_sp appendTail = eval::funcall(_sym_mapappend,fun,eval::funcall(cl::_sym_mapcar,cl::_sym_cdr->symbolFunction(),cargs).as_or_nil<Cons_O>());
+	T_sp appendHead = eval::funcall(fun,eval::funcall(cl::_sym_mapcar,cl::_sym_car->symbolFunction(),cargs));
+	T_sp appendTail = eval::funcall(_sym_mapappend,fun,eval::funcall(cl::_sym_mapcar,cl::_sym_cdr->symbolFunction(),cargs));
 	return eval::funcall(cl::_sym_append,appendHead,appendTail);
     };
 
@@ -1385,7 +1377,7 @@ namespace core
 #define DOCS_cl_mapcon "mapcon"
     T_mv cl_mapcon(T_sp op, List_sp lists)
     {_G();
-	List_sp parts = cl_maplist(op,lists).as_or_nil<Cons_O>();
+	List_sp parts = cl_maplist(op,lists);
         T_sp result = cl_nconc(parts);
 	return(Values(result));
     };
@@ -1396,7 +1388,7 @@ namespace core
 #define DOCS_cl_mapcan "mapcan"
     T_mv cl_mapcan(T_sp op, List_sp lists)
     {_G();
-	List_sp parts = cl_mapcar(op,lists).as_or_nil<Cons_O>();
+	List_sp parts = cl_mapcar(op,lists);
         T_sp result = cl_nconc(parts);
 #if 0
 	ValueFrame_sp frame(ValueFrame_O::create(parts,_Nil<ActivationFrame_O>()));

@@ -61,13 +61,13 @@ namespace core
 	LambdaListHandler_sp	_argument_handler;
 	List_sp 	_declares;
 	/*! Store the docstring */
-	Str_sp		_docstring;
+	T_sp		_docstring;
     public: // creation function
 	// The creates above are depreciated
 	static SingleDispatchMethod_sp create(Symbol_sp name,
 					      Class_sp receiver,
 					      LambdaListHandler_sp lambda_list_handler,
-					      List_sp declares, Str_sp docstr,
+					      List_sp declares, T_sp docstr,
 					      Function_sp body );
     public: // Functions here
 
@@ -80,7 +80,7 @@ namespace core
         Function_sp singleDispatchMethodCode() const { return this->code;};
         LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler;};
         List_sp singleDispatchMethodDeclares() const { return this->_declares;};
-        Str_sp singleDispatchMethodDocstring() const { return this->_docstring;};
+        T_sp singleDispatchMethodDocstring() const { return this->_docstring;};
 
     }; // SingleDispatchMethod class
     

@@ -93,7 +93,11 @@ namespace core
         } else if ( Str_sp strSourceFile = sourceFile.asOrNull<Str_O>() ) {
             return _lisp->getOrRegisterSourceFileInfo(strSourceFile->get(),sourceDebugNamestring,sourceDebugOffset,useLineno);
         } else if ( Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>() ) {
-            return _lisp->getOrRegisterSourceFileInfo(af_namestring(pnSourceFile)->get(),sourceDebugNamestring,sourceDebugOffset,useLineno);
+	    T_sp ns = af_namestring(pnSourceFile);
+	    if (ns.nilp()) {
+		SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
+	    }
+            return _lisp->getOrRegisterSourceFileInfo(ns.as<Str_O>()->get(),sourceDebugNamestring,sourceDebugOffset,useLineno);
         } else if ( Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
 	    size_t idx = fnSourceFile->get();
             if ( idx >= _lisp->_Roots._SourceFiles.size() ) {
@@ -345,7 +349,7 @@ namespace core
     }
 
 
-    SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, Str_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno )
+    SourceFileInfo_sp SourceFileInfo_O::create(Pathname_sp path, int handle, T_sp sourceDebugNamestring, size_t sourceDebugOffset, bool useLineno )
     {_G();
         GC_ALLOCATE(SourceFileInfo_O,sfi );
 	sfi->_pathname = path;
@@ -356,7 +360,7 @@ namespace core
 	return sfi;
     }
 
-    SourceFileInfo_sp SourceFileInfo_O::create(const string& str, int handle, Str_sp truename, size_t offset, bool useLineno)
+    SourceFileInfo_sp SourceFileInfo_O::create(const string& str, int handle, T_sp truename, size_t offset, bool useLineno)
     {_G();
 	Pathname_sp pn = cl_pathname(Str_O::create(str));
 	return SourceFileInfo_O::create(pn,handle,truename,offset,useLineno);
@@ -615,7 +619,7 @@ namespace core
     }
 #endif
     
-    SourcePosInfo_sp SourceManager_O::duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp macroExpansion)
+    T_sp SourceManager_O::duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp macroExpansion)
     {
         if ( _lisp->sourceDatabase().notnilp()  ) {
             T_sp info = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(orig_obj);
@@ -656,7 +660,7 @@ namespace core
     T_sp SourceManager_O::lookupSourcePosInfo(T_sp key)
     {
         if ( this->availablep() ) {
-            SourcePosInfo_sp it = this->_SourcePosInfo->gethash(key,_Nil<T_O>());
+            T_sp it = this->_SourcePosInfo->gethash(key,_Nil<T_O>());
             return it;
         }
         return _Nil<T_O>();

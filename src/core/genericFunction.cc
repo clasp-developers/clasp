@@ -90,9 +90,9 @@ In ecl/src/c/interpreter.d  is the following code
 
 
 
-    Cons_sp frame_to_classes(int nargs, ArgArray args)
+    List_sp frame_to_classes(int nargs, ArgArray args)
     {
-	Cons_sp arglist = _Nil<Cons_O>();
+	List_sp arglist = _Nil<T_O>();
 	for ( int p=nargs-1; p>=0; --p)
 	{
 	    T_sp co = af_classOf(gctools::smart_ptr<T_O>(args[p]));
@@ -109,7 +109,7 @@ In ecl/src/c/interpreter.d  is the following code
 #if 0
     Cons_sp frame_to_list(int nargs, ArgArray args )
     {
-	Cons_sp arglist = _Nil<Cons_O>();
+	Cons_sp arglist = _Nil<T_O>();
 	for ( int p=nargs-1; p>=0; --p)
 	{
 	    T_sp co = args[p];
@@ -188,7 +188,7 @@ In ecl/src/c/interpreter.d  is the following code
 	    if ( first.nilp() ) {
 		return args;
 	    } else if ( first.framep() ) {
-		Cons_sp expanded = _Nil<Cons_O>();
+		List_sp expanded = _Nil<T_O>();
 		ASSERT(first.framep());
 		core::T_O** frameImpl(first.unsafe_frame());
 		frame::ElementType* values(frame::ValuesArray(frameImpl));
@@ -244,7 +244,7 @@ In ecl/src/c/interpreter.d  is the following code
 #endif
 	for ( ; spec_how_list.notnilp(); spec_how_list=oCdr(spec_how_list) )
 	{
-	    Cons_sp spec_how = oCar(spec_how_list).as_or_nil<Cons_O>();
+	    List_sp spec_how = oCar(spec_how_list);
 	    T_sp spec_type = oCar(spec_how);
 	    int spec_position = oCdr(spec_how).as<Fixnum_O>()->get();
 	    if ( spec_position >= narg )

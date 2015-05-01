@@ -94,7 +94,7 @@ namespace core
     void	StructureClass_O::initialize()
     {
 	this->Base::initialize();
-//    this->_InstanceVariableNames = _Nil<Cons_O>();
+//    this->_InstanceVariableNames = _Nil<T_O>();
 //	this->_SlotSpecifiers.clear();
 	this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
     }
@@ -105,7 +105,7 @@ namespace core
 	    oclass->_Name = name;
 	    oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL; // Not used anymore instanceClassSymbol;
 	    oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();
-//    oclass->_InstanceVariableNames = _Nil<Cons_O>();
+//    oclass->_InstanceVariableNames = _Nil<T_O>();
 	return oclass;
     }
 
@@ -124,7 +124,7 @@ namespace core
 	{_BLOCK_TRACE("About to assign base class");
 	    if ( baseClassesDesignator->consP() )
 	    {
-		baseClasses = baseClassesDesignator.as_or_nil<Cons_O>();
+		baseClasses = baseClassesDesignator;
 	    } else
 	    {
 		LOG(BF("baseClassesDesignator class(%s) value(%s)")
@@ -238,7 +238,7 @@ namespace core
 	IMPLEMENT_ME();
 #if 0
 	T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
-							  _Nil<Cons_O>(),
+							  _Nil<T_O>(),
 							  _Nil<Environment_O>(), _lisp );
 	StructureClass_sp thisClass = this->sharedThis<StructureClass_O>();
 	obj->__setClass(thisClass);

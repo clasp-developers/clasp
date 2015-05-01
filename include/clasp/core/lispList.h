@@ -67,8 +67,8 @@ namespace core
 
 
 namespace core {
-    T_sp cl_revappend(T_sp tail);
-    T_sp cl_nreconc(T_sp list, T_sp tail);
+    T_sp cl_revappend(List_sp tail);
+    T_sp cl_nreconc(List_sp list, T_sp tail);
     T_sp cl_nth(int idx, T_sp arg);
     T_sp cl_nthcdr(int idx, T_sp arg);
     

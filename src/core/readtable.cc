@@ -80,7 +80,8 @@ namespace core
 	    T_sp nonTerminating = macro.second();
 	    toReadTable->set_macro_character(toChar,macro,nonTerminating);
 	}
-	HashTable_sp fromTable = fromReadTable->_DispatchMacroCharacters->gethash(fromChar,_Nil<HashTable_O>()).as<HashTable_O>();
+	printf("%s:%d Check if Nilable types work!!!!!\n", __FILE__, __LINE__ );
+	gc::Nilable<HashTable_sp> fromTable = fromReadTable->_DispatchMacroCharacters->gethash(fromChar,_Nil<T_O>()).as_or_nil<HashTable_O>();
 	if ( fromTable.notnilp() ) {
 	    HashTableEql_sp toTable = HashTableEql_O::create_default();
 	    fromTable->maphash( [&toTable] (T_sp key, T_sp val) {
@@ -109,12 +110,12 @@ namespace core
 #define ARGS_cl_getMacroCharacter "(char &optional readtable)"
 #define DECL_cl_getMacroCharacter ""
 #define DOCS_cl_getMacroCharacter "getMacroCharacter"
-    T_mv cl_getMacroCharacter(Character_sp chr, ReadTable_sp readtable)
+    T_mv cl_getMacroCharacter(Character_sp chr, T_sp readtable)
     {_G();
         if ( readtable.nilp() ) {
             readtable = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>();
         }
-        return readtable->get_macro_character(chr);
+        return readtable.as<ReadTable_O>()->get_macro_character(chr);
     };
 
 
@@ -354,11 +355,9 @@ namespace core
 	    onumarg = Fixnum_O::create(numarg);
 	}
 	Character_sp subchar = cl_readChar(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
-	Function_sp macro_func = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>()->get_dispatch_macro_character(ch,subchar);
+	T_sp macro_func = cl::_sym_STARreadtableSTAR->symbolValue().as<ReadTable_O>()->get_dispatch_macro_character(ch,subchar);
 	if ( macro_func.nilp() )
-	{
 	    SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
-	}
 	return eval::funcall(macro_func,sin,subchar,onumarg);
     };
 
@@ -387,7 +386,7 @@ namespace core
 
 
     /*! See SACLA reader.lisp::collect-escaped-lexemes */
-    Cons_sp collect_escaped_lexemes(Character_sp c, T_sp sin)
+    List_sp collect_escaped_lexemes(Character_sp c, T_sp sin)
     {_G();
 	ReadTable_sp readTable = _lisp->getCurrentReadTable();
 	Symbol_sp syntax_type = readTable->syntax_type(c);
@@ -396,7 +395,7 @@ namespace core
 	    SIMPLE_ERROR(BF("invalid-character-error: %s") %_rep_(c) );
 	} else if ( syntax_type == kw::_sym_multiple_escape_character )
 	{
-	    return _Nil<Cons_O>();
+	    return _Nil<T_O>();
 	} else if ( syntax_type == kw::_sym_single_escape_character )
 	{
 	    return Cons_O::create(read_ch_or_die(sin),collect_escaped_lexemes(read_ch_or_die(sin),sin));
@@ -407,16 +406,16 @@ namespace core
 	{
 	    return Cons_O::create(c,collect_escaped_lexemes(read_ch_or_die(sin),sin));
 	}
-	return _Nil<Cons_O>();
+	return _Nil<T_O>();
     }
 
 
 
     /*! See SACLA reader.lisp::collect-lexemes */
-    Cons_sp collect_lexemes(Character_sp c, T_sp sin)
+    List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin)
     {_G();
-	if ( c.notnilp() )
-	{
+	if ( tc.notnilp() ) {
+	    Character_sp c = tc.as<Character_O>();
 	    ReadTable_sp readTable = _lisp->getCurrentReadTable();
 	    Symbol_sp syntax_type = readTable->syntax_type(c);
 	    if ( syntax_type == kw::_sym_invalid_character )
@@ -445,7 +444,7 @@ namespace core
 		return Cons_O::create(c,collect_lexemes(read_ch(sin),sin));
 	    }
 	}
-	return _Nil<Cons_O>();
+	return _Nil<T_O>();
     }
 
 
@@ -458,7 +457,7 @@ namespace core
 	    T_sp obj = oCar(cur_char);
 	    if ( cl_consp(obj) )
 	    {
-		make_str(sout,obj.as_or_nil<Cons_O>(),preserveCase);
+		make_str(sout,obj,preserveCase);
 	    } else if ( af_characterP(obj) )
 	    {
 		if ( preserveCase ) sout << obj.as<Character_O>()->asChar();
@@ -479,7 +478,7 @@ namespace core
     T_mv af_sharp_backslash(T_sp sin, Character_sp ch, T_sp num)
     {_G();
 	stringstream sslexemes;
-	Cons_sp lexemes = collect_lexemes(ch,sin);
+	List_sp lexemes = collect_lexemes(ch,sin);
 	make_str(sslexemes,lexemes,true);
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
@@ -490,12 +489,10 @@ namespace core
 	    } else
 	    {
 		Str_sp name = Str_O::create(lexeme_str);
-		Character_sp ch = eval::funcall(cl::_sym_name_char,name).as<Character_O>();
-		if ( ch.nilp() )
-		{
+		T_sp tch = eval::funcall(cl::_sym_name_char,name);
+		if ( tch.nilp() )
 		    SIMPLE_ERROR(BF("Unknown character name[%s]") % _rep_(name) );
-		}
-		return(Values(ch) );
+		return(Values(tch.as<Character_O>()) );
 	    }
 	}
 	return( Values0<T_O>() );
@@ -520,7 +517,7 @@ namespace core
 			     Cons_O::create(object),
 			     sin);
 	    }
-	    T_sp result = eval::af_topLevelEvalWithEnv(object,_Nil<Environment_O>());
+	    T_sp result = eval::af_topLevelEvalWithEnv(object,_Nil<T_O>());
 	    if ( cl_consp(result) ) {
 		lisp_registerSourcePosInfo(result,spi);
 	    }
@@ -552,30 +549,28 @@ namespace core
 #define DOCS_af_sharp_left_parenthesis "sharp_left_parenthesis"
 #define ARGS_af_sharp_left_parenthesis "(stream ch num)"
 #define DECL_af_sharp_left_parenthesis ""
-    T_mv af_sharp_left_parenthesis(T_sp sin, Character_sp ch, Fixnum_sp num)
+    T_mv af_sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_sp*/T_sp tnum)
     {_G();
 	Character_sp right_paren = Character_O::create(')');
 	T_sp olist = af_read_delimited_list(right_paren,sin,_lisp->_true());
-	Cons_sp list = olist.as_or_nil<Cons_O>();
+	List_sp list = olist;
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
 	    int list_length = cl_length(list);
-	    if ( num.notnilp() )
-	    {
+	    if ( tnum.notnilp() ) {
+		Fixnum_sp num = tnum.as<Fixnum_O>();
 		if ( list_length > num->get() )
-		{
 		    SIMPLE_ERROR(BF("vector is longer than specified length %s: %s") % num->get() % _rep_(list) );
-		}
 		int need_length = num->get();
 		if ( list_length < need_length )
 		{
-		    Cons_sp reversed = cl_nreverse(list).as_or_nil<Cons_O>();
+		    List_sp reversed = cl_nreverse(list);
 		    T_sp fill_entry = oCar(reversed);
 		    for ( int i=list_length; i<need_length; i++ )
 		    {
 			reversed = Cons_O::create(fill_entry,reversed);
 		    }
-		    list = cl_nreverse(reversed).as_or_nil<Cons_O>();
+		    list = cl_nreverse(reversed);
 		}
 	    }
 	    VectorObjects_sp vec = VectorObjects_O::make(_Nil<T_O>(),list,cl_length(list),false);
@@ -600,8 +595,9 @@ namespace core
 	    return Values(_Nil<T_O>());
 	}
 	for (dimcount = 0 ; ; dimcount++) {
-	    ch = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true()).as<Character_O>();
-	    if (ch.nilp()) break;
+	    T_sp tch = cl_readChar(sin,_Nil<T_O>(),_Nil<T_O>(),_lisp->_true());
+	    if (tch.nilp()) break;
+	    ch = tch.as<Character_O>();
 	    Symbol_sp syntaxType = rtbl->syntax_type(ch);
 	    if (syntaxType == kw::_sym_terminating_macro_character
 		|| syntaxType == kw::_sym_whitespace_character) {
@@ -625,9 +621,9 @@ namespace core
 		READER_ERROR(Str_O::create("Wrong vector dimension size ~D in #*."), Cons_O::create(num), sin);
 	    }
 	    unlikely_if (dimcount > dim)
-		READER_ERROR(Str_O::create("Too many elements in #*."),_Nil<Cons_O>(),sin);
+		READER_ERROR(Str_O::create("Too many elements in #*."),_Nil<T_O>(),sin);
 	    unlikely_if (dim && (dimcount == 0))
-		READER_ERROR(Str_O::create("Cannot fill the bit-vector #*."),_Nil<Cons_O>(),sin);
+		READER_ERROR(Str_O::create("Cannot fill the bit-vector #*."),_Nil<T_O>(),sin);
 	}
 	string bitPattern = pattern.str();
 	char last = bitPattern.size()>0 ? bitPattern[bitPattern.size()-1] : '0';
@@ -650,7 +646,7 @@ namespace core
     T_mv af_sharp_colon(T_sp sin, Character_sp ch, T_sp num)
     {_G();
 	stringstream sslexemes;
-	Cons_sp lexemes = collect_lexemes(ch,sin);
+	List_sp lexemes = collect_lexemes(ch,sin);
 	make_str(sslexemes,lexemes);
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
@@ -667,20 +663,18 @@ namespace core
 #define DOCS_af_sharp_r "sharp_r"
 #define ARGS_af_sharp_r "(stream subchar radix)"
 #define DECL_af_sharp_r ""
-    T_mv af_sharp_r(T_sp sin, Character_sp ch, Fixnum_sp radix)
+    T_mv af_sharp_r(T_sp sin, Character_sp ch, /*Fixnum_sp*/T_sp tradix)
     {_G();
 	if ( cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
 	    T_sp object = read_lisp_object(sin,true,_Nil<T_O>(),true);
 	    return(Values(_Nil<T_O>()));
-	} else if (radix.nilp())
-	{
+	} else if (tradix.nilp()) {
 	    SIMPLE_ERROR(BF("Radix missing in #R reader macro"));
-	} else
-	{
+	} else {
+	    Fixnum_sp radix = tradix.as<Fixnum_O>();
 	    int iradix = radix->get();
-	    if ( iradix < 2 || iradix > 36 )
-	    {
+	    if ( iradix < 2 || iradix > 36 ) {
 		SIMPLE_ERROR(BF("Illegal radix for #R: %d") % iradix);
 	    }
 	    {
@@ -738,7 +732,7 @@ namespace core
     {_G();
 	Character_sp right_paren = Character_O::create(')');
 	T_sp olist = read_lisp_object(sin,true,_Nil<T_O>(),true);
-	Cons_sp list = olist.as_or_nil<Cons_O>();
+	List_sp list = olist;
 	if ( !cl::_sym_STARread_suppressSTAR->symbolValue().isTrue() )
 	{
 	    int list_length = cl_length(list);
@@ -810,12 +804,12 @@ namespace core
 // 	LOG(BF("num[%s]") % num->__repr__() );
 // 	T_sp sharpThis = af_gensym(_Nil<T_O>());
 // 	{ // (setq *sharp-sharp-aliast* (acons n sharpThis *sharp-sharp-alist*))
-// 	    Cons_sp sharp_sharp_alist = _sym_STARsharp_sharp_alistSTAR->symbolValue().as_or_nil<Cons_O>();
+// 	    List_sp sharp_sharp_alist = _sym_STARsharp_sharp_alistSTAR->symbolValue();
 // 	    sharp_sharp_alist = Cons_O::create(Cons_O::create(num,sharpThis),sharp_sharp_alist,_lisp);
 // 	    _sym_STARsharp_sharp_alistSTAR->setf_symbolValue(sharp_sharp_alist);
 // 	}
 // 	T_sp object = read_lisp_object(sin,true,_Nil<T_O>(),true);
-// 	Cons_sp sharp_equal_alist = _sym_STARsharp_equal_alistSTAR->symbolValue().as_or_nil<Cons_O>();
+// 	List_sp sharp_equal_alist = _sym_STARsharp_equal_alistSTAR->symbolValue();
 // 	if ( sharp_equal_alist->assoc(sharpThis,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()).notnilp() )
 // 	{
 // 	    SIMPLE_ERROR(BF("#%d= is already defined") % num->get() );
@@ -842,10 +836,10 @@ namespace core
 // 	// Associate the object with the num
 // 	if ( num.nilp() ) SIMPLE_ERROR(BF("You must provide a number for #xx#"));
 // 	LOG(BF("num[%s]") % num->__repr__() );
-// 	Cons_sp assoc = _sym_STARsharp_sharp_alistSTAR->symbolValue().as_or_nil<Cons_O>()->assoc(num,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
+// 	List_sp assoc = _sym_STARsharp_sharp_alistSTAR->symbolValue()->assoc(num,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
 // 	if ( assoc.notnilp() )
 // 	{
-// 	    Cons_sp sharp_equal_assoc = _sym_STARsharp_equal_alistSTAR->symbolValue().as_or_nil<Cons_O>()->assoc(assoc->ocdr(),_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
+// 	    List_sp sharp_equal_assoc = _sym_STARsharp_equal_alistSTAR->symbolValue()->assoc(assoc->ocdr(),_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
 // 	    if ( assoc.notnilp() )
 // 	    {
 // 		return(Values(sharp_equal_assoc->ocdr()));
@@ -1219,7 +1213,7 @@ namespace core
         return _lisp->_true();
 #if 0
 	HashTable_sp syntax = this->_Syntax;
-	Cons_sp plist = syntax->gethash(ch,_Nil<Cons_O>()).as_or_nil<Cons_O>();
+	List_sp plist = syntax->gethash(ch,_Nil<T_O>());
 	ql::list qplist(_lisp);
 	SYMBOL_SC_(KeywordPkg,dispatch_table);
 	// add the :dispatch-table (make-hash-table) property
@@ -1258,10 +1252,7 @@ namespace core
 	    SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char) );
 	}
 	HashTable_sp syntax_table = this->_Syntax;
-	Cons_sp disp_char_plist;
-	{MULTIPLE_VALUES_CONTEXT()
-		disp_char_plist = syntax_table->gethash(disp_char,_Nil<Cons_O>()).as_or_nil<Cons_O>();
-	}
+	List_sp disp_char_plist = syntax_table->gethash(disp_char,_Nil<T_O>());
 	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
 	Character_sp upcase_sub_char = sub_char->char_upcase();
@@ -1282,11 +1273,11 @@ namespace core
         HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char,_Nil<HashTable_O>()).as_or_nil<HashTable_O>();
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
 	Character_sp upcase_sub_char = sub_char->char_upcase();
-	Function_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<Function_O>()).as<Function_O>();
+	Function_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<T_O>()).as<Function_O>();
         return func;
 #if 0
 	HashTable_sp syntax_table = this->_Syntax;
-	Cons_sp disp_char_plist = syntax_table->gethash(disp_char,_Nil<Cons_O>()).as_or_nil<Cons_O>();
+	Cons_sp disp_char_plist = syntax_table->gethash(disp_char,_Nil<T_O>());
 	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
 	Character_sp upcase_sub_char = sub_char->char_upcase();
@@ -1319,14 +1310,15 @@ namespace core
     }
 
 
-    ReadTable_sp ReadTable_O::copyReadTable(ReadTable_sp dest)
+    ReadTable_sp ReadTable_O::copyReadTable(T_sp tdest)
     {
 //	printf("%s:%d copy-readtable\n", __FILE__, __LINE__ );
-	if ( dest.nilp() ) {
+	if ( tdest.nilp() ) {
 //	    printf("%s:%d allocating copy-readtable\n", __FILE__, __LINE__ );
 	    GC_ALLOCATE(ReadTable_O,temp);
-	    dest = temp;
+	    tdest = temp;
 	}
+	ReadTable_sp dest = tdest.as<ReadTable_O>();
 //	printf("%s:%d dest.nilp() == %d\n", __FILE__, __LINE__, dest.nilp());
 //	printf("%s:%d dest->_SyntaxTypes.nilp() == %d\n", __FILE__, __LINE__, dest->_SyntaxTypes.nilp());
 //	printf("%s:%d about to _SyntaxTypes->clrhash() copy-readtable\n", __FILE__, __LINE__ );

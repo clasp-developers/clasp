@@ -335,8 +335,8 @@ namespace core
 {
 
     CharacterInfo::CharacterInfo() {
-        this->gCharacterNames.resize(256,_Nil<Str_O>());
-        this->gIndexedCharacters.resize(256,_Nil<Character_O>());
+        this->gCharacterNames.resize(256,_Nil<T_O>());
+        this->gIndexedCharacters.resize(256,_Nil<T_O>());
 #define	ADD_CHAR(name,char_index) {					\
             string upcase_name = stringUpper(name);			\
             int fci = char_index;					\
@@ -567,7 +567,10 @@ namespace core
 	    QERROR_WRONG_TYPE_NTH_ARG(2,radix,Integer_O::makeIntegerType(2,36));
 	}
 	Fixnum value = clasp_digitp(c->toInt(),basis);
-	return (value<0) ? _Nil<Fixnum_O>() : Fixnum_O::create(value);
+	if ( value<0 ) {
+	    return _Nil<T_O>();
+	}
+	return Fixnum_O::create(value);
     };
 
 

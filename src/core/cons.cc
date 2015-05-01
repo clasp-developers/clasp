@@ -660,7 +660,7 @@ namespace core
 	    LOG(BF("Arg not Cons"));
 	    return((false));
 	}
-	Cons_sp other = obj.as_or_nil<Cons_O>();
+	List_sp other = obj;
 	if ( !cl_equal(this->_Car,oCar(other) ) )
 	{
 	    LOG(BF("First args dont match"));
@@ -686,7 +686,7 @@ namespace core
 	    LOG(BF("Arg not Cons"));
 	    return((false));
 	}
-	Cons_sp other = obj.as_or_nil<Cons_O>();
+	List_sp other = obj;
 	if ( !cl_equalp(this->_Car,oCar(other) ) )
 	{
 	    LOG(BF("First args dont match"));
@@ -768,8 +768,8 @@ namespace core
 	while (cur.consp()) {
 	    T_sp next(oCdr(cur));
 	    if ( next.nilp() ) break;
-	    hold = next.as<Cons_O>();
-	    cur.asCons()->setCdr(reversed.asCons());
+	    hold = next;
+	    cur.asCons()->setCdr(reversed);
 	    reversed = cur;
 	    cur = hold;
 	}
@@ -791,7 +791,7 @@ namespace core
 	    reversed = cur;
 	    cur = hold;
 	}
-	original_first->setCdr(tail.as_or_nil<Cons_O>());
+	original_first->setCdr(tail);
 	return((reversed));
     }
 
@@ -1058,7 +1058,7 @@ namespace core
 	this->_Cdr = c;
 	if ( cl_consp(c) )
 	{
-	    Cons_sp cc = c.as_or_nil<Cons_O>();
+	    List_sp cc = c;
 //	    this->_CdrLength = cc->cdrLength()+1;
 	} else
 	{
@@ -1354,7 +1354,7 @@ namespace core
 		}
 		break;
 	    }
-	    p = op.as_or_nil<Cons_O>();
+	    p = op;
 	}
 	if ( _sym_STARprint_source_code_consSTAR->symbolValue().isTrue() )
 	{

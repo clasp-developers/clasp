@@ -643,6 +643,7 @@ namespace core {
 
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP );
 void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP );
+void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP );
 void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP );
 void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
 void lisp_errorUnexpectedNil(class_id expectedTyp);
@@ -1120,7 +1121,7 @@ namespace core
     string symbol_packageName(Symbol_sp);
     string symbol_repr(Symbol_sp);
     Symbol_sp lisp_symbolNil();
-    Class_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
+    T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
     void	lisp_exposeClass(const string& className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction);
     void	lisp_addClass( Symbol_sp classSymbol, Creator* cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2=UNDEFINED_SYMBOL,Symbol_sp baseClassSymbol3=UNDEFINED_SYMBOL );
     void	lisp_addClass( Symbol_sp classSymbol );
@@ -1326,7 +1327,7 @@ namespace core
         virtual int column() const { return 0;};
         virtual LambdaListHandler_sp lambdaListHandler() const = 0;
 	virtual T_sp lambdaList() const = 0;
-	virtual Str_sp docstring() const;
+	virtual T_sp docstring() const;
 	virtual List_sp declares() const;
     };
 

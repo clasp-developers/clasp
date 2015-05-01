@@ -176,7 +176,8 @@ void clasp_warn_proc(char *msg, GC_word arg)
 #endif
 
 #if defined(USE_BOEHM)
-//    GC_set_all_interior_pointers(1);
+	    GC_set_all_interior_pointers(1);   // tagged pointers require this
+	    printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
             GC_set_warn_proc(clasp_warn_proc);
             GC_init();
             int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize );

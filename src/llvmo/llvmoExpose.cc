@@ -138,31 +138,26 @@ namespace llvmo
 
 namespace llvmo
 {
-EXPOSE_CLASS(llvmo,LLVMContext_O);
+    EXPOSE_CLASS(llvmo,LLVMContext_O);
 
-void LLVMContext_O::exposeCando(core::Lisp_sp lisp)
-{_G();
-    core::externalClass_<LLVMContext_O>()
-;
-af_def(LlvmoPkg,"get-global-context",&LLVMContext_O::get_global_context);
+    void LLVMContext_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<LLVMContext_O>()
+	    ;
+	af_def(LlvmoPkg,"get-global-context",&LLVMContext_O::get_global_context);
 
-};
+    };
 
-	   void LLVMContext_O::exposePython(core::Lisp_sp lisp)
-	   {_G();
-	       IMPLEMENT_ME();
-           };
+    void LLVMContext_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
 }; // llvmo
 
 
 
 
-namespace llvmo
-{
-
-
-
-
+namespace llvmo {
 
 #define ARGS_Linker_O_make "(module)"
 #define DECL_Linker_O_make ""
@@ -182,12 +177,6 @@ namespace llvmo
 #define DOCS_af_linkInModule "linkInModule"
     core::T_mv af_linkInModule(Linker_sp linker, Module_sp module)
     {_G();
-        if (linker.nilp() ) {
-            SIMPLE_ERROR(BF("Linker was nil"));
-        }
-        if (module.nilp() ) {
-            SIMPLE_ERROR(BF("Module must be something other than nil"));
-        }
         std::string errorMsg = "llvm::Linker::linkInModule reported an error";
         bool res = linker->wrappedPtr()->linkInModule(module->wrappedPtr());
         return Values(_lisp->_boolean(res),core::Str_O::create(errorMsg));
@@ -799,18 +788,18 @@ namespace llvmo
 
 namespace llvmo
 {
-EXPOSE_CLASS(llvmo,FunctionPass_O);
+    EXPOSE_CLASS(llvmo,FunctionPass_O);
 
-void FunctionPass_O::exposeCando(core::Lisp_sp lisp)
-{_G();
-    core::externalClass_<FunctionPass_O>()
-;
-};
+    void FunctionPass_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<FunctionPass_O>()
+	    ;
+    };
 
-	   void FunctionPass_O::exposePython(core::Lisp_sp lisp)
-	   {_G();
-	       IMPLEMENT_ME();
-           };
+    void FunctionPass_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
 }; // llvmo
 namespace llvmo
 {
@@ -929,27 +918,25 @@ namespace llvmo
 
 namespace llvmo
 {
-EXPOSE_CLASS(llvmo,User_O);
+    EXPOSE_CLASS(llvmo,User_O);
 
-void User_O::exposeCando(core::Lisp_sp lisp)
-{_G();
-    core::externalClass_<User_O>()
-;
-};
+    void User_O::exposeCando(core::Lisp_sp lisp)
+    {_G();
+	core::externalClass_<User_O>()
+	    ;
+    };
 
-	   void User_O::exposePython(core::Lisp_sp lisp)
-	   {_G();
-	       IMPLEMENT_ME();
-           };
+    void User_O::exposePython(core::Lisp_sp lisp)
+    {_G();
+	IMPLEMENT_ME();
+    };
 }; // llvmo
 
 
 
 
 
-namespace llvmo
-{
-
+namespace llvmo {
 
 
 
@@ -962,9 +949,9 @@ namespace llvmo
 	string pathName = path->get();
 	llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
 	if (errcode)
-	{
-	    SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message() );
-	}
+	    {
+		SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message() );
+	    }
 	llvm::AssemblyAnnotationWriter* aaw = new llvm::AssemblyAnnotationWriter();
 	module->wrappedPtr()->print(OS,aaw);
 	delete aaw;
@@ -1015,9 +1002,9 @@ namespace llvmo
         std::error_code errcode;
 	llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
 	if ( errcode)
-	{
-	    SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message() );
-	}
+	    {
+		SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message() );
+	    }
 	llvm::WriteBitcodeToFile(module->wrappedPtr(),OS);
     };
 
@@ -1032,21 +1019,21 @@ namespace llvmo
 	//	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
         llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
         if (std::error_code ec = eo_membuf.getError() )
-	{
-	    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
-	}
+	    {
+		SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
+	    }
         llvm::ErrorOr<llvm::Module *>eom = llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
         if ( std::error_code eo2 = eom.getError() )
-	{
-	    SIMPLE_ERROR(BF("Could not parse bitcode for file %s - error: %s") % filename->get() % eo2.message());
-	}
+	    {
+		SIMPLE_ERROR(BF("Could not parse bitcode for file %s - error: %s") % filename->get() % eo2.message());
+	    }
 
 #if 0
 	if ( engine->hasNamedModule(filename->get()))
-	{
-	    engine->removeNamedModule(filename->get());
-	    LOG(BF("Removed existing module: %s") % filename->get());
-	}
+	    {
+		engine->removeNamedModule(filename->get());
+		LOG(BF("Removed existing module: %s") % filename->get());
+	    }
 	Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
 	engine->addNamedModule(filename->get(),omodule);
 	LOG(BF("Added module: %s") % filename->get());
@@ -1068,18 +1055,18 @@ namespace llvmo
     };
 
 #if 0
-	// Jan 31, 2013 - the Attribute/Argument api is changing fast and I'm not using it right now
-	// and I don't want to mess with this code until it settles down
+    // Jan 31, 2013 - the Attribute/Argument api is changing fast and I'm not using it right now
+    // and I don't want to mess with this code until it settles down
     Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_symbols)
     {_G();
 	llvm::AttrBuilder attrBuilder;
 	core::SymbolToEnumConverter_sp converter = _sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
 	for ( core::Cons_sp cur=attribute_symbols;cur->notNil(); cur=cur->cdr() )
-	{
-	    core::Symbol_sp sym = cur->ocar().as<core::Symbol_O>();
-	    llvm::Attribute::AttrKind e = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
-	    attrBuilder.addAttribute(e);
-	}
+	    {
+		core::Symbol_sp sym = cur->ocar().as<core::Symbol_O>();
+		llvm::Attribute::AttrKind e = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
+		attrBuilder.addAttribute(e);
+	    }
 	llvm::Attribute at = llvm::Attribute::get(*(context->wrappedPtr()),attrBuilder);
 	return translate::to_object<llvm::Attribute>::convert(at).as<Attribute_O>();
     }
@@ -1149,7 +1136,7 @@ namespace llvmo
 	    .value(_sym_AttributeReturnsTwice,llvm::Attribute::ReturnsTwice)
 	    .value(_sym_AttributeUWTable,llvm::Attribute::UWTable)
 	    .value(_sym_AttributeNonLazyBind,llvm::Attribute::NonLazyBind)
-//	    .value(_sym_AttributeAddressSafety,llvm::Attribute::AddressSafety)
+	    //	    .value(_sym_AttributeAddressSafety,llvm::Attribute::AddressSafety)
 	    ;
 	SYMBOL_EXPORT_SC_(LlvmoPkg,attributesGet);
 #if 0
@@ -1204,37 +1191,12 @@ namespace llvmo
 	llvm::Module &M = *(module->wrappedPtr());
 	llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(M.getContext(),svalue->get());
 	llvm::GlobalVariable *GV = new llvm::GlobalVariable(M,StrConstant->getType(),
-						      true,llvm::GlobalValue::InternalLinkage,
-						      StrConstant);
+							    true,llvm::GlobalValue::InternalLinkage,
+							    StrConstant);
 	GV->setName(":::str");
 	GV->setUnnamedAddr(true);
 	return translate::to_object<llvm::Value*>::convert(GV).as<Value_O>();
     }
-
-#if 0
-	llvm::Module* mod = module->wrappedPtr();
-	using namespace llvm;
-	ArrayType* ArrayTy_0 = ArrayType::get(IntegerType::get(mod->getContext(), 8), svalue->length()+1 );
-	GlobalVariable* gvar_array__str = new GlobalVariable(/*Module=*/*mod,
-							     /*Type=*/ArrayTy_0,
-							     /*isConstant=*/true,
-							     /*Linkage=*/GlobalValue::InternalLinkage,
-							     /*Initializer=*/0, // has initializer, specified below
-							     /*Name=*/".str");
-	gvar_array__str->setAlignment(1);
-// Constant Definitions
-	const string& str = svalue->get();
-	ArrayRef<uint8_t> ar_str((uint8_t*)&(str.c_str()[0]),str.size()+1);
-	Constant* const_array_4 = ConstantArray::get(ArrayTy_0,ar_str);
-//	Constant* const_array_4 = ConstantArray::get(ArrayTy_0, ArrayRef<string>(svalue->get()));
-// Global Variable Definitions
-	gvar_array__str->setInitializer(const_array_4);
-	return gvar_array__str;
-    }
-#endif
-
-
-
 
 
     // Define Value_O::__repr__ which is prototyped in llvmoExpose.lisp
@@ -1245,19 +1207,19 @@ namespace llvmo
 	string str;
 	llvm::raw_string_ostream ro(str);
 	if ( this->wrappedPtr() == 0 )
-	{
-	    ss << "wrappedPtr()==0";
-	} else
-	{
-	    try
 	    {
-		this->wrappedPtr()->print(ro);
-		ss << ro.str();
-	    } catch (...)
+		ss << "wrappedPtr()==0";
+	    } else
 	    {
-		ss << "COULD_NOT__REPR__LLVM::Value";
+		try
+		    {
+			this->wrappedPtr()->print(ro);
+			ss << ro.str();
+		    } catch (...)
+		    {
+			ss << "COULD_NOT__REPR__LLVM::Value";
+		    }
 	    }
-	}
 	ss <<">";
 	return ss.str();
     }
@@ -1275,11 +1237,14 @@ namespace llvmo
 #define ARGS_af_valid "(value)"
 #define DECL_af_valid ""
 #define DOCS_af_valid "Return true if this is a valid LLMV value, meaning its pointer is not NULL"
-    bool af_valid(Value_sp value)
+    bool af_valid(core::T_sp value)
     {_G();
 	// nil is a valid
 	if ( value.nilp() ) return true;
-	return value->valid();
+	else if ( Value_sp val = value.as<Value_O>() ) {
+	    return val->valid();
+	}
+	SIMPLE_ERROR(BF("Illegal argument for VALID: %s") % _rep_(value));
     }
 
 };
@@ -1290,27 +1255,27 @@ namespace llvmo
 namespace llvmo
 {
 
-    void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type*>& velements)
-    {_G();
-	core::T_sp save_elements = elements;
-        if ( elements.nilp() ) {
-            return;
-        } else if ( core::List_sp celements = elements.asOrNull<core::Cons_O>() ) {
-	    for ( auto cur : celements ) {
-		velements.push_back(oCar(cur).as<Type_O>()->wrappedPtr());
-	    }
-            return;
-	} else if ( core::Vector_sp vecelements = elements.asOrNull<core::Vector_O>() ) {
-	    for ( int i=0; i< vecelements->length(); i++ )
-	    {
-		core::T_sp element = vecelements->elt(i);
-		Type_sp ty = element.as<Type_O>();
-		velements.push_back(ty->wrappedPtr());
-	    }
-            return;
-	}
-        QERROR_WRONG_TYPE_NTH_ARG(0,elements,cl::_sym_sequence);
-    }
+   void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type*>& velements)
+   {_G();
+       core::T_sp save_elements = elements;
+       if ( elements.nilp() ) {
+	   return;
+       } else if ( core::List_sp celements = elements.asOrNull<core::Cons_O>() ) {
+	   for ( auto cur : celements ) {
+	       velements.push_back(oCar(cur).as<Type_O>()->wrappedPtr());
+	   }
+	   return;
+       } else if ( core::Vector_sp vecelements = elements.asOrNull<core::Vector_O>() ) {
+	   for ( int i=0; i< vecelements->length(); i++ )
+	   {
+	       core::T_sp element = vecelements->elt(i);
+	       Type_sp ty = element.as<Type_O>();
+	       velements.push_back(ty->wrappedPtr());
+	   }
+	   return;
+       }
+       QERROR_WRONG_TYPE_NTH_ARG(0,elements,cl::_sym_sequence);
+   }
 
 
 }
@@ -1321,13 +1286,13 @@ namespace llvmo
 #define ARGS_Module_O_make "(module-name context)"
 #define DECL_Module_O_make ""
 #define DOCS_Module_O_make ""
-    Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context)
-    {_G();
-        GC_ALLOCATE(Module_O,self );
-	ASSERT(&(llvm::getGlobalContext()) == context->wrappedPtr());
-	self->_ptr = new llvm::Module(module_name,*(context->wrappedPtr()));
-	return self;
-    };
+   Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context)
+   {_G();
+       GC_ALLOCATE(Module_O,self );
+       ASSERT(&(llvm::getGlobalContext()) == context->wrappedPtr());
+       self->_ptr = new llvm::Module(module_name,*(context->wrappedPtr()));
+       return self;
+   };
 
 
 
@@ -1337,18 +1302,18 @@ namespace llvmo
 #define ARGS_af_module_get_function_list "(module)"
 #define DECL_af_module_get_function_list ""
 #define DOCS_af_module_get_function_list "module_get_function_list"
-    core::List_sp af_module_get_function_list(Module_sp module)
-    {_G();
-	ql::list fl(_lisp);
-	llvm::Module::FunctionListType& functionList = module->wrappedPtr()->getFunctionList();
-	for ( llvm::Module::FunctionListType::const_iterator it=functionList.begin();
-	      it!=functionList.end(); it++ )
-	{
-	    Function_sp wrapped_func = translate::to_object<const llvm::Function&>::convert(*it).as<Function_O>();
-	    fl << wrapped_func;
-	}
-	return fl.cons();
-    };
+   core::List_sp af_module_get_function_list(Module_sp module)
+   {_G();
+       ql::list fl(_lisp);
+       llvm::Module::FunctionListType& functionList = module->wrappedPtr()->getFunctionList();
+       for ( llvm::Module::FunctionListType::const_iterator it=functionList.begin();
+	     it!=functionList.end(); it++ )
+       {
+	   Function_sp wrapped_func = translate::to_object<const llvm::Function&>::convert(*it).as<Function_O>();
+	   fl << wrapped_func;
+       }
+       return fl.cons();
+   };
 
 };
 
@@ -1357,107 +1322,106 @@ namespace llvmo
 
 namespace llvmo
 {
-    EXPOSE_CLASS(llvmo,Module_O);
+   EXPOSE_CLASS(llvmo,Module_O);
 
-    void Module_O::exposeCando(core::Lisp_sp lisp)
-    {_G();
-	using namespace llvm;
-	GlobalVariable* (llvm::Module::*getGlobalVariable_nc)(StringRef,bool) = &llvm::Module::getGlobalVariable;
-	GlobalVariable* (Module::*getNamedGlobal_nc)(StringRef) = &Module::getNamedGlobal;
-	void (Module::*addModuleFlag_nc)(MDNode *Node) = &Module::addModuleFlag;
-	core::externalClass_<Module_O>()
-	    .def("dump",  &llvm::Module::dump)
-	    .def("addModuleFlag",addModuleFlag_nc)
-	    .def("getModuleIdentifier",&llvm::Module::getModuleIdentifier)
-	    .def("getFunction", &llvmo::Module_O::getFunction)
-	    .def("getGlobalVariable", getGlobalVariable_nc)
-	    .def("getNamedGlobal", getNamedGlobal_nc)
-	    .def("getOrInsertGlobal", &llvm::Module::getOrInsertGlobal)
-	    .def("moduleValid",&Module_O::valid)
-	    .def("getGlobalList",&Module_O::getGlobalList)
-	    .def("getOrCreateUniquedStringGlobalVariable",&Module_O::getOrCreateUniquedStringGlobalVariable)
-	    .def("dump_namedMDList",&Module_O::dump_namedMDList)
-	    .def("moduleDelete",&Module_O::moduleDelete)
-	    .def("setTargetTriple",&llvm::Module::setTargetTriple)
-	    .def("getTargetTriple",&llvm::Module::getTargetTriple)
-	    .def("setDataLayout",(void (Module::*)(const DataLayout*))&llvm::Module::setDataLayout)
-	    ;
-	core::af_def(LlvmoPkg,"make-Module",&Module_O::make,ARGS_Module_O_make,DECL_Module_O_make,DOCS_Module_O_make);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,verifyModule);
-	Defun(verifyModule);
+   void Module_O::exposeCando(core::Lisp_sp lisp)
+   {_G();
+       using namespace llvm;
+       GlobalVariable* (llvm::Module::*getGlobalVariable_nc)(StringRef,bool) = &llvm::Module::getGlobalVariable;
+       GlobalVariable* (Module::*getNamedGlobal_nc)(StringRef) = &Module::getNamedGlobal;
+       void (Module::*addModuleFlag_nc)(MDNode *Node) = &Module::addModuleFlag;
+       core::externalClass_<Module_O>()
+	   .def("dump",  &llvm::Module::dump)
+	   .def("addModuleFlag",addModuleFlag_nc)
+	   .def("getModuleIdentifier",&llvm::Module::getModuleIdentifier)
+	   .def("getFunction", &llvmo::Module_O::getFunction)
+	   .def("getGlobalVariable", getGlobalVariable_nc)
+	   .def("getNamedGlobal", getNamedGlobal_nc)
+	   .def("getOrInsertGlobal", &llvm::Module::getOrInsertGlobal)
+	   .def("moduleValid",&Module_O::valid)
+	   .def("getGlobalList",&Module_O::getGlobalList)
+	   .def("getOrCreateUniquedStringGlobalVariable",&Module_O::getOrCreateUniquedStringGlobalVariable)
+	   .def("dump_namedMDList",&Module_O::dump_namedMDList)
+	   .def("moduleDelete",&Module_O::moduleDelete)
+	   .def("setTargetTriple",&llvm::Module::setTargetTriple)
+	   .def("getTargetTriple",&llvm::Module::getTargetTriple)
+	   .def("setDataLayout",(void (Module::*)(const DataLayout*))&llvm::Module::setDataLayout)
+	   ;
+       core::af_def(LlvmoPkg,"make-Module",&Module_O::make,ARGS_Module_O_make,DECL_Module_O_make,DOCS_Module_O_make);
+       SYMBOL_EXPORT_SC_(LlvmoPkg,verifyModule);
+       Defun(verifyModule);
 
-	SYMBOL_EXPORT_SC_(LlvmoPkg,module_get_function_list);
-	Defun(module_get_function_list);
+       SYMBOL_EXPORT_SC_(LlvmoPkg,module_get_function_list);
+       Defun(module_get_function_list);
 
-	SYMBOL_EXPORT_SC_(LlvmoPkg,STARmoduleModFlagBehaviorSTAR);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagError);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagWarning);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagRequire);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagOverride);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppend);
-	SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppendUnique);
-	core::enum_<llvm::Module::ModFlagBehavior>(_sym_STARmoduleModFlagBehaviorSTAR,"llvm::Module::ModFlagBehavior")
-	    .value(_sym_moduleFlagError,llvm::Module::Error)
-	    .value(_sym_moduleFlagWarning,llvm::Module::Warning)
-	    .value(_sym_moduleFlagRequire,llvm::Module::Require)
-	    .value(_sym_moduleFlagOverride,llvm::Module::Override)
-	    .value(_sym_moduleFlagAppend,llvm::Module::Append)
-	    .value(_sym_moduleFlagAppendUnique,llvm::Module::AppendUnique)
-	    ;
-    };
+       SYMBOL_EXPORT_SC_(LlvmoPkg,STARmoduleModFlagBehaviorSTAR);
+       SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagError);
+       SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagWarning);
+       SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagRequire);
+       SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagOverride);
+       SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppend);
+       SYMBOL_EXPORT_SC_(LlvmoPkg,moduleFlagAppendUnique);
+       core::enum_<llvm::Module::ModFlagBehavior>(_sym_STARmoduleModFlagBehaviorSTAR,"llvm::Module::ModFlagBehavior")
+	   .value(_sym_moduleFlagError,llvm::Module::Error)
+	   .value(_sym_moduleFlagWarning,llvm::Module::Warning)
+	   .value(_sym_moduleFlagRequire,llvm::Module::Require)
+	   .value(_sym_moduleFlagOverride,llvm::Module::Override)
+	   .value(_sym_moduleFlagAppend,llvm::Module::Append)
+	   .value(_sym_moduleFlagAppendUnique,llvm::Module::AppendUnique)
+	   ;
+   };
 
-    void Module_O::exposePython(core::Lisp_sp lisp)
-    {_G();
-	IMPLEMENT_ME();
-    };
-
-
-    llvm::Function* Module_O::getFunction( core::Str_sp dispatchName )
-    {_G();
-	llvm::Module* module = this->wrappedPtr();
-	string funcName = dispatchName->get();
-	llvm::Function* func = module->getFunction(funcName);
-	return func;
-    }
+   void Module_O::exposePython(core::Lisp_sp lisp)
+   {_G();
+       IMPLEMENT_ME();
+   };
 
 
-    bool Module_O::valid() const
-    {_G();
-	return this->wrappedPtr() != NULL;
-    }
-
-    void Module_O::moduleDelete()
-    {
-	ASSERT(this->wrappedPtr()!=NULL);
-	delete this->wrappedPtr();
-	this->set_wrapped(NULL);
-    }
+   llvm::Function* Module_O::getFunction( core::Str_sp dispatchName )
+   {_G();
+       llvm::Module* module = this->wrappedPtr();
+       string funcName = dispatchName->get();
+       llvm::Function* func = module->getFunction(funcName);
+       return func;
+   }
 
 
-    void Module_O::dump_namedMDList() const
-    {_G();
-	llvm::Module* M = this->wrappedPtr();
-	for ( llvm::Module::const_named_metadata_iterator it=M->named_metadata_begin();
-	      it!=M->named_metadata_end(); it++ )
-	{
-	    (*it).dump();
-	}
-    }
+   bool Module_O::valid() const
+   {_G();
+       return this->wrappedPtr() != NULL;
+   }
 
-    void Module_O::initialize() {
-        this->Base::initialize();
-        this->_UniqueGlobalVariableStrings = core::HashTableEqual_O::create_default();
-    }
+   void Module_O::moduleDelete()
+   {
+       ASSERT(this->wrappedPtr()!=NULL);
+       delete this->wrappedPtr();
+       this->set_wrapped(NULL);
+   }
 
 
-    GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable( const string& value, const string& name )
-    {
-        core::Str_sp nameKey = core::Str_O::create(name);
-        core::Cons_sp it = this->_UniqueGlobalVariableStrings->gethash(nameKey,_Nil<core::Cons_O>()).as<core::Cons_O>();
+   void Module_O::dump_namedMDList() const
+   {_G();
+       llvm::Module* M = this->wrappedPtr();
+       for ( llvm::Module::const_named_metadata_iterator it=M->named_metadata_begin();
+	     it!=M->named_metadata_end(); it++ )
+       {
+	   (*it).dump();
+       }
+   }
+
+   void Module_O::initialize() {
+       this->Base::initialize();
+       this->_UniqueGlobalVariableStrings = core::HashTableEqual_O::create_default();
+   }
+
+
+   GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable( const string& value, const string& name )
+   {
+       core::Str_sp nameKey = core::Str_O::create(name);
+       core::List_sp it = this->_UniqueGlobalVariableStrings->gethash(nameKey);
 //	map<string,GlobalVariableStringHolder>::iterator it = this->_UniqueGlobalVariableStrings.find(name);
 	llvm::GlobalVariable* GV;
-	if ( it.nilp() )
-	{
+	if ( it.nilp() ) {
 	    llvm::Module* M = this->wrappedPtr();
 	    llvm::LLVMContext& context = M->getContext();
 	    llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(context, value);
@@ -2341,17 +2305,17 @@ namespace llvmo
 #define ARGS_GlobalVariable_O_make "(module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local))"
 #define DECL_GlobalVariable_O_make ""
 #define DOCS_GlobalVariable_O_make "make GlobalVariable args: module type is-constant linkage initializer name"
-    GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, Constant_sp initializer, core::Str_sp name, GlobalVariable_sp insertBefore, core::Symbol_sp threadLocalMode )
+    GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/core::T_sp initializer, core::Str_sp name, /*GlobalVariable_sp*/core::T_sp insertBefore, core::Symbol_sp threadLocalMode )
     {_G();
         GC_ALLOCATE(GlobalVariable_O,me );
 	translate::from_object<llvm::GlobalValue::LinkageTypes> llinkage(linkage);
 	llvm::Constant* llvm_initializer = NULL;
 	if ( initializer.notnilp() ) {
-	    llvm_initializer = initializer->wrappedPtr();
+	    llvm_initializer = initializer.as<Constant_O>()->wrappedPtr();
 	}
 	llvm::GlobalVariable* lInsertBefore = NULL;
 	if ( insertBefore.notnilp() ) {
-	    lInsertBefore = insertBefore->wrappedPtr();
+	    lInsertBefore = insertBefore.as<GlobalVariable_O>()->wrappedPtr();
 	}
 	translate::from_object<llvm::GlobalValue::ThreadLocalMode> lThreadLocalMode(threadLocalMode);
 	llvm::GlobalVariable* gv = new llvm::GlobalVariable(*(mod->wrappedPtr()),type->wrappedPtr(),isConstant,llinkage._v,llvm_initializer,name->get(),lInsertBefore,lThreadLocalMode._v);
@@ -2707,12 +2671,6 @@ namespace llvmo
 
     void SwitchInst_O::addCase(ConstantInt_sp onVal, BasicBlock_sp dest)
     {
-	if ( dest.nilp() ) {
-	    SIMPLE_ERROR(BF("addCase basic-block is nil"));
-	}
-	if ( onVal.nilp() ) {
-	    SIMPLE_ERROR(BF("onVal is nil"));
-	}
 	this->wrappedPtr()->addCase(onVal->wrappedPtr(),dest->wrappedPtr());
     }
 
@@ -3355,13 +3313,10 @@ namespace llvmo
     {
 	vector<llvm::Value*> vector_Args;
 	for ( auto cur : Args ) {
-	    Value_sp val = oCar(cur).as<Value_O>();
-	    if ( val.nilp() )
-	    {
-		vector_Args.push_back(NULL);
-	    } else
-	    {
+	    if ( Value_sp val = oCar(cur).asOrNull<Value_O>() ) {
 		vector_Args.push_back(val->wrappedPtr());
+	    } else {
+		vector_Args.push_back(NULL);
 	    }
 	}
 	llvm::ArrayRef<llvm::Value*> array_ref_vector_Args(vector_Args);
@@ -3820,8 +3775,6 @@ namespace llvmo
 #define DOCS_af_FunctionCreate "FunctionCreate - wrapps llvm::Function::Create"
     Function_sp af_FunctionCreate(FunctionType_sp tysp, llvm::GlobalValue::LinkageTypes linkage, core::Str_sp nsp, Module_sp modulesp )
     {
-	if (modulesp.nilp() ) {SIMPLE_ERROR(BF("Module is NIL"));}
-	if (tysp.nilp() ) {SIMPLE_ERROR(BF("FunctionType is NIL"));}
 	translate::from_object<llvm::FunctionType*> ty(tysp);
 	translate::from_object<llvm::Module*> m(modulesp);
 //        printf("%s:%d FunctionCreate %s with linkage %d\n", __FILE__, __LINE__, nsp->get().c_str(), linkage);
@@ -3847,9 +3800,6 @@ namespace llvmo
 
     void Function_O::appendBasicBlock(BasicBlock_sp basicBlock)
     {
-	if (basicBlock.nilp()) {
-	    SIMPLE_ERROR(BF("You cannot appendBasicBlock a basic-block that is nil"));
-	}
 	this->wrappedPtr()->getBasicBlockList().push_back(basicBlock->wrappedPtr());
     }
 
@@ -4422,7 +4372,7 @@ namespace llvmo
 	    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(functionName));
 	}
 	CompiledClosure::fptr_type lisp_funcPtr = (CompiledClosure::fptr_type)(p);
-        core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::Cons_O>());
+        core::Cons_sp associatedFunctions = core::Cons_O::create(fn,_Nil<core::T_O>());
         core::SourceFileInfo_mv sfi = core_sourceFileInfo(fileName);
         int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();
         core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,linenumber,0);
@@ -4505,15 +4455,15 @@ namespace llvmo
 #endif
 
     /*! Return (values target nil) if successful or (values nil error-message) if not */
-    Target_mv TargetRegistryLookupTarget(const std::string& ArchName, Triple_sp triple )
+    core::T_mv TargetRegistryLookupTarget(const std::string& ArchName, Triple_sp triple )
     {
 	string message;
 	llvm::Target* target = const_cast<llvm::Target*>(llvm::TargetRegistry::lookupTarget(ArchName,*triple->wrappedPtr(),message));
 	if ( target == NULL ) {
-	    return Values(_Nil<Target_O>(),core::Str_O::create(message));
+	    return Values(_Nil<core::T_O>(),core::Str_O::create(message));
 	}
 	Target_sp targeto = core::RP_Create_wrapped<Target_O,llvm::Target*>(target);
-	return Values(targeto,_Nil<core::Str_O>());
+	return Values(targeto,_Nil<core::T_O>());
     }
 		      
 	

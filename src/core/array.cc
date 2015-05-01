@@ -264,7 +264,7 @@ namespace core
 
     List_sp Array_O::arrayDimensions() const
     {_OF();
-	Cons_sp indices = _Nil<Cons_O>();
+	List_sp indices = _Nil<T_O>();
 	for ( int i=this->rank()-1; i>=0; i-- )
 	{
 	    indices = Cons_O::create(Fixnum_O::create(this->arrayDimension(i)),indices);

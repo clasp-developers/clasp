@@ -158,7 +158,8 @@ namespace core {
             // 
             // If the class isn't in the class table then add it
             //
-            if ( lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol()).nilp())
+	    T_sp theClass = lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol());
+            if ( theClass.nilp())
             {
                 LOG(BF("Adding class(%s) to environment")% OT::static_className() );
                 lisp_addClass(OT::static_classSymbol(),

@@ -208,14 +208,13 @@ namespace core
                                , _BignumRegister2(_Unbound<Bignum_O>())
 //                               , _TraceFunctions(_Unbound<HashTable_O>())
                                , _SystemProperties(_Nil<T_O>())
-                               , _CatchInfo(_Nil<Cons_O>())
+                               , _CatchInfo(_Nil<T_O>())
                                ,  _SpecialForms(_Unbound<HashTableEq_O>())
-                               , _ActivationFrameNil(_Nil<ActivationFrame_O>())
                                , _SingleDispatchMethodCachePtr(NULL)
                                , _MethodCachePtr(NULL)
                                , _SlotCachePtr(NULL)
-                               , _NullStream(_Nil<Stream_O>())
-                               , _PathnameTranslations(_Nil<Cons_O>())
+                               , _NullStream(_Nil<T_O>())
+                               , _PathnameTranslations(_Nil<T_O>())
     {}
 
     Lisp_O::Lisp_O() : _StackWarnSize(15*1024*1024), // 8MB default stack size before warnings
@@ -283,13 +282,12 @@ namespace core
         this->_Roots._CatchInfo = cCdr(catchStore);
     }
 
-    Cons_sp Lisp_O::catchFindTag(T_sp tag)
+    List_sp Lisp_O::catchFindTag(T_sp tag)
     {_G();
-        for ( Cons_sp cur=this->_Roots._CatchInfo; cur.notnilp(); cur=cCdr(cur) )
-        {
+        for ( auto cur : this->_Roots._CatchInfo ) {
             if ( cl_eq(tag,oCar(cur)) ) return cur;
         }
-        return _Nil<Cons_O>();
+        return _Nil<T_O>();
     }
 #endif
 
@@ -325,7 +323,7 @@ namespace core
 
     void Lisp_O::addToStarModulesStar(Symbol_sp sym)
     {_OF();
-	Cons_sp list = cl::_sym_STARmodulesSTAR->symbolValue().as_or_nil<Cons_O>();
+	List_sp list = cl::_sym_STARmodulesSTAR->symbolValue();
 	list = Cons_O::create(sym,list);
 	cl::_sym_STARmodulesSTAR->setf_symbolValue(list);
     }
@@ -496,7 +494,7 @@ namespace core
 	//
 	// Finish initializing Lisp object
 	//
-	this->_Roots._CommandLineArguments = _Nil<Cons_O>();
+	this->_Roots._CommandLineArguments = _Nil<T_O>();
 #if 0
 	{_BLOCK_TRACE("Initialize scripting stuff");
 #include <core_initScripting_inc.h>
@@ -785,7 +783,7 @@ namespace core
 
     List_sp Lisp_O::loadTimeValuesIds() const
     {_G();
-	Cons_sp names = _Nil<Cons_O>();
+	List_sp names = _Nil<T_O>();
         this->_Roots._LoadTimeValueArrays->mapHash( [&names] (T_sp key, T_sp val) {
                 names = Cons_O::create(key,names);
             } );
@@ -905,7 +903,7 @@ namespace core
 	string formName = lispify_symbol_name(rawFormName);
 	Symbol_sp sym = _lisp->internWithPackageName(packageName,formName);
         sym->exportYourself();
-	sym->setf_symbolFunction(_Nil<Function_O>());
+	sym->setf_symbolFunction(_Unbound<Function_O>());
 	SpecialForm_sp special = SpecialForm_O::create(sym,cb);
         if ( this->_Roots._SpecialForms.unboundp() ) {
             this->_Roots._SpecialForms = HashTableEq_O::create_default();
@@ -923,10 +921,10 @@ namespace core
 
 
 
-    SpecialForm_sp Lisp_O::specialFormOrNil(Symbol_sp sym)
+    T_sp Lisp_O::specialFormOrNil(Symbol_sp sym)
     {
 	if ( sym.nilp() ) return _Nil<SpecialForm_O>();
-        return this->_Roots._SpecialForms->gethash(sym,_Nil<SpecialForm_O>()).as<SpecialForm_O>();
+        return this->_Roots._SpecialForms->gethash(sym);
     }
 
 
@@ -1146,7 +1144,7 @@ namespace core
 	    this->_PackageNameIndexMap[name] = packageIndex;
 	    this->_Roots._Packages.push_back(newPackage);
 	}
-	Cons_sp cnicknames(_Nil<Cons_O>());
+	List_sp cnicknames(_Nil<T_O>());
 	for ( list<string>::const_iterator it=nicknames.begin(); it!=nicknames.end(); it++ )
 	{
 	    string nickName = *it;
@@ -1355,7 +1353,7 @@ namespace core
 
 	CommandLineOptions options(endArg,argv);
 
-	Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+	List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
 	for ( int i=0; i<options._Features.size(); ++i )
 	{
 	    features = Cons_O::create(_lisp->internKeyword(lispify_symbol_name(options._Features[i])),features);
@@ -1424,7 +1422,7 @@ namespace core
 	this->_IgnoreInitLsp = options._DontLoadInitLsp;
 
         SYMBOL_EXPORT_SC_(CorePkg,STARcommandLineLoadEvalSequenceSTAR);
-        Cons_sp loadEvals = _Nil<Cons_O>();
+        List_sp loadEvals = _Nil<T_O>();
         for ( auto it : options._LoadEvalList ) {
             Cons_sp one;
             if ( it.first==cloEval ) {
@@ -1438,12 +1436,12 @@ namespace core
 
         this->_Interactive = options._Interactive;
         if ( this->_Interactive ) {
-            Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+            List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
             features = Cons_O::create(KW("interactive"),features);
             cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
         }
         if ( options._NoRc ) {
-            Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+            List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
             features = Cons_O::create(KW("no-rc"),features);
             cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
         }
@@ -1745,7 +1743,7 @@ namespace core
 #define	DOCS_af_member	"See CLHS member"
     List_sp af_member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not)
     {_G();
-	if ( tlist.nilp() ) return _Nil<Cons_O>();
+	if ( tlist.nilp() ) return _Nil<T_O>();
 	if ( Cons_sp list = tlist.asOrNull<Cons_O>() ) {
 	    return(list->member(item,key,test,test_not));
 	}
@@ -2364,7 +2362,7 @@ namespace core
     List_sp af_sorted(List_sp unsorted)
     {_G();
         gctools::Vec0<T_sp/*,gctools::RootedGCHolder*/>     sorted;
-	if ( cl_length(unsorted) == 0 ) return _Nil<Cons_O>();
+	if ( cl_length(unsorted) == 0 ) return _Nil<T_O>();
 	fillVec0FromCons(sorted,unsorted);
 	OrderByLessThan orderer;
 	sort::quickSort(sorted.begin(),sorted.end(),orderer);
@@ -2402,7 +2400,7 @@ namespace core
         gctools::Vec0<T_sp> sorted;
 	Function_sp sortProc = coerce::functionDesignator(predicate);
 	LOG(BF("Unsorted data: %s") % _rep_(sequence) );
-	if ( cl_length(sequence) == 0 ) return _Nil<Cons_O>();
+	if ( cl_length(sequence) == 0 ) return _Nil<T_O>();
 	fillVec0FromCons(sorted,sequence);
 	LOG(BF("Sort function: %s") % _rep_(sortProc) );
 	OrderBySortFunction orderer(sortProc);
@@ -3425,7 +3423,7 @@ extern "C"
     {
 	stringstream strace;
 	Cons_sp btReversed = this->getBackTrace();
-	Cons_sp bt = btReversed->reverse().as_or_nil<Cons_O>();;
+	List_sp bt = btReversed->reverse();
 	strace << "Cando-backtrace number of entries: " << cl_length(bt) <<std::endl;
 	while ( bt.notnilp() )
 	{
@@ -3433,7 +3431,7 @@ extern "C"
 	    stringstream sline;
 	    if ( code->consP() )
 	    {
-		Cons_sp entry = code.as_or_nil<Cons_O>();
+		List_sp entry = code;
 		if ( entry->hasParsePos() )
 		{
 		    sline << core_sourceFileInfo(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
@@ -3531,9 +3529,9 @@ extern "C"
 #define ARGS_core_allSourceFiles "()"
 #define DECL_core_allSourceFiles ""
 #define DOCS_core_allSourceFiles "List all of the source files"
-    T_sp core_allSourceFiles()
+    List_sp core_allSourceFiles()
     {
-	Cons_sp list = _Nil<Cons_O>();
+	List_sp list = _Nil<T_O>();
 	for ( auto it : _lisp->_SourceFileIndices ) {
 	    Str_sp sf = Str_O::create(it.first);
 	    list = Cons_O::create(sf,list);

@@ -60,9 +60,9 @@ namespace core
         T_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname,false);
 //        printf("%s:%d find_single_dispatch_generic_function(%s) --> %p\n", __FILE__, __LINE__, _rep_(gfname).c_str(), gfn.raw_() );
         if ( gfn.nilp() ) {
-	    T_sp symFunc = gfname->symbolFunction();
-            if ( !symFunc.unboundp() ) {
-//                printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().raw_());
+	    if ( gfname->fboundp() ) {
+		T_sp symFunc = gfname->symbolFunction();
+		// printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().raw_());
                 if ( SingleDispatchGenericFunction_sp existingGf = symFunc.asOrNull<SingleDispatchGenericFunction_O>() ) {
                     SIMPLE_ERROR(BF("The symbol %s has a SingleDispatchGenericFunction bound to its function slot but no SingleDispatchGenericFunction with that name was found") % _rep_(gfname));
                 } else {
@@ -384,7 +384,7 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc)
           This function takes two arguments: (args next-emfun) */
         Function_sp		_method_function;
         /*! Store the next-emfun that will be passed to the _method_function */
-        Function_sp		_next_emfun;
+        T_sp		_next_emfun;
     public:
         string describe() const { return "Lambda_emf";};
         bool requires_activation_frame() const { return true;};
@@ -403,7 +403,7 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc)
             // Do this by recursively calling gf->compute_effective_method_function with next_methods
             if ( next_methods.nilp() )
             {
-                this->_next_emfun = _Nil<Function_O>();
+                this->_next_emfun = _Nil<T_O>();
             } else
             {
                 this->_next_emfun = gf->compute_effective_method_function(next_methods);

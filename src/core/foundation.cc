@@ -159,9 +159,10 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
         core::lisp_error_simple(__FUNCTION__,__FILE__,__LINE__,boost::format("given class_id %lu symbol was not defined") % givenTyp );
     }
 
-    gctools::smart_ptr<core::T_O> obj(objP);
+    gctools::smart_ptr<core::T_O> obj((gc::Tagged)objP);
     TYPE_ERROR(obj,expectedSym);
 }
+
 
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP)
 {
@@ -173,6 +174,15 @@ void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP)
     class_id from_typ = reg::registered_class<core::T_O>::id;
     lisp_errorUnexpectedType(toType,from_typ,objP);
 }
+
+void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP)
+{
+    class_id to_typ = reg::registered_class<core::Cons_O>::id;
+    class_id from_typ = reg::registered_class<core::T_O>::id;
+    lisp_errorUnexpectedType(to_typ,from_typ,objP);
+}
+
+
 void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP)
 {
     class_id from_typ = reg::registered_class<core::Symbol_O>::id;
@@ -333,7 +343,7 @@ namespace core
 	return 0;
     }
 
-    Str_sp Closure::docstring() const
+    T_sp Closure::docstring() const
     {
 	SIMPLE_ERROR(BF("Closure does not support docstring"));
     }
@@ -921,7 +931,7 @@ namespace core
     }
 
 
-    Class_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol)
+    T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol)
     {_G();
 	Class_sp mc = eval::funcall(cl::_sym_findClass,_lisp->_true()).as<Class_O>();
 	return mc;
@@ -962,27 +972,27 @@ namespace core
 
     List_sp lisp_parse_arguments(const string& packageName, const string& args)
     {_G();
-	if ( args == "" ) return _Nil<Cons_O>();
+	if ( args == "" ) return _Nil<T_O>();
 	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(args);
 	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<Fixnum_O>());
 	Reader_sp reader = Reader_O::create(str);
 	T_sp osscons = reader->primitive_read(true,_Nil<T_O>(),false);
-	Cons_sp sscons = osscons.as_or_nil<Cons_O>();
+	List_sp sscons = osscons;
 	return sscons;
     }
 
 
     List_sp lisp_parse_declares(const string& packageName, const string& declarestring)
     {_G();
-	if ( declarestring == "" ) return _Nil<Cons_O>();
+	if ( declarestring == "" ) return _Nil<T_O>();
 	Package_sp pkg = _lisp->findPackage(packageName,true).as<Package_O>();
 	ChangePackage changePackage(pkg);
         Str_sp ss = Str_O::create(declarestring);
 	Stream_sp str = cl_make_string_input_stream(ss,Fixnum_O::create(0),_Nil<T_O>());
 	Reader_sp reader = Reader_O::create(str);
-	Cons_sp sscons = reader->primitive_read(true,_Nil<T_O>(),false).as_or_nil<Cons_O>();
+	List_sp sscons = reader->primitive_read(true,_Nil<T_O>(),false);
 	return sscons;
     }
 
@@ -1149,7 +1159,7 @@ namespace core
 	} else
 	{
 	    List_sp ll = lisp_parse_arguments(packageName,arguments);
-	    llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>(), skipIndices);
+	    llh = lisp_function_lambda_list_handler(ll,_Nil<T_O>(), skipIndices);
 	}
         fc->finishSetup(llh,kw::_sym_function);
         fc->setSourcePosInfo(Str_O::create(sourceFile),0,lineNumber,0);
@@ -1177,7 +1187,7 @@ namespace core
 	}
 	List_sp ll = lisp_parse_arguments(packageName,arguments);
 	List_sp ldeclares = lisp_parse_declares(packageName,declarestring);
-	LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll,_Nil<Cons_O>());
+	LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll,_Nil<T_O>());
         f->finishSetup(llh,kw::_sym_macro);
 	Function_sp func = Function_O::make(f);
 //    Package_sp package = lisp->getPackage(packageName);
@@ -1689,14 +1699,14 @@ namespace core
       }
       LispDebugger dbg;
       dbg.invoke();
-      //	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
+      //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
     }
     SYMBOL_EXPORT_SC_(ClPkg,programError);
     eval::funcall(_sym_signalSimpleError,
 		  cl::_sym_programError, 		//arg0
 		  _Nil<T_O>(),		// arg1
 		  Str_O::create(fmt.str()),	// arg2
-		  _Nil<Cons_O>());
+		  _Nil<T_O>());
   }
 
     void lisp_error_condition(const char* functionName, const char* fileName, int lineNumber, T_sp baseCondition, T_sp initializers )
@@ -1709,14 +1719,14 @@ namespace core
 	  printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str() );
 	  LispDebugger dbg;
 	  dbg.invoke();
-	  //	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
+	  //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
 	}
       eval::applyLastArgsPLUSFirst(_sym_signalSimpleError
-				   , initializers.as_or_nil<Cons_O>() // This is what is usually the LAST argument to APPLY
+				   , initializers // This is what is usually the LAST argument to APPLY
 				   , baseCondition
 				   , _Nil<T_O>()
 				   , Str_O::create(ss.str())
-				   , _Nil<Cons_O>() );
+				   , _Nil<T_O>() );
     }
 
 
@@ -1731,7 +1741,7 @@ namespace core
 	  printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str() );
 	  LispDebugger dbg;
 	  dbg.invoke();
-	  //	    af_error(CandoException_O::create(ss.str()),_Nil<Cons_O>());
+	  //	    af_error(CandoException_O::create(ss.str()),_Nil<T_O>());
 	}
       Cons_sp cargs = arguments.as<Cons_O>();
       eval::applyLastArgsPLUSFirst(cl::_sym_error, cargs, datum );

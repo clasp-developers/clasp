@@ -41,7 +41,7 @@ namespace core
 
 
 
-    T_mv af_implicit_compile_hook_default(T_sp form, Environment_sp env);
+    T_mv af_implicit_compile_hook_default(T_sp form, T_sp env);
 
     void initialize_compiler_primitives(Lisp_sp lisp);
 

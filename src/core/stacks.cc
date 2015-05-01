@@ -128,7 +128,7 @@ namespace core
     {
         uint ifilepos(0), ilineno(0), icolumn(0);
         if ( _lisp->sourceDatabase().notnilp() ) {
-            SourcePosInfo_sp info = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(expression);
+            T_sp info = _lisp->sourceDatabase().as<SourceManager_O>()->lookupSourcePosInfo(expression);
             if ( info.notnilp() ) {
                 this->_Top->setSourcePos(info);
             } else {
@@ -362,10 +362,10 @@ void    core_lowLevelBacktrace()
 		    }
 		}
 	    }
-	    SourceFileInfo_sp sfi = core_sourceFileInfo(Fixnum_O::create(closure->sourceFileInfoHandle()));
+	    /*Nilable?*/T_sp sfi = core_sourceFileInfo(Fixnum_O::create(closure->sourceFileInfoHandle()));
 	    string sourceName = "cannot-determine";
 	    if ( sfi.notnilp() ) {
-		sourceName = sfi->fileName();
+		sourceName = sfi.as<SourceFileInfo_O>()->fileName();
 	    }
 	    printf("_Index: %4d  Frame@%p(next=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Next, closure, name.c_str(), closure->lineNumber(), sourceName.c_str() );
 	}

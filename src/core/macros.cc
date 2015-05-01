@@ -46,7 +46,7 @@ namespace macros
     T_sp push(Symbol_sp accessor, T_sp target, T_sp val, Lisp_sp lisp)
     {_G();
 	SetfExpander_sp expander = _lisp->lookupSetfExpander(accessor);
-	Cons_sp tlist = target->slot_value(accessor).as_or_nil<Cons_O>();
+	List_sp tlist = target->slot_value(accessor);
 	tlist = Cons_O::create(val,tlist);
 	return expander->invoke(target,tlist);
     }

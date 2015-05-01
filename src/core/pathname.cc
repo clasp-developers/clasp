@@ -209,7 +209,7 @@ namespace core {
     }
 
     static T_sp
-    translate_list_case(T_sp list, T_sp fromcase, T_sp tocase)
+    translate_list_case(List_sp list, T_sp fromcase, T_sp tocase)
     {
 	/* If the argument is really a list, translate all strings in it and
 	 * return this new list, else assume it is a string and translate it.
@@ -217,17 +217,16 @@ namespace core {
 	if (!cl_consp(list)) {
 	    return translate_component_case(list, fromcase, tocase);
 	} else {
-	    T_sp l;
 	    list = cl_copyList(list);
-	    for (l = list; l.notnilp(); l = CONS_CDR(l)) {
+	    for ( auto l : list ) {
 		/* It is safe to pass anything to translate_component_case,
 		 * because it will only transform strings, leaving other
 		 * object (such as symbols) unchanged.*/
-		T_sp name = CONS_CAR(l);
+		T_sp name = oCar(l);
 		name = cl_listp(name)?
 		    translate_list_case(name, fromcase, tocase) :
 		    translate_component_case(name, fromcase, tocase);
-		l.as_or_nil<Cons_O>()->rplaca(name);
+		l->rplaca(name);
 	    }
 	    return list;
 	}
@@ -235,7 +234,7 @@ namespace core {
 
 
     static T_sp
-    destructively_check_directory(T_sp directory, bool logical, bool delete_back)
+    destructively_check_directory(List_sp directory, bool logical, bool delete_back)
     {
 	/* This function performs two tasks
 	 * 1) It ensures that the list is a valid directory list
@@ -245,19 +244,18 @@ namespace core {
 	 * 3) Redundant :back are removed.
 	 */
 	/* INV: directory is always a list */
-	T_sp ptr;
-	int i;
-
 	if (!cl_listp(directory))
 	    return kw::_sym_error;
 	if (directory.nilp())
 	    return directory;
-	if (CONS_CAR(directory) != kw::_sym_absolute &&
-	    CONS_CAR(directory) != kw::_sym_relative)
+	if (oCar(directory) != kw::_sym_absolute &&
+	    oCar(directory) != kw::_sym_relative)
 	    return kw::_sym_error;
     BEGIN:
-	for (i=0, ptr=directory; cl_consp(ptr); ptr = CONS_CDR(ptr), i++) {
-	    T_sp item = CONS_CAR(ptr);
+	T_sp ptr;
+	int i;
+	for ( i=0, ptr=directory; ptr.consp(); ptr = oCdr(ptr), ++i ) {
+	    T_sp item = oCar(ptr);
 	    if (item == kw::_sym_back) {
 		if (i == 0)
 		    return kw::_sym_error;
@@ -265,9 +263,9 @@ namespace core {
 		if (item == kw::_sym_absolute || item == kw::_sym_wild_inferiors)
 		    return kw::_sym_error;
 		if (delete_back && i >= 2) {
-		    T_sp next = CONS_CDR(ptr);
+		    T_sp next = oCdr(ptr);
 		    ptr = cl_nthcdr(i-2, directory);
-		    ptr.as_or_nil<Cons_O>()->rplacd(next);
+		    ptr.as<Cons_O>()->rplacd(next);
 		    i = i - 2 ; // Was i--;
 		}
 	    } else if (item == kw::_sym_up) {
@@ -282,22 +280,23 @@ namespace core {
 	    } else if (af_stringP(item)) {
 		size_t l = cl_length(item);
 #ifdef BRCL_UNICODE
-		if (brcl_fits_in_base_string(item)) {
-		    item = si_copy_to_simple_base_string(item);
-		} else {
+		//		if (brcl_fits_in_base_string(item)) {
+		//		    item = si_copy_to_simple_base_string(item);
+		//		} else {
 #endif
-		    item = cl_copySeq(item.as<T_O>());
-		ptr.as_or_nil<Cons_O>()->rplaca(item);
-		if (logical)
+		item = cl_copySeq(item.as<T_O>());
+		ptr.as<Cons_O>()->rplaca(item);
+		if (logical) {
 		    continue;
+		}
 		if (l && af_char(item,0) == '.') {
 		    if (l == 1) {
 			/* Single dot */
 			if (i == 0)
 			    return kw::_sym_error;
-			cl_nthcdr(--i, directory).as_or_nil<Cons_O>()->rplacd(CONS_CDR(ptr));
+			cl_nthcdr(--i, directory).as<Cons_O>()->rplacd(oCdr(ptr));
 		    } else if (l == 2 && af_char(item,1) == '.') {
-			ptr.as_or_nil<Cons_O>()->rplaca(kw::_sym_up);
+			ptr.as<Cons_O>()->rplaca(kw::_sym_up);
 			goto BEGIN;
 		    }
 		}
@@ -464,7 +463,7 @@ namespace core {
 	if (af_stringP(head) && cl_length(head) > 0 &&
 	    af_char(head,0) == '~') {
 	    /* Remove the tilde component */
-	    directory.as_or_nil<Cons_O>()->rplacd(oCddr(directory));
+	    directory.as<Cons_O>()->rplacd(oCddr(directory));
 	    pathname = af_mergePathnames(pathname,homedirPathname(head.as<Str_O>()),kw::_sym_default);
 	}
 	return pathname;
@@ -596,7 +595,7 @@ namespace core {
 		      size_t *end_of_dir)
     {
 	size_t i, j;
-	Cons_sp path = _Nil<Cons_O>();
+	List_sp path = _Nil<T_O>();
 	delim_fn delim = (flags & WORD_LOGICAL) ? is_semicolon : is_slash;
 
 	flags |= WORD_INCLUDE_DELIM | WORD_ALLOW_ASTERISK;
@@ -1101,7 +1100,6 @@ namespace core {
 #define DOCS_af_coerceToFilename "coerceToFilename"
     Str_sp af_coerceToFilename(T_sp pathname_orig)
     {_G();
-	Str_sp namestring;
 	Pathname_sp pathname;
 
 	/* We always go through the pathname representation and thus
@@ -1112,10 +1110,10 @@ namespace core {
 	{
 	    ERROR(cl::_sym_fileError,Cons_O::createList(kw::_sym_pathname,pathname_orig));
 	}
-	namestring = brcl_namestring(pathname,
+	T_sp tnamestring = brcl_namestring(pathname,
 				     BRCL_NAMESTRING_TRUNCATE_IF_ERROR |
 				     BRCL_NAMESTRING_FORCE_BASE_STRING);
-	if (namestring.nilp()) {
+	if (tnamestring.nilp()) {
 	    SIMPLE_ERROR(BF("Pathname without a physical namestring:"
 			    "\n :HOST %s"
 			    "\n :DEVICE %s"
@@ -1130,6 +1128,7 @@ namespace core {
 			 % _rep_(pathname->_Type)
 			 % _rep_(pathname->_Version));
 	}
+	Str_sp namestring = tnamestring.as<Str_O>();
 	if (_lisp->pathMax() != -1 &&
 	    cl_length(namestring) >= _lisp->pathMax() - 16)
 	    SIMPLE_ERROR(BF("Too long filename: %s.") % namestring->get());
@@ -1144,8 +1143,7 @@ namespace core {
   version, or type, etc); otherwise, when it is not possible to
   produce a readable representation of the pathname, NIL is returned.
 */
-    Str_sp
-    brcl_namestring(T_sp tx, int flags)
+    T_sp brcl_namestring(T_sp tx, int flags)
     {
 	bool logical;
 	T_sp l, y;
@@ -1164,7 +1162,7 @@ namespace core {
 	if (logical) {
 	    if ((y = x->_Device) != kw::_sym_unspecific &&
 		truncate_if_unreadable)
-		return _Nil<Str_O>();
+		return _Nil<T_O>();
 	    if (host.notnilp()) {
 		cl_writeSequence(host.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
 		clasp_write_string(":",buffer);
@@ -1208,7 +1206,7 @@ namespace core {
 		cl_writeSequence(y.as<Str_O>(), buffer, Fixnum_O::create(0), _Nil<Fixnum_O>());
 	    } else {
 		/* Directory :back has no namestring representation */
-		return _Nil<Str_O>();
+		return _Nil<T_O>();
 	    }
 	    clasp_write_char(logical? ';' : DIR_SEPARATOR_CHAR,buffer);
 	}
@@ -1231,11 +1229,11 @@ namespace core {
 	    /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
 	       hence :NAME = NIL and :TYPE != NIL does not have
 	       a printed representation */
-	    return _Nil<Str_O>();
+	    return _Nil<T_O>();
         }
 	y = x->_Type;
         if (y == kw::_sym_unspecific) {
-	    return _Nil<Str_O>();
+	    return _Nil<T_O>();
         } else if (y.notnilp()) {
 	    if (y == kw::_sym_wild) {
 		clasp_write_string(".*",buffer);
@@ -1276,10 +1274,10 @@ namespace core {
 	    if (x->_Name.nilp() && x->_Type.nilp()) {
 		/* Directories cannot have a version number */
 		if (y.notnilp())
-		    return _Nil<Str_O>();
+		    return _Nil<T_O>();
 	    } else if (y != kw::_sym_newest) {
 		/* Filenames have an implicit version :newest */
-		return _Nil<Str_O>();
+		return _Nil<T_O>();
 	    }
 	}
         Str_sp sbuffer = cl_get_output_stream_string(buffer).as<Str_O>();
@@ -1303,7 +1301,7 @@ namespace core {
 #define ARGS_af_namestring "(pathname)"
 #define DECL_af_namestring ""
 #define DOCS_af_namestring "namestring"
-    Str_sp af_namestring(T_sp x)
+    T_sp af_namestring(T_sp x)
     {_G();
 	return brcl_namestring(x, BRCL_NAMESTRING_TRUNCATE_IF_ERROR);
     }
@@ -1316,10 +1314,10 @@ namespace core {
 #define ARGS_af_parseNamestring "(thing &optional host defaults &key (start 0) end junk-allowed)"
 #define DECL_af_parseNamestring ""
 #define DOCS_af_parseNamestring "parseNamestring"
-    Pathname_mv af_parseNamestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, T_sp end, bool junkAllowed)
+    T_mv af_parseNamestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, T_sp end, bool junkAllowed)
     {_G();
-	Pathname_sp defaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue().as_or_nil<Pathname_O>() : cl_pathname(tdefaults);
-	Pathname_sp output;
+	T_sp tempdefaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue().as_or_nil<Pathname_O>() : cl_pathname(tdefaults);
+	T_sp output;
 	if (host.notnilp()) {
 	    host = af_string(host);
 	}
@@ -1329,9 +1327,9 @@ namespace core {
 	    T_sp default_host = host;
 	    size_t_pair p;
 	    size_t ee;
-	    if (default_host.nilp() && defaults.notnilp()) {
-		defaults = cl_pathname(defaults);
-		default_host = defaults->_Host;
+	    if (default_host.nilp() && tempdefaults.notnilp()) {
+		tempdefaults = cl_pathname(tempdefaults);
+		default_host = tempdefaults.as<Pathname_O>()->_Host;
 	    }
 #ifdef BRCL_UNICODE
 	    thing = si_coerce_to_base_string(thing);
@@ -1348,7 +1346,10 @@ namespace core {
 		goto OUTPUT;
 	    }
 	}
-	if (host.notnilp() && !output->_Host->equal(host)) {
+	if (output.nilp()) {
+	    SIMPLE_ERROR(BF("output is nil"));
+	}
+	if (host.notnilp() && !output.as<Pathname_O>()->_Host->equal(host)) {
 	    SIMPLE_ERROR(BF("The pathname %sS does not contain the required host %s.")
 			 % _rep_(thing) % _rep_(host));
 	}
@@ -1550,13 +1551,17 @@ namespace core {
     } else {
 	/* The new pathname is an absolute one. We compare it with the defaults
 	   and if they have some common elements, we just output the remaining ones. */
-	Integer_sp dir_begin = eval::funcall(cl::_sym_mismatch,pathdir,defaultdir,
-					     kw::_sym_test, cl::_sym_equal).as<Integer_O>();
-	if (dir_begin.nilp()) {
+	/*Integer_sp*/ T_sp tdir_begin = eval::funcall(cl::_sym_mismatch,pathdir,defaultdir,
+					     kw::_sym_test, cl::_sym_equal);
+	if (tdir_begin.nilp()) {
 	    pathdir = _Nil<T_O>();
-	} else if (dir_begin->as_int() == cl_length(defaultdir)) {
-	    pathdir = eval::funcall(cl::_sym_subseq, pathdir, dir_begin);
-	    pathdir = Cons_O::create(kw::_sym_relative, pathdir);
+	} else {
+	    ASSERTF(!tdir_begin.fixnump(),BF("Handle tagged fixnum!"));
+	    Integer_sp dir_begin = tdir_begin.as<Integer_O>();
+	    if (dir_begin->as_int() == cl_length(defaultdir)) {
+		pathdir = eval::funcall(cl::_sym_subseq, pathdir, dir_begin);
+		pathdir = Cons_O::create(kw::_sym_relative, pathdir);
+	    }
 	}
     }
     fname = EN_MATCH(path, defaults, _Name);
@@ -1783,7 +1788,7 @@ namespace core {
             if (_lisp->pathnameTranslations().notnilp() ) {
                 pair = _lisp->pathnameTranslations().asCons()->assoc(host,_Nil<T_O>(),cl::_sym_string_equal,_Nil<T_O>() );
             } else {
-                pair = _Nil<Cons_O>();
+                pair = _Nil<T_O>();
             }
         }
         if (set.nilp()) {
@@ -1803,8 +1808,8 @@ namespace core {
             T_sp to = cl_pathname(oCadr(item));
             set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
         }
-        set = cl_nreverse(set.as_or_nil<Cons_O>());
-        CONS_CDR(pair).as_or_nil<Cons_O>()->rplaca(set);
+        set = cl_nreverse(set);
+        oCdr(pair).as<Cons_O>()->rplaca(set);
         return set;
     }
 
@@ -1876,7 +1881,7 @@ namespace core {
 		a = CDR(a);
 	    }
 	}
-	return cl_nreverse(l.as_or_nil<Cons_O>());
+	return cl_nreverse(l);
     }
 
     static T_sp
@@ -1941,7 +1946,7 @@ namespace core {
 		else {
 		    T_sp dirlist = CAR(list);
 		    if (cl_consp(dirlist))
-			l = Cons_O::append(CAR(list).as_or_nil<Cons_O>(), l.as_or_nil<Cons_O>());
+			l = Cons_O::append(CAR(list), l);
 		    else if (!(oCar(list).nilp()))
 			return kw::_sym_error;
 		}
@@ -1955,7 +1960,7 @@ namespace core {
 	    to = CDR(to);
 	}
 	if (cl_consp(l))
-	    l = cl_nreverse(l.as_or_nil<Cons_O>());
+	    l = cl_nreverse(l);
 	return l;
     }
 
@@ -2099,7 +2104,7 @@ namespace core {
     string Pathname_O::__repr__() const
     {
 	stringstream ss;
-	Str_sp str = af_namestring(this->const_sharedThis<Pathname_O>()).as<Str_O>();
+	gc::Nilable<Str_sp> str = af_namestring(this->asSmartPtr()).as_or_nil<Str_O>();
 	if ( str.nilp() ) {
 	    ss << "#P" << '"' << '"';
 	} else {

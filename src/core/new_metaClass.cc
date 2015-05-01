@@ -55,7 +55,7 @@ namespace core
 
 
 
-    Cons_sp global_closClassSlots = _Nil<Cons_O>();
+    List_sp global_closClassSlots = _Nil<T_O>();
     const int Class_O::NumberOfClassSlots;
 
 
@@ -129,7 +129,7 @@ namespace core
 	    SIMPLE_ERROR(BF("Classes need at least %d slots - you asked for %d") % Class_O::NumberOfClassSlots % slots);
 	}
 	this->_MetaClassSlots.resize(slots,_Unbound<T_O>());
-	this->instanceSet(REF_DIRECT_SUPERCLASSES,_Nil<Cons_O>());
+	this->instanceSet(REF_DIRECT_SUPERCLASSES,_Nil<T_O>());
     }
 
 
@@ -164,7 +164,7 @@ namespace core
 	if ( this == ancestor.get() ) return true;
 	// TODO: I need to memoize this somehow so that I'm not constantly searching a list in
 	// linear time
-	Cons_sp cpl = this->instanceRef(Instance_O::REF_CLASS_PRECEDENCE_LIST).as_or_nil<Cons_O>();
+	List_sp cpl = this->instanceRef(Instance_O::REF_CLASS_PRECEDENCE_LIST);
 	ASSERTF(!cpl.unboundp(),BF("You tried to use isSubClassOf when the ClassPrecedenceList had not been initialized"))
 	    for ( Cons_sp cur=cpl; cur.notnilp(); cur=cCdr(cur) )
 	    {
@@ -252,7 +252,7 @@ namespace core
     {_G();
 	using namespace boost;
 	HashTable_sp supers(af_make_hash_table(cl::_sym_eq,Fixnum_O::create(8),DoubleFloat_O::create(1.5),DoubleFloat_O::create(2.0)));
-	VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),16,0,true));
+	VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),16,0,true));
 	this->accumulateSuperClasses(supers,arrayedSupers,this->sharedThis<Class_O>());
 	vector<list<int> > graph(cl_length(arrayedSupers));
 
@@ -304,7 +304,7 @@ namespace core
 	    LOG(BF("%s") % ss.str() );
 	}
 #endif
-	Cons_sp cpl = _Nil<Cons_O>();
+	List_sp cpl = _Nil<T_O>();
 	for ( deque<int>::const_reverse_iterator it=topo_order.rbegin(); it!=topo_order.rend(); it++ )
 	{
 	    Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
@@ -321,7 +321,7 @@ namespace core
 	Class_sp cl = eval::funcall(cl::_sym_findClass,className,_lisp->_true()).as<Class_O>();
 	// When booting _DirectSuperClasses may be undefined
 	ASSERT(this->directSuperclasses());
-	Cons_sp dsc = _Nil<Cons_O>();
+	List_sp dsc = _Nil<T_O>();
 	if ( !this->directSuperclasses().unboundp() )
 	{
 	    dsc = this->directSuperclasses();
@@ -348,7 +348,7 @@ namespace core
 
     Cons_sp Class_O::directSuperclasses() const
     {_OF();
-	return this->instanceRef(REF_DIRECT_SUPERCLASSES).as_or_nil<Cons_O>();
+	return this->instanceRef(REF_DIRECT_SUPERCLASSES);
     }
 
 
@@ -466,7 +466,7 @@ namespace core
 	if ( low == high ) return true;
 	if ( Class_sp lowmc = low.asOrNull<Class_O>() )
 	{
-	    Cons_sp lowClassPrecedenceList = lowmc->instanceRef(Instance_O::REF_CLASS_PRECEDENCE_LIST).as_or_nil<Cons_O>();// classPrecedenceList();
+	    List_sp lowClassPrecedenceList = lowmc->instanceRef(Instance_O::REF_CLASS_PRECEDENCE_LIST);// classPrecedenceList();
 	    return lowClassPrecedenceList->memberEq(high).notnilp();
 	} else if (Instance_sp inst = low.asOrNull<Instance_O>() )
 	{

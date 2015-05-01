@@ -133,7 +133,7 @@ namespace core {
         T_sp functionName() const;
         T_mv functionSourcePos() const;
 	List_sp declares() const;
-	Str_sp docstring() const;
+	T_sp docstring() const;
 
     };
 };
@@ -157,18 +157,18 @@ namespace core
     public:
         LambdaListHandler_sp    _lambdaListHandler;
         List_sp                 _declares;
-        Str_sp                  _docstring;
+        T_sp                  _docstring;
 	List_sp                 _code;
     public:
         DISABLE_NEW();
         InterpretedClosure(T_sp fn, T_sp sp, Symbol_sp k
-                           , LambdaListHandler_sp llh, List_sp dec, Str_sp doc
+                           , LambdaListHandler_sp llh, List_sp dec, T_sp doc
                            , T_sp e, List_sp c);
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual const char* describe() const {return "InterpretedClosure";};
 	virtual void LISP_CALLING_CONVENTION();
         bool interpretedP() const { return true; };
-	Str_sp docstring() const { return this->_docstring;};
+	T_sp docstring() const { return this->_docstring;};
 	List_sp declares() const { return this->_declares;};
 	List_sp code() const { return this->_code;};
         LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler;};

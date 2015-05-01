@@ -67,7 +67,7 @@ void LambdaListHandler_O::exposePython()
 	return((_Nil<LambdaListHandler_O>()));
     }
     Reader_sp reader = Reader_O::createOnString(argumentsInString,lisp);
-    Cons_sp sscons = reader->read().as_or_nil<Cons_O>();
+    List_sp sscons = reader->read();
     reader->close();
     LambdaListHandler_sp ah = lisp->create<LambdaListHandler_O>();
     ah->setupArgumentHandling(sscons);

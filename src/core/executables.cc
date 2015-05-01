@@ -138,7 +138,7 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
 
     
     InterpretedClosure::InterpretedClosure(T_sp fn, T_sp sp, Symbol_sp k
-					   , LambdaListHandler_sp llh, List_sp dec, Str_sp doc
+					   , LambdaListHandler_sp llh, List_sp dec, T_sp doc
 					   , T_sp e, List_sp c)
             : FunctionClosure(fn,sp,k,e)
             , _lambdaListHandler(llh)
@@ -207,7 +207,7 @@ T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int line
         return this->closure->getKind();
     };
 
-    Str_sp Function_O::docstring() const {
+    T_sp Function_O::docstring() const {
         ASSERTF(this->closure,BF("The Function closure is NULL"));
         return this->closure->docstring();
     };

@@ -96,11 +96,11 @@ namespace core {
 #define ARGS_cl_float "(x &optional y)"
 #define DECL_cl_float ""
 #define DOCS_cl_float "float"
-    Float_sp cl_float(Real_sp x, Float_sp y)
+    Float_sp cl_float(Real_sp x, T_sp y)
     {_G();
 	NumberType ty, tx;
 	if (y.notnilp()) {
-	    ty = y->number_type();
+	    ty = y.as<Float_O>()->number_type();
 	} else {
 	    ty = number_SingleFloat;
 	}
@@ -425,12 +425,10 @@ namespace core {
 #define ARGS_cl_floor "(x &optional y)"
 #define DECL_cl_floor ""
 #define DOCS_cl_floor "floor"
-    Real_mv cl_floor(Real_sp x, Real_sp y)
+    Real_mv cl_floor(Real_sp x, T_sp y)
     {_G();
-	if (y.nilp())
-	    return clasp_floor1(x);
-	else
-	    return clasp_floor2(x, y);
+	if (y.nilp()) return clasp_floor1(x);
+	else return clasp_floor2(x, y.as<Real_O>());
     }
 
 
@@ -677,12 +675,10 @@ namespace core {
 #define ARGS_cl_ceiling "(x &optional y)"
 #define DECL_cl_ceiling ""
 #define DOCS_cl_ceiling "ceiling"
-    Real_mv cl_ceiling(Real_sp x, Real_sp y)
+    Real_mv cl_ceiling(Real_sp x, T_sp y)
     {_G();
-	if (y.nilp())
-	    return brcl_ceiling1(x);
-	else
-	    return brcl_ceiling2(x, y);
+	if (y.nilp()) return brcl_ceiling1(x);
+	else return brcl_ceiling2(x, y.as<Real_O>());
     }
 
 
@@ -751,12 +747,10 @@ namespace core {
 #define ARGS_cl_truncate "(x &optional y)"
 #define DECL_cl_truncate ""
 #define DOCS_cl_truncate "truncate"
-    Real_mv cl_truncate(Real_sp x, Real_sp y)
+    Real_mv cl_truncate(Real_sp x, T_sp y)
     {_G();
-	if (y.nilp() == 1)
-	    return brcl_truncate1(x);
-	else
-	    return brcl_truncate2(x, y);
+	if (y.nilp()) return brcl_truncate1(x);
+	else return brcl_truncate2(x, y.as<Real_O>());
     }
 
     static double round_double(double d)
@@ -885,12 +879,10 @@ namespace core {
 #define ARGS_cl_round "(x &optional y)"
 #define DECL_cl_round ""
 #define DOCS_cl_round "round"
-    Number_mv cl_round(Real_sp x, Real_sp y)
+    Number_mv cl_round(Real_sp x, T_sp y)
     {_G();
-	if (y.nilp())
-	    return brcl_round1(x);
-	else
-	    return brcl_round2(x, y);
+	if (y.nilp()) return brcl_round1(x);
+	else return brcl_round2(x, y.as<Real_O>());
     }
 
 

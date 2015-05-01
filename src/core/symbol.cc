@@ -240,7 +240,7 @@ namespace core {
 	this->_Function = _Unbound<Function_O>();
 	this->_SetfFunction = _Unbound<Function_O>();
 	pkg->add_symbol_to_package(this->symbolName()->get().c_str(),this->sharedThis<Symbol_O>(),exportp);
-	this->_PropertyList = _Nil<Cons_O>();
+	this->_PropertyList = _Nil<T_O>();
     }
 
 
@@ -330,7 +330,7 @@ namespace core {
 	    new_symbol->_Function = this->_Function;
 	    new_symbol->_IsConstant = this->_IsConstant;
 	    new_symbol->_ReadOnlyFunction = this->_ReadOnlyFunction;
-	    new_symbol->_PropertyList = cl_copyList(this->_PropertyList).as_or_nil<Cons_O>();
+	    new_symbol->_PropertyList = cl_copyList(this->_PropertyList);
 	}
 	return new_symbol;
     };

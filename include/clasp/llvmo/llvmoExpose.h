@@ -1704,7 +1704,7 @@ namespace llvmo
 	typedef llvm::GlobalVariable* PointerToExternalType;
 
     public:
-	static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, core::Symbol_sp linkage, Constant_sp initializer, core::Str_sp name, GlobalVariable_sp insertBefore, core::Symbol_sp threadLocalMode  );
+	static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/core::T_sp initializer, core::Str_sp name, /*GlobalVariable_sp*/core::T_sp insertBefore, core::Symbol_sp threadLocalMode  );
 
     public:    PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr);};
 	void set_wrapped(PointerToExternalType ptr)

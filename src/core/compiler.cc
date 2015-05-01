@@ -380,13 +380,13 @@ namespace core
 #define ARGS_af_implicit_compile_hook_default "(form &optional environment)"
 #define DECL_af_implicit_compile_hook_default ""
 #define DOCS_af_implicit_compile_hook_default "implicit_compile_hook_default"
-    T_mv af_implicit_compile_hook_default(T_sp form, Environment_sp env)
+    T_mv af_implicit_compile_hook_default(T_sp form, T_sp env)
     {_G();
 	// Convert the form into a thunk and return like COMPILE does
 	LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
-	Cons_sp code = Cons_O::create(form,_Nil<Cons_O>());
+	Cons_sp code = Cons_O::create(form,_Nil<T_O>());
         SourceManager_sp db = _lisp->sourceDatabase();
-	SourcePosInfo_sp sourcePosInfo = db->duplicateSourcePosInfo(form,code);
+	T_sp sourcePosInfo = db->duplicateSourcePosInfo(form,code);
         stringstream ss;
         ss << "repl"<<_lisp->nextReplCounter();
         Symbol_sp name = _lisp->intern(ss.str());
@@ -396,8 +396,8 @@ namespace core
 								       , sourcePosInfo
 								       , kw::_sym_function
 								       , llh
-								       , _Nil<Cons_O>()
-								       , _Nil<Str_O>()
+								       , _Nil<T_O>()
+								       , _Nil<T_O>()
 								       , env
 								       , code ));
         Function_sp thunk = Function_O::make(ic);

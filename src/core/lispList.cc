@@ -249,7 +249,7 @@ namespace core
     {_G();
 	int ni = n->as_int();
 	int keepi = cl_length(list)-ni;
-	if ( keepi <= 0 ) return(Values(_Nil<Cons_O>()));
+	if ( keepi <= 0 ) return(Values(_Nil<T_O>()));
 	ql::list res;
 	List_sp cur = list;
 	for ( int i=0; i<keepi; i++ ) {
@@ -303,7 +303,7 @@ namespace core
     T_sp af_listSTAR(T_sp tobjects)
     {_G();
 	T_sp objects = tobjects;
-	if ( objects.nilp() ) return(Values(_Nil<Cons_O>()));
+	if ( objects.nilp() ) return(Values(_Nil<T_O>()));
 	if (oCdr(objects).nilp() ) return(oCar(objects));
 	Cons_sp cur;
 	ql::list result(_lisp);
@@ -392,13 +392,10 @@ namespace core
 #define LOCK_af_revappend 1
 #define ARGS_af_revappend "(list tail)"
 #define DECL_af_revappend ""
-    T_sp af_revappend(T_sp list, T_sp tail)
+    T_sp af_revappend(List_sp list, T_sp tail)
     {_G();
 	if ( list.nilp() ) return(tail);
-        if ( Cons_sp clist = list.asOrNull<Cons_O>() ) {
-            return clist->revappend(tail);
-        }
-        TYPE_ERROR(list,cl::_sym_list);
+	return list.asCons()->revappend(tail);
     };
 
 
@@ -407,13 +404,10 @@ namespace core
 #define LOCK_cl_nreconc 1
 #define ARGS_cl_nreconc "(list tail)"
 #define DECL_cl_nreconc ""
-    T_sp cl_nreconc(T_sp list, T_sp tail)
+    T_sp cl_nreconc(List_sp list, T_sp tail)
     {_G();
 	if ( list.nilp() ) return(tail);
-        if ( Cons_sp clist = list.asOrNull<Cons_O>() ) {
-            return clist->nreconc(tail);
-        }
-        TYPE_ERROR(list,cl::_sym_list);
+	return list.asCons()->nreconc(tail);
     };
 
 

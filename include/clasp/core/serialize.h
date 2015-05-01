@@ -539,7 +539,7 @@ namespace core
 	virtual T_sp getAttribute(Symbol_sp name,T_sp defaultValue) const;
 	virtual void addAttribute(Symbol_sp name, T_sp val);
 	virtual void setVectorSNodesUnsafe(Vector_sp vec) {this->_VectorSNodes = vec;};
-	virtual Vector_sp getVectorSNodes() const { return this->_VectorSNodes;};
+	virtual Vector_sp getVectorSNodes() const { ASSERT(!this->_VectorSNodes.unboundp());return this->_VectorSNodes;};
 	virtual T_sp object() const;
 	List_sp keys() const;
 

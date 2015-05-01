@@ -90,7 +90,7 @@ namespace core
 		VectorObjects_sp vresult(_Nil<VectorObjects_O>());
 		if ( oCddr(consObj).notnilp()) {
 		    Vector_sp vdata = oThird(consObj).as<Vector_O>();
-		    vresult = VectorObjects_O::make(_Nil<T_O>(),_Nil<Cons_O>(), vdata->length(), true);
+		    vresult = VectorObjects_O::make(_Nil<T_O>(),_Nil<T_O>(), vdata->length(), true);
 		    for ( int i=0,iEnd(vdata->length());i<iEnd;++i) {
 			SNode_sp data = parseNode(objToNode,vdata->elt(i));
 			vresult->setf_elt(i,data);

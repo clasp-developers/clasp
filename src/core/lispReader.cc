@@ -79,7 +79,7 @@ namespace core
 #if 1
 #define TRAP_BAD_CONS(x)
 #else
-#define TRAP_BAD_CONS(x) {if (cl_consp(x)) {LOG(BF("About to try trap bad cons"));string ssss=core_sourceFileInfo(x.as_or_nil<Cons_O>())->fileName();}}
+#define TRAP_BAD_CONS(x) {if (cl_consp(x)) {LOG(BF("About to try trap bad cons"));string ssss=core_sourceFileInfo(x)->fileName();}}
 #endif
 
     /*! Return a uint that combines the character x with its character TRAITs
@@ -465,7 +465,7 @@ namespace core
 	uint start_column=0;
 	bool got_dotted = false;
 	T_sp dotted_object = _Nil<T_O>();
-	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	List_sp cur = first;
 	while (1)
 	{
@@ -519,7 +519,7 @@ namespace core
 		    {
 			SIMPLE_ERROR(BF("More than one object after consing dot"));
 		    }
-		    Cons_sp one = Cons_O::create(obj,_Nil<Cons_O>());
+		    Cons_sp one = Cons_O::create(obj,_Nil<T_O>());
                     lisp_registerSourcePosInfo(one,info);
 		    LOG(BF("One = %s\n") % _rep_(one) );
 		    LOG(BF("one->sourceFileInfo()=%s") % _rep_(core_sourceFileInfo(one)) );
@@ -592,7 +592,7 @@ namespace core
             increment_read_lisp_object_recursion_depth::reset();
 
 #ifndef USE_SHARP_EQUAL_HASH_TABLES
-	    DynamicScopeManager scope(_sym_STARsharp_equal_alistSTAR,_Nil<Cons_O>());
+	    DynamicScopeManager scope(_sym_STARsharp_equal_alistSTAR,_Nil<T_O>());
 #else
 	    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR,HashTableEql_O::create(40,Fixnum_O::create(4000),0.8));
 	    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,HashTableEql_O::create(40,Fixnum_O::create(4000),0.8));

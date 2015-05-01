@@ -36,7 +36,7 @@ namespace core
 
     List_sp Argument::lambdaList() const
     {
-	return((this->_ArgTarget.as_or_nil<Cons_O>()));
+	return((this->_ArgTarget));
     };
 
     Symbol_sp Argument::symbol() const

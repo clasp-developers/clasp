@@ -146,7 +146,7 @@ namespace llvmo
 #define DOCS_af_cxxDataStructuresInfo "cxxDataStructuresInfo: Return an alist of C++ data structure sizes ((name . size-of-in-bytes))"
     T_sp af_cxxDataStructuresInfo()
     {
-	Cons_sp list = Cons_O::create(Cons_O::create(_sym_tsp,Fixnum_O::create((int)sizeof(T_sp))),_Nil<Cons_O>());
+	Cons_sp list = Cons_O::create(Cons_O::create(_sym_tsp,Fixnum_O::create((int)sizeof(T_sp))),_Nil<T_O>());
 	list = Cons_O::create(Cons_O::create(_sym_tmv,Fixnum_O::create((int)sizeof(T_mv))),list);
 	list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame,Fixnum_O::create((int)sizeof(InvocationHistoryFrame))),list);
 	list = Cons_O::create(Cons_O::create(_sym_size_t,Fixnum_O::create((int)sizeof(size_t))),list);
@@ -163,27 +163,19 @@ namespace llvmo
 #define DOCS_af_throwIfMismatchedStructureSizes "throwIfMismatchedStructureSizes"
     void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, Fixnum_sp givenIhfSize)
     {_G();
-	if ( tspSize.nilp() ) SIMPLE_ERROR(BF("You must provide a tspSize"));
-	if ( tmvSize.nilp() ) SIMPLE_ERROR(BF("You must provide a tmvSize"));
 	int T_sp_size = sizeof(core::T_sp);
-	if ( tspSize->get() != T_sp_size )
-	{
+	if ( tspSize->get() != T_sp_size ) {
 	    SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % tspSize->get() % T_sp_size );
 	}
 	int T_mv_size = sizeof(core::T_mv);
-	if ( tmvSize->get() != T_mv_size )
-	{
+	if ( tmvSize->get() != T_mv_size ) {
 	    SIMPLE_ERROR(BF("Mismatch between tmv size[%d] and core::T_mv size[%d]") % tmvSize->get() % T_mv_size );
 	}
-	if ( !givenIhfSize.nilp() )
-	{
-	    int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
-	    if ( givenIhfSize->get() != InvocationHistoryFrame_size )
-	    {
-		SIMPLE_ERROR(BF("Mismatch between IR lisp-compiled-function-ihf size[%d]"
-				" and sizeof(LispCompiledFunctionIHF)=[%d]")
-			     % _rep_(givenIhfSize) % InvocationHistoryFrame_size );
-	    }
+	int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
+	if ( givenIhfSize->get() != InvocationHistoryFrame_size ) {
+	    SIMPLE_ERROR(BF("Mismatch between IR lisp-compiled-function-ihf size[%d]"
+			    " and sizeof(LispCompiledFunctionIHF)=[%d]")
+			 % _rep_(givenIhfSize) % InvocationHistoryFrame_size );
 	}
     };
 
@@ -287,11 +279,7 @@ namespace llvmo
 #define DOCS_af_disassembleSTAR "disassembleSTAR"
     void af_disassembleSTAR(core::Function_sp cf)
     {_G();
-	if (cf.notnilp()) {
-	    dump_funcs(cf);
-	} else {
-	    SIMPLE_ERROR(BF("Could not disassemble %s") % _rep_(cf));
-	}
+	dump_funcs(cf);
     }
 
 

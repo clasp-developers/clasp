@@ -56,7 +56,7 @@ namespace core {
 
     Pathname_sp af_mergePathnames(T_sp arg, T_sp defaultPathname = _Nil<T_O>(), T_sp defaultVersion = kw::_sym_newest); // = af_symbolValue(cl::_sym_STARdefaultPathnameDefaultsSTAR), T_sp defaultVersion = kw::_sym_newest);
 
-    Pathname_mv af_parseNamestring(T_sp thing,
+    T_mv af_parseNamestring(T_sp thing,
 				   T_sp host=_Nil<T_O>(),
 				   T_sp defaultPathname=_Nil<T_O>(),
 				   Fixnum_sp start=Fixnum_O::create(0),
@@ -97,7 +97,7 @@ namespace core
 	friend Pathname_sp af_coerceToPhysicalPathname(T_sp x);
 	friend Pathname_sp af_coerceToFilePathname(T_sp x);
 	friend Str_sp af_coerceToFilename(T_sp pathname);
-	friend Str_sp brcl_namestring(T_sp tx, int flags);
+	friend T_sp brcl_namestring(T_sp tx, int flags);
 	friend Pathname_mv af_parseNamestring(T_sp thing, T_sp host, T_sp defaults, Fixnum_sp start, Fixnum_sp end, bool junk_allowed);
 	friend Pathname_sp af_makePathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);
 	friend T_sp af_pathnameHost(T_sp tpname, Symbol_sp scase);
@@ -182,11 +182,11 @@ namespace core {
                            T_sp p, size_t i, size_t lp);
     bool brcl_logical_hostname_p(T_sp host);
     bool brcl_wild_string_p(T_sp item);
-    Str_sp brcl_namestring(T_sp x, int flags);
+    T_sp brcl_namestring(T_sp x, int flags);
     Pathname_sp brcl_mergePathnames(T_sp path, T_sp def, T_sp defaultVersion);
 
     bool af_pathnameMatchP(T_sp path, T_sp mask);
-    Str_sp af_namestring(T_sp x);
+    T_sp af_namestring(T_sp x);
     Str_sp af_fileNamestring(T_sp tpname);
     Str_sp af_directoryNamestring(T_sp tpname);
     Str_sp af_hostNamestring(T_sp tpname);

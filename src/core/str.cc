@@ -44,7 +44,7 @@ THE SOFTWARE.
 namespace core
 {
 
-    string str_get(Str_sp str) { if (str.nilp()) {SIMPLE_ERROR(BF("Could not convert nil to Str"));}; return str->get(); };
+    string str_get(Str_sp str) { return str.as<Str_O>()->get(); };
     string str_get(T_sp str) {  if (str.nilp()) {SIMPLE_ERROR(BF("Could not convert nil to Str"));}; return str.as<Str_O>()->get(); };
     T_sp str_create(const string& str) { return Str_O::create(str);};
     T_sp str_create(const char* str) { return Str_O::create(str);};
@@ -322,11 +322,11 @@ namespace core
 #define ARGS_af_make_string "(size &key initial-element (element-type 'character))"
 #define DECL_af_make_string ""
 #define DOCS_af_make_string "See CLHS: make_string"
-    T_mv af_make_string(Fixnum_sp size, Character_sp initial_element, T_sp element_type )
+    T_mv af_make_string(Fixnum_sp size, T_sp initial_element, T_sp element_type )
     {_G();
 	stringstream ss;
 	char ch(' ');
-	if ( initial_element.notnilp() ) ch = initial_element->asChar();
+	if ( initial_element.notnilp() ) ch = initial_element.as<Character_O>()->asChar();
 	int isize = size->get();
 	for ( int i=0; i<isize; i++ )
 	{
@@ -803,7 +803,7 @@ namespace core
 	Cons_sp cur = first;
 	for ( vector<string>::iterator it=parts.begin(); it!=parts.end(); it++ )
 	{
-	    Cons_sp one = Cons_O::create(Str_O::create(*it),_Nil<Cons_O>());
+	    Cons_sp one = Cons_O::create(Str_O::create(*it),_Nil<T_O>());
 	    cur->setCdr(one);
 	    cur=one;
 	}
@@ -814,7 +814,7 @@ namespace core
     {
 	TESTING();
 	vector<string> parts = core::split(this->get(),chars);
-	Cons_sp result(_Nil<Cons_O>());
+	List_sp result(_Nil<T_O>());
 	for ( vector<string>::reverse_iterator it = parts.rend(); it != parts.rbegin(); ++it ) {
 	    Str_sp sone = translate::to_object<const string&>::convert(*it);
 	    result = Cons_O::create(sone,result);

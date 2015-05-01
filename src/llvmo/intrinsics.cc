@@ -279,7 +279,7 @@ extern "C" {
 
     __attribute__((visibility("default")))  void va_fillRestTarget( core::T_sp* restP, std::size_t nargs, core::T_O** argArray, std::size_t startRest, char* fnName)
     {_G();
-	core::Cons_sp result = _Nil<core::Cons_O>();
+	core::List_sp result = _Nil<core::T_O>();
 	int inargs = nargs;
 	int istartRest = startRest;
 	for ( int i=inargs-1; i>=istartRest; i-- )
@@ -531,7 +531,7 @@ extern "C"
     {_G();
 	ASSERT(frameP!=NULL);
 	new(frameP) core::ActivationFrame_sp();
-	core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(size,_Nil<core::ActivationFrame_O>()));
+	core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(size,_Nil<core::T_O>()));
 	(*frameP) = valueFrame;
 
     }
@@ -738,7 +738,7 @@ core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, char* sou
     core::SourceFileInfo_mv sfi = core::core_sourceFileInfo(sourceStr);
     int sfindex = sfi.valueGet(1).as<core::Fixnum_O>()->get();   // sfindex could be written into the Module global for debugging
     core::SourcePosInfo_sp spi = core::SourcePosInfo_O::create(sfindex,filePos,lineno,column);
-    core::FunctionClosure* closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP,spi,kw::_sym_function,funcPtr,_Nil<llvmo::Function_O>(),*frameP,*compiledFuncsP,*lambdaListP);
+    core::FunctionClosure* closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass(*functionNameP,spi,kw::_sym_function,funcPtr,_Nil<core::T_O>(),*frameP,*compiledFuncsP,*lambdaListP);
     core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
     return compiledFunction;
 };
@@ -902,7 +902,7 @@ extern "C"
     // was ActivationFrame_sp
     {_G();
 	ASSERT(resultActivationFrameP!=NULL);
-	core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs,_Nil<core::ActivationFrame_O>()));
+	core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs,_Nil<core::T_O>()));
 	valueFrame->setEnvironmentId(id);
 	(*resultActivationFrameP) = valueFrame;
 //        printf("%s:%d makeValueFrame address &result->%p (&result)->px->%p valueFrame->%p\n", __FILE__, __LINE__, resultActivationFrameP, resultActivationFrameP->px_ref(), valueFrame.px_ref() );
@@ -912,7 +912,7 @@ extern "C"
     // was ActivationFrame_sp
     {_G();
 	ASSERT(resultP!=NULL);
-	core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::ActivationFrame_O>()));
+	core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
 	(*resultP) = tagbodyFrame;
 	ASSERTNOTNULL(*resultP);
     }
@@ -922,7 +922,7 @@ extern "C"
     extern void makeValueFrameFromReversedCons(core::ActivationFrame_sp* afP, core::T_sp* consP, uint id )
     {_G();
 	core::Cons_sp cons = (*consP).as<core::Cons_O>();
-	core::ValueFrame_sp vf = core::ValueFrame_O::createFromReversedCons(cons,_Nil<core::ActivationFrame_O>());
+	core::ValueFrame_sp vf = core::ValueFrame_O::createFromReversedCons(cons,_Nil<core::T_O>());
 	vf->setEnvironmentId(id);
 	(*afP) = vf;
 	ASSERTNOTNULL(*afP);
@@ -1032,7 +1032,7 @@ extern "C"
 	ASSERT(frameP!=NULL);
 	ASSERT(frameP->objectp());
 	core::ValueFrame_sp frame = (*frameP).as<core::ValueFrame_O>();
-	core::Cons_sp result = _Nil<core::Cons_O>();
+	core::List_sp result = _Nil<core::T_O>();
 	for ( int i=frame->length()-1; i>=startRest; i-- )
 	{
 	    result = core::Cons_O::create(frame->entry(i),result);
@@ -1133,7 +1133,7 @@ extern "C"
 
 inline core::T_sp prependMultipleValues(core::T_mv* multipleValuesP)
 {_G();
-    core::Cons_sp result = _Nil<core::Cons_O>();
+    core::List_sp result = _Nil<core::T_O>();
     core::T_mv& mv = (*multipleValuesP);
     if ( mv.number_of_values() > 0 )
     {
@@ -1718,9 +1718,8 @@ extern "C"
 	    *resultP = core::VectorObjects_O::create(_Nil<core::T_O>(),dimensions[0],*elementTypeP);
 	} else
 	{
-	    core::Cons_sp dims = _Nil<core::Cons_O>();
-	    for ( int i= rank-1; i>= 0; i-- )
-	    {
+	    core::List_sp dims = _Nil<core::T_O>();
+	    for ( int i= rank-1; i>= 0; i-- ) {
 		dims = core::Cons_O::create(core::Fixnum_O::create(dimensions[i]),dims);
 	    }
 	    *resultP = core::ArrayObjects_O::make(dims,cl::_sym_T_O,*elementTypeP);
@@ -2036,20 +2035,16 @@ extern "C" {
     T_O* cc_fdefinition(core::T_O* sym)
     {
 	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	if (!s->fboundp()) SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
 	core::Function_sp fn = core::af_symbolFunction(s);
-	if (fn.nilp() || fn.unboundp()) {
-	    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
-	}
 	return &(*fn);
     }
 
     T_O* cc_getSetfFdefinition(core::T_O* sym)
     {
 	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
+	if (!s->setf_fboundp()) SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
 	core::Function_sp fn = s->getSetfFdefinition();//_lisp->get_setfDefinition(s);
-	if (fn.nilp() || fn.unboundp()) {
-	    SIMPLE_ERROR(BF("Could not find function %s") % _rep_(s));
-	}
 	return &(*fn);
     }
 
@@ -2117,12 +2112,12 @@ extern "C" {
 	//
 	llvmo::CompiledClosure* functoid 
 	    = gctools::ClassAllocator<llvmo::CompiledClosure>::allocateClass( tlambdaName // functionName - make this something useful!
-									      , _Nil<core::SourcePosInfo_O>() // SourcePosInfo
+									      , _Nil<core::T_O>() // SourcePosInfo
 									      , kw::_sym_function   // fn-type
 									      , llvm_func //(llvmo::CompiledClosure::fptr_type)NULL   // ptr - will be set when Module is compiled
-									      , _Nil<llvmo::Function_O>() // llvm-func
+									      , _Nil<core::T_O>() // llvm-func
 									      , vo  // renv
-									      , _Nil<Cons_O>()  // assocFuncs
+									      , _Nil<T_O>()  // assocFuncs
 									      , _Nil<T_O>() // lambdaList
 									    );
 	core::CompiledFunction_sp cf = core::CompiledFunction_O::make(functoid);
@@ -2191,11 +2186,10 @@ extern "C" {
 
     __attribute__((visibility("default")))  core::T_O* cc_gatherRestArguments(std::size_t nargs, core::T_O** argArray, std::size_t startRest, char* fnName)
     {_G();
-	core::Cons_sp result = _Nil<core::Cons_O>();
+	core::List_sp result = _Nil<core::T_O>();
 	int inargs = nargs;
 	int istartRest = startRest;
-	for ( int i=inargs-1; i>=istartRest; i-- )
-	{
+	for ( int i=inargs-1; i>=istartRest; i-- ) {
 	    result = core::Cons_O::create(core::T_sp(argArray[i]),result);
 	}
 	return (core::T_O*)(&(*result));
@@ -2292,7 +2286,7 @@ extern "C" {
 
     T_O* cc_pushLandingPadFrame()
     {_G();
-	core::Pointer_sp ptr = _Nil<core::Pointer_O>();
+	core::T_sp ptr = _Nil<core::T_O>();
 #define DEBUG_UNWIND 1
 #ifdef DEBUG_UNWIND
 	ptr = core::Pointer_O::create((void*)&typeid(core::Unwind));
