@@ -1603,6 +1603,7 @@ namespace gctools {
 
  
 namespace gctools {
+    // my comment
     typedef smart_ptr<core::List_V> List_sp;
     class List_sp_iterator_nil;
     class List_sp_iterator;
