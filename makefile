@@ -56,11 +56,11 @@ endif
 all:
 	@echo Dumping local.config
 	cat local.config
-	make submodules
-	make asdf
-	make boostbuildv2-build
-	make clasp-boehm
-	make clasp-mps
+	$(MAKE) submodules
+	$(MAKE) asdf
+	$(MAKE) boostbuildv2-build
+	$(MAKE) clasp-boehm
+	$(MAKE) clasp-mps
 
 fix-scraping:
 	for d in src/*/; do cd "$$d"; export PYTHONPATH="$$PWD:$$PYTHONPATH"; python ../../src/common/symbolScraper.py symbols_scraped.inc *.h *.cc *.scrape.inc; cd ../..; done
@@ -80,8 +80,8 @@ fix-scraping2:
 
 
 submodules:
-	make submodules-boehm
-	make submodules-mps
+	$(MAKE) submodules-boehm
+	$(MAKE) submodules-mps
 
 submodules-boehm:
 	-git submodule update --init src/lisp/kernel/contrib/sicl
@@ -92,18 +92,18 @@ submodules-mps:
 	-git submodule update --init src/mps
 
 asdf:
-	(cd src/lisp/kernel/asdf; make)
+	(cd src/lisp/kernel/asdf; $(MAKE))
 
 only-boehm:
-	make submodules-boehm
-	make boostbuildv2-build
-	make clasp-boehm
+	$(MAKE) submodules-boehm
+	$(MAKE) boostbuildv2-build
+	$(MAKE) clasp-boehm
 
 boehm-build-mps-interface:
-	make submodules
-	make boostbuildv2-build
-	make clasp-boehm
-	(cd src/main; make mps-interface)
+	$(MAKE) submodules
+	$(MAKE) boostbuildv2-build
+	$(MAKE) clasp-boehm
+	(cd src/main; $(MAKE) mps-interface)
 
 
 #
@@ -138,47 +138,47 @@ clasp-mps-cpp:
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release mps)
 
 clasp-mps:
-	make clasp-mps-cpp
-	(cd src/main; make mps)
+	$(MAKE) clasp-mps-cpp
+	(cd src/main; $(MAKE) mps)
 
 # Compile the CL sources for min-mps: and full-mps
 cl-mps:
-	(cd src/main; make mps)
+	(cd src/main; $(MAKE) mps)
 
 # Compile the CL sources for min-mps: using the existing min-mps: - FAST
 cl-min-mps-recompile:
-	(cd src/main; make min-mps-recompile)
+	(cd src/main; $(MAKE) min-mps-recompile)
 
 # Compile the CL sources for full-mps:
 cl-full-mps:
-	(cd src/main; make full-mps)
+	(cd src/main; $(MAKE) full-mps)
 
 
 clasp-boehm-cpp:
 	(cd src/main; $(BJAM) -j$(PJOBS) $(USE_CXXFLAGS) link=$(LINK) bundle release boehm)
 
 clasp-boehm:
-	make clasp-boehm-cpp
-	(cd src/main; make boehm)
+	$(MAKE) clasp-boehm-cpp
+	(cd src/main; $(MAKE) boehm)
 
 # Compile the CL sources for min-boehm: and full-boehm
 cl-boehm:
-	(cd src/main; make boehm)
+	(cd src/main; $(MAKE) boehm)
 
 # Compile the CL sources for min-boehm: using the existing min-boehm: - FAST
 cl-min-boehm-recompile:
-	(cd src/main; make min-boehm-recompile)
+	(cd src/main; $(MAKE) min-boehm-recompile)
 
 # Compile the CL sources for full-boehm:
 cl-full-boehm:
-	(cd src/main; make full-boehm)
+	(cd src/main; $(MAKE) full-boehm)
 
 
 boostbuildv2-build:
 	(cd $(BOOST_BUILD_V2_SOURCE_DIR); ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_V2_INSTALL) --ignore-site-config)
 
 compile-commands:
-	(cd src/main; make compile-commands)
+	(cd src/main; $(MAKE) compile-commands)
 
 
 clean:
