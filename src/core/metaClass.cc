@@ -106,11 +106,11 @@ namespace core
 #define ARGS_af_allocateRawClass "(original meta-class slots &optional name)"
 #define DECL_af_allocateRawClass ""
 #define DOCS_af_allocateRawClass "allocateRawClass - behaves like ECL instance::allocate_raw_instance, The allocator for the new class is taken from (allocatorPrototype).  If (allocatorPrototype) is nil then use the allocator for Instance_O."
-    T_sp af_allocateRawClass(Class_sp orig, Class_sp metaClass, int slots, T_sp className)
+    T_sp af_allocateRawClass(T_sp orig, Class_sp metaClass, int slots, T_sp className)
     {_G();
 	if ( orig.notnilp() )
 	{
-	    SIMPLE_ERROR(BF("Deal with non-nil orig in allocateRawClass"));
+	    SIMPLE_ERROR(BF("Deal with non-nil orig class in allocateRawClass"));
 	    // Check out ecl/src/c/instance.d/si_allocate_raw_instance
 	}
         ASSERTF(metaClass->hasCreator(),BF("The metaClass allocator should always be defined - for class %s it hasn't been") % _rep_(metaClass));
@@ -170,7 +170,7 @@ namespace core
 	    SIMPLE_ERROR(BF("Classes need at least %d slots - you asked for %d") % Class_O::NumberOfClassSlots % slots);
 	}
 	this->_MetaClassSlots.resize(slots,_Unbound<T_O>());
-	this->instanceSet(REF_DIRECT_SUPERCLASSES,_Nil<Cons_O>());
+	this->instanceSet(REF_DIRECT_SUPERCLASSES,_Nil<T_O>());
     }
 
 
@@ -182,7 +182,7 @@ namespace core
         return output;
     };
 
-    Class_sp identifyCxxDerivableAncestorClass(Class_sp aClass)
+    gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass)
     {
         if ( aClass->cxxClassP() ) {
             if ( aClass->cxxDerivableClassP() ) {
@@ -191,9 +191,10 @@ namespace core
         }
         for ( auto supers : aClass->directSuperclasses() ) {
             Class_sp aSuperClass = oCar(supers).as<Class_O>();
-            Class_sp aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
-            if ( aPossibleCxxDerivableAncestorClass.notnilp() ) 
-                return aPossibleCxxDerivableAncestorClass;
+	    gc::Nilable<Class_sp> taPossibleCxxDerivableAncestorClass
+		= identifyCxxDerivableAncestorClass(aSuperClass);
+            if ( taPossibleCxxDerivableAncestorClass.notnilp() ) 
+                return taPossibleCxxDerivableAncestorClass;
         }
         return _Nil<Class_O>();
     }
@@ -202,11 +203,9 @@ namespace core
 
     void Class_O::inheritDefaultAllocator(List_sp superclasses)
     {
-        if ( this->hasCreator() ) {
             // If this class already has an allocator then leave it alone
-            return;
-        }
-        Class_sp aCxxDerivableAncestorClass(_Nil<Class_O>());
+        if ( this->hasCreator() ) return;
+        Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
         for ( auto cur : superclasses ) {
             Class_sp aSuperClass = oCar(cur).as<Class_O>();
             if ( aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP() ) {
@@ -214,22 +213,22 @@ namespace core
                                 "any C++ class you want to derive from must inherit from clbind::Adapter")
                              % _rep_(aSuperClass->className()));
             }
-            Class_sp aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+	    gc::Nilable<Class_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
             if ( aPossibleCxxDerivableAncestorClass.notnilp() ) {
-                if (aCxxDerivableAncestorClass.nilp()) {
-                    aCxxDerivableAncestorClass = aPossibleCxxDerivableAncestorClass;
+                if (!aCxxDerivableAncestorClass_unsafe) {
+                    aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;
                 } else {
                     SIMPLE_ERROR(BF("Only one derivable C++ class is allowed to be"
                                     " derived from at a time instead we have two %s and %s ")
-                                 % _rep_(aCxxDerivableAncestorClass->className())
+                                 % _rep_(aCxxDerivableAncestorClass_unsafe->className())
                                  % _rep_(aPossibleCxxDerivableAncestorClass->className()));
                 }
             }
         }
-
-        if ( aCxxDerivableAncestorClass.notnilp() ) {
-            Creator* aCxxAllocator(aCxxDerivableAncestorClass->getCreator());
-            // gctools::StackRootedPointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass->getCreator());
+        if ( aCxxDerivableAncestorClass_unsafe ) {
+	    // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
+            Creator* aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
+            // gctools::StackRootedPointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
             Creator* dup(aCxxAllocator->duplicateForClassName(this->name()));
             //gctools::StackRootedPointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
             this->setCreator(dup); // this->setCreator(dup.get());
@@ -397,7 +396,7 @@ namespace core {
     {_G();
 	using namespace boost;
 	HashTableEq_sp supers = HashTableEq_O::create_default();
-	VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),16,0,true));
+	VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),16,0,true));
 	this->accumulateSuperClasses(supers,arrayedSupers,this->sharedThis<Class_O>());
 	vector<list<int> > graph(cl_length(arrayedSupers));
 
@@ -449,7 +448,7 @@ namespace core {
 	    LOG(BF("%s") % ss.str() );
 	}
 #endif
-	Cons_sp cpl = _Nil<Cons_O>();
+	List_sp cpl = _Nil<T_O>();
 	for ( deque<int>::const_reverse_iterator it=topo_order.rbegin(); it!=topo_order.rend(); it++ )
 	{
 	    Class_sp mc = arrayedSupers->operator[](*it).as<Class_O>();
@@ -507,7 +506,7 @@ namespace core {
 	    LOG(BF("%s") % ss.str() );
 	}
 #endif
-	Cons_sp cpl = _Nil<Cons_O>();
+	List_sp cpl = _Nil<T_O>();
 	for ( deque<int>::const_reverse_iterator it=topo_order.rbegin(); it!=topo_order.rend(); it++ )
 	{
 	    Class_sp mc = arrayedSupers.get()[*it];
@@ -559,7 +558,7 @@ namespace core {
 	List_sp directSuperclasses = this->directSuperclasses();
 	directSuperclasses = Cons_O::create(superClass,directSuperclasses);
 	this->instanceSet(REF_DIRECT_SUPERCLASSES,directSuperclasses);
-	this->instanceSet(REF_CLASS_PRECEDENCE_LIST,_Nil<Cons_O>());
+	this->instanceSet(REF_CLASS_PRECEDENCE_LIST,_Nil<T_O>());
     }
 
 /*
@@ -686,8 +685,8 @@ namespace core {
 	if ( low == high ) return true;
 	if ( Class_sp lowmc = low.asOrNull<Class_O>() )
 	{
-	    Cons_sp lowClassPrecedenceList = lowmc->instanceRef(Class_O::REF_CLASS_PRECEDENCE_LIST).as_or_nil<Cons_O>();// classPrecedenceList();
-	    return lowClassPrecedenceList->memberEq(high).notnilp();
+	    List_sp lowClassPrecedenceList = lowmc->instanceRef(Class_O::REF_CLASS_PRECEDENCE_LIST);// classPrecedenceList();
+	    return lowClassPrecedenceList.asCons()->memberEq(high).notnilp();
 	} else if (Instance_sp inst = low.asOrNull<Instance_O>() )
 	{
 	    IMPLEMENT_MEF(BF("Run some other tests to make sure that instance is a Class: %s") % _rep_(low) );

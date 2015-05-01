@@ -170,7 +170,7 @@ namespace gctools {
 	    {
 		GCWEAK_LOG(BF("Created BucketsBase with length: %d") % this->length() );
 		for (size_t i(0); i<l; ++i ) {
-		    this->bucket[i] = T(gctools::tag_unbound<typename T::Type>());
+		    this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type>());
 		}
 	    }
 

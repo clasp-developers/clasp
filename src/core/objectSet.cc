@@ -55,7 +55,7 @@ void	ObjectSet_O::addObjects(ObjectSet_sp other)
 
     List_sp ObjectSet_O::asCons()
     {
-	Cons_sp res = _Nil<Cons_O>();
+	List_sp res = _Nil<T_O>();
         this->map( [&res] (T_sp o) {
 	    res = Cons_O::create(o,res);
             } );

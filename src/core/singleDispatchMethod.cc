@@ -160,7 +160,7 @@ namespace core
 							   Class_sp receiverClass,
 							   LambdaListHandler_sp llh,
 							   List_sp declares,
-							   Str_sp docstr,
+							   T_sp docstr,
 							   Function_sp body )
     {_G();
         GC_ALLOCATE(SingleDispatchMethod_O,method );

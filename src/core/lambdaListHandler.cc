@@ -229,7 +229,7 @@ namespace core
 
     T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher)
     {_G();
-	List_sp llprocessed = cl_copyList(llraw).as_or_nil<Cons_O>();
+	List_sp llprocessed = cl_copyList(llraw);
 	Symbol_sp sd_symbol = _Nil<Symbol_O>();
 	Symbol_sp sd_class = _Nil<Symbol_O>();
 	bool saw_amp = false;
@@ -246,16 +246,14 @@ namespace core
 		}
 	    } else if ( cl_consp(arg) )
 	    {
-		List_sp carg = arg.as_or_nil<Cons_O>();
-		if ( cl_length(carg) != 2 )
-		{
+		List_sp carg = arg;
+		if ( cl_length(carg) != 2 ) {
 		    SYMBOL_SC_(CorePkg,singleDispatchWrongNumberArgumentsError);
 		    SYMBOL_SC_(KeywordPkg,arguments);
 		    ERROR(_sym_singleDispatchWrongNumberArgumentsError,
 			  Cons_O::createList(kw::_sym_arguments,carg) );
 		}
-		if ( sd_symbol.notnilp() )
-		{
+		if ( sd_symbol.notnilp() ) {
 		    SYMBOL_SC_(CorePkg,singleDispatchTooManyArgumentsError);
 		    ERROR(_sym_singleDispatchTooManyArgumentsError,
 			  Cons_O::createList(kw::_sym_arguments,llraw));
@@ -272,13 +270,11 @@ namespace core
 	    }
             idx++;
 	}
-	if ( sd_symbol.nilp() )
-	{
-	    if ( allow_first_argument_default_dispatcher )
-	    {
-		sd_symbol = oCar(llprocessed).as<Symbol_O>();
-	    } else
-	    {
+	if ( sd_symbol.nilp() ) {
+	    if ( allow_first_argument_default_dispatcher ) {
+		T_sp car = oCar(llprocessed);
+		sd_symbol = car.as<Symbol_O>();
+	    } else {
 		SYMBOL_SC_(CorePkg,singleDispatchMissingDispatchArgumentError);
 		ERROR(_sym_singleDispatchMissingDispatchArgumentError,
 		      Cons_O::createList(kw::_sym_arguments,llraw) );
@@ -295,7 +291,7 @@ namespace core
       generate temporary symbols */
     List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list )
     {_G();
-	List_sp new_lambda_list = cl_copyList(lambda_list).as_or_nil<Cons_O>();
+	List_sp new_lambda_list = cl_copyList(lambda_list);
 	Symbol_sp whole_symbol = _Nil<Symbol_O>();
 	Symbol_sp environment_symbol = _Nil<Symbol_O>();
 	if ( oCar(new_lambda_list) == cl::_sym_AMPwhole ) {
@@ -363,7 +359,7 @@ namespace core
     {_OF();
         this->Base::initialize();
 	this->_CreatesBindings = true;
-	this->_DeclareSpecifierList = _Nil<Cons_O>();
+	this->_DeclareSpecifierList = _Nil<T_O>();
 	this->_RequiredArguments.clear();
 	this->_OptionalArguments.clear();
 	this->_RestArgument.clear();
@@ -823,7 +819,7 @@ void bind_aux
 	allow_other_keys = _lisp->_false();
 	if ( original_lambda_list.nilp() ) return false;
 	throw_if_invalid_context(context);
-	List_sp arguments = cl_copyList(original_lambda_list).as_or_nil<Cons_O>();
+	List_sp arguments = cl_copyList(original_lambda_list);
 	LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % arguments->__repr__() );
 	ArgumentMode add_argument_mode = required;
 	restarg.clear();
@@ -861,7 +857,7 @@ void bind_aux
 		    T_sp defaultValue = _Nil<T_O>();
 		    T_sp supplied = _Nil<T_O>();
 		    if ( cl_consp(oarg) ) {
-			List_sp carg = oarg.as_or_nil<Cons_O>();
+			List_sp carg = oarg;
 			LOG(BF("Optional argument is a Cons: %s") % carg->__repr__() );
 			sarg = oCar(carg);
 			if ( oCdr(carg).notnilp() )
@@ -925,10 +921,10 @@ void bind_aux
 			localTarget = oarg;
 			keySymbol = localTarget.as<Symbol_O>()->asKeywordSymbol();
 		    } else if ( cl_consp(oarg) ) {
-			List_sp carg = oarg.as_or_nil<Cons_O>();
+			List_sp carg = oarg;
 			T_sp head = oCar(carg);
 			if ( cl_consp(head) ) {
-			    List_sp namePart = head.as_or_nil<Cons_O>();
+			    List_sp namePart = head;
 			    keySymbol = oCar(namePart).as<Symbol_O>();			// This is the keyword name
 			    if (!keySymbol->isKeywordSymbol()) {
 				SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: ") % _rep_(keySymbol));
@@ -965,7 +961,7 @@ void bind_aux
 			T_sp expression = _Nil<T_O>();
 			if ( cl_consp(oarg) )
 			    {
-				List_sp carg = oarg.as_or_nil<Cons_O>();
+				List_sp carg = oarg;
 				localSymbol = oCar(carg).as<Symbol_O>();
 				//
 				// Is there an expression
@@ -984,7 +980,7 @@ void bind_aux
 	    if ( ocur.nilp() || cl_consp(ocur) )
 	    {
 		// Advance to next element of the list
-		cur = ocur.as_or_nil<Cons_O>();
+		cur = ocur;
 		continue;
 	    }
 	    // This is a dotted list. The cdr must be a symbol and
@@ -1165,7 +1161,7 @@ void bind_aux
 	    ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList) );
 	} else
 	{
-	    this->_ClassifiedSymbolList = _Nil<Cons_O>();
+	    this->_ClassifiedSymbolList = _Nil<T_O>();
 	}
     }
 
@@ -1346,13 +1342,13 @@ void bind_aux
 
     List_sp LambdaListHandler_O::namesOfLexicalVariables() const
     {_G();
-	List_sp namesRev = _Nil<Cons_O>();
+	List_sp namesRev = _Nil<T_O>();
 	for ( auto cur : this->_ClassifiedSymbolList ) {
 	    if ( oCar(oCar(cur)) == ext::_sym_heapVar ) {
 		namesRev = Cons_O::create(oCadr(oCar(cur)),namesRev);
 	    }
 	}
-	return cl_nreverse(namesRev).as_or_nil<Cons_O>();
+	return cl_nreverse(namesRev);
     }
 
     void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging()

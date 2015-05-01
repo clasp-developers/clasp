@@ -52,7 +52,7 @@ namespace core {
 	// Lets create a predefined symbol here for the class name
 	oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL;
 	_lisp->createPredefinedSymbol(oclass->_InstanceClassSymbol,name);
-//    oclass->_InstanceVariableNames = _Nil<Cons_O>();
+//    oclass->_InstanceVariableNames = _Nil<T_O>();
 	IMPLEMENT_MEF(BF("What do I do about superclasses of the CandoClass here? - I should call setInstanceBaseClasses with something or just StandardObject "));
 	return oclass;
     }

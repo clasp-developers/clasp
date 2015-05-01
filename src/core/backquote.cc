@@ -148,16 +148,19 @@ namespace core
 	// C-version if 0    Lisp-version if 1
 	T_sp result = _Nil<T_O>();
 	T_sp p;
-	Cons_sp q;
+	T_sp q;
 	int step;
-	Cons_sp cp, nreconc, nr, x;
+	T_sp cp;
+	T_sp nr;
+	T_sp x;
+	T_sp nreconc;
 	T_sp ax;
 	if ( af_atom(ox) )
 	{
 	    result = Cons_O::createList(_sym_STARbq_quoteSTAR,ox);
 	    goto DONE;
 	}
-	x = ox.as_or_nil<Cons_O>();
+	x = ox;
 	ax = oCar(x);
 	if ( ax == _sym_backquote )
 	{
@@ -176,18 +179,18 @@ namespace core
 	    SIMPLE_ERROR(BF(",.%s after `") % _rep_(oCadr(x)) );
 	}
 	p = x;
-	q = _Nil<Cons_O>();
+	q = _Nil<T_O>();
 	step = 0;
 	while (!af_atom(p))
 	{
-	    cp = p.as_or_nil<Cons_O>();
+	    cp = p;
 	    if ( oCar(cp) == _sym_unquote )
 	    {
 		if ( !oCddr(cp).nilp() )
 		{
 		    SIMPLE_ERROR(BF("Malformed ,%s") % _rep_(p) );
 		}
-		nreconc = cl_nreconc(q,Cons_O::create(oCadr(cp))).as_or_nil<Cons_O>(); // eval::funcall(cl::_sym_nreconc,q,Cons_O::create(oCadr(cp)))); // HERE_scCONS_CREATE(oCadr(cp))).as_or_nil<Cons_O>();
+		nreconc = cl_nreconc(q,Cons_O::create(oCadr(cp))); // eval::funcall(cl::_sym_nreconc,q,Cons_O::create(oCadr(cp)))); // HERE_scCONS_CREATE(oCadr(cp)));
 		result = Cons_O::create(_sym_STARbq_appendSTAR, nreconc);
 		goto DONE;
 	    }
@@ -209,8 +212,8 @@ namespace core
 	    step++;
 	}
 	{
-	    nr = cl_nreconc(q,Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p))).as_or_nil<Cons_O>();
-//	    nr = eval::funcall(cl::_sym_nreconc,q,Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p))).as_or_nil<Cons_O>();
+	    nr = cl_nreconc(q,Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p)));
+//	    nr = eval::funcall(cl::_sym_nreconc,q,Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p)));
 	}
 	result = Cons_O::create(_sym_STARbq_appendSTAR, nr);
 
@@ -236,7 +239,7 @@ namespace core
             //	    return Cons_O::createList(_sym_STARbq_listSTAR,eval::funcall(_sym_backquote_process,x));
             return Cons_O::createList(_sym_STARbq_listSTAR,af_backquote_process(x)); 
 	}
-	Cons_sp cx = x.as_or_nil<Cons_O>();
+	List_sp cx = x;
 	if ( oCar(cx) == _sym_unquote )
 	{
 	    return(Values(Cons_O::createList(_sym_STARbq_listSTAR,oCadr(cx))));
@@ -266,7 +269,7 @@ namespace core
     {_G();
 	if ( cl_consp(x) )
 	{
-	    Cons_sp cx = x.as_or_nil<Cons_O>();
+	    List_sp cx = x;
 	    T_sp head = oCar(cx);
 	    return(((( head == _sym_unquote_splice ) || (head == _sym_unquote_nsplice))));
 	}
@@ -282,7 +285,7 @@ namespace core
     {_G();
 	if ( cl_consp(x) )
 	{
-	    Cons_sp cx = x.as_or_nil<Cons_O>();
+	    List_sp cx = x;
 	    T_sp head = oCar(cx);
 	    return((((head==_sym_unquote)|| ( head == _sym_unquote_splice ) || (head == _sym_unquote_nsplice))));
 	}
@@ -306,7 +309,7 @@ namespace core
 	    T_sp result = eval::funcall(op,x);
 	    return result;
 	}
-	Cons_sp cx = x.as_or_nil<Cons_O>();
+	List_sp cx = x;
 	T_sp a = eval::funcall(op,oCar(cx));
 	T_sp d = af_backquote_maptree(op,oCdr(cx));
 	if ( cl_eql(a,oCar(cx)) && cl_eql(d,oCdr(cx)))
@@ -325,7 +328,7 @@ namespace core
 	    T_sp result = op(x);
 	    return((result));
 	}
-	Cons_sp cx = x.as_or_nil<Cons_O>();
+	List_sp cx = x;
 	T_sp a = op(x);
 	T_sp d = backquote_maptree(op,cCdr(cx));
 	if ( cl_eql(a,oCar(cx)) && cl_eql(d,cCdr(cx)))
@@ -346,7 +349,7 @@ namespace core
     T_sp af_backquote_simplify(T_sp x)
     {_G();
 	if ( af_atom(x) ) return(Values(x));
-	Cons_sp cx = x.as_or_nil<Cons_O>();
+	List_sp cx = x;
 	if ( oCar(cx) == _sym_STARbq_quoteSTAR )
 	{
 	    // do nothing x = x;
@@ -354,7 +357,7 @@ namespace core
 	{
 	    SYMBOL_SC_(CorePkg,backquote_simplify);
 	    x = af_backquote_maptree(_sym_backquote_simplify->symbolFunction(),x);
-	    cx = x.as_or_nil<Cons_O>();
+	    cx = x;
 	}
 	if ( oCar(cx) != _sym_STARbq_appendSTAR )
 	{
@@ -405,7 +408,7 @@ namespace core
 								      car_last_car_args,
 								      result));
 	    } else if ( (oCaar(args) == _sym_STARbq_quoteSTAR) &&
-			(cl_consp(oCadar(args).as_or_nil<Cons_O>())) &&
+			(cl_consp(oCadar(args))) &&
 			(!af_backquote_frob(oCadar(args))) &&
 			(oCddar(args).nilp()))
 	    {
@@ -435,7 +438,7 @@ namespace core
 	if ( x.nilp() ) return(Values(_lisp->_true()));
 	if ( cl_consp(x) )
 	{
-	    Cons_sp cx = x.as_or_nil<Cons_O>();
+	    List_sp cx = x;
 	    if ( oCar(cx) == _sym_STARbq_quoteSTAR ) return(_lisp->_true());
 	}
 	return _Nil<T_O>();
@@ -454,7 +457,7 @@ namespace core
 	if ( af_backquote_null_or_quoted(item).isTrue()
 	     && af_backquote_null_or_quoted(result).isTrue() )
 	{
-	    Cons_sp tl = Cons_O::createList(oCadr(item.as_or_nil<Cons_O>()),oCadr(result.as_or_nil<Cons_O>()));
+	    List_sp tl = Cons_O::createList(oCadr(item),oCadr(result));
 	    return Cons_O::createList(_sym_STARbq_quoteSTAR,
 				    af_backquote_append(tl));
 	} else if ( cl_equal(result,_sym_STARbq_quote_nilSTAR->symbolValue()) )
@@ -482,7 +485,7 @@ namespace core
 	if ( af_every(_sym_backquote_null_or_quoted,Cons_O::create(items)).isTrue()
 	     && af_backquote_null_or_quoted(result).isTrue() )
 	{
-	    Cons_sp ti = Cons_O::create(items.as_or_nil<Cons_O>());
+	    Cons_sp ti = Cons_O::create(items);
 	    Cons_sp tl = Cons_O::createList(cl_mapcar(cl::_sym_cadr,ti), oCadr(result));
 	    return Cons_O::createList(_sym_STARbq_quoteSTAR,af_backquote_append(tl));
 	} else if ( cl_equal(result,_sym_STARbq_quote_nilSTAR->symbolValue()))
@@ -492,7 +495,7 @@ namespace core
 		    && ((oCar(result) == _sym_STARbq_listSTAR )
 			|| (oCar(result) == _sym_STARbq_listSTARSTAR )))
 	{
-	    Cons_sp tl = Cons_O::createList(items,oCdr(result.as_or_nil<Cons_O>()));
+	    List_sp tl = Cons_O::createList(items,oCdr(result));
 	    return Cons_O::create(oCar(result),af_backquote_append(tl));
 	}
 	Cons_sp ta = Cons_O::create(result);
@@ -516,7 +519,7 @@ namespace core
 	if ( x == _sym_STARbq_listSTARSTAR ) return cl::_sym_listSTAR;
 	if ( x == _sym_STARbq_quoteSTAR ) return cl::_sym_quote;
 	if (af_atom(x)) return x;
-	Cons_sp cx = x.as_or_nil<Cons_O>();
+	List_sp cx = x;
 	if ( oCar(cx) == _sym_STARbq_clobberableSTAR )
 	{
 	    return((af_backquote_remove_tokens(oCadr(cx))));

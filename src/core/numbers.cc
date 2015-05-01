@@ -131,17 +131,10 @@ namespace core
     {_G();
 	/* INV: type check occurs in brcl_number_compare() for the rest of
 	   numbers, but for the first argument it happens in brcl_zerop(). */
-	if (!nums.nilp()) {
-	    do {
-		Real_sp numi = oCar(nums).as<Real_O>();
-		if ( numi.nilp() ) {
-		    TYPE_ERROR(numi,cl::_sym_Real_O);
-		}
-		nums = oCdr(nums);
+	for ( auto cur : nums ) {
+	    if ( Real_sp numi = oCar(cur).asOrNull<Real_O>() ) {
 		min = brcl_min2(min,numi);
-		if (brcl_number_compare(min, numi) > 0)
-		    min = numi;
-	    } while (nums.notnilp());
+	    } else TYPE_ERROR(oCar(nums),cl::_sym_Real_O);
 	}
 	return min;
     }
@@ -155,15 +148,10 @@ namespace core
     {_G();
 	/* INV: type check occurs in brcl_number_compare() for the rest of
 	   numbers, but for the first argument it happens in brcl_zerop(). */
-	if (!nums.nilp()) {
-	    do {
-		Real_sp numi = oCar(nums).as<Real_O>();
-		if ( numi.nilp() ) {
-		    TYPE_ERROR(numi,cl::_sym_Real_O);
-		}
-		nums = oCdr(nums);
+	for ( auto cur : nums ) {
+	    if ( Real_sp numi = oCar(nums).asOrNull<Real_O>() ) {
 		max = brcl_max2(max,numi);
-	    } while (nums.notnilp());
+	    } else TYPE_ERROR(numi,cl::_sym_Real_O);
 	}
 	return max;
     }
@@ -1432,18 +1420,16 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 #define LOCK_af__NE_ 1
 #define ARGS_af__NE_ "(&rest args)"
 #define DECL_af__NE_ ""
-    T_mv af__NE_(List_sp args)
+    T_sp af__NE_(List_sp args)
     {_G();
-	while ( args.notnilp() )
-	{
-	    Number_sp a = oCar(args).as<Number_O>();
-	    for ( auto cur : (List_sp)oCdr(args) ) {
-		Number_sp b = oCar(cur).as<Number_O>();
-		if ( basic_equalp(a,b) ) return(Values(_Nil<T_O>()));
-	    }
-	    args = oCdr(args);
-	}
-	return(Values(_lisp->_true()));
+        if ( args.nilp() ) return _lisp->_true();
+        Number_sp a = oCar(args).as<Number_O>();
+	Number_sp b;
+        for ( auto cur : (List_sp)oCdr(args) ) {
+            b = oCar(cur).as<Number_O>();
+            if ( basic_equalp(a,b)==0 ) return _Nil<T_O>();
+        }
+	return _lisp->_true();
     }
 
 
@@ -1451,23 +1437,16 @@ long_double_fix_compare(Fixnum n, LongFloat d)
 #define LOCK_af__EQ_ 1
 #define ARGS_af__EQ_ "(&rest args)"
 #define DECL_af__EQ_ ""
-    T_mv af__EQ_(List_sp args)
+    T_sp af__EQ_(List_sp args)
     {_G();
-	if ( args.nilp() ) return(Values(_lisp->_true()));
+	if ( args.nilp() ) return(_lisp->_true());
 	Number_sp a = oCar(args).as<Number_O>();
-	if ( a.nilp() ) {
-	    TYPE_ERROR(a,cl::_sym_Number_O);
+	Number_sp b;
+	for ( auto cur : (List_sp)oCdr(args) ) {
+	    b = oCar(cur).as<Number_O>();
+	    if ( !basic_equalp(a,b) ) return _Nil<T_O>();
 	}
-	args = oCdr(args);
-	while ( args.notnilp() ) {
-	    Number_sp b = oCar(args).as<Number_O>();
-	    if ( b.nilp() ) {
-		TYPE_ERROR(b,cl::_sym_Number_O);
-	    }
-	    if ( !basic_equalp(a,b) ) return(Values(_lisp->_false()));
-	    args = oCdr(args);
-	}
-	return(Values(_lisp->_true()));
+	return _lisp->_true();
     };
 
 
@@ -4045,15 +4024,13 @@ Number_sp brcl_atan1(Number_sp y)
 #define ARGS_af_atan "(x &optional y)"
 #define DECL_af_atan ""
 #define DOCS_af_atan "atan"
-	T_sp af_atan(Number_sp x, Number_sp y)
-	{_G();
+    T_sp af_atan(Number_sp x, T_sp y)
+    {_G();
 	/* INV: type check in brcl_atan() & brcl_atan2() */
 	/* FIXME brcl_atan() and brcl_atan2() produce generic errors
 	   without recovery and function information. */
-	if (y.nilp()) {
-	return brcl_atan1(x);
-    }
-	return brcl_atan2(x,y);
+	if (y.nilp()) return brcl_atan1(x);
+	return brcl_atan2(x,y.as<Number_O>());
     }
 
 /* ----------------------------------------------------------------------
@@ -4257,12 +4234,10 @@ Number_sp brcl_atan1(Number_sp y)
 #define ARGS_af_log "(number &optional base)"
 #define DECL_af_log ""
 #define DOCS_af_log "Calculate the log of (number) to base (base)."
-    Number_sp af_log(Number_sp number, Number_sp base)
+    Number_sp af_log(Number_sp number, T_sp base)
     {_G();
-	if ( base.nilp() ) {
-	    return brcl_log1(number);
-	}
-	return brcl_log2(base,number);
+	if ( base.nilp() ) return brcl_log1(number);
+	return brcl_log2(base.as<Number_O>(),number);
     }
 
 

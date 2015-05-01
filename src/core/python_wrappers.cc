@@ -222,7 +222,7 @@ namespace core
 	core::Cons_sp keywordAList = python_convertKeywordDictToAssocList(keywordDict,lisp);
 	core::Cons_sp first = core::Cons_O::create(_Nil<T_O>(),lisp);
 	first->setCdr(fixedArgs);
-	core::Cons_sp cur = first->last().as_or_nil<Cons_O>();
+	core::List_sp cur = first->last();
 	for ( Cons_sp acur = keywordAList; acur.notnilp(); acur = cCdr(acur))
 	{
 	    core::Cons_sp assoc = acur->ocar().as<core::Cons_O>();

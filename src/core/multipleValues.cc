@@ -78,9 +78,9 @@ namespace core
 
 
 #if 0
-    Cons_sp MultipleValues::asCons(int iend) const
+    List_sp MultipleValues::asCons(int iend) const
     {_OF();
-	Cons_sp cur = _Nil<Cons_O>();
+	List_sp cur = _Nil<T_O>();
 	for ( int i=iend-1; i>0; --i )
 	{
 	    Cons_sp one = _lisp->create<Cons_O>(this->_Values[i]);
@@ -111,7 +111,7 @@ namespace core
     void multipleValuesSaveToVector(T_mv values, VectorObjects_sp save)
     {
 	core::MultipleValues& mv = core::lisp_multipleValues();
-	save->adjust(_Nil<T_O>(),_Nil<Cons_O>(),values.number_of_values());
+	save->adjust(_Nil<T_O>(),_Nil<T_O>(),values.number_of_values());
 	if ( values.number_of_values() > 0 )
 	{
 	    save->operator[](0) = values;

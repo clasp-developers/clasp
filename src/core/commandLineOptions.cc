@@ -95,7 +95,7 @@ namespace core
 		if ( vm.count("image") )
 		{
 		    SYMBOL_EXPORT_SC_(KeywordPkg,ignoreInitImage);
-		    Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+		    List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
 		    features = Cons_O::create(kw::_sym_ignoreInitImage,features);
 		    cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 		}
@@ -103,7 +103,7 @@ namespace core
 		if ( vm.count("feature") )
 		{
 		    vector<string> feature = vm["feature"].as< vector<string> >();
-		    Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as_or_nil<Cons_O>();
+		    List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
 		    for ( vector<string>::iterator fit=feature.begin(); fit!=feature.end(); fit++ )
 		    {
 			if ( (*fit) == "" )

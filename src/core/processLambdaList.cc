@@ -284,7 +284,7 @@ void extract_lambda_list(Cons_sp arguments,
 		LOG(BF("Optional argument was a Symbol_O[%s]") % sarg->__repr__() );
 	    } else if ( oarg->consP() )
 	    {
-		Cons_sp carg = oarg.as_or_nil<Cons_O>();
+		List_sp carg = oarg;
 		LOG(BF("Optional argument is a Cons: %s") % carg->__repr__() );
 		sarg = carg->ocar().as<Symbol_O>();
 		if ( carg->cdr().notnilp() )
@@ -327,7 +327,7 @@ void extract_lambda_list(Cons_sp arguments,
 		keySymbol = localSymbol->asKeywordSymbol();
 	    } else if ( oarg->consP() )
 	    {
-		Cons_sp carg = oarg.as_or_nil<Cons_O>();
+		List_sp carg = oarg;
 		T_sp head = carg->ocar();
 		if ( head->symbolP() )
 		{
@@ -336,7 +336,7 @@ void extract_lambda_list(Cons_sp arguments,
 		    keySymbol = localSymbol->asKeywordSymbol();
 		} else if ( head->consP() )
 		{
-		    Cons_sp namePart = head.as_or_nil<Cons_O>();
+		    List_sp namePart = head;
 		    keySymbol = namePart->ocar().as<Symbol_O>();			// This is the keyword name
 		    ASSERTP(keySymbol->isKeywordSymbol(),"with key arguments of the form ((:x y) ...) the first argument must be a symbol");
 		    localSymbol = namePart->ocadr().as<Symbol_O>();		 // this is the symbol to rename it to
@@ -375,7 +375,7 @@ void extract_lambda_list(Cons_sp arguments,
 		localSymbol = oarg.as<Symbol_O>();
 	    } else if ( oarg->consP() )
 	    {
-		Cons_sp carg = oarg.as_or_nil<Cons_O>();
+		List_sp carg = oarg;
 		localSymbol = carg->ocar().as<Symbol_O>();
 		//
 		// Is there an expression

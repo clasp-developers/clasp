@@ -211,7 +211,7 @@ namespace core
 #define DOCS_af_environmentList "Return a list of environment parents"
     T_sp af_environmentList(T_sp env)
     {_G();
-	Cons_sp result = _Nil<Cons_O>();
+	List_sp result = _Nil<T_O>();
 	for ( T_sp ecur=env; ecur.notnilp(); ecur=ecur.as<Environment_O>()->getParentEnvironment() )
 	{
 	    result = Cons_O::create(ecur,result);
@@ -226,7 +226,7 @@ namespace core
 #define DOCS_af_environmentTypeList "Return a list of environment parents"
     T_sp af_environmentTypeList(T_sp env)
     {_G();
-	Cons_sp result = _Nil<Cons_O>();
+	List_sp result = _Nil<T_O>();
 	for ( T_sp ecur=env; ecur.notnilp(); ecur=ecur.as<Environment_O>()->getParentEnvironment() )
 	{
 	    result = Cons_O::create(lisp_static_class(ecur),result);
@@ -257,7 +257,7 @@ namespace core
 #define DOCS_af_runtimeEnvironment "Return the RuntimeEnvironment or nil"
     T_sp af_runtimeEnvironment(T_sp tenv)
     {_G();
-	if ( tenv.nilp() ) return _Nil<Environment_O>();
+	if ( tenv.nilp() ) return _Nil<T_O>();
         if ( tenv.framep() ) return tenv;
 	if ( Environment_sp env = tenv.asOrNull<Environment_O>() ) {
             return env->runtimeEnvironment();
@@ -388,7 +388,7 @@ namespace core
 
     T_sp Environment_O::clasp_currentVisibleEnvironment(T_sp env)
     {_G();
-	if ( env.nilp() ) return(_Nil<Environment_O>());
+	if ( env.nilp() ) return(_Nil<T_O>());
         if ( env.framep() ) {
             return env;
         } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
@@ -446,7 +446,7 @@ namespace core
 
     List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key)
     {
-	if ( env.nilp() ) return _Nil<Cons_O>();
+	if ( env.nilp() ) return _Nil<T_O>();
         else if ( env.framep() ) {
             SIMPLE_ERROR(BF("Illegal to call clasp_gather_metadata on tagged_frame"));
         } else if ( Environment_sp eenv = env.asOrNull<Environment_O>() ) {
@@ -457,7 +457,7 @@ namespace core
 
     List_sp Environment_O::gather_metadata(Symbol_sp key) const
     {_G();
-	if ( this->getParentEnvironment().nilp() ) return _Nil<Cons_O>();
+	if ( this->getParentEnvironment().nilp() ) return _Nil<T_O>();
 	return clasp_gather_metadata(this->getParentEnvironment(),key);
     }
 
@@ -467,7 +467,7 @@ namespace core
     {_G();
 	if ( this->getParentEnvironment().nilp())
 	{
-	    return(Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<Environment_O>()));
+	    return(Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()));
 	}
 	return Environment_O::clasp_lookupMetadata(this->getParentEnvironment(),key);
     }
@@ -845,7 +845,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	    }
 	}
 	// Lexical variable was not found - return nil
-	return _Nil<Cons_O>();
+	return _Nil<T_O>();
     }
 
 
@@ -1166,7 +1166,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 	if ( it.nilp() ) {
 	    if ( this->_ParentEnvironment.nilp())
 	    {
-		return(Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<Environment_O>()));
+		return(Values(_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>()));
 	    }
 	    return this->_ParentEnvironment.as<Environment_O>()->lookupMetadata(key);
 	}
@@ -1202,7 +1202,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
 
     T_sp RuntimeVisibleEnvironment_O::currentVisibleEnvironment() const
     {_G();
-//	if ( this -> isNil() ) return _Nil<Environment_O>();
+//	if ( this -> isNil() ) return _Nil<T_O>();
 	return this->const_sharedThis<Environment_O>();
     }
 
@@ -1711,7 +1711,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag)
     T_sp CompileTimeEnvironment_O::currentVisibleEnvironment() const
     {_G();
 	T_sp parent = this->getParentEnvironment();
-	if ( parent.nilp() ) return _Nil<Environment_O>();
+	if ( parent.nilp() ) return _Nil<T_O>();
 	return clasp_currentVisibleEnvironment(parent);
     }
 

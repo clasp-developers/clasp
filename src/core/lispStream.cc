@@ -3020,7 +3020,6 @@ namespace core
     static cl_index
     consume_byte_stack(T_sp strm, unsigned char *c, cl_index n)
     {
-	IMPLEMENT_MEF(BF("The code below is broken - see the commented out code - that was original"));
 	cl_index out = 0;
 	T_sp l;
 	while (n) {
@@ -3030,11 +3029,7 @@ namespace core
             *(c++) = clasp_fixnum(oCar(l));
             out++;
             n--;
-#if 1 // Current
-	    StreamByteStack(strm) = oCdr(l).as<Cons_O>();
-#else // old
             StreamByteStack(strm) = l = oCdr(l);
-#endif
 	}
 	return out;
     }
@@ -3077,7 +3072,7 @@ namespace core
             T_sp aux = clasp_file_position(strm);
             if (!aux.nilp())
                 clasp_file_position_set(strm, aux);
-            StreamByteStack(strm) = _Nil<Cons_O>();
+            StreamByteStack(strm) = _Nil<T_O>();
 	}
 	return output_file_write_byte8(strm, c, n);
     }

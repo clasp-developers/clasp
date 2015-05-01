@@ -148,7 +148,7 @@ namespace clbind {
     void package_::operator[](scope s)
     {
         string packageName = m_name;
-        core::Package_sp pkg = _lisp->findPackage(packageName);
+        core::T_sp pkg = _lisp->findPackage(packageName);
         if ( pkg.nilp() ) {
             pkg = _lisp->makePackage(packageName,m_nicknames,m_usePackageNames);
         }

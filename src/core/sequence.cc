@@ -103,7 +103,7 @@ namespace core
 	}
 	if ( element_type == cl::_sym_list )
 	{
-	    Cons_sp sequence = eval::funcall(cl::_sym_make_list,size,kw::_sym_initial_element,initial_element).as_or_nil<Cons_O>();
+	    List_sp sequence = eval::funcall(cl::_sym_make_list,size,kw::_sym_initial_element,initial_element);
 	    return sequence;
 	}
 	IMPLEMENT_MEF(BF("Implement make_sequence"));

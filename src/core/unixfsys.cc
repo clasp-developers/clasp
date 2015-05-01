@@ -151,7 +151,7 @@ safe_chdir(const char *path, T_sp tprefix)
     if ( Str_sp prefix = tprefix.asOrNull<Str_O>() ) {
 	stringstream ss;
 	ss << prefix.as<Str_O>()->get() << path;
-	return safe_chdir(ss.str().c_str(), _Nil<Str_O>());
+	return safe_chdir(ss.str().c_str(), _Nil<T_O>());
     } else {
 	int output;
 	brcl_disable_interrupts();
@@ -218,7 +218,7 @@ safe_chdir(const char *path, T_sp tprefix)
     T_sp af_chdir(Pathname_sp dir)
     {_G();
         Str_sp sdir = brcl_namestring(dir,true);
-        return Integer_O::create(safe_chdir(sdir->get().c_str(),_Nil<Str_O>()));
+        return Integer_O::create(safe_chdir(sdir->get().c_str(),_Nil<T_O>()));
     };
 
 static int

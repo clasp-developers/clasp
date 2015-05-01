@@ -84,10 +84,10 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
 					 ,spi
 					 ,kw::_sym_function
 					 ,LambdaListHandler_O::create(0)
-					 ,_Nil<Cons_O>()
-					 ,_Nil<Str_O>()
 					 ,_Nil<T_O>()
-					 ,_Nil<Cons_O>());
+					 ,_Nil<T_O>()
+					 ,_Nil<T_O>()
+					 ,_Nil<T_O>());
     InvocationHistoryFrame closure(&loadSourceClosure);
     _lisp->invocationHistoryStack().setActivationFrameForTop(_Nil<ActivationFrame_O>());
 //        printf("%s:%d   Here set-up *load-pathname*, *load-truename* and *load-source-file-info* for source: %s\n", __FILE__, __LINE__, _rep_(source).c_str() );
@@ -107,7 +107,7 @@ T_sp af_loadSource(T_sp source, bool verbose, bool print, T_sp externalFormat)
             if ( print ) {
                 _lisp->print(BF(";; -- read- %s\n") % _rep_(x));
             };
-            eval::af_topLevelEvalWithEnv(x,_Nil<Environment_O>());
+            eval::af_topLevelEvalWithEnv(x,_Nil<T_O>());
 //                gctools::af_cleanup();
         }
     }

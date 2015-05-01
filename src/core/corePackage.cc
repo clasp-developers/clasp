@@ -781,7 +781,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
 	gray::initialize_grayPackage();
 	cluser::initialize_commonLispUserPackage();
 	{_BLOCK_TRACEF(BF("Setup instance base classes for T_O"));
-	    T_O::___staticClass->setInstanceBaseClasses(_Nil<Cons_O>());
+	    T_O::___staticClass->setInstanceBaseClasses(_Nil<T_O>());
 	}
 	{_BLOCK_TRACEF(BF("Define class names"));
 #define DEFINE_CLASS_NAMES
@@ -936,17 +936,17 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         TwoWayStream_sp terminal = TwoWayStream_O::make(stdin_stream,stdout_stream);
         _lisp->_Roots._TerminalIO = terminal;
 	cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
-	_sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<Cons_O>());
+	_sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());
 	cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
 #ifndef USE_SHARP_EQUAL_HASH_TABLES
-	_sym_STARsharp_equal_alistSTAR->defparameter(_Nil<Cons_O>());
-	_sym_STARsharp_sharp_alistSTAR->defparameter(_Nil<Cons_O>());
+	_sym_STARsharp_equal_alistSTAR->defparameter(_Nil<T_O>());
+	_sym_STARsharp_sharp_alistSTAR->defparameter(_Nil<T_O>());
 #else
 	_sym_STARsharp_equal_final_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
 	_sym_STARsharp_equal_temp_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
 	_sym_STARsharp_equal_repl_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
 #endif
-	_sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<ActivationFrame_O>());
+	_sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
 	_sym__PLUS_executableName_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
 	SYMBOL_SC_(CorePkg,cArgumentsLimit);
 	_sym_cArgumentsLimit->defconstant(Fixnum_O::create(Lisp_O::MaxFunctionArguments));
@@ -976,8 +976,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         cl::_sym_arrayTotalSizeLimit->defconstant(Fixnum_O::create(MOST_POSITIVE_FIXNUM));
 	core::_sym__PLUS_standardReadtable_PLUS_->defparameter(_Nil<T_O>());
         core::_sym_STARpollTicksPerGcSTAR->defparameter(Fixnum_O::create(POLL_TICKS_PER_GC));
-	comp::_sym_STARlowLevelTraceSTAR->defparameter(_Nil<core::T_O>());
-	comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<core::T_O>());
+	comp::_sym_STARlowLevelTraceSTAR->defparameter(_Nil<T_O>());
+	comp::_sym_STARlowLevelTracePrintSTAR->defparameter(_Nil<T_O>());
 	_sym_STARallCxxClassesSTAR->defparameter(_Nil<T_O>());
 	_sym_STARtopLevelCommandHookSTAR->defparameter(_Nil<T_O>());
 	_sym_STARllvmFunctionNameHookSTAR->defparameter(_Nil<T_O>());
@@ -993,7 +993,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
         _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
 	_sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(Fixnum_O::create(LCC_ARGS_IN_REGISTERS));
 
-	Cons_sp hooks = _Nil<Cons_O>();
+	List_sp hooks = _Nil<T_O>();
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"),_sym_loadBundle),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"),_sym_loadBundle),hooks);
 	hooks = Cons_O::create(Cons_O::create(Str_O::create("so"),_sym_loadBundle),hooks);
@@ -1112,7 +1112,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,LineTablesOnly);
     void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn )
     {_G();
 	Cons_sp pair = Cons_O::create(access_fn,update_fn);
-	Cons_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue().as_or_nil<Cons_O>();
+	List_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue();
 	_sym_STARsystem_defsetf_update_functionsSTAR->defparameter(Cons_O::create(pair,list));
         _sym_STARmonitorRegisterSourceInfoSTAR->defparameter(_Nil<T_O>());
     }

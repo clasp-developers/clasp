@@ -88,7 +88,7 @@ namespace core
 	List_sp tail;
 	Str_sp fileName;
 	boost::regex ex(fileNameRegex);
-	first = Cons_O::create(_Nil<T_O>(),_Nil<Cons_O>());
+	first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	tail = first;
 	bf::directory_iterator end_iter;
 	for ( bf::directory_iterator itr(p); itr!=end_iter; itr++ )
@@ -905,7 +905,7 @@ namespace core
 		i--;
 	    }
 	    if (i == 0)
-		return homedirPathname(_Nil<Str_O>());
+		return homedirPathname(_Nil<T_O>());
 #ifdef HAVE_PWD_H
 	    pwent = getpwnam(p);
 	    if (pwent == NULL) {

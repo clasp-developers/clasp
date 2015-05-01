@@ -139,14 +139,15 @@ void    core_DebugHashTable(bool don)
 #define	DOCS_af_maphash "see CLHS"
 #define	FILE_af_maphash __FILE__
 #define LINE_af_maphash __LINE__
-    T_mv af_maphash(T_sp function_desig, HashTable_sp hash_table)
+    T_mv af_maphash(T_sp function_desig, T_sp thash_table)
     {_G();
 //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
 	Function_sp func = coerce::functionDesignator(function_desig);
-        if ( hash_table.nilp() ) {
+        if ( thash_table.nilp() ) {
             SIMPLE_ERROR(BF("maphash called with nil hash-table"));
         }
 //        HASH_TABLE_LOCK();
+	HashTable_sp hash_table = thash_table.as<HashTable_O>();
         VectorObjects_sp table = hash_table->_HashTable;
 	for ( size_t it=0, itEnd = cl_length(table); it<itEnd; ++it )
 	{
@@ -440,7 +441,7 @@ void    core_DebugHashTable(bool don)
     uint HashTable_O::resizeEmptyTable(uint sz)
     {_OF();
 	if ( sz < 4 ) sz = 4;
-	this->_HashTable = VectorObjects_O::make(_Nil<Cons_O>(),_Nil<Cons_O>(),sz,false);
+	this->_HashTable = VectorObjects_O::make(_Nil<T_O>(),_Nil<T_O>(),sz,false);
 #ifdef USE_MPS
         mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)),gctools::_global_arena);
 #endif
@@ -460,7 +461,7 @@ void    core_DebugHashTable(bool don)
 	uint cnt = 0;
 	for ( size_t it(0), itEnd(cl_length(this->_HashTable)); it<itEnd; ++it )
 	{
-	    cnt += cl_length((this->_HashTable->operator[](it)).as_or_nil<Cons_O>());
+	    cnt += cl_length((this->_HashTable->operator[](it)));
 	}
 	return cnt;
     }
@@ -489,7 +490,6 @@ void    core_DebugHashTable(bool don)
     {_OF();
 	List_sp rib = coerce_to_list((*this->_HashTable)[index]);
 	for ( auto cur : rib ) {
-	    //	for ( Cons_sp cur = this->_HashTable->operator[](index).as_or_nil<Cons_O>(); cur.notnilp(); cur = cCdr(cur) ) {
             List_sp pair = oCar(cur);
 	    if ( this->keyTest(oCar(pair),key) )
 	    {
@@ -519,11 +519,7 @@ void    core_DebugHashTable(bool don)
 	    
 	}
 #endif
-
         HashTable_sp ht = hashTable.as<HashTable_O>();
-        if ( ht.nilp() ) {
-            SIMPLE_ERROR(BF("You tried to call gethash on nil hashtable"));
-        }
         return ht->gethash(key,default_value);
     };
 
@@ -601,7 +597,7 @@ void    core_DebugHashTable(bool don)
     {
         List_sp keyValue = this->tableRef(key);
         if ( keyValue.nilp() ) return keyValue;
-        if ( oCdr(keyValue).unboundp() ) return _Nil<Cons_O>();
+        if ( oCdr(keyValue).unboundp() ) return _Nil<T_O>();
         return keyValue;
     }
 
@@ -689,7 +685,7 @@ void    core_DebugHashTable(bool don)
 		stringstream sk;
 		for (Cons_sp scur=oldTable->operator[](it);scur.notnilp(); scur=cCdr(scur))
 		{
-		    sk << scur->ocar().as_or_nil<Cons_O>()->ocar()->__repr__() << " ";
+		    sk << scur->ocar()->ocar()->__repr__() << " ";
 		}
 		LOG(BF("About to re-index hash table row index[%d] keys: %s") % (it-oldTable.begin()) % sk.str());
 #endif
@@ -714,13 +710,13 @@ void    core_DebugHashTable(bool don)
                         }
                         uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /* Will add key */);
                         LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
-                        Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index).as_or_nil<Cons_O>());
+                        Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index));
                         this->_HashTable->operator[](index) = newCur;
                     }
 		}
 #if 0
 		List_sp next;
-		for ( Cons_sp cur = oldTable->operator[](it).as_or_nil<Cons_O>(); cur.notnilp(); cur = next )
+		for ( List_sp cur = oldTable->operator[](it); cur.notnilp(); cur = next )
 		{
 		    T_sp tnext = oCdr(cur);
 		    next = coerce_to_list(tnext);//;cCdr(cur);
@@ -744,7 +740,7 @@ void    core_DebugHashTable(bool don)
                         }
                         uint index = this->sxhashKey(key,cl_length(this->_HashTable),true /* Will add key */);
                         LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
-                        Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index).as_or_nil<Cons_O>());
+                        Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index));
                         this->_HashTable->operator[](index) = newCur;
                     }
 		}
@@ -880,7 +876,7 @@ void    core_DebugHashTable(bool don)
     List_sp HashTable_O::hashTableAlistAtHash(int hash) const
     {
 	ASSERTF(hash >=0 && hash < cl_length(this->_HashTable),BF("Illegal hash value[%d] must between [0,%d)") % hash % cl_length(this->_HashTable));
-	return this->_HashTable->operator[](hash).as_or_nil<Cons_O>();
+	return this->_HashTable->operator[](hash);
     }
 
 

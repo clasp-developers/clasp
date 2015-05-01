@@ -256,7 +256,7 @@ void	Binder_O::archiveBase(ArchiveP node)
 	Cons_sp cur = first;
 	for ( Binder_O::const_iterator it=this->_Bindings.begin(); it!=this->_Bindings.end(); it++ )
 	{
-	    Cons_sp one = Cons_O::create(it->first,_Nil<Cons_O>());
+	    Cons_sp one = Cons_O::create(it->first,_Nil<T_O>());
 	    cur->setCdr(one);
 	    cur = one;
 	}
@@ -271,7 +271,7 @@ void	Binder_O::archiveBase(ArchiveP node)
 	Cons_sp cur = first;
 	for ( Binder_O::const_iterator it=this->_Bindings.begin(); it!=this->_Bindings.end(); it++ )
 	{
-	    Cons_sp one = Cons_O::create(this->_Bindings.indexed_value(it->second),_Nil<Cons_O>());
+	    Cons_sp one = Cons_O::create(this->_Bindings.indexed_value(it->second),_Nil<T_O>());
 	    cur->setCdr(one);
 	    cur = one;
 	}

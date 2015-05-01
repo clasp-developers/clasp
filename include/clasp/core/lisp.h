@@ -272,8 +272,6 @@ namespace core
             HashTableEq_sp              _SingleDispatchGenericFunctionTable;
 	    /*! True object */
 	    T_sp 			_TrueObject;
-            /*! This is needed by the compiler */
-            ActivationFrame_sp          _ActivationFrameNil;
 
             /*! SingleDispatchGenericFunction cache */
             Cache*                      _SingleDispatchMethodCachePtr;
@@ -314,7 +312,7 @@ namespace core
 	friend class ConditionHandlerManager;	
 	friend class BootStrapCoreSymbolMap;
 	friend T_sp sp_eval_when( List_sp args, T_sp env );
-	friend T_sp core_allSourceFiles();
+	friend List_sp core_allSourceFiles();
 	template <class oclass> friend void define_base_class(Class_sp co, Class_sp cob, uint& classesUpdated );
 	template <class oclass> friend BuiltInClass_sp hand_initialize_allocatable_class(uint& classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class );
 	friend T_mv af_put_sysprop(T_sp key, T_sp area, T_sp value);
@@ -613,7 +611,7 @@ namespace core
     private:
 	void parseStringIntoPackageAndSymbolName(const string& name, bool& packageDefined, Package_sp& package, string& symbolName, bool& exported ) const;
     public:
-        ActivationFrame_sp& activationFrameNil() { return this->_Roots._ActivationFrameNil; };
+	//        ActivationFrame_sp& activationFrameNil() { return this->_Roots._ActivationFrameNil; };
 	T_sp	_true() const { return this->_Roots._TrueObject;};
 	T_sp	_not(T_sp x) const { return this->_boolean(!x.isTrue());};
 	T_sp	_false() const { return _Nil<T_O>(); };

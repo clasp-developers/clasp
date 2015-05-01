@@ -197,11 +197,12 @@ namespace core {
     }
 
     static void
-    change_precision(float_approx *approx, Real_sp position, T_sp relativep)
+    change_precision(float_approx *approx, T_sp tposition, T_sp relativep)
     {
 	gctools::Fixnum pos;
-        if (position.nilp())
+        if (tposition.nilp())
 	    return;
+	Real_sp position = tposition.as<Real_O>();
         pos = clasp_fixnum(position);
         if (!relativep.nilp()) {
 	    Real_sp k = brcl_make_fixnum(0);
@@ -245,7 +246,7 @@ namespace core {
 #define ARGS_core_float_to_digits "(digits number position relativep)"
 #define DECL_core_float_to_digits ""
 #define DOCS_core_float_to_digits "float_to_digits"
-    T_mv core_float_to_digits(StrWithFillPtr_sp digits, Float_sp number, Real_sp position,
+    T_mv core_float_to_digits(T_sp tdigits, Float_sp number, Real_sp position,
 			      T_sp relativep)
     {
 	gctools::Fixnum k;
@@ -253,7 +254,8 @@ namespace core {
         setup(number, approx);
         change_precision(approx, position, relativep);
         k = scale(approx);
-        if (digits.nilp())
+	StrWithFillPtr_sp digits;
+        if (tdigits.nilp()) {
 	    digits = af_make_vector(cl::_sym_BaseChar_O,
 				    10,
 				    true /* adjustable */,
@@ -261,7 +263,10 @@ namespace core {
 				    _Nil<T_O>() /* displacement */,
 				    _Nil<T_O>() /* displ. offset */,
 				    _Nil<T_O>() /* initial_element */,
-				    _Nil<Cons_O>() /* initial_contents */).as<StrWithFillPtr_O>();
+				    _Nil<T_O>() /* initial_contents */).as<StrWithFillPtr_O>();
+	} else {
+	    digits = tdigits.as<StrWithFillPtr_O>();
+	}
         generate(digits, approx);
         return Values(brcl_make_fixnum(k), digits);
     }

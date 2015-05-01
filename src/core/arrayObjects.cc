@@ -49,14 +49,14 @@ namespace core
     {_G();
         GC_ALLOCATE(ArrayObjects_O,array );
 	array->_ElementType = elementType;
-	Cons_sp dim;
+	List_sp dim;
 	if ( af_atom(dim_desig) )
 	{
 	    int idim = dim_desig.as<Integer_O>()->as_int();
 	    dim = Cons_O::create(Fixnum_O::create(idim));
 	} else
 	{
-	    dim = dim_desig.as_or_nil<Cons_O>();
+	    dim = dim_desig;
 	}
 	/* LongLongInt elements = */ array->setDimensions(dim,initialElement);
 	return((array));

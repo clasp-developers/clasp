@@ -46,8 +46,8 @@ namespace core
 	LISP_CLASS(core,CorePkg,SourceFileInfo_O,"SourceFileInfo");
 	DECLARE_INIT();
     public:
-	static SourceFileInfo_sp create(Pathname_sp path, int handle, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
-	static SourceFileInfo_sp create(const string& fileNamePath, int handle, Str_sp truename = _Nil<Str_O>(), size_t offset=0, bool useLineno=true);
+	static SourceFileInfo_sp create(Pathname_sp path, int handle, T_sp truename = _Nil<T_O>(), size_t offset=0, bool useLineno=true);
+	static SourceFileInfo_sp create(const string& fileNamePath, int handle, T_sp truename = _Nil<T_O>(), size_t offset=0, bool useLineno=true);
 
     public: // ctor/dtor for classes with shared virtual base
 	explicit SourceFileInfo_O();
@@ -166,7 +166,7 @@ namespace core {
 
 	/*! Duplicate the source code information associated with orig_obj for new_obj 
 	 In the future I could do something more sophisticated with macroExpansionFunction*/
-	SourcePosInfo_sp duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp macroExpansionFunction= _Nil<T_O>());
+	T_sp duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp macroExpansionFunction= _Nil<T_O>());
 
 
 

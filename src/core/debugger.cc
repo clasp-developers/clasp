@@ -188,11 +188,11 @@ namespace core
 	    }
 	    case 'v':
 	    {
-		Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
+		T_sp env = af_ihsEnv(af_ihsCurrentFrame());
 		_lisp->print(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp() );
 		if ( env.notnilp() )
 		{
-		    _lisp->print(BF("%s") % env->environmentStackAsString());
+		    _lisp->print(BF("%s") % env.as<Environment_O>()->environmentStackAsString());
 		} else
 		{
 		    _lisp->print(BF("-- Only global environment available --"));
@@ -388,10 +388,10 @@ extern "C" {
 #define DOCS_af_printCurrentIhsFrameEnvironment "printCurrentIhsFrameEnvironment"
         void af_printCurrentIhsFrameEnvironment()
         {_G();
-            Environment_sp env = af_ihsEnv(af_ihsCurrentFrame());
+            T_sp env = af_ihsEnv(af_ihsCurrentFrame());
             if ( env.notnilp() )
             {
-                printf("%s\n", env->environmentStackAsString().c_str());
+                printf("%s\n", env.as<Environment_O>()->environmentStackAsString().c_str());
             } else 
             {
                 printf("-- Only global environment available --\n");

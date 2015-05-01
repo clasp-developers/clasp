@@ -75,7 +75,7 @@ enum clasp_readtable_case {
 
     public: // instance member functions here
 
-	ReadTable_sp copyReadTable(ReadTable_sp dest);
+	ReadTable_sp copyReadTable(T_sp dest);
 
 	string __repr__() const;
 

@@ -94,7 +94,7 @@ namespace core
 
     SNode_sp SNode_O::createBranchSNode(Symbol_sp kind)
     {
-	SNode_sp snode = BranchSNode_O::create(kind,_Nil<Cons_O>(),_Nil<Vector_O>());
+	SNode_sp snode = BranchSNode_O::create(kind,_Nil<T_O>(),_Nil<T_O>());
 	return snode;
     }
 
@@ -158,7 +158,7 @@ namespace core
     {
 	SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
 	if ( this->_VectorSNodes.unboundp() ) {
-	    this->_VectorSNodes = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),0,0,true);
+	    this->_VectorSNodes = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),0,0,true);
 	}
 	this->_VectorSNodes->vectorPushExtend(snode);
     }
@@ -170,14 +170,14 @@ namespace core
 	SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
 	SNode_sp snode = saveArchive->getOrCreateSNodeForObjectIncRefCount(obj);
 	if ( this->_VectorSNodes.unboundp() ) {
-	    this->_VectorSNodes = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),0,0,true);
+	    this->_VectorSNodes = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),0,0,true);
 	}
 	this->pushVectorSNode(snode);
     }
 	
     List_sp BranchSNode_O::keys() const
     {
-	Cons_sp keys = _Nil<Cons_O>();
+	List_sp keys = _Nil<T_O>();
 	for ( List_sp cur = this->_SNodePList;cur.consp();cur=oCddr(cur)) {
 	    keys = Cons_O::create(oCar(cur),keys);
 	}
@@ -249,22 +249,20 @@ namespace core
       pass it to the function */
     void BranchSNode_O::mapVector(std::function<void(T_sp)> const& fn)
     {
-        if ( this->_VectorSNodes.notnilp() )
-        {
-	    Vector_sp vectorSNodes = this->_VectorSNodes.as<Vector_O>();
-            for (int i(0), iEnd(vectorSNodes->length()); i<iEnd; ++i ) {
-                SNode_sp snode = vectorSNodes->elt(i).as<SNode_O>();
-                T_sp obj = snode->object();
-                fn(obj);
-            };
-        }
+	if (this->_VectorSNodes.unboundp())
+	    SIMPLE_ERROR(BF("BranchSNode VectorSNodes is unbound"));
+	for (int i(0), iEnd(this->_VectorSNodes->length()); i<iEnd; ++i ) {
+	    SNode_sp snode = this->_VectorSNodes->elt(i).as<SNode_O>();
+	    T_sp obj = snode->object();
+	    fn(obj);
+	};
     };	
 
 
     void BranchSNode_O::saveVector(gctools::Vec0<T_sp> const& vec)
     {
 	SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
-	this->_VectorSNodes = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<Cons_O>(),0,0,true);
+	this->_VectorSNodes = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(),_Nil<T_O>(),0,0,true);
 	for ( auto it=vec.begin(); it!=vec.end(); it++ ) {
 	    SNode_sp snode = saveArchive->getOrCreateSNodeForObjectIncRefCount(*it);
 	    this->_VectorSNodes->vectorPushExtend(snode);
@@ -495,12 +493,13 @@ namespace core
 	    for ( List_sp cur = branchSNode->_SNodePList; cur.consp(); cur=oCddr(cur) ) {
 		this->loadObjectDirectly(oCadr(cur).as<SNode_O>());
 	    }
-	    if ( branchSNode->_VectorSNodes.notnilp()) {
+	    if ( !branchSNode->_VectorSNodes.unboundp()) {
 		Vector_sp branchSNodeVectorSNodes = branchSNode->_VectorSNodes.as<Vector_O>();
 		for ( int i(0),iEnd(branchSNodeVectorSNodes->length());i<iEnd;++i) {
 		    this->loadObjectDirectly(branchSNodeVectorSNodes->elt(i).as<SNode_O>());
 		}
 	    }
+	    IMPLEMENT_MEF(BF("Should I return NIL at this point?  The BranchSNode was not completely initialized"));
 	    return _Nil<T_O>();
 	} else {
 	    T_sp findObj = this->_ObjectForSNode->gethash(branchSNode,_Unbound<T_O>());
@@ -564,7 +563,7 @@ namespace core
 
     List_sp LoadArchive_O::getContents()
     {_G();
-	if ( this->_TopNode.nilp() ) SIMPLE_ERROR(BF("No archive is loaded"));
+	if ( this->_TopNode.unboundp() ) SIMPLE_ERROR(BF("No archive is loaded"));
 	BranchSNode_sp bnode = this->_TopNode;
 	return bnode->_SNodePList;
     }

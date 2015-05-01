@@ -44,7 +44,7 @@ project clasp : requirements
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
 	<cxxflags>"-fvisibility=default"
-        <variant>debug:<cxxflags>"-O0 -gdwarf-4"
+        <variant>debug:<cxxflags>"-O0 -fstandalone-debug -gdwarf-4"
         <variant>release:<cxxflags>"-O3 -gdwarf-4"
         <variant>release:<cflags>"-O3 -gdwarf-4"
         <linkflags>"-fvisibility=default"

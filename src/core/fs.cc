@@ -105,12 +105,12 @@ Cons_sp	directory(Path_sp rpath)
     bf::path p(rpath->getPath());
     Cons_sp list, tail;
     Str_sp fileName;
-    list = Cons_O::create(this->env(),_Nil<T_O>(),_Nil<Cons_O>());
+    list = Cons_O::create(this->env(),_Nil<T_O>(),_Nil<T_O>());
     tail = list;
     bf::directory_iterator end_iter;
     for ( bf::directory_iterator itr(p); itr!=end_iter; itr++ )
     {
-        tail->setCdr(Cons_O::create(this->env(),Str_O::create(itr->path().string()),_Nil<Cons_O>()));
+        tail->setCdr(Cons_O::create(this->env(),Str_O::create(itr->path().string()),_Nil<T_O>()));
 	tail = tail->cdr();
     }
     return list->cdr();

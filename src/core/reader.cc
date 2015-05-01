@@ -721,7 +721,7 @@ namespace core
 
     List_sp Reader_O::readDelimitedList(char endChar, bool recursiveP)
     {_OF();
-	Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<Cons_O>());
+	Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
 	Cons_sp cur = first;
 	while (1)
 	{
@@ -742,7 +742,7 @@ namespace core
 	    {
 		ERROR_END_OF_FILE(this->_Input);
 	    }
-	    Cons_sp one = Cons_O::create(element, _Nil<Cons_O>());
+	    Cons_sp one = Cons_O::create(element, _Nil<T_O>());
             lisp_registerSourcePosInfo(one,spi);
 	    cur->setCdr(one);
 	    cur = one;

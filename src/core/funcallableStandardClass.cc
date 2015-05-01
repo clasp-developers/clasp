@@ -79,7 +79,7 @@ namespace core
     void	FuncallableStandardClass_O::initialize()
     {
 	this->Base::initialize();
-//    this->_InstanceVariableNames = _Nil<Cons_O>();
+//    this->_InstanceVariableNames = _Nil<T_O>();
 //	this->_SlotSpecifiers.clear();
 	this->_InstanceCoreClass = _Nil<FuncallableStandardClass_O>();
     }
@@ -90,7 +90,7 @@ namespace core
 	    oclass->_Name = name;
 	    oclass->_InstanceClassSymbol = UNDEFINED_SYMBOL; // Not used anymore instanceClassSymbol;
 	    oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();
-//    oclass->_InstanceVariableNames = _Nil<Cons_O>();
+//    oclass->_InstanceVariableNames = _Nil<T_O>();
 	return oclass;
     }
 
@@ -109,7 +109,7 @@ namespace core
 	{_BLOCK_TRACE("About to assign base class");
 	    if ( baseClassesDesignator->consP() )
 	    {
-		baseClasses = baseClassesDesignator.as_or_nil<Cons_O>();
+		baseClasses = baseClassesDesignator;
 	    } else
 	    {
 		LOG(BF("baseClassesDesignator class(%s) value(%s)")

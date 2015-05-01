@@ -74,10 +74,10 @@ namespace core
     void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream )
     {_G();
 	if ( snode->refCount() > 1 ) {
-	    Fixnum_sp ref = snodeToRef->gethash(snode,_Nil<T_O>()).as<Fixnum_O>();
+	    T_sp ref = snodeToRef->gethash(snode,_Nil<T_O>());
 	    if ( ref.notnilp() ) {
                 clasp_write_char('#',stream);
-		ref->__write__(stream);
+		ref.as<Fixnum_O>()->__write__(stream);
                 clasp_write_char('#',stream);
 		return;
 	    } else {
@@ -106,7 +106,8 @@ namespace core
 		clasp_write_char(' ',stream);
 	    }
 	    clasp_write_string(") ",stream);
-	    if ( bsnode->_VectorSNodes.notnilp() && bsnode->_VectorSNodes->length()>0) {
+	    ASSERT(!bsnode->_VectorSNodes.unboundp());
+	    if ( !bsnode->_VectorSNodes.unboundp() && bsnode->_VectorSNodes->length()>0) {
 		clasp_write_string(" #",stream);
 		write_ugly_object(Fixnum_O::create(bsnode->_VectorSNodes->length()),stream);
 		clasp_write_string("( ",stream);
