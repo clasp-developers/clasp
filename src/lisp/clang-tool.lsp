@@ -16,14 +16,47 @@
   "Stores the path to the main source file.  
 Relative paths will be converted to absolute ones using this pathname.")
 
+(define-condition database-load-directory-error (file-error)
+  ((directory :type pathname :initarg :directory))
+  (:report (lambda (e stream)
+             (with-slots (pathname directory) e
+               (format stream "error loading compilation database ~S:
+  No such directory ~S.
+
+CLANG-TOOL:LOAD-ASTS is likely to result in an uncatchable fatal error.
+
+Make sure that your compilation database contains up-to-date absolute pathnames in the 'directory' fields." pathname directory)))))
+
 (defun load-compilation-database (pathname &key (main-source-filename "main.cc"))
-  (setq *db* (ast-tooling:jsoncompilation-database-load-from-file
-              (namestring (probe-file pathname))))
-  (setq $* (map 'list #'identity (ast-tooling:get-all-files *db*)))
-  (let ((found-main-pathname (find-if (lambda (x) (search main-source-filename x)) $*)))
-    (unless found-main-pathname
-      (error "Could not find the main file ~a in the list of all source files~% - pass the name of the file using the :main-source-filename keyword argument" main-source-filename))
-    (setq *main-pathname* (pathname found-main-pathname)))
+  (let ((db-path (probe-file pathname)))
+    (setq *db* (ast-tooling:jsoncompilation-database-load-from-file
+                (namestring db-path)))
+    (setq $* (map 'list #'identity (ast-tooling:get-all-files *db*)))
+    (let ((found-main-pathname (find-if (lambda (x) (search main-source-filename x)) $*)))
+      (unless found-main-pathname
+        (error "Could not find the main file ~a in the list of all source files~% - pass the name of the file using the :main-source-filename keyword argument" main-source-filename))
+      (setq *main-pathname* (pathname found-main-pathname)))
+    (format t "Checking for empty directories (which result in uncatchable fatal errors inside LLVM)...~&")
+    (let ((dirs (make-hash-table :test #'equal))
+          (last-checked nil))
+      (labels ((file-dir-exists-p (file)
+                 (let* ((dir (make-pathname :name nil :type nil :defaults (pathname file)))
+                        (cached (multiple-value-list (gethash dir dirs))))
+                   (if (second cached) (first cached)
+                       (progn
+                         (setf last-checked dir)
+                         (setf (gethash dir dirs)
+                               (pathnamep (probe-file dir))))))))
+        (unless (every #'file-dir-exists-p $*)
+          ;; This rigmarole is used to erase *db* if a higher-level restart is invoked.
+          ;; $* is still useful (if only to tell the user which files caused the error), but *db* is "unsafe" since LOAD-ASTS is (as of 1e00c7212d6f9297f7c0b9b20b312e76e206cac2) "guaranteed" to crash-to-desktop at this point.
+          (let ((continuing nil))
+            (unwind-protect
+                 (setq continuing
+                       (not (with-simple-restart (load-asts-continue-unsafe "Continue anyway")
+                              (error 'database-load-directory-error :pathname db-path :directory last-checked))))
+              (unless continuing
+                (setq *db* nil))))))))
     (format t "Loaded database contains ~a source files~%" (length $*))
   (format t "The main source file is ~a~%" (namestring *main-pathname*)))
 
@@ -483,7 +516,17 @@ This can only be run in the context set up by the code-match-callback::run metho
     res))
 ||#
 
-(defun load-asts (list-name &key arguments-adjuster-code )
+(define-condition ast-load-error (simple-error)
+  ((num :initarg :num)
+   (asts :initarg :asts))
+  (:report (lambda (e stream)
+             (with-slots (num asts) e
+                 (format stream "unknown error loading ASTs; check your compilation database?
+
+AST-TOOLING:BUILD-ASTS returned (values ~S ~S)" num asts)))))
+
+(defun load-asts (&optional (list-name $*) &key arguments-adjuster-code )
+  (assert *db* nil "*db* should both be non-nil, did LOAD-COMPILATION-DATABASE succeed?")
   (let* ((files list-name)
          (tool (ast-tooling:new-refactoring-tool *db* files))
          (syntax-only-adjuster (ast-tooling:get-clang-syntax-only-adjuster))
@@ -500,6 +543,8 @@ This can only be run in the context set up by the code-match-callback::run metho
     (time 
      (multiple-value-bind (num asts)
          (ast-tooling:build-asts tool)
+       (unless (typep asts 'vector)
+         (error 'ast-load-error :num num :asts asts))
        (setq *asts* asts)
        (format t "Built asts: ~a~%" asts)
        )
