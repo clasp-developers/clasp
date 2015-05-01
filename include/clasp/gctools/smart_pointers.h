@@ -1747,12 +1747,12 @@ namespace gctools {
 		}
 		smart_ptr<core::Cons_O> *operator->() { return &ptr; }
 		const smart_ptr<core::Cons_O> *operator->() const { return &ptr; }
-		const smart_ptr<core::Cons_O> &operator*() const { return reinterpret_cast<smart_ptr<core::Cons_O>>(ptr); }
-		smart_ptr<core::T_O> &operator*() { return ptr; }
+		const smart_ptr<core::Cons_O> &operator*() const { return ptr; }
+		smart_ptr<core::Cons_O> &operator*() { return ptr; }
 		// Unsafe but fast cast of T_O* to Cons_O* - should only be done within a loop
 		/* smart_ptr<core::Cons_O> operator*() { return smart_ptr<core::Cons_O>((Tagged)(ptr)); } */
 	public:
-		smart_ptr<core::T_O> ptr;
+		smart_ptr<core::Cons_O> ptr;
 	};
     public:
 	    typedef List_sp_iterator<List_sp, false> iterator;
