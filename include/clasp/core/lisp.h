@@ -756,7 +756,7 @@ namespace core
 
     public:	// Functions for manipulating special forms
 	Symbol_sp defineSpecialOperator(const string& package, const string& formName, SpecialFormCallback cb, const string& args = "", const string& docstring = "");
-	SpecialForm_sp specialFormOrNil(Symbol_sp sym);
+	T_sp specialFormOrNil(Symbol_sp sym);
     public:
 	bool recognizesModule(const string& fileName);
 	void addModule(const string& fileName);

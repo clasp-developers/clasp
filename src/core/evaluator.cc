@@ -2399,7 +2399,7 @@ namespace core
                 // TODO: Deal with Compiler macros here
                 T_sp macroFunction(_Nil<T_O>());
                 if ( af_symbolp(head) ) {
-                    macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment).as<Function_O>();
+                    macroFunction = eval::funcall(cl::_sym_macroFunction,head,environment);
                     if ( macroFunction.notnilp() ) {
                         T_sp expanded = eval::funcall(macroFunction,exp,environment);
                         return t1Evaluate(expanded,environment);

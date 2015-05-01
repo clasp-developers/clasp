@@ -921,10 +921,10 @@ namespace core
 
 
 
-    SpecialForm_sp Lisp_O::specialFormOrNil(Symbol_sp sym)
+    T_sp Lisp_O::specialFormOrNil(Symbol_sp sym)
     {
 	if ( sym.nilp() ) return _Nil<SpecialForm_O>();
-        return this->_Roots._SpecialForms->gethash(sym,_Nil<SpecialForm_O>()).as<SpecialForm_O>();
+        return this->_Roots._SpecialForms->gethash(sym);
     }
 
 

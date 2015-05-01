@@ -198,6 +198,11 @@ namespace gctools {
     template <class T, class U, class Link>
     struct Buckets;
 
+    inline bool unboundOrDeleted(core::T_sp bucket)
+    {
+	return bucket.unboundp()||bucket.deletedp();
+    }
+    
     template <class T,class U>
     struct Buckets<T,U,WeakLinks> : public BucketsBase<T,U> {
         typedef typename BucketsBase<T,U>::value_type value_type;
@@ -205,7 +210,7 @@ namespace gctools {
         virtual ~Buckets() {
 #ifdef USE_BOEHM
             for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
-                if (this->bucket[i].objectp()) {
+                if ( !unboundOrDeleted(this->bucket[i]) ) {
                     int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[i].rawRef_()));
                     if ( !result ) {
                         THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
@@ -217,13 +222,17 @@ namespace gctools {
 
         void set(size_t idx, const value_type& val) {
 #ifdef USE_BOEHM
-            if (this->bucket[idx].objectp()) {
-                int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].rawRef_()));
+	    GCTOOLS_ASSERT(this->bucket[idx].objectp());
+            if ( !unboundOrDeleted(this->bucket[idx]) ) {
+		auto& rawRef = this->bucket[idx].rawRef_();
+		void** linkAddress = reinterpret_cast<void**>(&rawRef);
+                int result = GC_unregister_disappearing_link(linkAddress);//reinterpret_cast<void**>(&this->bucket[idx].rawRef_()));
                 if (!result) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
                 }
             }
-            if (val.objectp()) {
+	    GCTOOLS_ASSERT(val.objectp());
+            if ( !unboundOrDeleted(val) ) {
                 this->bucket[idx] = val;
                 GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].rawRef_())
                                                       ,reinterpret_cast<void*>(this->bucket[idx].rawRef_()));
@@ -389,7 +398,8 @@ namespace gctools {
         typedef typename MappingBase<T,U>::value_type value_type;
         Mapping(const T& val) : MappingBase<T,U>(val) {
 #ifdef USE_BOEHM
-            if (this->bucket.objectp()) {
+	    GCTOOLS_ASSERT(this->bucket.objectp());
+            if ( !unboundOrDeleted(this->bucket)) {
                 printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
                 GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_())
                                                       ,reinterpret_cast<void*>(this->bucket.rawRef_()));
@@ -398,7 +408,8 @@ namespace gctools {
         };
         virtual ~Mapping() {
 #ifdef USE_BOEHM
-            if (this->bucket.objectp()) {
+	    GCTOOLS_ASSERT(this->bucket.objectp());
+            if (!unboundOrDeleted(this->bucket)) {
                 printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
                 int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_()));
                 if ( !result ) {
@@ -523,7 +534,8 @@ namespace gctools {
         WeakPointerManager(const value_type& val) {
             this->pointer = AllocatorType::allocate(val);
 #ifdef USE_BOEHM
-            if ( this->pointer->value.objectp() ) {
+	    GCTOOLS_ASSERT(this->pointer->value.objectp());
+            if ( !unboundOrDeleted(this->pointer->value) ) {
                 GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.rawRef_())
                                                       , reinterpret_cast<void*>(this->pointer->value.rawRef_()));
             } else {
@@ -533,7 +545,8 @@ namespace gctools {
         }
         virtual ~WeakPointerManager() {
 #ifdef USE_BOEHM
-            if (this->pointer->value.objectp()) {
+	    GCTOOLS_ASSERT(this->pointer->value.objectp());
+            if ( !unboundOrDeleted(this->pointer->value) ) {
                 int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.rawRef_()));
                 if ( !result ) {
                     THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));
